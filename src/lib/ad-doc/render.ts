@@ -3,8 +3,8 @@
  * navigateur) et l'export du serveur (@napi-rs/canvas). Aucune dépendance Node ici : l'environnement fournit la
  * correspondance des polices et les images déjà chargées. Ce qui est vu dans l'éditeur est ce qui est exporté.
  */
-import { processedImage } from "./image-fx";
-import type { AdDocument, Fill, ImageLayer, Layer, Shadow, TextLayer } from "./types";
+import { processedImage, reflectionOf } from "./image-fx";
+import type { AdDocument, Fill, ImageLayer, Layer, Shadow, ShapeLayer, TextLayer } from "./types";
 
 /** Sous-ensemble de CanvasRenderingContext2D commun au navigateur et à @napi-rs/canvas. */
 export type Ctx2D = any;
@@ -16,11 +16,17 @@ export type RenderEnv = {
   images: Map<string, { width: number; height: number } & object>;
 };
 
+/**
+ * Mots insécables : la ponctuation haute française (« : », « ? », « ! », « ; », guillemets) reste collée au mot
+ * qui la précède ou la suit, jamais seule en début de ligne.
+ */
+const glue = (t: string) => t.replace(/[ \u00A0\u202F]+([:;?!»])/g, "\u00A0$1").replace(/«[ \u00A0\u202F]+/g, "«\u00A0");
+
 export function wrap(ctx: Ctx2D, text: string, maxWidth: number): string[] {
   const out: string[] = [];
-  for (const para of text.split(/\n/)) {
+  for (const para of glue(text).split(/\n/)) {
     let line = "";
-    for (const w of para.split(/\s+/).filter(Boolean)) {
+    for (const w of para.split(/[ \t\r\f\v]+/).filter(Boolean)) {
       const test = line ? `${line} ${w}` : w;
       if (ctx.measureText(test).width > maxWidth && line) {
         out.push(line);
@@ -153,11 +159,66 @@ function drawImage(ctx: Ctx2D, l: ImageLayer, env: RenderEnv) {
       ctx.fillRect(-rx, -rx, rx * 2, rx * 2);
       ctx.restore();
     }
-    shadowOn(ctx, l.shadow);
     const fx = l.filter && l.filter !== "none" ? processedImage(img, { sx, sy, sw, sh }, b.w, b.h, l.filter, null) : null;
+    if (l.reflection && l.reflection > 0) {
+      // Reflet sur sol brillant : le bas du produit renversé sous lui, de plus en plus transparent.
+      const rh = Math.max(1, Math.round(b.h * 0.42));
+      const r = reflectionOf(fx ?? img, fx ? { sx: 0, sy: 0, sw: b.w, sh: b.h } : { sx, sy, sw, sh }, Math.round(b.w), Math.round(b.h), rh);
+      if (r) {
+        ctx.save();
+        ctx.globalAlpha *= Math.min(1, l.reflection);
+        ctx.drawImage(r, b.x, b.y + b.h, b.w, rh);
+        ctx.restore();
+      }
+    }
+    shadowOn(ctx, l.shadow);
     if (fx) ctx.drawImage(fx, b.x, b.y, b.w, b.h);
     else ctx.drawImage(img, sx, sy, sw, sh, b.x, b.y, b.w, b.h);
   }
+  ctx.restore();
+}
+
+/**
+ * Faisceau d'ondes lumineuses (affiche « son », « énergie ») : une vingtaine de sinusoïdes fines et décalées qui
+ * s'ouvrent et se resserrent, tracées au contour du calque, avec une lueur (ombre colorée) si le calque en a une.
+ */
+function drawWaves(ctx: Ctx2D, l: ShapeLayer) {
+  const n = 18;
+  const color = l.stroke?.color ?? (typeof l.fill === "string" ? l.fill : "#FFFFFF");
+  ctx.strokeStyle = color;
+  ctx.lineWidth = l.stroke?.width ?? 2;
+  const steps = Math.max(24, Math.round(l.w / 12));
+  const base = ctx.globalAlpha;
+  for (let i = 0; i < n; i++) {
+    const t = i / (n - 1);
+    const phase = t * 1.6;
+    ctx.globalAlpha = Math.max(0.15, 1 - Math.abs(t - 0.5) * 1.4) * base;
+    ctx.beginPath();
+    for (let k = 0; k <= steps; k++) {
+      const u = k / steps;
+      const env = Math.sin(Math.PI * u) ** 0.8;
+      const y = l.y + l.h / 2 + Math.sin(u * Math.PI * 3.2 + phase) * (l.h / 2) * env * (0.35 + 0.65 * Math.sin(Math.PI * (0.2 + t * 0.6)));
+      if (k === 0) ctx.moveTo(l.x, y);
+      else ctx.lineTo(l.x + u * l.w, y);
+    }
+    ctx.stroke();
+  }
+  ctx.globalAlpha = base;
+}
+
+/** Pictogramme au trait : tracé SVG (grille 24 × 24) mis à l'échelle de la boîte, trait d'épaisseur constante. */
+function drawIcon(ctx: Ctx2D, l: Extract<Layer, { kind: "shape" }>) {
+  const P = (globalThis as { Path2D?: new (d: string) => unknown }).Path2D;
+  if (!l.path || !P) return;
+  const s = Math.min(l.w, l.h) / 24;
+  ctx.save();
+  ctx.translate(l.x + (l.w - 24 * s) / 2, l.y + (l.h - 24 * s) / 2);
+  ctx.scale(s, s);
+  ctx.strokeStyle = l.stroke?.color ?? (typeof l.fill === "string" ? l.fill : "#000");
+  ctx.lineWidth = (l.stroke?.width ?? 1.6 * s) / s;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  (ctx as unknown as { stroke: (p: unknown) => void }).stroke(new P(l.path));
   ctx.restore();
 }
 
@@ -173,7 +234,9 @@ function drawLayer(ctx: Ctx2D, l: Layer, env: RenderEnv) {
   if (l.kind === "image") drawImage(ctx, l, env);
   else if (l.kind === "shape") {
     shadowOn(ctx, l.shadow);
-    if (l.shape === "line") {
+    if (l.shape === "waves") drawWaves(ctx, l);
+    else if (l.shape === "icon") drawIcon(ctx, l);
+    else if (l.shape === "line") {
       ctx.strokeStyle = l.stroke?.color ?? (typeof l.fill === "string" ? l.fill : "#000");
       ctx.lineWidth = l.stroke?.width ?? 2;
       ctx.beginPath();

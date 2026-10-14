@@ -15,7 +15,7 @@ import type { z } from "zod";
 import { balance, EUR, recordUsage, release, reserve, settleUncertain } from "../billing";
 import { assertAiAllowed, currentUserHasAiCredits } from "./access";
 import { PermanentError, UserFacingError } from "../jobs";
-import { activeProviderKey, FX_SAFETY, priceFor, requirePrice, routeFor, TEXT_MODEL_LIMITS, usdToEur, type TaskId } from "./config";
+import { activeProviderKey, aiAvailability, FX_SAFETY, priceFor, requirePrice, routeFor, TEXT_MODEL_LIMITS, usdToEur, type TaskId } from "./config";
 import { contentLang, L, uiLang } from "../i18n-server";
 import { languageDirective } from "./prompts";
 import { AsyncLocalStorage } from "node:async_hooks";
@@ -126,6 +126,14 @@ function client(): Anthropic {
 /** IA texte utilisable pour la tâche en cours : fournisseur configuré et crédits disponibles (sinon moteur local). */
 export function llmConfigured() {
   return textProviderReady() && currentUserHasAiCredits();
+}
+
+/**
+ * Disponibilité de l'IA pour l'interface et les devis : le texte est « disponible » dès qu'un fournisseur de texte
+ * est prêt (Anthropic, ou OpenAI / Gemini en routage automatique), pas seulement avec Anthropic.
+ */
+export function aiReady() {
+  return { ...aiAvailability(), llm: textProviderReady() };
 }
 
 /**

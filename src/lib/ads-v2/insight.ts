@@ -16,9 +16,10 @@ const clean = (s: string | null | undefined) => (ph(s) ? null : s!.trim());
 export function adInsight(p: Project, opts: { audience?: string | null; offer?: string | null } = {}): AdInsight {
   const services = p.business === "services";
   const pf = p.strategy?.platform;
-  const facts = p.product.facts.filter((f) => f.status === "confirmed" && f.value.trim()).map((f) => ({ label: f.label, value: f.value.trim() }));
-  const answered = [...p.product.questions.filter((q) => q.answer?.trim()).map((q) => ({ label: q.question.replace(/\?$/, ""), value: q.answer!.trim() }))];
-  const objections = (pf?.objections ?? []).filter((o) => o.objection.trim() && o.answer?.trim()).map((o) => ({ objection: o.objection.trim(), answer: o.answer.trim() }));
+  // Une réponse « [À compléter : …] » n'est pas une réponse : la question n'apparaît jamais seule sur une publicité.
+  const facts = p.product.facts.filter((f) => f.status === "confirmed" && !ph(f.value)).map((f) => ({ label: f.label, value: f.value.trim() }));
+  const answered = [...p.product.questions.filter((q) => !ph(q.answer)).map((q) => ({ label: q.question.replace(/\s*\?\s*$/, "").trim(), value: q.answer!.trim() }))];
+  const objections = (pf?.objections ?? []).filter((o) => o.objection.trim() && !ph(o.answer)).map((o) => ({ objection: o.objection.trim(), answer: o.answer.trim() }));
   const proofs = (pf?.proofs ?? []).filter((x) => x.status === "available" && x.claim.trim()).map((x) => x.claim.trim());
   const cat = services ? null : resolveProductCategory(p.product);
   const trade = services ? resolveTrade(tradeText(p), p.product.sector ?? null) : null;

@@ -350,6 +350,12 @@ const contactForm: CopyFn = (ctx, base, schema) => {
 };
 
 /** Rédactions qui remplacent celles des boutiques de produits quand le projet est une entreprise de services. */
+/** Appel à l'action d'un site de services (rendez-vous, devis, appel, contact) et sa page. */
+export function serviceCta(ctx: ContentContext): { label: string; url: string } {
+  const d = info(ctx);
+  return { label: d.cta, url: d.ctaUrl };
+}
+
 export const SERVICE_COPY: Record<string, CopyFn> = {
   hero,
   "hero-split": hero,

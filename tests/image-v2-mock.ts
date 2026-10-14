@@ -86,7 +86,7 @@ export function mockDeps(o: {
     providers: o.providers ?? [],
     canReview: o.canReview ?? true,
     canGenerate: o.canGenerate ?? true,
-    path: o.path ?? ((b) => (b.productFidelity ? (b.references.length ? "composite_plate" : "none") : "text_to_image")),
+    path: o.path ?? ((b) => (b.productFidelity ? (b.references.length ? "reference_scene" : "none") : "text_to_image")),
     reference: () => o.reference ?? null,
     async download(c) {
       log.downloads.push(c.id);

@@ -8,7 +8,7 @@
  * Règle de présence humaine (`people-policy.ts`) : une personne visible sans autorisation du client est un défaut
  * FATAL (`unauthorized_person`) pour toutes les images et vidéos : le média est refusé, jamais publié.
  */
-export const POLICY_VERSION = "2026-10-p11g";
+export const POLICY_VERSION = "2026-10-p11h";
 
 export type Checker = "ai" | "local" | "metadata" | "human" | "none";
 
@@ -161,16 +161,19 @@ export const POLICIES: Record<Deliverable, Policy> = {
   // Image V2 (phase 5A) : une image hors sujet n'est jamais FINAL, même très belle (défaut fatal) ; un produit
   // transformé est fatal ; une image techniquement correcte mais esthétiquement faible ne passe pas (planchers
   // esthétique et composition). Reprises ciblées limitées à deux, chacune avec un diagnostic.
+  // Seuils baissés d'un cran à la demande du propriétaire (photos publicitaires fidèles refusées pour un détail).
   image_v2: {
-    final: 7.5,
+    final: 7,
     retryFloor: 5,
-    maxRetries: 2,
+    // Une seule correction payante ; ensuite une image correcte (≥ 6,5) est gardée « à vérifier » (jamais jetée).
+    maxRetries: 1,
     minCriterion: 5.5,
-    criteriaFloors: { relevance: 7, fidelity: 8, aesthetics: 6.5, composition: 6, brief: 6.5 },
+    criteriaFloors: { relevance: 6.5, fidelity: 7, aesthetics: 6, composition: 6, brief: 6 },
     finalCheckers: ["ai", "human"],
     minConfidence: 0.7,
     fatal: ["off_topic", "wrong_product", "product_altered", "corrupt", "forbidden", "unauthorized_person"],
     blocking: ["deformed", "text_in_image", "artifacts", "low_resolution", "bad_crop", "weak_aesthetics", "brand_mismatch", "brief_mismatch", "duplicate", "license_unverified"],
+    provisional: { checkers: ["ai"], floor: 6.5, use: "manual", label: "needs_improvement" },
   },
   stock_photo: STOCK,
   // Photo de banque V2 : seul un contrôle visuel (IA) ou humain conclut FINAL ; la description de la banque seule
@@ -200,11 +203,11 @@ export const POLICIES: Record<Deliverable, Policy> = {
   // ou produit transformé = fatal ; affirmation non confirmée, texte illisible, zone de sécurité débordée, produit
   // recouvert, trop de texte ou création générique bloquent. Sans relecture IA : au mieux PROVISOIRE (choix manuel).
   ad_v2: {
-    final: 7.5,
+    final: 7,
     retryFloor: 5.5,
     maxRetries: 2,
-    minCriterion: 6,
-    criteriaFloors: { hook: 7, relevance: 7, legibility: 7, cta: 6.5, brand: 6.5 },
+    minCriterion: 5.5,
+    criteriaFloors: { hook: 6.5, relevance: 6.5, legibility: 7, cta: 6, brand: 6 },
     finalCheckers: ["ai", "human"],
     minConfidence: 0.7,
     fatal: ["forbidden_claim", "product_altered", "wrong_product", "corrupt", "forbidden", "unauthorized_person"],

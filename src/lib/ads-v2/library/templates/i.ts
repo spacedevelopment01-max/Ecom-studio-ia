@@ -11,6 +11,7 @@ import { col, deep, hair, pad, readVeil, soft, tsize } from "./util";
 export const TEMPLATES_I: Template[] = [
   {
     id: "centered-rules",
+    coversSubject: true,
     name: ["Filets centrés", "Centered rules"],
     family: "lux",
     photo: "required",
@@ -31,6 +32,7 @@ export const TEMPLATES_I: Template[] = [
   },
   {
     id: "golden-ring",
+    coversSubject: true,
     name: ["Anneau doré", "Golden ring"],
     family: "lux",
     photo: "required",

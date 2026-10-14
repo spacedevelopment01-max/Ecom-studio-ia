@@ -14,7 +14,7 @@ import crypto from "node:crypto";
 import type { JobContext } from "../jobs";
 import { JobCancelled, JobPaused } from "../jobs";
 import { aiActiveFor } from "../ai/access";
-import { all, json } from "../db";
+import { all, json, one } from "../db";
 import { CostCapReached, currentTrace, withCandidate, withTrace } from "../ai/trace";
 import { gateSave } from "../quality/store";
 import { isAutoUsable } from "../quality/usable";
@@ -30,7 +30,16 @@ import { adInsight } from "./insight";
 import { planAngles } from "./angles";
 import { copyPrompt, copySystem, localCopy } from "./copy";
 import { claimIssues, type ClaimIssue } from "./claims";
-import { composeAd } from "./compose";
+import { composeAd, type ComposeInput } from "./compose";
+import { HERO_TEMPLATES } from "./library";
+import { planDirections, templateFor } from "./direction";
+import { confirmedFeatures } from "./poster";
+import { ownScenePhotos } from "../engine/images";
+import { assetData, getAsset } from "../library";
+import { dHash, hamming } from "../image-v2/quality";
+
+/** Distance minimale (dHash, 64 bits) entre deux publicités d'une campagne pour les dire différentes. */
+const DIVERSITY_MIN = 10;
 import { adArt, layoutForConcept, textZoneFor, toAdLayout, treatmentsFor, type AdArt, type LogoPlacement } from "./art";
 import { gateAd, localAdChecks } from "./quality";
 import { peopleAllowedFor } from "../people-policy";
@@ -40,8 +49,10 @@ import { engineDocKey, latestDoc, saveVersion, userOwned } from "../ad-doc/store
 import type { AdConcept, AdCopy, AdInsight, AdOutcome, AdReview, AnglePlan, FormatSpec, Platform, VisualConcept } from "./types";
 import { projectRights } from "../plan-gates";
 
-export const ADS_V2_VERSION = "6b.1";
+export const ADS_V2_VERSION = "7.1";
 export const DEFAULT_AD_CAP_EUR = 3;
+/** Note à partir de laquelle une création sans défaut rédhibitoire est gardée « à améliorer » plutôt que refusée. */
+export const AD_KEEP_FLOOR = 6;
 
 export type AdRequestV2 = {
   count?: number;
@@ -53,6 +64,8 @@ export type AdRequestV2 = {
   maxCostEur?: number;
   /** Textes seulement (fenêtre « Campagne ») : angles, textes contrôlés et plan de test, sans création d'image. */
   copyOnly?: boolean;
+  /** Formats voulus par le client (ex. ["4:5"]) parmi ceux des plateformes ; absent : tous. */
+  aspects?: string[];
 };
 
 export type AdRunResult = {
@@ -65,6 +78,8 @@ export type AdRunResult = {
   stoppedByCostCap: boolean;
   costMicro: number;
   notes: string[];
+  /** Paires de publicités trop proches (rendus réels comparés), vide quand la campagne est variée. */
+  diversity: { a: string; b: string; distance: number }[];
 };
 
 /** Mise en page et image selon l'angle (le visuel sert l'idée de l'annonce). */
@@ -112,7 +127,7 @@ async function engine(ctx: JobContext | null, p: Project, req: AdRequestV2, deps
   notes.push(...insight.gaps.map((g) => `à compléter : ${g}`));
   const stats = { copyCalls: 0, reviews: 0, images: 0, reused: 0, retries: 0, layoutChanges: 0 };
   const strategy = localAdStrategy(p, lang, { count: angles.length, objective: req.objective ?? undefined, audience: req.audience ?? undefined, networks: platforms.map((x) => (x.startsWith("meta") ? "instagram" : x)) });
-  const result: AdRunResult = { runId, insight, concepts: [], outcomes: [], strategy, stats, stoppedByCostCap: false, costMicro: 0, notes };
+  const result: AdRunResult = { runId, insight, concepts: [], outcomes: [], strategy, stats, stoppedByCostCap: false, costMicro: 0, notes, diversity: [] };
   if (!angles.length) {
     notes.push("aucun angle possible : complétez les faits du produit ou les prestations");
     return result;
@@ -155,25 +170,60 @@ async function engine(ctx: JobContext | null, p: Project, req: AdRequestV2, deps
     const typo = brandTypo(p);
     // Direction artistique du projet : chaque création de la campagne a sa propre composition.
     const art = adArt(p, typo);
+    // Direction artistique par publicité (V3) : un concept différent pour chaque angle (prise de vue, mise en page).
+    const feats = confirmedFeatures(p);
+    const dirs = planDirections(angles, p.business, feats.length >= 2);
+    const taken = new Set<string>();
+    const fr = lang === "fr";
     angles.forEach((a, k) => {
       const v = visualFor(a, insight, !!cut);
-      result.concepts.push({ id: a.id, angle: a, copy: copies.get(a.id)!.copy, visual: { ...v, layout: layoutForConcept(art, k) }, copyBy: copies.get(a.id)!.by, claims: allClaims.get(a.id)! });
+      const d = dirs[k];
+      const direction = { id: d.id, name: fr ? d.name.fr : d.name.en, objective: fr ? d.objective.fr : d.objective.en, layout: templateFor(d, taken, feats.length >= 2), shot: d.shot, textZone: d.textZone, templates: d.templates.map((t) => `tpl:${t}`) };
+      result.concepts.push({ id: a.id, angle: a, copy: copies.get(a.id)!.copy, visual: { ...v, layout: layoutForConcept(art, k) }, direction, copyBy: copies.get(a.id)!.by, claims: allClaims.get(a.id)! });
     });
+    const ownPhotos = p.business === "products" && !cut ? ownScenePhotos(p.id) : [];
+    // Référence des photos publicitaires générées quand le produit n'est montré que sur les photos du client : le
+    // produit seul, recadré dans la première photo (jamais la photo entière, où il n'est qu'un détail).
+    const refId = ownPhotos[0] && deps.canGenerate && !req.copyOnly ? await deps.productReference?.(ownPhotos[0].id).catch(() => null) ?? null : null;
+    const renders: { id: string; angle: string; hash: string; layout: string | null }[] = [];
 
     if (req.copyOnly) return result;
     // 2. Créations par concept et par format.
-    const formats = formatsFor(platforms);
-    for (const concept of result.concepts) {
+    const all = formatsFor(platforms);
+    const wanted = req.aspects?.length ? all.filter((f) => req.aspects!.includes(f.aspect)) : all;
+    const formats = wanted.length ? wanted : all;
+    for (const [ci, concept] of result.concepts.entries()) {
       const images = new Map<AspectId, { assetId: string; data: Buffer; withProduct: boolean } | null>();
+      // Produit montré seulement sur les photos du client (en situation, rien à détourer) : une photo ENTIÈRE par
+      // concept, la même dans tous les formats du concept.
+      // Avec l'IA d'images : chaque concept a sa propre photo publicitaire, générée à partir de la vraie photo du
+      // produit (référence) ; le concept « mise en situation » garde la photo entière du client.
+      // Une seule publicité demandée : la photo générée (le produit seul, en scène) plutôt que la photo d'origine.
+      const own = ownPhotos.length && (!deps.canGenerate || (concept.direction?.id === "lifestyle" && result.concepts.length > 1)) ? ownPhotos[ci % ownPhotos.length] : null;
+      if (own) for (const a of ["1:1", "4:5", "16:9"]) for (const v of [0, 1, 2]) images.set(`${a}:${v}` as AspectId, { assetId: own.id, data: assetData(own), withProduct: true });
       let conceptReview: AdReview | null = null;
       let reviewed = false;
       for (const [fi, f] of formats.entries()) {
-        const out = await oneFormat({ p, ctx, deps, concept, f, main: fi === 0 || !reviewed, images, pal, typo, art, logo, logoLight, cut, insight, limits, stats, prior: conceptReview });
+        const out = await oneFormat({ p, ctx, deps, concept, f, main: fi === 0 || !reviewed, images, pal, typo, art, logo, logoLight, cut, refPhoto: ownPhotos[0] ?? null, refId, insight, limits, stats, prior: conceptReview, features: feats });
         if (out.review) {
           conceptReview = out.review;
           reviewed = true;
         }
         result.outcomes.push(out.outcome);
+        // Diversité contrôlée sur les rendus réels (format principal) : une publicité trop proche d'une autre de la
+        // campagne (même composition sur une image quasi identique) est signalée, jamais livrée comme « différente ».
+        if (fi === 0 && out.outcome.assetId) {
+          const a = one<Asset>("SELECT * FROM assets WHERE id = ?", out.outcome.assetId);
+          if (a) {
+            const hsh = await dHash(assetData(a));
+            const twin = renders.find((r) => hamming(r.hash, hsh) <= 6 || (hamming(r.hash, hsh) <= DIVERSITY_MIN && r.layout === (concept.direction?.layout ?? null)));
+            if (twin) {
+              notes.push(`publicité « ${concept.angle.type} » trop proche de « ${twin.angle} » (même composition sur une image quasi identique)`);
+              result.diversity.push({ a: twin.id, b: concept.id, distance: hamming(twin.hash, hsh) });
+            }
+            renders.push({ id: concept.id, angle: concept.angle.type, hash: hsh, layout: concept.direction?.layout ?? null });
+          }
+        }
       }
     }
   } catch (e) {
@@ -229,16 +279,21 @@ type OneInput = {
   logo: { id: string; data: Buffer } | null;
   logoLight: { id: string; data: Buffer } | null;
   cut: { id: string; data: Buffer } | null;
+  /** Photo du client montrant le produit (sans détourage) : référence de la photo publicitaire générée. */
+  refPhoto: Asset | null;
+  /** Produit recadré dans cette photo (référence de la génération), null si non repéré. */
+  refId?: string | null;
   insight: AdInsight;
   limits: ReturnType<typeof strictestText>;
   stats: AdRunResult["stats"];
   prior: AdReview | null;
+  features: string[];
 };
 
 async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdReview | null }> {
   const { p, deps, concept, f, stats } = o;
   const jobId = o.ctx?.job.id ?? null;
-  const h = hash({ v: ADS_V2_VERSION, c: concept.id, copy: concept.copy, f: `${f.platform}:${f.aspect}`, pal: o.pal, typo: o.typo, layout: concept.visual.layout, art: o.art.style });
+  const h = hash({ v: ADS_V2_VERSION, c: concept.id, copy: concept.copy, f: `${f.platform}:${f.aspect}`, pal: o.pal, typo: o.typo, layout: concept.visual.layout, dir: concept.direction ? `${concept.direction.id}:${concept.direction.layout}` : null, art: o.art.style, gen: !!deps.canGenerate });
   // Création modifiée par le client (éditeur visuel) : jamais écrasée en silence par une régénération.
   const docKey = engineDocKey(p.id, concept.id, f.platform, f.aspect);
   if (userOwned(p.id, docKey)) {
@@ -253,6 +308,7 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
   }
   let copy = concept.copy;
   let layout = concept.visual.layout;
+  let dirLayout: string | null = null;
   let variant = 0;
   let claims = concept.claims;
   let last: { outcome: AdOutcome; review: AdReview | null } | null = null;
@@ -261,21 +317,33 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     // Image (Image Engine V2) : une par orientation et par variante, réutilisée entre formats.
     const key = `${orientation(f.aspect)}:${variant}` as AspectId;
+    // Photo générée (payée) pour ce concept dans un autre format : la même photo sert à tous ses formats, recadrée sur
+    // le produit par la mise en page — jamais une nouvelle image payée pour un autre format.
+    if (!o.images.has(key)) {
+      const paid = [...o.images.entries()].find(([k, v]) => k.endsWith(`:${variant}`) && v && getAsset(v.assetId)?.origin === "generated");
+      if (paid) o.images.set(key, paid[1]);
+    }
     if (!o.images.has(key)) {
       stats.images++;
       const aspect = orientation(f.aspect);
       const fmt = { "1:1": [1080, 1080], "16:9": [1920, 1080] }[aspect as string] ?? [1080, 1350];
       const textZone = textZoneFor(toAdLayout(layout), fmt[0], fmt[1]);
       const topic = [concept.visual.subject, copy.visual].filter(Boolean).join(" — ").slice(0, 300);
-      const common = { support: "ad" as const, aspect, topic, variant: variant || null, allowGenerate: true, name: `pub-${concept.angle.type}`, maxControls: 3, textZone };
+      const dir = concept.direction;
+      const common = { support: "ad" as const, aspect, topic, variant: variant || null, allowGenerate: true, ...(deps.canGenerate ? { noStock: true } : {}), name: `pub-${concept.angle.type}`, maxControls: 3, textZone: dir?.textZone ?? textZone, ...(dir ? { shot: dir.shot } : {}) };
       // Produit : d'abord une vraie mise en scène publicitaire AVEC le produit réel (photo de référence, pixels
       // d'origine remis par-dessus) ; à défaut, un décor d'univers et le détourage posé par la composition.
       let got: { assetId: string; data: Buffer; withProduct: boolean } | null = null;
-      if (p.business === "products" && o.cut) {
-        const scene = await o.deps.image({ ...common, kind: "lifestyle", references: [o.cut.id] });
+      const ref = o.cut?.id ?? (deps.canGenerate ? (o.refId ?? undefined) : undefined);
+      if (p.business === "products" && ref) {
+        const scene = await o.deps.image({ ...common, kind: "lifestyle", references: [ref] });
         if (scene) got = { ...scene, withProduct: true };
       }
-      if (!got) {
+      // Génération impossible ou refusée : la photo entière du client (jamais un produit inventé).
+      if (!got && !o.cut && o.refPhoto && p.business === "products") got = { assetId: o.refPhoto.id, data: assetData(o.refPhoto), withProduct: true };
+      // Jamais de produit collé sur une photo d'univers qui ne le montre pas (échelle, perspective et lumière fausses) :
+      // sans mise en scène réelle du produit, la publicité le pose sur le décor de studio de la marque.
+      if (!got && !(p.business === "products" && o.cut)) {
         const plain = await o.deps.image({ ...common, kind: concept.visual.kind });
         got = plain ? { ...plain, withProduct: false } : null;
       }
@@ -287,7 +355,14 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
     tried.add(sig);
     // Le produit réel est posé par la composition seulement quand l'image ne le montre pas déjà.
     const pasteProduct = !!o.cut && p.business === "products" && !img?.withProduct && (concept.visual.productOnTop || !img);
-    const { jpg, metrics, doc } = await composeAd({ format: f, layout: img ? layout : "typographic", palette: o.pal, typo: o.typo, art: o.art, brand: o.insight.brand, headline: copy.hook, subline: sublineFor(o.insight, copy), eyebrow: o.insight.category.label || null, cta: copy.cta, background: img?.data ?? null, product: pasteProduct ? (o.cut?.data ?? null) : null, logo: o.logo?.data ?? null, logoLight: o.logoLight?.data ?? null, ids: { background: img?.assetId ?? null, product: o.cut?.id ?? null, logo: o.logo?.id ?? null, logoLight: o.logoLight?.id ?? null }, conceptId: concept.id, variant: adVariant(o.art, toAdLayout(layout), concept.id) });
+    // Sans photo du produit en situation : affiche « produit héros » (produit en grand dans un décor dessiné à la
+    // marque), une par concept, plutôt qu'une composition typographique avec un produit posé dans un coin.
+    const hero = !img && pasteProduct ? `tpl:${HERO_TEMPLATES.slice(0, 3)[(parseInt(crypto.createHash("sha256").update(`${concept.id}:${variant}`).digest("hex").slice(0, 6), 16) + attempt) % 3]}` : null;
+    // Image qui montre le produit (photo du client, photo publicitaire générée) ou photo du métier : la mise en page
+    // de la direction artistique du concept (photo entière) ; sinon la composition du moteur.
+    const directed: string | null = img && concept.direction && (img.withProduct || p.business === "services") ? (dirLayout ?? concept.direction.layout) : null;
+    const used: string = hero ?? directed ?? (img ? layout : "typographic");
+    const { jpg, metrics, doc } = await composeAd({ format: f, layout: used as ComposeInput["layout"], palette: o.pal, typo: o.typo, art: o.art, brand: o.insight.brand, headline: copy.hook, subline: sublineFor(o.insight, copy), eyebrow: o.insight.category.label || null, cta: copy.cta, tagline: p.brand?.tagline ?? null, productName: p.product.name ?? null, features: o.features, background: img?.data ?? null, product: pasteProduct ? (o.cut?.data ?? null) : null, logo: o.logo?.data ?? null, logoLight: o.logoLight?.data ?? null, ids: { background: img?.assetId ?? null, product: o.cut?.id ?? null, logo: o.logo?.id ?? null, logoLight: o.logoLight?.id ?? null }, conceptId: concept.id, variant: adVariant(o.art, toAdLayout(layout), concept.id) });
     const local = localAdChecks(metrics, claims, f.platform);
     let review: AdReview | null = null;
     let reviewError: string | null = null;
@@ -300,7 +375,10 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
         reviewError = (e as Error).message;
       }
     } else if (!local.codes.length && o.prior) review = o.prior; // autre format du même concept : relecture du format principal reprise
-    const d = gateAd({ local, review, reviewError, attempt, peopleAllowed: peopleAllowedFor(p) });
+    const d0 = gateAd({ local, review, reviewError, attempt, peopleAllowed: peopleAllowedFor(p) });
+    // Essais épuisés sans défaut rédhibitoire et note correcte (≥ 6/10) : la création reste visible et modifiable,
+    // marquée « à améliorer » (jamais jetée pour une accroche jugée banale ou un critère un peu faible).
+    const d = d0.verdict === "REJECTED" && !d0.fatal && d0.checked && (d0.score ?? 0) >= AD_KEEP_FLOOR ? { ...d0, verdict: "PROVISIONAL" as const, reason: `${d0.reason} — gardée, à améliorer` } : d0;
     const g = gateSave({ userId: p.userId, projectId: p.id, jobId, candidateId: `ads2:${concept.id}:${f.platform}:${f.aspect}` }, d);
     const asset = await saveAsset({
       projectId: p.id,
@@ -314,7 +392,7 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
       sourceAssetId: img?.assetId ?? null,
       status: d.verdict === "REJECTED" ? "rejected" : "review",
       meta: {
-        adV2: { version: ADS_V2_VERSION, docKey: d.verdict === "REJECTED" ? null : docKey, hash: d.verdict === "FINAL" ? h : `trial:${h}`, conceptId: concept.id, angle: { type: concept.angle.type, material: concept.angle.material, lever: concept.angle.lever }, copy, platform: f.platform, aspect: f.aspect, layout, imageAssetId: img?.assetId ?? null, metrics, claims: claims.map((c) => c.fix), attempt },
+        adV2: { version: ADS_V2_VERSION, docKey: d.verdict === "REJECTED" ? null : docKey, hash: d.verdict === "FINAL" ? h : `trial:${h}`, conceptId: concept.id, angle: { type: concept.angle.type, material: concept.angle.material, lever: concept.angle.lever }, copy, platform: f.platform, aspect: f.aspect, layout: used, imageAssetId: img?.assetId ?? null, metrics, claims: claims.map((c) => c.fix), attempt },
         format: f.aspect,
         text: { headline: copy.hook },
         ...g.meta,
@@ -328,7 +406,14 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
     stats.retries++;
     const codes = [...d.blockingCodes];
     const target = review?.fix.target ?? (codes.some((c) => c === "illegible" || c === "safe_zone" || c === "product_overlap" || c === "too_much_text") ? "layout" : codes.some((c) => c === "unverified_claim" || c === "copy_policy") ? "copy" : "visual");
-    if (target === "layout") {
+    if (target === "layout" && concept.direction && used === (dirLayout ?? concept.direction.layout)) {
+      // Autre mise en page du même concept (gratuite), jamais la même deux fois.
+      const list = concept.direction.templates;
+      const next: string = list[(list.indexOf(used) + 1) % list.length];
+      if (next === used) break;
+      dirLayout = next;
+      stats.layoutChanges++;
+    } else if (target === "layout") {
       // Composition suivante de la direction artistique du projet (gratuite) : jamais la même deux fois.
       const cycle = o.art.cycle;
       const at = cycle.indexOf(toAdLayout(layout) as never);
@@ -340,7 +425,16 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
       if (next.hook === copy.hook && next.primary === copy.primary) break;
       copy = next;
       claims = claimIssues([{ id: concept.id, copy }], p, o.insight, o.limits).get(concept.id)!;
-    } else variant++;
+    } else {
+      // Nouvelle image : seulement si l'actuelle n'a rien coûté (photo du client, banque d'images). Une photo générée
+      // (payée) n'est jamais remplacée par une autre photo payée : une seule image payante par création.
+      const cur = img?.assetId ? getAsset(img.assetId) : undefined;
+      if (cur?.origin === "generated") break;
+      variant++;
+    }
   }
+  // Reprises arrêtées (rien de gratuit à tenter) : une création correcte sans défaut rédhibitoire reste « à améliorer ».
+  if (last && last.outcome.verdict === "RETRY" && (last.outcome.score ?? 0) >= AD_KEEP_FLOOR && !last.outcome.codes.some((c) => POLICIES.ad_v2.fatal.includes(c)))
+    last = { ...last, outcome: { ...last.outcome, verdict: "PROVISIONAL", reason: `${last.outcome.reason} — gardée, à améliorer` } };
   return last!;
 }

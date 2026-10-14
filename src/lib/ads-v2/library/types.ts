@@ -24,5 +24,7 @@ export type Template = {
   treatments?: Treatment[];
   /** Modèle « produit » : met en scène le produit détouré (préféré dès qu'un détourage existe). */
   product?: boolean;
+  /** Le modèle voile ou rogne le centre de la photo : écarté quand la photo montre le produit (il serait caché). */
+  coversSubject?: boolean;
   build: (k: Kit) => void;
 };

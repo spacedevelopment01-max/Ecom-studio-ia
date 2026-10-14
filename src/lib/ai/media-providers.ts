@@ -18,7 +18,7 @@ import { assertQuota, consumeQuota, refundQuota, userPlan } from "../quotas";
 import { all } from "../db";
 import { PLANS } from "../plans";
 import { PermanentError, UserFacingError } from "../jobs";
-import { activeProviderKey, FX_SAFETY, requirePrice, routeFor, usdToEur } from "./config";
+import { activeProviderKey, bearer, FX_SAFETY, requirePrice, routeFor, usdToEur } from "./config";
 import { assertUnderCostCap, recordCall, redact } from "./trace";
 import { L } from "../i18n-server";
 import { getJsonSetting } from "../settings";
@@ -281,7 +281,9 @@ export function openaiImageMax(model: string, o: { prompt: string; images: numbe
   // Avec le flux, les aperçus s'ajoutent (≈ 2 × 100 jetons, < 5 % d'une image haute qualité) : +5 % sur le tarif par image.
   if (p.unit === "image") return Math.ceil(cost("openai", model, { images: 1, input: bytes(o.prompt) }).micro * (openaiStreams(model) ? 1.05 : 1));
   // Au jeton : seulement pour le modèle dont la table officielle des jetons de sortie est connue.
-  if (model !== "gpt-image-1") throw new PermanentError(L(`Jetons de sortie de ${model} inconnus : saisissez un tarif par image dans l'administration (coût maximal non borné, génération bloquée).`, `Output tokens of ${model} are unknown: enter a per-image price in the admin settings (maximum cost not bounded, generation blocked).`));
+  // gpt-image-1.5 : mêmes jetons de sortie par taille et qualité (page officielle du modèle : « medium » 1024² = 1 056 ;
+  // mesuré en réel : « high » 1024×1536 ≈ 6 240 + aperçus).
+  if (model !== "gpt-image-1" && model !== "gpt-image-1.5") throw new PermanentError(L(`Jetons de sortie de ${model} inconnus : saisissez un tarif par image dans l'administration (coût maximal non borné, génération bloquée).`, `Output tokens of ${model} are unknown: enter a per-image price in the admin settings (maximum cost not bounded, generation blocked).`));
   const out = OPENAI_OUT_TOKENS[o.quality]?.[o.size];
   if (!out) throw new PermanentError(L(`Taille d'image ${o.size} sans borne de coût connue : génération bloquée.`, `Image size ${o.size} has no known cost bound: generation blocked.`));
   // Réponse en flux : chaque image partielle est facturée en plus (≈ 100 jetons de sortie).
@@ -367,19 +369,19 @@ export function imageUnavailableReason(usage?: MediaUsage): string | null {
 }
 
 /**
- * Parcours d'une image qui montre le produit RÉEL, selon l'usage : toujours un décor VIDE généré (aucune photo du
- * produit envoyée), puis le produit réel composé par le studio, pixels d'origine. La retouche par masque n'est plus
- * utilisée : à l'essai réel, le modèle y redessinait un second produit (plus sombre) derrière le vrai.
- *  - modèle choisi pour « Retouches produit » (images produit) ou pour l'usage lui-même (publicités) s'il est OpenAI ;
- *  - sinon modèle de l'usage ;
- *  - null : aucun modèle utilisable (rien n'est généré).
+ * Parcours d'une image qui montre le produit RÉEL : une vraie photographie publicitaire générée À PARTIR de la photo
+ * du produit (référence), le produit intégré à la scène (même lumière, ombre de contact, échelle réelle), comme les
+ * publicités de référence du propriétaire. Le produit n'est plus jamais découpé puis collé sur un décor (photo libre
+ * ou décor vide généré) : rendu « produit posé devant une photo floue », refusé par le propriétaire.
+ * La fidélité au vrai produit est vérifiée ensuite par le contrôle visuel (photo de référence à l'appui).
+ *  - modèle choisi pour « Retouches produit » (images produit) ou pour l'usage lui-même (publicités) ;
+ *  - seulement un modèle qui accepte une image de référence (OpenAI, Gemini, fal selon le modèle) ;
+ *  - null : aucun modèle utilisable (rien n'est généré, le studio garde ses mises en scène dessinées).
  */
-export function productImagePath(usage: "product_image" | "ad_visual"): { path: "composite_plate"; usage: MediaUsage } | null {
+export function productImagePath(usage: "product_image" | "ad_visual"): { path: "reference_scene"; usage: MediaUsage } | null {
   const editUsage: MediaUsage = usage === "product_image" ? "product_edit" : usage;
-  const edit = routeMedia("image_generation", "mask", { usage: editUsage });
-  if (edit && edit.provider === "openai") return { path: "composite_plate", usage: editUsage };
-  const gen = routeMedia("image_generation", undefined, { usage });
-  return gen ? { path: "composite_plate", usage } : null;
+  for (const u of [editUsage, usage] as MediaUsage[]) if (routeMedia("image_generation", undefined, { usage: u, references: 1 })) return { path: "reference_scene", usage: u };
+  return null;
 }
 
 /** Fournisseur et modèle que prendra une génération de cet usage (affichage, notes de la tâche), null si aucun. */
@@ -454,6 +456,29 @@ async function productPlateImpl(ctx: Ctx, input: { prompt: string; aspect: "1:1"
 }
 
 /**
+ * Photographie publicitaire du produit réel, générée à partir de sa photo (référence) : le produit reproduit à
+ * l'identique, intégré à la scène décrite, avec un espace libre pour le titre (ajouté ensuite par le studio).
+ * `reference` : photo du produit (détourage posé sur fond blanc, ou packshot).
+ */
+async function productSceneImpl(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9" | "2:3"; reference: Buffer; textZone?: string | null; usage?: MediaUsage }) {
+  const text = productScenePrompt(input);
+  const aspect = input.aspect === "2:3" ? "4:5" : input.aspect;
+  const reference = await sharp(input.reference).rotate().flatten({ background: "#FFFFFF" }).jpeg({ quality: 90 }).toBuffer();
+  return generateImageImpl(ctx, { text, aspect, reference, quality: "high", usage: input.usage ?? "product_image" });
+}
+
+/** Consigne d'une photographie publicitaire du produit réel (référence jointe à la demande). */
+export function productScenePrompt(input: { prompt: string; aspect: string; textZone?: string | null }): string {
+  return `Professional advertising photograph for a premium brand campaign. Scene: ${input.prompt}.
+The product shown in the reference image is the hero of the picture: reproduce it exactly as it is (same shape, proportions, materials, colours, details, label, logo and printed text); do not redesign it, do not change its colour, do not add a second product or copies of it.
+If the reference photo shows the product worn or held by a person, or inside a wider scene, take only the product itself from it: never reproduce the person, their clothes, their body or that background.
+Never write a brand name, a word or a logo on the product that is not on the reference.
+The product sits naturally in the scene at a realistic scale, sharp and in focus, lit by the same light as the scene, with a real contact shadow on the surface it rests on; shallow depth of field behind it, never a flat cut-out look.
+Leave clean, uncluttered negative space ${input.textZone ? `in the ${input.textZone}` : "on one side"} for a headline that will be added later.
+No text, no lettering, no captions, no watermark, no added logo, no price tag. No people, no hands, no faces. Aspect ratio ${input.aspect === "2:3" ? "4:5" : input.aspect}.`;
+}
+
+/**
  * Image d'ambiance d'une activité de services (texte vers image) : lieu, gestes, matériaux, lumière.
  * Consignes d'honnêteté ajoutées à chaque demande : aucun visage identifiable présenté comme un client,
  * aucun texte, logo, diplôme, certificat ni récompense. `reference` : photo réelle de l'activité (ambiance seulement).
@@ -525,7 +550,19 @@ export function logoArtworkMaxMicro(opts: { text?: boolean } = { text: true }): 
 const openaiTransparent = (model: string) => !!mediaModel("openai", model)?.caps.transparent;
 
 /** Génération d'image par le fournisseur d'images configuré (Gemini ou OpenAI), décomptée et facturée. */
-async function generateImageImpl(ctx: Ctx, input: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed> }) {
+/**
+ * Qualité des images d'un usage (administration : `ai.media.quality`). Publicités : « medium » par défaut — tarif
+ * officiel GPT Image 1.5 ≈ 0,05 $ l'image portrait au lieu de ≈ 0,20 $ en « high », pour un rendu publicitaire
+ * jugé suffisant (texte et bouton posés ensuite par le studio).
+ */
+export function imageQuality(usage: MediaUsage | undefined, asked: "medium" | "high"): "medium" | "high" {
+  const set = getJsonSetting<Partial<Record<MediaUsage, string>>>("ai.media.quality", {});
+  const v = usage ? (set[usage] ?? (usage === "ad_visual" ? "medium" : undefined)) : undefined;
+  return v === "medium" || v === "high" ? v : asked;
+}
+
+async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed> }) {
+  const input = { ...input0, quality: imageQuality(input0.usage, input0.quality) };
   const provider = imageProviderAvailable({ references: input.reference ? 1 : 0, ...(input.usage ? { usage: input.usage } : {}), ...input.need });
   if (!provider) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini, OpenAI ou fal.ai).", "No image provider configured (Google Gemini, OpenAI or fal.ai)."));
   const text = input.text;
@@ -799,7 +836,7 @@ export async function pingProvider(p: "openai" | "google" | "fal"): Promise<stri
   const key = activeProviderKey(p);
   if (!key) throw new Error(L("Aucune clé enregistrée.", "No key saved."));
   if (p === "openai") {
-    const r = await fetch("https://api.openai.com/v1/models", { headers: { Authorization: `Bearer ${key}` } });
+    const r = await fetch("https://api.openai.com/v1/models", { headers: bearer(key) });
     if (!r.ok) throw new Error(`OpenAI ${r.status}`);
     return L("Clé OpenAI valide.", "OpenAI key is valid.");
   }
@@ -832,6 +869,7 @@ export function falRefusal(status: number, body: string): string {
 
 export const openaiScene = withMediaBackup("image", traced("image_generation", openaiSceneImpl), { usage: (_c, i) => i.usage ?? "product_edit", providers: ["openai"] });
 export const productPlate = withMediaBackup("image", traced("image_generation", productPlateImpl), { usage: (_c, i) => i.usage ?? "product_image" });
+export const productScene = withMediaBackup("image", traced("image_generation", productSceneImpl), { usage: (_c, i) => i.usage ?? "product_image" });
 /** Ancien nom (décor vide) : même génération, par le modèle de l'usage. */
 export const geminiPlate = productPlate;
 export const veoClip = traced("video_generation", veoClipImpl);

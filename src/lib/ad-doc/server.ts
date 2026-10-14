@@ -2,7 +2,7 @@
  * Rendu serveur d'un document publicitaire (export PNG / JPEG, vignettes, contrôles) avec le MÊME moteur que
  * l'éditeur (render.ts), et contrôles de lisibilité et de débordement calculés sur le document lui-même.
  */
-import { createCanvas, loadImage } from "@napi-rs/canvas";
+import { createCanvas, loadImage, Path2D } from "@napi-rs/canvas";
 import { contrast } from "../color";
 import { ensureFonts, font } from "../media/fonts";
 import { layoutText, renderDoc, type RenderEnv } from "./render";
@@ -10,6 +10,8 @@ import { setCanvasFactory } from "./image-fx";
 
 // Traitements de photo calculés sur des canevas du serveur (mêmes calculs que dans le navigateur).
 setCanvasFactory((w, h) => createCanvas(w, h) as never);
+// Pictogrammes (tracés SVG) : même objet Path2D qu'au navigateur.
+if (!(globalThis as { Path2D?: unknown }).Path2D) (globalThis as { Path2D?: unknown }).Path2D = Path2D;
 import type { AdDocument, Layer } from "./types";
 
 export const serverFont: RenderEnv["font"] = (family, weight, size, italic) => font(family, weight, size, italic);

@@ -38,8 +38,11 @@ export type LayerBase = {
   anim?: LayerAnim;
 };
 
-/** Animation d'un calque dans une vidéo : glisse, monte, se déroule, rebondit ; retard et durée en secondes. */
-export type LayerAnim = { in: "rise" | "drop" | "left" | "right" | "grow" | "pop" | "fade"; delay: number; dur?: number };
+/**
+ * Animation d'un calque (vidéo, publication animée) : entrée (glisse, monte, se déroule, rebondit, ou « none » : présent
+ * dès le début), retard et durée en secondes ; `loop` : effet continu après l'entrée (bouton qui bat, texte qui flotte).
+ */
+export type LayerAnim = { in: "rise" | "drop" | "left" | "right" | "grow" | "pop" | "fade" | "none"; delay: number; dur?: number; loop?: "pulse" | "float" | "none" };
 
 export type ImageLayer = LayerBase & {
   kind: "image";
@@ -52,6 +55,8 @@ export type ImageLayer = LayerBase & {
   shadow: Shadow | null;
   /** Ombre de contact au sol (produit posé). */
   contactShadow?: boolean;
+  /** Reflet du produit sur un sol brillant (opacité 0-1, s'efface vers le bas). */
+  reflection?: number;
   /**
    * Traitement de la photo (étalonnage d'affiche) : filtre limité à IMAGE_FILTERS (luminosité, contraste,
    * saturation, noir et blanc, sépia, flou, teinte), identique dans l'éditeur et à l'export.
@@ -83,7 +88,11 @@ export type TextLayer = LayerBase & {
 
 export type ShapeLayer = LayerBase & {
   kind: "shape";
-  shape: "rect" | "ellipse" | "line";
+  /** « waves » : faisceau d'ondes lumineuses tracées au trait (couleur et épaisseur du contour). */
+  /** « icon » : pictogramme au trait (tracé SVG `path` sur une grille 24 × 24, couleur et épaisseur du contour). */
+  shape: "rect" | "ellipse" | "line" | "waves" | "icon";
+  /** Tracé SVG du pictogramme (forme « icon ») : commandes de tracé seulement, grille 24 × 24. */
+  path?: string;
   fill: Fill | null;
   stroke: { color: string; width: number } | null;
   radius: number;

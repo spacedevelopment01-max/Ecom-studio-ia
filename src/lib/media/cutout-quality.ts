@@ -50,7 +50,9 @@ export async function measureBackground(input: Buffer): Promise<BgStats> {
     if (Math.max(Math.abs(data[i] - data[j]), Math.abs(data[i + 1] - data[j + 1]), Math.abs(data[i + 2] - data[j + 2])) <= 6) calm++;
   }
   const smooth = calm / Math.max(1, ring.length - 1);
-  const plain = transparent >= 0.9 || uniform >= 0.85 || (smooth >= 0.93 && uniform >= 0.45) || smooth >= 0.97;
+  // Un contour très doux mais de couleurs très variées est une photo en situation à l'arrière-plan flou (plage,
+  // rue au soir) : pas un fond de studio. Seul un dégradé quasi parfait passe sans couleur dominante.
+  const plain = transparent >= 0.9 || uniform >= 0.85 || (smooth >= 0.93 && uniform >= 0.45) || (smooth >= 0.97 && uniform >= 0.2) || smooth >= 0.99;
   const flat = transparent >= 0.9 || (uniform >= 0.97 && smooth >= 0.95);
   return { uniform: round(uniform), smooth: round(smooth), transparent: round(transparent), color, plain, flat };
 }

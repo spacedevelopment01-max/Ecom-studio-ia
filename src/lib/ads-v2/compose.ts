@@ -44,6 +44,9 @@ export type ComposeInput = {
   cta: string;
   /** Atouts confirmés du produit ou prestations (listes à puces, légendes des modèles « produit »). */
   features?: string[] | null;
+  /** Signature de la marque et nom du produit (affiches « produit héros »). */
+  tagline?: string | null;
+  productName?: string | null;
   background: Buffer | null;
   product: Buffer | null;
   logo?: Buffer | null;
@@ -139,7 +142,22 @@ export async function subjectPoint(buf: Buffer, W: number, H: number, avoid: "le
 }
 
 /** Construit le document en calques d'une création (géométrie, polices, couleurs garanties lisibles). */
-export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocument; images: RenderEnv["images"] }> {
+/**
+ * Un espace réservé (« [À compléter : …] ») se relit dans le texte de la publication ; il ne s'imprime jamais sur
+ * l'image. Un titre qui n'est qu'un espace réservé est remplacé par le nom de la marque.
+ */
+const PLACEHOLDER = /\[(?:À|A) compléter[^\]]*\]?|\[To complete[^\]]*\]?/gi;
+export function noPlaceholders(i: ComposeInput): ComposeInput {
+  // Seul un texte qui contient un espace réservé est retouché (« -20 % » garde son signe).
+  const clean = (x: string | null | undefined) => (x == null || !new RegExp(PLACEHOLDER.source, "i").test(x) ? x : x.replace(PLACEHOLDER, "").replace(/\s{2,}/g, " ").replace(/^[\s:·—-]+|[\s:·—-]+$/g, "").trim());
+  // Titre d'affiche : toujours une majuscule initiale (« partout avec vous » → « Partout avec vous »).
+  const h0 = clean(i.headline) || i.brand;
+  const headline = /^\p{Ll}/u.test(h0) ? h0.charAt(0).toUpperCase() + h0.slice(1) : h0;
+  return { ...i, headline, subline: clean(i.subline) || null, eyebrow: clean(i.eyebrow) || null, features: i.features ? i.features.map((f) => clean(f) ?? "").filter(Boolean) : i.features };
+}
+
+export async function buildAdDocument(raw: ComposeInput): Promise<{ doc: AdDocument; images: RenderEnv["images"] }> {
+  const i = noPlaceholders(raw);
   if (isTemplateLayout(i.layout)) return buildTemplateDocument(i, i.layout.slice(4));
   ensureFonts();
   const { width: W, height: H } = i.format;
@@ -686,6 +704,11 @@ async function recomposeDoc(src: AdDocument, format: FormatSpec, load: (assetId:
   // Modèle de la bibliothèque : un calque ajouté ou modifié à la main qui n'existe pas dans la composition refaite
   // est gardé par l'adaptation géométrique (relayout refusé).
   if (!over?.force && tpl && src.layers.some((l) => l.userEdited && !doc.layers.some((n) => n.id === l.id))) return null;
+  // Animations choisies par le client (titre, bouton, logo…) : gardées dans la nouvelle composition.
+  for (const l of doc.layers) {
+    const a = src.layers.find((o) => o.id === l.id)?.anim;
+    if (a) l.anim = a;
+  }
   return doc;
 }
 

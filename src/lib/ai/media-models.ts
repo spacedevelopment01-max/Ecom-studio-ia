@@ -111,7 +111,8 @@ export const MEDIA_MODELS: MediaModel[] = [
     kind: "image",
     adapter: "openai_image",
     quality: 3,
-    caps: { maskEdit: true, references: 16, transparent: true, textInImage: true, people: true },
+    // Réponse en flux confirmée par un essai réel (retouche avec référence, 1024×1536, qualité haute).
+    caps: { maskEdit: true, references: 16, transparent: true, textInImage: true, people: true, stream: true },
     aspects: ["1:1", "2:3", "3:2"],
     resolution: "1024×1024, 1024×1536, 1536×1024",
     typical: {},

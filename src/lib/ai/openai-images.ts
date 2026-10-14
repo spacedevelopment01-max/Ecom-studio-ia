@@ -14,6 +14,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import OpenAI from "openai";
 import { EnvHttpProxyAgent, fetch as undiciFetch } from "undici";
 import { getJsonSetting } from "../settings";
+import { isGatewayKey } from "./gateway";
 import { mediaModel } from "./media-models";
 
 /** Images partielles demandées en flux (chacune ≈ 100 jetons d'image en sortie, comptés dans le coût maximal). */
@@ -47,7 +48,16 @@ function proxyOptions(): Pick<ConstructorParameters<typeof OpenAI>[0] & object, 
 }
 
 export function openaiClient(apiKey: string): OpenAI {
-  return new OpenAI({ apiKey, maxRetries: 0, timeout: 300_000, ...proxyOptions() });
+  if (!isGatewayKey(apiKey)) return new OpenAI({ apiKey, maxRetries: 0, timeout: 300_000, ...proxyOptions() });
+  // Clé injectée par la passerelle : l'en-tête d'autorisation du client est retiré avant l'envoi.
+  const opts = proxyOptions();
+  const base = (opts.fetch ?? fetch) as typeof fetch;
+  const strip: typeof fetch = (input, init) => {
+    const headers = new Headers(init?.headers);
+    headers.delete("authorization");
+    return base(input, { ...init, headers });
+  };
+  return new OpenAI({ apiKey, maxRetries: 0, timeout: 300_000, ...opts, fetch: strip });
 }
 
 /** Flux terminé sans image finale : la génération a pu être facturée (jamais relancée automatiquement). */

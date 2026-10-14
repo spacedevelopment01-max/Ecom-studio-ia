@@ -217,20 +217,20 @@ describe("Phase 6A — Advertising Engine V2", async () => {
     expect(isAutoUsable(getAsset(r1.outcomes[0].assetId!)!)).toBe(false);
   });
 
-  it("reprises ciblées : mise en page (gratuite) puis visuel (autre image) ; jamais deux fois la même création", async () => {
+  it("reprises ciblées : mise en page (gratuite) ; jamais une seconde photo payée pour « une image plus forte » (création gardée à améliorer)", async () => {
     const p = fresh("hightech");
     let n = 0;
     const { deps, log } = mockAdDeps({
       userId: u.id,
       projectId: p.id,
-      review: () => (++n === 1 ? adReview(7, { issues: ["hiérarchie confuse"], fix: { target: "layout", instruction: "texte à gauche" } }) : n === 2 ? adReview(7, { issues: ["image banale"], fix: { target: "visual", instruction: "image plus forte" } }) : adReview(8.7)),
+      review: () => (++n === 1 ? adReview(6.5, { issues: ["hiérarchie confuse"], fix: { target: "layout", instruction: "texte à gauche" } }) : n === 2 ? adReview(6.5, { issues: ["image banale"], fix: { target: "visual", instruction: "image plus forte" } }) : adReview(8.7)),
     });
     const r = await fr(() => runAdEngineV2(null, p.id, { count: 1, platforms: ["google_display"] }, deps));
-    expect(r.outcomes[0]).toMatchObject({ verdict: "FINAL", attempts: 3 });
+    expect(r.outcomes[0]).toMatchObject({ verdict: "PROVISIONAL", attempts: 2 });
     expect(r.stats.layoutChanges).toBe(1);
-    expect(log.images.filter((x) => x.variant === 1)).toHaveLength(1);
+    expect(log.images.filter((x) => x.variant === 1)).toHaveLength(0);
     const trials = all<any>("SELECT status FROM assets WHERE project_id = ? AND role = 'ad'", p.id);
-    expect(trials.length).toBeGreaterThanOrEqual(3);
+    expect(trials.length).toBeGreaterThanOrEqual(2);
   });
 
   it("forfait sans IA : textes et créations locaux, PROVISOIRES (choix manuel), jamais FINAL", async () => {

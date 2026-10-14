@@ -92,6 +92,7 @@ export const TEMPLATES_F: Template[] = [
   },
   {
     id: "rising-disc",
+    coversSubject: true,
     name: ["Disque qui se lève", "Rising disc"],
     family: "split",
     photo: "required",
@@ -158,6 +159,7 @@ export const TEMPLATES_F: Template[] = [
   },
   {
     id: "half-tint",
+    coversSubject: true,
     name: ["Demi-teinte", "Half tint"],
     family: "split",
     photo: "required",

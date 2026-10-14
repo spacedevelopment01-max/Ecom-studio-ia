@@ -91,19 +91,22 @@ export function researchKeywords(p: Project, lang: ContentLang, pages: PageRef[]
     // Le terme de catégorie du client (sa langue) ; sinon le libellé de la catégorie reconnue.
     const base = (lang === "fr" ? p.product.category : lang === "en" ? cat?.labels.en : null)?.trim() || p.product.category.trim() || cat?.labels.fr || p.product.name;
     const name = p.product.name || p.brand?.name || p.name;
+    // Questions d'usage : sur le produit lui-même quand le client n'a pas donné de catégorie (une catégorie devinée
+    // peut être trop large ou fausse : « Cuisine : comment l'utiliser » pour une plante).
+    const subject = p.product.category.trim() || p.product.name.trim() || base;
     clusters.push({
       id: `product-${id(name)}`,
       theme: name,
       primary: kw(base, "commercial", "catégorie du produit"),
       variants: [kw(`${base} ${L.modifiers.buy}`, "transactional", "achat"), kw(`${base} ${L.modifiers.price}`, "transactional", "prix"), kw(name, "navigational", "nom du produit (recherche de marque)")],
-      questions: [...p.product.questions.filter((q) => q.answer).map((q) => q.question.trim().replace(/\s*\?\s*$/, "").toLowerCase()), L.questions.how(base.toLowerCase())].slice(0, 5),
+      questions: [...p.product.questions.filter((q) => q.answer).map((q) => q.question.trim().replace(/\s*\?\s*$/, "").toLowerCase()), L.questions.how(subject.toLowerCase())].slice(0, 5),
       page: pageOf("product", name),
     });
     const cats = [...new Set(p.catalog.map((c) => c.category.trim()).filter(Boolean))];
     for (const c of cats) clusters.push({ id: `cat-${id(c)}`, theme: c, primary: kw(c, "commercial", "collection du catalogue"), variants: [kw(`${c} ${L.modifiers.buy}`, "transactional", "achat"), kw(L.questions.choose(c.toLowerCase()), "informational", "critères de choix")], questions: [L.questions.which(c.toLowerCase())], page: pageOf("collection", c) });
     // Information (blog) : choisir, utiliser, entretenir — la page produit garde l'achat (pas de cannibalisation).
-    clusters.push({ id: `guide-${id(base)}`, theme: `${L.headings.criteria} — ${base}`, primary: kw(L.questions.choose(base.toLowerCase()), "informational", "guide de choix"), variants: [kw(L.questions.which(base.toLowerCase()), "informational", "choix")], questions: [L.questions.why(base.toLowerCase())], page: null });
-    clusters.push({ id: `usage-${id(base)}`, theme: `${L.headings.usage} — ${base}`, primary: kw(L.questions.how(base.toLowerCase()), "informational", "usage"), variants: [kw(L.questions.maintain(base.toLowerCase()), "informational", "entretien")], questions: [], page: null });
+    clusters.push({ id: `guide-${id(base)}`, theme: `${L.headings.criteria} — ${base}`, primary: kw(L.questions.choose(base.toLowerCase()), "informational", "guide de choix"), variants: [kw(L.questions.which(base.toLowerCase()), "informational", "choix")], questions: [L.questions.why(subject.toLowerCase())], page: null });
+    clusters.push({ id: `usage-${id(base)}`, theme: `${L.headings.usage} — ${base}`, primary: kw(L.questions.how(subject.toLowerCase()), "informational", "usage"), variants: [kw(L.questions.maintain(base.toLowerCase()), "informational", "entretien")], questions: [], page: null });
     if (!p.product.facts.some((f) => f.status === "confirmed")) opportunities.push(lang === "fr" ? "Ajoutez des caractéristiques confirmées : sans elles, la fiche produit reste générique." : "Add confirmed specifications: without them the product page stays generic.");
   }
 

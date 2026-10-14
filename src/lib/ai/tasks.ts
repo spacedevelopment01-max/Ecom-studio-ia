@@ -4,6 +4,7 @@
  * n'est configuré, l'appelant bascule sur le moteur local (engine/local.ts),
  * clairement signalé comme tel dans le studio.
  */
+import { skillReference, type SkillIntent } from "./skills";
 import { decide } from "../quality/gate";
 import { saveCheck } from "../quality/store";
 import { SEO_DESCRIPTION_MAX, SEO_TITLE_MAX } from "../seo-limits";
@@ -230,7 +231,7 @@ export async function aiBrand(b: Base, p: Project, guidance?: string, feedback?:
       prompt: `Construis la direction de marque.
 Directions de boutique disponibles :\n${DIRECTION_LIST}
 Polices Shopify autorisées (fonts.heading et fonts.body) : ${FONT_LIST}
-Familles disponibles pour le logo (logo.family) : ${Object.keys(CANVAS_FONTS).join(", ")}
+Familles disponibles pour le logo (logo.family) : ${Object.keys(CANVAS_FONTS).filter((f) => CANVAS_FONTS[f].kind !== "script").join(", ")}
 ${guidance ? `Orientation demandée par le client : ${guidance}` : ""}${feedback ? `\nCorrections exigées par le contrôle qualité de la proposition précédente (à appliquer impérativement) :\n${feedback}` : ""}
 Réponds avec un objet JSON exactement de cette forme :
 ${BRAND_SHAPE}`,
@@ -240,7 +241,7 @@ ${BRAND_SHAPE}`,
   );
   if (!FONT_HANDLES.includes(r.fonts.heading)) r.fonts.heading = DIRECTIONS.find((d) => d.id === r.direction)!.fonts.heading;
   if (!FONT_HANDLES.includes(r.fonts.body)) r.fonts.body = DIRECTIONS.find((d) => d.id === r.direction)!.fonts.body;
-  if (!CANVAS_FONTS[r.logo.family]) r.logo.family = "Cormorant";
+  if (!CANVAS_FONTS[r.logo.family] || CANVAS_FONTS[r.logo.family].kind === "script") r.logo.family = "Cormorant";
   return r;
 }
 
@@ -1097,7 +1098,7 @@ export type ImageBrief = { prompt: string; surface: string; lightFrom: "left" | 
  * en dessous → meilleure version gardée ; si aucune n'atteint 6/10, la consigne du studio (ligne photographique)
  * est utilisée. La ligne photographique de la marque est imposée à chaque image : même campagne partout.
  */
-export async function aiImageBrief(b: Base, p: Project, kind: string, opts: { line: PhotoLine; lifestyle?: string; format?: string }): Promise<ImageBrief> {
+export async function aiImageBrief(b: Base, p: Project, kind: string, opts: { line: PhotoLine; lifestyle?: string; format?: string; skills?: SkillIntent }): Promise<ImageBrief> {
   const line = opts.line;
   const view = brainView(p, "image");
   const lifestyle = !!opts.lifestyle;
@@ -1113,6 +1114,8 @@ export async function aiImageBrief(b: Base, p: Project, kind: string, opts: { li
         usageKey: feedback ? `${b.usageKey}:retake` : b.usageKey,
         system: S().imageBrief,
         context: view.stable,
+        // Visuel publicitaire ou bannière : compétences image, canvas-design, brand-guidelines (+ ad-creative).
+        ...(opts.skills ? { reference: skillReference(opts.skills) } : {}),
         prompt: `Visuel à produire : ${kind}${opts.format ? ` (format ${opts.format})` : ""}.
 ${lifestyle ? `PHOTO EN SITUATION : ${opts.lifestyle}. Une vraie scène de vie, jamais un studio.` : "MISE EN SCÈNE PRODUIT : le produit réel posé au centre du premier plan, sur le plateau."}${people ? "" : `\nAUCUNE PERSONNE : le client n'a pas autorisé de personne à l'image. Ni personne, ni visage, ni main, ni silhouette (la règle « une personne ou un animal peuvent être présents » ne s'applique pas) ; la consigne finale se termine par : « ${NO_PEOPLE_EN} »`}
 LIGNE PHOTOGRAPHIQUE DE LA MARQUE (à respecter, toutes les images forment une même campagne) :
@@ -1386,7 +1389,7 @@ export function routesBrief(p: Project, kept: readonly string[] = []) {
   ].filter(Boolean);
   return `${lines.length ? `${lines.join("\n")}\n` : ""}LIEN AVEC L'ACTIVITÉ (obligatoire) : chaque piste doit évoquer, au premier regard, ce que la marque vend ou fait réellement (son métier, son produit, son geste, sa matière) — et rester cohérente avec l'univers du site (direction « ${b?.direction ?? ""} »). Un symbole joli mais hors sujet (diamant pour un garage, feuille pour une agence informatique…) est refusé. Exemple : carrosserie → ligne de carrosserie, reflet de peinture, galbe d'une aile, geste du débosselage ; jamais un objet sans rapport.
 Palette (rôles) : ${pal ? Object.entries(pal).map(([k, v]) => `${k} ${v}`).join(", ") : ""}
-Familles disponibles (heading, body) et graisses : ${Object.entries(CANVAS_FONTS).map(([f, d]) => `${f} (${Object.keys(d.file).join("/")})`).join(", ")}
+Familles disponibles (heading, body) et graisses : ${Object.entries(CANVAS_FONTS).filter(([, d]) => d.kind !== "script").map(([f, d]) => `${f} (${Object.keys(d.file).join("/")})`).join(", ")}
 Mots INTERDITS dans les dessins (vus chez le fournisseur, jamais repris) : ${p.product.visual.labelText?.join(", ") || "aucun"}`;
 }
 

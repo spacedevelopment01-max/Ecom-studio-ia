@@ -285,3 +285,10 @@ html:not(.js) .hp .reveal { opacity: 1; transform: none; }
   .hp .hp-flow { animation: none; }
   .hp .hp-fill { animation: none; transform: scaleX(1); }
 }
+
+/* Mur de publications de l'accueil : deux rangées qui défilent en sens inverse, à l'arrêt au survol. */
+@keyframes hp-wall { to { transform: translateX(-50%); } }
+.hp-wall { animation: hp-wall 70s linear infinite; }
+.hp-wall-rev { animation-direction: reverse; animation-duration: 80s; }
+.group:hover .hp-wall { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .hp-wall { animation: none; } }

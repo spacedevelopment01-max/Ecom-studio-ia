@@ -10,7 +10,7 @@
  * pour modifier un texte au clavier.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertTriangle, ChevronLeft, Circle, Download, Hand, History as HistoryIcon, ImagePlus, Layers, Maximize2, Minus, MoreHorizontal, Plus, Redo2, Save, Send, SlidersHorizontal, Square, Type, Undo2, X, Copy, Ratio, PenLine } from "lucide-react";
+import { AlertTriangle, ChevronLeft, Circle, Download, Hand, History as HistoryIcon, ImagePlus, Layers, Maximize2, Minus, MoreHorizontal, Plus, Redo2, Save, Send, SlidersHorizontal, Square, Type, Undo2, X, Copy, Ratio, PenLine, Play } from "lucide-react";
 import { api, Button, cx, Modal, Spinner, useToast } from "../../ui";
 import { useT } from "../../i18n";
 import { JobProgress, MediaPicker } from "../common";
@@ -19,6 +19,7 @@ import { useCostConfirm } from "../cost-confirm";
 import { useProject } from "../project-context";
 import { History, type DocOp } from "@/lib/ad-doc/ops";
 import { localAdEdit } from "@/lib/ad-doc/local-edit";
+import { ANIM_DURATION_S } from "@/lib/ad-doc/animate";
 import { newLayerId } from "@/lib/ad-doc/geometry";
 import type { AdDocument, Layer } from "@/lib/ad-doc/types";
 import type { RenderEnv } from "@/lib/ad-doc/render";
@@ -86,6 +87,30 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
   const [photoChoice, setPhotoChoice] = useState<View["edit"] | null>(null);
   const [draft, setDraft] = useState<{ doc: AdDocument } | null>(null);
   const stageRef = useRef<HTMLDivElement>(null);
+  // Aperçu animé (gratuit, dans le navigateur) : même calcul que la vidéo exportée, joué une fois (7 s).
+  const [playT, setPlayT] = useState<number | null>(null);
+  const playing = useRef<number | null>(null);
+  const stopPlay = () => {
+    if (playing.current) cancelAnimationFrame(playing.current);
+    playing.current = null;
+    setPlayT(null);
+  };
+  const togglePlay = () => {
+    if (playing.current) return stopPlay();
+    setSelected(null);
+    setEditing(null);
+    const t0 = performance.now();
+    const tick = (now: number) => {
+      const s = (now - t0) / 1000;
+      if (s >= ANIM_DURATION_S) return stopPlay();
+      setPlayT(s);
+      playing.current = requestAnimationFrame(tick);
+    };
+    playing.current = requestAnimationFrame(tick);
+  };
+  useEffect(() => () => {
+    if (playing.current) cancelAnimationFrame(playing.current);
+  }, []);
   const base = `/api/projects/${projectId}/ads/docs/${docKey}`;
 
   const load = useCallback(
@@ -358,7 +383,7 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
 
   const canvasEl = (
     <div className="relative">
-      <EditorCanvas doc={doc} env={env} scale={scale} selectedId={selected} touch={mobile} editingId={editing} onSelect={(id) => (setSelected(id), mobile && id && setSheet(null))} onCommit={(ops) => applyMany(ops)} onEditText={setEditing} />
+      <EditorCanvas doc={doc} env={env} scale={scale} selectedId={selected} touch={mobile} editingId={editing} onSelect={(id) => (setSelected(id), mobile && id && setSheet(null))} onCommit={(ops) => applyMany(ops)} onEditText={setEditing} playT={playT} />
       {editingLayer && (
         <InlineText
           layer={editingLayer}
@@ -436,6 +461,7 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
         {!mobile && <p className="mr-2 hidden truncate font-display text-lg lg:block">{t("Éditeur de publicité", "Ad editor")} · {doc.format.aspect}</p>}
         <IconBtn label={t("Annuler", "Undo")} onClick={undo} disabled={!hist.current?.canUndo} testId="undo"><Undo2 className="size-4" /></IconBtn>
         <IconBtn label={t("Rétablir", "Redo")} onClick={redo} disabled={!hist.current?.canRedo} testId="redo"><Redo2 className="size-4" /></IconBtn>
+        <IconBtn label={playT !== null ? t("Arrêter l'aperçu animé", "Stop the animated preview") : t("Aperçu animé", "Animated preview")} onClick={togglePlay} active={playT !== null} testId="play-anim">{playT !== null ? <Square className="size-4" /> : <Play className="size-4" />}</IconBtn>
         {!mobile && (
           <>
             <span className="mx-1 h-6 w-px bg-line" />

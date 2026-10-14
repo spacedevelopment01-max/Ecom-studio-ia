@@ -188,6 +188,12 @@ describe("fond des photos et choix du modèle", () => {
     expect((await measureBackground(await sharp(`${dir}/maison/oreiller-bleu.jpg`).toBuffer())).flat).toBe(true);
     for (const f of ["drone-montagne", "gant-canape", "oreiller-sommeil", "protege-canape-chat"]) expect((await measureBackground(await sharp(`${dir}/situations/${f}.jpg`).toBuffer())).plain).toBe(false);
   });
+  it("arrière-plan flou d'une photo en situation (plage au soir) : pas un fond uni, la personne n'est pas détourée", async () => {
+    const dir = "scripts/demo-products/inputs";
+    for (const f of ["casque-1", "casque-3"]) expect((await measureBackground(await sharp(`${dir}/pixabay/${f}.jpg`).toBuffer())).plain).toBe(false);
+    // Dégradé de studio quasi parfait : reste un packshot.
+    expect((await measureBackground(await sharp(`${dir}/hightech/drone-pliable.jpg`).toBuffer())).plain).toBe(true);
+  });
   it("modèle « large » seulement s'il est livré et que la mémoire le permet", () => {
     expect(chooseModel(8000, ["large", "medium", "small"])).toBe("large");
     expect(chooseModel(1500, ["large", "medium", "small"])).toBe("medium");

@@ -31,6 +31,8 @@ const short = (s: string, n = 40) => {
   t = t.slice(0, Math.max(t.lastIndexOf(" "), 8));
   return t.replace(/\s+(de|des|du|la|le|les|d'|l'|et|à|au|aux|en|pour|of|the|and|to)$/i, "").replace(/[,;:–-]+$/, "");
 };
+/** Titre tiré d'une question : garde son point d'interrogation (« En quelle matière ? »). */
+const qmark = (s: string, sep = " ") => (/[?…!.]$/.test(s.trim()) ? s : `${s.trim()}${sep}?`);
 
 /** Matière vérifiée d'un pilier (ce qui peut être affirmé). */
 export function atomsFor(pillar: Pillar, archetype: Archetype, f: VerifiedFacts, questions: string[]): Atom[] {
@@ -95,13 +97,13 @@ const TBANK: Record<string, { fr: Tpl[]; en: Tpl[] }> = {
   },
   engage: {
     fr: [
-      (x) => ({ hook: `« ${cap(x.a)} ? » On nous la pose souvent.`, body: x.b ? `${cap(x.b)}.` : "[À compléter : votre réponse]", headline: short(x.a) }),
-      (x) => ({ hook: `Question du jour : ${low(x.a)} ?`, body: x.b ? `Notre réponse : ${low(x.b)}.` : "[À compléter : votre réponse]", headline: short(`${x.a} ?`) }),
-      (x) => ({ hook: `Vous vous demandez ${low(x.a)} ?`, body: x.b ? `${cap(x.b)}.` : "[À compléter : votre réponse]", headline: short(x.a) }),
+      (x) => ({ hook: `« ${cap(x.a)} ? » On nous la pose souvent.`, body: x.b ? `${cap(x.b)}.` : "[À compléter : votre réponse]", headline: qmark(short(x.a)) }),
+      (x) => ({ hook: `Question du jour : ${low(x.a)} ?`, body: x.b ? `Notre réponse : ${low(x.b)}.` : "[À compléter : votre réponse]", headline: qmark(short(x.a)) }),
+      (x) => ({ hook: `Vous vous demandez ${low(x.a)} ?`, body: x.b ? `${cap(x.b)}.` : "[À compléter : votre réponse]", headline: qmark(short(x.a)) }),
     ],
     en: [
-      (x) => ({ hook: `"${cap(x.a)}?" We get asked this a lot.`, body: x.b ? `${cap(x.b)}.` : "[To complete: your answer]", headline: short(x.a) }),
-      (x) => ({ hook: `Question of the day: ${low(x.a)}?`, body: x.b ? `Our answer: ${low(x.b)}.` : "[To complete: your answer]", headline: short(`${x.a}?`) }),
+      (x) => ({ hook: `"${cap(x.a)}?" We get asked this a lot.`, body: x.b ? `${cap(x.b)}.` : "[To complete: your answer]", headline: qmark(short(x.a), "") }),
+      (x) => ({ hook: `Question of the day: ${low(x.a)}?`, body: x.b ? `Our answer: ${low(x.b)}.` : "[To complete: your answer]", headline: qmark(short(x.a), "") }),
     ],
   },
   demonstrate: {
@@ -163,15 +165,15 @@ const TBANK: Record<string, { fr: Tpl[]; en: Tpl[] }> = {
 /** Questions (réponse du client si elle existe, sinon « à compléter ») : tournures propres aux questions. */
 const QBANK: { fr: Tpl[]; en: Tpl[] } = {
   fr: [
-    (x) => ({ hook: `« ${cap(x.a)} ? » On nous la pose souvent.`, body: x.b ? `${cap(x.b)}.` : "[À compléter : votre réponse]", headline: short(x.a) }),
-    (x) => ({ hook: `${cap(x.a)} ? On vous répond.`, body: x.b ? `${cap(x.b)}.` : "[À compléter : votre réponse en deux phrases]", headline: short(x.a) }),
-    (x) => ({ hook: `Question du jour : ${low(x.a)} ?`, body: x.b ? `Notre réponse : ${low(x.b)}.` : "[À compléter : votre réponse]", headline: short(x.a) }),
-    (x) => ({ hook: `Vous nous demandez souvent : ${low(x.a)} ?`, body: x.b ? `${cap(x.b)}.` : "[À compléter : votre réponse, avec un exemple concret]", headline: short(x.a) }),
+    (x) => ({ hook: `« ${cap(x.a)} ? » On nous la pose souvent.`, body: x.b ? `${cap(x.b)}.` : "[À compléter : votre réponse]", headline: qmark(short(x.a)) }),
+    (x) => ({ hook: `${cap(x.a)} ? On vous répond.`, body: x.b ? `${cap(x.b)}.` : "[À compléter : votre réponse en deux phrases]", headline: qmark(short(x.a)) }),
+    (x) => ({ hook: `Question du jour : ${low(x.a)} ?`, body: x.b ? `Notre réponse : ${low(x.b)}.` : "[À compléter : votre réponse]", headline: qmark(short(x.a)) }),
+    (x) => ({ hook: `Vous nous demandez souvent : ${low(x.a)} ?`, body: x.b ? `${cap(x.b)}.` : "[À compléter : votre réponse, avec un exemple concret]", headline: qmark(short(x.a)) }),
   ],
   en: [
-    (x) => ({ hook: `"${cap(x.a)}?" We get asked this a lot.`, body: x.b ? `${cap(x.b)}.` : "[To complete: your answer]", headline: short(x.a) }),
-    (x) => ({ hook: `${cap(x.a)}? Here's our answer.`, body: x.b ? `${cap(x.b)}.` : "[To complete: your two-sentence answer]", headline: short(x.a) }),
-    (x) => ({ hook: `Question of the day: ${low(x.a)}?`, body: x.b ? `Our answer: ${low(x.b)}.` : "[To complete: your answer]", headline: short(x.a) }),
+    (x) => ({ hook: `"${cap(x.a)}?" We get asked this a lot.`, body: x.b ? `${cap(x.b)}.` : "[To complete: your answer]", headline: qmark(short(x.a), "") }),
+    (x) => ({ hook: `${cap(x.a)}? Here's our answer.`, body: x.b ? `${cap(x.b)}.` : "[To complete: your two-sentence answer]", headline: qmark(short(x.a), "") }),
+    (x) => ({ hook: `Question of the day: ${low(x.a)}?`, body: x.b ? `Our answer: ${low(x.b)}.` : "[To complete: your answer]", headline: qmark(short(x.a), "") }),
   ],
 };
 
@@ -253,7 +255,8 @@ export function writeLocal(o: { pillar: Pillar; archetype: Archetype; f: Verifie
       atom = a;
     }
   }
-  if (!chosen) chosen = missing(o.pillar, lang, o.n);
+  // Sans matière confirmée : le titre de l'affiche nomme le produit (ou l'offre), pas l'intitulé interne du pilier.
+  if (!chosen) chosen = { ...missing(o.pillar, lang, o.n), ...(f.offerName ? { headline: short(f.offerName) } : {}) };
   o.used.add(fold(chosen.hook));
   const caption = [chosen.hook, chosen.body, o.cta].filter((x) => x && x.trim()).join("\n\n");
   const visual: Draft["visual"] = pillar.formats[0] === "reel" || pillar.formats[0] === "video" ? "video" : pillar.objective === "demonstrate" ? "detail" : pillar.objective === "brand" ? "scene" : "creative";

@@ -391,7 +391,13 @@ export async function applyLogo(ctx: JobContext | null, projectId: string, pr: L
   swapThemeLogos(projectId, { logo: horizontal.id, light: light.id, favicon: fav.id }, isLocked(brand, "fonts") ? null : routeFonts(route), effectivePalette(loadProject(projectId).brand), banners);
   // Logo provisoire (version du studio, aucune proposition validée) : pas de kit réseaux sociaux ni de charte finale ;
   // ils seront faits quand un logo sera choisi ou validé.
-  if (opts.provisional) return { main, proposal: pr.key, provisional: true };
+  // La planche d'identité, elle, est faite tout de suite : elle montre le système de marque (logo, couleurs,
+  // typographies, applications) et sera refaite avec la charte quand le logo sera choisi.
+  if (opts.provisional) {
+    const { saveIdentityBoard } = await import("./identity-board");
+    await saveIdentityBoard(projectId).catch((e) => console.error(`[planche] ${projectId} : ${(e as Error).message}`));
+    return { main, proposal: pr.key, provisional: true };
+  }
   // Kit réseaux sociaux aux couleurs et typographies de la piste choisie (la ligne éditoriale peut appeler l'IA).
   if (r) {
     ctx?.progress(0.82, L("Kit réseaux sociaux", "Social media kit"));

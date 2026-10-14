@@ -20,7 +20,16 @@ const AdEditor = dynamic(() => import("./ad-editor").then((m) => m.AdEditor), { 
 type DocItem = { docKey: string; version: number; source: string; edited: boolean; aspect: string | null; platform: string | null; width: number | null; height: number | null; title: string; url: string | null; at: number };
 
 const PLATFORM_LABEL: Record<string, string> = { meta_feed: "Facebook / Instagram", meta_story: "Stories / Reels", tiktok: "TikTok", google_display: "Google", pinterest: "Pinterest", linkedin: "LinkedIn" };
-const PLATFORMS = Object.keys(PLATFORM_LABEL);
+
+type AdAspect = "4:5" | "1:1" | "9:16" | "16:9" | "1.91:1";
+/** Formats proposés au client (et le réseau qui les porte). */
+const FORMAT_OPTIONS: { aspect: AdAspect; platform: string; fr: string; en: string }[] = [
+  { aspect: "4:5", platform: "meta_feed", fr: "Publication portrait 4:5", en: "Portrait post 4:5" },
+  { aspect: "1:1", platform: "meta_feed", fr: "Publication carrée 1:1", en: "Square post 1:1" },
+  { aspect: "9:16", platform: "meta_story", fr: "Story / Reel 9:16", en: "Story / Reel 9:16" },
+  { aspect: "16:9", platform: "linkedin", fr: "Paysage 16:9", en: "Landscape 16:9" },
+  { aspect: "1.91:1", platform: "google_display", fr: "Bannière 1.91:1", en: "Banner 1.91:1" },
+];
 
 export function AdCreatives() {
   const { id, data } = useProject();
@@ -30,7 +39,8 @@ export function AdCreatives() {
   const { data: list, reload } = useApi<{ docs: DocItem[] }>(`/api/projects/${id}/ads/docs`);
   const jobs = useActive("ads.v2");
   const [open, setOpen] = useState<string | null>(null);
-  const [form, setForm] = useState<{ count: number; platforms: string[]; offer: string; audience: string } | null>(null);
+  const [form, setForm] = useState<{ count: number; aspect: AdAspect; offer: string; audience: string } | null>(null);
+  const [derive, setDerive] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   // Fin d'une génération : la liste se recharge d'elle-même.
   const running = jobs.length > 0;
@@ -46,7 +56,7 @@ export function AdCreatives() {
     if (data?.ai.llm && !(await cost.confirm("images"))) return;
     setBusy(true);
     try {
-      const r = await api<{ jobId: string }>(`/api/projects/${id}/campaigns/v2`, { body: { action: "generate", count: form.count, platforms: form.platforms, offer: form.offer.trim() || undefined, audience: form.audience.trim() || undefined } });
+      const r = await api<{ jobId: string }>(`/api/projects/${id}/campaigns/v2`, { body: { action: "generate", count: form.count, platforms: [FORMAT_OPTIONS.find((f) => f.aspect === form.aspect)!.platform], aspects: [form.aspect], offer: form.offer.trim() || undefined, audience: form.audience.trim() || undefined } });
       toast("ok", t("Création des publicités lancée : elles apparaissent ici dès qu'elles sont prêtes.", "Ads are being created: they appear here as soon as they're ready."));
       setForm(null);
       setBusy(false);
@@ -68,12 +78,26 @@ export function AdCreatives() {
     }
   };
 
+  // Autre format : même photo et mêmes textes, mise en page recomposée (aucune IA, gratuit).
+  const reformat = async (docKey: string, f: (typeof FORMAT_OPTIONS)[number]) => {
+    setDerive(docKey);
+    try {
+      await api(`/api/projects/${id}/ads/docs/${encodeURIComponent(docKey)}`, { body: { action: "reflow", platform: f.platform, aspect: f.aspect } });
+      await reload();
+      toast("ok", t(`Publicité déclinée au format ${f.aspect} (même photo, sans frais).`, `Ad adapted to ${f.aspect} (same photo, free).`));
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    } finally {
+      setDerive(null);
+    }
+  };
+
   const docs = list?.docs ?? [];
   return (
     <section data-testid="ad-creatives">
       <SectionTitle
         title={t("Créations publicitaires", "Ad creatives")}
-        action={<Button variant="signal" icon={<Sparkles className="size-4" />} disabled={running || !data?.brand} onClick={() => setForm({ count: 3, platforms: ["meta_feed", "meta_story"], offer: "", audience: data?.brand?.audience ?? "" })} data-testid="create-ads">{t("Créer des publicités", "Create ads")}</Button>}
+        action={<Button variant="signal" icon={<Sparkles className="size-4" />} disabled={running || !data?.brand} onClick={() => setForm({ count: 2, aspect: "4:5", offer: "", audience: data?.brand?.audience ?? "" })} data-testid="create-ads">{t("Créer des publicités", "Create ads")}</Button>}
       >
         {t("Des visuels prêts à publier, aux formats de chaque réseau. Cliquez sur « Modifier » pour changer vous-même textes, photos, formes, couleurs et positions : ces retouches sont gratuites.", "Ready-to-post visuals in each network's formats. Click “Edit” to change copy, photos, shapes, colours and positions yourself: these edits are free.")}
       </SectionTitle>
@@ -97,6 +121,14 @@ export function AdCreatives() {
                     <Download className="size-3.5" /> PNG
                   </a>
                 </div>
+                <div className="flex flex-wrap items-center gap-1.5" aria-label={t("Autres formats", "Other formats")}>
+                  <span className="text-xs text-muted">{t("Autres formats :", "Other formats:")}</span>
+                  {FORMAT_OPTIONS.filter((f) => f.aspect !== d.aspect).map((f) => (
+                    <button key={f.aspect} type="button" disabled={derive === d.docKey} onClick={() => reformat(d.docKey, f)} className="rounded-full border border-line px-2 py-0.5 text-xs hover:bg-paper-2 disabled:opacity-50" title={t(`Décliner en ${f.fr} (même photo, gratuit)`, `Adapt to ${f.en} (same photo, free)`)} data-testid={`derive-${f.aspect}`}>
+                      {f.aspect}
+                    </button>
+                  ))}
+                </div>
                 <StyleGallery projectId={id} docKey={d.docKey} compact onApplied={reload} />
                 <AnimatePost projectId={id} docKey={d.docKey} compact />
               </div>
@@ -107,16 +139,16 @@ export function AdCreatives() {
       <Modal open={!!form} onClose={() => setForm(null)} title={t("Créer des publicités", "Create ads")}>
         {form && (
           <div className="grid gap-4">
-            <Field label={t("Nombre d'angles", "Number of angles")}>
-              <Input type="number" min={1} max={6} value={form.count} onChange={(e) => setForm({ ...form, count: Math.max(1, Math.min(6, +e.target.value || 1)) })} />
+            <Field label={t("Nombre d'images différentes", "Number of different images")} hint={t("Une publicité par image, chacune avec sa propre photo et son propre texte.", "One ad per image, each with its own photo and copy.")}>
+              <Input type="number" min={1} max={6} value={form.count} onChange={(e) => setForm({ ...form, count: Math.max(1, Math.min(6, +e.target.value || 1)) })} data-testid="ads-count" />
             </Field>
-            <Field label={t("Réseaux", "Networks")}>
-              <div className="flex flex-wrap gap-2">
-                {PLATFORMS.map((p) => {
-                  const on = form.platforms.includes(p);
+            <Field label={t("Format", "Format")} hint={t("Vous pourrez ensuite décliner chaque publicité dans les autres formats, gratuitement (même photo).", "You can then adapt each ad to the other formats for free (same photo).")}>
+              <div className="flex flex-wrap gap-2" role="radiogroup">
+                {FORMAT_OPTIONS.map((f) => {
+                  const on = form.aspect === f.aspect;
                   return (
-                    <button key={p} type="button" onClick={() => setForm({ ...form, platforms: on ? form.platforms.filter((x) => x !== p) : [...form.platforms, p] })} className={`rounded-full border px-3 py-1.5 text-sm ${on ? "border-ink bg-ink text-paper" : "border-line"}`} aria-pressed={on}>
-                      {PLATFORM_LABEL[p]}
+                    <button key={f.aspect} type="button" role="radio" aria-checked={on} onClick={() => setForm({ ...form, aspect: f.aspect })} className={`rounded-full border px-3 py-1.5 text-sm ${on ? "border-ink bg-ink text-paper" : "border-line"}`} data-testid={`ads-format-${f.aspect}`}>
+                      {t(f.fr, f.en)}
                     </button>
                   );
                 })}
@@ -130,7 +162,7 @@ export function AdCreatives() {
             </Field>
             <div className="flex justify-end gap-2">
               <Button variant="ghost" onClick={() => setForm(null)}>{t("Annuler", "Cancel")}</Button>
-              <Button onClick={generate} loading={busy} disabled={form.platforms.length === 0} data-testid="confirm-create-ads">{t("Créer", "Create")}</Button>
+              <Button onClick={generate} loading={busy} data-testid="confirm-create-ads">{t("Créer", "Create")}</Button>
             </div>
           </div>
         )}

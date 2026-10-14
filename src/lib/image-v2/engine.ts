@@ -36,8 +36,7 @@ import { gateImage, localImageCheck } from "./quality";
 import { candidateKey, searchCandidates, shortlist, type SearchStats } from "./search";
 import { creditLine } from "./sources";
 import { memoOf, projectHashes, rejectedKeys, remember, reusableFor, saveImageV2, usedStockKeys, briefSummary } from "./assets";
-import { compositeProduct, realImageDeps, type ImageV2Deps } from "./deps";
-import { plateQueries, scorePlate } from "./plates";
+import { realImageDeps, type ImageV2Deps } from "./deps";
 import type { ArtDirectionId, ImageOutcome, ImageReview, VisualBrief } from "./types";
 
 export const IMAGE_V2_VERSION = "5a.1";
@@ -47,6 +46,8 @@ export type ImageRequestV2 = BriefRequest & {
   count?: number;
   /** Génération permise en dernier recours (sinon recherche seule). */
   allowGenerate?: boolean;
+  /** Aucune photo de banque (Pixabay…) : image générée seulement (publicités créées par l'IA, choix du propriétaire). */
+  noStock?: boolean;
   /** Plafond de dépense RÉEL de la tâche, en euros (vérifié avant chaque appel payant). */
   maxCostEur?: number;
   /** Emplacement du site (meta.slot) et nom de fichier. */
@@ -74,8 +75,10 @@ type Plan = { action: "regenerate" | "change_direction" | "abandon" | "stop"; in
 /** Correction ciblée à partir du verdict et de la relecture : jamais une reprise « à l'aveugle ». */
 export function targetedCorrection(d: GateDecision, r: ImageReview | null, brief: VisualBrief): Plan {
   const codes = [...d.fatalCodes, ...d.blockingCodes];
-  if (brief.productFidelity && (codes.includes("product_altered") || codes.includes("wrong_product") || r?.fix.target === "product"))
+  if (brief.productFidelity && (codes.includes("product_altered") || codes.includes("wrong_product")))
     return { action: "abandon", instruction: "produit transformé : la transformation est abandonnée, la photo d'origine (détourage) reste la référence" };
+  // Produit ressemblant aux détails près : pas de nouvelle génération payante pour un détail (gardée « à vérifier »).
+  if (brief.productFidelity && r?.fix.target === "product") return { action: "stop", instruction: null };
   if (codes.includes("off_topic") || r?.fix.target === "direction") return { action: "change_direction", instruction: r?.fix.instruction || "scène hors sujet : changer de direction artistique" };
   if (d.verdict !== "RETRY" || d.action !== "regenerate") return { action: "stop", instruction: null };
   const target = r?.fix.target ?? "none";
@@ -113,7 +116,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ImageRequestV2, d
   const result: ImageRunResult = { runId, outcomes: [], search: [], stats: { reused: 0, candidatesSeen: 0, controls: 0, controlsSkippedByMemo: 0, generations: 0, retries: 0, directionChanges: 0 }, stoppedByCostCap: false, costMicro: 0, notes };
   const memory = brainSnapshot(p).memory;
   const rejectedDirs = rejectedDirections(memory);
-  const stages = stagesFor(req.kind);
+  const stages = req.noStock ? stagesFor(req.kind).filter((s) => s !== "search") : stagesFor(req.kind);
   const count = Math.max(1, Math.min(8, req.count ?? 1));
   const seriesHashes: string[] = [];
   // Détourage valide du produit (référence obligatoire pour toute image du produit).
@@ -129,7 +132,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ImageRequestV2, d
         result.stats.directionChanges++;
         brief = buildBrief(p, { ...req, references: refsUsed, variant: count > 1 ? i : (req.variant ?? null) }, { rejectedDirections: [...rejectedDirs, brief.artDirection] });
         notes.push(`image ${i + 1} : direction changée (${out.outcome.reason})`);
-        const second = await one(ctx, p, req, deps, brief, stages.filter((s) => s !== "search" && s !== "reuse" && s !== "plate"), seriesHashes, result);
+        const second = await one(ctx, p, req, deps, brief, stages.filter((s) => s !== "search" && s !== "reuse"), seriesHashes, result);
         result.outcomes.push({ ...second.outcome, brief: briefSummary(brief), artDirection: brief.artDirection });
       } else result.outcomes.push({ ...out.outcome, brief: briefSummary(brief), artDirection: brief.artDirection });
     }
@@ -229,17 +232,9 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
     }
   }
 
-  // 2 bis. Produit réel : décor vide d'une banque d'images (gratuit), produit réel posé par le studio (pixels
-  // d'origine, ombre de contact). Aucun produit n'est envoyé à une IA d'images : jamais un second produit redessiné.
-  if (stages.includes("plate") && brief.productFidelity && brief.references[0]) {
-    const plated = await fromPlate(p, req, deps, brief, bh, [...projectH, ...seriesHashes], result, base);
-    if (plated.outcome) {
-      seriesHashes.push(plated.hash ?? "");
-      return { outcome: plated.outcome, changeDirection: false };
-    }
-    if (plated.reason) lastReason = plated.reason;
-  }
-
+  // Produit réel : jamais posé sur une photo libre de droits (ancienne étape « décor » retirée : rendu « produit
+  // collé devant une photo floue », refusé par le propriétaire). La photo publicitaire est générée à partir de la
+  // photo du produit, ou le studio garde ses mises en scène dessinées.
   // 3. Génération (dernier recours pour le métier ; seul parcours pour le produit réel).
   if (!stages.includes("generate") || req.allowGenerate === false) return { outcome: none(lastReason), changeDirection: false };
   if (!deps.canGenerate) return { outcome: none(`${lastReason} ; génération non disponible (forfait ou fournisseur)`), changeDirection: false };
@@ -282,6 +277,11 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
     const d = gateImage({ brief, origin: "generated", local, review, reviewError, attempt });
     const g = gateSave({ ...base, candidateId: `img2:${bh}` }, d);
     const plan = targetedCorrection(d, review, brief);
+    // Dernier essai (ou plus de correction utile) : une image payée correcte (contrôlée, sans défaut rédhibitoire, note
+    // ≥ plancher « à vérifier ») est gardée et utilisée, marquée à vérifier — jamais jetée pour un détail.
+    const stopping = plan.action === "stop" || !plan.instruction || attempt >= maxAttempts - 1;
+    const floor = POLICIES.image_v2.provisional?.floor ?? Infinity;
+    const keep = d.verdict === "PROVISIONAL" || (stopping && plan.action !== "abandon" && plan.action !== "change_direction" && d.verdict === "RETRY" && d.checked && !d.fatalCodes.length && (d.score ?? 0) >= floor);
     // Image payée : gardée (refusée ou à vérifier) pour le diagnostic ; seule une FINAL est réutilisable automatiquement.
     const asset = await saveImageV2({
       projectId: p.id,
@@ -292,7 +292,7 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
       brief,
       meta: { version: IMAGE_V2_VERSION, origin: brief.productFidelity ? "edited" : "generated", provider: gen.provider, model: gen.model, briefHash: d.verdict === "FINAL" ? bh : `trial:${bh}`, brief: briefSummary(brief), score: d.score, verdict: d.verdict, codes: [...d.fatalCodes, ...d.blockingCodes], license: null, productRef: brief.references[0] ?? null, corrections: [...corrections], phash: local.hash, attempts: attempt + 1 },
       gate: g,
-      status: d.verdict === "FINAL" ? "review" : "rejected",
+      status: d.verdict === "FINAL" || keep ? "review" : "rejected",
       slot: req.slot ?? null,
       service: req.service?.name ?? null,
       sourceAssetId: brief.references[0] ?? null,
@@ -303,6 +303,7 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
       seriesHashes.push(local.hash);
       return { outcome: last, changeDirection: false };
     }
+    if (keep) return { outcome: { ...last, verdict: "PROVISIONAL", assetId: asset.id, reason: `${d.reason} — gardée, à vérifier` }, changeDirection: false };
     if (plan.action === "abandon") return { outcome: { ...last, verdict: "REJECTED", reason: plan.instruction ?? d.reason }, changeDirection: false };
     if (plan.action === "change_direction") return { outcome: { ...last, verdict: "REJECTED" }, changeDirection: true };
     if (plan.action !== "regenerate" || !plan.instruction) break;
@@ -314,84 +315,3 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
   return { outcome: { ...last, verdict: last.verdict === "FINAL" ? "FINAL" : last.verdict === "PROVISIONAL" ? "PROVISIONAL" : "REJECTED" }, changeDirection: false };
 }
 
-/**
- * Décor libre de droits + produit réel (Image V2). Seuls les meilleurs décors (description de la banque) sont
- * composés et relus ; un décor refusé pour ce brief n'est ni retéléchargé ni relu. Composition locale gratuite :
- * seule la relecture (si disponible) est payante, jamais une génération d'image.
- */
-async function fromPlate(p: Project, req: ImageRequestV2, deps: ImageV2Deps, brief: VisualBrief, bh: string, hashes: string[], result: ImageRunResult, base: { userId: string; projectId: string; jobId: string | null }): Promise<{ outcome: ImageOutcome | null; hash?: string; reason?: string }> {
-  const reference = deps.reference(brief.references[0]);
-  if (!reference) return { outcome: null };
-  const plateBrief: VisualBrief = { ...brief, queries: plateQueries(p, brief), must: [] };
-  const exclude = new Set([...usedStockKeys(p.id), ...rejectedKeys(p.id, bh)]);
-  const { ranked, stats } = await searchCandidates(plateBrief, deps.providers, { exclude, enough: 4, score: scorePlate });
-  result.search.push(stats);
-  result.stats.candidatesSeen += ranked.length;
-  let reason: string | undefined;
-  for (const c of shortlist(ranked, deps.canReview, deps.canReview ? 2 : 1)) {
-    const key = `plate:${candidateKey(c)}`;
-    if (memoOf(p.id, key, bh)?.verdict === "REJECTED") {
-      result.stats.controlsSkippedByMemo++;
-      continue;
-    }
-    let raw: Buffer;
-    try {
-      raw = await deps.download(c);
-    } catch {
-      remember(p.id, key, "*", { verdict: "REJECTED", codes: ["corrupt"] });
-      continue;
-    }
-    const plate = await frameTo(raw, brief.format.aspect);
-    if (!plate) {
-      remember(p.id, key, bh, { verdict: "REJECTED", codes: ["bad_crop"] });
-      continue;
-    }
-    let img: Buffer;
-    try {
-      img = await compositeProduct(plate, reference, brief.format.aspect, brief.format.textZone);
-    } catch {
-      // Détourage illisible : aucun décor n'y changera rien (la suite du parcours décide).
-      return { outcome: null, reason };
-    }
-    const local = await localImageCheck(img, brief, hashes);
-    let review: ImageReview | null = null;
-    let reviewError: string | null = null;
-    if (local.ok && deps.canReview) {
-      result.stats.controls++;
-      try {
-        review = await withCandidate(`img2:${bh}:${key}`, 0, () => deps.review(brief, img, reference, `${base.jobId ?? "img2"}:img2:review:${bh}:${key}`, "stock"));
-      } catch (e) {
-        if (e instanceof JobCancelled || e instanceof JobPaused || e instanceof CostCapReached) throw e;
-        reviewError = (e as Error).message;
-      }
-    }
-    const d = gateImage({ brief, origin: "stock", local, review, reviewError, metadataMatch: c.metadataMatch, attempt: 0 });
-    const usable = d.verdict === "FINAL" || (d.verdict === "PROVISIONAL" && d.provisional?.use === "auto");
-    if (!usable) {
-      const checkId = saveCheck(d, { ...base, candidateId: key });
-      if (d.checked) remember(p.id, key, bh, { verdict: "REJECTED", score: d.score, codes: [...d.fatalCodes, ...d.blockingCodes], check_id: checkId, phash: local.hash });
-      reason = `décor libre refusé : ${d.reason}`;
-      continue;
-    }
-    const g = gateSave({ ...base, candidateId: key }, d);
-    const asset = await saveImageV2({
-      projectId: p.id,
-      userId: p.userId,
-      img,
-      name: `${req.name ?? `${brief.kind}-${(brief.variant?.index ?? 0) + 1}`}.jpg`,
-      business: p.business,
-      brief,
-      meta: { version: IMAGE_V2_VERSION, origin: "edited", provider: `${c.source}+studio`, model: null, briefHash: bh, brief: briefSummary(brief), score: d.score, verdict: d.verdict, codes: [], license: c.license, productRef: brief.references[0], corrections: [], phash: local.hash, attempts: 1 },
-      gate: g,
-      stock: { source: c.source, id: c.id, page: c.page, author: c.author, license: c.license.name },
-      recipe: `${creditLine(c).split(" — ")[0]} — décor ; votre produit réel posé par le studio (aucune image générée)`,
-      status: "review",
-      slot: req.slot ?? null,
-      service: req.service?.name ?? null,
-      sourceAssetId: brief.references[0],
-    });
-    remember(p.id, key, bh, { verdict: d.verdict, score: d.score, check_id: g.meta.gate.checkId, asset_id: asset.id, phash: local.hash });
-    return { outcome: { briefHash: bh, verdict: d.verdict, score: d.score, codes: [], reason: `décor libre de droits + produit réel : ${d.reason}`, origin: "stock", assetId: asset.id, attempts: 1, candidateKey: key }, hash: local.hash };
-  }
-  return { outcome: null, reason };
-}

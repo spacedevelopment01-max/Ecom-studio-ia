@@ -12,6 +12,7 @@ import { dedupeCreativeText, renderProCreatives } from "../media/creative-html";
 import sharp from "sharp";
 import { loadImage } from "@napi-rs/canvas";
 import { all, one } from "../db";
+import { isAutoUsable } from "../quality/usable";
 import { assetData, saveAsset, type Asset } from "../library";
 import { loadProject, notify, type Project } from "../projects";
 import { detailCrops } from "../media/cutout";
@@ -21,13 +22,14 @@ import { canvasFamily } from "../media/fonts";
 import { aiImageBrief, aiQcImage, qcScore, qcTier, type QcTier } from "../ai/tasks";
 import { peopleAllowed, peopleAllowedFor, personCodes } from "../people-policy";
 import { llmConfigured } from "../ai/llm";
-import { mediaRouteFor, productImagePath, productPlate, refundMediaQuota } from "../ai/media-providers";
+import { mediaRouteFor, productImagePath, productScene, refundMediaQuota } from "../ai/media-providers";
 import { JobCancelled, JobPaused, type JobContext } from "../jobs";
 import { directionById } from "../theme/directions";
 import { C, L } from "../i18n-server";
 import { generateServiceImageSet, generateServiceSingleImage, isServices, type ServiceSingleRequest } from "./service-media";
 import { finalImagePrompt, photoLine, photoLineInput, scenePromptFromLine, type PhotoLine } from "./photo-line";
 import type { CreativeLook } from "../media/creative-html";
+import type { AdVariant } from "../ads-v2/art";
 import type { SceneLook } from "../media/compose";
 
 /** Ligne photographique de la marque (piste créative choisie, secteur, cible) : toutes les images en découlent. */
@@ -116,13 +118,19 @@ export const tierSave = (tier: QcTier, reason: string) => ({ status: (tier === "
 
 type Brief = { prompt: string; lightFrom?: "left" | "right"; brain?: { scope: string; hash: string; version: string } };
 
+/**
+ * Formats publicitaires (réseaux sociaux, bannière) : le brief reçoit les compétences « visuel » ; les images du
+ * site (fiche produit, packshot) gardent leur brief habituel.
+ */
+const AD_FORMATS: Partial<Record<FormatId, "ad_visual" | "banner">> = { square: "ad_visual", portrait: "ad_visual", story: "ad_visual", pin: "ad_visual", landscape: "banner", banner: "banner" };
+
 /** Brief de directeur artistique d'une image (payé une fois ; une reprise le réutilise avec les défauts à éviter). */
 async function imageBrief(ictx: ImgCtx, project: Project, style: string, formatId: FormatId, key: string, lifestyle?: string): Promise<Brief> {
   // Brief de directeur artistique (grille notée, une reprise au plus) ; sans IA de rédaction, consigne du studio
   // tirée de la ligne photographique — dans les deux cas, la même ligne de campagne pour toutes les images.
   const line = brandPhotoLine(project);
   return llmConfigured()
-    ? await aiImageBrief({ ...ictx, usageKey: `${key}:brief` }, project, lifestyle ? C(`PHOTO EN SITUATION (vie de tous les jours) : ${lifestyle}`, `LIFESTYLE PHOTO (everyday life): ${lifestyle}`) : C(`mise en scène produit (style ${style})`, `product staging (${style} style)`), { line, lifestyle, format: FORMATS[formatId].label })
+    ? await aiImageBrief({ ...ictx, usageKey: `${key}:brief` }, project, lifestyle ? C(`PHOTO EN SITUATION (vie de tous les jours) : ${lifestyle}`, `LIFESTYLE PHOTO (everyday life): ${lifestyle}`) : C(`mise en scène produit (style ${style})`, `product staging (${style} style)`), { line, lifestyle, format: FORMATS[formatId].label, skills: AD_FORMATS[formatId] })
     : (() => {
         const people = peopleAllowedFor(project);
         const st = scenePromptFromLine(line, { lifestyle, format: FORMATS[formatId].label, people });
@@ -134,51 +142,21 @@ async function imageBrief(ictx: ImgCtx, project: Project, style: string, formatI
 const PROVIDER_NAME: Record<string, string> = { openai: "OpenAI", google: "Gemini", fal: "fal.ai" };
 
 /**
- * Décor du produit réel : d'abord un décor vide libre de droits (Pixabay en premier, gratuit), sinon un décor vide
- * généré par le modèle choisi dans l'administration (Images & Vidéos). Dans les deux cas, le produit réel est composé
- * ensuite par le studio (pixels d'origine) : aucune photo du produit n'est envoyée à une IA d'images, qui y redessinait
- * un second produit (constaté à l'essai réel).
+ * Photo du produit réel par l'IA d'images : une vraie photographie publicitaire générée à partir de la photo du
+ * produit (référence), le produit intégré à la scène (lumière, ombre, échelle). Plus jamais de produit détouré collé
+ * sur une photo libre de droits ou sur un décor vide généré (rendu « produit devant une photo floue », refusé par le
+ * propriétaire). La fidélité au vrai produit est vérifiée ensuite (contrôle visuel avec la photo d'origine).
  */
-async function aiBackground(ictx: ImgCtx, project: Project, cut: Buffer, style: string, formatId: FormatId, key: string, lifestyle?: string, given?: Brief): Promise<{ image: Buffer; provider: string; providerLabel: string; lightFrom?: "left" | "right"; brief: Brief; stock?: { source: string; id: string; page: string; author: string; license: string; credit: string } } | null> {
+async function aiBackground(ictx: ImgCtx, project: Project, cut: Buffer, style: string, formatId: FormatId, key: string, lifestyle?: string, given?: Brief): Promise<{ image: Buffer; provider: "scene"; providerLabel: string; lightFrom?: "left" | "right"; brief: Brief; stock?: { source: string; id: string; page: string; author: string; license: string; credit: string } } | null> {
   const f = FORMATS[formatId];
   const aspect = f.w > f.h * 1.5 ? "16:9" : f.h > f.w * 1.5 ? "9:16" : f.h > f.w * 1.1 ? "4:5" : "1:1";
-  const free = await stockPlate(project, aspect).catch((e) => {
-    if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
-    return null;
-  });
-  if (free) return { image: free.image, provider: "plate", providerLabel: free.label, brief: given ?? { prompt: "" }, stock: free.stock };
   const route = productImagePath("product_image");
   if (!route) return null;
   const brief = given ?? (await imageBrief(ictx, project, style, formatId, key, lifestyle));
-  const name = PROVIDER_NAME[mediaRouteFor(route.usage)?.provider ?? ""] ?? "IA";
+  const name = PROVIDER_NAME[mediaRouteFor(route.usage, { references: 1 })?.provider ?? ""] ?? "IA";
   // Clé de consommation inchangée (« :gemini ») : une reprise d'une tâche déjà commencée ne repaie rien.
-  const plate = await productPlate({ ...ictx, usageKey: `${key}:gemini`, brain: brief.brain }, { prompt: brief.prompt, aspect, usage: route.usage });
-  return { image: plate, provider: "plate", providerLabel: name, lightFrom: brief.lightFrom, brief };
-}
-
-/** Décor vide libre de droits pour le produit (description de la banque, sans IA), jamais une photo déjà utilisée. */
-async function stockPlate(project: Project, aspect: "1:1" | "4:5" | "9:16" | "16:9") {
-  const { buildBrief } = await import("../image-v2/brief");
-  const { plateQueries, scorePlate } = await import("../image-v2/plates");
-  const { searchCandidates, shortlist } = await import("../image-v2/search");
-  const { STOCK_PROVIDERS, creditLine } = await import("../image-v2/sources");
-  const { usedStockKeys } = await import("../image-v2/assets");
-  const { frameTo } = await import("../image-v2/formats");
-  const { downloadStock } = await import("../stock/photos");
-  const brief = buildBrief(project, { kind: "lifestyle", support: "product_page", aspect });
-  const { ranked } = await searchCandidates({ ...brief, queries: plateQueries(project, brief), must: [] }, STOCK_PROVIDERS, { exclude: new Set(usedStockKeys(project.id)), enough: 4, score: scorePlate });
-  for (const c of shortlist(ranked, false, 2)) {
-    try {
-      const raw = await downloadStock({ source: c.source as never, id: c.id, url: c.url, page: c.page, author: c.author, license: c.license.name, width: c.width, height: c.height, alt: c.alt });
-      const image = await frameTo(raw, aspect);
-      if (!image) continue;
-      const label = STOCK_PROVIDERS.find((x) => x.id === c.source)?.label ?? c.source;
-      return { image, label, stock: { source: c.source, id: c.id, page: c.page, author: c.author, license: c.license.name, credit: creditLine(c).split(" — ")[0] } };
-    } catch (e) {
-      if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
-    }
-  }
-  return null;
+  const image = await productScene({ ...ictx, usageKey: `${key}:gemini`, brain: brief.brain }, { prompt: brief.prompt, aspect, reference: cut, usage: route.usage });
+  return { image, provider: "scene", providerLabel: name, lightFrom: brief.lightFrom, brief };
 }
 
 export type ImageSetOptions = {
@@ -202,7 +180,13 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
   if (isServices(project)) return generateServiceImageSet(ctx, projectId, opts.localOnly ? { social: false, v2: true } : opts);
   const ictx: ImgCtx = { userId: project.userId, projectId, jobId: ctx.job.id };
   const cutouts = await ensureCutouts(ctx, project);
-  if (!cutouts.length) throw new Error(L("Aucune photo du produit : importez au moins une photo pour créer les images.", "No product photo: upload at least one photo to create the images."));
+  if (!cutouts.length) {
+    // Photos en situation seulement (personne, décor) : rien à détourer. Les visuels sont mis en page sur ces vraies
+    // photos, jamais sur une silhouette découpée et collée ailleurs.
+    const own = await photoImageSet(ctx, loadProject(projectId), opts);
+    if (own) return own;
+    throw new Error(L("Aucune photo du produit : importez au moins une photo pour créer les images.", "No product photo: upload at least one photo to create the images."));
+  }
   project = loadProject(projectId);
   const main = cutouts[0];
   const cutBuf = assetData(main);
@@ -255,11 +239,11 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
           const r = await aiBackground(ictx, project, cutBuf, style, "product", `${ctx.job.id}:scene:${style}`);
           if (r) {
             // Retouche par masque : décor peint autour du produit (pixels d'origine replacés) ; sinon décor vide + produit réel composé.
-            const image = r.provider === "openai" ? r.image : (await renderScene({ product, palette: pal, style, format: FORMATS.product, seed: 7 + i, background: await loadImage(r.image), lightFrom: r.lightFrom })).png;
+            const image = r.provider === "scene" ? r.image : (await renderScene({ product, palette: pal, style, format: FORMATS.product, seed: 7 + i, background: await loadImage(r.image), lightFrom: r.lightFrom })).png;
             const check = await verifyAiImage({ ...ictx, usageKey: `${ctx.job.id}:qc:${style}` }, originalPhoto(), image, { deliverable: "image_product", attempt: 1 });
             qc = check.qc;
             const keep = gateSave(ictx, check.decision);
-            const id = await save(await sharp(image).jpeg({ quality: 92 }).toBuffer(), `${base}-scene-${style}-${C("ia", "ai")}.jpg`, "scene", "images.scenes", { ...(r.provider === "openai" ? { recipe: L(`Décor peint par IA autour du produit réel (${style})`, `AI-painted set around the real product (${style})`), provider: "OpenAI", qc } : { recipe: L(`Décor généré par IA, produit réel composé (${style})`, `AI-generated set with the real product composited (${style})`), provider: L(`${r.providerLabel} (décor) + composition locale`, `${r.providerLabel} (set) + local compositing`), qc }), ...keep.meta }, "image/jpeg", keep.status);
+            const id = await save(await sharp(image).jpeg({ quality: 92 }).toBuffer(), `${base}-scene-${style}-${C("ia", "ai")}.jpg`, "scene", "images.scenes", { ...(r.provider === "scene" ? { recipe: L(`Photo publicitaire générée à partir de la photo du produit (${style})`, `Ad photograph generated from the product photo (${style})`), provider: r.providerLabel, qc } : { recipe: L(`Décor généré par IA, produit réel composé (${style})`, `AI-generated set with the real product composited (${style})`), provider: L(`${r.providerLabel} (décor) + composition locale`, `${r.providerLabel} (set) + local compositing`), qc }), ...keep.meta }, "image/jpeg", keep.status);
             if (check.decision.verdict === "FINAL") return [id];
             // Image de l'IA gardée (à vérifier ou écartée, visible dans Images, jamais réutilisée automatiquement) ;
             // une scène du studio complète la série.
@@ -294,7 +278,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
             const given = brief ? { ...brief, prompt: avoid ? `${brief.prompt} A previous attempt was rejected for: ${avoid}. Avoid exactly these defects.` : brief.prompt } : undefined;
             const r = await aiBackground(ictx, project, cutBuf, "lifestyle", fmt, key, situation, given);
             if (!r) return null;
-            const image = r.provider === "openai" ? r.image : (await renderScene({ product, palette: pal, style: "spotlight", format: i === 0 ? FORMATS.landscape : FORMATS.product, seed: 31 + i, background: await loadImage(r.image), lightFrom: r.lightFrom })).png;
+            const image = r.provider === "scene" ? r.image : (await renderScene({ product, palette: pal, style: "spotlight", format: i === 0 ? FORMATS.landscape : FORMATS.product, seed: 31 + i, background: await loadImage(r.image), lightFrom: r.lightFrom })).png;
             return { r, image, check: await verifyAiImage({ ...ictx, usageKey: `${key}:qc` }, originalPhoto(), image, { deliverable: "image_lifestyle", attempt: n }) };
           };
           let got = await attempt(`${ctx.job.id}:lifestyle:${i}`, 0);
@@ -308,7 +292,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
           // Photo gardée dans tous les cas (payée) : FINAL utilisable ; sinon à vérifier ou écartée (visible, non réutilisée).
           if (check.decision.verdict === "REJECTED") refundMediaQuota(ictx.userId, `${ctx.job.id}:lifestyle:${i}:retry`);
           const keep = gateSave(ictx, check.decision);
-          return [await save(await sharp(image).jpeg({ quality: 92 }).toBuffer(), `${base}-${C("en-situation", "lifestyle")}-${i + 1}.jpg`, "lifestyle", "images.scenes", { ...(r.provider === "openai" ? { recipe: L(`Photo en situation générée autour du produit réel : ${situation}`, `Lifestyle photo generated around the real product: ${situation}`), provider: "OpenAI", qc: check.qc } : { recipe: L(`Photo en situation : décor généré (${situation}) et produit réel composé`, `Lifestyle photo: generated set (${situation}) with the real product composited`), provider: L(`${r.providerLabel} + composition locale`, `${r.providerLabel} + local compositing`), qc: check.qc }), ...keep.meta }, "image/jpeg", keep.status)];
+          return [await save(await sharp(image).jpeg({ quality: 92 }).toBuffer(), `${base}-${C("en-situation", "lifestyle")}-${i + 1}.jpg`, "lifestyle", "images.scenes", { ...(r.provider === "scene" ? { recipe: L(`Photo en situation générée à partir de la photo du produit : ${situation}`, `Lifestyle photo generated from the product photo: ${situation}`), provider: r.providerLabel, qc: check.qc } : { recipe: L(`Photo en situation : décor généré (${situation}) et produit réel composé`, `Lifestyle photo: generated set (${situation}) with the real product composited`), provider: L(`${r.providerLabel} + composition locale`, `${r.providerLabel} + local compositing`), qc: check.qc }), ...keep.meta }, "image/jpeg", keep.status)];
         } catch (e) {
           if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
           console.warn("[images] photo en situation indisponible :", (e as Error).message);
@@ -394,6 +378,86 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
   return { created };
 }
 
+/** Photos du client utilisables telles quelles (en situation, pas un packshot à détourer, pas une photo libre). */
+export function ownScenePhotos(projectId: string): Asset[] {
+  return all<Asset>(
+    `SELECT * FROM assets WHERE project_id = ? AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' AND origin = 'upload'
+        AND role IN ('lifestyle', 'original') AND COALESCE(json_extract(meta, '$.triage.plain'), 0) = 0
+        AND COALESCE(json_extract(meta, '$.triage.kind'), 'situation') NOT IN ('packshot', 'text') AND json_extract(meta, '$.stock') IS NULL
+      ORDER BY created_at LIMIT 24`,
+    projectId,
+  ).filter(isAutoUsable);
+}
+
+/**
+ * Jeu d'images sans détourage : publicités, bannière et visuel social mis en page (modèles « photo » de la
+ * bibliothèque) sur les vraies photos du client, entières. Une publicité = une photo, un texte et une mise en page,
+ * déclinés dans chaque format ; une autre publicité prend une autre photo (jamais la même personne isolée ou
+ * recadrée). Rendu local, gratuit. null si le client n'a fourni aucune photo exploitable.
+ */
+async function photoImageSet(ctx: JobContext, project: Project, opts: ImageSetOptions): Promise<{ created: string[] } | null> {
+  const photos = ownScenePhotos(project.id);
+  if (!photos.length) return null;
+  const { composePoster, savePosterDoc } = await import("../ads-v2/poster");
+  const concepts = photoSetPlan(project, opts, photos.length);
+  const total = concepts.reduce((n, c) => n + c.formats.length, 0);
+  const created = await ctx.step("photo-set", async () => {
+    const ids: string[] = [];
+    for (const [k, c] of concepts.entries()) {
+      const background = photos[k % photos.length];
+      // Mise en page choisie une fois (premier format), puis reprise telle quelle dans les autres formats.
+      let layout: string | undefined;
+      let variant: AdVariant | undefined;
+      for (const f of c.formats) {
+        ctx.progress(0.4 + (ids.length / Math.max(1, total)) * 0.55, L("Visuels mis en page sur vos photos", "Visuals laid out on your photos"));
+        const r = await composePoster(project, { aspect: f.aspect, headline: c.headline, subline: c.subline, eyebrow: c.eyebrow, cta: c.cta, background, product: null, features: c.features, layout, variant, seed: `images:${c.key}` });
+        layout ??= r.layout;
+        variant ??= r.doc.meta.recipe?.variant as AdVariant | undefined;
+        const a = await saveAsset({ projectId: project.id, userId: project.userId, data: r.jpg, name: `${slug(project.product.name || project.name)}-${f.role === "ad" ? C("publicite", "ad") : f.role === "banner" ? C("banniere", "banner") : "post"}-${c.key}-${f.aspect.replace(":", "x")}.jpg`, mime: "image/jpeg", role: f.role, folderKey: f.folder, origin: "generated", sourceAssetId: background.id, meta: { recipe: L(`${c.angle.fr} : votre photo entière, format ${f.aspect}`, `${c.angle.en}: your whole photo, ${f.aspect} format`), format: f.aspect, concept: c.key, text: { headline: c.headline }, poster: { docKey: r.docKey, layout: r.layout, backgroundAssetId: background.id } } });
+        savePosterDoc(project.id, r.docKey, r.doc, a.id);
+        ids.push(a.id);
+      }
+    }
+    return ids;
+  });
+  ctx.progress(0.98, L("Images prêtes", "Images ready"));
+  return { created };
+}
+
+export type PhotoFormat = { aspect: "4:5" | "1:1" | "9:16" | "16:9"; role: "social" | "ad" | "banner"; folder: string };
+export type PhotoConcept = { key: string; angle: { fr: string; en: string }; headline: string; subline: string | null; eyebrow: string | null; cta: string | null; features: string[] | null; formats: PhotoFormat[] };
+
+/**
+ * Publicités sur photo, un angle par publicité (méthodes des compétences ad-creative / ads, adaptées au studio) :
+ * - « Offre » (première photo) : nom exact du produit et prix confirmé, bouton qui nomme l'action ; déclinée en
+ *   carré, portrait, story et bannière ;
+ * - « Photo en situation » (deuxième photo, s'il y en a une) : la photo fait le travail, la phrase de marque seule
+ *   (texte < 20 % de l'image) ; portrait et carré.
+ * Les textes viennent uniquement du projet ; un prix non confirmé n'est jamais affiché.
+ */
+export function photoSetPlan(project: Project, opts: ImageSetOptions = {}, photoCount = 1): PhotoConcept[] {
+  const name = project.product.name || project.brand?.name || project.name;
+  const tagline = project.brand?.tagline?.trim() || "";
+  const category = project.product.category?.trim() || null;
+  const pr = project.product.price;
+  const price = pr?.status === "confirmed" && pr.amount != null ? `${(pr.amount / 100).toFixed(2).replace(".", C(",", ".")).replace(/[.,]00$/, "")} ${pr.currency === "EUR" ? "€" : pr.currency}` : null;
+  // Atouts confirmés (valeurs des faits du projet, une idée par atout) : la rangée d'atouts des modèles « signature ».
+  const feats = [...new Set(project.product.facts.filter((f) => f.status === "confirmed" && f.key !== "price" && f.value?.trim()).flatMap((f) => f.value.split(/\s*[,;•·]\s*/)).map((v) => v.trim().replace(/\.$/, "")).filter((v) => v.length >= 3 && v.length <= 28).map((v) => v[0].toUpperCase() + v.slice(1)))].slice(0, 3);
+  const social = opts.social !== false && !opts.localOnly;
+  const offer: PhotoFormat[] = [
+    ...(social ? [
+      { aspect: "1:1" as const, role: "ad" as const, folder: "images.ads" },
+      { aspect: "4:5" as const, role: "ad" as const, folder: "images.ads" },
+      { aspect: "9:16" as const, role: "ad" as const, folder: "images.ads" },
+    ] : []),
+    ...(opts.banner !== false ? [{ aspect: "16:9" as const, role: "banner" as const, folder: "images.banners" }] : []),
+  ];
+  const out: PhotoConcept[] = [];
+  if (offer.length) out.push({ key: "offre", angle: { fr: "Offre", en: "Offer" }, headline: name.slice(0, 60), subline: price ?? (tagline || category), eyebrow: price ? category : null, cta: price ? C("Commander", "Order now") : C("Voir la boutique", "Visit the store"), features: feats.length >= 2 ? feats : null, formats: offer });
+  if (social && photoCount >= 2) out.push({ key: "situation", angle: { fr: "Photo en situation", en: "Lifestyle photo" }, headline: (tagline || name).slice(0, 60), subline: null, eyebrow: null, cta: null, features: null, formats: [{ aspect: "4:5", role: "social", folder: "images.social" }, { aspect: "1:1", role: "social", folder: "images.social" }] });
+  return out;
+}
+
 /** Informations confirmées, très courtes, pour les pastilles des visuels (jamais d'allégation inventée). */
 export function confirmedFacts(p: Project): string[] {
   const out: string[] = [];
@@ -455,7 +519,7 @@ export async function generateSingleImage(ctx: JobContext, projectId: string, re
         try {
           const out = await aiBackground(ictx, project, assetData(cut), req.style ?? "studio", req.format ?? "product", `${ctx.job.id}:single`);
           if (!out) return null;
-          const image = out.provider === "openai" ? out.image : (await renderScene({ product, palette: pal, style: req.style ?? "studio", format: fmt, seed: Date.now() % 1000, background: await loadImage(out.image), lightFrom: out.lightFrom, offsetX: req.kind === "banner" ? 0.18 : 0 })).png;
+          const image = out.provider === "scene" ? out.image : (await renderScene({ product, palette: pal, style: req.style ?? "studio", format: fmt, seed: Date.now() % 1000, background: await loadImage(out.image), lightFrom: out.lightFrom, offsetX: req.kind === "banner" ? 0.18 : 0 })).png;
           const original = one<Asset>("SELECT * FROM assets WHERE id = ?", cut.source_asset_id) ?? cut;
           const check = await verifyAiImage({ ...ictx, usageKey: `${ctx.job.id}:single:qc` }, assetData(original), image);
           if (!check.ok) {
@@ -472,8 +536,8 @@ export async function generateSingleImage(ctx: JobContext, projectId: string, re
       if (r && "b64" in r && r.b64) {
         data = await sharp(Buffer.from(r.b64, "base64")).jpeg({ quality: 92 }).toBuffer();
         const st = r.stock;
-        const recipe = st ? L(`${st.credit} — décor ; votre produit réel composé par le studio (aucune image générée)`, `${st.credit} — set; your real product composited by the studio (no generated image)`) : L("Décor généré par IA, produit réel composé", "AI-generated set with the real product composited");
-        const a = await saveAsset({ projectId, userId: project.userId, data, name: `${base}-${req.kind === "banner" ? C("banniere", "banner") : "scene"}-${C("ia", "ai")}-${Date.now().toString(36)}.jpg`, mime: "image/jpeg", role: req.kind, folderKey: req.kind === "banner" ? "images.banners" : "images.scenes", origin: "generated", sourceAssetId: cut.id, meta: { recipe, provider: L(`${r.providerLabel ?? "IA"} (décor) + composition locale`, `${r.providerLabel ?? "AI"} (set) + local compositing`), ...(st ? { stock: { source: st.source, id: st.id, page: st.page, author: st.author, license: st.license } } : {}), qc: r.qc, gate: r.gate, format: fmt.label }, status: "review" });
+        const recipe = st ? L(`${st.credit} — décor ; votre produit réel composé par le studio (aucune image générée)`, `${st.credit} — set; your real product composited by the studio (no generated image)`) : L("Photo publicitaire générée à partir de la photo du produit", "Ad photograph generated from the product photo");
+        const a = await saveAsset({ projectId, userId: project.userId, data, name: `${base}-${req.kind === "banner" ? C("banniere", "banner") : "scene"}-${C("ia", "ai")}-${Date.now().toString(36)}.jpg`, mime: "image/jpeg", role: req.kind, folderKey: req.kind === "banner" ? "images.banners" : "images.scenes", origin: "generated", sourceAssetId: cut.id, meta: { recipe, provider: r.providerLabel ?? "IA", ...(st ? { stock: { source: st.source, id: st.id, page: st.page, author: st.author, license: st.license } } : {}), qc: r.qc, gate: r.gate, format: fmt.label }, status: "review" });
         return { assetId: a.id };
       }
       // Image IA refusée au contrôle (ou indisponible) : scène composée localement, la raison est gardée et affichée.

@@ -174,30 +174,32 @@ describe("routage multimédia par usage", async () => {
     expect(reasons).toEqual(["admin primary [logo]", "admin primary [scene]", "admin primary [ad_visual]"]);
   });
 
-  it("photos produit : « Retouches produit » (masque, OpenAI) d'abord ; coupé → « Images produit » (décor du modèle choisi + composition)", async () => {
+  it("photos produit : « Retouches produit » d'abord ; coupé → « Images produit » (photo générée à partir de la photo du produit)", async () => {
     const c = await client();
-    // Jamais de retouche par masque (second produit redessiné) : décor vide du modèle choisi, produit composé.
-    expect(fr(() => mp.productImagePath("product_image"))).toEqual({ path: "composite_plate", usage: "product_edit" });
+    // Jamais de produit détouré collé sur un décor : photo publicitaire générée avec la photo du produit en référence.
+    expect(fr(() => mp.productImagePath("product_image"))).toEqual({ path: "reference_scene", usage: "product_edit" });
     await fr(() => mp.openaiScene(ctx(c), { composite: png, productMask: png, prompt: "scène", size: "1024x1024", usage: "product_edit" }));
     expect(oa.calls.at(-1)).toMatchObject({ kind: "edit", model: "gpt-image-1" });
     // Retouche coupée par l'administration + Images produit → Gemini 2.5 : décor vide demandé à Gemini.
     setUsage("product_edit", { off: true });
     setUsage("product_image", { primary: "google:gemini-2.5-flash-image" });
-    expect(fr(() => mp.productImagePath("product_image"))).toEqual({ path: "composite_plate", usage: "product_image" });
-    await fr(() => mp.productPlate(ctx(c), { prompt: "plan en marbre", aspect: "4:5", usage: "product_image" }));
+    expect(fr(() => mp.productImagePath("product_image"))).toEqual({ path: "reference_scene", usage: "product_image" });
+    await fr(() => mp.productScene(ctx(c), { prompt: "plan en marbre", aspect: "4:5", reference: png, usage: "product_image" }));
     expect(net.calls.at(-1)!.url).toContain("gemini-2.5-flash-image:generateContent");
-    expect(JSON.stringify(net.calls.at(-1)!.body)).toMatch(/empty product-photography set/);
-    // Images produit → OpenAI : le décor vide passe par la génération OpenAI (plus seulement Gemini).
+    // La photo du produit part avec la demande (référence) et la consigne exige le produit à l'identique.
+    expect(JSON.stringify(net.calls.at(-1)!.body)).toMatch(/inline_data/);
+    expect(JSON.stringify(net.calls.at(-1)!.body)).toMatch(/reproduce it exactly as it is/);
+    // Images produit → OpenAI : génération à partir de la photo du produit (retouche avec image de référence).
     setUsage("product_image", { primary: "openai:gpt-image-1" });
-    await fr(() => mp.productPlate(ctx(c), { prompt: "plan en bois", aspect: "1:1", usage: "product_image" }));
-    expect(oa.calls.at(-1)).toMatchObject({ kind: "generate", model: "gpt-image-1" });
+    await fr(() => mp.productScene(ctx(c), { prompt: "plan en bois", aspect: "1:1", reference: png, usage: "product_image" }));
+    expect(oa.calls.at(-1)).toMatchObject({ kind: "edit", model: "gpt-image-1" });
   });
 
-  it("publicités : un modèle sans retouche par masque → décor + produit composé ; jamais un modèle fal qui exige une référence", async () => {
+  it("publicités : photo générée à partir de la photo du produit (modèle qui accepte une référence)", async () => {
     setUsage("ad_visual", { primary: "google:gemini-2.5-flash-image" });
-    expect(fr(() => mp.productImagePath("ad_visual"))).toEqual({ path: "composite_plate", usage: "ad_visual" });
+    expect(fr(() => mp.productImagePath("ad_visual"))).toEqual({ path: "reference_scene", usage: "ad_visual" });
     setUsage("ad_visual", {});
-    expect(fr(() => mp.productImagePath("ad_visual"))).toEqual({ path: "composite_plate", usage: "ad_visual" });
+    expect(fr(() => mp.productImagePath("ad_visual"))).toEqual({ path: "reference_scene", usage: "ad_visual" });
     const fal = mediaModel("fal", "fal-ai/nano-banana-2/edit")!;
     expect(routing.incompatibility(fal, routing.usageNeed("ad_visual"))).toMatch(/référence/);
     expect(routing.incompatibility(mediaModel("google", "gemini-3.1-flash-image")!, routing.usageNeed("product_edit"))).toMatch(/masque/);

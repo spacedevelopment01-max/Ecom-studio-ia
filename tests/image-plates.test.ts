@@ -21,12 +21,12 @@ describe("Décors libres de droits pour les images du produit", async () => {
   const u = await createUser(`plates-${Date.now()}@test.fr`, "motdepasse-test", "P");
   const cut = await sharp({ create: { width: 300, height: 600, channels: 4, background: { r: 199, g: 123, b: 48, alpha: 1 } } }).png().toBuffer();
 
-  it("Pixabay est la première banque interrogée ; les images du produit passent par un décor libre avant la génération", () => {
+  it("Pixabay est la première banque interrogée ; le produit n'est plus jamais collé sur une photo libre (décor)", () => {
     expect(STOCK_PROVIDERS[0].id).toBe("pixabay");
     for (const k of ["lifestyle", "ad_image", "product_image", "usage_scene"] as const) {
-      const st = stagesFor(k);
-      expect(st.indexOf("plate"), k).toBeGreaterThan(-1);
-      expect(st.indexOf("plate"), k).toBeLessThan(st.indexOf("generate"));
+      const st = stagesFor(k) as string[];
+      expect(st.includes("plate"), k).toBe(false);
+      expect(st.includes("generate"), k).toBe(true);
     }
   });
 
@@ -43,21 +43,15 @@ describe("Décors libres de droits pour les images du produit", async () => {
     expect(rival.metadataMatch).toBe(false);
   });
 
-  it("décor libre + produit réel : image retenue sans aucune génération, crédit et mention honnête gardés", async () => {
+  it("produit réel : jamais collé sur une photo libre (même un décor vide parfait) ; photo générée à partir de la photo du produit", async () => {
     const p = loadProject(seedImageFixture(u.id, "cosmetic"));
     const cutId = await seedCutout(u.id, p.id);
-    const prov = mockProvider("pixabay", () => [candidate("deco1", "empty marble table surface background", { source: "pixabay" }), candidate("gens", "woman applying cream", { source: "pixabay" })]);
+    const prov = mockProvider("pixabay", () => [candidate("deco1", "empty marble table surface background", { source: "pixabay" })]);
     const { deps, log } = mockDeps({ providers: [prov], reference: cut, reviewFor: () => review(8.6) });
     const r = await fr(() => runImageEngineV2(null, p.id, { kind: "lifestyle", support: "ad", aspect: "1:1", references: [cutId], textZone: "left" }, deps));
-    expect(r.outcomes[0].verdict).toBe("FINAL");
-    expect(r.outcomes[0].origin).toBe("stock");
-    expect(log.generations).toEqual([]);
-    expect(log.downloads).toEqual(["deco1"]);
-    const a = getAsset(r.outcomes[0].assetId!)!;
-    const meta = JSON.parse(a.meta as any);
-    expect(meta.stock.source).toBe("pixabay");
-    expect(meta.recipe).toMatch(/produit réel posé par le studio/);
-    expect(meta.imageV2.productRef).toBe(cutId);
+    expect(r.outcomes[0].origin).toBe("generated");
+    expect(log.downloads).not.toContain("deco1");
+    expect(log.generations.length).toBeGreaterThan(0);
   });
 
   it("décor refusé à la relecture (produit mal intégré) : génération d'un décor vide en dernier recours, jamais deux fois le même décor", async () => {
@@ -74,7 +68,7 @@ describe("Décors libres de droits pour les images du produit", async () => {
     expect(log.downloads.slice(before)).not.toContain("deco2");
   });
 
-  it("sans IA (forfait Découverte) : décor libre bien décrit + produit réel, gratuit, jamais validé comme définitif", async () => {
+  it("sans contrôle visuel (forfait Découverte) : le produit n'est jamais collé sur une photo libre", async () => {
     const p = loadProject(seedImageFixture(u.id, "cosmetic"));
     const cutId = await seedCutout(u.id, p.id);
     const prov = mockProvider("pixabay", () => [candidate("deco3", "empty stone surface blurred background", { source: "pixabay" })]);
@@ -82,7 +76,9 @@ describe("Décors libres de droits pour les images du produit", async () => {
     const r = await fr(() => runImageEngineV2(null, p.id, { kind: "lifestyle", support: "ad", aspect: "4:5", references: [cutId] }, deps));
     expect(log.reviews).toEqual([]);
     expect(log.generations).toEqual([]);
+    expect(log.downloads).not.toContain("deco3");
     expect(r.outcomes[0].verdict).not.toBe("FINAL");
+    expect(r.outcomes[0].assetId).toBeNull();
   });
 
   it("produit posé : les restes presque transparents du détourage n'impriment aucun rectangle sur le décor", async () => {

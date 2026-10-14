@@ -35,7 +35,7 @@ export function findFontDir(): string {
 export const FONT_DIR = findFontDir();
 
 /** Familles disponibles pour la composition (nom canvas → fichiers par graisse). */
-export const CANVAS_FONTS: Record<string, { file: Record<number, string>; italic?: string; kind: "serif" | "sans" | "display" }> = {
+export const CANVAS_FONTS: Record<string, { file: Record<number, string>; italic?: string; kind: "serif" | "sans" | "display" | "script" }> = {
   "Cormorant": { file: { 400: "Cormorant-400.ttf", 500: "Cormorant-500.ttf", 600: "Cormorant-600.ttf" }, italic: "Cormorant-500italic.ttf", kind: "serif" },
   "Jost": { file: { 400: "Jost-400.ttf", 500: "Jost-500.ttf", 600: "Jost-600.ttf" }, kind: "sans" },
   "DM Sans": { file: { 400: "DMSans-400.ttf", 500: "DMSans-500.ttf", 700: "DMSans-700.ttf" }, kind: "sans" },
@@ -55,6 +55,11 @@ export const CANVAS_FONTS: Record<string, { file: Record<number, string>; italic
   "Anton": { file: { 400: "Anton-400.ttf" }, kind: "display" },
   "Bebas Neue": { file: { 400: "BebasNeue-400.ttf" }, kind: "display" },
   "Oswald": { file: { 500: "Oswald-500.ttf", 700: "Oswald-700.ttf" }, kind: "display" },
+  // Publicités « éditoriales » (polices libres OFL, licences dans assets/fonts/licenses) : sérif d'affiche, capitales
+  // fines, et une écriture manuscrite réservée aux accents (« Voir plus loin »), jamais aux titres longs ni aux logos.
+  "Gloock": { file: { 400: "Gloock-400.ttf" }, kind: "serif" },
+  "Italiana": { file: { 400: "Italiana-400.ttf" }, kind: "display" },
+  "Nothing You Could Do": { file: { 400: "NothingYouCouldDo-400.ttf" }, kind: "script" },
 };
 
 /** Correspondance entre les polices Shopify des directions et les familles locales. */

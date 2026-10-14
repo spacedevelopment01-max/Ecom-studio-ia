@@ -153,7 +153,7 @@ function animatedOverlay(doc: AdDocument, local: number, clipS: number, last: bo
       const raw = clamp((local - a.delay) / (a.dur ?? 0.45));
       const p = easeOut(raw);
       let { x, y, w, h } = l;
-      let opacity = l.opacity * Math.min(1, raw * 2.2) * (1 - outP);
+      let opacity = l.opacity * (a.in === "none" ? 1 : Math.min(1, raw * 2.2)) * (1 - outP);
       let font = (l as { font?: { size: number } }).font;
       if (a.in === "rise") y += (1 - p) * H * 0.045;
       else if (a.in === "drop") y -= (1 - p) * H * 0.045;

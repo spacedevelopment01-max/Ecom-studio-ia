@@ -9,7 +9,7 @@ import type { RenderEnv } from "../../ad-doc/render";
 import type { AdDocument } from "../../ad-doc/types";
 import { ensureFonts } from "../../media/fonts";
 import type { ComposeInput } from "../compose";
-import { interestPoints, Kit, type Scheme } from "./kit";
+import { interestPoints, Kit, subjectBox, type Scheme } from "./kit";
 import type { Template } from "./types";
 import { TEMPLATES_A } from "./templates/a";
 import { TEMPLATES_B } from "./templates/b";
@@ -21,9 +21,17 @@ import { TEMPLATES_G } from "./templates/g";
 import { TEMPLATES_H } from "./templates/h";
 import { TEMPLATES_I } from "./templates/i";
 import { TEMPLATES_J } from "./templates/j";
+import { TEMPLATES_K } from "./templates/k";
+import { TEMPLATES_L } from "./templates/l";
+import { TEMPLATES_M } from "./templates/m";
 
-export const TEMPLATES: Template[] = [...TEMPLATES_A, ...TEMPLATES_B, ...TEMPLATES_C, ...TEMPLATES_D, ...TEMPLATES_E, ...TEMPLATES_F, ...TEMPLATES_G, ...TEMPLATES_H, ...TEMPLATES_I, ...TEMPLATES_J];
+export const TEMPLATES: Template[] = [...TEMPLATES_A, ...TEMPLATES_B, ...TEMPLATES_C, ...TEMPLATES_D, ...TEMPLATES_E, ...TEMPLATES_F, ...TEMPLATES_G, ...TEMPLATES_H, ...TEMPLATES_I, ...TEMPLATES_J, ...TEMPLATES_K, ...TEMPLATES_L, ...TEMPLATES_M];
 export const templateById = (id: string) => TEMPLATES.find((t) => t.id === id) ?? null;
+/**
+ * Affiches « produit héros » (produit détouré en très grand dans un décor dessiné à la marque) : choisies en
+ * priorité dès qu'un détourage existe ; les trois premières servent aussi aux publicités sans photo du produit.
+ */
+export const HERO_TEMPLATES = ["light-stage", "sunlit-stone", "color-room", "halo-center", "night-launch", "satin-editorial"];
 export const isTemplateLayout = (l: unknown): l is `tpl:${string}` => typeof l === "string" && l.startsWith("tpl:");
 
 /** Modèles utilisables pour une création (avec ou sans photo). */
@@ -63,10 +71,12 @@ export async function buildTemplateDocument(i: ComposeInput, id: string): Promis
     cta: i.cta,
     scheme,
     treatment,
-    photo: bg && bgId ? { id: bgId, width: bg.width, height: bg.height, points: await interestPoints(i.background!).catch(() => []) } : null,
+    photo: bg && bgId ? { id: bgId, width: bg.width, height: bg.height, points: await interestPoints(i.background!).catch(() => []), subject: await subjectBox(i.background!).catch(() => null) } : null,
     logo: lg && logoId ? { id: logoId, width: lg.width, height: lg.height, lightId } : null,
     product: productId ? { id: productId, width: images.get(productId)!.width, height: images.get(productId)!.height } : null,
     features: (i.features ?? []).filter(Boolean),
+    tagline: i.tagline ?? null,
+    productName: i.productName ?? null,
     images,
   });
   tpl.build(k);

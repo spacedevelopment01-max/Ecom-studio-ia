@@ -10,7 +10,8 @@ import { useT } from "../../i18n";
 import type { FontCatalog } from "@/lib/ad-doc/fonts-client";
 import { alignBox } from "@/lib/ad-doc/geometry";
 import type { DocOp } from "@/lib/ad-doc/ops";
-import type { AdDocument, Fill, Layer } from "@/lib/ad-doc/types";
+import type { AdDocument, Fill, Layer, LayerAnim } from "@/lib/ad-doc/types";
+import { isAnimatedLayer } from "@/lib/ad-doc/animate";
 
 export type Apply = (op: DocOp, merge?: string) => void;
 
@@ -211,6 +212,7 @@ export function PropertiesPanel({ doc, layer, apply, catalog, onPickImage, onUpl
             <Crop layer={l} apply={apply} />
           </>
         )}
+        {isAnimatedLayer(l) && <AnimField layer={l} set={set} />}
         <label className="grid gap-1">
           <span className={lbl}>{t("Opacité", "Opacity")} · {Math.round(l.opacity * 100)} %</span>
           <input type="range" min={0} max={1} step={0.01} value={l.opacity} onChange={(e) => set({ opacity: Number(e.target.value) }, "opacity")} />
@@ -261,6 +263,57 @@ function Crop({ layer, apply }: { layer: Extract<Layer, { kind: "image" }>; appl
       <input type="range" min={1} max={4} step={0.05} value={zoom} aria-label={t("Zoom de la photo", "Photo zoom")} data-testid="crop-zoom" onChange={(e) => setCrop(Number(e.target.value), px, py)} />
       <input type="range" min={0} max={1} step={0.01} value={px} aria-label={t("Position horizontale", "Horizontal position")} disabled={zoom <= 1.001} onChange={(e) => setCrop(zoom, Number(e.target.value), py)} />
       <input type="range" min={0} max={1} step={0.01} value={py} aria-label={t("Position verticale", "Vertical position")} disabled={zoom <= 1.001} onChange={(e) => setCrop(zoom, px, Number(e.target.value))} />
+    </div>
+  );
+}
+
+/** Entrées proposées au client (même liste pour l'aperçu et la vidéo). */
+const ENTRANCES: [LayerAnim["in"] | "auto", string, string][] = [
+  ["auto", "Automatique (ordre du studio)", "Automatic (studio order)"],
+  ["none", "Aucune (présent dès le début)", "None (shown from the start)"],
+  ["rise", "Monte", "Rises"],
+  ["drop", "Descend", "Drops in"],
+  ["left", "Arrive de la gauche", "From the left"],
+  ["right", "Arrive de la droite", "From the right"],
+  ["fade", "Apparaît en fondu", "Fades in"],
+  ["grow", "Grandit", "Grows"],
+  ["pop", "Surgit (rebond)", "Pops (bounce)"],
+];
+
+/**
+ * Animation de l'élément (titre, texte, bouton, logo) : entrée, moment, durée et effet continu (bouton qui bat, texte
+ * qui flotte). « Automatique » garde l'animation du studio. Visible avec « Aperçu animé » ; la vidéo (« Animer » sur
+ * la création enregistrée) suit les mêmes réglages. Gratuit, sans IA.
+ */
+function AnimField({ layer: l, set }: { layer: Layer; set: (patch: Partial<Layer>, key: string) => void }) {
+  const t = useT();
+  const a = l.anim;
+  const put = (patch: Partial<LayerAnim>) => set({ anim: { in: a?.in ?? "rise", delay: a?.delay ?? 0.3, dur: a?.dur ?? 0.6, loop: a?.loop ?? (l.role === "cta" ? "pulse" : "none"), ...patch } }, "anim");
+  return (
+    <div className="grid gap-2 rounded-xl border border-line p-3" data-testid="prop-anim">
+      <span className={lbl}>{t("Animation", "Animation")}</span>
+      <select className={inp} value={a?.in ?? "auto"} data-testid="prop-anim-in" onChange={(e) => (e.target.value === "auto" ? set({ anim: undefined }, "anim") : put({ in: e.target.value as LayerAnim["in"] }))}>
+        {ENTRANCES.map(([v, fr, en]) => (
+          <option key={v} value={v}>{t(fr, en)}</option>
+        ))}
+      </select>
+      {a && (
+        <>
+          <div className="grid grid-cols-2 gap-2">
+            {a.in !== "none" && <Num label={t("Départ (s)", "Start (s)")} value={a.delay} step={0.1} min={0} max={6} testId="prop-anim-delay" onChange={(v) => put({ delay: Math.max(0, Math.min(6, v)) })} />}
+            {a.in !== "none" && <Num label={t("Durée (s)", "Duration (s)")} value={a.dur ?? 0.6} step={0.1} min={0.1} max={3} onChange={(v) => put({ dur: Math.max(0.1, Math.min(3, v)) })} />}
+          </div>
+          <label className="grid gap-1">
+            <span className={lbl}>{t("Ensuite", "Then")}</span>
+            <select className={inp} value={a.loop ?? "none"} data-testid="prop-anim-loop" onChange={(e) => put({ loop: e.target.value as LayerAnim["loop"] })}>
+              <option value="none">{t("Reste en place", "Stays still")}</option>
+              <option value="pulse">{t("Bat (appel au clic)", "Pulses (call to click)")}</option>
+              <option value="float">{t("Flotte doucement", "Floats gently")}</option>
+            </select>
+          </label>
+        </>
+      )}
+      <p className="text-[11px] text-muted">{t("« Aperçu animé » (barre du haut) pour voir le résultat ; la vidéo « Animer » suit ces réglages. Gratuit.", "“Animated preview” (top bar) to see it; the “Animate” video follows these settings. Free.")}</p>
     </div>
   );
 }

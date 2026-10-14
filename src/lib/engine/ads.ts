@@ -5,6 +5,7 @@
  * des faits produit confirmés, du nom de marque et des angles de la stratégie (aucun chiffre ni avis inventé).
  * Serveur uniquement.
  */
+import { adIntent, skillReference } from "../ai/skills";
 import { randomUUID } from "node:crypto";
 import { stableKey } from "../ai/keys";
 import { currentTrace } from "../ai/trace";
@@ -124,6 +125,8 @@ export async function draftAds(p: Project, opts: { userId: string; count?: numbe
         usageKey: stableKey("ads", p.id, scope, "draft", drafts++),
         system: adSystem(p, lang, ctas),
         context: `${adView.stable}\n${brandCraftBrief(p, adView.kept)}`,
+        // Compétences publicitaires : annonces pour les réseaux sociaux quand des réseaux sont choisis.
+        reference: skillReference(adIntent(p, opts.networks?.length ? "social" : undefined)),
         prompt: `Prépare la campagne de test : ${count} annonce(s).\n${brief}${feedback ? `\nCorrections exigées par le directeur de création et le contrôle qualité sur la proposition précédente (à appliquer toutes, sans rien inventer) :\n${feedback}` : ""}
 Réponds { "strategy": { "summary": "…", "audiences": [ { "name": "…", "who": "…", "signals": "…", "why": "…" } ], "structure": ["…"], "tests": [ { "variable": "…", "hypothesis": "…" } ], "kpis": ["…"] }, "hooks": [ { "text": "…", "visual": "…", "lever": "…" } ], "ads": [ { "angle": "…", "lever": "…", "hook": "…", "primary": "…", "headline": "…", "description": "…", "cta": "…", "visual": "…" } ] }.`,
         maxTokens: 9000,
