@@ -1,7 +1,65 @@
 {
-  "generatedAt": "2026-10-14T15:49:22.777Z",
+  "generatedAt": "2026-10-14T16:24:45.083Z",
   "note": "Marques créées par E-COM STUDIO IA (moteur intégré) à partir de photos de produits réels de fournisseurs, retouchées (inscriptions d'origine retirées).",
   "demos": [
+    {
+      "id": "paysagiste",
+      "brand": "Racines & Pierres",
+      "product": "Création et entretien de jardins",
+      "sector": "Paysagiste",
+      "direction": "jardin",
+      "palette": [
+        "#3F6B4A",
+        "#DCE6D2",
+        "#E89BA7",
+        "#F7F8F1",
+        "#1D2E22"
+      ],
+      "photo": "/demo/paysagiste/photo.jpg",
+      "logo": "/demo/paysagiste/logo.png",
+      "shopDesktop": "/demo/paysagiste/boutique-bureau.jpg",
+      "shopMobile": "/demo/paysagiste/boutique-mobile.jpg",
+      "productPage": "",
+      "business": "services",
+      "images": [
+        {
+          "src": "/demo/paysagiste/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/paysagiste/scene-2.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/paysagiste/ad-1.jpg",
+          "label": "Publicité"
+        },
+        {
+          "src": "/demo/paysagiste/banner-1.jpg",
+          "label": "Bannière"
+        }
+      ],
+      "video": "/demo/paysagiste/video.mp4",
+      "videoPoster": "/demo/paysagiste/video-poster.jpg",
+      "shopVideo": "/demo/paysagiste/video-boutique.mp4",
+      "storeType": "mono",
+      "products": 1,
+      "source": {
+        "supplier": "Photos créées par l'IA",
+        "url": "",
+        "note": "Entreprise fictive : les photos de jardins ont été créées par l'IA (OpenAI) pour la démonstration ; le site et la marque sont créés par le studio."
+      },
+      "posts": [
+        "/demo/paysagiste/post-1.jpg",
+        "/demo/paysagiste/post-2.jpg",
+        "/demo/paysagiste/post-3.jpg",
+        "/demo/paysagiste/post-4.jpg",
+        "/demo/paysagiste/post-5.jpg",
+        "/demo/paysagiste/post-6.jpg",
+        "/demo/paysagiste/post-7.jpg"
+      ],
+      "board": "/demo/paysagiste/planche.jpg"
+    },
     {
       "id": "gourde",
       "brand": "Cime",

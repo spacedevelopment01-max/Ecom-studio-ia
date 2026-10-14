@@ -4,6 +4,7 @@
  * n'est configuré, l'appelant bascule sur le moteur local (engine/local.ts),
  * clairement signalé comme tel dans le studio.
  */
+import { STRATEGY_JARGON } from "../copy-voice";
 import { skillReference, type SkillIntent } from "./skills";
 import { decide } from "../quality/gate";
 import { saveCheck } from "../quality/store";
@@ -619,10 +620,18 @@ export function lintJargon(copy: ShopCopy): { path: string; term: string }[] {
     ["detail.heading", c.detail?.heading], ["story.heading", c.story?.heading], ["cta.heading", c.cta?.heading], ["gallery.heading", c.gallery?.heading],
     ...((c.features?.items ?? []) as { title: string }[]).map((x, i) => [`features.items[${i}].title`, x?.title] as [string, unknown]),
   ];
-  return heads.flatMap(([path, v]) => {
-    const m = typeof v === "string" ? v.match(JARGON) : null;
-    return m ? [{ path, term: m[0] }] : [];
-  });
+  // Textes courants lus par le client : tournures d'analyste de la stratégie (« la différence défendable tient… »).
+  const texts: [string, unknown][] = [["hero.text", c.hero?.text], ["statement.text", c.statement?.text], ["cta.text", c.cta?.text], ["story.text", c.story?.text]];
+  return [
+    ...heads.flatMap(([path, v]) => {
+      const m = typeof v === "string" ? v.match(JARGON) ?? v.match(STRATEGY_JARGON) : null;
+      return m ? [{ path, term: m[0] }] : [];
+    }),
+    ...texts.flatMap(([path, v]) => {
+      const m = typeof v === "string" ? v.match(STRATEGY_JARGON) : null;
+      return m ? [{ path, term: m[0] }] : [];
+    }),
+  ];
 }
 
 export function copyQuality(copy: ShopCopy, p: Project): string[] {

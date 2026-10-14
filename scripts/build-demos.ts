@@ -136,7 +136,7 @@ async function api(ctx: BrowserContext, url: string, init?: { method?: string; b
   // Une lecture coupée (serveur de développement occupé) est relancée ; une écriture ne l'est jamais.
   const send = async (k = 0): Promise<Awaited<ReturnType<typeof ctx.request.fetch>>> => {
     try {
-      return await ctx.request.fetch(`${BASE}${url}`, { method, data: init?.body as any });
+      return await ctx.request.fetch(`${BASE}${url}`, { method, data: init?.body as any, timeout: 600_000 });
     } catch (e) {
       if (method !== "GET" || k >= 4) throw e;
       await new Promise((r) => setTimeout(r, 3000 * (k + 1)));
