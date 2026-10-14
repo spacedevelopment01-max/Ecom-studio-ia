@@ -866,6 +866,8 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ["ai_calls", "routing_reason", "TEXT"],
   ["ai_calls", "routing_fallback", "INTEGER NOT NULL DEFAULT 0"],
   ["ai_calls", "routing_escalation", "INTEGER NOT NULL DEFAULT 0"],
+  // Compétences (skills) transmises à l'appel : activation vérifiable dans les traces.
+  ["ai_calls", "skills", "TEXT"],
   ["projects", "store_type", "TEXT NOT NULL DEFAULT 'mono'"],
   ["projects", "catalog_json", "TEXT NOT NULL DEFAULT '[]'"],
   ["projects", "business_type", "TEXT NOT NULL DEFAULT 'products'"],

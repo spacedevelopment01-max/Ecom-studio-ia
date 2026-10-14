@@ -19,7 +19,7 @@ import { activeProviderKey, aiAvailability, FX_SAFETY, priceFor, requirePrice, r
 import { contentLang, L, uiLang } from "../i18n-server";
 import { languageDirective } from "./prompts";
 import { AsyncLocalStorage } from "node:async_hooks";
-import { assertUnderCostCap, recordCall, redact, shortHash } from "./trace";
+import { assertUnderCostCap, recordCall, redact, shortHash, skillsOfReference } from "./trace";
 import { brainMetaOf } from "../brain/facade";
 import { getJsonSetting } from "../settings";
 import { route, type Difficulty, type RouteDecision, type RoutingHistory } from "../orchestrator/router";
@@ -303,6 +303,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   const counter = { n: 0 };
   const started = Date.now();
   const trace = {
+    skills: skillsOfReference(call.reference),
     userId: call.userId,
     projectId: call.projectId,
     jobId: call.jobId,
@@ -454,6 +455,7 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
   const started = Date.now();
   let attempts = 0;
   const trace = {
+    skills: skillsOfReference(call.reference),
     userId: call.userId,
     projectId: call.projectId,
     jobId: call.jobId,

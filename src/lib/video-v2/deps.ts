@@ -4,6 +4,7 @@
  * fournisseur de synthèse vocale dans le studio aujourd'hui : null, dit clairement), inventaire de la bibliothèque.
  * Injectables : le studio et le benchmark utilisent `realVideoDeps` ; les tests, des outils simulés (aucun appel).
  */
+import { skillReference } from "../ai/skills";
 import sharp from "sharp";
 import { llmConfigured, llmJson } from "../ai/llm";
 import { brainView } from "../ai/context";
@@ -98,7 +99,7 @@ export function realVideoDeps(ctx: JobContext | null, p: Project, aiActive: bool
     canWrite: ai,
     canReview: ai,
     generationAllowed: aiActive,
-    writeScript: (system, prompt, key) => llmJson({ task: "video_direction", ...base, usageKey: key, promptKey: "video-v2-script", routing: { difficulty: "complex", deliverable: "video_v2" }, system, context: brainView(p, "video").stable, prompt, maxTokens: 3000 }, ScriptSchema),
+    writeScript: (system, prompt, key) => llmJson({ task: "video_direction", ...base, usageKey: key, promptKey: "video-v2-script", routing: { difficulty: "complex", deliverable: "video_v2" }, system, context: brainView(p, "video").stable, reference: skillReference("video_ad"), prompt, maxTokens: 3000 }, ScriptSchema),
     async reviewShot(frames, refs, text, key) {
       const images = [...(await Promise.all(frames.map(small))).map((data, k) => ({ data, label: L(`image ${k + 1} du plan`, `shot frame ${k + 1}`) }))];
       if (refs.product) images.push({ data: await small(refs.product), label: L("référence : produit réel", "reference: real product") });

@@ -107,6 +107,8 @@ export type CallRow = {
   routingReason?: string | null;
   fallback?: boolean;
   escalation?: boolean;
+  /** Compétences (skills) transmises dans la référence de l'appel, séparées par des virgules. */
+  skills?: string | null;
 };
 
 /**
@@ -118,8 +120,8 @@ export function recordCall(c: CallRow): string | null {
   const rid = id();
   try {
     run(
-      `INSERT INTO ai_calls (id, created_at, user_id, project_id, job_id, task, step, candidate_id, attempt, call_try, provider, requested_model, served_model, unit, input_tokens, cache_read_tokens, cache_write_tokens, output_tokens, quantity, latency_ms, http_attempts, stop_reason, effort, cost, estimated, usage_key, usage_event_id, billing_dedup, status, error_kind, prompt_key, prompt_hash, quality_check_id, brain_scope, brain_hash, brain_version, intent, plan_id, step_id, routing_reason, routing_fallback, routing_escalation)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      `INSERT INTO ai_calls (id, created_at, user_id, project_id, job_id, task, step, candidate_id, attempt, call_try, provider, requested_model, served_model, unit, input_tokens, cache_read_tokens, cache_write_tokens, output_tokens, quantity, latency_ms, http_attempts, stop_reason, effort, cost, estimated, usage_key, usage_event_id, billing_dedup, status, error_kind, prompt_key, prompt_hash, quality_check_id, brain_scope, brain_hash, brain_version, intent, plan_id, step_id, routing_reason, routing_fallback, routing_escalation, skills)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       rid,
       now(),
       c.userId,
@@ -162,10 +164,18 @@ export function recordCall(c: CallRow): string | null {
       (c.routingReason ?? t.routing?.reason ?? null)?.slice(0, 200) ?? null,
       (c.fallback ?? t.routing?.fallback) ? 1 : 0,
       (c.escalation ?? t.routing?.escalation) ? 1 : 0,
+      c.skills ?? null,
     );
     return rid;
   } catch (e) {
     console.warn("[trace] appel non enregistré :", redact((e as Error).message));
     return null;
   }
+}
+
+/** Compétences (skills) annoncées dans le bloc de référence d'un appel (`<skills names="a,b">`), pour la trace. */
+export function skillsOfReference(reference?: string | null): string | null {
+  if (!reference) return null;
+  const names = [...reference.matchAll(/<skills names="([^"]+)"/g)].flatMap((m) => m[1].split(",")).map((x) => x.trim()).filter(Boolean);
+  return names.length ? [...new Set(names)].join(",").slice(0, 500) : null;
 }
