@@ -5,7 +5,8 @@ import { all, now } from "@/lib/db";
 import { enqueue } from "@/lib/jobs";
 import { L } from "@/lib/i18n-server";
 import { aiActiveFor } from "@/lib/ai/access";
-import { assertCalendarDays, planOfUserId, requirePlan } from "@/lib/plan-gates";
+import { assertCalendarDays, assertPerDayRequest, planOfUserId, requirePlan } from "@/lib/plan-gates";
+import { PLANS } from "@/lib/plans";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { createPlanV2, publishingDates } from "@/lib/social-v2/planner";
 import { applySocialEdit, approve, planFromAsk, projectAccounts } from "@/lib/social-v2/engine";
@@ -99,12 +100,16 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       // Période demandée (jours de calendrier, jours exclus compris) : limite du forfait, comme le calendrier existant.
       const span = b.request.endDate ? Math.round((Date.parse(b.request.endDate) - Date.parse(b.request.startDate)) / 86_400_000) + 1 : (b.request.days ?? 30);
       assertCalendarDays(user, p.id, span);
+      // 1, 3 ou 5 publications par jour selon le forfait : jamais plus, même en modifiant la requête.
+      assertPerDayRequest(p.id, b.request.perDay);
       if (!publishingDates(b.request).length) throw new HttpError(400, L("Aucun jour de publication dans cette période.", "No publishing day in this period."));
       for (const x of b.request.platforms) if (x.connectionId && !projectAccounts(p).some((a) => a.id === x.connectionId)) throw new HttpError(400, L("Compte inconnu.", "Unknown account."));
       return ok(createPlanV2(p, { ...b.request, lang: p.settings.language === "en" ? "en" : "fr" }));
     }
     case "ask": {
-      const r = planFromAsk(p, b.text, { lang: p.settings.language === "en" ? "en" : "fr" });
+      // Demande écrite : mêmes limites que le formulaire (jours de calendrier et publications par jour du forfait).
+      const plan = requirePlan(user, p.id);
+      const r = planFromAsk(p, b.text, { lang: p.settings.language === "en" ? "en" : "fr", maxDays: PLANS[plan].calendarDays, maxPerDay: PLANS[plan].postsPerDay });
       return ok(r);
     }
     case "estimate":
@@ -132,11 +137,11 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     case "pause":
     case "resume":
       planOwned(b.planId);
-      setPlanPaused(b.planId, b.action === "pause");
-      return ok({ ok: true });
+      return ok({ ok: true, ...setPlanPaused(b.planId, b.action === "pause") });
     case "edit":
       return ok(await applySocialEdit(p, b.text, realSocialDeps(null, p, aiActiveFor(p.userId, p.id)), { confirm: b.confirm, maxCostEur: b.maxCostEur, planId: b.planId }));
     case "automation":
+      requirePlan(user, p.id);
       return ok({ id: createAutomation(p.id, b.kind, b.config ?? {}) });
     case "automation_status":
       setAutomationStatus(p.id, b.automationId, b.status);

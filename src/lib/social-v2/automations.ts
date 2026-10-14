@@ -10,6 +10,8 @@ import { L } from "../i18n-server";
 import { createPlanV2, type PlanRequest } from "./planner";
 import { schedulePosts } from "./scheduler";
 import { checkPost } from "./quality";
+import { planOfProject } from "../plan-gates";
+import { PLANS } from "../plans";
 
 export const AUTOMATION_KINDS = ["prepare_next_week", "schedule_approved", "notify_errors", "require_validation"] as const;
 export type AutomationKind = (typeof AUTOMATION_KINDS)[number];
@@ -43,11 +45,14 @@ export async function runAutomation(a: Automation, at = now()): Promise<string> 
   switch (a.kind) {
     case "prepare_next_week": {
       // Brouillons de la semaine suivante, avec les réglages du dernier calendrier V2 : gratuit, aucun média payant.
+      // Forfait du projet requis ; jamais plus de publications par jour que le forfait, même si la règle le demande.
+      const forfait = planOfProject(p.id);
+      if (!forfait) return "projet sans forfait actif : rien n'est préparé";
       const last = one<{ params: string }>("SELECT params FROM content_plans WHERE project_id = ? AND engine = 'v2' ORDER BY created_at DESC LIMIT 1", p.id);
       if (!last) return "aucun calendrier de référence";
       const base = json<PlanRequest>(last.params, null as never);
       const startDate = nextMonday(at);
-      const r = createPlanV2(p, { ...base, startDate, endDate: null, days: 7, ...(cfg.perDay ? { perDay: Number(cfg.perDay) } : {}) }, { planId: `auto-${a.id}-${startDate}` });
+      const r = createPlanV2(p, { ...base, startDate, endDate: null, days: 7, perDay: Math.min(PLANS[forfait].postsPerDay, Number(cfg.perDay) || base.perDay || 1) }, { planId: `auto-${a.id}-${startDate}` });
       if (r.created) notify(p.userId, p.id, L("Semaine suivante préparée", "Next week prepared"), L(`${r.created} brouillons à relire et approuver (aucune publication sans votre accord).`, `${r.created} drafts to review and approve (nothing is posted without your approval).`));
       return `${r.created} brouillon(s) créés (${r.existing} déjà présents)`;
     }

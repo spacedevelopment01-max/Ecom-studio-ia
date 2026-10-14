@@ -12,6 +12,7 @@ import { PLANS, type Plan, type PlanId } from "./plans";
 import { projectPlan } from "./project-billing";
 import { themeAllowed, planForTheme, themeRank } from "./theme/theme-access";
 import { L } from "./i18n-server";
+import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 
 const name = (p: PlanId) => L(PLANS[p].name.fr, PLANS[p].name.en);
 /** Premier forfait qui a la caractéristique demandée. */
@@ -107,22 +108,38 @@ export function assertCampaignSlot(_user: User | null, projectId: string) {
   if (n >= max) throw new HttpError(402, L(`Votre forfait ${name(plan)} comprend ${max} campagne(s) active(s). Archivez-en une, ou passez au forfait supérieur.`, `Your ${name(plan)} plan includes ${max} active campaign(s). Archive one, or move up a plan.`));
 }
 
-/** Jour civil (UTC) d'un horodatage, pour compter les publications programmées par jour. */
-const dayBounds = (at: number) => {
-  const d = new Date(at);
-  const start = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
-  return [start, start + 86_400_000] as const;
+/**
+ * Jour civil d'un horodatage dans le fuseau du projet (celui de la publication, sinon Europe/Paris) : « 3 par jour »
+ * se compte comme le client voit son calendrier, pas en heure UTC.
+ */
+const dayBounds = (at: number, tz: string) => {
+  const ymd = formatInTimeZone(at, tz, "yyyy-MM-dd");
+  const start = fromZonedTime(`${ymd}T00:00:00`, tz).getTime();
+  const [y, m, d] = ymd.split("-").map(Number);
+  const next = new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10);
+  return [start, fromZonedTime(`${next}T00:00:00`, tz).getTime()] as const;
 };
 
-/** Publications programmées ce jour-là pour le projet (hors brouillons, échecs et publication `exceptId`). */
-export function scheduledPostsOn(projectId: string, at: number, exceptId?: string | null): number {
-  const [a, b] = dayBounds(at);
+/**
+ * Contenus éditoriaux programmés ce jour-là pour le projet (hors brouillons et échecs). Une publication et ses
+ * adaptations pour d'autres réseaux (même `group_id`) comptent pour UN contenu : la limite du forfait porte sur les
+ * créations distinctes, l'envoi reste suivi réseau par réseau. Le contenu de `exceptId` n'est pas compté.
+ */
+export function scheduledPostsOn(projectId: string, at: number, exceptId?: string | null, tz?: string | null): number {
+  const self = exceptId ? one<{ g: string; timezone: string | null }>("SELECT COALESCE(group_id, id) g, timezone FROM posts WHERE id = ?", exceptId) : undefined;
+  const zone = tz || self?.timezone || "Europe/Paris";
+  let a: number, b: number;
+  try {
+    [a, b] = dayBounds(at, zone);
+  } catch {
+    [a, b] = dayBounds(at, "Europe/Paris");
+  }
   return one<{ n: number }>(
-    "SELECT COUNT(*) n FROM posts WHERE project_id = ? AND scheduled_at >= ? AND scheduled_at < ? AND status IN ('scheduled','approved','publishing','published') AND id != ?",
+    "SELECT COUNT(DISTINCT COALESCE(group_id, id)) n FROM posts WHERE project_id = ? AND scheduled_at >= ? AND scheduled_at < ? AND status IN ('scheduled','approved','publishing','published','paused') AND COALESCE(group_id, id) != ?",
     projectId,
     a,
     b,
-    exceptId ?? "",
+    self?.g ?? exceptId ?? "",
   )!.n;
 }
 
@@ -139,4 +156,19 @@ export function assertPostsPerDay(projectId: string, at: number, exceptId?: stri
  */
 export function planOfUserId(_userId: string, projectId?: string | null): PlanId | null {
   return projectId ? projectPlan(projectId) : null;
+}
+
+/** Date de programmation : dans le futur et dans la fenêtre de calendrier du forfait (7, 30 ou 90 jours). */
+export function assertScheduleWindow(plan: PlanId, at: number) {
+  const max = PLANS[plan].calendarDays;
+  if (at < Date.now() - 60_000) throw new HttpError(400, L("Cette date est passée : choisissez une date à venir.", "This date is in the past: pick an upcoming date."));
+  if (at > Date.now() + max * 86_400_000 + 3_600_000) throw new HttpError(402, L(`Votre forfait ${name(plan)} programme jusqu'à ${max} jours à l'avance. ${needPlan(firstWith((p) => p.calendarDays > max))}`, `Your ${name(plan)} plan schedules up to ${max} days ahead. ${needPlan(firstWith((p) => p.calendarDays > max))}`));
+}
+
+/** Nombre de publications par jour demandé (génération d'un calendrier) : au plus celui du forfait. */
+export function assertPerDayRequest(projectId: string, perDay: number): PlanId {
+  const plan = requirePlan(null, projectId);
+  const max = PLANS[plan].postsPerDay;
+  if (perDay > max) throw new HttpError(402, L(`Votre forfait ${name(plan)} prévoit au plus ${max} publication(s) par jour. ${needPlan(firstWith((p) => p.postsPerDay >= perDay))}`, `Your ${name(plan)} plan allows at most ${max} post(s) per day. ${needPlan(firstWith((p) => p.postsPerDay >= perDay))}`));
+  return plan;
 }

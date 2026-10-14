@@ -19,7 +19,7 @@ import { adaptForPlatform, nativeFormatFor, PLATFORMS, type Platform, type PostF
 import { afterEdit, approvePosts } from "./approval";
 import { checkPost } from "./quality";
 import { produceBatch } from "./production";
-import { setPlanPaused } from "./scheduler";
+import { moveRefusal, setPlanPaused } from "./scheduler";
 import { moveToWeekday, planSocialEdit } from "./local-edit";
 import type { SocialDeps } from "./deps";
 
@@ -35,8 +35,13 @@ export function projectAccounts(p: Project): { id: string; provider: string; nam
 }
 
 /** Demande en clair → calendrier de niveau 1 (aucune dépense). La programmation viendra après approbation. */
-export function planFromAsk(p: Project, text: string, o: { at?: number; lang?: "fr" | "en"; platforms?: Platform[]; maxDays?: number; planId?: string } = {}) {
+export function planFromAsk(p: Project, text: string, o: { at?: number; lang?: "fr" | "en"; platforms?: Platform[]; maxDays?: number; maxPerDay?: number; planId?: string } = {}) {
   const ask = parseSocialAsk(text);
+  // Nombre par jour limité par le forfait (annoncé, jamais caché).
+  if (o.maxPerDay && ask.perDay > o.maxPerDay) {
+    ask.notes.push(`${ask.perDay} publications par jour demandées : limité à ${o.maxPerDay} par votre forfait`);
+    ask.perDay = o.maxPerDay;
+  }
   // Durée limitée par le forfait (annoncé, jamais caché).
   if (o.maxDays && ask.days > o.maxDays) {
     ask.notes.push(`${ask.days} jours demandés : limité à ${o.maxDays} jours par votre forfait`);
@@ -70,6 +75,10 @@ export function editPostV2(p: Project, postId: string, patch: ManualPatch): { re
   if (!r || r.project_id !== p.id) throw new Error("publication introuvable");
   if (["publishing", "published", "uncertain"].includes(r.status)) throw new Error("publication déjà envoyée : elle ne peut plus être modifiée");
   if (patch.media) for (const m of patch.media) if (getAsset(m)?.project_id !== p.id) throw new Error("média étranger au projet");
+  if (patch.scheduledAt !== undefined) {
+    const why = moveRefusal(p.id, postId, patch.scheduledAt);
+    if (why) throw new Error(why);
+  }
   if (patch.network && !(PLATFORMS as readonly string[]).includes(patch.network)) throw new Error("réseau inconnu");
   if (patch.connectionId) {
     const c = one<{ user_id: string }>("SELECT user_id FROM connections WHERE id = ?", patch.connectionId);
@@ -133,6 +142,7 @@ export async function applySocialEdit(p: Project, text: string, deps: SocialDeps
   const base = { ids: plan.ids, costMicro: 0 };
   if (plan.kind === "unclear") return { ...base, applied: false, by: "none", summary: plan.summary };
   if (plan.kind === "local") {
+    const moveRefused: string[] = [];
     const planIds = o.planId ? [o.planId] : all<{ id: string }>("SELECT id FROM content_plans WHERE project_id = ? AND engine = 'v2'", p.id).map((r) => r.id);
     switch (plan.action) {
       case "pause":
@@ -146,7 +156,14 @@ export async function applySocialEdit(p: Project, text: string, deps: SocialDeps
       case "move_weekday":
         for (const pid of plan.ids) {
           const r = one<{ scheduled_at: number; timezone: string }>("SELECT scheduled_at, timezone FROM posts WHERE id = ?", pid)!;
-          run("UPDATE posts SET scheduled_at = ?, updated_at = ? WHERE id = ? AND status NOT IN ('publishing','published','uncertain')", moveToWeekday(r.scheduled_at, r.timezone, plan.weekday!), now(), pid);
+          const at = moveToWeekday(r.scheduled_at, r.timezone, plan.weekday!);
+          // Même contrôle que le glisser-déposer : date future, calendrier et nombre par jour du forfait.
+          const why = moveRefusal(p.id, pid, at);
+          if (why) {
+            moveRefused.push(`${pid} : ${why}`);
+            continue;
+          }
+          run("UPDATE posts SET scheduled_at = ?, updated_at = ? WHERE id = ? AND status NOT IN ('publishing','published','uncertain')", at, now(), pid);
         }
         break;
       case "replace_media": {
@@ -159,6 +176,7 @@ export async function applySocialEdit(p: Project, text: string, deps: SocialDeps
         break;
       }
     }
+    if (moveRefused.length) return { ...base, applied: moveRefused.length < plan.ids.length, by: "local", summary: `${plan.summary} — ${moveRefused.length} non déplacée(s)`, refused: moveRefused };
     return { ...base, applied: true, by: "local", summary: plan.summary };
   }
   // Réécriture IA : seulement les publications visées, estimée, confirmée, plafonnée.
