@@ -6,7 +6,10 @@
  *   NODE_USE_ENV_PROXY=1 npx tsx scripts/alibaba-qwen-essai.ts --confirm --spec=<fichier.json> --out=<dossier>
  * Spécification : { model, items: [{ id, aspect, prompt, reference? (chemin d'une image) }] }.
  * Clé : injectée par la passerelle réseau (secret de l'environnement) — jamais lue ni affichée ici.
- * Sorties : <out>/<id>.png (image ORIGINALE reçue) et <out>/essai.json (modèle, paramètres, coût borné, durée).
+ * Sorties : <out>/<id>.png (image ORIGINALE reçue), <out>/<id>.response.json (réponse et adresse de l'image, gardées
+ * avant le téléchargement) et <out>/essai.json (modèle, paramètres, coût borné, durée).
+ * L'image se télécharge depuis le stockage d'Alibaba (*.aliyuncs.com, hors dashscope) : cet hôte doit être autorisé
+ * par le réseau. Sinon : relancer plus tard `--fetch-only` (gratuit, adresse valable environ 24 h).
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -16,6 +19,19 @@ import { DEFAULT_PRICES } from "@/lib/ai/config";
 
 const args = process.argv.slice(2);
 const arg = (k: string) => args.find((a) => a.startsWith(`--${k}=`))?.split("=").slice(1).join("=");
+// --fetch-only (gratuit) : télécharge les images déjà payées dont l'adresse a été gardée, sans rien redemander.
+if (args.includes("--fetch-only")) {
+  const dir = path.resolve(arg("out") ?? "reports/alibaba-qwen-essai");
+  for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".response.json"))) {
+    const id = f.replace(/\.response\.json$/, "");
+    if (fs.existsSync(path.join(dir, `${id}.png`))) continue;
+    const { url } = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8"));
+    const dl = await fetch(url).catch((e) => e as Error);
+    if (dl instanceof Error || !dl.ok) console.error(`${id} : téléchargement impossible (${dl instanceof Error ? dl.message : `HTTP ${dl.status}`}).`);
+    else fs.writeFileSync(path.join(dir, `${id}.png`), Buffer.from(await dl.arrayBuffer())), console.log(`${id} : récupérée.`);
+  }
+  process.exit(0);
+}
 if (!args.includes("--confirm")) {
   console.error("Appel PAYANT : relancez avec --confirm après accord explicite.");
   process.exit(1);
@@ -53,8 +69,19 @@ for (const it of spec.items) {
     report.push({ id: it.id, ok: false, error: "réponse sans image", raw: text.slice(0, 500) });
     continue;
   }
-  const img = Buffer.from(await (await fetch(url)).arrayBuffer());
-  fs.writeFileSync(path.join(OUT, `${it.id}.png`), img);
+  // Image payée : réponse et adresse gardées AVANT le téléchargement (l'adresse reste valable environ 24 h), pour
+  // la récupérer sans repayer si le téléchargement échoue (hôte de stockage bloqué, coupure…).
+  fs.writeFileSync(path.join(OUT, `${it.id}.response.json`), JSON.stringify({ at: new Date().toISOString(), url, response: j }, null, 2));
+  try {
+    const dl = await fetch(url);
+    if (!dl.ok) throw new Error(`HTTP ${dl.status}`);
+    fs.writeFileSync(path.join(OUT, `${it.id}.png`), Buffer.from(await dl.arrayBuffer()));
+  } catch (e) {
+    const host = new URL(url).host;
+    console.error(`${it.id} : image créée (payée) mais téléchargement impossible depuis ${host} (${(e as Error).message}). Adresse gardée dans ${it.id}.response.json — récupérer avec --fetch-only.`);
+    report.push({ id: it.id, ok: false, paid: true, downloadHost: host, error: (e as Error).message });
+    continue;
+  }
   report.push({ id: it.id, ok: true, model: spec.model, aspect: it.aspect, size: body.parameters.size, references: refs.length, usage: j.usage ?? null, requestId: j.request_id ?? null, seconds: Math.round((Date.now() - t0) / 1000), maxCostUsd: price, prompt: it.prompt });
   console.log(`${it.id} : OK (${Math.round((Date.now() - t0) / 1000)} s)`);
 }
