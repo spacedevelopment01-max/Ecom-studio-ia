@@ -1,27 +1,27 @@
 {
-  "at": "2026-10-15T13:41:14.900Z",
+  "at": "2026-10-15T13:42:51.018Z",
   "model": "qwen-image-3.0-pro",
   "boundUsd": 0.081,
   "items": [
     {
-      "id": "logo-qwen",
+      "id": "pub-qwen",
       "ok": true,
       "model": "qwen-image-3.0-pro",
-      "aspect": "1:1",
-      "size": "1328*1328",
-      "references": 0,
+      "aspect": "4:5",
+      "size": "1104*1472",
+      "references": 1,
       "usage": {
-        "input_image_count": 0,
+        "input_image_count": 1,
         "input_image_type": "qima_input_1k",
-        "output_height": 1328,
+        "output_height": 1472,
         "output_image_count": 1,
         "output_image_type": "qima_output_1k",
-        "output_width": 1328
+        "output_width": 1104
       },
-      "requestId": "c3fb6ab2-da3e-9f72-b097-ba052f9d1f45",
-      "seconds": 28,
+      "requestId": "b44381a2-658b-9970-b2f9-7786af904faf",
+      "seconds": 17,
       "maxCostUsd": 0.081,
-      "prompt": "Design a complete, premium, original logo for a French watchmaking brand, as a top branding agency would deliver it (flat logo artwork only, not a mockup). Brand name: \"ARVEN\". Trade line: \"HORLOGERIE\". Slogan: \"Le temps, bien porté.\" Concept: an elegant emblem inspired by a chronograph bezel — a thin precise circle with fine minute ticks, enclosing a refined monogram letter A whose crossbar reads like a watch hand; timeless, Swiss-style precision, luxury but understated. Below the emblem, the name ARVEN in wide, perfectly spaced high-contrast serif capitals; beneath it, smaller, the trade line HORLOGERIE in spaced sans-serif capitals; and at the bottom, smallest, the slogan Le temps, bien porté. in an italic serif. Colors: deep near-black #111214 for the name and emblem, cognac #A0612B as the single accent (the monogram hand and a thin line), on a plain ivory #F3EFE7 background. Spell every word EXACTLY, with the accent on é; no other words, no fake letters, no numbers other than the bezel ticks. Centered composition, generous margins, crisp vector-like edges, no gradients, no 3D, no shadow, no texture."
+      "prompt": "Create a premium Instagram advertisement (portrait 4:5) for the watch brand ARVEN. The product is the watch in the reference image: keep it EXACTLY as it is — same steel case, black dial with three silver sub-dials, numbered bezel, crown and pushers, brown leather strap with dark stitching. Do not redesign, recolor or add any logo or text on the watch. Scene: the watch resting on a dark cognac leather surface in a moody luxury studio, warm low-key light from the side, soft reflections on the steel, subtle depth of field, deep near-black background (#111214) with a warm cognac glow (#A0612B). Typography, elegant and perfectly legible, laid out like a high-end magazine ad: at the top, the wordmark ARVEN in wide spaced ivory serif capitals; below it, a large headline in ivory serif: \"Le temps, bien porté.\"; a small line in spaced sans-serif capitals: \"CHRONOGRAPHE · ACIER & CUIR\"; at the bottom, a slim cognac pill button with the text \"Découvrir\". Spell every word EXACTLY with the accents. No price, no other text, no people, no hands, no wrist."
     }
   ]
 }
