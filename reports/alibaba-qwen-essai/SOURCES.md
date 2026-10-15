@@ -52,3 +52,9 @@ Coût : 4 × (0,04 $ + 2 × 0,003 $) ≈ 0,184 $ (facturé « 1K », 2 images d'
 ## Story « tape-à-l'œil » — Qwen-Image 3.0 Pro (15/10/2026)
 - `story-choc.png`, 928×1664 : papier cognac déchiré, montre qui jaillit, étincelles, « ARVEN » géant derrière,
   « Prenez le temps. » + bouton « Découvrir ». Textes exacts, montre fidèle (même angle). ≈ 0,046 $, aucune retouche.
+
+## Story « Luxe cinématique » (ligne visuelle choisie) — Qwen-Image 3.0 Pro (15/10/2026)
+- `story-luxe.png`, 928×1664, d'après `reference-style-luxe.png` et `style-luxe-cinematique.md`.
+- Textes exacts : « LE TEMPS, BIEN PORTÉ », « Le détail fait l'élégance. » (« l'élégance » en doré), « Découvrir › »,
+  « ÉLÉGANCE | CARACTÈRE | ACIER & CUIR ». Montre fidèle, cadran sans logo. Dos des livres : ornements dorés illisibles
+  (décor). ≈ 0,046 $, aucune retouche.
