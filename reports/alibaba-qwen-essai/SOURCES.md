@@ -43,3 +43,8 @@ Références : photo Pixabay + vrai logo ; consigne « même angle que la photo 
 | `format-9x16-velours.png` | 9:16 | velours cognac vu de dessus, « Le temps vous va bien. » | textes exacts |
 | `format-16x9-banniere.png` | 16:9 | lin ivoire au soleil, « Un chronographe pour chaque jour. » | faute « Découvir » → corrigée gratuitement : `format-16x9-banniere-corrigee.png` (`scripts/pub-correction-bouton.cjs`) |
 Coût : 4 × (0,04 $ + 2 × 0,003 $) ≈ 0,184 $ (facturé « 1K », 2 images d'entrée chacune).
+
+## « chronographe » remplacé par « montre » (gratuit, sans IA)
+- `format-1x1-bureau-montre.png` : bouton « Voir la montre » (police Jost).
+- `format-16x9-banniere-montre.png` : titre « Une montre pour chaque jour. » (première ligne réécrite en Cormorant).
+- Script réutilisable : `scripts/pub-remplace-ligne.cjs`.
