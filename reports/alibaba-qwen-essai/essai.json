@@ -1,0 +1,27 @@
+{
+  "at": "2026-10-15T13:41:14.900Z",
+  "model": "qwen-image-3.0-pro",
+  "boundUsd": 0.081,
+  "items": [
+    {
+      "id": "logo-qwen",
+      "ok": true,
+      "model": "qwen-image-3.0-pro",
+      "aspect": "1:1",
+      "size": "1328*1328",
+      "references": 0,
+      "usage": {
+        "input_image_count": 0,
+        "input_image_type": "qima_input_1k",
+        "output_height": 1328,
+        "output_image_count": 1,
+        "output_image_type": "qima_output_1k",
+        "output_width": 1328
+      },
+      "requestId": "c3fb6ab2-da3e-9f72-b097-ba052f9d1f45",
+      "seconds": 28,
+      "maxCostUsd": 0.081,
+      "prompt": "Design a complete, premium, original logo for a French watchmaking brand, as a top branding agency would deliver it (flat logo artwork only, not a mockup). Brand name: \"ARVEN\". Trade line: \"HORLOGERIE\". Slogan: \"Le temps, bien porté.\" Concept: an elegant emblem inspired by a chronograph bezel — a thin precise circle with fine minute ticks, enclosing a refined monogram letter A whose crossbar reads like a watch hand; timeless, Swiss-style precision, luxury but understated. Below the emblem, the name ARVEN in wide, perfectly spaced high-contrast serif capitals; beneath it, smaller, the trade line HORLOGERIE in spaced sans-serif capitals; and at the bottom, smallest, the slogan Le temps, bien porté. in an italic serif. Colors: deep near-black #111214 for the name and emblem, cognac #A0612B as the single accent (the monogram hand and a thin line), on a plain ivory #F3EFE7 background. Spell every word EXACTLY, with the accent on é; no other words, no fake letters, no numbers other than the bezel ticks. Centered composition, generous margins, crisp vector-like edges, no gradients, no 3D, no shadow, no texture."
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "at": "2026-10-15T13:40:57.628Z",
+  "url": "https://dashscope-463f.oss-accelerate.aliyuncs.com/1d/d8/20261015/f746ca88/c3fb6ab2-da3e-9f72-b097-ba052f9d1f45_qwen_image3_serving_output_0.png?Expires=1792158057&OSSAccessKeyId=LTAI5tRcsWJEymQaTsKbKqGf&Signature=0lfwbatNSdz32XkUgd%2FfdUwZb6s%3D",
+  "response": {
+    "output": {
+      "choices": [
+        {
+          "finish_reason": "stop",
+          "message": {
+            "content": [
+              {
+                "image": "https://dashscope-463f.oss-accelerate.aliyuncs.com/1d/d8/20261015/f746ca88/c3fb6ab2-da3e-9f72-b097-ba052f9d1f45_qwen_image3_serving_output_0.png?Expires=1792158057&OSSAccessKeyId=LTAI5tRcsWJEymQaTsKbKqGf&Signature=0lfwbatNSdz32XkUgd%2FfdUwZb6s%3D",
+                "type": "image"
+              }
+            ],
+            "role": "assistant"
+          }
+        }
+      ],
+      "rewrite_status": "not_use"
+    },
+    "usage": {
+      "input_image_count": 0,
+      "input_image_type": "qima_input_1k",
+      "output_height": 1328,
+      "output_image_count": 1,
+      "output_image_type": "qima_output_1k",
+      "output_width": 1328
+    },
+    "request_id": "c3fb6ab2-da3e-9f72-b097-ba052f9d1f45"
+  }
+}
