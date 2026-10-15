@@ -8,6 +8,7 @@ import { useT } from "./i18n";
 
 type MediaModelRow = {
   key: string;
+  adminConfirm?: boolean;
   provider: string;
   model: string;
   label: string;
@@ -142,7 +143,7 @@ export function MediaRoutingPanel({ data, post }: { data: MediaRoutingData; post
                         ) : (
                           <Button size="sm" variant="ghost" disabled={!m.usable} onClick={() => post({ mediaBackup: { kind: k.kind, key: m.key } }, t("Secours enregistré.", "Backup saved."))}>{t("Choisir comme secours", "Set as backup")}</Button>
                         ))}
-                        {!(m.verified.id && m.verified.price) && (m.confirmed ? (
+                        {(!(m.verified.id && m.verified.price) || m.adminConfirm) && (m.confirmed ? (
                           <Button size="sm" variant="ghost" onClick={() => post({ mediaModel: { key: m.key, confirm: false } }, t("Confirmation retirée.", "Confirmation removed."))}>{t("Retirer la confirmation", "Remove confirmation")}</Button>
                         ) : (
                           <Button size="sm" variant="ghost" onClick={() => confirm(t(`Confirmez-vous avoir vérifié l'identifiant et le tarif de ${m.label} sur la page officielle du fournisseur ?`, `Do you confirm you've checked ${m.label}'s ID and price on the provider's official page?`)) && post({ mediaModel: { key: m.key, confirm: true } }, t("Modèle confirmé.", "Model confirmed."))}>{t("Confirmer", "Confirm")}</Button>
