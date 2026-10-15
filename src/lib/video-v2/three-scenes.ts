@@ -65,15 +65,15 @@ export type ThreeScenesRequest = {
 };
 
 /**
- * Options du titre (par défaut : en haut, taille habituelle, sur bandeau) : place (en bas pour ne pas couvrir le produit),
- * titleSize « large » (en grand quand il le faut ou que c'est plus beau), titleStyle « shadow » (sans bandeau).
+ * Options du titre (par défaut : en haut, taille habituelle) : place (en bas pour ne pas couvrir le produit),
+ * titleSize « large » (en grand quand il le faut ou que c'est plus beau). Jamais de bande sombre derrière le titre.
  */
-export type Scene = { still: string; motion: string; title: string; place?: "top" | "lower"; titleSize?: "standard" | "large"; titleStyle?: "band" | "shadow" };
+export type Scene = { still: string; motion: string; title: string; place?: "top" | "lower"; titleSize?: "standard" | "large" };
 /** endCard « large » : phrase et bouton de l'écran de fin en grand (au choix). */
 export type ScenePlan = { scenes: Scene[]; line: string; cta: string; endCard?: "standard" | "large" };
 
 export const ScenePlanSchema = z.object({
-  scenes: z.array(z.object({ still: z.string().min(10).max(500), motion: z.string().min(10).max(400), title: z.string().max(40).default(""), place: z.enum(["top", "lower"]).optional(), titleSize: z.enum(["standard", "large"]).optional(), titleStyle: z.enum(["band", "shadow"]).optional() })).min(1).max(6),
+  scenes: z.array(z.object({ still: z.string().min(10).max(500), motion: z.string().min(10).max(400), title: z.string().max(40).default(""), place: z.enum(["top", "lower"]).optional(), titleSize: z.enum(["standard", "large"]).optional() })).min(1).max(6),
   line: z.string().max(70).default(""),
   cta: z.string().min(2).max(28),
   endCard: z.enum(["standard", "large"]).optional(),
@@ -145,7 +145,7 @@ export function buildSceneDoc(p: Project, clips: { assetId: string; durationS: n
     part: null,
     durationS: Math.min(timing.showS, c.durationS),
     source: { kind: "video", assetId: c.assetId, inS: 0, outS: Math.min(timing.showS, c.durationS), muted: true },
-    overlays: plan.scenes[k]?.title ? overlayText({ w: size.w, h: size.h, safe, typo, text: plan.scenes[k].title, place: plan.scenes[k].place ?? "top", size: plan.scenes[k].titleSize, style: plan.scenes[k].titleStyle }) : [],
+    overlays: plan.scenes[k]?.title ? overlayText({ w: size.w, h: size.h, safe, typo, text: plan.scenes[k].title, place: plan.scenes[k].place ?? "top", size: plan.scenes[k].titleSize }) : [],
     transitionIn: { kind: k === 0 ? "cut" : "fade", durationS: k === 0 ? 0 : 0.5 },
     generated: c.generated,
   }));
@@ -277,7 +277,7 @@ export function realThreeScenesDeps(ctx: JobContext | null, base: { userId: stri
 ${req.request ? `Client's brief (follow it): ${req.request.slice(0, 600)}\n` : ""}Write ${req.scenes ?? SCENES} different scenes for a ${req.as === "ad" ? "paid ad" : "social post"} video: for each, "still" (in English: the setting, light and mood of the opening image, the ${s?.kind === "service" ? "craft shown through tools, materials and results" : "real product as the hero"}), "motion" (in English: the slow camera move and what moves in the scene, the product itself never changes) and "title" (in ${lang}, 2 to 5 words shown on screen, or empty).
 Then "line" (in ${lang}, a short brand line, max 8 words, no claim) and "cta" (in ${lang}, 2-3 words button).
 Never any person, face, hand or body. Never numbers, prices, percentages, promises, awards or reviews.
-Optional per scene: "place": "lower" when the product fills the top of the frame; "titleSize": "large" only when it reads better or looks better (short punchy title, busy image), otherwise leave the usual size; "titleStyle": "shadow" (no dark band) on clean, bright images. Optional "endCard": "large" for a bold end card.
+Optional per scene: "place": "lower" when the product fills the top of the frame; "titleSize": "large" only when it reads better or looks better (short punchy title, busy image), otherwise leave the usual size. Optional "endCard": "large" for a bold end card.
 Reply { "scenes": [{ "still": "", "motion": "", "title": "" }, ...${req.scenes ?? SCENES}], "line": "", "cta": "" }.`,
               maxTokens: 1200,
             },

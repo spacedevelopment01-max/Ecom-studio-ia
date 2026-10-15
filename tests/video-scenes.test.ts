@@ -117,21 +117,22 @@ describe("Vidéo en scènes", async () => {
     expect(prompt).toContain("no black bars");
   });
 
-  it("titre d'une scène : taille habituelle sur bandeau par défaut ; en bas, en grand ou sans bandeau seulement si choisi", async () => {
+  it("titre d'une scène : jamais de bande sombre ; taille habituelle par défaut, en bas ou en grand seulement si choisi", async () => {
     const { ScenePlanSchema } = await import("@/lib/video-v2/three-scenes");
     const p = await productProject();
-    const plan = ScenePlanSchema.parse({ scenes: [{ still: "close-up of the lid", motion: "slow push-in", title: "Gros plan", place: "lower", titleSize: "large", titleStyle: "shadow" }, { still: "wide shot on a rock", motion: "slow push-in", title: "Plan large" }], line: "", cta: "Découvrir" });
+    const plan = ScenePlanSchema.parse({ scenes: [{ still: "close-up of the lid", motion: "slow push-in", title: "Gros plan", place: "lower", titleSize: "large" }, { still: "wide shot on a rock", motion: "slow push-in", title: "Plan large" }], line: "", cta: "Découvrir" });
     const doc = buildSceneDoc(p, plan.scenes.map((_, k) => ({ assetId: `a${k}`, durationS: 5, generated: true })), plan, "9:16", "post");
     const t = (k: number) => doc.clips[k].overlays.find((l) => l.id === "ov-text") as any;
     const short = Math.min(doc.width, doc.height);
-    // Scène 1 (choisie) : en bas, en très grand, sans bandeau sombre.
+    // Scène 1 (choisie) : en bas, en très grand.
     expect(t(0).y).toBeGreaterThan(doc.height * 0.5);
     expect(t(0).font.size).toBeGreaterThanOrEqual(Math.round(short * 0.14));
     expect(doc.clips[0].overlays.some((l) => l.role === "scrim")).toBe(false);
-    // Scène 2 (par défaut) : en haut, taille habituelle, sur son bandeau.
+    // Scène 2 (par défaut) : en haut, taille habituelle, toujours sans bande sombre (ombre douce sur les lettres).
     expect(t(1).y).toBeLessThan(doc.height * 0.3);
     expect(t(1).font.size).toBeLessThan(Math.round(short * 0.08));
-    expect(doc.clips[1].overlays.some((l) => l.role === "scrim")).toBe(true);
+    expect(doc.clips[1].overlays.some((l) => l.role === "scrim")).toBe(false);
+    expect(t(1).shadow).toBeTruthy();
   });
 
   it("carte de fin : le vrai logo sur un médaillon clair, lisible sur le fond sombre", async () => {

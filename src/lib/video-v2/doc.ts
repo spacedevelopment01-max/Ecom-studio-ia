@@ -89,9 +89,10 @@ export function cuesForVoice(clipId: string, voice: string, clipS: number, maxCh
   });
 }
 
+/** Sous-titres sans fond noir (choix du propriétaire) : contour sombre autour des lettres. */
 export function defaultSubtitleStyle(doc: { width: number; height: number }, typo: Typo, pal: Palette): SubtitleStyle {
   const short = Math.min(doc.width, doc.height);
-  return { enabled: true, family: typo.body, weight: 700, size: Math.round(short * 0.052), color: "#FFFFFF", background: "rgba(0,0,0,0.62)", position: "bottom", offsetY: 0, maxChars: doc.width > doc.height ? 42 : 28, uppercase: false };
+  return { enabled: true, family: typo.body, weight: 700, size: Math.round(short * 0.052), color: "#FFFFFF", background: null, position: "bottom", offsetY: 0, maxChars: doc.width > doc.height ? 42 : 28, uppercase: false };
 }
 
 // ------------------------------------------------------------------------------------------- calques (ad-doc)
@@ -204,10 +205,10 @@ export function enlargeSmallTitles(doc: Pick<VideoDocument, "width" | "height" |
 }
 
 /**
- * Texte posé sur un plan (photo, vidéo). Par défaut : taille habituelle sur un bandeau lisible. Au choix : en grand
- * (`size: "large"`) et/ou sans bandeau, une ombre douce sur les lettres (`style: "shadow"`).
+ * Texte posé sur un plan (photo, vidéo) : jamais de bande sombre derrière (choix du propriétaire) ; une ombre douce sur
+ * les lettres le garde lisible. Taille habituelle par défaut, en grand au choix (`size: "large"`).
  */
-export function overlayText(o: { w: number; h: number; safe: VideoDocument["safe"]; typo: Typo; text: string; place: "top" | "lower"; size?: TitleSize; style?: "band" | "shadow" }): Layer[] {
+export function overlayText(o: { w: number; h: number; safe: VideoDocument["safe"]; typo: Typo; text: string; place: "top" | "lower"; size?: TitleSize }): Layer[] {
   const { w, h } = o;
   const short = Math.min(w, h);
   const large = o.size === "large";
@@ -215,12 +216,7 @@ export function overlayText(o: { w: number; h: number; safe: VideoDocument["safe
   const bh = size * (large ? 2.4 : 2.9);
   const y = o.place === "top" ? o.safe.top + h * 0.02 : h * (large ? 0.58 : 0.62);
   const text = textLayer("ov-text", "Texte à l'écran", "title", { x: o.safe.side, y, w: w - o.safe.side * 2, h: bh }, o.text, { family: o.typo.heading, weight: o.typo.headingWeight ?? 700, size, color: "#FFFFFF" });
-  const styled = large ? { ...text, lineHeight: 1.02 } : text;
-  if (o.style === "shadow") return [{ ...styled, shadow: { color: "rgba(0,0,0,0.45)", blur: Math.round(size * 0.35), x: 0, y: Math.round(size * 0.04) } }];
-  return [
-    rectLayer("ov-scrim", "Voile du texte", "scrim", { x: 0, y: y - size * 0.6, w, h: bh + size * 1.2 }, { type: "linear", angle: 90, stops: [{ offset: 0, color: "rgba(0,0,0,0)" }, { offset: 0.5, color: "rgba(0,0,0,0.55)" }, { offset: 1, color: "rgba(0,0,0,0)" }] }),
-    styled,
-  ];
+  return [{ ...text, lineHeight: large ? 1.02 : text.lineHeight, shadow: { color: "rgba(0,0,0,0.5)", blur: Math.round(size * 0.35), x: 0, y: Math.max(1, Math.round(size * 0.04)) } }];
 }
 
 /** Voix d'un plan (texte à enregistrer) : décalage et durée de parole naturelle. */
