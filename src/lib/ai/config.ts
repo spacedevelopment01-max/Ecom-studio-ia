@@ -163,7 +163,8 @@ export const DEFAULT_PRICES: Record<string, Price> = {
   "alibaba:qwen-image-2.0": { unit: "image", perImage: 0.035 },
   "alibaba:qwen-image-2.0-pro": { unit: "image", perImage: 0.075 },
   "alibaba:wan2.2-i2v-flash": { unit: "video_second", perSecond: 0.036 },
-  "alibaba:wan2.6-i2v-flash": { unit: "video_second", perSecond: 0.05 },
+  // 1080P sans son (demandé ainsi par le studio) : tarif de l'API officielle « 1080P_no_audio », vérifié le 15/10/2026.
+  "alibaba:wan2.6-i2v-flash": { unit: "video_second", perSecond: 0.0375 },
   "alibaba:wan2.7-i2v": { unit: "video_second", perSecond: 0.1 },
   "alibaba:wan2.7-t2v": { unit: "video_second", perSecond: 0.1 },
   "alibaba:wan3.0-video": { unit: "video_second", perSecond: 0.1 },

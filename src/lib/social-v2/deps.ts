@@ -94,7 +94,9 @@ function backgroundFor(p: Project, seed: string, roles: string[] = ["lifestyle",
   const pool = all<Asset & { uses: number }>(
     `SELECT a.*, (SELECT COUNT(*) FROM assets b WHERE b.project_id = a.project_id AND b.deleted_at IS NULL AND json_extract(b.meta, '$.poster.backgroundAssetId') = a.id) uses
        FROM assets a WHERE a.project_id = ? AND a.kind = 'image' AND a.deleted_at IS NULL AND a.status != 'rejected'
-        AND a.role IN (${roles.map(() => "?").join(",")})${ownOnly ? " AND a.origin = 'upload'" : ""} ORDER BY a.created_at DESC LIMIT 24`,
+        AND a.role IN (${roles.map(() => "?").join(",")})${ownOnly ? " AND a.origin = 'upload'" : ""}
+        -- Règle du propriétaire : jamais une photo libre de droits (banque du thème) en fond de publication.
+        AND json_extract(a.meta, '$.stock') IS NULL ORDER BY a.created_at DESC LIMIT 24`,
     p.id,
     ...roles,
   ).filter((a) => isAutoUsable(a) && (!productOnly || !isPastedOnStock(a)));
@@ -176,9 +178,8 @@ export function photoTopic(p: Project, post: Pick<PostBrief, "id" | "title" | "c
 }
 
 /**
- * Rendu gratuit : d'abord LA photo libre (Pixabay d'abord) cherchée pour cette publication — en rapport avec le
- * produit ou le service et le sujet, jamais déjà utilisée, choisie pour faire une belle affiche ; sinon une photo
- * déjà validée du projet ; sinon une composition typographique à la marque.
+ * Rendu gratuit : une photo du projet (jamais une photo libre de droits : celles-ci sont réservées au thème), sinon
+ * une composition typographique à la marque.
  */
 export async function localRender(p: Project, post: PostBrief, ctx: JobContext | null = null, o: { background?: Asset | null } = {}): Promise<MediaResult> {
   // Photo imposée (nombre d'images différentes atteint) : reprise telle quelle, autre texte et autre mise en page.
@@ -211,13 +212,9 @@ export async function localRender(p: Project, post: PostBrief, ctx: JobContext |
     const own = backgroundFor(p, post.id, ["lifestyle", "original", "scene", "post-photo"], false, true);
     if (own) return posterForPost(p, post, own, "local");
   }
-  const aspect = aspectOf(post.network, post.format);
-  const { bestAdPhoto } = await import("../engine/service-media");
-  const fresh = await bestAdPhoto({ userId: p.userId, projectId: p.id, jobId: ctx?.job.id ?? null }, p, { key: `post-${post.id}`, topic: photoTopic(p, post), aspect: aspect === "2:3" ? "4:5" : aspect, name: `publication-${post.network}-${post.id.slice(0, 6)}-photo.jpg` }).catch((e) => {
-    if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
-    return null;
-  });
-  return posterForPost(p, post, fresh ?? backgroundFor(p, post.id), "local");
+  // Règle du propriétaire : les images libres de droits (Pixabay…) servent au thème, jamais aux publications. Sans
+  // photo du projet : composition à la marque (typographie, formes, couleurs), sans photo.
+  return posterForPost(p, post, backgroundFor(p, post.id), "local");
 }
 
 const PLATFORM_VIDEO: Record<string, "reels" | "tiktok" | "shorts" | "meta_feed"> = { instagram: "reels", tiktok: "tiktok", youtube: "shorts", facebook: "meta_feed", pinterest: "reels", linkedin: "meta_feed" };

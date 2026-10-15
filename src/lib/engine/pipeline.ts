@@ -345,7 +345,7 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
       if (services) {
         return serviceContent(async () => {
           const r = await runImageSetV2(ctx, projectId);
-          const ads = await pipelineAds(ctx, projectId);
+          const ads = await adsAndThemeBank(ctx, projectId);
           return note("images.done", { n: r.created.length + ads });
         });
       }
@@ -355,24 +355,42 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
         const { generateImageSet, ownScenePhotos } = await import("./images");
         if (ownScenePhotos(projectId).length) {
           const r = await ctx.step("photo-images", () => generateImageSet(ctx, projectId));
-          const ads = await pipelineAds(ctx, projectId);
+          const ads = await adsAndThemeBank(ctx, projectId);
           return note("images.done", { n: r.created.length + ads });
         }
         return { skipped: p.settings.existingSite ? NO_CUTOUT_SITE() : note("skip.noCutout") };
       }
       const r = await runImageSetV2(ctx, projectId);
-      const ads = await pipelineAds(ctx, projectId);
+      const ads = await adsAndThemeBank(ctx, projectId);
       return note("images.done", { n: r.created.length + ads });
     }
     case "video": {
       if (inp.videos === "none") return { skipped: note("skip.videosNone") };
       // Video & UGC Engine V2 : documents vidéo modifiables et versionnés ; plans générés seulement si le client les a
       // choisis au lancement (« avec plans IA ») et dans le plafond, sinon montage local à partir des médias.
-      const approve = inp.videos !== "edited";
+      // Création : 2 vidéos de 15 s en 3 scènes (logo, marque, musique). Produit avec Développer/Dominer : scènes par
+      // l'IA depuis la vraie photo ; service : plans du métier ; sinon montage local (sans génération).
+      const local = (k: number) =>
+        k === 0
+          ? ctx.step("v2:916", () => pipelineVideo(ctx, projectId, { kind: "video_ad", platform: "reels", text: services ? C("vidéo courte pour faire connaître l'activité sur les réseaux sociaux", "short video to promote the business on social media") : C("publicité courte pour les réseaux sociaux", "short ad for social media") }, false))
+          : ctx.step("v2:169", () => pipelineVideo(ctx, projectId, { kind: services ? "company_presentation" : "brand_film", platform: services ? "website" : "shop_page", text: services ? C("vidéo de présentation de l'activité pour le site", "business presentation video for the website") : C("vidéo d'ambiance pour la boutique", "mood video for the store") }, false));
       const produce = async () => {
-        const a = await ctx.step("v2:916", () => pipelineVideo(ctx, projectId, { kind: "video_ad", platform: "reels", text: services ? C("vidéo courte pour faire connaître l'activité sur les réseaux sociaux", "short video to promote the business on social media") : C("publicité courte pour les réseaux sociaux", "short ad for social media") }, approve));
-        const b = await ctx.step("v2:169", () => pipelineVideo(ctx, projectId, { kind: services ? "company_presentation" : "brand_film", platform: services ? "website" : "shop_page", text: services ? C("vidéo de présentation de l'activité pour le site", "business presentation video for the website") : C("vidéo d'ambiance pour la boutique", "mood video for the store") }, approve));
-        return inBothLangs(() => L(`${[a, b].filter(Boolean).length} vidéo(s) montée(s) (documents modifiables dans l'onglet Vidéos)`, `${[a, b].filter(Boolean).length} video(s) edited (editable documents in the Videos tab)`));
+        const { creationSceneVideos, creationVideoMode } = await import("../video-v2/creation-videos");
+        const { realThreeScenesDeps, quoteScenes } = await import("../video-v2/three-scenes");
+        const { aiActiveFor } = await import("../ai/access");
+        const { projectRights } = await import("../plan-gates");
+        const { aiPostMaxMicro, wanClipMaxMicro } = await import("../ai/media-providers");
+        const { estimateMicro } = await import("../ai/estimate");
+        const aiActive = aiActiveFor(p.userId, projectId);
+        const videosRight = projectRights(projectId)?.videos ?? null;
+        const mode = creationVideoMode(p, inp.videos, { videosRight, aiActive });
+        const made = await creationSceneVideos(ctx, projectId, mode, {
+          scenes: realThreeScenesDeps(ctx, { userId: p.userId, projectId }, { aiText: aiActive && llmConfigured() }),
+          quote: (pp, r) => quoteScenes(pp, r, { imageMaxMicro: aiPostMaxMicro(), clipMaxMicro: (s) => wanClipMaxMicro(s), textMicro: Math.round(estimateMicro("blog") / 10), videosRight, aiActive }),
+          local,
+          spentByJob: () => one<{ c: number }>("SELECT COALESCE(SUM(cost), 0) c FROM ai_calls WHERE job_id = ?", ctx.job.id)?.c ?? 0,
+        });
+        return inBothLangs(() => L(`${made.length} vidéo(s) montée(s) (documents modifiables dans l'onglet Vidéos)`, `${made.length} video(s) edited (editable documents in the Videos tab)`));
       };
       if (services) return serviceContent(produce);
       const has = validCutouts(projectId).length > 0;
@@ -411,16 +429,72 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
  * documents à calques ouverts dans l'éditeur visuel. Une publicité impossible (pas assez de faits confirmés) ne
  * bloque pas la création. Point de reprise : une reprise ne refait ni ne repaie rien.
  */
-/** Publicités créées pendant la conception du projet (produit ou service). */
-export const PIPELINE_ADS = 3;
+/**
+ * Publicités de la création, puis banque du THÈME (15 images, vidéos libres de droits) : réservée au site, jamais
+ * reprise dans les publications ou les publicités. Un échec de la banque ne bloque jamais la création.
+ */
+async function adsAndThemeBank(ctx: JobContext, projectId: string): Promise<number> {
+  const ads = await pipelineAds(ctx, projectId);
+  await ctx
+    .step("theme-bank", async () => {
+      const { fillThemeBank, realThemeBankDeps } = await import("../media/theme-bank");
+      return fillThemeBank(ctx, loadProject(projectId), realThemeBankDeps());
+    })
+    .catch((e) => {
+      if (e instanceof JobPaused || e instanceof JobCancelled) throw e;
+      console.warn(`[pipeline] banque du thème incomplète : ${(e as Error).message}`);
+    });
+  return ads;
+}
 
+/** Publicités créées pendant la conception du projet sans IA (moteur publicitaire local, calques). */
+export const PIPELINE_ADS = 3;
+/** Publicités entièrement conçues par l'IA d'images (Qwen) à la création, forfaits avec IA (règle du propriétaire). */
+export const CREATION_AI_ADS = 5;
+const CREATION_AD_ASPECTS = ["4:5", "1:1", "9:16", "4:5", "16:9"] as const;
+
+/**
+ * 5 publicités entièrement par l'IA (Qwen) : produits ou services du projet à tour de rôle, formats variés, textes
+ * relus lettre par lettre (3 essais au plus). Une publicité refusée est remplacée par une publicité du studio (calques).
+ * Sans IA active : moteur publicitaire local (3 publicités). Point de reprise par publicité : rien de repayé.
+ */
 async function pipelineAds(ctx: JobContext, projectId: string): Promise<number> {
-  return ctx.step("ads-v2", async () => {
+  const fresh = loadProject(projectId);
+  const { aiActiveFor } = await import("../ai/access");
+  if (!aiActiveFor(fresh.userId, projectId)) return pipelineLayeredAds(ctx, projectId, PIPELINE_ADS);
+  const { subjectOptions } = await import("../creative-subject");
+  const { designPostWithAi, realAiPostDeps } = await import("../social-v2/ai-post");
+  const { aiPostEstimate } = await import("../social-v2/deps");
+  const subjects = subjectOptions(fresh);
+  let made = 0;
+  for (let k = 0; k < CREATION_AI_ADS; k++) {
+    const ok = await ctx.step(`ai-ad:${k}`, async () => {
+      ctx.progress(0.95, L(`Publicités par l'IA (${k + 1}/${CREATION_AI_ADS})`, `Ads by AI (${k + 1}/${CREATION_AI_ADS})`));
+      const s = subjects.length ? subjects[k % subjects.length] : null;
+      if (fresh.business !== "services" && s?.kind !== "service" && !s?.referenceAssetId) return false;
+      try {
+        const r = await designPostWithAi(fresh, { id: `creation-ad-${projectId.slice(0, 8)}-${k}`, network: "meta", format: "image", title: s?.name ?? fresh.product.name, caption: "", pillar: null, objective: "convert", headline: s?.name ?? fresh.product.name, scheduled_at: null, subject: s ? (s.kind === "service" ? { kind: "service", name: s.key } : { kind: "product", key: s.key }) : null }, { aspect: CREATION_AD_ASPECTS[k % CREATION_AD_ASPECTS.length], maxCostEur: aiPostEstimate() / 1e6, reference: s?.referenceAssetId ?? null, subject: s, as: "ad" }, realAiPostDeps({ userId: fresh.userId, projectId, jobId: ctx.job.id }));
+        return !!r.assetId;
+      } catch (e) {
+        if (e instanceof JobPaused || e instanceof JobCancelled) throw e;
+        console.warn(`[pipeline] publicité IA ${k + 1} non créée : ${(e as Error).message}`);
+        return false;
+      }
+    });
+    if (ok) made++;
+  }
+  // Publicités refusées (textes faux après 3 essais) : version du studio, à calques, pour en avoir 5 en tout.
+  if (made < CREATION_AI_ADS) made += await pipelineLayeredAds(ctx, projectId, CREATION_AI_ADS - made);
+  return made;
+}
+
+async function pipelineLayeredAds(ctx: JobContext, projectId: string, count: number): Promise<number> {
+  return ctx.step(count === PIPELINE_ADS ? "ads-v2" : `ads-v2:${count}`, async () => {
     ctx.progress(0.96, L("Publicités (moteur publicitaire)", "Ads (advertising engine)"));
     try {
       const { runAdEngineV2 } = await import("../ads-v2/engine");
       // 3 vraies publicités (3 concepts, 3 photos différentes ; les autres formats reprennent la même photo).
-      const r = await runAdEngineV2(ctx, projectId, { count: PIPELINE_ADS, maxCostEur: 1.5 });
+      const r = await runAdEngineV2(ctx, projectId, { count, maxCostEur: 1.5 });
       return r.outcomes.filter((o) => o.assetId).length;
     } catch (e) {
       if (e instanceof JobPaused || e instanceof JobCancelled) throw e;
@@ -454,8 +528,8 @@ async function pipelineVideo(ctx: JobContext, projectId: string, ask: { kind: "v
   return r.videoAssetId;
 }
 
-/** Publications de la création dont le visuel est entièrement fait par l'IA (forfaits avec IA). */
-export const FIRST_AI_POSTS = 3;
+/** Publications de la création dont le visuel est entièrement fait par l'IA (Qwen, forfaits avec IA) : 10. */
+export const FIRST_AI_POSTS = 10;
 
 /** Identifiant stable du calendrier de la création complète : une reprise retrouve le même, jamais un second. */
 export const creationPlanId = (projectId: string) => `creation-${projectId}`;
@@ -467,6 +541,45 @@ export const creationPlanId = (projectId: string) => `creation-${projectId}`;
  * « Suite de la création » ne crée jamais un second calendrier (ni celui d'un ancien projet qui en a déjà un).
  */
 export async function startWeekCalendar(ctx: JobContext, projectId: string, _idempotencyKey?: string) {
+  const planId = await creationCalendar(ctx, projectId);
+  await creationExtraPosts(ctx, projectId, planId);
+  return planId;
+}
+
+/**
+ * Calendrier plus court que 10 publications en image (forfait Créer : 7 jours, ou réels dans le calendrier) : les
+ * publications IA manquantes sont créées quand même (produits ou services à tour de rôle) et rangées avec les
+ * publications, prêtes à être programmées. Une par point de reprise : rien n'est refait ni repayé.
+ */
+async function creationExtraPosts(ctx: JobContext, projectId: string, planId: string) {
+  const fresh = loadProject(projectId);
+  const { aiActiveFor } = await import("../ai/access");
+  if (!aiActiveFor(fresh.userId, projectId)) return;
+  const { aiImageIds } = await import("../social-v2/production");
+  const rows = all<{ id: string; format: string }>("SELECT id, format FROM posts WHERE plan_id = ? ORDER BY scheduled_at", planId);
+  const missing = FIRST_AI_POSTS - aiImageIds(rows, FIRST_AI_POSTS).size;
+  if (missing <= 0) return;
+  const { subjectOptions } = await import("../creative-subject");
+  const { designPostWithAi, realAiPostDeps } = await import("../social-v2/ai-post");
+  const { aiPostEstimate } = await import("../social-v2/deps");
+  const subjects = subjectOptions(fresh);
+  for (let k = 0; k < missing; k++) {
+    await ctx.step(`creation-extra-post:${k}`, async () => {
+      const s = subjects.length ? subjects[(rows.length + k) % subjects.length] : null;
+      if (fresh.business !== "services" && s?.kind !== "service" && !s?.referenceAssetId) return null;
+      try {
+        const r = await designPostWithAi(fresh, { id: `creation-post-${projectId.slice(0, 8)}-${k}`, network: "instagram", format: "image", title: s?.name ?? fresh.product.name, caption: "", pillar: null, objective: null, headline: s?.name ?? fresh.product.name, scheduled_at: null, subject: s ? (s.kind === "service" ? { kind: "service", name: s.key } : { kind: "product", key: s.key }) : null }, { aspect: k % 2 ? "1:1" : "4:5", maxCostEur: aiPostEstimate() / 1e6, reference: s?.referenceAssetId ?? null, subject: s }, realAiPostDeps({ userId: fresh.userId, projectId, jobId: ctx.job.id }));
+        return r.assetId;
+      } catch (e) {
+        if (e instanceof JobPaused || e instanceof JobCancelled) throw e;
+        console.warn(`[pipeline] publication IA en plus non créée : ${(e as Error).message}`);
+        return null;
+      }
+    });
+  }
+}
+
+async function creationCalendar(ctx: JobContext, projectId: string): Promise<string> {
   return await ctx.step("plan", async () => {
     const planId = creationPlanId(projectId);
     if (one("SELECT 1 FROM content_plans WHERE id = ? AND project_id = ?", planId, projectId)) return planId;
@@ -477,16 +590,25 @@ export async function startWeekCalendar(ctx: JobContext, projectId: string, _ide
     const { produceBatch, postsOfPlan } = await import("../social-v2/production");
     const { realSocialDeps } = await import("../social-v2/deps");
     const fresh = loadProject(projectId);
-    planFromAsk(fresh, "7 jours, 1 publication par jour", { planId, lang: fresh.settings.language === "en" ? "en" : "fr" });
-    // Forfait avec IA : les 3 premières publications en image ont un visuel entièrement créé par l'IA (le vrai
-    // produit en référence), dans un plafond calculé d'avance ; le client en change ensuite le format à volonté.
-    // Forfait Découverte (0 € d'IA) : tout reste local.
+    // Jusqu'à 10 jours (une publication par jour), dans la limite du calendrier du forfait (Créer : 7 jours).
+    const { projectRights } = await import("../plan-gates");
+    const days = Math.max(1, Math.min(FIRST_AI_POSTS, projectRights(projectId)?.calendarDays ?? 7));
+    planFromAsk(fresh, `${days} jours, 1 publication par jour`, { planId, lang: fresh.settings.language === "en" ? "en" : "fr" });
+    // Produits ou services du projet à tour de rôle : chaque publication travaille un sujet précis (sa photo, ses infos).
+    const { subjectOptions } = await import("../creative-subject");
+    const subjects = subjectOptions(fresh);
+    if (subjects.length) postsOfPlan(planId).forEach((id, k) => {
+      const s = subjects[k % subjects.length];
+      run(`UPDATE posts SET brief = json_set(COALESCE(brief, '{}'), '$.subject', json(?)) WHERE id = ?`, JSON.stringify(s.kind === "service" ? { kind: "service", name: s.key } : { kind: "product", key: s.key }), id);
+    });
+    // Forfait avec IA : 10 publications en image entièrement créées par l'IA (Qwen, le vrai produit en référence),
+    // dans un plafond calculé d'avance (3 essais au plus chacune). Forfait Découverte (0 € d'IA) : tout reste local.
     const { aiActiveFor } = await import("../ai/access");
     const ai = aiActiveFor(fresh.userId, projectId);
     const deps = realSocialDeps(ctx, fresh, ai);
-    const capMicro = ai ? FIRST_AI_POSTS * deps.estimate("image") : 0;
+    const capMicro = ai ? FIRST_AI_POSTS * deps.estimate("ai_post") : 0;
     await produceBatch(fresh, postsOfPlan(planId), deps, { allowPaid: ai, maxCostEur: capMicro / 1e6, approvedEstimateMicro: ai ? capMicro : null, batchSize: 50, aiImages: ai ? FIRST_AI_POSTS : 0 });
-    remember(projectId, { kind: "artifact", key: "social_plan_v2", value: JSON.stringify({ planId, days: 7, origin: "creation" }), source: "local" });
+    remember(projectId, { kind: "artifact", key: "social_plan_v2", value: JSON.stringify({ planId, days, origin: "creation" }), source: "local" });
     return planId;
   });
 }

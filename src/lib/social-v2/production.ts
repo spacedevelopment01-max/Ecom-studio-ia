@@ -33,6 +33,8 @@ function libraryPool(projectId: string, kind: "image" | "video"): Asset[] {
         AND COALESCE(a.role, '') NOT IN ('logo','cutout','subtitles','video-poster','screenshot','favicon','ad')
         -- Visuels publicitaires (Publicités) : jamais repris pour une publication organique.
         AND NOT (a.kind = 'video' AND (COALESCE(json_extract(a.meta, '$.videoV2.intent'), '') IN ('video_ad','ugc') OR COALESCE(json_extract(a.meta, '$.kind'), '') = 'ugc'))
+        -- Banque du thème (images libres de droits, vidéos du site) : jamais reprise dans une publication.
+        AND json_extract(a.meta, '$.bank') IS NULL AND NOT (a.kind = 'image' AND json_extract(a.meta, '$.stock') IS NOT NULL)
       ORDER BY uses ASC, a.created_at DESC LIMIT 60`,
     projectId,
     kind,

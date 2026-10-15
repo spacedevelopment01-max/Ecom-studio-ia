@@ -32,7 +32,7 @@ describe("Publications : le vrai produit reste visible sans détourage", async (
   const { run } = await import("@/lib/db");
   const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
 
-  it("au moins une publication sur trois (attendu : une sur deux) a le produit en fond, jamais toutes des paysages", async () => {
+  it("le vrai produit en fond de chaque publication (plus jamais un paysage libre de droits : réservés au thème)", async () => {
     const u = await createUser(`prodvis${Date.now()}@test.fr`, "motdepasse-test", "P");
     const pid = await seedThemeScenario(u.id, "cosmetic");
     grantProjectPlan(pid, "vendre");
@@ -56,7 +56,7 @@ describe("Publications : le vrai produit reste visible sans détourage", async (
       // Fond = une vraie photo du produit (photo d'origine, packshot, mise en scène), pas une photo libre.
       if (a && ["original", "packshot", "scene", "lifestyle", "detail"].includes(a.role ?? "") && !assetMeta<any>(a).stock) withProduct++;
     }
-    expect(withProduct).toBeGreaterThanOrEqual(Math.ceil(N / 3));
-    expect(withProduct).toBeLessThan(N);
+    // Règle du propriétaire : les photos libres de droits ne servent qu'au thème ; le fond est toujours une photo du projet.
+    expect(withProduct).toBe(N);
   }, 120_000);
 });

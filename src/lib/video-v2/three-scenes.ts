@@ -219,7 +219,7 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
     if (!refBuf) throw new UserFacingError(L("Ajoutez d'abord une photo de ce produit : la vidéo part de votre vrai produit, l'IA ne l'invente pas.", "Add a photo of this product first: the video starts from your real product, the AI never invents it."));
     for (const [k, scene] of plan.scenes.entries()) {
       ctx?.progress(0.1 + k * 0.28, L(`Scène ${k + 1} : image puis mouvement (Wan 2.6)`, `Scene ${k + 1}: image then motion (Wan 2.6)`));
-      const clipId = await step(`scene-${k}`, async () => {
+      const clipId = await step(`${key}:scene-${k}`, async () => {
         const still = await deps.keyframe(keyframePrompt(p, s, scene, aspect, true), aspect, refBuf, `${key}:still:${k}`);
         const stillAsset = await saveAsset({ projectId, userId: p.userId, data: still, name: `scene-${k + 1}-image.png`, mime: "image/png", role: "scene", folderKey: "videos.ads", origin: "generated", status: "ready", meta: { scenes: { key, index: k, prompt: scene.still }, recipe: "Image de départ d'une scène vidéo (IA d'images, produit réel en référence)" } });
         const mp4 = await deps.clip(still, motionPrompt(scene), aspect, timing.clipS, `${key}:clip:${k}`);
@@ -232,7 +232,7 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
     const exclude = new Set<string>();
     for (const [k, scene] of plan.scenes.entries()) {
       ctx?.progress(0.1 + k * 0.25, L(`Scène ${k + 1} : plan libre de droits lié au métier`, `Scene ${k + 1}: royalty-free shot linked to the trade`));
-      const found = await step(`stock-${k}`, () => deps.stock(p, k, `${s?.name ?? ""} ${scene.still}`.slice(0, 200), aspect, timing.showS, exclude, `${key}:stock:${k}`));
+      const found = await step(`${key}:stock-${k}`, () => deps.stock(p, k, `${s?.name ?? ""} ${scene.still}`.slice(0, 200), aspect, timing.showS, exclude, `${key}:stock:${k}`));
       if (found) {
         exclude.add(found.assetId);
         clips.push({ ...found, generated: false });

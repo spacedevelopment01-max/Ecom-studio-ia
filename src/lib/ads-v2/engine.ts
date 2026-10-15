@@ -330,7 +330,7 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
       const textZone = textZoneFor(toAdLayout(layout), fmt[0], fmt[1]);
       const topic = [concept.visual.subject, copy.visual].filter(Boolean).join(" — ").slice(0, 300);
       const dir = concept.direction;
-      const common = { support: "ad" as const, aspect, topic, variant: variant || null, allowGenerate: true, ...(deps.canGenerate ? { noStock: true } : {}), name: `pub-${concept.angle.type}`, maxControls: 3, textZone: dir?.textZone ?? textZone, ...(dir ? { shot: dir.shot } : {}) };
+      const common = { support: "ad" as const, aspect, topic, variant: variant || null, allowGenerate: true, noStock: true /* règle du propriétaire : jamais une photo libre de droits dans une publicité */, name: `pub-${concept.angle.type}`, maxControls: 3, textZone: dir?.textZone ?? textZone, ...(dir ? { shot: dir.shot } : {}) };
       // Produit : d'abord une vraie mise en scène publicitaire AVEC le produit réel (photo de référence, pixels
       // d'origine remis par-dessus) ; à défaut, un décor d'univers et le détourage posé par la composition.
       let got: { assetId: string; data: Buffer; withProduct: boolean } | null = null;

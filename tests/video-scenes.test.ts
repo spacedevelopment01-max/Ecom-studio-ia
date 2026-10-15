@@ -107,4 +107,13 @@ describe("Vidéo en scènes", async () => {
     expect(doc.width).toBeGreaterThan(doc.height);
     expect(keyframePrompt(p, null, plan.scenes[0], "16:9", false)).toContain("horizontal");
   });
+
+  it("Wan 2.6 Flash demandé en 1080P SANS son (tarif « no audio »), un seul plan continu ; les autres modèles restent en 720P", async () => {
+    const { wanVideoBody } = await import("@/lib/ai/alibaba");
+    const flash = wanVideoBody({ model: "wan2.6-i2v-flash", prompt: "p", image: "data:x", seconds: 5, people: false });
+    expect(flash.parameters).toMatchObject({ resolution: "1080P", audio: false, shot_type: "single", duration: 5 });
+    const other = wanVideoBody({ model: "wan2.7-i2v", prompt: "p", image: "data:x", seconds: 5, people: false });
+    expect(other.parameters).toMatchObject({ resolution: "720P" });
+    expect((other.parameters as Record<string, unknown>).audio).toBeUndefined();
+  });
 });

@@ -29,7 +29,7 @@ describe("Publications entièrement faites par l'IA (création du projet)", asyn
     return { p, ids: postsOfPlan(r.planId) };
   }
 
-  it("3 publications par l'IA à la création", () => expect(FIRST_AI_POSTS).toBe(3));
+  it("10 publications par l'IA (Qwen) à la création (règle du propriétaire)", () => expect(FIRST_AI_POSTS).toBe(10));
 
   it("les 3 premières publications en image : visuel IA (payant, plafonné) ; les autres gratuites", async () => {
     const { p, ids } = await project();
