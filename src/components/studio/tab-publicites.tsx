@@ -1,277 +1,220 @@
 "use client";
-import { AiWait } from "../wait-time";
-import { useState } from "react";
-import { Download, Megaphone, Plus, Send, Trash2, Wand2 } from "lucide-react";
-import { api, Badge, Button, Card, Empty, Field, Input, Modal, Select, Textarea, useApi, useToast } from "../ui";
+/**
+ * Onglet Publicités, organisé comme Publications : sous-menu à gauche (Piloter / Créer / Gérer).
+ * Les visuels PUBLICITAIRES (créations « ad », publicités vidéo, UGC) vivent ici et seulement ici : ils ne sont jamais
+ * repris pour une publication organique, et la banque d'images reste neutre. Aucune dépense publicitaire n'est
+ * engagée depuis le studio : budget et lancement se règlent dans le gestionnaire de chaque réseau.
+ */
+import { useEffect, useState } from "react";
+import { BarChart3, Clapperboard, Download, FolderOpen, Gauge, ImageIcon, Megaphone, Target } from "lucide-react";
+import { Badge, Button, Card, cx, Empty, Select, useApi } from "../ui";
 import { useProject } from "./project-context";
-import { AssetThumb, MediaPicker, type AssetView } from "./common";
-import { NETWORKS } from "./post-editor";
+import { StatusBadge, type AssetView } from "./common";
+import { AssetViewer } from "./asset-viewer";
 import { useT } from "../i18n";
-import { ContentLangPicker } from "./content-lang";
-import { pick, type Lang } from "@/lib/i18n";
 import { AdCreatives } from "./ad-editor/ad-creatives";
+import { VideoV2Panel } from "./video-v2-panel";
+import { CampaignsPanel, StrategyPanel, type Campaign } from "./ad-campaigns";
+import { isAdVisual } from "@/lib/media/bank";
 
-type Ad = { angle: string; primary: string; headline: string; cta: string; hook?: string; description?: string; visual?: string; lever?: string; media: AssetView[] };
-/** Plan de test proposé avec les annonces (src/lib/engine/ads.ts) : rédigé pour le marchand, aucun résultat promis. */
-type AdStrategy = {
-  summary: string;
-  audiences: { name: string; who: string; signals: string; why: string }[];
-  structure: string[];
-  budget: { daily: string; duration: string; total: string; rule: string; note: string };
-  tests: { variable: string; hypothesis: string }[];
-  kpis: string[];
-  hooks: { text: string; visual: string; lever: string }[];
-  quality?: { score: number; rounds: number; passed: boolean; remaining: string[] };
-  by: "ai" | "local";
-};
-type Campaign = { id: string; name: string; objective: string; networks: string[]; status: string; brief: { audience?: string; budgetNote?: string; kpis?: string; language?: Lang }; plan: { ads?: Ad[]; strategy?: AdStrategy }; posts: { id: string; network: string; status: string }[] };
-
-/** Objectifs : la valeur enregistrée reste le libellé français (campagnes existantes), affichée selon la langue. */
-const OBJECTIVES: [string, string][] = [
-  ["Notoriété", "Awareness"],
-  ["Trafic vers la boutique", "Store traffic"],
-  ["Ventes", "Sales"],
-  ["Interactions", "Engagement"],
-  ["Lancement de produit", "Product launch"],
-];
-/** Boutons d'appel à l'action selon la langue de la campagne (même ordre ; identique à src/lib/engine/ads.ts). */
-const CTAS: Record<Lang, string[]> = {
-  fr: ["Découvrir", "Acheter", "En savoir plus", "Voir le produit", "S'inscrire"],
-  en: ["Discover", "Shop now", "Learn more", "View product", "Sign up"],
-};
-/** Entreprises de services : objectifs et boutons de prise de contact (identiques à src/lib/engine/ads.ts). */
-const SERVICE_OBJECTIVES: [string, string][] = [
-  ["Prises de rendez-vous", "Appointments"],
-  ["Demandes de devis", "Quote requests"],
-  ["Appels", "Calls"],
-  ["Notoriété", "Awareness"],
-  ["Interactions", "Engagement"],
-];
-const SERVICE_CTAS: Record<Lang, string[]> = {
-  fr: ["Prendre rendez-vous", "Demander un devis", "Appeler", "En savoir plus", "Nous contacter"],
-  en: ["Book now", "Get a quote", "Call now", "Learn more", "Contact us"],
-};
-const objectiveIn = (o: string, lang: Lang) => pick(lang, o, [...OBJECTIVES, ...SERVICE_OBJECTIVES].find(([fr]) => fr === o)?.[1] ?? o);
-/** Bouton équivalent dans l'autre langue (même position dans la liste). */
-const ctaIn = (cta: string, lang: Lang) => {
-  for (const list of [CTAS, SERVICE_CTAS]) {
-    const i = Math.max(list.fr.indexOf(cta), list.en.indexOf(cta));
-    if (i >= 0) return list[lang][i];
-  }
-  return cta;
-};
+const SECTIONS = [
+  ["vue", "Vue d'ensemble", "Overview", Gauge, "piloter"],
+  ["strategie", "Stratégie publicitaire", "Ad strategy", Target, "piloter"],
+  ["image", "Publicité image", "Image ad", ImageIcon, "creer"],
+  ["video", "Publicité vidéo", "Video ad", Clapperboard, "creer"],
+  ["campagnes", "Campagnes", "Campaigns", Megaphone, "gerer"],
+  ["bibliotheque", "Visuels publicitaires", "Ad visuals", FolderOpen, "gerer"],
+] as const;
+type Section = (typeof SECTIONS)[number][0];
+const GROUPS = [
+  ["piloter", "Piloter", "Steer"],
+  ["creer", "Créer", "Create"],
+  ["gerer", "Gérer", "Manage"],
+] as const;
 
 export default function TabPublicites() {
-  const { id, data } = useProject();
-  const toast = useToast();
+  const { id } = useProject();
   const t = useT();
-  const projectLang: Lang = data?.settings.language ?? "fr";
-  const svc = data?.business === "services";
-  const ctaList = svc ? SERVICE_CTAS : CTAS;
-  const objectives = svc ? SERVICE_OBJECTIVES : OBJECTIVES;
-  const mainCta = (lang: Lang) => ctaList[lang][svc ? ({ booking: 0, quote: 1, call: 2, form: 4 } as const)[data?.services?.contactMode ?? "form"] ?? 4 : 0];
-  const { data: list, reload } = useApi<{ campaigns: Campaign[] }>(`/api/projects/${id}/campaigns`);
-  const remove = async (c: Campaign) => {
-    const posts = c.posts.length ? t(` Ses ${c.posts.length} publication(s) sont gardées.`, ` Its ${c.posts.length} post(s) are kept.`) : "";
-    if (!window.confirm(t(`Supprimer la campagne « ${c.name} » ?`, `Delete the “${c.name}” campaign?`) + posts)) return;
-    await api(`/api/projects/${id}/campaigns`, { method: "DELETE", body: { id: c.id } });
-    toast("ok", t("Campagne supprimée.", "Campaign deleted."));
-    reload();
-  };
-  const [edit, setEdit] = useState<Campaign | null>(null);
-  const [picker, setPicker] = useState<number | null>(null);
-  const [drafting, setDrafting] = useState(false);
-  const langOf = (c: Campaign): Lang => c.brief.language ?? projectLang;
-  const blank = (): Campaign => ({
-    id: "",
-    name: `${t("Lancement", "Launch")} · ${data?.brand?.name ?? data?.project.name ?? ""}`,
-    objective: svc ? (data?.services?.contactMode === "quote" ? "Demandes de devis" : data?.services?.contactMode === "call" ? "Appels" : "Prises de rendez-vous") : "Trafic vers la boutique",
-    networks: ["instagram", "facebook"],
-    status: "draft",
-    brief: { audience: data?.brand?.audience ?? "", budgetNote: "", kpis: svc ? t("Taux de clic, coût par contact, demandes reçues (rendez-vous, devis, appels)", "Click-through rate, cost per lead, requests received (bookings, quotes, calls)") : t("Taux de clic, coût par clic, ajouts au panier", "Click-through rate, cost per click, add-to-carts"), language: projectLang },
-    plan: { ads: (data?.strategy?.angles ?? [{ title: svc ? pick(projectLang, "Nos prestations", "Our services") : pick(projectLang, "Le produit", "The product"), idea: "" }]).slice(0, 3).map((a) => ({ angle: a.title, primary: a.idea, headline: data?.brand?.tagline ?? "", cta: mainCta(projectLang), media: [] })) },
-    posts: [],
-  });
-  const save = async (c: Campaign) => {
+  const [section, setSection] = useState<Section>("vue");
+  const [newCampaign, setNewCampaign] = useState(false);
+  // Lien direct vers une rubrique (#image, #campagnes…), y compris quand seul le lien change.
+  useEffect(() => {
+    const read = () => {
+      const h = window.location.hash.slice(1) as Section;
+      if (SECTIONS.some((x) => x[0] === h)) setSection(h);
+    };
+    read();
+    window.addEventListener("hashchange", read);
+    return () => window.removeEventListener("hashchange", read);
+  }, []);
+  const go = (x: Section, o: { newCampaign?: boolean } = {}) => {
+    setNewCampaign(!!o.newCampaign);
+    setSection(x);
     try {
-      const r = await api<{ id: string }>(`/api/projects/${id}/campaigns`, { body: { id: c.id || undefined, name: c.name, objective: c.objective, networks: c.networks, brief: { ...c.brief, language: langOf(c) }, plan: { ...c.plan, ads: (c.plan.ads ?? []).map((a) => ({ ...a, media: a.media.map((m) => ({ id: m.id, name: m.name, url: m.url, thumbUrl: m.thumbUrl, kind: m.kind, meta: { format: m.meta?.format } })) })) }, status: c.status } });
-      toast("ok", t("Campagne enregistrée.", "Campaign saved."));
-      reload();
-      return r.id;
-    } catch (e) {
-      toast("bad", (e as Error).message);
-    }
+      history.replaceState(null, "", `#${x}`);
+    } catch {}
   };
-  const toPosts = async (c: Campaign) => {
-    const cid = await save(c);
-    if (!cid) return;
-    let n = 0;
-    for (const ad of c.plan.ads ?? []) for (const net of c.networks) {
-      await api(`/api/projects/${id}/posts`, { body: { network: net, format: ad.media[0]?.kind === "video" ? (net === "youtube" ? "short" : "reel") : net === "pinterest" ? "pin" : "image", title: ad.headline, caption: `${ad.primary}\n\n${ad.cta}`, media: ad.media.map((m) => m.id), campaignId: cid }, lang: langOf(c) });
-      n++;
-    }
-    toast("ok", t(`${n} publication(s) créée(s) en brouillon dans l'espace Publications.`, `${n} post(s) created as drafts in the Posts area.`));
-    reload();
-  };
-  const exportCsv = (c: Campaign) => {
-    const lang = langOf(c);
-    const esc = (v: string) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-    const rows = [pick(lang, ["Campagne", "Objectif", "Réseau", "Angle", "Accroche (3 s)", "Texte principal", "Titre", "Description", "Bouton", "Création", "Médias"], ["Campaign", "Objective", "Network", "Angle", "Hook (3 s)", "Primary text", "Headline", "Description", "Call to action", "Creative", "Media"]).join(",")];
-    for (const ad of c.plan.ads ?? []) for (const net of c.networks) rows.push([c.name, objectiveIn(c.objective, lang), NETWORKS[net]?.label ?? net, ad.angle, ad.hook ?? "", ad.primary, ad.headline, ad.description ?? "", ad.cta, ad.visual ?? "", ad.media.map((m) => m.name).join(" ")].map(esc).join(","));
-    const url = URL.createObjectURL(new Blob(["﻿" + rows.join("\n")], { type: "text/csv;charset=utf-8" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${c.name.replace(/[^\p{L}\p{N}]+/gu, "-")}-${pick(lang, "annonces", "ads")}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-  /** Langue de la campagne : les boutons passent dans la langue choisie ; les textes se proposent avec « Proposer les annonces… ». */
-  const setLanguage = (c: Campaign, lang: Lang) => setEdit({ ...c, brief: { ...c.brief, language: lang }, plan: { ...c.plan, ads: (c.plan.ads ?? []).map((a) => ({ ...a, cta: ctaIn(a.cta, lang) })) } });
-  const draft = async (c: Campaign) => {
-    const lang = langOf(c);
-    const current = c.plan.ads ?? [];
-    setDrafting(true);
-    try {
-      const r = await api<{ ads: Omit<Ad, "media">[]; by: "ai" | "local"; strategy?: AdStrategy }>(`/api/projects/${id}/campaigns/draft`, { body: { count: Math.max(1, Math.min(6, current.length || 3)), objective: objectiveIn(c.objective, lang), audience: c.brief.audience || undefined, networks: c.networks }, lang });
-      // Les créations déjà choisies restent attachées aux annonces (même position).
-      setEdit((e) => e && { ...e, plan: { ...e.plan, strategy: r.strategy ?? e.plan.strategy, ads: r.ads.map((a, i) => ({ ...a, media: current[i]?.media ?? [] })) } });
-      toast("ok", r.by === "ai" ? t("Annonces proposées : relisez-les avant d'enregistrer.", "Ads drafted: review them before saving.") : (svc ? t("Annonces proposées à partir de vos prestations (version simplifiée) : complétez les passages entre crochets.", "Ads drafted from your services (simplified version): fill in the bracketed parts.") : t("Annonces proposées à partir des faits du produit (version simplifiée) : complétez les passages entre crochets.", "Ads drafted from the product facts (simplified version): fill in the bracketed parts.")));
-    } catch (e) {
-      toast("bad", (e as Error).message);
-    } finally {
-      setDrafting(false);
-    }
-  };
-  const editLang = edit ? langOf(edit) : projectLang;
-  const ctaOptions = (cur: string) => (ctaList[editLang].includes(cur) || !cur ? ctaList[editLang] : [cur, ...ctaList[editLang]]);
+  const { data: files, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=ad,video`);
+  const { data: camps } = useApi<{ campaigns: Campaign[] }>(`/api/projects/${id}/campaigns`);
+  const adVisuals = (files?.assets ?? []).filter((a) => isAdVisual(a) && !a.name.includes("refusee"));
+  const counts = { images: adVisuals.filter((a) => a.kind === "image").length, videos: adVisuals.filter((a) => a.kind === "video").length, campaigns: camps?.campaigns.length ?? 0 };
   return (
-    <div className="mx-auto grid max-w-6xl gap-6">
-      <div className="rounded-2xl border border-line bg-card p-4 text-sm text-ink-2">
-        {t("Le studio prépare vos campagnes : angles, audiences, textes et créations aux bons formats.", "The studio prepares your campaigns: angles, audiences, copy and creatives in the right formats.")} <strong className="text-ink">{t("Aucune dépense publicitaire n'est engagée depuis le studio", "No ad spend is committed from the studio")}</strong>{t(" : le budget et le lancement se règlent dans le gestionnaire de publicités de chaque réseau, avec l'export ci-dessous.", ": budget and launch are set in each network's ads manager, using the export below.")}
-      </div>
-      <AdCreatives />
-      <h2 className="font-display text-2xl font-semibold">{t("Campagnes", "Campaigns")}</h2>
-      <div className="flex justify-end"><Button variant="signal" icon={<Plus className="size-4" />} onClick={() => setEdit(blank())}>{t("Nouvelle campagne", "New campaign")}</Button></div>
-      {(list?.campaigns ?? []).length === 0 ? (
-        <Empty title={t("Aucune campagne", "No campaigns")} icon={<Megaphone className="size-5" />}>{t("Créez une campagne : les angles de votre stratégie de marque sont proposés comme point de départ.", "Create a campaign: the angles from your brand strategy are suggested as a starting point.")}</Empty>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2">
-          {list!.campaigns.map((c) => (
-            <Card key={c.id} className="p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-display text-xl font-semibold">{c.name}</p>
-                  <p className="text-sm text-muted">{t(c.objective, objectiveIn(c.objective, "en"))} · {c.networks.map((n) => NETWORKS[n]?.label).join(", ")} · {langOf(c).toUpperCase()}</p>
-                </div>
-                <Badge tone={c.status === "ready" ? "ok" : "neutral"}>{c.status === "ready" ? t("Prête", "Ready") : t("Brouillon", "Draft")}</Badge>
-              </div>
-              <div className="mt-4 flex gap-2">
-                {(c.plan.ads ?? []).flatMap((a) => a.media).slice(0, 5).map((m, i) => <img key={i} src={m.thumbUrl ?? m.url} alt="" className="size-14 rounded-xl object-cover" />)}
-              </div>
-              <p className="mt-3 text-xs text-muted">{t(`${(c.plan.ads ?? []).length} annonce(s) · ${c.posts.length} publication(s) liée(s)`, `${(c.plan.ads ?? []).length} ad(s) · ${c.posts.length} linked post(s)`)}</p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Button size="sm" variant="secondary" onClick={() => setEdit(c)}>{t("Ouvrir", "Open")}</Button>
-                <Button size="sm" variant="ghost" icon={<Trash2 className="size-4" />} onClick={() => remove(c)}>{t("Supprimer", "Delete")}</Button>
-                <Button size="sm" variant="ghost" icon={<Download className="size-3.5" />} onClick={() => exportCsv(c)}>{t("Export pour le gestionnaire de publicités", "Export for the ads manager")}</Button>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
-      {edit && (
-        <Modal open onClose={() => setEdit(null)} title={edit.id ? t("Campagne", "Campaign") : t("Nouvelle campagne", "New campaign")} wide>
-          <div className="grid gap-4">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Field label={t("Nom", "Name")} htmlFor="cname"><Input id="cname" value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} /></Field>
-              <Field label={t("Objectif", "Objective")} htmlFor="cobj"><Select id="cobj" value={edit.objective} onChange={(e) => setEdit({ ...edit, objective: e.target.value })}>{(objectives.some(([fr]) => fr === edit.objective) ? objectives : [[edit.objective, edit.objective] as [string, string], ...objectives]).map(([fr, en]) => <option key={fr} value={fr}>{t(fr, en)}</option>)}</Select></Field>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              {Object.keys(NETWORKS).map((n) => (
-                <label key={n} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={edit.networks.includes(n)} onChange={(e) => setEdit({ ...edit, networks: e.target.checked ? [...edit.networks, n] : edit.networks.filter((x) => x !== n) })} className="size-4 accent-[var(--signal)]" /> {NETWORKS[n].label}</label>
-              ))}
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Field label={t("Audience", "Audience")} htmlFor="caud"><Textarea id="caud" rows={2} value={edit.brief.audience ?? ""} onChange={(e) => setEdit({ ...edit, brief: { ...edit.brief, audience: e.target.value } })} /></Field>
-              <Field label={t("Indicateurs suivis", "Tracked metrics")} htmlFor="ckpi"><Textarea id="ckpi" rows={2} value={edit.brief.kpis ?? ""} onChange={(e) => setEdit({ ...edit, brief: { ...edit.brief, kpis: e.target.value } })} /></Field>
-            </div>
-            <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-paper-2 p-3">
-              <ContentLangPicker lang={editLang} setLang={(l) => setLanguage(edit, l)} projectLang={projectLang} />
-              <Button size="sm" variant="secondary" icon={<Wand2 className="size-3.5" />} loading={drafting} onClick={() => draft(edit)}>{t("Proposer les annonces dans cette langue", "Draft ads in this language")}</Button>
-              <AiWait busy={drafting} label={t("Rédaction des annonces…", "Writing the ads…")} waitKey="ads-draft" expectedMs={30000} className="w-full" />
-              <p className="w-full text-[11px] text-muted">{t("Annonces, boutons, export et publications de cette campagne sont dans cette langue, même si le reste du projet est dans une autre.", "This campaign's ads, buttons, export and posts use this language, even if the rest of the project uses another.")}</p>
-            </div>
-            {edit.plan.strategy && <StrategyPanel s={edit.plan.strategy} />}
-            <p className="text-sm font-medium">{t("Annonces", "Ads")}</p>
-            {(edit.plan.ads ?? []).map((ad, i) => (
-              <Card key={i} className="grid gap-3 p-4 sm:grid-cols-[1fr_200px]">
-                <div className="grid gap-2" lang={editLang}>
-                  <Input value={ad.angle} onChange={(e) => { const ads = [...edit.plan.ads!]; ads[i] = { ...ad, angle: e.target.value }; setEdit({ ...edit, plan: { ...edit.plan, ads } }); }} placeholder={t("Angle", "Angle")} aria-label={t("Angle", "Angle")} />
-                  <Input value={ad.hook ?? ""} onChange={(e) => { const ads = [...edit.plan.ads!]; ads[i] = { ...ad, hook: e.target.value }; setEdit({ ...edit, plan: { ...edit.plan, ads } }); }} placeholder={t("Accroche des 3 premières secondes (10 mots au plus)", "Hook for the first 3 seconds (10 words max)")} aria-label={t("Accroche", "Hook")} />
-                  <Textarea rows={3} value={ad.primary} onChange={(e) => { const ads = [...edit.plan.ads!]; ads[i] = { ...ad, primary: e.target.value }; setEdit({ ...edit, plan: { ...edit.plan, ads } }); }} placeholder={t("Texte principal (faits confirmés uniquement)", "Primary text (confirmed facts only)")} aria-label={t("Texte principal", "Primary text")} />
-                  <div className="grid gap-2 sm:grid-cols-[1fr_1fr_160px]">
-                    <Input value={ad.headline} onChange={(e) => { const ads = [...edit.plan.ads!]; ads[i] = { ...ad, headline: e.target.value }; setEdit({ ...edit, plan: { ...edit.plan, ads } }); }} placeholder={t("Titre", "Headline")} aria-label={t("Titre", "Headline")} />
-                    <Input value={ad.description ?? ""} maxLength={60} onChange={(e) => { const ads = [...edit.plan.ads!]; ads[i] = { ...ad, description: e.target.value }; setEdit({ ...edit, plan: { ...edit.plan, ads } }); }} placeholder={t("Description (30 caractères)", "Description (30 characters)")} aria-label={t("Description", "Description")} />
-                    <Select value={ad.cta} onChange={(e) => { const ads = [...edit.plan.ads!]; ads[i] = { ...ad, cta: e.target.value }; setEdit({ ...edit, plan: { ...edit.plan, ads } }); }} aria-label={t("Bouton", "Call to action")}>{ctaOptions(ad.cta).map((c) => <option key={c}>{c}</option>)}</Select>
-                  </div>
-                  {ad.visual && <p className="text-xs text-muted">{t("Création conseillée : ", "Suggested creative: ")}{ad.visual}</p>}
-                </div>
-                <div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {ad.media.map((m) => <AssetThumb key={m.id} a={m} className="size-14 rounded-xl" />)}
-                    <button onClick={() => setPicker(i)} className="grid size-14 place-items-center rounded-xl border border-dashed border-line" aria-label={t("Choisir des créations", "Choose creatives")}><Plus className="size-4" /></button>
-                  </div>
-                  <button onClick={() => setEdit({ ...edit, plan: { ...edit.plan, ads: edit.plan.ads!.filter((_, k) => k !== i) } })} className="mt-2 inline-flex items-center gap-1 text-xs text-muted"><Trash2 className="size-3" /> {t("Retirer l'annonce", "Remove ad")}</button>
-                </div>
-              </Card>
+    <div className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-5 lg:grid-cols-[240px_minmax(0,1fr)]" data-ads-studio>
+      <aside className="min-w-0 lg:sticky lg:top-24 lg:h-max" data-ads-subnav>
+        <Card className="p-3">
+          <Select aria-label={t("Rubrique", "Section")} value={section} onChange={(e) => go(e.target.value as Section)} className="lg:hidden">
+            {GROUPS.map(([g, gfr, gen]) => (
+              <optgroup key={g} label={t(gfr, gen)}>
+                {SECTIONS.filter((x) => x[4] === g).map(([key, frl, enl]) => <option key={key} value={key}>{t(frl, enl)}</option>)}
+              </optgroup>
             ))}
-            <Button variant="ghost" size="sm" icon={<Plus className="size-4" />} onClick={() => setEdit({ ...edit, plan: { ...edit.plan, ads: [...(edit.plan.ads ?? []), { angle: "", primary: "", headline: "", cta: mainCta(editLang), media: [] }] } })} className="justify-self-start">{t("Ajouter une annonce", "Add an ad")}</Button>
-            <div className="flex flex-wrap gap-2 border-t border-line pt-4">
-              <Button onClick={async () => { await save(edit); setEdit(null); }}>{t("Enregistrer", "Save")}</Button>
-              <Button variant="secondary" icon={<Send className="size-4" />} onClick={async () => { await toPosts(edit); setEdit(null); }}>{t("Créer les publications organiques", "Create organic posts")}</Button>
-              <Button variant="ghost" icon={<Download className="size-4" />} onClick={() => exportCsv(edit)}>{t("Exporter (CSV)", "Export (CSV)")}</Button>
-            </div>
+          </Select>
+          <nav className="hidden lg:block" aria-label={t("Rubriques des publicités", "Ad sections")}>
+            {GROUPS.map(([g, gfr, gen]) => (
+              <div key={g} className="mb-2 last:mb-0">
+                <p className="mb-1 px-2 text-[11px] font-medium uppercase tracking-[.16em] text-muted">{t(gfr, gen)}</p>
+                {SECTIONS.filter((x) => x[4] === g).map(([key, frl, enl, Icon]) => (
+                  <button key={key} type="button" data-ads-section={key} aria-current={section === key ? "page" : undefined} onClick={() => go(key)} className={cx("mb-0.5 flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-sm transition", section === key ? "bg-ink text-paper" : "text-ink-2 hover:bg-paper-2 hover:text-ink")}>
+                    <Icon className="size-4 shrink-0" aria-hidden />
+                    <span className="flex-1">{t(frl, enl)}</span>
+                  </button>
+                ))}
+              </div>
+            ))}
+          </nav>
+        </Card>
+      </aside>
+      <div className="grid min-w-0 grid-cols-1 content-start gap-5">
+        {section === "vue" && <AdsOverview counts={counts} onGo={go} />}
+        {section === "strategie" && <AdsStrategy campaigns={camps?.campaigns ?? null} onGo={go} />}
+        {section === "image" && <AdCreatives />}
+        {section === "video" && (
+          <>
+            <Card className="p-4 text-sm text-ink-2">{t("Publicités vidéo et vidéos UGC (personnage synthétique, toujours signalé). Elles restent dans Publicités : les vidéos des publications organiques se créent dans Publications › Publication vidéo.", "Video ads and UGC videos (synthetic presenter, always disclosed). They stay in Ads: organic post videos are created in Posts › Video post.")}</Card>
+            <VideoV2Panel scope="ad" />
+          </>
+        )}
+        {section === "campagnes" && <CampaignsPanel autoNew={newCampaign} />}
+        {section === "bibliotheque" && <AdsLibrary assets={files ? adVisuals : null} reload={reload} />}
+      </div>
+    </div>
+  );
+}
+
+/** Vue d'ensemble : ce qui existe, la règle « publicitaire ≠ organique » et les prochaines étapes. */
+function AdsOverview({ counts, onGo }: { counts: { images: number; videos: number; campaigns: number }; onGo: (s: Section, o?: { newCampaign?: boolean }) => void }) {
+  const t = useT();
+  const tiles: [string, number, Section][] = [
+    [t("Publicités image", "Image ads"), counts.images, "image"],
+    [t("Publicités vidéo", "Video ads"), counts.videos, "video"],
+    [t("Campagnes", "Campaigns"), counts.campaigns, "campagnes"],
+  ];
+  return (
+    <div className="grid gap-5" data-ads-overview>
+      <div className="grid gap-3 sm:grid-cols-3">
+        {tiles.map(([label, n, s]) => (
+          <button key={label} type="button" onClick={() => onGo(s)} className="rounded-2xl border border-line bg-card p-4 text-left transition hover:border-ink">
+            <p className="text-xs text-muted">{label}</p>
+            <p className="font-display text-3xl font-semibold">{n}</p>
+          </button>
+        ))}
+      </div>
+      <Card className="grid gap-3 p-5 sm:p-7">
+        <h3 className="font-display text-xl font-semibold">{t("Publicité ou publication : deux usages séparés", "Ad or post: two separate uses")}</h3>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl bg-paper-2 p-4 text-sm">
+            <p className="font-medium">{t("Ici, les publicités", "Here, the ads")}</p>
+            <p className="mt-1 text-muted">{t("Visuels et vidéos faits pour être diffusés contre paiement : une offre, un bouton d'action, des formats de gestionnaire de publicités. Ils ne sont jamais publiés comme publications organiques.", "Visuals and videos made to run as paid ads: an offer, a call-to-action button, ads-manager formats. They're never published as organic posts.")}</p>
           </div>
-          <MediaPicker open={picker !== null} onClose={() => setPicker(null)} multiple kinds={["image", "video"]} onPick={(m) => { if (picker === null) return; const ads = [...edit.plan.ads!]; ads[picker] = { ...ads[picker], media: [...ads[picker].media, ...m] }; setEdit({ ...edit, plan: { ...edit.plan, ads } }); }} />
-        </Modal>
+          <div className="rounded-2xl border border-line p-4 text-sm">
+            <p className="font-medium">{t("Dans Publications, l'organique", "In Posts, the organic content")}</p>
+            <p className="mt-1 text-muted">{t("Les publications gratuites de vos réseaux : conseils, coulisses, nouveautés. La banque d'images et de vidéos reste neutre et sert aux deux.", "Your networks' free posts: tips, behind the scenes, news. The image and video bank stays neutral and serves both.")}</p>
+          </div>
+        </div>
+        <p className="text-xs text-muted">{t("Aucune dépense publicitaire n'est engagée depuis le studio : le budget et le lancement se règlent dans le gestionnaire de publicités de chaque réseau, avec l'export des campagnes.", "No ad spend is committed from the studio: budget and launch are set in each network's ads manager, using the campaign export.")}</p>
+      </Card>
+      <Card className="grid gap-3 p-5 sm:p-7">
+        <h3 className="font-display text-xl font-semibold">{t("Par où commencer", "Where to start")}</h3>
+        <ol className="grid gap-2 text-sm sm:grid-cols-3">
+          <li className="rounded-2xl bg-paper-2 p-3"><button type="button" className="font-semibold underline" onClick={() => onGo("image")}>{t("1. Créer les publicités", "1. Create the ads")}</button> — {t("image ou vidéo, aux formats des réseaux.", "image or video, in the networks' formats.")}</li>
+          <li className="rounded-2xl bg-paper-2 p-3"><button type="button" className="font-semibold underline" onClick={() => onGo("campagnes", { newCampaign: true })}>{t("2. Préparer une campagne", "2. Prepare a campaign")}</button> — {t("annonces, audiences, plan de test.", "ads, audiences, test plan.")}</li>
+          <li className="rounded-2xl bg-paper-2 p-3"><button type="button" className="font-semibold underline" onClick={() => onGo("campagnes")}>{t("3. Exporter et lancer", "3. Export and launch")}</button> — {t("dans le gestionnaire de publicités du réseau.", "in the network's ads manager.")}</li>
+        </ol>
+      </Card>
+    </div>
+  );
+}
+
+/** Stratégie publicitaire : plans de test des campagnes (audiences, accroches, budget de test, indicateurs). */
+function AdsStrategy({ campaigns, onGo }: { campaigns: Campaign[] | null; onGo: (s: Section, o?: { newCampaign?: boolean }) => void }) {
+  const t = useT();
+  const withPlan = (campaigns ?? []).filter((c) => c.plan.strategy);
+  return (
+    <div className="grid gap-5" data-ads-strategy>
+      <Card className="grid gap-3 p-5 sm:p-7">
+        <h3 className="font-display text-xl font-semibold">{t("Stratégie publicitaire", "Ad strategy")}</h3>
+        <p className="text-sm text-muted">{t("Chaque campagne a son plan de test : audiences, accroches des 3 premières secondes, structure, budget de test honnête et indicateurs. Rien n'est promis : les résultats se mesurent dans le gestionnaire de publicités.", "Each campaign has its test plan: audiences, first-3-second hooks, structure, honest test budget and metrics. Nothing is promised: results are measured in the ads manager.")}</p>
+        <ul className="grid gap-2 text-sm sm:grid-cols-3">
+          <li className="rounded-2xl bg-paper-2 p-3"><span className="font-medium">{t("Tester peu à la fois", "Test one thing at a time")}</span><span className="block text-xs text-muted">{t("une seule variable par test (accroche, visuel ou audience).", "a single variable per test (hook, visual or audience).")}</span></li>
+          <li className="rounded-2xl bg-paper-2 p-3"><span className="font-medium">{t("Budget de test d'abord", "Test budget first")}</span><span className="block text-xs text-muted">{t("un petit budget fixé par vous, puis on garde ce qui marche.", "a small budget you set, then keep what works.")}</span></li>
+          <li className="rounded-2xl bg-paper-2 p-3"><span className="font-medium">{t("Mesurer le vrai résultat", "Measure the real result")}</span><span className="block text-xs text-muted">{t("ventes ou demandes reçues, pas seulement les clics.", "sales or enquiries received, not just clicks.")}</span></li>
+        </ul>
+      </Card>
+      {campaigns === null ? null : withPlan.length ? (
+        withPlan.map((c) => (
+          <div key={c.id} className="grid gap-2">
+            <p className="font-display text-lg font-semibold">{c.name}</p>
+            <StrategyPanel s={c.plan.strategy!} />
+          </div>
+        ))
+      ) : (
+        <Empty title={t("Aucun plan de test pour l'instant", "No test plan yet")} icon={<BarChart3 className="size-5" />} action={<Button onClick={() => onGo("campagnes", { newCampaign: true })}>{t("Préparer une campagne", "Prepare a campaign")}</Button>}>
+          {t("Créez une campagne puis « Proposer les annonces » : le plan de test apparaît ici.", "Create a campaign then \"Draft ads\": the test plan appears here.")}
+        </Empty>
       )}
     </div>
   );
 }
 
-/** Plan de test proposé : audiences, structure, budget honnête, accroches, variable testée et indicateurs. */
-function StrategyPanel({ s }: { s: AdStrategy }) {
+/** Tous les visuels publicitaires (images et vidéos), séparés de l'organique, prêts à télécharger. */
+function AdsLibrary({ assets, reload }: { assets: AssetView[] | null; reload: () => void }) {
   const t = useT();
+  const [viewer, setViewer] = useState<AssetView | null>(null);
+  const [kind, setKind] = useState<"" | "image" | "video">("");
+  const shown = (assets ?? []).filter((a) => !kind || a.kind === kind);
   return (
-    <details className="rounded-2xl border border-line bg-card p-4 text-sm" open>
-      <summary className="cursor-pointer font-medium">
-        {t("Plan de test de la campagne", "Campaign test plan")}
-        {s.quality && s.quality.score > 0 && <span className="ml-2 text-xs text-muted">{t(`relu par le directeur de création : ${s.quality.score}/10`, `reviewed by the creative director: ${s.quality.score}/10`)}</span>}
-        {s.by === "local" && <span className="ml-2 text-xs text-muted">{t("version du studio", "studio version")}</span>}
-      </summary>
-      <div className="mt-3 grid gap-4 text-ink-2">
-        {s.summary && <p>{s.summary}</p>}
+    <div className="grid gap-4" data-ads-library>
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="font-medium text-ink">{t("Accroches à tester (3 premières secondes)", "Hooks to test (first 3 seconds)")}</p>
-          <ol className="mt-1 list-decimal space-y-1 pl-5">{s.hooks.map((h, i) => <li key={i}><strong className="text-ink">{h.text}</strong>{h.visual && <span className="text-muted"> · {h.visual}</span>}{h.lever && <span className="text-muted"> · {h.lever}</span>}</li>)}</ol>
+          <h3 className="font-display text-xl font-semibold">{t("Visuels publicitaires", "Ad visuals")}</h3>
+          <p className="text-sm text-muted">{t("Uniquement les créations publicitaires : elles ne se mélangent pas aux publications organiques.", "Ad creatives only: they don't mix with organic posts.")}</p>
         </div>
-        <div>
-          <p className="font-medium text-ink">{t("Audiences", "Audiences")}</p>
-          <ul className="mt-1 space-y-1">{s.audiences.map((a, i) => <li key={i}><strong className="text-ink">{a.name}</strong> · {a.who}{a.signals && <span className="text-muted"> · {a.signals}</span>}{a.why && <span className="block text-xs text-muted">{a.why}</span>}</li>)}</ul>
+        <div className="flex gap-1.5" role="tablist">
+          {([["", "Tous", "All"], ["image", "Images", "Images"], ["video", "Vidéos", "Videos"]] as const).map(([v, fr, en]) => (
+            <button key={v} role="tab" aria-selected={kind === v} onClick={() => setKind(v)} className={cx("rounded-full border px-3 py-1 text-sm", kind === v ? "border-ink bg-ink text-paper" : "border-line bg-card")}>{t(fr, en)}</button>
+          ))}
         </div>
-        <div>
-          <p className="font-medium text-ink">{t("Structure", "Structure")}</p>
-          <ul className="mt-1 list-disc space-y-1 pl-5">{s.structure.map((x, i) => <li key={i}>{x}</li>)}</ul>
-        </div>
-        <div>
-          <p className="font-medium text-ink">{t("Budget de test", "Test budget")}</p>
-          <p className="mt-1">{s.budget.daily} · {s.budget.duration} · {s.budget.total}</p>
-          <p className="mt-1">{s.budget.rule}</p>
-          <p className="mt-1 text-xs text-muted">{s.budget.note}</p>
-        </div>
-        {s.tests.length > 0 && <div><p className="font-medium text-ink">{t("Ce qu'on teste", "What we test")}</p><ul className="mt-1 list-disc space-y-1 pl-5">{s.tests.map((x, i) => <li key={i}><strong className="text-ink">{x.variable}</strong> : {x.hypothesis}</li>)}</ul></div>}
-        {s.kpis.length > 0 && <p><span className="font-medium text-ink">{t("Indicateurs : ", "Metrics: ")}</span>{s.kpis.join(" · ")}</p>}
-        {s.quality && !s.quality.passed && s.quality.remaining.length > 0 && <div className="rounded-xl bg-paper-2 p-3 text-xs"><p className="font-medium text-ink">{t("Points à revoir avant de lancer", "Points to review before launch")}</p><ul className="mt-1 list-disc pl-5">{s.quality.remaining.map((x, i) => <li key={i}>{x}</li>)}</ul></div>}
       </div>
-    </details>
+      {assets && shown.length === 0 ? (
+        <Empty title={t("Aucun visuel publicitaire", "No ad visuals")} icon={<Megaphone className="size-5" />}>{t("Créez une publicité image ou vidéo : elle arrive ici.", "Create an image or video ad: it lands here.")}</Empty>
+      ) : (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+          {shown.map((a) => (
+            <Card key={a.id} className="flex min-w-0 flex-col overflow-hidden">
+              <button type="button" onClick={() => setViewer(a)} className="relative block bg-paper-2">
+                {a.kind === "video" ? <video src={a.url} poster={a.thumbUrl ?? undefined} preload="none" className="aspect-[4/5] w-full object-cover" /> : <img src={a.thumbUrl ?? a.url} alt={a.name} loading="lazy" className="aspect-[4/5] w-full object-cover" />}
+                <span className="absolute left-2 top-2"><StatusBadge status={a.status} /></span>
+              </button>
+              <div className="flex items-center gap-1.5 p-3">
+                {a.meta?.format && <Badge>{a.meta.format}</Badge>}
+                <span className="flex-1" />
+                <a href={a.downloadUrl} className="grid size-8 place-items-center rounded-full border border-line hover:border-ink" title={t("Télécharger", "Download")} aria-label={t("Télécharger", "Download")}><Download className="size-3.5" /></a>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+      <AssetViewer asset={viewer} onClose={() => setViewer(null)} onChanged={reload} />
+    </div>
   );
 }

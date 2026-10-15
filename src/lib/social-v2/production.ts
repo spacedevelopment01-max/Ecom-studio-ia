@@ -29,7 +29,9 @@ function libraryPool(projectId: string, kind: "image" | "video"): Asset[] {
   const rows = all<Asset & { uses: number }>(
     `SELECT a.*, (SELECT COUNT(*) FROM posts p WHERE p.project_id = a.project_id AND p.media LIKE '%' || a.id || '%' AND p.status != 'cancelled') uses
        FROM assets a WHERE a.project_id = ? AND a.kind = ? AND a.deleted_at IS NULL AND a.status != 'rejected'
-        AND COALESCE(a.role, '') NOT IN ('logo','cutout','subtitles','video-poster','screenshot','favicon')
+        AND COALESCE(a.role, '') NOT IN ('logo','cutout','subtitles','video-poster','screenshot','favicon','ad')
+        -- Visuels publicitaires (Publicités) : jamais repris pour une publication organique.
+        AND NOT (a.kind = 'video' AND (COALESCE(json_extract(a.meta, '$.videoV2.intent'), '') IN ('video_ad','ugc') OR COALESCE(json_extract(a.meta, '$.kind'), '') = 'ugc'))
       ORDER BY uses ASC, a.created_at DESC LIMIT 60`,
     projectId,
     kind,

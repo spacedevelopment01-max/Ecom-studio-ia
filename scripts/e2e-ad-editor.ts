@@ -41,7 +41,7 @@ const api = async (ctx: BrowserContext, url: string) => (await ctx.request.get(`
 
 /** Ouvre la première création dans l'éditeur et attend le rendu (polices et images chargées). */
 async function openEditor(page: Page, docKey: string) {
-  await page.goto(`${BASE}/studio/${PROJECT}/publicites`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/studio/${PROJECT}/publicites#image`, { waitUntil: "networkidle" });
   // La liste suit l'ordre des dernières modifications : on retrouve la création par sa clé.
   const docs = (await api(page.context(), `/api/projects/${PROJECT}/ads/docs`)).docs as any[];
   await page.getByTestId("edit-creative").nth(docs.findIndex((d) => d.docKey === docKey)).click();
@@ -59,7 +59,7 @@ const center = (l: any) => ({ x: l.x + l.w / 2, y: l.y + l.h / 2 });
 // ───────────────────────────── Ordinateur ─────────────────────────────
 const desk = await browser.newContext({ viewport: { width: 1440, height: 900 }, acceptDownloads: true, locale: "fr-FR" });
 const page = await login(desk);
-await page.goto(`${BASE}/studio/${PROJECT}/publicites`, { waitUntil: "networkidle" });
+await page.goto(`${BASE}/studio/${PROJECT}/publicites#image`, { waitUntil: "networkidle" });
 const n = await page.getByTestId("creative").count();
 check("Onglet Publicités : créations V2 listées avec « Modifier »", n > 0 && (await page.getByTestId("edit-creative").count()) === n, `${n} création(s)`);
 check("Onglet Publicités : bouton « Créer des publicités »", await page.getByTestId("create-ads").isVisible());

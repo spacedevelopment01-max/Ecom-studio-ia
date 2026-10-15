@@ -24,7 +24,7 @@ export const SPACES: { id: SpaceId; group: SpaceGroup; purpose: T2; purposeServi
   { id: "videos", group: "creer", purpose: ["Votre banque de vidéos, sans texte : vos plans, plans libres et plans créés.", "Your video bank, no text: your clips, royalty-free clips and created clips."] },
   { id: "publications", group: "diffuser", purpose: ["Stratégie, création, calendrier et validation de vos publications : rien ne part sans votre accord.", "Strategy, creation, calendar and approval of your posts: nothing goes out without your approval."] },
   { id: "calendrier", group: "diffuser", within: "publications", purpose: ["Quand chaque publication part, jour par jour.", "When each post goes out, day by day."] },
-  { id: "publicites", group: "diffuser", purpose: ["Vos campagnes publicitaires et leurs visuels.", "Your ad campaigns and their visuals."] },
+  { id: "publicites", group: "diffuser", purpose: ["Vos publicités image et vidéo et vos campagnes, séparées des publications organiques.", "Your image and video ads and campaigns, kept apart from organic posts."] },
   { id: "blog", group: "diffuser", purpose: ["Des articles pour être trouvé sur Google.", "Articles to be found on Google."] },
   { id: "prompts", group: "avance", purpose: ["Les consignes envoyées à l'IA, pour les utilisateurs avertis.", "The instructions sent to the AI, for advanced users."] },
   { id: "fichiers", group: "avance", purpose: ["Tous les fichiers du projet, rangés par dossier.", "All the project files, sorted into folders."] },

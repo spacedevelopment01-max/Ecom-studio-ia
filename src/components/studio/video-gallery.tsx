@@ -6,6 +6,7 @@ import { useProject } from "./project-context";
 import { JobProgress, StatusBadge, useActive, type AssetView } from "./common";
 import { AssetViewer } from "./asset-viewer";
 import { VideoV2Panel } from "./video-v2-panel";
+import { isAdVisual } from "@/lib/media/bank";
 import { useT } from "../i18n";
 import { useCreationLocked } from "../billing-client";
 
@@ -27,14 +28,15 @@ export function EditedVideos() {
     if (!active.length) reload();
   }, [active.length, reload]);
   const videoStep = data?.pipeline?.steps.find((s) => s.id === "video")?.status;
-  const videos = (list?.assets ?? []).filter((a) => a.kind === "video" && a.role === "video");
+  // Vidéos organiques seulement : les publicités vidéo et UGC sont dans l'onglet Publicités.
+  const videos = (list?.assets ?? []).filter((a) => a.kind === "video" && a.role === "video" && !isAdVisual(a));
   const subs = (list?.assets ?? []).filter((a) => a.role === "subtitles");
   return (
     <div className="grid min-w-0 gap-5" data-edited-videos>
       {active.map((j) => <JobProgress key={j.id} job={j} />)}
       <details className="rounded-3xl border border-line bg-card p-5">
         <summary className="cursor-pointer select-none font-display text-lg font-semibold">{t("Vidéo sur mesure (publicité, démonstration, film de marque…)", "Custom video (ad, demo, brand film…)")}</summary>
-        <div className="mt-4"><VideoV2Panel /></div>
+        <div className="mt-4"><VideoV2Panel scope="organic" /></div>
       </details>
       <h3 className="font-display text-lg font-semibold">{t("Vos vidéos montées", "Your edited videos")}</h3>
       <div>

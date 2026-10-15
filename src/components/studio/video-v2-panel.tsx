@@ -13,6 +13,7 @@ import { useProject } from "./project-context";
 import { JobProgress, SectionTitle, useActive } from "./common";
 import { useT } from "../i18n";
 import { PlanRequired, useCreationLocked } from "../billing-client";
+import { AD_VIDEO_INTENTS } from "@/lib/media/bank";
 
 type VideoItem = { docKey: string; version: number; edited: boolean; intent: string | null; aspect: string | null; platform: string | null; durationS: number; clips: number; url: string | null; renderedAssetId: string | null; renderedVersion: number | null; needsRender: boolean; status: string | null; verdict: string | null; at: number };
 type Plan = { shots: { id: string; part: string; durationS: number; subject: string; method: string; paid: boolean; estimateMicro: number }[]; estimateMicro: number; notes: string[]; script?: { hook?: string } | null };
@@ -27,10 +28,12 @@ const KINDS: [string, string, string][] = [
   ["company_presentation", "Présentation de l'entreprise", "Company presentation"],
   ["service_presentation", "Présentation d'une prestation", "Service presentation"],
 ];
+const AD_KINDS = new Set<string>(AD_VIDEO_INTENTS);
 const PLATFORMS: [string, string][] = [["reels", "Instagram Reels (9:16)"], ["tiktok", "TikTok (9:16)"], ["shorts", "YouTube Shorts (9:16)"], ["meta_feed", "Facebook / Instagram (4:5)"], ["youtube", "YouTube (16:9)"], ["shop_page", "Boutique (16:9)"], ["website", "Site (16:9)"], ["linkedin", "LinkedIn"]];
 const eur = (micro: number) => `${(micro / 1_000_000).toFixed(2).replace(".", ",")} €`;
 
-export function VideoV2Panel() {
+/** `scope` : « ad » (Publicités : publicité vidéo, UGC) ou « organic » (Publications : contenus des réseaux). */
+export function VideoV2Panel({ scope }: { scope?: "ad" | "organic" } = {}) {
   const { id, data } = useProject();
   const t = useT();
   const toast = useToast();
@@ -38,7 +41,8 @@ export function VideoV2Panel() {
   const services = data?.business === "services";
   const active = useActive("video.v2");
   const { data: list, reload } = useApi<{ videos: VideoItem[] }>(`/api/projects/${id}/videos/v2`, { poll: active.length ? 4000 : undefined });
-  const [form, setForm] = useState({ kind: services ? "company_presentation" : "video_ad", platform: "reels", text: "", allowGeneration: false });
+  const kinds = KINDS.filter(([v]) => !scope || (scope === "ad") === AD_KINDS.has(v));
+  const [form, setForm] = useState({ kind: scope === "ad" ? "video_ad" : scope === "organic" ? (services ? "service_presentation" : "social_content") : services ? "company_presentation" : "video_ad", platform: scope === "ad" ? "meta_feed" : "reels", text: "", allowGeneration: false });
   const [plan, setPlan] = useState<Plan | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [open, setOpen] = useState<string | null>(null);
@@ -68,7 +72,7 @@ export function VideoV2Panel() {
       setBusy(null);
     }
   }
-  const videos = list?.videos ?? [];
+  const videos = (list?.videos ?? []).filter((v) => !scope || (scope === "ad") === AD_KINDS.has(v.intent ?? ""));
   return (
     <Card className="p-5 sm:p-7">
       <SectionTitle title={t("Vidéos", "Videos")}>
@@ -77,7 +81,7 @@ export function VideoV2Panel() {
       {active.map((j) => <JobProgress key={j.id} job={j} className="mb-4" />)}
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label={t("Type de vidéo", "Video type")} htmlFor="v2vkind">
-          <Select id="v2vkind" value={form.kind} onChange={(e) => (setForm({ ...form, kind: e.target.value }), setPlan(null))}>{KINDS.map(([v, fr, en]) => <option key={v} value={v}>{t(fr, en)}</option>)}</Select>
+          <Select id="v2vkind" value={form.kind} onChange={(e) => (setForm({ ...form, kind: e.target.value }), setPlan(null))}>{kinds.map(([v, fr, en]) => <option key={v} value={v}>{t(fr, en)}</option>)}</Select>
         </Field>
         <Field label={t("Diffusion", "Where it runs")} htmlFor="v2vplat">
           <Select id="v2vplat" value={form.platform} onChange={(e) => (setForm({ ...form, platform: e.target.value }), setPlan(null))}>{PLATFORMS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</Select>
