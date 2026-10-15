@@ -110,10 +110,12 @@ export function localScenePlan(p: Project, s: SubjectOption | null, req: ThreeSc
 /** Consigne de l'image de départ d'une scène : la scène seule, aucun texte, le vrai produit identique. */
 export function keyframePrompt(p: Project, s: SubjectOption | null, scene: Scene, aspect: SceneAspect, hasReference: boolean): string {
   const pal = palette(p);
-  return `Cinematic photorealistic still for a premium ${p.business === "services" ? "service" : "product"} film, ${aspect === "16:9" ? "horizontal" : aspect === "1:1" ? "square" : "vertical"} frame (${aspect}). Brand "${p.brand?.name ?? ""}".
+  // Sans le nom de la marque : donné à l'IA d'images, il finissait imprimé sur le produit ou sur une enseigne (le
+  // titre, le logo et le bouton sont posés ensuite par le montage du studio).
+  return `Cinematic photorealistic still for a premium ${p.business === "services" ? "service" : "product"} film, ${aspect === "16:9" ? "horizontal" : aspect === "1:1" ? "square" : "vertical"} frame (${aspect}), full-bleed (no borders, no black bars).
 Scene: ${scene.still}
 ${hasReference ? "The product in the reference image is the hero: reproduce it EXACTLY (same shape, proportions, materials, colours, details, printed text), seen from the same angle; never redesign it, never add a second copy.\n" : ""}Light and colour mood consistent with the brand colours ${[pal.dark, pal.primary, pal.accent].join(", ")}. Real light, depth of field, rich materials, top advertising campaign quality.
-No text, no letters, no logo, no watermark anywhere. No people, no hands, no faces, no body parts. Keep calm empty space at the top and bottom.`;
+No text, no letters, no brand name, no logo, no watermark anywhere: nothing written on the product (unless printed on the reference), on signs, walls or objects. No people, no hands, no faces, no body parts. Keep calm empty space at the top and bottom.`;
 }
 
 /** Consigne du mouvement (Wan) : le décor bouge, le produit reste identique. */

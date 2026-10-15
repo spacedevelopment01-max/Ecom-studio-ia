@@ -169,9 +169,17 @@ export function endCardDoc(o: { w: number; h: number; safe: VideoDocument["safe"
   const short = Math.min(w, h);
   const ink = inkOn(pal.dark);
   const layers: Layer[] = [rectLayer("bg", "Fond", "background", { x: 0, y: 0, w, h }, pal.dark)];
-  if (o.logoId) layers.push(imageLayer("logo", "Logo", "logo", { x: w * 0.25, y: h * 0.26, w: w * 0.5, h: h * 0.14 }, o.logoId, "contain"));
+  if (o.logoId) {
+    // Vrai logo bien visible quel que soit le fond : médaillon clair de la marque derrière lui (un logo foncé ou à fond
+    // blanc reste lisible sur la carte sombre), plus grand qu'avant.
+    const cw = Math.min(w * 0.62, short * 0.62);
+    const ch = Math.min(h * 0.26, cw * (h > w ? 1 : 0.62));
+    const cy = h * 0.42 - ch;
+    layers.push(rectLayer("logo-card", "Médaillon du logo", "shape", { x: (w - cw) / 2, y: cy, w: cw, h: ch }, pal.light, Math.round(short * 0.04)));
+    layers.push(imageLayer("logo", "Logo", "logo", { x: (w - cw) / 2 + cw * 0.08, y: cy + ch * 0.08, w: cw * 0.84, h: ch * 0.84 }, o.logoId, "contain"));
+  }
   else layers.push(textLayer("brand", "Marque", "title", { x: o.safe.side, y: h * 0.28, w: w - o.safe.side * 2, h: h * 0.12 }, o.brand, { family: o.typo.heading, weight: o.typo.headingWeight ?? 600, size: Math.round(short * 0.085), color: ink, uppercase: o.typo.uppercase }));
-  if (o.line) layers.push(textLayer("line", "Phrase", "subtitle", { x: o.safe.side, y: h * 0.45, w: w - o.safe.side * 2, h: h * 0.1 }, o.line, { family: o.typo.body, weight: 500, size: Math.round(short * 0.045), color: ink }));
+  if (o.line) layers.push(textLayer("line", "Phrase", "subtitle", { x: o.safe.side, y: h * 0.46, w: w - o.safe.side * 2, h: h * 0.1 }, o.line, { family: o.typo.body, weight: 500, size: Math.round(short * 0.045), color: ink }));
   const bw = Math.min(w - o.safe.side * 2, short * 0.62);
   const bh = short * 0.11;
   layers.push(buttonLayer("cta", { x: (w - bw) / 2, y: h * 0.6, w: bw, h: bh }, o.cta, { family: o.typo.body, size: Math.round(short * 0.042), fill: pal.accent, color: inkOn(pal.accent) }));

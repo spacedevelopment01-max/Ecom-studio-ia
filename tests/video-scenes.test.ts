@@ -108,6 +108,27 @@ describe("Vidéo en scènes", async () => {
     expect(keyframePrompt(p, null, plan.scenes[0], "16:9", false)).toContain("horizontal");
   });
 
+  it("image de départ : jamais le nom de la marque dans la consigne (il finissait imprimé sur le produit), image pleine", async () => {
+    const p = await productProject();
+    const plan = localScenePlan(p, null, { as: "post" });
+    const prompt = keyframePrompt(p, null, plan.scenes[0], "9:16", true);
+    expect(prompt).not.toContain(`"${p.brand!.name}"`);
+    expect(prompt).toContain("no brand name");
+    expect(prompt).toContain("no black bars");
+  });
+
+  it("carte de fin : le vrai logo sur un médaillon clair, lisible sur le fond sombre", async () => {
+    const { endCardDoc, SIZES, safeZone } = await import("@/lib/video-v2/doc");
+    const pal = { primary: "#A3122B", secondary: "#F0E7DB", accent: "#E0A100", light: "#FBF8F3", dark: "#1B1717" };
+    const doc = endCardDoc({ w: SIZES["9:16"].w, h: SIZES["9:16"].h, safe: safeZone("9:16", "reels"), pal, typo: { heading: "Inter", body: "Inter" }, brand: "B", cta: "Découvrir", line: "Une phrase", logoId: "logo-1" });
+    const card = doc.layers.find((l) => l.id === "logo-card")! as any;
+    const logo = doc.layers.find((l) => l.id === "logo")!;
+    expect(card.fill).toBe(pal.light);
+    expect(logo.x).toBeGreaterThanOrEqual(card.x);
+    expect(logo.y + logo.h).toBeLessThanOrEqual(card.y + card.h);
+    expect(doc.layers.indexOf(card)).toBeLessThan(doc.layers.indexOf(logo));
+  });
+
   it("Wan 2.6 Flash demandé en 1080P SANS son (tarif « no audio »), un seul plan continu ; les autres modèles restent en 720P", async () => {
     const { wanVideoBody } = await import("@/lib/ai/alibaba");
     const flash = wanVideoBody({ model: "wan2.6-i2v-flash", prompt: "p", image: "data:x", seconds: 5, people: false });
