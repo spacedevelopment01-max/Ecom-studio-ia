@@ -56,9 +56,9 @@ describe("Vidéo en scènes", async () => {
     expect(f.calls.keyframe[0]).toContain("No people");
     expect(f.calls.keyframe[0]).toContain("No text");
     expect(timeline(f.calls.rendered).total).toBeCloseTo(15, 0);
-    // Carte de fin (bouton, marque) et mention « vidéo générée par IA ».
+    // Carte de fin (bouton, marque) ; aucune mention « vidéo générée par IA » sur une vidéo produit.
     expect(f.calls.rendered.clips.at(-1).source.kind).toBe("doc");
-    expect(f.calls.rendered.disclosure).toBeTruthy();
+    expect(f.calls.rendered.disclosure).toBeNull();
   });
 
   it("le client choisit 5 scènes, 30 s, format carré", async () => {
@@ -117,6 +117,20 @@ describe("Vidéo en scènes", async () => {
     expect(prompt).toContain("no black bars");
   });
 
+  it("titre d'une scène : en haut par défaut, en bas sur demande (gros plan, le titre ne couvre pas le produit)", async () => {
+    const { ScenePlanSchema } = await import("@/lib/video-v2/three-scenes");
+    const p = await productProject();
+    const plan = ScenePlanSchema.parse({ scenes: [{ still: "close-up of the lid", motion: "slow push-in", title: "Gros plan", place: "lower" }, { still: "wide shot on a rock", motion: "slow push-in", title: "Plan large" }], line: "", cta: "Découvrir" });
+    const doc = buildSceneDoc(p, plan.scenes.map((_, k) => ({ assetId: `a${k}`, durationS: 5, generated: true })), plan, "9:16", "post");
+    const y = (k: number) => doc.clips[k].overlays.find((l) => l.id === "ov-text")!.y;
+    expect(y(0)).toBeGreaterThan(doc.height * 0.5);
+    expect(y(1)).toBeLessThan(doc.height * 0.3);
+    // Titres écrits en très grand (au moins 14 % du petit côté), sans bandeau sombre derrière.
+    const t = doc.clips[0].overlays.find((l) => l.id === "ov-text") as { font: { size: number } };
+    expect(t.font.size).toBeGreaterThanOrEqual(Math.round(doc.width * 0.14));
+    expect(doc.clips.flatMap((c) => c.overlays).some((l) => l.role === "scrim")).toBe(false);
+  });
+
   it("carte de fin : le vrai logo sur un médaillon clair, lisible sur le fond sombre", async () => {
     const { endCardDoc, SIZES, safeZone } = await import("@/lib/video-v2/doc");
     const pal = { primary: "#A3122B", secondary: "#F0E7DB", accent: "#E0A100", light: "#FBF8F3", dark: "#1B1717" };
@@ -127,6 +141,22 @@ describe("Vidéo en scènes", async () => {
     expect(logo.x).toBeGreaterThanOrEqual(card.x);
     expect(logo.y + logo.h).toBeLessThanOrEqual(card.y + card.h);
     expect(doc.layers.indexOf(card)).toBeLessThan(doc.layers.indexOf(logo));
+    // Phrase et bouton écrits en grand.
+    const short = Math.min(doc.width, doc.height);
+    expect((doc.layers.find((l) => l.id === "line") as any).font.size).toBeGreaterThanOrEqual(Math.round(short * 0.08));
+    expect((doc.layers.find((l) => l.id === "cta") as any).font.size).toBeGreaterThanOrEqual(Math.round(short * 0.06));
+  });
+
+  it("texte trop petit sur un plan : signalé illisible par le contrôle", async () => {
+    const { localVideoChecks } = await import("@/lib/video-v2/quality");
+    const p = await productProject();
+    const plan = localScenePlan(p, null, { as: "post" });
+    const doc = buildSceneDoc(p, plan.scenes.map((_, k) => ({ assetId: `a${k}`, durationS: 5, generated: true })), plan, "9:16", "post");
+    const opts = { targetS: timeline(doc).total, scriptIssues: [], audio: null };
+    expect(localVideoChecks(doc, opts).codes).not.toContain("illegible_text");
+    const tiny = structuredClone(doc);
+    (tiny.clips[0].overlays.find((l) => l.kind === "text") as any).font.size = 30;
+    expect(localVideoChecks(tiny, opts).codes).toContain("illegible_text");
   });
 
   it("Wan 2.6 Flash demandé en 1080P SANS son (tarif « no audio »), un seul plan continu ; les autres modèles restent en 720P", async () => {

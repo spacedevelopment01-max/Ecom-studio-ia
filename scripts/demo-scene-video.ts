@@ -27,9 +27,10 @@ const DEMOS: Record<string, Def> = {
     summary: "Gourde isotherme double paroi en inox, 750 ml, finition mate vert sauge, bouchon en bambou à anse inox.",
     plan: {
       scenes: [
-        { still: "the completely plain, unbranded bottle (no label, no print, no text on it, exactly like the reference) standing on a lichen-covered granite rock on a mountain ridge at sunrise, a sea of clouds below, crisp orange first light", motion: "the camera slowly moves in toward the bottle while the clouds drift slowly below", title: "Gourde isotherme 750 ml" },
-        { still: "the very same plain sage-green bottle as in the reference image (identical shape, bamboo lid, steel handle, completely blank matte surface), now placed on a mossy fallen log deep in a wild pine forest after the rain, soft green daylight through the trees, nothing written anywhere", motion: "slow lateral glide along the bottle, light rays move through the trees, water drops glisten on the moss", title: "Partez léger." },
-        { still: "the very same plain sage-green bottle as in the reference image (identical shape, bamboo lid, steel handle, completely blank matte surface), now standing on old wooden planks of a pontoon on a calm alpine lake at golden hour, mountains mirrored in the water, nothing written anywhere", motion: "majestic slow push-in, gentle ripples on the lake, the warm sunlight intensifies", title: "Voyez grand." },
+        // Images faites par l'IA (Qwen) ; mouvement de caméra et lumière ajoutés au montage (aucune animation IA qui déforme le décor).
+        { still: "extreme close-up of the top of the plain sage-green bottle: bamboo lid, brushed steel collar and handle, tiny condensation droplets, blurred mountain ridge in early morning light", motion: "very slow push-in, a soft band of light glides across the steel and the bamboo lid", title: "Gourde isotherme 750 ml", place: "lower" },
+        { still: "low-angle shot of the plain sage-green bottle on a dark granite boulder, pale sky and a sharp summit behind, the sun hidden behind the bottle", motion: "the camera rises very slowly while the sun's glow grows around the top of the bottle", title: "Partez léger.", place: "lower" },
+        { still: "mountain bivouac at dusk: the plain sage-green bottle on a flat rock next to a plain olive backpack and a folded wool blanket, a glowing tent behind, warm golden low sunlight", motion: "very slow push-in while the warm golden light intensifies and a soft glint passes over the steel", title: "Voyez grand." },
       ],
       line: "Partez léger. Voyez grand.",
       cta: "Découvrir",

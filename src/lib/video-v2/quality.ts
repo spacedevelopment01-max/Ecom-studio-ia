@@ -11,8 +11,9 @@
 import { z } from "zod";
 import { decide, type GateDecision } from "../quality/gate";
 import { personCodes } from "../people-policy";
-import { absoluteCues, timeline } from "./doc";
+import { absoluteCues, MIN_TEXT_RATIO, timeline } from "./doc";
 import type { AudioMeasure } from "./audio";
+import { needsDisclosure } from "./ops";
 import { VIDEO_CRITERIA, type ShotReview, type VideoCriterion, type VideoDocument, type VideoReview } from "./types";
 
 const score = z.coerce.number().min(0).max(10).catch(0);
@@ -78,10 +79,17 @@ export function localVideoChecks(doc: VideoDocument, o: { targetS: number; scrip
   for (const c of doc.clips) if (c.durationS < 0.8) issues.push(`plan « ${c.label} » très court (${c.durationS} s)`);
   // Sous-titres : taille lisible sur téléphone, débit de lecture, zone de sécurité, synchronisés avec la voix.
   const st = doc.subtitles.style;
-  const minSize = Math.round(Math.min(doc.width, doc.height) * 0.035);
+  const minSize = Math.round(Math.min(doc.width, doc.height) * 0.045);
   if (st.enabled && st.size < minSize) {
     codes.push("illegible_text");
     issues.push(`sous-titres de ${st.size} px (au moins ${minSize} px)`);
+  }
+  // Titres posés sur les plans : trop petits = illisibles sur téléphone (les lignes de détail gardent leur taille).
+  const minText = Math.round(Math.min(doc.width, doc.height) * MIN_TEXT_RATIO);
+  const small = doc.clips.flatMap((c) => c.overlays).filter((l) => l.kind === "text" && l.role === "title" && l.visible && (l as { font: { size: number } }).font.size < minText);
+  if (small.length) {
+    codes.push("illegible_text");
+    issues.push(`${small.length} texte(s) trop petit(s) à l'écran (moins de ${minText} px) : à agrandir`);
   }
   const cues = absoluteCues(doc);
   for (const q of cues) {
@@ -127,10 +135,10 @@ export function localVideoChecks(doc: VideoDocument, o: { targetS: number; scrip
       issues.push(`saturation (crête ${o.audio.truePeakDb} dBFS)`);
     }
   }
-  // Mention IA obligatoire dès qu'un plan est généré.
-  if (doc.clips.some((c) => c.generated) && !doc.disclosure) {
+  // Mention IA obligatoire pour l'UGC (personne de synthèse face caméra).
+  if (needsDisclosure(doc) && !doc.disclosure) {
     codes.push("missing_disclosure");
-    issues.push("plans générés par l'IA sans mention « vidéo générée par IA »");
+    issues.push("personne générée par l'IA sans mention « vidéo générée par IA »");
   }
   // Montage : transitions identiques (hors coupe franche) sur presque tous les plans = effet automatique.
   const trans = doc.clips.slice(1).map((c) => c.transitionIn.kind).filter((k) => k !== "cut");

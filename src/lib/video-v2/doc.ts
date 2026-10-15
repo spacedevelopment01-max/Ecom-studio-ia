@@ -91,7 +91,7 @@ export function cuesForVoice(clipId: string, voice: string, clipS: number, maxCh
 
 export function defaultSubtitleStyle(doc: { width: number; height: number }, typo: Typo, pal: Palette): SubtitleStyle {
   const short = Math.min(doc.width, doc.height);
-  return { enabled: true, family: typo.body, weight: 700, size: Math.round(short * 0.052), color: "#FFFFFF", background: "rgba(0,0,0,0.62)", position: "bottom", offsetY: 0, maxChars: doc.width > doc.height ? 42 : 28, uppercase: false };
+  return { enabled: true, family: typo.body, weight: 700, size: Math.round(short * 0.06), color: "#FFFFFF", background: "rgba(0,0,0,0.62)", position: "bottom", offsetY: 0, maxChars: doc.width > doc.height ? 42 : 28, uppercase: false };
 }
 
 // ------------------------------------------------------------------------------------------- calques (ad-doc)
@@ -179,24 +179,36 @@ export function endCardDoc(o: { w: number; h: number; safe: VideoDocument["safe"
     layers.push(imageLayer("logo", "Logo", "logo", { x: (w - cw) / 2 + cw * 0.08, y: cy + ch * 0.08, w: cw * 0.84, h: ch * 0.84 }, o.logoId, "contain"));
   }
   else layers.push(textLayer("brand", "Marque", "title", { x: o.safe.side, y: h * 0.28, w: w - o.safe.side * 2, h: h * 0.12 }, o.brand, { family: o.typo.heading, weight: o.typo.headingWeight ?? 600, size: Math.round(short * 0.085), color: ink, uppercase: o.typo.uppercase }));
-  if (o.line) layers.push(textLayer("line", "Phrase", "subtitle", { x: o.safe.side, y: h * 0.46, w: w - o.safe.side * 2, h: h * 0.1 }, o.line, { family: o.typo.body, weight: 500, size: Math.round(short * 0.045), color: ink }));
-  const bw = Math.min(w - o.safe.side * 2, short * 0.62);
-  const bh = short * 0.11;
-  layers.push(buttonLayer("cta", { x: (w - bw) / 2, y: h * 0.6, w: bw, h: bh }, o.cta, { family: o.typo.body, size: Math.round(short * 0.042), fill: pal.accent, color: inkOn(pal.accent) }));
+  if (o.line) layers.push(textLayer("line", "Phrase", "subtitle", { x: o.safe.side, y: h * 0.46, w: w - o.safe.side * 2, h: h * 0.12 }, o.line, { family: o.typo.heading, weight: o.typo.headingWeight ?? 600, size: Math.round(short * 0.085), color: ink }));
+  // Textes en grand (lisibles sur téléphone) : phrase dans la police des titres, bouton plus haut et plus gros.
+  const bw = Math.min(w - o.safe.side * 2, short * 0.76);
+  const bh = short * 0.15;
+  layers.push(buttonLayer("cta", { x: (w - bw) / 2, y: h * 0.6, w: bw, h: bh }, o.cta, { family: o.typo.body, size: Math.round(short * 0.065), fill: pal.accent, color: inkOn(pal.accent) }));
   return frame(w, h, pal, o.typo, o.brand, layers, pal.dark);
 }
 
-/** Texte posé sur un plan (photo, vidéo) : bandeau lisible dans la zone de sécurité. */
+/** Tailles minimales des textes à l'écran (part du petit côté) : en dessous, le texte est jugé illisible. */
+export const TITLE_RATIO = 0.15;
+export const MIN_TEXT_RATIO = 0.06;
+
+/** Titres posés sur les plans jamais plus petits que le minimum lisible (le rendu les réduit seulement s'ils débordent). Renvoie le nombre agrandi. */
+export function enlargeSmallTitles(doc: Pick<VideoDocument, "width" | "height" | "clips">): number {
+  const min = Math.round(Math.min(doc.width, doc.height) * MIN_TEXT_RATIO);
+  let n = 0;
+  for (const c of doc.clips) for (const l of c.overlays) if (l.kind === "text" && l.role === "title" && l.font.size < min) (l.font = { ...l.font, size: min }), n++;
+  return n;
+}
+
+/** Texte posé sur un plan (photo, vidéo) : en très grand, sans bandeau sombre ; une ombre douce sur les lettres le garde lisible. */
 export function overlayText(o: { w: number; h: number; safe: VideoDocument["safe"]; typo: Typo; text: string; place: "top" | "lower" }): Layer[] {
   const { w, h } = o;
   const short = Math.min(w, h);
-  const size = Math.round(short * 0.062);
-  const bh = size * 2.9;
-  const y = o.place === "top" ? o.safe.top + h * 0.02 : h * 0.62;
-  return [
-    rectLayer("ov-scrim", "Voile du texte", "scrim", { x: 0, y: y - size * 0.6, w, h: bh + size * 1.2 }, { type: "linear", angle: 90, stops: [{ offset: 0, color: "rgba(0,0,0,0)" }, { offset: 0.5, color: "rgba(0,0,0,0.55)" }, { offset: 1, color: "rgba(0,0,0,0)" }] }),
-    textLayer("ov-text", "Texte à l'écran", "title", { x: o.safe.side, y, w: w - o.safe.side * 2, h: bh }, o.text, { family: o.typo.heading, weight: o.typo.headingWeight ?? 700, size, color: "#FFFFFF" }),
-  ];
+  // Titres en très grand (tendance actuelle, lisibles sur téléphone) : 15 % du petit côté, réduits seulement s'ils débordent.
+  const size = Math.round(short * TITLE_RATIO);
+  const bh = size * 2.4;
+  const y = o.place === "top" ? o.safe.top + h * 0.02 : h * 0.58;
+  const text = textLayer("ov-text", "Texte à l'écran", "title", { x: o.safe.side, y, w: w - o.safe.side * 2, h: bh }, o.text, { family: o.typo.heading, weight: o.typo.headingWeight ?? 700, size, color: "#FFFFFF" });
+  return [{ ...text, lineHeight: 1.02, shadow: { color: "rgba(0,0,0,0.45)", blur: Math.round(size * 0.35), x: 0, y: Math.round(size * 0.04) } }];
 }
 
 /** Voix d'un plan (texte à enregistrer) : décalage et durée de parole naturelle. */

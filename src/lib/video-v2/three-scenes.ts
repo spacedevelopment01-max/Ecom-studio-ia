@@ -18,7 +18,6 @@ import { projectForSubject } from "../social-v2/ai-post";
 import { localIdeas } from "../prompt-ideas";
 import { brandTypo, palette } from "../engine/images";
 import { SIZES, VIDEO_DOC_VERSION, defaultSubtitleStyle, endCardDoc, overlayText, safeZone } from "./doc";
-import { disclosureLabel } from "./ugc";
 import { songStyleFor } from "../media/song";
 import { renderVideoFile, saveRendered, saveVideoVersion } from "./store";
 import type { Clip, VideoDocument, VideoPlatform } from "./types";
@@ -65,11 +64,12 @@ export type ThreeScenesRequest = {
   music?: boolean;
 };
 
-export type Scene = { still: string; motion: string; title: string };
+/** place : titre en haut (défaut) ou en bas de l'image, pour ne pas couvrir le produit (gros plan, contre-plongée). */
+export type Scene = { still: string; motion: string; title: string; place?: "top" | "lower" };
 export type ScenePlan = { scenes: Scene[]; line: string; cta: string };
 
 export const ScenePlanSchema = z.object({
-  scenes: z.array(z.object({ still: z.string().min(10).max(500), motion: z.string().min(10).max(400), title: z.string().max(40).default("") })).min(1).max(6),
+  scenes: z.array(z.object({ still: z.string().min(10).max(500), motion: z.string().min(10).max(400), title: z.string().max(40).default(""), place: z.enum(["top", "lower"]).optional() })).min(1).max(6),
   line: z.string().max(70).default(""),
   cta: z.string().min(2).max(28),
 });
@@ -140,7 +140,7 @@ export function buildSceneDoc(p: Project, clips: { assetId: string; durationS: n
     part: null,
     durationS: Math.min(timing.showS, c.durationS),
     source: { kind: "video", assetId: c.assetId, inS: 0, outS: Math.min(timing.showS, c.durationS), muted: true },
-    overlays: plan.scenes[k]?.title ? overlayText({ w: size.w, h: size.h, safe, typo, text: plan.scenes[k].title, place: "top" }) : [],
+    overlays: plan.scenes[k]?.title ? overlayText({ w: size.w, h: size.h, safe, typo, text: plan.scenes[k].title, place: plan.scenes[k].place ?? "top" }) : [],
     transitionIn: { kind: k === 0 ? "cut" : "fade", durationS: k === 0 ? 0 : 0.5 },
     generated: c.generated,
   }));
@@ -168,7 +168,7 @@ export function buildSceneDoc(p: Project, clips: { assetId: string; durationS: n
     subtitles: { style: defaultSubtitleStyle({ width: size.w, height: size.h }, typo, pal), cues: [] },
     audio: { voice: [], voiceId: null, music: music ? { source: "synth", mood: "warm", gainDb: -12, style: songStyleFor(p), seed: p.id } : null, sfx: [], duckingDb: -10, loudnessLufs: -14 },
     brand: { palette: { ...pal }, fonts: { heading: typo.heading, body: typo.body }, name: p.brand?.name ?? "" },
-    disclosure: clips.some((c) => c.generated) ? disclosureLabel() : null,
+    disclosure: null,
     meta: { intent: as === "ad" ? "video_ad" : "social_content", source: "engine", createdFrom: null, runId: null, promo: true },
   };
   return doc;
