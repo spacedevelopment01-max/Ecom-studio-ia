@@ -11,3 +11,7 @@ Version « avant » (moteur gratuit, sans IA) : faite hors dépôt ; version Qwe
 - `pub-qwen.png`, 1104×1472 (4:5), photo Pixabay en référence ; facturé « 1K » + 1 image d'entrée (≈ 0,043 $), 17 s.
 - Montre fidèle à la photo ; textes exacts SAUF « ACER » au lieu de « ACIER » (faute de l'IA, non corrigée).
 - Avant : `pub-local-1x1.png`, `pub-local-4x5.png` (moteur gratuit) ; comparaison : `comparaison-pub.jpg`.
+
+## Publicité corrigée (gratuit, sans IA)
+- `pub-qwen-corrigee.png` : « ACER » → « ACIER » réécrit (police Jost), et le vrai logo ARVEN (emblème cadran +
+  ARVEN + HORLOGERIE, en ivoire / cognac) remplace le mot « ARVEN » dessiné par l'IA. Script : `scripts/pub-correction-logo.cjs`.
