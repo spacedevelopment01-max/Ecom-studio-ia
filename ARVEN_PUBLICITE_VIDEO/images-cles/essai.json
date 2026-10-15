@@ -1,0 +1,67 @@
+{
+  "at": "2026-10-15T15:35:20.121Z",
+  "model": "qwen-image-3.0-pro",
+  "boundUsd": 0.243,
+  "items": [
+    {
+      "id": "plan1-eveil",
+      "ok": true,
+      "model": "qwen-image-3.0-pro",
+      "aspect": "9:16",
+      "size": "928*1664",
+      "references": 1,
+      "usage": {
+        "input_image_count": 1,
+        "input_image_type": "qima_input_1k",
+        "output_height": 1664,
+        "output_image_count": 1,
+        "output_image_type": "qima_output_1k",
+        "output_width": 928
+      },
+      "requestId": "54ef077f-c076-9109-807b-38b74aa7c44c",
+      "seconds": 17,
+      "maxCostUsd": 0.081,
+      "prompt": "Cinematic macro photograph, vertical frame, for a luxury watch film. The watch is EXACTLY the one in the reference photo (same steel case, plain black dial with three silver sub-dials and their numbers, numbered bezel, luminous hands and indices, crown and pushers), seen from the SAME three-quarter angle. Extreme close-up on the dial filling most of the frame. Almost total darkness: a single very thin blade of warm golden light crosses the dial diagonally, catching the hands, the indices and the polished bezel; everything else falls into deep black. Shallow depth of field, rich film grain-free detail, high-end watch campaign quality. No text, no logo on the dial, no people, no hands."
+    },
+    {
+      "id": "plan2-roche",
+      "ok": true,
+      "model": "qwen-image-3.0-pro",
+      "aspect": "9:16",
+      "size": "928*1664",
+      "references": 1,
+      "usage": {
+        "input_image_count": 1,
+        "input_image_type": "qima_input_1k",
+        "output_height": 1664,
+        "output_image_count": 1,
+        "output_image_type": "qima_output_1k",
+        "output_width": 928
+      },
+      "requestId": "d0ce77eb-9884-94cf-829d-8d962fcf0e02",
+      "seconds": 17,
+      "maxCostUsd": 0.081,
+      "prompt": "Cinematic luxury watch photograph, vertical frame. The watch is EXACTLY the one in the reference photo (same steel case, plain black dial with three silver sub-dials and their numbers, numbered bezel, crown and pushers, brown leather strap with dark stitching), seen from the SAME three-quarter angle, resting on a slab of black textured volcanic rock. A narrow beam of warm light falls from the side, fine golden dust particles float in the beam, deep black background, crisp reflections on the steel, dramatic contrast, shallow depth of field, room above and below the watch. High-end watch campaign quality. No text, no logo on the dial, no people, no hands."
+    },
+    {
+      "id": "plan3-signature",
+      "ok": true,
+      "model": "qwen-image-3.0-pro",
+      "aspect": "9:16",
+      "size": "928*1664",
+      "references": 1,
+      "usage": {
+        "input_image_count": 1,
+        "input_image_type": "qima_input_1k",
+        "output_height": 1664,
+        "output_image_count": 1,
+        "output_image_type": "qima_output_1k",
+        "output_width": 928
+      },
+      "requestId": "26873608-931c-9f82-a1b8-a95c5e5be05e",
+      "seconds": 16,
+      "maxCostUsd": 0.081,
+      "prompt": "Cinematic luxury watch hero photograph, vertical frame, for the final shot of a film. The watch is EXACTLY the one in the reference photo (same steel case, plain black dial with three silver sub-dials and their numbers, numbered bezel, crown and pushers, brown leather strap with dark stitching), seen from the SAME three-quarter angle, centered slightly below the middle, on an elegant pure black background with a subtle warm golden rim light outlining the case and strap, soft glow on the floor, large clean empty black space at the top and at the bottom for titles. High-end watch campaign quality. No text, no logo on the dial, no people, no hands."
+    }
+  ]
+}
