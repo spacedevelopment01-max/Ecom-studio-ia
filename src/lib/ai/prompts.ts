@@ -330,7 +330,8 @@ Indique aussi la meilleure photo pour isoler le produit (« best ») : celle où
 Tu reçois : la photo d'origine, puis le détourage posé sur fond blanc, puis le même sur fond sombre.
 Vérifie : le produit est-il entier (aucune partie coupée ou retirée : oreilles, anses, sangles, disque central, écran, étiquette…) ? Reste-t-il des morceaux de fond, de décor, de texte ajouté ou de personne (main, bras, cou, cheveux) ? L'objet isolé est-il bien le produit vendu (et pas une personne, un animal ou un autre objet) ? Les bords sont-ils propres ?
 Un trou là où le produit est plein est un échec (« missing_parts »). Sois strict : un détourage douteux est refusé ; seul un détourage utilisable tel quel dans une boutique est « ok ».
-Codes de problèmes possibles : product_cut, missing_parts, background_left, person_left, wrong_object, other_objects, text_left, blurry.
+Produit ENTIER sur la photo d'origine elle-même : regarde le produit tel qu'il est vendu (une montre a son bracelet complet des deux côtés, un sac ses deux anses, un casque ses deux écouteurs, une chaise ses quatre pieds…). Si une partie manque déjà SUR LA PHOTO (hors du cadre, perdue dans l'ombre ou le noir, cachée par un objet, coupée par le cadrage), le détourage ne peut pas être bon : verdict « rejected » avec le code « incomplete_product », et nomme dans « note » la partie qui manque. C'est obligatoire, même si le découpage lui-même est propre.
+Codes de problèmes possibles : product_cut, missing_parts, incomplete_product, background_left, person_left, wrong_object, other_objects, text_left, blurry.
 Langue : « note » (une phrase courte) dans la langue de l'interface.`,
 
   logoSymbol: `Rôle : directeur artistique et dessinateur de pictogrammes (niveau agence). Tu dessines le SYMBOLE d'un logo : un pictogramme vectoriel simple, distinctif et propre à CE produit, pas une icône générique (soleil, étoile, planète, feuille, cœur, goutte, éclair, coche…).

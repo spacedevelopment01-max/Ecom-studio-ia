@@ -35,7 +35,8 @@ const isStop = (e: unknown) => e instanceof JobCancelled || e instanceof JobPaus
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || C("produit", "product");
 
 function originalsOf(projectId: string): Asset[] {
-  return all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'original' AND kind = 'image' AND deleted_at IS NULL ORDER BY created_at", projectId);
+  // Une reconstruction écartée (pas le même produit) n'est jamais une photo source.
+  return all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'original' AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at", projectId);
 }
 
 /** Photos triées devenues photos en situation (elles peuvent encore servir de dernière candidate au détourage). */
@@ -90,7 +91,102 @@ export async function ensureCutouts(ctx: JobContext | null, project: Project, op
       await makeCutout(project, base, candidate, { force: false, fallback: kind(candidate) !== "packshot" });
     }
   }
+  // Produit incomplet sur la photo (partie hors cadre, dans l'ombre, cachée) : JAMAIS utilisé tel quel — reconstruit
+  // en entier par l'IA d'images, sinon le client est prévenu clairement.
+  await completeIncompleteProduct(ctx, project, base);
   return validCutouts(project.id);
+}
+
+/** Raisons qui signifient « le produit n'est pas entier sur la photo » (et non un simple défaut de découpage). */
+export const INCOMPLETE_REASONS = ["incomplete_product", "cut_by_frame", "product_cut"];
+/** Essais de reconstruction au plus par photo (chacun est une image payante, comptée). */
+const MAX_COMPLETION_TRIES = 2;
+
+/** Photos du produit dont le détourage a été refusé parce que le produit n'est pas entier (meilleure photo d'abord). */
+export function incompleteProductPhotos(projectId: string): { photo: Asset; reasons: string[]; note: string | null }[] {
+  const out: { photo: Asset; reasons: string[]; note: string | null }[] = [];
+  for (const o of originalsOf(projectId)) {
+    if (meta(o).reconstructed) continue;
+    const c = cutoutFor(projectId, o.id);
+    const q = c ? (meta(c).quality as CutoutQuality | undefined) : undefined;
+    if (!c || c.status !== "rejected" || !q) continue;
+    const reasons = q.reasons.filter((r) => INCOMPLETE_REASONS.includes(r));
+    if (reasons.length) out.push({ photo: o, reasons, note: q.note ?? null });
+  }
+  return out.sort((x, y) => Number(!!meta(y.photo).triage?.best) - Number(!!meta(x.photo).triage?.best));
+}
+
+/**
+ * Reconstruction obligatoire d'un produit incomplet : sans détourage utilisable et avec une photo refusée parce que
+ * le produit n'y est pas entier, l'IA d'images refait le même produit en entier (photo du client en référence),
+ * contrôlé « même produit » quand le contrôle visuel est disponible, puis détouré et contrôlé comme toute photo.
+ * Sans IA (forfait, budget, fournisseur), rien n'est inventé : le client est prévenu (photo à remplacer ou
+ * reconstruction par l'IA). L'original du client est toujours gardé.
+ */
+async function completeIncompleteProduct(ctx: JobContext | null, project: Project, base: Base) {
+  if (validCutouts(project.id).length) return;
+  const todo = incompleteProductPhotos(project.id)[0];
+  if (!todo) return;
+  const src = todo.photo;
+  const done = (meta(src).completion ?? {}) as { tries?: number; warned?: boolean; failed?: boolean };
+  const tries = done.tries ?? 0;
+  const { aiActiveFor } = await import("../ai/access");
+  const { notify } = await import("../projects");
+  const what = todo.note ? ` (${todo.note})` : "";
+  if (!aiActiveFor(project.userId, project.id) || tries >= MAX_COMPLETION_TRIES) {
+    if (!done.warned) {
+      notify(
+        project.userId,
+        project.id,
+        L("Produit incomplet sur la photo", "Product incomplete in the photo"),
+        tries >= MAX_COMPLETION_TRIES
+          ? L(`La reconstruction du produit entier n'a pas donné un résultat fidèle${what}. Ajoutez une photo où le produit est entier, dans l'onglet Produit.`, `Rebuilding the whole product did not give a faithful result${what}. Add a photo where the product is whole, in the Product tab.`)
+          : L(`Une partie du produit manque sur la photo${what} : il ne sera jamais montré incomplet. Ajoutez une photo où il est entier, ou activez l'IA pour le reconstruire (image payante, prix annoncé).`, `Part of the product is missing in the photo${what}: it will never be shown incomplete. Add a photo where it is whole, or turn on AI to rebuild it (paid image, price shown).`),
+        "warning",
+      );
+      setMeta(reload(src.id), { completion: { ...done, warned: true } });
+    }
+    return;
+  }
+  ctx?.progress(0.34, L("Produit incomplet : reconstruction du produit entier (IA)", "Incomplete product: rebuilding the whole product (AI)"));
+  const step = async () => {
+    const { completeProductImage } = await import("../ai/media-providers");
+    const original = assetData(src);
+    const img = await completeProductImage({ ...base, usageKey: base.jobId ? `${base.jobId}:complete-product:${src.id}:${tries}` : undefined }, { image: original, missing: todo.note });
+    // Même produit que la photo du client (contrôle visuel quand il est disponible) : sinon l'essai est écarté.
+    let faithful: boolean | null = null;
+    if (llmConfigured()) {
+      const { aiQcImage, qcPassed } = await import("../ai/tasks");
+      const ref = await sharp(original, { failOn: "none" }).rotate().flatten({ background: "#ffffff" }).resize(768, 768, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer();
+      const cand = await sharp(img).resize(768, 768, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer();
+      faithful = qcPassed(await aiQcImage({ ...base, usageKey: base.jobId ? `${base.jobId}:complete-product-qc:${src.id}:${tries}` : undefined }, ref, cand, { peopleAllowed: false }).catch(() => null));
+    }
+    const a = await saveAsset({
+      projectId: project.id,
+      userId: project.userId,
+      data: img,
+      name: `${slug(project.product.name || project.name)}-${C("entier", "whole")}-${tries + 1}.png`,
+      mime: "image/png",
+      role: "original",
+      folderKey: "product.originals",
+      origin: "generated",
+      sourceAssetId: src.id,
+      // Vérifiée « même produit » : sert de photo de référence ; sinon gardée à vérifier, jamais utilisée d'office.
+      status: faithful === false ? "rejected" : faithful ? "ready" : "review",
+      meta: { reconstructed: { from: src.id, missing: todo.note, reasons: todo.reasons, faithful, at: now() }, triage: { kind: "packshot", by: "local", best: true, at: now() } },
+    });
+    setMeta(reload(src.id), { completion: { ...done, tries: tries + 1 } });
+    return { id: a.id, faithful };
+  };
+  const r = ctx ? await ctx.step(`complete-product:${src.id}:${tries}`, step) : await step();
+  if (r.faithful === false) return completeIncompleteProduct(ctx, project, base);
+  const rebuilt = reload(r.id);
+  await makeCutout(project, base, rebuilt, { force: false, fallback: false });
+  // Sans contrôle visuel disponible, la reconstruction n'a pas pu être comparée à la photo : le client la vérifie.
+  if (r.faithful === null && validCutouts(project.id).length)
+    notify(project.userId, project.id, L("Produit reconstruit en entier : à vérifier", "Product rebuilt in full: please check"), L(`Une partie du produit manquait sur la photo${what} : l'IA l'a reconstruit en entier. Vérifiez dans l'onglet Produit qu'il correspond exactement au vôtre.`, `Part of the product was missing in the photo${what}: AI rebuilt it in full. Check in the Product tab that it matches yours exactly.`), "warning");
+  // Détourage de la reconstruction refusé (encore incomplet, autre objet…) : nouvel essai dans la limite, sinon le client est prévenu.
+  if (!validCutouts(project.id).length) return completeIncompleteProduct(ctx, project, base);
 }
 
 /** Intérêt d'une photo comme dernière candidate : choisie par l'IA, puis fond le plus simple. */

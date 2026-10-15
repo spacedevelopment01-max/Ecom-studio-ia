@@ -498,6 +498,21 @@ async function editPhotoImpl(ctx: Ctx, input: { image: Buffer; instruction: stri
   return generateImageImpl(ctx, { text: editPhotoPrompt(input.instruction, input.aspect), aspect: input.aspect, reference: input.image, quality: "high", usage: input.usage ?? "ad_visual" });
 }
 
+/**
+ * Produit incomplet sur la photo du client (partie hors cadre, perdue dans l'ombre, cachée) : l'IA d'images refait le
+ * MÊME produit en entier, de face ou du même angle, sur un fond clair uni — seule la partie manquante est ajoutée,
+ * dans la continuité exacte de ce qui se voit (formes, matières, couleurs, coutures, inscriptions).
+ */
+export function completeProductPrompt(missing?: string | null): string {
+  return `Product photography retouching. The attached photo shows a real product that is NOT entirely visible: ${missing?.trim() ? `missing part: ${missing.replace(/"/g, "'").slice(0, 200)}` : "a part of it is out of frame, lost in shadow or hidden"}.
+Recreate the very same product, complete and entirely visible, as a clean e-commerce packshot: centred, the whole object inside the frame with generous margins, on a plain light neutral background, soft studio light, a soft natural shadow under it.
+Keep every visible detail exactly as on the photo (shape, proportions, materials, colours, finishes, stitching, numbers, markings and printed text, same camera angle when possible); only add the missing part, drawn as the natural continuation of what is visible (for a watch: the full strap on both sides with its buckle; for a bag: both handles…). Do not redesign, restyle or simplify the product, do not change any colour, do not invent a logo, a brand name or a word, do not add a second product, props, text, hands or people. Photorealistic. Square format.`;
+}
+
+async function completeProductImpl(ctx: Ctx, input: { image: Buffer; missing?: string | null }) {
+  return generateImageImpl(ctx, { text: completeProductPrompt(input.missing), aspect: "1:1", reference: input.image, quality: "high", usage: "product_edit" });
+}
+
 /** Consigne de retouche d'une photo livrée : la demande du client, rien d'autre ne bouge. */
 export function editPhotoPrompt(instruction: string, aspect: string): string {
   return `Edit the attached photograph. Change requested by the client: "${instruction.replace(/"/g, "'").slice(0, 400)}".
@@ -1074,6 +1089,8 @@ export const openaiScene = withMediaBackup("image", traced("image_generation", o
 export const productPlate = withMediaBackup("image", traced("image_generation", productPlateImpl), { usage: (_c, i) => i.usage ?? "product_image" });
 export const productScene = withMediaBackup("image", traced("image_generation", productSceneImpl), { usage: (_c, i) => i.usage ?? "product_image" });
 export const editPhoto = withMediaBackup("image", traced("image_generation", editPhotoImpl), { usage: (_c, i) => i.usage ?? "ad_visual" });
+/** Produit incomplet sur la photo : reconstruit en entier (même produit), payant, compté comme toute image. */
+export const completeProductImage = withMediaBackup("image", traced("image_generation", completeProductImpl), { usage: () => "product_edit" });
 /** Ancien nom (décor vide) : même génération, par le modèle de l'usage. */
 export const geminiPlate = productPlate;
 export const veoClip = traced("video_generation", veoClipImpl);

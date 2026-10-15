@@ -1275,7 +1275,7 @@ export async function aiPhotoTriage(b: Base, photos: Buffer[]) {
   );
 }
 
-export const CUTOUT_PROBLEMS = ["product_cut", "missing_parts", "background_left", "person_left", "wrong_object", "other_objects", "text_left", "blurry"] as const;
+export const CUTOUT_PROBLEMS = ["product_cut", "missing_parts", "incomplete_product", "background_left", "person_left", "wrong_object", "other_objects", "text_left", "blurry"] as const;
 export const CutoutCheckSchema = z.object({
   verdict: z.enum(["ok", "rejected"]).catch("rejected"),
   score: z.coerce.number().catch(0),
