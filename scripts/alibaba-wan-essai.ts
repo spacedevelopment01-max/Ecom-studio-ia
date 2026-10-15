@@ -3,7 +3,8 @@
  * studio (alibaba.ts : wanVideoBody, wanTask), en 1080P ou 720P. Ne s'exécute qu'avec --confirm, sous un plafond
  * (--max-usd) calculé au tarif de la liste officielle ; UN SEUL envoi par clip, aucune nouvelle tentative.
  *   NODE_USE_ENV_PROXY=1 npx tsx scripts/alibaba-wan-essai.ts --confirm --spec=<fichier.json> --out=<dossier> --max-usd=3.2
- * Spécification : { model, resolution: "1080P"|"720P", usdPerSecond, items: [{ id, image, seconds, prompt }] }.
+ * Spécification : { model, resolution: "1080P"|"720P", usdPerSecond, parameters? (ex. { audio: false }), items: [{ id, image, seconds, prompt }] }.
+ * usdPerSecond = tarif le PLUS CHER possible pour le modèle (le plafond reste sûr même si une option est ignorée).
  * L'identifiant de chaque tâche est gardé dès sa création (<out>/<id>.task.json) : relancer avec --resume récupère
  * les vidéos déjà payées sans en commander de nouvelles. Clé : injectée par la passerelle réseau, jamais affichée.
  */
@@ -15,7 +16,7 @@ import { GATEWAY_KEY } from "@/lib/ai/gateway";
 
 const args = process.argv.slice(2);
 const arg = (k: string) => args.find((a) => a.startsWith(`--${k}=`))?.split("=").slice(1).join("=");
-const spec = JSON.parse(fs.readFileSync(arg("spec")!, "utf8")) as { model: string; resolution: "1080P" | "720P"; usdPerSecond: number; items: { id: string; image: string; seconds: number; prompt: string }[] };
+const spec = JSON.parse(fs.readFileSync(arg("spec")!, "utf8")) as { model: string; resolution: "1080P" | "720P"; usdPerSecond: number; parameters?: Record<string, unknown>; items: { id: string; image: string; seconds: number; prompt: string }[] };
 const OUT = path.resolve(arg("out") ?? "ARVEN_PUBLICITE_VIDEO/clips");
 const resume = args.includes("--resume");
 if (!resume && !args.includes("--confirm")) {
@@ -38,7 +39,7 @@ async function start(it: (typeof spec.items)[number]) {
   if (resume) return null;
   const image = `data:image/jpeg;base64,${(await sharp(it.image).jpeg({ quality: 92 }).toBuffer()).toString("base64")}`;
   const body = wanVideoBody({ model: spec.model, prompt: it.prompt, image, seconds: it.seconds, people: false });
-  (body.parameters as Record<string, unknown>).resolution = spec.resolution;
+  Object.assign(body.parameters as Record<string, unknown>, { resolution: spec.resolution }, spec.parameters ?? {});
   const r = await fetch(`${base}/services/aigc/video-generation/video-synthesis`, { method: "POST", headers: headers(true), body: JSON.stringify(body) });
   const text = await r.text();
   if (!r.ok) throw new Error(`${it.id} : ${alibabaError(r.status, text).message}`);

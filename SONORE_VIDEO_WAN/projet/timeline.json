@@ -1,0 +1,32 @@
+{
+  "titre": "SONORE — film 15 s, vertical (Alibaba Qwen-Image + Wan 2.6)",
+  "sortie": { "fichier": "SONORE_VIDEO_WAN/SONORE_film_15s_1080x1920.mp4", "largeur": 1080, "hauteur": 1920, "ips": 30, "duree": 15 },
+  "etalonnage": "eq=contrast=1.05:saturation=1.0:gamma=0.98,vignette=PI/5",
+  "plans": [
+    { "id": "plan1-onde", "fichier": "SONORE_VIDEO_WAN/clips/plan1-onde.mp4", "debut": 0, "duree": 4.8,
+      "pourquoi": "Onde : le casque flotte, anneaux rouges comme une onde sonore, avancée de caméra." },
+    { "id": "plan2-matiere", "fichier": "SONORE_VIDEO_WAN/clips/plan2-matiere.mp4", "debut": 0, "duree": 5.0,
+      "transition": { "type": "dissolve", "duree": 0.5 }, "pourquoi": "Matière : rai de lumière sur l'aluminium brossé." },
+    { "id": "plan3-signature", "fichier": "SONORE_VIDEO_WAN/clips/plan3-signature.mp4", "debut": 0, "duree": 2.0, "vitesse": 0.4,
+      "transition": { "type": "dissolve", "duree": 0.4 },
+      "pourquoi": "Signature : l'anneau rouge s'allume. Seules les 0,8 premières secondes servent (ralenties) : ensuite l'IA ajoute une fumée ratée." }
+  ],
+  "carte_finale": { "couleur": "0x0E0F11", "transition": { "type": "fade", "duree": 0.6 } },
+  "titres": [
+    { "calque": "SONORE_VIDEO_WAN/titres/titre-ecoutez.png", "entree": 1.0, "sortie": 4.2, "glisse": 24 },
+    { "calque": "SONORE_VIDEO_WAN/titres/titre-detail.png", "entree": 5.4, "sortie": 8.8, "glisse": 24 },
+    { "calque": "SONORE_VIDEO_WAN/titres/logo.png", "entree": 10.9, "sortie": 15.5, "glisse": 0 },
+    { "calque": "SONORE_VIDEO_WAN/titres/slogan.png", "entree": 11.5, "sortie": 15.5, "glisse": 30 },
+    { "calque": "SONORE_VIDEO_WAN/titres/bouton.png", "entree": 12.2, "sortie": 15.5, "glisse": 30 }
+  ],
+  "audio": {
+    "musique": { "fichier": "SONORE_VIDEO_WAN/musique/musique-15s.wav", "volume": 0.9,
+      "licence": "Composée par le studio (style lounge) ; instruments GeneralUser GS (libre, usage commercial compris) ; moteur SpessaSynth (Apache-2.0)." },
+    "effets": [
+      { "fichier": "SONORE_VIDEO_WAN/son/pulsation.wav", "a": [0.1, 1.6, 3.1], "volume": 0.8 },
+      { "fichier": "SONORE_VIDEO_WAN/son/souffle.wav", "a": [4.3, 8.9], "volume": 0.6 },
+      { "fichier": "SONORE_VIDEO_WAN/son/signature.wav", "a": 10.8, "volume": 0.8 }
+    ],
+    "loudness": "-14 LUFS, crête -1 dBTP"
+  }
+}

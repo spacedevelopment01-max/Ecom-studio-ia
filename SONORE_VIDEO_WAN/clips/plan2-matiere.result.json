@@ -1,0 +1,20 @@
+{
+  "request_id": "cf941923-aadc-9fc7-a250-62a5b10b3b8f",
+  "output": {
+    "task_id": "c0319faf-a45f-444f-93ee-f1925a2855fe",
+    "task_status": "SUCCEEDED",
+    "submit_time": "2026-10-16 00:13:52.774",
+    "scheduled_time": "2026-10-16 00:13:52.798",
+    "end_time": "2026-10-16 00:14:33.917",
+    "orig_prompt": "Premium headphones commercial, macro shot. The camera glides slowly sideways along the ear cup with parallax; a narrow beam of cool white light sweeps across the brushed aluminium, making the radial texture shimmer; the thin red ring catches the light; dust particles drift in the beam. Keep the headphones exactly identical. Smooth, slow, elegant motion. Single continuous shot, no cuts. No text, no logo, no people, no hands. No people in frame.",
+    "video_url": "https://dashscope-463f.oss-accelerate.aliyuncs.com/1d/d1/20261016/e4949017/323fd2a5e9b44eaf9fb601b3cdfc0ce7-metadata_7b5d510b33d9e080.mp4?Expires=1792167273&OSSAccessKeyId=LTAI5t7xkDxYoFdeAc4nqUeU&Signature=vW%2F1x6kJ2sAv8mHy3XN%2B0MQtMW8%3D"
+  },
+  "usage": {
+    "duration": 5,
+    "input_video_duration": 0,
+    "output_video_duration": 5,
+    "video_count": 1,
+    "audio": false,
+    "SR": 1080
+  }
+}

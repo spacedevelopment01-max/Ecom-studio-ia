@@ -1,0 +1,31 @@
+{
+  "titre": "Racines & Pierres — film 15 s, vertical (vidéos Pixabay de chantier + montage du studio)",
+  "sortie": { "fichier": "PAYSAGISTE_VIDEO/RACINES-PIERRES_film_15s_1080x1920.mp4", "largeur": 1080, "hauteur": 1920, "ips": 30, "duree": 15 },
+  "etalonnage": "eq=contrast=1.06:saturation=1.08:gamma=0.98,colorbalance=rs=0.02:gs=0.01:bs=-0.03:rh=0.03:gh=0.01:bh=-0.02,vignette=PI/6",
+  "plans": [
+    { "id": "creer-beche", "fichier": "PAYSAGISTE_VIDEO/pixabay/6580.mp4", "debut": 2.0, "duree": 4.8, "recadrage": { "x": 0.5, "y": 0.5 },
+      "pourquoi": "Création : la bêche entre dans la pelouse (pied seul, aucun visage). Pixabay 6580." },
+    { "id": "amenager-paves", "fichier": "PAYSAGISTE_VIDEO/pixabay/67463.mp4", "debut": 2.0, "duree": 5.0, "recadrage": { "x": 0.5, "y": 0.5 },
+      "transition": { "type": "slideleft", "duree": 0.45 }, "pourquoi": "Aménagement : pose de pavés, mains seules. Pixabay 67463." },
+    { "id": "entretenir-debroussailleuse", "fichier": "PAYSAGISTE_VIDEO/pixabay/11167.mp4", "debut": 0.5, "duree": 4.6, "recadrage": { "x": 0.42, "y": 0.5 },
+      "transition": { "type": "slideleft", "duree": 0.45 }, "pourquoi": "Entretien : débroussailleuse, bottes seules. Pixabay 11167." }
+  ],
+  "carte_finale": { "couleur": "0xF7F8F1", "transition": { "type": "fade", "duree": 0.6 } },
+  "titres": [
+    { "calque": "PAYSAGISTE_VIDEO/titres/titre-cree.png", "entree": 0.6, "sortie": 4.3, "glisse": 30 },
+    { "calque": "PAYSAGISTE_VIDEO/titres/titre-amenage.png", "entree": 5.0, "sortie": 8.8, "glisse": 30 },
+    { "calque": "PAYSAGISTE_VIDEO/titres/titre-entretient.png", "entree": 9.4, "sortie": 12.6, "glisse": 30 },
+    { "calque": "PAYSAGISTE_VIDEO/titres/logo.png", "entree": 12.6, "sortie": 15.5, "glisse": 0 },
+    { "calque": "PAYSAGISTE_VIDEO/titres/slogan.png", "entree": 13.1, "sortie": 15.5, "glisse": 30 },
+    { "calque": "PAYSAGISTE_VIDEO/titres/bouton.png", "entree": 13.6, "sortie": 15.5, "glisse": 30 }
+  ],
+  "audio": {
+    "musique": { "fichier": "PAYSAGISTE_VIDEO/musique/musique-15s.wav", "volume": 0.9,
+      "licence": "Composée par le studio (style inspirant) ; instruments GeneralUser GS (libre, usage commercial compris) ; moteur SpessaSynth (Apache-2.0)." },
+    "effets": [
+      { "fichier": "PAYSAGISTE_VIDEO/son/souffle.wav", "a": [4.3, 9.1], "volume": 0.5 },
+      { "fichier": "PAYSAGISTE_VIDEO/son/tintement.wav", "a": 12.6, "volume": 0.5 }
+    ],
+    "loudness": "-14 LUFS, crête -1 dBTP"
+  }
+}

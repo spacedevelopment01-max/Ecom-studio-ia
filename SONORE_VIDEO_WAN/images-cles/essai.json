@@ -1,0 +1,47 @@
+{
+  "at": "2026-10-15T16:13:35.207Z",
+  "model": "qwen-image-3.0-pro",
+  "boundUsd": 0.162,
+  "items": [
+    {
+      "id": "plan2-matiere",
+      "ok": true,
+      "model": "qwen-image-3.0-pro",
+      "aspect": "9:16",
+      "size": "928*1664",
+      "references": 1,
+      "usage": {
+        "input_image_count": 1,
+        "input_image_type": "qima_input_1k",
+        "output_height": 1664,
+        "output_image_count": 1,
+        "output_image_type": "qima_output_1k",
+        "output_width": 928
+      },
+      "requestId": "f0aab16d-21e3-9f22-b9ec-3d01b8f9b766",
+      "seconds": 25,
+      "maxCostUsd": 0.081,
+      "prompt": "Cinematic extreme macro photograph, vertical frame, of EXACTLY the headphones of the reference image (same matte black headband with fine red stitching, same black leather cushions, same round brushed silver aluminium ear cup with its thin red ring, same silver sliders), shown ALONE: extreme close-up on one ear cup and the slider, filling most of the frame, seen from a low side angle. Dark charcoal background. A narrow raking beam of cool white light crosses the radial brushed metal and makes it shimmer, deep shadows elsewhere, tiny dust particles drifting in the beam. Ultra sharp textures, shallow depth of field. World-class audio brand campaign quality, photorealistic. No person, no hands, no text, no logo."
+    },
+    {
+      "id": "plan3-signature",
+      "ok": true,
+      "model": "qwen-image-3.0-pro",
+      "aspect": "9:16",
+      "size": "928*1664",
+      "references": 1,
+      "usage": {
+        "input_image_count": 1,
+        "input_image_type": "qima_input_1k",
+        "output_height": 1664,
+        "output_image_count": 1,
+        "output_image_type": "qima_output_1k",
+        "output_width": 928
+      },
+      "requestId": "e969e004-f5bb-94c3-838f-8285807929cb",
+      "seconds": 34,
+      "maxCostUsd": 0.081,
+      "prompt": "Cinematic hero product photograph, vertical frame, final shot of a premium headphones film. EXACTLY the headphones of the reference image (same matte black headband with fine red stitching, same black leather cushions, same brushed silver aluminium ear cups with thin red rings, same silver sliders), shown ALONE, standing upright on a small raw grey concrete pedestal, front three-quarter view, placed slightly below the middle of the frame. Pure graphite-black background with a soft red backlight halo behind the headphones and a gentle reflection on the pedestal. Large clean empty dark space at the top and at the bottom for titles. World-class audio brand campaign quality, photorealistic. No person, no hands, no text, no logo."
+    }
+  ]
+}

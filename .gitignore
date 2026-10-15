@@ -14,3 +14,8 @@ _site
 # Copies muettes des tutoriels (avant voix off), régénérables par scripts/build-tutorials.ts
 scripts/tutorials/silent/
 .studio-dev.pid
+
+# Vidéos Pixabay brutes (re-téléchargeables : voir PAYSAGISTE_VIDEO/pixabay/sources.jsonl)
+PAYSAGISTE_VIDEO/pixabay/*.mp4
+PAYSAGISTE_VIDEO/ecartees-paysages/
+SONORE_VIDEO_WAN/ecartees-reference-pixabay/references/
