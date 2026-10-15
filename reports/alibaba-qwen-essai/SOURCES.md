@@ -58,3 +58,8 @@ Coût : 4 × (0,04 $ + 2 × 0,003 $) ≈ 0,184 $ (facturé « 1K », 2 images d'
 - Textes exacts : « LE TEMPS, BIEN PORTÉ », « Le détail fait l'élégance. » (« l'élégance » en doré), « Découvrir › »,
   « ÉLÉGANCE | CARACTÈRE | ACIER & CUIR ». Montre fidèle, cadran sans logo. Dos des livres : ornements dorés illisibles
   (décor). ≈ 0,046 $, aucune retouche.
+
+## Story « minérale » — même mise en page que la référence, design différent (15/10/2026)
+- `story-mineral.png`, 928×1664 : travertin, arche, lumière du jour, pampa. Textes exacts (« HORLOGERIE »,
+  « Un classique à votre rythme. », « Découvrir → », « ACIER · CUIR · TROIS COMPTEURS »). Montre fidèle.
+  Petit écart : l'aiguille du logo est noire au lieu de cognac. ≈ 0,046 $, aucune retouche.
