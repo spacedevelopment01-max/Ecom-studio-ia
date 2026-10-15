@@ -1,27 +1,27 @@
 {
-  "at": "2026-10-15T13:47:44.605Z",
+  "at": "2026-10-15T14:20:13.072Z",
   "model": "qwen-image-3.0-pro",
   "boundUsd": 0.081,
   "items": [
     {
-      "id": "pub2-qwen",
+      "id": "pub3-qwen",
       "ok": true,
       "model": "qwen-image-3.0-pro",
-      "aspect": "1:1",
-      "size": "1328*1328",
+      "aspect": "9:16",
+      "size": "928*1664",
       "references": 2,
       "usage": {
         "input_image_count": 2,
         "input_image_type": "qima_input_1k",
-        "output_height": 1328,
+        "output_height": 1664,
         "output_image_count": 1,
         "output_image_type": "qima_output_1k",
-        "output_width": 1328
+        "output_width": 928
       },
-      "requestId": "8e9c4fa9-9209-978c-a4d0-5aef4c12589e",
-      "seconds": 29,
+      "requestId": "30fe4bb9-a930-9b5c-b11a-3bc79a6db5d0",
+      "seconds": 25,
       "maxCostUsd": 0.081,
-      "prompt": "Create a premium square Instagram advertisement (1:1) for the watch brand ARVEN, in a bright, minimal, editorial style — the opposite of a dark ad. Image 1 is the product: keep the watch EXACTLY as it is (same steel case, black dial with three silver sub-dials, numbered bezel, crown and pushers, brown leather strap with dark stitching); do not redesign it and do not add any text or logo on the watch. Image 2 is the brand logo: reproduce it faithfully and small at the top center (the dial emblem with the letter A and the cognac hand, the name ARVEN and the line HORLOGERIE), do not redraw or change its letters. Scene: top-down flat lay, the watch lying slightly diagonal on warm ivory travertine stone (#F3EFE7), soft natural morning light from the upper left, a long soft shadow, a small folded cognac leather card (#A0612B) and a sprig of dried olive leaves near the edge, lots of empty space, calm and luxurious. Typography: in the lower left area, a headline in an elegant near-black serif (#111214): \"Chaque seconde compte.\"; below it, a thin underlined text link in near-black spaced sans-serif capitals: \"DÉCOUVRIR\". Spell every word EXACTLY with the accents. No price, no other text, no people, no hands, no wrist."
+      "prompt": "Create a premium vertical story advertisement (9:16) for Instagram and TikTok for the watch brand ARVEN, in a bold, graphic, architectural style — different from a dark studio shot or a flat lay. Image 1 is the product: keep the watch EXACTLY as it is (same steel case, black dial with three silver sub-dials, numbered bezel, crown and pushers, brown leather strap with dark stitching); do not redesign it, do not add any text or logo on the watch. Image 2 is the brand logo: reproduce only its dial emblem (circle with the letter A and the cognac hand) and the name ARVEN faithfully and small at the bottom center, without changing the letters. Scene: the watch standing upright on a solid cognac block (#A0612B) against a smooth deep near-black wall (#111214), a single strong diagonal beam of warm late-afternoon light crossing the wall and the watch, crisp geometric shadows, the steel catching the light, minimal and sculptural, lots of negative space at the top. Typography: at the top, large ivory (#F3EFE7) serif text on two lines: \"L'heure\" then \"juste.\"; under it, smaller, in spaced ivory sans-serif capitals: \"CHRONOGRAPHE ARVEN\". Spell every word EXACTLY, keep the apostrophe. No price, no other text, no button, no people, no hands, no wrist."
     }
   ]
 }
