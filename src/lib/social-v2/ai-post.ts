@@ -2,7 +2,8 @@
  * Publication entièrement conçue par l'IA : l'IA d'images compose le visuel complet (scène, mise en page,
  * typographie, bouton) avec le VRAI produit en référence, dans les couleurs de la marque. Les textes sont donnés mot
  * pour mot ; un contrôle visuel vérifie ensuite l'orthographe exacte, la lisibilité et la fidélité au produit. Un
- * essai refusé est refait une fois avec la correction demandée ; sinon la publication garde son rendu du studio.
+ * essai refusé est refait avec la correction demandée (3 essais au plus, règle du propriétaire) ; sinon la version du
+ * studio prend le relais (scène créée par l'IA sans texte + mise en page à calques, ou rendu local).
  * Coût vérifié avant chaque appel (plafond du lot) ; jamais sans IA active ni accord.
  */
 import { z } from "zod";
@@ -13,7 +14,8 @@ import { effectivePalette } from "../route-palette";
 import { C } from "../i18n-server";
 import { peopleAllowedFor } from "../people-policy";
 import { aiPostImage, aiPostMaxMicro } from "../ai/media-providers";
-import type { MediaResult, PostBrief } from "./deps";
+import { AI_POST_ATTEMPTS, type MediaResult, type PostBrief } from "./deps";
+import { MAIN_PRODUCT, type SubjectOption } from "../creative-subject";
 
 export const AiPostReviewSchema = z.object({
   /** Textes lus dans l'image, recopiés lettre pour lettre (comparés ensuite par le studio, pas par l'IA). */
@@ -77,7 +79,7 @@ export function aiPostPrompt(p: Project, post: PostBrief, o: { aspect: string; h
   return `Create a finished, ultra-premium social media advertisement (${post.network}, aspect ratio ${o.aspect}) for the brand "${t.brand}", at the level of a top brand's advertising campaign: real campaign photography and refined typography in one image, ready to publish.
 Subject: ${p.product.name || p.product.category} — ${p.product.summary?.slice(0, 300) ?? ""}
 Post angle: ${post.pillar ?? ""} — ${post.title}.
-${t.scene ? `Universe of THIS post (its own setting, light and mood — not a generic template): ${t.scene}\n` : ""}${o.hasReference ? `The product in the first reference image is the hero: reproduce it EXACTLY, seen from the SAME angle and viewpoint as the photo (same shape, proportions, materials, colours, details, printed text); never redraw it from another angle, never redesign it, never add a word or logo on it that is not on the reference, never add a second copy. If the reference shows it worn or held by someone, take only the product.
+${post.request ? `Client's brief for THIS visual (follow it closely; it has priority over the post angle, but never breaks the rules below): ${post.request.slice(0, 600)}\n` : ""}${t.scene ? `Universe of THIS post (its own setting, light and mood — not a generic template): ${t.scene}\n` : ""}${o.hasReference ? `The product in the first reference image is the hero: reproduce it EXACTLY, seen from the SAME angle and viewpoint as the photo (same shape, proportions, materials, colours, details, printed text); never redraw it from another angle, never redesign it, never add a word or logo on it that is not on the reference, never add a second copy. If the reference shows it worn or held by someone, take only the product.
 ` : ""}Finish: real light (key light, rim light, crisp reflections), depth of field with a blurred environment that tells the story, rich true-to-life materials, high dynamic range. No text, letters or signs anywhere in the decor.
 Art direction: free and original for THIS post — choose the composition, framing, typography and placement of each element that best serves the idea (never a fixed template: product, texts and brand mark may sit anywhere, as the best agencies would decide). The result must be worthy of the greatest advertising campaigns in the world.
 Elements to include:
@@ -116,11 +118,22 @@ export type AiPostDeps = {
   maxMicro: () => number | null;
 };
 
-export async function designPostWithAi(p: Project, post: PostBrief, o: { aspect: "1:1" | "4:5" | "9:16" | "16:9"; maxCostEur: number; reference: string | null }, deps: AiPostDeps): Promise<MediaResult> {
+/**
+ * Projet vu à travers le sujet choisi (produit du catalogue ou service) : le visuel parle de CE produit ou service,
+ * avec ses informations, sans rien inventer (les faits vérifiés ne valent que pour le produit principal).
+ */
+export function projectForSubject(p: Project, subject: SubjectOption | null | undefined): Project {
+  if (!subject || (subject.kind === "product" && subject.key === MAIN_PRODUCT)) return p;
+  return { ...p, product: { ...p.product, name: subject.name, summary: subject.summary || p.product.summary, facts: [] } };
+}
+
+export async function designPostWithAi(p0: Project, post: PostBrief, o: { aspect: "1:1" | "4:5" | "9:16" | "16:9"; maxCostEur: number; reference: string | null; subject?: SubjectOption | null; /** Publicité (rôle « ad ») plutôt que publication organique. */ as?: "post" | "ad" }, deps: AiPostDeps): Promise<MediaResult> {
+  const p = projectForSubject(p0, o.subject);
+  const isAd = o.as === "ad";
   const capMicro = Math.round(o.maxCostEur * 1e6);
   const ref = o.reference ? getAsset(o.reference) : null;
   const refBuf = ref ? assetData(ref) : null;
-  if (p.business !== "services" && !refBuf) return { assetId: null, costMicro: 0, by: "image_v2", note: C("publication IA : aucune photo de référence du produit (le studio n'invente pas le produit)", "AI post: no product reference photo (the studio never invents the product)") };
+  if (p.business !== "services" && o.subject?.kind !== "service" && !refBuf) return { assetId: null, costMicro: 0, by: "image_v2", note: C("publication IA : aucune photo de référence du produit (le studio n'invente pas le produit)", "AI post: no product reference photo (the studio never invents the product)") };
   // Chaque passage a ses propres clés : un essai d'un passage précédent n'est ni recompté dans ce plafond, ni rejoué.
   const prefix = `ai-post:${post.id}:${Date.now().toString(36)}`;
   const base = aiPostTexts(p, post);
@@ -132,7 +145,7 @@ export async function designPostWithAi(p: Project, post: PostBrief, o: { aspect:
   const written = deps.copy ? await deps.copy(p, post, base, `${prefix}:copy`, people).catch(() => null) : null;
   const t = written ? cleanAiCopy(written, base, people) : base;
   let fix = "";
-  for (let attempt = 0; attempt < 2; attempt++) {
+  for (let attempt = 0; attempt < AI_POST_ATTEMPTS; attempt++) {
     const max = deps.maxMicro();
     if (max == null) return { assetId: null, costMicro: deps.spentMicro(prefix), by: "image_v2", note: C("publication IA : aucun modèle d'images disponible", "AI post: no image model available") };
     if (deps.spentMicro(prefix) + max > capMicro) break;
@@ -143,9 +156,9 @@ export async function designPostWithAi(p: Project, post: PostBrief, o: { aspect:
     const r = await deps.review(img, refBuf, expected, key, people, logoBuf);
     if (!aiPostAccepted(r, !!refBuf, expected, people)) {
       // Image payée refusée : gardée (statut refusé, défauts notés), jamais jetée.
-      await saveAsset({ projectId: p.id, userId: p.userId, data: img, name: `publication-ia-refusee-${post.id.slice(0, 6)}-${attempt + 1}.png`, mime: "image/png", role: "social-trial", folderKey: "content.calendar", origin: "generated", status: "rejected", meta: { recipe: "Essai de publication conçue par l'IA, refusé par le contrôle", post: post.id, aiPost: { texts: t, transcribed: r.transcribed, issues: r.issues, score: r.score, attempt: attempt + 1 } } });
+      await saveAsset({ projectId: p.id, userId: p.userId, data: img, name: `${isAd ? "publicite" : "publication"}-ia-refusee-${post.id.slice(0, 6)}-${attempt + 1}.png`, mime: "image/png", role: "social-trial", folderKey: isAd ? "images.ads" : "content.calendar", origin: "generated", status: "rejected", meta: { recipe: "Essai de publication conçue par l'IA, refusé par le contrôle", post: post.id, aiPost: { texts: t, transcribed: r.transcribed, issues: r.issues, score: r.score, attempt: attempt + 1 } } });
     } else {
-      const a = await saveAsset({ projectId: p.id, userId: p.userId, data: img, name: `publication-ia-${post.network}-${post.id.slice(0, 6)}.png`, mime: "image/png", role: "social", folderKey: "content.calendar", origin: "generated", status: "ready", meta: { recipe: "Publication entièrement conçue par l'IA (produit réel en référence, textes vérifiés)", post: post.id, socialV2: true, aiPost: { texts: t, score: r.score, attempts: attempt + 1, reference: o.reference } } });
+      const a = await saveAsset({ projectId: p.id, userId: p.userId, data: img, name: `${isAd ? "publicite" : "publication"}-ia-${post.network}-${post.id.slice(0, 6)}.png`, mime: "image/png", role: isAd ? "ad" : "social", folderKey: isAd ? "images.ads" : "content.calendar", origin: "generated", status: "ready", meta: { recipe: isAd ? "Publicité entièrement conçue par l'IA (produit réel en référence, textes vérifiés)" : "Publication entièrement conçue par l'IA (produit réel en référence, textes vérifiés)", ...(isAd ? { aiAd: true } : { post: post.id, socialV2: true }), aspect: o.aspect, aiPost: { texts: t, score: r.score, attempts: attempt + 1, reference: o.reference, subject: o.subject ? { kind: o.subject.kind, key: o.subject.key, name: o.subject.name } : null, request: post.request ?? null, brand: { name: p.brand?.name ?? "", logo: p.brand?.logo?.assetId ?? null, palette: p.brand?.palette ?? null } } } });
       return { assetId: a.id, costMicro: deps.spentMicro(prefix), by: "image_v2" };
     }
     fix = [r.fix, ...r.issues].filter(Boolean).join(" ; ").slice(0, 400) || "spell every text exactly and keep the product identical to the reference";
@@ -167,7 +180,7 @@ export function realAiPostDeps(base: { userId: string; projectId: string; jobId:
           promptKey: "social-ai-post-copy",
           routing: { difficulty: "standard", deliverable: "ad_v2" },
           system: "You are the creative director of a top advertising agency. You write French ad copy for social media posts. Answer with JSON only.",
-          prompt: `Brand: "${fallback.brand}". Product or service: ${facts}.\nPost angle: ${post.pillar ?? ""} — ${post.title}.\nWrite, in ${p.settings.language === "en" ? "English" : "French"}:\n- headline: a short, punchy, emotional ad headline (2 to 6 words, may be two short sentences like "Partez léger. Voyez grand."), no product jargon;\n- subline: one short line naming the product or service (max 6 words);\n- cta: a button label (2 to 3 words, e.g. "Découvrir", "Commander", "Demander un devis");\n- scene: in English, the art direction of the image as for a high-end campaign: a distinctive universe of its own (setting, materials, props, dominant light — e.g. golden hour, daylight through an arch, moody studio, night reflections), the product alone as hero and room for the text, consistent with the brand and the real use of the product; never a plain or generic background. ${people ? "A person may wear or use the product if it serves the idea (natural, real-looking, product clearly visible); otherwise the product alone." : "NEVER any person, body part, hand, face, silhouette or mannequin: the product is shown on its own (worn items are shown laid flat, hung or floating, never on a body)."}\nNever invent facts: no numbers, prices, percentages, awards, reviews, guarantees or claims not in the product description.\nReply { "headline": "", "subline": "", "cta": "", "scene": "" }.`,
+          prompt: `Brand: "${fallback.brand}". Product or service: ${facts}.\nPost angle: ${post.pillar ?? ""} — ${post.title}.\n${post.request ? `Client's brief for this visual (follow it closely): ${post.request.slice(0, 600)}\n` : ""}Write, in ${p.settings.language === "en" ? "English" : "French"}:\n- headline: a short, punchy, emotional ad headline (2 to 6 words, may be two short sentences like "Partez léger. Voyez grand."), no product jargon;\n- subline: one short line naming the product or service (max 6 words);\n- cta: a button label (2 to 3 words, e.g. "Découvrir", "Commander", "Demander un devis");\n- scene: in English, the art direction of the image as for a high-end campaign: a distinctive universe of its own (setting, materials, props, dominant light — e.g. golden hour, daylight through an arch, moody studio, night reflections), the product alone as hero and room for the text, consistent with the brand and the real use of the product; never a plain or generic background. ${people ? "A person may wear or use the product if it serves the idea (natural, real-looking, product clearly visible); otherwise the product alone." : "NEVER any person, body part, hand, face, silhouette or mannequin: the product is shown on its own (worn items are shown laid flat, hung or floating, never on a body)."}\nNever invent facts: no numbers, prices, percentages, awards, reviews, guarantees or claims not in the product description.\nReply { "headline": "", "subline": "", "cta": "", "scene": "" }.`,
           maxTokens: 600,
         },
         AiPostCopySchema,

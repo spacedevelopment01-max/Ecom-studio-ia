@@ -886,6 +886,15 @@ CREATE TABLE IF NOT EXISTS content_runs (
   created_at INTEGER NOT NULL,
   PRIMARY KEY (project_id, run_key)
 );
+
+-- Idées de prompts propres à chaque produit ou service (écrites à la création du projet, réécrites si le catalogue,
+-- les services ou la marque changent) : proposées au client dans la création guidée par l'IA.
+CREATE TABLE IF NOT EXISTS prompt_ideas (
+  project_id TEXT PRIMARY KEY,
+  data TEXT NOT NULL,
+  fingerprint TEXT NOT NULL DEFAULT '',
+  created_at INTEGER NOT NULL
+);
 `;
 
 /** Colonnes ajoutées après la première version (ajout seulement, jamais de suppression). */

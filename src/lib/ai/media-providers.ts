@@ -905,6 +905,9 @@ async function alibabaImage(ctx: Ctx, model: string, prompt: string, refs: Buffe
   return Buffer.from(await img.arrayBuffer());
 }
 
+/** Coût maximal (micro-euros) d'un plan Wan de `seconds` secondes (tarif de l'administration, durée facturée). */
+export const wanClipMaxMicro = (seconds: number, model = "wan2.6-i2v-flash") => cost("alibaba", model, { seconds: wanBilledSeconds(model, seconds) }).micro;
+
 /** Durée Wan demandée : la plus courte acceptée qui couvre la demande (la même est réservée et comptée). */
 export function wanBilledSeconds(model: string, requested?: number) {
   const d = mediaModel("alibaba", model)?.durations ?? [5];

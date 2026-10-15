@@ -71,6 +71,7 @@ export const ACTION_STEPS: Record<string, StepKind[]> = {
   "ads.draft": ["ad"],
   "ads.v2": ["ad"],
   "video.v2": ["video"],
+  "video.scenes": ["video"],
   "content.v2": ["seo"],
   "social.v2.produce": ["social"],
 };

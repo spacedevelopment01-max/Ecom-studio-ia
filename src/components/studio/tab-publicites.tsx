@@ -13,7 +13,9 @@ import { StatusBadge, type AssetView } from "./common";
 import { AssetViewer } from "./asset-viewer";
 import { useT } from "../i18n";
 import { AdCreatives } from "./ad-editor/ad-creatives";
+import { AiAdCreator } from "./ad-editor/ai-ad-creator";
 import { VideoV2Panel } from "./video-v2-panel";
+import { GuidedVideo } from "./guided-video";
 import { CampaignsPanel, StrategyPanel, type Campaign } from "./ad-campaigns";
 import { isAdVisual } from "@/lib/media/bank";
 
@@ -87,10 +89,16 @@ export default function TabPublicites() {
       <div className="grid min-w-0 grid-cols-1 content-start gap-5">
         {section === "vue" && <AdsOverview counts={counts} onGo={go} />}
         {section === "strategie" && <AdsStrategy campaigns={camps?.campaigns ?? null} onGo={go} />}
-        {section === "image" && <AdCreatives />}
+        {section === "image" && (
+          <>
+            <AiAdCreator />
+            <AdCreatives />
+          </>
+        )}
         {section === "video" && (
           <>
             <Card className="p-4 text-sm text-ink-2">{t("Publicités vidéo et vidéos UGC (personnage synthétique, toujours signalé). Elles restent dans Publicités : les vidéos des publications organiques se créent dans Publications › Publication vidéo.", "Video ads and UGC videos (synthetic presenter, always disclosed). They stay in Ads: organic post videos are created in Posts › Video post.")}</Card>
+            <GuidedVideo as="ad" />
             <VideoV2Panel scope="ad" />
           </>
         )}

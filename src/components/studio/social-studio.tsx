@@ -20,6 +20,7 @@ import { AutopilotPanel, SocialOverview } from "./social-autopilot";
 import { VisualChoice } from "./visual-choice";
 import { BatchVisuals, CreateOnePanel } from "./social-create";
 import { EditedVideos } from "./video-gallery";
+import { GuidedVideo } from "./guided-video";
 
 export type PostV = {
   id: string; network: string; format: string; status: string; scheduledAt: number | null; timezone: string; title: string; caption: string; hashtags: string; link: string | null;
@@ -27,6 +28,7 @@ export type PostV = {
   engine: string; pillar: string | null; objective: string | null; approvedValid: boolean; approvedHash: string | null; userEdited: boolean; blocking: string[]; issues: string[]; level: string;
 };
 type Pillar = { id: string; title: string; objective: string; share: number; idea: string; formats: string[] };
+import type { SubjectView } from "./subject-picker";
 export type Data = {
   longTerm?: LongTermStrategy;
   strategy: { archetype: string; objectives: string[]; audience: string; positioning: string; tone: string[]; messages: string[]; pillars: Pillar[]; formats: { format: string; share: number }[]; ctas: string[]; seasonality: { label: string; date: string }[]; gaps: string[] };
@@ -38,6 +40,8 @@ export type Data = {
   stats: { counts: Record<string, number>; byPlatform: { platform: string; label: string; scheduled: number; published: number; failed: number; uncertain: number; connected: boolean; metrics: Record<string, { state: string; value: number | null }> }[]; note: string };
   automations: { id: string; kind: string; status: string; last_run_at: number | null; last_result: string }[];
   ai: boolean;
+  /** Produits ou services du projet (création guidée). */
+  subjects?: SubjectView[];
   canPublish: boolean;
   timezone: string;
   limits: { perDay: number; calendarDays: number } | null;
@@ -174,6 +178,7 @@ export function SocialStudio({ initial = "calendrier" }: { initial?: Section }) 
         )}
         {section === "video" && (
           <>
+            <GuidedVideo as="post" />
             <CreateOnePanel data={data} kind="video" reload={reload} onCreated={() => go("publications")} />
             <BatchVisuals data={data} kind="video" reload={reload} />
             <EditedVideos />

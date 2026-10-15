@@ -318,6 +318,18 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
       // 1. Page principale (fiche produit ou accueil d'un service) : SEO & Copywriting Engine V2 — faits vérifiés,
       //    contrôles, document éditable et versionné ; c'est le texte de référence de la boutique pour ce qu'il couvre.
       await pipelinePageCopy(ctx, projectId, services ? "home_page" : "product_page");
+      // Idées de prompts propres à chaque produit ou service (création guidée par l'IA) : écrites maintenant, par
+      // l'IA de texte si elle est active, sinon par le studio (gratuit). Ne bloque jamais la création.
+      await ctx
+        .step("prompt-ideas", async () => {
+          const { writePromptIdeas, aiIdeaWriter } = await import("../prompt-ideas");
+          const r = await writePromptIdeas(fresh, llmConfigured() ? aiIdeaWriter({ userId: p.userId, projectId, jobId: ctx.job.id }) : null);
+          return { by: r.by, subjects: r.subjects.length };
+        })
+        .catch((e) => {
+          if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+          console.warn("[pipeline] idées de prompts :", (e as Error).message);
+        });
       // 2. Kit de textes de mise en page (accroches de sections, bandeau, pied de page) pour ce qu'aucun document ne couvre.
       if (llmConfigured()) {
         const r = await ctx.step("ai", () => aiShopCopyChecked({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:copy` }, fresh, (m) => ctx.progress(0.5, m), (k, fn) => ctx.step(k, fn)));

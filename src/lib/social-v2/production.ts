@@ -12,6 +12,7 @@ import type { Project } from "../projects";
 import { isAutoUsable } from "../quality/usable";
 import { EUR } from "../billing";
 import { afterEdit } from "./approval";
+import { JobCancelled, JobPaused } from "../jobs";
 import type { MediaResult, PostBrief, SocialDeps } from "./deps";
 
 export type ProduceMethod = "library" | "local" | "image_v2" | "ads_v2" | "video_v2" | "ai_post" | "none";
@@ -56,7 +57,12 @@ function pick(r: Row, opts: { allowPaid: boolean; ai?: boolean; bg?: boolean }, 
 }
 
 const selectRows = (projectId: string, ids: string[]) =>
-  ids.length ? all<Row>(`SELECT * FROM posts WHERE project_id = ? AND id IN (${ids.map(() => "?").join(",")}) ORDER BY scheduled_at`, projectId, ...ids).map((r) => ({ ...r, headline: json<{ headline?: string }>(r.brief, {}).headline ?? r.title })) : [];
+  ids.length
+    ? all<Row>(`SELECT * FROM posts WHERE project_id = ? AND id IN (${ids.map(() => "?").join(",")}) ORDER BY scheduled_at`, projectId, ...ids).map((r) => {
+        const b = json<{ headline?: string; subject?: PostBrief["subject"]; request?: string }>(r.brief, {});
+        return { ...r, headline: b.headline ?? r.title, subject: b.subject ?? null, request: b.request ?? null };
+      })
+    : [];
 
 /** Les `n` premières publications en image (dans l'ordre du calendrier) : celles dont le visuel est fait par l'IA. */
 export function aiImageIds(rows: { id: string; format: string }[], n: number | null | undefined): Set<string> {
@@ -145,8 +151,23 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
           if (!out?.assetId && m.method !== "video_v2") {
             const paidForNothing = out?.costMicro ?? 0;
             if (out?.note) notes.push(out.note);
-            out = await deps.local(p, r);
-            if (out) out = { ...out, costMicro: (out.costMicro ?? 0) + paidForNothing };
+            // Visuel tout par l'IA refusé après ses essais : version du studio, de préférence sur une scène créée par
+            // l'IA d'images (le vrai produit, sans texte dessiné) si le plafond le permet ; sinon rendu local.
+            const left = cap - res.spentMicro - paidForNothing;
+            if (m.method === "ai_post" && deps.aiPost && m.paid && left >= deps.estimate("image")) {
+              const again = await deps.image(p, r, { allowPaid: true, maxCostEur: left / EUR }).catch((e) => {
+                if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+                return null;
+              });
+              if (again?.assetId) out = { ...again, costMicro: again.costMicro + paidForNothing };
+              else {
+                out = await deps.local(p, r);
+                if (out) out = { ...out, costMicro: (out.costMicro ?? 0) + paidForNothing + (again?.costMicro ?? 0) };
+              }
+            } else {
+              out = await deps.local(p, r);
+              if (out) out = { ...out, costMicro: (out.costMicro ?? 0) + paidForNothing };
+            }
           }
         }
       }

@@ -81,6 +81,7 @@ export const ACTION_INTENTS: Record<string, Intent[]> = {
   "ads.draft": ["CREATE_AD"],
   "ads.v2": ["CREATE_AD"],
   "video.v2": ["CREATE_VIDEO"],
+  "video.scenes": ["CREATE_VIDEO"],
   "video.v2.clip": ["CREATE_VIDEO"],
   "files.classify": ["ORGANIZE_FILES"],
   // Export du thème vers une plateforme (CMS Engine V2, phase 11A) : ZIP contrôlé, jamais envoyé sans accord.

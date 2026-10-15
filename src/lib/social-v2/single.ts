@@ -9,6 +9,7 @@ import { createPlanV2 } from "./planner";
 import { postsOfPlan } from "./production";
 import type { SocialDeps } from "./deps";
 import type { Platform } from "./platforms";
+import type { CreativeSubject } from "../creative-subject";
 
 export type OneKind = "image" | "video";
 /** Image : gratuit, image par l'IA (mise en page du studio) ou tout par l'IA. Vidéo : montage gratuit ou plans filmés par l'IA. */
@@ -25,6 +26,10 @@ export type OneRequest = {
   /** Titre écrit par le client (sinon proposé par le studio). */
   headline?: string;
   lang?: "fr" | "en";
+  /** Produit (principal ou du catalogue) ou service choisi par le client pour ce visuel. */
+  subject?: CreativeSubject | null;
+  /** Demande du client écrite librement (« comme en conversation ») : l'idée du visuel. */
+  request?: string | null;
 };
 
 /** Mode payant ? (gratuit : aucune dépense, jamais d'IA). */
@@ -61,5 +66,8 @@ export function createOnePost(p: Project, r: OneRequest): { planId: string; ids:
   const ids = postsOfPlan(res.planId);
   const head = r.headline?.trim();
   if (head && ids.length) run(`UPDATE posts SET title = ?, brief = json_set(COALESCE(brief, '{}'), '$.headline', ?) WHERE plan_id = ?`, head.slice(0, 120), head.slice(0, 120), res.planId);
+  if (r.subject && ids.length) run(`UPDATE posts SET brief = json_set(COALESCE(brief, '{}'), '$.subject', json(?)) WHERE plan_id = ?`, JSON.stringify(r.subject), res.planId);
+  const ask = r.request?.trim();
+  if (ask && ids.length) run(`UPDATE posts SET brief = json_set(COALESCE(brief, '{}'), '$.request', ?) WHERE plan_id = ?`, ask.slice(0, 600), res.planId);
   return { planId: res.planId, ids, warnings: res.warnings };
 }
