@@ -188,3 +188,14 @@ describe("Autopilot V2 — affichage", async () => {
     expect(v.pillar).toBe("Question fréquente");
   });
 });
+
+describe("Autopilot V2 — semaine type affichée", async () => {
+  const { weekPreview } = await import("@/lib/social-v2/editorial");
+  it("suit la fréquence choisie : 1, 3 puis 5 rôles par jour, lundi en premier", () => {
+    for (const n of [1, 3, 5]) {
+      const w = weekPreview(n, "balanced", 1, "fr");
+      expect(w[0].title).toBe("Présentation");
+      expect(w.every((d) => d.roles.length === n)).toBe(true);
+    }
+  });
+});

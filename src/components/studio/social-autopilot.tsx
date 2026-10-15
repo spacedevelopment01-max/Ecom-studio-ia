@@ -67,6 +67,8 @@ export function AutopilotPanel({ onChanged }: { onChanged: () => void }) {
   const [agree, setAgree] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [last, setLast] = useState<View["run"] | null>(null);
+  // Semaine type qui suit les choix en cours (fréquence, objectif, niveau commercial), même avant « Enregistrer ».
+  const { data: preview } = useApi<{ week: View["week"] }>(cfg ? `/api/projects/${id}/social/v2/autopilot?preview=week&perDay=${cfg.perDay}&goal=${cfg.goal}&commercial=${cfg.commercial}&lang=${cfg.language}` : null);
   useEffect(() => {
     if (data && !cfg) setCfg(data.settings.config);
   }, [data, cfg]);
@@ -241,7 +243,7 @@ export function AutopilotPanel({ onChanged }: { onChanged: () => void }) {
       <Card className="grid gap-3 p-4 sm:p-5" data-week>
         <h3 className="flex items-center gap-2 font-display text-lg font-semibold"><CalendarDays className="size-5" aria-hidden />{t("Votre semaine type", "Your standard week")}</h3>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-          {data.week.map((d) => (
+          {(preview?.week ?? data.week).map((d) => (
             <div key={d.day} className={cx("grid gap-1 rounded-2xl border border-line p-3", !cfg.weekdays.includes(d.day) && "opacity-40")}>
               <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t(["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"][d.day], ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][d.day])}</p>
               <p className="font-medium">{d.title}</p>

@@ -338,3 +338,11 @@ export const roleAsPillar = (r: Role, lang: "fr" | "en"): Pillar => ({ id: r.id,
 export const weekdayOf = (ymd: string) => new Date(`${ymd}T12:00:00Z`).getUTCDay();
 /** Numéro de semaine absolu (lundi comme début de semaine) : sert à faire tourner les produits d'une semaine à l'autre. */
 export const weekIndex = (ymd: string) => Math.floor((Date.parse(`${ymd}T12:00:00Z`) / 86_400_000 + 3) / 7);
+
+/** Semaine type affichée pour des réglages donnés (thème du jour et rôle de chaque publication), lundi en premier. */
+export function weekPreview(perDay: number, goal: Goal, commercial: 0 | 1 | 2, lang: "fr" | "en") {
+  return [1, 2, 3, 4, 5, 6, 0].map((day) => {
+    const d = dayTheme(day);
+    return { day, title: d.title[lang], goal: d.goal[lang], roles: rolesFor(day, perDay, goal, commercial).map((r) => ({ title: r.title[lang], kind: r.kind })) };
+  });
+}
