@@ -117,18 +117,21 @@ describe("Vidéo en scènes", async () => {
     expect(prompt).toContain("no black bars");
   });
 
-  it("titre d'une scène : en haut par défaut, en bas sur demande (gros plan, le titre ne couvre pas le produit)", async () => {
+  it("titre d'une scène : taille habituelle sur bandeau par défaut ; en bas, en grand ou sans bandeau seulement si choisi", async () => {
     const { ScenePlanSchema } = await import("@/lib/video-v2/three-scenes");
     const p = await productProject();
-    const plan = ScenePlanSchema.parse({ scenes: [{ still: "close-up of the lid", motion: "slow push-in", title: "Gros plan", place: "lower" }, { still: "wide shot on a rock", motion: "slow push-in", title: "Plan large" }], line: "", cta: "Découvrir" });
+    const plan = ScenePlanSchema.parse({ scenes: [{ still: "close-up of the lid", motion: "slow push-in", title: "Gros plan", place: "lower", titleSize: "large", titleStyle: "shadow" }, { still: "wide shot on a rock", motion: "slow push-in", title: "Plan large" }], line: "", cta: "Découvrir" });
     const doc = buildSceneDoc(p, plan.scenes.map((_, k) => ({ assetId: `a${k}`, durationS: 5, generated: true })), plan, "9:16", "post");
-    const y = (k: number) => doc.clips[k].overlays.find((l) => l.id === "ov-text")!.y;
-    expect(y(0)).toBeGreaterThan(doc.height * 0.5);
-    expect(y(1)).toBeLessThan(doc.height * 0.3);
-    // Titres écrits en très grand (au moins 14 % du petit côté), sans bandeau sombre derrière.
-    const t = doc.clips[0].overlays.find((l) => l.id === "ov-text") as { font: { size: number } };
-    expect(t.font.size).toBeGreaterThanOrEqual(Math.round(doc.width * 0.14));
-    expect(doc.clips.flatMap((c) => c.overlays).some((l) => l.role === "scrim")).toBe(false);
+    const t = (k: number) => doc.clips[k].overlays.find((l) => l.id === "ov-text") as any;
+    const short = Math.min(doc.width, doc.height);
+    // Scène 1 (choisie) : en bas, en très grand, sans bandeau sombre.
+    expect(t(0).y).toBeGreaterThan(doc.height * 0.5);
+    expect(t(0).font.size).toBeGreaterThanOrEqual(Math.round(short * 0.14));
+    expect(doc.clips[0].overlays.some((l) => l.role === "scrim")).toBe(false);
+    // Scène 2 (par défaut) : en haut, taille habituelle, sur son bandeau.
+    expect(t(1).y).toBeLessThan(doc.height * 0.3);
+    expect(t(1).font.size).toBeLessThan(Math.round(short * 0.08));
+    expect(doc.clips[1].overlays.some((l) => l.role === "scrim")).toBe(true);
   });
 
   it("carte de fin : le vrai logo sur un médaillon clair, lisible sur le fond sombre", async () => {
@@ -141,13 +144,15 @@ describe("Vidéo en scènes", async () => {
     expect(logo.x).toBeGreaterThanOrEqual(card.x);
     expect(logo.y + logo.h).toBeLessThanOrEqual(card.y + card.h);
     expect(doc.layers.indexOf(card)).toBeLessThan(doc.layers.indexOf(logo));
-    // Phrase et bouton écrits en grand.
+    // Phrase et bouton : taille habituelle par défaut, en grand seulement si choisi.
     const short = Math.min(doc.width, doc.height);
-    expect((doc.layers.find((l) => l.id === "line") as any).font.size).toBeGreaterThanOrEqual(Math.round(short * 0.08));
-    expect((doc.layers.find((l) => l.id === "cta") as any).font.size).toBeGreaterThanOrEqual(Math.round(short * 0.06));
+    expect((doc.layers.find((l) => l.id === "line") as any).font.size).toBeLessThan(Math.round(short * 0.06));
+    const big = endCardDoc({ w: SIZES["9:16"].w, h: SIZES["9:16"].h, safe: safeZone("9:16", "reels"), pal, typo: { heading: "Inter", body: "Inter" }, brand: "B", cta: "Découvrir", line: "Une phrase", logoId: "logo-1", big: true });
+    expect((big.layers.find((l) => l.id === "line") as any).font.size).toBeGreaterThanOrEqual(Math.round(short * 0.08));
+    expect((big.layers.find((l) => l.id === "cta") as any).font.size).toBeGreaterThanOrEqual(Math.round(short * 0.06));
   });
 
-  it("texte trop petit sur un plan : signalé illisible par le contrôle", async () => {
+  it("titre vraiment trop petit sur un plan : signalé illisible (un titre petit mais lisible reste au choix)", async () => {
     const { localVideoChecks } = await import("@/lib/video-v2/quality");
     const p = await productProject();
     const plan = localScenePlan(p, null, { as: "post" });
@@ -155,7 +160,7 @@ describe("Vidéo en scènes", async () => {
     const opts = { targetS: timeline(doc).total, scriptIssues: [], audio: null };
     expect(localVideoChecks(doc, opts).codes).not.toContain("illegible_text");
     const tiny = structuredClone(doc);
-    (tiny.clips[0].overlays.find((l) => l.kind === "text") as any).font.size = 30;
+    (tiny.clips[0].overlays.find((l) => l.kind === "text") as any).font.size = 20;
     expect(localVideoChecks(tiny, opts).codes).toContain("illegible_text");
   });
 

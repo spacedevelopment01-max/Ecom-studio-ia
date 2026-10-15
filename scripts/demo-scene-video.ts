@@ -28,12 +28,13 @@ const DEMOS: Record<string, Def> = {
     plan: {
       scenes: [
         // Images faites par l'IA (Qwen) ; mouvement de caméra et lumière ajoutés au montage (aucune animation IA qui déforme le décor).
-        { still: "extreme close-up of the top of the plain sage-green bottle: bamboo lid, brushed steel collar and handle, tiny condensation droplets, blurred mountain ridge in early morning light", motion: "very slow push-in, a soft band of light glides across the steel and the bamboo lid", title: "Gourde isotherme 750 ml", place: "lower" },
-        { still: "low-angle shot of the plain sage-green bottle on a dark granite boulder, pale sky and a sharp summit behind, the sun hidden behind the bottle", motion: "the camera rises very slowly while the sun's glow grows around the top of the bottle", title: "Partez léger.", place: "lower" },
-        { still: "mountain bivouac at dusk: the plain sage-green bottle on a flat rock next to a plain olive backpack and a folded wool blanket, a glowing tent behind, warm golden low sunlight", motion: "very slow push-in while the warm golden light intensifies and a soft glint passes over the steel", title: "Voyez grand." },
+        { still: "extreme close-up of the top of the plain sage-green bottle: bamboo lid, brushed steel collar and handle, tiny condensation droplets, blurred mountain ridge in early morning light", motion: "very slow push-in, a soft band of light glides across the steel and the bamboo lid", title: "Gourde isotherme 750 ml", place: "lower", titleSize: "large", titleStyle: "shadow" },
+        { still: "low-angle shot of the plain sage-green bottle on a dark granite boulder, pale sky and a sharp summit behind, the sun hidden behind the bottle", motion: "the camera rises very slowly while the sun's glow grows around the top of the bottle", title: "Partez léger.", place: "lower", titleSize: "large", titleStyle: "shadow" },
+        { still: "mountain bivouac at dusk: the plain sage-green bottle on a flat rock next to a plain olive backpack and a folded wool blanket, a glowing tent behind, warm golden low sunlight", motion: "very slow push-in while the warm golden light intensifies and a soft glint passes over the steel", title: "Voyez grand.", titleSize: "large", titleStyle: "shadow" },
       ],
       line: "Partez léger. Voyez grand.",
       cta: "Découvrir",
+      endCard: "large",
     },
   },
   tribunes: {

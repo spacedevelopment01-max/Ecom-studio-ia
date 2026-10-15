@@ -79,12 +79,12 @@ export function localVideoChecks(doc: VideoDocument, o: { targetS: number; scrip
   for (const c of doc.clips) if (c.durationS < 0.8) issues.push(`plan « ${c.label} » très court (${c.durationS} s)`);
   // Sous-titres : taille lisible sur téléphone, débit de lecture, zone de sécurité, synchronisés avec la voix.
   const st = doc.subtitles.style;
-  const minSize = Math.round(Math.min(doc.width, doc.height) * 0.045);
+  const minSize = Math.round(Math.min(doc.width, doc.height) * 0.035);
   if (st.enabled && st.size < minSize) {
     codes.push("illegible_text");
     issues.push(`sous-titres de ${st.size} px (au moins ${minSize} px)`);
   }
-  // Titres posés sur les plans : trop petits = illisibles sur téléphone (les lignes de détail gardent leur taille).
+  // Titres posés sur les plans vraiment trop petits = illisibles sur téléphone (petit mais lisible : laissé au choix).
   const minText = Math.round(Math.min(doc.width, doc.height) * MIN_TEXT_RATIO);
   const small = doc.clips.flatMap((c) => c.overlays).filter((l) => l.kind === "text" && l.role === "title" && l.visible && (l as { font: { size: number } }).font.size < minText);
   if (small.length) {
