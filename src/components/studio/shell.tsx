@@ -12,7 +12,7 @@ import { TutorialButton, TutorialsMenuLink } from "./tutorial";
 import { AiUsageBar, PlanLink, QuotaBanner, useBilling } from "../billing-client";
 import type { BillingView } from "@/lib/plans";
 import { DeleteProjectButton } from "./delete-project";
-import { advancedOpen, space, spacePurpose, SPACE_GROUPS, type SpaceGroup, type SpaceId } from "@/lib/studio-nav";
+import { advancedOpen, navSpace, space, spacePurpose, SPACE_GROUPS, type SpaceGroup, type SpaceId } from "@/lib/studio-nav";
 import { projectProgress } from "@/lib/project-progress";
 
 export const TABS = [
@@ -32,7 +32,7 @@ export const TABS = [
 ] as const satisfies readonly { id: SpaceId; label: string; labelEn: string; icon: unknown }[];
 export type TabId = (typeof TABS)[number]["id"];
 /** Espaces d'un groupe du plan du studio (votre projet, créer, diffuser, outils avancés). */
-const tabsOf = (g: SpaceGroup) => TABS.filter((x) => space(x.id)?.group === g);
+const tabsOf = (g: SpaceGroup) => TABS.filter((x) => space(x.id)?.group === g && !space(x.id)?.within);
 /** Libellé d'un onglet dans la langue de l'interface ; pour un site de services, « Produit » devient « Activité » et « Boutique » « Site ». */
 export const tabLabel = (t: (typeof TABS)[number], lang: "fr" | "en", business?: "products" | "services") =>
   t.id === "produit" && business === "services" ? (lang === "en" ? "Business" : "Activité") : t.id === "boutique" && business === "services" ? (lang === "en" ? "Website" : "Site") : lang === "en" ? t.labelEn : t.label;
@@ -332,7 +332,7 @@ function MobileNav({ projectId, tab, business, badge }: { projectId: string; tab
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
-  const inMore = !MOBILE_MAIN.includes(tab);
+  const inMore = !MOBILE_MAIN.includes(navSpace(tab) as TabId);
   const cur = TABS.find((x) => x.id === tab);
   const moreBadge = TABS.some((x) => !MOBILE_MAIN.includes(x.id) && badge(x.id) !== null);
   return (
@@ -350,7 +350,7 @@ function MobileNav({ projectId, tab, business, badge }: { projectId: string; tab
                     const Icon = tabIcon(x, business);
                     const b = badge(x.id);
                     return (
-                      <Link key={x.id} href={`/studio/${projectId}/${x.id}`} aria-current={tab === x.id ? "page" : undefined} className={cx("relative flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl border px-1 py-2 text-center text-[12px]", tab === x.id ? "border-ink bg-ink text-paper" : "border-line bg-card text-ink-2")}>
+                      <Link key={x.id} href={`/studio/${projectId}/${x.id}`} aria-current={navSpace(tab) === x.id ? "page" : undefined} className={cx("relative flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl border px-1 py-2 text-center text-[12px]", navSpace(tab) === x.id ? "border-ink bg-ink text-paper" : "border-line bg-card text-ink-2")}>
                         <Icon className="size-5" />
                         <span className="leading-tight">{tabLabel(x, lang, business)}</span>
                         {b !== null && <span className="absolute right-1.5 top-1.5 grid min-w-4 place-items-center rounded-full bg-signal px-1 text-[10px] font-bold text-signal-ink">{b}</span>}
@@ -369,8 +369,8 @@ function MobileNav({ projectId, tab, business, badge }: { projectId: string; tab
           const Icon = tabIcon(x, business);
           const b = badge(id);
           return (
-            <Link key={id} href={`/studio/${projectId}/${id}`} aria-current={tab === id ? "page" : undefined} className={cx("relative flex h-16 flex-col items-center justify-center gap-0.5 text-[11px]", tab === id ? "font-semibold text-ink" : "text-muted")}>
-              {tab === id && <span className="absolute top-0 h-0.5 w-8 rounded-full bg-ink" aria-hidden />}
+            <Link key={id} href={`/studio/${projectId}/${id}`} aria-current={navSpace(tab) === id ? "page" : undefined} className={cx("relative flex h-16 flex-col items-center justify-center gap-0.5 text-[11px]", navSpace(tab) === id ? "font-semibold text-ink" : "text-muted")}>
+              {navSpace(tab) === id && <span className="absolute top-0 h-0.5 w-8 rounded-full bg-ink" aria-hidden />}
               <Icon className="size-5" />
               <span>{tabLabel(x, lang, business)}</span>
               {b !== null && <span className="absolute right-[22%] top-2 grid min-w-4 place-items-center rounded-full bg-signal px-1 text-[10px] font-bold text-signal-ink">{b}</span>}
@@ -415,7 +415,7 @@ function SpaceGuide({ projectId, tab }: { projectId: string; tab: TabId }) {
   };
   return (
     <div className="mx-auto mb-5 flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-line bg-paper-2/60 px-4 py-2.5 text-sm" data-space-guide>
-      <p className="min-w-0 flex-1 text-ink-2">{purpose}</p>
+      <p className="min-w-0 flex-1 basis-64 text-ink-2">{purpose}</p>
       {next && next.tab !== tab && (
         <Link href={`/studio/${projectId}/${next.tab}`} className="inline-flex items-center gap-1.5 rounded-full bg-ink px-3 py-1.5 text-[13px] font-medium text-paper hover:opacity-90" data-space-next>
           {t("Prochaine étape :", "Next step:")} {lang === "en" ? next.action[1] : next.action[0]} <ArrowRight className="size-3.5" />
@@ -479,7 +479,8 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
       if (e.key === "[" && !e.altKey && !e.ctrlKey && !e.metaKey && !(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)))) return toggleFoldRef.current();
       if (!e.altKey) return;
       const n = Number(e.key);
-      if (n >= 1 && n <= 9) router.push(`/studio/${projectId}/${TABS[n - 1].id}`);
+      const visible = TABS.filter((x) => !space(x.id)?.within);
+      if (n >= 1 && n <= Math.min(9, visible.length)) router.push(`/studio/${projectId}/${visible[n - 1].id}`);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -548,10 +549,10 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
                 const b = badge(x.id);
                 const label = tabLabel(x, lang, data?.business);
                 return (
-                  <Link key={x.id} href={`/studio/${projectId}/${x.id}`} aria-current={tab === x.id ? "page" : undefined} aria-label={folded ? label : undefined} title={folded ? label : (spacePurpose(x.id, lang, data?.business) ?? undefined)} className={cx("relative mb-0.5 flex items-center gap-3 rounded-xl py-2 text-[14px] transition short:py-1.5 shorter:py-1", folded ? "justify-center px-0" : "px-3", tab === x.id ? "bg-ink text-paper" : "text-ink-2 hover:bg-paper-2 hover:text-ink")}>
+                  <Link key={x.id} href={`/studio/${projectId}/${x.id}`} aria-current={navSpace(tab) === x.id ? "page" : undefined} aria-label={folded ? label : undefined} title={folded ? label : (spacePurpose(x.id, lang, data?.business) ?? undefined)} className={cx("relative mb-0.5 flex items-center gap-3 rounded-xl py-2 text-[14px] transition short:py-1.5 shorter:py-1", folded ? "justify-center px-0" : "px-3", navSpace(tab) === x.id ? "bg-ink text-paper" : "text-ink-2 hover:bg-paper-2 hover:text-ink")}>
                     <Icon className="size-4 shrink-0" />
                     {!folded && <span className="flex-1">{label}</span>}
-                    {b !== null && (folded ? <span className="absolute right-2 top-1.5 size-2 rounded-full bg-signal" aria-hidden /> : <span className={cx("grid min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-semibold", tab === x.id ? "bg-paper text-ink" : "bg-signal text-signal-ink")}>{b}</span>)}
+                    {b !== null && (folded ? <span className="absolute right-2 top-1.5 size-2 rounded-full bg-signal" aria-hidden /> : <span className={cx("grid min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-semibold", navSpace(tab) === x.id ? "bg-paper text-ink" : "bg-signal text-signal-ink")}>{b}</span>)}
                   </Link>
                 );
               })}

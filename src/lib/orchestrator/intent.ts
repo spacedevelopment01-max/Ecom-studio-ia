@@ -50,6 +50,8 @@ export const ACTION_INTENTS: Record<string, Intent[]> = {
   "image.single": ["GENERATE_IMAGE"],
   "image.v2": ["GENERATE_IMAGE"],
   "image.ai_post": ["GENERATE_IMAGE"],
+  "video.bank.stock": ["CREATE_VIDEO"],
+  "video.bank.ai": ["CREATE_VIDEO"],
   "stock.search": ["FIND_STOCK_IMAGE"],
   "video.render": ["CREATE_VIDEO"],
   "ugc.script": ["CREATE_VIDEO"],

@@ -1,15 +1,16 @@
 "use client";
 /**
- * Studio social V2 (phase 9A) : Stratégie → Créer → Calendrier → Publications → Comptes → Statistiques.
+ * Studio social V2 : Piloter (vue d'ensemble, communication automatique, stratégie) → Créer (image, vidéo, plusieurs) → Gérer (calendrier, validation, statistiques).
  * Le client voit ce qui est prêt, à valider, programmé, publié, en échec ou à vérifier ; il modifie, déplace
  * (glisser-déposer sur ordinateur, date et heure sur téléphone), approuve et programme. Rien ne part sans son accord.
  */
 import { visualParams, type VisualMode } from "@/lib/social-v2/visual-mode";
+import type { LongTermStrategy } from "@/lib/social-v2/strategy-long";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { addDays, addMonths, endOfMonth, endOfWeek, format, isSameMonth, startOfMonth, startOfWeek } from "date-fns";
 import { enUS, fr } from "date-fns/locale";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
-import { ArrowDown, ArrowUp, BarChart3, Bot, Gauge, CalendarDays, Check, ChevronLeft, ChevronRight, Copy, Link2, ListChecks, MessageSquare, Pause, Pencil, Play, Plus, Send, Sparkles, Target, Trash2, Type, Wand2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, BarChart3, Bot, Gauge, CalendarDays, CalendarPlus, Clapperboard, ImageIcon, Check, ChevronLeft, ChevronRight, Copy, ListChecks, MessageSquare, Pause, Pencil, Play, Plus, Send, Sparkles, Target, Trash2, Type, Wand2, X } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, Field, Input, Modal, Select, Spinner, Textarea, useApi, useToast } from "../ui";
 import { useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
@@ -17,14 +18,17 @@ import { AssetThumb, JobProgress, MediaPicker, useActive, type AssetView } from 
 import { AiWait } from "../wait-time";
 import { AutopilotPanel, SocialOverview } from "./social-autopilot";
 import { VisualChoice } from "./visual-choice";
+import { BatchVisuals, CreateOnePanel } from "./social-create";
+import { EditedVideos } from "./video-gallery";
 
-type PostV = {
+export type PostV = {
   id: string; network: string; format: string; status: string; scheduledAt: number | null; timezone: string; title: string; caption: string; hashtags: string; link: string | null;
   media: AssetView[]; connectionId: string | null; connectionName: string | null; planId: string | null; error: string | null; remoteUrl: string | null; publishedAt: number | null;
   engine: string; pillar: string | null; objective: string | null; approvedValid: boolean; approvedHash: string | null; userEdited: boolean; blocking: string[]; issues: string[]; level: string;
 };
-type Pillar = { id: string; title: string; objective: string; share: number; idea: string };
-type Data = {
+type Pillar = { id: string; title: string; objective: string; share: number; idea: string; formats: string[] };
+export type Data = {
+  longTerm?: LongTermStrategy;
   strategy: { archetype: string; objectives: string[]; audience: string; positioning: string; tone: string[]; messages: string[]; pillars: Pillar[]; formats: { format: string; share: number }[]; ctas: string[]; seasonality: { label: string; date: string }[]; gaps: string[] };
   plans: { id: string; engine: string; paused: boolean; createdAt: number; params: any }[];
   posts: PostV[];
@@ -71,14 +75,20 @@ const LEVEL: Record<string, [string, string, "ok" | "info" | "warn" | "neutral"]
   unavailable: ["NON DISPONIBLE", "UNAVAILABLE", "neutral"],
 };
 const SECTIONS = [
-  ["vue", "Vue d'ensemble", "Overview", Gauge],
-  ["pilote", "Ma communication automatique", "My automatic communication", Bot],
-  ["strategie", "Stratégie", "Strategy", Target],
-  ["creer", "Création IA", "AI creation", Sparkles],
-  ["calendrier", "Calendrier", "Calendar", CalendarDays],
-  ["publications", "Publications", "Posts", ListChecks],
-  ["comptes", "Comptes", "Accounts", Link2],
-  ["stats", "Statistiques", "Statistics", BarChart3],
+  ["vue", "Vue d'ensemble", "Overview", Gauge, "piloter"],
+  ["pilote", "Ma communication automatique", "My automatic communication", Bot, "piloter"],
+  ["strategie", "Stratégie", "Strategy", Target, "piloter"],
+  ["image", "Publication image", "Image post", ImageIcon, "creer"],
+  ["video", "Publication vidéo", "Video post", Clapperboard, "creer"],
+  ["planifier", "Planifier plusieurs publications", "Plan several posts", CalendarPlus, "creer"],
+  ["calendrier", "Calendrier", "Calendar", CalendarDays, "gerer"],
+  ["publications", "À valider et suivre", "Review and track", ListChecks, "gerer"],
+  ["stats", "Statistiques", "Statistics", BarChart3, "gerer"],
+] as const;
+const SECTION_GROUPS = [
+  ["piloter", "Piloter", "Steer"],
+  ["creer", "Créer", "Create"],
+  ["gerer", "Gérer", "Manage"],
 ] as const;
 type Section = (typeof SECTIONS)[number][0];
 
@@ -88,12 +98,25 @@ export function SocialStudio({ initial = "calendrier" }: { initial?: Section }) 
   const { id } = useProject();
   const t = useT();
   const [section, setSection] = useState<Section>(initial);
+  // Lien direct vers une rubrique (#image, #video, #strategie…) ; anciens liens (#creer, #comptes) redirigés.
+  useEffect(() => {
+    const read = () => {
+      const h = window.location.hash.slice(1);
+      const alias: Record<string, Section> = { creer: "planifier", comptes: "vue" };
+      const target = (alias[h] ?? h) as Section;
+      if (SECTIONS.some((x) => x[0] === target)) setSection(target);
+    };
+    read();
+    window.addEventListener("hashchange", read);
+    return () => window.removeEventListener("hashchange", read);
+  }, []);
   const [range, setRange] = useState(() => ({ from: Date.now() - 40 * 86_400_000, to: Date.now() + 120 * 86_400_000 }));
   const { data, reload, error } = useApi<Data>(`/api/projects/${id}/social/v2?from=${range.from}&to=${range.to}`);
   const [open, setOpen] = useState<string | null>(null);
   if (error && !data) return <Empty title={t("Réseaux sociaux indisponibles", "Social unavailable")}>{error}</Empty>;
   if (!data) return <div className="grid place-items-center py-24 text-muted"><Spinner className="size-6" /></div>;
   const c = data.stats.counts;
+  const review = (c.review ?? 0) + (c.planned ?? 0);
   const chips: [string, number, string][] = [
     [t("À valider", "To review"), (c.review ?? 0) + (c.planned ?? 0), "warn"],
     [t("Approuvées", "Approved"), c.approved ?? 0, "signal"],
@@ -102,28 +125,65 @@ export function SocialStudio({ initial = "calendrier" }: { initial?: Section }) 
     [t("Échecs", "Failed"), c.failed ?? 0, "bad"],
     [t("À vérifier", "To verify"), c.uncertain ?? 0, "bad"],
   ];
+  const go = (x: Section) => {
+    setSection(x);
+    try {
+      history.replaceState(null, "", `#${x}`);
+    } catch {}
+  };
   return (
-    <div className="mx-auto grid w-full min-w-0 max-w-6xl grid-cols-1 gap-5" data-social-studio>
-      <Card className="p-4 sm:p-5">
-        <div className="flex flex-wrap items-center gap-2">
-          {chips.map(([label, n, tone]) => <Badge key={label} tone={tone as never}>{label} : {n}</Badge>)}
-        </div>
-        <nav className="mt-4 flex gap-1 overflow-x-auto" aria-label={t("Sections", "Sections")}>
-          {SECTIONS.map(([key, frl, enl, Icon]) => (
-            <button key={key} type="button" data-section={key} onClick={() => setSection(key)} className={cx("inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-sm", section === key ? "bg-ink text-paper" : "border border-line hover:border-ink")}>
-              <Icon className="size-4" aria-hidden /> {t(frl, enl)}
-            </button>
-          ))}
-        </nav>
-      </Card>
-      {section === "vue" && <SocialOverview counts={data.stats.counts} posts={data.posts} statsNote={data.stats.note} hasMetrics={data.stats.byPlatform.some((b) => Object.values(b.metrics).some((m) => m.value != null))} onGo={(s: string) => setSection(s as Section)} />}
-      {section === "pilote" && <AutopilotPanel onChanged={reload} />}
-      {section === "strategie" && <StrategyPanel data={data} />}
-      {section === "creer" && <CreatePanel data={data} onDone={() => (reload(), setSection("calendrier"))} reload={reload} />}
-      {section === "calendrier" && <CalendarPanel data={data} reload={reload} onOpen={setOpen} onRange={setRange} />}
-      {section === "publications" && <PostsPanel data={data} reload={reload} onOpen={setOpen} />}
-      {section === "comptes" && <AccountsPanel data={data} />}
-      {section === "stats" && <StatsPanel data={data} />}
+    <div className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-5 lg:grid-cols-[240px_minmax(0,1fr)]" data-social-studio>
+      <aside className="min-w-0 lg:sticky lg:top-24 lg:h-max" data-social-subnav>
+        <Card className="p-3">
+          <div className="flex flex-wrap gap-1.5 px-1 pb-3">
+            {chips.filter(([, n]) => n > 0).map(([label, n, tone]) => <Badge key={label} tone={tone as never}>{label} : {n}</Badge>)}
+          </div>
+          {/* Téléphone : liste déroulante ; ordinateur : sous-menu vertical par groupe. */}
+          <Select aria-label={t("Rubrique", "Section")} value={section} onChange={(e) => go(e.target.value as Section)} className="lg:hidden">
+            {SECTION_GROUPS.map(([g, gfr, gen]) => (
+              <optgroup key={g} label={t(gfr, gen)}>
+                {SECTIONS.filter((x) => x[4] === g).map(([key, frl, enl]) => <option key={key} value={key}>{t(frl, enl)}</option>)}
+              </optgroup>
+            ))}
+          </Select>
+          <nav className="hidden lg:block" aria-label={t("Rubriques des publications", "Post sections")}>
+            {SECTION_GROUPS.map(([g, gfr, gen]) => (
+              <div key={g} className="mb-2 last:mb-0">
+                <p className="mb-1 px-2 text-[11px] font-medium uppercase tracking-[.16em] text-muted">{t(gfr, gen)}</p>
+                {SECTIONS.filter((x) => x[4] === g).map(([key, frl, enl, Icon]) => (
+                  <button key={key} type="button" data-section={key} aria-current={section === key ? "page" : undefined} onClick={() => go(key)} className={cx("mb-0.5 flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-sm transition", section === key ? "bg-ink text-paper" : "text-ink-2 hover:bg-paper-2 hover:text-ink")}>
+                    <Icon className="size-4 shrink-0" aria-hidden />
+                    <span className="flex-1">{t(frl, enl)}</span>
+                    {key === "publications" && review > 0 && <span className={cx("grid min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-semibold", section === key ? "bg-paper text-ink" : "bg-signal text-signal-ink")}>{review}</span>}
+                  </button>
+                ))}
+              </div>
+            ))}
+          </nav>
+        </Card>
+      </aside>
+      <div className="grid min-w-0 grid-cols-1 content-start gap-5">
+        {section === "vue" && <SocialOverview counts={data.stats.counts} posts={data.posts} statsNote={data.stats.note} hasMetrics={data.stats.byPlatform.some((b) => Object.values(b.metrics).some((m) => m.value != null))} onGo={(s: string) => go((s === "creer" ? "planifier" : s) as Section)} />}
+        {section === "pilote" && <AutopilotPanel onChanged={reload} />}
+        {section === "strategie" && <StrategyPanel data={data} />}
+        {section === "image" && (
+          <>
+            <CreateOnePanel data={data} kind="image" reload={reload} onCreated={() => go("publications")} />
+            <BatchVisuals data={data} kind="image" reload={reload} />
+          </>
+        )}
+        {section === "video" && (
+          <>
+            <CreateOnePanel data={data} kind="video" reload={reload} onCreated={() => go("publications")} />
+            <BatchVisuals data={data} kind="video" reload={reload} />
+            <EditedVideos />
+          </>
+        )}
+        {section === "planifier" && <CreatePanel data={data} onDone={() => (reload(), go("calendrier"))} onGo={go} reload={reload} />}
+        {section === "calendrier" && <CalendarPanel data={data} reload={reload} onOpen={setOpen} onRange={setRange} />}
+        {section === "publications" && <PostsPanel data={data} reload={reload} onOpen={setOpen} />}
+        {section === "stats" && <StatsPanel data={data} />}
+      </div>
       {open && <PostEditorV2 postId={open} data={data} onClose={() => setOpen(null)} onChanged={reload} />}
     </div>
   );
@@ -134,39 +194,132 @@ export function SocialStudio({ initial = "calendrier" }: { initial?: Section }) 
 function StrategyPanel({ data }: { data: Data }) {
   const t = useT();
   const s = data.strategy;
+  const lt = data.longTerm;
+  const H = ({ n, title, sub }: { n: string; title: string; sub?: string }) => (
+    <div className="mb-3 flex items-baseline gap-3">
+      <span className="grid size-7 shrink-0 place-items-center rounded-full bg-ink text-xs font-semibold text-paper">{n}</span>
+      <div>
+        <h4 className="font-display text-lg font-semibold">{title}</h4>
+        {sub && <p className="text-xs text-muted">{sub}</p>}
+      </div>
+    </div>
+  );
+  const STAGE_TONE: Record<string, string> = { awareness: "bg-info", trust: "bg-signal", action: "bg-ok", loyalty: "bg-warn" };
   return (
-    <Card className="grid gap-5 p-5 sm:p-7" data-social-strategy>
-      <div>
-        <h3 className="font-display text-xl font-semibold">{t("Stratégie éditoriale", "Editorial strategy")}</h3>
-        <p className="mt-1 text-sm text-muted">{t("Construite à partir de vos seules informations ; rien n'est inventé.", "Built from your information only; nothing is made up.")}</p>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div><p className="text-sm font-semibold">{t("Objectifs", "Goals")}</p><ul className="mt-1 list-disc pl-5 text-sm">{s.objectives.map((o) => <li key={o}>{o}</li>)}</ul></div>
-        <div><p className="text-sm font-semibold">{t("Public et positionnement", "Audience and positioning")}</p><p className="mt-1 text-sm">{s.audience}</p><p className="mt-1 text-sm text-muted">{s.positioning}</p></div>
-      </div>
-      <div>
-        <p className="text-sm font-semibold">{t("Piliers éditoriaux", "Content pillars")}</p>
-        <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-5" data-social-strategy>
+      <Card className="grid gap-3 p-5 sm:p-7">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t("Stratégie sur 12 mois", "12-month strategy")}{lt ? ` · ${lt.horizon}` : ""}</p>
+        <h3 className="font-display text-2xl font-semibold leading-tight">{lt?.vision ?? s.objectives[0]}</h3>
+        <p className="text-sm text-muted">{t("Construite uniquement à partir de vos informations : aucun chiffre, résultat ni client n'est inventé. Ce qui manque est indiqué « À compléter ».", "Built only from your information: no figure, result or customer is made up. Anything missing is marked \"To complete\".")}</p>
+        <div className="grid gap-2 sm:grid-cols-3">{s.objectives.map((o, i) => <div key={o} className="rounded-2xl bg-paper-2 p-3 text-sm"><span className="text-xs text-muted">{t("Objectif", "Goal")} {i + 1}</span><p className="font-medium">{o}</p></div>)}</div>
+      </Card>
+
+      {lt && (
+        <Card className="p-5 sm:p-7" data-strategy-roadmap>
+          <H n="1" title={t("Feuille de route", "Roadmap")} sub={t("Quatre étapes de trois mois : chacune prépare la suivante.", "Four three-month stages: each prepares the next.")} />
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {lt.roadmap.map((q, i) => (
+              <div key={q.id} className="flex flex-col rounded-2xl border border-line p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">{t(`Étape ${i + 1}`, `Stage ${i + 1}`)} · {q.months}</p>
+                <p className="mt-1 font-display text-lg font-semibold">{q.title}</p>
+                <p className="mt-1 text-sm">{q.focus}</p>
+                {q.pillars.length > 0 && <p className="mt-2 text-xs text-muted">{t("Piliers : ", "Pillars: ")}{q.pillars.join(" · ")}</p>}
+                <p className="mt-1 text-xs text-muted">{t("Rythme : ", "Pace: ")}{q.rhythm}</p>
+                <ul className="mt-3 grid gap-1 text-sm">{q.milestones.map((m) => <li key={m} className="flex gap-2"><Check className="mt-0.5 size-3.5 shrink-0 text-ok" aria-hidden />{m}</li>)}</ul>
+                <p className="mt-auto pt-3 text-xs"><span className="font-medium">{t("À suivre : ", "Track: ")}</span>{q.kpis.join(" · ")}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {lt && (
+        <Card className="p-5 sm:p-7" data-strategy-funnel>
+          <H n="2" title={t("Le parcours de vos clients", "Your customers' journey")} sub={t("Chaque publication a un rôle : faire connaître, faire confiance, faire agir ou fidéliser.", "Every post has a role: get known, build trust, drive action or build loyalty.")} />
+          <div className="grid gap-2">
+            {lt.funnel.map((f) => (
+              <div key={f.id} className="grid gap-2 rounded-2xl border border-line p-3 sm:grid-cols-[180px_minmax(0,1fr)_200px] sm:items-center">
+                <div>
+                  <p className="font-medium">{f.title}</p>
+                  <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-paper-2"><div className={cx("h-full rounded-full", STAGE_TONE[f.id])} style={{ width: `${Math.max(4, f.share)}%` }} /></div>
+                  <p className="mt-0.5 text-[11px] text-muted">{f.share} % {t("du calendrier", "of the calendar")}</p>
+                </div>
+                <div className="text-sm"><p>{f.goal}</p><p className="text-xs text-muted">{[...f.pillars, ...f.content].join(" · ")}</p></div>
+                <p className="text-xs"><span className="font-medium">{t("Mesure : ", "Measure: ")}</span>{f.kpis.join(", ")}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      <Card className="grid gap-5 p-5 sm:p-7">
+        <H n="3" title={t("Publics et positionnement", "Audiences and positioning")} />
+        {lt && (
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {lt.personas.map((x) => (
+              <div key={x.name} className="rounded-2xl border border-line p-3 text-sm">
+                <p className="font-medium">{x.name}</p>
+                <p className="mt-1 text-xs text-muted">{t("Besoin : ", "Need: ")}{x.need}</p>
+                <p className="text-xs text-muted">{t("Où les toucher : ", "Where to reach them: ")}{x.channel}</p>
+                <Badge className="mt-2" tone={x.confirmed ? "ok" : "neutral"}>{x.confirmed ? t("Déclaré par vous", "Declared by you") : t("Hypothèse à confirmer", "Assumption to confirm")}</Badge>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div><p className="text-sm font-semibold">{t("Positionnement", "Positioning")}</p><p className="mt-1 text-sm">{s.positioning}</p><p className="mt-2 text-sm font-semibold">{t("Ton", "Tone")}</p><p className="mt-1 text-sm">{s.tone.join(" · ") || t("[À compléter : ton de la marque]", "[To complete: brand tone]")}</p></div>
+          <div><p className="text-sm font-semibold">{t("Messages à répéter (faits vérifiés)", "Messages to repeat (verified facts)")}</p>{s.messages.length ? <ul className="mt-1 list-disc pl-5 text-sm">{s.messages.slice(0, 6).map((m) => <li key={m}>{m}</li>)}</ul> : <p className="mt-1 text-sm text-warn">{t("[À compléter : vos points forts confirmés]", "[To complete: your confirmed strengths]")}</p>}</div>
+        </div>
+      </Card>
+
+      <Card className="p-5 sm:p-7">
+        <H n="4" title={t("Piliers de contenu", "Content pillars")} sub={t("Les grands thèmes qui reviennent, et leur part du calendrier.", "The recurring themes and their share of the calendar.")} />
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {s.pillars.map((p) => (
             <div key={p.id} className="rounded-2xl border border-line p-3">
-              <p className="font-medium">{p.title} <span className="text-xs text-muted">· {Math.round(p.share * 100)} %</span></p>
-              <p className="mt-1 text-xs text-muted">{p.idea}</p>
+              <div className="flex items-baseline justify-between gap-2"><p className="font-medium">{p.title}</p><span className="text-xs text-muted">{Math.round(p.share * 100)} %</span></div>
+              <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-paper-2"><div className="h-full rounded-full bg-ink" style={{ width: `${Math.round(p.share * 100)}%` }} /></div>
+              <p className="mt-2 text-xs text-muted">{p.idea}</p>
+              <p className="mt-1 text-[11px] text-muted">{t("Formats : ", "Formats: ")}{p.formats.join(", ")}</p>
             </div>
           ))}
         </div>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div><p className="text-sm font-semibold">{t("Appels à l'action", "Calls to action")}</p><p className="mt-1 text-sm">{s.ctas.join(" · ")}</p></div>
-        <div><p className="text-sm font-semibold">{t("Temps forts (dates réelles)", "Key dates (real)")}</p><p className="mt-1 text-sm">{s.seasonality.length ? s.seasonality.map((m) => `${m.label} (${m.date})`).join(" · ") : t("Aucun dans la période", "None in the period")}</p></div>
-      </div>
-      {s.gaps.length > 0 && <div className="rounded-2xl bg-warn-soft p-3 text-sm text-warn"><p className="font-semibold">{t("À compléter pour de meilleures publications", "To complete for better posts")}</p><ul className="mt-1 list-disc pl-5">{s.gaps.slice(0, 6).map((g) => <li key={g}>{g}</li>)}</ul></div>}
-    </Card>
+      </Card>
+
+      {lt && (
+        <Card className="grid gap-4 p-5 sm:p-7" data-strategy-year>
+          <H n="5" title={t("Temps forts de l'année", "Key dates of the year")} sub={t("Dates réelles des 12 prochains mois, et périodes propices à votre activité.", "Real dates for the next 12 months, and good periods for your business.")} />
+          {lt.moments.length ? (
+            <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{lt.moments.map((m) => <li key={m.date + m.label} className="rounded-2xl bg-paper-2 p-3 text-sm"><p className="text-xs text-muted">{m.month}</p><p className="font-medium">{m.label} · {m.date}</p><p className="text-xs text-muted">{m.prepare}</p></li>)}</ol>
+          ) : <p className="text-sm text-muted">{t("Aucune fête commerciale ne concerne directement votre activité : la feuille de route suit vos saisons.", "No retail holiday directly concerns your business: the roadmap follows your seasons.")}</p>}
+          {lt.seasons.length > 0 && <div className="grid gap-2 sm:grid-cols-3">{lt.seasons.map((x) => <div key={x.period} className="rounded-2xl border border-line p-3 text-sm"><p className="font-medium">{x.period}</p><p className="text-xs text-muted">{x.idea}</p></div>)}</div>}
+        </Card>
+      )}
+
+      {lt && (
+        <Card className="grid gap-5 p-5 sm:p-7">
+          <H n="6" title={t("Rythme, indicateurs et suivi", "Pace, indicators and follow-up")} />
+          <div className="grid gap-4 lg:grid-cols-3">
+            <div className="text-sm"><p className="font-semibold">{t("Rythme", "Pace")}</p><p className="mt-1">{lt.rhythm.perWeek}</p><p className="mt-1 text-xs text-muted">{t("Formats : ", "Formats: ")}{lt.rhythm.mix}</p><p className="mt-2 font-semibold">{t("Réseaux", "Networks")}</p><ul className="mt-1 text-xs text-muted">{lt.rhythm.channels.map((c) => <li key={c}>{c}</li>)}</ul><p className="mt-2 font-semibold">{t("Appels à l'action", "Calls to action")}</p><p className="mt-1 text-xs text-muted">{s.ctas.join(" · ")}</p></div>
+            <div className="text-sm"><p className="font-semibold">{t("Indicateurs", "Indicators")}</p><ul className="mt-1 grid gap-2">{lt.kpis.map((k) => <li key={k.name}><p className="font-medium">{k.name}</p><p className="text-xs text-muted">{k.why}</p><p className={cx("text-xs", /compléter|complete/i.test(k.target) ? "text-warn" : "text-ok")}>{k.target}</p></li>)}</ul></div>
+            <div className="text-sm"><p className="font-semibold">{t("Rituels de suivi", "Follow-up rituals")}</p><ul className="mt-1 grid gap-2">{lt.rituals.map((r) => <li key={r.when}><p className="font-medium">{r.when}</p><p className="text-xs text-muted">{r.what}</p></li>)}</ul></div>
+          </div>
+        </Card>
+      )}
+
+      {lt && lt.nextActions.length > 0 && (
+        <Card className="p-5 sm:p-7" data-strategy-next>
+          <H n="7" title={t("Vos prochaines actions", "Your next actions")} />
+          <ul className="grid gap-2 text-sm">{lt.nextActions.map((a) => <li key={a} className={cx("rounded-2xl p-3", /compléter|complete/i.test(a) ? "bg-warn-soft text-warn" : "bg-paper-2")}>{a}</li>)}</ul>
+        </Card>
+      )}
+    </div>
   );
 }
 
 // ------------------------------------------------------------------ créer
 
-function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void; reload: () => void }) {
+function CreatePanel({ data, onDone, onGo, reload }: { data: Data; onDone: () => void; onGo: (s: Section) => void; reload: () => void }) {
   const { id } = useProject();
   const t = useT();
   const toast = useToast();
@@ -176,14 +329,6 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
   const [ask, setAsk] = useState("");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ created: number; warnings: string[]; notes?: string[] } | null>(null);
-  const [est, setEst] = useState<{ posts: number; free: number; paid: number; estimateMicro: number; notes: string[] } | null>(null);
-  const [cap, setCap] = useState(5);
-  // Avec l'IA : publication entièrement conçue par l'IA (scène, mise en page, textes, produit réel) ou seulement
-  // l'image de fond par l'IA, mise en page faite par le studio.
-  const [mode, setModeState] = useState<VisualMode>("free");
-  const setMode = (m: VisualMode) => (setModeState(m), setEst(null));
-  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
-  const latest = data.plans.find((p) => p.engine === "v2");
   const days = Math.max(1, Math.round((Date.parse(f.endDate) - Date.parse(f.startDate)) / 86_400_000) + 1);
   // Attente en cours (libellé et clé de mesure du temps) ; production payante : tâche de fond suivie ci-dessous.
   const [what, setWhat] = useState<{ key: string; label: string; ms: number } | null>(null);
@@ -214,57 +359,17 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
     toast("ok", t(`${r.created} publications planifiées.`, `${r.created} posts planned.`));
     reload();
   }, { key: "social-ask", label: t("Préparation de vos publications…", "Preparing your posts…"), ms: 25000 });
-  // Gratuit, par petits lots (un montage vidéo local prend du temps) : chaque requête reste courte et la progression
-  // s'affiche ; les 30 prochaines publications sans média du dernier calendrier.
-  // Nombre d'images différentes pour les publications (0 : une image par publication), mémorisé sur cet appareil.
-  const [distinct, setDistinctState] = useState(0);
-  useEffect(() => {
-    try {
-      setDistinctState(Number(localStorage.getItem(`es-distinct-${id}`) ?? 0) || 0);
-    } catch {}
-  }, [id]);
-  const setDistinct = (n: number) => {
-    setDistinctState(n);
-    try {
-      localStorage.setItem(`es-distinct-${id}`, String(n));
-    } catch {}
-  };
-  const produceFree = () => run(async () => {
-    if (!latest) throw new Error(t("Préparez d'abord un calendrier.", "Prepare a calendar first."));
-    const todo = data.posts.filter((p) => p.planId === latest.id && p.media.length === 0 && ["planned", "draft", "failed"].includes(p.status)).sort((a, b) => (a.scheduledAt ?? 0) - (b.scheduledAt ?? 0)).slice(0, 30).map((p) => p.id);
-    let produced = 0;
-    setProgress({ done: 0, total: todo.length });
-    for (let i = 0; i < todo.length; i += 3) {
-      const r = await api<{ produced: number }>(`/api/projects/${id}/social/v2`, { body: { action: "produce", ids: todo.slice(i, i + 3), allowPaid: false, distinctImages: distinct || null } });
-      produced += r.produced;
-      setProgress({ done: Math.min(todo.length, i + 3), total: todo.length });
-      reload();
-    }
-    setProgress(null);
-    toast("ok", t(`${produced} visuels préparés gratuitement (photos libres choisies pour votre activité, mises en page à la marque).`, `${produced} visuals prepared for free (royalty-free photos chosen for your business, branded layouts).`));
-    reload();
-  }, { key: "social-produce", label: t("Production des visuels…", "Producing visuals…"), ms: 60000 });
-  const estimate = () => run(async () => {
-    if (!latest) throw new Error(t("Préparez d'abord un calendrier.", "Prepare a calendar first."));
-    setEst(await api(`/api/projects/${id}/social/v2`, { body: { action: "estimate", planId: latest.id, ...visualParams(mode) } }));
-  }, { key: "social-estimate", label: t("Estimation de la production…", "Estimating the production…"), ms: 10000 });
-  const producePaid = () => run(async () => {
-    if (!latest || !est) return;
-    await api(`/api/projects/${id}/social/v2`, { body: { action: "produce", planId: latest.id, ...visualParams(mode), maxCostEur: cap, approvedEstimateMicro: est.estimateMicro, distinctImages: distinct || null } });
-    toast("ok", t("Production lancée dans le plafond accepté.", "Production started within the accepted cap."));
-    setEst(null);
-  });
   const toggleDay = (d: number) => setF((x) => ({ ...x, weekdays: x.weekdays.includes(d) ? x.weekdays.filter((y) => y !== d) : [...x.weekdays, d].sort() }));
   return (
     <div className="grid min-w-0 grid-cols-1 gap-5" data-social-create>
       {jobs.map((j) => <JobProgress key={j.id} job={j} />)}
-      <AiWait busy={busy && !!what} label={what?.label ?? ""} waitKey={what?.key ?? "social"} expectedMs={what?.ms ?? 20000} progress={progress ? progress.done / Math.max(1, progress.total) : undefined} />
+      <AiWait busy={busy && !!what} label={what?.label ?? ""} waitKey={what?.key ?? "social"} expectedMs={what?.ms ?? 20000} />
       <Card className="grid gap-2 p-5 sm:p-7" data-create-guide>
-        <h3 className="font-display text-xl font-semibold">{t("Comment créer vos publications", "How to create your posts")}</h3>
+        <h3 className="font-display text-xl font-semibold">{t("Planifier plusieurs publications", "Plan several posts")}</h3>
         <ol className="grid gap-1.5 text-sm sm:grid-cols-3">
-          <li className="rounded-2xl bg-paper-2 p-3"><span className="font-semibold">{t("1. Planifier", "1. Plan")}</span> — {t("les dates, les sujets et les textes (gratuit).", "dates, topics and copy (free).")}</li>
-          <li className="rounded-2xl bg-paper-2 p-3"><a href="#creer-visuels" className="font-semibold underline">{t("2. Créer les visuels", "2. Create the visuals")}</a> — {t("plus bas : image gratuite mise en page par le studio, image par l'IA, ou publication entièrement par l'IA.", "below: free image laid out by the studio, AI image, or post entirely by AI.")}</li>
-          <li className="rounded-2xl bg-paper-2 p-3"><span className="font-semibold">{t("3. Relire et valider", "3. Review and approve")}</span> — {t("dans « Calendrier » : ouvrez une publication pour la modifier, refaire son visuel ou l'approuver.", "in \"Calendar\": open a post to edit it, redo its visual or approve it.")}</li>
+          <li className="rounded-2xl bg-paper-2 p-3"><span className="font-semibold">{t("1. Planifier", "1. Plan")}</span> — {t("ici : les dates, les sujets et les textes (gratuit).", "here: dates, topics and copy (free).")}</li>
+          <li className="rounded-2xl bg-paper-2 p-3"><span className="font-semibold">{t("2. Créer les visuels", "2. Create the visuals")}</span> — {t("dans", "in")} <button type="button" className="underline" onClick={() => onGo("image")}>{t("Publication image", "Image post")}</button> {t("et", "and")} <button type="button" className="underline" onClick={() => onGo("video")}>{t("Publication vidéo", "Video post")}</button>{t(", avec ou sans IA.", ", with or without AI.")}</li>
+          <li className="rounded-2xl bg-paper-2 p-3"><span className="font-semibold">{t("3. Relire et valider", "3. Review and approve")}</span> — {t("dans", "in")} <button type="button" className="underline" onClick={() => onGo("publications")}>{t("À valider et suivre", "Review and track")}</button>.</li>
         </ol>
         <p className="text-xs text-muted">{t("Vous préférez que tout se fasse seul, semaine après semaine ? Utilisez « Ma communication automatique ».", "Prefer everything to happen on its own, week after week? Use \"My automatic communication\".")}</p>
       </Card>
@@ -336,36 +441,6 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
             <p>{t(`${result.created} publications planifiées.`, `${result.created} posts planned.`)}</p>
             {[...(result.warnings ?? []), ...(result.notes ?? [])].map((w) => <p key={w} className="text-warn">⚠ {w}</p>)}
             <button type="button" className="mt-1 underline" onClick={onDone}>{t("Voir le calendrier", "See the calendar")}</button>
-          </div>
-        )}
-      </Card>
-      <Card className="grid gap-3 p-5 sm:p-7">
-        <h3 className="font-display text-xl font-semibold" id="creer-visuels">{t("2. Créer les visuels de vos publications", "2. Create your post visuals")}</h3>
-        <p className="text-sm text-muted">{t("C'est ici que le studio crée les images de toutes les publications planifiées à l'étape 1, en une fois. Choisissez d'abord comment : gratuit, image par l'IA ou publication entièrement par l'IA. Avec l'IA, le prix s'affiche avant de lancer et rien n'est dépensé sans votre accord.", "This is where the studio creates the images for all posts planned in step 1, in one go. First choose how: free, AI image or post entirely by AI. With AI, the price is shown before starting and nothing is spent without your approval.")}</p>
-        <VisualChoice value={mode} onChange={setMode} ai={!!data.ai} name="visual-mode-batch" />
-        <Field label={t("Nombre d'images différentes", "Number of different images")} htmlFor="distinct-images">
-          <div className="flex flex-wrap items-center gap-2">
-            <Select id="distinct-images" value={String(distinct)} onChange={(e) => setDistinct(Number(e.target.value))} className="h-10 w-full sm:w-72" data-distinct-images>
-              <option value="0">{t("Une image par publication", "One image per post")}</option>
-              {[1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20].map((n) => <option key={n} value={n}>{t(`${n} image${n > 1 ? "s" : ""} différente${n > 1 ? "s" : ""}`, `${n} different image${n > 1 ? "s" : ""}`)}</option>)}
-            </Select>
-            <span className="text-xs text-muted">{t("Chaque image est cherchée pour votre métier ou votre produit ; au-delà, elles sont reprises avec un autre texte et une autre mise en page.", "Each image is searched for your trade or product; beyond that, they are reused with different text and layout.")}</span>
-          </div>
-        </Field>
-        <div className="flex flex-wrap gap-2">
-          {mode === "free"
-            ? <Button variant="signal" icon={<Sparkles className="size-4" />} loading={busy} disabled={!latest} onClick={produceFree} data-action="produce-free">{t("Produire gratuitement (30 publications)", "Produce for free (30 posts)")}</Button>
-            : <Button variant="signal" loading={busy} disabled={!latest || !data.ai} onClick={estimate} data-action="estimate">{t("Voir le prix avant de lancer", "See the price before starting")}</Button>}
-        </div>
-        {progress && <p className="text-sm text-muted" data-produce-progress>{t(`Production gratuite : ${progress.done} / ${progress.total}`, `Free production: ${progress.done} / ${progress.total}`)}</p>}
-        {est && (
-          <div className="rounded-2xl border border-line p-3 text-sm">
-            <p>{t(`${est.posts} publications : ${est.free} gratuites, ${est.paid} payantes — estimation ${(est.estimateMicro / 1e6).toFixed(2)} €.`, `${est.posts} posts: ${est.free} free, ${est.paid} paid — estimate €${(est.estimateMicro / 1e6).toFixed(2)}.`)}</p>
-            {est.notes.map((n) => <p key={n} className="text-warn">{n}</p>)}
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span>{t("Plafond", "Cap")}</span><Input type="number" min={0} max={100} value={cap} onChange={(e) => setCap(Number(e.target.value))} className="h-9 w-24" /><span>€</span>
-              <Button size="sm" variant="signal" disabled={est.estimateMicro / 1e6 > cap} onClick={producePaid}>{t("J'accepte et je lance", "I accept, start")}</Button>
-            </div>
           </div>
         )}
       </Card>
@@ -690,31 +765,7 @@ function PostsPanel({ data, reload, onOpen }: { data: Data; reload: () => void; 
   );
 }
 
-// ------------------------------------------------------------------ comptes et statistiques
-
-function AccountsPanel({ data }: { data: Data }) {
-  const t = useT();
-  const { id } = useProject();
-  return (
-    <Card className="grid gap-4 p-5 sm:p-7" data-social-accounts>
-      <h3 className="font-display text-xl font-semibold">{t("Comptes et réseaux", "Accounts and networks")}</h3>
-      <p className="text-sm text-muted">{t("Connexion par les autorisations officielles des réseaux (aucun mot de passe). Une connexion ne garantit pas l'autorisation de publier : chaque réseau valide l'application.", "Connection through the networks' official authorization (no password). A connection does not guarantee permission to publish: each network approves the app.")} <a className="underline" href={`/studio/${id}/connexions`}>{t("Gérer les connexions", "Manage connections")}</a></p>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {data.platforms.map((pl) => {
-          const accts = data.accounts.filter((a) => a.provider === pl.id);
-          const lvl = accts.some((a) => a.status === "active") ? "connected" : pl.level;
-          return (
-            <div key={pl.id} className="rounded-2xl border border-line p-4" data-platform-card={pl.id}>
-              <p className="flex items-center gap-2 font-medium"><Dot n={pl.id} /> {pl.label} <Badge tone={LEVEL[lvl][2]}>{t(LEVEL[lvl][0], LEVEL[lvl][1])}</Badge></p>
-              {accts.map((a) => <p key={a.id} className="mt-1 text-sm">{a.name} — {a.status === "active" ? t("actif", "active") : t("à reconnecter", "reconnect")}</p>)}
-              <ul className="mt-2 list-disc pl-5 text-xs text-muted">{pl.limits.map((l) => <li key={l}>{l}</li>)}</ul>
-            </div>
-          );
-        })}
-      </div>
-    </Card>
-  );
-}
+// ------------------------------------------------------------------ statistiques
 
 function StatsPanel({ data }: { data: Data }) {
   const t = useT();

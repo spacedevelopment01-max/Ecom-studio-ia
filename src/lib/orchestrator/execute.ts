@@ -55,6 +55,8 @@ export const ACTION_STEPS: Record<string, StepKind[]> = {
   "image.single": ["image_generate"],
   "image.v2": ["image_generate"],
   "image.ai_post": ["image_generate"],
+  "video.bank.stock": ["video"],
+  "video.bank.ai": ["video"],
   "stock.search": ["stock_search"],
   "shop.build": ["theme"],
   "shop.direction": ["theme"],

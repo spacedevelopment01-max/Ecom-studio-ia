@@ -63,6 +63,9 @@ export const handlers: Record<string, Handler> = {
     return runImageSetV2(ctx, ctx.payload.projectId);
   },
   "image.single": async (ctx) => generateSingleImage(ctx, ctx.payload.projectId, ctx.payload.request),
+  /** Banque de vidéos : plans libres de droits (gratuit) ou plan filmé par l'IA (payant, prix accepté). */
+  "video.bank.stock": async (ctx) => (await import("../src/lib/media/bank-video")).findBankClips(ctx, ctx.payload.projectId, ctx.payload.request),
+  "video.bank.ai": async (ctx) => (await import("../src/lib/media/bank-video")).createBankClip(ctx, ctx.payload.projectId, ctx.payload.request),
   /** Onglet Images, « Tout par l'IA, de A à Z » : publication entière conçue par l'IA (moteur des Publications). */
   "image.ai_post": async (ctx) => (await import("../src/lib/engine/ai-post-image")).generateAiPostImage(ctx, ctx.payload.projectId, ctx.payload.request ?? {}),
   /** Publicités V2 : angles, textes contrôlés, créations composées (Image V2), barrière publicitaire. */

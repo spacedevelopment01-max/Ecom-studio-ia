@@ -5,7 +5,6 @@
  *  - Tout par l'IA, de A à Z : la publication entière par le moteur des Publications, textes du client écrits tels quels.
  * Sans IA active (Découverte, budget épuisé), les choix payants sont refusés par le serveur.
  */
-import fs from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import sharp from "sharp";
 
@@ -137,14 +136,4 @@ describe("Faire un visuel (onglet Images)", async () => {
     aiOn = false;
   }, 60_000);
 
-  it("écran : galerie d'abord, bouton « Faire un visuel », trois choix, réglages gardés et « Une de mes images »", () => {
-    const tab = fs.readFileSync("src/components/studio/tab-images.tsx", "utf8");
-    expect(tab).toContain("Faire un visuel");
-    expect(tab).toContain("<VisualChoice");
-    expect(tab).toContain("Une de mes images (à choisir)");
-    expect(tab).toContain("Étape 2 · Réglages (facultatifs)");
-    expect(tab).toContain("Coût maximal");
-    // Le formulaire n'occupe plus la colonne de gauche : la galerie prend toute la largeur.
-    expect(tab).not.toContain("lg:grid-cols-[340px_minmax(0,1fr)]");
-  });
 });

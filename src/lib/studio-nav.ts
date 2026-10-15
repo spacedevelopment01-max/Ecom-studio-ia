@@ -15,15 +15,15 @@ export const SPACE_GROUPS: { id: SpaceGroup; label: T2; /** Groupe replié par d
   { id: "avance", label: ["Outils avancés", "Advanced tools"], folded: true },
 ];
 
-export const SPACES: { id: SpaceId; group: SpaceGroup; purpose: T2; purposeServices?: T2 }[] = [
+export const SPACES: { id: SpaceId; group: SpaceGroup; purpose: T2; purposeServices?: T2; /** Espace regroupé dans un autre (sous-menu de celui-ci) : pas d'entrée propre dans le menu. */ within?: SpaceId }[] = [
   { id: "pilote", group: "projet", purpose: ["Où en est votre projet et la prochaine étape à faire.", "Where your project stands and the next step to take."] },
   { id: "produit", group: "creer", purpose: ["Les informations de votre produit : tout le reste s'en sert.", "Your product details: everything else builds on them."], purposeServices: ["Vos prestations, votre zone, vos horaires et vos coordonnées.", "Your services, area, hours and contact details."] },
   { id: "marque", group: "creer", purpose: ["Nom, logo, couleurs et polices : l'identité de toute la marque.", "Name, logo, colours and fonts: the identity of the whole brand."] },
   { id: "boutique", group: "creer", purpose: ["Votre boutique en ligne : aperçu, retouches et mise en ligne.", "Your online store: preview, edits and going live."], purposeServices: ["Votre site : aperçu, retouches et mise en ligne.", "Your website: preview, edits and going live."] },
-  { id: "images", group: "creer", purpose: ["Photos, visuels et publications prêtes à poster.", "Photos, visuals and ready-to-post images."] },
-  { id: "videos", group: "creer", purpose: ["Vos vidéos pour les réseaux sociaux.", "Your videos for social media."] },
-  { id: "publications", group: "diffuser", purpose: ["Relisez et approuvez vos publications : rien ne part sans votre accord.", "Review and approve your posts: nothing goes out without your approval."] },
-  { id: "calendrier", group: "diffuser", purpose: ["Quand chaque publication part, jour par jour.", "When each post goes out, day by day."] },
+  { id: "images", group: "creer", purpose: ["Votre banque d'images, sans texte : vos photos, photos libres et images créées.", "Your image bank, no text: your photos, royalty-free photos and created images."] },
+  { id: "videos", group: "creer", purpose: ["Votre banque de vidéos, sans texte : vos plans, plans libres et plans créés.", "Your video bank, no text: your clips, royalty-free clips and created clips."] },
+  { id: "publications", group: "diffuser", purpose: ["Stratégie, création, calendrier et validation de vos publications : rien ne part sans votre accord.", "Strategy, creation, calendar and approval of your posts: nothing goes out without your approval."] },
+  { id: "calendrier", group: "diffuser", within: "publications", purpose: ["Quand chaque publication part, jour par jour.", "When each post goes out, day by day."] },
   { id: "publicites", group: "diffuser", purpose: ["Vos campagnes publicitaires et leurs visuels.", "Your ad campaigns and their visuals."] },
   { id: "blog", group: "diffuser", purpose: ["Des articles pour être trouvé sur Google.", "Articles to be found on Google."] },
   { id: "prompts", group: "avance", purpose: ["Les consignes envoyées à l'IA, pour les utilisateurs avertis.", "The instructions sent to the AI, for advanced users."] },
@@ -32,6 +32,9 @@ export const SPACES: { id: SpaceId; group: SpaceGroup; purpose: T2; purposeServi
 ];
 
 export const space = (id: string) => SPACES.find((s) => s.id === id);
+
+/** Entrée du menu qui contient cet espace (le Calendrier est un sous-menu de Publications). */
+export const navSpace = (id: string): string => space(id)?.within ?? id;
 
 /** À quoi sert cet espace (une phrase), dans la langue de l'interface. */
 export function spacePurpose(id: string, lang: "fr" | "en", business?: Business): string | null {

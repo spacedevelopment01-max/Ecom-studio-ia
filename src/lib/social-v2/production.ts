@@ -101,7 +101,7 @@ function planBackgrounds(planId: string | null): { asset: Asset; uses: number }[
   return rows.map((r) => ({ asset: getAsset(r.bg)!, uses: r.uses })).filter((x) => x.asset && !x.asset.deleted_at);
 }
 
-export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, o: { allowPaid: boolean; maxCostEur: number; approvedEstimateMicro?: number | null; batchSize?: number; /** Nombre d'images différentes voulu pour les publications du calendrier (vide : une par publication). */ distinctImages?: number | null; /** Les N premières publications en image : visuel entièrement créé par l'IA (payant, dans le plafond). */ aiImages?: number | null; /** Image de fond par l'IA, mise en page du studio (payant, dans le plafond). */ aiBackground?: boolean; /** Remplacer le visuel déjà posé (l'ancien reste dans la bibliothèque). */ replace?: boolean }): Promise<ProductionResult> {
+export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, o: { allowPaid: boolean; maxCostEur: number; approvedEstimateMicro?: number | null; batchSize?: number; /** Nombre d'images différentes voulu pour les publications du calendrier (vide : une par publication). */ distinctImages?: number | null; /** Les N premières publications en image : visuel entièrement créé par l'IA (payant, dans le plafond). */ aiImages?: number | null; /** Image de fond par l'IA, mise en page du studio (payant, dans le plafond). */ aiBackground?: boolean; /** Remplacer le visuel déjà posé (l'ancien reste dans la bibliothèque). */ replace?: boolean; /** Image de la banque choisie par le client comme fond des publications en image (gratuit). */ background?: Asset | null }): Promise<ProductionResult> {
   const cap = Math.round(o.maxCostEur * EUR);
   const allowPaid = o.allowPaid && deps.aiActive && o.approvedEstimateMicro != null && o.approvedEstimateMicro <= cap;
   const notes: string[] = [];
@@ -119,7 +119,10 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
     const reuse = o.distinctImages && bgs.length >= o.distinctImages ? bgs.slice(0, o.distinctImages).sort((a, b) => a.uses - b.uses)[0].asset : null;
     if (reuse && !aiIds.has(r.id) && !(o.aiBackground && allowPaid)) m = { method: "local", paid: false };
     try {
-      if (reuse && !aiIds.has(r.id) && !(o.aiBackground && allowPaid)) {
+      if (o.background && !needsVideo(r) && !aiIds.has(r.id) && !(o.aiBackground && allowPaid)) {
+        // Une image choisie par le client dans sa banque : affiche à la marque posée dessus (gratuit).
+        out = await deps.local(p, r, { background: o.background });
+      } else if (reuse && !aiIds.has(r.id) && !(o.aiBackground && allowPaid)) {
         out = await deps.local(p, r, { background: reuse });
       } else if (m.method === "library") {
         const pool = needsVideo(r) ? pools.video : pools.image;

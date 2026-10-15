@@ -57,6 +57,8 @@ const ImageRequestSchema = z.object({
   count: z.number().int().min(1).max(4).optional(),
   topic: z.string().max(200).optional(),
   allowGenerate: z.boolean().optional(),
+  /** Image demandée à l'IA (banque d'images › Créer avec l'IA) : pas de recherche de photo libre. */
+  noStock: z.boolean().optional(),
 });
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
@@ -93,7 +95,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     projectId: p.id,
     type: "image.v2",
     label: L("Images : direction artistique et sélection", "Images: art direction and selection"),
-    payload: { projectId: p.id, request: { kind: intent.kind, support: r.support ?? intent.support, aspect: r.aspect, count: r.count ?? 1, topic: r.topic ?? (r.kind ? null : r.text ?? null), allowGenerate: r.allowGenerate !== false } },
+    payload: { projectId: p.id, request: { kind: intent.kind, support: r.support ?? intent.support, aspect: r.aspect, count: r.count ?? 1, topic: r.topic ?? (r.kind ? null : r.text ?? null), allowGenerate: r.allowGenerate !== false, ...(r.noStock && r.allowGenerate !== false ? { noStock: true } : {}) } },
   });
   return ok({ jobId: job.id, ...view(p.id) });
 });
