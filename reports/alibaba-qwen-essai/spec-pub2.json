@@ -1,0 +1,11 @@
+{
+  "model": "qwen-image-3.0-pro",
+  "items": [
+    {
+      "id": "pub2-qwen",
+      "aspect": "1:1",
+      "reference": ["reports/alibaba-qwen-essai/montre-pixabay.jpg", "reports/alibaba-qwen-essai/logo-qwen.png"],
+      "prompt": "Create a premium square Instagram advertisement (1:1) for the watch brand ARVEN, in a bright, minimal, editorial style — the opposite of a dark ad. Image 1 is the product: keep the watch EXACTLY as it is (same steel case, black dial with three silver sub-dials, numbered bezel, crown and pushers, brown leather strap with dark stitching); do not redesign it and do not add any text or logo on the watch. Image 2 is the brand logo: reproduce it faithfully and small at the top center (the dial emblem with the letter A and the cognac hand, the name ARVEN and the line HORLOGERIE), do not redraw or change its letters. Scene: top-down flat lay, the watch lying slightly diagonal on warm ivory travertine stone (#F3EFE7), soft natural morning light from the upper left, a long soft shadow, a small folded cognac leather card (#A0612B) and a sprig of dried olive leaves near the edge, lots of empty space, calm and luxurious. Typography: in the lower left area, a headline in an elegant near-black serif (#111214): \"Chaque seconde compte.\"; below it, a thin underlined text link in near-black spaced sans-serif capitals: \"DÉCOUVRIR\". Spell every word EXACTLY with the accents. No price, no other text, no people, no hands, no wrist."
+    }
+  ]
+}

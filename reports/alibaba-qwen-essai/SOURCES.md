@@ -15,3 +15,8 @@ Version « avant » (moteur gratuit, sans IA) : faite hors dépôt ; version Qwe
 ## Publicité corrigée (gratuit, sans IA)
 - `pub-qwen-corrigee.png` : « ACER » → « ACIER » réécrit (police Jost), et le vrai logo ARVEN (emblème cadran +
   ARVEN + HORLOGERIE, en ivoire / cognac) remplace le mot « ARVEN » dessiné par l'IA. Script : `scripts/pub-correction-logo.cjs`.
+
+## Deuxième publicité — Qwen-Image 3.0 Pro (15/10/2026)
+- `pub2-qwen.png`, 1328×1328 (1:1), style clair (pierre ivoire, vue de dessus) ; références : photo Pixabay + vrai logo.
+- Facturé « 1K » + 2 images d'entrée (≈ 0,046 $), 29 s. Textes exacts (« Chaque seconde compte. », « DÉCOUVRIR »),
+  logo reproduit fidèlement par l'IA (slogan ajouté sous le logo, comme sur le logo d'origine). Aucune retouche.

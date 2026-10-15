@@ -36,7 +36,7 @@ if (!args.includes("--confirm")) {
   console.error("Appel PAYANT : relancez avec --confirm après accord explicite.");
   process.exit(1);
 }
-const spec = JSON.parse(fs.readFileSync(arg("spec")!, "utf8")) as { model: string; items: { id: string; aspect: string; prompt: string; reference?: string }[] };
+const spec = JSON.parse(fs.readFileSync(arg("spec")!, "utf8")) as { model: string; items: { id: string; aspect: string; prompt: string; reference?: string | string[] }[] };
 const OUT = path.resolve(arg("out") ?? "reports/alibaba-qwen-essai");
 const maxUsd = Number(arg("max-usd") ?? "0.25");
 const price = (DEFAULT_PRICES as Record<string, { perImage?: number }>)[`alibaba:${spec.model}`]?.perImage;
@@ -53,7 +53,8 @@ fs.mkdirSync(OUT, { recursive: true });
 const { base } = alibabaBase();
 const report: Record<string, unknown>[] = [];
 for (const it of spec.items) {
-  const refs = it.reference ? [`data:image/jpeg;base64,${fs.readFileSync(it.reference).toString("base64")}`] : [];
+  const refFiles = it.reference ? (Array.isArray(it.reference) ? it.reference : [it.reference]) : [];
+  const refs = refFiles.map((f) => `data:image/${/\.png$/i.test(f) ? "png" : "jpeg"};base64,${fs.readFileSync(f).toString("base64")}`);
   const body = qwenImageBody({ model: spec.model, prompt: it.prompt, aspect: it.aspect, references: refs, people: false });
   const t0 = Date.now();
   const r = await fetch(`${base}/services/aigc/multimodal-generation/generation`, { method: "POST", headers: alibabaHeaders(GATEWAY_KEY), body: JSON.stringify(body) });
