@@ -1,0 +1,20 @@
+{
+  "request_id": "e1d6ad02-891b-9f3b-a1e1-71a84ec72c8f",
+  "output": {
+    "task_id": "0a63621c-7217-4438-b1eb-2ba986aa55a1",
+    "task_status": "SUCCEEDED",
+    "submit_time": "2026-10-16 01:30:40.086",
+    "scheduled_time": "2026-10-16 01:30:40.108",
+    "end_time": "2026-10-16 01:31:00.867",
+    "orig_prompt": "Real luxury watch commercial filmed with a real camera, final hero shot. Very slow, smooth push-in toward the watch lying on the stone block; the warm amber side light slowly brightens and a soft highlight travels along the steel case and the bezel. The watch and its complete leather strap and buckle stay perfectly still and exactly identical, fully visible, nothing changes shape. Keep empty dark space at the top and bottom. Photorealistic, subtle, understated motion only. No effects, no particles, no glow, no smoke. Single continuous shot, no cuts. No text, no logo, no people, no hands. No people in frame.",
+    "video_url": "https://dashscope-463f.oss-accelerate.aliyuncs.com/1d/8a/20261016/e4949017/e78df5b8f8604bcbb00c789baad0ced5-metadata_61246926db7ae53c.mp4?Expires=1792171860&OSSAccessKeyId=LTAI5t7xkDxYoFdeAc4nqUeU&Signature=qUb394tJ2TcN89yqws%2B5gE8cCPE%3D"
+  },
+  "usage": {
+    "duration": 5,
+    "input_video_duration": 0,
+    "output_video_duration": 5,
+    "video_count": 1,
+    "audio": false,
+    "SR": 1080
+  }
+}

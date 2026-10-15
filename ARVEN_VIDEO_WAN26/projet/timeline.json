@@ -28,15 +28,15 @@
       "pourquoi": "Caractère : flanc de la montre, couronne, cuir, lumière ambrée."
     },
     {
-      "id": "plan3-signature",
-      "fichier": "ARVEN_VIDEO_WAN26/clips/plan3-signature.mp4",
+      "id": "plan3-pierre",
+      "fichier": "ARVEN_VIDEO_WAN26/clips/plan3-pierre.mp4",
       "debut": 0,
       "duree": 4.0,
       "transition": {
         "type": "dissolve",
         "duree": 0.5
       },
-      "pourquoi": "Signature : montre sur un bloc de pierre, poussée lente, lumière qui monte (refait : la version « sable » faisait trop IA)."
+      "pourquoi": "Signature : montre posée sur la pierre, bracelet complet et bouclé, poussée lente, lumière qui monte (refait : bracelet incomplet dans la version précédente)."
     }
   ],
   "carte_finale": {
