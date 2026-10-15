@@ -251,7 +251,7 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
           }
           if (d.verdict !== "FINAL") continue;
           const keep = gateSave({ userId: project.userId, projectId, jobId: ctx.job.id }, d);
-          const a = await saveAsset({ projectId, userId: project.userId, data: buf, name: `${slug(project.product.name || project.name)}-${C("plan-libre", "stock-shot")}-${v.source}-${v.id}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", meta: { provider: v.source, recipe: stockVideoCredit(v), stock: { source: v.source, id: v.id, page: v.page, author: v.author, license: v.license }, ...keep.meta }, status: "review" });
+          const a = await saveAsset({ projectId, userId: project.userId, data: buf, name: `${slug(project.product.name || project.name)}-${C("plan-libre", "stock-shot")}-${v.source}-${v.id}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", meta: { provider: v.source, recipe: stockVideoCredit(v), stock: { source: v.source, id: v.id, page: v.page, author: v.author, license: v.license, ...(v.aiGenerated ? { aiGenerated: true } : {}) }, ...keep.meta }, status: "review" });
           return a.id;
         } catch (e) {
           if (e instanceof JobCancelled || e instanceof JobPaused) throw e;

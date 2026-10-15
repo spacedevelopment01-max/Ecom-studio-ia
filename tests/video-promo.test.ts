@@ -69,6 +69,19 @@ describe("habillage publicitaire des vidéos", async () => {
     expect(r).toHaveLength(1);
     expect(r[0].url).toBe("https://cdn/large.mp4");
   });
+
+  it("plans faits par l'IA sur Pixabay : toujours proposés et signalés ; dessins animés toujours écartés", async () => {
+    vi.stubEnv("PIXABAY_API_KEY", "test-key");
+    vi.stubEnv("STOCK_OFFLINE", "0");
+    const files = { large: { url: "https://cdn/l.mp4", width: 1080, height: 1920 } };
+    const ai = { id: 360167, duration: 8, pageURL: "https://pixabay.com/videos/id-360167/", user: "M", tags: "wedding chair, floral arrangement, cinematic, render, ai generated", videos: files };
+    const toon = { id: 2, duration: 8, pageURL: "https://pixabay.com/videos/id-2/", user: "T", tags: "flowers, cartoon, ai generated", videos: files };
+    const cgi = { id: 3, duration: 8, pageURL: "https://pixabay.com/videos/id-3/", user: "C", tags: "flowers, 3d, render", videos: files };
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ hits: [ai, toon, cgi] }), { status: 200, headers: { "content-type": "application/json" } })));
+    const r = await searchStockVideos(["wedding flowers"], "portrait", "en", new Set());
+    expect(r.map((v) => v.id)).toEqual(["360167"]);
+    expect(r[0].aiGenerated).toBe(true);
+  });
 });
 
 describe("habillage : jamais la même image en boucle", async () => {

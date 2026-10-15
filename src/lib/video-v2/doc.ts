@@ -216,7 +216,7 @@ export function overlayText(o: { w: number; h: number; safe: VideoDocument["safe
   const bh = size * (large ? 2.4 : 2.9);
   const y = o.place === "top" ? o.safe.top + h * 0.02 : h * (large ? 0.58 : 0.62);
   const text = textLayer("ov-text", "Texte à l'écran", "title", { x: o.safe.side, y, w: w - o.safe.side * 2, h: bh }, o.text, { family: o.typo.heading, weight: o.typo.headingWeight ?? 700, size, color: "#FFFFFF" });
-  return [{ ...text, lineHeight: large ? 1.02 : text.lineHeight, shadow: { color: "rgba(0,0,0,0.5)", blur: Math.round(size * 0.35), x: 0, y: Math.max(1, Math.round(size * 0.04)) } }];
+  return [{ ...text, lineHeight: large ? 1.02 : text.lineHeight, shadow: { color: "rgba(0,0,0,0.65)", blur: Math.round(size * 0.3), x: 0, y: Math.max(1, Math.round(size * 0.04)) } }];
 }
 
 /** Voix d'un plan (texte à enregistrer) : décalage et durée de parole naturelle. */

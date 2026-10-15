@@ -62,8 +62,8 @@ const DEMOS: Record<string, Def> = {
       scenes: [
         // Plans choisis et regardés (Pixabay) : chacun montre le métier et correspond à son titre.
         { still: "florist in an apron presenting a fresh bouquet", motion: "", title: "Bouquets du jour" },
-        { still: "flower stall: a customer buys a wrapped rose bouquet", motion: "", title: "Fleurs de saison" },
-        { still: "bride holding her bridal bouquet", motion: "", title: "Mariages et événements" },
+        { still: "flower stall: a customer buys a wrapped rose bouquet", motion: "", title: "Fleurs de saison", titleSize: "large" },
+        { still: "bride holding her bridal bouquet", motion: "", title: "Mariages et événements", titleSize: "large" },
       ],
       line: "Des fleurs qui racontent.",
       cta: "Demander un devis",

@@ -151,7 +151,7 @@ export async function findStockClip(ictx: Ictx, p: Project, r: StockClipRequest,
       }
       if (d.verdict !== "FINAL") continue;
       const keep = gateSave(ictx, d);
-      const a = await saveAsset({ projectId: p.id, userId: p.userId, data: buf, name: `${C("plan-libre", "stock-shot")}-${r.part}-${v.source}-${v.id}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", meta: { provider: v.source, recipe: stockVideoCredit(v), stock: { source: v.source, id: v.id, page: v.page, author: v.author, license: v.license }, subject: r.topic, part: r.part, durationS: v.duration, ...keep.meta }, status: "review" });
+      const a = await saveAsset({ projectId: p.id, userId: p.userId, data: buf, name: `${C("plan-libre", "stock-shot")}-${r.part}-${v.source}-${v.id}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", meta: { provider: v.source, recipe: stockVideoCredit(v), stock: { source: v.source, id: v.id, page: v.page, author: v.author, license: v.license, ...(v.aiGenerated ? { aiGenerated: true } : {}) }, subject: r.topic, part: r.part, durationS: v.duration, ...keep.meta }, status: "review" });
       exclude.add(`${v.source}:${v.id}`);
       return { assetId: a.id, durationS: v.duration };
     } catch (e) {
