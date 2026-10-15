@@ -157,7 +157,7 @@ Par exemple : principal Qwen-Image et secours GPT Image, ou principal Wan et sec
 - `tests/alibaba-media.test.ts` : 11 sur 11 réussis.
   - Couvert : catalogue et verrouillage, adresses et sécurité de l'adresse, requête Qwen avec facturation, blocage sans tarif, refus avec secours et messages sans clé.
   - Couvert aussi : Wan image vers vidéo, Wan 3.0 avec `media` et texte vers vidéo, reprise sans nouvelle tâche, vidéo payée récupérée sans repayer, échec non facturé, test de clé et état de validation, usages hérités.
-- Série complète `npx vitest run` : résultat dans la section « Vérifications » de la PR.
+- Série complète `npx vitest run` : 1593 sur 1593 réussis (207 fichiers).
 
 ## 8. TypeScript
 
@@ -165,7 +165,7 @@ Par exemple : principal Qwen-Image et secours GPT Image, ou principal Wan et sec
 
 ## 9. Build
 
-Voir la PR : la CI exécute `next build`.
+`npx next build` : réussi (toutes les pages construites).
 
 ## 10. Également dans cette branche (demandes du propriétaire)
 
