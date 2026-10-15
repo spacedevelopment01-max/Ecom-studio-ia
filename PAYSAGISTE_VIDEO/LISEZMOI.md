@@ -13,6 +13,14 @@ Aucun visage. Sources, auteurs et adresses : `pixabay/sources.jsonl` (vidéos br
 re-téléchargeables). Des vidéos de simples paysages avaient d'abord été choisies puis écartées : il fallait montrer le
 **travail** du paysagiste.
 
+## Version « tape-à-l'œil » (actuelle)
+- Titres animés en grand (`titres/animer-titres.cjs` → séquences `titres/anim/`) : numéro de plan, petit bandeau « ON »,
+  grand bandeau de couleur du verbe qui se déroule, lettres qui montent une à une, étiquette qui rebondit, sortie balayée.
+- Couleurs de la marque en aplats (rose, vert, vert clair, crème), image plus saturée, léger zoom avant sur chaque plan,
+  transitions zoom et ouverture en cercle.
+- Fin sur fond vert : logo réel qui surgit sur une carte crème, cercles qui s'ouvrent, slogan qui glisse, bouton qui pulse.
+- Musique du studio en style pop énergique, effets sonores calés sur les animations.
+
 ## Montage
 Fait par l'outil du studio (`node scripts/montage-film.cjs PAYSAGISTE_VIDEO/projet/timeline.json`) : recadrage
 vertical, étalonnage, transitions glissées, titres animés, logo réel du projet, slogan, bouton « Demander un devis »,

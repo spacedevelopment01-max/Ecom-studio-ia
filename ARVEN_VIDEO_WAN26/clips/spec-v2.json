@@ -1,0 +1,20 @@
+{
+  "model": "wan2.6-i2v-flash",
+  "resolution": "1080P",
+  "usdPerSecond": 0.075,
+  "parameters": { "audio": false, "shot_type": "single" },
+  "items": [
+    {
+      "id": "plan1-cadran",
+      "image": "ARVEN_VIDEO_WAN26/images-cles/plan1-cadran.png",
+      "seconds": 5,
+      "prompt": "Real luxury watch commercial filmed with a real camera on a slider, macro lens. Very slow, smooth dolly-in toward the dial; a warm amber light slowly sweeps across the bezel and the crystal, real reflections move naturally on the polished steel. The watch stays perfectly still and exactly identical: same dial, sub-dials, numbers, hands, bezel, case and strap. Photorealistic, subtle, understated motion only. No effects, no particles, no glow, no water. Single continuous shot, no cuts. No text, no logo, no people, no hands."
+    },
+    {
+      "id": "plan3-signature",
+      "image": "ARVEN_VIDEO_WAN26/images-cles/plan3-signature.png",
+      "seconds": 5,
+      "prompt": "Real luxury watch commercial filmed with a real camera, final hero shot. Very slow, smooth push-in toward the watch standing on the stone block; the warm amber side light slowly brightens and a soft highlight travels along the steel case edge. The watch stays perfectly still and exactly identical: same dial, sub-dials, numbers, hands, bezel, case and strap. Keep empty dark space at the top and bottom. Photorealistic, subtle, understated motion only. No effects, no particles, no glow, no sand, no smoke. Single continuous shot, no cuts. No text, no logo, no people, no hands."
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "request_id": "99cb3d65-78ae-9970-9b64-9a298c5f461b",
+  "output": {
+    "task_id": "119fd774-edd3-4112-aff7-ef664464f4ef",
+    "task_status": "SUCCEEDED",
+    "submit_time": "2026-10-16 01:10:59.818",
+    "scheduled_time": "2026-10-16 01:10:59.832",
+    "end_time": "2026-10-16 01:11:20.966",
+    "orig_prompt": "Luxury watch commercial, cinematic slow motion. Single water droplets fall from above onto the wet black slate around the watch, creating small crisp splashes and spreading ripples in the thin film of water; the cool silver-blue rim light shimmers on the wet surface; the camera slowly orbits a few degrees to the right. The watch itself does not move and stays exactly identical: same dial, sub-dials, numbers, bezel, case and strap. Single continuous shot, no cuts. No text, no logo, no people, no hands. No people in frame.",
+    "video_url": "https://dashscope-463f.oss-accelerate.aliyuncs.com/1d/08/20261016/e4949017/1c61525de934487ea1dfa4816ce248c3-metadata_ee40453e7b128a3a.mp4?Expires=1792170680&OSSAccessKeyId=LTAI5t7xkDxYoFdeAc4nqUeU&Signature=3VdpXVbNMII8HtoiZoe4NIi2woE%3D"
+  },
+  "usage": {
+    "duration": 5,
+    "input_video_duration": 0,
+    "output_video_duration": 5,
+    "video_count": 1,
+    "audio": false,
+    "SR": 1080
+  }
+}

@@ -19,3 +19,5 @@ scripts/tutorials/silent/
 PAYSAGISTE_VIDEO/pixabay/*.mp4
 PAYSAGISTE_VIDEO/ecartees-paysages/
 SONORE_VIDEO_WAN/ecartees-reference-pixabay/references/
+# Séquences de titres animés (régénérables : node PAYSAGISTE_VIDEO/titres/animer-titres.cjs)
+PAYSAGISTE_VIDEO/titres/anim/

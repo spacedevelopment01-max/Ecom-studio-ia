@@ -1,0 +1,34 @@
+{
+  "at": "2026-10-15T17:22:28.304Z",
+  "model": "qwen-image-3.0-pro",
+  "boundUsd": 0.162,
+  "items": [
+    {
+      "id": "plan1-cadran",
+      "ok": true,
+      "model": "qwen-image-3.0-pro",
+      "aspect": "9:16",
+      "size": "928*1664",
+      "references": 1,
+      "usage": {
+        "input_image_count": 1,
+        "input_image_type": "qima_input_1k",
+        "output_height": 1664,
+        "output_image_count": 1,
+        "output_image_type": "qima_output_1k",
+        "output_width": 928
+      },
+      "requestId": "ad42aba5-fbea-9e7a-9937-b50055552031",
+      "seconds": 19,
+      "maxCostUsd": 0.081,
+      "prompt": "Photorealistic luxury watch photograph shot on a real camera with a macro lens, vertical frame. The watch is EXACTLY the one in the reference photo (same steel case, plain black dial with three silver sub-dials and their numbers, numbered bezel, luminous hands and indices, crown and pushers, brown leather strap with dark stitching), seen from the SAME three-quarter angle, close-up on the dial and bezel. Resting on a dark brown leather surface. Warm amber key light from the side, natural soft falloff into a dark warm background, real reflections on the sapphire crystal and polished steel, shallow depth of field. Understated, natural, like a real high-end watch catalogue. No effects, no particles, no glow, no water, no text, no logo on the dial, no people, no hands."
+    },
+    {
+      "id": "plan3-signature",
+      "ok": false,
+      "paid": true,
+      "downloadHost": "dashscope-463f.oss-accelerate.aliyuncs.com",
+      "error": "fetch failed"
+    }
+  ]
+}

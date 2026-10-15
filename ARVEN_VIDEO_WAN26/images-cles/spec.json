@@ -1,0 +1,23 @@
+{
+  "model": "qwen-image-3.0-pro",
+  "items": [
+    {
+      "id": "plan1-eau",
+      "aspect": "9:16",
+      "reference": "ARVEN_PUBLICITE_VIDEO/references/montre-pixabay.jpg",
+      "prompt": "Cinematic luxury watch photograph, vertical frame. The watch is EXACTLY the one in the reference photo (same steel case, plain black dial with three silver sub-dials and their numbers, numbered bezel, luminous hands, crown and pushers, brown leather strap with dark stitching), seen from the SAME three-quarter angle, lying flat on a slab of wet polished black slate. Fine water droplets bead on the slate and the crystal, a thin film of water mirrors the watch. Cool silver-blue rim light from behind, deep night-blue background, crisp specular highlights. High-end watch campaign quality. No text, no logo on the dial, no people, no hands."
+    },
+    {
+      "id": "plan2-cuir",
+      "aspect": "9:16",
+      "reference": "ARVEN_PUBLICITE_VIDEO/references/montre-pixabay.jpg",
+      "prompt": "Cinematic macro photograph, vertical frame. EXACTLY the watch of the reference photo (same steel case, crown and pushers, brown leather strap with dark stitching, same black dial with silver sub-dials), seen from the side: extreme close-up on the case flank, the crown, the pushers and the beginning of the leather strap with its stitching, the dial partly visible. Warm amber light grazes the leather grain and the brushed steel, rich brown and black tones, dark warm background, shallow depth of field. High-end watch campaign quality. No text, no logo, no people, no hands."
+    },
+    {
+      "id": "plan3-sable",
+      "aspect": "9:16",
+      "reference": "ARVEN_PUBLICITE_VIDEO/references/montre-pixabay.jpg",
+      "prompt": "Cinematic luxury watch hero photograph, vertical frame, final shot of a film about time. EXACTLY the watch of the reference photo (same steel case, plain black dial with three silver sub-dials and their numbers, numbered bezel, crown and pushers, brown leather strap with dark stitching), seen from the SAME three-quarter angle, resting on a smooth dune of very fine dark golden sand, placed slightly below the middle of the frame. Low warm sunset light from the side, long soft shadows, golden glow, plain dark brown-black background, large clean empty space at the top and the bottom for titles. High-end watch campaign quality. No text, no logo on the dial, no people, no hands."
+    }
+  ]
+}

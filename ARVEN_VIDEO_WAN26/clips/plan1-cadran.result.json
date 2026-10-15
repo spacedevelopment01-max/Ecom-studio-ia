@@ -1,0 +1,20 @@
+{
+  "request_id": "cd0ca770-5583-9d2d-9353-b5b3890c9265",
+  "output": {
+    "task_id": "1d791284-3777-4fca-a861-0c4e04da69c1",
+    "task_status": "SUCCEEDED",
+    "submit_time": "2026-10-16 01:22:56.354",
+    "scheduled_time": "2026-10-16 01:22:56.370",
+    "end_time": "2026-10-16 01:23:23.844",
+    "orig_prompt": "Real luxury watch commercial filmed with a real camera on a slider, macro lens. Very slow, smooth dolly-in toward the dial; a warm amber light slowly sweeps across the bezel and the crystal, real reflections move naturally on the polished steel. The watch stays perfectly still and exactly identical: same dial, sub-dials, numbers, hands, bezel, case and strap. Photorealistic, subtle, understated motion only. No effects, no particles, no glow, no water. Single continuous shot, no cuts. No text, no logo, no people, no hands. No people in frame.",
+    "video_url": "https://dashscope-463f.oss-accelerate.aliyuncs.com/1d/49/20261016/e4949017/b7b39222405b4762ac85c9cced4ca258-metadata_9ef084898e154c19.mp4?Expires=1792171403&OSSAccessKeyId=LTAI5t7xkDxYoFdeAc4nqUeU&Signature=48Z%2BYbt68sYNg3pqjTmqzHZ0QFc%3D"
+  },
+  "usage": {
+    "duration": 5,
+    "input_video_duration": 0,
+    "output_video_duration": 5,
+    "video_count": 1,
+    "audio": false,
+    "SR": 1080
+  }
+}

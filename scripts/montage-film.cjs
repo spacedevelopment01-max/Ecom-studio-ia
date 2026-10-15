@@ -3,7 +3,9 @@
 // sociaux. Modifier la timeline (plans, durées, titres, sons) puis relancer :
 //   node scripts/montage-film.cjs <dossier>/projet/timeline.json
 // Options d'un plan : "vitesse" (0,5 = ralenti ×2, images intermédiaires calculées), "recadrage" {x, y} entre 0 et 1
-// (position du cadre vertical dans une vidéo horizontale, 0,5 = centre).
+// (position du cadre vertical dans une vidéo horizontale, 0,5 = centre), "poussee" (zoom avant progressif, ex. 0,08).
+// Titre : "calque" (PNG fixe, fondu + glissé) ou "sequence" (dossier d'images PNG animées 000.png, 001.png… à la
+// cadence du film, jouées à partir de "entree").
 const fs = require("fs"), path = require("path"), { execFileSync } = require("child_process");
 const root = path.resolve(__dirname, "..");
 const tlPath = path.resolve(process.argv[2] ?? "");
@@ -18,7 +20,7 @@ for (const p of T.plans) {
   const v = p.vitesse ?? 1, r = p.recadrage ?? { x: 0.5, y: 0.5 };
   args.push("-ss", String(p.debut), "-t", String(+(p.duree * v).toFixed(3)), "-i", abs(p.fichier));
   const lent = v !== 1 ? `setpts=PTS/${v},minterpolate=fps=${ips}:mi_mode=mci:mc_mode=aobmc:vsbmc=1,` : "";
-  f.push(`[${n}:v]${lent}scale=${W}:${H}:force_original_aspect_ratio=increase,crop=${W}:${H}:(iw-${W})*${r.x}:(ih-${H})*${r.y},fps=${ips},setsar=1,trim=duration=${p.duree},setpts=PTS-STARTPTS,${T.etalonnage},format=yuv420p[v${n}]`);
+  f.push(`[${n}:v]${lent}scale=${W}:${H}:force_original_aspect_ratio=increase,crop=${W}:${H}:(iw-${W})*${r.x}:(ih-${H})*${r.y},fps=${ips},setsar=1,trim=duration=${p.duree},setpts=PTS-STARTPTS,${p.poussee ? `zoompan=z='1+${p.poussee}*on/${Math.round(p.duree * ips)}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=${W}x${H}:fps=${ips},` : ""}${T.etalonnage},format=yuv420p[v${n}]`);
   n++;
 }
 // Enchaînement par transitions (xfade).
@@ -37,8 +39,16 @@ n++;
 // Titres : calques PNG, fondu d'entrée/sortie et léger glissé vers le haut.
 cur = "base";
 T.titres.forEach((ti, i) => {
-  args.push("-loop", "1", "-t", String(duree), "-i", abs(ti.calque));
   const out = Math.min(ti.sortie, duree);
+  if (ti.sequence) {
+    args.push("-framerate", String(ips), "-i", path.join(abs(ti.sequence), "%03d.png"));
+    f.push(`[${n}:v]format=rgba,tpad=start_duration=${ti.entree}:color=0x00000000[t${i}]`);
+    f.push(`[${cur}][t${i}]overlay=x=0:y=0:eof_action=pass:format=auto[o${i}]`);
+    cur = `o${i}`;
+    n++;
+    return;
+  }
+  args.push("-loop", "1", "-t", String(duree), "-i", abs(ti.calque));
   const fadeOut = out < duree ? `,fade=t=out:st=${(out - 0.4).toFixed(2)}:d=0.4:alpha=1` : "";
   f.push(`[${n}:v]format=rgba,fade=t=in:st=${ti.entree}:d=0.7:alpha=1${fadeOut}[t${i}]`);
   const y = ti.glisse ? `'if(lt(t,${ti.entree}),${ti.glisse},max(0,${ti.glisse}-(t-${ti.entree})*${ti.glisse}/0.7))'` : "0";

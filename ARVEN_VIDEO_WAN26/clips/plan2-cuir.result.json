@@ -1,0 +1,20 @@
+{
+  "request_id": "9052e340-3723-986a-95b9-32d195b65529",
+  "output": {
+    "task_id": "d9905f8a-4775-41b2-b19c-22fe2c33bf0c",
+    "task_status": "SUCCEEDED",
+    "submit_time": "2026-10-16 01:10:59.809",
+    "scheduled_time": "2026-10-16 01:10:59.829",
+    "end_time": "2026-10-16 01:11:29.582",
+    "orig_prompt": "Luxury watch commercial, macro shot. The camera glides slowly upward along the side of the watch case, from the leather strap to the crown and pushers; a warm amber light slowly sweeps across the brushed steel and the leather grain, highlights travel along the edges. The watch stays still and exactly identical. Smooth, slow, elegant motion. Single continuous shot, no cuts. No text, no logo, no people, no hands. No people in frame.",
+    "video_url": "https://dashscope-463f.oss-accelerate.aliyuncs.com/1d/72/20261016/e4949017/46a88c87109b4b49bdc87d6d00dd019f-metadata_37a53e95823839bb.mp4?Expires=1792170688&OSSAccessKeyId=LTAI5t7xkDxYoFdeAc4nqUeU&Signature=x%2BhkRo2s%2FeaShDNMAmjasXjpG3k%3D"
+  },
+  "usage": {
+    "duration": 5,
+    "input_video_duration": 0,
+    "output_video_duration": 5,
+    "video_count": 1,
+    "audio": false,
+    "SR": 1080
+  }
+}
