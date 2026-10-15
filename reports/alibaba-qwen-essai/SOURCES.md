@@ -48,3 +48,7 @@ Coût : 4 × (0,04 $ + 2 × 0,003 $) ≈ 0,184 $ (facturé « 1K », 2 images d'
 - `format-1x1-bureau-montre.png` : bouton « Voir la montre » (police Jost).
 - `format-16x9-banniere-montre.png` : titre « Une montre pour chaque jour. » (première ligne réécrite en Cormorant).
 - Script réutilisable : `scripts/pub-remplace-ligne.cjs`.
+
+## Story « tape-à-l'œil » — Qwen-Image 3.0 Pro (15/10/2026)
+- `story-choc.png`, 928×1664 : papier cognac déchiré, montre qui jaillit, étincelles, « ARVEN » géant derrière,
+  « Prenez le temps. » + bouton « Découvrir ». Textes exacts, montre fidèle (même angle). ≈ 0,046 $, aucune retouche.

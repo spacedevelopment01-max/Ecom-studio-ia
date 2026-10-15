@@ -1,0 +1,11 @@
+{
+  "model": "qwen-image-3.0-pro",
+  "items": [
+    {
+      "id": "story-choc",
+      "aspect": "9:16",
+      "reference": ["reports/alibaba-qwen-essai/montre-pixabay.jpg", "reports/alibaba-qwen-essai/logo-qwen.png"],
+      "prompt": "Create a scroll-stopping, high-impact vertical story advertisement (9:16) for Instagram and TikTok for the watch brand ARVEN — bold, energetic, dramatic, like a premium sneaker or luxury launch poster, impossible to scroll past. Image 1 is the product: keep the watch EXACTLY as in the photo, seen from the SAME three-quarter angle and viewpoint (same steel case, black dial with three silver sub-dials and their numbers, numbered bezel, crown and pushers, brown leather strap with dark stitching); do not redraw it from another angle, do not add any text or logo on it. Image 2 is the brand logo: reproduce only its small dial emblem faithfully at the very top center, in ivory. Composition: a deep near-black background (#111214); a huge cognac (#A0612B) paper sheet torn open diagonally across the middle, with rough torn edges, and the watch bursting out through the tear, large, slightly tilted, sharp and glossy, dramatic rim light, warm light streaks and a few glowing sparks flying around it, strong depth and motion. Behind the watch, the word ARVEN in gigantic ivory (#F3EFE7) serif capitals filling the full width, partly hidden behind the watch. Typography: at the bottom, a bold ivory headline on two lines \"Prenez\" then \"le temps.\"; under it a solid ivory pill button with near-black text \"Découvrir\". Spell every word EXACTLY with the accents. Maximum contrast. No price, no other text, no people, no hands, no wrist."
+    }
+  ]
+}
