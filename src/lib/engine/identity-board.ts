@@ -32,7 +32,8 @@ export async function saveIdentityBoard(projectId: string): Promise<Asset | null
     all<Asset>(`SELECT * FROM assets WHERE project_id = ? AND role = ? AND deleted_at IS NULL ${source ? "AND source_asset_id = ?" : ""} ORDER BY created_at DESC LIMIT 1`, projectId, role, ...(source ? [source] : []))[0];
   const main = (b.logo.assetId ? getAsset(b.logo.assetId) : undefined) ?? latest("logo");
   if (!main) return null;
-  const mark = latest("logo-mark", main.id) ?? null;
+  // Symbole retenu pour la marque (découpé dans le logo du client ou de l'œuvre), sinon celui du logo principal.
+  const mark = (b.logo.markAssetId ? getAsset(b.logo.markAssetId) : undefined) ?? latest("logo-mark", main.id) ?? null;
   const business = p.business === "services" ? "services" : "products";
   // Vraies photos du projet seulement (ambiances, mises en situation, photos de publications), jamais refusées.
   const photos = all<Asset>(

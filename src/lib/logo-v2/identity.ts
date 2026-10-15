@@ -255,3 +255,36 @@ export async function visualHash(png: Buffer): Promise<string> {
 export const hashDistance = (a: string, b: string) => [...a].reduce((n, c, i) => n + (c !== b[i] ? 1 : 0), 0);
 /** Seuil : au plus 4 bits différents sur 64 = même dessin (recadrage ou compression près). */
 export const SAME_LOGO_BITS = 4;
+
+/**
+ * Fond uni d'un logo fourni sans transparence (blanc, crème, gris clair…) rendu transparent : couleur du fond mesurée
+ * dans les quatre coins (médiane), tolérance selon l'écart mesuré, bord adouci. Un logo déjà transparent, ou dont les
+ * coins ne sont pas d'une même couleur (photo, dégradé), est rendu tel quel.
+ */
+export async function knockoutBackground(buf: Buffer): Promise<Buffer> {
+  const { data, info } = await sharp(buf).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const W = info.width;
+  const H = info.height;
+  const k = Math.max(4, Math.round(Math.min(W, H) * 0.03));
+  const samples: number[][] = [];
+  for (const [x0, y0] of [[0, 0], [W - k, 0], [0, H - k], [W - k, H - k]])
+    for (let y = y0; y < y0 + k; y++)
+      for (let x = x0; x < x0 + k; x++) {
+        const i = (y * W + x) * 4;
+        if (data[i + 3] > 200) samples.push([data[i], data[i + 1], data[i + 2]]);
+      }
+  // Coins déjà transparents (logo détouré) : rien à faire.
+  if (samples.length < k * k * 2) return buf;
+  const med = [0, 1, 2].map((c) => samples.map((s) => s[c]).sort((a, b) => a - b)[samples.length >> 1]);
+  const spread = Math.max(...samples.map((s) => Math.hypot(s[0] - med[0], s[1] - med[1], s[2] - med[2])));
+  // Coins de couleurs différentes : ce n'est pas un fond uni.
+  if (spread > 40) return buf;
+  const lo = Math.max(14, spread * 1.5);
+  const hi = lo + 26;
+  for (let i = 0; i < data.length; i += 4) {
+    const d = Math.hypot(data[i] - med[0], data[i + 1] - med[1], data[i + 2] - med[2]);
+    if (d <= lo) data[i + 3] = 0;
+    else if (d < hi) data[i + 3] = Math.round((data[i + 3] * (d - lo)) / (hi - lo));
+  }
+  return sharp(data, { raw: { width: W, height: H, channels: 4 } }).png().toBuffer();
+}

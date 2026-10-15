@@ -80,10 +80,19 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
   const clientLogo = one<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'logo' AND origin = 'upload' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", projectId);
   // Un logo validé par le client (autre que ce fichier) n'est jamais remplacé automatiquement par une reconstruction.
   const logoKept = isLocked(p.brand, "logo") && p.brand?.logo.assetId && p.brand.logo.assetId !== clientLogo?.id;
-  if (clientLogo && !site && !logoKept) brand.logo = { assetId: clientLogo.id, concept: C("Logo fourni par le client", "Logo provided by the client"), status: "provided" };
+  // Logo du client : déclinaisons tirées de SON logo (fond transparent, symbole découpé, fond sombre, favicon) et ses
+  // couleurs mesurées deviennent les couleurs du client — jamais une initiale ni les couleurs d'une direction à la place.
+  let logoColors: Brand["palette"] | null = null;
+  if (clientLogo && !site && !logoKept) {
+    const { deriveClientLogo } = await import("./client-logo");
+    const set = await ctx.step(`client-logo:${clientLogo.id}`, () => deriveClientLogo(projectId, p.userId, clientLogo));
+    brand.logo = { assetId: set.mainId, markAssetId: set.markId, concept: C("Logo fourni par le client", "Logo provided by the client"), status: "provided" };
+    logoColors = set.palette;
+  }
   // Palette verrouillée par la direction : chaque direction a ses propres couleurs (site existant : celles du client).
   if (!site) {
     if (p.brand?.paletteMode === "client" && p.brand.clientPalette) Object.assign(brand, { paletteMode: "client", clientPalette: p.brand.clientPalette, palette: { ...p.brand.clientPalette } });
+    else if (logoColors) Object.assign(brand, { paletteMode: "client", clientPalette: logoColors, palette: { ...logoColors } });
     else Object.assign(brand, { paletteMode: "direction", clientPalette: p.brand?.clientPalette, palette: directionPalette(brand.direction) });
   }
   saveBrand(projectId, brand);
