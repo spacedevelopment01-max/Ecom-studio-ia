@@ -133,7 +133,7 @@ export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: b
   return {
     providers: STOCK_PROVIDERS,
     canReview: b.aiActive && llmConfigured(),
-    canGenerate: b.aiActive && (!!activeProviderKey("openai") || !!activeProviderKey("google") || !!activeProviderKey("fal")),
+    canGenerate: b.aiActive && (!!activeProviderKey("openai") || !!activeProviderKey("google") || !!activeProviderKey("fal") || !!activeProviderKey("alibaba")),
     download: (c) => downloadStock({ source: c.source as never, id: c.id, url: c.url, page: c.page, author: c.author, license: c.license.name, width: c.width, height: c.height, alt: c.alt }),
     reference: (assetId) => {
       const a = getAsset(assetId);

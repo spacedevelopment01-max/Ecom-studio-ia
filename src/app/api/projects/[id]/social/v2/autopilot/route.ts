@@ -64,6 +64,7 @@ const Config = z
     horizonDays: z.number().int().min(1).max(90),
     produceDays: z.number().int().min(1).max(7),
     paidCapEurWeek: z.number().min(0).max(50),
+    visual: z.enum(["free", "ai_image", "ai_post"]),
   })
   .partial();
 

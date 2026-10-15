@@ -10,6 +10,8 @@ import { Bot, CalendarDays, Check, History, Pause, Play, Power, Save, ShieldChec
 import { api, Badge, Button, Card, cx, Input, Select, Spinner, useApi, useToast } from "../ui";
 import { useT } from "../i18n";
 import { useProject } from "./project-context";
+import { VisualChoice } from "./visual-choice";
+import type { VisualMode } from "@/lib/social-v2/visual-mode";
 
 type Goal = "awareness" | "sales" | "community" | "balanced";
 type Net = "instagram" | "facebook" | "tiktok" | "youtube" | "pinterest" | "linkedin";
@@ -17,7 +19,7 @@ type Kind = "main" | "info" | "demo" | "more" | "engage" | "convert";
 type Config = {
   active: boolean; goal: Goal; platforms: Net[]; perDay: number; weekdays: number[]; slots: string[]; timezone: string; tone: string; language: "fr" | "en";
   commercial: 0 | 1 | 2; focus: string[]; formats: Partial<Record<"image" | "carousel" | "video" | "text", number>>; approval: "manual" | "auto"; autoKinds: Kind[]; exclude: string[];
-  suspended: Net[]; horizonDays: number; produceDays: number; paidCapEurWeek: number;
+  suspended: Net[]; horizonDays: number; produceDays: number; paidCapEurWeek: number; visual: VisualMode;
 };
 type NetworkStatus = { platform: Net; label: string; state: string; text: { fr: string; en: string }; account: string | null; missing: string[]; verified: boolean; note: { fr: string; en: string } | null };
 type View = {
@@ -188,11 +190,15 @@ export function AutopilotPanel({ onChanged }: { onChanged: () => void }) {
           <label className="grid gap-1 text-sm">{t("Produits ou services prioritaires", "Priority products or services")}
             <Input value={cfg.focus.join(", ")} onChange={(e) => set("focus", e.target.value.split(",").map((x) => x.trim()).filter(Boolean))} placeholder={t("noms séparés par des virgules", "names separated by commas")} />
           </label>
-          <label className="grid gap-1 text-sm">{t("Plafond IA par semaine pour les visuels (€)", "Weekly AI cap for visuals (€)")}
-            <Input type="number" min={0} max={50} step={0.5} value={cfg.paidCapEurWeek} onChange={(e) => set("paidCapEurWeek", Number(e.target.value))} />
-            <span className="text-xs text-muted">{cfg.paidCapEurWeek > 0 ? (data.ai ? t("Visuels par l'IA seulement dans ce plafond, quelques jours à l'avance.", "AI visuals only within this cap, a few days ahead.") : t("IA non disponible pour ce projet : visuels gratuits.", "AI not available for this project: free visuals.")) : t("0 € : visuels gratuits (vos photos, mise en page du studio).", "€0: free visuals (your photos, studio layout).")}</span>
-          </label>
+
         </div>
+        <VisualChoice value={cfg.visual} onChange={(v) => set("visual", v)} ai={data.ai} name="visual-mode-autopilot" />
+        {cfg.visual !== "free" && (
+          <label className="grid max-w-sm gap-1 text-sm">{t("Budget IA maximum par semaine pour ces visuels (€)", "Maximum AI budget per week for these visuals (€)")}
+            <Input type="number" min={0} max={50} step={0.5} value={cfg.paidCapEurWeek} onChange={(e) => set("paidCapEurWeek", Number(e.target.value))} data-paid-cap />
+            <span className="text-xs text-muted">{cfg.paidCapEurWeek > 0 ? t("Le studio ne dépasse jamais ce montant ; au-delà, il continue avec des visuels gratuits.", "The studio never goes over this amount; beyond it, it continues with free visuals.") : t("À 0 €, les visuels restent gratuits : indiquez un montant pour autoriser l'IA.", "At €0, visuals stay free: enter an amount to allow AI.")}</span>
+          </label>
+        )}
         <div className="flex flex-wrap gap-2" data-formats>
           {(["image", "carousel", "video", "text"] as const).map((f) => {
             const on = (cfg.formats[f] ?? 0) > 0;

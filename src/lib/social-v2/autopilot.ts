@@ -33,6 +33,7 @@ import { brainIssues } from "./brain-check";
 import { PLATFORMS, type Platform } from "./platforms";
 import type { Goal, RoleKind } from "./editorial";
 import type { SocialDeps } from "./deps";
+import { visualParams, type VisualMode } from "./visual-mode";
 
 export type AutopilotConfig = {
   /** Communication automatique activée (préparation au fil de l'eau). */
@@ -62,6 +63,8 @@ export type AutopilotConfig = {
   produceDays: number;
   /** Plafond de dépense IA par semaine pour les visuels (0 : visuels gratuits seulement). */
   paidCapEurWeek: number;
+  /** Façon de faire les visuels : gratuit (photo + mise en page du studio), image par l'IA, publication entière par l'IA. */
+  visual: VisualMode;
 };
 
 export const SUGGESTED_SLOTS = ["09:00", "12:30", "18:00", "11:00", "20:00"];
@@ -97,6 +100,7 @@ export function defaultConfig(p: Project): AutopilotConfig {
     horizonDays: Math.min(14, plan ? PLANS[plan].calendarDays : 7),
     produceDays: 3,
     paidCapEurWeek: 0,
+    visual: "free",
   };
 }
 
@@ -146,6 +150,7 @@ export function saveSettings(p: Project, patch: Partial<AutopilotConfig>) {
   next.slots = clampSlots(next.slots);
   if (!next.slots.length) next.slots = SUGGESTED_SLOTS.slice(0, next.perDay);
   next.paidCapEurWeek = Math.max(0, Math.min(Number(next.paidCapEurWeek) || 0, 50));
+  if (!["free", "ai_image", "ai_post"].includes(next.visual)) next.visual = "free";
   run(
     "INSERT INTO social_settings (project_id, config, updated_at) VALUES (?,?,?) ON CONFLICT(project_id) DO UPDATE SET config = excluded.config, updated_at = excluded.updated_at",
     p.id,
@@ -265,7 +270,10 @@ export async function runAutopilot(p: Project, deps: SocialDeps, at = now()): Pr
   const soon = all<{ id: string }>("SELECT id FROM posts WHERE plan_id = ? AND media = '[]' AND status IN ('planned','draft','review') AND scheduled_at > ? AND scheduled_at < ? ORDER BY scheduled_at LIMIT 15", autoPlanId(p.id), at, at + c.produceDays * 24 * HOUR).map((r) => r.id);
   if (soon.length) {
     const left = Math.round(c.paidCapEurWeek * 1_000_000) - spentThisWeek(p.id, at);
-    if (c.paidCapEurWeek > 0 && !deps.aiActive) {
+    // Visuels par l'IA : seulement si le client les a choisis ET a fixé un plafond par semaine.
+    const paidWanted = c.visual !== "free" && c.paidCapEurWeek > 0;
+    const vp = visualParams(c.visual);
+    if (paidWanted && !deps.aiActive) {
       // Budget IA épuisé ou IA indisponible : on continue gratuitement et on prévient une fois par semaine.
       if (!one("SELECT 1 FROM social_autopilot_log WHERE project_id = ? AND action = 'budget_low' AND at > ?", p.id, at - 7 * 24 * HOUR)) {
         notify(p.userId, p.id, L("Budget IA épuisé pour vos publications", "AI budget used up for your posts"), L("Les publications prêtes restent programmées et les visuels continuent gratuitement (bibliothèque, mise en page du studio). Pour des visuels par l'IA, ajoutez une recharge de 10 € dans « Mon compte ».", "Ready posts stay scheduled and visuals continue for free (library, studio layout). For AI visuals, add a €10 top-up in \"My account\"."), "warning");
@@ -273,10 +281,10 @@ export async function runAutopilot(p: Project, deps: SocialDeps, at = now()): Pr
       }
       out.notes.push("budget IA indisponible : visuels gratuits seulement");
     }
-    const est = c.paidCapEurWeek > 0 && deps.aiActive ? estimateProduction(p, soon, deps, { allowPaid: true }) : null;
+    const est = paidWanted && deps.aiActive ? estimateProduction(p, soon, deps, { allowPaid: true, aiBackground: "aiBackground" in vp ? vp.aiBackground : undefined, aiImages: "aiImages" in vp ? vp.aiImages : undefined }) : null;
     if (est && est.paid > 0 && est.estimateMicro <= left) {
       // Payant, dans le plafond consenti : par la tâche de production existante (réservation atomique du budget).
-      const job = enqueue({ userId: p.userId, projectId: p.id, type: "social.v2.produce", label: L("Pilote : visuels des prochains jours", "Autopilot: upcoming visuals"), payload: { projectId: p.id, ids: soon, allowPaid: true, maxCostEur: left / 1_000_000, approvedEstimateMicro: est.estimateMicro }, idempotencyKey: `autopilot:${p.id}:${soon.join(",").slice(0, 200)}` });
+      const job = enqueue({ userId: p.userId, projectId: p.id, type: "social.v2.produce", label: L("Pilote : visuels des prochains jours", "Autopilot: upcoming visuals"), payload: { projectId: p.id, ids: soon, allowPaid: true, maxCostEur: left / 1_000_000, approvedEstimateMicro: est.estimateMicro, aiBackground: "aiBackground" in vp ? !!vp.aiBackground : false, aiImages: "aiImages" in vp ? vp.aiImages : null }, idempotencyKey: `autopilot:${p.id}:${soon.join(",").slice(0, 200)}` });
       out.paidJob = job.id;
       logAutopilot(p.id, "paid_job", { jobId: job.id, posts: soon.length, estimateMicro: est.estimateMicro });
     } else {

@@ -136,9 +136,9 @@ describe("routage multimédia par usage", async () => {
   });
   afterEach(() => vi.unstubAllGlobals());
 
-  it("sans réglage propre : les 7 usages suivent le réglage général (rien ne change pour les projets existants)", () => {
+  it("sans réglage propre : les 9 usages suivent le réglage général (rien ne change pour les projets existants)", () => {
     const o = fr(() => mediaUsageOverview());
-    expect(o.map((u) => u.usage)).toEqual(["logo", "product_image", "product_edit", "ad_visual", "scene", "product_video", "ugc_video"]);
+    expect(o.map((u) => u.usage)).toEqual(["logo", "product_image", "product_edit", "ad_visual", "social_image", "scene", "product_video", "ugc_video", "text_video"]);
     for (const u of o) {
       expect(u.primaryInherited && u.backupInherited && u.modeInherited).toBe(true);
       expect(u.mode).toBe("manual");

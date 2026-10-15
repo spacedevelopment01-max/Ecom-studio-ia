@@ -7,6 +7,7 @@ import { effortValues, modelStatus, textModel } from "@/lib/ai/text-models";
 import { mediaModel } from "@/lib/ai/media-models";
 import { incompatibility, MEDIA_USAGES, mediaPrimary, mediaStatus, priceUnitFits, USAGE_INFO, usageNeed, usagePrimary, usageSettings, type UsageSetting } from "@/lib/ai/media-routing";
 import { L } from "@/lib/i18n-server";
+import { ALIBABA_ENDPOINT_RE } from "@/lib/ai/alibaba";
 
 const pos = z.number().positive().finite();
 /** Un tarif incomplet serait compté 0 € : chaque champ de coût doit être un nombre positif. */
@@ -18,7 +19,7 @@ const PriceSchema = z.discriminatedUnion("unit", [
 
 // Réglages SMTP (serveur, identifiant, mot de passe, expéditeur) : chiffrés comme les clés, jamais renvoyés en clair.
 const SECRET_KEYS = /apiKey$|clientSecret$|secretKey$|webhookSecret$|^smtp\.(host|user|password|from)$/;
-const ALLOWED = /^(provider\.(anthropic|openai|google|fal|pexels|pixabay)\.(apiKey|disabled)|oauth\.(meta|tiktok|youtube|pinterest|canva|shopify)\.(clientId|clientSecret)|stripe\.(secretKey|webhookSecret)|smtp\.(host|port|user|password|from)|app\.url|meta\.graphVersion|shopify\.apiVersion)$/;
+const ALLOWED = /^(provider\.(anthropic|openai|google|fal|alibaba|pexels|pixabay)\.(apiKey|disabled)|provider\.alibaba\.(region|endpoint|workspace)|oauth\.(meta|tiktok|youtube|pinterest|canva|shopify)\.(clientId|clientSecret)|stripe\.(secretKey|webhookSecret)|smtp\.(host|port|user|password|from)|app\.url|meta\.graphVersion|shopify\.apiVersion)$/;
 
 /** Réglages d'administration. Les secrets sont chiffrés et jamais renvoyés en clair. */
 export const POST = handle(async (req: Request) => {
@@ -27,7 +28,7 @@ export const POST = handle(async (req: Request) => {
     req,
     z.object({
       set: z.array(z.object({ key: z.string(), value: z.string().nullable() })).optional(),
-      route: z.object({ task: z.string(), provider: z.enum(["anthropic", "openai", "google", "fal"]), model: z.string().min(2).max(120), effort: z.string().max(20).optional() }).optional(),
+      route: z.object({ task: z.string(), provider: z.enum(["anthropic", "openai", "google", "fal", "alibaba"]), model: z.string().min(2).max(120), effort: z.string().max(20).optional() }).optional(),
       // Routage des modèles de texte : manuel (défaut, routage actuel inchangé) ou automatique multifournisseur.
       routingMode: z.enum(["manual", "auto"]).optional(),
       pinTask: z.object({ task: z.string(), pinned: z.boolean() }).optional(),
@@ -50,7 +51,7 @@ export const POST = handle(async (req: Request) => {
         })
         .optional(),
       textModel: z.object({ key: z.string().regex(/^(anthropic|openai|google):[\w.-]+$/), enabled: z.boolean().optional(), confirm: z.boolean().optional() }).optional(),
-      price: z.object({ key: z.string().regex(/^(anthropic|openai|google|fal):.+$/, { error: () => L("Clé attendue : fournisseur:modèle", "Expected key: provider:model") }), value: PriceSchema.nullable() }).optional(),
+      price: z.object({ key: z.string().regex(/^(anthropic|openai|google|fal|alibaba):.+$/, { error: () => L("Clé attendue : fournisseur:modèle", "Expected key: provider:model") }), value: PriceSchema.nullable() }).optional(),
       pricesChecked: z.literal(true).optional(),
       usdToEur: z.number().min(0.3).max(3).optional(),
       // Coefficient au moins égal à 1 : l'enveloppe ne peut pas être débitée moins que le coût réel.
@@ -61,7 +62,13 @@ export const POST = handle(async (req: Request) => {
     if (!ALLOWED.test(s.key)) throw new HttpError(400, L(`Réglage non autorisé : ${s.key}`, `Setting not allowed: ${s.key}`));
     if (s.key === "smtp.port" && s.value && !/^\d{2,5}$/.test(s.value.trim())) throw new HttpError(400, L("Port SMTP invalide (ex. 587 ou 465).", "Invalid SMTP port (e.g. 587 or 465)."));
     if (s.key === "smtp.from" && s.value && !/^[^@\s<>]+@[^@\s<>]+\.[^@\s<>]+$|^[^<>]*<[^@\s<>]+@[^@\s<>]+\.[^@\s<>]+>$/.test(s.value.trim())) throw new HttpError(400, L("Adresse d'expédition invalide (ex. studio@exemple.fr ou Studio <studio@exemple.fr>).", "Invalid sender address (e.g. studio@example.com or Studio <studio@example.com>)."));
-    setSetting(s.key, s.value, SECRET_KEYS.test(s.key));
+    if (s.key === "provider.alibaba.region" && s.value && !["intl", "us", "cn"].includes(s.value)) throw new HttpError(400, L("Région inconnue.", "Unknown region."));
+    // Adresse personnalisée : HTTPS vers un domaine Alibaba Cloud seulement (jamais une autre destination).
+    if (s.key === "provider.alibaba.endpoint" && s.value && !ALIBABA_ENDPOINT_RE.test(s.value.trim())) throw new HttpError(400, L("Adresse d'API invalide : https://…aliyuncs.com attendu (ex. https://dashscope-intl.aliyuncs.com/api/v1).", "Invalid API address: https://…aliyuncs.com expected (e.g. https://dashscope-intl.aliyuncs.com/api/v1)."));
+    if (s.key === "provider.alibaba.workspace" && s.value && !/^[\w-]{1,80}$/.test(s.value.trim())) throw new HttpError(400, L("Identifiant d'espace de travail invalide.", "Invalid workspace ID."));
+    // Région ou adresse changée : la connexion doit être testée à nouveau.
+    if (/^provider\.alibaba\.(region|endpoint|apiKey|workspace)$/.test(s.key)) setSetting("provider.alibaba.lastTest", null);
+    setSetting(s.key, s.value?.trim() ?? null, SECRET_KEYS.test(s.key));
   }
   if (b.route) {
     if (!(b.route.task in DEFAULT_ROUTES)) throw new HttpError(400, L("Tâche inconnue.", "Unknown task."));

@@ -27,6 +27,7 @@ import { route, type InputType, type RouteDecision } from "../orchestrator/route
 import { balance } from "../billing";
 import { mediaBackup, mediaStatus, modelForProvider, selectMedia, USAGE_INFO, usageBackup, usageExplicit, usageOff, type MediaChoice, type MediaNeed, type MediaUsage } from "./media-routing";
 import { mediaModel, type MediaKind } from "./media-models";
+import { alibabaBase, alibabaError, alibabaHeaders, qwenImageBody, qwenImageUrl, wanTask, wanTaskKey, wanVideoBody } from "./alibaba";
 
 /** brain : contexte du Brain d'où vient la consigne de la génération (portée, empreinte, version), tracé dans ai_calls. */
 type Ctx = { userId: string; projectId: string; jobId?: string | null; usageKey?: string; brain?: { scope: string; hash: string; version: string } };
@@ -165,7 +166,7 @@ function pickModel(provider: string, kind: MediaKind): string {
 }
 
 /** Intervalles d'interrogation des générations longues (réduits dans les tests). */
-export const mediaPoll = { veoMs: 10_000, falVideoMs: 6000, falImageMs: 3000 };
+export const mediaPoll = { veoMs: 10_000, falVideoMs: 6000, falImageMs: 3000, wanMs: 8000 };
 
 /** Marge prudente sur le coût d'une génération (jetons d'image variables selon la taille et la qualité). */
 const MEDIA_MAX_FACTOR = 1.25;
@@ -353,9 +354,9 @@ export function routeMedia(task: "image_generation" | "video_generation", inputT
   return d;
 }
 
-export function imageProviderAvailable(need?: Partial<MediaNeed>): "openai" | "google" | "fal" | null {
+export function imageProviderAvailable(need?: Partial<MediaNeed>): "openai" | "google" | "fal" | "alibaba" | null {
   const d = routeMedia("image_generation", undefined, need);
-  return d && (d.provider === "openai" || d.provider === "google" || d.provider === "fal") ? d.provider : null;
+  return d && (d.provider === "openai" || d.provider === "google" || d.provider === "fal" || d.provider === "alibaba") ? d.provider : null;
 }
 
 /** Pourquoi aucune image IA ne peut être faite maintenant (affiché au client et dans le diagnostic). */
@@ -390,9 +391,9 @@ export function mediaRouteFor(usage: MediaUsage, need: Partial<MediaNeed> = {}):
   return d ? { provider: d.provider, model: d.model, reason: d.reason } : null;
 }
 
-export function videoProviderAvailable(usage?: MediaUsage): "google" | "fal" | null {
+export function videoProviderAvailable(usage?: MediaUsage): "google" | "fal" | "alibaba" | null {
   const d = routeMedia("video_generation", undefined, usage ? { usage } : undefined);
-  return d && (d.provider === "google" || d.provider === "fal") ? d.provider : null;
+  return d && (d.provider === "google" || d.provider === "fal" || d.provider === "alibaba") ? d.provider : null;
 }
 
 /**
@@ -484,7 +485,7 @@ No text, no lettering, no captions, no watermark, no added logo, no price tag. N
  * sont donnés mot pour mot (vérifiés ensuite par le contrôle) ; `reference` : photo du vrai produit (fidélité).
  */
 export async function aiPostImage(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null }) {
-  return generateImage(ctx, { text: clampBytes(input.prompt, LOGO_PROMPT_MAX_BYTES), aspect: input.aspect, reference: input.reference, quality: "high", strictQuality: true, usage: "ad_visual", need: { text: true } });
+  return generateImage(ctx, { text: clampBytes(input.prompt, LOGO_PROMPT_MAX_BYTES), aspect: input.aspect, reference: input.reference, quality: "high", strictQuality: true, usage: "social_image", need: { text: true } });
 }
 
 /**
@@ -570,7 +571,7 @@ export function logoArtworkMaxMicro(opts: { text?: boolean } = { text: true }): 
 
 /** Coût MAXIMAL d'une publication conçue par l'IA (même calcul que la réservation faite avant l'appel). null : aucun modèle. */
 export function aiPostMaxMicro(): number | null {
-  const r = mediaRouteFor("ad_visual", { text: true, references: 1 });
+  const r = mediaRouteFor("social_image", { text: true, references: 1 });
   if (!r) return null;
   const prompt = "x".repeat(LOGO_PROMPT_MAX_BYTES);
   const micro = r.provider === "openai" ? openaiImageMax(r.model, { prompt, images: 1, size: "1024x1536", quality: "high" }) : r.provider === "google" ? geminiImageMax(r.model, { prompt, images: 1 }) : cost(r.provider, r.model, { images: 1 }).micro;
@@ -602,6 +603,7 @@ async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: "1:1"
   const text = input.text;
   const ref = input.reference ? await sharp(input.reference).rotate().resize(768, 768, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer() : null;
   if (provider === "fal") return falImage(ctx, pickModel("fal", "image"), text, ref ? [ref] : [], input.aspect);
+  if (provider === "alibaba") return alibabaImage(ctx, pickModel("alibaba", "image"), text, ref ? [ref] : [], input.aspect, !!input.need?.people);
   if (provider === "google") {
     const key = activeProviderKey("google")!;
     const model = pickModel("google", "image");
@@ -724,6 +726,7 @@ async function ugcFrameImpl(ctx: Ctx, input: { prompt: string; product: Buffer; 
 ${subject}${persona ? " Keep the same person, outfit and room as in the second reference image." : ""}
 Authentic smartphone video still, natural light, realistic skin and hands, no text overlay, no watermark. Aspect ratio ${input.aspect}.`;
   if (provider === "fal") return falImage(ctx, pickModel("fal", "image"), text, persona ? [product, persona] : [product], input.aspect);
+  if (provider === "alibaba") return alibabaImage(ctx, pickModel("alibaba", "image"), text, persona ? [product, persona] : [product], input.aspect, true);
   if (provider === "google") {
     const key = activeProviderKey("google")!;
     const model = pickModel("google", "image");
@@ -867,12 +870,121 @@ async function falImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[],
 
 
 /**
+ * Image Qwen-Image (Alibaba Cloud Model Studio, point d'accès synchrone). Tarif « par image » obligatoire : le coût
+ * maximal (une image) est réservé avant l'envoi. Aucune personne ajoutée sans photo du client (consigne + negative
+ * prompt). Une demande refusée (clé, région, contenu, droits) ne coûte rien : la réservation est rendue.
+ */
+async function alibabaImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[], aspect: string, people: boolean) {
+  const key = activeProviderKey("alibaba");
+  if (!key) throw new UserFacingError(L("Aucune clé Alibaba Cloud configurée.", "No Alibaba Cloud key configured."));
+  if (mediaModel("alibaba", model)?.needsReference && !refs.length) throw new PermanentError(L(`${model} exige une image de référence.`, `${model} requires a reference image.`));
+  const p = requirePrice("alibaba", model);
+  if (p.unit !== "image") throw new PermanentError(L(`Tarif « par image » attendu pour alibaba:${model} : coût maximal non borné, génération bloquée.`, `A per-image price is expected for alibaba:${model}: maximum cost not bounded, generation blocked.`));
+  const max = cost("alibaba", model, { images: 1 }).micro;
+  gate(ctx, max, "image", "alibaba", model);
+  const { base } = alibabaBase();
+  const body = qwenImageBody({ model, prompt, aspect, references: refs.map((b) => `data:image/jpeg;base64,${b.toString("base64")}`), people });
+  const r = await providerFetch(`${base}/services/aigc/multimodal-generation/generation`, { method: "POST", headers: alibabaHeaders(key), body: JSON.stringify(body) });
+  if (!r.ok) {
+    const e = alibabaError(r.status, await r.text().catch(() => ""));
+    throw e.refused ? refusal(new PermanentError(e.message)) : new Error(e.message);
+  }
+  const url = qwenImageUrl(await r.json());
+  // Réponse sans image : résultat incertain (jamais compté comme un refus gratuit).
+  if (!url) throw new Error(L("Alibaba Cloud n'a renvoyé aucune image (contenu filtré ou indisponible).", "Alibaba Cloud returned no image (content filtered or unavailable)."));
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "alibaba", model, unit: "image", quantity: 1, costMicro: max, estimated: true, idempotencyKey: ctx.usageKey });
+  const img = await providerFetch(url);
+  if (!img.ok) throw new PermanentError(L(`Image produite par Alibaba Cloud mais impossible à télécharger (${img.status}).`, `Image produced by Alibaba Cloud but could not be downloaded (${img.status}).`));
+  return Buffer.from(await img.arrayBuffer());
+}
+
+/** Durée Wan demandée : la plus courte acceptée qui couvre la demande (la même est réservée et comptée). */
+export function wanBilledSeconds(model: string, requested?: number) {
+  const d = mediaModel("alibaba", model)?.durations ?? [5];
+  return d.find((x) => x >= Math.ceil(requested ?? 5)) ?? d[d.length - 1];
+}
+
+/**
+ * Plan vidéo Wan (Alibaba Cloud Model Studio, tâche ASYNCHRONE) : image vers vidéo (image fournie) ou texte vers
+ * vidéo (image null). Garde-fous :
+ *  - coût maximal (durée × tarif 720P) réservé avant l'envoi ;
+ *  - identifiant de la tâche gardé dès sa création (`alibaba.task.<clé d'usage>`) : une reprise (page rechargée,
+ *    serveur redémarré, tâche relancée) reprend le SUIVI de la même tâche, jamais une nouvelle génération ;
+ *  - vidéo terminée : coût enregistré avant le téléchargement, adresse gardée pour un nouvel essai sans repayer
+ *    (adresse valable environ 24 h selon la documentation) ;
+ *  - tâche en échec chez le fournisseur : non facturée (documentation), réservation rendue, secours possible.
+ */
+async function wanClipImpl(ctx: Ctx, input: { image: Buffer | null; prompt: string; aspect?: "16:9" | "9:16"; seconds?: number; people?: boolean; model?: string; usage?: MediaUsage }, onWait?: (msg: string) => void) {
+  const key = activeProviderKey("alibaba");
+  if (!key) throw new UserFacingError(L("Aucune clé Alibaba Cloud configurée pour la vidéo.", "No Alibaba Cloud key configured for video."));
+  routeMedia("video_generation", undefined, { usage: input.usage ?? (input.people ? "ugc_video" : "product_video"), people: !!input.people, ...(input.image ? {} : { imageToVideo: false }) });
+  const model = input.model && mediaModel("alibaba", input.model)?.adapter === "alibaba_video" ? input.model : pickModel("alibaba", "video");
+  const mm = mediaModel("alibaba", model);
+  if (!mm) throw new PermanentError(L(`Modèle vidéo Alibaba inconnu : ${model}.`, `Unknown Alibaba video model: ${model}.`));
+  if (input.image && !mm.caps.imageToVideo) throw new PermanentError(L(`${mm.label} ne fait pas l'image vers vidéo.`, `${mm.label} doesn't do image-to-video.`));
+  if (!input.image && !mm.caps.textToVideo) throw new PermanentError(L(`${mm.label} ne fait pas le texte vers vidéo.`, `${mm.label} doesn't do text-to-video.`));
+  const seconds = wanBilledSeconds(model, input.seconds);
+  const { base } = alibabaBase();
+  const tk = ctx.usageKey ? wanTaskKey(ctx.usageKey) : null;
+  type Saved = { taskId: string; model: string; seconds: number; at: number; videoUrl?: string };
+  const prev = tk ? getJsonSetting<Saved | null>(tk, null) : null;
+  const download = async (url: string) => {
+    const v = await providerFetch(url);
+    if (!v.ok) throw new PermanentError(L(`Vidéo terminée chez Alibaba Cloud mais impossible à télécharger (${v.status}). Un nouvel essai la récupérera sans la repayer (adresse valable environ 24 h).`, `Video finished at Alibaba Cloud but could not be downloaded (${v.status}). A retry will fetch it without paying again (address valid about 24 h).`));
+    const data = Buffer.from(await v.arrayBuffer());
+    if (tk) setSetting(tk, null);
+    return data;
+  };
+  // Déjà terminée et payée, pas encore récupérée : téléchargement seul, aucune nouvelle génération ni nouveau coût.
+  if (prev?.videoUrl && prev.model === model && Date.now() - prev.at < 24 * 3_600_000) return download(prev.videoUrl);
+  gate(ctx, cost("alibaba", model, { seconds }).micro, "video", "alibaba", model);
+  let taskId = prev && prev.model === model && Date.now() - prev.at < 24 * 3_600_000 ? prev.taskId : null;
+  if (taskId) onWait?.(L("Reprise du suivi de la vidéo déjà lancée chez Alibaba Cloud…", "Resuming the video already started at Alibaba Cloud…"));
+  else {
+    const image = input.image ? `data:image/jpeg;base64,${(await sharp(input.image).jpeg({ quality: 90 }).toBuffer()).toString("base64")}` : null;
+    const start = await providerFetch(`${base}/services/aigc/video-generation/video-synthesis`, { method: "POST", headers: alibabaHeaders(key, { async: true }), body: JSON.stringify(wanVideoBody({ model, prompt: input.prompt, image, seconds, people: !!input.people })) });
+    // Dépôt d'une tâche : une erreur signifie qu'aucune tâche n'a été créée (rien à suivre, rien de facturé).
+    if (!start.ok) throw refusal(new PermanentError(alibabaError(start.status, await start.text().catch(() => "")).message));
+    taskId = wanTask(await start.json()).id;
+    if (!taskId) throw new Error(L("Alibaba Cloud n'a pas renvoyé d'identifiant de tâche (résultat incertain).", "Alibaba Cloud returned no task ID (uncertain result)."));
+    if (tk) setSetting(tk, JSON.stringify({ taskId, model, seconds, at: Date.now() } satisfies Saved));
+  }
+  for (let i = 0; i < 150; i++) {
+    await new Promise((r) => setTimeout(r, mediaPoll.wanMs));
+    onWait?.(L(`Génération de la vidéo par Wan (${Math.round(((i + 1) * mediaPoll.wanMs) / 1000)} s)…`, `Wan is generating the video (${Math.round(((i + 1) * mediaPoll.wanMs) / 1000)} s)…`));
+    const s = await providerFetch(`${base}/tasks/${encodeURIComponent(taskId)}`, { headers: alibabaHeaders(key) });
+    if (!s.ok) {
+      // Suivi momentanément impossible : la tâche continue chez le fournisseur, on réessaie (jamais relancée).
+      if (s.status >= 500 || s.status === 429) continue;
+      throw new Error(alibabaError(s.status, await s.text().catch(() => "")).message);
+    }
+    const t = wanTask(await s.json());
+    if (t.status === "SUCCEEDED") {
+      if (!t.videoUrl) throw new Error(L("Tâche Wan terminée sans vidéo (résultat incertain).", "Wan task finished without a video (uncertain result)."));
+      recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "video_generation", provider: "alibaba", model, unit: "video_second", quantity: seconds, costMicro: cost("alibaba", model, { seconds }).micro, estimated: true, idempotencyKey: ctx.usageKey });
+      if (tk) setSetting(tk, JSON.stringify({ taskId, model, seconds, at: Date.now(), videoUrl: t.videoUrl } satisfies Saved));
+      return download(t.videoUrl);
+    }
+    if (t.status === "FAILED" || t.status === "CANCELED") {
+      if (tk) setSetting(tk, null);
+      throw refusal(new PermanentError(L(`La génération Wan a échoué chez Alibaba Cloud (non facturée) : ${t.message ?? t.status}`, `Wan generation failed at Alibaba Cloud (not billed): ${t.message ?? t.status}`)));
+    }
+    if (t.status === "UNKNOWN") {
+      if (tk) setSetting(tk, null);
+      throw new Error(L("Tâche Wan introuvable ou expirée chez Alibaba Cloud (résultat incertain).", "Wan task not found or expired at Alibaba Cloud (uncertain result)."));
+    }
+  }
+  // Délai dépassé : l'identifiant reste gardé, la prochaine tentative reprend le suivi (jamais une nouvelle tâche).
+  throw new Error(L("Délai dépassé pour la vidéo Wan : la tâche continue chez Alibaba Cloud, un nouvel essai reprendra son suivi.", "Wan video timed out: the task continues at Alibaba Cloud, a retry will resume tracking it."));
+}
+
+/**
  * Plan vidéo IA chez le fournisseur choisi, avec relais vers le secours compatible si le principal échoue sans coût.
  * `provider` : celui annoncé à l'appelant (videoProviderAvailable / Video Engine V2).
  */
 export async function aiClip(provider: string, ctx: Ctx, input: { image: Buffer; prompt: string; aspect: "16:9" | "9:16"; seconds?: number; people?: boolean; model?: string; usage?: MediaUsage }, onWait?: (msg: string) => void): Promise<Buffer> {
   const usage: MediaUsage = input.usage ?? (input.people ? "ugc_video" : "product_video");
-  const run = (p: string, model?: string) => (p === "google" ? veoClip(ctx, { ...input, usage, model }, onWait) : falClip(ctx, { image: input.image, prompt: input.prompt, seconds: input.seconds, usage, model }, onWait));
+  const run = (p: string, model?: string) => (p === "google" ? veoClip(ctx, { ...input, usage, model }, onWait) : p === "alibaba" ? wanClip(ctx, { ...input, usage, model }, onWait) : falClip(ctx, { image: input.image, prompt: input.prompt, seconds: input.seconds, usage, model }, onWait));
   try {
     return await run(provider, input.model);
   } catch (e) {
@@ -886,9 +998,10 @@ export async function aiClip(provider: string, ctx: Ctx, input: { image: Buffer;
 }
 
 /** Vérification de clé depuis l'administration (appel léger, sans génération). */
-export async function pingProvider(p: "openai" | "google" | "fal"): Promise<string> {
+export async function pingProvider(p: "openai" | "google" | "fal" | "alibaba"): Promise<string> {
   const key = activeProviderKey(p);
   if (!key) throw new Error(L("Aucune clé enregistrée.", "No key saved."));
+  if (p === "alibaba") return pingAlibaba(key);
   if (p === "openai") {
     const r = await fetch("https://api.openai.com/v1/models", { headers: bearer(key) });
     if (!r.ok) throw new Error(`OpenAI ${r.status}`);
@@ -904,6 +1017,32 @@ export async function pingProvider(p: "openai" | "google" | "fal"): Promise<stri
   const r = await fetch("https://queue.fal.run/fal-ai/fast-sdxl/requests/00000000-0000-0000-0000-000000000000/status", { headers: falAuth(key) });
   if (r.status === 401 || r.status === 403) throw new Error(falRefusal(r.status, await r.text().catch(() => "")));
   return L("Clé fal.ai acceptée.", "fal.ai key accepted.");
+}
+
+/**
+ * Test de la clé Alibaba Cloud SANS génération : liste des modèles (GET /models, appel du SDK officiel, gratuit).
+ * Le résultat est gardé pour l'état « connexion testée » de l'administration.
+ */
+async function pingAlibaba(key: string): Promise<string> {
+  const { base, problem } = alibabaBase();
+  if (problem) throw new Error(problem);
+  const save = (ok: boolean, message: string) => setSetting("provider.alibaba.lastTest", JSON.stringify({ ok, at: Date.now(), message }));
+  let r: Response;
+  try {
+    r = await fetch(`${base}/models?page_no=1&page_size=1`, { headers: alibabaHeaders(key) });
+  } catch (e) {
+    const m = L(`Adresse d'API injoignable (${new URL(base).host}) : ${redact(String((e as Error).message)).slice(0, 120)}`, `API address unreachable (${new URL(base).host}): ${redact(String((e as Error).message)).slice(0, 120)}`);
+    save(false, m);
+    throw new Error(m);
+  }
+  if (!r.ok) {
+    const m = alibabaError(r.status, await r.text().catch(() => "")).message;
+    save(false, m);
+    throw new Error(m);
+  }
+  const m = L(`Clé Alibaba Cloud acceptée (${new URL(base).host}, aucune génération facturée).`, `Alibaba Cloud key accepted (${new URL(base).host}, no billed generation).`);
+  save(true, m);
+  return m;
 }
 
 /** Une clé fal.ai a la forme « identifiant:secret » : sans les deux-points, elle a été copiée en partie. */
@@ -930,4 +1069,7 @@ export const geminiPlate = productPlate;
 export const veoClip = traced("video_generation", veoClipImpl);
 export const ugcFrame = withMediaBackup("image", traced("image_generation", ugcFrameImpl), { usage: () => "product_image" });
 export const falClip = traced("video_generation", falClipImpl);
+export const wanClip = traced("video_generation", wanClipImpl);
+/** Texte vers vidéo Wan (vidéo publicitaire, motion design) : prêt pour les moteurs, aucune image de départ. */
+export const wanTextClip = traced("video_generation", (ctx: Ctx, input: { prompt: string; seconds?: number; model?: string; usage?: MediaUsage }, onWait?: (msg: string) => void) => wanClipImpl(ctx, { ...input, image: null, usage: input.usage ?? "text_video" }, onWait));
 const generateImage = withMediaBackup("image", traced("image_generation", generateImageImpl), { usage: (_c, i) => i.usage });

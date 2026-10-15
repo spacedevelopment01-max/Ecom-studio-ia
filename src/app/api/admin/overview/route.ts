@@ -10,7 +10,7 @@ import { PROVIDER_INFO, providerConfig, redirectUri, type ProviderKey } from "@/
 import { paymentsLive, stripeKeys } from "@/lib/payments";
 import { mailConfigured } from "@/lib/mail";
 import { textRoutingOverview } from "@/lib/ai/text-routing-admin";
-import { mediaRoutingOverview, mediaUsageOverview } from "@/lib/ai/media-routing-admin";
+import { alibabaReadiness, mediaRoutingOverview, mediaUsageOverview } from "@/lib/ai/media-routing-admin";
 
 export const GET = handle(async () => {
   await requireAdmin();
@@ -39,6 +39,7 @@ export const GET = handle(async () => {
     textRouting: textRoutingOverview(),
     mediaRouting: mediaRoutingOverview(),
     mediaUsages: mediaUsageOverview(),
+    alibaba: alibabaReadiness(),
     oauth: (Object.keys(PROVIDER_INFO) as ProviderKey[]).map((k) => ({ key: k, label: PROVIDER_INFO[k].label, configured: providerConfig(k).configured, clientIdMasked: mask(providerConfig(k).clientId), redirectUri: redirectUri(k), needs: PROVIDER_INFO[k].needs, docs: PROVIDER_INFO[k].docs })),
     stripe: { secretMasked: mask(stripeKeys().secret), webhookConfigured: !!stripeKeys().webhookSecret, verifiedAt: getSetting("stripe.verifiedAt"), live: paymentsLive(), webhookUrl: `${appUrl()}/api/stripe/webhook` },
     // SMTP : valeurs masquées uniquement (le port n'est pas un secret).
