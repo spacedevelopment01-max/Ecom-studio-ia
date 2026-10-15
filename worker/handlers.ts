@@ -63,6 +63,8 @@ export const handlers: Record<string, Handler> = {
     return runImageSetV2(ctx, ctx.payload.projectId);
   },
   "image.single": async (ctx) => generateSingleImage(ctx, ctx.payload.projectId, ctx.payload.request),
+  /** Onglet Images, « Tout par l'IA, de A à Z » : publication entière conçue par l'IA (moteur des Publications). */
+  "image.ai_post": async (ctx) => (await import("../src/lib/engine/ai-post-image")).generateAiPostImage(ctx, ctx.payload.projectId, ctx.payload.request ?? {}),
   /** Publicités V2 : angles, textes contrôlés, créations composées (Image V2), barrière publicitaire. */
   "ads.v2": async (ctx) => {
     const { runAdEngineV2 } = await import("../src/lib/ads-v2/engine");
