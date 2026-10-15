@@ -130,7 +130,7 @@ describe("Video Engine V2 — moteur et rendu", async () => {
     for (const c of people) expect(c.prompt).toMatch(/Same synthetic presenter/);
     expect(r.stats.retries).toBeGreaterThan(0);
     const doc = latestVideo(p.id, r.docKey!)!.doc;
-    expect(doc.disclosure).toMatch(/générée par IA/);
+    expect(doc.disclosure).toBeNull();
     // Script IA avec faux témoignage : refusé (script local gardé), jamais « je l'utilise depuis ».
     expect(JSON.stringify(r.script)).not.toMatch(/depuis 6 mois/);
   }, 180_000);

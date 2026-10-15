@@ -171,7 +171,7 @@ export function applyVideoOp(input: VideoDocument, o: VideoOp): VideoDocument {
       if (o.track === "voice") doc.audio.voice = doc.audio.voice.map((v) => ({ ...v, gainDb: round(clamp(o.gainDb, -20, 12)) }));
       break;
     case "disclosure":
-      // La mention « générée par IA » ne se retire pas d'une vidéo UGC (personne de synthèse face caméra).
+      // Mention « générée par IA » : libre (ajoutée ou retirée par le client).
       if (!o.text && needsDisclosure(doc)) throw new VideoOpError("mention obligatoire : la vidéo montre une personne générée par l'IA");
       doc.disclosure = o.text;
       break;
@@ -183,8 +183,8 @@ export function applyVideoOp(input: VideoDocument, o: VideoOp): VideoDocument {
 export const applyVideoOps = (doc: VideoDocument, ops: VideoOp[]) => ops.reduce(applyVideoOp, doc);
 
 /** Un plan généré (vidéo IA, personnage) est-il présent ? */
-/** Mention IA : seulement pour l'UGC (personne de synthèse) ; vidéos produit et publicités sans mention (choix du propriétaire). */
-export const needsDisclosure = (doc: Pick<VideoDocument, "meta">) => doc.meta.intent === "ugc";
+/** Mention « générée par IA » : jamais imposée ni ajoutée d'office, dans aucune vidéo (choix du propriétaire) ; le client peut en mettre une. */
+export const needsDisclosure = (_doc: Pick<VideoDocument, "meta">) => false;
 
 export function hasGenerated(doc: VideoDocument): boolean {
   return doc.clips.some((c) => c.generated);

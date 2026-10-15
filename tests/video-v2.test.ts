@@ -238,9 +238,9 @@ describe("Video Engine V2 — modules", async () => {
     d = applyVideoOp(d, { op: "overlay", clipId: "c-s2", docOp: { op: "add", layer: { id: "badge", name: "Pastille", role: "decor", kind: "shape", shape: "ellipse", x: 10, y: 10, w: 100, h: 100, rotation: 0, opacity: 1, visible: true, locked: false, anchor: { h: "left", v: "top" }, fill: "#ff0000", stroke: null, radius: 0, shadow: null } } });
     expect(d.clips[2].overlays.map((l: any) => l.id)).toContain("badge");
     expect(() => applyVideoOp(d, { op: "remove", clipId: "inconnu" })).toThrow(VideoOpError);
-    // Mention IA : impossible à retirer d'une vidéo UGC (personne de synthèse) ; libre sur une vidéo produit.
+    // Mention IA : jamais imposée, libre sur toutes les vidéos (UGC comprises).
     const g = { ...d, clips: d.clips.map((c: any, k: number) => (k === 0 ? { ...c, generated: true } : c)), disclosure: "Vidéo générée par IA" };
-    expect(() => applyVideoOp({ ...g, meta: { ...g.meta, intent: "ugc" } }, { op: "disclosure", text: null })).toThrow(/obligatoire/);
+    expect(applyVideoOp({ ...g, meta: { ...g.meta, intent: "ugc" } }, { op: "disclosure", text: null }).disclosure).toBeNull();
     expect(applyVideoOp({ ...g, meta: { ...g.meta, intent: "product_demo" } }, { op: "disclosure", text: null }).disclosure).toBeNull();
     // Historique.
     const h = new VideoHistory(sampleDoc() as any);
@@ -310,7 +310,7 @@ describe("Video Engine V2 — modules", async () => {
     expect(localVideoChecks(tiny, { targetS: timeline(d).total, scriptIssues: [], audio: null }).codes).toContain("illegible_text");
     expect(localVideoChecks(d, { targetS: 60, scriptIssues: [], audio: null }).codes).toContain("duration_mismatch");
     expect(localVideoChecks(d, { targetS: timeline(d).total, scriptIssues: [], audio: { lufs: null, truePeakDb: null, durationS: 15, silent: true } }).codes).toContain("audio_unusable");
-    expect(localVideoChecks({ ...d, meta: { ...d.meta, intent: "ugc" }, clips: d.clips.map((c: any) => ({ ...c, generated: true })) }, { targetS: timeline(d).total, scriptIssues: [], audio: null }).codes).toContain("missing_disclosure");
+    expect(localVideoChecks({ ...d, meta: { ...d.meta, intent: "ugc" }, clips: d.clips.map((c: any) => ({ ...c, generated: true })) }, { targetS: timeline(d).total, scriptIssues: [], audio: null }).codes).not.toContain("missing_disclosure");
     expect(localVideoChecks({ ...d, meta: { ...d.meta, intent: "product_demo" }, clips: d.clips.map((c: any) => ({ ...c, generated: true })) }, { targetS: timeline(d).total, scriptIssues: [], audio: null }).codes).not.toContain("missing_disclosure");
     const inv = localVideoChecks(d, { targetS: timeline(d).total, scriptIssues: ["proof : pourcentage non confirmé (« 97 % »)"], audio: null });
     expect(gateVideo({ local: inv, review: videoReview(9), attempt: 0 })).toMatchObject({ verdict: "REJECTED", fatal: true });

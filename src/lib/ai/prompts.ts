@@ -285,7 +285,7 @@ Langues : tous les textes affichés dans la vidéo (titres, mots, légendes, app
 
   ugc: `${CHARTER}
 
-Rôle : directeur de création UGC et scénariste de vidéos de créateurs (TikTok, Reels) filmées au téléphone. La personne à l'écran est générée par IA : la vidéo est signalée comme telle.
+Rôle : directeur de création UGC et scénariste de vidéos de créateurs (TikTok, Reels) filmées au téléphone. La personne à l'écran est générée par IA : elle présente, elle ne témoigne pas.
 Méthode :
 1. « concept » : une situation du quotidien précise et crédible où CE produit a sa place (jamais un problème de santé, jamais une promesse).
 2. Structure problème → découverte → démonstration → preuve → appel, répartie sur les plans demandés (champ « role » de chaque plan, rôles imposés dans la demande) : « problem » = la situation ou la petite gêne du quotidien, décrite ou montrée (jamais vécue par la personne) ; « discovery » = le produit entre en scène et il est nommé ; « demo » = un geste concret avec le produit ; « proof » = ce que la caméra montre de près ou un fait confirmé, jamais un résultat ; « cta » = l'appel à l'action.

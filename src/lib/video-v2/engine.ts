@@ -37,10 +37,9 @@ import { planShots } from "./shots";
 import { chooseProvider, estimateMicro, shootDuration, VIDEO_CAPABILITIES } from "./providers";
 import { cuesForVoice, defaultSubtitleStyle, endCardDoc, interfaceDoc, kineticDoc, overlayText, packshotDoc, safeZone, SIZES, timeline, VIDEO_DOC_VERSION, voiceClip, inkOn, enlargeSmallTitles, type Palette } from "./doc";
 import { gateShot, gateVideo, localVideoChecks } from "./quality";
-import { needsDisclosure } from "./ops";
 import { NO_PEOPLE_EN } from "../people-policy";
 import { engineVideoKey, keyFrames, rememberShot, renderVideoFile, saveRendered, saveVideoVersion, shotKey, shotMemo, videoUserOwned } from "./store";
-import { disclosureLabel, honestLine, personaPrompt, personaSheet, ugcScriptIssues, type PersonaSheet } from "./ugc";
+import { honestLine, personaPrompt, personaSheet, ugcScriptIssues, type PersonaSheet } from "./ugc";
 import { realVideoDeps, type VideoV2Deps } from "./deps";
 import type { Clip, CreativeStrategy, ShotOutcome, ShotPlan, VideoDocument, VideoReview, VideoRunResult, VideoScript } from "./types";
 import type { GateDecision } from "../quality/gate";
@@ -671,7 +670,6 @@ function assemble(a: AssembleInput): VideoDocument {
     const v = voiceClip(c, s.voice);
     if (v) doc.audio.voice.push(v);
   }
-  if (a.intent.kind === "ugc") doc.disclosure = disclosureLabel();
   enlargeSmallTitles(doc);
   return doc;
 }
@@ -776,7 +774,6 @@ export async function regenerateClip(ctx: JobContext | null, projectId: string, 
   );
   const doc = structuredClone(cur.doc);
   doc.clips[k] = { ...clipFor(shot, out.media, { pal, typo, size: { w: doc.width, h: doc.height }, safe: doc.safe, insight, inv, strategy }, k), id: clip.id, overlays: clip.overlays, transitionIn: clip.transitionIn, durationS: clip.durationS };
-  if (needsDisclosure(doc) && !doc.disclosure) doc.disclosure = disclosureLabel();
   doc.meta = { ...doc.meta, source: out.media.generated ? "ai" : "user" };
   saveVideoVersion(projectId, docKey, doc, { note: `plan ${clip.shotId} remplacé (${out.outcome.reason})` });
   return { doc, outcome: out.outcome, notes };

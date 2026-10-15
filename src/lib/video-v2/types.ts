@@ -178,7 +178,7 @@ export type Clip = {
   /** Calques posés par-dessus (titres, pastilles, logo) — calques de l'éditeur publicitaire, en pixels vidéo. */
   overlays: Layer[];
   transitionIn: { kind: Transition; durationS: number };
-  /** Plan généré par l'IA (vidéo, personnage) : la mention « générée par IA » est alors obligatoire. */
+  /** Plan généré par l'IA (vidéo, personnage) : la mention « générée par IA » reste au choix du client (jamais imposée). */
   generated?: boolean;
   /** Modifié par le client : jamais écrasé par une régénération. */
   userEdited?: boolean;
@@ -234,7 +234,7 @@ export type VideoDocument = {
   subtitles: { style: SubtitleStyle; cues: SubtitleCue[] };
   audio: AudioTracks;
   brand: AdDocument["brand"];
-  /** Mention obligatoire quand un personnage ou des plans sont générés (ex. « Vidéo générée par IA »). */
+  /** Mention « Vidéo générée par IA » : jamais ajoutée d'office, au choix du client. */
   disclosure: string | null;
   /** Étalonnage de la direction artistique (plans filmés et photos) ; absent : étalonnage par défaut. */
   grade?: VideoGrade;

@@ -135,7 +135,7 @@ export function localVideoChecks(doc: VideoDocument, o: { targetS: number; scrip
       issues.push(`saturation (crête ${o.audio.truePeakDb} dBFS)`);
     }
   }
-  // Mention IA obligatoire pour l'UGC (personne de synthèse face caméra).
+  // Mention IA : jamais imposée (choix du propriétaire) ; la règle reste prête si elle redevient obligatoire.
   if (needsDisclosure(doc) && !doc.disclosure) {
     codes.push("missing_disclosure");
     issues.push("personne générée par l'IA sans mention « vidéo générée par IA »");
