@@ -11,6 +11,7 @@ import { useLang, useT } from "../../i18n";
 import { useProject } from "../project-context";
 import { JobProgress, SectionTitle, useActive } from "../common";
 import { formatEur } from "../../billing-client";
+import { AiImageActions } from "../ai-image-actions";
 import { SubjectPicker, subjectChoice, type SubjectView } from "../subject-picker";
 
 type AiAd = { id: string; url: string; aspect: string | null; subject: string | null; request: string | null; at: number };
@@ -107,6 +108,9 @@ export function AiAdCreator({ onDone }: { onDone?: () => void }) {
                 <a href={`${a.url}?download=1`} className="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium text-ink-2 hover:bg-paper-2" download>
                   <Download className="size-3.5" /> PNG
                 </a>
+              </div>
+              <div className="border-t border-line p-2">
+                <AiImageActions projectId={id} assetId={a.id} aspect={a.aspect} onChanged={reload} compact />
               </div>
             </Card>
           ))}

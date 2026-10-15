@@ -31,10 +31,11 @@ const quote = (p: Project, r: ThreeScenesRequest) =>
 
 /** Vidéos en scènes déjà faites (création guidée et création du projet), avec leur sujet et leur demande. */
 function list(projectId: string) {
+  const seen = new Set<string>();
   return all<{ id: string; meta: string; created_at: number }>("SELECT id, meta, created_at FROM assets WHERE project_id = ? AND role = 'video' AND deleted_at IS NULL AND json_extract(meta, '$.scenes') IS NOT NULL ORDER BY created_at DESC LIMIT 40", projectId).map((r) => {
     const m = json<any>(r.meta, {});
     return { id: r.id, url: `/api/files/${r.id}`, docKey: m.videoV2?.docKey ?? null, aspect: m.format ?? null, durationS: m.videoV2?.durationS ?? null, as: m.scenes?.as ?? "post", mode: m.scenes?.mode ?? null, subject: m.scenes?.subject?.name ?? null, request: m.scenes?.request ?? null, music: m.scenes?.music !== false, at: r.created_at };
-  });
+  }).filter((v) => !v.docKey || (!seen.has(v.docKey) && !!seen.add(v.docKey))); // dernier rendu de chaque vidéo seulement
 }
 
 export const GET = handle(async (_req: Request, ctx: Ctx) => {

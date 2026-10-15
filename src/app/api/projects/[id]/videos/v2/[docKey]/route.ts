@@ -61,7 +61,9 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
   const b = await body(
     req,
     z.object({
-      action: z.enum(["save", "ops", "edit", "restore", "duplicate", "render", "clip"]),
+      action: z.enum(["save", "ops", "edit", "restore", "duplicate", "render", "clip", "reformat"]),
+      /** Autre format (copie déclinée, gratuite) : 9:16, 4:5, 1:1, 16:9. */
+      aspect: z.enum(["9:16", "4:5", "1:1", "16:9"]).optional(),
       doc: VideoDocumentSchema.optional(),
       ops: z.array(z.record(z.string(), z.unknown())).max(200).optional(),
       instruction: z.string().max(400).optional(),
@@ -102,6 +104,16 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
       return ok(view(p, docKey));
     case "duplicate":
       return ok(view(p, duplicateVideo(p.id, docKey).docKey));
+    case "reformat": {
+      // Copie dans un autre format (l'original reste intact), puis rendu : gratuit, sans IA.
+      if (!b.aspect) throw new HttpError(400, L("Format manquant.", "Missing format."));
+      if (busy()) throw new HttpError(409, L("Une vidéo est déjà en préparation.", "A video is already being prepared."));
+      const { reformatVideoDoc } = await import("@/lib/video-v2/reformat");
+      const copy = duplicateVideo(p.id, docKey).docKey;
+      save(p, copy, reformatVideoDoc(cur.doc, b.aspect), `format ${b.aspect}`);
+      const job = enqueue({ userId: user.id, projectId: p.id, type: "video.v2.render", label: L(`Vidéo : format ${b.aspect}`, `Video: ${b.aspect} format`), payload: { projectId: p.id, docKey: copy } });
+      return ok({ ...view(p, copy), jobId: job.id });
+    }
     case "render": {
       if (busy()) throw new HttpError(409, L("Une vidéo est déjà en préparation.", "A video is already being prepared."));
       const job = enqueue({ userId: user.id, projectId: p.id, type: "video.v2.render", label: L("Vidéo : rendu", "Video: rendering"), payload: { projectId: p.id, docKey } });

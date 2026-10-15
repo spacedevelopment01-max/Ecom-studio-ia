@@ -953,6 +953,30 @@ function PostEditorV2({ postId, data, onClose, onChanged }: { postId: string; da
             {p.status === "scheduled" || p.status === "paused" ? <Button variant="secondary" onClick={() => action("unschedule")}>{t("Déprogrammer", "Unschedule")}</Button> : <Button variant="secondary" disabled={!data.canPublish} onClick={() => action("schedule")} data-action="schedule-post">{t("Programmer", "Schedule")}</Button>}
             <Button variant="secondary" disabled={!data.canPublish} onClick={() => action("publish_now")}>{t("Publier maintenant", "Publish now")}</Button>
             <Button variant="secondary" icon={<Copy className="size-4" />} onClick={() => action("duplicate")}>{t("Dupliquer", "Duplicate")}</Button>
+            {f.media.length > 0 && (
+              <Select
+                value=""
+                disabled={busy}
+                aria-label={t("Dupliquer dans un autre format", "Duplicate in another format")}
+                className="h-10 w-auto"
+                data-action="duplicate-format"
+                onChange={(e) => {
+                  const aspect = e.target.value;
+                  if (!aspect) return;
+                  void run(async () => {
+                    await api(base, { body: { action: "duplicate_format", aspect } });
+                    toast("ok", t(`Copie au format ${aspect} créée (gratuit) : à relire dans le calendrier.`, `${aspect} copy created (free): review it in the calendar.`));
+                    onChanged();
+                  });
+                }}
+              >
+                <option value="">{t("Dupliquer dans un autre format…", "Duplicate in another format…")}</option>
+                <option value="4:5">{t("Portrait 4:5", "Portrait 4:5")}</option>
+                <option value="1:1">{t("Carré 1:1", "Square 1:1")}</option>
+                <option value="9:16">{t("Story 9:16", "Story 9:16")}</option>
+                <option value="16:9">{t("Paysage 16:9", "Landscape 16:9")}</option>
+              </Select>
+            )}
             <Button variant="secondary" icon={<Trash2 className="size-4" />} onClick={() => action("delete")}>{t("Supprimer", "Delete")}</Button>
           </div>
         )}

@@ -136,7 +136,7 @@ export function VideoV2Panel({ scope }: { scope?: "ad" | "organic" } = {}) {
   );
 }
 
-function VideoDocModal({ docKey, onClose }: { docKey: string; onClose: () => void }) {
+export function VideoDocModal({ docKey, onClose }: { docKey: string; onClose: () => void }) {
   const { id } = useProject();
   const t = useT();
   const toast = useToast();
@@ -185,6 +185,16 @@ function VideoDocModal({ docKey, onClose }: { docKey: string; onClose: () => voi
             <Button size="sm" icon={<Wand2 className="size-4" />} disabled={!instruction.trim()} loading={busy === "edit"} onClick={() => post({ action: "edit", instruction }, t("Retouche appliquée (nouvelle version) : relancez le rendu.", "Change applied (new version): render again."), "edit")}>{t("Appliquer", "Apply")}</Button>
             <Button size="sm" variant="secondary" icon={<Play className="size-4" />} loading={busy === "render"} onClick={() => post({ action: "render" }, t("Rendu lancé.", "Rendering started."), "render")}>{t("Rendre la vidéo", "Render the video")}</Button>
             <Button size="sm" variant="ghost" loading={busy === "dup"} onClick={() => post({ action: "duplicate" }, t("Copie créée.", "Copy created."), "dup")}>{t("Dupliquer", "Duplicate")}</Button>
+          </div>
+          <div className="flex flex-wrap items-center gap-2" data-video-reformat>
+            <span className="text-xs text-muted">{t("Dupliquer dans un autre format (gratuit) :", "Duplicate in another format (free):")}</span>
+            {(["9:16", "4:5", "1:1", "16:9"] as const)
+              .filter((a) => a !== data.doc.aspect)
+              .map((a) => (
+                <Button key={a} size="sm" variant="secondary" loading={busy === `fmt${a}`} onClick={() => post({ action: "reformat", aspect: a }, t(`Copie au format ${a} en préparation.`, `${a} copy being prepared.`), `fmt${a}`)}>
+                  {a}
+                </Button>
+              ))}
           </div>
           <div className="flex flex-wrap gap-3 text-xs">
             <a className="underline" href={`${base}?export=srt`}>{t("Sous-titres SRT", "SRT subtitles")}</a>

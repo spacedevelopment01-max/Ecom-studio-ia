@@ -17,7 +17,7 @@ import path from "node:path";
 import type { JobContext } from "../jobs";
 import { JobCancelled, JobPaused } from "../jobs";
 import { aiActiveFor } from "../ai/access";
-import { all } from "../db";
+import { all, one } from "../db";
 import { CostCapReached, currentTrace, withCandidate, withTrace } from "../ai/trace";
 import { gateSave } from "../quality/store";
 import { POLICIES } from "../quality/policies";
@@ -778,6 +778,19 @@ export async function regenerateClip(ctx: JobContext | null, projectId: string, 
 }
 
 /** Rendu du document enregistré (après modifications du client) : local et gratuit, contrôles locaux, bibliothèque. */
+/**
+ * Vidéo en scènes (création guidée ou création du projet) : son étiquette (sujet, demande, publication ou publicité)
+ * suit ses nouveaux rendus et ses copies (autre format), pour qu'elles restent rangées avec les vidéos du client.
+ */
+function scenesMetaOf(projectId: string, docKey: string, createdFrom: string | null): Record<string, unknown> | null {
+  for (const key of [docKey, createdFrom]) {
+    if (!key) continue;
+    const r = one<{ m: string | null }>("SELECT json_extract(meta, '$.scenes') m FROM assets WHERE project_id = ? AND json_extract(meta, '$.videoV2.docKey') = ? AND json_extract(meta, '$.scenes') IS NOT NULL ORDER BY created_at DESC LIMIT 1", projectId, key);
+    if (r?.m) return JSON.parse(r.m);
+  }
+  return null;
+}
+
 export async function renderLatest(ctx: JobContext | null, projectId: string, docKey: string, o: { scale?: number; fps?: number } = {}): Promise<{ videoAssetId: string; verdict: string; issues: string[] }> {
   const { latestVideo } = await import("./store");
   const p = loadProject(projectId);
@@ -790,7 +803,8 @@ export async function renderLatest(ctx: JobContext | null, projectId: string, do
     // Rendu d'une version modifiée par le client : au mieux PROVISOIRE (le client valide lui-même).
     const d = gateVideo({ local, review: null, attempt: 0 });
     const g = gateSave({ userId: p.userId, projectId, jobId: ctx?.job.id ?? null, candidateId: `video2:${docKey}` }, d);
-    const saved = await saveRendered(projectId, p.userId, docKey, cur.doc, ex, { ...g.meta, videoV2Render: { version: cur.version.version } });
+    const scenes = scenesMetaOf(projectId, docKey, cur.doc.meta.createdFrom);
+    const saved = await saveRendered(projectId, p.userId, docKey, cur.doc, ex, { ...g.meta, videoV2Render: { version: cur.version.version }, ...(scenes ? { scenes: { ...scenes, music: !!cur.doc.audio.music } } : {}) });
     saveVideoVersion(projectId, docKey, cur.doc, { note: `rendu de la version ${cur.version.version}`, renderedAssetId: saved.videoId });
     return { videoAssetId: saved.videoId, verdict: d.verdict, issues: local.issues };
   } finally {

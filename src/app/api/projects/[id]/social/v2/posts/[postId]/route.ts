@@ -47,7 +47,7 @@ export const PATCH = handle(async (req: Request, ctx: PostCtx) => {
 export const POST = handle(async (req: Request, ctx: PostCtx) => {
   const { user, project: p } = await projectFromCtx(ctx as Ctx);
   const { postId } = await ctx.params;
-  const b = await body(req, z.object({ action: z.enum(["approve", "schedule", "unschedule", "duplicate", "delete", "publish_now", "confirm_uncertain"]), published: z.boolean().optional(), url: z.string().url().max(500).optional() }));
+  const b = await body(req, z.object({ action: z.enum(["approve", "schedule", "unschedule", "duplicate", "duplicate_format", "delete", "publish_now", "confirm_uncertain"]), aspect: z.enum(["1:1", "4:5", "9:16", "16:9"]).optional(), published: z.boolean().optional(), url: z.string().url().max(500).optional() }));
   if (!one("SELECT 1 FROM posts WHERE id = ? AND project_id = ?", postId, p.id)) throw new HttpError(404, L("Publication introuvable.", "Post not found."));
   try {
     switch (b.action) {
@@ -67,6 +67,12 @@ export const POST = handle(async (req: Request, ctx: PostCtx) => {
         break;
       case "duplicate":
         return ok({ id: duplicatePostV2(p, postId) });
+      case "duplicate_format": {
+        // Copie dans un autre format (gratuit, sans IA) : visuel recomposé, même texte, à relire.
+        if (!b.aspect) throw new HttpError(400, L("Format manquant.", "Missing format."));
+        const { duplicatePostInFormat } = await import("@/lib/social-v2/post-format");
+        return ok(await duplicatePostInFormat(p, postId, b.aspect));
+      }
       case "delete":
         deletePostV2(p, postId);
         return ok({ deleted: true });

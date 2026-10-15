@@ -6,7 +6,7 @@
  * métier. Montage du studio (titres, logo, musique). Prix affiché avant, rien ne part sans le clic du client.
  */
 import { useEffect, useRef, useState } from "react";
-import { Clapperboard, Download, Wand2 } from "lucide-react";
+import { Clapperboard, Download, Pencil, Wand2 } from "lucide-react";
 import { api, Button, Card, cx, useApi, useToast } from "../ui";
 import { useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
@@ -14,9 +14,10 @@ import { JobProgress, SectionTitle, useActive } from "./common";
 import { formatEur } from "../billing-client";
 import { SubjectPicker, subjectChoice, type SubjectView } from "./subject-picker";
 import { MusicChoice } from "./music-choice";
+import { VideoDocModal } from "./video-v2-panel";
 
 type Quote = { mode: "ai" | "stock"; allowed: boolean; reason: string | null; estimateMicro: number; scenes: number; totalS: number; clipS: number };
-type VideoItem = { id: string; url: string; aspect: string | null; durationS: number | null; as: "post" | "ad"; mode: string | null; subject: string | null; request: string | null; at: number };
+type VideoItem = { id: string; docKey: string | null; url: string; aspect: string | null; durationS: number | null; as: "post" | "ad"; mode: string | null; subject: string | null; request: string | null; at: number };
 type Data = { videos: VideoItem[]; ai: boolean; subjects: SubjectView[]; limits: { scenes: [number, number]; totalS: [number, number] } };
 const ASPECTS = [
   { v: "9:16", fr: "Vertical 9:16 (Reels, TikTok, Stories)", en: "Vertical 9:16 (Reels, TikTok, Stories)" },
@@ -33,7 +34,16 @@ export function GuidedVideo({ as }: { as: "post" | "ad" }) {
   const { lang } = useLang();
   const toast = useToast();
   const { data, reload } = useApi<Data>(`/api/projects/${id}/creative/video`);
-  const jobs = useActive("video.scenes");
+  const jobs = useActive(["video.scenes", "video.v2.render"]);
+  const [editing, setEditing] = useState<string | null>(null);
+  const reformat = async (docKey: string, to: string) => {
+    try {
+      await api(`/api/projects/${id}/videos/v2/${encodeURIComponent(docKey)}`, { body: { action: "reformat", aspect: to } });
+      toast("ok", t(`Copie au format ${to} en préparation (gratuit) : elle apparaît ici dès qu'elle est prête.`, `${to} copy being prepared (free): it appears here as soon as it's ready.`));
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    }
+  };
   const subjects = data?.subjects ?? [];
   const [subjectKey, setSubjectKey] = useState("");
   const [request, setRequest] = useState("");
@@ -149,9 +159,31 @@ export function GuidedVideo({ as }: { as: "post" | "ad" }) {
                   <Download className="size-3.5" /> MP4
                 </a>
               </div>
+              {v.docKey && (
+                <div className="flex flex-wrap items-center gap-1.5 border-t border-line px-3 py-2" data-guided-video-actions>
+                  <button type="button" onClick={() => setEditing(v.docKey)} className="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium text-ink-2 hover:bg-paper-2" data-guided-video-edit>
+                    <Pencil className="size-3.5" /> {t("Modifier", "Edit")}
+                  </button>
+                  <select aria-label={t("Dupliquer dans un autre format", "Duplicate in another format")} value="" disabled={running} onChange={(e) => e.target.value && reformat(v.docKey!, e.target.value)} className="h-8 rounded-full border border-line bg-paper px-2 text-xs" data-guided-video-reformat>
+                    <option value="">{t("Autre format…", "Other format…")}</option>
+                    {ASPECTS.filter((a) => a.v !== v.aspect).map((a) => (
+                      <option key={a.v} value={a.v}>{t(a.fr, a.en)}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </Card>
           ))}
         </div>
+      )}
+      {editing && (
+        <VideoDocModal
+          docKey={editing}
+          onClose={() => {
+            setEditing(null);
+            reload();
+          }}
+        />
       )}
     </section>
   );
