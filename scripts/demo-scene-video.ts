@@ -28,8 +28,8 @@ const DEMOS: Record<string, Def> = {
     plan: {
       scenes: [
         { still: "the completely plain, unbranded bottle (no label, no print, no text on it, exactly like the reference) standing on a lichen-covered granite rock on a mountain ridge at sunrise, a sea of clouds below, crisp orange first light", motion: "the camera slowly moves in toward the bottle while the clouds drift slowly below", title: "Gourde isotherme 750 ml" },
-        { still: "same image", motion: "slow lateral glide around the bottle, the rising sun flares softly behind it, the clouds keep drifting", title: "Partez léger." },
-        { still: "same image", motion: "slow pull-back revealing the whole ridge and the sea of clouds, the warm sunlight grows", title: "Voyez grand." },
+        { still: "the very same plain sage-green bottle as in the reference image (identical shape, bamboo lid, steel handle, completely blank matte surface), now placed on a mossy fallen log deep in a wild pine forest after the rain, soft green daylight through the trees, nothing written anywhere", motion: "slow lateral glide along the bottle, light rays move through the trees, water drops glisten on the moss", title: "Partez léger." },
+        { still: "the very same plain sage-green bottle as in the reference image (identical shape, bamboo lid, steel handle, completely blank matte surface), now standing on old wooden planks of a pontoon on a calm alpine lake at golden hour, mountains mirrored in the water, nothing written anywhere", motion: "majestic slow push-in, gentle ripples on the lake, the warm sunlight intensifies", title: "Voyez grand." },
       ],
       line: "Partez léger. Voyez grand.",
       cta: "Découvrir",
