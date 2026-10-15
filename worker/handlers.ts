@@ -105,7 +105,7 @@ export const handlers: Record<string, Handler> = {
     const { llmConfigured } = await import("../src/lib/ai/llm");
     const p = loadProject(ctx.payload.projectId);
     const { aiActiveFor } = await import("../src/lib/ai/access");
-    // Plan des scènes écrit par l'IA seulement si l'IA est active pour ce projet (Découverte : 0 € d'IA).
+    // Plan des scènes écrit par l'IA seulement si l'IA est active pour ce projet (compte sans abonnement ou budget IA épuisé : aucun appel).
     const r = await runThreeScenes(ctx, p.id, ctx.payload.request, realThreeScenesDeps(ctx, { userId: p.userId, projectId: p.id }, { aiText: aiActiveFor(p.userId, p.id) && llmConfigured() }));
     return { docKey: r.docKey, videoAssetId: r.videoAssetId, costMicro: r.costMicro, mode: r.mode, notes: r.notes };
   },

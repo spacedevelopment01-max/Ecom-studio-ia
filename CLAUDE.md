@@ -16,7 +16,7 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
 
 ## Règles du produit (ne pas casser)
 
-- **Forfait Découverte = 0 € d'IA** : tout passe par le moteur local (`src/lib/engine/local*.ts`), aucun appel payant.
+- **Découverte n'est pas un forfait** : c'est un compte inscrit par e-mail, sans abonnement, qui visite le studio de démonstration (`src/app/studio/decouverte`) sans rien pouvoir créer ni modifier (création de projet refusée sans abonnement payé). Aucun appel à l'IA sans abonnement (`aiActiveFor`).
 - **Le compte administrateur suit son forfait comme un client** (pas de passe-droit) : le propriétaire teste en
   gratuit puis en payant. Accès à l'IA : `aiActiveFor(userId)` (`src/lib/ai/access.ts`) ; le bouton « Désactiver »
   d'un fournisseur coupe vraiment ses appels.
