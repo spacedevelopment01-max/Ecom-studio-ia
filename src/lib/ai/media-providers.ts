@@ -484,8 +484,9 @@ No text, no lettering, no captions, no watermark, no added logo, no price tag. N
  * le visuel complet d'une publication de réseau social, comme le ferait un directeur artistique. Les textes à écrire
  * sont donnés mot pour mot (vérifiés ensuite par le contrôle) ; `reference` : photo du vrai produit (fidélité).
  */
-export async function aiPostImage(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null }) {
-  return generateImage(ctx, { text: clampBytes(input.prompt, LOGO_PROMPT_MAX_BYTES), aspect: input.aspect, reference: input.reference, quality: "high", strictQuality: true, usage: "social_image", need: { text: true } });
+export async function aiPostImage(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; logo?: Buffer | null }) {
+  // Logo de la marque transmis en seconde image de référence (Qwen-Image, OpenAI) : l'IA le reproduit au lieu de l'inventer.
+  return generateImage(ctx, { text: clampBytes(input.prompt, LOGO_PROMPT_MAX_BYTES), aspect: input.aspect, reference: input.reference, extraRefs: input.logo ? [input.logo] : [], quality: "high", strictQuality: true, usage: "social_image", need: { text: true } });
 }
 
 /**
@@ -596,14 +597,19 @@ export function imageQuality(usage: MediaUsage | undefined, asked: "medium" | "h
   return v === "medium" || v === "high" ? v : asked;
 }
 
-async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed>; /** Qualité demandée gardée (publication complète conçue par l'IA : texte net). */ strictQuality?: boolean }) {
+async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; /** Images de référence en plus (logo de la marque), pour les modèles qui en acceptent plusieurs. */ extraRefs?: Buffer[]; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed>; /** Qualité demandée gardée (publication complète conçue par l'IA : texte net). */ strictQuality?: boolean }) {
   const input = { ...input0, quality: input0.strictQuality ? input0.quality : imageQuality(input0.usage, input0.quality) };
   const provider = imageProviderAvailable({ references: input.reference ? 1 : 0, ...(input.usage ? { usage: input.usage } : {}), ...input.need });
   if (!provider) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini, OpenAI ou fal.ai).", "No image provider configured (Google Gemini, OpenAI or fal.ai)."));
   const text = input.text;
   const ref = input.reference ? await sharp(input.reference).rotate().resize(768, 768, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer() : null;
   if (provider === "fal") return falImage(ctx, pickModel("fal", "image"), text, ref ? [ref] : [], input.aspect);
-  if (provider === "alibaba") return alibabaImage(ctx, pickModel("alibaba", "image"), text, ref ? [ref] : [], input.aspect, !!input.need?.people);
+  const extras = await Promise.all((input.extraRefs ?? []).map((b) => sharp(b).rotate().resize(768, 768, { fit: "inside" }).flatten({ background: "#ffffff" }).jpeg({ quality: 88 }).toBuffer()));
+  if (provider === "alibaba") {
+    const model = pickModel("alibaba", "image");
+    const max = mediaModel("alibaba", model)?.caps.references ?? 1;
+    return alibabaImage(ctx, model, text, [...(ref ? [ref] : []), ...extras].slice(0, Math.max(1, max)), input.aspect, !!input.need?.people);
+  }
   if (provider === "google") {
     const key = activeProviderKey("google")!;
     const model = pickModel("google", "image");
@@ -629,12 +635,13 @@ async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: "1:1"
   const key = activeProviderKey("openai")!;
   const model = pickModel("openai", "image");
   const size = input.aspect === "16:9" ? "1536x1024" : input.aspect === "1:1" ? "1024x1024" : "1024x1536";
-  gate(ctx, openaiImageMax(model, { prompt: text, images: ref ? 1 : 0, size, quality: input.quality }), "image", "openai", model);
+  const oaExtras = ref ? extras : [];
+  gate(ctx, openaiImageMax(model, { prompt: text, images: ref ? 1 + oaExtras.length : 0, size, quality: input.quality }), "image", "openai", model);
   const client = openaiClient(key);
   let res: Awaited<ReturnType<typeof openaiImage>>;
   try {
     res = ref
-      ? await openaiImage(client, "edit", { model, image: [await toFile(ref, "reference.jpg", { type: "image/jpeg" })], prompt: text, size, quality: input.quality, n: 1 }, sent)
+      ? await openaiImage(client, "edit", { model, image: [await toFile(ref, "reference.jpg", { type: "image/jpeg" }), ...(await Promise.all(oaExtras.map((b, i) => toFile(b, `reference-${i + 2}.jpg`, { type: "image/jpeg" }))))], prompt: text, size, quality: input.quality, n: 1 }, sent)
       : await openaiImage(client, "generate", { model, prompt: text, size, quality: input.quality, n: 1, ...(input.transparent && openaiTransparent(model) ? { background: "transparent", output_format: "png" } : {}) }, sent);
   } catch (e: any) {
     if (e?.status === 401 || e?.status === 403) throw refusal(new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel.")));

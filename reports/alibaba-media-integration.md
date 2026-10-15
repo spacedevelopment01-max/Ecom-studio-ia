@@ -209,3 +209,20 @@ confirmation dans Administration › Modèles Images & Vidéos, et n'entrent pas
 (`capabilities.ts`), qui aurait sinon contourné ce verrou (trouvé par `budget-ia.test.ts`, corrigé, testé).
 
 Non vérifié : aucune génération réelle (image ou vidéo) n'a encore été faite.
+
+## 15/10/2026 — Qwen-Image 3.0 Pro par défaut et ligne « campagne » pour tous les clients (demande du propriétaire)
+
+- **Modèle d'images par défaut** : `alibaba:qwen-image-3.0-pro` (≈ 0,04 € par publicité contre 0,14 à 0,215 € avec
+  OpenAI lors des derniers essais). Il passe en premier **dès qu'il est utilisable** : clé Alibaba active, tarif, et
+  **confirmation dans Administration › Modèles Images & Vidéos** (verrou conservé : un nouveau fournisseur payant
+  n'est jamais activé sans accord de l'administration). Avant cette confirmation, le défaut historique (OpenAI) reste
+  en place : aucune création ne se retrouve sans modèle. Un choix explicite de l'administration reste prioritaire.
+- **Ligne « campagne »** (`src/lib/social-v2/ai-post.ts`, `aiPostPrompt`) pour toutes les publications et publicités
+  conçues par l'IA : logo en haut, produit héros sous le même angle que la photo, titre avec un seul mot en accent,
+  bouton pilule fin, finition de campagne (vraie lumière, profondeur de champ), un univers propre à chaque visuel,
+  aucun texte dans le décor. Référence : `reports/alibaba-qwen-essai/style-luxe-cinematique.md`.
+- **Vrai logo transmis** en seconde image de référence (Qwen-Image 3.0, OpenAI) et **contrôlé contre l'original** par
+  la relecture automatique (qui continue de vérifier chaque lettre des textes et de refaire un essai si besoin).
+- Restent sur OpenAI : la retouche par masque (seul fournisseur branché pour cela) et les textes (Qwen n'est utilisé
+  que pour les images et vidéos).
+- Tests : `tests/publicite-ligne-campagne.test.ts`.

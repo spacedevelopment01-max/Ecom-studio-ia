@@ -151,7 +151,10 @@ export const mediaMode = (kind: MediaKind): MediaMode => (getJsonSetting<Partial
 export function mediaPrimary(kind: MediaKind): { provider: string; model: string } {
   const r = getJsonSetting<Partial<Record<TaskId, { provider: string; model: string }>>>("ai.routes", {})[MEDIA_TASK[kind]];
   if (r?.provider && r.model) return { provider: r.provider, model: r.model };
-  const d = MEDIA_MODELS.find((m) => m.kind === kind && m.defaultFor === "primary");
+  // Défaut du studio : le mieux classé qui est UTILISABLE (ex. Qwen-Image 3.0 Pro une fois confirmé par
+  // l'administration) ; sinon le défaut historique, pour qu'une génération ne reste jamais sans modèle.
+  const ds = MEDIA_MODELS.filter((m) => m.kind === kind && m.defaultFor === "primary").sort((a, b) => (b.defaultRank ?? 0) - (a.defaultRank ?? 0));
+  const d = ds.find((m) => (m.defaultRank ?? 0) > 0 && mediaStatus(m).usable) ?? ds.find((m) => !m.defaultRank) ?? ds[0];
   return { provider: d!.provider, model: d!.model };
 }
 

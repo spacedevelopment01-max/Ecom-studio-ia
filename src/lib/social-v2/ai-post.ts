@@ -64,22 +64,29 @@ export function cleanAiCopy(c: AiPostCopy, fallback: AiPostTexts, people = false
   };
 }
 
-/** Consigne de l'IA d'images pour une publication complète. */
-export function aiPostPrompt(p: Project, post: PostBrief, o: { aspect: string; hasReference: boolean; fix?: string; texts?: AiPostTexts; people?: boolean }): string {
+/**
+ * Consigne de l'IA d'images pour une publication complète — ligne « campagne » choisie par le propriétaire pour TOUS
+ * les clients (référence : reports/alibaba-qwen-essai/style-luxe-cinematique.md) : on garde une MISE EN PAGE et un
+ * NIVEAU DE FINITION de campagne haut de gamme, jamais un décor tout fait ; chaque publication invente son univers.
+ */
+export function aiPostPrompt(p: Project, post: PostBrief, o: { aspect: string; hasReference: boolean; hasLogo?: boolean; fix?: string; texts?: AiPostTexts; people?: boolean }): string {
   const t = o.texts ?? aiPostTexts(p, post);
   const pal = effectivePalette(p.brand) ?? p.brand?.palette;
   const colors = pal ? [pal.dark, pal.primary, pal.accent, pal.light].filter(Boolean).join(", ") : "";
-  return `Design a complete, finished social media post (${post.network}, aspect ratio ${o.aspect}) for the brand "${t.brand}", as a top creative agency would deliver it: art direction, photography, layout and typography in one image, full of life and emotion, ready to publish.
+  const logoRef = o.hasReference ? "second" : "first";
+  return `Create a finished, ultra-premium social media advertisement (${post.network}, aspect ratio ${o.aspect}) for the brand "${t.brand}", at the level of a top brand's advertising campaign: real campaign photography and refined typography in one image, ready to publish.
 Subject: ${p.product.name || p.product.category} — ${p.product.summary?.slice(0, 300) ?? ""}
 Post angle: ${post.pillar ?? ""} — ${post.title}.
-${t.scene ? `Art direction and scene: ${t.scene}\n` : ""}${o.hasReference ? `The product in the reference image is the hero: reproduce it EXACTLY (same shape, proportions, materials, colours, details, printed text); never redesign it, never add a word or logo on it that is not on the reference, never add a second copy. If the reference shows it worn or held by someone, take only the product.
-` : ""}Brand colours to build the design with: ${colors} (dark anchor, brand colour, accent, light neutral). Modern, premium, clean typography with strong hierarchy and generous margins.
-Write ONLY these texts, spelled EXACTLY (same accents, same punctuation), nothing else:
-1. Headline (large): "${t.headline}"
-2. Small line: "${t.subline}"
-3. Button (rounded, clearly a button): "${t.cta}"
-4. Brand name (small, discreet, typeset, no invented symbol): "${t.brand}"
-No other words, no fake letters, no prices, no percentages, no claims, no reviews, no stars, no hashtags, no website, no watermark. Every text must be perfectly legible (strong contrast with what is behind it). ${o.people ? "If a person appears, they look like a real photographed person (natural skin, natural expression, anatomically correct face, hands and fingers, natural posture), wearing or using the product naturally; the product stays clearly visible and identical to the reference." : "No people, no hands, no faces, no body parts."}${o.fix ? `\nCorrect the previous attempt: ${o.fix}` : ""}`;
+${t.scene ? `Universe of THIS post (its own setting, light and mood — not a generic template): ${t.scene}\n` : ""}${o.hasReference ? `The product in the first reference image is the hero: reproduce it EXACTLY, seen from the SAME angle and viewpoint as the photo (same shape, proportions, materials, colours, details, printed text); never redraw it from another angle, never redesign it, never add a word or logo on it that is not on the reference, never add a second copy. If the reference shows it worn or held by someone, take only the product.
+` : ""}Finish: real light (key light, rim light, crisp reflections), depth of field with a blurred environment that tells the story, rich true-to-life materials, high dynamic range. No text, letters or signs anywhere in the decor.
+Layout, from top to bottom:
+1. Top center: ${o.hasLogo ? `the brand logo from the ${logoRef} reference image, reproduced faithfully (same emblem, same letters), small and elegant` : `the brand name "${t.brand}" typeset in elegant spaced capitals`}; under it a short thin line in the accent colour, then the small line "${t.subline}" in small widely spaced capitals.
+2. The product, large, as the hero in the middle.
+3. Lower part: the headline "${t.headline}" in a large refined typeface, on one or two lines, with ONE single word highlighted in the brand accent colour (or italic).
+4. Under it, a slim pill-shaped button with a fine outline and a small arrow, text: "${t.cta}".
+Brand colours to build the whole design with: ${colors} (dark anchor, brand colour, accent, light neutral); generous margins, strong hierarchy, maximum legibility (strong contrast behind every text).
+Write ONLY these texts, spelled EXACTLY (same accents, same punctuation), nothing else: "${t.headline}", "${t.subline}", "${t.cta}"${o.hasLogo ? "" : `, "${t.brand}"`}${o.hasLogo ? ` (plus the brand name inside the logo, as on the logo: "${t.brand}")` : ""}.
+No other words, no fake letters, no prices, no percentages, no claims, no reviews, no stars, no hashtags, no website, no watermark. ${o.people ? "If a person appears, they look like a real photographed person (natural skin, natural expression, anatomically correct face, hands and fingers, natural posture), wearing or using the product naturally; the product stays clearly visible and identical to the reference." : "No people, no hands, no faces, no body parts."}${o.fix ? `\nCorrect the previous attempt: ${o.fix}` : ""}`;
 }
 
 /** Forme comparable d'un texte : espaces et apostrophes unifiés, accents et lettres gardés tels quels. */
@@ -102,8 +109,8 @@ export const aiPostAccepted = (r: AiPostReview, hasReference: boolean, expected?
 export type AiPostDeps = {
   /** Accroche, ligne, bouton et scène écrits par l'IA de texte (null : textes du calendrier). */
   copy?: (p: Project, post: PostBrief, fallback: AiPostTexts, key: string, people: boolean) => Promise<AiPostCopy | null>;
-  generate: (prompt: string, aspect: "1:1" | "4:5" | "9:16" | "16:9", reference: Buffer | null, key: string) => Promise<Buffer>;
-  review: (image: Buffer, reference: Buffer | null, texts: string[], key: string, people?: boolean) => Promise<AiPostReview>;
+  generate: (prompt: string, aspect: "1:1" | "4:5" | "9:16" | "16:9", reference: Buffer | null, key: string, logo?: Buffer | null) => Promise<Buffer>;
+  review: (image: Buffer, reference: Buffer | null, texts: string[], key: string, people?: boolean, logo?: Buffer | null) => Promise<AiPostReview>;
   spentMicro: (keyPrefix: string) => number;
   maxMicro: () => number | null;
 };
@@ -118,6 +125,9 @@ export async function designPostWithAi(p: Project, post: PostBrief, o: { aspect:
   const base = aiPostTexts(p, post);
   // Personnes : seulement avec l'accord du client (réglage, ou photo fournie qui en montre une).
   const people = peopleAllowedFor(p);
+  // Logo de la marque (pointeur de la marque) transmis à l'IA d'images : reproduit, jamais réinventé.
+  const logoAsset = p.brand?.logo?.assetId ? getAsset(p.brand.logo.assetId) : null;
+  const logoBuf = logoAsset && logoAsset.project_id === p.id && !logoAsset.deleted_at ? assetData(logoAsset) : null;
   const written = deps.copy ? await deps.copy(p, post, base, `${prefix}:copy`, people).catch(() => null) : null;
   const t = written ? cleanAiCopy(written, base, people) : base;
   let fix = "";
@@ -126,9 +136,10 @@ export async function designPostWithAi(p: Project, post: PostBrief, o: { aspect:
     if (max == null) return { assetId: null, costMicro: deps.spentMicro(prefix), by: "image_v2", note: C("publication IA : aucun modèle d'images disponible", "AI post: no image model available") };
     if (deps.spentMicro(prefix) + max > capMicro) break;
     const key = `${prefix}:${attempt}`;
-    const img = await deps.generate(aiPostPrompt(p, post, { aspect: o.aspect, hasReference: !!refBuf, fix, texts: t, people }), o.aspect, refBuf, key);
-    const expected = [t.headline, t.subline, t.cta, t.brand].filter(Boolean);
-    const r = await deps.review(img, refBuf, expected, key, people);
+    const img = await deps.generate(aiPostPrompt(p, post, { aspect: o.aspect, hasReference: !!refBuf, hasLogo: !!logoBuf, fix, texts: t, people }), o.aspect, refBuf, key, logoBuf);
+    // Avec le vrai logo, le nom de la marque est dans le logo : contrôlé contre le logo, pas comme un texte libre.
+    const expected = [t.headline, t.subline, t.cta, ...(logoBuf ? [] : [t.brand])].filter(Boolean);
+    const r = await deps.review(img, refBuf, expected, key, people, logoBuf);
     if (!aiPostAccepted(r, !!refBuf, expected, people)) {
       // Image payée refusée : gardée (statut refusé, défauts notés), jamais jetée.
       await saveAsset({ projectId: p.id, userId: p.userId, data: img, name: `publication-ia-refusee-${post.id.slice(0, 6)}-${attempt + 1}.png`, mime: "image/png", role: "social-trial", folderKey: "content.calendar", origin: "generated", status: "rejected", meta: { recipe: "Essai de publication conçue par l'IA, refusé par le contrôle", post: post.id, aiPost: { texts: t, transcribed: r.transcribed, issues: r.issues, score: r.score, attempt: attempt + 1 } } });
@@ -155,16 +166,16 @@ export function realAiPostDeps(base: { userId: string; projectId: string; jobId:
           promptKey: "social-ai-post-copy",
           routing: { difficulty: "standard", deliverable: "ad_v2" },
           system: "You are the creative director of a top advertising agency. You write French ad copy for social media posts. Answer with JSON only.",
-          prompt: `Brand: "${fallback.brand}". Product or service: ${facts}.\nPost angle: ${post.pillar ?? ""} — ${post.title}.\nWrite, in ${p.settings.language === "en" ? "English" : "French"}:\n- headline: a short, punchy, emotional ad headline (2 to 6 words, may be two short sentences like "Partez léger. Voyez grand."), no product jargon;\n- subline: one short line naming the product or service (max 6 words);\n- cta: a button label (2 to 3 words, e.g. "Découvrir", "Commander", "Demander un devis");\n- scene: in English, the art direction of the image (setting, light, mood, composition with the product alone as hero and room for the text), consistent with the brand and the real use of the product. ${people ? "A person may wear or use the product if it serves the idea (natural, real-looking, product clearly visible); otherwise the product alone." : "NEVER any person, body part, hand, face, silhouette or mannequin: the product is shown on its own (worn items are shown laid flat, hung or floating, never on a body)."}\nNever invent facts: no numbers, prices, percentages, awards, reviews, guarantees or claims not in the product description.\nReply { "headline": "", "subline": "", "cta": "", "scene": "" }.`,
+          prompt: `Brand: "${fallback.brand}". Product or service: ${facts}.\nPost angle: ${post.pillar ?? ""} — ${post.title}.\nWrite, in ${p.settings.language === "en" ? "English" : "French"}:\n- headline: a short, punchy, emotional ad headline (2 to 6 words, may be two short sentences like "Partez léger. Voyez grand."), no product jargon;\n- subline: one short line naming the product or service (max 6 words);\n- cta: a button label (2 to 3 words, e.g. "Découvrir", "Commander", "Demander un devis");\n- scene: in English, the art direction of the image as for a high-end campaign: a distinctive universe of its own (setting, materials, props, dominant light — e.g. golden hour, daylight through an arch, moody studio, night reflections), the product alone as hero and room for the text, consistent with the brand and the real use of the product; never a plain or generic background. ${people ? "A person may wear or use the product if it serves the idea (natural, real-looking, product clearly visible); otherwise the product alone." : "NEVER any person, body part, hand, face, silhouette or mannequin: the product is shown on its own (worn items are shown laid flat, hung or floating, never on a body)."}\nNever invent facts: no numbers, prices, percentages, awards, reviews, guarantees or claims not in the product description.\nReply { "headline": "", "subline": "", "cta": "", "scene": "" }.`,
           maxTokens: 600,
         },
         AiPostCopySchema,
       );
     },
-    async generate(prompt, aspect, reference, key) {
-      return aiPostImage({ ...base, usageKey: key }, { prompt, aspect, reference });
+    async generate(prompt, aspect, reference, key, logo) {
+      return aiPostImage({ ...base, usageKey: key }, { prompt, aspect, reference, logo });
     },
-    async review(image, reference, texts, key, people) {
+    async review(image, reference, texts, key, people, logo) {
       const { llmJson } = await import("../ai/llm");
       return llmJson(
         {
@@ -174,8 +185,8 @@ export function realAiPostDeps(base: { userId: string; projectId: string; jobId:
           promptKey: "social-ai-post-check",
           routing: { difficulty: "standard", deliverable: "image_v2" },
           system: "You are a strict art director checking a finished social media post before publication. Answer with JSON only.",
-          images: [{ data: image, label: "post" }, ...(reference ? [{ data: reference, label: "real product (reference)" }] : [])],
-          prompt: `Check the post.\n- transcribed: every piece of text of the DESIGN (headline, lines, button, brand name), copied EXACTLY letter by letter as it is drawn (keep any wrong letter, accent or typo as you see it; one item per text block). Do NOT include text printed on the product itself (it belongs to the real product, compare it with the reference instead).\n- textsExact: true only if the design contains exactly these texts, each spelled exactly (accents included), and no other words (text printed on the product, when it matches the reference, is allowed): ${texts.map((x) => `"${x}"`).join(", ")}.\n- legible: every text is clearly readable (contrast, size).\n- person: true if any person, face, hand, body part or human silhouette appears.\n- anatomyOk: ${people ? "false if a person looks fake or has a wrong face, hands, fingers, limbs or posture; true otherwise" : "true"}.\n- productFaithful: ${reference ? "the product in the post is the same as the reference (shape, colour, details, printed text); false if altered, invented or duplicated" : "true"}.\n- score: overall quality 0-10 for a premium brand.\n- issues: short list of problems; fix: one instruction to correct them.\nReply { "transcribed": ["..."], "person": false, "anatomyOk": true, "productFaithful": true, "textsExact": true, "legible": true, "score": 8, "issues": [], "fix": "" }.`,
+          images: [{ data: image, label: "post" }, ...(reference ? [{ data: reference, label: "real product (reference)" }] : []), ...(logo ? [{ data: logo, label: "brand logo (reference)" }] : [])],
+          prompt: `Check the post.\n- transcribed: every piece of text of the DESIGN (headline, lines, button, brand name), copied EXACTLY letter by letter as it is drawn (keep any wrong letter, accent or typo as you see it; one item per text block). Do NOT include text printed on the product itself (it belongs to the real product, compare it with the reference instead)${logo ? " nor the text inside the brand logo (emblem, brand name, trade line or slogan drawn as part of the logo: compare it with the logo reference; a logo that is altered, misspelled or invented counts as an issue and lowers the score)" : ""}.\n- textsExact: true only if the design contains exactly these texts, each spelled exactly (accents included), and no other words (text printed on the product, when it matches the reference, is allowed): ${texts.map((x) => `"${x}"`).join(", ")}.\n- legible: every text is clearly readable (contrast, size).\n- person: true if any person, face, hand, body part or human silhouette appears.\n- anatomyOk: ${people ? "false if a person looks fake or has a wrong face, hands, fingers, limbs or posture; true otherwise" : "true"}.\n- productFaithful: ${reference ? "the product in the post is the same as the reference (shape, colour, details, printed text); false if altered, invented or duplicated" : "true"}.\n- score: overall quality 0-10 for a premium brand.\n- issues: short list of problems; fix: one instruction to correct them.\nReply { "transcribed": ["..."], "person": false, "anatomyOk": true, "productFaithful": true, "textsExact": true, "legible": true, "score": 8, "issues": [], "fix": "" }.`,
           maxTokens: 700,
         },
         AiPostReviewSchema,
