@@ -154,6 +154,10 @@ export const DEFAULT_PRICES: Record<string, Price> = {
   "google:veo-3.0-fast-generate-001": { unit: "video_second", perSecond: 0.15 },
   "fal:fal-ai/kling-video/v2.1/pro/image-to-video": { unit: "video_second", perSecond: 0.09 },
   // Alibaba Cloud Model Studio (région internationale) : tarifs lus dans l'API officielle des modèles le 15/10/2026.
+  // Qwen-Image 3.0 : facturé par image produite (1K / 2K) + 0,003 $ par image d'entrée. Borne retenue : sortie 2K
+  // + deux images d'entrée (le studio en envoie au plus deux) → jamais dépassée.
+  "alibaba:qwen-image-3.0-pro": { unit: "image", perImage: 0.081 },
+  "alibaba:qwen-image-3.0": { unit: "image", perImage: 0.036 },
   "alibaba:qwen-image-2.1-turbo": { unit: "image", perImage: 0.016 },
   "alibaba:qwen-image-2.1-pro": { unit: "image", perImage: 0.04 },
   "alibaba:qwen-image-2.0": { unit: "image", perImage: 0.035 },

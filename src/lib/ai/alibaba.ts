@@ -14,6 +14,7 @@
  *    identifiants de modèles, tailles, forme des réponses image, codes d'erreur. → à confirmer au premier essai réel.
  */
 import { getSetting } from "../settings";
+import { isGatewayKey } from "./gateway";
 import { L } from "../i18n-server";
 
 export type AlibabaRegion = "intl" | "us" | "cn";
@@ -45,7 +46,8 @@ export function alibabaBase(): { base: string; problem: string | null } {
 export function alibabaHeaders(key: string, o: { async?: boolean } = {}): Record<string, string> {
   const ws = getSetting("provider.alibaba.workspace")?.trim();
   return {
-    Authorization: `Bearer ${key}`,
+    // Clé injectée par la passerelle de l'hébergement : aucune autorisation envoyée par le studio.
+    ...(isGatewayKey(key) ? {} : { Authorization: `Bearer ${key}` }),
     "Content-Type": "application/json",
     ...(o.async ? { "X-DashScope-Async": "enable" } : {}),
     ...(ws ? { "X-DashScope-WorkSpace": ws } : {}),

@@ -469,6 +469,8 @@ const WAN = (model: string, label: string, quality: 1 | 2 | 3, caps: MediaModel[
   ...o,
 });
 MEDIA_MODELS.push(
+  QWEN("qwen-image-3.0-pro", "Qwen-Image 3.0 Pro (Alibaba, le meilleur)", 3, "0,04 $ (1K) à 0,075 $ (2K) / image + 0,003 $ par image d'entrée (API officielle, 15/10/2026) ; borne 0,081 $", { caps: { textInImage: true, people: true, references: 2 } }),
+  QWEN("qwen-image-3.0", "Qwen-Image 3.0 (Alibaba)", 3, "0,03 $ / image + 0,003 $ par image d'entrée (API officielle, 15/10/2026) ; borne 0,036 $", { caps: { textInImage: true, people: true, references: 2 } }),
   QWEN("qwen-image-2.1-turbo", "Qwen-Image 2.1 Turbo (Alibaba)", 2, "0,016 $ / image (API officielle, 15/10/2026)", { caps: { textInImage: true, people: true, references: 1 } }),
   QWEN("qwen-image-2.1-pro", "Qwen-Image 2.1 Pro (Alibaba)", 3, "0,04 $ / image (API officielle, 15/10/2026)", { caps: { textInImage: true, people: true, references: 1 } }),
   QWEN("qwen-image-2.0", "Qwen-Image 2.0 (Alibaba)", 2, "0,035 $ / image (API officielle, 15/10/2026)", { caps: { textInImage: true, people: true, references: 1 } }),
