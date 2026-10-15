@@ -1,0 +1,26 @@
+{
+  "model": "wan2.6-i2v-flash",
+  "resolution": "1080P",
+  "usdPerSecond": 0.075,
+  "parameters": { "audio": false, "shot_type": "single" },
+  "items": [
+    {
+      "id": "plan1-eau",
+      "image": "ARVEN_VIDEO_WAN26/images-cles/plan1-eau.png",
+      "seconds": 5,
+      "prompt": "Luxury watch commercial, cinematic slow motion. Single water droplets fall from above onto the wet black slate around the watch, creating small crisp splashes and spreading ripples in the thin film of water; the cool silver-blue rim light shimmers on the wet surface; the camera slowly orbits a few degrees to the right. The watch itself does not move and stays exactly identical: same dial, sub-dials, numbers, bezel, case and strap. Single continuous shot, no cuts. No text, no logo, no people, no hands."
+    },
+    {
+      "id": "plan2-cuir",
+      "image": "ARVEN_VIDEO_WAN26/images-cles/plan2-cuir.png",
+      "seconds": 5,
+      "prompt": "Luxury watch commercial, macro shot. The camera glides slowly upward along the side of the watch case, from the leather strap to the crown and pushers; a warm amber light slowly sweeps across the brushed steel and the leather grain, highlights travel along the edges. The watch stays still and exactly identical. Smooth, slow, elegant motion. Single continuous shot, no cuts. No text, no logo, no people, no hands."
+    },
+    {
+      "id": "plan3-sable",
+      "image": "ARVEN_VIDEO_WAN26/images-cles/plan3-sable.png",
+      "seconds": 5,
+      "prompt": "Luxury watch commercial, final hero shot about time. A gentle breeze makes very fine golden sand grains slide and flow softly down the dune around the watch, like an hourglass; the low sunset light glows; the camera slowly pushes in. The watch does not move and stays exactly identical: same dial, sub-dials, numbers, bezel, case and strap. Keep large empty dark space at the top and bottom. Single continuous shot, no cuts. No smoke, no text, no logo, no people, no hands."
+    }
+  ]
+}

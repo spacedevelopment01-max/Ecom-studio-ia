@@ -1,0 +1,21 @@
+{
+  "request_id": "984e225b-3462-9f06-b1b1-ef04f6f50ba2",
+  "output": {
+    "task_id": "884da9d7-3c4d-4350-b0f0-eed5e87cd624",
+    "task_status": "SUCCEEDED",
+    "submit_time": "2026-10-15 23:36:07.723",
+    "scheduled_time": "2026-10-15 23:36:07.744",
+    "end_time": "2026-10-15 23:37:36.682",
+    "orig_prompt": "Luxury watch commercial, final hero shot. Slow cinematic push-in toward the watch on a pure black background; the warm golden rim light gradually intensifies and travels along the case edge and the strap, the reflections on the polished steel bloom softly, the glow on the floor grows. Keep the watch exactly identical: same dial, sub-dials, numbers, bezel, case and strap. Keep large empty black space at the top and bottom. Smooth, elegant, majestic motion. No text, no logo, no people, no hands. No people in frame.",
+    "video_url": "https://dashscope-463f.oss-accelerate.aliyuncs.com/1d/0c/20261015/e6a9c850/725a20bfb3914f5c8dab2156e51a4ab5-metadata_G4unZTtn_1491b7afe16d.mp4?Expires=1792165054&OSSAccessKeyId=LTAI5t7xkDxYoFdeAc4nqUeU&Signature=kU0PScQbvUFMwiz94Js0%2FD%2Fwf8E%3D"
+  },
+  "usage": {
+    "duration": 5,
+    "input_video_duration": 0,
+    "output_video_duration": 5,
+    "fps": 30,
+    "video_count": 1,
+    "SR": 1080,
+    "ratio": "29:52"
+  }
+}

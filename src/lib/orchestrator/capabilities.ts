@@ -46,10 +46,11 @@ export const MODELS: ModelCapability[] = [
 ];
 
 // Modèles images et vidéos du catalogue multimédia (media-models.ts) VÉRIFIÉS (identifiant et tarif officiels)
-// absents ci-dessus : déclarés au repli historique du routeur. Les autres (à confirmer) ne passent que par le routage
-// multimédia (media-routing.ts), qui vérifie leur confirmation par l'administration.
+// absents ci-dessus : déclarés au repli historique du routeur. Les autres (à confirmer, ou nouveaux fournisseurs payants
+// qui attendent l'accord de l'administration, `adminConfirm`) ne passent que par le routage multimédia
+// (media-routing.ts), qui vérifie leur confirmation par l'administration.
 for (const m of MEDIA_MODELS) {
-  if (!m.adapter || !(m.verified.id && m.verified.price) || MODELS.some((x) => x.provider === m.provider && x.model === m.model)) continue;
+  if (!m.adapter || !(m.verified.id && m.verified.price) || m.adminConfirm || MODELS.some((x) => x.provider === m.provider && x.model === m.model)) continue;
   const capabilities: Capability[] = m.kind === "video" ? ["video_generation"] : m.needsReference ? ["image_edit"] : m.caps.maskEdit ? ["image_generation", "image_edit"] : ["image_generation"];
   MODELS.push({ provider: m.provider, model: m.model, tier: m.quality === 3 ? "strong" : m.quality === 2 ? "standard" : "light", capabilities, effort: false });
 }

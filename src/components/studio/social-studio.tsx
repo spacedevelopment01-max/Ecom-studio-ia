@@ -20,6 +20,7 @@ import { AutopilotPanel, SocialOverview } from "./social-autopilot";
 import { VisualChoice } from "./visual-choice";
 import { BatchVisuals, CreateOnePanel } from "./social-create";
 import { EditedVideos } from "./video-gallery";
+import { GuidedVideo } from "./guided-video";
 
 export type PostV = {
   id: string; network: string; format: string; status: string; scheduledAt: number | null; timezone: string; title: string; caption: string; hashtags: string; link: string | null;
@@ -27,6 +28,7 @@ export type PostV = {
   engine: string; pillar: string | null; objective: string | null; approvedValid: boolean; approvedHash: string | null; userEdited: boolean; blocking: string[]; issues: string[]; level: string;
 };
 type Pillar = { id: string; title: string; objective: string; share: number; idea: string; formats: string[] };
+import type { SubjectView } from "./subject-picker";
 export type Data = {
   longTerm?: LongTermStrategy;
   strategy: { archetype: string; objectives: string[]; audience: string; positioning: string; tone: string[]; messages: string[]; pillars: Pillar[]; formats: { format: string; share: number }[]; ctas: string[]; seasonality: { label: string; date: string }[]; gaps: string[] };
@@ -38,6 +40,8 @@ export type Data = {
   stats: { counts: Record<string, number>; byPlatform: { platform: string; label: string; scheduled: number; published: number; failed: number; uncertain: number; connected: boolean; metrics: Record<string, { state: string; value: number | null }> }[]; note: string };
   automations: { id: string; kind: string; status: string; last_run_at: number | null; last_result: string }[];
   ai: boolean;
+  /** Produits ou services du projet (création guidée). */
+  subjects?: SubjectView[];
   canPublish: boolean;
   timezone: string;
   limits: { perDay: number; calendarDays: number } | null;
@@ -174,6 +178,7 @@ export function SocialStudio({ initial = "calendrier" }: { initial?: Section }) 
         )}
         {section === "video" && (
           <>
+            <GuidedVideo as="post" />
             <CreateOnePanel data={data} kind="video" reload={reload} onCreated={() => go("publications")} />
             <BatchVisuals data={data} kind="video" reload={reload} />
             <EditedVideos />
@@ -948,6 +953,30 @@ function PostEditorV2({ postId, data, onClose, onChanged }: { postId: string; da
             {p.status === "scheduled" || p.status === "paused" ? <Button variant="secondary" onClick={() => action("unschedule")}>{t("Déprogrammer", "Unschedule")}</Button> : <Button variant="secondary" disabled={!data.canPublish} onClick={() => action("schedule")} data-action="schedule-post">{t("Programmer", "Schedule")}</Button>}
             <Button variant="secondary" disabled={!data.canPublish} onClick={() => action("publish_now")}>{t("Publier maintenant", "Publish now")}</Button>
             <Button variant="secondary" icon={<Copy className="size-4" />} onClick={() => action("duplicate")}>{t("Dupliquer", "Duplicate")}</Button>
+            {f.media.length > 0 && (
+              <Select
+                value=""
+                disabled={busy}
+                aria-label={t("Dupliquer dans un autre format", "Duplicate in another format")}
+                className="h-10 w-auto"
+                data-action="duplicate-format"
+                onChange={(e) => {
+                  const aspect = e.target.value;
+                  if (!aspect) return;
+                  void run(async () => {
+                    await api(base, { body: { action: "duplicate_format", aspect } });
+                    toast("ok", t(`Copie au format ${aspect} créée (gratuit) : à relire dans le calendrier.`, `${aspect} copy created (free): review it in the calendar.`));
+                    onChanged();
+                  });
+                }}
+              >
+                <option value="">{t("Dupliquer dans un autre format…", "Duplicate in another format…")}</option>
+                <option value="4:5">{t("Portrait 4:5", "Portrait 4:5")}</option>
+                <option value="1:1">{t("Carré 1:1", "Square 1:1")}</option>
+                <option value="9:16">{t("Story 9:16", "Story 9:16")}</option>
+                <option value="16:9">{t("Paysage 16:9", "Landscape 16:9")}</option>
+              </Select>
+            )}
             <Button variant="secondary" icon={<Trash2 className="size-4" />} onClick={() => action("delete")}>{t("Supprimer", "Delete")}</Button>
           </div>
         )}

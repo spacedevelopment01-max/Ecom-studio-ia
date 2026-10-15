@@ -1,0 +1,17 @@
+{
+  "model": "qwen-image-3.0-pro",
+  "items": [
+    {
+      "id": "plan1-cadran",
+      "aspect": "9:16",
+      "reference": "ARVEN_PUBLICITE_VIDEO/references/montre-pixabay.jpg",
+      "prompt": "Photorealistic luxury watch photograph shot on a real camera with a macro lens, vertical frame. The watch is EXACTLY the one in the reference photo (same steel case, plain black dial with three silver sub-dials and their numbers, numbered bezel, luminous hands and indices, crown and pushers, brown leather strap with dark stitching), seen from the SAME three-quarter angle, close-up on the dial and bezel. Resting on a dark brown leather surface. Warm amber key light from the side, natural soft falloff into a dark warm background, real reflections on the sapphire crystal and polished steel, shallow depth of field. Understated, natural, like a real high-end watch catalogue. No effects, no particles, no glow, no water, no text, no logo on the dial, no people, no hands."
+    },
+    {
+      "id": "plan3-signature",
+      "aspect": "9:16",
+      "reference": "ARVEN_PUBLICITE_VIDEO/references/montre-pixabay.jpg",
+      "prompt": "Photorealistic luxury watch hero photograph shot on a real camera, vertical frame, final shot of a film. The watch is EXACTLY the one in the reference photo (same steel case, plain black dial with three silver sub-dials and their numbers, numbered bezel, crown and pushers, brown leather strap with dark stitching), seen from the SAME three-quarter angle, standing on a simple block of dark matte stone, placed slightly below the middle of the frame. Warm amber side light, natural soft shadows, dark warm brown-black background, large clean empty space at the top and the bottom for titles. Understated, natural, like a real high-end watch catalogue. No effects, no particles, no glow, no sand, no smoke, no text, no logo on the dial, no people, no hands."
+    }
+  ]
+}

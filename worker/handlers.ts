@@ -99,6 +99,16 @@ export const handlers: Record<string, Handler> = {
     const r = await runVideoEngineV2(ctx, ctx.payload.projectId, ctx.payload.request);
     return { docKey: r.docKey, videoAssetId: r.videoAssetId, verdict: r.verdict, codes: r.codes, estimateMicro: r.estimateMicro, stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, notes: r.notes.slice(0, 20) };
   },
+  /** Vidéo en scènes (création guidée) : images Qwen + plans Wan 2.6 (produit) ou plans libres (service), montage du studio. */
+  "video.scenes": async (ctx) => {
+    const { runThreeScenes, realThreeScenesDeps } = await import("../src/lib/video-v2/three-scenes");
+    const { llmConfigured } = await import("../src/lib/ai/llm");
+    const p = loadProject(ctx.payload.projectId);
+    const { aiActiveFor } = await import("../src/lib/ai/access");
+    // Plan des scènes écrit par l'IA seulement si l'IA est active pour ce projet (compte sans abonnement ou budget IA épuisé : aucun appel).
+    const r = await runThreeScenes(ctx, p.id, ctx.payload.request, realThreeScenesDeps(ctx, { userId: p.userId, projectId: p.id }, { aiText: aiActiveFor(p.userId, p.id) && llmConfigured() }));
+    return { docKey: r.docKey, videoAssetId: r.videoAssetId, costMicro: r.costMicro, mode: r.mode, notes: r.notes };
+  },
   /** Vidéo V2 : nouveau rendu du document enregistré (local, gratuit), rangé dans la bibliothèque. */
   "video.v2.render": async (ctx) => {
     const { renderLatest } = await import("../src/lib/video-v2/engine");

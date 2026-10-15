@@ -1,0 +1,10 @@
+{
+  "model": "qwen-image-3.0-pro",
+  "items": [
+    {
+      "id": "plan1-onde",
+      "aspect": "9:16",
+      "prompt": "Cinematic product photograph, vertical frame, for a premium headphones film by the audio brand SONORE. A pair of premium over-ear wireless headphones, shown ALONE, floating in mid-air in three-quarter view, centered: matte black padded headband with fine red stitching, soft black leather ear cushions, round brushed silver aluminium ear cups each with a thin red ring, polished silver sliders. Deep graphite-black studio void. Behind the headphones, faint concentric rings of red light ripple outward like a visible sound wave, very subtle haze. Crisp reflections on the brushed aluminium, dramatic rim light, shallow depth of field, room above and below. World-class audio brand campaign quality, photorealistic. No person, no hands, no body, no text, no logo."
+    }
+  ]
+}

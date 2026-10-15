@@ -8,7 +8,11 @@
  *    création modifiée par le client n'est jamais écrasée sans son accord explicite ;
  *  - publications V2 non publiées : visuel refait localement (une approbation antérieure ne vaut plus) ;
  *  - exports de thème : nouvel export contrôlé et versionné ;
- *  - vidéos et textes : signalés seulement (à reprendre dans leur éditeur).
+ *  - vidéos : titres, logo, carte de fin et sous-titres aux nouvelles couleurs, polices, logo et nom, puis nouveau
+ *    rendu (local, gratuit) ;
+ *  - visuels faits par l'IA (textes dans l'image) : nouvelle version par l'IA, PAYANTE — seulement si le client
+ *    l'accepte avec son prix ;
+ *  - textes : signalés seulement (à reprendre dans leur éditeur).
  * Rien n'est modifié en silence : chaque mise à jour crée une nouvelle version (l'ancienne reste restaurable).
  */
 import { all, json, now, one, run } from "../db";
@@ -17,11 +21,13 @@ import { brandAt, brandFingerprint, snapshotOf, type BrandSnapshot } from "../br
 import { themeFingerprint } from "../theme/compile";
 import type { ThemeSpec } from "../theme/spec";
 import type { AdDocument, Fill, Layer } from "../ad-doc/types";
+import type { VideoDocument } from "../video-v2/types";
+import { aiPostEstimate } from "../social-v2/deps";
 import type { CmsPlatform } from "../cms-v2/types";
 import { L } from "../i18n-server";
 import { contrast, hsl, hslToHex, onColor } from "../color";
 
-export type ImpactKind = "theme" | "ad" | "post" | "export" | "video" | "text";
+export type ImpactKind = "theme" | "ad" | "post" | "export" | "video" | "text" | "ai_image";
 export type ImpactItem = {
   key: string;
   kind: ImpactKind;
@@ -33,6 +39,8 @@ export type ImpactItem = {
   updatable: boolean;
   /** Publication déjà approuvée ou programmée : la mise à jour demandera une nouvelle approbation. */
   reapproval?: boolean;
+  /** Mise à jour payante (visuel fait par l'IA) : coût maximal, à accepter par le client. */
+  paidMicro?: number;
   createdAt: number;
 };
 
@@ -88,7 +96,16 @@ export function brandImpact(p: Project): { current: string; items: ImpactItem[] 
   }
   for (const r of all<{ doc_key: string; created_at: number }>("SELECT d.doc_key, d.created_at FROM video_documents d WHERE d.project_id = ? AND d.version = (SELECT MAX(version) FROM video_documents x WHERE x.doc_key = d.doc_key)", p.id)) {
     const ch = stale(r.created_at);
-    if (ch.length) items.push({ key: `video:${r.doc_key}`, kind: "video", label: L("Vidéo (à reprendre dans l'éditeur vidéo)", "Video (to redo in the video editor)"), changes: ch, userEdited: false, updatable: false, createdAt: r.created_at });
+    if (!ch.length) continue;
+    const edited = !!one("SELECT 1 FROM video_documents WHERE project_id = ? AND doc_key = ? AND source IN ('user','ai_local','ai')", p.id, r.doc_key);
+    items.push({ key: `video:${r.doc_key}`, kind: "video", label: L("Vidéo", "Video"), changes: ch, userEdited: edited, updatable: true, createdAt: r.created_at });
+  }
+  // Visuels faits par l'IA : textes et couleurs DANS l'image → seule une nouvelle version par l'IA les met à jour.
+  for (const r of all<{ id: string; meta: string; created_at: number }>("SELECT id, meta, created_at FROM assets WHERE project_id = ? AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' AND json_extract(meta, '$.aiPost') IS NOT NULL AND json_extract(meta, '$.aiPost.issues') IS NULL AND json_extract(meta, '$.reformat') IS NULL", p.id)) {
+    const ch = stale(r.created_at).filter((c) => c !== "fonts");
+    if (!ch.length) continue;
+    const ad = !!json<{ aiAd?: boolean }>(r.meta, {}).aiAd;
+    items.push({ key: `ai_image:${r.id}`, kind: "ai_image", label: ad ? L("Publicité faite par l'IA (nouvelle version payante)", "AI-made ad (paid new version)") : L("Publication faite par l'IA (nouvelle version payante)", "AI-made post (paid new version)"), changes: ch, userEdited: false, updatable: true, paidMicro: aiImageRedoMicro(), createdAt: r.created_at });
   }
   for (const r of all<{ doc_key: string; created_at: number }>("SELECT d.doc_key, d.created_at FROM content_documents d WHERE d.project_id = ? AND d.version = (SELECT MAX(version) FROM content_documents x WHERE x.doc_key = d.doc_key)", p.id)) {
     const ch = stale(r.created_at).filter((c) => c === "name");
@@ -96,6 +113,9 @@ export function brandImpact(p: Project): { current: string; items: ImpactItem[] 
   }
   return { current: fp, items };
 }
+
+/** Prix maximal d'une nouvelle version d'un visuel fait par l'IA (même calcul que la création guidée). */
+const aiImageRedoMicro = (): number => aiPostEstimate(); // 3 essais au plus, comme la création guidée
 
 // ---------------------------------------------------------------- remplacements (sans IA)
 
@@ -134,6 +154,8 @@ function swapColor(c: string, m: Map<string, string>): string {
 }
 const swapFill = (f: Fill | null, m: Map<string, string>): Fill | null => (f == null ? f : typeof f === "string" ? swapColor(f, m) : { ...f, stops: f.stops.map((s) => ({ ...s, color: swapColor(s.color, m) })) });
 const swapName = (t: string, oldName: string, newName: string) => (oldName && newName && oldName !== newName ? t.split(oldName).join(newName) : t);
+/** Police des titres → nouvelle police des titres, police des textes → nouvelle police des textes (les autres restent). */
+const swapFont = (family: string, oldS: BrandSnapshot, newS: BrandSnapshot) => (!oldS.fonts || !newS.fonts ? family : family === oldS.fonts.heading ? newS.fonts.heading : family === oldS.fonts.body ? newS.fonts.body : family);
 
 /** Document publicitaire aux couleurs, logo et nom actuels (calques verrouillés ou masqués respectés). */
 export function rebrandAdDoc(doc: AdDocument, oldS: BrandSnapshot, newS: BrandSnapshot, logoAssetId: string | null): AdDocument {
@@ -142,13 +164,13 @@ export function rebrandAdDoc(doc: AdDocument, oldS: BrandSnapshot, newS: BrandSn
     if (l.locked) return l;
     switch (l.kind) {
       case "text":
-        return { ...l, color: swapColor(l.color, m), text: swapName(l.text, oldS.name, newS.name), shadow: l.shadow ? { ...l.shadow, color: swapColor(l.shadow.color, m) } : null };
+        return { ...l, color: swapColor(l.color, m), text: swapName(l.text, oldS.name, newS.name), font: { ...l.font, family: swapFont(l.font.family, oldS, newS) }, shadow: l.shadow ? { ...l.shadow, color: swapColor(l.shadow.color, m) } : null };
       case "button": {
         const fill = swapFill(l.fill, m) as Fill;
         // Texte du bouton lisible sur sa nouvelle couleur (4,5:1), comme à la création.
         const solid = typeof fill === "string" ? fill : fill.stops[0]?.color;
         const color = swapColor(l.color, m);
-        return { ...l, fill, color: solid && contrast(color, solid) < 4.5 ? onColor(solid) : color, text: swapName(l.text, oldS.name, newS.name) };
+        return { ...l, fill, color: solid && contrast(color, solid) < 4.5 ? onColor(solid) : color, text: swapName(l.text, oldS.name, newS.name), font: { ...l.font, family: swapFont(l.font.family, oldS, newS) } };
       }
       case "shape":
         return { ...l, fill: swapFill(l.fill, m), stroke: l.stroke ? { ...l.stroke, color: swapColor(l.stroke.color, m) } : null };
@@ -159,6 +181,22 @@ export function rebrandAdDoc(doc: AdDocument, oldS: BrandSnapshot, newS: BrandSn
     }
   });
   return { ...doc, layers, brand: { ...doc.brand, palette: { ...doc.brand.palette, ...newS.palette }, name: newS.name || doc.brand.name, fonts: newS.fonts ?? doc.brand.fonts }, meta: { ...doc.meta, source: "engine", ...(doc.meta.recipe ? { recipe: { ...doc.meta.recipe, palette: { ...doc.meta.recipe.palette, ...newS.palette }, brand: newS.name || doc.meta.recipe.brand } } : {}) } };
+}
+
+/** Vidéo aux couleurs, polices, logo et nom actuels : titres, carte de fin, sous-titres (plans filmés inchangés). */
+export function rebrandVideoDoc(doc: VideoDocument, oldS: BrandSnapshot, newS: BrandSnapshot, logoAssetId: string | null): VideoDocument {
+  const asDoc = (layers: Layer[]): AdDocument => ({ version: 1, width: doc.width, height: doc.height, background: "transparent", safe: doc.safe, format: { platform: null, aspect: doc.aspect }, layers, brand: doc.brand, meta: { conceptId: null, source: "engine", createdFrom: null } });
+  const m = colorMap(oldS, newS);
+  const next = structuredClone(doc);
+  next.clips = doc.clips.map((c) => ({
+    ...c,
+    overlays: c.overlays.length ? rebrandAdDoc(asDoc(c.overlays), oldS, newS, logoAssetId).layers : [],
+    source: c.source.kind === "doc" ? { ...c.source, doc: rebrandAdDoc(c.source.doc, oldS, newS, logoAssetId) } : c.source.kind === "color" ? { ...c.source, color: swapColor(c.source.color, m) } : c.source,
+  }));
+  const st = doc.subtitles.style;
+  next.subtitles = { ...doc.subtitles, style: { ...st, family: swapFont(st.family, oldS, newS), color: swapColor(st.color, m), background: st.background ? swapColor(st.background, m) : null }, cues: doc.subtitles.cues.map((q) => ({ ...q, text: swapName(q.text, oldS.name, newS.name) })) };
+  next.brand = { ...doc.brand, palette: { ...doc.brand.palette, ...newS.palette }, name: newS.name || doc.brand.name, fonts: newS.fonts ?? doc.brand.fonts };
+  return next;
 }
 
 /** Thème aux couleurs, typographies, logo et nom actuels ; mise en page et retouches conservées. */
@@ -216,6 +254,14 @@ const remapJson = (s: string, m: Map<string, string>) => s.replace(/#[0-9a-fA-F]
 
 // ---------------------------------------------------------------- application
 
+/** Versions animées d'une création mise à jour : refaites (locales, gratuites), même animation et même musique. */
+async function reanimate(projectId: string, userId: string, docKey: string) {
+  const rows = all<{ style: string; music: number | null }>("SELECT json_extract(meta, '$.animatedPost.style') style, json_extract(meta, '$.animatedPost.music') music FROM assets WHERE project_id = ? AND deleted_at IS NULL AND json_extract(meta, '$.animatedPost.docKey') = ? ORDER BY created_at DESC LIMIT 1", projectId, docKey);
+  if (!rows.length) return;
+  const { animateDocToAsset } = await import("../ad-doc/animate-server");
+  await animateDocToAsset(projectId, userId, docKey, (rows[0].style || "pop") as "pop", { music: rows[0].music !== 0 }).catch((e) => console.warn("[marque] version animée", (e as Error).message));
+}
+
 export type PropagationResult = { updated: { key: string; kind: ImpactKind; detail: string }[]; skipped: { key: string; reason: string }[] };
 
 /**
@@ -224,20 +270,23 @@ export type PropagationResult = { updated: { key: string; kind: ImpactKind; deta
  */
 /** Résumé lisible de la mise à jour (mémoire du projet) : nombre de créations par type, mises à jour et laissées. */
 function propagationSummary(res: PropagationResult) {
-  const NAMES: Record<ImpactKind, [string, string]> = { theme: ["boutique / site", "store / website"], ad: ["publicité(s)", "ad(s)"], post: ["publication(s)", "post(s)"], export: ["export(s)", "export(s)"], video: ["vidéo(s)", "video(s)"], text: ["texte(s)", "text(s)"] };
+  const NAMES: Record<ImpactKind, [string, string]> = { theme: ["boutique / site", "store / website"], ad: ["publicité(s)", "ad(s)"], post: ["publication(s)", "post(s)"], export: ["export(s)", "export(s)"], video: ["vidéo(s)", "video(s)"], text: ["texte(s)", "text(s)"], ai_image: ["visuel(s) IA (nouvelle version)", "AI visual(s) (new version)"] };
   const count = new Map<ImpactKind, number>();
   for (const u of res.updated) count.set(u.kind, (count.get(u.kind) ?? 0) + 1);
   const parts = [...count].map(([k, n]) => `${n} ${L(NAMES[k][0], NAMES[k][1])}`);
   return L(`Nouvelle identité appliquée : ${parts.join(", ") || "aucune création"} ; ${res.skipped.length} laissée(s) telle(s) quelle(s).`, `New identity applied: ${parts.join(", ") || "no creation"}; ${res.skipped.length} left as is.`);
 }
 
-export async function applyBrandUpdate(projectId: string, keys: string[], o: { includeEdited?: boolean; userId?: string } = {}): Promise<PropagationResult> {
+export async function applyBrandUpdate(projectId: string, keys: string[], o: { includeEdited?: boolean; userId?: string; /** Prix accepté pour les nouvelles versions IA (somme) ; sans lui, rien de payant ne part. */ approvedPaidMicro?: number | null } = {}): Promise<PropagationResult> {
   const p = loadProject(projectId);
   const impact = brandImpact(p);
   const newS = snapshotOf(p.brand)!;
   const res: PropagationResult = { updated: [], skipped: [] };
   const postIds: string[] = [];
   const exports: CmsPlatform[] = [];
+  const paid = impact.items.filter((i) => keys.includes(i.key) && i.kind === "ai_image");
+  const paidTotal = paid.reduce((n, i) => n + (i.paidMicro ?? 0), 0);
+  const paidOk = paidTotal > 0 && o.approvedPaidMicro != null && o.approvedPaidMicro >= paidTotal;
   for (const key of keys) {
     const it = impact.items.find((i) => i.key === key);
     if (!it) {
@@ -268,6 +317,29 @@ export async function applyBrandUpdate(projectId: string, keys: string[], o: { i
       const v = await saveAndRender(p.id, o.userId ?? p.userId, docKey, doc, L("identité de marque mise à jour", "brand identity updated"));
       run("UPDATE ad_documents SET source = 'engine' WHERE id = ?", v.id);
       res.updated.push({ key, kind: "ad", detail: `v${v.version}` });
+      await reanimate(p.id, o.userId ?? p.userId, docKey);
+    } else if (it.kind === "video") {
+      const { latestVideo, saveVideoVersion } = await import("../video-v2/store");
+      const { enqueue } = await import("../jobs");
+      const docKey = key.slice(6);
+      const cur = latestVideo(p.id, docKey);
+      if (!cur) continue;
+      const v = saveVideoVersion(p.id, docKey, { ...rebrandVideoDoc(cur.doc, oldS, newS, p.brand?.logo?.assetId ?? null), meta: { ...cur.doc.meta, source: "engine" } }, { note: L("identité de marque mise à jour", "brand identity updated") });
+      enqueue({ userId: o.userId ?? p.userId, projectId: p.id, type: "video.v2.render", label: L("Vidéo : nouvelle identité", "Video: new identity"), payload: { projectId: p.id, docKey } });
+      res.updated.push({ key, kind: "video", detail: L(`v${v.version}, rendu en cours`, `v${v.version}, rendering`) });
+    } else if (it.kind === "ai_image") {
+      if (!paidOk) {
+        res.skipped.push({ key, reason: L("nouvelle version payante : prix à accepter", "paid new version: price to accept") });
+        continue;
+      }
+      const { getAsset, assetMeta } = await import("../library");
+      const { redoRequest } = await import("../media/ai-image-variants");
+      const { enqueue } = await import("../jobs");
+      const a = getAsset(key.slice(9));
+      if (!a) continue;
+      const meta = assetMeta<Record<string, any>>(a);
+      enqueue({ userId: o.userId ?? p.userId, projectId: p.id, type: "image.ai_post", label: L("Visuel IA : nouvelle identité", "AI visual: new identity"), payload: { projectId: p.id, costCapMicro: it.paidMicro, request: redoRequest(meta, { aspect: (meta.aspect ?? "4:5") as "4:5" }) } });
+      res.updated.push({ key, kind: "ai_image", detail: L("nouvelle version en préparation (l'ancienne est gardée)", "new version being prepared (the old one is kept)") });
     } else if (it.kind === "post") {
       postIds.push(key.slice(5));
     } else if (it.kind === "export") {

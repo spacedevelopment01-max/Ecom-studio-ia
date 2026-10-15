@@ -1,0 +1,134 @@
+{
+  "titre": "ARVEN — film 15 s, vertical",
+  "sortie": {
+    "fichier": "ARVEN_PUBLICITE_VIDEO/ARVEN_film_15s_1080x1920.mp4",
+    "largeur": 1080,
+    "hauteur": 1920,
+    "ips": 30,
+    "duree": 15
+  },
+  "etalonnage": "eq=contrast=1.06:saturation=0.92:gamma=0.98,colorbalance=rs=0.02:gs=0.0:bs=-0.03:rh=0.04:gh=0.02:bh=-0.03,vignette=PI/5",
+  "plans": [
+    {
+      "id": "plan1-eveil",
+      "fichier": "ARVEN_PUBLICITE_VIDEO/clips/plan1-eveil.mp4",
+      "debut": 0,
+      "duree": 4.8,
+      "pourquoi": "Éveil : rai de lumière qui balaie le cadran, avancée de caméra."
+    },
+    {
+      "id": "plan2-roche",
+      "fichier": "ARVEN_PUBLICITE_VIDEO/clips/plan2-roche.mp4",
+      "debut": 0,
+      "duree": 5.0,
+      "transition": {
+        "type": "fadeblack",
+        "duree": 0.6
+      },
+      "pourquoi": "Caractère : arc de caméra sur la roche, particules dorées ; montre fidèle jusqu'à la fin."
+    },
+    {
+      "id": "plan3-signature",
+      "fichier": "ARVEN_PUBLICITE_VIDEO/clips/plan3-signature.mp4",
+      "debut": 0,
+      "duree": 4.2,
+      "transition": {
+        "type": "dissolve",
+        "duree": 0.5
+      },
+      "pourquoi": "Signature : poussée et contour doré. Coupé à 4,2 s : ensuite l'IA tourne la montre de face et redessine le cadran."
+    }
+  ],
+  "carte_finale": {
+    "couleur": "0x0B0B0C",
+    "transition": {
+      "type": "fade",
+      "duree": 0.6
+    }
+  },
+  "titres": [
+    {
+      "calque": "ARVEN_PUBLICITE_VIDEO/titres/titre-detail.png",
+      "entree": 5.0,
+      "sortie": 6.9,
+      "glisse": 24
+    },
+    {
+      "calque": "ARVEN_PUBLICITE_VIDEO/titres/titre-allure.png",
+      "entree": 7.1,
+      "sortie": 8.8,
+      "glisse": 24
+    },
+    {
+      "calque": "ARVEN_PUBLICITE_VIDEO/titres/logo.png",
+      "entree": 12.7,
+      "sortie": 15.5,
+      "glisse": 0
+    },
+    {
+      "calque": "ARVEN_PUBLICITE_VIDEO/titres/slogan.png",
+      "entree": 13.2,
+      "sortie": 15.5,
+      "glisse": 30
+    },
+    {
+      "calque": "ARVEN_PUBLICITE_VIDEO/titres/bouton.png",
+      "entree": 13.8,
+      "sortie": 15.5,
+      "glisse": 30
+    }
+  ],
+  "audio": {
+    "musique": {
+      "fichier": "ARVEN_PUBLICITE_VIDEO/musique/musique-15s.wav",
+      "volume": 0.9,
+      "licence": "Composée par le studio (compositeur intégré, style cinématique) ; instruments GeneralUser GS (libre pour toute création, commerciale comprise) ; moteur SpessaSynth (Apache-2.0)."
+    },
+    "effets": [
+      {
+        "fichier": "ARVEN_PUBLICITE_VIDEO/son/pulsation.wav",
+        "a": 0.1,
+        "volume": 0.9
+      },
+      {
+        "fichier": "ARVEN_PUBLICITE_VIDEO/son/tic.wav",
+        "a": [
+          0.6,
+          1.6,
+          2.6,
+          3.6
+        ],
+        "volume": 0.5
+      },
+      {
+        "fichier": "ARVEN_PUBLICITE_VIDEO/son/tac.wav",
+        "a": [
+          1.1,
+          2.1,
+          3.1,
+          4.1
+        ],
+        "volume": 0.5
+      },
+      {
+        "fichier": "ARVEN_PUBLICITE_VIDEO/son/souffle.wav",
+        "a": [
+          4.0,
+          8.3
+        ],
+        "volume": 0.6
+      },
+      {
+        "fichier": "ARVEN_PUBLICITE_VIDEO/son/tintement.wav",
+        "a": 12.7,
+        "volume": 0.5
+      },
+      {
+        "fichier": "ARVEN_PUBLICITE_VIDEO/son/signature.wav",
+        "a": 12.6,
+        "volume": 0.8
+      }
+    ],
+    "loudness": "-14 LUFS, crête -1 dBTP"
+  }
+}

@@ -24,6 +24,7 @@ import { AUTOMATION_KINDS, createAutomation, listAutomations, setAutomationStatu
 import { postViewV2 } from "@/lib/social-v2/view";
 import { createOnePost, produceParams, quoteOne } from "@/lib/social-v2/single";
 import { getAsset } from "@/lib/library";
+import { resolveSubject, subjectOptions } from "@/lib/creative-subject";
 
 export const runtime = "nodejs";
 
@@ -52,6 +53,8 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
     stats: socialStats(p.id, user.id),
     automations: listAutomations(p.id),
     ai: aiActiveFor(p.userId, p.id),
+    /** Produits ou services du projet pour la création guidée (photo de référence comprise). */
+    subjects: subjectOptions(p).map((x) => ({ kind: x.kind, key: x.key, name: x.name, hasPhoto: !!x.referenceAssetId, photoId: x.referenceAssetId })),
     canPublish: !!planOfUserId(user.id, p.id),
     limits: (() => {
       const pl = planOfUserId(user.id, p.id);
@@ -116,6 +119,10 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
         pillar: z.string().max(40).optional(),
         headline: z.string().max(120).optional(),
         backgroundId: z.string().max(64).optional(),
+        /** Produit (clé, « main » pour le principal) ou service choisi pour le visuel (création guidée). */
+        subject: z.discriminatedUnion("kind", [z.object({ kind: z.literal("product"), key: z.string().min(1).max(80) }), z.object({ kind: z.literal("service"), name: z.string().min(1).max(120) })]).optional(),
+        /** Demande libre du client pour ce visuel. */
+        request: z.string().max(600).optional(),
         /** Prix vu et accepté par le client (payant). */
         approvedEstimateMicro: z.number().int().min(0).nullable().optional(),
       }),
@@ -194,7 +201,10 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       }
       const bg = b.backgroundId ? getAsset(b.backgroundId) : null;
       if (b.backgroundId && (!bg || bg.project_id !== p.id || bg.kind !== "image" || bg.deleted_at)) throw new HttpError(400, L("Image introuvable dans votre banque.", "Image not found in your bank."));
-      const one = createOnePost(p, { kind: b.kind, date: b.date, time: b.time, timezone: b.timezone, platforms: b.platforms, pillar: b.pillar, headline: b.headline, lang: p.settings.language === "en" ? "en" : "fr" });
+      // Sujet vérifié contre le projet (jamais un produit ou service d'un autre projet).
+      const subject = b.subject ? resolveSubject(p, b.subject) : null;
+      if (b.subject && (!subject || subject.kind !== b.subject.kind || subject.key !== (b.subject.kind === "service" ? b.subject.name.trim() : b.subject.key))) throw new HttpError(400, L("Produit ou service introuvable dans ce projet.", "Product or service not found in this project."));
+      const one = createOnePost(p, { kind: b.kind, date: b.date, time: b.time, timezone: b.timezone, platforms: b.platforms, pillar: b.pillar, headline: b.headline, lang: p.settings.language === "en" ? "en" : "fr", subject: b.subject ?? null, request: b.request ?? null });
       const params = produceParams(b.kind, b.mode);
       if (params.allowPaid) {
         const job = enqueue({ userId: user.id, projectId: p.id, type: "social.v2.produce", label: b.kind === "video" ? L("Publication vidéo", "Video post") : L("Publication image", "Image post"), payload: { projectId: p.id, ids: one.ids, allowPaid: true, maxCostEur: quote / 1e6, approvedEstimateMicro: quote, aiImages: params.aiImages ?? null, aiBackground: !!params.aiBackground } });

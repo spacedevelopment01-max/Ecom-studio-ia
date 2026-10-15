@@ -182,3 +182,47 @@ Par exemple : principal Qwen-Image et secours GPT Image, ou principal Wan et sec
 - Vidéo Wan : résolution fixée à 720P. Le tarif saisi doit être celui du 720P.
 - Le texte vers vidéo est prêt dans le moteur (usage « Texte vers vidéo »), mais aucun écran client ne le propose encore. C'est cohérent avec une vidéo prévue pour la V2 commerciale.
 - Le mode « forfait Créer = vidéo rapide », appliqué à Veo, ne s'applique pas à Wan. Choisissez Wan 2.6 Flash si besoin.
+
+## Mise à jour du 15/10/2026 — identifiants et tarifs vérifiés avec la clé du propriétaire
+
+Lecture gratuite de l'API officielle `GET /api/v1/models` (région internationale, Singapour). Aucun appel payant.
+Les tarifs de l'API n'indiquent pas la devise : dollars (USD) supposés pour la région internationale, à recouper avec
+la première facture.
+
+| Modèle | Tarif (API) |
+|---|---|
+| qwen-image-2.1-turbo | 0,016 $ / image |
+| qwen-image-2.1-pro | 0,04 $ / image |
+| qwen-image-2.0 | 0,035 $ / image |
+| qwen-image-2.0-pro | 0,075 $ / image |
+| wan2.2-i2v-flash | 0,036 $ / s (720P, 5 s) |
+| wan2.6-i2v-flash | 0,05 $ / s (720P) |
+| wan2.7-i2v, wan2.7-t2v, wan3.0-video | 0,10 $ / s (720P) |
+| wan3.0-video-prime | 0,14 $ / s (720P) |
+| wan2.6-i2v, wan2.6-t2v | tarif absent de l'API → restent non tarifés |
+
+Retirés du catalogue (absents du compte) : qwen-image-max, qwen-image-plus, qwen-image, qwen-image-edit-plus,
+qwen-image-edit-max.
+
+**Verrou maintenu** : nouveau champ `adminConfirm` — même vérifiés, ces modèles restent verrouillés jusqu'à la
+confirmation dans Administration › Modèles Images & Vidéos, et n'entrent pas dans le repli historique du routeur
+(`capabilities.ts`), qui aurait sinon contourné ce verrou (trouvé par `budget-ia.test.ts`, corrigé, testé).
+
+Non vérifié : aucune génération réelle (image ou vidéo) n'a encore été faite.
+
+## 15/10/2026 — Qwen-Image 3.0 Pro par défaut et ligne « campagne » pour tous les clients (demande du propriétaire)
+
+- **Modèle d'images par défaut** : `alibaba:qwen-image-3.0-pro` (≈ 0,04 € par publicité contre 0,14 à 0,215 € avec
+  OpenAI lors des derniers essais). Il passe en premier **dès qu'il est utilisable** : clé Alibaba active, tarif, et
+  **confirmation dans Administration › Modèles Images & Vidéos** (verrou conservé : un nouveau fournisseur payant
+  n'est jamais activé sans accord de l'administration). Avant cette confirmation, le défaut historique (OpenAI) reste
+  en place : aucune création ne se retrouve sans modèle. Un choix explicite de l'administration reste prioritaire.
+- **Niveau « plus grandes campagnes »** (`src/lib/social-v2/ai-post.ts`, `aiPostPrompt`) pour toutes les publications
+  et publicités conçues par l'IA : seul le niveau de rendu est imposé ; la mise en page est libre et change à chaque
+  visuel (logo, produit et textes placés comme le déciderait une grande agence). Produit fidèle sous le même angle,
+  aucun texte dans le décor. Référence : `reports/alibaba-qwen-essai/style-luxe-cinematique.md`.
+- **Vrai logo transmis** en seconde image de référence (Qwen-Image 3.0, OpenAI) et **contrôlé contre l'original** par
+  la relecture automatique (qui continue de vérifier chaque lettre des textes et de refaire un essai si besoin).
+- Restent sur OpenAI : la retouche par masque (seul fournisseur branché pour cela) et les textes (Qwen n'est utilisé
+  que pour les images et vidéos).
+- Tests : `tests/publicite-ligne-campagne.test.ts`.

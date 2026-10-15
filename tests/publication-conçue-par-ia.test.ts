@@ -1,6 +1,6 @@
 /**
  * Publication entièrement conçue par l'IA (scène, mise en page, textes, produit réel) : accroche de l'IA nettoyée
- * (rien d'inventé de chiffré), textes exacts et produit fidèle exigés par le contrôle, un seul nouvel essai avec la
+ * (rien d'inventé de chiffré), textes exacts et produit fidèle exigés par le contrôle, 3 essais au plus avec la
  * correction, plafond respecté, jamais sans photo du produit, coût payé toujours compté.
  */
 import { describe, expect, it } from "vitest";
@@ -56,13 +56,14 @@ describe("Publication conçue par l'IA", async () => {
     expect(f.calls.prompts[1]).toContain("ISOTHERME");
   });
 
-  it("refusé deux fois : rien d'enregistré, mais les deux essais payés restent comptés", async () => {
+  it("refusé trois fois (règle du propriétaire : 3 essais) : rien d'enregistré, mais les trois essais payés restent comptés", async () => {
     const { p, ref } = await setup();
     const bad = { ...ok, productFaithful: false };
-    const f = fakes([bad, bad]);
+    const f = fakes([bad, bad, bad]);
     const r = await designPostWithAi(p, post, { aspect: "4:5", maxCostEur: 1, reference: ref }, f.deps);
     expect(r.assetId).toBeNull();
-    expect(r.costMicro).toBe(460_000);
+    expect(f.calls.generate).toBe(3);
+    expect(r.costMicro).toBe(690_000);
   });
 
   it("plafond : aucun appel au-delà ; sans photo du produit : rien n'est généré", async () => {
@@ -98,10 +99,11 @@ describe("Publication conçue par l'IA", async () => {
     expect(textsMatch(want, ["Le son, en beauté.", "Casque audio Sonore", "Découvrïr", "Sonore"])).toBe(false);
     expect(textsMatch(want, [...want, "Livraison offerte"])).toBe(false);
     const { p, ref } = await setup();
-    const f = fakes([{ ...ok, transcribed: ["Partez léger. Voyez grand.", "La gourde Cime", "Découvrïr"] }, { ...ok, transcribed: ["Partez léger. Voyez grand.", "La gourde Cime", "Découvrïr"] }]);
+    const typo = { ...ok, transcribed: ["Partez léger. Voyez grand.", "La gourde Cime", "Découvrïr"] };
+    const f = fakes([typo, typo, typo]);
     const r = await designPostWithAi(p, post, { aspect: "4:5", maxCostEur: 1, reference: ref }, f.deps);
     expect(r.assetId).toBeNull();
-    expect(f.calls.generate).toBe(2);
+    expect(f.calls.generate).toBe(3);
   });
 
   it("un passage précédent ne compte pas dans le plafond du nouveau passage", async () => {

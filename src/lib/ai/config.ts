@@ -153,6 +153,22 @@ export const DEFAULT_PRICES: Record<string, Price> = {
   "google:veo-3.0-generate-001": { unit: "video_second", perSecond: 0.4 },
   "google:veo-3.0-fast-generate-001": { unit: "video_second", perSecond: 0.15 },
   "fal:fal-ai/kling-video/v2.1/pro/image-to-video": { unit: "video_second", perSecond: 0.09 },
+  // Alibaba Cloud Model Studio (région internationale) : tarifs lus dans l'API officielle des modèles le 15/10/2026.
+  // Qwen-Image 3.0 : facturé par image produite (1K / 2K) + 0,003 $ par image d'entrée. Borne retenue : sortie 2K
+  // + deux images d'entrée (le studio en envoie au plus deux) → jamais dépassée.
+  "alibaba:qwen-image-3.0-pro": { unit: "image", perImage: 0.081 },
+  "alibaba:qwen-image-3.0": { unit: "image", perImage: 0.036 },
+  "alibaba:qwen-image-2.1-turbo": { unit: "image", perImage: 0.016 },
+  "alibaba:qwen-image-2.1-pro": { unit: "image", perImage: 0.04 },
+  "alibaba:qwen-image-2.0": { unit: "image", perImage: 0.035 },
+  "alibaba:qwen-image-2.0-pro": { unit: "image", perImage: 0.075 },
+  "alibaba:wan2.2-i2v-flash": { unit: "video_second", perSecond: 0.036 },
+  // 1080P sans son (demandé ainsi par le studio) : tarif de l'API officielle « 1080P_no_audio », vérifié le 15/10/2026.
+  "alibaba:wan2.6-i2v-flash": { unit: "video_second", perSecond: 0.0375 },
+  "alibaba:wan2.7-i2v": { unit: "video_second", perSecond: 0.1 },
+  "alibaba:wan2.7-t2v": { unit: "video_second", perSecond: 0.1 },
+  "alibaba:wan3.0-video": { unit: "video_second", perSecond: 0.1 },
+  "alibaba:wan3.0-video-prime": { unit: "video_second", perSecond: 0.14 },
 };
 
 export function routeFor(task: TaskId): Route {

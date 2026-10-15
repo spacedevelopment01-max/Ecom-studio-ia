@@ -1,0 +1,26 @@
+{
+  "model": "wan2.6-i2v-flash",
+  "resolution": "1080P",
+  "usdPerSecond": 0.075,
+  "parameters": { "audio": false, "shot_type": "single" },
+  "items": [
+    {
+      "id": "plan1-onde",
+      "image": "SONORE_VIDEO_WAN/images-cles/plan1-onde.png",
+      "seconds": 5,
+      "prompt": "Premium headphones commercial, cinematic shot. The headphones float and rotate very slowly in mid-air; rings of red light pulse outward behind them like a visible sound wave, rhythmically; reflections glide over the brushed aluminium ear cups; the camera slowly pushes in. Keep the headphones exactly identical: same headband with red stitching, same cushions, same silver cups with red rings. Smooth, elegant, physically realistic motion. Single continuous shot, no cuts. No text, no logo, no people, no hands."
+    },
+    {
+      "id": "plan2-matiere",
+      "image": "SONORE_VIDEO_WAN/images-cles/plan2-matiere.png",
+      "seconds": 5,
+      "prompt": "Premium headphones commercial, macro shot. The camera glides slowly sideways along the ear cup with parallax; a narrow beam of cool white light sweeps across the brushed aluminium, making the radial texture shimmer; the thin red ring catches the light; dust particles drift in the beam. Keep the headphones exactly identical. Smooth, slow, elegant motion. Single continuous shot, no cuts. No text, no logo, no people, no hands."
+    },
+    {
+      "id": "plan3-signature",
+      "image": "SONORE_VIDEO_WAN/images-cles/plan3-signature.png",
+      "seconds": 5,
+      "prompt": "Premium headphones commercial, final hero shot. Slow majestic push-in toward the headphones standing on the concrete pedestal; the red backlight halo slowly breathes and intensifies, the reflection on the pedestal glows, a faint haze drifts. The headphones stay still and exactly identical. Keep large empty dark space at the top and bottom. Smooth, elegant motion. Single continuous shot, no cuts. No text, no logo, no people, no hands."
+    }
+  ]
+}

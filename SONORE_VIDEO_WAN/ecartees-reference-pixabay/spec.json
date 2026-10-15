@@ -1,0 +1,23 @@
+{
+  "model": "qwen-image-3.0-pro",
+  "items": [
+    {
+      "id": "plan1-onde",
+      "aspect": "9:16",
+      "reference": "SONORE_VIDEO_WAN/references/casque-gros-plan-1.png",
+      "prompt": "Cinematic product photograph, vertical frame, for a premium headphones film. The headphones are EXACTLY the ones in the reference photo (black padded headband with red stitching, black ear cushions, brushed silver aluminium ear cups with a thin red ring, silver slider with a red cable), shown ALONE, floating in mid-air, seen in three-quarter view, centered. Deep graphite-black studio void. Behind the headphones, faint concentric rings of red light ripple outward like a visible sound wave, very subtle haze. Crisp reflections on the brushed aluminium, dramatic rim light, shallow depth of field, room above and below. World-class audio brand campaign quality. No person, no hands, no body, no text, no logo."
+    },
+    {
+      "id": "plan2-matiere",
+      "aspect": "9:16",
+      "reference": "SONORE_VIDEO_WAN/references/casque-gros-plan-1.png",
+      "prompt": "Cinematic extreme macro photograph, vertical frame, for a premium headphones film. EXACTLY the headphones of the reference photo, shown ALONE: extreme close-up on one brushed silver aluminium ear cup with its thin red ring, the soft black ear cushion and the silver slider with its red cable, part of the black headband with red stitching. Dark charcoal background. A narrow raking beam of cool white light glides across the radial brushed metal and makes it shimmer, deep shadows elsewhere, tiny dust particles in the beam. Ultra sharp textures, shallow depth of field. World-class audio brand campaign quality. No person, no hands, no body, no text, no logo."
+    },
+    {
+      "id": "plan3-signature",
+      "aspect": "9:16",
+      "reference": "SONORE_VIDEO_WAN/references/casque-gros-plan-1.png",
+      "prompt": "Cinematic hero product photograph, vertical frame, final shot of a premium headphones film. EXACTLY the headphones of the reference photo (black padded headband with red stitching, black ear cushions, brushed silver aluminium ear cups with a thin red ring), shown ALONE, standing upright on a small raw grey concrete pedestal, seen from the front three-quarter, slightly below the middle of the frame. Pure graphite-black background with a soft red backlight halo behind the headphones and a gentle reflection on the pedestal. Large clean empty dark space at the top and at the bottom for titles. World-class audio brand campaign quality. No person, no hands, no body, no text, no logo."
+    }
+  ]
+}

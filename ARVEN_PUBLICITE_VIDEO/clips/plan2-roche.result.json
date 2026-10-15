@@ -1,0 +1,21 @@
+{
+  "request_id": "17395f4b-868c-9ca9-b8e8-f252befb7933",
+  "output": {
+    "task_id": "68a2e709-8a6e-420f-b262-35ddac13593d",
+    "task_status": "SUCCEEDED",
+    "submit_time": "2026-10-15 23:36:08.172",
+    "scheduled_time": "2026-10-15 23:36:08.296",
+    "end_time": "2026-10-15 23:37:54.236",
+    "orig_prompt": "Luxury watch commercial, cinematic shot. The camera makes a slow, deep lateral tracking move from left to right around the watch resting on black volcanic rock, revealing parallax between the rock and the dark background; the beam of warm light slowly moves across the steel case and the leather strap; fine golden dust particles drift and glitter through the beam. Keep the watch exactly identical: same dial, sub-dials, numbers, bezel, case and strap. Smooth, elegant, physically realistic motion. No text, no logo, no people, no hands. No people in frame.",
+    "video_url": "https://dashscope-463f.oss-accelerate.aliyuncs.com/1d/01/20261015/e6a9c850/c853054458cd4524aba84c4e54a1ab8c-metadata_jmFpSLjx_f1c878c3e41b.mp4?Expires=1792165072&OSSAccessKeyId=LTAI5t7xkDxYoFdeAc4nqUeU&Signature=PMf5vVWED7vq59u6mX8EO5%2FDrCI%3D"
+  },
+  "usage": {
+    "duration": 5,
+    "input_video_duration": 0,
+    "output_video_duration": 5,
+    "fps": 30,
+    "video_count": 1,
+    "SR": 1080,
+    "ratio": "29:52"
+  }
+}

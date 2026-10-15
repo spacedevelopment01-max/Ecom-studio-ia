@@ -14,10 +14,11 @@ import { JobProgress, SectionTitle, useActive } from "./common";
 import { useT } from "../i18n";
 import { PlanRequired, useCreationLocked } from "../billing-client";
 import { AD_VIDEO_INTENTS } from "@/lib/media/bank";
+import { MusicChoice } from "./music-choice";
 
 type VideoItem = { docKey: string; version: number; edited: boolean; intent: string | null; aspect: string | null; platform: string | null; durationS: number; clips: number; url: string | null; renderedAssetId: string | null; renderedVersion: number | null; needsRender: boolean; status: string | null; verdict: string | null; at: number };
 type Plan = { shots: { id: string; part: string; durationS: number; subject: string; method: string; paid: boolean; estimateMicro: number }[]; estimateMicro: number; notes: string[]; script?: { hook?: string } | null };
-type DocView = { docKey: string; version: number; versions: { version: number; source: string; note: string; renderedAssetId: string | null; createdAt: number }[]; problems: string[]; durationS: number; doc: { aspect: string; clips: { id: string; durationS: number; source?: { kind?: string }; text?: { value?: string }[] }[] } };
+type DocView = { docKey: string; version: number; versions: { version: number; source: string; note: string; renderedAssetId: string | null; createdAt: number }[]; problems: string[]; durationS: number; doc: { aspect: string; audio?: { music?: unknown | null }; clips: { id: string; durationS: number; source?: { kind?: string }; text?: { value?: string }[] }[] } };
 
 const KINDS: [string, string, string][] = [
   ["video_ad", "Publicité vidéo", "Video ad"],
@@ -135,7 +136,7 @@ export function VideoV2Panel({ scope }: { scope?: "ad" | "organic" } = {}) {
   );
 }
 
-function VideoDocModal({ docKey, onClose }: { docKey: string; onClose: () => void }) {
+export function VideoDocModal({ docKey, onClose }: { docKey: string; onClose: () => void }) {
   const { id } = useProject();
   const t = useT();
   const toast = useToast();
@@ -165,6 +166,18 @@ function VideoDocModal({ docKey, onClose }: { docKey: string; onClose: () => voi
             {data.doc.clips.map((c, i) => <li key={c.id} className="rounded-lg bg-paper-2 px-2 py-1">{i + 1}. {c.durationS} s{c.text?.[0]?.value ? ` — « ${c.text[0].value} »` : ""}</li>)}
           </ol>
           {data.problems.length > 0 && <ul className="list-disc pl-5 text-xs text-warn">{data.problems.slice(0, 5).map((p) => <li key={p}>{p}</li>)}</ul>}
+          <div className="flex flex-wrap items-center gap-3" data-video-music>
+            <span className="text-sm font-medium">{t("Musique", "Music")}</span>
+            <MusicChoice
+              compact
+              value={!!data.doc.audio?.music}
+              onChange={(on) => {
+                if (on === !!data.doc.audio?.music) return;
+                // Musique composée par le studio (droits inclus) ou aucune ; nouvelle version, puis rendu.
+                void post({ action: "ops", ops: [{ op: "music", music: on ? { source: "synth", mood: "warm", gainDb: -14 } : null }], note: on ? "musique ajoutée" : "musique retirée" }, on ? t("Musique ajoutée : relancez le rendu.", "Music added: render again.") : t("Musique retirée : relancez le rendu.", "Music removed: render again."), "music");
+              }}
+            />
+          </div>
           <Field label={t("Retouche simple (ex. « raccourcis à 15 secondes », « change le titre en … »)", "Simple change (e.g. \"shorten to 15 seconds\", \"change the title to …\")")} htmlFor="v2edit">
             <Input id="v2edit" value={instruction} maxLength={400} onChange={(e) => setInstruction(e.target.value)} />
           </Field>
@@ -172,6 +185,16 @@ function VideoDocModal({ docKey, onClose }: { docKey: string; onClose: () => voi
             <Button size="sm" icon={<Wand2 className="size-4" />} disabled={!instruction.trim()} loading={busy === "edit"} onClick={() => post({ action: "edit", instruction }, t("Retouche appliquée (nouvelle version) : relancez le rendu.", "Change applied (new version): render again."), "edit")}>{t("Appliquer", "Apply")}</Button>
             <Button size="sm" variant="secondary" icon={<Play className="size-4" />} loading={busy === "render"} onClick={() => post({ action: "render" }, t("Rendu lancé.", "Rendering started."), "render")}>{t("Rendre la vidéo", "Render the video")}</Button>
             <Button size="sm" variant="ghost" loading={busy === "dup"} onClick={() => post({ action: "duplicate" }, t("Copie créée.", "Copy created."), "dup")}>{t("Dupliquer", "Duplicate")}</Button>
+          </div>
+          <div className="flex flex-wrap items-center gap-2" data-video-reformat>
+            <span className="text-xs text-muted">{t("Dupliquer dans un autre format (gratuit) :", "Duplicate in another format (free):")}</span>
+            {(["9:16", "4:5", "1:1", "16:9"] as const)
+              .filter((a) => a !== data.doc.aspect)
+              .map((a) => (
+                <Button key={a} size="sm" variant="secondary" loading={busy === `fmt${a}`} onClick={() => post({ action: "reformat", aspect: a }, t(`Copie au format ${a} en préparation.`, `${a} copy being prepared.`), `fmt${a}`)}>
+                  {a}
+                </Button>
+              ))}
           </div>
           <div className="flex flex-wrap gap-3 text-xs">
             <a className="underline" href={`${base}?export=srt`}>{t("Sous-titres SRT", "SRT subtitles")}</a>

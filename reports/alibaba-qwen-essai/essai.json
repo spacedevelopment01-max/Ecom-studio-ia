@@ -1,0 +1,27 @@
+{
+  "at": "2026-10-15T14:56:57.966Z",
+  "model": "qwen-image-3.0-pro",
+  "boundUsd": 0.081,
+  "items": [
+    {
+      "id": "story-mineral",
+      "ok": true,
+      "model": "qwen-image-3.0-pro",
+      "aspect": "9:16",
+      "size": "928*1664",
+      "references": 2,
+      "usage": {
+        "input_image_count": 2,
+        "input_image_type": "qima_input_1k",
+        "output_height": 1664,
+        "output_image_count": 1,
+        "output_image_type": "qima_output_1k",
+        "output_width": 928
+      },
+      "requestId": "833e6e73-186e-90aa-b5e0-414f4a096d23",
+      "seconds": 26,
+      "maxCostUsd": 0.081,
+      "prompt": "Create an ultra-premium vertical story advertisement (9:16) for the watch brand ARVEN, with the polish of a top luxury campaign, in a BRIGHT, airy, mineral Mediterranean design (not dark, not golden). Image 1 is the product: keep the watch EXACTLY as in the photo, seen from the SAME three-quarter angle and viewpoint — same steel case, plain black dial with three silver sub-dials and their numbers, numbered bezel, crown and pushers, brown leather strap with dark stitching. The dial has NO logo and NO brand name: do not add any text or logo on the watch. Image 2 is the brand logo. Scene: the watch resting large on a sculpted ivory travertine plinth, soft natural afternoon sunlight from a tall arched window casting long elegant shadows, sharp clean reflections on the steel, a blurred background of warm ivory plaster walls with an arch and a few dried pampas grass stems, fine stone texture, calm and luxurious, high dynamic range, crisp photographic detail. Colors: ivory #F3EFE7, warm sand, cognac #A0612B accents, near-black #111214 text. Layout from top to bottom: (1) at the top center the dial emblem from image 2 in near-black, below it the name ARVEN in near-black serif capitals, a short thin cognac line, then in small widely spaced cognac capitals: \"HORLOGERIE\". (2) the watch, hero, large, in the middle. (3) in the lower part a large refined serif headline on two lines in near-black: \"Un classique\" then \"à votre rythme.\" with only the word \"rythme\" in cognac italic. (4) below, a slim pill button with a thin cognac outline and a soft frosted ivory fill, near-black text \"Découvrir\" followed by a small arrow →. (5) at the very bottom, between two hairlines, small widely spaced cognac capitals: \"ACIER  ·  CUIR  ·  TROIS COMPTEURS\". Spell every word EXACTLY with the apostrophe and accents. No price, no other text anywhere, no people, no hands, no wrist."
+    }
+  ]
+}

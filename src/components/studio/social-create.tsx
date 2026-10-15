@@ -16,6 +16,7 @@ import { formatEur } from "../billing-client";
 import { visualParams, type VisualMode } from "@/lib/social-v2/visual-mode";
 import { BANK_IMAGE_ROLES } from "@/lib/media/bank";
 import type { Data } from "./social-studio";
+import { SubjectPicker, subjectChoice } from "./subject-picker";
 
 type Kind = "image" | "video";
 type VideoMode = "free" | "ai_video";
@@ -75,6 +76,9 @@ export function CreateOnePanel({ data, kind, reload, onCreated }: { data: Data; 
   const [pillar, setPillar] = useState("");
   const [headline, setHeadline] = useState("");
   const [bg, setBg] = useState("");
+  const subjects = data.subjects ?? [];
+  const [subjectKey, setSubjectKey] = useState(subjects[0]?.key ?? "");
+  const [request, setRequest] = useState("");
   const [busy, setBusy] = useState(false);
   const [quote, setQuote] = useState<number | null>(null);
   const jobs = useActive(["social.v2"]);
@@ -98,7 +102,7 @@ export function CreateOnePanel({ data, kind, reload, onCreated }: { data: Data; 
     setBusy(true);
     try {
       const r = await api<{ ids: string[]; jobId?: string; produced?: number; notes?: string[]; warnings: string[] }>(`/api/projects/${id}/social/v2`, {
-        body: { action: "create_one", kind, mode, date, time, timezone: data.timezone || "Europe/Paris", platforms: nets.map((platform) => ({ platform, connectionId: data.accounts.find((a) => a.provider === platform && a.status === "active")?.id ?? null })), pillar: pillar || undefined, headline: headline.trim() || undefined, backgroundId: kind === "image" && mode === "free" && bg ? bg : undefined, approvedEstimateMicro: mode === "free" ? undefined : quote },
+        body: { action: "create_one", kind, mode, date, time, timezone: data.timezone || "Europe/Paris", platforms: nets.map((platform) => ({ platform, connectionId: data.accounts.find((a) => a.provider === platform && a.status === "active")?.id ?? null })), pillar: pillar || undefined, headline: headline.trim() || undefined, backgroundId: kind === "image" && mode === "free" && bg ? bg : undefined, ...(mode !== "free" ? { subject: subjectChoice(subjects.find((x) => x.key === subjectKey) ?? subjects[0]), request: request.trim() || undefined } : {}), approvedEstimateMicro: mode === "free" ? undefined : quote },
       });
       toast("ok", r.jobId ? t("Publication créée : son visuel se prépare avec l'IA, puis elle attend votre validation.", "Post created: its visual is being made with AI, then it waits for your approval.") : t(`Publication créée (${r.ids.length} réseau${r.ids.length > 1 ? "x" : ""}) : relisez-la puis validez-la.`, `Post created (${r.ids.length} network${r.ids.length > 1 ? "s" : ""}): review it, then approve it.`));
       for (const w of [...(r.warnings ?? []), ...(r.notes ?? [])].slice(0, 3)) toast("info", w);
@@ -129,6 +133,12 @@ export function CreateOnePanel({ data, kind, reload, onCreated }: { data: Data; 
           <VideoChoice value={videoMode} onChange={setVideoMode} ai={!!data.ai} price={quote && videoMode !== "free" ? t(`Payant · ${eur(quote, lang)}`, `Paid · ${eur(quote, lang)}`) : undefined} />
         )}
       </section>
+      {paid && (
+        <section className="grid gap-2" data-guided>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t("Votre idée pour l'IA", "Your idea for the AI")}</p>
+          <SubjectPicker subjects={subjects} value={subjectKey} onChange={setSubjectKey} request={request} onRequest={setRequest} idPrefix={`one-${kind}`} video={kind === "video"} />
+        </section>
+      )}
       <section className="grid gap-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t("2 · Où et quand", "2 · Where and when")}</p>
         <div className="flex flex-wrap gap-2" role="group" aria-label={t("Réseaux", "Networks")}>

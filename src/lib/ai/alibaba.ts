@@ -14,6 +14,7 @@
  *    identifiants de modèles, tailles, forme des réponses image, codes d'erreur. → à confirmer au premier essai réel.
  */
 import { getSetting } from "../settings";
+import { isGatewayKey } from "./gateway";
 import { L } from "../i18n-server";
 
 export type AlibabaRegion = "intl" | "us" | "cn";
@@ -45,7 +46,8 @@ export function alibabaBase(): { base: string; problem: string | null } {
 export function alibabaHeaders(key: string, o: { async?: boolean } = {}): Record<string, string> {
   const ws = getSetting("provider.alibaba.workspace")?.trim();
   return {
-    Authorization: `Bearer ${key}`,
+    // Clé injectée par la passerelle de l'hébergement : aucune autorisation envoyée par le studio.
+    ...(isGatewayKey(key) ? {} : { Authorization: `Bearer ${key}` }),
     "Content-Type": "application/json",
     ...(o.async ? { "X-DashScope-Async": "enable" } : {}),
     ...(ws ? { "X-DashScope-WorkSpace": ws } : {}),
@@ -91,7 +93,15 @@ export function qwenImageUrl(j: any): string | null {
 /** Wan 3.0 : modèle « tout-en-un » (entrées décrites par `media`) ; Wan 2.x : `img_url`. */
 export const wanUsesMedia = (model: string) => /^wan3\./.test(model);
 
-/** Corps d'une génération vidéo Wan (point d'accès asynchrone « video-synthesis »). Résolution fixée à 720P. */
+/**
+ * Wan 2.6 Flash : vidéo SANS son (`audio: false`, tarif « no audio » de l'API, vérifié par les essais réels du
+ * 15/10/2026 : la réponse confirme `audio: false`), en 1080P, un seul plan continu ; la musique est celle du studio.
+ */
+export const wanSilentFlash = (model: string) => /^wan2\.6-(i2v|r2v)-flash$/.test(model);
+/** Résolution demandée : 1080P pour Wan 2.6 Flash sans son (0,0375 $/s), 720P pour les autres modèles. */
+export const wanResolution = (model: string) => (wanSilentFlash(model) ? "1080P" : WAN_RESOLUTION);
+
+/** Corps d'une génération vidéo Wan (point d'accès asynchrone « video-synthesis »). */
 export function wanVideoBody(o: { model: string; prompt: string; image: string | null; seconds: number; people: boolean }) {
   const prompt = `${o.prompt}${o.people ? "" : " No people in frame."}`;
   const input: Record<string, unknown> = { prompt, negative_prompt: negativePrompt(o.people) };
@@ -99,7 +109,7 @@ export function wanVideoBody(o: { model: string; prompt: string; image: string |
     if (wanUsesMedia(o.model)) input.media = [{ type: "first_frame", url: o.image }];
     else input.img_url = o.image;
   }
-  return { model: o.model, input, parameters: { resolution: WAN_RESOLUTION, duration: o.seconds, watermark: false, prompt_extend: false } };
+  return { model: o.model, input, parameters: { resolution: wanResolution(o.model), duration: o.seconds, watermark: false, prompt_extend: false, ...(wanSilentFlash(o.model) ? { audio: false, shot_type: "single" } : {}) } };
 }
 export const WAN_RESOLUTION = "720P";
 

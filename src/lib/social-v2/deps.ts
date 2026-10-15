@@ -19,10 +19,25 @@ import { publishPost, alreadyPublished, type Connection, type PostRow, type Publ
 import { platformSpec } from "./platforms";
 import { estimateMicro } from "../ai/estimate";
 import { aiPostMaxMicro } from "../ai/media-providers";
+import type { CreativeSubject } from "../creative-subject";
 
 export type MediaBy = "library" | "local" | "image_v2" | "ads_v2" | "video_v2" | "ai_post";
 export type MediaResult = { assetId: string | null; costMicro: number; by: MediaBy; note?: string };
-export type PostBrief = { id: string; network: string; format: string; title: string; caption: string; pillar: string | null; objective: string | null; headline: string; scheduled_at: number | null };
+export type PostBrief = {
+  id: string;
+  network: string;
+  format: string;
+  title: string;
+  caption: string;
+  pillar: string | null;
+  objective: string | null;
+  headline: string;
+  scheduled_at: number | null;
+  /** Produit ou service choisi par le client (création guidée) ; absent : produit principal. */
+  subject?: CreativeSubject | null;
+  /** Demande libre du client pour ce visuel (création guidée). */
+  request?: string | null;
+};
 export type MediaOpts = { allowPaid: boolean; maxCostEur: number };
 
 export type SocialDeps = {
@@ -79,7 +94,9 @@ function backgroundFor(p: Project, seed: string, roles: string[] = ["lifestyle",
   const pool = all<Asset & { uses: number }>(
     `SELECT a.*, (SELECT COUNT(*) FROM assets b WHERE b.project_id = a.project_id AND b.deleted_at IS NULL AND json_extract(b.meta, '$.poster.backgroundAssetId') = a.id) uses
        FROM assets a WHERE a.project_id = ? AND a.kind = 'image' AND a.deleted_at IS NULL AND a.status != 'rejected'
-        AND a.role IN (${roles.map(() => "?").join(",")})${ownOnly ? " AND a.origin = 'upload'" : ""} ORDER BY a.created_at DESC LIMIT 24`,
+        AND a.role IN (${roles.map(() => "?").join(",")})${ownOnly ? " AND a.origin = 'upload'" : ""}
+        -- Règle du propriétaire : jamais une photo libre de droits (banque du thème) en fond de publication.
+        AND json_extract(a.meta, '$.stock') IS NULL ORDER BY a.created_at DESC LIMIT 24`,
     p.id,
     ...roles,
   ).filter((a) => isAutoUsable(a) && (!productOnly || !isPastedOnStock(a)));
@@ -161,9 +178,8 @@ export function photoTopic(p: Project, post: Pick<PostBrief, "id" | "title" | "c
 }
 
 /**
- * Rendu gratuit : d'abord LA photo libre (Pixabay d'abord) cherchée pour cette publication — en rapport avec le
- * produit ou le service et le sujet, jamais déjà utilisée, choisie pour faire une belle affiche ; sinon une photo
- * déjà validée du projet ; sinon une composition typographique à la marque.
+ * Rendu gratuit : une photo du projet (jamais une photo libre de droits : celles-ci sont réservées au thème), sinon
+ * une composition typographique à la marque.
  */
 export async function localRender(p: Project, post: PostBrief, ctx: JobContext | null = null, o: { background?: Asset | null } = {}): Promise<MediaResult> {
   // Photo imposée (nombre d'images différentes atteint) : reprise telle quelle, autre texte et autre mise en page.
@@ -196,22 +212,21 @@ export async function localRender(p: Project, post: PostBrief, ctx: JobContext |
     const own = backgroundFor(p, post.id, ["lifestyle", "original", "scene", "post-photo"], false, true);
     if (own) return posterForPost(p, post, own, "local");
   }
-  const aspect = aspectOf(post.network, post.format);
-  const { bestAdPhoto } = await import("../engine/service-media");
-  const fresh = await bestAdPhoto({ userId: p.userId, projectId: p.id, jobId: ctx?.job.id ?? null }, p, { key: `post-${post.id}`, topic: photoTopic(p, post), aspect: aspect === "2:3" ? "4:5" : aspect, name: `publication-${post.network}-${post.id.slice(0, 6)}-photo.jpg` }).catch((e) => {
-    if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
-    return null;
-  });
-  return posterForPost(p, post, fresh ?? backgroundFor(p, post.id), "local");
+  // Règle du propriétaire : les images libres de droits (Pixabay…) servent au thème, jamais aux publications. Sans
+  // photo du projet : composition à la marque (typographie, formes, couleurs), sans photo.
+  return posterForPost(p, post, backgroundFor(p, post.id), "local");
 }
 
 const PLATFORM_VIDEO: Record<string, "reels" | "tiktok" | "shorts" | "meta_feed"> = { instagram: "reels", tiktok: "tiktok", youtube: "shorts", facebook: "meta_feed", pinterest: "reels", linkedin: "meta_feed" };
 const PLATFORM_AD: Record<string, "meta_feed" | "meta_story" | "tiktok" | "pinterest" | "linkedin"> = { instagram: "meta_feed", facebook: "meta_feed", tiktok: "tiktok", youtube: "meta_story", pinterest: "pinterest", linkedin: "linkedin" };
 
-/** Estimation d'une publication conçue par l'IA : deux essais au plus (image + contrôle) et l'accroche. */
+/** Essais au plus d'un visuel conçu par l'IA (règle du propriétaire : 3, puis version du studio). */
+export const AI_POST_ATTEMPTS = 3;
+
+/** Estimation d'une publication conçue par l'IA : trois essais au plus (image + contrôle) et l'accroche. */
 export function aiPostEstimate(): number {
   const one = aiPostMaxMicro() ?? estimateMicro("image");
-  return 2 * one + Math.round(estimateMicro("blog") / 10);
+  return AI_POST_ATTEMPTS * one + Math.round(estimateMicro("blog") / 10);
 }
 
 export function realSocialDeps(ctx: JobContext | null, p: Project, aiActive: boolean): SocialDeps {
@@ -242,10 +257,12 @@ export function realSocialDeps(ctx: JobContext | null, p: Project, aiActive: boo
     async aiPost(pp, post, o) {
       if (!o.allowPaid) return localRender(pp, post, ctx);
       const { designPostWithAi, realAiPostDeps } = await import("./ai-post");
-      const { productReferences } = await import("../image-v2/engine");
+      const { resolveSubject } = await import("../creative-subject");
       const a = aspectOf(post.network, post.format);
       const aspect = a === "2:3" ? "4:5" : a;
-      return designPostWithAi(pp, post, { aspect, maxCostEur: o.maxCostEur, reference: productReferences(pp.id)[0] ?? null }, realAiPostDeps({ userId: pp.userId, projectId: pp.id, jobId: ctx?.job.id ?? null }));
+      // Le produit (ou service) choisi par le client ; sinon le produit principal et sa photo de référence.
+      const subject = resolveSubject(pp, post.subject);
+      return designPostWithAi(pp, post, { aspect, maxCostEur: o.maxCostEur, reference: subject?.referenceAssetId ?? null, subject }, realAiPostDeps({ userId: pp.userId, projectId: pp.id, jobId: ctx?.job.id ?? null }));
     },
     local: (pp, post, o) => localRender(pp, post, ctx, o),
     async rewrite(pp, post, instruction, key) {

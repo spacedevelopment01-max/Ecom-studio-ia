@@ -1,0 +1,118 @@
+{
+  "titre": "ARVEN — 2e film 15 s, vertical (Qwen-Image + Wan 2.6 flash, plans réalistes)",
+  "sortie": {
+    "fichier": "ARVEN_VIDEO_WAN26/ARVEN_film2_wan26_15s_1080x1920.mp4",
+    "largeur": 1080,
+    "hauteur": 1920,
+    "ips": 30,
+    "duree": 15
+  },
+  "etalonnage": "eq=contrast=1.06:saturation=0.95:gamma=0.98,colorbalance=rs=0.02:gs=0.0:bs=-0.02:rh=0.03:gh=0.01:bh=-0.02,vignette=PI/5",
+  "plans": [
+    {
+      "id": "plan1-cadran",
+      "fichier": "ARVEN_VIDEO_WAN26/clips/plan1-cadran.mp4",
+      "debut": 0,
+      "duree": 4.8,
+      "pourquoi": "Cadran : avancée lente, lumière ambrée qui balaie la lunette (refait : la version « eau » faisait trop IA)."
+    },
+    {
+      "id": "plan2-cuir",
+      "fichier": "ARVEN_VIDEO_WAN26/clips/plan2-cuir.mp4",
+      "debut": 0,
+      "duree": 4.6,
+      "transition": {
+        "type": "fadeblack",
+        "duree": 0.6
+      },
+      "pourquoi": "Caractère : flanc de la montre, couronne, cuir, lumière ambrée."
+    },
+    {
+      "id": "plan3-pierre",
+      "fichier": "ARVEN_VIDEO_WAN26/clips/plan3-pierre.mp4",
+      "debut": 0,
+      "duree": 4.0,
+      "transition": {
+        "type": "dissolve",
+        "duree": 0.5
+      },
+      "pourquoi": "Signature : montre posée sur la pierre, bracelet complet et bouclé, poussée lente, lumière qui monte (refait : bracelet incomplet dans la version précédente)."
+    }
+  ],
+  "carte_finale": {
+    "couleur": "0x0B0B0C",
+    "transition": {
+      "type": "fade",
+      "duree": 0.6
+    }
+  },
+  "titres": [
+    {
+      "calque": "ARVEN_VIDEO_WAN26/titres/titre-caractere.png",
+      "entree": 5.0,
+      "sortie": 7.4,
+      "glisse": 24
+    },
+    {
+      "calque": "ARVEN_VIDEO_WAN26/titres/titre-precision.png",
+      "entree": 9.3,
+      "sortie": 11.6,
+      "glisse": 24
+    },
+    {
+      "calque": "ARVEN_VIDEO_WAN26/titres/logo.png",
+      "entree": 12.5,
+      "sortie": 15.5,
+      "glisse": 0
+    },
+    {
+      "calque": "ARVEN_VIDEO_WAN26/titres/slogan.png",
+      "entree": 13.0,
+      "sortie": 15.5,
+      "glisse": 30
+    },
+    {
+      "calque": "ARVEN_VIDEO_WAN26/titres/bouton.png",
+      "entree": 13.6,
+      "sortie": 15.5,
+      "glisse": 30
+    }
+  ],
+  "audio": {
+    "musique": {
+      "fichier": "ARVEN_VIDEO_WAN26/musique/musique-15s.wav",
+      "volume": 0.9,
+      "licence": "Composée par le studio (style cinématique) ; instruments GeneralUser GS (libre, usage commercial compris) ; moteur SpessaSynth (Apache-2.0)."
+    },
+    "effets": [
+      {
+        "fichier": "ARVEN_VIDEO_WAN26/son/pulsation.wav",
+        "a": 0.1,
+        "volume": 0.8
+      },
+      {
+        "fichier": "ARVEN_VIDEO_WAN26/son/souffle.wav",
+        "a": [
+          4.3,
+          8.4
+        ],
+        "volume": 0.6
+      },
+      {
+        "fichier": "ARVEN_VIDEO_WAN26/son/tic.wav",
+        "a": [
+          5.2,
+          6.2,
+          7.2
+        ],
+        "volume": 0.4
+      },
+      {
+        "fichier": "ARVEN_VIDEO_WAN26/son/signature.wav",
+        "a": 12.4,
+        "volume": 0.8
+      }
+    ],
+    "loudness": "-14 LUFS, crête -1 dBTP"
+  }
+}

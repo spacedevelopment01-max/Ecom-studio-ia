@@ -1,0 +1,11 @@
+{
+  "model": "qwen-image-3.0-pro",
+  "items": [
+    {
+      "id": "story-luxe",
+      "aspect": "9:16",
+      "reference": ["reports/alibaba-qwen-essai/montre-pixabay.jpg", "reports/alibaba-qwen-essai/logo-qwen.png"],
+      "prompt": "Create an ultra-premium, cinematic luxury vertical story advertisement (9:16) for the watch brand ARVEN, at the level of a high-end Swiss watchmaker campaign. Image 1 is the product: keep the watch EXACTLY as in the photo, seen from the SAME three-quarter angle and viewpoint — same steel case, plain black dial with three silver sub-dials and their numbers, numbered bezel, crown and pushers, brown leather strap with dark stitching. The dial has NO logo and NO brand name: do not add any text or logo on the watch. Image 2 is the brand logo. Mood and lighting: warm golden cinematic light, dramatic rim light and soft glints on the polished steel, deep shadows, rich depth of field. Scene: the watch rests large in the center on folds of dark, supple brown leather; blurred in the background a refined collector's study — a brass globe and a fountain pen on the left, a dark leather-bound book on the right, warm bokeh. Layout from top to bottom: (1) at the top center the dial emblem from image 2 inside a thin glowing gold circle, below it the name ARVEN in ivory serif capitals, then a short thin gold line, then in small widely spaced gold capitals: \"LE TEMPS, BIEN PORTÉ\". (2) the watch, hero, large. (3) in the lower part a large elegant italic serif headline on two lines in ivory: \"Le détail\" then \"fait l'élégance.\" with only the word \"l'élégance\" in warm gold. (4) below, a pill-shaped button with a thin glowing gold outline and a dark translucent fill, ivory text \"Découvrir\" followed by a small chevron ›. (5) at the very bottom, between two thin gold lines, small widely spaced gold capitals: \"ÉLÉGANCE  |  CARACTÈRE  |  ACIER & CUIR\". Spell every word EXACTLY with all accents and the apostrophe. No price, no other text anywhere (no text on the book or objects), no people, no hands, no wrist."
+    }
+  ]
+}

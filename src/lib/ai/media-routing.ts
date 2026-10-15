@@ -151,7 +151,10 @@ export const mediaMode = (kind: MediaKind): MediaMode => (getJsonSetting<Partial
 export function mediaPrimary(kind: MediaKind): { provider: string; model: string } {
   const r = getJsonSetting<Partial<Record<TaskId, { provider: string; model: string }>>>("ai.routes", {})[MEDIA_TASK[kind]];
   if (r?.provider && r.model) return { provider: r.provider, model: r.model };
-  const d = MEDIA_MODELS.find((m) => m.kind === kind && m.defaultFor === "primary");
+  // Défaut du studio : le mieux classé qui est UTILISABLE (ex. Qwen-Image 3.0 Pro une fois confirmé par
+  // l'administration) ; sinon le défaut historique, pour qu'une génération ne reste jamais sans modèle.
+  const ds = MEDIA_MODELS.filter((m) => m.kind === kind && m.defaultFor === "primary").sort((a, b) => (b.defaultRank ?? 0) - (a.defaultRank ?? 0));
+  const d = ds.find((m) => (m.defaultRank ?? 0) > 0 && mediaStatus(m).usable) ?? ds.find((m) => !m.defaultRank) ?? ds[0];
   return { provider: d!.provider, model: d!.model };
 }
 
@@ -184,10 +187,12 @@ export function mediaStatus(m: MediaModel, admin: Record<string, MediaAdmin> = m
   const p = priceFor(m.provider, m.model);
   if (!p || !priceValid(p)) reasons.push(L("tarif non renseigné", "price not set"));
   else if (!priceUnitFits(m, p.unit)) reasons.push(L(`unité de tarif incompatible (${p.unit})`, `incompatible price unit (${p.unit})`));
-  const confirmed = (m.verified.id && m.verified.price) || !!a.confirmedAt;
+  // Vérifié par le fournisseur : confirmé d'office, SAUF un fournisseur payant ajouté récemment (Alibaba), qui attend
+  // toujours l'accord explicite de l'administration.
+  const confirmed = (m.verified.id && m.verified.price && !m.adminConfirm) || !!a.confirmedAt;
   if (!confirmed) reasons.push(L("identifiant ou tarif à confirmer", "ID or price to confirm"));
   // Activés par défaut : seulement les modèles déjà en service (vérifiés) ; les nouveaux attendent l'administration.
-  return { key, usable: reasons.length === 0, confirmed, enabled: a.enabled ?? (m.verified.id && m.verified.price), connected, reasons };
+  return { key, usable: reasons.length === 0, confirmed, enabled: a.enabled ?? (m.verified.id && m.verified.price && !m.adminConfirm), connected, reasons };
 }
 
 /**

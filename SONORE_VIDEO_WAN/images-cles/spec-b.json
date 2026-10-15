@@ -1,0 +1,17 @@
+{
+  "model": "qwen-image-3.0-pro",
+  "items": [
+    {
+      "id": "plan2-matiere",
+      "aspect": "9:16",
+      "reference": "SONORE_VIDEO_WAN/images-cles/plan1-onde.png",
+      "prompt": "Cinematic extreme macro photograph, vertical frame, of EXACTLY the headphones of the reference image (same matte black headband with fine red stitching, same black leather cushions, same round brushed silver aluminium ear cup with its thin red ring, same silver sliders), shown ALONE: extreme close-up on one ear cup and the slider, filling most of the frame, seen from a low side angle. Dark charcoal background. A narrow raking beam of cool white light crosses the radial brushed metal and makes it shimmer, deep shadows elsewhere, tiny dust particles drifting in the beam. Ultra sharp textures, shallow depth of field. World-class audio brand campaign quality, photorealistic. No person, no hands, no text, no logo."
+    },
+    {
+      "id": "plan3-signature",
+      "aspect": "9:16",
+      "reference": "SONORE_VIDEO_WAN/images-cles/plan1-onde.png",
+      "prompt": "Cinematic hero product photograph, vertical frame, final shot of a premium headphones film. EXACTLY the headphones of the reference image (same matte black headband with fine red stitching, same black leather cushions, same brushed silver aluminium ear cups with thin red rings, same silver sliders), shown ALONE, standing upright on a small raw grey concrete pedestal, front three-quarter view, placed slightly below the middle of the frame. Pure graphite-black background with a soft red backlight halo behind the headphones and a gentle reflection on the pedestal. Large clean empty dark space at the top and at the bottom for titles. World-class audio brand campaign quality, photorealistic. No person, no hands, no text, no logo."
+    }
+  ]
+}

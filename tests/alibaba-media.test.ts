@@ -90,15 +90,17 @@ describe("Alibaba Cloud — Qwen-Image et Wan", async () => {
 
   it("catalogue : Qwen-Image (images) et Wan (vidéos) ajoutés SANS retirer OpenAI, Gemini, fal.ai ; verrouillés tant que non confirmés et tarifés", () => {
     const ids = MEDIA_MODELS.filter((m) => m.provider === "alibaba");
-    expect(ids.filter((m) => m.kind === "image").map((m) => m.model)).toEqual(expect.arrayContaining(["qwen-image-max", "qwen-image-plus", "qwen-image-edit-plus"]));
+    expect(ids.filter((m) => m.kind === "image").map((m) => m.model)).toEqual(expect.arrayContaining(["qwen-image-2.0-pro", "qwen-image-2.1-turbo", "qwen-image-2.1-pro"]));
     expect(ids.filter((m) => m.kind === "video").map((m) => m.model)).toEqual(expect.arrayContaining(["wan2.6-i2v", "wan2.6-i2v-flash", "wan2.7-i2v", "wan3.0-video"]));
-    expect(ids.every((m) => !m.verified.price && routing.mediaStatus(m).usable === false)).toBe(true);
+    // Identifiants et tarifs vérifiés par l'API officielle, mais verrouillés tant que l'administration n'a pas confirmé.
+    expect(ids.every((m) => m.verified.id && m.adminConfirm && routing.mediaStatus(m).usable === false)).toBe(true);
+    expect(ids.filter((m) => m.verified.price).length).toBeGreaterThan(5);
     for (const p of ["openai", "google", "fal"]) expect(MEDIA_MODELS.some((m) => m.provider === p)).toBe(true);
     // Aucun modèle de texte Qwen : images et vidéos seulement.
     expect(ids.every((m) => m.kind === "image" || m.kind === "video")).toBe(true);
     // Un tarif saisi sans confirmation ne suffit pas.
-    setJsonSetting("ai.prices", { "alibaba:qwen-image-max": { unit: "image", perImage: 0.075 } });
-    expect(routing.mediaStatus(mediaModel("alibaba", "qwen-image-max")!).reasons.join(" ")).toMatch(/confirmer|confirm/);
+    setJsonSetting("ai.prices", { "alibaba:qwen-image-2.0-pro": { unit: "image", perImage: 0.075 } });
+    expect(routing.mediaStatus(mediaModel("alibaba", "qwen-image-2.0-pro")!).reasons.join(" ")).toMatch(/confirmer|confirm/);
   });
 
   it("adresses : région (Singapour par défaut, Virginie, Pékin), adresse personnalisée seulement sur un domaine Alibaba Cloud", () => {
@@ -114,25 +116,25 @@ describe("Alibaba Cloud — Qwen-Image et Wan", async () => {
 
   it("image Qwen : principal choisi par l'administration → requête sans filigrane, à la bonne taille, sans personne ; coût réservé puis facturé", async () => {
     const c = await client();
-    confirmModel("alibaba:qwen-image-max", { unit: "image", perImage: 0.075 });
+    confirmModel("alibaba:qwen-image-2.0-pro", { unit: "image", perImage: 0.075 });
     setSetting("provider.alibaba.workspace", "ws-test");
-    setJsonSetting("ai.routes", { image_generation: { provider: "alibaba", model: "qwen-image-max" } });
+    setJsonSetting("ai.routes", { image_generation: { provider: "alibaba", model: "qwen-image-2.0-pro" } });
     const img = await fr(() => mp.ambianceImage(ctx(c), { prompt: "atelier de céramique lumineux", aspect: "16:9" }));
     expect(img.length).toBeGreaterThan(10);
     const call = net.calls.find((x) => x.url.includes("multimodal-generation"))!;
     expect(call.url).toBe("https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation");
     expect(call.headers).toMatchObject({ Authorization: "Bearer sk-alibaba-test-1234567890", "X-DashScope-WorkSpace": "ws-test" });
-    expect(call.body).toMatchObject({ model: "qwen-image-max", parameters: { n: 1, size: "1664*928", watermark: false, prompt_extend: false } });
+    expect(call.body).toMatchObject({ model: "qwen-image-2.0-pro", parameters: { n: 1, size: "1664*928", watermark: false, prompt_extend: false } });
     expect(call.body.parameters.negative_prompt).toMatch(/people.*face/);
     expect(JSON.stringify(call.body.input)).toMatch(/No people/);
-    expect(reservations(c.userId)).toEqual([{ status: "settled", provider: "alibaba", model: "qwen-image-max" }]);
-    expect(billed(c.userId)).toEqual([{ provider: "alibaba", requested_model: "qwen-image-max", quantity: 1 }]);
+    expect(reservations(c.userId)).toEqual([{ status: "settled", provider: "alibaba", model: "qwen-image-2.0-pro" }]);
+    expect(billed(c.userId)).toEqual([{ provider: "alibaba", requested_model: "qwen-image-2.0-pro", quantity: 1 }]);
   });
 
   it("sans tarif ou sans confirmation : rien n'est envoyé chez Alibaba (jamais de coût non borné)", async () => {
     const c = await client();
-    setJsonSetting("ai.routes", { image_generation: { provider: "alibaba", model: "qwen-image-max" } });
-    setJsonSetting("ai.media.usage", { scene: { primary: "alibaba:qwen-image-max" } });
+    setJsonSetting("ai.routes", { image_generation: { provider: "alibaba", model: "qwen-image-2.0-pro" } });
+    setJsonSetting("ai.media.usage", { scene: { primary: "alibaba:qwen-image-2.0-pro" } });
     await expect(fr(() => mp.ambianceImage(ctx(c), { prompt: "atelier", aspect: "1:1" }))).rejects.toThrow();
     expect(net.calls.some((x) => x.url.includes("aliyuncs.com"))).toBe(false);
     expect(reservations(c.userId)).toEqual([]);
@@ -140,8 +142,8 @@ describe("Alibaba Cloud — Qwen-Image et Wan", async () => {
 
   it("refus d'Alibaba (clé, région, contrôle de contenu) : réservation rendue, secours compatible appelé, message sans la clé", async () => {
     const c = await client();
-    confirmModel("alibaba:qwen-image-max", { unit: "image", perImage: 0.075 });
-    setJsonSetting("ai.routes", { image_generation: { provider: "alibaba", model: "qwen-image-max" } });
+    confirmModel("alibaba:qwen-image-2.0-pro", { unit: "image", perImage: 0.075 });
+    setJsonSetting("ai.routes", { image_generation: { provider: "alibaba", model: "qwen-image-2.0-pro" } });
     setJsonSetting("ai.media.backup", { image: "google:gemini-2.5-flash-image" });
     net.image = "401";
     await fr(() => mp.ambianceImage(ctx(c), { prompt: "atelier", aspect: "1:1" }));
@@ -231,7 +233,7 @@ describe("Alibaba Cloud — Qwen-Image et Wan", async () => {
     expect(net.calls.map((x) => x.url)).toEqual(["https://dashscope-intl.aliyuncs.com/api/v1/models?page_no=1&page_size=1"]);
     r = fr(() => alibabaReadiness());
     expect(r.status).toMatch(/confirm/);
-    confirmModel("alibaba:qwen-image-plus", { unit: "image", perImage: 0.03 });
+    confirmModel("alibaba:qwen-image-2.1-turbo", { unit: "image", perImage: 0.016 });
     r = fr(() => alibabaReadiness());
     expect(r.ready).toBe(true);
     expect(r.status).toBe("Fournisseur prêt");
@@ -240,11 +242,16 @@ describe("Alibaba Cloud — Qwen-Image et Wan", async () => {
   });
 
   it("usages : « Images réseaux sociaux » suit « Publicités visuelles » tant qu'il n'a pas son propre réglage ; « Texte vers vidéo » exclut l'image vers vidéo", () => {
-    setJsonSetting("ai.media.usage", { ad_visual: { primary: "alibaba:qwen-image-max" } });
-    expect(routing.usagePrimary("social_image")).toMatchObject({ provider: "alibaba", model: "qwen-image-max", inherited: true });
-    setJsonSetting("ai.media.usage", { ad_visual: { primary: "alibaba:qwen-image-max" }, social_image: { primary: "openai:gpt-image-1" } });
+    setJsonSetting("ai.media.usage", { ad_visual: { primary: "alibaba:qwen-image-2.0-pro" } });
+    expect(routing.usagePrimary("social_image")).toMatchObject({ provider: "alibaba", model: "qwen-image-2.0-pro", inherited: true });
+    setJsonSetting("ai.media.usage", { ad_visual: { primary: "alibaba:qwen-image-2.0-pro" }, social_image: { primary: "openai:gpt-image-1" } });
     expect(routing.usagePrimary("social_image")).toMatchObject({ provider: "openai", inherited: false });
     expect(routing.incompatibility(mediaModel("alibaba", "wan2.6-i2v")!, routing.usageNeed("text_video"))).toBeTruthy();
     expect(routing.incompatibility(mediaModel("alibaba", "wan2.6-t2v")!, routing.usageNeed("text_video"))).toBeNull();
+  });
+
+  it("verrou de l'administration : un modèle Alibaba vérifié n'entre PAS dans le repli historique du routeur", async () => {
+    const { modelInfo } = await import("@/lib/orchestrator/capabilities");
+    for (const m of MEDIA_MODELS.filter((x) => x.provider === "alibaba")) expect(modelInfo("alibaba", m.model)).toBeNull();
   });
 });

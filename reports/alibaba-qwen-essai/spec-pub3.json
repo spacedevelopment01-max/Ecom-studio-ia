@@ -1,0 +1,11 @@
+{
+  "model": "qwen-image-3.0-pro",
+  "items": [
+    {
+      "id": "pub3-qwen",
+      "aspect": "9:16",
+      "reference": ["reports/alibaba-qwen-essai/montre-pixabay.jpg", "reports/alibaba-qwen-essai/logo-qwen.png"],
+      "prompt": "Create a premium vertical story advertisement (9:16) for Instagram and TikTok for the watch brand ARVEN, in a bold, graphic, architectural style — different from a dark studio shot or a flat lay. Image 1 is the product: keep the watch EXACTLY as it is (same steel case, black dial with three silver sub-dials, numbered bezel, crown and pushers, brown leather strap with dark stitching); do not redesign it, do not add any text or logo on the watch. Image 2 is the brand logo: reproduce only its dial emblem (circle with the letter A and the cognac hand) and the name ARVEN faithfully and small at the bottom center, without changing the letters. Scene: the watch standing upright on a solid cognac block (#A0612B) against a smooth deep near-black wall (#111214), a single strong diagonal beam of warm late-afternoon light crossing the wall and the watch, crisp geometric shadows, the steel catching the light, minimal and sculptural, lots of negative space at the top. Typography: at the top, large ivory (#F3EFE7) serif text on two lines: \"L'heure\" then \"juste.\"; under it, smaller, in spaced ivory sans-serif capitals: \"CHRONOGRAPHE ARVEN\". Spell every word EXACTLY, keep the apostrophe. No price, no other text, no button, no people, no hands, no wrist."
+    }
+  ]
+}

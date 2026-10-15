@@ -1,0 +1,21 @@
+{
+  "request_id": "a73ccfb6-a4bc-94f3-87b6-498e8c17b576",
+  "output": {
+    "task_id": "c26cf675-75d9-40b7-826d-6fa7b288597d",
+    "task_status": "SUCCEEDED",
+    "submit_time": "2026-10-15 23:36:07.744",
+    "scheduled_time": "2026-10-15 23:36:07.764",
+    "end_time": "2026-10-15 23:37:48.066",
+    "orig_prompt": "Luxury watch commercial, cinematic macro shot. In near darkness, a thin blade of warm golden light slowly sweeps across the watch dial from left to right, revealing the hands, indices and polished bezel; the reflections on the steel shift naturally as the light moves; the camera dollies slowly forward toward the dial with a subtle parallax. The second hand and the chronograph hands do not change the design of the watch. Keep the watch exactly identical: same dial, same sub-dials, same numbers, same case. Smooth, slow, elegant motion, shallow depth of field. No text, no logo, no people, no hands. No people in frame.",
+    "video_url": "https://dashscope-463f.oss-accelerate.aliyuncs.com/1d/77/20261015/e6a9c850/96ed393650cc48eb87c9ee1ee7485585-metadata_6nTdlaoY_b3fc8f43de70.mp4?Expires=1792165066&OSSAccessKeyId=LTAI5t7xkDxYoFdeAc4nqUeU&Signature=RGHy%2F93NLldcTbk3ObA%2B9bKHDoQ%3D"
+  },
+  "usage": {
+    "duration": 5,
+    "input_video_duration": 0,
+    "output_video_duration": 5,
+    "fps": 30,
+    "video_count": 1,
+    "SR": 1080,
+    "ratio": "29:52"
+  }
+}

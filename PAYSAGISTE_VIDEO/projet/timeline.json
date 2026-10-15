@@ -1,0 +1,120 @@
+{
+  "titre": "Racines & Pierres — film 15 s vertical, version « tape-à-l'œil » (chantiers Pixabay + montage animé du studio)",
+  "sortie": {
+    "fichier": "PAYSAGISTE_VIDEO/RACINES-PIERRES_film_15s_1080x1920.mp4",
+    "largeur": 1080,
+    "hauteur": 1920,
+    "ips": 30,
+    "duree": 15
+  },
+  "etalonnage": "eq=contrast=1.12:saturation=1.32:gamma=0.97,colorbalance=rs=0.03:gs=0.02:bs=-0.04:rh=0.04:gh=0.02:bh=-0.03,vignette=PI/6",
+  "plans": [
+    {
+      "id": "creer-beche",
+      "fichier": "PAYSAGISTE_VIDEO/pixabay/6580.mp4",
+      "debut": 2.0,
+      "duree": 4.8,
+      "recadrage": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "pourquoi": "Création : la bêche entre dans la pelouse (pied seul, aucun visage). Pixabay 6580.",
+      "poussee": 0.1
+    },
+    {
+      "id": "amenager-paves",
+      "fichier": "PAYSAGISTE_VIDEO/pixabay/67463.mp4",
+      "debut": 2.0,
+      "duree": 5.0,
+      "recadrage": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "transition": {
+        "type": "zoomin",
+        "duree": 0.4
+      },
+      "pourquoi": "Aménagement : pose de pavés, mains seules. Pixabay 67463.",
+      "poussee": 0.1
+    },
+    {
+      "id": "entretenir-debroussailleuse",
+      "fichier": "PAYSAGISTE_VIDEO/pixabay/11167.mp4",
+      "debut": 0.5,
+      "duree": 4.6,
+      "recadrage": {
+        "x": 0.42,
+        "y": 0.5
+      },
+      "transition": {
+        "type": "circleopen",
+        "duree": 0.45
+      },
+      "pourquoi": "Entretien : débroussailleuse, bottes seules. Pixabay 11167.",
+      "poussee": 0.1
+    }
+  ],
+  "carte_finale": {
+    "couleur": "0x3F6B4A",
+    "transition": {
+      "type": "circleopen",
+      "duree": 0.6
+    }
+  },
+  "titres": [
+    {
+      "sequence": "PAYSAGISTE_VIDEO/titres/anim/cree",
+      "entree": 0.3
+    },
+    {
+      "sequence": "PAYSAGISTE_VIDEO/titres/anim/amenage",
+      "entree": 4.8
+    },
+    {
+      "sequence": "PAYSAGISTE_VIDEO/titres/anim/entretient",
+      "entree": 9.0
+    },
+    {
+      "sequence": "PAYSAGISTE_VIDEO/titres/anim/fin",
+      "entree": 13.0
+    }
+  ],
+  "audio": {
+    "musique": {
+      "fichier": "PAYSAGISTE_VIDEO/musique/musique-15s-pop.wav",
+      "volume": 0.9,
+      "licence": "Composée par le studio (style pop énergique) ; instruments GeneralUser GS (libre, usage commercial compris) ; moteur SpessaSynth (Apache-2.0)."
+    },
+    "effets": [
+      {
+        "fichier": "PAYSAGISTE_VIDEO/son/souffle.wav",
+        "a": [
+          0.3,
+          4.8,
+          9.0
+        ],
+        "volume": 0.6
+      },
+      {
+        "fichier": "PAYSAGISTE_VIDEO/son/tic.wav",
+        "a": [
+          1.0,
+          5.5,
+          9.7
+        ],
+        "volume": 0.6
+      },
+      {
+        "fichier": "PAYSAGISTE_VIDEO/son/tintement.wav",
+        "a": 13.0,
+        "volume": 0.6
+      },
+      {
+        "fichier": "PAYSAGISTE_VIDEO/son/pulsation.wav",
+        "a": 14.0,
+        "volume": 0.6
+      }
+    ],
+    "loudness": "-14 LUFS, crête -1 dBTP"
+  }
+}

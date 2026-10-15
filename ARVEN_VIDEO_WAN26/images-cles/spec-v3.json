@@ -1,0 +1,11 @@
+{
+  "model": "qwen-image-3.0-pro",
+  "items": [
+    {
+      "id": "plan3-pierre2",
+      "aspect": "9:16",
+      "reference": "ARVEN_PUBLICITE_VIDEO/references/montre-pixabay.jpg",
+      "prompt": "Photorealistic luxury watch hero photograph shot on a real camera, vertical frame, final shot of a film. The watch is EXACTLY the one in the reference photo (same steel case, plain black dial with three silver sub-dials and their numbers, numbered bezel, crown and pushers, brown leather strap with dark stitching). The watch lies flat on top of a simple block of dark matte stone, seen from the SAME three-quarter angle as the reference: the dial is upright (12 o'clock at the top), the crown and the two pushers are on the RIGHT side of the case at 3 o'clock exactly as in the reference, the three sub-dials at 9, 6 and 3 o'clock exactly as in the reference, with its COMPLETE leather strap fully visible and buckled closed into a natural round loop behind the case: both strap halves, the buckle and the strap end all fully visible and connected, nothing cut off, nothing missing, entirely inside the frame. Placed slightly below the middle of the frame. Warm amber side light, natural soft shadows, dark warm brown-black background, large clean empty space at the top and the bottom for titles. Understated, natural, like a real high-end watch catalogue. No effects, no particles, no glow, no text, no logo on the dial, no people, no hands."
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "model": "qwen-image-3.0-pro",
+  "items": [
+    {
+      "id": "format-1x1-bureau",
+      "aspect": "1:1",
+      "reference": ["reports/alibaba-qwen-essai/montre-pixabay.jpg", "reports/alibaba-qwen-essai/logo-qwen.png"],
+      "prompt": "Create a premium square social media advertisement (1:1) for the watch brand ARVEN. Image 1 is the product: keep the watch EXACTLY as in the photo, seen from the SAME three-quarter angle and viewpoint (same steel case, black dial with three silver sub-dials and their numbers, numbered bezel, crown and pushers, brown leather strap with dark stitching); do not redraw it from another angle, do not add any text or logo on it. Image 2 is the brand logo: reproduce its dial emblem and the name ARVEN faithfully and small in the top left corner, in ivory, without changing the letters. Scene: a writer's desk at dusk — the watch lying on a dark walnut wood desk next to a closed brown leather notebook and a black fountain pen, warm pool of light from a brass desk lamp out of frame, deep shadows, cosy and refined. Typography in ivory (#F3EFE7): at the bottom left a serif headline \"Le goût du détail.\"; under it a small cognac (#A0612B) rectangular button with the ivory text \"Voir le chronographe\". Spell every word EXACTLY with the accents. No price, no other text, no people, no hands, no wrist."
+    },
+    {
+      "id": "format-4x5-affiche",
+      "aspect": "4:5",
+      "reference": ["reports/alibaba-qwen-essai/montre-pixabay.jpg", "reports/alibaba-qwen-essai/logo-qwen.png"],
+      "prompt": "Create a premium portrait advertisement (4:5) for the watch brand ARVEN in a bold Swiss graphic-poster style. Image 1 is the product: keep the watch EXACTLY as in the photo, seen from the SAME three-quarter angle and viewpoint (same steel case, black dial with three silver sub-dials and their numbers, numbered bezel, crown and pushers, brown leather strap with dark stitching); do not redraw it from another angle, do not add any text or logo on it. Image 2 is the brand logo: reproduce its dial emblem and the name ARVEN faithfully, small, centered at the bottom, in near-black, without changing the letters. Scene: a flat studio background split vertically in two solid color fields — ivory (#F3EFE7) on the left, cognac (#A0612B) on the right — the watch placed exactly across the dividing line with a soft realistic drop shadow, clean product lighting. Typography: at the top, three short words stacked on three lines in a large bold near-black (#111214) condensed sans-serif: \"Acier.\" then \"Cuir.\" then \"Caractère.\". Spell every word EXACTLY with the accent on è. No button, no price, no other text, no people, no hands, no wrist."
+    },
+    {
+      "id": "format-9x16-velours",
+      "aspect": "9:16",
+      "reference": ["reports/alibaba-qwen-essai/montre-pixabay.jpg", "reports/alibaba-qwen-essai/logo-qwen.png"],
+      "prompt": "Create a premium vertical story advertisement (9:16) for the watch brand ARVEN. Image 1 is the product: keep the watch EXACTLY as in the photo, seen from the SAME three-quarter angle and viewpoint (same steel case, black dial with three silver sub-dials and their numbers, numbered bezel, crown and pushers, brown leather strap with dark stitching); do not redraw it from another angle, do not add any text or logo on it. Image 2 is the brand logo: reproduce its dial emblem and the name ARVEN faithfully at the top center, in ivory, without changing the letters. Scene: top-down view of deep cognac-brown velvet fabric (#A0612B, darker in the folds) with soft sculptural folds, the watch resting in the middle of the frame on the folds, a gentle glow on the steel, rich and intimate, dark vignette toward the edges (#111214). Typography in ivory (#F3EFE7): in the lower third, an elegant italic serif headline on two lines: \"Le temps\" then \"vous va bien.\"; below it a thin ivory outlined pill button with the text \"Découvrir\". Spell every word EXACTLY with the accents. No price, no other text, no people, no hands, no wrist."
+    },
+    {
+      "id": "format-16x9-banniere",
+      "aspect": "16:9",
+      "reference": ["reports/alibaba-qwen-essai/montre-pixabay.jpg", "reports/alibaba-qwen-essai/logo-qwen.png"],
+      "prompt": "Create a premium wide web banner advertisement (16:9) for the watch brand ARVEN. Image 1 is the product: keep the watch EXACTLY as in the photo, seen from the SAME three-quarter angle and viewpoint (same steel case, black dial with three silver sub-dials and their numbers, numbered bezel, crown and pushers, brown leather strap with dark stitching); do not redraw it from another angle, do not add any text or logo on it. Image 2 is the brand logo: reproduce it faithfully (dial emblem, the name ARVEN and the line HORLOGERIE) on the left side, in near-black, without changing the letters. Scene: bright, airy morning — the watch on the right third, resting on crumpled natural ivory linen fabric (#F3EFE7) with soft folds, warm sunlight through a window casting delicate leaf shadows, a small ceramic dish nearby, lots of calm empty space on the left. Typography on the left under the logo, in near-black (#111214): a serif headline \"Un chronographe pour chaque jour.\"; under it a cognac (#A0612B) rounded button with the ivory text \"Découvrir\". Spell every word EXACTLY with the accents. No price, no other text, no people, no hands, no wrist."
+    }
+  ]
+}

@@ -66,6 +66,7 @@ export function mediaRoutingOverview() {
           enabled: st.enabled,
           reasons: st.reasons,
           verified: m.verified,
+          adminConfirm: !!m.adminConfirm,
           adapter: !!m.adapter,
           source: m.source,
           use: L(m.use.fr, m.use.en),

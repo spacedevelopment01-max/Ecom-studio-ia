@@ -6,6 +6,7 @@ import { Check, Download, ExternalLink, PenLine, Send, Store, X, Package } from 
 import { AdEditor } from "./ad-editor/ad-editor";
 import { AnimatePost } from "./animate-post";
 import { StyleGallery } from "./style-gallery";
+import { AiImageActions } from "./ai-image-actions";
 import { api, Badge, Button, cx, formatBytes, formatDate, Modal, Select, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { AssetThumb, ROLE_LABEL, StatusBadge, type AssetView } from "./common";
@@ -122,6 +123,12 @@ export function AssetViewer({ asset, onClose, onChanged }: { asset: AssetView | 
                 <Button size="sm" variant="secondary" icon={<Store className="size-3.5" />} onClick={useInShop} disabled={!target}>{t("Placer", "Place")}</Button>
               </div>
               <Button size="sm" variant="ghost" className="mt-2" icon={<Send className="size-3.5" />} onClick={toPost}>{t("Créer une publication avec ce média", "Create a post with this media")}</Button>
+            </div>
+          )}
+          {a.kind === "image" && a.meta?.aiPost && !a.meta.aiPost.issues && (
+            <div className="rounded-2xl border border-line p-3" data-ai-image-edit>
+              <p className="mb-2 text-xs font-medium">{t("Visuel fait par l'IA : modifier ou décliner", "AI-made visual: edit or adapt")}</p>
+              <AiImageActions projectId={projectId} assetId={a.id} aspect={a.meta.aspect ?? null} onChanged={() => onChanged?.()} />
             </div>
           )}
           {a.meta?.poster?.docKey && (
