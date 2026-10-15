@@ -7,6 +7,9 @@ import { requireCreationPlan } from "@/lib/plan-gates";
 import { FORMATS, SCENE_STYLES } from "@/lib/media/compose";
 import { L } from "@/lib/i18n-server";
 import { HttpError } from "@/lib/auth";
+import { aiActiveFor } from "@/lib/ai/access";
+import { estimateMicro } from "@/lib/ai/estimate";
+import { aiPostQuoteMicro } from "@/lib/engine/ai-post-image";
 
 const Req = z.object({
   mode: z.enum(["set", "single"]),
@@ -25,6 +28,17 @@ const Req = z.object({
   usePhoto: z.boolean().optional(),
   background: z.enum(["photo", "image", "none"]).optional(),
   photoId: z.string().max(64).optional(),
+  /** Comment faire le visuel : gratuit (mise en page du studio), image par l'IA + studio, ou tout par l'IA. */
+  visual: z.enum(["free", "ai_image", "ai_post"]).optional(),
+});
+
+/** Image par l'IA : jusqu'à deux images et leurs contrôles (une reprise si la première est refusée). */
+const aiImageQuoteMicro = () => 2 * estimateMicro("image");
+
+/** Devis affiché avant toute création payante (« Faire un visuel ») et état de l'IA du projet. */
+export const GET = handle(async (_req: Request, ctx: Ctx) => {
+  const { project: p } = await projectFromCtx(ctx);
+  return ok({ ai: aiActiveFor(p.userId, p.id), quote: { ai_image: aiImageQuoteMicro() / 1e6, ai_post: aiPostQuoteMicro() / 1e6 } });
 });
 
 /** Libellé lisible de la tâche (jamais la clé interne). */
@@ -60,20 +74,34 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const kind = b.kind ?? "scene";
   // Double clic (même demande dans les 4 secondes) : la même tâche est rendue. Une demande répétée ensuite donne
   // volontairement un NOUVEAU visuel (autre formulation, autre mise en page).
+  const visual = b.mode === "single" ? b.visual : undefined;
+  if (visual && visual !== "free" && !aiActiveFor(p.userId, p.id)) throw new HttpError(402, L("L'IA n'est pas active pour ce projet (forfait Découverte, budget IA épuisé ou fournisseur désactivé) : choisissez « Image gratuite, mise en page du studio ».", "AI isn't active for this project (Discovery plan, AI budget used up or provider disabled): choose \"Free image, studio layout\"."));
+  // Gratuit : jamais d'IA, même en secours (photo libre, une de vos images ou visuel typographique).
+  if (visual === "free") b.useAi = false;
   const dedup = `images:${p.id}:${crypto.createHash("sha256").update(JSON.stringify(b)).digest("hex").slice(0, 24)}:${Math.floor(Date.now() / 4_000)}`;
   // Visuels avec texte : Advertising Engine V2 (onglet Publicités, éditeur à calques) et Social V2 (Publications).
   if (b.mode === "single" && p.business !== "services" && (kind === "social" || kind === "ad")) throw new HttpError(410, L("Les visuels avec texte se créent dans Publicités (modifiables dans l'éditeur visuel) ou Publications.", "Visuals with text are created in Ads (editable in the visual editor) or Posts."));
+  // Tout par l'IA, de A à Z : la publication entière (scène, mise en page, textes) par le moteur des Publications.
+  if (visual === "ai_post") {
+    const job = enqueue({ userId: user.id, projectId: p.id, idempotencyKey: dedup, type: "image.ai_post", label: L("Visuel entièrement conçu par l'IA", "Visual fully designed by AI"), payload: { projectId: p.id, request: { kind, format: b.format, headline: b.headline, subline: b.subline, cta: b.cta, serviceIndex: b.serviceIndex, photoId: b.photoId } } });
+    return ok({ jobId: job.id, engine: "ai-post" });
+  }
+  if (visual === "ai_image") {
+    if (p.business === "services") b.useAi = true;
+    else if (kind === "packshot") throw new HttpError(400, L("Le packshot est rendu par le studio à partir de votre photo : choisissez « Image gratuite » ou un autre type.", "The packshot is rendered by the studio from your photo: choose \"Free image\" or another type."));
+    else b.useAi = true;
+  }
   // Image générée par IA : toujours Image Engine V2 (brief, fidélité au produit, contrôle, bibliothèque).
   if (b.mode === "single" && (kind === "ambiance" || (b.useAi && (kind === "scene" || kind === "banner")))) {
     const f = b.format ? FORMATS[b.format as keyof typeof FORMATS] : null;
     const aspect = !f ? "4:5" : f.w > f.h * 1.5 ? "16:9" : f.h > f.w * 1.5 ? "9:16" : f.h > f.w * 1.1 ? "4:5" : "1:1";
     const v2kind = p.business === "services" ? (kind === "banner" ? "banner" : "trade_photo") : kind === "banner" ? "banner" : "lifestyle";
-    const job = enqueue({ userId: user.id, projectId: p.id, idempotencyKey: dedup, type: "image.v2", label: L("Images : direction artistique et sélection", "Images: art direction and selection"), payload: { projectId: p.id, request: { kind: v2kind, aspect, count: 1, topic: b.subline ?? null, allowGenerate: true } } });
+    const job = enqueue({ userId: user.id, projectId: p.id, idempotencyKey: dedup, type: "image.v2", label: L("Images : direction artistique et sélection", "Images: art direction and selection"), payload: { projectId: p.id, request: { kind: v2kind, aspect, count: 1, topic: b.subline ?? null, allowGenerate: true, ...(visual === "ai_image" ? { noStock: true, maxCostEur: aiImageQuoteMicro() / 1e6 } : {}) } } });
     return ok({ jobId: job.id, engine: "image-v2" });
   }
   const job =
     b.mode === "set"
       ? enqueue({ userId: user.id, projectId: p.id, idempotencyKey: dedup, type: "images.generate", label: L("Jeu d'images complet", "Full image set"), payload: { projectId: p.id } })
-      : enqueue({ userId: user.id, projectId: p.id, idempotencyKey: dedup, type: "image.single", label: imageLabel(b.kind ?? "scene"), payload: { projectId: p.id, request: { kind: b.kind ?? "scene", style: b.style, format: b.format, layout: b.layout, headline: b.headline, subline: b.subline, cta: b.cta, useAi: b.useAi, sourceCutoutId: b.sourceCutoutId, serviceIndex: b.serviceIndex, items: b.items, usePhoto: b.usePhoto, background: b.background, photoId: b.photoId } } });
+      : enqueue({ userId: user.id, projectId: p.id, idempotencyKey: dedup, type: "image.single", label: imageLabel(b.kind ?? "scene"), payload: { projectId: p.id, request: { kind: b.kind ?? "scene", style: b.style, format: b.format, layout: b.layout, headline: b.headline, subline: b.subline, cta: b.cta, useAi: b.useAi, sourceCutoutId: b.sourceCutoutId, serviceIndex: b.serviceIndex, items: b.items, usePhoto: b.usePhoto, background: b.background, photoId: b.photoId, aiImage: visual === "ai_image" || undefined } } });
   return ok({ jobId: job.id });
 });

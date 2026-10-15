@@ -1,80 +1,211 @@
 "use client";
-import { useEffect, useState } from "react";
-import { Download, Package, Play } from "lucide-react";
-import { Badge, Button, Card, cx, Empty, useApi } from "../ui";
+/**
+ * Onglet Vidéos : la BANQUE DE VIDÉOS du projet. Seulement des plans neutres, sans texte (vos vidéos importées, plans
+ * libres de droits, plans filmés par l'IA), utilisés ensuite dans les publications vidéo et les publicités. Les vidéos
+ * montées avec titres sont dans Publications › Publication vidéo.
+ */
+import { useEffect, useRef, useState } from "react";
+import { Clapperboard, Download, Search, Upload, Wand2 } from "lucide-react";
+import { api, Button, Card, cx, Empty, Field, Input, Modal, Select, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
-import { EngineNotice, JobProgress, StatusBadge, useActive, type AssetView } from "./common";
+import { JobProgress, StatusBadge, useActive, type AssetView } from "./common";
 import { AssetViewer } from "./asset-viewer";
-import { VideoV2Panel } from "./video-v2-panel";
-import { useT } from "../i18n";
-import { useCreationLocked } from "../billing-client";
+import { useLang, useT } from "../i18n";
+import { formatEur, PlanRequired, useCreationLocked } from "../billing-client";
+import { BANK_IMAGE_ROLES, BANK_VIDEO_ROLES } from "@/lib/media/bank";
 
-const SCENE_LABEL: Record<string, string> = { title: "Accroche", reveal: "Révélation", callouts: "Points clés", detail: "Détail", scene: "Scène", clip: "Plan généré", end: "Fin + appel", hook: "Produit en action", spotlight: "Projecteur", split: "Écran partagé", words: "Phrases chocs", list: "Prestations", info: "Infos pratiques" };
-const SCENE_LABEL_EN: Record<string, string> = { title: "Hook", reveal: "Reveal", callouts: "Key points", detail: "Detail", scene: "Scene", clip: "Generated shot", end: "End + call to action", hook: "Product in action", spotlight: "Spotlight", split: "Split screen", words: "Punchlines", list: "Services", info: "Practical info" };
+type Source = "mine" | "stock" | "ai";
+const sourceOf = (a: AssetView): Source => (a.origin === "generated" ? "ai" : a.origin === "import" || a.meta?.stock ? "stock" : "mine");
+const SOURCES: [Source | "", string, string][] = [
+  ["", "Tous les plans", "All clips"],
+  ["mine", "Vos vidéos", "Your videos"],
+  ["stock", "Plans libres", "Royalty-free"],
+  ["ai", "Filmés par l'IA", "Filmed by AI"],
+];
+const BADGE: Record<Source, [string, string]> = { mine: ["Vous", "Yours"], stock: ["Libre", "Free"], ai: ["IA", "AI"] };
 
 export default function TabVideos() {
   const { id, data } = useProject();
   const t = useT();
-  const active = useActive(["video.render", "video.ugc", "canva."]);
+  const toast = useToast();
   const locked = useCreationLocked();
-  const { data: list, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=video,clip,subtitles`);
+  const active = useActive(["video.bank"]);
+  const { data: list, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=${BANK_VIDEO_ROLES.join(",")}`);
+  const [source, setSource] = useState<Source | "">("");
   const [viewer, setViewer] = useState<AssetView | null>(null);
+  const [dialog, setDialog] = useState<"search" | "ai" | null>(null);
   useEffect(() => {
     if (!active.length) reload();
   }, [active.length, reload]);
-  const videoStep = data?.pipeline?.steps.find((s) => s.id === "video")?.status;
-  const videos = (list?.assets ?? []).filter((a) => a.kind === "video");
-  const subs = (list?.assets ?? []).filter((a) => a.role === "subtitles");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const upload = async (files: FileList | null) => {
+    if (!files?.length) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      for (const f of Array.from(files).slice(0, 10)) fd.append("files", f);
+      fd.append("role", "original");
+      const r = await fetch(`/api/projects/${id}/files`, { method: "POST", body: fd });
+      if (!r.ok) throw new Error((await r.json().catch(() => ({})))?.error ?? t("Import impossible.", "Upload failed."));
+      toast("ok", t("Vidéos ajoutées à votre banque.", "Videos added to your bank."));
+      await reload();
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+  const clips = (list?.assets ?? []).filter((a) => a.kind === "video" && a.status !== "rejected");
+  const shown = clips.filter((a) => !source || sourceOf(a) === source);
+  const started = (jobId?: string) => {
+    setDialog(null);
+    if (jobId) toast("ok", t("C'est parti : les plans arrivent dans votre banque.", "Started: the clips will land in your bank."));
+  };
   return (
-    <div className="mx-auto grid max-w-7xl gap-6">
-      <EngineNotice what={t("le découpage des vidéos", "the video storyboards")} />
-      {active.map((j) => <JobProgress key={j.id} job={j} />)}
-      <VideoV2Panel />
-      <h2 className="font-display text-xl font-semibold">{t("Tous les fichiers vidéo", "All video files")}</h2>
-      <div>
-        {videos.length === 0 && <Empty title={t("Aucune vidéo pour l'instant", "No videos yet")} icon={<Play className="size-5" />}>{locked ? t("Les vidéos sont incluses dans les forfaits : le pilote ne les a pas créées pendant la découverte gratuite.", "Videos come with the plans: the autopilot did not create them during the free discovery.") : videoStep === "done" || videoStep === "running" || videoStep === "pending" ? t("La première vidéo est produite automatiquement par le pilote ; vous pouvez en créer d'autres ci-dessus.", "The first video is produced automatically by the autopilot; you can create more above.") : t("Créez votre première vidéo ci-dessus.", "Create your first video above.")}</Empty>}
-        {/* Galerie compacte : plusieurs vidéos par ligne, le détail (plan, script) se déplie à la demande. */}
-        <div className="grid grid-cols-2 content-start gap-4 sm:grid-cols-3 xl:grid-cols-4" data-video-gallery>
-          {videos.map((v) => {
-            const plan = v.meta?.plan;
-            const srt = subs.find((s) => s.sourceAssetId === v.id);
-            const tall = (v.height ?? 0) > (v.width ?? 0);
-            const beats = v.meta?.kind === "ugc" ? (v.meta.script?.beats ?? []) : [];
-            return (
-              <Card key={v.id} className="flex min-w-0 flex-col overflow-hidden">
-                <div className="grid place-items-center bg-ink">
-                  <video src={v.url} poster={v.thumbUrl ?? undefined} controls playsInline preload="none" className={cx("w-full", tall ? "aspect-[9/16]" : v.meta?.format === "1:1" ? "aspect-square" : v.meta?.format === "4:5" ? "aspect-[4/5]" : "aspect-video")} />
-                </div>
-                <div className="flex flex-1 flex-col gap-2 p-3">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    {v.meta?.format && <Badge tone="ink">{v.meta.format}</Badge>}
-                    <StatusBadge status={v.status} />
-                    {v.meta?.kind === "ugc" && <span className="rounded-full bg-signal-soft px-2 py-0.5 text-[10px] font-medium text-signal">{t("IA", "AI")}</span>}
-                  </div>
-                  {v.meta?.qcWarning && <p className={cx("line-clamp-2 rounded-lg px-2 py-1 text-[11px]", v.status === "rejected" ? "bg-bad-soft text-bad" : "bg-warn-soft text-warn")} title={v.meta.qcWarning}>{v.status === "rejected" ? t("Écartée par le contrôle (non décomptée) : ", "Rejected by the check (not counted): ") : t("À vérifier : ", "To check: ")}{v.meta.qcWarning}</p>}
-                  {(plan || beats.length > 0 || v.meta?.method || v.role === "clip") && (
-                    <details className="text-xs text-ink-2">
-                      <summary className="cursor-pointer select-none text-muted hover:text-ink">{t("Détail du montage", "Edit details")}</summary>
-                      <p className="mt-1.5">{v.role === "clip" ? t("Plan vidéo complet généré par l'IA (utilisé en partie dans le montage)", "Full AI-generated video shot (partly used in the edit)") : v.meta?.method}</p>
-                      {beats.length > 0 && <p className="mt-1.5">{v.meta.aiLabel ?? t("Vidéo générée par IA", "AI-generated video")} · {t("mention incrustée", "label burned in")}</p>}
-                      {beats.length > 0 && <ol className="mt-1.5 grid gap-1">{beats.map((b: any, i: number) => <li key={i}><span className="text-muted">{t("Plan", "Shot")} {i + 1} · </span>{t(`« ${b.line} »`, `“${b.line}”`)}</li>)}</ol>}
-                      {plan && <ol className="mt-1.5 grid gap-1">{plan.scenes.map((sc: any, i: number) => <li key={i}><span className="text-muted">{t(SCENE_LABEL[sc.kind], SCENE_LABEL_EN[sc.kind]) ?? sc.kind} · {Number(sc.duration).toFixed(1)} s · </span>{sc.text ?? sc.headline ?? sc.caption ?? [sc.heading, ...(sc.items ?? [])].filter(Boolean).join(" · ")}{sc.cta ? ` · ${sc.cta}` : ""}</li>)}</ol>}
-                      {v.meta?.issues?.length > 0 && <p className="mt-1.5 text-warn">{t("À vérifier : ", "To check: ")}{v.meta.issues.join(t(" ; ", "; "))}</p>}
-                    </details>
-                  )}
-                  <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-1">
-                    <Button size="sm" variant="secondary" onClick={() => setViewer(v)}>{t("Ouvrir", "Open")}</Button>
-                    <a href={v.downloadUrl} className="grid size-8 place-items-center rounded-full border border-line hover:border-ink" title={t("Télécharger le MP4", "Download the MP4")} aria-label={t("Télécharger le MP4", "Download the MP4")}><Download className="size-3.5" /></a>
-                    {srt && <a href={srt.downloadUrl} className="inline-flex h-8 items-center rounded-full border border-line px-2.5 text-[11px] hover:border-ink" title={t("Sous-titres SRT", "SRT subtitles")}>SRT</a>}
-                    <a href={`/api/files/${v.id}/capcut`} className="grid size-8 place-items-center rounded-full border border-line hover:border-ink" title={t("Pack CapCut (prêt à importer)", "CapCut pack (ready to import)")} aria-label={t("Pack CapCut", "CapCut pack")}><Package className="size-3.5" /></a>
-                  </div>
-                </div>
-              </Card>
-            );
-          })}
+    <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6" data-video-bank>
+      <Card className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <h2 className="font-display text-2xl font-semibold">{t("Banque de vidéos", "Video bank")}</h2>
+          <p className="mt-1 max-w-2xl text-sm text-muted">{t("Des plans vidéo neutres, sans texte, utilisés dans vos publications vidéo et vos publicités. Les vidéos montées avec titres sont dans Publications › Publication vidéo.", "Neutral video clips, no text, used in your video posts and ads. Edited videos with titles are in Posts › Video post.")}</p>
         </div>
+        <div className="flex flex-wrap gap-2 sm:shrink-0 sm:justify-end">
+          <input ref={fileRef} type="file" accept="video/mp4,video/quicktime,video/webm" multiple className="hidden" onChange={(e) => upload(e.target.files)} />
+          <Button variant="ghost" icon={<Upload className="size-4" />} loading={uploading} onClick={() => fileRef.current?.click()} data-bank-upload>{t("Importer", "Upload")}</Button>
+          <Button variant="secondary" icon={<Search className="size-4" />} disabled={locked} onClick={() => setDialog("search")} data-bank-search>{t("Chercher des plans libres", "Find royalty-free clips")}</Button>
+          <Button icon={<Wand2 className="size-4" />} disabled={locked} onClick={() => setDialog("ai")} data-bank-create>{t("Créer un plan avec l'IA", "Create a clip with AI")}</Button>
+        </div>
+        {locked && <div className="sm:basis-full"><PlanRequired what="videos" /></div>}
+      </Card>
+      {active.map((j) => <JobProgress key={j.id} job={j} />)}
+      <div>
+        <div className="scrollbar-none mb-5 flex gap-1.5 overflow-x-auto" role="tablist">
+          {SOURCES.map(([v, fr, en]) => (
+            <button key={v} role="tab" aria-selected={source === v} onClick={() => setSource(v)} className={cx("shrink-0 rounded-full border px-3.5 py-1.5 text-sm", source === v ? "border-ink bg-ink text-paper" : "border-line bg-card")}>{t(fr, en)}</button>
+          ))}
+        </div>
+        {list && shown.length === 0 ? (
+          <Empty title={t("Aucun plan ici pour l'instant", "No clips here yet")} icon={<Clapperboard className="size-5" />} action={!locked && <Button icon={<Search className="size-4" />} onClick={() => setDialog("search")}>{t("Chercher des plans libres", "Find royalty-free clips")}</Button>}>
+            {t("Importez vos vidéos, cherchez des plans libres de droits ou faites filmer un plan par l'IA à partir d'une de vos images.", "Upload your videos, search royalty-free clips or have the AI film a clip from one of your images.")}
+          </Empty>
+        ) : (
+          <div className="grid grid-cols-2 content-start gap-4 sm:grid-cols-3 xl:grid-cols-4" data-video-gallery>
+            {shown.map((v) => {
+              const tall = (v.height ?? 0) > (v.width ?? 0);
+              return (
+                <Card key={v.id} className="flex min-w-0 flex-col overflow-hidden">
+                  <div className="relative grid place-items-center bg-ink">
+                    <video src={v.url} poster={v.thumbUrl ?? undefined} controls playsInline preload="none" className={cx("w-full", tall ? "aspect-[9/16]" : "aspect-video")} />
+                    <span className="absolute right-2 top-2 rounded-full bg-paper/90 px-2 py-0.5 text-[10px] font-medium text-ink">{t(...BADGE[sourceOf(v)])}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 p-3">
+                    <StatusBadge status={v.status} />
+                    {v.duration ? <span className="text-xs text-muted">{Math.round(v.duration)} s</span> : null}
+                    <span className="flex-1" />
+                    <Button size="sm" variant="secondary" onClick={() => setViewer(v)}>{t("Ouvrir", "Open")}</Button>
+                    <a href={v.downloadUrl} className="grid size-8 place-items-center rounded-full border border-line hover:border-ink" title={t("Télécharger", "Download")} aria-label={t("Télécharger", "Download")}><Download className="size-3.5" /></a>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </div>
+      <Modal open={dialog === "search"} onClose={() => setDialog(null)} title={t("Chercher des plans libres", "Find royalty-free clips")} wide>
+        <SearchClips services={data?.business === "services"} onStarted={started} />
+      </Modal>
+      <Modal open={dialog === "ai"} onClose={() => setDialog(null)} title={t("Créer un plan avec l'IA", "Create a clip with AI")} wide>
+        <AiClip onStarted={started} />
+      </Modal>
       <AssetViewer asset={viewer} onClose={() => setViewer(null)} onChanged={reload} />
+    </div>
+  );
+}
+
+/** Plans libres de droits (Pixabay, Pexels) sur un sujet : gratuit, sujet contrôlé, aucune IA de vidéo. */
+function SearchClips({ services, onStarted }: { services: boolean; onStarted: (jobId?: string) => void }) {
+  const { id } = useProject();
+  const t = useT();
+  const toast = useToast();
+  const [f, setF] = useState({ topic: "", aspect: "9:16", count: 2 });
+  const [busy, setBusy] = useState(false);
+  const go = async () => {
+    setBusy(true);
+    try {
+      const r = await api<{ jobId?: string }>(`/api/projects/${id}/videos/bank`, { body: { action: "stock", topic: f.topic.trim() || undefined, aspect: f.aspect, count: f.count } });
+      onStarted(r.jobId);
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="grid gap-4" data-bank-search-dialog>
+      <p className="text-sm text-muted">{t("Le studio cherche des plans libres de droits adaptés à votre activité et vérifie leur sujet. Gratuit, aucune IA de vidéo.", "The studio searches royalty-free clips suited to your business and checks their subject. Free, no AI video.")}</p>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Field label={t("Sujet (facultatif)", "Subject (optional)")} htmlFor="vs-topic"><Input id="vs-topic" value={f.topic} maxLength={200} onChange={(e) => setF({ ...f, topic: e.target.value })} placeholder={services ? t("Ex. atelier, mains sur l'établi", "E.g. workshop, hands on the bench") : t("Ex. café du matin, cuisine lumineuse", "E.g. morning coffee, bright kitchen")} /></Field>
+        <Field label="Format" htmlFor="vs-aspect"><Select id="vs-aspect" value={f.aspect} onChange={(e) => setF({ ...f, aspect: e.target.value })}><option value="9:16">{t("9:16 · vertical (reels, TikTok)", "9:16 · vertical (reels, TikTok)")}</option><option value="16:9">{t("16:9 · paysage (site, YouTube)", "16:9 · landscape (website, YouTube)")}</option></Select></Field>
+        <Field label={t("Nombre", "Count")} htmlFor="vs-count"><Select id="vs-count" value={f.count} onChange={(e) => setF({ ...f, count: Number(e.target.value) })}>{[1, 2, 3].map((n) => <option key={n} value={n}>{n}</option>)}</Select></Field>
+      </div>
+      <div className="flex items-center justify-between gap-3 border-t border-line pt-4">
+        <span className="text-sm font-medium text-ok">{t("Gratuit", "Free")}</span>
+        <Button icon={<Search className="size-4" />} loading={busy} onClick={go} data-bank-search-go>{t("Chercher", "Search")}</Button>
+      </div>
+    </div>
+  );
+}
+
+/** Un plan filmé par l'IA à partir d'une image de la banque : prix affiché avant, aucune personne ajoutée sans accord. */
+function AiClip({ onStarted }: { onStarted: (jobId?: string) => void }) {
+  const { id } = useProject();
+  const t = useT();
+  const { lang } = useLang();
+  const toast = useToast();
+  const { data: q } = useApi<{ ai: boolean; clipEstimateMicro: number }>(`/api/projects/${id}/videos/bank`);
+  const { data: bank } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=${BANK_IMAGE_ROLES.join(",")}`);
+  const images = (bank?.assets ?? []).filter((a) => a.kind === "image" && a.status !== "rejected").slice(0, 40);
+  const [imageId, setImageId] = useState("");
+  const [prompt, setPrompt] = useState("");
+  const [aspect, setAspect] = useState("9:16");
+  const [busy, setBusy] = useState(false);
+  const price = q ? formatEur(Math.max(0.01, Math.ceil(q.clipEstimateMicro / 1e4) / 100), lang) : null;
+  const go = async () => {
+    if (!q) return;
+    setBusy(true);
+    try {
+      const r = await api<{ jobId?: string }>(`/api/projects/${id}/videos/bank`, { body: { action: "ai", imageId, prompt: prompt.trim() || undefined, aspect, approvedEstimateMicro: q.clipEstimateMicro } });
+      onStarted(r.jobId);
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  if (q && !q.ai) return <p className="text-sm text-muted" data-bank-ai-off>{t("La création de plans par l'IA n'est pas disponible pour ce projet (forfait Découverte, budget IA épuisé ou fournisseur désactivé). Cherchez plutôt des plans libres de droits (gratuit) ou importez vos vidéos.", "AI clip creation isn't available for this project (Discovery plan, AI budget used up or provider disabled). Search royalty-free clips instead (free) or upload your videos.")}</p>;
+  return (
+    <div className="grid gap-4" data-bank-ai-dialog>
+      <p className="text-sm text-muted">{t("Choisissez une image de votre banque : l'IA la fait vivre en un court plan (mouvement de caméra, lumière), sans texte et sans personne ajoutée. Le plan arrive « à vérifier » dans votre banque.", "Pick an image from your bank: the AI brings it to life as a short clip (camera move, light), no text and no added people. The clip lands \"to check\" in your bank.")}</p>
+      {images.length ? (
+        <div className="grid max-h-56 grid-cols-4 gap-1.5 overflow-y-auto pr-1 sm:grid-cols-8" role="radiogroup" aria-label={t("Image de départ", "Starting image")}>
+          {images.map((a) => (
+            <button key={a.id} type="button" role="radio" aria-checked={imageId === a.id} aria-label={a.name} onClick={() => setImageId(a.id)} className={cx("aspect-square overflow-hidden rounded-lg border-2", imageId === a.id ? "border-ink" : "border-transparent opacity-80 hover:opacity-100")}>
+              <img src={a.thumbUrl ?? a.url} alt="" loading="lazy" className="size-full object-cover" />
+            </button>
+          ))}
+        </div>
+      ) : (
+        <p className="text-xs text-muted">{t("Votre banque d'images est vide : ajoutez d'abord une image dans l'onglet Images.", "Your image bank is empty: add an image in the Images tab first.")}</p>
+      )}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label={t("Mouvement souhaité (facultatif)", "Desired motion (optional)")} htmlFor="va-prompt"><Input id="va-prompt" value={prompt} maxLength={300} onChange={(e) => setPrompt(e.target.value)} placeholder={t("Ex. lent travelling avant, lumière du matin", "E.g. slow push-in, morning light")} /></Field>
+        <Field label="Format" htmlFor="va-aspect"><Select id="va-aspect" value={aspect} onChange={(e) => setAspect(e.target.value)}><option value="9:16">9:16</option><option value="16:9">16:9</option></Select></Field>
+      </div>
+      <div className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm">{price ? t(<>Coût estimé : environ <strong>{price}</strong>, pris sur le budget IA du projet. Rien n'est lancé sans votre clic.</>, <>Estimated cost: about <strong>{price}</strong>, taken from the project's AI budget. Nothing starts without your click.</>) : t("Calcul du prix…", "Calculating the price…")}</p>
+        <Button icon={<Wand2 className="size-4" />} loading={busy} disabled={busy || !imageId || !price} onClick={go} data-bank-ai-go>{t(`Créer le plan · ${price ?? "…"}`, `Create the clip · ${price ?? "…"}`)}</Button>
+      </div>
     </div>
   );
 }

@@ -9,10 +9,12 @@ import fs from "node:fs";
 import { describe, expect, it } from "vitest";
 
 describe("Trois choix pour le visuel d'une publication", async () => {
-  const src = fs.readFileSync("src/components/studio/social-studio.tsx", "utf8") + fs.readFileSync("src/components/studio/visual-choice.tsx", "utf8");
+  const src = fs.readFileSync("src/components/studio/social-studio.tsx", "utf8") + fs.readFileSync("src/components/studio/visual-choice.tsx", "utf8") + fs.readFileSync("src/components/studio/social-create.tsx", "utf8");
   it("les trois options sont proposées (FR/EN), dans le lot et dans la fiche d'une publication", () => {
     for (const s of ["Image gratuite, mise en page du studio", "Image par l'IA, le studio fait le reste", "Publication entièrement par l'IA", "Free image, studio layout", "Post entirely by AI"]) expect(src).toContain(s);
-    expect(src).toContain('<VisualChoice value={mode} onChange={setMode} ai={!!data.ai} name="visual-mode-batch" />');
+    // Lot des publications planifiées et publication seule (Publications › Publication image).
+    expect(src).toContain('name="batch-image"');
+    expect(src).toContain("<VisualChoice value={imageMode} onChange={setImageMode}");
     expect(src).toContain("<PostVisualMaker postId={p.id}");
     expect(src).toMatch(/action: "estimate", ids: \[postId\], replace: true, \.\.\.visualParams\(mode\)/);
   });

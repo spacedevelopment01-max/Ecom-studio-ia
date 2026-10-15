@@ -1058,6 +1058,8 @@ export type ServiceSingleRequest = {
   /** Fond des visuels avec image : photo de l'activité, nouvelle image (libre de droits, sinon IA) ou aucune. */
   background?: "photo" | "image" | "none";
   photoId?: string;
+  /** « Image par l'IA, le studio fait le reste » : la nouvelle image est créée par l'IA (pas de photo libre). */
+  aiImage?: boolean;
 };
 
 const FORMAT_OF: Record<string, ServiceFormat> = { square: "square", portrait: "portrait", story: "story", landscape: "landscape", banner: "banner", product: "portrait", packshot: "square", pin: "portrait" };
@@ -1066,13 +1068,14 @@ const FORMAT_OF: Record<string, ServiceFormat> = { square: "square", portrait: "
  * Nouvelle image d'ambiance du métier (ni photo du client, ni image déjà utilisée) : d'abord une photo libre de droits
  * (gratuite), l'IA d'images seulement à défaut (budget IA du projet, image contrôlée). Renvoie l'id du fichier créé.
  */
-async function freshAmbiance(ctx: JobContext, p: Project, fs: ServiceFormat, topic: string, o: { useAi?: boolean; subline?: string; reference?: Asset | null }): Promise<string> {
+async function freshAmbiance(ctx: JobContext, p: Project, fs: ServiceFormat, topic: string, o: { useAi?: boolean; subline?: string; reference?: Asset | null; forceAi?: boolean }): Promise<string> {
   const projectId = p.id;
   const name = activityName(p);
   const req = { subline: o.subline, useAi: o.useAi, format: fs as string };
   const photo = o.reference ?? undefined;
   // D'abord une photo libre de droits du métier (Pixabay en premier, gratuite) ; l'IA d'images seulement à défaut.
-  const free = await ctx.step("ambiance:stock", async () => {
+  // Image demandée à l'IA par le client : pas de recherche de photo libre.
+  const free = o.forceAi ? null : await ctx.step("ambiance:stock", async () => {
     const a = await postStockPhoto({ userId: p.userId, projectId, jobId: ctx.job.id }, p, { key: `single-${ctx.job.id}`, topic, aspect: aspectFor(fs), name: `${slug(name)}-${C("ambiance", "mood")}-${Date.now().toString(36)}.jpg` }, { role: "lifestyle", folderKey: "images.scenes" }).catch((e) => {
       if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
       return null;
@@ -1080,6 +1083,7 @@ async function freshAmbiance(ctx: JobContext, p: Project, fs: ServiceFormat, top
     return a?.id ?? null;
   });
   if (free) return free;
+  if (o.forceAi && (!imageProviderAvailable({ usage: "scene" }) || !llmConfigured())) throw new UserFacingError(L("L'IA d'images n'est pas disponible pour ce projet : choisissez « Image gratuite, mise en page du studio ».", "The AI image generator isn't available for this project: choose \"Free image, studio layout\"."));
   if (!imageProviderAvailable({ usage: "scene" }) || req.useAi === false || !llmConfigured()) throw new UserFacingError(L("Aucune photo libre de droits ne convient et l'IA d'images n'est pas disponible ici. Importez plutôt des photos de vos réalisations, de votre équipe ou de votre lieu.", "No royalty-free photo fits and the AI image generator is not available here. Upload photos of your work, team or premises instead."));
   const f = fs;
   const prompts = ambiancePrompts(p);
@@ -1140,7 +1144,8 @@ export async function generateServiceSingleImage(ctx: JobContext, projectId: str
   const p = loadProject(projectId);
   const photos = activityPhotos(projectId);
   // Image de fond : une photo de l'activité (par défaut), une nouvelle image (libre de droits ou IA), ou aucune.
-  const background = req.background ?? (req.usePhoto === false ? "none" : "photo");
+  // Image par l'IA : toujours une nouvelle image (créée par l'IA), le studio pose ensuite les textes.
+  const background = req.aiImage ? "image" : req.background ?? (req.usePhoto === false ? "none" : "photo");
   // Image choisie par le client parmi toutes les images du projet (ses photos, photos libres, ambiances…).
   const chosen = req.photoId ? one<Asset>("SELECT * FROM assets WHERE id = ? AND project_id = ? AND kind = 'image' AND deleted_at IS NULL", req.photoId, projectId) : undefined;
   let photo = background !== "photo" ? undefined : chosen || photos[0];
@@ -1149,7 +1154,7 @@ export async function generateServiceSingleImage(ctx: JobContext, projectId: str
   const name = activityName(p);
   ctx.progress(0.2, L("Composition de l'image", "Composing the image"));
 
-  if (kind === "ambiance") return { assetId: await freshAmbiance(ctx, p, FORMAT_OF[req.format ?? "portrait"] ?? "portrait", req.subline || clip(p.product.summary, 160) || name, { useAi: req.useAi, subline: req.subline, reference: photo }) };
+  if (kind === "ambiance") return { assetId: await freshAmbiance(ctx, p, FORMAT_OF[req.format ?? "portrait"] ?? "portrait", req.subline || clip(p.product.summary, 160) || name, { useAi: req.aiImage || req.useAi, subline: req.subline, reference: photo, forceAi: req.aiImage }) };
 
   // « Une nouvelle image » (pas une photo de l'activité) : photo libre de droits du métier, sinon image créée par l'IA,
   // puis le visuel est composé dessus. « Sans image » : visuel typographique.
@@ -1157,7 +1162,7 @@ export async function generateServiceSingleImage(ctx: JobContext, projectId: str
     const s = kind === "service" ? items[Math.max(0, Math.min(items.length - 1, req.serviceIndex ?? 0))] : undefined;
     const topic = [s?.name, s ? clip(s.description, 120) : req.subline || clip(p.product.summary, 140)].filter(Boolean).join(" — ") || name;
     const fs: ServiceFormat = kind === "banner" ? (FORMAT_OF[req.format ?? "banner"] === "landscape" ? "landscape" : "banner") : FORMAT_OF[req.format ?? "portrait"] ?? "portrait";
-    const fresh = await freshAmbiance(ctx, p, fs, topic, { useAi: req.useAi, subline: s?.name ?? req.subline, reference: null });
+    const fresh = await freshAmbiance(ctx, p, fs, topic, { useAi: req.aiImage || req.useAi, subline: s?.name ?? req.subline, reference: null, forceAi: req.aiImage });
     photo = one<Asset>("SELECT * FROM assets WHERE id = ?", fresh) ?? undefined;
     ctx.progress(0.7, L("Composition du visuel sur la nouvelle image", "Composing the visual on the new image"));
   }

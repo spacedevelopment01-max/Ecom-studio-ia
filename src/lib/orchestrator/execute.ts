@@ -54,6 +54,9 @@ export const ACTION_STEPS: Record<string, StepKind[]> = {
   "images.generate": ["image_generate"],
   "image.single": ["image_generate"],
   "image.v2": ["image_generate"],
+  "image.ai_post": ["image_generate"],
+  "video.bank.stock": ["video"],
+  "video.bank.ai": ["video"],
   "stock.search": ["stock_search"],
   "shop.build": ["theme"],
   "shop.direction": ["theme"],
@@ -73,7 +76,7 @@ export const ACTION_STEPS: Record<string, StepKind[]> = {
 };
 
 /** Actions qui demandent EXPRESSÉMENT une image générée (aucune recherche de photo libre imposée avant). */
-const GENERATED_IMAGE_ACTIONS = new Set(["images.generate", "image.single"]);
+const GENERATED_IMAGE_ACTIONS = new Set(["images.generate", "image.single", "image.ai_post"]);
 
 /** Environnement de routage du compte (IA active, fournisseurs disponibles). */
 export function routingEnv(p: Pick<Project, "userId" | "id">) {

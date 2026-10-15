@@ -11,6 +11,9 @@ import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { createPlanV2, publishingDates } from "@/lib/social-v2/planner";
 import { applySocialEdit, approve, planFromAsk, projectAccounts } from "@/lib/social-v2/engine";
 import { socialStrategy } from "@/lib/social-v2/strategy";
+import { longTermStrategy } from "@/lib/social-v2/strategy-long";
+import { verifiedFacts } from "@/lib/seo-v2/facts";
+import { mainCity } from "@/lib/seo-v2/keywords";
 import { PLATFORM_SPECS, PLATFORMS } from "@/lib/social-v2/platforms";
 import { estimateProduction, postsOfPlan, produceBatch } from "@/lib/social-v2/production";
 import { realSocialDeps } from "@/lib/social-v2/deps";
@@ -19,6 +22,8 @@ import { checkPost, varietyReport } from "@/lib/social-v2/quality";
 import { socialStats } from "@/lib/social-v2/analytics";
 import { AUTOMATION_KINDS, createAutomation, listAutomations, setAutomationStatus } from "@/lib/social-v2/automations";
 import { postViewV2 } from "@/lib/social-v2/view";
+import { createOnePost, produceParams, quoteOne } from "@/lib/social-v2/single";
+import { getAsset } from "@/lib/library";
 
 export const runtime = "nodejs";
 
@@ -31,8 +36,14 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   const rows = all<any>("SELECT p.*, c.name AS connection_name FROM posts p LEFT JOIN connections c ON c.id = p.connection_id WHERE p.project_id = ? AND p.status != 'cancelled' AND ((p.scheduled_at >= ? AND p.scheduled_at < ?) OR p.scheduled_at IS NULL) ORDER BY COALESCE(p.scheduled_at, p.created_at) LIMIT 800", p.id, from, to);
   const plans = all<{ id: string; params: string; status: string; engine: string; paused: number; created_at: number }>("SELECT id, params, status, engine, paused, created_at FROM content_plans WHERE project_id = ? ORDER BY created_at DESC LIMIT 20", p.id);
   const latest = plans.find((x) => x.engine === "v2");
+  const lang = p.settings.language === "en" ? "en" : "fr";
+  const facts = verifiedFacts(p);
+  // Temps forts des 90 prochains jours (dates réelles) et stratégie à 12 mois.
+  const strategy = socialStrategy(p, { lang, startDate: new Date().toISOString().slice(0, 10), days: 90, facts });
+  const perDay = Number(JSON.parse(latest?.params || "{}").perDay) || 1;
   return ok({
-    strategy: socialStrategy(p, { lang: p.settings.language === "en" ? "en" : "fr" }),
+    strategy,
+    longTerm: longTermStrategy(p, strategy, { lang, perDay, city: mainCity(facts.area), declaredAudience: facts.audience ?? null, connected: projectAccounts(p).filter((a) => a.status === "active").length }),
     plans: plans.map((x) => ({ id: x.id, engine: x.engine, paused: !!x.paused, createdAt: x.created_at, params: JSON.parse(x.params || "{}") })),
     posts: rows.map((r) => postViewV2(p, r, { gate: r.engine === "v2" })),
     variety: latest ? varietyReport(p.id, latest.id) : null,
@@ -93,6 +104,21 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       z.object({ action: z.literal("resume"), planId: z.string().max(80) }),
       z.object({ action: z.literal("edit"), text: z.string().min(3).max(600), confirm: z.boolean().optional(), maxCostEur: z.number().min(0).max(20).optional(), planId: z.string().max(80).optional() }),
       z.object({ action: z.literal("automation"), kind: z.enum(AUTOMATION_KINDS), config: z.record(z.string(), z.unknown()).optional() }),
+      z.object({ action: z.literal("quote_one"), kind: z.enum(["image", "video"]), mode: z.enum(["free", "ai_image", "ai_post", "ai_video"]), networks: z.number().int().min(1).max(6) }),
+      z.object({
+        action: z.literal("create_one"),
+        kind: z.enum(["image", "video"]),
+        mode: z.enum(["free", "ai_image", "ai_post", "ai_video"]),
+        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        time: z.string().regex(/^\d{2}:\d{2}$/),
+        timezone: z.string().min(1).max(60),
+        platforms: z.array(z.object({ platform: z.enum(PLATFORMS), connectionId: z.string().max(40).nullable().optional() })).min(1).max(6),
+        pillar: z.string().max(40).optional(),
+        headline: z.string().max(120).optional(),
+        backgroundId: z.string().max(64).optional(),
+        /** Prix vu et accepté par le client (payant). */
+        approvedEstimateMicro: z.number().int().min(0).nullable().optional(),
+      }),
       z.object({ action: z.literal("automation_status"), automationId: z.string().max(40), status: z.enum(["active", "paused"]) }),
     ]),
   );
@@ -151,6 +177,32 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     case "automation":
       requirePlan(user, p.id);
       return ok({ id: createAutomation(p.id, b.kind, b.config ?? {}) });
+    case "quote_one":
+      return ok({ ai: aiActiveFor(p.userId, p.id), estimateMicro: quoteOne(b.kind, b.mode, b.networks, realSocialDeps(null, p, aiActiveFor(p.userId, p.id)).estimate) });
+    case "create_one": {
+      // Une publication (image ou vidéo) : gratuite, ou payante seulement avec l'IA active et le prix accepté.
+      assertPerDayRequest(p.id, 1);
+      for (const x of b.platforms) if (x.connectionId && !projectAccounts(p).some((a) => a.id === x.connectionId)) throw new HttpError(400, L("Compte inconnu.", "Unknown account."));
+      if (b.mode === "ai_video" && b.kind !== "video") throw new HttpError(400, L("Mode réservé aux vidéos.", "Mode for videos only."));
+      if ((b.mode === "ai_image" || b.mode === "ai_post") && b.kind !== "image") throw new HttpError(400, L("Mode réservé aux images.", "Mode for images only."));
+      const ai = aiActiveFor(p.userId, p.id);
+      const deps = realSocialDeps(null, p, ai);
+      const quote = quoteOne(b.kind, b.mode, b.platforms.length, deps.estimate);
+      if (b.mode !== "free") {
+        if (!ai) throw new HttpError(402, L("L'IA n'est pas active pour ce projet (forfait Découverte, budget IA épuisé ou fournisseur désactivé) : choisissez la version gratuite.", "AI isn't active for this project (Discovery plan, AI budget used up or provider disabled): choose the free version."));
+        if (b.approvedEstimateMicro == null || b.approvedEstimateMicro < quote) throw new HttpError(409, L("Prix à accepter avant de lancer (il a pu changer) : vérifiez-le puis relancez.", "Price to accept before starting (it may have changed): check it and start again."));
+      }
+      const bg = b.backgroundId ? getAsset(b.backgroundId) : null;
+      if (b.backgroundId && (!bg || bg.project_id !== p.id || bg.kind !== "image" || bg.deleted_at)) throw new HttpError(400, L("Image introuvable dans votre banque.", "Image not found in your bank."));
+      const one = createOnePost(p, { kind: b.kind, date: b.date, time: b.time, timezone: b.timezone, platforms: b.platforms, pillar: b.pillar, headline: b.headline, lang: p.settings.language === "en" ? "en" : "fr" });
+      const params = produceParams(b.kind, b.mode);
+      if (params.allowPaid) {
+        const job = enqueue({ userId: user.id, projectId: p.id, type: "social.v2.produce", label: b.kind === "video" ? L("Publication vidéo", "Video post") : L("Publication image", "Image post"), payload: { projectId: p.id, ids: one.ids, allowPaid: true, maxCostEur: quote / 1e6, approvedEstimateMicro: quote, aiImages: params.aiImages ?? null, aiBackground: !!params.aiBackground } });
+        return ok({ ...one, jobId: job.id, estimateMicro: quote });
+      }
+      const produced = await produceBatch(p, one.ids, realSocialDeps(null, p, false), { allowPaid: false, maxCostEur: 0, batchSize: 6, background: bg });
+      return ok({ ...one, produced: produced.produced, notes: produced.notes, estimateMicro: 0 });
+    }
     case "automation_status":
       setAutomationStatus(p.id, b.automationId, b.status);
       return ok({ ok: true });

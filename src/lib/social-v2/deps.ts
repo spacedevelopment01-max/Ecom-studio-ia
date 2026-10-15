@@ -209,7 +209,7 @@ const PLATFORM_VIDEO: Record<string, "reels" | "tiktok" | "shorts" | "meta_feed"
 const PLATFORM_AD: Record<string, "meta_feed" | "meta_story" | "tiktok" | "pinterest" | "linkedin"> = { instagram: "meta_feed", facebook: "meta_feed", tiktok: "tiktok", youtube: "meta_story", pinterest: "pinterest", linkedin: "linkedin" };
 
 /** Estimation d'une publication conçue par l'IA : deux essais au plus (image + contrôle) et l'accroche. */
-function aiPostEstimate(): number {
+export function aiPostEstimate(): number {
   const one = aiPostMaxMicro() ?? estimateMicro("image");
   return 2 * one + Math.round(estimateMicro("blog") / 10);
 }
