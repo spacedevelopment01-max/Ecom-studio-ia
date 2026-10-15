@@ -33,3 +33,13 @@ Version « avant » (moteur gratuit, sans IA) : faite hors dépôt ; version Qwe
 | Publicité | SONORE 0,215 € ; fleuriste 0,14 € (14/10, gpt-image-1.5, coûts calculés par le studio) | 0,037 à 0,040 € |
 | Logo | 0,19 € (10/10, gpt-image-2, haute qualité, 0,2164 $ mesurés sur les jetons) | 0,034 € |
 Taux 0,86 € / $. Prix Qwen : liste officielle de l'API (devise supposée USD), à recouper avec la facture Alibaba.
+
+## Une publicité par format — Qwen-Image 3.0 Pro (15/10/2026)
+Références : photo Pixabay + vrai logo ; consigne « même angle que la photo » (évite la montre redessinée).
+| Fichier | Format | Idée | Résultat |
+|---|---|---|---|
+| `format-1x1-bureau.png` | 1:1 | bureau en noyer, carnet, stylo, lampe | textes exacts |
+| `format-4x5-affiche.png` | 4:5 | affiche bicolore ivoire / cognac, « Acier. Cuir. Caractère. » | textes exacts |
+| `format-9x16-velours.png` | 9:16 | velours cognac vu de dessus, « Le temps vous va bien. » | textes exacts |
+| `format-16x9-banniere.png` | 16:9 | lin ivoire au soleil, « Un chronographe pour chaque jour. » | faute « Découvir » → corrigée gratuitement : `format-16x9-banniere-corrigee.png` (`scripts/pub-correction-bouton.cjs`) |
+Coût : 4 × (0,04 $ + 2 × 0,003 $) ≈ 0,184 $ (facturé « 1K », 2 images d'entrée chacune).
