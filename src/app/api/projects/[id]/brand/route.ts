@@ -98,7 +98,9 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
   const taglineChanged = b.tagline !== undefined && b.tagline.trim() !== (p.brand.tagline ?? "").trim();
   const taglineOnSite = taglineChanged && p.brand.tagline ? (() => { try { return applyTaglineToSite(p.id, p.brand!.tagline!, b.tagline!); } catch (e) { console.warn("[brand] signature du site", (e as Error).message); return false; } })() : false;
   if (taglineChanged && p.brand.tagline) await applyTaglineToCreations(p.id, owner, p.brand.tagline, b.tagline!).catch((e) => console.warn("[brand] signature des créations", (e as Error).message));
-  if (taglineChanged) await saveIdentityBoard(p.id).catch((e) => console.warn("[brand] planche", (e as Error).message));
+  // Planche d'identité refaite dès que l'identité change (signature, nom, couleurs, polices), localement, sans IA.
+  const identityChanged = taglineChanged || paletteChanged || (b.name !== undefined && b.name !== p.brand.name) || ((b as { fonts?: unknown }).fonts !== undefined && JSON.stringify((b as { fonts?: unknown }).fonts) !== JSON.stringify(p.brand.fonts));
+  if (identityChanged) await saveIdentityBoard(p.id).catch((e) => console.warn("[brand] planche", (e as Error).message));
   return ok({ brand: loadProject(p.id).brand ?? brand, logoUpdated: v2 || (regenerate && latestProposals(p.id).length > 0) || recolored, recolored, siteUpdated: siteUpdated || taglineOnSite, logoKept: touchesLogo && logoLocked && !recolored });
 });
 
