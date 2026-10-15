@@ -60,9 +60,10 @@ const DEMOS: Record<string, Def> = {
     ],
     plan: {
       scenes: [
-        { still: "florist shop bouquet flowers", motion: "", title: "Bouquets du jour" },
-        { still: "florist arranging flowers workshop", motion: "", title: "Mariages et événements" },
-        { still: "flower shop roses peonies", motion: "", title: "Atelier floral" },
+        // Plans choisis et regardés (Pixabay) : chacun montre le métier et correspond à son titre.
+        { still: "florist in an apron presenting a fresh bouquet", motion: "", title: "Bouquets du jour" },
+        { still: "flower stall: a customer buys a wrapped rose bouquet", motion: "", title: "Fleurs de saison" },
+        { still: "bride holding her bridal bouquet", motion: "", title: "Mariages et événements" },
       ],
       line: "Des fleurs qui racontent.",
       cta: "Demander un devis",
