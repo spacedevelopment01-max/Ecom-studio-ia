@@ -24,11 +24,11 @@ export const MEDIA_TASK: Record<MediaKind, TaskId> = { image: "image_generation"
  * USAGES : chaque usage a son propre principal, son secours et son mode (manuel ou automatique). Sans réglage propre,
  * un usage suit le réglage général de son type (images / vidéos) — les réglages existants restent donc inchangés.
  */
-export const MEDIA_USAGES = ["logo", "product_image", "product_edit", "ad_visual", "scene", "product_video", "ugc_video"] as const;
+export const MEDIA_USAGES = ["logo", "product_image", "product_edit", "ad_visual", "social_image", "scene", "product_video", "ugc_video", "text_video"] as const;
 export type MediaUsage = (typeof MEDIA_USAGES)[number];
 export const isMediaUsage = (v: unknown): v is MediaUsage => typeof v === "string" && (MEDIA_USAGES as readonly string[]).includes(v);
 
-export const USAGE_INFO: Record<MediaUsage, { kind: MediaKind; need: Omit<MediaNeed, "kind" | "usage">; label: { fr: string; en: string }; detail: { fr: string; en: string }; canBeOff?: boolean }> = {
+export const USAGE_INFO: Record<MediaUsage, { kind: MediaKind; need: Omit<MediaNeed, "kind" | "usage">; label: { fr: string; en: string }; detail: { fr: string; en: string }; canBeOff?: boolean; /** Sans réglage propre : suit cet usage (puis le réglage du type). */ parent?: MediaUsage }> = {
   logo: {
     kind: "image",
     need: {},
@@ -54,6 +54,13 @@ export const USAGE_INFO: Record<MediaUsage, { kind: MediaKind; need: Omit<MediaN
     label: { fr: "Publicités visuelles", en: "Visual ads" },
     detail: { fr: "Visuels des créations publicitaires (Advertising Engine V2) : produit réel par retouche ou composition, ou visuel d'ambiance.", en: "Ad creative visuals (Advertising Engine V2): real product via retouching or compositing, or a mood visual." },
   },
+  social_image: {
+    kind: "image",
+    need: {},
+    parent: "ad_visual",
+    label: { fr: "Images réseaux sociaux", en: "Social media images" },
+    detail: { fr: "Publications entièrement conçues par l'IA pour les réseaux sociaux. Sans réglage propre, suit « Publicités visuelles ».", en: "Social media posts entirely designed by AI. Without its own setting, follows \"Visual ads\"." },
+  },
   scene: {
     kind: "image",
     need: {},
@@ -65,6 +72,12 @@ export const USAGE_INFO: Record<MediaUsage, { kind: MediaKind; need: Omit<MediaN
     need: { imageToVideo: true },
     label: { fr: "Vidéos produit", en: "Product videos" },
     detail: { fr: "Plans vidéo animés à partir d'une scène contenant le produit réel (montages, publicités vidéo, Video Engine V2).", en: "Video shots animated from a scene containing the real product (edits, video ads, Video Engine V2)." },
+  },
+  text_video: {
+    kind: "video",
+    need: { imageToVideo: false },
+    label: { fr: "Texte vers vidéo", en: "Text-to-video" },
+    detail: { fr: "Vidéo créée à partir d'une description seule (vidéo publicitaire, motion design). Prêt dans le moteur (Wan, Veo) ; aucun écran client ne l'utilise encore.", en: "Video created from a description only (video ad, motion design). Ready in the engine (Wan, Veo); no customer screen uses it yet." },
   },
   ugc_video: {
     kind: "video",
@@ -81,17 +94,20 @@ const splitKey = (v: string) => {
   return { provider, model: rest.join(":") };
 };
 /** Mode de l'usage (sinon celui de son type). */
-export const usageMode = (u: MediaUsage): MediaMode => usageSettings()[u]?.mode ?? mediaMode(USAGE_INFO[u].kind);
+export const usageMode = (u: MediaUsage): MediaMode => usageSettings()[u]?.mode ?? (USAGE_INFO[u].parent ? usageMode(USAGE_INFO[u].parent!) : mediaMode(USAGE_INFO[u].kind));
 /** Principal de l'usage (sinon celui de son type) et son origine. */
 export function usagePrimary(u: MediaUsage): { provider: string; model: string; inherited: boolean } {
   const v = usageSettings()[u]?.primary;
-  return v ? { ...splitKey(v), inherited: false } : { ...mediaPrimary(USAGE_INFO[u].kind), inherited: true };
+  if (v) return { ...splitKey(v), inherited: false };
+  const parent = USAGE_INFO[u].parent;
+  return parent ? { ...usagePrimary(parent), inherited: true } : { ...mediaPrimary(USAGE_INFO[u].kind), inherited: true };
 }
 /** Secours de l'usage : le sien s'il est réglé (null = aucun, choisi), sinon celui de son type. */
 export function usageBackup(u: MediaUsage): { provider: string; model: string } | null {
   const s = usageSettings()[u];
   if (s && "backup" in s) return s.backup ? splitKey(s.backup) : null;
-  return mediaBackup(USAGE_INFO[u].kind);
+  const parent = USAGE_INFO[u].parent;
+  return parent ? usageBackup(parent) : mediaBackup(USAGE_INFO[u].kind);
 }
 /**
  * Usage réglé explicitement (principal ou mode choisis pour lui) : son choix est respecté à la lettre — si ni le
@@ -100,7 +116,7 @@ export function usageBackup(u: MediaUsage): { provider: string; model: string } 
  */
 export const usageExplicit = (u: MediaUsage): boolean => {
   const s = usageSettings()[u];
-  return !!s && (!!s.primary || !!s.mode);
+  return (!!s && (!!s.primary || !!s.mode)) || (!!USAGE_INFO[u].parent && usageExplicit(USAGE_INFO[u].parent!));
 };
 /** Usage coupé par l'administration (retouches produit seulement : les photos passent alors par décor + composition). */
 export const usageOff = (u: MediaUsage): boolean => !!USAGE_INFO[u].canBeOff && !!usageSettings()[u]?.off;
@@ -195,6 +211,8 @@ export function incompatibility(m: MediaModel, n: MediaNeed): string | null {
   if ((n.references ?? 0) > (c.references ?? 0)) return L(`${n.references} image(s) de référence non acceptée(s)`, `${n.references} reference image(s) not accepted`);
   if (n.text && !c.textInImage) return L("texte dans l'image non fiable", "unreliable text in image");
   if (n.kind === "video" && n.imageToVideo !== false && !c.imageToVideo) return L("pas d'image vers vidéo", "no image-to-video");
+  // Texte vers vidéo (aucune image de départ) : seulement un modèle qui le fait.
+  if (n.kind === "video" && n.imageToVideo === false && !c.textToVideo) return L("pas de texte vers vidéo", "no text-to-video");
   if (n.audio && !c.audio) return L("pas de son natif", "no native audio");
   if (n.people && !c.people) return L("personnes non prises en charge", "people not supported");
   return null;

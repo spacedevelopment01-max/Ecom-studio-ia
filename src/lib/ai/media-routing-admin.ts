@@ -5,10 +5,11 @@
  */
 import { EUR } from "../billing";
 import { L } from "../i18n-server";
-import { getSetting } from "../settings";
-import { priceFor } from "./config";
+import { getJsonSetting, getSetting } from "../settings";
+import { priceFor, providerEnabled, providerKey } from "./config";
+import { ALIBABA_REGIONS, alibabaBase, alibabaRegion } from "./alibaba";
 import { MEDIA_MODELS, type MediaKind, type MediaModel } from "./media-models";
-import { incompatibility, MEDIA_USAGES, mediaBackup, mediaMode, mediaPrimary, mediaStats, mediaStatus, rankMedia, selectMedia, shutDown, typicalCostMicro, USAGE_INFO, usageBackup, usageExplicit, usageNeed, usageOff, usagePrimary, usageSettings } from "./media-routing";
+import { incompatibility, MEDIA_USAGES, mediaBackup, mediaMode, usageMode, mediaPrimary, mediaStats, mediaStatus, rankMedia, selectMedia, shutDown, typicalCostMicro, USAGE_INFO, usageBackup, usageExplicit, usageNeed, usageOff, usagePrimary, usageSettings } from "./media-routing";
 
 const eur = (micro: number | null) => (micro == null ? null : Math.round((micro / EUR) * 1000) / 1000);
 
@@ -98,7 +99,7 @@ export function mediaUsageOverview() {
       kind: info.kind,
       label: L(info.label.fr, info.label.en),
       detail: L(info.detail.fr, info.detail.en),
-      mode: own.mode ?? mediaMode(info.kind),
+      mode: usageMode(u),
       modeInherited: !own.mode,
       primary: key(primary)!,
       primaryInherited: primary.inherited,
@@ -117,4 +118,43 @@ export function mediaUsageOverview() {
       }),
     };
   });
+}
+
+/**
+ * Alibaba Cloud (Qwen-Image, Wan) : état RÉEL de validation, étape par étape, pour l'administration. La première étape
+ * non remplie donne le message affiché (clé absente, adresse invalide, connexion non testée, modèle non confirmé,
+ * modèle non tarifé…) ; toutes remplies : « fournisseur prêt ».
+ */
+export function alibabaReadiness() {
+  const models = MEDIA_MODELS.filter((m) => m.provider === "alibaba").map((m) => {
+    const st = mediaStatus(m);
+    return { key: st.key, label: m.label, kind: m.kind, confirmed: st.confirmed, priced: !st.reasons.some((r) => /tarif|price/i.test(r)), usable: st.usable, enabled: st.enabled, reasons: st.reasons };
+  });
+  const { base, problem } = alibabaBase();
+  const last = getJsonSetting<{ ok: boolean; at: number; message: string } | null>("provider.alibaba.lastTest", null);
+  const usedBy = MEDIA_USAGES.filter((u) => usagePrimary(u).provider === "alibaba" || usageBackup(u)?.provider === "alibaba").map((u) => L(USAGE_INFO[u].label.fr, USAGE_INFO[u].label.en));
+  const checks: { id: string; ok: boolean; label: string; fail: string }[] = [
+    { id: "key", ok: !!providerKey("alibaba"), label: L("Clé présente (chiffrée)", "Key present (encrypted)"), fail: L("Clé absente", "Key missing") },
+    { id: "enabled", ok: providerEnabled("alibaba"), label: L("Fournisseur activé", "Provider enabled"), fail: L("Fournisseur désactivé", "Provider disabled") },
+    { id: "endpoint", ok: !problem, label: L("Adresse d'API valide", "Valid API address"), fail: problem ?? L("Adresse d'API invalide", "Invalid API address") },
+    { id: "tested", ok: !!last?.ok, label: L("Connexion testée", "Connection tested"), fail: last ? last.message : L("Connexion jamais testée : cliquez sur « Tester réellement »", "Connection never tested: click \"Run a live test\"") },
+    { id: "models", ok: models.length > 0, label: L("Modèles image et vidéo disponibles dans le studio", "Image and video models available in the studio"), fail: L("Aucun modèle", "No model") },
+    { id: "confirmed", ok: models.some((m) => m.confirmed), label: L("Au moins un modèle autorisé (confirmé)", "At least one model allowed (confirmed)"), fail: L("Aucun modèle confirmé : confirmez-les dans « Modèles Images & Vidéos » après vérification sur la console Alibaba", "No model confirmed: confirm them in \"Image & video models\" after checking the Alibaba console") },
+    { id: "priced", ok: models.some((m) => m.priced), label: L("Tarification renseignée", "Pricing set"), fail: L("Modèle non tarifé : saisissez le tarif (par image, ou par seconde en 720P)", "Model not priced: enter the price (per image, or per second at 720P)") },
+    { id: "usable", ok: models.some((m) => m.usable && m.enabled), label: L("Génération autorisée", "Generation allowed"), fail: L("Aucun modèle utilisable (clé, confirmation, tarif)", "No usable model (key, confirmation, price)") },
+  ];
+  const firstFail = checks.find((c) => !c.ok);
+  return {
+    region: alibabaRegion(),
+    regions: (Object.keys(ALIBABA_REGIONS) as (keyof typeof ALIBABA_REGIONS)[]).map((r) => ({ id: r, label: L(ALIBABA_REGIONS[r].label.fr, ALIBABA_REGIONS[r].label.en), base: ALIBABA_REGIONS[r].base })),
+    base,
+    endpoint: getSetting("provider.alibaba.endpoint") ?? "",
+    workspace: getSetting("provider.alibaba.workspace") ?? "",
+    lastTest: last,
+    checks,
+    status: firstFail ? firstFail.fail : L("Fournisseur prêt", "Provider ready"),
+    ready: !firstFail,
+    models,
+    usedBy,
+  };
 }

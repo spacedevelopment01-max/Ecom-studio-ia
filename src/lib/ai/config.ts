@@ -10,7 +10,7 @@ import { POLICY_ROUTES } from "../orchestrator/policy";
 import { GATEWAY_KEY, gatewayProviders } from "./gateway";
 export { bearer, falAuth, GATEWAY_KEY, gatewayProviders, isGatewayKey } from "./gateway";
 
-export type ProviderId = "anthropic" | "openai" | "google" | "fal" | "pexels" | "pixabay";
+export type ProviderId = "anthropic" | "openai" | "google" | "fal" | "alibaba" | "pexels" | "pixabay";
 
 // Libellés affichés dans l'administration : accesseurs évalués à la lecture, dans la langue de l'interface.
 const provider = (name: { fr: string; en: string }, role: { fr: string; en: string }, keyHelp: { fr: string; en: string }, docs: string) => ({
@@ -50,6 +50,12 @@ export const PROVIDERS: Record<ProviderId, { readonly name: string; readonly rol
     { fr: "Alternative pour la vidéo image-vers-vidéo", en: "Alternative for image-to-video generation" },
     { fr: "Clé fal.ai (Key …)", en: "fal.ai key (Key …)" },
     "https://fal.ai/models",
+  ),
+  alibaba: provider(
+    { fr: "Alibaba Cloud — Images & Vidéos (Model Studio)", en: "Alibaba Cloud — Images & Videos (Model Studio)" },
+    { fr: "Images Qwen-Image et vidéos Wan uniquement (aucun texte, aucun SEO)", en: "Qwen-Image images and Wan videos only (no text, no SEO)" },
+    { fr: "Clé API Model Studio (DashScope, sk-…) de la région choisie ci-dessous", en: "Model Studio (DashScope) API key (sk-…) for the region chosen below" },
+    "https://www.alibabacloud.com/help/en/model-studio/",
   ),
   pexels: provider(
     { fr: "Pexels (photos libres de droits)", en: "Pexels (royalty-free photos)" },
@@ -226,7 +232,7 @@ export function usdToEur(): number {
  * Clés lues aussi dans l'environnement (ex. secrets GitHub Codespaces) : elles survivent à un codespace recréé,
  * sans passer par la base. La clé saisie dans l'administration reste prioritaire.
  */
-const ENV_KEYS: Record<ProviderId, string[]> = { anthropic: ["ANTHROPIC_API_KEY"], openai: ["OPENAI_API_KEY"], google: ["GOOGLE_API_KEY", "GEMINI_API_KEY"], fal: ["FAL_KEY", "FAL_API_KEY"], pexels: ["PEXELS_API_KEY"], pixabay: ["PIXABAY_API_KEY"] };
+const ENV_KEYS: Record<ProviderId, string[]> = { anthropic: ["ANTHROPIC_API_KEY"], openai: ["OPENAI_API_KEY"], google: ["GOOGLE_API_KEY", "GEMINI_API_KEY"], fal: ["FAL_KEY", "FAL_API_KEY"], alibaba: ["DASHSCOPE_API_KEY", "ALIBABA_MODEL_STUDIO_API_KEY"], pexels: ["PEXELS_API_KEY"], pixabay: ["PIXABAY_API_KEY"] };
 export const providerEnvKey = (p: ProviderId): string | null => ENV_KEYS[p].map((k) => process.env[k]?.trim()).find(Boolean) ?? null;
 
 export function providerKey(p: ProviderId): string | null {
@@ -249,8 +255,8 @@ export function activeProviderKey(p: ProviderId): string | null {
 /** Le moteur local fonctionne sans fournisseur : il ne remplace pas l'IA, il l'outille. */
 export function aiAvailability() {
   const llm = providerEnabled("anthropic");
-  const image = providerEnabled("openai") || providerEnabled("google");
-  const video = providerEnabled("google") || providerEnabled("fal");
+  const image = providerEnabled("openai") || providerEnabled("google") || providerEnabled("alibaba");
+  const video = providerEnabled("google") || providerEnabled("fal") || providerEnabled("alibaba");
   // Vidéo UGC : une personne générée (images) puis animée (vidéo) ; la voix vient de Veo 3 (Google).
   const ugc = image && video;
   const ugcVoice = ugc && providerEnabled("google");

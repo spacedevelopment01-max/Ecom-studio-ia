@@ -9,7 +9,7 @@ import { L } from "@/lib/i18n-server";
 /** Vérifie réellement une clé (appel minimal au fournisseur). */
 export const POST = handle(async (req: Request) => {
   await requireAdmin();
-  const b = await body(req, z.object({ provider: z.enum(["anthropic", "openai", "google", "fal", "pexels", "pixabay"]) }));
+  const b = await body(req, z.object({ provider: z.enum(["anthropic", "openai", "google", "fal", "alibaba", "pexels", "pixabay"]) }));
   try {
     const msg = b.provider === "anthropic" ? await pingAnthropic("claude-haiku-4-5").then((r) => L(`Clé acceptée par Anthropic (${r.model}, sans génération facturée)`, `Key accepted by Anthropic (${r.model}, no billed generation)`)) : b.provider === "pexels" || b.provider === "pixabay" ? await pingStock(b.provider) : await pingProvider(b.provider);
     return ok({ ok: true, message: msg });

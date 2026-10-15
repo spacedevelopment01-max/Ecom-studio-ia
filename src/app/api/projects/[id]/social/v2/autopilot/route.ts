@@ -9,20 +9,15 @@ import { networkStatuses } from "@/lib/social-v2/networks";
 import { memorySummary } from "@/lib/social-v2/memory";
 import { realSocialDeps } from "@/lib/social-v2/deps";
 import { PLATFORMS } from "@/lib/social-v2/platforms";
-import { GOALS, WEEK, rolesFor } from "@/lib/social-v2/editorial";
+import { GOALS, weekPreview, type Goal } from "@/lib/social-v2/editorial";
 
 export const runtime = "nodejs";
 
 function view(p: Parameters<typeof getSettings>[0]) {
   const plan = planOfProject(p.id);
   const s = getSettings(p);
-  const lang = s.config.language;
   return {
-    // Semaine éditoriale réelle pour les réglages choisis (thème du jour et rôle de chaque publication).
-    week: [1, 2, 3, 4, 5, 6, 0].map((day) => {
-      const d = WEEK.find((x) => x.day === day)!;
-      return { day, title: d.title[lang], goal: d.goal[lang], roles: rolesFor(day, s.config.perDay, s.config.goal, s.config.commercial).map((r) => ({ title: r.title[lang], kind: r.kind })) };
-    }),
+    week: weekPreview(s.config.perDay, s.config.goal, s.config.commercial, s.config.language),
     settings: s,
     networks: networkStatuses(p),
     limits: plan ? { plan, perDay: PLANS[plan].postsPerDay, calendarDays: PLANS[plan].calendarDays, autopublish: PLANS[plan].autopublish } : null,
@@ -35,8 +30,16 @@ function view(p: Parameters<typeof getSettings>[0]) {
 }
 
 /** « Ma communication automatique » : réglages, état réel des réseaux, limites du forfait, consentement, historique. */
-export const GET = handle(async (_req: Request, ctx: Ctx) => {
+export const GET = handle(async (req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
+  // Aperçu de la semaine type pour les choix EN COURS (avant enregistrement) : suit l'écran immédiatement.
+  const q = new URL(req.url).searchParams;
+  if (q.get("preview") === "week") {
+    const perDay = Math.max(1, Math.min(5, Number(q.get("perDay")) || 1));
+    const goal = (GOALS as string[]).includes(q.get("goal") ?? "") ? (q.get("goal") as Goal) : "balanced";
+    const commercial = (Math.max(0, Math.min(2, Number(q.get("commercial") ?? 1))) || 0) as 0 | 1 | 2;
+    return ok({ week: weekPreview(perDay, goal, commercial, q.get("lang") === "en" ? "en" : "fr") });
+  }
   return ok(view(p));
 });
 
@@ -61,6 +64,7 @@ const Config = z
     horizonDays: z.number().int().min(1).max(90),
     produceDays: z.number().int().min(1).max(7),
     paidCapEurWeek: z.number().min(0).max(50),
+    visual: z.enum(["free", "ai_image", "ai_post"]),
   })
   .partial();
 

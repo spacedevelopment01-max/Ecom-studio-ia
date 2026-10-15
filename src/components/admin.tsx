@@ -17,6 +17,7 @@ import { TextRoutingPanel, type TextRoutingData } from "./admin-text-routing";
 import type { MediaRoutingData } from "./admin-media-routing";
 const MediaRoutingPanel = dynamic(() => import("./admin-media-routing").then((m) => m.MediaRoutingPanel), { ssr: false });
 import type { MediaUsageData } from "./admin-media-usages";
+import { AlibabaSettings, type AlibabaData } from "./admin-alibaba";
 const MediaUsagesPanel = dynamic(() => import("./admin-media-usages").then((m) => m.MediaUsagesPanel), { ssr: false });
 
 type Overview = {
@@ -30,6 +31,7 @@ type Overview = {
   textRouting: TextRoutingData;
   mediaRouting: MediaRoutingData;
   mediaUsages: MediaUsageData;
+  alibaba: AlibabaData;
   oauth: { key: string; label: string; configured: boolean; clientIdMasked: string; redirectUri: string; needs: string; docs: string }[];
   stripe: { secretMasked: string; webhookConfigured: boolean; verifiedAt: string | null; live: boolean; webhookUrl: string };
   smtp: { configured: boolean; hostMasked: string; port: string; userMasked: string; passwordConfigured: boolean; fromMasked: string };
@@ -195,6 +197,7 @@ function AiProviders({ data, set }: { data: Overview; set: SetFn }) {
               {p.configured && <Button size="sm" variant="ghost" onClick={() => confirm(t("Supprimer cette clé ?", "Delete this key?")) && set([{ key: `provider.${p.id}.apiKey`, value: null }], t("Clé supprimée.", "Key deleted."))}>{t("Supprimer", "Delete")}</Button>}
               <a href={p.docs} target="_blank" rel="noreferrer" className="text-xs underline">{t("Documentation", "Documentation")}</a>
             </div>
+            {p.id === "alibaba" && data.alibaba && <AlibabaSettings data={data.alibaba} set={set} />}
             {result[p.id] && (
               <p className={cx("flex gap-2 rounded-xl p-2.5 text-xs", result[p.id].ok ? "bg-ok-soft text-ok" : "bg-bad-soft text-bad")}>
                 {result[p.id].ok ? <CheckCircle2 className="size-4 shrink-0" /> : <XCircle className="size-4 shrink-0" />} {result[p.id].message}

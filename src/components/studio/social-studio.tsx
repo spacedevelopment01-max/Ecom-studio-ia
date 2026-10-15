@@ -16,6 +16,7 @@ import { useProject } from "./project-context";
 import { AssetThumb, JobProgress, MediaPicker, useActive, type AssetView } from "./common";
 import { AiWait } from "../wait-time";
 import { AutopilotPanel, SocialOverview } from "./social-autopilot";
+import { VisualChoice } from "./visual-choice";
 
 type PostV = {
   id: string; network: string; format: string; status: string; scheduledAt: number | null; timezone: string; title: string; caption: string; hashtags: string; link: string | null;
@@ -258,6 +259,15 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
     <div className="grid min-w-0 grid-cols-1 gap-5" data-social-create>
       {jobs.map((j) => <JobProgress key={j.id} job={j} />)}
       <AiWait busy={busy && !!what} label={what?.label ?? ""} waitKey={what?.key ?? "social"} expectedMs={what?.ms ?? 20000} progress={progress ? progress.done / Math.max(1, progress.total) : undefined} />
+      <Card className="grid gap-2 p-5 sm:p-7" data-create-guide>
+        <h3 className="font-display text-xl font-semibold">{t("Comment créer vos publications", "How to create your posts")}</h3>
+        <ol className="grid gap-1.5 text-sm sm:grid-cols-3">
+          <li className="rounded-2xl bg-paper-2 p-3"><span className="font-semibold">{t("1. Planifier", "1. Plan")}</span> — {t("les dates, les sujets et les textes (gratuit).", "dates, topics and copy (free).")}</li>
+          <li className="rounded-2xl bg-paper-2 p-3"><a href="#creer-visuels" className="font-semibold underline">{t("2. Créer les visuels", "2. Create the visuals")}</a> — {t("plus bas : image gratuite mise en page par le studio, image par l'IA, ou publication entièrement par l'IA.", "below: free image laid out by the studio, AI image, or post entirely by AI.")}</li>
+          <li className="rounded-2xl bg-paper-2 p-3"><span className="font-semibold">{t("3. Relire et valider", "3. Review and approve")}</span> — {t("dans « Calendrier » : ouvrez une publication pour la modifier, refaire son visuel ou l'approuver.", "in \"Calendar\": open a post to edit it, redo its visual or approve it.")}</li>
+        </ol>
+        <p className="text-xs text-muted">{t("Vous préférez que tout se fasse seul, semaine après semaine ? Utilisez « Ma communication automatique ».", "Prefer everything to happen on its own, week after week? Use \"My automatic communication\".")}</p>
+      </Card>
       <Card className="grid gap-4 p-5 sm:p-7">
         <h3 className="font-display text-xl font-semibold">{t("Demander en une phrase", "Ask in one sentence")}</h3>
         <Textarea rows={2} value={ask} onChange={(e) => setAsk(e.target.value)} placeholder={t("Ex. Prépare mes publications pour les 30 prochains jours, avec 3 publications par jour, des images, des vidéos et des textes.", "E.g. Prepare my posts for the next 30 days, 3 posts a day, with images, videos and text.")} />
@@ -330,8 +340,9 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
         )}
       </Card>
       <Card className="grid gap-3 p-5 sm:p-7">
-        <h3 className="font-display text-xl font-semibold">{t("2. Produire les visuels et vidéos", "2. Produce visuals and videos")}</h3>
-        <p className="text-sm text-muted">{t("Par lots. Gratuit : pour chaque publication, la photo libre (Pixabay d'abord) la plus en rapport avec votre métier ou votre produit, mise en page à la marque. Avec l'IA : estimation d'abord, puis plafond que vous fixez.", "In batches. Free: for each post, the royalty-free photo (Pixabay first) that best matches your trade or product, in a branded layout. With AI: estimate first, then a cap you set.")}</p>
+        <h3 className="font-display text-xl font-semibold" id="creer-visuels">{t("2. Créer les visuels de vos publications", "2. Create your post visuals")}</h3>
+        <p className="text-sm text-muted">{t("C'est ici que le studio crée les images de toutes les publications planifiées à l'étape 1, en une fois. Choisissez d'abord comment : gratuit, image par l'IA ou publication entièrement par l'IA. Avec l'IA, le prix s'affiche avant de lancer et rien n'est dépensé sans votre accord.", "This is where the studio creates the images for all posts planned in step 1, in one go. First choose how: free, AI image or post entirely by AI. With AI, the price is shown before starting and nothing is spent without your approval.")}</p>
+        <VisualChoice value={mode} onChange={setMode} ai={!!data.ai} name="visual-mode-batch" />
         <Field label={t("Nombre d'images différentes", "Number of different images")} htmlFor="distinct-images">
           <div className="flex flex-wrap items-center gap-2">
             <Select id="distinct-images" value={String(distinct)} onChange={(e) => setDistinct(Number(e.target.value))} className="h-10 w-full sm:w-72" data-distinct-images>
@@ -341,7 +352,6 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
             <span className="text-xs text-muted">{t("Chaque image est cherchée pour votre métier ou votre produit ; au-delà, elles sont reprises avec un autre texte et une autre mise en page.", "Each image is searched for your trade or product; beyond that, they are reused with different text and layout.")}</span>
           </div>
         </Field>
-        <VisualChoice value={mode} onChange={setMode} ai={!!data.ai} name="visual-mode-batch" />
         <div className="flex flex-wrap gap-2">
           {mode === "free"
             ? <Button variant="signal" icon={<Sparkles className="size-4" />} loading={busy} disabled={!latest} onClick={produceFree} data-action="produce-free">{t("Produire gratuitement (30 publications)", "Produce for free (30 posts)")}</Button>
@@ -916,36 +926,6 @@ function PostEditorV2({ postId, data, onClose, onChanged }: { postId: string; da
 }
 
 // ------------------------------------------------------------------ choix du visuel
-
-function VisualChoice({ value, onChange, ai, name }: { value: VisualMode; onChange: (m: VisualMode) => void; ai: boolean; name: string }) {
-  const t = useT();
-  const options: [VisualMode, string, string, string][] = [
-    ["free", t("Image gratuite, mise en page du studio", "Free image, studio layout"), t("Une photo libre de droits choisie pour votre activité ou votre produit ; le studio pose le titre, le texte et le bouton à vos couleurs.", "A royalty-free photo chosen for your business or product; the studio adds the headline, text and button in your colors."), t("Gratuit", "Free")],
-    ["ai_image", t("Image par l'IA, le studio fait le reste", "AI image, the studio does the rest"), t("L'IA crée la photo avec votre vrai produit ; le studio pose le titre, le texte et le bouton (modifiables ensuite).", "AI creates the photo with your real product; the studio adds the headline, text and button (editable afterwards)."), t("Payant · prix affiché avant", "Paid · price shown first")],
-    ["ai_post", t("Publication entièrement par l'IA", "Post entirely by AI"), t("Scène, mise en page, titre et bouton créés ensemble par l'IA, avec votre vrai produit ; textes relus lettre par lettre.", "Scene, layout, headline and button created together by AI, with your real product; texts checked letter by letter."), t("Payant · prix affiché avant", "Paid · price shown first")],
-  ];
-  return (
-    <fieldset className="grid gap-2" data-visual-mode>
-      <legend className="mb-1.5 text-sm font-medium">{t("Comment faire le visuel ?", "How should the visual be made?")}</legend>
-      <div className="grid gap-2 lg:grid-cols-3">
-        {options.map(([v, label, help, price]) => {
-          const off = v !== "free" && !ai;
-          return (
-            <label key={v} className={cx("flex gap-3 rounded-2xl border p-3 text-sm", off ? "cursor-not-allowed opacity-55" : "cursor-pointer", value === v ? "border-ink bg-paper-2" : "border-line")}>
-              <input type="radio" name={name} value={v} checked={value === v} disabled={off} onChange={() => onChange(v)} className="mt-1" data-visual-option={v} />
-              <span>
-                <span className="block font-medium">{label}</span>
-                <span className="block text-xs text-muted">{help}</span>
-                <span className={cx("mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold", v === "free" ? "bg-ok-soft text-ok" : "bg-signal-soft text-signal")}>{price}</span>
-              </span>
-            </label>
-          );
-        })}
-      </div>
-      {!ai && <p className="text-xs text-muted">{t("Les choix avec l'IA ne sont pas disponibles pour ce projet (forfait Découverte, budget IA épuisé ou fournisseur désactivé).", "AI choices aren't available for this project (Discovery plan, AI budget used up or provider disabled).")}</p>}
-    </fieldset>
-  );
-}
 
 /** Visuel d'UNE publication : le client choisit (gratuit / image IA / publication entièrement IA), voit le prix, accepte. */
 function PostVisualMaker({ postId, ai, hasMedia, onDone }: { postId: string; ai: boolean; hasMedia: boolean; onDone: () => Promise<void> }) {

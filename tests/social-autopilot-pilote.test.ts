@@ -142,7 +142,7 @@ describe("Autopilot V2 — pilote", async () => {
 
   it("budget : sans IA disponible, visuels gratuits et recharge de 10 € proposée ; avec IA, tâche payante seulement dans le plafond de la semaine", async () => {
     const p = await project("vendre");
-    ap.saveSettings(p, { active: true, perDay: 1, horizonDays: 7, platforms: ["instagram"], paidCapEurWeek: 2 });
+    ap.saveSettings(p, { active: true, perDay: 1, horizonDays: 7, platforms: ["instagram"], paidCapEurWeek: 2, visual: "ai_image" });
     const free = mockSocialDeps({ aiActive: false });
     const r = await fr(() => ap.runAutopilot(p, free.deps));
     expect(free.log.paid).toBe(0);
@@ -150,18 +150,22 @@ describe("Autopilot V2 — pilote", async () => {
     expect(one<{ body: string }>("SELECT body FROM notifications WHERE project_id = ? AND title LIKE 'Budget IA%'", p.id)!.body).toMatch(/recharge de 10 €/);
 
     const q = await project("vendre");
-    ap.saveSettings(q, { active: true, perDay: 1, horizonDays: 7, platforms: ["instagram"], paidCapEurWeek: 0.25 });
+    ap.saveSettings(q, { active: true, perDay: 1, horizonDays: 7, platforms: ["instagram"], paidCapEurWeek: 0.5, visual: "ai_image" });
     const paid = mockSocialDeps({ aiActive: true, cost: 100_000 });
     const r1 = await fr(() => ap.runAutopilot(q, paid.deps));
     expect(r1.paidJob).toBeTruthy();
     expect(paid.log.paid).toBe(0); // la dépense passe par la tâche de production (réservation du budget), pas ici
     const job = one<{ payload: string }>("SELECT payload FROM jobs WHERE id = ?", r1.paidJob)!;
-    expect(JSON.parse(job.payload).approvedEstimateMicro).toBeLessThanOrEqual(250_000);
+    expect(JSON.parse(job.payload).approvedEstimateMicro).toBeLessThanOrEqual(500_000);
     // Nouvelles publications à produire, plafond de la semaine déjà engagé : gratuit.
     run("UPDATE posts SET media = '[]' WHERE plan_id = ?", `auto-${q.id}`);
     const r2 = await fr(() => ap.runAutopilot(q, paid.deps));
     expect(r2.paidJob).toBeNull();
     expect(r2.notes.join(" ")).toMatch(/plafond de la semaine/);
+    // Visuel « gratuit » choisi : jamais de tâche payante, même avec un budget saisi.
+    const g = await project("vendre");
+    ap.saveSettings(g, { active: true, perDay: 1, horizonDays: 7, platforms: ["instagram"], paidCapEurWeek: 5, visual: "free" });
+    expect((await fr(() => ap.runAutopilot(g, mockSocialDeps({ aiActive: true }).deps))).paidJob).toBeNull();
   });
 
   it("qualité : adaptations d'un même contenu non vues comme doublons ; TikTok sans vraie vidéo ne peut pas partir", async () => {

@@ -10,6 +10,8 @@ import { Bot, CalendarDays, Check, History, Pause, Play, Power, Save, ShieldChec
 import { api, Badge, Button, Card, cx, Input, Select, Spinner, useApi, useToast } from "../ui";
 import { useT } from "../i18n";
 import { useProject } from "./project-context";
+import { VisualChoice } from "./visual-choice";
+import type { VisualMode } from "@/lib/social-v2/visual-mode";
 
 type Goal = "awareness" | "sales" | "community" | "balanced";
 type Net = "instagram" | "facebook" | "tiktok" | "youtube" | "pinterest" | "linkedin";
@@ -17,7 +19,7 @@ type Kind = "main" | "info" | "demo" | "more" | "engage" | "convert";
 type Config = {
   active: boolean; goal: Goal; platforms: Net[]; perDay: number; weekdays: number[]; slots: string[]; timezone: string; tone: string; language: "fr" | "en";
   commercial: 0 | 1 | 2; focus: string[]; formats: Partial<Record<"image" | "carousel" | "video" | "text", number>>; approval: "manual" | "auto"; autoKinds: Kind[]; exclude: string[];
-  suspended: Net[]; horizonDays: number; produceDays: number; paidCapEurWeek: number;
+  suspended: Net[]; horizonDays: number; produceDays: number; paidCapEurWeek: number; visual: VisualMode;
 };
 type NetworkStatus = { platform: Net; label: string; state: string; text: { fr: string; en: string }; account: string | null; missing: string[]; verified: boolean; note: { fr: string; en: string } | null };
 type View = {
@@ -67,6 +69,8 @@ export function AutopilotPanel({ onChanged }: { onChanged: () => void }) {
   const [agree, setAgree] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [last, setLast] = useState<View["run"] | null>(null);
+  // Semaine type qui suit les choix en cours (fréquence, objectif, niveau commercial), même avant « Enregistrer ».
+  const { data: preview } = useApi<{ week: View["week"] }>(cfg ? `/api/projects/${id}/social/v2/autopilot?preview=week&perDay=${cfg.perDay}&goal=${cfg.goal}&commercial=${cfg.commercial}&lang=${cfg.language}` : null);
   useEffect(() => {
     if (data && !cfg) setCfg(data.settings.config);
   }, [data, cfg]);
@@ -186,11 +190,15 @@ export function AutopilotPanel({ onChanged }: { onChanged: () => void }) {
           <label className="grid gap-1 text-sm">{t("Produits ou services prioritaires", "Priority products or services")}
             <Input value={cfg.focus.join(", ")} onChange={(e) => set("focus", e.target.value.split(",").map((x) => x.trim()).filter(Boolean))} placeholder={t("noms séparés par des virgules", "names separated by commas")} />
           </label>
-          <label className="grid gap-1 text-sm">{t("Plafond IA par semaine pour les visuels (€)", "Weekly AI cap for visuals (€)")}
-            <Input type="number" min={0} max={50} step={0.5} value={cfg.paidCapEurWeek} onChange={(e) => set("paidCapEurWeek", Number(e.target.value))} />
-            <span className="text-xs text-muted">{cfg.paidCapEurWeek > 0 ? (data.ai ? t("Visuels par l'IA seulement dans ce plafond, quelques jours à l'avance.", "AI visuals only within this cap, a few days ahead.") : t("IA non disponible pour ce projet : visuels gratuits.", "AI not available for this project: free visuals.")) : t("0 € : visuels gratuits (vos photos, mise en page du studio).", "€0: free visuals (your photos, studio layout).")}</span>
-          </label>
+
         </div>
+        <VisualChoice value={cfg.visual} onChange={(v) => set("visual", v)} ai={data.ai} name="visual-mode-autopilot" />
+        {cfg.visual !== "free" && (
+          <label className="grid max-w-sm gap-1 text-sm">{t("Budget IA maximum par semaine pour ces visuels (€)", "Maximum AI budget per week for these visuals (€)")}
+            <Input type="number" min={0} max={50} step={0.5} value={cfg.paidCapEurWeek} onChange={(e) => set("paidCapEurWeek", Number(e.target.value))} data-paid-cap />
+            <span className="text-xs text-muted">{cfg.paidCapEurWeek > 0 ? t("Le studio ne dépasse jamais ce montant ; au-delà, il continue avec des visuels gratuits.", "The studio never goes over this amount; beyond it, it continues with free visuals.") : t("À 0 €, les visuels restent gratuits : indiquez un montant pour autoriser l'IA.", "At €0, visuals stay free: enter an amount to allow AI.")}</span>
+          </label>
+        )}
         <div className="flex flex-wrap gap-2" data-formats>
           {(["image", "carousel", "video", "text"] as const).map((f) => {
             const on = (cfg.formats[f] ?? 0) > 0;
@@ -241,7 +249,7 @@ export function AutopilotPanel({ onChanged }: { onChanged: () => void }) {
       <Card className="grid gap-3 p-4 sm:p-5" data-week>
         <h3 className="flex items-center gap-2 font-display text-lg font-semibold"><CalendarDays className="size-5" aria-hidden />{t("Votre semaine type", "Your standard week")}</h3>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-          {data.week.map((d) => (
+          {(preview?.week ?? data.week).map((d) => (
             <div key={d.day} className={cx("grid gap-1 rounded-2xl border border-line p-3", !cfg.weekdays.includes(d.day) && "opacity-40")}>
               <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t(["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"][d.day], ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][d.day])}</p>
               <p className="font-medium">{d.title}</p>
