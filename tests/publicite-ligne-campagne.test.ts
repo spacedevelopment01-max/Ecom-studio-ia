@@ -1,7 +1,7 @@
 /**
  * Choix du propriétaire (15/10/2026) :
- *  - toutes les publications conçues par l'IA suivent la ligne « campagne » (logo en haut, produit héros sous le même
- *    angle que la photo, titre avec un seul mot en accent, bouton pilule fin, finition de campagne, univers propre) ;
+ *  - toutes les publications conçues par l'IA visent un rendu digne des plus grandes campagnes ; AUCUNE mise en page
+ *    imposée (logo, produit et textes placés librement, différemment à chaque fois), produit fidèle sous le même angle ;
  *  - le VRAI logo de la marque est transmis à l'IA d'images et contrôlé contre l'original (jamais réinventé) ;
  *  - Qwen-Image 3.0 Pro devient le modèle d'images par défaut, mais seulement une fois confirmé par
  *    l'administration : avant, le défaut historique reste en place (aucune création sans modèle).
@@ -22,17 +22,19 @@ describe("Ligne « campagne » et Qwen-Image 3.0 Pro par défaut", async () => {
   const png = (c = "#335544") => sharp({ create: { width: 64, height: 64, channels: 3, background: c } }).png().toBuffer();
   const post = { id: "post-camp-1", network: "instagram", format: "image", title: "Le temps", caption: "", pillar: "Produit", objective: "sell", headline: "Le temps vous va bien", scheduled_at: null };
 
-  it("consigne : mise en page de campagne, même angle que la photo, un seul mot en accent, aucun texte dans le décor", async () => {
+  it("consigne : niveau des plus grandes campagnes, mise en page libre, même angle que la photo, aucun texte dans le décor", async () => {
     const u = await createUser(`camp-${Date.now()}@test.fr`, "motdepasse-test", "P");
     const p = loadProject(seedImageFixture(u.id, "cosmetic"));
     const withLogo = aiPostPrompt(p, post as any, { aspect: "9:16", hasReference: true, hasLogo: true });
     expect(withLogo).toMatch(/SAME angle and viewpoint/);
     expect(withLogo).toMatch(/brand logo from the second reference image, reproduced faithfully/);
-    expect(withLogo).toMatch(/ONE single word highlighted/);
-    expect(withLogo).toMatch(/slim pill-shaped button/);
+    // Aucune mise en page imposée : seul le niveau est exigé.
+    expect(withLogo).toMatch(/never a fixed template/);
+    expect(withLogo).toMatch(/greatest advertising campaigns/);
+    expect(withLogo).not.toMatch(/from top to bottom|Top center/);
     expect(withLogo).toMatch(/No text, letters or signs anywhere in the decor/);
     const noLogo = aiPostPrompt(p, post as any, { aspect: "1:1", hasReference: true, hasLogo: false });
-    expect(noLogo).toMatch(/brand name ".*" typeset in elegant spaced capitals/);
+    expect(noLogo).toMatch(/brand name ".*", elegantly typeset/);
   });
 
   it("le vrai logo est transmis à l'IA et contrôlé contre l'original (le nom de la marque n'est plus exigé en texte libre)", async () => {

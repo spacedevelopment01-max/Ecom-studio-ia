@@ -217,9 +217,9 @@ Non vérifié : aucune génération réelle (image ou vidéo) n'a encore été f
   **confirmation dans Administration › Modèles Images & Vidéos** (verrou conservé : un nouveau fournisseur payant
   n'est jamais activé sans accord de l'administration). Avant cette confirmation, le défaut historique (OpenAI) reste
   en place : aucune création ne se retrouve sans modèle. Un choix explicite de l'administration reste prioritaire.
-- **Ligne « campagne »** (`src/lib/social-v2/ai-post.ts`, `aiPostPrompt`) pour toutes les publications et publicités
-  conçues par l'IA : logo en haut, produit héros sous le même angle que la photo, titre avec un seul mot en accent,
-  bouton pilule fin, finition de campagne (vraie lumière, profondeur de champ), un univers propre à chaque visuel,
+- **Niveau « plus grandes campagnes »** (`src/lib/social-v2/ai-post.ts`, `aiPostPrompt`) pour toutes les publications
+  et publicités conçues par l'IA : seul le niveau de rendu est imposé ; la mise en page est libre et change à chaque
+  visuel (logo, produit et textes placés comme le déciderait une grande agence). Produit fidèle sous le même angle,
   aucun texte dans le décor. Référence : `reports/alibaba-qwen-essai/style-luxe-cinematique.md`.
 - **Vrai logo transmis** en seconde image de référence (Qwen-Image 3.0, OpenAI) et **contrôlé contre l'original** par
   la relecture automatique (qui continue de vérifier chaque lettre des textes et de refaire un essai si besoin).

@@ -65,9 +65,9 @@ export function cleanAiCopy(c: AiPostCopy, fallback: AiPostTexts, people = false
 }
 
 /**
- * Consigne de l'IA d'images pour une publication complète — ligne « campagne » choisie par le propriétaire pour TOUS
- * les clients (référence : reports/alibaba-qwen-essai/style-luxe-cinematique.md) : on garde une MISE EN PAGE et un
- * NIVEAU DE FINITION de campagne haut de gamme, jamais un décor tout fait ; chaque publication invente son univers.
+ * Consigne de l'IA d'images pour une publication complète — exigence du propriétaire pour TOUS les clients : un rendu
+ * digne des plus grandes campagnes publicitaires. Seul le NIVEAU est imposé : mise en page, cadrage, typographie, place
+ * du logo, du produit et des textes, décor et lumière sont libres et changent d'une publication à l'autre.
  */
 export function aiPostPrompt(p: Project, post: PostBrief, o: { aspect: string; hasReference: boolean; hasLogo?: boolean; fix?: string; texts?: AiPostTexts; people?: boolean }): string {
   const t = o.texts ?? aiPostTexts(p, post);
@@ -79,12 +79,13 @@ Subject: ${p.product.name || p.product.category} — ${p.product.summary?.slice(
 Post angle: ${post.pillar ?? ""} — ${post.title}.
 ${t.scene ? `Universe of THIS post (its own setting, light and mood — not a generic template): ${t.scene}\n` : ""}${o.hasReference ? `The product in the first reference image is the hero: reproduce it EXACTLY, seen from the SAME angle and viewpoint as the photo (same shape, proportions, materials, colours, details, printed text); never redraw it from another angle, never redesign it, never add a word or logo on it that is not on the reference, never add a second copy. If the reference shows it worn or held by someone, take only the product.
 ` : ""}Finish: real light (key light, rim light, crisp reflections), depth of field with a blurred environment that tells the story, rich true-to-life materials, high dynamic range. No text, letters or signs anywhere in the decor.
-Layout, from top to bottom:
-1. Top center: ${o.hasLogo ? `the brand logo from the ${logoRef} reference image, reproduced faithfully (same emblem, same letters), small and elegant` : `the brand name "${t.brand}" typeset in elegant spaced capitals`}; under it a short thin line in the accent colour, then the small line "${t.subline}" in small widely spaced capitals.
-2. The product, large, as the hero in the middle.
-3. Lower part: the headline "${t.headline}" in a large refined typeface, on one or two lines, with ONE single word highlighted in the brand accent colour (or italic).
-4. Under it, a slim pill-shaped button with a fine outline and a small arrow, text: "${t.cta}".
-Brand colours to build the whole design with: ${colors} (dark anchor, brand colour, accent, light neutral); generous margins, strong hierarchy, maximum legibility (strong contrast behind every text).
+Art direction: free and original for THIS post — choose the composition, framing, typography and placement of each element that best serves the idea (never a fixed template: product, texts and brand mark may sit anywhere, as the best agencies would decide). The result must be worthy of the greatest advertising campaigns in the world.
+Elements to include:
+- ${o.hasLogo ? `the brand logo from the ${logoRef} reference image, reproduced faithfully (same emblem, same letters), placed where it looks best` : `the brand name "${t.brand}", elegantly typeset`};
+- the headline "${t.headline}" (the hero text);
+- the small line "${t.subline}";
+- a call-to-action that clearly reads as a button or link: "${t.cta}".
+Brand colours to build the whole design with: ${colors} (dark anchor, brand colour, accent, light neutral); strong hierarchy, maximum legibility (strong contrast behind every text).
 Write ONLY these texts, spelled EXACTLY (same accents, same punctuation), nothing else: "${t.headline}", "${t.subline}", "${t.cta}"${o.hasLogo ? "" : `, "${t.brand}"`}${o.hasLogo ? ` (plus the brand name inside the logo, as on the logo: "${t.brand}")` : ""}.
 No other words, no fake letters, no prices, no percentages, no claims, no reviews, no stars, no hashtags, no website, no watermark. ${o.people ? "If a person appears, they look like a real photographed person (natural skin, natural expression, anatomically correct face, hands and fingers, natural posture), wearing or using the product naturally; the product stays clearly visible and identical to the reference." : "No people, no hands, no faces, no body parts."}${o.fix ? `\nCorrect the previous attempt: ${o.fix}` : ""}`;
 }
