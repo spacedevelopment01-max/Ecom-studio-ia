@@ -61,6 +61,8 @@ export type ThreeScenesRequest = {
   mode?: "ai" | "stock";
   /** Clé stable (reprise sans repayer). */
   key?: string;
+  /** Musique composée par le studio (défaut) ou aucune : choix du client. */
+  music?: boolean;
 };
 
 export type Scene = { still: string; motion: string; title: string };
@@ -123,7 +125,7 @@ export function scenesMaxMicro(scenes: number, imageMaxMicro: number, clipMaxMic
 }
 
 /** Montage : 3 plans (titres courts en calques) + carte de fin (vrai logo, phrase, bouton), musique du studio. */
-export function buildSceneDoc(p: Project, clips: { assetId: string; durationS: number; generated: boolean }[], plan: ScenePlan, aspect: SceneAspect, as: "post" | "ad", timing = sceneTiming(clips.length)): VideoDocument {
+export function buildSceneDoc(p: Project, clips: { assetId: string; durationS: number; generated: boolean }[], plan: ScenePlan, aspect: SceneAspect, as: "post" | "ad", timing = sceneTiming(clips.length), music = true): VideoDocument {
   const pal = palette(p);
   const typo = brandTypo(p);
   const size = SIZES[aspect];
@@ -162,7 +164,7 @@ export function buildSceneDoc(p: Project, clips: { assetId: string; durationS: n
     safe,
     clips: out,
     subtitles: { style: defaultSubtitleStyle({ width: size.w, height: size.h }, typo, pal), cues: [] },
-    audio: { voice: [], voiceId: null, music: { source: "synth", mood: "warm", gainDb: -12, style: songStyleFor(p), seed: p.id }, sfx: [], duckingDb: -10, loudnessLufs: -14 },
+    audio: { voice: [], voiceId: null, music: music ? { source: "synth", mood: "warm", gainDb: -12, style: songStyleFor(p), seed: p.id } : null, sfx: [], duckingDb: -10, loudnessLufs: -14 },
     brand: { palette: { ...pal }, fonts: { heading: typo.heading, body: typo.body }, name: p.brand?.name ?? "" },
     disclosure: clips.some((c) => c.generated) ? disclosureLabel() : null,
     meta: { intent: as === "ad" ? "video_ad" : "social_content", source: "engine", createdFrom: null, runId: null, promo: true },
@@ -241,9 +243,9 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
     if (clips.length < Math.min(2, plan.scenes.length)) throw new UserFacingError(L("Pas assez de plans libres de droits en rapport avec ce service pour une vidéo de qualité.", "Not enough royalty-free shots related to this service for a quality video."));
   }
   ctx?.progress(0.9, L("Montage : titres, logo, musique", "Editing: titles, logo, music"));
-  const doc = buildSceneDoc(p0, clips, plan, aspect, req.as, timing);
+  const doc = buildSceneDoc(p0, clips, plan, aspect, req.as, timing, req.music !== false);
   saveVideoVersion(projectId, docKey, doc, { note: C(`Vidéo en ${clips.length} scènes`, `${clips.length}-scene video`) });
-  const videoAssetId = await deps.render(p0, docKey, doc, { scenes: { key, mode, subject: s ? { kind: s.kind, key: s.key, name: s.name } : null, request: req.request ?? null, as: req.as } });
+  const videoAssetId = await deps.render(p0, docKey, doc, { scenes: { key, mode, subject: s ? { kind: s.kind, key: s.key, name: s.name } : null, request: req.request ?? null, as: req.as, music: req.music !== false } });
   return { docKey, videoAssetId, costMicro: deps.spentMicro(key), mode, notes };
 }
 

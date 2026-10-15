@@ -64,6 +64,8 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
       scheme: z.enum(["dark", "light", "brand", "accent", "mono"]).optional(),
       treatment: z.enum(["natural", "punch", "warm", "cool", "mono", "moody", "duotone"]).optional(),
       style: z.enum(ANIM_STYLES).optional(),
+      /** Version animée : avec la musique du studio (défaut) ou sans. */
+      music: z.boolean().optional(),
       doc: AdDocumentSchema.optional(),
       version: z.number().int().min(1).optional(),
       note: z.string().max(200).optional(),
@@ -108,7 +110,7 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
   if (b.action === "animate") {
     // Version animée (vidéo) : locale et gratuite, même rendu que l'image (moteur commun).
     const { animateDocToAsset } = await import("@/lib/ad-doc/animate-server");
-    const a = await animateDocToAsset(p.id, user.id, docKey, b.style ?? "pop");
+    const a = await animateDocToAsset(p.id, user.id, docKey, b.style ?? "pop", { music: b.music !== false });
     if (!a) throw new HttpError(404, L("Création introuvable.", "Creative not found."));
     return ok({ ...(await view(p, docKey)), animated: { assetId: a.id, url: `/api/files/${a.id}` } });
   }

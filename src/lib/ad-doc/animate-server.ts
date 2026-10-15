@@ -12,6 +12,7 @@ import { renderDoc, type RenderEnv } from "./render";
 import { serverFont } from "./server";
 import { ANIM_DURATION_S, animatedLayers, backdropZoom, isAnimatedLayer, type AnimStyle } from "./animate";
 import type { AdDocument } from "./types";
+import type { SongStyle } from "../media/song";
 
 export type AnimOptions = { style?: AnimStyle; durationS?: number; fps?: number; scale?: number };
 
@@ -80,7 +81,22 @@ export async function renderAnimatedDoc(doc: AdDocument, images: RenderEnv["imag
  * Version animée d'une création du projet (dernière version de sa lignée) : vidéo MP4 enregistrée dans la
  * bibliothèque (Vidéos › Réseaux sociaux), liée à l'image d'origine. Gratuit : aucun appel à l'IA.
  */
-export async function animateDocToAsset(projectId: string, userId: string, docKey: string, style: AnimStyle) {
+/**
+ * Ajoute la musique composée par le studio (droits du studio, style du produit ou du métier) à une vidéo muette ;
+ * à défaut de banque d'instruments, la musique de secours synthétisée. Fondu en fin pour une boucle propre.
+ */
+export async function addStudioMusic(video: string, out: string, durationS: number, music: { style: SongStyle; seed: string }): Promise<string> {
+  const { renderSong } = await import("../media/song");
+  const { synthMusic } = await import("../media/video");
+  const { execTool } = await import("../exec-tool");
+  const wav = `${out}.wav`;
+  fs.writeFileSync(wav, (await renderSong(music.style, durationS, music.seed).catch(() => null)) ?? synthMusic(durationS, "calm", []));
+  await execTool("ffmpeg", ["-y", "-v", "error", "-i", video, "-i", wav, "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-af", `volume=-6dB,afade=t=out:st=${Math.max(0, durationS - 0.8)}:d=0.8`, "-t", String(durationS), "-movflags", "+faststart", out]);
+  fs.rmSync(wav, { force: true });
+  return out;
+}
+
+export async function animateDocToAsset(projectId: string, userId: string, docKey: string, style: AnimStyle, o: { music?: boolean } = {}) {
   const { latestDoc, docImages } = await import("./store");
   const { saveAsset } = await import("../library");
   const { tmpDir } = await import("../storage");
@@ -90,9 +106,17 @@ export async function animateDocToAsset(projectId: string, userId: string, docKe
   const dir = tmpDir("anim");
   try {
     const out = await renderAnimatedDoc(cur.doc, await docImages(projectId, cur.doc), path.join(dir, "post.mp4"), { style });
+    // Avec musique (choix du client, par défaut) : morceau composé par le studio dans le style du projet.
+    const music = o.music !== false;
+    if (music) {
+      const { loadProject } = await import("../projects");
+      const { songStyleFor } = await import("../media/song");
+      const p = loadProject(projectId);
+      out.file = await addStudioMusic(out.file, path.join(dir, "post-music.mp4"), out.durationS, { style: songStyleFor(p), seed: `${p.id}:${docKey}` });
+    }
     const title = (cur.doc.layers.find((l) => l.role === "title" && l.kind === "text") as { text?: string } | undefined)?.text ?? "";
     const slug = title.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "publication";
-    return await saveAsset({ projectId, userId, data: fs.readFileSync(out.file), name: `${slug}-${L("animee", "animated")}.mp4`, mime: "video/mp4", role: "social", folderKey: "videos.social", origin: "generated", sourceAssetId: cur.version.renderedAssetId ?? null, meta: { animatedPost: { docKey, style, version: cur.version.version }, recipe: L("Publication animée par le studio (sans IA) : arrivée du texte, bouton qui bat, photo qui avance", "Post animated by the studio (no AI): text entrance, pulsing button, slow photo push-in") } });
+    return await saveAsset({ projectId, userId, data: fs.readFileSync(out.file), name: `${slug}-${L("animee", "animated")}.mp4`, mime: "video/mp4", role: "social", folderKey: "videos.social", origin: "generated", sourceAssetId: cur.version.renderedAssetId ?? null, meta: { animatedPost: { docKey, style, version: cur.version.version, music }, recipe: L("Publication animée par le studio (sans IA) : arrivée du texte, bouton qui bat, photo qui avance", "Post animated by the studio (no AI): text entrance, pulsing button, slow photo push-in") } });
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }

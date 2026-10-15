@@ -23,6 +23,7 @@ const Req = z.object({
   aspect: z.enum(["9:16", "16:9", "1:1", "4:5"]).default("9:16"),
   scenes: z.number().int().min(SCENE_LIMITS.scenes[0]).max(SCENE_LIMITS.scenes[1]).default(3),
   totalS: z.number().int().min(SCENE_LIMITS.totalS[0]).max(SCENE_LIMITS.totalS[1]).default(15),
+  music: z.boolean().default(true),
 });
 
 const quote = (p: Project, r: ThreeScenesRequest) =>
@@ -32,7 +33,7 @@ const quote = (p: Project, r: ThreeScenesRequest) =>
 function list(projectId: string) {
   return all<{ id: string; meta: string; created_at: number }>("SELECT id, meta, created_at FROM assets WHERE project_id = ? AND role = 'video' AND deleted_at IS NULL AND json_extract(meta, '$.scenes') IS NOT NULL ORDER BY created_at DESC LIMIT 40", projectId).map((r) => {
     const m = json<any>(r.meta, {});
-    return { id: r.id, url: `/api/files/${r.id}`, docKey: m.videoV2?.docKey ?? null, aspect: m.format ?? null, durationS: m.videoV2?.durationS ?? null, as: m.scenes?.as ?? "post", mode: m.scenes?.mode ?? null, subject: m.scenes?.subject?.name ?? null, request: m.scenes?.request ?? null, at: r.created_at };
+    return { id: r.id, url: `/api/files/${r.id}`, docKey: m.videoV2?.docKey ?? null, aspect: m.format ?? null, durationS: m.videoV2?.durationS ?? null, as: m.scenes?.as ?? "post", mode: m.scenes?.mode ?? null, subject: m.scenes?.subject?.name ?? null, request: m.scenes?.request ?? null, music: m.scenes?.music !== false, at: r.created_at };
   });
 }
 
@@ -46,7 +47,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const b = await body(req, z.discriminatedUnion("action", [z.object({ action: z.literal("quote"), ...Req.shape }), z.object({ action: z.literal("create"), ...Req.shape, approvedEstimateMicro: z.number().int().min(0).nullable().optional() })]));
   const subject = b.subject ? resolveSubject(p, b.subject) : null;
   if (b.subject && (!subject || subject.kind !== b.subject.kind || subject.key !== (b.subject.kind === "service" ? b.subject.name.trim() : b.subject.key))) throw new HttpError(400, L("Produit ou service introuvable dans ce projet.", "Product or service not found in this project."));
-  const r: ThreeScenesRequest = { as: b.as, subject: b.subject ?? null, request: b.request?.trim() || null, aspect: b.aspect, scenes: b.scenes, totalS: b.totalS };
+  const r: ThreeScenesRequest = { as: b.as, subject: b.subject ?? null, request: b.request?.trim() || null, aspect: b.aspect, scenes: b.scenes, totalS: b.totalS, music: b.music };
   const q = quote(p, r);
   if (b.action === "quote") return ok(q);
   if (!p.brand) throw new HttpError(409, L("La marque n'est pas encore créée.", "The brand has not been created yet."));

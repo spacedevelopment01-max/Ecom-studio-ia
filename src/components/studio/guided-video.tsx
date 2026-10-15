@@ -13,6 +13,7 @@ import { useProject } from "./project-context";
 import { JobProgress, SectionTitle, useActive } from "./common";
 import { formatEur } from "../billing-client";
 import { SubjectPicker, subjectChoice, type SubjectView } from "./subject-picker";
+import { MusicChoice } from "./music-choice";
 
 type Quote = { mode: "ai" | "stock"; allowed: boolean; reason: string | null; estimateMicro: number; scenes: number; totalS: number; clipS: number };
 type VideoItem = { id: string; url: string; aspect: string | null; durationS: number | null; as: "post" | "ad"; mode: string | null; subject: string | null; request: string | null; at: number };
@@ -39,6 +40,7 @@ export function GuidedVideo({ as }: { as: "post" | "ad" }) {
   const [aspect, setAspect] = useState<(typeof ASPECTS)[number]["v"]>("9:16");
   const [totalS, setTotalS] = useState(15);
   const [scenes, setScenes] = useState(3);
+  const [music, setMusic] = useState(true);
   const [quote, setQuote] = useState<Quote | null>(null);
   const [busy, setBusy] = useState(false);
   useEffect(() => {
@@ -67,7 +69,7 @@ export function GuidedVideo({ as }: { as: "post" | "ad" }) {
     if (!quote?.allowed) return;
     setBusy(true);
     try {
-      await api(`/api/projects/${id}/creative/video`, { body: { action: "create", as, subject, request: request.trim() || undefined, aspect, totalS, scenes, approvedEstimateMicro: quote.estimateMicro } });
+      await api(`/api/projects/${id}/creative/video`, { body: { action: "create", as, subject, request: request.trim() || undefined, aspect, totalS, scenes, music, approvedEstimateMicro: quote.estimateMicro } });
       toast("ok", t("Vidéo en préparation : elle apparaît ici dès qu'elle est prête.", "Video being prepared: it appears here as soon as it's ready."));
     } catch (e) {
       toast("bad", (e as Error).message);
@@ -117,6 +119,11 @@ export function GuidedVideo({ as }: { as: "post" | "ad" }) {
             </div>
             <p className="mt-1.5 text-xs text-muted">{t(`≈ ${perScene} s par scène, puis la carte de fin avec votre logo.`, `≈ ${perScene} s per scene, then the end card with your logo.`)}</p>
           </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="text-sm font-medium">{t("Musique", "Music")}</p>
+          <MusicChoice value={music} onChange={setMusic} />
+          <p className="text-xs text-muted">{music ? t("Morceau composé par le studio dans le style de votre marque (droits inclus).", "Track composed by the studio in your brand's style (rights included).") : t("Vidéo sans musique.", "Video without music.")}</p>
         </div>
         <div className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between" data-video-price>
           <p className="text-sm">
