@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { ImagePlus, Plus, RefreshCw, Trash2, Link2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ImagePlus, Plus, RefreshCw, Trash2, Link2 } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, Field, Input, Modal, Textarea, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { SectionTitle } from "./common";
@@ -71,7 +71,7 @@ export function CatalogPanel() {
             <Empty title={t("Aucun autre produit pour l'instant", "No other products yet")} icon={<ImagePlus className="size-5" />}>{t("Ajoutez la photo, le nom et le prix de chaque produit : le studio s'occupe du détourage, du packshot et des collections.", "Add each product's photo, name and price: the studio takes care of the cutout, packshot and collections.")}</Empty>
           ) : (
             <ul className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {data.items.map((i) => (
+              {data.items.map((i, n) => (
                 <li key={i.key} className="flex gap-3 rounded-2xl border border-line p-3">
                   <span className="size-20 shrink-0 overflow-hidden rounded-xl bg-paper-2">{i.image && <img src={i.image} alt="" className="size-full object-cover" />}</span>
                   <div className="min-w-0 flex-1">
@@ -80,11 +80,15 @@ export function CatalogPanel() {
                       <Input defaultValue={i.category} placeholder={t("Catégorie", "Category")} onBlur={(e) => e.target.value !== i.category && patch({ item: { key: i.key, category: e.target.value.trim() } })} className="h-8 text-xs" aria-label={t("Catégorie", "Category")} />
                       <Input defaultValue={euros(i.price)} placeholder={t("Prix €", "Price €")} inputMode="decimal" onBlur={(e) => { const c = toCents(e.target.value); if (c === undefined) { toast("bad", t("Prix illisible : écrivez par exemple 24,90.", "Unreadable price: write for example 24.90.")); e.target.value = euros(i.price); } else if (c !== i.price) patch({ item: { key: i.key, price: c } }); }} className="h-8 text-xs" aria-label={t("Prix", "Price")} />
                     </div>
-                    <div className="mt-1.5 flex items-center gap-1.5">
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                       {!i.processed && <Badge tone="neutral">{t("packshot à la prochaine mise à jour", "packshot at next update")}</Badge>}
                       {i.price === null && <Badge tone="warn">{t("prix à renseigner", "price needed")}</Badge>}
                       {i.source?.url && <a href={i.source.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[11px] text-muted underline" title={t("Provenance (visible seulement dans le studio)", "Source (only visible in the studio)")}><Link2 className="size-3" /> {i.source.supplier}</a>}
-                      <button onClick={() => confirm(t(`Retirer « ${i.name} » du catalogue ?`, `Remove “${i.name}” from the catalog?`)) && patch({ remove: i.key }, t("Produit retiré du catalogue.", "Product removed from the catalog."))} className="ml-auto grid size-8 place-items-center rounded-full hover:bg-paper-2" aria-label={t(`Retirer ${i.name}`, `Remove ${i.name}`)}><Trash2 className="size-4 text-muted" /></button>
+                      <span className="ml-auto flex items-center">
+                        <button disabled={n === 0} onClick={() => patch({ move: { key: i.key, dir: "up" } })} className="grid size-8 place-items-center rounded-full hover:bg-paper-2 disabled:opacity-30" aria-label={t(`Monter ${i.name}`, `Move ${i.name} up`)} title={t("Monter", "Move up")}><ArrowUp className="size-4 text-muted" /></button>
+                        <button disabled={n === data.items.length - 1} onClick={() => patch({ move: { key: i.key, dir: "down" } })} className="grid size-8 place-items-center rounded-full hover:bg-paper-2 disabled:opacity-30" aria-label={t(`Descendre ${i.name}`, `Move ${i.name} down`)} title={t("Descendre", "Move down")}><ArrowDown className="size-4 text-muted" /></button>
+                      </span>
+                      <button onClick={() => confirm(t(`Retirer « ${i.name} » du catalogue ?`, `Remove “${i.name}” from the catalog?`)) && patch({ remove: i.key }, t("Produit retiré du catalogue.", "Product removed from the catalog."))} className="grid size-8 place-items-center rounded-full hover:bg-paper-2" aria-label={t(`Retirer ${i.name}`, `Remove ${i.name}`)}><Trash2 className="size-4 text-muted" /></button>
                     </div>
                   </div>
                 </li>

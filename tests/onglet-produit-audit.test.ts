@@ -1,24 +1,57 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { withFirstVariant } from "../src/lib/project-types";
+import { cleanVariants, moveCatalogItem, variantCombinations } from "../src/lib/project-types";
+import { storeProduct } from "../src/lib/engine/shop";
 
 const read = (f: string) => fs.readFileSync(path.join(process.cwd(), f), "utf8");
 
-describe("onglet Produit : variantes", () => {
+describe("onglet Produit : toutes les variantes", () => {
   const both = [{ name: "Coloris", values: ["Noir", "Brun"] }, { name: "Taille", values: ["40 mm", "42 mm"] }];
 
-  it("enregistrer la première variante garde les autres (la Taille n'est pas effacée)", () => {
-    expect(withFirstVariant(both, " Coloris ", "Noir, Brun, Bleu")).toEqual([{ name: "Coloris", values: ["Noir", "Brun", "Bleu"] }, both[1]]);
+  it("les variantes vides ou sans nom sont écartées, les doublons de valeur aussi", () => {
+    expect(cleanVariants([{ name: " Coloris ", values: [" Noir", "Noir", ""] }, { name: "", values: ["x"] }, { name: "Taille", values: [] }])).toEqual([{ name: "Coloris", values: ["Noir"] }]);
   });
 
-  it("vider la première variante ne retire qu'elle", () => {
-    expect(withFirstVariant(both, "Coloris", " , ")).toEqual([both[1]]);
-    expect(withFirstVariant([], "", "")).toEqual([]);
+  it("toutes les combinaisons, dans l'ordre saisi (3 options et 100 combinaisons au plus)", () => {
+    expect(variantCombinations(both)).toEqual([["Noir", "40 mm"], ["Noir", "42 mm"], ["Brun", "40 mm"], ["Brun", "42 mm"]]);
+    expect(variantCombinations([])).toEqual([]);
+    const many = Array.from({ length: 5 }, (_, i) => ({ name: `O${i}`, values: Array.from({ length: 10 }, (_, k) => `${i}-${k}`) }));
+    const c = variantCombinations(many);
+    expect(c.length).toBe(100);
+    expect(c.every((x) => x.length === 3)).toBe(true);
   });
 
-  it("l'onglet utilise bien cette fusion", () => {
-    expect(read("src/components/studio/tab-produit.tsx")).toMatch(/withFirstVariant\(data\?\.product\.variants/);
+  it("la boutique reçoit toutes les options (Coloris ET Taille), pas seulement la première", () => {
+    const p = { name: "ARVEN", brand: { name: "ARVEN" }, product: { name: "ARVEN", price: { amount: 18900, currency: "EUR" }, variants: both } } as never;
+    const sp = storeProduct(p, { product: { title: "ARVEN", description_html: "" } } as never, []);
+    expect(sp.options).toEqual(["Coloris", "Taille"]);
+    expect(sp.variants.map((v) => v.title)).toEqual(["Noir / 40 mm", "Noir / 42 mm", "Brun / 40 mm", "Brun / 42 mm"]);
+    expect(sp.variants[1].options).toEqual(["Noir", "42 mm"]);
+  });
+
+  it("l'onglet enregistre toutes les variantes, sans rien perdre", () => {
+    const s = read("src/components/studio/tab-produit.tsx");
+    expect(s).toMatch(/variants: cleanVariants\(rows\.map/);
+    expect(s).toContain("Ajouter une variante");
+    expect(s).toContain("Add a variant");
+  });
+});
+
+describe("catalogue : ordre des produits", () => {
+  const items = [{ key: "a" }, { key: "b" }, { key: "c" }];
+  it("monter / descendre d'un cran ; aux extrémités rien ne change", () => {
+    expect(moveCatalogItem(items, "b", "up").map((x) => x.key)).toEqual(["b", "a", "c"]);
+    expect(moveCatalogItem(items, "b", "down").map((x) => x.key)).toEqual(["a", "c", "b"]);
+    expect(moveCatalogItem(items, "a", "up")).toBe(items);
+    expect(moveCatalogItem(items, "c", "down")).toBe(items);
+    expect(moveCatalogItem(items, "zz", "up")).toBe(items);
+  });
+  it("l'API et l'écran (FR/EN) proposent le déplacement", () => {
+    expect(read("src/app/api/projects/[id]/catalog/route.ts")).toMatch(/moveCatalogItem\(catalog, b\.move\.key, b\.move\.dir\)/);
+    const s = read("src/components/studio/catalog-panel.tsx");
+    expect(s).toContain("`Monter ${i.name}`");
+    expect(s).toContain("`Move ${i.name} down`");
   });
 });
 

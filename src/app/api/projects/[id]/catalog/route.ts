@@ -7,7 +7,7 @@ import { saveAsset } from "@/lib/library";
 import { saveCatalog } from "@/lib/projects";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { catalogMedia, upsertCatalogItem } from "@/lib/engine/catalog";
-import type { CatalogItem, StoreType } from "@/lib/project-types";
+import { moveCatalogItem, type CatalogItem, type StoreType } from "@/lib/project-types";
 import { L } from "@/lib/i18n-server";
 
 export const runtime = "nodejs";
@@ -71,10 +71,10 @@ const ItemPatch = z.object({
   features: z.array(z.string().max(200)).max(12).optional(),
 });
 
-/** Modification d'un produit, du type de boutique, ou régénération de la boutique. */
+/** Modification d'un produit, de l'ordre du catalogue, du type de boutique, ou régénération de la boutique. */
 export const PATCH = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  const b = await body(req, z.object({ storeType: z.enum(["mono", "multi", "niche"]).optional(), item: ItemPatch.optional(), remove: z.string().optional(), rebuild: z.boolean().optional() }));
+  const b = await body(req, z.object({ storeType: z.enum(["mono", "multi", "niche"]).optional(), item: ItemPatch.optional(), remove: z.string().optional(), move: z.object({ key: z.string(), dir: z.enum(["up", "down"]) }).optional(), rebuild: z.boolean().optional() }));
   let catalog = p.catalog;
   if (b.item) {
     const { key, ...patch } = b.item;
@@ -82,6 +82,11 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
     catalog = catalog.map((i) => (i.key === key ? { ...i, ...patch } : i));
   }
   if (b.remove) catalog = catalog.filter((i) => i.key !== b.remove);
+  // Ordre du catalogue : repris tel quel par la boutique, ses collections et l'export.
+  if (b.move) {
+    if (!catalog.some((i) => i.key === b.move!.key)) throw new HttpError(404, L("Produit introuvable.", "Product not found."));
+    catalog = moveCatalogItem(catalog, b.move.key, b.move.dir);
+  }
   saveCatalog(p.id, catalog, b.storeType as StoreType | undefined);
   let jobId: string | null = null;
   if (b.rebuild) {

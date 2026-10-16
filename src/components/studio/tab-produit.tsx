@@ -8,7 +8,7 @@ import { FromSiteBadge } from "./existing-site";
 import { CatalogPanel } from "./catalog-panel";
 import { ContentPanel } from "./content-panel";
 import TabActivite from "./tab-activite";
-import { withFirstVariant, type Fact } from "@/lib/project-types";
+import { cleanVariants, MAX_PRODUCT_OPTIONS, type Fact } from "@/lib/project-types";
 import { useLang, useT } from "../i18n";
 import type { Lang } from "@/lib/i18n";
 import { cutoutReasonText, PHOTO_KINDS, type PhotoKind } from "@/lib/cutout-reasons";
@@ -275,28 +275,34 @@ function ProductPhotosCard() {
   );
 }
 
-/** Variante du produit (ex. coloris) et photo de chaque valeur, montrée quand le client la choisit. */
+/**
+ * Toutes les variantes du produit (Coloris, Taille… 3 au plus, comme Shopify) et la photo de chaque valeur, montrée
+ * quand l'acheteur la choisit. L'enregistrement envoie toutes les variantes : rien n'est perdu.
+ */
 function VariantsCard() {
   const { id, data, reload } = useProject();
   const toast = useToast();
   const t = useT();
-  const v = data?.product.variants[0];
-  const [label, setLabel] = useState(v?.name ?? "");
-  const [values, setValues] = useState(v?.values.join(", ") ?? "");
+  const saved = data?.product.variants ?? [];
+  const toRows = (vs: { name: string; values: string[] }[]) => vs.map((v) => ({ name: v.name, values: v.values.join(", ") }));
+  const [rows, setRows] = useState(toRows(saved));
+  const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(false);
   const [target, setTarget] = useState<string | null>(null);
   const file = useRef<HTMLInputElement>(null);
   const { data: photos, reload: reloadPhotos } = useApi<{ photos: { id: string; variant: string; url: string }[] }>(`/api/projects/${id}/product/variant-photo`);
+  const savedKey = JSON.stringify(saved);
   useEffect(() => {
-    setLabel(v?.name ?? "");
-    setValues(v?.values.join(", ") ?? "");
-  }, [v?.name, v?.values.join("|")]);
-  const list = (v?.values ?? []).filter(Boolean);
+    if (!dirty) setRows(toRows(saved));
+  }, [savedKey, dirty]);
+  const edit = (i: number, patch: Partial<{ name: string; values: string }>) => (setRows(rows.map((r, k) => (k === i ? { ...r, ...patch } : r))), setDirty(true));
+  const list = cleanVariants(saved);
   async function save() {
     setBusy(true);
     try {
-      await api(`/api/projects/${id}/product`, { method: "PATCH", body: { variants: withFirstVariant(data?.product.variants ?? [], label, values) } });
+      await api(`/api/projects/${id}/product`, { method: "PATCH", body: { variants: cleanVariants(rows.map((r) => ({ name: r.name, values: r.values.split(",") }))) } });
       toast("ok", t("Variantes enregistrées. Reconstruisez la boutique pour les voir dans l'aperçu.", "Variants saved. Rebuild the store to see them in the preview."));
+      setDirty(false);
       reload();
     } catch (e) {
       toast("bad", (e as Error).message);
@@ -307,28 +313,41 @@ function VariantsCard() {
   return (
     <Card className="p-5">
       <h3 className="font-display text-lg font-semibold">{t("Variantes", "Variants")}</h3>
-      <p className="mt-1 text-xs text-muted">{t("Ex. « Coloris » : Bleu, Vert. Ajoutez la photo de chaque valeur : elle s'affiche quand l'acheteur la choisit.", "E.g. “Color”: Blue, Green. Add a photo for each value: it shows when the shopper selects it.")}</p>
-      <div className="mt-3 grid gap-2">
-        <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder={t("Nom (ex. Coloris, Taille)", "Name (e.g. Color, Size)")} className="h-9 text-sm" aria-label={t("Nom de la variante", "Variant name")} />
-        <Input value={values} onChange={(e) => setValues(e.target.value)} placeholder={t("Valeurs séparées par des virgules", "Comma-separated values")} className="h-9 text-sm" aria-label={t("Valeurs", "Values")} />
-        <Button size="sm" onClick={save} loading={busy}>{t("Enregistrer les variantes", "Save variants")}</Button>
+      <p className="mt-1 text-xs text-muted">{t("Ex. « Coloris » : Bleu, Vert ; « Taille » : 40 mm, 42 mm (3 variantes au plus). Ajoutez la photo de chaque valeur : elle s'affiche quand l'acheteur la choisit.", "E.g. “Color”: Blue, Green; “Size”: 40 mm, 42 mm (3 variants at most). Add a photo for each value: it shows when the shopper selects it.")}</p>
+      <ul className="mt-3 grid gap-3">
+        {rows.map((r, i) => (
+          <li key={i} className="grid gap-2 rounded-xl border border-line p-2">
+            <div className="flex items-center gap-2">
+              <Input value={r.name} onChange={(e) => edit(i, { name: e.target.value })} placeholder={t("Nom (ex. Coloris, Taille)", "Name (e.g. Color, Size)")} className="h-9 min-w-0 flex-1 text-sm" aria-label={t(`Nom de la variante ${i + 1}`, `Variant ${i + 1} name`)} />
+              <button type="button" onClick={() => (setRows(rows.filter((_, k) => k !== i)), setDirty(true))} className="grid size-9 shrink-0 place-items-center rounded-full hover:bg-paper-2" aria-label={t(`Supprimer la variante ${r.name || i + 1}`, `Delete variant ${r.name || i + 1}`)}><Trash2 className="size-4 text-muted" /></button>
+            </div>
+            <Input value={r.values} onChange={(e) => edit(i, { values: e.target.value })} placeholder={t("Valeurs séparées par des virgules", "Comma-separated values")} className="h-9 text-sm" aria-label={t(`Valeurs de la variante ${i + 1}`, `Variant ${i + 1} values`)} />
+          </li>
+        ))}
+      </ul>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {rows.length < MAX_PRODUCT_OPTIONS && <Button size="sm" variant="secondary" icon={<Plus className="size-4" />} onClick={() => (setRows([...rows, { name: "", values: "" }]), setDirty(true))}>{t("Ajouter une variante", "Add a variant")}</Button>}
+        <Button size="sm" onClick={save} loading={busy} disabled={!dirty}>{t("Enregistrer les variantes", "Save variants")}</Button>
       </div>
-      {list.length > 0 && (
-        <ul className="mt-4 grid gap-2">
-          {list.map((val) => {
-            const ph = photos?.photos.find((x) => x.variant.toLowerCase() === val.toLowerCase());
-            return (
-              <li key={val} className="flex items-center gap-3 rounded-xl border border-line p-2">
-                <span className={cx("grid size-12 shrink-0 place-items-center overflow-hidden rounded-lg bg-paper-2", !ph && "text-[10px] text-muted")}>
-                  {ph ? <img src={ph.url} alt={t(`Photo ${val}`, `${val} photo`)} className="size-full object-cover" /> : t("Photo", "Photo")}
-                </span>
-                <span className="min-w-0 flex-1 truncate text-sm">{val}</span>
-                <Button size="sm" variant="secondary" icon={<ImagePlus className="size-4" />} onClick={() => (setTarget(val), file.current?.click())}>{ph ? t("Changer", "Change") : t("Photo", "Photo")}</Button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      {list.map((v, k) => (
+        <div key={`${k}-${v.name}`} className="mt-4">
+          <p className="text-xs font-medium text-muted">{v.name}</p>
+          <ul className="mt-1.5 grid gap-2">
+            {v.values.map((val) => {
+              const ph = photos?.photos.find((x) => x.variant.toLowerCase() === val.toLowerCase());
+              return (
+                <li key={val} className="flex items-center gap-3 rounded-xl border border-line p-2">
+                  <span className={cx("grid size-12 shrink-0 place-items-center overflow-hidden rounded-lg bg-paper-2", !ph && "text-[10px] text-muted")}>
+                    {ph ? <img src={ph.url} alt={t(`Photo ${val}`, `${val} photo`)} className="size-full object-cover" /> : t("Photo", "Photo")}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-sm">{val}</span>
+                  <Button size="sm" variant="secondary" icon={<ImagePlus className="size-4" />} onClick={() => (setTarget(val), file.current?.click())}>{ph ? t("Changer", "Change") : t("Photo", "Photo")}</Button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
       <input
         ref={file}
         type="file"

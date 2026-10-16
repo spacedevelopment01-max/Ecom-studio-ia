@@ -281,12 +281,33 @@ export const emptyProduct = (): ProductProfile => ({
   analyzedBy: "local",
 });
 
+/** Shopify : 3 options au plus par produit, 100 combinaisons au plus. */
+export const MAX_PRODUCT_OPTIONS = 3;
+export const MAX_PRODUCT_VARIANTS = 100;
+
+/** Variantes réellement utilisables : nom et au moins une valeur, sans doublon de valeur. */
+export function cleanVariants(variants: { name: string; values: string[] }[]): { name: string; values: string[] }[] {
+  return variants
+    .map((v) => ({ name: v.name.trim(), values: [...new Set(v.values.map((x) => x.trim()).filter(Boolean))] }))
+    .filter((v) => v.name && v.values.length);
+}
+
 /**
- * Remplace la première variante (celle que montre l'onglet Produit) sans toucher aux autres : enregistrer le
- * « Coloris » ne doit jamais effacer la « Taille ». Nom ou valeurs vides : la première variante est retirée.
+ * Toutes les combinaisons des options du produit (« Noir / 40 mm », « Noir / 42 mm »…), dans l'ordre saisi, limitées
+ * aux 3 premières options et à 100 combinaisons (limites de Shopify).
  */
-export function withFirstVariant(variants: { name: string; values: string[] }[], name: string, values: string): { name: string; values: string[] }[] {
-  const vals = values.split(",").map((x) => x.trim()).filter(Boolean);
-  const rest = variants.slice(1);
-  return vals.length && name.trim() ? [{ name: name.trim(), values: vals }, ...rest] : rest;
+export function variantCombinations(variants: { name: string; values: string[] }[]): string[][] {
+  let out: string[][] = [[]];
+  for (const v of cleanVariants(variants).slice(0, MAX_PRODUCT_OPTIONS)) out = out.flatMap((c) => v.values.map((x) => [...c, x])).slice(0, MAX_PRODUCT_VARIANTS);
+  return out.filter((c) => c.length);
+}
+
+/** Déplace un produit du catalogue d'un cran (« monter » / « descendre ») ; aux extrémités, rien ne change. */
+export function moveCatalogItem<T extends { key: string }>(items: T[], key: string, dir: "up" | "down"): T[] {
+  const i = items.findIndex((x) => x.key === key);
+  const j = dir === "up" ? i - 1 : i + 1;
+  if (i < 0 || j < 0 || j >= items.length) return items;
+  const out = [...items];
+  [out[i], out[j]] = [out[j], out[i]];
+  return out;
 }
