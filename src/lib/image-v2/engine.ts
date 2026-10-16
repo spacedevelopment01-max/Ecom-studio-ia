@@ -235,7 +235,7 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
 
   // Produit réel : jamais posé sur une photo libre de droits (ancienne étape « décor » retirée : rendu « produit
   // collé devant une photo floue », refusé par le propriétaire). La photo publicitaire est générée à partir de la
-  // photo du produit, ou le studio garde ses mises en scène dessinées.
+  // photo du produit ; sinon rien n'est créé et la raison est dite (jamais de gabarit à la place).
   // 3. Génération (dernier recours pour le métier ; seul parcours pour le produit réel).
   if (!stages.includes("generate") || req.allowGenerate === false) return { outcome: none(lastReason), changeDirection: false };
   if (!deps.canGenerate) return { outcome: none(`${lastReason} ; génération non disponible (forfait ou fournisseur)`), changeDirection: false };

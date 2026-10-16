@@ -35,8 +35,15 @@ export function mediaRoutingOverview() {
     const backup = mediaBackup(kind);
     const stats = mediaStats(kind);
     const ranking = rankMedia(kind === "image" ? { kind } : { kind, imageToVideo: true });
+    // Modèle du studio (images : Qwen-Image 3.0 Pro, choix du propriétaire) : s'il n'est pas utilisable et que rien
+    // n'a été choisi ici, un autre modèle (souvent plus cher) le remplace — l'administration le voit et sait pourquoi.
+    const own = getJsonSetting<Partial<Record<string, { provider: string; model: string }>>>("ai.routes", {})[kind === "image" ? "image_generation" : "video_generation"];
+    const dm = MEDIA_MODELS.find((m) => m.kind === kind && m.defaultFor === "primary" && (m.defaultRank ?? 0) > 0);
+    const dst = dm ? mediaStatus(dm) : null;
+    const studioDefault = dm && dst ? { key: dst.key, label: dm.label, usable: dst.usable, reasons: dst.reasons, replacedBy: !own?.provider && !dst.usable && `${primary.provider}:${primary.model}` !== dst.key ? `${primary.provider}:${primary.model}` : null } : null;
     return {
       kind,
+      studioDefault,
       mode: mediaMode(kind),
       primary: `${primary.provider}:${primary.model}`,
       backup: backup ? `${backup.provider}:${backup.model}` : null,

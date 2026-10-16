@@ -473,8 +473,6 @@ const WAN = (model: string, label: string, quality: 1 | 2 | 3, caps: MediaModel[
   ...o,
 });
 MEDIA_MODELS.push(
-  // Modèle d'images PAR DÉFAUT du studio (choix du propriétaire le 15/10/2026, après essais réels : bien moins cher
-  // qu'OpenAI). Reste verrouillé tant que l'administration ne l'a pas confirmé : jusque-là, le secours historique sert.
   // Modèle d'images de tout le studio, pour tous les comptes (choix et accord écrit du propriétaire, 16/10/2026 :
   // meilleurs résultats aux essais réels ARVEN, produit entier et textes exacts) : confirmé d'office.
   QWEN("qwen-image-3.0-pro", "Qwen-Image 3.0 Pro (Alibaba, le meilleur)", 3, "0,04 $ (1K) à 0,075 $ (2K) / image + 0,003 $ par image d'entrée (API officielle, 15/10/2026) ; borne 0,081 $", { caps: { textInImage: true, people: true, references: 2 }, defaultFor: "primary", defaultRank: 1, legacyDefault: true, adminConfirm: false }),

@@ -265,7 +265,7 @@ describe("rendus locaux et mises en page", () => {
     expect(images).toMatch(/verifyAiImage/);
     // Photo publicitaire générée à partir de la photo du produit (référence), produit reproduit à l'identique ;
     // plus jamais de produit détouré collé sur un décor (photo libre ou décor vide généré).
-    expect(providers).toMatch(/reproduce it exactly as it is/);
+    expect(providers).toMatch(/le reproduire exactement tel qu'il est/);
     expect(images).toMatch(/productScene\(/);
     expect(images).not.toMatch(/stockPlate|productPlate\(/);
     expect(images).not.toMatch(/openaiScene\(/);

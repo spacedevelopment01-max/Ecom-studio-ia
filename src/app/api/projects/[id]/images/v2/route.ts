@@ -57,7 +57,7 @@ const ImageRequestSchema = z.object({
   count: z.number().int().min(1).max(4).optional(),
   topic: z.string().max(200).optional(),
   allowGenerate: z.boolean().optional(),
-  /** Image demandée à l'IA (banque d'images › Créer avec l'IA) : pas de recherche de photo libre. */
+  /** Ancien indicateur, désormais implicite : toute génération demandée exclut les photos libres. */
   noStock: z.boolean().optional(),
 });
 
@@ -89,13 +89,16 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     return ok({ jobId: job.id });
   }
   const r = b.request ?? {};
+  // Images finales 100 % IA : une image demandée à l'IA n'est jamais remplacée par une photo libre de droits (aucune
+  // bascule silencieuse). La recherche de photos libres reste possible seulement quand elle est demandée seule
+  // (« Chercher des photos libres », allowGenerate: false).
   const intent = r.kind ? { kind: r.kind, support: r.support } : visualIntent(r.text ?? "", p.business);
   const job = enqueue({
     userId: user.id,
     projectId: p.id,
     type: "image.v2",
     label: L("Images : direction artistique et sélection", "Images: art direction and selection"),
-    payload: { projectId: p.id, request: { kind: intent.kind, support: r.support ?? intent.support, aspect: r.aspect, count: r.count ?? 1, topic: r.topic ?? (r.kind ? null : r.text ?? null), allowGenerate: r.allowGenerate !== false, ...(r.noStock && r.allowGenerate !== false ? { noStock: true } : {}) } },
+    payload: { projectId: p.id, request: { kind: intent.kind, support: r.support ?? intent.support, aspect: r.aspect, count: r.count ?? 1, topic: r.topic ?? (r.kind ? null : r.text ?? null), allowGenerate: r.allowGenerate !== false, ...(r.allowGenerate !== false ? { noStock: true } : {}) } },
   });
   return ok({ jobId: job.id, ...view(p.id) });
 });

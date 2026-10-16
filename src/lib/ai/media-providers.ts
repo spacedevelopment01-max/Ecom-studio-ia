@@ -366,7 +366,7 @@ export function imageUnavailableReason(usage?: MediaUsage): string | null {
   const u = currentAiUser();
   if (u && !userPlan(u)) return L("aucun forfait actif : les images IA sont réservées aux forfaits", "no active plan: AI images come with the plans");
   if (usage && usageExplicit(usage)) return L(`le modèle choisi pour « ${USAGE_INFO[usage].label.fr} » (et son secours) n'est pas utilisable : clé, tarif, confirmation ou capacité — voir Administration › Images & Vidéos`, `the model chosen for "${USAGE_INFO[usage].label.en}" (and its backup) is not usable: key, price, confirmation or capability — see Admin › Images & videos`);
-  return L("aucune clé OpenAI, Gemini ou fal.ai active (ou aucun modèle d'image compatible) dans l'administration", "no active OpenAI, Gemini or fal.ai key (or no compatible image model) in the admin settings");
+  return L("aucun modèle d'images utilisable : clé Alibaba (Qwen-Image 3.0 Pro, modèle du studio) absente ou désactivée, et aucun autre modèle compatible dans l'administration", "no usable image model: Alibaba key (Qwen-Image 3.0 Pro, the studio's model) missing or disabled, and no other compatible model in the admin settings");
 }
 
 /**
@@ -377,7 +377,7 @@ export function imageUnavailableReason(usage?: MediaUsage): string | null {
  * La fidélité au vrai produit est vérifiée ensuite par le contrôle visuel (photo de référence à l'appui).
  *  - modèle choisi pour « Retouches produit » (images produit) ou pour l'usage lui-même (publicités) ;
  *  - seulement un modèle qui accepte une image de référence (OpenAI, Gemini, fal selon le modèle) ;
- *  - null : aucun modèle utilisable (rien n'est généré, le studio garde ses mises en scène dessinées).
+ *  - null : aucun modèle utilisable (rien n'est généré, la raison est dite ; jamais de gabarit à la place).
  */
 export function productImagePath(usage: "product_image" | "ad_visual"): { path: "reference_scene"; usage: MediaUsage } | null {
   const editUsage: MediaUsage = usage === "product_image" ? "product_edit" : usage;
