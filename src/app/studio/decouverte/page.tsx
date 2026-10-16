@@ -82,7 +82,7 @@ export default async function DiscoveryPage() {
       </header>
       <main className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="py-10">
-          <p className="text-sm font-medium uppercase tracking-[.18em] text-signal">{T("Forfait Découverte · gratuit", "Discovery plan · free")}</p>
+          <p className="text-sm font-medium uppercase tracking-[.18em] text-signal">{T("Découverte · gratuite, sans abonnement", "Discovery · free, no subscription")}</p>
           <h1 className="mt-3 font-display text-4xl font-semibold sm:text-5xl">{T("Le studio, en démonstration.", "The studio, as a demo.")}</h1>
           <p className="mt-4 max-w-2xl text-lg text-ink-2">{T("Manipulez les outils sur des marques d'exemple : couleurs, textes, mises en page, publicités, calendrier. Tout tourne dans votre navigateur.", "Try the tools on sample brands: colors, copy, layouts, ads, calendar. Everything runs in your browser.")}</p>
           <p className="mt-5 flex max-w-2xl gap-2 rounded-2xl bg-paper-2 p-4 text-sm text-ink-2"><Info className="mt-0.5 size-4 shrink-0 text-signal" aria-hidden /> {T("Démonstration : exemples créés à l'avance par le studio, pas des résultats clients. Aucun appel IA, aucune publication, aucun export, rien n'est enregistré. Pour créer votre vrai projet, choisissez un forfait.", "Demo: examples made in advance by the studio, not client results. No AI calls, no posting, no export, nothing is saved. To create your real project, choose a plan.")}</p>
