@@ -121,7 +121,7 @@ describe("onglet Images — audit", async () => {
     expect(log.prompts.length).toBeGreaterThan(0);
     for (const x of log.prompts) {
       expect(x).not.toMatch(/chronographe/i);
-      expect(x).toContain("montre posé sur l'établi");
+      expect(x).toContain("une montre posée sur l'établi");
     }
   });
 
