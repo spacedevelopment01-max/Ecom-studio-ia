@@ -1,0 +1,27 @@
+{
+  "at": "2026-10-16T14:12:01.957Z",
+  "model": "qwen-image-3.0-pro",
+  "boundUsd": 0.081,
+  "items": [
+    {
+      "id": "arven-produit-en-situation-v5",
+      "ok": true,
+      "model": "qwen-image-3.0-pro",
+      "aspect": "4:5",
+      "size": "1104*1472",
+      "references": 1,
+      "usage": {
+        "input_image_count": 1,
+        "input_image_type": "qima_input_1k",
+        "output_height": 1472,
+        "output_image_count": 1,
+        "output_image_type": "qima_output_1k",
+        "output_width": 1104
+      },
+      "requestId": "729c5606-cee1-96ab-9ffb-eed7958213ad",
+      "seconds": 20,
+      "maxCostUsd": 0.081,
+      "prompt": "Photographie publicitaire haut de gamme, photoréaliste, au format vertical 4:5. Vue de face légèrement plongeante, cadrage rapproché.\n\nLa scène se déroule sur une surface en marbre blanc poli, parcourue de fines veines grises naturelles. Un fond uni brun chocolat chaud occupe le tiers supérieur de l’image, légèrement flou.\n\nAu centre de l’image se trouve le produit de l’image de référence, reproduit exactement à l’identique : même forme, mêmes proportions, mêmes matières, mêmes couleurs, mêmes détails et mêmes inscriptions que sur la référence, vu sous le même angle. Il n’est ni redessiné, ni recoloré, ni simplifié. Le produit est entier dans le cadre : aucune partie coupée, cachée ou manquante (pour une montre : le bracelet complet, ses deux brins et la boucle). Il repose naturellement sur la surface, à sa taille réelle, avec une vraie ombre de contact.\n\nLa scène contient exactement un objet : le produit de la référence. Le bas de l’image laisse une zone dégagée de marbre devant le produit.\n\nÉclairage doux et naturel venant de la gauche. Ombre de contact réaliste sous le produit, reflets justes sur ses matières. Mise au point précise sur le produit, arrière-plan légèrement adouci. Ambiance : clair, utile, honnête ; rendu photographique naturel.\n\nRien d’autre n’apparaît sur l’image : aucun texte, aucune lettre, aucun chiffre, aucune gravure, aucun logo, aucun filigrane, aucune personne, en dehors de ce qui figure déjà sur le produit de la référence. Aucun objet supplémentaire."
+    }
+  ]
+}
