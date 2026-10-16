@@ -102,3 +102,24 @@ describe("planche : signature seulement une fois validée par le client", () => 
     expect(boardTagline(null)).toBeNull();
   });
 });
+
+describe("planche Sonore : deux quasi-noirs fusionnés", () => {
+  it("#05070D et #0B0F1A : un seul « Noir d'encre » ; deux sombres vraiment différents restent", () => {
+    const sw = boardSwatches(boardColors({ primary: "#0B0F1A", secondary: "#8A9BC2", accent: "#00E0A4", light: "#E8EEF6", dark: "#05070D" }));
+    expect(sw).toEqual(["#05070D", "#8A9BC2", "#00E0A4", "#E8EEF6"]);
+    expect(uniqueColorNames(sw)[0]).toBe("Noir d'encre");
+    expect(sameColor("#05070D", "#0B0F1A")).toBe(true);
+    expect(sameColor("#05070D", "#1F3A5F")).toBe(false);
+    expect(sameColor("#E8EEF6", "#F5F1EA")).toBe(false);
+  });
+});
+
+describe("noms des couleurs : un vert reste un vert", () => {
+  it("#00E0A4 (Sonore) s'appelle « Vert menthe », jamais « Bleu canard » ; un vrai bleu canard le reste", async () => {
+    const { brandColorName } = await import("@/lib/media/identity-board");
+    expect(brandColorName("#00E0A4")).toBe("Vert menthe");
+    expect(brandColorName("#00E0A4", "en")).toBe("Mint green");
+    expect(brandColorName("#2F4A43")).toBe("Vert sapin");
+    expect(brandColorName("#1A8A9A")).toBe("Bleu canard");
+  });
+});
