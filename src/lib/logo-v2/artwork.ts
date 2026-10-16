@@ -298,10 +298,24 @@ export function artworkScore(r: Pick<ArtworkReview, "criteria">, style: LogoStyl
 
 const squash = (s: string) => s.replace(/\s+/g, " ").trim().toLocaleLowerCase("fr-FR");
 
-/** Défauts relevés par la relecture d'un logo complet. Le nom est comparé à la lecture, accents compris. */
-export function artworkCodes(r: ArtworkReview, expected: { name: string }): string[] {
+/** Mots d'un texte (lettres, chiffres, traits d'union intérieurs), en minuscules, accents GARDÉS. */
+const words = (s: string) => squash(s).match(/[\p{L}\p{N}]+(?:[-'’][\p{L}\p{N}]+)*/gu) ?? [];
+
+/**
+ * Mots de la ligne d'activités ou du slogan mal écrits dans le logo (comparés à la lecture lettre par lettre de la
+ * relecture, accents compris) : « SUPRA-AURICUULAIRE » au lieu de « SUPRA-AURICULAIRE » est une faute.
+ */
+export function misspelledWords(textRead: string, expected: { descriptor?: string | null; tagline?: string | null }): string[] {
+  const read = new Set(words(textRead));
+  return [expected.descriptor, expected.tagline].flatMap((t) => (t ? words(t) : [])).filter((w) => !read.has(w));
+}
+
+/** Défauts relevés par la relecture d'un logo complet. Le nom ET les autres textes sont comparés à la lecture. */
+export function artworkCodes(r: ArtworkReview, expected: { name: string; descriptor?: string | null; tagline?: string | null }): string[] {
   const codes: string[] = [];
   if (!r.nameExact || !squash(r.textRead).includes(squash(expected.name))) codes.push("name_mismatch");
+  if (misspelledWords(r.textRead, expected).length) codes.push("text_mismatch");
+  if (r.person) codes.push("unauthorized_person");
   if (r.extraText) codes.push("extra_text");
   if (r.clumsyCliche) codes.push("cliche");
   if (r.resemblesKnownBrand) codes.push("resembles_known_brand");
@@ -312,8 +326,10 @@ export function artworkCodes(r: ArtworkReview, expected: { name: string }): stri
 }
 
 /** Verdict de la barrière pour un logo complet (critères du style, nom exact, défauts bloquants et fatals). */
-export function gateArtwork(r: ArtworkReview, t: Territory, expected: { name: string }, attempt: number): GateDecision {
-  return decide("logo_artwork", { checker: "ai", score: artworkScore(r, t.style), criteria: r.criteria, codes: artworkCodes(r, expected), issues: r.issues }, { attempt });
+export function gateArtwork(r: ArtworkReview, t: Territory, expected: { name: string; descriptor?: string | null; tagline?: string | null }, attempt: number): GateDecision {
+  const bad = misspelledWords(r.textRead, expected);
+  const issues = bad.length ? [...r.issues, `texte mal écrit : ${bad.join(", ")}`] : r.issues;
+  return decide("logo_artwork", { checker: "ai", score: artworkScore(r, t.style), criteria: r.criteria, codes: artworkCodes(r, expected), issues }, { attempt });
 }
 
 export const ARTWORK_REVIEW_SYSTEM = (style: LogoStyle) => `Rôle : directeur artistique qui crée les logos de PETITES ENTREPRISES (artisans, commerces, restaurants, services de proximité). Tu juges UN logo complet dessiné par une IA d'images avant qu'il soit présenté au client, sur une planche : grand format sur fond neutre, sur blanc, sur fond sombre (la VERSION CLAIRE produite automatiquement par le studio à partir de ce logo : juge sa tenue, pas le contraste des couleurs d'origine sur fond sombre), puis aux tailles prévues pour ce style.
@@ -326,7 +342,7 @@ Une ligne d'activité très fine qui devient difficile à lire à la PLUS PETITE
 Échelle (la même pour chaque critère) : 9-10 = remarquable ; 8 = beau, lisible, soigné, métier compris au premier regard — de petites imperfections qu'on ne voit qu'en cherchant ne retirent rien : le patron serait content de l'afficher sur sa devanture, son camion, ses cartes ; 7 = présentable, avec un défaut que le client remarquerait (dessin maladroit par endroits, déséquilibre net, couleurs ternes) ; 5-6 = faible ou banal ; 0-4 = raté. Un logo qui plairait à la plupart des petites entreprises du métier mérite au moins 8.
 « genericConcept » = true quand la proposition repose SEULEMENT sur une forme vide sans rien du métier (cercle, triangle ou carré sans contenu), une abstraction que personne ne peut relier au métier, une police standard posée sans composition ou une décoration sans intention. Une icône du métier bien dessinée, un emblème rond réunissant les éléments du métier ou une signature script soignée ne sont PAS des concepts pauvres.
 Lis tout le texte du logo LETTRE PAR LETTRE, accents compris, et recopie-le exactement dans « textRead ». « nameExact » : le nom attendu y figure exactement. « extraText » : un mot non autorisé (slogan inventé, lettres parasites). « nameBox » : rectangle du NOM seul en fractions de l'image (x, y, largeur, hauteur entre 0 et 1), ou null.
-« artifacts » : lettres fantômes, formes fondues, détails incohérents typiques d'une IA. « resemblesKnownBrand » : rappelle un logo connu. « amateur » : rendu de générateur, déséquilibré, daté.
+« artifacts » : lettres fantômes, formes fondues, détails incohérents typiques d'une IA. « person » : une personne est dessinée (visage, tête, silhouette humaine, main), même stylisée ou sans traits. « resemblesKnownBrand » : rappelle un logo connu. « amateur » : rendu de générateur, déséquilibré, daté.
 Sois juste et bienveillant comme un client : note ce que tu vois selon l'échelle ; ne baisse pas une note pour un détail que seul un graphiste remarquerait, ni parce que le logo montre simplement le métier ; garde les notes basses pour les défauts réellement visibles. « issues » : défauts concrets et précis (ce qui ne va pas, où, pourquoi), jamais des généralités. « fix » : LA correction la plus utile pour une nouvelle version — cible (symbol, typography, composition, colour, concept) et consigne précise qui change vraiment la proposition (ex. « symbole trop générique : remplacer le cadre par une construction des deux lettres en réserve », « référence au métier trop littérale : garder le geste, abandonner l'objet ») ; « none » si rien à corriger. « needsSimplifiedMark » : une version simplifiée est-elle nécessaire pour les petites tailles ?`;
 
 // ---------------------------------------------------------------- correction du texte sans redessin

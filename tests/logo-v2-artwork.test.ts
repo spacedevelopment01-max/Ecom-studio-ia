@@ -82,9 +82,9 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     return { box: { x: x0 / info.width, y: y0 / info.height, w: (x1 - x0 + 1) / info.width, h: (y1 - y0 + 1) / info.height }, clean: c };
   }
 
-  const artReview = (score: number, exp: { name: string }, o: Record<string, any> = {}) => ({
+  const artReview = (score: number, exp: { name: string; descriptor?: string | null; tagline?: string | null }, o: Record<string, any> = {}) => ({
     criteria: Object.fromEntries(ART_CRITERIA.map((k) => [k, o.low?.[k] ?? score])) as any,
-    textRead: o.textRead ?? exp.name,
+    textRead: o.textRead ?? [exp.name, exp.descriptor, exp.tagline].filter(Boolean).join(" "),
     nameExact: o.nameExact ?? true,
     extraText: o.extraText ?? false,
     nameBox: o.nameBox ?? null,

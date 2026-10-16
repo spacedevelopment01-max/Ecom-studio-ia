@@ -46,7 +46,7 @@ describe("Logo V2 — avancement et échecs visibles", async () => {
   // Un dessin distinct (et travaillé) par image : jamais 3 copies, jamais une simple forme pleine.
   let drawn = 0;
   const png = () => artFixture(drawn++, 600);
-  const review = (exp: any, score = 8.6) => ({ criteria: Object.fromEntries(ART_CRITERIA.map((k) => [k, score])), textRead: exp.name, nameExact: true, extraText: false, nameBox: null, clumsyCliche: false, resemblesKnownBrand: false, amateur: false, artifacts: false, issues: [], needsSimplifiedMark: true });
+  const review = (exp: any, score = 8.6) => ({ criteria: Object.fromEntries(ART_CRITERIA.map((k) => [k, score])), textRead: [exp.name, exp.descriptor, exp.tagline].filter(Boolean).join(" "), nameExact: true, extraText: false, nameBox: null, clumsyCliche: false, resemblesKnownBrand: false, amateur: false, artifacts: false, issues: [], needsSimplifiedMark: true });
   const ai = (o: { draw?: (t: any) => Promise<Buffer>; route?: () => any; score?: (t: any) => number } = {}) => ({
     ...mockAi({ calls: [] }, { drafts: DRAFTS as any }),
     artworkRoute: o.route ?? (() => ({ provider: "openai", model: "gpt-image-2" })),
