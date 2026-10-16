@@ -338,7 +338,7 @@ describe("Social V2 — parcours", async () => {
     const sun = await fr(() => applySocialEdit(p, "Supprime les publications du dimanche", deps, { confirm: true }));
     expect(sun.by).toBe("local");
     expect(sun.ids.length).toBe(6);
-    const vids = await fr(() => applySocialEdit(p, "Mets les vidéos le vendredi", deps));
+    const vids = await fr(() => applySocialEdit(p, "Mets les vidéos le vendredi", deps, { confirm: true }));
     expect(vids.applied).toBe(true);
     const days = all<{ d: string }>("SELECT strftime('%w', scheduled_at / 1000, 'unixepoch') d FROM posts WHERE plan_id = ? AND format = 'reel' AND status != 'cancelled'", r.planId);
     expect(days.every((x) => x.d === "5")).toBe(true);
@@ -350,7 +350,7 @@ describe("Social V2 — parcours", async () => {
       counts.set(d, (counts.get(d) ?? 0) + 1);
     }
     expect(Math.max(...counts.values())).toBeLessThanOrEqual(2);
-    const rep = await fr(() => applySocialEdit(p, "Remplace les images des trois prochaines publications", deps));
+    const rep = await fr(() => applySocialEdit(p, "Remplace les images des trois prochaines publications", deps, { confirm: true }));
     expect(rep.ids).toHaveLength(3);
     // Remplacer une image ne la refait jamais par un gabarit : seulement par l'IA (avec accord), sinon elle attend.
     expect(log.local).toBe(0);

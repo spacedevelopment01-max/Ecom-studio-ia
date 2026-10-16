@@ -119,15 +119,15 @@ describe("Modifier le calendrier en une phrase", async () => {
     const end = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10);
     const r = fr(() => createPlanV2(p, { startDate: start, endDate: end, perDay: 1, timezone: TZ, platforms: [{ platform: "instagram" }], formatMix: { image: 70, video: 30 } }));
     const { deps } = mockSocialDeps();
-    const fri = await fr(() => applySocialEdit(p, "Mets les vidéos le vendredi", deps));
+    const fri = await fr(() => applySocialEdit(p, "Mets les vidéos le vendredi", deps, { confirm: true }));
     expect(fri.by).toBe("local");
     expect(fri.refused ?? []).toHaveLength(0);
     const vids = alive(r.planId).filter((x) => ["video", "reel", "short"].includes(x.format));
     const moved = vids.filter((v) => !(fri.refused ?? []).some((x) => x.startsWith(v.id)));
     expect(moved.length).toBeGreaterThan(0);
     expect(moved.every((v) => dow(v.scheduled_at) === 5)).toBe(true);
-    const tue = await en(() => applySocialEdit(p, "Move the videos to Tuesday", deps));
-    expect(tue.summary).toMatch(/video\(s\) moved to Tuesday/);
+    const tue = await en(() => applySocialEdit(p, "Move the videos to Tuesday", deps, { confirm: true }));
+    expect(tue.summary).toMatch(/video\(s\).*will move to Tuesday/);
   });
 
   it("changer le nombre de publications par jour : confirmation, puis au plus N par jour ; augmenter renvoie vers Planifier", async () => {
@@ -137,7 +137,7 @@ describe("Modifier le calendrier en une phrase", async () => {
     const ask = await fr(() => applySocialEdit(p, "deux publications par jour au lieu de trois", deps, { at: AT }));
     expect(ask).toMatchObject({ needsConfirm: true, confirmKind: "delete" });
     expect(ask.ids).toHaveLength(31);
-    expect(ask.summary).toMatch(/31 publication\(s\) du 01\/03 au 31\/03 seront supprimées pour passer à 2 par jour\. Confirmer \?/);
+    expect(ask.summary).toMatch(/31 publication\(s\) du 01\/03 au 31\/03 seront supprimées \(retirées pour passer à 2 par jour\)\..*Confirmer \?/);
     await fr(() => applySocialEdit(p, "deux publications par jour au lieu de trois", deps, { at: AT, confirm: true }));
     const per = new Map<string, number>();
     for (const x of alive(r.planId)) per.set(ymd(x.scheduled_at), (per.get(ymd(x.scheduled_at)) ?? 0) + 1);
@@ -158,17 +158,17 @@ describe("Modifier le calendrier en une phrase", async () => {
     fr(() => attachFreeVisuals(p, alive(r.planId).map((x) => x.id)));
     const before = alive(r.planId).slice(0, 3).map((x) => JSON.parse(x.media)[0]);
     const { deps, log } = mockSocialDeps();
-    const rep = await fr(() => applySocialEdit(p, "Remplace les images des 3 prochaines publications", deps, { at: AT }));
+    const rep = await fr(() => applySocialEdit(p, "Remplace les images des 3 prochaines publications", deps, { at: AT, confirm: true }));
     expect(rep).toMatchObject({ applied: true, by: "local" });
     expect(rep.ids).toHaveLength(3);
     const after = alive(r.planId).slice(0, 3).map((x) => JSON.parse(x.media)[0]);
     after.forEach((m, i) => expect(m && m !== before[i]).toBeTruthy());
-    const repEn = await en(() => applySocialEdit(p, "Replace the images of the next 2 posts", deps, { at: AT }));
+    const repEn = await en(() => applySocialEdit(p, "Replace the images of the next 2 posts", deps, { at: AT, confirm: true }));
     expect(repEn.ids).toHaveLength(2);
     expect(log.local + log.aiPost + log.paid).toBe(0);
     // Banque vide : les images actuelles restent, et c'est dit.
     run("UPDATE assets SET deleted_at = 1 WHERE project_id = ? AND origin = 'upload'", p.id);
-    const none = await fr(() => applySocialEdit(p, "Remplace les images des 2 prochaines publications", deps, { at: AT }));
+    const none = await fr(() => applySocialEdit(p, "Remplace les images des 2 prochaines publications", deps, { at: AT, confirm: true }));
     expect(none.applied).toBe(false);
     expect(none.summary).toMatch(/les images actuelles restent/);
     expect(alive(r.planId).slice(0, 2).every((x) => x.media !== "[]")).toBe(true);
