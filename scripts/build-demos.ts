@@ -51,6 +51,8 @@ type DemoDef = {
   photos?: string[];
   /** Logo fourni par le client à la création (l'identité en est tirée : couleurs, symbole). */
   logo?: string;
+  /** Signature fournie par le client (écrite sur son logo, par exemple). */
+  tagline?: string;
   /** Vidéos de la création : « edited » = montées par le studio à partir des images (sans plan filmé par l'IA). */
   videos?: "ai" | "edited" | "none";
 };
@@ -95,6 +97,8 @@ const REAL_DEMOS: DemoDef[] = [
     // d'origine en référence, accord du propriétaire, 0,162 $ pour 2 essais ; le 1er, boîtier devenu noir, refusé).
     photo: path.join(PX, "montre-1-entiere.jpg"),
     logo: path.join(REAL, "logos", "arven.png"),
+    // Signature écrite sur le logo du client : reprise telle quelle (jamais remplacée par une autre).
+    tagline: "Le temps, bien porté.",
     videos: "edited",
     source: { supplier: "Pixabay", url: "https://pixabay.com/images/id-3090387/", note: "Photo d'une montre sans marque (Pixabay), bracelet complété par l'IA (la partie basse était dans l'ombre) : la marque ARVEN, ses visuels et sa boutique sont créés par le studio. Prix et caractéristiques techniques non annoncés : à compléter par le marchand." },
   },
@@ -286,6 +290,11 @@ for (const p of PRODUCTS) {
   const t0 = Date.now();
   let ov = await waitIdle(ctx, pid);
   console.log(`  pipeline ${Math.round((Date.now() - t0) / 1000)} s`, ov.pipeline?.job?.status);
+  // Signature fournie par le client : posée comme il le ferait dans l'onglet Marque (site, créations, planche suivent).
+  if (REDO && p.tagline) {
+    await api(ctx, `/api/projects/${pid}/brand`, { method: "PATCH", body: { tagline: p.tagline, validate: ["tagline"] } });
+    ov = await waitIdle(ctx, pid);
+  }
   // Catalogue (niche, multi) : les autres produits, avec leur photo réelle.
   if (REDO && p.catalog?.length) {
     for (const c of p.catalog) {
