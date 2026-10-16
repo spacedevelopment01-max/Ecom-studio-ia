@@ -6,6 +6,8 @@
 import { balance, EUR } from "../billing";
 import { getJsonSetting } from "../settings";
 import { priceFor, routeFor, usdToEur, type TaskId } from "./config";
+import { mediaRouteFor } from "./media-providers";
+import type { MediaUsage } from "./media-routing";
 import { L } from "../i18n-server";
 
 export type CostAction = "pipeline" | "theme" | "images" | "image" | "video-clip" | "ugc" | "theme-custom" | "blog";
@@ -21,8 +23,20 @@ const ACTIONS: Record<CostAction, { fr: string; en: string }> = {
   "theme-custom": { fr: "Thème entièrement sur mesure (chaque section écrite par l'IA)", en: "Fully custom theme (every section written by AI)" },
 };
 
-function usd(task: TaskId, units: { input?: number; output?: number; images?: number; seconds?: number }): number {
-  const r = routeFor(task);
+/**
+ * Modèle qui sera réellement appelé : pour les images et les vidéos, celui du routage multimédia (ex. Qwen-Image
+ * 3.0 Pro) ; sinon (ou si aucun modèle multimédia n'est utilisable) la route de la tâche.
+ */
+function routeOf(task: TaskId, usage?: MediaUsage): { provider: string; model: string } {
+  if (task === "image_generation" || task === "video_generation") {
+    const m = mediaRouteFor(usage ?? (task === "video_generation" ? "product_video" : "product_image"));
+    if (m) return m;
+  }
+  return routeFor(task);
+}
+
+function usd(task: TaskId, units: { input?: number; output?: number; images?: number; seconds?: number }, usage?: MediaUsage): number {
+  const r = routeOf(task, usage);
   const p = priceFor(r.provider, r.model);
   if (!p) return 0;
   if (p.unit === "tokens") {
@@ -42,7 +56,7 @@ export function estimateMicro(action: CostAction, opts: { beats?: number; videos
   const brief = (n: number) => n * 1.3 * usd("art_direction", { input: 5000, output: 900 });
   const images = (n: number) => usd("image_generation", { images: n }) + brief(n) + qc(n);
   // Plan vidéo généré : 8 s chez Google (Veo), 5 s chez fal (Kling).
-  const clip = () => usd("video_generation", { seconds: routeFor("video_generation").provider === "fal" ? 5 : 8 });
+  const clip = () => usd("video_generation", { seconds: routeOf("video_generation").provider === "fal" ? 5 : 8 });
   // Découpage vidéo ou script UGC : réalisateur + relecture notée du directeur de création ; reprise ciblée (et sa
   // relecture) dans la moitié des cas environ.
   const direction = (output: number) => 1.5 * (usd("video_direction", { input: 9000, output }) + usd("quality_control", { input: 9000, output: 1200 }));
@@ -65,8 +79,8 @@ export function estimateMicro(action: CostAction, opts: { beats?: number; videos
       break;
     case "ugc": {
       const n = Math.max(1, Math.min(5, opts.beats ?? 3));
-      const fal = routeFor("video_generation").provider === "fal";
-      total = direction(2500) + n * 1.5 * (usd("image_generation", { images: 1 }) + qc(1)) + usd("video_generation", { seconds: n * (fal ? 10 : 8) });
+      const fal = routeOf("video_generation", "ugc_video").provider === "fal";
+      total = direction(2500) + n * 1.5 * (usd("image_generation", { images: 1 }) + qc(1)) + usd("video_generation", { seconds: n * (fal ? 10 : 8) }, "ugc_video");
       break;
     }
     case "theme-custom":
@@ -98,9 +112,9 @@ export function estimateMicro(action: CostAction, opts: { beats?: number; videos
 }
 
 /** Coût estimé (micro-euros, marge de sécurité et coefficient compris) d'une tâche d'IA isolée — devis des étapes d'un plan. */
-export function estimateTaskMicro(task: TaskId, units: { input?: number; output?: number; images?: number; seconds?: number }, times = 1): number {
+export function estimateTaskMicro(task: TaskId, units: { input?: number; output?: number; images?: number; seconds?: number }, times = 1, usage?: MediaUsage): number {
   const markup = getJsonSetting<number>("billing.markup", 1);
-  return Math.round(times * usd(task, units) * 1.2 * usdToEur() * markup * EUR);
+  return Math.round(times * usd(task, units, usage) * 1.2 * usdToEur() * markup * EUR);
 }
 
 export function estimateFor(userId: string, action: CostAction, opts: { beats?: number; videos?: VideoChoice } = {}) {
