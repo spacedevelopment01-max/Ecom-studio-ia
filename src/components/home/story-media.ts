@@ -14,7 +14,7 @@ const KINDS: [MediaKind, RegExp][] = [
   ["packshot", /packshot|fond blanc|white background/i],
   ["detail", /détail|detail|gros plan|close-?up/i],
   ["scene", /scène|scene|situation|lifestyle/i],
-  ["social", /social/i],
+  ["social", /social|publication/i],
   ["ad", /publicité|^ad$|\bads?\b/i],
   ["banner", /bannière|banner/i],
 ];
@@ -52,12 +52,12 @@ export function storyMedia(d: { photo: string; images: { src: string; label: str
   const tiles: MediaTile[] = [];
   const take = (x?: MediaTile) => x && !tiles.includes(x) && tiles.length < 4 && tiles.push(x);
   take(of("cutout")[0]);
-  for (const k of ["packshot", "detail", "scene"] as MediaKind[]) take(of(k)[0]);
+  for (const k of ["packshot", "detail", "scene", "social", "ad"] as MediaKind[]) take(of(k)[0]);
   of("scene").forEach(take);
   // Les autres emplacements : la création de la bonne nature, sinon une autre création réelle, sinon la photo d'origine.
   const pool = all.filter((x) => x.kind !== "cutout");
   // Deux passes : chaque emplacement prend d'abord une création de sa propre nature, puis les vides se complètent.
-  const slots: [keyof Omit<StoryMedia, "cutout" | "tiles">, MediaKind[]][] = [["scene1", ["scene"]], ["packshot", ["packshot", "scene"]], ["detail", ["detail", "scene"]], ["ad", ["ad", "post", "social"]], ["social", ["social", "post"]], ["banner", ["banner", "post"]], ["scene2", ["scene"]]];
+  const slots: [keyof Omit<StoryMedia, "cutout" | "tiles">, MediaKind[]][] = [["scene1", ["scene"]], ["packshot", ["packshot", "scene"]], ["detail", ["detail", "scene"]], ["ad", ["ad"]], ["social", ["social", "post"]], ["banner", ["banner", "post"]], ["scene2", ["scene"]]];
   const used = new Set<string>();
   const got: Partial<Record<(typeof slots)[number][0], string>> = {};
   const free = (list: MediaTile[]) => list.find((y) => !used.has(y.src));
@@ -68,6 +68,8 @@ export function storyMedia(d: { photo: string; images: { src: string; label: str
   for (const [slot, kinds] of slots) {
     if (got[slot]) continue;
     // Publicité, visuel social, bannière : jamais une autre image présentée à leur place (vide = rien n'est affiché).
+    // La publicité du panneau « Publicités » est une publicité modifiable : une publication IA (texte dans l'image) n'en
+    // tient pas lieu.
     const strict = slot === "ad" || slot === "social" || slot === "banner";
     const x = free(kinds.flatMap(of)) ?? (strict ? kinds.flatMap(of)[0] : free(pool) ?? kinds.flatMap(of)[0] ?? pool[0]);
     if (x) used.add(x.src);

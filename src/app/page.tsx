@@ -138,12 +138,12 @@ export default async function Home() {
     : null;
 
   // Texte du module « Images » : exactement les sortes d'images que montre la démonstration, rien de plus.
-  const KIND_NAMES: Record<string, [string, string]> = { cutout: ["Produit découpé", "Cut-out product"], packshot: ["Fond blanc", "White background"], detail: ["Gros plans", "Close-ups"], scene: ["Mises en situation", "Lifestyle shots"] };
+  const KIND_NAMES: Record<string, [string, string]> = { cutout: ["Produit découpé", "Cut-out product"], packshot: ["Fond blanc", "White background"], detail: ["Gros plans", "Close-ups"], scene: ["Mises en situation", "Lifestyle shots"], social: ["Publications", "Posts"], ad: ["Publicités", "Ads"] };
   const shownKinds = [...new Set((media?.tiles ?? []).map((x) => x.kind))].filter((k) => KIND_NAMES[k]);
   const kindList = (i: 0 | 1) => {
-    const n = shownKinds.map((k) => KIND_NAMES[k][i]);
+    const n = shownKinds.map((k, j) => (j ? KIND_NAMES[k][i].toLowerCase() : KIND_NAMES[k][i]));
     const and = i === 0 ? " et " : " and ";
-    const txt = n.length > 1 ? `${n.slice(0, -1).join(", ")}${and}${n[n.length - 1].toLowerCase()}` : (n[0] ?? (i === 0 ? "Images" : "Images"));
+    const txt = n.length > 1 ? `${n.slice(0, -1).join(", ")}${and}${n[n.length - 1]}` : (n[0] ?? (i === 0 ? "Images" : "Images"));
     return txt.charAt(0).toUpperCase() + txt.slice(1);
   };
   const imageKinds = { fr: kindList(0), en: kindList(1), points: shownKinds.map((k) => T(...KIND_NAMES[k])) };

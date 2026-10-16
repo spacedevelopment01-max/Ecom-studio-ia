@@ -86,13 +86,15 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
       </div>
     );
   if (k === "images") {
-    const names: Record<MediaKind, string> = { cutout: t("Produit découpé", "Cut-out product"), packshot: t("Fond blanc", "White background"), detail: t("Détail", "Detail"), scene: t("Mise en situation", "Lifestyle shot"), social: t("Visuel social", "Social visual"), ad: t("Publicité", "Ad"), banner: t("Bannière", "Banner"), post: t("Publication", "Post") };
+    const names: Record<MediaKind, string> = { cutout: t("Produit découpé", "Cut-out product"), packshot: t("Fond blanc", "White background"), detail: t("Détail", "Detail"), scene: t("Mise en situation", "Lifestyle shot"), social: t("Publication", "Post"), ad: t("Publicité", "Ad"), banner: t("Bannière", "Banner"), post: t("Publication", "Post") };
     const tiles: [string, string][] = d.tiles.map((x) => [x.src, names[x.kind]]);
+    const isText = (k: MediaKind) => k === "social" || k === "ad" || k === "banner" || k === "post";
     return (
       <div className={cx("grid h-full grid-cols-2 gap-2.5 p-4 sm:gap-3 sm:p-5", tiles.length > 2 ? "grid-rows-2" : "content-center")}>
         {tiles.map(([src, l], i) => (
           <figure key={src} className={cx("relative overflow-hidden rounded-2xl border border-line", tiles.length === 3 && i === 2 && "col-span-2", tiles.length <= 2 && "aspect-[4/5]", d.tiles[i].kind === "cutout" ? "bg-[repeating-conic-gradient(#E9ECF3_0_25%,#fff_0_50%)] [background-size:16px_16px]" : "bg-paper-2")}>
-            <Img src={src} alt={l} contain={d.tiles[i].kind === "cutout"} className={d.tiles[i].kind === "cutout" ? "p-3" : ""} />
+            {/* Détourage et publication (texte dans l'image) : affichés en entier, jamais rognés. */}
+            <Img src={src} alt={l} contain={d.tiles[i].kind === "cutout" || isText(d.tiles[i].kind)} className={d.tiles[i].kind === "cutout" ? "p-3" : isText(d.tiles[i].kind) ? "bg-[#0E0A08]" : ""} />
             <figcaption className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs font-medium text-white">{l}</figcaption>
           </figure>
         ))}
