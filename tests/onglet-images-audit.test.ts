@@ -101,6 +101,21 @@ describe("onglet Images — audit", async () => {
     expect(prompt).not.toMatch(/«[^»]+»/);
   });
 
+  it("vocabulaire du client appliqué à la consigne du modèle d'images (ex. « montre », jamais « chronographe »)", async () => {
+    const { addWordingRule } = await import("@/lib/client-wording");
+    const { runImageEngineV2 } = await import("@/lib/image-v2/engine");
+    const { mockDeps, review } = await import("./image-v2-mock");
+    const q = seedImageFixture(u.id, "artisan");
+    addWordingRule(q, { avoid: "chronographe", use: "montre" });
+    const { deps, log } = mockDeps({ providers: [], reviewFor: () => review(9) });
+    await fr(() => runImageEngineV2(null, q, { kind: "trade_photo", aspect: "16:9", topic: "un chronographe posé sur l'établi", allowGenerate: true, noStock: true }, deps));
+    expect(log.prompts.length).toBeGreaterThan(0);
+    for (const x of log.prompts) {
+      expect(x).not.toMatch(/chronographe/i);
+      expect(x).toContain("montre posé sur l'établi");
+    }
+  });
+
   it("écran : plus de « forfait Découverte », IA indisponible expliquée, tâche sans image ou bloquée signalée", () => {
     const src = fs.readFileSync(path.join(process.cwd(), "src/components/studio/tab-images.tsx"), "utf8");
     expect(src).not.toMatch(/forfait Découverte|Discovery plan/);
