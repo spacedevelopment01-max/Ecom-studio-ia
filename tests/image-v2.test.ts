@@ -176,7 +176,7 @@ describe("Phase 5A — Image & Search Engine V2", async () => {
     expect((await sharp(wide!).metadata()).width).toBe(FORMATS["16:9"].width);
     const b = buildBrief(fresh("saas"), { kind: "banner", support: "banner" });
     expect(b.format.aspect).toBe("3:1");
-    expect(generationPrompt(b)).toMatch(/Format 3:1, left area kept calm for text/);
+    expect(generationPrompt(b)).toMatch(/Format 3:1, zone à gauche gardée calme pour un texte/);
   });
 
   // ------------------------------------------------------------------ barrière de qualité
@@ -339,7 +339,7 @@ describe("Phase 5A — Image & Search Engine V2", async () => {
     expect(r.outcomes[0]).toMatchObject({ verdict: "FINAL", attempts: 2 });
     expect(r.stats.retries).toBe(1);
     expect(log.prompts[0]).not.toEqual(log.prompts[1]);
-    expect(log.prompts[1]).toMatch(/Correction for this attempt: corriger l'éclairage — lumière chaude/);
+    expect(log.prompts[1]).toMatch(/Correction pour cet essai : corriger l'éclairage — lumière chaude/);
     const a = getAsset(r.outcomes[0].assetId!)!;
     expect(json<any>(a.meta, {}).imageV2.corrections[0]).toMatch(/éclairage/);
   });
@@ -468,7 +468,7 @@ describe("Phase 5A — Image & Search Engine V2", async () => {
     const { deps } = mockDeps({ providers: [] });
     const r = await fr(() => runImageEngineV2(null, p.id, { kind: "trade_photo", aspect: "16:9" }, deps));
     const a = getAsset(r.outcomes[0].assetId!)!;
-    expect(a.meta).not.toMatch(/Correction for this attempt|Never show|sk-/);
+    expect(a.meta).not.toMatch(/Correction pour cet essai|Ne jamais montrer|sk-/);
     expect(one<{ n: number }>("SELECT COUNT(*) n FROM quality_checks WHERE project_id = ? AND deliverable = 'image_v2'", p.id)!.n).toBeGreaterThan(0);
     expect(one<{ n: number }>("SELECT COUNT(*) n FROM image_candidates WHERE project_id = ?", p.id)!.n).toBeGreaterThan(0);
   });

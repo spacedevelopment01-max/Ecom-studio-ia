@@ -45,8 +45,11 @@ export function peopleAllowedFor(p: { id: string; settings?: unknown }): boolean
   return clientImageWithPerson(p.id);
 }
 
-/** Clause des consignes de génération (modèles d'images et de vidéo : en anglais). */
+/** Clause des consignes de génération rédigées en anglais (vidéo, anciens parcours). */
 export const NO_PEOPLE_EN = "No people: no person, no face, no hands, no body parts, no silhouettes, no reflections of people, no mannequins with faces; show only places, objects, tools, materials and results.";
+
+/** Même clause pour les consignes d'images rédigées en français (Qwen-Image : règle du propriétaire). */
+export const NO_PEOPLE_FR = "Aucune personne : ni personne, ni visage, ni mains, ni partie du corps, ni silhouette, ni reflet de personne, ni mannequin avec un visage ; montrer seulement des lieux, des objets, des outils, des matériaux et des résultats.";
 
 /** Mots qui désignent une personne (ou une partie du corps) dans une description de banque d'images ou une consigne. */
 export const PERSON_RE =

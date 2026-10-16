@@ -64,7 +64,7 @@ export function negativePrompt(people: boolean): string {
   return people ? BASE_NEGATIVE : `${BASE_NEGATIVE}, ${NO_PEOPLE_NEGATIVE}`;
 }
 export function noPeopleLine(people: boolean): string {
-  return people ? "" : " No people, no person, no face, no hands, no body, no mannequin.";
+  return people ? "" : " Aucune personne : ni visage, ni mains, ni corps, ni mannequin.";
 }
 
 /** Tailles Qwen-Image (largeur*hauteur) par format du studio : préréglages documentés (1328², 16:9, 9:16, 3:4). */

@@ -127,14 +127,16 @@ describe("titre d'affiche", () => {
 describe("consigne de la photo publicitaire (produit réel en référence)", () => {
   it("reproduit le produit, garde la zone de texte, sans texte ni personne", async () => {
     const { productScenePrompt } = await import("@/lib/ai/media-providers");
-    const p = productScenePrompt({ prompt: "headphones on stone", aspect: "2:3", textZone: "left" });
-    expect(p).toContain("reproduce it exactly");
-    expect(p).toContain("in the left");
-    expect(p).toContain("No people");
-    expect(p).toContain("Aspect ratio 4:5");
+    const p = productScenePrompt({ prompt: "casque sur une pierre", aspect: "2:3", textZone: "à gauche du cadre" });
+    expect(p).toContain("le reproduire exactement");
+    // Produit entier exigé (règle du propriétaire : ex. bracelet complet d'une montre).
+    expect(p).toContain("Le produit ENTIER est dans le cadre");
+    expect(p).toContain("dégagé à gauche du cadre");
+    expect(p).toContain("Aucune personne");
+    expect(p).toContain("Format 4:5");
     // Photo du client portée par une personne : seul le produit est repris.
-    expect(p).toContain("never reproduce the person");
-    expect(p).toContain("Never write a brand name");
+    expect(p).toContain("ne jamais reproduire la personne");
+    expect(p).toContain("Ne jamais écrire sur le produit un nom de marque");
   });
 });
 

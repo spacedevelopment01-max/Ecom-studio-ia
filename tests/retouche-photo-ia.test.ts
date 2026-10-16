@@ -45,9 +45,9 @@ describe("retouche de la photo livrée par l'IA", async () => {
   it("consigne : seule la demande change, produit gardé, aucun texte ajouté", () => {
     const p = editPhotoPrompt("ajoute des pétales sur la table", "9:16");
     expect(p).toContain("ajoute des pétales sur la table");
-    expect(p).toMatch(/Apply only this change/);
-    expect(p).toMatch(/same product/);
-    expect(p).toMatch(/Do not add any text/);
+    expect(p).toMatch(/Appliquer seulement cette modification/);
+    expect(p).toMatch(/le même produit/);
+    expect(p).toMatch(/N'ajouter aucun texte/);
   });
 
   it("l'éditeur lance une retouche (tâche), refusée sans demande ou pour une photo d'un autre projet", async () => {

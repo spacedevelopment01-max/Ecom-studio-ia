@@ -451,7 +451,7 @@ async function openaiSceneImpl(ctx: Ctx, input: { composite: Buffer; productMask
  * presque toujours dans le décor, ce qui donnerait un second produit (réinventé) à côté du vrai.
  */
 async function productPlateImpl(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9" | "2:3"; usage?: MediaUsage }) {
-  const text = `Photograph of an empty product-photography set, ${input.prompt}. The center foreground surface must be empty, flat and clear, seen at eye level from slightly above (a real product will be placed there later, standing on that surface). Aspect ratio ${input.aspect}. No text, no lettering, no logo, no product, no packaging, no bottle, no device, no people, no hands.`;
+  const text = `Photographie d'un décor de prise de vue produit vide, ${input.prompt}. Le centre du premier plan reste vide, plat et dégagé, vu à hauteur d'œil légèrement en plongée (un vrai produit y sera posé plus tard, debout sur cette surface). Format ${input.aspect}. Aucun texte, aucune lettre, aucun logo, aucun produit, aucun emballage, aucune bouteille, aucun appareil, aucune personne, aucune main.`;
   const aspect = input.aspect === "2:3" ? "4:5" : input.aspect;
   return generateImageImpl(ctx, { text, aspect, reference: null, quality: "high", usage: input.usage ?? "product_image" });
 }
@@ -470,13 +470,14 @@ async function productSceneImpl(ctx: Ctx, input: { prompt: string; aspect: "1:1"
 
 /** Consigne d'une photographie publicitaire du produit réel (référence jointe à la demande). */
 export function productScenePrompt(input: { prompt: string; aspect: string; textZone?: string | null }): string {
-  return `Professional advertising photograph for a premium brand campaign. Scene: ${input.prompt}.
-The product shown in the reference image is the hero of the picture: reproduce it exactly as it is (same shape, proportions, materials, colours, details, label, logo and printed text); do not redesign it, do not change its colour, do not add a second product or copies of it.
-If the reference photo shows the product worn or held by a person, or inside a wider scene, take only the product itself from it: never reproduce the person, their clothes, their body or that background.
-Never write a brand name, a word or a logo on the product that is not on the reference.
-The product sits naturally in the scene at a realistic scale, sharp and in focus, lit by the same light as the scene, with a real contact shadow on the surface it rests on; shallow depth of field behind it, never a flat cut-out look.
-Leave clean, uncluttered negative space ${input.textZone ? `in the ${input.textZone}` : "on one side"} for a headline that will be added later.
-No text, no lettering, no captions, no watermark, no added logo, no price tag. No people, no hands, no faces. Aspect ratio ${input.aspect === "2:3" ? "4:5" : input.aspect}.`;
+  return `Photographie publicitaire professionnelle pour la campagne d'une marque haut de gamme. Scène : ${input.prompt}.
+Le produit de l'image de référence est le héros de la photo : le reproduire exactement tel qu'il est (même forme, mêmes proportions, mêmes matières, mêmes couleurs, mêmes détails, même étiquette, même logo, mêmes inscriptions) ; ne pas le redessiner, ne pas changer sa couleur, ne pas ajouter un second produit ni de copie.
+Le produit ENTIER est dans le cadre : aucune partie coupée, cachée ou manquante (ex. une montre : le bracelet complet, ses deux brins et la boucle).
+Si la photo de référence montre le produit porté ou tenu par une personne, ou dans une scène plus large, ne reprendre que le produit : ne jamais reproduire la personne, ses vêtements, son corps ni ce décor.
+Ne jamais écrire sur le produit un nom de marque, un mot ou un logo absent de la référence.
+Le produit est posé naturellement dans la scène, à sa taille réelle, net, éclairé par la même lumière que la scène, avec une vraie ombre de contact sur la surface où il repose ; faible profondeur de champ derrière lui, jamais un aspect découpé et collé.
+Garder un espace libre, net et dégagé ${input.textZone ? `${input.textZone}` : "d'un côté"} pour un titre ajouté plus tard.
+Aucun texte, aucune lettre, aucune légende, aucun filigrane, aucun logo ajouté, aucune étiquette de prix. Aucune personne, aucune main, aucun visage. Format ${input.aspect === "2:3" ? "4:5" : input.aspect}.`;
 }
 
 /**
@@ -522,9 +523,9 @@ async function editPhotoImpl(ctx: Ctx, input: { image: Buffer; instruction: stri
  * dans la continuité exacte de ce qui se voit (formes, matières, couleurs, coutures, inscriptions).
  */
 export function completeProductPrompt(missing?: string | null): string {
-  return `Product photography retouching. The attached photo shows a real product that is NOT entirely visible: ${missing?.trim() ? `missing part: ${missing.replace(/"/g, "'").slice(0, 200)}` : "a part of it is out of frame, lost in shadow or hidden"}.
-Recreate the very same product, complete and entirely visible: the same camera angle and the same pose as on the photo, the whole object inside the frame with generous margins, on a plain light neutral background, soft studio light, a soft natural shadow under it.
-Keep every visible detail exactly as on the photo (shape, proportions, materials, colours, metal colour and finish, stitching, numbers, markings and printed text); a polished metal stays the same metal colour (a silver steel never becomes black or gunmetal). Only add the missing part, drawn as the natural continuation of what is visible, including its closing part (for a watch: the strap closed in a loop as when worn, with its buckle or clasp visible; for a bag: both handles…). Do not redesign, restyle or simplify the product, do not change any colour, do not invent a logo, a brand name or a word, do not add a second product, props, text, hands or people. Photorealistic. Square format.`;
+  return `Retouche de photographie produit. La photo jointe montre un vrai produit qui n'est PAS entièrement visible : ${missing?.trim() ? `partie manquante : ${missing.replace(/"/g, "'").slice(0, 200)}` : "une partie sort du cadre, se perd dans l'ombre ou est cachée"}.
+Refaire exactement le même produit, complet et entièrement visible : même angle de prise de vue et même position que sur la photo, l'objet entier dans le cadre avec de larges marges, sur un fond clair neutre et uni, lumière douce de studio, ombre douce et naturelle dessous.
+Garder chaque détail visible exactement comme sur la photo (forme, proportions, matières, couleurs, couleur et finition du métal, coutures, chiffres, marquages et inscriptions) ; un métal poli garde sa couleur (un acier argenté ne devient jamais noir ni gris anthracite). Ajouter seulement la partie manquante, dessinée dans la continuité naturelle de ce qui se voit, y compris sa partie de fermeture (pour une montre : le bracelet fermé en boucle comme porté, avec sa boucle ou son fermoir visible ; pour un sac : les deux anses…). Ne pas redessiner, ni restyler, ni simplifier le produit, ne changer aucune couleur, n'inventer aucun logo, nom de marque ni mot, n'ajouter ni second produit, ni accessoire, ni texte, ni main, ni personne. Photoréaliste. Format carré.`;
 }
 
 async function completeProductImpl(ctx: Ctx, input: { image: Buffer; missing?: string | null }) {
@@ -533,9 +534,9 @@ async function completeProductImpl(ctx: Ctx, input: { image: Buffer; missing?: s
 
 /** Consigne de retouche d'une photo livrée : la demande du client, rien d'autre ne bouge. */
 export function editPhotoPrompt(instruction: string, aspect: string): string {
-  return `Edit the attached photograph. Change requested by the client: "${instruction.replace(/"/g, "'").slice(0, 400)}".
-Apply only this change. Keep everything else exactly as it is: the same framing and composition, the same camera angle, the same light and colours, and the same product (shape, proportions, colours, materials, details, label and printed text) unless the client explicitly asks to change it.
-Do not add any text, lettering, caption, watermark, logo or price. Do not add people, hands or faces unless the client asks for them. Photorealistic result. Aspect ratio ${aspect}.`;
+  return `Retoucher la photographie jointe. Modification demandée par le client : « ${instruction.replace(/["«»]/g, "'").slice(0, 400)} ».
+Appliquer seulement cette modification. Garder tout le reste exactement comme c'est : même cadrage et même composition, même angle de prise de vue, même lumière et mêmes couleurs, et le même produit (forme, proportions, couleurs, matières, détails, étiquette et inscriptions), entier dans le cadre, sauf si le client demande explicitement de le changer.
+N'ajouter aucun texte, aucune lettre, aucune légende, aucun filigrane, aucun logo ni prix. N'ajouter ni personne, ni main, ni visage sauf si le client le demande. Résultat photoréaliste. Format ${aspect}.`;
 }
 
 /**
@@ -545,7 +546,7 @@ Do not add any text, lettering, caption, watermark, logo or price. Do not add pe
  */
 export async function ambianceImage(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference?: Buffer | null; usage?: MediaUsage }) {
   const text = `${input.prompt}
-Editorial photograph that conveys the atmosphere of this business, natural light, realistic, premium. The place, the objects, the materials and the light tell the story. No people, no hands, no faces (the most frequent source of defects). No text, no lettering, no logo, no signage, no diploma, no certificate, no award, no badge, no price. Aspect ratio ${input.aspect}.${input.reference ? " The reference photo shows the real business: use it only for mood, colors and kind of place; do not copy any person." : ""}`;
+Photographie éditoriale qui fait sentir l'ambiance de cette activité, lumière naturelle, réaliste, haut de gamme. Le lieu, les objets, les matériaux et la lumière racontent l'histoire. Aucune personne, aucune main, aucun visage (source de défauts la plus fréquente). Aucun texte, aucune lettre, aucun logo, aucune enseigne, aucun diplôme, aucun certificat, aucune récompense, aucun badge, aucun prix. Format ${input.aspect}.${input.reference ? " La photo de référence montre la vraie activité : s'en servir seulement pour l'ambiance, les couleurs et le genre de lieu ; ne copier aucune personne." : ""}`;
   return generateImage(ctx, { text, aspect: input.aspect, reference: input.reference ?? null, quality: "high", usage: input.usage ?? "scene" });
 }
 

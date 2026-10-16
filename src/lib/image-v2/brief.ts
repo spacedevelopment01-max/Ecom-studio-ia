@@ -8,7 +8,7 @@ import type { Project } from "../projects";
 import { resolveTrade, tradeText, GLOBAL_NEGATIVES, type TradeProfile } from "../brain/trade";
 import { tradeStock } from "../stock/trade-queries";
 import { POLICIES } from "../quality/policies";
-import { mentionsPerson, NO_PEOPLE_EN, peopleAllowedFor, peopleFreeQueries } from "../people-policy";
+import { mentionsPerson, NO_PEOPLE_FR, peopleAllowedFor, peopleFreeQueries } from "../people-policy";
 import { productIdentity, resolveProductCategory, type ProductCategoryProfile } from "./categories";
 import { chooseDirection, DIRECTIONS } from "./direction";
 import { defaultAspect, FORMATS } from "./formats";
@@ -38,18 +38,18 @@ export type BriefRequest = {
 const uniq = <T,>(a: T[]) => [...new Set(a.filter(Boolean))];
 
 /** Axes de variation d'une série : même direction, angles, lieux, lumières et intentions différents. */
-const ANGLES = ["medium shot on hands and work", "wide shot showing the whole space", "close-up detail of the result", "three-quarter view of the person at work"];
-const LIGHTS = ["soft side daylight", "bright even daylight", "warm late-afternoon light", "cool morning light"];
-const INTENTS = ["show the skill", "show the setting", "show the result", "show the human"];
+const ANGLES = ["plan moyen sur les mains et l'ouvrage", "plan large qui montre tout l'espace", "gros plan sur un détail du résultat", "vue de trois quarts de la personne au travail"];
+const LIGHTS = ["lumière du jour douce de côté", "lumière du jour vive et égale", "lumière chaude de fin d'après-midi", "lumière fraîche du matin"];
+const INTENTS = ["montrer le savoir-faire", "montrer le lieu", "montrer le résultat", "montrer l'humain"];
 /** Mêmes axes sans personne (règle de présence humaine) : outils, lieu, résultat, matière. */
-const ANGLES_NO_PEOPLE = ["medium shot on tools and work surface", "wide shot showing the whole space", "close-up detail of the result", "three-quarter view of the workspace and materials"];
-const INTENTS_NO_PEOPLE = ["show the tools", "show the setting", "show the result", "show the materials"];
+const ANGLES_NO_PEOPLE = ["plan moyen sur les outils et le plan de travail", "plan large qui montre tout l'espace", "gros plan sur un détail du résultat", "vue de trois quarts du poste de travail et des matériaux"];
+const INTENTS_NO_PEOPLE = ["montrer les outils", "montrer le lieu", "montrer le résultat", "montrer les matériaux"];
 /** Directions artistiques dont la composition, le cadrage ou l'ambiance supposent une personne : version sans personne. */
 const DIRECTION_NO_PEOPLE: Partial<Record<ArtDirectionId, { composition?: string; framing?: string; mood?: string }>> = {
-  documentary_trade: { composition: "real job site, tools, materials and work in progress clearly visible, nobody in frame", framing: "35-50 mm, medium shot on tools and work, eye level" },
-  natural_lifestyle: { composition: "real everyday place, the subject ready to use, candid, nobody in frame" },
-  product_demo: { composition: "the product set up on a real task, result visible, no hands" },
-  warm_universe: { mood: "welcoming, generous, warm" },
+  documentary_trade: { composition: "vrai chantier, outils, matériaux et travail en cours bien visibles, personne dans le cadre", framing: "35-50 mm, plan moyen sur les outils et l'ouvrage, à hauteur d'œil" },
+  natural_lifestyle: { composition: "vrai lieu du quotidien, le sujet prêt à servir, naturel, personne dans le cadre" },
+  product_demo: { composition: "le produit installé pour une vraie tâche, résultat visible, aucune main" },
+  warm_universe: { mood: "accueillant, généreux, chaleureux" },
 };
 
 const WEAK_MUST = new Set(["interior", "exterior", "renovation", "construction", "tools", "repair", "diy", "builder", "design", "home", "work", "service", "professional"]);
@@ -190,23 +190,33 @@ export function briefHash(b: VisualBrief): string {
   return crypto.createHash("sha256").update(JSON.stringify(key)).digest("hex").slice(0, 16);
 }
 
-/** Consigne de génération tirée du brief (anglais) : sujet, geste, lieu, direction, lumière, cadrage, interdits. */
+/** Zone du cadre gardée calme, en français. */
+const ZONE_FR: Record<string, string> = { left: "à gauche", right: "à droite", top: "en haut", bottom: "en bas", center: "au centre" };
+
+/**
+ * Consigne de génération tirée du brief, EN FRANÇAIS (règle du propriétaire pour Qwen-Image) : concrète (sujet, geste,
+ * lieu, lumière, cadrage), aucun texte voulu dans l'image (rien entre guillemets), produit ENTIER exigé.
+ */
 export function generationPrompt(b: VisualBrief, extra?: string | null): string {
   const d = { ...DIRECTIONS[b.artDirection], ...(b.people === false ? DIRECTION_NO_PEOPLE[b.artDirection] : {}) };
   return [
-    `${d.label} photograph. Subject: ${b.subject}.`,
+    `Photographie, style ${d.label}. Sujet : ${b.subject}.`,
     // Publicité : niveau campagne d'agence (lumière travaillée, matières, profondeur), un seul point focal, de l'air.
-    b.support === "ad" ? "Premium advertising campaign photograph for social media: one clear focal point, crafted natural or golden light, rich textures and materials, shallow depth of field, refined colour grading, generous negative space, realistic and believable (never a 3D render, never clip-art)." : "",
-    b.action ? `Action: ${b.action}.` : "",
-    b.environment ? `Setting: ${b.environment}.` : "",
-    `Composition: ${b.composition}. Lighting: ${b.lighting}. Camera: ${b.framing}. Mood: ${d.mood}.`,
-    b.palette.length ? `Colour accents in harmony with ${b.palette.join(", ")}.` : "",
-    `Format ${b.format.aspect}${b.format.textZone !== "none" ? `, ${b.format.textZone} area kept calm for text` : ""}.`,
-    b.productFidelity ? "The product must stay EXACTLY as in the reference: same shape, colours, logo, label text and proportions; do not redraw or restyle it." : "",
-    `Never show: ${b.negative.slice(0, 8).join(", ")}; no text, letters, logos or watermarks.`,
-    b.people === false ? NO_PEOPLE_EN : "",
-    extra ? `Correction for this attempt: ${extra}` : "",
+    b.support === "ad" ? "Photographie de campagne publicitaire haut de gamme pour les réseaux sociaux : un seul point focal net, lumière naturelle ou dorée travaillée, matières et textures riches, faible profondeur de champ, étalonnage soigné, bel espace libre, réaliste et crédible (jamais un rendu 3D, jamais un dessin)." : "",
+    b.action ? `Action : ${b.action}.` : "",
+    b.environment ? `Décor : ${b.environment}.` : "",
+    `Composition : ${b.composition}. Lumière : ${b.lighting}. Prise de vue : ${b.framing}. Ambiance : ${d.mood}.`,
+    b.palette.length ? `Touches de couleur en accord avec ${b.palette.join(", ")}.` : "",
+    `Format ${b.format.aspect}${b.format.textZone !== "none" ? `, zone ${ZONE_FR[b.format.textZone] ?? b.format.textZone} gardée calme pour un texte ajouté plus tard` : ""}.`,
+    b.productFidelity ? PRODUCT_FIDELITY_FR : "",
+    `Ne jamais montrer : ${b.negative.slice(0, 8).join(", ")} ; aucun texte, aucune lettre, aucun logo, aucun filigrane.`,
+    b.people === false ? NO_PEOPLE_FR : "",
+    extra ? `Correction pour cet essai : ${extra}` : "",
   ]
     .filter(Boolean)
     .join(" ");
 }
+
+/** Fidélité au vrai produit, et produit entier dans le cadre (exigence du propriétaire, ex. bracelet complet d'une montre). */
+export const PRODUCT_FIDELITY_FR =
+  "Le produit reste EXACTEMENT comme sur la référence : même forme, mêmes couleurs, même logo, mêmes inscriptions, mêmes proportions ; ne pas le redessiner. Le produit ENTIER est dans le cadre, aucune partie coupée, cachée ou manquante (ex. une montre : le bracelet complet avec sa boucle).";
