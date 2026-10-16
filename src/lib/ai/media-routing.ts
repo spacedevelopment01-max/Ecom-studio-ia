@@ -65,7 +65,7 @@ export const USAGE_INFO: Record<MediaUsage, { kind: MediaKind; need: Omit<MediaN
     kind: "image",
     need: { text: true, references: 2 },
     label: { fr: "Texte et logo sur les images", en: "Text and logo on images" },
-    detail: { fr: "Deuxième étape des publications et publicités : sur la photo créée sans texte (Qwen), l'IA pose les textes exacts, le bouton et le vrai logo. Par défaut : ChatGPT Images (OpenAI).", en: "Second step of posts and ads: on the photo created without text (Qwen), the AI lays out the exact texts, the button and the real logo. Default: ChatGPT Images (OpenAI)." },
+    detail: { fr: "Deuxième étape facultative des publications et publicités : sur la photo créée sans texte, l'IA choisie ici pose les textes exacts, le bouton et le vrai logo. Sans réglage propre, aucune deuxième étape : Qwen-Image 3.0 Pro crée l'image entière.", en: "Optional second step of posts and ads: on the photo created without text, the AI chosen here lays out the exact texts, the button and the real logo. Without its own setting, no second step: Qwen-Image 3.0 Pro creates the whole image." },
   },
   scene: {
     kind: "image",
@@ -105,12 +105,6 @@ export const usageMode = (u: MediaUsage): MediaMode => usageSettings()[u]?.mode 
 export function usagePrimary(u: MediaUsage): { provider: string; model: string; inherited: boolean } {
   const v = usageSettings()[u]?.primary;
   if (v) return { ...splitKey(v), inherited: false };
-  // Texte et logo : ChatGPT Images par défaut (choix du propriétaire) — le meilleur modèle OpenAI utilisable.
-  if (u === "text_layout") {
-    const oa = MEDIA_MODELS.filter((m) => m.provider === "openai" && m.kind === "image" && m.caps.textInImage);
-    const best = oa.find((m) => mediaStatus(m).usable) ?? oa.find((m) => m.legacyDefault) ?? oa[0];
-    if (best) return { provider: best.provider, model: best.model, inherited: true };
-  }
   const parent = USAGE_INFO[u].parent;
   return parent ? { ...usagePrimary(parent), inherited: true } : { ...mediaPrimary(USAGE_INFO[u].kind), inherited: true };
 }

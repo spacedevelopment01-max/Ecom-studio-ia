@@ -302,6 +302,16 @@ export function boardColors(pal: IdentityBoardInput["palette"]) {
   return { ink, cream, brand, second, accent, paper };
 }
 
+/**
+ * Grille du téléphone (réseaux sociaux) : chaque photo n'y figure QU'UNE fois (jamais la même image répétée) ;
+ * la case du milieu de chaque ligne et les cases restantes sont des tuiles aux couleurs de la marque.
+ * Renvoie, pour chaque case, l'index de la photo ou null (tuile de marque).
+ */
+export function phoneGridPlan(cells: number, photos: number): (number | null)[] {
+  let used = 0;
+  return Array.from({ length: cells }, (_, i) => (i % 3 !== 1 && used < photos ? used++ : null));
+}
+
 export async function renderIdentityBoard(b: IdentityBoardInput): Promise<Buffer> {
   ensureFonts();
   const col = boardColors(b.palette);
@@ -591,10 +601,12 @@ export async function renderIdentityBoard(b: IdentityBoardInput): Promise<Buffer
   ctx.fillStyle = "#555";
   if (tagline) ctx.fillText(tagline.slice(0, 26), sx + 40 + av * 2, sy + 82 + av * 0.6);
   const gy = sy + 80 + av * 2, cell = (sW - 4) / 3;
-  let used = 0;
-  for (let i = 0; gy + Math.floor(i / 3) * (cell + 2) < sy + sH; i++) {
+  let cells = 0;
+  while (gy + Math.floor(cells / 3) * (cell + 2) < sy + sH) cells++;
+  const plan = phoneGridPlan(cells, pics.length);
+  for (let i = 0; i < cells; i++) {
     const gx = sx + (i % 3) * (cell + 2), gyy = gy + Math.floor(i / 3) * (cell + 2);
-    const pic = pics.length && i % 3 !== 1 ? pics[used++ % pics.length] : null;
+    const pic = plan[i] === null ? null : pics[plan[i] as number];
     // Une case sur trois aux couleurs de la marque : la grille garde son rythme et sa cohérence.
     if (pic) cover(ctx, pic, gx, gyy, cell, cell);
     else {

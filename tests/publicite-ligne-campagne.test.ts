@@ -3,8 +3,8 @@
  *  - toutes les publications conçues par l'IA visent un rendu digne des plus grandes campagnes ; AUCUNE mise en page
  *    imposée (logo, produit et textes placés librement, différemment à chaque fois), produit fidèle sous le même angle ;
  *  - le VRAI logo de la marque est transmis à l'IA d'images et contrôlé contre l'original (jamais réinventé) ;
- *  - Qwen-Image 3.0 Pro devient le modèle d'images par défaut, mais seulement une fois confirmé par
- *    l'administration : avant, le défaut historique reste en place (aucune création sans modèle).
+ *  - Qwen-Image 3.0 Pro est le modèle d'images par défaut de tout le studio (choix du propriétaire, 16/10/2026),
+ *    confirmé d'office ; un choix de l'administration reste prioritaire.
  */
 import { describe, expect, it, vi } from "vitest";
 import sharp from "sharp";
@@ -61,11 +61,12 @@ describe("Ligne « campagne » et Qwen-Image 3.0 Pro par défaut", async () => {
     expect(seen.expected).toEqual([post.headline]);
   });
 
-  it("Qwen-Image 3.0 Pro par défaut seulement une fois confirmé ; sinon le défaut historique", () => {
+  it("Qwen-Image 3.0 Pro : modèle d'images de tout le studio par défaut, sans confirmation (choix du propriétaire)", () => {
     for (const k of ["ai.routes", "ai.media.models", "ai.prices", "ai.media.usage"]) setJsonSetting(k, {});
-    expect(routing.mediaPrimary("image")).toEqual({ provider: "openai", model: "gpt-image-1" });
-    setJsonSetting("ai.media.models", { "alibaba:qwen-image-3.0-pro": { confirmedAt: Date.now(), enabled: true } });
     expect(routing.mediaPrimary("image")).toEqual({ provider: "alibaba", model: "qwen-image-3.0-pro" });
+    // Tous les usages d'images le suivent, texte et logo compris (aucune deuxième étape par une autre IA).
+    for (const u of ["logo", "product_image", "ad_visual", "social_image", "scene", "text_layout"] as const) expect(routing.usagePrimary(u)).toMatchObject({ provider: "alibaba", model: "qwen-image-3.0-pro" });
+    expect(routing.usageExplicit("text_layout")).toBe(false);
     // Un choix de l'administration reste prioritaire.
     setJsonSetting("ai.routes", { image_generation: { provider: "google", model: "gemini-2.5-flash-image" } });
     expect(routing.mediaPrimary("image").provider).toBe("google");

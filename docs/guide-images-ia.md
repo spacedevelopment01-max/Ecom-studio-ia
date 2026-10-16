@@ -19,17 +19,21 @@ services) ; les **images fixes** de services sont créées par l'IA, jamais une 
 | Brief de génération en 16 points (objectif, sujet, références, concept, composition, cadrage, décor, lumière, palette, typographie, textes exacts entre « », logo, fidélité, interdits, format, contrôles) | `buildGenerationBrief` + `briefPrompt` | `designPostWithAi` (publications, publicités) |
 | Diversité : compositions récentes du projet ; au niveau du studio, seulement les **univers** choisis par les autres projets du même secteur (jamais leurs données) | `universesUsedElsewhere`, `meta.finalImage` des images | `artDirectionFor`, `designPostWithAi` |
 
-## Publications et publicités : deux étapes (choix du propriétaire)
+## Modèle d'images du studio : Qwen-Image 3.0 Pro (choix du propriétaire, 16/10/2026)
 
-1. **Photo** — Qwen-Image (usage « Images réseaux sociaux / Publicités visuelles ») : la scène avec le vrai produit en
-   référence, **sans aucun texte ni logo** (les notes de direction artistique sont des instructions, jamais écrites).
-2. **Texte et logo** — ChatGPT Images d'OpenAI (usage « Texte et logo sur les images », réglable dans
-   Administration › Images & Vidéos) : sur cette photo, inchangée, l'IA pose les textes exacts, le bouton et le vrai
-   logo (tailles, marges, contraste du guide).
+Toutes les images du studio, pour tous les comptes (logos, produits, publicités, publications, décors), sont créées
+par **Qwen-Image 3.0 Pro** (Alibaba), confirmé d'office (`adminConfirm: false` dans `src/lib/ai/media-models.ts`).
+Un choix fait dans Administration › Images & Vidéos reste prioritaire. Sans clé Alibaba active, le studio retombe sur
+le défaut historique (OpenAI) : à surveiller dans l'administration.
 
-Contrôle : texte raté → seule l'étape 2 est refaite (la photo payée est gardée) ; produit raté → la photo est refaite.
-Essai réel du 16/10 (une seule étape, Qwen) : produit fidèle mais mots des consignes recopiés dans l'image — d'où
-cette séparation.
+Publications et publicités : **une seule étape** — Qwen-Image 3.0 Pro crée l'image entière (scène, vrai produit en
+référence, textes exacts, bouton, vrai logo). Essais réels ARVEN du 16/10 : la version 3.0 standard a raté trois fois la
+même scène (bracelet tronqué, lettre en trop, fausses lettres), la 3.0 Pro l'a réussie du premier coup.
+
+Deuxième étape facultative : si l'administration règle l'usage « Texte et logo sur les images », la photo est d'abord
+créée sans texte, puis cette IA pose les textes, le bouton et le logo (texte raté → seule l'étape 2 est refaite).
+
+Produit entier exigé à chaque génération (aucune partie coupée ou manquante, ex. le bracelet complet d'une montre).
 
 ## Chaque parcours appelle un modèle d'images
 

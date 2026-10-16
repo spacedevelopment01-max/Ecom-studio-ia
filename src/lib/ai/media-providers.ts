@@ -486,7 +486,7 @@ No text, no lettering, no captions, no watermark, no added logo, no price tag. N
  */
 /**
  * Étape 2 des publications et publicités (choix du propriétaire) : sur la PHOTO déjà créée sans texte (Qwen-Image),
- * l'IA de l'usage « Texte et logo » (ChatGPT Images par défaut) pose les textes exacts, le bouton et le vrai logo.
+ * l'IA de l'usage « Texte et logo » (seulement s'il est réglé) pose les textes exacts, le bouton et le vrai logo.
  * La photo est envoyée en grand (1536 px) pour que le produit ne perde rien ; le logo suit en seconde image.
  */
 export async function aiTextLayout(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; image: Buffer; logo?: Buffer | null }) {
