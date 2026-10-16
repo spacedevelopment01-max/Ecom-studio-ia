@@ -67,4 +67,19 @@ describe("studio Découverte : étiquette de la photo de départ", () => {
     const brand = fs.readFileSync(path.join(process.cwd(), "src/components/home/home-demos.tsx"), "utf8");
     expect(brand).toContain("{b.photoBadge && <span");
   });
+
+  it("l'étiquette n'existe que dans le studio Découverte (ni accueil, ni studio des clients)", () => {
+    const hits: string[] = [];
+    const walk = (dir: string) => {
+      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+        const f = path.join(dir, e.name);
+        if (e.isDirectory()) walk(f);
+        else if (/\.(tsx?|json)$/.test(e.name) && /photoBadge|Photo fournie par le client|Photo provided by the client/.test(fs.readFileSync(f, "utf8"))) hits.push(path.relative(process.cwd(), f));
+      }
+    };
+    walk(path.join(process.cwd(), "src"));
+    // home-demos.tsx : seulement l'option facultative (vide par défaut) ; seul le studio Découverte la remplit.
+    expect(hits.sort()).toEqual(["src/app/studio/decouverte/page.tsx", "src/components/home/home-demos.tsx", "src/lib/discovery-demos.ts"]);
+    expect(fs.readFileSync(path.join(process.cwd(), "src/components/home/home-demos.tsx"), "utf8")).not.toMatch(/Photo fournie par le client|Photo provided by the client/);
+  });
 });

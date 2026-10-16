@@ -12,7 +12,7 @@ import { useT } from "../i18n";
 
 // ------------------------------------------------------------------------------------------------ Marque
 
-/** `photoBadge` (facultatif) : étiquette posée sur la photo de départ (ex. studio Découverte : « Photo fournie par le client »). */
+/** `photoBadge` (facultatif, vide par défaut) : étiquette posée sur la photo de départ ; seul le studio Découverte la remplit. */
 export type BrandDemo = { id: string; brand: string; sector: string; direction: string; palette: string[]; logo: string; photo: string; fonts: { heading: string; body: string }; photoBadge?: string };
 
 const SERIF = /baskerville|lora|playfair|cormorant/i;
