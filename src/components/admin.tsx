@@ -182,13 +182,13 @@ function AiProviders({ data, set }: { data: Overview; set: SetFn }) {
       <Card className="p-5 text-sm text-ink-2">{t("Les clés sont chiffrées en base (AES-256-GCM avec APP_SECRET) et ne sont jamais renvoyées au navigateur. Les clients n'ont jamais de clé à fournir. Sans clé, le studio fonctionne avec son moteur intégré (sans IA externe) et l'indique clairement aux clients.", "Keys are encrypted in the database (AES-256-GCM with APP_SECRET) and are never sent back to the browser. Customers never have to provide a key. Without a key, the studio runs on its built-in engine (no external AI) and tells customers so clearly.")}</Card>
       <div className="grid gap-4 md:grid-cols-2">
         {data.providers.map((p) => (
-          <Card key={p.id} className="grid gap-3 p-5">
+          <Card key={p.id} className="grid content-start gap-3 p-5">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <p className="font-display text-lg font-semibold">{p.name}</p>
                 <p className="text-xs text-muted">{p.role}</p>
               </div>
-              {p.configured ? (p.disabled ? <Badge tone="warn">{t("Désactivé", "Disabled")}</Badge> : <Badge tone="ok" dot>{t("Clé enregistrée", "Key saved")}</Badge>) : <Badge>{t("Aucune clé", "No key")}</Badge>}
+              {p.configured ? (p.disabled ? <Badge tone="warn" className="shrink-0 whitespace-nowrap">{t("Désactivé", "Disabled")}</Badge> : <Badge tone="ok" dot className="shrink-0 whitespace-nowrap">{t("Clé enregistrée", "Key saved")}</Badge>) : <Badge className="shrink-0 whitespace-nowrap">{t("Aucune clé", "No key")}</Badge>}
             </div>
             <SecretRow label={p.keyHelp} masked={p.keyMasked} onSave={(v) => set([{ key: `provider.${p.id}.apiKey`, value: v }], t("Clé enregistrée (chiffrée).", "Key saved (encrypted)."))} />
             <div className="flex flex-wrap items-center gap-2">

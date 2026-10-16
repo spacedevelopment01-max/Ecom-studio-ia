@@ -7,7 +7,7 @@ import { clientIp, LIMITS, rateCount, rateHit } from "@/lib/rate-limit";
 
 export const POST = handle(async (req: Request) => {
   const b = await body(req, z.object({ email: z.string(), password: z.string(), name: z.string().optional() }));
-  // Chaque compte reçoit la découverte gratuite (budget IA) : nombre de comptes limité par adresse IP,
+  // Chaque compte ouvre la découverte gratuite (studio de démonstration, sans IA) : nombre de comptes limité par adresse IP,
   // par heure et par jour (il n'existe pas encore de vérification de l'adresse e-mail).
   const ip = clientIp(req);
   const key = ip ? `register:ip:${ip}` : null;

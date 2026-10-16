@@ -167,7 +167,7 @@ export function SecurityCard() {
         <Field label={t("Mot de passe actuel", "Current password")} htmlFor="pw-current">
           <Input id="pw-current" name="current" type="password" required autoComplete="current-password" />
         </Field>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid items-start gap-4 sm:grid-cols-2">
           <Field label={t("Nouveau mot de passe", "New password")} htmlFor="pw-next" hint={t("8 caractères au minimum.", "At least 8 characters.")}>
             <Input id="pw-next" name="next" type="password" required minLength={8} autoComplete="new-password" />
           </Field>

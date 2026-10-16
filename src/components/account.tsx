@@ -110,7 +110,7 @@ function Subscriptions({ paymentsOpen }: { paymentsOpen: boolean }) {
       </div>
       {rows.length === 0 && data.pending.length === 0 ? (
         <div className="mt-5 rounded-2xl bg-paper-2 p-4 text-sm text-ink-2">
-          {t("Forfait Découverte (gratuit) : studio de démonstration, aucun projet réel.", "Discovery plan (free): demo studio, no real project.")}{" "}
+          {t("Compte Découverte (gratuit, sans abonnement) : studio de démonstration, aucun projet réel.", "Discovery account (free, no subscription): demo studio, no real project.")}{" "}
           <Link href="/studio?nouveau=1" className="font-semibold text-signal underline-offset-4 hover:underline">{t("Choisir un forfait", "Choose a plan")}</Link>
           {!paymentsOpen && <p className="mt-2 text-xs text-muted">{t("Le paiement en ligne n'est pas encore ouvert. En attendant, l'administration peut activer un forfait pour vous.", "Online payment isn't open yet. In the meantime, the admin can activate a plan for you.")}</p>}
         </div>

@@ -10,7 +10,8 @@ import { cx } from "../ui";
 import { onTabKeys } from "./tabs";
 import { useT } from "../i18n";
 
-export type WallItem = { src: string; brand: string };
+/** tall : visuel vertical 9:16 (publication créée par l'IA), montré en entier plutôt que rogné au format 4:5. */
+export type WallItem = { src: string; brand: string; tall?: boolean };
 
 /** Deux rangées de publications qui défilent en sens inverse (immobiles si l'utilisateur réduit les animations). */
 export function PostsWall({ items, label }: { items: WallItem[]; label: string }) {
@@ -25,7 +26,7 @@ export function PostsWall({ items, label }: { items: WallItem[]; label: string }
         <div key={r} className="group flex overflow-hidden py-2" aria-hidden>
           <div className={cx("hp-wall flex shrink-0 gap-3 pr-3 sm:gap-4 sm:pr-4", r === 1 && "hp-wall-rev")}>
             {[...row, ...row].map((x, k) => (
-              <img key={k} src={x.src} alt="" loading="lazy" decoding="async" className="aspect-[4/5] w-36 shrink-0 rounded-2xl object-cover shadow-[0_18px_40px_-24px_rgba(10,16,40,.55)] ring-1 ring-black/5 sm:w-52" />
+              <img key={k} src={x.src} alt="" loading="lazy" decoding="async" className={cx("shrink-0 rounded-2xl object-cover shadow-[0_18px_40px_-24px_rgba(10,16,40,.55)] ring-1 ring-black/5", x.tall ? "aspect-[9/16] h-[180px] sm:h-[260px]" : "aspect-[4/5] w-36 sm:w-52")} />
             ))}
           </div>
         </div>
@@ -47,7 +48,7 @@ export function BoardShowcase({ boards }: { boards: BoardDemo[] }) {
       <div role="tablist" onKeyDown={(e) => onTabKeys(e, i, boards.length, setI)} aria-label={t("Marques de démonstration", "Demo brands")} className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
         {boards.map((x, k) => (
           <button key={x.id} type="button" role="tab" tabIndex={k === i ? 0 : -1} aria-selected={k === i} onClick={() => setI(k)} className={cx("flex h-12 shrink-0 cursor-pointer items-center gap-3 rounded-full border pl-2 pr-4 text-sm transition", k === i ? "border-ink bg-ink text-paper" : "border-line bg-card text-ink-2 hover:border-ink/40")}>
-            <span className="flex h-7 w-10 overflow-hidden rounded-full ring-1 ring-black/10">{x.palette.slice(0, 3).map((c) => <span key={c} className="flex-1" style={{ background: c }} />)}</span>
+            <span className="flex h-7 w-10 overflow-hidden rounded-full ring-1 ring-black/10">{x.palette.slice(0, 3).map((c, i) => <span key={i} className="flex-1" style={{ background: c }} />)}</span>
             <span className="font-medium">{x.brand}</span>
             <span className={cx("hidden sm:inline", k === i ? "text-paper/60" : "text-muted")}>· {x.sector}</span>
           </button>
