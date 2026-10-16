@@ -96,6 +96,16 @@ describe("Accueil : démo montre (ARVEN) sans aucun visuel fait par gabarit du s
     const json = JSON.stringify(all) + read("src/components/home/demo-curation.ts").replace(/\/\/.*|\*.*$/gm, "");
     for (const f of ["/demo/montre/detail-1", "/demo/montre/ad-1", "plan2-cuir", "velours", "publication-ia"]) expect(json).not.toContain(f);
   });
+  it("sans capture de boutique ni éditeur de publicité en direct pour la montre", async () => {
+    const { allowsLiveAd } = await import("@/components/home/demo-curation");
+    expect([montre.shopDesktop, montre.shopMobile]).toEqual(["", ""]);
+    expect(allowsLiveAd("montre")).toBe(false);
+    expect(allowsLiveAd("gourde")).toBe(true);
+    const page = read("src/app/page.tsx");
+    expect(page).toContain("allowsLiveAd(hero.id)");
+    expect(page).toContain(".filter((d) => d.shopDesktop && d.shopMobile)");
+    expect(read("src/components/home/home-story.tsx")).toContain('if (k === "store" && !(d.shopDesktop && d.shopMobile))');
+  });
   it("la page applique la sélection et les panneaux savent s'afficher sans image", () => {
     expect(read("src/app/page.tsx")).toContain(".map(curateForHome)");
     const story = read("src/components/home/home-story.tsx");

@@ -19,7 +19,7 @@
 import type { Demo } from "@/components/landing-client";
 
 /** images : liste des seules images gardées (adresse exacte) ; extra : images IA vérifiées ajoutées pour l'accueil seul. */
-type Curation = { posts?: false; board?: false; video?: false; images?: string[]; extra?: { src: string; label: string }[] };
+type Curation = { posts?: false; board?: false; video?: false; shop?: false; liveAd?: false; images?: string[]; extra?: { src: string; label: string }[] };
 
 export const HOME_CURATION: Record<string, Curation> = {
   // Quatre cases toutes différentes voulues par le propriétaire : une seule mise en situation (lifestyle-2 et -3 trop
@@ -28,6 +28,12 @@ export const HOME_CURATION: Record<string, Curation> = {
     posts: false,
     board: false,
     video: false,
+    // Captures de la boutique : le bandeau d'accueil recadre la mise en situation, la montre y est coupée (bracelet sans
+    // boucle) → retirées de l'accueil, les autres boutiques de démonstration restent.
+    shop: false,
+    // Démo interactive « éditeur de publicité » : elle compose en direct une publicité par gabarit (montre détourée +
+    // texte posé en local) → pas avec la montre.
+    liveAd: false,
     images: ["/demo/montre/cutout-1.webp", "/demo/montre/lifestyle-1.jpg"],
     extra: [
       // Fond blanc validé par le propriétaire (16 octobre 2026) : montre entière de 3/4, bracelet et boucle, ombre douce.
@@ -46,17 +52,26 @@ export const HOME_EXCLUDED_FILES = [
   "/demo/montre/planche",
   "/demo/montre/video-poster",
   "/demo/montre/video.mp4",
+  "/demo/montre/boutique-",
+  "/demo/montre/fiche-produit",
 ];
 
 export function curateForHome(d: Demo): Demo {
   const c = HOME_CURATION[d.id];
   if (!c) return d;
+  // Champs du manifeste absents du type (ex. productPage : capture de la fiche produit) : retirés avec la boutique.
+  const { productPage: _p, ...rest } = d as Demo & { productPage?: string };
   return {
-    ...d,
+    ...(c.shop === false ? rest : d),
     posts: c.posts === false ? [] : d.posts,
     board: c.board === false ? undefined : d.board,
     video: c.video === false ? "" : d.video,
+    shopDesktop: c.shop === false ? "" : d.shopDesktop,
+    shopMobile: c.shop === false ? "" : d.shopMobile,
     videoPoster: c.video === false ? "" : d.videoPoster,
     images: [...(c.images ? d.images.filter((x) => c.images!.includes(x.src)) : d.images), ...(c.extra ?? [])],
   };
 }
+
+/** La démo interactive de l'éditeur de publicité peut-elle utiliser ce produit ? */
+export const allowsLiveAd = (id: string) => HOME_CURATION[id]?.liveAd !== false;

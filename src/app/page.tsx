@@ -12,7 +12,7 @@ import { HomeHeader } from "@/components/home/home-chrome";
 import { HeroFilm, HowItWorks } from "@/components/home/home-media";
 import { StoryScroll, type StoryDemo, type StoryStep } from "@/components/home/home-story";
 import { storyMedia } from "@/components/home/story-media";
-import { curateForHome } from "@/components/home/demo-curation";
+import { allowsLiveAd, curateForHome } from "@/components/home/demo-curation";
 import { AdEditorDemo, BrandLab, ConnectedHub, ControlDemo, SeoDocDemo, SocialCalendarDemo, StoreDevices, type BrandDemo, type SocialPost, type StoreDemo } from "@/components/home/home-demos";
 import { BoardShowcase, FeedShowcase, PostsWall, ThemesWall, type BoardDemo, type FeedDemo, type WallItem } from "@/components/home/home-showcase";
 import { directionById, directionCards } from "@/lib/theme/directions";
@@ -179,8 +179,8 @@ export default async function Home() {
   // Boutiques de produits puis sites d'entreprises de services, tels que le studio les a composés.
   const handle = (b: string) => b.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "");
   const stores: StoreDemo[] = [
-    ...productDemos.slice(0, 3).map((d): StoreDemo => ({ id: d.id, label: d.sector, text: T(`Boutique ${directionById(d.direction).name} composée pour ${d.brand} · ${d.product}.`, `${directionById(d.direction).name} store designed for ${d.brand} · ${d.product}.`), desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${handle(d.brand)}.myshopify.com` })),
-    ...serviceDemos.map((d): StoreDemo => ({ id: d.id, label: d.sector, text: T(`Entreprise fictive : ${d.brand}, site WordPress. Aucun panier : chaque bouton mène au devis, au rendez-vous ou à l'appel.`, `Fictional business: ${d.brand}, WordPress website. No cart: every button leads to a quote, a booking or a call.`), desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${handle(d.brand)}.fr` })),
+    ...productDemos.filter((d) => d.shopDesktop && d.shopMobile).slice(0, 3).map((d): StoreDemo => ({ id: d.id, label: d.sector, text: T(`Boutique ${directionById(d.direction).name} composée pour ${d.brand} · ${d.product}.`, `${directionById(d.direction).name} store designed for ${d.brand} · ${d.product}.`), desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${handle(d.brand)}.myshopify.com` })),
+    ...serviceDemos.filter((d) => d.shopDesktop && d.shopMobile).map((d): StoreDemo => ({ id: d.id, label: d.sector, text: T(`Entreprise fictive : ${d.brand}, site WordPress. Aucun panier : chaque bouton mène au devis, au rendez-vous ou à l'appel.`, `Fictional business: ${d.brand}, WordPress website. No cart: every button leads to a quote, a booking or a call.`), desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${handle(d.brand)}.fr` })),
   ];
 
 
@@ -465,7 +465,7 @@ export default async function Home() {
               <div className="reveal mt-12" style={{ ["--d" as any]: 2 }}>
                 <FeedShowcase feeds={feeds} />
               </div>
-            {story && (
+            {story && hero && allowsLiveAd(hero.id) && (
               <div id="editeur-publicite" className="reveal mt-16 scroll-mt-24" style={{ ["--d" as any]: 1 }}>
                 <TryHint text={T("Changez le titre, le bouton, la couleur du fond, la place du logo ou le format : la publicité de gauche change en direct.", "Change the title, the button, the background color, the logo position or the format: the ad on the left updates live.")} label={T("À vous d'essayer", "Try it yourself")} />
                 <AdEditorDemo cutout={story.cutout} logo={story.logo} palette={story.palette} brand={story.brand} />

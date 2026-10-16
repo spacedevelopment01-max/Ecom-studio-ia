@@ -73,6 +73,16 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
         </div>
       </div>
     );
+  // Sans capture de boutique sans défaut : les pages de la boutique, sans image.
+  if (k === "store" && !(d.shopDesktop && d.shopMobile))
+    return (
+      <div className="grid h-full content-center gap-2 p-4 text-sm sm:p-5">
+        <p className="text-xs font-semibold uppercase tracking-[.16em] text-muted">{t("Pages de la boutique", "Store pages")}</p>
+        {[t("Accueil", "Home"), t("Boutique", "Shop"), t("Fiche produit", "Product page"), t("Notre histoire", "Our story"), "FAQ", t("Contact", "Contact")].map((x) => (
+          <p key={x} className="flex items-center gap-2 rounded-xl border border-line bg-card px-3 py-2 text-ink-2"><Check className="size-3.5 text-signal" aria-hidden /> {x}</p>
+        ))}
+      </div>
+    );
   if (k === "store")
     return (
       <div className="relative h-full p-4 sm:p-5">
