@@ -85,13 +85,15 @@ describe("Autopilot V2 — pilote", async () => {
     const rows = autoPosts(p.id);
     // Un contenu éditorial = une création ; ses adaptations Instagram / Facebook en sont des variantes (même groupe).
     expect(new Set(all<{ g: string }>("SELECT group_id g FROM posts WHERE plan_id = ?", `auto-${p.id}`).map((x) => x.g)).size).toBe(14 * 3);
+    // Sans accord de dépense : aucun visuel « gratuit » monté par un gabarit (règle : toute image finale est créée
+    // par l'IA) ; les publications attendent leur visuel IA.
     const withMedia = rows.filter((x) => x.media !== "[]");
-    expect(withMedia.length).toBeGreaterThan(0);
-    expect(withMedia.every((x) => x.scheduled_at < now() + 3 * 86_400_000 + 3_600_000)).toBe(true);
+    expect(withMedia.length).toBe(0);
+    expect(log.local).toBe(0);
     expect(log.paid).toBe(0);
     expect(rows.some((x) => ["approved", "scheduled"].includes(x.status))).toBe(false);
-    expect(r.waiting).toBeGreaterThan(0);
-    expect(one("SELECT 1 FROM notifications WHERE project_id = ? AND title LIKE 'Publications à valider%'", p.id)).toBeTruthy();
+    // Rien à valider tant que les images n'ont pas été créées par l'IA (avec accord de dépense).
+    expect(r.waiting).toBe(0);
     // Relancer : rien n'est recréé.
     expect((await fr(() => ap.runAutopilot(p, deps))).created).toBe(0);
   });
@@ -146,7 +148,9 @@ describe("Autopilot V2 — pilote", async () => {
     const free = mockSocialDeps({ aiActive: false });
     const r = await fr(() => ap.runAutopilot(p, free.deps));
     expect(free.log.paid).toBe(0);
-    expect(r.produced).toBeGreaterThan(0);
+    // Sans IA : aucune image (jamais un gabarit à la place), recharge proposée.
+    expect(r.produced).toBe(0);
+    expect(free.log.local).toBe(0);
     expect(one<{ body: string }>("SELECT body FROM notifications WHERE project_id = ? AND title LIKE 'Budget IA%'", p.id)!.body).toMatch(/recharge de 10 €/);
 
     const q = await project("vendre");

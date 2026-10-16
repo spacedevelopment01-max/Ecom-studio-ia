@@ -2,8 +2,9 @@
  * Publication entièrement conçue par l'IA : l'IA d'images compose le visuel complet (scène, mise en page,
  * typographie, bouton) avec le VRAI produit en référence, dans les couleurs de la marque. Les textes sont donnés mot
  * pour mot ; un contrôle visuel vérifie ensuite l'orthographe exacte, la lisibilité et la fidélité au produit. Un
- * essai refusé est refait avec la correction demandée (3 essais au plus, règle du propriétaire) ; sinon la version du
- * studio prend le relais (scène créée par l'IA sans texte + mise en page à calques, ou rendu local).
+ * essai refusé est refait avec la correction demandée (3 essais au plus, règle du propriétaire) ; sinon le blocage est
+ * signalé (jamais un gabarit à la place : toute image finale est créée par l'IA, guide du moteur d'images). La
+ * direction artistique du CLIENT (image-v2/art-direction.ts) et un brief structuré en 16 points guident chaque image.
  * Coût vérifié avant chaque appel (plafond du lot) ; jamais sans IA active ni accord.
  */
 import { z } from "zod";
@@ -16,6 +17,7 @@ import { peopleAllowedFor } from "../people-policy";
 import { aiPostImage, aiPostMaxMicro } from "../ai/media-providers";
 import { AI_POST_ATTEMPTS, type MediaResult, type PostBrief } from "./deps";
 import { MAIN_PRODUCT, type SubjectOption } from "../creative-subject";
+import { artDirectionFor, briefPrompt, buildGenerationBrief, type GenerationBrief } from "../image-v2/art-direction";
 
 export const AiPostReviewSchema = z.object({
   /** Textes lus dans l'image, recopiés lettre pour lettre (comparés ensuite par le studio, pas par l'IA). */
@@ -71,7 +73,7 @@ export function cleanAiCopy(c: AiPostCopy, fallback: AiPostTexts, people = false
  * digne des plus grandes campagnes publicitaires. Seul le NIVEAU est imposé : mise en page, cadrage, typographie, place
  * du logo, du produit et des textes, décor et lumière sont libres et changent d'une publication à l'autre.
  */
-export function aiPostPrompt(p: Project, post: PostBrief, o: { aspect: string; hasReference: boolean; hasLogo?: boolean; fix?: string; texts?: AiPostTexts; people?: boolean }): string {
+export function aiPostPrompt(p: Project, post: PostBrief, o: { aspect: string; hasReference: boolean; hasLogo?: boolean; fix?: string; texts?: AiPostTexts; people?: boolean; /** Brief structuré (direction artistique du client) : remplace la direction libre générique. */ brief?: GenerationBrief }): string {
   const t = o.texts ?? aiPostTexts(p, post);
   const pal = effectivePalette(p.brand) ?? p.brand?.palette;
   const colors = pal ? [pal.dark, pal.primary, pal.accent, pal.light].filter(Boolean).join(", ") : "";
@@ -81,7 +83,7 @@ Subject (context for you only — NEVER write this description or any product de
 Post angle: ${post.pillar ?? ""} — ${post.title}.
 ${post.request ? `Client's brief for THIS visual (follow it closely; it has priority over the post angle, but never breaks the rules below): ${post.request.slice(0, 600)}\n` : ""}${t.scene ? `Universe of THIS post (its own setting, light and mood — not a generic template): ${t.scene}\n` : ""}${o.hasReference ? `The product in the first reference image is the hero: reproduce it EXACTLY, seen from the SAME angle and viewpoint as the photo (same shape, proportions, materials, colours, details, printed text); never redraw it from another angle, never redesign it, never add a word or logo on it that is not on the reference, never add a second copy. If the reference shows it worn or held by someone, take only the product.
 ` : ""}Finish: real light (key light, rim light, crisp reflections), depth of field with a blurred environment that tells the story, rich true-to-life materials, high dynamic range. No text, letters or signs anywhere in the decor.
-Art direction: free and original for THIS post — choose the composition, framing, typography and placement of each element that best serves the idea (never a fixed template: product, texts and brand mark may sit anywhere, as the best agencies would decide). The result must be worthy of the greatest advertising campaigns in the world.
+${o.brief ? `CLIENT ART DIRECTION (specific to this brand — follow it; never a generic look, never the model's default style):\n${briefPrompt(o.brief)}` : "Art direction: free and original for THIS post — choose the composition, framing, typography and placement of each element that best serves the idea (never a fixed template: product, texts and brand mark may sit anywhere, as the best agencies would decide). The result must be worthy of the greatest advertising campaigns in the world."}
 Elements to include:
 - ${o.hasLogo ? `the brand logo from the ${logoRef} reference image, reproduced faithfully (same emblem, same letters), placed where it looks best` : `the brand name "${t.brand}", elegantly typeset`};
 - the headline "${t.headline}" (the hero text);
@@ -144,13 +146,18 @@ export async function designPostWithAi(p0: Project, post: PostBrief, o: { aspect
   const logoBuf = logoAsset && logoAsset.project_id === p.id && !logoAsset.deleted_at ? assetData(logoAsset) : null;
   const written = deps.copy ? await deps.copy(p, post, base, `${prefix}:copy`, people).catch(() => null) : null;
   const t = written ? cleanAiCopy(written, base, people) : base;
+  // Direction artistique du client (enregistrée, versionnée) + brief en 16 points ; composition différente des
+  // créations récentes du projet (diversité réelle, pas seulement une autre couleur de fond).
+  const art = artDirectionFor(p);
+  const recent = all<{ c: string | null }>("SELECT json_extract(meta, '$.finalImage.composition') c FROM assets WHERE project_id = ? AND deleted_at IS NULL AND json_extract(meta, '$.finalImage') IS NOT NULL ORDER BY created_at DESC LIMIT 6", p.id).map((r) => r.c).filter((c): c is string => !!c);
+  const brief = buildGenerationBrief(p, { purpose: isAd ? "ad" : "post", subject: `${p.product.name || p.product.category} — ${post.title}`, aspect: o.aspect, texts: { hook: t.headline, secondary: t.subline, cta: t.cta }, references: [refBuf ? "image 1: the real product (keep it identical)" : "", logoBuf ? `image ${refBuf ? 2 : 1}: the project's real logo` : ""].filter(Boolean), recent, ad: art });
   let fix = "";
   for (let attempt = 0; attempt < AI_POST_ATTEMPTS; attempt++) {
     const max = deps.maxMicro();
     if (max == null) return { assetId: null, costMicro: deps.spentMicro(prefix), by: "image_v2", note: C("publication IA : aucun modèle d'images disponible", "AI post: no image model available") };
     if (deps.spentMicro(prefix) + max > capMicro) break;
     const key = `${prefix}:${attempt}`;
-    const img = await deps.generate(aiPostPrompt(p, post, { aspect: o.aspect, hasReference: !!refBuf, hasLogo: !!logoBuf, fix, texts: t, people }), o.aspect, refBuf, key, logoBuf);
+    const img = await deps.generate(aiPostPrompt(p, post, { aspect: o.aspect, hasReference: !!refBuf, hasLogo: !!logoBuf, fix, texts: t, people, brief }), o.aspect, refBuf, key, logoBuf);
     // Avec le vrai logo, le nom de la marque est dans le logo : contrôlé contre le logo, pas comme un texte libre.
     const expected = [t.headline, t.subline, t.cta, ...(logoBuf ? [] : [t.brand])].filter(Boolean);
     const r = await deps.review(img, refBuf, expected, key, people, logoBuf);
@@ -158,12 +165,12 @@ export async function designPostWithAi(p0: Project, post: PostBrief, o: { aspect
       // Image payée refusée : gardée (statut refusé, défauts notés), jamais jetée.
       await saveAsset({ projectId: p.id, userId: p.userId, data: img, name: `${isAd ? "publicite" : "publication"}-ia-refusee-${post.id.slice(0, 6)}-${attempt + 1}.png`, mime: "image/png", role: "social-trial", folderKey: isAd ? "images.ads" : "content.calendar", origin: "generated", status: "rejected", meta: { recipe: "Essai de publication conçue par l'IA, refusé par le contrôle", post: post.id, aiPost: { texts: t, transcribed: r.transcribed, issues: r.issues, score: r.score, attempt: attempt + 1 } } });
     } else {
-      const a = await saveAsset({ projectId: p.id, userId: p.userId, data: img, name: `${isAd ? "publicite" : "publication"}-ia-${post.network}-${post.id.slice(0, 6)}.png`, mime: "image/png", role: isAd ? "ad" : "social", folderKey: isAd ? "images.ads" : "content.calendar", origin: "generated", status: "ready", meta: { recipe: isAd ? "Publicité entièrement conçue par l'IA (produit réel en référence, textes vérifiés)" : "Publication entièrement conçue par l'IA (produit réel en référence, textes vérifiés)", ...(isAd ? { aiAd: true } : { post: post.id, socialV2: true }), aspect: o.aspect, aiPost: { texts: t, score: r.score, attempts: attempt + 1, reference: o.reference, subject: o.subject ? { kind: o.subject.kind, key: o.subject.key, name: o.subject.name } : null, request: post.request ?? null, brand: { name: p.brand?.name ?? "", logo: p.brand?.logo?.assetId ?? null, palette: p.brand?.palette ?? null } } } });
+      const a = await saveAsset({ projectId: p.id, userId: p.userId, data: img, name: `${isAd ? "publicite" : "publication"}-ia-${post.network}-${post.id.slice(0, 6)}.png`, mime: "image/png", role: isAd ? "ad" : "social", folderKey: isAd ? "images.ads" : "content.calendar", origin: "generated", status: "ready", meta: { recipe: isAd ? "Publicité entièrement conçue par l'IA (produit réel en référence, textes vérifiés)" : "Publication entièrement conçue par l'IA (produit réel en référence, textes vérifiés)", ...(isAd ? { aiAd: true } : { post: post.id, socialV2: true }), aspect: o.aspect, finalImage: { purpose: isAd ? "ad" : "post", composition: brief.composition, universe: art.universe, artDirectionVersion: art.version, brief }, aiPost: { texts: t, score: r.score, attempts: attempt + 1, reference: o.reference, subject: o.subject ? { kind: o.subject.kind, key: o.subject.key, name: o.subject.name } : null, request: post.request ?? null, brand: { name: p.brand?.name ?? "", logo: p.brand?.logo?.assetId ?? null, palette: p.brand?.palette ?? null } } } });
       return { assetId: a.id, costMicro: deps.spentMicro(prefix), by: "image_v2" };
     }
     fix = [r.fix, ...r.issues].filter(Boolean).join(" ; ").slice(0, 400) || "spell every text exactly and keep the product identical to the reference";
   }
-  return { assetId: null, costMicro: deps.spentMicro(prefix), by: "image_v2", note: C("publication IA refusée par le contrôle (texte ou produit non conformes) : rendu du studio à la place", "AI post rejected by the check (text or product not faithful): studio render instead") };
+  return { assetId: null, costMicro: deps.spentMicro(prefix), by: "image_v2", note: C("publication IA refusée par le contrôle après ses essais (texte, logo ou produit non conformes) : à refaire, aucun gabarit à la place", "AI post rejected by the check after its attempts (text, logo or product not faithful): to redo, no template instead") };
 }
 
 /** Branchement réel : IA d'images de l'usage « Publicités », contrôle visuel, coûts lus dans le journal des appels. */

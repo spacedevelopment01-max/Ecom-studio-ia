@@ -1,9 +1,12 @@
 /**
- * NIVEAU 2 — PRODUCTION (progressive, par lots) : médias des publications choisies. Ordre de préférence :
- *  1. bibliothèque : un média validé, du bon type, le moins utilisé (gratuit, aucune image repayée) ;
- *  2. moteurs V2 sans dépense : Image V2 en recherche seule, Video V2 en montage local, rendu local à la marque ;
- *  3. génération payante (Image V2, Advertising V2, plans Video V2) SEULEMENT si le client l'a autorisée, dans
- *     le plafond du lot, après estimation (un appel qui dépasserait le budget n'est jamais envoyé).
+ * NIVEAU 2 — PRODUCTION (progressive, par lots) : médias des publications choisies.
+ *  - IMAGES (règle du propriétaire, guide du moteur d'images) : toute image de publication est CRÉÉE par l'IA
+ *    (« ai_post » : composition, décor, lumière, textes exacts, logo du projet en référence, contrôle). Jamais un
+ *    gabarit, une affiche montée par le studio ni une photo de banque avec un texte posé. IA indisponible, estimation
+ *    non acceptée, budget atteint ou essais refusés : la publication ATTEND son visuel et c'est dit (« none » + note),
+ *    jamais de bascule silencieuse. Une image finale déjà créée par l'IA pour le projet peut être reprise (bibliothèque).
+ *  - VIDÉOS : bibliothèque, puis Video V2 (règles du moteur vidéo inchangées).
+ *  Génération payante SEULEMENT si le client l'a autorisée, dans le plafond du lot, après estimation.
  * Une publication modifiée par le client garde ses médias (jamais remplacés sans sa demande).
  */
 import { all, json, now, run } from "../db";
@@ -42,21 +45,22 @@ function libraryPool(projectId: string, kind: "image" | "video"): Asset[] {
   return rows.filter(isAutoUsable).filter((a) => a.uses < 3);
 }
 
+/** Image finale déjà créée par l'IA pour ce projet (publication IA validée) : seule image reprenable telle quelle. */
+const aiFinal = (a: Asset) => {
+  const m = json<{ aiPost?: unknown; finalImage?: unknown }>(a.meta, {});
+  return a.origin === "generated" && (!!m.aiPost || !!m.finalImage);
+};
+
 function pick(r: Row, opts: { allowPaid: boolean; ai?: boolean; bg?: boolean }, pools: { image: Asset[]; video: Asset[] }): { method: ProduceMethod; paid: boolean } {
-  // Visuel demandé « entièrement par l'IA » (premières publications d'un projet, ou choix du client) : image créée
-  // par l'IA d'images avec le vrai produit en référence, même si la bibliothèque a déjà des photos.
-  if (opts.ai && opts.allowPaid && !needsVideo(r)) return { method: "ai_post", paid: true };
-  // « Image de fond par l'IA, le studio fait le reste » choisi par le client : photo créée par l'IA (avec le vrai
-  // produit), mise en page du studio — même si la bibliothèque a déjà des photos.
-  if (opts.bg && opts.allowPaid && !needsVideo(r)) return { method: "image_v2", paid: true };
   if (needsVideo(r)) return pools.video.length ? { method: "library", paid: false } : { method: "video_v2", paid: opts.allowPaid };
-  if (r.objective === "convert" || r.objective === "sell") return { method: opts.allowPaid && !pools.image.length ? "ads_v2" : "local", paid: opts.allowPaid && !pools.image.length };
-  // Image : une affiche par publication, sur LA photo cherchée pour elle (Pixabay d'abord, gratuite ; « local »),
-  // sinon une photo validée de la bibliothèque. L'IA d'images n'est utilisée que si elle est permise et acceptée.
-  // Bibliothèque déjà fournie : aucune dépense (affiche gratuite sur une photo libre ou une photo validée).
-  if (pools.image.length) return { method: "local", paid: false };
-  return opts.allowPaid ? { method: "image_v2", paid: true } : { method: "local", paid: false };
+  // Image : toujours créée par l'IA (publication complète) ; sinon une image IA déjà validée du projet ; sinon rien.
+  if (opts.allowPaid) return { method: "ai_post", paid: true };
+  if (pools.image.some(aiFinal)) return { method: "library", paid: false };
+  return { method: "none", paid: false };
 }
+
+/** Pourquoi une publication attend son visuel (affiché au client, jamais remplacé par un gabarit). */
+const WAITING_AI = "visuel en attente : les images des publications sont créées par l'IA (IA indisponible, estimation non acceptée ou budget atteint) — aucun gabarit à la place";
 
 const selectRows = (projectId: string, ids: string[]) =>
   ids.length
@@ -84,7 +88,7 @@ export function estimateProduction(p: Project, ids: string[], deps: Pick<SocialD
     return { postId: r.id, method: m.method, paid: m.paid, estimateMicro: est };
   });
   const notes: string[] = [];
-  if (opts.allowPaid && !deps.aiActive) notes.push("IA non disponible pour ce compte : production locale et bibliothèque seulement (0 €)");
+  if (!deps.aiActive) notes.push("IA non disponible pour ce compte : aucune image de publication ne peut être créée (elles sont toutes faites par l'IA) ; seules les images IA déjà validées du projet peuvent être reprises");
   return { posts: lines.length, free: lines.filter((l) => !l.paid).length, paid: lines.filter((l) => l.paid).length, estimateMicro: lines.reduce((s, l) => s + l.estimateMicro, 0), lines, notes };
 }
 
@@ -94,48 +98,24 @@ export type ProductionResult = { produced: number; skipped: number; failed: numb
  * Production d'un lot. `approvedEstimateMicro` : estimation vue et acceptée par le client — une production
  * payante n'est lancée que si elle a été acceptée et seulement dans le plafond `maxCostEur`.
  */
-/**
- * Photos de fond déjà prises pour les affiches d'un calendrier (de la moins à la plus utilisée) : quand le client a
- * choisi un nombre d'images différentes, les publications suivantes les reprennent (autre texte, autre mise en page).
- */
-function planBackgrounds(planId: string | null): { asset: Asset; uses: number }[] {
-  if (!planId) return [];
-  const rows = all<{ bg: string; uses: number }>(
-    `SELECT json_extract(a.meta, '$.poster.backgroundAssetId') bg, COUNT(*) uses FROM assets a
-      WHERE a.project_id = (SELECT project_id FROM posts WHERE plan_id = ? LIMIT 1) AND a.role = 'social' AND a.deleted_at IS NULL AND json_extract(a.meta, '$.poster.backgroundAssetId') IS NOT NULL
-        AND json_extract(a.meta, '$.post') IN (SELECT id FROM posts WHERE plan_id = ?)
-      GROUP BY bg ORDER BY uses ASC`,
-    planId,
-    planId,
-  );
-  return rows.map((r) => ({ asset: getAsset(r.bg)!, uses: r.uses })).filter((x) => x.asset && !x.asset.deleted_at);
-}
-
 export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, o: { allowPaid: boolean; maxCostEur: number; approvedEstimateMicro?: number | null; batchSize?: number; /** Nombre d'images différentes voulu pour les publications du calendrier (vide : une par publication). */ distinctImages?: number | null; /** Les N premières publications en image : visuel entièrement créé par l'IA (payant, dans le plafond). */ aiImages?: number | null; /** Image de fond par l'IA, mise en page du studio (payant, dans le plafond). */ aiBackground?: boolean; /** Remplacer le visuel déjà posé (l'ancien reste dans la bibliothèque). */ replace?: boolean; /** Image de la banque choisie par le client comme fond des publications en image (gratuit). */ background?: Asset | null }): Promise<ProductionResult> {
   const cap = Math.round(o.maxCostEur * EUR);
   const allowPaid = o.allowPaid && deps.aiActive && o.approvedEstimateMicro != null && o.approvedEstimateMicro <= cap;
   const notes: string[] = [];
-  if (o.allowPaid && !allowPaid) notes.push(deps.aiActive ? "estimation non acceptée ou au-delà du plafond : production gratuite seulement" : "IA non disponible : production gratuite seulement");
+  if (o.allowPaid && !allowPaid) notes.push(deps.aiActive ? "estimation non acceptée ou au-delà du plafond : les images attendent leur création par l'IA" : "IA non disponible : les images attendent leur création par l'IA (vidéos de la bibliothèque seulement)");
   const rows = selectRows(p.id, ids).filter((r) => PRODUCIBLE.has(r.status) && (o.replace || r.media === "[]")).slice(0, o.batchSize ?? 30);
   const pools = { image: libraryPool(p.id, "image"), video: libraryPool(p.id, "video") };
   const used = new Map<string, number>();
   const aiIds = aiImageIds(rows, o.aiImages);
   const res: ProductionResult = { produced: 0, skipped: 0, failed: 0, spentMicro: 0, stoppedByCap: false, notes, byMethod: {} };
   for (const r of rows) {
-    let m = pick(r, { allowPaid: allowPaid && (!o.aiImages || aiIds.has(r.id)), ai: aiIds.has(r.id), bg: o.aiBackground }, pools);
+    const m = pick(r, { allowPaid: allowPaid && (!o.aiImages || aiIds.has(r.id)), ai: aiIds.has(r.id), bg: o.aiBackground }, pools);
     let out: MediaResult | null = null;
-    // Nombre d'images différentes atteint pour ce calendrier : on reprend l'une d'elles (gratuit), sans nouvelle photo.
-    const bgs = o.distinctImages && !needsVideo(r) ? planBackgrounds(r.plan_id) : [];
-    const reuse = o.distinctImages && bgs.length >= o.distinctImages ? bgs.slice(0, o.distinctImages).sort((a, b) => a.uses - b.uses)[0].asset : null;
-    if (reuse && !aiIds.has(r.id) && !(o.aiBackground && allowPaid)) m = { method: "local", paid: false };
     try {
-      if (o.background && !needsVideo(r) && !aiIds.has(r.id) && !(o.aiBackground && allowPaid)) {
-        // Une image choisie par le client dans sa banque : affiche à la marque posée dessus (gratuit).
-        out = await deps.local(p, r, { background: o.background });
-      } else if (reuse && !aiIds.has(r.id) && !(o.aiBackground && allowPaid)) {
-        out = await deps.local(p, r, { background: reuse });
+      if (m.method === "none") {
+        out = { assetId: null, costMicro: 0, by: "local", note: `publication ${r.id.slice(0, 6)} : ${WAITING_AI}` };
       } else if (m.method === "library") {
-        const pool = needsVideo(r) ? pools.video : pools.image;
+        const pool = needsVideo(r) ? pools.video : pools.image.filter(aiFinal);
         const a = [...pool].sort((x, y) => (used.get(x.id) ?? 0) - (used.get(y.id) ?? 0))[0];
         out = a ? { assetId: a.id, costMicro: 0, by: "library" } : null;
       } else {
@@ -143,33 +123,16 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
         const est = m.paid ? deps.estimate(kind) : 0;
         if (m.paid && res.spentMicro + est > cap) {
           res.stoppedByCap = true;
-          notes.push(`plafond atteint (${(cap / EUR).toFixed(2)} €) : production payante arrêtée, rendu local pour la suite`);
-          out = await deps.local(p, r);
+          notes.push(`plafond atteint (${(cap / EUR).toFixed(2)} €) : production arrêtée, les publications suivantes attendent leur visuel IA (aucun gabarit à la place)`);
+          out = null;
         } else {
           const opts = { allowPaid: m.paid, maxCostEur: Math.max(0, (cap - res.spentMicro) / EUR) };
-          out = m.method === "video_v2" ? await deps.video(p, r, opts) : m.method === "ads_v2" ? await deps.ad(p, r, opts) : m.method === "image_v2" ? await deps.image(p, r, opts) : m.method === "ai_post" ? await (deps.aiPost ?? deps.image)(p, r, opts) : await deps.local(p, r);
-          // Rien d'exploitable du moteur : rendu local (vidéo : la publication attend une vidéo). Ce qui a été payé
-          // pour l'essai refusé reste compté (jamais une dépense cachée).
+          // Image : publication entièrement créée par l'IA (jamais une affiche montée par le studio).
+          out = m.method === "video_v2" ? await deps.video(p, r, opts) : deps.aiPost ? await deps.aiPost(p, r, opts) : null;
+          // Rien d'exploitable : visuel IA refusé après ses essais (ou blocage). Ce qui a été payé reste compté ; la
+          // publication attend son visuel, dit clairement — aucun gabarit ni rendu local à la place.
           if (!out?.assetId && m.method !== "video_v2") {
-            const paidForNothing = out?.costMicro ?? 0;
-            if (out?.note) notes.push(out.note);
-            // Visuel tout par l'IA refusé après ses essais : version du studio, de préférence sur une scène créée par
-            // l'IA d'images (le vrai produit, sans texte dessiné) si le plafond le permet ; sinon rendu local.
-            const left = cap - res.spentMicro - paidForNothing;
-            if (m.method === "ai_post" && deps.aiPost && m.paid && left >= deps.estimate("image")) {
-              const again = await deps.image(p, r, { allowPaid: true, maxCostEur: left / EUR }).catch((e) => {
-                if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
-                return null;
-              });
-              if (again?.assetId) out = { ...again, costMicro: again.costMicro + paidForNothing };
-              else {
-                out = await deps.local(p, r);
-                if (out) out = { ...out, costMicro: (out.costMicro ?? 0) + paidForNothing + (again?.costMicro ?? 0) };
-              }
-            } else {
-              out = await deps.local(p, r);
-              if (out) out = { ...out, costMicro: (out.costMicro ?? 0) + paidForNothing };
-            }
+            notes.push(`publication ${r.id.slice(0, 6)} : visuel IA non validé par le contrôle, à refaire (aucun gabarit à la place)`);
           }
         }
       }

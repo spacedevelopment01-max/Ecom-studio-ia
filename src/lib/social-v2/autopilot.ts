@@ -269,17 +269,19 @@ export async function runAutopilot(p: Project, deps: SocialDeps, at = now()): Pr
   // 2. Production progressive : seulement les prochains jours, visuels gratuits d'abord.
   const soon = all<{ id: string }>("SELECT id FROM posts WHERE plan_id = ? AND media = '[]' AND status IN ('planned','draft','review') AND scheduled_at > ? AND scheduled_at < ? ORDER BY scheduled_at LIMIT 15", autoPlanId(p.id), at, at + c.produceDays * 24 * HOUR).map((r) => r.id);
   if (soon.length) {
-    const left = Math.round(c.paidCapEurWeek * 1_000_000) - spentThisWeek(p.id, at);
+    // Plafond de la semaine : dépensé + déjà engagé par une tâche de création IA encore en attente (jamais deux fois).
+    const engaged = all<{ payload: string }>("SELECT payload FROM jobs WHERE project_id = ? AND type = 'social.v2.produce' AND status IN ('queued','running') AND created_at > ?", p.id, at - 7 * 24 * HOUR).reduce((t, j) => t + (Number(JSON.parse(j.payload || "{}").approvedEstimateMicro) || 0), 0);
+    const left = Math.round(c.paidCapEurWeek * 1_000_000) - spentThisWeek(p.id, at) - engaged;
     // Visuels par l'IA : seulement si le client les a choisis ET a fixé un plafond par semaine.
     const paidWanted = c.visual !== "free" && c.paidCapEurWeek > 0;
     const vp = visualParams(c.visual);
     if (paidWanted && !deps.aiActive) {
       // Budget IA épuisé ou IA indisponible : on continue gratuitement et on prévient une fois par semaine.
       if (!one("SELECT 1 FROM social_autopilot_log WHERE project_id = ? AND action = 'budget_low' AND at > ?", p.id, at - 7 * 24 * HOUR)) {
-        notify(p.userId, p.id, L("Budget IA épuisé pour vos publications", "AI budget used up for your posts"), L("Les publications prêtes restent programmées et les visuels continuent gratuitement (bibliothèque, mise en page du studio). Pour des visuels par l'IA, ajoutez une recharge de 10 € dans « Mon compte ».", "Ready posts stay scheduled and visuals continue for free (library, studio layout). For AI visuals, add a €10 top-up in \"My account\"."), "warning");
-        logAutopilot(p.id, "budget_low", "visuels gratuits seulement ; recharge de 10 € proposée");
+        notify(p.userId, p.id, L("Budget IA épuisé pour vos publications", "AI budget used up for your posts"), L("Les publications prêtes restent programmées. Les nouvelles images sont toutes créées par l'IA : elles attendent (aucun gabarit à la place). Pour les créer, ajoutez une recharge de 10 € dans « Mon compte ».", "Ready posts stay scheduled. New images are all created by AI: they are waiting (no template instead). To create them, add a €10 top-up in \"My account\"."), "warning");
+        logAutopilot(p.id, "budget_low", "images en attente de l'IA ; recharge de 10 € proposée");
       }
-      out.notes.push("budget IA indisponible : visuels gratuits seulement");
+      out.notes.push("budget IA indisponible : images en attente de l'IA (aucun gabarit à la place)");
     }
     const est = paidWanted && deps.aiActive ? estimateProduction(p, soon, deps, { allowPaid: true, aiBackground: "aiBackground" in vp ? vp.aiBackground : undefined, aiImages: "aiImages" in vp ? vp.aiImages : undefined }) : null;
     if (est && est.paid > 0 && est.estimateMicro <= left) {
@@ -288,7 +290,7 @@ export async function runAutopilot(p: Project, deps: SocialDeps, at = now()): Pr
       out.paidJob = job.id;
       logAutopilot(p.id, "paid_job", { jobId: job.id, posts: soon.length, estimateMicro: est.estimateMicro });
     } else {
-      if (est && est.paid > 0) out.notes.push(`plafond de la semaine atteint (${c.paidCapEurWeek} €) : visuels gratuits`);
+      if (est && est.paid > 0) out.notes.push(`plafond de la semaine atteint (${c.paidCapEurWeek} €) : images en attente de l'IA`);
       const r = await produceBatch(p, soon, deps, { allowPaid: false, maxCostEur: 0, batchSize: 15 });
       out.produced = r.produced;
       logAutopilot(p.id, "produce", { produced: r.produced, failed: r.failed, spentMicro: 0 });
