@@ -121,7 +121,8 @@ describe("onglet Images — audit", async () => {
     expect(log.prompts.length).toBeGreaterThan(0);
     for (const x of log.prompts) {
       expect(x).not.toMatch(/chronographe/i);
-      expect(x).toContain("montre posé sur l'établi");
+      // Accord en genre appliqué par le vocabulaire du client (« une montre posée », plus « un montre posé »).
+      expect(x).toContain("une montre posée sur l'établi");
     }
   });
 
