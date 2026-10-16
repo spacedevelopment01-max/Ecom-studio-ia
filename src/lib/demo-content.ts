@@ -26,10 +26,11 @@ const DEMO_EN: Record<string, { product?: string; note?: string }> = {
   tribunes: { product: "Lavender supporter T-shirt", note: "Two supporter T-shirts from a supplier (supplier visuals) and two accessories whose photo was created by AI: the brand and the store are created by the studio. No official crest." },
   gourde: { product: "Insulated bottle 750 ml", note: "Product and original photo created by AI (OpenAI) for the demo: the brand, the visuals and the store are created by the studio. No technical specification is claimed unless provided." },
   paysagiste: { product: "Garden design and maintenance", note: "Fictional business: the garden photos were created by AI (OpenAI) for the demo; the website and brand are created by the studio." },
+  montre: { product: "Steel and leather watch", note: "Photo of an unbranded watch (Pixabay), strap completed by AI (the lower part was in shadow): the ARVEN brand, its visuals and its store are created by the studio. Price and technical specifications not stated: to be completed by the merchant." },
   barbier: { product: "Barber shop", note: "Real photos of a barber shop (Pixabay): the business is fictional, its website and brand are created by the studio." },
 };
-const SECTOR_EN: Record<string, string> = { "Épicerie fine": "Fine food", Accessoires: "Accessories", Plantes: "Plants", Fleuriste: "Florist", Barbier: "Barber", Boissons: "Beverages", Maison: "Home", "High-tech": "Tech", Animaux: "Pets", Mode: "Fashion", "Sport et plein air": "Sports & outdoors", Paysagiste: "Landscaper", Beauté: "Beauty", Sport: "Sports", Alimentation: "Food", Bijoux: "Jewelry", Enfants: "Kids" };
-const IMAGE_LABEL_EN: Record<string, string> = { Bannière: "Banner", Détail: "Detail", Détourage: "Cutout", Packshot: "Packshot", Publicité: "Ad", Scène: "Scene", "Visuel social": "Social visual" };
+const SECTOR_EN: Record<string, string> = { "Épicerie fine": "Fine food", Accessoires: "Accessories", Plantes: "Plants", Fleuriste: "Florist", Barbier: "Barber", Boissons: "Beverages", Maison: "Home", "High-tech": "Tech", Animaux: "Pets", Mode: "Fashion", "Sport et plein air": "Sports & outdoors", Paysagiste: "Landscaper", Beauté: "Beauty", Sport: "Sports", Alimentation: "Food", Bijoux: "Jewelry", Enfants: "Kids", Horlogerie: "Watches" };
+const IMAGE_LABEL_EN: Record<string, string> = { Bannière: "Banner", Détail: "Detail", Détourage: "Cutout", Packshot: "Packshot", Publicité: "Ad", Scène: "Scene", "Visuel social": "Social visual", "En situation": "Lifestyle" };
 
 export function localizeDemo(d: Demo, lang: Lang): Demo {
   if (lang !== "en") return d;

@@ -124,3 +124,40 @@ export const wallExtras = (id: string) => HOME_CURATION[id]?.wall ?? [];
 
 /** Publicité de l'éditeur et publications du calendrier préparées pour l'accueil (démonstration donnée). */
 export const homeExtras = (id: string) => ({ editorAd: HOME_CURATION[id]?.editorAd ?? null, social: HOME_CURATION[id]?.social ?? [] });
+
+/**
+ * Vidéos de démonstration de l'accueil, regardées une image toutes les 0,5 s (16 octobre 2026). Retenues :
+ *  - ARVEN : film publicitaire IA (montre fidèle, textes exacts, logo exact, aucun « chronographe ») ;
+ *  - Les Tribunes : montage du studio, coupé à 12,9 s avant la carte finale (texte coupé « … « FRANCE » e ») ;
+ *  - Racines & Pierres : film du studio (vidéos Pixabay de chantier, mains et pieds seuls, aucun visage) ;
+ *  - Atelier Pivoine : montage du studio (vraies photos Pixabay, textes exacts).
+ * Écartées faute de vidéo sans défaut (aucune fausse vidéo à leur place) :
+ *  - Cime : montage presque sans image (écrans de texte vides, « Voici Gourde isotherme », phrase finale coupée) ;
+ *  - Sonore : montage avec phrases coupées (« et u ») ; film IA dont le casque n'est pas celui de la démo (créé sans
+ *    photo, sur texte seul).
+ */
+export const DEMO_FILMS: { id: string; src: string; poster: string; label: [string, string] }[] = [
+  { id: "montre", src: "/demo/montre/film-ia.mp4", poster: "/demo/montre/film-ia.jpg", label: ["Film publicitaire, 15 s", "Ad film, 15 s"] },
+  { id: "paysagiste", src: "/demo/paysagiste/film-demo.mp4", poster: "/demo/paysagiste/film-demo.jpg", label: ["Création et entretien de jardins, 15 s", "Garden design and care, 15 s"] },
+  { id: "tribunes", src: "/demo/tribunes/film-demo.mp4", poster: "/demo/tribunes/film-demo.jpg", label: ["T-shirt supporter Lavande, 13 s", "Lavender supporter T-shirt, 13 s"] },
+  { id: "fleuriste", src: "/demo/fleuriste/film-demo.mp4", poster: "/demo/fleuriste/film-demo.jpg", label: ["Fleuriste artisan à Lyon, 15 s", "Artisan florist in Lyon, 15 s"] },
+];
+
+/** Démo choisie pour chaque section de l'accueil : les sections tournent entre les six démos (consigne du propriétaire). */
+export const SECTION_DEMO = {
+  boards: "paysagiste",
+  stores: "tribunes",
+  beforeAfter: "casque",
+  feeds: "fleuriste",
+  seo: "gourde",
+  calendar: "paysagiste",
+  control: "tribunes",
+} as const;
+
+/** Publications du calendrier « Votre semaine de publications » (Racines & Pierres) : visuels et textes de la démo. */
+export const CALENDAR_POSTS: { src: string; network: string; caption: [string, string] }[] = [
+  { src: "/demo/paysagiste/post-3.jpg", network: "Instagram", caption: ["Création de jardin : demandez votre devis.", "Garden design: ask for your quote."] },
+  { src: "/demo/paysagiste/post-7.jpg", network: "Facebook", caption: ["Terrasses et aménagements.", "Terraces and landscaping."] },
+  { src: "/demo/paysagiste/post-6.jpg", network: "Pinterest", caption: ["Entretien à l'année.", "Year-round maintenance."] },
+  { src: "/demo/paysagiste/post-4.jpg", network: "TikTok", caption: ["Aix-en-Provence et alentours.", "Aix-en-Provence and surroundings."] },
+];

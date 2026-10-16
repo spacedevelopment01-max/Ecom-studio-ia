@@ -36,6 +36,7 @@ describe("Accueil : parcours « 03 Images » sans fausse promesse", () => {
   });
   it("la démo « Personnalisation » ne propose pas deux fois la même couleur", () => {
     expect(buttonColors(["#1E2225", "#E8DACF", "#A86932", "#FAF7F5", "#1E2225"])).toEqual(["#1E2225", "#A86932"]);
+    expect(buttonColors(["#0D0D0D", "#C4C4C4", "#E10600", "#FAFAFA", "#050505"])).toEqual(["#0D0D0D", "#E10600"]);
   });
 });
 
@@ -119,8 +120,8 @@ describe("Accueil : démo montre (ARVEN) sans aucun visuel fait par gabarit du s
   });
   it("équilibre : les vitrines ne commencent pas toutes par la même démo", () => {
     const page = read("src/app/page.tsx");
-    expect(page).toContain('startAt(list.filter((d) => d.board), "paysagiste")');
-    expect(page).toContain('startAt(list.filter((d) => (d.posts?.length ?? 0) >= 4), "casque")');
+    expect(page).toContain("startAt(list.filter((d) => d.board), SECTION_DEMO.boards)");
+    expect(page).toContain("startAt(list.filter((d) => (d.posts?.length ?? 0) >= 4), SECTION_DEMO.feeds)");
   });
   it("la page applique la sélection et les panneaux savent s'afficher sans image", () => {
     expect(read("src/app/page.tsx")).toContain(".map(curateForHome)");
@@ -153,7 +154,8 @@ describe("Accueil : parcours ARVEN, un vrai résultat à chaque étape", async (
       expect(exists(p.src)).toBe(true);
       for (const c of p.caption) expect(c.toLowerCase()).not.toContain("chronographe");
     }
-    expect(read("src/app/page.tsx")).toContain("story.socialPosts?.length");
+    expect(read("src/app/page.tsx")).toContain("socialPosts: extras.social.map(");
+    expect(read("src/components/home/home-story.tsx")).toContain("const sp = d.socialPosts ?? [];");
   });
   it("aucun texte de la sélection n'écrit « chronographe » (vocabulaire du client : « montre »)", () => {
     expect(JSON.stringify(HOME_CURATION).toLowerCase()).not.toMatch(/chronograph(e|s)?"/);
@@ -169,5 +171,31 @@ describe("Accueil : parcours ARVEN, un vrai résultat à chaque étape", async (
   });
   it("l'article de blog de démonstration n'écrit plus « son montre »", () => {
     expect(read("src/app/page.tsx")).not.toContain("Comment bien choisir son ${story.product.toLowerCase()}");
+  });
+});
+
+describe("Accueil : les sections tournent entre les démos, chacune avec de vrais visuels", async () => {
+  const { SECTION_DEMO, DEMO_FILMS, CALENDAR_POSTS } = await import("@/components/home/demo-curation");
+  const exists = (f: string) => fs.existsSync(path.join(process.cwd(), "public", f));
+  const order = [SECTION_DEMO.boards, SECTION_DEMO.stores, "gourde" /* thèmes */, SECTION_DEMO.beforeAfter, SECTION_DEMO.feeds, SECTION_DEMO.seo, SECTION_DEMO.calendar, SECTION_DEMO.control];
+
+  it("jamais deux sections consécutives avec la même démo, produits et services mêlés", () => {
+    for (let i = 1; i < order.length; i++) expect(order[i]).not.toBe(order[i - 1]);
+    expect(order.some((d) => d === "paysagiste" || d === "fleuriste")).toBe(true);
+    expect(new Set(order).size).toBeGreaterThanOrEqual(5);
+  });
+  it("vidéos de démonstration : une par démo retenue, fichiers présents, produits et services", () => {
+    expect(DEMO_FILMS.map((f) => f.id)).toEqual(["montre", "paysagiste", "tribunes", "fleuriste"]);
+    for (const f of DEMO_FILMS) expect(exists(f.src) && exists(f.poster)).toBe(true);
+    expect(JSON.stringify(DEMO_FILMS)).not.toContain("/demo/montre/video");
+    const films = read("src/components/home/home-films.tsx");
+    expect(films).toContain("muted={muted}");
+    expect(films).toContain('preload="none"');
+    expect(read("src/app/page.tsx")).toContain("<DemoFilms films={films} />");
+  });
+  it("calendrier « Votre semaine de publications » : quatre publications de Racines & Pierres avec leurs images", () => {
+    expect(CALENDAR_POSTS).toHaveLength(4);
+    for (const p of CALENDAR_POSTS) expect(exists(p.src)).toBe(true);
+    expect(read("src/app/page.tsx")).toContain("CALENDAR_POSTS.slice(0, 4)");
   });
 });
