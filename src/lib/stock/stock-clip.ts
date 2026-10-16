@@ -48,11 +48,21 @@ export type StockClipRequest = {
   typed?: string;
   /** Recherche élargie (demandée par le client) : chaque mot tapé est aussi cherché seul, et un seul mot cité suffit. */
   broad?: boolean;
+  /**
+   * Silhouettes acceptées (choix du client, projet sans personnes) : une personne de dos ou dans l'ombre, visage non
+   * visible, d'après les mots-clés du plan. Un visage reconnaissable reste toujours écarté.
+   */
+  silhouettes?: boolean;
 };
 
 /** Ce que la recherche a trouvé ou écarté : dit au client pourquoi aucun plan n'a été retenu. */
 export type StockClipDiag = { report: StockVideoReport; people: number; offTopic: number; rejected: number };
 export const emptyClipDiag = (): StockClipDiag => ({ report: emptyVideoReport(), people: 0, offTopic: 0, rejected: 0 });
+
+const SILHOUETTE_RE = /\b(silhouettes?|shadows?|from behind|back view|rear view|backlit|hooded|hoods?|cloaked|ombres?|de dos|contre-jour|capuche)\b/i;
+const FACE_RE = /\b(faces?|portraits?|selfies?|smil(e|es|ing)|close-?ups?|eyes|looking at (the )?camera|visages?|sourires?|gros plan)\b/i;
+/** Mots-clés d'un plan : une personne, mais seulement en silhouette (de dos, dans l'ombre), sans visage cité. */
+export const silhouetteOnly = (alt: string) => SILHOUETTE_RE.test(alt) && !FACE_RE.test(alt);
 
 const STOP = new Set(["les", "des", "une", "est", "avec", "pour", "dans", "sur", "par", "aux", "the", "and", "with", "for", "from", "into", "dun", "dune", "video", "videos", "plan", "plans"]);
 /** Mots significatifs d'un texte tapé (« escape game » → escape, game ; « porte d'entrée » → porte, entree). */
@@ -191,13 +201,17 @@ export async function findStockClip(ictx: Ictx, p: Project, r: StockClipRequest,
   // Toutes les recherches du texte tapé sont faites (aucun arrêt anticipé), puis celles du métier.
   const fromTyped = typedQueries.length ? await search(typedQueries, Number.POSITIVE_INFINITY, taken) : [];
   const fromTrade = await search(queriesFor(q.queries, people), 16, new Set([...taken, ...fromTyped.map((v) => `${v.source}:${v.id}`)]));
-  const raw = [...fromTyped, ...fromTrade].filter((v) => !stockMentionsBrand(v.alt, own) && (!need || (citesAll(v.alt, need) && !ART.test(v.alt))));
-  if (!people) diag.people += raw.filter((v) => mentionsPerson(v.alt)).length;
+  const all0 = [...fromTyped, ...fromTrade].filter((v) => !stockMentionsBrand(v.alt, own) && (!need || (citesAll(v.alt, need) && !ART.test(v.alt))));
+  // Projet sans personnes : un plan qui en montre une est écarté, sauf silhouette acceptée par le client (signalée).
+  const shadowOk = (v: StockVideo) => !people && !!r.silhouettes && mentionsPerson(v.alt) && silhouetteOnly(v.alt);
+  const raw = all0.filter((v) => people || !mentionsPerson(v.alt) || shadowOk(v)).map((v) => (shadowOk(v) ? { ...v, silhouette: true } : v));
+  if (!people) diag.people += all0.length - raw.length;
+  const rankPeople = { people: true, allowAiMade: true };
   // Plans qui citent le texte tapé d'abord (le sujet demandé par le client), puis ceux du métier.
-  const asked = words.length ? rankStock(raw.filter((v) => citesTyped(v.alt, words, r.broad)), [], true, [], { people, allowAiMade: true }) : [];
-  const onTrade = rankStock(raw, q.must, ai, q.negative, { people, allowAiMade: true }).filter((v) => !asked.includes(v));
+  const asked = words.length ? rankStock(raw.filter((v) => citesTyped(v.alt, words, r.broad)), [], true, [], rankPeople) : [];
+  const onTrade = rankStock(raw, q.must, ai, q.negative, rankPeople).filter((v) => !asked.includes(v));
   const found = [...asked, ...onTrade];
-  diag.offTopic += Math.max(0, raw.length - found.length - (people ? 0 : raw.filter((v) => mentionsPerson(v.alt)).length));
+  diag.offTopic += Math.max(0, raw.length - found.length);
   const trade = [p.product.category, p.product.name].filter(Boolean)[0] ?? "";
   const subject = services ? `${trade} — ${r.topic}` : C(`univers du produit « ${p.product.name} » (${p.product.category ?? ""}) — ${r.topic} ; sans le produit lui-même`, `world of the product "${p.product.name}" (${p.product.category ?? ""}) — ${r.topic}; without the product itself`);
   const { checkAmbiance } = await import("../engine/service-media");
@@ -225,7 +239,7 @@ export async function findStockClip(ictx: Ictx, p: Project, r: StockClipRequest,
         continue;
       }
       const keep = gateSave(ictx, d);
-      const a = await saveAsset({ projectId: p.id, userId: p.userId, data: buf, name: `${C("plan-libre", "stock-shot")}-${r.part}-${v.source}-${v.id}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", meta: { provider: v.source, recipe: stockVideoCredit(v), stock: { source: v.source, id: v.id, page: v.page, author: v.author, license: v.license, ...(v.aiGenerated ? { aiGenerated: true } : {}) }, subject: r.topic, part: r.part, durationS: v.duration, ...keep.meta }, status: "review" });
+      const a = await saveAsset({ projectId: p.id, userId: p.userId, data: buf, name: `${C("plan-libre", "stock-shot")}-${r.part}-${v.source}-${v.id}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", meta: { provider: v.source, recipe: `${stockVideoCredit(v)}${v.silhouette ? C(" — silhouette (personne de dos ou dans l'ombre, visage non visible)", " — silhouette (seen from behind or in shadow, face not visible)") : ""}`, stock: { source: v.source, id: v.id, page: v.page, author: v.author, license: v.license, ...(v.aiGenerated ? { aiGenerated: true } : {}), ...(v.silhouette ? { silhouette: true } : {}) }, subject: r.topic, part: r.part, durationS: v.duration, ...keep.meta }, status: "review" });
       exclude.add(`${v.source}:${v.id}`);
       return { assetId: a.id, durationS: v.duration };
     } catch (e) {

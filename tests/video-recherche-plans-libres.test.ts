@@ -9,7 +9,7 @@ import fixture from "./fixtures/pixabay-videos-escape-game.json";
 const { setSetting } = await import("@/lib/settings");
 const { searchStockVideos, emptyVideoReport, aiGeneratedTags, stockVideoCredit } = await import("@/lib/stock/photos");
 const { rankStock, tradeStock, tagsMatch } = await import("@/lib/stock/trade-queries");
-const { citesTyped, typedWords } = await import("@/lib/stock/stock-clip");
+const { citesTyped, typedWords, silhouetteOnly } = await import("@/lib/stock/stock-clip");
 const { findBankClips, noClipMessage } = await import("@/lib/media/bank-video");
 const { emptyClipDiag } = await import("@/lib/stock/stock-clip");
 const { createUser } = await import("@/lib/auth");
@@ -29,7 +29,8 @@ function fakePixabay() {
     const q = url.searchParams.get("q") ?? "";
     const lang = url.searchParams.get("lang") ?? "en";
     calls.push({ q, lang, perPage: url.searchParams.get("per_page") ?? "" });
-    const hits = q === "escape game" ? (fixture.hits as Record<string, unknown[]>)[lang] ?? [] : [];
+    const en = (fixture.hits as Record<string, { id: number }[]>).en;
+    const hits = q === "escape game" ? (fixture.hits as Record<string, unknown[]>)[lang] ?? [] : q === "silhouette door" && lang === "en" ? en.filter((h) => h.id === 187666) : [];
     return new Response(JSON.stringify({ total: hits.length, totalHits: hits.length, hits }), { headers: { "content-type": "application/json" } });
   });
 }
@@ -91,6 +92,17 @@ describe("recherche de plans libres : « escape game » (bug du projet contretem
     await expect(findBankClips(ctx("j5"), pid, { topic: "escape game", aspect: "16:9", count: 1 })).rejects.toThrow(/aucune clé Pixabay active/);
   });
 
+  it("silhouettes : écartées par défaut (projet sans personnes), proposées et signalées si le client coche la case", async () => {
+    const pid = await escapeProject("Loisirs");
+    // 187666 : « man, silhouette, … door » (silhouette d'homme devant une porte éclairée).
+    await expect(findBankClips(ctx("s1"), pid, { topic: "silhouette door", aspect: "16:9", count: 1 })).rejects.toThrow(/1 avec des personnes.*Accepter les silhouettes/);
+    const out = await findBankClips(ctx("s2"), pid, { topic: "silhouette door", aspect: "16:9", count: 1, silhouettes: true });
+    expect(out.assetIds).toHaveLength(1);
+    const row = all<{ s: string; recipe: string }>("SELECT json_extract(meta,'$.stock') s, json_extract(meta,'$.recipe') recipe FROM assets WHERE project_id = ?", pid)[0];
+    expect(JSON.parse(row.s)).toMatchObject({ id: "187666", silhouette: true });
+    expect(row.recipe).toMatch(/visage non visible/);
+  });
+
   it("Pixabay injoignable : erreur dite au client, pas avalée", async () => {
     vi.stubGlobal("fetch", async () => new Response("err", { status: 503 }));
     const pid = await escapeProject("Loisirs");
@@ -141,6 +153,12 @@ describe("filtres de la recherche de plans (sans réseau)", () => {
     expect(citesTyped("birds, escape, panic", ["escape", "game"])).toBe(false);
     expect(citesTyped("birds, escape, panic", ["escape", "game"], true)).toBe(true);
     expect(citesTyped("porte, château, secret", typedWords("porte secrète"))).toBe(true);
+  });
+
+  it("silhouette : de dos ou dans l'ombre oui, visage cité non", () => {
+    expect(silhouetteOnly("man, silhouette, dream, escape, door")).toBe(true);
+    expect(silhouetteOnly("woman, silhouette, face, portrait")).toBe(false);
+    expect(silhouetteOnly("man, running, road")).toBe(false);
   });
 
   it("message « pourquoi rien » : personnes écartées, hors sujet, proposition d'élargir", () => {

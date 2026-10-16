@@ -102,7 +102,7 @@ export async function pingStock(source: "pexels" | "pixabay"): Promise<string> {
 
 // ---------------------------------------------------------------- vidéos libres de droits
 
-export type StockVideo = { source: "pexels" | "pixabay"; id: string; url: string; page: string; author: string; license: string; width: number; height: number; duration: number; /** Description de la banque (mots-clés Pixabay, titre de la page Pexels) : filtre du métier sans IA. */ alt: string; /** Plan fait par l'IA et publié sur la banque (Pixabay « ai generated ») : toujours proposé, signalé. */ aiGenerated?: boolean };
+export type StockVideo = { source: "pexels" | "pixabay"; id: string; url: string; page: string; author: string; license: string; width: number; height: number; duration: number; /** Description de la banque (mots-clés Pixabay, titre de la page Pexels) : filtre du métier sans IA. */ alt: string; /** Plan fait par l'IA et publié sur la banque (Pixabay « ai generated ») : toujours proposé, signalé. */ aiGenerated?: boolean; /** Personne seulement en silhouette (acceptée par le client), signalée. */ silhouette?: boolean };
 
 /** Mots du titre d'une page Pexels (« /video/a-man-painting-a-wall-123/ » → « a man painting a wall »). */
 const slugWords = (url: string) => (url.match(/\/video\/([^/?#]+)/)?.[1] ?? "").replace(/-\d+$/, "").replace(/-/g, " ");

@@ -97,7 +97,7 @@ export default function TabVideos() {
                 <Card key={v.id} className="flex min-w-0 flex-col overflow-hidden">
                   <div className="relative grid place-items-center bg-ink">
                     <video src={v.url} poster={v.thumbUrl ?? undefined} controls playsInline preload="none" className={cx("w-full", tall ? "aspect-[9/16]" : "aspect-video")} />
-                    <span className="absolute right-2 top-2 rounded-full bg-paper/90 px-2 py-0.5 text-[10px] font-medium text-ink" title={sourceOf(v) === "stock" ? t("Libre de droits : illustration, pas une vidéo de votre activité", "Royalty-free: an illustration, not a video of your business") : undefined}>{sourceOf(v) === "stock" && v.meta?.stock?.aiGenerated ? t("Libre · créé par l'IA", "Free · AI-made") : t(...BADGE[sourceOf(v)])}</span>
+                    <span className="absolute right-2 top-2 rounded-full bg-paper/90 px-2 py-0.5 text-[10px] font-medium text-ink" title={sourceOf(v) === "stock" ? t("Libre de droits : illustration, pas une vidéo de votre activité", "Royalty-free: an illustration, not a video of your business") : undefined}>{sourceOf(v) === "stock" && (v.meta?.stock?.aiGenerated || v.meta?.stock?.silhouette) ? [t("Libre", "Free"), v.meta?.stock?.aiGenerated && t("créé par l'IA", "AI-made"), v.meta?.stock?.silhouette && t("silhouette", "silhouette")].filter(Boolean).join(" · ") : t(...BADGE[sourceOf(v)])}</span>
                   </div>
                   <div className="flex items-center gap-1.5 p-3">
                     <StatusBadge status={v.status} />
@@ -113,7 +113,7 @@ export default function TabVideos() {
         )}
       </div>
       <Modal open={dialog === "search"} onClose={() => setDialog(null)} title={t("Chercher des plans libres", "Find royalty-free clips")} wide>
-        <SearchClips services={data?.business === "services"} onStarted={started} />
+        <SearchClips services={data?.business === "services"} peopleAllowed={(data?.settings as { peopleAllowed?: boolean } | undefined)?.peopleAllowed === true} onStarted={started} />
       </Modal>
       <Modal open={dialog === "ai"} onClose={() => setDialog(null)} title={t("Créer un plan avec l'IA", "Create a clip with AI")} wide>
         <AiClip onStarted={started} />
@@ -124,16 +124,16 @@ export default function TabVideos() {
 }
 
 /** Plans libres de droits (Pixabay, Pexels) sur un sujet : gratuit, sujet contrôlé, aucune IA de vidéo. */
-function SearchClips({ services, onStarted }: { services: boolean; onStarted: (jobId?: string) => void }) {
+function SearchClips({ services, peopleAllowed, onStarted }: { services: boolean; peopleAllowed: boolean; onStarted: (jobId?: string) => void }) {
   const { id } = useProject();
   const t = useT();
   const toast = useToast();
-  const [f, setF] = useState({ topic: "", aspect: "9:16", count: 2, broad: false });
+  const [f, setF] = useState({ topic: "", aspect: "9:16", count: 2, broad: false, silhouettes: false });
   const [busy, setBusy] = useState(false);
   const go = async () => {
     setBusy(true);
     try {
-      const r = await api<{ jobId?: string }>(`/api/projects/${id}/videos/bank`, { body: { action: "stock", topic: f.topic.trim() || undefined, aspect: f.aspect, count: f.count, broad: f.broad || undefined } });
+      const r = await api<{ jobId?: string }>(`/api/projects/${id}/videos/bank`, { body: { action: "stock", topic: f.topic.trim() || undefined, aspect: f.aspect, count: f.count, broad: f.broad || undefined, silhouettes: f.silhouettes || undefined } });
       onStarted(r.jobId);
     } catch (e) {
       toast("bad", (e as Error).message);
@@ -153,6 +153,12 @@ function SearchClips({ services, onStarted }: { services: boolean; onStarted: (j
         <input type="checkbox" className="mt-0.5" checked={f.broad} onChange={(e) => setF({ ...f, broad: e.target.checked })} data-bank-search-broad />
         <span>{t("Recherche élargie : chaque mot est aussi cherché seul (plus de plans, parfois moins précis)", "Broader search: each word is also searched on its own (more clips, sometimes less precise)")}</span>
       </label>
+      {!peopleAllowed && (
+        <label className="flex items-start gap-2 text-sm">
+          <input type="checkbox" className="mt-0.5" checked={f.silhouettes} onChange={(e) => setF({ ...f, silhouettes: e.target.checked })} data-bank-search-silhouettes />
+          <span>{t("Accepter les silhouettes (personne de dos ou dans l'ombre, visage non visible)", "Allow silhouettes (seen from behind or in shadow, face not visible)")}</span>
+        </label>
+      )}
       <p className="text-xs text-muted">{t("Votre texte est cherché tel quel sur Pixabay. Les plans libres de droits illustrent votre activité : ce ne sont pas des vidéos de vos réalisations. Un plan créé par l'IA et publié sur Pixabay est signalé « créé par l'IA ».", "Your text is searched as-is on Pixabay. Royalty-free clips illustrate your business: they aren't videos of your own work. A clip made by AI and published on Pixabay is marked \"AI-made\".")}</p>
       <div className="flex items-center justify-between gap-3 border-t border-line pt-4">
         <span className="text-sm font-medium text-ok">{t("Gratuit", "Free")}</span>
