@@ -1,0 +1,16 @@
+{
+  "model": "qwen-image-3.0-pro",
+  "items": [
+    {
+      "id": "arven-produit-en-situation",
+      "aspect": "4:5",
+      "prompt": "Photographie, style démonstration produit. Sujet : the real product \"Montre acier et cuir\" (acier poli, cuir brun). Action : the product ready to use in its real everyday setting, nobody in frame. Décor : marble or wood surface with soft light. Composition : le produit installé pour une vraie tâche, résultat visible, aucune main. Lumière : lumière vive et égale, détails lisibles. Prise de vue : plan rapproché à moyen, 50 mm, produit lisible. Ambiance : clair, utile, honnête. Touches de couleur en accord avec #1E2225, #E8DACF, #A86932, #FAF7F5. Format 4:5, zone en bas gardée calme pour un texte ajouté plus tard. Le produit reste EXACTEMENT comme sur la référence : même forme, mêmes couleurs, même logo, mêmes inscriptions, mêmes proportions ; ne pas le redessiner. Le produit ENTIER est dans le cadre, aucune partie coupée, cachée ou manquante (ex. une montre : le bracelet complet avec sa boucle). Ne jamais montrer : counterfeit luxury logos, pawn shop, competitor brand logo, unrelated product, cartoon illustration, watermark, empty room, bare wall ; aucun texte, aucune lettre, aucun logo, aucun filigrane. Aucune personne : ni personne, ni visage, ni mains, ni partie du corps, ni silhouette, ni reflet de personne, ni mannequin avec un visage ; montrer seulement des lieux, des objets, des outils, des matériaux et des résultats.",
+      "reference": "scripts/demo-products/inputs/pixabay/montre-1-entiere.jpg"
+    },
+    {
+      "id": "arven-univers-marque",
+      "aspect": "4:5",
+      "prompt": "Photographie, style photographie premium. Sujet : world of accessories (without the product itself). Action : accessory worn in daily life, objects only, nobody in frame. Décor : marble or wood surface with soft light. Composition : le sujet en héros, quelques accessoires raffinés dans la palette de la marque, profondeur en plusieurs plans. Lumière : lumière douce maîtrisée avec un léger liseré, tons riches. Prise de vue : angle légèrement bas, détails au 100 mm macro ou plan héros au 70 mm. Ambiance : raffiné, tactile, haut de gamme. Touches de couleur en accord avec #1E2225, #E8DACF, #A86932, #FAF7F5. Format 4:5, zone en bas gardée calme pour un texte ajouté plus tard. Ne jamais montrer : counterfeit luxury logos, pawn shop, competitor brand logo, unrelated product, cartoon illustration, watermark, empty room, bare wall ; aucun texte, aucune lettre, aucun logo, aucun filigrane. Aucune personne : ni personne, ni visage, ni mains, ni partie du corps, ni silhouette, ni reflet de personne, ni mannequin avec un visage ; montrer seulement des lieux, des objets, des outils, des matériaux et des résultats."
+    }
+  ]
+}
