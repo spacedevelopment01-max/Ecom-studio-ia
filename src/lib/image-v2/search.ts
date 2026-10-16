@@ -12,6 +12,7 @@
  * contrôle, jamais collés dans la requête.
  */
 import { mentionsPerson } from "../people-policy";
+import { citesTyped, silhouetteOnly } from "../stock/typed-search";
 import { fitsFormat, orientationOf } from "./formats";
 import { licenseUsable, type StockProvider } from "./sources";
 import type { RankedCandidate, StockCandidate, VisualBrief } from "./types";
@@ -34,10 +35,19 @@ function conceptWords(phrases: string[]): string[] {
 }
 
 /**
- * Pertinence d'un résultat pour le brief (0-10), à partir de sa seule description (gratuit) et de ses dimensions.
- * `metadataMatch` : la description cite le métier ou le produit (seule base d'un choix sans contrôle visuel).
+ * Recherche tapée par le client (« Chercher des photos libres ») : ses mots, la recherche élargie et les silhouettes
+ * acceptées (projet sans personnes). Même comportement que la banque de vidéos.
  */
-export function scoreCandidate(c: StockCandidate, brief: VisualBrief): RankedCandidate & { metadataMatch: boolean; offTopicLikely: boolean } {
+export type TypedSearch = { queries: { q: string; lang: "en" | "fr" }[]; words: string[]; broad: boolean; silhouettes: boolean };
+
+export type ScoredCandidate = RankedCandidate & { metadataMatch: boolean; offTopicLikely: boolean; personBlocked?: boolean };
+
+/**
+ * Pertinence d'un résultat pour le brief (0-10), à partir de sa seule description (gratuit) et de ses dimensions.
+ * `metadataMatch` : la description cite le métier ou le produit (seule base d'un choix sans contrôle visuel), ou les
+ * mots tapés par le client (c'est le sujet qu'il a demandé).
+ */
+export function scoreCandidate(c: StockCandidate, brief: VisualBrief, typed?: Omit<TypedSearch, "queries"> | null): ScoredCandidate {
   const text = norm(c.alt);
   const reasons: string[] = [];
   let s = 4;
@@ -45,6 +55,12 @@ export function scoreCandidate(c: StockCandidate, brief: VisualBrief): RankedCan
   if (mustHit) {
     s += 3;
     reasons.push("cite le métier");
+  }
+  // Mots tapés par le client cités (tous, ou un seul en recherche élargie) : le sujet demandé, jamais « hors sujet ».
+  const asked = !!typed?.words.length && citesTyped(c.alt, typed.words, typed.broad);
+  if (asked) {
+    s += 3;
+    reasons.push("cite votre recherche");
   }
   const words = conceptWords([...(brief.action ? [brief.action] : []), ...(brief.environment ? [brief.environment] : []), ...brief.positive]);
   const hits = words.filter((w) => text.includes(` ${w} `)).length;
@@ -54,13 +70,15 @@ export function scoreCandidate(c: StockCandidate, brief: VisualBrief): RankedCan
   }
   const human = HUMAN_ACTION.test(text);
   // Règle de présence humaine : personnes non autorisées → une photo décrite avec une personne est écartée.
-  const personNotAllowed = brief.people === false && mentionsPerson(text);
+  // Silhouette acceptée par le client (de dos, dans l'ombre, visage non visible d'après les mots-clés) : gardée, signalée.
+  const silhouette = brief.people === false && !!typed?.silhouettes && mentionsPerson(text) && silhouetteOnly(c.alt);
+  const personNotAllowed = brief.people === false && mentionsPerson(text) && !silhouette;
   if (human && brief.people !== false) s += 0.5;
   const negHit = brief.negative.find((n) => has(text, n));
-  const surfaceOnly = SURFACES.some((w) => has(text, w)) && !human && !mustHit;
+  const surfaceOnly = SURFACES.some((w) => has(text, w)) && !human && !mustHit && !asked;
   // Comprendre la scène : un concept hors sujet n'écarte la photo que si rien du métier ni du geste ne s'y voit.
   let offTopicLikely = false;
-  if (negHit && !mustHit) {
+  if (negHit && !mustHit && !asked) {
     s -= 4;
     offTopicLikely = true;
     reasons.push(`hors sujet probable (${negHit})`);
@@ -88,10 +106,11 @@ export function scoreCandidate(c: StockCandidate, brief: VisualBrief): RankedCan
     reasons.push("aucune description");
   }
   const relevance = Math.max(0, Math.min(10, Math.round(s * 10) / 10));
-  return { ...c, relevance, reasons, metadataMatch: !personNotAllowed && (mustHit || (!brief.must.length && hits >= 2)), offTopicLikely };
+  if (silhouette) reasons.push("silhouette acceptée (visage non visible)");
+  return { ...c, relevance, reasons, metadataMatch: !personNotAllowed && (mustHit || asked || (!brief.must.length && hits >= 2)), offTopicLikely, ...(personNotAllowed ? { personBlocked: true } : {}), ...(silhouette ? { silhouette: true } : {}) };
 }
 
-export type SearchStats = { requests: number; results: number; kept: number; byProvider: Record<string, number>; queries: string[]; errors: string[] };
+export type SearchStats = { requests: number; results: number; kept: number; byProvider: Record<string, number>; queries: string[]; errors: string[]; /** Résultats déjà pris dans le projet ou déjà refusés pour ce brief (distincts). */ excluded?: number };
 
 /** Clé stable d'un résultat (doublons entre requêtes et réutilisation). */
 export const candidateKey = (c: Pick<StockCandidate, "source" | "id">) => `${c.source}:${c.id}`;
@@ -100,11 +119,12 @@ export const candidateKey = (c: Pick<StockCandidate, "source" | "id">) => `${c.s
  * Recherche dans les sources disponibles. Arrêt dès qu'assez de bons candidats sont trouvés (moins de requêtes).
  * `exclude` : photos déjà utilisées dans le projet ou déjà refusées pour ce brief.
  */
-export async function searchCandidates(brief: VisualBrief, providers: StockProvider[], opts: { exclude?: Set<string>; enough?: number; fallbackFr?: string | null; score?: typeof scoreCandidate } = {}): Promise<{ ranked: (RankedCandidate & { metadataMatch: boolean; offTopicLikely: boolean })[]; stats: SearchStats }> {
+export async function searchCandidates(brief: VisualBrief, providers: StockProvider[], opts: { exclude?: Set<string>; enough?: number; fallbackFr?: string | null; score?: typeof scoreCandidate; typed?: TypedSearch | null } = {}): Promise<{ ranked: ScoredCandidate[]; stats: SearchStats }> {
   const stats: SearchStats = { requests: 0, results: 0, kept: 0, byProvider: {}, queries: [], errors: [] };
   const seen = new Set<string>();
   const seenUrl = new Set<string>();
-  const out: (RankedCandidate & { metadataMatch: boolean; offTopicLikely: boolean })[] = [];
+  const excluded = new Set<string>();
+  const out: ScoredCandidate[] = [];
   const enough = opts.enough ?? 8;
   const orientation = orientationOf(brief.format.aspect);
   const good = () => out.filter((c) => c.relevance >= 6 && !c.offTopicLikely).length;
@@ -121,15 +141,21 @@ export async function searchCandidates(brief: VisualBrief, providers: StockProvi
     stats.results += found.length;
     for (const c of found) {
       const k = candidateKey(c);
+      if (opts.exclude?.has(k)) excluded.add(k);
       if (!c.url || seen.has(k) || seenUrl.has(c.url) || opts.exclude?.has(k)) continue;
       seen.add(k);
       seenUrl.add(c.url);
       // Licence non établie : jamais retenue automatiquement.
       if (!licenseUsable(c.license)) continue;
-      out.push((opts.score ?? scoreCandidate)(c, brief));
+      out.push((opts.score ?? scoreCandidate)(c, brief, opts.typed));
       stats.byProvider[prov.id] = (stats.byProvider[prov.id] ?? 0) + 1;
     }
   };
+  // Texte tapé par le client d'abord, tel quel (anglais et français ; chaque mot seul en recherche élargie) : toutes
+  // ses recherches sont faites, sans arrêt anticipé. Puis les recherches du métier, si elles manquent encore.
+  if (opts.typed?.queries.length)
+    for (const prov of providers.filter((p) => p.available()))
+      for (const t of opts.typed.queries) if (prov.capabilities.languages.includes(t.lang)) await run(prov, t.q, t.lang);
   for (const prov of providers.filter((p) => p.available())) {
     for (const q of brief.queries) {
       if (good() >= enough) break;
@@ -148,6 +174,7 @@ export async function searchCandidates(brief: VisualBrief, providers: StockProvi
   }
   const ranked = [...dedup.values()].sort((a, b) => b.relevance - a.relevance);
   stats.kept = ranked.length;
+  stats.excluded = excluded.size;
   return { ranked, stats };
 }
 

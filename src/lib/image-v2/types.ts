@@ -125,6 +125,10 @@ export type StockCandidate = {
   alt: string;
   license: LicenseInfo;
   query: string;
+  /** Photo faite par l'IA et publiée sur la banque (Pixabay « ai generated ») : proposée, signalée « créée par l'IA ». */
+  aiGenerated?: boolean;
+  /** Personne seulement en silhouette (de dos, dans l'ombre), acceptée par le client : signalée. */
+  silhouette?: boolean;
 };
 
 export type RankedCandidate = StockCandidate & { relevance: number; reasons: string[] };
