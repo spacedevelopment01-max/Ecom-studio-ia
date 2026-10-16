@@ -49,22 +49,24 @@ export const HOME_CURATION: Record<string, Curation> = {
     // Captures refaites en local par le moteur de thème (scripts/demo-arven-boutique.ts) avec les images validées : la
     // montre est entière (bracelet et boucle) sur ordinateur et sur téléphone. Les anciennes la coupaient.
     shop: { desktop: "/demo/montre/boutique-ia-bureau.jpg", mobile: "/demo/montre/boutique-ia-mobile.jpg", direction: "atelier" },
-    // Publicité faite par le moteur de l'éditeur du studio (scripts/demo-arven-pubs.ts) : texte du propriétaire mot pour
-    // mot, vrai logo, montre entière dans les quatre formats.
+    // Publicité créée par l'IA (Qwen-Image 3.0 Pro), choisie par le propriétaire : « Un classique à votre rythme. ».
+    // 9:16 d'origine ; 1:1, 4:5 et 16:9 refaits par Qwen à partir d'elle (16/10, 0,24 $), vérifiés un par un. Retouches
+    // locales seulement : une bande de mur vide retirée sur le 4:5 (format exact) et le « t » en trop de « vottre »
+    // retiré sur le 16:9. Aucune pub composée par le gabarit du studio sur l'accueil (demande du propriétaire).
     editorAd: {
-      title: "Acier et cuir véritable.",
+      title: "Un classique à votre rythme.",
       formats: [
-        { aspect: "9:16", src: "/demo/montre/pub-editeur-9x16.jpg" },
-        { aspect: "1:1", src: "/demo/montre/pub-editeur-1x1.jpg" },
-        { aspect: "4:5", src: "/demo/montre/pub-editeur-4x5.jpg" },
-        { aspect: "16:9", src: "/demo/montre/pub-editeur-16x9.jpg" },
+        { aspect: "9:16", src: "/demo/montre/publicite-ia-1.jpg" },
+        { aspect: "1:1", src: "/demo/montre/publicite-ia-1x1.jpg" },
+        { aspect: "4:5", src: "/demo/montre/publicite-ia-4x5.jpg" },
+        { aspect: "16:9", src: "/demo/montre/publicite-ia-16x9.jpg" },
       ],
     },
-    // Calendrier : les deux publications créées par l'IA, la publicité de l'éditeur et le film.
+    // Calendrier : les deux publications créées par l'IA, la même publicité au format 4:5 et le film.
     social: [
       { src: "/demo/montre/publicite-ia-1.jpg", network: "Instagram", caption: ["Un classique à votre rythme.", "A classic at your own pace."] },
       { src: "/demo/montre/publication-ia-1.jpg", network: "Facebook", caption: ["Le temps vous va bien.", "Time suits you."] },
-      { src: "/demo/montre/pub-editeur-4x5.jpg", network: "Pinterest", caption: ["Acier et cuir véritable.", "Genuine steel and leather."] },
+      { src: "/demo/montre/publicite-ia-4x5.jpg", network: "Pinterest", caption: ["Un classique à votre rythme.", "A classic at your own pace."] },
       { src: "/demo/montre/film-ia.jpg", network: "TikTok", caption: ["La montre ARVEN en 15 secondes.", "The ARVEN watch in 15 seconds."] },
     ],
     // Démo interactive « éditeur de publicité » : elle compose en direct une publicité par gabarit (montre détourée +
