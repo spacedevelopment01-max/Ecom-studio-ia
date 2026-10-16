@@ -66,3 +66,34 @@ describe("Intro animée en anglais", () => {
     expect(read("src/components/intro/intro-source.ts")).toContain(">Passer</button>");
   });
 });
+
+describe("Accueil : démo montre (ARVEN) sans aucun visuel fait par gabarit du studio", async () => {
+  const { curateForHome, HOME_EXCLUDED_FILES } = await import("@/components/home/demo-curation");
+  const { demos, localizeDemo } = await import("@/lib/demo-content");
+  const all = [...demos(), ...demos("manifest.en.json"), ...demos().map((d) => localizeDemo(d, "en"))].map(curateForHome);
+  const montre = all.find((d) => d.id === "montre")!;
+
+  it("aucun fichier gabarit de la montre (publications, planche, vidéo, affiche) n'est référencé", () => {
+    expect(montre).toBeTruthy();
+    const json = JSON.stringify(all);
+    for (const f of HOME_EXCLUDED_FILES) expect(json).not.toContain(f);
+  });
+  it("seuls restent les visuels IA vérifiés : détourage et les trois mises en situation", () => {
+    expect(montre.images.map((x) => x.src)).toEqual(["/demo/montre/cutout-1.webp", "/demo/montre/lifestyle-1.jpg", "/demo/montre/lifestyle-2.jpg", "/demo/montre/lifestyle-3.jpg"]);
+    expect(montre.posts).toEqual([]);
+    expect(montre.board).toBeUndefined();
+    expect(montre.videoPoster).toBe("");
+  });
+  it("publicité, visuel social et bannière restent vides plutôt qu'une autre image à leur place", () => {
+    const m = storyMedia(montre);
+    expect([m.ad, m.social, m.banner]).toEqual(["", "", ""]);
+    expect(m.tiles.map((x) => x.kind)).toEqual(["cutout", "scene", "scene", "scene"]);
+  });
+  it("la page applique la sélection et les panneaux savent s'afficher sans image", () => {
+    expect(read("src/app/page.tsx")).toContain(".map(curateForHome)");
+    const story = read("src/components/home/home-story.tsx");
+    expect(story).toContain("{!d.ad ? null : (");
+    expect(story).toContain("if (!d.videoPoster)");
+    expect(read("src/components/home/home-demos.tsx")).toContain("{p.image && <img");
+  });
+});

@@ -3,7 +3,8 @@
  * de la démonstration, chacune avec sa vraie nature. Avant, une image absente (ex. ARVEN n'a ni packshot ni détail,
  * et ses scènes s'appellent « En situation ») était remplacée par la photo d'origine du fournisseur, affichée trois
  * fois sous les étiquettes « Fond blanc », « Scène » et « Détail » : une promesse fausse. Ici, rien n'est inventé :
- * une case sans création réelle disparaît, et la photo d'origine n'est utilisée qu'en tout dernier recours.
+ * une case sans création réelle disparaît, la photo d'origine n'est utilisée qu'en tout dernier recours, et une
+ * publicité, un visuel social ou une bannière absents restent vides (« » : le panneau s'affiche sans image).
  */
 export type MediaKind = "cutout" | "packshot" | "detail" | "scene" | "social" | "ad" | "banner" | "post";
 export type MediaTile = { src: string; kind: MediaKind };
@@ -66,9 +67,11 @@ export function storyMedia(d: { photo: string; images: { src: string; label: str
   }
   for (const [slot, kinds] of slots) {
     if (got[slot]) continue;
-    const x = free(kinds.flatMap(of)) ?? free(pool) ?? kinds.flatMap(of)[0] ?? pool[0];
+    // Publicité, visuel social, bannière : jamais une autre image présentée à leur place (vide = rien n'est affiché).
+    const strict = slot === "ad" || slot === "social" || slot === "banner";
+    const x = free(kinds.flatMap(of)) ?? (strict ? kinds.flatMap(of)[0] : free(pool) ?? kinds.flatMap(of)[0] ?? pool[0]);
     if (x) used.add(x.src);
-    got[slot] = x?.src ?? d.photo;
+    got[slot] = x?.src ?? (strict ? "" : d.photo);
   }
   const { scene1, scene2, packshot, detail, ad, social, banner } = got as Record<(typeof slots)[number][0], string>;
   return { cutout, tiles, packshot, detail, scene1, scene2, social, ad, banner };

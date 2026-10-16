@@ -12,6 +12,7 @@ import { HomeHeader } from "@/components/home/home-chrome";
 import { HeroFilm, HowItWorks } from "@/components/home/home-media";
 import { StoryScroll, type StoryDemo, type StoryStep } from "@/components/home/home-story";
 import { storyMedia } from "@/components/home/story-media";
+import { curateForHome } from "@/components/home/demo-curation";
 import { AdEditorDemo, BrandLab, ConnectedHub, ControlDemo, SeoDocDemo, SocialCalendarDemo, StoreDevices, type BrandDemo, type SocialPost, type StoreDemo } from "@/components/home/home-demos";
 import { BoardShowcase, FeedShowcase, PostsWall, ThemesWall, type BoardDemo, type FeedDemo, type WallItem } from "@/components/home/home-showcase";
 import { directionById, directionCards } from "@/lib/theme/directions";
@@ -106,7 +107,8 @@ export default async function Home() {
   // Interface anglaise : démonstration produite en anglais (manifest.en.json) quand elle existe, sinon la française aux textes traduits.
   const rawEn = lang === "en" ? demos("manifest.en.json") : [];
   const raw = demos().map((d) => rawEn.find((x) => x.id === d.id) ?? d);
-  const list = raw.map((d) => (rawEn.includes(d) ? d : localizeDemo(d, lang))).map(webp);
+  // Accueil : seuls les visuels créés par l'IA et vérifiés sans défaut (demo-curation.ts) ; aucun gabarit du studio.
+  const list = raw.map((d) => (rawEn.includes(d) ? d : localizeDemo(d, lang))).map(curateForHome).map(webp);
   const user = await currentUser();
   const live = paymentsLive();
   const cta = user ? "/studio" : "/inscription";
@@ -135,6 +137,17 @@ export default async function Home() {
       }
     : null;
 
+  // Texte du module « Images » : exactement les sortes d'images que montre la démonstration, rien de plus.
+  const KIND_NAMES: Record<string, [string, string]> = { cutout: ["Produit découpé", "Cut-out product"], packshot: ["Fond blanc", "White background"], detail: ["Gros plans", "Close-ups"], scene: ["Mises en situation", "Lifestyle shots"] };
+  const shownKinds = [...new Set((media?.tiles ?? []).map((x) => x.kind))].filter((k) => KIND_NAMES[k]);
+  const kindList = (i: 0 | 1) => {
+    const n = shownKinds.map((k) => KIND_NAMES[k][i]);
+    const and = i === 0 ? " et " : " and ";
+    const txt = n.length > 1 ? `${n.slice(0, -1).join(", ")}${and}${n[n.length - 1].toLowerCase()}` : (n[0] ?? (i === 0 ? "Images" : "Images"));
+    return txt.charAt(0).toUpperCase() + txt.slice(1);
+  };
+  const imageKinds = { fr: kindList(0), en: kindList(1), points: shownKinds.map((k) => T(...KIND_NAMES[k])) };
+
   const nav = [
     { href: "#fonctionnalites", label: T("Fonctionnalités", "Features") },
     { href: "#fonctionnement", label: T("Fonctionnement", "How it works") },
@@ -153,7 +166,7 @@ export default async function Home() {
   const modules: StoryStep[] = [
     { key: "brand", label: T("Marque", "Brand"), title: T("Un logo et des couleurs qui vous ressemblent.", "A logo and colors that look like you."), text: T("Le studio crée votre logo, choisit vos couleurs à partir de votre produit et les polices de vos textes. Ensuite, tout le reste suit ce style.", "The studio creates your logo, picks your colors from your product and the fonts for your text. Everything else then follows that style."), points: [T("Logo", "Logo"), T("Couleurs", "Colors"), T("Polices", "Fonts")] },
     { key: "store", label: T("Boutique", "Store"), title: T("Une boutique en ligne faite pour votre produit.", "An online store made for your product."), text: T("Les pages, les textes et la mise en page sont pensés pour votre produit, vérifiés sur ordinateur et sur téléphone, puis livrés pour votre plateforme.", "Pages, copy and layout are designed around your product, checked on desktop and mobile, then delivered for your platform."), points: ["Shopify", "WooCommerce", "PrestaShop"] },
-    { key: "images", label: T("Images", "Images"), title: T("Des visuels fidèles au vrai produit.", "Visuals true to the real product."), text: T("Photo sur fond blanc, gros plans et mises en situation : le studio part de la photo de votre vrai produit et le garde tel qu'il est.", "White-background photo, close-ups and lifestyle shots: the studio starts from the photo of your real product and keeps it as it is."), points: [T("Fond blanc", "White background"), T("Gros plans", "Close-ups"), T("Mises en situation", "Lifestyle shots")] },
+    { key: "images", label: T("Images", "Images"), title: T("Des visuels fidèles au vrai produit.", "Visuals true to the real product."), text: T(`${imageKinds.fr} : le studio part de la photo de votre vrai produit et le garde tel qu'il est.`, `${imageKinds.en}: the studio starts from the photo of your real product and keeps it as it is.`), points: imageKinds.points },
     { key: "ads", label: T("Publicités", "Ads"), title: T("Des publicités que vous retouchez vous-même.", "Ads you can edit yourself."), text: T("Vous changez le texte, la photo ou le logo d'un clic, puis vous téléchargez la publicité aux bonnes tailles pour chaque réseau.", "You change the text, photo or logo in a click, then download the ad in the right sizes for each network."), points: [T("Carré", "Square"), T("Portrait", "Portrait"), T("Story", "Story"), T("Paysage", "Landscape")] },
     { key: "video", label: T("Vidéos", "Videos"), title: T("Des vidéos préparées pas à pas.", "Videos prepared step by step."), text: T("Le studio écrit le déroulé de la vidéo et vous montre chaque image avant de la fabriquer. Le prix s'affiche, et rien n'est lancé sans votre accord.", "The studio writes the video's outline and shows you each frame before making it. The price is shown, and nothing starts without your approval."), points: [T("Déroulé en images", "Outline in pictures"), T("Votre accord d'abord", "Your approval first"), T("Prête à publier", "Ready to post")] },
     { key: "seo", label: T("Google", "Google"), title: T("Des textes qui aident Google à vous trouver.", "Copy that helps Google find you."), text: T("Le studio écrit vos fiches produit, vos pages et vos articles avec des mots simples que vos clients pourraient chercher. Vous les modifiez comme un texte normal. Ce qu'il ne sait pas reste « à compléter », jamais inventé.", "The studio writes your product pages, pages and articles with simple words your customers might search for. You edit them like any text. What it doesn't know stays \"to complete\", never made up."), points: [T("Fiche produit", "Product page"), T("Pages", "Pages"), T("Articles", "Articles")] },
@@ -177,14 +190,15 @@ export default async function Home() {
       ]
     : [];
 
-  // Publications réelles du calendrier de la marque (modèles du studio) quand elles existent.
+  // Publications réelles du calendrier de la marque quand l'accueil peut les montrer (demo-curation.ts) ; sinon la
+  // publication s'affiche sans image (jamais une scène ni une photo présentée comme une publication).
   const heroPosts = hero?.posts ?? [];
   const posts: SocialPost[] = story
     ? [
         { day: 0, time: "18:00", network: "Instagram", image: heroPosts[0] ?? story.social, caption: T(`${story.product}, signé ${story.brand}.`, `${story.product}, by ${story.brand}.`) },
-        { day: 2, time: "12:30", network: "Facebook", image: heroPosts[1] ?? story.scene2, caption: T(`Découvrez ${story.brand} sur notre boutique.`, `Discover ${story.brand} in our store.`) },
-        { day: 4, time: "20:00", network: "Pinterest", image: heroPosts[2] ?? story.banner, caption: T(`Idée cadeau : ${story.product.toLowerCase()}.`, `Gift idea: ${story.product.toLowerCase()}.`) },
-        { day: 5, time: "11:00", network: "TikTok", image: heroPosts[3] ?? story.scene1, caption: T("Comment bien l'installer ? Réponse en vidéo.", "How to set it up? Answer on video.") },
+        { day: 2, time: "12:30", network: "Facebook", image: heroPosts[1] ?? story.banner, caption: T(`Découvrez ${story.brand} sur notre boutique.`, `Discover ${story.brand} in our store.`) },
+        { day: 4, time: "20:00", network: "Pinterest", image: heroPosts[2] ?? "", caption: T(`Idée cadeau : ${story.product.toLowerCase()}.`, `Gift idea: ${story.product.toLowerCase()}.`) },
+        { day: 5, time: "11:00", network: "TikTok", image: heroPosts[3] ?? "", caption: T("Comment bien le choisir ? Réponse en vidéo.", "How to choose it? Answer on video.") },
       ]
     : [];
 

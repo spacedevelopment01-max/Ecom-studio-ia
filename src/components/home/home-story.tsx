@@ -101,7 +101,9 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
   }
   if (k === "ads")
     return (
-      <div className="grid h-full grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] gap-3 p-4 sm:p-5">
+      <div className={cx("grid h-full gap-3 p-4 sm:p-5", d.ad ? "grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)]" : "content-center")}>
+        {/* Sans publicité créée par l'IA à montrer : seulement les réglages, jamais un gabarit à la place. */}
+        {!d.ad ? null : (
         <div className="relative mx-auto aspect-[9/16] h-full max-w-full overflow-hidden rounded-2xl border border-line bg-[#F6F6F9]">
           <Img src={d.ad} alt={t(`Publicité ${d.brand} au format 9:16`, `${d.brand} 9:16 ad`)} />
           {/* Sélection d'un élément, comme dans l'éditeur du studio */}
@@ -109,6 +111,7 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
             <span className="absolute -left-1 -top-1 size-2 rounded-sm bg-[#2F4BD8]" /><span className="absolute -right-1 -top-1 size-2 rounded-sm bg-[#2F4BD8]" /><span className="absolute -bottom-1 -left-1 size-2 rounded-sm bg-[#2F4BD8]" /><span className="absolute -bottom-1 -right-1 size-2 rounded-sm bg-[#2F4BD8]" />
           </span>
         </div>
+        )}
         <div className="flex flex-col gap-2.5 text-xs">
           <div className="rounded-2xl border border-line bg-card p-3">
             <p className="font-semibold text-ink">{t("Titre sélectionné", "Selected heading")}</p>
@@ -123,6 +126,18 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
     );
   if (k === "video") {
     const shots: [string, string][] = [[d.packshot, t("Ouverture", "Opening")], [d.detail, t("Produit", "Product")], [d.scene1, t("Usage", "In use")], [d.banner, t("Appel à l'action", "Call to action")]];
+    // Sans vidéo créée par l'IA à montrer : les étapes, sans image.
+    if (!d.videoPoster)
+      return (
+        <ol className="grid h-full content-center gap-2.5 p-4 text-sm sm:p-5">
+          {[[t("Le message", "The message"), t("adapté au produit et au réseau", "adapted to the product and network")], [t("Le déroulé en images", "The outline in pictures"), t("chaque moment montré avant de dépenser", "each moment shown before spending")], [t("Votre accord", "Your approval"), t("le prix s'affiche d'abord", "the price is shown first")], [t("La vidéo prête", "The finished video"), t("vertical, carré ou horizontal", "vertical, square or horizontal")]].map(([a, b], i) => (
+            <li key={a} className="flex items-center gap-3 rounded-xl border border-line bg-card px-3 py-2.5">
+              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-paper-2 font-display text-xs font-semibold text-signal">{i + 1}</span>
+              <span><span className="block font-semibold text-ink">{a}</span><span className="text-xs text-muted">{b}</span></span>
+            </li>
+          ))}
+        </ol>
+      );
     return (
       <div className="flex h-full flex-col gap-3 p-4 sm:p-5">
         <div className="relative min-h-0 flex-1 overflow-hidden rounded-2xl border border-line bg-[#070B17]">
@@ -131,7 +146,7 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
           <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs text-white">{t("Vidéo fabriquée après votre accord", "Video made after your approval")}</span>
         </div>
         <ol className="grid grid-cols-4 gap-2">
-          {shots.map(([src, l], i) => (
+          {shots.filter(([src]) => src).map(([src, l], i) => (
             <li key={i} className="overflow-hidden rounded-xl border border-line bg-card">
               <img src={src} alt="" aria-hidden loading="lazy" className="aspect-[4/3] w-full object-cover" />
               <p className="truncate px-1.5 py-1 text-xs text-ink-2"><span className="font-semibold text-ink">{i + 1}</span> · {l}</p>
@@ -164,7 +179,8 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
     );
   // social
   const days = [t("Lun", "Mon"), t("Mar", "Tue"), t("Mer", "Wed"), t("Jeu", "Thu"), t("Ven", "Fri"), t("Sam", "Sat"), t("Dim", "Sun")];
-  const posts: Record<number, [string, string, "review" | "ok" | "sched"]> = { 0: [d.social, "Instagram", "ok"], 2: [d.scene2, "Facebook", "sched"], 4: [d.banner, "Pinterest", "review"], 5: [d.scene1, "TikTok", "review"] };
+  // Vignettes : seulement des publications réelles (visuel social, bannière) ; sinon aucune image, jamais une scène.
+  const posts: Record<number, [string, string, "review" | "ok" | "sched"]> = { 0: [d.social, "Instagram", "ok"], 2: [d.banner, "Facebook", "sched"], 4: ["", "Pinterest", "review"], 5: ["", "TikTok", "review"] };
   const status = { review: t("À valider", "To approve"), ok: t("Approuvée", "Approved"), sched: t("Programmée", "Scheduled") };
   return (
     <div className="flex h-full flex-col gap-3 p-4 sm:p-5">
@@ -180,7 +196,7 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
       <ul className="grid min-h-0 flex-1 content-start gap-2">
         {Object.entries(posts).map(([day, [src, net, st]]) => (
           <li key={day} className="flex items-center gap-3 rounded-xl border border-line bg-card p-2">
-            <img src={src} alt="" aria-hidden loading="lazy" className="size-14 shrink-0 rounded-lg object-cover" />
+            {src ? <img src={src} alt="" aria-hidden loading="lazy" className="size-14 shrink-0 rounded-lg object-cover" /> : <span className="grid size-14 shrink-0 place-items-center rounded-lg bg-paper-2 text-muted" aria-hidden><CalendarDays className="size-5" /></span>}
             <span className="min-w-0 flex-1">
               <span className="block text-sm font-semibold text-ink">{net}</span>
               <span className="block text-xs text-muted">{days[Number(day)]} · {["18:00", "", "12:30", "", "20:00", "11:00"][Number(day)]}</span>
