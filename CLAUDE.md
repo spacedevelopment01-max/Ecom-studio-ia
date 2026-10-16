@@ -29,6 +29,14 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   Une image ratée est signalée comme ratée, jamais présentée comme bonne.
 - **Images 100 % IA, avec Qwen-Image 3.0 Pro** (pas ChatGPT, jugé trop cher ; pas de texte posé en local à la place).
   Consignes à Qwen **en français**, concrètes (scène, objets, lumière), seuls les textes voulus entre guillemets.
+- **Écrire une consigne d'image comme le propriétaire** (modèle réussi du 16/10, `docs/guide-images-ia.md`) : décrire
+  UNE photo, en phrases complètes et logiques, dans cet ordre : 1) type de photo, format, point de vue, cadrage ;
+  2) surface et fond ; 3) chaque objet dans son paragraphe : place exacte dans l'image, forme, matière, couleur, état,
+  et ce qu'il ne contient pas (« l'écrin est vide : aucune montre, aucun cadran… ») ; 4) « La scène contient exactement
+  N objets : … » ; 5) ce qui est coupé par le cadre ou laissé dégagé ; 6) lumière, ombres, textures, mise au point,
+  ambiance ; 7) « Aucun texte, aucune lettre, aucun chiffre, aucune gravure, aucun logo, aucun filigrane, aucune
+  personne. Aucun objet supplémentaire. » Jamais de contradiction (ne pas citer le produit ni ses matières s'il ne doit
+  pas apparaître), jamais d'objet vague (« quelques accessoires »).
 - **Réponses courtes et claires**, sans jargon ; ne pas reposer une question à laquelle il a déjà répondu.
 - **Ne pas décider à sa place** : un retrait de contenu ou un changement visible important se propose, il ne s'applique
   qu'après son accord. Retirer un visuel raté sans rien mettre à la place n'est pas une correction.
