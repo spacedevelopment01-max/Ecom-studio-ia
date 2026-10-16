@@ -39,11 +39,12 @@ describe("Vocabulaire du client", async () => {
     expect(seen.texts.join(" ")).toContain("Le soin du matin");
     // Textes du visuel (le nom de la marque, propre au client, n'est jamais réécrit).
     expect(seen.texts.slice(0, 3).join(" | ")).not.toMatch(/sérum/i);
-    expect(seen.prompt).toContain('say "soin", never "sérum"');
+    // Consigne aux modèles en français, sans guillemets (seuls les textes à écrire sur l'image en ont).
+    expect(seen.prompt).toContain("Vocabulaire du client, obligatoire dans tout mot écrit : écrire soin, jamais sérum.");
   });
 
   it("ne fusionne que le mot de remplacement répété (« nous nous » reste intact)", () => {
-    expect(applyWording("Nous nous engageons : chronographe garanti", rules)).toBe("Nous nous engageons : montre garanti");
+    expect(applyWording("Nous nous engageons : chronographe garanti", rules)).toBe("Nous nous engageons : montre garantie");
   });
 
   it("appliquée à tous les textes du thème enregistré, liens et identifiant du produit compris", async () => {
@@ -70,5 +71,25 @@ describe("Vocabulaire du client", async () => {
     const saved = JSON.parse(one<{ spec: string }>("SELECT spec FROM theme_versions WHERE id = ?", v.id)!.spec);
     expect(saved.store.product.title).toBe("Montre acier");
     expect(JSON.stringify(saved)).not.toMatch(/Chronographe acier|chronographe-acier/);
+  });
+
+  it("accorde le genre : article, adjectifs avant et après, attribut, pluriel, élision (« un montre posé » n'existe plus)", () => {
+    expect(applyWording("Un chronographe posé sur le bois.", rules)).toBe("Une montre posée sur le bois.");
+    expect(applyWording("Le petit chronographe est garanti deux ans.", rules)).toBe("La petite montre est garantie deux ans.");
+    expect(applyWording("Ce chronographe élégant et robuste", rules)).toBe("Cette montre élégante et robuste");
+    expect(applyWording("Des chronographes posés et vendus", rules)).toBe("Des montres posées et vendues");
+    expect(applyWording("UN CHRONOGRAPHE NOIR", rules)).toBe("UNE MONTRE NOIRE");
+    expect(applyWording("Découvrez notre chronographe automatique en acier", rules)).toBe("Découvrez notre montre automatique en acier");
+    // Mots qui ne sont pas des adjectifs : jamais touchés.
+    expect(applyWording("Chronographe acier et cuir", rules)).toBe("Montre acier et cuir");
+    // Dans l'autre sens, et avec élision.
+    const back = [{ avoid: "montre", use: "chronographe" }];
+    expect(applyWording("Une montre posée, élégante et légère.", back)).toBe("Un chronographe posé, élégant et léger.");
+    expect(applyWording("Cette montre est garantie", back)).toBe("Ce chronographe est garanti");
+    expect(applyWording("Le chronographe est là", [{ avoid: "chronographe", use: "horloge" }])).toBe("L'horloge est là");
+    expect(applyWording("La crème hydratante", [{ avoid: "crème", use: "soin" }])).toBe("Le soin hydratant");
+    // Genre inconnu du studio : rien n'est accordé au hasard ; donné avec la consigne, il est suivi.
+    expect(applyWording("Un zorglub posé", [{ avoid: "zorglub", use: "trucmuche" }])).toBe("Un trucmuche posé");
+    expect(applyWording("Un zorglub posé", [{ avoid: "zorglub", use: "trucmuche", avoidGender: "m", useGender: "f" }])).toBe("Une trucmuche posée");
   });
 });
