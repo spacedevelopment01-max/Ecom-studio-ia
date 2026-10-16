@@ -10,14 +10,19 @@ export function pctOfBudget(micro: number, baseMicro: number | null | undefined)
   return Math.max(0, (micro / baseMicro) * 100);
 }
 
-/** « 3 % » / « < 1 % » (fr) ; « 3% » / « < 1% » (en). Un coût non nul n'est jamais affiché « 0 % ». */
+/**
+ * « 12 % », « 0,4 % », « < 0,1 % » (fr) ; « 12% », « 0.4% », « < 0.1% » (en). Une décimale sous 10 % (une image
+ * pèse souvent moins de 1 % du budget du mois). Un coût non nul n'est jamais affiché « 0 % ».
+ */
 export function formatPct(pct: number, lang: "fr" | "en"): string {
-  const sp = lang === "fr" ? " " : "";
-  if (pct > 0 && pct < 1) return `< 1${sp}%`;
+  const sp = lang === "fr" ? "\u202f" : "";
+  const dec = (n: number) => (lang === "fr" ? String(n).replace(".", ",") : String(n));
+  if (pct > 0 && pct < 0.1) return `< ${dec(0.1)}${sp}%`;
+  if (pct < 10) return `${dec(Math.round(pct * 10) / 10)}${sp}%`;
   return `${Math.round(pct)}${sp}%`;
 }
 
-/** « ≈ 3 % de votre budget IA », « < 1 % de votre budget IA » ; sans budget connu : « sur votre budget IA ». */
+/** « ≈ 3 % de votre budget IA », « < 0,1 % de votre budget IA » ; sans budget connu : « sur votre budget IA ». */
 export function formatBudgetPct(pct: number | null, lang: "fr" | "en"): string {
   if (pct == null) return lang === "fr" ? "sur votre budget IA" : "from your AI budget";
   const v = formatPct(pct, lang);
@@ -25,7 +30,7 @@ export function formatBudgetPct(pct: number | null, lang: "fr" | "en"): string {
   return lang === "fr" ? `${approx}${v} de votre budget IA` : `${approx}${v} of your AI budget`;
 }
 
-/** Forme courte (listes, badges) : « ≈ 3 % », « < 1 % » ; sans budget connu : « — ». */
+/** Forme courte (listes, badges) : « ≈ 3 % », « < 0,1 % » ; sans budget connu : « — ». */
 export function formatPctShort(pct: number | null, lang: "fr" | "en"): string {
   if (pct == null) return "—";
   const v = formatPct(pct, lang);

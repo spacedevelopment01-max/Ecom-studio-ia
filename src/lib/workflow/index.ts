@@ -438,7 +438,8 @@ export async function runWorkflow(ctx: JobContext) {
             const spent = jobSpend([ctx.job.id]);
             if (spent + (est.get(s.kind) ?? 0) > cap) {
               const base = pctBaseFor(p.userId, p.id);
-              return { skip: `plafond atteint (${formatPct(pctOfBudget(spent, base) ?? 0, "fr")} utilisés sur ${formatPct(pctOfBudget(cap, base) ?? 0, "fr")} de votre budget IA) : étape non lancée` };
+              const pct = (m: number, l: "fr" | "en") => formatPct(pctOfBudget(m, base) ?? 0, l);
+              return { skip: L(`plafond atteint (${pct(spent, "fr")} utilisés sur ${pct(cap, "fr")} de votre budget IA) : étape non lancée`, `cap reached (${pct(spent, "en")} used out of ${pct(cap, "en")} of your AI budget): step not started`) };
             }
           }
           try {
