@@ -309,11 +309,13 @@ export default function TabImages() {
           </div>
         )}
       </div>
+      {/* Fenêtres remontées quand l'activité du projet est connue : ouvertes avant son chargement, elles proposaient le
+          « Type » d'une boutique à une entreprise de services (valeur fixée au premier affichage). */}
       <Modal open={dialog === "search"} onClose={() => setDialog(null)} title={t("Chercher des photos libres", "Find royalty-free photos")} wide>
-        <SearchPhotos services={services} peopleAllowed={(data?.settings as { peopleAllowed?: boolean } | undefined)?.peopleAllowed === true} onStarted={(jobId) => (setDialog(null), follow(jobId, t("Photos trouvées : elles sont dans votre banque.", "Photos found: they're in your bank."), t("Aucune photo libre ne convient à ce sujet : rien n'a été ajouté. Essayez un autre sujet ou importez vos photos.", "No royalty-free photo fits this subject: nothing was added. Try another subject or upload your photos.")))} />
+        <SearchPhotos key={services ? "services" : "products"} services={services} peopleAllowed={(data?.settings as { peopleAllowed?: boolean } | undefined)?.peopleAllowed === true} onStarted={(jobId) => (setDialog(null), follow(jobId, t("Photos trouvées : elles sont dans votre banque.", "Photos found: they're in your bank."), t("Aucune photo libre ne convient à ce sujet : rien n'a été ajouté. Essayez un autre sujet ou importez vos photos.", "No royalty-free photo fits this subject: nothing was added. Try another subject or upload your photos.")))} />
       </Modal>
       <Modal open={dialog === "create"} onClose={() => setDialog(null)} title={t("Créer une image", "Create an image")} wide>
-        <CreateImage services={services} q={q} onStarted={(jobId) => (setDialog(null), follow(jobId, t("Image prête : elle est dans votre banque.", "Image ready: it's in your bank."), t("Aucune image n'a été retenue (contrôle de qualité ou IA indisponible) : rien n'a été mis à la place. Le détail est dans les tâches du projet.", "No image was kept (quality check or AI unavailable): nothing was put in its place. Details are in the project's tasks.")))} />
+        <CreateImage key={services ? "services" : "products"} services={services} q={q} onStarted={(jobId) => (setDialog(null), follow(jobId, t("Image prête : elle est dans votre banque.", "Image ready: it's in your bank."), t("Aucune image n'a été retenue (contrôle de qualité ou IA indisponible) : rien n'a été mis à la place. Le détail est dans les tâches du projet.", "No image was kept (quality check or AI unavailable): nothing was put in its place. Details are in the project's tasks.")))} />
       </Modal>
       <AssetViewer asset={viewer} onClose={() => setViewer(null)} onChanged={reload} />
     </div>

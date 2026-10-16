@@ -175,4 +175,13 @@ describe("Images : recherche élargie et silhouettes (photos libres)", async () 
     expect(e.message).toContain("Cochez « Recherche élargie »");
     expect(deps.log.generations).toEqual([]);
   });
+
+  it("fenêtres ouvertes avant le chargement du projet : remontées quand l'activité est connue (« Type » juste)", () => {
+    const src = fs.readFileSync("src/components/studio/tab-images.tsx", "utf8");
+    // Le « Type » proposé est fixé au premier affichage (services → photo du métier, produits → univers) : sans clé
+    // liée à l'activité, une fenêtre ouverte avant le chargement gardait le type d'une boutique pour un service.
+    expect(src).toMatch(/<SearchPhotos key=\{services \? "services" : "products"\}/);
+    expect(src).toMatch(/<CreateImage key=\{services \? "services" : "products"\}/);
+    expect(src).toMatch(/useState\(\{ kind: services \? "trade_photo" : "ambiance"/);
+  });
 });
