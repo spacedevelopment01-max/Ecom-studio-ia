@@ -201,3 +201,14 @@ describe("Accueil : les sections tournent entre les démos, chacune avec de vrai
     expect(read("src/app/page.tsx")).toContain("CALENDAR_POSTS.slice(0, 4)");
   });
 });
+
+describe("Conditions : section 4 conforme à la règle Découverte (décision du propriétaire)", () => {
+  const c = read("src/app/conditions/page.tsx");
+  it("FR et EN : compte Découverte = visite du studio de démonstration, rien créé, aucune IA", () => {
+    expect(c).toContain("<h2>4. Compte Découverte gratuit</h2>");
+    expect(c).toContain("Le compte Découverte ne permet de rien créer ni modifier");
+    expect(c).toContain("<h2>4. Free Discovery account</h2>");
+    expect(c).toContain("A Discovery account cannot create or change anything");
+    expect(c).not.toContain("product analysis by AI");
+  });
+});
