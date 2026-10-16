@@ -23,6 +23,7 @@ import { gateSave } from "../quality/store";
 import { POLICIES } from "../quality/policies";
 import { assetData, getAsset, saveAsset } from "../library";
 import { loadProject, type Project } from "../projects";
+import { applyWordingDeep, loadWordingRules } from "../client-wording";
 import { contentLang } from "../i18n-server";
 import { EUR } from "../billing";
 import { brandTypo, palette } from "../engine/images";
@@ -168,7 +169,8 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
     // 7. Document vidéo (timeline éditable), habillé façon publicité quand des plans réels existent.
     const thumbs = intent.kind === "ugc" ? [] : await promoThumbs(p, media, inv);
     const icons = intent.kind === "ugc" ? [] : await promoIcons(p, pal);
-    let doc = assemble({ p, intent, strategy, shots, media, inv, pal, typo, size, safe, insight, runId, thumbs, icons });
+    // Vocabulaire du client (ex. « montre », jamais « chronographe ») : textes à l'écran et voix, avant l'enregistrement.
+    let doc = applyWordingDeep(assemble({ p, intent, strategy, shots, media, inv, pal, typo, size, safe, insight, runId, thumbs, icons }), loadWordingRules(p.id));
     // Voix off : seulement si un fournisseur de synthèse vocale existe (sinon la voix reste à enregistrer).
     if (deps.voice) await recordVoices(p, deps, doc, jobId, notes);
     else if (doc.audio.voice.length) notes.push("voix off : aucun fournisseur de synthèse vocale configuré — texte prêt à enregistrer, porté par les sous-titres");

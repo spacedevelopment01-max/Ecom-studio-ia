@@ -13,6 +13,7 @@ import { productIdentity, resolveProductCategory, type ProductCategoryProfile } 
 import { chooseDirection, DIRECTIONS } from "./direction";
 import { defaultAspect, FORMATS } from "./formats";
 import { toFr } from "./prompt-fr";
+import { tradeFr } from "../brain/trade-fr";
 import { productScenePromptFr, stillLifeFor, stillLifePrompt, type StillLifeScene } from "./still-life";
 import { PRODUCT_KINDS } from "./intent";
 import type { ArtDirectionId, AspectId, Support, VisualBrief, VisualKind } from "./types";
@@ -106,8 +107,8 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
       environment = scenes.length ? scenes[v % scenes.length] : null;
       subject = req.service ? `${req.service.name} — ${prof} at work` : `${prof} at work`;
       subjectFr = `${req.service ? `${req.service.name} — ` : ""}${trade.labels.fr || "professionnel"} au travail`;
-      actionFr = gesture;
-      environmentFr = environment;
+      actionFr = tradeFr(gesture);
+      environmentFr = tradeFr(environment);
     } else {
       // Sans personne : le métier se prouve par ses outils, ses matériaux, le chantier et le résultat.
       action = gesture ? `${gesture} shown through its tools, materials and finished result, nobody in frame` : "tools, materials and finished result of the trade, nobody in frame";
@@ -115,8 +116,8 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
       // Le nom du métier désigne une personne (« plasterer ») : le sujet est l'ouvrage, pas l'artisan.
       subject = `${req.service ? `${req.service.name} — ` : ""}${gesture ?? "trade"} work: tools, materials and finished result (no people)`;
       subjectFr = `${req.service ? `${req.service.name} — ` : ""}métier de ${trade.labels.fr || "l'artisan"} : outils, matériaux et ouvrage terminé (sans personne)`;
-      actionFr = gesture ? `${gesture}, montré par ses outils, ses matériaux et le résultat, personne dans le cadre` : "outils, matériaux et ouvrage terminé du métier, personne dans le cadre";
-      environmentFr = scenes.length ? environment : `lieu de travail avec les outils et les matériaux en place, personne dans le cadre`;
+      actionFr = gesture ? `${tradeFr(gesture)}, montré par ses outils, ses matériaux et le résultat, personne dans le cadre` : "outils, matériaux et ouvrage terminé du métier, personne dans le cadre";
+      environmentFr = scenes.length ? tradeFr(environment) : `lieu de travail avec les outils et les matériaux en place, personne dans le cadre`;
     }
     positive = uniq(noPerson([...trade.visuals.positive, ...trade.actions]));
     // Mots trop généraux pour prouver le métier (« interior », « renovation », « tools »…) : jamais suffisants seuls.
@@ -223,7 +224,7 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
     understanding,
     people,
     ...(req.shot ? { shotKey: crypto.createHash("sha256").update(JSON.stringify(req.shot)).digest("hex").slice(0, 12) } : {}),
-    fr: { subject: subjectFr || subject, action: actionFr, environment: req.shot?.environment ?? environmentFr, negative: negative.map(toFr), ...(sceneFr ? { scene: sceneFr } : {}), ...(sceneExclude ? { sceneExclude } : {}), ...(productSceneFr ? { productScene: productSceneFr } : {}) },
+    fr: { subject: subjectFr || subject, action: actionFr, environment: req.shot?.environment ?? environmentFr, negative: negative.map((n) => toFr(tradeFr(n))), ...(sceneFr ? { scene: sceneFr } : {}), ...(sceneExclude ? { sceneExclude } : {}), ...(productSceneFr ? { productScene: productSceneFr } : {}) },
   };
 }
 

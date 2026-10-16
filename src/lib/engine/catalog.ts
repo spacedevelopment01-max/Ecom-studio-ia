@@ -150,9 +150,11 @@ export function attachVariantMedia(projectId: string, product: StoreProduct, fil
   const originals = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'variant-original' AND deleted_at IS NULL ORDER BY created_at DESC", projectId);
   const norm = (s: string) => s.trim().toLowerCase();
   for (const v of product.variants) {
-    const value = v.options[0];
-    const original = originals.find((o) => norm((JSON.parse(o.meta || "{}") as { variant?: string }).variant ?? "") === norm(value ?? ""));
-    if (!original) continue;
+    // Photo de la première valeur de la combinaison qui en a une (« Noir / 42 mm » → photo « Noir »).
+    const photoOf = (value: string) => originals.find((o) => norm((JSON.parse(o.meta || "{}") as { variant?: string }).variant ?? "") === norm(value));
+    const value = v.options.find((o) => photoOf(o));
+    const original = value ? photoOf(value) : undefined;
+    if (!original || !value) continue;
     const cut = derived(projectId, "variant-cutout", original.id);
     const asset = (cut && derived(projectId, "variant-packshot", cut.id)) || original;
     const f = fileName(asset, `${C("variante", "variant")}-${slug(value)}`);

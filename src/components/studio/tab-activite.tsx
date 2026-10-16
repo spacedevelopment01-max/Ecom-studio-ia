@@ -174,9 +174,13 @@ export default function TabActivite() {
               icon={<RefreshCw className="size-4" />}
               onClick={async () => {
                 if (!confirm(t("Réanalyser l'activité relance aussi les étapes suivantes (marque, textes, images, site…). Continuer ?", "Reanalyzing the business also reruns the following steps (brand, copy, images, website…). Continue?"))) return;
-                await api(`/api/projects/${id}/resume`, { body: { from: "analysis" } });
-                toast("ok", t("Nouvelle analyse lancée.", "New analysis started."));
-                reload();
+                try {
+                  await api(`/api/projects/${id}/resume`, { body: { from: "analysis" } });
+                  toast("ok", t("Nouvelle analyse lancée.", "New analysis started."));
+                  reload();
+                } catch (e) {
+                  toast("bad", (e as Error).message);
+                }
               }}
             >
               {t("Réanalyser tout le projet", "Reanalyze the whole project")}

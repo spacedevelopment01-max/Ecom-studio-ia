@@ -425,3 +425,14 @@ export function tradeText(p: { product: { category?: string; name?: string; summ
 }
 
 export const coreTradeIds = () => CORE.map((c) => c.id);
+
+/**
+ * Toutes les expressions anglaises du registre susceptibles d'entrer dans une consigne d'images (gestes, scènes,
+ * interdits, replis par secteur). Sert au contrôle de la traduction française (`trade-fr.ts`).
+ */
+export const tradePromptExpressions = (): string[] =>
+  uniq([
+    ...CORE.flatMap((c) => [...c.actions, ...c.positive, ...(c.negative ?? [])]),
+    ...Object.values(SECTOR_FALLBACK).flatMap((f) => (f ? [...f.actions, ...f.positive] : [])),
+    ...GLOBAL_NEGATIVES,
+  ]);

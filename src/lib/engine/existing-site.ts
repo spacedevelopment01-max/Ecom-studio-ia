@@ -176,6 +176,35 @@ async function sizeOf(data: Buffer): Promise<{ w: number; h: number }> {
   }
 }
 
+/** Nom provisoire donné à la création quand le client n'a rien saisi (adresse du site, « Nouveau projet »). */
+const isPlaceholderName = (name: string, url: string) => {
+  const n = name.trim().toLowerCase();
+  let host = "";
+  try {
+    host = new URL(url).hostname.replace(/^www\./, "").toLowerCase();
+  } catch {}
+  return !n || n === host || /^(nouveau projet|new project)/.test(n);
+};
+
+/**
+ * Nom du projet après lecture du site : celui saisi par le client est TOUJOURS gardé ; le nom du site ne remplace
+ * que le nom provisoire de la création.
+ */
+export function projectNameAfterImport(current: string, url: string, siteName?: string | null): string {
+  return isPlaceholderName(current, url) && siteName?.trim() ? siteName.trim() : current;
+}
+
+/**
+ * Catalogue après lecture du site : les produits déjà saisis restent tels quels et dans leur ordre ; ceux du site
+ * sont ajoutés seulement s'ils manquent (même identifiant ou même nom).
+ */
+export function mergeSiteCatalog(existing: CatalogItem[], fromSite: CatalogItem[]): CatalogItem[] {
+  const names = new Set(existing.map((i) => i.name.trim().toLowerCase()));
+  const keys = new Set(existing.map((i) => i.key));
+  const added = fromSite.filter((i) => !keys.has(i.key) && !names.has(i.name.trim().toLowerCase()));
+  return [...existing, ...added];
+}
+
 /**
  * Lit le site du client et l'intègre au projet (étape « sources » du pilote).
  * Chaque partie est un point de reprise : une reprise ne relit ni ne retélécharge ce qui est fait.
@@ -203,7 +232,7 @@ export async function importExistingSiteNote(ctx: JobContext, projectId: string,
 
   // 2) type d'activité, plateforme, nom et sources du projet
   const platform = studioPlatformFor(site);
-  run("UPDATE projects SET business_type = ?, platform = ?, name = ?, updated_at = ? WHERE id = ?", site.business, platform, site.name || p0.name, now(), projectId);
+  run("UPDATE projects SET business_type = ?, platform = ?, name = ?, updated_at = ? WHERE id = ?", site.business, platform, projectNameAfterImport(p0.name, url, site.name), now(), projectId);
   const sources = [...json<any[]>(loadProject(projectId).row.sources_json, []).filter((x) => !(x.type === "link" && (x.ref === url || x.ref === site.finalUrl))), { type: "link", ref: site.finalUrl, note: C(`Votre site actuel (${platformName(site.platform)})`, `Your current website (${platformName(site.platform)})`) }];
   run("UPDATE projects SET sources_json = ? WHERE id = ?", JSON.stringify(sources), projectId);
 
@@ -220,7 +249,7 @@ export async function importExistingSiteNote(ctx: JobContext, projectId: string,
   const p = loadProject(projectId);
   if (site.business === "products") {
     const others = site.products.slice(1, MAX_PRODUCTS);
-    const catalog: CatalogItem[] = others.map((sp) => {
+    const fromSite: CatalogItem[] = others.map((sp) => {
       const img = sp.images[0] ? existingBySource(projectId, sp.images[0]) : undefined;
       return {
         key: sp.handle,
@@ -233,7 +262,9 @@ export async function importExistingSiteNote(ctx: JobContext, projectId: string,
         originalAssetId: img && img.role === "catalog-original" ? img.id : null,
       };
     });
-    saveCatalog(projectId, catalog, site.products.length > 1 ? "multi" : "mono");
+    // Le catalogue déjà saisi par le client n'est jamais écrasé : seuls les produits du site absents sont ajoutés.
+    const catalog = mergeSiteCatalog(p.catalog, fromSite);
+    saveCatalog(projectId, catalog, catalog.length ? (p.storeType === "mono" ? "multi" : p.storeType) : undefined);
   } else {
     const found = siteServices(site);
     const c = site.contact;

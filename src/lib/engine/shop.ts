@@ -12,6 +12,7 @@ import { all, json, one } from "../db";
 import { getAsset, type Asset } from "../library";
 import { loadProject, saveThemeVersion, currentTheme, type Project } from "../projects";
 import { tradeText } from "../brain/trade";
+import { cleanVariants, MAX_PRODUCT_OPTIONS, variantCombinations } from "../project-types";
 import { buildSpec, directionById, type DirectionId, type ImageSlots } from "../theme/directions";
 import { libraryFiller } from "../theme/library-fill";
 import { contentContext } from "../theme/section-content";
@@ -177,8 +178,10 @@ function serviceSlots(projectId: string, slots: ImageSlots, files: Record<string
 }
 
 export function storeProduct(p: Project, copy: ShopCopy, gallery: string[]): StoreProduct {
-  const variants = p.product.variants.length
-    ? p.product.variants[0].values.map((v) => ({ title: v, options: [v], price: p.product.price.amount, available: true }))
+  // Toutes les options du produit (Coloris, Taille…), combinées comme dans Shopify.
+  const combos = variantCombinations(p.product.variants);
+  const variants = combos.length
+    ? combos.map((o) => ({ title: o.join(" / "), options: o, price: p.product.price.amount, available: true }))
     : [{ title: "Default Title", options: ["Default Title"], price: p.product.price.amount, available: true }];
   return {
     title: copy.product.title || p.product.name || p.name,
@@ -188,7 +191,7 @@ export function storeProduct(p: Project, copy: ShopCopy, gallery: string[]): Sto
     price: p.product.price.amount,
     compare_at_price: null,
     currency: p.product.price.currency || "EUR",
-    options: p.product.variants.length ? [p.product.variants[0].name] : [],
+    options: combos.length ? cleanVariants(p.product.variants).slice(0, MAX_PRODUCT_OPTIONS).map((v) => v.name) : [],
     variants,
     images: gallery,
     tags: [],
