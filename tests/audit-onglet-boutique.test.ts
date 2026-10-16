@@ -125,7 +125,7 @@ describe("Onglet Boutique — aucun jargon technique visible, carte du tutoriel 
       for (const t of baseSectionTypes()) expect(libraryEntry(t, lang)?.name ?? "").not.toMatch(/\bV2\b/);
     }
     expect(sectionSchema(null, "v2-hero", "fr")!.name).toBe("Ouverture du site");
-    expect(sectionSchema(null, "v2-hero", "en")!.name).toBe("Site opening");
+    expect(sectionSchema(null, "v2-hero", "en")!.name).toBe("Site hero");
     expect(sectionSchema(null, "v2-band", "en")!.name).toBe("Transition band");
   });
   it("panneau du site et carte « Première visite ? » : libellé clair, en haut de l'écran sur téléphone", () => {

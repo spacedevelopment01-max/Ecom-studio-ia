@@ -12,7 +12,7 @@ export type LibraryEntry = { type: string; name: string; category: SectionCatego
 
 /** Noms, descriptions et mots-clés anglais (la catégorie reste la clé française, traduite par l'interface). */
 const SECTION_LIBRARY_EN: Record<string, { name: string; description: string; keywords: string }> = {
-  "v2-hero": { name: "Site opening", description: "Opening in five compositions: product on a stage, photo and text, typographic (no photo), interface screenshot, or signboard with a slate. Only confirmed facts are shown.", keywords: "hero opening banner v2 stage typographic interface signboard" },
+  "v2-hero": { name: "Site hero", description: "Opening in five compositions: product on a stage, photo and text, typographic (no photo), interface screenshot, or signboard with a slate. Only confirmed facts are shown.", keywords: "hero opening banner v2 stage typographic interface signboard" },
   "v2-index": { name: "Offer list", description: "Services, menu, highlights or features as numbered rows, cards, tiles or a restaurant menu. Ideal right after the opening.", keywords: "services menu features list rows cards tiles v2" },
   "v2-split": { name: "Text and photo", description: "Image and text side by side, or text overlapping the image's edge; without an image it becomes a large typographic quote — never an empty frame.", keywords: "image text split overlap quote v2" },
   "v2-steps": { name: "Numbered steps", description: "Process as a timeline, a numbered column or cards. Ideal to explain how a quote, a booking or onboarding works.", keywords: "steps process timeline how it works v2" },
