@@ -87,7 +87,15 @@ export const SECTOR_DIRECTION: Record<SectorId, DirectionId> = {
   agence: serviceDirection({ sector: "agence" }),
 };
 
-/** Faits extraits d'une description libre (formes simples « clé : valeur »). */
+/** Matières reconnues dans un texte libre (FR/EN), des formes les plus précises aux plus courtes. */
+const MATERIAL_WORDS: RegExp[] = [
+  "acier inoxydable", "acier inox", "cuir véritable", "cuir pleine fleur", "plaqué or", "argent 925", "argent massif", "or 18 carats", "coton bio(?:logique)?", "verre trempé", "verre saphir",
+  "stainless steel", "genuine leather", "full-grain leather", "sterling silver", "gold[- ]plated", "organic cotton", "sapphire glass", "tempered glass",
+  "acier", "inox", "cuir", "coton", "lin", "laine", "soie", "bois", "bambou", "verre", "céramique", "grès", "porcelaine", "titane", "aluminium", "laiton", "cuivre", "marbre", "silicone", "caoutchouc", "nylon", "polyester", "liège",
+  "steel", "leather", "cotton", "linen", "wool", "silk", "wood", "bamboo", "glass", "ceramic", "stoneware", "titanium", "aluminum", "brass", "copper", "marble", "rubber", "cork",
+].map((w) => new RegExp(`(?<![\\p{L}\\d])${w}(?![\\p{L}])`, "giu"));
+
+/** Faits extraits d'une description libre (formes simples « clé : valeur », matières nommées). */
 export function factsFromDescription(desc: string): Fact[] {
   const facts: Fact[] = [];
   // Intitulés compris en français et en anglais ; le libellé du fait suit la langue des contenus.
@@ -105,6 +113,18 @@ export function factsFromDescription(desc: string): Fact[] {
   for (const [re, key, fr, en] of labels) {
     const m = desc.match(re);
     if (m) facts.push({ key, label: C(fr, en), value: m[2].trim(), status: "confirmed", source: "description" });
+  }
+  // Matières nommées en toutes lettres dans la description (« montre en acier et cuir véritable ») : reprises mot pour
+  // mot, rien n'est déduit. Les formes longues passent avant les courtes (« cuir véritable » avant « cuir »).
+  if (!facts.some((f) => f.key === "materials")) {
+    const found: { i: number; s: string }[] = [];
+    let rest = desc;
+    for (const re of MATERIAL_WORDS) {
+      for (const m of rest.matchAll(re)) found.push({ i: m.index, s: m[0] });
+      // Une forme déjà reprise est masquée : « cuir véritable » ne donne pas aussi « cuir ».
+      rest = rest.replace(re, (m) => " ".repeat(m.length));
+    }
+    if (found.length) facts.push({ key: "materials", label: C("Matière", "Material"), value: found.sort((a, b) => a.i - b.i).map((f) => f.s).filter((x, k, a) => a.findIndex((y) => y.toLowerCase() === x.toLowerCase()) === k && !a.some((y) => y.length > x.length && y.toLowerCase().includes(x.toLowerCase()))).join(", "), status: "confirmed", source: "description" });
   }
   // Volumes et mesures explicites.
   const vol = desc.match(/\b(\d+(?:[.,]\d+)?)\s?(ml|cl|l|g|kg|cm|mm|oz|fl ?oz|lb)\b/i);
