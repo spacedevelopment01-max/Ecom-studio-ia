@@ -12,7 +12,8 @@ import { HomeHeader } from "@/components/home/home-chrome";
 import { HeroFilm, HowItWorks } from "@/components/home/home-media";
 import { StoryScroll, type StoryDemo, type StoryStep } from "@/components/home/home-story";
 import { storyMedia } from "@/components/home/story-media";
-import { allowsLiveAd, curateForHome, wallExtras } from "@/components/home/demo-curation";
+import { allowsLiveAd, CALENDAR_POSTS, curateForHome, DEMO_FILMS, homeExtras, SECTION_DEMO, wallExtras } from "@/components/home/demo-curation";
+import { DemoFilms, type DemoFilm } from "@/components/home/home-films";
 import { AdEditorDemo, BrandLab, ConnectedHub, ControlDemo, SeoDocDemo, SocialCalendarDemo, StoreDevices, type BrandDemo, type SocialPost, type StoreDemo } from "@/components/home/home-demos";
 import { BoardShowcase, FeedShowcase, PostsWall, ThemesWall, type BoardDemo, type FeedDemo, type WallItem } from "@/components/home/home-showcase";
 import { directionById, directionCards } from "@/lib/theme/directions";
@@ -122,6 +123,7 @@ export default async function Home() {
   const fontsOf = (d: Demo) => directionById(d.direction).previewFonts;
   // Images du parcours : uniquement les vraies créations de la démonstration, chacune sous sa vraie nature.
   const media = hero ? storyMedia(hero) : null;
+  const extras = homeExtras(hero?.id ?? "");
   const story: StoryDemo | null = hero && media
     ? {
         brand: hero.brand,
@@ -134,6 +136,12 @@ export default async function Home() {
         shopMobile: hero.shopMobile,
         ...media,
         videoPoster: hero.videoPoster,
+        video: hero.video,
+        // Publicité faite dans l'éditeur (quatre formats) et publications du calendrier, préparées pour l'accueil.
+        adTitle: extras.editorAd?.title ?? null,
+        adFormats: extras.editorAd?.formats.map((f) => ({ ...f, src: W(f.src) })) ?? [],
+        ...(extras.editorAd ? { ad: W(extras.editorAd.formats.find((f) => f.aspect === "9:16")?.src ?? extras.editorAd.formats[0].src) } : {}),
+        socialPosts: extras.social.map((x) => ({ src: W(x.src), network: x.network, caption: T(...x.caption) })),
       }
     : null;
 
@@ -176,33 +184,44 @@ export default async function Home() {
   ];
 
   const brands: BrandDemo[] = list.map((d) => ({ id: d.id, brand: d.brand, sector: d.sector, direction: directionById(d.direction).name, palette: d.palette, logo: d.logo, photo: d.photo, fonts: fontsOf(d) }));
+  // Équilibre voulu par le propriétaire : chaque vitrine commence par une démo différente (produits et services mêlés).
+  const startAt = <X extends { id: string }>(xs: X[], id: string) => {
+    const k = xs.findIndex((x) => x.id === id);
+    return k > 0 ? [...xs.slice(k), ...xs.slice(0, k)] : xs;
+  };
   // Boutiques de produits puis sites d'entreprises de services, tels que le studio les a composés.
   const handle = (b: string) => b.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "");
   const stores: StoreDemo[] = [
-    ...productDemos.filter((d) => d.shopDesktop && d.shopMobile).slice(0, 3).map((d): StoreDemo => ({ id: d.id, label: d.sector, text: T(`Boutique ${directionById(d.direction).name} composée pour ${d.brand} · ${d.product}.`, `${directionById(d.direction).name} store designed for ${d.brand} · ${d.product}.`), desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${handle(d.brand)}.myshopify.com` })),
+    ...startAt(productDemos.filter((d) => d.shopDesktop && d.shopMobile), SECTION_DEMO.stores).map((d): StoreDemo => ({ id: d.id, label: d.sector, text: T(`Boutique ${directionById(d.direction).name} composée pour ${d.brand} · ${d.product}.`, `${directionById(d.direction).name} store designed for ${d.brand} · ${d.product}.`), desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${handle(d.brand)}.myshopify.com` })),
     ...serviceDemos.filter((d) => d.shopDesktop && d.shopMobile).map((d): StoreDemo => ({ id: d.id, label: d.sector, text: T(`Entreprise fictive : ${d.brand}, site WordPress. Aucun panier : chaque bouton mène au devis, au rendez-vous ou à l'appel.`, `Fictional business: ${d.brand}, WordPress website. No cart: every button leads to a quote, a booking or a call.`), desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${handle(d.brand)}.fr` })),
   ];
 
 
-  const docs = story
+  // Textes et Google : une autre démo que le parcours (les sections tournent entre les démos).
+  const seoDemo = list.find((d) => d.id === SECTION_DEMO.seo) ?? hero;
+  const sd = seoDemo ? { brand: seoDemo.brand, product: seoDemo.product } : null;
+  const docs = sd
     ? [
-        { tab: T("Fiche produit", "Product page"), kind: `${T("Fiche produit", "Product page")} · ${story.brand}`, meta: `${story.product} · ${story.brand}`, blocks: [{ k: "h1" as const, text: story.product }, { k: "p" as const, text: hero?.source ? T(`${story.product} signé ${story.brand}.`, `${story.product} by ${story.brand}.`) : story.product }, { k: "li" as const, text: T("Ce que l'on voit sur la photo, décrit sans exagérer", "What the photo shows, described without exaggerating") }, { k: "li" as const, text: T("Garantie : [À compléter : durée de la garantie]", "Warranty: [To complete: warranty length]") }, { k: "faq" as const, text: T("Comment l'entretenir ? [À compléter : consignes du fabricant]", "How do I care for it? [To complete: manufacturer's instructions]") }] },
-        { tab: T("Page d'accueil", "Home page"), kind: `${T("Page d'accueil", "Home page")} · ${story.brand}`, meta: T(`${story.brand} · page d'accueil`, `${story.brand} · home page`), blocks: [{ k: "h1" as const, text: story.brand }, { k: "p" as const, text: T(`${story.brand} présente ${story.product.toLowerCase()}.`, `${story.brand} presents its ${story.product.toLowerCase()}.`) }, { k: "li" as const, text: T("Livraison : [À compléter]", "Shipping: [To complete]") }, { k: "li" as const, text: T("Retours : [À compléter]", "Returns: [To complete]") }, { k: "faq" as const, text: T("Où expédiez-vous ? [À compléter]", "Where do you ship? [To complete]") }] },
-        { tab: T("Article de blog", "Blog post"), kind: T("Article de blog", "Blog post"), meta: T(`Comment bien choisir : ${story.product.toLowerCase()}.`, `How to choose: ${story.product.toLowerCase()}.`), blocks: [{ k: "h1" as const, text: T(`Comment bien choisir son ${story.product.toLowerCase()} ?`, `How do you choose a ${story.product.toLowerCase()}?`) }, { k: "p" as const, text: T("Les critères à regarder avant d'acheter, sans promesse inventée.", "What to look at before buying, with no made-up promises.") }, { k: "li" as const, text: T("L'usage", "The use") }, { k: "li" as const, text: T("Le confort", "Comfort") }, { k: "faq" as const, text: T("Combien de temps dure-t-il ? [À compléter : source à citer]", "How long does it last? [To complete: source to cite]") }] },
+        { tab: T("Fiche produit", "Product page"), kind: `${T("Fiche produit", "Product page")} · ${sd.brand}`, meta: `${sd.product} · ${sd.brand}`, blocks: [{ k: "h1" as const, text: sd.product }, { k: "p" as const, text: seoDemo?.source ? T(`${sd.product}, par ${sd.brand}.`, `${sd.product} by ${sd.brand}.`) : sd.product }, { k: "li" as const, text: T("Ce que l'on voit sur la photo, décrit sans exagérer", "What the photo shows, described without exaggerating") }, { k: "li" as const, text: T("Garantie : [À compléter : durée de la garantie]", "Warranty: [To complete: warranty length]") }, { k: "faq" as const, text: T("Comment l'entretenir ? [À compléter : consignes du fabricant]", "How do I care for it? [To complete: manufacturer's instructions]") }] },
+        { tab: T("Page d'accueil", "Home page"), kind: `${T("Page d'accueil", "Home page")} · ${sd.brand}`, meta: T(`${sd.brand} · page d'accueil`, `${sd.brand} · home page`), blocks: [{ k: "h1" as const, text: sd.brand }, { k: "p" as const, text: T(`${sd.brand} présente son produit : ${sd.product.toLowerCase()}.`, `${sd.brand} presents its product: ${sd.product.toLowerCase()}.`) }, { k: "li" as const, text: T("Livraison : [À compléter]", "Shipping: [To complete]") }, { k: "li" as const, text: T("Retours : [À compléter]", "Returns: [To complete]") }, { k: "faq" as const, text: T("Où expédiez-vous ? [À compléter]", "Where do you ship? [To complete]") }] },
+        { tab: T("Article de blog", "Blog post"), kind: T("Article de blog", "Blog post"), meta: T(`Comment bien choisir : ${sd.product.toLowerCase()}.`, `How to choose: ${sd.product.toLowerCase()}.`), blocks: [{ k: "h1" as const, text: T(`Bien choisir : ${sd.product.toLowerCase()}`, `How to choose: ${sd.product.toLowerCase()}`) }, { k: "p" as const, text: T("Les critères à regarder avant d'acheter, sans promesse inventée.", "What to look at before buying, with no made-up promises.") }, { k: "li" as const, text: T("L'usage", "The use") }, { k: "li" as const, text: T("Le confort", "Comfort") }, { k: "faq" as const, text: T("Quelle durée de vie prévoir ? [À compléter : source à citer]", "How long does it last? [To complete: source to cite]") }] },
       ]
     : [];
 
-  // Publications réelles du calendrier de la marque quand l'accueil peut les montrer (demo-curation.ts) ; sinon la
-  // publication s'affiche sans image (jamais une scène ni une photo présentée comme une publication).
-  const heroPosts = hero?.posts ?? [];
-  const posts: SocialPost[] = story
-    ? [
-        { day: 0, time: "18:00", network: "Instagram", image: heroPosts[0] ?? story.social, caption: T(`${story.product}, signé ${story.brand}.`, `${story.product}, by ${story.brand}.`) },
-        { day: 2, time: "12:30", network: "Facebook", image: heroPosts[1] ?? story.banner, caption: T(`Découvrez ${story.brand} sur notre boutique.`, `Discover ${story.brand} in our store.`) },
-        { day: 4, time: "20:00", network: "Pinterest", image: heroPosts[2] ?? "", caption: T(`Idée cadeau : ${story.product.toLowerCase()}.`, `Gift idea: ${story.product.toLowerCase()}.`) },
-        { day: 5, time: "11:00", network: "TikTok", image: heroPosts[3] ?? "", caption: T("Comment bien le choisir ? Réponse en vidéo.", "How to choose it? Answer on video.") },
-      ]
-    : [];
+  // Section « Votre semaine de publications » : une autre démo que le parcours ARVEN, avec ses vraies publications.
+  const calDemo = list.find((d) => d.id === SECTION_DEMO.calendar);
+  const slots = [{ day: 0, time: "18:00" }, { day: 2, time: "12:30" }, { day: 4, time: "20:00" }, { day: 5, time: "11:00" }];
+  const posts: SocialPost[] = calDemo ? CALENDAR_POSTS.slice(0, 4).map((x, k) => ({ ...slots[k], network: x.network, image: W(x.src), caption: T(...x.caption) })) : [];
+
+  // Personnalisation : une autre démo (sa mise en scène où le produit est entier).
+  const ctrlDemo = list.find((d) => d.id === SECTION_DEMO.control);
+  const ctrlImage = ctrlDemo?.images.find((x) => /scène|scene/i.test(x.label))?.src;
+  const ctrl = ctrlDemo && ctrlImage ? { brand: ctrlDemo.brand, image: ctrlImage, palette: ctrlDemo.palette } : null;
+  // Vidéos de démonstration : une par démo retenue (regardées image par image), produits et services mêlés.
+  const films: DemoFilm[] = DEMO_FILMS.flatMap((f) => {
+    const d = list.find((x) => x.id === f.id);
+    return d ? [{ id: f.id, brand: d.brand, kind: d.business === "services" ? "services" : "products", label: T(...f.label), src: f.src, poster: W(f.poster) } as DemoFilm] : [];
+  });
 
   const hub = [
     { key: "brand", label: T("Marque", "Brand"), text: T("Couleurs, logo et polices validés une fois, puis repris partout dans le projet.", "Colors, logo and fonts approved once, then reused everywhere in the project.") },
@@ -216,17 +235,12 @@ export default async function Home() {
 
   // Avant / après : la photo d'origine (Pixabay) et une création du studio sur le vrai produit.
   // Après : une publication faite par le studio sur la vraie photo (sinon une image du produit).
-  const ba = productDemos.find((d) => d.id === "gourde") ?? productDemos[0];
+  const ba = productDemos.find((d) => d.id === SECTION_DEMO.beforeAfter) ?? productDemos[0];
   const baAfter = ba ? (ba.posts?.[0] ?? (ba.images.find((x) => /scène|scene/i.test(x.label)) ?? ba.images.find((x) => /packshot/i.test(x.label)))?.src) : undefined;
 
   // Créations réelles des démonstrations : planches d'identité, fils de publications, mur de publications.
-  // Équilibre voulu par le propriétaire : chaque vitrine commence par une démo différente (produits et services mêlés).
-  const startAt = <X extends { id: string }>(xs: X[], id: string) => {
-    const k = xs.findIndex((x) => x.id === id);
-    return k > 0 ? [...xs.slice(k), ...xs.slice(0, k)] : xs;
-  };
-  const boards: BoardDemo[] = startAt(list.filter((d) => d.board), "paysagiste").map((d) => ({ id: d.id, brand: d.brand, sector: d.sector, board: d.board!, palette: d.palette }));
-  const feeds: FeedDemo[] = startAt(list.filter((d) => (d.posts?.length ?? 0) >= 4), "casque").map((d) => ({ id: d.id, brand: d.brand, handle: d.brand.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, ""), logo: d.logo, palette: d.palette, posts: d.posts! }));
+  const boards: BoardDemo[] = startAt(list.filter((d) => d.board), SECTION_DEMO.boards).map((d) => ({ id: d.id, brand: d.brand, sector: d.sector, board: d.board!, palette: d.palette }));
+  const feeds: FeedDemo[] = startAt(list.filter((d) => (d.posts?.length ?? 0) >= 4), SECTION_DEMO.feeds).map((d) => ({ id: d.id, brand: d.brand, handle: d.brand.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, ""), logo: d.logo, palette: d.palette, posts: d.posts! }));
   // Mur : les publications des marques entremêlées (jamais deux d'une même marque côte à côte).
   const wall: WallItem[] = [];
   for (let k = 0; k < 8; k++) for (const f of feeds) if (f.posts[k]) wall.push({ src: f.posts[k], brand: f.brand });
@@ -515,6 +529,14 @@ export default async function Home() {
               <p className="flex gap-3 rounded-2xl border border-white/10 bg-white/[.04] p-5 text-sm leading-relaxed text-white/80"><UserRound className="mt-0.5 size-5 shrink-0 text-[#AEB7FF]" aria-hidden /> {T(`Vidéo « témoignage » (forfait ${PLANS.dominer.name.fr}) : une personne créée par l'IA présente votre vrai produit face caméra, uniquement avec votre accord. La vidéo est signalée comme créée par l'IA.`, `"Testimonial" video (${PLANS.dominer.name.en} plan): an AI-created person presents your real product to camera, only with your approval. The video is labeled as AI-made.`)}</p>
               <p className="flex gap-3 rounded-2xl border border-white/10 bg-white/[.04] p-5 text-sm leading-relaxed text-white/80"><Minus className="mt-0.5 size-5 shrink-0 text-white/50" aria-hidden /> {T("Pas encore de montage image par image : vous demandez les changements avec vos mots et pouvez refaire un passage, avec votre accord.", "No frame-by-frame editing yet: you ask for changes in your own words and can redo a part, with your approval.")}</p>
             </div>
+            {films.length > 0 && (
+              <div id="videos-demo" className="mt-16 scroll-mt-24">
+                <p className="reveal text-[.78rem] font-semibold uppercase tracking-[.18em] text-[#AEB7FF]">{T("Vidéos de démonstration", "Demo videos")}</p>
+                <h3 className="hp-title reveal mt-3 text-[clamp(1.7rem,3.4vw,2.6rem)] text-white">{T("Une vidéo par projet de démonstration.", "One video per demo project.")}</h3>
+                <p className="reveal mt-3 max-w-2xl text-[15px] leading-relaxed text-white/70">{T("Produits et services : cliquez pour lancer la vidéo (son coupé par défaut).", "Products and services: click to play (sound off by default).")}</p>
+                <div className="reveal mt-8" style={{ ["--d" as any]: 1 }}><DemoFilms films={films} /></div>
+              </div>
+            )}
           </div>
         </section>
 
@@ -567,7 +589,7 @@ export default async function Home() {
               <Head eyebrow={T("Personnalisation", "Customization")} title={T("L'IA crée.", "AI creates.")} accent={T("Vous gardez le contrôle.", "You stay in control.")} lead={T("Les petits changements se font tout de suite, sans IA : un titre, une couleur, des coins arrondis, un bloc à cacher. Essayez.", "Small changes happen instantly, without AI: a heading, a color, rounded corners, a block to hide. Try it.")} />
               <div className="reveal mt-12" style={{ ["--d" as any]: 2 }}>
                 <TryHint text={T("Modifiez le titre, la couleur du bouton, les coins arrondis ou le bandeau : l'aperçu de la boutique change en direct.", "Edit the heading, the button color, the rounded corners or the banner: the store preview updates live.")} label={T("À vous d'essayer", "Try it yourself")} />
-                <ControlDemo brand={story.brand} image={story.scene1} palette={story.palette} />
+                <ControlDemo brand={ctrl?.brand ?? story.brand} image={ctrl?.image ?? story.scene1} palette={ctrl?.palette ?? story.palette} />
               </div>
             </div>
           </section>
