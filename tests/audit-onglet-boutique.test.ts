@@ -55,3 +55,60 @@ describe("Onglet Boutique — audit", async () => {
     expect(copy.product.description_html).not.toContain("**");
   });
 });
+
+describe("Onglet Boutique — photos libres de droits signalées", async () => {
+  const { stockPhotosInTheme, replaceThemeFile, stockPhotoLabel } = await import("@/lib/theme/stock-notice");
+  const { stockBadgeTool } = await import("@/lib/theme/preview-tools");
+  const asset = (id: string, meta: Record<string, unknown>, extra: Record<string, unknown> = {}) => ({ id, kind: "image", meta: JSON.stringify(meta), thumb_key: null, deleted_at: null, status: "review", ...extra }) as never;
+  const assets: Record<string, any> = {
+    s1: asset("s1", { stock: { source: "pixabay", id: 1, author: "Ana" }, slot: "hero" }),
+    s2: asset("s2", { stock: { source: "pixabay", id: 2 }, slot: "service:0", service: "Taille de haies" }),
+    own: asset("own", { recipe: "photo du client" }),
+    vid: asset("vid", { stock: { source: "pixabay" } }, { kind: "video" }),
+  };
+  const spec = () => ({ files: { "es-photo-1-s1.jpg": "s1", "es-prestation-s2.jpg": "s2", "es-photo-2-own.jpg": "own", "es-video-1.mp4": "vid" } }) as never;
+
+  it("liste chaque photo libre de droits du site avec son emplacement, jamais les photos du client", () => {
+    const fr = stockPhotosInTheme(spec(), (id) => assets[id], "fr");
+    expect(fr.map((p) => [p.file, p.where, p.source])).toEqual([
+      ["es-photo-1-s1.jpg", "Ouverture du site", "Pixabay"],
+      ["es-prestation-s2.jpg", "Prestation « Taille de haies »", "Pixabay"],
+    ]);
+    expect(stockPhotosInTheme(spec(), (id) => assets[id], "en")[1].where).toBe('Service "Taille de haies"');
+    expect(stockPhotosInTheme({ ...(spec() as object), imported: {} } as never, (id) => assets[id], "fr")).toEqual([]);
+  });
+
+  it("libellé demandé par le propriétaire, en français et en anglais", () => {
+    expect(stockPhotoLabel("pixabay", "fr")).toBe("Photo libre de droits (Pixabay), pas une image de votre activité");
+    expect(stockPhotoLabel("pixabay", "en")).toBe("Royalty-free photo (Pixabay), not an image of your business");
+  });
+
+  it("remplacer une photo : même fichier, nouvelle image partout ; refus si ce n'est pas une image du projet", () => {
+    const r = replaceThemeFile(spec(), "es-photo-1-s1.jpg", assets.own, "fr");
+    expect("spec" in r && (r.spec as any).files["es-photo-1-s1.jpg"]).toBe("own");
+    expect((spec() as any).files["es-photo-1-s1.jpg"]).toBe("s1");
+    expect(replaceThemeFile(spec(), "inconnu.jpg", assets.own, "fr")).toHaveProperty("error");
+    expect(replaceThemeFile(spec(), "es-video-1.mp4", assets.own, "fr")).toHaveProperty("error");
+    expect(replaceThemeFile(spec(), "es-photo-1-s1.jpg", assets.vid, "fr")).toHaveProperty("error");
+    expect(replaceThemeFile(spec(), "es-photo-1-s1.jpg", null, "en")).toEqual({ error: "Choose an image from the project library." });
+  });
+
+  it("aperçu du studio : libellé posé sur les photos concernées, rien quand il n'y en a pas", () => {
+    expect(stockBadgeTool([])).toBe("");
+    const tool = stockBadgeTool([{ file: "es-photo-1-s1.jpg", label: stockPhotoLabel("pixabay", "fr") }]);
+    expect(tool).toContain('"k":"es-photo-1-s1"');
+    expect(tool).toContain("Photo libre de droits (Pixabay), pas une image de votre activité");
+    expect(stockBadgeTool([{ file: "x.jpg", label: "</script><b>" }])).not.toContain("</script><b>");
+  });
+});
+
+describe("Onglet Boutique — le libellé des photos libres n'est jamais exporté", async () => {
+  const { compileTheme } = await import("@/lib/theme/compile");
+  const { sampleSpec } = await import("./fixtures");
+  it("le thème compilé (export Shopify) ne contient ni le libellé ni son script", () => {
+    const files = compileTheme(sampleSpec());
+    const all = [...files.values()].join("\n");
+    expect(all).not.toContain("es-stock-badge");
+    expect(all).not.toContain("pas une image de votre activité");
+  });
+});

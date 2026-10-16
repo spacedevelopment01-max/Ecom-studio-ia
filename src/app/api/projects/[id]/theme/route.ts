@@ -14,6 +14,9 @@ import { directionCards } from "@/lib/theme/directions";
 import { themeFingerprint } from "@/lib/theme/compile";
 import { layoutChoices } from "@/lib/theme/layout-choices";
 import { previewSandbox } from "@/lib/theme/preview-access";
+import { stockPhotosInTheme } from "@/lib/theme/stock-notice";
+import { getAsset } from "@/lib/library";
+import { pixabayOnly } from "@/lib/stock/photos";
 
 export const runtime = "nodejs";
 
@@ -36,6 +39,11 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     versions: listThemeVersions(p.id),
     // Theme Engine V2 : langage visuel, plan des pages (complètes ou à compléter), informations manquantes.
     v2: cur.spec.meta?.engine === "v2" ? { language: cur.spec.meta.v2?.language, site: cur.spec.meta.v2?.site, plan: cur.spec.meta.v2?.plan ?? [], todo: cur.spec.meta.v2?.todo ?? [], languages: LANGUAGES.map((l) => ({ id: l.id, label: ui === "en" ? LANGUAGE_LABEL_EN[l.id] : l.label })) } : null,
+    // Photos libres de droits sur le site : toujours signalées au client (jamais en silence), remplaçables.
+    stock: (() => {
+      const photos = stockPhotosInTheme(cur.spec, getAsset, ui);
+      return { photos, aiBlocked: photos.length > 0 && pixabayOnly() };
+    })(),
     // Attribut « sandbox » des iframes d'aperçu (dépend de l'hébergement, voir preview-access.ts).
     sandbox: previewSandbox(),
     messages,
