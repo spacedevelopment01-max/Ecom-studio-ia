@@ -11,6 +11,7 @@
 import type { JobContext } from "../jobs";
 import { activeProviderKey } from "../ai/config";
 import { aiActiveFor } from "../ai/access";
+import { budgetPctText } from "../ai/budget-pct";
 import { loadProject, remember, type Project } from "../projects";
 import type { Deliverable } from "../quality/policies";
 import { intentsFromAction, understand, aiIntentClassifier, type Intent, type IntentResult } from "./intent";
@@ -328,7 +329,7 @@ export const STEP_EXECUTORS: Partial<Record<StepKind, StepExecutorFn>> = {
     });
     remember(p.id, { kind: "artifact", key: "social_plan_v2", value: JSON.stringify({ planId: planned.planId, days: planned.days, platforms: planned.platforms }), source: "local" });
     const o = outcome(ctx.job.id, "social", since);
-    return { ...o, note: `${planned.created + planned.existing} posts planned (${planned.platforms.join(", ")}, ${planned.days} days), ${prod.produced} visuals produced, ${prod.spentMicro} µ€ spent; approval required before any publication` };
+    return { ...o, note: `${planned.created + planned.existing} posts planned (${planned.platforms.join(", ")}, ${planned.days} days), ${prod.produced} visuals produced, ${budgetPctText(p.userId, prod.spentMicro, p.id)} used; approval required before any publication` };
   },
   // Export du thème (CMS Engine V2, phase 11A) : même chemin que l'écran « Exporter » (contrôle, verdict, version).
   cms_export: async (ctx, p, s) => {

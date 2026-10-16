@@ -30,7 +30,7 @@ export type Overview = {
   aiBudget?: { usage: AiBudgetUsage; renewsAt: number } | null;
 };
 
-export type AiBudgetUsage = { plan: { used: number }; credits: { used: number } | null; paused: boolean };
+export type AiBudgetUsage = { plan: { used: number }; credits: { used: number } | null; paused: boolean; /** Base des % de coût (jamais affichée). */ baseMicro?: number };
 
 const Ctx = createContext<{ id: string; data: Overview | null; reload: () => Promise<void>; error: string | null } | null>(null);
 

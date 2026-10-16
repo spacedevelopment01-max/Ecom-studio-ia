@@ -13,6 +13,7 @@ import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 import { ArrowDown, ArrowUp, BarChart3, Bot, Gauge, CalendarDays, CalendarPlus, Clapperboard, ImageIcon, Check, ChevronLeft, ChevronRight, Copy, ListChecks, MessageSquare, Pause, Pencil, Play, Plus, Send, Sparkles, Target, Trash2, Type, Wand2, X } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, Field, Input, Modal, Select, Spinner, Textarea, useApi, useToast } from "../ui";
 import { useLang, useT } from "../i18n";
+import { useBudgetPct } from "../billing-client";
 import { useProject } from "./project-context";
 import { AssetThumb, JobProgress, MediaPicker, useActive, type AssetView } from "./common";
 import { AiWait } from "../wait-time";
@@ -525,6 +526,7 @@ function CalendarPanel({ data, reload, onOpen, onRange }: { data: Data; reload: 
   const posts = useMemo(() => (net === "all" ? data.posts : data.posts.filter((p) => p.network === net)), [data.posts, net]);
   const [chat, setChat] = useState("");
   const [pending, setPending] = useState<{ text: string; estimateMicro: number } | null>(null);
+  const budget = useBudgetPct();
   const locale = lang === "en" ? enUS : fr;
   const ymd = (ms: number) => formatInTimeZone(ms, tz, "yyyy-MM-dd");
   const byDay = useMemo(() => {
@@ -675,7 +677,7 @@ function CalendarPanel({ data, reload, onOpen, onRange }: { data: Data; reload: 
         <AiWait busy={sending} label={t("Modification du calendrier…", "Editing the calendar…")} waitKey="social-edit" expectedMs={15000} />
         {pending && (
           <div className="flex flex-wrap items-center gap-2 rounded-xl bg-warn-soft p-2 text-sm text-warn">
-            {t(`Cette retouche utilise l'IA : estimation ${(pending.estimateMicro / 1e6).toFixed(2)} €.`, `This edit uses AI: estimate €${(pending.estimateMicro / 1e6).toFixed(2)}.`)}
+            {t(`Cette retouche utilise l'IA : coût probable ${budget.label(pending.estimateMicro)}.`, `This edit uses AI: likely cost ${budget.label(pending.estimateMicro)}.`)}
             <Button size="sm" variant="signal" onClick={() => send(true)}>{t("Confirmer", "Confirm")}</Button>
             <Button size="sm" variant="secondary" onClick={() => setPending(null)}>{t("Annuler", "Cancel")}</Button>
           </div>
@@ -1014,7 +1016,8 @@ function PostVisualMaker({ postId, ai, hasMedia, onDone }: { postId: string; ai:
   const toast = useToast();
   const [mode, setMode] = useState<VisualMode>("free");
   const [busy, setBusy] = useState(false);
-  const [est, setEst] = useState<{ estimateMicro: number; paid: number; notes: string[] } | null>(null);
+  const [est, setEst] = useState<{ estimateMicro: number; capMicro?: number; paid: number; notes: string[] } | null>(null);
+  const budget = useBudgetPct();
   const url = `/api/projects/${id}/social/v2`;
   const go = async (fn: () => Promise<void>) => {
     setBusy(true);
@@ -1037,7 +1040,8 @@ function PostVisualMaker({ postId, ai, hasMedia, onDone }: { postId: string; ai:
   });
   const accept = () => go(async () => {
     if (!est) return;
-    const cap = Math.ceil(est.estimateMicro / 10_000) / 100;
+    // Plafond de la tâche : reprises comprises (seul le coût réel est décompté).
+    const cap = Math.ceil((est.capMicro ?? est.estimateMicro) / 10_000) / 100;
     await api(url, { body: { action: "produce", ids: [postId], replace: true, ...visualParams(mode), maxCostEur: cap, approvedEstimateMicro: est.estimateMicro } });
     toast("ok", t("C'est lancé : le visuel arrive dans quelques minutes (suivi en haut de l'onglet).", "Started: the visual arrives in a few minutes (progress at the top of the tab)."));
     setEst(null);
@@ -1052,7 +1056,7 @@ function PostVisualMaker({ postId, ai, hasMedia, onDone }: { postId: string; ai:
         <div><Button size="sm" variant="signal" loading={busy} disabled={mode !== "free" && !ai} onClick={make} data-action="post-visual">{mode === "free" ? t("Créer le visuel (gratuit)", "Create the visual (free)") : t("Voir le prix", "See the price")}</Button></div>
       ) : (
         <div className="flex flex-wrap items-center gap-2 text-sm">
-          <span>{t(`Prix estimé : ${(est.estimateMicro / 1e6).toFixed(2)} € au plus.`, `Estimated price: €${(est.estimateMicro / 1e6).toFixed(2)} at most.`)}</span>
+          <span>{t(`Coût probable : ${budget.label(est.estimateMicro)} (une reprise éventuelle est décomptée et annoncée).`, `Likely cost: ${budget.label(est.estimateMicro)} (any redo is counted and announced).`)}</span>
           {est.notes.map((n) => <span key={n} className="text-warn">{n}</span>)}
           <Button size="sm" variant="signal" loading={busy} disabled={!est.paid} onClick={accept} data-action="post-visual-accept">{t("J'accepte et je lance", "I accept, start")}</Button>
           <Button size="sm" variant="ghost" onClick={() => setEst(null)}>{t("Annuler", "Cancel")}</Button>

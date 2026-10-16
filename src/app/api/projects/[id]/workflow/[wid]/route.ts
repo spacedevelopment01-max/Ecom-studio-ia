@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { capPctToMicro } from "@/lib/ai/budget-pct";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
 import { L } from "@/lib/i18n-server";
@@ -26,11 +27,13 @@ export const GET = handle(async (_req: Request, ctx: WfCtx) => {
 /** Lancer (devis accepté, plafond) ou annuler. */
 export const POST = handle(async (req: Request, ctx: WfCtx) => {
   const { wf } = await owned(ctx);
-  const b = await body(req, z.object({ action: z.enum(["start", "cancel", "retry"]), approveMicro: z.number().int().min(0).nullable().optional(), capEur: z.number().min(0).max(10000).nullable().optional(), videos: z.enum(["ai", "edited", "none"]).optional() }));
+  const b = await body(req, z.object({ action: z.enum(["start", "cancel", "retry"]), approveMicro: z.number().int().min(0).nullable().optional(), capEur: z.number().min(0).max(10000).nullable().optional(), /** Plafond saisi en % du budget IA (prioritaire sur capEur). */ capPct: z.number().min(0).max(1000).nullable().optional(), videos: z.enum(["ai", "edited", "none"]).optional() }));
+  // Plafond saisi en % du budget IA du mois (jamais d'euros montrés au client) → montant interne.
+  const capEur = b.capPct != null ? capPctToMicro(wf.userId, b.capPct, wf.projectId) / 1e6 : (b.capEur ?? null);
   try {
     if (b.action === "cancel") cancelWorkflow(wf.id);
-    else if (b.action === "retry") retryWorkflow(wf.id, { approveMicro: b.approveMicro ?? null, capEur: b.capEur ?? null });
-    else startWorkflow(wf.id, { approveMicro: b.approveMicro ?? null, capEur: b.capEur ?? null, videos: b.videos });
+    else if (b.action === "retry") retryWorkflow(wf.id, { approveMicro: b.approveMicro ?? null, capEur });
+    else startWorkflow(wf.id, { approveMicro: b.approveMicro ?? null, capEur, videos: b.videos });
   } catch (e) {
     if (e instanceof WorkflowError) throw new HttpError(e.status, e.message);
     throw e;

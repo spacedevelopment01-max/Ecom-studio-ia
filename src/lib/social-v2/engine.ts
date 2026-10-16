@@ -13,6 +13,7 @@ import { addUsage, getAsset, removeUsages } from "../library";
 import type { Project } from "../projects";
 import { lintClaims } from "../ai/tasks";
 import { EUR } from "../billing";
+import { budgetPctText } from "../ai/budget-pct";
 import { parseSocialAsk } from "./intent";
 import { createPlanV2, type PlanRequest } from "./planner";
 import { adaptForPlatform, nativeFormatFor, PLATFORMS, type Platform, type PostFormat } from "./platforms";
@@ -189,9 +190,10 @@ export async function applySocialEdit(p: Project, text: string, deps: SocialDeps
   }
   // Réécriture IA : seulement les publications visées, estimée, confirmée, plafonnée.
   if (!deps.aiActive) return { ...base, applied: false, by: "none", needsAi: true, summary: "cette retouche demande l'IA, non disponible pour ce compte : modifiez les textes directement" };
-  const estimate = plan.ids.length * deps.estimate("rewrite");
+  // Devis au coût probable (un essai par publication), dit en % du budget IA du mois ; plafond : reprises comprises.
+  const estimate = plan.ids.length * (deps.probable ? deps.probable("rewrite") : deps.estimate("rewrite"));
   const cap = Math.round((o.maxCostEur ?? 1) * EUR);
-  if (!o.confirm) return { ...base, applied: false, by: "none", needsConfirm: true, estimateMicro: estimate, summary: `${plan.summary} — estimation ${(estimate / EUR).toFixed(2)} € : confirmez pour lancer` };
+  if (!o.confirm) return { ...base, applied: false, by: "none", needsConfirm: true, estimateMicro: estimate, summary: `${plan.summary} — ${budgetPctText(p.userId, estimate, p.id)} : confirmez pour lancer` };
   let spent = 0;
   const refused: string[] = [];
   let done = 0;

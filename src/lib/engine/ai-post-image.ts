@@ -8,6 +8,7 @@ import { UserFacingError, type JobContext } from "../jobs";
 import { getAsset } from "../library";
 import { loadProject, type Project } from "../projects";
 import { C, L } from "../i18n-server";
+import { budgetPctText, retryNotice } from "../ai/budget-pct";
 import { designPostWithAi, realAiPostDeps, type AiPostDeps } from "../social-v2/ai-post";
 import { aiPostEstimate, type PostBrief } from "../social-v2/deps";
 import { serviceItems } from "./service-media";
@@ -32,8 +33,8 @@ export type AiPostImageRequest = {
 /** Format de l'onglet Images → proportions acceptées par la publication IA. */
 export const AI_POST_ASPECT: Record<string, "1:1" | "4:5" | "9:16" | "16:9"> = { square: "1:1", packshot: "1:1", portrait: "4:5", product: "4:5", pin: "4:5", story: "9:16", landscape: "16:9", banner: "16:9" };
 
-/** Devis d'une publication par l'IA (micro-euros) : trois essais au plus (image + contrôle) et l'accroche. */
-export const aiPostQuoteMicro = (): number => aiPostEstimate();
+/** PLAFOND d'une publication par l'IA (micro-euros) : trois essais au plus (image + contrôle) et l'accroche. Jamais montré comme prix : le devis est le coût probable (`aiPostProbableMicro`). */
+export const aiPostCapMicro = (): number => aiPostEstimate();
 
 const SELL = new Set(["booking", "promo", "ad", "service"]);
 
@@ -82,13 +83,13 @@ export async function generateAiPostImage(ctx: JobContext, projectId: string, re
   ctx.progress(0.15, L("Publication conçue par l'IA (scène, mise en page, textes)", "Post designed by AI (scene, layout, texts)"));
   const base = deps ?? realAiPostDeps({ userId: p.userId, projectId: p.id, jobId: ctx.job.id });
   const r = await ctx.step("ai-post", () =>
-    designPostWithAi(p, aiPostBrief(p, req, ctx.job.id), { aspect: AI_POST_ASPECT[req.format ?? "portrait"] ?? (req.format && /^\d/.test(req.format) ? (req.format as "4:5") : "4:5"), maxCostEur: aiPostQuoteMicro() / 1e6, reference, subject, as: req.as ?? (req.cta?.trim() ? "ad" : undefined) }, withClientTexts(base, req)),
+    designPostWithAi(p, aiPostBrief(p, req, ctx.job.id), { aspect: AI_POST_ASPECT[req.format ?? "portrait"] ?? (req.format && /^\d/.test(req.format) ? (req.format as "4:5") : "4:5"), maxCostEur: aiPostCapMicro() / 1e6, reference, subject, as: req.as ?? (req.cta?.trim() ? "ad" : undefined) }, withClientTexts(base, req)),
   );
   if (!r.assetId && req.as === "ad") {
     // Publicité refusée après 3 essais (fautes dans les textes…) : version du studio (scène par l'IA d'images, textes
     // et logo posés en calques, modifiables), dans le reste du budget déjà accepté.
     ctx.progress(0.7, L("Version du studio (textes posés en calques)", "Studio version (texts laid as layers)"));
-    const left = Math.max(0, aiPostQuoteMicro() - r.costMicro) / 1e6;
+    const left = Math.max(0, aiPostCapMicro() - r.costMicro) / 1e6;
     const { runAdEngineV2 } = await import("../ads-v2/engine");
     const aspect = AI_POST_ASPECT[req.format ?? ""] ?? (req.format as "4:5") ?? "4:5";
     const platform = aspect === "9:16" ? "meta_story" : aspect === "16:9" ? "linkedin" : "meta_feed";
@@ -97,8 +98,10 @@ export async function generateAiPostImage(ctx: JobContext, projectId: string, re
     if (out?.assetId) return { assetId: out.assetId, costMicro: r.costMicro + ad.costMicro, fallback: "studio" };
   }
   if (!r.assetId) {
-    const spent = (r.costMicro / 1e6).toFixed(2).replace(".", ",");
-    throw new UserFacingError(`${r.note ?? C("publication IA non produite", "AI post not produced")} — ${L(`${spent} € utilisés ; les essais refusés restent dans Fichiers. Essayez « Image par l'IA, le studio fait le reste ».`, `€${spent} used; rejected attempts stay in Files. Try "AI image, the studio does the rest".`)}`);
+    const spent = budgetPctText(p.userId, r.costMicro, p.id);
+    throw new UserFacingError(`${r.note ?? C("publication IA non produite", "AI post not produced")} — ${L(`${spent} utilisé ; les essais refusés restent dans Fichiers. Essayez « Image par l'IA, le studio fait le reste ».`, `${spent} used; rejected attempts stay in Files. Try "AI image, the studio does the rest".`)}`);
   }
-  return { assetId: r.assetId, costMicro: r.costMicro };
+  // Reprise payée : annoncée au client (message de la tâche), en % du budget IA.
+  const notice = retryNotice(p.userId, p.id, r.attempts ?? 1, r.costMicro);
+  return { assetId: r.assetId, costMicro: r.costMicro, ...(notice ? { notice } : {}) };
 }

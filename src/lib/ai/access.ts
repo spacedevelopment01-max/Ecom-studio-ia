@@ -5,7 +5,7 @@
  * Le worker exécute chaque tâche « pour » son utilisateur (AsyncLocalStorage), avec la portée de décompte des quotas.
  */
 import { AsyncLocalStorage } from "node:async_hooks";
-import { aiReserves, balance, EUR, getSubscription, planOf } from "../billing";
+import { aiPctBaseMicro, aiReserves, balance, EUR, getSubscription, planOf } from "../billing";
 import { runScope, type QuotaScope } from "../billing-scope";
 import { accountKeyFor } from "../project-billing";
 import { UserFacingError } from "../jobs";
@@ -81,6 +81,8 @@ export type AiUsage = {
   credits: { used: number } | null;
   /** Forfait et crédits épuisés : l'IA est en pause jusqu'au renouvellement ou à un nouvel achat. */
   paused: boolean;
+  /** Base des % de coût montrés au client (même réserve que la jauge) — sert au calcul, jamais affichée. */
+  baseMicro?: number;
 };
 
 /**
@@ -97,7 +99,7 @@ export function aiUsage(user: string, projectId?: string | null): AiUsage | null
   const pct = (u: number) => (u >= 1 ? 100 : u <= 0 ? 0 : Math.min(99, Math.max(1, Math.round(u * 100))));
   const planUsed = r.plan ? pct(r.plan.used) : 100;
   const credits = r.credits ? { used: pct(r.credits.used) } : null;
-  return { plan: { used: paused ? 100 : planUsed }, credits: credits && paused ? { used: 100 } : credits, paused };
+  return { plan: { used: paused ? 100 : planUsed }, credits: credits && paused ? { used: 100 } : credits, paused, baseMicro: aiPctBaseMicro(userId) };
 }
 
 export function assertAiAllowed(user: string | null | undefined, projectId?: string | null): void {

@@ -26,6 +26,7 @@ import { loadProject, type Project } from "../projects";
 import { applyWordingDeep, loadWordingRules } from "../client-wording";
 import { contentLang } from "../i18n-server";
 import { EUR } from "../billing";
+import { budgetPctText } from "../ai/budget-pct";
 import { brandTypo, palette } from "../engine/images";
 import { adInsight } from "../ads-v2/insight";
 import type { AdInsight } from "../ads-v2/types";
@@ -136,7 +137,7 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
   // Accord du client : sans accord explicite, les plans payants deviennent des plans locaux (rien n'est dépensé).
   let shots = planning.shots;
   if (planning.estimateMicro > 0 && !req.approveGeneration) {
-    notes.push(`génération non approuvée (estimation ${(planning.estimateMicro / EUR).toFixed(2)} €) : vidéo montée sans plan généré`);
+    notes.push(`génération non approuvée (coût probable ${budgetPctText(p.userId, planning.estimateMicro, p.id)}) : vidéo montée sans plan généré`);
     shots = planShots(storyboard, { intent, strategy, inv, allowGeneration: false, provider: () => null, budgetMicro: 0 }).shots;
     result.shots = shots;
     result.estimateMicro = 0;
@@ -451,7 +452,7 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
     // Plafond : vérifié AVANT l'envoi ; au-delà, plan local (la vidéo n'est jamais bloquée).
     if (o.budget.spentMicro + est > o.budget.capMicro) {
       stats.skippedForBudget++;
-      o.notes.push(`${s.id} : génération arrêtée avant envoi (budget ${(o.budget.capMicro / EUR).toFixed(2)} € atteint) — plan local`);
+      o.notes.push(`${s.id} : génération arrêtée avant envoi (plafond de ${budgetPctText(p.userId, o.budget.capMicro, p.id)} atteint) — plan local`);
       break;
     }
     o.ctx?.progress(0.3, `Tournage du plan ${s.id}`);

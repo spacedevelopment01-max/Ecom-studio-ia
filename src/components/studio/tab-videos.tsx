@@ -11,7 +11,7 @@ import { useProject } from "./project-context";
 import { JobProgress, StatusBadge, useActive, type AssetView } from "./common";
 import { AssetViewer } from "./asset-viewer";
 import { useLang, useT } from "../i18n";
-import { formatEur, PlanRequired, useCreationLocked } from "../billing-client";
+import { PlanRequired, useBudgetPct, useCreationLocked } from "../billing-client";
 import { BANK_IMAGE_ROLES, BANK_VIDEO_ROLES } from "@/lib/media/bank";
 
 type Source = "mine" | "stock" | "ai";
@@ -181,7 +181,9 @@ function AiClip({ onStarted }: { onStarted: (jobId?: string) => void }) {
   const [prompt, setPrompt] = useState("");
   const [aspect, setAspect] = useState("9:16");
   const [busy, setBusy] = useState(false);
-  const price = q ? formatEur(Math.max(0.01, Math.ceil(q.clipEstimateMicro / 1e4) / 100), lang) : null;
+  // Prix en % du budget IA du mois (jamais en euros).
+  const budget = useBudgetPct();
+  const price = q ? budget.label(q.clipEstimateMicro) : null;
   const go = async () => {
     if (!q) return;
     setBusy(true);
@@ -214,7 +216,7 @@ function AiClip({ onStarted }: { onStarted: (jobId?: string) => void }) {
         <Field label="Format" htmlFor="va-aspect"><Select id="va-aspect" value={aspect} onChange={(e) => setAspect(e.target.value)}><option value="9:16">9:16</option><option value="16:9">16:9</option></Select></Field>
       </div>
       <div className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm">{price ? t(<>Coût estimé : environ <strong>{price}</strong>, pris sur le budget IA du projet. Rien n'est lancé sans votre clic.</>, <>Estimated cost: about <strong>{price}</strong>, taken from the project's AI budget. Nothing starts without your click.</>) : t("Calcul du prix…", "Calculating the price…")}</p>
+        <p className="text-sm">{price ? t(<>Coût probable : <strong>{price}</strong>. Rien n'est lancé sans votre clic.</>, <>Likely cost: <strong>{price}</strong>. Nothing starts without your click.</>) : t("Calcul du prix…", "Calculating the price…")}</p>
         <Button icon={<Wand2 className="size-4" />} loading={busy} disabled={busy || !imageId || !price} onClick={go} data-bank-ai-go>{t(`Créer le plan · ${price ?? "…"}`, `Create the clip · ${price ?? "…"}`)}</Button>
       </div>
     </div>

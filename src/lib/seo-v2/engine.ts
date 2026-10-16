@@ -36,6 +36,7 @@ import { localOnlyDeps, realSeoDeps, writeKind, type CallKind, type SeoV2Deps } 
 import { blogAiAllowed, saveBlogDraftV2 } from "./blog";
 import { LANGS, type ContentDoc, type ContentLang, type ContentRunResult, type ContentType, type EditorialReview, type Keyword, type PageRef, type SeoStrategy } from "./types";
 import type { GateDecision } from "../quality/gate";
+import { budgetPctText } from "../ai/budget-pct";
 
 export const SEO_V2_VERSION = "8a.1";
 export const DEFAULT_SEO_CAP_EUR = 0.6;
@@ -93,7 +94,7 @@ export async function runContentEngineV2(ctx: JobContext | null, projectId: stri
   const cur = currentTrace();
   return withTrace({ ...(ctx?.job.id ? { jobId: ctx.job.id } : {}), projectId, ...(cur.intent ? {} : { intent: "WRITE_CONTENT" }), costCapMicro: cur.costCapMicro != null ? Math.min(cur.costCapMicro, capMicro) : capMicro }, async () => {
     const r = await engine(ctx, p, req, deps, { capMicro, spentMicro: 0, stopped: false });
-    if (blogBlocked) r.notes.unshift("articles écrits par l'IA non inclus dans votre forfait : brouillon local à partir des faits (0 €)");
+    if (blogBlocked) r.notes.unshift("articles écrits par l'IA non inclus dans votre forfait : brouillon local à partir des faits (gratuit)");
     return r;
   });
 }
@@ -145,7 +146,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
     const est = deps.estimate(kind);
     if (budget.spentMicro + est > budget.capMicro) {
       budget.stopped = true;
-      notes.push(`plafond de coût atteint (${(budget.capMicro / EUR).toFixed(2)} €) : ${kind} non envoyé`);
+      notes.push(`plafond de coût atteint (${budgetPctText(p.userId, budget.capMicro, p.id)}) : ${kind} non envoyé`);
       return false;
     }
     return true;
@@ -169,7 +170,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
         notes.push("plafond de coût atteint : texte local conservé");
       } else notes.push(`rédaction IA en échec (${(e as Error).message.slice(0, 120)}) : texte local conservé`);
     }
-  } else if (!deps.canWrite) notes.push("IA non disponible pour ce compte : rédaction locale à partir des faits (0 €)");
+  } else if (!deps.canWrite) notes.push("IA non disponible pour ce compte : rédaction locale à partir des faits (gratuit)");
 
   // 8-9. Contrôles, relecture, barrière, reprises ciblées (défaut identifié seulement).
   const policy = POLICIES[DELIVERABLE_OF[req.type]];

@@ -14,8 +14,8 @@ import { useProject } from "./project-context";
 import { JobProgress, ROLE_LABEL, StatusBadge, useActive, type AssetView } from "./common";
 import { AssetViewer } from "./asset-viewer";
 import { useCostConfirm } from "./cost-confirm";
-import { useLang, useT } from "../i18n";
-import { formatEur, PlanRequired, useCreationLocked } from "../billing-client";
+import { useT } from "../i18n";
+import { PlanRequired, useBudgetPct, useCreationLocked } from "../billing-client";
 import { BANK_IMAGE_ROLES } from "@/lib/media/bank";
 
 /** Tri des images par statut, et encart « Supprimées » pour retrouver (et restaurer) une image supprimée. */
@@ -381,15 +381,16 @@ function SearchPhotos({ services, peopleAllowed, onStarted }: { services: boolea
 function CreateImage({ services, q, onStarted }: { services: boolean; q: ImagesQuote | null | undefined; onStarted: (jobId?: string) => void }) {
   const { id } = useProject();
   const t = useT();
-  const { lang } = useLang();
   const toast = useToast();
   const cost = useCostConfirm();
   const ai = !!q?.ai;
   const [f, setF] = useState({ kind: services ? "trade_photo" : "usage_scene", topic: "", aspect: "4:5", count: 1 });
   const [busy, setBusy] = useState(false);
-  // Prix d'une image par l'IA (estimation prudente, une reprise comprise si la première est refusée).
+  // Prix d'une image par l'IA : coût probable (un essai), en % du budget IA du mois (jamais en euros). Une reprise
+  // n'est décomptée que si elle a lieu, et elle est annoncée.
+  const budget = useBudgetPct();
   const unit = q ? q.quote.ai_image : null;
-  const price = unit == null ? null : formatEur(Math.max(0.01, Math.ceil(unit * f.count * 100) / 100), lang);
+  const price = unit == null ? null : budget.label(Math.round(unit * 1e6 * f.count));
   const go = async () => {
     setBusy(true);
     try {
@@ -402,7 +403,7 @@ function CreateImage({ services, q, onStarted }: { services: boolean; q: ImagesQ
       setBusy(false);
     }
   };
-  const badge = price ? t(`Payant · environ ${price}`, `Paid · about ${price}`) : t("Payant · prix affiché avant", "Paid · price shown first");
+  const badge = price ? t(`Payant · ${price}`, `Paid · ${price}`) : t("Payant · prix affiché avant", "Paid · price shown first");
   return (
     <div className="grid gap-5" data-bank-create-dialog>
       {cost.dialog}
@@ -422,7 +423,7 @@ function CreateImage({ services, q, onStarted }: { services: boolean; q: ImagesQ
         </div>
       )}
       <div className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm">{price ? t(<>Coût estimé : environ <strong>{price}</strong>, pris sur le budget IA du projet. Rien n'est lancé sans votre clic.</>, <>Estimated cost: about <strong>{price}</strong>, taken from the project's AI budget. Nothing starts without your click.</>) : t("Calcul du prix…", "Calculating the price…")}</p>
+        <p className="text-sm">{price ? t(<>Coût probable : <strong>{price}</strong>. Si le contrôle demande une 2e image, elle est décomptée et vous êtes prévenu. Rien n'est lancé sans votre clic.</>, <>Likely cost: <strong>{price}</strong>. If the check needs a 2nd image, it is counted and you are told. Nothing starts without your click.</>) : t("Calcul du prix…", "Calculating the price…")}</p>
         <Button icon={<Wand2 className="size-4" />} loading={busy} disabled={busy || !ai || !price} onClick={go} data-bank-create-go>
           {t(`Créer · ${price ?? "…"}`, `Create · ${price ?? "…"}`)}
         </Button>
