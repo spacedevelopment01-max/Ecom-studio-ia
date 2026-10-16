@@ -1,0 +1,47 @@
+{
+  "at": "2026-10-16T11:53:15.396Z",
+  "model": "qwen-image-3.0-pro",
+  "boundUsd": 0.162,
+  "items": [
+    {
+      "id": "arven-produit-en-situation",
+      "ok": true,
+      "model": "qwen-image-3.0-pro",
+      "aspect": "4:5",
+      "size": "1104*1472",
+      "references": 1,
+      "usage": {
+        "input_image_count": 1,
+        "input_image_type": "qima_input_1k",
+        "output_height": 1472,
+        "output_image_count": 1,
+        "output_image_type": "qima_output_1k",
+        "output_width": 1104
+      },
+      "requestId": "27f5f242-1d9c-9137-89ba-6c5ad8309028",
+      "seconds": 19,
+      "maxCostUsd": 0.081,
+      "prompt": "Photographie, style démonstration produit. Sujet : le vrai produit, Montre acier et cuir (acier poli, cuir brun). Action : le produit prêt à servir dans son vrai décor du quotidien, personne dans le cadre. Décor : surface en marbre ou en bois sous une lumière douce. Composition : le produit installé pour une vraie tâche, résultat visible, aucune main. Lumière : lumière vive et égale, détails lisibles. Prise de vue : plan rapproché à moyen, 50 mm, produit lisible. Ambiance : clair, utile, honnête. Touches de couleur en accord avec #1E2225, #E8DACF, #A86932, #FAF7F5. Format 4:5, zone en bas gardée calme pour un texte ajouté plus tard. Le produit reste EXACTEMENT comme sur la référence : même forme, mêmes couleurs, même logo, mêmes inscriptions, mêmes proportions ; ne pas le redessiner. Le produit ENTIER est dans le cadre, aucune partie coupée, cachée ou manquante (ex. une montre : le bracelet complet avec sa boucle). Ne jamais montrer : faux logos de luxe, prêteur sur gages, logo d'une marque concurrente, produit sans rapport, illustration de dessin animé, filigrane, pièce vide, mur nu ; aucun texte, aucune lettre, aucun logo, aucun filigrane. Aucune personne : ni personne, ni visage, ni mains, ni partie du corps, ni silhouette, ni reflet de personne, ni mannequin avec un visage ; montrer seulement des lieux, des objets, des outils, des matériaux et des résultats."
+    },
+    {
+      "id": "arven-univers-marque",
+      "ok": true,
+      "model": "qwen-image-3.0-pro",
+      "aspect": "4:5",
+      "size": "1104*1472",
+      "references": 0,
+      "usage": {
+        "input_image_count": 0,
+        "input_image_type": "qima_input_1k",
+        "output_height": 1472,
+        "output_image_count": 1,
+        "output_image_type": "qima_output_1k",
+        "output_width": 1104
+      },
+      "requestId": "b5514753-42b7-9eaa-bfd0-f705a0b6ae2a",
+      "seconds": 12,
+      "maxCostUsd": 0.081,
+      "prompt": "Photographie, style photographie premium. Sujet : univers de la famille accessoires (sans le produit lui-même). Action : porté chaque jour, seulement des objets, personne dans le cadre. Décor : surface en marbre ou en bois sous une lumière douce. Composition : le sujet en héros, quelques accessoires raffinés dans la palette de la marque, profondeur en plusieurs plans. Lumière : lumière douce maîtrisée avec un léger liseré, tons riches. Prise de vue : angle légèrement bas, détails au 100 mm macro ou plan héros au 70 mm. Ambiance : raffiné, tactile, haut de gamme. Touches de couleur en accord avec #1E2225, #E8DACF, #A86932, #FAF7F5. Format 4:5, zone en bas gardée calme pour un texte ajouté plus tard. Ne jamais montrer : faux logos de luxe, prêteur sur gages, logo d'une marque concurrente, produit sans rapport, illustration de dessin animé, filigrane, pièce vide, mur nu ; aucun texte, aucune lettre, aucun logo, aucun filigrane. Aucune personne : ni personne, ni visage, ni mains, ni partie du corps, ni silhouette, ni reflet de personne, ni mannequin avec un visage ; montrer seulement des lieux, des objets, des outils, des matériaux et des résultats."
+    }
+  ]
+}
