@@ -8,6 +8,8 @@
  *  - la lumière (direction, douceur, moment) et le cadrage (hauteur de vue, distance, focale).
  * Aucun objet qui porte d'habitude une écriture (livre ouvert, étiquette, emballage imprimé, écran allumé) ; le bas de
  * l'image reste une surface unie (zone calme). `match` : variante propre à un type de produit (ex. une montre).
+ * Le produit n'est JAMAIS nommé dans la scène (essai v3 : « écrin à montre » a fait inventer une montre) : les objets
+ * sont décrits par leur forme et leur matière, et le produit est exclu par le négatif (`exclude`).
  */
 
 export type StillLifeObject = { what: string; material: string; color: string; position: string };
@@ -19,6 +21,11 @@ export type StillLifeScene = {
   objects: StillLifeObject[];
   light: string;
   framing: string;
+  /**
+   * Ce que le modèle ne doit surtout pas dessiner dans CETTE scène (négatif technique, anglais) : le produit lui-même
+   * (essai v3 ARVEN : une montre inventée est apparue dans l'écrin, interdit — produit inventé).
+   */
+  exclude?: string;
 };
 
 const O = (what: string, material: string, color: string, position: string): StillLifeObject => ({ what, material, color, position });
@@ -29,7 +36,8 @@ export const STILL_LIFE: Record<string, StillLifeScene[]> = {
     {
       surface: "tablette en pierre calcaire beige clair, grain fin et mat",
       background: "mur enduit crème uni, légèrement flou",
-      objects: [O("flacon compte-gouttes fermé, sans étiquette", "verre ambré", "ambre doré", "au centre"), O("serviette pliée", "lin lavé", "blanc cassé", "à gauche, au second plan"), O("galet plat", "pierre polie", "gris clair", "à droite, au second plan")],
+      exclude: "skincare bottle, cream jar, cosmetic tube, serum dropper, perfume bottle, packaging",
+      objects: [O("petit vase avec des brins d'eucalyptus", "céramique mate", "blanc et vert sauge", "au centre"), O("serviette pliée", "lin lavé", "blanc cassé", "à gauche, au second plan"), O("galet plat", "pierre polie", "gris clair", "à droite, au second plan")],
       light: "lumière du matin douce venant de la gauche, ombres courtes et douces",
       framing: FRAMING,
     },
@@ -38,7 +46,8 @@ export const STILL_LIFE: Record<string, StillLifeScene[]> = {
     {
       surface: "plateau rectangulaire en bois de chêne clair, surface lisse huilée",
       background: "mur blanc chaud uni, flou",
-      objects: [O("brosse à cheveux ovale", "bois de hêtre et poils naturels", "bois clair", "au centre"), O("peigne", "corne", "brun moyen", "à gauche du plateau"), O("serviette roulée", "coton nid d'abeille", "beige", "à droite, au second plan")],
+      exclude: "hair brush, comb, hair dryer, hair straightener, makeup brush, beauty device",
+      objects: [O("serviette roulée", "coton nid d'abeille", "beige", "au centre"), O("galets lisses", "pierre", "gris clair", "à gauche du plateau"), O("petite plante en pot", "feuillage vert et pot en céramique", "vert et blanc", "à droite, au second plan")],
       light: "lumière naturelle douce de fenêtre venant de la droite, ombres légères",
       framing: FRAMING,
     },
@@ -47,6 +56,7 @@ export const STILL_LIFE: Record<string, StillLifeScene[]> = {
     {
       surface: "bureau en noyer foncé, bois lisse mat",
       background: "mur gris anthracite uni, flou profond",
+      exclude: "headphones, earbuds, smartphone, tablet, speaker, smartwatch, electronic device, gadget",
       objects: [O("carnet fermé à couverture unie", "toile", "gris ardoise", "à gauche"), O("tasse sans anse", "céramique émaillée mate", "blanc", "à droite, au second plan"), O("petite plante en pot", "feuillage vert et pot en terre cuite", "vert et ocre", "en arrière-plan à droite")],
       light: "lumière froide et douce venant de la gauche, léger liseré sur les bords",
       framing: FRAMING,
@@ -90,11 +100,12 @@ export const STILL_LIFE: Record<string, StillLifeScene[]> = {
   ],
   accessories: [
     {
-      // Montre (ex. ARVEN) : écrin vide et matières du bracelet, jamais une seconde montre.
+      // Montre (ex. ARVEN) : boîte vide et cuir, sans jamais nommer la montre ; aucune montre dessinée.
       match: /montre|watch|horlog|chronograph/i,
+      exclude: "watch, wristwatch, clock, clock face, dial, watch hands, chronograph, timepiece, jewelry, ring, bracelet",
       surface: "plateau en marbre blanc veiné de gris, poli et lisse",
       background: "mur brun chocolat uni, très flou",
-      objects: [O("écrin à montre ouvert et vide, intérieur en velours", "cuir lisse cousu et velours", "cuir brun cognac, velours noir", "au centre"), O("sablier", "verre et laiton", "sable clair, laiton doré", "en arrière-plan à droite"), O("bande de cuir roulée", "cuir pleine fleur lisse", "brun cognac", "à gauche, au second plan")],
+      objects: [O("boîte ronde ouverte et vide, intérieur en velours, coussin central nu, rien posé dessus ni dedans", "cuir lisse cousu et velours", "cuir brun cognac, velours noir", "au centre"), O("sablier", "verre et laiton", "sable clair, laiton doré", "en arrière-plan à droite"), O("bande de cuir roulée", "cuir pleine fleur lisse", "brun cognac", "à gauche, au second plan")],
       light: "lumière chaude et douce venant de la gauche, en fin d'après-midi, reflets discrets sur le métal",
       framing: FRAMING,
     },

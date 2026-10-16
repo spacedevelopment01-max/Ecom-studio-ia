@@ -182,7 +182,7 @@ describe("onglet Images — audit", async () => {
     }
     // Montre (ARVEN) : variante propre, sans seconde montre ; un autre accessoire garde la scène générale.
     const watch = stillLifeFor("accessories", "Montre acier et cuir Montres");
-    expect(watch.objects.map((o) => o.what).join(" ")).toMatch(/écrin à montre ouvert et vide/);
+    expect(watch.objects.map((o) => o.what).join(" ")).toMatch(/boîte ronde ouverte et vide/);
     expect(watch.objects.some((o) => /^montre/i.test(o.what))).toBe(false);
     expect(stillLifeFor("accessories", "Sac en cuir").match).toBeUndefined();
     const t = stillLifeText(watch);
@@ -199,6 +199,27 @@ describe("onglet Images — audit", async () => {
     expect(univ).toMatch(/Surface : .+Arrière-plan : .+Objets, liste fermée/);
     expect(univ).not.toMatch(/accessoires raffinés|Composition :/);
     for (const w of ["embossed text", "engraving", "monogram"]) expect(NO_TEXT_NEGATIVE).toContain(w);
+  });
+
+  it("essai v3 (montre inventée dans l'écrin) : le produit n'est jamais nommé dans la nature morte et il est exclu", async () => {
+    const { STILL_LIFE, stillLifeFor } = await import("@/lib/image-v2/still-life");
+    const { qwenImageBody } = await import("@/lib/ai/alibaba");
+    const watch = stillLifeFor("accessories", "Montre acier et cuir Montres");
+    expect(JSON.stringify(watch.objects)).not.toMatch(/montre|horlog/i);
+    expect(watch.objects[0].what).toMatch(/vide.*rien posé dessus ni dedans/);
+    expect(watch.exclude).toMatch(/watch.*wristwatch.*dial/);
+    // Les familles dont un objet du décor ressemblerait au produit l'excluent aussi.
+    for (const id of ["cosmetics", "beauty_tools", "tech"]) expect(STILL_LIFE[id][0].exclude, id).toBeTruthy();
+    // Consigne : ni les matières du produit (« acier poli »), ni son nom.
+    const p = loadProject(pid);
+    const b = buildBrief(p, { kind: "ambiance", support: "site", aspect: "4:5" });
+    const prompt = generationPrompt(b);
+    expect(prompt).not.toMatch(/matières et couleurs du produit|Sérum|Éclat/i);
+    // Projet de test : un soin du visage → le flacon du produit est exclu de l'univers.
+    expect(b.fr?.sceneExclude).toMatch(/skincare bottle/);
+    // Négatif technique transmis à Qwen.
+    const body = qwenImageBody({ model: "qwen-image-3.0-pro", prompt, aspect: "4:5", references: [], people: false, noText: true, extraNegative: watch.exclude });
+    expect(body.parameters.negative_prompt).toMatch(/monogram, initials, stamp, watch, wristwatch/);
   });
 
   it("écran : plus de « forfait Découverte », IA indisponible expliquée, tâche sans image ou bloquée signalée", () => {

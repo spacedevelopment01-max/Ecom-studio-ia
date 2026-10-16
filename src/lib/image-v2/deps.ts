@@ -171,7 +171,7 @@ export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: b
       }
       if (path === "text_to_image") {
         const r = mediaRouteFor(usage);
-        return { img: await ambianceImage({ ...base, usageKey: key }, { prompt, aspect, usage }), provider: r?.provider ?? "ai", model: r?.model ?? null, path };
+        return { img: await ambianceImage({ ...base, usageKey: key }, { prompt, aspect, usage, negative: brief.fr?.sceneExclude }), provider: r?.provider ?? "ai", model: r?.model ?? null, path };
       }
       throw new Error(L("aucun parcours de génération fiable pour cette image", "no reliable generation path for this image"));
     },

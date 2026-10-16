@@ -577,9 +577,9 @@ export function ambiancePrompt(input: { prompt: string; aspect: string; referenc
 ${closed ? "Photographie réaliste et haut de gamme." : "Photographie éditoriale réaliste et haut de gamme, lumière naturelle : le lieu, les objets, les matériaux et la lumière racontent l'histoire."} Image purement photographique : objets et surfaces vierges, rien n'est écrit sur l'image.${/présence humaine/.test(input.prompt) ? "" : " Scène sans aucune présence humaine."} Format ${input.aspect}.${input.reference ? " La photo de référence montre la vraie activité : s'en servir seulement pour l'ambiance, les couleurs et le genre de lieu." : ""}`;
 }
 
-export async function ambianceImage(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference?: Buffer | null; usage?: MediaUsage }) {
+export async function ambianceImage(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference?: Buffer | null; usage?: MediaUsage; /** Exclusions propres à la scène (négatif technique : le produit lui-même). */ negative?: string }) {
   const text = ambiancePrompt({ prompt: input.prompt, aspect: input.aspect, reference: !!input.reference });
-  return generateImage(ctx, { text, aspect: input.aspect, reference: input.reference ?? null, quality: "high", usage: input.usage ?? "scene" });
+  return generateImage(ctx, { text, aspect: input.aspect, reference: input.reference ?? null, quality: "high", usage: input.usage ?? "scene", ...(input.negative ? { negative: input.negative } : {}) });
 }
 
 /**
@@ -663,7 +663,7 @@ export function imageQuality(usage: MediaUsage | undefined, asked: "medium" | "h
   return v === "medium" || v === "high" ? v : asked;
 }
 
-async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; /** Taille maximale de la référence envoyée (768 px par défaut ; photo à mettre en page : plus grande). */ refMax?: number; /** Images de référence en plus (logo de la marque), pour les modèles qui en acceptent plusieurs. */ extraRefs?: Buffer[]; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed>; /** Qualité demandée gardée (publication complète conçue par l'IA : texte net). */ strictQuality?: boolean }) {
+async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; /** Taille maximale de la référence envoyée (768 px par défaut ; photo à mettre en page : plus grande). */ refMax?: number; /** Images de référence en plus (logo de la marque), pour les modèles qui en acceptent plusieurs. */ extraRefs?: Buffer[]; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed>; /** Qualité demandée gardée (publication complète conçue par l'IA : texte net). */ strictQuality?: boolean; /** Exclusions en plus pour le négatif du modèle (Qwen-Image). */ negative?: string }) {
   const input = { ...input0, quality: input0.strictQuality ? input0.quality : imageQuality(input0.usage, input0.quality) };
   const provider = imageProviderAvailable({ references: input.reference ? 1 : 0, ...(input.usage ? { usage: input.usage } : {}), ...input.need });
   if (!provider) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini, OpenAI ou fal.ai).", "No image provider configured (Google Gemini, OpenAI or fal.ai)."));
@@ -677,7 +677,7 @@ async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: "1:1"
     const max = mediaModel("alibaba", model)?.caps.references ?? 1;
     // Aucun texte demandé (photo, décor, produit en scène) : le négatif exclut aussi toute écriture.
     // Sauf avec une photo du produit en référence : ses inscriptions réelles (chiffres, étiquette) doivent rester.
-    return alibabaImage(ctx, model, text, [...(ref ? [ref] : []), ...extras].slice(0, Math.max(1, max)), input.aspect, !!input.need?.people, !input.need?.text && !ref && !extras.length);
+    return alibabaImage(ctx, model, text, [...(ref ? [ref] : []), ...extras].slice(0, Math.max(1, max)), input.aspect, !!input.need?.people, !input.need?.text && !ref && !extras.length, input.negative);
   }
   if (provider === "google") {
     const key = activeProviderKey("google")!;
@@ -950,7 +950,7 @@ async function falImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[],
  * maximal (une image) est réservé avant l'envoi. Aucune personne ajoutée sans photo du client (consigne + negative
  * prompt). Une demande refusée (clé, région, contenu, droits) ne coûte rien : la réservation est rendue.
  */
-async function alibabaImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[], aspect: string, people: boolean, noText = false) {
+async function alibabaImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[], aspect: string, people: boolean, noText = false, extraNegative?: string) {
   const key = activeProviderKey("alibaba");
   if (!key) throw new UserFacingError(L("Aucune clé Alibaba Cloud configurée.", "No Alibaba Cloud key configured."));
   if (mediaModel("alibaba", model)?.needsReference && !refs.length) throw new PermanentError(L(`${model} exige une image de référence.`, `${model} requires a reference image.`));
@@ -959,7 +959,7 @@ async function alibabaImage(ctx: Ctx, model: string, prompt: string, refs: Buffe
   const max = cost("alibaba", model, { images: 1 }).micro;
   gate(ctx, max, "image", "alibaba", model);
   const { base } = alibabaBase();
-  const body = qwenImageBody({ model, prompt, aspect, references: refs.map((b) => `data:image/jpeg;base64,${b.toString("base64")}`), people, noText });
+  const body = qwenImageBody({ model, prompt, aspect, references: refs.map((b) => `data:image/jpeg;base64,${b.toString("base64")}`), people, noText, extraNegative });
   const r = await providerFetch(`${base}/services/aigc/multimodal-generation/generation`, { method: "POST", headers: alibabaHeaders(key), body: JSON.stringify(body) });
   if (!r.ok) {
     const e = alibabaError(r.status, await r.text().catch(() => ""));

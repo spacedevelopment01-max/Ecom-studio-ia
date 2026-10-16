@@ -88,6 +88,7 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
   let actionFr: string | null = null;
   let environmentFr: string | null = null;
   let sceneFr: string | undefined;
+  let sceneExclude: string | undefined;
 
   if (services) {
     // Métier du projet, puis celui de la prestation demandée quand elle est reconnue (« carrelage » ≠ « peinture »).
@@ -149,14 +150,17 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
       action = people ? (category.usage[v % category.usage.length] ?? null) : usage.length ? `${usage[v % usage.length]}, objects only, nobody in frame` : "objects and materials of everyday use in place, nobody in frame";
       // Univers concret (essai ARVEN du 16/10 : « univers de la famille accessoires », « porté chaque jour » ont donné
       // une personne en manteau et des sacs de luxe) : une nature morte d'objets précis, avec les matières du produit.
-      const ident = productIdentity(p, { hasReference: false });
-      const materials = ident.colors.length ? ` ; matières et couleurs du produit : ${ident.colors.join(", ")}` : "";
-      subjectFr = `nature morte de l'univers du produit (${category.labels.fr || p.product.category || "produit"})${materials} ; le produit lui-même n'apparaît pas`;
+      // Sans les matières ni le nom du produit (essai v3 : « acier poli » + « écrin à montre » ont fait inventer une
+      // montre) : la palette de la marque suffit pour les couleurs.
+      subjectFr = `nature morte de l'univers de la marque (${category.labels.fr || p.product.category || "produit"}), avec seulement les objets décrits`;
       // Décor entièrement décrit (demande du propriétaire après les essais ARVEN) : surface, fond, 3 objets au plus avec
       // matière, couleur et place, lumière, cadrage — liste fermée.
       const scene = stillLifeFor(category.id, `${p.product.name ?? ""} ${p.product.category ?? ""} ${p.product.summary ?? ""}`, v);
       actionFr = people ? toFr(category.usage[v % category.usage.length] ?? "") || null : null;
-      if (!people) sceneFr = stillLifeText(scene);
+      if (!people) {
+        sceneFr = stillLifeText(scene);
+        sceneExclude = scene.exclude;
+      }
       positive = uniq(noPerson([...category.environments, ...category.usage]));
       const uq = [category.universeQueries[v % Math.max(1, category.universeQueries.length)], ...category.universeQueries];
       queries = uniq(people ? uq : peopleFreeQueries(uq)).slice(0, 3);
@@ -210,7 +214,7 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
     understanding,
     people,
     ...(req.shot ? { shotKey: crypto.createHash("sha256").update(JSON.stringify(req.shot)).digest("hex").slice(0, 12) } : {}),
-    fr: { subject: subjectFr || subject, action: actionFr, environment: req.shot?.environment ?? environmentFr, negative: negative.map(toFr), ...(sceneFr ? { scene: sceneFr } : {}) },
+    fr: { subject: subjectFr || subject, action: actionFr, environment: req.shot?.environment ?? environmentFr, negative: negative.map(toFr), ...(sceneFr ? { scene: sceneFr } : {}), ...(sceneExclude ? { sceneExclude } : {}) },
   };
 }
 
