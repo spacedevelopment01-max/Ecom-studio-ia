@@ -109,7 +109,7 @@ const TBANK: Record<string, { fr: Tpl[]; en: Tpl[] }> = {
   educate: {
     fr: [
       (x) => ({ hook: `${cap(x.a)} : ce que ça demande vraiment.`, body: x.b ? `${cap(strip(x.b))}.` : "[À compléter : les étapes que vous suivez]", headline: short(x.a) }),
-      (x) => ({ hook: `On vous explique : ${low(x.a)}.`, body: x.b ? `${cap(strip(x.b))}.` : "[À compléter : votre explication en deux phrases]", headline: short(`Comprendre : ${x.a}`) }),
+      (x) => ({ hook: `On vous explique : ${low(x.a)}.`, body: x.b ? `${cap(strip(x.b))}.` : "[À compléter : votre explication en deux phrases]", headline: short(x.a) }),
       (x) => ({ hook: `Avant de se lancer dans ${low(x.a)}, une question à se poser.`, body: "[À compléter : la question et votre conseil]", headline: short(x.a) }),
       (x) => ({ hook: `${cap(x.a)} en trois points.`, body: "[À compléter : les trois points]", headline: short(`${x.a} en 3 points`) }),
     ],
