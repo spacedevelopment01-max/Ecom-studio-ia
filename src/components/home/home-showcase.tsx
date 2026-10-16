@@ -47,7 +47,7 @@ export function BoardShowcase({ boards }: { boards: BoardDemo[] }) {
       <div role="tablist" onKeyDown={(e) => onTabKeys(e, i, boards.length, setI)} aria-label={t("Marques de démonstration", "Demo brands")} className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
         {boards.map((x, k) => (
           <button key={x.id} type="button" role="tab" tabIndex={k === i ? 0 : -1} aria-selected={k === i} onClick={() => setI(k)} className={cx("flex h-12 shrink-0 cursor-pointer items-center gap-3 rounded-full border pl-2 pr-4 text-sm transition", k === i ? "border-ink bg-ink text-paper" : "border-line bg-card text-ink-2 hover:border-ink/40")}>
-            <span className="flex h-7 w-10 overflow-hidden rounded-full ring-1 ring-black/10">{x.palette.slice(0, 3).map((c) => <span key={c} className="flex-1" style={{ background: c }} />)}</span>
+            <span className="flex h-7 w-10 overflow-hidden rounded-full ring-1 ring-black/10">{x.palette.slice(0, 3).map((c, i) => <span key={i} className="flex-1" style={{ background: c }} />)}</span>
             <span className="font-medium">{x.brand}</span>
             <span className={cx("hidden sm:inline", k === i ? "text-paper/60" : "text-muted")}>· {x.sector}</span>
           </button>

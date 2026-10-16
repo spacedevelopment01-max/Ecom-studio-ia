@@ -9,6 +9,7 @@ import { ArrowRight, Check, Clock, Monitor, Pause, Play, RotateCcw, Smartphone, 
 import { cx } from "../ui";
 import { onTabKeys } from "./tabs";
 import { useT } from "../i18n";
+import { buttonColors } from "./story-media";
 
 // ------------------------------------------------------------------------------------------------ Marque
 
@@ -28,7 +29,7 @@ export function BrandLab({ brands }: { brands: BrandDemo[] }) {
       <div role="tablist" onKeyDown={(e) => onTabKeys(e, i, brands.length, setI)} aria-label={t("Marques de démonstration", "Demo brands")} className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 lg:mx-0 lg:grid lg:content-start lg:gap-2 lg:overflow-visible lg:px-0">
         {brands.map((x, k) => (
           <button key={x.id} type="button" role="tab" tabIndex={k === i ? 0 : -1} aria-selected={k === i} onClick={() => setI(k)} className={cx("flex shrink-0 cursor-pointer items-center gap-3 rounded-2xl border p-2.5 pr-4 text-left transition lg:w-full", k === i ? "border-line bg-card hp-elev" : "border-transparent hover:bg-card/60")}>
-            <span className="flex h-9 w-12 shrink-0 overflow-hidden rounded-lg ring-1 ring-line">{x.palette.slice(0, 3).map((c) => <span key={c} className="flex-1" style={{ background: c }} />)}</span>
+            <span className="flex h-9 w-12 shrink-0 overflow-hidden rounded-lg ring-1 ring-line">{x.palette.slice(0, 3).map((c, i) => <span key={i} className="flex-1" style={{ background: c }} />)}</span>
             <span>
               <span className="block font-display text-[15px] font-semibold leading-tight">{x.brand}</span>
               <span className="block text-xs text-muted">{x.sector}</span>
@@ -53,8 +54,8 @@ export function BrandLab({ brands }: { brands: BrandDemo[] }) {
         <div className="col-span-6 rounded-3xl border border-line bg-card p-5 sm:col-span-3">
           <p className="text-xs font-semibold uppercase tracking-[.16em] text-muted">{t("Palette", "Palette")}</p>
           <div className="mt-3 grid grid-cols-5 gap-2">
-            {b.palette.map((c) => (
-              <span key={c} className="grid gap-1.5">
+            {b.palette.map((c, i) => (
+              <span key={i} className="grid gap-1.5">
                 <span className="aspect-square rounded-xl ring-1 ring-line" style={{ background: c }} />
                 <span className="truncate text-center font-mono text-xs text-muted">{c}</span>
               </span>
@@ -410,7 +411,7 @@ export function ControlDemo({ brand, image, palette }: { brand: string; image: s
   const initial = { title: t("Des objets à vivre.", "Objects to live with."), color: 0, round: true, banner: true };
   const [s, setS] = useState(initial);
   const [versions, setVersions] = useState<(typeof initial)[]>([initial]);
-  const colors = [palette[0] ?? "#454873", palette[2] ?? "#8D74B4", palette[4] ?? "#14151F"];
+  const colors = buttonColors(palette);
   const commit = (next: typeof initial) => {
     setS(next);
     setVersions((v) => [...v.slice(-4), next]);

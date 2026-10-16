@@ -1,0 +1,68 @@
+import fs from "node:fs";
+import path from "node:path";
+import { describe, expect, it } from "vitest";
+import { buttonColors, storyMedia } from "@/components/home/story-media";
+
+const read = (f: string) => fs.readFileSync(path.join(process.cwd(), f), "utf8");
+
+// Démonstration ARVEN telle que dans public/demo/manifest.json : ni packshot ni détail, scènes « En situation ».
+const arven = {
+  photo: "/demo/montre/photo.jpg",
+  images: [
+    { label: "Détourage", src: "/demo/montre/cutout-1.webp" },
+    { label: "En situation", src: "/demo/montre/lifestyle-1.jpg" },
+    { label: "En situation", src: "/demo/montre/lifestyle-2.jpg" },
+    { label: "En situation", src: "/demo/montre/lifestyle-3.jpg" },
+  ],
+  posts: ["/demo/montre/post-1.jpg", "/demo/montre/post-2.jpg", "/demo/montre/post-3.jpg"],
+};
+
+describe("Accueil : parcours « 03 Images » sans fausse promesse", () => {
+  it("n'affiche jamais la photo d'origine du fournisseur comme une création, ni deux fois la même image", () => {
+    const m = storyMedia(arven);
+    const srcs = m.tiles.map((x) => x.src);
+    expect(srcs).not.toContain(arven.photo);
+    expect(new Set(srcs).size).toBe(srcs.length);
+    for (const k of ["scene1", "scene2", "packshot", "detail", "ad", "social", "banner"] as const) expect(m[k]).not.toBe(arven.photo);
+  });
+  it("chaque case porte la vraie nature de l'image (« En situation » = mise en situation, pas « Fond blanc » ni « Détail »)", () => {
+    const m = storyMedia(arven);
+    expect(m.tiles.map((x) => x.kind)).toEqual(["cutout", "scene", "scene", "scene"]);
+  });
+  it("une démonstration complète garde ses packshot, détail et scène", () => {
+    const m = storyMedia({ photo: "/p.jpg", images: [{ label: "Détourage", src: "/c" }, { label: "Packshot", src: "/pk" }, { label: "Détail", src: "/d" }, { label: "Scène", src: "/s" }, { label: "Publicité", src: "/ad" }, { label: "Bannière", src: "/b" }] });
+    expect(m.tiles.map((x) => x.kind)).toEqual(["cutout", "packshot", "detail", "scene"]);
+    expect([m.packshot, m.detail, m.scene1, m.ad, m.banner]).toEqual(["/pk", "/d", "/s", "/ad", "/b"]);
+  });
+  it("la démo « Personnalisation » ne propose pas deux fois la même couleur", () => {
+    expect(buttonColors(["#1E2225", "#E8DACF", "#A86932", "#FAF7F5", "#1E2225"])).toEqual(["#1E2225", "#A86932"]);
+  });
+});
+
+describe("Accueil : promesses conformes aux forfaits et aux règles", () => {
+  const page = read("src/app/page.tsx");
+  it("la vidéo témoignage n'est annoncée que pour le forfait qui l'inclut, et seulement avec l'accord du client", () => {
+    expect(page).not.toContain("Vendre et Dominer");
+    expect(page).not.toContain("Sell and Dominate");
+    expect(page).toContain("forfait ${PLANS.dominer.name.fr}) : une personne créée par l'IA présente votre vrai produit face caméra, uniquement avec votre accord");
+  });
+  it("l'accueil du studio ne présente pas la Découverte comme un forfait", () => {
+    const home = read("src/components/studio/home.tsx");
+    expect(home).not.toContain("Forfait Découverte");
+    expect(home).not.toContain("Discovery plan");
+  });
+  it("le bouton du pied de page mène au studio d'une personne connectée", () => {
+    expect(read("src/components/site-footer.tsx")).toContain('href={user ? "/studio" : "/inscription"}');
+  });
+});
+
+describe("Intro animée en anglais", () => {
+  it("remplace « Passer » et le sous-titre français quand l'interface est en anglais", () => {
+    const src = read("src/components/intro/intro-splash.tsx");
+    expect(src).toContain("if(d.documentElement.lang==='en')");
+    expect(src).toContain('skip: "Skip"');
+    expect(src).toContain('sub: "The all-in-one e-commerce platform"');
+    // Le fichier fourni par le propriétaire reste intact (copie exacte, voir intro-splash.test.ts).
+    expect(read("src/components/intro/intro-source.ts")).toContain(">Passer</button>");
+  });
+});

@@ -11,6 +11,7 @@ import { BeforeAfter, RevealObserver, ScrollFX, type Demo } from "@/components/l
 import { HomeHeader } from "@/components/home/home-chrome";
 import { HeroFilm, HowItWorks } from "@/components/home/home-media";
 import { StoryScroll, type StoryDemo, type StoryStep } from "@/components/home/home-story";
+import { storyMedia } from "@/components/home/story-media";
 import { AdEditorDemo, BrandLab, ConnectedHub, ControlDemo, SeoDocDemo, SocialCalendarDemo, StoreDevices, type BrandDemo, type SocialPost, type StoreDemo } from "@/components/home/home-demos";
 import { BoardShowcase, FeedShowcase, PostsWall, ThemesWall, type BoardDemo, type FeedDemo, type WallItem } from "@/components/home/home-showcase";
 import { directionById, directionCards } from "@/lib/theme/directions";
@@ -116,9 +117,10 @@ export default async function Home() {
   const productDemos = list.filter((d) => d.business !== "services");
   const serviceDemos = list.filter((d) => d.business === "services");
   const hero = productDemos.find((d) => d.images.some((x) => /détourage|cutout/i.test(x.label))) ?? productDemos[0] ?? list[0];
-  const img = (d: Demo | undefined, label: RegExp, n = 0) => d?.images.filter((x) => label.test(x.label))[n]?.src ?? d?.photo ?? "";
   const fontsOf = (d: Demo) => directionById(d.direction).previewFonts;
-  const story: StoryDemo | null = hero
+  // Images du parcours : uniquement les vraies créations de la démonstration, chacune sous sa vraie nature.
+  const media = hero ? storyMedia(hero) : null;
+  const story: StoryDemo | null = hero && media
     ? {
         brand: hero.brand,
         product: hero.product,
@@ -128,14 +130,7 @@ export default async function Home() {
         direction: directionById(hero.direction).name,
         shopDesktop: hero.shopDesktop,
         shopMobile: hero.shopMobile,
-        cutout: img(hero, /détourage|cutout/i),
-        packshot: img(hero, /packshot/i),
-        detail: img(hero, /détail|detail/i),
-        scene1: img(hero, /scène|scene/i),
-        scene2: img(hero, /scène|scene/i, 1),
-        social: img(hero, /social/i),
-        ad: img(hero, /publicité|ad$/i),
-        banner: img(hero, /bannière|banner/i),
+        ...media,
         videoPoster: hero.videoPoster,
       }
     : null;
@@ -488,7 +483,7 @@ export default async function Home() {
               ))}
             </ol>
             <div className="mt-8 grid gap-4 lg:grid-cols-2">
-              <p className="flex gap-3 rounded-2xl border border-white/10 bg-white/[.04] p-5 text-sm leading-relaxed text-white/80"><UserRound className="mt-0.5 size-5 shrink-0 text-[#AEB7FF]" aria-hidden /> {T("Vidéo « témoignage » (forfaits Vendre et Dominer) : une personne créée par l'IA présente votre vrai produit face caméra. La vidéo est signalée comme créée par l'IA.", "\"Testimonial\" video (Sell and Dominate plans): an AI-created person presents your real product to camera. The video is labeled as AI-made.")}</p>
+              <p className="flex gap-3 rounded-2xl border border-white/10 bg-white/[.04] p-5 text-sm leading-relaxed text-white/80"><UserRound className="mt-0.5 size-5 shrink-0 text-[#AEB7FF]" aria-hidden /> {T(`Vidéo « témoignage » (forfait ${PLANS.dominer.name.fr}) : une personne créée par l'IA présente votre vrai produit face caméra, uniquement avec votre accord. La vidéo est signalée comme créée par l'IA.`, `"Testimonial" video (${PLANS.dominer.name.en} plan): an AI-created person presents your real product to camera, only with your approval. The video is labeled as AI-made.`)}</p>
               <p className="flex gap-3 rounded-2xl border border-white/10 bg-white/[.04] p-5 text-sm leading-relaxed text-white/80"><Minus className="mt-0.5 size-5 shrink-0 text-white/50" aria-hidden /> {T("Pas encore de montage image par image : vous demandez les changements avec vos mots et pouvez refaire un passage, avec votre accord.", "No frame-by-frame editing yet: you ask for changes in your own words and can redo a part, with your approval.")}</p>
             </div>
           </div>

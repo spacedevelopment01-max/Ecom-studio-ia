@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { CalendarDays, Check, Clapperboard, Clock, FileText, Image as ImageIcon, Megaphone, Palette, Play, Share2, Store } from "lucide-react";
 import { cx } from "../ui";
 import { useT } from "../i18n";
+import type { MediaKind, MediaTile } from "./story-media";
 
 export type StoryDemo = {
   brand: string;
@@ -21,6 +22,8 @@ export type StoryDemo = {
   shopDesktop: string;
   shopMobile: string;
   cutout: string;
+  /** Case « Images » : vraies créations de la démonstration, avec leur vraie nature (voir story-media.ts). */
+  tiles: MediaTile[];
   packshot: string;
   detail: string;
   scene1: string;
@@ -61,10 +64,10 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
         </div>
         <div className="rounded-2xl border border-line bg-card p-3">
           <div className="flex h-12 overflow-hidden rounded-xl">
-            {d.palette.map((c) => <span key={c} className="flex-1" style={{ background: c }} />)}
+            {d.palette.map((c, i) => <span key={i} className="flex-1" style={{ background: c }} />)}
           </div>
           <div className="mt-2 flex justify-between gap-1 font-mono text-xs text-muted sm:text-xs">
-            {d.palette.map((c) => <span key={c}>{c}</span>)}
+            {d.palette.map((c, i) => <span key={i}>{c}</span>)}
           </div>
           <p className="mt-2 text-xs text-ink-2">{t(`Palette mesurée sur le produit · direction « ${d.direction} »`, `Palette measured on the product · “${d.direction}” direction`)}</p>
         </div>
@@ -83,12 +86,13 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
       </div>
     );
   if (k === "images") {
-    const tiles: [string, string][] = [[d.cutout, t("Produit découpé", "Cut-out product")], [d.packshot, t("Fond blanc", "White background")], [d.scene1, t("Scène", "Scene")], [d.detail, t("Détail", "Detail")]];
+    const names: Record<MediaKind, string> = { cutout: t("Produit découpé", "Cut-out product"), packshot: t("Fond blanc", "White background"), detail: t("Détail", "Detail"), scene: t("Mise en situation", "Lifestyle shot"), social: t("Visuel social", "Social visual"), ad: t("Publicité", "Ad"), banner: t("Bannière", "Banner"), post: t("Publication", "Post") };
+    const tiles: [string, string][] = d.tiles.map((x) => [x.src, names[x.kind]]);
     return (
       <div className="grid h-full grid-cols-2 grid-rows-2 gap-2.5 p-4 sm:gap-3 sm:p-5">
         {tiles.map(([src, l], i) => (
-          <figure key={src} className={cx("relative overflow-hidden rounded-2xl border border-line", i === 0 ? "bg-[repeating-conic-gradient(#E9ECF3_0_25%,#fff_0_50%)] [background-size:16px_16px]" : "bg-paper-2")}>
-            <Img src={src} alt={l} contain={i === 0} className={i === 0 ? "p-3" : ""} />
+          <figure key={src} className={cx("relative overflow-hidden rounded-2xl border border-line", tiles.length === 3 && i === 2 && "col-span-2", d.tiles[i].kind === "cutout" ? "bg-[repeating-conic-gradient(#E9ECF3_0_25%,#fff_0_50%)] [background-size:16px_16px]" : "bg-paper-2")}>
+            <Img src={src} alt={l} contain={d.tiles[i].kind === "cutout"} className={d.tiles[i].kind === "cutout" ? "p-3" : ""} />
             <figcaption className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs font-medium text-white">{l}</figcaption>
           </figure>
         ))}
@@ -118,7 +122,7 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
       </div>
     );
   if (k === "video") {
-    const shots: [string, string][] = [[d.packshot, t("Ouverture", "Opening")], [d.detail, t("Détail", "Detail")], [d.scene1, t("Usage", "In use")], [d.banner, t("Appel à l'action", "Call to action")]];
+    const shots: [string, string][] = [[d.packshot, t("Ouverture", "Opening")], [d.detail, t("Produit", "Product")], [d.scene1, t("Usage", "In use")], [d.banner, t("Appel à l'action", "Call to action")]];
     return (
       <div className="flex h-full flex-col gap-3 p-4 sm:p-5">
         <div className="relative min-h-0 flex-1 overflow-hidden rounded-2xl border border-line bg-[#070B17]">
