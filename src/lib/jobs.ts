@@ -253,13 +253,18 @@ export function completeJob(jid: string, result: unknown) {
   run(
     "UPDATE jobs SET status='done', progress=1, result=?, error=NULL, locked_by=NULL, locked_until=NULL, message=?, finished_at=?, updated_at=? WHERE id=? AND ((status IN ('running','paused') AND (locked_by IS NULL OR locked_by=?)) OR (status='queued' AND locked_by=?))",
     JSON.stringify(result ?? null),
-    L("Terminé", "Done"),
+    // Message au client porté par le résultat (ex. reprise débitée, annoncée en % du budget IA).
+    typeof (result as { notice?: unknown } | null)?.notice === "string" ? `${L("Terminé", "Done")} · ${(result as { notice: string }).notice}` : L("Terminé", "Done"),
     now(),
     now(),
     jid,
     WORKER_ID,
     WORKER_ID,
   );
+  // Reprise débitée : aussi dans les notifications du client (jamais en silence).
+  const notice = (result as { notice?: unknown } | null)?.notice;
+  const j = typeof notice === "string" ? one<{ user_id: string; project_id: string | null }>("SELECT user_id, project_id FROM jobs WHERE id = ?", jid) : null;
+  if (j && typeof notice === "string") run("INSERT INTO notifications (id, user_id, project_id, level, title, body, created_at) VALUES (?,?,?,?,?,?,?)", id(), j.user_id, j.project_id, "info", L("Reprise d'une création par l'IA", "AI creation redone"), notice, now());
 }
 
 /** Échec : nouvelle tentative avec attente exponentielle, sauf erreur définitive. */

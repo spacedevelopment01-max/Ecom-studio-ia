@@ -9,8 +9,8 @@ import { L } from "@/lib/i18n-server";
 import { HttpError } from "@/lib/auth";
 import { aiActiveFor, runForUser } from "@/lib/ai/access";
 import { imageUnavailableReason } from "@/lib/ai/media-providers";
-import { estimateMicro } from "@/lib/ai/estimate";
-import { aiPostQuoteMicro } from "@/lib/engine/ai-post-image";
+import { aiPostProbableMicro, capMicro, estimateMicro } from "@/lib/ai/estimate";
+import { budgetPctOf } from "@/lib/ai/budget-pct";
 import { imageV2Kind } from "@/lib/image-v2/ai-only";
 
 const Req = z.object({
@@ -34,8 +34,12 @@ const Req = z.object({
   visual: z.enum(["free", "ai_image", "ai_post"]).optional(),
 });
 
-/** Image par l'IA : jusqu'à deux images et leurs contrôles (une reprise si la première est refusée). */
-const aiImageQuoteMicro = () => 2 * estimateMicro("image");
+/**
+ * Devis d'une image par l'IA au COÛT PROBABLE (choix du propriétaire) : une image et ses contrôles. Une reprise
+ * n'est débitée que si elle a lieu (elle est alors annoncée) ; le plafond de la tâche la permet (`capMicro`).
+ */
+const aiImageQuoteMicro = () => estimateMicro("image");
+const aiImageCapMicro = () => capMicro(estimateMicro("image"));
 
 /** Devis affiché avant toute création payante (« Faire un visuel ») et état de l'IA du projet. */
 export const GET = handle(async (_req: Request, ctx: Ctx) => {
@@ -43,7 +47,10 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
   // IA d'images vraiment utilisable pour CE projet : forfait et budget, ET un modèle d'images utilisable (clé, tarif,
   // confirmation). Sinon la raison est dite au client : aucun bouton payant qui échouerait ensuite.
   const reason = aiActiveFor(p.userId, p.id) ? await runForUser(p.userId, async () => imageUnavailableReason("scene"), "normal", p.id) : null;
-  return ok({ ai: aiActiveFor(p.userId, p.id) && !reason, reason, quote: { ai_image: aiImageQuoteMicro() / 1e6, ai_post: aiPostQuoteMicro() / 1e6 } });
+  const img = aiImageQuoteMicro();
+  const post = aiPostProbableMicro();
+  // `quote` (micro-euros / 1e6) sert au calcul ; le client ne voit que `pct` : part du budget IA du mois.
+  return ok({ ai: aiActiveFor(p.userId, p.id) && !reason, reason, quote: { ai_image: img / 1e6, ai_post: post / 1e6 }, pct: { ai_image: budgetPctOf(p.userId, img, p.id), ai_post: budgetPctOf(p.userId, post, p.id) } });
 });
 
 /** Libellé lisible de la tâche (jamais la clé interne). */
@@ -106,6 +113,6 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const f = b.format ? FORMATS[b.format as keyof typeof FORMATS] : null;
   const aspect = !f ? (kind === "banner" ? "16:9" : kind === "packshot" ? "1:1" : "4:5") : f.w > f.h * 1.5 ? "16:9" : f.h > f.w * 1.5 ? "9:16" : f.h > f.w * 1.1 ? "4:5" : "1:1";
   const v2kind = imageV2Kind(p.business === "services", kind);
-  const job = enqueue({ userId: user.id, projectId: p.id, idempotencyKey: dedup, type: "image.v2", label: imageLabel(kind), payload: { projectId: p.id, request: { kind: v2kind, aspect, count: 1, topic: b.subline ?? null, allowGenerate: true, noStock: true, maxCostEur: aiImageQuoteMicro() / 1e6 } } });
+  const job = enqueue({ userId: user.id, projectId: p.id, idempotencyKey: dedup, type: "image.v2", label: imageLabel(kind), payload: { projectId: p.id, request: { kind: v2kind, aspect, count: 1, topic: b.subline ?? null, allowGenerate: true, noStock: true, maxCostEur: aiImageCapMicro() / 1e6 } } });
   return ok({ jobId: job.id, engine: "image-v2" });
 });

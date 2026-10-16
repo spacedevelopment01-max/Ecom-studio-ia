@@ -12,7 +12,7 @@ import { useProject } from "./project-context";
 import { JobProgress, useActive, type AssetView } from "./common";
 import { AiWait } from "../wait-time";
 import { VisualChoice } from "./visual-choice";
-import { formatEur } from "../billing-client";
+import { useBudgetPct } from "../billing-client";
 import { visualParams, type VisualMode } from "@/lib/social-v2/visual-mode";
 import { BANK_IMAGE_ROLES } from "@/lib/media/bank";
 import type { Data } from "./social-studio";
@@ -29,7 +29,6 @@ const NETS: Record<string, { label: string; color: string }> = {
   linkedin: { label: "LinkedIn", color: "#0A66C2" },
 };
 const VIDEO_FORMATS = new Set(["video", "reel", "short"]);
-const eur = (micro: number, lang: "fr" | "en") => formatEur(Math.max(0.01, Math.ceil(micro / 1e4) / 100), lang);
 
 /** Choix de la vidéo : montage gratuit du studio, ou plans filmés par l'IA (payant, prix affiché avant). */
 export function VideoChoice({ value, onChange, ai, price }: { value: VideoMode; onChange: (m: VideoMode) => void; ai: boolean; price?: string }) {
@@ -81,6 +80,8 @@ export function CreateOnePanel({ data, kind, reload, onCreated }: { data: Data; 
   const [request, setRequest] = useState("");
   const [busy, setBusy] = useState(false);
   const [quote, setQuote] = useState<number | null>(null);
+  // Prix en % du budget IA du mois (même base que la jauge « Reste … % ») ; jamais en euros.
+  const budget = useBudgetPct();
   const jobs = useActive(["social.v2"]);
   const { data: bank } = useApi<{ assets: AssetView[] }>(kind === "image" ? `/api/projects/${id}/files?role=${BANK_IMAGE_ROLES.join(",")}` : null);
   const images = (bank?.assets ?? []).filter((a) => a.kind === "image" && a.status !== "rejected").slice(0, 36);
@@ -128,9 +129,9 @@ export function CreateOnePanel({ data, kind, reload, onCreated }: { data: Data; 
       <section className="grid gap-2">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t("1 · Avec ou sans IA", "1 · With or without AI")}</p>
         {kind === "image" ? (
-          <VisualChoice value={imageMode} onChange={setImageMode} ai={!!data.ai} name={`one-${kind}`} prices={quote && imageMode !== "free" ? { [imageMode]: t(`Payant · ${eur(quote, lang)}`, `Paid · ${eur(quote, lang)}`) } : undefined} />
+          <VisualChoice value={imageMode} onChange={setImageMode} ai={!!data.ai} name={`one-${kind}`} prices={quote && imageMode !== "free" ? { [imageMode]: t(`Payant · ${budget.label(quote)}`, `Paid · ${budget.label(quote)}`) } : undefined} />
         ) : (
-          <VideoChoice value={videoMode} onChange={setVideoMode} ai={!!data.ai} price={quote && videoMode !== "free" ? t(`Payant · ${eur(quote, lang)}`, `Paid · ${eur(quote, lang)}`) : undefined} />
+          <VideoChoice value={videoMode} onChange={setVideoMode} ai={!!data.ai} price={quote && videoMode !== "free" ? t(`Payant · ${budget.label(quote)}`, `Paid · ${budget.label(quote)}`) : undefined} />
         )}
       </section>
       {paid && (
@@ -168,11 +169,11 @@ export function CreateOnePanel({ data, kind, reload, onCreated }: { data: Data; 
       </section>
       <div className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between" data-one-price>
         <p className="text-sm">
-          {!paid ? <span className="font-medium text-ok">{t("Gratuit : aucun budget IA utilisé.", "Free: no AI budget used.")}</span> : quote == null ? t("Calcul du prix…", "Calculating the price…") : t(<>Coût estimé : <strong>{eur(quote, lang)}</strong> pour {nets.length} réseau{nets.length > 1 ? "x" : ""}, pris sur le budget IA du projet. Rien n'est lancé sans votre clic.</>, <>Estimated cost: <strong>{eur(quote, lang)}</strong> for {nets.length} network{nets.length > 1 ? "s" : ""}, taken from the project's AI budget. Nothing starts without your click.</>)}
+          {!paid ? <span className="font-medium text-ok">{t("Gratuit : aucun budget IA utilisé.", "Free: no AI budget used.")}</span> : quote == null ? t("Calcul du prix…", "Calculating the price…") : t(<>Coût probable : <strong>{budget.label(quote)}</strong> pour {nets.length} réseau{nets.length > 1 ? "x" : ""}. Si le contrôle demande une 2e image, elle est décomptée et vous êtes prévenu. Rien n'est lancé sans votre clic.</>, <>Likely cost: <strong>{budget.label(quote)}</strong> for {nets.length} network{nets.length > 1 ? "s" : ""}. If the check needs a 2nd image, it is counted and you are told. Nothing starts without your click.</>)}
         </p>
         <Button onClick={create} loading={busy} disabled={busy || !nets.length || (paid && quote == null)} icon={<Wand2 className="size-4" />} data-create-one-submit>
           {kind === "image" ? t("Créer la publication", "Create the post") : t("Créer la vidéo", "Create the video")}
-          {paid && quote != null ? ` · ${eur(quote, lang)}` : ""}
+          {paid && quote != null ? ` · ${budget.label(quote)}` : ""}
         </Button>
       </div>
     </Card>
@@ -188,8 +189,10 @@ export function BatchVisuals({ data, kind, reload }: { data: Data; kind: Kind; r
   const [videoMode, setVideoMode] = useState<VideoMode>("free");
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
-  const [est, setEst] = useState<{ posts: number; free: number; paid: number; estimateMicro: number; notes: string[] } | null>(null);
+  const [est, setEst] = useState<{ posts: number; free: number; paid: number; estimateMicro: number; pct?: number | null; capPct?: number | null; notes: string[] } | null>(null);
+  // Plafond en % du budget IA du mois (proposé : le coût probable avec la place des reprises).
   const [cap, setCap] = useState(5);
+  const budget = useBudgetPct();
   const todo = useMemo(
     () => data.posts.filter((p) => p.media.length === 0 && ["planned", "draft", "failed"].includes(p.status) && (p.scheduledAt ?? 0) >= Date.now() - 3_600_000 && VIDEO_FORMATS.has(p.format) === (kind === "video")).sort((a, b) => (a.scheduledAt ?? 0) - (b.scheduledAt ?? 0)).slice(0, 30).map((p) => p.id),
     [data.posts, kind],
@@ -218,7 +221,9 @@ export function BatchVisuals({ data, kind, reload }: { data: Data; kind: Kind; r
   const estimate = async () => {
     setBusy(true);
     try {
-      setEst(await api(`/api/projects/${id}/social/v2`, { body: { action: "estimate", ids: todo, ...params } }));
+      const e = await api<NonNullable<typeof est>>(`/api/projects/${id}/social/v2`, { body: { action: "estimate", ids: todo, ...params } });
+      setEst(e);
+      if (e.capPct != null) setCap(Math.min(100, Math.max(1, Math.ceil(e.capPct))));
     } catch (e) {
       toast("bad", (e as Error).message);
     } finally {
@@ -228,7 +233,7 @@ export function BatchVisuals({ data, kind, reload }: { data: Data; kind: Kind; r
   const producePaid = async () => {
     if (!est) return;
     try {
-      await api(`/api/projects/${id}/social/v2`, { body: { action: "produce", ids: todo, ...params, maxCostEur: cap, approvedEstimateMicro: est.estimateMicro } });
+      await api(`/api/projects/${id}/social/v2`, { body: { action: "produce", ids: todo, ...params, maxCostPct: cap, approvedEstimateMicro: est.estimateMicro } });
       toast("ok", t("Production lancée dans le plafond accepté.", "Production started within the accepted cap."));
       setEst(null);
     } catch (e) {
@@ -257,11 +262,11 @@ export function BatchVisuals({ data, kind, reload }: { data: Data; kind: Kind; r
           {progress && <p className="text-sm text-muted" data-produce-progress>{t(`Production gratuite : ${progress.done} / ${progress.total}`, `Free production: ${progress.done} / ${progress.total}`)}</p>}
           {est && (
             <div className="rounded-2xl border border-line p-3 text-sm">
-              <p>{t(`${est.posts} publications : ${est.free} gratuites, ${est.paid} payantes — estimation ${(est.estimateMicro / 1e6).toFixed(2)} €.`, `${est.posts} posts: ${est.free} free, ${est.paid} paid — estimate €${(est.estimateMicro / 1e6).toFixed(2)}.`)}</p>
+              <p>{t(`${est.posts} publications : ${est.free} gratuites, ${est.paid} payantes — coût probable ${budget.label(est.estimateMicro)}.`, `${est.posts} posts: ${est.free} free, ${est.paid} paid — likely cost ${budget.label(est.estimateMicro)}.`)}</p>
               {est.notes.map((n) => <p key={n} className="text-warn">{n}</p>)}
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                <span>{t("Plafond", "Cap")}</span><Input type="number" min={0} max={100} value={cap} onChange={(e) => setCap(Number(e.target.value))} className="h-9 w-24" /><span>€</span>
-                <Button size="sm" variant="signal" disabled={est.estimateMicro / 1e6 > cap} onClick={producePaid}>{t("J'accepte et je lance", "I accept, start")}</Button>
+                <span>{t("Plafond", "Cap")}</span><Input type="number" min={0} max={100} value={cap} onChange={(e) => setCap(Number(e.target.value))} className="h-9 w-24" aria-label={t("Plafond en % du budget IA du mois", "Cap as % of the monthly AI budget")} /><span>{t("% du budget IA", "% of AI budget")}</span>
+                <Button size="sm" variant="signal" disabled={cap < Math.ceil(est.capPct ?? 0)} onClick={producePaid}>{t("J'accepte et je lance", "I accept, start")}</Button>
               </div>
             </div>
           )}

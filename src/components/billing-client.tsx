@@ -12,6 +12,7 @@ import { cx, formatDate, useApi } from "./ui";
 import { useLang, useT } from "./i18n";
 import { intlLocale, type Lang } from "@/lib/i18n";
 import { PACKS, PLANS, type BillingView, type PackId, type QuotaKey } from "@/lib/plans";
+import { budgetPctLabel, formatPctShort, pctOfBudget } from "@/lib/budget-pct";
 
 /** Prix en euros : « 49,90 € » / « €49.90 » (décimales seulement si nécessaires). */
 export const formatEur = (n: number, lang: Lang) => {
@@ -22,6 +23,18 @@ export const formatEur = (n: number, lang: Lang) => {
 export function useEur() {
   const { lang } = useLang();
   return (n: number) => formatEur(n, lang);
+}
+
+/**
+ * Coûts d'IA côté client : jamais en euros, toujours « ≈ 3 % de votre budget IA » (même base que la jauge
+ * « Reste … % » du projet ouvert, sinon celle du compte). `label(micro)` : texte ; `short(micro)` : « ≈ 3 % » ; `pct(micro)` : nombre (ou null).
+ */
+export function useBudgetPct() {
+  const { lang } = useLang();
+  const project = useOptionalProject();
+  const { billing } = useBilling();
+  const base = project?.data?.aiBudget?.usage?.baseMicro ?? billing?.ai?.baseMicro ?? null;
+  return { base, label: (micro: number) => budgetPctLabel(micro, base, lang), short: (micro: number) => formatPctShort(pctOfBudget(micro, base), lang), pct: (micro: number) => pctOfBudget(micro, base) };
 }
 
 /** Libellés des quotas (pluriel / singulier). */

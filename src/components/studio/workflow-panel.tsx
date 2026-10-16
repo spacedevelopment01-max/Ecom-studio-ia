@@ -7,7 +7,8 @@ import { api, Badge, Button, Card, cx, Input, Textarea, useApi, useToast } from 
 import { useProject } from "./project-context";
 import { SectionTitle } from "./common";
 import { useLang, useT } from "../i18n";
-import { formatEur } from "../billing-client";
+import { useBudgetPct } from "../billing-client";
+import { CAP_FACTOR } from "@/lib/budget-pct";
 
 type Bi = { fr: string; en: string };
 type Line = { kind: string; label: Bi; module: string; mode: "local" | "ai" | "search" | "done" | "skip"; paid: boolean; estimateMicro: number; note?: string };
@@ -38,8 +39,6 @@ export const EDITORS: { tab: string; icon: typeof Palette; label: Bi }[] = [
   { tab: "calendrier", icon: CalendarDays, label: { fr: "Publications", en: "Posts" } },
   { tab: "fichiers", icon: FolderOpen, label: { fr: "Fichiers et dossiers", en: "Files and folders" } },
 ];
-
-const eur = (micro: number, lang: "fr" | "en") => formatEur(Math.round(micro / 10_000) / 100, lang);
 
 function StatusDot({ status }: { status: string }) {
   if (status === "done") return <span className="grid size-6 shrink-0 place-items-center rounded-full bg-ok text-white"><Check className="size-3.5" /></span>;
@@ -74,14 +73,19 @@ function Estimate({ view, onStarted }: { view: View; onStarted: () => void }) {
   const toast = useToast();
   const wf = view.workflow;
   const total = wf.estimate.totalMicro;
+  // Coûts en % du budget IA du mois (jamais d'euros) ; plafond par défaut : le coût probable avec la place d'une reprise.
+  const budget = useBudgetPct();
   const [accept, setAccept] = useState(total === 0);
-  const [cap, setCap] = useState(total ? String(Math.ceil(total / 1_000_000)) : "");
+  const [cap, setCap] = useState(() => {
+    const pc = budget.pct(Math.round(total * CAP_FACTOR));
+    return total && pc != null ? String(Math.max(1, Math.ceil(pc))) : "";
+  });
   const [busy, setBusy] = useState<string | null>(null);
   async function act(action: "start" | "cancel") {
     setBusy(action);
     try {
-      const capEur = cap.trim() ? Number(cap.replace(",", ".")) : null;
-      await api(`/api/projects/${id}/workflow/${wf.id}`, { body: action === "start" ? { action, approveMicro: total ? total : 0, capEur: total ? capEur : null } : { action } });
+      const capPct = cap.trim() ? Number(cap.replace(",", ".").replace("%", "")) : null;
+      await api(`/api/projects/${id}/workflow/${wf.id}`, { body: action === "start" ? { action, approveMicro: total ? total : 0, capPct: total ? capPct : null } : { action } });
       toast("ok", action === "start" ? t("C'est parti : suivez l'avancement ci-dessous.", "Started: follow the progress below.") : t("Demande annulée. Rien n'a été dépensé.", "Request cancelled. Nothing was spent."));
       onStarted();
     } catch (e) {
@@ -99,22 +103,22 @@ function Estimate({ view, onStarted }: { view: View; onStarted: () => void }) {
               <span className="font-medium">{l.label[lang]}</span> <span className="text-xs text-muted">· {l.module}</span>
               {l.note && <span className="mt-0.5 block text-xs text-muted">{l.note}</span>}
             </span>
-            <span className="flex items-center gap-2"><ModeBadge line={l} /><span className="tabular-nums">{eur(l.estimateMicro, lang)}</span></span>
+            <span className="flex items-center gap-2"><ModeBadge line={l} /><span className="tabular-nums">{l.estimateMicro > 0 ? budget.short(l.estimateMicro) : t("gratuit", "free")}</span></span>
           </li>
         ))}
       </ul>
       <p className="flex items-baseline justify-between rounded-xl bg-paper-2 px-3 py-2 text-sm font-semibold">
-        <span>{t("Total estimé", "Estimated total")}</span><span className="tabular-nums" data-testid="wf-total">{eur(total, lang)}</span>
+        <span>{t("Coût probable", "Likely cost")}</span><span className="tabular-nums" data-testid="wf-total">{total > 0 ? budget.label(total) : t("gratuit", "free")}</span>
       </p>
       {total > 0 ? (
         <div className="grid gap-3 rounded-2xl border border-signal/40 bg-signal-soft p-3">
           <label className="flex items-start gap-2 text-sm">
             <input type="checkbox" checked={accept} onChange={(e) => setAccept(e.target.checked)} className="mt-1" />
-            <span>{t(`J'autorise jusqu'à ${eur(total, lang)} d'IA pour cette demande. Au-delà, le studio s'arrête et me demande.`, `I authorize up to ${eur(total, lang)} of AI for this request. Beyond that, the studio stops and asks me.`)}</span>
+            <span>{t(`J'accepte cette demande : coût probable ${budget.label(total)}. Seul ce qui est vraiment utilisé est décompté ; une reprise éventuelle est annoncée. Au-delà du plafond, le studio s'arrête et me demande.`, `I accept this request: likely cost ${budget.label(total)}. Only what is actually used is counted; any redo is announced. Beyond the cap, the studio stops and asks me.`)}</span>
           </label>
           <label className="grid gap-1 text-sm sm:max-w-xs">
-            <span>{t("Plafond de dépense (€)", "Spending cap (€)")}</span>
-            <Input inputMode="decimal" value={cap} onChange={(e) => setCap(e.target.value)} aria-label={t("Plafond de dépense en euros", "Spending cap in euros")} />
+            <span>{t("Plafond (% de votre budget IA du mois)", "Cap (% of your monthly AI budget)")}</span>
+            <Input inputMode="decimal" value={cap} onChange={(e) => setCap(e.target.value)} aria-label={t("Plafond en pourcentage du budget IA", "Cap as a percentage of the AI budget")} />
           </label>
         </div>
       ) : (
@@ -133,6 +137,7 @@ function Progression({ view, reload }: { view: View; reload: () => void }) {
   const { lang } = useLang();
   const t = useT();
   const toast = useToast();
+  const budget = useBudgetPct();
   // Une étape non exécutée (forfait, plafond, aucun moteur) n'est jamais comptée comme faite.
   const done = view.steps.filter((s) => s.status === "done").length;
   const notDone = view.steps.filter((s) => s.status === "skipped").length;
@@ -151,7 +156,7 @@ function Progression({ view, reload }: { view: View; reload: () => void }) {
       {view.pipeline && view.pipeline.status !== "done" && (
         <p className="rounded-xl bg-paper-2 px-3 py-2 text-sm">{t("Création de base en cours (marque, boutique, images) : la suite démarre ensuite d'elle-même.", "Base creation running (brand, store, images): the rest starts automatically afterwards.")} <span className="tabular-nums text-muted">{Math.round(view.pipeline.progress * 100)} %</span></p>
       )}
-      {view.steps.length > 0 && <p className="text-sm text-muted">{t(`${done} / ${view.steps.length} étapes faites`, `${done} / ${view.steps.length} steps done`)}{notDone > 0 && t(` · ${notDone} non faite(s)`, ` · ${notDone} not done`)} · {t("dépensé", "spent")} <span className="tabular-nums" data-testid="wf-spent">{eur(view.spentMicro, lang)}</span>{view.workflow.capMicro != null && <> · {t("plafond", "cap")} {eur(view.workflow.capMicro, lang)}</>}</p>}
+      {view.steps.length > 0 && <p className="text-sm text-muted">{t(`${done} / ${view.steps.length} étapes faites`, `${done} / ${view.steps.length} steps done`)}{notDone > 0 && t(` · ${notDone} non faite(s)`, ` · ${notDone} not done`)} · {t("utilisé", "used")} <span className="tabular-nums" data-testid="wf-spent">{budget.label(view.spentMicro)}</span>{view.workflow.capMicro != null && <> · {t("plafond", "cap")} {budget.short(view.workflow.capMicro)}</>}</p>}
       <ol className="grid gap-1.5" data-testid="wf-steps">
         {view.steps.map((s, i) => (
           <li key={`${s.kind}-${i}`} className="flex items-start gap-3 rounded-xl border border-line px-3 py-2">
@@ -160,7 +165,7 @@ function Progression({ view, reload }: { view: View; reload: () => void }) {
               <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span className="font-medium">{s.label[lang]}</span>
                 {s.verdict && <Badge tone={s.verdict === "FINAL" ? "ok" : s.verdict === "REJECTED" ? "bad" : "warn"}>{s.verdict}</Badge>}
-                {s.spentMicro > 0 && <span className="text-xs tabular-nums text-muted">{eur(s.spentMicro, lang)}</span>}
+                {s.spentMicro > 0 && <span className="text-xs tabular-nums text-muted">{budget.short(s.spentMicro)}</span>}
                 {s.attempts > 1 && <span className="text-xs text-muted">{t(`${s.attempts} essais`, `${s.attempts} attempts`)}</span>}
               </p>
               {(s.reason || s.note) && <p className="mt-0.5 break-words text-xs text-muted">{s.reason ?? s.note}</p>}
@@ -310,7 +315,7 @@ export function BrandPropagationCard() {
   // Payant (visuel fait par l'IA) : jamais coché d'office, le client choisit en voyant le prix.
   const isOn = (it: Item) => picked[it.key] ?? (it.updatable && !it.userEdited && !it.paidMicro);
   const paidTotal = items.filter((it) => it.paidMicro && isOn(it)).reduce((n, it) => n + (it.paidMicro ?? 0), 0);
-  const eur = (micro: number) => `${(Math.ceil(micro / 1e4) / 100).toFixed(2).replace(".", ",")} €`;
+  const budget = useBudgetPct();
   async function apply() {
     const keys = items.filter((it) => it.updatable && isOn(it)).map((it) => it.key);
     if (!keys.length) return;
@@ -342,7 +347,7 @@ export function BrandPropagationCard() {
                 {it.userEdited && <> · {t("modifiée par vous", "edited by you")}</>}
                 {it.reapproval && <> · {t("demandera une nouvelle approbation", "will need approving again")}</>}
                 {!it.updatable && <> · {t("à reprendre dans l'éditeur", "to redo in the editor")}</>}
-                {it.paidMicro ? <> · {t(`payant : ${eur(it.paidMicro)} au plus`, `paid: ${eur(it.paidMicro)} at most`)}</> : null}
+                {it.paidMicro ? <> · {t(`payant : ${budget.label(it.paidMicro)}`, `paid: ${budget.label(it.paidMicro)}`)}</> : null}
               </span>
             </span>
           </li>
@@ -351,8 +356,8 @@ export function BrandPropagationCard() {
       {items.some((it) => it.userEdited) && (
         <label className="mt-3 flex items-start gap-2 text-sm"><input type="checkbox" className="mt-1" checked={includeEdited} onChange={(e) => setIncludeEdited(e.target.checked)} /> <span>{t("Mettre aussi à jour mes créations modifiées à la main", "Also update the creations I edited by hand")}</span></label>
       )}
-      {paidTotal > 0 && <p className="mt-3 text-sm" data-testid="brand-paid">{t(`Visuels faits par l'IA cochés : nouvelle version par l'IA, coût maximal ${eur(paidTotal)} pris sur le budget IA du projet (les anciens sont gardés).`, `AI-made visuals ticked: new version by AI, maximum cost ${eur(paidTotal)} taken from the project's AI budget (the old ones are kept).`)}</p>}
-      {items.length > 0 && <Button className="mt-4" onClick={apply} loading={busy} data-testid="brand-apply">{paidTotal > 0 ? t(`Mettre à jour la sélection · ${eur(paidTotal)}`, `Update the selection · ${eur(paidTotal)}`) : t("Mettre à jour la sélection", "Update the selection")}</Button>}
+      {paidTotal > 0 && <p className="mt-3 text-sm" data-testid="brand-paid">{t(`Visuels faits par l'IA cochés : nouvelle version par l'IA, coût probable ${budget.label(paidTotal)} (une reprise éventuelle est annoncée ; les anciens visuels sont gardés).`, `AI-made visuals ticked: new version by AI, likely cost ${budget.label(paidTotal)} (any redo is announced; the old visuals are kept).`)}</p>}
+      {items.length > 0 && <Button className="mt-4" onClick={apply} loading={busy} data-testid="brand-apply">{paidTotal > 0 ? t(`Mettre à jour la sélection · ${budget.short(paidTotal)}`, `Update the selection · ${budget.short(paidTotal)}`) : t("Mettre à jour la sélection", "Update the selection")}</Button>}
       {result && (
         <div className="mt-4 grid gap-1 text-sm" data-testid="brand-result">
           {result.updated.map((u) => <p key={u.key} className="flex items-start gap-2"><Check className="mt-0.5 size-4 shrink-0 text-ok" aria-hidden /> <span className="break-words">{u.detail}</span></p>)}

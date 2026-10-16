@@ -35,11 +35,11 @@ export type OneRequest = {
 /** Mode payant ? (gratuit : aucune dépense, jamais d'IA). */
 export const paidMode = (m: OneMode) => m !== "free";
 
-/** Coût estimé avant création (micro-euros) : une production par réseau choisi. */
-export function quoteOne(kind: OneKind, mode: OneMode, networks: number, estimate: SocialDeps["estimate"]): number {
+/** Coût avant création (micro-euros) : une production par réseau choisi. `cost` : coût probable (devis) ou plafond. */
+export function quoteOne(kind: OneKind, mode: OneMode, networks: number, cost: SocialDeps["estimate"]): number {
   if (!paidMode(mode)) return 0;
   // Image : toujours une publication entière par l'IA (l'ancien « ai_image » est traité de la même façon).
-  const unit = kind === "video" ? estimate("video") : estimate("ai_post");
+  const unit = kind === "video" ? cost("video") : cost("ai_post");
   return unit * Math.max(1, networks);
 }
 

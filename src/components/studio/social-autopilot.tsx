@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { Bot, CalendarDays, Check, History, Pause, Play, Power, Save, ShieldCheck, Sparkles } from "lucide-react";
 import { api, Badge, Button, Card, cx, Input, Select, Spinner, useApi, useToast } from "../ui";
 import { useT } from "../i18n";
+import { useBudgetPct } from "../billing-client";
 import { useProject } from "./project-context";
 import { VisualChoice } from "./visual-choice";
 import type { VisualMode } from "@/lib/social-v2/visual-mode";
@@ -63,6 +64,7 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
 export function AutopilotPanel({ onChanged }: { onChanged: () => void }) {
   const { id } = useProject();
   const t = useT();
+  const budget = useBudgetPct();
   const toast = useToast();
   const { data, reload } = useApi<View>(`/api/projects/${id}/social/v2/autopilot`);
   const [cfg, setCfg] = useState<Config | null>(null);
@@ -194,9 +196,10 @@ export function AutopilotPanel({ onChanged }: { onChanged: () => void }) {
         </div>
         <VisualChoice value={cfg.visual} onChange={(v) => set("visual", v)} ai={data.ai} name="visual-mode-autopilot" />
         {cfg.visual !== "free" && (
-          <label className="grid max-w-sm gap-1 text-sm">{t("Budget IA maximum par semaine pour ces visuels (€)", "Maximum AI budget per week for these visuals (€)")}
-            <Input type="number" min={0} max={50} step={0.5} value={cfg.paidCapEurWeek} onChange={(e) => set("paidCapEurWeek", Number(e.target.value))} data-paid-cap />
-            <span className="text-xs text-muted">{cfg.paidCapEurWeek > 0 ? t("Le studio ne dépasse jamais ce montant ; au-delà, il continue avec des visuels gratuits.", "The studio never goes over this amount; beyond it, it continues with free visuals.") : t("À 0 €, les visuels restent gratuits : indiquez un montant pour autoriser l'IA.", "At €0, visuals stay free: enter an amount to allow AI.")}</span>
+          <label className="grid max-w-sm gap-1 text-sm">{t("Plafond par semaine pour ces visuels (% de votre budget IA du mois)", "Weekly cap for these visuals (% of your monthly AI budget)")}
+            {/* Saisi en % du budget IA (jamais d'euros montrés) ; gardé en interne comme un montant. */}
+            <Input type="number" min={0} max={100} step={1} value={budget.base ? Math.round((cfg.paidCapEurWeek * 1e6 * 100) / budget.base) : 0} disabled={!budget.base} onChange={(e) => set("paidCapEurWeek", budget.base ? Math.round(((Math.max(0, Number(e.target.value)) / 100) * budget.base) / 1e4) / 100 : 0)} data-paid-cap />
+            <span className="text-xs text-muted">{cfg.paidCapEurWeek > 0 ? t("Le studio ne dépasse jamais ce plafond ; au-delà, les images attendent leur création par l'IA.", "The studio never goes over this cap; beyond it, images wait for their AI creation.") : t("À 0 %, aucune image n'est créée par l'IA : indiquez un pourcentage pour l'autoriser.", "At 0%, no image is created by AI: enter a percentage to allow it.")}</span>
           </label>
         )}
         <div className="flex flex-wrap gap-2" data-formats>

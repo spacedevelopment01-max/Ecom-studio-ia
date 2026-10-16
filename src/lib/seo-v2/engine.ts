@@ -36,6 +36,7 @@ import { localOnlyDeps, realSeoDeps, writeKind, type CallKind, type SeoV2Deps } 
 import { blogAiAllowed, saveBlogDraftV2 } from "./blog";
 import { LANGS, type ContentDoc, type ContentLang, type ContentRunResult, type ContentType, type EditorialReview, type Keyword, type PageRef, type SeoStrategy } from "./types";
 import type { GateDecision } from "../quality/gate";
+import { budgetPctText } from "../ai/budget-pct";
 
 export const SEO_V2_VERSION = "8a.1";
 export const DEFAULT_SEO_CAP_EUR = 0.6;
@@ -145,7 +146,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
     const est = deps.estimate(kind);
     if (budget.spentMicro + est > budget.capMicro) {
       budget.stopped = true;
-      notes.push(`plafond de coût atteint (${(budget.capMicro / EUR).toFixed(2)} €) : ${kind} non envoyé`);
+      notes.push(`plafond de coût atteint (${budgetPctText(p.userId, budget.capMicro, p.id)}) : ${kind} non envoyé`);
       return false;
     }
     return true;

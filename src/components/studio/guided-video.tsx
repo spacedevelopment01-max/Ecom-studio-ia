@@ -11,7 +11,7 @@ import { api, Button, Card, cx, useApi, useToast } from "../ui";
 import { useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
 import { JobProgress, SectionTitle, useActive } from "./common";
-import { formatEur } from "../billing-client";
+import { useBudgetPct } from "../billing-client";
 import { SubjectPicker, subjectChoice, type SubjectView } from "./subject-picker";
 import { MusicChoice } from "./music-choice";
 import { VideoDocModal } from "./video-v2-panel";
@@ -26,12 +26,12 @@ const ASPECTS = [
   { v: "16:9", fr: "Paysage 16:9 (YouTube, site)", en: "Landscape 16:9 (YouTube, website)" },
 ] as const;
 const DURATIONS = [10, 15, 20, 30, 45, 60];
-const eur = (micro: number, lang: "fr" | "en") => formatEur(Math.max(0.01, Math.ceil(micro / 1e4) / 100), lang);
 
 export function GuidedVideo({ as }: { as: "post" | "ad" }) {
   const { id } = useProject();
   const t = useT();
   const { lang } = useLang();
+  const budget = useBudgetPct();
   const toast = useToast();
   const { data, reload } = useApi<Data>(`/api/projects/${id}/creative/video`);
   const jobs = useActive(["video.scenes", "video.v2.render"]);
@@ -137,11 +137,11 @@ export function GuidedVideo({ as }: { as: "post" | "ad" }) {
         </div>
         <div className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between" data-video-price>
           <p className="text-sm">
-            {!quote ? t("Calcul du prix…", "Calculating the price…") : !quote.allowed ? <span className="text-warn">{quote.reason}</span> : quote.estimateMicro === 0 ? <span className="font-medium text-ok">{t("Gratuit : plans libres de droits de votre métier, montés par le studio.", "Free: royalty-free footage of your trade, edited by the studio.")}</span> : t(<>Coût maximal : <strong>{eur(quote.estimateMicro, lang)}</strong> ({quote.mode === "ai" ? `${quote.scenes} image${quote.scenes > 1 ? "s" : ""} + ${quote.scenes} plan${quote.scenes > 1 ? "s" : ""} Wan 2.6` : "contrôle des plans"}), pris sur le budget IA du projet.</>, <>Maximum cost: <strong>{eur(quote.estimateMicro, lang)}</strong> ({quote.mode === "ai" ? `${quote.scenes} image${quote.scenes > 1 ? "s" : ""} + ${quote.scenes} Wan 2.6 shot${quote.scenes > 1 ? "s" : ""}` : "shot checks"}), taken from the project's AI budget.</>)}
+            {!quote ? t("Calcul du prix…", "Calculating the price…") : !quote.allowed ? <span className="text-warn">{quote.reason}</span> : quote.estimateMicro === 0 ? <span className="font-medium text-ok">{t("Gratuit : plans libres de droits de votre métier, montés par le studio.", "Free: royalty-free footage of your trade, edited by the studio.")}</span> : t(<>Coût probable : <strong>{budget.label(quote.estimateMicro)}</strong> ({quote.mode === "ai" ? `${quote.scenes} image${quote.scenes > 1 ? "s" : ""} + ${quote.scenes} plan${quote.scenes > 1 ? "s" : ""} Wan 2.6` : "contrôle des plans"}). Une reprise éventuelle est décomptée et annoncée.</>, <>Likely cost: <strong>{budget.label(quote.estimateMicro)}</strong> ({quote.mode === "ai" ? `${quote.scenes} image${quote.scenes > 1 ? "s" : ""} + ${quote.scenes} Wan 2.6 shot${quote.scenes > 1 ? "s" : ""}` : "shot checks"}). Any redo is counted and announced.</>)}
           </p>
           <Button onClick={create} loading={busy} disabled={busy || running || !quote?.allowed || !subjects.length} icon={<Wand2 className="size-4" />} data-guided-video-submit>
             {as === "ad" ? t("Créer la publicité vidéo", "Create the video ad") : t("Créer la vidéo", "Create the video")}
-            {quote?.allowed && quote.estimateMicro > 0 ? ` · ${eur(quote.estimateMicro, lang)}` : ""}
+            {quote?.allowed && quote.estimateMicro > 0 ? ` · ${budget.label(quote.estimateMicro)}` : ""}
           </Button>
         </div>
       </Card>

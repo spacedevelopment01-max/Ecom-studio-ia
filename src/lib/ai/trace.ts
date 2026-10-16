@@ -48,7 +48,8 @@ export function withCandidate<T>(candidateId: string, attempt: number, fn: () =>
 /** Plafond de dépense atteint : l'appel n'est pas envoyé (rien n'est payé). */
 export class CostCapReached extends Error {
   constructor(public spentMicro: number, public estimateMicro: number, public capMicro: number) {
-    super(`plafond de dépense atteint : ${(spentMicro / 1e6).toFixed(3)} € dépensés + ${(estimateMicro / 1e6).toFixed(3)} € estimés > ${(capMicro / 1e6).toFixed(3)} €`);
+    // Message vu par le client (tâche) : jamais de montant en euros ; les chiffres restent dans les champs (journal, admin).
+    super("plafond de dépense atteint : l'appel suivant n'a pas été envoyé (rien de plus n'est décompté)");
     this.name = "CostCapReached";
   }
 }

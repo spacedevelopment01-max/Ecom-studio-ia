@@ -326,6 +326,18 @@ export function aiReserves(key: string): { plan: { used: number } | null; credit
   };
 }
 
+/**
+ * Base des pourcentages de coût montrés au client (« ≈ 3 % de votre budget IA ») : la même réserve que la jauge
+ * « Reste … % » — le budget IA du forfait du mois tant qu'il n'est pas épuisé, puis les crédits achetés. 0 : aucun budget.
+ * Jamais affichée elle-même (aucun montant montré au client).
+ */
+export function aiPctBaseMicro(key: string): number {
+  const w = ensureWallet(key);
+  const bought = Math.max(packEntitlementMicro(key), w.topup_balance + w.topup_period_used);
+  if (w.monthly_allowance > 0 && w.monthly_used < w.monthly_allowance) return w.monthly_allowance;
+  return bought > 0 ? bought : Math.max(0, w.monthly_allowance);
+}
+
 /** Message de budget épuisé (limite d'usage équitable, sans montant affiché). */
 function budgetError(userId: string) {
   const w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId);
