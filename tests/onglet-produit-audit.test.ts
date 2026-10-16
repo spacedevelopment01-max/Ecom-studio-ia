@@ -38,3 +38,11 @@ describe("onglets Produit et Activité : aucun bouton muet en cas d'erreur", () 
     expect(read("src/components/studio/catalog-panel.tsx")).toMatch(/c === undefined\) \{ toast\("bad"/);
   });
 });
+
+describe("onglet Produit : « Ce que montre la photo » jamais vide", () => {
+  it("un message explique l'absence de lecture visuelle (IA coupée ou photo illisible), en FR et en EN", () => {
+    const s = read("src/components/studio/tab-produit.tsx");
+    expect(s).toContain("La lecture de la photo (forme, matières, texte visible) se fait avec l'IA.");
+    expect(s).toContain("Reading the photo (shape, materials, visible text) uses AI.");
+  });
+});

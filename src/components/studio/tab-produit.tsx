@@ -114,6 +114,9 @@ function TabProduit() {
               {p.visual.labelText?.length ? <div><dt className="text-xs text-muted">{t("Texte lisible", "Readable text")}</dt><dd className="font-mono text-xs">{p.visual.labelText.join(" · ")}</dd></div> : null}
               {p.visual.description && <div><dt className="text-xs text-muted">{t("Description", "Description")}</dt><dd>{p.visual.description}</dd></div>}
             </dl>
+            {!p.visual.colors.length && !p.visual.shape && !p.visual.materials?.length && !p.visual.labelText?.length && !p.visual.description && (
+              <p className="mt-2 text-sm text-muted">{p.analyzedBy === "ai" ? t("Aucun détail visuel n'a pu être lu sur la photo. Ajoutez une photo nette du produit seul.", "No visual detail could be read from the photo. Add a sharp photo of the product alone.") : t("La lecture de la photo (forme, matières, texte visible) se fait avec l'IA. En attendant, complétez la fiche à gauche.", "Reading the photo (shape, materials, visible text) uses AI. Meanwhile, fill in the sheet on the left.")}</p>
+            )}
             {p.claimsToAvoid.length > 0 && (
               <div className="mt-4 rounded-xl bg-warn-soft p-3 text-xs text-warn">
                 <p className="font-semibold">{t("Allégations à éviter", "Claims to avoid")}</p>
