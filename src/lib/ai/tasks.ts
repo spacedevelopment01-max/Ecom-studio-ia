@@ -1384,7 +1384,7 @@ export const RouteDraftSchema = z.object({
   drawing: z.string().optional().catch(undefined),
   palette: z.object({ primary: z.string(), secondary: z.string(), accent: z.string(), light: z.string(), dark: z.string() }).partial().optional().catch(undefined),
 });
-const ROUTE_SHAPE = `{"key": "produit|concept|typo", "name": "", "why": "", "drawing": "brief de dessin du symbole pour l'illustrateur, en anglais", "palette": {"primary": "#…", "secondary": "#…", "accent": "#…", "light": "#…", "dark": "#…"}, "svg": "<svg …>…</svg>", "heading": "", "headingWeight": 700, "body": "", "case": "upper|title|lower|asis", "tracking": 0.06, "composition": "horizontal|stacked|emblem|wordmark", "ink": "dark", "accent": "primary", "ground": "primary"}`;
+const ROUTE_SHAPE = `{"key": "produit|concept|typo", "name": "", "why": "", "drawing": "brief de dessin du symbole pour l'illustrateur, en français, concret, sans guillemets", "palette": {"primary": "#…", "secondary": "#…", "accent": "#…", "light": "#…", "dark": "#…"}, "svg": "<svg …>…</svg>", "heading": "", "headingWeight": 700, "body": "", "case": "upper|title|lower|asis", "tracking": 0.06, "composition": "horizontal|stacked|emblem|wordmark", "ink": "dark", "accent": "primary", "ground": "primary"}`;
 
 /**
  * Brief des pistes de logo. `kept` = éléments déjà présents dans le contexte du Brain (scope logo) : ils ne sont pas

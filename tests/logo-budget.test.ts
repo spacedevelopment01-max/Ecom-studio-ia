@@ -119,7 +119,9 @@ describe("Logo V2 — devis et plafond de la série", async () => {
           firstA = false;
           return JSON.stringify(artReview({ textRead: "NOM FAUX", nameExact: false, nameBox }));
         }
-        return JSON.stringify(artReview({ textRead: name.toLocaleUpperCase("fr-FR") }));
+        // La relecture lit tout le texte du logo : le nom et la ligne d'activités autorisée.
+        const desc = msg.match(/Ligne d'activités autorisée : « ([^»]+) »/)?.[1] ?? "";
+        return JSON.stringify(artReview({ textRead: `${name.toLocaleUpperCase("fr-FR")} ${desc}` }));
       }
       return "{}";
     };

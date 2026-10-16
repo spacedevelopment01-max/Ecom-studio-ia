@@ -590,8 +590,9 @@ export async function ambianceImage(ctx: Ctx, input: { prompt: string; aspect: "
  * couleur sur fond blanc, sans texte, pensée pour être vectorisée. `reference` : photo du produit (silhouette à styliser).
  */
 export async function logoSymbolImage(ctx: Ctx, input: { concept: string; reference?: Buffer | null }) {
-  const text = `Design a single flat vector-style logo symbol (brand mark): ${input.concept}
-Rules: one solid black shape (or up to three bold black shapes) on a pure white background, centered, generous margins. Bold, simple geometric forms that stay recognizable at 16 pixels: thick strokes, no thin lines, no gradients, no shading, no texture, no outlines of the canvas, no 3D, no mockup. Absolutely no text, no letters, no numbers, no words. Think like a senior brand designer: a meaningful sign drawn from the idea; an object of the trade is welcome when stylized with intent, never as clip-art. Timeless, distinctive.${input.reference ? " The reference photo is context only: do not copy it." : ""}`;
+  // Consigne en français (règle du propriétaire pour les modèles d'images), concrète, sans texte à écrire.
+  const text = `Dessine un seul symbole de logo, à plat, façon vectorielle (signe de la marque) : ${input.concept}
+Règles : une seule forme noire pleine (ou trois formes noires épaisses au plus) sur un fond blanc pur, centrée, avec des marges généreuses. Des formes géométriques simples et franches, reconnaissables à 16 pixels : traits épais, aucun trait fin, aucun dégradé, aucune ombre, aucune texture, aucun cadre autour de l'image, aucun relief 3D, aucune maquette. Absolument aucun texte, aucune lettre, aucun chiffre, aucun mot. Pense comme un designer de marques confirmé : un signe porteur de sens, tiré de l'idée ; un objet du métier est bienvenu s'il est stylisé avec intention, jamais en image de banque. Intemporel, singulier.${input.reference ? " La photo de référence sert seulement de contexte : ne la recopie pas." : ""}`;
   return generateImage(ctx, { text, aspect: "1:1", reference: input.reference ?? null, quality: "medium", usage: "logo" });
 }
 
@@ -600,10 +601,11 @@ Rules: one solid black shape (or up to three bold black shapes) on a pure white 
  * Fond transparent (OpenAI) ; avec Gemini, fond blanc retiré ensuite.
  */
 export async function fullLogoImage(ctx: Ctx, input: { brief: string; name: string; descriptor?: string; tagline?: string; colors?: string[] }) {
-  const text = `Design a complete, professional logo as a top branding agency would deliver it (logo artwork only, not a mockup): ${input.brief}
-${input.colors?.length ? `Colors: use ONLY the brand's colors ${input.colors.join(", ")} (plus white or near-black if needed) — the logo must match the brand guidelines.
-` : ""}Text in the logo, spelled EXACTLY, same accents: the name "${input.name}"${input.descriptor ? ` and, smaller, the trade line "${input.descriptor}"` : ""}${input.tagline ? ` and, smallest, the brand's slogan "${input.tagline}"` : ""}. No other words${input.tagline ? "" : ", no slogan"}, no fake letters.
-Quality bar: a modern, professional logo for a real small business — original, made for this brand only, never a copy of an existing logo. Follow the composition and style chosen in the brief. Crisp edges, centered, generous margins, on a plain transparent or pure white background. No mockup, no paper, no wall, no photo background, no frame around the canvas.`;
+  // Consigne en français (règle du propriétaire) ; seuls les textes à écrire dans le logo sont entre guillemets.
+  const text = `Dessine un logo complet et professionnel, tel qu'une grande agence de branding le livrerait (le dessin du logo seul, pas une maquette) : ${input.brief}
+${input.colors?.length ? `Couleurs : UNIQUEMENT celles de la marque, ${input.colors.join(", ")} (plus du blanc ou un presque noir si besoin) ; le logo suit la charte graphique.
+` : ""}Texte du logo, écrit EXACTEMENT, accents compris : le nom « ${input.name} »${input.descriptor ? ` et, plus petite, la ligne d'activités « ${input.descriptor} »` : ""}${input.tagline ? ` et, en plus petit encore, le slogan de la marque « ${input.tagline} »` : ""}. Aucun autre mot${input.tagline ? "" : ", aucun slogan"}, aucune fausse lettre.
+Niveau attendu : un logo moderne et professionnel pour une vraie petite entreprise, original, fait pour cette marque seulement, jamais la copie d'un logo existant. Suis la composition et le style choisis dans le brief. Contours nets, logo centré, marges généreuses, sur un fond transparent ou blanc pur. Aucune maquette, aucun papier, aucun mur, aucune photo en fond, aucun cadre autour de l'image.`;
   return generateImage(ctx, { text, aspect: "1:1", reference: null, quality: "high", transparent: true, usage: "logo", need: { text: true, transparent: true } });
 }
 

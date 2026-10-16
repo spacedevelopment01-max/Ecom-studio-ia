@@ -14,7 +14,7 @@
  */
 import sharp from "sharp";
 import { createCanvas, loadImage, Path2D, type Canvas, type Image, type SKRSContext2D } from "@napi-rs/canvas";
-import { contrast, hsl, isDark, luminance, mix, onColor } from "../color";
+import { contrast, distinctColors, hsl, isDark, luminance, mix, onColor } from "../color";
 import { ensureFonts, font } from "./fonts";
 import { iconOutlinePath } from "./icon-library";
 import { C, contentLang } from "../i18n-server";
@@ -63,6 +63,23 @@ function contain(ctx: Ctx, img: Image | Canvas | null | undefined, x: number, y:
   const s = Math.min(w / img.width, h / img.height);
   const dw = img.width * s, dh = img.height * s;
   ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+}
+
+/** Texte raccourci à la fin d'un MOT, avec « … » (jamais « AUTOU » coupé au milieu d'un mot). */
+export function shorten(text: string, max: number): string {
+  const t = text.trim();
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max - 1);
+  const at = cut.lastIndexOf(" ");
+  return `${(at > max * 0.4 ? cut.slice(0, at) : cut).replace(/[\s,;:·•-]+$/, "")}…`;
+}
+
+/** Comme `contain`, mais l'image est POSÉE sur le bas du cadre (produit sur son socle, jamais en l'air). */
+export function containBottom(ctx: Ctx, img: Image | null | undefined, x: number, y: number, w: number, h: number) {
+  if (!img) return;
+  const s = Math.min(w / img.width, h / img.height);
+  const dw = img.width * s, dh = img.height * s;
+  ctx.drawImage(img, x + (w - dw) / 2, y + h - dh, dw, dh);
 }
 
 function cover(ctx: Ctx, img: Image, x: number, y: number, w: number, h: number, r = 0) {
@@ -291,6 +308,34 @@ export function brandColorName(hex: string, lang: "fr" | "en" = "fr"): string {
   return pick(["Aubergine", "Violet", "Lilas"], ["Aubergine", "Violet", "Lilac"]);
 }
 
+/**
+ * Noms des couleurs de la planche, chacun une seule fois : deux couleurs proches qui recevraient le même nom
+ * (« Crème » et « Crème ») sont distinguées par leur clarté (« Crème clair »), jamais affichées deux fois pareil.
+ */
+export function uniqueColorNames(hexes: string[], lang: "fr" | "en" = "fr"): string[] {
+  const out: string[] = [];
+  hexes.forEach((hex, i) => {
+    const base = brandColorName(hex, lang);
+    let name = base;
+    const twin = hexes.findIndex((h, j) => j < i && brandColorName(h, lang) === base);
+    if (twin >= 0) {
+      const lighter = hsl(hex)[2] >= hsl(hexes[twin])[2];
+      name = lang === "en" ? `${lighter ? "Light" : "Deep"} ${base.toLowerCase()}` : `${base} ${lighter ? "clair" : "profond"}`;
+    }
+    for (let k = 2; out.includes(name); k++) name = `${base} ${k}`;
+    out.push(name);
+  });
+  return out;
+}
+
+/**
+ * Nuancier de la planche : ancrage sombre, marque, second ton, accent, neutre clair — cinq au plus, SANS DOUBLON
+ * (une marque dont la couleur principale est aussi la couleur sombre, comme ARVEN, n'a pas deux fois son anthracite).
+ */
+export function boardSwatches(col: ReturnType<typeof boardColors>): string[] {
+  return distinctColors([col.ink, col.brand, col.second, col.accent, col.cream]).slice(0, 5);
+}
+
 /** Rôles de couleur de la planche (ancrage sombre, marque, accent, neutres). */
 export function boardColors(pal: IdentityBoardInput["palette"]) {
   const ink = isDark(pal.dark) ? pal.dark : "#1C1A17";
@@ -312,6 +357,15 @@ export function phoneGridPlan(cells: number, photos: number): (number | null)[] 
   return Array.from({ length: cells }, (_, i) => (i % 3 !== 1 && used < photos ? used++ : null));
 }
 
+/**
+ * Cases aux couleurs de la marque dans la grille du téléphone (dans l'ordre où elles apparaissent) : le slogan n'y
+ * est écrit qu'UNE fois, les autres portent le symbole, sur des fonds qui alternent sans deux identiques de suite.
+ */
+export function phoneBrandTiles(count: number, colors: string[], hasTagline: boolean): { kind: "tagline" | "mark"; bg: string }[] {
+  const bgs = distinctColors(colors);
+  return Array.from({ length: count }, (_, k) => ({ kind: k === 0 && hasTagline ? "tagline" : "mark", bg: bgs[k % Math.max(1, bgs.length)] ?? colors[0] }));
+}
+
 export async function renderIdentityBoard(b: IdentityBoardInput): Promise<Buffer> {
   ensureFonts();
   const col = boardColors(b.palette);
@@ -323,7 +377,8 @@ export async function renderIdentityBoard(b: IdentityBoardInput): Promise<Buffer
   const photos: Image[] = [];
   for (const p of (b.photos ?? []).slice(0, 8)) photos.push(await loadImage(p).catch(() => null as unknown as Image));
   const pics = photos.filter(Boolean);
-  const product = b.product ? await loadImage(b.product).catch(() => null) : null;
+  // Produit détouré, marges transparentes retirées : il repose vraiment sur son socle.
+  const product = b.product ? await loadImage(await sharp(b.product).trim({ threshold: 1 }).png().toBuffer().catch(() => b.product!)).catch(() => null) : null;
   const tagline = (b.tagline ?? "").replace(/[.\s]+$/, "");
 
   const HEAD = 120, RA = 560, RB = 500, RC = 640;
@@ -382,7 +437,7 @@ export async function renderIdentityBoard(b: IdentityBoardInput): Promise<Buffer
   if (tagline) {
     ctx.font = font(BF, 500, 15);
     ctx.fillStyle = mix(onBrand, col.brand, 0.2);
-    spaced(ctx, tagline.toLocaleUpperCase("fr-FR").slice(0, 38), x2 + a2 / 2, y + RA * 0.36 + Math.min(a2 * 0.34, 170) / 2 + s2 + 72, 3.5, "center");
+    spaced(ctx, shorten(tagline.toLocaleUpperCase("fr-FR"), 38), x2 + a2 / 2, y + RA * 0.36 + Math.min(a2 * 0.34, 170) / 2 + s2 + 72, 3.5, "center");
   }
   label(ctx, C("Logo secondaire", "Secondary logo"), x2 + 32, y + RA - 30, mix(onBrand, col.brand, 0.35), BF);
 
@@ -396,7 +451,8 @@ export async function renderIdentityBoard(b: IdentityBoardInput): Promise<Buffer
   y += RA + G;
   const b1 = Math.round(IW * 0.33), b2 = Math.round(IW * 0.26), b3 = Math.round(IW * 0.19), b4 = IW - b1 - b2 - b3 - G * 3;
   const lang = contentLang() === "en" ? "en" : "fr";
-  const swatches = [col.ink, col.brand, col.second, col.accent, col.cream];
+  const swatches = boardSwatches(col);
+  const names = uniqueColorNames(swatches, lang);
   const sw = b1 / swatches.length;
   ctx.save();
   ctx.beginPath();
@@ -413,7 +469,7 @@ export async function renderIdentityBoard(b: IdentityBoardInput): Promise<Buffer
     ctx.fillText(hex.toUpperCase(), 0, 0);
     ctx.rotate(-Math.PI / 2);
     ctx.font = font(HF, HW, 26);
-    ctx.fillText(brandColorName(hex, lang), 30, 0);
+    ctx.fillText(names[i], 30, 0);
     ctx.restore();
   });
   ctx.restore();
@@ -554,7 +610,7 @@ export async function renderIdentityBoard(b: IdentityBoardInput): Promise<Buffer
     const px = xc2 + c2 * 0.52, pw = c2 * 0.44, ph = RC * 0.42;
     rr(ctx, px - 6, y + RC - 92, pw + 12, 26, 13, mix(col.ink, col.cream, 0.7));
     shadow(ctx, 24, 10, 0.2);
-    contain(ctx, product, px, y + RC - 92 - ph, pw, ph);
+    containBottom(ctx, product, px, y + RC - 90 - ph, pw, ph);
     noShadow(ctx);
   } else {
     // Tasse aux couleurs de la marque.
@@ -599,21 +655,24 @@ export async function renderIdentityBoard(b: IdentityBoardInput): Promise<Buffer
   ctx.fillText(handle.slice(0, 18), sx + 40 + av * 2, sy + 62 + av * 0.6);
   ctx.font = font("Inter", 400, 12);
   ctx.fillStyle = "#555";
-  if (tagline) ctx.fillText(tagline.slice(0, 26), sx + 40 + av * 2, sy + 82 + av * 0.6);
+  if (tagline) ctx.fillText(shorten(tagline, 26), sx + 40 + av * 2, sy + 82 + av * 0.6);
   const gy = sy + 80 + av * 2, cell = (sW - 4) / 3;
   let cells = 0;
   while (gy + Math.floor(cells / 3) * (cell + 2) < sy + sH) cells++;
   const plan = phoneGridPlan(cells, pics.length);
+  const tiles = phoneBrandTiles(plan.filter((x) => x === null).length, [col.brand, col.ink, col.second], !!tagline);
+  let tileN = 0;
   for (let i = 0; i < cells; i++) {
     const gx = sx + (i % 3) * (cell + 2), gyy = gy + Math.floor(i / 3) * (cell + 2);
     const pic = plan[i] === null ? null : pics[plan[i] as number];
-    // Une case sur trois aux couleurs de la marque : la grille garde son rythme et sa cohérence.
+    // Une case sur trois aux couleurs de la marque : la grille garde son rythme et sa cohérence (slogan une seule fois).
     if (pic) cover(ctx, pic, gx, gyy, cell, cell);
     else {
-      const bg = [col.brand, col.ink, col.second][i % 3];
+      const tile = tiles[tileN++];
+      const bg = tile.bg;
       ctx.fillStyle = bg;
       ctx.fillRect(gx, gyy, cell, cell);
-      if (i % 2 === 0 && tagline) {
+      if (tile.kind === "tagline") {
         ctx.fillStyle = onColor(bg, col.ink, "#FFFFFF");
         ctx.font = font(HF, HW, 15);
         ctx.textAlign = "center";

@@ -12,6 +12,13 @@ import { renderIdentityBoard } from "../media/identity-board";
 import { effectivePalette } from "../route-palette";
 import { directionById } from "../theme/directions";
 import { C } from "../i18n-server";
+import { isLocked } from "../brain/brand-locks";
+import type { Brand } from "../project-types";
+
+/** Signature écrite sur la planche : seulement une fois VALIDÉE par le client (même règle que le logo). */
+export function boardTagline(brand: Brand | null | undefined): string | null {
+  return brand && isLocked(brand, "tagline") && brand.tagline?.trim() ? brand.tagline.trim() : null;
+}
 
 const GENERIC = {
   products: ["truck", "shield-check", "gift", "heart", "leaf", "sparkles", "package", "star"],
@@ -47,7 +54,7 @@ export async function saveIdentityBoard(projectId: string): Promise<Asset | null
   const text = [p.product.category, p.product.summary, p.product.sector ?? ""].join(" ");
   const png = await renderIdentityBoard({
     name: b.name,
-    tagline: b.tagline,
+    tagline: boardTagline(b),
     business,
     logo: assetData(main),
     mark: mark ? assetData(mark) : null,

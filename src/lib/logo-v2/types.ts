@@ -149,6 +149,8 @@ export type ArtworkReview = {
   amateur: boolean;
   /** Le dessin reste-t-il net et cohérent (pas de lettres fantômes, de formes fondues, d'artefacts) ? */
   artifacts: boolean;
+  /** Une personne (visage, tête, silhouette, main) est dessinée : jamais sans l'accord du client. */
+  person?: boolean;
   issues: string[];
   /** Une version simplifiée est-elle nécessaire pour les petites tailles (favicon, tampon, broderie) ? */
   needsSimplifiedMark: boolean;

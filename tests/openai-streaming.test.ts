@@ -238,7 +238,7 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
         artworkRoute: real.artworkRoute,
         drawArtwork: real.drawArtwork, // VRAI chemin du studio jusqu'au fournisseur (flux)
         // Relecture simulée (aucun appel) : le texte du vrai logo a été vérifié à l'œil (« SÉBASTIEN BLANC »).
-        reviewArtwork: async (_b: Buffer, t: any, _br: any, e: { name: string }) => (reviewed.push(t.name), { criteria: Object.fromEntries(ART_CRITERIA.map((k) => [k, 8.6])), textRead: e.name, nameExact: true, extraText: false, nameBox: null, clumsyCliche: false, resemblesKnownBrand: false, amateur: false, artifacts: false, issues: [], needsSimplifiedMark: true }),
+        reviewArtwork: async (_b: Buffer, t: any, _br: any, e: { name: string; descriptor?: string | null; tagline?: string | null }) => (reviewed.push(t.name), { criteria: Object.fromEntries(ART_CRITERIA.map((k) => [k, 8.6])), textRead: [e.name, e.descriptor, e.tagline].filter(Boolean).join(" "), nameExact: true, extraText: false, nameBox: null, clumsyCliche: false, resemblesKnownBrand: false, amateur: false, artifacts: false, issues: [], needsSimplifiedMark: true }),
       } as any;
     };
     const c1 = ctx();
@@ -247,7 +247,7 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
     // Aucune personne ajoutée sans autorisation (règle des créations).
     const { artworkPrompt } = await import("@/lib/logo-v2/artwork");
     const { brandDiscovery } = await import("@/lib/logo-v2/discovery");
-    expect(fr(() => artworkPrompt(prop0(r), brandDiscovery(loadProject(pid))))).toMatch(/no people\./);
+    expect(fr(() => artworkPrompt(prop0(r), brandDiscovery(loadProject(pid))))).toMatch(/aucune personne\./);
     const prop = r.shown[0];
     expect(prop?.verdict).toBe("FINAL");
     // Suivi en direct : image reçue PUIS sauvegardée (persistant, relu comme après un rechargement).
@@ -304,7 +304,7 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
     const drafts = () => [D("Monogramme d'artisan", "monogram", "stacked", "illustrative", 3, "monogram", "S et B, toit, truelle", "PLÂTRERIE • PEINTURE"), D("Maison au trait", "symbol_wordmark", "horizontal", "geometric", 2, "minimal", "une maison dessinée d'un seul trait"), D("Lettrage d'atelier", "wordmark", "wordmark_only", "typographic", 1, "typographic", null)];
     const reviewed: string[] = [];
     const real = realLogoV2Ai(c, { userId: u.id, projectId: pid });
-    const ai = { ...mockAi({ calls: [] } as any, { drafts: drafts as any }), ...(territoriesError ? { territories: async () => { throw territoriesError; } } : {}), artworkRoute: real.artworkRoute, drawArtwork: real.drawArtwork, reviewArtwork: async (_b: Buffer, t: any, _br: any, e: { name: string }) => (reviewed.push(t.name), { criteria: Object.fromEntries(ART_CRITERIA.map((k) => [k, 8.6])), textRead: e.name, nameExact: true, extraText: false, nameBox: null, clumsyCliche: false, resemblesKnownBrand: false, amateur: false, artifacts: false, issues: [], needsSimplifiedMark: true }) } as any;
+    const ai = { ...mockAi({ calls: [] } as any, { drafts: drafts as any }), ...(territoriesError ? { territories: async () => { throw territoriesError; } } : {}), artworkRoute: real.artworkRoute, drawArtwork: real.drawArtwork, reviewArtwork: async (_b: Buffer, t: any, _br: any, e: { name: string; descriptor?: string | null; tagline?: string | null }) => (reviewed.push(t.name), { criteria: Object.fromEntries(ART_CRITERIA.map((k) => [k, 8.6])), textRead: [e.name, e.descriptor, e.tagline].filter(Boolean).join(" "), nameExact: true, extraText: false, nameBox: null, clumsyCliche: false, resemblesKnownBrand: false, amateur: false, artifacts: false, issues: [], needsSimplifiedMark: true }) } as any;
     srv.images = images;
     const r = await fr(() => runLogoEngineV2(c, pid, { ai }));
     return { r, pid, reviewed };
@@ -323,8 +323,8 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
     expect(srv.prompts[0]).toContain(STYLE_GUIDE.monogram);
     expect(srv.prompts[1]).toContain(STYLE_GUIDE.minimal);
     expect(srv.prompts[2]).toContain(STYLE_GUIDE.typographic);
-    expect(srv.prompts[0]).toContain('creative direction "Monogramme d\'artisan"');
-    expect(srv.prompts[1]).toContain("Symbol idea: une maison dessinée d'un seul trait");
+    expect(srv.prompts[0]).toContain("direction créative Monogramme d'artisan :");
+    expect(srv.prompts[1]).toContain("Idée du symbole : une maison dessinée d'un seul trait");
     // Les 3 propositions sont montrées, chacune avec SON image ORIGINALE (fichier reçu, à l'identique).
     expect(r.shown.map((x) => x.territory.name)).toEqual(["Monogramme d'artisan", "Maison au trait", "Lettrage d'atelier"]);
     const { assetData, getAsset } = await import("@/lib/library");

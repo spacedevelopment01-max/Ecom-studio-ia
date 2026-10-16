@@ -82,9 +82,9 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     return { box: { x: x0 / info.width, y: y0 / info.height, w: (x1 - x0 + 1) / info.width, h: (y1 - y0 + 1) / info.height }, clean: c };
   }
 
-  const artReview = (score: number, exp: { name: string }, o: Record<string, any> = {}) => ({
+  const artReview = (score: number, exp: { name: string; descriptor?: string | null; tagline?: string | null }, o: Record<string, any> = {}) => ({
     criteria: Object.fromEntries(ART_CRITERIA.map((k) => [k, o.low?.[k] ?? score])) as any,
-    textRead: o.textRead ?? exp.name,
+    textRead: o.textRead ?? [exp.name, exp.descriptor, exp.tagline].filter(Boolean).join(" "),
     nameExact: o.nameExact ?? true,
     extraText: o.extraText ?? false,
     nameBox: o.nameBox ?? null,
@@ -134,8 +134,8 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     expect(log.prompts[1]).toContain(STYLE_GUIDE.minimal);
     expect(log.prompts[2]).toContain(STYLE_GUIDE.typographic);
     for (const p of log.prompts) {
-      expect(p).toMatch(/The name, perfectly legible(, in capitals)?: "(Sébastien Blanc|SÉBASTIEN BLANC)"/);
-      expect(p).not.toMatch(/one solid black shape|no letters|Absolutely no text/i);
+      expect(p).toMatch(/Le nom, parfaitement lisible(, en capitales)? : « (Sébastien Blanc|SÉBASTIEN BLANC) »/);
+      expect(p).not.toMatch(/one solid black shape|no letters|Absolutely no text|forme noire pleine|aucune lettre/i);
       // Forme de l'essai direct réussi : consignes positives, courtes, sans listes d'interdits.
       expect(p).not.toMatch(/Nothing is imposed|Avoid poor concepts|Also avoid/);
       expect(Buffer.byteLength(p, "utf8")).toBeLessThan(1800);
@@ -170,7 +170,7 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
       expect(prompt, kind).not.toMatch(/initials|texture|monogram/i);
       expect(prompt).toContain(STYLE_GUIDE.typographic);
       for (const other of ["illustrated", "monogram", "textured", "emblem", "gradient", "premium", "minimal"] as const) expect(prompt).not.toContain(STYLE_GUIDE[other]);
-      expect(prompt).toContain(`"${b.name}"`);
+      expect(prompt).toContain(`« ${b.name} »`);
     }
   });
 
@@ -323,10 +323,10 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     const b1 = fr(() => brandDiscovery(loadProject(pid)));
     const t1 = selectTerritories(STYLED(b1) as any, b1, 3).kept[0];
     expect(artworkPrompt(t1, b1)).not.toContain("Des murs nets");
-    expect(artworkPrompt(t1, b1)).toMatch(/No other text\./);
+    expect(artworkPrompt(t1, b1)).toMatch(/Aucun autre texte\./);
     saveBrand(pid, { ...loadProject(pid).brand!, validated: [...(loadProject(pid).brand!.validated ?? []), "tagline"] });
     const b2 = fr(() => brandDiscovery(loadProject(pid)));
-    expect(artworkPrompt(t1, b2)).toContain('the slogan: "Des murs nets, sans surprise"');
+    expect(artworkPrompt(t1, b2)).toContain("le slogan : « Des murs nets, sans surprise »");
     // Ligne d'activités : seulement des activités réelles.
     expect(cleanDescriptor("Plâtrerie • Peinture", b2)).toBe("PLÂTRERIE • PEINTURE");
     expect(cleanDescriptor("Plâtrerie • Électricité", b2)).toBeNull();
@@ -339,7 +339,7 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     const first = r.shown[0];
     const out = await fr(() => redrawArtwork(job(pid, "brand.logo.v2.redraw"), pid, first.assetId!, { feedback: "toit plus marqué, deux tons", ai: artAi(log) as any }));
     expect(log.calls.filter((c) => c === "art:Atelier illustré:v")).toHaveLength(1);
-    expect(log.prompts.at(-1)).toContain("Changes for this version: toit plus marqué, deux tons");
+    expect(log.prompts.at(-1)).toContain("Changements pour cette version : toit plus marqué, deux tons");
     expect(out.assetId).toBeTruthy();
     expect(getAsset(first.assetId!)!.deleted_at).toBeFalsy();
     expect(JSON.parse(getAsset(out.assetId!)!.meta as any)).toMatchObject({ run: JSON.parse(getAsset(first.assetId!)!.meta as any).run, previous: first.assetId });
@@ -377,20 +377,20 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     expect(draft.colors).toBeUndefined(); // couleur invalide : liste rejetée, jamais inventée
     const t = { ...selectTerritories([{ ...draft, colors: ["#2E2E33", "#B8916A"] }] as any, b, 1).kept[0] };
     const p = artworkPrompt(t, { ...b, paletteLocked: false });
-    expect(p).toContain("A real agency-quality logo: A refined custom-drawn mark");
-    expect(p).toContain("Colours: #2E2E33, #B8916A.");
+    expect(p).toContain("Un vrai logo d'agence : A refined custom-drawn mark");
+    expect(p).toContain("Couleurs : #2E2E33, #B8916A.");
     // Forme de l'essai direct réussi : ni barre de qualité générique, ni listes d'interdits, ni lignes contradictoires.
     expect(p).not.toContain(QUALITY_BAR);
     expect(p).not.toContain(POOR_CONCEPTS);
-    expect(p).not.toMatch(/^Composition: |^Style: /m);
+    expect(p).not.toMatch(/^Composition : |^Style : /m);
     expect(Buffer.byteLength(p, "utf8")).toBeLessThanOrEqual(3800);
-    expect(p).toMatch(new RegExp(`"(${b.name}|${b.name.toLocaleUpperCase("fr-FR")})"`));
-    expect(p).toContain("Spell every word exactly, with the accents. No other text.");
-    expect(p).toMatch(/plain white background, flat logo artwork only/);
+    expect(p).toMatch(new RegExp(`« (${b.name}|${b.name.toLocaleUpperCase("fr-FR")}) »`));
+    expect(p).toContain("Chaque mot écrit exactement, lettre par lettre, avec ses accents. Aucun autre texte.");
+    expect(p).toMatch(/fond blanc uni, dessin du logo à plat seulement/);
     // Palette validée par le client : ses couleurs, jamais celles de la direction.
     const locked = artworkPrompt(t, { ...b, paletteLocked: true });
     expect(locked).toContain(b.palette[t.colorRole.ink]);
-    expect(locked).toContain("from the brand palette");
+    expect(locked).toContain("tirées de la palette de la marque");
     expect(locked).not.toContain("#B8916A");
   });
 
@@ -420,15 +420,15 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     expect(last).toContain("abandonner le carré, construire le signe dans la lettre");
     expect(last).toContain("symbole interchangeable");
     await fr(() => redrawArtwork(job(pid, "brand.logo.v2.redraw"), pid, bad.assetId!, { feedback: "plus de contraste", ai: artAi(log) as any }));
-    expect(log.prompts.at(-1)).toMatch(/plus de contraste\. fix — abandonner le carré/);
+    expect(log.prompts.at(-1)).toMatch(/plus de contraste\. correction — abandonner le carré/);
   });
 });
 
 describe("brief de direction artistique sans texte recopié", () => {
-  it("le nom cité devient « the name », un mot du nom reste, une ligne d'activités réécrite devient « the activity line »", async () => {
+  it("le nom cité devient « le nom », un mot du nom reste, une ligne d'activités réécrite devient « la ligne d'activités »", async () => {
     const { briefWithoutText } = await import("@/lib/logo-v2/artwork");
     const out = briefWithoutText('Draw “SÉBASTIEN BLANC” with the word "Blanc" in sand, then "PLÂTRIER PEINTRE" below; « ENDUITS ET LISSAGE » never.', "Sébastien Blanc");
-    expect(out).toBe('Draw the name with the word "Blanc" in sand, then the activity line below; the activity line never.');
+    expect(out).toBe(`Draw le nom with the word "Blanc" in sand, then la ligne d'activités below; la ligne d'activités never.`);
     expect(briefWithoutText("An interlocked “SB” monogram", "Sébastien Blanc")).toBe("An interlocked “SB” monogram");
   });
 
