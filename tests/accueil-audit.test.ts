@@ -107,6 +107,11 @@ describe("Accueil : démo montre (ARVEN) sans aucun visuel fait par gabarit du s
     expect(page).toContain(".filter((d) => d.shopDesktop && d.shopMobile)");
     expect(read("src/components/home/home-story.tsx")).toContain('if (k === "store" && !(d.shopDesktop && d.shopMobile))');
   });
+  it("équilibre : les vitrines ne commencent pas toutes par la même démo", () => {
+    const page = read("src/app/page.tsx");
+    expect(page).toContain('startAt(list.filter((d) => d.board), "paysagiste")');
+    expect(page).toContain('startAt(list.filter((d) => (d.posts?.length ?? 0) >= 4), "casque")');
+  });
   it("la page applique la sélection et les panneaux savent s'afficher sans image", () => {
     expect(read("src/app/page.tsx")).toContain(".map(curateForHome)");
     const story = read("src/components/home/home-story.tsx");

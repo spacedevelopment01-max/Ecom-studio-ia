@@ -220,8 +220,13 @@ export default async function Home() {
   const baAfter = ba ? (ba.posts?.[0] ?? (ba.images.find((x) => /scène|scene/i.test(x.label)) ?? ba.images.find((x) => /packshot/i.test(x.label)))?.src) : undefined;
 
   // Créations réelles des démonstrations : planches d'identité, fils de publications, mur de publications.
-  const boards: BoardDemo[] = list.filter((d) => d.board).map((d) => ({ id: d.id, brand: d.brand, sector: d.sector, board: d.board!, palette: d.palette }));
-  const feeds: FeedDemo[] = list.filter((d) => (d.posts?.length ?? 0) >= 4).map((d) => ({ id: d.id, brand: d.brand, handle: d.brand.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, ""), logo: d.logo, palette: d.palette, posts: d.posts! }));
+  // Équilibre voulu par le propriétaire : chaque vitrine commence par une démo différente (produits et services mêlés).
+  const startAt = <X extends { id: string }>(xs: X[], id: string) => {
+    const k = xs.findIndex((x) => x.id === id);
+    return k > 0 ? [...xs.slice(k), ...xs.slice(0, k)] : xs;
+  };
+  const boards: BoardDemo[] = startAt(list.filter((d) => d.board), "paysagiste").map((d) => ({ id: d.id, brand: d.brand, sector: d.sector, board: d.board!, palette: d.palette }));
+  const feeds: FeedDemo[] = startAt(list.filter((d) => (d.posts?.length ?? 0) >= 4), "casque").map((d) => ({ id: d.id, brand: d.brand, handle: d.brand.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, ""), logo: d.logo, palette: d.palette, posts: d.posts! }));
   // Mur : les publications des marques entremêlées (jamais deux d'une même marque côte à côte).
   const wall: WallItem[] = [];
   for (let k = 0; k < 8; k++) for (const f of feeds) if (f.posts[k]) wall.push({ src: f.posts[k], brand: f.brand });
