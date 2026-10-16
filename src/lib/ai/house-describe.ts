@@ -1,6 +1,6 @@
 /**
- * Description du projet rédigée par l'IA, OFFERTE PAR LA PLATEFORME (hors budget IA du client, forfait Découverte
- * compris) : le client écrit quelques mots sur son activité ou son produit, l'IA en fait un vrai paragraphe et ajoute
+ * Description du projet rédigée par l'IA, OFFERTE PAR LA PLATEFORME (hors budget IA du client ; réservée aux comptes
+ * avec un abonnement payé en vigueur, jamais au compte Découverte — contrôle dans la route /api/describe) : le client écrit quelques mots sur son activité ou son produit, l'IA en fait un vrai paragraphe et ajoute
  * les éléments utiles auxquels il n'a pas pensé (prestations courantes du métier, déroulé, publics, bénéfices), sans
  * jamais inventer de faits vérifiables (chiffres, prix, années, labels, avis, garanties).
  *
