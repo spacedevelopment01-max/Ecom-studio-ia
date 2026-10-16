@@ -225,6 +225,8 @@ describe("budget IA : règle des 40 % / 50 % et réservations", async () => {
   it("image : refus du fournisseur → rendu ; image facturée mais inexploitable (réponse sans image) → coût maximal retenu", async () => {
     const u = await client("creer");
     const ctx = { userId: u.id, projectId: "p-test" };
+    // Réponses au format Gemini : le routage des images est fixé sur Gemini (Qwen-Image 3.0 Pro est sinon le défaut).
+    (await import("@/lib/settings")).setJsonSetting("ai.routes", { image_generation: { provider: "google", model: "gemini-2.5-flash-image" } });
     const before = balance(u.id).available;
     fetchImpl = async () => new Response("quota", { status: 429 });
     await expect(runForUser(u.id, () => ambianceImage(ctx, { prompt: "atelier", aspect: "1:1" }))).rejects.toThrow();
@@ -236,6 +238,7 @@ describe("budget IA : règle des 40 % / 50 % et réservations", async () => {
     const r = reservations(u.id).at(-1)!;
     expect(r.status).toBe("uncertain");
     expect(balance(u.id).available).toBe(before - r.amount);
+    (await import("@/lib/settings")).setJsonSetting("ai.routes", {});
   });
 
   it("reprise de worker : réservation orpheline traitée comme incertaine ; la tâche relancée réserve à nouveau", async () => {
