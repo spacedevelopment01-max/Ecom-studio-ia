@@ -196,6 +196,7 @@ describe("Accueil : les sections tournent entre les démos, chacune avec de vrai
   it("calendrier « Votre semaine de publications » : quatre publications de Racines & Pierres avec leurs images", () => {
     expect(CALENDAR_POSTS).toHaveLength(4);
     for (const p of CALENDAR_POSTS) expect(exists(p.src)).toBe(true);
+    expect(CALENDAR_POSTS.map((p) => p.src)).not.toContain("/demo/paysagiste/post-7.jpg");
     expect(read("src/app/page.tsx")).toContain("CALENDAR_POSTS.slice(0, 4)");
   });
 });

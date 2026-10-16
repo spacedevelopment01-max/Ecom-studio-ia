@@ -157,7 +157,8 @@ export const SECTION_DEMO = {
 /** Publications du calendrier « Votre semaine de publications » (Racines & Pierres) : visuels et textes de la démo. */
 export const CALENDAR_POSTS: { src: string; network: string; caption: [string, string] }[] = [
   { src: "/demo/paysagiste/post-3.jpg", network: "Instagram", caption: ["Création de jardin : demandez votre devis.", "Garden design: ask for your quote."] },
-  { src: "/demo/paysagiste/post-7.jpg", network: "Facebook", caption: ["Terrasses et aménagements.", "Terraces and landscaping."] },
+  // post-7 écartée : bloc vert clair posé sur la photo.
+  { src: "/demo/paysagiste/post-2.jpg", network: "Facebook", caption: ["Création de jardin : terrasse et jardinières.", "Garden design: terrace and planters."] },
   { src: "/demo/paysagiste/post-6.jpg", network: "Pinterest", caption: ["Entretien à l'année.", "Year-round maintenance."] },
   { src: "/demo/paysagiste/post-4.jpg", network: "TikTok", caption: ["Aix-en-Provence et alentours.", "Aix-en-Provence and surroundings."] },
 ];
