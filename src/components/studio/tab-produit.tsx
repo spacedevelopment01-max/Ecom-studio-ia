@@ -8,7 +8,7 @@ import { FromSiteBadge } from "./existing-site";
 import { CatalogPanel } from "./catalog-panel";
 import { ContentPanel } from "./content-panel";
 import TabActivite from "./tab-activite";
-import type { Fact } from "@/lib/project-types";
+import { withFirstVariant, type Fact } from "@/lib/project-types";
 import { useLang, useT } from "../i18n";
 import type { Lang } from "@/lib/i18n";
 import { cutoutReasonText, PHOTO_KINDS, type PhotoKind } from "@/lib/cutout-reasons";
@@ -257,9 +257,13 @@ function ProductPhotosCard() {
         icon={<RefreshCw className="size-4" />}
         onClick={async () => {
           if (!confirm(t("Réanalyser le produit relance aussi les étapes suivantes (marque, textes, images…). Les versions précédentes restent disponibles. Continuer ?", "Reanalyzing the product also reruns the following steps (brand, copy, images…). Previous versions remain available. Continue?"))) return;
-          await api(`/api/projects/${id}/resume`, { body: { from: "analysis" } });
-          toast("ok", t("Nouvelle analyse lancée.", "New analysis started."));
-          reload();
+          try {
+            await api(`/api/projects/${id}/resume`, { body: { from: "analysis" } });
+            toast("ok", t("Nouvelle analyse lancée.", "New analysis started."));
+            reload();
+          } catch (e) {
+            toast("bad", (e as Error).message);
+          }
         }}
       >
         {t("Réanalyser tout le projet", "Reanalyze the whole project")}
@@ -288,8 +292,7 @@ function VariantsCard() {
   async function save() {
     setBusy(true);
     try {
-      const vals = values.split(",").map((x) => x.trim()).filter(Boolean);
-      await api(`/api/projects/${id}/product`, { method: "PATCH", body: { variants: vals.length && label.trim() ? [{ name: label.trim(), values: vals }] : [] } });
+      await api(`/api/projects/${id}/product`, { method: "PATCH", body: { variants: withFirstVariant(data?.product.variants ?? [], label, values) } });
       toast("ok", t("Variantes enregistrées. Reconstruisez la boutique pour les voir dans l'aperçu.", "Variants saved. Rebuild the store to see them in the preview."));
       reload();
     } catch (e) {

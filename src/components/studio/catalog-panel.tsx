@@ -78,7 +78,7 @@ export function CatalogPanel() {
                     <Input defaultValue={i.name} onBlur={(e) => e.target.value.trim() && e.target.value !== i.name && patch({ item: { key: i.key, name: e.target.value.trim() } })} className="h-8 text-sm font-medium" aria-label={t("Nom", "Name")} />
                     <div className="mt-1.5 grid grid-cols-2 gap-1.5">
                       <Input defaultValue={i.category} placeholder={t("Catégorie", "Category")} onBlur={(e) => e.target.value !== i.category && patch({ item: { key: i.key, category: e.target.value.trim() } })} className="h-8 text-xs" aria-label={t("Catégorie", "Category")} />
-                      <Input defaultValue={euros(i.price)} placeholder={t("Prix €", "Price €")} inputMode="decimal" onBlur={(e) => { const c = toCents(e.target.value); if (c !== undefined && c !== i.price) patch({ item: { key: i.key, price: c } }); }} className="h-8 text-xs" aria-label={t("Prix", "Price")} />
+                      <Input defaultValue={euros(i.price)} placeholder={t("Prix €", "Price €")} inputMode="decimal" onBlur={(e) => { const c = toCents(e.target.value); if (c === undefined) { toast("bad", t("Prix illisible : écrivez par exemple 24,90.", "Unreadable price: write for example 24.90.")); e.target.value = euros(i.price); } else if (c !== i.price) patch({ item: { key: i.key, price: c } }); }} className="h-8 text-xs" aria-label={t("Prix", "Price")} />
                     </div>
                     <div className="mt-1.5 flex items-center gap-1.5">
                       {!i.processed && <Badge tone="neutral">{t("packshot à la prochaine mise à jour", "packshot at next update")}</Badge>}

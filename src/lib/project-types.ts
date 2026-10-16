@@ -280,3 +280,13 @@ export const emptyProduct = (): ProductProfile => ({
   sources: [],
   analyzedBy: "local",
 });
+
+/**
+ * Remplace la première variante (celle que montre l'onglet Produit) sans toucher aux autres : enregistrer le
+ * « Coloris » ne doit jamais effacer la « Taille ». Nom ou valeurs vides : la première variante est retirée.
+ */
+export function withFirstVariant(variants: { name: string; values: string[] }[], name: string, values: string): { name: string; values: string[] }[] {
+  const vals = values.split(",").map((x) => x.trim()).filter(Boolean);
+  const rest = variants.slice(1);
+  return vals.length && name.trim() ? [{ name: name.trim(), values: vals }, ...rest] : rest;
+}
