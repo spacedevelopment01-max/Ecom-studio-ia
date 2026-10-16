@@ -30,6 +30,12 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
 - **Images 100 % IA, avec Qwen-Image 3.0 Pro** (pas ChatGPT, jugé trop cher ; pas de texte posé en local à la place).
   Consignes à Qwen **en français**, concrètes (scène, objets, lumière), seuls les textes voulus entre guillemets.
 - **Réponses courtes et claires**, sans jargon ; ne pas reposer une question à laquelle il a déjà répondu.
+- **Ne pas décider à sa place** : un retrait de contenu ou un changement visible important se propose, il ne s'applique
+  qu'après son accord. Retirer un visuel raté sans rien mettre à la place n'est pas une correction.
+- **Démonstrations** : les seules sont la montre ARVEN, la gourde Cime, Les Tribunes (t-shirt « FRANCE 10 »), le casque
+  Sonore, le paysagiste Racines & Pierres et le fleuriste Atelier Pivoine. **Page d'accueil** : chaque section montre de
+  vrais visuels (jamais vide) et les sections tournent entre ces démos, en alternant produits et services ; une
+  explication en plusieurs étapes peut suivre une seule démo du début à la fin.
 
 ## Travail en plusieurs conversations (choix du propriétaire)
 
