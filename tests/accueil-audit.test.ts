@@ -50,6 +50,7 @@ describe("Accueil : promesses conformes aux forfaits et aux règles", () => {
     const home = read("src/components/studio/home.tsx");
     expect(home).not.toContain("Forfait Découverte");
     expect(home).not.toContain("Discovery plan");
+    expect(home).toContain('t("Compte Découverte · gratuit", "Discovery account · free")');
   });
   it("le bouton du pied de page mène au studio d'une personne connectée", () => {
     expect(read("src/components/site-footer.tsx")).toContain('href={user ? "/studio" : "/inscription"}');

@@ -551,7 +551,7 @@ export function StudioHome() {
             {discovery && !creating ? (
               <div className="mb-10 grid gap-6 rounded-[2rem] border border-line bg-card p-6 sm:p-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
                 <div>
-                  <p className="text-sm font-medium uppercase tracking-[.18em] text-signal">{t("Découverte gratuite · sans abonnement", "Free discovery · no subscription")}</p>
+                  <p className="text-sm font-medium uppercase tracking-[.18em] text-signal">{t("Compte Découverte · gratuit", "Discovery account · free")}</p>
                   <h1 className="mt-3 font-display text-4xl font-semibold">{t("Découvrez le studio, gratuitement.", "Discover the studio, for free.")}</h1>
                   <p className="mt-3 text-ink-2">{t("Votre compte gratuit ouvre le studio de démonstration : les 30 thèmes, des marques, boutiques, publicités et calendriers d'exemple. Pour créer votre vrai projet, choisissez un forfait ci-dessous.", "Your free account opens the demo studio: all 30 themes, sample brands, stores, ads and calendars. To create your real project, choose a plan below.")}</p>
                 </div>
