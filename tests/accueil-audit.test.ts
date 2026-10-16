@@ -84,7 +84,8 @@ describe("Accueil : démo montre (ARVEN) sans aucun visuel fait par gabarit du s
     for (const x of montre.images) expect(fs.existsSync(path.join(process.cwd(), "public", x.src))).toBe(true);
     expect(montre.posts).toEqual([]);
     expect(montre.board).toBeUndefined();
-    expect(montre.videoPoster).toBe("");
+    // Film et affiche : ceux du film publicitaire ARVEN vérifié image par image (plus l'ancien montage du studio).
+    expect([montre.video, montre.videoPoster]).toEqual(["/demo/montre/film-ia.mp4", "/demo/montre/film-ia.jpg"]);
     const m = storyMedia(montre);
     expect(m.tiles.map((x) => x.kind)).toEqual(["cutout", "packshot", "scene", "ad"]);
     expect(new Set(m.tiles.map((x) => x.src)).size).toBe(4);
@@ -97,9 +98,11 @@ describe("Accueil : démo montre (ARVEN) sans aucun visuel fait par gabarit du s
     const json = JSON.stringify(all) + read("src/components/home/demo-curation.ts").replace(/\/\/.*|\*.*$/gm, "");
     for (const f of ["/demo/montre/detail-1", "/demo/montre/ad-1", "plan2-cuir"]) expect(json).not.toContain(f);
   });
-  it("sans capture de boutique ni éditeur de publicité en direct pour la montre", async () => {
+  it("boutique refaite (montre entière), sans éditeur de publicité en direct pour la montre", async () => {
     const { allowsLiveAd } = await import("@/components/home/demo-curation");
-    expect([montre.shopDesktop, montre.shopMobile]).toEqual(["", ""]);
+    expect([montre.shopDesktop, montre.shopMobile]).toEqual(["/demo/montre/boutique-ia-bureau.jpg", "/demo/montre/boutique-ia-mobile.jpg"]);
+    for (const f of [montre.shopDesktop, montre.shopMobile, montre.video, montre.videoPoster]) expect(fs.existsSync(path.join(process.cwd(), "public", f))).toBe(true);
+    expect(montre.direction).toBe("atelier");
     expect(allowsLiveAd("montre")).toBe(false);
     expect(allowsLiveAd("gourde")).toBe(true);
     const page = read("src/app/page.tsx");
@@ -125,5 +128,46 @@ describe("Accueil : démo montre (ARVEN) sans aucun visuel fait par gabarit du s
     expect(story).toContain("{!d.ad ? null : (");
     expect(story).toContain("if (!d.videoPoster)");
     expect(read("src/components/home/home-demos.tsx")).toContain("{p.image && <img");
+  });
+});
+
+describe("Accueil : parcours ARVEN, un vrai résultat à chaque étape", async () => {
+  const { homeExtras, HOME_CURATION } = await import("@/components/home/demo-curation");
+  const x = homeExtras("montre");
+  const exists = (f: string) => fs.existsSync(path.join(process.cwd(), "public", f));
+
+  it("publicités : la publicité faite dans l'éditeur, texte du propriétaire mot pour mot, dans les quatre formats", () => {
+    expect(x.editorAd?.title).toBe("Acier et cuir véritable.");
+    expect(x.editorAd?.formats.map((f) => f.aspect).sort()).toEqual(["16:9", "1:1", "4:5", "9:16"]);
+    for (const f of x.editorAd!.formats) expect(exists(f.src)).toBe(true);
+    const story = read("src/components/home/home-story.tsx");
+    expect(story).toContain("{d.adTitle ?? t(");
+    expect(story).toContain('aria-label={t("Formats de la publicité", "Ad formats")}');
+  });
+  it("vidéos : le film est lu (sans le son, en boucle) avec son affiche", () => {
+    expect(read("src/components/home/home-story.tsx")).toContain("<video src={d.video} poster={d.videoPoster} muted loop playsInline");
+  });
+  it("réseaux sociaux : quatre publications vérifiées, légendes FR/EN, jamais « chronographe »", () => {
+    expect(x.social).toHaveLength(4);
+    for (const p of x.social) {
+      expect(exists(p.src)).toBe(true);
+      for (const c of p.caption) expect(c.toLowerCase()).not.toContain("chronographe");
+    }
+    expect(read("src/app/page.tsx")).toContain("story.socialPosts?.length");
+  });
+  it("aucun texte de la sélection n'écrit « chronographe » (vocabulaire du client : « montre »)", () => {
+    expect(JSON.stringify(HOME_CURATION).toLowerCase()).not.toMatch(/chronograph(e|s)?"/);
+    expect(JSON.stringify(x).toLowerCase()).not.toContain("chronographe");
+  });
+  it("les scripts de fabrication sont locaux et gratuits (moteur de thème, éditeur de publicités, aucun appel IA)", () => {
+    const b = read("scripts/demo-arven-boutique.ts");
+    const a = read("scripts/demo-arven-pubs.ts");
+    expect(b).toContain("compileTheme(spec)");
+    expect(a).toContain("composeAd({");
+    for (const src of [a, b]) expect(src).not.toMatch(/@\/lib\/ai\/|openai|dashscope|fal\.run/i);
+    expect(a).toContain('headline: process.env.HEADLINE ?? "Acier et cuir véritable."');
+  });
+  it("l'article de blog de démonstration n'écrit plus « son montre »", () => {
+    expect(read("src/app/page.tsx")).not.toContain("Comment bien choisir son ${story.product.toLowerCase()}");
   });
 });

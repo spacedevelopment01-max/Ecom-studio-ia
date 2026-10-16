@@ -12,7 +12,7 @@ import { HomeHeader } from "@/components/home/home-chrome";
 import { HeroFilm, HowItWorks } from "@/components/home/home-media";
 import { StoryScroll, type StoryDemo, type StoryStep } from "@/components/home/home-story";
 import { storyMedia } from "@/components/home/story-media";
-import { allowsLiveAd, curateForHome, wallExtras } from "@/components/home/demo-curation";
+import { allowsLiveAd, curateForHome, homeExtras, wallExtras } from "@/components/home/demo-curation";
 import { AdEditorDemo, BrandLab, ConnectedHub, ControlDemo, SeoDocDemo, SocialCalendarDemo, StoreDevices, type BrandDemo, type SocialPost, type StoreDemo } from "@/components/home/home-demos";
 import { BoardShowcase, FeedShowcase, PostsWall, ThemesWall, type BoardDemo, type FeedDemo, type WallItem } from "@/components/home/home-showcase";
 import { directionById, directionCards } from "@/lib/theme/directions";
@@ -122,6 +122,7 @@ export default async function Home() {
   const fontsOf = (d: Demo) => directionById(d.direction).previewFonts;
   // Images du parcours : uniquement les vraies créations de la démonstration, chacune sous sa vraie nature.
   const media = hero ? storyMedia(hero) : null;
+  const extras = homeExtras(hero?.id ?? "");
   const story: StoryDemo | null = hero && media
     ? {
         brand: hero.brand,
@@ -134,6 +135,12 @@ export default async function Home() {
         shopMobile: hero.shopMobile,
         ...media,
         videoPoster: hero.videoPoster,
+        video: hero.video,
+        // Publicité faite dans l'éditeur (quatre formats) et publications du calendrier, préparées pour l'accueil.
+        adTitle: extras.editorAd?.title ?? null,
+        adFormats: extras.editorAd?.formats.map((f) => ({ ...f, src: W(f.src) })) ?? [],
+        ...(extras.editorAd ? { ad: W(extras.editorAd.formats.find((f) => f.aspect === "9:16")?.src ?? extras.editorAd.formats[0].src) } : {}),
+        socialPosts: extras.social.map((x) => ({ src: W(x.src), network: x.network, caption: T(...x.caption) })),
       }
     : null;
 
@@ -176,10 +183,15 @@ export default async function Home() {
   ];
 
   const brands: BrandDemo[] = list.map((d) => ({ id: d.id, brand: d.brand, sector: d.sector, direction: directionById(d.direction).name, palette: d.palette, logo: d.logo, photo: d.photo, fonts: fontsOf(d) }));
+  // Équilibre voulu par le propriétaire : chaque vitrine commence par une démo différente (produits et services mêlés).
+  const startAt = <X extends { id: string }>(xs: X[], id: string) => {
+    const k = xs.findIndex((x) => x.id === id);
+    return k > 0 ? [...xs.slice(k), ...xs.slice(0, k)] : xs;
+  };
   // Boutiques de produits puis sites d'entreprises de services, tels que le studio les a composés.
   const handle = (b: string) => b.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "");
   const stores: StoreDemo[] = [
-    ...productDemos.filter((d) => d.shopDesktop && d.shopMobile).slice(0, 3).map((d): StoreDemo => ({ id: d.id, label: d.sector, text: T(`Boutique ${directionById(d.direction).name} composée pour ${d.brand} · ${d.product}.`, `${directionById(d.direction).name} store designed for ${d.brand} · ${d.product}.`), desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${handle(d.brand)}.myshopify.com` })),
+    ...startAt(productDemos.filter((d) => d.shopDesktop && d.shopMobile), "tribunes").map((d): StoreDemo => ({ id: d.id, label: d.sector, text: T(`Boutique ${directionById(d.direction).name} composée pour ${d.brand} · ${d.product}.`, `${directionById(d.direction).name} store designed for ${d.brand} · ${d.product}.`), desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${handle(d.brand)}.myshopify.com` })),
     ...serviceDemos.filter((d) => d.shopDesktop && d.shopMobile).map((d): StoreDemo => ({ id: d.id, label: d.sector, text: T(`Entreprise fictive : ${d.brand}, site WordPress. Aucun panier : chaque bouton mène au devis, au rendez-vous ou à l'appel.`, `Fictional business: ${d.brand}, WordPress website. No cart: every button leads to a quote, a booking or a call.`), desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${handle(d.brand)}.fr` })),
   ];
 
@@ -188,21 +200,24 @@ export default async function Home() {
     ? [
         { tab: T("Fiche produit", "Product page"), kind: `${T("Fiche produit", "Product page")} · ${story.brand}`, meta: `${story.product} · ${story.brand}`, blocks: [{ k: "h1" as const, text: story.product }, { k: "p" as const, text: hero?.source ? T(`${story.product} signé ${story.brand}.`, `${story.product} by ${story.brand}.`) : story.product }, { k: "li" as const, text: T("Ce que l'on voit sur la photo, décrit sans exagérer", "What the photo shows, described without exaggerating") }, { k: "li" as const, text: T("Garantie : [À compléter : durée de la garantie]", "Warranty: [To complete: warranty length]") }, { k: "faq" as const, text: T("Comment l'entretenir ? [À compléter : consignes du fabricant]", "How do I care for it? [To complete: manufacturer's instructions]") }] },
         { tab: T("Page d'accueil", "Home page"), kind: `${T("Page d'accueil", "Home page")} · ${story.brand}`, meta: T(`${story.brand} · page d'accueil`, `${story.brand} · home page`), blocks: [{ k: "h1" as const, text: story.brand }, { k: "p" as const, text: T(`${story.brand} présente ${story.product.toLowerCase()}.`, `${story.brand} presents its ${story.product.toLowerCase()}.`) }, { k: "li" as const, text: T("Livraison : [À compléter]", "Shipping: [To complete]") }, { k: "li" as const, text: T("Retours : [À compléter]", "Returns: [To complete]") }, { k: "faq" as const, text: T("Où expédiez-vous ? [À compléter]", "Where do you ship? [To complete]") }] },
-        { tab: T("Article de blog", "Blog post"), kind: T("Article de blog", "Blog post"), meta: T(`Comment bien choisir : ${story.product.toLowerCase()}.`, `How to choose: ${story.product.toLowerCase()}.`), blocks: [{ k: "h1" as const, text: T(`Comment bien choisir son ${story.product.toLowerCase()} ?`, `How do you choose a ${story.product.toLowerCase()}?`) }, { k: "p" as const, text: T("Les critères à regarder avant d'acheter, sans promesse inventée.", "What to look at before buying, with no made-up promises.") }, { k: "li" as const, text: T("L'usage", "The use") }, { k: "li" as const, text: T("Le confort", "Comfort") }, { k: "faq" as const, text: T("Combien de temps dure-t-il ? [À compléter : source à citer]", "How long does it last? [To complete: source to cite]") }] },
+        { tab: T("Article de blog", "Blog post"), kind: T("Article de blog", "Blog post"), meta: T(`Comment bien choisir : ${story.product.toLowerCase()}.`, `How to choose: ${story.product.toLowerCase()}.`), blocks: [{ k: "h1" as const, text: T(`Bien choisir : ${story.product.toLowerCase()}`, `How to choose: ${story.product.toLowerCase()}`) }, { k: "p" as const, text: T("Les critères à regarder avant d'acheter, sans promesse inventée.", "What to look at before buying, with no made-up promises.") }, { k: "li" as const, text: T("L'usage", "The use") }, { k: "li" as const, text: T("Le confort", "Comfort") }, { k: "faq" as const, text: T("Quelle durée de vie prévoir ? [À compléter : source à citer]", "How long does it last? [To complete: source to cite]") }] },
       ]
     : [];
 
   // Publications réelles du calendrier de la marque quand l'accueil peut les montrer (demo-curation.ts) ; sinon la
   // publication s'affiche sans image (jamais une scène ni une photo présentée comme une publication).
   const heroPosts = hero?.posts ?? [];
-  const posts: SocialPost[] = story
-    ? [
-        { day: 0, time: "18:00", network: "Instagram", image: heroPosts[0] ?? story.social, caption: T(`${story.product}, signé ${story.brand}.`, `${story.product}, by ${story.brand}.`) },
-        { day: 2, time: "12:30", network: "Facebook", image: heroPosts[1] ?? story.banner, caption: T(`Découvrez ${story.brand} sur notre boutique.`, `Discover ${story.brand} in our store.`) },
-        { day: 4, time: "20:00", network: "Pinterest", image: heroPosts[2] ?? "", caption: T(`Idée cadeau : ${story.product.toLowerCase()}.`, `Gift idea: ${story.product.toLowerCase()}.`) },
-        { day: 5, time: "11:00", network: "TikTok", image: heroPosts[3] ?? "", caption: T("Comment bien le choisir ? Réponse en vidéo.", "How to choose it? Answer on video.") },
-      ]
-    : [];
+  const slots = [{ day: 0, time: "18:00" }, { day: 2, time: "12:30" }, { day: 4, time: "20:00" }, { day: 5, time: "11:00" }];
+  const posts: SocialPost[] = !story
+    ? []
+    : story.socialPosts?.length
+      ? story.socialPosts.slice(0, 4).map((x, k) => ({ ...slots[k], network: x.network, image: x.src, caption: x.caption }))
+      : [
+          { ...slots[0], network: "Instagram", image: heroPosts[0] ?? story.social, caption: T(`${story.product}, signé ${story.brand}.`, `${story.product}, by ${story.brand}.`) },
+          { ...slots[1], network: "Facebook", image: heroPosts[1] ?? story.banner, caption: T(`Découvrez ${story.brand} sur notre boutique.`, `Discover ${story.brand} in our store.`) },
+          { ...slots[2], network: "Pinterest", image: heroPosts[2] ?? "", caption: T(`Idée cadeau : ${story.product.toLowerCase()}.`, `Gift idea: ${story.product.toLowerCase()}.`) },
+          { ...slots[3], network: "TikTok", image: heroPosts[3] ?? "", caption: T("Comment bien le choisir ? Réponse en vidéo.", "How to choose it? Answer on video.") },
+        ];
 
   const hub = [
     { key: "brand", label: T("Marque", "Brand"), text: T("Couleurs, logo et polices validés une fois, puis repris partout dans le projet.", "Colors, logo and fonts approved once, then reused everywhere in the project.") },
@@ -220,11 +235,6 @@ export default async function Home() {
   const baAfter = ba ? (ba.posts?.[0] ?? (ba.images.find((x) => /scène|scene/i.test(x.label)) ?? ba.images.find((x) => /packshot/i.test(x.label)))?.src) : undefined;
 
   // Créations réelles des démonstrations : planches d'identité, fils de publications, mur de publications.
-  // Équilibre voulu par le propriétaire : chaque vitrine commence par une démo différente (produits et services mêlés).
-  const startAt = <X extends { id: string }>(xs: X[], id: string) => {
-    const k = xs.findIndex((x) => x.id === id);
-    return k > 0 ? [...xs.slice(k), ...xs.slice(0, k)] : xs;
-  };
   const boards: BoardDemo[] = startAt(list.filter((d) => d.board), "paysagiste").map((d) => ({ id: d.id, brand: d.brand, sector: d.sector, board: d.board!, palette: d.palette }));
   const feeds: FeedDemo[] = startAt(list.filter((d) => (d.posts?.length ?? 0) >= 4), "casque").map((d) => ({ id: d.id, brand: d.brand, handle: d.brand.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, ""), logo: d.logo, palette: d.palette, posts: d.posts! }));
   // Mur : les publications des marques entremêlées (jamais deux d'une même marque côte à côte).

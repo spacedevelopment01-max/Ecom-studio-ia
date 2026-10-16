@@ -19,7 +19,22 @@
 import type { Demo } from "@/components/landing-client";
 
 /** images : liste des seules images gardées (adresse exacte) ; extra : images IA vérifiées ajoutées pour l'accueil seul. */
-type Curation = { posts?: false; board?: false; video?: false; shop?: false; liveAd?: false; wall?: string[]; images?: string[]; extra?: { src: string; label: string }[] };
+type Curation = {
+  posts?: false;
+  board?: false;
+  /** false : vidéo retirée ; sinon film et affiche vérifiés à montrer à la place de ceux du manifeste. */
+  video?: false | { src: string; poster: string };
+  /** false : captures retirées ; sinon captures refaites (sans défaut) à la place de celles du manifeste. */
+  shop?: false | { desktop: string; mobile: string; direction?: string };
+  liveAd?: false;
+  wall?: string[];
+  images?: string[];
+  extra?: { src: string; label: string }[];
+  /** Publicité faite dans l'éditeur du studio (texte modifiable), dans les quatre formats. */
+  editorAd?: { title: string; formats: { aspect: "1:1" | "4:5" | "9:16" | "16:9"; src: string }[] };
+  /** Publications du calendrier de démonstration (visuels vérifiés). */
+  social?: { src: string; network: string; caption: [string, string] }[];
+};
 
 export const HOME_CURATION: Record<string, Curation> = {
   // Quatre cases toutes différentes voulues par le propriétaire : une seule mise en situation (lifestyle-2 et -3 trop
@@ -27,10 +42,31 @@ export const HOME_CURATION: Record<string, Curation> = {
   montre: {
     posts: false,
     board: false,
-    video: false,
-    // Captures de la boutique : le bandeau d'accueil recadre la mise en situation, la montre y est coupée (bracelet sans
-    // boucle) → retirées de l'accueil, les autres boutiques de démonstration restent.
-    shop: false,
+    // Film publicitaire ARVEN déjà payé (ARVEN_PUBLICITE_VIDEO : Qwen-Image 3.0 Pro + Wan 3.0), regardé image par image
+    // toutes les 0,5 s : montre fidèle, textes exacts (« LE DÉTAIL. », « L'ALLURE. », « Le temps vous va bien. »,
+    // « DÉCOUVRIR »), logo exact, aucun « chronographe ». Compressé pour le web (540 × 960) ; affiche tirée du film.
+    video: { src: "/demo/montre/film-ia.mp4", poster: "/demo/montre/film-ia.jpg" },
+    // Captures refaites en local par le moteur de thème (scripts/demo-arven-boutique.ts) avec les images validées : la
+    // montre est entière (bracelet et boucle) sur ordinateur et sur téléphone. Les anciennes la coupaient.
+    shop: { desktop: "/demo/montre/boutique-ia-bureau.jpg", mobile: "/demo/montre/boutique-ia-mobile.jpg", direction: "atelier" },
+    // Publicité faite par le moteur de l'éditeur du studio (scripts/demo-arven-pubs.ts) : texte du propriétaire mot pour
+    // mot, vrai logo, montre entière dans les quatre formats.
+    editorAd: {
+      title: "Acier et cuir véritable.",
+      formats: [
+        { aspect: "9:16", src: "/demo/montre/pub-editeur-9x16.jpg" },
+        { aspect: "1:1", src: "/demo/montre/pub-editeur-1x1.jpg" },
+        { aspect: "4:5", src: "/demo/montre/pub-editeur-4x5.jpg" },
+        { aspect: "16:9", src: "/demo/montre/pub-editeur-16x9.jpg" },
+      ],
+    },
+    // Calendrier : les deux publications créées par l'IA, la publicité de l'éditeur et le film.
+    social: [
+      { src: "/demo/montre/publicite-ia-1.jpg", network: "Instagram", caption: ["Un classique à votre rythme.", "A classic at your own pace."] },
+      { src: "/demo/montre/publication-ia-1.jpg", network: "Facebook", caption: ["Le temps vous va bien.", "Time suits you."] },
+      { src: "/demo/montre/pub-editeur-4x5.jpg", network: "Pinterest", caption: ["Acier et cuir véritable.", "Genuine steel and leather."] },
+      { src: "/demo/montre/film-ia.jpg", network: "TikTok", caption: ["La montre ARVEN en 15 secondes.", "The ARVEN watch in 15 seconds."] },
+    ],
     // Démo interactive « éditeur de publicité » : elle compose en direct une publicité par gabarit (montre détourée +
     // texte posé en local) → pas avec la montre.
     liveAd: false,
@@ -55,7 +91,8 @@ export const HOME_EXCLUDED_FILES = [
   "/demo/montre/planche",
   "/demo/montre/video-poster",
   "/demo/montre/video.mp4",
-  "/demo/montre/boutique-",
+  "/demo/montre/boutique-bureau",
+  "/demo/montre/boutique-mobile",
   "/demo/montre/fiche-produit",
 ];
 
@@ -64,14 +101,17 @@ export function curateForHome(d: Demo): Demo {
   if (!c) return d;
   // Champs du manifeste absents du type (ex. productPage : capture de la fiche produit) : retirés avec la boutique.
   const { productPage: _p, ...rest } = d as Demo & { productPage?: string };
+  const shop = c.shop === undefined ? null : c.shop;
+  const video = c.video === undefined ? null : c.video;
   return {
-    ...(c.shop === false ? rest : d),
+    ...(shop !== null ? rest : d),
+    direction: shop && shop.direction ? shop.direction : d.direction,
     posts: c.posts === false ? [] : d.posts,
     board: c.board === false ? undefined : d.board,
-    video: c.video === false ? "" : d.video,
-    shopDesktop: c.shop === false ? "" : d.shopDesktop,
-    shopMobile: c.shop === false ? "" : d.shopMobile,
-    videoPoster: c.video === false ? "" : d.videoPoster,
+    video: video === null ? d.video : video === false ? "" : video.src,
+    shopDesktop: shop === null ? d.shopDesktop : shop === false ? "" : shop.desktop,
+    shopMobile: shop === null ? d.shopMobile : shop === false ? "" : shop.mobile,
+    videoPoster: video === null ? d.videoPoster : video === false ? "" : video.poster,
     images: [...(c.images ? d.images.filter((x) => c.images!.includes(x.src)) : d.images), ...(c.extra ?? [])],
   };
 }
@@ -81,3 +121,6 @@ export const allowsLiveAd = (id: string) => HOME_CURATION[id]?.liveAd !== false;
 
 /** Publications créées par l'IA à ajouter au mur de l'accueil, par démonstration. */
 export const wallExtras = (id: string) => HOME_CURATION[id]?.wall ?? [];
+
+/** Publicité de l'éditeur et publications du calendrier préparées pour l'accueil (démonstration donnée). */
+export const homeExtras = (id: string) => ({ editorAd: HOME_CURATION[id]?.editorAd ?? null, social: HOME_CURATION[id]?.social ?? [] });
