@@ -302,4 +302,20 @@ describe("Phase 6A — Advertising Engine V2", async () => {
     expect(a.meta).not.toMatch(/Rôle : concepteur|CORRECTIONS EXIGÉES|sk-/);
     expect(one<{ n: number }>("SELECT COUNT(*) n FROM quality_checks WHERE project_id = ? AND deliverable = 'ad_v2'", p.id)!.n).toBeGreaterThan(0);
   });
+  it("images 100 % IA : la publicité finale est créée par l'IA ; bloquée sans IA, aucun gabarit à la place", async () => {
+    const p = fresh("cosmetic");
+    const real = realAdDeps(null, p, false);
+    expect(typeof real.finalAd).toBe("function");
+    const blocked = await real.finalAd!({ conceptId: "c", angle: "proof", hook: "Un teint net", cta: "Découvrir", subject: "flacon", aspect: "1:1", maxCostEur: 1 });
+    expect(blocked.assetId).toBeNull();
+    expect(blocked.costMicro).toBe(0);
+    expect(blocked.reason).toMatch(/aucun gabarit/);
+    const { deps, log } = mockAdDeps({ userId: u.id, projectId: p.id });
+    const calls: string[] = [];
+    deps.finalAd = async (i) => (calls.push(i.hook), { assetId: null, costMicro: 0, reason: "IA indisponible — aucun gabarit à la place" });
+    const r = await fr(() => runAdEngineV2(null, p.id, { count: 2, platforms: ["meta_feed"] }, deps));
+    expect(calls.length).toBeGreaterThan(0);
+    expect(log.images).toHaveLength(0); // aucun fond ni composition de gabarit
+    expect(r.outcomes.every((o) => o.assetId === null && o.verdict === "REJECTED" && o.codes.includes("ai_blocked"))).toBe(true);
+  });
 });
