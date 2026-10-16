@@ -1,0 +1,32 @@
+{
+  "at": "2026-10-16T13:19:54.729Z",
+  "url": "https://dashscope-463f.oss-accelerate.aliyuncs.com/1d/38/20261016/f746ca88/84485da8-892e-9f00-8bf3-40191b60a3e1_qwen_image3_serving_output_0.png?Expires=1792243193&OSSAccessKeyId=LTAI5tRcsWJEymQaTsKbKqGf&Signature=XUGaeA9qF6HMyMaE88e7EXjG5dI%3D",
+  "response": {
+    "output": {
+      "choices": [
+        {
+          "finish_reason": "stop",
+          "message": {
+            "content": [
+              {
+                "image": "https://dashscope-463f.oss-accelerate.aliyuncs.com/1d/38/20261016/f746ca88/84485da8-892e-9f00-8bf3-40191b60a3e1_qwen_image3_serving_output_0.png?Expires=1792243193&OSSAccessKeyId=LTAI5tRcsWJEymQaTsKbKqGf&Signature=XUGaeA9qF6HMyMaE88e7EXjG5dI%3D",
+                "type": "image"
+              }
+            ],
+            "role": "assistant"
+          }
+        }
+      ],
+      "rewrite_status": "not_use"
+    },
+    "usage": {
+      "input_image_count": 0,
+      "input_image_type": "qima_input_1k",
+      "output_height": 1472,
+      "output_image_count": 1,
+      "output_image_type": "qima_output_1k",
+      "output_width": 1104
+    },
+    "request_id": "84485da8-892e-9f00-8bf3-40191b60a3e1"
+  }
+}

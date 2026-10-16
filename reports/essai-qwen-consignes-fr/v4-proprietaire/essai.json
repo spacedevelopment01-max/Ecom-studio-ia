@@ -1,0 +1,27 @@
+{
+  "at": "2026-10-16T13:19:56.600Z",
+  "model": "qwen-image-3.0-pro",
+  "boundUsd": 0.081,
+  "items": [
+    {
+      "id": "arven-univers-marque-v4-proprietaire",
+      "ok": true,
+      "model": "qwen-image-3.0-pro",
+      "aspect": "3:4",
+      "size": "1104*1472",
+      "references": 0,
+      "usage": {
+        "input_image_count": 0,
+        "input_image_type": "qima_input_1k",
+        "output_height": 1472,
+        "output_image_count": 1,
+        "output_image_type": "qima_output_1k",
+        "output_width": 1104
+      },
+      "requestId": "84485da8-892e-9f00-8bf3-40191b60a3e1",
+      "seconds": 30,
+      "maxCostUsd": 0.081,
+      "prompt": "Photographie de nature morte haut de gamme, photoréaliste, au format vertical 3:4. Vue de face légèrement plongeante, cadrage rapproché.\n\nLa scène se déroule sur une surface en marbre blanc poli, parcourue de fines veines grises naturelles. Un fond uni brun chocolat chaud occupe le tiers supérieur de l’image, légèrement flou.\n\nAu premier plan, au centre et légèrement décalé vers la droite, se trouve un écrin rond en cuir cognac, avec de fines coutures ton sur ton sur son pourtour. Sa base cylindrique repose à plat sur le marbre. Son couvercle circulaire est ouvert, relevé presque verticalement vers l’arrière, laissant voir sa doublure en velours noir.\n\nL’intérieur de la base contient uniquement un coussin de velours noir mat, bien visible, entièrement nu et intact. L’écrin ne contient aucun objet : aucune montre, aucun cadran, aucun bracelet, aucun bijou, aucune pièce métallique. Le velours forme une surface continue et naturelle, sans empreinte ni silhouette de produit.\n\nÀ l’arrière-plan à droite, un grand sablier vertical en verre transparent et laiton doré patiné. Il possède deux plateaux circulaires reliés par de fines colonnes métalliques. Du sable beige clair est visible dans les deux ampoules. Son sommet arrive près du bord supérieur de l’image.\n\nÀ l’arrière-plan à gauche, une large bande de cuir cognac est enroulée à plat en une spirale serrée, dont les couches sont bien visibles. Elle est légèrement coupée par le bord gauche du cadrage. Elle ne comporte ni boucle ni accessoire.\n\nLa scène contient exactement trois objets : l’écrin ouvert avec son coussin vide, le sablier et le rouleau de cuir. Le bas de l’image laisse une zone dégagée de marbre devant l’écrin.\n\nÉclairage chaud et doux venant du haut à gauche, comme une lumière de fin d’après-midi. Ombres délicates vers la droite, reflets dorés subtils sur le laiton, grain du cuir et texture du velours réalistes. Mise au point précise sur l’écrin, arrière-plan légèrement adouci. Ambiance élégante, sobre et chaleureuse, rendu photographique naturel.\n\nAucun texte, aucune lettre, aucun chiffre, aucune gravure, aucun logo, aucun filigrane, aucune personne. Aucun objet supplémentaire."
+    }
+  ]
+}
