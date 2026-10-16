@@ -309,13 +309,14 @@ export function BrandPropagationCard() {
   const [includeEdited, setIncludeEdited] = useState(false);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ updated: { key: string; detail: string }[]; skipped: { key: string; reason: string }[] } | null>(null);
+  // Hook appelé avant le retour anticipé : l'ordre des hooks ne doit jamais changer d'un rendu à l'autre.
+  const budget = useBudgetPct();
   const items = data?.items ?? [];
   if (!items.length && !result) return null;
   const CH: Record<string, Bi> = { name: { fr: "nom", en: "name" }, palette: { fr: "couleurs", en: "colours" }, fonts: { fr: "typographies", en: "fonts" }, logo: { fr: "logo", en: "logo" } };
   // Payant (visuel fait par l'IA) : jamais coché d'office, le client choisit en voyant le prix.
   const isOn = (it: Item) => picked[it.key] ?? (it.updatable && !it.userEdited && !it.paidMicro);
   const paidTotal = items.filter((it) => it.paidMicro && isOn(it)).reduce((n, it) => n + (it.paidMicro ?? 0), 0);
-  const budget = useBudgetPct();
   async function apply() {
     const keys = items.filter((it) => it.updatable && isOn(it)).map((it) => it.key);
     if (!keys.length) return;
