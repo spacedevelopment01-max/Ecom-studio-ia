@@ -7,6 +7,7 @@ import { AdEditorDemo, BrandLab, ControlDemo, SeoDocDemo, SocialCalendarDemo, St
 import { ThemeGrid } from "@/components/studio/theme-gallery";
 import { directionById, directionCards } from "@/lib/theme/directions";
 import { demoList, localMedia, webpOf } from "@/lib/demo-content";
+import { discoveryDemo, fullDemo } from "@/lib/discovery-demos";
 import { serverLang } from "@/lib/i18n-server";
 import { pick } from "@/lib/i18n";
 import { PAGE_MODELS } from "@/lib/theme/page-templates";
@@ -17,21 +18,22 @@ export async function generateMetadata() {
 }
 
 /**
- * Forfait DÉCOUVERTE : studio de démonstration interactif, réservé aux comptes connectés. Uniquement des exemples
+ * Compte DÉCOUVERTE (sans abonnement) : studio de démonstration interactif, réservé aux comptes connectés. Uniquement des exemples
  * préexistants (public/demo) et des manipulations dans le navigateur : aucun projet réel, aucun appel IA, aucune
  * publication, aucun export, rien n'est enregistré.
  */
 export default async function DiscoveryPage() {
   const lang = await serverLang();
   const T = (fr: string, en: string) => pick(lang, fr, en);
-  const list = demoList(lang);
+  // Visuels sans défaut seulement (ex. montre ARVEN : liste fixée par le propriétaire, voir discovery-demos.ts).
+  const list = demoList(lang).map(discoveryDemo);
   const productDemos = list.filter((d) => d.business !== "services");
   const hero = list.find((d) => d.id === "casque") ?? productDemos[0] ?? list[0];
   const img = (label: RegExp, n = 0) => hero?.images.filter((x) => label.test(x.label))[n]?.src ?? hero?.photo ?? "";
-  const brands: BrandDemo[] = list.map((d) => ({ id: d.id, brand: d.brand, sector: d.sector, direction: directionById(d.direction).name, palette: d.palette, logo: d.logo, photo: d.photo, fonts: directionById(d.direction).previewFonts }));
+  const brands: BrandDemo[] = list.filter((d) => d.logo && d.photo).map((d) => ({ id: d.id, brand: d.brand, sector: d.sector, direction: directionById(d.direction).name, palette: d.palette, logo: d.logo, photo: d.photo, fonts: directionById(d.direction).previewFonts }));
   const stores: StoreDemo[] = [
-    ...productDemos.slice(0, 4).map((d) => ({ id: d.id, label: d.brand, text: `${d.product} · ${d.sector}`, desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${d.brand.toLowerCase().replace(/\s+/g, "")}.myshopify.com` })),
-    ...list.filter((d) => d.business === "services").map((d) => ({ id: d.id, label: d.brand, text: T(`Entreprise fictive : ${d.sector.toLowerCase()}, site WordPress sans panier.`, `Fictional business: ${d.sector.toLowerCase()}, WordPress website with no cart.`), desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${d.brand.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "")}.fr` })),
+    ...productDemos.filter((d) => d.shopDesktop && d.shopMobile).slice(0, 4).map((d) => ({ id: d.id, label: d.brand, text: `${d.product} · ${d.sector}`, desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${d.brand.toLowerCase().replace(/\s+/g, "")}.myshopify.com` })),
+    ...list.filter((d) => d.business === "services" && d.shopDesktop && d.shopMobile).map((d) => ({ id: d.id, label: d.brand, text: T(`Entreprise fictive : ${d.sector.toLowerCase()}, site WordPress sans panier.`, `Fictional business: ${d.sector.toLowerCase()}, WordPress website with no cart.`), desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${d.brand.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "")}.fr` })),
   ];
 
   const posts: SocialPost[] = hero
@@ -48,7 +50,8 @@ export default async function DiscoveryPage() {
         { tab: T("Article de blog", "Blog post"), kind: T("Article de blog", "Blog post"), meta: T("Un article utile pour vos clients.", "A useful article for your customers."), blocks: [{ k: "h1" as const, text: T("Comment bien choisir ?", "How to choose well?") }, { k: "p" as const, text: T("Les critères à regarder avant d'acheter.", "What to look at before buying.") }, { k: "faq" as const, text: T("[À compléter : source à citer]", "[To complete: source to cite]") }] },
       ]
     : [];
-  const themes = directionCards(lang).map((c) => ({ ...c, preview: webpOf(localMedia(c.preview, lang)) }));
+  // Aperçu anglais (« .en.jpg ») seulement s'il existe : sinon l'aperçu de base (jamais d'image cassée).
+  const themes = directionCards(lang).map((c) => ({ ...c, preview: webpOf(localMedia(c.preview.replace(/\.en(\.\w+)$/, "$1"), lang)) }));
   const tabs = [
     ["marque", T("Marque", "Brand")],
     ["boutique", T("Boutique", "Store")],
@@ -103,7 +106,7 @@ export default async function DiscoveryPage() {
             ))}
           </ul>
         </section>
-        <section id="images" className={section}>{h(T("Images et vidéos", "Images and videos"), T("Détourages, packshots, scènes, visuels sociaux et vidéos des démonstrations.", "Cutouts, packshots, scenes, social visuals and videos from the demos."))}<DemoTabs demos={list} /></section>
+        <section id="images" className={section}>{h(T("Images et vidéos", "Images and videos"), T("Détourages, packshots, scènes, visuels sociaux et vidéos des démonstrations.", "Cutouts, packshots, scenes, social visuals and videos from the demos."))}<DemoTabs demos={list.filter(fullDemo)} /></section>
         {hero && <section id="publicites" className={section}>{h(T("Publicités", "Ads"), T("Déplacez le texte, changez les couleurs : l'éditeur de publicités en miniature.", "Move the text, change the colors: the ad editor in miniature."))}<AdEditorDemo cutout={img(/détourage|cutout/i)} logo={hero.logo} palette={hero.palette} brand={hero.brand} /></section>}
         <section id="textes" className={section}>{h(T("Textes et SEO", "Copy and SEO"), T("Des documents modifiables ; une information inconnue reste « à compléter ».", "Editable documents; unknown information stays \"to complete\"."))}<SeoDocDemo docs={docs} /></section>
         <section id="calendrier" className={section}>{h(T("Calendrier social", "Social calendar"), T("Publications d'exemple réparties dans la semaine. En démonstration, rien n'est programmé ni publié.", "Sample posts spread across the week. In the demo, nothing is scheduled or posted."))}<SocialCalendarDemo posts={posts} /></section>
