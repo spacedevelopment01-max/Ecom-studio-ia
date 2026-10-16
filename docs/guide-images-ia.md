@@ -24,7 +24,21 @@ services) ; les **images fixes** de services sont créées par l'IA, jamais une 
 Toutes les images du studio, pour tous les comptes (logos, produits, publicités, publications, décors), sont créées
 par **Qwen-Image 3.0 Pro** (Alibaba), confirmé d'office (`adminConfirm: false` dans `src/lib/ai/media-models.ts`).
 Un choix fait dans Administration › Images & Vidéos reste prioritaire. Sans clé Alibaba active, le studio retombe sur
-le défaut historique (OpenAI) : à surveiller dans l'administration.
+le défaut historique (OpenAI, plus cher) : l'administration l'affiche en avertissement (« Qwen-Image 3.0 Pro n'est pas
+utilisable… les images passent par … à la place »), avec la raison. Décision du propriétaire (16/10/2026) : ce passage automatique
+est gardé, mais l'administrateur est **alerté** dès la première image créée ailleurs (`src/lib/ai/media-alerts.ts`,
+appelé avant chaque génération payante) : e-mail aux administrateurs (si l'envoi d'e-mails est configuré) et
+notification dans l'administration — quoi, pourquoi, depuis quand, projet et usage, surcoût estimé par image, quoi
+faire. Au plus un rappel par heure tant que l'incident dure, puis une alerte « rétabli » quand Qwen refonctionne. Un
+modèle choisi exprès par l'administration n'est pas un incident. Sans aucun modèle utilisable, l'onglet Images le
+dit au client (raison affichée, bouton « Créer » désactivé) et rien n'est créé à la place.
+
+Consignes au modèle d'images **en français** (règle du propriétaire) : moteur Image V2 (banque, jeu d'images),
+photo du vrai produit en scène, ambiance, retouche et reconstruction du produit ; directions artistiques
+(`src/lib/image-v2/direction.ts`) en français ; produit entier exigé ; clause « aucune personne » en français
+(`NO_PEOPLE_FR`). Restent en anglais (à traiter avec leurs onglets) : la consigne des publications et publicités
+(`src/lib/social-v2/ai-post.ts`, avec `briefPrompt`/`briefScenePrompt`), les logos, et les descriptions des métiers
+et catégories de produits reprises dans les consignes (sujet, décor, interdits).
 
 Publications et publicités : **une seule étape** — Qwen-Image 3.0 Pro crée l'image entière (scène, vrai produit en
 référence, textes exacts, bouton, vrai logo). Essais réels ARVEN du 16/10 : la version 3.0 standard a raté trois fois la
@@ -41,7 +55,7 @@ Produit entier exigé à chaque génération (aucune partie coupée ou manquante
 |---|---|---|
 | Publications (Social V2, pilote automatique) | affiche du studio sur photo, gabarit en secours | `designPostWithAi` ; sans dépense acceptée : aucun visuel, raison dite |
 | Publicités (Ads V2, création du projet) | composition à calques sur photo | `finalAd` → `designPostWithAi` (as « ad ») ; sans IA : `ai_blocked` |
-| Onglet Images (créer une image) | « image gratuite » du studio (packshot, mise en scène) | Image V2 en génération seule (`noStock`) ou publication IA ; sans IA : refus 402 |
+| Onglet Images (créer une image) | « image gratuite » du studio (packshot, mise en scène) | Image V2 en génération seule (`noStock` imposé par le serveur à toute génération demandée) ; sans IA : raison affichée, bouton désactivé ; tâche sans image retenue : dit au client |
 | Jeu d'images de la création | packshots, recadrages, mises en scène du studio, photos de banque | `runImageSetV2` : image principale, en situation 16:9 et 4:5, ambiance (produit) ; scènes du métier et bannière (service) — toutes par l'IA |
 | Banque du thème | 15 photos de banque | aucune photo de banque (`THEME_BANK_IMAGES = 0`) ; vidéos libres inchangées |
 | « Régénérer le visuel » d'une publication | mise en page du studio | publication IA ; sans IA : refus expliqué |
@@ -65,3 +79,44 @@ insuffisant : le moteur le dit et ne crée rien à la place.
 
 - La recherche **manuelle** de photos libres dans la banque (onglet Images › Chercher des photos libres) reste
   disponible comme matière brute choisie par le client ; elle n'est plus utilisée automatiquement comme image finale.
+
+## Modèle de consigne du propriétaire (essai réussi du 16/10/2026)
+
+Image « univers de marque » ARVEN réussie du premier coup avec ce texte (Qwen-Image 3.0 Pro, 3:4, une seule étape ;
+résultat : branche `claude/essai-qwen-fr-resultats`, `reports/essai-qwen-consignes-fr/v4-proprietaire/`). Les essais
+précédents, écrits par morceaux, avaient produit une personne, un faux texte, un faux logo, puis une montre inventée.
+
+> Photographie de nature morte haut de gamme, photoréaliste, au format vertical 3:4. Vue de face légèrement plongeante,
+> cadrage rapproché.
+>
+> La scène se déroule sur une surface en marbre blanc poli, parcourue de fines veines grises naturelles. Un fond uni brun
+> chocolat chaud occupe le tiers supérieur de l'image, légèrement flou.
+>
+> Au premier plan, au centre et légèrement décalé vers la droite, se trouve un écrin rond en cuir cognac, avec de fines
+> coutures ton sur ton sur son pourtour. Sa base cylindrique repose à plat sur le marbre. Son couvercle circulaire est
+> ouvert, relevé presque verticalement vers l'arrière, laissant voir sa doublure en velours noir.
+>
+> L'intérieur de la base contient uniquement un coussin de velours noir mat, bien visible, entièrement nu et intact.
+> L'écrin ne contient aucun objet : aucune montre, aucun cadran, aucun bracelet, aucun bijou, aucune pièce métallique. Le
+> velours forme une surface continue et naturelle, sans empreinte ni silhouette de produit.
+>
+> À l'arrière-plan à droite, un grand sablier vertical en verre transparent et laiton doré patiné. Il possède deux
+> plateaux circulaires reliés par de fines colonnes métalliques. Du sable beige clair est visible dans les deux ampoules.
+> Son sommet arrive près du bord supérieur de l'image.
+>
+> À l'arrière-plan à gauche, une large bande de cuir cognac est enroulée à plat en une spirale serrée, dont les couches
+> sont bien visibles. Elle est légèrement coupée par le bord gauche du cadrage. Elle ne comporte ni boucle ni accessoire.
+>
+> La scène contient exactement trois objets : l'écrin ouvert avec son coussin vide, le sablier et le rouleau de cuir. Le
+> bas de l'image laisse une zone dégagée de marbre devant l'écrin.
+>
+> Éclairage chaud et doux venant du haut à gauche, comme une lumière de fin d'après-midi. Ombres délicates vers la
+> droite, reflets dorés subtils sur le laiton, grain du cuir et texture du velours réalistes. Mise au point précise sur
+> l'écrin, arrière-plan légèrement adouci. Ambiance élégante, sobre et chaleureuse, rendu photographique naturel.
+>
+> Aucun texte, aucune lettre, aucun chiffre, aucune gravure, aucun logo, aucun filigrane, aucune personne. Aucun objet
+> supplémentaire.
+
+Ce qu'il faut en retenir (règle pour toute consigne du studio) : une seule photo décrite du début à la fin ; chaque objet
+placé, décrit et dénombré ; ce qui doit rester vide l'est explicitement ; rien de vague ni de contradictoire ; les
+interdits regroupés en une phrase finale.

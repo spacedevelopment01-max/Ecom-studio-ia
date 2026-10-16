@@ -42,8 +42,8 @@ export default async function Page() {
           <p>Payment is made by card through a secure payment provider; the subscription renews automatically at the end of each period (month or year).</p>
         </section>
         <section>
-          <h2>4. Free discovery</h2>
-          <p>Without a subscription or a credit card, each account can make one free discovery: product analysis by AI, brand, logos and a preview of the home page marked "Preview". It does not include AI images or videos, nor the export or publication of the store.</p>
+          <h2>4. Free Discovery account</h2>
+          <p>Without a subscription or a credit card, every account registered by email can visit the demo studio: theme previews and sample brands, stores, ads, videos and calendars, used in the browser. A Discovery account cannot create or change anything: no project, no artificial intelligence calls, no images, videos or posts, no store export. To create a project, a paid subscription is required (one subscription per project).</p>
         </section>
         <section>
           <h2>5. Changing plan and cancellation</h2>
@@ -106,8 +106,8 @@ export default async function Page() {
         <p>Le paiement est effectué par carte via un prestataire de paiement sécurisé ; l'abonnement est renouvelé automatiquement à la fin de chaque période (mois ou année).</p>
       </section>
       <section>
-        <h2>4. Découverte gratuite</h2>
-        <p>Sans abonnement ni carte bancaire, chaque compte peut faire une découverte gratuite, réalisée par le moteur du studio sans intelligence artificielle : analyse du produit, marque, logos et aperçu de la page d'accueil marqué « Aperçu ». Elle ne comprend ni l'IA, ni images ni vidéos, ni l'export ou la publication de la boutique.</p>
+        <h2>4. Compte Découverte gratuit</h2>
+        <p>Sans abonnement ni carte bancaire, chaque compte inscrit par e-mail peut visiter le studio de démonstration : les thèmes en aperçu et des marques, boutiques, publicités, vidéos et calendriers d'exemple, manipulés dans le navigateur. Le compte Découverte ne permet de rien créer ni modifier : aucun projet, aucun appel à l'intelligence artificielle, aucune image, vidéo ou publication, aucun export de boutique. Pour créer un projet, il faut souscrire un abonnement payant (un abonnement par projet).</p>
       </section>
       <section>
         <h2>5. Changement de forfait et résiliation</h2>

@@ -137,7 +137,10 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
       srv.mode = mode;
       srv.requests = [];
       const err = (await fr(() => mp.logoArtworkImage({ ...c, usageKey: `k-${mode}` }, { prompt: "logo" })).catch((e) => e)) as Error;
-      expect(err.name).toBe("StreamInterrupted");
+      // Erreur définitive (aucune relance par la file de tâches), cause d'origine gardée.
+      expect((err as any).permanent).toBe(true);
+      expect((err as any).cause?.name).toBe("StreamInterrupted");
+      expect(err.message).toMatch(/Résultat incertain/);
       expect(srv.requests).toHaveLength(1);
       expect(reservations(c.userId).map((r) => r.status)).toEqual(["uncertain"]);
     }

@@ -84,5 +84,13 @@ export function storyMedia(d: { photo: string; images: { src: string; label: str
 /** Couleurs de la marque proposées pour le bouton de la démo « Personnalisation », sans doublon (ARVEN : l'ancrage et
  *  la couleur du texte sont le même noir, deux pastilles identiques s'affichaient). */
 export function buttonColors(palette: string[]): string[] {
-  return [...new Set([palette[0] ?? "#454873", palette[2] ?? "#8D74B4", palette[4] ?? "#14151F"])];
+  const rgb = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const near = (a: string, b: string) => {
+    const [x, y] = [rgb(a), rgb(b)];
+    return Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]) < 40;
+  };
+  // Deux couleurs presque identiques (ex. Les Tribunes : #0D0D0D et #050505) ne font qu'une pastille.
+  const out: string[] = [];
+  for (const c of [palette[0] ?? "#454873", palette[2] ?? "#8D74B4", palette[4] ?? "#14151F"]) if (!out.some((o) => near(o, c))) out.push(c);
+  return out;
 }

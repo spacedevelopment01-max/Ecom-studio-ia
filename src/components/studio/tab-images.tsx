@@ -1,16 +1,17 @@
 "use client";
 /**
  * Onglet Images : la BANQUE D'IMAGES du projet. Seulement des images neutres, sans texte (vos photos, détourages,
- * photos libres de droits, mises en scène du studio, images créées par l'IA), réutilisées partout : site,
+ * photos libres de droits choisies par le client, images créées par l'IA), réutilisées partout : site,
  * publications, publicités. Les publications avec texte se créent dans Publications.
  * Compléter la banque : chercher des photos libres (gratuit, matière brute choisie par le client), créer une image
- * par l'IA (prix affiché avant ; plus de mise en scène composée par le studio), importer ses propres photos.
+ * par l'IA (prix affiché avant ; jamais de gabarit ni de photo libre à la place), importer ses propres photos.
+ * IA d'images indisponible : la raison est dite et le bouton payant reste désactivé.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ImagePlus, Search, Upload, Wand2 } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, Field, Input, Modal, Select, Toggle, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
-import { EngineNotice, JobProgress, ROLE_LABEL, StatusBadge, useActive, type AssetView } from "./common";
+import { JobProgress, ROLE_LABEL, StatusBadge, useActive, type AssetView } from "./common";
 import { AssetViewer } from "./asset-viewer";
 import { useCostConfirm } from "./cost-confirm";
 import { useLang, useT } from "../i18n";
@@ -103,22 +104,26 @@ function useFollowJob(onDone: () => unknown) {
   done.current = onDone;
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
   return useCallback(
-    (jobId: string | undefined, okMessage: string) => {
+    (jobId: string | undefined, okMessage: string, noneMessage: string) => {
       reloadProject().catch(() => {});
       if (!jobId) return;
       const started = Date.now();
       const tick = async () => {
         try {
-          const { job } = await api<{ job: { status: string; error: string | null } }>(`/api/jobs/${jobId}`);
+          const { job } = await api<{ job: { status: string; error: string | null; message?: string | null; result?: { outcomes?: { assetId: string | null }[] } | null } }>(`/api/jobs/${jobId}`);
           if (job.status === "done") {
             await done.current();
             reloadProject().catch(() => {});
-            toast("ok", okMessage);
+            // Tâche terminée sans aucune image retenue : dit clairement (jamais « image prête » pour rien).
+            const outcomes = job.result?.outcomes;
+            if (Array.isArray(outcomes) && !outcomes.some((o) => o.assetId)) toast("bad", noneMessage);
+            else toast("ok", okMessage);
             return;
           }
           if (job.status === "failed" || job.status === "cancelled" || job.status === "blocked") {
             reloadProject().catch(() => {});
             if (job.status === "failed") toast("bad", job.error || t("La création a échoué.", "Creation failed."));
+            if (job.status === "blocked") toast("bad", job.message || t("La création est bloquée : rien n'a été créé à la place.", "Creation is blocked: nothing was created instead."));
             return;
           }
         } catch {}
@@ -196,6 +201,24 @@ const ASPECTS: [string, string, string][] = [
   ["9:16", "9:16 · vertical", "9:16 · vertical"],
 ];
 
+/** Réponse de GET /api/projects/[id]/images : IA d'images utilisable, raison sinon, prix d'une image. */
+export type ImagesQuote = { ai: boolean; reason?: string | null; quote: { ai_image: number } };
+
+/**
+ * IA d'images indisponible (forfait payé, mais budget épuisé ou aucun modèle d'images utilisable) : dit clairement,
+ * avec la raison ; jamais de « version simplifiée » ni de gabarit à la place (images finales 100 % IA).
+ */
+export function ImageAiNotice({ reason }: { reason?: string | null }) {
+  const t = useT();
+  return (
+    <div className="rounded-2xl border border-warn/30 bg-warn-soft px-4 py-3 text-sm text-warn" data-image-ai-notice>
+      <strong>{t("Création d'images par l'IA indisponible pour l'instant.", "AI image creation is unavailable for now.")}</strong>{" "}
+      {reason ? t(`Raison : ${reason}.`, `Reason: ${reason}.`) : t("Budget IA épuisé ou fournisseur désactivé.", "AI budget used up or provider disabled.")}{" "}
+      {t("Aucune image n'est fabriquée à la place : vous pouvez importer vos photos ou chercher des photos libres.", "No image is made instead: you can upload your photos or search royalty-free photos.")}
+    </div>
+  );
+}
+
 export default function TabImages() {
   const { id, data } = useProject();
   const t = useT();
@@ -208,6 +231,8 @@ export default function TabImages() {
   const active = useActive(["image.v2", "image.single", "images.generate"]);
   const { list, reload, status, setStatus } = useImageList(id, BANK_IMAGE_ROLES.join(","));
   const follow = useFollowJob(reload);
+  // État de l'IA d'images du projet et prix d'une image (affiché avant toute création payante).
+  const { data: q } = useApi<ImagesQuote>(`/api/projects/${id}/images`);
   useEffect(() => {
     if (!active.length) reload();
   }, [active.length, reload]);
@@ -235,7 +260,7 @@ export default function TabImages() {
   const shown = status === "trash" ? all : all.filter((a) => !source || sourceOf(a) === source);
   return (
     <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6" data-image-bank>
-      <EngineNotice what={t("les mises en scène du produit", "the product staging")} />
+      {!locked && q && !q.ai && <ImageAiNotice reason={q.reason} />}
       <Card className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <h2 className="font-display text-2xl font-semibold">{t("Banque d'images", "Image bank")}</h2>
@@ -285,10 +310,10 @@ export default function TabImages() {
         )}
       </div>
       <Modal open={dialog === "search"} onClose={() => setDialog(null)} title={t("Chercher des photos libres", "Find royalty-free photos")} wide>
-        <SearchPhotos services={services} onStarted={(jobId) => (setDialog(null), follow(jobId, t("Photos trouvées : elles sont dans votre banque.", "Photos found: they're in your bank.")))} />
+        <SearchPhotos services={services} onStarted={(jobId) => (setDialog(null), follow(jobId, t("Photos trouvées : elles sont dans votre banque.", "Photos found: they're in your bank."), t("Aucune photo libre ne convient à ce sujet : rien n'a été ajouté. Essayez un autre sujet ou importez vos photos.", "No royalty-free photo fits this subject: nothing was added. Try another subject or upload your photos.")))} />
       </Modal>
       <Modal open={dialog === "create"} onClose={() => setDialog(null)} title={t("Créer une image", "Create an image")} wide>
-        <CreateImage services={services} onStarted={(jobId) => (setDialog(null), follow(jobId, t("Image prête : elle est dans votre banque.", "Image ready: it's in your bank.")))} />
+        <CreateImage services={services} q={q} onStarted={(jobId) => (setDialog(null), follow(jobId, t("Image prête : elle est dans votre banque.", "Image ready: it's in your bank."), t("Aucune image n'a été retenue (contrôle de qualité ou IA indisponible) : rien n'a été mis à la place. Le détail est dans les tâches du projet.", "No image was kept (quality check or AI unavailable): nothing was put in its place. Details are in the project's tasks.")))} />
       </Modal>
       <AssetViewer asset={viewer} onClose={() => setViewer(null)} onChanged={reload} />
     </div>
@@ -340,13 +365,12 @@ function SearchPhotos({ services, onStarted }: { services: boolean; onStarted: (
  * Créer une image pour la banque : toujours créée par l'IA (règle « images finales 100 % IA » : plus de mise en scène
  * composée par le studio), vrai produit en référence, prix affiché avant ; aucune personne sans accord.
  */
-function CreateImage({ services, onStarted }: { services: boolean; onStarted: (jobId?: string) => void }) {
-  const { id, data } = useProject();
+function CreateImage({ services, q, onStarted }: { services: boolean; q: ImagesQuote | null | undefined; onStarted: (jobId?: string) => void }) {
+  const { id } = useProject();
   const t = useT();
   const { lang } = useLang();
   const toast = useToast();
   const cost = useCostConfirm();
-  const { data: q } = useApi<{ ai: boolean; quote: { ai_image: number } }>(`/api/projects/${id}/images`);
   const ai = !!q?.ai;
   const [f, setF] = useState({ kind: services ? "trade_photo" : "usage_scene", topic: "", aspect: "4:5", count: 1 });
   const [busy, setBusy] = useState(false);
@@ -374,7 +398,7 @@ function CreateImage({ services, onStarted }: { services: boolean; onStarted: (j
         <span className="block text-xs text-muted">{services ? t("Une image de votre métier ou de votre activité, contrôlée avant d'arriver dans la banque.", "An image of your trade or business, checked before it reaches the bank.") : t("Une scène autour de votre vrai produit, contrôlée avant d'arriver dans la banque.", "A scene around your real product, checked before it reaches the bank.")}</span>
         <span className="mt-1 inline-block rounded-full bg-signal-soft px-2 py-0.5 text-[11px] font-semibold text-signal">{badge}</span>
       </div>
-      {!ai && <p className="text-xs text-muted">{t("La création par l'IA n'est pas disponible pour ce projet (forfait Découverte, budget IA épuisé ou fournisseur désactivé).", "AI creation isn't available for this project (Discovery plan, AI budget used up or provider disabled).")} {t("Aucune image n'est créée à la place par un gabarit.", "No template image is made instead.")}</p>}
+      {q && !ai && <p className="text-xs text-warn" data-bank-create-unavailable>{q.reason ? t(`Création par l'IA indisponible pour l'instant : ${q.reason}.`, `AI creation unavailable for now: ${q.reason}.`) : t("Création par l'IA indisponible pour ce projet : budget IA épuisé ou fournisseur désactivé.", "AI creation unavailable for this project: AI budget used up or provider disabled.")} {t("Aucune image n'est créée à la place (ni gabarit, ni photo libre).", "No image is made instead (no template, no stock photo).")}</p>}
       {(
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label={t("Sujet (facultatif)", "Subject (optional)")} htmlFor="bc-topic"><Input id="bc-topic" value={f.topic} maxLength={200} onChange={(e) => setF({ ...f, topic: e.target.value })} placeholder={services ? t("Ex. atelier lumineux, matériaux posés", "E.g. bright workshop, materials laid out") : t("Ex. sur une table en bois, lumière du matin", "E.g. on a wooden table, morning light")} /></Field>

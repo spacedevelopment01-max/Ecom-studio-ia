@@ -8,10 +8,12 @@ import type { Project } from "../projects";
 import { resolveTrade, tradeText, GLOBAL_NEGATIVES, type TradeProfile } from "../brain/trade";
 import { tradeStock } from "../stock/trade-queries";
 import { POLICIES } from "../quality/policies";
-import { mentionsPerson, NO_PEOPLE_EN, peopleAllowedFor, peopleFreeQueries } from "../people-policy";
+import { mentionsPerson, NO_PEOPLE_FR, peopleAllowedFor, peopleFreeQueries } from "../people-policy";
 import { productIdentity, resolveProductCategory, type ProductCategoryProfile } from "./categories";
 import { chooseDirection, DIRECTIONS } from "./direction";
 import { defaultAspect, FORMATS } from "./formats";
+import { toFr } from "./prompt-fr";
+import { productScenePromptFr, stillLifeFor, stillLifePrompt, type StillLifeScene } from "./still-life";
 import { PRODUCT_KINDS } from "./intent";
 import type { ArtDirectionId, AspectId, Support, VisualBrief, VisualKind } from "./types";
 
@@ -38,18 +40,18 @@ export type BriefRequest = {
 const uniq = <T,>(a: T[]) => [...new Set(a.filter(Boolean))];
 
 /** Axes de variation d'une série : même direction, angles, lieux, lumières et intentions différents. */
-const ANGLES = ["medium shot on hands and work", "wide shot showing the whole space", "close-up detail of the result", "three-quarter view of the person at work"];
-const LIGHTS = ["soft side daylight", "bright even daylight", "warm late-afternoon light", "cool morning light"];
-const INTENTS = ["show the skill", "show the setting", "show the result", "show the human"];
+const ANGLES = ["plan moyen sur les mains et l'ouvrage", "plan large qui montre tout l'espace", "gros plan sur un détail du résultat", "vue de trois quarts de la personne au travail"];
+const LIGHTS = ["lumière du jour douce de côté", "lumière du jour vive et égale", "lumière chaude de fin d'après-midi", "lumière fraîche du matin"];
+const INTENTS = ["montrer le savoir-faire", "montrer le lieu", "montrer le résultat", "montrer l'humain"];
 /** Mêmes axes sans personne (règle de présence humaine) : outils, lieu, résultat, matière. */
-const ANGLES_NO_PEOPLE = ["medium shot on tools and work surface", "wide shot showing the whole space", "close-up detail of the result", "three-quarter view of the workspace and materials"];
-const INTENTS_NO_PEOPLE = ["show the tools", "show the setting", "show the result", "show the materials"];
+const ANGLES_NO_PEOPLE = ["plan moyen sur les outils et le plan de travail", "plan large qui montre tout l'espace", "gros plan sur un détail du résultat", "vue de trois quarts du poste de travail et des matériaux"];
+const INTENTS_NO_PEOPLE = ["montrer les outils", "montrer le lieu", "montrer le résultat", "montrer les matériaux"];
 /** Directions artistiques dont la composition, le cadrage ou l'ambiance supposent une personne : version sans personne. */
 const DIRECTION_NO_PEOPLE: Partial<Record<ArtDirectionId, { composition?: string; framing?: string; mood?: string }>> = {
-  documentary_trade: { composition: "real job site, tools, materials and work in progress clearly visible, nobody in frame", framing: "35-50 mm, medium shot on tools and work, eye level" },
-  natural_lifestyle: { composition: "real everyday place, the subject ready to use, candid, nobody in frame" },
-  product_demo: { composition: "the product set up on a real task, result visible, no hands" },
-  warm_universe: { mood: "welcoming, generous, warm" },
+  documentary_trade: { composition: "vrai chantier, outils, matériaux et travail en cours bien visibles, personne dans le cadre", framing: "35-50 mm, plan moyen sur les outils et l'ouvrage, à hauteur d'œil" },
+  natural_lifestyle: { composition: "vrai lieu du quotidien, le sujet prêt à servir, naturel, personne dans le cadre" },
+  product_demo: { composition: "le produit installé pour une vraie tâche, résultat visible, aucune main" },
+  warm_universe: { mood: "accueillant, généreux, chaleureux" },
 };
 
 const WEAK_MUST = new Set(["interior", "exterior", "renovation", "construction", "tools", "repair", "diy", "builder", "design", "home", "work", "service", "professional"]);
@@ -81,6 +83,13 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
   let negative: string[] = [];
   let queries: string[] = [];
   let understanding: VisualBrief["understanding"];
+  // Même brief rédigé en français pour la consigne du modèle d'images (les données anglaises servent aux recherches).
+  let subjectFr = "";
+  let actionFr: string | null = null;
+  let environmentFr: string | null = null;
+  let sceneFr: StillLifeScene | undefined;
+  let sceneExclude: string | undefined;
+  let productSceneFr: Pick<StillLifeScene, "view" | "setting" | "clearSurface"> | undefined;
 
   if (services) {
     // Métier du projet, puis celui de la prestation demandée quand elle est reconnue (« carrelage » ≠ « peinture »).
@@ -96,12 +105,18 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
       action = gesture;
       environment = scenes.length ? scenes[v % scenes.length] : null;
       subject = req.service ? `${req.service.name} — ${prof} at work` : `${prof} at work`;
+      subjectFr = `${req.service ? `${req.service.name} — ` : ""}${trade.labels.fr || "professionnel"} au travail`;
+      actionFr = gesture;
+      environmentFr = environment;
     } else {
       // Sans personne : le métier se prouve par ses outils, ses matériaux, le chantier et le résultat.
       action = gesture ? `${gesture} shown through its tools, materials and finished result, nobody in frame` : "tools, materials and finished result of the trade, nobody in frame";
       environment = scenes.length ? scenes[v % scenes.length] : `${gesture ?? "work"} site with tools and materials in place, nobody in frame`;
       // Le nom du métier désigne une personne (« plasterer ») : le sujet est l'ouvrage, pas l'artisan.
       subject = `${req.service ? `${req.service.name} — ` : ""}${gesture ?? "trade"} work: tools, materials and finished result (no people)`;
+      subjectFr = `${req.service ? `${req.service.name} — ` : ""}métier de ${trade.labels.fr || "l'artisan"} : outils, matériaux et ouvrage terminé (sans personne)`;
+      actionFr = gesture ? `${gesture}, montré par ses outils, ses matériaux et le résultat, personne dans le cadre` : "outils, matériaux et ouvrage terminé du métier, personne dans le cadre";
+      environmentFr = scenes.length ? environment : `lieu de travail avec les outils et les matériaux en place, personne dans le cadre`;
     }
     positive = uniq(noPerson([...trade.visuals.positive, ...trade.actions]));
     // Mots trop généraux pour prouver le métier (« interior », « renovation », « tools »…) : jamais suffisants seuls.
@@ -118,10 +133,19 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
   } else {
     category = resolveProductCategory(p.product);
     environment = category.environments[v % category.environments.length] ?? null;
+    environmentFr = environment ? toFr(environment) : null;
     if (productKind) {
       const id = productIdentity(p, { hasReference: !!req.references?.length });
       subject = `the real product "${id.name || p.product.category}"${id.colors.length ? ` (${id.colors.join(", ")})` : ""}`;
       action = req.kind === "usage_scene" || req.kind === "lifestyle" ? (people ? (category.usage[v % category.usage.length] ?? null) : "the product ready to use in its real everyday setting, nobody in frame") : null;
+      // Sans guillemets : seuls les textes à écrire dans l'image en ont (ici, aucun).
+      // Photo du vrai produit (référence jointe, sans personne) : surface et fond de la nature morte de sa famille.
+      if (req.references?.length && !people) {
+        const sc = stillLifeFor(category.id, `${p.product.name ?? ""} ${p.product.category ?? ""} ${p.product.summary ?? ""}`, v);
+        productSceneFr = { view: sc.view, setting: sc.setting, clearSurface: sc.clearSurface };
+      }
+      subjectFr = `le vrai produit, ${id.name || p.product.category}${id.colors.length ? ` (${id.colors.join(", ")})` : ""}`;
+      actionFr = req.kind === "usage_scene" || req.kind === "lifestyle" ? (people ? toFr(category.usage[v % category.usage.length] ?? "") || null : "le produit prêt à servir, posé dans son vrai décor du quotidien") : null;
       positive = uniq([id.name, p.product.category]);
       // Images du produit : aucune recherche dans les banques (elles n'ont pas votre produit).
       queries = [];
@@ -130,6 +154,22 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
       subject = `world of ${category.labels.en || p.product.category || "the product"} (without the product itself)`;
       const usage = noPerson(category.usage);
       action = people ? (category.usage[v % category.usage.length] ?? null) : usage.length ? `${usage[v % usage.length]}, objects only, nobody in frame` : "objects and materials of everyday use in place, nobody in frame";
+      // Univers concret (essai ARVEN du 16/10 : « univers de la famille accessoires », « porté chaque jour » ont donné
+      // une personne en manteau et des sacs de luxe) : une nature morte d'objets précis, avec les matières du produit.
+      // Sans les matières ni le nom du produit (essai v3 : « acier poli » + « écrin à montre » ont fait inventer une
+      // montre) : la palette de la marque suffit pour les couleurs.
+      subjectFr = `nature morte de l'univers de la marque (${category.labels.fr || p.product.category || "produit"}), avec seulement les objets décrits`;
+      // Décor entièrement décrit (demande du propriétaire après les essais ARVEN) : surface, fond, 3 objets au plus avec
+      // matière, couleur et place, lumière, cadrage — liste fermée.
+      const scene = stillLifeFor(category.id, `${p.product.name ?? ""} ${p.product.category ?? ""} ${p.product.summary ?? ""}`, v);
+      actionFr = people ? toFr(category.usage[v % category.usage.length] ?? "") || null : null;
+      if (!people) {
+        // Sans la RegExp de choix de variante (brief enregistré avec l'image).
+        const { match: _m, ...rest } = scene;
+        void _m;
+        sceneFr = rest;
+        sceneExclude = scene.exclude;
+      }
       positive = uniq(noPerson([...category.environments, ...category.usage]));
       const uq = [category.universeQueries[v % Math.max(1, category.universeQueries.length)], ...category.universeQueries];
       queries = uniq(people ? uq : peopleFreeQueries(uq)).slice(0, 3);
@@ -138,7 +178,10 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
     understanding = { source: category.source === "generic" ? "generic" : "product", id: category.id, confidence: category.source === "core" ? "high" : category.source === "sector" ? "medium" : "low" };
   }
 
-  if (req.topic?.trim()) subject = `${subject} — ${req.topic.trim().slice(0, 160)}`;
+  if (req.topic?.trim()) {
+    subject = `${subject} — ${req.topic.trim().slice(0, 160)}`;
+    subjectFr = `${subjectFr} — ${req.topic.trim().slice(0, 160)}`;
+  }
   const dir = chooseDirection({
     business: p.business,
     sector: p.product.sector ?? null,
@@ -180,6 +223,7 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
     understanding,
     people,
     ...(req.shot ? { shotKey: crypto.createHash("sha256").update(JSON.stringify(req.shot)).digest("hex").slice(0, 12) } : {}),
+    fr: { subject: subjectFr || subject, action: actionFr, environment: req.shot?.environment ?? environmentFr, negative: negative.map(toFr), ...(sceneFr ? { scene: sceneFr } : {}), ...(sceneExclude ? { sceneExclude } : {}), ...(productSceneFr ? { productScene: productSceneFr } : {}) },
   };
 }
 
@@ -190,23 +234,46 @@ export function briefHash(b: VisualBrief): string {
   return crypto.createHash("sha256").update(JSON.stringify(key)).digest("hex").slice(0, 16);
 }
 
-/** Consigne de génération tirée du brief (anglais) : sujet, geste, lieu, direction, lumière, cadrage, interdits. */
+/** Zone du cadre gardée calme, en français. */
+const ZONE_FR: Record<string, string> = { left: "le côté gauche", right: "le côté droit", top: "le haut", bottom: "le bas", center: "le centre" };
+
+/**
+ * Consigne de génération tirée du brief, EN FRANÇAIS (règle du propriétaire pour Qwen-Image) : concrète (sujet, geste,
+ * lieu, lumière, cadrage), aucun texte voulu dans l'image (rien entre guillemets), produit ENTIER exigé.
+ */
 export function generationPrompt(b: VisualBrief, extra?: string | null): string {
   const d = { ...DIRECTIONS[b.artDirection], ...(b.people === false ? DIRECTION_NO_PEOPLE[b.artDirection] : {}) };
+  // Brief en français (ancien brief sans version française : données d'origine).
+  const f = b.fr ?? { subject: b.subject, action: b.action, environment: b.environment, negative: b.negative };
+  const zone = b.format.textZone !== "none" ? ` ; ${ZONE_FR[b.format.textZone] ?? b.format.textZone} de l'image reste dégagé et calme (surface unie)` : "";
+  // Univers sans produit ni personne : nature morte au décor entièrement décrit (liste fermée d'objets), sans la
+  // composition générique de la direction (« quelques accessoires raffinés » amenait des objets hors sujet).
+  // Structure de la consigne du propriétaire (essai réel v4 réussi) : paragraphes, liste fermée d'objets, zone
+  // dégagée, lumière, phrase finale ; aucune couleur en code ni matière du produit.
+  if (f.scene) return stillLifePrompt(f.scene, { aspect: b.format.aspect, zone: b.format.textZone, correction: extra });
+  if (f.productScene && b.productFidelity) return productScenePromptFr(f.productScene, { aspect: b.format.aspect, zone: b.format.textZone, mood: d.mood, correction: extra });
   return [
-    `${d.label} photograph. Subject: ${b.subject}.`,
+    `Photographie, style ${d.label}. Sujet : ${f.subject}.`,
     // Publicité : niveau campagne d'agence (lumière travaillée, matières, profondeur), un seul point focal, de l'air.
-    b.support === "ad" ? "Premium advertising campaign photograph for social media: one clear focal point, crafted natural or golden light, rich textures and materials, shallow depth of field, refined colour grading, generous negative space, realistic and believable (never a 3D render, never clip-art)." : "",
-    b.action ? `Action: ${b.action}.` : "",
-    b.environment ? `Setting: ${b.environment}.` : "",
-    `Composition: ${b.composition}. Lighting: ${b.lighting}. Camera: ${b.framing}. Mood: ${d.mood}.`,
-    b.palette.length ? `Colour accents in harmony with ${b.palette.join(", ")}.` : "",
-    `Format ${b.format.aspect}${b.format.textZone !== "none" ? `, ${b.format.textZone} area kept calm for text` : ""}.`,
-    b.productFidelity ? "The product must stay EXACTLY as in the reference: same shape, colours, logo, label text and proportions; do not redraw or restyle it." : "",
-    `Never show: ${b.negative.slice(0, 8).join(", ")}; no text, letters, logos or watermarks.`,
-    b.people === false ? NO_PEOPLE_EN : "",
-    extra ? `Correction for this attempt: ${extra}` : "",
+    b.support === "ad" ? "Photographie de campagne publicitaire haut de gamme pour les réseaux sociaux : un seul point focal net, lumière naturelle ou dorée travaillée, matières et textures riches, faible profondeur de champ, étalonnage soigné, bel espace libre, réaliste et crédible (jamais un rendu 3D, jamais un dessin)." : "",
+    f.action ? `Action : ${f.action}.` : "",
+    f.environment ? `Décor : ${f.environment}.` : "",
+    `Composition : ${b.composition}. Lumière : ${b.lighting}. Prise de vue : ${b.framing}. Ambiance : ${d.mood}.`,
+    b.palette.length ? `Touches de couleur en accord avec ${b.palette.join(", ")}.` : "",
+    // Zone calme décrite comme une surface, sans jamais parler de texte (essai ARVEN : « zone gardée calme pour un
+    // texte » a fait écrire un faux texte à cet endroit).
+    `Format ${b.format.aspect}${zone}.`,
+    b.productFidelity ? PRODUCT_FIDELITY_FR : "",
+    // Positif seulement : nommer les interdits (« faux logos de luxe »…) les fait apparaître ; ils restent dans le
+    // brief pour la recherche et le contrôle, et le négatif du modèle exclut texte, logo et personnes.
+    "Objets sans marque visible ; image purement photographique, rien n'est écrit sur l'image.",
+    b.people === false ? NO_PEOPLE_FR : "",
+    extra ? `Correction pour cet essai : ${extra}` : "",
   ]
     .filter(Boolean)
     .join(" ");
 }
+
+/** Fidélité au vrai produit, et produit entier dans le cadre (exigence du propriétaire, ex. bracelet complet d'une montre). */
+export const PRODUCT_FIDELITY_FR =
+  "Le produit reste EXACTEMENT comme sur la référence : même forme, mêmes couleurs, même logo, mêmes inscriptions, mêmes proportions ; ne pas le redessiner. Le produit ENTIER est dans le cadre, aucune partie coupée, cachée ou manquante (ex. une montre : le bracelet complet avec sa boucle).";

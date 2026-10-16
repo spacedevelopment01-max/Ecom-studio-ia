@@ -32,6 +32,13 @@ export type StoryDemo = {
   ad: string;
   banner: string;
   videoPoster: string;
+  /** Film de la démonstration (vérifié image par image) ; vide : seulement l'affiche, ou les étapes. */
+  video?: string;
+  /** Publicité faite dans l'éditeur du studio : son titre et ses quatre formats. */
+  adTitle?: string | null;
+  adFormats?: { aspect: string; src: string }[];
+  /** Publications du calendrier (visuels vérifiés) ; sinon visuel social et bannière. */
+  socialPosts?: { src: string; network: string; caption: string }[];
 };
 
 export type StoryStep = { key: string; label: string; title: string; text: string; points: string[] };
@@ -111,31 +118,47 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
       </div>
     );
   }
-  if (k === "ads")
+  if (k === "ads") {
+    const formats = d.adFormats ?? [];
     return (
       <div className={cx("grid h-full gap-3 p-4 sm:p-5", d.ad ? "grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)]" : "content-center")}>
-        {/* Sans publicité créée par l'IA à montrer : seulement les réglages, jamais un gabarit à la place. */}
+        {/* Sans publicité valable à montrer : seulement les réglages, jamais un gabarit à la place. */}
         {!d.ad ? null : (
         <div className="relative mx-auto aspect-[9/16] h-full max-w-full overflow-hidden rounded-2xl border border-line bg-[#F6F6F9]">
-          <Img src={d.ad} alt={t(`Publicité ${d.brand} au format 9:16`, `${d.brand} 9:16 ad`)} />
-          {/* Sélection d'un élément, comme dans l'éditeur du studio */}
+          <Img src={d.ad} alt={t(`Publicité ${d.brand} au format 9:16`, `${d.brand} 9:16 ad`)} contain />
+          {/* Sélection d'un élément, comme dans l'éditeur du studio (publicités sans titre connu seulement). */}
+          {!d.adTitle && (
           <span className="pointer-events-none absolute left-[5%] top-[8%] h-[7.5%] w-[84%] rounded-md border-2 border-[#2F4BD8]" aria-hidden>
             <span className="absolute -left-1 -top-1 size-2 rounded-sm bg-[#2F4BD8]" /><span className="absolute -right-1 -top-1 size-2 rounded-sm bg-[#2F4BD8]" /><span className="absolute -bottom-1 -left-1 size-2 rounded-sm bg-[#2F4BD8]" /><span className="absolute -bottom-1 -right-1 size-2 rounded-sm bg-[#2F4BD8]" />
           </span>
+          )}
         </div>
         )}
-        <div className="flex flex-col gap-2.5 text-xs">
+        <div className="flex min-w-0 flex-col gap-2.5 text-xs">
           <div className="rounded-2xl border border-line bg-card p-3">
-            <p className="font-semibold text-ink">{t("Titre sélectionné", "Selected heading")}</p>
-            <p className="mt-1.5 rounded-lg border border-line bg-paper-2 px-2 py-1.5 text-ink-2">{t("Des objets à vivre.", "Objects to live with.")}</p>
+            <p className="font-semibold text-ink">{t("Titre", "Heading")}</p>
+            <p className="mt-1.5 rounded-lg border border-line bg-paper-2 px-2 py-1.5 text-ink-2">{d.adTitle ?? t("Des objets à vivre.", "Objects to live with.")}</p>
           </div>
           {[t("Remplacer la photo", "Replace the photo"), t("Déplacer le logo", "Move the logo"), t("Modifier une forme", "Edit a shape")].map((l) => (
             <p key={l} className="flex items-center gap-2 rounded-xl border border-line bg-card px-3 py-2 text-ink-2"><Check className="size-3.5 text-signal" aria-hidden /> {l}</p>
           ))}
-          <div className="mt-auto flex flex-wrap gap-1.5">{["1:1", "4:5", "9:16", "16:9"].map((f) => <span key={f} className="rounded-full border border-line bg-paper-2 px-2 py-0.5 font-medium text-ink-2">{f}</span>)}</div>
+          {formats.length ? (
+            // La même publicité déclinée par l'éditeur dans les quatre formats.
+            <ul className="mt-auto grid grid-cols-4 items-end gap-1.5" aria-label={t("Formats de la publicité", "Ad formats")}>
+              {formats.map((f) => (
+                <li key={f.aspect} className="min-w-0">
+                  <img src={f.src} alt={t(`Publicité ${d.brand} au format ${f.aspect}`, `${d.brand} ${f.aspect} ad`)} loading="lazy" className="w-full rounded-md border border-line object-contain" style={{ aspectRatio: f.aspect.replace(":", " / ") }} />
+                  <span className="mt-1 block text-center font-medium text-ink-2">{f.aspect}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="mt-auto flex flex-wrap gap-1.5">{["1:1", "4:5", "9:16", "16:9"].map((f) => <span key={f} className="rounded-full border border-line bg-paper-2 px-2 py-0.5 font-medium text-ink-2">{f}</span>)}</div>
+          )}
         </div>
       </div>
     );
+  }
   if (k === "video") {
     const shots: [string, string][] = [[d.packshot, t("Ouverture", "Opening")], [d.detail, t("Produit", "Product")], [d.scene1, t("Usage", "In use")], [d.banner, t("Appel à l'action", "Call to action")]];
     // Sans vidéo créée par l'IA à montrer : les étapes, sans image.
@@ -149,6 +172,23 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
             </li>
           ))}
         </ol>
+      );
+    // Film de la démonstration : lu en boucle, sans le son, comme un aperçu ; l'affiche s'affiche avant.
+    if (d.video)
+      return (
+        <div className="grid h-full grid-cols-[minmax(0,0.75fr)_minmax(0,1fr)] gap-3 p-4 sm:p-5">
+          <div className="relative mx-auto aspect-[9/16] h-full max-w-full overflow-hidden rounded-2xl border border-line bg-[#070B17]">
+            <video src={d.video} poster={d.videoPoster} muted loop playsInline autoPlay preload="none" aria-label={t(`Film publicitaire ${d.brand}, 15 secondes`, `${d.brand} ad film, 15 seconds`)} className="size-full object-cover" />
+          </div>
+          <ol className="flex min-w-0 flex-col justify-center gap-2 text-xs">
+            {[[t("Le message", "The message"), t("adapté au produit et au réseau", "adapted to the product and network")], [t("Le déroulé en images", "The outline in pictures"), t("chaque moment montré avant de dépenser", "each moment shown before spending")], [t("Votre accord", "Your approval"), t("le prix s'affiche d'abord", "the price is shown first")], [t("La vidéo prête", "The finished video"), t("15 s, vertical 9:16", "15 s, vertical 9:16")]].map(([a, b], i) => (
+              <li key={a} className="flex items-center gap-2.5 rounded-xl border border-line bg-card px-2.5 py-2">
+                <span className="grid size-7 shrink-0 place-items-center rounded-full bg-paper-2 font-display text-xs font-semibold text-signal">{i + 1}</span>
+                <span className="min-w-0"><span className="block font-semibold text-ink">{a}</span><span className="text-muted">{b}</span></span>
+              </li>
+            ))}
+          </ol>
+        </div>
       );
     return (
       <div className="flex h-full flex-col gap-3 p-4 sm:p-5">
@@ -192,11 +232,14 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
   // social
   const days = [t("Lun", "Mon"), t("Mar", "Tue"), t("Mer", "Wed"), t("Jeu", "Thu"), t("Ven", "Fri"), t("Sam", "Sat"), t("Dim", "Sun")];
   // Vignettes : seulement des publications réelles (visuel social, bannière) ; sinon aucune image, jamais une scène.
-  const posts: Record<number, [string, string, "review" | "ok" | "sched"]> = { 0: [d.social, "Instagram", "ok"], 2: [d.banner, "Facebook", "sched"], 4: ["", "Pinterest", "review"], 5: ["", "TikTok", "review"] };
+  const sp = d.socialPosts ?? [];
+  const posts: Record<number, [string, string, "review" | "ok" | "sched"]> = sp.length
+    ? { 0: [sp[0]?.src ?? "", sp[0]?.network ?? "Instagram", "ok"], 2: [sp[1]?.src ?? "", sp[1]?.network ?? "Facebook", "sched"], 4: [sp[2]?.src ?? "", sp[2]?.network ?? "Pinterest", "review"], 5: [sp[3]?.src ?? "", sp[3]?.network ?? "TikTok", "review"] }
+    : { 0: [d.social, "Instagram", "ok"], 2: [d.banner, "Facebook", "sched"], 4: ["", "Pinterest", "review"], 5: ["", "TikTok", "review"] };
   const status = { review: t("À valider", "To approve"), ok: t("Approuvée", "Approved"), sched: t("Programmée", "Scheduled") };
   return (
     <div className="flex h-full flex-col gap-3 p-4 sm:p-5">
-      <div className="flex items-center justify-between text-xs"><span className="flex items-center gap-1.5 font-semibold text-ink"><CalendarDays className="size-4 text-signal" aria-hidden /> {t("Semaine type", "Sample week")}</span><span className="text-muted">{t("Rien ne part sans votre accord", "Nothing goes out without your approval")}</span></div>
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs"><span className="flex items-center gap-1.5 font-semibold text-ink"><CalendarDays className="size-4 text-signal" aria-hidden /> {t("Semaine type", "Sample week")}</span><span className="text-muted">{t("Rien ne part sans votre accord", "Nothing goes out without your approval")}</span></div>
       <div className="grid grid-cols-7 gap-1.5" aria-hidden>
         {days.map((dd, i) => (
           <div key={dd} className={cx("flex flex-col items-center gap-1 rounded-xl border py-2", posts[i] ? "border-line bg-card" : "border-transparent")}>
@@ -208,7 +251,7 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
       <ul className="grid min-h-0 flex-1 content-start gap-2">
         {Object.entries(posts).map(([day, [src, net, st]]) => (
           <li key={day} className="flex items-center gap-3 rounded-xl border border-line bg-card p-2">
-            {src ? <img src={src} alt="" aria-hidden loading="lazy" className="size-14 shrink-0 rounded-lg object-cover" /> : <span className="grid size-14 shrink-0 place-items-center rounded-lg bg-paper-2 text-muted" aria-hidden><CalendarDays className="size-5" /></span>}
+            {src ? <img src={src} alt="" aria-hidden loading="lazy" className="size-14 shrink-0 rounded-lg bg-paper-2 object-contain" /> : <span className="grid size-14 shrink-0 place-items-center rounded-lg bg-paper-2 text-muted" aria-hidden><CalendarDays className="size-5" /></span>}
             <span className="min-w-0 flex-1">
               <span className="block text-sm font-semibold text-ink">{net}</span>
               <span className="block text-xs text-muted">{days[Number(day)]} · {["18:00", "", "12:30", "", "20:00", "11:00"][Number(day)]}</span>

@@ -14,7 +14,7 @@ describe("règle de présence humaine", async () => {
   const { getAsset, saveAsset } = await import("@/lib/library");
   const { isAutoUsable } = await import("@/lib/quality/usable");
   const { POLICIES, POLICY_VERSION } = await import("@/lib/quality/policies");
-  const { peopleAllowed, peopleAllowedFor, NO_PEOPLE_EN, mentionsPerson, peopleFreeQueries } = await import("@/lib/people-policy");
+  const { peopleAllowed, peopleAllowedFor, NO_PEOPLE_EN, NO_PEOPLE_FR, mentionsPerson, peopleFreeQueries } = await import("@/lib/people-policy");
   const { buildBrief, generationPrompt } = await import("@/lib/image-v2/brief");
   const { scoreCandidate, shortlist } = await import("@/lib/image-v2/search");
   const { gateImage, localImageCheck } = await import("@/lib/image-v2/quality");
@@ -45,7 +45,7 @@ describe("règle de présence humaine", async () => {
   };
   /** Mots qui demandent une personne dans une consigne (hors clause « no people »). */
   const ASKS_PERSON = /person at work|show the human|person using|person wearing|person working|\bat work\b|craftsman|plasterer|painter rolling|artisan|équipe|personnage/i;
-  const withoutClause = (s: string) => s.replace(NO_PEOPLE_EN, "");
+  const withoutClause = (s: string) => s.replace(NO_PEOPLE_EN, "").replace(NO_PEOPLE_FR, "");
   const inv0 = { cutout: null, logo: null, photos: [], videos: [], screens: [] };
 
   // ------------------------------------------------------------------ autorisation
@@ -75,7 +75,7 @@ describe("règle de présence humaine", async () => {
       const b = buildBrief(p, { kind: "trade_photo", support: "site", variant: v });
       expect(b.people).toBe(false);
       const prompt = generationPrompt(b);
-      expect(prompt).toContain(NO_PEOPLE_EN);
+      expect(prompt).toContain(NO_PEOPLE_FR);
       expect(withoutClause(prompt)).not.toMatch(ASKS_PERSON);
       expect(b.variant!.angle).not.toMatch(/person/);
       expect(b.variant!.intent).not.toMatch(/human/);
@@ -90,7 +90,7 @@ describe("règle de présence humaine", async () => {
     for (const kind of ["lifestyle", "usage_scene", "ambiance", "site_image"] as const) {
       const b = buildBrief(tech, { kind, variant: 0 });
       expect(b.people).toBe(false);
-      expect(generationPrompt(b)).toContain(NO_PEOPLE_EN);
+      expect(generationPrompt(b)).toMatch(/Scène sans aucune présence humaine|aucune personne\. Aucun objet supplémentaire/);
       expect(withoutClause(generationPrompt(b))).not.toMatch(ASKS_PERSON);
       for (const q of b.queries) expect(mentionsPerson(q), q).toBe(false);
     }
@@ -101,8 +101,8 @@ describe("règle de présence humaine", async () => {
     const b = buildBrief(p, { kind: "trade_photo", support: "site", variant: 3 });
     expect(b.people).toBe(true);
     expect(b.subject).toMatch(/at work/);
-    expect(b.variant!.angle).toMatch(/person at work/);
-    expect(generationPrompt(b)).not.toContain(NO_PEOPLE_EN);
+    expect(b.variant!.angle).toMatch(/personne au travail/);
+    expect(generationPrompt(b)).not.toContain(NO_PEOPLE_FR);
     // Même brief sans l'autorisation (option explicite) : empreinte différente, aucune réutilisation croisée.
     const nb = buildBrief(p, { kind: "trade_photo", support: "site", variant: 3 }, { peopleAllowed: false });
     expect(nb.people).toBe(false);
@@ -188,7 +188,7 @@ describe("règle de présence humaine", async () => {
     const r2 = await fr(() => runImageEngineV2(null, q.id, { kind: "trade_photo", aspect: "16:9" }, g.deps));
     expect(r2.outcomes[0]).toMatchObject({ verdict: "REJECTED", assetId: null });
     expect(r2.outcomes[0].codes).toContain("unauthorized_person");
-    expect(g.log.prompts[0]).toContain(NO_PEOPLE_EN);
+    expect(g.log.prompts[0]).toContain(NO_PEOPLE_FR);
     const { all } = await import("@/lib/db");
     const saved = all<any>("SELECT * FROM assets WHERE project_id = ? AND json_extract(meta, '$.imageV2') IS NOT NULL", q.id);
     expect(saved.length).toBeGreaterThan(0);

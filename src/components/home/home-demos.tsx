@@ -294,7 +294,7 @@ export function SocialCalendarDemo({ posts }: { posts: SocialPost[] }) {
           {posts.map((x, k) => (
             <li key={k}>
               <button type="button" onClick={() => setOpen(k)} aria-pressed={open === k} className={cx("flex w-full cursor-pointer items-center gap-3 rounded-xl border bg-card p-2 text-left transition", open === k ? "border-signal ring-2 ring-signal/30" : "border-line")}>
-                {x.image ? <img src={x.image} alt="" aria-hidden loading="lazy" className="size-14 shrink-0 rounded-lg object-cover" /> : <span className="grid size-14 shrink-0 place-items-center rounded-lg bg-paper-2 text-muted" aria-hidden><CalendarDays className="size-5" /></span>}
+                {x.image ? <img src={x.image} alt="" aria-hidden loading="lazy" className="size-14 shrink-0 rounded-lg bg-paper-2 object-contain" /> : <span className="grid size-14 shrink-0 place-items-center rounded-lg bg-paper-2 text-muted" aria-hidden><CalendarDays className="size-5" /></span>}
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-semibold text-ink">{x.network}</span>
                   <span className="block text-xs text-muted">{days[x.day]} · {x.time}</span>
@@ -313,7 +313,7 @@ export function SocialCalendarDemo({ posts }: { posts: SocialPost[] }) {
               {posts.map((x, k) =>
                 x.day !== di ? null : (
                   <button key={k} type="button" onClick={() => setOpen(k)} aria-pressed={open === k} aria-label={`${x.network}, ${d} ${x.time}`} className={cx("cursor-pointer overflow-hidden rounded-lg border bg-card text-left transition", open === k ? "border-signal ring-2 ring-signal/30" : "border-line hover:border-ink/30")}>
-                    {x.image && <img src={x.image} alt="" aria-hidden loading="lazy" className="aspect-square w-full object-cover" />}
+                    {x.image && <img src={x.image} alt="" aria-hidden loading="lazy" className="aspect-square w-full bg-paper-2 object-contain" />}
                     <span className="block truncate px-1 pt-1 text-xs font-semibold">{x.network}</span>
                     <span className={cx("mx-1 mb-1 mt-0.5 flex items-center justify-center rounded py-0.5 sm:justify-start sm:px-1", status[k] === "ok" ? "bg-[#DDF2E6] text-[#165C3A]" : "bg-[#FCEBD0] text-[#7A4500]")}>
                       {status[k] === "ok" ? <Check className="size-3" aria-hidden /> : <Clock className="size-3" aria-hidden />}
@@ -332,7 +332,7 @@ export function SocialCalendarDemo({ posts }: { posts: SocialPost[] }) {
             <span className="font-semibold">{p.network}</span>
             <span className="text-muted">{days[p.day]} · {p.time}</span>
           </div>
-          {p.image && <img src={p.image} alt={t("Visuel de la publication (démonstration)", "Post visual (demo)")} loading="lazy" className="mt-3 aspect-[4/3] w-full rounded-2xl object-cover" />}
+          {p.image && <img src={p.image} alt={t("Visuel de la publication (démonstration)", "Post visual (demo)")} loading="lazy" className="mt-3 aspect-[4/3] w-full rounded-2xl bg-paper-2 object-contain" />}
           <p className="mt-3 text-[15px] leading-relaxed text-ink-2">{p.caption}</p>
           <button type="button" onClick={() => approve(open)} className={cx("hp-btn mt-4 w-full", status[open] === "ok" ? "hp-btn-ghost" : "hp-btn-primary")}>
             {status[open] === "ok" ? <><Undo2 className="size-4" aria-hidden /> {t("Retirer l'approbation", "Withdraw approval")}</> : <><Check className="size-4" aria-hidden /> {t("Approuver cette publication", "Approve this post")}</>}
