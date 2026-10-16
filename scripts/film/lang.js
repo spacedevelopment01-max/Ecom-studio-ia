@@ -7,6 +7,8 @@ window.applyLang = () => {
   if (window.LANG !== "en") return;
   document.documentElement.lang = "en";
   for (const el of document.querySelectorAll("[data-en]")) el.innerHTML = el.dataset.en;
+  // Image propre à la version anglaise (ex. la publicité sans son texte français).
+  for (const img of document.querySelectorAll("img[data-en-src]")) img.src = img.dataset.enSrc;
   const en = new Set(window.EN_ASSETS || []);
   for (const img of document.images) {
     const m = (img.getAttribute("src") || "").match(/^(.*\/public\/demo\/)(.+)\.(\w+)$/);

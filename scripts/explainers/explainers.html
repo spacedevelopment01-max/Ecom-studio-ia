@@ -5,7 +5,8 @@
 <!--
   Courtes vidéos explicatives de la page d'accueil.
   Chaque scène est une animation CSS de 10 s, rendue image par image par scripts/build-explainers.ts.
-  Toutes les images viennent des démonstrations réellement produites par le studio (public/demo).
+  Un seul produit, la montre de la démonstration ARVEN : uniquement ses visuels validés par le propriétaire
+  (public/demo/montre et scripts/film/arven). Aucun ancien produit, aucun gabarit du studio.
 -->
 <style>
   @font-face { font-family: "Bricolage"; src: url("../../public/fonts/bricolage.woff2") format("woff2"); font-weight: 200 800; }
@@ -38,30 +39,35 @@
   .card { border-radius: 28px; overflow: hidden; border: 1px solid var(--line); background: var(--card); box-shadow: 0 40px 80px -40px rgba(0,0,0,.8); }
   .glow { box-shadow: 0 0 0 1px rgba(124,196,255,.35), 0 0 40px rgba(61,110,240,.45), 0 40px 80px -40px rgba(0,0,0,.8); }
 
+  .ph-fit img, .fit img { object-fit: contain !important; }
+  .cream { background: #F3EEE9 !important; }
+  .lbl { position: absolute; left: 12px; top: 12px; padding: 5px 11px; border-radius: 999px; background: rgba(7,11,23,.72); font: 600 15px Inter, sans-serif; color: #fff; }
+
   /* 1 · Photo → marque */
   #photo .ph { position: absolute; left: 120px; top: 170px; width: 360px; height: 450px; animation: in .9s var(--e) both, ph-move 1s var(--e) 2.8s both; }
   @keyframes ph-move { to { transform: translateX(-56px) scale(.82) rotate(-4deg); opacity: .75; } }
-  #photo .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  #photo .ph img { width: 100%; height: 100%; object-fit: contain; display: block; padding: 18px; }
   #photo .scan { position: absolute; left: 0; right: 0; height: 120px; top: -120px; background: linear-gradient(180deg, transparent, rgba(124,196,255,.35) 85%, #BFE2FF 100%); animation: scan 1.5s ease-in-out 1s both; }
   @keyframes scan { from { top: -120px; opacity: 1; } 90% { opacity: 1; } to { top: 450px; opacity: 0; } }
-  #photo .cut { position: absolute; left: 420px; top: 140px; width: 400px; height: 500px; --t: 3.1s;
+  #photo .cut { position: absolute; left: 420px; top: 140px; width: 440px; height: 500px; --t: 3.1s;
     background: conic-gradient(#1A2340 25%, #141B33 0 50%, #1A2340 0 75%, #141B33 0) 0 0 / 28px 28px; }
-  #photo .cut img { position: absolute; inset: 6% 8%; width: 84%; height: 88%; object-fit: contain; filter: drop-shadow(0 30px 30px rgba(0,0,0,.5)); }
+  #photo .cut img { position: absolute; inset: 5%; width: 90%; height: 90%; object-fit: contain; filter: drop-shadow(0 30px 30px rgba(0,0,0,.5)); }
   #photo .chips { position: absolute; left: 440px; top: 668px; display: flex; gap: 14px; }
   #photo .chip { width: 62px; height: 62px; border-radius: 50%; border: 3px solid rgba(255,255,255,.85); }
-  #photo .logo { position: absolute; left: 112px; top: 560px; width: 270px; padding: 26px 22px; background: #F7F4F2; border-radius: 22px; --t: 6.3s; }
-  #photo .logo img { width: 100%; height: 70px; object-fit: contain; display: block; }
+  #photo .logo { position: absolute; left: 100px; top: 470px; width: 280px; height: 280px; padding: 18px; background: #F7F4F2; border-radius: 24px; --t: 6.3s; }
+  #photo .logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
-  /* 2 · Thèmes */
+  /* 2 · Boutique et marque */
   #themes .browser { position: absolute; left: 70px; top: 150px; width: 820px; height: 560px; --t: .2s; }
   #themes .bar { height: 44px; display: flex; align-items: center; gap: 8px; padding: 0 18px; background: #0C1222; border-bottom: 1px solid var(--line); }
   #themes .bar span { width: 11px; height: 11px; border-radius: 50%; background: #2A3456; }
   #themes .bar p { margin-left: 14px; font-size: 15px; color: var(--muted); }
-  #themes .view { position: absolute; top: 44px; left: 0; right: 0; bottom: 0; overflow: hidden; background: #0C1222; }
-  #themes .shot { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; animation: wipe 1s var(--e) both, drift 2.6s linear both; animation-delay: var(--t), var(--t); }
+  #themes .view { position: absolute; top: 44px; left: 0; right: 0; bottom: 0; overflow: hidden; background: #F8F5F2; }
+  #themes .shot { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #F8F5F2; animation: wipe 1s var(--e) both; animation-delay: var(--t); }
+  #themes .gal { position: absolute; inset: 0; display: flex; gap: 22px; align-items: center; justify-content: center; background: #F8F5F2; animation: wipe 1s var(--e) both; animation-delay: var(--t); }
+  #themes .gal img { height: 420px; border-radius: 16px; box-shadow: 0 20px 40px -20px rgba(0,0,0,.45); display: block; }
   @keyframes wipe { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0 0 0 0); } }
-  @keyframes drift { from { transform: scale(1.08); } to { transform: scale(1); } }
-  #themes .name { position: absolute; left: 22px; bottom: 22px; padding: 10px 18px; border-radius: 999px; background: rgba(7,11,23,.78); backdrop-filter: blur(8px); font: 600 22px Bricolage, sans-serif; border: 1px solid rgba(255,255,255,.18); }
+  #themes .name { position: absolute; left: 22px; bottom: 22px; padding: 10px 18px; border-radius: 999px; background: rgba(7,11,23,.82); backdrop-filter: blur(8px); font: 600 22px Bricolage, sans-serif; border: 1px solid rgba(255,255,255,.18); }
   #themes .name em { font: 400 16px Inter, sans-serif; color: #BFD3FF; margin-left: 8px; font-style: normal; }
   #themes .opts { position: absolute; left: 70px; top: 730px; display: flex; gap: 10px; flex-wrap: wrap; width: 820px; }
   #themes .opt { padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(124,196,255,.35); background: rgba(61,110,240,.14); font-size: 16px; color: #D6E4FF; }
@@ -69,7 +75,7 @@
   #themes .cap { font-size: 46px; }
 
   /* 3 · Retouche par conversation */
-  #chat .panel { position: absolute; left: 56px; top: 150px; width: 380px; height: 590px; padding: 22px; --t: .1s; }
+  #chat .panel { position: absolute; left: 56px; top: 150px; width: 380px; height: 620px; padding: 22px; --t: .1s; }
   #chat .panel h4 { font: 600 18px Bricolage, sans-serif; color: var(--muted); margin-bottom: 18px; }
   #chat .ex { position: absolute; left: 22px; right: 22px; top: 62px; }
   #chat .msg { max-width: 300px; padding: 14px 18px; border-radius: 20px; font-size: 19px; line-height: 1.35; margin-bottom: 14px; }
@@ -86,50 +92,53 @@
   #chat .vers i.on { animation: none; background: rgba(124,196,255,.14); color: #CFE3FF; border-color: rgba(124,196,255,.4); }
   #chat .vers small { width: 100%; font-size: 13px; }
   @keyframes von { to { background: var(--blue); color: #fff; border-color: var(--blue); } }
-  #chat .shop { position: absolute; left: 470px; top: 150px; width: 434px; height: 590px; background: #FFF6EE; color: #2B1416; --t: .3s; animation: in .8s var(--e) .3s both, sage .8s ease var(--a3) forwards; }
-  @keyframes sage { to { background: #E3EBDD; } }
-  #chat .bar { height: 0; overflow: hidden; background: #2B1416; color: #FFF6EE; font: 600 14px Inter, sans-serif; letter-spacing: .04em; display: flex; align-items: center; justify-content: center; animation: bar .7s var(--e) var(--a) forwards; }
+  #chat .shop { position: absolute; left: 470px; top: 150px; width: 434px; height: 620px; background: #FAF7F5; color: #1E2225; --t: .3s; animation: in .8s var(--e) .3s both, sand .8s ease var(--a3) forwards; }
+  @keyframes sand { to { background: #E8DACF; } }
+  #chat .bar { height: 0; overflow: hidden; background: #1E2225; color: #FAF7F5; font: 600 14px Inter, sans-serif; letter-spacing: .04em; display: flex; align-items: center; justify-content: center; animation: bar .7s var(--e) var(--a) forwards; }
   @keyframes bar { to { height: 38px; } }
-  #chat .shop header { display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; font: 700 26px Bricolage, sans-serif; letter-spacing: -.03em; color: #90282C; }
-  #chat .shop header span { width: 26px; height: 3px; background: #2B1416; box-shadow: 0 -8px 0 #2B1416; }
-  #chat .shop .im { position: relative; margin: 0 22px; height: 290px; border-radius: 20px; overflow: hidden; background: #F3E1D6; }
+  #chat .shop header { display: flex; justify-content: space-between; align-items: center; height: 62px; padding: 10px 22px; }
+  #chat .shop header img { height: 52px; width: 52px; object-fit: contain; }
+  #chat .shop header span { width: 26px; height: 3px; background: #1E2225; box-shadow: 0 -8px 0 #1E2225; }
+  #chat .shop .im { position: relative; margin: 0 auto; width: 300px; height: 357px; border-radius: 20px; overflow: hidden; background: #F8F5F2; }
   #chat .shop .im img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   #chat .shop .im img.alt { opacity: 0; animation: fadein .9s ease var(--a) forwards; }
   #chat .shop .im .ring { inset: 8px; border-radius: 14px; }
   #chat .shop .im .ring b { top: 8px; left: 8px; }
   @keyframes fadein { to { opacity: 1; } }
-  #chat .shop h5 { position: relative; height: 40px; margin: 22px 22px 8px; font: 700 34px/1 Bricolage, sans-serif; letter-spacing: -.04em; }
+  #chat .shop h5 { position: relative; height: 38px; margin: 16px 22px 6px; font: 700 31px/1 Bricolage, sans-serif; letter-spacing: -.03em; }
   #chat .shop h5 span { position: absolute; left: 0; top: 0; white-space: nowrap; }
   #chat .shop h5 .t1 { animation: fadeout .5s ease var(--a) forwards; }
-  #chat .shop h5 .t2 { opacity: 0; font: italic 400 42px/.95 Instrument, serif; letter-spacing: -.01em; animation: fadein .6s ease var(--a) forwards; }
+  #chat .shop h5 .t2 { opacity: 0; font: italic 400 38px/.95 Instrument, serif; letter-spacing: -.01em; animation: fadein .6s ease var(--a) forwards; }
   @keyframes fadeout { to { opacity: 0; } }
   #chat .shop h5 .ring { inset: -8px -10px; border-radius: 12px; }
-  #chat .shop p { margin: 0 22px; font-size: 16px; color: #6E4A4C; }
+  #chat .shop p { margin: 0 22px; font-size: 16px; color: #5A5250; }
   @keyframes blink { 50% { opacity: .25; } }
-  @keyframes tob { to { background: #111111; } }
-  #chat .btn { position: relative; display: inline-block; margin: 20px 22px; padding: 16px 30px; border-radius: 999px; font: 600 18px Inter, sans-serif; color: #fff; background: #E8607A; animation: tob .6s ease var(--a) both; }
+  @keyframes tob { to { background: #1E2225; } }
+  #chat .btn { position: relative; display: inline-block; margin: 16px 22px; padding: 14px 30px; border-radius: 999px; font: 600 18px Inter, sans-serif; color: #fff; background: #A86932; animation: tob .6s ease var(--a) both; }
   #chat .ring { position: absolute; inset: -9px; border: 2.5px dashed var(--blue); border-radius: 999px; opacity: 0; animation: in .5s var(--e) var(--r) both, out .4s ease var(--x) both; }
   #chat .ring b { position: absolute; top: -34px; left: 0; padding: 4px 10px; border-radius: 8px; background: var(--blue); color: #fff; font: 600 13px Inter, sans-serif; white-space: nowrap; }
   #chat .btn .ring b { top: 50%; left: calc(100% + 14px); transform: translateY(-50%); }
   #chat .ring.page { inset: 6px; border-radius: 22px; }
   #chat .ring.page b { top: auto; bottom: 10px; left: auto; right: 10px; }
-  #chat .ring.top { inset: 4px 4px auto 4px; height: 52px; border-radius: 14px; }
+  #chat .ring.top { inset: 4px 4px auto 4px; height: 62px; border-radius: 14px; }
   #chat .ring.top b { top: auto; bottom: -32px; left: auto; right: 0; }
 
   /* 4 · Formats */
   #formats .f { position: absolute; }
-  #formats .f img { width: 100%; height: 100%; object-fit: cover; display: block; animation: kb 8s ease-out both; animation-delay: var(--t); }
-  @keyframes kb { from { transform: scale(1.12); } to { transform: scale(1); } }
+  /* Cadres aux proportions exactes de chaque visuel : la montre n'est jamais coupée. */
+  #formats .f img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  #formats .f.fit img { object-fit: contain; padding: 14px; }
   #formats .f span { position: absolute; left: 12px; top: 12px; padding: 5px 11px; border-radius: 999px; background: rgba(7,11,23,.72); font: 600 15px Inter, sans-serif; }
-  #formats .play { position: absolute; left: 50%; top: 50%; width: 70px; height: 70px; margin: -35px; border-radius: 50%; background: rgba(255,255,255,.92); --t: 5.6s; }
-  #formats .play::after { content: ""; position: absolute; left: 27px; top: 21px; border-left: 22px solid #070B17; border-block: 14px solid transparent; }
+  html[lang=en] #formats .story { height: 318px !important; }
+  html[lang=en] #formats .after-story { top: 488px !important; height: 252px !important; }
 
   /* 5 · Calendrier */
-  #cal .grid { position: absolute; left: 56px; top: 150px; width: 848px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
-  #cal .day { height: 560px; border-radius: 20px; border: 1px solid var(--line); background: rgba(255,255,255,.03); padding: 12px; }
+  #cal .grid { position: absolute; left: 56px; top: 220px; width: 848px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  #cal .day { height: 330px; border-radius: 20px; border: 1px solid var(--line); background: rgba(255,255,255,.03); padding: 12px; }
   #cal .day h6 { font: 600 16px Inter, sans-serif; color: var(--muted); margin-bottom: 12px; }
   #cal .post { border-radius: 14px; background: var(--card); border: 1px solid var(--line); overflow: hidden; margin-bottom: 12px; }
-  #cal .post img { width: 100%; height: 96px; object-fit: cover; display: block; }
+  #cal .post img { width: 100%; height: auto; display: block; }
+  #cal .post.fit img { height: 140px; object-fit: contain; background: #F3EEE9; padding: 8px; }
   #cal .post div { padding: 8px 10px; font-size: 13px; color: #C5CDE0; position: relative; height: 62px; }
   #cal .st { position: absolute; left: 10px; bottom: 9px; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; }
   #cal .wait { background: #3A2A0B; color: #F7C46A; animation: out .3s ease both; animation-delay: var(--o); }
@@ -139,15 +148,21 @@
   #cal .caps { height: 110px; }
   #cal .cap { font-size: 46px; }
 
-  /* 0 · Ouverture : du produit réel à la boutique (trois démonstrations) */
+  /* 0 · Ouverture : une montre, sa marque, sa boutique, ses visuels */
   #hero .grp { position: absolute; inset: 0; }
   #hero .desk { position: absolute; left: 200px; top: 150px; width: 704px; height: 440px; }
-  #hero .desk img, #hero .tel img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
-  #hero .tel { position: absolute; left: 700px; top: 380px; width: 196px; height: 380px; border-radius: 30px; border: 6px solid #0A1024; }
-  #hero .src { position: absolute; left: 56px; top: 420px; width: 230px; height: 280px; background: #fff; padding: 14px; }
-  #hero .src img { width: 100%; height: 100%; object-fit: contain; display: block; }
-  #hero .src span { position: absolute; left: 10px; top: 10px; padding: 4px 10px; border-radius: 999px; background: #0A1024; color: #fff; font: 600 13px Inter, sans-serif; }
-  #hero .arrow { position: absolute; left: 300px; top: 610px; font: 600 22px Inter, sans-serif; color: var(--sky); }
+  #hero .desk img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+  #hero .desk.board { height: 578px; top: 140px; background: #FAF9F7; }
+  #hero .desk.board img { object-fit: contain; }
+  #hero .lif { position: absolute; left: 650px; top: 400px; width: 250px; height: 298px; border: 5px solid #0A1024; }
+  #hero .src { position: absolute; z-index: 2; left: 56px; top: 440px; width: 250px; height: 300px; background: #fff; padding: 14px; }
+  #hero .src.logo { background: #F7F4F2; top: 470px; height: 250px; left: 40px; }
+  #hero .src img, #hero .lif img, #hero .v img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  #hero .lif img { object-fit: cover; }
+  #hero .src span, #hero .v span { position: absolute; left: 10px; top: 10px; padding: 4px 10px; border-radius: 999px; background: #0A1024; color: #fff; font: 600 13px Inter, sans-serif; }
+  #hero .v { position: absolute; }
+  #hero .v.cover img { object-fit: cover; }
+  html[lang=en] #hero .story { height: 333px !important; top: 230px !important; }
   #hero .caps { height: 120px; }
   #hero .cap { font-size: 50px; }
 </style>
@@ -156,71 +171,62 @@
 <div class="stage">
   <div class="brand">E-COM STUDIO <em>ia</em></div>
 
-
-  <!-- 0 · Ouverture : trois produits réels, trois boutiques -->
+  <!-- 0 · Ouverture : un produit, la montre ARVEN -->
   <section class="scene" id="hero">
     <div class="tag in" data-en="<i></i>One photo · one complete store"><i></i>Une photo · une boutique complète</div>
     <div class="grp">
-      <div class="src card io" style="--t:0.2s;--o:3.3s"><img src="../../public/demo/casque/photo.jpg" alt=""><span data-en="Supplier photo">Photo fournisseur</span></div>
-      <div class="desk card glow io" style="--t:0.55s;--o:3.3s"><img src="../../public/demo/casque/boutique-bureau.jpg" alt=""></div>
-      <div class="tel card io" style="--t:0.90s;--o:3.3s"><img src="../../public/demo/casque/boutique-mobile.jpg" alt=""></div>
-      <div class="caps"><p class="cap io" style="--t:0.70s;--o:3.3s" data-en="<b>Headphones</b>.<small>An audio store, the product up close.</small>">Un <b>casque audio</b>.<small>Une boutique audio, le produit de près.</small></p></div>
+      <div class="src card io" style="--t:0.2s;--o:3.3s"><img src="../../public/demo/montre/photo.jpg" alt=""><span data-en="Your photo">Votre photo</span></div>
+      <div class="desk card glow io" style="--t:0.55s;--o:3.3s"><img src="../../public/demo/montre/fiche-produit.jpg" alt=""></div>
+      <div class="caps"><p class="cap io" style="--t:0.70s;--o:3.3s" data-en="A <b>watch</b>, a store.<small>Example: ARVEN, a steel and leather watch.</small>">Une <b>montre</b>, une boutique.<small>Exemple : ARVEN, une montre acier et cuir.</small></p></div>
     </div>
     <div class="grp">
-      <div class="src card io" style="--t:3.5s;--o:6.6s"><img src="../../public/demo/tribunes/photo.jpg" alt=""><span data-en="Supplier photo">Photo fournisseur</span></div>
-      <div class="desk card glow io" style="--t:3.85s;--o:6.6s"><img src="../../public/demo/tribunes/boutique-bureau.jpg" alt=""></div>
-      <div class="tel card io" style="--t:4.20s;--o:6.6s"><img src="../../public/demo/tribunes/boutique-mobile.jpg" alt=""></div>
-      <div class="caps"><p class="cap io" style="--t:4.00s;--o:6.6s" data-en="<b>Supporter T-shirts</b>.<small>A fashion store with several products.</small>">Des <b>tee-shirts de supporter</b>.<small>Une boutique de mode, plusieurs produits.</small></p></div>
+      <div class="desk board card glow io" style="--t:3.6s;--o:6.6s"><img src="../../public/demo/montre/planche.jpg" alt=""></div>
+      <div class="src logo card io" style="--t:3.95s;--o:6.6s"><img src="../../public/demo/montre/logo.png" alt=""></div>
+      <div class="caps"><p class="cap io" style="--t:4.00s;--o:6.6s" data-en="A complete <b>brand</b>.<small>Logo, colors, fonts, stationery.</small>">Une <b>marque</b> complète.<small>Logo, couleurs, typographies, papeterie.</small></p></div>
     </div>
     <div class="grp">
-      <div class="src card in" style="--t:6.8s"><img src="../../public/demo/gourde/photo.jpg" alt=""><span data-en="AI-created photo">Photo créée par l'IA</span></div>
-      <div class="desk card glow in" style="--t:7.15s"><img src="../../public/demo/gourde/boutique-bureau.jpg" alt=""></div>
-      <div class="tel card in" style="--t:7.50s"><img src="../../public/demo/gourde/boutique-mobile.jpg" alt=""></div>
-      <div class="caps"><p class="cap in" style="--t:7.30s" data-en="An <b>insulated bottle</b>.<small>An outdoor store, the product in its setting.</small>">Une <b>gourde isotherme</b>.<small>Une boutique plein air, le produit en situation.</small></p></div>
+      <div class="v card in" style="left:56px;top:300px;width:240px;height:240px;background:#F8F5F2;--t:6.8s"><img src="../film/arven/packshot.jpg" alt=""><span>Packshot</span></div>
+      <div class="v cover card glow in" style="left:316px;top:170px;width:300px;height:357px;--t:7.1s"><img src="../../public/demo/montre/lifestyle-1.jpg" alt=""><span data-en="Lifestyle">En situation</span></div>
+      <div class="v cover story card in" style="left:636px;top:150px;width:250px;height:444px;--t:7.4s"><img src="../film/arven/publicite-minerale.jpg" data-en-src="../film/arven/publicite-minerale-sans-texte.jpg" alt=""><span data-en="Ad">Publicité</span></div>
+      <div class="caps"><p class="cap in" style="--t:7.30s" data-en="<b>High-quality</b> visuals.<small>Always your real product, in full.</small>">Des visuels <b>soignés</b>.<small>Toujours votre vrai produit, en entier.</small></p></div>
     </div>
   </section>
 
   <!-- 1 · Une photo suffit -->
   <section class="scene" id="photo">
     <div class="tag in" data-en="<i></i>01 · Product analysis"><i></i>01 · Analyse du produit</div>
-    <div class="ph card" style="background:#fff"><img src="../../public/demo/tribunes/photo.jpg" alt="" style="object-fit:contain;padding:18px"><div class="scan"></div></div>
-    <div class="cut card glow in"><img src="../../public/demo/tribunes/packshot-1.jpg" alt=""></div>
+    <div class="ph card" style="background:#fff"><img src="../../public/demo/montre/photo.jpg" alt=""><div class="scan"></div></div>
+    <div class="cut card glow in"><img src="../../public/demo/montre/cutout-1.webp" alt=""></div>
     <div class="chips">
-      <i class="chip pop" style="background:#0D0D0D;--t:4.5s"></i><i class="chip pop" style="background:#1F2A5C;--t:4.7s"></i><i class="chip pop" style="background:#E10600;--t:4.9s"></i><i class="chip pop" style="background:#C4C4C4;--t:5.1s"></i><i class="chip pop" style="background:#FAFAFA;--t:5.3s"></i>
+      <i class="chip pop" style="background:#1E2225;--t:4.5s"></i><i class="chip pop" style="background:#A86932;--t:4.7s"></i><i class="chip pop" style="background:#E8DACF;--t:4.9s"></i><i class="chip pop" style="background:#FAF7F5;--t:5.1s"></i>
     </div>
-    <div class="logo in"><img src="../../public/demo/tribunes/logo.png" alt=""></div>
+    <div class="logo in"><img src="../../public/demo/montre/logo.png" alt=""></div>
     <div class="caps">
       <p class="cap io" style="--t:.3s;--o:2.7s" data-en="One <b>photo</b> is enough.<small>Or a product page link, or three lines.</small>">Une <b>photo</b> suffit.<small>Ou un lien de fiche produit, ou trois lignes.</small></p>
-      <p class="cap io" style="--t:3s;--o:4.3s" data-en="Cut out <b>to the pixel</b>.<small>Your product stays yours: shape, label, colors.</small>">Détourée <b>au pixel près</b>.<small>Le produit reste le vôtre : forme, étiquette, couleurs.</small></p>
+      <p class="cap io" style="--t:3s;--o:4.3s" data-en="Cut out <b>to the pixel</b>.<small>Your product stays yours: shape, details, colors.</small>">Détourée <b>au pixel près</b>.<small>Le produit reste le vôtre : forme, détails, couleurs.</small></p>
       <p class="cap io" style="--t:4.5s;--o:6.1s" data-en="Palette <b>measured</b> on the object.<small>Contrast checked for readability.</small>">Palette <b>mesurée</b> sur l'objet.<small>Contrastes vérifiés pour la lecture.</small></p>
       <p class="cap in" style="--t:6.4s" data-en="Logo and <b>brand kit</b> ready.<small>Suggested name, fonts, editorial tone.</small>">Logo et <b>charte</b> prêts.<small>Nom proposé, typographies, ton éditorial.</small></p>
     </div>
   </section>
 
-  <!-- 2 · Onze thèmes -->
+  <!-- 2 · Marque, boutique, visuels : le même style partout -->
   <section class="scene" id="themes">
-    <div class="tag in" data-en="<i></i>02 · Custom store"><i></i>02 · Boutique sur mesure</div>
+    <div class="tag in" data-en="<i></i>02 · Everything in one style"><i></i>02 · Tout dans le même style</div>
     <div class="browser card glow in">
-      <div class="bar"><span></span><span></span><span></span><p data-en="Theme designed by AI for your brand">Thème composé par l'IA pour votre marque</p></div>
+      <div class="bar"><span></span><span></span><span></span><p data-en="ARVEN · created by the studio">ARVEN · créé par le studio</p></div>
       <div class="view">
-        <img class="shot" style="--t:.4s" src="../../public/demo/directions/atelier.jpg" alt="">
-        <img class="shot" style="--t:1.9s" src="../../public/demo/directions/nocturne.jpg" alt="">
-        <img class="shot" style="--t:3.4s" src="../../public/demo/directions/flux.jpg" alt="">
-        <img class="shot" style="--t:4.9s" src="../../public/demo/directions/gourmand.jpg" alt="">
-        <img class="shot" style="--t:6.4s" src="../../public/demo/directions/joaillerie.jpg" alt="">
-        <img class="shot" style="--t:7.9s" src="../../public/demo/directions/pop.jpg" alt="">
-        <p class="name io" style="--t:.8s;--o:1.8s" data-en="Atelier<em>floating header</em>">Atelier<em>en-tête flottant</em></p>
-        <p class="name io" style="--t:2.3s;--o:3.3s" data-en="Nocturne<em>dark, neon</em>">Nocturne<em>sombre, néon</em></p>
-        <p class="name io" style="--t:3.8s;--o:4.8s" data-en="Flux<em>framed header</em>">Flux<em>en-tête encadré</em></p>
-        <p class="name io" style="--t:5.3s;--o:6.3s" data-en="Gourmand<em>scrolling banner</em>">Gourmand<em>bandeau défilant</em></p>
-        <p class="name io" style="--t:6.8s;--o:7.8s" data-en="Joaillerie<em>centered footer</em>">Joaillerie<em>pied centré</em></p>
-        <p class="name in" style="--t:8.3s" data-en="Pop<em>pill header</em>">Pop<em>en-tête pilule</em></p>
+        <img class="shot" style="--t:.4s" src="../../public/demo/montre/planche.jpg" alt="">
+        <img class="shot" style="--t:3.6s" src="../../public/demo/montre/fiche-produit.jpg" alt="">
+        <div class="gal" style="--t:6.8s"><img src="../../public/demo/montre/lifestyle-1.jpg" alt=""><img src="../film/arven/publicite-minerale-sans-texte.jpg" alt=""></div>
+        <p class="name io" style="--t:.8s;--o:3.4s" data-en="Brand<em>logo, colors, fonts</em>">Marque<em>logo, couleurs, typographies</em></p>
+        <p class="name io" style="--t:4.0s;--o:6.6s" data-en="Store<em>product page</em>">Boutique<em>fiche produit</em></p>
+        <p class="name in" style="--t:7.2s" data-en="Visuals<em>lifestyle, ad</em>">Visuels<em>en situation, publicité</em></p>
       </div>
     </div>
     <div class="opts">
-      <span class="opt pop" style="--t:1.2s" data-en="Your colors">Vos couleurs</span><span class="opt pop" style="--t:1.4s" data-en="AI-coded sections">Sections codées par l'IA</span><span class="opt pop" style="--t:1.6s" data-en="Visual review">Relecture visuelle</span><span class="opt pop" style="--t:1.8s" data-en="Edits">Retouches</span>
+      <span class="opt pop" style="--t:1.2s" data-en="Your colors">Vos couleurs</span><span class="opt pop" style="--t:1.4s" data-en="Your copy">Vos textes</span><span class="opt pop" style="--t:1.6s" data-en="Your real product">Votre vrai produit</span><span class="opt pop" style="--t:1.8s" data-en="Edits">Retouches</span>
     </div>
-    <div class="caps"><p class="cap in" style="--t:.5s" data-en="A <b>custom</b> theme, from A to Z.<small>Built by AI for your brand · Shopify, WooCommerce, PrestaShop.</small>">Un thème <b>sur mesure</b>, de A à Z.<small>Créé par l'IA pour votre marque · Shopify, WooCommerce, PrestaShop.</small></p></div>
+    <div class="caps"><p class="cap in" style="--t:.5s" data-en="Everything <b>in the same style</b>.<small>Brand, store and visuals · Shopify, WooCommerce, PrestaShop.</small>">Tout <b>dans le même style</b>.<small>Marque, boutique et visuels · Shopify, WooCommerce, PrestaShop.</small></p></div>
   </section>
 
   <!-- 3 · Retouche en discutant -->
@@ -229,7 +235,7 @@
     <div class="panel card in">
       <h4 data-en="Chat">Discussion</h4>
       <div class="ex io" style="--t:0.50s;--o:3.65s">
-        <div class="row"><span class="pin" data-en="◎ Hero button">◎ Bouton du héros</span></div>
+        <div class="row"><span class="pin" data-en="◎ Button">◎ Bouton</span></div>
         <p class="msg me in" style="--t:0.85s" data-en="Make this button black">Mets ce bouton en noir</p>
         <div class="dots io" style="--t:1.40s;--o:2.35s"><i></i><i></i><i></i></div>
         <p class="msg ai in" style="--t:2.50s" data-en="Done. Only this button changed.">C'est fait : seul ce bouton a changé.</p>
@@ -242,7 +248,7 @@
       </div>
       <div class="ex io" style="--t:7.10s;--o:10.25s">
         <div class="row"><span class="pin" data-en="◎ Page background">◎ Fond de la page</span></div>
-        <p class="msg me in" style="--t:7.45s" data-en="A sage green background">Un fond vert sauge</p>
+        <p class="msg me in" style="--t:7.45s" data-en="A warmer sand background">Un fond sable, plus chaleureux</p>
         <div class="dots io" style="--t:8.00s;--o:8.95s"><i></i><i></i><i></i></div>
         <p class="msg ai in" style="--t:9.10s" data-en="Background changed across the whole page.">Fond changé sur toute la page.</p>
       </div>
@@ -261,11 +267,11 @@
       <div class="vers"><span data-en="Versions">Versions</span><i class="on">v1</i><i style="--a:2.50s">v2</i><i style="--a:5.80s">v3</i><i style="--a:9.10s">v4</i><i style="--a:12.40s">v5</i><i style="--a:15.70s">v6</i><small data-en="restorable at any time">restaurables à tout moment</small></div>
     </div>
     <div class="shop card in" style="--a3:9.10s">
-      <div class="bar" style="--a:15.70s" data-en="New: the Cime 750 ml bottle">Nouveau : la gourde Cime 750 ml</div>
-      <header>Cime<span></span></header>
-      <div class="im"><img src="../../public/demo/gourde/photo.jpg" alt=""><img class="alt" style="--a:12.40s" src="../../public/demo/gourde/scene-1.jpg" alt=""><i class="ring" style="--r:10.60s;--x:13.30s"><b data-en="Image">Image</b></i></div>
-      <h5><span class="t1" style="--a:5.80s" data-en="Insulated bottle">Gourde isotherme</span><span class="t2" style="--a:5.80s" data-en="Insulated bottle">Gourde isotherme</span><i class="ring" style="--r:4.00s;--x:6.70s"><b data-en="Heading">Titre</b></i></h5>
-      <p data-en="750 ml · double-wall steel">750 ml · inox double paroi</p>
+      <div class="bar" style="--a:15.70s" data-en="New: the steel and leather watch">Nouveau : la montre acier et cuir</div>
+      <header><img src="../../public/demo/montre/logo.png" alt=""><span></span></header>
+      <div class="im"><img src="../film/arven/packshot.jpg" alt=""><img class="alt" style="--a:12.40s" src="../../public/demo/montre/lifestyle-1.jpg" alt=""><i class="ring" style="--r:10.60s;--x:13.30s"><b data-en="Image">Image</b></i></div>
+      <h5><span class="t1" style="--a:5.80s" data-en="Steel and leather watch">Montre acier et cuir</span><span class="t2" style="--a:5.80s" data-en="Steel and leather watch">Montre acier et cuir</span><i class="ring" style="--r:4.00s;--x:6.70s"><b data-en="Heading">Titre</b></i></h5>
+      <p data-en="Steel and genuine leather.">Acier et cuir véritable.</p>
       <span class="btn" style="--a:2.50s"><span data-en="Discover">Découvrir</span><i class="ring" style="--r:0.70s;--x:3.40s"><b data-en="Button">Bouton</b></i></span>
       <i class="ring page" style="--r:7.30s;--x:10.00s"><b data-en="Page background">Fond de la page</b></i>
       <i class="ring top" style="--r:13.90s;--x:16.60s"><b data-en="Top of page">Haut de page</b></i>
@@ -273,16 +279,16 @@
     <div class="caps" style="height:110px"><p class="cap in" style="--t:.8s;font-size:46px" data-en="Edit everything <b>by chatting</b>.<small>Buttons, text, colors, images, sections: a new version at every step.</small>">Tout se modifie <b>en discutant</b>.<small>Boutons, textes, couleurs, images, sections : une version à chaque étape.</small></p></div>
   </section>
 
-  <!-- 4 · Images et vidéos -->
+  <!-- 4 · Visuels -->
   <section class="scene" id="formats">
-    <div class="tag in" data-en="<i></i>04 · Images and videos"><i></i>04 · Images et vidéos</div>
-    <div class="f card in" style="left:56px;top:150px;width:330px;height:330px;--t:.3s"><img src="../../public/demo/casque/scene-1.jpg" alt=""><span>1:1</span></div>
-    <div class="f card in" style="left:56px;top:500px;width:330px;height:240px;--t:1.6s"><img src="../../public/demo/paysagiste/scene-1.jpg" alt=""><span data-en="Scene">Scène</span></div>
-    <div class="f card in" style="left:406px;top:150px;width:240px;height:300px;--t:.8s"><img src="../../public/demo/tribunes/post-2.jpg" alt=""><span>4:5</span></div>
-    <div class="f card glow in" style="left:666px;top:150px;width:238px;height:423px;--t:1.2s"><img src="../../public/demo/tribunes/video-poster.jpg" alt=""><span>9:16 · MP4</span><i class="play pop"></i></div>
-    <div class="f card in" style="left:406px;top:470px;width:240px;height:270px;--t:2s"><img src="../../public/demo/fleuriste/scene-1.jpg" alt=""><span data-en="Scene">Scène</span></div>
-    <div class="f card in" style="left:666px;top:593px;width:238px;height:147px;--t:2.4s"><img src="../../public/demo/casque/banner-1.jpg" alt=""><span>16:9</span></div>
-    <div class="caps" style="height:110px"><p class="cap in" style="--t:3s;font-size:46px" data-en="Visuals <b>in the right formats</b>.<small>Packshots, scenes, ads and edited videos.</small>">Visuels <b>aux bons formats</b>.<small>Packshots, scènes, publicités et vidéos montées.</small></p></div>
+    <div class="tag in" data-en="<i></i>04 · Visuals"><i></i>04 · Visuels</div>
+    <div class="f card in" style="left:56px;top:150px;width:330px;height:330px;background:#F8F5F2;--t:.3s"><img src="../film/arven/packshot.jpg" alt=""><span>Packshot 1:1</span></div>
+    <div class="f fit card in" style="left:56px;top:500px;width:330px;height:240px;background:#F3EEE9;--t:1.6s"><img src="../../public/demo/montre/cutout-1.webp" alt=""><span data-en="Cutout">Détourage</span></div>
+    <div class="f card in" style="left:406px;top:150px;width:240px;height:286px;--t:.8s"><img src="../../public/demo/montre/lifestyle-1.jpg" alt=""><span data-en="Lifestyle">En situation</span></div>
+    <div class="f story card glow in" style="left:666px;top:150px;width:238px;height:423px;--t:1.2s"><img src="../film/arven/publicite-minerale.jpg" data-en-src="../film/arven/publicite-minerale-sans-texte.jpg" alt=""><span data-en="Ad">Story 9:16</span></div>
+    <div class="f card in" style="left:406px;top:456px;width:240px;height:215px;--t:2s"><img src="../film/arven/publicite-minerale-carre.jpg" alt=""><span data-en="Post">Publication</span></div>
+    <div class="f fit after-story card in" style="left:666px;top:593px;width:238px;height:147px;background:#F7F4F2;--t:2.4s"><img src="../../public/demo/montre/logo.png" alt=""><span>Logo</span></div>
+    <div class="caps" style="height:110px"><p class="cap in" style="--t:3s;font-size:46px" data-en="Visuals <b>in the right formats</b>.<small>Packshot, cutout, lifestyle, ads.</small>">Visuels <b>aux bons formats</b>.<small>Packshot, détourage, mise en situation, publicités.</small></p></div>
   </section>
 
   <!-- 5 · Calendrier -->
@@ -291,18 +297,15 @@
     <span class="all" data-en="Approve all">Tout valider</span>
     <div class="grid">
       <div class="day in" style="--t:.2s"><h6 data-en="Mon">Lun.</h6>
-        <div class="post in" style="--t:.9s"><img src="../../public/demo/gourde/post-1.jpg" alt=""><div><span data-en="Instagram · 9 AM">Instagram · 09:00</span><span class="st wait" style="--o:5.9s" data-en="To approve">À valider</span><span class="st ok" style="--o:5.9s" data-en="Scheduled">Programmé</span></div></div>
-        <div class="post in" style="--t:2.3s"><img src="../../public/demo/gourde/scene-2.jpg" alt=""><div><span data-en="Pinterest · 6 PM">Pinterest · 18:30</span><span class="st wait" style="--o:6.4s" data-en="To approve">À valider</span><span class="st ok" style="--o:6.4s" data-en="Scheduled">Programmé</span></div></div></div>
+        <div class="post in" style="--t:.9s"><img src="../film/arven/publicite-minerale-carre.jpg" alt=""><div><span data-en="Instagram · 9 AM">Instagram · 09:00</span><span class="st wait" style="--o:5.9s" data-en="To approve">À valider</span><span class="st ok" style="--o:5.9s" data-en="Scheduled">Programmé</span></div></div></div>
       <div class="day in" style="--t:.3s"><h6 data-en="Tue">Mar.</h6>
-        <div class="post in" style="--t:1.2s"><img src="../../public/demo/casque/scene-1.jpg" alt=""><div><span data-en="TikTok · 12 PM">TikTok · 12:00</span><span class="st wait" style="--o:6s" data-en="To approve">À valider</span><span class="st ok" style="--o:6s" data-en="Scheduled">Programmé</span></div></div></div>
+        <div class="post in" style="--t:1.2s"><img src="../film/arven/packshot.jpg" alt=""><div><span data-en="Facebook · 12 PM">Facebook · 12:00</span><span class="st wait" style="--o:6s" data-en="To approve">À valider</span><span class="st ok" style="--o:6s" data-en="Scheduled">Programmé</span></div></div></div>
       <div class="day in" style="--t:.4s"><h6 data-en="Wed">Mer.</h6>
-        <div class="post in" style="--t:1.5s"><img src="../../public/demo/paysagiste/post-2.jpg" alt=""><div><span data-en="Instagram · 9 AM">Instagram · 09:00</span><span class="st wait" style="--o:6.1s" data-en="To approve">À valider</span><span class="st ok" style="--o:6.1s" data-en="Scheduled">Programmé</span></div></div>
-        <div class="post in" style="--t:2.6s"><img src="../../public/demo/paysagiste/scene-2.jpg" alt=""><div><span data-en="Facebook · 6 PM">Facebook · 18:30</span><span class="st wait" style="--o:6.5s" data-en="To approve">À valider</span><span class="st ok" style="--o:6.5s" data-en="Scheduled">Programmé</span></div></div></div>
+        <div class="post in" style="--t:1.5s"><img src="../../public/demo/montre/lifestyle-1.jpg" alt=""><div><span data-en="Instagram · 6 PM">Instagram · 18:30</span><span class="st wait" style="--o:6.1s" data-en="To approve">À valider</span><span class="st ok" style="--o:6.1s" data-en="Scheduled">Programmé</span></div></div></div>
       <div class="day in" style="--t:.5s"><h6 data-en="Thu">Jeu.</h6>
-        <div class="post in" style="--t:1.8s"><img src="../../public/demo/fleuriste/scene-2.jpg" alt=""><div><span data-en="YouTube · 5 PM">YouTube · 17:00</span><span class="st wait" style="--o:6.2s" data-en="To approve">À valider</span><span class="st ok" style="--o:6.2s" data-en="Scheduled">Programmé</span></div></div></div>
+        <div class="post fit in" style="--t:1.8s"><img src="../../public/demo/montre/cutout-1.webp" alt=""><div><span data-en="Pinterest · 5 PM">Pinterest · 17:00</span><span class="st wait" style="--o:6.2s" data-en="To approve">À valider</span><span class="st ok" style="--o:6.2s" data-en="Scheduled">Programmé</span></div></div></div>
       <div class="day in" style="--t:.6s"><h6 data-en="Fri">Ven.</h6>
-        <div class="post in" style="--t:2.1s"><img src="../../public/demo/tribunes/post-1.jpg" alt=""><div><span data-en="Instagram · 9 AM">Instagram · 09:00</span><span class="st wait" style="--o:6.3s" data-en="To approve">À valider</span><span class="st ok" style="--o:6.3s" data-en="Scheduled">Programmé</span></div></div>
-        <div class="post in" style="--t:2.9s"><img src="../../public/demo/tribunes/scene-1.jpg" alt=""><div><span data-en="Pinterest · 8 PM">Pinterest · 20:00</span><span class="st wait" style="--o:6.6s" data-en="To approve">À valider</span><span class="st ok" style="--o:6.6s" data-en="Scheduled">Programmé</span></div></div></div>
+        <div class="post fit in" style="--t:2.1s"><img src="../../public/demo/montre/logo.png" alt=""><div><span data-en="Instagram · 9 AM">Instagram · 09:00</span><span class="st wait" style="--o:6.3s" data-en="To approve">À valider</span><span class="st ok" style="--o:6.3s" data-en="Scheduled">Programmé</span></div></div></div>
     </div>
     <div class="caps"><p class="cap in" style="--t:3.4s" data-en="You <b>approve</b>, it publishes.<small>Nothing goes out without your approval.</small>">Vous <b>validez</b>, il publie.<small>Rien ne part sans votre accord.</small></p></div>
   </section>
