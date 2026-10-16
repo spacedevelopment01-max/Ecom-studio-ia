@@ -22,11 +22,16 @@ const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 const low = (s: string) => (s ? s.charAt(0).toLowerCase() + s.slice(1) : s);
 const strip = (s: string) => s.trim().replace(/[.!?\s]+$/, "");
 /** Titre court du visuel : la partie avant « : » si elle suffit, sinon coupé sur un mot (jamais « des »/« de » final). */
-const short = (s: string, n = 40) => {
+export const short = (s: string, n = 40) => {
   let t = cap(strip(s));
   if (t.length <= n) return t.replace(/[\s,;:–·•|-]+$/, "");
-  const head = t.split(" : ")[0];
-  if (head.length >= 6 && head.length <= n) return head;
+  // « Tête : sujet » trop long : la partie qui tient en entier et a un sens seule (au moins deux mots), jamais un
+  // simple « Comprendre » ou « Découvrir » laissé sans son sujet.
+  const [head, ...rest] = t.split(" : ");
+  const tail = rest.join(" : ");
+  const fits = (x: string) => x.length >= 6 && x.length <= n && x.trim().split(/\s+/).length >= 2;
+  if (tail && fits(head)) return head;
+  if (tail && fits(tail)) return cap(tail);
   t = t.slice(0, n + 1);
   t = t.slice(0, Math.max(t.lastIndexOf(" "), 8));
   return t.replace(/\s+(de|des|du|la|le|les|d'|l'|et|à|au|aux|en|pour|of|the|and|to)$/i, "").replace(/[\s,;:–·•|-]+$/, "");
@@ -104,7 +109,7 @@ const TBANK: Record<string, { fr: Tpl[]; en: Tpl[] }> = {
   educate: {
     fr: [
       (x) => ({ hook: `${cap(x.a)} : ce que ça demande vraiment.`, body: x.b ? `${cap(strip(x.b))}.` : "[À compléter : les étapes que vous suivez]", headline: short(x.a) }),
-      (x) => ({ hook: `On vous explique : ${low(x.a)}.`, body: x.b ? `${cap(strip(x.b))}.` : "[À compléter : votre explication en deux phrases]", headline: short(`Comprendre : ${x.a}`) }),
+      (x) => ({ hook: `On vous explique : ${low(x.a)}.`, body: x.b ? `${cap(strip(x.b))}.` : "[À compléter : votre explication en deux phrases]", headline: short(x.a) }),
       (x) => ({ hook: `Avant de se lancer dans ${low(x.a)}, une question à se poser.`, body: "[À compléter : la question et votre conseil]", headline: short(x.a) }),
       (x) => ({ hook: `${cap(x.a)} en trois points.`, body: "[À compléter : les trois points]", headline: short(`${x.a} en 3 points`) }),
     ],

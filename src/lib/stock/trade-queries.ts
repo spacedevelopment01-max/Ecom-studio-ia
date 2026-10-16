@@ -35,6 +35,7 @@ const TRADES: Trade[] = [
   { re: /esthet|beaute|manucur|ongl/, queries: ["beauty salon treatment", "manicure nails salon"], must: ["beauty", "spa", "manicure", "nails", "cosmetic", "skincare", "salon"] },
   { re: /massag|kine|osteo/, queries: ["massage therapy room", "physiotherapy treatment"], must: ["massage", "therapy", "spa", "physiotherapy", "wellness"] },
   { re: /photograph/, queries: ["photographer camera studio", "photo shoot camera"], must: ["camera", "photographer", "photography", "photo", "lens"] },
+  { re: /fleuri|floral|bouquet/, queries: ["florist arranging bouquet", "flower shop bouquet", "florist workshop flowers"], must: ["florist", "flower shop", "bouquet", "flowers", "floral", "flower arrangement", "roses", "peonies", "tulips"] },
   { re: /boulang|patiss/, queries: ["artisan bakery bread", "pastry baking kitchen"], must: ["bread", "bakery", "pastry", "baking", "croissant", "cake"] },
   // Restaurant (salle, chef, table, vin) distinct du traiteur (buffet) : « food » seul ramenait fraises et bacon cru.
   { re: /restaura|bistro|brasserie/, queries: ["restaurant table", "chef cooking", "wine glass", "restaurant"], must: ["restaurant", "chef", "dining", "dinner", "lunch", "table setting", "wine", "cooking", "dish", "cuisine"] },

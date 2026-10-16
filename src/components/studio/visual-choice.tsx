@@ -1,20 +1,22 @@
 "use client";
 /**
- * Choix du visuel d'une publication (lot, publication seule, communication automatique) : image gratuite avec mise
- * en page du studio, image par l'IA avec mise en page du studio, ou publication entièrement par l'IA. Prix affiché
- * avant toute dépense.
+ * Choix du visuel d'une publication (lot, publication seule, communication automatique) — images finales 100 % IA :
+ * reprendre une image déjà créée par l'IA pour le projet (gratuit), ou publication entièrement créée par l'IA (prix
+ * affiché avant toute dépense). Plus de mise en page du studio sur une photo.
  */
 import { cx } from "../ui";
 import { useT } from "../i18n";
 import type { VisualMode } from "@/lib/social-v2/visual-mode";
 
-export function VisualChoice({ value, onChange, ai, name, help, prices, legend }: { value: VisualMode; onChange: (m: VisualMode) => void; ai: boolean; name: string; help?: Partial<Record<VisualMode, string>>; prices?: Partial<Record<VisualMode, string>>; legend?: string }) {
+export function VisualChoice({ value: raw, onChange, ai, name, help, prices, legend }: { value: VisualMode; onChange: (m: VisualMode) => void; ai: boolean; name: string; help?: Partial<Record<VisualMode, string>>; prices?: Partial<Record<VisualMode, string>>; legend?: string }) {
   const t = useT();
+  // Ancien réglage « image IA + mise en page du studio » : affiché comme publication entièrement par l'IA.
+  const value: VisualMode = raw === "ai_image" ? "ai_post" : raw;
   const options: [VisualMode, string, string, string][] = [
-    ["free", t("Image gratuite, mise en page du studio", "Free image, studio layout"), t("Une photo libre de droits choisie pour votre activité ou votre produit ; le studio pose le titre, le texte et le bouton à vos couleurs.", "A royalty-free photo chosen for your business or product; the studio adds the headline, text and button in your colors."), t("Gratuit", "Free")],
-    ["ai_image", t("Image par l'IA, le studio fait le reste", "AI image, the studio does the rest"), t("L'IA crée la photo avec votre vrai produit ; le studio pose le titre, le texte et le bouton (modifiables ensuite).", "AI creates the photo with your real product; the studio adds the headline, text and button (editable afterwards)."), t("Payant · prix affiché avant", "Paid · price shown first")],
+    ["free", t("Reprendre une image déjà créée par l'IA", "Reuse an image already created by AI"), t("Une image du projet déjà créée par l'IA et validée. S'il n'y en a pas, la publication attend son visuel : aucun gabarit à la place.", "A project image already created by AI and approved. If there is none, the post waits for its visual: no template instead."), t("Gratuit", "Free")],
     ["ai_post", t("Publication entièrement par l'IA", "Post entirely by AI"), t("Scène, mise en page, titre et bouton créés ensemble par l'IA, avec votre vrai produit ; textes relus lettre par lettre.", "Scene, layout, headline and button created together by AI, with your real product; texts checked letter by letter."), t("Payant · prix affiché avant", "Paid · price shown first")],
   ];
+
   // Textes d'aide propres à l'écran (ex. entreprise de services : pas de « vrai produit ») et prix connus d'avance.
   for (const o of options) {
     if (help?.[o[0]]) o[2] = help[o[0]]!;
@@ -23,7 +25,7 @@ export function VisualChoice({ value, onChange, ai, name, help, prices, legend }
   return (
     <fieldset className="grid gap-2" data-visual-mode>
       <legend className="mb-1.5 text-sm font-medium">{legend ?? t("Comment faire le visuel ?", "How should the visual be made?")}</legend>
-      <div className="grid gap-2 lg:grid-cols-3">
+      <div className="grid gap-2 lg:grid-cols-2">
         {options.map(([v, label, help, price]) => {
           const off = v !== "free" && !ai;
           return (

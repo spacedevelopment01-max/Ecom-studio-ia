@@ -86,27 +86,34 @@ describe("Social V2 — parcours", async () => {
     expect(est.posts).toBe(10);
     expect(est.paid).toBeGreaterThan(0);
     expect(est.estimateMicro).toBe(est.paid * 100_000);
-    // Sans estimation acceptée : rien de payant.
+    // Sans estimation acceptée : rien de payant, et AUCUN gabarit à la place — les publications attendent leur
+    // visuel créé par l'IA (règle du propriétaire : toute image finale est faite par l'IA), et c'est dit.
     const free = await produceBatch(p, ids.slice(0, 4), deps, { allowPaid: true, maxCostEur: 5, approvedEstimateMicro: null });
     expect(free.spentMicro).toBe(0);
     expect(log.paid).toBe(0);
-    expect(free.produced).toBe(4);
-    // Médias validés déjà dans la bibliothèque : aucune dépense — affiche gratuite (photo libre cherchée pour la
-    // publication, sinon photo validée de la bibliothèque), jamais une image repayée.
-    const reuse = await produceBatch(p, ids.slice(4, 6), deps, { allowPaid: true, maxCostEur: 5, approvedEstimateMicro: 200_000 });
-    expect(reuse.spentMicro).toBe(0);
-    expect(reuse.byMethod.local).toBe(2);
-    // Bibliothèque vide, estimation acceptée, plafond de 0,25 € : au plus 2 productions payantes, puis rendu local.
+    expect(log.local).toBe(0);
+    expect(free.produced).toBe(0);
+    expect(free.skipped).toBe(4);
+    expect(free.notes.join(" ")).toMatch(/aucun gabarit/);
+    // Estimation acceptée : chaque image est une publication entièrement créée par l'IA, jamais une affiche montée.
+    const made = await produceBatch(p, ids.slice(4, 6), deps, { allowPaid: true, maxCostEur: 5, approvedEstimateMicro: 200_000 });
+    expect(made.produced).toBe(2);
+    expect(log.aiPost).toBe(2);
+    expect(log.local + log.image + log.ad).toBe(0);
+    // Plafond de 0,25 € : au plus 2 créations payantes, puis les suivantes attendent (aucun rendu local).
     const p2 = loadProject(seedImageFixture(u.id, "cosmetic"));
     const r2 = fr(() => createPlanV2(p2, { startDate: start(), days: 3, perDay: 2, timezone: "Europe/Paris", platforms: [{ platform: "instagram" }], formatMix: { image: 100 } }));
     const ids2 = postsOfPlan(r2.planId);
     const capped = mockSocialDeps({ aiActive: true, cost: 100_000 });
-    const paid = await produceBatch(p2, ids2, { ...capped.deps, image: async (pp, post, m) => { const out = await capped.deps.image(pp, post, m); run("UPDATE assets SET status = 'review' WHERE id = ?", out.assetId); return out; }, ad: async (pp, post, m) => { const out = await capped.deps.ad(pp, post, m); run("UPDATE assets SET status = 'review' WHERE id = ?", out.assetId); return out; } }, { allowPaid: true, maxCostEur: 0.25, approvedEstimateMicro: 200_000 });
+    const paid = await produceBatch(p2, ids2, capped.deps, { allowPaid: true, maxCostEur: 0.25, approvedEstimateMicro: 200_000 });
     expect(paid.spentMicro).toBeLessThanOrEqual(250_000);
     expect(capped.log.paid).toBeLessThanOrEqual(2);
+    expect(capped.log.local).toBe(0);
     expect(paid.stoppedByCap).toBe(true);
-    expect(all<{ media: string }>("SELECT media FROM posts WHERE plan_id = ?", r2.planId).every((x) => x.media !== "[]")).toBe(true);
-    expect(free.produced + reuse.produced).toBe(6);
+    // Une image IA déjà validée du projet peut être reprise sans repayer (bibliothèque) ; rien d'autre.
+    const reuse = await produceBatch(p, ids.slice(0, 2), deps, { allowPaid: false, maxCostEur: 0 });
+    expect(reuse.spentMicro).toBe(0);
+    expect(reuse.byMethod.library).toBe(2);
     // IA coupée : aucune dépense même si demandée.
     const off = mockSocialDeps({ aiActive: false });
     expect(estimateProduction(p, ids, off.deps, { allowPaid: true }).notes.join(" ")).toMatch(/IA non disponible/);
@@ -340,7 +347,8 @@ describe("Social V2 — parcours", async () => {
     expect(Math.max(...counts.values())).toBeLessThanOrEqual(2);
     const rep = await fr(() => applySocialEdit(p, "Remplace les images des trois prochaines publications", deps));
     expect(rep.ids).toHaveLength(3);
-    expect(log.local + log.paid).toBeGreaterThanOrEqual(1);
+    // Remplacer une image ne la refait jamais par un gabarit : seulement par l'IA (avec accord), sinon elle attend.
+    expect(log.local).toBe(0);
     expect(log.rewrite).toBe(0);
     const ask = await fr(() => applySocialEdit(p, "Change uniquement le texte de la publication de demain", deps));
     expect(ask.needsConfirm).toBe(true);

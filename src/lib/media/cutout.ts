@@ -304,6 +304,8 @@ export async function cutoutProduct(input: Buffer, opts: { method?: "flood" | "t
     png = await floodCutout(input);
     method = "flood";
   }
+  // Fond enfermé dans le produit (boucle d'un bracelet, anse, anneau) rendu transparent, sur un fond clair et uni.
+  if (bg.plain && method !== "existing") png = await clearEnclosedBackground(png, input);
   // Fragments détachés (câble cassé, poussière) retirés avant le recadrage.
   png = await dropIslands(png);
   // Recadre sur le produit avec une petite marge.
@@ -333,6 +335,68 @@ export async function cutoutProduct(input: Buffer, opts: { method?: "flood" | "t
  * Fragments détachés du produit (bout de câble cassé, poussière, reste du fond) : supprimés. On garde la plus grande
  * forme et toute forme d'au moins 4 % de sa surface (deux chaussures, un lot de savons restent entiers).
  */
+/**
+ * Fond ENFERMÉ dans le produit (intérieur d'un bracelet en boucle, d'une anse, d'un anneau) : le détourage ne retire que
+ * le fond relié au bord de la photo. Les zones opaques de la couleur du fond — ombre douce comprise, par croissance
+ * progressive sans saut de couleur — assez grandes et assez unies sont rendues transparentes, bord adouci.
+ * Une partie du produit de la même couleur que le fond (rare sur un fond uni) reste si elle a de la matière (relief).
+ */
+export async function clearEnclosedBackground(png: Buffer, original: Buffer, o: { seedTol?: number; maxTol?: number; minShare?: number } = {}): Promise<Buffer> {
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { width: w, height: h } = info;
+  const src = await sharp(original, { failOn: "none" }).rotate().resize(w, h, { fit: "fill" }).removeAlpha().raw().toBuffer();
+  const bg = [0, 0, 0];
+  let n = 0;
+  for (let x = 0; x < w; x += 3) for (const y of [0, h - 1]) { for (let k = 0; k < 3; k++) bg[k] += src[(y * w + x) * 3 + k]; n++; }
+  for (let y = 0; y < h; y += 3) for (const x of [0, w - 1]) { for (let k = 0; k < 3; k++) bg[k] += src[(y * w + x) * 3 + k]; n++; }
+  for (let k = 0; k < 3; k++) bg[k] /= n;
+  const dist = (p: number) => Math.abs(src[p * 3] - bg[0]) + Math.abs(src[p * 3 + 1] - bg[1]) + Math.abs(src[p * 3 + 2] - bg[2]);
+  const step = (a: number, b: number) => Math.abs(src[a * 3] - src[b * 3]) + Math.abs(src[a * 3 + 1] - src[b * 3 + 1]) + Math.abs(src[a * 3 + 2] - src[b * 3 + 2]);
+  const seedTol = o.seedTol ?? 18;
+  const maxTol = o.maxTol ?? 75;
+  const minArea = Math.max(150, Math.round(w * h * (o.minShare ?? 0.0015)));
+  const seen = new Uint8Array(w * h);
+  const out = Buffer.from(data);
+  let cleared = 0;
+  for (let start = 0; start < w * h; start++) {
+    if (seen[start] || data[start * 4 + 3] <= 24 || dist(start) > seedTol) continue;
+    const comp: number[] = [];
+    const stack = [start];
+    seen[start] = 1;
+    let sum = 0, sum2 = 0;
+    while (stack.length) {
+      const p = stack.pop()!;
+      comp.push(p);
+      const l = src[p * 3] + src[p * 3 + 1] + src[p * 3 + 2];
+      sum += l;
+      sum2 += l * l;
+      const x = p % w, y = (p - x) / w;
+      for (const q of [x > 0 ? p - 1 : -1, x < w - 1 ? p + 1 : -1, y > 0 ? p - w : -1, y < h - 1 ? p + w : -1]) {
+        // Croissance douce : pas de saut de couleur (bord du produit), jamais trop loin de la couleur du fond.
+        if (q < 0 || seen[q] || data[q * 4 + 3] <= 24 || step(p, q) > 14 || dist(q) > maxTol) continue;
+        seen[q] = 1;
+        stack.push(q);
+      }
+    }
+    if (comp.length < minArea) continue;
+    const mean = sum / comp.length;
+    const sd = Math.sqrt(Math.max(0, sum2 / comp.length - mean * mean));
+    // Une zone de fond est unie (ombre douce) ; une matière du produit a du relief.
+    if (sd > 30) continue;
+    for (const p of comp) out[p * 4 + 3] = 0;
+    cleared += comp.length;
+    // Bord adouci : un pixel voisin à mi-chemin entre produit et fond devient semi-transparent.
+    for (const p of comp) {
+      const x = p % w, y = (p - x) / w;
+      for (const q of [x > 0 ? p - 1 : -1, x < w - 1 ? p + 1 : -1, y > 0 ? p - w : -1, y < h - 1 ? p + w : -1]) {
+        if (q < 0 || out[q * 4 + 3] === 0) continue;
+        if (dist(q) < maxTol * 1.4) out[q * 4 + 3] = Math.min(out[q * 4 + 3], 140);
+      }
+    }
+  }
+  return cleared ? sharp(out, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer() : png;
+}
+
 export async function dropIslands(png: Buffer, minShare = 0.04): Promise<Buffer> {
   const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   const { width: w, height: h } = info;

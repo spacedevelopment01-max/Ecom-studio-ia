@@ -774,35 +774,9 @@ export async function createContentPlan(ctx: JobContext, projectId: string, para
     } else if ((visual.kind === "packshot" || visual.kind === "scene" || visual.kind === "detail") && pools[visual.kind]?.length) {
       const pool = pools[visual.kind];
       mediaIds = [pool[i % pool.length].id];
-    } else if (services) {
-      // Entreprise de services (pas de produit détouré) : visuel à la marque par publication, sur une photo réelle de
-      // l'activité quand il y en a (à tour de rôle), sinon fond graphique ; titre de la publication et appel à l'action.
-      const imgFmt: FormatId = post.format === "story" ? "story" : fmt.image;
-      const slides = post.format === "carousel" && visual.slides?.length ? visual.slides.slice(0, 6) : [visual.headline || activityName(p)];
-      // Avec l'IA d'images : une image propre à cette publication (jamais la même d'une publication à l'autre) ;
-      // sinon, photos existantes à tour de rôle.
-      const aspect = imgFmt === "story" ? "9:16" : FORMATS[imgFmt].w === FORMATS[imgFmt].h ? "1:1" : FORMATS[imgFmt].w > FORMATS[imgFmt].h ? "16:9" : "4:5";
-      const own = await ctx.step(`post-photo:${postId}`, async () => (await postAmbiance({ userId: p.userId, projectId, jobId: ctx.job.id }, p, { key: postId, topic: [visual.headline, visual.subline, post.caption].filter(Boolean).join(" — "), aspect, name: `${C("photo-publication", "post-photo")}-${post.network}-${i + 1}.jpg` }))?.id ?? null);
-      const ownAsset = own ? getAsset(own) ?? null : null;
-      for (const [j, text] of slides.entries()) {
-        const photoAsset = ownAsset ?? (svcPhotos.length ? svcPhotos[(i + j) % svcPhotos.length] : null);
-        const photo = photoAsset ? await loadImage(assetData(photoAsset)).catch(() => null) : null;
-        const jpg = await renderServiceCard({ palette: palette(p), typo: brandTypo(p), format: FORMATS[imgFmt], brand: p.brand?.name ?? p.name, eyebrow: placeLine(p) && !(visual.subline ?? "").includes(placeLine(p)) ? placeLine(p) : undefined, title: text, text: j === 0 ? visual.subline || undefined : undefined, cta: j === slides.length - 1 ? serviceCta(p, true) : undefined, photo });
-        const a = await saveAsset({ projectId, userId: p.userId, data: jpg, name: `${C("publication", "post")}-${post.network}-${new Date(post.scheduled_at).toISOString().slice(0, 10)}-${i + 1}${slides.length > 1 ? `-${j + 1}` : ""}.jpg`, mime: "image/jpeg", role: "social", folderKey: "content.calendar", origin: "generated", sourceAssetId: photoAsset?.id, meta: { recipe: photoAsset ? L(`Photo de votre activité mise en page pour ${fmt.label}`, `Your business photo laid out for ${fmt.label}`) : L(`Visuel à la marque pour ${fmt.label} (aucune photo fournie)`, `Branded visual for ${fmt.label} (no photo provided)`), post: postId, business: "services" } });
-        mediaIds.push(a.id);
-      }
-    } else if (product) {
-      // Story en 9:16 ; carrousel : une diapositive par texte (couverture, idées, action), même typographie et palette.
-      const imgFmt: FormatId = post.format === "story" ? "story" : fmt.image;
-      const slides = post.format === "carousel" && visual.slides?.length ? visual.slides.slice(0, 6) : [visual.headline || p.product.name];
-      const layouts = ["bold", "minimal", "editorial", "centered", "split"] as const;
-      for (const [j, text] of slides.entries()) {
-        const layout = slides.length > 1 ? (j === 0 ? visual.layout : layouts[j % layouts.length]) : visual.layout;
-        const r = await renderCreative({ product, palette: palette(p), typo: brandTypo(p), format: FORMATS[imgFmt], layout, headline: text, subline: j === 0 ? visual.subline || undefined : undefined, brand: p.brand?.name ?? p.name, logo, seed: i + 11 + j * 7 });
-        const a = await saveAsset({ projectId, userId: p.userId, data: r.jpg, name: `${C("publication", "post")}-${post.network}-${new Date(post.scheduled_at).toISOString().slice(0, 10)}-${i + 1}${slides.length > 1 ? `-${j + 1}` : ""}.jpg`, mime: "image/jpeg", role: "social", folderKey: "content.calendar", origin: "generated", meta: { recipe: slides.length > 1 ? L(`Diapositive ${j + 1}/${slides.length} du carrousel ${fmt.label}`, `Carousel slide ${j + 1}/${slides.length} for ${fmt.label}`) : L(`Visuel ${FORMATS[imgFmt].label} pour ${fmt.label}`, `${FORMATS[imgFmt].label} visual for ${fmt.label}`), post: postId, safeArea: r.safe, minFontPx: r.minFontPx } });
-        mediaIds.push(a.id);
-      }
     }
+    // Images finales 100 % IA : l'ancien calendrier ne compose plus de visuel (ni carte du studio sur une photo, ni
+    // photo de banque). La publication reste en brouillon : son visuel est créé par l'IA dans Publications.
     for (const m of mediaIds) addUsage(m, "post", postId, `${fmt.label} — ${new Date(post.scheduled_at).toLocaleDateString(intlLocale(uiLang()))}`);
     // Une publication signalée par le contrôle des allégations n'est jamais programmée automatiquement.
     const flagged = !!json<{ claims?: string[] }>(post.brief, {}).claims?.length;

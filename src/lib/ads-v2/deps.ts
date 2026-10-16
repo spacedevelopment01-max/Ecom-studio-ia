@@ -56,12 +56,30 @@ export type AdsV2Deps = {
   logo: () => { id: string; data: Buffer } | null;
   /** Version claire du logo (posée sur une photo sombre) ; facultative. */
   logoLight?: () => { id: string; data: Buffer } | null;
+  /**
+   * PUBLICITÉ FINALE ENTIÈREMENT CRÉÉE PAR L'IA (guide du moteur d'images) : le moteur décide du concept, de l'angle et
+   * des textes contrôlés ; l'IA d'images crée l'image complète (scène, mise en page, textes exacts, logo du projet en
+   * référence), contrôlée puis corrigée. Toujours présent dans le branchement réel ; null + raison : bloqué (IA
+   * indisponible, budget, essais refusés) — jamais un gabarit à la place.
+   */
+  finalAd?: (i: { conceptId: string; angle: string; hook: string; cta: string; subject: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; maxCostEur: number }) => Promise<{ assetId: string | null; costMicro: number; reason?: string }>;
 };
 
 export function realAdDeps(ctx: JobContext | null, p: Project, aiActive: boolean): AdsV2Deps {
   const base = { userId: p.userId, projectId: p.id, jobId: ctx?.job.id ?? null };
   const ai = aiActive && llmConfigured();
   return {
+    async finalAd(i) {
+      if (!aiActive) return { assetId: null, costMicro: 0, reason: "IA indisponible pour ce projet (forfait, budget ou fournisseur) : publicité non créée — aucun gabarit à la place" };
+      const { designPostWithAi, realAiPostDeps } = await import("../social-v2/ai-post");
+      const { validCutouts } = await import("../engine/cutouts");
+      const ref = p.business === "services" ? null : (validCutouts(p.id)[0]?.id ?? all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'original' AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at DESC LIMIT 1", p.id)[0]?.id ?? null);
+      const post = { id: `ad-${i.conceptId}-${i.aspect.replace(":", "x")}`, network: "instagram", format: "image", title: i.hook, headline: i.hook, caption: "", pillar: i.angle, objective: "convert", request: i.subject } as unknown as import("../social-v2/deps").PostBrief;
+      const d = realAiPostDeps(base);
+      // Textes du moteur (contrôlés) gardés tels quels : pas de réécriture par l'IA de texte.
+      const r = await designPostWithAi(p, post, { aspect: i.aspect, maxCostEur: i.maxCostEur, reference: ref, as: "ad" }, { ...d, copy: undefined });
+      return { assetId: r.assetId, costMicro: r.costMicro, reason: r.note };
+    },
     canWrite: ai,
     canReview: ai,
     canGenerate: ai && !!productImagePath("ad_visual"),

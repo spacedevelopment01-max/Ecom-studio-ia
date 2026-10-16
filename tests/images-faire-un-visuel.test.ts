@@ -107,17 +107,16 @@ describe("Faire un visuel (onglet Images)", async () => {
     expect(fetchCalls).toBe(0);
   });
 
-  it("API : gratuit sans IA, choix payants refusés sans IA active, sinon la bonne tâche ; devis lisible avant", async () => {
+  it("API (images 100 % IA) : plus de visuel gratuit du studio ; sans IA, refus ; sinon publication entière par l'IA ; devis lisible avant", async () => {
     const u = await user();
     const pid = await seedThemeScenario(u.id, "artisan");
     grantProjectPlan(pid, "vendre");
-    // IA inactive (budget épuisé, fournisseur coupé…) : les choix payants sont refusés, le gratuit passe sans IA.
+    // IA inactive (budget épuisé, fournisseur coupé…) : tout est refusé, rien n'est composé à la place.
     aiOn = false;
     expect((await post(pid, { mode: "single", visual: "ai_post", kind: "service" })).status).toBe(402);
     expect((await post(pid, { mode: "single", visual: "ai_image", kind: "service" })).status).toBe(402);
-    const free = await post(pid, { mode: "single", visual: "free", kind: "service", format: "portrait", background: "image", useAi: true });
-    expect(free.status).toBe(200);
-    expect(JSON.parse(getJob((await free.json()).jobId)!.payload).request.useAi).toBe(false);
+    expect((await post(pid, { mode: "single", kind: "service", format: "portrait" })).status).toBe(402);
+    expect((await post(pid, { mode: "single", visual: "free", kind: "service", format: "portrait", background: "image", useAi: true })).status).toBe(410);
     const q = await (await fr(() => images.GET(new Request(`http://localhost:3000/api/projects/${pid}/images`), { params: Promise.resolve({ id: pid }) } as any))).json();
     expect(q.ai).toBe(false);
     expect(typeof q.quote.ai_image).toBe("number");
@@ -130,9 +129,10 @@ describe("Faire un visuel (onglet Images)", async () => {
     expect(ja.type).toBe("image.ai_post");
     expect(JSON.parse(ja.payload).request).toMatchObject({ kind: "service", format: "story", headline: "Titre" });
     const i = await post(pid, { mode: "single", visual: "ai_image", kind: "service", format: "portrait", headline: "Autre" });
+    // Visuel de prestation avec texte : publication entière par l'IA (plus de texte du studio posé sur une image).
     const ji = getJob((await i.json()).jobId)!;
-    expect(ji.type).toBe("image.single");
-    expect(JSON.parse(ji.payload).request).toMatchObject({ aiImage: true, useAi: true });
+    expect(ji.type).toBe("image.ai_post");
+    expect(JSON.parse(ji.payload).request).toMatchObject({ kind: "service", headline: "Autre" });
     aiOn = false;
   }, 60_000);
 

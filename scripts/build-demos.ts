@@ -49,6 +49,12 @@ type DemoDef = {
   contactModes?: string;
   /** Autres photos fournies à la création (services : atelier, salon…). */
   photos?: string[];
+  /** Logo fourni par le client à la création (l'identité en est tirée : couleurs, symbole). */
+  logo?: string;
+  /** Signature fournie par le client (écrite sur son logo, par exemple). */
+  tagline?: string;
+  /** Vidéos de la création : « edited » = montées par le studio à partir des images (sans plan filmé par l'IA). */
+  videos?: "ai" | "edited" | "none";
 };
 
 const REAL = path.join(process.cwd(), "scripts", "demo-products", "inputs");
@@ -81,6 +87,20 @@ const REAL_DEMOS: DemoDef[] = [
       { name: "Casquette Lavande", category: "Accessoires", price: "24,90", description: "Casquette en coton bleu marine, brin de lavande brodé sur le devant, bande tricolore sur la patte de serrage.", photo: path.join(IA, "tribunes-casquette.jpg") },
     ],
     source: { supplier: "Fournisseur + IA", url: "", note: "Deux t-shirts de supporter d'un fournisseur (visuels du fournisseur) et deux accessoires dont la photo a été créée par l'IA : la marque et la boutique sont créées par le studio. Aucun écusson officiel." },
+  },
+  {
+    // Montre : vraie photo Pixabay (n° 3090387) et logo ARVEN déjà créé par l'IA, fourni comme le ferait le client.
+    id: "montre", sector: "Horlogerie", direction: "joaillerie", category: "Montres",
+    productName: "Chronographe acier et cuir", brandName: "ARVEN", price: "",
+    description: "Montre chronographe : boîtier en acier poli, lunette graduée, cadran noir à trois compteurs argentés, guichet de date, bracelet en cuir brun surpiqué doublé de tissu bleu.",
+    // Photo Pixabay d'origine : bas du bracelet perdu dans l'ombre. Montre reconstruite en entier (Qwen-Image, photo
+    // d'origine en référence, accord du propriétaire, 0,162 $ pour 2 essais ; le 1er, boîtier devenu noir, refusé).
+    photo: path.join(PX, "montre-1-entiere.jpg"),
+    logo: path.join(REAL, "logos", "arven.png"),
+    // Signature écrite sur le logo du client : reprise telle quelle (jamais remplacée par une autre).
+    tagline: "Le temps, bien porté.",
+    videos: "edited",
+    source: { supplier: "Pixabay", url: "https://pixabay.com/images/id-3090387/", note: "Photo d'une montre sans marque (Pixabay), bracelet complété par l'IA (la partie basse était dans l'ombre) : la marque ARVEN, ses visuels et sa boutique sont créés par le studio. Prix et caractéristiques techniques non annoncés : à compléter par le marchand." },
   },
   {
     id: "gourde", sector: "Sport et plein air", direction: "elan", category: "Gourdes",
@@ -255,7 +275,8 @@ for (const p of PRODUCTS) {
   const form = new FormData();
   form.append("photos", new Blob([photo], { type: "image/jpeg" }), path.basename(photoFile).replace(/\.png$/, ".jpg"));
   for (const f of p.photos ?? []) form.append("photos", new Blob([fs.readFileSync(f)], { type: "image/jpeg" }), path.basename(f));
-  const fields: Record<string, string> = { productName: p.productName, brandName: p.brandName, price: p.price, description: p.description, mode: "autopilot", platform: p.platform ?? "shopify", storeType: p.storeType ?? "mono", businessType: p.business ?? "products", ...(EN ? { language: "en" } : {}) };
+  if (p.logo) form.append("logo", new Blob([fs.readFileSync(p.logo)], { type: "image/png" }), path.basename(p.logo));
+  const fields: Record<string, string> = { productName: p.productName, brandName: p.brandName, price: p.price, description: p.description, mode: "autopilot", platform: p.platform ?? "shopify", storeType: p.storeType ?? "mono", businessType: p.business ?? "products", ...(p.videos ? { videos: p.videos } : {}), ...(EN ? { language: "en" } : {}) };
   if (p.business === "services") Object.assign(fields, { services: JSON.stringify(p.services ?? []), area: p.area ?? "", hours: p.hours ?? "", contactModes: p.contactModes ?? "form", contactMode: (p.contactModes ?? "form").split(",")[0] });
   for (const [k, v] of Object.entries(fields)) form.append(k, v);
   // PID=<id> : reprend un projet déjà créé (création longue avec l'IA) au lieu d'en refaire un (et de le repayer).
@@ -269,6 +290,11 @@ for (const p of PRODUCTS) {
   const t0 = Date.now();
   let ov = await waitIdle(ctx, pid);
   console.log(`  pipeline ${Math.round((Date.now() - t0) / 1000)} s`, ov.pipeline?.job?.status);
+  // Signature fournie par le client : posée comme il le ferait dans l'onglet Marque (site, créations, planche suivent).
+  if (REDO && p.tagline) {
+    await api(ctx, `/api/projects/${pid}/brand`, { method: "PATCH", body: { tagline: p.tagline, validate: ["tagline"] } });
+    ov = await waitIdle(ctx, pid);
+  }
   // Catalogue (niche, multi) : les autres produits, avec leur photo réelle.
   if (REDO && p.catalog?.length) {
     for (const c of p.catalog) {

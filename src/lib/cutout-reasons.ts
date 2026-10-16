@@ -18,6 +18,7 @@ export const CUTOUT_REASONS = {
   background_left: { fr: "morceaux de fond restants", en: "pieces of background left" },
   person_left: { fr: "morceaux de personne restants (main, bras, cou…)", en: "parts of a person left (hand, arm, neck…)" },
   missing_parts: { fr: "parties du produit retirées", en: "parts of the product removed" },
+  incomplete_product: { fr: "produit incomplet sur la photo (une partie manque : hors cadre, dans l'ombre ou cachée) — reconstruction nécessaire", en: "product incomplete in the photo (a part is missing: out of frame, in shadow or hidden) — reconstruction needed" },
   wrong_object: { fr: "ce n'est pas le produit qui a été isolé", en: "the isolated object is not the product" },
   other_objects: { fr: "autres objets gardés avec le produit", en: "other objects kept with the product" },
   text_left: { fr: "texte publicitaire gardé", en: "advertising text kept" },

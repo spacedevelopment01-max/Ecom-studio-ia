@@ -14,7 +14,7 @@ import crypto from "node:crypto";
 import type { JobContext } from "../jobs";
 import { JobCancelled, JobPaused } from "../jobs";
 import { aiActiveFor } from "../ai/access";
-import { all, json, one } from "../db";
+import { all, json, one, run } from "../db";
 import { CostCapReached, currentTrace, withCandidate, withTrace } from "../ai/trace";
 import { gateSave } from "../quality/store";
 import { isAutoUsable } from "../quality/usable";
@@ -305,6 +305,15 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
   if (prev) {
     stats.reused++;
     return { outcome: { conceptId: concept.id, platform: f.platform, aspect: f.aspect, verdict: "FINAL", score: null, codes: [], reason: "création validée réutilisée", assetId: prev.id, imageAssetId: json<any>(prev.meta as any, {}).adV2?.imageAssetId ?? null, attempts: 0, reused: true }, review: null };
+  }
+  // Publicité finale créée ENTIÈREMENT par l'IA (branchement réel) : jamais une composition de gabarit. Bloquée
+  // (IA indisponible, budget, essais refusés) : aucune création, la raison est dite.
+  if (deps.finalAd) {
+    const aspect = (["1:1", "4:5", "9:16", "16:9"].includes(f.aspect) ? f.aspect : orientation(f.aspect)) as "1:1" | "4:5" | "9:16" | "16:9";
+    const r = await deps.finalAd({ conceptId: concept.id, angle: concept.angle.type, hook: concept.copy.hook, cta: concept.copy.cta, subject: [concept.visual.subject, concept.copy.visual].filter(Boolean).join(" — ").slice(0, 400), aspect, maxCostEur: 1 });
+    stats.images++;
+    if (r.assetId) run("UPDATE assets SET meta = json_set(meta, '$.adV2', json(?)) WHERE id = ?", JSON.stringify({ version: ADS_V2_VERSION, hash: h, conceptId: concept.id, angle: { type: concept.angle.type, material: concept.angle.material, lever: concept.angle.lever }, copy: concept.copy, platform: f.platform, aspect: f.aspect, layout: "ai", aiFinal: true }), r.assetId);
+    return { outcome: { conceptId: concept.id, platform: f.platform, aspect: f.aspect, verdict: r.assetId ? "PROVISIONAL" : "REJECTED", score: null, codes: r.assetId ? [] : ["ai_blocked"], reason: r.assetId ? "publicité entièrement créée par l'IA, contrôlée (textes, produit, logo)" : r.reason ?? "publicité IA non créée", assetId: r.assetId, imageAssetId: null, attempts: 1, reused: false }, review: null };
   }
   let copy = concept.copy;
   let layout = concept.visual.layout;

@@ -82,24 +82,22 @@ describe("Visuel de prestation : choix de l'image", async () => {
     return job;
   };
 
-  it("« une nouvelle image » est transmise à la tâche et cherche une image (jamais un visuel typographique en silence)", async () => {
+  it("images 100 % IA : un visuel de prestation part vers l'IA (publication entière), jamais un visuel typographique du studio", async () => {
     const u = await createUser(`bg${Date.now()}@test.fr`, "motdepasse-test", "P");
     sessionUser = { ...u, role: "client" };
     const pid = await seedThemeScenario(u.id, "artisan");
     grantProjectPlan(pid, "vendre");
-    const job = await launch(pid, { mode: "single", kind: "service", format: "portrait", serviceIndex: 0, background: "image" });
-    expect(new JobContext(job).payload.request.background).toBe("image");
-    // Ici : aucune photo libre (hors ligne) et aucune IA d'images configurée → message clair, pas de visuel muet.
-    await expect(fr(() => handlers["image.single"](new JobContext(job)))).rejects.toThrow(/photo libre de droits/);
+    for (const background of ["image", "none"]) {
+      const job = await launch(pid, { mode: "single", kind: "service", format: "portrait", serviceIndex: background === "none" ? 1 : 0, background });
+      expect(job.type).toBe("image.ai_post");
+    }
   }, 120_000);
 
-  it("« sans image » : visuel typographique, comme avant", async () => {
+  it("ancienne tâche image.single restée en file : passe par l'IA d'images ; sans IA, refus expliqué (aucun gabarit)", async () => {
     const u = await createUser(`bg2${Date.now()}@test.fr`, "motdepasse-test", "P");
-    sessionUser = { ...u, role: "client" };
     const pid = await seedThemeScenario(u.id, "artisan");
-    grantProjectPlan(pid, "vendre");
-    const job = await launch(pid, { mode: "single", kind: "service", format: "portrait", serviceIndex: 0, background: "none" });
-    const result = (await fr(() => handlers["image.single"](new JobContext(job)))) as { assetId?: string };
-    expect(result.assetId).toBeTruthy();
+    const jid = `old-single-${Date.now()}`;
+    run("INSERT INTO jobs (id, user_id, project_id, type, label, payload, status, run_at, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)", jid, u.id, pid, "image.single", "x", JSON.stringify({ projectId: pid, request: { kind: "service" } }), "running", Date.now(), Date.now(), Date.now());
+    await expect(fr(() => handlers["image.single"](new JobContext(getJob(jid)!)))).rejects.toThrow(/aucun gabarit/);
   }, 120_000);
 });

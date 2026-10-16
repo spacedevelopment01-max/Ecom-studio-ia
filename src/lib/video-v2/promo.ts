@@ -279,7 +279,6 @@ export function statementOverlay(o: PromoInput, text: string, id = "m", layout: 
     const y0 = h * 0.7 - lines.length * size * 1.12;
     const L: Layer[] = [
       vignette(o, id),
-      rect(`${id}-scrim`, "Voile bas", { x: 0, y: h * 0.4, w, h: h * 0.6 }, { type: "linear", angle: 90, stops: [{ offset: 0, color: "rgba(0,0,0,0)" }, { offset: 0.5, color: "rgba(0,0,0,0.55)" }, { offset: 1, color: "rgba(0,0,0,0.8)" }] }, { role: "scrim" }),
       ...brandMark(o, id, "#FFFFFF", 0.05),
       A(rect(`${id}-bar`, "Trait", { x: safe.side, y: y0, w: w * 0.014, h: lines.length * size * 1.12 }, acc), "drop", 0.1, 0.4),
     ];
@@ -324,7 +323,7 @@ export function statementOverlay(o: PromoInput, text: string, id = "m", layout: 
   const hi = lines.length >= 3 && !STOP.has(lines[1].toLowerCase()) ? 1 : lines.length - 1;
   const L: Layer[] = [
     vignette(o, id),
-    rect(`${id}-scrim`, "Voile", { x: 0, y: h * 0.2, w, h: h * 0.6 }, { type: "linear", angle: 90, stops: [{ offset: 0, color: "rgba(0,0,0,0)" }, { offset: 0.5, color: "rgba(0,0,0,0.55)" }, { offset: 1, color: "rgba(0,0,0,0)" }] }, { role: "scrim" }),
+    // Pas de bande sombre derrière le texte (choix du propriétaire) : ombre douce sur les lettres.
     ...brandMark(o, id),
   ];
   lines.forEach((t, k) => {

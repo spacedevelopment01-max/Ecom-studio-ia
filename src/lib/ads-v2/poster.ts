@@ -138,6 +138,26 @@ export function confirmedFeatures(p: Project, max = 6): string[] {
   return out.slice(0, max);
 }
 
+/**
+ * Traits du produit écrits par le client dans sa description (« boîtier en acier poli, lunette graduée… ») : de vrais
+ * titres courts, jamais inventés. Sert à varier les affiches au lieu de répéter la signature partout.
+ */
+export function descriptionTraits(p: Project, max = 6): string[] {
+  // Seulement le texte du client (analyse locale : le résumé EST sa description) ; jamais un résumé rédigé par l'IA.
+  const own = p.product.sources.find((x) => x.type === "description")?.ref ?? (p.product.analyzedBy === "local" ? p.product.summary : "");
+  if (p.business === "services" || !own) return [];
+  const d = own.split("\n")[0].replace(/^[^:]{0,60}:\s*/, "");
+  const out: string[] = [];
+  for (const raw of d.split(/[,;.·•]|\s+et\s+(?=[a-zà-ÿ]+\s)/i)) {
+    const t = raw.trim().replace(/\s+/g, " ");
+    const n = t.split(" ").length;
+    if (n < 2 || n > 6 || t.length > 34 || /\d+\s*(%|€|ans?|h|min)/i.test(t)) continue;
+    const c = t.charAt(0).toUpperCase() + t.slice(1);
+    if (!out.includes(c)) out.push(c);
+  }
+  return out.slice(0, max);
+}
+
 /** Clé de document d'une affiche (lignée éditable : publication ou visuel). */
 export const posterDocKey = (projectId: string, seed: string, aspect: string) => `post:${crypto.createHash("sha256").update(`${projectId}|${seed}|${aspect}`).digest("hex").slice(0, 20)}`;
 
@@ -156,7 +176,11 @@ export async function composePoster(p: Project, i: PosterInput): Promise<{ jpg: 
   const fold = (x: string) => x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
   const name = p.business === "services" ? "" : p.product.name?.trim() ?? "";
   const tag = p.brand?.tagline?.trim() ?? "";
-  const plainTitle = !!i.product && !!tag && !!name && fold(i.headline) === fold(name);
+  // Titre réduit au nom du produit : la signature OU un trait écrit par le client, choisi par affiche (la signature
+  // n'est plus répétée sur toutes les publications du projet).
+  const plainTitle = !!i.product && !!name && fold(i.headline) === fold(name) && (!!tag || descriptionTraits(p).length > 0);
+  const titles = [tag, ...descriptionTraits(p)].filter(Boolean);
+  const plainHeadline = titles[n % titles.length] ?? tag;
   const r = await composeAd({
     format: posterFormat(i.aspect),
     layout: layout as ComposeInput["layout"],
@@ -164,7 +188,7 @@ export async function composePoster(p: Project, i: PosterInput): Promise<{ jpg: 
     typo,
     art,
     brand: p.brand?.name ?? p.name,
-    headline: plainTitle ? tag : i.headline.trim() || p.brand?.tagline || p.brand?.name || p.name,
+    headline: plainTitle ? plainHeadline : i.headline.trim() || p.brand?.tagline || p.brand?.name || p.name,
     subline: i.subline?.trim() || (plainTitle ? name : null),
     eyebrow: i.eyebrow?.trim() || null,
     cta,

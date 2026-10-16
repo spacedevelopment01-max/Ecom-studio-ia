@@ -3,11 +3,11 @@
  * Onglet Images : la BANQUE D'IMAGES du projet. Seulement des images neutres, sans texte (vos photos, détourages,
  * photos libres de droits, mises en scène du studio, images créées par l'IA), réutilisées partout : site,
  * publications, publicités. Les publications avec texte se créent dans Publications.
- * Compléter la banque : chercher des photos libres (gratuit), créer (mise en scène gratuite du studio ou image par
- * l'IA, prix affiché avant), importer ses propres photos.
+ * Compléter la banque : chercher des photos libres (gratuit, matière brute choisie par le client), créer une image
+ * par l'IA (prix affiché avant ; plus de mise en scène composée par le studio), importer ses propres photos.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ImagePlus, Search, Sparkles, Upload, Wand2 } from "lucide-react";
+import { ImagePlus, Search, Upload, Wand2 } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, Field, Input, Modal, Select, Toggle, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { EngineNotice, JobProgress, ROLE_LABEL, StatusBadge, useActive, type AssetView } from "./common";
@@ -76,15 +76,6 @@ function TrashGrid({ assets, onRestored }: { assets: AssetView[]; onRestored: ()
 
 
 
-const STYLES = [
-  ["studio", "Studio doux", "Soft studio"],
-  ["podium", "Podium", "Podium"],
-  ["arch", "Arche", "Arch"],
-  ["window", "Lumière de fenêtre", "Window light"],
-  ["spotlight", "Projecteur sombre", "Dark spotlight"],
-  ["split", "Aplats de couleur", "Color blocks"],
-  ["color", "Fond de marque", "Brand background"],
-];
 const FORMATS = [
   ["product", "4:5 HD (fiche produit)", "4:5 HD (product page)"],
   ["packshot", "1:1 HD (packshot)", "1:1 HD (packshot)"],
@@ -346,8 +337,8 @@ function SearchPhotos({ services, onStarted }: { services: boolean; onStarted: (
 }
 
 /**
- * Créer une image pour la banque : mise en scène gratuite du studio à partir de la vraie photo du produit
- * (packshot, décor), ou image créée par l'IA (prix affiché avant ; aucune personne sans accord).
+ * Créer une image pour la banque : toujours créée par l'IA (règle « images finales 100 % IA » : plus de mise en scène
+ * composée par le studio), vrai produit en référence, prix affiché avant ; aucune personne sans accord.
  */
 function CreateImage({ services, onStarted }: { services: boolean; onStarted: (jobId?: string) => void }) {
   const { id, data } = useProject();
@@ -357,8 +348,6 @@ function CreateImage({ services, onStarted }: { services: boolean; onStarted: (j
   const cost = useCostConfirm();
   const { data: q } = useApi<{ ai: boolean; quote: { ai_image: number } }>(`/api/projects/${id}/images`);
   const ai = !!q?.ai;
-  const [mode, setMode] = useState<"studio" | "ai">(services ? "ai" : "studio");
-  const [studio, setStudio] = useState({ kind: "scene", style: "window", format: "product" });
   const [f, setF] = useState({ kind: services ? "trade_photo" : "usage_scene", topic: "", aspect: "4:5", count: 1 });
   const [busy, setBusy] = useState(false);
   // Prix d'une image par l'IA (estimation prudente, une reprise comprise si la première est refusée).
@@ -367,56 +356,26 @@ function CreateImage({ services, onStarted }: { services: boolean; onStarted: (j
   const go = async () => {
     setBusy(true);
     try {
-      if (mode === "studio") {
-        const r = await api<{ jobId?: string }>(`/api/projects/${id}/images`, { body: { mode: "single", visual: "free", kind: studio.kind, style: studio.kind === "packshot" ? undefined : studio.style, format: studio.format } });
-        onStarted(r.jobId);
-      } else {
-        if (!(await cost.confirm("image"))) return;
-        const r = await api<{ jobId?: string }>(`/api/projects/${id}/images/v2`, { body: { action: "generate", request: { kind: f.kind, aspect: f.aspect, topic: f.topic.trim() || undefined, count: f.count, allowGenerate: true, noStock: true } } });
-        onStarted(r.jobId);
-      }
+      if (!(await cost.confirm("image"))) return;
+      const r = await api<{ jobId?: string }>(`/api/projects/${id}/images/v2`, { body: { action: "generate", request: { kind: f.kind, aspect: f.aspect, topic: f.topic.trim() || undefined, count: f.count, allowGenerate: true, noStock: true } } });
+      onStarted(r.jobId);
     } catch (e) {
       toast("bad", (e as Error).message);
     } finally {
       setBusy(false);
     }
   };
-  const options: ["studio" | "ai", string, string, string][] = [
-    ...(!services ? [["studio", t("Mise en scène du studio", "Studio staging"), t("Votre vraie photo de produit, détourée et posée sur un fond ou un décor (packshot, podium, lumière de fenêtre…). Sans IA.", "Your real product photo, cut out and placed on a background or set (packshot, podium, window light…). No AI."), t("Gratuit", "Free")] as ["studio", string, string, string]] : []),
-    ["ai", t("Image créée par l'IA", "Image created by AI"), services ? t("Une image de votre métier ou de votre activité, contrôlée avant d'arriver dans la banque.", "An image of your trade or business, checked before it reaches the bank.") : t("Une scène autour de votre vrai produit, contrôlée avant d'arriver dans la banque.", "A scene around your real product, checked before it reaches the bank."), price ? t(`Payant · environ ${price}`, `Paid · about ${price}`) : t("Payant · prix affiché avant", "Paid · price shown first")],
-  ];
+  const badge = price ? t(`Payant · environ ${price}`, `Paid · about ${price}`) : t("Payant · prix affiché avant", "Paid · price shown first");
   return (
     <div className="grid gap-5" data-bank-create-dialog>
       {cost.dialog}
-      <fieldset className="grid gap-2 sm:grid-cols-2">
-        <legend className="mb-1.5 text-sm font-medium">{t("Comment créer l'image ?", "How should the image be created?")}</legend>
-        {options.map(([v, label, help, badge]) => {
-          const off = v === "ai" && !ai;
-          return (
-            <label key={v} className={cx("flex gap-3 rounded-2xl border p-3 text-sm", off ? "cursor-not-allowed opacity-55" : "cursor-pointer", mode === v ? "border-ink bg-paper-2" : "border-line")}>
-              <input type="radio" name="bank-create" checked={mode === v} disabled={off} onChange={() => setMode(v)} className="mt-1" data-bank-create-option={v} />
-              <span>
-                <span className="block font-medium">{label}</span>
-                <span className="block text-xs text-muted">{help}</span>
-                <span className={cx("mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold", v === "studio" ? "bg-ok-soft text-ok" : "bg-signal-soft text-signal")}>{badge}</span>
-              </span>
-            </label>
-          );
-        })}
-      </fieldset>
-      {!ai && <p className="text-xs text-muted">{t("La création par l'IA n'est pas disponible pour ce projet (forfait Découverte, budget IA épuisé ou fournisseur désactivé).", "AI creation isn't available for this project (Discovery plan, AI budget used up or provider disabled).")}{services ? ` ${t("Cherchez plutôt des photos libres (gratuit) ou importez les vôtres.", "Search royalty-free photos instead (free) or upload your own.")}` : ""}</p>}
-      {mode === "studio" ? (
-        <div className="grid gap-3 sm:grid-cols-3">
-          <Field label={t("Type", "Type")} htmlFor="bc-kind">
-            <Select id="bc-kind" value={studio.kind} onChange={(e) => setStudio({ ...studio, kind: e.target.value, format: e.target.value === "packshot" ? "packshot" : "product" })}>
-              <option value="packshot">{t("Packshot (fond uni)", "Packshot (plain background)")}</option>
-              <option value="scene">{t("Mise en scène", "Staged scene")}</option>
-            </Select>
-          </Field>
-          {studio.kind !== "packshot" && <Field label={t("Décor", "Set")} htmlFor="bc-style"><Select id="bc-style" value={studio.style} onChange={(e) => setStudio({ ...studio, style: e.target.value })}>{STYLES.map(([v, l, en]) => <option key={v} value={v}>{t(l, en)}</option>)}</Select></Field>}
-          <Field label="Format" htmlFor="bc-format"><Select id="bc-format" value={studio.format} onChange={(e) => setStudio({ ...studio, format: e.target.value })}>{FORMATS.filter(([v]) => v !== "banner").map(([v, l, en]) => <option key={v} value={v}>{t(l, en)}</option>)}</Select></Field>
-        </div>
-      ) : (
+      <div className="rounded-2xl border border-ink bg-paper-2 p-3 text-sm" data-bank-create-option="ai">
+        <span className="block font-medium">{t("Image créée par l'IA", "Image created by AI")}</span>
+        <span className="block text-xs text-muted">{services ? t("Une image de votre métier ou de votre activité, contrôlée avant d'arriver dans la banque.", "An image of your trade or business, checked before it reaches the bank.") : t("Une scène autour de votre vrai produit, contrôlée avant d'arriver dans la banque.", "A scene around your real product, checked before it reaches the bank.")}</span>
+        <span className="mt-1 inline-block rounded-full bg-signal-soft px-2 py-0.5 text-[11px] font-semibold text-signal">{badge}</span>
+      </div>
+      {!ai && <p className="text-xs text-muted">{t("La création par l'IA n'est pas disponible pour ce projet (forfait Découverte, budget IA épuisé ou fournisseur désactivé).", "AI creation isn't available for this project (Discovery plan, AI budget used up or provider disabled).")} {t("Aucune image n'est créée à la place par un gabarit.", "No template image is made instead.")}</p>}
+      {(
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label={t("Sujet (facultatif)", "Subject (optional)")} htmlFor="bc-topic"><Input id="bc-topic" value={f.topic} maxLength={200} onChange={(e) => setF({ ...f, topic: e.target.value })} placeholder={services ? t("Ex. atelier lumineux, matériaux posés", "E.g. bright workshop, materials laid out") : t("Ex. sur une table en bois, lumière du matin", "E.g. on a wooden table, morning light")} /></Field>
           <Field label={t("Type", "Type")} htmlFor="bc-aikind"><Select id="bc-aikind" value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value })}>{(services ? SERVICE_AI_KINDS : PRODUCT_AI_KINDS).map(([v, fr, en]) => <option key={v} value={v}>{t(fr, en)}</option>)}</Select></Field>
@@ -426,9 +385,9 @@ function CreateImage({ services, onStarted }: { services: boolean; onStarted: (j
         </div>
       )}
       <div className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm">{mode === "studio" ? <span className="font-medium text-ok">{t("Gratuit : aucun budget IA utilisé.", "Free: no AI budget used.")}</span> : price ? t(<>Coût estimé : environ <strong>{price}</strong>, pris sur le budget IA du projet. Rien n'est lancé sans votre clic.</>, <>Estimated cost: about <strong>{price}</strong>, taken from the project's AI budget. Nothing starts without your click.</>) : t("Calcul du prix…", "Calculating the price…")}</p>
-        <Button icon={mode === "studio" ? <Sparkles className="size-4" /> : <Wand2 className="size-4" />} loading={busy} disabled={busy || (mode === "ai" && (!ai || !price))} onClick={go} data-bank-create-go>
-          {mode === "studio" ? t("Créer l'image", "Create the image") : t(`Créer · ${price ?? "…"}`, `Create · ${price ?? "…"}`)}
+        <p className="text-sm">{price ? t(<>Coût estimé : environ <strong>{price}</strong>, pris sur le budget IA du projet. Rien n'est lancé sans votre clic.</>, <>Estimated cost: about <strong>{price}</strong>, taken from the project's AI budget. Nothing starts without your click.</>) : t("Calcul du prix…", "Calculating the price…")}</p>
+        <Button icon={<Wand2 className="size-4" />} loading={busy} disabled={busy || !ai || !price} onClick={go} data-bank-create-go>
+          {t(`Créer · ${price ?? "…"}`, `Create · ${price ?? "…"}`)}
         </Button>
       </div>
     </div>

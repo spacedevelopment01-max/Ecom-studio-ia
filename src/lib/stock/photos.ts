@@ -102,7 +102,7 @@ export async function pingStock(source: "pexels" | "pixabay"): Promise<string> {
 
 // ---------------------------------------------------------------- vidéos libres de droits
 
-export type StockVideo = { source: "pexels" | "pixabay"; id: string; url: string; page: string; author: string; license: string; width: number; height: number; duration: number; /** Description de la banque (mots-clés Pixabay, titre de la page Pexels) : filtre du métier sans IA. */ alt: string };
+export type StockVideo = { source: "pexels" | "pixabay"; id: string; url: string; page: string; author: string; license: string; width: number; height: number; duration: number; /** Description de la banque (mots-clés Pixabay, titre de la page Pexels) : filtre du métier sans IA. */ alt: string; /** Plan fait par l'IA et publié sur la banque (Pixabay « ai generated ») : toujours proposé, signalé. */ aiGenerated?: boolean };
 
 /** Mots du titre d'une page Pexels (« /video/a-man-painting-a-wall-123/ » → « a man painting a wall »). */
 const slugWords = (url: string) => (url.match(/\/video\/([^/?#]+)/)?.[1] ?? "").replace(/-\d+$/, "").replace(/-/g, " ");
@@ -121,8 +121,13 @@ export async function searchStockVideos(queries: string[], orientation: "landsca
       try {
         const j = await get(`https://pixabay.com/api/videos/?key=${encodeURIComponent(pixabay)}&q=${q}&per_page=10&safesearch=true&lang=${lang}`);
         for (const v of j.hits ?? []) {
-          // Vraies images filmées seulement : jamais un dessin animé, une 3D ou une animation à la place du réel.
-          if (/\b(anime|cartoon|animation|animated|3d|cgi|render|illustration|motion graphics?)\b/i.test(String(v.tags ?? ""))) continue;
+          // Images réalistes seulement : jamais un dessin animé, une illustration ou une animation graphique. Les plans
+          // réalistes faits par l'IA et publiés sur Pixabay (« ai generated ») sont toujours proposés (choix du
+          // propriétaire), même si leurs mots-clés parlent de « render » ou de « cinematic 3d ».
+          const tags = String(v.tags ?? "");
+          const aiGenerated = /\bai[- ]generated\b/i.test(tags);
+          if (/\b(anime|cartoon|animation|animated|illustration|motion graphics?)\b/i.test(tags)) continue;
+          if (!aiGenerated && /\b(3d|cgi|render)\b/i.test(tags)) continue;
           const files = ["large", "medium", "small"].map((k) => v.videos?.[k]).filter(Boolean).map((x: any) => ({ width: x.width ?? 0, height: x.height ?? 0, link: x.url as string }));
           const wantTall = orientation === "portrait";
           // Pixabay n'a presque que des vidéos horizontales : pour un format vertical, un plan horizontal assez net
@@ -133,7 +138,7 @@ export async function searchStockVideos(queries: string[], orientation: "landsca
           const fits = !!first && (first.height > first.width) === wantTall;
           const f = fits ? first : wantTall ? tallEnough : first;
           const croppable = !!f && wantTall && !fits;
-          if (f && v.duration >= 4 && (fits || croppable) && !exclude.has(`pixabay:${v.id}`) && ![...out, ...spare].some((o) => o.source === "pixabay" && o.id === String(v.id))) (fits ? out : spare).push({ source: "pixabay", id: String(v.id), url: f.link, page: v.pageURL, author: v.user ?? "", license: "Pixabay", width: f.width, height: f.height, duration: v.duration, alt: String(v.tags ?? "") });
+          if (f && v.duration >= 4 && (fits || croppable) && !exclude.has(`pixabay:${v.id}`) && ![...out, ...spare].some((o) => o.source === "pixabay" && o.id === String(v.id))) (fits ? out : spare).push({ source: "pixabay", id: String(v.id), url: f.link, page: v.pageURL, author: v.user ?? "", license: "Pixabay", width: f.width, height: f.height, duration: v.duration, alt: tags, ...(aiGenerated ? { aiGenerated: true } : {}) });
         }
       } catch (e) {
         console.warn("[vidéos libres] pixabay indisponible :", (e as Error).message);

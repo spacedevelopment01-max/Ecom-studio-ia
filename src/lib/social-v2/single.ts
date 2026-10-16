@@ -38,7 +38,8 @@ export const paidMode = (m: OneMode) => m !== "free";
 /** Coût estimé avant création (micro-euros) : une production par réseau choisi. */
 export function quoteOne(kind: OneKind, mode: OneMode, networks: number, estimate: SocialDeps["estimate"]): number {
   if (!paidMode(mode)) return 0;
-  const unit = kind === "video" ? estimate("video") : mode === "ai_post" ? estimate("ai_post") : estimate("image");
+  // Image : toujours une publication entière par l'IA (l'ancien « ai_image » est traité de la même façon).
+  const unit = kind === "video" ? estimate("video") : estimate("ai_post");
   return unit * Math.max(1, networks);
 }
 
@@ -46,7 +47,7 @@ export function quoteOne(kind: OneKind, mode: OneMode, networks: number, estimat
 export function produceParams(kind: OneKind, mode: OneMode): { allowPaid: boolean; aiBackground?: boolean; aiImages?: number } {
   if (!paidMode(mode)) return { allowPaid: false };
   if (kind === "video") return { allowPaid: true };
-  return mode === "ai_post" ? { allowPaid: true, aiImages: 60 } : { allowPaid: true, aiBackground: true };
+  return { allowPaid: true, aiImages: 60 };
 }
 
 /** Crée la publication (une par réseau choisi, même idée adaptée à chacun) ; renvoie ses identifiants. */

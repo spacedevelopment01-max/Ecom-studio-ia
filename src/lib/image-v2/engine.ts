@@ -155,7 +155,8 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
   // 1. Réutilisation : même brief, image FINAL, réutilisable automatiquement.
   if (stages.includes("reuse")) {
     const prev = reusableFor(p.id, bh);
-    if (prev) {
+    // Images 100 % IA : seule une image GÉNÉRÉE peut être reprise (jamais une photo de banque au même brief).
+    if (prev && (!req.noStock || prev.origin === "generated")) {
       result.stats.reused++;
       seriesHashes.push(String((JSON.parse(prev.meta || "{}") as any).imageV2?.phash ?? ""));
       return { outcome: { briefHash: bh, verdict: "FINAL", score: null, codes: [], reason: "image FINAL réutilisée (même brief)", origin: "reused", assetId: prev.id, attempts: 0, candidateKey: null }, changeDirection: false };

@@ -83,7 +83,7 @@ describe("Création guidée par produit ou service", async () => {
     expect(JSON.parse(a!.meta).aiAd).toBe(true);
   });
 
-  it("3 essais refusés : version du studio sur une scène de l'IA (dans le plafond), le coût des essais reste compté", async () => {
+  it("3 essais refusés : AUCUN gabarit ni affiche du studio à la place (toute image finale est créée par l'IA) ; le blocage est dit, le coût des essais reste compté", async () => {
     const { p } = await productProject();
     const one1 = createOnePost(p, { kind: "image", date: "2030-01-11", time: "10:00", timezone: "Europe/Paris", platforms: [{ platform: "instagram" }], subject: { kind: "product", key: MAIN_PRODUCT } });
     const calls: string[] = [];
@@ -98,8 +98,10 @@ describe("Création guidée par produit ou service", async () => {
       estimate: (k: string) => (k === "ai_post" ? 150_000 : 50_000),
     };
     const res = await produceBatch(p, one1.ids, deps, { allowPaid: true, maxCostEur: 0.3, approvedEstimateMicro: 300_000, aiImages: 60 });
-    expect(calls).toEqual(["aiPost", "image"]);
-    expect(res.produced).toBe(1);
-    expect(res.spentMicro).toBe(170_000);
+    expect(calls).toEqual(["aiPost"]);
+    expect(res.produced).toBe(0);
+    expect(res.skipped).toBe(1);
+    expect(res.spentMicro).toBe(120_000);
+    expect(res.notes.join(" ")).toMatch(/aucun gabarit/);
   });
 });

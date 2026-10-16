@@ -53,11 +53,11 @@ describe("Video Engine V2 — moteur et rendu", async () => {
     const doc = latestVideo(p.id, r.docKey!)!.doc;
     expect(Math.abs(Number(pr.format.duration) - timeline(doc).total)).toBeLessThan(0.5);
     expect(Math.abs(timeline(doc).total - 15)).toBeLessThanOrEqual(1.5);
-    // Plans : au moins un généré (contrôlé), les autres montés localement ; mention IA présente.
+    // Plans : au moins un généré (contrôlé), les autres montés localement ; pas de mention IA (réservée à l'UGC).
     expect(log.clips.length).toBeGreaterThan(0);
     expect(log.shotReviews).toBe(log.clips.length);
     expect(doc.clips.some((c) => c.generated)).toBe(true);
-    expect(doc.disclosure).toMatch(/générée par IA/);
+    expect(doc.disclosure).toBeNull();
     // Calques de l'éditeur publicitaire réutilisés (packshot, carte de fin).
     expect(doc.clips.some((c) => [...(c.source.kind === "doc" ? c.source.doc.layers : []), ...c.overlays].some((l) => l.kind === "button"))).toBe(true);
     // Sous-titres rangés à part (modifiables), voix enregistrées, audio mesuré proche de la cible.
@@ -130,7 +130,7 @@ describe("Video Engine V2 — moteur et rendu", async () => {
     for (const c of people) expect(c.prompt).toMatch(/Same synthetic presenter/);
     expect(r.stats.retries).toBeGreaterThan(0);
     const doc = latestVideo(p.id, r.docKey!)!.doc;
-    expect(doc.disclosure).toMatch(/générée par IA/);
+    expect(doc.disclosure).toBeNull();
     // Script IA avec faux témoignage : refusé (script local gardé), jamais « je l'utilise depuis ».
     expect(JSON.stringify(r.script)).not.toMatch(/depuis 6 mois/);
   }, 180_000);
@@ -196,7 +196,7 @@ describe("Video Engine V2 — moteur et rendu", async () => {
     expect(log.clips).toHaveLength(1);
     const after = latestVideo(p.id, r.docKey!)!.doc;
     expect(after.clips[1].generated).toBe(true);
-    expect(after.disclosure).toMatch(/IA/);
+    expect(after.disclosure).toBeNull();
     expect(JSON.stringify(after.clips.filter((_, k) => k !== 1))).toBe(JSON.stringify(before.clips.filter((_, k) => k !== 1)));
     expect(out.outcome.verdict).toBe("FINAL");
     // Sans accord : aucun appel, plan local.

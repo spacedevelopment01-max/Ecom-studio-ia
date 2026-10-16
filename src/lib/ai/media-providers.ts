@@ -484,6 +484,24 @@ No text, no lettering, no captions, no watermark, no added logo, no price tag. N
  * le visuel complet d'une publication de réseau social, comme le ferait un directeur artistique. Les textes à écrire
  * sont donnés mot pour mot (vérifiés ensuite par le contrôle) ; `reference` : photo du vrai produit (fidélité).
  */
+/**
+ * Étape 2 des publications et publicités (choix du propriétaire) : sur la PHOTO déjà créée sans texte (Qwen-Image),
+ * l'IA de l'usage « Texte et logo » (ChatGPT Images par défaut) pose les textes exacts, le bouton et le vrai logo.
+ * La photo est envoyée en grand (1536 px) pour que le produit ne perde rien ; le logo suit en seconde image.
+ */
+export async function aiTextLayout(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; image: Buffer; logo?: Buffer | null }) {
+  return generateImage(ctx, { text: clampBytes(input.prompt, LOGO_PROMPT_MAX_BYTES), aspect: input.aspect, reference: input.image, refMax: 1536, extraRefs: input.logo ? [input.logo] : [], quality: "high", strictQuality: true, usage: "text_layout", need: { text: true, references: input.logo ? 2 : 1 } });
+}
+
+/** Coût maximal d'une pose de texte et de logo (étape 2), null si aucun modèle n'est utilisable. */
+export function textLayoutMaxMicro(): number | null {
+  const r = mediaRouteFor("text_layout", { text: true, references: 2 });
+  if (!r) return null;
+  const prompt = "x".repeat(LOGO_PROMPT_MAX_BYTES);
+  const micro = r.provider === "openai" ? openaiImageMax(r.model, { prompt, images: 2, size: "1024x1536", quality: "high" }) : r.provider === "google" ? geminiImageMax(r.model, { prompt, images: 2 }) : cost(r.provider, r.model, { images: 1 }).micro;
+  return Math.ceil(micro * MEDIA_MAX_FACTOR * FX_SAFETY * Math.max(1, getJsonSetting<number>("billing.markup", 1)));
+}
+
 export async function aiPostImage(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; logo?: Buffer | null }) {
   // Logo de la marque transmis en seconde image de référence (Qwen-Image, OpenAI) : l'IA le reproduit au lieu de l'inventer.
   return generateImage(ctx, { text: clampBytes(input.prompt, LOGO_PROMPT_MAX_BYTES), aspect: input.aspect, reference: input.reference, extraRefs: input.logo ? [input.logo] : [], quality: "high", strictQuality: true, usage: "social_image", need: { text: true } });
@@ -496,6 +514,21 @@ export async function aiPostImage(ctx: Ctx, input: { prompt: string; aspect: "1:
  */
 async function editPhotoImpl(ctx: Ctx, input: { image: Buffer; instruction: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; usage?: MediaUsage }) {
   return generateImageImpl(ctx, { text: editPhotoPrompt(input.instruction, input.aspect), aspect: input.aspect, reference: input.image, quality: "high", usage: input.usage ?? "ad_visual" });
+}
+
+/**
+ * Produit incomplet sur la photo du client (partie hors cadre, perdue dans l'ombre, cachée) : l'IA d'images refait le
+ * MÊME produit en entier, de face ou du même angle, sur un fond clair uni — seule la partie manquante est ajoutée,
+ * dans la continuité exacte de ce qui se voit (formes, matières, couleurs, coutures, inscriptions).
+ */
+export function completeProductPrompt(missing?: string | null): string {
+  return `Product photography retouching. The attached photo shows a real product that is NOT entirely visible: ${missing?.trim() ? `missing part: ${missing.replace(/"/g, "'").slice(0, 200)}` : "a part of it is out of frame, lost in shadow or hidden"}.
+Recreate the very same product, complete and entirely visible: the same camera angle and the same pose as on the photo, the whole object inside the frame with generous margins, on a plain light neutral background, soft studio light, a soft natural shadow under it.
+Keep every visible detail exactly as on the photo (shape, proportions, materials, colours, metal colour and finish, stitching, numbers, markings and printed text); a polished metal stays the same metal colour (a silver steel never becomes black or gunmetal). Only add the missing part, drawn as the natural continuation of what is visible, including its closing part (for a watch: the strap closed in a loop as when worn, with its buckle or clasp visible; for a bag: both handles…). Do not redesign, restyle or simplify the product, do not change any colour, do not invent a logo, a brand name or a word, do not add a second product, props, text, hands or people. Photorealistic. Square format.`;
+}
+
+async function completeProductImpl(ctx: Ctx, input: { image: Buffer; missing?: string | null }) {
+  return generateImageImpl(ctx, { text: completeProductPrompt(input.missing), aspect: "1:1", reference: input.image, quality: "high", usage: "product_edit" });
 }
 
 /** Consigne de retouche d'une photo livrée : la demande du client, rien d'autre ne bouge. */
@@ -597,12 +630,13 @@ export function imageQuality(usage: MediaUsage | undefined, asked: "medium" | "h
   return v === "medium" || v === "high" ? v : asked;
 }
 
-async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; /** Images de référence en plus (logo de la marque), pour les modèles qui en acceptent plusieurs. */ extraRefs?: Buffer[]; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed>; /** Qualité demandée gardée (publication complète conçue par l'IA : texte net). */ strictQuality?: boolean }) {
+async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; /** Taille maximale de la référence envoyée (768 px par défaut ; photo à mettre en page : plus grande). */ refMax?: number; /** Images de référence en plus (logo de la marque), pour les modèles qui en acceptent plusieurs. */ extraRefs?: Buffer[]; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed>; /** Qualité demandée gardée (publication complète conçue par l'IA : texte net). */ strictQuality?: boolean }) {
   const input = { ...input0, quality: input0.strictQuality ? input0.quality : imageQuality(input0.usage, input0.quality) };
   const provider = imageProviderAvailable({ references: input.reference ? 1 : 0, ...(input.usage ? { usage: input.usage } : {}), ...input.need });
   if (!provider) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini, OpenAI ou fal.ai).", "No image provider configured (Google Gemini, OpenAI or fal.ai)."));
   const text = input.text;
-  const ref = input.reference ? await sharp(input.reference).rotate().resize(768, 768, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer() : null;
+  const rm = input.refMax ?? 768;
+  const ref = input.reference ? await sharp(input.reference).rotate().resize(rm, rm, { fit: "inside", withoutEnlargement: true }).jpeg({ quality: rm > 768 ? 92 : 85 }).toBuffer() : null;
   if (provider === "fal") return falImage(ctx, pickModel("fal", "image"), text, ref ? [ref] : [], input.aspect);
   const extras = await Promise.all((input.extraRefs ?? []).map((b) => sharp(b).rotate().resize(768, 768, { fit: "inside" }).flatten({ background: "#ffffff" }).jpeg({ quality: 88 }).toBuffer()));
   if (provider === "alibaba") {
@@ -1074,6 +1108,8 @@ export const openaiScene = withMediaBackup("image", traced("image_generation", o
 export const productPlate = withMediaBackup("image", traced("image_generation", productPlateImpl), { usage: (_c, i) => i.usage ?? "product_image" });
 export const productScene = withMediaBackup("image", traced("image_generation", productSceneImpl), { usage: (_c, i) => i.usage ?? "product_image" });
 export const editPhoto = withMediaBackup("image", traced("image_generation", editPhotoImpl), { usage: (_c, i) => i.usage ?? "ad_visual" });
+/** Produit incomplet sur la photo : reconstruit en entier (même produit), payant, compté comme toute image. */
+export const completeProductImage = withMediaBackup("image", traced("image_generation", completeProductImpl), { usage: () => "product_edit" });
 /** Ancien nom (décor vide) : même génération, par le modèle de l'usage. */
 export const geminiPlate = productPlate;
 export const veoClip = traced("video_generation", veoClipImpl);

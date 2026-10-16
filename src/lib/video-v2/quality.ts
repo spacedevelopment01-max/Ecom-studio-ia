@@ -11,8 +11,9 @@
 import { z } from "zod";
 import { decide, type GateDecision } from "../quality/gate";
 import { personCodes } from "../people-policy";
-import { absoluteCues, timeline } from "./doc";
+import { absoluteCues, MIN_TEXT_RATIO, timeline } from "./doc";
 import type { AudioMeasure } from "./audio";
+import { needsDisclosure } from "./ops";
 import { VIDEO_CRITERIA, type ShotReview, type VideoCriterion, type VideoDocument, type VideoReview } from "./types";
 
 const score = z.coerce.number().min(0).max(10).catch(0);
@@ -83,6 +84,13 @@ export function localVideoChecks(doc: VideoDocument, o: { targetS: number; scrip
     codes.push("illegible_text");
     issues.push(`sous-titres de ${st.size} px (au moins ${minSize} px)`);
   }
+  // Titres posés sur les plans vraiment trop petits = illisibles sur téléphone (petit mais lisible : laissé au choix).
+  const minText = Math.round(Math.min(doc.width, doc.height) * MIN_TEXT_RATIO);
+  const small = doc.clips.flatMap((c) => c.overlays).filter((l) => l.kind === "text" && l.role === "title" && l.visible && (l as { font: { size: number } }).font.size < minText);
+  if (small.length) {
+    codes.push("illegible_text");
+    issues.push(`${small.length} texte(s) trop petit(s) à l'écran (moins de ${minText} px) : à agrandir`);
+  }
   const cues = absoluteCues(doc);
   for (const q of cues) {
     const cps = q.text.length / Math.max(0.1, q.end - q.start);
@@ -127,10 +135,10 @@ export function localVideoChecks(doc: VideoDocument, o: { targetS: number; scrip
       issues.push(`saturation (crête ${o.audio.truePeakDb} dBFS)`);
     }
   }
-  // Mention IA obligatoire dès qu'un plan est généré.
-  if (doc.clips.some((c) => c.generated) && !doc.disclosure) {
+  // Mention IA : jamais imposée (choix du propriétaire) ; la règle reste prête si elle redevient obligatoire.
+  if (needsDisclosure(doc) && !doc.disclosure) {
     codes.push("missing_disclosure");
-    issues.push("plans générés par l'IA sans mention « vidéo générée par IA »");
+    issues.push("personne générée par l'IA sans mention « vidéo générée par IA »");
   }
   // Montage : transitions identiques (hors coupe franche) sur presque tous les plans = effet automatique.
   const trans = doc.clips.slice(1).map((c) => c.transitionIn.kind).filter((k) => k !== "cut");

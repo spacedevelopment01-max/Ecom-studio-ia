@@ -35,11 +35,11 @@ import { fromDraft, localScript, scriptIssues, scriptPrompt, scriptSystem } from
 import { buildStoryboard, storyboardIssues, type Inventory } from "./storyboard";
 import { planShots } from "./shots";
 import { chooseProvider, estimateMicro, shootDuration, VIDEO_CAPABILITIES } from "./providers";
-import { cuesForVoice, defaultSubtitleStyle, endCardDoc, interfaceDoc, kineticDoc, overlayText, packshotDoc, safeZone, SIZES, timeline, VIDEO_DOC_VERSION, voiceClip, inkOn, type Palette } from "./doc";
+import { cuesForVoice, defaultSubtitleStyle, endCardDoc, interfaceDoc, kineticDoc, overlayText, packshotDoc, safeZone, SIZES, timeline, VIDEO_DOC_VERSION, voiceClip, inkOn, enlargeSmallTitles, type Palette } from "./doc";
 import { gateShot, gateVideo, localVideoChecks } from "./quality";
 import { NO_PEOPLE_EN } from "../people-policy";
 import { engineVideoKey, keyFrames, rememberShot, renderVideoFile, saveRendered, saveVideoVersion, shotKey, shotMemo, videoUserOwned } from "./store";
-import { disclosureLabel, honestLine, personaPrompt, personaSheet, ugcScriptIssues, type PersonaSheet } from "./ugc";
+import { honestLine, personaPrompt, personaSheet, ugcScriptIssues, type PersonaSheet } from "./ugc";
 import { realVideoDeps, type VideoV2Deps } from "./deps";
 import type { Clip, CreativeStrategy, ShotOutcome, ShotPlan, VideoDocument, VideoReview, VideoRunResult, VideoScript } from "./types";
 import type { GateDecision } from "../quality/gate";
@@ -670,7 +670,7 @@ function assemble(a: AssembleInput): VideoDocument {
     const v = voiceClip(c, s.voice);
     if (v) doc.audio.voice.push(v);
   }
-  if (clips.some((c) => c.generated) || a.intent.kind === "ugc") doc.disclosure = disclosureLabel();
+  enlargeSmallTitles(doc);
   return doc;
 }
 
@@ -701,6 +701,9 @@ async function targetedFix(o: FixInput): Promise<VideoDocument | null> {
   const codes = [...o.decision.blockingCodes];
   const target = o.review?.fix.target ?? (codes.includes("illegible_text") || codes.includes("out_of_sync") ? "subtitles" : codes.includes("audio_unusable") ? "audio" : codes.includes("repetitive_editing") ? "editing" : codes.includes("character_inconsistent") || codes.includes("off_topic") || codes.includes("major_artifacts") ? "shot" : "none");
   if (target === "subtitles") {
+    // Textes posés sur les plans trop petits : agrandis au minimum lisible (gratuit).
+    const grown = enlargeSmallTitles(doc);
+    if (grown) o.notes.push(`reprise ciblée : ${grown} texte(s) agrandi(s) (gratuit)`);
     doc.subtitles.style = { ...doc.subtitles.style, size: Math.round(Math.max(doc.subtitles.style.size, Math.min(doc.width, doc.height) * 0.05)), maxChars: Math.max(18, doc.subtitles.style.maxChars - 4), offsetY: 0 };
     // Débit : chaque carton est re-découpé sur la voix du plan.
     const voices = new Map(doc.audio.voice.map((v) => [v.clipId, v.text]));
@@ -771,7 +774,6 @@ export async function regenerateClip(ctx: JobContext | null, projectId: string, 
   );
   const doc = structuredClone(cur.doc);
   doc.clips[k] = { ...clipFor(shot, out.media, { pal, typo, size: { w: doc.width, h: doc.height }, safe: doc.safe, insight, inv, strategy }, k), id: clip.id, overlays: clip.overlays, transitionIn: clip.transitionIn, durationS: clip.durationS };
-  if (doc.clips.some((c) => c.generated) && !doc.disclosure) doc.disclosure = disclosureLabel();
   doc.meta = { ...doc.meta, source: out.media.generated ? "ai" : "user" };
   saveVideoVersion(projectId, docKey, doc, { note: `plan ${clip.shotId} remplacé (${out.outcome.reason})` });
   return { doc, outcome: out.outcome, notes };

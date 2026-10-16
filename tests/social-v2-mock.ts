@@ -9,15 +9,15 @@ import { PermanentError } from "@/lib/jobs";
 import type { MediaResult, Publisher, SocialDeps } from "@/lib/social-v2/deps";
 import type { Project } from "@/lib/projects";
 
-export async function fakeImage(p: Project, name: string, kind: "image" | "video" = "image") {
+export async function fakeImage(p: Project, name: string, kind: "image" | "video" = "image", meta?: Record<string, unknown>) {
   const data = await sharp({ create: { width: 64, height: 80, channels: 3, background: { r: 120, g: 90, b: 60 } } }).jpeg().toBuffer();
-  return saveAsset({ projectId: p.id, userId: p.userId, data, name, mime: kind === "video" ? "video/mp4" : "image/jpeg", role: "social", origin: "generated", status: "approved", ...(kind === "video" ? { kind: "video" } : {}) });
+  return saveAsset({ projectId: p.id, userId: p.userId, data, name, mime: kind === "video" ? "video/mp4" : "image/jpeg", role: "social", origin: "generated", status: "approved", ...(kind === "video" ? { kind: "video" } : {}), ...(meta ? { meta } : {}) });
 }
 
-export type DepsLog = { image: number; video: number; ad: number; local: number; rewrite: number; paid: number };
+export type DepsLog = { image: number; video: number; ad: number; local: number; rewrite: number; paid: number; aiPost: number };
 
 export function mockSocialDeps(o: { aiActive?: boolean; cost?: number; rewrite?: (caption: string) => string } = {}): { deps: SocialDeps; log: DepsLog } {
-  const log: DepsLog = { image: 0, video: 0, ad: 0, local: 0, rewrite: 0, paid: 0 };
+  const log: DepsLog = { image: 0, video: 0, ad: 0, local: 0, rewrite: 0, paid: 0, aiPost: 0 };
   const cost = o.cost ?? 100_000;
   const make = async (p: Project, postId: string, by: MediaResult["by"], paid: boolean): Promise<MediaResult> => {
     const a = await fakeImage(p, `${by}-${postId.slice(0, 6)}.jpg`);
@@ -30,6 +30,13 @@ export function mockSocialDeps(o: { aiActive?: boolean; cost?: number; rewrite?:
     video: async (_p, _post, m) => (log.video++, m.allowPaid && log.paid++, { assetId: null, costMicro: m.allowPaid ? cost : 0, by: "video_v2", note: "vidéo simulée : aucune" }),
     ad: async (p, post, m) => (log.ad++, make(p, post.id, "ads_v2", m.allowPaid)),
     local: async (p, post) => (log.local++, make(p, post.id, "local", false)),
+    // Publication entièrement créée par l'IA (seule image finale permise) : payante, marquée comme telle.
+    aiPost: async (p, post, m) => {
+      log.aiPost++;
+      if (m.allowPaid) log.paid++;
+      const a = await fakeImage(p, `ai-${post.id.slice(0, 6)}.jpg`, "image", { aiPost: { simulated: true }, post: post.id, socialV2: true });
+      return { assetId: a.id, costMicro: m.allowPaid ? cost : 0, by: "image_v2" };
+    },
     rewrite: async (_p, post) => (log.rewrite++, { title: post.title, caption: o.rewrite ? o.rewrite(post.caption) : `${post.caption}\n\nVersion plus premium.`, hashtags: [], costMicro: 20_000 }),
     estimate: (kind) => (kind === "rewrite" ? 20_000 : cost),
   };

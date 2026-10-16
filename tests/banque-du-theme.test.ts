@@ -22,15 +22,18 @@ describe("Banque du thème", async () => {
     return loadProject(seedImageFixture(u.id, kind));
   }
 
-  it("service : jusqu'à 15 images et 3 vidéos, toutes marquées « thème »", async () => {
+  it("service : 3 vidéos marquées « thème », AUCUNE photo de banque comme image du site (images 100 % IA)", async () => {
     const p = await project("restaurant");
     let asked = 0;
+    let photosAsked = 0;
     const r = await fillThemeBank(null, p, {
-      productPhotos: async () => [],
-      servicePhotos: async (_i, pp, target) => Promise.all(Array.from({ length: target }, (_, k) => stockImage(pp, k))),
+      productPhotos: async () => (photosAsked++, []),
+      servicePhotos: async (_i, pp, target) => (photosAsked++, Promise.all(Array.from({ length: target }, (_, k) => stockImage(pp, k)))),
       clip: async (_i, pp, k) => (asked++, { assetId: await stockVideo(pp, k) }),
     });
-    expect(r.images).toBe(THEME_BANK_IMAGES);
+    expect(THEME_BANK_IMAGES).toBe(0);
+    expect(r.images).toBe(0);
+    expect(photosAsked).toBe(0);
     expect(r.videos).toBe(3);
     expect(asked).toBe(3);
   });

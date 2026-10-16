@@ -56,8 +56,9 @@ describe("Ligne « campagne » et Qwen-Image 3.0 Pro par défaut", async () => {
     expect(r.assetId).toBeTruthy();
     expect(seen.logo).toBeInstanceOf(Buffer);
     expect(seen.reviewLogo).toBeInstanceOf(Buffer);
-    // Titre, ligne du produit, bouton : le nom de la marque est vérifié dans le logo, pas en texte libre.
-    expect(seen.expected).toHaveLength(3);
+    // Publication (rôle « post » du guide : texte léger, sans bouton) : seul le titre est attendu ; le nom de la marque
+    // est vérifié dans le logo, pas en texte libre.
+    expect(seen.expected).toEqual([post.headline]);
   });
 
   it("Qwen-Image 3.0 Pro par défaut seulement une fois confirmé ; sinon le défaut historique", () => {

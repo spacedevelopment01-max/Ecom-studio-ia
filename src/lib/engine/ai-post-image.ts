@@ -82,7 +82,7 @@ export async function generateAiPostImage(ctx: JobContext, projectId: string, re
   ctx.progress(0.15, L("Publication conçue par l'IA (scène, mise en page, textes)", "Post designed by AI (scene, layout, texts)"));
   const base = deps ?? realAiPostDeps({ userId: p.userId, projectId: p.id, jobId: ctx.job.id });
   const r = await ctx.step("ai-post", () =>
-    designPostWithAi(p, aiPostBrief(p, req, ctx.job.id), { aspect: AI_POST_ASPECT[req.format ?? "portrait"] ?? (req.format && /^\d/.test(req.format) ? (req.format as "4:5") : "4:5"), maxCostEur: aiPostQuoteMicro() / 1e6, reference, subject, as: req.as }, withClientTexts(base, req)),
+    designPostWithAi(p, aiPostBrief(p, req, ctx.job.id), { aspect: AI_POST_ASPECT[req.format ?? "portrait"] ?? (req.format && /^\d/.test(req.format) ? (req.format as "4:5") : "4:5"), maxCostEur: aiPostQuoteMicro() / 1e6, reference, subject, as: req.as ?? (req.cta?.trim() ? "ad" : undefined) }, withClientTexts(base, req)),
   );
   if (!r.assetId && req.as === "ad") {
     // Publicité refusée après 3 essais (fautes dans les textes…) : version du studio (scène par l'IA d'images, textes
