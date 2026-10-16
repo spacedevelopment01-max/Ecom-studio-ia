@@ -1,6 +1,6 @@
 {
-  "project": "xlclkqfzmrzam2qr",
-  "seconds": 55,
+  "project": "fx8kdw9l2n9s86me",
+  "seconds": 115,
   "costMicro": 0,
   "brief": {
     "route": "services",
@@ -287,7 +287,8 @@
   },
   "notes": [
     "Plans d'illustration libres de droits (Pixabay) : ils ne sont pas présentés comme des réalisations du client.",
-    "scène 2 (Préparation des surfaces) : aucun plan libre de droits assez proche de cette étape"
+    "scène 2 (Préparation des surfaces) : aucun plan libre de droits assez proche de cette étape",
+    "Plans choisis sur leurs mots-clés seulement (contrôle visuel par l'IA indisponible) : titres d'étapes retirés, plans à vérifier dans l'aperçu."
   ],
   "finalCheck": {
     "items": [
@@ -337,13 +338,13 @@
         "id": "audio",
         "label": "Qualité audio (musique sous la voix)",
         "status": "ok",
-        "detail": "-16 LUFS, crête -4.8 dB, voix sous laquelle la musique baisse de 12 dB"
+        "detail": "-15.4 LUFS, crête -5 dB, voix sous laquelle la musique baisse de 12 dB"
       },
       {
         "id": "sync",
         "label": "Synchronisation voix / sous-titres / plans",
         "status": "ok",
-        "detail": "5 sous-titre(s) calés sur la durée mesurée de la voix"
+        "detail": "2 sous-titre(s) calés sur la durée mesurée de la voix"
       },
       {
         "id": "format",
