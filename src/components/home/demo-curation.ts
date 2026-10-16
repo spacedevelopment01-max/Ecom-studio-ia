@@ -5,9 +5,11 @@
  *
  * ARVEN (montre), visuels regardés un par un :
  *  - gardés : logo (créé par l'IA, fourni comme par le client) ; photo de départ (montre complétée par l'IA, bracelet
- *    et boucle entiers) ; détourage de cette photo (le produit tel quel) ; mises en situation lifestyle-1, -2, -3
- *    (créées par l'IA : montre entière, bracelet complet avec la boucle, cadran et lunette fidèles, aucun texte ajouté) ;
- *    captures de la boutique (la boutique elle-même, pas un visuel publicitaire).
+ *    et boucle entiers) ; détourage de cette photo (le produit tel quel) ; une mise en situation, lifestyle-1 (créée
+ *    par l'IA : bureau en bois, livre, fenêtre ; montre entière, bracelet complet avec boucle et passants, cadran et
+ *    lunette fidèles, aucun texte ajouté) ; captures de la boutique (la boutique elle-même, pas un visuel publicitaire).
+ *  - écartés de la carte « Images » : lifestyle-2 et -3 (IA, sans défaut, mais presque la même image que lifestyle-1 :
+ *    même angle, décor proche). Ils restent dans les captures de la boutique, qui les utilise.
  *  - retirés : publications post-1 à post-8 (gabarits, texte posé en local, « Chronographe » au lieu de « montre ») ;
  *    planche d'identité (composée par gabarit, « Anthracite » en double) ; vidéo et son affiche (fond uni et
  *    « Voici Chronographe acier et cuir »).
@@ -15,10 +17,13 @@
  */
 import type { Demo } from "@/components/landing-client";
 
-type Curation = { posts?: false; board?: false; video?: false; images?: RegExp };
+/** images : liste des seules images gardées (adresse exacte). */
+type Curation = { posts?: false; board?: false; video?: false; images?: string[] };
 
 export const HOME_CURATION: Record<string, Curation> = {
-  montre: { posts: false, board: false, video: false, images: /détourage|cutout|situation|in context|lifestyle/i },
+  // Quatre cases toutes différentes voulues par le propriétaire : une seule mise en situation (lifestyle-2 et -3 trop
+  // proches de lifestyle-1) ; « Fond blanc » et « Publicité » n'existent pas encore en IA : rien n'est montré à leur place.
+  montre: { posts: false, board: false, video: false, images: ["/demo/montre/cutout-1.webp", "/demo/montre/lifestyle-1.jpg"] },
 };
 
 /** Fichiers d'une démonstration qui ne doivent jamais apparaître sur l'accueil. */
@@ -38,6 +43,6 @@ export function curateForHome(d: Demo): Demo {
     board: c.board === false ? undefined : d.board,
     video: c.video === false ? "" : d.video,
     videoPoster: c.video === false ? "" : d.videoPoster,
-    images: c.images ? d.images.filter((x) => c.images!.test(x.label)) : d.images,
+    images: c.images ? d.images.filter((x) => c.images!.includes(x.src)) : d.images,
   };
 }

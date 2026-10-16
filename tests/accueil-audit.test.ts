@@ -78,8 +78,8 @@ describe("Accueil : démo montre (ARVEN) sans aucun visuel fait par gabarit du s
     const json = JSON.stringify(all);
     for (const f of HOME_EXCLUDED_FILES) expect(json).not.toContain(f);
   });
-  it("seuls restent les visuels IA vérifiés : détourage et les trois mises en situation", () => {
-    expect(montre.images.map((x) => x.src)).toEqual(["/demo/montre/cutout-1.webp", "/demo/montre/lifestyle-1.jpg", "/demo/montre/lifestyle-2.jpg", "/demo/montre/lifestyle-3.jpg"]);
+  it("seuls restent des visuels IA vérifiés et tous différents : détourage et une seule mise en situation", () => {
+    expect(montre.images.map((x) => x.src)).toEqual(["/demo/montre/cutout-1.webp", "/demo/montre/lifestyle-1.jpg"]);
     expect(montre.posts).toEqual([]);
     expect(montre.board).toBeUndefined();
     expect(montre.videoPoster).toBe("");
@@ -87,7 +87,7 @@ describe("Accueil : démo montre (ARVEN) sans aucun visuel fait par gabarit du s
   it("publicité, visuel social et bannière restent vides plutôt qu'une autre image à leur place", () => {
     const m = storyMedia(montre);
     expect([m.ad, m.social, m.banner]).toEqual(["", "", ""]);
-    expect(m.tiles.map((x) => x.kind)).toEqual(["cutout", "scene", "scene", "scene"]);
+    expect(m.tiles.map((x) => x.kind)).toEqual(["cutout", "scene"]);
   });
   it("la page applique la sélection et les panneaux savent s'afficher sans image", () => {
     expect(read("src/app/page.tsx")).toContain(".map(curateForHome)");
