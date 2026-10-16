@@ -5,10 +5,11 @@
  * à partir de produits de fournisseurs) et chaque bloc le dit.
  */
 import { useEffect, useId, useRef, useState } from "react";
-import { ArrowRight, Check, Clock, Monitor, Pause, Play, RotateCcw, Smartphone, Undo2 } from "lucide-react";
+import { ArrowRight, CalendarDays, Check, Clock, Monitor, Pause, Play, RotateCcw, Smartphone, Undo2 } from "lucide-react";
 import { cx } from "../ui";
 import { onTabKeys } from "./tabs";
 import { useT } from "../i18n";
+import { buttonColors } from "./story-media";
 
 // ------------------------------------------------------------------------------------------------ Marque
 
@@ -28,7 +29,7 @@ export function BrandLab({ brands }: { brands: BrandDemo[] }) {
       <div role="tablist" onKeyDown={(e) => onTabKeys(e, i, brands.length, setI)} aria-label={t("Marques de démonstration", "Demo brands")} className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 lg:mx-0 lg:grid lg:content-start lg:gap-2 lg:overflow-visible lg:px-0">
         {brands.map((x, k) => (
           <button key={x.id} type="button" role="tab" tabIndex={k === i ? 0 : -1} aria-selected={k === i} onClick={() => setI(k)} className={cx("flex shrink-0 cursor-pointer items-center gap-3 rounded-2xl border p-2.5 pr-4 text-left transition lg:w-full", k === i ? "border-line bg-card hp-elev" : "border-transparent hover:bg-card/60")}>
-            <span className="flex h-9 w-12 shrink-0 overflow-hidden rounded-lg ring-1 ring-line">{x.palette.slice(0, 3).map((c) => <span key={c} className="flex-1" style={{ background: c }} />)}</span>
+            <span className="flex h-9 w-12 shrink-0 overflow-hidden rounded-lg ring-1 ring-line">{x.palette.slice(0, 3).map((c, i) => <span key={i} className="flex-1" style={{ background: c }} />)}</span>
             <span>
               <span className="block font-display text-[15px] font-semibold leading-tight">{x.brand}</span>
               <span className="block text-xs text-muted">{x.sector}</span>
@@ -53,8 +54,8 @@ export function BrandLab({ brands }: { brands: BrandDemo[] }) {
         <div className="col-span-6 rounded-3xl border border-line bg-card p-5 sm:col-span-3">
           <p className="text-xs font-semibold uppercase tracking-[.16em] text-muted">{t("Palette", "Palette")}</p>
           <div className="mt-3 grid grid-cols-5 gap-2">
-            {b.palette.map((c) => (
-              <span key={c} className="grid gap-1.5">
+            {b.palette.map((c, i) => (
+              <span key={i} className="grid gap-1.5">
                 <span className="aspect-square rounded-xl ring-1 ring-line" style={{ background: c }} />
                 <span className="truncate text-center font-mono text-xs text-muted">{c}</span>
               </span>
@@ -268,6 +269,7 @@ export function SeoDocDemo({ docs }: { docs: Doc[] }) {
 
 // ------------------------------------------------------------------------------------------------ Réseaux sociaux
 
+/** Publication de démonstration ; « image » vide : aucun visuel valable à montrer, la publication s'affiche sans image. */
 export type SocialPost = { day: number; time: string; network: string; image: string; caption: string };
 
 export function SocialCalendarDemo({ posts }: { posts: SocialPost[] }) {
@@ -290,7 +292,7 @@ export function SocialCalendarDemo({ posts }: { posts: SocialPost[] }) {
           {posts.map((x, k) => (
             <li key={k}>
               <button type="button" onClick={() => setOpen(k)} aria-pressed={open === k} className={cx("flex w-full cursor-pointer items-center gap-3 rounded-xl border bg-card p-2 text-left transition", open === k ? "border-signal ring-2 ring-signal/30" : "border-line")}>
-                <img src={x.image} alt="" aria-hidden loading="lazy" className="size-14 shrink-0 rounded-lg object-cover" />
+                {x.image ? <img src={x.image} alt="" aria-hidden loading="lazy" className="size-14 shrink-0 rounded-lg object-cover" /> : <span className="grid size-14 shrink-0 place-items-center rounded-lg bg-paper-2 text-muted" aria-hidden><CalendarDays className="size-5" /></span>}
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-semibold text-ink">{x.network}</span>
                   <span className="block text-xs text-muted">{days[x.day]} · {x.time}</span>
@@ -309,7 +311,7 @@ export function SocialCalendarDemo({ posts }: { posts: SocialPost[] }) {
               {posts.map((x, k) =>
                 x.day !== di ? null : (
                   <button key={k} type="button" onClick={() => setOpen(k)} aria-pressed={open === k} aria-label={`${x.network}, ${d} ${x.time}`} className={cx("cursor-pointer overflow-hidden rounded-lg border bg-card text-left transition", open === k ? "border-signal ring-2 ring-signal/30" : "border-line hover:border-ink/30")}>
-                    <img src={x.image} alt="" aria-hidden loading="lazy" className="aspect-square w-full object-cover" />
+                    {x.image && <img src={x.image} alt="" aria-hidden loading="lazy" className="aspect-square w-full object-cover" />}
                     <span className="block truncate px-1 pt-1 text-xs font-semibold">{x.network}</span>
                     <span className={cx("mx-1 mb-1 mt-0.5 flex items-center justify-center rounded py-0.5 sm:justify-start sm:px-1", status[k] === "ok" ? "bg-[#DDF2E6] text-[#165C3A]" : "bg-[#FCEBD0] text-[#7A4500]")}>
                       {status[k] === "ok" ? <Check className="size-3" aria-hidden /> : <Clock className="size-3" aria-hidden />}
@@ -328,7 +330,7 @@ export function SocialCalendarDemo({ posts }: { posts: SocialPost[] }) {
             <span className="font-semibold">{p.network}</span>
             <span className="text-muted">{days[p.day]} · {p.time}</span>
           </div>
-          <img src={p.image} alt={t("Visuel de la publication (démonstration)", "Post visual (demo)")} loading="lazy" className="mt-3 aspect-[4/3] w-full rounded-2xl object-cover" />
+          {p.image && <img src={p.image} alt={t("Visuel de la publication (démonstration)", "Post visual (demo)")} loading="lazy" className="mt-3 aspect-[4/3] w-full rounded-2xl object-cover" />}
           <p className="mt-3 text-[15px] leading-relaxed text-ink-2">{p.caption}</p>
           <button type="button" onClick={() => approve(open)} className={cx("hp-btn mt-4 w-full", status[open] === "ok" ? "hp-btn-ghost" : "hp-btn-primary")}>
             {status[open] === "ok" ? <><Undo2 className="size-4" aria-hidden /> {t("Retirer l'approbation", "Withdraw approval")}</> : <><Check className="size-4" aria-hidden /> {t("Approuver cette publication", "Approve this post")}</>}
@@ -410,7 +412,7 @@ export function ControlDemo({ brand, image, palette }: { brand: string; image: s
   const initial = { title: t("Des objets à vivre.", "Objects to live with."), color: 0, round: true, banner: true };
   const [s, setS] = useState(initial);
   const [versions, setVersions] = useState<(typeof initial)[]>([initial]);
-  const colors = [palette[0] ?? "#454873", palette[2] ?? "#8D74B4", palette[4] ?? "#14151F"];
+  const colors = buttonColors(palette);
   const commit = (next: typeof initial) => {
     setS(next);
     setVersions((v) => [...v.slice(-4), next]);

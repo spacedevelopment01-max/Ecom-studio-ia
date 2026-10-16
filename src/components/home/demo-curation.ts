@@ -1,0 +1,83 @@
+/**
+ * Visuels des démonstrations montrés sur l'accueil : uniquement ceux créés par l'IA et vérifiés sans défaut
+ * (consigne du propriétaire, 16 octobre 2026). Les visuels faits par gabarit du studio (photo + texte posé en local)
+ * sont retirés de l'accueil, sans être remplacés par un autre gabarit ni par une photo de banque.
+ *
+ * ARVEN (montre), visuels regardés un par un :
+ *  - gardés : logo (créé par l'IA, fourni comme par le client) ; photo de départ (montre complétée par l'IA, bracelet
+ *    et boucle entiers) ; détourage de cette photo (le produit tel quel) ; une mise en situation, lifestyle-1 (créée
+ *    par l'IA : bureau en bois, livre, fenêtre ; montre entière, bracelet complet avec boucle et passants, cadran et
+ *    lunette fidèles, aucun texte ajouté) ; captures de la boutique (la boutique elle-même, pas un visuel publicitaire).
+ *    Ajoutés pour l'accueil seul : fond blanc packshot-1 (retrouvé dans l'historique) et une publicité créée par l'IA.
+ *  - écartés de la carte « Images » : lifestyle-2 et -3 (IA, sans défaut, mais presque la même image que lifestyle-1 :
+ *    même angle, décor proche). Ils restent dans les captures de la boutique, qui les utilise.
+ *  - retirés : publications post-1 à post-8 (gabarits, texte posé en local, « Chronographe » au lieu de « montre ») ;
+ *    planche d'identité (composée par gabarit, « Anthracite » en double) ; vidéo et son affiche (fond uni et
+ *    « Voici Chronographe acier et cuir »).
+ * Les mêmes fichiers servent encore ailleurs (studio Découverte) : hors de l'accueil, rien n'est changé ici.
+ */
+import type { Demo } from "@/components/landing-client";
+
+/** images : liste des seules images gardées (adresse exacte) ; extra : images IA vérifiées ajoutées pour l'accueil seul. */
+type Curation = { posts?: false; board?: false; video?: false; shop?: false; liveAd?: false; wall?: string[]; images?: string[]; extra?: { src: string; label: string }[] };
+
+export const HOME_CURATION: Record<string, Curation> = {
+  // Quatre cases toutes différentes voulues par le propriétaire : une seule mise en situation (lifestyle-2 et -3 trop
+  // proches de lifestyle-1) ; « Fond blanc » et « Publicité » n'existent pas encore en IA : rien n'est montré à leur place.
+  montre: {
+    posts: false,
+    board: false,
+    video: false,
+    // Captures de la boutique : le bandeau d'accueil recadre la mise en situation, la montre y est coupée (bracelet sans
+    // boucle) → retirées de l'accueil, les autres boutiques de démonstration restent.
+    shop: false,
+    // Démo interactive « éditeur de publicité » : elle compose en direct une publicité par gabarit (montre détourée +
+    // texte posé en local) → pas avec la montre.
+    liveAd: false,
+    // Mur « Créé par le studio » : les deux publications créées par l'IA (Qwen, texte écrit par l'IA), décision du
+    // propriétaire : la publicité « minérale » et la publication « velours » (format-9x16-velours.png, boucle cachée).
+    wall: ["/demo/montre/publicite-ia-1.jpg", "/demo/montre/publication-ia-1.jpg"],
+    images: ["/demo/montre/cutout-1.webp", "/demo/montre/lifestyle-1.jpg"],
+    extra: [
+      // Fond blanc validé par le propriétaire (16 octobre 2026) : montre entière de 3/4, bracelet et boucle, ombre douce.
+      { src: "/demo/montre/packshot-1.jpg", label: "Packshot" },
+      // Publicité créée par Qwen-Image 3.0 Pro, texte écrit par l'IA (reports/alibaba-qwen-essai/story-mineral.png),
+      // choisie par le propriétaire : « Un classique à votre rythme. », logo exact, aucune fausse lettre ; boucle cachée
+      // derrière la pierre (défaut accepté par le propriétaire).
+      { src: "/demo/montre/publicite-ia-1.jpg", label: "Publicité IA" },
+    ],
+  },
+};
+
+/** Fichiers d'une démonstration qui ne doivent jamais apparaître sur l'accueil. */
+export const HOME_EXCLUDED_FILES = [
+  ...Array.from({ length: 8 }, (_, i) => `/demo/montre/post-${i + 1}`),
+  "/demo/montre/planche",
+  "/demo/montre/video-poster",
+  "/demo/montre/video.mp4",
+  "/demo/montre/boutique-",
+  "/demo/montre/fiche-produit",
+];
+
+export function curateForHome(d: Demo): Demo {
+  const c = HOME_CURATION[d.id];
+  if (!c) return d;
+  // Champs du manifeste absents du type (ex. productPage : capture de la fiche produit) : retirés avec la boutique.
+  const { productPage: _p, ...rest } = d as Demo & { productPage?: string };
+  return {
+    ...(c.shop === false ? rest : d),
+    posts: c.posts === false ? [] : d.posts,
+    board: c.board === false ? undefined : d.board,
+    video: c.video === false ? "" : d.video,
+    shopDesktop: c.shop === false ? "" : d.shopDesktop,
+    shopMobile: c.shop === false ? "" : d.shopMobile,
+    videoPoster: c.video === false ? "" : d.videoPoster,
+    images: [...(c.images ? d.images.filter((x) => c.images!.includes(x.src)) : d.images), ...(c.extra ?? [])],
+  };
+}
+
+/** La démo interactive de l'éditeur de publicité peut-elle utiliser ce produit ? */
+export const allowsLiveAd = (id: string) => HOME_CURATION[id]?.liveAd !== false;
+
+/** Publications créées par l'IA à ajouter au mur de l'accueil, par démonstration. */
+export const wallExtras = (id: string) => HOME_CURATION[id]?.wall ?? [];

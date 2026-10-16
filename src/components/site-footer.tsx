@@ -4,11 +4,14 @@ import { Logo } from "./ui";
 import { company, legalLinks } from "@/lib/legal";
 import { pick } from "@/lib/i18n";
 import { serverLang } from "@/lib/i18n-server";
+import { currentUser } from "@/lib/auth";
 
 export async function SiteFooter() {
   const lang = await serverLang();
   const T = (fr: string, en: string) => pick(lang, fr, en);
   const COMPANY = company(lang);
+  // Personne connectée : le bouton mène à son studio, pas à une nouvelle inscription.
+  const user = await currentUser().catch(() => null);
   const COLUMNS: { title: string; links: { href: string; label: string }[] }[] = [
     {
       title: T("Produit", "Product"),
@@ -41,7 +44,7 @@ export async function SiteFooter() {
         <div className="lg:col-span-4">
           <div className="text-white [&_path]:[fill:#070B17]"><Logo /></div>
           <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/70">{T("Toute votre activité e-commerce, un seul studio : votre marque, votre boutique (Shopify, WooCommerce, PrestaShop), vos images, vos vidéos, vos publicités et vos publications.", "Your entire e-commerce business, one studio: your brand, your store (Shopify, WooCommerce, PrestaShop), your images, your videos, your ads and your posts.")}</p>
-          <Link href="/inscription" className="btn-glow mt-6 inline-flex h-11 items-center rounded-full bg-[#3D6EF0] px-5 text-sm font-semibold text-white">{T("Essayer le studio", "Try the studio")}</Link>
+          <Link href={user ? "/studio" : "/inscription"} className="btn-glow mt-6 inline-flex h-11 items-center rounded-full bg-[#3D6EF0] px-5 text-sm font-semibold text-white">{user ? T("Ouvrir mon studio", "Open my studio") : T("Essayer le studio", "Try the studio")}</Link>
         </div>
         <nav className="grid gap-10 sm:grid-cols-3 lg:col-span-8" aria-label={T("Pied de page", "Footer")}>
           {COLUMNS.map((c) => (
