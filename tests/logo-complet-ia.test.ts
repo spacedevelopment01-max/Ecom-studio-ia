@@ -44,7 +44,7 @@ describe("logo complet par l'IA d'images", () => {
   it("nom mal écrit → une reprise avec le défaut précis ; seule la version correcte (FINAL) est proposée, sans avertissement", async () => {
     const out = await generateFullLogos(null, "p");
     expect(prompts).toHaveLength(2);
-    expect(prompts[1]).toMatch(/written "Sebastein Blanc" instead of "Sébastien Blanc"/);
+    expect(prompts[1]).toMatch(/écrit Sebastein Blanc au lieu de « Sébastien Blanc »/);
     expect(refunds).toHaveLength(1);
     expect(out).toHaveLength(1);
     expect(saved[1]).toMatchObject({ role: "logo-ai-full", mime: "image/png" });

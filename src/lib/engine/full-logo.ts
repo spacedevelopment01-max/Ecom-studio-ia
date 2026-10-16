@@ -37,7 +37,7 @@ async function briefs(ictx: Ictx, p: Project, usageKey: string): Promise<{ conce
       task: "logo_symbol",
       ...ictx,
       usageKey,
-      system: `Rôle : directeur artistique senior d'une agence de branding. Tu écris, pour un illustrateur (une IA d'images), trois briefs de LOGO COMPLET (symbole + nom de la marque) vraiment différents, comme un vrai designer : le symbole naît de la logique du métier ou du produit (fonction, geste, outil, matière, bénéfice, origine), jamais un cliché du secteur ; typographie décrite précisément (famille, graisse, casse, interlettrage) ; composition (symbole à gauche, au-dessus, emblème…) ; couleurs : UNIQUEMENT celles de la palette de la marque (codes hexadécimaux donnés), le logo doit correspondre à la charte graphique. Aucune promesse, aucun slogan dans le logo. Briefs EN ANGLAIS, 70 à 140 mots chacun ; « concept » en français, une phrase.`,
+      system: `Rôle : directeur artistique senior d'une agence de branding. Tu écris, pour un illustrateur (une IA d'images), trois briefs de LOGO COMPLET (symbole + nom de la marque) vraiment différents, comme un vrai designer : le symbole naît de la logique du métier ou du produit (fonction, geste, outil, matière, bénéfice, origine), jamais un cliché du secteur ; typographie décrite précisément (famille, graisse, casse, interlettrage) ; composition (symbole à gauche, au-dessus, emblème…) ; couleurs : UNIQUEMENT celles de la palette de la marque (codes hexadécimaux donnés), le logo doit correspondre à la charte graphique. Aucune promesse, aucun slogan dans le logo. Briefs EN FRANÇAIS, concrets (formes, objets, matières, couleurs), 70 à 140 mots chacun, sans guillemets (le studio ajoute le texte exact du logo) ; « concept » en français, une phrase.`,
       context: view.stable,
       prompt: `Marque : « ${p.brand?.name ?? p.name} ».${palette}${direction}
 Trois propositions ORIGINALES et vraiment différentes (idée, composition, typographie, couleurs), du niveau d'une agence. Aucun style n'est imposé : logotype pur, monogramme, symbole, emblème, illustré, minimaliste, premium… choisis ce qui sert le mieux CETTE entreprise d'après son activité et sa clientèle ; aucun objet, aucune initiale, aucune texture n'est obligatoire. Un objet du métier est permis s'il est stylisé avec soin (pas une icône de bibliothèque) ; jamais la copie d'un logo existant. « descriptor » : la ligne des activités sous le nom, en capitales, uniquement des activités réelles de l'entreprise (1 à 3, séparées par « • »), ou vide.
@@ -137,7 +137,7 @@ export async function generateFullLogos(ctx: JobContext | null, projectId: strin
         let fresh: { asset: Asset; png: Buffer } | null = null;
         const assetId = await step(`full-logo:${i}:${attempt}:image`, () =>
           withCandidate(candidate, attempt, async () => {
-            const img = await fullLogoImage({ ...ictx, usageKey: key }, { brief: feedback ? `${b.brief} Fix these defects of a previous attempt: ${feedback}.` : b.brief, name, descriptor, tagline, colors });
+            const img = await fullLogoImage({ ...ictx, usageKey: key }, { brief: feedback ? `${b.brief} Corrige ces défauts de l'essai précédent : ${feedback}.` : b.brief, name, descriptor, tagline, colors });
             const png = await clean(img);
             const a = await saveAsset({ projectId, userId: p.userId, data: png, name: C(`logo-complet-ia-${i + 1}.png`, `ai-full-logo-${i + 1}.png`), mime: "image/png", role: "logo-ai-full", folderKey: "brand.logos", origin: "generated", meta: { concept: b.concept, brief: b.brief, aiGenerated: true, attempt, recipe: L("Logo complet dessiné par l'IA d'images d'après le brief du directeur artistique", "Full logo drawn by the image AI from the art director's brief"), qcWarning: L("contrôle en attente", "check pending") }, status: "review" });
             fresh = { asset: a, png };
@@ -170,9 +170,9 @@ export async function generateFullLogos(ctx: JobContext | null, projectId: strin
         const updated = { ...asset, meta: JSON.stringify(meta), status } as Asset;
         if (status === "rejected") refundMediaQuota(p.userId, key);
         if (retry) {
-          // Consigne de reprise pour l'IA d'images (en anglais), tirée des défauts relevés.
+          // Consigne de reprise pour l'IA d'images (en français), tirée des défauts relevés.
           const qc = qcRes.qc;
-          feedback = [qc && !qc.nameExact && `the name was written "${qc.text}" instead of "${name}"`, qc?.extraText && "remove every extra word or letter", ...(qc?.issues ?? [])].filter(Boolean).join("; ") || d.feedback;
+          feedback = [qc && !qc.nameExact && `le nom a été écrit ${qc.text} au lieu de « ${name} »`, qc?.extraText && "retirer tout mot ou toute lettre en trop", ...(qc?.issues ?? [])].filter(Boolean).join("; ") || d.feedback;
           continue;
         }
         if (status !== "rejected") {

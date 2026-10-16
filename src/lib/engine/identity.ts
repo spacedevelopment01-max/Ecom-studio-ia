@@ -181,7 +181,7 @@ function realRouteAi(p: Project, cutout: Buffer | null, avoid: RouteAvoid[] = []
     const activity = [p.product.name, p.product.category, p.product.summary].filter(Boolean).join(" — ");
     try {
       // Le dessin part de l'idée (brief du directeur artistique), pas d'un calque de la photo du produit.
-      const img = await logoSymbolImage({ ...base, usageKey }, { concept: `"${d.name}" for the brand ${p.brand?.name ?? p.name} (${activity.slice(0, 200)}). ${d.drawing ? `Drawing brief: ${d.drawing.slice(0, 600)}` : ""} Idea behind it: ${d.why}${feedback ? ` Fix these issues from the previous version: ${feedback}` : ""}` });
+      const img = await logoSymbolImage({ ...base, usageKey }, { concept: `piste ${d.name} pour la marque ${p.brand?.name ?? p.name} (${activity.slice(0, 200)}). ${d.drawing ? `Brief du dessin : ${d.drawing.slice(0, 600)}` : ""} Idée : ${d.why}${feedback ? ` Corrige ces défauts de la version précédente : ${feedback}` : ""}` });
       const traced = await traceSymbol(img);
       if (!traced.ok) {
         console.warn(`[logo] symbole de l'IA d'images non vectorisable (${traced.reason}) : dessin du modèle de texte gardé`);

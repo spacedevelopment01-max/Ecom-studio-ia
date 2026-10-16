@@ -127,16 +127,16 @@ describe("routage multimédia V2", async () => {
     expect(reservations(c.userId)).toEqual([{ status: "settled", provider: "openai", model: "gpt-image-1" }]);
   });
 
-  it("logo complet : nom, activités et slogan validé écrits tels quels dans la demande ; sans slogan, « no slogan »", async () => {
+  it("logo complet : nom, activités et slogan validé écrits tels quels dans la demande ; sans slogan, « aucun slogan »", async () => {
     const c = await client();
     await fr(() => mp.fullLogoImage(ctx(c), { brief: "monogramme SB et toit", name: "Sébastien Blanc", descriptor: "PLÂTRERIE • PEINTURE • RÉNOVATION", tagline: "Des espaces qui vous ressemblent" }));
     const withTag = oa.calls.at(-1).prompt as string;
-    expect(withTag).toContain('the name "Sébastien Blanc"');
-    expect(withTag).toContain('the trade line "PLÂTRERIE • PEINTURE • RÉNOVATION"');
-    expect(withTag).toContain(`the brand's slogan "Des espaces qui vous ressemblent"`);
-    expect(withTag).not.toContain("no slogan");
+    expect(withTag).toContain("le nom « Sébastien Blanc »");
+    expect(withTag).toContain("la ligne d'activités « PLÂTRERIE • PEINTURE • RÉNOVATION »");
+    expect(withTag).toContain("le slogan de la marque « Des espaces qui vous ressemblent »");
+    expect(withTag).not.toContain("aucun slogan");
     await fr(() => mp.fullLogoImage(ctx(c), { brief: "monogramme SB", name: "Sébastien Blanc" }));
-    expect(oa.calls.at(-1).prompt).toContain("no slogan");
+    expect(oa.calls.at(-1).prompt).toContain("aucun slogan");
   });
 
   it("images produit : principal Gemini 3.1 choisi par l'administration → décor vide demandé à ce modèle", async () => {

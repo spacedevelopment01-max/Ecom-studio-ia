@@ -453,7 +453,7 @@ export async function redrawArtwork(ctx: JobContext, projectId: string, assetId:
   ctx.progress(0.2, L(`Nouvelle version de « ${t.name} »`, `New version of "${t.name}"`));
   // Nouvelle version : les remarques du client ET la critique du contrôle sur la version précédente (défauts, correction
   // proposée) — pour corriger réellement le concept au lieu de refaire presque la même image.
-  const critique = [meta.artwork.fix?.instruction ? `fix — ${meta.artwork.fix.instruction}` : "", (meta.artwork.issues ?? []).length ? `defects of the previous version to correct — ${(meta.artwork.issues as string[]).slice(0, 4).join("; ")}` : ""].filter(Boolean).join(". ");
+  const critique = [meta.artwork.fix?.instruction ? `correction — ${meta.artwork.fix.instruction}` : "", (meta.artwork.issues ?? []).length ? `défauts de la version précédente à corriger — ${(meta.artwork.issues as string[]).slice(0, 4).join("; ")}` : ""].filter(Boolean).join(". ");
   const feedback = [opts.feedback?.trim(), critique].filter(Boolean).join(". ") || "a genuinely new interpretation of the same direction";
   const quote = logoRedrawQuote();
   let r: ProposalResult | null;
