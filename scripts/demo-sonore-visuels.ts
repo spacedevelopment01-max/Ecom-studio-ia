@@ -72,6 +72,56 @@ function fill(img: Px, mask: Uint8Array, dirs: number[][] = [[-1, 0], [1, 0], [0
   const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647) - 0.5;
   for (let i = 0; i < mask.length; i++) if (mask[i]) { const g = (rnd() + rnd() + rnd()) * 2 * sigma; for (let c = 0; c < 3; c++) data[i * 4 + c] += g; }
 }
+/**
+ * Efface une grande zone de texte sur un fond en dégradé, sans trace :
+ *  1. fond flouté autour de la zone (texte blanc exclu) ;
+ *  2. intérieur reconstitué en raccordant ce fond flou de bord à bord (équation de Laplace, sur une grille réduite) :
+ *     dégradé continu, aucun contour ni traînée ;
+ *  3. grain d'origine recopié depuis une zone propre de même taille (`grainFrom` : décalage vertical), pas inventé.
+ */
+function fillSmooth(img: Px, mask: Uint8Array, grainDy: number) {
+  const { data, width: W, height: H } = img;
+  const src = new Float32Array(data);
+  let x0 = W, y0 = H, x1 = 0, y1 = 0;
+  for (let i = 0; i < mask.length; i++) if (mask[i]) { const x = i % W, y = (i / W) | 0; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+  const R = 8; // flou du fond (rayon)
+  const valid = (i: number) => !mask[i] && Math.min(src[i * 4], src[i * 4 + 1], src[i * 4 + 2]) <= 150;
+  const blurAt = (x: number, y: number, c: number) => {
+    let t = 0, n = 0;
+    for (let yy = Math.max(0, y - R); yy <= Math.min(H - 1, y + R); yy += 2) for (let xx = Math.max(0, x - R); xx <= Math.min(W - 1, x + R); xx += 2) { const j = yy * W + xx; if (valid(j)) { t += src[j * 4 + c]; n++; } }
+    return n ? t / n : NaN;
+  };
+  // Grille réduite (pas de 4 px) sur la zone élargie de 2 cases ; les cases hors zone sont fixées au fond flou.
+  const S = 4, gx0 = x0 - 2 * S, gy0 = y0 - 2 * S, GW = Math.ceil((x1 - gx0) / S) + 3, GH = Math.ceil((y1 - gy0) / S) + 3;
+  const inside = (gx: number, gy: number) => { const x = gx0 + gx * S, y = gy0 + gy * S; return x >= x0 && x <= x1 && y >= y0 && y <= y1 && mask[y * W + x] === 1; };
+  const grid = [0, 1, 2].map((c) => {
+    const g = new Float32Array(GW * GH);
+    let mean = 0, nm = 0;
+    for (let gy = 0; gy < GH; gy++) for (let gx = 0; gx < GW; gx++) if (!inside(gx, gy)) { const v = blurAt(Math.min(W - 1, gx0 + gx * S), Math.min(H - 1, gy0 + gy * S), c); g[gy * GW + gx] = v; if (!isNaN(v)) { mean += v; nm++; } }
+    mean /= Math.max(1, nm);
+    for (let k = 0; k < g.length; k++) if (isNaN(g[k]) || inside(k % GW, (k / GW) | 0)) g[k] = isNaN(g[k]) ? mean : g[k];
+    for (let it = 0; it < 4000; it++)
+      for (let gy = 1; gy < GH - 1; gy++) for (let gx = 1; gx < GW - 1; gx++) if (inside(gx, gy)) { const k = gy * GW + gx; g[k] = (g[k - 1] + g[k + 1] + g[k - GW] + g[k + GW]) / 4; }
+    return g;
+  });
+  const sample = (g: Float32Array, x: number, y: number) => {
+    const fx = (x - gx0) / S, fy = (y - gy0) / S, ix = Math.min(GW - 2, Math.max(0, Math.floor(fx))), iy = Math.min(GH - 2, Math.max(0, Math.floor(fy))), ax = fx - ix, ay = fy - iy;
+    return g[iy * GW + ix] * (1 - ax) * (1 - ay) + g[iy * GW + ix + 1] * ax * (1 - ay) + g[(iy + 1) * GW + ix] * (1 - ax) * ay + g[(iy + 1) * GW + ix + 1] * ax * ay;
+  };
+  for (let y = y0; y <= y1; y++)
+    for (let x = x0; x <= x1; x++) {
+      const i = y * W + x;
+      if (!mask[i]) continue;
+      // Grain d'origine : écart du pixel source (zone propre décalée) à la moyenne de ses voisins.
+      const sy = Math.min(H - 2, Math.max(1, y + grainDy)), j = sy * W + x;
+      for (let c = 0; c < 3; c++) {
+        let m = 0;
+        for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) m += src[((sy + dy) * W + Math.min(W - 1, Math.max(0, x + dx))) * 4 + c];
+        data[i * 4 + c] = sample(grid[c], x, y) + (src[j * 4 + c] - m / 25);
+      }
+    }
+}
+
 const rect = (W: number, H: number, x: number, y: number, w: number, h: number, pad = 0) => {
   const m = new Uint8Array(W * H);
   for (let yy = Math.max(0, y - pad); yy < Math.min(H, y + h + pad); yy++) for (let xx = Math.max(0, x - pad); xx < Math.min(W, x + w + pad); xx++) m[yy * W + xx] = 1;
@@ -97,9 +147,9 @@ for (const name of Object.keys(NEW)) {
     // 2. ad-1 : 2e ligne du titre et petite ligne d'activités effacées (la 1re ligne « Casque audio. » reste telle quelle).
     if (name === "ad-1") {
       const k = W / 1080;
-      const LR = [[-1, 0], [1, 0]];
-      fill(px, rect(W, H, Math.round(60 * k), Math.round(374 * k), Math.round(690 * k), Math.round(104 * k)), LR);
-      fill(px, rect(W, H, Math.round(60 * k), Math.round(486 * k), Math.round(566 * k), Math.round(56 * k)), LR);
+      // Les deux zones (2e ligne du titre et petite ligne) d'un seul tenant : un dégradé continu, sans ligne.
+      // Grain recopié de la bande propre juste en dessous (fond uni sous le titre).
+      fillSmooth(px, rect(W, H, Math.round(60 * k), Math.round(374 * k), Math.round(690 * k), Math.round(170 * k)), Math.round(240 * k));
     }
     ctx.putImageData(img, 0, 0);
     if (name === "ad-1") {
