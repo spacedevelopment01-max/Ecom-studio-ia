@@ -18,12 +18,12 @@ describe("devis d'une image : modèle d'images réellement routé", async () => 
     routed = null;
   });
 
-  it("Qwen-Image 3.0 Pro routé : la part image du devis est son tarif à l'image (marge de 20 % comprise)", () => {
+  it("Qwen-Image 3.0 Pro routé : la part image du devis est son tarif à l'image (coût probable, sans marge de sécurité)", () => {
     routed = { provider: "alibaba", model: "modele-sans-tarif", reason: "test" };
     const withoutImage = estimateMicro("image");
     routed = qwen;
     const withQwen = estimateMicro("image");
-    expect(withQwen - withoutImage).toBeCloseTo(perImage * 1.2 * usdToEur() * EUR, -1);
+    expect(withQwen - withoutImage).toBeCloseTo(perImage * usdToEur() * EUR, -1);
     // 2 essais : bien moins que l'ancien devis calculé sur le tarif OpenAI.
     routed = null;
     const openaiRoute = estimateMicro("image");
