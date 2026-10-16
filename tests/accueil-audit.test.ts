@@ -95,7 +95,7 @@ describe("Accueil : démo montre (ARVEN) sans aucun visuel fait par gabarit du s
   });
   it("les visuels refusés par le propriétaire ne sont jamais utilisés (detail-1, ad-1, image coupée des films)", () => {
     const json = JSON.stringify(all) + read("src/components/home/demo-curation.ts").replace(/\/\/.*|\*.*$/gm, "");
-    for (const f of ["/demo/montre/detail-1", "/demo/montre/ad-1", "plan2-cuir", "velours", "publication-ia"]) expect(json).not.toContain(f);
+    for (const f of ["/demo/montre/detail-1", "/demo/montre/ad-1", "plan2-cuir"]) expect(json).not.toContain(f);
   });
   it("sans capture de boutique ni éditeur de publicité en direct pour la montre", async () => {
     const { allowsLiveAd } = await import("@/components/home/demo-curation");
@@ -106,6 +106,13 @@ describe("Accueil : démo montre (ARVEN) sans aucun visuel fait par gabarit du s
     expect(page).toContain("allowsLiveAd(hero.id)");
     expect(page).toContain(".filter((d) => d.shopDesktop && d.shopMobile)");
     expect(read("src/components/home/home-story.tsx")).toContain('if (k === "store" && !(d.shopDesktop && d.shopMobile))');
+  });
+  it("mur : les deux publications IA d'ARVEN, en entier (format vertical), une par rangée", async () => {
+    const { wallExtras } = await import("@/components/home/demo-curation");
+    expect(wallExtras("montre")).toEqual(["/demo/montre/publicite-ia-1.jpg", "/demo/montre/publication-ia-1.jpg"]);
+    for (const f of wallExtras("montre")) expect(fs.existsSync(path.join(process.cwd(), "public", f))).toBe(true);
+    expect(read("src/components/home/home-showcase.tsx")).toContain('x.tall ? "aspect-[9/16]');
+    expect(read("src/app/page.tsx")).toContain("tall: true");
   });
   it("équilibre : les vitrines ne commencent pas toutes par la même démo", () => {
     const page = read("src/app/page.tsx");

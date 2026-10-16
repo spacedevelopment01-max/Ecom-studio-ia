@@ -19,7 +19,7 @@
 import type { Demo } from "@/components/landing-client";
 
 /** images : liste des seules images gardées (adresse exacte) ; extra : images IA vérifiées ajoutées pour l'accueil seul. */
-type Curation = { posts?: false; board?: false; video?: false; shop?: false; liveAd?: false; images?: string[]; extra?: { src: string; label: string }[] };
+type Curation = { posts?: false; board?: false; video?: false; shop?: false; liveAd?: false; wall?: string[]; images?: string[]; extra?: { src: string; label: string }[] };
 
 export const HOME_CURATION: Record<string, Curation> = {
   // Quatre cases toutes différentes voulues par le propriétaire : une seule mise en situation (lifestyle-2 et -3 trop
@@ -34,6 +34,9 @@ export const HOME_CURATION: Record<string, Curation> = {
     // Démo interactive « éditeur de publicité » : elle compose en direct une publicité par gabarit (montre détourée +
     // texte posé en local) → pas avec la montre.
     liveAd: false,
+    // Mur « Créé par le studio » : les deux publications créées par l'IA (Qwen, texte écrit par l'IA), décision du
+    // propriétaire : la publicité « minérale » et la publication « velours » (format-9x16-velours.png, boucle cachée).
+    wall: ["/demo/montre/publicite-ia-1.jpg", "/demo/montre/publication-ia-1.jpg"],
     images: ["/demo/montre/cutout-1.webp", "/demo/montre/lifestyle-1.jpg"],
     extra: [
       // Fond blanc validé par le propriétaire (16 octobre 2026) : montre entière de 3/4, bracelet et boucle, ombre douce.
@@ -75,3 +78,6 @@ export function curateForHome(d: Demo): Demo {
 
 /** La démo interactive de l'éditeur de publicité peut-elle utiliser ce produit ? */
 export const allowsLiveAd = (id: string) => HOME_CURATION[id]?.liveAd !== false;
+
+/** Publications créées par l'IA à ajouter au mur de l'accueil, par démonstration. */
+export const wallExtras = (id: string) => HOME_CURATION[id]?.wall ?? [];

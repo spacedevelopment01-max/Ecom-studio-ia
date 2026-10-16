@@ -12,7 +12,7 @@ import { HomeHeader } from "@/components/home/home-chrome";
 import { HeroFilm, HowItWorks } from "@/components/home/home-media";
 import { StoryScroll, type StoryDemo, type StoryStep } from "@/components/home/home-story";
 import { storyMedia } from "@/components/home/story-media";
-import { allowsLiveAd, curateForHome } from "@/components/home/demo-curation";
+import { allowsLiveAd, curateForHome, wallExtras } from "@/components/home/demo-curation";
 import { AdEditorDemo, BrandLab, ConnectedHub, ControlDemo, SeoDocDemo, SocialCalendarDemo, StoreDevices, type BrandDemo, type SocialPost, type StoreDemo } from "@/components/home/home-demos";
 import { BoardShowcase, FeedShowcase, PostsWall, ThemesWall, type BoardDemo, type FeedDemo, type WallItem } from "@/components/home/home-showcase";
 import { directionById, directionCards } from "@/lib/theme/directions";
@@ -230,6 +230,14 @@ export default async function Home() {
   // Mur : les publications des marques entremêlées (jamais deux d'une même marque côte à côte).
   const wall: WallItem[] = [];
   for (let k = 0; k < 8; k++) for (const f of feeds) if (f.posts[k]) wall.push({ src: f.posts[k], brand: f.brand });
+  // Publications créées par l'IA (ARVEN) : une au milieu de chaque rangée du mur, jamais côte à côte.
+  const iaWall: WallItem[] = list.flatMap((d) => wallExtras(d.id).map((src) => ({ src: W(src), brand: d.brand, tall: true })));
+  const wallBrands = new Set([...feeds.map((f) => f.brand), ...iaWall.map((x) => x.brand)]).size;
+  if (wall.length >= 6)
+    iaWall.forEach((x, j) => {
+      const half = Math.ceil((wall.length + iaWall.length) / 2);
+      wall.splice(Math.min(wall.length, j * half + Math.floor(half / 2)), 0, x);
+    });
 
   // Plateformes : uniquement ce qui existe (src/lib/cms-v2/capabilities.ts, src/lib/social-v2/platforms.ts).
   type Cell = { ok: "yes" | "beta" | "no" | "kit"; text: string };
@@ -346,7 +354,7 @@ export default async function Home() {
           {wall.length >= 6 && (
             <div className="pt-14 sm:pt-20">
               <p className="hp-eyebrow reveal mx-auto max-w-7xl px-4 text-center sm:px-6">{T("Créé par le studio, sans retouche", "Created by the studio, untouched")}</p>
-              <p className="reveal mx-auto mt-3 max-w-2xl px-4 text-center text-[15px] text-ink-2 sm:px-6">{T(`${feeds.length} marques de démonstration, une ligne graphique chacune : ce sont leurs vraies publications, telles que le studio les prépare.`, `${feeds.length} demo brands, each with its own visual line: these are their real posts, exactly as the studio prepares them.`)}</p>
+              <p className="reveal mx-auto mt-3 max-w-2xl px-4 text-center text-[15px] text-ink-2 sm:px-6">{T(`${wallBrands} marques de démonstration, une ligne graphique chacune : ce sont leurs vraies publications, telles que le studio les prépare.`, `${wallBrands} demo brands, each with its own visual line: these are their real posts, exactly as the studio prepares them.`)}</p>
               <div className="mt-8"><PostsWall items={wall} label={T("Publications créées par le studio pour les marques de démonstration", "Posts created by the studio for the demo brands")} /></div>
             </div>
           )}
