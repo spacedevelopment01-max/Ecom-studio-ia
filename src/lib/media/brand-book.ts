@@ -51,6 +51,23 @@ export function paletteCards(pal: Record<PalKey, string>): { key: PalKey; roles:
   return out;
 }
 
+/**
+ * Une ligne qui tient dans sa largeur : la taille baisse jusqu'à `min`, puis le texte est raccourci à la fin d'un mot
+ * (« … »). Jamais un texte qui déborde sur la colonne voisine ou hors de sa carte.
+ */
+export function fitLine(ctx: SKRSContext2D, s: string, family: string, weight: number, size: number, maxW: number, min = Math.round(size * 0.5)): { text: string; font: string } {
+  let z = size;
+  for (; z > min; z -= 2) {
+    ctx.font = font(family, weight, z);
+    if (ctx.measureText(s).width <= maxW) return { text: s, font: ctx.font };
+  }
+  const f = font(family, weight, min);
+  ctx.font = f;
+  let t = s;
+  while (t.includes(" ") && ctx.measureText(`${t}…`).width > maxW) t = t.slice(0, t.lastIndexOf(" ")).replace(/[\s,;:·•-]+$/, "");
+  return { text: t === s ? s : `${t}…`, font: f };
+}
+
 function wrap(ctx: SKRSContext2D, text: string, maxW: number): string[] {
   const out: string[] = [];
   for (const para of text.split("\n")) {
@@ -373,7 +390,8 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
     label(ctx, `${C("Titres", "Headings")} — ${HF}`, M, 330);
     text(ctx, "Aa", M, 560, font(HF, 600, 220));
     para(ctx, "ABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstuvwxyz\n0123456789 € & ! ?", M, 640, cw, 30, ink, 1.45);
-    text(ctx, b.tagline || b.name, M, 900, font(HF, 600, 54));
+    const sample = fitLine(ctx, b.tagline || b.name, HF, 600, 54, cw);
+    text(ctx, sample.text, M, 900, sample.font);
     const x2 = M + cw + 80;
     label(ctx, `${C("Texte", "Body")} — ${BF}`, x2, 330);
     text(ctx, "Aa", x2, 560, font(BF, 500, 220));
@@ -489,7 +507,8 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
     contain(ctx, inp.product, px + 60, 380, ps - 120, ps - 160);
     ctx.fillStyle = ink;
     ctx.fillRect(px, 340 + ps - 90, ps, 90);
-    text(ctx, b.tagline || b.name, px + ps / 2, 340 + ps - 34, font(HF, 600, 30), onColor(ink), "center");
+    const caption = fitLine(ctx, b.tagline || b.name, HF, 600, 30, ps - 48, 18);
+    text(ctx, caption.text, px + ps / 2, 340 + ps - 34, caption.font, onColor(ink), "center");
     para(ctx, C("Les visuels du studio reprennent ces règles automatiquement : couleurs, typographies, marges et logo.", "The studio's visuals apply these rules automatically: colors, typefaces, margins and logo."), px, 880, ps, 22, mix(ink, paper, 0.3));
   }
 

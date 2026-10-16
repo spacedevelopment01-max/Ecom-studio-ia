@@ -72,3 +72,22 @@ describe("planche : textes raccourcis à la fin d'un mot", () => {
     expect(shorten("Le temps, bien porté", 26)).toBe("Le temps, bien porté");
   });
 });
+
+describe("charte PDF : aucun texte qui déborde", () => {
+  it("la signature tient dans sa colonne (taille réduite, puis raccourcie à la fin d'un mot)", async () => {
+    const { createCanvas } = await import("@napi-rs/canvas");
+    const { ensureFonts } = await import("@/lib/media/fonts");
+    const { fitLine } = await import("@/lib/media/brand-book");
+    ensureFonts();
+    const ctx = createCanvas(800, 200).getContext("2d");
+    const s = "Plâtrier peintre, Mâcon et 30 km autour.";
+    for (const [size, maxW, min] of [[54, 520, 27], [30, 402, 18], [30, 150, 18]] as const) {
+      const r = fitLine(ctx, s, "Archivo", 600, size, maxW, min);
+      ctx.font = r.font;
+      expect(ctx.measureText(r.text).width).toBeLessThanOrEqual(maxW);
+      expect(r.text === s || r.text.endsWith("…")).toBe(true);
+    }
+    // Assez de place : texte intact, taille d'origine.
+    expect(fitLine(ctx, "ARVEN", "Archivo", 600, 54, 900)).toMatchObject({ text: "ARVEN" });
+  });
+});
