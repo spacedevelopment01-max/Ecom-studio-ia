@@ -126,6 +126,19 @@ export function hasEverSubscribed(userId: string): boolean {
 }
 
 /**
+ * Le compte a-t-il en ce moment au moins un abonnement payé (ou offert) en vigueur, rattaché ou en attente de projet ?
+ * Sans lui (compte Découverte, abonnement résilié ou impayé) : aucun appel à l'IA, même offert par la plateforme.
+ */
+export function hasPaidSubscription(userId: string): boolean {
+  return !!one(
+    `SELECT 1 FROM subscriptions WHERE (owner_user_id = ? OR (owner_user_id IS NULL AND user_id = ?)) AND status IN (${PAID_STATUSES.map(() => "?").join(",")}) LIMIT 1`,
+    userId,
+    userId,
+    ...PAID_STATUSES,
+  );
+}
+
+/**
  * Compte de facturation qui paie un appel : `key` est l'id du client (ou déjà une clé d'abonnement) ; le projet vient
  * de l'appel, sinon de la tâche en cours. Le projet doit appartenir au client — sinon rien n'est résolu (refus en aval).
  * Sans projet : la clé reçue (ancien comportement, compte sans projet).

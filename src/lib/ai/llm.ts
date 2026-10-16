@@ -230,8 +230,11 @@ async function countInputTokens(p: { model: string; system?: unknown; messages: 
   }
 }
 
-/** Réponses d'erreur HTTP du fournisseur relançables (rien n'a été produit ni facturé). */
-const RETRYABLE = (status: number) => status === 429 || status === 529 || status >= 500;
+/**
+ * Seule une saturation (429, rien de produit) est relancée automatiquement. Un 5xx (panne, surcharge, relais réseau)
+ * n'est jamais relancé tout seul (règle du propriétaire) : arrêt net, la personne décide de recommencer.
+ */
+const RETRYABLE = (status: number) => status === 429;
 const RETRY_DELAYS_MS = [1000, 4000];
 
 function pricier(a: string, b: string) {
@@ -326,8 +329,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     escalation: decision.escalation,
   };
   try {
-    // Relances maison, dans la MÊME réservation, uniquement sur une réponse d'erreur HTTP (rien de produit ni
-    // facturé). Une coupure après le début de la réponse n'est jamais relancée ici (résultat incertain).
+    // Relances maison, dans la MÊME réservation, uniquement sur une saturation 429 (rien de produit ni facturé). Une coupure après le début de la réponse n'est jamais relancée ici (résultat incertain).
     msg = await httpCounter.run(counter, async () => {
       for (let attempt = 0; ; attempt++) {
         try {
@@ -350,7 +352,18 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     if (e instanceof Anthropic.AuthenticationError) throw new PermanentError(L("La clé Anthropic configurée est refusée. Vérifiez-la dans l'administration.", "The configured Anthropic key was rejected. Check it in the admin settings."));
     if (e instanceof Anthropic.BadRequestError) throw new PermanentError(L(`Requête refusée par le fournisseur : ${e.message}`, `Request rejected by the provider: ${e.message}`));
     if (e instanceof Anthropic.NotFoundError) throw new PermanentError(L(`Modèle introuvable (${route.model}). Corrigez le routage dans l'administration.`, `Model not found (${route.model}). Fix the routing in the admin settings.`));
-    throw e; // 429 / 5xx / réseau : la file de tâches réessaie.
+    // Coupure réseau, délai dépassé, flux interrompu : le coût maximal vient d'être retenu ; une relance par la file
+    // de tâches repaierait (nouvelle réservation, nouvel appel). Arrêt net, comme pour les autres fournisseurs.
+    if (typeof status !== "number") {
+      const why = redact(String((e as Error)?.message ?? e)).slice(0, 200);
+      throw new PermanentError(L(`Résultat incertain chez Anthropic (${why}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.`, `Uncertain result at Anthropic (${why}): maximum cost kept as a precaution, no automatic retry. Check the provider's usage before trying again.`));
+    }
+    // Réponse d'erreur 5xx : Anthropic ne la facture pas (réservation rendue ci-dessus), mais elle n'est jamais
+    // relancée toute seule, ni ici ni par la file de tâches : arrêt net, la personne décide de recommencer.
+    if (status >= 500) {
+      throw new PermanentError(L(`Anthropic a répondu par une erreur (${status}) : rien n'a été facturé, aucune relance automatique. Réessayez dans un moment.`, `Anthropic answered with an error (${status}): nothing was billed, no automatic retry. Try again in a moment.`));
+    }
+    throw e; // 429 (saturation, réservation rendue) : la file de tâches réessaie plus tard.
   }
   // Modèle servi différent du modèle demandé (ne devrait pas arriver sans repli) : compté au plus cher des deux.
   const served = msg.model && msg.model !== route.model && pricier(msg.model, route.model) ? msg.model : route.model;

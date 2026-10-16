@@ -13,7 +13,8 @@ import { buttonColors } from "./story-media";
 
 // ------------------------------------------------------------------------------------------------ Marque
 
-export type BrandDemo = { id: string; brand: string; sector: string; direction: string; palette: string[]; logo: string; photo: string; fonts: { heading: string; body: string } };
+/** `photoBadge` (facultatif, vide par défaut) : étiquette posée sur la photo de départ ; seul le studio Découverte la remplit. */
+export type BrandDemo = { id: string; brand: string; sector: string; direction: string; palette: string[]; logo: string; photo: string; fonts: { heading: string; body: string }; photoBadge?: string };
 
 const SERIF = /baskerville|lora|playfair|cormorant/i;
 
@@ -42,7 +43,8 @@ export function BrandLab({ brands }: { brands: BrandDemo[] }) {
           <img src={b.logo} alt={t(`Logo ${b.brand} créé par le studio`, `${b.brand} logo created by the studio`)} className="max-h-36 w-auto object-contain" />
           <figcaption className="absolute bottom-3 left-4 text-xs font-medium" style={{ color: dark }}>{t("Logo créé par le studio", "Logo created by the studio")}</figcaption>
         </figure>
-        <figure className="col-span-3 overflow-hidden rounded-3xl border border-line bg-card sm:col-span-2">
+        <figure className="relative col-span-3 overflow-hidden rounded-3xl border border-line bg-card sm:col-span-2">
+          {b.photoBadge && <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs text-white">{b.photoBadge}</span>}
           <img src={b.photo} alt={t(`Photo de départ du produit ${b.brand}`, `${b.brand} starting product photo`)} loading="lazy" className="aspect-square w-full object-cover" />
           <figcaption className="px-3 py-2 text-xs text-muted">{t("Photo de départ", "Starting photo")}</figcaption>
         </figure>

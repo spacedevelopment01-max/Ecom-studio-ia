@@ -1,6 +1,6 @@
 /**
  * Description du projet rédigée par l'IA à la création : offerte par la plateforme (jamais débitée du budget IA du
- * client, forfait Découverte compris), modèle le moins cher, réponse courte, cache sans nouvel appel, limite par
+ * client), réservée aux comptes avec un abonnement payé (un compte Découverte n'appelle jamais l'IA), modèle le moins cher, réponse courte, cache sans nouvel appel, limite par
  * compte et par jour, désactivable, texte du client traité comme une donnée.
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -20,6 +20,7 @@ describe("Description rédigée par l'IA (offerte par la plateforme)", async () 
   const { ledgerOf } = await import("@/lib/billing").then((m) => ({ ledgerOf: (u: string) => all("SELECT * FROM ledger WHERE user_id = ?", u) }));
   const { houseDeps, houseDescribe, cleanParagraph, HOUSE_TASK } = await import("@/lib/ai/house-describe");
   const route = await import("@/app/api/describe/route");
+  const { createSubscription } = await import("@/lib/project-subscriptions");
   const fr = <T,>(fn: () => Promise<T>) => runWithLang({ ui: "fr", content: "fr" }, fn);
   const PARA = "Nous sommes plombiers chauffagistes à Mâcon et dans les environs. Nous intervenons pour les fuites, les débouchages et l'entretien des chaudières, chez les particuliers comme chez les professionnels. Nous prenons le temps d'expliquer chaque intervention avant de commencer, et nous laissons votre logement aussi propre qu'à notre arrivée.";
   let calls: { model: string; sys: string; user: string; max: number }[] = [];
@@ -34,9 +35,27 @@ describe("Description rédigée par l'IA (offerte par la plateforme)", async () 
     setJsonSetting("house.describe.perUserPerDay", 8);
   });
 
-  it("un client Découverte (sans IA) l'obtient, rien n'est débité de son compte, la dépense est celle de la plateforme", async () => {
+  const post = (b: object) => fr(() => route.POST(new Request("http://localhost:3000/api/describe", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) })));
+
+  it("compte Découverte (sans abonnement, administrateur compris) : refus net, aucun appel à l'IA, aucune dépense", async () => {
+    for (const role of ["client", "admin"]) {
+      const u = await createUser(`desc0-${role}-${Date.now()}@test.fr`, "motdepasse-test", "D");
+      sessionUser = { ...u, role };
+      const res = await post({ business: "services", brief: "plombier dépannage chaudière" });
+      expect(res.status).toBe(402);
+      expect((await res.json()).error).toMatch(/incluse dans les forfaits/);
+      expect(all("SELECT * FROM usage_events WHERE user_id = ? AND task = ?", u.id, HOUSE_TASK)).toHaveLength(0);
+      // Abonnement résilié : toujours refusé.
+      createSubscription(u.id, { plan: "creer", status: "canceled", source: "admin" });
+      expect((await post({ business: "services", brief: "plombier dépannage chaudière" })).status).toBe(402);
+    }
+    expect(calls).toHaveLength(0);
+  });
+
+  it("un client avec un abonnement payé en attente de projet l'obtient, rien n'est débité de son compte, la dépense est celle de la plateforme", async () => {
     const u = await createUser(`desc-${Date.now()}@test.fr`, "motdepasse-test", "D");
     sessionUser = { ...u, role: "client" };
+    createSubscription(u.id, { plan: "creer", source: "admin" });
     const res = await fr(() => route.POST(new Request("http://localhost:3000/api/describe", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ business: "services", brief: "plombier dépannage chaudière", area: "Mâcon et 20 km", phone: "06 11 22 33 44", email: "a@b.fr" }) })));
     expect(res.status).toBe(200);
     const j = await res.json();

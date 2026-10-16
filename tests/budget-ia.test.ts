@@ -9,7 +9,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-type Mode = "ok" | "slow" | "status429" | "timeout" | "huge" | "midstream" | "otherModel";
+type Mode = "ok" | "slow" | "status429" | "status500" | "status529" | "timeout" | "huge" | "midstream" | "otherModel";
 const llm: { mode: Mode; calls: number; waiting: (() => void)[]; counted: number | null; countStatus: number | null; counts: any[]; sent: any[] } = { mode: "ok", calls: 0, waiting: [], counted: null, countStatus: null, counts: [], sent: [] };
 vi.mock("@anthropic-ai/sdk", () => {
   class APIError extends Error {}
@@ -25,6 +25,8 @@ vi.mock("@anthropic-ai/sdk", () => {
       const finalMessage = async () => {
         if (llm.mode === "slow") await new Promise<void>((r) => llm.waiting.push(r));
         if (llm.mode === "status429") throw Object.assign(new Error("rate limited"), { status: 429 });
+        if (llm.mode === "status500") throw Object.assign(new Error("internal server error"), { status: 500 });
+        if (llm.mode === "status529") throw Object.assign(new Error("overloaded"), { status: 529 });
         if (llm.mode === "timeout") throw new Error("Request timed out.");
         // Estimation trop basse : le fournisseur facture bien plus que le maximum réservé (cas anormal).
         if (llm.mode === "huge") return { ...done, usage: { input_tokens: 40_000_000, output_tokens: 10 } };
@@ -450,9 +452,23 @@ describe("plafond fournisseur : coût maximal réellement borné", async () => {
     expect(reservations(u.id)[0].status).toBe("released");
     llm.calls = 0;
     llm.mode = "midstream";
-    await expect(text(u.id)).rejects.toThrow(/overloaded/);
+    const err = await text(u.id).catch((e: unknown) => e);
+    expect(String((err as Error).message)).toMatch(/overloaded/);
+    // Résultat incertain : arrêt net (PermanentError), la file de tâches ne relance pas un appel déjà payé au maximum.
+    expect((err as { permanent?: boolean }).permanent).toBe(true);
     expect(llm.calls).toBe(1);
     expect(reservations(u.id).at(-1)!.status).toBe("uncertain");
+    // Erreur 5xx (panne, surcharge 529) : jamais relancée toute seule (ni ici, ni par la file de tâches) ; rien
+    // n'est facturé, la réservation est rendue.
+    for (const mode of ["status500", "status529"] as const) {
+      llm.calls = 0;
+      llm.mode = mode;
+      const e5 = await text(u.id).catch((x: unknown) => x);
+      expect(String((e5 as Error).message)).toMatch(/aucune relance automatique/);
+      expect((e5 as { permanent?: boolean }).permanent).toBe(true);
+      expect(llm.calls).toBe(1);
+      expect(reservations(u.id).at(-1)!.status).toBe("released");
+    }
   }, 30_000);
 
   it("tarifs jamais confirmés ou vérifiés il y a plus de 90 jours : toute génération payante bloquée (texte et image)", async () => {
