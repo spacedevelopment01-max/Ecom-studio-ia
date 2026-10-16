@@ -189,7 +189,7 @@ check("Section ajoutée (FAQ V2, contenu « À compléter »)", idx().order.leng
 // 10. Déplacer une section (panneau Structure : « Monter »).
 const order0 = homeTypes().join(">");
 const structure = page.getByRole("region", { name: "Structure" }).or(page.locator("section[aria-label=Structure]"));
-const faqRow = structure.locator("li", { hasText: "Questions V2" }).first();
+const faqRow = structure.locator("li", { hasText: "Questions fréquentes" }).first();
 await faqRow.hover().catch(() => {});
 await faqRow.getByRole("button", { name: "Monter" }).click({ force: true }).catch(() => {});
 await page.waitForTimeout(2500);
@@ -200,7 +200,7 @@ page.once("dialog", (d) => d.accept());
 const nBefore = idx().order.length;
 await faqRow.hover().catch(() => {});
 // Actions d'une section rangées dans son menu « … » : ouverture du menu, puis « Supprimer la section ».
-await structure.locator("li", { hasText: "Questions V2" }).first().getByRole("button", { name: /^Actions pour/ }).click({ force: true }).catch(() => {});
+await structure.locator("li", { hasText: "Questions fréquentes" }).first().getByRole("button", { name: /^Actions pour/ }).click({ force: true }).catch(() => {});
 await structure.getByRole("menuitem", { name: "Supprimer la section" }).click({ force: true }).catch(() => {});
 await page.waitForTimeout(2500);
 check("Section supprimée (versionnée, réversible)", idx().order.length === nBefore - 1, `${nBefore} → ${idx().order.length}`);

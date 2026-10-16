@@ -59,12 +59,13 @@ function TutorialNudge({ id, onWatch, onClose }: { id: TutorialId; onWatch: () =
   const t = useT();
   const { lang } = useLang();
   return (
-    <div data-tuto-nudge className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-5 z-[60] lg:bottom-5 flex w-[min(360px,calc(100vw-2.5rem))] items-start gap-3 rounded-2xl border border-line bg-card p-4 shadow-soft">
-      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-signal-soft text-signal"><GraduationCap className="size-5" aria-hidden /></span>
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold">{t("Première visite ?", "First time here?")}</p>
-        <p className="mt-0.5 text-sm text-muted">{t(`Le tutoriel « ${TUTORIALS[id].title.fr} » montre l'essentiel en vidéo.`, `The "${TUTORIALS[id].title.en}" tutorial shows the essentials on video.`)}</p>
-        <button type="button" onClick={onWatch} className="mt-2.5 inline-flex h-9 items-center gap-1.5 rounded-full bg-signal px-4 text-sm font-semibold text-signal-ink"><PlayCircle className="size-4" aria-hidden /> {t("Regarder", "Watch")}</button>
+    // Téléphone : carte compacte en haut de l'écran, pour ne jamais recouvrir la zone de saisie (en bas).
+    <div data-tuto-nudge className="fixed right-3 top-[calc(4.25rem+env(safe-area-inset-top))] z-[60] flex w-[min(360px,calc(100vw-1.5rem))] items-center gap-3 rounded-2xl border border-line bg-card p-2.5 shadow-soft lg:bottom-5 lg:right-5 lg:top-auto lg:w-[min(360px,calc(100vw-2.5rem))] lg:items-start lg:p-4">
+      <span className="hidden size-9 shrink-0 place-items-center rounded-xl bg-signal-soft text-signal lg:grid"><GraduationCap className="size-5" aria-hidden /></span>
+      <div className="flex min-w-0 flex-1 items-center gap-2 lg:block">
+        <p className="min-w-0 flex-1 text-sm font-semibold">{t("Première visite ?", "First time here?")}<span className="font-normal text-muted lg:hidden"> {t("Le tutoriel en vidéo.", "The video tutorial.")}</span></p>
+        <p className="mt-0.5 hidden text-sm text-muted lg:block">{t(`Le tutoriel « ${TUTORIALS[id].title.fr} » montre l'essentiel en vidéo.`, `The "${TUTORIALS[id].title.en}" tutorial shows the essentials on video.`)}</p>
+        <button type="button" onClick={onWatch} className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-signal px-4 text-sm font-semibold text-signal-ink lg:mt-2.5"><PlayCircle className="size-4" aria-hidden /> {t("Regarder", "Watch")}</button>
       </div>
       <button type="button" onClick={onClose} className="grid size-8 shrink-0 place-items-center rounded-full text-muted hover:bg-paper-2 hover:text-ink" aria-label={t("Masquer", "Dismiss")} lang={lang}><X className="size-4" /></button>
     </div>

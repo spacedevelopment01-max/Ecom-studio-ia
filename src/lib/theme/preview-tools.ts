@@ -104,3 +104,31 @@ export const previewTools = (lang: Lang, business: "products" | "services" = "pr
 
 /** Outils de l'aperçu en français (compatibilité). */
 export const PREVIEW_TOOLS = previewTools("fr");
+
+/**
+ * Aperçu du studio seulement : libellé posé sur chaque photo libre de droits du site (« Photo libre de droits
+ * (Pixabay), pas une image de votre activité »). Jamais dans l'export ni sur le site publié.
+ */
+export const stockBadgeTool = (photos: { file: string; label: string }[]) => {
+  if (!photos.length) return "";
+  const keys = photos.map((p) => ({ k: p.file.replace(/\.[a-z0-9]+$/i, ""), label: p.label }));
+  return `
+<style id="es-stock-style">
+  .es-stock-badge{position:absolute;left:8px;top:8px;z-index:30;max-width:calc(100% - 16px);font:600 11px/1.3 system-ui,sans-serif;background:rgba(122,74,0,.92);color:#fff;padding:4px 8px;border-radius:6px;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+</style>
+<script>
+(function(){
+  var KEYS=${JSON.stringify(keys).replace(/</g, "\\u003c")};
+  function match(img){ var s=(img.currentSrc||'')+' '+(img.getAttribute('src')||'')+' '+(img.getAttribute('srcset')||''); for(var i=0;i<KEYS.length;i++){ if(s.indexOf(KEYS[i].k)>=0) return KEYS[i]; } return null; }
+  function mark(){
+    document.querySelectorAll('img').forEach(function(img){
+      if(img.dataset.esStock) return; var m=match(img); if(!m) return;
+      var host=img.parentElement; if(!host) return; img.dataset.esStock='1';
+      if(getComputedStyle(host).position==='static') host.style.position='relative';
+      var b=document.createElement('span'); b.className='es-stock-badge'; b.textContent=m.label; b.setAttribute('data-es-stock-badge',''); host.appendChild(b);
+    });
+  }
+  mark(); window.addEventListener('load', mark); new MutationObserver(function(){ mark(); }).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>`;
+};

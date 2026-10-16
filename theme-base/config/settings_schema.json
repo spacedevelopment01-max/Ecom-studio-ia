@@ -187,11 +187,11 @@
     ]
   },
   {
-    "name": "Design system V2",
+    "name": "Style des sites composés",
     "settings": [
       {
         "type": "paragraph",
-        "content": "Langage visuel des sites créés par le Theme Engine V2. « Aucun » garde le style des directions précédentes."
+        "content": "Langage visuel des sites composés par le studio. « Aucun » garde le style des directions précédentes."
       },
       {
         "type": "select",

@@ -54,6 +54,8 @@ type ThemeData = {
   directions: DirectionCard[];
   library: LibraryItem[];
   /** Theme Engine V2 : langage visuel, plan des pages et informations à compléter (absent pour l'ancien moteur). */
+  /** Photos libres de droits placées sur le site : signalées au client, remplaçables (aiBlocked : réglage « Pixabay seulement »). */
+  stock?: { photos: { file: string; assetId: string; source: string; author: string | null; page: string | null; where: string; thumbUrl: string }[]; aiBlocked: boolean };
   v2?: null | { language: string; site: string; plan: { key: string; title: string; handle: string; url: string; inNav: boolean; complete: boolean; missing: string[] }[]; todo: string[]; languages: { id: string; label: string }[] };
 };
 type Selection = { template: string; section: string; block?: string; text?: string; tag?: string; type?: string; kind?: string; path?: string; role?: string; src?: string } | null;
@@ -158,6 +160,7 @@ export default function TabBoutique() {
   const [message, setMessage] = useState("");
   const [attachments, setAttachments] = useState<AssetView[]>([]);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [stockH, setStockH] = useState(0);
   const [sending, setSending] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
@@ -666,13 +669,16 @@ export default function TabBoutique() {
   return (
     <div className="-mx-4 -my-6 sm:-mx-6 lg:-mx-8">
       {chatJobs.filter((j) => j.type !== "shop.chat").map((j) => <JobProgress key={j.id} job={j} className="m-4" />)}
+      {/* Photos libres de droits sur le site : toujours visibles (ordinateur et téléphone), jamais en silence. */}
+      {!!theme.stock?.photos.length && <StockStrip stock={theme.stock} projectId={id} onReplaced={() => (reload(), reloadProject())} onHeight={setStockH} />}
       {/* Téléphone : bascule entre discussion, aperçu et structure */}
       <div className="flex gap-1 border-b border-line bg-paper p-2 lg:hidden" role="tablist">
         {[["chat", MessageSquare, t("Discussion", "Chat")], ["preview", Laptop, t("Aperçu", "Preview")], ["structure", Layers, t("Structure", "Structure")]].map(([k, I, l]: any) => (
           <button key={k} role="tab" aria-selected={view === k} onClick={() => setView(k)} className={cx("flex flex-1 items-center justify-center gap-1.5 rounded-full py-2 text-sm", view === k ? "bg-ink text-paper" : "text-ink-2")}><I className="size-4" /> {l}</button>
         ))}
       </div>
-      <div className="grid h-[calc(100dvh-9.5rem)] grid-cols-1 lg:h-[calc(100dvh-4rem)] lg:grid-cols-[400px_minmax(0,1fr)] xl:grid-cols-[380px_minmax(0,1fr)_320px]">
+      {/* Hauteur du bandeau des photos libres déduite : la zone de saisie reste visible (téléphone compris). */}
+      <div className="grid h-[calc(100dvh-9.5rem-var(--stock-h,0px))] grid-cols-1 lg:h-[calc(100dvh-4rem-var(--stock-h,0px))] lg:grid-cols-[400px_minmax(0,1fr)] xl:grid-cols-[380px_minmax(0,1fr)_320px]" style={{ "--stock-h": `${theme.stock?.photos.length ? stockH : 0}px` } as React.CSSProperties}>
         <section className={cx("min-h-0 border-r border-line bg-paper", view !== "chat" && "hidden lg:block")} aria-label={t("Discussion", "Chat")}>{Chat}</section>
         <section className={cx("min-h-0", full ? "fixed inset-0 z-[80] bg-paper" : view !== "preview" && "hidden lg:block")} aria-label={t("Aperçu", "Preview")} aria-modal={full || undefined} role={full ? "dialog" : undefined}>{Preview}</section>
         <section className={cx("min-h-0 border-l border-line bg-paper", view !== "structure" ? "hidden xl:block" : "")} aria-label={t("Structure", "Structure")}>{Structure}</section>
@@ -706,13 +712,79 @@ export default function TabBoutique() {
   );
 }
 
+/**
+ * Photos libres de droits (Pixabay…) placées sur le site : le client est toujours prévenu (jamais de bascule
+ * silencieuse) et peut remplacer chacune par sa propre photo ou une image IA de sa bibliothèque.
+ */
+function StockStrip({ stock, projectId, onReplaced, onHeight }: { stock: NonNullable<ThemeData["stock"]>; projectId: string; onReplaced: () => void; onHeight?: (h: number) => void }) {
+  const t = useT();
+  const toast = useToast();
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = box.current;
+    if (!el || !onHeight) return;
+    const ro = new ResizeObserver(() => onHeight(el.offsetHeight));
+    ro.observe(el);
+    return () => (ro.disconnect(), onHeight(0));
+  }, [onHeight]);
+  const [open, setOpen] = useState(false);
+  const [target, setTarget] = useState<string | null>(null);
+  const n = stock.photos.length;
+  const src = [...new Set(stock.photos.map((p) => p.source))].join(", ");
+  const replace = async (a: AssetView[]) => {
+    const file = target;
+    setTarget(null);
+    if (!file || !a[0]) return;
+    try {
+      await api(`/api/projects/${projectId}/theme/replace-photo`, { body: { file, assetId: a[0].id } });
+      toast("ok", t("Photo remplacée partout sur le site (nouvelle version, l'ancienne reste restaurable).", "Photo replaced everywhere on the website (new version, the previous one stays restorable)."));
+      onReplaced();
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    }
+  };
+  return (
+    <>
+    <div ref={box} className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-warn-soft px-4 py-2 text-xs text-warn" data-stock-strip>
+      <span className="min-w-0 flex-1">
+        {n > 1
+          ? t(`${n} photos libres de droits (${src}) sur votre site : ce ne sont pas des images de votre activité.`, `${n} royalty-free photos (${src}) on your website: they are not images of your business.`)
+          : t(`1 photo libre de droits (${src}) sur votre site : ce n'est pas une image de votre activité.`, `1 royalty-free photo (${src}) on your website: it is not an image of your business.`)}
+      </span>
+      <button type="button" className="font-semibold underline" onClick={() => setOpen(true)} data-stock-open>{t("Voir et remplacer", "View and replace")}</button>
+    </div>
+      <Modal open={open && !target} onClose={() => setOpen(false)} title={t("Photos libres de droits sur votre site", "Royalty-free photos on your website")} wide>
+        <p className="text-sm text-ink-2">{t("Ces photos viennent d'une banque d'images libres de droits : elles illustrent votre métier mais ne montrent ni vos réalisations, ni votre équipe, ni vos locaux. Remplacez-les par vos propres photos ou par une image créée par l'IA (onglet Images), puis choisissez-la ici. Ce libellé n'apparaît que dans le studio, jamais sur votre site publié.", "These photos come from a royalty-free image bank: they illustrate your trade but show neither your work, your team nor your premises. Replace them with your own photos or with an AI image (Images tab), then pick it here. This label only appears in the studio, never on your published website.")}</p>
+        {stock.aiBlocked && <p className="mt-3 rounded-xl bg-warn-soft px-3 py-2 text-xs text-warn" data-stock-ai-blocked>{t("À la création, le studio utilise uniquement des photos Pixabay pour ces emplacements (réglage « Pixabay seulement » actif) : aucune image IA n'a été créée à leur place.", "At creation, the studio only uses Pixabay photos for these spots (\"Pixabay only\" setting on): no AI image was created in their place.")}</p>}
+        <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {stock.photos.map((p) => (
+            <li key={p.file} className="overflow-hidden rounded-2xl border border-line bg-card" data-stock-photo>
+              <div className="relative aspect-[4/3] bg-paper-2">
+                <img src={p.thumbUrl} alt={p.where} loading="lazy" className="size-full object-cover" />
+                <span className="absolute left-2 top-2 max-w-[calc(100%-1rem)] rounded-md bg-black/70 px-2 py-0.5 text-[11px] font-medium text-white">{t(`Photo libre de droits (${p.source})`, `Royalty-free photo (${p.source})`)}</span>
+              </div>
+              <div className="p-3">
+                <p className="text-sm font-medium">{p.where}</p>
+                <p className="mt-0.5 text-xs text-muted">{t("Pas une image de votre activité", "Not an image of your business")}{p.author ? ` · ${t("auteur", "by")} ${p.author}` : ""}</p>
+                <Button size="sm" variant="secondary" className="mt-2" icon={<Replace className="size-3.5" />} onClick={() => setTarget(p.file)} data-stock-replace>{t("Remplacer", "Replace")}</Button>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 text-xs text-muted"><a className="underline" href={`/studio/${projectId}/images`}>{t("Créer ou importer une image dans l'onglet Images", "Create or upload an image in the Images tab")}</a></p>
+      </Modal>
+      <MediaPicker open={!!target} onClose={() => setTarget(null)} kinds={["image"]} title={t("Choisir l'image qui la remplace", "Choose the replacement image")} onPick={replace} />
+    </>
+  );
+}
+
 /** Theme Engine V2 : langage visuel (recomposition gratuite), pages prévues et informations à compléter. */
 function V2Panel({ v2, onRebuild, onPage, busy }: { v2: NonNullable<ThemeData["v2"]>; onRebuild: (language: string) => void; onPage: (url: string) => void; busy: boolean }) {
   const t = useT();
   const [lang, setLang] = useState(v2.language);
   return (
     <div className="mb-5 min-w-0 overflow-hidden rounded-2xl border border-line bg-card p-3.5" data-v2-panel>
-      <p className="text-[11px] font-medium uppercase tracking-[.16em] text-muted">{t("Site — moteur V2", "Website — V2 engine")}</p>
+      <p className="text-[11px] font-medium uppercase tracking-[.16em] text-muted">{t("Pages et style du site", "Website pages and style")}</p>
       <div className="mt-2 flex items-center gap-2">
         <Select value={lang} onChange={(e) => setLang(e.target.value)} className="h-9 min-w-0 flex-1 text-sm" aria-label={t("Langage visuel", "Visual language")} data-v2-language>
           {v2.languages.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}

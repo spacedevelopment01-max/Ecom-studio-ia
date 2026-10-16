@@ -116,6 +116,9 @@ bascule silencieuse (blocage signalé). Règles et branchements : `docs/guide-im
 `src/lib/image-v2/art-direction.ts` (mémoire `image.art_direction`, versionnée).
 Modèle d'images de tout le studio : **Qwen-Image 3.0 Pro**, une seule étape (choix du propriétaire) ; produit
 entier exigé (aucune partie coupée).
+Exception choisie par le propriétaire — sites de services : les photos Pixabay restent permises comme images du site,
+mais jamais en silence : le studio les signale au client (onglet Boutique et aperçu du studio, jamais sur le site
+publié) et permet de les remplacer par sa photo ou une image IA (`src/lib/theme/stock-notice.ts`).
 
 ## Ligne directrice de marque (cohésion)
 

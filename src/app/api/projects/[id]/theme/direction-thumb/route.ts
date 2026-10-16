@@ -6,7 +6,7 @@ import { handle } from "@/lib/http";
 import { uiLang } from "@/lib/i18n-server";
 import { currentTheme } from "@/lib/projects";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
-import { DIRECTIONS, type DirectionId } from "@/lib/theme/directions";
+import { DIRECTIONS, directionPreview, type DirectionId } from "@/lib/theme/directions";
 import { directionThumb } from "@/lib/theme/direction-thumb";
 
 export const runtime = "nodejs";
@@ -18,7 +18,7 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   const lang = currentTheme(p.id)?.spec.language ?? uiLang();
   // Sans marque : capture d'exemple. Sans navigateur de captures ou en cas d'échec : 503, l'écran montre alors
   // l'aperçu en direct de la direction (rendu par le serveur), jamais l'exemple d'un autre projet.
-  const fallback = () => new Response(null, { status: 307, headers: { Location: `/demo/directions/${d}${lang === "en" ? ".en" : ""}.jpg`, "Cache-Control": "no-store" } });
+  const fallback = () => new Response(null, { status: 307, headers: { Location: directionPreview(d), "Cache-Control": "no-store" } });
   const unavailable = () => new Response(null, { status: 503, headers: { "Cache-Control": "no-store" } });
   if (!p.brand) return fallback();
   try {

@@ -476,6 +476,11 @@ const CHROME_LABEL = {
   },
 };
 
+/** Capture d'exemple d'une direction (la même en français et en anglais). */
+export function directionPreview(id: string): string {
+  return `/demo/directions/${id}.jpg`;
+}
+
 /** Directions présentées dans la galerie : description, aperçu et combinaison d'en-tête / pied de page (langue de l'interface). */
 /** Cartes de la galerie, dans l'ordre de la bibliothèque (1 → 30), avec le premier forfait qui ouvre chaque thème. */
 export function directionCards(lang: Lang = "fr") {
@@ -487,7 +492,8 @@ export function directionCards(lang: Lang = "fr") {
     tagline: pick(lang, d.tagline, DIRECTIONS_EN[d.id].tagline),
     description: pick(lang, d.description, DIRECTIONS_EN[d.id].description),
     dark: DARK_DIRECTIONS.includes(d.id),
-    preview: `/demo/directions/${d.id}${lang === "en" ? ".en" : ""}.jpg`,
+    // Une seule capture par direction (les « .en.jpg » n'existent pas) : jamais d'image cassée en anglais.
+    preview: directionPreview(d.id),
     chrome: [cl.shape[CHROME[d.id].shape], cl.footer[CHROME[d.id].footer], cl.ann[CHROME[d.id].ann], cl.card[CHROME[d.id].card]],
     plan: planForTheme(d.id),
   }));
