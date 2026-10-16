@@ -77,7 +77,7 @@ export const qwenSize = (aspect: string) => QWEN_SIZES[aspect] ?? QWEN_SIZES["1:
 /** Corps d'une génération / retouche Qwen-Image (point d'accès synchrone « multimodal-generation »). */
 export function qwenImageBody(o: { model: string; prompt: string; aspect: string; references: string[]; people: boolean; noText?: boolean; extraNegative?: string }) {
   // Clause « sans personne » ajoutée une seule fois (la consigne du studio la contient déjà le plus souvent).
-  const content: Record<string, string>[] = [...o.references.map((image) => ({ image })), { text: `${o.prompt}${/présence humaine/.test(o.prompt) ? "" : noPeopleLine(o.people)}` }];
+  const content: Record<string, string>[] = [...o.references.map((image) => ({ image })), { text: `${o.prompt}${/présence humaine|aucune personne/i.test(o.prompt) ? "" : noPeopleLine(o.people)}` }];
   return {
     model: o.model,
     input: { messages: [{ role: "user", content }] },

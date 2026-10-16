@@ -176,7 +176,8 @@ describe("Phase 5A — Image & Search Engine V2", async () => {
     expect((await sharp(wide!).metadata()).width).toBe(FORMATS["16:9"].width);
     const b = buildBrief(fresh("saas"), { kind: "banner", support: "banner" });
     expect(b.format.aspect).toBe("3:1");
-    expect(generationPrompt(b)).toMatch(/Format 3:1 ; le côté gauche de l'image reste dégagé et calme \(surface unie\)/);
+    // Bannière sans le produit : nature morte du propriétaire, zone dégagée du côté du texte.
+    expect(generationPrompt(b)).toMatch(/format horizontal 3:1\..+Le côté gauche de l’image laisse une zone dégagée/s);
   });
 
   // ------------------------------------------------------------------ barrière de qualité

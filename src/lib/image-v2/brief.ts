@@ -13,7 +13,7 @@ import { productIdentity, resolveProductCategory, type ProductCategoryProfile } 
 import { chooseDirection, DIRECTIONS } from "./direction";
 import { defaultAspect, FORMATS } from "./formats";
 import { toFr } from "./prompt-fr";
-import { stillLifeFor, stillLifeText } from "./still-life";
+import { stillLifeFor, stillLifePrompt, type StillLifeScene } from "./still-life";
 import { PRODUCT_KINDS } from "./intent";
 import type { ArtDirectionId, AspectId, Support, VisualBrief, VisualKind } from "./types";
 
@@ -87,7 +87,7 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
   let subjectFr = "";
   let actionFr: string | null = null;
   let environmentFr: string | null = null;
-  let sceneFr: string | undefined;
+  let sceneFr: StillLifeScene | undefined;
   let sceneExclude: string | undefined;
 
   if (services) {
@@ -158,7 +158,10 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
       const scene = stillLifeFor(category.id, `${p.product.name ?? ""} ${p.product.category ?? ""} ${p.product.summary ?? ""}`, v);
       actionFr = people ? toFr(category.usage[v % category.usage.length] ?? "") || null : null;
       if (!people) {
-        sceneFr = stillLifeText(scene);
+        // Sans la RegExp de choix de variante (brief enregistré avec l'image).
+        const { match: _m, ...rest } = scene;
+        void _m;
+        sceneFr = rest;
         sceneExclude = scene.exclude;
       }
       positive = uniq(noPerson([...category.environments, ...category.usage]));
@@ -239,20 +242,9 @@ export function generationPrompt(b: VisualBrief, extra?: string | null): string 
   const zone = b.format.textZone !== "none" ? ` ; ${ZONE_FR[b.format.textZone] ?? b.format.textZone} de l'image reste dégagé et calme (surface unie)` : "";
   // Univers sans produit ni personne : nature morte au décor entièrement décrit (liste fermée d'objets), sans la
   // composition générique de la direction (« quelques accessoires raffinés » amenait des objets hors sujet).
-  if (f.scene)
-    return [
-      `Photographie de nature morte, style ${d.label}. Sujet : ${f.subject}.`,
-      f.scene,
-      `Ambiance : ${d.mood}.`,
-      b.palette.length ? `Touches de couleur en accord avec ${b.palette.join(", ")}.` : "",
-      `Format ${b.format.aspect}${zone}.`,
-      "Objets sans marque visible ; image purement photographique, rien n'est écrit sur l'image.",
-      // Courte : la clause générale (« des lieux, des objets, des outils… ») invitait d'autres objets que la liste.
-      "Scène sans aucune présence humaine.",
-      extra ? `Correction pour cet essai : ${extra}` : "",
-    ]
-      .filter(Boolean)
-      .join(" ");
+  // Structure de la consigne du propriétaire (essai réel v4 réussi) : paragraphes, liste fermée d'objets, zone
+  // dégagée, lumière, phrase finale ; aucune couleur en code ni matière du produit.
+  if (f.scene) return stillLifePrompt(f.scene, { aspect: b.format.aspect, zone: b.format.textZone, correction: extra });
   return [
     `Photographie, style ${d.label}. Sujet : ${f.subject}.`,
     // Publicité : niveau campagne d'agence (lumière travaillée, matières, profondeur), un seul point focal, de l'air.

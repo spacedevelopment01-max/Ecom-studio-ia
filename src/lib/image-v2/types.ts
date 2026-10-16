@@ -99,7 +99,7 @@ export type VisualBrief = {
   shotKey?: string;
   /** Version française du sujet, du geste, du décor et des interdits pour la consigne du modèle d'images (règle :
    * consignes à Qwen en français). Hors empreinte du brief : la réutilisation des images reste inchangée. */
-  fr?: { subject: string; action: string | null; environment: string | null; negative: string[]; /** Univers sans produit ni personne : décor entièrement décrit (surface, fond, objets, lumière, cadrage). */ scene?: string; /** Négatif propre à la scène (le produit lui-même, jamais dessiné). */ sceneExclude?: string };
+  fr?: { subject: string; action: string | null; environment: string | null; negative: string[]; /** Univers sans produit ni personne : nature morte au décor entièrement décrit (structure du propriétaire). */ scene?: import("./still-life").StillLifeScene; /** Négatif propre à la scène (le produit lui-même, jamais dessiné). */ sceneExclude?: string };
 };
 
 /** Licence et provenance d'une image de banque : jamais « libre de droits » sans vérification. */

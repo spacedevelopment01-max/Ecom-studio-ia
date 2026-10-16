@@ -147,8 +147,8 @@ describe("onglet Images — audit", async () => {
       expect(x).not.toMatch(/pour un (texte|titre)|texte ajouté|titre ajouté/);
       // 3. Interdits nommés absents de la consigne (« faux logos de luxe » amorçait un faux logo).
       expect(x).not.toMatch(/Ne jamais montrer|logos de luxe|marque concurrente/);
-      // Une seule fois la phrase positive sur l'absence de personne.
-      expect(x.split("présence humaine").length - 1).toBe(1);
+      // Une seule fois la phrase sur l'absence de personne.
+      expect(x.split(/présence humaine|aucune personne/).length - 1).toBe(1);
     }
     // 4. Univers : une nature morte d'objets précis, jamais « porté » ni une famille vague seule.
     expect(univ).toMatch(/nature morte/);
@@ -160,65 +160,78 @@ describe("onglet Images — audit", async () => {
     expect(negativePrompt(false, false)).not.toContain("typography");
     expect(negativePrompt(false)).toMatch(/person.*face.*hands/);
     const body = qwenImageBody({ model: "qwen-image-3.0-pro", prompt: univ, aspect: "4:5", references: [], people: false, noText: true });
-    expect(JSON.stringify(body.input).split("présence humaine").length - 1).toBe(1);
+    expect(JSON.stringify(body.input).split(/présence humaine|aucune personne/).length - 1).toBe(1);
   });
 
-  it("chaque famille de produits a sa nature morte d'univers au décor entièrement décrit (liste fermée), sans personne ni inscription", async () => {
-    const { STILL_LIFE, stillLifeFor, stillLifeText } = await import("@/lib/image-v2/still-life");
+  it("chaque famille respecte la structure de la consigne du propriétaire (essai réel v4 réussi)", async () => {
+    const { STILL_LIFE, stillLifeFor, stillLifePrompt, STILL_LIFE_END } = await import("@/lib/image-v2/still-life");
     const src = fs.readFileSync(path.join(process.cwd(), "src/lib/image-v2/categories.ts"), "utf8");
     const ids = [...src.matchAll(/\n    id: "([a-z_]+)",/g)].map((m) => m[1]);
     expect(ids).toContain("generic");
     for (const id of ids) {
       expect(STILL_LIFE[id]?.length, id).toBeGreaterThan(0);
       for (const sc of STILL_LIFE[id]) {
+        // 1. Point de vue et cadrage ; 2. surface et fond (part de l'image, flou).
+        expect(sc.view, id).toMatch(/Vue .+cadrage/);
+        expect(sc.setting, id).toMatch(/^La scène se déroule sur .+occupe .+de l’image.+flou/);
+        // 3. Trois objets au plus, chacun dans une phrase complète qui commence par sa position.
         expect(sc.objects.length, id).toBeGreaterThanOrEqual(2);
-        expect(sc.objects.length, id).toBeLessThanOrEqual(4);
-        for (const o of sc.objects) for (const k of ["what", "material", "color", "position"] as const) expect(o[k].trim(), `${id}.${k}`).not.toBe("");
-        const all = JSON.stringify(sc).replace(/sans étiquette|sans motif/g, "");
+        expect(sc.objects.length, id).toBeLessThanOrEqual(3);
+        for (const o of sc.objects) {
+          expect(o.text, `${id}: ${o.name}`).toMatch(/^(Au centre|Au premier plan|À l’arrière-plan|À gauche|À droite)/);
+          expect(o.text.trim().endsWith("."), o.name).toBe(true);
+        }
+        // 6. Lumière, ombres, mise au point, ambiance.
+        expect(sc.light, id).toMatch(/[Ll]umière|[ÉE]clairage/);
+        expect(sc.light, id).toMatch(/Ombres/);
+        expect(sc.light, id).toMatch(/Mise au point/);
+        expect(sc.light, id).toMatch(/Ambiance/);
+        // Rien qui appelle une personne, une écriture ou le produit lui-même.
+        const all = [sc.setting, ...sc.objects.map((o) => o.text), sc.light].join(" ").replace(/sans étiquette|ni étiquette|ni broderie|sans (aucun )?marquage|sans aucune inscription|aucune lettre, aucun chiffre/g, "");
         expect(all, id).not.toMatch(/personne|\bmains?\b|porté|texte|logo|étiquette|gravé|monogramme|livre ouvert|écran allumé/i);
-        // Le bas de l'image reste une surface dégagée : aucun objet placé en bas ni au premier plan.
-        for (const o of sc.objects) expect(o.position, id).not.toMatch(/premier plan|en bas/);
       }
     }
-    // Montre (ARVEN) : variante propre, sans seconde montre ; un autre accessoire garde la scène générale.
+    // Consigne complète : 4. compte exact, 5. zone dégagée, 7. phrase finale ; phrases logiques, sans code couleur.
     const watch = stillLifeFor("accessories", "Montre acier et cuir Montres");
-    expect(watch.objects.map((o) => o.what).join(" ")).toMatch(/boîte ronde ouverte et vide/);
-    expect(watch.objects.some((o) => /^montre/i.test(o.what))).toBe(false);
+    const t = stillLifePrompt(watch, { aspect: "4:5", zone: "bottom" });
+    expect(t).toMatch(/^Photographie de nature morte haut de gamme, photoréaliste, au format vertical 4:5\. Vue de face/);
+    expect(t).toContain("La scène contient exactement trois objets : l’écrin ouvert avec son coussin vide, le sablier et le rouleau de cuir.");
+    expect(t).toContain("Le bas de l’image laisse une zone dégagée de marbre devant l’écrin.");
+    expect(t.trim().endsWith(STILL_LIFE_END)).toBe(true);
+    expect(t).not.toMatch(/#[0-9A-F]{6}|acier poli|matières? (et couleurs )?du produit/i);
+    expect(t.split("\n\n").length).toBeGreaterThanOrEqual(7);
+    expect(stillLifePrompt(watch, { aspect: "16:9", zone: "left" })).toMatch(/format horizontal 16:9.+Le côté gauche de l’image laisse une zone dégagée de marbre/s);
     expect(stillLifeFor("accessories", "Sac en cuir").match).toBeUndefined();
-    const t = stillLifeText(watch);
-    expect(t).toMatch(/liste fermée \(aucun autre objet dans l'image\)/);
-    expect(t).toMatch(/sans gravure, sans marquage, sans motif en relief/);
-    expect(t).toMatch(/Lumière : .+ Cadrage : /);
   });
 
-  it("consigne d'univers : décor détaillé, sans la composition générique « quelques accessoires raffinés »", async () => {
-    const { NO_TEXT_NEGATIVE } = await import("@/lib/ai/alibaba");
+  it("consigne d'univers produite par le studio : structure du propriétaire, envoyée telle quelle à Qwen", async () => {
+    const { NO_TEXT_NEGATIVE, qwenImageBody } = await import("@/lib/ai/alibaba");
+    const { ambiancePrompt } = await import("@/lib/ai/media-providers");
+    const { STILL_LIFE_END } = await import("@/lib/image-v2/still-life");
     const p = loadProject(pid);
     const univ = generationPrompt(buildBrief(p, { kind: "ambiance", support: "site", aspect: "4:5" }));
-    expect(univ).toMatch(/^Photographie de nature morte/);
-    expect(univ).toMatch(/Surface : .+Arrière-plan : .+Objets, liste fermée/);
-    expect(univ).not.toMatch(/accessoires raffinés|Composition :/);
+    expect(univ).toMatch(/^Photographie de nature morte haut de gamme/);
+    expect(univ).not.toMatch(/accessoires raffinés|Composition :|Touches de couleur/);
+    // L'enveloppe d'ambiance n'ajoute rien ; Qwen ne reçoit pas une seconde phrase « sans personne ».
+    expect(ambiancePrompt({ prompt: univ, aspect: "4:5" })).toBe(univ);
+    const body = qwenImageBody({ model: "qwen-image-3.0-pro", prompt: univ, aspect: "4:5", references: [], people: false, noText: true });
+    expect((body.input.messages[0].content.at(-1) as any).text.trim().endsWith(STILL_LIFE_END)).toBe(true);
     for (const w of ["embossed text", "engraving", "monogram"]) expect(NO_TEXT_NEGATIVE).toContain(w);
   });
 
-  it("essai v3 (montre inventée dans l'écrin) : le produit n'est jamais nommé dans la nature morte et il est exclu", async () => {
+  it("essai v3 (montre inventée dans l'écrin) : le contenant est dit vide et le produit est exclu par le négatif", async () => {
     const { STILL_LIFE, stillLifeFor } = await import("@/lib/image-v2/still-life");
     const { qwenImageBody } = await import("@/lib/ai/alibaba");
     const watch = stillLifeFor("accessories", "Montre acier et cuir Montres");
-    expect(JSON.stringify(watch.objects)).not.toMatch(/montre|horlog/i);
-    expect(watch.objects[0].what).toMatch(/vide.*rien posé dessus ni dedans/);
+    expect(watch.objects[0].text).toMatch(/L’écrin ne contient aucun objet : aucune montre, aucun cadran/);
     expect(watch.exclude).toMatch(/watch.*wristwatch.*dial/);
-    // Les familles dont un objet du décor ressemblerait au produit l'excluent aussi.
     for (const id of ["cosmetics", "beauty_tools", "tech"]) expect(STILL_LIFE[id][0].exclude, id).toBeTruthy();
-    // Consigne : ni les matières du produit (« acier poli »), ni son nom.
     const p = loadProject(pid);
     const b = buildBrief(p, { kind: "ambiance", support: "site", aspect: "4:5" });
-    const prompt = generationPrompt(b);
-    expect(prompt).not.toMatch(/matières et couleurs du produit|Sérum|Éclat/i);
     // Projet de test : un soin du visage → le flacon du produit est exclu de l'univers.
     expect(b.fr?.sceneExclude).toMatch(/skincare bottle/);
-    // Négatif technique transmis à Qwen.
-    const body = qwenImageBody({ model: "qwen-image-3.0-pro", prompt, aspect: "4:5", references: [], people: false, noText: true, extraNegative: watch.exclude });
+    expect(generationPrompt(b)).not.toMatch(/matières et couleurs du produit|Sérum|Éclat/i);
+    const body = qwenImageBody({ model: "qwen-image-3.0-pro", prompt: "x", aspect: "4:5", references: [], people: false, noText: true, extraNegative: watch.exclude });
     expect(body.parameters.negative_prompt).toMatch(/monogram, initials, stamp, watch, wristwatch/);
   });
 

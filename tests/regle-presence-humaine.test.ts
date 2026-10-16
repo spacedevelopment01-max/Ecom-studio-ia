@@ -90,7 +90,7 @@ describe("règle de présence humaine", async () => {
     for (const kind of ["lifestyle", "usage_scene", "ambiance", "site_image"] as const) {
       const b = buildBrief(tech, { kind, variant: 0 });
       expect(b.people).toBe(false);
-      expect(generationPrompt(b)).toMatch(/Scène sans aucune présence humaine/);
+      expect(generationPrompt(b)).toMatch(/Scène sans aucune présence humaine|aucune personne\. Aucun objet supplémentaire/);
       expect(withoutClause(generationPrompt(b))).not.toMatch(ASKS_PERSON);
       for (const q of b.queries) expect(mentionsPerson(q), q).toBe(false);
     }
