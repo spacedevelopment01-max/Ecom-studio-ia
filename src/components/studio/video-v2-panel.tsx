@@ -12,7 +12,7 @@ import { api, Badge, Button, Card, Field, Input, Modal, Select, Textarea, Toggle
 import { useProject } from "./project-context";
 import { JobProgress, SectionTitle, useActive } from "./common";
 import { useT } from "../i18n";
-import { PlanRequired, useCreationLocked } from "../billing-client";
+import { PlanRequired, useBudgetPct, useCreationLocked } from "../billing-client";
 import { AD_VIDEO_INTENTS } from "@/lib/media/bank";
 import { MusicChoice } from "./music-choice";
 
@@ -31,12 +31,12 @@ const KINDS: [string, string, string][] = [
 ];
 const AD_KINDS = new Set<string>(AD_VIDEO_INTENTS);
 const PLATFORMS: [string, string][] = [["reels", "Instagram Reels (9:16)"], ["tiktok", "TikTok (9:16)"], ["shorts", "YouTube Shorts (9:16)"], ["meta_feed", "Facebook / Instagram (4:5)"], ["youtube", "YouTube (16:9)"], ["shop_page", "Boutique (16:9)"], ["website", "Site (16:9)"], ["linkedin", "LinkedIn"]];
-const eur = (micro: number) => `${(micro / 1_000_000).toFixed(2).replace(".", ",")} €`;
 
 /** `scope` : « ad » (Publicités : publicité vidéo, UGC) ou « organic » (Publications : contenus des réseaux). */
 export function VideoV2Panel({ scope }: { scope?: "ad" | "organic" } = {}) {
   const { id, data } = useProject();
   const t = useT();
+  const budget = useBudgetPct();
   const toast = useToast();
   const locked = useCreationLocked();
   const services = data?.business === "services";
@@ -99,12 +99,12 @@ export function VideoV2Panel({ scope }: { scope?: "ad" | "organic" } = {}) {
       <AiWait busy={busy === "plan"} label={t("Préparation du plan de la vidéo et de l'estimation…", "Preparing the video plan and estimate…")} waitKey="video-plan" expectedMs={20000} className="mt-3" />
       {plan && (
         <div className="mt-4 rounded-xl border border-line p-4 text-sm">
-          <p className="font-medium">{t(`${plan.shots.length} plan(s) · coût estimé : ${eur(plan.estimateMicro)}`, `${plan.shots.length} shot(s) · estimated cost: ${eur(plan.estimateMicro)}`)}</p>
+          <p className="font-medium">{t(`${plan.shots.length} plan(s) · coût probable : ${budget.label(plan.estimateMicro)}`, `${plan.shots.length} shot(s) · likely cost: ${budget.label(plan.estimateMicro)}`)}</p>
           <ul className="mt-2 grid gap-1 text-xs text-ink-2">
-            {plan.shots.map((s) => <li key={s.id}>{s.part} · {s.durationS} s · {s.subject} — {s.paid ? t(`plan généré (${eur(s.estimateMicro)})`, `generated shot (${eur(s.estimateMicro)})`) : t("montage local (gratuit)", "local edit (free)")}</li>)}
+            {plan.shots.map((s) => <li key={s.id}>{s.part} · {s.durationS} s · {s.subject} — {s.paid ? t(`plan généré (${budget.short(s.estimateMicro)})`, `generated shot (${budget.short(s.estimateMicro)})`) : t("montage local (gratuit)", "local edit (free)")}</li>)}
           </ul>
           {plan.notes.length > 0 && <p className="mt-2 text-xs text-muted">{plan.notes.slice(0, 3).join(" · ")}</p>}
-          <Button className="mt-3" icon={<Play className="size-4" />} loading={busy === "go"} onClick={produce}>{plan.estimateMicro > 0 && form.allowGeneration && aiVideo ? t(`J'accepte ${eur(plan.estimateMicro)} au plus : produire`, `I accept up to ${eur(plan.estimateMicro)}: produce`) : t("Produire (montage local, gratuit)", "Produce (local edit, free)")}</Button>
+          <Button className="mt-3" icon={<Play className="size-4" />} loading={busy === "go"} onClick={produce}>{plan.estimateMicro > 0 && form.allowGeneration && aiVideo ? t(`J'accepte (coût probable ${budget.label(plan.estimateMicro)}) : produire`, `I accept (likely cost ${budget.label(plan.estimateMicro)}): produce`) : t("Produire (montage local, gratuit)", "Produce (local edit, free)")}</Button>
         </div>
       )}
       {videos.length > 0 && (

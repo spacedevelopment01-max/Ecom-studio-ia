@@ -15,7 +15,8 @@ import { longTermStrategy } from "@/lib/social-v2/strategy-long";
 import { verifiedFacts } from "@/lib/seo-v2/facts";
 import { mainCity } from "@/lib/seo-v2/keywords";
 import { PLATFORM_SPECS, PLATFORMS } from "@/lib/social-v2/platforms";
-import { estimateProduction, postsOfPlan, produceBatch } from "@/lib/social-v2/production";
+import { estimateProduction, postsOfPlan, probableOf, produceBatch } from "@/lib/social-v2/production";
+import { budgetPctOf, capPctToMicro } from "@/lib/ai/budget-pct";
 import { realSocialDeps } from "@/lib/social-v2/deps";
 import { schedulePosts, setPlanPaused, unschedule } from "@/lib/social-v2/scheduler";
 import { checkPost, varietyReport } from "@/lib/social-v2/quality";
@@ -109,13 +110,13 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       }),
       z.object({ action: z.literal("ask"), text: z.string().min(5).max(600) }),
       z.object({ action: z.literal("estimate"), ids, planId: z.string().max(80).optional(), allowPaid: z.boolean().default(false), aiImages: z.number().int().min(0).max(60).nullable().optional(), aiBackground: z.boolean().optional(), replace: z.boolean().optional() }),
-      z.object({ action: z.literal("produce"), ids, planId: z.string().max(80).optional(), allowPaid: z.boolean().default(false), maxCostEur: z.number().min(0).max(100).default(0), approvedEstimateMicro: z.number().int().min(0).nullable().optional(), distinctImages: z.number().int().min(1).max(60).nullable().optional(), aiImages: z.number().int().min(0).max(60).nullable().optional(), aiBackground: z.boolean().optional(), replace: z.boolean().optional() }),
+      z.object({ action: z.literal("produce"), ids, planId: z.string().max(80).optional(), allowPaid: z.boolean().default(false), maxCostEur: z.number().min(0).max(100).default(0), /** Plafond saisi par le client en % de son budget IA (prioritaire sur maxCostEur). */ maxCostPct: z.number().min(0).max(100).optional(), approvedEstimateMicro: z.number().int().min(0).nullable().optional(), distinctImages: z.number().int().min(1).max(60).nullable().optional(), aiImages: z.number().int().min(0).max(60).nullable().optional(), aiBackground: z.boolean().optional(), replace: z.boolean().optional() }),
       z.object({ action: z.literal("approve"), ids, planId: z.string().max(80).optional(), from: z.number().optional(), to: z.number().optional() }),
       z.object({ action: z.literal("schedule"), ids, planId: z.string().max(80).optional() }),
       z.object({ action: z.literal("unschedule"), ids }),
       z.object({ action: z.literal("pause"), planId: z.string().max(80) }),
       z.object({ action: z.literal("resume"), planId: z.string().max(80) }),
-      z.object({ action: z.literal("edit"), text: z.string().min(3).max(600), confirm: z.boolean().optional(), maxCostEur: z.number().min(0).max(20).optional(), planId: z.string().max(80).optional() }),
+      z.object({ action: z.literal("edit"), text: z.string().min(3).max(600), confirm: z.boolean().optional(), maxCostEur: z.number().min(0).max(20).optional(), maxCostPct: z.number().min(0).max(100).optional(), planId: z.string().max(80).optional() }),
       z.object({ action: z.literal("automation"), kind: z.enum(AUTOMATION_KINDS), config: z.record(z.string(), z.unknown()).optional() }),
       z.object({ action: z.literal("quote_one"), kind: z.enum(["image", "video"]), mode: z.enum(["free", "ai_image", "ai_post", "ai_video"]), networks: z.number().int().min(1).max(6) }),
       z.object({
@@ -188,12 +189,15 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       const r = planFromAsk(p, b.text, { lang: p.settings.language === "en" ? "en" : "fr", maxDays: PLANS[plan].calendarDays, maxPerDay: PLANS[plan].postsPerDay });
       return ok(r);
     }
-    case "estimate":
-      return ok(estimateProduction(p, own(b.ids, b.planId), { estimate: realSocialDeps(null, p, aiActiveFor(p.userId, p.id)).estimate, aiActive: aiActiveFor(p.userId, p.id) }, { allowPaid: b.allowPaid, aiImages: b.aiImages ?? null, aiBackground: !!b.aiBackground, replace: !!b.replace }));
+    case "estimate": {
+      // Coût probable et plafond conseillé, en % du budget IA du mois (jamais en euros).
+      const est = estimateProduction(p, own(b.ids, b.planId), realSocialDeps(null, p, aiActiveFor(p.userId, p.id)), { allowPaid: b.allowPaid, aiImages: b.aiImages ?? null, aiBackground: !!b.aiBackground, replace: !!b.replace });
+      return ok({ ...est, pct: budgetPctOf(p.userId, est.estimateMicro, p.id), capPct: budgetPctOf(p.userId, est.capMicro, p.id) });
+    }
     case "produce": {
       const list = own(b.ids, b.planId);
       if (b.allowPaid && aiActiveFor(p.userId, p.id)) {
-        const job = enqueue({ userId: user.id, projectId: p.id, type: "social.v2.produce", label: L("Production des publications", "Producing posts"), payload: { projectId: p.id, ids: list, allowPaid: true, maxCostEur: b.maxCostEur, approvedEstimateMicro: b.approvedEstimateMicro ?? null, distinctImages: b.distinctImages ?? null, aiImages: b.aiImages ?? null, aiBackground: !!b.aiBackground, replace: !!b.replace } });
+        const job = enqueue({ userId: user.id, projectId: p.id, type: "social.v2.produce", label: L("Production des publications", "Producing posts"), payload: { projectId: p.id, ids: list, allowPaid: true, maxCostEur: b.maxCostPct != null ? capPctToMicro(p.userId, b.maxCostPct, p.id) / 1e6 : b.maxCostEur, approvedEstimateMicro: b.approvedEstimateMicro ?? null, distinctImages: b.distinctImages ?? null, aiImages: b.aiImages ?? null, aiBackground: !!b.aiBackground, replace: !!b.replace } });
         return ok({ jobId: job.id });
       }
       // Gratuit (bibliothèque, rendu local) : immédiat, par lots de 30.
@@ -215,7 +219,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       planOwned(b.planId);
       return ok({ ok: true, ...setPlanPaused(b.planId, b.action === "pause") });
     case "edit": {
-      const r = await applySocialEdit(p, b.text, realSocialDeps(null, p, aiActiveFor(p.userId, p.id)), { confirm: b.confirm, maxCostEur: b.maxCostEur, planId: b.planId });
+      const r = await applySocialEdit(p, b.text, realSocialDeps(null, p, aiActiveFor(p.userId, p.id)), { confirm: b.confirm, maxCostEur: b.maxCostPct != null ? capPctToMicro(p.userId, b.maxCostPct, p.id) / 1e6 : b.maxCostEur, planId: b.planId });
       // Coût d'une retouche IA : en % du budget IA du mois, jamais en euros.
       const { estimateMicro, ...rest } = r;
       return ok(estimateMicro != null ? { ...rest, cost: budgetShare(p, estimateMicro) } : rest);
@@ -224,7 +228,12 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       requirePlan(user, p.id);
       return ok({ id: createAutomation(p.id, b.kind, b.config ?? {}) });
     case "quote_one":
-      return ok({ ai: aiActiveFor(p.userId, p.id), estimateMicro: quoteOne(b.kind, b.mode, b.networks, realSocialDeps(null, p, aiActiveFor(p.userId, p.id)).estimate) });
+    {
+      // Devis au coût probable (un essai), montré en % du budget IA du mois ; jamais en euros.
+      const deps = realSocialDeps(null, p, aiActiveFor(p.userId, p.id));
+      const estimateMicro = quoteOne(b.kind, b.mode, b.networks, (k) => probableOf(deps, k));
+      return ok({ ai: aiActiveFor(p.userId, p.id), estimateMicro, pct: budgetPctOf(p.userId, estimateMicro, p.id) });
+    }
     case "create_one": {
       // Une publication (image ou vidéo) : gratuite (reprise d'une image IA déjà validée, sinon en attente — jamais un
       // gabarit), ou payante seulement avec l'IA active et le prix accepté.
@@ -234,7 +243,9 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       if ((b.mode === "ai_image" || b.mode === "ai_post") && b.kind !== "image") throw new HttpError(400, L("Mode réservé aux images.", "Mode for images only."));
       const ai = aiActiveFor(p.userId, p.id);
       const deps = realSocialDeps(null, p, ai);
-      const quote = quoteOne(b.kind, b.mode, b.platforms.length, deps.estimate);
+      const quote = quoteOne(b.kind, b.mode, b.platforms.length, (k) => probableOf(deps, k));
+      // Plafond de la tâche (reprises comprises) : seul le coût réel est débité.
+      const capOne = quoteOne(b.kind, b.mode, b.platforms.length, deps.estimate);
       if (b.mode !== "free") {
         if (!ai) throw new HttpError(402, L("L'IA n'est pas active pour ce projet (forfait Découverte, budget IA épuisé ou fournisseur désactivé) : choisissez la version gratuite.", "AI isn't active for this project (Discovery plan, AI budget used up or provider disabled): choose the free version."));
         if (b.approvedEstimateMicro == null || b.approvedEstimateMicro < quote) throw new HttpError(409, L("Prix à accepter avant de lancer (il a pu changer) : vérifiez-le puis relancez.", "Price to accept before starting (it may have changed): check it and start again."));
@@ -245,7 +256,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       const one = createOnePost(p, { kind: b.kind, date: b.date, time: b.time, timezone: b.timezone, platforms: b.platforms, pillar: b.pillar, headline: b.headline, lang: p.settings.language === "en" ? "en" : "fr", subject: b.subject ?? null, request: b.request ?? null });
       const params = produceParams(b.kind, b.mode);
       if (params.allowPaid) {
-        const job = enqueue({ userId: user.id, projectId: p.id, type: "social.v2.produce", label: b.kind === "video" ? L("Publication vidéo", "Video post") : L("Publication image", "Image post"), payload: { projectId: p.id, ids: one.ids, allowPaid: true, maxCostEur: quote / 1e6, approvedEstimateMicro: quote, aiImages: params.aiImages ?? null, aiBackground: !!params.aiBackground } });
+        const job = enqueue({ userId: user.id, projectId: p.id, type: "social.v2.produce", label: b.kind === "video" ? L("Publication vidéo", "Video post") : L("Publication image", "Image post"), payload: { projectId: p.id, ids: one.ids, allowPaid: true, maxCostEur: capOne / 1e6, approvedEstimateMicro: quote, aiImages: params.aiImages ?? null, aiBackground: !!params.aiBackground } });
         return ok({ ...one, jobId: job.id, estimateMicro: quote });
       }
       const produced = await produceBatch(p, one.ids, realSocialDeps(null, p, false), { allowPaid: false, maxCostEur: 0, batchSize: 6 });

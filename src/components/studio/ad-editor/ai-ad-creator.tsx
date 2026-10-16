@@ -10,7 +10,7 @@ import { api, Button, Card, cx, useApi, useToast } from "../../ui";
 import { useLang, useT } from "../../i18n";
 import { useProject } from "../project-context";
 import { JobProgress, SectionTitle, useActive } from "../common";
-import { formatEur } from "../../billing-client";
+import { useBudgetPct } from "../../billing-client";
 import { AiImageActions } from "../ai-image-actions";
 import { SubjectPicker, subjectChoice, type SubjectView } from "../subject-picker";
 
@@ -22,12 +22,12 @@ const ASPECTS = [
   { aspect: "9:16", fr: "Story 9:16", en: "Story 9:16" },
   { aspect: "16:9", fr: "Paysage 16:9", en: "Landscape 16:9" },
 ] as const;
-const eur = (micro: number, lang: "fr" | "en") => formatEur(Math.max(0.01, Math.ceil(micro / 1e4) / 100), lang);
 
 export function AiAdCreator({ onDone }: { onDone?: () => void }) {
   const { id } = useProject();
   const t = useT();
   const { lang } = useLang();
+  const budget = useBudgetPct();
   const toast = useToast();
   const { data, reload } = useApi<Campaigns>(`/api/projects/${id}/campaigns/v2`);
   const jobs = useActive("image.ai_post");
@@ -89,10 +89,10 @@ export function AiAdCreator({ onDone }: { onDone?: () => void }) {
               </div>
             </div>
             <div className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm">{quote == null ? t("Calcul du prix…", "Calculating the price…") : t(<>Coût maximal : <strong>{eur(quote, lang)}</strong> (3 essais au plus), pris sur le budget IA du projet.</>, <>Maximum cost: <strong>{eur(quote, lang)}</strong> (3 attempts at most), taken from the project's AI budget.</>)}</p>
+              <p className="text-sm">{quote == null ? t("Calcul du prix…", "Calculating the price…") : t(<>Coût probable : <strong>{budget.label(quote)}</strong>. Si le contrôle demande un nouvel essai, il est décompté et vous êtes prévenu.</>, <>Likely cost: <strong>{budget.label(quote)}</strong>. If the check needs another attempt, it is counted and you are told.</>)}</p>
               <Button onClick={create} loading={busy} disabled={busy || running || quote == null || !subjects.length} icon={<Wand2 className="size-4" />} data-ai-ad-submit>
                 {t("Créer la publicité", "Create the ad")}
-                {quote != null ? ` · ${eur(quote, lang)}` : ""}
+                {quote != null ? ` · ${budget.label(quote)}` : ""}
               </Button>
             </div>
           </>

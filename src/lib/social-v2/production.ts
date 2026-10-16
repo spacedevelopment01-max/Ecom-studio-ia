@@ -16,12 +16,17 @@ import { isAutoUsable } from "../quality/usable";
 import { EUR } from "../billing";
 import { afterEdit } from "./approval";
 import { JobCancelled, JobPaused } from "../jobs";
-import type { MediaResult, PostBrief, SocialDeps } from "./deps";
+import type { MediaResult, PostBrief, SocialCostKind, SocialDeps } from "./deps";
+import { budgetPctText, retryNotice } from "../ai/budget-pct";
 import { setVisualNote } from "./plan-visuals";
 
 export type ProduceMethod = "library" | "local" | "image_v2" | "ads_v2" | "video_v2" | "ai_post" | "none";
+/** Coût probable d'une production (devis montré au client) ; à défaut, le plafond. */
+export const probableOf = (deps: Pick<SocialDeps, "estimate" | "probable">, kind: SocialCostKind) => (deps.probable ? deps.probable(kind) : deps.estimate(kind));
+
 export type EstimateLine = { postId: string; method: ProduceMethod; paid: boolean; estimateMicro: number };
-export type ProductionEstimate = { posts: number; free: number; paid: number; estimateMicro: number; lines: EstimateLine[]; notes: string[] };
+/** `estimateMicro` : coût probable (devis montré en % du budget) ; `capMicro` : plafond conseillé (reprises comprises). */
+export type ProductionEstimate = { posts: number; free: number; paid: number; estimateMicro: number; capMicro: number; lines: EstimateLine[]; notes: string[] };
 
 type Row = PostBrief & { project_id: string; plan_id: string | null; media: string; status: string; user_edited: number; brief: string; engine: string };
 
@@ -77,7 +82,7 @@ export function aiImageIds(rows: { id: string; format: string }[], n: number | n
 }
 
 /** Estimation AVANT tout envoi : nombre de contenus, part gratuite, part payante et coût estimé. */
-export function estimateProduction(p: Project, ids: string[], deps: Pick<SocialDeps, "estimate" | "aiActive">, opts: { allowPaid: boolean; aiImages?: number | null; aiBackground?: boolean; replace?: boolean }): ProductionEstimate {
+export function estimateProduction(p: Project, ids: string[], deps: Pick<SocialDeps, "estimate" | "probable" | "aiActive">, opts: { allowPaid: boolean; aiImages?: number | null; aiBackground?: boolean; replace?: boolean }): ProductionEstimate {
   const rows = selectRows(p.id, ids).filter((r) => PRODUCIBLE.has(r.status) && (opts.replace || r.media === "[]"));
   const pools = { image: libraryPool(p.id, "image"), video: libraryPool(p.id, "video") };
   const allowPaid = opts.allowPaid && deps.aiActive;
@@ -85,15 +90,16 @@ export function estimateProduction(p: Project, ids: string[], deps: Pick<SocialD
   const lines = rows.map((r) => {
     // Visuels IA demandés pour N publications : seules celles-là sont payantes, les autres restent gratuites.
     const m = pick(r, { allowPaid: allowPaid && (!opts.aiImages || aiIds.has(r.id)), ai: aiIds.has(r.id), bg: opts.aiBackground }, pools);
-    const est = m.paid ? deps.estimate(m.method === "video_v2" ? "video" : m.method === "ads_v2" ? "ad" : m.method === "ai_post" ? "ai_post" : "image") : 0;
-    return { postId: r.id, method: m.method, paid: m.paid, estimateMicro: est };
+    const kind = m.method === "video_v2" ? "video" : m.method === "ads_v2" ? "ad" : m.method === "ai_post" ? "ai_post" : "image";
+    return { postId: r.id, method: m.method, paid: m.paid, estimateMicro: m.paid ? probableOf(deps, kind) : 0, capMicro: m.paid ? deps.estimate(kind) : 0 };
   });
   const notes: string[] = [];
   if (!deps.aiActive) notes.push("IA non disponible pour ce compte : aucune image de publication ne peut être créée (elles sont toutes faites par l'IA) ; seules les images IA déjà validées du projet peuvent être reprises");
-  return { posts: lines.length, free: lines.filter((l) => !l.paid).length, paid: lines.filter((l) => l.paid).length, estimateMicro: lines.reduce((s, l) => s + l.estimateMicro, 0), lines, notes };
+  return { posts: lines.length, free: lines.filter((l) => !l.paid).length, paid: lines.filter((l) => l.paid).length, estimateMicro: lines.reduce((s, l) => s + l.estimateMicro, 0), capMicro: lines.reduce((s, l) => s + l.capMicro, 0), lines: lines.map(({ capMicro: _c, ...l }) => l), notes };
 }
 
-export type ProductionResult = { produced: number; skipped: number; failed: number; spentMicro: number; stoppedByCap: boolean; notes: string[]; byMethod: Record<string, number> };
+/** `notice` : message au client (reprise débitée, annoncée en % du budget IA). */
+export type ProductionResult = { produced: number; skipped: number; failed: number; spentMicro: number; stoppedByCap: boolean; notes: string[]; byMethod: Record<string, number>; notice?: string };
 
 /**
  * Production d'un lot. `approvedEstimateMicro` : estimation vue et acceptée par le client — une production
@@ -127,7 +133,7 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
         const est = m.paid ? deps.estimate(kind) : 0;
         if (m.paid && res.spentMicro + est > cap) {
           res.stoppedByCap = true;
-          notes.push(`plafond atteint (${(cap / EUR).toFixed(2)} €) : production arrêtée, les publications suivantes attendent leur visuel IA (aucun gabarit à la place)`);
+          notes.push(`plafond atteint (${budgetPctText(p.userId, cap, p.id)}) : production arrêtée, les publications suivantes attendent leur visuel IA (aucun gabarit à la place)`);
           out = null;
         } else {
           const opts = { allowPaid: m.paid, maxCostEur: Math.max(0, (cap - res.spentMicro) / EUR) };
@@ -163,6 +169,9 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
     run("UPDATE posts SET user_edited = ? WHERE id = ?", r.user_edited, r.id);
     res.produced++;
     res.byMethod[out.by] = (res.byMethod[out.by] ?? 0) + 1;
+    // Reprise payée (1er essai refusé par le contrôle) : annoncée au client, jamais en silence.
+    const notice = retryNotice(p.userId, p.id, out.attempts ?? 1, out.costMicro);
+    if (notice) res.notice = res.notice ? `${res.notice} ${notice}` : notice;
   }
   o.progress?.(rows.length, rows.length);
   return res;

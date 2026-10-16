@@ -13,6 +13,7 @@ import { addUsage, getAsset, removeUsages } from "../library";
 import type { Project } from "../projects";
 import { lintClaims } from "../ai/tasks";
 import { EUR } from "../billing";
+import { budgetPctText } from "../ai/budget-pct";
 import { parseSocialAsk } from "./intent";
 import { createPlanV2, type PlanRequest } from "./planner";
 import { adaptForPlatform, nativeFormatFor, PLATFORMS, type Platform, type PostFormat } from "./platforms";
@@ -269,11 +270,10 @@ export async function applySocialEdit(p: Project, text: string, deps: SocialDeps
   }
   // Réécriture IA : seulement les publications visées, estimée, confirmée, plafonnée.
   if (!deps.aiActive) return { ...base, applied: false, by: "none", needsAi: true, summary: L("Cette retouche demande l'IA, non disponible pour ce compte : modifiez les textes directement.", "This edit needs AI, which isn't available for this account: edit the texts directly.") };
-  // Coût probable montré au client (en % de son budget IA par la route) : un essai par publication, sans la marge
-  // de sécurité de l'estimation ; le plafond, lui, garde la marge.
-  const estimate = Math.round((plan.ids.length * deps.estimate("rewrite")) / 1.2);
+  // Devis au coût probable (un essai par publication), dit en % du budget IA du mois ; plafond : reprises comprises.
+  const estimate = plan.ids.length * (deps.probable ? deps.probable("rewrite") : deps.estimate("rewrite"));
   const cap = Math.round((o.maxCostEur ?? Math.max(1, (plan.ids.length * deps.estimate("rewrite")) / EUR)) * EUR);
-  if (!o.confirm) return { ...base, applied: false, by: "none", needsConfirm: true, confirmKind: "ai", estimateMicro: estimate, summary: L(`${plan.summary} : confirmez pour lancer`, `${plan.summary}: confirm to start`) };
+  if (!o.confirm) return { ...base, applied: false, by: "none", needsConfirm: true, confirmKind: "ai", estimateMicro: estimate, summary: L(`${plan.summary} — ${budgetPctText(p.userId, estimate, p.id)} : confirmez pour lancer`, `${plan.summary} — ${budgetPctText(p.userId, estimate, p.id)}: confirm to start`) };
   let spent = 0;
   const refused: string[] = [];
   let done = 0;

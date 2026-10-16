@@ -6,7 +6,8 @@ import { enqueue } from "@/lib/jobs";
 import { L } from "@/lib/i18n-server";
 import { aiActiveFor } from "@/lib/ai/access";
 import { projectRights } from "@/lib/plan-gates";
-import { estimateMicro } from "@/lib/ai/estimate";
+import { aiPostProbableMicro, estimateMicro } from "@/lib/ai/estimate";
+import { budgetPctOf } from "@/lib/ai/budget-pct";
 import { aiPostMaxMicro, wanClipMaxMicro } from "@/lib/ai/media-providers";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { resolveSubject, subjectOptions } from "@/lib/creative-subject";
@@ -26,8 +27,16 @@ const Req = z.object({
   music: z.boolean().default(true),
 });
 
-const quote = (p: Project, r: ThreeScenesRequest) =>
-  quoteScenes(p, r, { imageMaxMicro: aiPostMaxMicro(), clipMaxMicro: (s) => wanClipMaxMicro(s), textMicro: Math.round(estimateMicro("blog") / 10), videosRight: projectRights(p.id)?.videos ?? null, aiActive: aiActiveFor(p.userId, p.id) });
+/**
+ * Devis au COÛT PROBABLE (une image et un plan par scène, un essai), montré en % du budget IA du mois ; `capMicro` :
+ * plafond de la tâche (coûts maximaux, reprises comprises), jamais montré comme prix.
+ */
+const quote = (p: Project, r: ThreeScenesRequest) => {
+  const o = { clipMaxMicro: (s: number) => wanClipMaxMicro(s), textMicro: Math.round(estimateMicro("blog") / 10), videosRight: projectRights(p.id)?.videos ?? null, aiActive: aiActiveFor(p.userId, p.id) };
+  const max = quoteScenes(p, r, { ...o, imageMaxMicro: aiPostMaxMicro() });
+  const probable = quoteScenes(p, r, { ...o, imageMaxMicro: aiPostMaxMicro() == null ? null : aiPostProbableMicro() });
+  return { ...probable, capMicro: Math.max(max.estimateMicro, probable.estimateMicro), pct: budgetPctOf(p.userId, probable.estimateMicro, p.id) };
+};
 
 /** Vidéos en scènes déjà faites (création guidée et création du projet), avec leur sujet et leur demande. */
 function list(projectId: string) {
@@ -55,6 +64,6 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   if (!q.allowed) throw new HttpError(402, q.reason ?? L("Vidéo impossible pour ce projet.", "Video not possible for this project."));
   if (q.estimateMicro > 0 && (b.approvedEstimateMicro == null || b.approvedEstimateMicro < q.estimateMicro)) throw new HttpError(409, L("Prix à accepter avant de lancer (il a pu changer) : vérifiez-le puis relancez.", "Price to accept before starting (it may have changed): check it and start again."));
   if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'video.scenes' AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Une vidéo est déjà en préparation.", "A video is already being prepared."));
-  const job = enqueue({ userId: user.id, projectId: p.id, type: "video.scenes", label: b.as === "ad" ? L("Publicité vidéo", "Video ad") : L("Publication vidéo", "Video post"), payload: { projectId: p.id, costCapMicro: q.estimateMicro, request: { ...r, mode: q.mode } } });
+  const job = enqueue({ userId: user.id, projectId: p.id, type: "video.scenes", label: b.as === "ad" ? L("Publicité vidéo", "Video ad") : L("Publication vidéo", "Video post"), payload: { projectId: p.id, costCapMicro: q.capMicro, request: { ...r, mode: q.mode } } });
   return ok({ jobId: job.id, ...q });
 });

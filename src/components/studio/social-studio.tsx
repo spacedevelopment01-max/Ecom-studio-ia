@@ -13,6 +13,7 @@ import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 import { ArrowDown, ArrowUp, BarChart3, Bot, Gauge, CalendarDays, CalendarPlus, Clapperboard, ImageIcon, Check, ChevronLeft, ChevronRight, Copy, ListChecks, MessageSquare, Pause, Pencil, Play, Plus, Send, Sparkles, Target, Trash2, TriangleAlert, Type, Wand2, X } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, Field, Input, Modal, Select, Spinner, Textarea, useApi, useToast } from "../ui";
 import { useLang, useT } from "../i18n";
+import { useBudgetPct } from "../billing-client";
 import { useProject } from "./project-context";
 import { AssetThumb, JobProgress, MediaPicker, useActive, type AssetView } from "./common";
 import { AiWait } from "../wait-time";
@@ -772,7 +773,7 @@ function CalendarPanel({ data, reload, onOpen, onRange }: { data: Data; reload: 
               {pending.kind !== "ai"
                 ? pending.summary
                 : pending.enough
-                  ? t(`Cette retouche utilise l'IA (${pending.summary}) : ≈ ${pending.pct != null && pending.pct < 1 ? "< 1" : Math.round(pending.pct ?? 0)} % de votre budget IA.`, `This edit uses AI (${pending.summary}): ≈ ${pending.pct != null && pending.pct < 1 ? "< 1" : Math.round(pending.pct ?? 0)}% of your AI budget.`)
+                  ? t(`Cette retouche utilise l'IA : ${pending.summary}`, `This edit uses AI: ${pending.summary}`)
                   : t(`Cette retouche utilise l'IA (≈ ${Math.round(pending.pct ?? 0)} % de votre budget IA) : votre budget restant ne suffit pas. Visez moins de publications (ex. « les 3 prochaines »).`, `This edit uses AI (≈ ${Math.round(pending.pct ?? 0)}% of your AI budget): your remaining budget isn't enough. Target fewer posts (e.g. "the next 3").`)}
             </p>
             <div className="flex flex-wrap gap-2">
@@ -1116,7 +1117,8 @@ function PostVisualMaker({ postId, ai, hasMedia, onDone }: { postId: string; ai:
   const toast = useToast();
   const [mode, setMode] = useState<VisualMode>("free");
   const [busy, setBusy] = useState(false);
-  const [est, setEst] = useState<{ estimateMicro: number; paid: number; notes: string[] } | null>(null);
+  const [est, setEst] = useState<{ estimateMicro: number; capMicro?: number; paid: number; notes: string[] } | null>(null);
+  const budget = useBudgetPct();
   const url = `/api/projects/${id}/social/v2`;
   const go = async (fn: () => Promise<void>) => {
     setBusy(true);
@@ -1139,7 +1141,8 @@ function PostVisualMaker({ postId, ai, hasMedia, onDone }: { postId: string; ai:
   });
   const accept = () => go(async () => {
     if (!est) return;
-    const cap = Math.ceil(est.estimateMicro / 10_000) / 100;
+    // Plafond de la tâche : reprises comprises (seul le coût réel est décompté).
+    const cap = Math.ceil((est.capMicro ?? est.estimateMicro) / 10_000) / 100;
     await api(url, { body: { action: "produce", ids: [postId], replace: true, ...visualParams(mode), maxCostEur: cap, approvedEstimateMicro: est.estimateMicro } });
     toast("ok", t("C'est lancé : le visuel arrive dans quelques minutes (suivi en haut de l'onglet).", "Started: the visual arrives in a few minutes (progress at the top of the tab)."));
     setEst(null);
@@ -1154,7 +1157,7 @@ function PostVisualMaker({ postId, ai, hasMedia, onDone }: { postId: string; ai:
         <div><Button size="sm" variant="signal" loading={busy} disabled={mode !== "free" && !ai} onClick={make} data-action="post-visual">{mode === "free" ? t("Créer le visuel (gratuit)", "Create the visual (free)") : t("Voir le prix", "See the price")}</Button></div>
       ) : (
         <div className="flex flex-wrap items-center gap-2 text-sm">
-          <span>{t(`Prix estimé : ${(est.estimateMicro / 1e6).toFixed(2)} € au plus.`, `Estimated price: €${(est.estimateMicro / 1e6).toFixed(2)} at most.`)}</span>
+          <span>{t(`Coût probable : ${budget.label(est.estimateMicro)} (une reprise éventuelle est décomptée et annoncée).`, `Likely cost: ${budget.label(est.estimateMicro)} (any redo is counted and announced).`)}</span>
           {est.notes.map((n) => <span key={n} className="text-warn">{n}</span>)}
           <Button size="sm" variant="signal" loading={busy} disabled={!est.paid} onClick={accept} data-action="post-visual-accept">{t("J'accepte et je lance", "I accept, start")}</Button>
           <Button size="sm" variant="ghost" onClick={() => setEst(null)}>{t("Annuler", "Cancel")}</Button>

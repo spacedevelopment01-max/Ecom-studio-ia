@@ -112,7 +112,7 @@ export function ContentPanel({ types, title }: { types: string[]; title?: string
       else if (r.docKey) {
         await reload();
         setOpen(r.docKey);
-        toast("ok", t("Texte rédigé à partir de vos informations (sans IA, 0 €). Complétez les passages marqués « À compléter ».", "Text written from your information (no AI, €0). Fill in the parts marked “To complete”."));
+        toast("ok", t("Texte rédigé à partir de vos informations (sans IA, gratuit). Complétez les passages marqués « À compléter ».", "Text written from your information (no AI, free). Fill in the parts marked “To complete”."));
       }
     } catch (e) {
       toast("bad", (e as Error).message);
@@ -164,7 +164,7 @@ export function ContentPanel({ types, title }: { types: string[]; title?: string
           <Input id="cnt-ask" value={ask} onChange={(e) => setAsk(e.target.value)} placeholder={t("Ex. rassurer sur l'entretien", "E.g. reassure about care")} />
         </Field>
         <div className="flex items-end">
-          <Button variant="signal" icon={<Sparkles className="size-4" />} loading={busy || !!job} onClick={generate}>{data.ai ? t("Rédiger", "Write") : t("Rédiger (sans IA, 0 €)", "Write (no AI, €0)")}</Button>
+          <Button variant="signal" icon={<Sparkles className="size-4" />} loading={busy || !!job} onClick={generate}>{data.ai ? t("Rédiger", "Write") : t("Rédiger (sans IA, gratuit)", "Write (no AI, free)")}</Button>
         </div>
       </div>
       {(() => {

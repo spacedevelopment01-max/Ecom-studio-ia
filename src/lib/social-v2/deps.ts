@@ -18,12 +18,13 @@ import { validCutouts } from "../engine/cutouts";
 import { isAutoUsable } from "../quality/usable";
 import { publishPost, alreadyPublished, type Connection, type PostRow, type PublishResult } from "../social/publish";
 import { platformSpec } from "./platforms";
-import { estimateMicro } from "../ai/estimate";
+import { aiPostProbableMicro, capMicro, estimateMicro } from "../ai/estimate";
 import { aiPostMaxMicro } from "../ai/media-providers";
 import type { CreativeSubject } from "../creative-subject";
 
 export type MediaBy = "library" | "local" | "image_v2" | "ads_v2" | "video_v2" | "ai_post";
-export type MediaResult = { assetId: string | null; costMicro: number; by: MediaBy; note?: string };
+/** `attempts` : essais payés pour obtenir ce visuel (plus d'un : la reprise est annoncée au client). */
+export type MediaResult = { assetId: string | null; costMicro: number; by: MediaBy; note?: string; attempts?: number };
 export type PostBrief = {
   id: string;
   network: string;
@@ -53,9 +54,13 @@ export type SocialDeps = {
   local: (p: Project, post: PostBrief, o?: { background?: Asset | null }) => Promise<MediaResult>;
   /** Réécriture IA d'une publication (réutilise la rédaction sociale existante, Router V2, budget du compte). */
   rewrite: (p: Project, post: PostBrief & { network: string; format: string }, instruction: string, key: string) => Promise<{ title: string; caption: string; hashtags: string[]; costMicro: number }>;
-  /** Estimation prudente (micro-euros) d'une production payante, vérifiée avant l'envoi. */
-  estimate: (kind: "image" | "video" | "ad" | "rewrite" | "ai_post") => number;
+  /** PLAFOND (micro-euros) d'une production payante, vérifié avant l'envoi : reprises comprises, jamais montré comme prix. */
+  estimate: (kind: SocialCostKind) => number;
+  /** Coût PROBABLE (un essai) montré au client en % de son budget ; absent : le plafond. */
+  probable?: (kind: SocialCostKind) => number;
 };
+
+export type SocialCostKind = "image" | "video" | "ad" | "rewrite" | "ai_post";
 
 /** Publication réelle : interface séparée (les tests en injectent une simulée). */
 export type Publisher = {
@@ -224,7 +229,7 @@ const PLATFORM_AD: Record<string, "meta_feed" | "meta_story" | "tiktok" | "pinte
 /** Essais au plus d'un visuel conçu par l'IA (règle du propriétaire : 3, puis version du studio). */
 export const AI_POST_ATTEMPTS = 3;
 
-/** Estimation d'une publication conçue par l'IA : trois essais au plus (image + contrôle) et l'accroche. */
+/** PLAFOND d'une publication conçue par l'IA : trois essais au plus (image + contrôle) et l'accroche. Jamais montré comme prix (devis : `aiPostProbableMicro`). */
 export function aiPostEstimate(): number {
   const one = aiPostMaxMicro() ?? estimateMicro("image");
   return AI_POST_ATTEMPTS * one + Math.round(estimateMicro("blog") / 10);
@@ -270,6 +275,7 @@ export function realSocialDeps(ctx: JobContext | null, p: Project, aiActive: boo
       return { ...r, costMicro: c };
     },
     // Estimations du studio (tarifs de l'administration, marge de sécurité comprise).
-    estimate: (kind) => (kind === "video" ? estimateMicro("video-clip") : kind === "rewrite" ? Math.round(estimateMicro("blog") / 20) : kind === "ai_post" ? aiPostEstimate() : estimateMicro("image")),
+    estimate: (kind) => (kind === "video" ? capMicro(estimateMicro("video-clip")) : kind === "rewrite" ? capMicro(Math.round(estimateMicro("blog") / 20)) : kind === "ai_post" ? aiPostEstimate() : capMicro(estimateMicro("image"))),
+    probable: (kind) => (kind === "video" ? estimateMicro("video-clip") : kind === "rewrite" ? Math.round(estimateMicro("blog") / 20) : kind === "ai_post" ? aiPostProbableMicro() : estimateMicro("image")),
   };
 }

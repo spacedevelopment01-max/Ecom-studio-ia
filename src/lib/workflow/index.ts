@@ -17,7 +17,9 @@ import { enqueue, getJob, pipelineActive, type JobContext } from "../jobs";
 import { loadProject, type Project } from "../projects";
 import { aiActiveFor } from "../ai/access";
 import { activeProviderKey } from "../ai/config";
-import { estimateMicro, estimateTaskMicro } from "../ai/estimate";
+import { capMicro, estimateMicro, estimateTaskMicro } from "../ai/estimate";
+import { pctBaseFor } from "../ai/budget-pct";
+import { formatPct, pctOfBudget } from "../budget-pct";
 import { EUR } from "../billing";
 import { understand, type Intent } from "../orchestrator/intent";
 import { buildPlan, loadOrCreatePlan, loadPlan, runPlan, savePlan, applyResult, type PlanStep, type StepKind, type TaskPlan } from "../orchestrator/planner";
@@ -121,21 +123,21 @@ export const workflowAiActive = (userId: string, projectId: string) => aiActiveF
  */
 const LOGO_CONCEPTS_MICRO = () => logoSeriesQuote().maxMicro;
 
-/** Coût IA estimé d'une étape (micro-euros) si elle passe par l'IA ; 0 pour une étape locale ou de recherche. */
+/** Coût IA PROBABLE d'une étape (micro-euros, un essai) si elle passe par l'IA ; 0 pour une étape locale ou de recherche. */
 export function stepEstimateMicro(kind: StepKind, params: WorkflowParams): number {
   switch (kind) {
     case "understand":
       return estimateTaskMicro("vision_analysis", { input: 8000, output: 2000 });
     case "brand_strategy":
-      return estimateTaskMicro("strategy", { input: 20000, output: 8000 }, 1.3) + LOGO_CONCEPTS_MICRO();
+      return estimateTaskMicro("strategy", { input: 20000, output: 8000 }) + LOGO_CONCEPTS_MICRO();
     case "logo":
       return LOGO_CONCEPTS_MICRO();
     case "image_generate":
       return estimateMicro("images");
     case "copy":
-      return estimateTaskMicro("copywriting", { input: 34000, output: 12000 }, 1.5) + estimateTaskMicro("quality_control", { input: 26000, output: 2500 }, 1.5);
+      return estimateTaskMicro("copywriting", { input: 34000, output: 12000 }) + estimateTaskMicro("quality_control", { input: 26000, output: 2500 });
     case "seo":
-      return estimateTaskMicro("copywriting", { input: 16000, output: 5000 }, 1.3);
+      return estimateTaskMicro("copywriting", { input: 16000, output: 5000 });
     case "theme":
       return estimateMicro("theme");
     case "blog":
@@ -146,7 +148,7 @@ export function stepEstimateMicro(kind: StepKind, params: WorkflowParams): numbe
       return estimateTaskMicro("social_planning", { input: 20000, output: 8000 }) + estimateTaskMicro("social_copy", { input: 6000, output: 2000 }, Math.ceil(n / 10));
     }
     case "ad":
-      return estimateTaskMicro("ad_creative", { input: 14000, output: 5000 }, 1.3) + estimateMicro("image") * 2;
+      return estimateTaskMicro("ad_creative", { input: 14000, output: 5000 }) + estimateMicro("image");
     case "video":
       return estimateMicro("video-clip");
     case "quality_review":
@@ -341,7 +343,8 @@ export function startWorkflow(wid: string, o: { approveMicro?: number | null; ca
   if (wf.status === "needs_clarification") throw new WorkflowError(409, wf.clarification ?? L("Précisez votre demande.", "Please clarify your request."));
   if (wf.status !== "draft") return wf;
   const total = wf.estimate.totalMicro;
-  const cap = o.capEur != null ? Math.round(o.capEur * EUR) : total;
+  // Plafond (jamais débité en lui-même) : par défaut, le coût probable avec la place d'une reprise par étape.
+  const cap = o.capEur != null ? Math.round(o.capEur * EUR) : capMicro(total);
   if (total > 0 && (o.approveMicro == null || o.approveMicro < total)) throw new WorkflowError(402, L("Cette demande utilise l'IA payante : acceptez le devis avant de lancer.", "This request uses paid AI: accept the estimate before starting."));
   if (total > 0 && cap < total) throw new WorkflowError(402, L("Le plafond est inférieur au devis : augmentez-le ou retirez des étapes.", "The cap is below the estimate: raise it or remove steps."));
   const p = loadProject(wf.projectId);
@@ -433,7 +436,11 @@ export async function runWorkflow(ctx: JobContext) {
           // Plafond : une étape qui peut appeler l'IA n'est pas lancée si le reste ne couvre pas son estimation.
           if (allowPaid && (d.mode === "llm" || d.mode === "image" || d.mode === "video")) {
             const spent = jobSpend([ctx.job.id]);
-            if (spent + (est.get(s.kind) ?? 0) > cap) return { skip: `plafond atteint (${(spent / EUR).toFixed(2)} € dépensés sur ${(cap / EUR).toFixed(2)} €) : étape non lancée` };
+            if (spent + (est.get(s.kind) ?? 0) > cap) {
+              const base = pctBaseFor(p.userId, p.id);
+              const pct = (m: number, l: "fr" | "en") => formatPct(pctOfBudget(m, base) ?? 0, l);
+              return { skip: L(`plafond atteint (${pct(spent, "fr")} utilisés sur ${pct(cap, "fr")} de votre budget IA) : étape non lancée`, `cap reached (${pct(spent, "en")} used out of ${pct(cap, "en")} of your AI budget): step not started`) };
+            }
           }
           try {
             return await ex(ctx, loadProject(p.id), s, d);

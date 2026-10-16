@@ -38,7 +38,8 @@ describe("SEO V2 — moteur", async () => {
     expect(r.by).toBe("local");
     expect(r.costMicro).toBe(0);
     expect(r.verdict).toBe("PROVISIONAL");
-    expect(r.notes.join(" ")).toMatch(/0 €/);
+    // Jamais d'euros montrés au client pour l'IA : « gratuit ».
+    expect(r.notes.join(" ")).toMatch(/gratuit/);
     expect(latestContent(pid, r.docKey!)!.version.version).toBe(1);
     expect(all("SELECT 1 FROM ai_calls WHERE project_id = ?", pid)).toHaveLength(0);
   });

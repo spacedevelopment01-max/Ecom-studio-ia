@@ -25,6 +25,7 @@ import { enqueue } from "../jobs";
 import { formatInTimeZone } from "date-fns-tz";
 import { createPlanV2, type FormatKind } from "./planner";
 import { estimateProduction, produceBatch } from "./production";
+import { budgetPctText } from "../ai/budget-pct";
 import { approvePosts } from "./approval";
 import { checkPost } from "./quality";
 import { resumePosts, schedulePosts } from "./scheduler";
@@ -290,7 +291,7 @@ export async function runAutopilot(p: Project, deps: SocialDeps, at = now()): Pr
       out.paidJob = job.id;
       logAutopilot(p.id, "paid_job", { jobId: job.id, posts: soon.length, estimateMicro: est.estimateMicro });
     } else {
-      if (est && est.paid > 0) out.notes.push(`plafond de la semaine atteint (${c.paidCapEurWeek} €) : images en attente de l'IA`);
+      if (est && est.paid > 0) out.notes.push(`plafond de la semaine atteint (${budgetPctText(p.userId, Math.round(c.paidCapEurWeek * 1_000_000), p.id)}) : images en attente de l'IA`);
       const r = await produceBatch(p, soon, deps, { allowPaid: false, maxCostEur: 0, batchSize: 15 });
       out.produced = r.produced;
       logAutopilot(p.id, "produce", { produced: r.produced, failed: r.failed, spentMicro: 0 });

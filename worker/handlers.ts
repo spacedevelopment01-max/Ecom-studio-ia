@@ -86,7 +86,12 @@ export const handlers: Record<string, Handler> = {
   "image.v2": async (ctx) => {
     const { runImageEngineV2 } = await import("../src/lib/image-v2/engine");
     const r = await runImageEngineV2(ctx, ctx.payload.projectId, ctx.payload.request);
-    return { outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, origin: o.origin, score: o.score })), stoppedByCostCap: r.stoppedByCostCap, stats: r.stats };
+    // Reprise payée (1re image refusée par le contrôle) : annoncée au client, en % du budget IA.
+    const { retryNotice } = await import("../src/lib/ai/budget-pct");
+    const p = loadProject(ctx.payload.projectId);
+    const tries = Math.max(1, ...r.outcomes.filter((o) => o.assetId).map((o) => o.attempts ?? 1));
+    const notice = retryNotice(p.userId, p.id, tries, r.costMicro);
+    return { outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, origin: o.origin, score: o.score })), stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, ...(notice ? { notice } : {}) };
   },
 
   /** Retouche par l'IA d'une photo livrée (publicité, publication) : seule la demande du client change, original gardé. */

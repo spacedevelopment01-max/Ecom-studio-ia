@@ -14,19 +14,20 @@ describe("Barres d'utilisation de l'IA (forfait et crédits achetés, en %, sans
     expect(aiUsage(u.id)).toBeNull();
   });
 
+  // `baseMicro` (base des % de coût, jamais affichée) s'ajoute aux barres : toMatchObject.
   it("forfait : 0 %, puis la part utilisée ; crédits achetés dans une seconde barre ; pause quand les deux sont épuisés", async () => {
     const u = await createUser(`pct1${Date.now()}@test.fr`, "motdepasse-test", "P");
     run("UPDATE users SET role = 'client' WHERE id = ?", u.id);
     getSubscription(u.id); // crée l'abonnement (découverte) avant de l'activer
     run("UPDATE subscriptions SET status = 'manual', plan = 'creer' WHERE user_id = ?", u.id);
     syncAllowance(u.id);
-    expect(aiUsage(u.id)).toEqual({ plan: { used: 0 }, credits: null, paused: false });
+    expect(aiUsage(u.id)).toMatchObject({ plan: { used: 0 }, credits: null, paused: false });
     // Créer : 49 € TTC → 40,83 € HT → budget 16,33 € ; la moitié consommée ≈ 50 %.
     spend(u.id, 8.166, "a");
-    expect(aiUsage(u.id)).toEqual({ plan: { used: 50 }, credits: null, paused: false });
+    expect(aiUsage(u.id)).toMatchObject({ plan: { used: 50 }, credits: null, paused: false });
     // Crédits achetés : seconde barre, intacte tant que le forfait n'est pas épuisé.
     creditTopup(u.id, 24, "pay_pct"); // 10 € de budget
-    expect(aiUsage(u.id)).toEqual({ plan: { used: 50 }, credits: { used: 0 }, paused: false });
+    expect(aiUsage(u.id)).toMatchObject({ plan: { used: 50 }, credits: { used: 0 }, paused: false });
     // Forfait épuisé : la barre du forfait est à 100 %, les crédits prennent le relais (l'IA continue).
     spend(u.id, 8.17 + 5, "b");
     const mid = aiUsage(u.id)!;
@@ -35,7 +36,7 @@ describe("Barres d'utilisation de l'IA (forfait et crédits achetés, en %, sans
     expect(mid.paused).toBe(false);
     // Crédits épuisés aussi : les deux barres à 100 %, l'IA en pause.
     spend(u.id, 5, "c");
-    expect(aiUsage(u.id)).toEqual({ plan: { used: 100 }, credits: { used: 100 }, paused: true });
+    expect(aiUsage(u.id)).toMatchObject({ plan: { used: 100 }, credits: { used: 100 }, paused: true });
   });
 
   it("une action en cours ne fait pas bouger la barre : seul le coût réel compte, dès la fin de l'appel", async () => {

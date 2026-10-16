@@ -23,6 +23,7 @@ import type { ThemeSpec } from "../theme/spec";
 import type { AdDocument, Fill, Layer } from "../ad-doc/types";
 import type { VideoDocument } from "../video-v2/types";
 import { aiPostEstimate } from "../social-v2/deps";
+import { aiPostProbableMicro } from "../ai/estimate";
 import type { CmsPlatform } from "../cms-v2/types";
 import { L } from "../i18n-server";
 import { contrast, hsl, hslToHex, onColor } from "../color";
@@ -115,7 +116,8 @@ export function brandImpact(p: Project): { current: string; items: ImpactItem[] 
 }
 
 /** Prix maximal d'une nouvelle version d'un visuel fait par l'IA (même calcul que la création guidée). */
-const aiImageRedoMicro = (): number => aiPostEstimate(); // 3 essais au plus, comme la création guidée
+/** Devis d'une nouvelle version IA : coût probable (un essai) ; le plafond de la tâche (3 essais au plus) reste `aiPostEstimate`. */
+const aiImageRedoMicro = (): number => aiPostProbableMicro();
 
 // ---------------------------------------------------------------- remplacements (sans IA)
 
@@ -338,7 +340,7 @@ export async function applyBrandUpdate(projectId: string, keys: string[], o: { i
       const a = getAsset(key.slice(9));
       if (!a) continue;
       const meta = assetMeta<Record<string, any>>(a);
-      enqueue({ userId: o.userId ?? p.userId, projectId: p.id, type: "image.ai_post", label: L("Visuel IA : nouvelle identité", "AI visual: new identity"), payload: { projectId: p.id, costCapMicro: it.paidMicro, request: redoRequest(meta, { aspect: (meta.aspect ?? "4:5") as "4:5" }) } });
+      enqueue({ userId: o.userId ?? p.userId, projectId: p.id, type: "image.ai_post", label: L("Visuel IA : nouvelle identité", "AI visual: new identity"), payload: { projectId: p.id, costCapMicro: aiPostEstimate(), request: redoRequest(meta, { aspect: (meta.aspect ?? "4:5") as "4:5" }) } });
       res.updated.push({ key, kind: "ai_image", detail: L("nouvelle version en préparation (l'ancienne est gardée)", "new version being prepared (the old one is kept)") });
     } else if (it.kind === "post") {
       postIds.push(key.slice(5));

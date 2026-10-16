@@ -11,6 +11,7 @@ import { api, Badge, Button, Card, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { JobProgress, SectionTitle, useActive } from "./common";
 import { useT } from "../i18n";
+import { useBudgetPct } from "../billing-client";
 
 type Proposal = {
   id: string;
@@ -63,12 +64,14 @@ const MARK: Record<string, [string, string]> = {
 export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
   const { id } = useProject();
   const t = useT();
-  // Provenance réelle de l'image (fournisseur · modèle) et coût facturé de cette image, quand il est connu.
+  // Coûts en % du budget IA du mois (jamais en euros).
+  const budget = useBudgetPct();
+  // Provenance réelle de l'image (fournisseur · modèle) et part du budget IA utilisée, quand elle est connue.
   const provenance = (a: NonNullable<Proposal["artwork"]>) => {
     const [prov, model] = (a.provider ?? "").split(":");
     const who = prov === "openai" ? "OpenAI" : prov === "google" ? "Gemini" : prov === "fal" ? "fal.ai" : t("IA d'images", "image AI");
-    const euros = a.costMicro != null ? ` · ${(a.costMicro / 1e6).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €` : "";
-    return `${t("Dessiné par", "Drawn by")} ${who}${model ? ` ${model}` : ""}${euros}`;
+    const used = a.costMicro != null ? ` · ${budget.label(a.costMicro)}` : "";
+    return `${t("Dessiné par", "Drawn by")} ${who}${model ? ` ${model}` : ""}${used}`;
   };
   const toast = useToast();
   const [busy, setBusy] = useState<string | null>(null);
@@ -111,15 +114,15 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
       return null;
     }
   }
-  const eur = (n: number) => n.toLocaleString(t("fr-FR", "en-GB"), { style: "currency", currency: "EUR" });
+  const eur = (maxEur: number) => budget.label(Math.round(maxEur * 1e6));
   const generate = async () => {
     const q = await quote();
     if (!q) return;
     const msg = !q.ai || !q.quote
-      ? t("Créer de nouvelles directions de logo ? Sans IA active, elles sont construites par le studio (0 €).", "Create new logo directions? Without active AI, they are built by the studio (€0).")
+      ? t("Créer de nouvelles directions de logo ? Sans IA active, elles sont construites par le studio (gratuit).", "Create new logo directions? Without active AI, they are built by the studio (free).")
       : q.quote.mode === "artwork"
-        ? t(`Créer ${q.quote.creations} logos complets dessinés par l'IA d'images ? Devis : ${eur(q.quote.maxEur)} au maximum (${q.quote.images} images et leurs relectures), décompté de votre budget IA. Ce montant est aussi le plafond : rien ne sera dépensé au-delà, et aucune image ne sera relancée sans votre accord.`, `Create ${q.quote.creations} full logos drawn by the image AI? Quote: ${eur(q.quote.maxEur)} at most (${q.quote.images} images and their reviews), counted against your AI budget. This amount is also the cap: nothing is spent beyond it, and no image is restarted without your consent.`)
-        : t(`Créer ${q.quote.creations} directions de logo construites ? Devis : ${eur(q.quote.maxEur)} au maximum (relectures par l'IA), décompté de votre budget IA. Ce montant est aussi le plafond.`, `Create ${q.quote.creations} built logo directions? Quote: ${eur(q.quote.maxEur)} at most (AI reviews), counted against your AI budget. This amount is also the cap.`);
+        ? t(`Créer ${q.quote.creations} logos complets dessinés par l'IA d'images ? Devis : ${eur(q.quote.maxEur)} au maximum (${q.quote.images} images et leurs relectures), seul ce qui est vraiment utilisé est décompté. C'est aussi le plafond : rien ne sera utilisé au-delà, et aucune image ne sera relancée sans votre accord.`, `Create ${q.quote.creations} full logos drawn by the image AI? Quote: ${eur(q.quote.maxEur)} at most (${q.quote.images} images and their reviews), only what is actually used is counted. This is also the cap: nothing is used beyond it, and no image is restarted without your consent.`)
+        : t(`Créer ${q.quote.creations} directions de logo construites ? Devis : ${eur(q.quote.maxEur)} au maximum (relectures par l'IA) ; seul ce qui est vraiment utilisé est décompté. C'est aussi le plafond.`, `Create ${q.quote.creations} built logo directions? Quote: ${eur(q.quote.maxEur)} at most (AI reviews); only what is actually used is counted. This is also the cap.`);
     if (!window.confirm(msg)) return;
     post({ action: "generate", style }, t("Directions créatives lancées : quelques minutes.", "Creative directions started: a few minutes."), "gen");
   };
