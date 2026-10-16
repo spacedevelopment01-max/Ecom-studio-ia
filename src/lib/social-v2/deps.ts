@@ -7,6 +7,7 @@
  *  - publication : adaptateurs officiels existants (`publishPost`), JAMAIS appelés pendant les tests.
  * Injectables : les tests utilisent des outils simulés (aucun appel, aucune dépense, aucune publication).
  */
+import { C } from "../i18n-server";
 import crypto from "node:crypto";
 import { JobCancelled, JobPaused, type JobContext } from "../jobs";
 import { getAsset, saveAsset, type Asset } from "../library";
@@ -233,14 +234,9 @@ export function realSocialDeps(ctx: JobContext | null, p: Project, aiActive: boo
   return {
     aiActive,
     async image(pp, post, o) {
-      // Produit : scène créée par l'IA avec le VRAI produit en référence (jamais un produit inventé ni un décor sans lui).
-      const { runImageEngineV2 } = await import("../image-v2/engine");
-      const r = await runImageEngineV2(ctx, pp.id, { kind: pp.business === "services" ? "trade_photo" : "usage_scene", support: "social", aspect: aspectOf(post.network, post.format), topic: `${post.pillar ?? ""} — ${post.title}`, allowGenerate: o.allowPaid, ...(o.allowPaid && pp.business !== "services" ? { noStock: true } : {}), maxCostEur: o.maxCostEur, name: `publication-${post.network}` });
-      const ok = r.outcomes.find((x) => x.assetId && (x.verdict === "FINAL" || x.verdict === "PROVISIONAL"));
-      const a = ok?.assetId ? getAsset(ok.assetId) : undefined;
-      if (!a || !isAutoUsable(a)) return { assetId: null, costMicro: r.costMicro, by: "image_v2", note: "aucune image validée par Image Engine V2" };
-      // La photo (gardée dans la bibliothèque) devient le fond de l'affiche de la publication.
-      return posterForPost(pp, post, a, "image_v2", r.costMicro);
+      // Images finales 100 % IA : la publication entière est créée par l'IA (plus d'affiche du studio sur une photo).
+      if (!o.allowPaid) return { assetId: null, costMicro: 0, by: "image_v2", note: C("visuel non créé : les images finales sont créées par l'IA et la dépense n'est pas acceptée (aucun gabarit à la place)", "visual not created: final images are created by AI and the spend isn't approved (no template instead)") };
+      return this.aiPost!(pp, post, o);
     },
     async video(pp, post, o) {
       const { runVideoEngineV2 } = await import("../video-v2/engine");
@@ -248,14 +244,14 @@ export function realSocialDeps(ctx: JobContext | null, p: Project, aiActive: boo
       return { assetId: r.videoAssetId, costMicro: r.costMicro, by: "video_v2", note: r.videoAssetId ? undefined : r.reason };
     },
     async ad(pp, post, o) {
-      if (!o.allowPaid) return localRender(pp, post, ctx);
+      if (!o.allowPaid) return { assetId: null, costMicro: 0, by: "image_v2", note: C("visuel non créé : les images finales sont créées par l'IA et la dépense n'est pas acceptée (aucun gabarit à la place)", "visual not created: final images are created by AI and the spend isn't approved (no template instead)") };
       const { runAdEngineV2 } = await import("../ads-v2/engine");
       const r = await runAdEngineV2(ctx, pp.id, { count: 1, platforms: [PLATFORM_AD[post.network] ?? "meta_feed"], objective: post.objective, maxCostEur: o.maxCostEur });
       const out = r.outcomes.find((x) => x.assetId);
       return { assetId: out?.assetId ?? null, costMicro: r.costMicro, by: "ads_v2" };
     },
     async aiPost(pp, post, o) {
-      if (!o.allowPaid) return localRender(pp, post, ctx);
+      if (!o.allowPaid) return { assetId: null, costMicro: 0, by: "image_v2", note: C("visuel non créé : les images finales sont créées par l'IA et la dépense n'est pas acceptée (aucun gabarit à la place)", "visual not created: final images are created by AI and the spend isn't approved (no template instead)") };
       const { designPostWithAi, realAiPostDeps } = await import("./ai-post");
       const { resolveSubject } = await import("../creative-subject");
       const a = aspectOf(post.network, post.format);

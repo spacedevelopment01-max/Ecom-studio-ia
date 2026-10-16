@@ -148,7 +148,7 @@ describe("Affiches de publication", async () => {
     }
   }, 120_000);
 
-  it("nombre d'images différentes choisi : les publications du calendrier n'utilisent pas plus de photos que demandé", async () => {
+  it("images 100 % IA : sans dépense acceptée, le calendrier ne pose aucune affiche du studio sur les photos", async () => {
     const { pid } = await setup();
     // Deux autres photos validées dans la bibliothèque (trois au total).
     for (const k of [1, 2]) await saveAsset({ projectId: pid, userId: loadProject(pid).userId, data: await testPhoto(), name: `photo-${k}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "upload", meta: {} });
@@ -164,7 +164,7 @@ describe("Affiches de publication", async () => {
     for (let i = 0; i < ids.length; i += 3) await fr(() => produceBatch(p, ids.slice(i, i + 3), realSocialDeps(null, p, false), { allowPaid: false, maxCostEur: 0, distinctImages: 2 }));
     const bgs = all<{ bg: string }>("SELECT DISTINCT json_extract(a.meta, '$.poster.backgroundAssetId') bg FROM assets a WHERE json_extract(a.meta, '$.post') IN (SELECT id FROM posts WHERE plan_id = ?) AND json_extract(a.meta, '$.poster.backgroundAssetId') IS NOT NULL", plan.planId);
     const produced = all<{ id: string }>("SELECT id FROM posts WHERE plan_id = ? AND media != '[]'", plan.planId);
-    expect(produced.length).toBeGreaterThanOrEqual(4);
-    expect(bgs.length).toBe(2);
+    expect(produced).toHaveLength(0);
+    expect(bgs).toHaveLength(0);
   }, 180_000);
 });

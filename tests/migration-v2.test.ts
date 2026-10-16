@@ -87,13 +87,13 @@ describe("migration V1 → V2 : moteurs réellement appelés", async () => {
     expect(await fr(() => applyBestLogoV2(null, pid, [{ assetId: "x", verdict: "FINAL", score: 9 }]))).toBeNull();
   }, 120_000);
 
-  it("images : jeu orchestré par Image Engine V2 (composants locaux seulement, univers et photos en situation par V2)", async () => {
+  it("images : jeu créé par l'IA (Image Engine V2 en génération seule) — plus de composants locaux ni de photos de banque", async () => {
     const pid = await seedPaid("cosmetic");
-    const { runImageSetV2 } = await import("@/lib/image-v2/set");
+    const { runImageSetV2, imageSetPlan } = await import("@/lib/image-v2/set");
     await fr(() => runImageSetV2(ctxFor(pid, "images.generate"), pid));
-    expect(calls.set).toEqual([{ localOnly: true }]);
-    expect(calls.v2.map((r) => r.kind)).toEqual(["ambiance", "lifestyle", "lifestyle"]);
-    expect(calls.v2[0].allowGenerate).toBe(false); // univers : recherche de photos libres seulement
+    expect(calls.set).toEqual([]);
+    expect(calls.v2.map((r) => r.kind)).toEqual(imageSetPlan(false).map((x) => x.kind));
+    expect(calls.v2.every((r: any) => r.noStock === true && r.allowGenerate === true)).toBe(true);
   });
 
   it("calendrier de la création : Social V2, une seule fois par projet — une reprise ne crée aucun doublon", async () => {

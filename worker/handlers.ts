@@ -4,7 +4,6 @@ import { all, json, now, one, run } from "../src/lib/db";
 import { sectionGenerationAllowed } from "../src/lib/theme/custom-access";
 import { JobCancelled, JobContext, JobPaused, PermanentError, UserFacingError } from "../src/lib/jobs";
 import { runPipeline } from "../src/lib/engine/pipeline";
-import { generateImageSet, generateSingleImage } from "../src/lib/engine/images";
 import { produceVideo } from "../src/lib/engine/videos";
 import { produceUgc, writeUgcScript } from "../src/lib/engine/ugc";
 import { writeBlogArticle } from "../src/lib/engine/blog";
@@ -62,7 +61,16 @@ export const handlers: Record<string, Handler> = {
     const { runImageSetV2 } = await import("../src/lib/image-v2/set");
     return runImageSetV2(ctx, ctx.payload.projectId);
   },
-  "image.single": async (ctx) => generateSingleImage(ctx, ctx.payload.projectId, ctx.payload.request),
+  /** Ancienne image « studio » : désormais créée par l'IA (Image Engine V2, génération seule) ; sans IA, refus expliqué. */
+  "image.single": async (ctx) => {
+    const p = loadProject(ctx.payload.projectId);
+    const { aiActiveFor } = await import("../src/lib/ai/access");
+    const { imageV2Kind, NO_AI_IMAGES } = await import("../src/lib/image-v2/ai-only");
+    if (!aiActiveFor(p.userId, p.id)) throw new UserFacingError(L(NO_AI_IMAGES.fr, NO_AI_IMAGES.en));
+    const { runImageEngineV2 } = await import("../src/lib/image-v2/engine");
+    const r = await runImageEngineV2(ctx, p.id, { kind: imageV2Kind(p.business === "services", ctx.payload.request?.kind ?? "scene"), count: 1, allowGenerate: true, noStock: true, maxCostEur: 1 });
+    return { outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, origin: o.origin })), stoppedByCostCap: r.stoppedByCostCap };
+  },
   /** Banque de vidéos : plans libres de droits (gratuit) ou plan filmé par l'IA (payant, prix accepté). */
   "video.bank.stock": async (ctx) => (await import("../src/lib/media/bank-video")).findBankClips(ctx, ctx.payload.projectId, ctx.payload.request),
   "video.bank.ai": async (ctx) => (await import("../src/lib/media/bank-video")).createBankClip(ctx, ctx.payload.projectId, ctx.payload.request),
@@ -329,18 +337,17 @@ export const handlers: Record<string, Handler> = {
       run("UPDATE posts SET title = ?, caption = ?, hashtags = ?, brief = ?, error = ?, status = CASE WHEN status = 'scheduled' THEN 'review' ELSE status END, updated_at = ? WHERE id = ?", r.title, r.caption, r.hashtags.join(" "), JSON.stringify(brief), r.claims?.length ? L(`À vérifier avant publication : ${r.claims.join(", ")}`, `Check before publishing: ${r.claims.join(", ")}`) : null, now(), postId);
     }
     if (part !== "text") {
-      // Détourage réutilisable automatiquement seulement (jamais un refusé ni un « à vérifier »).
-      const cut = (await ensureCutouts(ctx, p)).filter(isAutoUsable)[0];
-      if (cut) {
-        const visual = json<any>(post.brief, {});
-        const fmt = NETWORK_FORMATS[post.network] ?? NETWORK_FORMATS.instagram;
-        const logoA = latestAsset(p.id, "logo");
-        const layouts = ["editorial", "bold", "minimal", "centered", "split"] as const;
-        const r = await renderCreative({ product: await loadImage(assetData(cut)), palette: palette(p), typo: brandTypo(p), format: FORMATS[fmt.image], layout: layouts[Math.floor(Math.random() * layouts.length)], headline: quotedHeadline(instruction) || visual.headline || p.product.name, brand: p.brand?.name ?? p.name, logo: logoA ? await loadImage(assetData(logoA)) : null, seed: Date.now() % 997 });
-        const a = await saveAsset({ projectId: p.id, userId: p.userId, data: r.jpg, name: L(`publication-${post.network}-regeneree-${Date.now().toString(36)}.jpg`, `post-${post.network}-regenerated-${Date.now().toString(36)}.jpg`), mime: "image/jpeg", role: "social", folderKey: "content.calendar", origin: "generated", meta: { post: postId, recipe: L("Visuel régénéré", "Regenerated visual") } });
-        run("UPDATE posts SET media = ?, status = CASE WHEN status = 'scheduled' THEN 'review' ELSE status END, updated_at = ? WHERE id = ?", JSON.stringify([a.id]), now(), postId);
-        addUsage(a.id, "post", postId, L("Publication", "Post"));
-      }
+      // Images finales 100 % IA : le nouveau visuel est créé par l'IA (direction artistique du client, vrai produit en
+      // référence, textes contrôlés). Sans IA active : refus expliqué, jamais une mise en page du studio à la place.
+      const { aiActiveFor } = await import("../src/lib/ai/access");
+      if (!aiActiveFor(p.userId, p.id)) throw new UserFacingError(L("Le visuel est créé par l'IA : l'IA n'est pas active pour ce projet (forfait, budget ou fournisseur). Aucun gabarit n'est créé à la place.", "The visual is created by AI: AI isn't active for this project (plan, budget or provider). No template is made instead."));
+      const { realSocialDeps, aiPostEstimate } = await import("../src/lib/social-v2/deps");
+      const visual = json<any>(post.brief, {});
+      const brief = { id: post.id, network: post.network, format: post.format ?? "feed", title: post.title ?? "", caption: post.caption ?? "", pillar: visual.pillar ?? null, objective: visual.objective ?? null, headline: quotedHeadline(instruction) || visual.headline || post.title || p.product.name, scheduled_at: post.scheduled_at ?? null, subject: visual.subject ?? null, request: instruction || undefined };
+      const r = await realSocialDeps(ctx, p, true).aiPost!(p, brief as never, { allowPaid: true, maxCostEur: aiPostEstimate() / 1e6 } as never);
+      if (!r.assetId) throw new UserFacingError(r.note ?? L("Visuel IA non validé par le contrôle : rien n'est remplacé (aucun gabarit à la place).", "AI visual not validated by the check: nothing is replaced (no template instead)."));
+      run("UPDATE posts SET media = ?, status = CASE WHEN status = 'scheduled' THEN 'review' ELSE status END, updated_at = ? WHERE id = ?", JSON.stringify([r.assetId]), now(), postId);
+      addUsage(r.assetId, "post", postId, L("Publication", "Post"));
     }
     return { ok: true };
   },

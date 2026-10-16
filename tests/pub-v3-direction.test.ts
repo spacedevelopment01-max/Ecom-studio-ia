@@ -208,7 +208,7 @@ describe("nombre d'images et formats choisis par le client", () => {
     const { saveAsset } = await import("@/lib/library");
     const { seedImageFixture } = await import("./image-v2-fixtures");
     const { mockAdDeps } = await import("./ads-v2-mock");
-    const { PIPELINE_ADS } = await import("@/lib/engine/pipeline");
+    const { CREATION_AI_ADS } = await import("@/lib/engine/pipeline");
     const u = await createUser(`formats-${Date.now()}@test.fr`, "motdepasse-test", "F");
     const pid = seedImageFixture(u.id, "saas");
     const { deps } = mockAdDeps({ userId: u.id, projectId: pid });
@@ -233,6 +233,6 @@ describe("nombre d'images et formats choisis par le client", () => {
     const r2 = await fr(() => runAdEngineV2(null, pid, { count: 1, platforms: ["meta_feed", "meta_story"], objective: "autre" }, deps));
     expect(new Set(r2.outcomes.map((o: any) => o.aspect)).size).toBe(3);
     expect(paid).toBe(1);
-    expect(PIPELINE_ADS).toBe(3);
+    expect(CREATION_AI_ADS).toBe(5);
   }, 240_000);
 });

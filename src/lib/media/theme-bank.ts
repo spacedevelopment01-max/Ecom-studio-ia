@@ -1,6 +1,8 @@
 /**
  * Banque du THÈME, remplie à la création du projet (règle du propriétaire) :
- *  - 15 images libres de droits (Pixabay d'abord) en rapport avec le produit ou le service ;
+ *  - AUCUNE photo de banque comme image du site (règle « images finales 100 % IA ») : les images du site sont créées
+ *    par l'IA (`runImageSetV2`). `THEME_BANK_IMAGES` vaut 0 ; les photos libres déjà présentes restent marquées « thème »
+ *    sans être reprises automatiquement ;
  *  - vidéos libres de droits : 3 pour un service, 1 pour un produit SEULEMENT si une vidéo vraiment liée est trouvée
  *    (ex. une gourde → un sentier de randonnée), sinon aucune.
  * Elles servent uniquement à alimenter le thème (site) : JAMAIS reprises automatiquement dans les publications ou les
@@ -10,7 +12,8 @@ import { all, run } from "../db";
 import type { Project } from "../projects";
 import { JobCancelled, JobPaused, type JobContext } from "../jobs";
 
-export const THEME_BANK_IMAGES = 15;
+/** Photos de banque ajoutées comme images du site : aucune (images finales créées par l'IA). */
+export const THEME_BANK_IMAGES = 0;
 export const THEME_BANK_VIDEOS = { services: 3, products: 1 } as const;
 
 type Ictx = { userId: string; projectId: string; jobId?: string | null };

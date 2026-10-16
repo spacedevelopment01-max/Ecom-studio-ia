@@ -340,8 +340,7 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
       return note("copy.base");
     }
     case "images": {
-      // Image Engine V2 (composants locaux gratuits, photos libres, génération contrôlée), puis publicités par
-      // Advertising Engine V2 (documents à calques modifiables dans l'éditeur visuel).
+      // Images finales créées par l'IA (Image Engine V2 en génération seule), puis publicités créées par l'IA.
       if (services) {
         return serviceContent(async () => {
           const r = await runImageSetV2(ctx, projectId);
@@ -349,17 +348,8 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
           return note("images.done", { n: r.created.length + ads });
         });
       }
-      const has = validCutouts(projectId).length > 0;
-      if (!has) {
-        // Photos en situation seulement (rien à détourer) : visuels mis en page sur ces vraies photos.
-        const { generateImageSet, ownScenePhotos } = await import("./images");
-        if (ownScenePhotos(projectId).length) {
-          const r = await ctx.step("photo-images", () => generateImageSet(ctx, projectId));
-          const ads = await adsAndThemeBank(ctx, projectId);
-          return note("images.done", { n: r.created.length + ads });
-        }
-        return { skipped: p.settings.existingSite ? NO_CUTOUT_SITE() : note("skip.noCutout") };
-      }
+      // Images finales 100 % IA : le jeu d'images prépare la référence (détourage) puis fait créer chaque image par
+      // l'IA ; sans IA active, rien n'est composé à la place (plus de visuels mis en page sur les photos).
       const r = await runImageSetV2(ctx, projectId);
       const ads = await adsAndThemeBank(ctx, projectId);
       return note("images.done", { n: r.created.length + ads });
@@ -447,21 +437,20 @@ async function adsAndThemeBank(ctx: JobContext, projectId: string): Promise<numb
   return ads;
 }
 
-/** Publicités créées pendant la conception du projet sans IA (moteur publicitaire local, calques). */
-export const PIPELINE_ADS = 3;
 /** Publicités entièrement conçues par l'IA d'images (Qwen) à la création, forfaits avec IA (règle du propriétaire). */
 export const CREATION_AI_ADS = 5;
 const CREATION_AD_ASPECTS = ["4:5", "1:1", "9:16", "4:5", "16:9"] as const;
 
 /**
  * 5 publicités entièrement par l'IA (Qwen) : produits ou services du projet à tour de rôle, formats variés, textes
- * relus lettre par lettre (3 essais au plus). Une publicité refusée est remplacée par une publicité du studio (calques).
- * Sans IA active : moteur publicitaire local (3 publicités). Point de reprise par publicité : rien de repayé.
+ * relus lettre par lettre (3 essais au plus). Images finales 100 % IA : une publicité refusée n'est PAS remplacée par
+ * une composition du studio ; sans IA active, aucune publicité n'est créée (raison dite). Point de reprise par
+ * publicité : rien de repayé.
  */
 async function pipelineAds(ctx: JobContext, projectId: string): Promise<number> {
   const fresh = loadProject(projectId);
   const { aiActiveFor } = await import("../ai/access");
-  if (!aiActiveFor(fresh.userId, projectId)) return pipelineLayeredAds(ctx, projectId, PIPELINE_ADS);
+  if (!aiActiveFor(fresh.userId, projectId)) return 0;
   const { subjectOptions } = await import("../creative-subject");
   const { designPostWithAi, realAiPostDeps } = await import("../social-v2/ai-post");
   const { aiPostEstimate } = await import("../social-v2/deps");
@@ -483,26 +472,9 @@ async function pipelineAds(ctx: JobContext, projectId: string): Promise<number> 
     });
     if (ok) made++;
   }
-  // Publicités refusées (textes faux après 3 essais) : version du studio, à calques, pour en avoir 5 en tout.
-  if (made < CREATION_AI_ADS) made += await pipelineLayeredAds(ctx, projectId, CREATION_AI_ADS - made);
   return made;
 }
 
-async function pipelineLayeredAds(ctx: JobContext, projectId: string, count: number): Promise<number> {
-  return ctx.step(count === PIPELINE_ADS ? "ads-v2" : `ads-v2:${count}`, async () => {
-    ctx.progress(0.96, L("Publicités (moteur publicitaire)", "Ads (advertising engine)"));
-    try {
-      const { runAdEngineV2 } = await import("../ads-v2/engine");
-      // 3 vraies publicités (3 concepts, 3 photos différentes ; les autres formats reprennent la même photo).
-      const r = await runAdEngineV2(ctx, projectId, { count, maxCostEur: 1.5 });
-      return r.outcomes.filter((o) => o.assetId).length;
-    } catch (e) {
-      if (e instanceof JobPaused || e instanceof JobCancelled) throw e;
-      console.warn(`[pipeline] publicités V2 non créées : ${(e as Error).message}`);
-      return 0;
-    }
-  });
-}
 
 /**
  * Page principale rédigée par SEO & Copywriting Engine V2 (une fois : même brief et mêmes faits = rien de refait ;

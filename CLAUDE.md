@@ -57,6 +57,13 @@ Règles du propriétaire branchées sur le moteur « vidéo en scènes » : `doc
 comment elles agissent). Valeurs : `src/lib/video-v2/creative-guide.ts` (modifiables sans code : réglage
 `video.creative_guide`). Services = Pixabay par étape ; produits = vrai produit seulement ; seule la marque du projet.
 
+## Images finales 100 % IA
+
+Toute image finale est créée par un modèle d'images ; jamais de gabarit ni de photo de banque à la place, jamais de
+bascule silencieuse (blocage signalé). Règles et branchements : `docs/guide-images-ia.md` ; valeurs
+`src/lib/image-v2/image-guide.ts` (réglage `image.creative_guide`), direction artistique par client
+`src/lib/image-v2/art-direction.ts` (mémoire `image.art_direction`, versionnée).
+
 ## Ligne directrice de marque (cohésion)
 
 Toute création suit le même système que la planche d'identité (`src/lib/media/identity-board.ts`, `BRAND_RULES`) :
