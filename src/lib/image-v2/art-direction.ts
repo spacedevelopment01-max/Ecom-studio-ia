@@ -242,19 +242,20 @@ const ROLE_EN: Record<string, string> = { accroche: "headline", "titre secondair
  * ÉTAPE 1 (Qwen-Image) : la PHOTOGRAPHIE seule, sans aucun texte ni logo. Les notes de direction artistique sont
  * données comme instructions (le modèle ne doit jamais en écrire un mot : défaut constaté à l'essai réel ARVEN).
  */
-export function briefScenePrompt(b: GenerationBrief): string {
-  const textLater = b.exactTexts.length > 0;
+export function briefScenePrompt(b: GenerationBrief, o: { photoOnly?: boolean } = {}): string {
+  const photoOnly = o.photoOnly ?? true;
+  const textLater = photoOnly && b.exactTexts.length > 0;
   return [
     "ART DIRECTION NOTES — instructions for you only: never write any of these words, labels, colour codes or notes in the image.",
-    `Concept: ${b.concept}.`,
+    `Concept (an idea to convey with the picture only — never write it): ${b.concept}.`,
     `Composition: ${b.composition}; framing: ${b.framing}; one clear focal point; generous breathing space${textLater ? "; keep a calm, uncluttered area (plain wall, sky, table surface, soft blur) where a headline will be added later, never on the product" : ""}.`,
-    `Setting: ${b.setting}. Light: ${b.light}; coherent light direction, temperature, perspective, contact shadows and reflections; nothing floating.`,
+    `Setting (objects and place, not words): ${b.setting}. Light: ${b.light}; coherent light direction, temperature, perspective, contact shadows and reflections; nothing floating.`,
     `Colour mood: ${b.palette}.`,
     `Fidelity: ${b.fidelity}.`,
     `Avoid: ${b.forbidden.filter((f) => !/texte|bouton|lettre/i.test(f)).join("; ")}.`,
     `Format: ${b.format}.`,
-    "OUTPUT: a PHOTOGRAPH ONLY — absolutely no text, letters, numbers, words, logo, label, caption, watermark, frame or graphic element anywhere (the text printed on the real product itself stays as on the reference).",
-  ].join("\n");
+    photoOnly ? "OUTPUT: a PHOTOGRAPH ONLY — absolutely no text, letters, numbers, words, logo, label, caption, watermark, frame or graphic element anywhere (the text printed on the real product itself stays as on the reference)." : "",
+  ].filter(Boolean).join("\n");
 }
 
 /**
