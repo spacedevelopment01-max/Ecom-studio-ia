@@ -1,7 +1,7 @@
 /**
  * Premières publications faites entièrement par l'IA : les N premières publications en image d'un calendrier ont un
- * visuel créé par l'IA (le vrai produit en référence), même quand la bibliothèque a déjà des photos ; les autres
- * restent gratuites. Sans IA (forfait Découverte) ou sans accord, rien n'est payé. Les vidéos ne sont pas concernées.
+ * visuel créé par l'IA (le vrai produit en référence) ; les autres attendent leur visuel ou reprennent une image IA
+ * déjà validée (jamais un gabarit). Sans IA (forfait Découverte) ou sans accord, rien n'est payé ni composé.
  */
 import { describe, expect, it } from "vitest";
 
@@ -31,40 +31,44 @@ describe("Publications entièrement faites par l'IA (création du projet)", asyn
 
   it("10 publications par l'IA (Qwen) à la création (règle du propriétaire)", () => expect(FIRST_AI_POSTS).toBe(10));
 
-  it("les 3 premières publications en image : visuel IA (payant, plafonné) ; les autres gratuites", async () => {
+  it("les 3 premières publications en image : visuel IA (payant, plafonné) ; les autres attendent (aucun gabarit)", async () => {
     const { p, ids } = await project();
     const { deps, log } = mockSocialDeps({ aiActive: true, cost: 100_000 });
     const est = estimateProduction(p, ids, deps, { allowPaid: true, aiImages: 3 });
     expect(est.paid).toBe(3);
     expect(est.lines.filter((l) => l.method === "ai_post")).toHaveLength(3);
     const res = await produceBatch(p, ids, deps, { allowPaid: true, maxCostEur: 0.3, approvedEstimateMicro: 300_000, aiImages: 3 });
-    expect(log.image).toBe(3);
+    expect(log.aiPost).toBe(3);
+    expect(log.local).toBe(0);
     expect(log.paid).toBe(3);
     expect(res.spentMicro).toBe(300_000);
-    expect(res.byMethod.image_v2).toBe(3);
-    expect(res.produced).toBe(ids.length);
+    // Les suivantes attendent leur visuel (rien n'est composé par le studio).
+    expect(res.produced).toBe(3);
   });
 
-  it("sans IA ou sans accord : aucune dépense, tout en rendu gratuit", async () => {
+  it("sans IA ou sans accord : aucune dépense, aucun visuel composé à la place", async () => {
     const { p, ids } = await project();
     const off = mockSocialDeps({ aiActive: false });
     const r1 = await produceBatch(p, ids.slice(0, 3), off.deps, { allowPaid: true, maxCostEur: 1, approvedEstimateMicro: 300_000, aiImages: 3 });
     expect(r1.spentMicro).toBe(0);
+    expect(r1.produced).toBe(0);
     expect(off.log.paid).toBe(0);
+    expect(off.log.local).toBe(0);
     const on = mockSocialDeps({ aiActive: true });
     const r2 = await produceBatch(p, ids.slice(3), on.deps, { allowPaid: true, maxCostEur: 1, approvedEstimateMicro: null, aiImages: 3 });
     expect(r2.spentMicro).toBe(0);
     expect(on.log.paid).toBe(0);
   });
 
-  it("image IA refusée par le contrôle : rendu gratuit à la place, mais le coût payé reste compté", async () => {
+  it("image IA refusée par le contrôle : aucun gabarit à la place, et le coût payé reste compté", async () => {
     const { p, ids } = await project();
-    const { deps } = mockSocialDeps({ aiActive: true, cost: 100_000 });
-    const refused = { ...deps, image: async () => ({ assetId: null, costMicro: 227_000, by: "image_v2" as const, note: "aucune image validée par Image Engine V2" }) };
+    const { deps, log } = mockSocialDeps({ aiActive: true, cost: 100_000 });
+    const refused = { ...deps, aiPost: async () => ({ assetId: null, costMicro: 227_000, by: "image_v2" as const, note: "publication IA refusée par le contrôle" }) };
     const res = await produceBatch(p, ids.slice(0, 1), refused, { allowPaid: true, maxCostEur: 1, approvedEstimateMicro: 343_000, aiImages: 1 });
-    expect(res.produced).toBe(1);
+    expect(res.produced).toBe(0);
+    expect(log.local).toBe(0);
     expect(res.spentMicro).toBe(227_000);
-    expect(res.notes.join(" ")).toMatch(/aucune image validée/);
+    expect(res.notes.join(" ")).toMatch(/aucun gabarit/);
   });
 
   it("les vidéos ne comptent pas parmi les publications en image", () => {

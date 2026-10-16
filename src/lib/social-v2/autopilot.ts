@@ -283,10 +283,10 @@ export async function runAutopilot(p: Project, deps: SocialDeps, at = now()): Pr
       }
       out.notes.push("budget IA indisponible : images en attente de l'IA (aucun gabarit à la place)");
     }
-    const est = paidWanted && deps.aiActive ? estimateProduction(p, soon, deps, { allowPaid: true, aiBackground: "aiBackground" in vp ? vp.aiBackground : undefined, aiImages: "aiImages" in vp ? vp.aiImages : undefined }) : null;
+    const est = paidWanted && deps.aiActive ? estimateProduction(p, soon, deps, { allowPaid: true, aiImages: "aiImages" in vp ? vp.aiImages : undefined }) : null;
     if (est && est.paid > 0 && est.estimateMicro <= left) {
       // Payant, dans le plafond consenti : par la tâche de production existante (réservation atomique du budget).
-      const job = enqueue({ userId: p.userId, projectId: p.id, type: "social.v2.produce", label: L("Pilote : visuels des prochains jours", "Autopilot: upcoming visuals"), payload: { projectId: p.id, ids: soon, allowPaid: true, maxCostEur: left / 1_000_000, approvedEstimateMicro: est.estimateMicro, aiBackground: "aiBackground" in vp ? !!vp.aiBackground : false, aiImages: "aiImages" in vp ? vp.aiImages : null }, idempotencyKey: `autopilot:${p.id}:${soon.join(",").slice(0, 200)}` });
+      const job = enqueue({ userId: p.userId, projectId: p.id, type: "social.v2.produce", label: L("Pilote : visuels des prochains jours", "Autopilot: upcoming visuals"), payload: { projectId: p.id, ids: soon, allowPaid: true, maxCostEur: left / 1_000_000, approvedEstimateMicro: est.estimateMicro, aiBackground: false, aiImages: "aiImages" in vp ? vp.aiImages : null }, idempotencyKey: `autopilot:${p.id}:${soon.join(",").slice(0, 200)}` });
       out.paidJob = job.id;
       logAutopilot(p.id, "paid_job", { jobId: job.id, posts: soon.length, estimateMicro: est.estimateMicro });
     } else {

@@ -1,4 +1,7 @@
-/** Entreprise de services sans photo : chaque publication « image » du calendrier reçoit bien un visuel à la marque. */
+/**
+ * Entreprise de services : l'ancien calendrier ne compose plus de visuel du studio (images finales 100 % IA) ; les
+ * publications en image restent en brouillon jusqu'à leur visuel créé par l'IA dans Publications.
+ */
 import { describe, expect, it, vi } from "vitest";
 
 // Moteur local seulement : une clé d'IA posée par un autre fichier de tests (même base) ne doit pas déclencher d'appel.
@@ -12,7 +15,7 @@ import { createContentPlan } from "@/lib/engine/calendar";
 import { serviceProduct, serviceProfile } from "./fixtures";
 
 describe("publications d'une entreprise de services", () => {
-  it("aucune publication image sans image, même sans photo fournie", async () => {
+  it("ancien calendrier : aucune carte du studio ni photo de banque ; la publication image attend son visuel IA", async () => {
     const u = await createUser(`svcpost${Date.now()}@test.fr`, "motdepasse-test", "S");
     const product = { ...serviceProduct, name: "AutoDim", summary: "Carrosserie et peinture automobile à Mâcon." };
     const services = { ...serviceProfile, contactMode: "call" as const, bookingUrl: "" };
@@ -29,9 +32,7 @@ describe("publications d'une entreprise de services", () => {
     expect(posts.length).toBeGreaterThan(0);
     for (const p of posts.filter((x) => !["reel", "short", "video"].includes(x.format))) {
       const media = JSON.parse(p.media) as string[];
-      expect(media.length, `${p.format} ${p.status}`).toBeGreaterThan(0);
-      expect(one<{ kind: string }>("SELECT kind FROM assets WHERE id = ?", media[0])?.kind).toBe("image");
-      expect(p.status).not.toBe("draft");
+      expect(media, `${p.format} ${p.status}`).toEqual([]);
     }
   }, 120_000);
 });

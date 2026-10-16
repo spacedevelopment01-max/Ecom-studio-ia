@@ -71,25 +71,24 @@ describe("Publications, banques et stratégie", async () => {
     expect(one<{ format: string }>("SELECT format FROM posts WHERE id = ?", vid.ids[0])!.format).toMatch(/video|reel|short/);
     const est = (k: string) => ({ image: 100, ai_post: 300, video: 900 })[k as "image"] ?? 0;
     expect(quoteOne("image", "free", 3, est as any)).toBe(0);
-    expect(quoteOne("image", "ai_image", 2, est as any)).toBe(200);
+    expect(quoteOne("image", "ai_image", 2, est as any)).toBe(600); // ancien mode : publication entière par l'IA
     expect(quoteOne("image", "ai_post", 2, est as any)).toBe(600);
     expect(quoteOne("video", "ai_video", 1, est as any)).toBe(900);
     expect(produceParams("image", "free")).toEqual({ allowPaid: false });
-    expect(produceParams("image", "ai_image")).toMatchObject({ allowPaid: true, aiBackground: true });
+    expect(produceParams("image", "ai_image")).toEqual({ allowPaid: true, aiImages: 60 }); // plus de mise en page du studio
     expect(produceParams("image", "ai_post")).toMatchObject({ allowPaid: true, aiImages: 60 });
   });
 
-  it("API create_one : gratuit avec une image de la banque (visuel fait aussitôt) ; payant refusé sans IA ou sans prix accepté", async () => {
+  it("API create_one : gratuit sans image IA validée = en attente (jamais une photo de la banque mise en page) ; payant refusé sans IA ou sans prix accepté", async () => {
     const p = await project();
     const photo = await saveAsset({ projectId: p.id, userId: p.userId, data: await sharp({ create: { width: 900, height: 1100, channels: 3, background: "#7a5c43" } }).jpeg().toBuffer(), name: "chantier.jpg", mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "upload", status: "approved", meta: {} });
     aiOn = false;
     const r = await call(social, p.id, "social/v2", { action: "create_one", kind: "image", mode: "free", date: tomorrow, time: "11:30", timezone: "Europe/Paris", platforms: [{ platform: "instagram" }], backgroundId: photo.id });
     expect(r.status).toBe(200);
     const j = await r.json();
-    expect(j.produced).toBe(1);
-    const media = JSON.parse(one<{ media: string }>("SELECT media FROM posts WHERE id = ?", j.ids[0])!.media);
-    expect(media).toHaveLength(1);
-    expect(one<{ meta: string }>("SELECT meta FROM assets WHERE id = ?", media[0])!.meta).toContain(photo.id);
+    expect(j.produced).toBe(0);
+    expect(JSON.parse(one<{ media: string }>("SELECT media FROM posts WHERE id = ?", j.ids[0])!.media)).toEqual([]);
+    expect(j.notes.join(" ")).toMatch(/aucun gabarit/);
     expect((await call(social, p.id, "social/v2", { action: "create_one", kind: "image", mode: "ai_post", date: tomorrow, time: "12:30", timezone: "Europe/Paris", platforms: [{ platform: "instagram" }], approvedEstimateMicro: 10_000_000 })).status).toBe(402);
     aiOn = true;
     expect((await call(social, p.id, "social/v2", { action: "create_one", kind: "image", mode: "ai_post", date: tomorrow, time: "13:30", timezone: "Europe/Paris", platforms: [{ platform: "instagram" }] })).status).toBe(409);
@@ -98,7 +97,8 @@ describe("Publications, banques et stratégie", async () => {
     expect(paid.status).toBe(200);
     const pj = await paid.json();
     expect(getJob(pj.jobId)!.type).toBe("social.v2.produce");
-    expect(JSON.parse(getJob(pj.jobId)!.payload)).toMatchObject({ allowPaid: true, aiBackground: true });
+    // Ancien mode « image IA + mise en page du studio » : désormais publication entière par l'IA.
+    expect(JSON.parse(getJob(pj.jobId)!.payload)).toMatchObject({ allowPaid: true, aiBackground: false, aiImages: 60 });
     aiOn = false;
   }, 60_000);
 

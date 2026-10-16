@@ -102,7 +102,7 @@ export function CreateOnePanel({ data, kind, reload, onCreated }: { data: Data; 
     setBusy(true);
     try {
       const r = await api<{ ids: string[]; jobId?: string; produced?: number; notes?: string[]; warnings: string[] }>(`/api/projects/${id}/social/v2`, {
-        body: { action: "create_one", kind, mode, date, time, timezone: data.timezone || "Europe/Paris", platforms: nets.map((platform) => ({ platform, connectionId: data.accounts.find((a) => a.provider === platform && a.status === "active")?.id ?? null })), pillar: pillar || undefined, headline: headline.trim() || undefined, backgroundId: kind === "image" && mode === "free" && bg ? bg : undefined, ...(mode !== "free" ? { subject: subjectChoice(subjects.find((x) => x.key === subjectKey) ?? subjects[0]), request: request.trim() || undefined } : {}), approvedEstimateMicro: mode === "free" ? undefined : quote },
+        body: { action: "create_one", kind, mode, date, time, timezone: data.timezone || "Europe/Paris", platforms: nets.map((platform) => ({ platform, connectionId: data.accounts.find((a) => a.provider === platform && a.status === "active")?.id ?? null })), pillar: pillar || undefined, headline: headline.trim() || undefined, ...(mode !== "free" ? { subject: subjectChoice(subjects.find((x) => x.key === subjectKey) ?? subjects[0]), request: request.trim() || undefined } : {}), approvedEstimateMicro: mode === "free" ? undefined : quote },
       });
       toast("ok", r.jobId ? t("Publication créée : son visuel se prépare avec l'IA, puis elle attend votre validation.", "Post created: its visual is being made with AI, then it waits for your approval.") : t(`Publication créée (${r.ids.length} réseau${r.ids.length > 1 ? "x" : ""}) : relisez-la puis validez-la.`, `Post created (${r.ids.length} network${r.ids.length > 1 ? "s" : ""}): review it, then approve it.`));
       for (const w of [...(r.warnings ?? []), ...(r.notes ?? [])].slice(0, 3)) toast("info", w);
@@ -165,23 +165,6 @@ export function CreateOnePanel({ data, kind, reload, onCreated }: { data: Data; 
       <section className="grid gap-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t("3 · Le message (facultatif)", "3 · The message (optional)")}</p>
         <Field label={t("Titre de la publication", "Post headline")} htmlFor={`one-head-${kind}`}><Input id={`one-head-${kind}`} value={headline} maxLength={70} onChange={(e) => setHeadline(e.target.value)} placeholder={t("Laissé vide : le studio le propose d'après votre activité", "Left empty: the studio suggests it from your business")} /></Field>
-        {kind === "image" && imageMode === "free" && (
-          <div>
-            <p className="mb-1.5 text-sm font-medium">{t("Une de mes images (facultatif)", "One of my images (optional)")}</p>
-            {images.length ? (
-              <div className="grid max-h-52 grid-cols-5 gap-1.5 overflow-y-auto pr-1 sm:grid-cols-8" role="radiogroup" aria-label={t("Image de la banque", "Bank image")} data-bank-picker>
-                <button type="button" role="radio" aria-checked={!bg} onClick={() => setBg("")} className={cx("grid aspect-square place-items-center rounded-lg border-2 bg-paper-2 p-1 text-center text-[11px] text-muted", !bg ? "border-ink" : "border-transparent")}>{t("Auto", "Auto")}</button>
-                {images.map((a) => (
-                  <button key={a.id} type="button" role="radio" aria-checked={bg === a.id} aria-label={a.name} onClick={() => setBg(a.id)} className={cx("aspect-square overflow-hidden rounded-lg border-2", bg === a.id ? "border-ink" : "border-transparent opacity-80 hover:opacity-100")}>
-                    <img src={a.thumbUrl ?? a.url} alt="" loading="lazy" className="size-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-muted">{t("Votre banque d'images est vide : le studio choisit une photo libre de droits adaptée.", "Your image bank is empty: the studio picks a suitable royalty-free photo.")}</p>
-            )}
-          </div>
-        )}
       </section>
       <div className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between" data-one-price>
         <p className="text-sm">

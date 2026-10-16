@@ -118,6 +118,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
         platforms: z.array(z.object({ platform: z.enum(PLATFORMS), connectionId: z.string().max(40).nullable().optional() })).min(1).max(6),
         pillar: z.string().max(40).optional(),
         headline: z.string().max(120).optional(),
+        /** Ancien champ (photo de la banque posée sous une mise en page du studio) : ignoré, images finales 100 % IA. */
         backgroundId: z.string().max(64).optional(),
         /** Produit (clé, « main » pour le principal) ou service choisi pour le visuel (création guidée). */
         subject: z.discriminatedUnion("kind", [z.object({ kind: z.literal("product"), key: z.string().min(1).max(80) }), z.object({ kind: z.literal("service"), name: z.string().min(1).max(120) })]).optional(),
@@ -187,7 +188,8 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     case "quote_one":
       return ok({ ai: aiActiveFor(p.userId, p.id), estimateMicro: quoteOne(b.kind, b.mode, b.networks, realSocialDeps(null, p, aiActiveFor(p.userId, p.id)).estimate) });
     case "create_one": {
-      // Une publication (image ou vidéo) : gratuite, ou payante seulement avec l'IA active et le prix accepté.
+      // Une publication (image ou vidéo) : gratuite (reprise d'une image IA déjà validée, sinon en attente — jamais un
+      // gabarit), ou payante seulement avec l'IA active et le prix accepté.
       assertPerDayRequest(p.id, 1);
       for (const x of b.platforms) if (x.connectionId && !projectAccounts(p).some((a) => a.id === x.connectionId)) throw new HttpError(400, L("Compte inconnu.", "Unknown account."));
       if (b.mode === "ai_video" && b.kind !== "video") throw new HttpError(400, L("Mode réservé aux vidéos.", "Mode for videos only."));
@@ -199,8 +201,6 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
         if (!ai) throw new HttpError(402, L("L'IA n'est pas active pour ce projet (forfait Découverte, budget IA épuisé ou fournisseur désactivé) : choisissez la version gratuite.", "AI isn't active for this project (Discovery plan, AI budget used up or provider disabled): choose the free version."));
         if (b.approvedEstimateMicro == null || b.approvedEstimateMicro < quote) throw new HttpError(409, L("Prix à accepter avant de lancer (il a pu changer) : vérifiez-le puis relancez.", "Price to accept before starting (it may have changed): check it and start again."));
       }
-      const bg = b.backgroundId ? getAsset(b.backgroundId) : null;
-      if (b.backgroundId && (!bg || bg.project_id !== p.id || bg.kind !== "image" || bg.deleted_at)) throw new HttpError(400, L("Image introuvable dans votre banque.", "Image not found in your bank."));
       // Sujet vérifié contre le projet (jamais un produit ou service d'un autre projet).
       const subject = b.subject ? resolveSubject(p, b.subject) : null;
       if (b.subject && (!subject || subject.kind !== b.subject.kind || subject.key !== (b.subject.kind === "service" ? b.subject.name.trim() : b.subject.key))) throw new HttpError(400, L("Produit ou service introuvable dans ce projet.", "Product or service not found in this project."));
@@ -210,7 +210,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
         const job = enqueue({ userId: user.id, projectId: p.id, type: "social.v2.produce", label: b.kind === "video" ? L("Publication vidéo", "Video post") : L("Publication image", "Image post"), payload: { projectId: p.id, ids: one.ids, allowPaid: true, maxCostEur: quote / 1e6, approvedEstimateMicro: quote, aiImages: params.aiImages ?? null, aiBackground: !!params.aiBackground } });
         return ok({ ...one, jobId: job.id, estimateMicro: quote });
       }
-      const produced = await produceBatch(p, one.ids, realSocialDeps(null, p, false), { allowPaid: false, maxCostEur: 0, batchSize: 6, background: bg });
+      const produced = await produceBatch(p, one.ids, realSocialDeps(null, p, false), { allowPaid: false, maxCostEur: 0, batchSize: 6 });
       return ok({ ...one, produced: produced.produced, notes: produced.notes, estimateMicro: 0 });
     }
     case "automation_status":

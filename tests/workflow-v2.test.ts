@@ -94,8 +94,10 @@ describe("Studio Workflow V2", async () => {
     expect(all<{ network: string }>("SELECT DISTINCT network FROM posts WHERE plan_id = ?", `wf-social-${w.id}`).map((x) => x.network)).toEqual(["instagram"]);
     expect(one<{ n: number }>("SELECT COUNT(*) n FROM posts WHERE plan_id = ? AND status IN ('published','scheduled')", `wf-social-${w.id}`)!.n).toBe(0);
     expect(one("SELECT 1 FROM assets WHERE project_id = ? AND role = 'theme-export'", cosmetic)).toBeTruthy();
-    expect(one<{ n: number }>("SELECT COUNT(DISTINCT doc_key) n FROM ad_documents WHERE project_id = ?", cosmetic)!.n).toBeGreaterThan(0);
-    expect(v.validations.map((x) => x.key)).toEqual(expect.arrayContaining(["posts", "ads", "export"]));
+    // Images finales 100 % IA : sans IA, les textes des publicités sont préparés mais aucune création n'est composée.
+    expect(one<{ n: number }>("SELECT COUNT(DISTINCT doc_key) n FROM ad_documents WHERE project_id = ? AND doc_key NOT LIKE 'post:%'", cosmetic)!.n).toBe(0);
+    expect(v.validations.map((x) => x.key)).toEqual(expect.arrayContaining(["posts", "export"]));
+    expect(v.validations.map((x) => x.key)).not.toContain("ads"); // aucune publicité composée sans IA
     expect(aiCalls(vendre.id)).toBe(0);
     // Reprise après interruption (même tâche relancée) : aucun doublon.
     const before = { posts, ads: one<{ n: number }>("SELECT COUNT(*) n FROM ad_documents WHERE project_id = ?", cosmetic)!.n, exports: one<{ n: number }>("SELECT COUNT(*) n FROM assets WHERE project_id = ? AND role = 'theme-export'", cosmetic)!.n };
@@ -176,6 +178,10 @@ describe("Studio Workflow V2", async () => {
 
   it("propagation contrôlée : nouvelle palette → créations listées ; mise à jour locale des choisies, création modifiée par le client conservée", async () => {
     const p0 = loadProject(cosmetic);
+    // Publicités déjà présentes dans le projet (créées ici par les outils simulés du moteur publicitaire).
+    const { mockAdDeps } = await import("./ads-v2-mock");
+    const { runAdEngineV2 } = await import("@/lib/ads-v2/engine");
+    await fr(() => runAdEngineV2(null, cosmetic, { count: 2, platforms: ["meta_feed"] }, mockAdDeps({ userId: p0.userId, projectId: cosmetic }).deps));
     const themeBefore = currentTheme(cosmetic)!;
     // Publicités (les affiches de publications « post: » suivent leur publication).
     const docs = all<{ doc_key: string }>("SELECT DISTINCT doc_key FROM ad_documents WHERE project_id = ? AND doc_key NOT LIKE 'post:%'", cosmetic).map((x) => x.doc_key);

@@ -29,7 +29,7 @@ describe("Créer un visuel de prestation", async () => {
   const overview = await import("@/app/api/projects/[id]/route");
   const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
 
-  it("story 9:16 sans photo, titre vide : tâche terminée, visuel listé", async () => {
+  it("story 9:16 sans photo, titre vide : la demande part vers l'IA (publication entière), avec le forfait du projet", async () => {
     const u = await createUser(`vis${Date.now()}@test.fr`, "motdepasse-test", "P");
     sessionUser = { ...u, role: "client" };
     const pid = await seedThemeScenario(u.id, "artisan");
@@ -51,17 +51,9 @@ describe("Créer un visuel de prestation", async () => {
     expect(jobId).toBeTruthy();
     // Sa propre tâche (d'autres tests peuvent laisser des tâches en file dans la même base).
     const job = getJob(jobId)!;
-    expect(job.type).toBe("image.single");
-    run("UPDATE jobs SET status = 'running', locked_by = NULL WHERE id = ?", jobId);
-    const result = await fr(() => handlers["image.single"](new JobContext(job)));
-    completeJob(job.id, result);
-    // L'écran lit l'état de la tâche : terminée.
-    const st = await (await jobs.GET(new Request(`http://localhost:3000/api/jobs/${jobId}`), { params: Promise.resolve({ jid: jobId }) })).json();
-    expect(st.job.status).toBe("done");
-    // … puis recharge la liste : le visuel y est.
-    const list = await (await fr(() => files.GET(new Request(`http://localhost:3000/api/projects/${pid}/files?role=social,ad,banner,lifestyle,packshot,scene`), { params: Promise.resolve({ id: pid }) } as any))).json();
-    const assetId = (result as { assetId?: string }).assetId;
-    expect(assetId).toBeTruthy();
-    expect(list.assets.some((a: { id: string }) => a.id === assetId)).toBe(true);
+    // Images finales 100 % IA : le visuel de prestation est une publication entière créée par l'IA (plus de rendu du
+    // studio). La tâche porte la demande telle que l'écran l'envoie.
+    expect(job.type).toBe("image.ai_post");
+    expect(JSON.parse(job.payload).request).toMatchObject({ kind: "service", format: "story", serviceIndex: 0 });
   }, 120_000);
 });
