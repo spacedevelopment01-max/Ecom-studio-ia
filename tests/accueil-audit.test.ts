@@ -137,8 +137,11 @@ describe("Accueil : parcours ARVEN, un vrai résultat à chaque étape", async (
   const x = homeExtras("montre");
   const exists = (f: string) => fs.existsSync(path.join(process.cwd(), "public", f));
 
-  it("publicités : la publicité faite dans l'éditeur, texte du propriétaire mot pour mot, dans les quatre formats", () => {
-    expect(x.editorAd?.title).toBe("Acier et cuir véritable.");
+  it("publicités : la publicité créée par l'IA choisie par le propriétaire, dans les quatre formats, sans gabarit du studio", () => {
+    expect(x.editorAd?.title).toBe("Un classique à votre rythme.");
+    // Aucune publicité composée par le gabarit de l'éditeur sur l'accueil (demande du propriétaire, 16/10).
+    for (const f of x.editorAd!.formats) expect(f.src).toMatch(/\/demo\/montre\/publicite-ia-/);
+    expect(JSON.stringify(x.social)).not.toContain("pub-editeur");
     expect(x.editorAd?.formats.map((f) => f.aspect).sort()).toEqual(["16:9", "1:1", "4:5", "9:16"]);
     for (const f of x.editorAd!.formats) expect(exists(f.src)).toBe(true);
     const story = read("src/components/home/home-story.tsx");
