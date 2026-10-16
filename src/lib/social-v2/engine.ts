@@ -18,10 +18,11 @@ import { createPlanV2, type PlanRequest } from "./planner";
 import { adaptForPlatform, nativeFormatFor, PLATFORMS, type Platform, type PostFormat } from "./platforms";
 import { afterEdit, approvePosts } from "./approval";
 import { checkPost } from "./quality";
-import { produceBatch } from "./production";
 import { moveRefusal, setPlanPaused } from "./scheduler";
 import { rememberRefused } from "./memory";
 import { moveToWeekday, planSocialEdit } from "./local-edit";
+import { attachFreeVisuals } from "./plan-visuals";
+import { L } from "../i18n-server";
 import type { SocialDeps } from "./deps";
 
 export const SOCIAL_V2_VERSION = "9a.1";
@@ -136,7 +137,22 @@ export function deletePostV2(p: Project, postId: string) {
 
 export const approve = (p: Project, ids: string[], userId: string) => approvePosts(ids.filter((x) => one("SELECT 1 FROM posts WHERE id = ? AND project_id = ?", x, p.id)), userId, (pid) => checkPost(p, pid));
 
-export type EditOutcome = { applied: boolean; by: "local" | "ai" | "none"; summary: string; ids: string[]; needsConfirm?: boolean; estimateMicro?: number; needsAi?: boolean; refused?: string[]; costMicro: number };
+export type EditOutcome = {
+  applied: boolean;
+  by: "local" | "ai" | "none";
+  summary: string;
+  ids: string[];
+  /** Accord du client attendu : « delete » (suppression, toujours confirmée) ou « ai » (coût IA à accepter). */
+  needsConfirm?: boolean;
+  confirmKind?: "delete" | "ai";
+  /** Coût PROBABLE de la retouche IA (micro-euros, usage interne : le client voit un % de son budget IA). */
+  estimateMicro?: number;
+  needsAi?: boolean;
+  /** Demande non comprise : le résumé contient des exemples de phrases comprises. */
+  unclear?: boolean;
+  refused?: string[];
+  costMicro: number;
+};
 
 /**
  * Retouche en conversation sur le calendrier. Locale et gratuite quand c'est possible ; IA seulement pour réécrire,
@@ -145,8 +161,10 @@ export type EditOutcome = { applied: boolean; by: "local" | "ai" | "none"; summa
 export async function applySocialEdit(p: Project, text: string, deps: SocialDeps, o: { confirm?: boolean; maxCostEur?: number; planId?: string | null; at?: number } = {}): Promise<EditOutcome> {
   const plan = planSocialEdit(text, p.id, o.at ?? now(), o.planId);
   const base = { ids: plan.ids, costMicro: 0 };
-  if (plan.kind === "unclear") return { ...base, applied: false, by: "none", summary: plan.summary };
+  if (plan.kind === "unclear") return { ...base, applied: false, by: "none", unclear: true, summary: plan.summary };
   if (plan.kind === "local") {
+    // Suppression (ou retrait pour moins de publications par jour) : TOUJOURS confirmée par le client avant d'agir.
+    if (plan.confirm && !o.confirm) return { ...base, applied: false, by: "none", needsConfirm: true, confirmKind: "delete", summary: plan.confirm };
     const moveRefused: string[] = [];
     const planIds = o.planId ? [o.planId] : all<{ id: string }>("SELECT id FROM content_plans WHERE project_id = ? AND engine = 'v2'", p.id).map((r) => r.id);
     switch (plan.action) {
@@ -175,23 +193,24 @@ export async function applySocialEdit(p: Project, text: string, deps: SocialDeps
         }
         break;
       case "replace_media": {
-        // Nouvelle image demandée par le client : média retiré puis production GRATUITE (bibliothèque, rendu local).
-        for (const pid of plan.ids) {
-          removeUsages("post", pid);
-          run("UPDATE posts SET media = '[]', updated_at = ? WHERE id = ? AND status NOT IN ('publishing','published','uncertain')", now(), pid);
-        }
-        await produceBatch(p, plan.ids, deps, { allowPaid: false, maxCostEur: 0 });
+        // Nouvelle image demandée par le client : une AUTRE image de la banque du projet (gratuit). Jamais une image
+        // retirée sans rien à la place : sans autre photo disponible, l'image actuelle reste et c'est dit.
+        const r = attachFreeVisuals(p, plan.ids, { replace: true });
+        if (!r.images) return { ...base, applied: false, by: "local", summary: L("Aucune autre photo disponible dans votre banque d'images : les images actuelles restent. Ajoutez des photos à votre banque d'images, ou créez de nouveaux visuels par l'IA.", "No other photo available in your image bank: the current images stay. Add photos to your image bank, or create new visuals with AI.") };
+        if (r.images < plan.ids.length) return { ...base, applied: true, by: "local", summary: L(`nouvelles images pour ${r.images} publication(s) sur ${plan.ids.length} : pas assez d'autres photos dans votre banque pour les autres (images actuelles gardées)`, `new images for ${r.images} of ${plan.ids.length} post(s): not enough other photos in your bank for the rest (current images kept)`) };
         break;
       }
     }
-    if (moveRefused.length) return { ...base, applied: moveRefused.length < plan.ids.length, by: "local", summary: `${plan.summary} — ${moveRefused.length} non déplacée(s)`, refused: moveRefused };
+    if (moveRefused.length) return { ...base, applied: moveRefused.length < plan.ids.length, by: "local", summary: L(`${plan.summary} — ${moveRefused.length} non déplacée(s)`, `${plan.summary} — ${moveRefused.length} not moved`), refused: moveRefused };
     return { ...base, applied: true, by: "local", summary: plan.summary };
   }
   // Réécriture IA : seulement les publications visées, estimée, confirmée, plafonnée.
-  if (!deps.aiActive) return { ...base, applied: false, by: "none", needsAi: true, summary: "cette retouche demande l'IA, non disponible pour ce compte : modifiez les textes directement" };
-  const estimate = plan.ids.length * deps.estimate("rewrite");
-  const cap = Math.round((o.maxCostEur ?? 1) * EUR);
-  if (!o.confirm) return { ...base, applied: false, by: "none", needsConfirm: true, estimateMicro: estimate, summary: `${plan.summary} — estimation ${(estimate / EUR).toFixed(2)} € : confirmez pour lancer` };
+  if (!deps.aiActive) return { ...base, applied: false, by: "none", needsAi: true, summary: L("Cette retouche demande l'IA, non disponible pour ce compte : modifiez les textes directement.", "This edit needs AI, which isn't available for this account: edit the texts directly.") };
+  // Coût probable montré au client (en % de son budget IA par la route) : un essai par publication, sans la marge
+  // de sécurité de l'estimation ; le plafond, lui, garde la marge.
+  const estimate = Math.round((plan.ids.length * deps.estimate("rewrite")) / 1.2);
+  const cap = Math.round((o.maxCostEur ?? Math.max(1, (plan.ids.length * deps.estimate("rewrite")) / EUR)) * EUR);
+  if (!o.confirm) return { ...base, applied: false, by: "none", needsConfirm: true, confirmKind: "ai", estimateMicro: estimate, summary: L(`${plan.summary} : confirmez pour lancer`, `${plan.summary}: confirm to start`) };
   let spent = 0;
   const refused: string[] = [];
   let done = 0;
@@ -215,5 +234,5 @@ export async function applySocialEdit(p: Project, text: string, deps: SocialDeps
     afterEdit(pid);
     done++;
   }
-  return { ...base, applied: done > 0, by: "ai", summary: `${done} publication(s) réécrite(s)${refused.length ? `, ${refused.length} refusée(s)` : ""}`, refused, costMicro: spent };
+  return { ...base, applied: done > 0, by: "ai", summary: L(`${done} publication(s) réécrite(s)${refused.length ? `, ${refused.length} refusée(s)` : ""}`, `${done} post(s) rewritten${refused.length ? `, ${refused.length} refused` : ""}`), refused, costMicro: spent };
 }

@@ -17,6 +17,7 @@ import { EUR } from "../billing";
 import { afterEdit } from "./approval";
 import { JobCancelled, JobPaused } from "../jobs";
 import type { MediaResult, PostBrief, SocialDeps } from "./deps";
+import { setVisualNote } from "./plan-visuals";
 
 export type ProduceMethod = "library" | "local" | "image_v2" | "ads_v2" | "video_v2" | "ai_post" | "none";
 export type EstimateLine = { postId: string; method: ProduceMethod; paid: boolean; estimateMicro: number };
@@ -98,7 +99,7 @@ export type ProductionResult = { produced: number; skipped: number; failed: numb
  * Production d'un lot. `approvedEstimateMicro` : estimation vue et acceptée par le client — une production
  * payante n'est lancée que si elle a été acceptée et seulement dans le plafond `maxCostEur`.
  */
-export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, o: { allowPaid: boolean; maxCostEur: number; approvedEstimateMicro?: number | null; batchSize?: number; /** Nombre d'images différentes voulu pour les publications du calendrier (vide : une par publication). */ distinctImages?: number | null; /** Les N premières publications en image : visuel entièrement créé par l'IA (payant, dans le plafond). */ aiImages?: number | null; /** Image de fond par l'IA, mise en page du studio (payant, dans le plafond). */ aiBackground?: boolean; /** Remplacer le visuel déjà posé (l'ancien reste dans la bibliothèque). */ replace?: boolean; /** Image de la banque choisie par le client comme fond des publications en image (gratuit). */ background?: Asset | null }): Promise<ProductionResult> {
+export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, o: { allowPaid: boolean; maxCostEur: number; approvedEstimateMicro?: number | null; batchSize?: number; /** Nombre d'images différentes voulu pour les publications du calendrier (vide : une par publication). */ distinctImages?: number | null; /** Les N premières publications en image : visuel entièrement créé par l'IA (payant, dans le plafond). */ aiImages?: number | null; /** Image de fond par l'IA, mise en page du studio (payant, dans le plafond). */ aiBackground?: boolean; /** Remplacer le visuel déjà posé (l'ancien reste dans la bibliothèque). */ replace?: boolean; /** Image de la banque choisie par le client comme fond des publications en image (gratuit). */ background?: Asset | null; /** Suivi visible : une publication à la fois (tâche de fond). */ progress?: (done: number, total: number) => void; /** Message d'attente posé sur chaque publication restée sans visuel (calendrier). */ markWaiting?: boolean }): Promise<ProductionResult> {
   const cap = Math.round(o.maxCostEur * EUR);
   const allowPaid = o.allowPaid && deps.aiActive && o.approvedEstimateMicro != null && o.approvedEstimateMicro <= cap;
   const notes: string[] = [];
@@ -108,7 +109,10 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
   const used = new Map<string, number>();
   const aiIds = aiImageIds(rows, o.aiImages);
   const res: ProductionResult = { produced: 0, skipped: 0, failed: 0, spentMicro: 0, stoppedByCap: false, notes, byMethod: {} };
+  let done = 0;
+  const mark = (pid: string, video: boolean, detail: string | null) => o.markWaiting && setVisualNote(pid, allowPaid ? "ai_failed" : video ? "video_failed" : "bank_empty", detail);
   for (const r of rows) {
+    o.progress?.(done++, rows.length);
     const m = pick(r, { allowPaid: allowPaid && (!o.aiImages || aiIds.has(r.id)), ai: aiIds.has(r.id), bg: o.aiBackground }, pools);
     let out: MediaResult | null = null;
     try {
@@ -137,7 +141,9 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
         }
       }
     } catch (e) {
+      if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
       notes.push(`publication ${r.id.slice(0, 6)} : ${(e as Error).message.slice(0, 120)}`);
+      mark(r.id, needsVideo(r), (e as Error).message.slice(0, 160));
       res.failed++;
       continue;
     }
@@ -145,8 +151,10 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
     if (!out?.assetId) {
       res.skipped++;
       if (out?.note) notes.push(out.note);
+      mark(r.id, needsVideo(r), res.stoppedByCap ? "plafond de dépense atteint" : out?.note?.slice(0, 160) ?? null);
       continue;
     }
+    if (o.markWaiting) setVisualNote(r.id, null);
     used.set(out.assetId, (used.get(out.assetId) ?? 0) + 1);
     run("UPDATE posts SET media = ?, production = ?, status = CASE WHEN status IN ('planned','draft','failed') THEN 'review' ELSE status END, updated_at = ? WHERE id = ? AND (media = '[]' OR ?)", JSON.stringify([out.assetId]), JSON.stringify({ by: out.by, costMicro: out.costMicro, at: now() }), now(), r.id, o.replace ? 1 : 0);
     addUsage(out.assetId, "post", r.id, "Publication (Social V2)");
@@ -156,6 +164,7 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
     res.produced++;
     res.byMethod[out.by] = (res.byMethod[out.by] ?? 0) + 1;
   }
+  o.progress?.(rows.length, rows.length);
   return res;
 }
 

@@ -8,6 +8,7 @@ import type { Project } from "../projects";
 import { approvalValid } from "./approval";
 import { checkPost } from "./quality";
 import { platformSpec } from "./platforms";
+import { visualNoteOf } from "./plan-visuals";
 
 export function postViewV2(p: Project, r: any, o: { gate?: boolean } = {}) {
   const base = postView(r);
@@ -24,5 +25,7 @@ export function postViewV2(p: Project, r: any, o: { gate?: boolean } = {}) {
     blocking: g?.blocking ?? [],
     issues: g?.issues ?? [],
     level: platformSpec(r.network).level,
+    /** Pourquoi la publication n'a pas (encore) de visuel, dit au client (banque vide, échec signalé…). */
+    visualNote: (JSON.parse(r.media || "[]") as string[]).length ? null : visualNoteOf(r.brief),
   };
 }

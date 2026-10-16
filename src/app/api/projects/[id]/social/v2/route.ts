@@ -24,6 +24,8 @@ import { AUTOMATION_KINDS, createAutomation, listAutomations, setAutomationStatu
 import { postViewV2 } from "@/lib/social-v2/view";
 import { createOnePost, produceParams, quoteOne } from "@/lib/social-v2/single";
 import { getAsset } from "@/lib/library";
+import { EUR } from "@/lib/billing";
+import { attachFreeVisuals, budgetShare, needsImage, needsVideoFormat, previewVisualCounts, quoteVisuals } from "@/lib/social-v2/plan-visuals";
 import { resolveSubject, subjectOptions } from "@/lib/creative-subject";
 
 export const runtime = "nodejs";
@@ -96,7 +98,15 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const b = await body(
     req,
     z.discriminatedUnion("action", [
-      z.object({ action: z.literal("plan"), request: Plan }),
+      z.object({
+        action: z.literal("plan"),
+        request: Plan,
+        /** Visuels : textes seulement, visuels gratuits (banque du projet, montage local) ou créés par l'IA (devis puis accord). */
+        visuals: z.enum(["none", "free", "ai"]).optional(),
+        /** Visuels IA : devis vu et accepté par le client (part du budget IA du mois, en %). */
+        confirm: z.boolean().optional(),
+        approvedPct: z.number().min(0).max(1000).optional(),
+      }),
       z.object({ action: z.literal("ask"), text: z.string().min(5).max(600) }),
       z.object({ action: z.literal("estimate"), ids, planId: z.string().max(80).optional(), allowPaid: z.boolean().default(false), aiImages: z.number().int().min(0).max(60).nullable().optional(), aiBackground: z.boolean().optional(), replace: z.boolean().optional() }),
       z.object({ action: z.literal("produce"), ids, planId: z.string().max(80).optional(), allowPaid: z.boolean().default(false), maxCostEur: z.number().min(0).max(100).default(0), approvedEstimateMicro: z.number().int().min(0).nullable().optional(), distinctImages: z.number().int().min(1).max(60).nullable().optional(), aiImages: z.number().int().min(0).max(60).nullable().optional(), aiBackground: z.boolean().optional(), replace: z.boolean().optional() }),
@@ -146,7 +156,31 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       assertPerDayRequest(p.id, b.request.perDay);
       if (!publishingDates(b.request).length) throw new HttpError(400, L("Aucun jour de publication dans cette période.", "No publishing day in this period."));
       for (const x of b.request.platforms) if (x.connectionId && !projectAccounts(p).some((a) => a.id === x.connectionId)) throw new HttpError(400, L("Compte inconnu.", "Unknown account."));
-      return ok(createPlanV2(p, { ...b.request, lang: p.settings.language === "en" ? "en" : "fr" }));
+      const req = { ...b.request, lang: (p.settings.language === "en" ? "en" : "fr") as "fr" | "en" };
+      const visuals = b.visuals ?? "none";
+      if (visuals === "ai") {
+        // Visuels créés par l'IA : devis d'abord (rien n'est créé), puis accord explicite du client.
+        if (!aiActiveFor(p.userId, p.id)) throw new HttpError(402, L("L'IA n'est pas active pour ce projet (forfait Découverte, budget IA épuisé ou fournisseur désactivé) : choisissez les visuels gratuits.", "AI isn't active for this project (Discovery plan, AI budget used up or provider disabled): choose the free visuals."));
+        const quote = quoteVisuals(p, previewVisualCounts(p, req));
+        const { probableMicro, ...shown } = quote;
+        if (!b.confirm) return ok({ needsConfirm: true, quote: shown });
+        if (!quote.enough) throw new HttpError(402, L(`Budget IA insuffisant pour ${quote.images + quote.videos} visuels (≈ ${quote.pct} % du budget du mois, il en reste ${quote.leftPct} %). Planifiez moins de publications (environ ${quote.affordable} avec visuel), ou choisissez les visuels gratuits.`, `Not enough AI budget for ${quote.images + quote.videos} visuals (≈ ${quote.pct}% of the monthly budget, ${quote.leftPct}% left). Plan fewer posts (about ${quote.affordable} with a visual), or choose the free visuals.`));
+        if (b.approvedPct == null || quote.pct > b.approvedPct + 0.05) throw new HttpError(409, L("Le coût a changé depuis votre accord : vérifiez-le puis confirmez de nouveau.", "The cost changed since you agreed: check it and confirm again."));
+        const res = createPlanV2(p, req);
+        const visualIds = all<{ id: string; format: string }>("SELECT id, format FROM posts WHERE plan_id = ? AND media = '[]' AND status IN ('planned','draft','review','failed') ORDER BY scheduled_at", res.planId).filter((r) => needsImage(r.format) || needsVideoFormat(r.format)).map((r) => r.id);
+        if (!visualIds.length) return ok({ ...res, visuals: { mode: "ai", images: 0, videos: 0 } });
+        // Plafond de la tâche : l'estimation prudente (essais refaits compris) ; le client a vu le coût probable.
+        const deps = realSocialDeps(null, p, true);
+        const capMicro = Math.max(probableMicro, quote.images * deps.estimate("ai_post") + quote.videos * deps.estimate("video"));
+        const job = enqueue({ userId: user.id, projectId: p.id, type: "social.v2.produce", label: L("Visuels IA des publications", "AI visuals for posts"), payload: { projectId: p.id, ids: visualIds, allowPaid: true, maxCostEur: capMicro / EUR, approvedEstimateMicro: capMicro, aiImages: null, batchSize: visualIds.length, markWaiting: true } });
+        return ok({ ...res, jobId: job.id, visuals: { mode: "ai", images: quote.images, videos: quote.videos, pct: quote.pct } });
+      }
+      const res = createPlanV2(p, req);
+      if (visuals !== "free") return ok(res);
+      // Visuels gratuits : images de la banque posées tout de suite ; vidéos montées sans IA en tâche de fond.
+      const free = attachFreeVisuals(p, postsOfPlan(res.planId));
+      const job = free.videoIds.length ? enqueue({ userId: user.id, projectId: p.id, type: "social.v2.produce", label: L("Vidéos des publications (montage sans IA)", "Post videos (edited without AI)"), payload: { projectId: p.id, ids: free.videoIds, allowPaid: false, maxCostEur: 0, batchSize: free.videoIds.length, markWaiting: true } }) : null;
+      return ok({ ...res, jobId: job?.id ?? null, visuals: { mode: "free", images: free.images, stock: free.stock, waiting: free.waiting, videos: free.videoIds.length, message: free.message } });
     }
     case "ask": {
       // Demande écrite : mêmes limites que le formulaire (jours de calendrier et publications par jour du forfait).
@@ -180,8 +214,12 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     case "resume":
       planOwned(b.planId);
       return ok({ ok: true, ...setPlanPaused(b.planId, b.action === "pause") });
-    case "edit":
-      return ok(await applySocialEdit(p, b.text, realSocialDeps(null, p, aiActiveFor(p.userId, p.id)), { confirm: b.confirm, maxCostEur: b.maxCostEur, planId: b.planId }));
+    case "edit": {
+      const r = await applySocialEdit(p, b.text, realSocialDeps(null, p, aiActiveFor(p.userId, p.id)), { confirm: b.confirm, maxCostEur: b.maxCostEur, planId: b.planId });
+      // Coût d'une retouche IA : en % du budget IA du mois, jamais en euros.
+      const { estimateMicro, ...rest } = r;
+      return ok(estimateMicro != null ? { ...rest, cost: budgetShare(p, estimateMicro) } : rest);
+    }
     case "automation":
       requirePlan(user, p.id);
       return ok({ id: createAutomation(p.id, b.kind, b.config ?? {}) });
