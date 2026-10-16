@@ -1,0 +1,27 @@
+{
+  "at": "2026-10-16T12:41:33.881Z",
+  "model": "qwen-image-3.0-pro",
+  "boundUsd": 0.081,
+  "items": [
+    {
+      "id": "arven-univers-marque-v2",
+      "ok": true,
+      "model": "qwen-image-3.0-pro",
+      "aspect": "4:5",
+      "size": "1104*1472",
+      "references": 0,
+      "usage": {
+        "input_image_count": 0,
+        "input_image_type": "qima_input_1k",
+        "output_height": 1472,
+        "output_image_count": 1,
+        "output_image_type": "qima_output_1k",
+        "output_width": 1104
+      },
+      "requestId": "46186f17-65c9-942c-8ba9-2ba92f1c994a",
+      "seconds": 13,
+      "maxCostUsd": 0.081,
+      "prompt": "Photographie, style photographie premium. Sujet : nature morte de l'univers du produit (accessoires) ; matières et couleurs du produit : acier poli, cuir brun ; le produit lui-même n'apparaît pas. Action : écrin ouvert vide, pochette en cuir et chutes de cuir posés à plat, seulement des objets posés. Décor : surface en marbre ou en bois sous une lumière douce. Composition : le sujet en héros, quelques accessoires raffinés dans la palette de la marque, profondeur en plusieurs plans. Lumière : lumière douce maîtrisée avec un léger liseré, tons riches. Prise de vue : angle légèrement bas, détails au 100 mm macro ou plan héros au 70 mm. Ambiance : raffiné, tactile, haut de gamme. Touches de couleur en accord avec #1E2225, #E8DACF, #A86932, #FAF7F5. Format 4:5 ; le bas de l'image reste dégagé et calme (surface unie). Objets sans marque visible ; image purement photographique, rien n'est écrit sur l'image. Scène sans aucune présence humaine : seulement des lieux, des objets, des outils, des matériaux et des résultats.\nPhotographie éditoriale réaliste et haut de gamme, lumière naturelle : le lieu, les objets, les matériaux et la lumière racontent l'histoire. Image purement photographique : objets et surfaces vierges, rien n'est écrit sur l'image. Format 4:5."
+    }
+  ]
+}
