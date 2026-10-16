@@ -160,6 +160,7 @@ export default function TabBoutique() {
   const [message, setMessage] = useState("");
   const [attachments, setAttachments] = useState<AssetView[]>([]);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [stockH, setStockH] = useState(0);
   const [sending, setSending] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
@@ -669,14 +670,15 @@ export default function TabBoutique() {
     <div className="-mx-4 -my-6 sm:-mx-6 lg:-mx-8">
       {chatJobs.filter((j) => j.type !== "shop.chat").map((j) => <JobProgress key={j.id} job={j} className="m-4" />)}
       {/* Photos libres de droits sur le site : toujours visibles (ordinateur et téléphone), jamais en silence. */}
-      {!!theme.stock?.photos.length && <StockStrip stock={theme.stock} projectId={id} onReplaced={() => (reload(), reloadProject())} />}
+      {!!theme.stock?.photos.length && <StockStrip stock={theme.stock} projectId={id} onReplaced={() => (reload(), reloadProject())} onHeight={setStockH} />}
       {/* Téléphone : bascule entre discussion, aperçu et structure */}
       <div className="flex gap-1 border-b border-line bg-paper p-2 lg:hidden" role="tablist">
         {[["chat", MessageSquare, t("Discussion", "Chat")], ["preview", Laptop, t("Aperçu", "Preview")], ["structure", Layers, t("Structure", "Structure")]].map(([k, I, l]: any) => (
           <button key={k} role="tab" aria-selected={view === k} onClick={() => setView(k)} className={cx("flex flex-1 items-center justify-center gap-1.5 rounded-full py-2 text-sm", view === k ? "bg-ink text-paper" : "text-ink-2")}><I className="size-4" /> {l}</button>
         ))}
       </div>
-      <div className="grid h-[calc(100dvh-9.5rem)] grid-cols-1 lg:h-[calc(100dvh-4rem)] lg:grid-cols-[400px_minmax(0,1fr)] xl:grid-cols-[380px_minmax(0,1fr)_320px]">
+      {/* Hauteur du bandeau des photos libres déduite : la zone de saisie reste visible (téléphone compris). */}
+      <div className="grid h-[calc(100dvh-9.5rem-var(--stock-h,0px))] grid-cols-1 lg:h-[calc(100dvh-4rem-var(--stock-h,0px))] lg:grid-cols-[400px_minmax(0,1fr)] xl:grid-cols-[380px_minmax(0,1fr)_320px]" style={{ "--stock-h": `${theme.stock?.photos.length ? stockH : 0}px` } as React.CSSProperties}>
         <section className={cx("min-h-0 border-r border-line bg-paper", view !== "chat" && "hidden lg:block")} aria-label={t("Discussion", "Chat")}>{Chat}</section>
         <section className={cx("min-h-0", full ? "fixed inset-0 z-[80] bg-paper" : view !== "preview" && "hidden lg:block")} aria-label={t("Aperçu", "Preview")} aria-modal={full || undefined} role={full ? "dialog" : undefined}>{Preview}</section>
         <section className={cx("min-h-0 border-l border-line bg-paper", view !== "structure" ? "hidden xl:block" : "")} aria-label={t("Structure", "Structure")}>{Structure}</section>
@@ -714,9 +716,17 @@ export default function TabBoutique() {
  * Photos libres de droits (Pixabay…) placées sur le site : le client est toujours prévenu (jamais de bascule
  * silencieuse) et peut remplacer chacune par sa propre photo ou une image IA de sa bibliothèque.
  */
-function StockStrip({ stock, projectId, onReplaced }: { stock: NonNullable<ThemeData["stock"]>; projectId: string; onReplaced: () => void }) {
+function StockStrip({ stock, projectId, onReplaced, onHeight }: { stock: NonNullable<ThemeData["stock"]>; projectId: string; onReplaced: () => void; onHeight?: (h: number) => void }) {
   const t = useT();
   const toast = useToast();
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = box.current;
+    if (!el || !onHeight) return;
+    const ro = new ResizeObserver(() => onHeight(el.offsetHeight));
+    ro.observe(el);
+    return () => (ro.disconnect(), onHeight(0));
+  }, [onHeight]);
   const [open, setOpen] = useState(false);
   const [target, setTarget] = useState<string | null>(null);
   const n = stock.photos.length;
@@ -735,7 +745,7 @@ function StockStrip({ stock, projectId, onReplaced }: { stock: NonNullable<Theme
   };
   return (
     <>
-    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-warn-soft px-4 py-2 text-xs text-warn" data-stock-strip>
+    <div ref={box} className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-warn-soft px-4 py-2 text-xs text-warn" data-stock-strip>
       <span className="min-w-0 flex-1">
         {n > 1
           ? t(`${n} photos libres de droits (${src}) sur votre site : ce ne sont pas des images de votre activité.`, `${n} royalty-free photos (${src}) on your website: they are not images of your business.`)
@@ -774,7 +784,7 @@ function V2Panel({ v2, onRebuild, onPage, busy }: { v2: NonNullable<ThemeData["v
   const [lang, setLang] = useState(v2.language);
   return (
     <div className="mb-5 min-w-0 overflow-hidden rounded-2xl border border-line bg-card p-3.5" data-v2-panel>
-      <p className="text-[11px] font-medium uppercase tracking-[.16em] text-muted">{t("Site — moteur V2", "Website — V2 engine")}</p>
+      <p className="text-[11px] font-medium uppercase tracking-[.16em] text-muted">{t("Pages et style du site", "Website pages and style")}</p>
       <div className="mt-2 flex items-center gap-2">
         <Select value={lang} onChange={(e) => setLang(e.target.value)} className="h-9 min-w-0 flex-1 text-sm" aria-label={t("Langage visuel", "Visual language")} data-v2-language>
           {v2.languages.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}

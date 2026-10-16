@@ -127,7 +127,7 @@ export const LANGUAGE_LABEL_EN: Record<LanguageId, string> = { craft: "Precise w
  * propriétaire n'a pas validé le rendu.
  */
 export async function buildShopV2(ctx: JobContext | null, projectId: string, opts: { language?: LanguageId; summary?: Bi } = {}) {
-  ctx?.progress(0.2, L("Composition du site (Theme Engine V2)", "Composing the website (Theme Engine V2)"));
+  ctx?.progress(0.2, L("Composition du site", "Composing the website"));
   const r = await composeThemeV2(projectId, { language: opts.language, ctx });
   const problems = validateSpec(r.spec);
   if (problems.length) throw new Error(L(`Thème invalide : ${problems.join(" ; ")}`, `Invalid theme: ${problems.join("; ")}`));

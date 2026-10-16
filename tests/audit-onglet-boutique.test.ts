@@ -112,3 +112,30 @@ describe("Onglet Boutique — le libellé des photos libres n'est jamais export�
     expect(all).not.toContain("pas une image de votre activité");
   });
 });
+
+describe("Onglet Boutique — aucun jargon technique visible, carte du tutoriel hors de la saisie", async () => {
+  const { baseSectionTypes, sectionSchema } = await import("@/lib/theme/spec");
+  const { libraryEntry } = await import("@/lib/theme/section-library");
+  it("noms des sections sans « V2 », en français et en anglais, sans doublon", () => {
+    for (const lang of ["fr", "en"] as const) {
+      const names = baseSectionTypes().map((t) => sectionSchema(null, t, lang)?.name ?? "");
+      expect(names.filter((n) => /\bV2\b/.test(n))).toEqual([]);
+      const v2 = baseSectionTypes().filter((t) => t.startsWith("v2-")).map((t) => sectionSchema(null, t, lang)!.name);
+      expect(new Set(v2).size).toBe(v2.length);
+      for (const t of baseSectionTypes()) expect(libraryEntry(t, lang)?.name ?? "").not.toMatch(/\bV2\b/);
+    }
+    expect(sectionSchema(null, "v2-hero", "fr")!.name).toBe("Ouverture du site");
+    expect(sectionSchema(null, "v2-hero", "en")!.name).toBe("Site opening");
+    expect(sectionSchema(null, "v2-band", "en")!.name).toBe("Transition band");
+  });
+  it("panneau du site et carte « Première visite ? » : libellé clair, en haut de l'écran sur téléphone", () => {
+    const tab = fs.readFileSync(path.join(process.cwd(), "src/components/studio/tab-boutique.tsx"), "utf8");
+    expect(tab).not.toContain("moteur V2");
+    expect(tab).toContain('t("Pages et style du site", "Website pages and style")');
+    const tuto = fs.readFileSync(path.join(process.cwd(), "src/components/studio/tutorial.tsx"), "utf8");
+    const cls = /data-tuto-nudge className="([^"]+)"/.exec(tuto)![1].split(" ");
+    expect(cls.some((c) => c.startsWith("top-["))).toBe(true);
+    expect(cls.some((c) => c.startsWith("bottom-"))).toBe(false);
+    expect(cls).toContain("lg:bottom-5");
+  });
+});
