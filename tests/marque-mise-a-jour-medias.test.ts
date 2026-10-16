@@ -60,10 +60,13 @@ describe("Changement de marque : images et vidéos mises à jour", async () => {
     expect(latestVideo(pid, "vid:marque-test")!.doc.brand.name).toBe("Nouvelle Marque");
     expect(one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'video.v2.render'", pid)).toBeTruthy();
     expect(one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'image.ai_post'", pid)).toBeFalsy();
-    // Prix accepté : la nouvelle version part (plafonnée à ce prix).
+    // Prix accepté : la nouvelle version part (dans le plafond de la tâche).
     const r2 = await fr(() => prop.applyBrandUpdate(pid, [ai.key], { userId, approvedPaidMicro: ai.paidMicro }));
     expect(r2.updated.map((u) => u.key)).toEqual([ai.key]);
     const job = one<{ payload: string }>("SELECT payload FROM jobs WHERE project_id = ? AND type = 'image.ai_post'", pid)!;
-    expect(JSON.parse(job.payload)).toMatchObject({ costCapMicro: ai.paidMicro, request: { as: "ad", format: "4:5", subject: { kind: "product", key: "main" } } });
+    // Le prix montré est le coût probable (un essai) ; le plafond de la tâche laisse la place des reprises (3 essais au plus).
+    const payload = JSON.parse(job.payload);
+    expect(payload).toMatchObject({ request: { as: "ad", format: "4:5", subject: { kind: "product", key: "main" } } });
+    expect(payload.costCapMicro).toBeGreaterThan(ai.paidMicro);
   });
 });
