@@ -227,7 +227,7 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
       const ai = llmConfigured();
       if (!ai && !must.length) return null;
       // Règle de présence humaine : sans autorisation, requêtes et plans sans personne (descriptions de la banque).
-      const found = rankStock(await searchStockVideos(queriesFor(q.queries, people), req.format === "16:9" ? "landscape" : "portrait", q.lang, taken).catch(() => []), must, ai, undefined, { people });
+      const found = rankStock(await searchStockVideos(queriesFor(q.queries, people), req.format === "16:9" ? "landscape" : "portrait", q.lang, taken).catch(() => []), must, ai, undefined, { people, allowAiMade: true });
       const subject = services ? [trade, items[0]?.name].filter(Boolean).join(" — ") : C(`univers du produit « ${project.product.name} » (sans le produit lui-même)`, `world of the product "${project.product.name}" (without the product itself)`);
       for (const v of found.slice(0, 3)) {
         try {

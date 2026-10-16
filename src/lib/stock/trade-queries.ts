@@ -82,7 +82,10 @@ export function tradeStock(text: string): { queries: string[]; must: string[]; n
 export function tagsMatch(alt: string, must: string[]): boolean {
   if (!must.length) return true;
   const a = ` ${norm(alt).replace(/[^a-z0-9]+/g, " ")} `;
-  return must.some((m) => a.includes(` ${norm(m)} `) || a.includes(` ${norm(m)}s `));
+  return must.some((m) => {
+    const w = norm(m).replace(/[^a-z0-9]+/g, " ").trim();
+    return !!w && (a.includes(` ${w} `) || a.includes(` ${w}s `));
+  });
 }
 
 /**
@@ -91,9 +94,10 @@ export function tagsMatch(alt: string, must: string[]): boolean {
  * description ne parle que d'un concept hors sujet (mur de briques, texture, pièce vide…) passent en dernier ;
  * citer le métier les rachète (« plasterer on a brick wall » reste pertinente).
  */
-export function rankStock<T extends { alt: string }>(found: T[], must: string[], visualCheck: boolean, negative: string[] = GLOBAL_NEGATIVES, opts: { people?: boolean } = {}): T[] {
-  // Image ou vidéo générée par IA déposée sur la banque : jamais présentée comme une vraie photo ou un vrai plan.
-  found = found.filter((p) => !/\bai[ -]?(generated|created|art|image|render)\b|\bgenerative ai\b|\bmidjourney\b|\bstable diffusion\b/i.test(p.alt));
+export function rankStock<T extends { alt: string }>(found: T[], must: string[], visualCheck: boolean, negative: string[] = GLOBAL_NEGATIVES, opts: { people?: boolean; allowAiMade?: boolean } = {}): T[] {
+  // Image générée par IA déposée sur la banque : jamais présentée comme une vraie photo. Vidéos (`allowAiMade`) : les
+  // plans « ai generated » de Pixabay sont proposés (choix du propriétaire), toujours signalés comme créés par l'IA.
+  if (!opts.allowAiMade) found = found.filter((p) => !/\bai[ -]?(generated|created|art|image|render)\b|\bgenerative ai\b|\bmidjourney\b|\bstable diffusion\b/i.test(p.alt));
   // Règle de présence humaine : personnes non autorisées → toute photo (ou vidéo) décrite avec une personne est
   // écartée d'emblée ; le contrôle visuel refuse ensuite celles dont la description ne le disait pas.
   if (opts.people === false) found = found.filter((p) => !mentionsPerson(p.alt));

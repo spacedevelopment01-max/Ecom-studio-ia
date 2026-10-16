@@ -97,7 +97,7 @@ export default function TabVideos() {
                 <Card key={v.id} className="flex min-w-0 flex-col overflow-hidden">
                   <div className="relative grid place-items-center bg-ink">
                     <video src={v.url} poster={v.thumbUrl ?? undefined} controls playsInline preload="none" className={cx("w-full", tall ? "aspect-[9/16]" : "aspect-video")} />
-                    <span className="absolute right-2 top-2 rounded-full bg-paper/90 px-2 py-0.5 text-[10px] font-medium text-ink">{t(...BADGE[sourceOf(v)])}</span>
+                    <span className="absolute right-2 top-2 rounded-full bg-paper/90 px-2 py-0.5 text-[10px] font-medium text-ink" title={sourceOf(v) === "stock" ? t("Libre de droits : illustration, pas une vidéo de votre activité", "Royalty-free: an illustration, not a video of your business") : undefined}>{sourceOf(v) === "stock" && (v.meta?.stock?.aiGenerated || v.meta?.stock?.silhouette) ? [t("Libre", "Free"), v.meta?.stock?.aiGenerated && t("créé par l'IA", "AI-made"), v.meta?.stock?.silhouette && t("silhouette", "silhouette")].filter(Boolean).join(" · ") : t(...BADGE[sourceOf(v)])}</span>
                   </div>
                   <div className="flex items-center gap-1.5 p-3">
                     <StatusBadge status={v.status} />
@@ -113,7 +113,7 @@ export default function TabVideos() {
         )}
       </div>
       <Modal open={dialog === "search"} onClose={() => setDialog(null)} title={t("Chercher des plans libres", "Find royalty-free clips")} wide>
-        <SearchClips services={data?.business === "services"} onStarted={started} />
+        <SearchClips services={data?.business === "services"} peopleAllowed={(data?.settings as { peopleAllowed?: boolean } | undefined)?.peopleAllowed === true} onStarted={started} />
       </Modal>
       <Modal open={dialog === "ai"} onClose={() => setDialog(null)} title={t("Créer un plan avec l'IA", "Create a clip with AI")} wide>
         <AiClip onStarted={started} />
@@ -124,16 +124,16 @@ export default function TabVideos() {
 }
 
 /** Plans libres de droits (Pixabay, Pexels) sur un sujet : gratuit, sujet contrôlé, aucune IA de vidéo. */
-function SearchClips({ services, onStarted }: { services: boolean; onStarted: (jobId?: string) => void }) {
+function SearchClips({ services, peopleAllowed, onStarted }: { services: boolean; peopleAllowed: boolean; onStarted: (jobId?: string) => void }) {
   const { id } = useProject();
   const t = useT();
   const toast = useToast();
-  const [f, setF] = useState({ topic: "", aspect: "9:16", count: 2 });
+  const [f, setF] = useState({ topic: "", aspect: "9:16", count: 2, broad: false, silhouettes: false });
   const [busy, setBusy] = useState(false);
   const go = async () => {
     setBusy(true);
     try {
-      const r = await api<{ jobId?: string }>(`/api/projects/${id}/videos/bank`, { body: { action: "stock", topic: f.topic.trim() || undefined, aspect: f.aspect, count: f.count } });
+      const r = await api<{ jobId?: string }>(`/api/projects/${id}/videos/bank`, { body: { action: "stock", topic: f.topic.trim() || undefined, aspect: f.aspect, count: f.count, broad: f.broad || undefined, silhouettes: f.silhouettes || undefined } });
       onStarted(r.jobId);
     } catch (e) {
       toast("bad", (e as Error).message);
@@ -143,12 +143,23 @@ function SearchClips({ services, onStarted }: { services: boolean; onStarted: (j
   };
   return (
     <div className="grid gap-4" data-bank-search-dialog>
-      <p className="text-sm text-muted">{t("Le studio cherche des plans libres de droits adaptés à votre activité et vérifie leur sujet. Gratuit, aucune IA de vidéo.", "The studio searches royalty-free clips suited to your business and checks their subject. Free, no AI video.")}</p>
+      <p className="text-sm text-muted">{t("Le studio cherche des plans libres de droits sur votre sujet (ou, sans sujet, sur votre activité) et vérifie leurs mots-clés. Gratuit, aucune IA de vidéo.", "The studio searches royalty-free clips on your subject (or, without one, on your business) and checks their keywords. Free, no AI video.")}</p>
       <div className="grid gap-3 sm:grid-cols-3">
         <Field label={t("Sujet (facultatif)", "Subject (optional)")} htmlFor="vs-topic"><Input id="vs-topic" value={f.topic} maxLength={200} onChange={(e) => setF({ ...f, topic: e.target.value })} placeholder={services ? t("Ex. atelier, mains sur l'établi", "E.g. workshop, hands on the bench") : t("Ex. café du matin, cuisine lumineuse", "E.g. morning coffee, bright kitchen")} /></Field>
         <Field label="Format" htmlFor="vs-aspect"><Select id="vs-aspect" value={f.aspect} onChange={(e) => setF({ ...f, aspect: e.target.value })}><option value="9:16">{t("9:16 · vertical (reels, TikTok)", "9:16 · vertical (reels, TikTok)")}</option><option value="16:9">{t("16:9 · paysage (site, YouTube)", "16:9 · landscape (website, YouTube)")}</option></Select></Field>
         <Field label={t("Nombre", "Count")} htmlFor="vs-count"><Select id="vs-count" value={f.count} onChange={(e) => setF({ ...f, count: Number(e.target.value) })}>{[1, 2, 3].map((n) => <option key={n} value={n}>{n}</option>)}</Select></Field>
       </div>
+      <label className="flex items-start gap-2 text-sm">
+        <input type="checkbox" className="mt-0.5" checked={f.broad} onChange={(e) => setF({ ...f, broad: e.target.checked })} data-bank-search-broad />
+        <span>{t("Recherche élargie : chaque mot est aussi cherché seul (plus de plans, parfois moins précis)", "Broader search: each word is also searched on its own (more clips, sometimes less precise)")}</span>
+      </label>
+      {!peopleAllowed && (
+        <label className="flex items-start gap-2 text-sm">
+          <input type="checkbox" className="mt-0.5" checked={f.silhouettes} onChange={(e) => setF({ ...f, silhouettes: e.target.checked })} data-bank-search-silhouettes />
+          <span>{t("Accepter les silhouettes (personne de dos ou dans l'ombre, visage non visible)", "Allow silhouettes (seen from behind or in shadow, face not visible)")}</span>
+        </label>
+      )}
+      <p className="text-xs text-muted">{t("Votre texte est cherché tel quel sur Pixabay. Les plans libres de droits illustrent votre activité : ce ne sont pas des vidéos de vos réalisations. Un plan créé par l'IA et publié sur Pixabay est signalé « créé par l'IA ».", "Your text is searched as-is on Pixabay. Royalty-free clips illustrate your business: they aren't videos of your own work. A clip made by AI and published on Pixabay is marked \"AI-made\".")}</p>
       <div className="flex items-center justify-between gap-3 border-t border-line pt-4">
         <span className="text-sm font-medium text-ok">{t("Gratuit", "Free")}</span>
         <Button icon={<Search className="size-4" />} loading={busy} onClick={go} data-bank-search-go>{t("Chercher", "Search")}</Button>
