@@ -350,7 +350,13 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     if (e instanceof Anthropic.AuthenticationError) throw new PermanentError(L("La clé Anthropic configurée est refusée. Vérifiez-la dans l'administration.", "The configured Anthropic key was rejected. Check it in the admin settings."));
     if (e instanceof Anthropic.BadRequestError) throw new PermanentError(L(`Requête refusée par le fournisseur : ${e.message}`, `Request rejected by the provider: ${e.message}`));
     if (e instanceof Anthropic.NotFoundError) throw new PermanentError(L(`Modèle introuvable (${route.model}). Corrigez le routage dans l'administration.`, `Model not found (${route.model}). Fix the routing in the admin settings.`));
-    throw e; // 429 / 5xx / réseau : la file de tâches réessaie.
+    // Coupure réseau, délai dépassé, flux interrompu : le coût maximal vient d'être retenu ; une relance par la file
+    // de tâches repaierait (nouvelle réservation, nouvel appel). Arrêt net, comme pour les autres fournisseurs.
+    if (typeof status !== "number") {
+      const why = redact(String((e as Error)?.message ?? e)).slice(0, 200);
+      throw new PermanentError(L(`Résultat incertain chez Anthropic (${why}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.`, `Uncertain result at Anthropic (${why}): maximum cost kept as a precaution, no automatic retry. Check the provider's usage before trying again.`));
+    }
+    throw e; // 429 / 5xx (réponse d'erreur, rien de facturé, réservation rendue) : la file de tâches réessaie.
   }
   // Modèle servi différent du modèle demandé (ne devrait pas arriver sans repli) : compté au plus cher des deux.
   const served = msg.model && msg.model !== route.model && pricier(msg.model, route.model) ? msg.model : route.model;

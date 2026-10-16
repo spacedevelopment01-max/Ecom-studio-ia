@@ -450,7 +450,10 @@ describe("plafond fournisseur : coût maximal réellement borné", async () => {
     expect(reservations(u.id)[0].status).toBe("released");
     llm.calls = 0;
     llm.mode = "midstream";
-    await expect(text(u.id)).rejects.toThrow(/overloaded/);
+    const err = await text(u.id).catch((e: unknown) => e);
+    expect(String((err as Error).message)).toMatch(/overloaded/);
+    // Résultat incertain : arrêt net (PermanentError), la file de tâches ne relance pas un appel déjà payé au maximum.
+    expect((err as { permanent?: boolean }).permanent).toBe(true);
     expect(llm.calls).toBe(1);
     expect(reservations(u.id).at(-1)!.status).toBe("uncertain");
   }, 30_000);
