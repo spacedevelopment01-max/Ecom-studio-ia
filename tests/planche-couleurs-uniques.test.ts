@@ -91,3 +91,14 @@ describe("charte PDF : aucun texte qui déborde", () => {
     expect(fitLine(ctx, "ARVEN", "Archivo", 600, 54, 900)).toMatchObject({ text: "ARVEN" });
   });
 });
+
+describe("planche : signature seulement une fois validée par le client", () => {
+  it("non validée → absente de la planche ; validée → écrite", async () => {
+    const { boardTagline } = await import("@/lib/engine/identity-board");
+    const brand = { tagline: "Le temps, bien porté.", validated: [] } as any;
+    expect(boardTagline(brand)).toBeNull();
+    expect(boardTagline({ ...brand, validated: ["tagline"] })).toBe("Le temps, bien porté.");
+    expect(boardTagline({ tagline: "  ", validated: ["tagline"] } as any)).toBeNull();
+    expect(boardTagline(null)).toBeNull();
+  });
+});
