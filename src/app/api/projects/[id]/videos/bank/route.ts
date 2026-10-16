@@ -18,7 +18,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 });
 
 const Req = z.discriminatedUnion("action", [
-  z.object({ action: z.literal("stock"), topic: z.string().max(200).optional(), aspect: z.enum(["9:16", "16:9"]).default("9:16"), count: z.number().int().min(1).max(3).default(2) }),
+  z.object({ action: z.literal("stock"), topic: z.string().max(200).optional(), aspect: z.enum(["9:16", "16:9"]).default("9:16"), count: z.number().int().min(1).max(3).default(2), broad: z.boolean().optional() }),
   z.object({ action: z.literal("ai"), imageId: z.string().max(64), prompt: z.string().max(300).optional(), aspect: z.enum(["9:16", "16:9"]).default("9:16"), approvedEstimateMicro: z.number().int().min(0) }),
 ]);
 
@@ -28,7 +28,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   requireCreationPlan(user, p.id, "videos");
   const b = await body(req, Req);
   if (b.action === "stock") {
-    const job = enqueue({ userId: user.id, projectId: p.id, type: "video.bank.stock", label: L("Plans libres de droits", "Royalty-free clips"), payload: { projectId: p.id, request: { topic: b.topic, aspect: b.aspect, count: b.count } } });
+    const job = enqueue({ userId: user.id, projectId: p.id, type: "video.bank.stock", label: L("Plans libres de droits", "Royalty-free clips"), payload: { projectId: p.id, request: { topic: b.topic, aspect: b.aspect, count: b.count, broad: b.broad } } });
     return ok({ jobId: job.id });
   }
   if (!aiActiveFor(p.userId, p.id)) throw new HttpError(402, L("L'IA n'est pas active pour ce projet : cherchez plutôt des plans libres de droits (gratuit).", "AI isn't active for this project: search royalty-free clips instead (free)."));

@@ -17,10 +17,10 @@ import { JobCancelled, JobPaused } from "../jobs";
 import { llmConfigured } from "../ai/llm";
 import { decide } from "../quality/gate";
 import { gateSave } from "../quality/store";
-import { peopleAllowedFor, queriesFor } from "../people-policy";
+import { mentionsPerson, peopleAllowedFor, queriesFor } from "../people-policy";
 import { tmpDir } from "../storage";
 import { execTool } from "../exec-tool";
-import { downloadStockVideo, searchStockVideos, stockVideoCredit, type StockVideo } from "./photos";
+import { downloadStockVideo, emptyVideoReport, searchStockVideos, stockVideoCredit, type StockVideo, type StockVideoReport, type VideoQuery } from "./photos";
 import { rankStock, tradeStock } from "./trade-queries";
 
 type Ictx = { userId: string; projectId: string; jobId?: string | null };
@@ -41,7 +41,35 @@ export type StockClipRequest = {
    * de la peinture »…) avec ses mots-clés de recherche et les mots que la description doit citer.
    */
   step?: { queries: string[]; must: string[]; need?: string[][] };
+  /**
+   * Texte tapé par le client (recherche de la banque de vidéos) : envoyé TEL QUEL à la banque, en premier, en anglais
+   * et en français ; un plan dont les mots-clés citent tous ses mots est retenu même sans IA (c'est le sujet demandé).
+   */
+  typed?: string;
+  /** Recherche élargie (demandée par le client) : chaque mot tapé est aussi cherché seul, et un seul mot cité suffit. */
+  broad?: boolean;
 };
+
+/** Ce que la recherche a trouvé ou écarté : dit au client pourquoi aucun plan n'a été retenu. */
+export type StockClipDiag = { report: StockVideoReport; people: number; offTopic: number; rejected: number };
+export const emptyClipDiag = (): StockClipDiag => ({ report: emptyVideoReport(), people: 0, offTopic: 0, rejected: 0 });
+
+const STOP = new Set(["les", "des", "une", "est", "avec", "pour", "dans", "sur", "par", "aux", "the", "and", "with", "for", "from", "into", "dun", "dune", "video", "videos", "plan", "plans"]);
+/** Mots significatifs d'un texte tapé (« escape game » → escape, game ; « porte d'entrée » → porte, entree). */
+export function typedWords(text: string): string[] {
+  const t = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\b[dlj]'/g, " ");
+  return [...new Set(t.split(/[^a-z0-9]+/).filter((w) => w.length >= 3 && !STOP.has(w)))].slice(0, 6);
+}
+
+/** Les mots-clés d'un plan citent-ils les mots tapés (tous, ou un seul en recherche élargie) ? Pluriels acceptés. */
+export function citesTyped(alt: string, words: string[], any = false): boolean {
+  if (!words.length) return false;
+  const a = ` ${alt.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ")} `;
+  const one = (w: string) => a.includes(` ${w} `) || a.includes(` ${w}s `) || a.includes(` ${w}es `) || a.includes(` ${w}x `);
+  // Féminin français : « secrète » cite aussi « secret ».
+  const has = (w: string) => one(w) || (w.length > 4 && w.endsWith("e") && one(w.slice(0, -1)));
+  return any ? words.some(has) : words.every(has);
+}
 
 /** Mots entiers (« tape » ne valide pas « magnetic tape cassette » pour « masking tape »). */
 export function citesAll(alt: string, groups: string[][]): boolean {
@@ -138,15 +166,20 @@ export function clipOrder<T extends Pick<StockVideo, "duration" | "width" | "hei
   return found.map((v, i) => ({ v, s: score(v, i) })).sort((a, b) => b.s - a.s).map((x) => x.v);
 }
 
-export async function findStockClip(ictx: Ictx, p: Project, r: StockClipRequest, exclude: Set<string>): Promise<{ assetId: string; durationS: number } | null> {
+export async function findStockClip(ictx: Ictx, p: Project, r: StockClipRequest, exclude: Set<string>, diag: StockClipDiag = emptyClipDiag()): Promise<{ assetId: string; durationS: number } | null> {
   const services = p.business === "services";
   const people = peopleAllowedFor(p);
   const ai = llmConfigured();
   const q = await clipQueries(ictx, p, r);
-  // Sans IA pour regarder le plan : seule une description de la banque qui cite le métier vaut contrôle.
-  if (!ai && !q.must.length) return null;
+  const typed = r.typed?.trim() ?? "";
+  const words = typed ? typedWords(typed) : [];
+  // Sans IA pour regarder le plan : seule une description de la banque qui cite le métier (ou le texte tapé) vaut contrôle.
+  if (!ai && !q.must.length && !words.length) return null;
   const orientation = r.aspect === "16:9" ? "landscape" : "portrait";
   const taken = new Set([...takenStockVideos(p.id), ...exclude]);
+  // Texte du client d'abord, tel quel, en anglais ET en français (les mots-clés reviennent dans la langue demandée :
+  // « porte secrète » ne se retrouve que dans les mots-clés français) ; en recherche élargie, chacun de ses mots seul.
+  const typedQueries: VideoQuery[] = typed ? [{ q: typed, lang: "en" }, { q: typed, lang: "fr" }, ...(r.broad && words.length > 1 ? words.map((w) => ({ q: w, lang: "en" as const })) : [])] : [];
   // Règle des marques : un plan dont la description cite une marque tierce est écarté avant tout téléchargement.
   const { allowedBrands, stockMentionsBrand } = await import("../video-v2/brand-guard");
   const own = allowedBrands(p);
@@ -154,7 +187,17 @@ export async function findStockClip(ictx: Ictx, p: Project, r: StockClipRequest,
   const need = !ai ? r.step?.need : undefined;
   // Sans regard visuel : jamais de peinture d'art, de dessin animé, de texture seule ni de rendu 3D présenté comme réel.
   const ART = /\b(canvas|watercolor|watercolour|acrylic|artist|abstract|crayon|cassette|fog|wallpaper|texture|background|pattern|cartoon|fantasy|moon|night|chroma|green screen|mock-up|mockup|television|tv)\b/i;
-  const found = rankStock((await searchStockVideos(queriesFor(q.queries, people), orientation, q.lang, taken, 16).catch(() => [])).filter((v) => !stockMentionsBrand(v.alt, own) && (!need || (citesAll(v.alt, need) && !ART.test(v.alt)))), q.must, ai, q.negative, { people });
+  const search = (list: VideoQuery[], enough: number, skip: Set<string>) => searchStockVideos(list, orientation, q.lang, skip, enough, diag.report).catch((e) => (diag.report.errors.push((e as Error).message), [] as StockVideo[]));
+  // Toutes les recherches du texte tapé sont faites (aucun arrêt anticipé), puis celles du métier.
+  const fromTyped = typedQueries.length ? await search(typedQueries, Number.POSITIVE_INFINITY, taken) : [];
+  const fromTrade = await search(queriesFor(q.queries, people), 16, new Set([...taken, ...fromTyped.map((v) => `${v.source}:${v.id}`)]));
+  const raw = [...fromTyped, ...fromTrade].filter((v) => !stockMentionsBrand(v.alt, own) && (!need || (citesAll(v.alt, need) && !ART.test(v.alt))));
+  if (!people) diag.people += raw.filter((v) => mentionsPerson(v.alt)).length;
+  // Plans qui citent le texte tapé d'abord (le sujet demandé par le client), puis ceux du métier.
+  const asked = words.length ? rankStock(raw.filter((v) => citesTyped(v.alt, words, r.broad)), [], true, [], { people, allowAiMade: true }) : [];
+  const onTrade = rankStock(raw, q.must, ai, q.negative, { people, allowAiMade: true }).filter((v) => !asked.includes(v));
+  const found = [...asked, ...onTrade];
+  diag.offTopic += Math.max(0, raw.length - found.length - (people ? 0 : raw.filter((v) => mentionsPerson(v.alt)).length));
   const trade = [p.product.category, p.product.name].filter(Boolean)[0] ?? "";
   const subject = services ? `${trade} — ${r.topic}` : C(`univers du produit « ${p.product.name} » (${p.product.category ?? ""}) — ${r.topic} ; sans le produit lui-même`, `world of the product "${p.product.name}" (${p.product.category ?? ""}) — ${r.topic}; without the product itself`);
   const { checkAmbiance } = await import("../engine/service-media");
@@ -177,13 +220,17 @@ export async function findStockClip(ictx: Ictx, p: Project, r: StockClipRequest,
           fs.rmSync(dir, { recursive: true, force: true });
         }
       }
-      if (d.verdict !== "FINAL") continue;
+      if (d.verdict !== "FINAL") {
+        diag.rejected++;
+        continue;
+      }
       const keep = gateSave(ictx, d);
       const a = await saveAsset({ projectId: p.id, userId: p.userId, data: buf, name: `${C("plan-libre", "stock-shot")}-${r.part}-${v.source}-${v.id}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", meta: { provider: v.source, recipe: stockVideoCredit(v), stock: { source: v.source, id: v.id, page: v.page, author: v.author, license: v.license, ...(v.aiGenerated ? { aiGenerated: true } : {}) }, subject: r.topic, part: r.part, durationS: v.duration, ...keep.meta }, status: "review" });
       exclude.add(`${v.source}:${v.id}`);
       return { assetId: a.id, durationS: v.duration };
     } catch (e) {
       if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+      diag.rejected++;
     }
   }
   return null;

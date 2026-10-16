@@ -11,6 +11,7 @@ import { z } from "zod";
 import { all } from "../db";
 import { assetData, assetMeta, getAsset, saveAsset } from "../library";
 import { loadProject, type Project } from "../projects";
+import { applyWordingDeep, loadWordingRules } from "../client-wording";
 import { C, L } from "../i18n-server";
 import { JobCancelled, JobPaused, UserFacingError, type JobContext } from "../jobs";
 import { resolveSubject, type CreativeSubject, type SubjectOption } from "../creative-subject";
@@ -346,9 +347,11 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
   }) : null;
   const fallback = localScenePlan(p, s, req, storyboard);
   // Nombre de scènes demandé respecté ; les recherches d'étape (services) et le rôle viennent toujours du storyboard.
-  const plan: ScenePlan = written
+  // Vocabulaire du client (ex. « montre », jamais « chronographe ») : appliqué aux titres, à la voix et à l'action.
+  const wording = loadWordingRules(projectId);
+  const plan: ScenePlan = applyWordingDeep(written
     ? { ...written, voiceEnd: written.voiceEnd ?? fallback.voiceEnd, scenes: Array.from({ length: fallback.scenes.length }, (_, k) => ({ ...(written.scenes[k] ?? fallback.scenes[k]), role: fallback.scenes[k].role, intent: fallback.scenes[k].intent, stock: fallback.scenes[k].stock, voice: written.scenes[k]?.voice ?? fallback.scenes[k].voice })) }
-    : fallback;
+    : fallback, wording);
 
   // 2. Règle absolue des marques : aucun texte ni voix ne cite une marque tierce (retiré, jamais publié).
   const allowed = allowedBrands(p0);
@@ -436,7 +439,7 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
   }
 
   ctx?.progress(0.86, L("Montage : titres, logo, voix, musique", "Editing: titles, logo, voice, music"));
-  const doc = buildSceneDoc(p0, clips, plan, aspect, req.as, timing, req.music !== false, brief);
+  const doc = applyWordingDeep(buildSceneDoc(p0, clips, plan, aspect, req.as, timing, req.music !== false, brief), wording);
 
   // 5. Voix off (voix locale, gratuite) et sous-titres calés sur la voix RÉELLE ; sinon sans voix (dit dans l'aperçu).
   if (memory.preferences.voice !== "off" && voiceAvailable()) {

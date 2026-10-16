@@ -107,27 +107,60 @@ export type StockVideo = { source: "pexels" | "pixabay"; id: string; url: string
 /** Mots du titre d'une page Pexels (« /video/a-man-painting-a-wall-123/ » → « a man painting a wall »). */
 const slugWords = (url: string) => (url.match(/\/video\/([^/?#]+)/)?.[1] ?? "").replace(/-\d+$/, "").replace(/-/g, " ");
 
+/** Une recherche de vidéos : texte et langue (la langue d'une requête Pixabay est aussi celle des mots-clés renvoyés). */
+export type VideoQuery = string | { q: string; lang: "fr" | "en" };
+
+/** Bilan d'une recherche (pour dire au client POURQUOI rien n'a été trouvé, jamais un échec muet). */
+export type StockVideoReport = { noKey: boolean; errors: string[]; raw: number; cartoon: number; tooShort: number };
+export const emptyVideoReport = (): StockVideoReport => ({ noKey: false, errors: [], raw: 0, cartoon: 0, tooShort: 0 });
+
+/** Plan fait par l'IA et publié sur la banque (mots-clés Pixabay en anglais ou en français). */
+export const aiGeneratedTags = (tags: string) => /\bai[- ]?(generated|genere|generee|generes|generees)\b|\bgeneree? par (l )?ia\b/i.test(tags.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/'/g, " "));
+
 /** Vidéos libres de droits (Pexels, Pixabay : clés gratuites) ; fichier HD de taille raisonnable choisi. */
-export async function searchStockVideos(queries: string[], orientation: "landscape" | "portrait", lang: "fr" | "en", exclude: Set<string>, enough = 6): Promise<StockVideo[]> {
+export async function searchStockVideos(queries: VideoQuery[], orientation: "landscape" | "portrait", lang: "fr" | "en", exclude: Set<string>, enough = 6, report: StockVideoReport = emptyVideoReport()): Promise<StockVideo[]> {
   const out: StockVideo[] = [];
   const spare: StockVideo[] = [];
   if (offline()) return out;
+  const pixabay = activeProviderKey("pixabay");
+  const pexels = pixabayOnly() ? null : activeProviderKey("pexels");
+  if (!pixabay && !pexels) {
+    report.noKey = true;
+    return out;
+  }
   const pick = (files: { width: number; height: number; link: string }[]) =>
     files.filter((f) => f.link && Math.max(f.width, f.height) >= 1080 && Math.max(f.width, f.height) <= 2160).sort((a, b) => a.width * a.height - b.width * b.height)[0] ?? files.filter((f) => f.link).sort((a, b) => b.width * b.height - a.width * a.height)[0];
-  for (const query of queries.filter(Boolean)) {
-    const q = encodeURIComponent(query);
-    const pixabay = activeProviderKey("pixabay");
+  // Un même plan trouvé dans les deux langues : ses mots-clés des deux langues sont réunis (le filtre du métier et le
+  // texte tapé par le client se comparent alors en français comme en anglais).
+  const known = (source: string, id: string) => [...out, ...spare].find((o) => o.source === source && o.id === id);
+  for (const item of queries) {
+    const query = typeof item === "string" ? item : item.q;
+    const ql = typeof item === "string" ? lang : item.lang;
+    if (!query?.trim()) continue;
+    const q = encodeURIComponent(query.trim());
     if (pixabay) {
       try {
-        const j = await get(`https://pixabay.com/api/videos/?key=${encodeURIComponent(pixabay)}&q=${q}&per_page=10&safesearch=true&lang=${lang}`);
+        const j = await get(`https://pixabay.com/api/videos/?key=${encodeURIComponent(pixabay)}&q=${q}&per_page=40&safesearch=true&lang=${ql}`);
         for (const v of j.hits ?? []) {
-          // Images réalistes seulement : jamais un dessin animé, une illustration ou une animation graphique. Les plans
-          // réalistes faits par l'IA et publiés sur Pixabay (« ai generated ») sont toujours proposés (choix du
-          // propriétaire), même si leurs mots-clés parlent de « render » ou de « cinematic 3d ».
+          report.raw++;
+          // Images réalistes seulement : jamais un dessin animé, une illustration, une animation graphique ni un fond
+          // vert à détourer. Les plans réalistes faits par l'IA et publiés sur Pixabay (« ai generated ») sont toujours
+          // proposés (choix du propriétaire) et signalés, même si leurs mots-clés parlent de « render » ou de « 3d ».
           const tags = String(v.tags ?? "");
-          const aiGenerated = /\bai[- ]generated\b/i.test(tags);
-          if (/\b(anime|cartoon|animation|animated|illustration|motion graphics?)\b/i.test(tags)) continue;
-          if (!aiGenerated && /\b(3d|cgi|render)\b/i.test(tags)) continue;
+          const aiGenerated = aiGeneratedTags(tags);
+          const same = known("pixabay", String(v.id));
+          if (same) {
+            if (!same.alt.includes(tags)) same.alt = `${same.alt}, ${tags}`;
+            continue;
+          }
+          if (/\b(anime|cartoon|animation|animated|illustration|motion graphics?|chroma key|green ?screen|dessin anim[ée]|fond vert)\b/i.test(tags) || (!aiGenerated && /\b(3d|cgi|render)\b/i.test(tags))) {
+            report.cartoon++;
+            continue;
+          }
+          if (!(v.duration >= 4)) {
+            report.tooShort++;
+            continue;
+          }
           const files = ["large", "medium", "small"].map((k) => v.videos?.[k]).filter(Boolean).map((x: any) => ({ width: x.width ?? 0, height: x.height ?? 0, link: x.url as string }));
           const wantTall = orientation === "portrait";
           // Pixabay n'a presque que des vidéos horizontales : pour un format vertical, un plan horizontal assez net
@@ -138,21 +171,24 @@ export async function searchStockVideos(queries: string[], orientation: "landsca
           const fits = !!first && (first.height > first.width) === wantTall;
           const f = fits ? first : wantTall ? tallEnough : first;
           const croppable = !!f && wantTall && !fits;
-          if (f && v.duration >= 4 && (fits || croppable) && !exclude.has(`pixabay:${v.id}`) && ![...out, ...spare].some((o) => o.source === "pixabay" && o.id === String(v.id))) (fits ? out : spare).push({ source: "pixabay", id: String(v.id), url: f.link, page: v.pageURL, author: v.user ?? "", license: "Pixabay", width: f.width, height: f.height, duration: v.duration, alt: tags, ...(aiGenerated ? { aiGenerated: true } : {}) });
+          if (f && (fits || croppable) && !exclude.has(`pixabay:${v.id}`)) (fits ? out : spare).push({ source: "pixabay", id: String(v.id), url: f.link, page: v.pageURL, author: v.user ?? "", license: "Pixabay", width: f.width, height: f.height, duration: v.duration, alt: tags, ...(aiGenerated ? { aiGenerated: true } : {}) });
         }
       } catch (e) {
+        report.errors.push(`Pixabay : ${(e as Error).message}`);
         console.warn("[vidéos libres] pixabay indisponible :", (e as Error).message);
       }
     }
-    const pexels = pixabayOnly() ? null : activeProviderKey("pexels");
     if (pexels) {
       try {
-        const j = await get(`https://api.pexels.com/videos/search?query=${q}&per_page=10&orientation=${orientation}&locale=${lang === "fr" ? "fr-FR" : "en-US"}`, { Authorization: pexels });
+        const j = await get(`https://api.pexels.com/videos/search?query=${q}&per_page=30&orientation=${orientation}&locale=${ql === "fr" ? "fr-FR" : "en-US"}`, { Authorization: pexels });
         for (const v of j.videos ?? []) {
+          report.raw++;
           const f = pick((v.video_files ?? []).filter((x: any) => /mp4/.test(x.file_type ?? "video/mp4")).map((x: any) => ({ width: x.width ?? 0, height: x.height ?? 0, link: x.link })));
-          if (f && v.duration >= 4 && !exclude.has(`pexels:${v.id}`)) out.push({ source: "pexels", id: String(v.id), url: f.link, page: v.url, author: v.user?.name ?? "", license: "Pexels", width: f.width, height: f.height, duration: v.duration, alt: slugWords(v.url ?? "") });
+          if (!(v.duration >= 4)) report.tooShort++;
+          else if (f && !exclude.has(`pexels:${v.id}`) && !known("pexels", String(v.id))) out.push({ source: "pexels", id: String(v.id), url: f.link, page: v.url, author: v.user?.name ?? "", license: "Pexels", width: f.width, height: f.height, duration: v.duration, alt: slugWords(v.url ?? "") });
         }
       } catch (e) {
+        report.errors.push(`Pexels : ${(e as Error).message}`);
         console.warn("[vidéos libres] pexels indisponible :", (e as Error).message);
       }
     }
@@ -171,5 +207,5 @@ export async function downloadStockVideo(v: StockVideo): Promise<Buffer> {
   return buf;
 }
 
-export const stockVideoCredit = (v: Pick<StockVideo, "license" | "author">) =>
-  L(`Vidéo libre de droits (${v.license})${v.author ? `, ${v.author}` : ""} — illustration du métier, pas une vidéo de vos réalisations`, `Royalty-free video (${v.license})${v.author ? `, ${v.author}` : ""} — illustrates the trade, not a video of your work`);
+export const stockVideoCredit = (v: Pick<StockVideo, "license" | "author"> & { aiGenerated?: boolean }) =>
+  L(`Vidéo libre de droits (${v.license})${v.author ? `, ${v.author}` : ""}${v.aiGenerated ? " — plan créé par l'IA (publié sur la banque), pas une prise de vue réelle" : ""} — illustration du métier, pas une vidéo de vos réalisations`, `Royalty-free video (${v.license})${v.author ? `, ${v.author}` : ""}${v.aiGenerated ? " — AI-made shot (published on the stock library), not real footage" : ""} — illustrates the trade, not a video of your work`);
