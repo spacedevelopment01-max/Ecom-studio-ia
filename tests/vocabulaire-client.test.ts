@@ -41,4 +41,34 @@ describe("Vocabulaire du client", async () => {
     expect(seen.texts.slice(0, 3).join(" | ")).not.toMatch(/sérum/i);
     expect(seen.prompt).toContain('say "soin", never "sérum"');
   });
+
+  it("ne fusionne que le mot de remplacement répété (« nous nous » reste intact)", () => {
+    expect(applyWording("Nous nous engageons : chronographe garanti", rules)).toBe("Nous nous engageons : montre garanti");
+  });
+
+  it("appliquée à tous les textes du thème enregistré, liens et identifiant du produit compris", async () => {
+    const { applyWordingDeep } = await import("@/lib/client-wording");
+    const { saveThemeVersion } = await import("@/lib/projects");
+    const { one } = await import("@/lib/db");
+    const spec = {
+      templates: { index: { sections: { hero: { type: "hero", settings: { text: "<p>Montre chronographe : boîtier acier.</p>", button_link: "/products/chronographe-acier", image: "chronographe.jpg" } } } } },
+      store: { product: { title: "Chronographe acier", handle: "chronographe-acier", images: ["/api/files/chronographe.jpg"] } },
+    };
+    const out = applyWordingDeep(spec, rules);
+    expect(out.templates.index.sections.hero.settings.text).toBe("<p>Montre : boîtier acier.</p>");
+    expect(out.templates.index.sections.hero.settings.button_link).toBe("/products/montre-acier");
+    expect(out.store.product.handle).toBe("montre-acier");
+    // Références de fichiers jamais touchées ; l'objet d'origine n'est pas modifié.
+    expect(out.templates.index.sections.hero.settings.image).toBe("chronographe.jpg");
+    expect(out.store.product.images[0]).toBe("/api/files/chronographe.jpg");
+    expect(spec.store.product.title).toBe("Chronographe acier");
+
+    const u = await createUser(`voc-theme-${Date.now()}@test.fr`, "motdepasse-test", "V");
+    const pid = seedImageFixture(u.id, "cosmetic");
+    addWordingRule(pid, { avoid: "chronographe", use: "montre" });
+    const v = saveThemeVersion(pid, spec as any, "essai", "system");
+    const saved = JSON.parse(one<{ spec: string }>("SELECT spec FROM theme_versions WHERE id = ?", v.id)!.spec);
+    expect(saved.store.product.title).toBe("Montre acier");
+    expect(JSON.stringify(saved)).not.toMatch(/Chronographe acier|chronographe-acier/);
+  });
 });

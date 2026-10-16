@@ -91,12 +91,15 @@ const REAL_DEMOS: DemoDef[] = [
   {
     // Montre : vraie photo Pixabay (n° 3090387) et logo ARVEN déjà créé par l'IA, fourni comme le ferait le client.
     id: "montre", sector: "Horlogerie", direction: "joaillerie", category: "Montres",
-    productName: "Chronographe acier et cuir", brandName: "ARVEN", price: "",
-    description: "Montre chronographe : boîtier en acier poli, lunette graduée, cadran noir à trois compteurs argentés, guichet de date, bracelet en cuir brun surpiqué doublé de tissu bleu.",
+    productName: "Montre acier et cuir", brandName: "ARVEN", price: "",
+    description: "Montre : boîtier en acier poli, lunette graduée, cadran noir à trois compteurs argentés, guichet de date, bracelet en cuir brun surpiqué doublé de tissu bleu.",
     // Photo Pixabay d'origine : bas du bracelet perdu dans l'ombre. Montre reconstruite en entier (Qwen-Image, photo
     // d'origine en référence, accord du propriétaire, 0,162 $ pour 2 essais ; le 1er, boîtier devenu noir, refusé).
     photo: path.join(PX, "montre-1-entiere.jpg"),
     logo: path.join(REAL, "logos", "arven.png"),
+    // Photos en situation créées par l'IA (Qwen-Image 3.0, accord du propriétaire) : parties sans texte des visuels
+    // ARVEN, reprises par la boutique (ouverture, sections) et la planche d'identité.
+    lifestyle: ["arven-bureau.jpg", "arven-pierre.jpg", "arven-matiere.jpg", "arven-atelier.jpg", "arven-ombre.jpg"].map((f) => path.join(IA, f)),
     // Signature écrite sur le logo du client : reprise telle quelle (jamais remplacée par une autre).
     tagline: "Le temps, bien porté.",
     videos: "edited",
@@ -367,8 +370,8 @@ for (const p of PRODUCTS) {
   await sharp(photo).resize({ width: 900 }).jpeg({ quality: 84 }).toFile(path.join(dir, X("photo.jpg")));
   const images: { src: string; label: string }[] = [];
   const pick: [string, string, number][] = EN
-    ? [["cutout", "Cutout", 1], ["packshot", "Packshot", 1], ["detail", "Detail", 1], ["scene", "Scene", 2], ["social", "Social visual", 1], ["ad", "Ad", 1], ["banner", "Banner", 1]]
-    : [["cutout", "Détourage", 1], ["packshot", "Packshot", 1], ["detail", "Détail", 1], ["scene", "Scène", 2], ["social", "Visuel social", 1], ["ad", "Publicité", 1], ["banner", "Bannière", 1]];
+    ? [["cutout", "Cutout", 1], ["lifestyle", "In context", 3], ["packshot", "Packshot", 1], ["detail", "Detail", 1], ["scene", "Scene", 2], ["social", "Social visual", 1], ["ad", "Ad", 1], ["banner", "Banner", 1]]
+    : [["cutout", "Détourage", 1], ["lifestyle", "En situation", 3], ["packshot", "Packshot", 1], ["detail", "Détail", 1], ["scene", "Scène", 2], ["social", "Visuel social", 1], ["ad", "Publicité", 1], ["banner", "Bannière", 1]];
   for (const [role, label, n] of pick) {
     for (const [i, a] of byRole(role).slice(0, n).entries()) {
       const file = X(`${role}-${i + 1}.jpg`);

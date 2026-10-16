@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-10-16T00:19:41.848Z",
+  "generatedAt": "2026-10-16T08:08:55.834Z",
   "note": "Marques créées par E-COM STUDIO IA (moteur intégré) à partir de photos de produits réels de fournisseurs, retouchées (inscriptions d'origine retirées).",
   "demos": [
     {
       "id": "montre",
       "brand": "ARVEN",
-      "product": "Chronographe acier et cuir",
+      "product": "Montre acier et cuir",
       "sector": "Horlogerie",
       "direction": "joaillerie",
       "palette": [
@@ -27,28 +27,16 @@
           "label": "Détourage"
         },
         {
-          "src": "/demo/montre/packshot-1.jpg",
-          "label": "Packshot"
+          "src": "/demo/montre/lifestyle-1.jpg",
+          "label": "En situation"
         },
         {
-          "src": "/demo/montre/detail-1.jpg",
-          "label": "Détail"
+          "src": "/demo/montre/lifestyle-2.jpg",
+          "label": "En situation"
         },
         {
-          "src": "/demo/montre/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/montre/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/montre/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/montre/banner-1.jpg",
-          "label": "Bannière"
+          "src": "/demo/montre/lifestyle-3.jpg",
+          "label": "En situation"
         }
       ],
       "video": "/demo/montre/video.mp4",

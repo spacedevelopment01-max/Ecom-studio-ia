@@ -88,6 +88,10 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
   // Celles du marchand passent avant celles générées par l'IA.
   // Photos du produit en situation de l'Image Engine V2 (rangées en « scènes ») comptent aussi comme photos en situation.
   const life = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND (role = 'lifestyle' OR (role = 'scene' AND json_extract(meta, '$.imageV2.brief.kind') IN ('lifestyle','usage_scene'))) AND deleted_at IS NULL AND status != 'rejected' ORDER BY (origin = 'upload') DESC, (origin != 'generated') DESC, (status = 'approved') DESC, (json_extract(meta, '$.qcWarning') IS NULL) DESC, created_at DESC", projectId).filter(isAutoUsable);
+  // Ouverture en grand format paysage : une photo horizontale passe devant une verticale (sinon recadrée de trop près).
+  const wide = (a: Asset) => !!a.width && !!a.height && a.width >= a.height;
+  const heroIdx = Math.max(0, life.slice(0, 4).findIndex(wide));
+  if (heroIdx > 0) life.unshift(...life.splice(heroIdx, 1));
   put("lifestyle", life[0], "en-situation-1");
   // Ambiances de l'univers (photos libres, sans le produit) : seulement pour les emplacements d'ambiance encore vides.
   const amb = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'ambiance' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (status = 'approved') DESC, created_at DESC LIMIT 8", projectId).filter(isAutoUsable).slice(0, 2);

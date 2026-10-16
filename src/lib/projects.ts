@@ -7,6 +7,7 @@ import type { ThemeSpec } from "./theme/spec";
 import { L, uiLang } from "./i18n-server";
 import { storedText } from "./step-notes";
 import { normalizeMemory, oppositeKey } from "./brain/memory-norm";
+import { applyWordingDeep, loadWordingRules } from "./client-wording";
 
 export type Project = {
   row: ProjectRow;
@@ -188,6 +189,8 @@ export class ThemeConflict extends Error {}
  * modification est passée entre-temps, rien n'est écrit (ThemeConflict) au lieu d'écraser silencieusement.
  */
 export function saveThemeVersion(projectId: string, spec: ThemeSpec, summary: string, author: "ai" | "user" | "system", qc?: unknown, expectedParent?: string): ThemeVersion {
+  // Vocabulaire du client (ex. « montre », jamais « chronographe ») : appliqué à tous les textes du site enregistré.
+  spec = applyWordingDeep(spec, loadWordingRules(projectId));
   return tx(() => {
     const cur = one<{ current_theme_version_id: string | null }>("SELECT current_theme_version_id FROM projects WHERE id = ?", projectId);
     if (expectedParent && cur?.current_theme_version_id !== expectedParent) throw new ThemeConflict("theme_conflict");

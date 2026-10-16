@@ -49,9 +49,30 @@ export function applyWording(text: string, rules: WordingRule[]): string {
   for (const r of rules) {
     const re = new RegExp(`(?<![\\p{L}\\p{N}])(${esc(r.avoid)})(s?)(?![\\p{L}\\p{N}])`, "giu");
     out = out.replace(re, (_m, w: string, plural: string) => (r.use ? matchCase(w, r.use) + (plural && !/s$/i.test(r.use) ? plural : "") : ""));
+    // « Montre chronographe » → « Montre montre » : le mot de remplacement répété est fusionné (seulement lui :
+    // « nous nous » reste intact).
+    if (r.use) out = out.replace(new RegExp(`(?<![\\p{L}])(${esc(r.use)})([ -])\\1(?![\\p{L}])`, "giu"), "$1");
   }
-  // « Montre chronographe » → « Montre montre » : le mot répété est fusionné.
-  return out.replace(/(?<![\p{L}])(\p{L}+) \1(?![\p{L}])/giu, "$1").replace(/ {2,}/g, " ").trim();
+  return out.replace(/ {2,}/g, " ").trim();
+}
+
+/** Clés et valeurs jamais réécrites : identifiants, types et références de fichiers (photos, vidéos). */
+const KEEP_KEY = /^(id|type|key|src|url|image|images|video|videos|poster|asset|assetId|assets|file|files|font|fonts)$|(_image|_video|_asset|_id|Id|_url|Url)$/;
+const KEEP_VALUE = /^(https?:|\/api\/|shopify:\/\/|data:)/;
+
+/**
+ * Applique les consignes à tous les textes d'un objet (ex. le thème : titres, textes, fiche produit, liens et
+ * identifiant du produit réécrits ensemble pour rester cohérents). Renvoie une copie ; l'objet reçu n'est pas modifié.
+ */
+export function applyWordingDeep<T>(value: T, rules: WordingRule[]): T {
+  if (!rules.length) return value;
+  const walk = (v: unknown, key = ""): unknown => {
+    if (typeof v === "string") return KEEP_KEY.test(key) || KEEP_VALUE.test(v) || !rules.some((r) => v.toLowerCase().includes(r.avoid.toLowerCase())) ? v : applyWording(v, rules);
+    if (Array.isArray(v)) return v.map((x) => walk(x, key));
+    if (v && typeof v === "object") return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, walk(x, k)]));
+    return v;
+  };
+  return walk(value) as T;
 }
 
 /** Ligne ajoutée aux consignes des modèles : le vocabulaire du client, à respecter dans ce qui est écrit. */
