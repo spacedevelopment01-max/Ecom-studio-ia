@@ -253,6 +253,7 @@ export function briefScenePrompt(b: GenerationBrief, o: { photoOnly?: boolean } 
     `Colour mood: ${b.palette}.`,
     `Fidelity: ${b.fidelity}.`,
     `Avoid: ${b.forbidden.filter((f) => !/texte|bouton|lettre/i.test(f)).join("; ")}.`,
+    "Decor objects stay blank: no writing, letters, title or logo on books, notebooks, papers, labels, boxes or signs.",
     `Format: ${b.format}.`,
     photoOnly ? "OUTPUT: a PHOTOGRAPH ONLY — absolutely no text, letters, numbers, words, logo, label, caption, watermark, frame or graphic element anywhere (the text printed on the real product itself stays as on the reference)." : "",
   ].filter(Boolean).join("\n");
