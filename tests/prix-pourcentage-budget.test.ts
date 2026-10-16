@@ -108,6 +108,7 @@ describe("écrans du client : aucun prix d'IA en euros", () => {
     "src/components/studio/logo-v2-panel.tsx",
     "src/components/studio/social-studio.tsx",
     "src/components/studio/social-autopilot.tsx",
+    "src/components/studio/tab-images.tsx",
   ];
   for (const f of files) {
     it(`${f} : ni « € » ni formatEur, prix par useBudgetPct`, () => {
