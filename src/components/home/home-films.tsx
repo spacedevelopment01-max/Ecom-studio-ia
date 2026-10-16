@@ -57,7 +57,7 @@ function Film({ f }: { f: DemoFilm }) {
 export function DemoFilms({ films }: { films: DemoFilm[] }) {
   if (!films.length) return null;
   return (
-    <div className="scrollbar-none -mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-4">
+    <div className="scrollbar-none -mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 lg:grid-cols-5">
       {films.map((f) => (
         <div key={f.id} className="w-[62%] shrink-0 snap-start sm:w-auto">
           <Film f={f} />

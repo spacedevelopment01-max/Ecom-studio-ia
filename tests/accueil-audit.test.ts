@@ -185,7 +185,8 @@ describe("Accueil : les sections tournent entre les démos, chacune avec de vrai
     expect(new Set(order).size).toBeGreaterThanOrEqual(5);
   });
   it("vidéos de démonstration : une par démo retenue, fichiers présents, produits et services", () => {
-    expect(DEMO_FILMS.map((f) => f.id)).toEqual(["montre", "paysagiste", "tribunes", "fleuriste"]);
+    expect(DEMO_FILMS.map((f) => f.id)).toEqual(["montre", "paysagiste", "casque", "fleuriste", "tribunes"]);
+    expect(DEMO_FILMS.map((f) => f.id)).not.toContain("gourde");
     for (const f of DEMO_FILMS) expect(exists(f.src) && exists(f.poster)).toBe(true);
     expect(JSON.stringify(DEMO_FILMS)).not.toContain("/demo/montre/video");
     const films = read("src/components/home/home-films.tsx");

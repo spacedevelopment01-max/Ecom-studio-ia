@@ -131,16 +131,17 @@ export const homeExtras = (id: string) => ({ editorAd: HOME_CURATION[id]?.editor
  *  - Les Tribunes : montage du studio, coupé à 12,9 s avant la carte finale (texte coupé « … « FRANCE » e ») ;
  *  - Racines & Pierres : film du studio (vidéos Pixabay de chantier, mains et pieds seuls, aucun visage) ;
  *  - Atelier Pivoine : montage du studio (vraies photos Pixabay, textes exacts).
- * Écartées faute de vidéo sans défaut (aucune fausse vidéo à leur place) :
- *  - Cime : montage presque sans image (écrans de texte vides, « Voici Gourde isotherme », phrase finale coupée) ;
- *  - Sonore : montage avec phrases coupées (« et u ») ; film IA dont le casque n'est pas celui de la démo (créé sans
- *    photo, sur texte seul).
+ *  - Sonore : film IA (SONORE_VIDEO_WAN, textes exacts, aucune personne) retenu par le propriétaire bien que le casque
+ *    ait été créé sur texte seul ; le montage du studio (phrases coupées « et u ») est écarté.
+ * Écartée faute de vidéo sans défaut, sur décision du propriétaire (aucune nouvelle génération) :
+ *  - Cime : montage presque sans image (écrans de texte vides, « Voici Gourde isotherme », phrase finale coupée).
  */
 export const DEMO_FILMS: { id: string; src: string; poster: string; label: [string, string] }[] = [
   { id: "montre", src: "/demo/montre/film-ia.mp4", poster: "/demo/montre/film-ia.jpg", label: ["Film publicitaire, 15 s", "Ad film, 15 s"] },
-  { id: "paysagiste", src: "/demo/paysagiste/film-demo.mp4", poster: "/demo/paysagiste/film-demo.jpg", label: ["Création et entretien de jardins, 15 s", "Garden design and care, 15 s"] },
-  { id: "tribunes", src: "/demo/tribunes/film-demo.mp4", poster: "/demo/tribunes/film-demo.jpg", label: ["T-shirt supporter Lavande, 13 s", "Lavender supporter T-shirt, 13 s"] },
+  { id: "paysagiste", src: "/demo/paysagiste/film-demo.mp4", poster: "/demo/paysagiste/film-demo.jpg", label: ["Création de jardins, 15 s", "Garden design, 15 s"] },
+  { id: "casque", src: "/demo/casque/film-ia.mp4", poster: "/demo/casque/film-ia.jpg", label: ["Film publicitaire, 15 s", "Ad film, 15 s"] },
   { id: "fleuriste", src: "/demo/fleuriste/film-demo.mp4", poster: "/demo/fleuriste/film-demo.jpg", label: ["Fleuriste artisan à Lyon, 15 s", "Artisan florist in Lyon, 15 s"] },
+  { id: "tribunes", src: "/demo/tribunes/film-demo.mp4", poster: "/demo/tribunes/film-demo.jpg", label: ["T-shirt supporter Lavande, 13 s", "Lavender supporter T-shirt, 13 s"] },
 ];
 
 /** Démo choisie pour chaque section de l'accueil : les sections tournent entre les six démos (consigne du propriétaire). */
