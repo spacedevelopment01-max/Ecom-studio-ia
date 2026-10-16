@@ -12,6 +12,7 @@ import { mentionsPerson, NO_PEOPLE_FR, peopleAllowedFor, peopleFreeQueries } fro
 import { productIdentity, resolveProductCategory, type ProductCategoryProfile } from "./categories";
 import { chooseDirection, DIRECTIONS } from "./direction";
 import { defaultAspect, FORMATS } from "./formats";
+import { toFr } from "./prompt-fr";
 import { PRODUCT_KINDS } from "./intent";
 import type { ArtDirectionId, AspectId, Support, VisualBrief, VisualKind } from "./types";
 
@@ -81,6 +82,10 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
   let negative: string[] = [];
   let queries: string[] = [];
   let understanding: VisualBrief["understanding"];
+  // Même brief rédigé en français pour la consigne du modèle d'images (les données anglaises servent aux recherches).
+  let subjectFr = "";
+  let actionFr: string | null = null;
+  let environmentFr: string | null = null;
 
   if (services) {
     // Métier du projet, puis celui de la prestation demandée quand elle est reconnue (« carrelage » ≠ « peinture »).
@@ -96,12 +101,18 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
       action = gesture;
       environment = scenes.length ? scenes[v % scenes.length] : null;
       subject = req.service ? `${req.service.name} — ${prof} at work` : `${prof} at work`;
+      subjectFr = `${req.service ? `${req.service.name} — ` : ""}${trade.labels.fr || "professionnel"} au travail`;
+      actionFr = gesture;
+      environmentFr = environment;
     } else {
       // Sans personne : le métier se prouve par ses outils, ses matériaux, le chantier et le résultat.
       action = gesture ? `${gesture} shown through its tools, materials and finished result, nobody in frame` : "tools, materials and finished result of the trade, nobody in frame";
       environment = scenes.length ? scenes[v % scenes.length] : `${gesture ?? "work"} site with tools and materials in place, nobody in frame`;
       // Le nom du métier désigne une personne (« plasterer ») : le sujet est l'ouvrage, pas l'artisan.
       subject = `${req.service ? `${req.service.name} — ` : ""}${gesture ?? "trade"} work: tools, materials and finished result (no people)`;
+      subjectFr = `${req.service ? `${req.service.name} — ` : ""}métier de ${trade.labels.fr || "l'artisan"} : outils, matériaux et ouvrage terminé (sans personne)`;
+      actionFr = gesture ? `${gesture}, montré par ses outils, ses matériaux et le résultat, personne dans le cadre` : "outils, matériaux et ouvrage terminé du métier, personne dans le cadre";
+      environmentFr = scenes.length ? environment : `lieu de travail avec les outils et les matériaux en place, personne dans le cadre`;
     }
     positive = uniq(noPerson([...trade.visuals.positive, ...trade.actions]));
     // Mots trop généraux pour prouver le métier (« interior », « renovation », « tools »…) : jamais suffisants seuls.
@@ -118,10 +129,14 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
   } else {
     category = resolveProductCategory(p.product);
     environment = category.environments[v % category.environments.length] ?? null;
+    environmentFr = environment ? toFr(environment) : null;
     if (productKind) {
       const id = productIdentity(p, { hasReference: !!req.references?.length });
       subject = `the real product "${id.name || p.product.category}"${id.colors.length ? ` (${id.colors.join(", ")})` : ""}`;
       action = req.kind === "usage_scene" || req.kind === "lifestyle" ? (people ? (category.usage[v % category.usage.length] ?? null) : "the product ready to use in its real everyday setting, nobody in frame") : null;
+      // Sans guillemets : seuls les textes à écrire dans l'image en ont (ici, aucun).
+      subjectFr = `le vrai produit, ${id.name || p.product.category}${id.colors.length ? ` (${id.colors.join(", ")})` : ""}`;
+      actionFr = req.kind === "usage_scene" || req.kind === "lifestyle" ? (people ? (category.usageFr[v % category.usage.length] ?? null) : "le produit prêt à servir dans son vrai décor du quotidien, personne dans le cadre") : null;
       positive = uniq([id.name, p.product.category]);
       // Images du produit : aucune recherche dans les banques (elles n'ont pas votre produit).
       queries = [];
@@ -130,6 +145,10 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
       subject = `world of ${category.labels.en || p.product.category || "the product"} (without the product itself)`;
       const usage = noPerson(category.usage);
       action = people ? (category.usage[v % category.usage.length] ?? null) : usage.length ? `${usage[v % usage.length]}, objects only, nobody in frame` : "objects and materials of everyday use in place, nobody in frame";
+      subjectFr = `univers ${category.labels.fr ? `de la famille ${category.labels.fr}` : "du produit"} (sans le produit lui-même)`;
+      // Usage en français au même rang que l'usage anglais retenu (même scène).
+      const usageFr = (en: string | undefined) => (en ? (category!.usageFr[category!.usage.indexOf(en)] ?? null) : null);
+      actionFr = people ? usageFr(category.usage[v % category.usage.length]) : usage.length && usageFr(usage[v % usage.length]) ? `${usageFr(usage[v % usage.length])}, seulement des objets, personne dans le cadre` : "objets et matières du quotidien en place, personne dans le cadre";
       positive = uniq(noPerson([...category.environments, ...category.usage]));
       const uq = [category.universeQueries[v % Math.max(1, category.universeQueries.length)], ...category.universeQueries];
       queries = uniq(people ? uq : peopleFreeQueries(uq)).slice(0, 3);
@@ -138,7 +157,10 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
     understanding = { source: category.source === "generic" ? "generic" : "product", id: category.id, confidence: category.source === "core" ? "high" : category.source === "sector" ? "medium" : "low" };
   }
 
-  if (req.topic?.trim()) subject = `${subject} — ${req.topic.trim().slice(0, 160)}`;
+  if (req.topic?.trim()) {
+    subject = `${subject} — ${req.topic.trim().slice(0, 160)}`;
+    subjectFr = `${subjectFr} — ${req.topic.trim().slice(0, 160)}`;
+  }
   const dir = chooseDirection({
     business: p.business,
     sector: p.product.sector ?? null,
@@ -180,6 +202,7 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
     understanding,
     people,
     ...(req.shot ? { shotKey: crypto.createHash("sha256").update(JSON.stringify(req.shot)).digest("hex").slice(0, 12) } : {}),
+    fr: { subject: subjectFr || subject, action: actionFr, environment: req.shot?.environment ?? environmentFr, negative: negative.map(toFr) },
   };
 }
 
@@ -199,17 +222,19 @@ const ZONE_FR: Record<string, string> = { left: "à gauche", right: "à droite",
  */
 export function generationPrompt(b: VisualBrief, extra?: string | null): string {
   const d = { ...DIRECTIONS[b.artDirection], ...(b.people === false ? DIRECTION_NO_PEOPLE[b.artDirection] : {}) };
+  // Brief en français (ancien brief sans version française : données d'origine).
+  const f = b.fr ?? { subject: b.subject, action: b.action, environment: b.environment, negative: b.negative };
   return [
-    `Photographie, style ${d.label}. Sujet : ${b.subject}.`,
+    `Photographie, style ${d.label}. Sujet : ${f.subject}.`,
     // Publicité : niveau campagne d'agence (lumière travaillée, matières, profondeur), un seul point focal, de l'air.
     b.support === "ad" ? "Photographie de campagne publicitaire haut de gamme pour les réseaux sociaux : un seul point focal net, lumière naturelle ou dorée travaillée, matières et textures riches, faible profondeur de champ, étalonnage soigné, bel espace libre, réaliste et crédible (jamais un rendu 3D, jamais un dessin)." : "",
-    b.action ? `Action : ${b.action}.` : "",
-    b.environment ? `Décor : ${b.environment}.` : "",
+    f.action ? `Action : ${f.action}.` : "",
+    f.environment ? `Décor : ${f.environment}.` : "",
     `Composition : ${b.composition}. Lumière : ${b.lighting}. Prise de vue : ${b.framing}. Ambiance : ${d.mood}.`,
     b.palette.length ? `Touches de couleur en accord avec ${b.palette.join(", ")}.` : "",
     `Format ${b.format.aspect}${b.format.textZone !== "none" ? `, zone ${ZONE_FR[b.format.textZone] ?? b.format.textZone} gardée calme pour un texte ajouté plus tard` : ""}.`,
     b.productFidelity ? PRODUCT_FIDELITY_FR : "",
-    `Ne jamais montrer : ${b.negative.slice(0, 8).join(", ")} ; aucun texte, aucune lettre, aucun logo, aucun filigrane.`,
+    `Ne jamais montrer : ${f.negative.slice(0, 8).join(", ")} ; aucun texte, aucune lettre, aucun logo, aucun filigrane.`,
     b.people === false ? NO_PEOPLE_FR : "",
     extra ? `Correction pour cet essai : ${extra}` : "",
   ]

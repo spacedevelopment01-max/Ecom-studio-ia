@@ -97,6 +97,9 @@ export type VisualBrief = {
   people?: boolean;
   /** Prise de vue imposée par une direction artistique de publicité (empreinte : image propre à ce concept). */
   shotKey?: string;
+  /** Version française du sujet, du geste, du décor et des interdits pour la consigne du modèle d'images (règle :
+   * consignes à Qwen en français). Hors empreinte du brief : la réutilisation des images reste inchangée. */
+  fr?: { subject: string; action: string | null; environment: string | null; negative: string[] };
 };
 
 /** Licence et provenance d'une image de banque : jamais « libre de droits » sans vérification. */

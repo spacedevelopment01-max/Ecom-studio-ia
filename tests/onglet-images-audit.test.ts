@@ -116,6 +116,23 @@ describe("onglet Images — audit", async () => {
     }
   });
 
+  it("consigne entièrement en français : chaque décor et interdit des familles de produits a sa traduction", async () => {
+    const { PROMPT_FR, untranslated } = await import("@/lib/image-v2/prompt-fr");
+    const { GLOBAL_NEGATIVES } = await import("@/lib/brain/trade");
+    const src = fs.readFileSync(path.join(process.cwd(), "src/lib/image-v2/categories.ts"), "utf8");
+    const phrases = [...src.matchAll(/(?:environments|negative): \[([^\]]*)\]/g)].flatMap((m) => [...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1]));
+    const common = /COMMON_NEGATIVE = \[([^\]]*)\]/.exec(src)![1].match(/"([^"]+)"/g)!.map((x) => x.slice(1, -1));
+    expect(phrases.length).toBeGreaterThan(40);
+    expect(untranslated([...phrases, ...common, ...GLOBAL_NEGATIVES])).toEqual([]);
+    expect(Object.keys(PROMPT_FR).length).toBeGreaterThan(80);
+    // Consigne d'une image produit et d'une image d'univers : aucun mot anglais du brief.
+    const p = loadProject(pid);
+    for (const kind of ["usage_scene", "ambiance", "lifestyle"] as const) {
+      const prompt = generationPrompt(buildBrief(p, { kind, support: "site", aspect: "4:5", ...(kind === "ambiance" ? {} : { references: ["ref"] }) }));
+      expect(prompt, kind).not.toMatch(/\b(the|of|with|without|nobody|frame|product|real|world|objects only|ready to use)\b/i);
+    }
+  });
+
   it("écran : plus de « forfait Découverte », IA indisponible expliquée, tâche sans image ou bloquée signalée", () => {
     const src = fs.readFileSync(path.join(process.cwd(), "src/components/studio/tab-images.tsx"), "utf8");
     expect(src).not.toMatch(/forfait Découverte|Discovery plan/);
