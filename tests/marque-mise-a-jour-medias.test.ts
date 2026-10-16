@@ -67,6 +67,6 @@ describe("Changement de marque : images et vidéos mises à jour", async () => {
     // Le prix montré est le coût probable (un essai) ; le plafond de la tâche laisse la place des reprises (3 essais au plus).
     const payload = JSON.parse(job.payload);
     expect(payload).toMatchObject({ request: { as: "ad", format: "4:5", subject: { kind: "product", key: "main" } } });
-    expect(payload.costCapMicro).toBeGreaterThan(ai.paidMicro);
+    expect(payload.costCapMicro).toBeGreaterThan(ai.paidMicro!);
   });
 });
