@@ -109,8 +109,12 @@ describe("produit entier obligatoire", () => {
   it("consigne : même produit, seule la partie manquante est ajoutée, rien d'inventé", () => {
     const p = completeProductPrompt("le bracelet manque d'un côté");
     expect(p).toContain("missing part: le bracelet manque d'un côté");
-    expect(p).toContain("only add the missing part");
+    expect(p).toContain("Only add the missing part");
     expect(p).toContain("do not invent a logo");
+    // Leçon de l'essai réel ARVEN : le cadrage « catalogue » faisait perdre l'angle et la couleur de l'acier.
+    expect(p).toContain("same camera angle and the same pose");
+    expect(p).toContain("never becomes black or gunmetal");
+    expect(p).toContain("with its buckle or clasp visible");
   });
 
   it("avec l'IA : produit incomplet reconstruit en entier, contrôlé, détouré ; l'original du client est gardé", async () => {

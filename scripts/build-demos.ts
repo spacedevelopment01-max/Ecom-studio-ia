@@ -91,10 +91,12 @@ const REAL_DEMOS: DemoDef[] = [
     id: "montre", sector: "Horlogerie", direction: "joaillerie", category: "Montres",
     productName: "Chronographe acier et cuir", brandName: "ARVEN", price: "",
     description: "Montre chronographe : boîtier en acier poli, lunette graduée, cadran noir à trois compteurs argentés, guichet de date, bracelet en cuir brun surpiqué doublé de tissu bleu.",
-    photo: path.join(PX, "montre-1.jpg"),
+    // Photo Pixabay d'origine : bas du bracelet perdu dans l'ombre. Montre reconstruite en entier (Qwen-Image, photo
+    // d'origine en référence, accord du propriétaire, 0,162 $ pour 2 essais ; le 1er, boîtier devenu noir, refusé).
+    photo: path.join(PX, "montre-1-entiere.jpg"),
     logo: path.join(REAL, "logos", "arven.png"),
     videos: "edited",
-    source: { supplier: "Pixabay", url: "https://pixabay.com/images/id-3090387/", note: "Photo d'une montre sans marque (Pixabay) : la marque ARVEN, ses visuels et sa boutique sont créés par le studio. Prix et caractéristiques techniques non annoncés : à compléter par le marchand." },
+    source: { supplier: "Pixabay", url: "https://pixabay.com/images/id-3090387/", note: "Photo d'une montre sans marque (Pixabay), bracelet complété par l'IA (la partie basse était dans l'ombre) : la marque ARVEN, ses visuels et sa boutique sont créés par le studio. Prix et caractéristiques techniques non annoncés : à compléter par le marchand." },
   },
   {
     id: "gourde", sector: "Sport et plein air", direction: "elan", category: "Gourdes",

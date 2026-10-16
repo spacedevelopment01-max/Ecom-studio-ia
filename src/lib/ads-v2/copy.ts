@@ -14,7 +14,19 @@ import { CTAS } from "./platforms";
 import type { AdCopy, AdInsight, AnglePlan, AngleType } from "./types";
 
 const cut = (t: string, n: number) => (t.length > n ? t.slice(0, n + 1).replace(/\s+\S*$/, "").replace(/[\s,;:·-]+$/, "") : t);
-const words = (t: string, n: number) => t.split(/\s+/).filter(Boolean).slice(0, n).join(" ");
+const count = (t: string) => t.split(/\s+/).filter(Boolean).length;
+const DANGLING = /\s+(de|des|du|la|le|les|d'|l'|un|une|et|ou|à|au|aux|en|pour|avec|sur|of|the|a|an|and|or|to|for|with|on)$/i;
+/** Accroche limitée à `n` mots, jamais coupée au milieu d'une idée (« … acier et ») : une accroche « tête : nom » trop
+ * longue garde la partie qui tient en entier ; sinon les mots de liaison laissés en fin sont retirés. */
+export const words = (t: string, n: number) => {
+  if (count(t) <= n) return t;
+  const parts = t.split(/\s*:\s*/).filter(Boolean);
+  const whole = parts.length > 1 ? [...parts].reverse().find((x) => count(x) >= 2 && count(x) <= n) : undefined;
+  if (whole) return whole;
+  let out = t.split(/\s+/).filter(Boolean).slice(0, n).join(" ");
+  while (DANGLING.test(out)) out = out.replace(DANGLING, "");
+  return out.replace(/[\s,;:·–-]+$/, "");
+};
 const lowerFirst = (t: string) => `${t.charAt(0).toLowerCase()}${t.slice(1)}`;
 const noDot = (t: string) => t.trim().replace(/[.!?…]+$/, "");
 

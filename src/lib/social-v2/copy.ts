@@ -22,11 +22,16 @@ const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 const low = (s: string) => (s ? s.charAt(0).toLowerCase() + s.slice(1) : s);
 const strip = (s: string) => s.trim().replace(/[.!?\s]+$/, "");
 /** Titre court du visuel : la partie avant « : » si elle suffit, sinon coupé sur un mot (jamais « des »/« de » final). */
-const short = (s: string, n = 40) => {
+export const short = (s: string, n = 40) => {
   let t = cap(strip(s));
   if (t.length <= n) return t.replace(/[\s,;:–·•|-]+$/, "");
-  const head = t.split(" : ")[0];
-  if (head.length >= 6 && head.length <= n) return head;
+  // « Tête : sujet » trop long : la partie qui tient en entier et a un sens seule (au moins deux mots), jamais un
+  // simple « Comprendre » ou « Découvrir » laissé sans son sujet.
+  const [head, ...rest] = t.split(" : ");
+  const tail = rest.join(" : ");
+  const fits = (x: string) => x.length >= 6 && x.length <= n && x.trim().split(/\s+/).length >= 2;
+  if (tail && fits(head)) return head;
+  if (tail && fits(tail)) return cap(tail);
   t = t.slice(0, n + 1);
   t = t.slice(0, Math.max(t.lastIndexOf(" "), 8));
   return t.replace(/\s+(de|des|du|la|le|les|d'|l'|et|à|au|aux|en|pour|of|the|and|to)$/i, "").replace(/[\s,;:–·•|-]+$/, "");
