@@ -122,11 +122,141 @@ function fillSmooth(img: Px, mask: Uint8Array, grainDy: number) {
     }
 }
 
+/**
+ * Retire un texte posé sur une photo : seuls les pixels des lettres (blancs ou verts, avec leurs accents pâles et leur ombre douce : 9 px au-dessus et en dessous, 6 px sur les côtés
+ * douce) sont effacés,
+ * puis reconstitués par diffusion depuis la photo voisine (traits fins : pas de flou visible) et reçoivent le grain
+ * d'origine recopié `grainDy` px plus bas. Les zones vides restent propres, sans traînée.
+ */
+/** Pixel de texte du gabarit : blanc (peu saturé, clair) ou vert de la marque. */
+const isGlyph = (src: Float32Array, i: number) => {
+  const r = src[i], g = src[i + 1], b = src[i + 2];
+  // Blanc pur des lettres seulement (un reflet du t-shirt rose ou des cheveux n'en est pas un) ; bords adoucis : dilatation.
+  return (Math.min(r, g, b) > 210 && Math.max(r, g, b) - Math.min(r, g, b) < 35) || (g > 100 && g - r > 35 && g - b > 5);
+};
+
+function eraseGlyphs(img: Px, x0: number, y0: number, w: number, h: number, grainDy: number, photo: Uint8Array | null = null) {
+  const { data, width: W, height: H } = img;
+  const src = new Float32Array(data);
+  const m = new Uint8Array(W * H);
+  for (let y = y0; y < Math.min(H, y0 + h); y++)
+    for (let x = x0; x < Math.min(W, x0 + w); x++) {
+      const i = (y * W + x) * 4, r = src[i], g = src[i + 1], b = src[i + 2];
+      if (isGlyph(src, i)) for (let dy = -9; dy <= 9; dy++) for (let dx = -6; dx <= 6; dx++) { const yy = y + dy, xx = x + dx; if (yy >= 0 && xx >= 0 && yy < H && xx < W) m[yy * W + xx] = 1; }
+    }
+  if (photo) {
+    // Avec la photo d'origine : sont aussi effacés les pixels qui s'écartent nettement de ce que la photo prévoit
+    // (traits fins et adoucis, bas d'un cercle, accents pâles, ombres), sans toucher au reste.
+    const pre = [0, 1, 2].map((c) => {
+      let n = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
+      for (let y = Math.max(0, y0 - 20); y < Math.min(H, y0 + h + 20); y++)
+        for (let x = Math.max(0, x0 - 40); x < Math.min(W, x0 + w + 40); x++) {
+          const k = y * W + x;
+          if (m[k]) continue;
+          const pv = photo[k * 3 + c], v = src[k * 4 + c];
+          n++; sx += pv; sy += v; sxx += pv * pv; sxy += pv * v;
+        }
+      const a = (n * sxy - sx * sy) / Math.max(1e-6, n * sxx - sx * sx);
+      return [a, (sy - a * sx) / Math.max(1, n)];
+    });
+    const extra: number[] = [];
+    for (let y = Math.max(0, y0 - 8); y < Math.min(H, y0 + h + 8); y++)
+      for (let x = Math.max(0, x0 - 8); x < Math.min(W, x0 + w + 8); x++) {
+        const k = y * W + x;
+        let d = 0;
+        for (let c = 0; c < 3; c++) d += Math.abs(src[k * 4 + c] - (pre[c][0] * photo[k * 3 + c] + pre[c][1]));
+        if (d > 36) extra.push(k);
+      }
+    for (const k of extra) { const x = k % W, y = (k / W) | 0; for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) { const yy = y + dy, xx = x + dx; if (yy >= 0 && xx >= 0 && yy < H && xx < W) m[yy * W + xx] = 1; } }
+    // Vraie photo d'origine (recalée sur le visuel) : sous chaque lettre, son pixel, ramené à la teinte locale du
+    // visuel (voile sombre, dégradé) par un ajustement linéaire sur les pixels voisins sans texte.
+    // Ajustement ligne par ligne sur une fenêtre glissante de 33 lignes : transition continue, sans marche.
+    for (let y = Math.max(0, y0 - 10); y < Math.min(H, y0 + h + 10); y++) {
+      const coef = [0, 1, 2].map((c) => {
+        let n = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
+        for (let yy = Math.max(0, y - 16); yy <= Math.min(H - 1, y + 16); yy++)
+          for (let x = Math.max(0, x0 - 60); x < Math.min(W, x0 + w + 60); x++) {
+            const k = yy * W + x;
+            if (m[k]) continue;
+            const pv = photo[k * 3 + c], v = src[k * 4 + c];
+            n++; sx += pv; sy += v; sxx += pv * pv; sxy += pv * v;
+          }
+        const a = n > 50 ? (n * sxy - sx * sy) / Math.max(1e-6, n * sxx - sx * sx) : 1;
+        return [a, n > 50 ? (sy - a * sx) / n : 0];
+      });
+      for (let x = Math.max(0, x0 - 7); x < Math.min(W, x0 + w + 7); x++) {
+        const k = y * W + x;
+        if (!m[k]) continue;
+        for (let c = 0; c < 3; c++) data[k * 4 + c] = coef[c][0] * photo[k * 3 + c] + coef[c][1];
+      }
+    }
+    return;
+  }
+  fill(img, m);
+  // Lissage (Laplace) des pixels reconstitués : supprime les traînées de l'interpolation ligne/colonne.
+  for (let it = 0; it < 2500; it++)
+    for (let y = Math.max(1, y0 - 10); y < Math.min(H - 1, y0 + h + 10); y++)
+      for (let x = Math.max(1, x0 - 7); x < Math.min(W - 1, x0 + w + 7); x++) {
+        const k = y * W + x;
+        if (!m[k]) continue;
+        for (let c = 0; c < 3; c++) data[k * 4 + c] = (data[(k - 1) * 4 + c] + data[(k + 1) * 4 + c] + data[(k - W) * 4 + c] + data[(k + W) * 4 + c]) / 4;
+      }
+  // Grain d'origine.
+  for (let y = y0 - 10; y < y0 + h + 10; y++)
+    for (let x = x0 - 7; x < x0 + w + 7; x++) {
+      const k = y * W + x;
+      if (y < 2 || x < 2 || y >= H - 2 || x >= W - 2 || !m[k]) continue;
+      const sy = Math.min(H - 3, Math.max(2, y + grainDy));
+      // Jamais de grain pris sur un autre texte (il réapparaîtrait en fantôme).
+      let near = false;
+      for (let dy = -10; dy <= 10 && !near; dy++) for (let dx = -10; dx <= 10 && !near; dx++) { const yy = sy + dy, xx = x + dx; if (yy >= 0 && yy < H && xx >= 0 && xx < W && isGlyph(src, (yy * W + xx) * 4)) near = true; }
+      if (near) continue;
+      for (let c = 0; c < 3; c++) {
+        // Texture de la bande voisine (mèches, plis, grain) : écart à sa moyenne locale 9 x 9.
+        let mm = 0, nn = 0;
+        for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) { const yy = Math.min(H - 1, Math.max(0, sy + dy)), xx = Math.min(W - 1, Math.max(0, x + dx)); mm += src[(yy * W + xx) * 4 + c]; nn++; }
+        data[k * 4 + c] += src[(sy * W + x) * 4 + c] - mm / nn;
+      }
+    }
+}
+
+/** Doublons retirés (choix du propriétaire) : [x, y, largeur, hauteur, décalage du grain] sur 1080 px de large. */
+const DOUBLONS: Record<string, [number, number, number, number, number][]> = {
+  "post-3": [[284, 78, 508, 28, 40]], // « CASQUE AUDIO SUPRA-AURICULAIRE » au-dessus de « Supra-auriculaire »
+  "post-4": [
+    [72, 878, 498, 48, 60], // « Casque audio supra-auriculaire » sous le même titre
+    [186, 970, 90, 90, 100], // puce 1 (cercle) : son texte est réécrit sous la puce du milieu, centrée
+    [128, 1064, 204, 60, 70], // texte de la puce 1
+    [448, 1064, 186, 64, 70], // « Dimensions supra-auriculaire »
+    [804, 970, 90, 90, 100], // puce 3 (cercle)
+    [796, 1064, 106, 32, 40], // « Prix 79 € »
+  ],
+  "post-5": [[70, 764, 572, 288, 300]], // puces « Dimensions », « Prix 79 € » et « Format Supra-auriculaire »
+  "post-6": [
+    [70, 218, 676, 30, 40], // surtitre « CASQUE AUDIO SUPRA-AURICULAIRE » (le titre dit la même chose)
+    [72, 553, 468, 48, 60], // « Casque audio supra-auriculaire » sous le même titre
+  ],
+  "post-7": [[262, 198, 550, 28, 36]], // « CASQUE AUDIO SUPRA-AURICULAIRE » sous « Supra-auriculaire »
+};
+
 const rect = (W: number, H: number, x: number, y: number, w: number, h: number, pad = 0) => {
   const m = new Uint8Array(W * H);
   for (let yy = Math.max(0, y - pad); yy < Math.min(H, y + h + pad); yy++) for (let xx = Math.max(0, x - pad); xx < Math.min(W, x + w + pad); xx++) m[yy * W + xx] = 1;
   return m;
 };
+
+/** Photos Pixabay d'origine recalées sur chaque visuel (échelle, décalage : scripts/demo-sonore-photos.json). */
+const PHOTOS = JSON.parse(fs.readFileSync(path.join(process.cwd(), "scripts", "demo-sonore-photos.json"), "utf8")) as Record<string, { photo: string; s: number; ox: number; oy: number }>;
+async function alignedPhoto(name: string, W: number, H: number): Promise<Uint8Array | null> {
+  const r = PHOTOS[name];
+  if (!r) return null;
+  const file = path.join(process.cwd(), "scripts", "demo-products", "inputs", "pixabay", `${r.photo}.jpg`);
+  const meta = await sharp(file).metadata();
+  const k = W / (name === "banner-1" ? 1200 : 1080);
+  const sw = Math.round(meta.width! * r.s * k), sh = Math.round(meta.height! * r.s * k);
+  const { data } = await sharp(file).resize(sw, sh).extract({ left: Math.round(r.ox * k), top: Math.round(r.oy * k), width: W, height: H }).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  return new Uint8Array(data);
+}
 
 ensureFonts();
 const logo = await loadImage(await oneColourVersion(await sharp(path.join(SRC, "logo.png")).trim().png().toBuffer(), "#FFFFFF"));
@@ -151,7 +281,24 @@ for (const name of Object.keys(NEW)) {
       // Grain recopié de la bande propre juste en dessous (fond uni sous le titre).
       fillSmooth(px, rect(W, H, Math.round(60 * k), Math.round(374 * k), Math.round(690 * k), Math.round(170 * k)), Math.round(240 * k));
     }
+    // 3. Doublons retirés (post-3 à post-7).
+    const photo = DOUBLONS[name] ? await alignedPhoto(name, W, H) : null;
+    for (const [x, y, w, h, gdy] of DOUBLONS[name] ?? []) {
+      const k = W / 1080;
+      eraseGlyphs(px, Math.round(x * k), Math.round(y * k), Math.round(w * k), Math.round(h * k), Math.round(gdy * k), photo);
+    }
     ctx.putImageData(img, 0, 0);
+    if (name === "post-4") {
+      // La seule puce gardée, « coques argentées, arceau rembourré », recentrée sous le cercle du milieu (même police :
+      // Jost 600, 23 px, mêmes lignes de base).
+      const k = W / 1080;
+      ctx.font = font("Jost", 600, Math.round(23 * k));
+      ctx.fillStyle = "#FFFFFF";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText("coques argentées,", Math.round(540 * k), Math.round(1088 * k));
+      ctx.fillText("arceau rembourré", Math.round(540 * k), Math.round(1116 * k));
+    }
     if (name === "ad-1") {
       const k = W / 1080;
       // Même police, même taille et même interligne que la 1re ligne (Archivo 600, 97 px, lignes espacées de 102 px).
@@ -162,7 +309,7 @@ for (const name of Object.keys(NEW)) {
       ctx.fillText("La qualité", Math.round(81 * k), Math.round(453 * k));
       ctx.fillText("inégalable.", Math.round(81 * k), Math.round(555 * k));
     }
-    // 3. Nouveau logo, blanc, lisible, dans son coin dégagé.
+    // 4. Nouveau logo, blanc, lisible, dans son coin dégagé.
     const k = W / (name === "banner-1" ? 1200 : 1080);
     const p = NEW[name];
     const lw = Math.round(p.w * k), lh = Math.round((logo.height / logo.width) * lw);
