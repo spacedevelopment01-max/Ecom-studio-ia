@@ -1,0 +1,27 @@
+{
+  "at": "2026-10-16T13:09:56.963Z",
+  "model": "qwen-image-3.0-pro",
+  "boundUsd": 0.081,
+  "items": [
+    {
+      "id": "arven-univers-marque-v3",
+      "ok": true,
+      "model": "qwen-image-3.0-pro",
+      "aspect": "4:5",
+      "size": "1104*1472",
+      "references": 0,
+      "usage": {
+        "input_image_count": 0,
+        "input_image_type": "qima_input_1k",
+        "output_height": 1472,
+        "output_image_count": 1,
+        "output_image_type": "qima_output_1k",
+        "output_width": 1104
+      },
+      "requestId": "42ed7fa9-019f-9484-b915-c0c5bb44e0f4",
+      "seconds": 13,
+      "maxCostUsd": 0.081,
+      "prompt": "Photographie de nature morte, style photographie premium. Sujet : nature morte de l'univers du produit (accessoires) ; matières et couleurs du produit : acier poli, cuir brun ; le produit lui-même n'apparaît pas. Surface : plateau en marbre blanc veiné de gris, poli et lisse. Arrière-plan : mur brun chocolat uni, très flou. Objets, liste fermée (aucun autre objet dans l'image) : 1) écrin à montre ouvert et vide, intérieur en velours, en cuir lisse cousu et velours, cuir brun cognac, velours noir, au centre ; 2) sablier, en verre et laiton, sable clair, laiton doré, en arrière-plan à droite ; 3) bande de cuir roulée, en cuir pleine fleur lisse, brun cognac, à gauche, au second plan. Toutes les surfaces sont lisses et unies, sans gravure, sans marquage, sans motif en relief ; sur le cuir, seules les coutures sont visibles. Lumière : lumière chaude et douce venant de la gauche, en fin d'après-midi, reflets discrets sur le métal. Cadrage : vue légèrement plongeante à environ 35°, prise à 60 cm, objectif 50 mm, faible profondeur de champ. Ambiance : raffiné, tactile, haut de gamme. Touches de couleur en accord avec #1E2225, #E8DACF, #A86932, #FAF7F5. Format 4:5 ; le bas de l'image reste dégagé et calme (surface unie). Objets sans marque visible ; image purement photographique, rien n'est écrit sur l'image. Scène sans aucune présence humaine.\nPhotographie réaliste et haut de gamme. Image purement photographique : objets et surfaces vierges, rien n'est écrit sur l'image. Format 4:5."
+    }
+  ]
+}
