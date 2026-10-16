@@ -119,6 +119,8 @@ describe("onglet Images — audit", async () => {
   it("écran : plus de « forfait Découverte », IA indisponible expliquée, tâche sans image ou bloquée signalée", () => {
     const src = fs.readFileSync(path.join(process.cwd(), "src/components/studio/tab-images.tsx"), "utf8");
     expect(src).not.toMatch(/forfait Découverte|Discovery plan/);
+    // Découverte est un compte sans abonnement, pas un forfait (même règle dans le choix du visuel).
+    expect(fs.readFileSync(path.join(process.cwd(), "src/components/studio/visual-choice.tsx"), "utf8")).not.toMatch(/forfait Découverte|Discovery plan/);
     expect(src).not.toMatch(/EngineNotice/);
     expect(src).toContain("data-image-ai-notice");
     expect(src).toMatch(/job\.status === "blocked"\) toast\("bad"/);

@@ -59,14 +59,20 @@ function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...
         const out = await fn(...args);
         keepPaidImage(t, out);
         return out;
-      } catch (e) {
+      } catch (e0) {
+        let e = e0;
         // Réservation du coût maximal : rendue si rien n'est parti ou si le fournisseur a refusé la demande ; sinon
         // (délai dépassé, coupure, erreur après acceptation ou réponse), coût maximal retenu par prudence.
         if (t.reservation && !t.recorded) {
           const status = (e as { status?: unknown })?.status;
           if (!t.sent) release(t.reservation, "aucune demande envoyée au fournisseur");
           else if (t.rejected || refused(status)) release(t.reservation, `refus du fournisseur${typeof status === "number" ? ` (${status})` : ""}`);
-          else settleUncertain(t.reservation, redact(String((e as Error)?.message ?? e)).slice(0, 160));
+          else {
+            settleUncertain(t.reservation, redact(String((e as Error)?.message ?? e)).slice(0, 160));
+            // Résultat incertain (5xx, coupure, réponse sans image) : l'appel a pu être facturé. Règle du propriétaire :
+            // jamais relancé tout seul — erreur définitive (la file de tâches ne réessaie pas), raison dite au client.
+            if (!(e instanceof PermanentError)) e = uncertainMediaError(e, t);
+          }
           // Rien n'a été facturé (réservation rendue) : un secours compatible peut prendre le relais sans double coût.
           // Une erreur 5xx (ex. « 502 upstream request failed » d'un proxy) ou une coupure du flux n'en fait pas partie :
           // la génération a pu avoir lieu et être facturée → coût maximal retenu, jamais de seconde génération.
@@ -74,13 +80,25 @@ function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...
         }
         // Échec après le départ de la demande au fournisseur : l'appel a eu lieu, il est tracé (coût inconnu = 0, signalé).
         if (t.provider && !t.recorded) {
-          const msg = String((e as Error)?.message ?? e);
+          const msg = String((e0 as Error)?.message ?? e0);
           recordCall({ userId: t.ctx!.userId, projectId: t.ctx!.projectId, jobId: t.ctx!.jobId, task, provider: t.provider, requestedModel: t.model ?? "", unit: t.unit ?? "image", latencyMs: t.started ? Date.now() - t.started : null, usageKey: t.ctx!.usageKey ?? null, estimated: true, status: /délai|timeout|timed out/i.test(msg) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(msg).slice(0, 200)}` , ...brainCols(t.ctx), ...routingCols(t) });
         }
         throw e;
       }
     });
   };
+}
+
+/**
+ * Erreur définitive d'une génération au résultat incertain : le coût maximal est retenu, aucune nouvelle tentative
+ * automatique (ni par la file de tâches, ni par un secours). Le client sait quoi faire.
+ */
+export function uncertainMediaError(e: unknown, t: Pick<MediaTrace, "provider" | "model">): PermanentError {
+  const why = redact(String((e as Error)?.message ?? e)).slice(0, 200);
+  const who = t.provider ? `${t.provider}${t.model ? `:${t.model}` : ""}` : "fournisseur";
+  const out = new PermanentError(L(`Résultat incertain chez ${who} (${why}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.`, `Uncertain result at ${who} (${why}): maximum cost kept as a precaution, no automatic retry. Check the provider's usage before trying again.`));
+  const status = (e as { status?: unknown })?.status;
+  return Object.assign(out, { cause: e, uncertain: true, ...(typeof status === "number" ? { status } : {}) });
 }
 
 /** Refus net du fournisseur (4xx hors délai) : rien n'a été produit ni facturé. 5xx, 408 et coupures : incertain. */

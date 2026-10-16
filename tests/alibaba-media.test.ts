@@ -19,7 +19,7 @@ vi.mock("@/lib/ai/config", async (orig) => ({ ...(await orig<object>()), activeP
 
 const PNG = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
 const mp4 = Buffer.from("00000018667479706d703432", "hex");
-const net = { calls: [] as { url: string; body: any; headers: Record<string, string> }[], image: "ok" as "ok" | "401" | "inspect" | "500", video: "ok" as "ok" | "failed", polls: 0, downloadDown: false };
+const net = { calls: [] as { url: string; body: any; headers: Record<string, string> }[], image: "ok" as "ok" | "401" | "inspect" | "500" | "empty", video: "ok" as "ok" | "failed", polls: 0, downloadDown: false };
 
 async function fakeFetch(url: string, init?: RequestInit): Promise<Response> {
   const body = init?.body ? JSON.parse(String(init.body)) : null;
@@ -29,6 +29,7 @@ async function fakeFetch(url: string, init?: RequestInit): Promise<Response> {
     if (net.image === "401") return json({ code: "InvalidApiKey", message: "Invalid API-key provided: sk-abcdefghijkl" }, 401);
     if (net.image === "inspect") return json({ code: "DataInspectionFailed", message: "Input data may contain inappropriate content." }, 400);
     if (net.image === "500") return json({ code: "InternalError", message: "oops" }, 500);
+    if (net.image === "empty") return json({ output: { choices: [{ message: { content: [] } }] } });
     return json({ output: { choices: [{ message: { content: [{ image: "https://result.test/qwen.png" }] } }] } });
   }
   if (url.includes("/services/aigc/video-generation/video-synthesis")) return json({ output: { task_id: "task-123", task_status: "PENDING" } });
@@ -155,6 +156,28 @@ describe("Alibaba Cloud — Qwen-Image et Wan", async () => {
     expect(ali.alibabaError(401, JSON.stringify({ code: "InvalidApiKey", message: "sk-abcdefghijkl" })).message).not.toContain("sk-abcdefghijkl");
     expect(ali.alibabaError(400, JSON.stringify({ code: "DataInspectionFailed" })).message).toMatch(/contrôle de contenu/);
     expect(ali.alibabaError(500, "x").refused).toBe(false);
+  });
+
+  it("résultat incertain (erreur 5xx, réponse sans image) : coût maximal retenu, erreur définitive, jamais relancé ni secours", async () => {
+    const { PermanentError } = await import("@/lib/jobs");
+    for (const mode of ["500", "empty"] as const) {
+      const c = await client();
+      confirmModel("alibaba:qwen-image-2.0-pro", { unit: "image", perImage: 0.075 });
+      setJsonSetting("ai.routes", { image_generation: { provider: "alibaba", model: "qwen-image-2.0-pro" } });
+      setJsonSetting("ai.media.backup", { image: "google:gemini-2.5-flash-image" });
+      net.image = mode;
+      net.calls = [];
+      const err = await fr(() => mp.ambianceImage(ctx(c), { prompt: "atelier", aspect: "1:1" })).catch((e) => e);
+      // Définitive : la file de tâches ne relance pas (l'appel a pu être facturé), raison claire pour le client.
+      expect(err).toBeInstanceOf(PermanentError);
+      expect(err.permanent).toBe(true);
+      expect(err.message).toMatch(/Résultat incertain.*aucune relance automatique/);
+      // Un seul envoi, aucun secours appelé, coût maximal gardé (pas rendu).
+      expect(net.calls.filter((x) => x.url.includes("multimodal-generation")).length).toBe(1);
+      expect(net.calls.some((x) => x.url.includes("generativelanguage"))).toBe(false);
+      expect(reservations(c.userId).map((r) => `${r.provider}:${r.status}`)).toEqual([expect.stringMatching(/^alibaba:(?!released)/)]);
+    }
+    net.image = "ok";
   });
 
   it("vidéo Wan (image → vidéo) : tâche asynchrone suivie, 720P, durée acceptée réservée et facturée, vidéo récupérée", async () => {

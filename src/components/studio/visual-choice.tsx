@@ -40,7 +40,7 @@ export function VisualChoice({ value: raw, onChange, ai, name, help, prices, leg
           );
         })}
       </div>
-      {!ai && <p className="text-xs text-muted">{t("Les choix avec l'IA ne sont pas disponibles pour ce projet (forfait Découverte, budget IA épuisé ou fournisseur désactivé).", "AI choices aren't available for this project (Discovery plan, AI budget used up or provider disabled).")}</p>}
+      {!ai && <p className="text-xs text-muted">{t("Les choix avec l'IA ne sont pas disponibles pour ce projet (compte Découverte sans abonnement, budget IA épuisé ou fournisseur désactivé).", "AI choices aren't available for this project (Discovery account without a subscription, AI budget used up or provider disabled).")}</p>}
     </fieldset>
   );
 }
