@@ -65,6 +65,15 @@ function contain(ctx: Ctx, img: Image | Canvas | null | undefined, x: number, y:
   ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
 }
 
+/** Texte raccourci à la fin d'un MOT, avec « … » (jamais « AUTOU » coupé au milieu d'un mot). */
+export function shorten(text: string, max: number): string {
+  const t = text.trim();
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max - 1);
+  const at = cut.lastIndexOf(" ");
+  return `${(at > max * 0.4 ? cut.slice(0, at) : cut).replace(/[\s,;:·•-]+$/, "")}…`;
+}
+
 /** Comme `contain`, mais l'image est POSÉE sur le bas du cadre (produit sur son socle, jamais en l'air). */
 export function containBottom(ctx: Ctx, img: Image | null | undefined, x: number, y: number, w: number, h: number) {
   if (!img) return;
@@ -428,7 +437,7 @@ export async function renderIdentityBoard(b: IdentityBoardInput): Promise<Buffer
   if (tagline) {
     ctx.font = font(BF, 500, 15);
     ctx.fillStyle = mix(onBrand, col.brand, 0.2);
-    spaced(ctx, tagline.toLocaleUpperCase("fr-FR").slice(0, 38), x2 + a2 / 2, y + RA * 0.36 + Math.min(a2 * 0.34, 170) / 2 + s2 + 72, 3.5, "center");
+    spaced(ctx, shorten(tagline.toLocaleUpperCase("fr-FR"), 38), x2 + a2 / 2, y + RA * 0.36 + Math.min(a2 * 0.34, 170) / 2 + s2 + 72, 3.5, "center");
   }
   label(ctx, C("Logo secondaire", "Secondary logo"), x2 + 32, y + RA - 30, mix(onBrand, col.brand, 0.35), BF);
 
@@ -646,7 +655,7 @@ export async function renderIdentityBoard(b: IdentityBoardInput): Promise<Buffer
   ctx.fillText(handle.slice(0, 18), sx + 40 + av * 2, sy + 62 + av * 0.6);
   ctx.font = font("Inter", 400, 12);
   ctx.fillStyle = "#555";
-  if (tagline) ctx.fillText(tagline.slice(0, 26), sx + 40 + av * 2, sy + 82 + av * 0.6);
+  if (tagline) ctx.fillText(shorten(tagline, 26), sx + 40 + av * 2, sy + 82 + av * 0.6);
   const gy = sy + 80 + av * 2, cell = (sW - 4) / 3;
   let cells = 0;
   while (gy + Math.floor(cells / 3) * (cell + 2) < sy + sH) cells++;

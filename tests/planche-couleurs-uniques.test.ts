@@ -62,3 +62,13 @@ describe("planche : produit posé sur son socle", () => {
     expect(x).toBe(10);
   });
 });
+
+describe("planche : textes raccourcis à la fin d'un mot", () => {
+  it("« … MÂCON ET 30 KM AUTOU » n'arrive plus : coupe au dernier mot entier, avec « … »", async () => {
+    const { shorten } = await import("@/lib/media/identity-board");
+    const t = "PLÂTRIER PEINTRE, MÂCON ET 30 KM AUTOUR";
+    expect(shorten(t, 38)).toBe("PLÂTRIER PEINTRE, MÂCON ET 30 KM…");
+    expect(shorten("Plâtrier peintre, Mâcon et 30 km autour", 26)).toBe("Plâtrier peintre, Mâcon…");
+    expect(shorten("Le temps, bien porté", 26)).toBe("Le temps, bien porté");
+  });
+});
