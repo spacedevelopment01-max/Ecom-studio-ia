@@ -40,10 +40,15 @@ export async function createUser(email: string, password: string, name: string):
   return one<User>("SELECT id, email, name, role, timezone, created_at FROM users WHERE id = ?", uid)!;
 }
 
+/** Empreinte bcrypt valide (coût 11, comme les vrais comptes), calculée à la première adresse inconnue. */
+let dummyHash: Promise<string> | null = null;
+
 export async function verifyLogin(email: string, password: string): Promise<User | null> {
   const row = one<User & { password_hash: string }>("SELECT * FROM users WHERE email = ?", email.trim().toLowerCase());
   if (!row) {
-    await bcrypt.compare(password, "$2a$11$invalidinvalidinvalidinvalidinvalidinvalidinvalidinv");
+    // Adresse inconnue : vraie vérification sur une empreinte factice valide (même durée qu'un vrai compte), pour
+    // ne pas révéler par le temps de réponse si un compte existe.
+    await bcrypt.compare(password, await (dummyHash ??= bcrypt.hash(randomToken(16), 11)));
     return null;
   }
   if (!(await bcrypt.compare(password, row.password_hash))) return null;
