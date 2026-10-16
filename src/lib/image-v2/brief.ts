@@ -13,6 +13,7 @@ import { productIdentity, resolveProductCategory, type ProductCategoryProfile } 
 import { chooseDirection, DIRECTIONS } from "./direction";
 import { defaultAspect, FORMATS } from "./formats";
 import { toFr } from "./prompt-fr";
+import { stillLifeFor, stillLifeText } from "./still-life";
 import { PRODUCT_KINDS } from "./intent";
 import type { ArtDirectionId, AspectId, Support, VisualBrief, VisualKind } from "./types";
 
@@ -86,6 +87,7 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
   let subjectFr = "";
   let actionFr: string | null = null;
   let environmentFr: string | null = null;
+  let sceneFr: string | undefined;
 
   if (services) {
     // Métier du projet, puis celui de la prestation demandée quand elle est reconnue (« carrelage » ≠ « peinture »).
@@ -150,8 +152,11 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
       const ident = productIdentity(p, { hasReference: false });
       const materials = ident.colors.length ? ` ; matières et couleurs du produit : ${ident.colors.join(", ")}` : "";
       subjectFr = `nature morte de l'univers du produit (${category.labels.fr || p.product.category || "produit"})${materials} ; le produit lui-même n'apparaît pas`;
-      const still = category.stillLifeFr?.length ? category.stillLifeFr[v % category.stillLifeFr.length] : "objets du quotidien bien rangés sur une surface neutre et propre";
-      actionFr = people ? toFr(category.usage[v % category.usage.length] ?? "") || still : `${still}, seulement des objets posés`;
+      // Décor entièrement décrit (demande du propriétaire après les essais ARVEN) : surface, fond, 3 objets au plus avec
+      // matière, couleur et place, lumière, cadrage — liste fermée.
+      const scene = stillLifeFor(category.id, `${p.product.name ?? ""} ${p.product.category ?? ""} ${p.product.summary ?? ""}`, v);
+      actionFr = people ? toFr(category.usage[v % category.usage.length] ?? "") || null : null;
+      if (!people) sceneFr = stillLifeText(scene);
       positive = uniq(noPerson([...category.environments, ...category.usage]));
       const uq = [category.universeQueries[v % Math.max(1, category.universeQueries.length)], ...category.universeQueries];
       queries = uniq(people ? uq : peopleFreeQueries(uq)).slice(0, 3);
@@ -205,7 +210,7 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
     understanding,
     people,
     ...(req.shot ? { shotKey: crypto.createHash("sha256").update(JSON.stringify(req.shot)).digest("hex").slice(0, 12) } : {}),
-    fr: { subject: subjectFr || subject, action: actionFr, environment: req.shot?.environment ?? environmentFr, negative: negative.map(toFr) },
+    fr: { subject: subjectFr || subject, action: actionFr, environment: req.shot?.environment ?? environmentFr, negative: negative.map(toFr), ...(sceneFr ? { scene: sceneFr } : {}) },
   };
 }
 
@@ -227,6 +232,23 @@ export function generationPrompt(b: VisualBrief, extra?: string | null): string 
   const d = { ...DIRECTIONS[b.artDirection], ...(b.people === false ? DIRECTION_NO_PEOPLE[b.artDirection] : {}) };
   // Brief en français (ancien brief sans version française : données d'origine).
   const f = b.fr ?? { subject: b.subject, action: b.action, environment: b.environment, negative: b.negative };
+  const zone = b.format.textZone !== "none" ? ` ; ${ZONE_FR[b.format.textZone] ?? b.format.textZone} de l'image reste dégagé et calme (surface unie)` : "";
+  // Univers sans produit ni personne : nature morte au décor entièrement décrit (liste fermée d'objets), sans la
+  // composition générique de la direction (« quelques accessoires raffinés » amenait des objets hors sujet).
+  if (f.scene)
+    return [
+      `Photographie de nature morte, style ${d.label}. Sujet : ${f.subject}.`,
+      f.scene,
+      `Ambiance : ${d.mood}.`,
+      b.palette.length ? `Touches de couleur en accord avec ${b.palette.join(", ")}.` : "",
+      `Format ${b.format.aspect}${zone}.`,
+      "Objets sans marque visible ; image purement photographique, rien n'est écrit sur l'image.",
+      // Courte : la clause générale (« des lieux, des objets, des outils… ») invitait d'autres objets que la liste.
+      "Scène sans aucune présence humaine.",
+      extra ? `Correction pour cet essai : ${extra}` : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
   return [
     `Photographie, style ${d.label}. Sujet : ${f.subject}.`,
     // Publicité : niveau campagne d'agence (lumière travaillée, matières, profondeur), un seul point focal, de l'air.
@@ -237,7 +259,7 @@ export function generationPrompt(b: VisualBrief, extra?: string | null): string 
     b.palette.length ? `Touches de couleur en accord avec ${b.palette.join(", ")}.` : "",
     // Zone calme décrite comme une surface, sans jamais parler de texte (essai ARVEN : « zone gardée calme pour un
     // texte » a fait écrire un faux texte à cet endroit).
-    `Format ${b.format.aspect}${b.format.textZone !== "none" ? ` ; ${ZONE_FR[b.format.textZone] ?? b.format.textZone} de l'image reste dégagé et calme (surface unie)` : ""}.`,
+    `Format ${b.format.aspect}${zone}.`,
     b.productFidelity ? PRODUCT_FIDELITY_FR : "",
     // Positif seulement : nommer les interdits (« faux logos de luxe »…) les fait apparaître ; ils restent dans le
     // brief pour la recherche et le contrôle, et le négatif du modèle exclut texte, logo et personnes.

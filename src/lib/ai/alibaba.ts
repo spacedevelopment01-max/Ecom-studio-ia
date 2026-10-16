@@ -61,7 +61,7 @@ export function alibabaHeaders(key: string, o: { async?: boolean } = {}): Record
 export const NO_PEOPLE_NEGATIVE = "people, person, human, man, woman, child, face, faces, portrait, hands, fingers, body, model, mannequin, crowd";
 const BASE_NEGATIVE = "watermark, blurry, low quality, distorted, deformed, extra text, misspelled text";
 /** Image sans aucun texte voulu (photo de la banque, décor, produit en scène) : le négatif exclut aussi toute écriture. */
-export const NO_TEXT_NEGATIVE = "text, letters, words, typography, caption, title, logo, brand mark, signage, label text";
+export const NO_TEXT_NEGATIVE = "text, letters, words, typography, caption, title, logo, brand mark, signage, label text, embossed text, engraving, monogram, initials, stamp";
 export function negativePrompt(people: boolean, noText = false): string {
   return [BASE_NEGATIVE, people ? "" : NO_PEOPLE_NEGATIVE, noText ? NO_TEXT_NEGATIVE : ""].filter(Boolean).join(", ");
 }

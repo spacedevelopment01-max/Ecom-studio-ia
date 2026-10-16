@@ -571,8 +571,10 @@ N'ajouter aucun texte, aucune lettre, aucune légende, aucun filigrane, aucun lo
  * texte) : on décrit ce qui doit être vu ; ce qui est exclu passe par le négatif du modèle.
  */
 export function ambiancePrompt(input: { prompt: string; aspect: string; reference?: boolean }): string {
+  // Nature morte au décor entièrement décrit (liste fermée) : aucune phrase générique qui ajouterait d'autres objets.
+  const closed = /liste fermée/.test(input.prompt);
   return `${input.prompt}
-Photographie éditoriale réaliste et haut de gamme, lumière naturelle : le lieu, les objets, les matériaux et la lumière racontent l'histoire. Image purement photographique : objets et surfaces vierges, rien n'est écrit sur l'image.${/présence humaine/.test(input.prompt) ? "" : " Scène sans aucune présence humaine."} Format ${input.aspect}.${input.reference ? " La photo de référence montre la vraie activité : s'en servir seulement pour l'ambiance, les couleurs et le genre de lieu." : ""}`;
+${closed ? "Photographie réaliste et haut de gamme." : "Photographie éditoriale réaliste et haut de gamme, lumière naturelle : le lieu, les objets, les matériaux et la lumière racontent l'histoire."} Image purement photographique : objets et surfaces vierges, rien n'est écrit sur l'image.${/présence humaine/.test(input.prompt) ? "" : " Scène sans aucune présence humaine."} Format ${input.aspect}.${input.reference ? " La photo de référence montre la vraie activité : s'en servir seulement pour l'ambiance, les couleurs et le genre de lieu." : ""}`;
 }
 
 export async function ambianceImage(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference?: Buffer | null; usage?: MediaUsage }) {

@@ -163,14 +163,42 @@ describe("onglet Images — audit", async () => {
     expect(JSON.stringify(body.input).split("présence humaine").length - 1).toBe(1);
   });
 
-  it("chaque famille de produits a sa nature morte d'univers, sans personne ni inscription", () => {
+  it("chaque famille de produits a sa nature morte d'univers au décor entièrement décrit (liste fermée), sans personne ni inscription", async () => {
+    const { STILL_LIFE, stillLifeFor, stillLifeText } = await import("@/lib/image-v2/still-life");
     const src = fs.readFileSync(path.join(process.cwd(), "src/lib/image-v2/categories.ts"), "utf8");
     const ids = [...src.matchAll(/\n    id: "([a-z_]+)",/g)].map((m) => m[1]);
-    const still = [...src.matchAll(/stillLifeFr: \[([^\]]*)\]/g)].map((m) => m[1]);
-    // Une par famille, plus la famille générique (comptée dans les identifiants).
-    expect(still.length).toBe(ids.length);
     expect(ids).toContain("generic");
-    for (const s of still) expect(s.replace(/sans étiquette/g, "")).not.toMatch(/personne|\bmains?\b|porté|texte|logo|étiquette/i);
+    for (const id of ids) {
+      expect(STILL_LIFE[id]?.length, id).toBeGreaterThan(0);
+      for (const sc of STILL_LIFE[id]) {
+        expect(sc.objects.length, id).toBeGreaterThanOrEqual(2);
+        expect(sc.objects.length, id).toBeLessThanOrEqual(4);
+        for (const o of sc.objects) for (const k of ["what", "material", "color", "position"] as const) expect(o[k].trim(), `${id}.${k}`).not.toBe("");
+        const all = JSON.stringify(sc).replace(/sans étiquette|sans motif/g, "");
+        expect(all, id).not.toMatch(/personne|\bmains?\b|porté|texte|logo|étiquette|gravé|monogramme|livre ouvert|écran allumé/i);
+        // Le bas de l'image reste une surface dégagée : aucun objet placé en bas ni au premier plan.
+        for (const o of sc.objects) expect(o.position, id).not.toMatch(/premier plan|en bas/);
+      }
+    }
+    // Montre (ARVEN) : variante propre, sans seconde montre ; un autre accessoire garde la scène générale.
+    const watch = stillLifeFor("accessories", "Montre acier et cuir Montres");
+    expect(watch.objects.map((o) => o.what).join(" ")).toMatch(/écrin à montre ouvert et vide/);
+    expect(watch.objects.some((o) => /^montre/i.test(o.what))).toBe(false);
+    expect(stillLifeFor("accessories", "Sac en cuir").match).toBeUndefined();
+    const t = stillLifeText(watch);
+    expect(t).toMatch(/liste fermée \(aucun autre objet dans l'image\)/);
+    expect(t).toMatch(/sans gravure, sans marquage, sans motif en relief/);
+    expect(t).toMatch(/Lumière : .+ Cadrage : /);
+  });
+
+  it("consigne d'univers : décor détaillé, sans la composition générique « quelques accessoires raffinés »", async () => {
+    const { NO_TEXT_NEGATIVE } = await import("@/lib/ai/alibaba");
+    const p = loadProject(pid);
+    const univ = generationPrompt(buildBrief(p, { kind: "ambiance", support: "site", aspect: "4:5" }));
+    expect(univ).toMatch(/^Photographie de nature morte/);
+    expect(univ).toMatch(/Surface : .+Arrière-plan : .+Objets, liste fermée/);
+    expect(univ).not.toMatch(/accessoires raffinés|Composition :/);
+    for (const w of ["embossed text", "engraving", "monogram"]) expect(NO_TEXT_NEGATIVE).toContain(w);
   });
 
   it("écran : plus de « forfait Découverte », IA indisponible expliquée, tâche sans image ou bloquée signalée", () => {

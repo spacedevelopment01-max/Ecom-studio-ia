@@ -27,12 +27,6 @@ export type ProductCategoryProfile = {
   usageFr: string[];
   /** Univers du produit pour les photos libres : matière, lieu, geste — jamais le produit lui-même. */
   universeQueries: string[];
-  /**
-   * Nature morte de l'univers en français, SANS personne ni inscription (images d'univers : consigne au modèle
-   * d'images). Objets concrets posés sur une surface — jamais « porté », « utilisé par » (essai ARVEN du 16/10 : une
-   * scène « portée chaque jour » a fait apparaître une personne).
-   */
-  stillLifeFr?: string[];
   /** Concepts hors sujet pour cette famille. */
   negative: string[];
   /** Directions artistiques adaptées, de la plus naturelle à la plus forte. */
@@ -63,7 +57,6 @@ const CORE: CoreCategory[] = [
     usage: ["hands applying cream", "morning skincare routine", "texture swatch on skin"],
     usageFr: ["une routine du matin en quelques gestes", "la texture appliquée sur la peau", "un moment de soin chez soi"],
     universeQueries: ["skincare routine natural light bathroom", "botanical ingredients close up", "spa towel stone washbasin"],
-    stillLifeFr: ["flacons en verre sans étiquette, serviette en lin et galet lisse sur une tablette de salle de bain", "pots de crème fermés et brins d'eucalyptus sur une pierre claire"],
     negative: ["medical syringe", "hospital", "before after skin", "heavy glitter"],
     directions: ["premium_photo", "minimal_studio", "natural_lifestyle", "editorial"],
     fidelityRisks: ["label text", "cap and pump shape", "liquid colour", "bottle proportions"],
@@ -78,7 +71,6 @@ const CORE: CoreCategory[] = [
     usage: ["hair styling at home", "self care moment"],
     usageFr: ["un coiffage réussi à la maison", "un moment pour soi"],
     universeQueries: ["self care routine bathroom mirror", "hair styling at home natural light"],
-    stillLifeFr: ["brosse, peigne et serviette pliée sur une coiffeuse", "accessoires de coiffure rangés dans un plateau en bois"],
     negative: ["salon advertisement poster"],
     directions: ["natural_lifestyle", "minimal_studio", "premium_photo"],
     fidelityRisks: ["bristles and handle shape", "colour", "cable and buttons"],
@@ -93,7 +85,6 @@ const CORE: CoreCategory[] = [
     usage: ["person using the device at a desk", "device on the go", "close-up of ports and buttons"],
     usageFr: ["au bureau, prêt à l'emploi", "partout avec vous", "chaque détail pensé pour l'usage"],
     universeQueries: ["modern minimal desk setup", "creative workspace night city light", "commute headphones city"],
-    stillLifeFr: ["bureau net : carnet fermé, tasse en céramique, câble enroulé et plante verte", "surfaces lisses en métal et en verre sous une lumière froide"],
     negative: ["circuit board cliché", "hologram", "matrix code", "neon glow overload"],
     directions: ["tech_universe", "minimal_studio", "product_demo", "premium_ad"],
     fidelityRisks: ["ports and buttons", "screen content", "logo position", "finish (matte or glossy)"],
@@ -108,7 +99,6 @@ const CORE: CoreCategory[] = [
     usage: ["styled shelf", "cosy evening at home"],
     usageFr: ["une étagère qui a du caractère", "une soirée douce à la maison"],
     universeQueries: ["sunlit living room interior design", "scandinavian bedroom linen morning", "architectural interior soft light"],
-    stillLifeFr: ["coussins en lin, vase en céramique et livre fermé sur une console", "plaid en laine plié sur un fauteuil près d'une fenêtre"],
     negative: ["messy room", "construction site", "empty white room"],
     directions: ["architectural", "warm_universe", "natural_lifestyle", "editorial"],
     fidelityRisks: ["material texture", "colour", "proportions in the room"],
@@ -123,7 +113,6 @@ const CORE: CoreCategory[] = [
     usage: ["cooking a family meal", "morning coffee", "serving food at the table"],
     usageFr: ["un repas en famille", "le café du matin", "le service à table"],
     universeQueries: ["home cooking kitchen daylight", "family dinner table wooden", "morning coffee kitchen counter"],
-    stillLifeFr: ["planche en bois, ustensiles et légumes frais sur un plan de travail", "torchon en lin et bols en grès sur une table en bois"],
     negative: ["industrial restaurant kitchen", "fast food", "dirty dishes"],
     directions: ["warm_universe", "natural_lifestyle", "product_demo", "editorial"],
     fidelityRisks: ["handle and lid shape", "material finish", "size against hands"],
@@ -139,7 +128,6 @@ const CORE: CoreCategory[] = [
     usage: ["pouring", "tasting", "breakfast table", "sharing with friends"],
     usageFr: ["à verser, à goûter", "la dégustation", "un petit-déjeuner qui change", "à partager entre amis"],
     universeQueries: ["breakfast table natural light", "tea ceremony cup steam", "farm ingredients harvest"],
-    stillLifeFr: ["ingrédients bruts, torchon en lin et vaisselle en grès sur une table rustique", "panier de fruits frais et pain de campagne sur un comptoir"],
     negative: ["fast food", "plastic packaging pile", "rotten"],
     directions: ["warm_universe", "editorial", "natural_lifestyle", "premium_photo"],
     fidelityRisks: ["packaging label", "product colour", "portion realism"],
@@ -154,7 +142,6 @@ const CORE: CoreCategory[] = [
     usage: ["person wearing the garment", "outfit detail", "walking in the city"],
     usageFr: ["porté au quotidien", "le détail de la tenue", "en ville, à votre rythme"],
     universeQueries: ["street style city walk", "fashion editorial natural light", "minimal concept store interior"],
-    stillLifeFr: ["étoffes pliées, cintre en bois et boutons posés à plat", "pile de tissus et bobines de fil sur une table d'atelier"],
     negative: ["runway crowd", "mannequin", "shopping mall cliché"],
     directions: ["editorial", "natural_lifestyle", "minimal_studio", "premium_ad"],
     fidelityRisks: ["cut and fit", "fabric colour and pattern", "logo and labels", "stitching details"],
@@ -169,7 +156,6 @@ const CORE: CoreCategory[] = [
     usage: ["accessory worn in daily life", "detail on hand or wrist"],
     usageFr: ["porté chaque jour", "le détail qui se remarque"],
     universeQueries: ["minimal flat lay leather texture", "city travel lifestyle detail", "soft light wrist detail"],
-    stillLifeFr: ["écrin ouvert vide, pochette en cuir et chutes de cuir posés à plat", "outils de maroquinier et cuir pleine fleur sur un établi"],
     negative: ["counterfeit luxury logos", "pawn shop"],
     directions: ["premium_photo", "editorial", "minimal_studio", "natural_lifestyle"],
     fidelityRisks: ["metal colour", "stone and engraving", "hardware shape", "logo"],
@@ -184,7 +170,6 @@ const CORE: CoreCategory[] = [
     usage: ["training session", "outdoor adventure", "post-workout recovery"],
     usageFr: ["l'entraînement", "l'aventure en plein air", "la récupération après l'effort"],
     universeQueries: ["trail running morning mountain", "home workout natural light", "outdoor hiking adventure"],
-    stillLifeFr: ["gourde, serviette pliée et chaussures de course au bord d'un sentier", "tapis d'entraînement roulé et haltères dans une pièce lumineuse"],
     negative: ["bodybuilding competition", "injury", "stadium crowd"],
     directions: ["natural_lifestyle", "product_demo", "editorial", "premium_ad"],
     fidelityRisks: ["shape and size", "colourway", "logo"],
@@ -199,7 +184,6 @@ const CORE: CoreCategory[] = [
     usage: ["pet playing", "owner caring for the pet", "pet resting"],
     usageFr: ["le jeu", "les soins du quotidien", "le repos bien mérité"],
     universeQueries: ["dog walk park morning", "cat resting cosy living room", "pet owner playing at home"],
-    stillLifeFr: ["panier douillet, gamelle en céramique et jouet en corde sur un parquet", "laisse enroulée et coussin moelleux près d'une porte-fenêtre"],
     negative: ["stray animal", "veterinary surgery", "wild animal"],
     directions: ["warm_universe", "natural_lifestyle", "product_demo"],
     fidelityRisks: ["size relative to the animal", "colour", "materials"],
@@ -214,7 +198,6 @@ const CORE: CoreCategory[] = [
     usage: ["child playing", "family game time"],
     usageFr: ["le jeu des enfants", "les moments en famille"],
     universeQueries: ["family playing together living room", "bright playroom natural light", "child hands building blocks"],
-    stillLifeFr: ["cubes en bois et peluche sur un tapis de jeu", "petits jouets en bois rangés sur une étagère basse"],
     negative: ["scary", "dangerous small parts close to mouth", "messy chaos"],
     directions: ["warm_universe", "natural_lifestyle", "graphic"],
     fidelityRisks: ["colours", "number of pieces shown", "safety markings"],
@@ -229,7 +212,6 @@ const CORE: CoreCategory[] = [
     usage: ["hands using the tool on a real task", "close-up of the work result"],
     usageFr: ["sur un vrai chantier", "un résultat net"],
     universeQueries: ["workshop bench tools natural light", "home renovation hands at work", "garden shed tools"],
-    stillLifeFr: ["outils rangés sur un établi en bois, copeaux et mètre ruban", "boîte à outils ouverte dans un atelier lumineux"],
     negative: ["injury", "industrial factory line"],
     directions: ["product_demo", "natural_lifestyle", "tech_universe"],
     fidelityRisks: ["body colour", "battery and chuck shape", "logo"],
@@ -244,7 +226,6 @@ const CORE: CoreCategory[] = [
     usage: ["relaxing evening ritual", "breathing and meditation", "restful sleep"],
     usageFr: ["un rituel du soir", "respirer, souffler", "un sommeil réparateur"],
     universeQueries: ["calm bedroom morning light", "meditation corner natural light", "relaxing bath ritual"],
-    stillLifeFr: ["bougie allumée, serviette roulée et galets lisses près d'un bain", "coussin de méditation et plante verte dans un coin calme"],
     negative: ["medical claims", "pills pile", "hospital"],
     directions: ["warm_universe", "natural_lifestyle", "minimal_studio"],
     fidelityRisks: ["shape and fabric", "colour", "label"],
@@ -259,7 +240,6 @@ const CORE: CoreCategory[] = [
     usage: ["writing by hand", "maker at work", "gift wrapping"],
     usageFr: ["écrire à la main", "créer de ses mains", "un cadeau bien emballé"],
     universeQueries: ["handwriting notebook wooden desk", "maker workshop hands crafting", "gift wrapping natural light"],
-    stillLifeFr: ["carnets fermés, crayons et papier kraft sur un bureau en bois", "pinceaux, flacons d'encre et feuilles vierges sur une table d'atelier"],
     negative: ["office supply store aisle"],
     directions: ["warm_universe", "editorial", "natural_lifestyle"],
     fidelityRisks: ["paper and cover texture", "colour", "printed pattern"],
@@ -274,7 +254,6 @@ const CORE: CoreCategory[] = [
     usage: ["person working on a laptop", "team collaboration", "learning online"],
     usageFr: ["travailler plus simplement", "à plusieurs, au même endroit", "apprendre en ligne"],
     universeQueries: ["focused work laptop clean desk", "team collaboration bright office", "online learning at home"],
-    stillLifeFr: ["ordinateur portable fermé, carnet fermé et tasse sur un bureau lumineux", "bureau épuré avec une plante et une lampe, écran éteint"],
     negative: ["matrix code", "hacker hoodie", "fake dashboard numbers"],
     directions: ["graphic", "editorial", "tech_universe"],
     fidelityRisks: ["interface screenshots must be real", "no invented figures on screens"],
@@ -304,7 +283,6 @@ const fromCore = (c: CoreCategory, source: CategorySource, label?: string): Prod
   environments: c.environments,
   usage: c.usage,
   usageFr: c.usageFr,
-  stillLifeFr: c.stillLifeFr,
   universeQueries: c.universeQueries,
   negative: [...c.negative, ...COMMON_NEGATIVE],
   directions: c.directions,
@@ -339,7 +317,6 @@ export function resolveProductCategory(input: { category?: string | null; name?:
     environments: ["clean neutral surface in natural light", "real home interior"],
     usage: label ? [`person using ${label} in daily life`] : ["person using the product in daily life"],
     usageFr: label ? [`${label}, au quotidien`] : ["au quotidien"],
-    stillLifeFr: ["objets du quotidien bien rangés sur une surface neutre et propre"],
     universeQueries: label ? [`${label} in daily life natural light`] : [],
     negative: COMMON_NEGATIVE,
     directions: ["minimal_studio", "natural_lifestyle", "product_demo"],
