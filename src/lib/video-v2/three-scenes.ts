@@ -9,7 +9,7 @@
  */
 import { z } from "zod";
 import { all } from "../db";
-import { assetData, getAsset, saveAsset } from "../library";
+import { assetData, assetMeta, getAsset, saveAsset } from "../library";
 import { loadProject, type Project } from "../projects";
 import { C, L } from "../i18n-server";
 import { JobCancelled, JobPaused, UserFacingError, type JobContext } from "../jobs";
@@ -22,7 +22,17 @@ import { songStyleFor } from "../media/song";
 import { renderVideoFile, saveRendered, saveVideoVersion } from "./store";
 import type { Clip, VideoDocument, VideoPlatform } from "./types";
 import fs from "node:fs";
+import path from "node:path";
 import crypto from "node:crypto";
+import { loadVideoGuide, type VideoCreativeGuide } from "./creative-guide";
+import { buildCreativeBrief, type CreativeBrief } from "./creative-brief";
+import { buildStoryboard, usable, type Storyboard } from "./ad-storyboard";
+import { allowedBrands, brandIssuesInTexts } from "./brand-guard";
+import { loadCreativeMemory, productReferences, rememberDirection, rememberMedia } from "./creative-memory";
+import { countWords, subtitleChunks, synthLine, voiceAvailable, wordBudget } from "./voice";
+import { brainView } from "../brain/facade";
+import { storagePath, tmpDir } from "../storage";
+import { llmConfigured } from "../ai/llm";
 
 export const SCENES = 3;
 export const DEFAULT_TOTAL_S = 15;
@@ -68,48 +78,98 @@ export type ThreeScenesRequest = {
  * Options du titre (par défaut : en haut, taille habituelle) : place (en bas pour ne pas couvrir le produit),
  * titleSize « large » (en grand quand il le faut ou que c'est plus beau). Jamais de bande sombre derrière le titre.
  */
-export type Scene = { still: string; motion: string; title: string; place?: "top" | "lower"; titleSize?: "standard" | "large" };
+export type Scene = {
+  still: string;
+  motion: string;
+  title: string;
+  place?: "top" | "lower";
+  titleSize?: "standard" | "large";
+  /** Phrase de voix off de la scène (français naturel, rien d'inventé, aucune marque tierce). */
+  voice?: string;
+  /** Rôle dans le storyboard (accroche, étape, détail, résultat…) et ce que le plan montre (aperçu de validation). */
+  role?: string;
+  intent?: string;
+  /** Services : recherches Pixabay de CETTE étape de la prestation. */
+  stock?: { queries: string[]; must: string[]; need?: string[][] };
+  /** Couleur du titre choisie d'après le fond mesuré (texte foncé sur un plan clair). */
+  titleColor?: string;
+};
 /** endCard « large » : phrase et bouton de l'écran de fin en grand (au choix). */
-export type ScenePlan = { scenes: Scene[]; line: string; cta: string; endCard?: "standard" | "large" };
+export type ScenePlan = { scenes: Scene[]; line: string; cta: string; endCard?: "standard" | "large"; /** Voix de la carte de fin. */ voiceEnd?: string };
 
 export const ScenePlanSchema = z.object({
-  scenes: z.array(z.object({ still: z.string().min(10).max(500), motion: z.string().min(10).max(400), title: z.string().max(40).default(""), place: z.enum(["top", "lower"]).optional(), titleSize: z.enum(["standard", "large"]).optional() })).min(1).max(6),
+  scenes: z.array(z.object({ still: z.string().min(10).max(500), motion: z.string().min(10).max(400), title: z.string().max(40).default(""), place: z.enum(["top", "lower"]).optional(), titleSize: z.enum(["standard", "large"]).optional(), voice: z.string().max(200).optional() })).min(1).max(6),
   line: z.string().max(70).default(""),
   cta: z.string().min(2).max(28),
   endCard: z.enum(["standard", "large"]).optional(),
+  voiceEnd: z.string().max(160).optional(),
 });
+
+/** Ce que le moteur sait avant d'écrire le plan : storyboard, fiche créative et contexte du Project Brain. */
+export type PlanContext = { storyboard: Storyboard; brief: CreativeBrief; brain: string };
 
 export type ThreeScenesDeps = {
   /** Plan des 3 scènes écrit par l'IA de texte (null : plan du studio). */
-  writePlan?: (p: Project, s: SubjectOption | null, req: ThreeScenesRequest, key: string) => Promise<ScenePlan | null>;
+  writePlan?: (p: Project, s: SubjectOption | null, req: ThreeScenesRequest, key: string, ctx?: PlanContext) => Promise<ScenePlan | null>;
   keyframe: (prompt: string, aspect: SceneAspect, reference: Buffer | null, key: string) => Promise<Buffer>;
   clip: (image: Buffer, prompt: string, aspect: SceneAspect, seconds: number, key: string) => Promise<Buffer>;
-  stock: (p: Project, index: number, topic: string, aspect: SceneAspect, seconds: number, exclude: Set<string>, key: string) => Promise<{ assetId: string; durationS: number } | null>;
+  stock: (p: Project, index: number, topic: string, aspect: SceneAspect, seconds: number, exclude: Set<string>, key: string, step?: { queries: string[]; must: string[] }) => Promise<{ assetId: string; durationS: number } | null>;
   spentMicro: (keyPrefix: string) => number;
+  /** Les plans libres sont-ils regardés par l'IA (contrôle visuel) ? Faux : seuls leurs mots-clés sont connus. */
+  visualCheck?: boolean;
   render: (p: Project, docKey: string, doc: VideoDocument, meta: Record<string, unknown>) => Promise<string>;
 };
 
 /** Mode par défaut : plans IA pour un produit, plans libres de droits pour un service. */
 export const sceneMode = (p: Project, s: SubjectOption | null, req: ThreeScenesRequest): "ai" | "stock" => req.mode ?? (s?.kind === "service" || p.business === "services" ? "stock" : "ai");
 
-const ctaOf = (p: Project, as: "post" | "ad") => (p.business === "services" ? C("Demander un devis", "Request a quote") : as === "ad" ? C("Commander", "Shop now") : C("Découvrir", "Discover"));
+/** Action adaptée (guide créatif, règle 12) : devis pour un artisan, réservation pour un service sur rendez-vous… */
+const ctaOf = (p: Project, as: "post" | "ad") => {
+  if (p.business !== "services") return as === "ad" ? C("Commander", "Shop now") : C("Découvrir", "Discover");
+  const g = loadVideoGuide().cta.byGoal;
+  const modes = [p.services?.contactMode, ...(p.services?.contactModes ?? [])];
+  const goal = modes.includes("quote") ? "quote" : modes.includes("booking") ? "booking" : modes.includes("call") || modes.includes("form") ? "contact" : "quote";
+  return C(g[goal].fr, g[goal].en);
+};
 
 /**
  * Plan du studio (gratuit) : 3 scènes tirées des idées propres au produit ou service, la demande du client en tête.
  * Titres courts sans rien d'inventé (nom du produit, slogan de la marque).
  */
-export function localScenePlan(p: Project, s: SubjectOption | null, req: ThreeScenesRequest): ScenePlan {
+export function localScenePlan(p: Project, s: SubjectOption | null, req: ThreeScenesRequest, board?: Storyboard): ScenePlan {
   const subject = s ?? resolveSubject(p, null);
   const ideas = subject ? localIdeas(p, subject)[req.as === "ad" ? "ad_video" : "post_video"] : [];
   const name = subject?.name ?? p.product.name ?? "";
   const moves = [C("la caméra avance lentement, un rai de lumière révèle le sujet", "the camera slowly moves in, a beam of light reveals the subject"), C("glissé lent le long des matières, reflets qui courent", "slow glide along the materials, travelling highlights"), C("poussée majestueuse, la lumière s'intensifie", "majestic push-in, the light intensifies")];
   const n = Math.max(1, Math.min(6, req.scenes ?? SCENES));
+  // Storyboard du guide créatif : un rôle et une information différente par plan (étapes de la prestation, cadrages
+  // différents du produit). Sans storyboard : idées propres au produit ou au service.
+  const sb = board ?? buildStoryboard(p, n, { serviceName: subject?.kind === "service" ? subject.name : null, productName: subject?.kind === "service" ? null : name });
   const scenes: Scene[] = Array.from({ length: n }, (_, k) => {
+    const shot = sb.shots[k];
     const idea = ideas[k % Math.max(1, ideas.length)]?.prompt ?? name;
-    const still = k === 0 && req.request?.trim() ? `${req.request.trim()} — ${idea}` : idea;
-    return { still, motion: moves[k % moves.length], title: k === 0 ? name.slice(0, 40) : k === 1 ? (p.brand?.tagline ?? "").slice(0, 40) : "" };
+    const base = shot?.still ?? shot?.intent ?? idea;
+    const still = k === 0 && req.request?.trim() ? `${req.request.trim()} — ${base}` : base;
+    return { still, motion: shot?.motion ?? moves[k % moves.length], title: (shot?.title ?? (k === 0 ? name : "")).slice(0, 40), role: shot?.role, intent: shot?.intent, stock: shot?.stock, voice: localVoiceLine(p, name, shot?.role ?? "", shot?.title ?? "", shot?.intent ?? "", k) };
   });
-  return { scenes, line: (p.brand?.tagline ?? "").slice(0, 70), cta: ctaOf(p, req.as) };
+  return { scenes, line: usable(p.brand?.tagline) ? p.brand!.tagline.slice(0, 70) : "", cta: ctaOf(p, req.as), voiceEnd: localVoiceEnd(p, req) };
+}
+
+/**
+ * Voix off du studio (sans IA) : phrases courtes tirées de ce que le client a écrit (nom, signature, étapes,
+ * traits de sa description) — rien d'inventé, aucune marque tierce.
+ */
+function localVoiceLine(p: Project, name: string, role: string, title: string, intent: string, k: number): string {
+  const brand = p.brand?.name ?? "";
+  if (k === 0) return usable(p.brand?.tagline) ? `${brand ? `${brand}. ` : ""}${p.brand!.tagline}` : brand ? `${brand}.` : name ? `${name}.` : "";
+  if (p.business === "services") return intent ? `${intent}.` : "";
+  if (role === "detail" && title) return `${title}.`;
+  if (role === "use") return C(`${name}, au quotidien.`, `${name}, every day.`);
+  return "";
+}
+function localVoiceEnd(p: Project, req: ThreeScenesRequest): string {
+  const cta = ctaOf(p, req.as);
+  return p.business === "services" ? C(`${cta} : ${p.brand?.name ?? ""} vous répond.`, `${cta}: ${p.brand?.name ?? ""} gets back to you.`) : C(`${p.product.name}, chez ${p.brand?.name ?? ""}.`, `${p.product.name}, by ${p.brand?.name ?? ""}.`);
 }
 
 /** Consigne de l'image de départ d'une scène : la scène seule, aucun texte, le vrai produit identique. */
@@ -124,7 +184,7 @@ No text, no letters, no brand name, no logo, no watermark anywhere: nothing writ
 }
 
 /** Consigne du mouvement (Wan) : le décor bouge, le produit reste identique. */
-export const motionPrompt = (scene: Scene) => `${scene.motion}. The product stays perfectly still and exactly identical (same shape, colours, details, printed text). Photorealistic, smooth, slow, elegant motion. Single continuous shot, no cuts. No text, no logo, no people, no hands, no smoke.`;
+export const motionPrompt = (scene: Scene) => `${scene.motion}. Only the camera and the light move: nothing else in the scene moves (no flowing water, no leaves, no clouds, no smoke, no liquid). The product stays perfectly still and exactly identical (same shape, colours, details, printed text). Photorealistic, smooth, slow, elegant motion. Single continuous shot, no cuts. No text, no logo, no brand, no people, no hands.`;
 
 /** Coût maximal (micro-euros) d'une vidéo IA : une image et un plan par scène (`clipMaxMicro` : un plan de la durée découpée). */
 export function scenesMaxMicro(scenes: number, imageMaxMicro: number, clipMaxMicro: number, planMicro = 0): number {
@@ -132,7 +192,7 @@ export function scenesMaxMicro(scenes: number, imageMaxMicro: number, clipMaxMic
 }
 
 /** Montage : 3 plans (titres courts en calques) + carte de fin (vrai logo, phrase, bouton), musique du studio. */
-export function buildSceneDoc(p: Project, clips: { assetId: string; durationS: number; generated: boolean }[], plan: ScenePlan, aspect: SceneAspect, as: "post" | "ad", timing = sceneTiming(clips.length), music = true): VideoDocument {
+export function buildSceneDoc(p: Project, clips: { assetId: string; durationS: number; generated: boolean }[], plan: ScenePlan, aspect: SceneAspect, as: "post" | "ad", timing = sceneTiming(clips.length), music = true, brief?: CreativeBrief): VideoDocument {
   const pal = palette(p);
   const typo = brandTypo(p);
   const size = SIZES[aspect];
@@ -145,8 +205,23 @@ export function buildSceneDoc(p: Project, clips: { assetId: string; durationS: n
     part: null,
     durationS: Math.min(timing.showS, c.durationS),
     source: { kind: "video", assetId: c.assetId, inS: 0, outS: Math.min(timing.showS, c.durationS), muted: true },
-    overlays: plan.scenes[k]?.title ? overlayText({ w: size.w, h: size.h, safe, typo, text: plan.scenes[k].title, place: plan.scenes[k].place ?? "top", size: plan.scenes[k].titleSize }) : [],
-    transitionIn: { kind: k === 0 ? "cut" : "fade", durationS: k === 0 ? 0 : 0.5 },
+    overlays: plan.scenes[k]?.title
+      ? overlayText({
+          w: size.w,
+          h: size.h,
+          safe,
+          typo,
+          text: plan.scenes[k].title,
+          place: plan.scenes[k].place ?? "top",
+          size: plan.scenes[k].titleSize,
+          ...(plan.scenes[k].titleColor ? { color: plan.scenes[k].titleColor } : {}),
+          // Guide créatif : accroche 90–130 px sur le premier plan (ou un titre voulu en grand), titre de scène 64–88 px,
+          // interligne des grands titres, animation principale de la fiche (entrée, temps de lecture, sortie).
+          ...(brief ? { px: k === 0 || plan.scenes[k].titleSize === "large" ? brief.sizes.hook : brief.sizes.sceneTitle, lineHeight: brief.lineHeight.title, anim: { in: brief.animation.layerIn, delay: 0.25, dur: (brief.animation.dur[0] + brief.animation.dur[1]) / 2 } } : {}),
+        })
+      : [],
+    // Coupe franche par défaut ; fondu doux pour un changement d'ambiance (fiche créative).
+    transitionIn: brief ? { kind: k === 0 ? "cut" : brief.transition.kind, durationS: k === 0 ? 0 : brief.transition.durationS } : { kind: k === 0 ? "cut" : "fade", durationS: k === 0 ? 0 : 0.5 },
     generated: c.generated,
   }));
   const logoId = p.brand?.logo?.assetId ?? null;
@@ -156,8 +231,8 @@ export function buildSceneDoc(p: Project, clips: { assetId: string; durationS: n
     label: C("Carte de fin", "End card"),
     part: "cta",
     // La carte de fin complète la durée voulue (plans plus courts que prévu : elle dure un peu plus, 4 s au plus).
-    durationS: Math.round(Math.min(4, Math.max(END_CARD_S, timing.endS + timing.showS * clips.length - out.reduce((t, c) => t + c.durationS, 0))) * 100) / 100,
-    source: { kind: "doc", doc: endCardDoc({ w: size.w, h: size.h, safe, pal, typo, brand: p.brand?.name ?? "", cta: plan.cta, line: plan.line || undefined, logoId, big: plan.endCard === "large" }), animate: "rise" },
+    durationS: Math.round(Math.min(4, Math.max(brief?.ctaHoldS ?? END_CARD_S, timing.endS + timing.showS * clips.length - out.reduce((t, c) => t + c.durationS, 0))) * 100) / 100,
+    source: { kind: "doc", doc: endCardDoc({ w: size.w, h: size.h, safe, pal, typo, brand: p.brand?.name ?? "", cta: plan.cta, line: plan.line || undefined, logoId, big: plan.endCard === "large", ...(brief ? { px: { line: brief.sizes.benefit, cta: brief.sizes.cta, padX: Math.round(36 * (Math.min(size.w, size.h) / 1080)), padY: Math.round(22 * (Math.min(size.w, size.h) / 1080)) } } : {}) }), animate: "rise" },
     overlays: [],
     transitionIn: { kind: "fade", durationS: 0.6 },
   });
@@ -170,8 +245,8 @@ export function buildSceneDoc(p: Project, clips: { assetId: string; durationS: n
     platform,
     safe,
     clips: out,
-    subtitles: { style: defaultSubtitleStyle({ width: size.w, height: size.h }, typo, pal), cues: [] },
-    audio: { voice: [], voiceId: null, music: music ? { source: "synth", mood: "warm", gainDb: -12, style: songStyleFor(p), seed: p.id } : null, sfx: [], duckingDb: -10, loudnessLufs: -14 },
+    subtitles: { style: brief ? { ...defaultSubtitleStyle({ width: size.w, height: size.h }, typo, pal), size: brief.sizes.subtitle, maxChars: 32 } : defaultSubtitleStyle({ width: size.w, height: size.h }, typo, pal), cues: [] },
+    audio: { voice: [], voiceId: null, music: music ? { source: "synth", mood: brief?.music.mood ?? "warm", gainDb: -12, style: songStyleFor(p), seed: p.id } : null, sfx: [], duckingDb: -10, loudnessLufs: -14 },
     brand: { palette: { ...pal }, fonts: { heading: typo.heading, body: typo.body }, name: p.brand?.name ?? "" },
     disclosure: null,
     meta: { intent: as === "ad" ? "video_ad" : "social_content", source: "engine", createdFrom: null, runId: null, promo: true },
@@ -197,7 +272,41 @@ export function quoteScenes(p: Project, req: ThreeScenesRequest, o: { imageMaxMi
   return { mode, allowed: !reason, reason, estimateMicro: reason ? 0 : scenesMaxMicro(n, o.imageMaxMicro!, o.clipMaxMicro(t.clipS), o.textMicro), scenes: n, totalS, clipS: t.clipS };
 }
 
-export type ThreeScenesResult = { docKey: string; videoAssetId: string | null; costMicro: number; mode: "ai" | "stock"; notes: string[] };
+export type ThreeScenesResult = {
+  docKey: string;
+  videoAssetId: string | null;
+  costMicro: number;
+  mode: "ai" | "stock";
+  notes: string[];
+  /** Fiche créative et storyboard réellement utilisés (montrés dans l'aperçu de validation). */
+  brief?: CreativeBrief;
+  storyboard?: Storyboard;
+};
+
+/** Zone calme du plan pour le titre (haut ou bas) : la plus sombre et la plus unie sous un texte clair. */
+async function calmZone(file: string, atS: number): Promise<{ place: "top" | "lower"; lum: number } | null> {
+  const dir = tmpDir("calmzone");
+  try {
+    const { execTool } = await import("../exec-tool");
+    const sharp = (await import("sharp")).default;
+    const out = path.join(dir, "f.png");
+    await execTool("ffmpeg", ["-y", "-v", "error", "-ss", atS.toFixed(2), "-i", file, "-frames:v", "1", out]);
+    const m = await sharp(out).metadata();
+    const zone = async (top: number) => {
+      const st = await sharp(out).extract({ left: 0, top: Math.round(m.height! * top), width: m.width!, height: Math.round(m.height! * 0.22) }).greyscale().stats();
+      return { score: st.channels[0].mean + st.channels[0].stdev * 0.8, lum: st.channels[0].mean, busy: st.channels[0].stdev };
+    };
+    const [t, l] = [await zone(0.1), await zone(0.6)];
+    // Zone la plus calme pour un texte clair ; si les deux sont claires, la plus unie (le texte passera en foncé).
+    const lightBoth = t.lum > 165 && l.lum > 165;
+    const best = lightBoth ? (t.busy <= l.busy ? { z: t, place: "top" as const } : { z: l, place: "lower" as const }) : t.score <= l.score ? { z: t, place: "top" as const } : { z: l, place: "lower" as const };
+    return { place: best.place, lum: best.z.lum };
+  } catch {
+    return null;
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
 
 export async function runThreeScenes(ctx: JobContext | null, projectId: string, req: ThreeScenesRequest, deps: ThreeScenesDeps): Promise<ThreeScenesResult> {
   const p0 = loadProject(projectId);
@@ -212,17 +321,64 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
   const docKey = `vid:${crypto.createHash("sha256").update(key).digest("hex").slice(0, 20)}`;
   const notes: string[] = [];
   const step = <T,>(k: string, fn: () => Promise<T>) => (ctx ? ctx.step(k, fn) : fn());
+
+  // 1. Brief → service/produit → fiche créative (guide créatif + mémoire du projet) → storyboard.
+  const guide: VideoCreativeGuide = loadVideoGuide();
+  const memory = loadCreativeMemory(projectId, p0);
+  const size = SIZES[aspect];
+  const totalS = req.totalS ?? DEFAULT_TOTAL_S;
+  const brief = buildCreativeBrief(p, { request: req.request, durationS: totalS, width: size.w, height: size.h, platform: aspect === "9:16" ? "reels" : "meta_feed", guide, memory });
+  const n = Math.max(1, Math.min(6, req.scenes ?? SCENES));
+  const storyboard = buildStoryboard(p, n, { serviceName: s?.kind === "service" ? s.name : null, productName: s?.kind === "service" ? null : s?.name ?? p.product.name });
+  notes.push(...storyboard.notes);
+
   ctx?.progress(0.05, L("Plan des scènes", "Planning the scenes"));
-  const written = deps.writePlan ? await deps.writePlan(p, s, req, `${key}:plan`).catch((e) => {
+  const brain = (() => {
+    try {
+      return brainView(p0, "video").stable;
+    } catch {
+      return "";
+    }
+  })();
+  const written = deps.writePlan ? await deps.writePlan(p, s, req, `${key}:plan`, { storyboard, brief, brain }).catch((e) => {
     if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
     return null;
   }) : null;
-  const fallback = localScenePlan(p, s, req);
-  // Nombre de scènes demandé respecté même si l'IA de texte en écrit plus ou moins.
-  const plan: ScenePlan = written ? { ...written, scenes: Array.from({ length: fallback.scenes.length }, (_, k) => written.scenes[k] ?? fallback.scenes[k]) } : fallback;
+  const fallback = localScenePlan(p, s, req, storyboard);
+  // Nombre de scènes demandé respecté ; les recherches d'étape (services) et le rôle viennent toujours du storyboard.
+  const plan: ScenePlan = written
+    ? { ...written, voiceEnd: written.voiceEnd ?? fallback.voiceEnd, scenes: Array.from({ length: fallback.scenes.length }, (_, k) => ({ ...(written.scenes[k] ?? fallback.scenes[k]), role: fallback.scenes[k].role, intent: fallback.scenes[k].intent, stock: fallback.scenes[k].stock, voice: written.scenes[k]?.voice ?? fallback.scenes[k].voice })) }
+    : fallback;
+
+  // 2. Règle absolue des marques : aucun texte ni voix ne cite une marque tierce (retiré, jamais publié).
+  const allowed = allowedBrands(p0);
+  const fields: Record<string, string | undefined> = { line: plan.line, cta: plan.cta, voiceEnd: plan.voiceEnd };
+  plan.scenes.forEach((sc, k) => Object.assign(fields, { [`title-${k}`]: sc.title, [`voice-${k}`]: sc.voice }));
+  for (const issue of brandIssuesInTexts(fields, allowed)) {
+    const [kind, idx] = issue.field.split("-");
+    if (idx != null) (plan.scenes[Number(idx)] as Record<string, unknown>)[kind] = "";
+    else if (kind === "line" || kind === "voiceEnd") (plan as Record<string, unknown>)[kind] = "";
+    notes.push(C(`marque tierce « ${issue.brand} » retirée (${issue.field})`, `third-party brand "${issue.brand}" removed (${issue.field})`));
+  }
+  if (!plan.cta.trim()) plan.cta = ctaOf(p, req.as);
+  // Jamais de « [À compléter : …] » à l'écran ni dans la voix (un manque se signale dans l'aperçu, pas dans la pub).
+  for (const sc of plan.scenes) {
+    if (sc.title && !usable(sc.title)) sc.title = "";
+    if (sc.voice && !usable(sc.voice)) sc.voice = "";
+  }
+  if (plan.line && !usable(plan.line)) plan.line = "";
+  if (plan.voiceEnd && !usable(plan.voiceEnd)) plan.voiceEnd = "";
+
   const clips: { assetId: string; durationS: number; generated: boolean }[] = [];
+  // Scènes réellement obtenues (une étape sans plan est retirée AVEC son titre et sa voix : rien ne se décale).
+  const kept: number[] = [];
   if (mode === "ai") {
-    const refId = s?.referenceAssetId ?? null;
+    // 3. Produit : jamais de substitut ; la référence STABLE du produit (reconstruction validée, détourage valide,
+    // photo du client) sert à toutes les scènes pour garder la même forme, les mêmes couleurs et matières.
+    const mainProduct = !s || s.kind !== "service" && (!s.referenceAssetId || s.key === "main" || s.name === p0.product.name);
+    const stable = mainProduct ? productReferences(projectId)[0] ?? null : null;
+    const refId = stable?.assetId ?? s?.referenceAssetId ?? null;
+    if (stable?.reconstructed) notes.push(C("Produit reconstruit (partie manquante complétée à partir de vos photos) : reconstruction plausible, pas une forme retrouvée à l'identique — à vérifier dans l'aperçu.", "Product reconstructed (missing part completed from your photos): a plausible reconstruction, not an exactly recovered shape — check it in the preview."));
     const ref = refId ? getAsset(refId) : null;
     const refBuf = ref && !ref.deleted_at ? assetData(ref) : null;
     if (!refBuf) throw new UserFacingError(L("Ajoutez d'abord une photo de ce produit : la vidéo part de votre vrai produit, l'IA ne l'invente pas.", "Add a photo of this product first: the video starts from your real product, the AI never invents it."));
@@ -230,30 +386,123 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
       ctx?.progress(0.1 + k * 0.28, L(`Scène ${k + 1} : image puis mouvement (Wan 2.6)`, `Scene ${k + 1}: image then motion (Wan 2.6)`));
       const clipId = await step(`${key}:scene-${k}`, async () => {
         const still = await deps.keyframe(keyframePrompt(p, s, scene, aspect, true), aspect, refBuf, `${key}:still:${k}`);
-        const stillAsset = await saveAsset({ projectId, userId: p.userId, data: still, name: `scene-${k + 1}-image.png`, mime: "image/png", role: "scene", folderKey: "videos.ads", origin: "generated", status: "ready", meta: { scenes: { key, index: k, prompt: scene.still }, recipe: "Image de départ d'une scène vidéo (IA d'images, produit réel en référence)" } });
+        const stillAsset = await saveAsset({ projectId, userId: p.userId, data: still, name: `scene-${k + 1}-image.png`, mime: "image/png", role: "scene", folderKey: "videos.ads", origin: "generated", status: "ready", sourceAssetId: refId, meta: { scenes: { key, index: k, prompt: scene.still, role: scene.role ?? null }, recipe: "Image de départ d'une scène vidéo (IA d'images, produit réel en référence)" } });
         const mp4 = await deps.clip(still, motionPrompt(scene), aspect, timing.clipS, `${key}:clip:${k}`);
         const a = await saveAsset({ projectId, userId: p.userId, data: mp4, name: `scene-${k + 1}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "generated", status: "ready", sourceAssetId: stillAsset.id, meta: { scenes: { key, index: k, motion: scene.motion, model: SCENE_VIDEO_MODEL } } });
         return a.id;
       });
       clips.push({ assetId: clipId, durationS: timing.clipS, generated: true });
+      kept.push(k);
     }
   } else {
+    // 3. Services : une étape de la prestation par plan, cherchée sur Pixabay avec SES mots-clés (jamais cinq vidéos
+    // générales du métier) ; plans d'illustration, jamais présentés comme des réalisations du client.
     const exclude = new Set<string>();
     for (const [k, scene] of plan.scenes.entries()) {
       ctx?.progress(0.1 + k * 0.25, L(`Scène ${k + 1} : plan libre de droits lié au métier`, `Scene ${k + 1}: royalty-free shot linked to the trade`));
-      const found = await step(`${key}:stock-${k}`, () => deps.stock(p, k, `${s?.name ?? ""} ${scene.still}`.slice(0, 200), aspect, timing.showS, exclude, `${key}:stock:${k}`));
+      const topic = `${s?.name ?? ""} ${scene.intent ?? scene.still}`.slice(0, 200);
+      const found = await step(`${key}:stock-${k}`, () => deps.stock(p, k, topic, aspect, timing.showS, exclude, `${key}:stock:${k}`, scene.stock));
       if (found) {
-        exclude.add(found.assetId);
         clips.push({ ...found, generated: false });
-      } else notes.push(C(`scène ${k + 1} : aucun plan libre de droits assez proche du métier`, `scene ${k + 1}: no royalty-free shot close enough to the trade`));
+        kept.push(k);
+      }
+      else notes.push(C(`scène ${k + 1} (${scene.intent ?? ""}) : aucun plan libre de droits assez proche de cette étape`, `scene ${k + 1} (${scene.intent ?? ""}): no royalty-free shot close enough to this step`));
     }
     if (clips.length < Math.min(2, plan.scenes.length)) throw new UserFacingError(L("Pas assez de plans libres de droits en rapport avec ce service pour une vidéo de qualité.", "Not enough royalty-free shots related to this service for a quality video."));
   }
-  ctx?.progress(0.9, L("Montage : titres, logo, musique", "Editing: titles, logo, music"));
-  const doc = buildSceneDoc(p0, clips, plan, aspect, req.as, timing, req.music !== false);
+
+  // 4. Titres sur la zone calme de chaque plan (ne masque ni le produit ni le geste ; contraste meilleur).
+  plan.scenes = kept.map((k) => plan.scenes[k]);
+  // Plans libres NON regardés (aucune IA de vision) : on ne sait pas quelle étape ils montrent vraiment ; aucun titre
+  // ni voix ne l'affirme (seule l'accroche reste). Dit dans l'aperçu de validation.
+  if (mode === "stock" && deps.visualCheck === false) {
+    plan.scenes.forEach((sc, k) => {
+      if (k > 0) Object.assign(sc, { title: "", voice: "" });
+    });
+    notes.push(C("Plans choisis sur leurs mots-clés seulement (contrôle visuel par l'IA indisponible) : titres d'étapes retirés, plans à vérifier dans l'aperçu.", "Shots chosen on their keywords only (AI visual check unavailable): step titles removed, check the shots in the preview."));
+  }
+  for (const [k, c] of clips.entries()) {
+    const sc = plan.scenes[k];
+    if (!sc?.title || sc.place) continue;
+    const a = getAsset(c.assetId);
+    if (!a || a.kind !== "video") continue;
+    const file = storagePath(a.storage_key);
+    const z = fs.existsSync(file) ? await calmZone(file, Math.min(1.5, c.durationS / 2)) : null;
+    if (z) {
+      sc.place = z.place;
+      // Fond clair : titre foncé (couleur sombre de la charte), jamais un texte blanc illisible ni une bande noire.
+      if (z.lum > 165) sc.titleColor = brief.colors.bg;
+    }
+  }
+
+  ctx?.progress(0.86, L("Montage : titres, logo, voix, musique", "Editing: titles, logo, voice, music"));
+  const doc = buildSceneDoc(p0, clips, plan, aspect, req.as, timing, req.music !== false, brief);
+
+  // 5. Voix off (voix locale, gratuite) et sous-titres calés sur la voix RÉELLE ; sinon sans voix (dit dans l'aperçu).
+  if (memory.preferences.voice !== "off" && voiceAvailable()) {
+    try {
+      await addVoice(projectId, p0.userId, doc, plan, brief, key, guide.script.wordsPer30s);
+    } catch (e) {
+      if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+      notes.push(C(`voix off non produite : ${(e as Error).message.slice(0, 120)}`, `voice-over not produced: ${(e as Error).message.slice(0, 120)}`));
+    }
+  } else if (memory.preferences.voice !== "off") notes.push(C("Voix off : le modèle de voix n'est pas installé sur ce serveur ; vidéo sans voix (musique et titres).", "Voice-over: the voice model isn't installed on this server; video without voice (music and titles)."));
+
   saveVideoVersion(projectId, docKey, doc, { note: C(`Vidéo en ${clips.length} scènes`, `${clips.length}-scene video`) });
-  const videoAssetId = await deps.render(p0, docKey, doc, { scenes: { key, mode, subject: s ? { kind: s.kind, key: s.key, name: s.name } : null, request: req.request ?? null, as: req.as, music: req.music !== false } });
-  return { docKey, videoAssetId, costMicro: deps.spentMicro(key), mode, notes };
+  const texts: Record<string, string | undefined> = { ...fields, line: plan.line, cta: plan.cta, voiceEnd: plan.voiceEnd };
+  plan.scenes.forEach((sc, k) => Object.assign(texts, { [`title-${k}`]: sc.title, [`voice-${k}`]: sc.voice }));
+  const videoAssetId = await deps.render(p0, docKey, doc, { scenes: { key, mode, subject: s ? { kind: s.kind, key: s.key, name: s.name } : null, request: req.request ?? null, as: req.as, music: req.music !== false }, creative: { family: brief.family, concept: brief.concept, goal: brief.goal, storyboard: storyboard.shots.map((x) => ({ role: x.role, intent: x.intent })), notes }, check: { texts, allowed } });
+
+  // 6. Mémoire créative : concept utilisé, médias et leur provenance (relus à la prochaine vidéo).
+  try {
+    rememberDirection(projectId, brief.concept);
+    for (const c of clips) {
+      const a = getAsset(c.assetId);
+      const st = a ? assetMeta<{ stock?: { source: string; id: string | number; page?: string; license?: string } }>(a).stock ?? null : null;
+      rememberMedia(projectId, { assetId: c.assetId, source: st ? st.source : "generated", ref: st ? String(st.page ?? st.id) : SCENE_VIDEO_MODEL, license: st?.license ?? (c.generated ? "généré pour le projet" : ""), role: "clip" });
+    }
+  } catch {
+    // La mémoire est un confort : son échec ne bloque jamais la vidéo.
+  }
+  return { docKey, videoAssetId, costMicro: deps.spentMicro(key), mode, notes, brief, storyboard };
+}
+
+/** Voix off par scène + phrase de fin ; durée mesurée ; sous-titres découpés par groupes de sens (2 lignes). */
+async function addVoice(projectId: string, userId: string, doc: VideoDocument, plan: ScenePlan, brief: CreativeBrief, key: string, words30: [number, number]) {
+  const lang = C("fr", "en") === "en" ? "en" : "fr";
+  const lines = doc.clips.map((c, k) => ({ clip: c, text: (c.id === "end-card" ? plan.voiceEnd : plan.scenes[k]?.voice)?.trim() ?? "" }));
+  const budget = wordBudget(doc.clips.reduce((t, c) => t + c.durationS, 0), words30);
+  let total = lines.reduce((t, l) => t + countWords(l.text), 0);
+  // Au-delà du budget de mots : les phrases des plans de détail sont retirées d'abord (jamais l'accroche ni la fin).
+  for (let k = lines.length - 2; k > 0 && total > budget.max; k--) {
+    total -= countWords(lines[k].text);
+    lines[k].text = "";
+  }
+  const dir = tmpDir("voice");
+  try {
+    for (const [k, l] of lines.entries()) {
+      if (!l.text) continue;
+      const wav = path.join(dir, `v-${k}.wav`);
+      const dur = await synthLine(l.text, wav, { voice: brief.voice.kokoroVoice, speed: brief.voice.speed, lang });
+      // Une phrase plus longue que son plan n'est jamais coupée : elle est retirée (le titre reste à l'écran).
+      if (dur > l.clip.durationS - 0.3) continue;
+      const a = await saveAsset({ projectId, userId, data: fs.readFileSync(wav), name: `voix-${k + 1}.wav`, mime: "audio/wav", role: "voice", folderKey: "videos.ads", origin: "generated", status: "ready", meta: { voice: { engine: "kokoro", key, text: l.text } } });
+      doc.audio.voice.push({ id: `voice-${l.clip.id}`, clipId: l.clip.id, assetId: a.id, text: l.text, offsetS: 0.2, durationS: dur, gainDb: 0 });
+      doc.audio.voiceId = `kokoro:${brief.voice.kokoroVoice}`;
+      // Sous-titres : groupes de sens, répartis sur la durée réelle de la phrase.
+      const chunks = subtitleChunks(l.text, doc.subtitles.style.maxChars);
+      const totalChars = chunks.reduce((t, c) => t + c.length, 0);
+      let at = 0.2;
+      for (const [j, chunk] of chunks.entries()) {
+        const d = (dur * chunk.length) / totalChars;
+        doc.subtitles.cues.push({ id: `cue-${l.clip.id}-${j}`, clipId: l.clip.id, fromS: Math.round(at * 100) / 100, toS: Math.round((at + d) * 100) / 100, text: chunk });
+        at += d;
+      }
+    }
+    doc.audio.duckingDb = -12;
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 /** Branchement réel : Qwen (images), Wan 2.6 (plans), Pixabay (plans libres), rendu du studio, coûts du journal. */
@@ -261,7 +510,7 @@ export function realThreeScenesDeps(ctx: JobContext | null, base: { userId: stri
   const jobId = ctx?.job.id ?? null;
   return {
     writePlan: o.aiText
-      ? async (p, s, req, key) => {
+      ? async (p, s, req, key, pc) => {
           const { llmJson } = await import("../ai/llm");
           const lang = p.settings?.language === "en" ? "English" : "French";
           return llmJson(
@@ -272,10 +521,15 @@ export function realThreeScenesDeps(ctx: JobContext | null, base: { userId: stri
               usageKey: key,
               promptKey: "three-scenes-plan",
               routing: { difficulty: "standard", deliverable: "video_v2" },
-              system: `You are the director of a top advertising agency writing a ${req.totalS ?? DEFAULT_TOTAL_S}-second film in ${req.scenes ?? SCENES} scenes. Answer with JSON only.`,
+              system: `You are the director of a top advertising agency writing a ${req.totalS ?? DEFAULT_TOTAL_S}-second film in ${req.scenes ?? SCENES} scenes. Answer with JSON only.${pc?.brain ? `\n\nPROJECT BRAIN (facts you may use; never invent anything else):\n${pc.brain.slice(0, 4000)}` : ""}`,
               prompt: `Brand "${p.brand?.name ?? ""}" (personality: ${(p.brand?.personality ?? []).join(", ")}). ${s?.kind === "service" ? "Service" : "Product"}: ${s?.name ?? p.product.name} — ${(s?.summary || p.product.summary || "").slice(0, 300)}.
-${req.request ? `Client's brief (follow it): ${req.request.slice(0, 600)}\n` : ""}Write ${req.scenes ?? SCENES} different scenes for a ${req.as === "ad" ? "paid ad" : "social post"} video: for each, "still" (in English: the setting, light and mood of the opening image, the ${s?.kind === "service" ? "craft shown through tools, materials and results" : "real product as the hero"}), "motion" (in English: the slow camera move and what moves in the scene, the product itself never changes) and "title" (in ${lang}, 2 to 5 words shown on screen, or empty).
+${req.request ? `Client's brief (follow it): ${req.request.slice(0, 600)}\n` : ""}${pc ? `Creative sheet: concept "${pc.brief.concept}", treatment ${pc.brief.family}, goal ${pc.brief.goal}, rhythm ${pc.brief.rhythm}, voice ${pc.brief.voice.tone}.${pc.brief.audience ? ` Audience: ${pc.brief.audience}.` : ""}${pc.brief.benefit ? ` Main benefit: ${pc.brief.benefit}.` : ""}${pc.brief.proofs.length ? ` Available proofs: ${pc.brief.proofs.join("; ")}.` : " No proof available: claim nothing."}${pc.brief.objections.length ? ` Objections to answer: ${pc.brief.objections.slice(0, 3).join("; ")}.` : ""}
+STORYBOARD to follow, one shot per scene, in this order (each shot brings a different information): ${pc.storyboard.shots.map((x, k) => `${k + 1}. ${x.role} — ${x.intent}${x.still ? ` (${x.still})` : ""}`).join(" | ")}.
+${pc.storyboard.route === "products" ? "PRODUCT: always the real product of the reference photo, never a look-alike or substitute; only the camera and the light move." : "SERVICE: each scene shows one real step or benefit of the service (royalty-free footage), never presented as the client's own work."}
+ONLY the brand "${p.brand?.name ?? ""}" may appear or be spoken: never any other brand, logo or trademark anywhere (text, voice, objects, clothes, screens).
+` : ""}Write ${req.scenes ?? SCENES} different scenes for a ${req.as === "ad" ? "paid ad" : "social post"} video: for each, "still" (in English: the setting, light and mood of the opening image, the ${s?.kind === "service" ? "craft shown through tools, materials and results" : "real product as the hero"}), "motion" (in English: the slow camera move and what moves in the scene, the product itself never changes) and "title" (in ${lang}, 2 to 5 words shown on screen, or empty).
 Then "line" (in ${lang}, a short brand line, max 8 words, no claim) and "cta" (in ${lang}, 2-3 words button).
+Per scene also "voice" (in ${lang}, natural spoken sentence, simple words, max 12 words, nothing invented) and "voiceEnd" (in ${lang}, closing sentence with the call to action, max 10 words). About ${Math.round((65 * (req.totalS ?? DEFAULT_TOTAL_S)) / 30)} words of voice in total.
 Never any person, face, hand or body. Never numbers, prices, percentages, promises, awards or reviews.
 Optional per scene: "place": "lower" when the product fills the top of the frame; "titleSize": "large" only when it reads better or looks better (short punchy title, busy image), otherwise leave the usual size. Optional "endCard": "large" for a bold end card.
 Reply { "scenes": [{ "still": "", "motion": "", "title": "" }, ...${req.scenes ?? SCENES}], "line": "", "cta": "" }.`,
@@ -294,15 +548,42 @@ Reply { "scenes": [{ "still": "", "motion": "", "title": "" }, ...${req.scenes ?
       // Wan suit les proportions de l'image de départ (carré et 4:5 compris) ; ce paramètre ne sert qu'aux autres modèles.
       return aiClip("alibaba", { ...base, jobId, usageKey: key }, { image, prompt, aspect: aspect === "16:9" ? "16:9" : "9:16", seconds, model: SCENE_VIDEO_MODEL, usage: "product_video" }, (m) => ctx?.progress(0.5, m));
     },
-    async stock(p, index, topic, aspect, seconds, exclude, key) {
+    async stock(p, index, topic, aspect, seconds, exclude, key, stepQ) {
       const { findStockClip } = await import("../stock/stock-clip");
-      return findStockClip({ ...base, jobId }, p, { topic, part: ["hook", "demonstration", "result"][index % 3] ?? "development", aspect, durationS: seconds, index, key }, exclude);
+      return findStockClip({ ...base, jobId }, p, { topic, part: ["hook", "demonstration", "result"][index % 3] ?? "development", aspect, durationS: seconds, index, key, step: stepQ }, exclude);
     },
+    visualCheck: llmConfigured(),
     spentMicro: (prefix) => all<{ c: number }>("SELECT COALESCE(SUM(cost), 0) c FROM ai_calls WHERE usage_key LIKE ?", `${prefix}%`)[0]?.c ?? 0,
     async render(p, docKey, doc, meta) {
-      const ex = await renderVideoFile(p.id, doc);
+      let ex = await renderVideoFile(p.id, doc);
       try {
-        const saved = await saveRendered(p.id, p.userId, docKey, doc, ex, meta);
+        // Contrôle du fichier final (grille du guide créatif), mesuré sur la vidéo rendue, enregistré avec elle.
+        // Titre peu lisible : seuls les plans concernés changent de couleur, puis UN nouveau rendu (gratuit, local).
+        const chk = meta.check as { texts: Record<string, string | undefined>; allowed: string[] } | undefined;
+        let check: unknown = null;
+        if (chk) {
+          try {
+            const { finalCheck, checkSummary } = await import("./final-check");
+            const opts = { texts: chk.texts, allowed: chk.allowed, darkInk: doc.brand.palette.dark };
+            let items = await finalCheck(doc, ex, opts);
+            const fixes = items.find((i) => i.id === "contrast")?.fixes;
+            if (fixes && Object.keys(fixes).length) {
+              for (const c of doc.clips) for (const l of c.overlays) if (fixes[c.id] && l.kind === "text") {
+                const dark = fixes[c.id] !== "#FFFFFF";
+                Object.assign(l, { color: fixes[c.id], shadow: { ...(l.shadow ?? { blur: 12, x: 0, y: 0 }), color: dark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.65)", y: dark ? 0 : l.shadow?.y ?? 2 } });
+              }
+              fs.rmSync(ex.dir, { recursive: true, force: true });
+              ex = await renderVideoFile(p.id, doc);
+              items = await finalCheck(doc, ex, opts);
+              items.push({ id: "targeted_fix", label: "Correction ciblée", status: "ok", detail: `titre repris sur ${Object.keys(fixes).join(", ")} (le reste de la vidéo inchangé)` });
+            }
+            check = { items, summary: checkSummary(items) };
+          } catch (e) {
+            check = { error: (e as Error).message.slice(0, 200) };
+          }
+        }
+        const { check: _c, ...rest } = meta;
+        const saved = await saveRendered(p.id, p.userId, docKey, doc, ex, { ...rest, finalCheck: check });
         saveVideoVersion(p.id, docKey, doc, { note: C("Rendu", "Render"), renderedAssetId: saved.videoId });
         return saved.videoId;
       } finally {

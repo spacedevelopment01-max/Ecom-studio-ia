@@ -36,7 +36,18 @@ export type StockClipRequest = {
   /** Rang du plan dans la vidéo (rotation des recherches). */
   index: number;
   key: string;
+  /**
+   * Guide créatif (services) : l'ÉTAPE de la prestation montrée par ce plan (« protection de la pièce », « application
+   * de la peinture »…) avec ses mots-clés de recherche et les mots que la description doit citer.
+   */
+  step?: { queries: string[]; must: string[]; need?: string[][] };
 };
+
+/** Mots entiers (« tape » ne valide pas « magnetic tape cassette » pour « masking tape »). */
+export function citesAll(alt: string, groups: string[][]): boolean {
+  const t = ` ${alt.toLowerCase().replace(/[^a-z0-9' ]+/g, " ").replace(/\s+/g, " ")} `;
+  return groups.every((g) => g.some((w) => t.includes(` ${w.toLowerCase()} `)));
+}
 
 /** Plans libres déjà pris dans le projet (jamais repris d'une vidéo à l'autre). */
 export function takenStockVideos(projectId: string): Set<string> {
@@ -55,6 +66,16 @@ async function clipQueries(ictx: Ictx, p: Project, r: StockClipRequest): Promise
     const own = svc ? tradeStock(svc.name) : null;
     const whole = tradeStock(`${trade} ${svc?.name ?? ""}`) ?? tradeStock(`${r.topic} ${trade}`) ?? tradeStock(trade);
     const known = own ?? whole;
+    // Étape de la prestation (storyboard) : ses recherches passent EN PREMIER ; les mots du métier restent un repli.
+    if (r.step?.queries.length) {
+      const trades = [known, ...(whole && whole !== known ? [whole] : [])].filter(Boolean) as NonNullable<typeof known>[];
+      return {
+        lang: "en",
+        queries: [...new Set([...r.step.queries, ...trades.flatMap((t) => shortQueries(t.must))])],
+        must: [...new Set([...r.step.must, ...trades.flatMap((t) => t.must)])],
+        negative: [...new Set(trades.flatMap((t) => t.negative))],
+      };
+    }
     if (known) {
       // La banque de vidéos répond aux mots-clés courts (« paint roller ») bien mieux qu'aux phrases ; ceux de la
       // prestation d'abord, puis ceux de tout le métier (un plâtrier peintre sans plan de plâtrerie garde un plan de
@@ -126,7 +147,14 @@ export async function findStockClip(ictx: Ictx, p: Project, r: StockClipRequest,
   if (!ai && !q.must.length) return null;
   const orientation = r.aspect === "16:9" ? "landscape" : "portrait";
   const taken = new Set([...takenStockVideos(p.id), ...exclude]);
-  const found = rankStock(await searchStockVideos(queriesFor(q.queries, people), orientation, q.lang, taken, 16).catch(() => []), q.must, ai, q.negative, { people });
+  // Règle des marques : un plan dont la description cite une marque tierce est écarté avant tout téléchargement.
+  const { allowedBrands, stockMentionsBrand } = await import("../video-v2/brand-guard");
+  const own = allowedBrands(p);
+  // Sans IA pour regarder le plan : la description doit citer l'étape ET le métier (groupes du storyboard).
+  const need = !ai ? r.step?.need : undefined;
+  // Sans regard visuel : jamais de peinture d'art, de dessin animé, de texture seule ni de rendu 3D présenté comme réel.
+  const ART = /\b(canvas|watercolor|watercolour|acrylic|artist|abstract|crayon|cassette|fog|wallpaper|texture|background|pattern|cartoon|fantasy|moon|night|chroma|green screen|mock-up|mockup|television|tv)\b/i;
+  const found = rankStock((await searchStockVideos(queriesFor(q.queries, people), orientation, q.lang, taken, 16).catch(() => [])).filter((v) => !stockMentionsBrand(v.alt, own) && (!need || (citesAll(v.alt, need) && !ART.test(v.alt)))), q.must, ai, q.negative, { people });
   const trade = [p.product.category, p.product.name].filter(Boolean)[0] ?? "";
   const subject = services ? `${trade} — ${r.topic}` : C(`univers du produit « ${p.product.name} » (${p.product.category ?? ""}) — ${r.topic} ; sans le produit lui-même`, `world of the product "${p.product.name}" (${p.product.category ?? ""}) — ${r.topic}; without the product itself`);
   const { checkAmbiance } = await import("../engine/service-media");
