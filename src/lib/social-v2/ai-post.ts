@@ -17,6 +17,7 @@ import { peopleAllowedFor } from "../people-policy";
 import { aiPostImage, aiPostMaxMicro, aiTextLayout, textLayoutMaxMicro } from "../ai/media-providers";
 import { AI_POST_ATTEMPTS, type MediaResult, type PostBrief } from "./deps";
 import { MAIN_PRODUCT, type SubjectOption } from "../creative-subject";
+import { applyWording, loadWordingRules, wordingPromptLine } from "../client-wording";
 import { artDirectionFor, briefPrompt, briefScenePrompt, buildGenerationBrief, layoutPrompt, type GenerationBrief } from "../image-v2/art-direction";
 
 export const AiPostReviewSchema = z.object({
@@ -163,7 +164,12 @@ export async function designPostWithAi(p0: Project, post: PostBrief, o: { aspect
   const logoAsset = p.brand?.logo?.assetId ? getAsset(p.brand.logo.assetId) : null;
   const logoBuf = logoAsset && logoAsset.project_id === p.id && !logoAsset.deleted_at ? assetData(logoAsset) : null;
   const written = deps.copy ? await deps.copy(p, post, base, `${prefix}:copy`, people).catch(() => null) : null;
-  const t = written ? cleanAiCopy(written, base, people) : base;
+  // Consignes de vocabulaire du client (mémoire du projet) : appliquées aux textes ET aux consignes des modèles.
+  const rules = loadWordingRules(p0.id);
+  const W = (x: string) => applyWording(x, rules);
+  const P = (x: string) => [W(x), wordingPromptLine(rules)].filter(Boolean).join("\n");
+  const t0 = written ? cleanAiCopy(written, base, people) : base;
+  const t = { ...t0, headline: W(t0.headline), subline: W(t0.subline), cta: W(t0.cta) };
   // Direction artistique du client (enregistrée, versionnée) + brief en 16 points ; composition différente des
   // créations récentes du projet (diversité réelle, pas seulement une autre couleur de fond).
   const art = artDirectionFor(p);
@@ -185,9 +191,9 @@ export async function designPostWithAi(p0: Project, post: PostBrief, o: { aspect
     let img: Buffer;
     if (twoSteps) {
       // Étape 1 refaite seulement si le produit ou la scène étaient en cause ; sinon la photo payée est gardée.
-      if (!scene) scene = await deps.generate(aiScenePrompt(p, post, { aspect: o.aspect, hasReference: !!refBuf, people, brief, fix: sceneFix }), o.aspect, refBuf, `${key}:scene`, null);
-      img = await deps.layout!(scene, layoutPrompt(brief, { hasLogo: !!logoBuf, brand: t.brand, textColor: pal?.dark ?? art.palette.text, accent: pal?.accent ?? art.palette.accent }) + (fix ? `\nCorrect the previous attempt: ${fix}` : ""), o.aspect, logoBuf, `${key}:layout`);
-    } else img = await deps.generate(aiPostPrompt(p, post, { aspect: o.aspect, hasReference: !!refBuf, hasLogo: !!logoBuf, fix, texts: t, people, brief }), o.aspect, refBuf, key, logoBuf);
+      if (!scene) scene = await deps.generate(P(aiScenePrompt(p, post, { aspect: o.aspect, hasReference: !!refBuf, people, brief, fix: sceneFix })), o.aspect, refBuf, `${key}:scene`, null);
+      img = await deps.layout!(scene, P(layoutPrompt(brief, { hasLogo: !!logoBuf, brand: t.brand, textColor: pal?.dark ?? art.palette.text, accent: pal?.accent ?? art.palette.accent }) + (fix ? `\nCorrect the previous attempt: ${fix}` : "")), o.aspect, logoBuf, `${key}:layout`);
+    } else img = await deps.generate(P(aiPostPrompt(p, post, { aspect: o.aspect, hasReference: !!refBuf, hasLogo: !!logoBuf, fix, texts: t, people, brief })), o.aspect, refBuf, key, logoBuf);
     // Avec le vrai logo, le nom de la marque est dans le logo : contrôlé contre le logo, pas comme un texte libre.
     // Textes attendus = ceux du brief (le rôle de l'image décide : une publication sans bouton n'en attend pas).
     const expected = [...brief.exactTexts.map((x) => x.text), ...(logoBuf ? [] : [t.brand])].filter(Boolean);
