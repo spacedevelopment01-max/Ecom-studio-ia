@@ -260,7 +260,7 @@ export function briefScenePrompt(b: GenerationBrief, o: { photoOnly?: boolean } 
 }
 
 /**
- * ÉTAPE 2 (ChatGPT Images par défaut) : sur la photo de l'étape 1, poser les textes exacts, le bouton et le vrai logo,
+ * ÉTAPE 2 (facultative, usage « Texte et logo » réglé par l'administration) : sur la photo de l'étape 1, poser les textes exacts, le bouton et le vrai logo,
  * sans toucher à la photo. Tailles en part de la largeur (guide : px pour 1080 px), contraste 4,5:1, marges.
  */
 export function layoutPrompt(b: GenerationBrief, o: { hasLogo: boolean; brand: string; textColor: string; accent: string }): string {

@@ -28,13 +28,14 @@ describe("Alibaba : clé de la passerelle et Qwen-Image 3.0", async () => {
     expect(alibabaHeaders("sk-test")).toMatchObject({ Authorization: "Bearer sk-test" });
   });
 
-  it("Qwen-Image 3.0 Pro : tarif borné (0,075 $ en 2K + 2 images d'entrée) et verrouillé sans l'administration", () => {
+  it("Qwen-Image 3.0 Pro : tarif borné (0,075 $ en 2K + 2 images d'entrée), confirmé d'office ; Qwen-Image 3.0 reste verrouillé", () => {
     const m = mediaModel("alibaba", "qwen-image-3.0-pro")!;
     expect(m).toBeTruthy();
     expect((DEFAULT_PRICES as Record<string, { perImage?: number }>)["alibaba:qwen-image-3.0-pro"].perImage).toBeGreaterThanOrEqual(0.075 + 2 * 0.003);
-    expect(m.adminConfirm).toBe(true);
-    const s = routing.mediaStatus(m, {});
-    expect(s.confirmed).toBe(false);
-    expect(s.usable).toBe(false);
+    expect(m.adminConfirm).toBe(false);
+    expect(routing.mediaStatus(m, {}).confirmed).toBe(true);
+    const std = routing.mediaStatus(mediaModel("alibaba", "qwen-image-3.0")!, {});
+    expect(std.confirmed).toBe(false);
+    expect(std.usable).toBe(false);
   });
 });

@@ -93,7 +93,9 @@ describe("Alibaba Cloud — Qwen-Image et Wan", async () => {
     expect(ids.filter((m) => m.kind === "image").map((m) => m.model)).toEqual(expect.arrayContaining(["qwen-image-2.0-pro", "qwen-image-2.1-turbo", "qwen-image-2.1-pro"]));
     expect(ids.filter((m) => m.kind === "video").map((m) => m.model)).toEqual(expect.arrayContaining(["wan2.6-i2v", "wan2.6-i2v-flash", "wan2.7-i2v", "wan3.0-video"]));
     // Identifiants et tarifs vérifiés par l'API officielle, mais verrouillés tant que l'administration n'a pas confirmé.
-    expect(ids.every((m) => m.verified.id && m.adminConfirm && routing.mediaStatus(m).usable === false)).toBe(true);
+    // Sauf Qwen-Image 3.0 Pro, modèle d'images du studio confirmé d'office (accord écrit du propriétaire, 16/10/2026).
+    expect(ids.filter((m) => m.model !== "qwen-image-3.0-pro").every((m) => m.verified.id && m.adminConfirm && routing.mediaStatus(m).usable === false)).toBe(true);
+    expect(mediaModel("alibaba", "qwen-image-3.0-pro")!.adminConfirm).toBe(false);
     expect(ids.filter((m) => m.verified.price).length).toBeGreaterThan(5);
     for (const p of ["openai", "google", "fal"]) expect(MEDIA_MODELS.some((m) => m.provider === p)).toBe(true);
     // Aucun modèle de texte Qwen : images et vidéos seulement.
@@ -231,8 +233,9 @@ describe("Alibaba Cloud — Qwen-Image et Wan", async () => {
     const msg = await fr(() => mp.pingProvider("alibaba"));
     expect(msg).toMatch(/aucune génération facturée/);
     expect(net.calls.map((x) => x.url)).toEqual(["https://dashscope-intl.aliyuncs.com/api/v1/models?page_no=1&page_size=1"]);
+    // Qwen-Image 3.0 Pro confirmé d'office (choix du propriétaire) : clé testée = fournisseur prêt.
     r = fr(() => alibabaReadiness());
-    expect(r.status).toMatch(/confirm/);
+    expect(r.ready).toBe(true);
     confirmModel("alibaba:qwen-image-2.1-turbo", { unit: "image", perImage: 0.016 });
     r = fr(() => alibabaReadiness());
     expect(r.ready).toBe(true);
@@ -252,6 +255,6 @@ describe("Alibaba Cloud — Qwen-Image et Wan", async () => {
 
   it("verrou de l'administration : un modèle Alibaba vérifié n'entre PAS dans le repli historique du routeur", async () => {
     const { modelInfo } = await import("@/lib/orchestrator/capabilities");
-    for (const m of MEDIA_MODELS.filter((x) => x.provider === "alibaba")) expect(modelInfo("alibaba", m.model)).toBeNull();
+    for (const m of MEDIA_MODELS.filter((x) => x.provider === "alibaba" && x.model !== "qwen-image-3.0-pro")) expect(modelInfo("alibaba", m.model)).toBeNull();
   });
 });

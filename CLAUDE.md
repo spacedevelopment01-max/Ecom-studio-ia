@@ -63,6 +63,8 @@ Toute image finale est créée par un modèle d'images ; jamais de gabarit ni de
 bascule silencieuse (blocage signalé). Règles et branchements : `docs/guide-images-ia.md` ; valeurs
 `src/lib/image-v2/image-guide.ts` (réglage `image.creative_guide`), direction artistique par client
 `src/lib/image-v2/art-direction.ts` (mémoire `image.art_direction`, versionnée).
+Modèle d'images de tout le studio : **Qwen-Image 3.0 Pro**, une seule étape (choix du propriétaire) ; produit
+entier exigé (aucune partie coupée).
 
 ## Ligne directrice de marque (cohésion)
 

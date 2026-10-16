@@ -15,6 +15,7 @@ import { effectivePalette } from "../route-palette";
 import { C } from "../i18n-server";
 import { peopleAllowedFor } from "../people-policy";
 import { aiPostImage, aiPostMaxMicro, aiTextLayout, textLayoutMaxMicro } from "../ai/media-providers";
+import { usageExplicit } from "../ai/media-routing";
 import { AI_POST_ATTEMPTS, type MediaResult, type PostBrief } from "./deps";
 import { MAIN_PRODUCT, type SubjectOption } from "../creative-subject";
 import { applyWording, loadWordingRules, wordingPromptLine } from "../client-wording";
@@ -123,7 +124,7 @@ export type AiPostDeps = {
   maxMicro: () => number | null;
   /**
    * Étape 2 (choix du propriétaire) : sur la photo créée SANS texte (étape 1, Qwen-Image), l'IA « Texte et logo »
-   * (ChatGPT Images par défaut) pose les textes exacts, le bouton et le vrai logo. Absent : une seule étape.
+   * (seulement si l'administration règle cet usage) pose les textes exacts, le bouton et le vrai logo. Absent (par défaut) : une seule étape, Qwen-Image 3.0 Pro.
    */
   layout?: (photo: Buffer, prompt: string, aspect: "1:1" | "4:5" | "9:16" | "16:9", logo: Buffer | null, key: string) => Promise<Buffer>;
   layoutMaxMicro?: () => number | null;
@@ -185,7 +186,7 @@ export async function designPostWithAi(p0: Project, post: PostBrief, o: { aspect
     const max = deps.maxMicro();
     if (max == null) return { assetId: null, costMicro: deps.spentMicro(prefix), by: "image_v2", note: C("publication IA : aucun modèle d'images disponible", "AI post: no image model available") };
     const layMax = twoSteps ? (deps.layoutMaxMicro?.() ?? null) : 0;
-    if (layMax == null) return { assetId: null, costMicro: deps.spentMicro(prefix), by: "image_v2", note: C("publication IA : aucun modèle pour poser le texte et le logo (ChatGPT Images) — aucun gabarit à la place", "AI post: no model to lay out the text and logo (ChatGPT Images) — no template instead") };
+    if (layMax == null) return { assetId: null, costMicro: deps.spentMicro(prefix), by: "image_v2", note: C("publication IA : aucun modèle pour poser le texte et le logo — aucun gabarit à la place", "AI post: no model to lay out the text and logo — no template instead") };
     if (deps.spentMicro(prefix) + (twoSteps && scene ? 0 : max) + layMax > capMicro) break;
     const key = `${prefix}:${attempt}`;
     let img: Buffer;
@@ -255,10 +256,16 @@ export function realAiPostDeps(base: { userId: string; projectId: string; jobId:
         AiPostReviewSchema,
       );
     },
-    async layout(photo, prompt, aspect, logo, key) {
-      return aiTextLayout({ ...base, usageKey: key }, { prompt, aspect, image: photo, logo });
-    },
-    layoutMaxMicro: textLayoutMaxMicro,
+    // Deuxième étape (texte et logo par une autre IA) seulement si l'administration a réglé l'usage « Texte et logo » :
+    // par défaut, Qwen-Image 3.0 Pro crée l'image entière en une fois (choix du propriétaire).
+    ...(usageExplicit("text_layout")
+      ? {
+          async layout(photo: Buffer, prompt: string, aspect: "1:1" | "4:5" | "9:16" | "16:9", logo: Buffer | null, key: string) {
+            return aiTextLayout({ ...base, usageKey: key }, { prompt, aspect, image: photo, logo });
+          },
+          layoutMaxMicro: textLayoutMaxMicro,
+        }
+      : {}),
     spentMicro: (prefix) => all<{ c: number }>("SELECT COALESCE(SUM(cost), 0) c FROM ai_calls WHERE usage_key LIKE ?", `${prefix}%`)[0]?.c ?? 0,
     maxMicro: aiPostMaxMicro,
   };
