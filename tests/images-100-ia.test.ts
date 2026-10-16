@@ -118,3 +118,79 @@ describe("Images finales 100 % IA", async () => {
     expect(one<{ n: number }>("SELECT COUNT(*) n FROM memory WHERE project_id = ? AND key = 'image.art_direction' AND status != 'rejected'", pid)!.n).toBe(1);
   });
 });
+
+describe("Consigne de publication : seuls les textes permis par le rôle de l'image", async () => {
+  const { aiPostPrompt, aiPostTexts } = await import("@/lib/social-v2/ai-post");
+  const { buildGenerationBrief } = await import("@/lib/image-v2/art-direction");
+  const { createUser } = await import("@/lib/auth");
+  const { loadProject } = await import("@/lib/projects");
+  const { runWithLang } = await import("@/lib/i18n-server");
+  const { seedImageFixture } = await import("./image-v2-fixtures");
+  it("publication : pas de bouton ni de ligne d'angle vide ; publicité : bouton ; image produit : aucun logo", async () => {
+    const u = await createUser(`img100b-${Date.now()}@test.fr`, "motdepasse-test", "I");
+    const p = loadProject(seedImageFixture(u.id, "cosmetic"));
+    await runWithLang({ ui: "fr", content: "fr" }, async () => {
+      const post = { id: "x", network: "instagram", format: "image", title: "Un rituel simple", headline: "Un rituel simple", caption: "", pillar: null, objective: "educate", scheduled_at: null } as any;
+      const t = aiPostTexts(p, post);
+      const asPost = aiPostPrompt(p, post, { aspect: "4:5", hasReference: true, hasLogo: true, texts: t, brief: buildGenerationBrief(p, { purpose: "post", subject: "x", aspect: "4:5", texts: { hook: t.headline, secondary: t.subline, cta: t.cta } }) });
+      expect(asPost).toContain("social media post");
+      expect(asPost).not.toContain("call-to-action");
+      expect(asPost).not.toContain(`"${t.cta}"`);
+      expect(asPost).not.toMatch(/Post angle:\s+—/);
+      const asAd = aiPostPrompt(p, post, { aspect: "4:5", hasReference: true, hasLogo: true, texts: t, brief: buildGenerationBrief(p, { purpose: "ad", subject: "x", aspect: "4:5", texts: { hook: t.headline, secondary: t.subline, cta: t.cta } }) });
+      expect(asAd).toContain("social media advertisement");
+      expect(asAd).toContain(`call-to-action that clearly reads as a button or link: "${t.cta}"`);
+      expect(buildGenerationBrief(p, { purpose: "product_main", subject: "x", aspect: "1:1" }).logo).toBe("aucun logo dans l'image");
+    });
+  });
+});
+
+describe("Deux étapes : photo par Qwen, texte et logo par ChatGPT Images", async () => {
+  const { designPostWithAi } = await import("@/lib/social-v2/ai-post");
+  const { usagePrimary } = await import("@/lib/ai/media-routing");
+  const { createUser } = await import("@/lib/auth");
+  const { loadProject } = await import("@/lib/projects");
+  const { saveAsset } = await import("@/lib/library");
+  const { runWithLang } = await import("@/lib/i18n-server");
+  const { seedImageFixture } = await import("./image-v2-fixtures");
+  const sharp = (await import("sharp")).default;
+  const png = (c = "#886644") => sharp({ create: { width: 64, height: 80, channels: 3, background: c } }).png().toBuffer();
+  const post = { id: "two-steps", network: "instagram", format: "image", title: "Le temps", caption: "", pillar: null, objective: "convert", headline: "Le temps, bien porté", scheduled_at: null } as any;
+
+  it("texte et logo : ChatGPT Images par défaut", () => expect(usagePrimary("text_layout").provider).toBe("openai"));
+
+  it("photo sans texte puis mise en page ; texte raté : seule la mise en page est refaite (photo payée gardée) ; produit raté : photo refaite", async () => {
+    const u = await createUser(`two-${Date.now()}@test.fr`, "motdepasse-test", "T");
+    const pid = seedImageFixture(u.id, "cosmetic");
+    const ref = await saveAsset({ projectId: pid, userId: u.id, data: await png(), name: "ref.png", mime: "image/png", role: "cutout", folderKey: "images.cutouts", origin: "generated", status: "approved", meta: {} });
+    const p = loadProject(pid);
+    const run = async (verdicts: { text: boolean; product: boolean }[]) => {
+      const log = { scenes: [] as string[], layouts: [] as { prompt: string; photo: Buffer }[] };
+      let n = 0;
+      const deps = {
+        generate: async (prompt: string) => (log.scenes.push(prompt), png("#223344")),
+        layout: async (photo: Buffer, prompt: string) => (log.layouts.push({ prompt, photo }), png("#445566")),
+        layoutMaxMicro: () => 50_000,
+        review: async (_i: Buffer, _r: Buffer | null, texts: string[]) => {
+          const v = verdicts[Math.min(n++, verdicts.length - 1)];
+          return { transcribed: v.text ? texts : ["Le tmps"], person: false, anatomyOk: true, productFaithful: v.product, textsExact: v.text, legible: true, score: 8.5, issues: v.text ? [] : ["faute"], fix: "" };
+        },
+        spentMicro: () => 0,
+        maxMicro: () => 50_000,
+      };
+      const r = await runWithLang({ ui: "fr", content: "fr" }, () => designPostWithAi(p, post, { aspect: "4:5", maxCostEur: 1, reference: ref.id, as: "ad" }, deps as any));
+      return { r, log };
+    };
+    const a = await run([{ text: false, product: true }, { text: true, product: true }]);
+    expect(a.r.assetId).toBeTruthy();
+    expect(a.log.scenes).toHaveLength(1); // photo gardée
+    expect(a.log.layouts).toHaveLength(2); // mise en page refaite
+    expect(a.log.scenes[0]).toMatch(/PHOTOGRAPH ONLY/);
+    expect(a.log.scenes[0]).not.toContain("Le temps, bien porté");
+    expect(a.log.layouts[0].prompt).toContain('headline: "Le temps, bien porté"');
+    expect(a.log.layouts[0].prompt).toMatch(/keep it EXACTLY as it is/);
+    const b = await run([{ text: true, product: false }, { text: true, product: true }]);
+    expect(b.r.assetId).toBeTruthy();
+    expect(b.log.scenes).toHaveLength(2); // produit en cause : photo refaite
+  });
+});

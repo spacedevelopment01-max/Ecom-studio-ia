@@ -204,7 +204,8 @@ export function buildGenerationBrief(p: Project, o: { purpose: ImagePurpose; sub
     palette: `dominante ${ad.palette.dominant}, texte ${ad.palette.text}, accent ${ad.palette.accent} (une seule information mise en valeur), secondaire ${ad.palette.secondary} ; ne jamais recolorer le produit`,
     typography: texts.length ? ad.typography : "aucun texte dans l'image",
     exactTexts: texts,
-    logo: p.brand?.logo?.assetId ? "logo du projet fourni en référence : à reproduire exactement, ou laisser l'emplacement libre" : "aucun logo",
+    // Image sans texte (produit seul, ambiance, bannière) : aucun logo dessiné par le modèle.
+    logo: purpose.text === "none" ? "aucun logo dans l'image" : p.brand?.logo?.assetId ? "logo du projet fourni en référence : à reproduire exactement, ou laisser l'emplacement libre" : "aucun logo",
     fidelity: services
       ? "geste, outils, posture et matériaux exacts du métier ; mains correctes ; illustration (jamais un chantier, un salarié ou un témoignage réels)"
       : "le produit de la référence à l'identique : forme, proportions, matières, couleurs réelles, détails, nombre de pièces ; aucune fonction ni accessoire inventés",
@@ -233,4 +234,45 @@ export function briefPrompt(b: GenerationBrief): string {
     `FORMAT: ${b.format}.`,
   ];
   return lines.filter(Boolean).join("\n");
+}
+
+const ROLE_EN: Record<string, string> = { accroche: "headline", "titre secondaire": "secondary line", bénéfice: "benefit line", bouton: "button" };
+
+/**
+ * ÉTAPE 1 (Qwen-Image) : la PHOTOGRAPHIE seule, sans aucun texte ni logo. Les notes de direction artistique sont
+ * données comme instructions (le modèle ne doit jamais en écrire un mot : défaut constaté à l'essai réel ARVEN).
+ */
+export function briefScenePrompt(b: GenerationBrief): string {
+  const textLater = b.exactTexts.length > 0;
+  return [
+    "ART DIRECTION NOTES — instructions for you only: never write any of these words, labels, colour codes or notes in the image.",
+    `Concept: ${b.concept}.`,
+    `Composition: ${b.composition}; framing: ${b.framing}; one clear focal point; generous breathing space${textLater ? "; keep a calm, uncluttered area (plain wall, sky, table surface, soft blur) where a headline will be added later, never on the product" : ""}.`,
+    `Setting: ${b.setting}. Light: ${b.light}; coherent light direction, temperature, perspective, contact shadows and reflections; nothing floating.`,
+    `Colour mood: ${b.palette}.`,
+    `Fidelity: ${b.fidelity}.`,
+    `Avoid: ${b.forbidden.filter((f) => !/texte|bouton|lettre/i.test(f)).join("; ")}.`,
+    `Format: ${b.format}.`,
+    "OUTPUT: a PHOTOGRAPH ONLY — absolutely no text, letters, numbers, words, logo, label, caption, watermark, frame or graphic element anywhere (the text printed on the real product itself stays as on the reference).",
+  ].join("\n");
+}
+
+/**
+ * ÉTAPE 2 (ChatGPT Images par défaut) : sur la photo de l'étape 1, poser les textes exacts, le bouton et le vrai logo,
+ * sans toucher à la photo. Tailles en part de la largeur (guide : px pour 1080 px), contraste 4,5:1, marges.
+ */
+export function layoutPrompt(b: GenerationBrief, o: { hasLogo: boolean; brand: string; textColor: string; accent: string }): string {
+  const lines = b.exactTexts.map((t) => `- ${ROLE_EN[t.role] ?? t.role}: "${t.text}" (cap height about ${t.sharePct}% of the image width)`);
+  return [
+    "Graphic design step on an existing photograph.",
+    "Image 1 is the finished campaign photograph: keep it EXACTLY as it is — same product, same framing, same light, same colours; do not redraw, move, crop, retouch or recolour anything in it.",
+    "Add ONLY the typography" + (o.hasLogo ? " and the brand logo" : "") + " on top of it, as the art director of a top agency would: in the calm area of the photo, never covering the product, clear reading order (headline first).",
+    "Texts to set — spell them EXACTLY, letter for letter, with the same accents and punctuation; write nothing else:",
+    ...lines,
+    o.hasLogo ? `Logo: image 2 is the brand's real logo — place it small and clean, reproduced exactly (same emblem, same letters "${o.brand}", same colours); no other logo, no invented emblem.` : `Brand: no logo is provided — do not draw any logo or brand name.`,
+    `Typography: ${b.typography}; two font families at most, two or three hierarchy levels, clean alignment, outer margins about 6–8% of the width.`,
+    `Colours: text ${o.textColor}${b.exactTexts.some((t) => t.role === "bouton") ? `, button filled with ${o.accent} (the only highlighted element)` : ""}; contrast at least 4.5:1 — if needed a soft local gradient on the photo behind the text, never a solid band or box.`,
+    "Forbidden: any other word, label, note, colour code, swatch, price, percentage, claim, hashtag, website, watermark, frame or second product.",
+    `Format: ${b.format.split(",")[0]}.`,
+  ].join("\n");
 }

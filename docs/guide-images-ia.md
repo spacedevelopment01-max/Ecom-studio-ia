@@ -19,6 +19,18 @@ services) ; les **images fixes** de services sont créées par l'IA, jamais une 
 | Brief de génération en 16 points (objectif, sujet, références, concept, composition, cadrage, décor, lumière, palette, typographie, textes exacts entre « », logo, fidélité, interdits, format, contrôles) | `buildGenerationBrief` + `briefPrompt` | `designPostWithAi` (publications, publicités) |
 | Diversité : compositions récentes du projet ; au niveau du studio, seulement les **univers** choisis par les autres projets du même secteur (jamais leurs données) | `universesUsedElsewhere`, `meta.finalImage` des images | `artDirectionFor`, `designPostWithAi` |
 
+## Publications et publicités : deux étapes (choix du propriétaire)
+
+1. **Photo** — Qwen-Image (usage « Images réseaux sociaux / Publicités visuelles ») : la scène avec le vrai produit en
+   référence, **sans aucun texte ni logo** (les notes de direction artistique sont des instructions, jamais écrites).
+2. **Texte et logo** — ChatGPT Images d'OpenAI (usage « Texte et logo sur les images », réglable dans
+   Administration › Images & Vidéos) : sur cette photo, inchangée, l'IA pose les textes exacts, le bouton et le vrai
+   logo (tailles, marges, contraste du guide).
+
+Contrôle : texte raté → seule l'étape 2 est refaite (la photo payée est gardée) ; produit raté → la photo est refaite.
+Essai réel du 16/10 (une seule étape, Qwen) : produit fidèle mais mots des consignes recopiés dans l'image — d'où
+cette séparation.
+
 ## Chaque parcours appelle un modèle d'images
 
 | Parcours | Avant | Maintenant |

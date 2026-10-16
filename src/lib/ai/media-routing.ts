@@ -24,7 +24,7 @@ export const MEDIA_TASK: Record<MediaKind, TaskId> = { image: "image_generation"
  * USAGES : chaque usage a son propre principal, son secours et son mode (manuel ou automatique). Sans réglage propre,
  * un usage suit le réglage général de son type (images / vidéos) — les réglages existants restent donc inchangés.
  */
-export const MEDIA_USAGES = ["logo", "product_image", "product_edit", "ad_visual", "social_image", "scene", "product_video", "ugc_video", "text_video"] as const;
+export const MEDIA_USAGES = ["logo", "product_image", "product_edit", "ad_visual", "social_image", "text_layout", "scene", "product_video", "ugc_video", "text_video"] as const;
 export type MediaUsage = (typeof MEDIA_USAGES)[number];
 export const isMediaUsage = (v: unknown): v is MediaUsage => typeof v === "string" && (MEDIA_USAGES as readonly string[]).includes(v);
 
@@ -60,6 +60,12 @@ export const USAGE_INFO: Record<MediaUsage, { kind: MediaKind; need: Omit<MediaN
     parent: "ad_visual",
     label: { fr: "Images réseaux sociaux", en: "Social media images" },
     detail: { fr: "Publications entièrement conçues par l'IA pour les réseaux sociaux. Sans réglage propre, suit « Publicités visuelles ».", en: "Social media posts entirely designed by AI. Without its own setting, follows \"Visual ads\"." },
+  },
+  text_layout: {
+    kind: "image",
+    need: { text: true, references: 2 },
+    label: { fr: "Texte et logo sur les images", en: "Text and logo on images" },
+    detail: { fr: "Deuxième étape des publications et publicités : sur la photo créée sans texte (Qwen), l'IA pose les textes exacts, le bouton et le vrai logo. Par défaut : ChatGPT Images (OpenAI).", en: "Second step of posts and ads: on the photo created without text (Qwen), the AI lays out the exact texts, the button and the real logo. Default: ChatGPT Images (OpenAI)." },
   },
   scene: {
     kind: "image",
@@ -99,6 +105,12 @@ export const usageMode = (u: MediaUsage): MediaMode => usageSettings()[u]?.mode 
 export function usagePrimary(u: MediaUsage): { provider: string; model: string; inherited: boolean } {
   const v = usageSettings()[u]?.primary;
   if (v) return { ...splitKey(v), inherited: false };
+  // Texte et logo : ChatGPT Images par défaut (choix du propriétaire) — le meilleur modèle OpenAI utilisable.
+  if (u === "text_layout") {
+    const oa = MEDIA_MODELS.filter((m) => m.provider === "openai" && m.kind === "image" && m.caps.textInImage);
+    const best = oa.find((m) => mediaStatus(m).usable) ?? oa.find((m) => m.legacyDefault) ?? oa[0];
+    if (best) return { provider: best.provider, model: best.model, inherited: true };
+  }
   const parent = USAGE_INFO[u].parent;
   return parent ? { ...usagePrimary(parent), inherited: true } : { ...mediaPrimary(USAGE_INFO[u].kind), inherited: true };
 }

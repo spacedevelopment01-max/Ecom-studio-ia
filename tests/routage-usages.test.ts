@@ -136,9 +136,9 @@ describe("routage multimédia par usage", async () => {
   });
   afterEach(() => vi.unstubAllGlobals());
 
-  it("sans réglage propre : les 9 usages suivent le réglage général (rien ne change pour les projets existants)", () => {
+  it("sans réglage propre : les usages suivent le réglage général (rien ne change pour les projets existants) ; texte et logo : ChatGPT Images", () => {
     const o = fr(() => mediaUsageOverview());
-    expect(o.map((u) => u.usage)).toEqual(["logo", "product_image", "product_edit", "ad_visual", "social_image", "scene", "product_video", "ugc_video", "text_video"]);
+    expect(o.map((u) => u.usage)).toEqual(["logo", "product_image", "product_edit", "ad_visual", "social_image", "text_layout", "scene", "product_video", "ugc_video", "text_video"]);
     for (const u of o) {
       expect(u.primaryInherited && u.backupInherited && u.modeInherited).toBe(true);
       expect(u.mode).toBe("manual");
@@ -149,6 +149,8 @@ describe("routage multimédia par usage", async () => {
     setJsonSetting("ai.routes", { image_generation: { provider: "google", model: "gemini-2.5-flash-image" } });
     const o2 = fr(() => mediaUsageOverview());
     expect(o2.find((u) => u.usage === "logo")?.primary).toBe("google:gemini-2.5-flash-image");
+    // Texte et logo sur les images : reste chez OpenAI (ChatGPT Images, choix du propriétaire).
+    expect(o2.find((u) => u.usage === "text_layout")?.primary).toMatch(/^openai:/);
     // … sauf qu'il ne sait pas retoucher par masque : signalé pour « Retouches produit ».
     expect(o2.find((u) => u.usage === "product_edit")?.primaryProblem).toMatch(/masque/);
   });
