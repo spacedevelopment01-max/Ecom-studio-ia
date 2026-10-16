@@ -297,7 +297,7 @@ export default function TabImages() {
                   <div className="relative">
                     <img src={a.thumbUrl ?? a.url} alt={a.name} className="w-full" loading="lazy" style={{ aspectRatio: a.width && a.height ? `${a.width}/${a.height}` : undefined }} />
                     <span className="absolute left-2 top-2"><StatusBadge status={a.status} /></span>
-                    <span className="absolute right-2 top-2 rounded-full bg-ink/80 px-2 py-0.5 text-[10px] font-medium text-paper">{t(...SOURCE_BADGE[src])}</span>
+                    <span className="absolute right-2 top-2 rounded-full bg-ink/80 px-2 py-0.5 text-[10px] font-medium text-paper" data-source-badge>{src === "stock" && (a.meta?.stock?.aiGenerated || a.meta?.stock?.silhouette) ? [t("Libre", "Free"), a.meta?.stock?.aiGenerated && t("créée par l'IA", "AI-made"), a.meta?.stock?.silhouette && t("silhouette", "silhouette")].filter(Boolean).join(" · ") : t(...SOURCE_BADGE[src])}</span>
                   </div>
                   <div className="flex items-center justify-between gap-2 px-3 py-2">
                     <span className="truncate text-xs">{ROLE_LABEL[a.role ?? ""] ?? a.name}</span>
@@ -309,11 +309,13 @@ export default function TabImages() {
           </div>
         )}
       </div>
+      {/* Fenêtres remontées quand l'activité du projet est connue : ouvertes avant son chargement, elles proposaient le
+          « Type » d'une boutique à une entreprise de services (valeur fixée au premier affichage). */}
       <Modal open={dialog === "search"} onClose={() => setDialog(null)} title={t("Chercher des photos libres", "Find royalty-free photos")} wide>
-        <SearchPhotos services={services} onStarted={(jobId) => (setDialog(null), follow(jobId, t("Photos trouvées : elles sont dans votre banque.", "Photos found: they're in your bank."), t("Aucune photo libre ne convient à ce sujet : rien n'a été ajouté. Essayez un autre sujet ou importez vos photos.", "No royalty-free photo fits this subject: nothing was added. Try another subject or upload your photos.")))} />
+        <SearchPhotos key={services ? "services" : "products"} services={services} peopleAllowed={(data?.settings as { peopleAllowed?: boolean } | undefined)?.peopleAllowed === true} onStarted={(jobId) => (setDialog(null), follow(jobId, t("Photos trouvées : elles sont dans votre banque.", "Photos found: they're in your bank."), t("Aucune photo libre ne convient à ce sujet : rien n'a été ajouté. Essayez un autre sujet ou importez vos photos.", "No royalty-free photo fits this subject: nothing was added. Try another subject or upload your photos.")))} />
       </Modal>
       <Modal open={dialog === "create"} onClose={() => setDialog(null)} title={t("Créer une image", "Create an image")} wide>
-        <CreateImage services={services} q={q} onStarted={(jobId) => (setDialog(null), follow(jobId, t("Image prête : elle est dans votre banque.", "Image ready: it's in your bank."), t("Aucune image n'a été retenue (contrôle de qualité ou IA indisponible) : rien n'a été mis à la place. Le détail est dans les tâches du projet.", "No image was kept (quality check or AI unavailable): nothing was put in its place. Details are in the project's tasks.")))} />
+        <CreateImage key={services ? "services" : "products"} services={services} q={q} onStarted={(jobId) => (setDialog(null), follow(jobId, t("Image prête : elle est dans votre banque.", "Image ready: it's in your bank."), t("Aucune image n'a été retenue (contrôle de qualité ou IA indisponible) : rien n'a été mis à la place. Le détail est dans les tâches du projet.", "No image was kept (quality check or AI unavailable): nothing was put in its place. Details are in the project's tasks.")))} />
       </Modal>
       <AssetViewer asset={viewer} onClose={() => setViewer(null)} onChanged={reload} />
     </div>
@@ -321,16 +323,16 @@ export default function TabImages() {
 }
 
 /** Photos libres de droits (gratuit) : sujet, format, nombre ; licence vérifiée, sujet contrôlé, jamais d'IA. */
-function SearchPhotos({ services, onStarted }: { services: boolean; onStarted: (jobId?: string) => void }) {
+function SearchPhotos({ services, peopleAllowed, onStarted }: { services: boolean; peopleAllowed: boolean; onStarted: (jobId?: string) => void }) {
   const { id } = useProject();
   const t = useT();
   const toast = useToast();
-  const [f, setF] = useState({ kind: services ? "trade_photo" : "ambiance", topic: "", aspect: "4:5", count: 2 });
+  const [f, setF] = useState({ kind: services ? "trade_photo" : "ambiance", topic: "", aspect: "4:5", count: 2, broad: false, silhouettes: false });
   const [busy, setBusy] = useState(false);
   const go = async () => {
     setBusy(true);
     try {
-      const r = await api<{ jobId?: string }>(`/api/projects/${id}/images/v2`, { body: { action: "generate", request: { kind: f.kind, aspect: f.aspect, topic: f.topic.trim() || undefined, count: f.count, allowGenerate: false } } });
+      const r = await api<{ jobId?: string }>(`/api/projects/${id}/images/v2`, { body: { action: "generate", request: { kind: f.kind, aspect: f.aspect, topic: f.topic.trim() || undefined, count: f.count, allowGenerate: false, broad: f.broad || undefined, silhouettes: (!peopleAllowed && f.silhouettes) || undefined } } });
       onStarted(r.jobId);
     } catch (e) {
       toast("bad", (e as Error).message);
@@ -340,7 +342,7 @@ function SearchPhotos({ services, onStarted }: { services: boolean; onStarted: (
   };
   return (
     <div className="grid gap-4" data-bank-search-dialog>
-      <p className="text-sm text-muted">{t("Le studio cherche des photos libres de droits (licence vérifiée, sujet contrôlé) adaptées à votre activité. Gratuit, aucune IA d'images.", "The studio searches royalty-free photos (license verified, subject checked) suited to your business. Free, no AI images.")}</p>
+      <p className="text-sm text-muted">{t("Le studio cherche des photos libres de droits sur votre sujet (ou, sans sujet, sur votre activité) : licence vérifiée, sujet contrôlé. Gratuit, aucune IA d'images.", "The studio searches royalty-free photos on your subject (or, without one, on your business): license verified, subject checked. Free, no AI images.")}</p>
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label={t("Sujet (facultatif)", "Subject (optional)")} htmlFor="bs-topic"><Input id="bs-topic" value={f.topic} maxLength={200} onChange={(e) => setF({ ...f, topic: e.target.value })} placeholder={services ? t("Ex. chantier terminé, outils", "E.g. finished job, tools") : t("Ex. salle de bain lumineuse", "E.g. bright bathroom")} /></Field>
         <Field label={t("Type", "Type")} htmlFor="bs-kind">
@@ -353,6 +355,17 @@ function SearchPhotos({ services, onStarted }: { services: boolean; onStarted: (
         <Field label="Format" htmlFor="bs-aspect"><Select id="bs-aspect" value={f.aspect} onChange={(e) => setF({ ...f, aspect: e.target.value })}>{ASPECTS.map(([v, fr, en]) => <option key={v} value={v}>{t(fr, en)}</option>)}</Select></Field>
         <Field label={t("Nombre", "Count")} htmlFor="bs-count"><Select id="bs-count" value={f.count} onChange={(e) => setF({ ...f, count: Number(e.target.value) })}>{[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}</option>)}</Select></Field>
       </div>
+      <label className="flex items-start gap-2 text-sm">
+        <input type="checkbox" className="mt-0.5" checked={f.broad} onChange={(e) => setF({ ...f, broad: e.target.checked })} data-bank-search-broad />
+        <span>{t("Recherche élargie : chaque mot est aussi cherché seul (plus de photos, parfois moins précises)", "Broader search: each word is also searched on its own (more photos, sometimes less precise)")}</span>
+      </label>
+      {!peopleAllowed && (
+        <label className="flex items-start gap-2 text-sm">
+          <input type="checkbox" className="mt-0.5" checked={f.silhouettes} onChange={(e) => setF({ ...f, silhouettes: e.target.checked })} data-bank-search-silhouettes />
+          <span>{t("Accepter les silhouettes (personne de dos ou dans l'ombre, visage non visible)", "Allow silhouettes (seen from behind or in shadow, face not visible)")}</span>
+        </label>
+      )}
+      <p className="text-xs text-muted">{t("Votre texte est cherché tel quel sur Pixabay. Les photos libres de droits illustrent votre activité : ce ne sont pas des photos de vos réalisations. Une photo créée par l'IA et publiée sur Pixabay est signalée « créée par l'IA ».", "Your text is searched as-is on Pixabay. Royalty-free photos illustrate your business: they aren't photos of your own work. A photo made by AI and published on Pixabay is marked \"AI-made\".")}</p>
       <div className="flex items-center justify-between gap-3 border-t border-line pt-4">
         <span className="text-sm font-medium text-ok">{t("Gratuit", "Free")}</span>
         <Button icon={<Search className="size-4" />} loading={busy} onClick={go} data-bank-search-go>{t("Chercher", "Search")}</Button>

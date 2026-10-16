@@ -9,7 +9,7 @@
  * personnes reconnaissables ni les marques visibles : c'est rappelé dans les restrictions conservées avec l'image.
  */
 import { activeProviderKey } from "../ai/config";
-import { pixabayOnly, searchSource, type Orientation } from "../stock/photos";
+import { aiGeneratedTags, pixabayOnly, searchSource, type Orientation } from "../stock/photos";
 import type { LicenseInfo, StockCandidate } from "./types";
 
 export type StockProvider = {
@@ -74,7 +74,7 @@ export function openverseLicense(raw: { license?: string }): LicenseInfo {
 const offline = () => process.env.STOCK_OFFLINE === "1";
 
 const toCandidates = async (source: "pexels" | "pixabay" | "openverse", query: string, orientation: Orientation, lang: "en" | "fr", license: (raw: { license?: string }) => LicenseInfo): Promise<StockCandidate[]> =>
-  (offline() ? [] : await searchSource(source, query, orientation, lang)).map((p) => ({ source: p.source, id: p.id, url: p.url, page: p.page, author: p.author, width: p.width, height: p.height, alt: p.alt, license: license({ license: p.license }), query }));
+  (offline() ? [] : await searchSource(source, query, orientation, lang)).map((p) => ({ source: p.source, id: p.id, url: p.url, page: p.page, author: p.author, width: p.width, height: p.height, alt: p.alt, license: license({ license: p.license }), query, ...(aiGeneratedTags(p.alt) ? { aiGenerated: true } : {}) }));
 
 /** Ordre de recherche : Pixabay d'abord (choix du propriétaire), puis Pexels, puis Openverse. */
 export const STOCK_PROVIDERS: StockProvider[] = [
