@@ -491,14 +491,14 @@ async function productSceneImpl(ctx: Ctx, input: { prompt: string; aspect: "1:1"
 
 /** Consigne d'une photographie publicitaire du produit réel (référence jointe à la demande). */
 export function productScenePrompt(input: { prompt: string; aspect: string; textZone?: string | null }): string {
-  return `Photographie publicitaire professionnelle pour la campagne d'une marque haut de gamme. Scène : ${input.prompt}.
+  return `Photographie publicitaire professionnelle pour la campagne d'une marque haut de gamme. Scène : ${input.prompt.replace(/\.\s*$/, "")}.
 Le produit de l'image de référence est le héros de la photo : le reproduire exactement tel qu'il est (même forme, mêmes proportions, mêmes matières, mêmes couleurs, mêmes détails, même étiquette, même logo, mêmes inscriptions) ; ne pas le redessiner, ne pas changer sa couleur, ne pas ajouter un second produit ni de copie.
 Le produit ENTIER est dans le cadre : aucune partie coupée, cachée ou manquante (ex. une montre : le bracelet complet, ses deux brins et la boucle).
-Si la photo de référence montre le produit porté ou tenu par une personne, ou dans une scène plus large, ne reprendre que le produit : ne jamais reproduire la personne, ses vêtements, son corps ni ce décor.
+Si la photo de référence montre le produit porté, tenu ou dans une scène plus large, ne reprendre que le produit lui-même, posé dans la nouvelle scène.
 Ne jamais écrire sur le produit un nom de marque, un mot ou un logo absent de la référence.
 Le produit est posé naturellement dans la scène, à sa taille réelle, net, éclairé par la même lumière que la scène, avec une vraie ombre de contact sur la surface où il repose ; faible profondeur de champ derrière lui, jamais un aspect découpé et collé.
-Garder un espace libre, net et dégagé ${input.textZone ? `${input.textZone}` : "d'un côté"} pour un titre ajouté plus tard.
-Aucun texte, aucune lettre, aucune légende, aucun filigrane, aucun logo ajouté, aucune étiquette de prix. Aucune personne, aucune main, aucun visage. Format ${input.aspect === "2:3" ? "4:5" : input.aspect}.`;
+Garder un espace dégagé et calme (surface unie) ${input.textZone ? `${input.textZone}` : "d'un côté"}.
+Image purement photographique : rien n'est écrit ni ajouté sur l'image.${/présence humaine/.test(input.prompt) ? "" : " Scène sans aucune présence humaine."} Format ${input.aspect === "2:3" ? "4:5" : input.aspect}.`;
 }
 
 /**
@@ -565,9 +565,18 @@ N'ajouter aucun texte, aucune lettre, aucune légende, aucun filigrane, aucun lo
  * Consignes d'honnêteté ajoutées à chaque demande : aucun visage identifiable présenté comme un client,
  * aucun texte, logo, diplôme, certificat ni récompense. `reference` : photo réelle de l'activité (ambiance seulement).
  */
+/**
+ * Consigne d'une image d'ambiance (texte vers image). Formulation POSITIVE (essai réel ARVEN du 16/10 : énumérer
+ * « aucune personne, aucune main, aucun visage… aucun diplôme, aucun badge » a fait apparaître une personne et du faux
+ * texte) : on décrit ce qui doit être vu ; ce qui est exclu passe par le négatif du modèle.
+ */
+export function ambiancePrompt(input: { prompt: string; aspect: string; reference?: boolean }): string {
+  return `${input.prompt}
+Photographie éditoriale réaliste et haut de gamme, lumière naturelle : le lieu, les objets, les matériaux et la lumière racontent l'histoire. Image purement photographique : objets et surfaces vierges, rien n'est écrit sur l'image.${/présence humaine/.test(input.prompt) ? "" : " Scène sans aucune présence humaine."} Format ${input.aspect}.${input.reference ? " La photo de référence montre la vraie activité : s'en servir seulement pour l'ambiance, les couleurs et le genre de lieu." : ""}`;
+}
+
 export async function ambianceImage(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference?: Buffer | null; usage?: MediaUsage }) {
-  const text = `${input.prompt}
-Photographie éditoriale qui fait sentir l'ambiance de cette activité, lumière naturelle, réaliste, haut de gamme. Le lieu, les objets, les matériaux et la lumière racontent l'histoire. Aucune personne, aucune main, aucun visage (source de défauts la plus fréquente). Aucun texte, aucune lettre, aucun logo, aucune enseigne, aucun diplôme, aucun certificat, aucune récompense, aucun badge, aucun prix. Format ${input.aspect}.${input.reference ? " La photo de référence montre la vraie activité : s'en servir seulement pour l'ambiance, les couleurs et le genre de lieu ; ne copier aucune personne." : ""}`;
+  const text = ambiancePrompt({ prompt: input.prompt, aspect: input.aspect, reference: !!input.reference });
   return generateImage(ctx, { text, aspect: input.aspect, reference: input.reference ?? null, quality: "high", usage: input.usage ?? "scene" });
 }
 
@@ -664,7 +673,9 @@ async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: "1:1"
   if (provider === "alibaba") {
     const model = pickModel("alibaba", "image");
     const max = mediaModel("alibaba", model)?.caps.references ?? 1;
-    return alibabaImage(ctx, model, text, [...(ref ? [ref] : []), ...extras].slice(0, Math.max(1, max)), input.aspect, !!input.need?.people);
+    // Aucun texte demandé (photo, décor, produit en scène) : le négatif exclut aussi toute écriture.
+    // Sauf avec une photo du produit en référence : ses inscriptions réelles (chiffres, étiquette) doivent rester.
+    return alibabaImage(ctx, model, text, [...(ref ? [ref] : []), ...extras].slice(0, Math.max(1, max)), input.aspect, !!input.need?.people, !input.need?.text && !ref && !extras.length);
   }
   if (provider === "google") {
     const key = activeProviderKey("google")!;
@@ -937,7 +948,7 @@ async function falImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[],
  * maximal (une image) est réservé avant l'envoi. Aucune personne ajoutée sans photo du client (consigne + negative
  * prompt). Une demande refusée (clé, région, contenu, droits) ne coûte rien : la réservation est rendue.
  */
-async function alibabaImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[], aspect: string, people: boolean) {
+async function alibabaImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[], aspect: string, people: boolean, noText = false) {
   const key = activeProviderKey("alibaba");
   if (!key) throw new UserFacingError(L("Aucune clé Alibaba Cloud configurée.", "No Alibaba Cloud key configured."));
   if (mediaModel("alibaba", model)?.needsReference && !refs.length) throw new PermanentError(L(`${model} exige une image de référence.`, `${model} requires a reference image.`));
@@ -946,7 +957,7 @@ async function alibabaImage(ctx: Ctx, model: string, prompt: string, refs: Buffe
   const max = cost("alibaba", model, { images: 1 }).micro;
   gate(ctx, max, "image", "alibaba", model);
   const { base } = alibabaBase();
-  const body = qwenImageBody({ model, prompt, aspect, references: refs.map((b) => `data:image/jpeg;base64,${b.toString("base64")}`), people });
+  const body = qwenImageBody({ model, prompt, aspect, references: refs.map((b) => `data:image/jpeg;base64,${b.toString("base64")}`), people, noText });
   const r = await providerFetch(`${base}/services/aigc/multimodal-generation/generation`, { method: "POST", headers: alibabaHeaders(key), body: JSON.stringify(body) });
   if (!r.ok) {
     const e = alibabaError(r.status, await r.text().catch(() => ""));

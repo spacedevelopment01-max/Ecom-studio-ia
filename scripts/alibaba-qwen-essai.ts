@@ -4,7 +4,7 @@
  * qwenImageUrl). Ne s'exécute qu'avec --confirm, sous un plafond (--max-usd, 0,25 $ par défaut) ; UN SEUL envoi par
  * image, aucune nouvelle tentative automatique.
  *   NODE_USE_ENV_PROXY=1 npx tsx scripts/alibaba-qwen-essai.ts --confirm --spec=<fichier.json> --out=<dossier>
- * Spécification : { model, items: [{ id, aspect, prompt, reference? (chemin d'une image) }] }.
+ * Spécification : { model, items: [{ id, aspect, prompt, reference? (chemin d'une image), noText? }] }.
  * Clé : injectée par la passerelle réseau (secret de l'environnement) — jamais lue ni affichée ici.
  * Sorties : <out>/<id>.png (image ORIGINALE reçue), <out>/<id>.response.json (réponse et adresse de l'image, gardées
  * avant le téléchargement) et <out>/essai.json (modèle, paramètres, coût borné, durée).
@@ -36,7 +36,7 @@ if (!args.includes("--confirm")) {
   console.error("Appel PAYANT : relancez avec --confirm après accord explicite.");
   process.exit(1);
 }
-const spec = JSON.parse(fs.readFileSync(arg("spec")!, "utf8")) as { model: string; items: { id: string; aspect: string; prompt: string; reference?: string | string[] }[] };
+const spec = JSON.parse(fs.readFileSync(arg("spec")!, "utf8")) as { model: string; items: { id: string; aspect: string; prompt: string; reference?: string | string[]; /** Aucun texte voulu : négatif « sans écriture » comme le studio. */ noText?: boolean }[] };
 const OUT = path.resolve(arg("out") ?? "reports/alibaba-qwen-essai");
 const maxUsd = Number(arg("max-usd") ?? "0.25");
 const price = (DEFAULT_PRICES as Record<string, { perImage?: number }>)[`alibaba:${spec.model}`]?.perImage;
@@ -55,7 +55,7 @@ const report: Record<string, unknown>[] = [];
 for (const it of spec.items) {
   const refFiles = it.reference ? (Array.isArray(it.reference) ? it.reference : [it.reference]) : [];
   const refs = refFiles.map((f) => `data:image/${/\.png$/i.test(f) ? "png" : "jpeg"};base64,${fs.readFileSync(f).toString("base64")}`);
-  const body = qwenImageBody({ model: spec.model, prompt: it.prompt, aspect: it.aspect, references: refs, people: false });
+  const body = qwenImageBody({ model: spec.model, prompt: it.prompt, aspect: it.aspect, references: refs, people: false, noText: !!it.noText });
   const t0 = Date.now();
   const r = await fetch(`${base}/services/aigc/multimodal-generation/generation`, { method: "POST", headers: alibabaHeaders(GATEWAY_KEY), body: JSON.stringify(body) });
   const text = await r.text();

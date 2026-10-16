@@ -131,11 +131,13 @@ describe("consigne de la photo publicitaire (produit réel en référence)", () 
     expect(p).toContain("le reproduire exactement");
     // Produit entier exigé (règle du propriétaire : ex. bracelet complet d'une montre).
     expect(p).toContain("Le produit ENTIER est dans le cadre");
-    expect(p).toContain("dégagé à gauche du cadre");
-    expect(p).toContain("Aucune personne");
+    expect(p).toContain("(surface unie) à gauche du cadre");
+    expect(p).toContain("Scène sans aucune présence humaine");
+    // Aucune mention d'un texte à ajouter (essai réel : elle faisait écrire un faux texte).
+    expect(p).not.toMatch(/titre|texte ajouté/);
     expect(p).toContain("Format 4:5");
     // Photo du client portée par une personne : seul le produit est repris.
-    expect(p).toContain("ne jamais reproduire la personne");
+    expect(p).toContain("ne reprendre que le produit lui-même");
     expect(p).toContain("Ne jamais écrire sur le produit un nom de marque");
   });
 });

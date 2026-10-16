@@ -176,7 +176,7 @@ describe("Phase 5A — Image & Search Engine V2", async () => {
     expect((await sharp(wide!).metadata()).width).toBe(FORMATS["16:9"].width);
     const b = buildBrief(fresh("saas"), { kind: "banner", support: "banner" });
     expect(b.format.aspect).toBe("3:1");
-    expect(generationPrompt(b)).toMatch(/Format 3:1, zone à gauche gardée calme pour un texte/);
+    expect(generationPrompt(b)).toMatch(/Format 3:1 ; le côté gauche de l'image reste dégagé et calme \(surface unie\)/);
   });
 
   // ------------------------------------------------------------------ barrière de qualité

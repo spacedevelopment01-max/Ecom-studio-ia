@@ -95,7 +95,7 @@ describe("onglet Images — audit", async () => {
     expect(prompt).toMatch(/^Photographie, style /);
     expect(prompt).toMatch(/Lumière : .+ Prise de vue : /);
     expect(prompt).toContain("Le produit ENTIER est dans le cadre, aucune partie coupée");
-    expect(prompt).toContain("aucun texte, aucune lettre, aucun logo");
+    expect(prompt).toContain("rien n'est écrit sur l'image");
     expect(prompt).not.toMatch(/Never show|Lighting:|Camera:|Correction for this attempt/);
     // Aucun texte demandé entre guillemets dans une image de la banque.
     expect(prompt).not.toMatch(/«[^»]+»/);
@@ -131,6 +131,46 @@ describe("onglet Images — audit", async () => {
       const prompt = generationPrompt(buildBrief(p, { kind, support: "site", aspect: "4:5", ...(kind === "ambiance" ? {} : { references: ["ref"] }) }));
       expect(prompt, kind).not.toMatch(/\b(the|of|with|without|nobody|frame|product|real|world|objects only|ready to use)\b/i);
     }
+  });
+
+  it("leçons de l'essai réel ARVEN (univers raté : personne, faux texte, faux logo) : consigne positive et concrète", async () => {
+    const { negativePrompt, qwenImageBody, NO_TEXT_NEGATIVE } = await import("@/lib/ai/alibaba");
+    const { ambiancePrompt, productScenePrompt } = await import("@/lib/ai/media-providers");
+    const { NO_PEOPLE_FR } = await import("@/lib/people-policy");
+    const p = loadProject(pid);
+    const univ = generationPrompt(buildBrief(p, { kind: "ambiance", support: "site", aspect: "4:5" }));
+    const scene = generationPrompt(buildBrief(p, { kind: "usage_scene", support: "site", aspect: "4:5", references: ["ref"] }));
+    for (const x of [univ, scene, ambiancePrompt({ prompt: univ, aspect: "4:5" }), productScenePrompt({ prompt: scene, aspect: "4:5", textZone: "en bas du cadre" })]) {
+      // 1. Aucune énumération de parties du corps (elle amorçait l'apparition d'une personne).
+      expect(x).not.toMatch(/visage|mains|silhouette|corps|mannequin/);
+      // 2. Jamais « zone gardée pour un texte / un titre » (Qwen y écrivait un faux texte).
+      expect(x).not.toMatch(/pour un (texte|titre)|texte ajouté|titre ajouté/);
+      // 3. Interdits nommés absents de la consigne (« faux logos de luxe » amorçait un faux logo).
+      expect(x).not.toMatch(/Ne jamais montrer|logos de luxe|marque concurrente/);
+      // Une seule fois la phrase positive sur l'absence de personne.
+      expect(x.split("présence humaine").length - 1).toBe(1);
+    }
+    // 4. Univers : une nature morte d'objets précis, jamais « porté » ni une famille vague seule.
+    expect(univ).toMatch(/nature morte/);
+    expect(univ).not.toMatch(/porté|chaque jour/);
+    expect(NO_PEOPLE_FR).toMatch(/^Scène sans aucune présence humaine/);
+    // 5. Le négatif du modèle exclut personnes, et texte/logo quand aucun texte n'est voulu (pas avec un produit en
+    //    référence : ses inscriptions réelles restent).
+    expect(negativePrompt(false, true)).toContain(NO_TEXT_NEGATIVE);
+    expect(negativePrompt(false, false)).not.toContain("typography");
+    expect(negativePrompt(false)).toMatch(/person.*face.*hands/);
+    const body = qwenImageBody({ model: "qwen-image-3.0-pro", prompt: univ, aspect: "4:5", references: [], people: false, noText: true });
+    expect(JSON.stringify(body.input).split("présence humaine").length - 1).toBe(1);
+  });
+
+  it("chaque famille de produits a sa nature morte d'univers, sans personne ni inscription", () => {
+    const src = fs.readFileSync(path.join(process.cwd(), "src/lib/image-v2/categories.ts"), "utf8");
+    const ids = [...src.matchAll(/\n    id: "([a-z_]+)",/g)].map((m) => m[1]);
+    const still = [...src.matchAll(/stillLifeFr: \[([^\]]*)\]/g)].map((m) => m[1]);
+    // Une par famille, plus la famille générique (comptée dans les identifiants).
+    expect(still.length).toBe(ids.length);
+    expect(ids).toContain("generic");
+    for (const s of still) expect(s.replace(/sans étiquette/g, "")).not.toMatch(/personne|\bmains?\b|porté|texte|logo|étiquette/i);
   });
 
   it("écran : plus de « forfait Découverte », IA indisponible expliquée, tâche sans image ou bloquée signalée", () => {

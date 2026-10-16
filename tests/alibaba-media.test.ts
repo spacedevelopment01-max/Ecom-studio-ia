@@ -129,7 +129,7 @@ describe("Alibaba Cloud — Qwen-Image et Wan", async () => {
     expect(call.headers).toMatchObject({ Authorization: "Bearer sk-alibaba-test-1234567890", "X-DashScope-WorkSpace": "ws-test" });
     expect(call.body).toMatchObject({ model: "qwen-image-2.0-pro", parameters: { n: 1, size: "1664*928", watermark: false, prompt_extend: false } });
     expect(call.body.parameters.negative_prompt).toMatch(/people.*face/);
-    expect(JSON.stringify(call.body.input)).toMatch(/Aucune personne/);
+    expect(JSON.stringify(call.body.input)).toMatch(/Scène sans aucune présence humaine/);
     expect(reservations(c.userId)).toEqual([{ status: "settled", provider: "alibaba", model: "qwen-image-2.0-pro" }]);
     expect(billed(c.userId)).toEqual([{ provider: "alibaba", requested_model: "qwen-image-2.0-pro", quantity: 1 }]);
   });

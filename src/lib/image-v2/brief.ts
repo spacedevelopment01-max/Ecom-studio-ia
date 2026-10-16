@@ -136,7 +136,7 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
       action = req.kind === "usage_scene" || req.kind === "lifestyle" ? (people ? (category.usage[v % category.usage.length] ?? null) : "the product ready to use in its real everyday setting, nobody in frame") : null;
       // Sans guillemets : seuls les textes à écrire dans l'image en ont (ici, aucun).
       subjectFr = `le vrai produit, ${id.name || p.product.category}${id.colors.length ? ` (${id.colors.join(", ")})` : ""}`;
-      actionFr = req.kind === "usage_scene" || req.kind === "lifestyle" ? (people ? (category.usageFr[v % category.usage.length] ?? null) : "le produit prêt à servir dans son vrai décor du quotidien, personne dans le cadre") : null;
+      actionFr = req.kind === "usage_scene" || req.kind === "lifestyle" ? (people ? toFr(category.usage[v % category.usage.length] ?? "") || null : "le produit prêt à servir, posé dans son vrai décor du quotidien") : null;
       positive = uniq([id.name, p.product.category]);
       // Images du produit : aucune recherche dans les banques (elles n'ont pas votre produit).
       queries = [];
@@ -145,10 +145,13 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
       subject = `world of ${category.labels.en || p.product.category || "the product"} (without the product itself)`;
       const usage = noPerson(category.usage);
       action = people ? (category.usage[v % category.usage.length] ?? null) : usage.length ? `${usage[v % usage.length]}, objects only, nobody in frame` : "objects and materials of everyday use in place, nobody in frame";
-      subjectFr = `univers ${category.labels.fr ? `de la famille ${category.labels.fr}` : "du produit"} (sans le produit lui-même)`;
-      // Usage en français au même rang que l'usage anglais retenu (même scène).
-      const usageFr = (en: string | undefined) => (en ? (category!.usageFr[category!.usage.indexOf(en)] ?? null) : null);
-      actionFr = people ? usageFr(category.usage[v % category.usage.length]) : usage.length && usageFr(usage[v % usage.length]) ? `${usageFr(usage[v % usage.length])}, seulement des objets, personne dans le cadre` : "objets et matières du quotidien en place, personne dans le cadre";
+      // Univers concret (essai ARVEN du 16/10 : « univers de la famille accessoires », « porté chaque jour » ont donné
+      // une personne en manteau et des sacs de luxe) : une nature morte d'objets précis, avec les matières du produit.
+      const ident = productIdentity(p, { hasReference: false });
+      const materials = ident.colors.length ? ` ; matières et couleurs du produit : ${ident.colors.join(", ")}` : "";
+      subjectFr = `nature morte de l'univers du produit (${category.labels.fr || p.product.category || "produit"})${materials} ; le produit lui-même n'apparaît pas`;
+      const still = category.stillLifeFr?.length ? category.stillLifeFr[v % category.stillLifeFr.length] : "objets du quotidien bien rangés sur une surface neutre et propre";
+      actionFr = people ? toFr(category.usage[v % category.usage.length] ?? "") || still : `${still}, seulement des objets posés`;
       positive = uniq(noPerson([...category.environments, ...category.usage]));
       const uq = [category.universeQueries[v % Math.max(1, category.universeQueries.length)], ...category.universeQueries];
       queries = uniq(people ? uq : peopleFreeQueries(uq)).slice(0, 3);
@@ -214,7 +217,7 @@ export function briefHash(b: VisualBrief): string {
 }
 
 /** Zone du cadre gardée calme, en français. */
-const ZONE_FR: Record<string, string> = { left: "à gauche", right: "à droite", top: "en haut", bottom: "en bas", center: "au centre" };
+const ZONE_FR: Record<string, string> = { left: "le côté gauche", right: "le côté droit", top: "le haut", bottom: "le bas", center: "le centre" };
 
 /**
  * Consigne de génération tirée du brief, EN FRANÇAIS (règle du propriétaire pour Qwen-Image) : concrète (sujet, geste,
@@ -232,9 +235,13 @@ export function generationPrompt(b: VisualBrief, extra?: string | null): string 
     f.environment ? `Décor : ${f.environment}.` : "",
     `Composition : ${b.composition}. Lumière : ${b.lighting}. Prise de vue : ${b.framing}. Ambiance : ${d.mood}.`,
     b.palette.length ? `Touches de couleur en accord avec ${b.palette.join(", ")}.` : "",
-    `Format ${b.format.aspect}${b.format.textZone !== "none" ? `, zone ${ZONE_FR[b.format.textZone] ?? b.format.textZone} gardée calme pour un texte ajouté plus tard` : ""}.`,
+    // Zone calme décrite comme une surface, sans jamais parler de texte (essai ARVEN : « zone gardée calme pour un
+    // texte » a fait écrire un faux texte à cet endroit).
+    `Format ${b.format.aspect}${b.format.textZone !== "none" ? ` ; ${ZONE_FR[b.format.textZone] ?? b.format.textZone} de l'image reste dégagé et calme (surface unie)` : ""}.`,
     b.productFidelity ? PRODUCT_FIDELITY_FR : "",
-    `Ne jamais montrer : ${f.negative.slice(0, 8).join(", ")} ; aucun texte, aucune lettre, aucun logo, aucun filigrane.`,
+    // Positif seulement : nommer les interdits (« faux logos de luxe »…) les fait apparaître ; ils restent dans le
+    // brief pour la recherche et le contrôle, et le négatif du modèle exclut texte, logo et personnes.
+    "Objets sans marque visible ; image purement photographique, rien n'est écrit sur l'image.",
     b.people === false ? NO_PEOPLE_FR : "",
     extra ? `Correction pour cet essai : ${extra}` : "",
   ]
