@@ -113,3 +113,13 @@ describe("planche Sonore : deux quasi-noirs fusionnés", () => {
     expect(sameColor("#E8EEF6", "#F5F1EA")).toBe(false);
   });
 });
+
+describe("noms des couleurs : un vert reste un vert", () => {
+  it("#00E0A4 (Sonore) s'appelle « Vert menthe », jamais « Bleu canard » ; un vrai bleu canard le reste", async () => {
+    const { brandColorName } = await import("@/lib/media/identity-board");
+    expect(brandColorName("#00E0A4")).toBe("Vert menthe");
+    expect(brandColorName("#00E0A4", "en")).toBe("Mint green");
+    expect(brandColorName("#2F4A43")).toBe("Vert sapin");
+    expect(brandColorName("#1A8A9A")).toBe("Bleu canard");
+  });
+});

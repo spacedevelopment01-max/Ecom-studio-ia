@@ -303,6 +303,8 @@ export function brandColorName(hex: string, lang: "fr" | "en" = "fr"): string {
   if (h < 40) return pick(["Rouille", "Terracotta", "Pêche"], ["Rust", "Terracotta", "Peach"]);
   if (h < 70) return pick(["Olive", "Moutarde", "Vanille"], ["Olive", "Mustard", "Vanilla"]);
   if (h < 160) return s < 0.35 ? pick(["Vert forêt", "Sauge", "Vert tilleul"], ["Forest green", "Sage", "Lime blossom"]) : pick(["Vert forêt", "Vert", "Vert d'eau"], ["Forest green", "Green", "Mint"]);
+  // Verts bleutés (jusqu'à 175°) : encore des verts à l'œil (#00E0A4 de Sonore est un vert menthe, pas un bleu).
+  if (h < 175) return pick(["Vert sapin", "Vert menthe", "Vert d'eau"], ["Pine green", "Mint green", "Seafoam"]);
   if (h < 195) return pick(["Vert sapin", "Bleu canard", "Céladon"], ["Pine green", "Teal", "Celadon"]);
   if (h < 245) return pick(["Bleu nuit", "Bleu", "Bleu ciel"], ["Midnight blue", "Blue", "Sky blue"]);
   return pick(["Aubergine", "Violet", "Lilas"], ["Aubergine", "Violet", "Lilac"]);

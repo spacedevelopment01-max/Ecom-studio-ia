@@ -54,7 +54,7 @@ async function main() {
       year: 2026,
     }),
   );
-  await sharp(png).resize({ width: 2000 }).jpeg({ quality: 88 }).toFile(out);
+  await sharp(png).resize({ width: 2000 }).jpeg({ quality: 86 }).toFile(out);
   // Version .webp à côté (1400 px, comme celles de public/demo).
   if (/\.jpe?g$/i.test(out)) await sharp(png).resize({ width: 1400 }).webp({ quality: 82 }).toFile(out.replace(/\.jpe?g$/i, ".webp"));
   console.log(`Planche écrite : ${out}`);
