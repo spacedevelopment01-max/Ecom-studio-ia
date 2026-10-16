@@ -22,6 +22,9 @@ import { tmpDir } from "../storage";
 import { execTool } from "../exec-tool";
 import { downloadStockVideo, emptyVideoReport, searchStockVideos, stockVideoCredit, type StockVideo, type StockVideoReport, type VideoQuery } from "./photos";
 import { rankStock, tradeStock } from "./trade-queries";
+import { citesTyped, silhouetteOnly, typedQueries, typedWords } from "./typed-search";
+
+export { citesTyped, silhouetteOnly, typedWords };
 
 type Ictx = { userId: string; projectId: string; jobId?: string | null };
 
@@ -58,28 +61,6 @@ export type StockClipRequest = {
 /** Ce que la recherche a trouvé ou écarté : dit au client pourquoi aucun plan n'a été retenu. */
 export type StockClipDiag = { report: StockVideoReport; people: number; offTopic: number; rejected: number };
 export const emptyClipDiag = (): StockClipDiag => ({ report: emptyVideoReport(), people: 0, offTopic: 0, rejected: 0 });
-
-const SILHOUETTE_RE = /\b(silhouettes?|shadows?|from behind|back view|rear view|backlit|hooded|hoods?|cloaked|ombres?|de dos|contre-jour|capuche)\b/i;
-const FACE_RE = /\b(faces?|portraits?|selfies?|smil(e|es|ing)|close-?ups?|eyes|looking at (the )?camera|visages?|sourires?|gros plan)\b/i;
-/** Mots-clés d'un plan : une personne, mais seulement en silhouette (de dos, dans l'ombre), sans visage cité. */
-export const silhouetteOnly = (alt: string) => SILHOUETTE_RE.test(alt) && !FACE_RE.test(alt);
-
-const STOP = new Set(["les", "des", "une", "est", "avec", "pour", "dans", "sur", "par", "aux", "the", "and", "with", "for", "from", "into", "dun", "dune", "video", "videos", "plan", "plans"]);
-/** Mots significatifs d'un texte tapé (« escape game » → escape, game ; « porte d'entrée » → porte, entree). */
-export function typedWords(text: string): string[] {
-  const t = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\b[dlj]'/g, " ");
-  return [...new Set(t.split(/[^a-z0-9]+/).filter((w) => w.length >= 3 && !STOP.has(w)))].slice(0, 6);
-}
-
-/** Les mots-clés d'un plan citent-ils les mots tapés (tous, ou un seul en recherche élargie) ? Pluriels acceptés. */
-export function citesTyped(alt: string, words: string[], any = false): boolean {
-  if (!words.length) return false;
-  const a = ` ${alt.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ")} `;
-  const one = (w: string) => a.includes(` ${w} `) || a.includes(` ${w}s `) || a.includes(` ${w}es `) || a.includes(` ${w}x `);
-  // Féminin français : « secrète » cite aussi « secret ».
-  const has = (w: string) => one(w) || (w.length > 4 && w.endsWith("e") && one(w.slice(0, -1)));
-  return any ? words.some(has) : words.every(has);
-}
 
 /** Mots entiers (« tape » ne valide pas « magnetic tape cassette » pour « masking tape »). */
 export function citesAll(alt: string, groups: string[][]): boolean {
@@ -189,7 +170,7 @@ export async function findStockClip(ictx: Ictx, p: Project, r: StockClipRequest,
   const taken = new Set([...takenStockVideos(p.id), ...exclude]);
   // Texte du client d'abord, tel quel, en anglais ET en français (les mots-clés reviennent dans la langue demandée :
   // « porte secrète » ne se retrouve que dans les mots-clés français) ; en recherche élargie, chacun de ses mots seul.
-  const typedQueries: VideoQuery[] = typed ? [{ q: typed, lang: "en" }, { q: typed, lang: "fr" }, ...(r.broad && words.length > 1 ? words.map((w) => ({ q: w, lang: "en" as const })) : [])] : [];
+  const typedList: VideoQuery[] = typedQueries(typed, r.broad);
   // Règle des marques : un plan dont la description cite une marque tierce est écarté avant tout téléchargement.
   const { allowedBrands, stockMentionsBrand } = await import("../video-v2/brand-guard");
   const own = allowedBrands(p);
@@ -199,7 +180,7 @@ export async function findStockClip(ictx: Ictx, p: Project, r: StockClipRequest,
   const ART = /\b(canvas|watercolor|watercolour|acrylic|artist|abstract|crayon|cassette|fog|wallpaper|texture|background|pattern|cartoon|fantasy|moon|night|chroma|green screen|mock-up|mockup|television|tv)\b/i;
   const search = (list: VideoQuery[], enough: number, skip: Set<string>) => searchStockVideos(list, orientation, q.lang, skip, enough, diag.report).catch((e) => (diag.report.errors.push((e as Error).message), [] as StockVideo[]));
   // Toutes les recherches du texte tapé sont faites (aucun arrêt anticipé), puis celles du métier.
-  const fromTyped = typedQueries.length ? await search(typedQueries, Number.POSITIVE_INFINITY, taken) : [];
+  const fromTyped = typedList.length ? await search(typedList, Number.POSITIVE_INFINITY, taken) : [];
   const fromTrade = await search(queriesFor(q.queries, people), 16, new Set([...taken, ...fromTyped.map((v) => `${v.source}:${v.id}`)]));
   const all0 = [...fromTyped, ...fromTrade].filter((v) => !stockMentionsBrand(v.alt, own) && (!need || (citesAll(v.alt, need) && !ART.test(v.alt))));
   // Projet sans personnes : un plan qui en montre une est écarté, sauf silhouette acceptée par le client (signalée).

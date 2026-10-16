@@ -61,7 +61,7 @@ export async function saveImageV2(o: {
   brief: VisualBrief;
   meta: ImageV2Meta;
   gate: { meta: { gate: GateMeta } };
-  stock?: { source: string; id: string; page: string; author: string; license: string } | null;
+  stock?: { source: string; id: string; page: string; author: string; license: string; aiGenerated?: boolean; silhouette?: boolean } | null;
   recipe?: string | null;
   status: "review" | "rejected";
   slot?: string | null;

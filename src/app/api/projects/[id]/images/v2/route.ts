@@ -59,6 +59,10 @@ const ImageRequestSchema = z.object({
   allowGenerate: z.boolean().optional(),
   /** Ancien indicateur, désormais implicite : toute génération demandée exclut les photos libres. */
   noStock: z.boolean().optional(),
+  /** Recherche de photos libres (allowGenerate: false) : chaque mot tapé aussi cherché seul. */
+  broad: z.boolean().optional(),
+  /** Recherche de photos libres, projet sans personnes : silhouettes acceptées (visage non visible). */
+  silhouettes: z.boolean().optional(),
 });
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
@@ -98,7 +102,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     projectId: p.id,
     type: "image.v2",
     label: L("Images : direction artistique et sélection", "Images: art direction and selection"),
-    payload: { projectId: p.id, request: { kind: intent.kind, support: r.support ?? intent.support, aspect: r.aspect, count: r.count ?? 1, topic: r.topic ?? (r.kind ? null : r.text ?? null), allowGenerate: r.allowGenerate !== false, ...(r.allowGenerate !== false ? { noStock: true } : {}) } },
+    payload: { projectId: p.id, request: { kind: intent.kind, support: r.support ?? intent.support, aspect: r.aspect, count: r.count ?? 1, topic: r.topic ?? (r.kind ? null : r.text ?? null), allowGenerate: r.allowGenerate !== false, ...(r.allowGenerate !== false ? { noStock: true } : { bankSearch: { typed: r.topic?.trim() || null, broad: !!r.broad, silhouettes: !!r.silhouettes } }) } },
   });
   return ok({ jobId: job.id, ...view(p.id) });
 });

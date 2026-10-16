@@ -17,7 +17,7 @@
  */
 import crypto from "node:crypto";
 import type { JobContext } from "../jobs";
-import { JobCancelled, JobPaused } from "../jobs";
+import { JobCancelled, JobPaused, UserFacingError } from "../jobs";
 import { aiActiveFor } from "../ai/access";
 import { all } from "../db";
 import { CostCapReached, currentTrace, withCandidate, withTrace } from "../ai/trace";
@@ -34,7 +34,9 @@ import { rejectedDirections } from "./direction";
 import { frameTo } from "./formats";
 import { PRODUCT_KINDS, stagesFor } from "./intent";
 import { gateImage, localImageCheck } from "./quality";
-import { candidateKey, searchCandidates, shortlist, type SearchStats } from "./search";
+import { candidateKey, searchCandidates, shortlist, type SearchStats, type TypedSearch } from "./search";
+import { typedQueries, typedWords } from "../stock/typed-search";
+import { emptyBankPhotoDiag, noPhotoMessage, silhouetteBrief, stockFlagsNote, type BankPhotoDiag } from "../media/bank-photo";
 import { creditLine } from "./sources";
 import { memoOf, projectHashes, rejectedKeys, remember, reusableFor, saveImageV2, usedStockKeys, briefSummary } from "./assets";
 import { realImageDeps, type ImageV2Deps } from "./deps";
@@ -56,6 +58,11 @@ export type ImageRequestV2 = BriefRequest & {
   name?: string;
   /** Contrôles payants au plus par image voulue (photos de banque). */
   maxControls?: number;
+  /**
+   * Recherche demandée par le client dans la banque d'images (« Chercher des photos libres ») : son texte cherché tel
+   * quel, recherche élargie, silhouettes acceptées. Sans aucune photo retenue, la tâche dit pourquoi (jamais muette).
+   */
+  bankSearch?: { typed?: string | null; broad?: boolean; silhouettes?: boolean };
 };
 
 export type ImageRunResult = {
@@ -66,6 +73,8 @@ export type ImageRunResult = {
   stoppedByCostCap: boolean;
   costMicro: number;
   notes: string[];
+  /** Recherche du client (bankSearch) : ce qui a été trouvé puis écarté, pour lui dire pourquoi rien n'est retenu. */
+  bank?: BankPhotoDiag;
 };
 
 /** Plafond par défaut d'une tâche d'images (euros) quand le module n'en donne pas. */
@@ -143,6 +152,11 @@ async function engine(ctx: JobContext | null, p: Project, req: ImageRequestV2, d
     notes.push(`arrêt au plafond de dépense : ${e.message}`);
   }
   if (jobId) result.costMicro = all<{ c: number }>("SELECT COALESCE(SUM(cost), 0) c FROM ai_calls WHERE job_id = ?", jobId)[0]?.c ?? 0;
+  // Recherche du client sans aucune photo retenue : la raison est dite (nombre trouvé, pourquoi écartées, cases à cocher).
+  if (req.bankSearch && result.bank && !result.stoppedByCostCap && !result.outcomes.some((o) => o.assetId)) {
+    const topic = req.bankSearch.typed?.trim() || [p.product.category, p.product.name].filter(Boolean)[0] || p.name;
+    throw new UserFacingError(noPhotoMessage(result.bank, topic, !!req.bankSearch.broad, !!req.bankSearch.silhouettes));
+  }
   return result;
 }
 
@@ -166,17 +180,30 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
   const projectH = projectHashes(p.id);
   let lastReason = "aucune image retenue";
 
-  // 2. Recherche (banques d'images).
-  if (stages.includes("search") && brief.queries.length) {
+  // 2. Recherche (banques d'images). Recherche du client : son texte tel quel, élargie et silhouettes s'il les a cochées.
+  const bank = req.bankSearch;
+  const typedText = bank?.typed?.trim() ?? "";
+  const typed: TypedSearch | null = bank ? { queries: typedQueries(typedText, !!bank.broad), words: typedText ? typedWords(typedText) : [], broad: !!bank.broad, silhouettes: !!bank.silhouettes } : null;
+  if (stages.includes("search") && (brief.queries.length || typed?.queries.length)) {
     const exclude = new Set([...usedStockKeys(p.id), ...rejectedKeys(p.id, bh)]);
-    const { ranked, stats } = await searchCandidates(brief, deps.providers, { exclude, fallbackFr: p.business === "services" ? (p.product.category || null) : null });
+    const { ranked, stats } = await searchCandidates(brief, deps.providers, { exclude, fallbackFr: p.business === "services" ? (p.product.category || null) : null, typed });
     result.search.push(stats);
     result.stats.candidatesSeen += ranked.length;
-    for (const c of shortlist(ranked, deps.canReview, req.maxControls ?? 4)) {
+    const short = shortlist(ranked, deps.canReview, req.maxControls ?? 4);
+    // Diagnostic de cette recherche (le dernier compte : c'est celui de l'image qui n'a rien trouvé).
+    const diag: BankPhotoDiag | null = bank ? { ...emptyBankPhotoDiag(), noKey: !deps.providers.some((pr) => pr.available()), found: ranked.length + (stats.excluded ?? 0), already: stats.excluded ?? 0, errors: stats.errors, people: ranked.filter((c) => c.personBlocked).length } : null;
+    if (diag) {
+      const eligible = shortlist(ranked, deps.canReview, Number.POSITIVE_INFINITY).length;
+      diag.offTopic = Math.max(0, ranked.length - diag.people - eligible);
+      diag.untried = Math.max(0, eligible - short.length);
+      result.bank = diag;
+    }
+    for (const c of short) {
       const key = candidateKey(c);
       const memo = memoOf(p.id, key, bh);
       if (memo && memo.verdict === "REJECTED") {
         result.stats.controlsSkippedByMemo++;
+        if (diag) diag.rejected++;
         continue;
       }
       let raw: Buffer;
@@ -184,32 +211,37 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
         raw = await deps.download(c);
       } catch {
         remember(p.id, key, "*", { verdict: "REJECTED", codes: ["corrupt"] });
+        if (diag) diag.rejected++;
         continue;
       }
       const img = await frameTo(raw, brief.format.aspect);
       if (!img) {
         remember(p.id, key, bh, { verdict: "REJECTED", codes: ["bad_crop"] });
+        if (diag) diag.rejected++;
         continue;
       }
-      const local = await localImageCheck(img, brief, [...projectH, ...seriesHashes]);
+      // Silhouette acceptée par le client : relue avec un brief qui l'autorise (un visage visible reste refusé).
+      const cBrief = c.silhouette ? silhouetteBrief(brief) : brief;
+      const local = await localImageCheck(img, cBrief, [...projectH, ...seriesHashes]);
       let review: ImageReview | null = null;
       let reviewError: string | null = null;
       if (local.ok && deps.canReview) {
         result.stats.controls++;
         try {
-          review = await withCandidate(`img2:${bh}:${key}`, 0, () => deps.review(brief, img, null, `${jobId ?? "img2"}:img2:review:${bh}:${key}`, "stock"));
+          review = await withCandidate(`img2:${bh}:${key}`, 0, () => deps.review(cBrief, img, null, `${jobId ?? "img2"}:img2:review:${bh}:${key}`, "stock"));
         } catch (e) {
           if (e instanceof JobCancelled || e instanceof JobPaused || e instanceof CostCapReached) throw e;
           reviewError = (e as Error).message;
         }
       }
-      const d = gateImage({ brief, origin: "stock", local, review, reviewError, metadataMatch: c.metadataMatch, attempt: 0 });
+      const d = gateImage({ brief: cBrief, origin: "stock", local, review, reviewError, metadataMatch: c.metadataMatch, attempt: 0 });
       const usable = d.verdict === "FINAL" || (d.verdict === "PROVISIONAL" && d.provisional?.use === "auto");
       if (!usable) {
         const checkId = saveCheck(d, { ...base, candidateId: key });
         // Contrôle en panne : rien n'est mémorisé (il pourra être refait) ; sinon le refus est retenu pour ce brief.
         if (d.checked) remember(p.id, key, bh, { verdict: d.verdict === "RETRY" ? "REJECTED" : d.verdict, score: d.score, codes: [...d.fatalCodes, ...d.blockingCodes], check_id: checkId, phash: local.hash });
         lastReason = d.reason;
+        if (diag) diag.rejected++;
         continue;
       }
       const g = gateSave({ ...base, candidateId: key }, d);
@@ -222,8 +254,8 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
         brief,
         meta: { version: IMAGE_V2_VERSION, origin: "stock", provider: c.source, model: null, briefHash: bh, brief: briefSummary(brief), score: d.score, verdict: d.verdict, codes: [], license: c.license, productRef: null, corrections: [], phash: local.hash, attempts: 1 },
         gate: g,
-        stock: { source: c.source, id: c.id, page: c.page, author: c.author, license: c.license.name },
-        recipe: creditLine(c),
+        stock: { source: c.source, id: c.id, page: c.page, author: c.author, license: c.license.name, ...(c.aiGenerated ? { aiGenerated: true } : {}), ...(c.silhouette ? { silhouette: true } : {}) },
+        recipe: `${creditLine(c)}${stockFlagsNote(c)}`,
         status: "review",
         slot: req.slot ?? null,
         service: req.service?.name ?? null,
