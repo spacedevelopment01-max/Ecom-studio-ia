@@ -98,8 +98,8 @@ const REAL_DEMOS: DemoDef[] = [
     photo: path.join(PX, "montre-1-entiere.jpg"),
     logo: path.join(REAL, "logos", "arven.png"),
     // Photos en situation créées par l'IA (Qwen-Image 3.0, accord du propriétaire) : parties sans texte des visuels
-    // ARVEN, reprises par la boutique (ouverture, sections) et la planche d'identité.
-    lifestyle: ["arven-bureau.jpg", "arven-pierre.jpg", "arven-matiere.jpg", "arven-atelier.jpg", "arven-ombre.jpg"].map((f) => path.join(IA, f)),
+    // ARVEN où la montre est entière (bracelet complet), reprises par la boutique et la planche d'identité.
+    lifestyle: ["arven-bureau.jpg", "arven-matiere.jpg", "arven-atelier.jpg", "arven-ombre.jpg"].map((f) => path.join(IA, f)),
     // Signature écrite sur le logo du client : reprise telle quelle (jamais remplacée par une autre).
     tagline: "Le temps, bien porté.",
     videos: "edited",

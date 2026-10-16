@@ -75,7 +75,7 @@ export const DEFAULT_IMAGE_GUIDE: ImageCreativeGuide = {
   ],
   grid: [
     { id: "relevance", label: "Pertinence (le sujet exact, le message)" },
-    { id: "product", label: "Fidélité du produit (forme, proportions, matières, couleurs, détails, nombre de pièces)" },
+    { id: "product", label: "Fidélité du produit (forme, proportions, matières, couleurs, détails, nombre de pièces) et produit entier (aucune partie coupée ou manquante)" },
     { id: "service", label: "Cohérence du service (geste, outils, posture, matériaux)" },
     { id: "hands", label: "Mains et objets sans défaut" },
     { id: "text", label: "Lisibilité, orthographe (texte exact), contraste" },

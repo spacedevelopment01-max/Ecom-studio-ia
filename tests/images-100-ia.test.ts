@@ -141,6 +141,9 @@ describe("Consigne de publication : seuls les textes permis par le rôle de l'im
       expect(asAd).toContain("social media advertisement");
       expect(asAd).toContain(`call-to-action that clearly reads as a button or link: "${t.cta}"`);
       expect(buildGenerationBrief(p, { purpose: "product_main", subject: "x", aspect: "1:1" }).logo).toBe("aucun logo dans l'image");
+      // Produit entier exigé à chaque génération (bracelet tronqué constaté sur une publicité ARVEN).
+      expect(buildGenerationBrief(p, { purpose: "ad", subject: "x", aspect: "1:1" }).fidelity).toMatch(/produit ENTIER.*aucune partie coupée/);
+      expect(asAd).toMatch(/produit ENTIER/);
     });
   });
 });

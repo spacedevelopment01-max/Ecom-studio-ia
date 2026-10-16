@@ -208,7 +208,7 @@ export function buildGenerationBrief(p: Project, o: { purpose: ImagePurpose; sub
     logo: purpose.text === "none" ? "aucun logo dans l'image" : p.brand?.logo?.assetId ? "logo du projet fourni en référence : à reproduire exactement, ou laisser l'emplacement libre" : "aucun logo",
     fidelity: services
       ? "geste, outils, posture et matériaux exacts du métier ; mains correctes ; illustration (jamais un chantier, un salarié ou un témoignage réels)"
-      : "le produit de la référence à l'identique : forme, proportions, matières, couleurs réelles, détails, nombre de pièces ; aucune fonction ni accessoire inventés",
+      : "le produit de la référence à l'identique : forme, proportions, matières, couleurs réelles, détails, nombre de pièces ; aucune fonction ni accessoire inventés ; le produit ENTIER dans le cadre, aucune partie coupée, cachée ou manquante (ex. une montre : le bracelet complet, ses deux brins et la boucle, comme sur la référence)",
     forbidden: [...ad.avoid, "aucune autre marque que celle du projet", ...g.effectsNeedIntent.map((e) => `${e} sans raison`), purpose.cta ? "" : "aucun bouton", purpose.text === "none" ? "aucun texte, aucune lettre" : ""].filter(Boolean),
     format: `${o.aspect}, marges extérieures ${g.layout.marginPx.min}–${g.layout.marginPx.max} px pour 1080 px${purpose.calmZone ? ", grande zone calme réservée au texte du site" : ""}`,
     validation: g.grid.map((x) => x.label),
