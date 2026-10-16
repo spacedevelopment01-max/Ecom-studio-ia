@@ -60,11 +60,14 @@ export function alibabaHeaders(key: string, o: { async?: boolean } = {}): Record
  */
 export const NO_PEOPLE_NEGATIVE = "people, person, human, man, woman, child, face, faces, portrait, hands, fingers, body, model, mannequin, crowd";
 const BASE_NEGATIVE = "watermark, blurry, low quality, distorted, deformed, extra text, misspelled text";
-export function negativePrompt(people: boolean): string {
-  return people ? BASE_NEGATIVE : `${BASE_NEGATIVE}, ${NO_PEOPLE_NEGATIVE}`;
+/** Image sans aucun texte voulu (photo de la banque, décor, produit en scène) : le négatif exclut aussi toute écriture. */
+export const NO_TEXT_NEGATIVE = "text, letters, words, typography, caption, title, logo, brand mark, signage, label text, embossed text, engraving, monogram, initials, stamp";
+export function negativePrompt(people: boolean, noText = false): string {
+  return [BASE_NEGATIVE, people ? "" : NO_PEOPLE_NEGATIVE, noText ? NO_TEXT_NEGATIVE : ""].filter(Boolean).join(", ");
 }
 export function noPeopleLine(people: boolean): string {
-  return people ? "" : " No people, no person, no face, no hands, no body, no mannequin.";
+  // Formulation positive et courte : énumérer les parties du corps à éviter tend à les faire apparaître.
+  return people ? "" : " Scène sans aucune présence humaine.";
 }
 
 /** Tailles Qwen-Image (largeur*hauteur) par format du studio : préréglages documentés (1328², 16:9, 9:16, 3:4). */
@@ -72,13 +75,14 @@ export const QWEN_SIZES: Record<string, string> = { "1:1": "1328*1328", "16:9": 
 export const qwenSize = (aspect: string) => QWEN_SIZES[aspect] ?? QWEN_SIZES["1:1"];
 
 /** Corps d'une génération / retouche Qwen-Image (point d'accès synchrone « multimodal-generation »). */
-export function qwenImageBody(o: { model: string; prompt: string; aspect: string; references: string[]; people: boolean }) {
-  const content: Record<string, string>[] = [...o.references.map((image) => ({ image })), { text: `${o.prompt}${noPeopleLine(o.people)}` }];
+export function qwenImageBody(o: { model: string; prompt: string; aspect: string; references: string[]; people: boolean; noText?: boolean; extraNegative?: string }) {
+  // Clause « sans personne » ajoutée une seule fois (la consigne du studio la contient déjà le plus souvent).
+  const content: Record<string, string>[] = [...o.references.map((image) => ({ image })), { text: `${o.prompt}${/présence humaine|aucune personne/i.test(o.prompt) ? "" : noPeopleLine(o.people)}` }];
   return {
     model: o.model,
     input: { messages: [{ role: "user", content }] },
     // Une seule image, sans filigrane ; la consigne n'est pas réécrite par le fournisseur (texte exact du studio).
-    parameters: { n: 1, size: qwenSize(o.aspect), watermark: false, prompt_extend: false, negative_prompt: negativePrompt(o.people) },
+    parameters: { n: 1, size: qwenSize(o.aspect), watermark: false, prompt_extend: false, negative_prompt: [negativePrompt(o.people, !!o.noText), o.extraNegative?.trim()].filter(Boolean).join(", ") },
   };
 }
 

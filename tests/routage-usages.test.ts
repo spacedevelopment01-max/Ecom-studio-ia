@@ -190,7 +190,7 @@ describe("routage multimédia par usage", async () => {
     expect(net.calls.at(-1)!.url).toContain("gemini-2.5-flash-image:generateContent");
     // La photo du produit part avec la demande (référence) et la consigne exige le produit à l'identique.
     expect(JSON.stringify(net.calls.at(-1)!.body)).toMatch(/inline_data/);
-    expect(JSON.stringify(net.calls.at(-1)!.body)).toMatch(/reproduce it exactly as it is/);
+    expect(JSON.stringify(net.calls.at(-1)!.body)).toMatch(/le reproduire exactement tel qu'il est/);
     // Images produit → OpenAI : génération à partir de la photo du produit (retouche avec image de référence).
     setUsage("product_image", { primary: "openai:gpt-image-1" });
     await fr(() => mp.productScene(ctx(c), { prompt: "plan en bois", aspect: "1:1", reference: png, usage: "product_image" }));

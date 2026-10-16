@@ -24,7 +24,21 @@ services) ; les **images fixes** de services sont créées par l'IA, jamais une 
 Toutes les images du studio, pour tous les comptes (logos, produits, publicités, publications, décors), sont créées
 par **Qwen-Image 3.0 Pro** (Alibaba), confirmé d'office (`adminConfirm: false` dans `src/lib/ai/media-models.ts`).
 Un choix fait dans Administration › Images & Vidéos reste prioritaire. Sans clé Alibaba active, le studio retombe sur
-le défaut historique (OpenAI) : à surveiller dans l'administration.
+le défaut historique (OpenAI, plus cher) : l'administration l'affiche en avertissement (« Qwen-Image 3.0 Pro n'est pas
+utilisable… les images passent par … à la place »), avec la raison. Décision du propriétaire (16/10/2026) : ce passage automatique
+est gardé, mais l'administrateur est **alerté** dès la première image créée ailleurs (`src/lib/ai/media-alerts.ts`,
+appelé avant chaque génération payante) : e-mail aux administrateurs (si l'envoi d'e-mails est configuré) et
+notification dans l'administration — quoi, pourquoi, depuis quand, projet et usage, surcoût estimé par image, quoi
+faire. Au plus un rappel par heure tant que l'incident dure, puis une alerte « rétabli » quand Qwen refonctionne. Un
+modèle choisi exprès par l'administration n'est pas un incident. Sans aucun modèle utilisable, l'onglet Images le
+dit au client (raison affichée, bouton « Créer » désactivé) et rien n'est créé à la place.
+
+Consignes au modèle d'images **en français** (règle du propriétaire) : moteur Image V2 (banque, jeu d'images),
+photo du vrai produit en scène, ambiance, retouche et reconstruction du produit ; directions artistiques
+(`src/lib/image-v2/direction.ts`) en français ; produit entier exigé ; clause « aucune personne » en français
+(`NO_PEOPLE_FR`). Restent en anglais (à traiter avec leurs onglets) : la consigne des publications et publicités
+(`src/lib/social-v2/ai-post.ts`, avec `briefPrompt`/`briefScenePrompt`), les logos, et les descriptions des métiers
+et catégories de produits reprises dans les consignes (sujet, décor, interdits).
 
 Publications et publicités : **une seule étape** — Qwen-Image 3.0 Pro crée l'image entière (scène, vrai produit en
 référence, textes exacts, bouton, vrai logo). Essais réels ARVEN du 16/10 : la version 3.0 standard a raté trois fois la
@@ -41,7 +55,7 @@ Produit entier exigé à chaque génération (aucune partie coupée ou manquante
 |---|---|---|
 | Publications (Social V2, pilote automatique) | affiche du studio sur photo, gabarit en secours | `designPostWithAi` ; sans dépense acceptée : aucun visuel, raison dite |
 | Publicités (Ads V2, création du projet) | composition à calques sur photo | `finalAd` → `designPostWithAi` (as « ad ») ; sans IA : `ai_blocked` |
-| Onglet Images (créer une image) | « image gratuite » du studio (packshot, mise en scène) | Image V2 en génération seule (`noStock`) ou publication IA ; sans IA : refus 402 |
+| Onglet Images (créer une image) | « image gratuite » du studio (packshot, mise en scène) | Image V2 en génération seule (`noStock` imposé par le serveur à toute génération demandée) ; sans IA : raison affichée, bouton désactivé ; tâche sans image retenue : dit au client |
 | Jeu d'images de la création | packshots, recadrages, mises en scène du studio, photos de banque | `runImageSetV2` : image principale, en situation 16:9 et 4:5, ambiance (produit) ; scènes du métier et bannière (service) — toutes par l'IA |
 | Banque du thème | 15 photos de banque | aucune photo de banque (`THEME_BANK_IMAGES = 0`) ; vidéos libres inchangées |
 | « Régénérer le visuel » d'une publication | mise en page du studio | publication IA ; sans IA : refus expliqué |

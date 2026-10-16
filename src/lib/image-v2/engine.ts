@@ -29,6 +29,7 @@ import { loadProject, type Project } from "../projects";
 import { validCutouts } from "../engine/cutouts";
 import { EUR } from "../billing";
 import { buildBrief, briefHash, generationPrompt, type BriefRequest } from "./brief";
+import { applyWording, loadWordingRules } from "../client-wording";
 import { rejectedDirections } from "./direction";
 import { frameTo } from "./formats";
 import { PRODUCT_KINDS, stagesFor } from "./intent";
@@ -235,7 +236,7 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
 
   // Produit réel : jamais posé sur une photo libre de droits (ancienne étape « décor » retirée : rendu « produit
   // collé devant une photo floue », refusé par le propriétaire). La photo publicitaire est générée à partir de la
-  // photo du produit, ou le studio garde ses mises en scène dessinées.
+  // photo du produit ; sinon rien n'est créé et la raison est dite (jamais de gabarit à la place).
   // 3. Génération (dernier recours pour le métier ; seul parcours pour le produit réel).
   if (!stages.includes("generate") || req.allowGenerate === false) return { outcome: none(lastReason), changeDirection: false };
   if (!deps.canGenerate) return { outcome: none(`${lastReason} ; génération non disponible (forfait ou fournisseur)`), changeDirection: false };
@@ -248,12 +249,14 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
   if (brief.productFidelity && !reference) return { outcome: none("photo de référence du produit introuvable"), changeDirection: false };
 
   const maxAttempts = POLICIES.image_v2.maxRetries + 1;
+  const wording = loadWordingRules(p.id);
   const prompts = new Set<string>();
   const corrections: string[] = [];
   let correction: string | null = null;
   let last: ImageOutcome = none(lastReason);
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    const prompt = generationPrompt(brief, correction);
+    // Vocabulaire du client (ex. ARVEN : « montre », jamais « chronographe ») : appliqué à chaque consigne.
+    const prompt = applyWording(generationPrompt(brief, correction), wording);
     const ph = hash(prompt);
     // Jamais deux fois la même consigne (une reprise identique ne changerait rien, et se paierait).
     if (prompts.has(ph) || memoOf(p.id, `gen:${ph}`, bh)?.verdict === "REJECTED") break;

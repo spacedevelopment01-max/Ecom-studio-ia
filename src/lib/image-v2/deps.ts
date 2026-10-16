@@ -166,12 +166,12 @@ export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: b
       const aspect = generationAspect(brief.format.aspect);
       if (path === "reference_scene" && reference) {
         const r = mediaRouteFor(usage, { references: 1 });
-        const zone = brief.format.textZone && brief.format.textZone !== "none" ? `${brief.format.textZone} part of the frame` : null;
+        const zone = brief.format.textZone && brief.format.textZone !== "none" ? `${{ left: "à gauche", right: "à droite", top: "en haut", bottom: "en bas", center: "au centre" }[brief.format.textZone]} du cadre` : null;
         return { img: await productScene({ ...base, usageKey: key }, { prompt, aspect, reference, textZone: zone, usage }), provider: r?.provider ?? "ai", model: r?.model ?? null, path };
       }
       if (path === "text_to_image") {
         const r = mediaRouteFor(usage);
-        return { img: await ambianceImage({ ...base, usageKey: key }, { prompt, aspect, usage }), provider: r?.provider ?? "ai", model: r?.model ?? null, path };
+        return { img: await ambianceImage({ ...base, usageKey: key }, { prompt, aspect, usage, negative: brief.fr?.sceneExclude }), provider: r?.provider ?? "ai", model: r?.model ?? null, path };
       }
       throw new Error(L("aucun parcours de génération fiable pour cette image", "no reliable generation path for this image"));
     },

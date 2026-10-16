@@ -7,7 +7,8 @@ import { requireCreationPlan } from "@/lib/plan-gates";
 import { FORMATS, SCENE_STYLES } from "@/lib/media/compose";
 import { L } from "@/lib/i18n-server";
 import { HttpError } from "@/lib/auth";
-import { aiActiveFor } from "@/lib/ai/access";
+import { aiActiveFor, runForUser } from "@/lib/ai/access";
+import { imageUnavailableReason } from "@/lib/ai/media-providers";
 import { estimateMicro } from "@/lib/ai/estimate";
 import { aiPostQuoteMicro } from "@/lib/engine/ai-post-image";
 import { imageV2Kind } from "@/lib/image-v2/ai-only";
@@ -39,7 +40,10 @@ const aiImageQuoteMicro = () => 2 * estimateMicro("image");
 /** Devis affiché avant toute création payante (« Faire un visuel ») et état de l'IA du projet. */
 export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
-  return ok({ ai: aiActiveFor(p.userId, p.id), quote: { ai_image: aiImageQuoteMicro() / 1e6, ai_post: aiPostQuoteMicro() / 1e6 } });
+  // IA d'images vraiment utilisable pour CE projet : forfait et budget, ET un modèle d'images utilisable (clé, tarif,
+  // confirmation). Sinon la raison est dite au client : aucun bouton payant qui échouerait ensuite.
+  const reason = aiActiveFor(p.userId, p.id) ? await runForUser(p.userId, async () => imageUnavailableReason("scene"), "normal", p.id) : null;
+  return ok({ ai: aiActiveFor(p.userId, p.id) && !reason, reason, quote: { ai_image: aiImageQuoteMicro() / 1e6, ai_post: aiPostQuoteMicro() / 1e6 } });
 });
 
 /** Libellé lisible de la tâche (jamais la clé interne). */

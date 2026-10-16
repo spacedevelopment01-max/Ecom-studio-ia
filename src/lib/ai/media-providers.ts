@@ -18,6 +18,7 @@ import { assertQuota, consumeQuota, refundQuota, userPlan } from "../quotas";
 import { all } from "../db";
 import { PLANS } from "../plans";
 import { PermanentError, UserFacingError } from "../jobs";
+import { noteImageModel } from "./media-alerts";
 import { activeProviderKey, bearer, falAuth, FX_SAFETY, isGatewayKey, requirePrice, routeFor, usdToEur } from "./config";
 import { assertUnderCostCap, recordCall, redact } from "./trace";
 import { L } from "../i18n-server";
@@ -59,14 +60,20 @@ function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...
         const out = await fn(...args);
         keepPaidImage(t, out);
         return out;
-      } catch (e) {
+      } catch (e0) {
+        let e = e0;
         // Réservation du coût maximal : rendue si rien n'est parti ou si le fournisseur a refusé la demande ; sinon
         // (délai dépassé, coupure, erreur après acceptation ou réponse), coût maximal retenu par prudence.
         if (t.reservation && !t.recorded) {
           const status = (e as { status?: unknown })?.status;
           if (!t.sent) release(t.reservation, "aucune demande envoyée au fournisseur");
           else if (t.rejected || refused(status)) release(t.reservation, `refus du fournisseur${typeof status === "number" ? ` (${status})` : ""}`);
-          else settleUncertain(t.reservation, redact(String((e as Error)?.message ?? e)).slice(0, 160));
+          else {
+            settleUncertain(t.reservation, redact(String((e as Error)?.message ?? e)).slice(0, 160));
+            // Résultat incertain (5xx, coupure, réponse sans image) : l'appel a pu être facturé. Règle du propriétaire :
+            // jamais relancé tout seul — erreur définitive (la file de tâches ne réessaie pas), raison dite au client.
+            if (!(e instanceof PermanentError)) e = uncertainMediaError(e, t);
+          }
           // Rien n'a été facturé (réservation rendue) : un secours compatible peut prendre le relais sans double coût.
           // Une erreur 5xx (ex. « 502 upstream request failed » d'un proxy) ou une coupure du flux n'en fait pas partie :
           // la génération a pu avoir lieu et être facturée → coût maximal retenu, jamais de seconde génération.
@@ -74,13 +81,25 @@ function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...
         }
         // Échec après le départ de la demande au fournisseur : l'appel a eu lieu, il est tracé (coût inconnu = 0, signalé).
         if (t.provider && !t.recorded) {
-          const msg = String((e as Error)?.message ?? e);
+          const msg = String((e0 as Error)?.message ?? e0);
           recordCall({ userId: t.ctx!.userId, projectId: t.ctx!.projectId, jobId: t.ctx!.jobId, task, provider: t.provider, requestedModel: t.model ?? "", unit: t.unit ?? "image", latencyMs: t.started ? Date.now() - t.started : null, usageKey: t.ctx!.usageKey ?? null, estimated: true, status: /délai|timeout|timed out/i.test(msg) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(msg).slice(0, 200)}` , ...brainCols(t.ctx), ...routingCols(t) });
         }
         throw e;
       }
     });
   };
+}
+
+/**
+ * Erreur définitive d'une génération au résultat incertain : le coût maximal est retenu, aucune nouvelle tentative
+ * automatique (ni par la file de tâches, ni par un secours). Le client sait quoi faire.
+ */
+export function uncertainMediaError(e: unknown, t: Pick<MediaTrace, "provider" | "model">): PermanentError {
+  const why = redact(String((e as Error)?.message ?? e)).slice(0, 200);
+  const who = t.provider ? `${t.provider}${t.model ? `:${t.model}` : ""}` : "fournisseur";
+  const out = new PermanentError(L(`Résultat incertain chez ${who} (${why}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.`, `Uncertain result at ${who} (${why}): maximum cost kept as a precaution, no automatic retry. Check the provider's usage before trying again.`));
+  const status = (e as { status?: unknown })?.status;
+  return Object.assign(out, { cause: e, uncertain: true, ...(typeof status === "number" ? { status } : {}) });
 }
 
 /** Refus net du fournisseur (4xx hors délai) : rien n'a été produit ni facturé. 5xx, 408 et coupures : incertain. */
@@ -188,6 +207,8 @@ function gate(ctx: Ctx, micro: number, media: "image" | "video", provider: strin
   t.reservation = reserve(ctx.userId, max, { task: t.task, provider, model, jobId: ctx.jobId, projectId: ctx.projectId });
   const priced = requirePrice(provider, model);
   Object.assign(t, { provider, model, unit: media === "video" ? "video_second" : priced.unit === "tokens" ? "tokens" : "image", started: Date.now() });
+  // Qwen-Image 3.0 Pro inutilisable et image créée ailleurs (souvent OpenAI, plus cher) : administrateur alerté vite.
+  if (media === "image") noteImageModel({ provider, model, projectId: ctx.projectId ?? null, usage: t.usage ?? null, excluded: mediaExclude.getStore()?.exclude });
 }
 
 /** La demande part chez le fournisseur (à partir d'ici, un échec sans réponse d'erreur est incertain). */
@@ -366,7 +387,7 @@ export function imageUnavailableReason(usage?: MediaUsage): string | null {
   const u = currentAiUser();
   if (u && !userPlan(u)) return L("aucun forfait actif : les images IA sont réservées aux forfaits", "no active plan: AI images come with the plans");
   if (usage && usageExplicit(usage)) return L(`le modèle choisi pour « ${USAGE_INFO[usage].label.fr} » (et son secours) n'est pas utilisable : clé, tarif, confirmation ou capacité — voir Administration › Images & Vidéos`, `the model chosen for "${USAGE_INFO[usage].label.en}" (and its backup) is not usable: key, price, confirmation or capability — see Admin › Images & videos`);
-  return L("aucune clé OpenAI, Gemini ou fal.ai active (ou aucun modèle d'image compatible) dans l'administration", "no active OpenAI, Gemini or fal.ai key (or no compatible image model) in the admin settings");
+  return L("aucun modèle d'images utilisable : clé Alibaba (Qwen-Image 3.0 Pro, modèle du studio) absente ou désactivée, et aucun autre modèle compatible dans l'administration", "no usable image model: Alibaba key (Qwen-Image 3.0 Pro, the studio's model) missing or disabled, and no other compatible model in the admin settings");
 }
 
 /**
@@ -377,7 +398,7 @@ export function imageUnavailableReason(usage?: MediaUsage): string | null {
  * La fidélité au vrai produit est vérifiée ensuite par le contrôle visuel (photo de référence à l'appui).
  *  - modèle choisi pour « Retouches produit » (images produit) ou pour l'usage lui-même (publicités) ;
  *  - seulement un modèle qui accepte une image de référence (OpenAI, Gemini, fal selon le modèle) ;
- *  - null : aucun modèle utilisable (rien n'est généré, le studio garde ses mises en scène dessinées).
+ *  - null : aucun modèle utilisable (rien n'est généré, la raison est dite ; jamais de gabarit à la place).
  */
 export function productImagePath(usage: "product_image" | "ad_visual"): { path: "reference_scene"; usage: MediaUsage } | null {
   const editUsage: MediaUsage = usage === "product_image" ? "product_edit" : usage;
@@ -451,7 +472,7 @@ async function openaiSceneImpl(ctx: Ctx, input: { composite: Buffer; productMask
  * presque toujours dans le décor, ce qui donnerait un second produit (réinventé) à côté du vrai.
  */
 async function productPlateImpl(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9" | "2:3"; usage?: MediaUsage }) {
-  const text = `Photograph of an empty product-photography set, ${input.prompt}. The center foreground surface must be empty, flat and clear, seen at eye level from slightly above (a real product will be placed there later, standing on that surface). Aspect ratio ${input.aspect}. No text, no lettering, no logo, no product, no packaging, no bottle, no device, no people, no hands.`;
+  const text = `Photographie d'un décor de prise de vue produit vide, ${input.prompt}. Le centre du premier plan reste vide, plat et dégagé, vu à hauteur d'œil légèrement en plongée (un vrai produit y sera posé plus tard, debout sur cette surface). Format ${input.aspect}. Aucun texte, aucune lettre, aucun logo, aucun produit, aucun emballage, aucune bouteille, aucun appareil, aucune personne, aucune main.`;
   const aspect = input.aspect === "2:3" ? "4:5" : input.aspect;
   return generateImageImpl(ctx, { text, aspect, reference: null, quality: "high", usage: input.usage ?? "product_image" });
 }
@@ -470,13 +491,16 @@ async function productSceneImpl(ctx: Ctx, input: { prompt: string; aspect: "1:1"
 
 /** Consigne d'une photographie publicitaire du produit réel (référence jointe à la demande). */
 export function productScenePrompt(input: { prompt: string; aspect: string; textZone?: string | null }): string {
-  return `Professional advertising photograph for a premium brand campaign. Scene: ${input.prompt}.
-The product shown in the reference image is the hero of the picture: reproduce it exactly as it is (same shape, proportions, materials, colours, details, label, logo and printed text); do not redesign it, do not change its colour, do not add a second product or copies of it.
-If the reference photo shows the product worn or held by a person, or inside a wider scene, take only the product itself from it: never reproduce the person, their clothes, their body or that background.
-Never write a brand name, a word or a logo on the product that is not on the reference.
-The product sits naturally in the scene at a realistic scale, sharp and in focus, lit by the same light as the scene, with a real contact shadow on the surface it rests on; shallow depth of field behind it, never a flat cut-out look.
-Leave clean, uncluttered negative space ${input.textZone ? `in the ${input.textZone}` : "on one side"} for a headline that will be added later.
-No text, no lettering, no captions, no watermark, no added logo, no price tag. No people, no hands, no faces. Aspect ratio ${input.aspect === "2:3" ? "4:5" : input.aspect}.`;
+  // Consigne complète selon la structure du propriétaire (photo du vrai produit) : envoyée telle quelle.
+  if (/Aucun objet supplémentaire\.$/.test(input.prompt.trim())) return input.prompt.trim();
+  return `Photographie publicitaire professionnelle pour la campagne d'une marque haut de gamme. Scène : ${input.prompt.replace(/\.\s*$/, "")}.
+Le produit de l'image de référence est le héros de la photo : le reproduire exactement tel qu'il est (même forme, mêmes proportions, mêmes matières, mêmes couleurs, mêmes détails, même étiquette, même logo, mêmes inscriptions) ; ne pas le redessiner, ne pas changer sa couleur, ne pas ajouter un second produit ni de copie.
+Le produit ENTIER est dans le cadre : aucune partie coupée, cachée ou manquante (ex. une montre : le bracelet complet, ses deux brins et la boucle).
+Si la photo de référence montre le produit porté, tenu ou dans une scène plus large, ne reprendre que le produit lui-même, posé dans la nouvelle scène.
+Ne jamais écrire sur le produit un nom de marque, un mot ou un logo absent de la référence.
+Le produit est posé naturellement dans la scène, à sa taille réelle, net, éclairé par la même lumière que la scène, avec une vraie ombre de contact sur la surface où il repose ; faible profondeur de champ derrière lui, jamais un aspect découpé et collé.
+Garder un espace dégagé et calme (surface unie) ${input.textZone ? `${input.textZone}` : "d'un côté"}.
+Image purement photographique : rien n'est écrit ni ajouté sur l'image.${/présence humaine/.test(input.prompt) ? "" : " Scène sans aucune présence humaine."} Format ${input.aspect === "2:3" ? "4:5" : input.aspect}.`;
 }
 
 /**
@@ -522,9 +546,9 @@ async function editPhotoImpl(ctx: Ctx, input: { image: Buffer; instruction: stri
  * dans la continuité exacte de ce qui se voit (formes, matières, couleurs, coutures, inscriptions).
  */
 export function completeProductPrompt(missing?: string | null): string {
-  return `Product photography retouching. The attached photo shows a real product that is NOT entirely visible: ${missing?.trim() ? `missing part: ${missing.replace(/"/g, "'").slice(0, 200)}` : "a part of it is out of frame, lost in shadow or hidden"}.
-Recreate the very same product, complete and entirely visible: the same camera angle and the same pose as on the photo, the whole object inside the frame with generous margins, on a plain light neutral background, soft studio light, a soft natural shadow under it.
-Keep every visible detail exactly as on the photo (shape, proportions, materials, colours, metal colour and finish, stitching, numbers, markings and printed text); a polished metal stays the same metal colour (a silver steel never becomes black or gunmetal). Only add the missing part, drawn as the natural continuation of what is visible, including its closing part (for a watch: the strap closed in a loop as when worn, with its buckle or clasp visible; for a bag: both handles…). Do not redesign, restyle or simplify the product, do not change any colour, do not invent a logo, a brand name or a word, do not add a second product, props, text, hands or people. Photorealistic. Square format.`;
+  return `Retouche de photographie produit. La photo jointe montre un vrai produit qui n'est PAS entièrement visible : ${missing?.trim() ? `partie manquante : ${missing.replace(/"/g, "'").slice(0, 200)}` : "une partie sort du cadre, se perd dans l'ombre ou est cachée"}.
+Refaire exactement le même produit, complet et entièrement visible : même angle de prise de vue et même position que sur la photo, l'objet entier dans le cadre avec de larges marges, sur un fond clair neutre et uni, lumière douce de studio, ombre douce et naturelle dessous.
+Garder chaque détail visible exactement comme sur la photo (forme, proportions, matières, couleurs, couleur et finition du métal, coutures, chiffres, marquages et inscriptions) ; un métal poli garde sa couleur (un acier argenté ne devient jamais noir ni gris anthracite). Ajouter seulement la partie manquante, dessinée dans la continuité naturelle de ce qui se voit, y compris sa partie de fermeture (pour une montre : le bracelet fermé en boucle comme porté, avec sa boucle ou son fermoir visible ; pour un sac : les deux anses…). Ne pas redessiner, ni restyler, ni simplifier le produit, ne changer aucune couleur, n'inventer aucun logo, nom de marque ni mot, n'ajouter ni second produit, ni accessoire, ni texte, ni main, ni personne. Photoréaliste. Format carré.`;
 }
 
 async function completeProductImpl(ctx: Ctx, input: { image: Buffer; missing?: string | null }) {
@@ -533,9 +557,9 @@ async function completeProductImpl(ctx: Ctx, input: { image: Buffer; missing?: s
 
 /** Consigne de retouche d'une photo livrée : la demande du client, rien d'autre ne bouge. */
 export function editPhotoPrompt(instruction: string, aspect: string): string {
-  return `Edit the attached photograph. Change requested by the client: "${instruction.replace(/"/g, "'").slice(0, 400)}".
-Apply only this change. Keep everything else exactly as it is: the same framing and composition, the same camera angle, the same light and colours, and the same product (shape, proportions, colours, materials, details, label and printed text) unless the client explicitly asks to change it.
-Do not add any text, lettering, caption, watermark, logo or price. Do not add people, hands or faces unless the client asks for them. Photorealistic result. Aspect ratio ${aspect}.`;
+  return `Retoucher la photographie jointe. Modification demandée par le client : « ${instruction.replace(/["«»]/g, "'").slice(0, 400)} ».
+Appliquer seulement cette modification. Garder tout le reste exactement comme c'est : même cadrage et même composition, même angle de prise de vue, même lumière et mêmes couleurs, et le même produit (forme, proportions, couleurs, matières, détails, étiquette et inscriptions), entier dans le cadre, sauf si le client demande explicitement de le changer.
+N'ajouter aucun texte, aucune lettre, aucune légende, aucun filigrane, aucun logo ni prix. N'ajouter ni personne, ni main, ni visage sauf si le client le demande. Résultat photoréaliste. Format ${aspect}.`;
 }
 
 /**
@@ -543,10 +567,22 @@ Do not add any text, lettering, caption, watermark, logo or price. Do not add pe
  * Consignes d'honnêteté ajoutées à chaque demande : aucun visage identifiable présenté comme un client,
  * aucun texte, logo, diplôme, certificat ni récompense. `reference` : photo réelle de l'activité (ambiance seulement).
  */
-export async function ambianceImage(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference?: Buffer | null; usage?: MediaUsage }) {
-  const text = `${input.prompt}
-Editorial photograph that conveys the atmosphere of this business, natural light, realistic, premium. The place, the objects, the materials and the light tell the story. No people, no hands, no faces (the most frequent source of defects). No text, no lettering, no logo, no signage, no diploma, no certificate, no award, no badge, no price. Aspect ratio ${input.aspect}.${input.reference ? " The reference photo shows the real business: use it only for mood, colors and kind of place; do not copy any person." : ""}`;
-  return generateImage(ctx, { text, aspect: input.aspect, reference: input.reference ?? null, quality: "high", usage: input.usage ?? "scene" });
+/**
+ * Consigne d'une image d'ambiance (texte vers image). Formulation POSITIVE (essai réel ARVEN du 16/10 : énumérer
+ * « aucune personne, aucune main, aucun visage… aucun diplôme, aucun badge » a fait apparaître une personne et du faux
+ * texte) : on décrit ce qui doit être vu ; ce qui est exclu passe par le négatif du modèle.
+ */
+export function ambiancePrompt(input: { prompt: string; aspect: string; reference?: boolean }): string {
+  // Nature morte complète (structure du propriétaire, phrase finale comprise) : envoyée telle quelle.
+  if (/Aucun objet supplémentaire\.$/.test(input.prompt.trim())) return input.prompt.trim();
+  const closed = /liste fermée/.test(input.prompt);
+  return `${input.prompt}
+${closed ? "Photographie réaliste et haut de gamme." : "Photographie éditoriale réaliste et haut de gamme, lumière naturelle : le lieu, les objets, les matériaux et la lumière racontent l'histoire."} Image purement photographique : objets et surfaces vierges, rien n'est écrit sur l'image.${/présence humaine/.test(input.prompt) ? "" : " Scène sans aucune présence humaine."} Format ${input.aspect}.${input.reference ? " La photo de référence montre la vraie activité : s'en servir seulement pour l'ambiance, les couleurs et le genre de lieu." : ""}`;
+}
+
+export async function ambianceImage(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference?: Buffer | null; usage?: MediaUsage; /** Exclusions propres à la scène (négatif technique : le produit lui-même). */ negative?: string }) {
+  const text = ambiancePrompt({ prompt: input.prompt, aspect: input.aspect, reference: !!input.reference });
+  return generateImage(ctx, { text, aspect: input.aspect, reference: input.reference ?? null, quality: "high", usage: input.usage ?? "scene", ...(input.negative ? { negative: input.negative } : {}) });
 }
 
 /**
@@ -630,7 +666,7 @@ export function imageQuality(usage: MediaUsage | undefined, asked: "medium" | "h
   return v === "medium" || v === "high" ? v : asked;
 }
 
-async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; /** Taille maximale de la référence envoyée (768 px par défaut ; photo à mettre en page : plus grande). */ refMax?: number; /** Images de référence en plus (logo de la marque), pour les modèles qui en acceptent plusieurs. */ extraRefs?: Buffer[]; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed>; /** Qualité demandée gardée (publication complète conçue par l'IA : texte net). */ strictQuality?: boolean }) {
+async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; /** Taille maximale de la référence envoyée (768 px par défaut ; photo à mettre en page : plus grande). */ refMax?: number; /** Images de référence en plus (logo de la marque), pour les modèles qui en acceptent plusieurs. */ extraRefs?: Buffer[]; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed>; /** Qualité demandée gardée (publication complète conçue par l'IA : texte net). */ strictQuality?: boolean; /** Exclusions en plus pour le négatif du modèle (Qwen-Image). */ negative?: string }) {
   const input = { ...input0, quality: input0.strictQuality ? input0.quality : imageQuality(input0.usage, input0.quality) };
   const provider = imageProviderAvailable({ references: input.reference ? 1 : 0, ...(input.usage ? { usage: input.usage } : {}), ...input.need });
   if (!provider) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini, OpenAI ou fal.ai).", "No image provider configured (Google Gemini, OpenAI or fal.ai)."));
@@ -642,7 +678,9 @@ async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: "1:1"
   if (provider === "alibaba") {
     const model = pickModel("alibaba", "image");
     const max = mediaModel("alibaba", model)?.caps.references ?? 1;
-    return alibabaImage(ctx, model, text, [...(ref ? [ref] : []), ...extras].slice(0, Math.max(1, max)), input.aspect, !!input.need?.people);
+    // Aucun texte demandé (photo, décor, produit en scène) : le négatif exclut aussi toute écriture.
+    // Sauf avec une photo du produit en référence : ses inscriptions réelles (chiffres, étiquette) doivent rester.
+    return alibabaImage(ctx, model, text, [...(ref ? [ref] : []), ...extras].slice(0, Math.max(1, max)), input.aspect, !!input.need?.people, !input.need?.text && !ref && !extras.length, input.negative);
   }
   if (provider === "google") {
     const key = activeProviderKey("google")!;
@@ -915,7 +953,7 @@ async function falImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[],
  * maximal (une image) est réservé avant l'envoi. Aucune personne ajoutée sans photo du client (consigne + negative
  * prompt). Une demande refusée (clé, région, contenu, droits) ne coûte rien : la réservation est rendue.
  */
-async function alibabaImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[], aspect: string, people: boolean) {
+async function alibabaImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[], aspect: string, people: boolean, noText = false, extraNegative?: string) {
   const key = activeProviderKey("alibaba");
   if (!key) throw new UserFacingError(L("Aucune clé Alibaba Cloud configurée.", "No Alibaba Cloud key configured."));
   if (mediaModel("alibaba", model)?.needsReference && !refs.length) throw new PermanentError(L(`${model} exige une image de référence.`, `${model} requires a reference image.`));
@@ -924,7 +962,7 @@ async function alibabaImage(ctx: Ctx, model: string, prompt: string, refs: Buffe
   const max = cost("alibaba", model, { images: 1 }).micro;
   gate(ctx, max, "image", "alibaba", model);
   const { base } = alibabaBase();
-  const body = qwenImageBody({ model, prompt, aspect, references: refs.map((b) => `data:image/jpeg;base64,${b.toString("base64")}`), people });
+  const body = qwenImageBody({ model, prompt, aspect, references: refs.map((b) => `data:image/jpeg;base64,${b.toString("base64")}`), people, noText, extraNegative });
   const r = await providerFetch(`${base}/services/aigc/multimodal-generation/generation`, { method: "POST", headers: alibabaHeaders(key), body: JSON.stringify(body) });
   if (!r.ok) {
     const e = alibabaError(r.status, await r.text().catch(() => ""));

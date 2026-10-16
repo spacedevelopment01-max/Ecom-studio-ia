@@ -36,7 +36,9 @@ type MediaModelRow = {
   observed: { calls: number; failures: number; avgCostEur: number | null; avgLatencyMs: number | null; avgScore: number | null } | null;
 };
 
-export type MediaRoutingData = { kind: "image" | "video"; mode: "manual" | "auto"; primary: string; backup: string | null; autoPick: string | null; models: MediaModelRow[] }[];
+/** Modèle du studio (images : Qwen-Image 3.0 Pro) ; `replacedBy` : modèle appelé à sa place faute d'être utilisable. */
+export type StudioDefault = { key: string; label: string; usable: boolean; reasons: string[]; replacedBy: string | null };
+export type MediaRoutingData = { kind: "image" | "video"; mode: "manual" | "auto"; primary: string; backup: string | null; autoPick: string | null; studioDefault?: StudioDefault | null; models: MediaModelRow[] }[];
 
 type Post = (b: Record<string, unknown>, msg?: string) => Promise<void>;
 
@@ -89,6 +91,14 @@ export function MediaRoutingPanel({ data, post }: { data: MediaRoutingData; post
               ))}
             </div>
           </div>
+          {k.studioDefault?.replacedBy && (
+            <p className="rounded-xl border border-warn/30 bg-warn-soft px-3 py-2 text-sm text-warn" data-studio-default-warning>
+              {t(
+                `${k.studioDefault.label}, le modèle du studio, n'est pas utilisable (${k.studioDefault.reasons.join(", ")}) : les images passent par ${k.studioDefault.replacedBy} à la place, qui peut coûter plus cher. Pour revenir au modèle du studio : clé Alibaba dans Fournisseurs IA, et tarif dans Modèles et tarifs.`,
+                `${k.studioDefault.label}, the studio's model, is not usable (${k.studioDefault.reasons.join(", ")}): images go through ${k.studioDefault.replacedBy} instead, which may cost more. To return to the studio's model: Alibaba key in AI providers, and price in Models and pricing.`,
+              )}
+            </p>
+          )}
           <table className="w-full min-w-[980px] text-sm">
             <thead className="text-left text-xs text-muted">
               <tr>
