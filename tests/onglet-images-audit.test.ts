@@ -88,17 +88,26 @@ describe("onglet Images — audit", async () => {
     expect(own.studioDefault!.replacedBy).toBeNull();
   });
 
-  it("consigne au modèle d'images : en français, concrète, produit entier exigé, aucun texte voulu", () => {
+  it("photo du vrai produit : structure du propriétaire, en français, produit entier, sans contradiction", async () => {
+    const { PRODUCT_SCENE_END } = await import("@/lib/image-v2/still-life");
     const p = loadProject(pid);
     const b = buildBrief(p, { kind: "usage_scene", support: "site", aspect: "4:5", references: ["ref"] });
     const prompt = generationPrompt(b);
-    expect(prompt).toMatch(/^Photographie, style /);
-    expect(prompt).toMatch(/Lumière : .+ Prise de vue : /);
-    expect(prompt).toContain("Le produit ENTIER est dans le cadre, aucune partie coupée");
-    expect(prompt).toContain("rien n'est écrit sur l'image");
-    expect(prompt).not.toMatch(/Never show|Lighting:|Camera:|Correction for this attempt/);
-    // Aucun texte demandé entre guillemets dans une image de la banque.
+    expect(prompt).toMatch(/^Photographie publicitaire haut de gamme, photoréaliste, au format vertical 4:5\. Vue de face/);
+    expect(prompt).toMatch(/La scène se déroule sur .+\n\nAu centre de l’image se trouve le produit de l’image de référence, reproduit exactement à l’identique/s);
+    expect(prompt).toContain("Le produit est entier dans le cadre : aucune partie coupée, cachée ou manquante");
+    expect(prompt).toContain("La scène contient exactement un objet : le produit de la référence.");
+    expect(prompt).toContain("Le bas de l’image laisse une zone dégagée");
+    expect(prompt).toMatch(/Mise au point précise sur le produit/);
+    // Phrase finale sans contradiction : les inscriptions réelles du produit restent.
+    expect(prompt.trim().endsWith(PRODUCT_SCENE_END)).toBe(true);
+    expect(PRODUCT_SCENE_END).toMatch(/en dehors de ce qui figure déjà sur le produit/);
+    expect(prompt).not.toMatch(/Never show|Lighting:|Camera:|accessoires|#[0-9A-F]{6}/);
+    // Aucun texte voulu entre guillemets dans une image de la banque.
     expect(prompt).not.toMatch(/«[^»]+»/);
+    // L'enveloppe du studio n'ajoute rien à une consigne complète.
+    const { productScenePrompt } = await import("@/lib/ai/media-providers");
+    expect(productScenePrompt({ prompt, aspect: "4:5", textZone: "en bas du cadre" })).toBe(prompt.trim());
   });
 
   it("vocabulaire du client appliqué à la consigne du modèle d'images (ex. « montre », jamais « chronographe »)", async () => {

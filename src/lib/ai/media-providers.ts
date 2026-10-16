@@ -491,6 +491,8 @@ async function productSceneImpl(ctx: Ctx, input: { prompt: string; aspect: "1:1"
 
 /** Consigne d'une photographie publicitaire du produit réel (référence jointe à la demande). */
 export function productScenePrompt(input: { prompt: string; aspect: string; textZone?: string | null }): string {
+  // Consigne complète selon la structure du propriétaire (photo du vrai produit) : envoyée telle quelle.
+  if (/Aucun objet supplémentaire\.$/.test(input.prompt.trim())) return input.prompt.trim();
   return `Photographie publicitaire professionnelle pour la campagne d'une marque haut de gamme. Scène : ${input.prompt.replace(/\.\s*$/, "")}.
 Le produit de l'image de référence est le héros de la photo : le reproduire exactement tel qu'il est (même forme, mêmes proportions, mêmes matières, mêmes couleurs, mêmes détails, même étiquette, même logo, mêmes inscriptions) ; ne pas le redessiner, ne pas changer sa couleur, ne pas ajouter un second produit ni de copie.
 Le produit ENTIER est dans le cadre : aucune partie coupée, cachée ou manquante (ex. une montre : le bracelet complet, ses deux brins et la boucle).

@@ -13,7 +13,7 @@ import { productIdentity, resolveProductCategory, type ProductCategoryProfile } 
 import { chooseDirection, DIRECTIONS } from "./direction";
 import { defaultAspect, FORMATS } from "./formats";
 import { toFr } from "./prompt-fr";
-import { stillLifeFor, stillLifePrompt, type StillLifeScene } from "./still-life";
+import { productScenePromptFr, stillLifeFor, stillLifePrompt, type StillLifeScene } from "./still-life";
 import { PRODUCT_KINDS } from "./intent";
 import type { ArtDirectionId, AspectId, Support, VisualBrief, VisualKind } from "./types";
 
@@ -89,6 +89,7 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
   let environmentFr: string | null = null;
   let sceneFr: StillLifeScene | undefined;
   let sceneExclude: string | undefined;
+  let productSceneFr: Pick<StillLifeScene, "view" | "setting" | "clearSurface"> | undefined;
 
   if (services) {
     // Métier du projet, puis celui de la prestation demandée quand elle est reconnue (« carrelage » ≠ « peinture »).
@@ -138,6 +139,11 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
       subject = `the real product "${id.name || p.product.category}"${id.colors.length ? ` (${id.colors.join(", ")})` : ""}`;
       action = req.kind === "usage_scene" || req.kind === "lifestyle" ? (people ? (category.usage[v % category.usage.length] ?? null) : "the product ready to use in its real everyday setting, nobody in frame") : null;
       // Sans guillemets : seuls les textes à écrire dans l'image en ont (ici, aucun).
+      // Photo du vrai produit (référence jointe, sans personne) : surface et fond de la nature morte de sa famille.
+      if (req.references?.length && !people) {
+        const sc = stillLifeFor(category.id, `${p.product.name ?? ""} ${p.product.category ?? ""} ${p.product.summary ?? ""}`, v);
+        productSceneFr = { view: sc.view, setting: sc.setting, clearSurface: sc.clearSurface };
+      }
       subjectFr = `le vrai produit, ${id.name || p.product.category}${id.colors.length ? ` (${id.colors.join(", ")})` : ""}`;
       actionFr = req.kind === "usage_scene" || req.kind === "lifestyle" ? (people ? toFr(category.usage[v % category.usage.length] ?? "") || null : "le produit prêt à servir, posé dans son vrai décor du quotidien") : null;
       positive = uniq([id.name, p.product.category]);
@@ -217,7 +223,7 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
     understanding,
     people,
     ...(req.shot ? { shotKey: crypto.createHash("sha256").update(JSON.stringify(req.shot)).digest("hex").slice(0, 12) } : {}),
-    fr: { subject: subjectFr || subject, action: actionFr, environment: req.shot?.environment ?? environmentFr, negative: negative.map(toFr), ...(sceneFr ? { scene: sceneFr } : {}), ...(sceneExclude ? { sceneExclude } : {}) },
+    fr: { subject: subjectFr || subject, action: actionFr, environment: req.shot?.environment ?? environmentFr, negative: negative.map(toFr), ...(sceneFr ? { scene: sceneFr } : {}), ...(sceneExclude ? { sceneExclude } : {}), ...(productSceneFr ? { productScene: productSceneFr } : {}) },
   };
 }
 
@@ -245,6 +251,7 @@ export function generationPrompt(b: VisualBrief, extra?: string | null): string 
   // Structure de la consigne du propriétaire (essai réel v4 réussi) : paragraphes, liste fermée d'objets, zone
   // dégagée, lumière, phrase finale ; aucune couleur en code ni matière du produit.
   if (f.scene) return stillLifePrompt(f.scene, { aspect: b.format.aspect, zone: b.format.textZone, correction: extra });
+  if (f.productScene && b.productFidelity) return productScenePromptFr(f.productScene, { aspect: b.format.aspect, zone: b.format.textZone, mood: d.mood, correction: extra });
   return [
     `Photographie, style ${d.label}. Sujet : ${f.subject}.`,
     // Publicité : niveau campagne d'agence (lumière travaillée, matières, profondeur), un seul point focal, de l'air.

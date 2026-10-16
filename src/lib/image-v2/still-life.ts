@@ -343,3 +343,26 @@ export function stillLifePrompt(s: StillLifeScene, o: { aspect: string; zone: st
     .filter(Boolean)
     .join("\n\n");
 }
+
+/** Phrase finale d'une photo du VRAI produit : ses inscriptions réelles restent (jamais de contradiction). */
+export const PRODUCT_SCENE_END = "Rien d’autre n’apparaît sur l’image : aucun texte, aucune lettre, aucun chiffre, aucune gravure, aucun logo, aucun filigrane, aucune personne, en dehors de ce qui figure déjà sur le produit de la référence. Aucun objet supplémentaire.";
+
+/**
+ * Photo du VRAI produit (photo de référence jointe), même structure que la consigne du propriétaire : type de photo et
+ * cadrage ; surface et fond de la famille ; le produit dans son paragraphe (place, fidélité, produit ENTIER) ; « La scène
+ * contient exactement un objet » ; zone dégagée ; lumière ; phrase finale. Aucun accessoire : rien de vague.
+ */
+export function productScenePromptFr(s: Pick<StillLifeScene, "view" | "setting" | "clearSurface">, o: { aspect: string; zone: string; mood: string; correction?: string | null }): string {
+  const zone = clearZone(o.zone, { ...s, main: "le produit" } as StillLifeScene);
+  return [
+    `Photographie publicitaire haut de gamme, photoréaliste, au format ${orientation(o.aspect)} ${o.aspect}. ${s.view}`,
+    s.setting,
+    "Au centre de l’image se trouve le produit de l’image de référence, reproduit exactement à l’identique : même forme, mêmes proportions, mêmes matières, mêmes couleurs, mêmes détails et mêmes inscriptions que sur la référence, vu sous le même angle. Il n’est ni redessiné, ni recoloré, ni simplifié. Le produit est entier dans le cadre : aucune partie coupée, cachée ou manquante (pour une montre : le bracelet complet, ses deux brins et la boucle). Il repose naturellement sur la surface, à sa taille réelle, avec une vraie ombre de contact.",
+    `La scène contient exactement un objet : le produit de la référence. ${zone}`.trim(),
+    `Éclairage doux et naturel venant de la gauche. Ombre de contact réaliste sous le produit, reflets justes sur ses matières. Mise au point précise sur le produit, arrière-plan légèrement adouci. Ambiance : ${o.mood} ; rendu photographique naturel.`,
+    o.correction ? `Correction pour cet essai : ${o.correction}` : "",
+    PRODUCT_SCENE_END,
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+}

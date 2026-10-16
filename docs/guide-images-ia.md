@@ -49,19 +49,6 @@ créée sans texte, puis cette IA pose les textes, le bouton et le logo (texte r
 
 Produit entier exigé à chaque génération (aucune partie coupée ou manquante, ex. le bracelet complet d'une montre).
 
-## Images d'univers (sans le produit) : structure de la consigne du propriétaire
-
-Leçons des essais réels ARVEN du 16/10/2026 (v1 : personne, faux texte, faux logo ; v2 : lettres en relief, objets hors
-sujet ; v3 : montre inventée dans l'écrin ; v4, consigne écrite par le propriétaire : réussie). Toute image d'univers
-sans personne est une **nature morte au décor entièrement décrit** (`src/lib/image-v2/still-life.ts`, une scène par
-famille de produits, variante montre) : type de photo, format, point de vue ; surface et fond ; un paragraphe par
-objet (position, matière, couleur, forme, état, ce qu'il ne comporte pas — un contenant est dit **vide**) ;
-« La scène contient exactement N objets » ; zone dégagée ; lumière, ombres, mise au point, ambiance ; phrase finale
-« Aucun texte, aucune lettre, aucun chiffre, aucune gravure, aucun logo, aucun filigrane, aucune personne. Aucun
-objet supplémentaire. » Le produit n'y est jamais nommé ni décrit (ni ses matières) ; il est exclu par le négatif
-technique de Qwen (`exclude` de la scène), avec texte, lettres en relief, gravure et monogramme. Jamais « zone
-gardée pour un texte », jamais d'interdits nommés dans la consigne (« faux logos de luxe » amorçait un faux logo).
-
 ## Chaque parcours appelle un modèle d'images
 
 | Parcours | Avant | Maintenant |
