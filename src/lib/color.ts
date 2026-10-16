@@ -31,10 +31,14 @@ export function mix(a: string, b: string, t: number): string {
   return rgbToHex([A[0] + (B[0] - A[0]) * t, A[1] + (B[1] - A[1]) * t, A[2] + (B[2] - A[2]) * t]);
 }
 
-/** Deux couleurs que l'œil ne distingue pas (écart de 10 au plus sur chaque canal) : une seule sur une planche. */
+/**
+ * Deux couleurs que l'œil ne distingue pas : une seule sur une planche. Écart de 10 au plus sur chaque canal, ou deux
+ * quasi-noirs (contraste entre eux sous 1,1 : #05070D et #0B0F1A de Sonore paraissent le même noir).
+ */
 export function sameColor(a: string, b: string): boolean {
   const A = hexToRgb(a), B = hexToRgb(b);
-  return A.every((v, i) => Math.abs(v - B[i]) <= 10);
+  if (A.every((v, i) => Math.abs(v - B[i]) <= 10)) return true;
+  return luminance(a) < 0.02 && luminance(b) < 0.02 && contrast(a, b) < 1.1;
 }
 
 /** Couleurs sans doublon (ordre gardé) : la première de chaque groupe de couleurs identiques est retenue. */

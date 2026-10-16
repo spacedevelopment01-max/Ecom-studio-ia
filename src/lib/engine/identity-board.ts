@@ -27,7 +27,11 @@ const GENERIC = {
 
 /** Six icônes au trait : celles du métier d'abord, puis des icônes utiles au client (livraison, rendez-vous…). */
 export function boardIcons(text: string, business: "products" | "services"): string[] {
-  const trade = searchIcons(tradeKeywords(text), 8).filter((n) => !/^(file|folder|device|square|circle|box)-/.test(n));
+  // Une seule icône par famille (pas trois horloges « clock », « clock-hour-1 », « clock-hour-10 ») ; la montre
+  // connectée (« device-watch ») est un objet du métier, les autres « device-… » non.
+  const trade = searchIcons(tradeKeywords(text), 12)
+    .filter((n) => !/^(file|folder|square|circle|box)-/.test(n) && !/^device-(?!watch$)/.test(n))
+    .filter((n, i, all) => !all.slice(0, i).some((m) => n.startsWith(`${m}-`) || m.startsWith(`${n}-`) || n.split("-")[0] === m.split("-")[0]));
   return [...new Set([...trade.slice(0, 3), ...GENERIC[business]])].slice(0, 6);
 }
 

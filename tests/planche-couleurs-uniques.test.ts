@@ -102,3 +102,14 @@ describe("planche : signature seulement une fois validée par le client", () => 
     expect(boardTagline(null)).toBeNull();
   });
 });
+
+describe("planche Sonore : deux quasi-noirs fusionnés", () => {
+  it("#05070D et #0B0F1A : un seul « Noir d'encre » ; deux sombres vraiment différents restent", () => {
+    const sw = boardSwatches(boardColors({ primary: "#0B0F1A", secondary: "#8A9BC2", accent: "#00E0A4", light: "#E8EEF6", dark: "#05070D" }));
+    expect(sw).toEqual(["#05070D", "#8A9BC2", "#00E0A4", "#E8EEF6"]);
+    expect(uniqueColorNames(sw)[0]).toBe("Noir d'encre");
+    expect(sameColor("#05070D", "#0B0F1A")).toBe(true);
+    expect(sameColor("#05070D", "#1F3A5F")).toBe(false);
+    expect(sameColor("#E8EEF6", "#F5F1EA")).toBe(false);
+  });
+});
