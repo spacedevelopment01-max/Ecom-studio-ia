@@ -7,7 +7,8 @@
  * publicité, un visuel social ou une bannière absents restent vides (« » : le panneau s'affiche sans image).
  */
 export type MediaKind = "cutout" | "packshot" | "detail" | "scene" | "social" | "ad" | "banner" | "post";
-export type MediaTile = { src: string; kind: MediaKind };
+/** ai : visuel entièrement créé par l'IA, texte compris (non modifiable dans l'éditeur de publicités). */
+export type MediaTile = { src: string; kind: MediaKind; ai?: boolean };
 
 const KINDS: [MediaKind, RegExp][] = [
   ["cutout", /détourage|cutout/i],
@@ -39,12 +40,12 @@ export type StoryMedia = {
 export function storyMedia(d: { photo: string; images: { src: string; label: string }[]; posts?: string[] }): StoryMedia {
   const all: MediaTile[] = [];
   const seen = new Set<string>();
-  const add = (src: string | undefined, kind: MediaKind) => {
+  const add = (src: string | undefined, kind: MediaKind, ai = false) => {
     if (!src || seen.has(src) || src === d.photo) return;
     seen.add(src);
-    all.push({ src, kind });
+    all.push(ai ? { src, kind, ai } : { src, kind });
   };
-  for (const im of d.images) add(im.src, mediaKind(im.label) ?? "post");
+  for (const im of d.images) add(im.src, mediaKind(im.label) ?? "post", /\b(IA|AI)\b/.test(im.label));
   for (const p of d.posts ?? []) add(p, "post");
   const of = (k: MediaKind) => all.filter((x) => x.kind === k);
   const cutout = of("cutout")[0]?.src ?? d.photo;
@@ -61,17 +62,18 @@ export function storyMedia(d: { photo: string; images: { src: string; label: str
   const used = new Set<string>();
   const got: Partial<Record<(typeof slots)[number][0], string>> = {};
   const free = (list: MediaTile[]) => list.find((y) => !used.has(y.src));
+  // La publicité du panneau « Publicités » doit être modifiable : une publicité tout IA (texte dans l'image) n'y va pas.
+  const of2 = (k: MediaKind, slot: string) => of(k).filter((x) => !(slot === "ad" && x.ai));
   for (const [slot, kinds] of slots) {
-    const x = free(of(kinds[0]));
+    const x = free(of2(kinds[0], slot));
     if (x) (used.add(x.src), (got[slot] = x.src));
   }
   for (const [slot, kinds] of slots) {
     if (got[slot]) continue;
     // Publicité, visuel social, bannière : jamais une autre image présentée à leur place (vide = rien n'est affiché).
-    // La publicité du panneau « Publicités » est une publicité modifiable : une publication IA (texte dans l'image) n'en
-    // tient pas lieu.
     const strict = slot === "ad" || slot === "social" || slot === "banner";
-    const x = free(kinds.flatMap(of)) ?? (strict ? kinds.flatMap(of)[0] : free(pool) ?? kinds.flatMap(of)[0] ?? pool[0]);
+    const own = kinds.flatMap((k) => of2(k, slot));
+    const x = free(own) ?? (strict ? own[0] : free(pool) ?? own[0] ?? pool[0]);
     if (x) used.add(x.src);
     got[slot] = x?.src ?? (strict ? "" : d.photo);
   }

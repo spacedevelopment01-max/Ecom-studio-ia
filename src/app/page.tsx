@@ -146,7 +146,9 @@ export default async function Home() {
     const txt = n.length > 1 ? `${n.slice(0, -1).join(", ")}${and}${n[n.length - 1]}` : (n[0] ?? (i === 0 ? "Images" : "Images"));
     return txt.charAt(0).toUpperCase() + txt.slice(1);
   };
-  const imageKinds = { fr: kindList(0), en: kindList(1), points: shownKinds.map((k) => T(...KIND_NAMES[k])) };
+  // Puces : les étiquettes mêmes des cases (« Produit découpé », « Fond blanc », « Mise en situation », « Publicité »).
+  const TILE_NAMES: Record<string, [string, string]> = { cutout: ["Produit découpé", "Cut-out product"], packshot: ["Fond blanc", "White background"], detail: ["Détail", "Detail"], scene: ["Mise en situation", "Lifestyle shot"], social: ["Publication", "Post"], ad: ["Publicité", "Ad"] };
+  const imageKinds = { fr: kindList(0), en: kindList(1), points: shownKinds.map((k) => T(...TILE_NAMES[k])) };
 
   const nav = [
     { href: "#fonctionnalites", label: T("Fonctionnalités", "Features") },

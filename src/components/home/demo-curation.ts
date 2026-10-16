@@ -8,7 +8,7 @@
  *    et boucle entiers) ; détourage de cette photo (le produit tel quel) ; une mise en situation, lifestyle-1 (créée
  *    par l'IA : bureau en bois, livre, fenêtre ; montre entière, bracelet complet avec boucle et passants, cadran et
  *    lunette fidèles, aucun texte ajouté) ; captures de la boutique (la boutique elle-même, pas un visuel publicitaire).
- *    Ajoutés pour l'accueil seul : fond blanc packshot-1 (retrouvé dans l'historique) et une publication créée par l'IA.
+ *    Ajoutés pour l'accueil seul : fond blanc packshot-1 (retrouvé dans l'historique) et une publicité créée par l'IA.
  *  - écartés de la carte « Images » : lifestyle-2 et -3 (IA, sans défaut, mais presque la même image que lifestyle-1 :
  *    même angle, décor proche). Ils restent dans les captures de la boutique, qui les utilise.
  *  - retirés : publications post-1 à post-8 (gabarits, texte posé en local, « Chronographe » au lieu de « montre ») ;
@@ -32,9 +32,10 @@ export const HOME_CURATION: Record<string, Curation> = {
     extra: [
       // Fond blanc validé par le propriétaire (16 octobre 2026) : montre entière de 3/4, bracelet et boucle, ombre douce.
       { src: "/demo/montre/packshot-1.jpg", label: "Packshot" },
-      // Publication créée par Qwen-Image 3.0 Pro, texte écrit par l'IA (reports/alibaba-qwen-essai/format-9x16-velours.png) :
-      // « Le temps vous va bien. », logo exact, aucune fausse lettre ; la boucle est cachée dans le velours (signalé).
-      { src: "/demo/montre/publication-ia-1.jpg", label: "Publication IA" },
+      // Publicité créée par Qwen-Image 3.0 Pro, texte écrit par l'IA (reports/alibaba-qwen-essai/story-mineral.png),
+      // choisie par le propriétaire : « Un classique à votre rythme. », logo exact, aucune fausse lettre ; boucle cachée
+      // derrière la pierre (défaut accepté par le propriétaire).
+      { src: "/demo/montre/publicite-ia-1.jpg", label: "Publicité IA" },
     ],
   },
 };

@@ -78,24 +78,23 @@ describe("Accueil : démo montre (ARVEN) sans aucun visuel fait par gabarit du s
     const json = JSON.stringify(all);
     for (const f of HOME_EXCLUDED_FILES) expect(json).not.toContain(f);
   });
-  it("carte « Images » : quatre visuels différents, tous vérifiés (détourage, fond blanc, mise en situation, publication IA)", () => {
-    expect(montre.images.map((x) => x.src)).toEqual(["/demo/montre/cutout-1.webp", "/demo/montre/lifestyle-1.jpg", "/demo/montre/packshot-1.jpg", "/demo/montre/publication-ia-1.jpg"]);
+  it("carte « Images » : quatre visuels différents choisis par le propriétaire (découpé, fond blanc, mise en situation, publicité IA)", () => {
+    expect(montre.images.map((x) => x.src)).toEqual(["/demo/montre/cutout-1.webp", "/demo/montre/lifestyle-1.jpg", "/demo/montre/packshot-1.jpg", "/demo/montre/publicite-ia-1.jpg"]);
     for (const x of montre.images) expect(fs.existsSync(path.join(process.cwd(), "public", x.src))).toBe(true);
     expect(montre.posts).toEqual([]);
     expect(montre.board).toBeUndefined();
     expect(montre.videoPoster).toBe("");
     const m = storyMedia(montre);
-    expect(m.tiles.map((x) => x.kind)).toEqual(["cutout", "packshot", "scene", "social"]);
+    expect(m.tiles.map((x) => x.kind)).toEqual(["cutout", "packshot", "scene", "ad"]);
     expect(new Set(m.tiles.map((x) => x.src)).size).toBe(4);
   });
-  it("aucune publicité modifiable ni bannière n'est remplacée par une autre image ; la publication IA va au calendrier", () => {
+  it("la publicité tout IA n'est pas présentée comme une publicité modifiable, ni comme une publication du calendrier", () => {
     const m = storyMedia(montre);
-    expect([m.ad, m.banner]).toEqual(["", ""]);
-    expect(m.social).toBe("/demo/montre/publication-ia-1.jpg");
+    expect([m.ad, m.social, m.banner]).toEqual(["", "", ""]);
   });
   it("les visuels refusés par le propriétaire ne sont jamais utilisés (detail-1, ad-1, image coupée des films)", () => {
     const json = JSON.stringify(all) + read("src/components/home/demo-curation.ts").replace(/\/\/.*|\*.*$/gm, "");
-    for (const f of ["/demo/montre/detail-1", "/demo/montre/ad-1", "plan2-cuir"]) expect(json).not.toContain(f);
+    for (const f of ["/demo/montre/detail-1", "/demo/montre/ad-1", "plan2-cuir", "velours", "publication-ia"]) expect(json).not.toContain(f);
   });
   it("la page applique la sélection et les panneaux savent s'afficher sans image", () => {
     expect(read("src/app/page.tsx")).toContain(".map(curateForHome)");

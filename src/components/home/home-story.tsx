@@ -94,7 +94,7 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
         {tiles.map(([src, l], i) => (
           <figure key={src} className={cx("relative overflow-hidden rounded-2xl border border-line", tiles.length === 3 && i === 2 && "col-span-2", tiles.length <= 2 && "aspect-[4/5]", d.tiles[i].kind === "cutout" ? "bg-[repeating-conic-gradient(#E9ECF3_0_25%,#fff_0_50%)] [background-size:16px_16px]" : "bg-paper-2")}>
             {/* Détourage et publication (texte dans l'image) : affichés en entier, jamais rognés. */}
-            <Img src={src} alt={l} contain={d.tiles[i].kind === "cutout" || isText(d.tiles[i].kind)} className={d.tiles[i].kind === "cutout" ? "p-3" : isText(d.tiles[i].kind) ? "bg-[#0E0A08]" : ""} />
+            <Img src={src} alt={l} contain={d.tiles[i].kind === "cutout" || isText(d.tiles[i].kind)} className={d.tiles[i].kind === "cutout" ? "p-3" : isText(d.tiles[i].kind) ? "bg-paper-2" : ""} />
             <figcaption className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs font-medium text-white">{l}</figcaption>
           </figure>
         ))}
