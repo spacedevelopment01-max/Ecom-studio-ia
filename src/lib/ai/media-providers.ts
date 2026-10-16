@@ -18,6 +18,7 @@ import { assertQuota, consumeQuota, refundQuota, userPlan } from "../quotas";
 import { all } from "../db";
 import { PLANS } from "../plans";
 import { PermanentError, UserFacingError } from "../jobs";
+import { noteImageModel } from "./media-alerts";
 import { activeProviderKey, bearer, falAuth, FX_SAFETY, isGatewayKey, requirePrice, routeFor, usdToEur } from "./config";
 import { assertUnderCostCap, recordCall, redact } from "./trace";
 import { L } from "../i18n-server";
@@ -206,6 +207,8 @@ function gate(ctx: Ctx, micro: number, media: "image" | "video", provider: strin
   t.reservation = reserve(ctx.userId, max, { task: t.task, provider, model, jobId: ctx.jobId, projectId: ctx.projectId });
   const priced = requirePrice(provider, model);
   Object.assign(t, { provider, model, unit: media === "video" ? "video_second" : priced.unit === "tokens" ? "tokens" : "image", started: Date.now() });
+  // Qwen-Image 3.0 Pro inutilisable et image créée ailleurs (souvent OpenAI, plus cher) : administrateur alerté vite.
+  if (media === "image") noteImageModel({ provider, model, projectId: ctx.projectId ?? null, usage: t.usage ?? null, excluded: mediaExclude.getStore()?.exclude });
 }
 
 /** La demande part chez le fournisseur (à partir d'ici, un échec sans réponse d'erreur est incertain). */

@@ -25,7 +25,12 @@ Toutes les images du studio, pour tous les comptes (logos, produits, publicités
 par **Qwen-Image 3.0 Pro** (Alibaba), confirmé d'office (`adminConfirm: false` dans `src/lib/ai/media-models.ts`).
 Un choix fait dans Administration › Images & Vidéos reste prioritaire. Sans clé Alibaba active, le studio retombe sur
 le défaut historique (OpenAI, plus cher) : l'administration l'affiche en avertissement (« Qwen-Image 3.0 Pro n'est pas
-utilisable… les images passent par … à la place »), avec la raison. Sans aucun modèle utilisable, l'onglet Images le
+utilisable… les images passent par … à la place »), avec la raison. Décision du propriétaire (16/10/2026) : ce passage automatique
+est gardé, mais l'administrateur est **alerté** dès la première image créée ailleurs (`src/lib/ai/media-alerts.ts`,
+appelé avant chaque génération payante) : e-mail aux administrateurs (si l'envoi d'e-mails est configuré) et
+notification dans l'administration — quoi, pourquoi, depuis quand, projet et usage, surcoût estimé par image, quoi
+faire. Au plus un rappel par heure tant que l'incident dure, puis une alerte « rétabli » quand Qwen refonctionne. Un
+modèle choisi exprès par l'administration n'est pas un incident. Sans aucun modèle utilisable, l'onglet Images le
 dit au client (raison affichée, bouton « Créer » désactivé) et rien n'est créé à la place.
 
 Consignes au modèle d'images **en français** (règle du propriétaire) : moteur Image V2 (banque, jeu d'images),
