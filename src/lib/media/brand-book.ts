@@ -4,7 +4,7 @@
  * Chaque planche est dessinée par Skia ; l'ensemble est assemblé en PDF.
  */
 import { createCanvas, type Canvas, type Image, type SKRSContext2D } from "@napi-rs/canvas";
-import { contrast, hexToRgb, isDark, mix, onColor } from "../color";
+import { contrast, hexToRgb, isDark, mix, onColor, sameColor } from "../color";
 import { font } from "./fonts";
 import { jpegPagesToPdf } from "./pdf";
 import type { Brand, SocialVoice, Strategy } from "../project-types";
@@ -38,6 +38,18 @@ const PAL_LABEL: Record<string, { fr: string; en: string }> = {
   light: { fr: "Clair", en: "Light" },
   dark: { fr: "Sombre", en: "Dark" },
 };
+
+type PalKey = "primary" | "secondary" | "accent" | "light" | "dark";
+/** Cartes de la page « Couleurs » : une par couleur distincte, avec tous les rôles qu'elle tient. */
+export function paletteCards(pal: Record<PalKey, string>): { key: PalKey; roles: PalKey[] }[] {
+  const out: { key: PalKey; roles: PalKey[] }[] = [];
+  for (const k of ["primary", "secondary", "accent", "light", "dark"] as const) {
+    const same = out.find((c) => sameColor(pal[c.key], pal[k]));
+    if (same) same.roles.push(k);
+    else out.push({ key: k, roles: [k] });
+  }
+  return out;
+}
 
 function wrap(ctx: SKRSContext2D, text: string, maxW: number): string[] {
   const out: string[] = [];
@@ -318,14 +330,16 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
   {
     const ctx = page();
     head(ctx, 6, C("Couleurs", "Colors"), C("La palette", "The palette"));
-    const keys = ["primary", "secondary", "accent", "light", "dark"] as const;
-    const cw = (W - M * 2 - 4 * 28) / 5;
-    keys.forEach((k, i) => {
+    // Une couleur qui tient deux rôles (principale ET sombre, comme ARVEN) n'est montrée qu'une fois, ses deux rôles
+    // écrits sur la même carte : jamais deux cartes identiques.
+    const keys = paletteCards(pal);
+    const cw = (W - M * 2 - (keys.length - 1) * 28) / keys.length;
+    keys.forEach(({ key: k, roles }, i) => {
       const hex = pal[k];
       const x = M + i * (cw + 28), y = 320;
       card(ctx, x, y, cw, 360, hex, k === "light" ? mix(ink, paper, 0.8) : undefined);
       const on = onColor(hex);
-      text(ctx, C(PAL_LABEL[k].fr, PAL_LABEL[k].en), x + 26, y + 56, font(BF, 600, 26), on);
+      text(ctx, roles.map((r) => C(PAL_LABEL[r].fr, PAL_LABEL[r].en)).join(" · "), x + 26, y + 56, font(BF, 600, 26), on);
       text(ctx, hex.toUpperCase(), x + 26, y + 320, font(BF, 500, 24), on);
       const [r, g, bb] = hexToRgb(hex);
       label(ctx, C("RVB", "RGB"), x, y + 410);

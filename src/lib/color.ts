@@ -31,6 +31,17 @@ export function mix(a: string, b: string, t: number): string {
   return rgbToHex([A[0] + (B[0] - A[0]) * t, A[1] + (B[1] - A[1]) * t, A[2] + (B[2] - A[2]) * t]);
 }
 
+/** Deux couleurs que l'œil ne distingue pas (écart de 10 au plus sur chaque canal) : une seule sur une planche. */
+export function sameColor(a: string, b: string): boolean {
+  const A = hexToRgb(a), B = hexToRgb(b);
+  return A.every((v, i) => Math.abs(v - B[i]) <= 10);
+}
+
+/** Couleurs sans doublon (ordre gardé) : la première de chaque groupe de couleurs identiques est retenue. */
+export function distinctColors(list: string[]): string[] {
+  return list.reduce<string[]>((out, c) => (c && !out.some((o) => sameColor(o, c)) ? [...out, c] : out), []);
+}
+
 export function rgbToHsl([r, g, b]: RGB): [number, number, number] {
   r /= 255;
   g /= 255;
