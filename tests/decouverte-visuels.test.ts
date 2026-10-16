@@ -54,3 +54,17 @@ describe("studio Découverte : aperçus des 30 thèmes", () => {
     }
   });
 });
+
+describe("studio Découverte : étiquette de la photo de départ", () => {
+  it("« Photo fournie par le client » sur la montre et les vraies photos, jamais sur une photo créée par l'IA (FR et EN)", async () => {
+    const { startingPhotoIsClients } = await import("@/lib/discovery-demos");
+    for (const lang of ["fr", "en"] as const) {
+      const ids = demoList(lang).filter(startingPhotoIsClients).map((d) => d.id).sort();
+      expect(ids, lang).toEqual(["casque", "fleuriste", "montre", "tribunes"]);
+    }
+    const page = fs.readFileSync(path.join(process.cwd(), "src/app/studio/decouverte/page.tsx"), "utf8");
+    expect(page).toContain('T("Photo fournie par le client", "Photo provided by the client")');
+    const brand = fs.readFileSync(path.join(process.cwd(), "src/components/home/home-demos.tsx"), "utf8");
+    expect(brand).toContain("{b.photoBadge && <span");
+  });
+});

@@ -7,7 +7,7 @@ import { AdEditorDemo, BrandLab, ControlDemo, SeoDocDemo, SocialCalendarDemo, St
 import { ThemeGrid } from "@/components/studio/theme-gallery";
 import { directionById, directionCards } from "@/lib/theme/directions";
 import { demoList, localMedia, webpOf } from "@/lib/demo-content";
-import { discoveryDemo, fullDemo } from "@/lib/discovery-demos";
+import { discoveryDemo, fullDemo, startingPhotoIsClients } from "@/lib/discovery-demos";
 import { serverLang } from "@/lib/i18n-server";
 import { pick } from "@/lib/i18n";
 import { PAGE_MODELS } from "@/lib/theme/page-templates";
@@ -30,7 +30,7 @@ export default async function DiscoveryPage() {
   const productDemos = list.filter((d) => d.business !== "services");
   const hero = list.find((d) => d.id === "casque") ?? productDemos[0] ?? list[0];
   const img = (label: RegExp, n = 0) => hero?.images.filter((x) => label.test(x.label))[n]?.src ?? hero?.photo ?? "";
-  const brands: BrandDemo[] = list.filter((d) => d.logo && d.photo).map((d) => ({ id: d.id, brand: d.brand, sector: d.sector, direction: directionById(d.direction).name, palette: d.palette, logo: d.logo, photo: d.photo, fonts: directionById(d.direction).previewFonts }));
+  const brands: BrandDemo[] = list.filter((d) => d.logo && d.photo).map((d) => ({ id: d.id, brand: d.brand, sector: d.sector, direction: directionById(d.direction).name, palette: d.palette, logo: d.logo, photo: d.photo, fonts: directionById(d.direction).previewFonts, photoBadge: startingPhotoIsClients(d) ? T("Photo fournie par le client", "Photo provided by the client") : undefined }));
   const stores: StoreDemo[] = [
     ...productDemos.filter((d) => d.shopDesktop && d.shopMobile).slice(0, 4).map((d) => ({ id: d.id, label: d.brand, text: `${d.product} · ${d.sector}`, desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${d.brand.toLowerCase().replace(/\s+/g, "")}.myshopify.com` })),
     ...list.filter((d) => d.business === "services" && d.shopDesktop && d.shopMobile).map((d) => ({ id: d.id, label: d.brand, text: T(`Entreprise fictive : ${d.sector.toLowerCase()}, site WordPress sans panier.`, `Fictional business: ${d.sector.toLowerCase()}, WordPress website with no cart.`), desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${d.brand.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "")}.fr` })),

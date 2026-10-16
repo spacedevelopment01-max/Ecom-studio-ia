@@ -45,3 +45,11 @@ export function discoveryDemo(d: Demo): Demo {
 
 /** Démonstration complète pour l'onglet « Images et vidéos » (photo, boutique, téléphone, vidéo et 3 visuels). */
 export const fullDemo = (d: Demo) => !!(d.photo && d.logo && d.shopDesktop && d.shopMobile && d.video && d.images.length >= 3);
+
+/**
+ * Étiquette « Photo fournie par le client » sur la photo de départ (décision du propriétaire), sauf quand cette photo
+ * a elle-même été créée par l'IA pour la démonstration : l'étiquette serait alors fausse.
+ */
+export function startingPhotoIsClients(d: Demo): boolean {
+  return !/photo d'origine créés par l'IA|photos de jardins ont été créées par l'IA|original photo created by AI|garden photos were created by AI/i.test(d.source?.note ?? "");
+}
