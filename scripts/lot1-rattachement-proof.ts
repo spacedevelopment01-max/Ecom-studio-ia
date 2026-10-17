@@ -77,17 +77,18 @@ try {
           const page = await browser.newPage({ viewport, isMobile: device === "mobile", hasTouch: device === "mobile" });
           await page.route("**/*", (route) => route.request().url().startsWith(origin + "/") ? route.continue() : route.abort());
           const response = await page.goto(origin + url, { waitUntil: "networkidle" }); assert.equal(response?.status(), 200);
-          await page.addStyleTag({ content: "*{animation:none!important;transition:none!important}[data-reveal],[data-reveal] *{opacity:1!important;transform:none!important;clip-path:none!important;filter:none!important}" });
+          await page.addStyleTag({ content: "html{scroll-behavior:auto!important}*{animation:none!important;transition:none!important}[data-reveal],[data-reveal] *{opacity:1!important;transform:none!important;clip-path:none!important;filter:none!important}" });
           const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
           assert.ok(overflow <= 1, `${business}/${target}/${device} : débordement de ${overflow}px`);
           assert.equal(await page.getByText(m.text, { exact: true }).count(), 1); assert.ok(await page.getByText(m.text, { exact: true }).isVisible());
           assert.equal(await page.getByText(other.text, { exact: true }).count(), 0);
           // Placer le paragraphe au centre : le panier fixe ne doit pas le masquer sur la capture mobile.
-          await page.getByText(m.text, { exact: true }).evaluate((el) => el.scrollIntoView({ block: "center" }));
-          assert.ok(await page.getByText(m.text, { exact: true }).evaluate((el) => {
+          await page.getByText(m.text, { exact: true }).evaluate((el) => el.scrollIntoView({ block: "center", behavior: "instant" }));
+          const visibility = await page.getByText(m.text, { exact: true }).evaluate((el) => {
             const r = el.getBoundingClientRect(), top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
-            return top === el || !!top && el.contains(top);
-          }), "Le texte doit être visible sans être recouvert par un élément fixe.");
+            return { clear: top === el || !!top && el.contains(top), top: top?.tagName, y: r.y, height: r.height };
+          });
+          assert.ok(visibility.clear, `${business}/${target}/${device} : texte recouvert ${JSON.stringify(visibility)}`);
           assert.ok((await page.title()).includes(m.title)); assert.equal(await page.locator('meta[name="description"]').getAttribute("content"), m.description);
           const file = `page-${i + 1}-${device}.png`; await page.screenshot({ path: path.join(dir, file), fullPage: true });
           screens.push({ file, width: viewport.width, overflow }); await page.close();
