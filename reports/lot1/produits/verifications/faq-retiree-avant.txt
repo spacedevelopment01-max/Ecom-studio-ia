@@ -1,0 +1,40 @@
+
+ RUN  v5.0.3 /workspace/Ecom-studio-ia
+
+ ❯ tests/lot1-produits-sections.test.ts (17 tests | 1 failed | 16 skipped) 160ms
+   ❯ Lot 1 — sections propres au produit (17)
+     × une FAQ déjà retirée par le client ne réapparaît pas sans nouveau document 158ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/lot1-produits-sections.test.ts > Lot 1 — sections propres au produit > une FAQ déjà retirée par le client ne réapparaît pas sans nouveau document
+AssertionError: expected '<p>Version client sans FAQ</p><div cl…' to be '<p>Version client sans FAQ</p>' // Object.is equality
+
+- Expected
++ Received
+
+- <p>Version client sans FAQ</p>
++ <p>Version client sans FAQ</p><div class="faq">
++ <details><summary>Question retirée ?</summary><p>REPONSE_SUPPRIMEE_PAR_CLIENT</p></details>
++ </div>
+
+ ❯ tests/lot1-produits-sections.test.ts:249:38
+    247|     saveThemeVersion(pid, spec, "FAQ retirée par le client", "user");
+    248|     const next = await composeThemeV2(pid), product = storeProducts(ne…
+    249|     expect(product.description_html).toBe("<p>Version client sans FAQ<…
+       |                                      ^
+    250|   }));
+    251| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 16 skipped (17)
+   Start at  23:09:19
+   Duration  6.74s (transform 54%, import 43%, tests 2%)
+
+  Transform  transforming modules took 3.51s · 54% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

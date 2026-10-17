@@ -1,0 +1,75 @@
+{
+  "codeCommit": "fb0e78b96d44a6e0c17d2bcf1f6e3e51d7b11c2a",
+  "baseCommit": "21ce77cc419b08ed0d3504bf9be54a53f2597368",
+  "data": "Bases temporaires isolées et utilisateurs synthétiques, aucun appel IA ni connexion CMS",
+  "executions": [
+    {
+      "command": "tsc --noEmit",
+      "exitCode": 0
+    },
+    {
+      "command": "vitest run tests/lot1-produits-sections.test.ts",
+      "exitCode": 0,
+      "tests": 17
+    },
+    {
+      "command": "vitest run --maxWorkers=1 (12 fichiers, liste complète dans LOT_1_RESULTATS.md)",
+      "exitCode": 0,
+      "files": 12,
+      "tests": 137,
+      "includesPreviouslyAcceptedTests": 29
+    },
+    {
+      "command": "tsx scripts/lot1-produits-proof.ts reports/lot1/produits",
+      "exitCode": 0,
+      "products": 6,
+      "screenshots": 12,
+      "themeCheckErrors": 0,
+      "aiCalls": 0
+    },
+    {
+      "command": "tsx scripts/theme-screens.ts reports/lot1/produits/verification-atelier atelier multi fr",
+      "exitCode": 0,
+      "sourceCommit": "85517f7373de6af950af97efad4c412953a9ef8a",
+      "screenshots": 10,
+      "imageLimitation": "Fichiers de démonstration vides du script générique ; chargement réel vérifié dans la preuve dédiée."
+    },
+    {
+      "command": "vitest run tests/lot1-produits-avant.test.ts (worktree détaché sur la base)",
+      "exitCode": 1,
+      "expectedFailure": true
+    },
+    {
+      "command": "Premier vitest run de cette reprise (avant c247e62)",
+      "interrupted": true,
+      "reason": "Ajout des régressions style seul et priorité des nouveaux documents."
+    },
+    {
+      "command": "DATA_DIR=temp STOCK_OFFLINE=1 JOBS=2 scripts/verify-theme.sh --rapide",
+      "exitCode": 0,
+      "cases": 25,
+      "errors": 0,
+      "warnings": 0,
+      "sourceCommit": "c247e625955be2c9ac7ba8ac16b7f32f9f4f7137"
+    },
+    {
+      "command": "vitest run tests/lot1-produits-sections.test.ts -t FAQ déjà retirée (c247e62)",
+      "exitCode": 1,
+      "expectedFailure": true
+    },
+    {
+      "command": "Second vitest run de cette reprise sur c247e62",
+      "exitCode": 130,
+      "interrupted": true,
+      "reason": "Régression confirmée de la FAQ retirée ; aucun résultat global revendiqué."
+    },
+    {
+      "command": "vitest run",
+      "exitCode": 0,
+      "files": 260,
+      "passedTests": 1942,
+      "skippedTests": 3,
+      "durationSeconds": 633.72
+    }
+  ]
+}

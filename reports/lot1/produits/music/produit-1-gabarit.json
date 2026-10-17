@@ -1,0 +1,188 @@
+/*
+ * Fichier généré par E-COM STUDIO IA. Modifiable dans l'éditeur de thème Shopify.
+ */
+{
+  "sections": {
+    "p_24b76c1d_main_product_1": {
+      "type": "main-product",
+      "settings": {
+        "gallery_layout": "stack",
+        "sticky_bar": true,
+        "color_scheme": "scheme-1",
+        "padding_top": 32,
+        "padding_bottom": 96,
+        "enable_zoom": true
+      },
+      "blocks": {
+        "eyebrow_1": {
+          "type": "eyebrow",
+          "settings": {
+            "text": "Boutique synthétique indépendante"
+          }
+        },
+        "title_1": {
+          "type": "title",
+          "settings": {}
+        },
+        "price_1": {
+          "type": "price",
+          "settings": {}
+        },
+        "buy_buttons_1": {
+          "type": "buy_buttons",
+          "settings": {
+            "picker": "buttons",
+            "show_quantity": true,
+            "show_dynamic_checkout": true
+          }
+        },
+        "highlights_1": {
+          "type": "highlights",
+          "settings": {
+            "items": "Matière nickel\nTension moyenne",
+            "product_handle": "diagnostic"
+          }
+        },
+        "description_1": {
+          "type": "description",
+          "settings": {}
+        },
+        "collapsible_1": {
+          "type": "collapsible",
+          "settings": {
+            "heading": "Entretien du principal",
+            "content": "<p>ENTRETIEN_EXCLUSIF_PRINCIPAL</p>",
+            "open": false,
+            "product_handle": "diagnostic"
+          }
+        }
+      },
+      "block_order": [
+        "eyebrow_1",
+        "title_1",
+        "price_1",
+        "buy_buttons_1",
+        "highlights_1",
+        "description_1",
+        "collapsible_1"
+      ]
+    },
+    "p_24b76c1d_product_recommendations_1": {
+      "type": "product-recommendations",
+      "settings": {
+        "heading": "Vous aimerez aussi",
+        "limit": 4,
+        "color_scheme": "scheme-1",
+        "padding_top": 64,
+        "padding_bottom": 96
+      }
+    },
+    "p_24b76c1d_v2_benefits_2": {
+      "type": "v2-benefits",
+      "settings": {
+        "layout": "icons",
+        "columns": 2,
+        "eyebrow": "",
+        "heading": "Ce qu'il faut savoir",
+        "text": "",
+        "color_scheme": "scheme-2",
+        "padding_top": 96,
+        "padding_bottom": 96
+      },
+      "blocks": {
+        "benefit_3": {
+          "type": "benefit",
+          "settings": {
+            "image_asset": "",
+            "icon": "check",
+            "title": "Bénéfice du principal",
+            "text": "<p>BENEFICE_EXCLUSIF_PRINCIPAL</p>"
+          }
+        },
+        "benefit_4": {
+          "type": "benefit",
+          "settings": {
+            "image_asset": "",
+            "icon": "check",
+            "title": "Autre bénéfice principal",
+            "text": "<p>DETAIL_EXCLUSIF_PRINCIPAL</p>"
+          }
+        }
+      },
+      "block_order": [
+        "benefit_3",
+        "benefit_4"
+      ]
+    },
+    "p_24b76c1d_v2_specs_1": {
+      "type": "v2-specs",
+      "settings": {
+        "layout": "table",
+        "eyebrow": "Fiche",
+        "heading": "Caractéristiques",
+        "image_asset": "",
+        "note": "Seules les caractéristiques confirmées sont affichées.",
+        "color_scheme": "scheme-1",
+        "padding_top": 104,
+        "padding_bottom": 104
+      },
+      "blocks": {
+        "spec_1": {
+          "type": "spec",
+          "settings": {
+            "label": "Type",
+            "value": "Cordes frottées"
+          }
+        },
+        "spec_2": {
+          "type": "spec",
+          "settings": {
+            "label": "Matière",
+            "value": "nickel"
+          }
+        },
+        "spec_3": {
+          "type": "spec",
+          "settings": {
+            "label": "Tension",
+            "value": "Tension moyenne"
+          }
+        }
+      },
+      "block_order": [
+        "spec_1",
+        "spec_2",
+        "spec_3"
+      ]
+    },
+    "p_24b76c1d_v2_faq_2": {
+      "type": "v2-faq",
+      "settings": {
+        "layout": "side",
+        "heading": "Questions fréquentes",
+        "color_scheme": "scheme-2",
+        "padding_top": 96,
+        "padding_bottom": 96
+      },
+      "blocks": {
+        "question_2": {
+          "type": "question",
+          "settings": {
+            "question": "Question du principal uniquement ?",
+            "answer": "<p>FAQ_EXCLUSIVE_PRINCIPAL</p>"
+          }
+        }
+      },
+      "block_order": [
+        "question_2"
+      ]
+    }
+  },
+  "order": [
+    "p_24b76c1d_main_product_1",
+    "p_24b76c1d_v2_benefits_2",
+    "p_24b76c1d_v2_specs_1",
+    "p_24b76c1d_v2_faq_2",
+    "p_24b76c1d_product_recommendations_1"
+  ]
+}
