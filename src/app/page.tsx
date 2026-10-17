@@ -35,8 +35,8 @@ export async function generateMetadata(): Promise<Metadata> {
     "Une photo de votre produit suffit : l'IA crée votre logo, votre boutique Shopify, WordPress ou PrestaShop, vos images, vos publicités et vos publications. Vous validez tout. Découverte gratuite.",
     "One product photo is enough: AI creates your logo, your Shopify, WordPress or PrestaShop store, your images, your ads and your posts. You approve everything. Free discovery.",
   );
-  // Image de partage : affiche du film d'entrée montré dans la langue (nouveau film en français, ancien en anglais).
-  const shareImage = lang === "en" ? "/explainers/film-court.jpg" : "/explainers/film-motion.jpg";
+  // Image de partage : affiche du film d'entrée dans la langue de la page.
+  const shareImage = lang === "en" ? "/explainers/film-motion.en.jpg" : "/explainers/film-motion.jpg";
   return {
     title: { absolute: title },
     description,
@@ -343,12 +343,8 @@ export default async function Home() {
                     <span className="hp-dot" /><span className="hp-dot" /><span className="hp-dot" />
                     <span className="ml-2 truncate text-xs text-muted">{T("Comment ça marche · 1 min", "How it works · 1 min")}</span>
                   </div>
-                  {/* Film d'entrée : film motion design avec voix off française ; l'anglais garde l'ancien film sans voix tant que sa version anglaise n'existe pas. */}
-                  {lang === "en" ? (
-                    <HeroFilm src={M("/explainers/film-court.mp4")} poster={M("/explainers/film-court.jpg")} description="Explainer film without voice-over: from photo to post in 7 steps" />
-                  ) : (
-                    <HeroFilm src="/explainers/film-motion.mp4" poster="/explainers/film-motion.jpg" description="Film explicatif avec voix off : comment fonctionne E-COM STUDIO IA, de la photo à la publication" />
-                  )}
+                  {/* Film d'entrée : film motion design avec voix off, version anglaise film-motion.en. */}
+                  <HeroFilm src={M("/explainers/film-motion.mp4")} poster={M("/explainers/film-motion.jpg")} description={T("Film explicatif avec voix off : comment fonctionne E-COM STUDIO IA, de la photo à la publication", "Explainer film with voice-over: how E-COM STUDIO IA works, from photo to publication")} />
                 </div>
                 <ol className="scrollbar-none mt-5 flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:justify-center sm:overflow-visible" aria-label={T("Ce que fait le studio", "What the studio does")}>
                   {modules.map((m, i) => (
