@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { ZodError, type ZodType } from "zod";
 import { HttpError } from "./auth";
+import { UserFacingError } from "./jobs";
 import { logError } from "./db";
 import { redact } from "./redact";
 import { L, langFromRequest, runWithLang } from "./i18n-server";
@@ -24,6 +25,9 @@ export function handle<A extends unknown[]>(fn: (...args: A) => Promise<Response
       return await fn(...args);
     } catch (e) {
       if (e instanceof HttpError) return fail(e.status, e.message, e.code);
+      // Refus clair d'une fonction du studio (limite atteinte, IA indisponible…) : son message est montré tel quel,
+      // jamais remplacé par « Une erreur inattendue » (ce n'est pas une panne).
+      if (e instanceof UserFacingError) return fail(422, e.message);
       if (e instanceof ZodError) {
         const first = e.issues[0];
         return fail(400, L(`Donnée invalide : ${first?.path.join(".") || "requête"} — ${first?.message}`, `Invalid data: ${first?.path.join(".") || "request"} — ${first?.message}`));

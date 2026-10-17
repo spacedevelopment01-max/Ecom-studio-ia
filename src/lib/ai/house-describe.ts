@@ -11,7 +11,7 @@
  */
 import Anthropic from "@anthropic-ai/sdk";
 import crypto from "node:crypto";
-import { all, id, now, one, run } from "../db";
+import { all, id, logError, now, one, run } from "../db";
 import { EUR } from "../billing";
 import { UserFacingError } from "../jobs";
 import { L } from "../i18n-server";
@@ -104,7 +104,13 @@ export async function houseDescribe(userId: string, i: DescribeInput): Promise<{
   if (!s.enabled) throw new UserFacingError(L("La rédaction par l'IA est désactivée pour le moment : écrivez votre description vous-même.", "AI writing is turned off for now: please write your description yourself."));
   const brief = clip(i.brief, 600);
   if (brief.length < 3) throw new UserFacingError(L("Écrivez d'abord quelques mots sur votre activité.", "First write a few words about your business."));
-  ensureTable();
+  try {
+    ensureTable();
+  } catch (e) {
+    // Base momentanément occupée (le worker écrit) : rien n'est envoyé ni décompté, le client peut réessayer.
+    logError(HOUSE_TASK, e, { userId, details: { step: "table des textes" } });
+    throw new UserFacingError(L("La rédaction par l'IA est momentanément indisponible : réessayez dans un instant.", "AI writing is temporarily unavailable: try again in a moment."));
+  }
   const sys = system(i.lang, i.business);
   const user = prompt({ ...i, brief });
   // Même demande déjà rédigée : reprise sans nouvel appel (rien n'est repayé).
@@ -117,19 +123,34 @@ export async function houseDescribe(userId: string, i: DescribeInput): Promise<{
   if (spentToday() >= s.dailyEur * EUR) throw new UserFacingError(L("La rédaction par l'IA est momentanément indisponible : écrivez votre description vous-même, le studio la complétera.", "AI writing is temporarily unavailable: write your description yourself, the studio will complete it."));
   const key = activeProviderKey("anthropic");
   if (!key) throw new UserFacingError(L("La rédaction par l'IA n'est pas disponible ici : écrivez votre description vous-même.", "AI writing isn't available here: please write your description yourself."));
-  const r = await houseDeps.send(key, s.model, sys, user, 600);
+  let r: Awaited<ReturnType<typeof houseDeps.send>>;
+  try {
+    r = await houseDeps.send(key, s.model, sys, user, 600);
+  } catch (e) {
+    // Erreur du fournisseur (surcharge, délai, clé ou modèle refusé, réseau) : message clair au client, cause exacte
+    // au journal de l'administration (caviardé : jamais de clé). Rien n'est décompté.
+    const status = (e as { status?: unknown })?.status;
+    logError(HOUSE_TASK, e, { userId, details: { model: s.model, status: typeof status === "number" ? status : null } });
+    if (status === 401 || status === 403 || status === 404) throw new UserFacingError(L("La rédaction par l'IA n'est pas disponible ici pour le moment : écrivez votre description vous-même, le studio la complétera.", "AI writing isn't available here right now: write your description yourself, the studio will complete it."));
+    throw new UserFacingError(L("La rédaction par l'IA est momentanément indisponible : réessayez dans un instant, ou écrivez votre description vous-même, le studio la complétera.", "AI writing is temporarily unavailable: try again in a moment, or write your description yourself, the studio will complete it."));
+  }
   const text = cleanParagraph(r.text);
   if (text.length < 40) throw new UserFacingError(L("L'IA n'a pas pu rédiger la description : réessayez avec quelques mots de plus.", "The AI couldn't write the description: try again with a few more words."));
   const p = priceFor("anthropic", s.model);
   const usd = p && p.unit === "tokens" ? (r.input * p.inputPerM + r.output * p.outputPerM) / 1e6 : 0;
   const costMicro = Math.max(1, Math.round(usd * usdToEur() * EUR));
-  // Dépense de la plateforme (administration) : rien n'est débité du client (« billed » = 0).
-  run(
-    `INSERT INTO usage_events (id, user_id, project_id, job_id, task, provider, model, unit, input_units, output_units, quantity, cost, billed, estimated, idempotency_key, created_at)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-    id(), userId, null, null, HOUSE_TASK, "anthropic", s.model, "tokens", r.input, r.output, 0, costMicro, 0, p ? 0 : 1, null, now(),
-  );
-  run("INSERT OR REPLACE INTO house_texts (hash, text, created_at) VALUES (?,?,?)", hash, text, now());
+  // Dépense de la plateforme (administration) : rien n'est débité du client (« billed » = 0). Le texte est déjà payé :
+  // une base momentanément occupée ne doit pas le faire perdre au client (l'incident est inscrit au journal).
+  try {
+    run(
+      `INSERT INTO usage_events (id, user_id, project_id, job_id, task, provider, model, unit, input_units, output_units, quantity, cost, billed, estimated, idempotency_key, created_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      id(), userId, null, null, HOUSE_TASK, "anthropic", s.model, "tokens", r.input, r.output, 0, costMicro, 0, p ? 0 : 1, null, now(),
+    );
+    run("INSERT OR REPLACE INTO house_texts (hash, text, created_at) VALUES (?,?,?)", hash, text, now());
+  } catch (e) {
+    logError(HOUSE_TASK, e, { userId, details: { step: "enregistrement après rédaction" } });
+  }
   return { text, cached: false, costMicro };
 }
 
