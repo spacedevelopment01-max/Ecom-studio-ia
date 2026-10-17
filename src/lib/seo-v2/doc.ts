@@ -146,7 +146,7 @@ const BlockSchema = z.discriminatedUnion("kind", [
   z.object({ id: z.string().min(1).max(40), kind: z.literal("faq"), q: z.string().max(300), a: z.string().max(2000) }),
   z.object({ id: z.string().min(1).max(40), kind: z.literal("cta"), text: z.string().max(120), url: z.string().max(500).nullable() }),
 ]);
-const PageRefSchema = z.object({ key: z.string().max(120), aliases: z.array(z.string().max(120)).max(100).optional(), title: z.string().max(200), url: z.string().max(500).nullable(), kind: z.enum(["product", "collection", "page", "service", "home", "brand", "local", "article"]), status: z.enum(["existing", "planned"]) });
+const PageRefSchema = z.object({ key: z.string().max(120), contentTarget: z.string().max(120).optional(), aliases: z.array(z.string().max(120)).max(100).optional(), title: z.string().max(200), url: z.string().max(500).nullable(), kind: z.enum(["product", "collection", "page", "service", "home", "brand", "local", "article"]), status: z.enum(["existing", "planned"]) });
 export const ContentDocSchema = z.object({
   version: z.number(),
   type: z.enum(["product_page", "category_page", "service_page", "home_page", "brand_page", "local_page", "blog_article", "faq", "metadata", "ad_copy"]),

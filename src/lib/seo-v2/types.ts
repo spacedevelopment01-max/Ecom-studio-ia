@@ -71,7 +71,7 @@ export type KeywordResearch = {
 };
 
 /** Page du site : existante (vue dans la boutique créée) ou prévue (proposée par la stratégie) — jamais confondues. */
-export type PageRef = { key: string; aliases?: string[]; title: string; url: string | null; kind: "product" | "collection" | "page" | "service" | "home" | "brand" | "local" | "article"; status: "existing" | "planned" };
+export type PageRef = { key: string; contentTarget?: string; aliases?: string[]; title: string; url: string | null; kind: "product" | "collection" | "page" | "service" | "home" | "brand" | "local" | "article"; status: "existing" | "planned" };
 
 export type SeoStrategy = {
   lang: ContentLang;

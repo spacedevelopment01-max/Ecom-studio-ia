@@ -1,13 +1,40 @@
 /** Livraison des documents par cible stable, après composition : aucun résumé ne remplace un corps validé. */
 import { referenceContent } from "./theme-copy";
+import crypto from "node:crypto";
 import { toHtml, stripInline } from "./doc";
 import { slugify } from "./doc";
-import type { Project } from "../projects";
+import { currentTheme, type Project } from "../projects";
 import { storeProducts, type SectionInstance, type ThemeSpec } from "../theme/spec";
-import { sitePages } from "./pages";
+import { associatePages, plannedPages, sitePages, themePages } from "./pages";
 import type { ContentType } from "./types";
 
 export function deliverContent(spec: ThemeSpec, p: Project, lang: string) {
+  const planned = plannedPages(p);
+  const active = new Set(planned.map((page) => page.key));
+  const pages = sitePages(p).filter((page) => active.has(page.key));
+  // Une composition neuve ne doit pas faire disparaître les pages historiques sans association certaine.
+  const previous = currentTheme(p.id)?.spec;
+  const historicalPages = [] as ThemeSpec["store"]["pages"];
+  for (const old of previous?.store.pages ?? []) {
+    const page = structuredClone(old);
+    const oldKey = page.template_suffix ? `page.${page.template_suffix}` : "page";
+    const template = previous!.templates[oldKey];
+    if (template && page.template_suffix) {
+      if (!spec.templates[oldKey]) spec.templates[oldKey] = structuredClone(template);
+      else if (JSON.stringify(spec.templates[oldKey]) !== JSON.stringify(template)) {
+        const suffix = `kept-${crypto.createHash("sha256").update(JSON.stringify([old.handle, template])).digest("hex").slice(0, 16)}`;
+        spec.templates[`page.${suffix}`] = structuredClone(template);
+        page.template_suffix = suffix;
+      }
+      for (const section of Object.values(template.sections)) {
+        if (previous!.customSections[section.type] && !spec.customSections[section.type]) spec.customSections[section.type] = structuredClone(previous!.customSections[section.type]);
+      }
+      const text = JSON.stringify(template);
+      for (const [file, id] of Object.entries(previous!.files)) if (text.includes(file) && !spec.files[file]) spec.files[file] = id;
+    }
+    historicalPages.push(page);
+  }
+  spec.store.pages = [...historicalPages, ...spec.store.pages.filter((page) => !historicalPages.some((old) => old.handle === page.handle))];
   const section = (html: string, heading = ""): SectionInstance => ({ type: "rich-text", settings: { align: "left", style: "plain", color_scheme: "scheme-1", padding_top: 48, padding_bottom: 48 }, blocks: { ...(heading ? { heading: { type: "heading", settings: { text: heading, size: "h2" } } } : {}), body: { type: "text", settings: { text: html } } }, block_order: [...(heading ? ["heading"] : []), "body"] });
   const traces = new Map<string, { docKey: string; version: number; target: string; runId: string | null; contextHash: string | null }>();
   const referenceDoc = (...args: Parameters<typeof referenceContent>) => {
@@ -30,9 +57,11 @@ export function deliverContent(spec: ThemeSpec, p: Project, lang: string) {
     const doc = referenceDoc(p.id, "faq", lang, target);
     return doc ? body(doc) : "";
   };
+  const productMatches = associatePages(planned, themePages(spec));
   if (p.business !== "services") for (const product of storeProducts(spec)) {
-    const target = product.contentTarget ?? (product === spec.store.product ? "product:main" : null);
+    const target = [...productMatches].find(([, page]) => page.kind === "product" && page.url === `/products/${product.handle}`)?.[0];
     if (!target) continue;
+    product.contentTarget = target;
     const doc = referenceDoc(p.id, "product_page", lang, target);
     product.seo = seo(target, doc ? { title: doc.meta.seoTitle, description: doc.meta.metaDescription } : product.seo, "product_page");
     const questions = faq(target);
@@ -67,17 +96,29 @@ export function deliverContent(spec: ThemeSpec, p: Project, lang: string) {
   }
   spec.store.seo = seo("home:accueil", home ? { title: home.meta.seoTitle, description: home.meta.metaDescription } : spec.store.seo, "home_page");
   for (const collection of spec.store.collections ?? []) {
-    const page = sitePages(p).find((x) => x.kind === "collection" && (x.title === collection.title || x.url === `/collections/${collection.handle}`));
+    const page = pages.find((x) => x.kind === "collection" && x.url === `/collections/${collection.handle}`);
     const doc = page && referenceDoc(p.id, "category_page", lang, page.key);
     if (doc) collection.description = body(doc);
   }
-  for (const page of sitePages(p)) {
+  for (const page of pages) {
     const type = page.kind === "service" ? "service_page" : page.kind === "brand" ? "brand_page" : page.kind === "local" ? "local_page" : null;
     if (!type) continue;
     const doc = referenceDoc(p.id, type, lang, page.key);
     if (!doc) continue;
-    const handle = page.url?.startsWith("/pages/") ? page.url.slice(7) : `texte-${slugify(page.key)}`;
-    const suffix = `seo-${slugify(page.key)}`;
+    let handle = page.url?.startsWith("/pages/") ? page.url.slice(7) : `texte-${slugify(page.key)}`;
+    // Le nom d'un nouveau fichier ne donne aucun droit sur une page historique déjà présente.
+    if (!page.url) {
+      const base = handle;
+      const suffix = crypto.createHash("sha256").update(page.key).digest("hex").slice(0, 12);
+      for (let n = 0; spec.store.pages.some((x) => x.handle === handle); n++) handle = `${base}-${suffix}${n ? `-${n}` : ""}`;
+    }
+    // Les anciennes pages peuvent partager un gabarit : le nouveau texte ne doit pas changer leur rendu.
+    let suffix = `seo-${slugify(page.key)}`;
+    const baseSuffix = suffix;
+    const ownSuffix = spec.store.pages.find((x) => x.handle === handle)?.template_suffix;
+    for (let n = 0; spec.store.pages.some((x) => x.handle !== handle && x.template_suffix === suffix) || (spec.templates[`page.${suffix}`] && ownSuffix !== suffix); n++) {
+      suffix = `${baseSuffix}-${crypto.createHash("sha256").update(page.key).digest("hex").slice(0, 12)}${n ? `-${n}` : ""}`;
+    }
     const questions = faq(page.key);
     const html = body(doc) + questions;
     const h1 = doc.blocks.find((b) => b.kind === "h1");

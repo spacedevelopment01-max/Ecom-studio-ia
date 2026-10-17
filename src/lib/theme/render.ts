@@ -759,7 +759,11 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     if (sp) page = { title: sp.title, content: sp.body_html, handle: sp.handle, url: `${opts.base}/pages/${sp.handle}`, template_suffix: sp.template_suffix };
     pageTitle = sp?.seo?.title || sp?.title || pageTitle;
     seoDescription = sp?.seo?.description || null;
-  } else if (tplKey === "product" || tplKey.startsWith("product.")) pageTitle = store.product.title;
+  } else if (tplKey === "product" || tplKey.startsWith("product.")) {
+    const product = storeProducts(opts.spec).find((p) => p.handle === route.handle);
+    pageTitle = product?.seo?.title || store.product.title;
+    seoDescription = product?.seo?.description || null;
+  }
   else if (tplKey === "collection") pageTitle = store.collection.title;
   else if (tplKey === "404") pageTitle = pick(lang, "Page introuvable", "Page not found");
 
