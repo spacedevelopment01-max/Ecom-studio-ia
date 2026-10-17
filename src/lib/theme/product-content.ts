@@ -109,7 +109,8 @@ export function bindProductContent(spec: ThemeSpec, p: Project, principalTemplat
       product.description_html = old!.description_html;
       const faq = referenceContent(p.id, "faq", lang, target);
       const questions = faq ? toHtml({ blocks: faq.doc.blocks.filter((b) => b.kind !== "h1") }) : "";
-      if (questions && !product.description_html.includes(questions)) product.description_html += questions;
+      // Une FAQ plus ancienne que la retouche peut avoir été retirée volontairement du corps.
+      if (questions && faq && current && faq.version.createdAt > current.version.created_at && !product.description_html.includes(questions)) product.description_html += questions;
     }
     if (seoSource === "user") product.seo = structuredClone(old!.seo);
     const main = Object.values(tpl.sections).find((s) => s.type === "main-product");

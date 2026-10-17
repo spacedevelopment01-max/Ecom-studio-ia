@@ -236,4 +236,16 @@ describe("Lot 1 — sections propres au produit", async () => {
     expect(product.description_html).toContain("NOUVELLE_REPONSE_ACCESSOIRE");
     expect(product.description_html.split("NOUVELLE_REPONSE_ACCESSOIRE")).toHaveLength(2);
   }));
+  it("une FAQ déjà retirée par le client ne réapparaît pas sans nouveau document", async () => fr(async () => {
+    const { pid } = await productTrio(user.id, { images: false }), target = "product:catalog:steel";
+    const faq = await runContentEngineV2(null, pid, { type: "faq", pageKey: target, lang: "fr" }, localOnlyDeps());
+    saveUserEdit(pid, faq.docKey!, { ...faq.doc!, blocks: [{ id: "question", kind: "faq", q: "Question retirée ?", a: "REPONSE_SUPPRIMEE_PAR_CLIENT" }] });
+    const { spec } = await composeThemeV2(pid);
+    const a = storeProducts(spec).find((x) => x.contentTarget === target)!;
+    expect(a.description_html).toContain("REPONSE_SUPPRIMEE_PAR_CLIENT");
+    a.description_html = "<p>Version client sans FAQ</p>";
+    saveThemeVersion(pid, spec, "FAQ retirée par le client", "user");
+    const next = await composeThemeV2(pid), product = storeProducts(next.spec).find((x) => x.contentTarget === target)!;
+    expect(product.description_html).toBe("<p>Version client sans FAQ</p>");
+  }));
 });
