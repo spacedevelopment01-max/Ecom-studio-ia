@@ -47,10 +47,7 @@ export type StoreProduct = {
 /** Collection de la boutique : liste ordonnée de produits (par identifiant « handle »). */
 export type StoreCollection = { handle: string; title: string; description: string; image?: string; products: string[] };
 
-/** Tous les produits de la boutique : le produit principal puis ceux du catalogue. */
-export function storeProducts(spec: { store: { product: StoreProduct; products?: StoreProduct[] } }): StoreProduct[] {
-  return [spec.store.product, ...(spec.store.products ?? []).filter((p) => p.handle !== spec.store.product.handle)];
-}
+export { storeProducts } from "./store-products";
 
 export type StorePage = {
   contentTarget?: string;

@@ -12,7 +12,8 @@
  * - aucune section vide (galerie, grille, frise… sans contenu) ;
  * - aucune image désignée par un nom de fichier qui n'existe pas (cadre cassé).
  */
-import { storeProducts, type SectionInstance, type TemplateJson, type ThemeSpec } from "./spec";
+import type { SectionInstance, TemplateJson, ThemeSpec } from "./spec";
+import { storeProducts } from "./store-products";
 
 const norm = (t: unknown) => String(t ?? "").replace(/<[^>]+>/g, " ").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 /** Texte qui n'est qu'un espace réservé « [À compléter : …] » / « [To complete: …] » (ou vide). */
