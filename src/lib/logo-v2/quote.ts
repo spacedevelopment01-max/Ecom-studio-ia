@@ -10,7 +10,7 @@
 import { FX_SAFETY, priceFor, routeFor, usdToEur, type TaskId } from "../ai/config";
 import { getJsonSetting } from "../settings";
 import { EUR } from "../billing";
-import { logoArtworkMaxMicro } from "../ai/media-providers";
+import { logoArtworkMaxMicro, logoRelayMaxMicro } from "../ai/media-providers";
 import { routeLlm } from "../ai/llm";
 
 /** Créations par série quand le modèle d'images dessine le logo complet. */
@@ -42,12 +42,24 @@ const TERRITORIES = () => textMaxMicro("logo_symbol", 14_000, 9000);
 const REVIEW = () => textMaxMicro("quality_control", 9000, 3000);
 const SYMBOL = () => textMaxMicro("logo_symbol", 8000, 6000);
 
-export type LogoQuote = { mode: "artwork" | "built"; creations: number; images: number; maxMicro: number; imageMaxMicro: number | null };
+/**
+ * `probableMicro` : coût probable (devis annoncé) — la série sans relais. `relayMicro` : coût MAXIMAL d'un relais OpenAI
+ * pour UN logo (image + relecture), débité seulement s'il a lieu (logo du modèle principal écarté par le contrôle) et
+ * annoncé au client. `maxMicro` : plafond de la série, relais de chaque logo compris (rien n'est utilisé au-delà).
+ */
+export type LogoQuote = { mode: "artwork" | "built"; creations: number; images: number; maxMicro: number; imageMaxMicro: number | null; probableMicro?: number; relayMicro?: number | null };
 
 /** Devis (et plafond) d'une série complète. */
 export function logoSeriesQuote(): LogoQuote {
   const img = logoArtworkMaxMicro();
-  if (img != null) return { mode: "artwork", creations: ARTWORK_SERIES, images: ARTWORK_SERIES, imageMaxMicro: img, maxMicro: TERRITORIES() + ARTWORK_SERIES * (img + 2 * REVIEW()) };
+  if (img != null) {
+    // Relais de qualité (règle du propriétaire) : un logo du modèle principal écarté par le contrôle est redessiné par
+    // OpenAI ; son coût n'est débité que si le relais a lieu.
+    const relayImg = logoRelayMaxMicro();
+    const relayMicro = relayImg != null ? relayImg + 2 * REVIEW() : null;
+    const probableMicro = TERRITORIES() + ARTWORK_SERIES * (img + REVIEW());
+    return { mode: "artwork", creations: ARTWORK_SERIES, images: ARTWORK_SERIES, imageMaxMicro: img, probableMicro, relayMicro, maxMicro: TERRITORIES() + ARTWORK_SERIES * (img + 2 * REVIEW() + (relayMicro ?? 0)) };
+  }
   // Construit : relecture + au plus 2 reprises ciblées par direction, symbole et 2 redessins pour au plus 2 directions ;
   // concepts de symbole par un modèle d'images qui n'écrit pas le texte (au plus 3), s'il y en a un.
   const concept = logoArtworkMaxMicro({ text: false });
@@ -58,5 +70,8 @@ export function logoSeriesQuote(): LogoQuote {
 /** Devis (et plafond) d'une « Nouvelle version » demandée par le client : une image et ses relectures. */
 export function logoRedrawQuote(): LogoQuote | null {
   const img = logoArtworkMaxMicro();
-  return img == null ? null : { mode: "artwork", creations: 1, images: 1, imageMaxMicro: img, maxMicro: img + 2 * REVIEW() };
+  if (img == null) return null;
+  const relayImg = logoRelayMaxMicro();
+  const relayMicro = relayImg != null ? relayImg + 2 * REVIEW() : null;
+  return { mode: "artwork", creations: 1, images: 1, imageMaxMicro: img, probableMicro: img + REVIEW(), relayMicro, maxMicro: img + 2 * REVIEW() + (relayMicro ?? 0) };
 }

@@ -26,7 +26,7 @@ import { getJsonSetting, setSetting } from "../settings";
 import { putFile } from "../storage";
 import { route, type InputType, type RouteDecision } from "../orchestrator/router";
 import { balance } from "../billing";
-import { mediaBackup, mediaStatus, modelForProvider, selectMedia, USAGE_INFO, usageBackup, usageExplicit, usageOff, type MediaChoice, type MediaNeed, type MediaUsage } from "./media-routing";
+import { incompatibility, mediaBackup, mediaStatus, modelForProvider, selectMedia, USAGE_INFO, usageBackup, usageExplicit, usageOff, type MediaChoice, type MediaNeed, type MediaUsage } from "./media-routing";
 import { mediaModel, type MediaKind } from "./media-models";
 import { alibabaBase, alibabaError, alibabaHeaders, qwenImageBody, qwenImageUrl, wanTask, wanTaskKey, wanVideoBody } from "./alibaba";
 
@@ -131,8 +131,11 @@ function markReleased(e: unknown, t: MediaTrace) {
   if (e && typeof e === "object") Object.assign(e as object, { mediaReleased: true, mediaFailed: t.provider && t.model ? `${t.provider}:${t.model}` : null });
 }
 
-/** Relais en cours : modèle en échec écarté, et SEUL le secours choisi par l'administration peut être appelé. */
-const mediaExclude = new AsyncLocalStorage<{ exclude: string[]; only: string }>();
+/**
+ * Relais en cours : modèle en échec écarté, et SEUL le secours choisi par l'administration peut être appelé.
+ * `force` : relais de QUALITÉ (logos) — le modèle `only` est appelé directement s'il est utilisable et compatible.
+ */
+const mediaExclude = new AsyncLocalStorage<{ exclude: string[]; only: string; force?: boolean }>();
 
 /** Secours utilisable pour cet usage (sinon ce type) : confirmé, tarifé, clé active, adaptateur réel (coût couvert). */
 function usableBackup(kind: MediaKind, usage?: MediaUsage): { provider: string; model: string } | null {
@@ -351,6 +354,19 @@ export function routeMedia(task: "image_generation" | "video_generation", inputT
   if (t && usage) t.usage = usage;
   // Usage coupé par l'administration (retouches produit) : aucun modèle, pas de repli historique.
   if (usage && usageOff(usage)) return null;
+  // Relais de qualité (logos) : le modèle désigné, s'il est utilisable (clé, tarif) et capable — sinon rien.
+  if (relay?.force) {
+    const [fp, ...fm] = relay.only.split(":");
+    const m = mediaModel(fp, fm.join(":"));
+    const n = { ...(usage ? USAGE_INFO[usage].need : {}), kind, mask: inputType === "mask", ...need } as MediaNeed;
+    if (!m || !m.adapter || !mediaStatus(m).usable || incompatibility(m, n)) return null;
+    const choice: MediaChoice = { provider: m.provider, model: m.model, role: "backup", reason: `relais de qualité${usage ? ` [${usage}]` : ""}` };
+    if (t) {
+      t.choice = choice;
+      t.routing = { reason: choice.reason, fallback: true, escalation: false };
+    }
+    return { mode: kind, provider: m.provider, model: m.model, tier: "strong", reason: choice.reason, fallback: true, escalation: false, qualityTarget: null };
+  }
   // Routage multimédia : principal de l'administration, secours compatible et couvert, ou mode automatique.
   const choice = selectMedia({ ...(usage ? USAGE_INFO[usage].need : {}), kind, mask: inputType === "mask", ...(kind === "video" ? { imageToVideo: true } : {}), ...need }, { exclude, budgetLeftMicro: budgetLeft(t?.ctx?.userId ?? currentAiUser() ?? undefined), mode: relay ? "manual" : undefined });
   // Relais : uniquement le secours désigné (jamais un autre modèle de repli, dont le coût n'aurait pas été validé).
@@ -616,6 +632,41 @@ Niveau attendu : un logo moderne et professionnel pour une vraie petite entrepri
  */
 export async function logoArtworkImage(ctx: Ctx, input: { prompt: string }) {
   return generateImage(ctx, { text: clampBytes(input.prompt, LOGO_PROMPT_MAX_BYTES), aspect: "1:1", reference: null, quality: "high", transparent: true, usage: "logo", need: { text: true, transparent: true } });
+}
+
+/**
+ * RELAIS DE QUALITÉ DES LOGOS (règle du propriétaire) : quand le contrôle juge insuffisant un logo dessiné par le
+ * modèle principal (Qwen-Image 3.0 Pro), le même logo est redessiné par le modèle d'images d'OpenAI (ChatGPT). Modèle :
+ * le secours de l'usage « Logos » s'il est chez OpenAI, sinon OpenAI GPT Image 1 — seulement s'il est utilisable (clé
+ * active, tarif connu) et différent du principal. null : aucun relais possible (la raison est dite au client).
+ */
+export function logoQualityRelay(): { provider: string; model: string } | null {
+  const primary = mediaRouteFor("logo", { text: true, transparent: true });
+  const b = usageBackup("logo");
+  for (const c of [b?.provider === "openai" ? b : null, { provider: "openai", model: "gpt-image-1" }]) {
+    if (!c) continue;
+    const m = mediaModel(c.provider, c.model);
+    if (!m?.adapter || !mediaStatus(m).usable || incompatibility(m, { ...USAGE_INFO.logo.need, kind: "image", text: true } as MediaNeed)) continue;
+    if (primary && primary.provider === c.provider && primary.model === c.model) return null;
+    return { provider: c.provider, model: c.model };
+  }
+  return null;
+}
+
+/** Logo complet redessiné par le relais de qualité (OpenAI) : même demande, réservation et plafond propres. */
+export async function logoArtworkRelayImage(ctx: Ctx, input: { prompt: string }) {
+  const relay = logoQualityRelay();
+  if (!relay) throw new PermanentError(L("Relais OpenAI indisponible pour les logos (clé OpenAI absente ou désactivée, ou tarif inconnu).", "OpenAI relay unavailable for logos (OpenAI key missing or disabled, or unknown price)."));
+  const primary = mediaRouteFor("logo", { text: true, transparent: true });
+  return mediaExclude.run({ exclude: primary ? [`${primary.provider}:${primary.model}`] : [], only: `${relay.provider}:${relay.model}`, force: true }, () => logoArtworkImage(ctx, input));
+}
+
+/** Coût MAXIMAL d'un logo redessiné par le relais OpenAI (même calcul que sa réservation). null : aucun relais. */
+export function logoRelayMaxMicro(): number | null {
+  const r = logoQualityRelay();
+  if (!r) return null;
+  const micro = openaiImageMax(r.model, { prompt: "x".repeat(LOGO_PROMPT_MAX_BYTES), images: 0, size: "1024x1024", quality: "high" });
+  return Math.ceil(micro * MEDIA_MAX_FACTOR * FX_SAFETY * Math.max(1, getJsonSetting<number>("billing.markup", 1)));
 }
 
 /** Taille maximale d'une demande de logo complet : borne le coût maximal du devis (jamais dépassé). */

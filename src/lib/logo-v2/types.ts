@@ -204,4 +204,6 @@ export type EngineRun = {
   ai: "used" | "unavailable" | "off";
   stoppedByCostCap: boolean;
   notes: string[];
+  /** Sans proposition validée : meilleur logo obtenu (asset), présenté au client comme non validé — jamais zéro logo. */
+  best?: string | null;
 };

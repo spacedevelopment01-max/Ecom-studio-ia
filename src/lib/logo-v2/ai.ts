@@ -14,7 +14,7 @@
  */
 import type { JobContext } from "../jobs";
 import { llmJson } from "../ai/llm";
-import { imageUnavailableReason, mediaRouteFor } from "../ai/media-providers";
+import { imageUnavailableReason, logoQualityRelay, mediaRouteFor } from "../ai/media-providers";
 import { L, uiLang } from "../i18n-server";
 import { STYLE_FONTS, TerritoriesSchema, type TerritoryDraft } from "./territories";
 import { LogoReviewSchema } from "./quality";
@@ -36,6 +36,13 @@ export type LogoV2Ai = {
   artworkRoute?(): { provider: string; model: string } | { unavailable: string };
   /** Logo complet d'un territoire dessiné par le modèle d'images (image PNG telle que livrée). */
   drawArtwork?(t: Territory, brief: BrandBrief, feedback?: string): Promise<Buffer>;
+  /**
+   * RELAIS DE QUALITÉ (règle du propriétaire) : modèle d'OpenAI qui redessine un logo que le contrôle a jugé
+   * insuffisant (ou la raison de son absence).
+   */
+  relayRoute?(): { provider: string; model: string } | { unavailable: string };
+  /** Logo complet redessiné par le relais de qualité (OpenAI), avec la critique du contrôle. */
+  drawArtworkRelay?(t: Territory, brief: BrandBrief, feedback?: string): Promise<Buffer>;
   /** Relecture d'un logo complet sur sa planche, critères adaptés au style. */
   reviewArtwork?(board: Buffer, t: Territory, brief: BrandBrief, expected: { name: string; descriptor: string | null; tagline: string | null }): Promise<ArtworkReview>;
 };
@@ -155,6 +162,13 @@ ${brief.rejectedMarkTypes.length ? `Types de logo refusés par le client (ne pas
       // Logo complet : le modèle doit savoir écrire le nom (même décision que la génération pour l'usage « Logos »).
       const r = mediaRouteFor("logo", { text: true, transparent: true });
       return r ?? { unavailable: imageUnavailableReason("logo") ?? L("aucun modèle d'images capable d'écrire le nom pour les logos", "no image model able to write the name for logos") };
+    },
+    relayRoute() {
+      return logoQualityRelay() ?? { unavailable: L("relais OpenAI indisponible (clé OpenAI absente ou désactivée, ou tarif inconnu)", "OpenAI relay unavailable (OpenAI key missing or disabled, or unknown price)") };
+    },
+    async drawArtworkRelay(t, brief, feedback) {
+      const { logoArtworkRelayImage } = await import("../ai/media-providers");
+      return logoArtworkRelayImage({ ...base, usageKey: key(`relay:${t.id}${feedback ? `:r${feedback.length}` : ""}`) }, { prompt: artworkPrompt(t, brief, feedback) });
     },
     async drawArtwork(t, brief, feedback) {
       const { logoArtworkImage } = await import("../ai/media-providers");
