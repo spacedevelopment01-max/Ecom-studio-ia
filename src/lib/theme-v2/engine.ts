@@ -27,6 +27,7 @@ import { artDirection, type ArtDirection, type LanguageId } from "./art-directio
 import { designSettings } from "./design-system";
 import { siteContent, type SiteContent } from "./content";
 import { compose, type PagePlan } from "./compose";
+import { bindProductContent, stampProductContent } from "../theme/product-content";
 
 export const THEME_ENGINE_V2_VERSION = "10a.1";
 
@@ -47,7 +48,9 @@ export async function composeThemeV2(projectId: string, opts: { language?: Langu
   const content = siteContent(p, intent, copy, images, servicePhotos ?? gallery, homeSeoDoc(projectId, intent.lang));
   content.wide = wideFiles(files);
   const shop = intent.site === "shop_mono" || intent.site === "shop_multi";
-  const c = compose(intent, art, content, shop ? base.store.product.handle : null, shop ? base.templates.product : null, { collections: base.store.collections ?? [], products: shop ? storeProducts(base) : [] });
+  const mainProduct = storeProducts(base).find((x) => x.contentTarget === "product:main");
+  const mainTemplate = mainProduct?.template_suffix ? base.templates[`product.${mainProduct.template_suffix}`] ?? base.templates.product : base.templates.product;
+  const c = compose(intent, art, content, shop ? mainProduct?.handle ?? base.store.product.handle : null, shop ? structuredClone(mainTemplate) : null, { collections: base.store.collections ?? [], products: shop ? storeProducts(base) : [] });
 
   const spec = cloneSpec(base);
   spec.direction = base.direction;
@@ -100,7 +103,9 @@ export async function composeThemeV2(projectId: string, opts: { language?: Langu
   };
   // Trace limitée aux identifiants et empreintes, jamais aux consignes ni aux données client.
   (spec.meta as typeof spec.meta & { contentDelivery?: typeof contentDelivery }).contentDelivery = contentDelivery;
+  if (shop) bindProductContent(spec, p, c.templates.product);
   const tidied = tidyComposition(spec, { strictAssets: true });
+  stampProductContent(tidied);
   return { spec: tidied, intent, art, content, plan: c.plan };
 }
 

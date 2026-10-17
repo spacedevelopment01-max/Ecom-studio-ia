@@ -12,7 +12,7 @@
  * - aucune section vide (galerie, grille, frise… sans contenu) ;
  * - aucune image désignée par un nom de fichier qui n'existe pas (cadre cassé).
  */
-import type { SectionInstance, TemplateJson, ThemeSpec } from "./spec";
+import { storeProducts, type SectionInstance, type TemplateJson, type ThemeSpec } from "./spec";
 
 const norm = (t: unknown) => String(t ?? "").replace(/<[^>]+>/g, " ").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 /** Texte qui n'est qu'un espace réservé « [À compléter : …] » / « [To complete: …] » (ou vide). */
@@ -89,16 +89,19 @@ export function tidyComposition(spec: ThemeSpec, opts: { strictAssets?: boolean 
   if (!spec.imported && (opts.strictAssets || Object.keys(spec.files).length)) {
     const files = Object.keys(spec.files);
     const fallback = ["packshot", "hero", "en-situation", "scene", "produit-detoure"].map((h) => files.find((f) => f.includes(h) && !/\.(mp4|webm)$/.test(f))).find(Boolean) ?? "";
-    const fix = (settings: Record<string, unknown>) => {
+    const fix = (settings: Record<string, unknown>, replacement: string) => {
       for (const [k, v] of Object.entries(settings)) {
         if (!k.endsWith("_asset") || typeof v !== "string" || !v || spec.files[v]) continue;
-        settings[k] = /video|logo|favicon/.test(k) ? "" : fallback;
+        settings[k] = /video|logo|favicon/.test(k) ? "" : replacement;
       }
     };
-    for (const c of [...Object.values(spec.templates), ...Object.values(spec.groups)]) {
+    for (const [key, c] of [...Object.entries(spec.templates), ...Object.entries(spec.groups)]) {
+      const owners = storeProducts(spec).filter((p) => p.template_suffix && `product.${p.template_suffix}` === key);
+      // Une image manquante de fiche n'est jamais remplacée par celle d'un autre produit.
+      const replacement = key === "product" || key.startsWith("product.") ? (owners.length === 1 ? owners[0].images.find((f) => !!spec.files[f]) ?? "" : "") : fallback;
       for (const s of Object.values(c.sections)) {
-        fix(s.settings);
-        for (const b of Object.values(s.blocks ?? {})) fix(b.settings);
+        fix(s.settings, replacement);
+        for (const b of Object.values(s.blocks ?? {})) fix(b.settings, replacement);
       }
     }
   }

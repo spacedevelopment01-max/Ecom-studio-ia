@@ -14,6 +14,7 @@ import { importedArchive } from "./imported";
 import { L } from "../i18n-server";
 import type { Lang } from "../i18n";
 import { localizeSectionLiquid, localizeSettingsSchema } from "./schema-i18n";
+import { productTemplateAssignments, productTemplateManifest } from "./product-templates";
 
 export type ThemeFiles = Map<string, string>; // chemin → contenu texte (assets binaires exclus)
 
@@ -92,6 +93,7 @@ export function compileTheme(spec: ThemeSpec): ThemeFiles {
   for (const [key, t] of Object.entries(spec.templates)) {
     files.set(`templates/${key}.json`, HEADER + JSON.stringify(cleanTemplate(t), null, 2));
   }
+  if (productTemplateAssignments(spec).length) files.set("assets/es-product-templates.json", JSON.stringify(productTemplateManifest(spec), null, 2));
   for (const [g, json] of Object.entries(spec.groups)) {
     if (imp && !imp.groups.includes(g as "header" | "footer")) continue;
     files.set(`sections/${g}-group.json`, HEADER + JSON.stringify({ type: json.type, name: json.name, sections: json.sections, order: json.order.filter((id) => json.sections[id]) }, null, 2));

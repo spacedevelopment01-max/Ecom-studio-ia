@@ -1,0 +1,127 @@
+/** Fiches isolées par identité. Le gabarit commun reste dynamique, sans fait du produit principal. */
+import crypto from "node:crypto";
+import { currentTheme, type Project } from "../projects";
+import { associatePages, plannedPages, themePages } from "../seo-v2/pages";
+import { referenceContent } from "../seo-v2/theme-copy";
+import { pick } from "../i18n";
+import { escapeHtml, storeProducts, type ProductContentBinding, type TemplateJson, type ThemeSpec } from "./spec";
+
+const hash = (x: unknown) => crypto.createHash("sha256").update(JSON.stringify(x) ?? "null").digest("hex");
+const dynamicBlocks = new Set(["title", "price", "buy_buttons", "description"]);
+export function neutralProductTemplate(source: TemplateJson): TemplateJson {
+  const out = structuredClone(source);
+  out.order = out.order.filter((id) => ["main-product", "product-recommendations"].includes(out.sections[id]?.type));
+  out.sections = Object.fromEntries(out.order.map((id) => [id, out.sections[id]]));
+  for (const s of Object.values(out.sections)) if (s.type === "main-product") {
+    s.block_order = (s.block_order ?? Object.keys(s.blocks ?? {})).filter((id) => dynamicBlocks.has(s.blocks?.[id]?.type ?? ""));
+    s.blocks = Object.fromEntries(s.block_order.map((id) => [id, s.blocks![id]]));
+    for (const b of Object.values(s.blocks)) { delete b.settings.product_handle; delete b.settings.hide_for_handle; }
+    if (!Object.values(s.blocks).some((b) => b.type === "description")) { s.blocks.own_description = { type: "description", settings: {} }; s.block_order.push("own_description"); }
+  }
+  return out;
+}
+
+/** Copie d'un gabarit possédé par une cible : ses médias/sections ne sont pas remplacés par ceux d'une autre. */
+function keepTemplate(spec: ThemeSpec, previous: ThemeSpec, template: TemplateJson): TemplateJson {
+  let json = JSON.stringify(template);
+  const keptTypes: string[] = [];
+  for (const [type, section] of Object.entries(previous.customSections)) if (json.includes(`"${type}"`)) {
+    let next = type;
+    const assetConflict = Object.entries(previous.files).some(([file, asset]) => section.liquid.includes(file) && spec.files[file] && spec.files[file] !== asset);
+    if (assetConflict || spec.customSections[type] && hash(spec.customSections[type]) !== hash(section)) next = `es-custom-kept-${hash([type, section, previous.files]).slice(0, 12)}`;
+    spec.customSections[next] = structuredClone(section);
+    keptTypes.push(next);
+    if (next !== type) json = json.replaceAll(`"${type}"`, `"${next}"`);
+  }
+  for (const [file, asset] of Object.entries(previous.files)) if (json.includes(file) || keptTypes.some((t) => spec.customSections[t].liquid.includes(file))) {
+    let next = file;
+    if (spec.files[file] && spec.files[file] !== asset) next = `es-kept-${hash([file, asset]).slice(0, 12)}.${file.split(".").pop()}`;
+    spec.files[next] = asset;
+    if (next !== file) { json = json.replaceAll(file, next); for (const type of keptTypes) spec.customSections[type].liquid = spec.customSections[type].liquid.replaceAll(file, next); }
+  }
+  return JSON.parse(json) as TemplateJson;
+}
+
+export function bindProductContent(spec: ThemeSpec, p: Project, principalTemplate: TemplateJson = spec.templates.product) {
+  if (p.business === "services" || !principalTemplate) return;
+  const neutral = neutralProductTemplate(principalTemplate);
+  spec.templates.product = neutral;
+  const products = storeProducts(spec);
+  const planned = plannedPages(p);
+  const matches = associatePages(planned, themePages(spec));
+  const current = currentTheme(p.id);
+  const oldMatches = current ? associatePages(planned, themePages(current.spec)) : new Map();
+  const previousProducts = current ? storeProducts(current.spec) : [];
+  const bindings: ProductContentBinding[] = [];
+  const lang = spec.language ?? "fr", t = (fr: string, en: string) => pick(lang, fr, en);
+  for (const product of products) {
+    const target = [...matches].find(([, page]) => page.kind === "product" && page.url === `/products/${product.handle}`)?.[0];
+    if (!target) { delete product.template_suffix; continue; }
+    product.contentTarget = target;
+    const item = target.startsWith("product:catalog:") ? p.catalog.find((x) => `product:catalog:${x.key}` === target) : null;
+    const oldUrl = oldMatches.get(target)?.url;
+    const old = previousProducts.find((x) => `/products/${x.handle}` === oldUrl);
+    const prior = current?.spec.meta?.productContent?.find((b) => b.target === target && b.suffix === old?.template_suffix);
+    let suffix = `ecp-${hash(target).slice(0, 16)}`;
+    let tpl = structuredClone(target === "product:main" ? principalTemplate : neutral);
+    let templateSource: ProductContentBinding["templateSource"] = "generated";
+    if (old?.template_suffix && current) {
+      const oldTemplate = current.spec.templates[`product.${old.template_suffix}`];
+      const uniquelyOwned = previousProducts.filter((x) => x.template_suffix === old.template_suffix).length === 1;
+      if (oldTemplate && uniquelyOwned && (!prior || prior.templateSource === "user" || prior.templateHash !== hash(oldTemplate))) {
+        tpl = keepTemplate(spec, current.spec, oldTemplate); suffix = old.template_suffix; templateSource = "user";
+        // Un renommage change l'URL, pas la propriété des blocs réservés explicitement à cette fiche.
+        for (const s of Object.values(tpl.sections)) for (const b of Object.values(s.blocks ?? {})) for (const k of ["product_handle", "hide_for_handle"]) if (b.settings[k] === old.handle) b.settings[k] = product.handle;
+      }
+    }
+    if (item && templateSource === "generated") {
+      const facts = [...(item.category.trim() ? [{ label: t("Type", "Type"), value: item.category.trim() }] : []), ...item.features.filter((s) => s.trim()).map((value) => ({ label: t("Caractéristique", "Feature"), value: value.trim() }))];
+      const main = Object.values(tpl.sections).find((s) => s.type === "main-product");
+      if (main && item.features.some((x) => x.trim())) {
+        main.blocks ??= {}; main.block_order ??= Object.keys(main.blocks);
+        main.blocks.own_highlights = { type: "highlights", settings: { items: item.features.filter((x) => x.trim()).map(escapeHtml).join("\n"), icon: "check", columns: 1 } };
+        main.block_order.push("own_highlights");
+      }
+      if (facts.length >= 2) {
+        tpl.sections.own_specs = { type: "v2-specs", settings: { layout: "table", eyebrow: t("Fiche", "Details"), heading: t("Caractéristiques", "Specifications"), image_asset: "", note: "", color_scheme: "scheme-1", padding_top: 64, padding_bottom: 64 }, blocks: Object.fromEntries(facts.map((f, i) => [`fact_${i}`, { type: "spec", settings: { label: escapeHtml(f.label), value: escapeHtml(f.value) } }])), block_order: facts.map((_, i) => `fact_${i}`) };
+        tpl.order.push("own_specs");
+      } else if (facts.length === 1) {
+        tpl.sections.own_fact = { type: "rich-text", settings: { align: "left", color_scheme: "scheme-1", padding_top: 32, padding_bottom: 32 }, blocks: { body: { type: "text", settings: { text: `<p>${escapeHtml(facts[0].label)} : ${escapeHtml(facts[0].value)}</p>` } } }, block_order: ["body"] };
+        tpl.order.push("own_fact");
+      }
+    }
+    // Les IDs de sections sont propres au produit : un style ciblé sur une fiche ne colore pas ses voisines.
+    if (templateSource === "generated") {
+      const prefix = `p_${hash(target).slice(0, 8)}_`;
+      const scopedId = (id: string) => prefix + id.replace(/^(?:p_[a-f0-9]{8}_)+/, "");
+      tpl = { ...tpl, order: tpl.order.map(scopedId), sections: Object.fromEntries(Object.entries(tpl.sections).map(([id, s]) => [scopedId(id), s])) };
+    }
+    const doc = referenceContent(p.id, "product_page", lang, target);
+    const newerDoc = doc && current && doc.version.createdAt > current.version.created_at;
+    const isEdited = (field: "body" | "seo") => old && !newerDoc && (prior ? prior[`${field}Source`] === "user" || prior[`${field}Hash`] !== hash(field === "body" ? old.description_html : old.seo) : current?.version.author === "user");
+    const bodySource = isEdited("body") ? "user" : "generated", seoSource = isEdited("seo") ? "user" : "generated";
+    if (bodySource === "user") product.description_html = old!.description_html;
+    if (seoSource === "user") product.seo = structuredClone(old!.seo);
+    const main = Object.values(tpl.sections).find((s) => s.type === "main-product");
+    if (main && !Object.values(main.blocks ?? {}).some((b) => b.type === "description")) {
+      main.blocks ??= {}; main.block_order ??= Object.keys(main.blocks);
+      main.blocks.own_description = { type: "description", settings: {} }; main.block_order.push("own_description");
+    }
+    const conflicts = (s: string) => products.some((x) => x !== product && x.template_suffix === s && x.contentTarget !== target) || previousProducts.some((x) => x !== old && x.contentTarget !== target && x.template_suffix === s);
+    for (let n = 0; conflicts(suffix); n++) suffix = `ecp-${hash([target, n]).slice(0, 16)}`;
+    if (templateSource === "user" && old?.template_suffix && current) {
+      for (const style of current.spec.elementStyles ?? []) if (style.template === `product.${old.template_suffix}` && tpl.sections[style.section]) {
+        const next = { ...structuredClone(style), template: `product.${suffix}` };
+        spec.elementStyles ??= []; if (!spec.elementStyles.some((x) => hash(x) === hash(next))) spec.elementStyles.push(next);
+      }
+    }
+    spec.templates[`product.${suffix}`] = tpl; product.template_suffix = suffix;
+    bindings.push({ target, suffix, templateHash: hash(tpl), bodyHash: hash(product.description_html), seoHash: hash(product.seo), templateSource, bodySource, seoSource });
+  }
+  spec.meta ??= {}; spec.meta.productContent = bindings;
+}
+
+/** À appeler après les finitions : ne pas prendre leur nettoyage pour une retouche ultérieure du client. */
+export function stampProductContent(spec: ThemeSpec) {
+  for (const b of spec.meta?.productContent ?? []) if (b.templateSource === "generated") b.templateHash = hash(spec.templates[`product.${b.suffix}`]);
+}

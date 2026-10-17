@@ -23,6 +23,7 @@ import { localCopy } from "./local-copy";
 import { serviceTermsHtml } from "./services-text";
 import { attachVariantMedia, catalogStore, ensureCatalogMedia, ensureVariantMedia } from "./catalog";
 import { deliverContent } from "../seo-v2/theme-delivery";
+import { bindProductContent } from "../theme/product-content";
 import { assetsByRole, latestAsset } from "./images";
 import { aiDesignHome, aiReviewHome } from "../ai/tasks";
 import { snapshotTheme } from "../theme/snapshot";
@@ -269,6 +270,7 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
     ...(catalog ? { storeType: p.storeType, products: catalog.products, collections: catalog.collections } : {}),
   });
   deliverContent(spec, p, spec.language ?? contentLang());
+  if (!services) bindProductContent(spec, p);
   return { p, direction, services, catalog, spec };
 }
 

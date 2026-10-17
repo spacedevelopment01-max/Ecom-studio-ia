@@ -710,7 +710,7 @@ export default function TabBoutique() {
       <SectionLibrary open={!!libTarget} onClose={() => setLibTarget(null)} items={theme.library} onPick={addSection} where={libTarget?.label ?? ""} busy={adding} projectId={id} versionId={theme.current.versionId} aiAvailable={!!data?.ai.llm} onGenerate={generateSection} generateLocked={!!custom.data && !custom.data.sectionsAllowed} sameOrigin={!!theme.sandbox?.includes("allow-same-origin")} />
       <ThemeGallery services={isServices} sandbox={theme.sandbox} open={galleryOpen} onClose={() => setGalleryOpen(false)} projectId={id} directions={theme.directions} current={cur.direction} canApply onApplied={() => (reload(), reloadProject())} />
       {pagesOpen && <PagesManager open onClose={() => setPagesOpen(false)} projectId={id} sandbox={theme.sandbox} onOpenPage={(path) => (setPage(path), setView("preview"))} onChanged={() => reload()} />}
-      <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} projectId={id} versionId={versionId} fingerprint={cur.fingerprint} platform={data && isPlatform(data.project.platform) ? data.project.platform : "shopify"} business={data?.business ?? "products"} />
+      <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} projectId={id} versionId={versionId} fingerprint={cur.fingerprint} platform={data && isPlatform(data.project.platform) ? data.project.platform : "shopify"} business={data?.business ?? "products"} hasProductTemplates={!!cur.products?.some((p) => p.template_suffix)} />
     </div>
   );
 }
@@ -830,7 +830,7 @@ function pageTemplate(path: string, theme: ThemeData | null): string {
   return "404";
 }
 
-function ExportModal({ open, onClose, projectId, versionId, fingerprint, platform, business }: { open: boolean; onClose: () => void; projectId: string; versionId: string | null; fingerprint: string; platform: PlatformId; business: BusinessType }) {
+function ExportModal({ open, onClose, projectId, versionId, fingerprint, platform, business, hasProductTemplates }: { open: boolean; onClose: () => void; projectId: string; versionId: string | null; fingerprint: string; platform: PlatformId; business: BusinessType; hasProductTemplates: boolean }) {
   const toast = useToast();
   const t = useT();
   const { reload } = useProject();
@@ -861,6 +861,7 @@ function ExportModal({ open, onClose, projectId, versionId, fingerprint, platfor
         <p className="mt-1 text-xs text-ink-2">{main.text}</p>
         <ExportDownload url={`/api/projects/${projectId}/theme/export?platform=${platform}${q}`} label={main.kind === "theme" ? t(`Vérifier et télécharger le thème ${main.short}`, `Check and download the ${main.short} theme`) : t(`Télécharger le kit ${main.short}`, `Download the ${main.short} kit`)} onDone={() => setChecked((n) => n + 1)} />
         <p className="mt-2 text-xs text-muted">{howTo[platform]}</p>
+        {platform === "shopify" && !svc && hasProductTemplates && <p className="mt-2 text-xs text-muted">{t("Après l'import du thème et des produits, affectez à chaque produit son modèle dans Shopify. Les correspondances sont dans assets/es-product-templates.json du ZIP ; le CSV seul ne les affecte pas.", "After importing the theme and products, assign each product its template in Shopify. The mapping is in assets/es-product-templates.json inside the ZIP; the CSV alone does not assign templates.")}</p>}
         <PlatformExportDetails projectId={projectId} platform={platform} reloadKey={checked} />
         {csv && (
           <a href={`/api/projects/${projectId}/theme/export?platform=${csv[0]}${q}`} className="mt-3 flex items-center gap-3 rounded-2xl border border-line bg-card p-3 hover:border-ink">

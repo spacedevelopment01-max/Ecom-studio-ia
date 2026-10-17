@@ -68,6 +68,12 @@ export type StorePage = {
   links?: { service?: string; booking?: string };
 };
 
+/** Origine des parties de fiche : une retouche du client ne devient pas un nouveau contenu généré. */
+export type ProductContentBinding = {
+  target: string; suffix: string; templateHash: string; bodyHash: string; seoHash: string;
+  templateSource: "generated" | "user"; bodySource: "generated" | "user"; seoSource: "generated" | "user";
+};
+
 /**
  * Style d'un élément précis : section, chemin CSS depuis l'enveloppe de la section (« div:nth-child(1) > h1:nth-child(2) »),
  * nature et texte (pour le retrouver dans les exports qui ne reprennent pas le même HTML, ex. WordPress).
@@ -121,7 +127,7 @@ export type ThemeSpec = {
    * Moteur qui a composé ce thème et sa traçabilité (Theme Engine V2 : intention, direction artistique, plan des
    * pages, contenus à compléter). Ignoré par la compilation et l'export ; absent sur les thèmes plus anciens.
    */
-  meta?: { engine?: "v1" | "v2"; v2?: Record<string, any> };
+  meta?: { engine?: "v1" | "v2"; v2?: Record<string, any>; productContent?: ProductContentBinding[] };
   /** Données de la boutique (produit, pages, menus). Séparées du thème ; utilisées par l'aperçu et l'import. */
   store: {
     shopName: string;
