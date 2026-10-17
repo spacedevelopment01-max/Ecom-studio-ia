@@ -365,7 +365,7 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
   const quality = checked.verdict === "RETRY" && checked.action === "recheck" ? { ...checked, verdict: "PROVISIONAL" as const, action: "none" as const, reason: L("Structure vérifiée ; rendu visuel non vérifié, à relire.", "Structure checked; visual result unchecked, review required."), provisional: { use: "manual" as const, label: "needs_improvement" as const } } : checked;
   const qcId = saveCheck(quality, { userId: p.userId, projectId, jobId: ctx?.job.id ?? null, candidateId: `theme:${projectId}:${direction}` });
   if (reviewed && !reviewedKept) saveCheck(decide("theme_home", { checker: "ai", score: reviewed.score }), { userId: p.userId, projectId, jobId: ctx?.job.id ?? null, candidateId: `theme-ai-layout:${projectId}:${direction}` });
-  if (quality.verdict === "PROVISIONAL") append(inBothLangs(() => L(" · niveau provisoire, à améliorer (moins de 8/10)", " · provisional level, needs improvement (below 8/10)")));
+  if (quality.verdict === "PROVISIONAL") append(inBothLangs(() => L(" · niveau provisoire, à vérifier et améliorer", " · provisional level, review and improve")));
   const conflict = (currentTheme(projectId)?.version.id ?? null) !== parent;
   const v = saveThemeVersion(projectId, spec, JSON.stringify(summary), author, { checks: L(["structure", "schémas des sections", "contraste des couleurs"], ["structure", "section schemas", "color contrast"]), problems, gate: gateMeta(quality, qcId) }, parent, { activate: !conflict });
   ctx?.progress(0.95, L("Boutique enregistrée", "Store saved"));

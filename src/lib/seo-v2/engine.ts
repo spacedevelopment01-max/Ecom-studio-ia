@@ -302,14 +302,15 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   // Une relecture en panne ne laisse jamais « à reprendre » : provisoire, à valider par le client.
   const insufficient = by === "ai" && review && editorialScore(review) < policy.retryFloor;
   const verdict = base.codes.length || insufficient ? "REJECTED" : d.verdict === "RETRY" && !d.checked ? "PROVISIONAL" : d.verdict;
-  gateSave({ userId: p.userId, projectId: p.id, jobId: ctx?.job.id ?? null, candidateId: `seo2:${docKey}` }, d);
+  // Garder les contrôles d'essai, puis tracer aussi le verdict effectif du document livré.
+  gateSave({ userId: p.userId, projectId: p.id, jobId: ctx?.job.id ?? null, candidateId: `seo2:${docKey}` }, { ...d, verdict });
   doc = { ...doc, meta2: { ...doc.meta2, contract: { request: brief.request ?? "", contextHash: brief.context?.hash ?? "", contextVersion: brief.context?.version ?? "", target: page.key, checks: checkRequirements(doc, brief.requirements) } } };
   ctx?.progress(0.9, L("Conservation du texte et de son contrôle", "Saving content and its check"));
   const saved = retain(doc, verdict, `moteur ${by === "ai" ? "IA" : "local"} — ${verdict}`);
   // Blog V2 : le brouillon rejoint le blog existant (relecture, couverture, publication dans l'onglet Blog).
   if (req.type === "blog_article") saveBlogDraftV2(p, docKey, doc, { notes: [...base.issues, ...notes], ai: by === "ai", jobKey: runId });
   rememberContentRun(p.id, memoKey, { docKey, version: saved.version, verdict, costMicro: budget.spentMicro });
-  return { ...base, docKey, doc, verdict, reason: d.reason, by, costMicro: budget.spentMicro, stoppedByCostCap: budget.stopped, delivery: delivery(verdict, [...base.issues, ...notes], budget.stopped) };
+  return { ...base, docKey, doc, verdict, reason: d.reason, by, costMicro: budget.spentMicro, stoppedByCostCap: budget.stopped, delivery: delivery(verdict, [d.reason, ...base.issues, ...notes], budget.stopped) };
 }
 
 // ---------------------------------------------------------------- édition (manuelle et conversationnelle)
