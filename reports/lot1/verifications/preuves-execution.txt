@@ -1,0 +1,1 @@
+{"cases":4,"screenshots":16,"themeCheckErrors":0,"aiCalls":0,"output":"/workspace/Ecom-studio-ia/reports/lot1"}

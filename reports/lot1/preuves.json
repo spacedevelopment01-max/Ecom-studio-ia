@@ -1,0 +1,201 @@
+{
+  "sourceCommit": "bb51140ded044c30118e1cc7f422be8c584925a0",
+  "generatedAt": "2026-10-17T20:09:47.408Z",
+  "isolated": true,
+  "paidCalls": 0,
+  "data": "synthétiques uniquement",
+  "cases": [
+    {
+      "case": "laboratoire",
+      "business": "products",
+      "conversion": "sale",
+      "source": "local puis correction client synthétique",
+      "target": "product:main",
+      "runId": "c3240804-598d-40d8-909f-a628c7098415",
+      "contextHash": "0c131bdd5e0a2ad3",
+      "themeVersion": "ute40nymtxowdyfw",
+      "documents": [
+        {
+          "docKey": "cnt:797e8b73571811f6ae83",
+          "version": 2,
+          "target": "product:main",
+          "runId": "c3240804-598d-40d8-909f-a628c7098415",
+          "contextHash": "0c131bdd5e0a2ad3"
+        }
+      ],
+      "renderedPath": "/products/cartouche-de-filtration",
+      "endingPresent": true,
+      "themeCheck": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "missingMedia": 0,
+      "screenshots": [
+        {
+          "file": "laboratoire/accueil-ordinateur.png",
+          "width": 1440,
+          "overflow": 0
+        },
+        {
+          "file": "laboratoire/contenu-ordinateur.png",
+          "width": 1440,
+          "overflow": 0
+        },
+        {
+          "file": "laboratoire/accueil-mobile.png",
+          "width": 390,
+          "overflow": 0
+        },
+        {
+          "file": "laboratoire/contenu-mobile.png",
+          "width": 390,
+          "overflow": 0
+        }
+      ]
+    },
+    {
+      "case": "jardinage",
+      "business": "products",
+      "conversion": "sale",
+      "source": "local puis correction client synthétique",
+      "target": "product:main",
+      "runId": "35664ad0-65d6-4fa5-a32d-f5527356d642",
+      "contextHash": "792582e4be7e2ff4",
+      "themeVersion": "18ztqo6b6b2lqnkh",
+      "documents": [
+        {
+          "docKey": "cnt:3ac10c2fca8139d6daf6",
+          "version": 2,
+          "target": "product:main",
+          "runId": "35664ad0-65d6-4fa5-a32d-f5527356d642",
+          "contextHash": "792582e4be7e2ff4"
+        }
+      ],
+      "renderedPath": "/products/semences-de-pois",
+      "endingPresent": true,
+      "themeCheck": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "missingMedia": 0,
+      "screenshots": [
+        {
+          "file": "jardinage/accueil-ordinateur.png",
+          "width": 1440,
+          "overflow": 0
+        },
+        {
+          "file": "jardinage/contenu-ordinateur.png",
+          "width": 1440,
+          "overflow": 0
+        },
+        {
+          "file": "jardinage/accueil-mobile.png",
+          "width": 390,
+          "overflow": 0
+        },
+        {
+          "file": "jardinage/contenu-mobile.png",
+          "width": 390,
+          "overflow": 0
+        }
+      ]
+    },
+    {
+      "case": "piano",
+      "business": "services",
+      "conversion": "quote",
+      "source": "local puis correction client synthétique",
+      "target": "service:offer-one",
+      "runId": "9c2f1d3a-230d-4a76-bcc2-a00fd2682ede",
+      "contextHash": "30f5a752eacb6c4e",
+      "themeVersion": "kk4nmvbe1y65dbty",
+      "documents": [
+        {
+          "docKey": "cnt:f13d48c442feaef2308c",
+          "version": 2,
+          "target": "service:offer-one",
+          "runId": "9c2f1d3a-230d-4a76-bcc2-a00fd2682ede",
+          "contextHash": "30f5a752eacb6c4e"
+        }
+      ],
+      "renderedPath": "/pages/texte-service-offer-one",
+      "endingPresent": true,
+      "themeCheck": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "missingMedia": 0,
+      "screenshots": [
+        {
+          "file": "piano/accueil-ordinateur.png",
+          "width": 1440,
+          "overflow": 0
+        },
+        {
+          "file": "piano/contenu-ordinateur.png",
+          "width": 1440,
+          "overflow": 0
+        },
+        {
+          "file": "piano/accueil-mobile.png",
+          "width": 390,
+          "overflow": 0
+        },
+        {
+          "file": "piano/contenu-mobile.png",
+          "width": 390,
+          "overflow": 0
+        }
+      ]
+    },
+    {
+      "case": "voix",
+      "business": "services",
+      "conversion": "booking",
+      "source": "local puis correction client synthétique",
+      "target": "service:offer-one",
+      "runId": "e4d4a03e-edf8-40e1-972d-0ef86024dba7",
+      "contextHash": "7541e551254875cc",
+      "themeVersion": "uvzh7yilreqe9zfr",
+      "documents": [
+        {
+          "docKey": "cnt:18d2e19f66d7cdc3ae4d",
+          "version": 2,
+          "target": "service:offer-one",
+          "runId": "e4d4a03e-edf8-40e1-972d-0ef86024dba7",
+          "contextHash": "7541e551254875cc"
+        }
+      ],
+      "renderedPath": "/pages/texte-service-offer-one",
+      "endingPresent": true,
+      "themeCheck": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "missingMedia": 0,
+      "screenshots": [
+        {
+          "file": "voix/accueil-ordinateur.png",
+          "width": 1440,
+          "overflow": 0
+        },
+        {
+          "file": "voix/contenu-ordinateur.png",
+          "width": 1440,
+          "overflow": 0
+        },
+        {
+          "file": "voix/accueil-mobile.png",
+          "width": 390,
+          "overflow": 0
+        },
+        {
+          "file": "voix/contenu-mobile.png",
+          "width": 390,
+          "overflow": 0
+        }
+      ]
+    }
+  ]
+}

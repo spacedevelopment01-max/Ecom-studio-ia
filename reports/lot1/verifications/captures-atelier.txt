@@ -1,0 +1,2 @@
+Captures dans /workspace/work/lot1-theme-screens : accueil-ordinateur.png, accueil-pied-ordinateur.png, accueil-pied-telephone.png, accueil-telephone.png, menu-ordinateur.png, menu-telephone.png, produit-ordinateur.png, produit-pied-ordinateur.png, produit-pied-telephone.png, produit-telephone.png
+✓ Aucun débordement horizontal.
