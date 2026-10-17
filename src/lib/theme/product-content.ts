@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import { currentTheme, type Project } from "../projects";
 import { associatePages, plannedPages, themePages } from "../seo-v2/pages";
 import { referenceContent } from "../seo-v2/theme-copy";
+import { toHtml } from "../seo-v2/doc";
 import { pick } from "../i18n";
 import { escapeHtml, storeProducts, type ProductContentBinding, type TemplateJson, type ThemeSpec } from "./spec";
 
@@ -97,10 +98,19 @@ export function bindProductContent(spec: ThemeSpec, p: Project, principalTemplat
       tpl = { ...tpl, order: tpl.order.map(scopedId), sections: Object.fromEntries(Object.entries(tpl.sections).map(([id, s]) => [scopedId(id), s])) };
     }
     const doc = referenceContent(p.id, "product_page", lang, target);
-    const newerDoc = doc && current && doc.version.createdAt > current.version.created_at;
-    const isEdited = (field: "body" | "seo") => old && !newerDoc && (prior ? prior[`${field}Source`] === "user" || prior[`${field}Hash`] !== hash(field === "body" ? old.description_html : old.seo) : current?.version.author === "user");
+    const seoDoc = referenceContent(p.id, ["metadata", "product_page"], lang, target);
+    const isEdited = (field: "body" | "seo") => {
+      const selected = field === "body" ? doc : seoDoc;
+      const newerDoc = selected && current && selected.version.createdAt > current.version.created_at;
+      return old && !newerDoc && (prior ? prior[`${field}Source`] === "user" || prior[`${field}Hash`] !== hash(field === "body" ? old.description_html : old.seo) : current?.version.author === "user");
+    };
     const bodySource = isEdited("body") ? "user" : "generated", seoSource = isEdited("seo") ? "user" : "generated";
-    if (bodySource === "user") product.description_html = old!.description_html;
+    if (bodySource === "user") {
+      product.description_html = old!.description_html;
+      const faq = referenceContent(p.id, "faq", lang, target);
+      const questions = faq ? toHtml({ blocks: faq.doc.blocks.filter((b) => b.kind !== "h1") }) : "";
+      if (questions && !product.description_html.includes(questions)) product.description_html += questions;
+    }
     if (seoSource === "user") product.seo = structuredClone(old!.seo);
     const main = Object.values(tpl.sections).find((s) => s.type === "main-product");
     if (main && !Object.values(main.blocks ?? {}).some((b) => b.type === "description")) {
@@ -109,7 +119,7 @@ export function bindProductContent(spec: ThemeSpec, p: Project, principalTemplat
     }
     const conflicts = (s: string) => products.some((x) => x !== product && x.template_suffix === s && x.contentTarget !== target) || previousProducts.some((x) => x !== old && x.contentTarget !== target && x.template_suffix === s);
     for (let n = 0; conflicts(suffix); n++) suffix = `ecp-${hash([target, n]).slice(0, 16)}`;
-    if (templateSource === "user" && old?.template_suffix && current) {
+    if (old?.template_suffix && current && previousProducts.filter((x) => x.template_suffix === old.template_suffix).length === 1) {
       for (const style of current.spec.elementStyles ?? []) if (style.template === `product.${old.template_suffix}` && tpl.sections[style.section]) {
         const next = { ...structuredClone(style), template: `product.${suffix}` };
         spec.elementStyles ??= []; if (!spec.elementStyles.some((x) => hash(x) === hash(next))) spec.elementStyles.push(next);

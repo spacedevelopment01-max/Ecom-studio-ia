@@ -66,7 +66,8 @@ export function deliverContent(spec: ThemeSpec, p: Project, lang: string) {
     product.seo = seo(target, doc ? { title: doc.meta.seoTitle, description: doc.meta.metaDescription } : product.seo, "product_page");
     const questions = faq(target);
     if (!doc && !questions) continue;
-    product.description_html = (doc ? body(doc) : product.description_html) + questions;
+    const base = doc ? body(doc) : product.description_html;
+    product.description_html = base + (questions && !base.includes(questions) ? questions : "");
     const title = doc?.blocks.find((b) => b.kind === "h1");
     if (title && "text" in title) product.title = stripInline(title.text);
     const template = product.template_suffix ? spec.templates[`product.${product.template_suffix}`] ?? spec.templates.product : spec.templates.product;

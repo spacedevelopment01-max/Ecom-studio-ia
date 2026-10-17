@@ -208,4 +208,32 @@ describe("Lot 1 — sections propres au produit", async () => {
     expect(rendered.html).toContain(`/assets/${file}`);
     expect(currentTheme(pid)).toEqual(before);
   }));
+  it("une retouche de style seule est conservée sur sa fiche, sans dépendre d'un changement de texte", async () => fr(async () => {
+    const { pid } = await productTrio(user.id, { images: false });
+    const { spec } = await composeThemeV2(pid);
+    const a = storeProducts(spec).find((x) => x.contentTarget === "product:catalog:steel")!;
+    const key = `product.${a.template_suffix}`, tpl = spec.templates[key];
+    const style = { template: key, section: tpl.order[0], path: "div:nth-child(1)", role: "text" as const, color: "#134679" };
+    spec.elementStyles = [style]; saveThemeVersion(pid, spec, "Couleur client uniquement", "user");
+    const next = await composeThemeV2(pid);
+    expect(next.spec.elementStyles).toContainEqual(style);
+    const other = storeProducts(next.spec).find((x) => x.contentTarget === "product:catalog:blank")!;
+    expect(Object.keys(next.spec.templates[`product.${other.template_suffix}`].sections)).not.toContain(style.section);
+  }));
+  it("SEO client nouveau et FAQ ciblée : les retouches antérieures du corps restent disponibles", async () => fr(async () => {
+    const { pid } = await productTrio(user.id, { images: false });
+    const { spec } = await composeThemeV2(pid), target = "product:catalog:steel";
+    const a = storeProducts(spec).find((x) => x.contentTarget === target)!;
+    a.description_html = "<p>CORPS_MANUEL_A_PRESERVER</p>"; a.seo = { title: "Ancien SEO manuel", description: "Ancienne description manuelle" };
+    saveThemeVersion(pid, spec, "Corps et SEO corrigés", "user");
+    const meta = await runContentEngineV2(null, pid, { type: "metadata", pageKey: target, lang: "fr" }, localOnlyDeps());
+    saveUserEdit(pid, meta.docKey!, { ...meta.doc!, meta: { ...meta.doc!.meta, seoTitle: "NOUVEAU_SEO_CLIENT", metaDescription: "Nouvelle description client ciblée." } });
+    const faq = await runContentEngineV2(null, pid, { type: "faq", pageKey: target, lang: "fr" }, localOnlyDeps());
+    saveUserEdit(pid, faq.docKey!, { ...faq.doc!, blocks: [{ id: "question", kind: "faq", q: "Nouvelle question accessoire ?", a: "NOUVELLE_REPONSE_ACCESSOIRE" }] });
+    const next = await composeThemeV2(pid), product = storeProducts(next.spec).find((x) => x.contentTarget === target)!;
+    expect(product.seo?.title).toBe("NOUVEAU_SEO_CLIENT");
+    expect(product.description_html).toContain("CORPS_MANUEL_A_PRESERVER");
+    expect(product.description_html).toContain("NOUVELLE_REPONSE_ACCESSOIRE");
+    expect(product.description_html.split("NOUVELLE_REPONSE_ACCESSOIRE")).toHaveLength(2);
+  }));
 });
