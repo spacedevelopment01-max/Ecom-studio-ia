@@ -151,6 +151,18 @@ describe("Lot 1 — rattachement jusqu'au rendu/export", async () => {
     const fresh = built.spec.store.pages.find((p) => p.contentTarget === TARGETS[0])!;
     expect(fresh.handle).not.toBe(old.handle); expect(fresh.template_suffix).not.toBe(old.template_suffix);
   }));
+  it("gabarit par défaut personnalisé : texte historique conservé même sans suffixe", async () => fr(async () => {
+    const { pid, spec } = await servicePair(user.id, { identities: false });
+    spec.templates.page = { order: ["old"], sections: { old: { type: "rich-text", settings: {}, blocks: { body: { type: "text", settings: { text: "<p>Texte du gabarit par défaut personnalisé.</p>" } } }, block_order: ["body"] } } };
+    saveThemeVersion(pid, spec, "Gabarit par défaut du client synthétique", "user");
+    await writePair(pid);
+    const built = await composeThemeV2(pid);
+    const old = built.spec.store.pages.find((p) => p.handle === "prestation-1")!;
+    expect(old.body_html).toBe(spec.store.pages[0].body_html); expect(old.seo).toEqual(spec.store.pages[0].seo);
+    const rendered = await renderPage({ spec: built.spec, base: "", cart: [] }, "/pages/" + old.handle, new URLSearchParams());
+    expect(rendered.html).toContain("Texte du gabarit par défaut personnalisé.");
+    expect(rendered.html).not.toContain(markers(1).text);
+  }));
   it.each([false, true])("produits historiques sans identité, noms identiques=%s : aucun écrasement ambigu", async (ambiguous) => {
     const { pid, spec } = await productPair(user.id, { identities: false, names: ambiguous ? ["Diagnostic", "Diagnostic"] : ["Diagnostic", "Accessoire"] });
     await writePair(pid, "products");

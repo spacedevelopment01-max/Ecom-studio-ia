@@ -19,7 +19,7 @@ export function deliverContent(spec: ThemeSpec, p: Project, lang: string) {
     const page = structuredClone(old);
     const oldKey = page.template_suffix ? `page.${page.template_suffix}` : "page";
     const template = previous!.templates[oldKey];
-    if (template && page.template_suffix) {
+    if (template) {
       if (!spec.templates[oldKey]) spec.templates[oldKey] = structuredClone(template);
       else if (JSON.stringify(spec.templates[oldKey]) !== JSON.stringify(template)) {
         const suffix = `kept-${crypto.createHash("sha256").update(JSON.stringify([old.handle, template])).digest("hex").slice(0, 16)}`;
