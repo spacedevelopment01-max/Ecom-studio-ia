@@ -1,0 +1,33 @@
+
+ RUN  v5.0.3 /workspace/Ecom-studio-ia
+
+ ❯ tests/bibliotheque-modeles.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/bibliotheque-modeles.test.ts [ tests/bibliotheque-modeles.test.ts ]
+SqliteError: database is locked
+ ❯ Database.pragma node_modules/better-sqlite3/lib/methods/pragma.js:11:44
+ ❯ open src/lib/db.ts:1098:6
+    1096|   const file = process.env.DATABASE_FILE || path.join(DATA_DIR, "studi…
+    1097|   const db = new Database(file);
+    1098|   db.pragma("journal_mode = WAL");
+       |      ^
+    1099|   db.pragma("busy_timeout = 8000");
+    1100|   db.pragma("foreign_keys = ON");
+ ❯ db src/lib/db.ts:1108:33
+ ❯ one src/lib/db.ts:1115:10
+ ❯ createUser src/lib/auth.ts:38:35
+ ❯ tests/bibliotheque-modeles.test.ts:32:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 258 passed (259)
+      Tests  1921 passed | 3 skipped (1924)
+   Start at  21:51:49
+   Duration  641.11s (tests 81%, import 18%, transform 1%)
+
+    Isolate  259 workers spawned · ~119ms startup each (spawn + environment, per file)
+             at least ~10.13s faster with isolate: false — reuses workers across files instead of one per file
+

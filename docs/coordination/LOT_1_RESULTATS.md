@@ -2,6 +2,88 @@
 
 Date : 17 octobre 2026. Livraison pour revue indépendante ; aucune fusion ni mise en production.
 
+## Reprise après revue — rattachement des pages (17 octobre 2026)
+
+Cette section décrit la correction demandée dans le [dernier commentaire de mission](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/133#issuecomment-6241348050). Le compte rendu initial, plus bas, est conservé comme historique : ses conclusions sur le rattachement étaient insuffisantes pour les homonymes.
+
+### Version et périmètre
+
+- Départ distant vérifié : `9d6e0734814598f930001d9f44a39f11c7303e1a`, branche de cette PR, répertoire propre. `main` : `ad41c596e859781f33874730891b4bd8b85e259e`. Aucun correctif concurrent publié sur cette branche au démarrage.
+- **Code applicatif et régressions testés : `92b9295b234f9f526005c66fc8fa78e1eb82da9f`.** Les commits suivants changent seulement le script de captures, les preuves et ce rapport ; aucun changement du code applicatif ou des tests de ce commit.
+- Script de preuve exécuté dans sa version `92b9295` (identifiant complet dans `reports/lot1/rattachement/preuves.json`). Il neutralise le défilement animé et vérifie que le panier fixe ne recouvre pas le paragraphe capturé. Types et 99 tests ciblés vérifiés sur ce même code.
+- Relecture de `CLAUDE.md`, de la mission et du rapport initial ; skill [verifier-theme](../../.claude/skills/verifier-theme/SKILL.md) appliqué. Un seul exécutant. L'audit, la mission, les preuves antérieures et les versions de projet restent conservés.
+- Aucun appel IA payant, fournisseur ajouté, compte CMS ou Google connecté, déploiement, publication client ou fusion. Aucun travail sur les 30 thèmes ou la galerie.
+
+### Causes confirmées et corrections
+
+| Constat | Preuve et conséquence | Correction et fichiers |
+| --- | --- | --- |
+| **REPRODUIT / CONFIRMÉ DANS LE CODE** : le premier titre ou alias trouvé passait avant une identité exacte ; une URL pouvait servir deux cibles. | Sur la base `9d6e073`, la régression réelle attend deux URL mais reçoit deux fois `/pages/prestation-1` ; [échec avant correction](../../reports/lot1/rattachement/avant-correction.txt). | `pages.ts` : extraction explicite des identités (`themePages`, y compris `StoreProduct.contentTarget`), association commune `associatePages`, identités d'abord, une URL au plus par cible et réciproquement. `sitePages` réutilise cette association ; `resolvePage` refuse plusieurs correspondances exactes. |
+| **REPRODUIT / CONFIRMÉ DANS LE CODE** : les titres/alias historiques pouvaient réattribuer une page déjà identifiée, même retirée, ou choisir entre plusieurs propriétaires possibles. | Tests de renommage, alias communs, identité après un homonyme, identité/URL dupliquée et offre retirée. | Seules les pages dépourvues d'identité explicite entrent dans le rapprochement historique ; candidat et propriétaire doivent être uniques, en comptant aussi les offres déjà identifiées. Une identité explicite incohérente reste non résolue. `types.ts` et `doc.ts` conservent cette provenance optionnelle sans migration destructrice. |
+| **REPRODUIT** pendant les vérifications de composition : la nouvelle composition omettait les anciennes pages ambiguës ; une page retirée pouvait être retraitée comme cible supplémentaire. | Les tests du parcours réel vérifient l'égalité des anciennes pages, texte et SEO compris, puis la présence séparée des nouveaux documents. | `theme-delivery.ts` : conserver les pages historiques avant livraison, leurs gabarits nécessaires (y compris un gabarit par défaut personnalisé sans suffixe), livrer aux seules cibles actives, ne pas remplacer une adresse occupée ni un gabarit utilisé par une autre page. Les anciens contenus restent accessibles par leur URL. |
+| **REPRODUIT / CONFIRMÉ DANS LE CODE** : le rendu produit ignorait `StoreProduct.seo`. | Les contrôles du vrai `renderPage` échouaient sur les titres/descriptions SEO distincts ; ils passent après correction. | `theme/render.ts` sélectionne les métadonnées du produit demandé par son handle. La livraison produit utilise la même association stable et refuse une association ambiguë au lieu d'utiliser la position du produit. |
+
+Les fichiers applicatifs modifiés sont `src/lib/seo-v2/{pages,theme-delivery,types,doc}.ts` et `src/lib/theme/render.ts`. Les tests nouveaux sont `tests/lot1-rattachement-pages.test.ts`, `tests/lot1-rattachement-parcours.test.ts`, avec les données isolées de `tests/lot1-rattachement-fixtures.ts`. Le script reproductible est `scripts/lot1-rattachement-proof.ts`.
+
+### Matrice vérifiée
+
+- Deux offres « Diagnostic », identités différentes : les quatre combinaisons d'ordre des prestations et des pages sont exécutées pour deux activités de services (accord de piano sur devis et cours de voix sur rendez-vous). Les deux corps et les deux SEO restent distincts jusqu'au `ThemeSpec`, au vrai rendu et aux exports concernés.
+- Produit principal et accessoire homonymes, dans les deux positions de `StoreProduct`, pour laboratoire et semences : identités lues, aucun mélange des corps/SEO ; rendu des deux produits et lignes CSV contrôlés séparément.
+- Renommage avec anciens alias communs ; identité exacte après un titre concurrent ; ancien contenu sans identité, unique ou ambigu ; offre retirée ; identité dupliquée ; URL dupliquée ; gabarit historique partagé, gabarit par défaut personnalisé et adresse de nouveau contenu déjà occupée.
+- Produits historiques sans identité : association seulement si elle est unique ; sinon livraison en place sans modification du produit. Produit catalogue retiré : conservé tel quel lors de cette livraison, sans réattribution au principal.
+- Validation supplémentaire ajoutée après la correction : numérisation d'archives sur devis et instrumentation industrielle avec accessoire. Composition réelle après changement du contexte et du nom du projet, puis contrôle des deux contenus et SEO dans le rendu. Aucune condition de production ne dépend d'un métier, d'une marque ou d'un nom de projet.
+- La composition de preuve ne sauvegarde ni n'active une version : le thème courant est comparé avant/après et reste identique. Les bases sont temporaires, les documents locaux corrigés par un utilisateur synthétique et `fetch` interdit. Les tests de rattachement ne simulent ni la base, ni la sélection, ni la livraison, ni le rendu, ni l'export ; aucune évaluation d'un fournisseur réel n'est revendiquée.
+
+### Commandes et résultats réellement exécutés
+
+Les journaux sont dans [`reports/lot1/rattachement/`](../../reports/lot1/rattachement). Les exécutables locaux correspondent aux commandes `npx` du dépôt ; `DATA_DIR` est isolé par Vitest ou explicitement créé par les scripts.
+
+```bash
+# Sur la base avant correction : échec attendu, journal conservé
+./node_modules/.bin/vitest run tests/lot1-rattachement-pages.test.ts
+
+# Types : réussite, aucune erreur
+./node_modules/.bin/tsc --noEmit
+
+# Vérifications ciblées finales : 7 fichiers, 99 tests réussis
+./node_modules/.bin/vitest run tests/lot1-rattachement-pages.test.ts tests/lot1-rattachement-parcours.test.ts tests/lot1-consignes-livraison.test.ts tests/lot1-holdout.test.ts tests/seo-v2.test.ts tests/seo-v2-engine.test.ts tests/theme-v2.test.ts
+
+# Suite complète requise
+./node_modules/.bin/vitest run
+
+# Dans une base temporaire dédiée supprimée à la sortie
+DATA_DIR="$audit_theme_data" STOCK_OFFLINE=1 JOBS=2 scripts/verify-theme.sh --rapide
+
+# Crée sa propre base temporaire et interdit le réseau fournisseur
+CHROMIUM=/usr/bin/chromium ./node_modules/.bin/tsx scripts/lot1-rattachement-proof.ts reports/lot1/rattachement
+```
+
+- Types : **réussi**. Régressions de rattachement : **29 réussies**. Ensemble ciblé final : **99 réussies**, 7 fichiers (16,40 s). Les tests antérieurs du lot, du moteur SEO et du moteur de thèmes sont inclus.
+- Première suite complète interrompue volontairement (sortie 130) pour ajouter la régression du gabarit par défaut : ce test a échoué avant correction. Après correction et contrôle ciblé, la suite a été relancée sur le commit final. **Suite finale locale non entièrement verte** : 258 fichiers réussis, 1 échec de collecte, 1 921 tests réussis et 3 ignorés (641,11 s). `tests/bibliotheque-modeles.test.ts` échoue avant ses 4 tests sur `SqliteError: database is locked`, lors de `db.pragma("journal_mode = WAL")` dans `src/lib/db.ts:1098`. Le même fichier exécuté séparément réussit ses **4 tests** (181,31 s). Les fonctions de base de données n'ont pas été modifiées ; la concurrence à l'initialisation est une hypothèse, pas une cause démontrée par cette reprise. Aucun échec de rattachement n'est présent dans ce lancement. [Journal complet](../../reports/lot1/rattachement/tests-complets.txt) et [exécution isolée](../../reports/lot1/rattachement/bibliotheque-isolee.txt). Le lancement global échoué ne reçoit pas un statut réussi par addition des tests isolés ; la CI finale doit être consultée séparément.
+- Theme Check rapide : **25 cas réussis** (5 directions FR/EN, multi/niche, services FR/EN et ZIP client), aucune erreur ni avertissement. Aucun changement de `theme-base/`.
+- Preuve navigateur : **4 pages, 8 captures** à 1440 et 390 px, contrôles des textes propres à chaque cible, absence de l'autre texte, `<title>` et meta description corrects, aucun débordement horizontal, paragraphe non recouvert après défilement. Les captures ont été ouvertes et inspectées ; les deux captures mobiles produit ont été refaites pour rendre le paragraphe lisible malgré le panier fixe.
+- Deux vrais ZIP Shopify vérifiés par Theme Check : **0 erreur, 0 avertissement** ; les corps des prestations sont vérifiés dans leurs gabarits JSON, les corps produits dans leur **CSV séparé**. Les métadonnées sont présentes dans `ThemeSpec`, le DOM d'aperçu et les exports documentaires `.seo.json` par cible. Cela ne constitue pas une importation SEO automatique par le ZIP ou le CSV natif.
+- `ai_calls` de la base de preuve : **0**. Aucun appel payant exécuté. Les dépendances locales de rédaction sont explicites ; la frontière SDK simulée des tests initiaux est toujours couverte par la suite ciblée.
+- CI de la tête livrée : résultat, SHA exact et lien d'exécution consignés dans [le commentaire de remise de cette reprise](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/133#issuecomment-6241603870), mis à jour après terminaison des jobs. Ce contrôle après envoi porte sur le dernier commit distant, y compris rapport et preuves ; le succès de la CI de `9d6e073` n'est pas utilisé pour valider la nouvelle correction. Les deux jobs requis sont « Typecheck, tests, Theme Check, build » et « Image Docker (construction et démarrage) ».
+
+Preuves visibles : [prestation 1 ordinateur](../../reports/lot1/rattachement/services/page-1-ordinateur.png), [prestation 2 mobile](../../reports/lot1/rattachement/services/page-2-mobile.png), [produit principal mobile](../../reports/lot1/rattachement/products/page-1-mobile.png), [accessoire mobile](../../reports/lot1/rattachement/products/page-2-mobile.png). Les autres captures, HTML compilés, exports documentaires, ZIP et CSV sont à côté. [`preuves.json`](../../reports/lot1/rattachement/preuves.json) indique le commit du script exécuté, les cibles, URL et résultats mesurés.
+
+### Limites et décision de revue
+
+- **Validé pour cette correction** : rattachement injectif, priorité des identités, refus de deviner les cas historiques ambigus, conservation des pages historiques et retirées, livraison séparée des documents et SEO au thème/rendu/exports contrôlés. Les versions utilisables, corrections et plafonds du lot initial restent couverts par ses tests ; aucune nouvelle génération payante n'est déclenchée par ce correctif.
+- **À vérifier dans la CI** : exécution intégrale sans le verrou SQLite rencontré localement. Le fichier concerné passe isolément ; son échec au lancement global est conservé, sans modification de la base de données hors périmètre.
+- **Non validé** : qualité commerciale d'une IA réelle, disponibilité des fournisseurs, installation sur un CMS externe, parcours complet dans l'interface authentifiée du studio. Les captures montrent des données synthétiques et des emplacements d'images vides ; elles ne prouvent pas une qualité professionnelle finale.
+- **Limite préexistante observée dans les captures** : le gabarit produit commun comporte encore un bloc statique « Caractéristiques » issu du principal, également visible sur l'accessoire (`theme-v2/compose.ts`, construction de `templates.product`). Les corps documentaires et métadonnées sont bien distincts ; il ne faut donc pas lire ces résultats comme une validation de tous les blocs du catalogue. Ce bloc nécessite une correction/validation complémentaire par produit. Il n'a pas été modifié dans cette reprise consacrée à l'association des documents/pages.
+- Les captures complètes d'une page produit placent le panier fixe à la position de défilement courante ; le script contrôle explicitement que le texte cible n'est pas recouvert. Il ne valide pas toutes les positions de défilement ou interactions.
+- Les cas de médias personnalisés en conflit de nom de fichier ne sont pas couverts par ces données sans médias. La reconstruction de produits depuis les données du projet reste le comportement existant : la conservation des URL historiques produit après une recomposition globale n'est pas garantie par cette correction ; les anciens thèmes restent conservés et la livraison en place ambiguë ne les écrase pas.
+- Les SEO documentaires sont exportés séparément ; aucune installation ou application automatique des métadonnées sur Shopify n'a été essayée. Aucun ancien rapport ou simple compilation n'est utilisé comme preuve de qualité des créations.
+
+La PR reste ouverte pour revue indépendante, sans fusion. Le compte rendu initial suivant documente la première livraison ; la présente section et ses preuves déterminent l'état de la correction demandée après revue.
+
+---
+
+## Livraison initiale — historique conservé
+
 ## Version, mandat et travaux préservés
 
 - Dépôt : `spacedevelopment01-max/Ecom-studio-ia`.

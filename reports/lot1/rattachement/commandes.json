@@ -1,0 +1,76 @@
+{
+  "baseCommit": "9d6e0734814598f930001d9f44a39f11c7303e1a",
+  "applicationAndTestsCommit": "92b9295b234f9f526005c66fc8fa78e1eb82da9f",
+  "proofScriptCommit": "92b9295b234f9f526005c66fc8fa78e1eb82da9f",
+  "applicationAndTestsUnchangedSinceTestedCommit": true,
+  "isolation": "Vitest crée et supprime DATA_DIR ; les scripts utilisent des bases temporaires ; rédaction locale et fetch fournisseur interdit dans les nouvelles preuves.",
+  "commands": [
+    {
+      "command": "./node_modules/.bin/vitest run tests/lot1-rattachement-pages.test.ts",
+      "at": "base avant correction",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "log": "avant-correction.txt"
+    },
+    {
+      "command": "./node_modules/.bin/tsc --noEmit",
+      "exitCode": 0,
+      "log": "types.txt"
+    },
+    {
+      "command": "./node_modules/.bin/vitest run tests/lot1-rattachement-pages.test.ts tests/lot1-rattachement-parcours.test.ts tests/lot1-consignes-livraison.test.ts tests/lot1-holdout.test.ts tests/seo-v2.test.ts tests/seo-v2-engine.test.ts tests/theme-v2.test.ts",
+      "exitCode": 0,
+      "filesPassed": 7,
+      "testsPassed": 99,
+      "log": "tests-cibles.txt"
+    },
+    {
+      "command": "DATA_DIR=base_temporaire STOCK_OFFLINE=1 JOBS=2 scripts/verify-theme.sh --rapide",
+      "exitCode": 0,
+      "casesPassed": 25,
+      "log": "theme-check-rapide.txt"
+    },
+    {
+      "command": "CHROMIUM=/usr/bin/chromium ./node_modules/.bin/tsx scripts/lot1-rattachement-proof.ts reports/lot1/rattachement",
+      "exitCode": 0,
+      "log": "execution-preuves.txt"
+    },
+    {
+      "command": "git diff --exit-code 92b9295b234f9f526005c66fc8fa78e1eb82da9f HEAD -- src tests scripts",
+      "exitCode": 0
+    },
+    {
+      "command": "./node_modules/.bin/vitest run tests/lot1-rattachement-parcours.test.ts -t 'gabarit par défaut personnalisé'",
+      "at": "b3c26ce avant correction du gabarit par défaut",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "log": "gabarit-defaut-avant-correction.txt"
+    },
+    {
+      "command": "./node_modules/.bin/vitest run tests/bibliotheque-modeles.test.ts",
+      "exitCode": 0,
+      "filesPassed": 1,
+      "testsPassed": 4,
+      "log": "bibliotheque-isolee.txt"
+    },
+    {
+      "command": "./node_modules/.bin/vitest run",
+      "at": "commit final 92b9295",
+      "exitCode": 1,
+      "filesPassed": 258,
+      "filesFailed": 1,
+      "testsPassed": 1921,
+      "testsSkipped": 3,
+      "durationSeconds": 641.11,
+      "failure": "SqliteError: database is locked pendant journal_mode=WAL, collecte de tests/bibliotheque-modeles.test.ts, 4 tests non exécutés dans ce lancement",
+      "log": "tests-complets.txt"
+    },
+    {
+      "command": "./node_modules/.bin/vitest run",
+      "at": "premier lancement interrompu avant le correctif du gabarit par défaut",
+      "exitCode": 130,
+      "reason": "Ajout de la régression du gabarit par défaut personnalisé puis relance sur le code final."
+    }
+  ],
+  "ciReceipt": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/133#issuecomment-6241603870"
+}

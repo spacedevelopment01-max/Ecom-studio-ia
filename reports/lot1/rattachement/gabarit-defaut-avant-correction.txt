@@ -1,0 +1,268 @@
+
+ RUN  v5.0.3 /workspace/Ecom-studio-ia
+
+ ❯ tests/lot1-rattachement-parcours.test.ts (28 tests | 1 failed | 27 skipped) 183ms
+   ❯ Lot 1 — rattachement jusqu'au rendu/export (28)
+     × gabarit par défaut personnalisé : texte historique conservé même sans suffixe 181ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/lot1-rattachement-parcours.test.ts > Lot 1 — rattachement jusqu'au rendu/export > gabarit par défaut personnalisé : texte historique conservé même sans suffixe
+AssertionError: expected '<!doctype html>\n<html class="no-js" …' to contain 'Texte du gabarit par défaut personnal…'
+
+- Expected
++ Received
+
+- Texte du gabarit par défaut personnalisé.
++ <!doctype html>
++ <html class="no-js" lang="fr">
++   <head>
++     <meta charset="utf-8">
++     <meta http-equiv="X-UA-Compatible" content="IE=edge">
++     <meta name="viewport" content="width=device-width,initial-scale=1">
++     <meta name="theme-color" content="">
++     <link rel="canonical" href="/pages/prestation-1"><title>
++       Ancien titre 1 &ndash; Association synthétique 2</title>
++     <meta name="description" content="Ancienne description 1">
++     <meta property="og:site_name" content="Association synthétique 2">
++ <meta property="og:url" content="/pages/prestation-1">
++ <meta property="og:title" content="Ancien titre 1">
++ <meta property="og:type" content="website">
++ <meta property="og:description" content="Ancienne description 1"><meta name="twitter:card" content="summary_large_image">
++ <meta name="twitter:title" content="Ancien titre 1">
++ <meta name="twitter:description" content="Ancienne description 1">
++
++
++     <script src="/assets/theme.js" defer="defer"></script>
++     <script>window.Shopify=window.Shopify||{designMode:false,locale:"fr",country:"FR",currency:{active:"EUR",rate:"1.0"},routes:{root:"/"},shop:"apercu",theme:{name:"aperçu"}};</script><style data-shopify>
++       @font-face { font-family: "Archivo"; font-weight: 600; font-style: normal; font-display: swap; src: url("/__fonts/Archivo-600.ttf") format("truetype"); }
++       @font-face { font-family: "Work Sans"; font-weight: 400; font-style: normal; font-display: swap; src: url("/__fonts/WorkSans-400.ttf") format("truetype"); }
++       @font-face { font-family: "Work Sans"; font-weight: 700; font-style: normal; font-display: swap; src: url("/__fonts/WorkSans-600.ttf") format("truetype"); }
++       @font-face { font-family: "Cormorant"; font-weight: 500; font-style: italic; font-display: swap; src: url("/__fonts/Cormorant-500italic.ttf") format("truetype"); }
++
++       .color-scheme-1, :root, .color-scheme-1 .es-scheme-inherit {
++           --c-bg: #F4F1EB;
++           --c-bg-rgb: 244, 241, 235;
++           --c-surface: #EAE5DB;
++           --c-text: #1D1B18;
++           --c-text-rgb: 29, 27, 24;
++           --c-muted: #5C5A56;
++           --c-accent: #984828;
++           --c-accent-rgb: 152, 72, 40;
++           --c-accent-text: #FFFFFF;
++           --c-border: #D6D3CD;
++         }
++       .color-scheme-2,  .color-scheme-2 .es-scheme-inherit {
++           --c-bg: #EAE5DB;
++           --c-bg-rgb: 234, 229, 219;
++           --c-surface: #DED9CF;
++           --c-text: #1D1B18;
++           --c-text-rgb: 29, 27, 24;
++           --c-muted: #595652;
++           --c-accent: #894124;
++           --c-accent-rgb: 137, 65, 36;
++           --c-accent-text: #FFFFFF;
++           --c-border: #CDC9C0;
++         }
++       .color-scheme-3,  .color-scheme-3 .es-scheme-inherit {
++           --c-bg: #1C1A17;
++           --c-bg-rgb: 28, 26, 23;
++           --c-surface: #2B2926;
++           --c-text: #F7F4EF;
++           --c-text-rgb: 247, 244, 239;
++           --c-muted: #9F9D99;
++           --c-accent: #C88F78;
++           --c-accent-rgb: 200, 143, 120;
++           --c-accent-text: #141414;
++           --c-border: #3B3935;
++         }
++       .color-scheme-4,  .color-scheme-4 .es-scheme-inherit {
++           --c-bg: #A9502C;
++           --c-bg-rgb: 169, 80, 44;
++           --c-surface: #B05E3D;
++           --c-text: #FFFFFF;
++           --c-text-rgb: 255, 255, 255;
++           --c-muted: #FFFFFF;
++           --c-accent: #FFFFFF;
++           --c-accent-rgb: 255, 255, 255;
++           --c-accent-text: #141414;
++           --c-border: #B5694A;
++         }
++       
++
++       :root {
++         --font-heading: "Archivo", sans-serif;
++         --font-heading-style: normal;
++         --font-heading-weight: 600;
++         --font-body: "Work Sans", sans-serif;
++         --font-body-style: normal;
++         --font-body-weight: 400;
++         --font-body-weight-bold: 700;
++         --font-accent: "Cormorant", serif;
++         --font-accent-style: italic;
++         --font-accent-weight: 500;
++         --glow: 0.35;
++         --heading-scale: 1;
++         --body-scale: 1;
++         --heading-case: none;
++         --heading-tracking: 0em;
++         --page-width: 1320px;
++         --space-scale: 1;
++         --radius-button: 2px;
++         --btn-scale: 1;
++         --radius-card: 4px;
++         --button-transform: none;
++         --logo-width: 150px;--motion-distance: 14px; --motion-duration: .7s;}
++     </style>
++
++     <link href="/assets/theme.css" rel="stylesheet" type="text/css" media="all"><style>:root { --v2-r1: 1.3; --v2-r2: 1.6900000000000002; --v2-r4: 2.8561000000000005; --v2-r6: 4.826809000000002; }</style>
++       <link href="/assets/theme-v2.css" rel="stylesheet" type="text/css" media="all"><script>
++       document.documentElement.className = document.documentElement.className.replace('no-js', 'js');
++       window.routes = {
++         root: "/",
++         cart: "/cart",
++         cart_add: "/cart/add",
++         cart_change: "/cart/change",
++         cart_update: "/cart/update",
++         search: "/search",
++         predictive_search: "/search/suggest"
++       };
++       window.themeStrings = {
++         addToCart: "Ajouter au panier",
++         soldOut: "Épuisé",
++         unavailable: "Indisponible",
++         added: "Ajouté au panier",
++         error: "Une erreur est survenue. Réessayez.",
++         unmute: "Activer le son",
++         mute: "Couper le son"
++       };
++       window.themeSettings = { moneyFormat: "{{amount_with_comma_separator}} €", cartType: "none", motion: true, parallax: false };
++     </script>
++   <style data-section-styles>
++ .es-header__cta { min-height: 44px; padding: .55em 1.25em; gap: 8px; white-space: nowrap; margin-left: 10px; }
++ .es-header__cta .es-icon { width: 16px; height: 16px; flex: none; }
++ .es-header__cta:hover .es-icon { transform: none; }
++ .es-header__phone { display: inline-flex; align-items: center; border-radius: 999px; width: auto; gap: 8px; padding-inline: 10px; text-decoration: none; font-size: .9rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
++ .es-header__phone .es-icon { flex: none; }
++ .es-header__phone--compact .es-header__phone-number { display: none; }
++ .es-mobile-menu__cta { margin-top: auto; }
++ .es-mobile-menu__cta .es-icon { width: 18px; height: 18px; }
++ .es-mobile-menu__phone { display: inline-flex; align-items: center; gap: 10px; font-size: 1.15rem; text-decoration: none; font-variant-numeric: tabular-nums; }
++ .es-mobile-menu__phone .es-icon { width: 20px; height: 20px; color: var(--c-accent); }
++ @media (min-width: 1200px) { .es-header__phone--compact .es-header__phone-number { display: inline; } }
++ @media (max-width: 989px) {
++   .es-header__cta { padding: 0; width: 44px; min-width: 44px; margin-left: 4px; border-radius: 50%; justify-content: center; }
++   .es-header__cta span { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
++   .es-header__phone .es-header__phone-number { display: none; }
++   .es-header__phone { padding-inline: 0; width: 44px; justify-content: center; }
++ }
++
++
++ /* Lueur d'ambiance contenue dans le pied de page (sinon elle élargit la page). */
++ .es-footer.es-ambient { position: relative; }
++ .es-footer__contact { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; font-size: .95rem; }
++ .es-footer__contact li { display: flex; gap: 10px; align-items: flex-start; }
++ .es-footer__contact .es-icon { width: 18px; height: 18px; flex: none; margin-top: 3px; color: var(--c-accent); }
++ .es-footer__contact a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(var(--c-text-rgb), .25); }
++ .es-footer__contact a:hover { border-color: currentColor; }
++ /* Styles supplémentaires du pied de page */
++ .es-footer__layout { display: grid; gap: clamp(36px, 5vw, 72px); }
++ .es-footer__brandcol { display: grid; gap: 18px; align-content: start; justify-items: start; }
++ .es-footer__brandcol .es-footer__brand { font-size: clamp(1.6rem, 3vw, 2.2rem); }
++ .es-footer__tagline { margin: 0; max-width: 34ch; opacity: .8; font-size: 1rem; line-height: 1.5; }
++ .es-footer__brand-news { width: 100%; max-width: 420px; }
++ @media (min-width: 990px) {
++   .es-footer--brand-left .es-footer__layout { grid-template-columns: minmax(240px, .8fr) 2fr; }
++   .es-footer--split .es-footer__layout { grid-template-columns: 1fr 1.3fr; align-items: stretch; }
++ }
++ .es-footer--split .es-footer__brandcol { padding: clamp(24px, 4vw, 48px); border-radius: var(--radius-card, 20px); background: rgba(var(--c-accent-rgb), .12); border: 1px solid rgba(var(--c-accent-rgb), .25); }
++ .es-footer--split .es-footer__grid { align-content: center; }
++ .es-footer--stacked .es-footer__grid { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 32px; }
++ .es-footer--stacked .es-footer__links { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 24px; }
++ .es-footer--stacked .es-footer__contact li { justify-content: center; }
++ .es-footer--stacked .es-footer__block--newsletter { width: min(100%, 460px); }
++ .es-footer--stacked .es-footer__wordmark { text-align: center; }
++ .es-footer--stacked .es-footer__bottom { justify-content: center; text-align: center; }
++ .es-footer--boxed .es-footer__grid { padding: clamp(24px, 4vw, 48px); border-radius: var(--radius-card, 20px); border: 1px solid rgba(var(--c-text-rgb), .12); background: rgba(var(--c-text-rgb), .04); }
++ </style></head>
++
++   <body data-ds="craft" data-density="balanced" class="es-body dir-galerie template-page button-solid header-bar card-minimal motion-on color-scheme-1">
++     <a class="skip-link visually-hidden-focusable" href="#MainContent">Aller au contenu</a>
++
++     <div id="shopify-section-template--es__header_1" class="shopify-section es-header-section" data-es-section="group:header:header_1" data-es-type="header"><header class="es-header es-header--logo-left es-header--shape-bar es-header--icons-plain es-header--sticky color-scheme-1" data-header>
++   <div class="es-header__inner es-container">
++     <button class="es-header__burger es-icon-button" type="button" aria-controls="MobileMenu" aria-expanded="false" data-menu-open>
++       <svg class="es-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 12h18M3 17h18"/></svg><span class="visually-hidden">Menu</span>
++     </button>
++
++     <a href="/" class="es-header__logo" aria-label="Association synthétique 2"><span class="es-header__wordmark">Association synthétique 2</span></a>
++
++     <nav class="es-header__nav" aria-label="Navigation principale">
++       <ul role="list"><li class="es-nav__item">
++             <a href="/pages/prestations" class="es-nav__link"><span>Prestations</span></a></li><li class="es-nav__item">
++             <a href="/pages/questions" class="es-nav__link"><span>Questions</span></a></li><li class="es-nav__item">
++             <a href="/pages/contact" class="es-nav__link"><span>Contact</span></a></li></ul>
++     </nav>
++
++     <div class="es-header__icons"><a href="/pages/contact" class="es-button es-button--small es-header__cta"><svg class="es-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span>Demander un devis</span></a></div>
++   </div>
++
++   <div class="es-mobile-menu es-mobile-menu--sheet es-mobile-menu--sub-accordion color-scheme-1" id="MobileMenu" hidden data-mobile-menu>
++     <div class="es-mobile-menu__head">
++       <span class="es-header__wordmark">Association synthétique 2</span>
++       <button type="button" class="es-icon-button" data-menu-close aria-label="Fermer"><svg class="es-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m5 5 14 14M19 5 5 19"/></svg></button>
++     </div><ul role="list" class="es-mobile-menu__list"><li style="--i: 1"><a href="/pages/prestations" class="es-mm__link"><span>Prestations</span></a></li><li style="--i: 2"><a href="/pages/questions" class="es-mm__link"><span>Questions</span></a></li><li style="--i: 3"><a href="/pages/contact" class="es-mm__link"><span>Contact</span></a></li></ul><a href="/pages/contact" class="es-button es-button--full es-mobile-menu__cta"><svg class="es-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span>Demander un devis</span></a><ul class="es-social" role="list"></ul>
++
++   </div>
++ </header>
++
++
++
++
++ </div>
++
++     <main id="MainContent" class="es-main" role="main" tabindex="-1">
++       <div id="shopify-section-template--es__main_page_1" class="shopify-section " data-es-section="page:main_page_1" data-es-type="main-page"><section class="es-section es-page color-scheme-1 es-page--narrow" style="--pt: 64px; --pb: 96px;">
++   <div class="es-container es-page__inner">
++     <h1 class="es-heading es-h1" data-reveal="lines">Diagnostic</h1>
++     <div class="es-rte es-page__content" data-reveal="up"><p>Texte historique 1.</p></div>
++   </div>
++ </section>
++
++
++ </div>
++     </main>
++
++     <div id="shopify-section-template--es__footer_1" class="shopify-section es-footer-section" data-es-section="group:footer:footer_1" data-es-type="footer"><footer class="es-footer es-footer--columns es-ambient color-scheme-3">
++   <div class="es-container"><div class="es-footer__grid"><div class="es-footer__block es-footer__block--text" data-es-block="v2_text_1"><h2 class="es-footer__heading">Association synthétique 2</h2><div class="es-rte"><p>Accord de piano, Lyon.</p></div></div><div class="es-footer__block es-footer__block--links" data-es-block="v2_links_2"><h2 class="es-footer__heading">Le site</h2>
++                 <ul role="list" class="es-footer__links"><li><a href="/pages/prestations">Prestations</a></li><li><a href="/pages/questions">Questions</a></li><li><a href="/pages/contact">Contact</a></li></ul></div><div class="es-footer__block es-footer__block--links" data-es-block="v2_links_3"><h2 class="es-footer__heading">Informations</h2>
++                 <ul role="list" class="es-footer__links"><li><a href="/pages/mentions-legales">Mentions légales</a></li><li><a href="/pages/texte-service-offer-1">Diagnostic</a></li><li><a href="/pages/texte-service-offer-2">Diagnostic</a></li></ul></div><div class="es-footer__block es-footer__block--contact" data-es-block="v2_contact_4"><h2 class="es-footer__heading">Nous trouver</h2><ul role="list" class="es-footer__contact"><li><svg class="es-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span>Lyon</span></li><li><svg class="es-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><a href="mailto:contact@example.invalid">contact@example.invalid</a></li></ul></div></div><div class="es-footer__bottom">
++       <p>&copy; 2026 Association synthétique 2</p></div>
++   </div>
++ </footer>
++
++
++
++
++ </div><div class="es-fab" data-fab><a href="#MainContent" class="es-fab__button es-fab__button--top" data-back-to-top aria-label="Revenir en haut de la page"><svg class="es-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V4M6 10l6-6 6 6"/></svg></a><a href="/pages/contact" class="es-fab__button es-fab__button--contact" aria-label="Demander un devis"><svg class="es-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/></svg></a></div>
++     <div class="es-toast" role="status" aria-live="polite" hidden></div>
++   </body>
++ </html>
++
+
+ ❯ tests/lot1-rattachement-parcours.test.ts:163:27
+    161|     expect(old.body_html).toBe(spec.store.pages[0].body_html); expect(…
+    162|     const rendered = await renderPage({ spec: built.spec, base: "", ca…
+    163|     expect(rendered.html).toContain("Texte du gabarit par défaut perso…
+       |                           ^
+    164|     expect(rendered.html).not.toContain(markers(1).text);
+    165|   }));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 27 skipped (28)
+   Start at  21:51:11
+   Duration  4.40s (import 54%, transform 41%, tests 4%)
+
