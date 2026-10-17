@@ -8,7 +8,8 @@
  * 100 % local : aucun appel d'IA, aucune dépense.
  */
 import { homeSeoDoc } from "../seo-v2/theme-copy";
-import { loadProject, saveThemeVersion } from "../projects";
+import { deliverContent } from "../seo-v2/theme-delivery";
+import { currentTheme, loadProject, saveThemeVersion, setStatus } from "../projects";
 import { all } from "../db";
 import type { JobContext } from "../jobs";
 import { validateSpec } from "../theme/ops";
@@ -78,6 +79,7 @@ export async function composeThemeV2(projectId: string, opts: { language?: Langu
   if (intent.site === "saas") spec.settings.cart_type = "none";
   spec.store = { ...spec.store, seo: content.seo, pages: c.pages, menus: { ...spec.store.menus, ...c.menus } };
   if (shop && content.descriptionHtml) spec.store.product = { ...spec.store.product, description_html: content.descriptionHtml };
+  const contentDelivery = deliverContent(spec, p, intent.lang);
   spec.meta = {
     engine: "v2",
     v2: {
@@ -96,6 +98,8 @@ export async function composeThemeV2(projectId: string, opts: { language?: Langu
       demoMedia: false,
     },
   };
+  // Trace limitée aux identifiants et empreintes, jamais aux consignes ni aux données client.
+  (spec.meta as typeof spec.meta & { contentDelivery?: typeof contentDelivery }).contentDelivery = contentDelivery;
   const tidied = tidyComposition(spec, { strictAssets: true });
   return { spec: tidied, intent, art, content, plan: c.plan };
 }
@@ -127,6 +131,7 @@ export const LANGUAGE_LABEL_EN: Record<LanguageId, string> = { craft: "Precise w
  * propriétaire n'a pas validé le rendu.
  */
 export async function buildShopV2(ctx: JobContext | null, projectId: string, opts: { language?: LanguageId; summary?: Bi } = {}) {
+  const parent = currentTheme(projectId)?.version.id ?? null;
   ctx?.progress(0.2, L("Composition du site", "Composing the website"));
   const r = await composeThemeV2(projectId, { language: opts.language, ctx });
   const problems = validateSpec(r.spec);
@@ -139,7 +144,13 @@ export async function buildShopV2(ctx: JobContext | null, projectId: string, opt
     `Site composé — ${r.art.label}${incomplete ? ` · ${incomplete} page(s) à compléter` : ""} · à valider par vous`,
     `Website composed — ${LANGUAGE_LABEL_EN[r.art.language]}${incomplete ? ` · ${incomplete} page(s) to complete` : ""} · for your review`,
   ));
-  const v = saveThemeVersion(projectId, r.spec, JSON.stringify(summary), "system", { checks: L(["structure", "sections remplies", "contrastes", "pages et données à compléter"], ["structure", "filled sections", "contrast", "pages and data to complete"]), problems, gate: gateMeta(q.decision, qcId) });
-  ctx?.progress(0.95, L("Site enregistré", "Website saved"));
-  return { versionId: v.id, number: v.number, language: r.art.language, quality: q };
+  ctx?.progress(0.9, L("Conservation du thème et de son contrôle", "Saving the theme and its check"));
+  const conflict = (currentTheme(projectId)?.version.id ?? null) !== parent;
+  const rejected = q.decision.verdict === "REJECTED" || q.decision.verdict === "RETRY";
+  const v = saveThemeVersion(projectId, r.spec, JSON.stringify(summary), "system", { checks: L(["structure", "sections remplies", "contrastes", "pages et données à compléter"], ["structure", "filled sections", "contrast", "pages and data to complete"]), problems, gate: gateMeta(q.decision, qcId) }, parent, { activate: !conflict && !rejected });
+  const active = currentTheme(projectId)?.version.id === v.id;
+  const delivery = { state: active ? "to_verify" : conflict ? "partial" : "blocked", active, versionId: v.id, message: active ? L("Thème enregistré, à vérifier.", "Theme saved, review before use.") : L("Tentative conservée en brouillon ; la version utilisable est protégée.", "Attempt saved as a draft; the usable version is protected."), reasons: conflict ? [L("Le thème a changé pendant la composition : votre version est conservée, la tentative reste consultable.", "The theme changed during composition: your version is kept and this attempt remains available.")] : q.issues, verdict: q.decision.verdict };
+  if (!active && !currentTheme(projectId)) setStatus(projectId, "awaiting_validation");
+  ctx?.progress(0.95, active ? L("Thème enregistré, à vérifier", "Theme saved, to review") : L("Tentative conservée, version courante protégée", "Attempt saved, current version protected"));
+  return { versionId: v.id, number: v.number, language: r.art.language, quality: q, delivery };
 }

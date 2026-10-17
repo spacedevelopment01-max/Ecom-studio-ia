@@ -32,6 +32,7 @@ const PREVIEW_SANDBOX = "allow-scripts allow-forms allow-popups allow-popups-to-
 type TFn = <T>(fr: T, en: T) => T;
 
 type ThemeData = {
+  quality?: { verdict: string; reason: string; checked: boolean } | null;
   /** Attribut « sandbox » des aperçus, fourni par le serveur (Codespaces : avec l'origine). */
   sandbox?: string;
   current: null | {
@@ -356,6 +357,7 @@ export default function TabBoutique() {
         {site?.status === "read" && site.decision === "reproduce" && <div className="mb-6"><ReproductionBanner site={site} /></div>}
         <ThemeImportModal open={!!importOpen} onClose={() => setImportOpen(null)} projectId={id} onImported={() => { reload(); reloadProject(); }} />
         {chatJobs[0] && <JobProgress job={chatJobs[0]} className="mb-6" />}
+        {!!theme.versions.length && <Card className="mb-6 p-5"><p className="font-semibold">{t("Tentatives conservées, à corriger avant utilisation", "Saved attempts, correction needed before use")}</p><p className="mt-2 text-sm text-muted">{t("Aucun thème utilisable n'est encore activé. Les brouillons restent consultables ; complétez les informations puis relancez la composition.", "No usable theme is active yet. Drafts remain available; complete the information and rebuild.")}</p><ul className="mt-3 grid gap-2">{theme.versions.map((v) => <li key={v.id}><a className="underline" href={`/preview/${id}/v/${v.id}`} target="_blank" rel="noreferrer">{t(`Consulter la tentative ${v.number}`, `View attempt ${v.number}`)}</a><p className="text-xs text-muted">{v.summary}</p></li>)}</ul></Card>}
         <Empty title={isServices ? t("Le site n'est pas encore composé", "The website hasn't been built yet") : t("La boutique n'est pas encore composée", "The store hasn't been built yet")} icon={<Store className="size-5" />} action={<div className="flex flex-wrap items-center justify-center gap-2">{data?.brand && <><Button onClick={async () => { if (!(await cost.confirm("theme"))) return; await api(`/api/projects/${id}/theme/build`, { body: {}, lang: cl.lang }); reloadProject(); }}>{isServices ? t("Composer le site maintenant", "Build the website now") : t("Composer la boutique maintenant", "Build the store now")}</Button><ContentLangPicker {...cl} compact /></>}<Button variant="secondary" icon={<Upload className="size-4" />} onClick={() => setImportOpen("upload")}>{t("Importer mon thème Shopify", "Import my Shopify theme")}</Button></div>}>
           {data?.brand ? t("La marque est prête : vous pouvez lancer la composition.", "The brand is ready: you can start building the store.") : t("Elle sera créée après la marque et les textes (voir le Pilote).", "It will be created after the brand and the copy (see Pilot).")}
         </Empty>
@@ -668,6 +670,7 @@ export default function TabBoutique() {
 
   return (
     <div className="-mx-4 -my-6 sm:-mx-6 lg:-mx-8">
+      {theme.quality && theme.quality.verdict !== "FINAL" && <div className="m-3 rounded-xl border border-line bg-paper-2 p-3 text-sm"><p className="font-medium">{t("Thème enregistré, à vérifier avant utilisation", "Theme saved, review before use")}</p><p className="mt-1 text-muted">{theme.quality.reason}</p></div>}
       {chatJobs.filter((j) => j.type !== "shop.chat").map((j) => <JobProgress key={j.id} job={j} className="m-4" />)}
       {/* Photos libres de droits sur le site : toujours visibles (ordinateur et téléphone), jamais en silence. */}
       {!!theme.stock?.photos.length && <StockStrip stock={theme.stock} projectId={id} onReplaced={() => (reload(), reloadProject())} onHeight={setStockH} />}

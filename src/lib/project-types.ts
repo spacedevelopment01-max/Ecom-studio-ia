@@ -46,6 +46,7 @@ export type Fact = { key: string; label: string; value: string; status: "confirm
 export type Question = { id: string; question: string; why: string; required: boolean; factKey: string; answer?: string };
 
 export type ProductProfile = {
+  contentAliases?: string[];
   name: string;
   nameStatus: "provided" | "detected" | "proposed" | "unknown";
   category: string;
@@ -156,7 +157,7 @@ export type BrandPlatform = {
  * l'activité (nom, résumé, secteur, faits confirmés) et `services` détaille l'offre.
  */
 export type BusinessType = "products" | "services";
-export type ServiceItem = { name: string; description: string; price?: string; duration?: string };
+export type ServiceItem = { key?: string; contentAliases?: string[]; name: string; description: string; price?: string; duration?: string };
 export type ServiceProfile = {
   /** Prestations proposées (texte fourni par le client ; prix et durées seulement s'il les donne). */
   services: ServiceItem[];
@@ -196,6 +197,7 @@ export const storeTypeInfo = (t: StoreType, lang: "fr" | "en" = "fr") => (lang =
 /** Produit du catalogue (en plus du produit principal analysé en détail). */
 export type CatalogItem = {
   key: string;
+  contentAliases?: string[];
   name: string;
   category: string;
   price: number | null; // centimes

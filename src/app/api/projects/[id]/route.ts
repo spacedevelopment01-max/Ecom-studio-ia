@@ -86,7 +86,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
       /** Offre de services (projets « entreprise de services »). */
       services: z
         .object({
-          services: z.array(z.object({ name: z.string().max(160), description: z.string().max(1000), price: z.string().max(60).optional(), duration: z.string().max(60).optional() })).max(40),
+          services: z.array(z.object({ key: z.string().max(80).optional(), name: z.string().max(160), description: z.string().max(1000), price: z.string().max(60).optional(), duration: z.string().max(60).optional() })).max(40),
           area: z.string().max(300),
           address: z.string().max(300),
           phone: z.string().max(40),

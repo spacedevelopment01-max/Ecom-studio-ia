@@ -17,12 +17,13 @@ import type { JobContext } from "../jobs";
 import type { Project } from "../projects";
 import { AiDraftSchema, type AiDraft } from "./write";
 import { EditorialReviewSchema, REVIEW_SYSTEM } from "./quality";
-import type { ContentType, EditorialReview } from "./types";
+import type { ContentBrief, ContentType, EditorialReview } from "./types";
 
 export type CallKind = "write_page" | "write_article" | "write_meta" | "review" | "rewrite";
 export type Paid<T> = { value: T; costMicro: number };
 
 export type SeoV2Deps = {
+  context?: ContentBrief["context"];
   /** IA de rédaction disponible pour ce compte (forfait, IA active, fournisseur configuré). */
   canWrite: boolean;
   /** Relecture IA disponible : sans elle, un contenu reste au mieux PROVISOIRE. */
@@ -35,7 +36,7 @@ export type SeoV2Deps = {
   estimate: (kind: CallKind) => number;
 };
 
-export const RewriteSchema = z.object({ blocks: z.array(z.object({ id: z.string(), text: z.string().optional(), items: z.array(z.string()).optional(), q: z.string().optional(), a: z.string().optional() })).catch([]), note: z.string().catch("") });
+export const RewriteSchema = z.object({ blocks: z.array(z.object({ id: z.string(), text: z.string().optional(), items: z.array(z.string()).optional(), q: z.string().optional(), a: z.string().optional() })).catch([]), seoTitle: z.string().optional(), metaDescription: z.string().optional(), note: z.string().catch("") });
 export type RewriteOut = z.infer<typeof RewriteSchema>;
 
 export const KIND_ROUTE: Record<CallKind, { task: TaskId; difficulty: "simple" | "standard" | "complex"; input: number; output: number }> = {
@@ -62,22 +63,25 @@ const measured = (key: string) => one<{ c: number }>("SELECT COALESCE(SUM(cost),
 export function realSeoDeps(ctx: JobContext | null, p: Project, aiActive: boolean): SeoV2Deps {
   const base = { userId: p.userId, projectId: p.id, jobId: ctx?.job.id ?? null };
   const ai = aiActive && llmConfigured();
+  const snapshot = brainView(p, "seo");
+  const context = { scope: snapshot.label, hash: snapshot.hash, version: snapshot.brainVersion, stable: snapshot.stable };
   return {
+    context,
     canWrite: ai,
     canReview: ai,
     async write(system, prompt, key, kind) {
       const k = KIND_ROUTE[kind];
-      const value = await llmJson({ task: k.task, ...base, usageKey: key, promptKey: `seo-v2-${kind}`, routing: { difficulty: k.difficulty }, system, context: brainView(p, "seo").stable, reference: skillReference(seoIntent(p, kind === "write_article" ? "article" : kind === "write_meta" ? "meta" : "page")), prompt, maxTokens: kind === "write_article" ? 6000 : 3500 }, AiDraftSchema);
+      const value = await llmJson({ task: k.task, ...base, usageKey: key, promptKey: `seo-v2-${kind}`, routing: { difficulty: k.difficulty }, system, context: context.stable, reference: skillReference(seoIntent(p, kind === "write_article" ? "article" : kind === "write_meta" ? "meta" : "page")), prompt, maxTokens: kind === "write_article" ? 6000 : 3500 }, AiDraftSchema);
       return { value: value as AiDraft, costMicro: measured(key) };
     },
     async review(prompt, key) {
       const k = KIND_ROUTE.review;
-      const value = await llmJson({ task: k.task, ...base, usageKey: key, promptKey: "seo-v2-review", routing: { difficulty: k.difficulty }, system: REVIEW_SYSTEM, context: brainView(p, "qc").stable, prompt, maxTokens: 1500 }, EditorialReviewSchema);
+      const value = await llmJson({ task: k.task, ...base, usageKey: key, promptKey: "seo-v2-review", routing: { difficulty: k.difficulty }, system: REVIEW_SYSTEM, context: context.stable, prompt, maxTokens: 1500 }, EditorialReviewSchema);
       return { value: value as EditorialReview, costMicro: measured(key) };
     },
     async rewrite(system, prompt, key) {
       const k = KIND_ROUTE.rewrite;
-      const value = await llmJson({ task: k.task, ...base, usageKey: key, promptKey: "seo-v2-rewrite", routing: { difficulty: k.difficulty }, system, context: brainView(p, "seo").stable, reference: skillReference(seoIntent(p, "meta")), prompt, maxTokens: 2000 }, RewriteSchema);
+      const value = await llmJson({ task: k.task, ...base, usageKey: key, promptKey: "seo-v2-rewrite", routing: { difficulty: k.difficulty }, system, context: context.stable, reference: skillReference(seoIntent(p, "meta")), prompt, maxTokens: 2000 }, RewriteSchema);
       return { value: value as RewriteOut, costMicro: measured(key) };
     },
     estimate: estimateCall,

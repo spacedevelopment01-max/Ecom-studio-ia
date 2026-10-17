@@ -25,6 +25,7 @@ export type TemplateJson = { sections: Record<string, SectionInstance>; order: s
 export type GroupJson = TemplateJson & { type: "header" | "footer"; name: string };
 
 export type StoreProduct = {
+  contentTarget?: string;
   title: string;
   handle: string;
   vendor: string;
@@ -52,6 +53,7 @@ export function storeProducts(spec: { store: { product: StoreProduct; products?:
 }
 
 export type StorePage = {
+  contentTarget?: string;
   handle: string;
   title: string;
   template_suffix: string;

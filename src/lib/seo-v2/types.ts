@@ -71,7 +71,7 @@ export type KeywordResearch = {
 };
 
 /** Page du site : existante (vue dans la boutique créée) ou prévue (proposée par la stratégie) — jamais confondues. */
-export type PageRef = { key: string; title: string; url: string | null; kind: "product" | "collection" | "page" | "service" | "home" | "brand" | "local" | "article"; status: "existing" | "planned" };
+export type PageRef = { key: string; aliases?: string[]; title: string; url: string | null; kind: "product" | "collection" | "page" | "service" | "home" | "brand" | "local" | "article"; status: "existing" | "planned" };
 
 export type SeoStrategy = {
   lang: ContentLang;
@@ -116,6 +116,10 @@ export type VerifiedFacts = {
 };
 
 export type ContentBrief = {
+  /** Commande exacte et contexte figé, également utilisés pour l'idempotence et le contrôle. */
+  request?: string;
+  context?: { scope: string; hash: string; version: string; stable: string };
+  requirements?: { exact: string[]; forbidden: string[]; sentences?: number; words?: number; ending?: string; unchecked: string[] };
   type: ContentType;
   intent: ContentIntent;
   lang: ContentLang;
@@ -156,7 +160,7 @@ export type ContentDoc = {
   schema: Record<string, unknown>[];
   /** Liens internes du document (existants / prévus). */
   links: PageRef[];
-  meta2: { source: "engine" | "user" | "ai_local" | "ai"; by: "ai" | "local"; runId: string | null; createdFrom: string | null };
+  meta2: { source: "engine" | "user" | "ai_local" | "ai"; by: "ai" | "local"; runId: string | null; createdFrom: string | null; contract?: { request: string; contextHash: string; contextVersion: string; target: string; checks: { checked: string[]; issues: string[]; unchecked: string[] } } };
 };
 
 // ------------------------------------------------------------------------------------------- qualité
@@ -167,6 +171,7 @@ export type EditorialCriterion = (typeof EDITORIAL_CRITERIA)[number];
 export type EditorialReview = { criteria: Record<EditorialCriterion, number>; issues: string[]; invented: string[]; fix: { blockIds: string[]; instruction: string } };
 
 export type ContentRunResult = {
+  delivery?: { state: "ready" | "partial" | "to_verify" | "blocked"; message: string; reasons: string[] };
   runId: string;
   docKey: string | null;
   brief: ContentBrief;

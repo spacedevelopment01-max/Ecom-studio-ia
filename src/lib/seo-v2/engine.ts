@@ -12,7 +12,8 @@
  */
 import crypto from "node:crypto";
 import type { JobContext } from "../jobs";
-import { JobCancelled, JobPaused } from "../jobs";
+import { JobCancelled, JobPaused, UserFacingError } from "../jobs";
+import { L } from "../i18n-server";
 import { aiActiveFor } from "../ai/access";
 import { CostCapReached, currentTrace, withCandidate, withTrace } from "../ai/trace";
 import { gateSave } from "../quality/store";
@@ -22,23 +23,24 @@ import { contentLang } from "../i18n-server";
 import { loadProject, type Project } from "../projects";
 import { verifiedFacts } from "./facts";
 import { researchKeywords } from "./keywords";
-import { sitePages } from "./pages";
+import { sitePages, resolvePage } from "./pages";
+import { checkRequirements, requirementTargets } from "./requirements";
 import { seoStrategy } from "./strategy";
 import { buildBrief } from "./brief";
 import { INTENT_GOAL } from "./intent";
 import { fromAiDraft, localDraft, writePrompt, writeSystem } from "./write";
-import { DELIVERABLE_OF, gateContent, localContentChecks, proseOf, reviewPrompt } from "./quality";
+import { DELIVERABLE_OF, editorialScore, gateContent, localContentChecks, proseOf, reviewPrompt } from "./quality";
 import { blockText } from "./doc";
-import { contentKey, contentRun, contentUserOwned, latestContent, listContents, rememberContentRun, runKey, saveContentVersion } from "./store";
+import { ContentConflict, contentKey, contentRun, contentUserOwned, contentVersionDoc, latestContent, listContents, lockContentTarget, releaseContentTarget, renewContentTarget, rememberContentRun, runKey, saveContentVersion } from "./store";
 import { applyContentOps } from "./ops";
 import { planEdit } from "./local-edit";
-import { localOnlyDeps, realSeoDeps, writeKind, type CallKind, type SeoV2Deps } from "./deps";
+import { localOnlyDeps, realSeoDeps, writeKind, type CallKind, type RewriteOut, type SeoV2Deps } from "./deps";
 import { blogAiAllowed, saveBlogDraftV2 } from "./blog";
 import { LANGS, type ContentDoc, type ContentLang, type ContentRunResult, type ContentType, type EditorialReview, type Keyword, type PageRef, type SeoStrategy } from "./types";
 import type { GateDecision } from "../quality/gate";
 import { budgetPctText } from "../ai/budget-pct";
 
-export const SEO_V2_VERSION = "8a.1";
+export const SEO_V2_VERSION = "lot1.1";
 export const DEFAULT_SEO_CAP_EUR = 0.6;
 
 export type ContentRequestV2 = {
@@ -73,8 +75,9 @@ const KIND_PAGE: Partial<Record<ContentType, PageRef["kind"][]>> = {
 
 /** Page visée : la clé donnée, sinon la première du bon type ; un article sans page devient une page prévue. */
 export function targetPage(pages: PageRef[], type: ContentType, pageKey: string | null | undefined, strategy: SeoStrategy, keyword?: Keyword | null): PageRef {
-  const byKey = pageKey ? pages.find((p) => p.key === pageKey) : undefined;
-  if (byKey) return byKey;
+  const byKey = pageKey ? resolvePage(pages, pageKey) : null;
+  if (byKey && (!KIND_PAGE[type] || KIND_PAGE[type]!.includes(byKey.kind))) return byKey;
+  if (pageKey) throw new UserFacingError(L("La page visée est introuvable ou ne correspond pas à ce contenu. Sélectionnez sa cible à nouveau.", "The target page is missing or doesn't match this content. Select the target again."));
   const kinds = KIND_PAGE[type];
   const found = kinds ? pages.find((p) => kinds.includes(p.kind)) : undefined;
   if (found && type !== "blog_article") return found;
@@ -84,7 +87,9 @@ export function targetPage(pages: PageRef[], type: ContentType, pageKey: string 
   return { key: `article:${crypto.createHash("sha256").update(title).digest("hex").slice(0, 10)}`, title: title.charAt(0).toUpperCase() + title.slice(1), url: null, kind: "article", status: "planned" };
 }
 
-export async function runContentEngineV2(ctx: JobContext | null, projectId: string, req: ContentRequestV2, injected?: SeoV2Deps): Promise<ContentRunResult & { strategy: SeoStrategy; stoppedByCostCap: boolean }> {
+type RunResult = ContentRunResult & { strategy: SeoStrategy; stoppedByCostCap: boolean };
+const pending = new Map<string, Promise<RunResult>>();
+export async function runContentEngineV2(ctx: JobContext | null, projectId: string, req: ContentRequestV2, injected?: SeoV2Deps): Promise<RunResult> {
   const p = loadProject(projectId);
   let deps = injected ?? realSeoDeps(ctx, p, aiActiveFor(p.userId, p.id));
   // Articles écrits par l'IA : inclus selon le forfait (comme le blog existant) ; sinon brouillon local gratuit.
@@ -92,11 +97,23 @@ export async function runContentEngineV2(ctx: JobContext | null, projectId: stri
   if (blogBlocked) deps = localOnlyDeps();
   const capMicro = Math.round((req.maxCostEur ?? DEFAULT_SEO_CAP_EUR) * EUR);
   const cur = currentTrace();
-  return withTrace({ ...(ctx?.job.id ? { jobId: ctx.job.id } : {}), projectId, ...(cur.intent ? {} : { intent: "WRITE_CONTENT" }), costCapMicro: cur.costCapMicro != null ? Math.min(cur.costCapMicro, capMicro) : capMicro }, async () => {
+  const flight = runKey({ projectId, req, product: p.product, services: p.services, catalog: p.catalog, brand: p.brand, context: deps.context });
+  const running = pending.get(flight);
+  if (running && !req.planOnly) { const result = await running; ctx?.progress(1, L("Rédaction identique retrouvée", "Identical content reused")); return { ...result, costMicro: 0, skipped: true }; }
+  const pageList = sitePages(p);
+  const target = req.pageKey ? resolvePage(pageList, req.pageKey)?.key ?? req.pageKey : pageList.find((x) => KIND_PAGE[req.type]?.includes(x.kind))?.key ?? req.type;
+  const lock = `${req.type}|${target}|${pickLang(req.lang)}`;
+  const owner = crypto.randomUUID();
+  if (!req.planOnly && !lockContentTarget(projectId, lock, owner, ctx?.job.id ?? null)) throw new UserFacingError(L("Une rédaction de cette cible est déjà en cours. Aucun nouvel appel n'a été lancé ; retrouvez le résultat dans les textes.", "Writing for this target is already in progress. No new call was started; check the content list for its result."));
+  const heartbeat = req.planOnly ? null : setInterval(() => renewContentTarget(projectId, lock, owner), 30_000);
+  heartbeat?.unref();
+  const execution = withTrace({ ...(ctx?.job.id ? { jobId: ctx.job.id } : {}), projectId, ...(cur.intent ? {} : { intent: "WRITE_CONTENT" }), costCapMicro: cur.costCapMicro != null ? Math.min(cur.costCapMicro, capMicro) : capMicro }, async () => {
     const r = await engine(ctx, p, req, deps, { capMicro, spentMicro: 0, stopped: false });
     if (blogBlocked) r.notes.unshift("articles écrits par l'IA non inclus dans votre forfait : brouillon local à partir des faits (gratuit)");
     return r;
   });
+  if (!req.planOnly) pending.set(flight, execution);
+  try { return await execution; } finally { if (heartbeat) clearInterval(heartbeat); if (!req.planOnly) releaseContentTarget(projectId, lock, owner); if (pending.get(flight) === execution) pending.delete(flight); }
 }
 
 async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2, deps: SeoV2Deps, budget: Budget) {
@@ -111,11 +128,21 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   const research = researchKeywords(p, lang, pages);
   const strategy = seoStrategy(p, lang, { pages, research });
   const page = targetPage(pages, req.type, req.pageKey, strategy, req.keyword);
-  const item = req.type === "product_page" ? p.catalog.find((c) => c.name.trim() === page.title.trim()) ?? null : null;
-  const facts = verifiedFacts(p, item);
-  const brief = buildBrief(p, { type: req.type, page, lang, strategy, request: req.request, keyword: req.keyword ?? null, facts });
+  const item = page.key.startsWith("product:catalog:") ? p.catalog.find((c) => `product:catalog:${c.key}` === page.key) ?? null : null;
+  let facts = verifiedFacts(p, item);
+  if (page.kind === "service") {
+    const service = p.services.services.find((s) => `service:${s.key}` === page.key);
+    if (!service) throw new UserFacingError(L("Prestation introuvable.", "Service not found."));
+    facts = { ...facts, offerName: service.name, services: [{ name: service.name, description: service.description, price: service.price, duration: service.duration }] };
+  }
+  const brief = buildBrief(p, { type: req.type, page, lang, strategy, request: req.request, keyword: req.keyword ?? null, facts, context: deps.context });
   if (facts.unknowns.length) notes.push(...facts.unknowns.map((u) => `à compléter : ${u}`));
   const base = { runId, brief, codes: [] as string[], issues: [] as string[], stats, notes, strategy, stoppedByCostCap: false, skipped: false };
+  const delivery = (verdict: string, issues: string[], stopped = false): NonNullable<ContentRunResult["delivery"]> => {
+    const state = verdict === "REJECTED" || verdict === "RETRY" ? "blocked" : stopped ? "partial" : verdict === "FINAL" && !brief.requirements?.unchecked.length ? "ready" : "to_verify";
+    const message = state === "blocked" ? L("Texte conservé en brouillon : des corrections sont nécessaires.", "Content saved as a draft: corrections are needed.") : state === "partial" ? L("Texte partiel conservé : limite de dépense atteinte.", "Partial content saved: spending limit reached.") : state === "ready" ? L("Texte rédigé et contrôlé.", "Content written and checked.") : L("Texte enregistré, à vérifier avant utilisation.", "Content saved, review before use.");
+    return { state, message, reasons: [...issues, ...(brief.requirements?.unchecked ?? [])] };
+  };
   if (req.planOnly) return { ...base, docKey: null, doc: null, verdict: "PROVISIONAL" as const, reason: "brief seul (rien n'est rédigé)", by: "local" as const, costMicro: 0 };
 
   // 5. Lignée : un contenu modifié par le client n'est jamais écrasé.
@@ -126,12 +153,31 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   }
 
   // 6. Idempotence : même brief, mêmes faits, même moteur → le document déjà produit, sans rien refaire ni payer.
-  const memoKey = runKey({ v: SEO_V2_VERSION, docKey, type: req.type, lang, page: page.key, kw: brief.primaryKeyword?.term ?? null, intent: brief.intent, facts, links: brief.links.map((l) => [l.key, l.status, l.url]), ai: deps.canWrite, review: deps.canReview });
+  const memoKey = runKey({ v: SEO_V2_VERSION, type: req.type, lang, brief, facts, ai: deps.canWrite, review: deps.canReview });
   const memo = req.force ? null : contentRun(p.id, memoKey);
   if (memo) {
-    const prev = latestContent(p.id, memo.docKey);
-    if (prev) return { ...base, docKey: memo.docKey, doc: prev.doc, verdict: memo.verdict as ContentRunResult["verdict"], reason: "déjà rédigé avec le même brief et les mêmes faits : rien n'a été refait", by: prev.doc.meta2.by, costMicro: 0, skipped: true };
+    const prev = contentVersionDoc(p.id, memo.docKey, memo.version);
+    const latest = latestContent(p.id, memo.docKey);
+    if (prev && latest?.version.version === memo.version && !contentUserOwned(p.id, memo.docKey)) return { ...base, docKey: memo.docKey, doc: prev, verdict: memo.verdict as ContentRunResult["verdict"], reason: "déjà rédigé avec le même brief et les mêmes faits : rien n'a été refait", by: prev.meta2.by, costMicro: 0, skipped: true, delivery: delivery(memo.verdict, prev.meta2.contract?.checks.issues ?? []) };
   }
+  let expectedVersion = latestContent(p.id, docKey)?.version.version ?? 0;
+  const retain = (candidate: ContentDoc, verdict: string, note: string) => {
+    const contract = { request: brief.request ?? "", contextHash: brief.context?.hash ?? "", contextVersion: brief.context?.version ?? "", target: page.key, checks: checkRequirements(candidate, brief.requirements) };
+    candidate = { ...candidate, meta2: { ...candidate.meta2, contract } };
+    try {
+      const v = saveContentVersion(p.id, docKey, candidate, { verdict, note, expectedVersion });
+      expectedVersion = v.version;
+      return v;
+    } catch (e) {
+      if (!(e instanceof ContentConflict)) throw e;
+      docKey = `cnt:${runId.replace(/-/g, "").slice(0, 20)}`;
+      expectedVersion = 0;
+      notes.push("Le contenu a changé pendant la rédaction : votre version est conservée, la tentative est enregistrée séparément.");
+      const v = saveContentVersion(p.id, docKey, candidate, { verdict, note, expectedVersion: 0 });
+      expectedVersion = v.version;
+      return v;
+    }
+  };
 
   // Autres pages du projet (doublons).
   const others = listContents(p.id)
@@ -142,6 +188,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   const local = localDraft(brief, facts, { runId, pages });
   let doc: ContentDoc = local;
   let by: "ai" | "local" = "local";
+  let providerStopped = false;
   const pay = (kind: CallKind) => {
     const est = deps.estimate(kind);
     if (budget.spentMicro + est > budget.capMicro) {
@@ -154,6 +201,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
 
   if (deps.canWrite && pay(writeKind(req.type))) {
     try {
+      ctx?.progress(0.2, L("Rédaction du texte", "Writing content"));
       const key = `${jobKey}:seo2:write:${memoKey}:0`;
       const r = await withCandidate(`seo2:${docKey}`, 0, () => deps.write(writeSystem(lang), writePrompt(brief, facts), key, writeKind(req.type)));
       budget.spentMicro += r.costMicro;
@@ -162,6 +210,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
       if (ai.blocks.length >= 2) {
         doc = ai;
         by = "ai";
+        if (ctx) retain(doc, "RETRY", "premier essai — contrôle en préparation");
       } else notes.push("réponse de l'IA inexploitable : texte local conservé");
     } catch (e) {
       if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
@@ -169,6 +218,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
         budget.stopped = true;
         notes.push("plafond de coût atteint : texte local conservé");
       } else notes.push(`rédaction IA en échec (${(e as Error).message.slice(0, 120)}) : texte local conservé`);
+      providerStopped = true;
     }
   } else if (!deps.canWrite) notes.push("IA non disponible pour ce compte : rédaction locale à partir des faits (gratuit)");
 
@@ -176,42 +226,61 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   const policy = POLICIES[DELIVERABLE_OF[req.type]];
   let decision: GateDecision | null = null;
   let review: EditorialReview | null = null;
+  const checked = (candidate: ContentDoc) => {
+    const checks = localContentChecks(candidate, p, facts, { others, pages });
+    const reqChecks = checkRequirements(candidate, brief.requirements);
+    if (reqChecks.issues.length) {
+      checks.codes = [...new Set([...checks.codes, "intent_mismatch"])];
+      checks.issues.push(...reqChecks.issues);
+      checks.blocks = [...new Set([...checks.blocks, ...requirementTargets(candidate, brief.requirements)])];
+    }
+    return checks;
+  };
   for (let attempt = 0; attempt <= policy.maxRetries; attempt++) {
-    const checks = localContentChecks(doc, p, facts, { others, pages });
+    ctx?.progress(0.4 + attempt * 0.1, attempt ? L("Contrôle de la correction ciblée", "Checking the targeted correction") : L("Contrôle du texte", "Checking content"));
+    const checks = checked(doc);
     review = null;
     let reviewError: string | null = null;
-    if (!checks.codes.length && deps.canReview && by === "ai" && pay("review")) {
+    if (!checks.codes.length && deps.canReview && by === "ai" && !providerStopped && pay("review")) {
       try {
         const key = `${jobKey}:seo2:review:${memoKey}:${attempt}`;
-        const r = await withCandidate(`seo2:${docKey}`, attempt, () => deps.review(reviewPrompt(doc, facts, INTENT_GOAL[brief.intent].fr), key));
+        const r = await withCandidate(`seo2:${docKey}`, attempt, () => deps.review(reviewPrompt(doc, facts, INTENT_GOAL[brief.intent].fr, brief), key));
         budget.spentMicro += r.costMicro;
         stats.reviews++;
         review = r.value;
       } catch (e) {
         if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
         reviewError = (e as Error).message;
+        providerStopped = true;
       }
     }
     decision = gateContent({ type: req.type, local: checks, review, reviewError, attempt });
     base.codes = [...decision.fatalCodes, ...decision.blockingCodes];
     base.issues = [...checks.issues, ...(review?.issues ?? [])];
-    if (decision.verdict !== "RETRY" || decision.action !== "regenerate" || by !== "ai") break;
+    gateSave({ userId: p.userId, projectId: p.id, jobId: ctx?.job.id ?? null, candidateId: `seo2:${docKey}` }, decision);
+    if (attempt >= policy.maxRetries || providerStopped || by !== "ai" || decision.verdict === "FINAL" || (!checks.codes.length && decision.action !== "regenerate")) break;
     // Reprise : seulement avec un défaut identifié et les blocs visés ; jamais pour « gonfler » la note.
-    const blockIds = [...new Set([...checks.blocks, ...(review?.fix.blockIds ?? [])])].filter((id) => doc.blocks.some((b) => b.id === id));
-    const fix = decision.feedback || review?.fix.instruction || "";
-    if (!fix.trim() || !pay(writeKind(req.type))) break;
+    const blockIds = [...new Set([...checks.blocks, ...(review?.fix.blockIds ?? [])])].filter((id) => id === "meta" || doc.blocks.some((b) => b.id === id));
+    const fix = decision.feedback || review?.fix.instruction || checks.issues.join(" ; ");
+    // Un défaut non localisé est laissé à vérifier plutôt que de réécrire tout le document.
+    if (!fix.trim() || !blockIds.length || !pay("rewrite")) break;
+    retain(doc, decision.verdict, `essai ${attempt + 1} — ${decision.reason}`);
     try {
-      const key = `${jobKey}:seo2:write:${memoKey}:${attempt + 1}`;
-      const r = await withCandidate(`seo2:${docKey}`, attempt + 1, () => deps.write(writeSystem(lang), writePrompt(brief, facts, { fix: `${fix}${blockIds.length ? ` (blocs : ${blockIds.join(", ")})` : ""}`, current: doc }), key, writeKind(req.type)));
+      ctx?.progress(0.5 + attempt * 0.1, L("Correction ciblée des passages insuffisants", "Correcting insufficient passages"));
+      const key = `${jobKey}:seo2:rewrite:${memoKey}:${attempt + 1}`;
+      const target = doc.blocks.filter((b) => blockIds.includes(b.id));
+      const prompt = `${writePrompt(brief, facts)}\nCORRECTION CIBLÉE : ${fix} (blocs : ${blockIds.join(", ")}). Ne renvoie que ces blocs, mêmes identifiants et natures.\nBlocs à modifier : ${JSON.stringify(target)}\n${blockIds.includes("meta") ? `Métadonnées à corriger : ${JSON.stringify(doc.meta)}` : ""}\nRéponds { "blocks": [{ "id": "…", "text": "…" }], "note": "…" }, items pour une liste, q/a pour une FAQ ; seoTitle/metaDescription seulement si meta est visé.`;
+      const r = await withCandidate(`seo2:${docKey}`, attempt + 1, () => deps.rewrite(writeSystem(lang), prompt, key));
       budget.spentMicro += r.costMicro;
-      stats.writes++;
+      stats.rewrites++;
       stats.retries++;
-      const next = fromAiDraft(brief, facts, r.value, runId);
-      if (next.blocks.length >= 2) doc = next;
-      else break;
+      const next = mergeRewrite(doc, r.value, blockIds);
+      if (JSON.stringify(next) === JSON.stringify(doc)) { notes.push("La reprise n'a produit aucun changement : texte conservé."); break; }
+      doc = next;
     } catch (e) {
       if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
-      notes.push(`reprise en échec : ${(e as Error).message.slice(0, 120)}`);
+      providerStopped = true;
+      notes.push(`reprise en échec, sans nouvel essai automatique : ${(e as Error).message.slice(0, 120)}`);
       break;
     }
   }
@@ -219,10 +288,11 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   // Un texte IA encore fautif (affirmation inventée, source, information commerciale…) n'est jamais gardé : le
   // texte local, construit sur les seuls faits, le remplace.
   if (by === "ai" && decision && (decision.verdict === "REJECTED" || decision.verdict === "RETRY") && decision.blockingCodes.some((c) => ["invented_claim", "invented_source", "wrong_fact", "unconfirmed_commercial", "forbidden_claim", "invented_link"].includes(c))) {
+    retain(doc, decision.verdict, `essai écarté — ${decision.reason}`);
     notes.push(`texte IA écarté (${decision.blockingCodes.join(", ")}) : texte local construit sur les faits vérifiés`);
     doc = local;
     by = "local";
-    const checks = localContentChecks(doc, p, facts, { others, pages });
+    const checks = checked(doc);
     decision = gateContent({ type: req.type, local: checks, review: null, attempt: 0 });
     base.codes = [...decision.fatalCodes, ...decision.blockingCodes];
     base.issues = checks.issues;
@@ -230,23 +300,42 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
 
   const d = decision!;
   // Une relecture en panne ne laisse jamais « à reprendre » : provisoire, à valider par le client.
-  const verdict = d.verdict === "RETRY" ? "PROVISIONAL" : d.verdict;
+  const insufficient = by === "ai" && review && editorialScore(review) < policy.retryFloor;
+  const verdict = base.codes.length || insufficient ? "REJECTED" : d.verdict === "RETRY" && !d.checked ? "PROVISIONAL" : d.verdict;
   gateSave({ userId: p.userId, projectId: p.id, jobId: ctx?.job.id ?? null, candidateId: `seo2:${docKey}` }, d);
-  const saved = saveContentVersion(p.id, docKey, doc, { note: `moteur ${by === "ai" ? "IA" : "local"} — ${verdict}`, verdict });
+  doc = { ...doc, meta2: { ...doc.meta2, contract: { request: brief.request ?? "", contextHash: brief.context?.hash ?? "", contextVersion: brief.context?.version ?? "", target: page.key, checks: checkRequirements(doc, brief.requirements) } } };
+  ctx?.progress(0.9, L("Conservation du texte et de son contrôle", "Saving content and its check"));
+  const saved = retain(doc, verdict, `moteur ${by === "ai" ? "IA" : "local"} — ${verdict}`);
   // Blog V2 : le brouillon rejoint le blog existant (relecture, couverture, publication dans l'onglet Blog).
   if (req.type === "blog_article") saveBlogDraftV2(p, docKey, doc, { notes: [...base.issues, ...notes], ai: by === "ai", jobKey: runId });
   rememberContentRun(p.id, memoKey, { docKey, version: saved.version, verdict, costMicro: budget.spentMicro });
-  return { ...base, docKey, doc, verdict, reason: d.reason, by, costMicro: budget.spentMicro, stoppedByCostCap: budget.stopped };
+  return { ...base, docKey, doc, verdict, reason: d.reason, by, costMicro: budget.spentMicro, stoppedByCostCap: budget.stopped, delivery: delivery(verdict, [...base.issues, ...notes], budget.stopped) };
 }
 
 // ---------------------------------------------------------------- édition (manuelle et conversationnelle)
 
+/** Une reprise ne peut modifier que ses blocs et métadonnées autorisés, sans déplacer ni supprimer le reste. */
+export function mergeRewrite(doc: ContentDoc, out: RewriteOut, ids: string[]): ContentDoc {
+  const allowed = new Set(ids);
+  const map = new Map(out.blocks.filter((b) => allowed.has(b.id)).map((b) => [b.id, b]));
+  return { ...doc, ...(allowed.has("meta") ? { meta: { ...doc.meta, ...(out.seoTitle ? { seoTitle: out.seoTitle } : {}), ...(out.metaDescription ? { metaDescription: out.metaDescription } : {}) } } : {}), blocks: doc.blocks.map((b) => {
+    const x = map.get(b.id);
+    if (!x) return b;
+    if ((b.kind === "ul" || b.kind === "ol") && x.items?.length) return { ...b, items: x.items };
+    if (b.kind === "faq" && x.q?.trim() && x.a?.trim()) return { ...b, q: x.q, a: x.a };
+    if ("text" in b && x.text?.trim()) return { ...b, text: x.text };
+    return b;
+  }) };
+}
+
 /** Enregistrement d'une modification manuelle du client : aucune IA ; contrôles locaux pour information. */
-export function saveUserEdit(projectId: string, docKey: string, doc: ContentDoc, note = "modification du client") {
+export function saveUserEdit(projectId: string, docKey: string, doc: ContentDoc, note = "modification du client", expectedVersion?: number) {
   const p = loadProject(projectId);
+  const previous = latestContent(projectId, docKey);
+  if (previous) doc = { ...doc, type: previous.doc.type, lang: previous.doc.lang, page: { ...doc.page, key: previous.doc.page.key, kind: previous.doc.page.kind }, meta2: previous.doc.meta2 };
   const facts = verifiedFacts(p);
   const checks = localContentChecks(doc, p, facts, { pages: sitePages(p) });
-  const version = saveContentVersion(projectId, docKey, { ...doc, meta2: { ...doc.meta2, source: "user" } }, { note, verdict: checks.codes.length ? "PROVISIONAL" : null });
+  const version = saveContentVersion(projectId, docKey, { ...doc, meta2: { ...doc.meta2, source: "user" } }, { note, verdict: checks.codes.length ? "PROVISIONAL" : null, expectedVersion: expectedVersion ?? previous?.version.version });
   if (doc.type === "blog_article") saveBlogDraftV2(p, docKey, doc, { notes: checks.issues, ai: false, jobKey: "" });
   return { version, checks };
 }
@@ -263,14 +352,16 @@ export async function editContentV2(ctx: JobContext | null, projectId: string, d
   const cur = latestContent(projectId, docKey);
   if (!cur) throw new Error("contenu introuvable");
   const doc = cur.doc;
-  const facts = verifiedFacts(p);
+  const item = p.catalog.find((c) => `product:catalog:${c.key}` === doc.page.key);
+  const facts = verifiedFacts(p, item);
   const pages = sitePages(p);
   const plan = planEdit(request, doc, { selected: o.selected, facts, brief: { primaryKeyword: doc.primaryKeyword ? { term: doc.primaryKeyword, intent: "commercial", source: "semantic_hypothesis", metrics: null, basis: "" } : null, page: doc.page, type: doc.type } });
   if (plan.kind === "unclear") return { applied: false, by: "none", summary: plan.summary, version: null, doc, issues: [], costMicro: 0 };
   if (plan.kind === "local") {
     const next = { ...applyContentOps(doc, plan.ops), meta2: { ...doc.meta2, source: "ai_local" as const } };
+    if (JSON.stringify(next.blocks) === JSON.stringify(doc.blocks) && JSON.stringify(next.meta) === JSON.stringify(doc.meta)) return { applied: false, by: "none", summary: L("Aucun changement : le texte est déjà identique.", "No change: the content is already identical."), version: null, doc, issues: [], costMicro: 0 };
     const checks = localContentChecks(next, p, facts, { pages });
-    const v = saveContentVersion(projectId, docKey, next, { note: `retouche locale : ${plan.summary}`.slice(0, 200), verdict: checks.codes.length ? "PROVISIONAL" : null });
+    const v = saveContentVersion(projectId, docKey, next, { note: `retouche locale : ${plan.summary}`.slice(0, 200), verdict: checks.codes.length ? "PROVISIONAL" : null, expectedVersion: cur.version.version });
     if (next.type === "blog_article") saveBlogDraftV2(p, docKey, next, { notes: checks.issues, ai: false, jobKey: "" });
     return { applied: true, by: "local", summary: plan.summary, version: v.version, doc: next, issues: checks.issues, costMicro: 0 };
   }
@@ -306,7 +397,8 @@ export async function editContentV2(ctx: JobContext | null, projectId: string, d
   const added = after.codes.filter((c) => !before.codes.includes(c));
   if (added.length) return { applied: false, by: "ai", summary: `réécriture refusée (${added.join(", ")}) : votre texte est conservé`, version: null, doc, issues: after.issues, costMicro: r.costMicro };
   const changed = next.blocks.filter((b, i) => blockText(b) !== blockText(doc.blocks[i])).length;
-  const v = saveContentVersion(projectId, docKey, next, { note: `retouche IA : ${plan.instruction}`.slice(0, 200), verdict: "PROVISIONAL" });
+  if (!changed) return { applied: false, by: "ai", summary: L("La réécriture n'a rien changé : votre version est conservée.", "The rewrite changed nothing: your version is kept."), version: null, doc, issues: after.issues, costMicro: r.costMicro };
+  const v = saveContentVersion(projectId, docKey, next, { note: `retouche IA : ${plan.instruction}`.slice(0, 200), verdict: "PROVISIONAL", expectedVersion: cur.version.version });
   if (next.type === "blog_article") saveBlogDraftV2(p, docKey, next, { notes: after.issues, ai: false, jobKey: "" });
   return { applied: true, by: "ai", summary: `${changed} bloc(s) réécrit(s)`, version: v.version, doc: next, issues: after.issues, costMicro: r.costMicro };
 }

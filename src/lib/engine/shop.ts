@@ -22,6 +22,7 @@ import type { StoreProduct, ThemeSpec } from "../theme/spec";
 import { localCopy } from "./local-copy";
 import { serviceTermsHtml } from "./services-text";
 import { attachVariantMedia, catalogStore, ensureCatalogMedia, ensureVariantMedia } from "./catalog";
+import { deliverContent } from "../seo-v2/theme-delivery";
 import { assetsByRole, latestAsset } from "./images";
 import { aiDesignHome, aiReviewHome } from "../ai/tasks";
 import { snapshotTheme } from "../theme/snapshot";
@@ -235,6 +236,7 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
   // Entreprise de services : les photos du marchand (rôle « lifestyle ») illustrent ouverture, prestations, méthode et réalisations.
   if (services) serviceSlots(projectId, slots, files);
   const main = storeProduct(p, copy, gallery);
+  main.contentTarget = "product:main";
   attachVariantMedia(projectId, main, files, themeFileName);
   // Boutique multi-produit ou niche : les autres produits sont détourés, mis en packshot et rangés en collections.
   let catalog: ReturnType<typeof catalogStore> | null = null;
@@ -266,17 +268,19 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
     ...(services ? { business: "services" as const, services: p.services, servicesTermsHtml: serviceTermsHtml(p.services), activity: tradeText(p) } : {}),
     ...(catalog ? { storeType: p.storeType, products: catalog.products, collections: catalog.collections } : {}),
   });
+  deliverContent(spec, p, spec.language ?? contentLang());
   return { p, direction, services, catalog, spec };
 }
 
 export async function buildShop(ctx: JobContext | null, projectId: string, opts: { direction?: DirectionId; useAi?: boolean; summary?: Bi; engine?: "v1" | "v2"; language?: LanguageId } = {}) {
+  const parent = currentTheme(projectId)?.version.id ?? null;
   // Theme Engine V2 (phase 10A) par défaut pour toute nouvelle composition ; une direction V1 explicitement choisie
   // (galerie des thèmes, « change de direction ») ou un projet réglé sur l'ancien moteur garde le moteur V1.
   const engine = opts.engine ?? (opts.direction || (loadProject(projectId).settings as { themeEngine?: string }).themeEngine === "v1" ? "v1" : "v2");
   if (engine === "v2") {
     const { buildShopV2 } = await import("../theme-v2/engine");
     const r = await buildShopV2(ctx, projectId, { language: opts.language, summary: opts.summary });
-    return { versionId: r.versionId, number: r.number };
+    return { versionId: r.versionId, number: r.number, delivery: r.delivery };
   }
   const { p, direction, services, catalog, spec: built } = await composeShop(projectId, opts.direction, ctx);
   let spec = built;
@@ -357,13 +361,16 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
   // Niveau de qualité dit honnêtement (Phase 1 : comportement technique inchangé). 8/10 et plus : FINAL ; de 5 à
   // moins de 8 : PROVISOIRE, à améliorer (utilisable, jamais présenté comme un résultat final) ; sous 5 : refusé
   // (la composition de l'IA est alors écartée, celle de la direction gardée, non relue). Sans relecture : non contrôlé.
-  const quality = decide("theme_home", reviewed && reviewedKept ? { checker: "ai", score: reviewed.score } : { checker: "none", score: null });
+  const checked = decide("theme_home", reviewed && reviewedKept ? { checker: "ai", score: reviewed.score } : { checker: "none", score: null });
+  const quality = checked.verdict === "RETRY" && checked.action === "recheck" ? { ...checked, verdict: "PROVISIONAL" as const, action: "none" as const, reason: L("Structure vérifiée ; rendu visuel non vérifié, à relire.", "Structure checked; visual result unchecked, review required."), provisional: { use: "manual" as const, label: "needs_improvement" as const } } : checked;
   const qcId = saveCheck(quality, { userId: p.userId, projectId, jobId: ctx?.job.id ?? null, candidateId: `theme:${projectId}:${direction}` });
   if (reviewed && !reviewedKept) saveCheck(decide("theme_home", { checker: "ai", score: reviewed.score }), { userId: p.userId, projectId, jobId: ctx?.job.id ?? null, candidateId: `theme-ai-layout:${projectId}:${direction}` });
   if (quality.verdict === "PROVISIONAL") append(inBothLangs(() => L(" · niveau provisoire, à améliorer (moins de 8/10)", " · provisional level, needs improvement (below 8/10)")));
-  const v = saveThemeVersion(projectId, spec, JSON.stringify(summary), author, { checks: L(["structure", "schémas des sections", "contraste des couleurs"], ["structure", "section schemas", "color contrast"]), problems, gate: gateMeta(quality, qcId) });
+  const conflict = (currentTheme(projectId)?.version.id ?? null) !== parent;
+  const v = saveThemeVersion(projectId, spec, JSON.stringify(summary), author, { checks: L(["structure", "schémas des sections", "contraste des couleurs"], ["structure", "section schemas", "color contrast"]), problems, gate: gateMeta(quality, qcId) }, parent, { activate: !conflict });
   ctx?.progress(0.95, L("Boutique enregistrée", "Store saved"));
-  return { versionId: v.id, number: v.number };
+  const active = currentTheme(projectId)?.version.id === v.id;
+  return { versionId: v.id, number: v.number, delivery: { state: active ? quality.verdict === "FINAL" ? "ready" : "to_verify" : "blocked", active, message: active ? L("Thème enregistré ; consultez son contrôle avant utilisation.", "Theme saved; review its check before use.") : L("Tentative conservée en brouillon ; version courante protégée.", "Attempt saved as a draft; current version protected."), reasons: [quality.reason] } };
 }
 
 /** Change de direction en conservant les retouches de contenu ? Non : nouvelle version complète, l'ancienne reste restaurable. */

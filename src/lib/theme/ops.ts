@@ -323,6 +323,7 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
             reject(v.errors.join(" ; "));
             break;
           }
+          if (Object.entries(v.settings).every(([k, value]) => JSON.stringify(target.settings[k]) === JSON.stringify(value))) break;
           target.settings = { ...target.settings, ...v.settings };
           applied.push(L(`${op.block ? `Bloc ${op.block}` : `Section ${op.section}`} : « ${key} » mis à jour`, `${op.block ? `Block ${op.block}` : `Section ${op.section}`}: "${key}" updated`));
           break;

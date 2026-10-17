@@ -104,7 +104,7 @@ export const handlers: Record<string, Handler> = {
   "content.v2": async (ctx) => {
     const { runContentEngineV2 } = await import("../src/lib/seo-v2/engine");
     const r = await runContentEngineV2(ctx, ctx.payload.projectId, ctx.payload.request);
-    return { docKey: r.docKey, verdict: r.verdict, codes: r.codes, by: r.by, costMicro: r.costMicro, skipped: r.skipped, stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, notes: r.notes.slice(0, 20) };
+    return { docKey: r.docKey, verdict: r.verdict, codes: r.codes, by: r.by, costMicro: r.costMicro, skipped: r.skipped, stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, notes: r.notes.slice(0, 20), delivery: r.delivery };
   },
   /** Vidéo V2 : intention, stratégie, script, storyboard, plans, document éditable, rendu, barrière vidéo. */
   "video.v2": async (ctx) => {

@@ -5,7 +5,7 @@ import { LANGUAGE_LABEL_EN } from "@/lib/theme-v2/engine";
 import path from "node:path";
 import { addable, libraryEntry } from "@/lib/theme/section-library";
 import { L, uiLang } from "@/lib/i18n-server";
-import { all } from "@/lib/db";
+import { all, json } from "@/lib/db";
 import { handle, ok } from "@/lib/http";
 import { currentTheme, listThemeVersions } from "@/lib/projects";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
@@ -26,7 +26,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const ui = uiLang();
   const cur = currentTheme(p.id);
   const messages = all<any>("SELECT id, role, content, attachments, selection, theme_version_id, job_id, created_at FROM chat_messages WHERE project_id = ? AND thread = 'shop' ORDER BY created_at ASC LIMIT 200", p.id).map((m) => ({ ...m, attachments: JSON.parse(m.attachments || "[]"), selection: m.selection ? JSON.parse(m.selection) : null }));
-  if (!cur) return ok({ current: null, versions: [], messages, directions: directionCards(ui), sandbox: previewSandbox() });
+  if (!cur) return ok({ current: null, versions: listThemeVersions(p.id), messages, directions: directionCards(ui), sandbox: previewSandbox() });
   const structure = ["group:header", ...Object.keys(cur.spec.templates), "group:footer"].map((t) => {
     const c = containerOf(cur.spec, t)!;
     return {
@@ -35,6 +35,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     };
   });
   return ok({
+    quality: json<{ gate?: unknown }>(cur.version.qc, {})?.gate ?? null,
     current: { versionId: cur.version.id, number: cur.version.number, direction: cur.spec.direction, name: cur.spec.name, language: cur.spec.language ?? "fr", summary: cur.version.summary, fingerprint: themeFingerprint(cur.spec), structure, pages: cur.spec.store.pages, products: storeProducts(cur.spec).map((x) => ({ handle: x.handle, title: x.title, template_suffix: x.template_suffix && cur.spec.templates[`product.${x.template_suffix}`] ? x.template_suffix : null })), product: { handle: cur.spec.store.product.handle, title: cur.spec.store.product.title, price: cur.spec.store.product.price }, motion: cur.spec.imported ? undefined : { enabled: cur.spec.settings.motion_enabled !== false, intensity: String(cur.spec.settings.motion_intensity ?? "normal"), parallax: cur.spec.settings.motion_parallax !== false }, imported: cur.spec.imported ? { name: cur.spec.imported.name, report: cur.spec.imported.report } : undefined },
     versions: listThemeVersions(p.id),
     // Theme Engine V2 : langage visuel, plan des pages (complètes ou à compléter), informations manquantes.

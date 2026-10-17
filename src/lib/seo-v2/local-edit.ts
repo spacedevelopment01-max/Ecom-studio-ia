@@ -76,7 +76,7 @@ export function planEdit(request: string, doc: ContentDoc, o: { selected?: strin
   if (CREATIVE.test(t) || /reecris|rewrite|reescribe/.test(t)) {
     const onlyThis = /uniquement|seulement|only|solo|ce paragraphe|this paragraph|este parrafo/.test(t);
     const ids = sel.length ? sel : onlyThis ? target : doc.blocks.filter((b) => b.kind !== "h1").map((b) => b.id);
-    return { kind: "ai", blockIds: ids, instruction: request.trim().slice(0, 400), summary: `réécriture par l'IA de ${ids.length} bloc(s)`, meta: /titre|title|meta/.test(t) };
+    return { kind: "ai", blockIds: ids, instruction: request, summary: `réécriture par l'IA de ${ids.length} bloc(s)`, meta: /titre|title|meta/.test(t) };
   }
   return { kind: "unclear", summary: "demande non comprise : précisez le passage et la modification (ex. « raccourcis ce paragraphe »)" };
 }
