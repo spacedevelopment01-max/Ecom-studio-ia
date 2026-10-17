@@ -330,14 +330,19 @@ describe("Social V2 — parcours", async () => {
     const p = loadProject(seedImageFixture(u.id, "cosmetic"));
     const r = fr(() => createPlanV2(p, { startDate: start(), days: 14, perDay: 3, timezone: "Europe/Paris", platforms: [{ platform: "instagram" }], formatMix: { image: 60, video: 40 } }));
     const { deps, log } = mockSocialDeps({ aiActive: true });
-    const sun = await fr(() => applySocialEdit(p, "Supprime les publications du dimanche", deps));
+    // Suppression : toujours une confirmation avant d'agir (choix du propriétaire), puis appliquée localement.
+    const ask0 = await fr(() => applySocialEdit(p, "Supprime les publications du dimanche", deps));
+    expect(ask0.needsConfirm).toBe(true);
+    expect(ask0.confirmKind).toBe("delete");
+    expect(ask0.ids.length).toBe(6);
+    const sun = await fr(() => applySocialEdit(p, "Supprime les publications du dimanche", deps, { confirm: true }));
     expect(sun.by).toBe("local");
     expect(sun.ids.length).toBe(6);
-    const vids = await fr(() => applySocialEdit(p, "Mets les vidéos le vendredi", deps));
+    const vids = await fr(() => applySocialEdit(p, "Mets les vidéos le vendredi", deps, { confirm: true }));
     expect(vids.applied).toBe(true);
     const days = all<{ d: string }>("SELECT strftime('%w', scheduled_at / 1000, 'unixepoch') d FROM posts WHERE plan_id = ? AND format = 'reel' AND status != 'cancelled'", r.planId);
     expect(days.every((x) => x.d === "5")).toBe(true);
-    const red = await fr(() => applySocialEdit(p, "Programme deux publications par jour au lieu de trois", deps));
+    const red = await fr(() => applySocialEdit(p, "Programme deux publications par jour au lieu de trois", deps, { confirm: true }));
     expect(red.by).toBe("local");
     const counts = new Map<string, number>();
     for (const x of all<{ scheduled_at: number }>("SELECT scheduled_at FROM posts WHERE plan_id = ? AND status != 'cancelled'", r.planId)) {
@@ -345,7 +350,7 @@ describe("Social V2 — parcours", async () => {
       counts.set(d, (counts.get(d) ?? 0) + 1);
     }
     expect(Math.max(...counts.values())).toBeLessThanOrEqual(2);
-    const rep = await fr(() => applySocialEdit(p, "Remplace les images des trois prochaines publications", deps));
+    const rep = await fr(() => applySocialEdit(p, "Remplace les images des trois prochaines publications", deps, { confirm: true }));
     expect(rep.ids).toHaveLength(3);
     // Remplacer une image ne la refait jamais par un gabarit : seulement par l'IA (avec accord), sinon elle attend.
     expect(log.local).toBe(0);

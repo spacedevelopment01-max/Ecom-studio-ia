@@ -19,10 +19,12 @@ import { createPlanV2, type PlanRequest } from "./planner";
 import { adaptForPlatform, nativeFormatFor, PLATFORMS, type Platform, type PostFormat } from "./platforms";
 import { afterEdit, approvePosts } from "./approval";
 import { checkPost } from "./quality";
-import { produceBatch } from "./production";
 import { moveRefusal, setPlanPaused } from "./scheduler";
 import { rememberRefused } from "./memory";
-import { moveToWeekday, planSocialEdit } from "./local-edit";
+import { EDITABLE, movedAt, moveToWeekday, planSocialEdit } from "./local-edit";
+import { enqueue } from "../jobs";
+import { attachFreeVisuals } from "./plan-visuals";
+import { L } from "../i18n-server";
 import type { SocialDeps } from "./deps";
 
 export const SOCIAL_V2_VERSION = "9a.1";
@@ -137,7 +139,22 @@ export function deletePostV2(p: Project, postId: string) {
 
 export const approve = (p: Project, ids: string[], userId: string) => approvePosts(ids.filter((x) => one("SELECT 1 FROM posts WHERE id = ? AND project_id = ?", x, p.id)), userId, (pid) => checkPost(p, pid));
 
-export type EditOutcome = { applied: boolean; by: "local" | "ai" | "none"; summary: string; ids: string[]; needsConfirm?: boolean; estimateMicro?: number; needsAi?: boolean; refused?: string[]; costMicro: number };
+export type EditOutcome = {
+  applied: boolean;
+  by: "local" | "ai" | "none";
+  summary: string;
+  ids: string[];
+  /** Accord du client attendu : « delete » (suppression, toujours confirmée) ou « ai » (coût IA à accepter). */
+  needsConfirm?: boolean;
+  confirmKind?: "delete" | "change" | "ai";
+  /** Coût PROBABLE de la retouche IA (micro-euros, usage interne : le client voit un % de son budget IA). */
+  estimateMicro?: number;
+  needsAi?: boolean;
+  /** Demande non comprise : le résumé contient des exemples de phrases comprises. */
+  unclear?: boolean;
+  refused?: string[];
+  costMicro: number;
+};
 
 /**
  * Retouche en conversation sur le calendrier. Locale et gratuite quand c'est possible ; IA seulement pour réécrire,
@@ -146,54 +163,117 @@ export type EditOutcome = { applied: boolean; by: "local" | "ai" | "none"; summa
 export async function applySocialEdit(p: Project, text: string, deps: SocialDeps, o: { confirm?: boolean; maxCostEur?: number; planId?: string | null; at?: number } = {}): Promise<EditOutcome> {
   const plan = planSocialEdit(text, p.id, o.at ?? now(), o.planId);
   const base = { ids: plan.ids, costMicro: 0 };
-  if (plan.kind === "unclear") return { ...base, applied: false, by: "none", summary: plan.summary };
+  if (plan.kind === "unclear") return { ...base, applied: false, by: "none", unclear: true, summary: plan.summary };
   if (plan.kind === "local") {
-    const moveRefused: string[] = [];
+    // Aperçu avant d'agir (« 12 vidéo(s) passeront au vendredi 18:00. Confirmer ? ») ; suppression : toujours confirmée.
+    if (plan.confirm && !o.confirm) return { ...base, applied: false, by: "none", needsConfirm: true, confirmKind: plan.destructive ? "delete" : "change", summary: plan.confirm };
     const planIds = o.planId ? [o.planId] : all<{ id: string }>("SELECT id FROM content_plans WHERE project_id = ? AND engine = 'v2'", p.id).map((r) => r.id);
+    if (plan.action === "pause" || plan.action === "resume") {
+      for (const pid of planIds) setPlanPaused(pid, plan.action === "pause");
+      return { ...base, applied: true, by: "local", summary: plan.summary };
+    }
+    if (plan.action === "undo") return undoLastEdit(p);
+    // Publications envoyées ou en cours d'envoi : jamais touchées (revérifié au moment d'agir).
+    const ids = plan.ids.filter((pid) => EDITABLE.has(one<{ status: string }>("SELECT status FROM posts WHERE id = ?", pid)?.status ?? ""));
+    const created: string[] = [];
+    snapshotForUndo(p.id, ids, plan.summary);
+    const refused: string[] = [];
+    let done = 0;
+    const move = (pid: string, to: (r: { scheduled_at: number; timezone: string }) => number) => {
+      const r = one<{ scheduled_at: number; timezone: string }>("SELECT scheduled_at, timezone FROM posts WHERE id = ?", pid)!;
+      const at = to(r);
+      // Même contrôle que le glisser-déposer : date future, calendrier et nombre par jour du forfait.
+      const why = moveRefusal(p.id, pid, at);
+      if (why) return void refused.push(`${pid} : ${why}`);
+      run("UPDATE posts SET scheduled_at = ?, updated_at = ? WHERE id = ? AND status NOT IN ('publishing','published','uncertain')", at, now(), pid);
+      done++;
+    };
     switch (plan.action) {
-      case "pause":
-      case "resume":
-        for (const pid of planIds) setPlanPaused(pid, plan.action === "pause");
-        break;
       case "cancel":
       case "reduce_per_day":
-        for (const pid of plan.ids) {
+      case "per_week":
+        for (const pid of ids) {
           const changed = run("UPDATE posts SET status = 'cancelled', updated_at = ? WHERE id = ? AND status NOT IN ('publishing','published','uncertain')", now(), pid).changes;
           if (changed && plan.action === "cancel") rememberRefused(p.id, one<{ caption: string }>("SELECT caption FROM posts WHERE id = ?", pid)?.caption ?? "");
+          done += changed;
         }
         break;
       case "move_weekday":
-        for (const pid of plan.ids) {
-          const r = one<{ scheduled_at: number; timezone: string }>("SELECT scheduled_at, timezone FROM posts WHERE id = ?", pid)!;
-          const at = moveToWeekday(r.scheduled_at, r.timezone, plan.weekday!);
-          // Même contrôle que le glisser-déposer : date future, calendrier et nombre par jour du forfait.
-          const why = moveRefusal(p.id, pid, at);
-          if (why) {
-            moveRefused.push(`${pid} : ${why}`);
-            continue;
+        for (const pid of ids) move(pid, (r) => moveToWeekday(r.scheduled_at, r.timezone, plan.weekday!, plan.time));
+        break;
+      case "move_date":
+      case "shift":
+      case "set_time":
+        for (const pid of ids) move(pid, (r) => movedAt(r.scheduled_at, r.timezone, { days: plan.days, ymd: plan.ymd, time: plan.time }));
+        break;
+      case "network":
+        for (const pid of ids) {
+          try {
+            editPostV2(p, pid, { network: plan.network!, connectionId: projectAccounts(p).find((a) => a.provider === plan.network && a.status === "active")?.id ?? null });
+            done++;
+          } catch (e) {
+            refused.push(`${pid} : ${(e as Error).message}`);
           }
-          run("UPDATE posts SET scheduled_at = ?, updated_at = ? WHERE id = ? AND status NOT IN ('publishing','published','uncertain')", at, now(), pid);
         }
         break;
-      case "replace_media": {
-        // Nouvelle image demandée par le client : média retiré puis production GRATUITE (bibliothèque, rendu local).
-        for (const pid of plan.ids) {
-          removeUsages("post", pid);
-          run("UPDATE posts SET media = '[]', updated_at = ? WHERE id = ? AND status NOT IN ('publishing','published','uncertain')", now(), pid);
+      case "add_network":
+      case "duplicate":
+        for (const pid of ids) {
+          const nid = duplicatePostV2(p, pid);
+          created.push(nid);
+          if (plan.action === "add_network") editPostV2(p, nid, { network: plan.network!, connectionId: projectAccounts(p).find((a) => a.provider === plan.network && a.status === "active")?.id ?? null });
+          done++;
         }
-        await produceBatch(p, plan.ids, deps, { allowPaid: false, maxCostEur: 0 });
+        break;
+      case "approve": {
+        const r = approve(p, ids, p.userId);
+        done = r.approved.length;
+        for (const x of r.refused) refused.push(`${x.id} : ${x.reason}`);
         break;
       }
+      case "format": {
+        // Nouveau format : le visuel qui ne convient plus est retiré (il reste dans la bibliothèque), puis remplacé
+        // GRATUITEMENT (photo de la banque ; vidéo montée sans IA en tâche de fond). Rien d'inventé.
+        const toVideo = plan.format === "video";
+        for (const pid of ids) {
+          const r = one<{ network: string; format: string }>("SELECT network, format FROM posts WHERE id = ?", pid)!;
+          const nf = nativeFormatFor(r.network as Platform, (plan.format === "image" ? "image" : plan.format) as PostFormat);
+          const wasVideo = ["video", "reel", "short"].includes(r.format);
+          const clear = toVideo !== wasVideo || plan.format === "text";
+          run(`UPDATE posts SET format = ?${clear ? ", media = '[]'" : ""}, updated_at = ? WHERE id = ?`, nf, now(), pid);
+          if (clear) removeUsages("post", pid);
+          afterEdit(pid);
+          done++;
+        }
+        if (plan.format === "image" || plan.format === "carousel") attachFreeVisuals(p, ids);
+        if (toVideo) enqueueFreeVideos(p, ids);
+        break;
+      }
+      case "replace_media": {
+        // Nouvelle image demandée par le client : une AUTRE image de la banque du projet (gratuit). Jamais une image
+        // retirée sans rien à la place : sans autre photo disponible, l'image actuelle reste et c'est dit.
+        const r = attachFreeVisuals(p, ids, { replace: true });
+        if (!r.images) return { ...base, applied: false, by: "local", summary: L("Aucune autre photo disponible dans votre banque d'images : les images actuelles restent. Ajoutez des photos à votre banque d'images, ou créez de nouveaux visuels par l'IA.", "No other photo available in your image bank: the current images stay. Add photos to your image bank, or create new visuals with AI.") };
+        if (r.images < ids.length) return { ...base, applied: true, by: "local", summary: L(`nouvelles images pour ${r.images} publication(s) sur ${ids.length} : pas assez d'autres photos dans votre banque pour les autres (images actuelles gardées)`, `new images for ${r.images} of ${ids.length} post(s): not enough other photos in your bank for the rest (current images kept)`) };
+        done = r.images;
+        break;
+      }
+      case "replace_video": {
+        // Nouvelle vidéo montée sans IA : l'ancienne n'est retirée qu'une fois la nouvelle prête (tâche de fond).
+        enqueueFreeVideos(p, ids, true);
+        return { ...base, applied: true, by: "local", summary: L(`${ids.length} nouvelle(s) vidéo(s) en cours de montage, sans IA (l'ancienne reste en place jusque-là)`, `${ids.length} new video(s) being edited, without AI (the old one stays until then)`) };
+      }
     }
-    if (moveRefused.length) return { ...base, applied: moveRefused.length < plan.ids.length, by: "local", summary: `${plan.summary} — ${moveRefused.length} non déplacée(s)`, refused: moveRefused };
+    if (created.length) recordCreatedForUndo(p.id, created);
+    if (refused.length) return { ...base, applied: done > 0, by: "local", summary: L(`${plan.summary} — ${done} fait(es), ${refused.length} non modifiée(s)`, `${plan.summary} — ${done} done, ${refused.length} not changed`), refused };
     return { ...base, applied: true, by: "local", summary: plan.summary };
   }
   // Réécriture IA : seulement les publications visées, estimée, confirmée, plafonnée.
-  if (!deps.aiActive) return { ...base, applied: false, by: "none", needsAi: true, summary: "cette retouche demande l'IA, non disponible pour ce compte : modifiez les textes directement" };
+  if (!deps.aiActive) return { ...base, applied: false, by: "none", needsAi: true, summary: L("Cette retouche demande l'IA, non disponible pour ce compte : modifiez les textes directement.", "This edit needs AI, which isn't available for this account: edit the texts directly.") };
   // Devis au coût probable (un essai par publication), dit en % du budget IA du mois ; plafond : reprises comprises.
   const estimate = plan.ids.length * (deps.probable ? deps.probable("rewrite") : deps.estimate("rewrite"));
-  const cap = Math.round((o.maxCostEur ?? 1) * EUR);
-  if (!o.confirm) return { ...base, applied: false, by: "none", needsConfirm: true, estimateMicro: estimate, summary: `${plan.summary} — ${budgetPctText(p.userId, estimate, p.id)} : confirmez pour lancer` };
+  const cap = Math.round((o.maxCostEur ?? Math.max(1, (plan.ids.length * deps.estimate("rewrite")) / EUR)) * EUR);
+  if (!o.confirm) return { ...base, applied: false, by: "none", needsConfirm: true, confirmKind: "ai", estimateMicro: estimate, summary: L(`${plan.summary} — ${budgetPctText(p.userId, estimate, p.id)} : confirmez pour lancer`, `${plan.summary} — ${budgetPctText(p.userId, estimate, p.id)}: confirm to start`) };
   let spent = 0;
   const refused: string[] = [];
   let done = 0;
@@ -217,5 +297,50 @@ export async function applySocialEdit(p: Project, text: string, deps: SocialDeps
     afterEdit(pid);
     done++;
   }
-  return { ...base, applied: done > 0, by: "ai", summary: `${done} publication(s) réécrite(s)${refused.length ? `, ${refused.length} refusée(s)` : ""}`, refused, costMicro: spent };
+  return { ...base, applied: done > 0, by: "ai", summary: L(`${done} publication(s) réécrite(s)${refused.length ? `, ${refused.length} refusée(s)` : ""}`, `${done} post(s) rewritten${refused.length ? `, ${refused.length} refused` : ""}`), refused, costMicro: spent };
+}
+
+// ------------------------------------------------------------------ annuler la dernière modification
+
+/** Mémoire de la dernière retouche en une phrase (une par projet) : lignes avant modification, publications créées. */
+function undoTable() {
+  run("CREATE TABLE IF NOT EXISTS social_edit_undo (project_id TEXT PRIMARY KEY, at INTEGER NOT NULL, summary TEXT NOT NULL, rows TEXT NOT NULL, created TEXT NOT NULL DEFAULT '[]')");
+}
+const UNDO_COLS = ["status", "scheduled_at", "network", "format", "media", "connection_id", "title", "caption", "hashtags", "content_hash", "approved_hash", "approved_at", "approved_by", "user_edited", "brief", "production"];
+
+function snapshotForUndo(projectId: string, ids: string[], summary: string) {
+  undoTable();
+  const rows = ids.length ? all<Record<string, unknown>>(`SELECT id, ${UNDO_COLS.join(", ")} FROM posts WHERE id IN (${ids.map(() => "?").join(",")})`, ...ids) : [];
+  run("INSERT INTO social_edit_undo (project_id, at, summary, rows, created) VALUES (?,?,?,?, '[]') ON CONFLICT(project_id) DO UPDATE SET at = excluded.at, summary = excluded.summary, rows = excluded.rows, created = '[]'", projectId, now(), summary.slice(0, 300), JSON.stringify(rows));
+}
+function recordCreatedForUndo(projectId: string, created: string[]) {
+  run("UPDATE social_edit_undo SET created = ? WHERE project_id = ?", JSON.stringify(created), projectId);
+}
+
+/** Remet les publications dans l'état d'avant la dernière retouche (jamais une publication envoyée entre-temps). */
+function undoLastEdit(p: Project): EditOutcome {
+  undoTable();
+  const u = one<{ rows: string; created: string; summary: string }>("SELECT rows, created, summary FROM social_edit_undo WHERE project_id = ?", p.id);
+  if (!u) return { ids: [], costMicro: 0, applied: false, by: "none", summary: L("Aucune modification récente à annuler.", "No recent change to undo.") };
+  const rows = json<Record<string, unknown>[]>(u.rows, []);
+  let restored = 0;
+  for (const r of rows) {
+    const cur = one<{ status: string }>("SELECT status FROM posts WHERE id = ? AND project_id = ?", r.id, p.id);
+    if (!cur || ["publishing", "published", "uncertain"].includes(cur.status)) continue;
+    run(`UPDATE posts SET ${UNDO_COLS.map((c) => `${c} = ?`).join(", ")}, updated_at = ? WHERE id = ?`, ...UNDO_COLS.map((c) => r[c] as never), now(), r.id);
+    removeUsages("post", r.id as string);
+    for (const m of json<string[]>(String(r.media ?? "[]"), [])) addUsage(m, "post", r.id as string, "Publication");
+    restored++;
+  }
+  let removed = 0;
+  for (const nid of json<string[]>(u.created, [])) removed += run("DELETE FROM posts WHERE id = ? AND project_id = ? AND status NOT IN ('publishing','published','uncertain')", nid, p.id).changes;
+  run("DELETE FROM social_edit_undo WHERE project_id = ?", p.id);
+  return { ids: rows.map((r) => r.id as string), costMicro: 0, applied: true, by: "local", summary: L(`Dernière modification annulée (« ${u.summary} ») : ${restored} publication(s) remise(s) comme avant${removed ? `, ${removed} copie(s) retirée(s)` : ""}.`, `Last change undone ("${u.summary}"): ${restored} post(s) restored${removed ? `, ${removed} copy(ies) removed` : ""}.`) };
+}
+
+/** Vidéos montées sans IA (tâche de fond, aucune dépense) pour des publications vidéo. */
+function enqueueFreeVideos(p: Project, ids: string[], replace = false) {
+  const list = ids.filter((pid) => ["video", "reel", "short"].includes(one<{ format: string }>("SELECT format FROM posts WHERE id = ?", pid)?.format ?? ""));
+  if (!list.length) return null;
+  return enqueue({ userId: p.userId, projectId: p.id, type: "social.v2.produce", label: L("Vidéos des publications (montage sans IA)", "Post videos (edited without AI)"), payload: { projectId: p.id, ids: list, allowPaid: false, maxCostEur: 0, batchSize: list.length, markWaiting: true, replace } });
 }

@@ -245,7 +245,9 @@ export function realSocialDeps(ctx: JobContext | null, p: Project, aiActive: boo
     },
     async video(pp, post, o) {
       const { runVideoEngineV2 } = await import("../video-v2/engine");
-      const r = await runVideoEngineV2(ctx, pp.id, { ask: { text: `${post.pillar ?? ""} : ${post.title}`, platform: PLATFORM_VIDEO[post.network] ?? "reels", aspect: aspectOf(post.network, post.format) === "4:5" ? "4:5" : "9:16", durationS: 15, allowGeneration: o.allowPaid }, approveGeneration: o.allowPaid, maxCostEur: o.maxCostEur });
+      // Sans dépense acceptée : montage local SANS IA (script local, aucun plan généré ni relecture IA payante).
+      const free = o.allowPaid ? undefined : (await import("../video-v2/deps")).realVideoDeps(ctx, pp, false);
+      const r = await runVideoEngineV2(ctx, pp.id, { ask: { text: `${post.pillar ?? ""} : ${post.title}`, platform: PLATFORM_VIDEO[post.network] ?? "reels", aspect: aspectOf(post.network, post.format) === "4:5" ? "4:5" : "9:16", durationS: 15, allowGeneration: o.allowPaid }, approveGeneration: o.allowPaid, maxCostEur: o.maxCostEur }, free);
       return { assetId: r.videoAssetId, costMicro: r.costMicro, by: "video_v2", note: r.videoAssetId ? undefined : r.reason };
     },
     async ad(pp, post, o) {

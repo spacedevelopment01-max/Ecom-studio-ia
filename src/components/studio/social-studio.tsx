@@ -10,7 +10,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { addDays, addMonths, endOfMonth, endOfWeek, format, isSameMonth, startOfMonth, startOfWeek } from "date-fns";
 import { enUS, fr } from "date-fns/locale";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
-import { ArrowDown, ArrowUp, BarChart3, Bot, Gauge, CalendarDays, CalendarPlus, Clapperboard, ImageIcon, Check, ChevronLeft, ChevronRight, Copy, ListChecks, MessageSquare, Pause, Pencil, Play, Plus, Send, Sparkles, Target, Trash2, Type, Wand2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, BarChart3, Bot, Gauge, CalendarDays, CalendarPlus, Clapperboard, ImageIcon, Check, ChevronLeft, ChevronRight, Copy, ListChecks, MessageSquare, Pause, Pencil, Play, Plus, Send, Sparkles, Target, Trash2, TriangleAlert, Type, Wand2, X } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, Field, Input, Modal, Select, Spinner, Textarea, useApi, useToast } from "../ui";
 import { useLang, useT } from "../i18n";
 import { useBudgetPct } from "../billing-client";
@@ -27,6 +27,8 @@ export type PostV = {
   id: string; network: string; format: string; status: string; scheduledAt: number | null; timezone: string; title: string; caption: string; hashtags: string; link: string | null;
   media: AssetView[]; connectionId: string | null; connectionName: string | null; planId: string | null; error: string | null; remoteUrl: string | null; publishedAt: number | null;
   engine: string; pillar: string | null; objective: string | null; approvedValid: boolean; approvedHash: string | null; userEdited: boolean; blocking: string[]; issues: string[]; level: string;
+  /** Pourquoi la publication n'a pas de visuel (banque vide, échec signalé…). */
+  visualNote?: string | null;
 };
 type Pillar = { id: string; title: string; objective: string; share: number; idea: string; formats: string[] };
 import type { SubjectView } from "./subject-picker";
@@ -334,7 +336,9 @@ function CreatePanel({ data, onDone, onGo, reload }: { data: Data; onDone: () =>
   const [nets, setNets] = useState<Record<string, { on: boolean; account: string }>>(() => Object.fromEntries(["instagram", "facebook", "tiktok", "youtube", "pinterest", "linkedin"].map((n) => [n, { on: n === "instagram" || n === "facebook", account: data.accounts.find((a) => a.provider === n && a.status === "active")?.id ?? "" }])));
   const [ask, setAsk] = useState("");
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{ created: number; warnings: string[]; notes?: string[] } | null>(null);
+  const [result, setResult] = useState<{ created: number; warnings: string[]; notes?: string[]; visuals?: PlanVisualsOut } | null>(null);
+  const [visuals, setVisuals] = useState<"none" | "free" | "ai">("none");
+  const [quote, setQuote] = useState<VisualQuoteV | null>(null);
   const days = Math.max(1, Math.round((Date.parse(f.endDate) - Date.parse(f.startDate)) / 86_400_000) + 1);
   // Attente en cours (libellé et clé de mesure du temps) ; production payante : tâche de fond suivie ci-dessous.
   const [what, setWhat] = useState<{ key: string; label: string; ms: number } | null>(null);
@@ -351,12 +355,29 @@ function CreatePanel({ data, onDone, onGo, reload }: { data: Data; onDone: () =>
       setWhat(null);
     }
   };
-  const plan = () => run(async () => {
+  const request = () => {
     const platforms = Object.entries(nets).filter(([, v]) => v.on).map(([platform, v]) => ({ platform, connectionId: v.account || null }));
     if (!platforms.length) throw new Error(t("Choisissez au moins un réseau.", "Choose at least one network."));
-    const r = await api<{ created: number; warnings: string[] }>(`/api/projects/${id}/social/v2`, { body: { action: "plan", request: { startDate: f.startDate, endDate: f.endDate, perDay: f.perDay, weekdays: f.weekdays, slots: f.slots.slice(0, f.perDay), timezone: f.timezone, platforms, distribution: f.distribution, priority: f.priority, formatMix: f.mix, structure: "weekly", exclude: f.exclude.split(/[\s,;]+/).filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x)) } } });
+    return { startDate: f.startDate, endDate: f.endDate, perDay: f.perDay, weekdays: f.weekdays, slots: f.slots.slice(0, f.perDay), timezone: f.timezone, platforms, distribution: f.distribution, priority: f.priority, formatMix: f.mix, structure: "weekly", exclude: f.exclude.split(/[\s,;]+/).filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x)) };
+  };
+  // Visuels IA : 1) devis en % du budget IA (rien n'est créé) ; 2) clic de confirmation ; 3) tâche de fond suivie.
+  const plan = (confirm = false) => run(async () => {
+    const r = await api<{ created: number; warnings: string[]; needsConfirm?: boolean; quote?: VisualQuoteV; visuals?: PlanVisualsOut; jobId?: string | null }>(`/api/projects/${id}/social/v2`, { body: { action: "plan", request: request(), visuals, ...(confirm && quote ? { confirm: true, approvedPct: quote.pct } : {}) } });
+    if (r.needsConfirm && r.quote) {
+      setQuote(r.quote);
+      return;
+    }
+    setQuote(null);
     setResult(r);
-    toast("ok", t(`${r.created} publications planifiées (textes proposés, aucun média payant).`, `${r.created} posts planned (proposed copy, no paid media).`));
+    const v = r.visuals;
+    toast(
+      v?.message ? "bad" : "ok",
+      v?.mode === "ai"
+        ? t(`${r.created} publications planifiées : les visuels IA se créent en arrière-plan, une publication à la fois.`, `${r.created} posts planned: AI visuals are being created in the background, one post at a time.`)
+        : v?.mode === "free"
+          ? t(`${r.created} publications planifiées : ${v.images} image(s) de votre banque posée(s)${v.videos ? `, ${v.videos} vidéo(s) en montage` : ""}.`, `${r.created} posts planned: ${v.images} image(s) from your bank placed${v.videos ? `, ${v.videos} video(s) being edited` : ""}.`)
+          : t(`${r.created} publications planifiées (textes proposés, aucun média payant).`, `${r.created} posts planned (proposed copy, no paid media).`),
+    );
     reload();
   }, { key: "social-plan", label: t("Préparation du calendrier de publications…", "Preparing the posting calendar…"), ms: 20000 });
   const fromAsk = () => run(async () => {
@@ -374,7 +395,7 @@ function CreatePanel({ data, onDone, onGo, reload }: { data: Data; onDone: () =>
         <h3 className="font-display text-xl font-semibold">{t("Planifier plusieurs publications", "Plan several posts")}</h3>
         <ol className="grid gap-1.5 text-sm sm:grid-cols-3">
           <li className="rounded-2xl bg-paper-2 p-3"><span className="font-semibold">{t("1. Planifier", "1. Plan")}</span> — {t("ici : les dates, les sujets et les textes (gratuit).", "here: dates, topics and copy (free).")}</li>
-          <li className="rounded-2xl bg-paper-2 p-3"><span className="font-semibold">{t("2. Créer les visuels", "2. Create the visuals")}</span> — {t("dans", "in")} <button type="button" className="underline" onClick={() => onGo("image")}>{t("Publication image", "Image post")}</button> {t("et", "and")} <button type="button" className="underline" onClick={() => onGo("video")}>{t("Publication vidéo", "Video post")}</button>{t(", avec ou sans IA.", ", with or without AI.")}</li>
+          <li className="rounded-2xl bg-paper-2 p-3"><span className="font-semibold">{t("2. Créer les visuels", "2. Create the visuals")}</span> — {t("ici avec « Visuels », ou dans", "here with \"Visuals\", or in")} <button type="button" className="underline" onClick={() => onGo("image")}>{t("Publication image", "Image post")}</button> {t("et", "and")} <button type="button" className="underline" onClick={() => onGo("video")}>{t("Publication vidéo", "Video post")}</button>{t(", avec ou sans IA.", ", with or without AI.")}</li>
           <li className="rounded-2xl bg-paper-2 p-3"><span className="font-semibold">{t("3. Relire et valider", "3. Review and approve")}</span> — {t("dans", "in")} <button type="button" className="underline" onClick={() => onGo("publications")}>{t("À valider et suivre", "Review and track")}</button>.</li>
         </ol>
         <p className="text-xs text-muted">{t("Vous préférez que tout se fasse seul, semaine après semaine ? Utilisez « Ma communication automatique ».", "Prefer everything to happen on its own, week after week? Use \"My automatic communication\".")}</p>
@@ -385,7 +406,7 @@ function CreatePanel({ data, onDone, onGo, reload }: { data: Data; onDone: () =>
         <div><Button variant="secondary" icon={<Wand2 className="size-4" />} loading={busy} disabled={ask.trim().length < 5} onClick={fromAsk}>{t("Préparer (gratuit)", "Prepare (free)")}</Button></div>
       </Card>
       <Card className="grid gap-4 p-5 sm:p-7">
-        <h3 className="font-display text-xl font-semibold">{t("1. Planifier", "1. Plan")} <span className="text-sm font-normal text-muted">{t("— calendrier, thèmes, formats et textes proposés : gratuit", "— calendar, themes, formats and proposed copy: free")}</span></h3>
+        <h3 className="font-display text-xl font-semibold">{t("1. Planifier", "1. Plan")} <span className="text-sm font-normal text-muted">{visuals === "ai" ? t("— calendrier, thèmes, formats et textes proposés ; visuels créés par l'IA", "— calendar, themes, formats and proposed copy; visuals created by AI") : t("— calendrier, thèmes, formats et textes proposés : gratuit", "— calendar, themes, formats and proposed copy: free")}</span></h3>
         <div className="grid gap-3 sm:grid-cols-3">
           <Field label={t("Début", "Start")} htmlFor="s-start"><Input id="s-start" type="date" value={f.startDate} onChange={(e) => setF({ ...f, startDate: e.target.value })} /></Field>
           <Field label={t("Fin", "End")} htmlFor="s-end"><Input id="s-end" type="date" value={f.endDate} onChange={(e) => setF({ ...f, endDate: e.target.value })} /></Field>
@@ -439,17 +460,83 @@ function CreatePanel({ data, onDone, onGo, reload }: { data: Data; onDone: () =>
           <p className="mb-1.5 text-sm font-medium">{t("Thèmes prioritaires", "Priority themes")}</p>
           <div className="flex flex-wrap gap-1.5">{data.strategy.pillars.map((p) => <button key={p.id} type="button" onClick={() => setF({ ...f, priority: f.priority.includes(p.id) ? f.priority.filter((x) => x !== p.id) : [...f.priority, p.id] })} className={cx("rounded-full border px-3 py-1.5 text-sm", f.priority.includes(p.id) ? "border-signal bg-signal-soft text-signal" : "border-line")}>{p.title}</button>)}</div>
         </div>
+        <VisualsChoice value={visuals} ai={data.ai} onChange={(v) => (setVisuals(v), setQuote(null))} />
         <div className="flex flex-wrap items-center gap-3">
-          <Button variant="signal" icon={<CalendarDays className="size-4" />} loading={busy} onClick={plan} data-action="plan">{t(`Planifier ${days * f.perDay} publications (gratuit)`, `Plan ${days * f.perDay} posts (free)`)}</Button>
+          <Button variant="signal" icon={visuals === "ai" ? <Sparkles className="size-4" /> : <CalendarDays className="size-4" />} loading={busy} onClick={() => plan()} data-action="plan" data-visuals={visuals}>
+            {visuals === "ai"
+              ? t(`Voir le coût : ${days * f.perDay} publications avec visuels IA`, `See the cost: ${days * f.perDay} posts with AI visuals`)
+              : visuals === "free"
+                ? t(`Planifier ${days * f.perDay} publications avec visuels gratuits`, `Plan ${days * f.perDay} posts with free visuals`)
+                : t(`Planifier ${days * f.perDay} publications (gratuit)`, `Plan ${days * f.perDay} posts (free)`)}
+          </Button>
         </div>
+        {quote && <VisualQuoteBox quote={quote} busy={busy} onConfirm={() => plan(true)} onCancel={() => setQuote(null)} onFree={() => (setVisuals("free"), setQuote(null))} />}
         {result && (
-          <div className="rounded-2xl bg-paper-2 p-3 text-sm">
+          <div className="rounded-2xl bg-paper-2 p-3 text-sm" data-plan-result>
             <p>{t(`${result.created} publications planifiées.`, `${result.created} posts planned.`)}</p>
+            {result.visuals?.mode === "free" && <p>{t(`Visuels gratuits : ${result.visuals.images} image(s) de votre banque${result.visuals.videos ? `, ${result.visuals.videos} vidéo(s) en cours de montage (sans IA)` : ""}.`, `Free visuals: ${result.visuals.images} image(s) from your bank${result.visuals.videos ? `, ${result.visuals.videos} video(s) being edited (no AI)` : ""}.`)}</p>}
+            {!!result.visuals?.stock && <p className="text-warn" data-stock-notice>⚠ {t(`${result.visuals.stock} publication(s) utilisent une photo libre de droits (Pixabay), pas une image de votre activité : remplacez-la par votre photo quand vous le pouvez.`, `${result.visuals.stock} post(s) use a royalty-free photo (Pixabay), not an image of your business: replace it with your own photo when you can.`)}</p>}
+            {result.visuals?.message && <p className="text-warn" data-bank-message>⚠ {result.visuals.message}</p>}
+            {result.visuals?.mode === "ai" && <p>{t(`Visuels IA : ${result.visuals.images} image(s) et ${result.visuals.videos} vidéo(s) en cours de création, une publication à la fois (suivi ci-dessus). Un visuel raté est signalé sur sa publication, jamais remplacé en silence.`, `AI visuals: ${result.visuals.images} image(s) and ${result.visuals.videos} video(s) being created, one post at a time (progress above). A failed visual is flagged on its post, never silently replaced.`)}</p>}
             {[...(result.warnings ?? []), ...(result.notes ?? [])].map((w) => <p key={w} className="text-warn">⚠ {w}</p>)}
             <button type="button" className="mt-1 underline" onClick={onDone}>{t("Voir le calendrier", "See the calendar")}</button>
           </div>
         )}
       </Card>
+    </div>
+  );
+}
+
+type VisualQuoteV = { images: number; videos: number; pct: number; leftPct: number; enough: boolean; affordable: number };
+type PlanVisualsOut = { mode: "free" | "ai"; images: number; videos: number; stock?: number; waiting?: number; message?: string | null; pct?: number };
+
+/** Choix « Visuels » du calendrier : textes seulement, visuels gratuits (banque du projet) ou créés par l'IA. */
+function VisualsChoice({ value, ai, onChange }: { value: "none" | "free" | "ai"; ai: boolean; onChange: (v: "none" | "free" | "ai") => void }) {
+  const t = useT();
+  const opts = [
+    ["none", t("Sans visuel (textes seulement)", "No visual (text only)"), t("Les dates et les textes ; les visuels se font ensuite.", "Dates and copy; visuals come later.")],
+    ["free", t("Visuels gratuits", "Free visuals"), t("Vos photos de la banque d'images (photos libres signalées pour un site de services) et des vidéos montées sans IA.", "Your bank photos (royalty-free photos flagged for a services website) and videos edited without AI.")],
+    ["ai", t("Visuels créés par l'IA", "Visuals created by AI"), ai ? t("Une image ou une vidéo créée pour chaque publication. Coût montré avant, en % de votre budget IA.", "An image or video created for each post. Cost shown first, as a % of your AI budget.") : t("L'IA n'est pas active pour ce projet.", "AI isn't active for this project.")],
+  ] as const;
+  return (
+    <fieldset className="grid gap-1.5" data-visuals-choice>
+      <legend className="mb-1.5 text-sm font-medium">{t("Visuels", "Visuals")}</legend>
+      <div className="grid gap-2 sm:grid-cols-3">
+        {opts.map(([k, label, help]) => {
+          const off = k === "ai" && !ai;
+          return (
+            <label key={k} className={cx("flex cursor-pointer gap-2 rounded-2xl border p-3 text-sm", value === k ? "border-ink bg-paper-2" : "border-line", off && "cursor-not-allowed opacity-50")}>
+              <input type="radio" name="plan-visuals" value={k} checked={value === k} disabled={off} onChange={() => onChange(k)} className="mt-1" data-visuals-option={k} />
+              <span><span className="font-medium">{label}</span><span className="mt-0.5 block text-xs text-muted">{help}</span></span>
+            </label>
+          );
+        })}
+      </div>
+    </fieldset>
+  );
+}
+
+/** Devis des visuels IA : nombre de visuels et part du budget IA du mois (jamais d'euros), puis accord du client. */
+function VisualQuoteBox({ quote, busy, onConfirm, onCancel, onFree }: { quote: VisualQuoteV; busy: boolean; onConfirm: () => void; onCancel: () => void; onFree: () => void }) {
+  const t = useT();
+  const pct = quote.pct < 1 ? "< 1" : Math.round(quote.pct);
+  const what = t(`${quote.images} image(s) et ${quote.videos} vidéo(s)`, `${quote.images} image(s) and ${quote.videos} video(s)`);
+  if (!quote.enough)
+    return (
+      <div className="grid gap-2 rounded-2xl border border-bad/30 bg-bad-soft p-4 text-sm text-bad" data-visual-quote="insufficient">
+        <p className="font-medium">{what} · ≈ {pct} % {t("de votre budget IA", "of your AI budget")}</p>
+        <p>{t(`Votre budget IA ne suffit pas : il en reste ${quote.leftPct} % ce mois-ci. Planifiez moins de publications (environ ${quote.affordable} avec visuel), ou choisissez les visuels gratuits.`, `Your AI budget isn't enough: ${quote.leftPct}% left this month. Plan fewer posts (about ${quote.affordable} with a visual), or choose the free visuals.`)}</p>
+        <div className="flex flex-wrap gap-2"><Button size="sm" variant="secondary" onClick={onFree}>{t("Choisir les visuels gratuits", "Choose the free visuals")}</Button><Button size="sm" variant="ghost" onClick={onCancel}>{t("Fermer", "Close")}</Button></div>
+      </div>
+    );
+  return (
+    <div className="grid gap-2 rounded-2xl border border-line bg-paper-2 p-4 text-sm" data-visual-quote="confirm">
+      <p className="flex items-center gap-2 font-medium"><Sparkles className="size-4 text-signal" aria-hidden />{what} · ≈ {pct} % {t("de votre budget IA", "of your AI budget")}</p>
+      <p className="text-xs text-muted">{t(`Coût probable (un essai par visuel). Il vous reste ${quote.leftPct} % ce mois-ci. Les visuels se créent en arrière-plan, une publication à la fois ; un visuel raté est signalé sur sa publication.`, `Likely cost (one try per visual). You have ${quote.leftPct}% left this month. Visuals are created in the background, one post at a time; a failed visual is flagged on its post.`)}</p>
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" variant="signal" loading={busy} onClick={onConfirm} data-action="confirm-visuals">{t("Confirmer et lancer", "Confirm and start")}</Button>
+        <Button size="sm" variant="ghost" onClick={onCancel}>{t("Annuler", "Cancel")}</Button>
+      </div>
     </div>
   );
 }
@@ -482,8 +569,9 @@ function CalCard({ p, tz, onOpen, onAction, row = false }: { p: PostV; tz: strin
   const locked = LOCKED.includes(p.status);
   const thumb = (
     <button type="button" onClick={() => onOpen(p.id)} className={cx("relative block shrink-0 overflow-hidden rounded-lg bg-paper-2", row ? "size-20" : "aspect-[4/3] w-full")} aria-label={t("Ouvrir la publication", "Open the post")}>
-      {media ? <AssetThumb a={media} className="size-full object-cover" /> : <span className="grid size-full place-items-center text-muted"><Type className="size-5" aria-hidden /><span className="sr-only">{t("Texte seul", "Text only")}</span></span>}
+      {media ? <AssetThumb a={media} className="size-full object-cover" /> : p.visualNote ? <span className="grid size-full place-items-center bg-warn-soft p-1.5 text-center text-[10px] leading-tight text-warn" title={p.visualNote} data-visual-note><TriangleAlert className="size-4" aria-hidden /><span className="line-clamp-3">{p.visualNote}</span></span> : <span className="grid size-full place-items-center text-muted"><Type className="size-5" aria-hidden /><span className="sr-only">{t("Texte seul", "Text only")}</span></span>}
       {video && <span className="absolute left-1.5 top-1.5 grid size-5 place-items-center rounded-md bg-black/55 text-white"><Play className="size-3" aria-hidden /></span>}
+      {media?.meta?.stock && <span className="absolute bottom-1 right-1 rounded-full bg-black/60 px-1.5 py-0.5 text-[9px] text-white" title={t("Photo libre de droits (Pixabay), pas une image de votre activité", "Royalty-free photo (Pixabay), not an image of your business")} data-stock-badge>{t("Photo libre", "Free photo")}</span>}
     </button>
   );
   return (
@@ -525,8 +613,8 @@ function CalendarPanel({ data, reload, onOpen, onRange }: { data: Data; reload: 
   const [net, setNet] = useState<string>("all");
   const posts = useMemo(() => (net === "all" ? data.posts : data.posts.filter((p) => p.network === net)), [data.posts, net]);
   const [chat, setChat] = useState("");
-  const [pending, setPending] = useState<{ text: string; estimateMicro: number } | null>(null);
-  const budget = useBudgetPct();
+  const [pending, setPending] = useState<{ text: string; kind: "delete" | "change" | "ai"; summary: string; pct: number | null; enough: boolean } | null>(null);
+  const [answer, setAnswer] = useState<{ ok: boolean; text: string } | null>(null);
   const locale = lang === "en" ? enUS : fr;
   const ymd = (ms: number) => formatInTimeZone(ms, tz, "yyyy-MM-dd");
   const byDay = useMemo(() => {
@@ -565,16 +653,20 @@ function CalendarPanel({ data, reload, onOpen, onRange }: { data: Data; reload: 
     if (!text.trim() || sending) return;
     setSending(true);
     try {
-      const r = await api<{ applied: boolean; summary: string; needsConfirm?: boolean; estimateMicro?: number }>(`/api/projects/${id}/social/v2`, { body: { action: "edit", text, confirm } });
-      if (r.needsConfirm) setPending({ text, estimateMicro: r.estimateMicro ?? 0 });
-      else {
+      const r = await api<{ applied: boolean; summary: string; needsConfirm?: boolean; confirmKind?: "delete" | "change" | "ai"; cost?: { pct: number; enough: boolean }; unclear?: boolean }>(`/api/projects/${id}/social/v2`, { body: { action: "edit", text, confirm } });
+      // Toujours une réponse visible sous la demande (jamais de silence) : confirmation, résultat ou exemples.
+      if (r.needsConfirm) {
+        setAnswer(null);
+        setPending({ text, kind: r.confirmKind ?? "ai", summary: r.summary, pct: r.cost?.pct ?? null, enough: r.cost?.enough ?? true });
+      } else {
         setPending(null);
-        setChat("");
-        toast(r.applied ? "ok" : "bad", r.summary);
+        if (r.applied) setChat("");
+        setAnswer({ ok: r.applied, text: r.summary });
+        if (r.applied) toast("ok", r.summary);
         reload();
       }
     } catch (e) {
-      toast("bad", (e as Error).message);
+      setAnswer({ ok: false, text: (e as Error).message });
     } finally {
       setSending(false);
     }
@@ -669,19 +761,28 @@ function CalendarPanel({ data, reload, onOpen, onRange }: { data: Data; reload: 
       )}
       <Card className="grid gap-2 p-4" data-social-chat>
         <p className="flex items-center gap-2 font-semibold"><MessageSquare className="size-4" /> {t("Modifier le calendrier en une phrase", "Edit the calendar in one sentence")}</p>
-        <p className="text-xs text-muted">{t("Ex. « Supprime les publications du dimanche », « Mets les vidéos le vendredi », « Programme deux publications par jour au lieu de trois », « Remplace les images des trois prochaines publications » (gratuit) ; « Rends les publications plus premium » (IA, avec estimation).", "E.g. \"Delete Sunday posts\", \"Put videos on Friday\", \"Two posts a day instead of three\", \"Replace the images of the next three posts\" (free); \"Make posts more premium\" (AI, with an estimate).")}</p>
+        <p className="text-xs text-muted">{t("Ex. « Efface tout à partir du 19 octobre », « Vide novembre », « Pas le week-end », « Mets les vidéos le vendredi à 18h », « Décale tout d'une semaine », « Passe les publications Facebook sur Instagram », « Transforme les textes en images », « Deux publications par jour au lieu de trois », « Remplace les images des 3 prochaines publications », « Annule ma dernière modification » (gratuit, aperçu avant d'agir) ; « Rends les publications plus premium » (IA, coût montré avant en % de votre budget IA).", "E.g. \"Delete everything from October 19\", \"Clear November\", \"No weekends\", \"Move videos to Friday at 6pm\", \"Push everything back a week\", \"Move Facebook posts to Instagram\", \"Turn text posts into images\", \"Two posts a day instead of three\", \"Replace the images of the next 3 posts\", \"Undo my last change\" (free, preview before acting); \"Make posts more premium\" (AI, cost shown first as a % of your AI budget).")}</p>
         <div className="flex gap-2">
           <Input value={chat} onChange={(e) => setChat(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder={t("Votre demande", "Your request")} />
           <Button onClick={() => send()} loading={sending}>{t("Envoyer", "Send")}</Button>
         </div>
         <AiWait busy={sending} label={t("Modification du calendrier…", "Editing the calendar…")} waitKey="social-edit" expectedMs={15000} />
         {pending && (
-          <div className="flex flex-wrap items-center gap-2 rounded-xl bg-warn-soft p-2 text-sm text-warn">
-            {t(`Cette retouche utilise l'IA : coût probable ${budget.label(pending.estimateMicro)}.`, `This edit uses AI: likely cost ${budget.label(pending.estimateMicro)}.`)}
-            <Button size="sm" variant="signal" onClick={() => send(true)}>{t("Confirmer", "Confirm")}</Button>
-            <Button size="sm" variant="secondary" onClick={() => setPending(null)}>{t("Annuler", "Cancel")}</Button>
+          <div className="grid gap-2 rounded-xl bg-warn-soft p-3 text-sm text-warn" data-edit-confirm={pending.kind}>
+            <p>
+              {pending.kind !== "ai"
+                ? pending.summary
+                : pending.enough
+                  ? t(`Cette retouche utilise l'IA : ${pending.summary}`, `This edit uses AI: ${pending.summary}`)
+                  : t(`Cette retouche utilise l'IA (≈ ${Math.round(pending.pct ?? 0)} % de votre budget IA) : votre budget restant ne suffit pas. Visez moins de publications (ex. « les 3 prochaines »).`, `This edit uses AI (≈ ${Math.round(pending.pct ?? 0)}% of your AI budget): your remaining budget isn't enough. Target fewer posts (e.g. "the next 3").`)}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {(pending.kind !== "ai" || pending.enough) && <Button size="sm" variant={pending.kind === "delete" ? "danger" : "signal"} loading={sending} onClick={() => send(true)} data-action="confirm-edit">{pending.kind === "delete" ? t("Confirmer la suppression", "Confirm deletion") : t("Confirmer", "Confirm")}</Button>}
+              <Button size="sm" variant="secondary" onClick={() => setPending(null)}>{t("Annuler", "Cancel")}</Button>
+            </div>
           </div>
         )}
+        {answer && !pending && <p className={cx("rounded-xl p-2 text-sm", answer.ok ? "bg-ok-soft text-ok" : "bg-warn-soft text-warn")} role="status" data-edit-answer={answer.ok ? "ok" : "no"}>{answer.text}</p>}
       </Card>
     </div>
   );

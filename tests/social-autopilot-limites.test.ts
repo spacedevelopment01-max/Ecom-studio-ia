@@ -146,7 +146,7 @@ describe("Autopilot V2 — structure éditoriale et limites", async () => {
     run("INSERT INTO content_plans (id, project_id, params, strategy, status, created_at, engine, updated_at) VALUES (?,?,?,?,?,?,?,?)", plan2, q.id, "{}", "{}", "ready", now(), "v2", now());
     const ids = [1, 2, 3, 4, 5].map((n) => post(q.id, day(n), "approved", null, "instagram", plan2));
     for (const x of ids) run("UPDATE posts SET format = 'reel' WHERE id = ?", x);
-    const out = await fr(() => applySocialEdit(q, "mets les vidéos le mardi", mockSocialDeps().deps, { planId: plan2 }));
+    const out = await fr(() => applySocialEdit(q, "mets les vidéos le mardi", mockSocialDeps().deps, { planId: plan2, confirm: true }));
     const dates = all<{ scheduled_at: number }>(`SELECT scheduled_at FROM posts WHERE id IN (${ids.map(() => "?").join(",")})`, ...ids).map((x) => x.scheduled_at);
     const perDay = new Map<string, number>();
     for (const d of dates) {
