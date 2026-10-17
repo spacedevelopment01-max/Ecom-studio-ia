@@ -82,6 +82,12 @@ try {
           assert.ok(overflow <= 1, `${business}/${target}/${device} : débordement de ${overflow}px`);
           assert.equal(await page.getByText(m.text, { exact: true }).count(), 1); assert.ok(await page.getByText(m.text, { exact: true }).isVisible());
           assert.equal(await page.getByText(other.text, { exact: true }).count(), 0);
+          // Placer le paragraphe au centre : le panier fixe ne doit pas le masquer sur la capture mobile.
+          await page.getByText(m.text, { exact: true }).evaluate((el) => el.scrollIntoView({ block: "center" }));
+          assert.ok(await page.getByText(m.text, { exact: true }).evaluate((el) => {
+            const r = el.getBoundingClientRect(), top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+            return top === el || !!top && el.contains(top);
+          }), "Le texte doit être visible sans être recouvert par un élément fixe.");
           assert.ok((await page.title()).includes(m.title)); assert.equal(await page.locator('meta[name="description"]').getAttribute("content"), m.description);
           const file = `page-${i + 1}-${device}.png`; await page.screenshot({ path: path.join(dir, file), fullPage: true });
           screens.push({ file, width: viewport.width, overflow }); await page.close();
