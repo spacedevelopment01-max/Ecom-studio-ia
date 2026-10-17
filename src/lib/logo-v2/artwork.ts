@@ -310,6 +310,12 @@ export function misspelledWords(textRead: string, expected: { descriptor?: strin
   return [expected.descriptor, expected.tagline].flatMap((t) => (t ? words(t) : [])).filter((w) => !read.has(w));
 }
 
+/**
+ * Défauts qui interdisent un logo complet même choisi par le client : nom faux, texte faux ou inventé, ressemblance,
+ * personne dessinée sans accord, copie.
+ */
+export const ARTWORK_NEVER = ["name_mismatch", "text_mismatch", "text_unreadable", "extra_text", "resembles_known_brand", "unauthorized_person", "corrupt", "forbidden", "placeholder_shape", "duplicate"];
+
 /** Défauts relevés par la relecture d'un logo complet. Le nom ET les autres textes sont comparés à la lecture. */
 export function artworkCodes(r: ArtworkReview, expected: { name: string; descriptor?: string | null; tagline?: string | null }): string[] {
   const codes: string[] = [];

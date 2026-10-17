@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
-import { enqueue } from "@/lib/jobs";
+import { cancelJob, enqueue } from "@/lib/jobs";
 import { all, json, one } from "@/lib/db";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { L } from "@/lib/i18n-server";
@@ -12,19 +12,21 @@ import { LOGO_STYLES } from "@/lib/logo-v2/types";
 import { artworkChoosable } from "@/lib/logo-v2/choose";
 import { isLocked } from "@/lib/brain/brand-locks";
 import { logoRedrawQuote, logoSeriesQuote } from "@/lib/logo-v2/quote";
-import { readLive } from "@/lib/logo-v2/live";
+import { logoJobStalled, readLive } from "@/lib/logo-v2/live";
 
 /**
  * Dernière tâche de logo du projet (en cours, terminée ou ÉCHOUÉE) et avancement direction par direction : une
  * tâche qui échoue reste visible avec son erreur, jamais une barre qui disparaît.
  */
+const LOGO_JOBS = "('brand.logo.v2','brand.logo.v2.choose','brand.logo.v2.redraw','brand.logo')";
+
 function progressView(projectId: string) {
-  const job = one<{ id: string; type: string; status: string; progress: number; message: string; error: string | null; created_at: number; updated_at: number }>(
-    "SELECT id, type, status, progress, message, error, created_at, updated_at FROM jobs WHERE project_id = ? AND type IN ('brand.logo.v2','brand.logo.v2.redraw') ORDER BY created_at DESC, rowid DESC LIMIT 1",
+  const job = one<{ id: string; type: string; status: string; progress: number; message: string; error: string | null; created_at: number; updated_at: number; locked_until: number | null }>(
+    "SELECT id, type, status, progress, message, error, created_at, updated_at, locked_until FROM jobs WHERE project_id = ? AND type IN ('brand.logo.v2','brand.logo.v2.redraw') ORDER BY created_at DESC, rowid DESC LIMIT 1",
     projectId,
   );
   const live = readLive(projectId);
-  return { job: job ? { ...job, error: job.error ? job.error.slice(0, 600) : null } : null, live: live && (!job || live.jobId === job.id) ? live : null };
+  return { job: job ? { ...job, error: job.error ? job.error.slice(0, 600) : null, stalled: logoJobStalled(job) } : null, live: live && (!job || live.jobId === job.id) ? live : null };
 }
 
 export const runtime = "nodejs";
@@ -60,7 +62,7 @@ function view(projectId: string) {
     };
   };
   return {
-    run: { id: run.runId, at: run.at, ai: run.ai, art: run.art ?? null, style: run.style ?? "auto", stoppedByCostCap: !!run.stoppedByCostCap, territories: run.territories, rejected: run.rejected ?? [], failures: run.failures ?? [], notes: (run.notes ?? []).slice(0, 12) },
+    run: { id: run.runId, at: run.at, ai: run.ai, art: run.art ?? null, style: run.style ?? "auto", stoppedByCostCap: !!run.stoppedByCostCap, best: run.best ?? null, territories: run.territories, rejected: run.rejected ?? [], failures: run.failures ?? [], notes: (run.notes ?? []).slice(0, 12) },
     ...progressView(projectId),
     tagline,
     styles: LOGO_STYLES,
@@ -82,9 +84,15 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  const b = await body(req, z.object({ action: z.enum(["generate", "choose", "reject", "redraw", "quote"]), assetId: z.string().max(40).optional(), style: z.enum([...LOGO_STYLES, "auto"]).optional(), feedback: z.string().max(400).optional() }));
+  const b = await body(req, z.object({ action: z.enum(["generate", "choose", "reject", "redraw", "quote", "stop"]), assetId: z.string().max(40).optional(), style: z.enum([...LOGO_STYLES, "auto"]).optional(), feedback: z.string().max(400).optional() }));
   if (!p.brand) throw new HttpError(409, L("La marque n'est pas encore créée.", "The brand has not been created yet."));
-  if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type IN ('brand.logo.v2','brand.logo.v2.choose','brand.logo.v2.redraw','brand.logo') AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Une création de logo est déjà en cours : attendez qu'elle se termine.", "A logo task is already running: wait for it to finish."));
+  // « Arrêter » : la création de logo en cours (ou bloquée, studio arrêté) est annulée ; l'onglet est libéré. Les images
+  // déjà reçues restent enregistrées ; aucune dépense ne continue (le worker s'arrête à son prochain point d'avancement).
+  if (b.action === "stop") {
+    for (const j of all<{ id: string }>(`SELECT id FROM jobs WHERE project_id = ? AND type IN ${LOGO_JOBS} AND status IN ('queued','running','paused','blocked')`, p.id)) cancelJob(j.id);
+    return ok(view(p.id));
+  }
+  if (one(`SELECT 1 FROM jobs WHERE project_id = ? AND type IN ${LOGO_JOBS} AND status IN ('queued','running','paused')`, p.id)) throw new HttpError(409, L("Une création de logo est déjà en cours : attendez qu'elle se termine, ou cliquez sur « Arrêter » sous la barre d'avancement.", "A logo task is already running: wait for it to finish, or click \"Stop\" under the progress bar."));
   if (b.action === "reject") {
     // Direction écartée par le client : refus mémorisé (le type de logo ne sera plus proposé).
     const meta = json<any>(one<{ meta: string }>("SELECT meta FROM assets WHERE id = ? AND project_id = ? AND role IN ('logo-v2','logo-v2-studio')", b.assetId ?? "", p.id)?.meta, null);
@@ -97,7 +105,8 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     // Devis AVANT tout appel payant : montant maximal de la série (ou d'une nouvelle version), qui sert aussi de plafond.
     const q = b.assetId ? logoRedrawQuote() : logoSeriesQuote();
     const ai = aiActiveFor(p.userId, p.id);
-    return ok({ ai, quote: q ? { ...q, maxEur: Math.round((q.maxMicro / 1e6) * 100) / 100 } : null });
+    const eur = (m: number | null | undefined) => (m == null ? null : Math.round((m / 1e6) * 100) / 100);
+    return ok({ ai, quote: q ? { ...q, maxEur: eur(q.maxMicro), probableEur: eur(q.probableMicro), relayEur: eur(q.relayMicro) } : null });
   }
   if (b.action === "redraw") {
     // Nouvelle version d'un logo complet : une image payée, seulement à la demande du client (coût confirmé dans l'interface).

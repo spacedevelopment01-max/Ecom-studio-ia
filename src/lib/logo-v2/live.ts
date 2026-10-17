@@ -71,3 +71,16 @@ export function liveTracker(projectId: string, jobId: string) {
   };
 }
 export type LiveTracker = ReturnType<typeof liveTracker>;
+
+/**
+ * Tâche de logo qui n'avance plus faute de traitement : aucun signe de vie du worker depuis 2 min (studio arrêté,
+ * mémoire épuisée), ou bail expiré depuis plus de 2 min. Le client le voit et peut l'arrêter : jamais bloqué.
+ */
+export function logoJobStalled(job: { status: string; locked_until?: number | null; updated_at: number } | null, nowMs = Date.now()): boolean {
+  if (!job || (job.status !== "queued" && job.status !== "running")) return false;
+  const beat = one<{ b: number | null }>("SELECT MAX(beat_at) b FROM worker_heartbeat")?.b ?? 0;
+  const workerDown = nowMs - beat > 120_000;
+  const leaseLost = job.status === "running" && !!job.locked_until && nowMs - job.locked_until > 120_000;
+  return (workerDown && nowMs - job.updated_at > 60_000) || leaseLost;
+}
+

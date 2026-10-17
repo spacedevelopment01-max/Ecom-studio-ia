@@ -10,7 +10,7 @@ import { assetData, getAsset, saveAsset } from "../library";
 import { markBrandLogo } from "../brain/brand-locks";
 import { canvasFamily } from "../media/fonts";
 import { brandBoard } from "./brand-board";
-import { faithfulSvg, STYLE_LABEL, correctArtworkText, onDarkVersion, oneColourVersion } from "./artwork";
+import { ARTWORK_NEVER, faithfulSvg, STYLE_LABEL, correctArtworkText, onDarkVersion, oneColourVersion } from "./artwork";
 import { brandDiscovery } from "./discovery";
 import { artworkInks, artworkSymbol, paletteFromInks, squareMark, symbolFavicon } from "./identity";
 import { defaultStyle } from "./territories";
@@ -41,8 +41,6 @@ export function extraVariants(spec: LogoSpec): { role: string; name: string; spe
   return out;
 }
 
-/** Défauts qui interdisent un logo complet même choisi par le client (nom faux, texte inventé, ressemblance). */
-const ARTWORK_NEVER = ["name_mismatch", "text_unreadable", "extra_text", "resembles_known_brand", "corrupt", "forbidden", "placeholder_shape", "duplicate"];
 
 /**
  * Logo complet écarté par le contrôle mais présentable au CLIENT (son choix vaut contrôle humain) : seulement si le

@@ -27,9 +27,9 @@ type Proposal = {
 };
 type LiveDir = { id: string; name: string; style: string | null; status: "waiting" | "drawing" | "checking" | "done" | "failed"; verdict?: string | null; score?: number | null; reason?: string; assetId?: string; progress?: { phase: "sent" | "partial" | "received" | "saved"; partials?: number; atMs?: number; streamed?: boolean } };
 type Live = { jobId: string; startedAt: number; updatedAt: number; stage: "prepare" | "images" | "save" | "done" | "failed"; art: string | null; directions: LiveDir[]; error?: string };
-type JobRow = { id: string; type: string; status: string; progress: number; message: string; error: string | null; created_at: number; updated_at: number };
+type JobRow = { id: string; type: string; status: string; progress: number; message: string; error: string | null; created_at: number; updated_at: number; stalled?: boolean };
 type View = {
-  run: { id: string; at?: number; ai: string; art?: string | null; style?: string; stoppedByCostCap: boolean; territories: { name: string }[]; rejected: { name: string; reason: string }[]; failures?: { id: string; name: string; style: string | null; reason: string }[]; notes?: string[] } | null;
+  run: { id: string; at?: number; ai: string; art?: string | null; style?: string; stoppedByCostCap: boolean; best?: string | null; territories: { name: string }[]; rejected: { name: string; reason: string }[]; failures?: { id: string; name: string; style: string | null; reason: string }[]; notes?: string[] } | null;
   job?: JobRow | null;
   live?: Live | null;
   proposals: Proposal[];
@@ -106,7 +106,7 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
     }
   }
   /** Devis avant tout appel payant : montant MAXIMAL (qui sert aussi de plafond), accepté par le client. */
-  async function quote(assetId?: string): Promise<{ ai: boolean; quote: { mode: string; creations: number; images: number; maxEur: number } | null } | null> {
+  async function quote(assetId?: string): Promise<{ ai: boolean; quote: { mode: string; creations: number; images: number; maxEur: number; probableEur?: number | null; relayEur?: number | null } | null } | null> {
     try {
       return await api(`/api/projects/${id}/brand/logo-v2`, { body: { action: "quote", ...(assetId ? { assetId } : {}) } });
     } catch (e) {
@@ -121,7 +121,10 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
     const msg = !q.ai || !q.quote
       ? t("Créer de nouvelles directions de logo ? Sans IA active, elles sont construites par le studio (gratuit).", "Create new logo directions? Without active AI, they are built by the studio (free).")
       : q.quote.mode === "artwork"
-        ? t(`Créer ${q.quote.creations} logos complets dessinés par l'IA d'images ? Devis : ${eur(q.quote.maxEur)} au maximum (${q.quote.images} images et leurs relectures), seul ce qui est vraiment utilisé est décompté. C'est aussi le plafond : rien ne sera utilisé au-delà, et aucune image ne sera relancée sans votre accord.`, `Create ${q.quote.creations} full logos drawn by the image AI? Quote: ${eur(q.quote.maxEur)} at most (${q.quote.images} images and their reviews), only what is actually used is counted. This is also the cap: nothing is used beyond it, and no image is restarted without your consent.`)
+        ? t(
+            `Créer ${q.quote.creations} logos complets dessinés par l'IA d'images ? Devis : ${eur(q.quote.probableEur ?? q.quote.maxEur)} (${q.quote.images} images et leurs relectures).${q.quote.relayEur ? ` Si le contrôle juge un logo insuffisant, OpenAI le redessine : ${eur(q.quote.relayEur)} de plus par logo repris, seulement si c'est nécessaire.` : ""} Plafond : ${eur(q.quote.maxEur)}, rien ne sera utilisé au-delà ; seul ce qui est vraiment utilisé est décompté.`,
+            `Create ${q.quote.creations} full logos drawn by the image AI? Quote: ${eur(q.quote.probableEur ?? q.quote.maxEur)} (${q.quote.images} images and their reviews).${q.quote.relayEur ? ` If the check finds a logo below standard, OpenAI redraws it: ${eur(q.quote.relayEur)} more per redrawn logo, only when needed.` : ""} Cap: ${eur(q.quote.maxEur)}, nothing is used beyond it; only what is actually used is counted.`,
+          )
         : t(`Créer ${q.quote.creations} directions de logo construites ? Devis : ${eur(q.quote.maxEur)} au maximum (relectures par l'IA) ; seul ce qui est vraiment utilisé est décompté. C'est aussi le plafond.`, `Create ${q.quote.creations} built logo directions? Quote: ${eur(q.quote.maxEur)} at most (AI reviews); only what is actually used is counted. This is also the cap.`);
     if (!window.confirm(msg)) return;
     post({ action: "generate", style }, t("Directions créatives lancées : quelques minutes.", "Creative directions started: a few minutes."), "gen");
@@ -129,8 +132,9 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
   const redraw = async (p: Proposal) => {
     const q = await quote(p.id);
     if (!q) return;
-    const price = q.quote ? eur(q.quote.maxEur) : t("[non disponible]", "[not available]");
-    const feedback = window.prompt(t(`Nouvelle version de « ${p.territory.name} » : une image payée, ${price} au maximum (plafond). Vos remarques (facultatif) :`, `New version of "${p.territory.name}": one paid image, ${price} at most (cap). Your remarks (optional):`), "");
+    const price = q.quote ? eur(q.quote.probableEur ?? q.quote.maxEur) : t("[non disponible]", "[not available]");
+    const relay = q.quote?.relayEur ? t(` ; si le contrôle la juge insuffisante, OpenAI la redessine (${eur(q.quote.relayEur)} de plus, seulement si nécessaire)`, `; if the check finds it below standard, OpenAI redraws it (${eur(q.quote.relayEur)} more, only when needed)`) : "";
+    const feedback = window.prompt(t(`Nouvelle version de « ${p.territory.name} » : une image payée, ${price}${relay}. Vos remarques (facultatif) :`, `New version of "${p.territory.name}": one paid image, ${price}${relay}. Your remarks (optional):`), "");
     if (feedback === null) return;
     post({ action: "redraw", assetId: p.id, feedback }, t("Nouvelle version en cours : la précédente reste disponible.", "New version in progress: the previous one stays available."), `v${p.id}`);
   };
@@ -165,6 +169,27 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
             </div>
           </div>
   );
+  // Logo complet écarté par le contrôle (image originale, raison, choix possible quand le nom est exact).
+  const discardedCard = (d: Proposal) => (
+              <div key={d.id} className="min-w-0 rounded-xl border border-dashed border-line p-4">
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <strong className="text-sm">{d.territory.name}</strong>
+                  {d.territory.style && STYLE[d.territory.style] && <Badge>{t(...STYLE[d.territory.style])}</Badge>}
+                  <Badge tone="warn">{d.score != null ? t(`Non validé ${d.score}/10`, `Not approved ${d.score}/10`) : t("Non validé", "Not approved")}</Badge>
+                  {d.artwork && <Badge tone="info">{provenance(d.artwork)}</Badge>}
+                </div>
+                <img src={d.url} alt={d.territory.name} className="mb-3 aspect-square w-full rounded-lg bg-[#F4F3EF] object-contain p-3" />
+                <p className="text-xs text-ink-2">{d.reason}</p>
+                {!!d.artwork?.issues.length && <p className="mt-1 text-xs text-muted">{d.artwork.issues.join(" ; ")}</p>}
+                {d.artwork?.fix && <p className="mt-1 text-xs text-ink-2"><strong>{t("À corriger dans une nouvelle version :", "To fix in a new version:")}</strong> {d.artwork.fix}</p>}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {d.artwork?.choosable && <Button size="sm" variant="secondary" icon={<Check className="size-4" />} loading={busy === d.id} onClick={() => { if (window.confirm(t("Ce logo n'a pas atteint le niveau du contrôle. Le choisir quand même ?", "This logo did not reach the check's level. Choose it anyway?"))) post({ action: "choose", assetId: d.id }, t("Logo choisi : déclinaisons et charte en préparation.", "Logo chosen: variations and guidelines being prepared."), d.id); }}>{t("Choisir quand même", "Choose anyway")}</Button>}
+                  <Button size="sm" variant="ghost" icon={<RefreshCw className="size-4" />} loading={busy === `v${d.id}`} onClick={() => redraw(d)}>{t("Nouvelle version", "New version")}</Button>
+                </div>
+              </div>
+  );
+  // JAMAIS AUCUNE DIRECTION : sans proposition validée, le meilleur logo obtenu est mis en avant (signalé non validé).
+  const bestItem = !proposals.length ? (data?.discarded.find((d) => d.id === data?.run?.best && d.url) ?? null) : null;
   return (
     <Card className="min-w-0 p-5 sm:p-7">
       <SectionTitle
@@ -184,10 +209,17 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
         {t("Comme en agence : plusieurs directions vraiment différentes (illustré, minimaliste, typographique, monogramme, emblème, texturé, dégradés…). Avec un modèle d'images capable d'écrire le nom, chaque direction est un logo complet dessiné par l'IA : l'image originale est gardée telle quelle, le nom exact est vérifié (et réécrit par le studio s'il est faux), et le contrôle juge selon le style. Sinon, le logo est construit avec de vraies polices.", "Like an agency: several genuinely different directions (illustrated, minimal, typographic, monogram, emblem, textured, gradients…). With an image model able to write the name, each direction is a full logo drawn by the AI: the original image is kept as is, the exact name is checked (and rewritten by the studio if wrong), and the review judges by style. Otherwise the logo is built with real fonts.")}
       </SectionTitle>
       {applying && <JobProgress job={applying} className="mb-4" />}
-      {data?.job && <SeriesProgress job={data.job} live={data.live ?? null} runId={data.run?.id ?? null} runAt={data.run?.at ?? null} />}
+      {data?.job && <SeriesProgress job={data.job} live={data.live ?? null} runId={data.run?.id ?? null} runAt={data.run?.at ?? null} onStop={() => { if (window.confirm(t("Arrêter la création des logos ? Les images déjà reçues restent enregistrées ; plus rien n'est dépensé.", "Stop creating the logos? Images already received stay saved; nothing more is spent."))) post({ action: "stop" }, t("Création arrêtée : vous pouvez relancer.", "Creation stopped: you can start again."), "stop"); }} stopping={busy === "stop"} />}
       {data?.tagline && !data.tagline.validated && <p className="mb-3 text-xs text-muted">{t(`Slogan « ${data.tagline.text} » : proposition à valider dans Identité. Il n'apparaîtra dans un logo qu'une fois validé par vous.`, `Slogan "${data.tagline.text}": a proposal to validate in Identity. It will only appear in a logo once you validate it.`)}</p>}
       {data?.run?.stoppedByCostCap && <p className="mb-3 text-xs text-warn">{t("Série arrêtée au plafond de dépense fixé.", "Series stopped at the set spending cap.")}</p>}
-      {data?.run && !proposals.length && <p className="mb-3 text-sm text-ink-2">{studio.length ? t("Aucune direction relue par l'IA dans cette série : les versions du studio ci-dessous servent de logo provisoire.", "No AI-reviewed direction in this series: the studio versions below serve as a provisional logo.") : data.run.failures?.length && !data.discarded.length ? t("Aucune proposition : les images n'ont pas pu être produites (raisons ci-dessous).", "No proposal: the images could not be produced (reasons below).") : t("Aucune direction n'a atteint le niveau attendu dans cette série : les essais écartés sont montrés ci-dessous.", "No direction reached the expected level in this series: the rejected attempts are shown below.")}</p>}
+      {bestItem && (
+        <div className="mb-5 rounded-xl border border-warn/50 bg-warn/5 p-4" data-testid="logo-best-fallback">
+          <p className="mb-1 text-sm font-medium">{t("Meilleur logo obtenu", "Best logo obtained")}</p>
+          <p className="mb-3 text-xs text-ink-2">{t(`Aucun logo n'a été validé par le contrôle dans cette série. Voici le meilleur obtenu${bestItem.score != null ? ` (${bestItem.score}/10)` : ""} : il n'a PAS atteint le niveau attendu, vérifiez-le avant de le choisir, ou demandez une nouvelle version.`, `No logo was approved by the check in this series. Here is the best one obtained${bestItem.score != null ? ` (${bestItem.score}/10)` : ""}: it did NOT reach the expected level; check it before choosing it, or ask for a new version.`)}</p>
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">{discardedCard(bestItem)}</div>
+        </div>
+      )}
+      {data?.run && !proposals.length && !bestItem && <p className="mb-3 text-sm text-ink-2">{studio.length ? t("Aucune direction relue par l'IA dans cette série : les versions du studio ci-dessous servent de logo provisoire.", "No AI-reviewed direction in this series: the studio versions below serve as a provisional logo.") : data.run.failures?.length && !data.discarded.length ? t("Aucune proposition : les images n'ont pas pu être produites (raisons ci-dessous).", "No proposal: the images could not be produced (reasons below).") : t("Aucune direction n'a atteint le niveau attendu dans cette série : les essais écartés sont montrés ci-dessous.", "No direction reached the expected level in this series: the rejected attempts are shown below.")}</p>}
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
         {proposals.map((p) => card(p, false))}
       </div>
@@ -198,29 +230,12 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">{studio.map((p) => card(p, true))}</div>
         </div>
       )}
-      {!!data?.discarded.filter((d) => d.artwork && d.url).length && (
+      {!!data?.discarded.filter((d) => d.artwork && d.url && d.id !== bestItem?.id).length && (
         <div className="mt-5">
           <p className="mb-1 text-sm font-medium">{t("Logos complets écartés par le contrôle (images originales)", "Full logos rejected by the check (original images)")}</p>
           <p className="mb-3 text-xs text-muted">{t("Gardés et montrés tels que l'IA les a dessinés, avec la raison. Vous pouvez en choisir un quand le nom est exact (il restera marqué « non validé par le contrôle »), ou demander une nouvelle version.", "Kept and shown as the AI drew them, with the reason. You can choose one when the name is exact (it stays marked \"not validated by the check\"), or ask for a new version.")}</p>
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-            {data.discarded.filter((d) => d.artwork && d.url).map((d) => (
-              <div key={d.id} className="min-w-0 rounded-xl border border-dashed border-line p-4">
-                <div className="mb-2 flex flex-wrap items-center gap-2">
-                  <strong className="text-sm">{d.territory.name}</strong>
-                  {d.territory.style && STYLE[d.territory.style] && <Badge>{t(...STYLE[d.territory.style])}</Badge>}
-                  <Badge tone="warn">{d.score != null ? t(`Non validé ${d.score}/10`, `Not approved ${d.score}/10`) : t("Non validé", "Not approved")}</Badge>
-                  {d.artwork && <Badge tone="info">{provenance(d.artwork)}</Badge>}
-                </div>
-                <img src={d.url} alt={d.territory.name} className="mb-3 aspect-square w-full rounded-lg bg-[#F4F3EF] object-contain p-3" />
-                <p className="text-xs text-ink-2">{d.reason}</p>
-                {!!d.artwork?.issues.length && <p className="mt-1 text-xs text-muted">{d.artwork.issues.join(" ; ")}</p>}
-                {d.artwork?.fix && <p className="mt-1 text-xs text-ink-2"><strong>{t("À corriger dans une nouvelle version :", "To fix in a new version:")}</strong> {d.artwork.fix}</p>}
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {d.artwork?.choosable && <Button size="sm" variant="secondary" icon={<Check className="size-4" />} loading={busy === d.id} onClick={() => { if (window.confirm(t("Ce logo n'a pas atteint le niveau du contrôle. Le choisir quand même ?", "This logo did not reach the check's level. Choose it anyway?"))) post({ action: "choose", assetId: d.id }, t("Logo choisi : déclinaisons et charte en préparation.", "Logo chosen: variations and guidelines being prepared."), d.id); }}>{t("Choisir quand même", "Choose anyway")}</Button>}
-                  <Button size="sm" variant="ghost" icon={<RefreshCw className="size-4" />} loading={busy === `v${d.id}`} onClick={() => redraw(d)}>{t("Nouvelle version", "New version")}</Button>
-                </div>
-              </div>
-            ))}
+            {data.discarded.filter((d) => d.artwork && d.url && d.id !== bestItem?.id).map((d) => discardedCard(d))}
           </div>
         </div>
       )}
@@ -265,7 +280,7 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
  * résultat. Une tâche échouée reste affichée avec son erreur (jamais une barre qui disparaît) ; si la série montrée
  * dessous est plus ancienne, c'est écrit.
  */
-function SeriesProgress({ job, live, runId, runAt }: { job: JobRow; live: Live | null; runId: string | null; runAt: number | null }) {
+function SeriesProgress({ job, live, runId, runAt, onStop, stopping }: { job: JobRow; live: Live | null; runId: string | null; runAt: number | null; onStop?: () => void; stopping?: boolean }) {
   const t = useT();
   const active = job.status === "queued" || job.status === "running" || job.status === "paused";
   const failed = job.status === "failed" || job.status === "cancelled" || live?.stage === "failed";
@@ -313,7 +328,17 @@ function SeriesProgress({ job, live, runId, runAt }: { job: JobRow; live: Live |
           </li>
         ))}
       </ol>
-      {active && <p className="mt-2 text-xs text-muted">{job.message} · {Math.round(job.progress * 100)} %</p>}
+      {active && (
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
+          <p className="text-xs text-muted">{job.message} · {Math.round(job.progress * 100)} %</p>
+          {onStop && <Button size="sm" variant="ghost" icon={<X className="size-4" />} loading={stopping} onClick={onStop} data-testid="logo-stop">{t("Arrêter", "Stop")}</Button>}
+        </div>
+      )}
+      {active && job.stalled && (
+        <p className="mt-2 text-xs text-warn" role="alert" data-testid="logo-stalled">
+          {t("Cette création n'avance plus : le traitement du studio semble arrêté (redémarrage, mémoire insuffisante…). Elle reprendra d'elle-même à l'étape en cours dès qu'il redémarre ; vous pouvez aussi l'arrêter pour relancer plus tard.", "This creation is no longer progressing: the studio's processing seems to be stopped (restart, not enough memory…). It will resume by itself at the current step as soon as it restarts; you can also stop it and start again later.")}
+        </p>
+      )}
       {failed && (
         <div className="mt-3 text-sm" role="alert">
           <p className="font-medium text-bad">{job.status === "cancelled" ? t("Création annulée.", "Creation canceled.") : t("La création des logos a échoué.", "Logo creation failed.")}</p>

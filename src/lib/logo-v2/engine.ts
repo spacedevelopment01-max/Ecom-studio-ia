@@ -28,7 +28,7 @@ import { POLICIES } from "../quality/policies";
 import { decide } from "../quality/gate";
 import { mediaProgress, type MediaProgress } from "../ai/openai-images";
 import { hashDistance, isPlaceholderShape, SAME_LOGO_BITS, visualHash } from "./identity";
-import { artworkBoard, artworkText, cleanArtwork, correctArtworkText, gateArtwork } from "./artwork";
+import { ARTWORK_NEVER, artworkBoard, artworkText, cleanArtwork, correctArtworkText, gateArtwork } from "./artwork";
 import type { ArtworkReview, BrandBrief, Candidate, EngineRun, LogoReview, LogoStyle, ProposalResult, Territory } from "./types";
 
 export type EngineOptions = {
@@ -52,7 +52,7 @@ const stopping = (e: unknown) => e instanceof JobCancelled || e instanceof JobPa
  * RÉÉCRIT par le studio (vraie police, même endroit), sans redessiner l'illustration ni payer une nouvelle image.
  * Une nouvelle version dessinée ne se fait qu'à la demande du client (« Nouvelle version », avec accord du coût).
  */
-export async function developArtwork(ctx: JobContext, ai: LogoV2Ai, t: Territory, brief: BrandBrief, notes: string[], opts: { feedback?: string; provider?: string | null; keyTag?: string; live?: LiveTracker } = {}): Promise<ProposalResult | null> {
+export async function developArtwork(ctx: JobContext, ai: LogoV2Ai, t: Territory, brief: BrandBrief, notes: string[], opts: { feedback?: string; provider?: string | null; keyTag?: string; live?: LiveTracker; relay?: boolean } = {}): Promise<ProposalResult | null> {
   const expected = artworkText(t, brief);
   const family = fontsFor(t, brief)[0] ?? "Inter";
   // Construction typographique du studio : base de la version simplifiée (favicon, tampon, broderie) après le choix.
@@ -63,7 +63,7 @@ export async function developArtwork(ctx: JobContext, ai: LogoV2Ai, t: Territory
   try {
     // Avancement de la génération (envoi, aperçus du flux, réception) écrit en direct pour l'interface.
     const onProgress = (p: MediaProgress) => (p.phase === "billed" ? (billedMicro = p.costMicro ?? null) : opts.live?.dir(t.id, { progress: { phase: p.phase, partials: p.partials, atMs: p.atMs, streamed: p.streamed } }));
-    const b64 = await withCandidate(`logo-v2:${t.id}${tag}`, 0, () => ctx.step(`v2:${t.id}${tag}:art:0`, () => mediaProgress.run(onProgress, async () => (await ai.drawArtwork!(t, brief, opts.feedback)).toString("base64"))));
+    const b64 = await withCandidate(`logo-v2:${t.id}${tag}`, 0, () => ctx.step(`v2:${t.id}${tag}:art:0`, () => mediaProgress.run(onProgress, async () => (await (opts.relay ? ai.drawArtworkRelay! : ai.drawArtwork!)(t, brief, opts.feedback)).toString("base64"))));
     raw = Buffer.from(b64, "base64");
     // Image enregistrée comme point de reprise de la tâche (et original conservé par le moteur multimédia).
     const prev = opts.live?.state.directions.find((d) => d.id === t.id)?.progress;
@@ -77,7 +77,7 @@ export async function developArtwork(ctx: JobContext, ai: LogoV2Ai, t: Territory
   }
   opts.live?.dir(t.id, { status: "checking" });
   const png = await cleanArtwork(raw);
-  let cand: Candidate = { territoryId: t.id, attempt: 0, spec, change: opts.feedback ? `nouvelle version demandée : ${opts.feedback.slice(0, 160)}` : null, symbolSource: "artwork", artwork: { png, originalPng: raw, expected, textBox: null, textCorrected: false, provider: opts.provider ?? null, costMicro: billedMicro, hash: await visualHash(png) } };
+  let cand: Candidate = { territoryId: t.id, attempt: 0, spec, change: opts.relay ? `relais OpenAI : le contrôle a jugé insuffisant le logo du modèle principal${opts.feedback ? ` (${opts.feedback.slice(0, 140)})` : ""}` : opts.feedback ? `nouvelle version demandée : ${opts.feedback.slice(0, 160)}` : null, symbolSource: "artwork", artwork: { png, originalPng: raw, expected, textBox: null, textCorrected: false, provider: opts.provider ?? null, costMicro: billedMicro, hash: await visualHash(png) } };
   // Forme de remplissage (disque, carré, triangle plein d'une couleur au-dessus du nom) : jamais présentée comme un
   // logo, et aucune relecture payée pour elle. L'image reste visible parmi les essais écartés.
   if (await isPlaceholderShape(png)) {
@@ -220,9 +220,49 @@ async function targetedChange(
   return null;
 }
 
+/**
+ * Logo complet d'un territoire, avec le RELAIS DE QUALITÉ (règle du propriétaire) : le modèle principal (Qwen-Image)
+ * dessine ; si le contrôle juge le rendu insuffisant (ou si l'image n'a pas pu être dessinée), le modèle d'OpenAI
+ * redessine le même logo, avec la critique du contrôle. Renvoie les essais, le meilleur en premier (FINAL d'abord,
+ * puis la meilleure note) ; l'autre reste parmi les essais écartés (image gardée, jamais perdue).
+ */
+async function artworkWithRelay(ctx: JobContext, ai: LogoV2Ai, t: Territory, brief: BrandBrief, notes: string[], art: { provider: string }, live?: LiveTracker, o: { feedback?: string; keyTag?: string } = {}): Promise<ProposalResult[]> {
+  const first = await developArtwork(ctx, ai, t, brief, notes, { provider: art.provider, live, feedback: o.feedback, keyTag: o.keyTag });
+  if (first?.verdict === "FINAL") return [first];
+  const route = ai.relayRoute?.();
+  if (!route || !ai.drawArtworkRelay || "unavailable" in route) {
+    if (route && "unavailable" in route) notes.push(`${t.name} : ${route.unavailable} — logo du modèle principal gardé`);
+    return first ? [first] : [];
+  }
+  if (art.provider === `${route.provider}:${route.model}`) return first ? [first] : [];
+  const rv = first?.artworkReview;
+  const feedback = [rv?.fix?.target !== "none" ? rv?.fix?.instruction : "", ...(rv?.issues ?? []).slice(0, 4)].filter(Boolean).join(" ; ");
+  ctx.progress(ctx.job.progress ?? 0.5, L(`Relais OpenAI pour « ${t.name} »`, `OpenAI relay for "${t.name}"`));
+  notes.push(`${t.name} : ${first ? `logo du modèle principal écarté par le contrôle (${first.score ?? "?"}/10)` : "logo du modèle principal non dessiné"} — relais ${route.provider}:${route.model}`);
+  live?.dir(t.id, { status: "drawing", progress: undefined });
+  let second: ProposalResult | null = null;
+  try {
+    second = await developArtwork(ctx, ai, t, brief, notes, { provider: `${route.provider}:${route.model}`, live, relay: true, keyTag: `${o.keyTag ?? ""}:relais`, feedback: [o.feedback, feedback].filter(Boolean).join(". ") || undefined });
+  } catch (e) {
+    if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+    if (!(e instanceof CostCapReached)) throw e;
+    notes.push(`${t.name} : relais non fait (${e.message})`);
+  }
+  const all = [first, second].filter((x): x is ProposalResult => !!x);
+  // Les deux essais d'un même territoire sont enregistrés séparément (identifiant distinct pour le relais).
+  if (second) second.territory = { ...second.territory, id: `${t.id}-relais` };
+  return all.sort((a, b) => (b.verdict === "FINAL" ? 1 : 0) - (a.verdict === "FINAL" ? 1 : 0) || (b.score ?? -1) - (a.score ?? -1));
+}
+
 /** Construit, contrôle et reprend (de façon ciblée) un territoire ; abandonne une direction faible. */
-async function developTerritory(ctx: JobContext, ai: LogoV2Ai | null, t: Territory, brief: BrandBrief, notes: string[], art: { provider: string } | null, live?: LiveTracker): Promise<ProposalResult | null> {
-  if (ai && art) return developArtwork(ctx, ai, t, brief, notes, { provider: art.provider, live });
+async function developTerritory(ctx: JobContext, ai: LogoV2Ai | null, t: Territory, brief: BrandBrief, notes: string[], art: { provider: string } | null, live?: LiveTracker): Promise<ProposalResult[]> {
+  if (ai && art) return artworkWithRelay(ctx, ai, t, brief, notes, art, live);
+  const built = await developBuilt(ctx, ai, t, brief, notes);
+  return built ? [built] : [];
+}
+
+/** Logo construit avec de vraies polices (sans modèle d'images capable d'écrire), contrôlé et repris de façon ciblée. */
+async function developBuilt(ctx: JobContext, ai: LogoV2Ai | null, t: Territory, brief: BrandBrief, notes: string[]): Promise<ProposalResult | null> {
   const fonts = fontsFor(t, brief);
   if (!fonts.length) {
     notes.push(`${t.name} : aucune police du style ${t.typography.style} n'écrit exactement « ${brief.name} » — territoire écarté`);
@@ -347,9 +387,12 @@ async function seriesSteps(ctx: JobContext, projectId: string, opts: EngineOptio
     ctx.progress(0.2 + (0.6 * i) / Math.max(1, sel.kept.length), useArt ? L(`Image de « ${t.name} » (IA d'images)`, `Image for "${t.name}" (image AI)`) : L(`Direction « ${t.name} »`, `Direction "${t.name}"`));
     live.dir(t.id, { status: "drawing" });
     try {
-      const r = await developTerritory(ctx, t.source === "local" ? null : ai, t, brief, notes, t.source === "local" ? null : art, live);
+      const rs = await developTerritory(ctx, t.source === "local" ? null : ai, t, brief, notes, t.source === "local" ? null : art, live);
+      const r = rs[0];
       if (r) {
-        results.push(r);
+        // Le meilleur essai du territoire est sa proposition ; un essai moins bon (relais) reste parmi les écartés.
+        for (const x of rs.slice(1)) if (x.verdict === "FINAL" || x.verdict === "PROVISIONAL") Object.assign(x, { verdict: "REJECTED", reason: `${x.reason} — un autre essai de la même direction a été retenu` });
+        results.push(...rs);
         live.dir(t.id, { status: "done", verdict: r.verdict, score: r.score, reason: r.reason });
       } else if (live.state.directions.find((d) => d.id === t.id)?.status !== "failed") live.dir(t.id, { status: "failed", reason: notes.filter((x) => x.startsWith(`${t.name} :`)).at(-1)?.slice(t.name.length + 3) ?? "aucune proposition construite" });
     } catch (e) {
@@ -370,6 +413,24 @@ async function seriesSteps(ctx: JobContext, projectId: string, opts: EngineOptio
     Object.assign(r, { verdict: "REJECTED", codes: [...r.codes, "duplicate"], reason: `copie quasi identique de « ${twin.territory.name} » : pas une création distincte` });
     live.dir(r.territory.id, { status: "done", verdict: "REJECTED", score: r.score, reason: r.reason });
   }
+  // JAMAIS AUCUNE DIRECTION (règle du propriétaire) : sans proposition validée, le MEILLEUR logo obtenu est présenté
+  // (clairement signalé comme non validé, avec sa note) ; sans aucune image présentable (fournisseurs en panne, nom
+  // faux partout…), des versions du studio sont construites avec de vraies polices (gratuit) — jamais un écran vide.
+  let bestFallback: string | null = null;
+  if (!results.some((r) => r.verdict === "FINAL" || r.verdict === "PROVISIONAL")) {
+    const pickable = results.filter((r) => r.candidate.artwork && !r.codes.some((c) => ARTWORK_NEVER.includes(c))).sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
+    if (pickable[0]) {
+      bestFallback = pickable[0].territory.id;
+      notes.push(`aucun logo validé par le contrôle : meilleur logo obtenu présenté (« ${pickable[0].territory.name} », ${pickable[0].score ?? "?"}/10), signalé comme non validé`);
+    } else {
+      notes.push("aucun logo dessiné présentable : versions du studio construites avec de vraies polices (gratuit)");
+      for (const d of localTerritories(brief).slice(0, 2)) {
+        const lt: Territory = { ...d, id: `s${results.length + 1}`, source: "local", symbolIdea: d.symbolIdea ?? null };
+        const b = await developBuilt(ctx, null, lt, brief, notes).catch(() => null);
+        if (b) results.push(b);
+      }
+    }
+  }
   // 3. Enregistrement : propositions FINALES, versions du studio, essais écartés (image gardée) et échecs.
   ctx.progress(0.9, L("Enregistrement des propositions", "Saving the proposals"));
   live.set({ stage: "save" });
@@ -386,8 +447,9 @@ async function seriesSteps(ctx: JobContext, projectId: string, opts: EngineOptio
     live.dir(r.territory.id, { assetId: r.assetId });
   }
   const failures = live.state.directions.filter((d) => d.status === "failed").map((d) => ({ id: d.id, name: d.name, style: d.style, reason: d.reason ?? "" }));
-  const run: EngineRun = { runId: ctx.job.id, territories: sel.kept, shown, studio, discarded, territoryRejections: sel.rejected, ai: aiState, stoppedByCostCap, notes };
-  remember(projectId, { kind: "artifact", key: "logo_v2_run", value: JSON.stringify({ runId: run.runId, at: Date.now(), style: brief.style, territories: run.territories.map((t) => ({ id: t.id, name: t.name, markType: t.markType, style: t.style, source: t.source })), shown: shown.map((r) => r.assetId), studio: studio.map((r) => r.assetId), discarded: discarded.map((r) => r.assetId), rejected: sel.rejected, failures, ai: aiState, art: art?.provider ?? null, stoppedByCostCap, notes: notes.slice(0, 20) }), source: ai ? "ai" : "local" });
+  const best = bestFallback ? (ids[bestFallback] ?? null) : null;
+  const run: EngineRun = { runId: ctx.job.id, territories: sel.kept, shown, studio, discarded, territoryRejections: sel.rejected, ai: aiState, stoppedByCostCap, notes, best };
+  remember(projectId, { kind: "artifact", key: "logo_v2_run", value: JSON.stringify({ runId: run.runId, at: Date.now(), style: brief.style, territories: run.territories.map((t) => ({ id: t.id, name: t.name, markType: t.markType, style: t.style, source: t.source })), shown: shown.map((r) => r.assetId), studio: studio.map((r) => r.assetId), discarded: discarded.map((r) => r.assetId), rejected: sel.rejected, failures, ai: aiState, art: art?.provider ?? null, stoppedByCostCap, best, notes: notes.slice(0, 20) }), source: ai ? "ai" : "local" });
   live.set({ stage: "done" });
   return run;
 }
@@ -456,15 +518,22 @@ export async function redrawArtwork(ctx: JobContext, projectId: string, assetId:
   const critique = [meta.artwork.fix?.instruction ? `correction — ${meta.artwork.fix.instruction}` : "", (meta.artwork.issues ?? []).length ? `défauts de la version précédente à corriger — ${(meta.artwork.issues as string[]).slice(0, 4).join("; ")}` : ""].filter(Boolean).join(". ");
   const feedback = [opts.feedback?.trim(), critique].filter(Boolean).join(". ") || "a genuinely new interpretation of the same direction";
   const quote = logoRedrawQuote();
-  let r: ProposalResult | null;
+  let rs: ProposalResult[];
   try {
-    r = await withSeriesCap(ctx, quote?.maxMicro ?? 0, opts.capMicro, () => developArtwork(ctx, ai, t, brief, notes, { feedback, provider: `${route.provider}:${route.model}`, keyTag: `:v${ctx.job.id.slice(0, 8)}` }));
+    // Relais de qualité aussi pour une nouvelle version : si le contrôle l'écarte, OpenAI la redessine.
+    rs = await withSeriesCap(ctx, quote?.maxMicro ?? 0, opts.capMicro, () => artworkWithRelay(ctx, ai, t, brief, notes, { provider: `${route.provider}:${route.model}` }, undefined, { feedback, keyTag: `:v${ctx.job.id.slice(0, 8)}` }));
   } catch (e) {
     if (!(e instanceof CostCapReached)) throw e;
     notes.push(e.message);
     return { assetId: null, verdict: null, notes };
   }
+  const r = rs[0];
   if (!r) return { assetId: null, verdict: null, notes };
-  const id = await ctx.step("v2:redraw:save", () => saveProposal(ctx, p.userId, projectId, r, { run: meta.run, previous: assetId }));
-  return { assetId: id, verdict: r.verdict, notes };
+  for (const x of rs.slice(1)) if (x.verdict === "FINAL") Object.assign(x, { verdict: "REJECTED", reason: `${x.reason} — un autre essai a été retenu` });
+  const ids = await ctx.step("v2:redraw:save", async () => {
+    const out: string[] = [];
+    for (const x of rs) out.push(await saveProposal(ctx, p.userId, projectId, x, { run: meta.run, previous: assetId }));
+    return out;
+  });
+  return { assetId: ids[0], verdict: r.verdict, notes };
 }
