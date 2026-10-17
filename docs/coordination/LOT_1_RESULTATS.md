@@ -6,7 +6,7 @@ Date : 17 octobre 2026. Livraison pour revue indépendante ; aucune fusion ni mi
 
 Mission : [commentaire du propriétaire du 17 octobre](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/133#issuecomment-6242357664). Base distante récupérée : **`21ce77cc419b08ed0d3504bf9be54a53f2597368`**, branche `codex/lot-1-consignes-textes-themes`, PR **#133**. Aucun changement local initial, aucune branche concurrente remplacée. `CLAUDE.md`, `LOT_1_MISSION.md`, l'audit, les commentaires et le skill `.claude/skills/verifier-theme/SKILL.md` ont été consultés. Les travaux précédents et leurs preuves, même insuffisantes sur ce P1, sont conservés ci-dessous.
 
-**Code testé : `fb0e78b96d44a6e0c17d2bcf1f6e3e51d7b11c2a`**. Les commits `14a981b`, `85517f7` et `c247e62` sont ses prédécesseurs de cette reprise. Le commit de remise ajoute uniquement ce rapport, les journaux et les preuves. Son SHA distant, sa CI finale et ses liens sont consignés dans [le commentaire de remise](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/133#issuecomment-6242444152), mis à jour après terminaison des jobs. La CI verte de `21ce77c` ne valide pas cette nouvelle correction.
+**Code final testé : `a89c6a0dc9758b6e1e883c38409445a6ccb5fffb`**. La correction fonctionnelle et les captures dédiées sont issues de `fb0e78b96d44a6e0c17d2bcf1f6e3e51d7b11c2a` ; le dernier correctif extrait une fonction pure sans changer son comportement. Les commits `14a981b`, `85517f7`, `c247e62`, `fb0e78b` et la remise intermédiaire `88ad3f1` sont conservés. Le commit de remise ajoute uniquement ce rapport, les journaux et les preuves. Son SHA distant, sa CI finale et ses liens sont consignés dans [le commentaire de remise](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/133#issuecomment-6242444152), mis à jour après terminaison des jobs. La CI verte de `21ce77c` ne valide pas cette nouvelle correction.
 
 ### Diagnostic et corrections
 
@@ -21,7 +21,13 @@ Les contenus de boutique restent partagés lorsqu'ils sont explicitement tels : 
 
 La conservation automatique vise les gabarits ayant un propriétaire explicite et unique. Un ancien gabarit partagé ou ambigu n'est pas attribué arbitrairement à une seule fiche. Les anciennes versions restent disponibles ; une fidélité générale à tout thème importé ou à toute composition historique inconnue n'est pas démontrée ici. Les nouvelles caractéristiques du catalogue actualisent les sections générées ; un gabarit retouché par le client reste sa version et n'est pas remplacé silencieusement.
 
-### Matrice, avant/après et reproductibilité
+### Échec de la première CI et correction de compilation
++
++**OBSERVÉ DANS LES JOURNAUX / CONFIRMÉ DANS LE CODE** : [CI de la livraison intermédiaire `88ad3f1`](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/39078687034), job Docker `117531040953`, échec du build Next avant tout démarrage. La nouvelle lecture `storeProducts` importée à l'exécution dans `tidy.ts` entraînait `spec.ts → imported.ts → library.ts → auth.ts → next/headers` dans un composant navigateur (`tab-marque.tsx`). Les tests et types verts n'avaient pas démontré cette frontière de compilation. [Extrait exact du journal](../../reports/lot1/produits/verifications/ci-88ad3f1-build-echec.txt).
++
++Correctif `a89c6a0` : nouvelle fonction pure dans `theme/store-products.ts`, signature et comportement identiques, réexportée depuis `spec.ts` pour préserver les appelants ; `tidy.ts` importe directement le module pur. Aucun assouplissement de Next, du Dockerfile ou de la CI. **32 tests concernés réussis** (produits, thème et sections personnalisées). **Build local complet réussi**, compilation, contrôle des types et génération des 49 pages statiques compris (sortie 0) ; [journal](../../reports/lot1/produits/verifications/build-final.txt). Le contrôle séparé `tsc --noEmit` réussit également.. Le build utilise une base temporaire supprimée à la sortie, `STOCK_OFFLINE=1` et la télémétrie désactivée. Les preuves visuelles restent celles de `fb0e78b` : cette extraction ne change aucun gabarit, aucune donnée et aucun rendu ; leurs SHA d'origine restent explicites.
++
++### Matrice, avant/après et reproductibilité
 
 Nouveaux fichiers : `tests/lot1-produits-fixtures.ts`, `tests/lot1-produits-sections.test.ts`, `scripts/lot1-produits-proof.ts`. Aucun branchement applicatif ne dépend du nom d'un projet ou d'un métier.
 
@@ -39,7 +45,10 @@ Journaux : [`reports/lot1/produits/verifications`](../../reports/lot1/produits/v
 
 ```bash
 ./node_modules/.bin/tsc --noEmit
-./node_modules/.bin/vitest run tests/lot1-produits-sections.test.ts
++# Après extraction du module pur :
++./node_modules/.bin/vitest run tests/lot1-produits-sections.test.ts tests/theme.test.ts tests/theme-custom.test.ts
++DATA_DIR="$audit_build_data" STOCK_OFFLINE=1 NEXT_TELEMETRY_DISABLED=1 npm run build
++./node_modules/.bin/vitest run tests/lot1-produits-sections.test.ts
 ./node_modules/.bin/vitest run --maxWorkers=1 tests/lot1-produits-sections.test.ts tests/lot1-rattachement-pages.test.ts tests/lot1-rattachement-parcours.test.ts tests/theme-v2.test.ts tests/seo-v2.test.ts tests/seo-v2-engine.test.ts tests/lot1-consignes-livraison.test.ts tests/lot1-holdout.test.ts tests/theme.test.ts tests/theme-custom.test.ts tests/site-texte-seo.test.ts tests/seo-utilise.test.ts
 ./node_modules/.bin/vitest run
 # DATA_DIR créé avec mktemp, supprimé à la sortie :
@@ -50,11 +59,12 @@ CHROMIUM=/usr/bin/chromium ./node_modules/.bin/tsx scripts/lot1-produits-proof.t
 git diff --check
 ```
 
-- Types : **réussi**, aucune erreur. Nouveaux tests produits : **17 réussis**. Ensemble ciblé final : **12 fichiers / 137 tests réussis** (113,55 s), dont les **29 tests de rattachement précédemment acceptés**, les cas de services et les contrôles antérieurs de consignes/reprise.
+- Types : **réussi**, aucune erreur. Nouveaux tests produits : **17 réussis**. Ensemble ciblé sur `fb0e78b` : **12 fichiers / 137 tests réussis** (113,55 s), dont les **29 tests de rattachement précédemment acceptés**, les cas de services et les contrôles antérieurs de consignes/reprise.
 - Theme Check rapide exécuté sur `c247e62` avant la dernière protection de suppression FAQ (aucun changement de schéma ou de section Liquid) : **25 cas réussis**, aucune erreur ni avertissement. Deux ZIP des preuves également contrôlés : **0 erreur et 0 avertissement**.
 - Preuve dédiée sur `fb0e78b` : **2 domaines, 6 produits, 12 captures**, fin des textes dans le rendu et le CSV, bons modèles dans chaque ZIP, aucune propriété étrangère dans les sections propres, photos de galerie chargées et distinctes, aucun débordement horizontal mesuré, thème courant inchangé, **0 appel IA**. Les 12 captures ont été ouvertes et inspectées.
 - Captures génériques prescrites : **10 réussies**, exécutées sur `85517f7` avant les deux précisions de conservation ; leur limite de photos vides est expliquée ci-dessous. La preuve dédiée a été réexécutée ensuite sur le code final.
-- Suite complète finale sur `fb0e78b` : **260 fichiers réussis, 1 942 tests réussis, 3 ignorés**, aucun échec (633,72 s, sortie 0). Les tests ignorés ne sont pas comptés comme des vérifications réussies. [Journal complet](../../reports/lot1/produits/verifications/tests-complets.txt). Le verrou SQLite ancien ne s’est pas reproduit dans ce lancement ; sa cause demeure non démontrée.
+- Première suite complète réussie sur `fb0e78b` : **260 fichiers réussis, 1 942 tests réussis, 3 ignorés**, aucun échec (633,72 s, sortie 0). Les tests ignorés ne sont pas comptés comme des vérifications réussies. [Journal complet](../../reports/lot1/produits/verifications/tests-complets.txt). Le verrou SQLite ancien ne s’est pas reproduit dans ce lancement ; sa cause demeure non démontrée.
+- Suite complète finale après extraction, sur `a89c6a0` : **260 fichiers réussis, 1 942 tests réussis, 3 ignorés**, aucun échec (615,37 s, sortie 0). [Journal final](../../reports/lot1/produits/verifications/tests-complets-import-pur.txt). Contrôle des types séparé et build de production également réussis ; les 17 tests produits et les 29 tests acceptés sont inclus dans ce passage.
 - CI finale de la tête distante : verdict après envoi dans le commentaire de remise lié plus haut ; les anciens résultats restent de l'historique.
 
 Deux lancements complets de cette reprise ont été interrompus volontairement : ajout des régressions style/SEO, puis vérification de la FAQ retirée (sortie 130 du second relevée). Ils ne sont pas présentés comme réussis. La troisième régression de conservation échoue sur `c247e62` : l'ancienne FAQ retirée réapparaît. [Échec conservé](../../reports/lot1/produits/verifications/faq-retiree-avant.txt), puis correction et 17 tests produits réussis. Le verrou SQLite du lancement de la reprise précédente reste décrit plus bas. Sa cause n'est toujours pas démontrée ; une CI réussie ne constituerait pas une explication de cet ancien échec.
