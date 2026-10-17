@@ -1,11 +1,10 @@
 /**
- * Accueil public (refonte premium) : la vidéo d'entrée d'origine est conservée, tous les liens existants mènent
+ * Accueil public (refonte premium) : la vidéo d'entrée a un affichage de secours, tous les liens existants mènent
  * toujours à une section, le thème clair / sombre est mémorisé et posé avant l'affichage, et la page ne présente
  * que ce qui existe (tarifs lus dans src/lib/plans.ts, connexions non essayées signalées « Bêta »).
  */
 import fs from "node:fs";
 import path from "node:path";
-import crypto from "node:crypto";
 import { describe, expect, it } from "vitest";
 
 const read = (f: string) => fs.readFileSync(path.join(process.cwd(), f), "utf8");
@@ -14,11 +13,11 @@ const home = ["src/components/home/home-chrome.tsx", "src/components/home/home-m
 const css = read("src/app/globals.css");
 
 describe("Accueil premium", () => {
-  it("garde la vidéo d'entrée d'origine (même fichier, même contenu) avec un affichage de secours", () => {
-    expect(page).toContain('M("/explainers/film-court.mp4")');
-    expect(page).toContain('M("/explainers/film-court.jpg")');
-    const sha = crypto.createHash("sha256").update(fs.readFileSync(path.join(process.cwd(), "public/explainers/film-court.mp4"))).digest("hex");
-    expect(sha).toBe("98b7fcf894db7a30a544421c463b0906e41bace4b49bf852cf883d565da59081");
+  it("vidéo d'entrée (film motion design avec voix off, FR et EN) avec un affichage de secours", () => {
+    // Le film d'entrée a été remplacé à la demande du propriétaire (voir tests/accueil-film-motion.test.ts).
+    expect(page).toContain('M("/explainers/film-motion.mp4")');
+    expect(page).toContain('M("/explainers/film-motion.jpg")');
+    for (const f of ["film-motion.mp4", "film-motion.en.mp4"]) expect(fs.statSync(path.join(process.cwd(), "public/explainers", f)).size).toBeGreaterThan(1_000_000);
     expect(home).toContain("La vidéo n'a pas pu être chargée.");
     // Lecture seulement quand elle est visible, jamais automatique si l'utilisateur demande moins de mouvement.
     expect(home).toMatch(/IntersectionObserver[\s\S]*v\.play\(\)/);
