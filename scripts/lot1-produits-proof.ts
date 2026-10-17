@@ -92,9 +92,14 @@ try {
           await page.addStyleTag({ content: "html{scroll-behavior:auto!important}*{animation:none!important;transition:none!important}[data-reveal],[data-reveal] *{opacity:1!important;transform:none!important;clip-path:none!important;filter:none!important}" });
           await page.getByText(endings.get(target)!, { exact: true }).evaluate((el) => el.scrollIntoView({ block: "center", behavior: "instant" }));
           assert.ok(await page.getByText(endings.get(target)!, { exact: true }).isVisible());
+          // Une capture intégrale doit aussi charger les miniatures paresseuses du panier fixe.
+          await page.locator("[data-main-product] img[src]").evaluateAll(async (imgs) => {
+            await Promise.all(imgs.map(async (el) => { const image = el as HTMLImageElement; image.loading = "eager"; await image.decode().catch(() => {}); }));
+          });
           assert.equal(await page.locator('meta[name="description"]').getAttribute("content"), `Description propre au produit ${i + 1}.`);
           const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth); assert.ok(overflow <= 1);
-          const missingImages = await page.locator("[data-main-product] img").evaluateAll((imgs) => imgs.filter((el) => !(el as HTMLImageElement).complete || !(el as HTMLImageElement).naturalWidth).length); assert.equal(missingImages, 0);
+          const missing = await page.locator("[data-main-product] img").evaluateAll((imgs) => imgs.filter((el) => !(el as HTMLImageElement).complete || !(el as HTMLImageElement).naturalWidth).map((el) => ({ src: el.getAttribute("src"), loading: el.getAttribute("loading"), html: el.outerHTML.slice(0, 250) })));
+          const missingImages = missing.length; assert.equal(missingImages, 0, `${domain}/${target}/${device} : ${JSON.stringify(missing)}`);
           const gallery = await page.locator("[data-main-product]").innerHTML(); for (const own of p.images) assert.ok(gallery.includes(own));
           for (const other of storeProducts(spec).filter((x) => x !== p)) for (const f of other.images) assert.ok(!gallery.includes(f));
           const name = `produit-${i + 1}-${device}.png`; await page.screenshot({ path: path.join(dir, name), fullPage: true });
