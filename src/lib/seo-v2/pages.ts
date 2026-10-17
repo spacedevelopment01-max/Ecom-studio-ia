@@ -16,7 +16,7 @@ export function existingPages(projectId: string): PageRef[] {
   const cur = currentTheme(projectId);
   const out: PageRef[] = storeLinks(projectId).map((l) => {
     const page = cur?.spec.store.pages.find((p) => l.url === `/pages/${p.handle}`);
-    const plan = cur?.spec.meta?.v2?.plan?.find((p) => p.handle === page?.handle);
+    const plan = cur?.spec.meta?.v2?.plan?.find((p: { handle?: string; key: string }) => p.handle === page?.handle);
     const target = page?.contentTarget ?? (plan?.key === "about" ? "brand:a-propos" : null);
     const kind = target?.startsWith("service:") ? "service" : target?.startsWith("brand:") ? "brand" : target?.startsWith("local:") ? "local" : l.kind;
     return { key: target ?? key(l.kind, l.title), title: l.title, url: l.url, kind, status: "existing" as const };
