@@ -13,7 +13,8 @@
     if(!quick)return;
     var rect=button.getBoundingClientRect(),footer=document.querySelector('.es-footer'),footerTop=footer?footer.getBoundingClientRect().top:Infinity;
     var editing=box.contains(document.activeElement)&&document.activeElement.matches('input,select,textarea'),overlay=document.querySelector('dialog[open],[data-cart-drawer].is-open')||document.body.classList.contains('menu-open');
-    quick.hidden=innerWidth>=750||editing||!!overlay||(rect.top>=0&&rect.bottom<=innerHeight)||footerTop<innerHeight;
+    var focusedGallery=document.activeElement.closest('[data-gallery]'),errorRect=error.hidden?null:error.getBoundingClientRect();
+    quick.hidden=innerWidth>=750||editing||!!focusedGallery||!!overlay||(rect.top<innerHeight&&rect.bottom>0)||!!(errorRect&&errorRect.top<innerHeight&&errorRect.bottom>0)||footerTop<innerHeight;
     document.body.classList.toggle('has-purchase-quick',innerWidth<750);
    }
    if(quick){var queued=false;function schedule(){if(queued)return;queued=true;requestAnimationFrame(function(){queued=false;quickVisibility();});}
