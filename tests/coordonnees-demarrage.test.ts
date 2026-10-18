@@ -16,6 +16,7 @@ import { loadProject } from "@/lib/projects";
 import { getSubscription, alignPeriod, syncAllowance } from "@/lib/billing";
 import { stateOf, approve } from "@/lib/preparation/engine";
 import { emptyServiceProfile } from "@/lib/project-types";
+import { commitState } from "@/lib/preparation/store";
 
 const ctx = (params: Record<string, string>) =>
   ({ params: Promise.resolve(params) }) as any;
@@ -95,6 +96,9 @@ describe("coordonnées saisies une seule fois", () => {
     });
     // Le choix du client est encore attendu ; les coordonnées existantes restent en place.
     expect(loadProject(pid).services.area).toBe(known.area);
+    expect(() => approve(pid, stateOf(pid)!.revision, "brief")).toThrow(/analyse IA/);
+    // Seule l'analyse est simulée ; l'approbation et la sauvegarde des coordonnées restent celles du studio.
+    commitState(pid, stateOf(pid)!.revision, s => { s.simulation = true; s.stages.brief!.data.provenance = "simulation"; });
     approve(pid, stateOf(pid)!.revision, "brief");
     const s = loadProject(pid).services;
     expect(s).toMatchObject({

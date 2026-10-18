@@ -20,6 +20,7 @@ import type { GateDecision, Verdict } from "../quality/gate";
 import { MODELS, TIER_RANK, capableModels, modelInfo, type Capability, type Tier } from "./capabilities";
 import { MEDIA_DEFAULTS, TEXT_MODEL_BY_TIER, routingPolicy, type TaskPolicy } from "./policy";
 import { pickTextModel } from "./text-routing";
+import { REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVIDER } from "../ai/logo-policy";
 
 export type Difficulty = "simple" | "standard" | "complex";
 export type InputType = "text" | "image" | "mixed" | "mask" | "video";
@@ -161,7 +162,8 @@ export function route(req: RouteRequest): RouteDecision {
 
   // Modèle préféré du niveau (texte) ou fournisseur par défaut (média) ; sinon repli sur un fournisseur capable.
   const preferred = mode === "llm" ? { provider: "anthropic", model: TEXT_MODEL_BY_TIER[tier === "local" ? "light" : tier] } : MEDIA_DEFAULTS[req.task] ?? null;
-  const usable = (m: { provider: string; model: string }) => m.provider !== "local" && req.available(m.provider as ProviderId) && `${m.provider}:${m.model}` !== failed;
+  // Le dessin logo dispose de son circuit imposé ; il ne devient pas un secours pour les images ordinaires.
+  const usable = (m: { provider: string; model: string }) => m.provider !== "local" && !(m.provider === REQUIRED_LOGO_PROVIDER && m.model === REQUIRED_LOGO_MODEL) && req.available(m.provider as ProviderId) && `${m.provider}:${m.model}` !== failed;
   const prefInfo = preferred ? modelInfo(preferred.provider, preferred.model) : null;
   if (preferred && prefInfo && needs.every((c) => prefInfo.capabilities.includes(c)) && usable(preferred)) {
     return { mode, provider: preferred.provider, model: preferred.model, effort: prefInfo.effort ? policy.effort : undefined, tier: prefInfo.tier, reason, ...base, escalation };

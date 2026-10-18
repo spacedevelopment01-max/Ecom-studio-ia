@@ -216,6 +216,7 @@ export function priceUnitFits(m: Pick<MediaModel, "kind" | "provider">, unit: st
 
 /** Capacité manquante pour ce besoin (null : compatible). */
 export function incompatibility(m: MediaModel, n: MediaNeed): string | null {
+  if (m.provider === REQUIRED_LOGO_PROVIDER && m.model === REQUIRED_LOGO_MODEL && n.usage !== "logo") return L("réservé au dessin des logos", "reserved for logo artwork");
   if (m.kind !== n.kind) return L("autre type de média", "other media type");
   const c = m.caps;
   if (n.mask && !c.maskEdit) return L("pas de retouche par masque", "no mask editing");
