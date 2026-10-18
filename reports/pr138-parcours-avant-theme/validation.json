@@ -1,0 +1,87 @@
+{
+  "at": "2026-10-18T21:45:21.825095+00:00",
+  "auditedBase": "09e0a86ac09cc3d76430fa12e34186e8f4d92a74",
+  "testedCodeCommit": "418579b424359721ed0dc16633f8937b121b54da",
+  "branch": "codex/parcours-amont-projet",
+  "pr": 138,
+  "mode": "Fournisseurs/API injectés ; HTTP/SSE local avec SDK réel ; fichiers et navigateur réels, contenus synthétiques. Aucun résultat créatif fournisseur réel vérifié.",
+  "checks": [
+    {
+      "command": "npx vitest run --maxWorkers=4",
+      "exitCode": 0,
+      "logSha256": "b0e0e1195199fc43b4ed89d5045d07972d0d499508aabe6ae3f20666f378404b",
+      "filesPassed": 269,
+      "testsPassed": 2004,
+      "testsSkipped": 3,
+      "durationSeconds": 607.14,
+      "skippedReason": "PHP absent : 2 tests calendrier-reservation et 1 test cms-v2"
+    },
+    {
+      "command": "npx tsc --noEmit",
+      "exitCode": 0,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": "DATA_DIR=<dossier isolé> STOCK_OFFLINE=1 npm run build",
+      "exitCode": 0,
+      "logSha256": "4e2e101d446576c2e4d3a63e125c8cb72588724e9bb9d7a6da8b189a73e84da4"
+    },
+    {
+      "command": "PLAYWRIGHT_BROWSERS_PATH=/workspace/work/pw-browsers npx tsx scripts/preparation/mission-browser-proof.ts <DATA_DIR synthétique isolé>",
+      "exitCode": 0,
+      "logSha256": "470d0ecbb530527108c66360a8b9d3845d4148fc049aabd1c3ad92fab9005440",
+      "screenshots": 12,
+      "profiles": 4,
+      "videos": 4,
+      "pageErrors": 0,
+      "horizontalOverflows": 0,
+      "placementEditTestedOn": "ordinateur ; consultation après déplacement sur mobile"
+    },
+    {
+      "command": "npx vitest run tests/routage-usages.test.ts tests/routage-multimedia.test.ts tests/logo-relais-openai-routage.test.ts tests/preparation*.test.ts tests/audit-workflow-portee.test.ts --maxWorkers=4",
+      "exitCode": 0,
+      "logSha256": "709eda78671dbfaee0c37f1370fe20a161cb14dc3c904c773d546d1ae7311c8f",
+      "testsPassed": 132,
+      "note": "Passage ciblé intermédiaire avant le dernier reçu API ; la suite complète finale couvre les sources définitives."
+    },
+    {
+      "command": "npx vitest run tests/logo-openai-routage.test.ts tests/workflow*.test.ts tests/audit-workflow-portee.test.ts --maxWorkers=4",
+      "exitCode": 0,
+      "logSha256": "801d85786f63566f31c4bab0ea2b5b93f2453ea3d850b250c683fb8f052d21ee",
+      "testsPassed": 27
+    },
+    {
+      "command": "npx vitest run tests/preparation-preuve-api.test.ts tests/preparation-analyse-reprise.test.ts tests/logo-openai-routage.test.ts --maxWorkers=3",
+      "exitCode": 0,
+      "logSha256": "87070d7ef8ff3996378e87853882eb2384b123f3736e0999bb05a4cb19e1927b",
+      "testsPassed": 9
+    },
+    {
+      "command": "npx vitest run tests/publicite-ligne-campagne.test.ts tests/photos-pixabay-galerie.test.ts tests/coordonnees-demarrage.test.ts tests/orchestrateur-3a.test.ts tests/routage-usages.test.ts tests/routage-multimedia.test.ts tests/logo-relais-openai-routage.test.ts --maxWorkers=4",
+      "exitCode": 0,
+      "logSha256": "f55864313fcb6c1ab6b088476a0e20cd830fbbb50d37a822c198026efc9c1f0b",
+      "testsPassed": 61
+    }
+  ],
+  "realSupplierCalls": 0,
+  "realSupplierCost": 0,
+  "costCurrency": "EUR",
+  "costExplanation": "Aucun appel fournisseur réel. Les montants des bases de tests sont synthétiques ; aucune facture interrogée.",
+  "screenshots": 12,
+  "directionBoards": 6,
+  "brandBookPdfs": 2,
+  "browserVideos": 4,
+  "themeFilesChanged": false,
+  "productionThemeBuilt": false,
+  "cmsTested": [],
+  "merge": false,
+  "deployment": false,
+  "pendingRealChecks": [
+    "Accès/authentification du modèle logo requis et borne de coût exploitable",
+    "Compréhension/recherche/copywriting réels et qualité des trois directions",
+    "Fidélité/diversité des dix images produit et qualité des médias Pixabay réels",
+    "Raccordement effectif aux thèmes et vérifications propres aux exports/CMS"
+  ],
+  "intermediateRuns": "Les passages intermédiaires ont exposé des attentes historiques incompatibles avec la nouvelle politique, puis été remplacés ou arrêtés pendant les corrections. Aucun passage incomplet n’est présenté comme succès final.",
+  "security": "Aucune base, session, clé ou journal brut publié. Données de démonstration exclusivement synthétiques."
+}

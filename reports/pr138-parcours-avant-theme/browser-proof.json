@@ -1,0 +1,45 @@
+{
+  "simulation": true,
+  "results": [
+    {
+      "case": "produit-ordinateur",
+      "simulation": true,
+      "directions": 3,
+      "ready": false,
+      "videoPlayedAndPaused": true,
+      "placementSavedAfterReload": true,
+      "externalRequestsBlocked": [],
+      "pageErrors": []
+    },
+    {
+      "case": "produit-mobile",
+      "simulation": true,
+      "directions": 3,
+      "ready": false,
+      "videoPlayedAndPaused": true,
+      "placementSavedAfterReload": false,
+      "externalRequestsBlocked": [],
+      "pageErrors": []
+    },
+    {
+      "case": "service-ordinateur",
+      "simulation": true,
+      "directions": 3,
+      "ready": false,
+      "videoPlayedAndPaused": true,
+      "placementSavedAfterReload": true,
+      "externalRequestsBlocked": [],
+      "pageErrors": []
+    },
+    {
+      "case": "service-mobile",
+      "simulation": true,
+      "directions": 3,
+      "ready": false,
+      "videoPlayedAndPaused": true,
+      "placementSavedAfterReload": false,
+      "externalRequestsBlocked": [],
+      "pageErrors": []
+    }
+  ]
+}

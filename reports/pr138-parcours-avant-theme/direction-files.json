@@ -1,0 +1,42 @@
+[
+  {
+    "file": "produit-direction-1.png",
+    "simulation": true,
+    "sha256": "84136893a205a75b143d5b28a2fde8c3c6e3b8f3442b6cec317a79ed823bbc20"
+  },
+  {
+    "file": "produit-direction-2.png",
+    "simulation": true,
+    "sha256": "d136e1fbddf96374e6674c11aabb7f9c1bf4df4000c9fac5f4c884b088d45cca"
+  },
+  {
+    "file": "produit-direction-3.png",
+    "simulation": true,
+    "sha256": "46d2b63b6506440c0ee47f47a890146ff4effd950825251a6394f94125b4c3f4"
+  },
+  {
+    "file": "produit-charte.pdf",
+    "simulation": true,
+    "sha256": "bbadb4469ac069d7d3226a67b4c89e12b3b424b016d7a4e444d7c713e3ea1079"
+  },
+  {
+    "file": "service-direction-1.png",
+    "simulation": true,
+    "sha256": "2c81bceaa04bdbe78d4b5074308056605936ae557ae95b41edb97f8f2f97134f"
+  },
+  {
+    "file": "service-direction-2.png",
+    "simulation": true,
+    "sha256": "233cc97dff19d5236547b66f6f28d27de865fb9a8847686bd7b27544366b8cf5"
+  },
+  {
+    "file": "service-direction-3.png",
+    "simulation": true,
+    "sha256": "b3d51316ca68a736fe1d3e9f029424625ec307c760886cf7caebe0acf39a14ae"
+  },
+  {
+    "file": "service-charte.pdf",
+    "simulation": true,
+    "sha256": "4671132869fdf61343dee0a71abeaa33072140d9d252b046ec78b17556e9ec76"
+  }
+]

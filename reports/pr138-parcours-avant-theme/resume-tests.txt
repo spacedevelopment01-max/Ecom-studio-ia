@@ -1,0 +1,5 @@
+Commit testé : 418579b424359721ed0dc16633f8937b121b54da
+Suite complète : 269 fichiers, 2004 tests réussis, 3 ignorés ; 607.14 s.
+TypeScript et build : code de sortie 0.
+Navigateur : 12 captures, 4 vidéos, aucune erreur JS ou débordement horizontal.
+0 appel IA réel ; 0 coût réel ; aucun thème client, merge ou déploiement.

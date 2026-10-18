@@ -1,0 +1,265 @@
+{
+  "simulation": true,
+  "sourceFieldsDescribePolicyNotRealCollection": true,
+  "projects": [
+    {
+      "business": "products",
+      "projectId": "bk6tupsdrbs9tggw",
+      "simulation": true,
+      "revision": 13,
+      "ready": false,
+      "directions": 3,
+      "selectedDirection": "t1",
+      "seriesStatus": "complete",
+      "slotCount": 11,
+      "media": [
+        {
+          "key": "final:image:1",
+          "kind": "image",
+          "sourceContract": "ai",
+          "aspect": "1:1",
+          "pageKey": "brand",
+          "sectionKey": "gallery",
+          "present": true,
+          "reviewed": false
+        },
+        {
+          "key": "final:image:2",
+          "kind": "image",
+          "sourceContract": "ai",
+          "aspect": "1:1",
+          "pageKey": "product:main",
+          "sectionKey": "gallery",
+          "present": true,
+          "reviewed": false
+        },
+        {
+          "key": "final:image:3",
+          "kind": "image",
+          "sourceContract": "ai",
+          "aspect": "1:1",
+          "pageKey": "home",
+          "sectionKey": "offer",
+          "present": false,
+          "reviewed": false
+        },
+        {
+          "key": "final:image:4",
+          "kind": "image",
+          "sourceContract": "ai",
+          "aspect": "1:1",
+          "pageKey": "brand",
+          "sectionKey": "gallery",
+          "present": false,
+          "reviewed": false
+        },
+        {
+          "key": "final:image:5",
+          "kind": "image",
+          "sourceContract": "ai",
+          "aspect": "16:9",
+          "pageKey": "home",
+          "sectionKey": "offer",
+          "present": false,
+          "reviewed": false
+        },
+        {
+          "key": "final:image:6",
+          "kind": "image",
+          "sourceContract": "ai",
+          "aspect": "16:9",
+          "pageKey": "product:main",
+          "sectionKey": "gallery",
+          "present": false,
+          "reviewed": false
+        },
+        {
+          "key": "final:image:7",
+          "kind": "image",
+          "sourceContract": "ai",
+          "aspect": "16:9",
+          "pageKey": "brand",
+          "sectionKey": "gallery",
+          "present": false,
+          "reviewed": false
+        },
+        {
+          "key": "final:image:8",
+          "kind": "image",
+          "sourceContract": "ai",
+          "aspect": "16:9",
+          "pageKey": "home",
+          "sectionKey": "gallery",
+          "present": false,
+          "reviewed": false
+        },
+        {
+          "key": "final:image:9",
+          "kind": "image",
+          "sourceContract": "ai",
+          "aspect": "9:16",
+          "pageKey": "product:main",
+          "sectionKey": "story",
+          "present": false,
+          "reviewed": false
+        },
+        {
+          "key": "final:image:10",
+          "kind": "image",
+          "sourceContract": "ai",
+          "aspect": "9:16",
+          "pageKey": "brand",
+          "sectionKey": "story",
+          "present": false,
+          "reviewed": false
+        },
+        {
+          "key": "final:video:1",
+          "kind": "video",
+          "sourceContract": "pixabay",
+          "aspect": "16:9",
+          "pageKey": "home",
+          "sectionKey": "hero",
+          "present": true,
+          "reviewed": false
+        }
+      ]
+    },
+    {
+      "business": "services",
+      "projectId": "9q37l5fxa2nzmqho",
+      "simulation": true,
+      "revision": 13,
+      "ready": false,
+      "directions": 3,
+      "selectedDirection": "t1",
+      "seriesStatus": "complete",
+      "slotCount": 12,
+      "media": [
+        {
+          "key": "final:image:1",
+          "kind": "image",
+          "sourceContract": "pixabay",
+          "aspect": "1:1",
+          "pageKey": "brand",
+          "sectionKey": "gallery",
+          "present": true,
+          "reviewed": false
+        },
+        {
+          "key": "final:image:2",
+          "kind": "image",
+          "sourceContract": "pixabay",
+          "aspect": "1:1",
+          "pageKey": "service:0",
+          "sectionKey": "gallery",
+          "present": true,
+          "reviewed": false
+        },
+        {
+          "key": "final:image:3",
+          "kind": "image",
+          "sourceContract": "pixabay",
+          "aspect": "1:1",
+          "pageKey": "home",
+          "sectionKey": "offer",
+          "present": false,
+          "reviewed": false
+        },
+        {
+          "key": "final:image:4",
+          "kind": "image",
+          "sourceContract": "pixabay",
+          "aspect": "1:1",
+          "pageKey": "brand",
+          "sectionKey": "gallery",
+          "present": false,
+          "reviewed": false
+        },
+        {
+          "key": "final:image:5",
+          "kind": "image",
+          "sourceContract": "pixabay",
+          "aspect": "16:9",
+          "pageKey": "home",
+          "sectionKey": "offer",
+          "present": false,
+          "reviewed": false
+        },
+        {
+          "key": "final:image:6",
+          "kind": "image",
+          "sourceContract": "pixabay",
+          "aspect": "16:9",
+          "pageKey": "service:0",
+          "sectionKey": "gallery",
+          "present": false,
+          "reviewed": false
+        },
+        {
+          "key": "final:image:7",
+          "kind": "image",
+          "sourceContract": "pixabay",
+          "aspect": "16:9",
+          "pageKey": "brand",
+          "sectionKey": "gallery",
+          "present": false,
+          "reviewed": false
+        },
+        {
+          "key": "final:image:8",
+          "kind": "image",
+          "sourceContract": "pixabay",
+          "aspect": "16:9",
+          "pageKey": "home",
+          "sectionKey": "gallery",
+          "present": false,
+          "reviewed": false
+        },
+        {
+          "key": "final:image:9",
+          "kind": "image",
+          "sourceContract": "pixabay",
+          "aspect": "9:16",
+          "pageKey": "service:0",
+          "sectionKey": "story",
+          "present": false,
+          "reviewed": false
+        },
+        {
+          "key": "final:image:10",
+          "kind": "image",
+          "sourceContract": "pixabay",
+          "aspect": "9:16",
+          "pageKey": "brand",
+          "sectionKey": "story",
+          "present": false,
+          "reviewed": false
+        },
+        {
+          "key": "final:video:1",
+          "kind": "video",
+          "sourceContract": "pixabay",
+          "aspect": "16:9",
+          "pageKey": "home",
+          "sectionKey": "hero",
+          "present": true,
+          "reviewed": false
+        },
+        {
+          "key": "final:video:2",
+          "kind": "video",
+          "sourceContract": "pixabay",
+          "aspect": "16:9",
+          "pageKey": "service:0",
+          "sectionKey": "method",
+          "present": false,
+          "reviewed": false
+        }
+      ]
+    }
+  ],
+  "aiCalls": 0,
+  "reservations": 0,
+  "themes": 0
+}
