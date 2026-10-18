@@ -15,6 +15,7 @@ if(process.env.DATA_DIR||process.env.DATABASE_FILE)throw new Error("Base existan
 const temp=fs.mkdtempSync(path.join(os.tmpdir(),"ecs-lot2b-"));process.env.DATA_DIR=temp;process.env.STOCK_OFFLINE="1";
 globalThis.fetch=async()=>{throw new Error("Réseau fournisseur interdit");};
 const out=path.resolve(process.argv[2]??"reports/lot2b");fs.mkdirSync(out,{recursive:true});
+const testedCommit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),workingTree=execFileSync('git',['status','--porcelain','--','src','theme-base','tests','scripts'],{encoding:'utf8'}).trim()?'modified':'clean';
 const {editorialProject,DEMO_PROVENANCE}=await import("../tests/lot2b-fixtures");
 const {createUser}=await import("../src/lib/auth");const {all}=await import("../src/lib/db");
 const {saveThemeVersion,currentTheme}=await import("../src/lib/projects");const {previewSegment}=await import("../src/lib/theme/preview-access");
@@ -109,5 +110,6 @@ try{
   }
   evidence.push({kind,provenance:DEMO_PROVENANCE,mediaCount:f.media.length,missing:f.missing,visualResult:f.missing.length?"PARTIEL — rendu photographique bloqué":"À inspecter",pages,interactions,exports,paidCalls:all("SELECT 1 FROM ai_calls WHERE project_id=?",pid).length});
  });
- fs.writeFileSync(path.join(out,"preuves.json"),JSON.stringify({testedCommit:execFileSync("git",["rev-parse","HEAD"],{encoding:"utf8"}).trim(),workingTree:execFileSync("git",["status","--porcelain","--","src","theme-base","tests","scripts"],{encoding:"utf8"}).trim()?"modified":"clean",date:new Date().toISOString(),renderMode:"es_raw=1 — thème issu des vraies routes, sans le bandeau flottant du studio",evidence},null,2)+"\n");console.log(JSON.stringify({ok:true,output:out,media:evidence.map(e=>e.mediaCount),pages:evidence.map(e=>e.pages.length)}));
+ assert.equal(execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),testedCommit,'La version a changé pendant la capture');
+ fs.writeFileSync(path.join(out,"preuves.json"),JSON.stringify({testedCommit,workingTree,date:new Date().toISOString(),renderMode:"es_raw=1 — thème issu des vraies routes, sans le bandeau flottant du studio",evidence},null,2)+"\n");console.log(JSON.stringify({ok:true,output:out,media:evidence.map(e=>e.mediaCount),pages:evidence.map(e=>e.pages.length)}));
 }finally{await browser.close();await new Promise<void>(r=>server.close(()=>r()));fs.rmSync(temp,{recursive:true,force:true});}
