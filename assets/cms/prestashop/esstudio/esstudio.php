@@ -16,7 +16,7 @@ class EsStudio extends Module
     {
         $this->name = 'esstudio';
         $this->tab = 'front_office_features';
-        $this->version = '1.0.0';
+        $this->version = '1.1.0';
         $this->author = 'E-COM STUDIO IA';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = ['min' => '8.0.0', 'max' => _PS_VERSION_];

@@ -72,6 +72,11 @@ export async function cmsExport(platform: CmsPlatform, spec0: ThemeSpec, load: A
     entries[sitePath] = strToU8(JSON.stringify(site, null, 1));
     entries["config/es-site.json"] = entries[sitePath];
     entries["config/es-catalogue.json"] = entries[catalogFile];
+    // ThemeManager ne remplace pas toujours un module compagnon déjà installé.
+    // Archive distincte téléversable via le gestionnaire de modules, sans désinstallation ni perte des correspondances.
+    const modulePrefix = "dependencies/modules/";
+    const moduleFiles = Object.fromEntries(Object.entries(entries).filter(([file]) => file.startsWith(modulePrefix)).map(([file, bytes]) => [file.slice(modulePrefix.length), bytes]));
+    entries["import/module-esstudio.zip"] = zipSync(moduleFiles, { level: 6, mtime: new Date("2026-01-01T00:00:00Z") });
   }
   exp.zip = Buffer.from(zipSync(entries, { level: 6, mtime: new Date("2026-01-01T00:00:00Z") }));
   exp.files = Object.keys(entries);

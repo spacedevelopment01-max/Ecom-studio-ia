@@ -59,6 +59,13 @@ def run_products():
  for phase in ['products','products-update']:
   archive=root/phase/'prestashop/export.zip'
   with zipfile.ZipFile(archive) as z:name=re.search(r'^name: (.+)$',z.read('config/theme.yml').decode(),re.M)[1]
+  # Mise à jour explicite depuis le module réellement livré (équivalent dépôt de fichiers / modules).
+  # Aucune désinstallation : les associations et reçus restent en base.
+  with zipfile.ZipFile(archive) as z:(root/'module-esstudio.zip').write_bytes(z.read('import/module-esstudio.zip'))
+  cmd('cp',str(root/'module-esstudio.zip'),c+':/tmp/module-esstudio.zip')
+  cmd('exec',c,'unzip','-o','/tmp/module-esstudio.zip','-d','/var/www/html/modules')
+  cmd('exec',c,'chown','-R','www-data:www-data','/var/www/html/modules/esstudio')
+  cmd('exec','-u','www-data','-w','/var/www/html',c,'php','-r',"define('_PS_ADMIN_DIR_','/var/www/html/admin-es');require 'config/config.inc.php'; if(Module::isInstalled('esstudio')){$m=Module::getInstanceByName('esstudio');if(Module::initUpgradeModule($m)){$r=$m->runUpgradeModule();if(empty($r['success']))throw new Exception('Module upgrade failed');}}")
   cmd('cp',str(archive),c+':/tmp/export-catalogue.zip');cmd('exec',c,'chmod','644','/tmp/export-catalogue.zip')
   exists=subprocess.run(D+['exec',c,'test','-d','/var/www/html/themes/'+name],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode==0
   if not exists: print(php('/tmp/ps-theme.php','install','/tmp/export-catalogue.zip'),flush=True)

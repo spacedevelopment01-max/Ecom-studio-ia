@@ -14,6 +14,13 @@ import { prepareShopifyCsv } from "../scripts/cms-v2/prepare-shopify-csv";
 import { multiAxisSpec } from "./cms-catalogue-fixtures";
 
 describe("exports catalogue fiables", () => {
+  it("Presta livre son module actualisable séparément sans effacer les correspondances", async () => {
+    const e=await cmsExport('prestashop',multiAxisSpec(),()=>null);const files=unzipSync(e.zip);
+    const module=unzipSync(files['import/module-esstudio.zip']);
+    expect(strFromU8(module['esstudio/esstudio.php'])).toContain("$this->version = '1.1.0'");
+    expect(strFromU8(module['esstudio/catalog-import.php'])).toContain('catalog_image_shop_detach');
+    expect(module['esstudio/catalogue.json']).toEqual(files['config/es-catalogue.json']);
+  });
   it("le compteur Woo Blocks suit les quantités serveur et masque le zéro", () => {
     const runtime=fs.readFileSync("assets/cms/wordpress/es-woo.js","utf8");
     let count=1, callback=()=>{}; const node={textContent:"",hidden:false};
