@@ -144,7 +144,7 @@ try {
     await extra.route("**/*", (r) => r.request().url().startsWith(origin + "/") ? r.continue() : r.abort());
     const keyRoutes = kind === "products" ? ["/collections/all", "/pages/contact"] : ["/pages/prestations", "/pages/a-propos", "/pages/contact"];
     for (const route of keyRoutes) { const r = await extra.goto(origin + base + route + "?es_raw=1", { waitUntil: "networkidle" }); assert.equal(r?.status(), 200); await loaded(extra); assert.ok(await extra.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)); }
-    const requiredEmail = extra.locator("input[name='contact[email]']");
+    const requiredEmail = extra.locator(".es-contact__form input[name='contact[email]']");
     assert.equal(await requiredEmail.getAttribute("type"), "email");
     assert.ok(await requiredEmail.evaluate((el) => !(el as HTMLInputElement).checkValidity()));
     await requiredEmail.fill("test@example.invalid"); assert.ok(await requiredEmail.evaluate((el) => (el as HTMLInputElement).checkValidity()));

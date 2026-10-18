@@ -12,7 +12,8 @@ const html = (s: string) => real(s) ? `<p>${esc(s)}</p>` : "";
 export function referenceHomeRows(input: BuildInput, c: ShopCopy, k: Kit, svc: ServicesPlan | null): Row[] | null {
   if (!isReferenceTheme(input.direction, !!svc)) return null;
   const t = k.t, im = input.images;
-  const photos = [...new Set([im.lifestyle, im.hero, im.scene1, im.scene2, im.scene3, im.detail1, im.detail2, im.packshot, ...(svc?.photos ?? [])].filter((x): x is string => !!x && !!input.files[x]))];
+  const photos = [...new Set([im.lifestyle, im.hero, im.scene1, im.scene2, im.scene3, im.detail1, im.detail2, im.packshot, ...(svc?.photos ?? [])].filter((x): x is string => !!x && !!input.files[x]))]
+    .filter((file, index, list) => list.findIndex((other) => input.files[other] === input.files[file]) === index);
   const shared = { color_scheme: "scheme-1", padding_top: 80, padding_bottom: 80, motion: "reveal" };
   const editorial = (heading: string, text: string, image: string | undefined, layout: string, n = 1): Row[] => real(heading) || real(text) ? [["ref-editorial", { ...shared, heading: real(heading) ? heading : "", text: html(text), image_asset: image ?? "", image_alt: svc ? heading : input.product.title, layout, color_scheme: `scheme-${n}`, button_label: "", button_link: "" }]] : [];
   const notes = (heading: string, items: { title: string; text: string }[]): Row[] => {
@@ -33,7 +34,7 @@ export function referenceHomeRows(input: BuildInput, c: ShopCopy, k: Kit, svc: S
   return [hero,
     ["featured-collection", { heading: t("La collection", "The collection"), collection: "all", limit: 8, columns: 3, ratio: "square", color_scheme: "scheme-1", padding_top: 80, padding_bottom: 80 }],
     ...editorial(c.detail.heading, c.detail.text, photos[1], "offset"),
-    ...k.v2.benefits("images", 2), ...editorial(c.statement.heading, c.statement.text, photos[2] ?? photos[0], "wide", 3),
+    ...k.v2.benefits("images", 2), ...editorial(c.statement.heading, c.statement.text, photos[2] ?? photos[0], "inset", 3),
     ...(c.specs.items.some((s) => real(s.value)) ? k.v2.specs("columns", 1) : []),
     ...k.v2.media("rail", 2), ...questionRows, ...k.v2.cta("band", 3)];
 }

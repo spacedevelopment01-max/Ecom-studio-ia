@@ -88,6 +88,7 @@
 .es-header--reference-shop .es-header__cta,.es-header--reference-studio .es-header__cta { box-shadow:none; background:var(--c-accent); color:var(--c-accent-text); }
 .ref-section :is(a,button):focus-visible,.es-header--reference-shop :is(a,button):focus-visible,.es-header--reference-studio :is(a,button):focus-visible,.es-footer--reference-shop :is(a,button,input):focus-visible,.es-footer--reference-studio :is(a,button,input):focus-visible { outline:3px solid currentColor; outline-offset:5px; }
 .dir-vitrine .es-product__img { object-fit:contain; }
+.dir-vitrine .ref-editorial__media>.ref-image { aspect-ratio:auto; height:auto; object-fit:contain; }
 .dir-vitrine .es-product__slide { background:var(--c-surface); border-radius:0; }
 .dir-vitrine .es-product__sticky { padding-top:20px; }
 .dir-vitrine .es-product__title { font-size:clamp(40px,4vw,64px); }

@@ -46,6 +46,8 @@ describe("Lot 2A — références intégrées", async () => {
       expect(html).not.toContain("Liquid error"); expect(html).not.toMatch(/99 %|10 000 clients|avis vérifiés/);
     }
     expect(product.spec.templates.index.order.map((id) => product.spec.templates.index.sections[id].type)).not.toEqual(service.spec.templates.index.order.map((id) => service.spec.templates.index.sections[id].type));
+    const editorials = Object.values(product.spec.templates.index.sections).filter((s) => s.type === "ref-editorial").map((s) => product.spec.files[String(s.settings.image_asset)]);
+    expect(new Set(editorials).size).toBe(editorials.length);
     expect(service.spec.settings.cart_type).toBe("none");
     expect(service.spec.store.pages.some((p) => p.contentTarget === "service:creation")).toBe(true);
   }));
