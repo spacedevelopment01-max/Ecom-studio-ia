@@ -3,7 +3,7 @@
 function es_catalog_read($file, $mediaDir)
 {
     $c = json_decode((string) file_get_contents($file), true, 128, JSON_THROW_ON_ERROR);
-    if (($c['version'] ?? null) !== 1 || !preg_match('/^[a-f0-9]{24}$/', $c['source'] ?? '') || count($c['products'] ?? []) > 40) throw new RuntimeException('catalog_invalid');
+    if (($c['version'] ?? null) !== 1 || !preg_match('/^[a-f0-9]{24}$/', $c['source'] ?? '') || !is_array($c['products'] ?? null)) throw new RuntimeException('catalog_invalid');
     $root = realpath($mediaDir);
     foreach ($c['media'] ?? [] as $name => $info) {
         $path = $root ? realpath($root . '/' . $name) : false;

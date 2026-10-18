@@ -35,6 +35,18 @@ describe("exports catalogue fiables", () => {
     expect(JSON.stringify(s.templates.index)).not.toContain(`/products/${s.store.product.handle}`);
     expect(s.templates.index.sections.bad.disabled).toBe(true);
   });
+  it("une présentation produit désactivée n'est jamais réactivée par l'adaptation Presta", () => {
+    const s=multiAxisSpec();const sec={type:'featured-product',disabled:true,settings:{product:s.store.product.handle}};
+    s.templates.index={order:['hidden'],sections:{hidden:sec}};const before=structuredClone(sec);
+    adaptFeaturedProduct(s,fr=>fr);expect(s.templates.index.sections.hidden).toEqual(before);
+  });
+  it("les données complètes des sections restent livrées même quand le CMS utilise sa fiche native", async () => {
+    const s=multiAxisSpec();s.templates.product.sections.longtext={type:'rich-text',settings:{heading:'Fin de texte préservée',text:'Texte conservé. '.repeat(300)+'FIN_SOURCE_COMPLÈTE'}};s.templates.product.order.push('longtext');
+    for(const platform of ['woocommerce','prestashop'] as const){
+      const e=await cmsExport(platform,s,()=>null);const z=unzipSync(e.zip);const p=Object.keys(z).find(p=>p.endsWith('configuration-studio.json')||p==='config/es-studio.json')!;
+      expect(strFromU8(z[p])).toContain('FIN_SOURCE_COMPLÈTE');
+    }
+  });
   it("la grille Woo reçoit une vraie adaptation native respectant la collection choisie", async () => {
     const s = multiAxisSpec(); const collection = s.store.collections![0];
     s.templates.index = { order: ["catalog"], sections: { catalog: { type: "featured-collection", settings: { heading: "Sélection contrôlée", collection: collection.handle, limit: 3, columns: 3 } } } };

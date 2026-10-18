@@ -35,6 +35,7 @@ function es_url($path) {
 		$maps = get_option('es_page_maps', []);
 		$ids = $source ? ($maps[$source] ?? []) : (array) get_option('es_pages', []);
 		$id = $ids[$m[2]] ?? 0;
+		if ($source) return $id && get_post_type($id) === 'page' && get_post_meta($id, '_es_page_owner', true) === $source && get_post_status($id) !== 'trash' ? get_permalink($id) . $tail : home_url('/?es_missing_page=' . rawurlencode($m[2]));
 		return ($id && get_post_status($id) === 'publish' ? get_permalink($id) : home_url('/' . $m[2] . '/')) . $tail;
 	}
 	// Produits, collections, panier, compte : fournis par l'intégration e-commerce quand elle est présente.
@@ -49,6 +50,9 @@ function es_rewrite_links($html) {
 		return $m[1] . '="' . esc_url(es_url(html_entity_decode($m[2], ENT_QUOTES))) . '"';
 	}, $html);
 }
+add_action('template_redirect', function () {
+	if (isset($_GET['es_missing_page'])) { status_header(404); nocache_headers(); wp_die(esc_html__('Page introuvable.', 'es-theme'), '', ['response' => 404]); }
+});
 
 /** Destination des formulaires des sections (inscription, contact) : traités par le thème, voir es_handle_form. */
 function es_form_action($type) { return admin_url('admin-post.php'); }
@@ -163,7 +167,7 @@ add_action('init', function () {
 	$schemas = [];
 	foreach (es_site()['schemas'] ?? [] as $t => $s) if (empty($s['hidden'])) $schemas[$t] = $s;
 	wp_add_inline_script('es-editor', 'window.esSchemas = ' . wp_json_encode($schemas) . ';', 'before');
-	wp_add_inline_script('es-editor', 'window.esCatalogCollections = ' . wp_json_encode(es_site()['catalogCollections'] ?? []) . ';', 'before');
+	wp_add_inline_script('es-editor', 'window.esCatalogCollections = ' . wp_json_encode((es_site()['business'] ?? '') === 'products' ? (es_site()['catalogCollections'] ?? []) : null) . ';', 'before');
 	register_block_type('es/section', [
 		'api_version' => 3,
 		'editor_script' => 'es-editor',
@@ -283,7 +287,7 @@ add_action('after_switch_theme', function () {
 	$source = $site['catalogSource'] ?? ''; $pageMaps = get_option('es_page_maps', []);
 	$ids = $source ? ($pageMaps[$source] ?? []) : (array) get_option('es_pages', []);
 	foreach (array_merge($site['pages'] ?? [], $site['policies'] ?? []) as $p) {
-		if (!empty($ids[$p['handle']]) && get_post_status($ids[$p['handle']]) === 'publish') continue;
+		if (!empty($ids[$p['handle']]) && ($source || get_post_status($ids[$p['handle']]) === 'publish')) continue;
 		$existing = get_page_by_path($p['handle']);
 		if ($existing && $existing->post_status === 'publish' && (!$source || get_post_meta($existing->ID, '_es_page_owner', true) === $source)) { $ids[$p['handle']] = $existing->ID; continue; }
 		$id = wp_insert_post(['post_type' => 'page', 'post_status' => 'publish', 'post_title' => $p['title'], 'post_name' => $p['handle'], 'post_content' => wp_kses_post($p['body_html'] ?? '')]);
