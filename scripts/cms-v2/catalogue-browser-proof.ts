@@ -11,9 +11,9 @@ const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PAT
 const results: any[] = [];
 async function scan(page: Page) {
   return page.evaluate(async () => {
-    for (let y = 0; y < document.documentElement.scrollHeight; y += 600) { scrollTo(0, y); await new Promise(r => setTimeout(r, 40)); }
+    for (let y = 0; y < document.documentElement.scrollHeight; y += 600) { scrollTo({top:y,behavior:"instant"}); await new Promise(r => setTimeout(r, 100)); }
     for (const i of document.images) { i.loading = "eager"; await i.decode().catch(() => {}); }
-    await document.fonts.ready; scrollTo(0, 0);
+    await document.fonts.ready; await new Promise(r=>setTimeout(r,1800)); scrollTo({top:0,behavior:"instant"});
     return { overflow: Math.max(0, document.documentElement.scrollWidth - innerWidth), broken: [...document.images].filter(i => i.getAttribute("src") && !i.naturalWidth).map(i => i.getAttribute("src")), h1: document.querySelectorAll("h1").length };
   });
 }
@@ -29,8 +29,10 @@ try {
       const page = await context.newPage(); const errors: string[] = []; page.on("pageerror", e => errors.push(e.message));
       const consoleErrors: string[] = []; page.on('console', message => { if (message.type() === 'error') consoleErrors.push(message.text()); });
       page.setDefaultTimeout(15_000); page.setDefaultNavigationTimeout(30_000);
+      console.log(platform,mode,width,"début");
       const response = await page.goto(base, { waitUntil: "networkidle" }); assert.equal(response?.status(), 200);
       const home = await scan(page); await page.screenshot({ path: path.join(dir, `${platform}-${mode}-${width}.png`), fullPage: true });
+      assert(home.overflow<=1,`Débordement mesuré : ${home.overflow}px`);assert.deepEqual(home.broken,[]);
       if (mode === "products") {
         const grid = page.locator('[data-es-type="featured-collection"]');
         const text = await grid.innerText(); assert(text.includes("Sérum Éclat") && text.includes("Brosse nettoyante")); assert(!text.includes("Rouleau de jade"));
@@ -47,6 +49,7 @@ try {
             const visible = gallery?.querySelector('.flex-active-slide img') || gallery?.querySelector('.woocommerce-product-gallery__image img');
             return (visible as HTMLImageElement)?.src === url;
           }, expectedImage, { timeout: 15_000 });
+          await page.screenshot({path:path.join(dir,`${platform}-product-${width}.png`),fullPage:true});
           await page.locator(".single_add_to_cart_button").click();
           await page.waitForLoadState("networkidle");
           await page.goto(base + "/cart/", { waitUntil: "networkidle" });
@@ -56,6 +59,7 @@ try {
         } else {
           for (let i = 0; i < 3; i++) { await page.locator(".product-variants select").nth(i).selectOption({ label: selected.options[i] }); await page.waitForTimeout(450); }
           if (selected.image) await page.waitForFunction(id => (document.querySelector('.js-qv-product-cover') as HTMLImageElement)?.src.includes('/'+id+'-'), selected.image, {timeout:15_000});
+          await page.screenshot({path:path.join(dir,`${platform}-product-${width}.png`),fullPage:true});
           await page.locator('[data-button-action="add-to-cart"]').click(); await page.waitForTimeout(900);
           await page.goto(base + "/index.php?controller=cart&action=show", { waitUntil: "networkidle" });
           const quantity = page.locator(".js-cart-line-product-quantity").first(); await quantity.fill("2"); await quantity.press("Tab"); await page.waitForTimeout(900);
@@ -92,7 +96,9 @@ try {
         assert((await page.locator("body").innerText()).match(/enregistr|Merci|Thank/i));
         await page.screenshot({ path: path.join(dir, `${platform}-contact-${width}.png`), fullPage: true });
       }
-      results.push({ platform, mode, width, home, errors, consoleErrors }); await context.close();
+      results.push({ platform, mode, width, home, errors, consoleErrors });
+      fs.writeFileSync(path.join(dir, `browser-${mode}.json`), JSON.stringify({ results, payment: "not-run", externalEmail: "disabled", paidCalls: 0 }, null, 2));
+      await context.close();
     }
   }
   fs.writeFileSync(path.join(dir, `browser-${mode}.json`), JSON.stringify({ results, payment: "not-run", externalEmail: "disabled", paidCalls: 0 }, null, 2));
