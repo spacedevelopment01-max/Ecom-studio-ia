@@ -157,6 +157,15 @@ export function assertFresh(projectId: string, s: State, step: Step) {
       409,
       "L’identité a changé hors du parcours. Revalidez votre marque.",
     );
+  if (i > 3)
+    for (const d of stageOf(s, "content").data.documents) {
+      const latest = latestContent(projectId, d.docKey);
+      if (!latest || stableHash(latest.doc) !== stableHash(d.doc))
+        throw new HttpError(
+          409,
+          "Un texte a été modifié : reprenez et validez les textes avant de créer de nouveaux visuels.",
+        );
+    }
 }
 export function blockers(projectId: string, s = stateOf(projectId)): string[] {
   if (!s) return ["Démarrez la préparation du projet."];
@@ -440,9 +449,23 @@ export function approve(
   return result;
 }
 export function editBrief(projectId: string, revision: number, input: Input) {
-  return commitState(projectId, revision, (s) =>
-    draft(s, "brief", analyzeLocally(input)),
-  );
+  return commitState(projectId, revision, (s) => {
+    const old = stageOf(s, "brief").data;
+    const offer = (x: Input) => {
+      const { target, constraints, referenceUrls, ...data } = x;
+      return data;
+    };
+    if (stableHash(offer(old.input)) === stableHash(offer(input))) {
+      const next = {
+        ...structuredClone(old),
+        input,
+        missing: old.missing.filter((x) => !x.includes("À qui cette offre")),
+      };
+      if (!input.target.trim())
+        next.missing.push("À qui cette offre s’adresse-t-elle ?");
+      draft(s, "brief", next);
+    } else draft(s, "brief", analyzeLocally(input));
+  });
 }
 export function references(
   projectId: string,
@@ -468,6 +491,7 @@ export function confirmIdentity(
 ) {
   return commitState(projectId, revision, (s) => {
     requireUpstream(s, "brand");
+    assertFresh(projectId, s, "brand");
     const st = stageOf(s, "brand");
     if (st.inputHash !== inputHash(s, "brand"))
       throw new HttpError(

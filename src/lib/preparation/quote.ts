@@ -42,6 +42,23 @@ export function createQuote(
   if (!s) throw new HttpError(409, "Parcours absent.");
   requireUpstream(s, step);
   assertFresh(projectId, s, step);
+  if (
+    step === "content" &&
+    slot &&
+    !s.stages.content?.data.pages.some(
+      (x) => x.key === slot && x.kind !== "contact",
+    )
+  )
+    throw new HttpError(400, "Page cible absente du plan validé.");
+  if (
+    action === "image" &&
+    p.business === "products" &&
+    !s.stages.brief?.data.input.photoIds.length
+  )
+    throw new HttpError(
+      409,
+      "Ajoutez une photo originale dans Produit, puis actualisez et validez les références de votre offre avant une création fidèle. Aucun appel n’a été lancé.",
+    );
   const paid = action === "logo" || action === "image" || textProviderReady();
   if (action === "analyze" && !paid)
     throw new HttpError(

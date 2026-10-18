@@ -523,6 +523,32 @@ export default function TabPreparation() {
               </Field>
             </div>
           )}
+          <div className="flex flex-wrap gap-3">
+            <a href={`/studio/${id}/produit`} className="text-sm underline">
+              {t("Ajouter des photos dans Produit", "Add photos in Product")}
+            </a>
+            <Button
+              variant="secondary"
+              onClick={() =>
+                field(
+                  "photoIds",
+                  data.assets
+                    .filter(
+                      (a) =>
+                        a.origin === "upload" &&
+                        ["original", "lifestyle"].includes(a.role),
+                    )
+                    .map((a) => a.id)
+                    .slice(0, 12),
+                )
+              }
+            >
+              {t(
+                "Actualiser mes photos de référence",
+                "Refresh my reference photos",
+              )}
+            </Button>
+          </div>
           {!!form.photoIds.length && (
             <div className="flex flex-wrap gap-3">
               {form.photoIds.map((assetId) => (

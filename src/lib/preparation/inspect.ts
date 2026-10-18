@@ -96,6 +96,18 @@ export async function inspectBrief(
       category: r.category,
       sector: r.sector,
       summary: r.summary,
+      facts: [
+        ...local.profile.facts,
+        ...r.facts
+          .filter((f) => !local.profile.facts.some((u) => u.key === f.key))
+          .map((f) => ({
+            ...f,
+            status:
+              f.status === "confirmed" && f.source === "ai"
+                ? ("inferred" as const)
+                : f.status,
+          })),
+      ],
       questions: r.questions,
       claimsToAvoid: r.claimsToAvoid,
       analyzedBy: "ai",

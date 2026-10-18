@@ -524,4 +524,36 @@ describe("Parcours amont — moteur réel, fournisseurs injectés et données is
       /forfait actif/,
     );
   });
+  it("une correction de cible conserve l’analyse existante ; les textes modifiés bloquent un devis image", async () => {
+    const f = await fixture();
+    initialize(f.pid, f.input);
+    commitState(f.pid, stateOf(f.pid)!.revision, (s) => {
+      s.stages.brief!.data.provenance = "provider";
+      s.stages.brief!.data.profile.visual.description =
+        "Observation conservée de la photo";
+    });
+    editBrief(f.pid, stateOf(f.pid)!.revision, {
+      ...f.input,
+      target: "Nouveau public",
+    });
+    expect(stateOf(f.pid)!.stages.brief!.data.profile.visual.description).toBe(
+      "Observation conservée de la photo",
+    );
+    await finish(f.pid);
+    const c = stateOf(f.pid)!.stages.content!.data.documents[0];
+    saveContentVersion(
+      f.pid,
+      c.docKey,
+      { ...c.doc, meta: { ...c.doc.meta, seoTitle: "Titre corrigé" } },
+      { verdict: "PROVISIONAL" },
+    );
+    expect(() =>
+      createQuote(
+        f.pid,
+        "media",
+        "image",
+        stateOf(f.pid)!.stages.media!.data.slots[0].key,
+      ),
+    ).toThrow(/texte a été modifié/);
+  });
 });
