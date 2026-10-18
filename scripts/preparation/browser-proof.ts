@@ -17,7 +17,10 @@ const browser = await chromium.launch({
   executablePath: "/usr/bin/chromium",
   args: ["--no-sandbox"],
 });
-const results: any[] = [];
+const results: any[] = fs.existsSync(path.join(out, "browser-proof.json"))
+  ? JSON.parse(fs.readFileSync(path.join(out, "browser-proof.json"), "utf8"))
+      .results
+  : [];
 const photo = path.join(dir, "source-synthetique.png");
 await sharp(
   Buffer.from(
@@ -27,6 +30,11 @@ await sharp(
   .png()
   .toFile(photo);
 for (const [index, c] of cfg.cases.entries()) {
+  if (
+    process.env.PREPARATION_CASE &&
+    process.env.PREPARATION_CASE !== c.business
+  )
+    continue;
   const context = await browser.newContext({
     viewport: { width: 1440, height: 960 },
     locale: "fr-FR",
@@ -74,6 +82,10 @@ for (const [index, c] of cfg.cases.entries()) {
   }
   async function shot(name: string) {
     console.log(slug, name);
+    const history = page.locator("details[open]").filter({
+      has: page.locator("summary", { hasText: "Versions enregistrées" }),
+    });
+    if (await history.count()) await history.locator("summary").click();
     const dismiss = page
       .locator("[data-tuto-nudge]")
       .getByRole("button", { name: "Masquer", exact: true });
@@ -92,22 +104,37 @@ for (const [index, c] of cfg.cases.entries()) {
     });
   }
   async function quotedClick(locator: any) {
+    const action = (r: any, name: string) => {
+      if (
+        !r.url().endsWith(`/projects/${pid}/preparation`) ||
+        r.request().method() !== "POST"
+      )
+        return false;
+      try {
+        return r.request().postDataJSON()?.action === name;
+      } catch {
+        return false;
+      }
+    };
+    const quoted = page.waitForResponse((r) => action(r, "quote"));
+    const generated = page.waitForResponse((r) => action(r, "generate"));
+    void generated.catch(() => {});
     await locator.click();
-    const dialog = page.getByRole("dialog", { name: "Confirmer cet essai" });
-    if (await dialog.count()) {
-      await dialog
+    const response = await quoted;
+    const result = await response.json();
+    if (!response.ok()) throw new Error(result.error || "Devis refusé");
+    if (result.quote.paid)
+      await page
+        .getByRole("dialog", { name: "Confirmer cet essai" })
         .getByRole("button", { name: "Confirmer cet essai", exact: true })
         .click();
-    } else {
-      await page.waitForTimeout(350);
-      if (await dialog.count())
-        await dialog
-          .getByRole("button", { name: "Confirmer cet essai", exact: true })
-          .click();
-    }
+    const started = await generated;
+    if (!started.ok())
+      throw new Error((await started.json()).error || "Préparation refusée");
     await idle();
     await page.waitForTimeout(700);
   }
+
   async function changeStep(n: number) {
     await page
       .locator("[data-preparation] ol")
@@ -117,6 +144,10 @@ for (const [index, c] of cfg.cases.entries()) {
       .click();
   }
   await page.goto(base + "/studio", { waitUntil: "domcontentloaded" });
+  if (index)
+    await page
+      .getByRole("button", { name: "Nouveau projet", exact: true })
+      .click();
   await page.waitForSelector("input[name=businessType]", { state: "attached" });
   if (index) {
     await page
@@ -263,6 +294,21 @@ for (const [index, c] of cfg.cases.entries()) {
   assert(ready, JSON.stringify((await state()).blockers));
   assert.equal(ready.provenance, "simulation");
   await shot("06-pret");
+  const downloaded = page.waitForEvent("download");
+  await page
+    .getByRole("button", {
+      name: "Télécharger les données préparées",
+      exact: true,
+    })
+    .click();
+  const download = await downloaded;
+  await download.saveAs(path.join(out, `${slug}-download.json`));
+  assert.deepEqual(
+    JSON.parse(
+      fs.readFileSync(path.join(out, `${slug}-download.json`), "utf8"),
+    ),
+    ready,
+  );
   await page.reload({ waitUntil: "domcontentloaded" });
   await page.waitForSelector("[data-preparation]");
   assert((await state()).ready);
@@ -277,6 +323,15 @@ for (const [index, c] of cfg.cases.entries()) {
   const mp = await mobile.newPage();
   await mp.goto(page.url(), { waitUntil: "domcontentloaded" });
   await mp.waitForSelector("[data-preparation]");
+  await mp.waitForSelector("#ecs-splash", { state: "detached" });
+  await mp.evaluate(async () => {
+    for (const image of document.images) {
+      image.loading = "eager";
+      await image.decode().catch(() => {});
+    }
+    await document.fonts.ready;
+    scrollTo({ top: 0, behavior: "instant" });
+  });
   await mp.screenshot({
     path: path.join(out, `${slug}-08-mobile.png`),
     fullPage: true,
@@ -307,11 +362,16 @@ for (const [index, c] of cfg.cases.entries()) {
     pid,
     readyRevision: ready.revision,
     persistedAfterReload: true,
+    downloadedContractMatchesApi: true,
     staleAfterChange: true,
     overflowMobile: overflow,
     errors,
   });
   await context.close();
+  fs.writeFileSync(
+    path.join(out, "browser-proof.json"),
+    JSON.stringify({ simulation: true, results }, null, 2),
+  );
 }
 await browser.close();
 fs.writeFileSync(

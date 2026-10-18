@@ -1,4 +1,6 @@
 import type { StartInput } from "../project-start";
+import { loadProject } from "../projects";
+import { mergeServiceProfile } from "../engine/local";
 import { all } from "../db";
 import { serviceProfileFromInput } from "../project-start";
 import { initialize } from "./engine";
@@ -17,6 +19,9 @@ export function startPreparation(projectId: string, input: StartInput) {
     ).map((a) => a.id),
     referenceUrls: [],
     price: input.price || "",
-    services: serviceProfileFromInput(input),
+    services: mergeServiceProfile(
+      serviceProfileFromInput(input),
+      loadProject(projectId).services,
+    ),
   });
 }
