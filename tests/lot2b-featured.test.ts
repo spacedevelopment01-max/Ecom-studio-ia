@@ -20,8 +20,11 @@ describe("Produit à la une — section réutilisable branchée sur la source de
   const {spec}=await editorialProject(user.id,"products");
   expect(validateSpec(spec)).toEqual([]);
   const featured=spec.templates.index.sections.featured;expect(featured.type).toBe("featured-purchase");expect(featured.settings.purchase_source).toBe("product.editorial:main");
+  expect(spec.templates.index.order.slice(0,3)).toEqual(["opening","presence","featured"]);// la section produit suit les premiers repères
+  expect(spec.templates.index.sections.opening.settings.copy_surface).toBe(false);
   const html=(await renderPage({spec,base:"",cart:[]},"/",new URLSearchParams())).html;
   expect(html).toContain("data-featured-purchase");expect(html).toContain("Lampe nomade ORBE");expect(html).toContain("Voir la fiche complète");
+  expect(html).toContain("ed-opening--clear");expect(html).toContain("data-purchase-summary-label");expect(html).toContain("data-purchase-unit-price");expect(html).toContain('"total":"Total"');
   expect((html.match(/data-fp-slide/g)??[]).length).toBe(1);// sans pack : un seul cadre « visuel attendu », aucune image empruntée
   expect((html.match(/data-quantity="/g)??[]).length).toBe(4);expect(html).toContain("data-gift");expect(html).toContain('data-fp-link');
   expect((html.match(/<h1[\s>]/g)??[])).toHaveLength(1);

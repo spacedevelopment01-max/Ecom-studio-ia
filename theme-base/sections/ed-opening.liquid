@@ -1,5 +1,5 @@
 {% assign s = section.settings %}
-<section class="ed-section ed-opening ed-opening--{{ s.layout }} color-{{ s.color_scheme }}"{% if s.anchor != blank %} id="{{ s.anchor | handleize }}"{% endif %} data-ed-motion="{{ s.motion }}" style="--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;">
+<section class="ed-section ed-opening ed-opening--{{ s.layout }}{% if s.copy_surface == false %} ed-opening--clear{% endif %} color-{{ s.color_scheme }}"{% if s.anchor != blank %} id="{{ s.anchor | handleize }}"{% endif %} data-ed-motion="{{ s.motion }}" style="--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;">
 <div class="ed-shell">
  <header class="ed-opening__copy">{% if s.label != blank %}<p class="ed-kicker">{{ s.label | escape }}</p>{% endif %}
  <{{ s.heading_tag }} class="ed-title ed-opening__title" data-ed-title>{{ s.heading | escape | newline_to_br }}</{{ s.heading_tag }}>
@@ -163,6 +163,13 @@
         }
       ],
       "default": "journal"
+    },
+    {
+      "type": "checkbox",
+      "id": "copy_surface",
+      "label": "Voile clair sous le texte",
+      "info": "Décoché : le texte se pose directement sur la zone calme de la photographie.",
+      "default": true
     },
     {
       "type": "select",

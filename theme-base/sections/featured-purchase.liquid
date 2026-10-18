@@ -50,7 +50,8 @@
     {%- if fp_product.media.size > 1 -%}
       <div class="fp__thumbs" role="list" aria-label="{{ 'products.product.media' | t }}">
         {%- for media in fp_product.media limit: gallery_limit -%}
-          <button type="button" class="fp__thumb{% if media.id == first_media.id %} is-active{% endif %}" data-fp-go="{{ media.id }}" aria-label="{{ 'products.product.media_n' | t: n: forloop.index }}"{% if media.id == first_media.id %} aria-current="true"{% endif %}>{{ media.preview_image | image_url: width: 240 | image_tag: loading: 'lazy', alt: '' }}</button>
+          {%- assign thumb_key = '|' | append: media.id -%}
+          <button type="button" class="fp__thumb{% if packshots contains thumb_key %} fp__thumb--packshot{% endif %}{% if media.id == first_media.id %} is-active{% endif %}" data-fp-go="{{ media.id }}" aria-label="{{ 'products.product.media_n' | t: n: forloop.index }}"{% if media.id == first_media.id %} aria-current="true"{% endif %}>{{ media.preview_image | image_url: width: 240 | image_tag: loading: 'lazy', alt: '' }}</button>
         {%- endfor -%}
       </div>
     {%- endif -%}

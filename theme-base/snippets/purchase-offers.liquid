@@ -30,12 +30,12 @@
     <span><strong>{{ gift_product.title | escape }}</strong><span>{{ gift.settings.quantity }} {{ 'purchase.gift' | t }} · <span data-gift-state>{{ 'purchase.locked' | t }} {{ gift.settings.threshold }} {{ 'purchase.items' | t }}</span></span></span>
   </div>{% endif %}
  {% endif %}{% endfor %}</div>
- <p class="purchase__summary" aria-live="polite"><span>{{ 'purchase.summary' | t }}</span><strong data-purchase-total></strong></p>
+ <p class="purchase__summary" aria-live="polite"><span><span data-purchase-summary-label>{{ 'purchase.summary' | t }}</span><small data-purchase-unit-price></small></span><strong data-purchase-total></strong></p>
  <button class="es-button purchase__submit" type="button" data-purchase-add>{{ 'purchase.add' | t }}</button>
  <p class="es-form-error" role="alert" data-purchase-error hidden></p>
  <noscript><p>{{ 'purchase.configure' | t }}</p>{% render 'product-buy', product: product, section_id: section_id, show_quantity: true, show_dynamic_checkout: false %}</noscript>
  {% if request.host == 'apercu' %}<p class="purchase__notice">{{ 'purchase.demo' | t }}</p>{% endif %}
  <script type="application/json" data-purchase-variants>{{ product.variants | json }}</script>
- <script type="application/json" data-purchase-strings>{"unit":{{ 'purchase.unit' | t | json }},"save":{{ 'purchase.save' | t | json }},"included":{{ 'purchase.included' | t | json }},"locked":{{ 'purchase.locked' | t | json }},"items":{{ 'purchase.items' | t | json }},"unavailable":{{ 'purchase.unavailable' | t | json }}}</script>
+ <script type="application/json" data-purchase-strings>{"unit":{{ 'purchase.unit' | t | json }},"save":{{ 'purchase.save' | t | json }},"included":{{ 'purchase.included' | t | json }},"locked":{{ 'purchase.locked' | t | json }},"items":{{ 'purchase.items' | t | json }},"unavailable":{{ 'purchase.unavailable' | t | json }},"total":{{ 'purchase.total' | t | json }},"choose_options":{{ 'purchase.choose_options' | t | json }},"item":{{ 'purchase.item' | t | json }}}</script>
 </div>
 {% else %}{% render 'product-buy', product: product, section_id: section_id, show_quantity: true, show_dynamic_checkout: false %}{% endif %}

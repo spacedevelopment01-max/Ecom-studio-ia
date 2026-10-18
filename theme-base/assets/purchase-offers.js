@@ -21,10 +21,14 @@
     retained = Array.from(area.querySelectorAll('select')).map(function (s) { return s.value; });
     radios.forEach(function (r) { var p = priceFor(r), card = r.closest('label'); card.classList.toggle('is-selected', r === selected); card.querySelector('[data-offer-total]').textContent = p ? money(p.total) : strings.unavailable; card.querySelector('[data-offer-unit]').textContent = p ? money(Math.round(p.total / p.count)) + ' ' + strings.unit : ''; var save = card.querySelector('[data-offer-saving]'); save.hidden = !p || p.base <= p.total; save.textContent = p && p.base > p.total ? strings.save + ' ' + money(p.base - p.total) : ''; });
     var p = priceFor(selected); box.querySelector('[data-purchase-total]').textContent = p ? money(p.total) : strings.unavailable;
-    box.dispatchEvent(new CustomEvent('es:offer-total',{bubbles:true,detail:{total:p?money(p.total):strings.unavailable,count:p?p.count:0,offer:selected.value,label:(selected.closest('label').querySelector('.purchase__offer-copy>strong')||{}).textContent||''}}));
+    var selectedLabel = (selected.closest('label').querySelector('.purchase__offer-copy>strong') || {}).textContent || '';
+    var summaryLabel = box.querySelector('[data-purchase-summary-label]'), unitNode = box.querySelector('[data-purchase-unit-price]');
+    if (summaryLabel && strings.total) summaryLabel.textContent = strings.total + (selectedLabel ? ' · ' + selectedLabel : '');
+    if (unitNode) unitNode.textContent = p ? money(Math.round(p.total / p.count)) + ' ' + strings.unit + (p.count > 1 ? ' × ' + p.count : '') : '';
     var counts = {}; retained.forEach(function(id) { counts[id] = (counts[id] || 0) + 1; });
     button.disabled = !p || !retained.length || retained.some(function (id) { var v = variants.find(function (v) { return String(v.id) === id; }); return !v || !v.available || (v.inventory_management && v.inventory_quantity < counts[id]); });
     box.querySelectorAll('[data-gift]').forEach(function (g) { var eligible = +selected.dataset.quantity >= +g.dataset.threshold, available = g.dataset.available === 'true' && (!g.dataset.stock || +g.dataset.stock >= +g.dataset.giftQuantity); g.classList.toggle('is-unlocked', eligible && available); g.querySelector('[data-gift-state]').textContent = !available ? strings.unavailable : eligible ? strings.included : strings.locked + ' ' + g.dataset.threshold + ' ' + strings.items; });
+    box.dispatchEvent(new CustomEvent('es:offer-total',{bubbles:true,detail:{total:p?money(p.total):strings.unavailable,unit:p?money(Math.round(p.total/p.count))+' '+strings.unit:'',count:p?p.count:0,offer:selected.value,label:selectedLabel,ready:!button.disabled}}));
    }
    function announce() { var v = variants.find(function(v){return String(v.id)===retained[0];}); box.dispatchEvent(new CustomEvent('es:offer-variant',{bubbles:true,detail:v})); box.querySelectorAll('[data-finish-id]').forEach(function(r){r.checked=r.value===retained[0];}); }
    var finishes=box.querySelector('[data-purchase-finishes]'),colorNode=box.querySelector('[data-purchase-colors]'),colors={};

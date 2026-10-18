@@ -363,7 +363,9 @@
     "view_product": "Voir la fiche complète",
     "unit_price": "prix à l’unité",
     "bar_total": "Total de la sélection",
-    "bar_action": "Voir ma sélection"
+    "bar_action": "Voir ma sélection",
+    "total": "Total",
+    "choose_options": "Choisir mes options"
   },
   "editorial": {
     "pending_media": "Visuel à importer"
