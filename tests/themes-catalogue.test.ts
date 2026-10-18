@@ -103,7 +103,9 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
 
   it("toutes les sections de la bibliothèque servent dans un thème ou une composition de référence (sauf les deux conteneurs techniques)", async () => {
     const used = new Set<string>();
-    const add = (spec: Spec) => { for (const t of Object.values(spec.templates)) for (const id of t.order) used.add(t.sections[id].type); };
+    // Gabarits ET groupes (en-tête, pied de page) : les composants structurels de la bibliothèque (catégorie « Structure »)
+    // vivent dans les groupes ou dans le gabarit général (panier latéral).
+    const add = (spec: Spec) => { for (const t of [...Object.values(spec.templates), ...Object.values((spec as { groups?: Record<string, { order: string[]; sections: Record<string, { type: string }> }> }).groups ?? {})]) for (const id of t.order) if (t.sections[id]) used.add(t.sections[id].type); };
     for (const d of DIRECTIONS) {
       add(products[d.id]);
       add(services[d.id]);
@@ -129,6 +131,8 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
     for (const kind of ["fraise", "onde"] as const) add((await conversionProject(user.id, kind)).spec);
     // Conteneurs vides par nature : code Liquid du marchand et blocs d'applications (rien à composer sans lui).
     const outside = new Set(["custom-liquid", "apps"]);
+    // Panier latéral : rendu par le gabarit général (layout/theme.liquid) sur toutes les pages, pas une instance de gabarit.
+    expect(fs.readFileSync(path.join(process.cwd(), "theme-base/layout/theme.liquid"), "utf8")).toMatch(/section ['"]cart-drawer['"]/); outside.add("cart-drawer");
     const missing = SECTION_LIBRARY.map((e) => e.type).filter((t) => !outside.has(t) && !used.has(t));
     expect(missing).toEqual([]);
   });
