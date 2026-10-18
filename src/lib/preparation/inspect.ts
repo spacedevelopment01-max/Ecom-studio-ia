@@ -1,3 +1,4 @@
+import { apiEvidence, assertAnalysisRoute } from "./evidence";
 /** Analyse réelle de la description, du lien et des originaux. Proposition conservée avant validation client. */
 import { aiAnalyzeProduct, aiAnalyzeService } from "../ai/tasks";
 import { assertAiAllowed } from "../ai/access";
@@ -20,6 +21,7 @@ export async function inspectBrief(
     );
   assertAiAllowed(p.userId, p.id);
   const input = b.input;
+  assertAnalysisRoute(input.photoIds.length > 0);
   const imported = input.offerUrl
     ? await ctx.step("offer-source", () => importLink(input.offerUrl!))
     : null;
@@ -34,7 +36,7 @@ export async function inspectBrief(
         },
       }
     : null;
-  const photos = input.photoIds.slice(0, 6).map((id) => {
+  const photos = input.photoIds.map((id) => {
     const a = getAsset(id);
     if (
       !a ||
@@ -62,6 +64,7 @@ export async function inspectBrief(
       input.description,
       `Cible indiquée : ${input.target}`,
       `Consignes exactes : ${input.constraints}`,
+      `Réponses déjà données par le client (à préserver) : ${JSON.stringify(b.profile.questions.filter(q => q.answer?.trim()))}`,
     ].join("\n"),
     providedName: input.offerName,
     providedBrand: input.brandName,
@@ -103,7 +106,7 @@ export async function inspectBrief(
           .map((f) => ({
             ...f,
             status:
-              f.status === "confirmed" && f.source === "ai"
+              f.status === "confirmed" && ["ai", "photo"].includes(f.source)
                 ? ("inferred" as const)
                 : f.status,
           })),
@@ -140,7 +143,7 @@ export async function inspectBrief(
           .map((f) => ({
             ...f,
             status:
-              f.status === "confirmed" && f.source === "ai"
+              f.status === "confirmed" && ["ai", "photo"].includes(f.source)
                 ? ("inferred" as const)
                 : f.status,
           })),
@@ -152,7 +155,20 @@ export async function inspectBrief(
       analyzedBy: "ai",
     };
   }
+  // Une nouvelle lecture ne peut effacer une réponse ni un fait explicitement confirmé par le client.
+  const answered = b.profile.questions.filter(q => q.answer?.trim());
+  result.profile.questions = [
+    ...result.profile.questions.map(q => {
+      const prior = answered.find(a => a.id === q.id || (a.factKey && a.factKey === q.factKey));
+      return prior ? { ...q, answer: prior.answer } : q;
+    }),
+    ...answered.filter(a => !result.profile.questions.some(q => q.id === a.id || (a.factKey && a.factKey === q.factKey))),
+  ];
+  const confirmed = b.profile.facts.filter(f => f.source === "user" && f.status === "confirmed");
+  result.profile.facts = [...confirmed, ...result.profile.facts.filter(f => !confirmed.some(c => c.key === f.key))];
+  result.execution = apiEvidence(p.id, base.usageKey, photos.length > 0);
   result.missing = [
+    ...result.profile.questions.filter(q => q.required && !q.answer?.trim()).map(q => q.question),
     !result.profile.name.trim() || result.profile.nameStatus === "unknown"
       ? "Précisez le nom de cette offre."
       : "",

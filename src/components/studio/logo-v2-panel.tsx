@@ -1,4 +1,6 @@
 "use client";
+import { DirectionCards } from "./direction-cards";
+import type { DirectionSeries } from "@/lib/logo-v2/direction-series";
 /**
  * Logo V2 : directions créatives (territoire, style, concept, pourquoi), logo complet dessiné par l'IA d'images (image
  * originale) ou construit, note du contrôle, choix. Le client choisit un style ou laisse l'IA en proposer plusieurs.
@@ -15,6 +17,7 @@ import { useBudgetPct } from "../billing-client";
 
 type Proposal = {
   id: string;
+  seriesManaged?: boolean;
   url?: string;
   territory: { name: string; concept: string; why: string; markType: string; composition: string; typography: string; distinctive: string; source: "ai" | "local"; style?: string | null; descriptor?: string | null };
   artwork?: { textCorrected: boolean; originalUrl: string | null; provider: string | null; costMicro: number | null; fix: string | null; issues: string[]; choosable: boolean; previous: string | null } | null;
@@ -29,6 +32,8 @@ type LiveDir = { id: string; name: string; style: string | null; status: "waitin
 type Live = { jobId: string; startedAt: number; updatedAt: number; stage: "prepare" | "images" | "save" | "done" | "failed"; art: string | null; directions: LiveDir[]; error?: string };
 type JobRow = { id: string; type: string; status: string; progress: number; message: string; error: string | null; created_at: number; updated_at: number; stalled?: boolean };
 type View = {
+  series?: DirectionSeries[];
+  rights?: { used: number; canRenew: boolean; partial: boolean };
   run: { id: string; at?: number; ai: string; art?: string | null; style?: string; stoppedByCostCap: boolean; best?: string | null; territories: { name: string }[]; rejected: { name: string; reason: string }[]; failures?: { id: string; name: string; style: string | null; reason: string }[]; notes?: string[] } | null;
   job?: JobRow | null;
   live?: Live | null;
@@ -119,7 +124,7 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
     const q = await quote();
     if (!q) return;
     const msg = !q.ai || !q.quote
-      ? t("Créer de nouvelles directions de logo ? Sans IA active, elles sont construites par le studio (gratuit).", "Create new logo directions? Without active AI, they are built by the studio (free).")
+      ? t("Fournisseur de dessin requis indisponible : les directions restent en attente, sans remplacement local.", "Required artwork provider unavailable: directions stay pending, without a local substitute.")
       : q.quote.mode === "artwork"
         ? t(
             `Créer ${q.quote.creations} logos complets dessinés par l'IA d'images ? Devis : ${eur(q.quote.probableEur ?? q.quote.maxEur)} (${q.quote.images} images et leurs relectures).${q.quote.relayEur ? ` Si le contrôle juge un logo insuffisant, OpenAI le redessine : ${eur(q.quote.relayEur)} de plus par logo repris, seulement si c'est nécessaire.` : ""} Plafond : ${eur(q.quote.maxEur)}, rien ne sera utilisé au-delà ; seul ce qui est vraiment utilisé est décompté.`,
@@ -127,7 +132,10 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
           )
         : t(`Créer ${q.quote.creations} directions de logo construites ? Devis : ${eur(q.quote.maxEur)} au maximum (relectures par l'IA) ; seul ce qui est vraiment utilisé est décompté. C'est aussi le plafond.`, `Create ${q.quote.creations} built logo directions? Quote: ${eur(q.quote.maxEur)} at most (AI reviews); only what is actually used is counted. This is also the cap.`);
     if (!window.confirm(msg)) return;
-    post({ action: "generate", style }, t("Directions créatives lancées : quelques minutes.", "Creative directions started: a few minutes."), "gen");
+    const partial = data?.rights?.partial;
+    const feedback = partial ? window.prompt(t("Quel défaut corriger dans les directions manquantes ? Les directions acceptées sont réutilisées.", "What should be corrected in missing directions? Accepted directions are reused."), "") : undefined;
+    if (partial && (!feedback || feedback.trim().length < 8)) return;
+    post({ action: "generate", style, renew: !!data?.rights?.used && !partial, feedback }, t("Directions créatives lancées : quelques minutes.", "Creative directions started: a few minutes."), "gen");
   };
   const redraw = async (p: Proposal) => {
     const q = await quote(p.id);
@@ -183,13 +191,13 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
                 {!!d.artwork?.issues.length && <p className="mt-1 text-xs text-muted">{d.artwork.issues.join(" ; ")}</p>}
                 {d.artwork?.fix && <p className="mt-1 text-xs text-ink-2"><strong>{t("À corriger dans une nouvelle version :", "To fix in a new version:")}</strong> {d.artwork.fix}</p>}
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {d.artwork?.choosable && <Button size="sm" variant="secondary" icon={<Check className="size-4" />} loading={busy === d.id} onClick={() => { if (window.confirm(t("Ce logo n'a pas atteint le niveau du contrôle. Le choisir quand même ?", "This logo did not reach the check's level. Choose it anyway?"))) post({ action: "choose", assetId: d.id }, t("Logo choisi : déclinaisons et charte en préparation.", "Logo chosen: variations and guidelines being prepared."), d.id); }}>{t("Choisir quand même", "Choose anyway")}</Button>}
-                  <Button size="sm" variant="ghost" icon={<RefreshCw className="size-4" />} loading={busy === `v${d.id}`} onClick={() => redraw(d)}>{t("Nouvelle version", "New version")}</Button>
+                  {d.artwork?.choosable && !d.seriesManaged && <Button size="sm" variant="secondary" icon={<Check className="size-4" />} loading={busy === d.id} onClick={() => { if (window.confirm(t("Ce logo n'a pas atteint le niveau du contrôle. Le choisir quand même ?", "This logo did not reach the check's level. Choose it anyway?"))) post({ action: "choose", assetId: d.id }, t("Logo choisi : déclinaisons et charte en préparation.", "Logo chosen: variations and guidelines being prepared."), d.id); }}>{t("Choisir quand même", "Choose anyway")}</Button>}
+                  {!d.seriesManaged && <Button size="sm" variant="ghost" icon={<RefreshCw className="size-4" />} loading={busy === `v${d.id}`} onClick={() => redraw(d)}>{t("Nouvelle version", "New version")}</Button>}
                 </div>
               </div>
   );
   // JAMAIS AUCUNE DIRECTION : sans proposition validée, le meilleur logo obtenu est mis en avant (signalé non validé).
-  const bestItem = !proposals.length ? (data?.discarded.find((d) => d.id === data?.run?.best && d.url) ?? null) : null;
+  const bestItem = !data?.series?.length && !proposals.length ? (data?.discarded.find((d) => d.id === data?.run?.best && d.url) ?? null) : null;
   return (
     <Card className="min-w-0 p-5 sm:p-7">
       <SectionTitle
@@ -200,14 +208,15 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
             <select id="logo-style" value={style} onChange={(e) => setStyle(e.target.value)} className="h-9 w-full min-w-0 max-w-full truncate rounded-full border border-line bg-paper px-3 text-sm sm:w-auto">
               {["auto", ...(data?.styles ?? Object.keys(STYLE).filter((k) => k !== "auto"))].map((k) => <option key={k} value={k}>{t(...(STYLE[k] ?? [k, k]))}</option>)}
             </select>
-            <Button size="sm" variant="secondary" icon={<Sparkles className="size-4" />} loading={busy === "gen"} onClick={generate}>
-              {proposals.length ? t("Nouvelles directions", "New directions") : t("Créer les directions", "Create directions")}
+            <Button size="sm" variant="secondary" icon={<Sparkles className="size-4" />} loading={busy === "gen"} disabled={!!data?.rights?.used && !data.rights.partial && !data.rights.canRenew} onClick={generate}>
+              {data?.rights?.partial ? t("Reprendre la série incomplète", "Resume incomplete series") : data?.rights?.used || proposals.length ? t("Nouvelles directions", "New directions") : t("Créer les directions", "Create directions")}
             </Button>
           </div>
         }
       >
-        {t("Comme en agence : plusieurs directions vraiment différentes (illustré, minimaliste, typographique, monogramme, emblème, texturé, dégradés…). Avec un modèle d'images capable d'écrire le nom, chaque direction est un logo complet dessiné par l'IA : l'image originale est gardée telle quelle, le nom exact est vérifié (et réécrit par le studio s'il est faux), et le contrôle juge selon le style. Sinon, le logo est construit avec de vraies polices.", "Like an agency: several genuinely different directions (illustrated, minimal, typographic, monogram, emblem, textured, gradients…). With an image model able to write the name, each direction is a full logo drawn by the AI: the original image is kept as is, the exact name is checked (and rewritten by the studio if wrong), and the review judges by style. Otherwise the logo is built with real fonts.")}
+        {t("Comme en agence : plusieurs directions vraiment différentes (illustré, minimaliste, typographique, monogramme, emblème, texturé, dégradés…). Avec un modèle d'images capable d'écrire le nom, chaque direction est un logo complet dessiné par l'IA : l'image originale est gardée telle quelle, le nom exact est vérifié (et réécrit par le studio s'il est faux), et le contrôle juge selon le style. Si le modèle requis est indisponible, la série reste en attente sans remplacement local.", "Like an agency: several genuinely different directions (illustrated, minimal, typographic, monogram, emblem, textured, gradients…). With an image model able to write the name, each direction is a full logo drawn by the AI: the original image is kept as is, the exact name is checked (and rewritten by the studio if wrong), and the review judges by style. If the required model is unavailable, the series stays pending without a local substitute.")}
       </SectionTitle>
+      {data?.series?.map(series => <DirectionCards key={series.id} series={series} selected={data.applied} disabled={!!busy || logoActive} onChoose={assetId => post({ action: "choose", assetId }, t("Direction choisie : charte et déclinaisons en préparation.", "Selected direction: preparing guidelines and variants."), assetId)} />)}
       {applying && <JobProgress job={applying} className="mb-4" />}
       {data?.job && <SeriesProgress job={data.job} live={data.live ?? null} runId={data.run?.id ?? null} runAt={data.run?.at ?? null} onStop={() => { if (window.confirm(t("Arrêter la création des logos ? Les images déjà reçues restent enregistrées ; plus rien n'est dépensé.", "Stop creating the logos? Images already received stay saved; nothing more is spent."))) post({ action: "stop" }, t("Création arrêtée : vous pouvez relancer.", "Creation stopped: you can start again."), "stop"); }} stopping={busy === "stop"} />}
       {data?.tagline && !data.tagline.validated && <p className="mb-3 text-xs text-muted">{t(`Slogan « ${data.tagline.text} » : proposition à valider dans Identité. Il n'apparaîtra dans un logo qu'une fois validé par vous.`, `Slogan "${data.tagline.text}": a proposal to validate in Identity. It will only appear in a logo once you validate it.`)}</p>}

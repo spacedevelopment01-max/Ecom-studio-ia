@@ -1,4 +1,5 @@
 import { it, expect, vi } from "vitest";
+vi.mock("@/lib/preparation/evidence", async original => ({ ...await original<object>(), assertAnalysisRoute: () => {}, apiEvidence: () => ({ provider: "simulation", model: "injected", usageKey: "test", vision: true, at: 1 }) }));
 const analysis = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/ai/tasks", async (original) => ({
   ...(await original<object>()),

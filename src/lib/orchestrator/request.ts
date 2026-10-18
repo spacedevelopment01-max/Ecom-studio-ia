@@ -2,6 +2,8 @@
 export const MAX_REQUEST_CHARS = 32000;
 export type ChoiceReference = { kind: string; id: string; version: string | number; ordinal?: number; selected?: boolean };
 export type RequestScope = {
+  choiceRequested?: boolean;
+  renewDirections?: boolean;
   original: string;
   actionable: string;
   restrictions: string[];
@@ -13,7 +15,7 @@ export type RequestScope = {
   titleEdit?: { pageKey: "home"; text: string };
 };
 export const normalizeRequest = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/’/g, "'").toLowerCase();
-const objects = (s: string) => [...new Set((s.match(/\b(logo|marque|identite|palette|style|titre|textes?|images?|photos?|site|boutique|video|publier|publication)\b/g) || []))];
+const objects = (s: string) => [...new Set((s.match(/\b(logo|marque|identite|palette|style|direction|titre|textes?|images?|photos?|site|boutique|video|publier|publication)\b/g) || []).map(x => x === "direction" ? "style" : x))];
 export function requestScope(original: string, choices: ChoiceReference[] = []): RequestScope {
   const scope: RequestScope = { original, actionable: "", restrictions: [], preserved: [], references: [], informational: false, narrow: false };
   if (original.length > MAX_REQUEST_CHARS) return { ...scope, clarification: `Votre demande dépasse ${MAX_REQUEST_CHARS} caractères. Divisez-la en demandes explicites ; aucune consigne n’a été exécutée ni tronquée.` };
@@ -34,12 +36,14 @@ export function requestScope(original: string, choices: ChoiceReference[] = []):
   }
   scope.preserved = [...new Set(scope.preserved)];
   scope.actionable = active.join(". ");
+  if (/\b(renouvelle|renouveler|recree|regenere|nouvelle serie|nouvelles directions)\b/.test(scope.actionable) && /\b(directions?|logos?|identite|serie)\b/.test(scope.actionable)) scope.renewDirections = true;
   const referenceText = [scope.actionable, ...scope.restrictions].join(" ");
-  if (/\b(proposition|option|piste)\b/.test(referenceText) || (/\b(ce style|cette identite|ce logo)\b/.test(referenceText) && /\b(utilise|choisis|prends|selectionne|applique|garde|keep|use|select)\b/.test(referenceText))) {
-    const ordinal = /\b(cinquieme|fifth|5e)\b/.test(referenceText) ? 5 : /\b(quatrieme|fourth|4e)\b/.test(referenceText) ? 4 : /\b(deuxieme|seconde|second|2e|2eme)\b/.test(referenceText) ? 2 : /\b(premiere|premier|first|1ere)\b/.test(referenceText) ? 1 : /\b(troisieme|third|3e)\b/.test(referenceText) ? 3 : undefined;
-    const kind = /\b(style|identite)\b/.test(referenceText) ? "style" : /\blogo\b/.test(referenceText) ? "logo" : /\b(strategie|angle)\b/.test(referenceText) ? "strategy" : undefined;
+  if (!scope.renewDirections && (/\b(proposition|option|piste|direction)\b/.test(referenceText) || (/\b(ce style|cette identite|ce logo)\b/.test(referenceText) && /\b(utilise|choisis|prends|selectionne|applique|garde|keep|use|select)\b/.test(referenceText)))) {
+    const numbered = /\b(?:direction|logo|proposition|option|piste)\s*(?:n[°o]\s*)?([1-5])\b/.exec(referenceText);
+    const ordinal = numbered ? Number(numbered[1]) : /\b(cinquieme|fifth|5e)\b/.test(referenceText) ? 5 : /\b(quatrieme|fourth|4e)\b/.test(referenceText) ? 4 : /\b(deuxieme|seconde|second|2e|2eme)\b/.test(referenceText) ? 2 : /\b(premiere|premier|first|1ere)\b/.test(referenceText) ? 1 : /\b(troisieme|third|3e)\b/.test(referenceText) ? 3 : undefined;
+    const kind = /\b(style|identite|direction)\b/.test(referenceText) ? "style" : /\blogo\b/.test(referenceText) ? "logo" : /\b(strategie|angle)\b/.test(referenceText) ? "strategy" : undefined;
     const candidates = choices.filter(c => (!kind || c.kind === kind) && (ordinal ? c.ordinal === ordinal : c.selected));
-    if (candidates.length === 1) scope.references = candidates;
+    if (candidates.length === 1) { scope.references = candidates; if (/\b(choisis|choisir|selectionne|applique|prends|choose|select|use|utilise)\b/.test(scope.actionable)) scope.choiceRequested = true; }
     else scope.clarification = "À quelle proposition faites-vous référence ? Choisissez son identifiant et sa version dans le projet.";
     // Réutiliser un choix est distinct d'en générer un nouveau : aucune nouvelle génération implicite.
     if (/\b(utilise|choisis|prends|selectionne|applique|garde|keep|use|select)\b/.test(referenceText) && !/\b(cree|genere|reecris|redige)\b/.test(scope.actionable)) {

@@ -1,3 +1,4 @@
+import { directionSeries, seriesRights, currentSeries } from "@/lib/logo-v2/direction-series";
 import { z } from "zod";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
@@ -40,15 +41,18 @@ function view(projectId: string) {
   const p = loadProject(projectId);
   // Slogan : écrit dans un logo seulement s'il est validé ; sinon c'est une proposition (jamais une info du client).
   const tagline = p.brand?.tagline?.trim() ? { text: p.brand.tagline.trim(), validated: isLocked(p.brand, "tagline") } : null;
-  if (!run) return { run: null, proposals: [], studio: [], discarded: [], applied: null, tagline, styles: LOGO_STYLES, ...progressView(projectId) };
+  const series = directionSeries(projectId), rights = seriesRights(projectId);
+  if (!run) return { series, rights, run: null, proposals: [], studio: [], discarded: [], applied: p.brand?.logo.proposalId ?? null, tagline, styles: LOGO_STYLES, ...progressView(projectId) };
   const rows = all<{ id: string; role: string; meta: string }>("SELECT id, role, meta FROM assets WHERE project_id = ? AND role IN ('logo-v2','logo-v2-studio','logo-v2-trial') AND json_extract(meta, '$.run') = ? AND deleted_at IS NULL ORDER BY created_at", projectId, run.runId);
   const originals = new Map(all<{ id: string; source_asset_id: string }>("SELECT id, source_asset_id FROM assets WHERE project_id = ? AND role = 'logo-v2-original' AND deleted_at IS NULL", projectId).map((o) => [o.source_asset_id, o.id] as const));
   const item = (r: { id: string; meta: string }) => {
     const m = json<any>(r.meta, {});
+    const seriesManaged = series.some(s => s.requestKeys.includes(m.run));
     const t = m.territory ?? {};
     const art = m.artwork ?? null;
     return {
       id: r.id,
+      seriesManaged,
       url: `/api/files/${r.id}`,
       territory: { name: t.name, concept: t.concept, why: t.whyItFits, markType: t.markType, composition: t.composition, typography: t.typography?.style, distinctive: t.distinctive, source: t.source, style: t.style ?? null, descriptor: t.descriptor ?? null },
       // Logo complet de l'IA d'images : original conservé (avant réécriture du nom), défauts relevés, choix possible.
@@ -62,11 +66,12 @@ function view(projectId: string) {
     };
   };
   return {
+    series, rights,
     run: { id: run.runId, at: run.at, ai: run.ai, art: run.art ?? null, style: run.style ?? "auto", stoppedByCostCap: !!run.stoppedByCostCap, best: run.best ?? null, territories: run.territories, rejected: run.rejected ?? [], failures: run.failures ?? [], notes: (run.notes ?? []).slice(0, 12) },
     ...progressView(projectId),
     tagline,
     styles: LOGO_STYLES,
-    proposals: rows.filter((r) => r.role === "logo-v2").map(item),
+    proposals: rows.filter((r) => r.role === "logo-v2").map(item).filter(r => !r.seriesManaged),
     // Versions du studio (contrôle local, sans relecture IA) : proposées à part, jamais présentées comme finales.
     studio: rows.filter((r) => r.role === "logo-v2-studio").map(item),
     // Proposition appliquée actuellement (création complète ou choix du client).
@@ -84,7 +89,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  const b = await body(req, z.object({ action: z.enum(["generate", "choose", "reject", "redraw", "quote", "stop"]), assetId: z.string().max(40).optional(), style: z.enum([...LOGO_STYLES, "auto"]).optional(), feedback: z.string().max(400).optional() }));
+  const b = await body(req, z.object({ action: z.enum(["generate", "choose", "reject", "redraw", "quote", "stop"]), assetId: z.string().max(40).optional(), style: z.enum([...LOGO_STYLES, "auto"]).optional(), feedback: z.string().max(400).optional(), renew: z.boolean().optional() }));
   if (!p.brand) throw new HttpError(409, L("La marque n'est pas encore créée.", "The brand has not been created yet."));
   // « Arrêter » : la création de logo en cours (ou bloquée, studio arrêté) est annulée ; l'onglet est libéré. Les images
   // déjà reçues restent enregistrées ; aucune dépense ne continue (le worker s'arrête à son prochain point d'avancement).
@@ -111,9 +116,11 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   if (b.action === "redraw") {
     // Nouvelle version d'un logo complet : une image payée, seulement à la demande du client (coût confirmé dans l'interface).
     const meta = json<any>(one<{ meta: string }>("SELECT meta FROM assets WHERE id = ? AND project_id = ? AND role IN ('logo-v2','logo-v2-trial') AND deleted_at IS NULL", b.assetId ?? "", p.id)?.meta, null);
+    if (meta && directionSeries(p.id).some(s => s.requestKeys.includes(meta.run))) throw new HttpError(409, "Reprenez la série incomplète ou renouvelez une série complète, sans dessin isolé.");
     if (!meta?.artwork) throw new HttpError(404, L("Logo complet introuvable.", "Full logo not found."));
     if (!aiActiveFor(p.userId, p.id)) throw new HttpError(403, L("Une nouvelle version dessinée par l'IA demande un forfait avec IA.", "A new AI-drawn version needs a plan with AI."));
-    const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.logo.v2.redraw", label: L("Logo : nouvelle version", "Logo: new version"), payload: { projectId: p.id, assetId: b.assetId, feedback: b.feedback ?? "", ...(logoRedrawQuote() ? { costCapMicro: logoRedrawQuote()!.maxMicro } : {}) } });
+    if (!logoRedrawQuote()) throw new HttpError(409, "Modèle logo requis indisponible ou plafond inconnu : nouvelle version en attente, aucun appel lancé.");
+    const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.logo.v2.redraw", maxAttempts: 1, label: L("Logo : nouvelle version", "Logo: new version"), payload: { projectId: p.id, assetId: b.assetId, feedback: b.feedback ?? "", ...(logoRedrawQuote() ? { costCapMicro: logoRedrawQuote()!.maxMicro } : {}) } });
     return ok({ jobId: job.id, ...view(p.id) });
   }
   if (b.action === "choose") {
@@ -122,6 +129,10 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.logo.v2.choose", label: L("Logo choisi : déclinaisons et charte", "Chosen logo: variations and guidelines"), payload: { projectId: p.id, assetId: b.assetId } });
     return ok({ jobId: job.id, ...view(p.id) });
   }
-  const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.logo.v2", label: L("Logo : directions créatives", "Logo: creative directions"), payload: { projectId: p.id, style: b.style ?? "auto", costCapMicro: logoSeriesQuote().maxMicro } });
+  const rights = seriesRights(p.id);
+  if ((!rights.partial || b.renew) && rights.used && !rights.canRenew) throw new HttpError(403, "Le droit de nouvelle série de votre forfait est utilisé. Vos directions sont conservées.");
+  if (rights.partial && !b.renew && (!b.feedback || b.feedback.trim().length < 8)) throw new HttpError(409, "Précisez la correction avant la reprise des directions manquantes.");
+  const previous = currentSeries(p.id);
+  const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.logo.v2", idempotencyKey: `direction-series:${p.id}:${previous?.id ?? "initial"}:${previous?.attempts ?? 0}:${!!b.renew}`, maxAttempts: 1, label: L("Logo : directions créatives", "Logo: creative directions"), payload: { projectId: p.id, style: b.style ?? "auto", expectedSeriesId: previous?.id ?? null, renew: b.renew ?? (!!rights.used && !rights.partial), correction: b.feedback, costCapMicro: logoSeriesQuote().maxMicro } });
   return ok({ jobId: job.id, ...view(p.id) });
 });

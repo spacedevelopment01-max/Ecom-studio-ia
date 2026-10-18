@@ -102,8 +102,8 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
     setSetting("ai.prices.checkedAt", String(Date.now()));
     for (const k of ["ai.routes", "ai.media.backup", "ai.media.mode", "ai.media.models", "ai.media.usage", "ai.prices", "ai.media.openaiStream"]) setJsonSetting(k, {});
     // Comme le projet réel : GPT Image 2 pour « Logos », tarif par image saisi, Gemini en secours.
-    confirmModel("openai:gpt-image-2", { unit: "image", perImage: 0.25 });
-    setUsage("logo", { primary: "openai:gpt-image-2", backup: "google:gemini-2.5-flash-image" });
+    confirmModel("openai:gpt-image-2.5-sunburst", { unit: "image", perImage: 0.25 });
+    setUsage("logo", { primary: "openai:gpt-image-2.5-sunburst", backup: "google:gemini-2.5-flash-image" });
   });
 
   it("flux : 2 aperçus puis l'image finale (le vrai logo), progression transmise, coût tracé, original conservé tel quel", async () => {
@@ -112,12 +112,12 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
     const out = await oi.mediaProgress.run((p) => events.push(`${p.phase}${p.partials ? `:${p.partials}` : ""}`), () => fr(() => mp.logoArtworkImage({ ...c, usageKey: "k-ok" }, { prompt: "logo Sébastien Blanc" })));
     expect(out.equals(realPng)).toBe(true);
     expect(srv.requests).toHaveLength(1);
-    expect(srv.requests[0]).toMatchObject({ model: "gpt-image-2", stream: true, partial_images: 2, quality: "high", size: "1024x1024" });
+    expect(srv.requests[0]).toMatchObject({ model: "gpt-image-2.5-sunburst", stream: true, partial_images: 2, quality: "high", size: "1024x1024" });
     expect(srv.requests[0].background).toBeUndefined();
-    // Réception puis coût réel facturé de CETTE image (affiché sur sa carte).
-    expect(events).toEqual(["sent", "partial:1", "partial:2", "received:2", "billed"]);
+    // Prix par image injecté : réception tracée, mais aucune facture au jeton déduite de ce forfait simulé.
+    expect(events).toEqual(["sent", "partial:1", "partial:2", "received:2"]);
     const call = one<any>("SELECT * FROM ai_calls WHERE user_id = ? AND task = 'image_generation'", c.userId);
-    expect(call).toMatchObject({ status: "ok", provider: "openai" });
+    expect(call).toMatchObject({ status: "ok", provider: "openai", estimated: 1 });
     expect(reservations(c.userId).map((r) => r.status)).toEqual(["settled"]);
     const { storagePath } = await import("@/lib/storage");
     expect(fs.readFileSync(storagePath(`ai-originals/${c.projectId}/${call.id}.png`)).equals(realPng)).toBe(true);
@@ -128,7 +128,7 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
     srv.mode = "502";
     await expect(fr(() => mp.logoArtworkImage({ ...c, usageKey: "k-502" }, { prompt: "logo" }))).rejects.toThrow();
     expect(srv.requests).toHaveLength(1);
-    expect(reservations(c.userId).map((r) => `${r.status}:${r.model}`)).toEqual(["uncertain:gpt-image-2"]);
+    expect(reservations(c.userId).map((r) => `${r.status}:${r.model}`)).toEqual(["uncertain:gpt-image-2.5-sunburst"]);
   });
 
   it("flux coupé après un aperçu, ou terminé sans image : incertain, aucune relance", async () => {
@@ -156,7 +156,7 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
 
   it("budget insuffisant : refus clair AVANT tout envoi (rien ne part, rien n'est réservé)", async () => {
     const c = await client("creer");
-    confirmModel("openai:gpt-image-2", { unit: "image", perImage: 5000 });
+    confirmModel("openai:gpt-image-2.5-sunburst", { unit: "image", perImage: 5000 });
     await expect(fr(() => mp.logoArtworkImage({ ...c, usageKey: "k-budget" }, { prompt: "logo" }))).rejects.toThrow();
     expect(srv.requests).toHaveLength(0);
     expect(reservations(c.userId).filter((r) => r.status === "held" || r.status === "settled")).toHaveLength(0);
@@ -253,7 +253,7 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
     // Suivi en direct : image reçue PUIS sauvegardée (persistant, relu comme après un rechargement).
     const live = readLive(pid)!;
     expect(live.stage).toBe("done");
-    expect(live.art).toBe("openai:gpt-image-2");
+    expect(live.art).toBe("openai:gpt-image-2.5-sunburst");
     expect(live.directions[0]).toMatchObject({ status: "done", progress: { phase: "saved", partials: 2, streamed: true } });
     // Fichier reçu du fournisseur conservé à l'identique, à côté de la proposition (fond retiré, dessin intact).
     const orig = one<{ id: string }>("SELECT id FROM assets WHERE project_id = ? AND role = 'logo-v2-original' AND source_asset_id = ?", pid, prop.assetId!)!;
@@ -316,7 +316,7 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
     const { r, pid } = await series(imgs);
     // 3 demandes distinctes, chacune en flux avec 2 aperçus.
     expect(srv.requests).toHaveLength(3);
-    expect(srv.requests.every((q) => q.stream === true && q.partial_images === 2 && q.model === "gpt-image-2")).toBe(true);
+    expect(srv.requests.every((q) => q.stream === true && q.partial_images === 2 && q.model === "gpt-image-2.5-sunburst")).toBe(true);
     // 3 prompts distincts : direction, style et idée de symbole propres à chacun.
     expect(new Set(srv.prompts).size).toBe(3);
     const { STYLE_GUIDE } = await import("@/lib/logo-v2/artwork");
@@ -334,8 +334,8 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
     // Provenance réelle et coût facturé de chaque image, gardés avec la proposition (affichés sur sa carte).
     for (const x of r.shown) {
       const m = JSON.parse(getAsset(x.assetId!)!.meta as any).artwork;
-      expect(m.provider).toBe("openai:gpt-image-2");
-      expect(m.costMicro).toBeGreaterThan(0);
+      expect(m.provider).toBe("openai:gpt-image-2.5-sunburst");
+      expect(m.costMicro).toBeNull(); // Le prix par image injecté ne devient jamais un coût réel mesuré.
     }
   }, 120_000);
 
@@ -382,7 +382,7 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
     // Coût réel mesuré lors de l'essai (0,2164 $ pour une image haute qualité 1024² en flux) sous le maximum d'UNE image
     // quand le tarif saisi est d'au moins 0,22 $ par image.
     setJsonSetting("ai.media.openaiStream", {} as any);
-    confirmModel("openai:gpt-image-2", { unit: "image", perImage: 0.22 });
+    confirmModel("openai:gpt-image-2.5-sunburst", { unit: "image", perImage: 0.22 });
     const { usdToEur } = await import("@/lib/ai/config");
     expect(fr(() => logoSeriesQuote()).imageMaxMicro!).toBeGreaterThan(0.2164 * usdToEur() * 1e6);
   });

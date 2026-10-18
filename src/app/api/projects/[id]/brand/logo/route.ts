@@ -1,3 +1,4 @@
+import { currentSeries, seriesRights } from "@/lib/logo-v2/direction-series";
 import { z } from "zod";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
@@ -77,8 +78,11 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   // Nouvelles propositions : toujours Brand & Logo Engine V2 (l'ancien générateur de pistes ne crée plus rien) ;
   // les anciennes pistes restent consultables et peuvent encore être choisies.
   if (regenerate) {
+    const rights = seriesRights(p.id);
+    if (rights.used && !rights.partial && !rights.canRenew) throw new HttpError(403, "Le droit de nouvelle série de votre forfait est utilisé.");
     if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type IN ('brand.logo.v2','brand.logo.v2.choose','brand.logo.v2.redraw','brand.logo') AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Une création de logo est déjà en cours : attendez qu'elle se termine.", "A logo task is already running: wait for it to finish."));
-    const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.logo.v2", label: L("Logo : directions créatives", "Logo: creative directions"), payload: { projectId: p.id } });
+    const previous = currentSeries(p.id);
+    const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.logo.v2", idempotencyKey: `direction-series:${p.id}:${previous?.id ?? "initial"}:${previous?.attempts ?? 0}:false`, maxAttempts: 1, label: L("Logo : directions créatives", "Logo: creative directions"), payload: { projectId: p.id, expectedSeriesId: previous?.id ?? null, renew: !!rights.used && !rights.partial } });
     return ok({ jobId: job.id, proposals: list(p.id), current: currentId(p), engine: "v2" });
   }
   if (regenerate && props.length >= MAX_ROUTES) throw new HttpError(409, L(`Vous avez déjà ${MAX_ROUTES} pistes : supprimez-en une pour en créer une nouvelle.`, `You already have ${MAX_ROUTES} routes: delete one to create a new one.`));

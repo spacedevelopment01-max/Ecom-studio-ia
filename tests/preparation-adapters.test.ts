@@ -1,5 +1,8 @@
+import { commitState, draft } from "@/lib/preparation/store";
+import { initializeSynthetic as initialize } from "./preparation-fixtures";
 import { describe, it, expect, vi } from "vitest";
 const calls = vi.hoisted(() => ({ image: vi.fn(), logo: vi.fn() }));
+vi.mock("@/lib/preparation/media-review", () => ({ reviewPlacement: async (_p: unknown, _ctx: unknown, _c: unknown, slot: object, a: { id: string }) => ({ ...slot, assetId: a.id, reviewed: false, alignment: { status: "accepted", reason: "Contrôle visuel injecté, pas une preuve réelle" } }) }));
 vi.mock("@/lib/image-v2/engine", async (orig) => ({
   ...(await orig<object>()),
   runImageEngineV2: calls.image,
@@ -9,7 +12,7 @@ vi.mock("@/lib/logo-v2/engine", async (orig) => ({
   runLogoEngineV2: calls.logo,
 }));
 import { realDependencies } from "@/lib/preparation/deps";
-import { initialize, approve, stateOf } from "@/lib/preparation/engine";
+import { approve, stateOf } from "@/lib/preparation/engine";
 import { loadProject, saveBrand } from "@/lib/projects";
 import { localBrand } from "@/lib/engine/local";
 import { buildBrief, generationPrompt, briefHash } from "@/lib/image-v2/brief";
@@ -17,7 +20,7 @@ import { brandDiscovery } from "@/lib/logo-v2/discovery";
 import { runContentEngineV2 } from "@/lib/seo-v2/engine";
 import { exactInstructions } from "@/lib/preparation/instructions";
 import { JobContext, getJob, enqueue } from "@/lib/jobs";
-import { fixture, syntheticAsset } from "./preparation-fixtures";
+import { fixture, syntheticAsset, simulatedDependencies } from "./preparation-fixtures";
 import { mockSeoDeps } from "./seo-v2-mock";
 import { runWithLang } from "@/lib/i18n-server";
 async function prepared() {
@@ -38,7 +41,10 @@ async function prepared() {
     payload: {},
     maxAttempts: 1,
   });
-  return { ...f, p, ctx: new JobContext(j) };
+  const ctx = new JobContext(j);
+  const content = await simulatedDependencies.contents(p, ctx, false);
+  commitState(f.pid, stateOf(f.pid)!.revision, s => { draft(s, "content", content); });
+  return { ...f, p, ctx };
 }
 describe("Préparation : raccordements aux moteurs existants (fournisseurs simulés)", () => {
   it("adaptateur images : références originales, consentement précis, pas de stock et refus du provisoire", async () => {

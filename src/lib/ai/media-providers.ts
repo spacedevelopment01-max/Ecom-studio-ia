@@ -1,3 +1,4 @@
+import { REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVIDER } from "./logo-policy";
 /**
  * Fournisseurs de génération d'images et de vidéo.
  * Principe de fidélité : le produit n'est jamais « réinventé ».
@@ -139,6 +140,7 @@ const mediaExclude = new AsyncLocalStorage<{ exclude: string[]; only: string; fo
 
 /** Secours utilisable pour cet usage (sinon ce type) : confirmé, tarifé, clé active, adaptateur réel (coût couvert). */
 function usableBackup(kind: MediaKind, usage?: MediaUsage): { provider: string; model: string } | null {
+  if (usage === "logo") return null;
   const b = usage ? usageBackup(usage) : mediaBackup(kind);
   const m = b ? mediaModel(b.provider, b.model) : null;
   return b && m && mediaStatus(m).usable ? b : null;
@@ -184,6 +186,7 @@ function budgetLeft(userId?: string): number | null {
 /** Modèle à appeler chez ce fournisseur pour la génération en cours (choix tracé, sinon modèle historique). */
 function pickModel(provider: string, kind: MediaKind): string {
   const t = mediaTrace.getStore();
+  if (kind === "image" && t?.usage === "logo") { if (provider !== REQUIRED_LOGO_PROVIDER) throw new PermanentError("Fournisseur interdit pour le dessin des logos."); return REQUIRED_LOGO_MODEL; }
   return modelForProvider(provider, kind, t?.choice ?? null, t?.usage);
 }
 
@@ -354,6 +357,15 @@ export function routeMedia(task: "image_generation" | "video_generation", inputT
   if (t && usage) t.usage = usage;
   // Usage coupé par l'administration (retouches produit) : aucun modèle, pas de repli historique.
   if (usage && usageOff(usage)) return null;
+  // Usage logo verrouillé : ni secours, ni route historique, ni substitution par une autre génération.
+  if (usage === "logo") {
+    const m = mediaModel(REQUIRED_LOGO_PROVIDER, REQUIRED_LOGO_MODEL);
+    const n = { kind: "image", text: true, ...need } as MediaNeed;
+    if (!m?.adapter || !mediaStatus(m).usable || !mediaStatus(m).enabled || incompatibility(m, n)) return null;
+    const reason = "modèle logo imposé par le propriétaire";
+    if (t) { t.choice = { provider: m.provider, model: m.model, role: "primary", reason }; t.routing = { reason, fallback: false, escalation: false }; }
+    return { mode: kind, provider: m.provider, model: m.model, tier: "strong", reason, fallback: false, escalation: false, qualityTarget: null };
+  }
   // Relais de qualité (logos) : le modèle désigné, s'il est utilisable (clé, tarif) et capable — sinon rien.
   if (relay?.force) {
     const [fp, ...fm] = relay.only.split(":");
@@ -399,6 +411,7 @@ export function imageProviderAvailable(need?: Partial<MediaNeed>): "openai" | "g
 /** Pourquoi aucune image IA ne peut être faite maintenant (affiché au client et dans le diagnostic). */
 export function imageUnavailableReason(usage?: MediaUsage): string | null {
   if (imageProviderAvailable(usage ? { usage } : undefined)) return null;
+  if (usage === "logo") return L("Le modèle logo demandé est en attente : vérifier clé OpenAI active, modèle autorisé et plafond par image vérifié. Aucun remplacement automatique.", "Required logo model is pending: verify active OpenAI key, model access and verified per-image bound. No automatic substitute.");
   if (!currentUserHasAiCredits()) return L("IA non active pour ce compte (forfait ou budget IA épuisé)", "AI not active for this account (plan or AI budget used up)");
   const u = currentAiUser();
   if (u && !userPlan(u)) return L("aucun forfait actif : les images IA sont réservées aux forfaits", "no active plan: AI images come with the plans");
@@ -478,7 +491,7 @@ async function openaiSceneImpl(ctx: Ctx, input: { composite: Buffer; productMask
   if (!b64) throw new Error(L("Réponse d'image vide.", "Empty image response."));
   const u = res.usage ?? {};
   const c = cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 });
-  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: c.micro, estimated: !res.usage, idempotencyKey: ctx.usageKey });
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: c.micro, estimated: !res.usage || requirePrice("openai", model).unit !== "tokens", idempotencyKey: ctx.usageKey });
   return Buffer.from(b64, "base64");
 }
 
@@ -622,7 +635,7 @@ export async function fullLogoImage(ctx: Ctx, input: { brief: string; name: stri
 ${input.colors?.length ? `Couleurs : UNIQUEMENT celles de la marque, ${input.colors.join(", ")} (plus du blanc ou un presque noir si besoin) ; le logo suit la charte graphique.
 ` : ""}Texte du logo, écrit EXACTEMENT, accents compris : le nom « ${input.name} »${input.descriptor ? ` et, plus petite, la ligne d'activités « ${input.descriptor} »` : ""}${input.tagline ? ` et, en plus petit encore, le slogan de la marque « ${input.tagline} »` : ""}. Aucun autre mot${input.tagline ? "" : ", aucun slogan"}, aucune fausse lettre.
 Niveau attendu : un logo moderne et professionnel pour une vraie petite entreprise, original, fait pour cette marque seulement, jamais la copie d'un logo existant. Suis la composition et le style choisis dans le brief. Contours nets, logo centré, marges généreuses, sur un fond transparent ou blanc pur. Aucune maquette, aucun papier, aucun mur, aucune photo en fond, aucun cadre autour de l'image.`;
-  return generateImage(ctx, { text, aspect: "1:1", reference: null, quality: "high", transparent: true, usage: "logo", need: { text: true, transparent: true } });
+  return generateImage(ctx, { text, aspect: "1:1", reference: null, quality: "high", strictQuality: true, usage: "logo", need: { text: true } });
 }
 
 /**
@@ -631,7 +644,7 @@ Niveau attendu : un logo moderne et professionnel pour une vraie petite entrepri
  * (style, texte exact) ; haute qualité, fond transparent quand le modèle le permet.
  */
 export async function logoArtworkImage(ctx: Ctx, input: { prompt: string }) {
-  return generateImage(ctx, { text: clampBytes(input.prompt, LOGO_PROMPT_MAX_BYTES), aspect: "1:1", reference: null, quality: "high", transparent: true, usage: "logo", need: { text: true, transparent: true } });
+  return generateImage(ctx, { text: clampBytes(input.prompt, LOGO_PROMPT_MAX_BYTES), aspect: "1:1", reference: null, quality: "high", strictQuality: true, usage: "logo", need: { text: true } });
 }
 
 /**
@@ -641,23 +654,15 @@ export async function logoArtworkImage(ctx: Ctx, input: { prompt: string }) {
  * active, tarif connu) et différent du principal. null : aucun relais possible (la raison est dite au client).
  */
 export function logoQualityRelay(): { provider: string; model: string } | null {
-  const primary = mediaRouteFor("logo", { text: true, transparent: true });
-  const b = usageBackup("logo");
-  for (const c of [b?.provider === "openai" ? b : null, { provider: "openai", model: "gpt-image-1" }]) {
-    if (!c) continue;
-    const m = mediaModel(c.provider, c.model);
-    if (!m?.adapter || !mediaStatus(m).usable || incompatibility(m, { ...USAGE_INFO.logo.need, kind: "image", text: true } as MediaNeed)) continue;
-    if (primary && primary.provider === c.provider && primary.model === c.model) return null;
-    return { provider: c.provider, model: c.model };
-  }
-  return null;
+  return null; // Aucun autre modèle autorisé pour le dessin du logo.
+
 }
 
 /** Logo complet redessiné par le relais de qualité (OpenAI) : même demande, réservation et plafond propres. */
 export async function logoArtworkRelayImage(ctx: Ctx, input: { prompt: string }) {
   const relay = logoQualityRelay();
   if (!relay) throw new PermanentError(L("Relais OpenAI indisponible pour les logos (clé OpenAI absente ou désactivée, ou tarif inconnu).", "OpenAI relay unavailable for logos (OpenAI key missing or disabled, or unknown price)."));
-  const primary = mediaRouteFor("logo", { text: true, transparent: true });
+  const primary = mediaRouteFor("logo", { text: true });
   return mediaExclude.run({ exclude: primary ? [`${primary.provider}:${primary.model}`] : [], only: `${relay.provider}:${relay.model}`, force: true }, () => logoArtworkImage(ctx, input));
 }
 
@@ -684,7 +689,7 @@ const clampBytes = (t: string, max: number) => {
  * modèle d'images utilisable (aucun logo complet possible).
  */
 export function logoArtworkMaxMicro(opts: { text?: boolean } = { text: true }): number | null {
-  const r = mediaRouteFor("logo", opts.text === false ? {} : { text: true, transparent: true });
+  const r = mediaRouteFor("logo", opts.text === false ? {} : { text: true });
   if (!r) return null;
   const prompt = "x".repeat(LOGO_PROMPT_MAX_BYTES);
   const model = r.model;
@@ -777,9 +782,9 @@ async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: "1:1"
   if (!b64) throw new Error(L("OpenAI n'a pas renvoyé d'image.", "OpenAI returned no image."));
   const u = res.usage ?? {};
   const billed = cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro;
-  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: billed, estimated: !res.usage, idempotencyKey: ctx.usageKey });
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: billed, estimated: !res.usage || requirePrice("openai", model).unit !== "tokens", idempotencyKey: ctx.usageKey });
   // Coût réel de cette image transmis au moteur qui l'a demandée (affiché sur la carte de la proposition).
-  if (res.usage) emitMediaProgress({ phase: "billed", atMs: res.ms, streamed: res.streamed, costMicro: billed });
+  if (res.usage && requirePrice("openai", model).unit === "tokens") emitMediaProgress({ phase: "billed", atMs: res.ms, streamed: res.streamed, costMicro: billed });
   return Buffer.from(b64, "base64");
 }
 
@@ -900,7 +905,7 @@ Authentic smartphone video still, natural light, realistic skin and hands, no te
   const b64 = res.b64;
   if (!b64) throw new Error(L("OpenAI n'a pas renvoyé d'image.", "OpenAI returned no image."));
   const u = res.usage ?? {};
-  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro, estimated: !res.usage, idempotencyKey: ctx.usageKey });
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro, estimated: !res.usage || requirePrice("openai", model).unit !== "tokens", idempotencyKey: ctx.usageKey });
   return Buffer.from(b64, "base64");
 }
 

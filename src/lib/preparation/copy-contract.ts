@@ -30,7 +30,7 @@ export function copyContract(c: Contents): { copy: Contents["copy"]; readiness: 
       if (first) set("about.intro", first);
     }
   }
-  const provisionalFields = leafPaths(copy).filter(p => ![...mapped].some(m => p === m || p.startsWith(m + ".")));
+  const provisionalFields = c.execution ? leafPaths(copy).filter(path => /\[(?:[ÀA] compl[eé]ter|To complete|Por completar)[^\]]*\]/i.test(String(path.split(".").reduce((v: any, k) => v?.[k], copy)))) : leafPaths(copy).filter(p => ![...mapped].some(m => p === m || p.startsWith(m + ".")));
   return { copy, readiness: { status: provisionalFields.length ? "review_required" : "mapped", provisionalFields, documentKeys: c.documents.map(d => d.docKey) } };
 }
 

@@ -1,3 +1,4 @@
+import { assertAnalysisRoute } from "./evidence";
 /** Devis local en % ; le garde-fou final reste la réservation native de chaque moteur. */
 import { id, json, now, one } from "../db";
 import { loadProject, remember } from "../projects";
@@ -9,7 +10,7 @@ import { budgetPctOf } from "../ai/budget-pct";
 import { logoSeriesQuote } from "../logo-v2/quote";
 import { requirePlan } from "../plan-gates";
 import { HttpError } from "../auth";
-import { assertFresh, requestHash, type RunAction } from "./engine";
+import { mediaReusable, assertFresh, requestHash, type RunAction } from "./engine";
 import { requireUpstream, stateOf } from "./store";
 import type { Step } from "./types";
 export type Quote = {
@@ -30,6 +31,7 @@ export function createQuote(
   slot?: string,
 ) {
   if (
+    (action === "collect" && step !== "media") ||
     (action === "logo" && step !== "brand") ||
     (action === "image" && (step !== "media" || !slot)) ||
     (action === "analyze" && step !== "brief") ||
@@ -46,7 +48,7 @@ export function createQuote(
     step === "content" &&
     slot &&
     !s.stages.content?.data.pages.some(
-      (x) => x.key === slot && x.kind !== "contact",
+      (x) => x.key === slot,
     )
   )
     throw new HttpError(400, "Page cible absente du plan validé.");
@@ -59,12 +61,13 @@ export function createQuote(
       409,
       "Ajoutez une photo originale dans Produit, puis actualisez et validez les références de votre offre avant une création fidèle. Aucun appel n’a été lancé.",
     );
-  const paid = action === "logo" || action === "image" || textProviderReady();
-  if (action === "analyze" && !paid)
+  const paid = !(action === "collect" && mediaReusable(projectId, s)) && (action === "logo" || action === "image" || action === "collect" || textProviderReady());
+  if (["analyze", "generate"].includes(action) && !paid)
     throw new HttpError(
       409,
-      "Fournisseur d’analyse indisponible. Décrivez votre offre et confirmez ses informations ; aucune photo n’a été analysée par l’IA.",
+      "Fournisseur texte/vision indisponible. Étape en attente ; le brouillon et les choix restent conservés. Aucun résultat local ne remplace la livraison API.",
     );
+  if (action === "analyze" && paid) assertAnalysisRoute(!!s.stages.brief?.data.input.photoIds.length);
   let capMicro = 0;
   if (paid) {
     if ((action === "image" || action === "logo") && !aiAvailability().image)
@@ -76,7 +79,7 @@ export function createQuote(
     capMicro =
       action === "logo"
         ? logoSeriesQuote().maxMicro
-        : action === "image"
+        : action === "image" || action === "collect"
           ? 2_000_000
           : ["research", "brand"].includes(step)
             ? 1_000_000
@@ -86,7 +89,7 @@ export function createQuote(
                   2,
                   s.stages.content?.data.pages.length ??
                     p.services.services.length + 3,
-                ) * 600_000;
+                ) * 600_000 + 1_000_000;
     assertCanSpend(p.userId, capMicro, p.id);
   }
   const pct = paid ? budgetPctOf(p.userId, capMicro, p.id) : 0;

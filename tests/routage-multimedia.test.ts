@@ -101,6 +101,7 @@ describe("routage multimédia V2", async () => {
     vi.stubGlobal("fetch", fakeFetch);
     setSetting("ai.prices.checkedAt", String(Date.now()));
     for (const k of ["ai.routes", "ai.media.backup", "ai.media.mode", "ai.media.models", "ai.prices"]) setJsonSetting(k, {});
+    confirmModel("openai:gpt-image-2.5-sunburst", { unit: "image", perImage: 0.2 }); // Prix synthétique.
   });
   afterEach(() => vi.unstubAllGlobals());
 
@@ -120,11 +121,11 @@ describe("routage multimédia V2", async () => {
     expect(mediaModel("google", "veo-3.0-generate-001")?.replacement).toBe("google:veo-3.1-generate-preview");
   });
 
-  it("manuel par défaut : principal actuel inchangé (logo complet → OpenAI GPT Image 1, réservation réglée)", async () => {
+  it("logo complet : modèle imposé et réservation réglée", async () => {
     const c = await client();
     await fr(() => mp.fullLogoImage(ctx(c), { brief: "monogramme", name: "Somnéa" }));
-    expect(oa.calls[0]).toMatchObject({ kind: "generate", model: "gpt-image-1", background: "transparent" });
-    expect(reservations(c.userId)).toEqual([{ status: "settled", provider: "openai", model: "gpt-image-1" }]);
+    expect(oa.calls[0]).toMatchObject({ kind: "generate", model: "gpt-image-2.5-sunburst", quality: "high" });
+    expect(reservations(c.userId)).toEqual([{ status: "settled", provider: "openai", model: "gpt-image-2.5-sunburst" }]);
   });
 
   it("logo complet : nom, activités et slogan validé écrits tels quels dans la demande ; sans slogan, « aucun slogan »", async () => {
@@ -236,11 +237,11 @@ describe("routage multimédia V2", async () => {
     const c = await client();
     setJsonSetting("ai.media.backup", { image: "google:gemini-2.5-flash-image" });
     oa.mode = "503";
-    await expect(fr(() => mp.logoSymbolImage(ctx(c), { concept: "une vague" }))).rejects.toThrow();
+    await expect(fr(() => mp.ambianceImage(ctx(c), { prompt: "une vague", aspect: "1:1" }))).rejects.toThrow();
     expect(reservations(c.userId).map((r) => `${r.status}:${r.provider}`)).toEqual(["uncertain:openai"]);
     run("DELETE FROM ai_reservations WHERE user_id = ?", c.userId);
     oa.mode = "429";
-    await fr(() => mp.logoSymbolImage(ctx(c), { concept: "une vague" }));
+    await fr(() => mp.ambianceImage(ctx(c), { prompt: "une vague", aspect: "1:1" }));
     expect(reservations(c.userId).map((r) => `${r.status}:${r.provider}`)).toEqual(["released:openai", "settled:google"]);
     keys.openai = null;
     expect(fr(() => mp.imageProviderAvailable())).toBe("google");
@@ -252,7 +253,7 @@ describe("routage multimédia V2", async () => {
     setJsonSetting("ai.prices", { "google:gemini-3.1-flash-image": { unit: "image", perImage: 0.067 } });
     setJsonSetting("ai.media.backup", { image: "google:gemini-3.1-flash-image" });
     oa.mode = "429";
-    await expect(fr(() => mp.logoSymbolImage(ctx(c), { concept: "une vague" }))).rejects.toThrow();
+    await expect(fr(() => mp.ambianceImage(ctx(c), { prompt: "une vague", aspect: "1:1" }))).rejects.toThrow();
     expect(net.calls.length).toBe(0);
     expect(reservations(c.userId).map((r) => r.status)).toEqual(["released"]);
   });
@@ -261,7 +262,7 @@ describe("routage multimédia V2", async () => {
     const c = await client();
     setJsonSetting("ai.media.backup", { image: "google:gemini-2.5-flash-image" });
     run("UPDATE wallets SET monthly_used = monthly_allowance - 50, topup_balance = 0 WHERE user_id = ?", c.userId);
-    await expect(fr(() => mp.logoSymbolImage(ctx(c), { concept: "une vague" }))).rejects.toThrow();
+    await expect(fr(() => mp.ambianceImage(ctx(c), { prompt: "une vague", aspect: "1:1" }))).rejects.toThrow();
     expect(oa.calls.length + net.calls.length).toBe(0);
     expect(reservations(c.userId)).toHaveLength(0);
   });
@@ -270,10 +271,10 @@ describe("routage multimédia V2", async () => {
     const c = await client();
     confirmModel("openai:gpt-image-2", { unit: "tokens", inputPerM: 5, outputPerM: 40 });
     setJsonSetting("ai.routes", { image_generation: { provider: "openai", model: "gpt-image-2" } });
-    await expect(fr(() => mp.logoSymbolImage(ctx(c), { concept: "une vague" }))).rejects.toThrow(/tarif par image/);
+    await expect(fr(() => mp.ambianceImage(ctx(c), { prompt: "une vague", aspect: "1:1" }))).rejects.toThrow(/tarif par image/);
     expect(oa.calls).toHaveLength(0);
     confirmModel("openai:gpt-image-2", { unit: "image", perImage: 0.2 });
-    await fr(() => mp.logoSymbolImage(ctx(c), { concept: "une vague" }));
+    await fr(() => mp.ambianceImage(ctx(c), { prompt: "une vague", aspect: "1:1" }));
     expect(oa.calls[0].model).toBe("gpt-image-2");
   });
 

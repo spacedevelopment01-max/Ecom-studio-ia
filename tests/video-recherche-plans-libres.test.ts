@@ -104,9 +104,11 @@ describe("recherche de plans libres : « escape game » (bug du projet contretem
   });
 
   it("Pixabay injoignable : erreur dite au client, pas avalée", async () => {
+    setSetting("provider.pixabay.apiKey", "synthetic-unavailable-cold-cache", true);
     vi.stubGlobal("fetch", async () => new Response("err", { status: 503 }));
+    // Nouvelle requête non mise en cache : le scénario vérifie une panne réseau, pas la réutilisation 24 h.
     const pid = await escapeProject("Loisirs");
-    await expect(findBankClips(ctx("j6"), pid, { topic: "escape game", aspect: "16:9", count: 1 })).rejects.toThrow(/Pixabay ne répond pas/);
+    await expect(findBankClips(ctx("j6"), pid, { topic: "escape game source unavailable isolated", aspect: "16:9", count: 1 })).rejects.toThrow(/Pixabay ne répond pas/);
   });
 
   it("recherche directe : mêmes plans vus dans les deux langues = mots-clés réunis, fonds verts écartés", async () => {

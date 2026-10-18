@@ -118,7 +118,12 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
   const paper = isDark(pal.light) ? "#F7F4EF" : pal.light;
   const accent = pal.primary;
   const HF = inp.headingFamily, BF = inp.bodyFamily;
-  const total = (inp.social || inp.voice ? 11 : 10) + (inp.board ? 1 : 0);
+  const directionMeasure = createCanvas(W, 10).getContext("2d");
+  directionMeasure.font = font(BF, 400, 26);
+  const identity = b.artIdentity;
+  const directionLines = identity ? [C("Ambiance", "Mood"), identity.mood, C("Langage graphique", "Graphic language"), identity.graphicLanguage, ...identity.rules, C("Rôles des couleurs", "Color roles"), ...Object.entries(identity.colorRoles).map(([role, meaning]) => `${role}: ${meaning}`), C("Exemple rédactionnel", "Copy example"), identity.sampleText].flatMap(value => [...wrap(directionMeasure, value, W - 2 * M), ""]) : [];
+  const directionPageCount = Math.ceil(directionLines.length / 22);
+  const total = (inp.social || inp.voice ? 11 : 10) + (inp.board ? 1 : 0) + directionPageCount;
   const canvases: Canvas[] = [];
   // Langue des contenus : toute la charte (titres, explications, dates) suit la langue du projet.
   const locale = intlLocale(contentLang());
@@ -538,6 +543,15 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
         para(ctx, v.captions[0].text.replace(/\n+/g, " "), M, 1020, kw, 22, mix(ink, paper, 0.2), 1.45, 400, 1120);
       }
     }
+  }
+
+  // Toutes les règles de la direction : pages supplémentaires, sans couper le texte sur une ellipse.
+  for (let pageIndex = 0; pageIndex < directionPageCount; pageIndex++) {
+    const count = canvases.length + 1;
+    const ctx = page();
+    head(ctx, count, C("Direction validée", "Approved direction"), C("Ambiance et règles", "Mood and rules"));
+    ctx.font = font(BF, 400, 26); ctx.fillStyle = ink;
+    directionLines.slice(pageIndex * 22, (pageIndex + 1) * 22).forEach((line, i) => ctx.fillText(line, M, 330 + i * 34));
   }
 
   // Planche d'identité : tout le système de marque d'un coup d'œil, juste après la couverture.

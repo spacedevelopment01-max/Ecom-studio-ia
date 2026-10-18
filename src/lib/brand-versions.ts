@@ -7,16 +7,16 @@
 import crypto from "node:crypto";
 import { all, id, json, now, one, run } from "./db";
 
-export type BrandSnapshot = { name: string; palette: Record<string, string>; fonts: { heading: string; body: string } | null; logoAssetId: string | null };
+export type BrandSnapshot = { identity?: unknown; tone?: unknown; name: string; palette: Record<string, string>; fonts: { heading: string; body: string } | null; logoAssetId: string | null };
 
-type BrandLike = { name?: string; palette?: Record<string, string>; fonts?: { heading: string; body: string }; logo?: { assetId?: string | null } } | null | undefined;
+type BrandLike = { artIdentity?: unknown; tone?: unknown; name?: string; palette?: Record<string, string>; fonts?: { heading: string; body: string }; logo?: { assetId?: string | null } } | null | undefined;
 
 export function snapshotOf(b: BrandLike): BrandSnapshot | null {
   if (!b) return null;
-  return { name: b.name ?? "", palette: { ...(b.palette ?? {}) }, fonts: b.fonts ? { heading: b.fonts.heading, body: b.fonts.body } : null, logoAssetId: b.logo?.assetId ?? null };
+  return { ...(b.artIdentity ? { identity: b.artIdentity, tone: b.tone } : {}), name: b.name ?? "", palette: { ...(b.palette ?? {}) }, fonts: b.fonts ? { heading: b.fonts.heading, body: b.fonts.body } : null, logoAssetId: b.logo?.assetId ?? null };
 }
 
-export const brandFingerprint = (s: BrandSnapshot | null) => (s ? crypto.createHash("sha256").update(JSON.stringify([s.name, Object.entries(s.palette).sort(), s.fonts, s.logoAssetId])).digest("hex").slice(0, 16) : "none");
+export const brandFingerprint = (s: BrandSnapshot | null) => (s ? crypto.createHash("sha256").update(JSON.stringify([s.name, Object.entries(s.palette).sort(), s.fonts, s.logoAssetId, ...(s.identity ? [s.identity, s.tone] : [])])).digest("hex").slice(0, 16) : "none");
 
 /**
  * Enregistre l'état de la marque s'il a changé. Premier enregistrement d'un projet existant : l'état PRÉCÉDENT est

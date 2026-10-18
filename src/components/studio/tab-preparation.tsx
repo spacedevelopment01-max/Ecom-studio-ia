@@ -1,4 +1,5 @@
 "use client";
+import { LogoV2Panel } from "./logo-v2-panel";
 import {
   cloneElement,
   isValidElement,
@@ -63,6 +64,7 @@ function Field(props: ComponentProps<typeof BaseField>) {
   );
 }
 type AssetView = {
+  kind?: string;
   id: string;
   name: string;
   role: string;
@@ -444,6 +446,7 @@ export default function TabPreparation() {
               ))}
             </div>
           )}
+          {state.stages.brief?.data.profile.questions.filter(q => q.required && !q.answer?.trim()).map(q => <Field key={q.id} label={q.question}><form onSubmit={event => { event.preventDefault(); const input = new FormData(event.currentTarget).get("answer"); if (typeof input === "string") send({ action: "answer", questionId: q.id, answer: input }); }} className="grid gap-2"><p className="text-sm text-muted">{q.why}</p><Input name="answer" required maxLength={3000} /><Button disabled={busy || working} type="submit">{t("Enregistrer ma réponse", "Save my answer")}</Button></form></Field>)}
           <Field
             label={t("À qui s’adresse cette offre ?", "Who is this offer for?")}
           >
@@ -474,6 +477,7 @@ export default function TabPreparation() {
               />
             </Field>
           )}
+          {form.business === "products" && <div className="grid gap-3"><h3 className="font-semibold">{t("Coordonnées publiques pour la page Contact", "Public contact details for the Contact page")}</h3>{(["email", "phone", "address", "hours"] as const).map(key => <Field key={key} label={({ email: t("E-mail", "Email"), phone: t("Téléphone", "Phone"), address: t("Adresse", "Address"), hours: t("Horaires", "Hours") })[key]}><Input value={form.services[key]} onChange={e => field("services", { ...form.services, [key]: e.target.value })} /></Field>)}</div>}
           {form.business === "services" && (
             <div className="grid gap-3">
               <h3 className="font-semibold">
@@ -722,6 +726,7 @@ export default function TabPreparation() {
           {state.stages.research && (
             <>
               <ul className="grid gap-3">
+                {state.stages.research.data.coverage && <p role="status">{state.stages.research.data.coverage.consulted}/10 {t("sources pertinentes consultées — cible indicative de 8 à 12.", "relevant sources read — indicative target of 8–12.")} {state.stages.research.data.coverage.status === "partial" && t("Couverture partielle.", "Partial coverage.")} {state.stages.research.data.coverage.limits.join(" ")}</p>}
                 {state.stages.research.data.sources.map((source) => (
                   <li
                     key={source.id}
@@ -849,8 +854,8 @@ export default function TabPreparation() {
                 />
               </Field>
               <p className="text-sm text-muted">
-                {t("Autres pistes :", "Alternatives:")}{" "}
-                {identity.proposal.alternatives.join(" · ")}
+                {t("Nom unique conservé ; les directions suivent ce nom.", "One name is kept; directions share that name.")}{" "}
+                {""}
               </p>
               <Field label="Slogan">
                 <Input
@@ -939,8 +944,8 @@ export default function TabPreparation() {
                 data-confirm-identity
               >
                 {t(
-                  "Valider ce nom et cette identité",
-                  "Approve this name and identity",
+                  "Valider ce nom avant les trois directions",
+                  "Approve this name before the three directions",
                 )}
               </Button>
               {identityDirty && (
@@ -959,17 +964,8 @@ export default function TabPreparation() {
                       "Choose your supplied logo or request proposals from the configured AI engine. A rejected attempt cannot become a final logo.",
                     )}
                   </p>
-                  <Button
-                    variant="secondary"
-                    onClick={() => prepare("brand", "logo")}
-                    disabled={busy || working || identityDirty}
-                  >
-                    {t(
-                      "Créer des propositions de logo",
-                      "Create logo proposals",
-                    )}
-                  </Button>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <LogoV2Panel onApplied={() => { reload(); reloadProject(); }} />
+                  {!identity.seriesId && <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                     {data.assets
                       .filter(
                         (a) =>
@@ -998,15 +994,15 @@ export default function TabPreparation() {
                           <span className="ml-2 text-xs">{a.name}</span>
                         </label>
                       ))}
-                  </div>
+                  </div>}
                   <Button
                     onClick={() => approve("brand")}
                     disabled={!logo || busy || working || identityDirty}
                     data-approve-brand
                   >
                     {t(
-                      "Valider la marque et ce logo",
-                      "Approve the brand and this logo",
+                      identity.seriesId ? "Valider cette direction complète" : "Valider la marque et ce logo",
+                      identity.seriesId ? "Approve this complete direction" : "Approve the brand and this logo",
                     )}
                   </Button>
                 </>
@@ -1036,7 +1032,13 @@ export default function TabPreparation() {
             </Button>
             {state.stages.content && (
               <>
+                {state.stages.content.data.pending && <p role="alert" className="rounded-xl border border-warn p-3">{state.stages.content.data.pending}</p>}
                 <p role="status">{t("Les textes à compléter ne peuvent pas être validés. Valider un brouillon ne remplace pas une relecture éditoriale. Certains textes des sections restent à relire avant de créer le thème.", "Incomplete copy cannot be approved. Approving a draft does not replace editorial review. Some section copy still needs review before building the theme.")}</p>
+                {state.stages.content.data.recommendation && <section className="grid gap-3 rounded-xl border border-line p-4">
+                  <h3 className="font-semibold">{t("Choisir le thème recommandé avant composition", "Choose a recommended theme before composition")}</h3>
+                  {[{ id: state.stages.content.data.recommendation.recommendedId, reasons: state.stages.content.data.recommendation.reasons }, ...state.stages.content.data.recommendation.alternatives].map(option => <div key={option.id}><p>{state.stages.content?.data.recommendation?.catalogue.find(x => x.id === option.id)?.name || option.id} — {option.reasons.join(" · ")}</p><Button variant="secondary" disabled={busy || working} onClick={() => send({ action: "theme-choice", choiceId: option.id })}>{state.stages.content?.data.recommendation?.selectedId === option.id ? t("Choisi", "Selected") : t("Choisir", "Choose")}</Button></div>)}
+                  <p className="text-xs">{t("Proposition argumentée, aucune composition ni publication lancée.", "Reasoned proposal; no composition or publication started.")}</p>
+                </section>}
                 <ol className="grid gap-3">
                   {state.stages.content.data.pages.map((page) => (
                     <li
@@ -1134,6 +1136,7 @@ export default function TabPreparation() {
                 "product_page",
                 "service_page",
                 "brand_page",
+                "contact_page",
               ]}
               title={t(
                 "Corriger et versionner vos textes",
@@ -1153,14 +1156,18 @@ export default function TabPreparation() {
           </h2>
           <p className="text-sm text-muted">
             {t(
-              "Les créations passent par le moteur IA existant avec les références du projet. Aucune photo de banque ni autre marque ne remplace votre produit. Par défaut, aucune personne n’est ajoutée.",
-              "Creations use the existing AI engine and project references. No stock photo or other brand replaces your product. By default, no person is added.",
+              "Produits : 10 créations IA (4 carrées, 4 paysages, 2 stories) et 1 vidéo Pixabay d’ambiance. Services : 10 photos et 2 vidéos Pixabay. Chaque média est contrôlé et affecté à une section. Par défaut, aucune personne ajoutée.",
+              "Products: 10 AI creations (4 square, 4 landscape, 2 stories) and 1 Pixabay mood video. Services: 10 photos and 2 videos from Pixabay. Each media is checked and placed in a section. No people added by default.",
             )}
           </p>
+          <Button onClick={() => prepare("media", "collect")} disabled={busy || working || !enabled}>{t("Préparer les médias manquants (avec devis)", "Prepare missing media (with quote)")}</Button>
+          <p role="status">{state.stages.media?.data.slots.filter(s => s.reviewed && s.assetId).length ?? 0}/{state.stages.media?.data.slots.length ?? 0} {t("médias vérifiés par vous. Les résultats incomplets restent enregistrés.", "media reviewed by you. Partial results stay saved.")}</p>
           {state.stages.media?.data.slots.map((slot) => (
             <Slot
               key={slot.key}
               slot={slot}
+              pages={state.stages.content?.data.pages ?? []}
+              move={(pageKey, sectionKey) => send({ action: "placement", slot: slot.key, placement: { pageKey, sectionKey } })}
               assets={data.assets}
               busy={busy || working || !enabled}
               consentChange={(peopleConsent) =>
@@ -1327,6 +1334,8 @@ export default function TabPreparation() {
 }
 function Slot({
   slot,
+  pages,
+  move,
   assets,
   busy,
   generate,
@@ -1334,6 +1343,8 @@ function Slot({
   consentChange,
 }: {
   slot: VisualSlot;
+  pages: { key: string; title: string; sections: { key: string; purpose: string }[] }[];
+  move: (pageKey: string, sectionKey: string) => Promise<unknown>;
   assets: AssetView[];
   busy: boolean;
   generate: () => void;
@@ -1350,18 +1361,24 @@ function Slot({
     () => setConsent(slot.peopleConsent || "none_confirmed"),
     [slot.peopleConsent, slot.key],
   );
+  const [placement, setPlacement] = useState(`${slot.pageKey}|${slot.sectionKey}`);
   const consentDirty =
     (consent === "this_slot") !== (slot.peopleConsent === "this_slot");
   return (
     <div className="grid gap-3 rounded-2xl border border-line p-4">
       <h3 className="font-semibold">{slot.purpose}</h3>
       <p className="text-xs text-muted">
-        {slot.pageKey} · {slot.sectionKey}
+        {pages.find(p => p.key === slot.pageKey)?.title ?? slot.pageKey} · {pages.find(p => p.key === slot.pageKey)?.sections.find(s => s.key === slot.sectionKey)?.purpose ?? slot.sectionKey}
       </p>
-      {slot.assetId && (
+      <Field label={t("Affectation dans les pages", "Page placement")}><Select value={placement} onChange={e => setPlacement(e.target.value)}>{pages.flatMap(pg => pg.sections.map(section => <option key={`${pg.key}|${section.key}`} value={`${pg.key}|${section.key}`}>{pg.title} — {section.purpose}</option>))}</Select></Field>
+      <Button variant="ghost" disabled={busy || placement === `${slot.pageKey}|${slot.sectionKey}`} onClick={() => { const [pageKey, sectionKey] = placement.split("|"); move(pageKey, sectionKey); }}>{t("Enregistrer l’affectation et revérifier", "Save placement and recheck")}</Button>
+      <p className="text-xs">{slot.source === "pixabay" ? "Pixabay" : "IA"} · {slot.kind ?? "image"} · {slot.aspect}</p>
+      {slot.alignment && <p role="status">{slot.alignment.status === "accepted" ? t("Cohérence texte-image contrôlée", "Text-media consistency checked") : t("À corriger", "Correction required")} : {slot.alignment.reason}</p>}
+      {slot.assetId && slot.kind === "video" ? <video src={`/api/files/${slot.assetId}`} poster={slot.posterId ? `/api/files/${slot.posterId}` : undefined} controls playsInline muted preload="metadata" className="max-h-72 w-full rounded-xl object-contain" /> : slot.assetId && (
         <img
           src={`/api/files/${slot.assetId}`}
-          alt={slot.purpose}
+          alt={slot.alt || slot.purpose}
+          loading="lazy"
           className="max-h-72 w-full rounded-xl object-contain"
         />
       )}
@@ -1386,7 +1403,7 @@ function Slot({
         onClick={generate}
         disabled={busy || consentDirty}
       >
-        {t("Créer ce visuel par l’IA", "Create this visual with AI")}
+        {slot.source === "pixabay" ? t("Chercher et contrôler sur Pixabay", "Search and review on Pixabay") : t("Créer ce visuel par l’IA", "Create this visual with AI")}
       </Button>
       <Field
         label={t(
@@ -1397,7 +1414,7 @@ function Slot({
         <Select value={selected} onChange={(e) => setSelected(e.target.value)}>
           <option value="">{t("Choisir une image", "Choose an image")}</option>
           {assets
-            .filter((a) => a.origin === "upload" || a.verdict === "FINAL")
+            .filter((a) => (a.kind ?? "image") === (slot.kind ?? "image") && a.verdict === "FINAL")
             .map((a) => (
               <option key={a.id} value={a.id}>
                 {a.name}

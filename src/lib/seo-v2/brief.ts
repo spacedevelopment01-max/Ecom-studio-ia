@@ -14,6 +14,8 @@ function outlineFor(type: ContentType, f: VerifiedFacts, lang: ContentLang): Out
   const H = langPack(lang).headings;
   const o = (heading: string, purpose: string, required = true) => ({ heading, purpose, required });
   switch (type) {
+    case "contact_page":
+      return [o("H1", "Contacter la marque"), o(H.intro, "Motif du contact et informations utiles à transmettre, sans inventer de délai"), o(H.contact, "Coordonnées réellement connues, moyen de contact configuré et CTA")];
     case "product_page":
       return [
         o("H1", "nom du produit + ce qu'il est"),
@@ -50,6 +52,7 @@ function outlineFor(type: ContentType, f: VerifiedFacts, lang: ContentLang): Out
 /** Appel à l'action adapté au type et au mode de contact réel. */
 export function ctaFor(type: ContentType, f: VerifiedFacts, lang: ContentLang): string | null {
   const C = langPack(lang).cta;
+  if (type === "contact_page") return lang === "fr" ? "Envoyer ma demande" : lang === "es" ? "Enviar mi consulta" : "Send my inquiry";
   if (type === "blog_article") return f.business === "services" ? C.quote : C.discover;
   if (type === "metadata" || type === "faq") return null;
   if (f.business === "services") return f.contact.bookingUrl ? C.book : f.contact.mode === "call" && f.contact.phone ? C.call : f.contact.mode === "booking" ? C.book : C.quote;

@@ -1,3 +1,5 @@
+import { initialize } from "@/lib/preparation/engine";
+import { commitState } from "@/lib/preparation/store";
 /** Données synthétiques et fournisseurs simulés. Aucun réseau ni appel facturé. */
 import sharp from "sharp";
 import { createUser } from "@/lib/auth";
@@ -196,14 +198,14 @@ export const simulatedDependencies: Dependencies = {
           (d) => d.doc.page.key !== options.pageKey,
         ) ?? [])
       : [];
-    for (const pg of plan.pages.filter((x) => x.kind !== "contact")) {
+    for (const pg of plan.pages) {
       const old = options?.previous?.pages.find((x) => x.key === pg.key);
       if (options?.pageKey && pg.key !== options.pageKey) {
         pg.docKey = old?.docKey;
         continue;
       }
       const type =
-        pg.kind === "home"
+        pg.kind === "contact" ? "contact_page" : pg.kind === "home"
           ? "home_page"
           : pg.kind === "brand"
             ? "brand_page"
@@ -268,3 +270,13 @@ export const simulatedDependencies: Dependencies = {
     return syntheticAsset(p.id);
   },
 };
+
+/** Fixture explicitement simulée, distincte du brouillon local réel (désormais non validable). */
+export function initializeSynthetic(pid: string, input: Input) {
+  const first = initialize(pid, input);
+  return commitState(pid, first.revision, state => {
+    state.simulation = true;
+    state.stages.brief!.data.provenance = "simulation";
+    state.stages.brief!.data.observations = ["Analyse injectée de test, aucune API réelle."];
+  });
+}

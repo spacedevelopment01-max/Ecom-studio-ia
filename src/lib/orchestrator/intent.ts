@@ -180,7 +180,7 @@ export async function understand(req: { action?: string; payload?: { regenerate?
   if (!text.trim()) return { intents: [], source: "none", confidence: 0, clarification: CLARIFY };
   const scope = requestScope(text, opts.choices);
   if (scope.clarification || !scope.actionable) return { intents: [], source: "none", confidence: 0, scope, clarification: scope.clarification || "Aucune modification autorisée dans cette demande. Les éléments à préserver restent inchangés." };
-  const r: IntentResult = scope.titleEdit ? { intents: ["WRITE_PRODUCT_COPY"], source: "rules", confidence: 1, scope } : { ...intentsFromRules(scope.actionable), scope };
+  const r: IntentResult = scope.renewDirections ? { intents: ["CREATE_LOGO"], source: "rules", confidence: 1, scope } : scope.titleEdit ? { intents: ["WRITE_PRODUCT_COPY"], source: "rules", confidence: 1, scope } : { ...intentsFromRules(scope.actionable), scope };
   if (r.intents.length && r.confidence >= 0.7) return r;
   if (!opts.aiActive || !opts.classify) return { ...r, intents: r.confidence >= 0.7 ? r.intents : [], clarification: CLARIFY };
   const ai = await opts.classify(text);

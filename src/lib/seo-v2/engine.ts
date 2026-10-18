@@ -29,7 +29,7 @@ import { INTENT_GOAL } from "./intent";
 import { fromAiDraft, localDraft, writePrompt, writeSystem } from "./write";
 import { DELIVERABLE_OF, gateContent, localContentChecks, proseOf, reviewPrompt } from "./quality";
 import { blockText } from "./doc";
-import { contentKey, contentRun, contentUserOwned, latestContent, listContents, rememberContentRun, runKey, saveContentVersion } from "./store";
+import { contentVersionDoc, contentKey, contentRun, contentUserOwned, latestContent, listContents, rememberContentRun, runKey, saveContentVersion } from "./store";
 import { applyContentOps } from "./ops";
 import { planEdit } from "./local-edit";
 import { localOnlyDeps, realSeoDeps, writeKind, type CallKind, type SeoV2Deps } from "./deps";
@@ -129,16 +129,27 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   }
 
   // 6. Idempotence : même brief, mêmes faits, même moteur → le document déjà produit, sans rien refaire ni payer.
-  const memoKey = runKey({ v: SEO_V2_VERSION, docKey, type: req.type, lang, page: page.key, instructions:brief.instructions??null, kw: brief.primaryKeyword?.term ?? null, intent: brief.intent, facts, links: brief.links.map((l) => [l.key, l.status, l.url]), ai: deps.canWrite, review: deps.canReview });
+  const memoKey = runKey({ v: SEO_V2_VERSION, identity: p.brand?.artIdentity ?? null, brandTone: p.brand?.tone, docKey, type: req.type, lang, page: page.key, instructions:brief.instructions??null, kw: brief.primaryKeyword?.term ?? null, intent: brief.intent, facts, links: brief.links.map((l) => [l.key, l.status, l.url]), ai: deps.canWrite, review: deps.canReview });
   const memo = req.force ? null : contentRun(p.id, memoKey);
   if (memo) {
-    const prev = latestContent(p.id, memo.docKey);
-    if (prev) return { ...base, docKey: memo.docKey, doc: prev.doc, verdict: memo.verdict as ContentRunResult["verdict"], reason: "déjà rédigé avec le même brief et les mêmes faits : rien n'a été refait", by: prev.doc.meta2.by, costMicro: 0, skipped: true };
+    const saved = contentVersionDoc(p.id, memo.docKey, memo.version);
+    const latest = latestContent(p.id, memo.docKey);
+    if (saved) {
+      let key = memo.docKey;
+      // Le mémo désigne une version précise, jamais la dernière rédaction d'un autre contexte.
+      if (!latest || JSON.stringify(latest.doc) !== JSON.stringify(saved)) {
+        key = `cnt:${runKey({ reuse: memo.docKey, version: memo.version, memoKey }).slice(0, 20)}`;
+        const existing = latestContent(p.id, key);
+        if (existing && JSON.stringify(existing.doc) !== JSON.stringify(saved)) key = `cnt:${runKey({ reuse: key, preserve: existing.version.id }).slice(0, 20)}`;
+        if (!latestContent(p.id, key)) saveContentVersion(p.id, key, saved, { verdict: memo.verdict, note: `Réutilisation gratuite de ${memo.docKey}, version ${memo.version} ; autres versions conservées` });
+      }
+      return { ...base, docKey: key, doc: saved, verdict: memo.verdict as ContentRunResult["verdict"], reason: "version précise déjà rédigée avec le même brief, les mêmes faits et la même identité : rien de repayé", by: saved.meta2.by, costMicro: 0, skipped: true };
+    }
   }
 
   // Autres pages du projet (doublons).
   const others = listContents(p.id)
-    .filter((x) => x.docKey !== docKey)
+    .filter((x) => x.docKey !== docKey && latestContent(p.id, x.docKey)?.doc.page.key !== page.key)
     .map((x) => ({ key: x.title, text: proseOf(latestContent(p.id, x.docKey)?.doc ?? { blocks: [] }) }));
 
   // 7. Rédaction locale d'abord (toujours possible, gratuite).

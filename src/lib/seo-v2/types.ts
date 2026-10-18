@@ -11,6 +11,7 @@
 import type { Verdict } from "../quality/gate";
 
 export const CONTENT_TYPES = [
+  "contact_page",
   "product_page",
   "category_page",
   "service_page",

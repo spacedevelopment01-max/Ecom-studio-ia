@@ -1,3 +1,5 @@
+import { saveAsset } from "../library";
+import sharp from "sharp";
 /**
  * Image & Search Engine V2 (phase 5A) — moteur central.
  *
@@ -47,6 +49,7 @@ import type { ArtDirectionId, ImageOutcome, ImageReview, VisualBrief } from "./t
 export const IMAGE_V2_VERSION = "5a.1";
 
 export type ImageRequestV2 = BriefRequest & {
+  preserveOriginal?: boolean;
   /** Nombre d'images (série diversifiée) ; 1 par défaut. */
   count?: number;
   /** Génération permise en dernier recours (sinon recherche seule). */
@@ -338,6 +341,12 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
       service: req.service?.name ?? null,
       sourceAssetId: brief.references[0] ?? null,
     });
+    if (req.preserveOriginal) {
+      const format = (await sharp(gen.img).metadata()).format;
+      const ext = format === "jpeg" ? "jpg" : format;
+      if (!["png", "jpg", "webp"].includes(ext ?? "")) throw new Error("Format original fournisseur non reconnu : original non présenté comme PNG.");
+      await saveAsset({ projectId: p.id, userId: p.userId, data: gen.img, name: `${req.slot?.replaceAll(":", "-") || "image"}-original.${ext}`, mime: format === "jpeg" ? "image/jpeg" : `image/${format}`, origin: "generated", role: "image-original", folderKey: "images.scenes", sourceAssetId: asset.id, status: "review", meta: { provider: gen.provider, model: gen.model, original: true, attempt } });
+    }
     remember(p.id, `gen:${ph}`, bh, { verdict: d.verdict === "FINAL" ? "FINAL" : "REJECTED", score: d.score, codes: [...d.fatalCodes, ...d.blockingCodes], check_id: g.meta.gate.checkId, asset_id: asset.id, phash: local.hash });
     last = { briefHash: bh, verdict: d.verdict, score: d.score, codes: [...d.fatalCodes, ...d.blockingCodes], reason: d.reason, origin: "generated", assetId: d.verdict === "FINAL" ? asset.id : null, attempts: attempt + 1, candidateKey: `gen:${ph}` };
     if (d.verdict === "FINAL") {

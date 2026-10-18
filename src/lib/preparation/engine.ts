@@ -1,3 +1,7 @@
+import { placementHash, receiptFor } from "./media-context";
+import { finalMediaIssues, slotIssues } from "./media-policy";
+import { currentSeries, directionOf } from "../logo-v2/direction-series";
+import { analyzed } from "./evidence";
 import { copyContract, incompleteDocument } from "./copy-contract";
 import { validateResearch, isLegacyResearch } from "./research-ai";
 /** Orchestration amont : points de reprise existants, validation client et contrat, jamais de thème. */
@@ -108,7 +112,7 @@ export function usableAsset(
   if (
     !a ||
     a.project_id !== projectId ||
-    a.kind !== "image" ||
+    !["image", "video"].includes(a.kind) ||
     !isAutoUsable(a)
   )
     throw new HttpError(
@@ -117,7 +121,7 @@ export function usableAsset(
       "preparation_media_unusable",
     );
   const meta = json<any>(a.meta, {});
-  if (role === "logo" && !["logo", "logo-v2"].includes(a.role || ""))
+  if (role === "logo" && (a.kind !== "image" || !["logo", "logo-v2"].includes(a.role || "")))
     throw new HttpError(409, "Choisissez un logo du projet.");
   if (a.origin !== "upload" && meta.gate?.verdict !== "FINAL")
     throw new HttpError(
@@ -187,6 +191,14 @@ export function blockers(projectId: string, s = stateOf(projectId)): string[] {
   const b = stageOf(s, "brief").data;
   const brand = stageOf(s, "brand").data;
   const media = stageOf(s, "media").data;
+  if (!s.simulation) out.push(...finalMediaIssues(p, media.slots, stageOf(s, "content").data));
+  const contents = stageOf(s, "content").data;
+  if (contents.pending) out.push(contents.pending);
+  if (!s.simulation && copyContract(contents).readiness.status !== "mapped") out.push("Copie de liaison à compléter avant thème.");
+  if (!s.simulation && (!contents.execution || !contents.editorial?.length || contents.recommendation?.status !== "selected" || contents.documents.some(d => d.doc.meta2.by !== "ai" || d.verdict !== "FINAL") || contents.pages.some(pg => !contents.documents.some(d => d.doc.page.key === pg.key)))) out.push("Rédaction API ou plan éditorial complet à reprendre avant thème.");
+  if (!s.simulation && !stageOf(s, "research").data.execution) out.push("Recherche stratégique API à reprendre avant thème.");
+  if (!s.simulation && !loadProject(projectId).brand?.artIdentity) out.push("Direction complète et charte à valider avant thème.");
+  if (!analyzed(b)) out.push("Compréhension IA du brief en attente ; le brouillon local ne suffit pas.");
   if (b.missing.length) out.push(...b.missing);
   if (
     stableHash(p.product) !== stableHash(b.profile) ||
@@ -244,6 +256,9 @@ export function readyContract(projectId: string): ReadyContract | null {
     copy: copyContract(c).copy,
     copyReadiness: copyContract(c).readiness,
     research: stageOf(s, "research").data,
+    editorial: c.editorial ?? [],
+    recommendation: c.recommendation,
+    mediaPolicy: { images: 10, videos: p.business === "products" ? 1 : 2, source: p.business === "products" ? "10 créations IA du produit + 1 vidéo Pixabay" : "10 images + 2 vidéos Pixabay", heroVideoRequired: true },
     pages: c.pages,
     documents: c.documents,
     media: stageOf(s, "media").data.slots,
@@ -285,6 +300,7 @@ export function approve(
     if (step === "brief") {
       const b = stageOf(s, "brief").data;
       if (b.missing.length) throw new HttpError(409, b.missing.join(" "));
+      if (!analyzed(b)) throw new HttpError(409, "L’analyse IA de la description et des photos est nécessaire avant validation. Vos données sont conservées.");
       saveProduct(projectId, b.profile);
       saveServices(projectId, b.services);
       run(
@@ -308,6 +324,7 @@ export function approve(
           409,
           "Aucune source n’a pu être consultée. Ajoutez un lien public accessible.",
         );
+      if (!s.simulation && !r.execution) throw new HttpError(409, "Analyse stratégique API en attente : les hypothèses locales restent conservées.");
       validateResearch(r, true);
       if (!r.angles.some((a) => a.id === o.choiceId))
         throw new HttpError(400, "Choisissez une proposition disponible.");
@@ -332,6 +349,8 @@ export function approve(
         o.logoId || b.selectedLogo || "",
         "logo",
       );
+      const selection = directionOf(projectId, asset.id);
+      if (!s.simulation && asset.origin !== "upload" && (!selection || selection.series.status !== "complete" || loadProject(projectId).brand?.logo.proposalId !== asset.id)) throw new HttpError(409, "Choisissez une direction complète et attendez ses déclinaisons avant de valider.");
       const logoMeta = json<any>(asset.meta, {});
       if (
         logoMeta.preparation?.identityHash &&
@@ -343,11 +362,11 @@ export function approve(
         );
       b.selectedLogo = asset.id;
       b.proposal = {
-        ...b.proposal,
+        ...(selection ? loadProject(projectId).brand! : b.proposal),
         validated: ["name", "tagline", "palette", "fonts", "logo"],
         logo: {
           ...b.proposal.logo,
-          assetId: asset.id,
+          assetId: selection ? loadProject(projectId).brand!.logo.assetId : asset.id,
           status: asset.origin === "upload" ? "provided" : "validated",
           provisional: false,
         },
@@ -357,7 +376,12 @@ export function approve(
     if (step === "content") {
       const c = stageOf(s, "content").data;
       const p = loadProject(projectId);
+      if (c.pending) throw new HttpError(409, c.pending);
+      if (!s.simulation && copyContract(c).readiness.status !== "mapped") throw new HttpError(409, "Copie de liaison encore provisoire : aucune livraison finale avant correction.");
+      if (c.provenance !== "simulation" && (c.provenance !== "provider" || !c.execution || !c.editorial?.length || c.recommendation?.status !== "selected")) throw new HttpError(409, "Rédaction API, plan éditorial complet et choix de thème sont requis ; aucun gabarit local final.");
+      for (const page of c.pages) if (!c.documents.some(d => d.doc.page.key === page.key)) throw new HttpError(409, `Document absent : ${page.title}.`);
       for (const item of c.documents) {
+        if (c.provenance !== "simulation" && (item.doc.meta2.by !== "ai" || item.verdict !== "FINAL")) throw new HttpError(409, "Texte API final contrôlé requis pour chaque page.");
         const current = latestContent(projectId, item.docKey);
         if (!current || stableHash(current.doc) !== stableHash(item.doc))
           throw new HttpError(
@@ -415,6 +439,7 @@ export function approve(
     }
     if (step === "media") {
       const m = stageOf(s, "media").data;
+      if (!s.simulation) { const issues = finalMediaIssues(loadProject(projectId), m.slots, stageOf(s, "content").data); if (issues.length) throw new HttpError(409, issues.join(" ")); }
       for (const slot of m.slots) {
         if (slot.required && (!slot.reviewed || !slot.assetId))
           throw new HttpError(409, `Vérifiez le visuel ${slot.key}.`);
@@ -469,6 +494,7 @@ export function editBrief(projectId: string, revision: number, input: Input) {
     if (stableHash(offer(old.input)) === stableHash(offer(input))) {
       const next = {
         ...structuredClone(old),
+
         input,
         missing: old.missing.filter((x) => !x.includes("À qui cette offre")),
       };
@@ -476,6 +502,20 @@ export function editBrief(projectId: string, revision: number, input: Input) {
         next.missing.push("À qui cette offre s’adresse-t-elle ?");
       draft(s, "brief", next);
     } else draft(s, "brief", analyzeLocally(input));
+  });
+}
+/** Une réponse client complète le brief analysé sans repayer sa lecture ni effacer les observations. */
+export function answerBriefQuestion(projectId: string, revision: number, questionId: string, answer: string) {
+  return commitState(projectId, revision, s => {
+    const st = stageOf(s, "brief"), b = st.data;
+    const q = b.profile.questions.find(x => x.id === questionId);
+    if (!q || !answer.trim()) throw new HttpError(400, "Question existante et réponse explicite requises.");
+    q.answer = answer.trim();
+    const existing = b.profile.facts.find(f => f.key === q.factKey);
+    if (existing) Object.assign(existing, { value: answer.trim(), status: "confirmed", source: "user" });
+    else b.profile.facts.push({ key: q.factKey, label: q.question, value: answer.trim(), status: "confirmed", source: "user" });
+    b.missing = b.missing.filter(m => m !== q.question);
+    st.status = "draft"; invalidateAfter(s, "brief");
   });
 }
 export function references(
@@ -488,6 +528,35 @@ export function references(
     b.data.input.referenceUrls = urls;
     invalidateAfter(s, "brief");
     b.inputHash = inputHash(s, "brief");
+  });
+}
+/** Choix volontaire d'un catalogue existant ; une nouvelle suggestion ne l'écrase pas. */
+export function chooseRecommendedTheme(projectId: string, revision: number, themeId: string) {
+  return commitState(projectId, revision, s => {
+    const c = stageOf(s, "content");
+    const item = c.data.recommendation?.catalogue.find(x => x.id === themeId);
+    if (!item || item.status !== "available") throw new HttpError(409, "Thème absent, en cours ou incompatible avec les droits du projet.");
+    c.data.recommendation!.selectedId = themeId;
+    c.data.recommendation!.status = "selected";
+    c.status = "draft"; invalidateAfter(s, "content");
+  });
+}
+export function moveMedia(projectId: string, revision: number, key: string, placement: { pageKey: string; sectionKey: string }) {
+  return commitState(projectId, revision, s => {
+    requireUpstream(s, "media");
+    const c = stageOf(s, "content").data, m = stageOf(s, "media");
+    const target = m.data.slots.find(x => x.key === key);
+    if (!target || !c.pages.some(p => p.key === placement.pageKey && p.sections.some(x => x.key === placement.sectionKey))) throw new HttpError(400, "Affectation inconnue.");
+    if (key === "final:video:1" && (placement.pageKey !== "home" || placement.sectionKey !== "hero")) throw new HttpError(409, "Conservez une vidéo dans le hero ; remplacez son fichier si nécessaire.");
+    Object.assign(target, placement, { reviewed: false, alignment: undefined });
+    for (const block of c.editorial ?? []) block.mediaSlotKeys = block.mediaSlotKeys.filter(k => k !== key);
+    const adjacent = c.editorial?.find(b => b.pageKey === placement.pageKey && b.sectionKey === placement.sectionKey);
+    if (!adjacent) throw new HttpError(409, "Cette section ne possède pas encore de texte éditorial associé.");
+    adjacent.mediaSlotKeys.push(key);
+    const original = c.slots.find(x => x.key === key);
+    if (original) Object.assign(original, placement);
+    m.inputHash = inputHash(s, "media");
+    m.status = "draft";
   });
 }
 export function confirmIdentity(
@@ -518,6 +587,7 @@ export function confirmIdentity(
         throw new HttpError(400, issues.map((x) => x.message).join(" "));
     }
     const changed = b.proposal.name !== edit.name.trim();
+    if (!changed && b.proposal.artIdentity && (edit.tagline !== b.proposal.tagline || (edit.palette && stableHash(edit.palette) !== stableHash(b.proposal.palette)) || (edit.fonts && stableHash(edit.fonts) !== stableHash(b.proposal.fonts)))) throw new HttpError(409, "Une direction complète est déjà choisie. Modifiez-la depuis l’onglet Marque, puis revérifiez l’identité et les contenus ; ce formulaire sert à confirmer le nom avant la série.");
     b.proposal = {
       ...b.proposal,
       name: edit.name.trim(),
@@ -525,9 +595,10 @@ export function confirmIdentity(
       tagline: edit.tagline,
       ...(edit.palette ? { palette: edit.palette } : {}),
       ...(edit.fonts ? { fonts: edit.fonts } : {}),
-      validated: ["name", "tagline", "palette", "fonts"],
+      validated: ["name", ...(edit.palette && stableHash(edit.palette) !== stableHash(b.proposal.palette) ? ["palette"] : []), ...(edit.fonts && stableHash(edit.fonts) !== stableHash(b.proposal.fonts) ? ["fonts"] : [])],
     };
     if (changed) {
+      delete b.proposal.artIdentity;
       b.logoCandidates = [];
       delete b.selectedLogo;
       b.proposal.logo = {
@@ -550,11 +621,6 @@ export function assignMedia(
 ) {
   const a = usableAsset(projectId, assetId);
   const meta = json<any>(a.meta, {});
-  if (a.origin === "stock" || meta.stock || meta.imageV2?.origin === "stock")
-    throw new HttpError(
-      409,
-      "Les photos de banque ne servent pas de création finale dans ce parcours.",
-    );
   if (
     meta.preparation?.brandHash &&
     meta.preparation.brandHash !== stableHash(loadProject(projectId).brand)
@@ -584,7 +650,14 @@ export function assignMedia(
     const st = stageOf(s, "media");
     const slot = st.data.slots.find((x) => x.key === key);
     if (!slot) throw new HttpError(404, "Emplacement inconnu.");
-    Object.assign(slot, {
+    const receipt = s.simulation ? meta.preparation?.reviewedSlot : receiptFor(meta, placementHash(loadProject(projectId), stageOf(s, "content").data, { ...slot, peopleConsent: consent }));
+    if (slot.source === "ai" && (meta.stock || meta.imageV2?.origin === "stock" || a.origin === "import")) throw new HttpError(409, "Création IA requise, aucune photo de banque dans ce lot produit.");
+    if (!s.simulation) {
+      if (!receipt || receipt.key !== slot.key || receipt.pageKey !== slot.pageKey || receipt.sectionKey !== slot.sectionKey || receipt.alignment?.contextHash !== placementHash(loadProject(projectId), stageOf(s, "content").data, { ...slot, peopleConsent: consent })) throw new HttpError(409, "Vérification texte-image nécessaire pour cet emplacement avant sélection.");
+      const issues = slotIssues(loadProject(projectId), { ...slot, ...receipt, assetId }, a);
+      if (issues.length) throw new HttpError(409, issues.join(" "));
+    }
+    Object.assign(slot, { ...receipt,
       assetId,
       peopleConsent: consent,
       reviewed: true,
@@ -631,7 +704,7 @@ export function restoreForReview(
     delete n.error;
   });
 }
-export type RunAction = "generate" | "analyze" | "logo" | "image";
+export type RunAction = "generate" | "analyze" | "logo" | "image" | "collect";
 export function requestHash(
   s: State,
   step: Step,
@@ -665,6 +738,10 @@ export function requestHash(
     ...(step === "content" ? { page: slot ?? null } : {}),
     ...(step === "research" ? { researchFormat: 2 } : {}),
   });
+}
+export function mediaReusable(projectId: string, s = stateOf(projectId)): boolean {
+  const p = loadProject(projectId), c = s?.stages.content?.data, m = s?.stages.media?.data;
+  return !!c && !!m?.slots.length && m.slots.every(slot => !!slot.assetId && slot.alignment?.status === "accepted" && (s?.simulation || (!slotIssues(p, slot, getAsset(slot.assetId)).length && slot.alignment.contextHash === placementHash(p, c, slot))));
 }
 export function queuePreparation(
   projectId: string,
@@ -708,6 +785,7 @@ export function queuePreparation(
       !(step === "research" && s.stages.research && isLegacyResearch(s.stages.research.data))
     )
       return { state: s, job: null, reused: true };
+    if (action === "collect" && mediaReusable(projectId, s)) return { state: s, job: null, reused: true };
     const attempts =
       one<{ n: number }>(
         "SELECT COUNT(*) n FROM jobs WHERE project_id=? AND type='project.prepare' AND json_extract(payload,'$.inputHash')=?",
@@ -739,6 +817,7 @@ export function queuePreparation(
         step,
         action,
         ...opts,
+        ...(action === "logo" ? { expectedSeriesId: currentSeries(projectId)?.id ?? null } : {}),
         inputHash: hash,
         revision: s.revision + 1,
       },
@@ -779,7 +858,7 @@ export async function runPreparation(
     const s = stateOf(projectId);
     if (
       !s ||
-      s.revision !== revision ||
+      (s.revision !== revision && !(action === "collect" && s.pending?.jobId === ctx.job.id && s.revision >= revision)) ||
       requestHash(s, step, action, key) !== hash
     )
       throw new UserFacingError(
@@ -789,10 +868,31 @@ export async function runPreparation(
     requirePlan(null, projectId);
     requireUpstream(s, step);
     assertFresh(projectId, s, step);
+    let expectedRevision = s.revision;
     ctx.progress(0.05, "Préparation à partir des choix validés");
     const execute = () =>
       withTrace({ jobId: ctx.job.id, projectId, costCapMicro: capMicro }, () =>
         ctx.step(`prepare:${action}:${hash}`, async () => {
+          if (action === "collect") {
+            const keys = stageOf(s, "media").data.slots.map(slot => slot.key);
+            for (const [i, slotKey] of keys.entries()) {
+              const current = stateOf(projectId)!;
+              if (current.revision !== expectedRevision || current.pending?.jobId !== ctx.job.id) throw new UserFacingError("Le projet a changé : collecte arrêtée, médias déjà enregistrés conservés.");
+              const slot = stageOf(current, "media").data.slots.find(x => x.key === slotKey)!;
+              // Réutilisation d'un résultat compatible, même avant la dernière validation manuelle : aucun nouvel achat.
+              if (slot.assetId && slot.alignment?.status === "accepted" && (!slotIssues(p, slot, getAsset(slot.assetId)).length || deps.simulation)) continue;
+              ctx.progress(.1 + .8 * i / keys.length, `Média ${i + 1}/${keys.length} : ${slotKey}`);
+              const aid = await ctx.step(`collect:${slotKey}`, () => deps.image(p, ctx, { ...slot, correction: ctx.payload.correction || slot.correction }, stageOf(current, "brief").data.input.photoIds, capMicro));
+              const a = usableAsset(projectId, aid), receipt = json<any>(a.meta, {}).preparation?.reviewedSlot;
+              const next = commitState(projectId, expectedRevision, n => {
+                const target = stageOf(n, "media").data.slots.find(x => x.key === slotKey)!;
+                Object.assign(target, receipt ?? {}, { assetId: aid, reviewed: false, inputHash: inputHash(n, "media") });
+                if (deps.simulation) n.simulation = true;
+              });
+              expectedRevision = next.revision;
+            }
+            return stageOf(stateOf(projectId)!, "media").data;
+          }
           if (action === "analyze")
             return deps.inspect(p, stageOf(s, "brief").data, ctx, paid);
           if (step === "research") {
@@ -809,6 +909,7 @@ export async function runPreparation(
               ctx,
               {
                 ...slot,
+                correction: ctx.payload.correction || slot.correction,
                 purpose:
                   slot.purpose +
                   (ctx.payload.correction
@@ -838,7 +939,7 @@ export async function runPreparation(
       for (const aid of output as string[]) {
         const a = usableAsset(projectId, aid, "logo");
         run(
-          "UPDATE assets SET meta=json_set(meta,'$.preparation',json(?)) WHERE id=? AND project_id=?",
+          "UPDATE assets SET meta=json_set(meta,'$.preparation',json_patch(COALESCE(json_extract(meta,'$.preparation'),'{}'),json(?))) WHERE id=? AND project_id=?",
           JSON.stringify({
             identityHash: identityHash(stageOf(s, "brand").data.proposal),
             provenance: deps.simulation ? "simulation" : "provider",
@@ -850,7 +951,7 @@ export async function runPreparation(
     if (action === "image") {
       const a = usableAsset(projectId, output as string);
       run(
-        "UPDATE assets SET meta=json_set(meta,'$.preparation',json(?)) WHERE id=? AND project_id=?",
+        "UPDATE assets SET meta=json_set(meta,'$.preparation',json_patch(COALESCE(json_extract(meta,'$.preparation'),'{}'),json(?))) WHERE id=? AND project_id=?",
         JSON.stringify({
           brandHash: stableHash(p.brand),
           inputHash: hash,
@@ -864,18 +965,22 @@ export async function runPreparation(
         projectId,
       );
     }
-    const next = commitState(projectId, revision, (n) => {
-      if (action === "logo") {
+    const next = commitState(projectId, expectedRevision, (n) => {
+      if (action === "collect") { stageOf(n, "media").status = "draft"; }
+      else if (action === "logo") {
         invalidateAfter(n, "brand");
         stageOf(n, "brand").status = "draft";
         stageOf(n, "brand").data.logoCandidates = output as string[];
+        const series = !deps.simulation && currentSeries(projectId);
+        if (series) { stageOf(n, "brand").data.seriesId = series.id; stageOf(n, "brand").data.directions = series.directions; }
         if (!(output as string[]).length)
           throw new UserFacingError(
             "Aucun logo final contrôlé. Les essais sont conservés, mais ne sont pas présentés comme validés.",
           );
       } else if (action === "image") {
         const slot = stageOf(n, "media").data.slots.find((x) => x.key === key)!;
-        Object.assign(slot, {
+        const receipt = json<any>(getAsset(output as string)?.meta, {}).preparation?.reviewedSlot;
+        Object.assign(slot, { ...receipt,
           assetId: output as string,
           reviewed: false,
           inputHash: inputHash(n, "media"),
@@ -885,6 +990,8 @@ export async function runPreparation(
       delete n.pending;
       delete n.error;
     });
+    if (step === "content" && (output as any)?.pending) throw new UserFacingError((output as any).pending);
+    if (action === "logo" && !deps.simulation && currentSeries(projectId)?.status !== "complete") throw new UserFacingError(`Série incomplète : ${currentSeries(projectId)?.directions.length ?? 0}/3 directions complètes conservées ; reprise ciblée nécessaire.`);
     ctx.progress(1, "Proposition disponible pour votre vérification");
     return {
       revision: next.revision,

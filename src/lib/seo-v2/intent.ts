@@ -7,6 +7,7 @@ import type { ContentIntent, ContentType, SearchIntent } from "./types";
 
 /** Intention par défaut de chaque type de contenu. */
 export const TYPE_INTENT: Record<ContentType, ContentIntent> = {
+  contact_page: "convert",
   product_page: "sell",
   category_page: "compare",
   service_page: "present_service",

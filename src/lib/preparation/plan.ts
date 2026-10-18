@@ -96,16 +96,22 @@ export function sitePlan(p: Project): {
       sections: [{ key: "contact", purpose: "Coordonnées et formulaire" }],
     },
   );
-  const slots: VisualSlot[] = pages.flatMap((pg) =>
-    pg.sections
-      .filter((s) => s.mediaSlot)
-      .map((s) => ({
-        key: s.mediaSlot!,
-        pageKey: pg.key,
-        sectionKey: s.key,
-        purpose: s.purpose,
-        required: true,
-      })),
-  );
+  // Emplacements finaux : aucun original, essai ou recadrage ne compte comme création distincte.
+  const main = pages.find(pg => pg.kind === (p.business === "services" ? "service" : "product"))!;
+  if (!main) throw new Error("Validez au moins une offre ou prestation avant de préparer les pages.");
+  const brand = pages.find(pg => pg.kind === "brand")!;
+  for (const pg of [pages[0], main, brand]) for (const [key, purpose] of [["gallery", "Galerie de scènes distinctes"], ["story", "Formats verticaux : lecture sans déformation"]]) if (!pg.sections.some(s => s.key === key)) pg.sections.push({ key, purpose });
+  const placements = [
+    [main.key, "detail"], [main.key, "gallery"], ["home", "offer"], ["brand", "gallery"],
+    ["home", "offer"], [main.key, "gallery"], ["brand", "gallery"], ["home", "gallery"],
+    [main.key, "story"], ["brand", "story"],
+  ];
+  if (p.business === "services") placements[0][1] = "presentation";
+  const slots: VisualSlot[] = placements.map(([pageKey, sectionKey], i) => ({
+    key: `final:image:${i + 1}`, pageKey, sectionKey, kind: "image", aspect: i < 4 ? "1:1" : i < 8 ? "16:9" : "9:16",
+    source: p.business === "products" ? "ai" : "pixabay", purpose: `Composition ${i + 1} de ${p.product.name} : ${pageKey}/${sectionKey}`, required: true,
+  }));
+  for (let i = 0; i < (p.business === "products" ? 1 : 2); i++) slots.push({ key: `final:video:${i + 1}`, pageKey: i === 0 ? "home" : main.key, sectionKey: i === 0 ? "hero" : "method", kind: "video", aspect: "16:9", source: "pixabay", purpose: i === 0 ? "Ambiance hero pertinente, zone de texte lisible ; jamais une preuve sur le produit exact ou les locaux réels" : "Présentation du métier, illustration déclarée", required: true, playback: { muted: true, playsInline: true, loop: true, pauseControl: true, reducedMotion: "poster", mobileFallback: "poster" } });
+  pages[0].sections[0].mediaSlot = "final:video:1";
   return { pages, slots };
 }

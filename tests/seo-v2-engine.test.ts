@@ -135,6 +135,28 @@ describe("SEO V2 — moteur", async () => {
     expect(d.skipped).toBe(false);
   });
 
+  it("reprise d'un ancien contexte : sa version précise, jamais la dernière page d'un autre brief", async () => {
+    const pid = seed("hightech");
+    const mark = (suffix: string) => (prompt: string) => {
+      const doc = faithfulDraft(prompt);
+      doc.blocks.push({ kind: "p" as const, text: `Consultez les informations de cette page pour découvrir les caractéristiques et usages décrits. ${suffix}` });
+      return doc;
+    };
+    const { deps, log } = mockSeoDeps({ drafts: [mark("Version alpha."), mark("Version bêta.")] });
+    const a = await fr(() => runContentEngineV2(null, pid, { type: "faq", request: "Présenter les usages de façon précise." }, deps));
+    const b = await fr(() => runContentEngineV2(null, pid, { type: "faq", request: "Présenter les informations dans un ton plus éditorial." }, deps));
+    expect(b.docKey).toBe(a.docKey);
+    expect(b.doc).not.toEqual(a.doc);
+    const restored = await fr(() => runContentEngineV2(null, pid, { type: "faq", request: "Présenter les usages de façon précise." }, deps));
+    expect(restored.skipped).toBe(true);
+    expect(restored.costMicro).toBe(0);
+    expect(restored.doc).toEqual(a.doc);
+    expect(restored.docKey).not.toBe(b.docKey);
+    expect(latestContent(pid, b.docKey!)?.doc).toEqual(b.doc);
+    expect(latestContent(pid, restored.docKey!)?.doc).toEqual(a.doc);
+    expect(log.writes).toHaveLength(2);
+  });
+
   it("modifications du client : manuelles sans IA, versionnées ; jamais écrasées par une nouvelle rédaction ; restauration = copie", async () => {
     const pid = seed("cosmetic");
     const r = await fr(() => runContentEngineV2(null, pid, { type: "product_page" }, localOnlyDeps()));

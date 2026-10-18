@@ -31,6 +31,7 @@ export function plannedPages(p: Project): PageRef[] {
     } else planned.push({ key: key("product", p.product.name || p.name), title: p.product.name || p.name, url: null, kind: "product", status: "planned" });
   }
   planned.push({ key: "brand:a-propos", title: p.brand?.name ?? p.name, url: null, kind: "brand", status: "planned" });
+  planned.push({ key: "contact", title: "Contact", url: null, kind: "page", status: "planned" });
   return planned;
 }
 

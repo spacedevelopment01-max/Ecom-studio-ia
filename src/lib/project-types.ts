@@ -69,6 +69,7 @@ export type ProductProfile = {
 };
 
 export type Brand = {
+  artIdentity?: import("./logo-v2/direction-series").DirectionIdentity & { directionId: string; seriesId: string };
   name: string;
   nameStatus: "provided" | "proposed" | "validated";
   alternatives: string[];

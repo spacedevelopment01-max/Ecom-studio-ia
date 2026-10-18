@@ -12,6 +12,7 @@ import { getJsonSetting } from "../settings";
 import { EUR } from "../billing";
 import { logoArtworkMaxMicro, logoRelayMaxMicro } from "../ai/media-providers";
 import { routeLlm } from "../ai/llm";
+import { HttpError } from "../auth";
 
 /** Créations par série quand le modèle d'images dessine le logo complet. */
 export const ARTWORK_SERIES = 3;
@@ -50,8 +51,13 @@ const SYMBOL = () => textMaxMicro("logo_symbol", 8000, 6000);
 export type LogoQuote = { mode: "artwork" | "built"; creations: number; images: number; maxMicro: number; imageMaxMicro: number | null; probableMicro?: number; relayMicro?: number | null };
 
 /** Devis (et plafond) d'une série complète. */
-export function logoSeriesQuote(): LogoQuote {
-  const img = logoArtworkMaxMicro();
+export function logoSeriesQuote(options: { allowLocal?: boolean } = {}): LogoQuote {
+  let img: number | null;
+  try { img = logoArtworkMaxMicro(); }
+  catch {
+    if (!options.allowLocal) throw new HttpError(409, "Plafond du modèle logo requis non vérifié : série en attente. Aucun tarif forfaitaire inventé, aucun appel lancé.");
+    img = null;
+  }
   if (img != null) {
     // Relais de qualité (règle du propriétaire) : un logo du modèle principal écarté par le contrôle est redessiné par
     // OpenAI ; son coût n'est débité que si le relais a lieu.
@@ -60,6 +66,7 @@ export function logoSeriesQuote(): LogoQuote {
     const probableMicro = TERRITORIES() + ARTWORK_SERIES * (img + REVIEW());
     return { mode: "artwork", creations: ARTWORK_SERIES, images: ARTWORK_SERIES, imageMaxMicro: img, probableMicro, relayMicro, maxMicro: TERRITORIES() + ARTWORK_SERIES * (img + 2 * REVIEW() + (relayMicro ?? 0)) };
   }
+  if (!options.allowLocal) throw new HttpError(409, "Modèle logo requis indisponible ou plafond inconnu : série en attente, aucun dessin local ni autre modèle de remplacement.");
   // Construit : relecture + au plus 2 reprises ciblées par direction, symbole et 2 redessins pour au plus 2 directions ;
   // concepts de symbole par un modèle d'images qui n'écrit pas le texte (au plus 3), s'il y en a un.
   const concept = logoArtworkMaxMicro({ text: false });
@@ -69,7 +76,8 @@ export function logoSeriesQuote(): LogoQuote {
 
 /** Devis (et plafond) d'une « Nouvelle version » demandée par le client : une image et ses relectures. */
 export function logoRedrawQuote(): LogoQuote | null {
-  const img = logoArtworkMaxMicro();
+  let img: number | null;
+  try { img = logoArtworkMaxMicro(); } catch { return null; }
   if (img == null) return null;
   const relayImg = logoRelayMaxMicro();
   const relayMicro = relayImg != null ? relayImg + 2 * REVIEW() : null;

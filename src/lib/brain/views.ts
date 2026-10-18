@@ -139,6 +139,7 @@ export function brainItems(s: BrainSnapshot): BrainItem[] {
   const items: BrainItem[] = [];
   const add = (it: Omit<BrainItem, "stable" | "critical"> & { stable?: boolean; critical?: boolean }) => items.push({ stable: true, critical: false, ...it });
 
+  if (p.brand?.artIdentity) add({ id: "brand.artIdentity", section: "brand", level: "hard", tier: 2, critical: true, scopes: "*", source: "brand", text: `DIRECTION COMPLÈTE VALIDÉE (toutes les créations suivent ce système ; ne pas modifier les versions approuvées) : ${JSON.stringify({ name: p.brand.name, logo: p.brand.logo.assetId, ...p.brand.artIdentity })}`, data: p.brand.artIdentity });
   // ------------------------------------------------------------------ identité et offre
   add({ id: "identity.kind", section: "identity", level: "hard", tier: 2, critical: true, scopes: "*", source: "project", text: services ? "Type : entreprise de services (site vitrine : rendez-vous, devis ou contact ; pas une boutique de produits)." : `Type : boutique de produits (${p.storeType}).`, data: { business: p.business, storeType: p.storeType } });
   add({

@@ -19,6 +19,7 @@ import { fold, langPack } from "./lang";
 import { EDITORIAL_CRITERIA, type Block, type ContentDoc, type ContentType, type EditorialCriterion, type EditorialReview, type PageRef, type SeoStrategy, type VerifiedFacts } from "./types";
 
 export const DELIVERABLE_OF: Record<ContentType, Deliverable> = {
+  contact_page: "seo_home_v2",
   product_page: "seo_product_v2",
   category_page: "seo_category_v2",
   service_page: "seo_service_v2",

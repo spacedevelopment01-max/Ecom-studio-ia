@@ -6,6 +6,9 @@ import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { all, json } from "@/lib/db";
 import {
   restoreForReview,
+  answerBriefQuestion,
+  chooseRecommendedTheme,
+  moveMedia,
   setPeopleConsent,
   approve,
   assignMedia,
@@ -39,7 +42,7 @@ const input = z.object({
   constraints: z.string().max(5000),
   business: z.enum(["products", "services"]),
   photoIds: z.array(z.string().max(80)).max(12),
-  referenceUrls: z.array(z.url().max(1000)).max(4),
+  referenceUrls: z.array(z.url().max(1000)).max(12),
   price: z.string().max(40),
   services: z.object({
     services: z
@@ -89,7 +92,7 @@ function view(projectId: string) {
       ),
     })),
     assets: all<Asset>(
-      "SELECT * FROM assets WHERE project_id=? AND kind='image' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 150",
+      "SELECT * FROM assets WHERE project_id=? AND kind IN ('image','video') AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 150",
       projectId,
     )
       .filter(isAutoUsable)
@@ -98,6 +101,7 @@ function view(projectId: string) {
         name: a.name,
         role: a.role,
         origin: a.origin,
+        kind: a.kind,
         status: a.status,
         verdict: json<any>(a.meta, {}).gate?.verdict ?? null,
         url: `/api/files/${a.id}`,
@@ -116,6 +120,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     z.object({
       action: z.enum([
         "edit-brief",
+        "answer",
         "references",
         "quote",
         "generate",
@@ -125,12 +130,17 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
         "assign",
         "refresh-content",
         "restore",
+        "theme-choice",
+        "placement",
       ]),
       revision: z.number().int().min(0),
       step: z.enum(STEPS).optional(),
-      runAction: z.enum(["generate", "analyze", "logo", "image"]).optional(),
+      runAction: z.enum(["generate", "analyze", "logo", "image", "collect"]).optional(),
       input: input.optional(),
-      urls: z.array(z.url().max(1000)).max(4).optional(),
+      urls: z.array(z.url().max(1000)).max(12).optional(),
+      questionId: z.string().max(100).optional(),
+      answer: z.string().trim().min(1).max(3000).optional(),
+      placement: z.object({ pageKey: z.string().max(200), sectionKey: z.string().max(200) }).optional(),
       choiceId: z.string().max(100).optional(),
       logoId: z.string().max(100).optional(),
       quoteId: z.string().max(100).optional(),
@@ -174,6 +184,18 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       )
         throw new HttpError(400, "Photo source étrangère ou refusée.");
     editBrief(p.id, b.revision, b.input as Input);
+  }
+  if (b.action === "answer") {
+    if (!b.questionId || !b.answer) throw new HttpError(400, "Question et réponse requises.");
+    answerBriefQuestion(p.id, b.revision, b.questionId, b.answer);
+  }
+  if (b.action === "theme-choice") {
+    if (!b.choiceId) throw new HttpError(400, "Choix de thème requis.");
+    chooseRecommendedTheme(p.id, b.revision, b.choiceId);
+  }
+  if (b.action === "placement") {
+    if (!b.slot || !b.placement) throw new HttpError(400, "Affectation requise.");
+    moveMedia(p.id, b.revision, b.slot, b.placement);
   }
   if (b.action === "references") references(p.id, b.revision, b.urls ?? []);
   if (b.action === "quote") {

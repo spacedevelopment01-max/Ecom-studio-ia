@@ -1,3 +1,4 @@
+import { initializeSynthetic as initialize } from "./preparation-fixtures";
 /** Régressions de l'audit, données isolées et aucun fournisseur réel. */
 import { expect, it, vi } from "vitest";
 import { understand } from "@/lib/orchestrator/intent";
@@ -13,7 +14,7 @@ import { runRequestPlan, STEP_EXECUTORS } from "@/lib/orchestrator/execute";
 import { JobContext, enqueue } from "@/lib/jobs";
 import { saveContentVersion, latestContent, contentKey } from "@/lib/seo-v2/store";
 import type { ContentDoc } from "@/lib/seo-v2/types";
-import { initialize, approve, stateOf, queuePreparation, runPreparation, readyContract } from "@/lib/preparation/engine";
+import { approve, stateOf, queuePreparation, runPreparation, readyContract } from "@/lib/preparation/engine";
 import { draft, commitState } from "@/lib/preparation/store";
 import { simulatedDependencies } from "./preparation-fixtures";
 import { isLegacyResearch, validateResearch } from "@/lib/preparation/research-ai";
@@ -75,7 +76,7 @@ it.each([
   expect(all("SELECT id FROM ai_calls WHERE project_id=?", f.pid)).toEqual([]);
 });
 it("demande composée : seul le texte autorisé est exécuté, logo et identité sont conservés", async () => {
-  const f = await fixture(); initialize(f.pid, f.input); approve(f.pid, 1, "brief");
+  const f = await fixture(); initialize(f.pid, f.input); approve(f.pid, stateOf(f.pid)!.revision, "brief");
   const before = loadProject(f.pid);
   const old = STEP_EXECUTORS.copy;
   const calls: string[] = [];
@@ -100,7 +101,7 @@ it("référence résolue par identifiant/version ; choix de même rang dans deux
 });
 const homeDoc = (): ContentDoc => ({ version: 1, type: "home_page", lang: "fr", page: { key: "home", title: "Accueil", url: null, kind: "home", status: "planned" }, primaryKeyword: null, meta: { seoTitle: "Titre SEO conservé", metaDescription: "Description conservée", slug: "", canonical: null, robots: "index,follow" }, blocks: [{ id: "h1", kind: "h1", text: "Ancien titre" }, { id: "p", kind: "p", text: "Texte intégral " + "paragraphe ".repeat(400) }], schema: [], links: [], meta2: { source: "user", by: "local", runId: null, createdFrom: null } });
 it("retouche exacte du titre : vraie nouvelle version, autres blocs et métadonnées inchangés", async () => {
-  const f = await fixture(); initialize(f.pid, f.input); approve(f.pid, 1, "brief");
+  const f = await fixture(); initialize(f.pid, f.input); approve(f.pid, stateOf(f.pid)!.revision, "brief");
   const doc = homeDoc(), key = contentKey(f.pid, "home_page", "home", "fr");
   saveContentVersion(f.pid, key, doc, { verdict: "FINAL" });
   const text = 'garde le logo, remplace uniquement le titre de la page d’accueil par « Un nouveau titre exact »';
@@ -143,7 +144,7 @@ it("cinq angles : rejette une simple reformulation des mêmes dimensions", async
   expect(() => validateResearch(similar)).toThrow(/trop proches/);
 });
 it("ancien projet trois angles : lecture et choix conservés, mise à niveau explicite sans génération automatique", async () => {
-  const f = await fixture(); initialize(f.pid, f.input); approve(f.pid, 1, "brief");
+  const f = await fixture(); initialize(f.pid, f.input); approve(f.pid, stateOf(f.pid)!.revision, "brief");
   const r = await simulatedDependencies.research(loadProject(f.pid), analyzeLocally(f.input), null as any, false);
   const legacy = { ...r, angles: r.angles.slice(0, 3) }; delete legacy.formatVersion;
   commitState(f.pid, stateOf(f.pid)!.revision, s => draft(s, "research", legacy));

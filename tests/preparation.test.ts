@@ -1,7 +1,8 @@
+import * as llm from "@/lib/ai/llm";
+import { initializeSynthetic as initialize } from "./preparation-fixtures";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   restoreForReview,
-  initialize,
   approve,
   stateOf,
   historyOf,
@@ -184,6 +185,7 @@ describe("Parcours amont — moteur réel, fournisseurs injectés et données is
     const f = await fixture();
     initialize(f.pid, f.input);
     accept(f.pid, "brief");
+    vi.spyOn(llm, "textProviderReady").mockReturnValueOnce(true); // Disponibilité injectée : aucun appel ne suit.
     const q = createQuote(f.pid, "research", "generate");
     const s = stateOf(f.pid)!;
     const a = queuePreparation(f.pid, s.revision, "research", "generate", {
@@ -544,6 +546,7 @@ describe("Parcours amont — moteur réel, fournisseurs injectés et données is
     initialize(f.pid, f.input);
     commitState(f.pid, stateOf(f.pid)!.revision, (s) => {
       s.stages.brief!.data.provenance = "provider";
+      s.stages.brief!.data.execution = { provider: "simulation", model: "simulation", usageKey: "test-only-analysis", vision: true, at: Date.now() };
       s.stages.brief!.data.profile.visual.description =
         "Observation conservée de la photo";
     });

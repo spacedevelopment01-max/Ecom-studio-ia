@@ -155,15 +155,18 @@ export const handlers: Record<string, Handler> = {
 
   /** Logo : nouvelles pistes (IA, plusieurs minutes) ou application de la piste choisie. */
   "brand.fulllogo": async (ctx) => {
-    const { generateFullLogos } = await import("../src/lib/engine/full-logo");
-    return { created: (await generateFullLogos(ctx, ctx.payload.projectId, { autoApply: !!ctx.job.parent_id })).length };
+    // Ancienne action conservée, nouvelles créations routées vers les séries et droits communs.
+    return handlers["brand.logo.v2"](ctx);
   },
 
   /** Logo V2 : territoires créatifs, construction hybride, barrière V2 (aucun mockup avant le choix). */
   "brand.logo.v2": async (ctx) => {
     const { runLogoEngineV2 } = await import("../src/lib/logo-v2/engine");
-    const r = await runLogoEngineV2(ctx, ctx.payload.projectId, { avoid: ctx.payload.avoid, style: ctx.payload.style });
-    return { shown: r.shown.length, discarded: r.discarded.length, territories: r.territories.length, stoppedByCostCap: r.stoppedByCostCap };
+    const r = await runLogoEngineV2(ctx, ctx.payload.projectId, { avoid: ctx.payload.avoid, style: ctx.payload.style, renew: ctx.payload.renew, correction: ctx.payload.correction });
+    const { currentSeries } = await import("../src/lib/logo-v2/direction-series");
+    const series = currentSeries(ctx.payload.projectId);
+    if (series && series.status !== "complete") throw new UserFacingError(`Série incomplète : ${series.directions.length}/3 directions complètes. Les résultats acceptés sont conservés ; reprise ciblée nécessaire.`);
+    return { shown: series?.directions.length ?? r.shown.length, generated: r.shown.length, discarded: r.discarded.length, territories: r.territories.length, stoppedByCostCap: r.stoppedByCostCap };
   },
   /** Logo V2 : nouvelle version d'un logo complet, demandée par le client (une image, coût accepté). */
   "brand.logo.v2.redraw": async (ctx) => {

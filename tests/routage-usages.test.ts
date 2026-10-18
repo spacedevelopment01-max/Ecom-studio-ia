@@ -133,13 +133,14 @@ describe("routage multimédia par usage", async () => {
     vi.stubGlobal("fetch", fakeFetch);
     setSetting("ai.prices.checkedAt", String(Date.now()));
     for (const k of ["ai.routes", "ai.media.backup", "ai.media.mode", "ai.media.models", "ai.media.usage", "ai.prices"]) setJsonSetting(k, {});
+    confirmModel("openai:gpt-image-2.5-sunburst", { unit: "image", perImage: 0.2 }); // Prix simulé, pas tarif officiel.
   });
   afterEach(() => vi.unstubAllGlobals());
 
-  it("sans réglage propre : les usages suivent le réglage général (rien ne change pour les projets existants), texte et logo compris", () => {
+  it("réglage général conservé pour les usages, sauf le dessin logo imposé", () => {
     const o = fr(() => mediaUsageOverview());
     expect(o.map((u) => u.usage)).toEqual(["logo", "product_image", "product_edit", "ad_visual", "social_image", "text_layout", "scene", "product_video", "ugc_video", "text_video"]);
-    for (const u of o) {
+    for (const u of o.filter(u => u.usage !== "logo")) {
       expect(u.primaryInherited && u.backupInherited && u.modeInherited).toBe(true);
       expect(u.mode).toBe("manual");
       expect(u.primary).toBe(u.kind === "image" ? "openai:gpt-image-1" : "google:veo-3.0-generate-001");
@@ -148,20 +149,21 @@ describe("routage multimédia par usage", async () => {
     // Un réglage général existant (ex. Gemini 2.5 en principal des images) reste suivi par les usages images…
     setJsonSetting("ai.routes", { image_generation: { provider: "google", model: "gemini-2.5-flash-image" } });
     const o2 = fr(() => mediaUsageOverview());
-    expect(o2.find((u) => u.usage === "logo")?.primary).toBe("google:gemini-2.5-flash-image");
+    expect(o2.find((u) => u.usage === "logo")).toMatchObject({ primary: "openai:gpt-image-2.5-sunburst", primaryInherited: false, backup: null });
     // Texte et logo sur les images : suit aussi le réglage général (plus de ChatGPT Images imposé ; choix du propriétaire).
     expect(o2.find((u) => u.usage === "text_layout")?.primary).toBe("google:gemini-2.5-flash-image");
     // … sauf qu'il ne sait pas retoucher par masque : signalé pour « Retouches produit ».
     expect(o2.find((u) => u.usage === "product_edit")?.primaryProblem).toMatch(/masque/);
   });
 
-  it("indépendance : logo → Gemini, décors → OpenAI, publicités → Gemini 2.5 ; chaque appel part chez le modèle de SON usage", async () => {
+  it("indépendance : logo imposé, décors historiques, publicités configurées ; chaque appel part chez le modèle de SON usage", async () => {
     const c = await client();
     setUsage("logo", { primary: "google:gemini-2.5-flash-image" });
     setUsage("ad_visual", { primary: "google:gemini-2.5-flash-image" });
     // Logo : symbole et logo complet par le modèle des logos.
     await fr(() => mp.logoSymbolImage(ctx(c), { concept: "vague en négatif" }));
-    expect(net.calls.at(-1)!.url).toContain("models/gemini-2.5-flash-image:generateContent");
+    expect(oa.calls.at(-1)).toMatchObject({ model: "gpt-image-2.5-sunburst" });
+    expect(net.calls).toHaveLength(0);
     // Décor et ambiance : réglage général (OpenAI GPT Image 1), pas celui des logos.
     await fr(() => mp.ambianceImage(ctx(c), { prompt: "atelier lumineux", aspect: "1:1" }));
     expect(oa.calls.at(-1)).toMatchObject({ kind: "generate", model: "gpt-image-1" });
@@ -170,10 +172,10 @@ describe("routage multimédia par usage", async () => {
     await fr(() => mp.ambianceImage(ctx(c), { prompt: "fond publicitaire", aspect: "4:5", usage: "ad_visual" }));
     expect(net.calls.length).toBe(before + 1);
     expect(net.calls.at(-1)!.url).toContain("gemini-2.5-flash-image");
-    expect(reservations(c.userId).map((r) => `${r.status}:${r.provider}:${r.model}`)).toEqual(["settled:google:gemini-2.5-flash-image", "settled:openai:gpt-image-1", "settled:google:gemini-2.5-flash-image"]);
+    expect(reservations(c.userId).map((r) => `${r.status}:${r.provider}:${r.model}`)).toEqual(["settled:openai:gpt-image-2.5-sunburst", "settled:openai:gpt-image-1", "settled:google:gemini-2.5-flash-image"]);
     // Trace : l'usage figure dans la raison de routage.
     const reasons = all<{ routing_reason: string }>("SELECT routing_reason FROM ai_calls WHERE user_id = ? ORDER BY created_at, rowid", c.userId).map((r) => r.routing_reason);
-    expect(reasons).toEqual(["admin primary [logo]", "admin primary [scene]", "admin primary [ad_visual]"]);
+    expect(reasons).toEqual(["modèle logo imposé par le propriétaire", "admin primary [scene]", "admin primary [ad_visual]"]);
   });
 
   it("photos produit : « Retouches produit » d'abord ; coupé → « Images produit » (photo générée à partir de la photo du produit)", async () => {
@@ -224,38 +226,25 @@ describe("routage multimédia par usage", async () => {
     expect(net.calls[0].url).toBe("https://queue.fal.run/fal-ai/kling-video/v2.1/pro/image-to-video");
   });
 
-  it("secours par usage : le logo relaie vers SON secours ; les décors (sans secours) ne relaient pas", async () => {
-    const c = await client();
-    setUsage("logo", { backup: "google:gemini-2.5-flash-image" });
-    setUsage("scene", { backup: null });
-    // Refus net sans facturation (429) : le secours prend le relais. Une erreur 5xx, elle, est incertaine (plus bas).
+  it("logo sans secours même après refus net ; décors sans secours respectés", async () => {
+    const c = await client(); setUsage("logo", { backup: "google:gemini-2.5-flash-image" }); setUsage("scene", { backup: null });
     oa.mode = "429";
-    await fr(() => mp.logoSymbolImage(ctx(c), { concept: "onde" }));
-    expect(net.calls.at(-1)!.url).toContain("gemini-2.5-flash-image");
-    expect(reservations(c.userId).map((r) => `${r.status}:${r.model}`)).toEqual(["released:gpt-image-1", "settled:gemini-2.5-flash-image"]);
-    const n = net.calls.length;
+    await expect(fr(() => mp.logoSymbolImage(ctx(c), { concept: "onde" }))).rejects.toThrow();
+    expect(net.calls).toHaveLength(0);
+    expect(reservations(c.userId).map(r => `${r.status}:${r.model}`)).toEqual(["released:gpt-image-2.5-sunburst"]);
     await expect(fr(() => mp.ambianceImage(ctx(c), { prompt: "atelier", aspect: "1:1" }))).rejects.toThrow();
-    expect(net.calls.length).toBe(n);
+    expect(net.calls).toHaveLength(0);
   });
 
-  it("logo complet sur GPT Image 2 (pas de fond transparent) : aucune demande de transparence ; principal refusé + secours incapable d'écrire → l'erreur réelle est montrée, jamais « aucun fournisseur »", async () => {
-    const c = await client();
-    confirmModel("openai:gpt-image-2", { unit: "image", perImage: 0.2 });
-    setUsage("logo", { primary: "openai:gpt-image-2", backup: "google:gemini-2.5-flash-image" });
+  it("logo imposé : fond blanc sans transparence, ancienne route ignorée, refus fournisseur conservé", async () => {
+    const c = await client(); setUsage("logo", { primary: "openai:gpt-image-1", backup: "google:gemini-2.5-flash-image" });
     await fr(() => mp.logoArtworkImage(ctx(c), { prompt: "logo complet" }));
-    expect(oa.calls.at(-1)).toMatchObject({ kind: "generate", model: "gpt-image-2" });
+    expect(oa.calls.at(-1)).toMatchObject({ model: "gpt-image-2.5-sunburst", quality: "high" });
     expect(oa.calls.at(-1).background).toBeUndefined();
-    // Le modèle qui gère la transparence la reçoit toujours.
-    setUsage("logo", { primary: "openai:gpt-image-1" });
-    await fr(() => mp.logoArtworkImage(ctx(c), { prompt: "logo complet" }));
-    expect(oa.calls.at(-1)).toMatchObject({ model: "gpt-image-1", background: "transparent" });
-    // Principal refusé par OpenAI (rien de facturé) ; le secours (Gemini) ne sait pas écrire le nom : vraie erreur.
-    setUsage("logo", { primary: "openai:gpt-image-2", backup: "google:gemini-2.5-flash-image" });
     oa.mode = "400";
-    const err = (await fr(() => mp.logoArtworkImage(ctx(c), { prompt: "logo complet" })).catch((e) => e)) as Error;
+    const err = await fr(() => mp.logoArtworkImage(ctx(c), { prompt: "logo complet" })).catch(e => e);
     expect(err.message).toMatch(/Requête refusée par OpenAI/);
-    expect(err.message).not.toMatch(/Aucun fournisseur/);
-    expect(net.calls.filter((x) => x.url.includes(":generateContent"))).toHaveLength(0);
+    expect(net.calls).toHaveLength(0);
   });
 
   it("mode automatique par usage : seules les vidéos UGC passent en automatique (son natif), les autres restent manuels", () => {
@@ -274,111 +263,47 @@ describe("routage multimédia par usage", async () => {
     expect(net.calls.length + oa.calls.length).toBe(0);
     expect(reservations(c.userId)).toHaveLength(0);
     // Clé Google retirée : le logo réglé sur Gemini n'est PAS confié en silence à un autre modèle.
-    keys.google = null;
+    keys.openai = null;
     expect(fr(() => mp.mediaRouteFor("logo"))).toBeNull();
-    expect(fr(() => mp.imageUnavailableReason("logo"))).toMatch(/modèle choisi pour « Logos »/);
+    expect(fr(() => mp.imageUnavailableReason("logo"))).toMatch(/modèle logo demandé.*attente/);
     // Un usage qui suit le réglage général garde le repli historique (comportement inchangé).
-    expect(fr(() => mp.mediaRouteFor("scene"))?.provider).toBe("openai");
+    expect(fr(() => mp.mediaRouteFor("scene"))?.provider).toBe("google");
   });
 
-  it("Logo Engine V2 : concept du modèle d'images des logos, puis finalisation vectorielle par « logo_symbol » (concept montré)", async () => {
+  it("Logo Engine V2 : modèle requis désactivé", async () => {
     const { seedLogoFixture } = await import("./logo-v2-fixtures");
-    const { draftsFor, review, SVG_OK } = await import("./logo-v2-mock");
-    const { brandDiscovery } = await import("@/lib/logo-v2/discovery");
-    const { loadProject } = await import("@/lib/projects");
     const { runLogoEngineV2 } = await import("@/lib/logo-v2/engine");
-    const { realLogoV2Ai } = await import("@/lib/logo-v2/ai");
-    const c = await client("creer");
-    const pid = fr(() => seedLogoFixture(c.userId, "artisan"));
-    const b = fr(() => brandDiscovery(loadProject(pid)));
-    setUsage("logo", { primary: "google:gemini-2.5-flash-image" });
-    llm.respond = (params: any) => {
-      const sys = JSON.stringify(params.system);
-      if (sys.includes("TERRITOIRES CRÉATIFS")) return JSON.stringify({ territories: draftsFor(b).slice(0, 3) });
-      if (sys.includes("SYMBOLE d'un territoire")) return JSON.stringify({ idea: "forme", svg: SVG_OK });
-      const exp = /Texte attendu \(exact\) : « ([^»]+) »/.exec(JSON.stringify(params.messages))?.[1] ?? "";
-      return JSON.stringify(review(8.7, exp));
-    };
-    const jid = `job-us-${Date.now()}`;
-    run("INSERT INTO jobs (id, user_id, project_id, type, label, payload, status, run_at, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)", jid, c.userId, pid, "brand.logo.v2", "logo", JSON.stringify({ projectId: pid }), "running", now(), now(), now());
-    const job = new JobContext(one<any>("SELECT * FROM jobs WHERE id = ?", jid));
-    const r = await fr(() => runLogoEngineV2(job, pid, { ai: realLogoV2Ai(job, { userId: c.userId, projectId: pid }) }));
-    // 1. Le concept du territoire à symbole (« Geste abstrait ») est demandé au modèle choisi pour les logos.
-    const gen = net.calls.filter((x) => x.url.includes(":generateContent"));
-    expect(gen).toHaveLength(1);
-    expect(gen[0].url).toContain("models/gemini-2.5-flash-image:generateContent");
-    expect(oa.calls).toHaveLength(0);
-    // 2. Concept non vectorisable tel quel (image simulée de 1 pixel) → finalisation vectorielle avec le concept joint.
-    const fin = llm.sent.filter((p) => JSON.stringify(p.system).includes("SYMBOLE d'un territoire"));
-    expect(fin).toHaveLength(1);
-    expect(JSON.stringify(fin[0].messages)).toMatch(/"type":"image"/);
-    expect(JSON.stringify(fin[0].messages)).toMatch(/concept du symbole/);
-    const symbolTerritory = r.shown.find((x) => x.territory.name === "Geste abstrait")!;
-    expect(symbolTerritory.candidate.symbolSource).toBe("ai_image_finalized");
-    expect(r.notes.join(" | ")).toMatch(/Geste abstrait : concept \(google:gemini-2\.5-flash-image\) non vectorisable/);
-    // Coûts tracés et réservations réglées : texte (Anthropic) et image (Google) dans la même tâche.
-    const calls = all<{ task: string; provider: string; requested_model: string; routing_reason: string | null }>("SELECT task, provider, requested_model, routing_reason FROM ai_calls WHERE job_id = ? ORDER BY created_at, rowid", jid);
-    expect(calls.find((x) => x.task === "image_generation")).toMatchObject({ provider: "google", requested_model: "gemini-2.5-flash-image", routing_reason: "admin primary [logo]" });
-    expect(reservations(c.userId).every((x) => x.status === "settled")).toBe(true);
+    const c = await client(); const pid = fr(() => seedLogoFixture(c.userId, "artisan"));
+    setJsonSetting("ai.media.models", { "openai:gpt-image-2.5-sunburst": { enabled: false } });
+    const jid = `native-block-${pid}`;
+    run("INSERT INTO jobs (id,user_id,project_id,type,label,status,payload,run_at,created_at,updated_at) VALUES (?,?,?,?,?,'running',?,?,?,?)", jid,c.userId,pid,"brand.logo.v2","Test",JSON.stringify({projectId:pid}),now(),now(),now());
+    await expect(fr(() => runLogoEngineV2(new JobContext(one<any>("SELECT * FROM jobs WHERE id=?",jid)),pid))).rejects.toThrow(/attente|indisponible|Plafond/);
+    expect(oa.calls).toHaveLength(0); expect(net.calls).toHaveLength(0); expect(llm.sent).toHaveLength(0);
+    expect(all("SELECT id FROM assets WHERE project_id=? AND role IN ('logo-v2','logo-v2-studio')",pid)).toHaveLength(0);
   });
 
-  it("Logo Engine V2 : concept net (formes pleines) → vectorisé directement, sans redessin par l'IA de texte", async () => {
-    const sharp = (await import("sharp")).default;
+  it("Logo Engine V2 : clé requise absente malgré un autre fournisseur", async () => {
     const { seedLogoFixture } = await import("./logo-v2-fixtures");
-    const { draftsFor, review, SVG_OK } = await import("./logo-v2-mock");
-    const { brandDiscovery } = await import("@/lib/logo-v2/discovery");
-    const { loadProject } = await import("@/lib/projects");
     const { runLogoEngineV2 } = await import("@/lib/logo-v2/engine");
-    const { realLogoV2Ai } = await import("@/lib/logo-v2/ai");
-    // Concept simulé : un disque noir et un carré noir sur fond blanc (ce que demande la consigne du symbole).
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><rect width="512" height="512" fill="#fff"/><circle cx="200" cy="256" r="120" fill="#000"/><rect x="300" y="160" width="110" height="190" fill="#000"/></svg>`;
-    net.image = (await sharp(Buffer.from(svg)).png().toBuffer()).toString("base64");
-    const c = await client("creer");
-    const pid = fr(() => seedLogoFixture(c.userId, "artisan"));
-    const b = fr(() => brandDiscovery(loadProject(pid)));
-    setUsage("logo", { primary: "google:gemini-2.5-flash-image" });
-    llm.respond = (params: any) => {
-      const sys = JSON.stringify(params.system);
-      if (sys.includes("TERRITOIRES CRÉATIFS")) return JSON.stringify({ territories: draftsFor(b).slice(0, 3) });
-      if (sys.includes("SYMBOLE d'un territoire")) return JSON.stringify({ idea: "forme", svg: SVG_OK });
-      const exp = /Texte attendu \(exact\) : « ([^»]+) »/.exec(JSON.stringify(params.messages))?.[1] ?? "";
-      return JSON.stringify(review(8.7, exp));
-    };
-    const jid = `job-us3-${Date.now()}`;
-    run("INSERT INTO jobs (id, user_id, project_id, type, label, payload, status, run_at, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)", jid, c.userId, pid, "brand.logo.v2", "logo", JSON.stringify({ projectId: pid }), "running", now(), now(), now());
-    const job = new JobContext(one<any>("SELECT * FROM jobs WHERE id = ?", jid));
-    const r = await fr(() => runLogoEngineV2(job, pid, { ai: realLogoV2Ai(job, { userId: c.userId, projectId: pid }) }));
-    expect(net.calls.filter((x) => x.url.includes("gemini-2.5-flash-image:generateContent"))).toHaveLength(1);
-    expect(r.shown.find((x) => x.territory.name === "Geste abstrait")?.candidate.symbolSource).toBe("ai_image_traced");
-    expect(llm.sent.filter((p) => JSON.stringify(p.system).includes("SYMBOLE d'un territoire"))).toHaveLength(0);
-    expect(r.notes.join(" | ")).toMatch(/concept du modèle d'images \(google:gemini-2\.5-flash-image\), vectorisé/);
+    const c = await client(); const pid = fr(() => seedLogoFixture(c.userId, "artisan"));
+    keys.openai = null; setUsage("logo", { primary: "google:gemini-2.5-flash-image" });
+    const jid = `native-block-${pid}`;
+    run("INSERT INTO jobs (id,user_id,project_id,type,label,status,payload,run_at,created_at,updated_at) VALUES (?,?,?,?,?,'running',?,?,?,?)", jid,c.userId,pid,"brand.logo.v2","Test",JSON.stringify({projectId:pid}),now(),now(),now());
+    await expect(fr(() => runLogoEngineV2(new JobContext(one<any>("SELECT * FROM jobs WHERE id=?",jid)),pid))).rejects.toThrow(/attente|indisponible|Plafond/);
+    expect(oa.calls).toHaveLength(0); expect(net.calls).toHaveLength(0); expect(llm.sent).toHaveLength(0);
+    expect(all("SELECT id FROM assets WHERE project_id=? AND role IN ('logo-v2','logo-v2-studio')",pid)).toHaveLength(0);
   });
 
-  it("Logo Engine V2 sans modèle d'images utilisable : symbole conçu en vectoriel, ÉCRIT dans les notes (jamais en silence)", async () => {
+  it("Logo Engine V2 : borne inconnue, aucun dessin ni remplacement local", async () => {
     const { seedLogoFixture } = await import("./logo-v2-fixtures");
-    const { draftsFor, review, SVG_OK } = await import("./logo-v2-mock");
-    const { brandDiscovery } = await import("@/lib/logo-v2/discovery");
-    const { loadProject } = await import("@/lib/projects");
     const { runLogoEngineV2 } = await import("@/lib/logo-v2/engine");
-    const { realLogoV2Ai } = await import("@/lib/logo-v2/ai");
-    keys = { anthropic: "sk-ant-test-1234567890abcdef" };
-    const c = await client("creer");
-    const pid = fr(() => seedLogoFixture(c.userId, "artisan"));
-    const b = fr(() => brandDiscovery(loadProject(pid)));
-    llm.respond = (params: any) => {
-      const sys = JSON.stringify(params.system);
-      if (sys.includes("TERRITOIRES CRÉATIFS")) return JSON.stringify({ territories: draftsFor(b).slice(0, 3) });
-      if (sys.includes("SYMBOLE d'un territoire")) return JSON.stringify({ idea: "forme", svg: SVG_OK });
-      const exp = /Texte attendu \(exact\) : « ([^»]+) »/.exec(JSON.stringify(params.messages))?.[1] ?? "";
-      return JSON.stringify(review(8.7, exp));
-    };
-    const jid = `job-us2-${Date.now()}`;
-    run("INSERT INTO jobs (id, user_id, project_id, type, label, payload, status, run_at, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)", jid, c.userId, pid, "brand.logo.v2", "logo", JSON.stringify({ projectId: pid }), "running", now(), now(), now());
-    const job = new JobContext(one<any>("SELECT * FROM jobs WHERE id = ?", jid));
-    const r = await fr(() => runLogoEngineV2(job, pid, { ai: realLogoV2Ai(job, { userId: c.userId, projectId: pid }) }));
-    expect(net.calls.filter((x) => x.url.includes("generateContent") || x.url.includes("fal.run"))).toHaveLength(0);
-    expect(r.shown.find((x) => x.territory.name === "Geste abstrait")?.candidate.symbolSource).toBe("ai_svg");
-    expect(r.notes.join(" | ")).toMatch(/Geste abstrait : aucun modèle d'images utilisable pour les logos .* symbole conçu en vectoriel par l'IA de texte/);
+    const c = await client(); const pid = fr(() => seedLogoFixture(c.userId, "artisan"));
+    setJsonSetting("ai.prices", {});
+    const jid = `native-block-${pid}`;
+    run("INSERT INTO jobs (id,user_id,project_id,type,label,status,payload,run_at,created_at,updated_at) VALUES (?,?,?,?,?,'running',?,?,?,?)", jid,c.userId,pid,"brand.logo.v2","Test",JSON.stringify({projectId:pid}),now(),now(),now());
+    await expect(fr(() => runLogoEngineV2(new JobContext(one<any>("SELECT * FROM jobs WHERE id=?",jid)),pid))).rejects.toThrow(/attente|indisponible|Plafond/);
+    expect(oa.calls).toHaveLength(0); expect(net.calls).toHaveLength(0); expect(llm.sent).toHaveLength(0);
+    expect(all("SELECT id FROM assets WHERE project_id=? AND role IN ('logo-v2','logo-v2-studio')",pid)).toHaveLength(0);
   });
 
   it("administration : choix validés (capacité, tarif, confirmation, secours distinct) et retour au réglage général", async () => {
@@ -389,27 +314,30 @@ describe("routage multimédia par usage", async () => {
     run("INSERT INTO sessions (id, user_id, expires_at, created_at) VALUES (?,?,?,?)", sha256(token), admin.id, now() + 3600_000, now());
     jar.token = token;
     const send = (mediaUsage: unknown) => fr(() => POST(new Request("http://x/api/admin/settings", { method: "POST", body: JSON.stringify({ mediaUsage }), headers: { "Content-Type": "application/json" } })));
+    expect((await send({ usage: "logo", primary: "google:gemini-2.5-flash-image" })).status).toBe(400);
+    expect((await send({ usage: "logo", backup: "google:gemini-2.5-flash-image" })).status).toBe(400);
+    expect((await send({ usage: "logo", primary: "openai:gpt-image-2.5-sunburst" })).status).toBe(200);
     // Retouches produit : Gemini refusé (pas de retouche par masque branchée).
     let res = await send({ usage: "product_edit", primary: "google:gemini-2.5-flash-image" });
     expect(res.status).toBe(400);
     expect((await res.json()).error).toMatch(/masque/);
     // Nouveau modèle non confirmé : refusé ; une fois tarifé et confirmé : accepté pour les logos.
-    res = await send({ usage: "logo", primary: "openai:gpt-image-2" });
+    res = await send({ usage: "ad_visual", primary: "openai:gpt-image-2" });
     expect(res.status).toBe(400);
     confirmModel("openai:gpt-image-2", { unit: "image", perImage: 0.2 });
-    res = await send({ usage: "logo", primary: "openai:gpt-image-2" });
+    res = await send({ usage: "ad_visual", primary: "openai:gpt-image-2" });
     expect(res.status).toBe(200);
     // Secours identique au principal : refusé ; secours couvert : accepté ; vidéo pour une image : refusé.
-    expect((await send({ usage: "logo", backup: "openai:gpt-image-2" })).status).toBe(400);
-    expect((await send({ usage: "logo", backup: "google:gemini-2.5-flash-image" })).status).toBe(200);
-    expect((await send({ usage: "logo", primary: "google:veo-3.0-generate-001" })).status).toBe(400);
+    expect((await send({ usage: "ad_visual", backup: "openai:gpt-image-2" })).status).toBe(400);
+    expect((await send({ usage: "ad_visual", backup: "google:gemini-2.5-flash-image" })).status).toBe(200);
+    expect((await send({ usage: "ad_visual", primary: "google:veo-3.0-generate-001" })).status).toBe(400);
     expect((await send({ usage: "scene", off: true })).status).toBe(400);
-    expect(getJsonSetting<Record<string, unknown>>("ai.media.usage", {}).logo).toEqual({ primary: "openai:gpt-image-2", backup: "google:gemini-2.5-flash-image" });
+    expect(getJsonSetting<Record<string, unknown>>("ai.media.usage", {}).ad_visual).toEqual({ primary: "openai:gpt-image-2", backup: "google:gemini-2.5-flash-image" });
     // Les autres usages ne bougent pas.
     const o = fr(() => mediaUsageOverview());
     expect(o.find((u) => u.usage === "scene")).toMatchObject({ primary: "openai:gpt-image-1", primaryInherited: true });
-    expect((await send({ usage: "logo", reset: true })).status).toBe(200);
-    expect(getJsonSetting<Record<string, unknown>>("ai.media.usage", {}).logo).toBeUndefined();
+    expect((await send({ usage: "ad_visual", reset: true })).status).toBe(200);
+    expect(getJsonSetting<Record<string, unknown>>("ai.media.usage", {}).ad_visual).toBeUndefined();
   });
 
   it("toute image payée est conservée telle que reçue, sous l'identifiant de son appel — même rejetée ensuite ; rien pour un échec non facturé", async () => {

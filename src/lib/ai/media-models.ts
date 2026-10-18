@@ -168,6 +168,18 @@ export const MEDIA_MODELS: MediaModel[] = [
     source: "https://raw.githubusercontent.com/openai/openai-openapi/master/openapi.yaml",
     use: { fr: "Dernière génération OpenAI : logos complets, visuels publicitaires avec texte.", en: "Latest OpenAI generation: full logos, ad visuals with text." },
   },
+  {
+    provider: "openai", model: "gpt-image-2.5-sunburst", label: "OpenAI GPT Image 2.5 Sunburst",
+    kind: "image", adapter: "openai_image", quality: 3,
+    caps: { maskEdit: true, references: 16, textInImage: true, people: true, stream: true },
+    aspects: ["1:1", "16:9", "9:16", "2:3", "3:2"],
+    resolution: "Résolutions multiples de 16 ; paramètres officiels vérifiés, aucun essai réel ici",
+    typical: {},
+    priceNote: "Officiel 18/10/2026 : texte entrée $5/M, image entrée $8/M, sortie $30/M. Consommation différente de GPT Image 2 : plafond par image vérifié requis avant appel.",
+    status: "stable", verified: { id: true, price: true }, paramsVerified: true,
+    source: "https://developers.openai.com/api/docs/models/gpt-image-2.5-sunburst",
+    use: { fr: "Dessin obligatoire des nouveaux logos ; sans fournisseur ou coût borné, reste en attente.", en: "Required for new logo artwork; pending if provider or bounded cost is unavailable." },
+  },
   // Google : identifiants du guide officiel « Nano Banana » (google-gemini/cookbook). Tarifs : page Vertex AI
   // (indicative pour l'API Gemini) → à confirmer dans l'administration.
   {

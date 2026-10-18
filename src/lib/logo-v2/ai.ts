@@ -1,3 +1,4 @@
+import { FONT_HANDLES } from "../theme/render";
 /**
  * Accès à l'IA du moteur Logo V2 (injecté : réel ici, simulé dans les tests). Chaque appel a une raison :
  *  - territoires : UN appel (directeur artistique, niveau fort) pour toutes les directions ;
@@ -68,7 +69,8 @@ export const ArtworkReviewSchema = z.object({
 
 const fontsList = () => Object.entries(STYLE_FONTS).map(([s, f]) => `${s} (${f.join(", ")})`).join(" ; ");
 
-export const TERRITORIES_SYSTEM = () => `Rôle : directeur artistique senior, spécialiste des logos de petites entreprises, artisans, commerces et indépendants. Avant tout dessin, tu proposes des TERRITOIRES CRÉATIFS de logo pour la marque décrite dans le contexte.
+export const TERRITORIES_SYSTEM = () => `Pour chaque territoire, ajoute identity : { signature (proposition, jamais une preuve), palette: {primary,secondary,accent,light,dark} (HEX), colorRoles: {primary,secondary,accent,light,dark} (rôle détaillé), fonts: {heading,body} (identifiants de polices disponibles), tone: {voice,do:[],dont:[]}, mood, graphicLanguage, rules:[] (au moins deux), sampleText }. Polices autorisées : ${FONT_HANDLES.join(", ")}. Le nom de marque est UNIQUE et identique dans les trois directions. Palette, typographies, écriture, ambiance et langage graphique doivent former un ensemble distinct, pas une recoloration. Utilise les couleurs identity.palette dans colors et imageBrief ; utilise identity.fonts pour la typographie.
+Rôle : directeur artistique senior, spécialiste des logos de petites entreprises, artisans, commerces et indépendants. Avant tout dessin, tu proposes des TERRITOIRES CRÉATIFS de logo pour la marque décrite dans le contexte.
 Ce que veulent ces entreprises et leurs clients : un logo BEAU, soigné, chaleureux et professionnel, qui fait comprendre le métier AU PREMIER REGARD. Les éléments reconnaissables du métier (ses outils, ses matières, ses produits, son lieu, ses gestes), dessinés avec talent, sont le cœur du logo, pas des clichés à fuir. Un emblème rond ou un arc, une icône au-dessus du nom, un nom en écriture script élégante, deux couleurs franches : ce sont des solutions appréciées quand elles sont bien exécutées. Jamais un concept abstrait qu'il faudrait expliquer.
 Démarche : comprends l'entreprise, son activité réelle, sa clientèle, sa personnalité ; repère les codes visuels de son secteur et sers-t'en avec un niveau de finition supérieur.
 Chaque territoire est RÉELLEMENT différent des autres sur au moins trois de ces axes : style, type de marque (markType), composition, style typographique, construction graphique, niveau de sobriété. Jamais « le même logo dans une autre couleur ».
@@ -128,7 +130,7 @@ ${brief.style !== "auto" ? `Style choisi par le client : ${brief.style} — tous
 ${brief.rejectedMarkTypes.length ? `Types de logo refusés par le client (ne pas proposer) : ${brief.rejectedMarkTypes.join(", ")}.\n` : ""}${avoid.length ? `Territoires déjà montrés (ne pas reprendre) : ${avoid.join(" ; ")}.\n` : ""}${brief.fontsLocked ? `Typographie validée par le client (à garder) : ${brief.fontsLocked.heading}.\n` : ""}${brief.positioning ? `Positionnement : ${brief.positioning}.\n` : ""}${brief.audience ? `Clientèle : ${brief.audience}.\n` : ""}${brief.personality.length ? `Personnalité : ${brief.personality.join(", ")}.\n` : ""}${brief.paletteLocked ? `Palette validée par le client (à garder, « colors » vide) : ${Object.values(brief.palette).join(", ")}.\n` : "Palette non validée : choisis les couleurs de chaque territoire (« colors »).\n"}Propose ${n} territoires. Réponds { "territories": [ { "name", "concept", "whyItFits", "style", "descriptor", "markType", "composition", "typography": { "style", "weight", "case", "tracking", "rationale" }, "colorRole": { "ink", "accent", "rationale" }, "sobriety", "construction", "symbolIdea", "distinctive", "avoid": [], "imageBrief", "colors": [] } ] }.`,
           maxTokens: 9000,
         },
-        TerritoriesSchema,
+        TerritoriesSchema.refine(v => v.territories.every(t => !!t.identity), "Chaque direction doit contenir son identité complète."),
       );
       return r.territories;
     },
@@ -160,7 +162,7 @@ ${brief.rejectedMarkTypes.length ? `Types de logo refusés par le client (ne pas
     },
     artworkRoute() {
       // Logo complet : le modèle doit savoir écrire le nom (même décision que la génération pour l'usage « Logos »).
-      const r = mediaRouteFor("logo", { text: true, transparent: true });
+      const r = mediaRouteFor("logo", { text: true });
       return r ?? { unavailable: imageUnavailableReason("logo") ?? L("aucun modèle d'images capable d'écrire le nom pour les logos", "no image model able to write the name for logos") };
     },
     relayRoute() {
