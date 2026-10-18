@@ -1,11 +1,13 @@
 {
-  "testedCommit": "7649674a02a9c3119581dd36692499bf03422c49",
+  "testedCommit": "7e04880d0986d99586be7c444687043dae2f2f4f",
   "workingTree": "clean",
-  "date": "2026-10-18T18:23:15.814Z",
+  "date": "2026-10-18T21:58:53.533Z",
   "renderMode": "es_raw=1 — thème issu des vraies routes, sans le bandeau flottant du studio",
   "widths": [
     1440,
-    390
+    768,
+    390,
+    360
   ],
   "evidence": [
     {
@@ -53,7 +55,7 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 9819,
+            "height": 9811,
             "h1": 1,
             "images": 8,
             "brokenImages": [],
@@ -79,11 +81,41 @@
         {
           "name": "accueil",
           "route": "/",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 10012,
+            "h1": 1,
+            "images": 8,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 9,
+            "logos": {
+              "header": [
+                150,
+                48,
+                37
+              ],
+              "footer": [
+                150,
+                59,
+                43
+              ]
+            }
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "accueil",
+          "route": "/",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 10900,
+            "height": 10684,
             "h1": 1,
             "images": 8,
             "brokenImages": [],
@@ -100,7 +132,37 @@
               "footer": [
                 150,
                 59,
-                45
+                44
+              ]
+            }
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 10782,
+            "h1": 1,
+            "images": 8,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 9,
+            "logos": {
+              "header": [
+                150,
+                48,
+                37
+              ],
+              "footer": [
+                150,
+                59,
+                44
               ]
             }
           },
@@ -113,7 +175,7 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 11484,
+            "height": 11476,
             "h1": 1,
             "images": 26,
             "brokenImages": [],
@@ -127,11 +189,47 @@
         {
           "name": "produit",
           "route": "/products/gummies-fraise",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 11681,
+            "h1": 1,
+            "images": 26,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 8
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "produit",
+          "route": "/products/gummies-fraise",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 12693,
+            "height": 12401,
+            "h1": 1,
+            "images": 26,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 8
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "produit",
+          "route": "/products/gummies-fraise",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 12576,
             "h1": 1,
             "images": 26,
             "brokenImages": [],
@@ -163,11 +261,47 @@
         {
           "name": "boutique",
           "route": "/collections/all",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 2402,
+            "h1": 1,
+            "images": 4,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 1
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "boutique",
+          "route": "/collections/all",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 3015,
+            "height": 3045,
+            "h1": 1,
+            "images": 4,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 1
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "boutique",
+          "route": "/collections/all",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 3058,
             "h1": 1,
             "images": 4,
             "brokenImages": [],
@@ -199,11 +333,47 @@
         {
           "name": "a-propos",
           "route": "/pages/a-propos",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 4009,
+            "h1": 1,
+            "images": 3,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 1
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "a-propos",
+          "route": "/pages/a-propos",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 4633,
+            "height": 4667,
+            "h1": 1,
+            "images": 3,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 1
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "a-propos",
+          "route": "/pages/a-propos",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 4684,
             "h1": 1,
             "images": 3,
             "brokenImages": [],
@@ -235,11 +405,47 @@
         {
           "name": "contact",
           "route": "/pages/contact",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 2012,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "contact",
+          "route": "/pages/contact",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 2793,
+            "height": 2826,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "contact",
+          "route": "/pages/contact",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 2853,
             "h1": 1,
             "images": 2,
             "brokenImages": [],
@@ -271,11 +477,47 @@
         {
           "name": "faq",
           "route": "/pages/faq",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 2476,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 1
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "faq",
+          "route": "/pages/faq",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 3483,
+            "height": 3517,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 1
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "faq",
+          "route": "/pages/faq",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 3543,
             "h1": 1,
             "images": 2,
             "brokenImages": [],
@@ -307,11 +549,47 @@
         {
           "name": "livraison-retours",
           "route": "/pages/livraison-retours",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 2067,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "livraison-retours",
+          "route": "/pages/livraison-retours",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 2965,
+            "height": 2998,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "livraison-retours",
+          "route": "/pages/livraison-retours",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 3027,
             "h1": 1,
             "images": 2,
             "brokenImages": [],
@@ -343,11 +621,47 @@
         {
           "name": "mentions-legales",
           "route": "/pages/mentions-legales",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 2085,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "mentions-legales",
+          "route": "/pages/mentions-legales",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 2895,
+            "height": 2929,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "mentions-legales",
+          "route": "/pages/mentions-legales",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 2986,
             "h1": 1,
             "images": 2,
             "brokenImages": [],
@@ -365,7 +679,7 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 6949,
+            "height": 6975,
             "h1": 1,
             "images": 7,
             "brokenImages": [],
@@ -379,11 +693,47 @@
         {
           "name": "listicle",
           "route": "/pages/listicle",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 6894,
+            "h1": 1,
+            "images": 7,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 8
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "listicle",
+          "route": "/pages/listicle",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 6308,
+            "height": 6342,
+            "h1": 1,
+            "images": 7,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 8
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "listicle",
+          "route": "/pages/listicle",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 6300,
             "h1": 1,
             "images": 7,
             "brokenImages": [],
@@ -401,7 +751,7 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 7388,
+            "height": 7413,
             "h1": 1,
             "images": 5,
             "brokenImages": [],
@@ -415,13 +765,121 @@
         {
           "name": "advertorial",
           "route": "/pages/advertorial",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 7124,
+            "h1": 1,
+            "images": 5,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 11
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "advertorial",
+          "route": "/pages/advertorial",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 7404,
+            "height": 7438,
             "h1": 1,
             "images": 5,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 11
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "advertorial",
+          "route": "/pages/advertorial",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 7578,
+            "h1": 1,
+            "images": 5,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 11
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "sections",
+          "route": "/pages/sections",
+          "width": 1440,
+          "metrics": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 11261,
+            "h1": 1,
+            "images": 21,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 114.546875,
+            "fictionalTags": 11
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "sections",
+          "route": "/pages/sections",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 12666,
+            "h1": 1,
+            "images": 21,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 11
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "sections",
+          "route": "/pages/sections",
+          "width": 390,
+          "metrics": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 12532,
+            "h1": 1,
+            "images": 21,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 11
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "sections",
+          "route": "/pages/sections",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 12465,
+            "h1": 1,
+            "images": 21,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
@@ -451,11 +909,47 @@
         {
           "name": "panier-vide",
           "route": "/cart",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 1303,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "panier-vide",
+          "route": "/cart",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 1958,
+            "height": 1991,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "panier-vide",
+          "route": "/cart",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 2042,
             "h1": 1,
             "images": 2,
             "brokenImages": [],
@@ -487,11 +981,47 @@
         {
           "name": "recherche",
           "route": "/search?q=rien",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 1443,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "recherche",
+          "route": "/search?q=rien",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 2180,
+            "height": 2214,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "recherche",
+          "route": "/search?q=rien",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 2214,
             "h1": 1,
             "images": 2,
             "brokenImages": [],
@@ -523,11 +1053,47 @@
         {
           "name": "page-404",
           "route": "/page-inconnue",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 1560,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "page-404",
+          "route": "/page-inconnue",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 2310,
+            "height": 2344,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "page-404",
+          "route": "/page-inconnue",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 2344,
             "h1": 1,
             "images": 2,
             "brokenImages": [],
@@ -549,11 +1115,27 @@
           "home": "menu ouvert/fermé au clavier (mobile), stories sans vidéo sans bouton de lecture, 6 mentions « Avis fictif », flèche droite → deuxième avis, FAQ ouverte"
         },
         {
+          "width": 768,
+          "stories": "lecteur ouvert sur le clip de test (mire générée), pause / lecture, son activé, Échap ferme et décharge la vidéo ; les deux autres cartes restent « Vidéo à venir »"
+        },
+        {
+          "width": 768,
+          "home": "menu ouvert/fermé au clavier (mobile), stories sans vidéo sans bouton de lecture, 6 mentions « Avis fictif », flèche droite → deuxième avis, FAQ ouverte"
+        },
+        {
           "width": 390,
           "stories": "lecteur ouvert sur le clip de test (mire générée), pause / lecture, son activé, Échap ferme et décharge la vidéo ; les deux autres cartes restent « Vidéo à venir »"
         },
         {
           "width": 390,
+          "home": "menu ouvert/fermé au clavier (mobile), stories sans vidéo sans bouton de lecture, 6 mentions « Avis fictif », flèche droite → deuxième avis, FAQ ouverte"
+        },
+        {
+          "width": 360,
+          "stories": "lecteur ouvert sur le clip de test (mire générée), pause / lecture, son activé, Échap ferme et décharge la vidéo ; les deux autres cartes restent « Vidéo à venir »"
+        },
+        {
+          "width": 360,
           "home": "menu ouvert/fermé au clavier (mobile), stories sans vidéo sans bouton de lecture, 6 mentions « Avis fictif », flèche droite → deuxième avis, FAQ ouverte"
         },
         {
@@ -565,6 +1147,14 @@
           "cart": "tiroir ouvert, protection non précochée (FRAISE : interrupteur → note « aucun montant ajouté »), quantité modifiée (ONDE : 2 → 1 = 149,00 €), ligne retirée → panier vide, tiroir vide capturé"
         },
         {
+          "width": 768,
+          "offers": "1 / 2+1 / 3+2 → 24,90 / 49,80 / 74,70 € ; prix de référence barré 104,70 € ; ajout du 2+1 → panier 49,80 €, 3 articles, économies affichées"
+        },
+        {
+          "width": 768,
+          "cart": "tiroir ouvert, protection non précochée (FRAISE : interrupteur → note « aucun montant ajouté »), quantité modifiée (ONDE : 2 → 1 = 149,00 €), ligne retirée → panier vide, tiroir vide capturé"
+        },
+        {
           "width": 390,
           "offers": "1 / 2+1 / 3+2 → 24,90 / 49,80 / 74,70 € ; prix de référence barré 104,70 € ; ajout du 2+1 → panier 49,80 €, 3 articles, économies affichées"
         },
@@ -573,11 +1163,27 @@
           "cart": "tiroir ouvert, protection non précochée (FRAISE : interrupteur → note « aucun montant ajouté »), quantité modifiée (ONDE : 2 → 1 = 149,00 €), ligne retirée → panier vide, tiroir vide capturé"
         },
         {
+          "width": 360,
+          "offers": "1 / 2+1 / 3+2 → 24,90 / 49,80 / 74,70 € ; prix de référence barré 104,70 € ; ajout du 2+1 → panier 49,80 €, 3 articles, économies affichées"
+        },
+        {
+          "width": 360,
+          "cart": "tiroir ouvert, protection non précochée (FRAISE : interrupteur → note « aucun montant ajouté »), quantité modifiée (ONDE : 2 → 1 = 149,00 €), ligne retirée → panier vide, tiroir vide capturé"
+        },
+        {
           "width": 1440,
           "contact": "envoi bloqué par la validation du champ e-mail requis ; aucun message « envoyé » affiché"
         },
         {
+          "width": 768,
+          "contact": "envoi bloqué par la validation du champ e-mail requis ; aucun message « envoyé » affiché"
+        },
+        {
           "width": 390,
+          "contact": "envoi bloqué par la validation du champ e-mail requis ; aucun message « envoyé » affiché"
+        },
+        {
+          "width": 360,
           "contact": "envoi bloqué par la validation du champ e-mail requis ; aucun message « envoyé » affiché"
         },
         {
@@ -585,7 +1191,15 @@
           "editing": "titre, image de l'ouverture, texte du bandeau d'annonce et titre du pied de page modifiés ; section bandeau défilant masquée ; garantie dupliquée ; stories déplacées avant les avis ; story ajoutée avec une adresse vidéo ; version enregistrée puis page rechargée : tout est conservé ; la version d'origine est inchangée"
         },
         {
+          "width": 768,
+          "editing": "titre, image de l'ouverture, texte du bandeau d'annonce et titre du pied de page modifiés ; section bandeau défilant masquée ; garantie dupliquée ; stories déplacées avant les avis ; story ajoutée avec une adresse vidéo ; version enregistrée puis page rechargée : tout est conservé ; la version d'origine est inchangée"
+        },
+        {
           "width": 390,
+          "editing": "titre, image de l'ouverture, texte du bandeau d'annonce et titre du pied de page modifiés ; section bandeau défilant masquée ; garantie dupliquée ; stories déplacées avant les avis ; story ajoutée avec une adresse vidéo ; version enregistrée puis page rechargée : tout est conservé ; la version d'origine est inchangée"
+        },
+        {
+          "width": 360,
           "editing": "titre, image de l'ouverture, texte du bandeau d'annonce et titre du pied de page modifiés ; section bandeau défilant masquée ; garantie dupliquée ; stories déplacées avant les avis ; story ajoutée avec une adresse vidéo ; version enregistrée puis page rechargée : tout est conservé ; la version d'origine est inchangée"
         }
       ],
@@ -668,11 +1282,41 @@
         {
           "name": "accueil",
           "route": "/",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 8179,
+            "h1": 1,
+            "images": 10,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 9,
+            "logos": {
+              "header": [
+                170,
+                46,
+                44
+              ],
+              "footer": [
+                170,
+                46,
+                45
+              ]
+            }
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "accueil",
+          "route": "/",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 8215,
+            "height": 8316,
             "h1": 1,
             "images": 10,
             "brokenImages": [],
@@ -690,6 +1334,36 @@
                 170,
                 46,
                 47
+              ]
+            }
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 8382,
+            "h1": 1,
+            "images": 10,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 9,
+            "logos": {
+              "header": [
+                170,
+                46,
+                45
+              ],
+              "footer": [
+                170,
+                46,
+                46
               ]
             }
           },
@@ -716,11 +1390,47 @@
         {
           "name": "produit",
           "route": "/products/casque-onde",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 9135,
+            "h1": 1,
+            "images": 28,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 7
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "produit",
+          "route": "/products/casque-onde",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 9377,
+            "height": 9402,
+            "h1": 1,
+            "images": 28,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 7
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "produit",
+          "route": "/products/casque-onde",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 9524,
             "h1": 1,
             "images": 28,
             "brokenImages": [],
@@ -752,11 +1462,47 @@
         {
           "name": "boutique",
           "route": "/collections/all",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 2299,
+            "h1": 1,
+            "images": 4,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 1
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "boutique",
+          "route": "/collections/all",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 2771,
+            "height": 2868,
+            "h1": 1,
+            "images": 4,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 1
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "boutique",
+          "route": "/collections/all",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 2907,
             "h1": 1,
             "images": 4,
             "brokenImages": [],
@@ -788,11 +1534,47 @@
         {
           "name": "a-propos",
           "route": "/pages/a-propos",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 3906,
+            "h1": 1,
+            "images": 3,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 1
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "a-propos",
+          "route": "/pages/a-propos",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 4389,
+            "height": 4490,
+            "h1": 1,
+            "images": 3,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 1
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "a-propos",
+          "route": "/pages/a-propos",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 4479,
             "h1": 1,
             "images": 3,
             "brokenImages": [],
@@ -824,11 +1606,47 @@
         {
           "name": "contact",
           "route": "/pages/contact",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 1911,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "contact",
+          "route": "/pages/contact",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 2550,
+            "height": 2651,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "contact",
+          "route": "/pages/contact",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 2678,
             "h1": 1,
             "images": 2,
             "brokenImages": [],
@@ -860,11 +1678,47 @@
         {
           "name": "faq",
           "route": "/pages/faq",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 2373,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 1
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "faq",
+          "route": "/pages/faq",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 3121,
+            "height": 3222,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 1
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "faq",
+          "route": "/pages/faq",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 3300,
             "h1": 1,
             "images": 2,
             "brokenImages": [],
@@ -896,11 +1750,47 @@
         {
           "name": "livraison-retours",
           "route": "/pages/livraison-retours",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 1966,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "livraison-retours",
+          "route": "/pages/livraison-retours",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 2690,
+            "height": 2791,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "livraison-retours",
+          "route": "/pages/livraison-retours",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 2820,
             "h1": 1,
             "images": 2,
             "brokenImages": [],
@@ -932,11 +1822,29 @@
         {
           "name": "mentions-legales",
           "route": "/pages/mentions-legales",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 1983,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "mentions-legales",
+          "route": "/pages/mentions-legales",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 2653,
+            "height": 2754,
             "h1": 1,
             "images": 2,
             "brokenImages": [],
@@ -944,6 +1852,96 @@
             "fonts": "loaded",
             "headerHeight": 65,
             "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "mentions-legales",
+          "route": "/pages/mentions-legales",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 2811,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "sections",
+          "route": "/pages/sections",
+          "width": 1440,
+          "metrics": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 11185,
+            "h1": 1,
+            "images": 21,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 112.125,
+            "fictionalTags": 11
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "sections",
+          "route": "/pages/sections",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 12565,
+            "h1": 1,
+            "images": 21,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 11
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "sections",
+          "route": "/pages/sections",
+          "width": 390,
+          "metrics": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 12295,
+            "h1": 1,
+            "images": 21,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 11
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "sections",
+          "route": "/pages/sections",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 12201,
+            "h1": 1,
+            "images": 21,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 11
           },
           "javascriptErrors": []
         },
@@ -968,11 +1966,47 @@
         {
           "name": "panier-vide",
           "route": "/cart",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 1201,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "panier-vide",
+          "route": "/cart",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 1715,
+            "height": 1816,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "panier-vide",
+          "route": "/cart",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 1866,
             "h1": 1,
             "images": 2,
             "brokenImages": [],
@@ -1004,11 +2038,47 @@
         {
           "name": "recherche",
           "route": "/search?q=rien",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 1342,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "recherche",
+          "route": "/search?q=rien",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 1937,
+            "height": 2038,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "recherche",
+          "route": "/search?q=rien",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 2038,
             "h1": 1,
             "images": 2,
             "brokenImages": [],
@@ -1040,11 +2110,47 @@
         {
           "name": "page-404",
           "route": "/page-inconnue",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 1458,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 73,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "page-404",
+          "route": "/page-inconnue",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 2067,
+            "height": 2168,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "page-404",
+          "route": "/page-inconnue",
+          "width": 360,
+          "metrics": {
+            "width": 360,
+            "scrollWidth": 360,
+            "height": 2168,
             "h1": 1,
             "images": 2,
             "brokenImages": [],
@@ -1066,11 +2172,27 @@
           "home": "menu ouvert/fermé au clavier (mobile), stories sans vidéo sans bouton de lecture, 6 mentions « Avis fictif », flèche droite → deuxième avis, FAQ ouverte"
         },
         {
+          "width": 768,
+          "stories": "lecteur ouvert sur le clip de test (mire générée), pause / lecture, son activé, Échap ferme et décharge la vidéo ; les deux autres cartes restent « Vidéo à venir »"
+        },
+        {
+          "width": 768,
+          "home": "menu ouvert/fermé au clavier (mobile), stories sans vidéo sans bouton de lecture, 6 mentions « Avis fictif », flèche droite → deuxième avis, FAQ ouverte"
+        },
+        {
           "width": 390,
           "stories": "lecteur ouvert sur le clip de test (mire générée), pause / lecture, son activé, Échap ferme et décharge la vidéo ; les deux autres cartes restent « Vidéo à venir »"
         },
         {
           "width": 390,
+          "home": "menu ouvert/fermé au clavier (mobile), stories sans vidéo sans bouton de lecture, 6 mentions « Avis fictif », flèche droite → deuxième avis, FAQ ouverte"
+        },
+        {
+          "width": 360,
+          "stories": "lecteur ouvert sur le clip de test (mire générée), pause / lecture, son activé, Échap ferme et décharge la vidéo ; les deux autres cartes restent « Vidéo à venir »"
+        },
+        {
+          "width": 360,
           "home": "menu ouvert/fermé au clavier (mobile), stories sans vidéo sans bouton de lecture, 6 mentions « Avis fictif », flèche droite → deuxième avis, FAQ ouverte"
         },
         {
@@ -1128,6 +2250,60 @@
           "cart": "tiroir ouvert, protection non précochée (FRAISE : interrupteur → note « aucun montant ajouté »), quantité modifiée (ONDE : 2 → 1 = 149,00 €), ligne retirée → panier vide, tiroir vide capturé"
         },
         {
+          "width": 768,
+          "discountDrawer": {
+            "apply": {
+              "scrollWidth": 109,
+              "clientWidth": 109,
+              "left": 635,
+              "right": 746,
+              "boxLeft": 328,
+              "boxRight": 768,
+              "text": "APPLIQUER"
+            },
+            "input": {
+              "scrollWidth": 275,
+              "clientWidth": 275,
+              "left": 350,
+              "right": 627,
+              "boxLeft": 328,
+              "boxRight": 768,
+              "text": "Code de réduction"
+            }
+          }
+        },
+        {
+          "width": 768,
+          "buy": "quantité 2 → ajout → tiroir ouvert : Total : 2 articles, 298,00 €, économies, bloc réservation marqué « Démonstration fictive », code DEMO10 → note « aucun code actif », total inchangé"
+        },
+        {
+          "width": 768,
+          "discountPage": {
+            "apply": {
+              "scrollWidth": 109,
+              "clientWidth": 109,
+              "left": 601,
+              "right": 712,
+              "boxLeft": 31,
+              "boxRight": 737,
+              "text": "APPLIQUER"
+            },
+            "input": {
+              "scrollWidth": 535,
+              "clientWidth": 535,
+              "left": 56,
+              "right": 593,
+              "boxLeft": 31,
+              "boxRight": 737,
+              "text": "Code de réduction"
+            }
+          }
+        },
+        {
+          "width": 768,
+          "cart": "tiroir ouvert, protection non précochée (FRAISE : interrupteur → note « aucun montant ajouté »), quantité modifiée (ONDE : 2 → 1 = 149,00 €), ligne retirée → panier vide, tiroir vide capturé"
+        },
+        {
           "width": 390,
           "discountDrawer": {
             "apply": {
@@ -1182,11 +2358,73 @@
           "cart": "tiroir ouvert, protection non précochée (FRAISE : interrupteur → note « aucun montant ajouté »), quantité modifiée (ONDE : 2 → 1 = 149,00 €), ligne retirée → panier vide, tiroir vide capturé"
         },
         {
+          "width": 360,
+          "discountDrawer": {
+            "apply": {
+              "scrollWidth": 109,
+              "clientWidth": 109,
+              "left": 227,
+              "right": 338,
+              "boxLeft": 0,
+              "boxRight": 360,
+              "text": "APPLIQUER"
+            },
+            "input": {
+              "scrollWidth": 195,
+              "clientWidth": 195,
+              "left": 22,
+              "right": 219,
+              "boxLeft": 0,
+              "boxRight": 360,
+              "text": "Code de réduction"
+            }
+          }
+        },
+        {
+          "width": 360,
+          "buy": "quantité 2 → ajout → tiroir ouvert : Total : 2 articles, 298,00 €, économies, bloc réservation marqué « Démonstration fictive », code DEMO10 → note « aucun code actif », total inchangé"
+        },
+        {
+          "width": 360,
+          "discountPage": {
+            "apply": {
+              "scrollWidth": 109,
+              "clientWidth": 109,
+              "left": 206,
+              "right": 317,
+              "boxLeft": 18,
+              "boxRight": 342,
+              "text": "APPLIQUER"
+            },
+            "input": {
+              "scrollWidth": 153,
+              "clientWidth": 153,
+              "left": 43,
+              "right": 198,
+              "boxLeft": 18,
+              "boxRight": 342,
+              "text": "Code de réduction"
+            }
+          }
+        },
+        {
+          "width": 360,
+          "cart": "tiroir ouvert, protection non précochée (FRAISE : interrupteur → note « aucun montant ajouté »), quantité modifiée (ONDE : 2 → 1 = 149,00 €), ligne retirée → panier vide, tiroir vide capturé"
+        },
+        {
           "width": 1440,
           "contact": "envoi bloqué par la validation du champ e-mail requis ; aucun message « envoyé » affiché"
         },
         {
+          "width": 768,
+          "contact": "envoi bloqué par la validation du champ e-mail requis ; aucun message « envoyé » affiché"
+        },
+        {
           "width": 390,
+          "contact": "envoi bloqué par la validation du champ e-mail requis ; aucun message « envoyé » affiché"
+        },
+        {
+          "width": 360,
           "contact": "envoi bloqué par la validation du champ e-mail requis ; aucun message « envoyé » affiché"
         },
         {
@@ -1194,7 +2432,15 @@
           "editing": "titre, image de l'ouverture, texte du bandeau d'annonce et titre du pied de page modifiés ; section bandeau défilant masquée ; garantie dupliquée ; stories déplacées avant les avis ; story ajoutée avec une adresse vidéo ; version enregistrée puis page rechargée : tout est conservé ; la version d'origine est inchangée"
         },
         {
+          "width": 768,
+          "editing": "titre, image de l'ouverture, texte du bandeau d'annonce et titre du pied de page modifiés ; section bandeau défilant masquée ; garantie dupliquée ; stories déplacées avant les avis ; story ajoutée avec une adresse vidéo ; version enregistrée puis page rechargée : tout est conservé ; la version d'origine est inchangée"
+        },
+        {
           "width": 390,
+          "editing": "titre, image de l'ouverture, texte du bandeau d'annonce et titre du pied de page modifiés ; section bandeau défilant masquée ; garantie dupliquée ; stories déplacées avant les avis ; story ajoutée avec une adresse vidéo ; version enregistrée puis page rechargée : tout est conservé ; la version d'origine est inchangée"
+        },
+        {
+          "width": 360,
           "editing": "titre, image de l'ouverture, texte du bandeau d'annonce et titre du pied de page modifiés ; section bandeau défilant masquée ; garantie dupliquée ; stories déplacées avant les avis ; story ajoutée avec une adresse vidéo ; version enregistrée puis page rechargée : tout est conservé ; la version d'origine est inchangée"
         }
       ],

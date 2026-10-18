@@ -40,7 +40,64 @@ Aucun environnement hébergé du studio n'est accessible depuis cette session (p
 - recherche (états avec et sans résultat pré-rendus), contact et newsletter (validation HTML réelle, aucun envoi) ; mention « Aperçu statique de démonstration · paiement désactivé » toujours visible ;
 - vérification Chromium `scripts/lot2c-static-check.ts` (390 et 1440 px) : chaque page se charge sans erreur ni ressource manquante, un seul h1, aucun débordement ; menu → fiche → galerie ; ajout → tiroir → quantité → retrait → page panier ; stories ; recherche ; contact.
 
-Publication : deux pages privées claude.ai (compte de Thomas), une par thème, avec page d'entrée listant les pages et les limites. Liens dans la PR #139. Ce n'est ni un déploiement ni un site de paiement : les exports CMS restent à faire avec Codex.
+Publication : deux pages privées claude.ai (compte de Thomas), une par thème, avec page d'entrée listant les pages et les limites. Liens dans la PR #139. Mise à jour du 18 octobre (commit `7e04880d`) : page « Bibliothèque de sections » ajoutée ; **l'aperçu livré a été vérifié tel quel** : les 59 + 58 fichiers publiés ont été retéléchargés depuis claude.ai, comparés au local (identiques, sauf la page d'entrée enveloppée par la plateforme) et repassés dans `lot2c-static-check.ts` (390 et 1440 px, tout vert). Ce n'est ni un déploiement ni un site de paiement : les exports CMS restent à faire avec Codex.
+
+## Consigne du 18 octobre, 22 h 41 — corrections mobile, huit sections, animations
+
+Partie E (personnalisation des quatre thèmes) **suspendue par Thomas : non commencée**. Commit du code testé : `7e04880d` (CI GitHub sur ce commit) ; ce rapport, `reports/lot2c/preuves.json` et les journaux `reports/lot2c/studio-*.json` sont ajoutés par le commit de documentation qui le suit sur la branche.
+
+### Corrigé (défauts vus par Thomas, avant / après)
+
+| Défaut | Cause trouvée | Correction | Avant → après |
+|---|---|---|---|
+| FAQ « La recette » : texte blanc sur fond blanc (390 px) | Les règles communes aux deux profils (`body[data-conversion]:not([data-conversion="none"])`) étaient **plus spécifiques** que les règles propres au profil « pop » : elles gagnaient sur la couleur du texte des questions ouvertes | Même spécificité pour toutes les règles de profil (`:is(body[data-conversion="pop"],body[data-conversion="contrast"])`), l'ordre décide ; règles de lisibilité de la FAQ « pop » | fond rouge, texte blanc, question et réponse lisibles (`faq-mobile.png`, planche `faq-ouverte-mobile.png`) |
+| « Ce que l'on voit dans le flacon » : une seule colonne sur téléphone | La grille d'icônes n'avait pas de réglage téléphone | `features-grid` : **Disposition** (grille / une rangée / carrousel) et **Colonnes sur téléphone** (1 ou 2), indépendantes de l'ordinateur ; démonstration en 2 × 2 | grille 2 × 2 à 390 px (`accueil-mobile.png`), carrousel sur la page de démonstration |
+| Galerie produit : bandes parasites autour des visuels | Cadre portrait imposé à des images carrées, fond différent de la zone | **Format de la galerie** sur la fiche (naturel / carré / portrait / paysage), image entière (`object-fit: contain`) sur fond de surface harmonisé ; démonstration en carré | cadres 304 × 304 sans bande (`produit-mobile.png`) |
+| Bandeau d'aperçu qui couvre les boutons | Bandeau pleine largeur fixe | Pastille compacte et repliable (« Aperçu de démonstration · paiement désactivé »), placée **au-dessus** de la barre d'achat mobile et du tiroir, jamais sur un bouton d'action ; en studio, pastille basse déjà discrète | vérification Chromium `lot2c-static-check.ts` : aucun recouvrement d'un bouton d'achat |
+| Image 04 manquante (« visuel à importer ») | Pack corrigé **toujours non reçu** dans la conversation | Rien à coder : dès réception du ZIP, relancer la démonstration et les preuves | emplacement explicite conservé (FRAISE uniquement) |
+
+### Construit : huit types de sections dans Thème → Sections (`theme-base/sections/`)
+
+| Section (nom FR dans la bibliothèque) | Fichier | Réglages principaux | Blocs |
+|---|---|---|---|
+| Grille de bénéfices avec icônes | `features-grid.liquid` (enrichie) | disposition grille / rangée / carrousel, colonnes téléphone 1–2, animation | icône + titre + texte |
+| Image à points interactifs | `cv-hotspots.liquid` | visuel, format, disposition (liste sous le visuel ou à côté), liste lisible sans survol ni JavaScript, mention de démonstration | points (position %, titre, texte), max 8 |
+| Image et texte alternés | `cv-alternating.liquid` | alternance / visuel à gauche / à droite, format des visuels | rangées (visuel, surtitre, titre, texte, bouton), max 6 |
+| Utilisation en étapes | `cv-steps.liquid` | cartes ou frise, bouton final | 3 à 4 étapes (visuel, titre, texte) |
+| Tableau comparatif personnalisable | `comparison-table.liquid` (enrichi) | colonnes, prix et lien par colonne, mention, animation | critères (coche / croix / texte) |
+| Galerie en situation | `cv-gallery.liquid` | grille / carrousel / mosaïque, colonnes, format, mention sur chaque visuel, visionneuse plein écran (clavier, Échap) | visuels avec légende, max 12 |
+| Fiche et contenu du colis | `cv-specs.liquid` | titre puis groupes / titre à gauche, mention | groupes dépliables « Libellé : valeur » (`[À compléter]` pour l'inconnu), contenu de la boîte |
+| Bannière d'achat | `cv-banner.liquid` | visuel à gauche / à droite / en fond, prix et mention, bouton, note | — |
+
+Toutes : nom et description **en français** dans la bibliothèque (`src/lib/theme/section-library.ts`), aperçu au survol, préréglage rempli avec les **visuels du projet** (`section-defaults.ts`), schéma traduit en anglais (`schema.en.json`, test `theme-en`), clés de locale FR/EN, choix de disposition déclarés (`layout-choices.ts`). Aucune caractéristique inventée : les textes de démonstration sont identifiés (« Détails de démonstration », « Image IA — démonstration », « Valeurs à confirmer avant publication », « exemple de promotion »).
+
+### Animations (réglables et désactivables, par section)
+
+- Chaque section ci-dessus (et les sections `cv-*` existantes : ouverture, cartes, avis, argumentaire, garantie, stories, article) a deux réglages : **Animation** (Aucune / Fondu / Montée en fondu / Léger zoom) et **Vitesse** (Lente / Normale / Rapide). « Aucune » retire toute apparition au défilement (test automatique : plus aucun attribut d'apparition dans les huit sections).
+- Garde-fous, vérifiés par test et par la passe Chromium : les textes ne sont **jamais masqués en attendant une animation** — sans JavaScript tout est visible (les règles d'apparition ne s'appliquent que sous `.motion-ready`) ; au-delà de 3,2 s tout ce qui n'est pas apparu est révélé (`theme.js`) ; `prefers-reduced-motion` coupe les apparitions, le survol zoom et les pulsations (page à 390 px en mouvement réduit : 0 animation en cours).
+
+### Testé réellement
+
+- **Depuis le vrai bouton « Ajouter une section »** de l'onglet Boutique, studio Next.js lancé en développement sur une base temporaire, Chromium piloté (`scripts/lot2c-studio-check.ts`, FRAISE et ONDE) : recherche « Points interactifs » → aperçu de la section dans la boutique au survol (avec le visuel du projet) → clic = ajout → section listée et rendue dans l'aperçu → point interactif ouvert dans l'aperçu (vue Téléphone) → menu de la section : **Dupliquer** (2 sections rendues) → texte et image modifiés et copie **masquée** par les opérations du studio (`/theme/ops`, mêmes appels que les panneaux) → **rechargement complet** : titre modifié, image remplacée, copie non rendue mais toujours listée, original intact. Captures `studio/<thème>-01…07.png`, journal `studio/<thème>-studio.json`.
+- Passe de preuves complète `lot2c-proof.ts` à **1440, 768, 390 et 360 px** sur toutes les pages (dont `pages/sections`) : un seul h1, aucun débordement, aucune image cassée, aucune erreur JavaScript, interactions (menu, stories, FAQ, comparatif, offres, barre d'achat, tiroir, remise, recherche), pass d'édition, mouvement réduit.
+- Tests : `tsc`, `vitest` (suites thème dont `lot2c-conversion` étendue : huit types sur la page de démonstration, animation « Aucune » / « Lente » / « Fondu », garde-fous CSS/JS, grille 2 × 2, format de galerie), Theme Check (échantillon rapide puis CI complète).
+- Aperçus statiques régénérés et revérifiés (`lot2c-static-check.ts`, 390 et 1440 px) : pages de démonstration `bibliotheque-de-sections.html` ajoutées sans toucher aux pages de référence.
+
+### Simulé ou partiel (dit tel quel)
+
+- L'entrée de menu « Choisir la disposition » n'apparaît, pour les sections de page, que dans les thèmes du nouveau moteur (v2) : comportement existant de l'onglet Boutique, non modifié. Pour ces thèmes, la disposition se change par les réglages de la section (opérations `set_setting`, testées) ou en discutant avec le studio.
+- Le clic sur un point interactif dans l'aperçu « Ordinateur » du studio n'a pas pu être automatisé (l'aperçu est réduit par une transformation CSS, ce qui fausse les coordonnées du robot) ; il l'a été en vue « Téléphone » dans le studio, et à 1440 / 390 px hors studio par la passe de preuves. Ce n'est pas un défaut du thème.
+- Les cadres gris vus sur une première capture pleine page de la page de démonstration ONDE étaient un **artefact de capture** (images chargées mais non peintes par Chromium dans une page de 12 000 px) : la passe de preuves décode désormais toutes les images avant la prise de vue ; vérifié section par section à l'écran.
+
+### Restant
+
+- Pack d'images corrigé : à joindre à la conversation (le ZIP de référence SHA-256 `07a1e028…` n'a jamais été reçu).
+- Partie E (personnalisation des quatre thèmes) : suspendue, à relancer sur consigne.
+- Hébergement du studio pour un aperçu distant **interactif** complet (le lien actuel est un aperçu statique privé).
+
+### Pour Codex (contrat de données, PR #138 non touchée)
+
+Aucun blocage rencontré. À signaler pour les exports : les huit sections ont des réglages `image_asset` (fichier du thème) **ou** `image` (image Shopify) ; les textes multi-lignes (« Libellé : valeur », contenu de la boîte) sont des `textarea` ; `animation` / `animation_speed` sont des `select` à valeurs fixes ; `features-grid` gagne `layout` et `columns_mobile`, `main-product` gagne `gallery_ratio`, `comparison-table` gagne `price`, `link_label`, `link` par colonne. Noms de schéma ≤ 25 caractères (Theme Check).
 
 ## Réponse point par point à la revue du 18 octobre
 

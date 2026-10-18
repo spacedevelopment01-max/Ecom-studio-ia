@@ -1,0 +1,34 @@
+{
+  "kind": "onde",
+  "origin": "studio Next.js de développement, base temporaire",
+  "steps": [
+    {
+      "step": "ajout depuis le bouton Sections",
+      "ok": true
+    },
+    {
+      "step": "point interactif ouvert dans l'aperçu (vue Téléphone)",
+      "ok": true
+    },
+    {
+      "step": "duplication",
+      "ok": true
+    },
+    {
+      "step": "choix de disposition",
+      "ok": false,
+      "reason": "menu absent"
+    },
+    {
+      "step": "texte, image, masquage puis rechargement",
+      "ok": true,
+      "after": {
+        "visible": 1,
+        "heading": "Titre modifié depuis le studio",
+        "image": "/preview/f1pydt1tdy2fy4hn/v/5dat3u5352fq257b~tn5etq.UiQtNlLecmlIATb759KTcaSOAe5jcTwK/assets/onde-06-banniere.webp",
+        "listed": 2
+      }
+    }
+  ],
+  "date": "2026-10-18T21:39:35.807Z"
+}
