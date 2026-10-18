@@ -20,6 +20,9 @@ export async function exportShopify(spec: ThemeSpec, load: AssetLoader): Promise
   const entries = unzipSync(new Uint8Array(r.zip));
   const text = (p: string) => (entries[p] ? strFromU8(entries[p]) : "");
   const issues: ExportIssue[] = [];
+  for (const p of spec.store.business === "services" ? [] : [spec.store.product, ...spec.store.products ?? []]) {
+    if (p.options.length > 3) issues.push({ code: "catalog_options_limit", severity: "blocking", detail: `${p.handle} : ${p.options.length} axes, Shopify en accepte trois. Catalogue complet conservé dans assets/es-catalogue.json ; combinaison manuelle à décider avant import.` });
+  }
   if (productTemplateAssignments(spec).length) issues.push({ code: "product_template_assignment_required", severity: "warning", detail: "Shopify : le ZIP et le CSV seuls n'affectent pas les gabarits aux produits. Suivre assets/es-product-templates.json : choisir puis enregistrer le modèle de chaque produit dans Shopify. Installation réelle non vérifiée." });
   for (const p of SHOPIFY_REQUIRED) if (!entries[p]) issues.push({ code: "missing_template", severity: "blocking", detail: `${p} absent` });
   const sections = new Set<string>();
