@@ -95,6 +95,14 @@ export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Pro
   const adaptedHome = adaptFeaturedProduct(spec, (fr, en) => pick(lang, fr, en));
   const files = compileTheme(spec);
   const design = await designLayer(spec, files);
+  // L'adaptation introduit un composant V2 même dans un projet historique sans ds_language.
+  // Livrer sa dépendance existante ; ne pas modifier les gabarits ou styles sources du studio.
+  if (adaptedHome && !design.stylesheets.includes("theme-v2.css")) {
+    design.stylesheets.push("theme-v2.css");
+    const configured = Number(spec.settings.ds_ratio);
+    const ratio = (Number.isFinite(configured) && configured > 0 ? configured : 125) / 100;
+    design.css += `\n:root { --v2-r1: ${ratio}; --v2-r2: ${ratio ** 2}; --v2-r4: ${ratio ** 4}; --v2-r6: ${ratio ** 6}; }\n`;
+  }
   const services = spec.store.business === "services";
   // Nouvelle archive modifiée = nouveau thème installable : Presta refuse l'écrasement d'un nom existant.
   const identity = createHash("sha256").update(JSON.stringify(spec));

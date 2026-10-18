@@ -14,6 +14,14 @@ import { prepareShopifyCsv } from "../scripts/cms-v2/prepare-shopify-csv";
 import { multiAxisSpec } from "./cms-catalogue-fixtures";
 
 describe("exports catalogue fiables", () => {
+  it("une présentation Presta adaptée à un ancien thème livre ses dépendances V2", async () => {
+    const s=multiAxisSpec();s.settings.ds_language='none';
+    s.templates.index={order:['buy'],sections:{buy:{type:'featured-product',settings:{product:s.store.product.handle}}}};
+    const e=await cmsExport('prestashop',s,()=>null);const files=unzipSync(e.zip);
+    expect(strFromU8(files['assets/css/es-theme-v2.css'])).toContain('.v2-split__grid');
+    expect(strFromU8(files['config/theme.yml'])).toContain('assets/css/es-theme-v2.css');
+    expect(strFromU8(files['assets/css/es-design.css'])).toContain('--v2-r6:');
+  });
   it("la présentation Presta garde le texte complet et le prix de la variante initiale", () => {
     const s=multiAxisSpec();s.store.product.price=9999;s.store.product.description_html='<p>'+"Texte complet. ".repeat(1000)+'FIN_PRODUIT</p>';
     s.templates.index={order:['buy'],sections:{buy:{type:'featured-product',settings:{product:s.store.product.handle}}}};
