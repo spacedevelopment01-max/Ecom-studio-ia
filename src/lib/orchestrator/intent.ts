@@ -149,7 +149,7 @@ export function intentsFromRules(text: string): IntentResult {
   if (!intents.length) return { intents: [], source: "none", confidence: 0, clarification: CLARIFY };
   // Très court et très général (« le site », « des images ») : objet compris, mais pas ce qu'il faut en faire.
   const vague = intents.length === 1 && ["GENERATE_IMAGE", "CREATE_SHOP"].includes(intents[0]) && t.split(/\s+/).filter(Boolean).length <= 2;
-  return { intents: order(intents), source: "rules", confidence: vague || !/\b(cree|creer|creez|fais|faire|faites|construis|lance|veux|voudrais|besoin|ameliore|retouche|modifie|change|corrige|refais|redige|reecris|ecris|genere|trouve|cherche|analyse|publie|exporte|telecharge|create|build|make|write|generate|find|improve|publish|export)\b/.test(t) ? 0.4 : 0.85, matched, scope };
+  return { intents: order(intents), source: "rules", confidence: vague || !/\b(cree|creer|creez|fais|faire|faites|construis|lance|veux|voudrais|besoin|ameliore|retouche|modifie|change|corrige|refais|redige|reecris|ecris|genere|prepare|planifie|organise|trouve|cherche|analyse|publie|exporte|telecharge|create|build|make|write|generate|prepare|plan|organize|find|improve|publish|export)\b/.test(t) ? 0.4 : 0.85, matched, scope };
 }
 
 const CLARIFY = "Que souhaitez-vous faire : logo, marque, boutique, textes, images, vidéo, publicité, publications ou articles ?";

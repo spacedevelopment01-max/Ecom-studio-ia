@@ -21,3 +21,11 @@ it("workflow : une consigne citée ne rajoute pas de création de boutique", asy
   expect(w.intents).toEqual(["WRITE_PRODUCT_COPY"]);
   expect(loadPlan(w.planId!)!.steps.map(s => s.kind)).toEqual(["copy"]);
 });
+
+it("commande explicite préparer : reconnue sans autoriser autre chose qu’un calendrier", async () => {
+  const f = await fixture();
+  const w = await prepareWorkflow(f.pid, f.uid, "Prépare mes publications Facebook pour les 7 prochains jours", { aiActive: false });
+  expect(w.status).toBe("draft");
+  expect(w.intents).toEqual(["SOCIAL"]);
+  expect(loadPlan(w.planId!)!.steps.map(s => s.kind)).toEqual(["social"]);
+});
