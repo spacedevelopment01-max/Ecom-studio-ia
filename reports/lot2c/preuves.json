@@ -1,7 +1,7 @@
 {
-  "testedCommit": "26e7135534da933f34cceb1f8036de4e584e8b56",
+  "testedCommit": "7649674a02a9c3119581dd36692499bf03422c49",
   "workingTree": "clean",
-  "date": "2026-10-18T16:53:42.859Z",
+  "date": "2026-10-18T18:23:15.814Z",
   "renderMode": "es_raw=1 — thème issu des vraies routes, sans le bandeau flottant du studio",
   "widths": [
     1440,
@@ -15,6 +15,20 @@
       "missing": [
         "04-detail-gummies"
       ],
+      "editing": {
+        "operations": [
+          "set_setting",
+          "set_setting",
+          "toggle_section",
+          "duplicate_section",
+          "move_section",
+          "add_block",
+          "set_setting",
+          "set_setting"
+        ],
+        "applied": 8,
+        "rejected": 0
+      },
       "logo": {
         "colors": [
           {
@@ -39,14 +53,26 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 9729,
+            "height": 9819,
             "h1": 1,
-            "images": 7,
+            "images": 8,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
-            "headerHeight": 110.546875,
-            "fictionalTags": 9
+            "headerHeight": 114.546875,
+            "fictionalTags": 9,
+            "logos": {
+              "header": [
+                150,
+                48,
+                37
+              ],
+              "footer": [
+                150,
+                59,
+                44
+              ]
+            }
           },
           "javascriptErrors": []
         },
@@ -57,266 +83,350 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 10882,
+            "height": 10900,
+            "h1": 1,
+            "images": 8,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 9,
+            "logos": {
+              "header": [
+                150,
+                48,
+                37
+              ],
+              "footer": [
+                150,
+                59,
+                45
+              ]
+            }
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "produit",
+          "route": "/products/gummies-fraise",
+          "width": 1440,
+          "metrics": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 11484,
+            "h1": 1,
+            "images": 26,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 114.546875,
+            "fictionalTags": 8
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "produit",
+          "route": "/products/gummies-fraise",
+          "width": 390,
+          "metrics": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 12693,
+            "h1": 1,
+            "images": 26,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 8
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "boutique",
+          "route": "/collections/all",
+          "width": 1440,
+          "metrics": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 2603,
+            "h1": 1,
+            "images": 4,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 114.546875,
+            "fictionalTags": 1
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "boutique",
+          "route": "/collections/all",
+          "width": 390,
+          "metrics": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 3015,
+            "h1": 1,
+            "images": 4,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 1
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "a-propos",
+          "route": "/pages/a-propos",
+          "width": 1440,
+          "metrics": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 3638,
+            "h1": 1,
+            "images": 3,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 114.546875,
+            "fictionalTags": 1
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "a-propos",
+          "route": "/pages/a-propos",
+          "width": 390,
+          "metrics": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 4633,
+            "h1": 1,
+            "images": 3,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 1
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "contact",
+          "route": "/pages/contact",
+          "width": 1440,
+          "metrics": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 1945,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 114.546875,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "contact",
+          "route": "/pages/contact",
+          "width": 390,
+          "metrics": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 2793,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "faq",
+          "route": "/pages/faq",
+          "width": 1440,
+          "metrics": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 2732,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 114.546875,
+            "fictionalTags": 1
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "faq",
+          "route": "/pages/faq",
+          "width": 390,
+          "metrics": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 3483,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 1
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "livraison-retours",
+          "route": "/pages/livraison-retours",
+          "width": 1440,
+          "metrics": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 2102,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 114.546875,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "livraison-retours",
+          "route": "/pages/livraison-retours",
+          "width": 390,
+          "metrics": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 2965,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "mentions-legales",
+          "route": "/pages/mentions-legales",
+          "width": 1440,
+          "metrics": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 2120,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 114.546875,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "mentions-legales",
+          "route": "/pages/mentions-legales",
+          "width": 390,
+          "metrics": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 2895,
+            "h1": 1,
+            "images": 2,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 0
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "listicle",
+          "route": "/pages/listicle",
+          "width": 1440,
+          "metrics": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 6949,
+            "h1": 1,
+            "images": 7,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 114.546875,
+            "fictionalTags": 8
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "listicle",
+          "route": "/pages/listicle",
+          "width": 390,
+          "metrics": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 6308,
             "h1": 1,
             "images": 7,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 65,
-            "fictionalTags": 9
-          },
-          "javascriptErrors": []
-        },
-        {
-          "name": "produit",
-          "route": "/products/gummies-fraise",
-          "width": 1440,
-          "metrics": {
-            "width": 1440,
-            "scrollWidth": 1440,
-            "height": 11395,
-            "h1": 1,
-            "images": 25,
-            "brokenImages": [],
-            "missingMedia": 0,
-            "fonts": "loaded",
-            "headerHeight": 110.546875,
             "fictionalTags": 8
           },
           "javascriptErrors": []
         },
         {
-          "name": "produit",
-          "route": "/products/gummies-fraise",
-          "width": 390,
-          "metrics": {
-            "width": 390,
-            "scrollWidth": 390,
-            "height": 12622,
-            "h1": 1,
-            "images": 25,
-            "brokenImages": [],
-            "missingMedia": 0,
-            "fonts": "loaded",
-            "headerHeight": 65,
-            "fictionalTags": 8
-          },
-          "javascriptErrors": []
-        },
-        {
-          "name": "boutique",
-          "route": "/collections/all",
+          "name": "advertorial",
+          "route": "/pages/advertorial",
           "width": 1440,
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 2463,
+            "height": 7388,
             "h1": 1,
-            "images": 3,
+            "images": 5,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
-            "headerHeight": 110.546875,
-            "fictionalTags": 1
+            "headerHeight": 114.546875,
+            "fictionalTags": 11
           },
           "javascriptErrors": []
         },
         {
-          "name": "boutique",
-          "route": "/collections/all",
+          "name": "advertorial",
+          "route": "/pages/advertorial",
           "width": 390,
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 2760,
+            "height": 7404,
             "h1": 1,
-            "images": 3,
+            "images": 5,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 65,
-            "fictionalTags": 1
-          },
-          "javascriptErrors": []
-        },
-        {
-          "name": "a-propos",
-          "route": "/pages/a-propos",
-          "width": 1440,
-          "metrics": {
-            "width": 1440,
-            "scrollWidth": 1440,
-            "height": 3498,
-            "h1": 1,
-            "images": 2,
-            "brokenImages": [],
-            "missingMedia": 0,
-            "fonts": "loaded",
-            "headerHeight": 110.546875,
-            "fictionalTags": 1
-          },
-          "javascriptErrors": []
-        },
-        {
-          "name": "a-propos",
-          "route": "/pages/a-propos",
-          "width": 390,
-          "metrics": {
-            "width": 390,
-            "scrollWidth": 390,
-            "height": 4378,
-            "h1": 1,
-            "images": 2,
-            "brokenImages": [],
-            "missingMedia": 0,
-            "fonts": "loaded",
-            "headerHeight": 65,
-            "fictionalTags": 1
-          },
-          "javascriptErrors": []
-        },
-        {
-          "name": "contact",
-          "route": "/pages/contact",
-          "width": 1440,
-          "metrics": {
-            "width": 1440,
-            "scrollWidth": 1440,
-            "height": 1804,
-            "h1": 1,
-            "images": 1,
-            "brokenImages": [],
-            "missingMedia": 0,
-            "fonts": "loaded",
-            "headerHeight": 110.546875,
-            "fictionalTags": 0
-          },
-          "javascriptErrors": []
-        },
-        {
-          "name": "contact",
-          "route": "/pages/contact",
-          "width": 390,
-          "metrics": {
-            "width": 390,
-            "scrollWidth": 390,
-            "height": 2537,
-            "h1": 1,
-            "images": 1,
-            "brokenImages": [],
-            "missingMedia": 0,
-            "fonts": "loaded",
-            "headerHeight": 65,
-            "fictionalTags": 0
-          },
-          "javascriptErrors": []
-        },
-        {
-          "name": "faq",
-          "route": "/pages/faq",
-          "width": 1440,
-          "metrics": {
-            "width": 1440,
-            "scrollWidth": 1440,
-            "height": 2591,
-            "h1": 1,
-            "images": 1,
-            "brokenImages": [],
-            "missingMedia": 0,
-            "fonts": "loaded",
-            "headerHeight": 110.546875,
-            "fictionalTags": 1
-          },
-          "javascriptErrors": []
-        },
-        {
-          "name": "faq",
-          "route": "/pages/faq",
-          "width": 390,
-          "metrics": {
-            "width": 390,
-            "scrollWidth": 390,
-            "height": 3228,
-            "h1": 1,
-            "images": 1,
-            "brokenImages": [],
-            "missingMedia": 0,
-            "fonts": "loaded",
-            "headerHeight": 65,
-            "fictionalTags": 1
-          },
-          "javascriptErrors": []
-        },
-        {
-          "name": "livraison-retours",
-          "route": "/pages/livraison-retours",
-          "width": 1440,
-          "metrics": {
-            "width": 1440,
-            "scrollWidth": 1440,
-            "height": 1962,
-            "h1": 1,
-            "images": 1,
-            "brokenImages": [],
-            "missingMedia": 0,
-            "fonts": "loaded",
-            "headerHeight": 110.546875,
-            "fictionalTags": 0
-          },
-          "javascriptErrors": []
-        },
-        {
-          "name": "livraison-retours",
-          "route": "/pages/livraison-retours",
-          "width": 390,
-          "metrics": {
-            "width": 390,
-            "scrollWidth": 390,
-            "height": 2709,
-            "h1": 1,
-            "images": 1,
-            "brokenImages": [],
-            "missingMedia": 0,
-            "fonts": "loaded",
-            "headerHeight": 65,
-            "fictionalTags": 0
-          },
-          "javascriptErrors": []
-        },
-        {
-          "name": "mentions-legales",
-          "route": "/pages/mentions-legales",
-          "width": 1440,
-          "metrics": {
-            "width": 1440,
-            "scrollWidth": 1440,
-            "height": 1979,
-            "h1": 1,
-            "images": 1,
-            "brokenImages": [],
-            "missingMedia": 0,
-            "fonts": "loaded",
-            "headerHeight": 110.546875,
-            "fictionalTags": 0
-          },
-          "javascriptErrors": []
-        },
-        {
-          "name": "mentions-legales",
-          "route": "/pages/mentions-legales",
-          "width": 390,
-          "metrics": {
-            "width": 390,
-            "scrollWidth": 390,
-            "height": 2640,
-            "h1": 1,
-            "images": 1,
-            "brokenImages": [],
-            "missingMedia": 0,
-            "fonts": "loaded",
-            "headerHeight": 65,
-            "fictionalTags": 0
+            "fictionalTags": 11
           },
           "javascriptErrors": []
         },
@@ -327,13 +437,13 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 1271,
+            "height": 1411,
             "h1": 1,
-            "images": 1,
+            "images": 2,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
-            "headerHeight": 110.546875,
+            "headerHeight": 114.546875,
             "fictionalTags": 0
           },
           "javascriptErrors": []
@@ -345,9 +455,9 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 1702,
+            "height": 1958,
             "h1": 1,
-            "images": 1,
+            "images": 2,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
@@ -363,13 +473,13 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 1407,
+            "height": 1547,
             "h1": 1,
-            "images": 1,
+            "images": 2,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
-            "headerHeight": 110.546875,
+            "headerHeight": 114.546875,
             "fictionalTags": 0
           },
           "javascriptErrors": []
@@ -381,9 +491,9 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 1925,
+            "height": 2180,
             "h1": 1,
-            "images": 1,
+            "images": 2,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
@@ -399,13 +509,13 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 1583,
+            "height": 1723,
             "h1": 1,
-            "images": 1,
+            "images": 2,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
-            "headerHeight": 110.546875,
+            "headerHeight": 114.546875,
             "fictionalTags": 0
           },
           "javascriptErrors": []
@@ -417,9 +527,9 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 2055,
+            "height": 2310,
             "h1": 1,
-            "images": 1,
+            "images": 2,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
@@ -469,13 +579,23 @@
         {
           "width": 390,
           "contact": "envoi bloqué par la validation du champ e-mail requis ; aucun message « envoyé » affiché"
+        },
+        {
+          "width": 1440,
+          "editing": "titre, image de l'ouverture, texte du bandeau d'annonce et titre du pied de page modifiés ; section bandeau défilant masquée ; garantie dupliquée ; stories déplacées avant les avis ; story ajoutée avec une adresse vidéo ; version enregistrée puis page rechargée : tout est conservé ; la version d'origine est inchangée"
+        },
+        {
+          "width": 390,
+          "editing": "titre, image de l'ouverture, texte du bandeau d'annonce et titre du pied de page modifiés ; section bandeau défilant masquée ; garantie dupliquée ; stories déplacées avant les avis ; story ajoutée avec une adresse vidéo ; version enregistrée puis page rechargée : tout est conservé ; la version d'origine est inchangée"
         }
       ],
       "comparisons": [
         "comparaison-accueil-390.png",
         "comparaison-produit-390.png",
-        "comparaison-panier-rempli-390.png",
-        "comparaison-panier-vide-390.png"
+        "comparaison-tiroir-rempli-390.png",
+        "comparaison-tiroir-vide-390.png",
+        "comparaison-listicle-390.png",
+        "comparaison-advertorial-390.png"
       ],
       "paidCalls": 0
     },
@@ -484,6 +604,20 @@
       "provenance": "Issue #137 (18 octobre 2026) — données synthétiques de démonstration, images IA sans personne du kit, aucun paiement",
       "mediaCount": 9,
       "missing": [],
+      "editing": {
+        "operations": [
+          "set_setting",
+          "set_setting",
+          "toggle_section",
+          "duplicate_section",
+          "move_section",
+          "add_block",
+          "set_setting",
+          "set_setting"
+        ],
+        "applied": 7,
+        "rejected": 0
+      },
       "logo": {
         "colors": [
           {
@@ -508,14 +642,26 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 7378,
+            "height": 7335,
             "h1": 1,
-            "images": 9,
+            "images": 10,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
-            "headerHeight": 110.546875,
-            "fictionalTags": 9
+            "headerHeight": 112.125,
+            "fictionalTags": 9,
+            "logos": {
+              "header": [
+                170,
+                46,
+                46
+              ],
+              "footer": [
+                170,
+                46,
+                45
+              ]
+            }
           },
           "javascriptErrors": []
         },
@@ -526,14 +672,26 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 8279,
+            "height": 8215,
             "h1": 1,
-            "images": 9,
+            "images": 10,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 65,
-            "fictionalTags": 9
+            "fictionalTags": 9,
+            "logos": {
+              "header": [
+                170,
+                46,
+                45
+              ],
+              "footer": [
+                170,
+                46,
+                47
+              ]
+            }
           },
           "javascriptErrors": []
         },
@@ -544,13 +702,13 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 8353,
+            "height": 8310,
             "h1": 1,
-            "images": 27,
+            "images": 28,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
-            "headerHeight": 110.546875,
+            "headerHeight": 112.125,
             "fictionalTags": 7
           },
           "javascriptErrors": []
@@ -562,9 +720,9 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 9413,
+            "height": 9377,
             "h1": 1,
-            "images": 27,
+            "images": 28,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
@@ -580,13 +738,13 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 2406,
+            "height": 2497,
             "h1": 1,
-            "images": 3,
+            "images": 4,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
-            "headerHeight": 110.546875,
+            "headerHeight": 112.125,
             "fictionalTags": 1
           },
           "javascriptErrors": []
@@ -598,7 +756,43 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 2697,
+            "height": 2771,
+            "h1": 1,
+            "images": 4,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 65,
+            "fictionalTags": 1
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "a-propos",
+          "route": "/pages/a-propos",
+          "width": 1440,
+          "metrics": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 3498,
+            "h1": 1,
+            "images": 3,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded",
+            "headerHeight": 112.125,
+            "fictionalTags": 1
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "a-propos",
+          "route": "/pages/a-propos",
+          "width": 390,
+          "metrics": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 4389,
             "h1": 1,
             "images": 3,
             "brokenImages": [],
@@ -610,55 +804,19 @@
           "javascriptErrors": []
         },
         {
-          "name": "a-propos",
-          "route": "/pages/a-propos",
-          "width": 1440,
-          "metrics": {
-            "width": 1440,
-            "scrollWidth": 1440,
-            "height": 3406,
-            "h1": 1,
-            "images": 2,
-            "brokenImages": [],
-            "missingMedia": 0,
-            "fonts": "loaded",
-            "headerHeight": 110.546875,
-            "fictionalTags": 1
-          },
-          "javascriptErrors": []
-        },
-        {
-          "name": "a-propos",
-          "route": "/pages/a-propos",
-          "width": 390,
-          "metrics": {
-            "width": 390,
-            "scrollWidth": 390,
-            "height": 4315,
-            "h1": 1,
-            "images": 2,
-            "brokenImages": [],
-            "missingMedia": 0,
-            "fonts": "loaded",
-            "headerHeight": 65,
-            "fictionalTags": 1
-          },
-          "javascriptErrors": []
-        },
-        {
           "name": "contact",
           "route": "/pages/contact",
           "width": 1440,
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 1765,
+            "height": 1856,
             "h1": 1,
-            "images": 1,
+            "images": 2,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
-            "headerHeight": 110.546875,
+            "headerHeight": 112.125,
             "fictionalTags": 0
           },
           "javascriptErrors": []
@@ -670,9 +828,9 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 2476,
+            "height": 2550,
             "h1": 1,
-            "images": 1,
+            "images": 2,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
@@ -688,13 +846,13 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 2500,
+            "height": 2591,
             "h1": 1,
-            "images": 1,
+            "images": 2,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
-            "headerHeight": 110.546875,
+            "headerHeight": 112.125,
             "fictionalTags": 1
           },
           "javascriptErrors": []
@@ -706,9 +864,9 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 3047,
+            "height": 3121,
             "h1": 1,
-            "images": 1,
+            "images": 2,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
@@ -724,13 +882,13 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 1922,
+            "height": 2013,
             "h1": 1,
-            "images": 1,
+            "images": 2,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
-            "headerHeight": 110.546875,
+            "headerHeight": 112.125,
             "fictionalTags": 0
           },
           "javascriptErrors": []
@@ -742,9 +900,9 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 2616,
+            "height": 2690,
             "h1": 1,
-            "images": 1,
+            "images": 2,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
@@ -760,13 +918,13 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 1940,
+            "height": 2031,
             "h1": 1,
-            "images": 1,
+            "images": 2,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
-            "headerHeight": 110.546875,
+            "headerHeight": 112.125,
             "fictionalTags": 0
           },
           "javascriptErrors": []
@@ -778,9 +936,9 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 2579,
+            "height": 2653,
             "h1": 1,
-            "images": 1,
+            "images": 2,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
@@ -796,13 +954,13 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 1231,
+            "height": 1322,
             "h1": 1,
-            "images": 1,
+            "images": 2,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
-            "headerHeight": 110.546875,
+            "headerHeight": 112.125,
             "fictionalTags": 0
           },
           "javascriptErrors": []
@@ -814,9 +972,9 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 1641,
+            "height": 1715,
             "h1": 1,
-            "images": 1,
+            "images": 2,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
@@ -832,13 +990,13 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 1367,
+            "height": 1458,
             "h1": 1,
-            "images": 1,
+            "images": 2,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
-            "headerHeight": 110.546875,
+            "headerHeight": 112.125,
             "fictionalTags": 0
           },
           "javascriptErrors": []
@@ -850,9 +1008,9 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 1864,
+            "height": 1937,
             "h1": 1,
-            "images": 1,
+            "images": 2,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
@@ -868,13 +1026,13 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 1543,
+            "height": 1634,
             "h1": 1,
-            "images": 1,
+            "images": 2,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
-            "headerHeight": 110.546875,
+            "headerHeight": 112.125,
             "fictionalTags": 0
           },
           "javascriptErrors": []
@@ -886,9 +1044,9 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 1994,
+            "height": 2067,
             "h1": 1,
-            "images": 1,
+            "images": 2,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
@@ -917,7 +1075,53 @@
         },
         {
           "width": 1440,
+          "discountDrawer": {
+            "apply": {
+              "scrollWidth": 109,
+              "clientWidth": 109,
+              "left": 1307,
+              "right": 1418,
+              "boxLeft": 1000,
+              "boxRight": 1440,
+              "text": "APPLIQUER"
+            },
+            "input": {
+              "scrollWidth": 275,
+              "clientWidth": 275,
+              "left": 1022,
+              "right": 1299,
+              "boxLeft": 1000,
+              "boxRight": 1440,
+              "text": "Code de réduction"
+            }
+          }
+        },
+        {
+          "width": 1440,
           "buy": "quantité 2 → ajout → tiroir ouvert : Total : 2 articles, 298,00 €, économies, bloc réservation marqué « Démonstration fictive », code DEMO10 → note « aucun code actif », total inchangé"
+        },
+        {
+          "width": 1440,
+          "discountPage": {
+            "apply": {
+              "scrollWidth": 109,
+              "clientWidth": 109,
+              "left": 1176,
+              "right": 1287,
+              "boxLeft": 969,
+              "boxRight": 1312,
+              "text": "APPLIQUER"
+            },
+            "input": {
+              "scrollWidth": 172,
+              "clientWidth": 172,
+              "left": 994,
+              "right": 1168,
+              "boxLeft": 969,
+              "boxRight": 1312,
+              "text": "Code de réduction"
+            }
+          }
         },
         {
           "width": 1440,
@@ -925,7 +1129,53 @@
         },
         {
           "width": 390,
+          "discountDrawer": {
+            "apply": {
+              "scrollWidth": 109,
+              "clientWidth": 109,
+              "left": 257,
+              "right": 368,
+              "boxLeft": 0,
+              "boxRight": 390,
+              "text": "APPLIQUER"
+            },
+            "input": {
+              "scrollWidth": 225,
+              "clientWidth": 225,
+              "left": 22,
+              "right": 249,
+              "boxLeft": 0,
+              "boxRight": 390,
+              "text": "Code de réduction"
+            }
+          }
+        },
+        {
+          "width": 390,
           "buy": "quantité 2 → ajout → tiroir ouvert : Total : 2 articles, 298,00 €, économies, bloc réservation marqué « Démonstration fictive », code DEMO10 → note « aucun code actif », total inchangé"
+        },
+        {
+          "width": 390,
+          "discountPage": {
+            "apply": {
+              "scrollWidth": 109,
+              "clientWidth": 109,
+              "left": 236,
+              "right": 347,
+              "boxLeft": 18,
+              "boxRight": 372,
+              "text": "APPLIQUER"
+            },
+            "input": {
+              "scrollWidth": 183,
+              "clientWidth": 183,
+              "left": 43,
+              "right": 228,
+              "boxLeft": 18,
+              "boxRight": 372,
+              "text": "Code de réduction"
+            }
+          }
         },
         {
           "width": 390,
@@ -938,13 +1188,21 @@
         {
           "width": 390,
           "contact": "envoi bloqué par la validation du champ e-mail requis ; aucun message « envoyé » affiché"
+        },
+        {
+          "width": 1440,
+          "editing": "titre, image de l'ouverture, texte du bandeau d'annonce et titre du pied de page modifiés ; section bandeau défilant masquée ; garantie dupliquée ; stories déplacées avant les avis ; story ajoutée avec une adresse vidéo ; version enregistrée puis page rechargée : tout est conservé ; la version d'origine est inchangée"
+        },
+        {
+          "width": 390,
+          "editing": "titre, image de l'ouverture, texte du bandeau d'annonce et titre du pied de page modifiés ; section bandeau défilant masquée ; garantie dupliquée ; stories déplacées avant les avis ; story ajoutée avec une adresse vidéo ; version enregistrée puis page rechargée : tout est conservé ; la version d'origine est inchangée"
         }
       ],
       "comparisons": [
         "comparaison-accueil-390.png",
         "comparaison-produit-390.png",
-        "comparaison-panier-rempli-390.png",
-        "comparaison-panier-vide-390.png"
+        "comparaison-tiroir-rempli-390.png",
+        "comparaison-tiroir-vide-390.png"
       ],
       "paidCalls": 0
     }

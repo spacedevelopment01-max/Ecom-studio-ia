@@ -1,6 +1,6 @@
 # FRAISE GUMMIES et ONDE AUDIO — thèmes fidèles aux références Lumora / Pawish (issue #137)
 
-**État : corrigé après la revue du 18 octobre (commentaire 6252905535 de la PR #139), en brouillon, sans fusion ni déploiement.** Deux thèmes complets construits dans le moteur du studio sur la branche `claude/fraise-onde-themes-reference` (base `7aa726cf`, tête validée de la PR #135). Commit testé : `[COMMIT2]` (champ `testedCommit` de `reports/lot2c/preuves.json`) ; première livraison testée sur `26e71355`. Les captures, comparaisons et vidéos contenant les 18 images IA et les logos du kit sont privées (ZIP remis à Thomas) ; rien de tout cela n'entre dans le dépôt public.
+**État : corrigé après la revue du 18 octobre (commentaire 6252905535 de la PR #139), en brouillon, sans fusion ni déploiement.** Deux thèmes complets construits dans le moteur du studio sur la branche `claude/fraise-onde-themes-reference` (base `7aa726cf`, tête validée de la PR #135). Commit testé : `7649674a` (champ `testedCommit` de `reports/lot2c/preuves.json`) ; première livraison testée sur `26e71355`. Le commit suivant n'ajoute que ce rapport, `preuves.json` et la mise en capitales des initiales de signature de `cv-article` (tests lot 2C et Theme Check rapide rejoués, OK). Les captures, comparaisons et vidéos contenant les 18 images IA et les logos du kit sont privées (ZIP remis à Thomas) ; rien de tout cela n'entre dans le dépôt public.
 
 Inventaire des références et correspondance section par section : [`LOT_2C_FRAISE_ONDE_INVENTAIRE.md`](LOT_2C_FRAISE_ONDE_INVENTAIRE.md). Manifeste des ressources et licences : [`reports/lot2c/ressources-licences.json`](../../reports/lot2c/ressources-licences.json).
 
@@ -45,17 +45,17 @@ Inventaire des références et correspondance section par section : [`LOT_2C_FRA
 
 ## Vérifications réellement exécutées
 
-Commit `[COMMIT2]` :
+Commit `7649674a` :
 
 | Contrôle | État | Détail |
 |---|---|---|
-| `npx tsc --noEmit` | [TSC2] | |
-| `npx vitest run` — thème, catalogue, EN, lot 2A, lot 2B, audit Boutique, lot 2C, cms-v2 | [VITEST2] | |
-| `scripts/verify-theme.sh --rapide` | [RAPIDE2] | |
-| `scripts/verify-theme.sh` complet (`JOBS=2`) | [COMPLET2] | |
-| `scripts/lot2c-proof.ts` (390 et 1440 px, vidéos, comparaisons, logos, champ de réduction, édition) | [PROOF2] |
-| `scripts/lot2c-demo-local.ts` sur une base temporaire | [DEMO2] | |
-| CI GitHub sur le commit testé | [CI2] |
+| `npx tsc --noEmit` | OK | |
+| `npx vitest run` — thème, catalogue, EN, lot 2A, lot 2B, audit Boutique, lot 2C, cms-v2 | OK — 134 tests, 14 fichiers (`theme`, `theme-v2`, `theme-custom`, `banque-du-theme`, `themes-catalogue`, `theme-en`, `audit-onglet-boutique`, `lot2a-php-export`, `lot2a-purchase`, `lot2a-reference`, `lot2b-editorial`, `lot2b-featured`, `lot2c-conversion`, `cms-v2`) | |
+| `scripts/verify-theme.sh --rapide` | OK | |
+| `scripts/verify-theme.sh` complet (`JOBS=2`) | OK — « Thème : tout est valide », 137 contrôles, 0 erreur, 0 avertissement (compositions FR/EN et ZIP client) | |
+| `scripts/lot2c-proof.ts` (390 et 1440 px, vidéos, comparaisons, logos, champ de réduction, édition) | OK — FRAISE 26 visites (13 pages × 2 largeurs), ONDE 22 ; 0 erreur JavaScript, 0 débordement, 0 image cassée ; logos rendus 150 × 48 / 170 × 46 px avec 37 à 47 % de pixels dessinés ; champ et bouton de réduction entiers (tiroir et page, 1440 et 390 px) ; 6 comparaisons FRAISE et 4 ONDE ; 12 et 16 interactions ; édition : 8 opérations, 0 rejet ; 2 vidéos par thème ; 0 appel IA payant ; seul média manquant : `04-detail-gummies` (vide dans le kit) |
+| `scripts/lot2c-demo-local.ts` sur une base temporaire | OK — 2 projets créés sur `DATA_DIR` temporaire, 8/9 et 9/9 images, logos vectorisés, pages listicle et advertorial listées | |
+| CI GitHub sur le commit testé | OK (succès) — https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/39153487962 |
 | Suite complète `npm test` en local | non exécutée | prise en charge par la CI |
 | Import dans Shopify, WordPress/WooCommerce, PrestaShop et test du panier natif | **non exécuté** | critère de réception à réaliser avec Codex (voir « Raccordements ») |
 | Vues ordinateur et interactions des démonstrations de référence | **non observées** | kit limité aux captures mobiles |
@@ -74,7 +74,7 @@ Exécutées à 1440 px puis à 390 px sur chaque thème (`preuves.json`, champ `
 - **Logos** : taille rendue et part de pixels dessinés mesurées en en-tête et pied de page, captures des deux logos.
 - **Code de réduction** (ONDE) : bouton « Appliquer » et champ mesurés (texte entier, dans la zone) dans le tiroir et sur la page panier.
 - **Édition** : 8 opérations du moteur appliquées (0 rejet), nouvelle version enregistrée, page rechargée, contrôles DOM (titre, image, section masquée, garantie dupliquée, ordre stories/avis, story ajoutée avec source, annonce, pied de page), version d'origine revisitée inchangée.
-- **Mesures** : [VISITES2] visites par thème sans erreur JavaScript, sans débordement horizontal, sans image cassée, polices chargées ; aucun appel IA payant (`paidCalls: 0`).
+- **Mesures** : 26 (FRAISE) et 22 (ONDE) visites sans erreur JavaScript, sans débordement horizontal, sans image cassée, polices chargées ; aucun appel IA payant (`paidCalls: 0`).
 
 ## Écarts assumés et limites
 
