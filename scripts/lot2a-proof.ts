@@ -141,7 +141,8 @@ try {
     await page.emulateMedia({ reducedMotion: "reduce" });
     const motion = await page.locator(".ref-hero__copy").evaluate((e) => getComputedStyle(e).animationName); assert.equal(motion, "none");
     const video = page.video()!; await context.close(); const webm = await video.path();
-    execFileSync("ffmpeg", ["-y", "-i", webm, "-an", "-c:v", "libx264", "-crf", "25", "-pix_fmt", "yuv420p", "-movflags", "+faststart", path.join(dir, "parcours.mp4")], { stdio: "ignore" }); fs.unlinkSync(webm);
+    execFileSync("ffmpeg", ["-y", "-i", webm, "-an", "-c:v", "libx264", "-crf", "25", "-pix_fmt", "yuv420p", "-movflags", "+faststart", path.join(dir, "parcours.mp4")], { stdio: "ignore" });
+    fs.renameSync(webm, path.join(dir, "parcours.webm")); // Source native conservée à côté de la version de lecture MP4.
     if (kind === "products") { assert.ok(gallery, "Miniature de galerie active"); assert.ok(cart, "Panier natif d'aperçu ouvert"); }
     // Pages clés supplémentaires et validation HTML du formulaire, sans simuler un envoi réussi.
     const extra = await browser.newPage({ viewport: { width: 390, height: 844 }, hasTouch: true });
