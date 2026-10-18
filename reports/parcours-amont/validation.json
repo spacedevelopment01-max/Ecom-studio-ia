@@ -1,0 +1,158 @@
+{
+  "codeSha": "70924680ea11592220c9965a142fb3335845c5ed",
+  "baseSha": "ad41c596e859781f33874730891b4bd8b85e259e",
+  "codeTreeSha": "62b080df43345e0862708d0b0e136df6b4754a27",
+  "recordedAt": "2026-10-18T17:33:44.603417+00:00",
+  "environment": {
+    "node": "v24.19.0",
+    "next": "15.5.27",
+    "vitest": "5.0.3",
+    "chromium": "Chromium 154.0.8037.57 built on Debian GNU/Linux 13 (trixie)",
+    "ffmpeg": "ffmpeg version 7.1.5-0+deb13u1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "desktop": [
+      1440,
+      960
+    ],
+    "mobile": [
+      390,
+      844
+    ]
+  },
+  "checks": {
+    "full": {
+      "exitCode": 0,
+      "sha256RawLog": "b04e27ea6ff42bd4c19de66443776cd8cf3c4098907119a2c65ad65c2190300c",
+      "bytes": 21031,
+      "summary": [
+        "Test Files  258 passed (258)",
+        "Tests  1898 passed | 3 skipped (1901)",
+        "Start at  17:19:51",
+        "Duration  660.05s (tests 80%, import 19%, transform 1%)"
+      ],
+      "command": "npx vitest run --maxWorkers=4 --reporter=dot"
+    },
+    "targeted": {
+      "exitCode": 0,
+      "sha256RawLog": "7c333b5e71f54460d79b6b4f23ab8f3289d92d70c234622836ad078d1a00044d",
+      "bytes": 183,
+      "summary": [
+        "Test Files  4 passed (4)",
+        "Tests  24 passed (24)",
+        "Start at  17:26:59",
+        "Duration  27.00s (import 46%, tests 31%, transform 23%)"
+      ],
+      "command": "npx vitest run tests/preparation.test.ts tests/preparation-adapters.test.ts tests/preparation-analysis.test.ts tests/coordonnees-demarrage.test.ts --maxWorkers=4"
+    },
+    "types": {
+      "exitCode": 0,
+      "sha256RawLog": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "summary": [],
+      "command": "npx tsc --noEmit"
+    },
+    "build": {
+      "exitCode": 0,
+      "sha256RawLog": "ee5710da6d32ece08b6f91b78f0090ffa185a48d72a4a9d07f69234e32b47979",
+      "bytes": 12991,
+      "summary": [],
+      "command": "DATA_DIR=<dossier isolé> npm run build"
+    },
+    "browser": {
+      "exitCode": 0,
+      "sha256RawLog": "ace2ff5fb8bee7d554025c83d6d194e5b3e30eca1510c500553bbcc4ca1a41cd",
+      "bytes": 938,
+      "summary": [],
+      "command": "PLAYWRIGHT_BROWSERS_PATH=<FFmpeg isolé> npx tsx scripts/preparation/browser-proof.ts /workspace/work/ecs-preparation-test-livraison"
+    },
+    "restoration": {
+      "exitCode": 0,
+      "sha256RawLog": "a74d9660a345d75a3b10a1aee2be5daa50f87a02cff14b9fec889a1cbc248fc0",
+      "bytes": 1034,
+      "summary": [],
+      "command": "PLAYWRIGHT_BROWSERS_PATH=<FFmpeg isolé> npx tsx scripts/preparation/restoration-proof.ts /workspace/work/ecs-preparation-test-livraison"
+    }
+  },
+  "skipped": {
+    "count": 3,
+    "reason": "PHP indisponible sur l’hôte",
+    "files": [
+      "tests/calendrier-reservation.test.ts (2)",
+      "tests/cms-v2.test.ts (1)"
+    ]
+  },
+  "browserJsErrorScope": "Pages ordinateur instrumentées ; affichage, présence des résultats et débordement vérifiés sur mobile.",
+  "liveAiCalls": 0,
+  "providerCostEur": 0,
+  "realSourceReads": "DNS EAI_AGAIN sur les deux adresses essayées",
+  "providerOutputs": "simulation explicitement affichée",
+  "finalProjectsReady": [
+    {
+      "id": "c4pylalq40be6mcy",
+      "revision": 38,
+      "simulation": true
+    },
+    {
+      "id": "gqmycuts10wz7fwn",
+      "revision": 35,
+      "simulation": true
+    }
+  ],
+  "videos": [
+    {
+      "path": "videos/produit.mp4",
+      "sourceDuration": 52.68,
+      "duration": 52.68,
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1440,
+          "height": 960
+        }
+      ],
+      "speedChanged": false,
+      "interactionContentReplaced": false
+    },
+    {
+      "path": "videos/service.mp4",
+      "sourceDuration": 58.28,
+      "duration": 58.28,
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1440,
+          "height": 960
+        }
+      ],
+      "speedChanged": false,
+      "interactionContentReplaced": false
+    },
+    {
+      "path": "videos/produit-restauration.mp4",
+      "sourceDuration": 14.0,
+      "duration": 14.0,
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1440,
+          "height": 960
+        }
+      ],
+      "speedChanged": false,
+      "interactionContentReplaced": false
+    },
+    {
+      "path": "videos/service-restauration.mp4",
+      "sourceDuration": 16.48,
+      "duration": 16.48,
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1440,
+          "height": 960
+        }
+      ],
+      "speedChanged": false,
+      "interactionContentReplaced": false
+    }
+  ]
+}

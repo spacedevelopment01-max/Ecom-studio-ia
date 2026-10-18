@@ -1,0 +1,297 @@
+{
+  "codeSha": "70924680ea11592220c9965a142fb3335845c5ed",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 7184,
+      "sha256": "a376655e73939ef64dd3b81ab91408541bacac81d9802cec26bca1c051dff359"
+    },
+    {
+      "path": "captures/produit-01-saisie.png",
+      "bytes": 256554,
+      "sha256": "3f300e209bb137af0d2bd6e21c071f78c857ced4cdaa0e33907f9ea6ba996470",
+      "width": 1440,
+      "height": 1992
+    },
+    {
+      "path": "captures/produit-02-offre-analysee.png",
+      "bytes": 236683,
+      "sha256": "8ac9138820418f7d5c6519759cbc1247219f6f594325b116760b17260511098e",
+      "width": 1440,
+      "height": 2141
+    },
+    {
+      "path": "captures/produit-03-recherche.png",
+      "bytes": 329917,
+      "sha256": "9b4e28c364ac6bd5a7d1b67556fedc3fa670e683b0d4f29502ad36ad6007873d",
+      "width": 1440,
+      "height": 2255
+    },
+    {
+      "path": "captures/produit-03a-echec-fournisseur.png",
+      "bytes": 198495,
+      "sha256": "d8e5ca0d34753ae153443578be270a7bbd96a95ca69991cdd42fe5bf2a46cd67",
+      "width": 1440,
+      "height": 1401
+    },
+    {
+      "path": "captures/produit-04-identite.png",
+      "bytes": 224267,
+      "sha256": "cc9e2778970cc4f33b855ff683ca0d29b9255ef8a9609a6c220def57a1b6fa24",
+      "width": 1440,
+      "height": 2014
+    },
+    {
+      "path": "captures/produit-05-contenus.png",
+      "bytes": 161052,
+      "sha256": "2adfad919398c5a53367239285f6cfd13e519c8940d7fa98f03f7f71ba5abced",
+      "width": 1440,
+      "height": 1103
+    },
+    {
+      "path": "captures/produit-06-pret.png",
+      "bytes": 256924,
+      "sha256": "166e119e6ea6a4a36c28d83926a7cc3cc138268372085268ca0de9d7420b2bb9",
+      "width": 1440,
+      "height": 2637
+    },
+    {
+      "path": "captures/produit-07-rechargement.png",
+      "bytes": 256063,
+      "sha256": "5a267e3fa9fe2a0523f1dd0ca6e3d9f6255164a4ac58a8e936a8e82436d23700",
+      "width": 1440,
+      "height": 2637
+    },
+    {
+      "path": "captures/produit-08-mobile.png",
+      "bytes": 206082,
+      "sha256": "2efc41eb6a583af07ba8f9bb48f26e4456d1ca2bda662fdc0aed70f76602be2f",
+      "width": 390,
+      "height": 3120
+    },
+    {
+      "path": "captures/produit-09-choix-amont-modifie.png",
+      "bytes": 306377,
+      "sha256": "1618ee04d9bf19f958e4196cd7265841e4c266e96c576ee481f0a07253760b1f",
+      "width": 1440,
+      "height": 2761
+    },
+    {
+      "path": "captures/produit-10-restauration-validee.png",
+      "bytes": 519426,
+      "sha256": "7910af8c930702cd72a0788b0d62d13c944a5acf4190845134ee71fa61060b2b",
+      "width": 1440,
+      "height": 4345
+    },
+    {
+      "path": "captures/produit-11-restauration-mobile.png",
+      "bytes": 206068,
+      "sha256": "6941f8fdcf8a7a7b474cf1aee907afd3a53676eaf405c1dab489775d6c0f50b7",
+      "width": 390,
+      "height": 3120
+    },
+    {
+      "path": "captures/produit-12-telechargement-mobile.png",
+      "bytes": 67245,
+      "sha256": "07a48bee16a045352d13a57f9e7429d33926213cab7590a340ec68f1141c669a",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "captures/produit-tarifs-non-confirmes.png",
+      "bytes": 243313,
+      "sha256": "59461b315fa172b2a03047af74e17bcb638302b8ccb372774047063ebb65a74b",
+      "width": 1440,
+      "height": 1843
+    },
+    {
+      "path": "captures/service-01-saisie.png",
+      "bytes": 312051,
+      "sha256": "4d169ecc2c692ee81b1eae2562c174b7ae97ece823190d8383f3fa9c026f5a27",
+      "width": 1440,
+      "height": 2689
+    },
+    {
+      "path": "captures/service-02-offre-analysee.png",
+      "bytes": 281964,
+      "sha256": "de697ae4fe15a5d36e87241869aab1b92cd8e1143073cf069bf31f1638b0e0db",
+      "width": 1440,
+      "height": 3011
+    },
+    {
+      "path": "captures/service-03-recherche.png",
+      "bytes": 339741,
+      "sha256": "b6b573abcdbe4a7b3a0b3404b9420c93fb4e64ae4feb1e459ad5db7b5dc00423",
+      "width": 1440,
+      "height": 2255
+    },
+    {
+      "path": "captures/service-04-identite.png",
+      "bytes": 226268,
+      "sha256": "d0b6c29086bdecf3e8e631e9a2d0ae6a380d747ae48dc79f8757029b17dfa9f5",
+      "width": 1440,
+      "height": 2014
+    },
+    {
+      "path": "captures/service-05-contenus.png",
+      "bytes": 161106,
+      "sha256": "6e69be767eeeea09280785d011ac9114ee8374ab7f5f8f151ce4a5a6b725e522",
+      "width": 1440,
+      "height": 1103
+    },
+    {
+      "path": "captures/service-06-pret.png",
+      "bytes": 303682,
+      "sha256": "593998901bba078578e7947f98b8a252f2ec8b11bf2cbea91bb0d0a11f210a05",
+      "width": 1440,
+      "height": 3395
+    },
+    {
+      "path": "captures/service-07-rechargement.png",
+      "bytes": 303650,
+      "sha256": "ea84f41c810001ea11dab326b6d5b110592e424d1632bb2e775744cb82c143be",
+      "width": 1440,
+      "height": 3395
+    },
+    {
+      "path": "captures/service-08-mobile.png",
+      "bytes": 245744,
+      "sha256": "d24b3570b0a1cd5a0c564da165fb61bb3b0edc856286a766fa9fca22acb6863a",
+      "width": 390,
+      "height": 3805
+    },
+    {
+      "path": "captures/service-09-choix-amont-modifie.png",
+      "bytes": 326763,
+      "sha256": "4e987e1febdf74aa06994a8d7473f47e0bdf32ba9d503379492cd2435b985550",
+      "width": 1440,
+      "height": 3031
+    },
+    {
+      "path": "captures/service-10-restauration-validee.png",
+      "bytes": 591869,
+      "sha256": "d194ff65098ab3eed76ffdf248b12b01f107aabf4b28edb03a1dd31633e03620",
+      "width": 1440,
+      "height": 5247
+    },
+    {
+      "path": "captures/service-11-restauration-mobile.png",
+      "bytes": 246435,
+      "sha256": "aa6cb325a2c970b92a5358db48177309fccab3fce37ae218a06eaaa0985b6112",
+      "width": 390,
+      "height": 3805
+    },
+    {
+      "path": "captures/service-12-telechargement-mobile.png",
+      "bytes": 67568,
+      "sha256": "e6e8e74efd72cfd765869273ee9c64e491c2a73ec848b6edbe46e8ecb1c4b08c",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "donnees/browser-proof.json",
+      "bytes": 555,
+      "sha256": "55f469d62ae70695153ea035fd9c7561bc9089de68ad58248fa73f2b33979833"
+    },
+    {
+      "path": "donnees/cas-nouveaux-source.txt",
+      "bytes": 3778,
+      "sha256": "4d58524e2fd64b029d4c3747a151ca37f58045159dfa832ccd85d8ef1e771d97"
+    },
+    {
+      "path": "donnees/cas-nouveaux.json",
+      "bytes": 1483,
+      "sha256": "78632761433832ac818ecc9577e786ad883ea9112ec9dc4bef538728c2a69e66"
+    },
+    {
+      "path": "donnees/lectures-web-reelles.json",
+      "bytes": 401,
+      "sha256": "73943d8abff235d3963fe32f96b49eacdea8aa69961987db604789889596e6b2"
+    },
+    {
+      "path": "donnees/persistence-proof.json",
+      "bytes": 55925,
+      "sha256": "1f16e3e10c072ff65e12875229dc6559fca53800909183882146fc2b69505298"
+    },
+    {
+      "path": "donnees/produit-download.json",
+      "bytes": 19086,
+      "sha256": "1ab8259061fb8dea5f908093e6dc512e9a0cf58a0aa87e65aa6254d8eac24972"
+    },
+    {
+      "path": "donnees/produit-ready.json",
+      "bytes": 19086,
+      "sha256": "1ab8259061fb8dea5f908093e6dc512e9a0cf58a0aa87e65aa6254d8eac24972"
+    },
+    {
+      "path": "donnees/produit-restored-download.json",
+      "bytes": 19086,
+      "sha256": "be02afb3ba153a945d4eef2ea969b1e6a05a992853c520486f9d563a1c91992d"
+    },
+    {
+      "path": "donnees/produit-restored-ready.json",
+      "bytes": 19086,
+      "sha256": "be02afb3ba153a945d4eef2ea969b1e6a05a992853c520486f9d563a1c91992d"
+    },
+    {
+      "path": "donnees/restauration-avant-correction.json",
+      "bytes": 193,
+      "sha256": "583f0cec28defbd05eafde71d443b47672588deda21b4d4b8507af9f31dfbeb9"
+    },
+    {
+      "path": "donnees/restoration-proof.json",
+      "bytes": 931,
+      "sha256": "3bc24e40cc5c0c1dd3d8a746ac2e94d0a6ecf39df9198cfc3847c7157a3f3a36"
+    },
+    {
+      "path": "donnees/service-download.json",
+      "bytes": 23821,
+      "sha256": "359c100e99727d55a253008ada3f141c16f8c6a0b91954382957efbb10b09bd1"
+    },
+    {
+      "path": "donnees/service-ready.json",
+      "bytes": 23821,
+      "sha256": "359c100e99727d55a253008ada3f141c16f8c6a0b91954382957efbb10b09bd1"
+    },
+    {
+      "path": "donnees/service-restored-download.json",
+      "bytes": 23821,
+      "sha256": "e7f134bbba6c0dbff8bd0bf43bd0e20d7ff405ea82ab1f252fa5f41335c94cc0"
+    },
+    {
+      "path": "donnees/service-restored-ready.json",
+      "bytes": 23821,
+      "sha256": "e7f134bbba6c0dbff8bd0bf43bd0e20d7ff405ea82ab1f252fa5f41335c94cc0"
+    },
+    {
+      "path": "resume-tests.txt",
+      "bytes": 1025,
+      "sha256": "96d7235c1cda38002b410138e27b4dac3b7eec0bda8848410fcbaf609b3c49be"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 4648,
+      "sha256": "c992cbe88b55e676bdac186c750b2b73b5b0fe52617af306f693770268f5057e"
+    },
+    {
+      "path": "videos/produit-restauration.mp4",
+      "bytes": 1472208,
+      "sha256": "b1ee56fde209eef160653960d12c240af847a008513aed87a57281aa1c5f4bd4"
+    },
+    {
+      "path": "videos/produit.mp4",
+      "bytes": 5375253,
+      "sha256": "b8ef35c40fa7cef9ea5d8ddaa03c84f4dd131627e79bb1141e8ecac82e533ad9"
+    },
+    {
+      "path": "videos/service-restauration.mp4",
+      "bytes": 1753599,
+      "sha256": "ad962582b737dd0b9c72f06548b3680517c8e4d5d315ed9306cc3f4d69b10cb6"
+    },
+    {
+      "path": "videos/service.mp4",
+      "bytes": 5580976,
+      "sha256": "e1ad7ae80afd6b15a5a536d1ee7ec4cb5d4987c612e32a0a152d4200d9f34071"
+    }
+  ]
+}

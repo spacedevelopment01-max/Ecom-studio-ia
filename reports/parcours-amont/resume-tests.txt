@@ -1,0 +1,25 @@
+Commit applicatif : 70924680ea11592220c9965a142fb3335845c5ed
+
+full: npx vitest run --maxWorkers=4 --reporter=dot
+Test Files  258 passed (258)
+Tests  1898 passed | 3 skipped (1901)
+Start at  17:19:51
+Duration  660.05s (tests 80%, import 19%, transform 1%)
+
+targeted: npx vitest run tests/preparation.test.ts tests/preparation-adapters.test.ts tests/preparation-analysis.test.ts tests/coordonnees-demarrage.test.ts --maxWorkers=4
+Test Files  4 passed (4)
+Tests  24 passed (24)
+Start at  17:26:59
+Duration  27.00s (import 46%, tests 31%, transform 23%)
+
+types: npx tsc --noEmit
+Réussi, code de sortie 0.
+
+build: DATA_DIR=<dossier isolé> npm run build
+Réussi, code de sortie 0.
+
+browser: PLAYWRIGHT_BROWSERS_PATH=<FFmpeg isolé> npx tsx scripts/preparation/browser-proof.ts /workspace/work/ecs-preparation-test-livraison
+Réussi, code de sortie 0.
+
+restoration: PLAYWRIGHT_BROWSERS_PATH=<FFmpeg isolé> npx tsx scripts/preparation/restoration-proof.ts /workspace/work/ecs-preparation-test-livraison
+Réussi, code de sortie 0.
