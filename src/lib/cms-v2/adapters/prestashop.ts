@@ -291,8 +291,9 @@ export function adaptFeaturedProduct(spec: ThemeSpec, t: (fr: string, en: string
       const handle = exportProductHandle(spec, sec);
       const prod = storeProductsOf(spec).find((x) => x.handle === handle);
       if (!prod) { tpl.sections[id] = { ...sec, disabled: true }; continue; }
-      const price = prod.price != null ? new Intl.NumberFormat(t("fr-FR", "en-GB"), { style: "currency", currency: prod.currency || "EUR" }).format(prod.price / 100) : "";
-      const text = [price ? `<p><strong>${price}</strong></p>` : "", String(sec.settings.text ?? "")].join("");
+      const initialPrice = prod.variants[0]?.price ?? prod.price;
+      const price = initialPrice != null ? new Intl.NumberFormat(t("fr-FR", "en-GB"), { style: "currency", currency: prod.currency || "EUR" }).format(initialPrice / 100) : "";
+      const text = [price ? `<p><strong>${price}</strong></p>` : "", String(sec.settings.text ?? "") || prod.description_html].join("");
       tpl.sections[id] = {
         type: "v2-split",
         settings: { layout: "media-left", fit: "v2-contain", eyebrow: String(sec.settings.eyebrow ?? ""), heading: prod.title, text, image_asset: String(sec.settings.image_asset ?? "") || prod.images[0] || "", image_alt: prod.title, button_label: t("Choisir et commander", "Choose and order"), button_link: `/products/${prod.handle}`, color_scheme: String(sec.settings.color_scheme ?? "scheme-1"), padding_top: 96, padding_bottom: 96 },

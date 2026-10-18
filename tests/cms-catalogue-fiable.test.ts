@@ -14,6 +14,12 @@ import { prepareShopifyCsv } from "../scripts/cms-v2/prepare-shopify-csv";
 import { multiAxisSpec } from "./cms-catalogue-fixtures";
 
 describe("exports catalogue fiables", () => {
+  it("la présentation Presta garde le texte complet et le prix de la variante initiale", () => {
+    const s=multiAxisSpec();s.store.product.price=9999;s.store.product.description_html='<p>'+"Texte complet. ".repeat(1000)+'FIN_PRODUIT</p>';
+    s.templates.index={order:['buy'],sections:{buy:{type:'featured-product',settings:{product:s.store.product.handle}}}};
+    adaptFeaturedProduct(s,fr=>fr);const copy=String(s.templates.index.sections.buy.settings.text);
+    expect(copy).toContain('32,10');expect(copy).not.toContain('99,99');expect(copy).toContain('FIN_PRODUIT');
+  });
   it("Presta livre son module actualisable séparément sans effacer les correspondances", async () => {
     const e=await cmsExport('prestashop',multiAxisSpec(),()=>null);const files=unzipSync(e.zip);
     const module=unzipSync(files['import/module-esstudio.zip']);
