@@ -101,7 +101,7 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
     }
   });
 
-  it("toutes les sections de la bibliothèque servent dans au moins un thème (sauf les deux conteneurs techniques)", () => {
+  it("toutes les sections de la bibliothèque servent dans un thème ou une composition de référence (sauf les deux conteneurs techniques)", async () => {
     const used = new Set<string>();
     const add = (spec: Spec) => { for (const t of Object.values(spec.templates)) for (const id of t.order) used.add(t.sections[id].type); };
     for (const d of DIRECTIONS) {
@@ -118,6 +118,12 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
       expect(fs.readFileSync(path.join(process.cwd(), "theme-base/sections/main-product.liquid"), "utf8")).toContain("render 'purchase-offers'");
       used.add("purchase-offers");
     }
+    // Les deux compositions de référence sont examinées avant toute déclinaison du catalogue.
+    // On vérifie leur usage réel des composants, sans les dispenser de couverture par une liste d'exceptions.
+    const { createUser } = await import("@/lib/auth");
+    const { editorialProject } = await import("./lot2b-fixtures");
+    const user = await createUser(`catalogue-references-${Date.now()}@example.invalid`, "isolated-test-only", "Références de test");
+    for (const kind of ["products", "services"] as const) add((await editorialProject(user.id, kind)).spec);
     // Conteneurs vides par nature : code Liquid du marchand et blocs d'applications (rien à composer sans lui).
     const outside = new Set(["custom-liquid", "apps"]);
     const missing = SECTION_LIBRARY.map((e) => e.type).filter((t) => !outside.has(t) && !used.has(t));
