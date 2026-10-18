@@ -103,10 +103,17 @@ for (const f of fixtures) for (const mobile of [false, true]) {
   const chooseResponse = page.waitForResponse(r => r.url().endsWith(`/projects/${f.pid}/brand/logo-v2`) && r.request().method() === "POST");
   await chosenCard.getByRole("button", { name: "Choisir cette direction complète", exact: true }).click();
   assert.equal((await chooseResponse).ok(), true);
-  await page.waitForFunction(async ({ pid, directionId, logoId }) => {
-    const r = await fetch(`/api/projects/${pid}/preparation`), data = await r.json();
-    return data.state.stages.brand.data.selectedLogo === logoId && data.state.stages.brand.data.proposal.artIdentity?.directionId === directionId;
-  }, { pid: f.pid, directionId: choice.id, logoId: choice.logoId }, { polling: 500, timeout: 60000 });
+  // waitForFunction traite une Promise comme truthy avant sa résolution dans cette
+  // version de Playwright : attendre explicitement chaque réponse JSON côté Node.
+  const deadline = Date.now() + 60000;
+  let applied;
+  do {
+    applied = (await state()).state.stages.brand.data;
+    if (applied.selectedLogo === choice.logoId && applied.proposal.artIdentity?.directionId === choice.id) break;
+    await page.waitForTimeout(500);
+  } while (Date.now() < deadline);
+  assert.equal(applied.selectedLogo, choice.logoId, "Le handler doit finir la sauvegarde avant rechargement");
+  assert.equal(applied.proposal.artIdentity.directionId, choice.id);
   await page.reload({ waitUntil: "networkidle" }); await step(2);
   const restored = (await state()).state.stages.brand.data;
   assert.equal(restored.selectedLogo, choice.logoId);
