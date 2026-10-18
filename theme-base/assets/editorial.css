@@ -34,7 +34,7 @@ body:not(.motion-on) .ed-button{transition:none}body:not(.motion-on) .ed-button:
 /* Les proportions appartiennent au contenu et restent réglables dans l'éditeur. */
 .ed-image{object-fit:var(--ed-fit,cover)}
 .ed-section .ed-media.ed-media--ratio{height:auto;aspect-ratio:var(--ed-ratio)}
-.ed-opening .ed-opening__media:has(>.ed-media--ratio){height:auto}
+.ed-opening .ed-opening__media:has(>.ed-media--ratio){height:auto;aspect-ratio:auto}
 .ed-opening--immersive.ed-opening--clear .ed-opening__copy{background:transparent;padding:32px}
 .ed-opening--immersive .ed-opening__title{font-size:clamp(60px,5.85vw,88px)}
 body[data-editorial="journal"] .ed-opening__title{max-width:16ch}
