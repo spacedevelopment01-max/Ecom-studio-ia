@@ -1,6 +1,6 @@
 # FRAISE GUMMIES et ONDE AUDIO — thèmes fidèles aux références Lumora / Pawish (issue #137)
 
-**État : livré pour revue, en brouillon, sans fusion ni déploiement.** Deux thèmes complets construits dans le moteur du studio sur la branche `claude/fraise-onde-themes-reference` (base `7aa726cf`, tête validée de la PR #135). Commit testé : `db1eef78` (champ `testedCommit` de `reports/lot2c/preuves.json`). Les captures, comparaisons et vidéos contenant les 18 images IA et les logos du kit sont privées (ZIP remis à Thomas) ; rien de tout cela n'entre dans le dépôt public.
+**État : livré pour revue, en brouillon, sans fusion ni déploiement.** Deux thèmes complets construits dans le moteur du studio sur la branche `claude/fraise-onde-themes-reference` (base `7aa726cf`, tête validée de la PR #135). Commit testé : `26e71355` (champ `testedCommit` de `reports/lot2c/preuves.json`). Les captures, comparaisons et vidéos contenant les 18 images IA et les logos du kit sont privées (ZIP remis à Thomas) ; rien de tout cela n'entre dans le dépôt public.
 
 Inventaire des références et correspondance section par section : [`LOT_2C_FRAISE_ONDE_INVENTAIRE.md`](LOT_2C_FRAISE_ONDE_INVENTAIRE.md). Manifeste des ressources et licences : [`reports/lot2c/ressources-licences.json`](../../reports/lot2c/ressources-licences.json).
 
@@ -30,7 +30,7 @@ Inventaire des références et correspondance section par section : [`LOT_2C_FRA
 
 ## Vérifications réellement exécutées
 
-Commit `db1eef78` :
+Commit `26e71355` :
 
 | Contrôle | État | Détail |
 |---|---|---|
@@ -38,9 +38,9 @@ Commit `db1eef78` :
 | `npx vitest run` — thème, catalogue, EN, lot 2A, lot 2B, audit Boutique, lot 2C | OK — 104 tests, 10 fichiers (`tests/theme*.test.ts`, `themes-catalogue`, `theme-en`, `lot2a`, `lot2b`, `boutique-audit`, `lot2c-conversion`, `cms-v2`) | |
 | `scripts/verify-theme.sh --rapide` | OK | |
 | `scripts/verify-theme.sh` complet (`JOBS=2`) | OK — « Thème : tout est valide », 0 erreur, 0 avertissement sur toutes les compositions FR/EN et le ZIP client | |
-| `scripts/lot2c-proof.ts` (390 et 1440 px, vidéos, comparaisons) | en cours (résultat au commit suivant) | |
+| `scripts/lot2c-proof.ts` (390 et 1440 px, vidéos, comparaisons) | OK | 22 visites par thème, 0 erreur JavaScript, 0 débordement, 0 image cassée, 10 interactions et 4 comparaisons par thème, 2 vidéos par thème, 0 appel IA payant ; seul média manquant : `04-detail-gummies` (vide dans le kit) |
 | `scripts/lot2c-demo-local.ts` sur une base temporaire | OK — 2 projets créés (`DATA_DIR` temporaire), 8/9 et 9/9 images, logos vectorisés, adresses d'aperçu signées affichées | |
-| CI GitHub sur le commit testé | en cours (résultat au commit suivant) | |
+| CI GitHub sur le commit testé | OK (succès) | https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/39146881089 |
 | Suite complète `npm test` en local | non exécutée | prise en charge par la CI |
 | Import dans Shopify, WordPress/WooCommerce, PrestaShop et test du panier natif | **non exécuté** | critère de réception à réaliser avec Codex (voir « Raccordements ») |
 | Vues ordinateur et interactions des démonstrations de référence | **non observées** | kit limité aux captures mobiles |
