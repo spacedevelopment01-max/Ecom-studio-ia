@@ -1,4 +1,6 @@
 import fs from "node:fs";
+import path from "node:path";
+import {createHash} from "node:crypto";
 import { afterAll,beforeEach,describe,it,expect,vi } from "vitest";
 const session=vi.hoisted(()=>{
  const root=process.env.DATA_DIR;if(!root)throw new Error("Tests isolés obligatoires");
@@ -81,9 +83,25 @@ describe("Lot 2B — moteur éditorial et parcours isolés",async()=>{
   const sharp=(await import("sharp")).default,bytes=await sharp({create:{width:32,height:32,channels:3,background:"#997755"}}).png().toBuffer();
   const asset=await saveAsset({projectId:pid,userId:user.id,data:bytes,mime:"image/png",name:"mapping-test.png",role:"lifestyle",origin:"upload",status:"approved"}),foreign=await saveAsset({projectId:other.pid,userId:user.id,data:bytes,mime:"image/png",name:"foreign-test.png",role:"lifestyle",origin:"upload",status:"approved"});
   const request=(ops:unknown[])=>new Request(`http://studio.test/api/projects/${pid}/theme/ops`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ops})}),ctx={params:Promise.resolve({id:pid})};
-  const res=await manualRoute(request([{op:"use_media",template:"index",section:"opening",key:"image_asset",assetId:asset.id},{op:"set_setting",template:"index",section:"opening",key:"button_label",value:"Voir la composition choisie"},{op:"section_colors",template:"index",section:"opening",colors:{accent:"#445566"}},{op:"set_global",key:"type_heading_font",value:"archivo_n6"}]),ctx);expect(res.status,await res.text()).toBe(200);
+  const res=await manualRoute(request([{op:"use_media",template:"index",section:"opening",key:"image_asset",assetId:asset.id},{op:"set_setting",template:"index",section:"opening",key:"mobile_media_ratio",value:"16/9"},{op:"set_setting",template:"index",section:"opening",key:"image_fit",value:"contain"},{op:"set_setting",template:"index",section:"opening",key:"button_label",value:"Voir la composition choisie"},{op:"section_colors",template:"index",section:"opening",colors:{accent:"#445566"}},{op:"set_global",key:"type_heading_font",value:"archivo_n6"}]),ctx);expect(res.status,await res.text()).toBe(200);
   const saved=currentTheme(pid)!.spec;expect(saved.templates.index.sections.opening.settings.button_label).toBe("Voir la composition choisie");expect(saved.settings.type_heading_font).toBe("archivo_n6");expect(Object.values(saved.files)).toContain(asset.id);expect(saved.templates.index.sections.night).toEqual(spec.templates.index.sections.night);
+  const rendered=await renderPage({spec:saved,base:"",cart:[]},"/",new URLSearchParams());expect(rendered.html).toContain('--ed-mobile-ratio:16/9');expect(rendered.html).toContain('--ed-fit:contain');
   const rejected=await manualRoute(request([{op:"use_media",template:"index",section:"opening",key:"image_asset",assetId:foreign.id}]),ctx);expect(rejected.status).toBe(400);expect(currentTheme(pid)!.spec).toEqual(saved);
+ }));
+ it("importe le manifeste sans altérer les originaux, recharge les associations et rejette un pack incohérent",async()=>fr(async()=>{
+  const dir=fs.mkdtempSync(path.join(session.dir,'media-pack-')),sharp=(await import('sharp')).default;
+  const bytes=await sharp({create:{width:600,height:800,channels:3,background:'#776655'}}).webp().toBuffer(),sha256=createHash('sha256').update(bytes).digest('hex');
+  const assets=MEDIA_ROLES.orbe.map(id=>({id,path:id+'.webp',sha256,width:600,height:800,alt_fr:'Image de test '+id}));for(const a of assets)fs.writeFileSync(path.join(dir,a.path),bytes);fs.writeFileSync(path.join(dir,'manifest.json'),JSON.stringify({assets}));
+  const f=await editorialProject(user.id,'products',dir),other=await editorialProject(user.id,'products');expect(f.missing).toEqual([]);expect(f.media).toHaveLength(12);expect(missingEditorialMedia(f.spec).filter(m=>m.page!=='product')).toEqual([]);
+  const version=saveThemeVersion(f.pid,f.spec,'Médias de test','user');expect(currentTheme(f.pid)!.version.id).toBe(version.id);expect(currentTheme(f.pid)!.spec.files).toEqual(f.spec.files);expect(Object.keys(currentTheme(f.pid)!.spec.files)).toHaveLength(12);expect(other.spec.files).toEqual({});
+  const {libraryLoader}=await import('@/lib/theme/loader');for(const m of f.media)expect(createHash('sha256').update(libraryLoader(m.asset)!.data).digest('hex')).toBe(sha256);
+  const html=(await renderPage({spec:currentTheme(f.pid)!.spec,base:'',cart:[]},f.detail,new URLSearchParams())).html;expect(html).not.toContain('ed-media--pending');expect(html).toContain('data-purchase-quick');
+  assets[0].sha256='0'.repeat(64);fs.writeFileSync(path.join(dir,'manifest.json'),JSON.stringify({assets}));await expect(editorialProject(user.id,'products',dir)).rejects.toThrow(/Manifeste incohérent/);
+ }));
+ it("supprime la marque secondaire seulement sur choix explicite, sans changer les autres pieds de page",async()=>fr(async()=>{
+  const f=await editorialProject(user.id,'services');let html=(await renderPage({spec:f.spec,base:'',cart:[]},'/',new URLSearchParams())).html;
+  const footer=html.slice(html.indexOf('<footer'),html.indexOf('</footer>'));expect(footer).toContain('ref-footer__signature');expect(footer).not.toContain('class="es-footer__brand');
+  Object.values(f.spec.groups.footer.sections).find(s=>s.type==='footer')!.settings.show_secondary_brand=true;html=(await renderPage({spec:f.spec,base:'',cart:[]},'/',new URLSearchParams())).html;expect(html.slice(html.indexOf('<footer'))).toContain('class="es-footer__brand');
  }));
  it("généralise les compositions, la galerie et les modifications à des contextes non utilisés pour leur conception",async()=>fr(async()=>{
   const {spec,project}=await editorialProject(user.id,"products");

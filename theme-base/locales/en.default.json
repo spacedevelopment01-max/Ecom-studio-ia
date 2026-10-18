@@ -359,7 +359,8 @@
     "add": "Add to cart",
     "summary": "Your selection",
     "demo": "Preview: locally tested rules, no real payment.",
-    "item": "item"
+    "item": "item",
+    "modify": "Edit"
   },
   "editorial": {
     "pending_media": "Image to import"

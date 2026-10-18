@@ -359,7 +359,8 @@
     "add": "Ajouter au panier",
     "summary": "Votre sélection",
     "demo": "Aperçu : règles testées localement, aucun paiement réel.",
-    "item": "article"
+    "item": "article",
+    "modify": "Modifier"
   },
   "editorial": {
     "pending_media": "Visuel à importer"

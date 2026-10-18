@@ -10,9 +10,10 @@
 {% if has_offers %}
 <div class="purchase purchase--{{ offer_settings.purchase_style | default: 'outlined' }}" data-purchase data-target="{{ target | escape }}" data-preview="{% if request.host == 'apercu' %}true{% else %}false{% endif %}" data-add-url="{{ routes.cart_add_url }}" data-cart-url="{{ routes.cart_url }}" data-currency="{{ shop.currency | default: 'EUR' }}" data-language="{{ request.locale.iso_code }}">
  <h2 class="purchase__heading">{{ offer_settings.purchase_heading | escape }}</h2>
+ <p class="purchase__current" aria-live="polite"><strong data-purchase-price></strong><span data-purchase-selection></span></p>
  <ul class="purchase__benefits" role="list">{% for benefit in blocks %}{% if benefit.type == 'purchase_benefit' and benefit.settings.title != blank %}<li {{ benefit.shopify_attributes }}>{% render 'icon', name: benefit.settings.icon %}<span>{{ benefit.settings.title | escape }}</span></li>{% endif %}{% endfor %}</ul>
  {% if offer_settings.show_finishes %}<fieldset class="purchase__finishes"><legend>{{ offer_settings.finish_label | escape }}</legend><div data-purchase-finishes></div></fieldset><script type="application/json" data-purchase-colors>{{ offer_settings.finish_colors | json }}</script>{% endif %}
- <fieldset class="purchase__offers"><legend class="visually-hidden">{{ 'purchase.summary' | t }}</legend>
+ <fieldset class="purchase__offers" id="PurchaseOptions-{{ section_id }}" tabindex="-1"><legend class="visually-hidden">{{ 'purchase.summary' | t }}</legend>
  {% for offer in blocks %}{% if offer.type == 'quantity_offer' %}
   <label class="purchase__offer" {{ offer.shopify_attributes }}>
    <input type="radio" name="offer-{{ section_id }}" value="{{ offer.id }}" data-quantity="{{ offer.settings.quantity }}" data-discount="{{ offer.settings.discount | default: 0 }}"{% if offer.settings.price_mode == 'fixed_total' %} data-fixed-total="{{ offer.settings.total_price }}"{% endif %}{% if offer.settings.recommended %} checked{% endif %}>
@@ -33,6 +34,10 @@
  <p class="purchase__summary" aria-live="polite"><span>{{ 'purchase.summary' | t }}</span><strong data-purchase-total></strong></p>
  <button class="es-button purchase__submit" type="button" data-purchase-add>{{ 'purchase.add' | t }}</button>
  <p class="es-form-error" role="alert" data-purchase-error hidden></p>
+ {% if offer_settings.mobile_quick_buy %}<div class="purchase__quick" data-purchase-quick hidden>
+  <div class="purchase__quick-selection"><span data-quick-selection></span><strong data-quick-total></strong><a href="#PurchaseOptions-{{ section_id }}" data-quick-options>{{ 'purchase.modify' | t }}</a></div>
+  <button type="button" class="es-button" data-quick-add>{{ 'purchase.add' | t }}</button>
+ </div>{% endif %}
  <noscript><p>{{ 'purchase.configure' | t }}</p>{% render 'product-buy', product: product, section_id: section_id, show_quantity: true, show_dynamic_checkout: false %}</noscript>
  {% if request.host == 'apercu' %}<p class="purchase__notice">{{ 'purchase.demo' | t }}</p>{% endif %}
  <script type="application/json" data-purchase-variants>{{ product.variants | json }}</script>

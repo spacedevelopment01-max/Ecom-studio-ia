@@ -1,7 +1,7 @@
 {% assign s = section.settings %}{% assign finish_product = s.product %}
 <section class="ed-section ed-finishes color-{{ s.color_scheme }}"{% if s.anchor != blank %} id="{{ s.anchor | handleize }}"{% endif %} data-ed-motion="{{ s.motion }}" style="--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;" data-ed-finishes>
  <div class="ed-shell"><header class="ed-section-head"><p class="ed-kicker">{{ s.label | escape }}</p><h2 class="ed-title">{{ s.heading | escape }}</h2><div class="ed-prose">{{ s.text }}</div></header><div class="ed-finishes__grid">
- <div class="ed-finishes__scene">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, focus_x: s.focus_x, focus_y: s.focus_y %}</div>
+ <div class="ed-finishes__scene">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, focus_x: s.focus_x, focus_y: s.focus_y, ratio: s.media_ratio, mobile_ratio: s.mobile_media_ratio, fit: s.image_fit %}</div>
  {% if finish_product != blank %}<div class="ed-finishes__selection"><div class="ed-finishes__views">{% for variant in finish_product.variants %}<figure data-finish-view="{{ variant.id }}"{% unless variant == finish_product.selected_or_first_available_variant %} hidden{% endunless %}>{% if variant.featured_media %}{{ variant.featured_media | image_url: width: 1000 | image_tag: loading: 'lazy', alt: variant.title }}{% elsif request.host == 'apercu' %}<div class="ed-media ed-media--pending"><p>{{ 'editorial.pending_media' | t }}<span>{{ finish_product.title | escape }} — {{ variant.title | escape }}</span></p></div>{% endif %}<figcaption>{{ variant.title | escape }}</figcaption></figure>{% endfor %}</div>
  <fieldset><legend>{{ 'purchase.choose' | t }}</legend>{% for variant in finish_product.variants %}<label><input type="radio" name="ed-finish-{{ section.id }}" value="{{ variant.id }}"{% if variant == finish_product.selected_or_first_available_variant %} checked{% endif %}{% unless variant.available %} disabled{% endunless %}>{{ variant.title | escape }}</label>{% endfor %}</fieldset>
  {% if s.button_label != blank and s.button_link != blank %}<a class="ed-button" data-finish-link href="{{ s.button_link }}">{{ s.button_label | escape }} ↗</a>{% endif %}</div>{% endif %}
@@ -140,6 +140,82 @@
       "type": "text",
       "id": "product_target",
       "label": "Identité du produit"
+    },
+    {
+      "type": "select",
+      "id": "media_ratio",
+      "label": "Format du visuel",
+      "default": "layout",
+      "options": [
+        {
+          "value": "layout",
+          "label": "Selon la composition"
+        },
+        {
+          "value": "16/9",
+          "label": "Panoramique 16:9"
+        },
+        {
+          "value": "3/2",
+          "label": "Paysage 3:2"
+        },
+        {
+          "value": "4/3",
+          "label": "Paysage 4:3"
+        },
+        {
+          "value": "1",
+          "label": "Carré"
+        },
+        {
+          "value": "4/5",
+          "label": "Portrait 4:5"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "mobile_media_ratio",
+      "label": "Format du visuel sur mobile",
+      "default": "3/2",
+      "options": [
+        {
+          "value": "16/9",
+          "label": "Panoramique 16:9"
+        },
+        {
+          "value": "3/2",
+          "label": "Paysage 3:2"
+        },
+        {
+          "value": "4/3",
+          "label": "Paysage 4:3"
+        },
+        {
+          "value": "1",
+          "label": "Carré"
+        },
+        {
+          "value": "4/5",
+          "label": "Portrait 4:5"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Cadrage du visuel",
+      "default": "cover",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Remplir le cadre"
+        },
+        {
+          "value": "contain",
+          "label": "Conserver le visuel entier"
+        }
+      ]
     }
   ],
   "presets": [

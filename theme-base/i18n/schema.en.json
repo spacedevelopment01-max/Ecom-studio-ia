@@ -1825,5 +1825,17 @@
  "Adresse du bloc d’achat de référence : gabarit:section. Modifiez ses offres sur la fiche produit.": "Reference purchase block address: template:section. Edit its offers on the product page.",
  "Diptyque": "Diptych",
  "Index d’inspirations": "Inspiration index",
- "Finitions en contexte": "Finishes in context"
+ "Finitions en contexte": "Finishes in context",
+ "Répéter la marque sous la signature": "Repeat the brand below the signature",
+ "Achat mobile avec sélection synchronisée": "Mobile purchase with synchronized selection",
+ "Format du visuel": "Image aspect ratio",
+ "Format du visuel sur mobile": "Mobile image aspect ratio",
+ "Selon la composition": "Follow the layout",
+ "Panoramique 16:9": "Panoramic 16:9",
+ "Paysage 3:2": "Landscape 3:2",
+ "Paysage 4:3": "Landscape 4:3",
+ "Portrait 4:5": "Portrait 4:5",
+ "Cadrage du visuel": "Image fit",
+ "Conserver le visuel entier": "Keep the entire image",
+ "Fond derrière le texte dans la scène": "Background behind text in the scene"
 }

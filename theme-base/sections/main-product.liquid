@@ -60,9 +60,11 @@
             {%- when 'title' -%}
               {% if section.settings.display_heading != blank or section.settings.display_intro != blank %}<div data-ed-product-heading {{ block.shopify_attributes }}><h1 class="es-heading es-h2 es-product__title">{{ section.settings.display_heading | default: product.title | escape }}</h1>{% if section.settings.display_intro != blank %}<p class="ed-product-intro">{{ section.settings.display_intro | escape }}</p>{% endif %}</div>{% else %}<h1 class="es-heading es-h2 es-product__title" {{ block.shopify_attributes }}>{{ product.title }}</h1>{% endif %}
             {%- when 'price' -%}
+              {% unless section.settings.purchase_enabled %}
               <div class="es-product__price" {{ block.shopify_attributes }} data-price-wrap>{% render 'price', product: product, use_variant: true %}
                 <p class="es-small es-muted">{{ 'products.product.taxes_included' | t }}</p>
               </div>
+              {% endunless %}
             {%- when 'text' -%}
               <div class="es-rte es-product__text" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
             {%- when 'buy_buttons' -%}
@@ -260,6 +262,7 @@
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 32 },
     { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 },
+    {"type":"checkbox","id":"mobile_quick_buy","label":"Achat mobile avec sélection synchronisée","default":false},
     {"type": "checkbox", "id": "show_finishes", "label": "Afficher les finitions", "default": false},
     {"type": "text", "id": "finish_label", "label": "Titre des finitions", "default": "Finition"},
     {"type": "textarea", "id": "finish_colors", "label": "Couleurs des finitions", "info": "Une ligne par variante : Nom=#RRGGBB. Le nom reste toujours visible."},
