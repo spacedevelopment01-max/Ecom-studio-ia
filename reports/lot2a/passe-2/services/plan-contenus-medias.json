@@ -1,0 +1,245 @@
+{
+  "demo": true,
+  "note": "Photographies autorisées existantes ; répétitions éventuelles = même prise de vue, jamais annoncées comme de nouveaux projets. Accessoire cadeau fictif sans visuel.",
+  "pages": [
+    {
+      "template": "index",
+      "sections": [
+        {
+          "id": "ref_hero_1",
+          "type": "ref-hero",
+          "role": "présentation",
+          "assets": [
+            {
+              "file": "es-photo-1-ilyxw4.jpg",
+              "asset": "ilyxw4hcqg1uexh7"
+            }
+          ]
+        },
+        {
+          "id": "ref_editorial_1",
+          "type": "ref-editorial",
+          "role": "information / orientation",
+          "assets": [
+            {
+              "file": "es-photo-2-lheit8.jpg",
+              "asset": "lheit8lo6a3sk4cd"
+            }
+          ]
+        },
+        {
+          "id": "ref_offers_1",
+          "type": "ref-offers",
+          "role": "information / orientation",
+          "assets": [
+            {
+              "file": "es-prestation-xgy6sw-xgy6sw.jpg",
+              "asset": "xgy6swy0royhjlo0"
+            },
+            {
+              "file": "es-prestation-sk5ku8-sk5ku8.jpg",
+              "asset": "sk5ku8va1o3eirbe"
+            },
+            {
+              "file": "es-prestation-pws3b7-pws3b7.jpg",
+              "asset": "pws3b78sawewxbbn"
+            }
+          ]
+        },
+        {
+          "id": "ref_editorial_2",
+          "type": "ref-editorial",
+          "role": "information / orientation",
+          "assets": [
+            {
+              "file": "es-photo-3-60zqyz.jpg",
+              "asset": "60zqyzebuppxf1qg"
+            }
+          ]
+        },
+        {
+          "id": "ref_notes_1",
+          "type": "ref-notes",
+          "role": "information / orientation",
+          "assets": []
+        },
+        {
+          "id": "ref_narrative_1",
+          "type": "ref-narrative",
+          "role": "détails / méthode",
+          "assets": [
+            {
+              "file": "es-photo-1-ilyxw4.jpg",
+              "asset": "ilyxw4hcqg1uexh7"
+            },
+            {
+              "file": "es-photo-2-lheit8.jpg",
+              "asset": "lheit8lo6a3sk4cd"
+            },
+            {
+              "file": "es-photo-3-60zqyz.jpg",
+              "asset": "60zqyzebuppxf1qg"
+            }
+          ]
+        },
+        {
+          "id": "v2_media_1",
+          "type": "v2-media",
+          "role": "contexte",
+          "assets": [
+            {
+              "file": "es-photo-2-lheit8.jpg",
+              "asset": "lheit8lo6a3sk4cd"
+            },
+            {
+              "file": "es-photo-3-60zqyz.jpg",
+              "asset": "60zqyzebuppxf1qg"
+            },
+            {
+              "file": "es-photo-4-wshpso.jpg",
+              "asset": "wshpso19npv14up8"
+            }
+          ]
+        },
+        {
+          "id": "v2_faq_1",
+          "type": "v2-faq",
+          "role": "information / orientation",
+          "assets": []
+        },
+        {
+          "id": "v2_facts_1",
+          "type": "v2-facts",
+          "role": "information / orientation",
+          "assets": []
+        },
+        {
+          "id": "v2_cta_1",
+          "type": "v2-cta",
+          "role": "information / orientation",
+          "assets": []
+        }
+      ]
+    },
+    {
+      "template": "page.seo-service-creation",
+      "sections": [
+        {
+          "id": "reference_opening",
+          "type": "ref-hero",
+          "role": "présentation",
+          "assets": [
+            {
+              "file": "es-prestation-xgy6sw-xgy6sw.jpg",
+              "asset": "xgy6swy0royhjlo0"
+            }
+          ]
+        },
+        {
+          "id": "seo_body",
+          "type": "rich-text",
+          "role": "information / orientation",
+          "assets": []
+        },
+        {
+          "id": "reference_compare",
+          "type": "ref-offers",
+          "role": "information / orientation",
+          "assets": []
+        },
+        {
+          "id": "reference_practical",
+          "type": "ref-notes",
+          "role": "information / orientation",
+          "assets": []
+        },
+        {
+          "id": "reference_contact",
+          "type": "ref-editorial",
+          "role": "information / orientation",
+          "assets": []
+        }
+      ]
+    },
+    {
+      "template": "page.seo-service-terrasse",
+      "sections": [
+        {
+          "id": "reference_opening",
+          "type": "ref-hero",
+          "role": "présentation",
+          "assets": [
+            {
+              "file": "es-prestation-sk5ku8-sk5ku8.jpg",
+              "asset": "sk5ku8va1o3eirbe"
+            }
+          ]
+        },
+        {
+          "id": "seo_body",
+          "type": "rich-text",
+          "role": "information / orientation",
+          "assets": []
+        },
+        {
+          "id": "reference_compare",
+          "type": "ref-offers",
+          "role": "information / orientation",
+          "assets": []
+        },
+        {
+          "id": "reference_practical",
+          "type": "ref-notes",
+          "role": "information / orientation",
+          "assets": []
+        },
+        {
+          "id": "reference_contact",
+          "type": "ref-editorial",
+          "role": "information / orientation",
+          "assets": []
+        }
+      ]
+    },
+    {
+      "template": "page.seo-service-entretien",
+      "sections": [
+        {
+          "id": "reference_opening",
+          "type": "ref-hero",
+          "role": "présentation",
+          "assets": [
+            {
+              "file": "es-prestation-pws3b7-pws3b7.jpg",
+              "asset": "pws3b78sawewxbbn"
+            }
+          ]
+        },
+        {
+          "id": "seo_body",
+          "type": "rich-text",
+          "role": "information / orientation",
+          "assets": []
+        },
+        {
+          "id": "reference_compare",
+          "type": "ref-offers",
+          "role": "information / orientation",
+          "assets": []
+        },
+        {
+          "id": "reference_practical",
+          "type": "ref-notes",
+          "role": "information / orientation",
+          "assets": []
+        },
+        {
+          "id": "reference_contact",
+          "type": "ref-editorial",
+          "role": "information / orientation",
+          "assets": []
+        }
+      ]
+    }
+  ]
+}

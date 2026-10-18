@@ -1,5 +1,7 @@
 # Lot 2A — deux références intégrées, à examiner visuellement
 
+> **Complément du 18 octobre 2026 :** la passe suivante est documentée dans [LOT_2A_COMPLEMENT_RESULTATS.md](LOT_2A_COMPLEMENT_RESULTATS.md), avec les nouveaux rendus et le bloc d’achat. Le rapport ci-dessous conserve l’historique de la première livraison.
+
 ## Périmètre et décision applicable
 
 Livraison de **Vitrine**, référence produit illustrée par ARVEN, et de **Jardin**, référence services illustrée par Racines & Pierres. Il s'agit de propositions à examiner ; aucune acceptation esthétique du propriétaire n'est présumée. Les 28 autres thèmes ne sont pas déclinés.
@@ -163,3 +165,15 @@ Liens durables au commit de preuves :
 - [Empreintes des fichiers publiés](https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/993ad5bad6847675eee687b4a710b878157b3e05/reports/lot2a/SHA256SUMS).
 
 La PR de suite, son dernier commit distant et le résultat des contrôles GitHub sont indiqués dans la restitution et liés depuis #133. Aucun résultat CI futur n'est anticipé dans les résultats locaux ci-dessus. Les 3 tests ignorés ne sont pas comptés comme réussis : absence de PHP pour la parité des sections (`cms-v2.test.ts`), la parité du calendrier et la conservation des données de réservation dans le message/e-mail (`calendrier-reservation.test.ts`). L'acceptation visuelle et les installations CMS restent à effectuer.
+
+## Complément livré le 18 octobre 2026 — références et achat avancé
+
+Le [rapport complémentaire](LOT_2A_COMPLEMENT_RESULTATS.md) répond au [nouveau brief de #134](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/134#issuecomment-6244332584). Le présent historique et les premières preuves sont conservés.
+
+- Code testé et rendu : `f40ef52dca145344d9972cf14727eeba6c992588` ; première implémentation de la passe : `b3b88d163e5cd8fd9e35bdd6e765540736d3086c`.
+- Validation locale : 262 fichiers, 1 971 tests réussis et 3 ignorés, aucun échec ; types, build et 137 cas Theme Check réussis. Deux ZIP réels sans erreur/avertissement officiel.
+- [Nouvelles preuves](../../reports/lot2a/passe-2/README.md) : 31 PNG originaux et quatre MP4 avec leurs quatre sources WebM, captures réelles de l’aperçu et six ZIP. Sources inchangées pendant la capture.
+- Les composants, les identités et l’édition sont intégrés au moteur ; le panier serveur d’aperçu recalcule lots, variantes, remises et cadeaux. **Adaptation commerciale CMS partielle** : remises/prix fixes/cadeaux désactivés dans les exports sans adaptateur serveur vérifié ; nouveau widget de quantité aussi désactivé hors Shopify. Achat natif conservé, aucune compatibilité de paiement réelle annoncée.
+- Les limites d’affectation manuelle Shopify et de fiches partagées WooCommerce/PrestaShop demeurent. CLS produit local maximal 0,149 à améliorer, aucune note de production annoncée.
+
+Les deux références restent soumises à validation visuelle avant les 28 autres. Aucun merge, déploiement, appel IA payant, publication client ni nouvelle connexion CMS/Google.

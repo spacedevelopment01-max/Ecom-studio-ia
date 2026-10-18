@@ -1,0 +1,32 @@
+[
+  {
+    "file": "lifestyle-3.jpg",
+    "role": "scene",
+    "source": "public/demo/montre/lifestyle-3.jpg"
+  },
+  {
+    "file": "lifestyle-2.jpg",
+    "role": "detail",
+    "source": "public/demo/montre/lifestyle-2.jpg"
+  },
+  {
+    "file": "lifestyle-1.jpg",
+    "role": "lifestyle",
+    "source": "public/demo/montre/lifestyle-1.jpg"
+  },
+  {
+    "file": "packshot-1.jpg",
+    "role": "packshot",
+    "source": "public/demo/montre/packshot-1.jpg"
+  },
+  {
+    "file": "cutout-1.webp",
+    "role": "cutout",
+    "source": "public/demo/montre/cutout-1.webp"
+  },
+  {
+    "file": "logo.png",
+    "role": "logo",
+    "source": "public/demo/montre/logo.png"
+  }
+]

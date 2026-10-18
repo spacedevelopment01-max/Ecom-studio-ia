@@ -1,0 +1,1469 @@
+{
+  "v": 1,
+  "name": "ARVEN · Vitrine",
+  "direction": "vitrine",
+  "language": "fr",
+  "settings": {
+    "logo_asset": "es-logo-cb0msw.png",
+    "logo_width": 150,
+    "favicon_asset": "",
+    "color_schemes": {
+      "scheme-1": {
+        "settings": {
+          "background": "#FAF7F5",
+          "surface": "#F0EDEB",
+          "text": "#111418",
+          "muted": "#686869",
+          "accent": "#1E2225",
+          "accent_text": "#FFFFFF",
+          "border": "#D9D7D6"
+        }
+      },
+      "scheme-2": {
+        "settings": {
+          "background": "#F3F4F6",
+          "surface": "#E9EAEC",
+          "text": "#111418",
+          "muted": "#656769",
+          "accent": "#1E2225",
+          "accent_text": "#FFFFFF",
+          "border": "#D3D5D7"
+        }
+      },
+      "scheme-3": {
+        "settings": {
+          "background": "#1E2225",
+          "surface": "#282C2F",
+          "text": "#FFFFFF",
+          "muted": "#A1A2A3",
+          "accent": "#FFFFFF",
+          "accent_text": "#141414",
+          "border": "#3E4144"
+        }
+      },
+      "scheme-4": {
+        "settings": {
+          "background": "#F5EAE1",
+          "surface": "#EBE0D8",
+          "text": "#111418",
+          "muted": "#666361",
+          "accent": "#1E2225",
+          "accent_text": "#FFFFFF",
+          "border": "#D5CCC5"
+        }
+      }
+    },
+    "type_heading_font": "cormorant_n5",
+    "type_body_font": "dm_sans_n4",
+    "type_accent_font": "cormorant_i5",
+    "heading_scale": 100,
+    "body_scale": 100,
+    "heading_case": "none",
+    "heading_tracking": 0,
+    "heading_weight_boost": 0,
+    "page_width": 1500,
+    "spacing_scale": 100,
+    "ds_language": "maison",
+    "ds_density": "balanced",
+    "style_preset": "vitrine",
+    "button_radius": 0,
+    "card_radius": 0,
+    "button_style": "solid",
+    "button_uppercase": false,
+    "button_shine": false,
+    "glow_enabled": false,
+    "glow_intensity": 0,
+    "header_shape": "bar",
+    "card_style": "boxed",
+    "motion_enabled": true,
+    "motion_intensity": "subtle",
+    "motion_parallax": false,
+    "fab_back_to_top": false,
+    "fab_contact_link": "",
+    "fab_contact_icon": "chat",
+    "fab_contact_label": "Nous contacter",
+    "cart_type": "drawer",
+    "cart_show_note": false,
+    "cart_reassurance": "",
+    "social_instagram": "",
+    "social_tiktok": "",
+    "social_facebook": "",
+    "social_youtube": "",
+    "social_pinterest": ""
+  },
+  "groups": {
+    "header": {
+      "type": "header",
+      "name": "Groupe en-tête",
+      "sections": {
+        "announcement_bar_1": {
+          "type": "announcement-bar",
+          "settings": {
+            "style": "static",
+            "color_scheme": "scheme-3"
+          },
+          "blocks": {
+            "announcement_1": {
+              "type": "announcement",
+              "settings": {
+                "text": "Démonstration — prix fictif, aucun paiement réel.",
+                "link": ""
+              }
+            }
+          },
+          "block_order": [
+            "announcement_1"
+          ]
+        },
+        "header_1": {
+          "type": "header",
+          "settings": {
+            "menu": "main-menu",
+            "layout": "reference-shop",
+            "shape": "bar",
+            "icons": "plain",
+            "mobile_menu": "sheet",
+            "sticky": true,
+            "transparent_on_home": false,
+            "show_search": true,
+            "color_scheme": "scheme-1"
+          }
+        }
+      },
+      "order": [
+        "announcement_bar_1",
+        "header_1"
+      ]
+    },
+    "footer": {
+      "type": "footer",
+      "name": "Groupe pied de page",
+      "sections": {
+        "footer_1": {
+          "type": "footer",
+          "settings": {
+            "style": "reference-shop",
+            "logo_asset": "es-logo-cb0msw.png",
+            "show_wordmark": true,
+            "show_policies": true,
+            "show_payment": true,
+            "color_scheme": "scheme-3"
+          },
+          "blocks": {
+            "text_4": {
+              "type": "text",
+              "settings": {
+                "heading": "ARVEN",
+                "text": "<p>ARVEN, marque de démonstration. Acier et cuir véritable.</p>"
+              }
+            },
+            "links_1": {
+              "type": "links",
+              "settings": {
+                "heading": "Boutique",
+                "menu": "main-menu"
+              }
+            },
+            "links_2": {
+              "type": "links",
+              "settings": {
+                "heading": "Aide",
+                "menu": "footer"
+              }
+            },
+            "newsletter_1": {
+              "type": "newsletter",
+              "settings": {
+                "heading": "Restons en contact",
+                "text": "Démonstration — aucune inscription réelle."
+              }
+            }
+          },
+          "block_order": [
+            "text_4",
+            "links_1",
+            "links_2",
+            "newsletter_1"
+          ]
+        }
+      },
+      "order": [
+        "footer_1"
+      ]
+    }
+  },
+  "templates": {
+    "404": {
+      "sections": {
+        "main_404_1": {
+          "type": "main-404",
+          "settings": {
+            "heading": "Cette page s'est égarée.",
+            "text": "Le lien est peut-être ancien. Le reste de la boutique vous attend.",
+            "color_scheme": "scheme-1"
+          }
+        }
+      },
+      "order": [
+        "main_404_1"
+      ]
+    },
+    "index": {
+      "sections": {
+        "ref_hero_1": {
+          "type": "ref-hero",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "padding_top": 80,
+            "padding_bottom": 80,
+            "motion": "reveal",
+            "heading": "Le temps, bien porté.",
+            "text": "<p>L’acier poli, le cuir brun, un cadran que l’on aime regarder. Une montre qui se découvre dans les détails.</p>",
+            "label": "ARVEN",
+            "image_asset": "es-en-situation-1-kj0a7v.jpg",
+            "image_alt": "Montre acier et cuir",
+            "layout": "object",
+            "button_label": "Découvrir le produit",
+            "button_link": "/products/montre-acier-et-cuir",
+            "secondary_label": "Voir la collection",
+            "secondary_link": "/collections/all",
+            "caption": "Acier et cuir véritable."
+          }
+        },
+        "featured_collection_1": {
+          "type": "featured-collection",
+          "settings": {
+            "heading": "La collection",
+            "collection": "selection-reference",
+            "limit": 8,
+            "columns": 3,
+            "ratio": "square",
+            "color_scheme": "scheme-1",
+            "padding_top": 80,
+            "padding_bottom": 80
+          }
+        },
+        "ref_editorial_1": {
+          "type": "ref-editorial",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "padding_top": 80,
+            "padding_bottom": 80,
+            "motion": "reveal",
+            "heading": "Le caractère est dans le détail.",
+            "text": "<p>Le boîtier en acier poli encadre un cadran noir à trois compteurs argentés. Le bracelet en cuir brun surpiqué révèle une doublure bleue.</p>",
+            "image_asset": "es-hero-n8quha.jpg",
+            "image_alt": "Montre acier et cuir",
+            "layout": "offset",
+            "button_label": "",
+            "button_link": ""
+          }
+        },
+        "v2_benefits_1": {
+          "type": "v2-benefits",
+          "settings": {
+            "layout": "images",
+            "columns": 3,
+            "eyebrow": "",
+            "heading": "La matière donne le ton.",
+            "text": "",
+            "color_scheme": "scheme-2",
+            "padding_top": 96,
+            "padding_bottom": 96
+          },
+          "blocks": {
+            "benefit_1": {
+              "type": "benefit",
+              "settings": {
+                "image_asset": "es-detail-1-fkobnv.jpg",
+                "icon": "sparkle",
+                "title": "L’éclat de l’acier",
+                "text": "Un boîtier poli et une lunette graduée qui captent la lumière."
+              }
+            },
+            "benefit_2": {
+              "type": "benefit",
+              "settings": {
+                "image_asset": "es-scene-1-n8quha.jpg",
+                "icon": "hand",
+                "title": "La présence du cuir",
+                "text": "Un bracelet brun surpiqué, avec une doublure de tissu bleu."
+              }
+            },
+            "benefit_3": {
+              "type": "benefit",
+              "settings": {
+                "image_asset": "es-packshot-ydmt8c.jpg",
+                "icon": "check",
+                "title": "Un contraste affirmé",
+                "text": "Un cadran noir ponctué de compteurs argentés."
+              }
+            }
+          },
+          "block_order": [
+            "benefit_1",
+            "benefit_2",
+            "benefit_3"
+          ]
+        },
+        "ref_editorial_2": {
+          "type": "ref-editorial",
+          "settings": {
+            "color_scheme": "scheme-3",
+            "padding_top": 80,
+            "padding_bottom": 80,
+            "motion": "reveal",
+            "heading": "Un objet, plusieurs regards.",
+            "text": "<p>Une lumière sur le boîtier, une couture sur le cuir, une touche de bleu. Le caractère d’ARVEN se lit de près.</p>",
+            "image_asset": "es-detail-1-fkobnv.jpg",
+            "image_alt": "Montre acier et cuir",
+            "layout": "inset",
+            "button_label": "",
+            "button_link": ""
+          }
+        },
+        "v2_specs_1": {
+          "type": "v2-specs",
+          "settings": {
+            "layout": "columns",
+            "eyebrow": "Fiche",
+            "heading": "Caractéristiques",
+            "image_asset": "",
+            "note": "",
+            "color_scheme": "scheme-1",
+            "padding_top": 104,
+            "padding_bottom": 104
+          },
+          "blocks": {
+            "spec_4": {
+              "type": "spec",
+              "settings": {
+                "label": "Boîtier",
+                "value": "Acier poli"
+              }
+            },
+            "spec_5": {
+              "type": "spec",
+              "settings": {
+                "label": "Bracelet",
+                "value": "Cuir brun surpiqué"
+              }
+            },
+            "spec_6": {
+              "type": "spec",
+              "settings": {
+                "label": "Cadran",
+                "value": "Noir, compteurs argentés"
+              }
+            }
+          },
+          "block_order": [
+            "spec_4",
+            "spec_5",
+            "spec_6"
+          ]
+        },
+        "v2_media_1": {
+          "type": "v2-media",
+          "settings": {
+            "layout": "rail",
+            "eyebrow": "",
+            "heading": "L’objet en situation.",
+            "color_scheme": "scheme-2",
+            "padding_top": 96,
+            "padding_bottom": 96
+          },
+          "blocks": {
+            "image_1": {
+              "type": "image",
+              "settings": {
+                "image_asset": "es-scene-1-n8quha.jpg",
+                "fit": "v2-cover",
+                "caption": "Cuir et acier"
+              }
+            },
+            "image_2": {
+              "type": "image",
+              "settings": {
+                "image_asset": "es-detail-1-fkobnv.jpg",
+                "fit": "v2-cover",
+                "caption": "Le cadran"
+              }
+            },
+            "image_3": {
+              "type": "image",
+              "settings": {
+                "image_asset": "es-packshot-ydmt8c.jpg",
+                "fit": "v2-cover",
+                "caption": "La silhouette"
+              }
+            }
+          },
+          "block_order": [
+            "image_1",
+            "image_2",
+            "image_3"
+          ]
+        },
+        "v2_faq_1": {
+          "type": "v2-faq",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "padding_top": 80,
+            "padding_bottom": 80,
+            "motion": "reveal",
+            "heading": "Les réponses, simplement.",
+            "layout": "side"
+          },
+          "blocks": {
+            "question_4": {
+              "type": "question",
+              "settings": {
+                "question": "Quelles matières sont présentées ?",
+                "answer": "<p>Le boîtier est en acier poli et le bracelet en cuir brun surpiqué, doublé de tissu bleu.</p>"
+              }
+            },
+            "question_5": {
+              "type": "question",
+              "settings": {
+                "question": "Le prix affiché permet-il de commander ?",
+                "answer": "<p>Le prix de 129 € est fictif et sert uniquement à tester le parcours. Aucun paiement ni achat réel n’est possible dans cette démonstration.</p>"
+              }
+            },
+            "question_6": {
+              "type": "question",
+              "settings": {
+                "question": "Quelles informations restent à confirmer ?",
+                "answer": "<p>Les dimensions, le mouvement, l’étanchéité et les conditions de livraison doivent être renseignés par le marchand avant toute publication.</p>"
+              }
+            }
+          },
+          "block_order": [
+            "question_4",
+            "question_5",
+            "question_6"
+          ]
+        },
+        "reassurance_1": {
+          "type": "reassurance",
+          "settings": {
+            "style": "solid",
+            "color_scheme": "scheme-1",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "eyebrow": "Commandez l'esprit tranquille",
+            "heading": "Nos engagements,",
+            "heading_accent": "noir sur blanc.",
+            "text": "<p>Tout ce qu'il faut savoir avant de commander chez ARVEN.</p>"
+          },
+          "blocks": {
+            "card_1": {
+              "type": "card",
+              "settings": {
+                "icon": "lock",
+                "title": "Paiement sécurisé",
+                "text": "<p>[À compléter : moyens de paiement]</p>"
+              }
+            },
+            "card_2": {
+              "type": "card",
+              "settings": {
+                "icon": "truck",
+                "title": "Livraison",
+                "text": "<p>[À compléter : délais et tarifs]</p>"
+              }
+            },
+            "card_3": {
+              "type": "card",
+              "settings": {
+                "icon": "return",
+                "title": "Retours",
+                "text": "<p>[À compléter : durée de retour]</p>"
+              }
+            },
+            "card_4": {
+              "type": "card",
+              "settings": {
+                "icon": "chat",
+                "title": "Service client",
+                "text": "<p>[À compléter : horaires et contact]</p>"
+              }
+            }
+          },
+          "block_order": [
+            "card_1",
+            "card_2",
+            "card_3",
+            "card_4"
+          ],
+          "disabled": true
+        },
+        "v2_cta_1": {
+          "type": "v2-cta",
+          "settings": {
+            "layout": "band",
+            "eyebrow": "",
+            "heading": "Prenez le temps de la découvrir.",
+            "text": "<p>Retrouvez les photographies et les informations de la montre sur sa fiche.</p>",
+            "button_label": "Découvrir la montre",
+            "button_link": "/products/montre-acier-et-cuir",
+            "button2_label": "Notre histoire",
+            "button2_link": "/pages/notre-histoire",
+            "color_scheme": "scheme-3",
+            "padding_top": 112,
+            "padding_bottom": 112
+          }
+        }
+      },
+      "order": [
+        "ref_hero_1",
+        "featured_collection_1",
+        "ref_editorial_1",
+        "v2_benefits_1",
+        "ref_editorial_2",
+        "v2_specs_1",
+        "v2_media_1",
+        "v2_faq_1",
+        "reassurance_1",
+        "v2_cta_1"
+      ]
+    },
+    "product": {
+      "sections": {
+        "main_product_1": {
+          "type": "main-product",
+          "settings": {
+            "gallery_layout": "carousel",
+            "sticky_bar": false,
+            "color_scheme": "scheme-1",
+            "padding_top": 32,
+            "padding_bottom": 96
+          },
+          "blocks": {
+            "title_1": {
+              "type": "title",
+              "settings": {}
+            },
+            "price_1": {
+              "type": "price",
+              "settings": {}
+            },
+            "buy_buttons_1": {
+              "type": "buy_buttons",
+              "settings": {
+                "picker": "buttons",
+                "show_quantity": true,
+                "show_dynamic_checkout": false
+              }
+            },
+            "description_1": {
+              "type": "description",
+              "settings": {}
+            }
+          },
+          "block_order": [
+            "title_1",
+            "price_1",
+            "buy_buttons_1",
+            "description_1"
+          ]
+        },
+        "product_recommendations_1": {
+          "type": "product-recommendations",
+          "settings": {
+            "heading": "Vous aimerez aussi",
+            "limit": 4,
+            "color_scheme": "scheme-1",
+            "padding_top": 64,
+            "padding_bottom": 96
+          }
+        }
+      },
+      "order": [
+        "main_product_1",
+        "product_recommendations_1"
+      ]
+    },
+    "collection": {
+      "sections": {
+        "main_collection_1": {
+          "type": "main-collection",
+          "settings": {
+            "per_page": 16,
+            "columns": 3,
+            "enable_filters": true,
+            "enable_sorting": true,
+            "color_scheme": "scheme-1"
+          }
+        }
+      },
+      "order": [
+        "main_collection_1"
+      ]
+    },
+    "list-collections": {
+      "sections": {
+        "main_list_collections_1": {
+          "type": "main-list-collections",
+          "settings": {
+            "heading": "Catalogue",
+            "color_scheme": "scheme-1"
+          }
+        }
+      },
+      "order": [
+        "main_list_collections_1"
+      ]
+    },
+    "search": {
+      "sections": {
+        "main_search_1": {
+          "type": "main-search",
+          "settings": {
+            "color_scheme": "scheme-1"
+          }
+        }
+      },
+      "order": [
+        "main_search_1"
+      ]
+    },
+    "cart": {
+      "sections": {
+        "main_cart_1": {
+          "type": "main-cart",
+          "settings": {
+            "color_scheme": "scheme-1"
+          }
+        }
+      },
+      "order": [
+        "main_cart_1"
+      ]
+    },
+    "page": {
+      "sections": {
+        "main_page_1": {
+          "type": "main-page",
+          "settings": {
+            "width": "narrow",
+            "color_scheme": "scheme-1",
+            "padding_top": 64,
+            "padding_bottom": 96
+          }
+        }
+      },
+      "order": [
+        "main_page_1"
+      ]
+    },
+    "page.about": {
+      "sections": {
+        "rich_text_1": {
+          "type": "rich-text",
+          "settings": {
+            "align": "center",
+            "style": "statement",
+            "color_scheme": "scheme-1",
+            "padding_top": 120,
+            "padding_bottom": 64
+          },
+          "blocks": {
+            "eyebrow_2": {
+              "type": "eyebrow",
+              "settings": {
+                "text": "Notre histoire"
+              }
+            },
+            "heading_1": {
+              "type": "heading",
+              "settings": {
+                "text": "Le goût des choses que l’on garde.",
+                "size": "h1"
+              }
+            },
+            "text_2": {
+              "type": "text",
+              "settings": {
+                "text": "<p>Un boîtier d’acier, un bracelet de cuir et des détails que l’on découvre en prenant le temps. ARVEN explore le caractère de l’objet au quotidien.</p>"
+              }
+            }
+          },
+          "block_order": [
+            "eyebrow_2",
+            "heading_1",
+            "text_2"
+          ]
+        },
+        "image_with_text_1": {
+          "type": "image-with-text",
+          "settings": {
+            "eyebrow": "",
+            "heading": "Une présence au quotidien.",
+            "text": "<p>ARVEN est une marque de démonstration du studio. Les matières décrites correspondent aux visuels ; les dimensions et performances restent à préciser par le marchand.</p>",
+            "image_asset": "es-scene-1-n8quha.jpg",
+            "layout": "image-left",
+            "ratio": "portrait",
+            "reveal": "curtain",
+            "parallax": false,
+            "color_scheme": "scheme-1",
+            "padding_top": 96,
+            "padding_bottom": 96
+          }
+        },
+        "features_grid_1": {
+          "type": "features-grid",
+          "settings": {
+            "heading": "Ce qui nous guide",
+            "heading_align": "left",
+            "columns": 2,
+            "style": "glow",
+            "color_scheme": "scheme-2",
+            "padding_top": 96,
+            "padding_bottom": 96
+          },
+          "blocks": {
+            "feature_1": {
+              "type": "feature",
+              "settings": {
+                "title": "L’acier et le cuir",
+                "text": "<p>Le contraste d’un boîtier poli et d’un bracelet brun surpiqué.</p>",
+                "icon": "sparkle"
+              }
+            },
+            "feature_2": {
+              "type": "feature",
+              "settings": {
+                "title": "Le sens du détail",
+                "text": "<p>Le cadran noir dialogue avec les compteurs argentés et la doublure bleue.</p>",
+                "icon": "sparkle"
+              }
+            }
+          },
+          "block_order": [
+            "feature_1",
+            "feature_2"
+          ]
+        },
+        "cta_banner_1": {
+          "type": "cta-banner",
+          "settings": {
+            "heading": "Prenez le temps de la découvrir.",
+            "text": "<p>Retrouvez les photographies et les informations de la montre sur sa fiche.</p>",
+            "button_label": "Découvrir la montre",
+            "button_link": "/products/montre-acier-et-cuir",
+            "image_asset": "es-hero-n8quha.jpg",
+            "overlay": 45,
+            "style": "center",
+            "parallax": true,
+            "color_scheme": "scheme-3",
+            "padding_top": 152,
+            "padding_bottom": 152
+          }
+        }
+      },
+      "order": [
+        "rich_text_1",
+        "image_with_text_1",
+        "features_grid_1",
+        "cta_banner_1"
+      ]
+    },
+    "page.faq": {
+      "sections": {
+        "faq_2": {
+          "type": "faq",
+          "settings": {
+            "heading": "Les réponses, simplement.",
+            "text": "",
+            "style": "cards",
+            "structured_data": true,
+            "color_scheme": "scheme-1",
+            "padding_top": 96,
+            "padding_bottom": 96
+          },
+          "blocks": {
+            "question_7": {
+              "type": "question",
+              "settings": {
+                "question": "Quelles matières sont présentées ?",
+                "answer": "<p>Le boîtier est en acier poli et le bracelet en cuir brun surpiqué, doublé de tissu bleu.</p>"
+              }
+            },
+            "question_8": {
+              "type": "question",
+              "settings": {
+                "question": "Le prix affiché permet-il de commander ?",
+                "answer": "<p>Le prix de 129 € est fictif et sert uniquement à tester le parcours. Aucun paiement ni achat réel n’est possible dans cette démonstration.</p>"
+              }
+            },
+            "question_9": {
+              "type": "question",
+              "settings": {
+                "question": "Quelles informations restent à confirmer ?",
+                "answer": "<p>Les dimensions, le mouvement, l’étanchéité et les conditions de livraison doivent être renseignés par le marchand avant toute publication.</p>"
+              }
+            }
+          },
+          "block_order": [
+            "question_7",
+            "question_8",
+            "question_9"
+          ]
+        },
+        "contact_form_1": {
+          "type": "contact-form",
+          "settings": {
+            "heading": "Une autre question ?",
+            "text": "<p>Démonstration du studio : données de test uniquement. Aucun message n’est adressé à une entreprise réelle.</p>",
+            "color_scheme": "scheme-2",
+            "padding_top": 96,
+            "padding_bottom": 96
+          }
+        }
+      },
+      "order": [
+        "faq_2",
+        "contact_form_1"
+      ]
+    },
+    "page.contact": {
+      "sections": {
+        "contact_form_2": {
+          "type": "contact-form",
+          "settings": {
+            "heading": "Une question sur la montre ?",
+            "text": "<p>Démonstration du studio : données de test uniquement. Aucun message n’est adressé à une entreprise réelle.</p>",
+            "color_scheme": "scheme-1",
+            "padding_top": 64,
+            "padding_bottom": 120
+          }
+        }
+      },
+      "order": [
+        "contact_form_2"
+      ]
+    },
+    "page.shipping": {
+      "sections": {
+        "main_page_2": {
+          "type": "main-page",
+          "settings": {
+            "width": "narrow",
+            "color_scheme": "scheme-1",
+            "padding_top": 64,
+            "padding_bottom": 96
+          }
+        },
+        "rich_text_2": {
+          "type": "rich-text",
+          "settings": {
+            "align": "left",
+            "style": "plain",
+            "color_scheme": "scheme-2",
+            "padding_top": 64,
+            "padding_bottom": 64
+          },
+          "blocks": {
+            "heading_2": {
+              "type": "heading",
+              "settings": {
+                "text": "Livraison et retours",
+                "size": "h3"
+              }
+            },
+            "text_3": {
+              "type": "text",
+              "settings": {
+                "text": "<p><strong>Livraison :</strong> [À compléter : délais et tarifs de livraison]</p><p><strong>Retours :</strong> [À compléter : conditions de retour]</p><p><strong>Contact :</strong> [À compléter : adresse e-mail du service client]</p>"
+              }
+            }
+          },
+          "block_order": [
+            "heading_2",
+            "text_3"
+          ]
+        }
+      },
+      "order": [
+        "main_page_2",
+        "rich_text_2"
+      ]
+    },
+    "blog": {
+      "sections": {
+        "main_blog_1": {
+          "type": "main-blog",
+          "settings": {
+            "color_scheme": "scheme-1"
+          }
+        }
+      },
+      "order": [
+        "main_blog_1"
+      ]
+    },
+    "article": {
+      "sections": {
+        "main_article_1": {
+          "type": "main-article",
+          "settings": {
+            "color_scheme": "scheme-1"
+          }
+        }
+      },
+      "order": [
+        "main_article_1"
+      ]
+    },
+    "password": {
+      "sections": {
+        "main_password_1": {
+          "type": "main-password",
+          "settings": {
+            "heading": "Bientôt en ligne"
+          }
+        }
+      },
+      "order": [
+        "main_password_1"
+      ],
+      "layout": "password"
+    },
+    "product.ecp-24b76c1d174e416c": {
+      "sections": {
+        "p_24b76c1d_main_product_1": {
+          "type": "main-product",
+          "settings": {
+            "gallery_layout": "carousel",
+            "sticky_bar": false,
+            "color_scheme": "scheme-1",
+            "padding_top": 32,
+            "padding_bottom": 96,
+            "purchase_enabled": true,
+            "purchase_heading": "Choisissez votre offre",
+            "purchase_style": "outlined",
+            "product_target": "product:main"
+          },
+          "blocks": {
+            "eyebrow_1": {
+              "type": "eyebrow",
+              "settings": {
+                "text": "ARVEN"
+              }
+            },
+            "title_1": {
+              "type": "title",
+              "settings": {}
+            },
+            "rating_1": {
+              "type": "rating",
+              "settings": {
+                "anchor": "avis"
+              }
+            },
+            "price_1": {
+              "type": "price",
+              "settings": {}
+            },
+            "text_1": {
+              "type": "text",
+              "settings": {
+                "text": "<p>Acier poli, cuir brun, cadran noir. Des matières et couleurs qui donnent sa présence à la montre.</p>"
+              }
+            },
+            "buy_buttons_1": {
+              "type": "buy_buttons",
+              "settings": {
+                "picker": "buttons",
+                "show_quantity": true,
+                "show_dynamic_checkout": false
+              }
+            },
+            "highlights_1": {
+              "type": "highlights",
+              "settings": {
+                "items": "Acier poli\nCuir brun surpiqué\nNoir"
+              },
+              "disabled": true
+            },
+            "description_1": {
+              "type": "description",
+              "settings": {}
+            },
+            "collapsible_1": {
+              "type": "collapsible",
+              "settings": {
+                "heading": "Les informations à confirmer",
+                "content": "<p>Dimensions, mouvement, étanchéité et conditions de vente à renseigner avant publication.</p>",
+                "open": false
+              }
+            },
+            "quantity_1": {
+              "type": "quantity_offer",
+              "settings": {
+                "title": "Un article",
+                "quantity": 1,
+                "discount": 0,
+                "recommended": false
+              }
+            },
+            "quantity_2": {
+              "type": "quantity_offer",
+              "settings": {
+                "title": "Le duo",
+                "quantity": 2,
+                "discount": 8,
+                "recommended": true
+              }
+            },
+            "quantity_3": {
+              "type": "quantity_offer",
+              "settings": {
+                "title": "Le trio",
+                "quantity": 3,
+                "discount": 12,
+                "recommended": false
+              }
+            },
+            "quantity_4": {
+              "type": "quantity_offer",
+              "settings": {
+                "title": "Quatre articles",
+                "quantity": 4,
+                "discount": 15,
+                "recommended": false
+              }
+            },
+            "gift_pouch": {
+              "type": "threshold_gift",
+              "settings": {
+                "gift_target": "product:catalog:test-pouch",
+                "threshold": 3,
+                "quantity": 1,
+                "sku": "DEMO-GIFT"
+              }
+            },
+            "purchase_benefit_0": {
+              "type": "purchase_benefit",
+              "settings": {
+                "title": "Boîtier en acier poli",
+                "icon": "sparkle"
+              }
+            },
+            "purchase_benefit_1": {
+              "type": "purchase_benefit",
+              "settings": {
+                "title": "Bracelet en cuir brun",
+                "icon": "heart"
+              }
+            },
+            "purchase_benefit_2": {
+              "type": "purchase_benefit",
+              "settings": {
+                "title": "Cadran noir et argent",
+                "icon": "check"
+              }
+            }
+          },
+          "block_order": [
+            "eyebrow_1",
+            "title_1",
+            "rating_1",
+            "price_1",
+            "text_1",
+            "buy_buttons_1",
+            "highlights_1",
+            "description_1",
+            "collapsible_1",
+            "quantity_1",
+            "quantity_2",
+            "quantity_3",
+            "quantity_4",
+            "gift_pouch",
+            "purchase_benefit_0",
+            "purchase_benefit_1",
+            "purchase_benefit_2"
+          ]
+        },
+        "p_24b76c1d_product_reviews_1": {
+          "type": "product-reviews",
+          "settings": {
+            "heading": "Avis des clients",
+            "anchor": "avis",
+            "color_scheme": "scheme-1",
+            "padding_top": 32,
+            "padding_bottom": 32
+          }
+        },
+        "p_24b76c1d_scroll_story_1": {
+          "type": "ref-narrative",
+          "settings": {
+            "heading": "Sous chaque angle, un détail.",
+            "image_asset": "es-packshot-ydmt8c.jpg",
+            "color_scheme": "scheme-2",
+            "padding_top": 80,
+            "padding_bottom": 80,
+            "motion": "reveal"
+          },
+          "blocks": {
+            "step_1": {
+              "type": "chapter",
+              "settings": {
+                "title": "L’acier capte la lumière",
+                "text": "<p>Le boîtier poli encadre le cadran noir et ses trois compteurs argentés. Les vues rapprochées montrent ce contraste, sans masquer les détails de la lunette.</p>",
+                "image_asset": "es-galerie-lifestyle-kj0a-kj0a7v.jpg",
+                "image_alt": "Montre acier et cuir"
+              }
+            },
+            "step_2": {
+              "type": "chapter",
+              "settings": {
+                "title": "Le cuir révèle sa couleur",
+                "text": "<p>Le bracelet brun est souligné par ses surpiqûres. Sa doublure de tissu bleu ajoute une couleur que l’on découvre en retournant la montre.</p>",
+                "image_asset": "es-galerie-detail-fkob-fkobnv.jpg",
+                "image_alt": "Montre acier et cuir"
+              }
+            },
+            "step_3": {
+              "type": "chapter",
+              "settings": {
+                "title": "Voir avant de choisir",
+                "text": "<p>Une vue d’ensemble pour apprécier la silhouette, des photographies en situation pour regarder l’objet autrement. Dimensions, mouvement et étanchéité restent à confirmer.</p>",
+                "image_asset": "es-galerie-scene-n8qu-n8quha.jpg",
+                "image_alt": "Montre acier et cuir"
+              }
+            }
+          },
+          "block_order": [
+            "step_1",
+            "step_2",
+            "step_3"
+          ]
+        },
+        "p_24b76c1d_specs_list_1": {
+          "type": "specs-list",
+          "settings": {
+            "heading": "Caractéristiques",
+            "color_scheme": "scheme-1",
+            "padding_top": 104,
+            "padding_bottom": 104
+          },
+          "blocks": {
+            "spec_1": {
+              "type": "spec",
+              "settings": {
+                "label": "Boîtier",
+                "value": "Acier poli"
+              }
+            },
+            "spec_2": {
+              "type": "spec",
+              "settings": {
+                "label": "Bracelet",
+                "value": "Cuir brun surpiqué"
+              }
+            },
+            "spec_3": {
+              "type": "spec",
+              "settings": {
+                "label": "Cadran",
+                "value": "Noir, compteurs argentés"
+              }
+            }
+          },
+          "block_order": [
+            "spec_1",
+            "spec_2",
+            "spec_3"
+          ]
+        },
+        "p_24b76c1d_faq_1": {
+          "type": "faq",
+          "settings": {
+            "heading": "Les réponses, simplement.",
+            "style": "cards",
+            "structured_data": true,
+            "color_scheme": "scheme-2",
+            "padding_top": 104,
+            "padding_bottom": 104
+          },
+          "blocks": {
+            "question_1": {
+              "type": "question",
+              "settings": {
+                "question": "Quelles matières sont présentées ?",
+                "answer": "<p>Le boîtier est en acier poli et le bracelet en cuir brun surpiqué, doublé de tissu bleu.</p>"
+              }
+            },
+            "question_2": {
+              "type": "question",
+              "settings": {
+                "question": "Le prix affiché permet-il de commander ?",
+                "answer": "<p>Le prix de 129 € est fictif et sert uniquement à tester le parcours. Aucun paiement ni achat réel n’est possible dans cette démonstration.</p>"
+              }
+            },
+            "question_3": {
+              "type": "question",
+              "settings": {
+                "question": "Quelles informations restent à confirmer ?",
+                "answer": "<p>Les dimensions, le mouvement, l’étanchéité et les conditions de livraison doivent être renseignés par le marchand avant toute publication.</p>"
+              }
+            }
+          },
+          "block_order": [
+            "question_1",
+            "question_2",
+            "question_3"
+          ]
+        },
+        "p_24b76c1d_product_recommendations_1": {
+          "type": "product-recommendations",
+          "settings": {
+            "heading": "Vous aimerez aussi",
+            "limit": 4,
+            "color_scheme": "scheme-1",
+            "padding_top": 64,
+            "padding_bottom": 96
+          },
+          "disabled": true
+        }
+      },
+      "order": [
+        "p_24b76c1d_main_product_1",
+        "p_24b76c1d_product_reviews_1",
+        "p_24b76c1d_scroll_story_1",
+        "p_24b76c1d_specs_list_1",
+        "p_24b76c1d_faq_1",
+        "p_24b76c1d_product_recommendations_1"
+      ]
+    }
+  },
+  "customSections": {},
+  "files": {
+    "es-en-situation-1-kj0a7v.jpg": "kj0a7v38h0irsp3j",
+    "es-produit-detoure-oioc4k.png": "oioc4kp0k48i52b7",
+    "es-packshot-ydmt8c.jpg": "ydmt8ckfx7sdmqox",
+    "es-detail-1-fkobnv.jpg": "fkobnvs5hxrx029x",
+    "es-scene-1-n8quha.jpg": "n8quhaqsaza2n1ve",
+    "es-hero-n8quha.jpg": "n8quhaqsaza2n1ve",
+    "es-logo-cb0msw.png": "cb0mswlma84g1ks9",
+    "es-galerie-packshot-ydmt8c.jpg": "ydmt8ckfx7sdmqox",
+    "es-galerie-lifestyle-kj0a-kj0a7v.jpg": "kj0a7v38h0irsp3j",
+    "es-galerie-detail-fkob-fkobnv.jpg": "fkobnvs5hxrx029x",
+    "es-galerie-scene-n8qu-n8quha.jpg": "n8quhaqsaza2n1ve"
+  },
+  "locks": [],
+  "store": {
+    "shopName": "ARVEN",
+    "product": {
+      "title": "Montre acier et cuir",
+      "handle": "montre-acier-et-cuir",
+      "vendor": "ARVEN",
+      "description_html": "<p>Le boîtier en acier poli et le bracelet en cuir brun surpiqué donnent à la montre son contraste. Sur le cadran noir, les trois compteurs argentés prolongent ce dialogue entre ombre et lumière.</p><p>La doublure bleue se découvre lorsque l’on retourne le bracelet. Les photographies permettent d’examiner la silhouette, les coutures et les surfaces avant de choisir.</p><p>Démonstration : les caractéristiques techniques non renseignées et les conditions de vente restent à confirmer avant une publication commerciale.</p>",
+      "price": 12900,
+      "compare_at_price": null,
+      "currency": "EUR",
+      "options": [
+        "Configuration de démonstration"
+      ],
+      "variants": [
+        {
+          "title": "Démo A",
+          "options": [
+            "Démo A"
+          ],
+          "price": 12900,
+          "available": true,
+          "sku": "DEMO-A",
+          "inventory_quantity": 12
+        },
+        {
+          "title": "Démo B",
+          "options": [
+            "Démo B"
+          ],
+          "price": 13900,
+          "available": true,
+          "sku": "DEMO-B",
+          "inventory_quantity": 6
+        },
+        {
+          "title": "Démo indisponible",
+          "options": [
+            "Démo indisponible"
+          ],
+          "price": 12900,
+          "available": false,
+          "sku": "DEMO-C",
+          "inventory_quantity": 0
+        }
+      ],
+      "images": [
+        "es-galerie-packshot-ydmt8c.jpg",
+        "es-galerie-lifestyle-kj0a-kj0a7v.jpg",
+        "es-galerie-detail-fkob-fkobnv.jpg",
+        "es-galerie-scene-n8qu-n8quha.jpg"
+      ],
+      "tags": [],
+      "contentTarget": "product:main",
+      "seo": {
+        "title": "Montre acier et cuir, montres | ARVEN",
+        "description": "Montre à boîtier en acier poli, cadran noir à trois compteurs argentés et bracelet en cuir brun surpiqué, doublé de tissu bleu."
+      },
+      "template_suffix": "ecp-24b76c1d174e416c"
+    },
+    "pages": [
+      {
+        "handle": "notre-histoire",
+        "title": "Notre histoire",
+        "template_suffix": "about",
+        "body_html": ""
+      },
+      {
+        "handle": "faq",
+        "title": "Questions fréquentes",
+        "template_suffix": "faq",
+        "body_html": ""
+      },
+      {
+        "handle": "contact",
+        "title": "Contact",
+        "template_suffix": "contact",
+        "body_html": ""
+      },
+      {
+        "handle": "livraison-et-retours",
+        "title": "Livraison et retours",
+        "template_suffix": "shipping",
+        "body_html": "<p>Les conditions détaillées figurent ci-dessous.</p>"
+      }
+    ],
+    "menus": {
+      "main-menu": {
+        "title": "Menu principal",
+        "links": [
+          {
+            "title": "Accueil",
+            "url": "/"
+          },
+          {
+            "title": "Boutique",
+            "url": "/collections/all"
+          },
+          {
+            "title": "Notre histoire",
+            "url": "/pages/notre-histoire"
+          },
+          {
+            "title": "FAQ",
+            "url": "/pages/faq"
+          },
+          {
+            "title": "Contact",
+            "url": "/pages/contact"
+          }
+        ]
+      },
+      "footer": {
+        "title": "Pied de page",
+        "links": [
+          {
+            "title": "Livraison et retours",
+            "url": "/pages/livraison-et-retours"
+          },
+          {
+            "title": "Contact",
+            "url": "/pages/contact"
+          },
+          {
+            "title": "Recherche",
+            "url": "/search"
+          }
+        ]
+      }
+    },
+    "policies": [
+      {
+        "handle": "terms-of-service",
+        "title": "Conditions générales de vente",
+        "body_html": "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>"
+      },
+      {
+        "handle": "privacy-policy",
+        "title": "Politique de confidentialité",
+        "body_html": "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>"
+      },
+      {
+        "handle": "refund-policy",
+        "title": "Politique de remboursement",
+        "body_html": "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>"
+      },
+      {
+        "handle": "legal-notice",
+        "title": "Mentions légales",
+        "body_html": "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>"
+      }
+    ],
+    "products": [
+      {
+        "contentTarget": "product:catalog:test-pouch",
+        "handle": "pochette-de-demonstration",
+        "title": "Pochette de démonstration",
+        "vendor": "ARVEN",
+        "price": 1900,
+        "compare_at_price": null,
+        "currency": "EUR",
+        "description_html": "<p>Accessoire fictif utilisé pour tester les cadeaux. Aucun visuel disponible.</p>",
+        "options": [
+          "Title"
+        ],
+        "variants": [
+          {
+            "title": "Default Title",
+            "options": [
+              "Default Title"
+            ],
+            "price": 1900,
+            "available": true,
+            "sku": "DEMO-GIFT",
+            "inventory_quantity": 5
+          }
+        ],
+        "images": [],
+        "tags": [
+          "Donnée fictive de test"
+        ]
+      }
+    ],
+    "collections": [
+      {
+        "handle": "selection-reference",
+        "title": "La montre",
+        "description": "Démonstration",
+        "products": [
+          "montre-acier-et-cuir"
+        ]
+      }
+    ]
+  },
+  "meta": {
+    "reference": {
+      "version": 1,
+      "kind": "products",
+      "links": []
+    },
+    "productContent": [
+      {
+        "target": "product:main",
+        "suffix": "ecp-24b76c1d174e416c",
+        "templateHash": "844684417388f6d12956eda9337daf3cdc5ae28eeeaefff4b1943a75acca7520",
+        "bodyHash": "b09b454006e417e9b705524ba779056c78b26e4d236835cdb70bf4916de1de4a",
+        "seoHash": "59a88c79814d8a6ddfc08ab2bb0ce8a6377c7d719fadeeeaa36ac85c47bbd828",
+        "templateSource": "generated",
+        "bodySource": "generated",
+        "seoSource": "generated"
+      }
+    ]
+  }
+}

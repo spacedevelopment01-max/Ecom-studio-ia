@@ -1,0 +1,20 @@
+{
+  "sourceCommit": "f40ef52dca145344d9972cf14727eeba6c992588",
+  "cmsInstalled": false,
+  "results": [
+    {
+      "kind": "products",
+      "files": 183,
+      "sha256": "0071f2bd8035280aeb9ca0f7cd2cb9aadf5df5ca14b3005c6107c734ac249720",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "kind": "services",
+      "files": 186,
+      "sha256": "7cc1b41134c962fe9bc2fcda5179d56e7f9c93ca0fe562fac804ded37f3ab76a",
+      "errors": [],
+      "warnings": []
+    }
+  ]
+}
