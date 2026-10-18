@@ -25,6 +25,7 @@ import { ART_CRITERIA, LOGO_STYLES } from "./types";
 import { ARTWORK_REVIEW_SYSTEM, artworkPrompt, STYLE_GUIDE } from "./artwork";
 import { directionSeriesPaletteIssues } from "./direction-palette";
 import { renderDirectionPreview } from "./direction-preview";
+import { loadProject } from "../projects";
 
 export type LogoV2Ai = {
   territories(brief: BrandBrief, n: number, avoid: string[]): Promise<TerritoryDraft[]>;
@@ -118,6 +119,8 @@ export function realLogoV2Ai(ctx: JobContext | null, b: { userId: string; projec
   const key = (k: string) => (ctx ? `${ctx.job.id}:logo-v2:${k}` : undefined);
   return {
     async territories(brief, n, avoid) {
+      const proposedAlternatives = !!loadProject(b.projectId).brand?.artIdentity;
+      const alternativeScope = proposedAlternatives ? "NOUVELLES PROPOSITIONS : l’identité complète déjà choisie (palette et polices verrouillées dans le contexte) reste appliquée tant que le client n’en choisit pas une autre. Cette demande autorise trois ensembles alternatifs, chacun avec sa propre palette complète et ses polices. Ne recopie pas la palette du choix précédent dans les trois propositions. Respecte toujours les interdits et les contraintes explicites du client. Aucun changement de la marque existante à cette étape." : "";
       const r = await llmJson(
         {
           task: "logo_symbol",
@@ -125,12 +128,12 @@ export function realLogoV2Ai(ctx: JobContext | null, b: { userId: string; projec
           usageKey: key("territories"),
           promptKey: "logo-v2-territories",
           system: TERRITORIES_SYSTEM(),
-          context: brief.brainContext,
+          context: [brief.brainContext, alternativeScope].filter(Boolean).join("\n"),
           prompt: `Nom exact de la marque : « ${brief.name} ». Activité : ${brief.activity}. Métier compris : ${brief.trade.label}${brief.trade.actions.length ? ` (gestes : ${brief.trade.actions.join(", ")})` : ""}.
 Activités réelles (seules autorisées dans « descriptor ») : ${brief.activities.join(", ") || brief.activity || "[À compléter : activités]"}.
 Symboles convenus du secteur (à styliser avec talent si tu les utilises, jamais en icône de banque d'images) : ${brief.cliches.slice(0, 12).join(", ")}.
 ${brief.style !== "auto" ? `Style choisi par le client : ${brief.style} — tous les territoires dans ce style, différents sur les autres axes.\n` : "Style : propose plusieurs styles différents, adaptés à cette entreprise.\n"}
-${brief.rejectedMarkTypes.length ? `Types de logo refusés par le client (ne pas proposer) : ${brief.rejectedMarkTypes.join(", ")}.\n` : ""}${avoid.length ? `Territoires déjà montrés (ne pas reprendre) : ${avoid.join(" ; ")}.\n` : ""}${brief.fontsLocked ? `Typographie validée par le client (à garder) : ${brief.fontsLocked.heading}.\n` : ""}${brief.positioning ? `Positionnement : ${brief.positioning}.\n` : ""}${brief.audience ? `Clientèle : ${brief.audience}.\n` : ""}${brief.personality.length ? `Personnalité : ${brief.personality.join(", ")}.\n` : ""}${brief.paletteLocked ? `Palette validée par le client (à garder, « colors » vide) : ${Object.values(brief.palette).join(", ")}.\n` : "Palette non validée : choisis les couleurs de chaque territoire (« colors »).\n"}Propose ${n} territoires. Réponds { "territories": [ { "name", "concept", "whyItFits", "style", "descriptor", "markType", "composition", "typography": { "style", "weight", "case", "tracking", "rationale" }, "colorRole": { "ink", "accent", "rationale" }, "sobriety", "construction", "symbolIdea", "distinctive", "avoid": [], "imageBrief", "colors": [] } ] }.`,
+${brief.rejectedMarkTypes.length ? `Types de logo refusés par le client (ne pas proposer) : ${brief.rejectedMarkTypes.join(", ")}.\n` : ""}${avoid.length ? `Territoires déjà montrés (ne pas reprendre) : ${avoid.join(" ; ")}.\n` : ""}${brief.fontsLocked && !proposedAlternatives ? `Typographie validée par le client (à garder) : ${brief.fontsLocked.heading}.\n` : ""}${brief.positioning ? `Positionnement : ${brief.positioning}.\n` : ""}${brief.audience ? `Clientèle : ${brief.audience}.\n` : ""}${brief.personality.length ? `Personnalité : ${brief.personality.join(", ")}.\n` : ""}${proposedAlternatives ? `${alternativeScope}\n` : brief.paletteLocked ? `Palette validée par le client (à garder, « colors » vide) : ${Object.values(brief.palette).join(", ")}. Si cette contrainte empêche trois palettes distinctes, le signaler : ne pas la contourner ni prétendre à trois ensembles valides.\n` : "Palette non validée : choisis les couleurs de chaque territoire (« colors »).\n"}Propose ${n} territoires. Réponds { "territories": [ { "name", "concept", "whyItFits", "style", "descriptor", "markType", "composition", "typography": { "style", "weight", "case", "tracking", "rationale" }, "colorRole": { "ink", "accent", "rationale" }, "sobriety", "construction", "symbolIdea", "distinctive", "avoid": [], "imageBrief", "colors": [] } ] }.`,
           maxTokens: 9000,
         },
         TerritoriesSchema.refine(v => v.territories.every(t => !!t.identity), "Chaque direction doit contenir son identité complète.").superRefine((v, ctx) => {

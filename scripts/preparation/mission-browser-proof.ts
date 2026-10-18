@@ -15,6 +15,8 @@ for (const f of fixtures) for (const mobile of [false, true]) {
   const name = `${f.business === "products" ? "produit" : "service"}-${mobile ? "mobile" : "ordinateur"}`;
   const context = await browser.newContext({ viewport: mobile ? { width: 390, height: 844 } : { width: 1440, height: 1000 }, locale: "fr-FR", reducedMotion: "reduce", recordVideo: { dir: out, size: mobile ? { width: 390, height: 844 } : { width: 1440, height: 1000 } } });
   await context.addCookies([{ name: "ecs_session", value: f.token, url: base }, { name: "ecs-lang", value: "fr", url: base }]);
+  // Helpers nommés émis par tsx/esbuild pour les fonctions imbriquées de evaluate().
+  await context.addInitScript({ content: "globalThis.__name = (fn) => fn;" });
   await context.addInitScript(() => { localStorage.setItem("ecs-lang", "fr"); sessionStorage.setItem("ecsSeen", "1"); });
   const external: string[] = [], errors: string[] = [];
   await context.route("**/*", route => {
