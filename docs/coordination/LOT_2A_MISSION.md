@@ -59,3 +59,12 @@ Thomas ne voit pas les vignettes sous « images vues » : elles restent en charg
 Contraintes maintenues : aucun merge, déploiement, publication client, connexion Google/CMS, appel IA payant ou nouveau service payant dans ce lot. Préserver budgets, accès, forfaits, versions et données clients. Utiliser les ressources disponibles pour avancer ; si un média payant devient réellement nécessaire, documenter le besoin précis et son coût avant toute dépense. Ne pas modifier la page publique d'E-COM STUDIO IA dans cette mission.
 
 Accuser réception dans la conversation de développement et indiquer la branche/PR de travail. Ce commentaire publie la mission ; il ne prouve pas à lui seul qu'une nouvelle exécution Codex a commencé.
+
+## Décisions ultérieures reçues sur #133
+
+Source initiale : https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/133#issuecomment-6243584467.
+
+- Le commentaire [6243823904](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/133#issuecomment-6243823904), du 18 octobre à 00:40 UTC, demandait de suspendre les anciennes démonstrations en attendant ORBE / Atelier Rive. Cette suspension a été accusée réception et appliquée à sa lecture.
+- **Décision actuellement applicable :** le commentaire [6243851508](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/133#issuecomment-6243851508), du 18 octobre à 00:43 UTC, remplace cette suspension : « Terminer la version actuellement en cours du lot 2A et livrer ses rendus réels, ses captures consultables/téléchargeables et son rapport pour examen. Ne pas engager une nouvelle reprise autour d'ORBE et Atelier Rive à ce stade : la préparation de ce dossier est mise en pause. »
+
+La livraison présente donc les deux références en cours pour examen ; elle ne présume pas leur acceptation visuelle et ne lance pas les 28 autres thèmes.
