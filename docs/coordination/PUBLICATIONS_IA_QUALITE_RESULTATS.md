@@ -8,7 +8,9 @@ La réception technique passe ; la qualité créative réelle n'est pas encore v
 
 ## Références reçues et périmètre
 
-Les cinq fichiers privés effectivement ouverts : `1000032787` (casque), `1000032785` (nettoyage), `1000032788` (piscine), `1000032789` (lampe), `1000032790` (peinture). Les fichiers `1000032793` (café), `1000032792` (sac) et `1000032791` (sérum) **ne sont pas présents** ; leurs descriptions dans la mission sont disponibles. Les deux fichiers nettoyage et lampe reçus sont carrés, malgré le libellé portrait du commentaire. Aucun des cinq fichiers privés, ni leur reproduction, n'est ajouté au dépôt.
+Les huit fichiers privés ont désormais été reçus et réellement ouverts. Première livraison : `1000032787` (casque), `1000032785` (nettoyage), `1000032788` (piscine), `1000032789` (lampe), `1000032790` (peinture). Complément reçu après la livraison technique `af83a5a` : `1000032793` (café), `1000032792` (sac), `1000032791` (sérum), initialement absents. La limite d'accès aux trois images est donc levée ; les affirmations historiques des premiers commentaires décrivent leur date de publication. Les fichiers nettoyage, lampe et sérum reçus sont carrés, malgré le libellé portrait du commentaire. Aucun fichier privé, ni sa reproduction, n'est ajouté au dépôt.
+
+L'[analyse du complément visuel](../../reports/publications-ia-qualite/REFERENCES_COMPLEMENT.md) détaille les observations sur les trois nouvelles images et leurs conséquences pour la réception créative. Ce complément est documentaire : code, tests, preuves navigateur et résultats de réception restent ceux du commit applicatif `5ee845f`. Aucun nouvel appel fournisseur ni nouvelle génération ; aucune comparaison avec des créations réelles du studio n'est prétendue.
 
 Ces références montrent des expressions très différentes : contraste vif, lumière chaude, diagonale d'outil, panneau éditorial, grandes lettres, CTA discret ou bouton. Elles servent à supprimer les contraintes uniformes du moteur, jamais à recopier leurs marques, textes ou scènes. Aucun nom de démonstration ne commande le comportement applicatif.
 

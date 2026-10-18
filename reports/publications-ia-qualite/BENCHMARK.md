@@ -1,6 +1,6 @@
 # Benchmark créatif à autoriser — aucune exécution payante
 
-**Ce fichier est un plan, pas un accord d'appel.** Les tests réels complets amont restent suspendus. Réutiliser seulement les fournisseurs existants ; aucune nouvelle clé, route ou connexion. Ne pas envoyer les cinq références privées aux fournisseurs sans accord sur cet usage. Leur inspection locale a servi au diagnostic qualitatif ; elles ne sont pas publiées ici.
+**Ce fichier est un plan, pas un accord d'appel.** Les tests réels complets amont restent suspendus. Réutiliser seulement les fournisseurs existants ; aucune nouvelle clé, route ou connexion. Ne pas envoyer les huit références privées aux fournisseurs sans accord sur cet usage. Elles ont désormais toutes été réellement ouvertes ; leur inspection locale a servi au diagnostic qualitatif et elles ne sont pas publiées ici. L'[analyse complémentaire](REFERENCES_COMPLEMENT.md) précise les points de comparaison visuelle, sans ajouter de génération payante au plan.
 
 ## Devis préparatoire
 

@@ -50,14 +50,40 @@
       "1000032785",
       "1000032788",
       "1000032789",
-      "1000032790"
+      "1000032790",
+      "1000032792",
+      "1000032793",
+      "1000032791"
     ],
-    "missing": [
+    "missing": [],
+    "published": false,
+    "missingAtInitialDelivery": [
       "1000032793",
       "1000032792",
       "1000032791"
     ],
-    "published": false
+    "supplement": {
+      "documentsOnly": true,
+      "codeUnchanged": true,
+      "applicationTestsRerun": false,
+      "imagesActuallyOpened": [
+        {
+          "file": "1000032792.jpg",
+          "width": 1280,
+          "height": 670
+        },
+        {
+          "file": "1000032793.jpg",
+          "width": 1024,
+          "height": 1280
+        },
+        {
+          "file": "1000032791.jpg",
+          "width": 1280,
+          "height": 1280
+        }
+      ]
+    }
   },
   "runtimeReadOnlyInspection": {
     "aiCallRows": 0,

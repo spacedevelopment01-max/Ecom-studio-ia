@@ -1,6 +1,6 @@
 # Preuves des publications IA — fournisseurs simulés
 
-**Ces fichiers prouvent le fonctionnement de l'interface, du moteur local, de la sauvegarde et du téléchargement. Ils ne prouvent pas la qualité créative d'une IA réelle. Aucun appel fournisseur, coût fournisseur, thème ni envoi social.** Les projets et leurs identités sont intégralement synthétiques ; les cinq références privées ne figurent pas dans ces fichiers.
+**Ces fichiers prouvent le fonctionnement de l'interface, du moteur local, de la sauvegarde et du téléchargement. Ils ne prouvent pas la qualité créative d'une IA réelle. Aucun appel fournisseur, coût fournisseur, thème ni envoi social.** Les projets et leurs identités sont intégralement synthétiques ; les huit références privées, désormais toutes reçues et ouvertes, ne figurent pas dans ces fichiers. Voir l'[analyse des trois images complémentaires](REFERENCES_COMPLEMENT.md), ajoutée après les preuves techniques sans changer le code testé.
 
 [Rapport de correction](../../docs/coordination/PUBLICATIONS_IA_QUALITE_RESULTATS.md) · [Validation](validation.json) · [Contrats, prompts effectifs et verdicts simulés](moteur-simulation.json) · [Résultats navigateur](browser-proof.json) · [Benchmark à autoriser](BENCHMARK.md) · [Devis indicatif](benchmark-quote.json) · [Empreintes des médias](manifest.json)
 
