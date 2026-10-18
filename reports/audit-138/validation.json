@@ -1,0 +1,98 @@
+{
+  "codeSha": "11114f1f5e38e59ab3b8ffc66d292f0d088c516f",
+  "baseBeforeAudit": "c4c2b1934fb5d0693bfe9566af26962cff71a72b",
+  "recordedAt": "2026-10-18T18:53:54.771327+00:00",
+  "checks": {
+    "targeted": {
+      "command": "npx vitest run tests/audit-intent-contexte.test.ts tests/audit-amont-regressions.test.ts tests/audit-workflow-portee.test.ts tests/preparation.test.ts tests/preparation-adapters.test.ts tests/orchestrateur-3a.test.ts tests/orchestrateur-3b.test.ts tests/image-v2.test.ts --maxWorkers=4",
+      "exitCode": 0,
+      "rawLogSha256": "95f5816ff3879d605152266baa5252bb65f1578e8fe01f375b025799b4688235",
+      "rawLogBytes": 185,
+      "result": {
+        "filesPassed": 8,
+        "passed": 114,
+        "failed": 0
+      }
+    },
+    "types": {
+      "command": "npx tsc --noEmit",
+      "exitCode": 0,
+      "rawLogSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rawLogBytes": 0,
+      "result": "Sortie vide, typage réussi"
+    },
+    "build": {
+      "command": "DATA_DIR=<dossier isolé> npm run build",
+      "exitCode": 0,
+      "rawLogSha256": "3843bff13b659c39a8ed8443f942b9a06adf2e4b6d2ab0a2596c5b4570a6124f",
+      "rawLogBytes": 12989,
+      "result": "Compilation de production réussie, sans déploiement"
+    },
+    "browser": {
+      "command": "PLAYWRIGHT_BROWSERS_PATH=<FFmpeg installé> npx tsx scripts/preparation/browser-proof.ts <dossier isolé>",
+      "exitCode": 0,
+      "rawLogSha256": "b46ad8f8980de1cc88a2e28ec54a99e6c3b9b85aa9152d994d8dd6af78f844a7",
+      "rawLogBytes": 938
+    },
+    "restoration": {
+      "command": "CODE_SHA=11114f1f5e38e59ab3b8ffc66d292f0d088c516f PLAYWRIGHT_BROWSERS_PATH=<FFmpeg installé> npx tsx scripts/preparation/restoration-proof.ts <dossier isolé>",
+      "exitCode": 0,
+      "rawLogSha256": "d016f5567539eeae642b0b672c80088ad0a9bf3a68e01797cba14c1151f9992c",
+      "rawLogBytes": 1034
+    },
+    "captures": {
+      "command": "node reports/audit-138/reproduction/captures.mjs <dossier isolé>",
+      "exitCode": 0,
+      "rawLogSha256": "45048d6345e540a32fe9937cdbd766399744a4ddc6708aa4b2b5111e1b2bb13b",
+      "rawLogBytes": 53
+    },
+    "legacy": {
+      "command": "AUDIT_LEGACY=1 node reports/audit-138/reproduction/captures.mjs <dossier isolé>",
+      "exitCode": 0,
+      "rawLogSha256": "c509722f4ee8fc217526a7dad8ffe5d5747854b2b99279739f59ffcc3700886d",
+      "rawLogBytes": 52
+    },
+    "full": {
+      "command": "npx vitest run --maxWorkers=4 --reporter=dot",
+      "exitCode": 0,
+      "rawLogSha256": "764b5d698f9b671ee92edc999442a0c01bad3b1a4e9f42523cc954847ed458b0",
+      "rawLogBytes": 20895,
+      "summary": [
+        "Test Files  261 passed (261)",
+        "Tests  1931 passed | 3 skipped (1934)",
+        "Start at  18:41:59",
+        "Duration  659.76s (tests 82%, import 17%, transform 1%)"
+      ],
+      "result": {
+        "filesPassed": 261,
+        "passed": 1931,
+        "failed": 0,
+        "skipped": 3,
+        "total": 1934,
+        "durationSeconds": 659.76
+      }
+    }
+  },
+  "realProviderCalls": 0,
+  "realProviderSpend": 0,
+  "currency": "EUR",
+  "providerBillingQueried": false,
+  "providerResults": "Simulation ; aucune qualité générative réelle certifiée",
+  "browserViewportDesktop": [
+    1440,
+    960
+  ],
+  "browserViewportMobile": [
+    390,
+    844
+  ],
+  "phpAvailable": false,
+  "previousSuite": {
+    "sha": "020ae9fcc3e6106ecf6728da987ee920cbafe4be",
+    "passed": 1926,
+    "failed": 1,
+    "skipped": 3,
+    "reason": "Verbe préparer non reconnu, corrigé ensuite ; ce résultat est conservé comme étape intermédiaire, jamais comme validation finale."
+  },
+  "skippedReason": "Trois contrôles de parité/réservation PHP ignorés : PHP indisponible sur cet hôte ; ne sont pas des réussites."
+}

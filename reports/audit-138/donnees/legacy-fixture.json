@@ -1,0 +1,12 @@
+{
+  "simulation": true,
+  "fixture": "Ancien format reconstitué dans une base de test, jamais un projet client",
+  "projectId": "7k2x63gfp3h01y7a",
+  "beforeRevision": 35,
+  "afterRevision": 36,
+  "selectedBefore": "transparence",
+  "selectedAfter": "transparence",
+  "angles": 3,
+  "jobsBefore": 8,
+  "jobsAfter": 8
+}

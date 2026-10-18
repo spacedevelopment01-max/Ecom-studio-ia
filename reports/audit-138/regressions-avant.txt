@@ -1,0 +1,19 @@
+Commande : npx vitest run tests/audit-amont-regressions.test.ts --maxWorkers=2
+Code initial : c4c2b1934fb5d0693bfe9566af26962cff71a72b
+Résultat : exit 1, six échecs attendus/reproduits.
+Journal SHA256 : 40f6e0f036695f74f2d65a9e4e293b182e0dd8682dfce24c9e133fe3775f5ea5
+
+ FAIL  tests/audit-amont-regressions.test.ts > une interdiction de logo ne lance aucune action, même avec un classifieur permissif
+AssertionError: expected [ 'IMPROVE_LOGO' ] to deeply equal []
+ FAIL  tests/audit-amont-regressions.test.ts > expliquer comment publier ne donne aucune autorisation de publier
+AssertionError: expected [ 'PUBLISH' ] to deeply equal []
+ FAIL  tests/audit-amont-regressions.test.ts > une instruction citée n'est pas exécutée
+AssertionError: expected [ 'IMPROVE_LOGO', 'EDIT_THEME', …(1) ] to deeply equal []
+ FAIL  tests/audit-amont-regressions.test.ts > une banque documentaire ne supprime pas la création IA et la replanification conserve cette politique
+AssertionError: expected 'skipped' to be 'pending' // Object.is equality
+ FAIL  tests/audit-amont-regressions.test.ts > la recherche prépare cinq angles
+AssertionError: expected [ { id: 'usage', …(8) }, …(2) ] to have a length of 5 but got 3
+ FAIL  tests/audit-amont-regressions.test.ts > un contexte critique trop long bloque avant l'exécution au lieu de perdre la contrainte finale
+AssertionError: expected [Function] to throw an error
+ Test Files  1 failed (1)
+      Tests  6 failed (6)

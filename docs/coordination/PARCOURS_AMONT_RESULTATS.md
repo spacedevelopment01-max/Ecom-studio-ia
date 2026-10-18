@@ -1,5 +1,7 @@
 # Parcours amont — résultats et remise pour vérification
 
+> Suite de la revue : voir [les corrections de l’audit compréhension / logique / textes / SEO](AUDIT_138_CORRECTIONS.md). Le présent rapport conserve les preuves et limites de la livraison initiale, sur son commit indiqué.
+
 Mission : [commentaire 6251627651 de la PR #136](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/136#issuecomment-6251627651). Nouvelle PR : **[#138](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/138)**, branche `codex/parcours-amont-projet`, vers `main`. Aucun merge ni déploiement.
 
 ## Version et périmètre

@@ -1,0 +1,21 @@
+{
+  "simulation": true,
+  "results": [
+    {
+      "project": "produit",
+      "viewport": "1440x960",
+      "angles": 3,
+      "legacy": true,
+      "overflow": 0,
+      "errors": []
+    },
+    {
+      "project": "produit",
+      "viewport": "390x844",
+      "angles": 3,
+      "legacy": true,
+      "overflow": 0,
+      "errors": []
+    }
+  ]
+}
