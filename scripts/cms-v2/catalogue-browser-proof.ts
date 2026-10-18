@@ -13,7 +13,7 @@ async function scan(page: Page) {
   return page.evaluate(async () => {
     for (let y = 0; y < document.documentElement.scrollHeight; y += 600) { scrollTo({top:y,behavior:"instant"}); await new Promise(r => setTimeout(r, 100)); }
     for (const i of document.images) { i.loading = "eager"; await i.decode().catch(() => {}); }
-    await document.fonts.ready; await new Promise(r=>setTimeout(r,1800)); scrollTo({top:0,behavior:"instant"});
+    await document.fonts.ready; await new Promise(r=>setTimeout(r,1800)); scrollTo({top:0,behavior:"instant"}); await new Promise(r=>setTimeout(r,700));
     return { overflow: Math.max(0, document.documentElement.scrollWidth - innerWidth), broken: [...document.images].filter(i => i.getAttribute("src") && !i.naturalWidth).map(i => i.getAttribute("src")), h1: document.querySelectorAll("h1").length };
   });
 }
@@ -49,7 +49,7 @@ try {
             const visible = gallery?.querySelector('.flex-active-slide img') || gallery?.querySelector('.woocommerce-product-gallery__image img');
             return (visible as HTMLImageElement)?.src === url;
           }, expectedImage, { timeout: 15_000 });
-          await page.screenshot({path:path.join(dir,`${platform}-product-${width}.png`),fullPage:true});
+          await scan(page);await page.screenshot({path:path.join(dir,`${platform}-product-${width}.png`),fullPage:true});
           await page.locator(".single_add_to_cart_button").click();
           await page.waitForLoadState("networkidle");
           await page.goto(base + "/cart/", { waitUntil: "networkidle" });
@@ -59,7 +59,7 @@ try {
         } else {
           for (let i = 0; i < 3; i++) { await page.locator(".product-variants select").nth(i).selectOption({ label: selected.options[i] }); await page.waitForTimeout(450); }
           if (selected.image) await page.waitForFunction(id => (document.querySelector('.js-qv-product-cover') as HTMLImageElement)?.src.includes('/'+id+'-'), selected.image, {timeout:15_000});
-          await page.screenshot({path:path.join(dir,`${platform}-product-${width}.png`),fullPage:true});
+          await scan(page);await page.screenshot({path:path.join(dir,`${platform}-product-${width}.png`),fullPage:true});
           await page.locator('[data-button-action="add-to-cart"]').click(); await page.waitForTimeout(900);
           await page.goto(base + "/index.php?controller=cart&action=show", { waitUntil: "networkidle" });
           const quantity = page.locator(".js-cart-line-product-quantity").first(); await quantity.fill("2"); await quantity.press("Tab"); await page.waitForTimeout(900);
@@ -67,7 +67,7 @@ try {
         }
         await page.waitForFunction(() => /66[,.]70/.test(document.body.innerText), null, { timeout: 15_000 });
         if (platform === 'woocommerce') await page.waitForFunction(() => document.querySelector('span.es-cart-count')?.textContent === '2', null, { timeout: 15_000 });
-        await page.screenshot({ path: path.join(dir, `${platform}-cart-${width}.png`), fullPage: true });
+        await scan(page);await page.screenshot({ path: path.join(dir, `${platform}-cart-${width}.png`), fullPage: true });
         const cartText = await page.locator("body").innerText(); assert(/66[,.]70/.test(cartText));
         const holdout = products.find((p: any) => p.handle === "echantillon-carre");
         if (holdout) {
@@ -94,7 +94,7 @@ try {
         for (const checkbox of await form.locator('input[type="checkbox"][required]').all()) await checkbox.check();
         await form.locator('[type="submit"]').click(); await page.waitForLoadState("networkidle");
         assert((await page.locator("body").innerText()).match(/enregistr|Merci|Thank/i));
-        await page.screenshot({ path: path.join(dir, `${platform}-contact-${width}.png`), fullPage: true });
+        await scan(page);await page.screenshot({ path: path.join(dir, `${platform}-contact-${width}.png`), fullPage: true });
       }
       results.push({ platform, mode, width, home, errors, consoleErrors });
       fs.writeFileSync(path.join(dir, `browser-${mode}.json`), JSON.stringify({ results, payment: "not-run", externalEmail: "disabled", paidCalls: 0 }, null, 2));
