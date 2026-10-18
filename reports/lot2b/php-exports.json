@@ -1,0 +1,120 @@
+[
+  {
+    "demo": "orbe",
+    "source": "Moteur PHP et sections extraits du ZIP WordPress réellement produit",
+    "checks": [
+      {
+        "id": "opening",
+        "type": "ed-opening",
+        "headingPreserved": true,
+        "bytes": 685
+      },
+      {
+        "id": "presence",
+        "type": "ed-statement",
+        "headingPreserved": true,
+        "bytes": 649
+      },
+      {
+        "id": "moments",
+        "type": "ed-diptych",
+        "headingPreserved": true,
+        "bytes": 1071
+      },
+      {
+        "id": "night",
+        "type": "ed-scene",
+        "headingPreserved": true,
+        "bytes": 435
+      },
+      {
+        "id": "finishes",
+        "type": "ed-finishes",
+        "headingPreserved": true,
+        "bytes": 475
+      },
+      {
+        "id": "duo",
+        "type": "ed-scene",
+        "headingPreserved": true,
+        "bytes": 614
+      },
+      {
+        "id": "accessories",
+        "type": "ed-diptych",
+        "headingPreserved": true,
+        "bytes": 834
+      },
+      {
+        "id": "closing",
+        "type": "ed-scene",
+        "headingPreserved": true,
+        "bytes": 542
+      }
+    ],
+    "errors": [],
+    "catalogContext": "Non alimenté par WooCommerce dans ce test ; les variantes natives et le contact CMS ne sont pas certifiés"
+  },
+  {
+    "demo": "atelier-rive",
+    "source": "Moteur PHP et sections extraits du ZIP WordPress réellement produit",
+    "checks": [
+      {
+        "id": "opening",
+        "type": "ed-opening",
+        "headingPreserved": true,
+        "bytes": 660
+      },
+      {
+        "id": "approach",
+        "type": "ed-statement",
+        "headingPreserved": true,
+        "bytes": 572
+      },
+      {
+        "id": "inspirations",
+        "type": "ed-diptych",
+        "headingPreserved": true,
+        "bytes": 1162
+      },
+      {
+        "id": "materials",
+        "type": "ed-scene",
+        "headingPreserved": true,
+        "bytes": 580
+      },
+      {
+        "id": "offers",
+        "type": "ref-narrative",
+        "headingPreserved": true,
+        "bytes": 2105
+      },
+      {
+        "id": "report",
+        "type": "ed-scene",
+        "headingPreserved": true,
+        "bytes": 636
+      },
+      {
+        "id": "method",
+        "type": "ref-narrative",
+        "headingPreserved": true,
+        "bytes": 2055
+      },
+      {
+        "id": "study",
+        "type": "ed-study",
+        "headingPreserved": true,
+        "bytes": 759
+      },
+      {
+        "id": "contact",
+        "type": "ed-contact",
+        "headingPreserved": true,
+        "bytes": 1714
+      }
+    ],
+    "errors": [],
+    "catalogContext": "Non alimenté par WooCommerce dans ce test ; les variantes natives et le contact CMS ne sont pas certifiés"
+  }
+]
