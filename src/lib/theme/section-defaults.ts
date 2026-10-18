@@ -28,8 +28,8 @@ export function mediaPools(spec: ThemeSpec) {
   const details = pick(/detail|packshot/);
   return {
     cutout,
-    photos: [...life, ...scenes, ...details].filter((f, i, a) => a.indexOf(f) === i),
-    life: life.length ? life : scenes,
+    photos: [...life, ...scenes, ...details, ...pick(/^es-photo-\d/)].filter((f, i, a) => a.indexOf(f) === i),
+    life: life.length ? life : scenes.length ? scenes : pick(/^es-photo-\d/),
     videos: pick(/^es-video-[^a]|^es-reel-[^a]/).filter((f) => f.endsWith(".mp4")),
     posters: pick(/affiche/),
   };

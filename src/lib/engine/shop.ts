@@ -24,6 +24,7 @@ import { serviceTermsHtml } from "./services-text";
 import { attachVariantMedia, catalogStore, ensureCatalogMedia, ensureVariantMedia } from "./catalog";
 import { deliverContent } from "../seo-v2/theme-delivery";
 import { bindProductContent } from "../theme/product-content";
+import { bindReferenceOffers } from "../theme/reference-delivery";
 import { assetsByRole, latestAsset } from "./images";
 import { aiDesignHome, aiReviewHome } from "../ai/tasks";
 import { snapshotTheme } from "../theme/snapshot";
@@ -269,7 +270,8 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
     ...(services ? { business: "services" as const, services: p.services, servicesTermsHtml: serviceTermsHtml(p.services), activity: tradeText(p) } : {}),
     ...(catalog ? { storeType: p.storeType, products: catalog.products, collections: catalog.collections } : {}),
   });
-  deliverContent(spec, p, spec.language ?? contentLang());
+  const delivered = deliverContent(spec, p, spec.language ?? contentLang());
+  bindReferenceOffers(spec, p, new Set(delivered.map((d) => d.target)));
   if (!services) bindProductContent(spec, p);
   return { p, direction, services, catalog, spec };
 }

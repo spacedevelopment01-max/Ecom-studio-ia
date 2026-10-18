@@ -12,6 +12,10 @@ export type LibraryEntry = { type: string; name: string; category: SectionCatego
 
 /** Noms, descriptions et mots-clés anglais (la catégorie reste la clé française, traduite par l'interface). */
 const SECTION_LIBRARY_EN: Record<string, { name: string; description: string; keywords: string }> = {
+  "ref-hero": { name: "Reference opening", description: "Object showcase, landscape opening or photographic poster. Editable copy, media and calls to action, with optional short entrance.", keywords: "reference opening product service landscape" },
+  "ref-editorial": { name: "Visual editorial", description: "Offset copy, panoramic image or inset photograph, using project media.", keywords: "reference editorial image panorama" },
+  "ref-offers": { name: "Editorial offers", description: "A real product collection or service rows with their own links.", keywords: "reference offers services collection" },
+  "ref-notes": { name: "Factual notes", description: "Known information in open columns or rows; no invented figures or claims.", keywords: "reference notes facts columns" },
   "v2-hero": { name: "Site hero", description: "Opening in five compositions: product on a stage, photo and text, typographic (no photo), interface screenshot, or signboard with a slate. Only confirmed facts are shown.", keywords: "hero opening banner v2 stage typographic interface signboard" },
   "v2-index": { name: "Offer list", description: "Services, menu, highlights or features as numbered rows, cards, tiles or a restaurant menu. Ideal right after the opening.", keywords: "services menu features list rows cards tiles v2" },
   "v2-split": { name: "Text and photo", description: "Image and text side by side, or text overlapping the image's edge; without an image it becomes a large typographic quote — never an empty frame.", keywords: "image text split overlap quote v2" },
@@ -116,6 +120,10 @@ export function libraryEntry(type: string, lang: Lang): LibraryEntry | undefined
 }
 
 export const SECTION_LIBRARY: LibraryEntry[] = [
+  { type: "ref-hero", name: "Ouverture référence", category: "Ouverture", description: "Objet en vitrine, titre paysage ou affiche photo. Image entière, textes et appels à l'action éditables ; apparition courte facultative.", keywords: "référence ouverture produit service paysage photo vitrine" },
+  { type: "ref-editorial", name: "Reportage visuel", category: "Images et vidéos", description: "Photo et texte en décalage, panorama légendé ou petite photo dans la marge. Les médias restent ceux du projet.", keywords: "référence reportage photo éditorial panorama matière" },
+  { type: "ref-offers", name: "Offres éditoriales", category: "Collections", description: "Collection de produits avec leurs vrais prix et images, ou prestations en lignes avec leurs propres liens.", keywords: "référence offres prestations collection produits" },
+  { type: "ref-notes", name: "Notes factuelles", category: "Textes", description: "Informations connues en colonnes ouvertes ou registre, sans chiffre ni preuve inventés.", keywords: "référence notes informations faits colonnes" },
   { type: "v2-hero", name: "Ouverture du site", category: "Ouverture", description: "Ouverture en cinq compositions : produit en scène, photo et texte, typographique (sans photo), capture d'interface ou enseigne avec ardoise. Seules les informations confirmées s'affichent.", keywords: "ouverture héros bannière v2 scène typographique interface enseigne" },
   { type: "v2-index", name: "Liste des offres", category: "Services", description: "Prestations, carte, atouts ou fonctionnalités en lignes numérotées, cartes, tuiles ou carte de restaurant. Idéal juste après l'ouverture.", keywords: "prestations carte menu atouts fonctionnalités liste lignes cartes tuiles v2" },
   { type: "v2-split", name: "Texte et photo", category: "Images et vidéos", description: "Image et texte côte à côte, ou texte posé sur le bord de l'image ; sans image, une grande citation typographique — jamais de cadre vide.", keywords: "image texte citation chevauchement v2" },

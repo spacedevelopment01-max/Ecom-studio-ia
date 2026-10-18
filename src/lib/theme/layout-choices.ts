@@ -16,6 +16,10 @@ export type LayoutChoice = {
 
 /** Réglages proposés, dans l'ordre d'affichage. Seuls ceux présents dans le schéma de la section sont gardés. */
 const KEYS: Record<string, string[]> = {
+  "ref-hero": ["layout", "heading_tag", "motion"],
+  "ref-editorial": ["layout", "motion"],
+  "ref-offers": ["layout"],
+  "ref-notes": ["layout"],
   header: ["layout", "mega_menu", "mobile_menu", "mobile_submenu", "mobile_promo", "shape", "icons", "desktop_icons", "sticky"],
   footer: ["style", "show_wordmark"],
   // Sections du Theme Engine V2 : chaque composition se change sans IA.

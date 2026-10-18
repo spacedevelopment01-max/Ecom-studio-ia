@@ -14,6 +14,7 @@ import { bookingCalendar, bookingNeed } from "./booking-need";
 import { tidyComposition } from "./tidy";
 import { planForTheme, themeRank } from "./theme-access";
 import { CATALOG_THEMES, catalogTheme, type CatalogThemeId, type Kit, type PaletteKit, type Row } from "./theme-catalog";
+import { isReferenceTheme, referenceHomeRows } from "./reference-composition";
 
 /** Onze directions d'origine, puis les thèmes du catalogue (theme-catalog.ts) : trente compositions distinctes. */
 export type BaseDirectionId = "atelier" | "clinique" | "brut" | "terroir" | "nocturne" | "pop" | "galerie" | "elan" | "flux" | "joaillerie" | "gourmand";
@@ -973,6 +974,15 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     }
   }
 
+  const reference = referenceHomeRows(input, c, kit, svc);
+  if (reference) {
+    const calendar = index.find((r) => r[0] === "booking-calendar" && !r[3]?.disabled);
+    const collections = index.find((r) => r[0] === "collection-list");
+    index = reference;
+    if (calendar) index.splice(index.length - 1, 0, calendar);
+    if (collections && !svc) index.splice(3, 0, collections);
+  }
+
   // Catalogue : les textes rédigés pour le produit principal ne s'affichent que sur sa fiche.
   const only = isCatalog ? { product_handle: input.product.handle } : {};
   const productTabs = c.product.tabs.map((tab) => ({ type: "collapsible", settings: { heading: tab.heading, content: p(tab.content_html), open: false, ...(/livraison|retour|shipping|deliver|return/i.test(tab.heading) ? {} : only) } }));
@@ -1137,7 +1147,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     social_pinterest: input.social?.pinterest ?? "",
   };
 
-  return tidyComposition({
+  const result = tidyComposition({
     v: 1,
     name: `${input.shopName} · ${d.name}`,
     direction: d.id,
@@ -1193,4 +1203,25 @@ export function buildSpec(input: BuildInput): ThemeSpec {
       ],
     },
   });
+  if (isReferenceTheme(d.id, !!svc)) {
+    result.meta = { ...result.meta, reference: { version: 1, kind: svc ? "services" : "products", links: [] } };
+    // Identités enregistrées au moment de la construction, pas déduites plus tard des titres ou de l'ordre.
+    if (svc) for (const [sid, section] of Object.entries(result.templates.index.sections)) if (section.type === "ref-offers") {
+      const services = input.services!.services.filter((s) => s.name.trim());
+      (section.block_order ?? []).forEach((bid, i) => result.meta!.reference!.links.push({ template: "index", section: sid, block: bid, target: `service:${services[i].key || `legacy-${i}`}` }));
+    }
+    const header = Object.values(result.groups.header.sections).find((s) => s.type === "header");
+    const footer = Object.values(result.groups.footer.sections).find((s) => s.type === "footer");
+    if (header) Object.assign(header.settings, { layout: svc ? "reference-studio" : "reference-shop", shape: "bar", icons: "plain", mobile_menu: "sheet", transparent_on_home: false });
+    if (footer) Object.assign(footer.settings, { style: svc ? "reference-studio" : "reference-shop", show_wordmark: true });
+    result.settings.fab_contact_link = "";
+    result.settings.fab_back_to_top = false;
+    Object.assign(result.settings, { type_heading_font: input.fonts?.heading ?? (svc ? "archivo_n6" : "cormorant_n5"), type_body_font: input.fonts?.body ?? (svc ? "work_sans_n4" : "dm_sans_n4"), page_width: 1480, spacing_scale: 100, ds_language: svc ? "craft" : "maison", ds_density: "balanced", heading_scale: 100, heading_tracking: 0, button_radius: svc ? 3 : 0, card_radius: 0, button_uppercase: false, button_shine: false, glow_enabled: false, motion_intensity: "subtle", motion_parallax: false });
+    for (const section of Object.values(result.templates.product.sections)) if (section.type === "main-product") {
+      section.settings.sticky_bar = false;
+      section.settings.gallery_layout = "carousel";
+      for (const block of Object.values(section.blocks ?? {})) if (block.type === "buy_buttons") block.settings.show_dynamic_checkout = false;
+    }
+  }
+  return result;
 }

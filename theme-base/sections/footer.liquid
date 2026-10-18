@@ -4,6 +4,9 @@
 -%}
 <footer class="es-footer es-footer--{{ style }} es-ambient color-{{ section.settings.color_scheme }}">
   <div class="es-container">
+    {%- if style == 'reference-shop' or style == 'reference-studio' -%}
+      {%- if section.settings.show_wordmark -%}<p class="ref-footer__signature" translate="no">{{ shop.name | escape }}</p>{%- endif -%}
+    {%- endif -%}
     {%- if style == 'card' and news_block -%}
       <div class="es-footer__card es-glow" data-reveal="up">
         <div>
@@ -22,7 +25,7 @@
       </div>
     {%- endif -%}
 
-    {%- if section.settings.show_wordmark and style != 'wordmark' and style != 'minimal' and style != 'centered' and style != 'brand-left' and style != 'split' -%}
+    {%- if section.settings.show_wordmark and style != 'wordmark' and style != 'minimal' and style != 'centered' and style != 'brand-left' and style != 'split' and style != 'reference-shop' and style != 'reference-studio' -%}
       <p class="es-footer__wordmark" data-reveal="mask">{{ shop.name }}</p>
     {%- endif -%}
 
@@ -56,7 +59,7 @@
     {%- else -%}
       {%- liquid
         assign has_brand_col = false
-        if style == 'brand-left' or style == 'split'
+        if style == 'brand-left' or style == 'split' or style == 'reference-shop' or style == 'reference-studio'
           assign has_brand_col = true
         endif
       -%}
@@ -204,7 +207,9 @@
         { "value": "brand-left", "label": "Marque à gauche, colonnes à droite" },
         { "value": "split", "label": "Deux panneaux (marque et inscription | liens)" },
         { "value": "stacked", "label": "Empilé et centré" },
-        { "value": "boxed", "label": "Colonnes dans une carte arrondie" }
+        { "value": "boxed", "label": "Colonnes dans une carte arrondie" },
+        { "value": "reference-shop", "label": "Pied de page vitrine" },
+        { "value": "reference-studio", "label": "Pied de page atelier" }
       ]
     },
     { "type": "text", "id": "tagline", "label": "Phrase sous le logo", "info": "Styles « Marque à gauche » et « Deux panneaux ». Facultatif." },

@@ -10,8 +10,9 @@ import { COPY as PRODUCT } from "./section-copy-product";
 import { COPY as MEDIA } from "./section-copy-media";
 import { COPY as STORY } from "./section-copy-story";
 import { COPY as SERVICES, SERVICE_COPY, serviceCta } from "./section-copy-services";
+import { REFERENCE_COPY } from "./section-copy-reference";
 
-const ALL: Record<string, CopyFn> = { ...HERO, ...PROOF, ...PRODUCT, ...MEDIA, ...STORY, ...SERVICES };
+const ALL: Record<string, CopyFn> = { ...HERO, ...PROOF, ...PRODUCT, ...MEDIA, ...STORY, ...SERVICES, ...REFERENCE_COPY };
 
 export function applySectionCopy(type: string, schema: SectionSchema, ctx: ContentContext, base: { settings: Record<string, unknown>; blocks?: { type: string; settings?: Record<string, unknown> }[] }) {
   // Entreprise de services : rédaction propre aux services pour les sections génériques (ouverture, FAQ, avis…).
