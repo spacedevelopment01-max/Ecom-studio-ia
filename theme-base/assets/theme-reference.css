@@ -82,6 +82,11 @@
 .es-footer--reference-shop .es-footer__layout,.es-footer--reference-studio .es-footer__layout { display:grid; grid-template-columns:1fr 2fr; gap:80px; }
 .es-footer--reference-shop .es-footer__grid,.es-footer--reference-studio .es-footer__grid { grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); }
 .es-footer--reference-shop .es-footer__brandcol img,.es-footer--reference-studio .es-footer__brandcol img { max-width:160px; }
+.es-footer--reference-shop .es-inline-field,.es-footer--reference-studio .es-inline-field { flex-direction:column; align-items:stretch; gap:10px; }
+.es-footer--reference-shop .es-inline-field input,.es-footer--reference-studio .es-inline-field input { width:100%; }
+.es-footer--reference-shop .es-inline-field .es-button,.es-footer--reference-studio .es-inline-field .es-button { min-height:48px; }
+.es-header--reference-shop .es-header__cta,.es-header--reference-studio .es-header__cta { box-shadow:none; background:var(--c-accent); color:var(--c-accent-text); }
+.ref-section :is(a,button):focus-visible,.es-header--reference-shop :is(a,button):focus-visible,.es-header--reference-studio :is(a,button):focus-visible,.es-footer--reference-shop :is(a,button,input):focus-visible,.es-footer--reference-studio :is(a,button,input):focus-visible { outline:3px solid currentColor; outline-offset:5px; }
 .dir-vitrine .es-product__img { object-fit:contain; }
 .dir-vitrine .es-product__slide { background:var(--c-surface); border-radius:0; }
 .dir-vitrine .es-product__sticky { padding-top:20px; }
