@@ -86,6 +86,12 @@ export async function exportWordPress(spec: ThemeSpec, load: AssetLoader): Promi
           adapted.add("featured-product");
           return `<!-- wp:group {"className":"es-wc es-wc-featured","layout":{"type":"default"}} -->\n<div class="wp-block-group es-wc es-wc-featured"><!-- wp:shortcode -->\n[product_page sku="${handle.replace(/[^a-z0-9-]/gi, "")}"]\n<!-- /wp:shortcode --></div>\n<!-- /wp:group -->`;
         }
+        if (s.type === "featured-collection" || (s.type === "ref-offers" && s.settings.layout === "shop")) {
+          issues.push({ code: "catalog_collection_requires_native_block", severity: "warning", detail: t(
+            `${where} : la grille « ${String(s.settings.heading ?? s.type)} » ne reçoit pas le catalogue WooCommerce dans le moteur Liquid. Remplacer cette grille par un bloc natif Collection de produits dans WordPress, puis vérifier produits, images et liens. Le ZIP seul ne prouve pas son fonctionnement.`,
+            `${where}: the “${String(s.settings.heading ?? s.type)}” grid does not receive the WooCommerce catalog in the Liquid runtime. Replace this grid with a native Product Collection block in WordPress, then verify products, images and links. The ZIP alone does not establish that it works.`,
+          ) });
+        }
         const schema = schemaOf(s.type);
         if (!schema) {
           issues.push({ code: "section_not_exported", severity: "blocking", detail: `${where} : section « ${s.type} » sans gabarit exportable` });

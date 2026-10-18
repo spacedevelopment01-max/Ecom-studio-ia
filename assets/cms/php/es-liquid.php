@@ -47,6 +47,35 @@ trait EsBlankAware {
 class TagIf extends \Liquid\Tag\TagIf { use EsBlankAware; }
 class TagUnless extends \Liquid\Tag\TagUnless { use EsBlankAware; }
 
+/** Branche {% else %} des boucles Shopify : la bibliothèque ne la reconnaît pas. */
+class TagFor extends \Liquid\Tag\TagFor {
+	private $body = [];
+	private $emptyBody = [];
+	private $hasElse = false;
+	private $iterated = false;
+	public function __construct($markup, array &$tokens, ?\Liquid\FileSystem $fileSystem = null) {
+		$this->nodelist = &$this->body;
+		parent::__construct($markup, $tokens, $fileSystem);
+		$this->nodelist = &$this->body;
+	}
+	protected function unknownTag($tag, $params, array $tokens) {
+		if ($tag === 'else' && trim($params) === '' && !$this->hasElse) {
+			$this->hasElse = true;
+			$this->nodelist = &$this->emptyBody;
+		} else parent::unknownTag($tag, $params, $tokens);
+	}
+	protected function renderAll(array $list, \Liquid\Context $context) {
+		$this->iterated = true;
+		return parent::renderAll($list, $context);
+	}
+	public function render(\Liquid\Context $context) {
+		$this->iterated = false;
+		$out = parent::render($context);
+		// Une boucle exécutée dont le contenu est vide ne déclenche pas la branche else.
+		return $this->iterated ? $out : parent::renderAll($this->emptyBody, $context);
+	}
+}
+
 /** {% form 'type', class: '…', id: '…' %} … {% endform %} : formulaire HTML simple (envoi géré par le CMS). */
 class TagForm extends \Liquid\AbstractBlock {
 	private $attrs = [];
@@ -124,6 +153,7 @@ function es_liquid_render_section($dir, $type, array $section, array $globals) {
 		$tpl = new \Liquid\Template($dir . '/snippets');
 		$tpl->registerTag('if', 'EsLiquid\\TagIf');
 		$tpl->registerTag('unless', 'EsLiquid\\TagUnless');
+		$tpl->registerTag('for', 'EsLiquid\\TagFor');
 		$tpl->registerTag('form', 'EsLiquid\\TagForm');
 		$tpl->registerTag('stylesheet', 'EsLiquid\\TagStylesheet');
 		$tpl->registerFilter('EsFilters');
