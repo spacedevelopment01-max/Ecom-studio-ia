@@ -215,6 +215,14 @@ describe("Parcours amont — moteur réel, fournisseurs injectés et données is
       ...f.input,
       target: "Associations et médiathèques",
     });
+    expect(
+      JSON.parse(
+        one<{ value: string }>(
+          "SELECT value FROM memory WHERE project_id=? AND key='project.ready_for_theme'",
+          f.pid,
+        )!.value,
+      ),
+    ).toEqual({ ready: false, revision: stateOf(f.pid)!.revision });
     expect(readyContract(f.pid)).toBeNull();
     expect(stateOf(f.pid)!.stages.content!.status).toBe("stale");
     expect(stateOf(f.pid)!.stages.content!.data).toEqual(

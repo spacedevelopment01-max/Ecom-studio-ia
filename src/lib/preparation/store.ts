@@ -60,6 +60,15 @@ export function commitState(
       value: JSON.stringify(s),
       source: "local",
     });
+    // Un contrat approuvé décrit une révision précise : toute mutation retire le pointeur exploitable.
+    // approve() le republie seulement après les contrôles complets de la nouvelle révision.
+    remember(projectId, {
+      kind: "artifact",
+      key: "project.ready_for_theme",
+      value: JSON.stringify({ ready: false, revision: s.revision }),
+      status: "inferred",
+      source: "local",
+    });
     return s;
   });
 }
