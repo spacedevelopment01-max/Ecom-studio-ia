@@ -1,9 +1,25 @@
 /** Lot 2A : stockage, composition, routes manuelles/chat, worker, rendu et ZIP réels.
  * Seule la session Next est adaptée au harnais ; disponibilité IA forcée à faux. Aucune réponse IA simulée.
  */
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { unzipSync, strFromU8 } from "fflate";
-const session = vi.hoisted(() => ({ token: "" }));
+const session = vi.hoisted(() => {
+  const root = process.env.DATA_DIR;
+  if (!root) throw new Error("Le harnais Vitest isolé est obligatoire");
+  const dir = process.getBuiltinModule("fs").mkdtempSync(`${root}/lot2a-`);
+  const shared = globalThis as { __ecomDb?: { close(): void } };
+  const previousDb = shared.__ecomDb;
+  delete shared.__ecomDb;
+  vi.stubEnv("DATA_DIR", dir);
+  return { token: "", dir, previousDb };
+});
+afterAll(() => {
+  const shared = globalThis as { __ecomDb?: { close(): void } };
+  if (shared.__ecomDb !== session.previousDb) shared.__ecomDb?.close();
+  if (session.previousDb) shared.__ecomDb = session.previousDb;
+  else delete shared.__ecomDb;
+  vi.unstubAllEnvs();
+});
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => session.token ? { value: session.token } : undefined, set: (_n: string, value: string) => { session.token = value; }, delete: () => {} }) }));
 vi.mock("@/lib/ai/llm", async (original) => ({ ...(await original<object>()), llmConfigured: () => false }));
 import { createUser, startSession } from "@/lib/auth";
@@ -35,6 +51,7 @@ beforeEach(() => vi.stubGlobal("fetch", async () => { throw new Error("Réseau i
 describe("Lot 2A — références intégrées", async () => {
   const user = await createUser(`lot2a-${Date.now()}@example.invalid`, "isolated-test-only", "Test isolé");
   it("compose deux structures distinctes, riches, valides, sans modifier une version existante", async () => fr(async () => {
+    expect(all<{ file: string }>("PRAGMA database_list")[0].file.startsWith(session.dir + "/")).toBe(true);
     const product = await referenceProject(user.id, "products"), service = await referenceProject(user.id, "services");
     for (const ref of [product, service]) {
       expect(validateSpec(ref.spec)).toEqual([]);

@@ -976,10 +976,13 @@ export function buildSpec(input: BuildInput): ThemeSpec {
 
   const reference = referenceHomeRows(input, c, kit, svc);
   if (reference) {
-    const calendar = index.find((r) => r[0] === "booking-calendar" && !r[3]?.disabled);
+    // Conserver aussi le calendrier masqué et le formulaire de secours lorsque les horaires manquent.
+    const bookingRows = index.filter((r) => r[0] === "booking-calendar" || (booking?.hidden && r[0] === "booking" && !r[3]?.disabled));
+    const reassurance = index.find((r) => r[0] === "reassurance");
     const collections = index.find((r) => r[0] === "collection-list");
     index = reference;
-    if (calendar) index.splice(index.length - 1, 0, calendar);
+    if (bookingRows.length) index.splice(index.length - 1, 0, ...bookingRows);
+    if (reassurance && !svc) index.splice(index.length - 1, 0, reassurance);
     if (collections && !svc) index.splice(3, 0, collections);
   }
 

@@ -154,7 +154,7 @@ try {
     assert.ok(await requiredEmail.evaluate((el) => !(el as HTMLInputElement).checkValidity()));
     await requiredEmail.fill("test@example.invalid"); assert.ok(await requiredEmail.evaluate((el) => (el as HTMLInputElement).checkValidity()));
     await extra.close();
-    evidence.push({ kind, direction: spec.direction, sections: spec.templates.index.order.map((id) => spec.templates.index.sections[id].type), pages, keyRoutes, exports, interactions: { gallery, cart, faq: true, mobileMenu: true, escape: true, focusReturned: true, focus, emailValidation: true, reducedMotion: motion, contactDelivery: "non vérifiée : aucune soumission externe" } });
+    evidence.push({ kind, direction: spec.direction, sections: spec.templates.index.order.map((id) => spec.templates.index.sections[id].type), visibleSections: spec.templates.index.order.filter((id) => !spec.templates.index.sections[id].disabled).length, pages, keyRoutes, exports, interactions: { gallery, cart, faq: true, mobileMenu: true, escape: true, focusReturned: true, focus, emailValidation: true, reducedMotion: motion, contactDelivery: "non vérifiée : aucune soumission externe" } });
     console.log(`${kind} : ${pages.length} vues vérifiées, PNG et vidéo enregistrés.`);
   });
   assert.equal(all("SELECT 1 FROM ai_calls").length, 0);
