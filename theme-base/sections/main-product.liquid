@@ -2,7 +2,7 @@
   assign current_variant = product.selected_or_first_available_variant
   assign media_count = product.media.size
 -%}
-<section class="es-section es-product es-product--{{ section.settings.gallery_layout }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-main-product>
+<section data-gallery-ratio="{{ section.settings.gallery_ratio | default: 'portrait' }}" class="es-section es-product es-product--{{ section.settings.gallery_layout }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-main-product>
   <div class="es-container es-product__grid">
     <div class="es-product__gallery" data-gallery>
       <div class="es-product__track" data-gallery-track tabindex="0" aria-label="{{ 'products.product.media' | t }}">
@@ -257,6 +257,7 @@
       { "value": "carousel", "label": "Carrousel avec miniatures" },
       { "value": "grid", "label": "Grille deux colonnes" }
     ] },
+    { "type": "select", "id": "gallery_ratio", "label": "Cadre des visuels", "default": "portrait", "info": "Carré pour des visuels carrés : aucune bande au-dessus ni en dessous. Le produit n'est jamais étiré ni coupé.", "options": [ { "value": "natural", "label": "Naturel (hauteur de l'image)" }, { "value": "square", "label": "Carré" }, { "value": "portrait", "label": "Portrait 4:5" }, { "value": "landscape", "label": "Paysage 4:3" } ] },
     { "type": "checkbox", "id": "sticky_bar", "label": "Barre d'achat qui suit le défilement", "default": true },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 32 },

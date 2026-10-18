@@ -53,6 +53,9 @@
       if (t !== el) (t._esReveal = t._esReveal || (t.hasAttribute('data-reveal') ? [t] : [])).push(el);
       io.observe(t);
     });
+    // Repli de sécurité : un texte ne reste jamais masqué en attente d'une apparition (observateur manqué, page
+    // restaurée, défilement très rapide) ; passé ce délai, tout ce qui est encore invisible est révélé.
+    setTimeout(function () { $$('[data-reveal]:not(.is-in)', root).forEach(function (el) { el.classList.add('is-in'); }); }, 3200);
   }
 
   /* ---------- Parallaxe (rAF, désactivée si mouvement réduit) ---------- */

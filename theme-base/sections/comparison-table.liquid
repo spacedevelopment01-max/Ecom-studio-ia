@@ -13,16 +13,16 @@
     endif
   endfor
 -%}
-<section class="es-section es-ctable color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+<section class="es-section cv-anim cv-anim--{{ section.settings.animation_speed | default: 'normal' }} es-ctable color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
   <div class="es-container">
     <div class="es-ctable__head">
-      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
-      {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2>{%- endif -%}
-      {%- if section.settings.text != blank -%}<div class="es-rte es-muted es-ctable__intro" data-reveal="up" style="--d: 1">{{ section.settings.text }}</div>{%- endif -%}
+      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow"{% render 'cv-reveal', animation: section.settings.animation %}>{{ section.settings.eyebrow }}</p>{%- endif -%}
+      {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2"{% if section.settings.animation != 'none' %} data-reveal="words"{% endif %}>{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2>{%- endif -%}
+      {%- if section.settings.text != blank -%}<div class="es-rte es-muted es-ctable__intro"{% render 'cv-reveal', animation: section.settings.animation %} style="--d: 1">{{ section.settings.text }}</div>{%- endif -%}
     </div>
 
     {%- if ncols > 0 -%}
-      <div class="es-ctable__frame" data-reveal="up" data-ctable style="--d: 2">
+      <div class="es-ctable__frame"{% render 'cv-reveal', animation: section.settings.animation %} data-ctable style="--d: 2">
         <div class="es-ctable__scroll" data-ctable-scroll tabindex="0" role="region" aria-label="{{ section.settings.heading | append: ' ' | append: section.settings.heading_accent | strip | default: section.settings.criteria_label | escape }}">
           <table class="es-ctable__table" style="--cols: {{ ncols }};">
             <caption class="visually-hidden">{{ section.settings.heading }} {{ section.settings.heading_accent }}</caption>
@@ -38,6 +38,8 @@
                     {%- endif -%}
                     <span class="es-ctable__name">{{ col.settings.label | default: shop.name }}</span>
                     {%- if col.settings.subtitle != blank -%}<span class="es-ctable__sub">{{ col.settings.subtitle }}</span>{%- endif -%}
+                    {%- if col.settings.price != blank -%}<span class="es-ctable__price">{{ col.settings.price | escape }}</span>{%- endif -%}
+                    {%- if col.settings.link_label != blank -%}<a class="es-ctable__link" href="{{ col.settings.link | default: routes.all_products_collection_url }}">{{ col.settings.link_label | escape }}</a>{%- endif -%}
                   </th>
                 {%- endfor -%}
               </tr>
@@ -193,6 +195,8 @@ tbody tr:last-child th, tbody tr:last-child td:not(.is-hl) { border-bottom: 0; }
     { "type": "text", "id": "note", "label": "Note sous le tableau", "default": "[À compléter : source et date de la comparaison]", "info": "Ne comparez que des points vérifiables. Ne nommez pas une marque concurrente sans pouvoir le prouver." },
     { "type": "text", "id": "button_label", "label": "Bouton", "default": "Découvrir le produit" },
     { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "select", "id": "animation", "label": "Animation", "default": "rise", "options": [ { "value": "none", "label": "Aucune" }, { "value": "fade", "label": "Fondu" }, { "value": "rise", "label": "Montée en fondu" }, { "value": "zoom", "label": "Léger zoom" } ] },
+    { "type": "select", "id": "animation_speed", "label": "Vitesse", "default": "normal", "options": [ { "value": "slow", "label": "Lente" }, { "value": "normal", "label": "Normale" }, { "value": "fast", "label": "Rapide" } ] },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
     { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
@@ -203,6 +207,9 @@ tbody tr:last-child th, tbody tr:last-child td:not(.is-hl) { border-bottom: 0; }
       { "type": "text", "id": "subtitle", "label": "Sous-titre" },
       { "type": "image_picker", "id": "image", "label": "Image" },
       { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "text", "id": "price", "label": "Prix ou offre", "info": "Texte libre, ex. « 24,90 € » ou « 2 + 1 offert ». Vide : rien." },
+      { "type": "text", "id": "link_label", "label": "Lien sous la colonne" },
+      { "type": "url", "id": "link", "label": "Adresse du lien" },
       { "type": "checkbox", "id": "highlight", "label": "Colonne mise en avant", "default": false }
     ] },
     { "type": "row", "name": "Ligne", "settings": [

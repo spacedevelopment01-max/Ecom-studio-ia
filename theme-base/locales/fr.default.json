@@ -412,6 +412,11 @@
     "verified_none": "Sans badge d'achat vérifié : avis de démonstration",
     "demo_article": "Article de démonstration",
     "breadcrumb": "Fil d’Ariane",
-    "home": "Accueil"
+    "home": "Accueil",
+    "hotspot_open": "Détail :",
+    "hotspot_list": "Détails du produit",
+    "step": "Étape",
+    "gallery": "Galerie",
+    "gallery_open": "Agrandir :"
   }
 }

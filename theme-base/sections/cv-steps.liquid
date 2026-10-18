@@ -1,0 +1,70 @@
+{%- comment -%}
+  Utilisation en étapes (3 ou 4) : numéro, titre, texte, visuel facultatif. Dispositions : cartes en ligne sur
+  ordinateur et empilées sur téléphone, ou frise verticale numérotée. Les numéros suivent l'ordre des blocs.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign speed = s.animation_speed | default: 'normal'
+-%}
+<section class="es-section cv-steps cv-steps--{{ s.layout }} cv-anim cv-anim--{{ speed }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;--n:{{ section.blocks.size }}">
+  <div class="es-container">
+    {%- if s.heading != blank -%}
+      <header class="cv-head"{% render 'cv-reveal', animation: s.animation %}>
+        {%- if s.eyebrow != blank -%}<p class="cv-eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
+        <h2 class="es-heading cv-title cv-title--h2">{{ s.heading | escape }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</h2>
+        {%- if s.text != blank -%}<div class="es-rte cv-head__text">{{ s.text }}</div>{%- endif -%}
+      </header>
+    {%- endif -%}
+    <ol class="cv-steps__list">
+      {%- for block in section.blocks -%}
+        <li class="cv-step" {{ block.shopify_attributes }}{% render 'cv-reveal', animation: s.animation, index: forloop.index0 %}>
+          {%- if block.settings.image != blank or block.settings.image_asset != blank or block.settings.media_role != blank -%}
+            <div class="cv-step__media cv-zoomable">{% render 'ed-media', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.image_alt, role_label: block.settings.media_role, focus_x: block.settings.focus_x, focus_y: block.settings.focus_y %}</div>
+          {%- endif -%}
+          <div class="cv-step__body">
+            <span class="cv-step__num" aria-hidden="true">{{ forloop.index }}</span>
+            <h3 class="cv-step__title"><span class="visually-hidden">{{ 'conversion.step' | t }} {{ forloop.index }} : </span>{{ block.settings.title | escape }}</h3>
+            {%- if block.settings.text != blank -%}<div class="es-rte cv-step__text">{{ block.settings.text }}</div>{%- endif -%}
+          </div>
+        </li>
+      {%- endfor -%}
+    </ol>
+    {%- if s.button_label != blank -%}<p class="cv-steps__cta"{% render 'cv-reveal', animation: s.animation %}><a class="es-button cv-button" href="{{ s.button_link | default: routes.all_products_collection_url }}">{{ s.button_label | escape }}</a></p>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Utilisation en étapes",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Comment l'utiliser" },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre en accent" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "cards", "options": [ { "value": "cards", "label": "Cartes en ligne (empilées sur téléphone)" }, { "value": "timeline", "label": "Frise verticale numérotée" } ] },
+    { "type": "text", "id": "button_label", "label": "Bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "select", "id": "animation", "label": "Animation", "default": "rise", "options": [ { "value": "none", "label": "Aucune" }, { "value": "fade", "label": "Fondu" }, { "value": "rise", "label": "Montée en fondu" }, { "value": "zoom", "label": "Léger zoom" } ] },
+    { "type": "select", "id": "animation_speed", "label": "Vitesse", "default": "normal", "options": [ { "value": "slow", "label": "Lente" }, { "value": "normal", "label": "Normale" }, { "value": "fast", "label": "Rapide" } ] },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 },
+    { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 }
+  ],
+  "blocks": [
+    { "type": "step", "name": "Étape", "settings": [
+      { "type": "text", "id": "title", "label": "Titre", "default": "Une étape" },
+      { "type": "richtext", "id": "text", "label": "Texte" },
+      { "type": "image_picker", "id": "image", "label": "Visuel" },
+      { "type": "text", "id": "image_asset", "label": "Fichier image fourni avec le thème" },
+      { "type": "text", "id": "image_alt", "label": "Description du visuel" },
+      { "type": "text", "id": "media_role", "label": "Rôle du visuel attendu" },
+      { "type": "range", "id": "focus_x", "label": "Point focal horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+      { "type": "range", "id": "focus_y", "label": "Point focal vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 }
+    ] }
+  ],
+  "max_blocks": 4,
+  "presets": [ { "name": "Utilisation en étapes", "blocks": [ { "type": "step" }, { "type": "step" }, { "type": "step" } ] } ]
+}
+{% endschema %}

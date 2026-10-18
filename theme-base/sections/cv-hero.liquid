@@ -11,30 +11,30 @@
     assign rating_note = 'conversion.fictional_rating' | t
   endif
 -%}
-<section class="es-section cv-hero cv-hero--{{ s.layout }} cv-hero--{{ s.image_ratio }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;" data-cv-hero>
+<section class="es-section cv-anim cv-anim--{{ section.settings.animation_speed | default: 'normal' }} cv-hero cv-hero--{{ s.layout }} cv-hero--{{ s.image_ratio }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;" data-cv-hero>
   <div class="es-container cv-hero__inner">
     <div class="cv-hero__media">
       {% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, loading: 'eager', focus_x: s.focus_x, focus_y: s.focus_y %}
     </div>
     <div class="cv-hero__copy">
       {%- if s.rating_text != blank -%}
-        <p class="cv-rating" data-reveal="up">
+        <p class="cv-rating"{% render 'cv-reveal', animation: section.settings.animation %}>
           <span class="es-stars" style="--pct:{{ s.rating_percent | default: 100 }}%" aria-hidden="true"></span>
           <span class="cv-rating__text">{{ s.rating_text | escape }}</span>
           <small class="cv-fictional" title="{{ 'conversion.demo_reviews' | t | escape }}">{{ rating_note | escape }}</small>
         </p>
       {%- endif -%}
-      <{{ s.heading_tag }} class="es-heading cv-title" data-reveal="up">{{ s.heading | escape | newline_to_br }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</{{ s.heading_tag }}>
-      {%- if s.text != blank -%}<div class="es-rte cv-hero__text" data-reveal="up">{{ s.text }}</div>{%- endif -%}
+      <{{ s.heading_tag }} class="es-heading cv-title"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.heading | escape | newline_to_br }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</{{ s.heading_tag }}>
+      {%- if s.text != blank -%}<div class="es-rte cv-hero__text"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.text }}</div>{%- endif -%}
       {%- if checks.size > 0 -%}
-        <ul class="cv-checks" role="list" data-reveal="up">
+        <ul class="cv-checks" role="list"{% render 'cv-reveal', animation: section.settings.animation %}>
           {%- for block in checks -%}<li {{ block.shopify_attributes }}><span class="cv-check" aria-hidden="true">{% render 'icon', name: 'check' %}</span><span>{{ block.settings.text | escape }}</span></li>{%- endfor -%}
         </ul>
       {%- endif -%}
       {%- if s.button_label != blank -%}
-        <a class="es-button es-button--full cv-button" href="{{ s.button_link | default: routes.all_products_collection_url }}" data-reveal="up">{{ s.button_label | escape }}</a>
+        <a class="es-button es-button--full cv-button" href="{{ s.button_link | default: routes.all_products_collection_url }}"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.button_label | escape }}</a>
       {%- endif -%}
-      {%- if s.guarantee_text != blank -%}<p class="cv-guarantee-line" data-reveal="up">{% render 'icon', name: 'shield' %}<span>{{ s.guarantee_text | escape }}</span></p>{%- endif -%}
+      {%- if s.guarantee_text != blank -%}<p class="cv-guarantee-line"{% render 'cv-reveal', animation: section.settings.animation %}>{% render 'icon', name: 'shield' %}<span>{{ s.guarantee_text | escape }}</span></p>{%- endif -%}
     </div>
   </div>
 </section>
@@ -63,6 +63,8 @@
     { "type": "text", "id": "button_label", "label": "Bouton", "default": "Découvrir" },
     { "type": "url", "id": "button_link", "label": "Lien du bouton" },
     { "type": "text", "id": "guarantee_text", "label": "Ligne de garantie", "info": "Uniquement une politique réelle, ou un exemple identifié." },
+    { "type": "select", "id": "animation", "label": "Animation", "default": "rise", "options": [ { "value": "none", "label": "Aucune" }, { "value": "fade", "label": "Fondu" }, { "value": "rise", "label": "Montée en fondu" }, { "value": "zoom", "label": "Léger zoom" } ] },
+    { "type": "select", "id": "animation_speed", "label": "Vitesse", "default": "normal", "options": [ { "value": "slow", "label": "Lente" }, { "value": "normal", "label": "Normale" }, { "value": "fast", "label": "Rapide" } ] },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 24 },
     { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 48 }

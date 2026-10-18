@@ -9,7 +9,7 @@
   assign initials = s.author | split: ' '
   assign n = 0
 -%}
-<section class="es-section cv-article cv-article--{{ s.style }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;">
+<section class="es-section cv-anim cv-anim--{{ section.settings.animation_speed | default: 'normal' }} cv-article cv-article--{{ s.style }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;">
   {%- if s.label_bar != blank -%}<p class="cv-article__bar">{{ s.label_bar | escape }}</p>{%- endif -%}
   <div class="es-container cv-article__inner cv-article__inner--{{ s.width }}">
     {%- if s.crumb_label != blank -%}
@@ -121,6 +121,8 @@
     { "type": "text", "id": "date_text", "label": "Date ou mise à jour" },
     { "type": "text", "id": "rating_text", "label": "Ligne de note sous la signature", "info": "Toujours marquée « Note fictive » sans application d'avis réelle." },
     { "type": "text", "id": "demo_note", "label": "Mention de démonstration", "default": "Auteur, récit et notes fictifs, rédigés pour la démonstration." },
+    { "type": "select", "id": "animation", "label": "Animation", "default": "rise", "options": [ { "value": "none", "label": "Aucune" }, { "value": "fade", "label": "Fondu" }, { "value": "rise", "label": "Montée en fondu" }, { "value": "zoom", "label": "Léger zoom" } ] },
+    { "type": "select", "id": "animation_speed", "label": "Vitesse", "default": "normal", "options": [ { "value": "slow", "label": "Lente" }, { "value": "normal", "label": "Normale" }, { "value": "fast", "label": "Rapide" } ] },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 32 },
     { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 }

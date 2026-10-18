@@ -1,0 +1,55 @@
+{%- comment -%}
+  Bannière d'achat : visuel (à côté ou en fond), surtitre, titre en deux temps, argument, prix facultatif (texte,
+  pour une mention d'exemple identifiée), bouton et note. Dispositions : visuel à gauche, à droite, ou en fond.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign speed = s.animation_speed | default: 'normal'
+-%}
+<section class="es-section cv-banner cv-banner--{{ s.layout }} cv-anim cv-anim--{{ speed }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;">
+  <div class="es-container">
+    <div class="cv-banner__inner"{% render 'cv-reveal', animation: s.animation %}>
+      <div class="cv-banner__media cv-zoomable">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, focus_x: s.focus_x, focus_y: s.focus_y %}</div>
+      <div class="cv-banner__copy">
+        {%- if s.eyebrow != blank -%}<p class="cv-eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
+        <h2 class="es-heading cv-title cv-banner__title">{{ s.heading | escape }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</h2>
+        {%- if s.text != blank -%}<div class="es-rte cv-banner__text">{{ s.text }}</div>{%- endif -%}
+        {%- if s.price_text != blank -%}<p class="cv-banner__price">{{ s.price_text | escape }}{% if s.price_note != blank %} <span class="cv-fictional">{{ s.price_note | escape }}</span>{% endif %}</p>{%- endif -%}
+        {%- if s.button_label != blank -%}<a class="es-button cv-button cv-banner__button" href="{{ s.button_link | default: routes.all_products_collection_url }}">{{ s.button_label | escape }}</a>{%- endif -%}
+        {%- if s.note != blank -%}<p class="cv-guarantee-line">{% render 'icon', name: 'shield' %}<span>{{ s.note | escape }}</span></p>{%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Bannière d'achat",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Visuel" },
+    { "type": "text", "id": "image_asset", "label": "Fichier image fourni avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Description du visuel" },
+    { "type": "text", "id": "media_role", "label": "Rôle du visuel attendu" },
+    { "type": "range", "id": "focus_x", "label": "Point focal horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "focus_y", "label": "Point focal vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "image-left", "options": [ { "value": "image-left", "label": "Visuel à gauche" }, { "value": "image-right", "label": "Visuel à droite" }, { "value": "background", "label": "Visuel en fond, texte par-dessus" } ] },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Prêt à essayer ?" },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre en accent" },
+    { "type": "richtext", "id": "text", "label": "Argument" },
+    { "type": "text", "id": "price_text", "label": "Prix affiché", "info": "Texte libre, ex. « 24,90 € le flacon ». Vide : aucun prix." },
+    { "type": "text", "id": "price_note", "label": "Mention à côté du prix", "info": "Ex. « exemple de promotion »." },
+    { "type": "text", "id": "button_label", "label": "Bouton", "default": "Découvrir" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "text", "id": "note", "label": "Ligne de réassurance", "info": "Uniquement une politique réelle, ou un exemple identifié." },
+    { "type": "select", "id": "animation", "label": "Animation", "default": "rise", "options": [ { "value": "none", "label": "Aucune" }, { "value": "fade", "label": "Fondu" }, { "value": "rise", "label": "Montée en fondu" }, { "value": "zoom", "label": "Léger zoom" } ] },
+    { "type": "select", "id": "animation_speed", "label": "Vitesse", "default": "normal", "options": [ { "value": "slow", "label": "Lente" }, { "value": "normal", "label": "Normale" }, { "value": "fast", "label": "Rapide" } ] },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-2" },
+    { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 },
+    { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 }
+  ],
+  "presets": [ { "name": "Bannière d'achat" } ]
+}
+{% endschema %}

@@ -412,6 +412,11 @@
     "verified_none": "No verified-purchase badge: demo review",
     "demo_article": "Demo article",
     "breadcrumb": "Breadcrumb",
-    "home": "Home"
+    "home": "Home",
+    "hotspot_open": "Detail:",
+    "hotspot_list": "Product details",
+    "step": "Step",
+    "gallery": "Gallery",
+    "gallery_open": "Enlarge:"
   }
 }

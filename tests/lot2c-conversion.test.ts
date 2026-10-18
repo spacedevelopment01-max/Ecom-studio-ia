@@ -73,10 +73,35 @@ describe("Lot 2C — FRAISE GUMMIES (référence Lumora) et ONDE AUDIO (référe
     }));
   }
   it("les nouvelles sections sont dans la bibliothèque FR/EN avec un schéma traduit", () => {
-    for (const type of ["cv-hero", "cv-cards", "cv-reviews", "cv-feature", "cv-guarantee", "cv-stories"]) {
+    for (const type of ["cv-hero", "cv-cards", "cv-reviews", "cv-feature", "cv-guarantee", "cv-stories", "cv-article", "cv-hotspots", "cv-alternating", "cv-steps", "cv-gallery", "cv-specs", "cv-banner"]) {
       expect(libraryEntry(type, "fr")?.name, type).toBeTruthy(); expect(libraryEntry(type, "en")?.name, type).toBeTruthy();
       const en = sectionSchema(null, type, "en")!; expect(en.name).not.toMatch(/[éèà]/);
       for (const s of en.settings) if (s.label) expect(s.label, `${type}.${s.id}`).not.toMatch(/[éèàç]|Visuel|Titre/);
     }
   });
+
+  it("page « Bibliothèque de sections » : huit types rendus, animations réglables et désactivables par section, textes jamais masqués sans JavaScript", async () => fr(async () => {
+    const f = await conversionProject(user.id, "fraise", pack), spec = f.spec, page = spec.templates["page.sections"];
+    const types = new Set(Object.values(page.sections).map((s) => s.type));
+    for (const t of ["features-grid", "cv-hotspots", "cv-alternating", "cv-steps", "cv-gallery", "comparison-table", "cv-specs", "cv-banner"]) expect(types.has(t), t).toBe(true);
+    const animated = Object.values(page.sections).filter((s) => "animation" in s.settings); expect(animated.length).toBeGreaterThanOrEqual(8);
+    for (const s of animated) { const schema = sectionSchema(spec, s.type, "fr")!; expect(schema.settings.find((x) => x.id === "animation")?.options?.map((o) => o.value)).toEqual(["none", "fade", "rise", "zoom"]); expect(schema.settings.find((x) => x.id === "animation_speed")?.options?.map((o) => o.value)).toEqual(["slow", "normal", "fast"]); }
+    // Contenu principal à partir de la première des huit sections (le titre de page et l'introduction sont des sections de base, hors réglage).
+    const main = (r: { html: string }) => { const m = r.html.slice(r.html.indexOf("<main"), r.html.indexOf("</main>")); return m.slice(m.lastIndexOf("es-section-wrapper", m.indexOf("data-cols-m"))); };
+    const rise = main(await render(spec, "/pages/sections"));
+    expect(rise).toContain('data-reveal="up" data-d="'); expect(rise).toContain("cv-anim--normal"); expect(rise).toContain('data-cols-m="2"'); expect(rise).toContain('data-layout="carousel"'); expect(rise).toContain("[data-cv-hotspots]".slice(1, -1)); expect(rise).toContain("data-cv-lightbox"); expect(rise).toContain("[À compléter]");
+    // « Aucune » sur chaque section : plus aucune apparition au défilement produite par le réglage ; « Lente » : classe de vitesse.
+    const off = structuredClone(spec); for (const s of Object.values(off.templates["page.sections"].sections)) if ("animation" in s.settings) { s.settings.animation = "none"; s.settings.animation_speed = "slow"; }
+    expect(validateSpec(off)).toEqual([]);
+    const none = main(await render(off, "/pages/sections")); expect(none).not.toContain("data-d="); expect(none).not.toMatch(/data-reveal="(up|fade|zoom)"/); expect(none).toContain("cv-anim--slow"); expect(none).not.toContain("cv-anim--normal");
+    const fade = structuredClone(spec); for (const s of Object.values(fade.templates["page.sections"].sections)) if ("animation" in s.settings) s.settings.animation = "fade";
+    expect(main(await render(fade, "/pages/sections"))).toContain('data-reveal="fade"');
+    // Garde-fous du thème : sans JavaScript rien n'est masqué (règles sous .motion-ready), repli à 3,2 s, mouvement réduit respecté.
+    const fs = process.getBuiltinModule("fs"), css = fs.readFileSync("theme-base/assets/theme.css", "utf8"), js = fs.readFileSync("theme-base/assets/theme.js", "utf8"), cv = fs.readFileSync("theme-base/assets/conversion.css", "utf8");
+    for (const line of css.split("\n")) if (/\[data-reveal\][^{]*\{[^}]*opacity:\s*0/.test(line)) expect(line.trim().startsWith(".motion-ready"), line).toBe(true);
+    expect(js).toMatch(/setTimeout\(function \(\) \{ \$\$\('\[data-reveal\]:not\(\.is-in\)'[\s\S]*3200\)/);
+    expect(cv).toContain("@media(prefers-reduced-motion:reduce)"); expect(cv).toContain(".cv-anim--slow{--motion-duration:"); expect(cv).toContain(".cv-anim--fast{--motion-duration:");
+    // Fiche produit : format de galerie réglable (carré sans bandes dans la démonstration).
+    expect((await render(spec, f.detail)).html).toContain('data-gallery-ratio="square"');
+  }));
 });

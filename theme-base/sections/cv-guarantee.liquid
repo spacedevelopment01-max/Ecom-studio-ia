@@ -5,15 +5,15 @@
 {%- liquid
   assign s = section.settings
 -%}
-<section class="es-section cv-guarantee color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;">
+<section class="es-section cv-anim cv-anim--{{ section.settings.animation_speed | default: 'normal' }} cv-guarantee color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;">
   <div class="es-container cv-guarantee__inner">
-    <span class="cv-guarantee__icon" aria-hidden="true" data-reveal="up">{% render 'icon', name: 'shield' %}</span>
-    <h2 class="es-heading cv-title cv-title--h2" data-reveal="up">{% if s.heading_accent != blank %}<em class="cv-accent cv-accent--first">{{ s.heading_accent | escape }}</em> {% endif %}{{ s.heading | escape }}</h2>
-    {%- if s.text != blank -%}<div class="es-rte cv-guarantee__text" data-reveal="up">{{ s.text }}</div>{%- endif -%}
-    {%- if s.demo_note != blank -%}<p class="cv-fictional cv-fictional--tag" data-reveal="up">{{ s.demo_note | escape }}</p>{%- endif -%}
-    {%- if s.button_label != blank -%}<a class="es-button cv-button" href="{{ s.button_link | default: routes.all_products_collection_url }}" data-reveal="up">{{ s.button_label | escape }}</a>{%- endif -%}
+    <span class="cv-guarantee__icon" aria-hidden="true"{% render 'cv-reveal', animation: section.settings.animation %}>{% render 'icon', name: 'shield' %}</span>
+    <h2 class="es-heading cv-title cv-title--h2"{% render 'cv-reveal', animation: section.settings.animation %}>{% if s.heading_accent != blank %}<em class="cv-accent cv-accent--first">{{ s.heading_accent | escape }}</em> {% endif %}{{ s.heading | escape }}</h2>
+    {%- if s.text != blank -%}<div class="es-rte cv-guarantee__text"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.text }}</div>{%- endif -%}
+    {%- if s.demo_note != blank -%}<p class="cv-fictional cv-fictional--tag"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.demo_note | escape }}</p>{%- endif -%}
+    {%- if s.button_label != blank -%}<a class="es-button cv-button" href="{{ s.button_link | default: routes.all_products_collection_url }}"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.button_label | escape }}</a>{%- endif -%}
     {%- if section.blocks.size > 0 -%}
-      <ul class="cv-guarantee__checks" role="list" data-reveal="up">
+      <ul class="cv-guarantee__checks" role="list"{% render 'cv-reveal', animation: section.settings.animation %}>
         {%- for block in section.blocks -%}<li {{ block.shopify_attributes }}>{% render 'icon', name: 'check' %}<span>{{ block.settings.text | escape }}</span></li>{%- endfor -%}
       </ul>
     {%- endif -%}
@@ -32,6 +32,8 @@
     { "type": "text", "id": "demo_note", "label": "Mention de démonstration", "info": "Ex. « Exemple de politique — à remplacer par vos conditions réelles ». Vide : aucune mention." },
     { "type": "text", "id": "button_label", "label": "Bouton" },
     { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "select", "id": "animation", "label": "Animation", "default": "rise", "options": [ { "value": "none", "label": "Aucune" }, { "value": "fade", "label": "Fondu" }, { "value": "rise", "label": "Montée en fondu" }, { "value": "zoom", "label": "Léger zoom" } ] },
+    { "type": "select", "id": "animation_speed", "label": "Vitesse", "default": "normal", "options": [ { "value": "slow", "label": "Lente" }, { "value": "normal", "label": "Normale" }, { "value": "fast", "label": "Rapide" } ] },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 },
     { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 }

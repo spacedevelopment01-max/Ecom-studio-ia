@@ -7,27 +7,27 @@
   assign pills = section.blocks | where: 'type', 'pill'
   assign points = section.blocks | where: 'type', 'point'
 -%}
-<section class="es-section cv-feature cv-feature--{{ s.layout }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;">
+<section class="es-section cv-anim cv-anim--{{ section.settings.animation_speed | default: 'normal' }} cv-feature cv-feature--{{ s.layout }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;">
   <div class="es-container cv-feature__inner">
     {%- if s.heading != blank and s.layout == 'stacked' -%}
       <header class="cv-head">
-        <h2 class="es-heading cv-title cv-title--h2" data-reveal="up">{{ s.heading | escape }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</h2>
-        {%- if s.text != blank -%}<div class="es-rte cv-head__text" data-reveal="up">{{ s.text }}</div>{%- endif -%}
+        <h2 class="es-heading cv-title cv-title--h2"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.heading | escape }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</h2>
+        {%- if s.text != blank -%}<div class="es-rte cv-head__text"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.text }}</div>{%- endif -%}
       </header>
     {%- endif -%}
-    <div class="cv-feature__media" data-reveal="up">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, focus_x: s.focus_x, focus_y: s.focus_y %}</div>
+    <div class="cv-feature__media"{% render 'cv-reveal', animation: section.settings.animation %}>{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, focus_x: s.focus_x, focus_y: s.focus_y %}</div>
     <div class="cv-feature__copy">
       {%- if s.heading != blank and s.layout != 'stacked' -%}
-        <h2 class="es-heading cv-title cv-title--h2 cv-title--left" data-reveal="up">{{ s.heading | escape }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</h2>
-        {%- if s.text != blank -%}<div class="es-rte cv-feature__text" data-reveal="up">{{ s.text }}</div>{%- endif -%}
+        <h2 class="es-heading cv-title cv-title--h2 cv-title--left"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.heading | escape }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</h2>
+        {%- if s.text != blank -%}<div class="es-rte cv-feature__text"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.text }}</div>{%- endif -%}
       {%- endif -%}
       {%- if pills.size > 0 -%}
-        <ul class="cv-pills" role="list" data-reveal="up">
+        <ul class="cv-pills" role="list"{% render 'cv-reveal', animation: section.settings.animation %}>
           {%- for block in pills -%}<li class="cv-pill" {{ block.shopify_attributes }}><span class="cv-check cv-check--inverse" aria-hidden="true">{% render 'icon', name: 'check' %}</span>{{ block.settings.text | escape }}</li>{%- endfor -%}
         </ul>
       {%- endif -%}
       {%- if points.size > 0 -%}
-        <ul class="cv-points" role="list" data-reveal="up">
+        <ul class="cv-points" role="list"{% render 'cv-reveal', animation: section.settings.animation %}>
           {%- for block in points -%}
             <li class="cv-point" {{ block.shopify_attributes }}>
               <span class="cv-point__icon" aria-hidden="true">{% render 'icon', name: block.settings.icon %}</span>
@@ -36,8 +36,8 @@
           {%- endfor -%}
         </ul>
       {%- endif -%}
-      {%- if s.button_label != blank -%}<a class="es-button es-button--full cv-button" href="{{ s.button_link | default: routes.all_products_collection_url }}" data-reveal="up">{{ s.button_label | escape }}</a>{%- endif -%}
-      {%- if s.guarantee_text != blank -%}<p class="cv-guarantee-line" data-reveal="up">{% render 'icon', name: 'shield' %}<span>{{ s.guarantee_text | escape }}</span></p>{%- endif -%}
+      {%- if s.button_label != blank -%}<a class="es-button es-button--full cv-button" href="{{ s.button_link | default: routes.all_products_collection_url }}"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.button_label | escape }}</a>{%- endif -%}
+      {%- if s.guarantee_text != blank -%}<p class="cv-guarantee-line"{% render 'cv-reveal', animation: section.settings.animation %}>{% render 'icon', name: 'shield' %}<span>{{ s.guarantee_text | escape }}</span></p>{%- endif -%}
     </div>
   </div>
 </section>
@@ -61,6 +61,8 @@
     { "type": "text", "id": "button_label", "label": "Bouton" },
     { "type": "url", "id": "button_link", "label": "Lien du bouton" },
     { "type": "text", "id": "guarantee_text", "label": "Ligne de garantie", "info": "Uniquement une politique réelle, ou un exemple identifié." },
+    { "type": "select", "id": "animation", "label": "Animation", "default": "rise", "options": [ { "value": "none", "label": "Aucune" }, { "value": "fade", "label": "Fondu" }, { "value": "rise", "label": "Montée en fondu" }, { "value": "zoom", "label": "Léger zoom" } ] },
+    { "type": "select", "id": "animation_speed", "label": "Vitesse", "default": "normal", "options": [ { "value": "slow", "label": "Lente" }, { "value": "normal", "label": "Normale" }, { "value": "fast", "label": "Rapide" } ] },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 },
     { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 }

@@ -12,12 +12,12 @@
     assign ai_label = 'conversion.ai_demo' | t
   endif
 -%}
-<section class="es-section cv-stories cv-stories--{{ s.ratio }} cv-stories--{{ s.size }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;" data-cv-stories>
+<section class="es-section cv-anim cv-anim--{{ section.settings.animation_speed | default: 'normal' }} cv-stories cv-stories--{{ s.ratio }} cv-stories--{{ s.size }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;" data-cv-stories>
   <div class="es-container">
     {%- if s.heading != blank or s.text != blank -%}
       <header class="cv-head">
-        <h2 class="es-heading cv-title cv-title--h2" data-reveal="up">{{ s.heading | escape }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</h2>
-        {%- if s.text != blank -%}<div class="es-rte cv-head__text" data-reveal="up">{{ s.text }}</div>{%- endif -%}
+        <h2 class="es-heading cv-title cv-title--h2"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.heading | escape }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</h2>
+        {%- if s.text != blank -%}<div class="es-rte cv-head__text"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.text }}</div>{%- endif -%}
       </header>
     {%- endif -%}
     <div class="cv-stories__wrap">
@@ -109,6 +109,8 @@
     { "type": "select", "id": "ratio", "label": "Format des cartes", "default": "portrait", "options": [ { "value": "portrait", "label": "9 / 16" }, { "value": "tall", "label": "4 / 5" }, { "value": "square", "label": "Carré" } ] },
     { "type": "select", "id": "size", "label": "Largeur des cartes", "default": "medium", "options": [ { "value": "small", "label": "Petites" }, { "value": "medium", "label": "Moyennes" }, { "value": "large", "label": "Grandes" } ] },
     { "type": "text", "id": "ai_label", "label": "Mention des posters issus d'images IA", "info": "Vide : « Image IA — démonstration »." },
+    { "type": "select", "id": "animation", "label": "Animation", "default": "rise", "options": [ { "value": "none", "label": "Aucune" }, { "value": "fade", "label": "Fondu" }, { "value": "rise", "label": "Montée en fondu" }, { "value": "zoom", "label": "Léger zoom" } ] },
+    { "type": "select", "id": "animation_speed", "label": "Vitesse", "default": "normal", "options": [ { "value": "slow", "label": "Lente" }, { "value": "normal", "label": "Normale" }, { "value": "fast", "label": "Rapide" } ] },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 },
     { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 }

@@ -14,18 +14,18 @@
     assign rating_note = 'conversion.fictional_rating' | t
   endif
 -%}
-<section class="es-section cv-reviews color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;" data-cv-reviews>
+<section class="es-section cv-anim cv-anim--{{ section.settings.animation_speed | default: 'normal' }} cv-reviews color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;" data-cv-reviews>
   <div class="es-container">
     <header class="cv-head">
-      {%- if s.heading != blank -%}<h2 class="es-heading cv-title cv-title--h2" data-reveal="up">{{ s.heading | escape }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</h2>{%- endif -%}
+      {%- if s.heading != blank -%}<h2 class="es-heading cv-title cv-title--h2"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.heading | escape }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</h2>{%- endif -%}
       {%- if s.rating_text != blank -%}
-        <p class="cv-rating cv-rating--center" data-reveal="up">
+        <p class="cv-rating cv-rating--center"{% render 'cv-reveal', animation: section.settings.animation %}>
           <span class="es-stars cv-stars--boxed" style="--pct:{{ s.rating_percent | default: 100 }}%" aria-hidden="true"></span>
           <span class="cv-rating__text">{{ s.rating_text | escape }}</span>
           <small class="cv-fictional" title="{{ 'conversion.demo_reviews' | t | escape }}">{{ rating_note | escape }}</small>
         </p>
       {%- endif -%}
-      {%- if s.text != blank -%}<div class="es-rte cv-head__text" data-reveal="up">{{ s.text }}</div>{%- endif -%}
+      {%- if s.text != blank -%}<div class="es-rte cv-head__text"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.text }}</div>{%- endif -%}
     </header>
     {%- if section.blocks.size > 0 -%}
       <div class="cv-reviews__wrap">
@@ -75,6 +75,8 @@
     { "type": "text", "id": "rating_note", "label": "Mention à côté de la note", "info": "Vide : « Note fictive ». Retirez-la seulement avec une vraie application d'avis." },
     { "type": "richtext", "id": "text", "label": "Texte" },
     { "type": "text", "id": "fictional_label", "label": "Mention des avis de démonstration", "info": "Vide : « Avis fictif ». Affichée sur chaque carte cochée « avis de démonstration »." },
+    { "type": "select", "id": "animation", "label": "Animation", "default": "rise", "options": [ { "value": "none", "label": "Aucune" }, { "value": "fade", "label": "Fondu" }, { "value": "rise", "label": "Montée en fondu" }, { "value": "zoom", "label": "Léger zoom" } ] },
+    { "type": "select", "id": "animation_speed", "label": "Vitesse", "default": "normal", "options": [ { "value": "slow", "label": "Lente" }, { "value": "normal", "label": "Normale" }, { "value": "fast", "label": "Rapide" } ] },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 },
     { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 }
