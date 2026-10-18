@@ -1,0 +1,69 @@
+
+ RUN  v5.0.3 /workspace/Ecom-studio-ia
+
+ ❯ tests/migration-v2.test.ts (6 tests | 1 failed) 150823ms
+   ❯ migration V1 → V2 : moteurs réellement appelés (6)
+     × calendrier de la création : Social V2, une seule fois par projet — une reprise ne crée aucun doublon 120040ms
+ ❯ tests/workflow-v2.test.ts (11 tests | 3 failed) 624351ms
+   ❯ Studio Workflow V2 (11)
+     × parcours complet sur un projet existant : publicités V2, calendrier Social V2 (30 j Instagram), export Shopify contrôlé, à valider, 0 € 240028ms
+     × site de plâtrier-peintre (services) : calendrier Facebook de 2 semaines, aucune trace de vente 240040ms
+     × calendrier sauté par la création complète (remplacé par la demande) : la demande le fait bien 120034ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/migration-v2.test.ts > migration V1 → V2 : moteurs réellement appelés > calendrier de la création : Social V2, une seule fois par projet — une reprise ne crée aucun doublon
+Error: Test timed out in 120000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/migration-v2.test.ts:99:3
+     97|   });
+     98|
+     99|   it("calendrier de la création : Social V2, une seule fois par projet…
+       |   ^
+    100|     const pid = await seedPaid("cosmetic");
+    101|     run("DELETE FROM content_plans WHERE project_id = ?", pid);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/workflow-v2.test.ts > Studio Workflow V2 > parcours complet sur un projet existant : publicités V2, calendrier Social V2 (30 j Instagram), export Shopify contrôlé, à valider, 0 €
+Error: Test timed out in 240000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/workflow-v2.test.ts:80:3
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/workflow-v2.test.ts > Studio Workflow V2 > site de plâtrier-peintre (services) : calendrier Facebook de 2 semaines, aucune trace de vente
+Error: Test timed out in 240000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/workflow-v2.test.ts:115:3
+    113|   }, 240_000);
+    114|
+    115|   it("site de plâtrier-peintre (services) : calendrier Facebook de 2 s…
+       |   ^
+    116|     const w = await fr(() => wf.prepareWorkflow(artisan, vendre.id, "P…
+    117|     expect(w.params.cmsPlatforms).toEqual(["woocommerce"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/workflow-v2.test.ts > Studio Workflow V2 > calendrier sauté par la création complète (remplacé par la demande) : la demande le fait bien
+Error: Test timed out in 120000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/workflow-v2.test.ts:160:3
+    158|   });
+    159|
+    160|   it("calendrier sauté par la création complète (remplacé par la deman…
+       |   ^
+    161|     const { enqueue } = await import("@/lib/jobs");
+    162|     const pipe = enqueue({ userId: vendre.id, projectId: cosmetic, typ…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed | 262 passed (264)
+      Tests  4 failed | 1990 passed (1994)
+   Start at  11:04:53
+   Duration  1044.63s (tests 87%, import 13%)
+
+    Isolate  264 workers spawned · ~165ms startup each (spawn + environment, per file)
+             at least ~10.75s faster with isolate: false — reuses workers across files instead of one per file

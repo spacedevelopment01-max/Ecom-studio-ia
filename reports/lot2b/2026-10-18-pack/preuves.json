@@ -1,0 +1,528 @@
+{
+  "testedCommit": "563ab003ca1d4ca836738767f898027be24acc59",
+  "workingTree": "clean",
+  "date": "2026-10-18T11:20:14.268Z",
+  "renderMode": "es_raw=1 — thème issu des vraies routes, sans le bandeau flottant du studio",
+  "evidence": [
+    {
+      "kind": "products",
+      "provenance": "Mission 6247457951, version 2026-10-18T08:28:10Z — données synthétiques de démonstration, aucun paiement",
+      "mediaCount": 12,
+      "missing": [],
+      "visualResult": "À inspecter",
+      "pages": [
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 1440,
+          "metrics": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 10879,
+            "h1": 1,
+            "images": 29,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 390,
+          "metrics": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 9910,
+            "h1": 1,
+            "images": 29,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 9966,
+            "h1": 1,
+            "images": 29,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 1024,
+          "metrics": {
+            "width": 1024,
+            "scrollWidth": 1024,
+            "height": 9168,
+            "h1": 1,
+            "images": 29,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "produit",
+          "route": "/products/lampe-nomade",
+          "width": 1440,
+          "metrics": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 8788,
+            "h1": 1,
+            "images": 27,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "produit",
+          "route": "/products/lampe-nomade",
+          "width": 390,
+          "metrics": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 8457,
+            "h1": 1,
+            "images": 27,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "produit",
+          "route": "/products/lampe-nomade",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 7313,
+            "h1": 1,
+            "images": 31,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "produit",
+          "route": "/products/lampe-nomade",
+          "width": 1024,
+          "metrics": {
+            "width": 1024,
+            "scrollWidth": 1024,
+            "height": 7506,
+            "h1": 1,
+            "images": 31,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        }
+      ],
+      "interactions": [
+        {
+          "width": 1440,
+          "featured": "Galerie, informations, prix unitaire et achat réunis",
+          "selectionToDetail": "Trio Charbon + Argile + Dune conservé, 201,45 €"
+        },
+        {
+          "width": 390,
+          "featured": "Galerie, informations, prix unitaire et achat réunis",
+          "selectionToDetail": "Trio Charbon + Argile + Dune conservé, 201,45 €"
+        },
+        {
+          "width": 1440,
+          "gallery": "Charbon → zoom réel → fermeture clavier → Argile",
+          "mediaReloaded": 12,
+          "hashesAfterReload": true
+        },
+        {
+          "width": 1440,
+          "quantity": 1,
+          "expectedTotal": 7900,
+          "display": "79,00 €"
+        },
+        {
+          "width": 1440,
+          "quantity": 2,
+          "expectedTotal": 14220,
+          "display": "142,20 €"
+        },
+        {
+          "width": 1440,
+          "quantity": 3,
+          "expectedTotal": 20145,
+          "display": "201,45 €"
+        },
+        {
+          "width": 1440,
+          "quantity": 4,
+          "expectedTotal": 25280,
+          "display": "252,80 €"
+        },
+        {
+          "width": 390,
+          "firstScreenPurchase": true,
+          "quickSelection": "Le duo · Dune + Dune\n142,20 €\nModifier\nAJOUTER AU PANIER",
+          "mainButtonY": 1616.171875
+        },
+        {
+          "width": 390,
+          "gallery": "Charbon → zoom réel → fermeture clavier → Argile",
+          "mediaReloaded": 12,
+          "hashesAfterReload": true
+        },
+        {
+          "width": 390,
+          "quantity": 1,
+          "expectedTotal": 7900,
+          "display": "79,00 €"
+        },
+        {
+          "width": 390,
+          "quantity": 2,
+          "expectedTotal": 14220,
+          "display": "142,20 €"
+        },
+        {
+          "width": 390,
+          "quantity": 3,
+          "expectedTotal": 20145,
+          "display": "201,45 €"
+        },
+        {
+          "width": 390,
+          "quantity": 4,
+          "expectedTotal": 25280,
+          "display": "252,80 €"
+        },
+        {
+          "width": 390,
+          "quickBuy": "Trio Dune + Charbon + Argile → panier serveur 201,45 €, une pochette",
+          "menuOverlay": "barre masquée",
+          "editOptions": "focus et accès au bloc réel"
+        },
+        {
+          "quantity": 3,
+          "gift": "indisponible — stock zéro vérifié dans Chromium"
+        }
+      ],
+      "exports": [
+        {
+          "platform": "shopify",
+          "kind": "theme",
+          "bytes": 1522297,
+          "verifiedMedia": 12,
+          "issues": [
+            {
+              "code": "product_template_assignment_required",
+              "severity": "warning",
+              "detail": "Shopify : le ZIP et le CSV seuls n'affectent pas les gabarits aux produits. Suivre assets/es-product-templates.json : choisir puis enregistrer le modèle de chaque produit dans Shopify. Installation réelle non vérifiée."
+            },
+            {
+              "code": "purchase_rules_require_server",
+              "severity": "warning",
+              "detail": "Offres avancées désactivées : index:purchase, product.editorial:main. Remises et cadeaux nécessitent un adaptateur commercial serveur installé et vérifié sur shopify. Configuration conservée dans le studio ; achat natif maintenu."
+            }
+          ],
+          "installed": false,
+          "checkoutVerified": false
+        },
+        {
+          "platform": "woocommerce",
+          "kind": "theme",
+          "bytes": 1394276,
+          "verifiedMedia": 12,
+          "issues": [
+            {
+              "code": "product_layouts_shared",
+              "severity": "warning",
+              "detail": "WooCommerce : une seule fiche produit pour tous les produits ; les mises en page propres à Lampe nomade ORBE ne sont pas reprises (elles le sont dans l'export Shopify)"
+            },
+            {
+              "code": "purchase_rules_require_server",
+              "severity": "warning",
+              "detail": "Offres avancées désactivées : index:purchase, product.editorial:main. Remises et cadeaux nécessitent un adaptateur commercial serveur installé et vérifié sur woocommerce. Configuration conservée dans le studio ; achat natif maintenu."
+            }
+          ],
+          "installed": false,
+          "checkoutVerified": false
+        },
+        {
+          "platform": "prestashop",
+          "kind": "theme",
+          "bytes": 1291867,
+          "verifiedMedia": 12,
+          "issues": [
+            {
+              "code": "featured_product_adapted",
+              "severity": "warning",
+              "detail": "accueil : le bloc d'achat devient une présentation du produit avec un lien vers sa fiche PrestaShop (achat sur la fiche)"
+            },
+            {
+              "code": "product_layouts_shared",
+              "severity": "warning",
+              "detail": "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Lampe nomade ORBE ne sont pas reprises (elles le sont dans l'export Shopify)"
+            },
+            {
+              "code": "purchase_rules_require_server",
+              "severity": "warning",
+              "detail": "Offres avancées désactivées : index:purchase, product.editorial:main. Remises et cadeaux nécessitent un adaptateur commercial serveur installé et vérifié sur prestashop. Configuration conservée dans le studio ; achat natif maintenu."
+            }
+          ],
+          "installed": false,
+          "checkoutVerified": false
+        },
+        {
+          "platform": "wix",
+          "kind": "kit",
+          "bytes": 1404753,
+          "verifiedMedia": 12,
+          "issues": [
+            {
+              "code": "purchase_rules_require_server",
+              "severity": "warning",
+              "detail": "Offres avancées désactivées : index:purchase, product.editorial:main. Remises et cadeaux nécessitent un adaptateur commercial serveur installé et vérifié sur wix. Configuration conservée dans le studio ; achat natif maintenu."
+            }
+          ],
+          "installed": false,
+          "checkoutVerified": false
+        },
+        {
+          "platform": "squarespace",
+          "kind": "kit",
+          "bytes": 1404707,
+          "verifiedMedia": 12,
+          "issues": [
+            {
+              "code": "purchase_rules_require_server",
+              "severity": "warning",
+              "detail": "Offres avancées désactivées : index:purchase, product.editorial:main. Remises et cadeaux nécessitent un adaptateur commercial serveur installé et vérifié sur squarespace. Configuration conservée dans le studio ; achat natif maintenu."
+            }
+          ],
+          "installed": false,
+          "checkoutVerified": false
+        }
+      ],
+      "paidCalls": 0
+    },
+    {
+      "kind": "services",
+      "provenance": "Mission 6247457951, version 2026-10-18T08:28:10Z — données synthétiques de démonstration, aucun paiement",
+      "mediaCount": 12,
+      "missing": [],
+      "visualResult": "À inspecter",
+      "pages": [
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 1440,
+          "metrics": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 10627,
+            "h1": 1,
+            "images": 13,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 390,
+          "metrics": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 10485,
+            "h1": 1,
+            "images": 13,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 8275,
+            "h1": 1,
+            "images": 13,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 1024,
+          "metrics": {
+            "width": 1024,
+            "scrollWidth": 1024,
+            "height": 8917,
+            "h1": 1,
+            "images": 13,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "prestation",
+          "route": "/pages/amenagement-une-piece",
+          "width": 1440,
+          "metrics": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 7989,
+            "h1": 1,
+            "images": 5,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "prestation",
+          "route": "/pages/amenagement-une-piece",
+          "width": 390,
+          "metrics": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 8439,
+            "h1": 1,
+            "images": 5,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "prestation",
+          "route": "/pages/amenagement-une-piece",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 7185,
+            "h1": 1,
+            "images": 5,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "prestation",
+          "route": "/pages/amenagement-une-piece",
+          "width": 1024,
+          "metrics": {
+            "width": 1024,
+            "scrollWidth": 1024,
+            "height": 7294,
+            "h1": 1,
+            "images": 5,
+            "brokenImages": [],
+            "missingMedia": 0,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        }
+      ],
+      "interactions": [
+        {
+          "width": 1440,
+          "contact": "Écriture locale réellement constatée, aucun envoi",
+          "receipts": 1
+        },
+        {
+          "width": 390,
+          "contact": "Écriture locale réellement constatée, aucun envoi",
+          "receipts": 2
+        }
+      ],
+      "exports": [
+        {
+          "platform": "shopify",
+          "kind": "theme",
+          "bytes": 3118509,
+          "verifiedMedia": 12,
+          "issues": [],
+          "installed": false,
+          "checkoutVerified": false
+        },
+        {
+          "platform": "woocommerce",
+          "kind": "theme",
+          "bytes": 3013309,
+          "verifiedMedia": 12,
+          "issues": [],
+          "installed": false,
+          "checkoutVerified": false
+        },
+        {
+          "platform": "prestashop",
+          "kind": "theme",
+          "bytes": 2913245,
+          "verifiedMedia": 12,
+          "issues": [],
+          "installed": false,
+          "checkoutVerified": false
+        },
+        {
+          "platform": "wix",
+          "kind": "kit",
+          "bytes": 2961368,
+          "verifiedMedia": 12,
+          "issues": [],
+          "installed": false,
+          "checkoutVerified": false
+        },
+        {
+          "platform": "squarespace",
+          "kind": "kit",
+          "bytes": 2961375,
+          "verifiedMedia": 12,
+          "issues": [],
+          "installed": false,
+          "checkoutVerified": false
+        }
+      ],
+      "paidCalls": 0
+    }
+  ]
+}

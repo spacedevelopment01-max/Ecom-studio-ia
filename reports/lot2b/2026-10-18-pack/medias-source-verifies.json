@@ -1,0 +1,200 @@
+{
+  "openedIndividually": 24,
+  "distinctSha256": 24,
+  "hashesVerified": true,
+  "imagesPubliclyUploaded": false,
+  "assets": [
+    {
+      "id": "orbe-01-dune",
+      "width": 1122,
+      "height": 1402,
+      "size_bytes": 61932,
+      "sha256": "53a6889488896d23ce7ec2133904cc05f4617be8b0e3cb7bb5e27693096a127e",
+      "role": "Packshot Dune"
+    },
+    {
+      "id": "orbe-02-chambre",
+      "width": 1672,
+      "height": 941,
+      "size_bytes": 164432,
+      "sha256": "d69a7f731981ea01dd070cf1b6ffbf73e18971da2d6574a955e16ec160a42b78",
+      "role": "Ouverture de la boutique"
+    },
+    {
+      "id": "orbe-03-diner",
+      "width": 1536,
+      "height": 1024,
+      "size_bytes": 142666,
+      "sha256": "0ec3f41661410cc52ac286fee7da8413dc37f850bf2e8df4eddb3c2abd7f673d",
+      "role": "Usage dîner"
+    },
+    {
+      "id": "orbe-04-lecture",
+      "width": 1122,
+      "height": 1402,
+      "size_bytes": 340622,
+      "sha256": "a6f235aa0cbe9f3c476445c095a708262eb18e171bd50cc3e8b41f64b3cbbd48",
+      "role": "Usage lecture"
+    },
+    {
+      "id": "orbe-05-bureau",
+      "width": 1536,
+      "height": 1024,
+      "size_bytes": 153784,
+      "sha256": "282d7a650429120d8ccf64623224d029b6b41ea87c1e56448c63df157b463b7f",
+      "role": "Usage bureau"
+    },
+    {
+      "id": "orbe-06-duo",
+      "width": 1672,
+      "height": 941,
+      "size_bytes": 268760,
+      "sha256": "6056a020da0776cac60b99f693e0ce5a54f9e39e466e1b476f0732f544aacbed",
+      "role": "Offre et usage duo"
+    },
+    {
+      "id": "orbe-07-trio",
+      "width": 1536,
+      "height": 1024,
+      "size_bytes": 90528,
+      "sha256": "d98ace52e0020b208a63edf2a69c2c17ee8550fa6d90027ebbc28217e35ba3b8",
+      "role": "Ensemble des finitions"
+    },
+    {
+      "id": "orbe-08-lumiere",
+      "width": 1122,
+      "height": 1402,
+      "size_bytes": 160120,
+      "sha256": "402a0c9c2ba04394343a589ab8bd9b601ba86e9224401083e9f1763765664a75",
+      "role": "Ambiance sombre"
+    },
+    {
+      "id": "orbe-09-charbon",
+      "width": 1254,
+      "height": 1254,
+      "size_bytes": 82524,
+      "sha256": "aa027c73cdf8f15c893d4c5c935f87187ea08d836330a3c319ddc9c565e0fa80",
+      "role": "Packshot Charbon"
+    },
+    {
+      "id": "orbe-10-argile",
+      "width": 1122,
+      "height": 1402,
+      "size_bytes": 71714,
+      "sha256": "8d8ed0618d1061c3dbf874c73b4cddc5de2ef0a4616e3c3d9604f2c791c39e55",
+      "role": "Packshot Argile"
+    },
+    {
+      "id": "orbe-11-boite",
+      "width": 1254,
+      "height": 1254,
+      "size_bytes": 90892,
+      "sha256": "794b66f210ed5704829b673e1b778d9df0392e475238971a7c39908b81b7a760",
+      "role": "Coffret distinct"
+    },
+    {
+      "id": "orbe-12-pochette",
+      "width": 1254,
+      "height": 1254,
+      "size_bytes": 254890,
+      "sha256": "cdddb4f52938e290abe3a83d8a17309a87db45f29f65f1ead02e43ba37131336",
+      "role": "Pochette cadeau"
+    },
+    {
+      "id": "rive-01-salon",
+      "width": 1536,
+      "height": 1024,
+      "size_bytes": 403750,
+      "sha256": "53cb9002d594bd0d3838ec1e45c6b6672cd729b845617bda381295c1e09ff5f7",
+      "role": "Image d’ouverture"
+    },
+    {
+      "id": "rive-02-cuisine",
+      "width": 1536,
+      "height": 1024,
+      "size_bytes": 394972,
+      "sha256": "8f4836c55c794511116722042253cee4c9a8b5133793697fd167f73c95c86240",
+      "role": "Cuisine"
+    },
+    {
+      "id": "rive-03-chambre",
+      "width": 1122,
+      "height": 1402,
+      "size_bytes": 314182,
+      "sha256": "a11b3a46661aebf8ea8bf23d16babbbd4774a111359baf652c8e78424be99646",
+      "role": "Chambre"
+    },
+    {
+      "id": "rive-04-entree",
+      "width": 1122,
+      "height": 1402,
+      "size_bytes": 308030,
+      "sha256": "863ec24fe63eecc5d93437dbf609afff7097098951f741b8e82f9ef3a9ba7552",
+      "role": "Entrée"
+    },
+    {
+      "id": "rive-05-salle-eau",
+      "width": 1536,
+      "height": 1024,
+      "size_bytes": 296378,
+      "sha256": "be1c8b8cf89eaa45b9b6c6a2dac951546dbbac4ab9514c13e0c4bb0c060d20d5",
+      "role": "Salle d’eau"
+    },
+    {
+      "id": "rive-06-bibliotheque",
+      "width": 1672,
+      "height": 941,
+      "size_bytes": 382034,
+      "sha256": "8e02da8936ab704f96e4ec6d12add12a1f5c11def206ea7c7751091324fa37e2",
+      "role": "Aménagement d’une pièce"
+    },
+    {
+      "id": "rive-07-matieres",
+      "width": 1254,
+      "height": 1254,
+      "size_bytes": 686170,
+      "sha256": "026d89f8d8f7756eb89719c126c64339b8055da89365ebde5e6d43f8fe3fd480",
+      "role": "Palette de matières"
+    },
+    {
+      "id": "rive-08-plans",
+      "width": 1536,
+      "height": 1024,
+      "size_bytes": 449218,
+      "sha256": "543be4abf51ebf83851d0dcaf58334188091473d7867788f8d9342831449c7c4",
+      "role": "Méthode de conception"
+    },
+    {
+      "id": "rive-09-volume",
+      "width": 1536,
+      "height": 1024,
+      "size_bytes": 220442,
+      "sha256": "5d2cce32aab846f99f2599adfcc8a41782a1d261ff9f8d12fbd82ca1fccc41d6",
+      "role": "Volume de départ simulé"
+    },
+    {
+      "id": "rive-10-menuiserie",
+      "width": 1122,
+      "height": 1402,
+      "size_bytes": 292518,
+      "sha256": "a1a014fbb8b135086fb1d174bd5f9ba5357f2906cae6f096ff51313f3718a774",
+      "role": "Détail de menuiserie"
+    },
+    {
+      "id": "rive-11-repas",
+      "width": 1536,
+      "height": 1024,
+      "size_bytes": 301268,
+      "sha256": "99c061a5a2282ca28d15cbcc690c74ea0671d1c92216995118afe46c1fedfea1",
+      "role": "Salle à manger"
+    },
+    {
+      "id": "rive-12-escalier",
+      "width": 1122,
+      "height": 1402,
+      "size_bytes": 230042,
+      "sha256": "1dec7c044635a65626fbefff99280dff75104f5ff7838d73272d5ef5bc561440",
+      "role": "Circulation et lumière"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "kind": "products",
+    "touchGallery": "Geste tactile Chromium natif, déplacement supérieur à 150 px",
+    "quickVisible": true
+  },
+  {
+    "kind": "products",
+    "finish": "Vue Charbon et premier article synchronisés",
+    "cta": "Sélection conservée vers la fiche",
+    "keyboard": "Offres duo → trio → duo",
+    "actualPhotos": 12,
+    "galleryAndZoom": "Vérifiés dans lot2b-proof.ts"
+  },
+  {
+    "kind": "services",
+    "navigation": [
+      "Accueil → accompagnements",
+      "Accompagnements → prestation",
+      "Prestation → inspirations",
+      "Contact"
+    ],
+    "h1": "unique sur les destinations",
+    "paidCalls": 0
+  }
+]

@@ -1,0 +1,27 @@
+
+ RUN  v5.0.3 /workspace/Ecom-studio-ia
+
+ ❯ tests/migration-v2.test.ts (6 tests | 1 failed | 5 skipped) 120020ms
+   ❯ migration V1 → V2 : moteurs réellement appelés (6)
+     × calendrier de la création : Social V2, une seule fois par projet — une reprise ne crée aucun doublon 120009ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/migration-v2.test.ts > migration V1 → V2 : moteurs réellement appelés > calendrier de la création : Social V2, une seule fois par projet — une reprise ne crée aucun doublon
+Error: Test timed out in 120000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/migration-v2.test.ts:99:3
+     97|   });
+     98|
+     99|   it("calendrier de la création : Social V2, une seule fois par projet…
+       |   ^
+    100|     const pid = await seedPaid("cosmetic");
+    101|     run("DELETE FROM content_plans WHERE project_id = ?", pid);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 skipped (6)
+   Start at  11:15:43
+   Duration  127.93s (tests 94%, import 4%, transform 2%)
