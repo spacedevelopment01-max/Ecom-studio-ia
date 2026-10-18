@@ -319,3 +319,6 @@ body[data-conversion="contrast"] .cv-article__button{background:var(--cv-button-
 .cv-article__criteria li span:last-child{font-weight:800;white-space:nowrap}
 .cv-article__scores .cv-article__demo-text{margin:0;text-align:center}
 @media(min-width:990px){.cv-article__inner{gap:26px}.cv-article__text{font-size:1.1rem}}
+/* Cartes produit : titre jamais coupé dans un mot ; sur téléphone (deux colonnes), titre puis prix l'un sous l'autre. */
+body[data-conversion]:not([data-conversion="none"]) .es-card__title{word-break:normal;overflow-wrap:normal;hyphens:manual;min-width:0}
+@media(max-width:749px){body[data-conversion]:not([data-conversion="none"]) .es-card__info{flex-direction:column;align-items:flex-start;gap:4px}}
