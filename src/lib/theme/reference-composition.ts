@@ -23,7 +23,7 @@ export function referenceHomeRows(input: BuildInput, c: ShopCopy, k: Kit, svc: S
   const faq = c.faq.items.filter((x) => real(x.q) && real(x.a));
   const questionRows: Row[] = faq.length ? [["v2-faq", { ...shared, heading: c.faq.heading, layout: svc ? "center" : "side" }, faq.map((x) => ({ type: "question", settings: { question: x.q, answer: html(x.a) } }))]] : [];
   if (svc) {
-    const offers: Row = ["ref-offers", { ...shared, layout: "studio", heading: t("Une réponse à votre projet", "An approach for your project"), text: "", button_label: svc.cta.label, button_link: svc.cta.url }, svc.services.map((s) => ({ type: "offer", settings: { title: s.name, text: html(s.description), image_asset: im.byService?.[s.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim()] ?? "", image_alt: s.name, price: s.price ?? "", duration: s.duration ?? "", link: svc.urls.services } }))];
+    const offers: Row = ["ref-offers", { ...shared, layout: "studio", heading: t("Une réponse à votre projet", "An approach for your project"), text: "", button_label: svc.cta.label, button_link: svc.cta.url }, svc.services.map((s) => ({ type: "offer", settings: { title: s.name, text: html(s.description), image_asset: s.key ? im.byService?.[`service:${s.key}`] ?? "" : "", image_alt: s.name, price: s.price ?? "", duration: s.duration ?? "", link: svc.urls.services } }))];
     return [hero, ...editorial(c.about.heading, c.about.intro, photos[1], "inset"), offers,
       ...editorial(c.detail.heading, c.detail.text, photos[2], "wide", 3),
       ...notes(t("Notre façon de travailler", "Our approach"), c.about.values),

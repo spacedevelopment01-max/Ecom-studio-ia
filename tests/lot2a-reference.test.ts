@@ -15,7 +15,7 @@ import { localBrand } from "@/lib/engine/local";
 import { composeShop } from "@/lib/engine/shop";
 import { emptyProduct, emptyServiceProfile } from "@/lib/project-types";
 import { runWithLang } from "@/lib/i18n-server";
-import { applyOps, validateSpec } from "@/lib/theme/ops";
+import { applyOps, validateSpec, OpSchema } from "@/lib/theme/ops";
 import { renderPage } from "@/lib/theme/render";
 import { sectionSchema, storeProducts } from "@/lib/theme/spec";
 import { bindReferenceOffers } from "@/lib/theme/reference-delivery";
@@ -66,6 +66,17 @@ describe("Lot 2A — références intégrées", async () => {
       for (const other of refs.filter((o) => o.target !== r.target)) expect(JSON.stringify(template)).not.toContain(offers.blocks![other.block].settings.image_asset);
     }
   }));
+  it("renommer une prestation garde son image ; un ancien nom ambigu n'attribue aucune photo à tort", async () => fr(async () => {
+    const { pid, spec } = await referenceProject(user.id, "services");
+    const original = Object.fromEntries(spec.meta!.reference!.links.map((r) => [r.target, spec.templates.index.sections[r.section].blocks![r.block].settings.image_asset]));
+    const p = loadProject(pid); saveServices(pid, { ...p.services, services: p.services.services.map((s) => ({ ...s, name: `Nouveau ${s.key}` })).reverse() });
+    const renamed = (await composeShop(pid, "jardin", null, false)).spec;
+    for (const r of renamed.meta!.reference!.links) expect(renamed.templates.index.sections[r.section].blocks![r.block].settings.image_asset).toBe(original[r.target]);
+    const next = loadProject(pid); saveServices(pid, { ...next.services, services: next.services.services.map((s) => ({ ...s, contentAliases: [...(s.contentAliases ?? []), "Création de jardin"] })) });
+    const ambiguous = (await composeShop(pid, "jardin", null, false)).spec;
+    const first = ambiguous.meta!.reference!.links.find((r) => r.target === "service:creation")!;
+    expect(ambiguous.templates.index.sections[first.section].blocks![first.block].settings.image_asset).toBe("");
+  }));
   it("édition manuelle → chat local → worker → historique → restauration : même version, fiches et logo protégés", async () => fr(async () => {
     const { pid, spec } = await referenceProject(user.id, "products", { media: false, multi: true });
     const initial = saveThemeVersion(pid, spec, "Initiale", "user"); await startSession(user.id);
@@ -104,7 +115,7 @@ describe("Lot 2A — références intégrées", async () => {
       expect(libraryEntry(type, "fr")?.name).toBeTruthy(); expect(libraryEntry(type, "en")?.name).toBeTruthy();
       const defaults = withProjectMedia(spec, type, { heading: "Texte manuel protégé" }, undefined, context);
       expect(defaults.settings.heading).toBe("Texte manuel protégé");
-      const added = applyOps(spec, [{ op: "add_section", template: "index", type, ...defaults, position: { after: spec.templates.index.order[0] } }]);
+      const added = applyOps(spec, [OpSchema.parse({ op: "add_section", template: "index", type, ...defaults, position: { after: spec.templates.index.order[0] } })]);
       expect(added.rejected).toEqual([]); const id = added.spec.templates.index.order[1];
       expect(added.spec.templates.index.sections[id].type).toBe(type);
       expect(applyOps(added.spec, [{ op: "remove_section", template: "index", section: id }]).spec.templates.index).toEqual(spec.templates.index);

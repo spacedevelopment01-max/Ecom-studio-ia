@@ -169,13 +169,20 @@ function serviceSlots(projectId: string, slots: ImageSlots, files: Record<string
   });
   // Photo propre à chaque prestation (votre photo d'abord, puis photo libre, puis image IA) : la carte « Carrelage » montre du
   // carrelage, jamais la photo d'une autre prestation.
-  const tagged = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role IN ('lifestyle','original') AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' AND json_extract(meta, '$.service') IS NOT NULL ORDER BY (origin IN ('upload','site')) DESC, (json_extract(meta, '$.stock') IS NOT NULL) DESC, (status = 'approved') DESC, (json_extract(meta, '$.qcWarning') IS NULL) DESC, created_at DESC", projectId).filter(isAutoUsable);
+  const tagged = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role IN ('lifestyle','original') AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' AND (json_extract(meta, '$.service') IS NOT NULL OR json_extract(meta, '$.serviceKey') IS NOT NULL) ORDER BY (origin IN ('upload','site')) DESC, (json_extract(meta, '$.stock') IS NOT NULL) DESC, (status = 'approved') DESC, (json_extract(meta, '$.qcWarning') IS NULL) DESC, created_at DESC", projectId).filter(isAutoUsable);
+  const services = loadProject(projectId).services.services;
   for (const a of tagged) {
-    const key = serviceKey(json<{ service?: string }>(a.meta, {}).service ?? "");
-    if (!key || slots.byService?.[key]) continue;
+    const meta = json<{ service?: string; serviceKey?: string }>(a.meta, {});
+    const key = serviceKey(meta.service ?? "");
+    if (!key && !meta.serviceKey) continue;
     const f = themeFileName(a, `prestation-${a.id.slice(0, 6)}`);
     files[f] = a.id;
-    slots.byService = { ...(slots.byService ?? {}), [key]: f };
+    slots.byService ??= {};
+    if (key) slots.byService[key] ??= f;
+    // Les références nouvelles utilisent l'identité stable. Un ancien nom n'est utilisable que s'il
+    // désigne une seule offre ; les homonymes restent sans image plutôt que recevoir celle d'une autre.
+    const candidates = services.filter((s) => meta.serviceKey ? s.key === meta.serviceKey : [s.name, ...(s.contentAliases ?? [])].some((name) => serviceKey(name) === key));
+    if (candidates.length === 1 && candidates[0].key) slots.byService[`service:${candidates[0].key}`] ??= f;
   }
   if (!slots.hero && slots.lifestyle) slots.hero = slots.lifestyle;
 }
