@@ -71,7 +71,7 @@ try {
    results.push({kind,platform,files:Object.keys(entries).length,products:catalog.products.length,media:Object.keys(catalog.media).length,issues:e.issues});
   }
   if(kind==='products'){
-   const changed=structuredClone(loaded);changed.store.product.variants[0].price=3335;changed.store.product.variants[0].inventory_quantity=5;changed.store.product.variants[0].sku='LAMPE-ÉTÉ-S-MAJ';changed.store.product.variants[0].image='es-produit-b.jpg';
+   const changed=structuredClone(loaded);changed.store.product.variants[0].price=3335;changed.store.product.variants[0].inventory_quantity=5;changed.store.product.variants[0].sku='LAMPE-ÉTÉ-S-MAJ';changed.store.product.variants[0].image='es-produit-b.jpg';changed.store.product.images=['es-produit-b.jpg'];
    saveThemeVersion(pid,changed,'Réexportation contrôlée : prix, stock, SKU et image','system');
    for(const platform of ['woocommerce','prestashop'] as const){
     const e=await cmsExport(platform,currentTheme(pid)!.spec,libraryLoader,{projectId:pid});const dir=path.join(out,'products-update',platform);fs.mkdirSync(dir,{recursive:true});fs.writeFileSync(path.join(dir,'export.zip'),e.zip);

@@ -38,10 +38,15 @@ try {
         const selected = products[0].variants[0];
         if (platform === "woocommerce") {
           const selects = page.locator("form.variations_form select"); assert.equal(await selects.count(), 3);
-          for (let i = 0; i < 3; i++) await selects.nth(i).selectOption({ label: selected.options[i] });
+          // Laisser les événements natifs Woo (réinitialisation de galerie incluse) se terminer entre choix.
+          for (let i = 0; i < 3; i++) { await selects.nth(i).selectOption({ label: selected.options[i] }); await page.waitForTimeout(250); }
           await page.waitForFunction(id => (document.querySelector('input.variation_id') as HTMLInputElement)?.value === String(id), selected.id, { timeout: 15_000 });
           const expectedImage = await page.locator('form.variations_form').evaluate((el, id) => JSON.parse(el.getAttribute('data-product_variations') || '[]').find((v: any) => v.variation_id === id)?.image?.src, selected.id);
-          if (expectedImage) await page.waitForFunction(url => (document.querySelector('.woocommerce-product-gallery__image img') as HTMLImageElement)?.src === url, expectedImage, { timeout: 15_000 });
+          if (expectedImage) await page.waitForFunction(url => {
+            const gallery = document.querySelector('.woocommerce-product-gallery');
+            const visible = gallery?.querySelector('.flex-active-slide img') || gallery?.querySelector('.woocommerce-product-gallery__image img');
+            return (visible as HTMLImageElement)?.src === url;
+          }, expectedImage, { timeout: 15_000 });
           await page.locator(".single_add_to_cart_button").click();
           await page.waitForLoadState("networkidle");
           await page.goto(base + "/cart/", { waitUntil: "networkidle" });
