@@ -19,6 +19,12 @@ export function productOfferSection(spec: ThemeSpec, product: StoreProduct) {
   // Deux configurations concurrentes ne deviennent jamais une règle commerciale devinée.
   return candidates.length === 1 ? candidates[0] : null;
 }
+/** Correspondances uniques uniquement : un nom ou une position ne remplace jamais une identité. */
+export function purchaseTargetHandles(spec: ThemeSpec) {
+ const products=storeProducts(spec), out:Record<string,string>={};
+ for(const p of products) if(p.contentTarget && products.filter((x)=>x.contentTarget===p.contentTarget).length===1)out[p.contentTarget]=p.handle;
+ return out;
+}
 export function offerVariants(spec: ThemeSpec) {
   return storeProducts(spec).flatMap((p, pi) => (p.variants.length ? p.variants : [{ title: "Default Title", price: p.price, available: true, options: [] }]).map((v, vi) => ({ id: 1000 * (pi + 1) + vi, product: p, variant: v, price: v.price ?? p.price, stock: v.inventory_quantity })));
 }
@@ -61,6 +67,7 @@ export function reconcileOfferCart(spec: ThemeSpec, input: OfferLine[]): OfferLi
     groupLines.forEach((l, i) => { l.finalLinePrice = i === groupLines.length - 1 ? total - allocated : Math.floor(base ? total * table.get(l.variantId)!.price! * l.quantity / base : total / groupLines.length); allocated += l.finalLinePrice; });
     for (const gift of config.gifts.filter((g) => count >= g.threshold)) {
       const choices = variants.filter((v) => v.product.contentTarget === gift.target && (!gift.sku || v.variant.sku === gift.sku));
+      if (new Set(choices.map((v) => v.product)).size !== 1) continue;
       const hit = gift.sku ? (choices.length === 1 ? choices[0] : undefined) : choices.find((v) => available(v, (totals.get(v.id) ?? 0) + gift.quantity));
       if (!hit || !available(hit, (totals.get(hit.id) ?? 0) + gift.quantity)) continue;
       totals.set(hit.id, (totals.get(hit.id) ?? 0) + gift.quantity);
@@ -74,7 +81,7 @@ export function reconcileOfferCart(spec: ThemeSpec, input: OfferLine[]): OfferLi
 }
 /** Ajout atomique : ne remplace le lot précédent qu'après validation complète. */
 export function addOfferToCart(spec: ThemeSpec, cart: OfferLine[], request: { target: string; offer: string; variants: number[] }): OfferLine[] {
-  const p = storeProducts(spec).find((p) => p.contentTarget === request.target), selected = p && productOfferSection(spec, p);
+  const products = storeProducts(spec).filter((p) => p.contentTarget === request.target), p = products.length === 1 ? products[0] : undefined, selected = p && productOfferSection(spec, p);
   const offer = selected && purchaseConfig(selected.section).offers.find((o) => o.id === request.offer);
   if (!p || !offer || request.variants.length !== offer.quantity) throw new Error("Offre ou quantité invalide.");
   const choices = offerVariants(spec);

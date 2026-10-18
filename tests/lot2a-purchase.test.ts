@@ -196,4 +196,14 @@ describe("Lot 2A complément — offres commerciales", async () => {
   for(const platform of ["woocommerce","prestashop"] as const){const exp=await cmsExport(platform,spec,()=>null),zip=unzipSync(exp.zip);const js=Object.entries(zip).find(([f])=>f.endsWith(platform==="woocommerce"?"assets/js/theme.js":"assets/js/es-theme.js"))!;expect(strFromU8(js[1])).toContain("data-narrative-chapter");expect(strFromU8(js[1])).toContain("data-purchase");}
  });
 
+ it("une section d’achat autonome conserve le bon produit après renommage de son URL", async () => {
+  const {spec,project}=await referenceProject(user.id,"products",{multi:true,media:false}),p=storeProducts(spec).find((p)=>p.contentTarget==="product:catalog:bottle")!;
+  const ctx=sectionContentContext(project,spec,false,`product.${p.template_suffix}`),filled=withProjectMedia(spec,"purchase-offers",{},undefined,ctx);
+  const added=applyOps(spec,[{op:"add_section",template:"index",type:"purchase-offers",settings:filled.settings as any,blocks:filled.blocks as any}]);expect(added.rejected).toEqual([]);
+  const changed=added.spec.store.products!.find((x)=>x.contentTarget===p.contentTarget)!;changed.handle="gourde-renommee";
+  const html=(await renderPage({spec:added.spec,base:"",cart:[]},"/",new URLSearchParams())).html;
+  expect(html).toContain('data-target="product:catalog:bottle"');expect(html).toContain('"id":2000');
+  const widget=html.match(/<div class="purchase purchase--[\s\S]*?<\/script>/)?.[0]??"";expect(widget).toContain("Gourde Cime");expect(widget).not.toContain('"id":1000');
+ });
+
 });

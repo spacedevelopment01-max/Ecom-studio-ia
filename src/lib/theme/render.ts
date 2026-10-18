@@ -1,3 +1,4 @@
+import { purchaseTargetHandles } from "./purchase-offers";
 /**
  * Moteur d'aperçu : interprète les fichiers Liquid compilés du thème avec
  * LiquidJS et des objets compatibles Shopify (produit, panier, menus…).
@@ -659,7 +660,9 @@ function* renderSectionGen(engine: Liquid, ctx: Context, emitter: Emitter, files
   const resolve = (ctx.getAll() as any).__resolve as ((type: string, v: unknown) => unknown) | undefined;
   const types = new Map<string, string>();
   for (const s of schema.settings) if (s.id) types.set(s.id, s.type);
-  const settings = wrapSettings(withDefaults(schema.settings, inst.settings), base, types, resolve);
+  const sectionSettings = { ...inst.settings };
+  if (inst.type === "purchase-offers" && sectionSettings.product_target) sectionSettings.product = (ctx.getAll() as any).__purchaseTargets?.[String(sectionSettings.product_target)] ?? "";
+  const settings = wrapSettings(withDefaults(schema.settings, sectionSettings), base, types, resolve);
   const blocks = (inst.block_order ?? Object.keys(inst.blocks ?? {}))
     .map((bid) => ({ bid, b: inst.blocks?.[bid] }))
     .filter((x) => x.b && !x.b.disabled)
@@ -798,7 +801,7 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     search: { performed: !!q, terms: q, results, results_count: results.length },
     recommendations: { performed: store.recommendations.length > 0, products: store.recommendations, products_count: store.recommendations.length },
     all_products: Object.fromEntries(store.products.map((p: any) => [p.handle, p])),
-    __purchaseTargets: Object.fromEntries(storeProducts(opts.spec).filter((p) => p.contentTarget).map((p) => [p.contentTarget!, p.handle])),
+    __purchaseTargets: purchaseTargetHandles(opts.spec),
     customer: null,
     request: { page_type: tplKey.split(".")[0], locale: { iso_code: lang }, origin: "", design_mode: !!opts.designMode, path: pathname, host: "apercu" },
     template: { name: tplKey.split(".")[0], suffix: tplKey.includes(".") ? tplKey.split(".")[1] : null, directory: null },

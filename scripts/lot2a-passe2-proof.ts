@@ -224,6 +224,9 @@ try {
     evidence.push({ kind, direction: spec.direction, purchaseStates, sections: spec.templates.index.order.map((id) => spec.templates.index.sections[id].type), visibleSections: spec.templates.index.order.filter((id) => !spec.templates.index.sections[id].disabled).length, pages, keyRoutes, exports, interactions: { gallery, cart, purchaseKeyboard, faq: true, mobileMenu: true, escape: true, focusReturned: true, focus, emailValidation: true, reducedMotion: motion, narrativeReducedMotion:narrativeMotion, contactDelivery: "non vérifiée : aucune soumission externe" } });
     console.log(`${kind} : ${pages.length} vues vérifiées, PNG et vidéo enregistrés.`);
   });
+  const finalCommit = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+  const finalDirty = execFileSync("git", ["status", "--porcelain", "--", "src", "theme-base", "tests", "scripts", "public/theme-references"], { encoding: "utf8" }).trim() !== "";
+  assert.ok(!sourceDirty && !finalDirty && finalCommit === sourceCommit, "Les sources ont changé pendant la capture : preuves refusées, ne pas les publier comme version figée.");
   assert.equal(all("SELECT 1 FROM ai_calls").length, 0);
   fs.writeFileSync(path.join(out, "preuves.json"), JSON.stringify({ sourceCommit, sourceDirty, generatedAt: new Date().toISOString(), environment: "Chromium local, routes GET/POST d'aperçu réelles, base temporaire, réseau fournisseur bloqué", aiCalls: 0, cmsInstalled: false, cases: evidence }, null, 2) + "\n");
 } finally { await browser.close(); await new Promise<void>((r) => server.close(() => r())); fs.rmSync(temp, { recursive: true, force: true }); }

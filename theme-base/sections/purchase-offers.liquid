@@ -1,4 +1,4 @@
-{% assign offer_product = section.settings.product | default: product %}
+{% assign offer_product = section.settings.product %}{% if section.settings.product_target == blank and offer_product == blank %}{% assign offer_product = product %}{% endif %}
 <div class="es-section color-{{ section.settings.color_scheme }}" style="--pt:{{ section.settings.padding_top }}px;--pb:{{ section.settings.padding_bottom }}px"><div class="es-container">
 {% if section.settings.purchase_enabled and offer_product != blank %}{% render 'purchase-offers', product: offer_product, blocks: section.blocks, offer_settings: section.settings, section_id: section.id %}{% elsif request.design_mode %}<p>{{ 'purchase.configure' | t }}</p>{% endif %}
 </div></div>
