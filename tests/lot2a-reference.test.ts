@@ -27,6 +27,7 @@ import { libraryLoader } from "@/lib/theme/loader";
 import { POST as manualRoute } from "@/app/api/projects/[id]/theme/ops/route";
 import { POST as chatRoute } from "@/app/api/projects/[id]/theme/chat/route";
 import { POST as restoreRoute } from "@/app/api/projects/[id]/theme/restore/route";
+import { POST as buildRoute } from "@/app/api/projects/[id]/theme/build/route";
 import { claimNext, completeJob, JobContext } from "@/lib/jobs";
 import { handlers } from "../worker/handlers";
 const fr = <T>(f: () => T) => runWithLang({ content: "fr", ui: "fr" }, f);
@@ -78,6 +79,19 @@ describe("Lot 2A — références intégrées", async () => {
     const ambiguous = (await composeShop(pid, "jardin", null, false)).spec;
     const first = ambiguous.meta!.reference!.links.find((r) => r.target === "service:creation")!;
     expect(ambiguous.templates.index.sections[first.section].blocks![first.block].settings.image_asset).toBe("");
+  }));
+  it("sélection réelle dans la galerie : route → job de direction → moteur local → nouvelle version", async () => fr(async () => {
+    const { pid, spec } = await referenceProject(user.id, "products", { media: false });
+    const before = saveThemeVersion(pid, spec, "Version utilisable conservée", "user"); await startSession(user.id);
+    const response = await buildRoute(new Request(`http://studio.test/api/projects/${pid}/theme/build`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ direction: "vitrine" }) }), { params: Promise.resolve({ id: pid }) });
+    const body = await response.json(); expect(response.status, JSON.stringify(body)).toBe(200);
+    const job = claimNext(["shop.direction"])!; expect(job.id).toBe(body.jobId);
+    const result = await handlers[job.type](new JobContext(job)); completeJob(job.id, result);
+    const current = currentTheme(pid)!; expect(current.version.id).not.toBe(before.id);
+    expect(current.spec.meta?.reference?.kind).toBe("products");
+    expect(current.spec.templates.index.sections[current.spec.templates.index.order[0]].type).toBe("ref-hero");
+    expect(listThemeVersions(pid).some((v) => v.id === before.id)).toBe(true);
+    expect(all("SELECT 1 FROM ai_calls WHERE project_id=?", pid)).toEqual([]);
   }));
   it("édition manuelle → chat local → worker → historique → restauration : même version, fiches et logo protégés", async () => fr(async () => {
     const { pid, spec } = await referenceProject(user.id, "products", { media: false, multi: true });

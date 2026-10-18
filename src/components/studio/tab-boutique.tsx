@@ -363,7 +363,7 @@ export default function TabBoutique() {
         </Empty>
         <h2 className="mb-1 mt-10 font-display text-2xl font-semibold">{t("Les thèmes disponibles", "Available themes")}</h2>
         <p className="mb-5 text-sm text-muted">{t("Le studio choisit une direction selon votre produit ; vous pourrez en changer à tout moment avec le bouton « Thèmes » de l'éditeur.", "The studio picks a direction based on your product; you can change it at any time with the editor's “Themes” button.")}</p>
-        <ThemeGrid directions={theme.directions} />
+        <ThemeGrid services={isServices} directions={theme.directions} />
       </div>
     );
 
