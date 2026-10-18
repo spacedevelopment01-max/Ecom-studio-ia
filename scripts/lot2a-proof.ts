@@ -89,10 +89,8 @@ try {
         });
         const response = await page.goto(origin + base + route + "?es_raw=1", { waitUntil: "networkidle" }); assert.equal(response?.status(), 200);
         await loaded(page);
-        const measurements = await page.evaluate(() => ({ width: innerWidth, scrollWidth: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight, h1: document.querySelectorAll("h1").length, images: document.images.length, ...((window as any).__metrics), duration: (performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming).duration, transferBytes: performance.getEntriesByType("resource").reduce((n, e: any) => n + e.transferSize, 0) }));
+        const measurements = await page.evaluate(() => ({ width: innerWidth, scrollWidth: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight, h1: document.querySelectorAll("h1").length, images: document.images.length, ...((window as any).__metrics), duration: (performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming).duration, transferBytes: performance.getEntriesByType("resource").reduce((n, e: any) => n + e.transferSize, 0) || null }));
         assert.ok(measurements.scrollWidth <= width + 1, `${kind}/${name}/${width} déborde : ${measurements.scrollWidth}`);
-        // L'origine opaque du bac à sable peut interdire Resource Timing : zéro ne signifie pas zéro trafic.
-        if (!measurements.transferBytes) measurements.transferBytes = null;
         assert.equal(measurements.h1, 1, `${kind}/${name} doit avoir un titre principal unique`);
         let file: string | null = null;
         if (width === 1440 || width === 390) {
