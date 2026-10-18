@@ -14,6 +14,7 @@ import { exportShopify } from "./adapters/shopify";
 import { exportWordPress } from "./adapters/wordpress";
 import { exportPrestaShop } from "./adapters/prestashop";
 import { forbiddenMedia, staticChecks, type StaticCheck } from "./checks";
+import { missingEditorialMedia } from "../theme/editorial-media";
 import { adaptForPlatform } from "./adapt";
 import { gateCmsExport, type CmsGateResult, type CriterionKey, type Measure } from "./quality";
 import type { CmsPlatform, PlatformExport } from "./types";
@@ -43,6 +44,7 @@ export async function cmsExport(platform: CmsPlatform, spec0: ThemeSpec, load: A
     exp = { platform, zip: k.zip, name: k.name, kind: "kit", files: [], issues: [], sections: [], media: Object.keys(spec.files).filter((f) => !forbidden.has(f)) };
   }
   exp.name = safeFileName(exp.name);
+  for (const missing of missingEditorialMedia(spec0)) exp.issues.push({code:"editorial_media_missing",severity:"blocking",detail:`${missing.page}/${missing.section} : image requise absente (${missing.role}). Composition exportée pour travail, rendu photographique incomplet.`});
   const purchaseRules = purchaseExportManifest(spec0);
   if (purchaseRules) {
     const entries = unzipSync(exp.zip);

@@ -12,6 +12,14 @@ export type LibraryEntry = { type: string; name: string; category: SectionCatego
 
 /** Noms, descriptions et mots-clés anglais (la catégorie reste la clé française, traduite par l'interface). */
 const SECTION_LIBRARY_EN: Record<string, { name: string; description: string; keywords: string }> = {
+  "ed-finishes": {name:"Finishes in context",description:"A scene and the selected product finish, with accessible choices.",keywords:"product finishes colors gallery"},
+  "ed-opening": { name: "Photographic opening", description: "A heading within a scene or before a landscape, with editable framing.", keywords: "editorial composition scene photograph" },
+  "ed-statement": { name: "Statement and notes", description: "A large statement and known facts, with an optional marginal photograph.", keywords: "editorial composition scene photograph" },
+  "ed-diptych": { name: "Editorial diptych", description: "Asymmetric photographs with independent captions and links.", keywords: "editorial composition scene photograph" },
+  "ed-scene": { name: "Scene and story", description: "A portrait, panorama or illustrated closing with complete copy.", keywords: "editorial composition scene photograph" },
+  "ed-study": { name: "Concept study", description: "Two captioned views; a comparison control only when images align.", keywords: "editorial composition scene photograph" },
+  "ed-contact": { name: "First conversation", description: "A short form with editable room choices and explicitly enabled test recording.", keywords: "editorial composition scene photograph" },
+
   "purchase-offers": { name: "Offers and gifts", description: "Configurable quantities, per-item variants, discounts and catalog gifts. Commercial rules require server support on export.", keywords: "bundle offers quantity gift variants cart" },
   "ref-narrative": { name: "Interactive story", description: "Accessible chapters reveal their associated photograph, using your own text and media.", keywords: "story chapters method demonstration gallery" },
   "ref-hero": { name: "Reference opening", description: "Object showcase, landscape opening or photographic poster. Editable copy, media and calls to action, with optional short entrance.", keywords: "reference opening product service landscape" },
@@ -122,6 +130,14 @@ export function libraryEntry(type: string, lang: Lang): LibraryEntry | undefined
 }
 
 export const SECTION_LIBRARY: LibraryEntry[] = [
+  { type: "ed-finishes", name: "Finitions en contexte", category:"Produit",description:"Une scène et la finition du produit sélectionnée, avec choix accessibles.",keywords:"produit finitions couleurs galerie" },
+  { type: "ed-opening", name: "Ouverture photographique", category: "Ouverture", description: "Titre dans la scène ou titre avant un paysage, avec cadrage réglable.", keywords: "éditorial composition photographie" },
+  { type: "ed-statement", name: "Phrase et repères", category: "Textes", description: "Grande phrase et informations connues, avec photographie marginale facultative.", keywords: "éditorial composition photographie" },
+  { type: "ed-diptych", name: "Diptyque éditorial", category: "Images et vidéos", description: "Photographies asymétriques, légendes et liens indépendants.", keywords: "éditorial composition photographie" },
+  { type: "ed-scene", name: "Scène et récit", category: "Images et vidéos", description: "Image verticale, panorama ou conclusion illustrée et récit complet.", keywords: "éditorial composition photographie" },
+  { type: "ed-study", name: "Étude d’intention", category: "Images et vidéos", description: "Deux vues légendées ; comparateur uniquement si les images sont alignées.", keywords: "éditorial composition photographie" },
+  { type: "ed-contact", name: "Premier échange", category: "Conversion", description: "Formulaire court, type de pièce éditable, enregistrement en test si explicitement autorisé.", keywords: "éditorial composition photographie" },
+
   { type: "purchase-offers", name: "Offres et cadeaux", category: "Produit", description: "Lots configurables, variantes par article et cadeaux du catalogue. Remises et cadeaux nécessitent le support commercial serveur à l’export.", keywords: "lots offres cadeaux quantités variantes panier" },
   { type: "ref-narrative", name: "Récit interactif", category: "Images et vidéos", description: "Chapitres accessibles et photographie associée, pour présenter les détails ou votre méthode.", keywords: "récit chapitres méthode démonstration galerie" },
   { type: "ref-hero", name: "Ouverture référence", category: "Ouverture", description: "Objet en vitrine, titre paysage ou affiche photo. Image entière, textes et appels à l'action éditables ; apparition courte facultative.", keywords: "référence ouverture produit service paysage photo vitrine" },

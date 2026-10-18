@@ -696,5 +696,30 @@
         "label": "Image de partage par défaut"
       }
     ]
+  },
+  {
+    "name": "Composition éditoriale",
+    "settings": [
+      {
+        "type": "select",
+        "id": "editorial_profile",
+        "label": "Univers éditorial",
+        "default": "none",
+        "options": [
+          {
+            "value": "none",
+            "label": "Style existant"
+          },
+          {
+            "value": "object",
+            "label": "Objet et ambiances"
+          },
+          {
+            "value": "journal",
+            "label": "Journal et espaces"
+          }
+        ]
+      }
+    ]
   }
 ]

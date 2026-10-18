@@ -172,7 +172,7 @@ export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Pro
   put("assets/css/es-design.css", `/* ${spec.store.shopName.replace(/\*\//g, "")} — design extrait du studio (E-COM STUDIO IA) */\n${design.css}\n`);
   put("assets/css/es-ps.css", fs.readFileSync(path.join(ROOT, "assets/cms/prestashop/theme/assets/es-ps.css")));
   css.push({ id: "es-design", path: "assets/css/es-design.css" }, { id: "es-ps", path: "assets/css/es-ps.css" });
-  const js = ["theme.js", "reference-interactions.js", "purchase-offers.js"].map((name) => files.get(`assets/${name}`)).filter(Boolean).join("\n;\n");
+  const js = ["theme.js", "reference-interactions.js", "purchase-offers.js", "editorial.js"].map((name) => files.get(`assets/${name}`)).filter(Boolean).join("\n;\n");
   if (js) put("assets/js/es-theme.js", js);
   put("assets/js/es-ps.js", fs.readFileSync(path.join(ROOT, "assets/cms/prestashop/theme/assets/es-ps.js")));
   for (const f of design.fonts) {

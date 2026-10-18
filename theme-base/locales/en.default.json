@@ -281,7 +281,8 @@
     "phone": "Phone",
     "message": "Message",
     "send": "Send",
-    "success": "Thanks, we'll get back to you shortly."
+    "success": "Thanks, we'll get back to you shortly.",
+    "error": "Please check your request before trying again."
   },
   "customer": {
     "account": "My account",
@@ -359,5 +360,8 @@
     "summary": "Your selection",
     "demo": "Preview: locally tested rules, no real payment.",
     "item": "item"
+  },
+  "editorial": {
+    "pending_media": "Image to import"
   }
 }

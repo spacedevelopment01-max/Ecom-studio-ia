@@ -124,7 +124,7 @@ export type ThemeSpec = {
    * Moteur qui a composé ce thème et sa traçabilité (Theme Engine V2 : intention, direction artistique, plan des
    * pages, contenus à compléter). Ignoré par la compilation et l'export ; absent sur les thèmes plus anciens.
    */
-  meta?: { engine?: "v1" | "v2"; v2?: Record<string, any>; productContent?: ProductContentBinding[]; reference?: { version: 1; kind: "products" | "services"; links: { template: string; section: string; block: string; target: string }[] } };
+  meta?: { demo?: { isDemo: true; provenance: string; contactTest?: boolean }; engine?: "v1" | "v2"; v2?: Record<string, any>; productContent?: ProductContentBinding[]; reference?: { version: 1; kind: "products" | "services"; links: { template: string; section: string; block: string; target: string }[] } };
   /** Données de la boutique (produit, pages, menus). Séparées du thème ; utilisées par l'aperçu et l'import. */
   store: {
     shopName: string;

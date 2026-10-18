@@ -5,8 +5,9 @@
   root.querySelectorAll('[data-purchase]').forEach(function (box) {
    if (box.dataset.ready) return; box.dataset.ready = 'true';
    var variants = JSON.parse(box.querySelector('[data-purchase-variants]').textContent), strings = JSON.parse(box.querySelector('[data-purchase-strings]').textContent);
-   var radios = Array.from(box.querySelectorAll('input[type=radio]')), selected = radios.find(function (r) { return r.checked; }) || radios[0], retained = [], area = box.querySelector('[data-offer-variants]'), button = box.querySelector('[data-purchase-add]'), error = box.querySelector('[data-purchase-error]');
+   var radios = Array.from(box.querySelectorAll('.purchase__offers input[type=radio]')), selected = radios.find(function (r) { return r.checked; }) || radios[0], retained = [], area = box.querySelector('[data-offer-variants]'), button = box.querySelector('[data-purchase-add]'), error = box.querySelector('[data-purchase-error]');
    if (!selected) return;
+   var requestedVariant=new URLSearchParams(location.search).get('variant');if(variants.some(function(v){return String(v.id)===requestedVariant&&v.available;}))retained[0]=requestedVariant;
    function money(n) { return new Intl.NumberFormat(box.dataset.language || 'fr', { style: 'currency', currency: box.dataset.currency || 'EUR' }).format(n / 100); }
    function priceFor(r) {
     var count = +r.dataset.quantity, sum = 0;
@@ -23,14 +24,19 @@
     button.disabled = !p || !retained.length || retained.some(function (id) { var v = variants.find(function (v) { return String(v.id) === id; }); return !v || !v.available || (v.inventory_management && v.inventory_quantity < counts[id]); });
     box.querySelectorAll('[data-gift]').forEach(function (g) { var eligible = +selected.dataset.quantity >= +g.dataset.threshold, available = g.dataset.available === 'true' && (!g.dataset.stock || +g.dataset.stock >= +g.dataset.giftQuantity); g.classList.toggle('is-unlocked', eligible && available); g.querySelector('[data-gift-state]').textContent = !available ? strings.unavailable : eligible ? strings.included : strings.locked + ' ' + g.dataset.threshold + ' ' + strings.items; });
    }
+   function announce() { var v = variants.find(function(v){return String(v.id)===retained[0];}); box.dispatchEvent(new CustomEvent('es:offer-variant',{bubbles:true,detail:v})); box.querySelectorAll('[data-finish-id]').forEach(function(r){r.checked=r.value===retained[0];}); }
+   var finishes=box.querySelector('[data-purchase-finishes]'),colorNode=box.querySelector('[data-purchase-colors]'),colors={};
+   if(colorNode) String(JSON.parse(colorNode.textContent)||'').split(/\n/).forEach(function(line){var cut=line.lastIndexOf('=');if(cut>0&&/^#[0-9a-f]{6}$/i.test(line.slice(cut+1).trim()))colors[line.slice(0,cut).trim()]=line.slice(cut+1).trim();});
+   if(finishes)finishes.className='purchase__finish-options';
+   if(finishes) variants.forEach(function(v){var label=document.createElement('label'),input=document.createElement('input'),dot=document.createElement('i'),text=document.createElement('span');label.className='purchase__finish';dot.className='purchase__swatch';input.type='radio';input.name='finish-'+radios[0].name;input.value=v.id;input.dataset.finishId=v.id;input.disabled=!v.available;dot.setAttribute('aria-hidden','true');if(colors[v.title])dot.style.backgroundColor=colors[v.title];text.textContent=v.title;label.append(input,dot,text);finishes.append(label);input.addEventListener('change',function(){retained=Array.from(area.querySelectorAll('select')).map(function(s){return s.value;});retained[0]=String(v.id);choose();announce();});});
    function choose() {
     area.replaceChildren(); selected.checked = true;
     for (var i = 0; i < +selected.dataset.quantity; i++) {
      var label = document.createElement('label'), select = document.createElement('select'), span = document.createElement('span'); span.textContent = (i + 1) + ' / ' + selected.dataset.quantity; label.append(span, select);
      variants.forEach(function (v) { var option = document.createElement('option'); option.value = v.id; option.textContent = v.title + (!v.available ? ' — ' + strings.unavailable : ''); option.disabled = !v.available; select.append(option); });
-     select.value = retained[i] || String((variants.find(function (v) { return v.available; }) || variants[0]).id); select.addEventListener('change', update); area.append(label);
+     select.value = retained[i] || String((variants.find(function (v) { return v.available; }) || variants[0]).id); select.addEventListener('change', function(){update();announce();}); area.append(label);
     }
-    update();
+    update();announce();
    }
    radios.forEach(function (r) { r.addEventListener('change', function () { selected = r; choose(); }); }); choose();
    button.addEventListener('click', function () {

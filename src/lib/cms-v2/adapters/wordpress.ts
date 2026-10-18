@@ -165,7 +165,7 @@ export async function exportWordPress(spec: ThemeSpec, load: AssetLoader): Promi
   }
   put("assets/css/es-design.css", `/* ${commentSafe(spec.store.shopName)} — design extrait du studio (E-COM STUDIO IA) */\n${design.css}\n`);
   put("assets/css/es-wp.css", fs.readFileSync(path.join(ROOT, "assets/cms/wordpress/es-wp.css")));
-  const js = ["theme.js", "reference-interactions.js", "purchase-offers.js"].map((name) => files.get(`assets/${name}`)).filter(Boolean).join("\n;\n");
+  const js = ["theme.js", "reference-interactions.js", "purchase-offers.js", "editorial.js"].map((name) => files.get(`assets/${name}`)).filter(Boolean).join("\n;\n");
   if (js) put("assets/js/theme.js", js);
   put("assets/js/es-editor.js", fs.readFileSync(path.join(ROOT, "assets/cms/wordpress/es-editor.js")));
   for (const f of design.fonts) {

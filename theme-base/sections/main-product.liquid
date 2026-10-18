@@ -24,7 +24,7 @@
             {%- endcase -%}
           </figure>
         {%- else -%}
-          <figure class="es-product__slide es-media-frame">{{ 'product-1' | placeholder_svg_tag: 'es-placeholder__svg' }}</figure>
+          <figure class="es-product__slide es-media-frame">{% if section.settings.media_role != blank %}{% render 'ed-media', role_label: section.settings.media_role %}{% else %}{{ 'product-1' | placeholder_svg_tag: 'es-placeholder__svg' }}{% endif %}</figure>
         {%- endfor -%}
       </div>
       {%- if media_count > 1 -%}
@@ -58,7 +58,7 @@
             {%- when 'eyebrow' -%}
               <p class="es-eyebrow" {{ block.shopify_attributes }}>{{ block.settings.text | default: product.vendor }}</p>
             {%- when 'title' -%}
-              <h1 class="es-heading es-h2 es-product__title" {{ block.shopify_attributes }}>{{ product.title }}</h1>
+              {% if section.settings.display_heading != blank or section.settings.display_intro != blank %}<div data-ed-product-heading {{ block.shopify_attributes }}><h1 class="es-heading es-h2 es-product__title">{{ section.settings.display_heading | default: product.title | escape }}</h1>{% if section.settings.display_intro != blank %}<p class="ed-product-intro">{{ section.settings.display_intro | escape }}</p>{% endif %}</div>{% else %}<h1 class="es-heading es-h2 es-product__title" {{ block.shopify_attributes }}>{{ product.title }}</h1>{% endif %}
             {%- when 'price' -%}
               <div class="es-product__price" {{ block.shopify_attributes }} data-price-wrap>{% render 'price', product: product, use_variant: true %}
                 <p class="es-small es-muted">{{ 'products.product.taxes_included' | t }}</p>
@@ -207,7 +207,7 @@
     </div>
   </div>
 
-  {%- if section.settings.sticky_bar -%}
+  {%- if section.settings.sticky_bar and section.settings.purchase_enabled != true -%}
     <div class="es-sticky-buy color-{{ section.settings.color_scheme }}" data-sticky-buy hidden>
       <div class="es-container es-sticky-buy__inner">
         <div class="es-sticky-buy__product">
@@ -259,7 +259,13 @@
     { "type": "checkbox", "id": "sticky_bar", "label": "Barre d'achat qui suit le défilement", "default": true },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 32 },
-    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 },
+    {"type": "checkbox", "id": "show_finishes", "label": "Afficher les finitions", "default": false},
+    {"type": "text", "id": "finish_label", "label": "Titre des finitions", "default": "Finition"},
+    {"type": "textarea", "id": "finish_colors", "label": "Couleurs des finitions", "info": "Une ligne par variante : Nom=#RRGGBB. Le nom reste toujours visible."},
+    {"type": "text", "id": "display_heading", "label": "Titre éditorial du produit"},
+    {"type": "text", "id": "display_intro", "label": "Introduction du produit"},
+    {"type": "text", "id": "media_role", "label": "Rôle du visuel attendu"}
   ],
   "blocks": [
     {"type": "quantity_offer", "name": "Offre par quantité", "settings": [{"type": "text", "id": "title", "label": "Libellé de l’offre", "default": "Votre offre"}, {"type": "range", "id": "quantity", "label": "Nombre d’articles", "min": 1, "max": 20, "step": 1, "default": 1}, {"type": "range", "id": "discount", "label": "Remise configurée (%)", "min": 0, "max": 100, "step": 1, "default": 0}, {"type": "checkbox", "id": "recommended", "label": "Offre recommandée", "default": false}, {"type": "text", "id": "badge", "label": "Badge éditorial", "info": "Sans classement ni popularité non vérifiée."}, {"type": "select", "id": "price_mode", "label": "Règle de prix", "default": "discount", "options": [{"value": "discount", "label": "Remise sur les prix unitaires"}, {"value": "fixed_total", "label": "Prix total fixe du lot"}]}, {"type": "number", "id": "total_price", "label": "Prix total du lot en centimes", "default": -1, "info": "À renseigner pour un prix fixe. Même total pour toutes les variantes du lot."}]},

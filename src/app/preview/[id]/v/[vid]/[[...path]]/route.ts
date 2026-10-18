@@ -3,6 +3,7 @@
  * avec LiquidJS. Gère pages, médias, polices et panier de démonstration.
  */
 import fs from "node:fs";
+import { recordPreviewContact } from "@/lib/theme/preview-contact";
 import { HttpError, currentUser, ownedProject } from "@/lib/auth";
 import { handle } from "@/lib/http";
 import { currentTheme, themeVersion } from "@/lib/projects";
@@ -156,13 +157,22 @@ async function get(req: Request, ctx: P): Promise<Response> {
   if (path === "/cart.js" || (path === "/cart" && req.headers.get("accept")?.includes("application/json"))) return Response.json(cartJson(spec, cart));
   if (url.searchParams.get("sections")) return Response.json(await sectionsFor(spec, base, cart, url.searchParams.get("sections")));
   const r = await renderPage({ spec, base, cart }, path, url.searchParams);
-  const html = url.searchParams.get("es_raw") === "1" ? r.html : r.html.replace("</body>", `${previewTools(uiLang(), spec.store.business)}${stockBadgeTool(stockPhotosInTheme(spec, getAsset, uiLang()).map((x) => ({ file: x.file, label: stockPhotoLabel(x.source, uiLang()) })))}</body>`);
+  const html = url.searchParams.get("es_raw") === "1" ? r.html : r.html.replace("</body>", `${previewTools(uiLang(), spec.store.business, spec.meta?.demo?.contactTest === true && spec.meta.demo.isDemo === true)}${stockBadgeTool(stockPhotosInTheme(spec, getAsset, uiLang()).map((x) => ({ file: x.file, label: stockPhotoLabel(x.source, uiLang()) })))}</body>`);
   return new Response(html, { status: r.status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Frame-Options": "SAMEORIGIN", "Content-Security-Policy": previewCsp(), "Referrer-Policy": "no-referrer" } });
 }
 
 async function post(req: Request, ctx: P): Promise<Response> {
   const { id, spec, segs, base } = await load(req, ctx);
   const path = "/" + segs.join("/");
+  if (path === "/contact") {
+    if (Number(req.headers.get("content-length")) > 16000) throw new HttpError(413, "Request too large");
+    const raw = await req.text();
+    if (Buffer.byteLength(raw) > 16000) throw new HttpError(413, "Request too large");
+    let data: unknown;
+    try { data = (req.headers.get("content-type") ?? "").includes("application/json") ? JSON.parse(raw) : Object.fromEntries(new URLSearchParams(raw)); }
+    catch { throw new HttpError(400, "Invalid form"); }
+    return Response.json(recordPreviewContact(id, spec, data));
+  }
   let cart: PreviewCartLine[];
   try { cart = rebindOfferLines(spec, await readCart(id)); } catch (e) { throw new HttpError(422, purchaseErrorMessage(e, spec.language ?? "fr")); }
   const ct = req.headers.get("content-type") ?? "";

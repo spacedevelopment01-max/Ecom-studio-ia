@@ -61,6 +61,16 @@ function projectMediaOnly(spec: ThemeSpec, type: string, settings: Record<string
   if (BRAND_MEDIA_TYPES.has(type)) return brandProjectMedia(type, schema, p, settings, blocks);
   if (UTILITY_MEDIA_TYPES.has(type)) return utilityProjectMedia(type, schema, p, settings, blocks);
   if (NARRATIVE_MEDIA_TYPES.has(type)) return narrativeProjectMedia(spec, type, schema, p, settings, blocks);
+  if (type.startsWith("ed-")) {
+    // Un rôle explicitement attendu ne reçoit jamais une photo choisie au hasard.
+    const out = { ...settings };
+    const photos = [...new Set(p.photos)];
+    let index = 0;
+    if (["ed-opening", "ed-scene"].includes(type) && !out.media_role && !out.image && !out.image_asset) out.image_asset = photos[index++] ?? "";
+    if(type==="ed-study") { if(!out.media_role&&!out.image&&!out.image_asset)out.image_asset=photos[index++]??""; if(!out.second_role&&!out.second_image&&!out.second_asset)out.second_asset=photos[index++]??""; }
+    const enriched = blocks?.map((b) => ({ ...b, settings: { ...b.settings, ...(!b.settings?.media_role && !b.settings?.image && !b.settings?.image_asset ? { image_asset: photos[index++] ?? "" } : {}) } }));
+    return { settings: out, blocks: enriched };
+  }
   let n = 0;
   const nextPhoto = () => p.photos.length ? p.photos[n++ % p.photos.length] : undefined;
   const out = { ...settings };

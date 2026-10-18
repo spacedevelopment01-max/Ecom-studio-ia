@@ -135,7 +135,7 @@ function productDrop(sp: StoreProduct, pi: number, base: string) {
     inventory_quantity: v.inventory_quantity,
     inventory_management: v.inventory_quantity === undefined ? null : "shopify",
     url: `${url}?variant=${variantId(pi, i)}`,
-    featured_media: withPreview[v.image ? Math.max(0, sp.images.indexOf(v.image)) : 0] ?? null,
+    featured_media: v.image ? withPreview[sp.images.indexOf(v.image)] ?? null : sp.variants.some(x=>!!x.image) ? null : withPreview[0] ?? null,
     unit_price_measurement: null,
   }));
   const hasOnlyDefault = variants.length === 1 && variants[0].title === "Default Title";
@@ -269,6 +269,7 @@ function buildStore(opts: PreviewOptions, current: { product?: string; collectio
     description: spec.store.shopName,
     money_format: lang === "en" ? "€{{amount}}" : "{{amount_with_comma_separator}} €",
     customer_accounts_enabled: false,
+    es_demo_contact: spec.meta?.demo?.isDemo === true && spec.meta.demo.contactTest === true,
     policies,
     enabled_payment_types: spec.store.paymentTypes ?? [],
     password_message: "",
@@ -661,7 +662,7 @@ function* renderSectionGen(engine: Liquid, ctx: Context, emitter: Emitter, files
   const types = new Map<string, string>();
   for (const s of schema.settings) if (s.id) types.set(s.id, s.type);
   const sectionSettings = { ...inst.settings };
-  if (inst.type === "purchase-offers" && sectionSettings.product_target) sectionSettings.product = (ctx.getAll() as any).__purchaseTargets?.[String(sectionSettings.product_target)] ?? "";
+  if (["purchase-offers","ed-finishes"].includes(inst.type) && sectionSettings.product_target) sectionSettings.product = (ctx.getAll() as any).__purchaseTargets?.[String(sectionSettings.product_target)] ?? "";
   const settings = wrapSettings(withDefaults(schema.settings, sectionSettings), base, types, resolve);
   const blocks = (inst.block_order ?? Object.keys(inst.blocks ?? {}))
     .map((bid) => ({ bid, b: inst.blocks?.[bid] }))

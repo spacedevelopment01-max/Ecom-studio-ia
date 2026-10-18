@@ -281,7 +281,8 @@
     "phone": "Téléphone",
     "message": "Message",
     "send": "Envoyer",
-    "success": "Merci, nous revenons vers vous rapidement."
+    "success": "Merci, nous revenons vers vous rapidement.",
+    "error": "Vérifiez votre demande avant de réessayer."
   },
   "customer": {
     "account": "Mon compte",
@@ -359,5 +360,8 @@
     "summary": "Votre sélection",
     "demo": "Aperçu : règles testées localement, aucun paiement réel.",
     "item": "article"
+  },
+  "editorial": {
+    "pending_media": "Visuel à importer"
   }
 }
