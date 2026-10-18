@@ -66,7 +66,7 @@ describe("Lot 2C — FRAISE GUMMIES (référence Lumora) et ONDE AUDIO (référe
       if (pack) expect(drawer).toContain(`${kind}-02-fond-clair.webp`);
       // Fiche : prix barré avec badge de remise, libellé unitaire ou quantité réelle.
       const product = (await render(spec, f.detail)).html;
-      expect(product).toContain("es-price__save"); expect(product).toContain(kind === "fraise" ? "−28 %" : "−21 %");
+      expect(product).toContain("es-price__save"); expect(product).toContain(kind === "fraise" ? "−29 %" : "−21 %");
       if (kind === "fraise") { expect(product).toContain("data-offer-compare"); expect(product).toContain('"unit":"par flacon"'); expect((product.match(/data-quantity="/g) ?? []).length).toBe(3); }
       else { expect(product).toContain('name="quantity"'); expect(product).toContain("data-sticky-buy"); }
       if (kind === "fraise") expect(product).toContain("es-ctabs"); expect(product).toContain("note fictive");

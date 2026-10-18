@@ -214,7 +214,7 @@ export async function conversionProject(userId: string, kind: ConversionKind, pa
   header.settings = { ...header.settings, menu: "main-menu", color_scheme: fraise ? "scheme-1" : "scheme-2", layout: "logo-center", shape: "bar", icons: "plain", mobile_menu: "drawer", sticky: true, transparent_on_home: false, show_search: true, show_cart: true, cta_label: "", cta_link: "", phone: "" };
   const announce = (text: string, scheme: string) => section("announcement-bar", { style: "static", color_scheme: scheme }, [{ type: "announcement", settings: { text, link: "" } }]);
   spec.groups.header.sections = fraise
-    ? { top: announce("Livraison offerte dès 2 flacons — exemple d'offre de démonstration", "scheme-2"), promo: announce("Offre de lancement : −28 % sur le flacon — exemple de promotion", "scheme-3"), header }
+    ? { top: announce("Livraison offerte dès 2 flacons — exemple d'offre de démonstration", "scheme-2"), promo: announce("Offre de lancement : −29 % sur le flacon — exemple de promotion", "scheme-3"), header }
     : { promo: announce("Offre de lancement : −21 % sur le casque — exemple de promotion", "scheme-3"), header };
   spec.groups.header.order = fraise ? ["top", "promo", "header"] : ["promo", "header"];
   // Pied de page sombre : logo inverse, texte, liens, aide, informations, newsletter en mode démonstration.
