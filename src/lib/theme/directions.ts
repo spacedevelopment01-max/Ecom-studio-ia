@@ -1216,7 +1216,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     if (footer) Object.assign(footer.settings, { style: svc ? "reference-studio" : "reference-shop", show_wordmark: true });
     result.settings.fab_contact_link = "";
     result.settings.fab_back_to_top = false;
-    Object.assign(result.settings, { type_heading_font: input.fonts?.heading ?? (svc ? "archivo_n6" : "cormorant_n5"), type_body_font: input.fonts?.body ?? (svc ? "work_sans_n4" : "dm_sans_n4"), page_width: 1480, spacing_scale: 100, ds_language: svc ? "craft" : "maison", ds_density: "balanced", heading_scale: 100, heading_tracking: 0, button_radius: svc ? 3 : 0, card_radius: 0, button_uppercase: false, button_shine: false, glow_enabled: false, motion_intensity: "subtle", motion_parallax: false });
+    Object.assign(result.settings, { type_heading_font: input.fonts?.heading ?? (svc ? "archivo_n6" : "cormorant_n5"), type_body_font: input.fonts?.body ?? (svc ? "work_sans_n4" : "dm_sans_n4"), page_width: 1500, spacing_scale: 100, ds_language: svc ? "craft" : "maison", ds_density: "balanced", heading_scale: 100, heading_tracking: 0, button_radius: svc ? 4 : 0, card_radius: 0, button_uppercase: false, button_shine: false, glow_enabled: false, motion_intensity: "subtle", motion_parallax: false });
     for (const section of Object.values(result.templates.product.sections)) if (section.type === "main-product") {
       section.settings.sticky_bar = false;
       section.settings.gallery_layout = "carousel";

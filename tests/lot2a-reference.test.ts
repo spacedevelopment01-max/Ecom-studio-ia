@@ -17,7 +17,7 @@ import { emptyProduct, emptyServiceProfile } from "@/lib/project-types";
 import { runWithLang } from "@/lib/i18n-server";
 import { applyOps, validateSpec, OpSchema } from "@/lib/theme/ops";
 import { renderPage } from "@/lib/theme/render";
-import { sectionSchema, storeProducts } from "@/lib/theme/spec";
+import { sectionSchema, storeProducts, settingsSchema, coerceSetting } from "@/lib/theme/spec";
 import { bindReferenceOffers } from "@/lib/theme/reference-delivery";
 import { withProjectMedia } from "@/lib/theme/section-defaults";
 import { contentContext } from "@/lib/theme/section-content";
@@ -38,6 +38,10 @@ describe("Lot 2A — références intégrées", async () => {
     const product = await referenceProject(user.id, "products"), service = await referenceProject(user.id, "services");
     for (const ref of [product, service]) {
       expect(validateSpec(ref.spec)).toEqual([]);
+      for (const def of settingsSchema(ref.spec).flatMap((group) => group.settings ?? []).filter((s) => s.type === "range")) {
+        const value = ref.spec.settings[def.id];
+        if (value != null) expect(coerceSetting(def, value), `${ref.kind}/${def.id}`).toEqual({ ok: true, value });
+      }
       expect(ref.spec.templates.index.order.length).toBeGreaterThanOrEqual(8);
       expect(ref.spec.templates.index.order.length).toBeLessThanOrEqual(12);
       expect(ref.spec.templates.index.sections[ref.spec.templates.index.order[0]].type).toBe("ref-hero");

@@ -24,6 +24,7 @@ const { previewSegment } = await import("../src/lib/theme/preview-access");
 const { GET, POST } = await import("../src/app/preview/[id]/v/[vid]/[[...path]]/route");
 const { cmsExport } = await import("../src/lib/cms-v2/export");
 const { libraryLoader } = await import("../src/lib/theme/loader");
+const { shopifyProductsCsv } = await import("../src/lib/theme/catalog-export");
 const { runWithLang } = await import("../src/lib/i18n-server");
 const sharp = (await import("sharp")).default;
 const user = await createUser("references-lot2a@example.invalid", "isolated-test-only", "Démonstrations isolées");
@@ -60,6 +61,9 @@ try {
     const base = `/preview/${pid}/v/${previewSegment(version.id, user.id, pid)}`, dir = path.join(out, kind); fs.mkdirSync(dir, { recursive: true });
     const detail = kind === "products" ? `/products/${spec.store.product.handle}` : `/pages/${spec.store.pages.find((p) => p.contentTarget === "service:creation")!.handle}`;
     const pages: any[] = [], exports: any[] = [];
+    fs.writeFileSync(path.join(dir, "theme-spec.json"), JSON.stringify(spec, null, 2) + "\n");
+    fs.writeFileSync(path.join(dir, "pages-a-creer.json"), JSON.stringify(spec.store.pages, null, 2) + "\n");
+    if (kind === "products") fs.writeFileSync(path.join(dir, "produits.csv"), shopifyProductsCsv(spec));
     for (const platform of ["shopify", "woocommerce", "prestashop"] as const) {
       const exp = await cmsExport(platform, spec, libraryLoader), zip = unzipSync(exp.zip);
       fs.writeFileSync(path.join(dir, `${platform}.zip`), exp.zip);
@@ -87,6 +91,8 @@ try {
         await loaded(page);
         const measurements = await page.evaluate(() => ({ width: innerWidth, scrollWidth: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight, h1: document.querySelectorAll("h1").length, images: document.images.length, ...((window as any).__metrics), duration: (performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming).duration, transferBytes: performance.getEntriesByType("resource").reduce((n, e: any) => n + e.transferSize, 0) }));
         assert.ok(measurements.scrollWidth <= width + 1, `${kind}/${name}/${width} déborde : ${measurements.scrollWidth}`);
+        // L'origine opaque du bac à sable peut interdire Resource Timing : zéro ne signifie pas zéro trafic.
+        if (!measurements.transferBytes) measurements.transferBytes = null;
         assert.equal(measurements.h1, 1, `${kind}/${name} doit avoir un titre principal unique`);
         let file: string | null = null;
         if (width === 1440 || width === 390) {
