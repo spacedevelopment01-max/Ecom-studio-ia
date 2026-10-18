@@ -126,6 +126,7 @@ describe("CMS Engine V2", async () => {
     for (const f of ["style.css", "theme.json", "functions.php", "templates/front-page.html", "templates/single-product.html", "templates/archive-product.html", "parts/header.html", "parts/footer.html", "inc/es-theme.php", "inc/es-woo.php", "inc/php/es-liquid.php", "inc/site.json", "assets/js/es-editor.js", "assets/css/es-woo.css", "import/produits-woocommerce.csv"]) expect(z[`${root}/${f}`], f).toBeTruthy();
     const single = strFromU8(z[`${root}/templates/single-product.html`]);
     expect(single).toContain("woocommerce/add-to-cart-form");
+    expect(single).toContain('class="wp-block-group es-wc product"');
     // Panier : celui de WooCommerce (lien vers la page panier), pas le tiroir panier de Shopify.
     const all = textOf(z);
     expect(all).not.toMatch(/\/cart\/add\.js|shopify-section-cart-drawer/);
@@ -133,7 +134,7 @@ describe("CMS Engine V2", async () => {
     // Bloc d'achat de l'accueil (boutique d'un produit) : celui de WooCommerce, retrouvé par le SKU du produit.
     if (Object.values(shop.templates.index.sections).some((x) => x.type === "featured-product")) {
       const front = strFromU8(z[`${root}/templates/front-page.html`]);
-      expect(front).toContain(`[product_page sku="${shop.store.product.handle}"]`);
+      expect(front).toContain(`[es_product handle="${shop.store.product.handle}"]`);
       expect(front).not.toContain('"type":"featured-product"');
     }
     const c = await fr(() => checkCmsExport("woocommerce", exp, shop, { projectId: ids.cosmetic }));

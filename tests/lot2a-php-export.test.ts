@@ -46,14 +46,15 @@ describe("Lot 2A — moteur PHP exporté", () => {
     } finally { fs.rmSync(dir, { recursive: true, force: true }); }
   });
 
-  it("signale les grilles Liquid dont le catalogue WooCommerce doit être remplacé par un bloc natif", async () => {
+  it("adapte les grilles commerciales en bloc de catalogue natif WooCommerce", async () => {
     for (const type of ["featured-collection", "ref-offers"]) {
       const spec = sampleSpec("vitrine");
       spec.templates.index = { order: ["catalog"], sections: { catalog: { type, settings: { heading: "Instruments et accessoires", layout: "shop" } } } };
       const exp = await cmsExport("woocommerce", spec, () => null);
-      expect(exp.issues.some((i) => i.code === "catalog_collection_requires_native_block")).toBe(true);
+      expect(exp.issues.some((i) => i.code === "catalog_collection_requires_native_block")).toBe(false);
       const file = Object.entries(unzipSync(exp.zip)).find(([p]) => p.endsWith("/templates/front-page.html"))!;
       expect(strFromU8(file[1])).toContain("Instruments et accessoires");
+      expect(strFromU8(file[1])).toContain("wp:es/catalog");
     }
   });
 

@@ -18,6 +18,7 @@ import { missingEditorialMedia } from "../theme/editorial-media";
 import { adaptForPlatform } from "./adapt";
 import { gateCmsExport, type CmsGateResult, type CriterionKey, type Measure } from "./quality";
 import type { CmsPlatform, PlatformExport } from "./types";
+import { catalogSnapshot } from "./catalog";
 
 export const CMS_PLATFORMS: CmsPlatform[] = ["shopify", "woocommerce", "prestashop", "wix", "squarespace"];
 
@@ -31,9 +32,11 @@ export function safeFileName(name: string): string {
 /** Génère l'export d'une plateforme. Les médias refusés ou fatals ne sont JAMAIS exportés. */
 export async function cmsExport(platform: CmsPlatform, spec0: ThemeSpec, load: AssetLoader, opts: { projectId?: string } = {}): Promise<PlatformExport> {
   const guardedOffers = guardPurchaseExport(spec0, platform);
-  const spec = adaptForPlatform(guardedOffers.spec, platform);
+  const spec = structuredClone(adaptForPlatform(guardedOffers.spec, platform));
   const { forbidden } = forbiddenMedia(spec, opts.projectId);
+  for (const file of forbiddenMedia(spec, opts.projectId).foreign) forbidden.add(file);
   const blockedIds = new Set([...forbidden].map((f) => spec.files[f]));
+  for (const file of forbidden) delete spec.files[file];
   const guarded: AssetLoader = (id) => (blockedIds.has(id) ? null : load(id));
   let exp: PlatformExport;
   if (platform === "shopify") exp = await exportShopify(spec, guarded);
@@ -44,6 +47,31 @@ export async function cmsExport(platform: CmsPlatform, spec0: ThemeSpec, load: A
     exp = { platform, zip: k.zip, name: k.name, kind: "kit", files: [], issues: [], sections: [], media: Object.keys(spec.files).filter((f) => !forbidden.has(f)) };
   }
   exp.name = safeFileName(exp.name);
+  const entries = unzipSync(exp.zip);
+  const prefix = platform === "woocommerce" ? `${exp.files[0].split("/")[0]}/` : "";
+  const mediaPrefix = platform === "woocommerce" ? `${prefix}assets/es/` : platform === "prestashop" ? "assets/es/" : platform === "shopify" ? "assets/" : "medias/";
+  const media = Object.fromEntries(Object.keys(spec.files).filter(f => entries[mediaPrefix + f]).map(f => [f, entries[mediaPrefix + f]]));
+  const catalog = catalogSnapshot(spec, media, opts.projectId);
+  const catalogFile = platform === "woocommerce" ? `${prefix}inc/catalogue.json` : platform === "prestashop" ? "dependencies/modules/esstudio/catalogue.json" : platform === "shopify" ? "assets/es-catalogue.json" : "catalogue.json";
+  entries[catalogFile] = strToU8(JSON.stringify(catalog, null, 2));
+  if (platform === "wix" || platform === "squarespace") {
+    entries["configuration-studio.json"] = strToU8(JSON.stringify({ settings: spec.settings, groups: spec.groups, templates: spec.templates, store: { ...spec.store, pages: spec.store.pages.filter(p => p.status !== "draft") } }, null, 2));
+    const guide = new TextDecoder().decode(entries["GUIDE.md"]);
+    entries["GUIDE.md"] = strToU8(guide + "\n\n## Catalogue, pages et navigation / Catalog, pages and navigation\n\n`catalogue.json` conserve les axes, combinaisons, SKU, prix, associations d’images, pages et menus. `configuration-studio.json` conserve les réglages et tous les contenus des sections. Ces JSON et le CSV sont des données de reprise : aucun n’est annoncé comme un import natif validé. Reportez les colonnes dans le modèle actuel de la plateforme et affectez les fichiers de `medias/`. Aucune publication automatique.\n\n`catalogue.json` retains axes, combinations, SKUs, prices, image associations, pages and menus. `configuration-studio.json` retains section settings and complete contents. These JSON files and the CSV are rebuild data, not a verified native importer. Map columns to the platform’s current template and assign the files in `medias/`. No automatic publication.\n");
+  }
+  if (platform === "woocommerce") {
+    const sitePath = `${prefix}inc/site.json`; const site = JSON.parse(new TextDecoder().decode(entries[sitePath]));
+    site.catalogSource = catalog.source; entries[sitePath] = strToU8(JSON.stringify(site, null, 1));
+  }
+  if (platform === "prestashop") {
+    const sitePath = "dependencies/modules/esstudio/site.json"; const site = JSON.parse(new TextDecoder().decode(entries[sitePath]));
+    site.catalogSource = catalog.source; site.theme = new TextDecoder().decode(entries["config/theme.yml"]).match(/^name: (.+)$/m)?.[1];
+    entries[sitePath] = strToU8(JSON.stringify(site, null, 1));
+    entries["config/es-site.json"] = entries[sitePath];
+    entries["config/es-catalogue.json"] = entries[catalogFile];
+  }
+  exp.zip = Buffer.from(zipSync(entries, { level: 6, mtime: new Date("2026-01-01T00:00:00Z") }));
+  exp.files = Object.keys(entries);
   for (const missing of missingEditorialMedia(spec0)) exp.issues.push({code:"editorial_media_missing",severity:"blocking",detail:`${missing.page}/${missing.section} : image requise absente (${missing.role}). Composition exportée pour travail, rendu photographique incomplet.`});
   const purchaseRules = purchaseExportManifest(spec0);
   if (purchaseRules) {
@@ -51,7 +79,7 @@ export async function cmsExport(platform: CmsPlatform, spec0: ThemeSpec, load: A
     const prefix = platform === "woocommerce" ? `${exp.files[0].split("/")[0]}/` : "";
     const file = `${prefix}${["wix","squarespace"].includes(platform) ? "offres-a-configurer.json" : "assets/es-purchase-offers.json"}`;
     entries[file] = strToU8(JSON.stringify({ ...purchaseRules, platform, activeDiscountsAndGifts:false }, null, 2));
-    exp.zip = Buffer.from(zipSync(entries)); if (!exp.files.includes(file)) exp.files.push(file);
+    exp.zip = Buffer.from(zipSync(entries, { level: 6, mtime: new Date("2026-01-01T00:00:00Z") })); if (!exp.files.includes(file)) exp.files.push(file);
   }
   if (guardedOffers.disabled.length) exp.issues.push({ code: "purchase_rules_require_server", severity: "warning", detail: `Offres avancées désactivées : ${guardedOffers.disabled.join(", ")}. Remises et cadeaux nécessitent un adaptateur commercial serveur installé et vérifié sur ${platform}. Configuration conservée dans le studio ; achat natif maintenu.` });
   for (const f of forbidden) exp.issues.push({ code: "rejected_media", severity: "blocking", detail: `média ${f} refusé : non exporté (à remplacer dans le studio)` });
