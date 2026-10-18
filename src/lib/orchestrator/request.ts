@@ -12,7 +12,7 @@ export type RequestScope = {
   narrow: boolean;
   titleEdit?: { pageKey: "home"; text: string };
 };
-export const normalizeRequest = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+export const normalizeRequest = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/’/g, "'").toLowerCase();
 const objects = (s: string) => [...new Set((s.match(/\b(logo|marque|identite|palette|style|titre|textes?|images?|photos?|site|boutique|video|publier|publication)\b/g) || []))];
 export function requestScope(original: string, choices: ChoiceReference[] = []): RequestScope {
   const scope: RequestScope = { original, actionable: "", restrictions: [], preserved: [], references: [], informational: false, narrow: false };
@@ -23,7 +23,7 @@ export function requestScope(original: string, choices: ChoiceReference[] = []):
   const active: string[] = [];
   for (const c of clauses) {
     if (/^(je|tu|vous|i|we|merci)$/.test(c)) continue;
-    if (/\b(explique|expliquer|comment|pourquoi|explain|how|supposons|hypothese|hypothetique|si je|si on|si tu|si vous|if i|would happen|que se passerait)\b/.test(c)) { scope.informational = true; continue; }
+    if (/^(?:et |and )?(?:si|if)\b/.test(c) || /\b(explique|expliquer|explication|comment|pourquoi|explain|explanation|how|supposons|hypothese|hypothetique|si je|si on|si tu|si vous|if i|would happen|que se passerait)\b/.test(c)) { scope.informational = true; continue; }
     if (/\b(ne|pas|jamais|sans|aucun|interdit|evite|preserve|conserve|garde|keep|preserve|never|without|don't|do not)\b|\bn['’]/.test(c)) {
       // Une négation partielle autorisant un autre objet exige une précision plutôt qu'une portée devinée.
       if (/\b(pas seulement|pas uniquement|non seulement|not only)\b/.test(c)) scope.clarification = "Précisez séparément ce qui doit changer et ce qui doit être conservé.";

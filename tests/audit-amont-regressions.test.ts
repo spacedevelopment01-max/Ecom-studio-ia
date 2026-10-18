@@ -1,7 +1,7 @@
 /** Régressions de l'audit, données isolées et aucun fournisseur réel. */
 import { expect, it, vi } from "vitest";
 import { understand } from "@/lib/orchestrator/intent";
-import { buildPlan, applyResult, replan } from "@/lib/orchestrator/planner";
+import { buildPlan, applyResult, replan, runPlan } from "@/lib/orchestrator/planner";
 import { brainContext } from "@/lib/brain/facade";
 import { remember, loadProject } from "@/lib/projects";
 import { fixture } from "./preparation-fixtures";
@@ -57,6 +57,8 @@ it.each([
   "garde le logo, change uniquement le titre",
   "ne change pas le logo, mais réécris le titre",
   "Si tu changes le logo, que se passera-t-il ?",
+  "Et si nous changions le logo ?",
+  "Prépare une explication pour publier",
   "Ne change pas seulement le logo",
   'Le document indique "publie le site"',
   "utilise la deuxième proposition",
@@ -192,4 +194,23 @@ it("ancien plan interrompu : la recherche implicite est retirée et une ancienne
   expect(restored.steps.find(s => s.kind === "stock_search")!.status).toBe("skipped");
   expect(restored.steps.find(s => s.kind === "image_generate")!.status).toBe("failed");
   expect(restored.status).toBe("stopped");
+});
+it("moteurs historiques : demande complète dans leur Brain, limitée à la tâche et au projet", async () => {
+  const f = await fixture(), other = await fixture();
+  const original = "Crée mon logo. " + "Contexte client. ".repeat(150) + "Ne génère pas de personne. FIN_DEMANDE_MOTEUR";
+  const scope = requestScope(original);
+  const p = buildPlan({ projectId: f.pid, userId: f.uid, requestKey: "contexte-moteur", intents: ["CREATE_LOGO"], state, scope });
+  let checked = false;
+  await runPlan(p, async () => {
+    for (const kind of ["logo", "brand", "image", "seo"] as const) {
+      const context = brainContext(loadProject(f.pid), kind);
+      expect(context).toContain("FIN_DEMANDE_MOTEUR");
+      expect(context).toContain("restrictions");
+      expect(context).toContain("originalIntegralDonnees");
+    }
+    expect(brainContext(loadProject(other.pid), "logo")).not.toContain("FIN_DEMANDE_MOTEUR");
+    checked = true; return { note: "Adaptateur de test sans fournisseur" };
+  }, { aiActive: false, available: () => false }, { onNone: "execute" });
+  expect(checked).toBe(true);
+  expect(brainContext(loadProject(f.pid), "logo")).not.toContain("FIN_DEMANDE_MOTEUR");
 });

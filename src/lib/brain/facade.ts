@@ -12,6 +12,7 @@
  * le contexte est recalculé à chaque appel ; le registre ne fait que relier un texte stable à ses métadonnées.
  */
 import type { Project } from "../projects";
+import { currentRequest } from "./request-scope";
 import { brainSnapshot } from "./snapshot";
 import { BUDGETS, contextFor, type BrainItem, type ContextView, type Scope } from "./views";
 
@@ -59,6 +60,8 @@ export function legacyView(p: Project, scope: LegacyScope = "all"): ContextView 
 export function brainView(p: Project, scope: Exclude<Scope, "all">): ContextView {
   if ((scope as Scope) === "all") throw new Error("brainView : un moteur reçoit un scope précis, jamais « all ».");
   const snapshot = brainSnapshot(p);
+  const request = currentRequest(p.id);
+  if (request) snapshot.memory.push({ kind: "decision", key: "demande.en_cours", value: request, status: "confirmed", source: "user", scope: "all", origin: "user", evidence_json: null });
   const facts = new Map<string, string>();
   for (const f of p.product.facts.filter(f => f.status === "confirmed")) {
     if (facts.has(f.key) && facts.get(f.key) !== f.value) throw new Error(`Contexte contradictoire : confirmez la valeur du fait ${f.label} avant toute création.`);

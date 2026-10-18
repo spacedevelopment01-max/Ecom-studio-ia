@@ -16,6 +16,7 @@ import type { Verdict } from "../quality/gate";
 import type { Intent } from "./intent";
 import { scopeAllowsStep, type RequestScope } from "./request";
 import { MEDIA_POLICY } from "../image-v2/policy";
+import { withRequestScope } from "../brain/request-scope";
 import { nextAction, route, type RouteDecision, type RouteRequest, type RoutingHistory } from "./router";
 
 export type StepKind =
@@ -415,11 +416,6 @@ export async function runPlan(
         Object.assign(s, { status: "failed", reason: "Étape interdite par le périmètre de la demande ; aucun effet exécuté." });
         blockDependents(plan, s); savePlan(plan); continue;
       }
-      if (s.requiredContext) {
-        const { loadProject } = await import("../projects");
-        const { brainContext } = await import("../brain/facade");
-        brainContext(loadProject(plan.projectId), s.requiredContext);
-      }
       const decision: RouteDecision =
         s.task === "local"
           ? { mode: "local", provider: "local", model: "local-engine", tier: "local", reason: "deterministic local task", fallback: false, escalation: false, qualityTarget: s.qualityTarget }
@@ -432,7 +428,14 @@ export async function runPlan(
         blockDependents(plan, s);
         continue;
       }
-      const result = await withTrace({ intent: plan.intents.join("+"), planId: plan.id, stepId: s.id, routing: s.route, history: stepHistory(s) }, () => execute(s, decision));
+      const result = await withTrace({ intent: plan.intents.join("+"), planId: plan.id, stepId: s.id, routing: s.route, history: stepHistory(s) }, () => withRequestScope(plan.projectId, scope, async () => {
+        if (s.requiredContext) {
+          const { loadProject } = await import("../projects");
+          const { brainContext } = await import("../brain/facade");
+          brainContext(loadProject(plan.projectId), s.requiredContext);
+        }
+        return execute(s, decision);
+      }));
       applyResult(plan, s.id, result);
       for (const [kind, r] of Object.entries(result.covered ?? {})) {
         const c = plan.steps.find((x) => x.kind === kind && x.status === "pending");

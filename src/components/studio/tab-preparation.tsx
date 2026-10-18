@@ -1036,7 +1036,7 @@ export default function TabPreparation() {
             </Button>
             {state.stages.content && (
               <>
-                <p role="status">{t("Les textes à compléter ne peuvent pas être validés. Une validation client ne remplace pas une relecture éditoriale IA. Les champs locaux du kit de liaison restent provisoires et sont listés dans le contrat.", "Incomplete copy cannot be approved. Client approval does not replace AI editorial review. Local layout fields remain provisional and are listed in the contract.")}</p>
+                <p role="status">{t("Les textes à compléter ne peuvent pas être validés. Valider un brouillon ne remplace pas une relecture éditoriale. Certains textes des sections restent à relire avant de créer le thème.", "Incomplete copy cannot be approved. Approving a draft does not replace editorial review. Some section copy still needs review before building the theme.")}</p>
                 <ol className="grid gap-3">
                   {state.stages.content.data.pages.map((page) => (
                     <li
@@ -1044,7 +1044,13 @@ export default function TabPreparation() {
                       className="rounded-xl border border-line p-3"
                     >
                       <h3 className="font-semibold">{page.title}</h3>
-                      <p className="text-sm">{page.goal}</p>
+                      <p className="text-sm">{page.kind === "contact" ? ({
+                        quote: t("Demande de devis", "Quote request"),
+                        booking: t("Prendre rendez-vous", "Book an appointment"),
+                        call: t("Appeler", "Call"),
+                        form: t("Formulaire de contact", "Contact form"),
+                        unknown: t("Moyen de contact à préciser", "Contact method to confirm"),
+                      } as Record<string, string>)[page.goal] || page.goal : page.goal}</p>
                       <ul className="mt-2 list-inside list-disc text-xs text-muted">
                         {page.sections.map((sec) => (
                           <li key={sec.key}>{sec.purpose}</li>
