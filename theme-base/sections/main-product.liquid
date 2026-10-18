@@ -1,6 +1,7 @@
 {%- liquid
   assign current_variant = product.selected_or_first_available_variant
   assign media_count = product.media.size
+  assign quantity_offers = section.blocks | where: 'type', 'quantity_offer'
 -%}
 <section class="es-section es-product es-product--{{ section.settings.gallery_layout }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-main-product>
   <div class="es-container es-product__grid">
@@ -60,7 +61,7 @@
             {%- when 'title' -%}
               {% if section.settings.display_heading != blank or section.settings.display_intro != blank %}<div data-ed-product-heading {{ block.shopify_attributes }}><h1 class="es-heading es-h2 es-product__title">{{ section.settings.display_heading | default: product.title | escape }}</h1>{% if section.settings.display_intro != blank %}<p class="ed-product-intro">{{ section.settings.display_intro | escape }}</p>{% endif %}</div>{% else %}<h1 class="es-heading es-h2 es-product__title" {{ block.shopify_attributes }}>{{ product.title }}</h1>{% endif %}
             {%- when 'price' -%}
-              {% unless section.settings.purchase_enabled %}
+              {% unless section.settings.purchase_enabled and quantity_offers.size > 0 %}
               <div class="es-product__price" {{ block.shopify_attributes }} data-price-wrap>{% render 'price', product: product, use_variant: true %}
                 <p class="es-small es-muted">{{ 'products.product.taxes_included' | t }}</p>
               </div>
@@ -68,7 +69,7 @@
             {%- when 'text' -%}
               <div class="es-rte es-product__text" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
             {%- when 'buy_buttons' -%}
-              <div {{ block.shopify_attributes }} id="MainBuy">{% if section.settings.purchase_enabled %}{% render 'purchase-offers', product: product, blocks: section.blocks, offer_settings: section.settings, section_id: section.id %}{% else %}{% render 'product-buy', product: product, section_id: section.id, show_quantity: block.settings.show_quantity, show_dynamic_checkout: block.settings.show_dynamic_checkout, picker: block.settings.picker, price_in_button: block.settings.price_in_button %}{% endif %}</div>
+              <div {{ block.shopify_attributes }} id="MainBuy">{% if section.settings.purchase_enabled %}{% render 'purchase-offers', product: product, blocks: section.blocks, offer_settings: section.settings, section_id: section.id, allow_quick_buy: true %}{% else %}{% render 'product-buy', product: product, section_id: section.id, show_quantity: block.settings.show_quantity, show_dynamic_checkout: block.settings.show_dynamic_checkout, picker: block.settings.picker, price_in_button: block.settings.price_in_button %}{% endif %}</div>
             {%- when 'description' -%}
               <div class="es-rte es-product__description" {{ block.shopify_attributes }}>{{ product.description }}</div>
             {%- when 'highlights' -%}

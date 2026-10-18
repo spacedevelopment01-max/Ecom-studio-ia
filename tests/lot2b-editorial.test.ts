@@ -32,6 +32,7 @@ import { withProjectMedia } from "@/lib/theme/section-defaults";
 import { contentContext } from "@/lib/theme/section-content";
 import { saveAsset } from "@/lib/library";
 import { libraryEntry } from "@/lib/theme/section-library";
+import { compileTheme } from "@/lib/theme/compile";
 beforeEach(()=>vi.stubGlobal("fetch",async()=>{throw new Error("Réseau externe interdit");}));
 const fr=<T>(f:()=>T)=>runWithLang({content:"fr",ui:"fr"},f);
 const total=(cart:ReturnType<typeof addOfferToCart>)=>cart.reduce((n,l)=>n+(l.finalLinePrice??0),0);
@@ -55,10 +56,18 @@ describe("Lot 2B — moteur éditorial et parcours isolés",async()=>{
  });
  it("réutilise une source d'offres sans ambiguïté et ferme une source absente ou concurrente",async()=>{
   const {spec}=await editorialProject(user.id,"products"),home=spec.templates.index.sections.purchase,main=spec.templates["product.editorial"].sections.main;
-  expect(sharedPurchaseSection(spec,home).blocks).toEqual(main.blocks);main.blocks!.offer_2.settings.total_price=15000;expect(sharedPurchaseSection(spec,home).blocks!.offer_2.settings.total_price).toBe(15000);expect(total(addOfferToCart(spec,[],{target:"product:main",offer:"offer_2",variants:[1000,1001]}))).toBe(15000);
+  expect(sharedPurchaseSection(spec,home).blocks!.offer_2).toEqual(main.blocks!.offer_2);expect(Object.values(sharedPurchaseSection(spec,home).blocks!).every(b=>["quantity_offer","threshold_gift","purchase_benefit"].includes(b.type))).toBe(true);main.blocks!.offer_2.settings.total_price=15000;expect(sharedPurchaseSection(spec,home).blocks!.offer_2.settings.total_price).toBe(15000);expect(total(addOfferToCart(spec,[],{target:"product:main",offer:"offer_2",variants:[1000,1001]}))).toBe(15000);
   home.settings.purchase_source="product.absent:missing";expect(sharedPurchaseSection(spec,home).settings.purchase_enabled).toBe(false);
   const duplicate=structuredClone(main);spec.templates["product.editorial"].sections.other=duplicate;spec.templates["product.editorial"].order.push("other");expect(()=>addOfferToCart(spec,[],{target:"product:main",offer:"offer_2",variants:[1000,1001]})).toThrow(/Offre/);
  });
+ it("présente le même produit à la une sans dupliquer ses règles et sans substituer un autre produit",async()=>fr(async()=>{
+  const {spec}=await editorialProject(user.id,'products'),featured=spec.templates.index.sections.purchase;expect(featured.type).toBe('featured-product');expect(libraryEntry('featured-product','fr')?.name).toBe('Produit à la une');
+  featured.blocks={personal:{type:'highlight',settings:{text:'Le point exact du client',icon:'check'}}};featured.block_order=['personal'];
+  const linked=sharedPurchaseSection(spec,featured);expect(linked.blocks!.personal.settings.text).toBe('Le point exact du client');expect(linked.blocks!.offer_3.settings.total_price).toBe(20145);expect(spec.templates.index.sections.purchase.blocks).not.toHaveProperty('offer_3');
+  const html=(await renderPage({spec,base:'',cart:[]},'/',new URLSearchParams())).html;expect(html).toContain('data-featured-product');expect(html).toContain('data-product-detail');expect(html).toContain('Prix à l’unité');expect(html).toContain('Le point exact du client');
+  const files=compileTheme(spec),compiled=JSON.parse(files.get('templates/index.json')!.replace(/^\/\*[\s\S]*?\*\/\s*/,''));expect(Object.values(compiled.sections.purchase.blocks).every((b:any)=>['highlight','quantity_offer','threshold_gift','purchase_benefit'].includes(b.type))).toBe(true);
+  featured.settings.product_target='product:missing';const missingHtml=(await renderPage({spec,base:'',cart:[]},'/',new URLSearchParams())).html;const start=missingHtml.indexOf('data-es-type="featured-product"'),end=missingHtml.indexOf('data-es-type="ed-diptych"',start);expect(missingHtml.slice(start,end)).not.toContain('Lampe nomade ORBE');
+ }));
  it("enregistre réellement le contact de test, idempotent, borné et sans envoi ni pollution d'autre projet",async()=>{
   const {spec,pid}=await editorialProject(user.id,"services"),other=await editorialProject(user.id,"services");
   const data={"contact[name]":"Visiteur de test","contact[email]":"visitor@example.invalid","contact[room]":"Cuisine","contact[body]":"Repenser les circulations.",submission_id:"test-submission-123"};

@@ -15,15 +15,18 @@ export function purchaseConfig(section: SectionInstance) {
 }
 /** Une présentation réutilisée lit les mêmes blocs que la fiche ; aucune deuxième règle tarifaire. */
 export function sharedPurchaseSection(spec: ThemeSpec, section: SectionInstance): SectionInstance {
- if(section.type!=="purchase-offers" || !section.settings.purchase_source)return section;
+ if(!["purchase-offers","featured-product"].includes(section.type) || !section.settings.purchase_source)return section;
  const parts=String(section.settings.purchase_source).split(":");
  const source=parts.length===2?spec.templates[parts[0]]?.sections[parts[1]]:undefined;
  if(!source || source.type!=="main-product" || source.settings.product_target!==section.settings.product_target) return {...section,settings:{...section.settings,purchase_enabled:false},blocks:{},block_order:[]};
- return {...section,settings:{...source.settings,...section.settings,purchase_enabled:section.settings.purchase_enabled===true&&source.settings.purchase_enabled===true&&!source.disabled},blocks:structuredClone(source.blocks),block_order:source.block_order?.slice()};
+ const blocks=Object.fromEntries(Object.entries(source.blocks??{}).filter(([,b])=>["quantity_offer","threshold_gift","purchase_benefit"].includes(b.type)));
+ const own=Object.fromEntries(Object.entries(section.blocks??{}).filter(([,b])=>b.type==="highlight"));
+ if(Object.keys(own).some(id=>blocks[id]))return {...section,settings:{...section.settings,purchase_enabled:false}};
+ return {...section,settings:{...source.settings,...section.settings,purchase_enabled:section.settings.purchase_enabled===true&&source.settings.purchase_enabled===true&&!source.disabled},blocks:structuredClone({...own,...blocks}),block_order:[...(section.block_order??Object.keys(own)).filter(id=>!!own[id]),...(source.block_order??Object.keys(blocks)).filter(id=>!!blocks[id])]};
 }
 export function productOfferSection(spec: ThemeSpec, product: StoreProduct) {
   const ownKey = product.template_suffix ? `product.${product.template_suffix}` : "product";
-  const candidates = Object.entries(spec.templates).flatMap(([key, template]) => (template.order ?? []).map((id) => ({ id, key, section: template.sections[id] }))).filter(({ key, section: s }) => s && !s.disabled && !s.settings.purchase_source && s.settings.purchase_enabled === true && ["main-product", "purchase-offers"].includes(s.type) && (s.settings.product_target ? s.settings.product_target === product.contentTarget : key === ownKey));
+  const candidates = Object.entries(spec.templates).flatMap(([key, template]) => (template.order ?? []).map((id) => ({ id, key, section: template.sections[id] }))).filter(({ key, section: s }) => s && !s.disabled && !s.settings.purchase_source && s.settings.purchase_enabled === true && ["main-product", "purchase-offers","featured-product"].includes(s.type) && (s.settings.product_target ? s.settings.product_target === product.contentTarget : key === ownKey));
   // Deux configurations concurrentes ne deviennent jamais une règle commerciale devinée.
   return candidates.length === 1 ? candidates[0] : null;
 }

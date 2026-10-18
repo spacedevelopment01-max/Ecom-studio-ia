@@ -360,7 +360,9 @@
     "summary": "Your selection",
     "demo": "Preview: locally tested rules, no real payment.",
     "item": "item",
-    "modify": "Edit"
+    "modify": "Edit",
+    "unit_price": "Price per item",
+    "return": "Return to purchase"
   },
   "editorial": {
     "pending_media": "Image to import"

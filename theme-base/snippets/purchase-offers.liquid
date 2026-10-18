@@ -32,9 +32,9 @@
   </div>{% endif %}
  {% endif %}{% endfor %}</div>
  <p class="purchase__summary" aria-live="polite"><span>{{ 'purchase.summary' | t }}</span><strong data-purchase-total></strong></p>
- <button class="es-button purchase__submit" type="button" data-purchase-add>{{ 'purchase.add' | t }}</button>
+ <button class="es-button purchase__submit" id="PurchaseAdd-{{ section_id }}" type="button" data-purchase-add>{{ 'purchase.add' | t }}</button>
  <p class="es-form-error" role="alert" data-purchase-error hidden></p>
- {% if offer_settings.mobile_quick_buy %}<div class="purchase__quick" data-purchase-quick hidden>
+ {% if offer_settings.mobile_quick_buy and allow_quick_buy %}<div class="purchase__quick" data-purchase-quick hidden>
   <div class="purchase__quick-selection"><span data-quick-selection></span><strong data-quick-total></strong><a href="#PurchaseOptions-{{ section_id }}" data-quick-options>{{ 'purchase.modify' | t }}</a></div>
   <button type="button" class="es-button" data-quick-add>{{ 'purchase.add' | t }}</button>
  </div>{% endif %}

@@ -48,6 +48,12 @@ body[data-editorial="journal"] .ed-study .ed-media{aspect-ratio:3/2}
  .ed-opening--immersive.ed-opening--clear .ed-opening__copy{padding:16px 0 32px}
  .ed-opening--immersive .ed-opening__title{font-size:64px;max-width:none}
 }
+body[data-editorial="object"] .es-fp--offers .es-fp__info{position:static}
+body[data-editorial="object"] .es-fp--offers .es-fp__info h2{font:500 clamp(36px,4vw,58px)/1.04 var(--font-heading);letter-spacing:-.035em}
+body[data-editorial="object"] .es-fp--offers .es-fp__info h2 a{color:inherit;text-decoration:none}
+body[data-editorial="object"] .es-fp--offers .purchase__heading{display:none}
+body[data-editorial="object"] .es-fp--offers .es-fp__price{display:flex;gap:14px;align-items:center}
+.fp-return{display:none}
 @media(max-width:749px){
  .ed-section .ed-media.ed-media--ratio{aspect-ratio:var(--ed-mobile-ratio,var(--ed-ratio))}
  .ed-opening--immersive.ed-opening--clear .ed-opening__copy{padding:10px 0 24px}
@@ -66,4 +72,22 @@ body[data-editorial="journal"] .ed-study .ed-media{aspect-ratio:3/2}
  body[data-editorial="object"] .purchase__variants [data-offer-variants]{grid-template-columns:1fr 1fr}
  body[data-editorial="object"] .purchase__gift img{width:56px;height:56px}
  .es-footer--signature-only .es-footer__grid{grid-template-columns:1fr;gap:28px}
+ body[data-editorial="object"] .es-fp--offers .es-fp__grid{display:flex;flex-direction:column;gap:20px}
+ body[data-editorial="object"] .es-fp--offers .es-fp__info{display:contents}
+ body[data-editorial="object"] .es-fp--offers .es-fp__info>*{order:3;width:100%;margin-block:0}
+ body[data-editorial="object"] .es-fp--offers [data-fp-heading]{order:1}
+ body[data-editorial="object"] .es-fp--offers .es-fp__gallery{order:2;width:100%}
+ body[data-editorial="object"] .es-fp--offers .es-fp__stage{aspect-ratio:1}
+ body[data-editorial="object"] .es-fp--offers .purchase{display:flex;flex-direction:column}
+ body[data-editorial="object"] .es-fp--offers .purchase>*{order:3}
+ body[data-editorial="object"] .es-fp--offers .purchase__current{order:0}
+ body[data-editorial="object"] .es-fp--offers .purchase__submit{order:1;scroll-margin-top:100px}
+ body[data-editorial="object"] .es-fp--offers .purchase__benefits{order:2}
+ body[data-editorial="object"] .es-fp--offers .purchase__offers{order:4}
+ body[data-editorial="object"] .es-fp--offers .purchase__variants{order:5}
+ body[data-editorial="object"] .es-fp--offers .purchase__gifts{order:6}
+ body[data-editorial="object"] .es-fp--offers .purchase__summary{order:7}
+ body[data-editorial="object"] .es-fp--offers :is(.purchase__notice,[data-purchase-error]){order:8}
+ .fp-return{display:inline-flex}
 }
+@media(prefers-reduced-motion:reduce){body[data-editorial="object"] .es-fp--offers .es-fp__gallery{position:static}}

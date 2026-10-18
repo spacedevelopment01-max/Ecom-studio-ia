@@ -4,7 +4,10 @@
   Identifiants des réglages inchangés depuis « Produit en vedette » (compatibilité des thèmes existants).
 {%- endcomment -%}
 {%- liquid
-  assign product = section.settings.product | default: collections.all.products.first
+  assign product = section.settings.product
+  if product == blank and section.settings.product_target == blank
+    assign product = collections.all.products.first
+  endif
   assign variant = product.selected_or_first_available_variant
   assign has_stage = false
   if section.settings.image != blank or section.settings.image_asset != blank
@@ -24,7 +27,7 @@
     assign slides = 1
   endif
 -%}
-<section class="es-section es-featured es-fp es-fp--thumbs-{{ section.settings.thumbs_position }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-featured-product data-fp{% if section.settings.enable_zoom %} data-fp-zoom{% endif %}>
+<section class="es-section es-featured es-fp{% if section.settings.purchase_enabled %} es-fp--offers{% endif %} es-fp--thumbs-{{ section.settings.thumbs_position }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;--fp-fit:{{ section.settings.media_fit | default: 'cover' }};--fp-ratio:{% if section.settings.gallery_ratio == 'portrait' %}4/5{% else %}1{% endif %};" data-featured-product data-fp{% if section.settings.enable_zoom %} data-fp-zoom{% endif %}>
   <div class="es-container es-featured__grid es-fp__grid">
     <div class="es-fp__gallery" data-reveal="up">
       <div class="es-fp__stage es-media-frame" data-fp-stage aria-label="{{ 'products.product.media' | t | escape }}" role="group">
@@ -81,13 +84,14 @@
     </div>
 
     <div class="es-featured__info es-fp__info" data-reveal="up">
-      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow">{{ section.settings.eyebrow }}</p>{%- elsif section.settings.show_vendor and product.vendor != blank -%}<p class="es-eyebrow">{{ product.vendor }}</p>{%- endif -%}
-      <h2 class="es-heading es-h2"><a href="{{ product.url }}">{%- if product.title != blank -%}{{ product.title }}{%- else -%}{{ 'products.product.placeholder_title' | t }}{%- endif -%}</a></h2>
-      <div class="es-fp__price">{% render 'price', product: product, use_variant: true %}</div>
+      <div data-fp-heading>{%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow">{{ section.settings.eyebrow }}</p>{%- elsif section.settings.show_vendor and product.vendor != blank -%}<p class="es-eyebrow">{{ product.vendor }}</p>{%- endif -%}
+      <h2 class="es-heading es-h2"><a href="{{ product.url }}">{%- if product.title != blank -%}{{ product.title }}{%- else -%}{{ 'products.product.placeholder_title' | t }}{%- endif -%}</a></h2></div>
+      <div class="es-fp__price">{% if section.settings.purchase_enabled %}<span class="es-small">{{ 'purchase.unit_price' | t }}</span><strong data-unit-price>{{ variant.price | money }}</strong>{% else %}{% render 'price', product: product, use_variant: true %}{% endif %}</div>
       {%- if section.settings.text != blank -%}<div class="es-rte">{{ section.settings.text }}</div>{%- endif -%}
-      {%- if section.blocks.size > 0 -%}
+      {%- assign highlights = section.blocks | where: 'type', 'highlight' -%}
+      {%- if highlights.size > 0 -%}
         <ul class="es-fp__highlights" role="list">
-          {%- for block in section.blocks -%}
+          {%- for block in highlights -%}
             <li style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
               <span class="es-fp__hl-icon" aria-hidden="true">{% render 'icon', name: block.settings.icon %}</span>
               <span>{{ block.settings.text }}</span>
@@ -96,9 +100,10 @@
         </ul>
       {%- endif -%}
       {%- if product != blank -%}
-        {% render 'product-buy', product: product, section_id: section.id, show_quantity: section.settings.show_quantity, show_dynamic_checkout: section.settings.show_dynamic_checkout, picker: section.settings.picker %}
+        {% if section.settings.purchase_enabled %}{% render 'purchase-offers', product: product, blocks: section.blocks, offer_settings: section.settings, section_id: section.id %}{% else %}{% render 'product-buy', product: product, section_id: section.id, show_quantity: section.settings.show_quantity, show_dynamic_checkout: section.settings.show_dynamic_checkout, picker: section.settings.picker %}{% endif %}
       {%- endif -%}
-      <a href="{{ product.url }}" class="es-link-arrow">{{ 'products.product.view_details' | t }} {% render 'icon', name: 'arrow' %}</a>
+      {% if section.settings.purchase_enabled %}<a class="es-link-arrow fp-return" href="#PurchaseAdd-{{ section.id }}">{{ 'purchase.return' | t }}</a>{% endif %}
+      <a href="{{ product.url }}" class="es-link-arrow" data-product-detail>{{ 'products.product.view_details' | t }} {% render 'icon', name: 'arrow' %}</a>
     </div>
   </div>
 </section>
@@ -108,11 +113,11 @@
 @media (min-width: 990px) { .es-fp__grid { grid-template-columns: 1.08fr 1fr; } .es-fp__info { position: sticky; top: calc(var(--header-h, 72px) + 24px); padding-top: 12px; } }
 .es-fp__gallery { display: grid; gap: 12px; min-width: 0; }
 @media (min-width: 990px) { .es-fp--thumbs-left .es-fp__gallery { grid-template-columns: 84px minmax(0, 1fr); } .es-fp--thumbs-left .es-fp__thumbs { order: -1; flex-direction: column; overflow: visible auto; max-height: 100%; } }
-.es-fp__stage { position: relative; aspect-ratio: 1; touch-action: pan-y; }
+.es-fp__stage { position: relative; aspect-ratio:var(--fp-ratio,1); touch-action: pan-y; }
 .es-fp__slide { position: absolute; inset: 0; margin: 0; opacity: 0; visibility: hidden; transition: opacity .6s var(--ease-out), visibility 0s .6s; overflow: hidden; }
 .es-fp__slide.is-active { opacity: 1; visibility: visible; transition: opacity .6s var(--ease-out); }
 .es-fp__slide .es-placeholder__svg { width: 70%; height: 100%; margin: auto; }
-.es-fp__img { width: 100%; height: 100%; object-fit: cover; transition: transform .45s var(--ease-out); transform-origin: var(--zx, 50%) var(--zy, 50%); }
+.es-fp__img { width: 100%; height: 100%; object-fit:var(--fp-fit,cover); transition: transform .45s var(--ease-out); transform-origin: var(--zx, 50%) var(--zy, 50%); }
 .es-fp__slide .es-placeholder { position: absolute; inset: 0; min-height: 0; }
 [data-fp-zoom] .es-fp__stage { cursor: zoom-in; }
 .es-fp__stage.is-zoomed { cursor: zoom-out; }
@@ -162,7 +167,7 @@
       function go(i) {
         var n = slides.length; if (!n) return; i = (i + n) % n; zoom(false);
         slides.forEach(function (sl, j) { sl.classList.toggle('is-active', j === i); });
-        thumbs.forEach(function (t, j) { var on = j === i; t.classList.toggle('is-active', on); if (on) { t.setAttribute('aria-current', 'true'); t.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } else t.removeAttribute('aria-current'); });
+        thumbs.forEach(function (t, j) { var on = j === i; t.classList.toggle('is-active', on); if (on) { t.setAttribute('aria-current', 'true'); var list=t.parentElement;list.scrollTo({left:t.offsetLeft-list.offsetLeft,top:t.offsetTop-list.offsetTop}); } else t.removeAttribute('aria-current'); });
         cur = i;
       }
       thumbs.forEach(function (t, j) { t.addEventListener('click', function () { go(j); }); });
@@ -185,6 +190,8 @@
         var k = slides.findIndex(function (sl) { return sl.getAttribute('data-media-id') === String(m.id); });
         if (k > -1) go(k);
       });
+      s.addEventListener('es:offer-variant',function(e){s.dispatchEvent(new CustomEvent('es:variant',{detail:e.detail}));});
+      var selected=s.querySelector('[data-purchase-finishes] input:checked'),data=s.querySelector('[data-purchase-variants]');if(selected&&data){var v=JSON.parse(data.textContent).find(function(v){return String(v.id)===selected.value;});if(v)s.dispatchEvent(new CustomEvent('es:variant',{detail:v}));}
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { init(document); }); else init(document);
@@ -198,36 +205,475 @@
   "tag": "div",
   "class": "es-section-wrapper",
   "settings": [
-    { "type": "product", "id": "product", "label": "Produit" },
-    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
-    { "type": "checkbox", "id": "show_vendor", "label": "Marque en surtitre (si le surtitre est vide)", "default": false },
-    { "type": "richtext", "id": "text", "label": "Texte" },
-    { "type": "image_picker", "id": "image", "label": "Image de mise en scène (facultatif)" },
-    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
-    { "type": "header", "content": "Galerie" },
-    { "type": "checkbox", "id": "show_gallery", "label": "Galerie des images du produit", "default": true },
-    { "type": "select", "id": "thumbs_position", "label": "Vignettes", "default": "bottom", "options": [{ "value": "bottom", "label": "Sous l'image" }, { "value": "left", "label": "À gauche (ordinateur)" }] },
-    { "type": "checkbox", "id": "enable_zoom", "label": "Zoom au survol et au clic", "default": true },
-    { "type": "checkbox", "id": "show_sale_badge", "label": "Pastille de remise (calculée depuis le prix barré Shopify)", "default": true },
-    { "type": "header", "content": "Achat" },
-    { "type": "select", "id": "picker", "label": "Choix des variantes", "default": "buttons", "options": [{ "value": "buttons", "label": "Pastilles" }, { "value": "dropdown", "label": "Liste déroulante" }] },
-    { "type": "checkbox", "id": "show_quantity", "label": "Sélecteur de quantité", "default": true },
-    { "type": "checkbox", "id": "show_dynamic_checkout", "label": "Boutons de paiement accéléré", "default": false },
-    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
-    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
-    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Produit"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Surtitre"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Marque en surtitre (si le surtitre est vide)",
+      "default": false
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texte"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image de mise en scène (facultatif)"
+    },
+    {
+      "type": "text",
+      "id": "image_asset",
+      "label": "Image fournie avec le thème"
+    },
+    {
+      "type": "header",
+      "content": "Galerie"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_gallery",
+      "label": "Galerie des images du produit",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "thumbs_position",
+      "label": "Vignettes",
+      "default": "bottom",
+      "options": [
+        {
+          "value": "bottom",
+          "label": "Sous l'image"
+        },
+        {
+          "value": "left",
+          "label": "À gauche (ordinateur)"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_zoom",
+      "label": "Zoom au survol et au clic",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sale_badge",
+      "label": "Pastille de remise (calculée depuis le prix barré Shopify)",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Achat"
+    },
+    {
+      "type": "select",
+      "id": "picker",
+      "label": "Choix des variantes",
+      "default": "buttons",
+      "options": [
+        {
+          "value": "buttons",
+          "label": "Pastilles"
+        },
+        {
+          "value": "dropdown",
+          "label": "Liste déroulante"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quantity",
+      "label": "Sélecteur de quantité",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dynamic_checkout",
+      "label": "Boutons de paiement accéléré",
+      "default": false
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "label": "Marge haute",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "label": "Marge basse",
+      "default": 96
+    },
+    {
+      "type": "checkbox",
+      "id": "purchase_enabled",
+      "label": "Activer les offres par quantité",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "purchase_style",
+      "label": "Style des offres",
+      "default": "outlined",
+      "options": [
+        {
+          "value": "outlined",
+          "label": "Cartes soulignées"
+        },
+        {
+          "value": "compact",
+          "label": "Lignes compactes"
+        },
+        {
+          "value": "soft",
+          "label": "Cartes douces"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "product_target",
+      "label": "Identité du produit",
+      "info": "Identité stable du catalogue, jamais son nom. Vide : produit de la page."
+    },
+    {
+      "type": "text",
+      "id": "purchase_heading",
+      "label": "Titre des offres",
+      "default": "Choisissez votre offre"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_finishes",
+      "label": "Afficher les finitions",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "finish_label",
+      "label": "Titre des finitions",
+      "default": "Finition"
+    },
+    {
+      "type": "textarea",
+      "id": "finish_colors",
+      "label": "Couleurs des finitions",
+      "info": "Une ligne par variante : Nom=#RRGGBB. Le nom reste toujours visible."
+    },
+    {
+      "type": "text",
+      "id": "purchase_source",
+      "label": "Source des offres partagées",
+      "info": "Adresse du bloc d’achat de référence : gabarit:section. Modifiez ses offres sur la fiche produit."
+    },
+    {
+      "type": "select",
+      "id": "media_fit",
+      "label": "Cadrage du visuel",
+      "default": "cover",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Remplir le cadre"
+        },
+        {
+          "value": "contain",
+          "label": "Conserver le visuel entier"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "gallery_ratio",
+      "label": "Format du visuel",
+      "default": "square",
+      "options": [
+        {
+          "value": "square",
+          "label": "Carré"
+        },
+        {
+          "value": "portrait",
+          "label": "Portrait 4:5"
+        }
+      ]
+    }
   ],
   "blocks": [
-    { "type": "highlight", "name": "Point fort", "settings": [
-      { "type": "select", "id": "icon", "label": "Icône", "default": "check", "options": [{ "value": "check", "label": "Coche" }, { "value": "sparkle", "label": "Étincelle" }, { "value": "leaf", "label": "Feuille" }, { "value": "drop", "label": "Goutte" }, { "value": "hand", "label": "Main" }, { "value": "truck", "label": "Camion" }, { "value": "return", "label": "Retour" }, { "value": "shield", "label": "Bouclier" }, { "value": "heart", "label": "Cœur" }, { "value": "clock", "label": "Horloge" }, { "value": "globe", "label": "Globe" }, { "value": "gift", "label": "Cadeau" }, { "value": "bolt", "label": "Éclair" }] },
-      { "type": "text", "id": "text", "label": "Texte", "default": "[À compléter : point fort vérifié]", "info": "Uniquement une caractéristique confirmée du produit." }
-    ] }
+    {
+      "type": "highlight",
+      "name": "Point fort",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icône",
+          "default": "check",
+          "options": [
+            {
+              "value": "check",
+              "label": "Coche"
+            },
+            {
+              "value": "sparkle",
+              "label": "Étincelle"
+            },
+            {
+              "value": "leaf",
+              "label": "Feuille"
+            },
+            {
+              "value": "drop",
+              "label": "Goutte"
+            },
+            {
+              "value": "hand",
+              "label": "Main"
+            },
+            {
+              "value": "truck",
+              "label": "Camion"
+            },
+            {
+              "value": "return",
+              "label": "Retour"
+            },
+            {
+              "value": "shield",
+              "label": "Bouclier"
+            },
+            {
+              "value": "heart",
+              "label": "Cœur"
+            },
+            {
+              "value": "clock",
+              "label": "Horloge"
+            },
+            {
+              "value": "globe",
+              "label": "Globe"
+            },
+            {
+              "value": "gift",
+              "label": "Cadeau"
+            },
+            {
+              "value": "bolt",
+              "label": "Éclair"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Texte",
+          "default": "[À compléter : point fort vérifié]",
+          "info": "Uniquement une caractéristique confirmée du produit."
+        }
+      ]
+    },
+    {
+      "type": "quantity_offer",
+      "name": "Offre par quantité",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Libellé de l’offre",
+          "default": "Votre offre"
+        },
+        {
+          "type": "range",
+          "id": "quantity",
+          "label": "Nombre d’articles",
+          "min": 1,
+          "max": 20,
+          "step": 1,
+          "default": 1
+        },
+        {
+          "type": "range",
+          "id": "discount",
+          "label": "Remise configurée (%)",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "default": 0
+        },
+        {
+          "type": "checkbox",
+          "id": "recommended",
+          "label": "Offre recommandée",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "badge",
+          "label": "Badge éditorial",
+          "info": "Sans classement ni popularité non vérifiée."
+        },
+        {
+          "type": "select",
+          "id": "price_mode",
+          "label": "Règle de prix",
+          "default": "discount",
+          "options": [
+            {
+              "value": "discount",
+              "label": "Remise sur les prix unitaires"
+            },
+            {
+              "value": "fixed_total",
+              "label": "Prix total fixe du lot"
+            }
+          ]
+        },
+        {
+          "type": "number",
+          "id": "total_price",
+          "label": "Prix total du lot en centimes",
+          "default": -1,
+          "info": "À renseigner pour un prix fixe. Même total pour toutes les variantes du lot."
+        }
+      ]
+    },
+    {
+      "type": "threshold_gift",
+      "name": "Cadeau par palier",
+      "settings": [
+        {
+          "type": "product",
+          "id": "gift_product",
+          "label": "Article cadeau du catalogue"
+        },
+        {
+          "type": "text",
+          "id": "gift_target",
+          "label": "Identité du cadeau au catalogue"
+        },
+        {
+          "type": "text",
+          "id": "sku",
+          "label": "SKU de la variante cadeau",
+          "info": "Vide : première variante disponible."
+        },
+        {
+          "type": "range",
+          "id": "threshold",
+          "label": "Palier en articles",
+          "min": 1,
+          "max": 20,
+          "step": 1,
+          "default": 3
+        },
+        {
+          "type": "range",
+          "id": "quantity",
+          "label": "Quantité de cadeaux",
+          "min": 1,
+          "max": 20,
+          "step": 1,
+          "default": 1
+        },
+        {
+          "type": "text",
+          "id": "gift_handle",
+          "label": "Référence cadeau à l’export",
+          "info": "Résolue depuis l’identité stable du catalogue par le studio."
+        }
+      ]
+    },
+    {
+      "type": "purchase_benefit",
+      "name": "Avantage vérifié",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Avantage confirmé"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Pictogramme",
+          "default": "check",
+          "options": [
+            {
+              "value": "check",
+              "label": "Coche"
+            },
+            {
+              "value": "leaf",
+              "label": "Feuille"
+            },
+            {
+              "value": "sparkle",
+              "label": "Étincelle"
+            },
+            {
+              "value": "heart",
+              "label": "Cœur"
+            }
+          ]
+        }
+      ]
+    }
   ],
-  "max_blocks": 6,
-  "presets": [{ "name": "Produit vedette premium", "blocks": [
-    { "type": "highlight", "settings": { "icon": "sparkle" } },
-    { "type": "highlight", "settings": { "icon": "check" } },
-    { "type": "highlight", "settings": { "icon": "truck", "text": "[À compléter : délai de livraison réel]" } }
-  ] }]
+  "max_blocks": 50,
+  "presets": [
+    {
+      "name": "Produit vedette premium",
+      "blocks": [
+        {
+          "type": "highlight",
+          "settings": {
+            "icon": "sparkle"
+          }
+        },
+        {
+          "type": "highlight",
+          "settings": {
+            "icon": "check"
+          }
+        },
+        {
+          "type": "highlight",
+          "settings": {
+            "icon": "truck",
+            "text": "[À compléter : délai de livraison réel]"
+          }
+        }
+      ]
+    }
+  ]
 }
 {% endschema %}

@@ -95,7 +95,7 @@ export function compileTheme(spec: ThemeSpec): ThemeFiles {
   for (const [key, t] of Object.entries(spec.templates)) {
     const template = structuredClone(t);
     for(const [id,s] of Object.entries(template.sections))template.sections[id]=sharedPurchaseSection(spec,s);
-    for (const section of Object.values(template.sections)) if (["purchase-offers","ed-finishes"].includes(section.type) && section.settings.product_target) section.settings.product = purchaseTargetHandles(spec)[String(section.settings.product_target)] ?? "";
+    for (const section of Object.values(template.sections)) if (["purchase-offers","ed-finishes","featured-product"].includes(section.type) && section.settings.product_target) section.settings.product = purchaseTargetHandles(spec)[String(section.settings.product_target)] ?? "";
     for (const section of Object.values(template.sections)) for (const block of Object.values(section.blocks ?? {})) if (block.type === "threshold_gift") block.settings.gift_handle = storeProducts(spec).find((p) => p.contentTarget === block.settings.gift_target)?.handle ?? "";
     files.set(`templates/${key}.json`, HEADER + JSON.stringify(cleanTemplate(template), null, 2));
   }

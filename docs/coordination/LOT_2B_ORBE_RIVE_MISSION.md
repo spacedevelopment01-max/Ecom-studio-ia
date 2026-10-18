@@ -1,5 +1,5 @@
 Source : https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/134#issuecomment-6247457951
-Version du commentaire : 2026-10-18T08:28:10Z
+Version du commentaire : 2026-10-18T10:48:03Z — complément 6248929074 (10:48:30Z)
 
 # Consignes de reprise pour Codex — ORBE et Atelier Rive
 
@@ -122,10 +122,23 @@ En-tête : logo typographique ORBE, liens « La lampe », « Les ambiances », �
 | 4 | Section sombre, image verticale à gauche et phrase ample à droite | « Quand la pièce ralentit. » ; « Une lumière d'ambiance et des lignes simples pour composer un coin plus intime. » | `orbe-08-lumiere` |
 | 5 | Composition horizontale, produit et sélecteur de finitions accessibles | « Dune. Argile. Charbon. » ; « Trois tonalités pour trouver votre place dans la pièce. » ; CTA « Choisir ma finition » | `orbe-07-trio`, puis packshot de la finition choisie |
 | 6 | Photo bord à bord avec légende discrète hors de l'image | « Deux points de lumière, un même équilibre. » ; CTA « Voir les offres » | `orbe-06-duo` |
-| 7 | Teaser achat compact, prix fictifs issus de la configuration de démo et CTA | « Votre ORBE, à votre façon. » ; choix couleur puis offre ; résumé réel, sans champ décoratif | Packshot sélectionné |
+| 7 | Section « Produit à la une » complète : présentation de la lampe, galerie, informations produit et achat réunis | « Lampe nomade ORBE » ; courte présentation, bénéfices, prix, finitions, offres rattachées au produit, CTA « Ajouter au panier » et lien vers la fiche complète | Packshot de la finition sélectionnée, galerie produit adaptée |
 | 8 | Deux images d'accessoires en fond clair avec rôle expliqué | « À offrir. À emporter. » ; coffret et pochette nommés séparément ; conditions du cadeau issues du palier configuré | `orbe-11-boite`, `orbe-12-pochette` |
 | 9 | FAQ en lignes généreuses avec ouverture animée courte | Questions de finition, contenu de l'offre et calcul du lot ; détails techniques uniquement si fournis | Aucune photo répétée |
 | 10 | Conclusion éditoriale courte, photo horizontale et action | « Faites une place à la lumière. » ; CTA « Composer mon ORBE » | `orbe-05-bureau` |
+
+### Précision de Thomas du 18 octobre 2026 à 12 h 46 — section produit sur l'accueil
+
+Thomas valide une **section produit complète sur l'accueil ORBE**. La combinaison de prix et les packs appartiennent au produit : leur présentation doit rester intégrée à cette section. Cette précision remplace l'interprétation « simple bloc de packs / tableau d'offres autonome » de l'ancien teaser d'achat.
+
+- **Présentation du produit :** nom « Lampe nomade ORBE », visuel principal suffisamment grand, petite galerie adaptée, description courte et deux ou trois bénéfices réellement étayés par le brief. La lampe est le sujet principal de la section.
+- **Choix et achat :** prix unitaire identifié, finitions Dune / Argile / Charbon avec photo correspondante, choix d'une lampe ou des lots 2/3/4, couleurs par article du lot, total de la sélection et cadeau conditionnel selon les règles existantes. Les offres sont un sous-ensemble du bloc produit. Le prix unitaire ne doit pas être confondu avec le total du lot.
+- **Actions :** bouton « Ajouter au panier » opérationnel dans le mode de démonstration existant et lien « Voir la fiche complète » vers la vraie fiche, en conservant la sélection lorsque le parcours le permet. Une seule commande d'achat clairement identifiée pour la sélection active.
+- **Composition :** sur ordinateur, une composition produit en deux colonnes, visuels et informations/achat ; sur mobile, nom, image, informations et choix dans un ordre compact et lisible. Corriger les espacements et la longueur du bloc pour rendre l'achat rapidement accessible. La section conserve l'identité ORBE et n'intègre pas toute la longue fiche à l'accueil.
+- **Données et réutilisation :** rattacher la section au même produit, aux mêmes variantes et à la même source de prix/offres que la fiche. Conserver les recalculs serveur, stocks, cadeaux, édition et historique. La proposer comme section réutilisable « Produit à la une » dans la galerie du studio, configurable pour d'autres produits ; les lots et cadeaux ne s'affichent que s'ils sont configurés pour ce produit. Aucun comportement moteur codé spécifiquement pour ORBE.
+- **Critère de réception :** une vue de la section seule permet d'identifier la lampe, de la voir, de comprendre les choix et d'acheter. Une grille de prix/packs sans présentation visuelle et éditoriale du produit ne répond pas à la demande. Fournir un gros plan ordinateur et mobile de cette section après correction.
+
+La fiche produit complète reste présente et conserve ses offres. Cette correction porte sur la section de l'accueil et s'ajoute à l'intégration des 24 images en cours ; elle ne demande aucune nouvelle génération d'images ni nouvelle direction artistique.
 
 Ces textes décrivent l'univers fictif. Ne pas ajouter autonomie, puissance, température chiffrée, recharge USB, dimensions, matériau certifié, étanchéité, avis ou livraison garantie : ces données ne sont pas disponibles.
 

@@ -360,7 +360,9 @@
     "summary": "Votre sélection",
     "demo": "Aperçu : règles testées localement, aucun paiement réel.",
     "item": "article",
-    "modify": "Modifier"
+    "modify": "Modifier",
+    "unit_price": "Prix à l’unité",
+    "return": "Revenir à l’achat"
   },
   "editorial": {
     "pending_media": "Visuel à importer"
