@@ -1,0 +1,167 @@
+{
+  "archiveCodeCommit": "3ecdcef4e21d8f3912910a6a50c04c4cfbcde973",
+  "captureHarnessCommit": "66b0fa70a04b33645d3942cd462be33be9cd8aa2",
+  "privatePage": "https://chatgpt.com/space/page_cc9895b347d88191ae5ab6a308f047b9",
+  "files": [
+    {
+      "file": "prestashop-cart-1440.png",
+      "bytes": 245597,
+      "sha256": "0339b0bef20b8f9479791f63582dfaa156c00340c35a96086a8d52bf1ff69a85"
+    },
+    {
+      "file": "prestashop-cart-390.png",
+      "bytes": 139639,
+      "sha256": "b6e9457d9e694fa7e9036be4c538182c33d954ccbfbb2732b52c3ac4d9a558a6"
+    },
+    {
+      "file": "prestashop-contact-1440.png",
+      "bytes": 650997,
+      "sha256": "b3f2695517f5680e3c4d435bca5851cc041b7a4baa81acaf809d6f59e617f85a"
+    },
+    {
+      "file": "prestashop-contact-390.png",
+      "bytes": 297826,
+      "sha256": "4cde49068c8d29f2c63ba0db46e65f7533e29e972c90ae3fc33c80e284215916"
+    },
+    {
+      "file": "prestashop-product-1440.png",
+      "bytes": 254917,
+      "sha256": "17a6d9a6753c951b01f3047a4eb24162ab9c53f039ee6a43a511b11bc79730a0"
+    },
+    {
+      "file": "prestashop-product-390.png",
+      "bytes": 142922,
+      "sha256": "ab8ab4c844ac9d88e624a51485ff17e8c3c806d9f9e0c91a9aa4ef5694343b98"
+    },
+    {
+      "file": "prestashop-products-1440.png",
+      "bytes": 243976,
+      "sha256": "103ff007d376d7b1b03c5ad7271de21d0f9bf6092d11dac21dbb78bbd6cbfa3c"
+    },
+    {
+      "file": "prestashop-products-390.png",
+      "bytes": 121814,
+      "sha256": "781de4fe94e9afc262c84784c28e716e67b509b9d3e47d2da2b9951fc9bacf1c"
+    },
+    {
+      "file": "prestashop-services-1440.png",
+      "bytes": 890135,
+      "sha256": "f60485de2bdd5c98bea923163587734c21eb9a5cac40942de80eb559bb201dbe"
+    },
+    {
+      "file": "prestashop-services-390.png",
+      "bytes": 491355,
+      "sha256": "d1943ddaac4e9c948c1c4fcfe83bd835b53dd98aaa89037b855439a3cdc8ddd7"
+    },
+    {
+      "file": "products/prestashop/export.zip",
+      "bytes": 605818,
+      "sha256": "3108fe9dcc00b3c142607a76bb881ec3164f46bd9c5d42ac79a973385bf83b5a"
+    },
+    {
+      "file": "products/shopify/export.zip",
+      "bytes": 453903,
+      "sha256": "ba4bc4e1f0f53e2193546a769122e6d480790a824f5da2b72b5a73a16b9b9f21"
+    },
+    {
+      "file": "products/squarespace/export.zip",
+      "bytes": 848293,
+      "sha256": "5fd18fc28713bf99a26cdd3fac6b68d7a6335d2bed3779498b9e2289a4a1fa92"
+    },
+    {
+      "file": "products/wix/export.zip",
+      "bytes": 848333,
+      "sha256": "cc6638269beaccef2beac63fe3e39749acacef4d633fc53f8d1bc8d781d5f659"
+    },
+    {
+      "file": "products/woocommerce/export.zip",
+      "bytes": 679537,
+      "sha256": "ff3798e2d0ab07566ab13ef6bcf8165eb5be06343f374987a0a7d1b5c02b4c80"
+    },
+    {
+      "file": "products-update/prestashop/export.zip",
+      "bytes": 605782,
+      "sha256": "74a4dc98d7182136242ed1fa3826c1cf6d561f40ec0a2d1dbe1f8d33d023cd76"
+    },
+    {
+      "file": "products-update/woocommerce/export.zip",
+      "bytes": 679535,
+      "sha256": "ca18d7536a29ac6c2f50bc305e23c8cb8f5dda33518e6f30968ce4d397b8bf7d"
+    },
+    {
+      "file": "services/prestashop/export.zip",
+      "bytes": 618858,
+      "sha256": "9c1a3b1a71ff86729a4592b0469bf21d9a527525bb63c0a0f5414ce28010f680"
+    },
+    {
+      "file": "services/shopify/export.zip",
+      "bytes": 457939,
+      "sha256": "235742e6d7753a2703bf594895cde636f46b268f2f24bf5ff7ecd9b37cbaab8d"
+    },
+    {
+      "file": "services/squarespace/export.zip",
+      "bytes": 848463,
+      "sha256": "601ba796d89a69e971cbdb498fbf38414de4a1a74f7ee36210aabd3605cb2c51"
+    },
+    {
+      "file": "services/wix/export.zip",
+      "bytes": 848449,
+      "sha256": "788a8f448104fb6c2c710581f22add88b2459fcb5ce423e8c51e80c60e0a8aa9"
+    },
+    {
+      "file": "services/woocommerce/export.zip",
+      "bytes": 711042,
+      "sha256": "f1566784d74995d76cdc670afe022e0bbdb0625b42f6e3411e6cfac20132dec8"
+    },
+    {
+      "file": "woocommerce-cart-1440.png",
+      "bytes": 214582,
+      "sha256": "08f5820310cd2840c186799f4e1bb15060faa5e3ba5581c17ad434049a162328"
+    },
+    {
+      "file": "woocommerce-cart-390.png",
+      "bytes": 107266,
+      "sha256": "2841b2b0f37b68281a9a4002f9c93d85a1d4600b794f158136480c24dab105e7"
+    },
+    {
+      "file": "woocommerce-contact-1440.png",
+      "bytes": 404290,
+      "sha256": "dc1de6c27d7f699d940ceb5f6d0fb83de4c8f40790853cae4e1c59ce4558a4f2"
+    },
+    {
+      "file": "woocommerce-contact-390.png",
+      "bytes": 187992,
+      "sha256": "6cc4df375b8e6432e919260e8c16b676249a39e8279f4adde82aad86aeceebf6"
+    },
+    {
+      "file": "woocommerce-product-1440.png",
+      "bytes": 236345,
+      "sha256": "252f2a5cf319e3dcef19521c3310c64b36415a372cf5c5909c97cb8a56fcb47d"
+    },
+    {
+      "file": "woocommerce-product-390.png",
+      "bytes": 122994,
+      "sha256": "e7e45f09e558d456b6839769807e88689b757a93f622558f0c30d264cb9e746c"
+    },
+    {
+      "file": "woocommerce-products-1440.png",
+      "bytes": 236819,
+      "sha256": "60ba02ae8273ae4d6fd63aaf3b65bdcd85ef5df617ffd239fdb10839c2f46679"
+    },
+    {
+      "file": "woocommerce-products-390.png",
+      "bytes": 117483,
+      "sha256": "4c89d1394e8a6e0d6ed4084eccb217daca35252cb6236f3829f6185986b556a9"
+    },
+    {
+      "file": "woocommerce-services-1440.png",
+      "bytes": 441278,
+      "sha256": "3017eac6bab83bc8045d76c87fd728871c21e6367e89bfe4d0c91b37440947f7"
+    },
+    {
+      "file": "woocommerce-services-390.png",
+      "bytes": 248374,
+      "sha256": "2411e70d0d0c6016b3a1bd8bb4184dc10fc854fbb9428da919c75731d5bab624"
+    }
+  ]
+}

@@ -1,0 +1,236 @@
+{
+  "csv": "{\"csv\":\"native importer passed\",\"parent\":28,\"axes\":3,\"children\":3,\"price\":\"32.10\",\"stock\":7}",
+  "csv-repeat": "{\"csv\":\"native importer passed\",\"parent\":28,\"axes\":3,\"children\":3,\"price\":\"32.10\",\"stock\":7}",
+  "products-import": "{\"import\":[{\"handle\":\"serum-eclat\",\"id\":38,\"variants\":[39,40,41],\"status\":\"draft\"},{\"handle\":\"brosse-nettoyante\",\"id\":43,\"variants\":[],\"status\":\"draft\"},{\"handle\":\"rouleau-de-jade\",\"id\":45,\"variants\":[46,47],\"status\":\"draft\"},{\"handle\":\"echantillon-carre\",\"id\":49,\"variants\":[50,51],\"status\":\"draft\"}]}",
+  "products-verified": {
+    "products": [
+      {
+        "id": 38,
+        "handle": "serum-eclat",
+        "url": "http://localhost:18081/?post_type=product&p=38",
+        "status": "draft",
+        "variants": [
+          {
+            "id": 39,
+            "options": [
+              "Été",
+              "S",
+              "Court"
+            ],
+            "sku": "LAMPE-ÉTÉ-S",
+            "price": "32.10",
+            "stock": 7,
+            "image": 36
+          },
+          {
+            "id": 40,
+            "options": [
+              "Ete",
+              "L",
+              "Long"
+            ],
+            "sku": "es-db8228c1e0ca36a98dc518f6",
+            "price": "45.60",
+            "stock": 0,
+            "image": 37
+          },
+          {
+            "id": 41,
+            "options": [
+              "Été",
+              "L",
+              "Court"
+            ],
+            "sku": "es-e122c9d33138ac42ce6836b0",
+            "price": "37.80",
+            "stock": null,
+            "image": 36
+          }
+        ]
+      },
+      {
+        "id": 43,
+        "handle": "brosse-nettoyante",
+        "url": "http://localhost:18081/?post_type=product&p=43",
+        "status": "draft",
+        "variants": []
+      },
+      {
+        "id": 45,
+        "handle": "rouleau-de-jade",
+        "url": "http://localhost:18081/?post_type=product&p=45",
+        "status": "draft",
+        "variants": [
+          {
+            "id": 46,
+            "options": [
+              "Jade"
+            ],
+            "sku": "es-49e27960203cf87e6a229436",
+            "price": "19.90",
+            "stock": null,
+            "image": 44
+          },
+          {
+            "id": 47,
+            "options": [
+              "Quartz rose"
+            ],
+            "sku": "es-f00fa55a4f144dcdae552f45",
+            "price": "21.90",
+            "stock": null,
+            "image": 44
+          }
+        ]
+      },
+      {
+        "id": 49,
+        "handle": "echantillon-carre",
+        "url": "http://localhost:18081/?post_type=product&p=49",
+        "status": "draft",
+        "variants": [
+          {
+            "id": 50,
+            "options": [
+              "Été"
+            ],
+            "sku": "ECH-01",
+            "price": "12.34",
+            "stock": 2,
+            "image": 48
+          },
+          {
+            "id": 51,
+            "options": [
+              "Ete"
+            ],
+            "sku": "ECH-02",
+            "price": "23.45",
+            "stock": 3,
+            "image": 48
+          }
+        ]
+      }
+    ],
+    "attachmentCount": 6,
+    "ownedProducts": 4,
+    "ownedVariants": 7
+  },
+  "products-repeat": "{\"import\":[{\"handle\":\"serum-eclat\",\"id\":38,\"variants\":[39,40,41],\"status\":\"draft\"},{\"handle\":\"brosse-nettoyante\",\"id\":43,\"variants\":[],\"status\":\"draft\"},{\"handle\":\"rouleau-de-jade\",\"id\":45,\"variants\":[46,47],\"status\":\"draft\"},{\"handle\":\"echantillon-carre\",\"id\":49,\"variants\":[50,51],\"status\":\"draft\"}]}",
+  "products-update-import": "{\"import\":[{\"handle\":\"serum-eclat\",\"id\":38,\"variants\":[39,40,41],\"status\":\"publish\"},{\"handle\":\"brosse-nettoyante\",\"id\":43,\"variants\":[],\"status\":\"publish\"},{\"handle\":\"rouleau-de-jade\",\"id\":45,\"variants\":[46,47],\"status\":\"publish\"},{\"handle\":\"echantillon-carre\",\"id\":49,\"variants\":[50,51],\"status\":\"publish\"}]}",
+  "products-update-verified": {
+    "products": [
+      {
+        "id": 38,
+        "handle": "serum-eclat",
+        "url": "http://localhost:18081/product/serum-eclat-2/",
+        "status": "publish",
+        "variants": [
+          {
+            "id": 39,
+            "options": [
+              "Été",
+              "S",
+              "Court"
+            ],
+            "sku": "LAMPE-ÉTÉ-S-MAJ",
+            "price": "33.35",
+            "stock": 5,
+            "image": 37
+          },
+          {
+            "id": 40,
+            "options": [
+              "Ete",
+              "L",
+              "Long"
+            ],
+            "sku": "es-db8228c1e0ca36a98dc518f6",
+            "price": "45.60",
+            "stock": 0,
+            "image": 37
+          },
+          {
+            "id": 41,
+            "options": [
+              "Été",
+              "L",
+              "Court"
+            ],
+            "sku": "es-e122c9d33138ac42ce6836b0",
+            "price": "37.80",
+            "stock": null,
+            "image": 37
+          }
+        ]
+      },
+      {
+        "id": 43,
+        "handle": "brosse-nettoyante",
+        "url": "http://localhost:18081/product/brosse-nettoyante-2/",
+        "status": "publish",
+        "variants": []
+      },
+      {
+        "id": 45,
+        "handle": "rouleau-de-jade",
+        "url": "http://localhost:18081/product/rouleau-de-jade-2/",
+        "status": "publish",
+        "variants": [
+          {
+            "id": 46,
+            "options": [
+              "Jade"
+            ],
+            "sku": "es-49e27960203cf87e6a229436",
+            "price": "19.90",
+            "stock": null,
+            "image": 44
+          },
+          {
+            "id": 47,
+            "options": [
+              "Quartz rose"
+            ],
+            "sku": "es-f00fa55a4f144dcdae552f45",
+            "price": "21.90",
+            "stock": null,
+            "image": 44
+          }
+        ]
+      },
+      {
+        "id": 49,
+        "handle": "echantillon-carre",
+        "url": "http://localhost:18081/product/echantillon-carre/",
+        "status": "publish",
+        "variants": [
+          {
+            "id": 50,
+            "options": [
+              "Été"
+            ],
+            "sku": "ECH-01",
+            "price": "12.34",
+            "stock": 2,
+            "image": 48
+          },
+          {
+            "id": 51,
+            "options": [
+              "Ete"
+            ],
+            "sku": "ECH-02",
+            "price": "23.45",
+            "stock": 3,
+            "image": 48
+          }
+        ]
+      }
+    ],
+    "attachmentCount": 6,
+    "ownedProducts": 4,
+    "ownedVariants": 7
+  },
+  "products-update-repeat": "{\"import\":[{\"handle\":\"serum-eclat\",\"id\":38,\"variants\":[39,40,41],\"status\":\"publish\"},{\"handle\":\"brosse-nettoyante\",\"id\":43,\"variants\":[],\"status\":\"publish\"},{\"handle\":\"rouleau-de-jade\",\"id\":45,\"variants\":[46,47],\"status\":\"publish\"},{\"handle\":\"echantillon-carre\",\"id\":49,\"variants\":[50,51],\"status\":\"publish\"}]}"
+}

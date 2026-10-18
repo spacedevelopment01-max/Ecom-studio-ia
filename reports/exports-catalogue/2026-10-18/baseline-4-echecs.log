@@ -1,0 +1,99 @@
+
+ RUN  v5.0.3 /workspace/work/exports-catalogue
+
+ ❯ tests/cms-catalogue-fiable.test.ts (4 tests | 4 failed) 398ms
+   ❯ exports catalogue fiables (4)
+     × Shopify conserve trois axes, les SKU, les prix, le stock connu et les images de variante 91ms
+     × Woo conserve tous les attributs et ne confond pas deux combinaisons ou accents proches 6ms
+     × une cible Presta invalide ne devient pas le produit principal 22ms
+     × la grille Woo reçoit une vraie adaptation native respectant la collection choisie 277ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/cms-catalogue-fiable.test.ts > exports catalogue fiables > Shopify conserve trois axes, les SKU, les prix, le stock connu et les images de variante
+AssertionError: expected 'Handle,Title,Body (HTML),Vendor,Type,…' to contain 'Option2 Name'
+
+- Expected
++ Received
+
+- Option2 Name
++ Handle,Title,Body (HTML),Vendor,Type,Tags,Published,Option1 Name,Option1 Value,Variant SKU,Variant Price,Variant Compare At Price,Variant Requires Shipping,Variant Taxable,Image Src,Image Position,Image Alt Text,Status
++ "serum-eclat","Sérum Éclat","<p>Desc</p>","Maison Ondine","","Soin du visage","FALSE","Finition","Été","LAMPE-ÉTÉ-S","32.10","","TRUE","TRUE","","","","draft"
++ "serum-eclat","","","","","","","","Ete","","45.60","","TRUE","TRUE","","","",""
++ "serum-eclat","","","","","","","","Été","","37.80","","TRUE","TRUE","","","",""
++ "brosse-nettoyante","Brosse nettoyante","<p>Brosse</p>","Maison Ondine","Soin du visage","Soin du visage, Soin du visage","FALSE","Title","Default Title","","24.90","29.90","TRUE","TRUE","","","","draft"
++ "rouleau-de-jade","Rouleau de jade","<p>Rouleau</p>","Maison Ondine","Outils","Outils, Outils","FALSE","Pierre","Jade","","19.90","","TRUE","TRUE","","","","draft"
++ "rouleau-de-jade","","","","","","","","Quartz rose","","21.90","","TRUE","TRUE","","","",""
+
+ ❯ tests/cms-catalogue-fiable.test.ts:23:17
+     21|   it("Shopify conserve trois axes, les SKU, les prix, le stock connu e…
+     22|     const s = multiAxisSpec(); const csv = shopifyProductsCsv(s);
+     23|     expect(csv).toContain("Option2 Name"); expect(csv).toContain("Opti…
+       |                 ^
+     24|     expect(csv).toContain('"Taille"'); expect(csv).toContain('"Câble"'…
+     25|     expect(csv).toContain('"LAMPE-ÉTÉ-S"'); expect(csv).toContain('"32…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/cms-catalogue-fiable.test.ts > exports catalogue fiables > Woo conserve tous les attributs et ne confond pas deux combinaisons ou accents proches
+AssertionError: expected 'Type,SKU,Name,Published,Short descrip…' to contain 'Attribute 3 name'
+
+- Expected
++ Received
+
+- Attribute 3 name
++ Type,SKU,Name,Published,Short description,Description,Regular price,Sale price,Categories,Tags,Images,Attribute 1 name,Attribute 1 value(s),Attribute 1 visible,Parent
++ "variable","serum-eclat","Sérum Éclat","0","Desc","<p>Desc</p>","","","Soin du visage","","","Finition","Été, Ete, Été","1",""
++ "variation","serum-eclat--t-","Sérum Éclat - Été / S / Court","0","","","32.10","","","","","Finition","Été","1","serum-eclat"
++ "variation","serum-eclat-ete","Sérum Éclat - Ete / L / Long","0","","","45.60","","","","","Finition","Ete","1","serum-eclat"
++ "variation","serum-eclat--t-","Sérum Éclat - Été / L / Court","0","","","37.80","","","","","Finition","Été","1","serum-eclat"
++ "simple","brosse-nettoyante","Brosse nettoyante","0","Brosse","<p>Brosse</p>","29.90","24.90","Soin du visage","Soin du visage","","","","",""
++ "variable","rouleau-de-jade","Rouleau de jade","0","Rouleau","<p>Rouleau</p>","","","Outils","Outils","","Pierre","Jade, Quartz rose","1",""
++ "variation","rouleau-de-jade-jade","Rouleau de jade - Jade","0","","","19.90","","","","","Pierre","Jade","1","rouleau-de-jade"
++ "variation","rouleau-de-jade-quartz-rose","Rouleau de jade - Quartz rose","0","","","21.90","","","","","Pierre","Quartz rose","1","rouleau-de-jade"
+
+ ❯ tests/cms-catalogue-fiable.test.ts:30:17
+     28|   it("Woo conserve tous les attributs et ne confond pas deux combinais…
+     29|     const s = multiAxisSpec(); const csv = wooProductsCsv(s);
+     30|     expect(csv).toContain("Attribute 3 name"); expect(csv).toContain('…
+       |                 ^
+     31|     expect(csv).toContain('"LAMPE-ÉTÉ-S"'); expect(csv).toContain('"Lo…
+     32|     const variations = csv.split("\n").filter(l => l.startsWith('"vari…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/cms-catalogue-fiable.test.ts > exports catalogue fiables > une cible Presta invalide ne devient pas le produit principal
+AssertionError: expected '{"order":["bad"],"sections":{"bad":{"…' not to contain '/products/serum-eclat'
+
+Expected: "/products/serum-eclat"
+Received: "{"order":["bad"],"sections":{"bad":{"type":"v2-split","settings":{"layout":"media-left","fit":"v2-contain","eyebrow":"","heading":"Sérum Éclat","text":"<p><strong>34,90 €</strong></p>","image_asset":"es-packshot.jpg","image_alt":"Sérum Éclat","button_label":"Choisir et commander","button_link":"/products/serum-eclat","color_scheme":"scheme-1","padding_top":96,"padding_bottom":96}}}}"
+
+ ❯ tests/cms-catalogue-fiable.test.ts:41:51
+     39|     const s = multiAxisSpec(); s.templates.index = { order: ["bad"], s…
+     40|     adaptFeaturedProduct(s, fr => fr);
+     41|     expect(JSON.stringify(s.templates.index)).not.toContain(`/products…
+       |                                                   ^
+     42|     expect(s.templates.index.sections.bad.disabled).toBe(true);
+     43|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/cms-catalogue-fiable.test.ts > exports catalogue fiables > la grille Woo reçoit une vraie adaptation native respectant la collection choisie
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/cms-catalogue-fiable.test.ts:48:87
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  12:07:18
+   Duration  1.61s (transform 54%, tests 29%, import 17%)

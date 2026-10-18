@@ -1,0 +1,40 @@
+{
+  "codeCommit": "3ecdcef4e21d8f3912910a6a50c04c4cfbcde973",
+  "targetedTests": {
+    "passed": 66,
+    "failed": 0,
+    "files": 4
+  },
+  "types": {
+    "exitCode": 0
+  },
+  "build": {
+    "exitCode": 0
+  },
+  "fullSuite": {
+    "commit": "31cd7adc80579ed381d8c916c0cf078d29d34a56",
+    "tree": "320f9fb1e8101c3ab668298a1f8544fb4e95ad27",
+    "passed": 2005,
+    "failed": 0,
+    "files": 265,
+    "repeatedOnFinalCode": false
+  },
+  "nativeVersions": {
+    "wordpress": "6.6.2",
+    "woocommerce": "9.3.3",
+    "phpWoo": "8.2.25",
+    "prestashop": "8.1.7",
+    "phpPresta": "8.1.30"
+  },
+  "nativePipelineExitCode": 0,
+  "paidAiCalls": 0,
+  "realPaymentRun": false,
+  "externalEmailDisabled": true,
+  "publicMedia": false,
+  "nativeWarnings": [
+    "PrestaShop productcomments: productCommentMandatoryMessage is not defined",
+    "External browser requests deliberately aborted",
+    "Presta synthetic catalog home has no H1"
+  ],
+  "scope": "Real local native import/reimport and browser; Shopify ThemeCheck only; Wix/Squarespace rebuild kits"
+}

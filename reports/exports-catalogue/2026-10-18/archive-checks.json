@@ -1,0 +1,76 @@
+[
+  {
+    "kind": "products",
+    "platform": "shopify",
+    "products": 4,
+    "variants": 7,
+    "media": 8,
+    "themeCheckErrors": [],
+    "themeCheckWarnings": 0
+  },
+  {
+    "kind": "products",
+    "platform": "woocommerce",
+    "products": 4,
+    "variants": 7,
+    "media": 8
+  },
+  {
+    "kind": "products",
+    "platform": "prestashop",
+    "products": 4,
+    "variants": 7,
+    "media": 8
+  },
+  {
+    "kind": "products",
+    "platform": "wix",
+    "products": 4,
+    "variants": 7,
+    "media": 8
+  },
+  {
+    "kind": "products",
+    "platform": "squarespace",
+    "products": 4,
+    "variants": 7,
+    "media": 8
+  },
+  {
+    "kind": "services",
+    "platform": "shopify",
+    "products": 0,
+    "variants": 0,
+    "media": 3,
+    "themeCheckErrors": [],
+    "themeCheckWarnings": 0
+  },
+  {
+    "kind": "services",
+    "platform": "woocommerce",
+    "products": 0,
+    "variants": 0,
+    "media": 3
+  },
+  {
+    "kind": "services",
+    "platform": "prestashop",
+    "products": 0,
+    "variants": 0,
+    "media": 3
+  },
+  {
+    "kind": "services",
+    "platform": "wix",
+    "products": 0,
+    "variants": 0,
+    "media": 3
+  },
+  {
+    "kind": "services",
+    "platform": "squarespace",
+    "products": 0,
+    "variants": 0,
+    "media": 3
+  }
+]
