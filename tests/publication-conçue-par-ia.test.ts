@@ -1,3 +1,4 @@
+import { campaignVerdict, campaignConcept, campaignCopy } from "./publication-fixtures";
 /**
  * Publication entièrement conçue par l'IA (scène, mise en page, textes, produit réel) : accroche de l'IA nettoyée
  * (rien d'inventé de chiffré), textes exacts et produit fidèle exigés par le contrôle, 3 essais au plus avec la
@@ -12,10 +13,10 @@ describe("Publication conçue par l'IA", async () => {
   const { saveAsset } = await import("@/lib/library");
   const { seedImageFixture } = await import("./image-v2-fixtures");
   const { designPostWithAi, cleanAiCopy, aiPostPrompt, aiPostAccepted, textsMatch } = await import("@/lib/social-v2/ai-post");
-  const png = () => sharp({ create: { width: 64, height: 80, channels: 3, background: "#335544" } }).png().toBuffer();
+  const png = () => sharp({ create: { width: 1080, height: 1350, channels: 3, background: "#335544" } }).png().toBuffer();
   const post = { id: "post-ia-1", network: "instagram", format: "image", title: "750 ml", caption: "", pillar: "Produit", objective: "sell", headline: "750 ml", scheduled_at: null };
-  type Rev = { transcribed?: string[]; person?: boolean; anatomyOk?: boolean; productFaithful: boolean; textsExact: boolean; legible: boolean; score: number; issues: string[]; fix: string };
-  const ok: Rev = { productFaithful: true, textsExact: true, legible: true, score: 8.5, issues: [], fix: "" };
+  type Rev = ReturnType<typeof campaignVerdict> & { transcribed?: string[]; person?: boolean; anatomyOk?: boolean; productFaithful: boolean; textsExact: boolean; legible: boolean; score: number; issues: string[]; fix: string };
+  const ok: Rev = { ...campaignVerdict(), productFaithful: true, textsExact: true, legible: true, score: 9.2, issues: [], fix: "" };
 
   async function setup() {
     const u = await createUser(`pcia-${Date.now()}-${Math.random()}@test.fr`, "motdepasse-test", "P");
@@ -28,7 +29,7 @@ describe("Publication conçue par l'IA", async () => {
     return {
       calls,
       deps: {
-        copy: async () => ({ headline: "Partez léger. Voyez grand.", subline: "La gourde Cime", cta: "Découvrir", scene: "mountain sunrise, product on a rock" }),
+        copy: async () => ({ headline: "Partez léger. Voyez grand.", subline: "La gourde Cime", cta: "Découvrir", scene: "mountain sunrise, product on a rock", concept:campaignConcept() }),
         generate: async (prompt: string) => (calls.generate++, calls.prompts.push(prompt), (calls.spent += costPerCall), png()),
         review: async (_img: Buffer, _ref: Buffer | null, texts: string[]) => { const r = reviews.shift() ?? ok; return { ...r, person: r.person ?? false, anatomyOk: r.anatomyOk ?? true, transcribed: r.transcribed ?? texts }; },
         spentMicro: () => calls.spent,
@@ -106,16 +107,16 @@ describe("Publication conçue par l'IA", async () => {
     expect(f.calls.generate).toBe(3);
   });
 
-  it("un passage précédent ne compte pas dans le plafond du nouveau passage", async () => {
+  it("une reprise identique réutilise la version acceptée sans nouvel appel", async () => {
     const { p, ref } = await setup();
     const keys: string[] = [];
     let spent = 0;
-    const deps = { generate: async (_pr: string, _a: string, _r: Buffer | null, key: string) => (keys.push(key), (spent += 230_000), png()), review: async (_i: Buffer, _r: Buffer | null, texts: string[]) => ({ ...ok, person: false, anatomyOk: true, transcribed: texts }), spentMicro: (prefix: string) => (keys.some((k) => k.startsWith(prefix)) ? keys.filter((k) => k.startsWith(prefix)).length * 230_000 : 0), maxMicro: () => 230_000 };
+    const deps = { copy:campaignCopy, generate: async (_pr: string, _a: string, _r: Buffer | null, key: string) => (keys.push(key), (spent += 230_000), png()), review: async (_i: Buffer, _r: Buffer | null, texts: string[]) => ({ ...ok, person: false, anatomyOk: true, transcribed: texts }), spentMicro: (prefix: string) => (keys.some((k) => k.startsWith(prefix)) ? keys.filter((k) => k.startsWith(prefix)).length * 230_000 : 0), maxMicro: () => 230_000 };
     await designPostWithAi(p, post, { aspect: "4:5", maxCostEur: 0.3, reference: ref }, deps as any);
     await new Promise((r) => setTimeout(r, 5));
     const second = await designPostWithAi(p, post, { aspect: "4:5", maxCostEur: 0.3, reference: ref }, deps as any);
     expect(second.assetId).toBeTruthy();
-    expect(new Set(keys).size).toBe(2);
+    expect(new Set(keys).size).toBe(1);
   });
 
   it("consigne : produit identique à la référence, aucun autre texte", async () => {

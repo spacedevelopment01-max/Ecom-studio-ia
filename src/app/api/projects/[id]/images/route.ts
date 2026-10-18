@@ -1,3 +1,4 @@
+import { TEXT_IMAGE_KINDS } from "@/lib/image-v2/ai-only";
 import crypto from "node:crypto";
 import { z } from "zod";
 import { body, handle, ok } from "@/lib/http";
@@ -80,7 +81,7 @@ const imageLabel = (kind: string) => {
 };
 
 /** Rôle de l'image demandée (guide du moteur d'images : tout par l'IA, mais pas de texte sur une image produit). */
-const TEXT_KINDS = new Set(["social", "ad", "service", "tips", "quote", "info", "booking", "promo", "event", "new", "review", "question", "team", "closing"]);
+const TEXT_KINDS = TEXT_IMAGE_KINDS;
 
 /**
  * Onglet Images : TOUTE image finale est créée par un modèle d'images (règle du propriétaire). Plus de « visuel

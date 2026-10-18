@@ -49,7 +49,8 @@ async function fakeFetch(url: string, init?: RequestInit): Promise<Response> {
   const body = init?.body ? JSON.parse(String(init.body)) : null;
   net.calls.push({ url, body });
   const json = (j: unknown, status = 200) => new Response(JSON.stringify(j), { status });
-  if (url.includes(":generateContent")) return json({ candidates: [{ content: { parts: [{ inlineData: { data: PNG } }] } }] });
+  if (url.includes("multimodal-generation/generation")) return json({output:{choices:[{message:{content:[{image:"https://img.test/alibaba.png"}]}}]}});
+  if (url.includes(":generateContent")) return json({ modelVersion:"reported-version-simulation",candidates: [{ content: { parts: [{ inlineData: { data: PNG } }] } }] });
   if (url.includes(":predictLongRunning")) return net.veo503 ? json({ error: { message: "indisponible" } }, 503) : json({ name: "operations/op1" });
   if (url.includes("/operations/op1")) return json({ done: true, response: { generateVideoResponse: { generatedSamples: [{ video: { uri: "https://video.test/clip.mp4" } }] } } });
   if (url.startsWith("https://queue.fal.run/") && init?.method === "POST") return json({ status_url: "https://queue.fal.run/x/requests/1/status", response_url: "https://queue.fal.run/x/requests/1" });
@@ -297,4 +298,67 @@ describe("routage multimédia V2", async () => {
     expect(routing.mediaMode("image")).toBe("manual");
     expect(routing.mediaMode("video")).toBe("manual");
   });
+  it.each(["google","fal","openai","alibaba"])("publication : %s reçoit le logo AVEC et SANS photo — transport simulé réellement inspecté",async provider => {
+    keys[provider]="cle-synthetique-pour-test";
+    const model=MEDIA_MODELS.find(m=>m.provider===provider && m.kind==="image" && !!m.caps.textInImage && (m.caps.references??0)>=2)!;
+    expect(model).toBeTruthy();
+    confirmModel(`${provider}:${model.model}`,{unit:"image",perImage:.08});
+    setJsonSetting("ai.media.usage",{social_image:{primary:`${provider}:${model.model}`}});
+    const c=await client();
+    for (const product of [true,false]) {
+      await mp.aiPostImage(ctx(c),{prompt:"Logo exact, sujet documenté",aspect:"4:5",reference:product?png:null,logo:png});
+      const n=product?2:1;
+      const ledger=all<{served_model:string|null}>("SELECT served_model FROM ai_calls WHERE user_id=? AND status='ok' ORDER BY created_at,rowid",c.userId);
+      expect(ledger.at(-1)?.served_model).toBe(provider==="google"?"reported-version-simulation":null);
+      if (provider==="openai") {
+        expect(oa.calls.at(-1).kind).toBe("edit");
+        expect(oa.calls.at(-1).image).toHaveLength(n);
+      } else if (provider==="google") {
+        const call=net.calls.filter(c=>c.url.includes(":generateContent")).at(-1)!;
+        expect(call.body.contents[0].parts.filter((p:any)=>p.inline_data)).toHaveLength(n);
+      } else if (provider==="fal") {
+        const call=net.calls.filter(c=>c.url.startsWith("https://queue.fal.run/")&&c.body).at(-1)!;
+        expect(call.body.image_urls).toHaveLength(n);
+      } else {
+        const call=net.calls.filter(c=>c.url.includes("multimodal-generation/generation")).at(-1)!;
+        expect(call.body.input.messages[0].content.filter((p:any)=>p.image)).toHaveLength(n);
+      }
+    }
+    setJsonSetting("ai.media.usage",{});
+  });
+
+  it("aucune référence essentielle supprimée pour tenir dans la capacité du modèle",async()=>{
+    keys={alibaba:"cle-test"};
+    const m=MEDIA_MODELS.find(m=>m.provider==="alibaba"&&m.kind==="image"&&m.caps.references===2)!;
+    confirmModel(`alibaba:${m.model}`,{unit:"image",perImage:.08});
+    setJsonSetting("ai.media.usage",{social_image:{primary:`alibaba:${m.model}`}});
+    const c=await client();
+    await expect(mp.aiPostImage(ctx(c),{prompt:"retouche avec trois références essentielles",aspect:"4:5",reference:png,logo:png,previous:png})).rejects.toThrow();
+    expect(net.calls).toHaveLength(0);expect(oa.calls).toHaveLength(0);
+    setJsonSetting("ai.media.usage",{});
+  });
+
+  it("brief de publication complet au-delà de la limite logo ; limite dédiée explicite, jamais tronquée",async()=>{
+    const m=MEDIA_MODELS.find(m=>m.provider==="openai"&&m.kind==="image"&&m.caps.textInImage)!;
+    confirmModel(`openai:${m.model}`,{unit:"image",perImage:.08});
+    setJsonSetting("ai.media.usage",{social_image:{primary:`openai:${m.model}`}});
+    const c=await client();
+    await mp.aiPostImage(ctx(c),{prompt:"Contexte ".repeat(800)+"CONTRAINTE FINALE INTACTE",aspect:"4:5",reference:png,logo:png});
+    expect(oa.calls[0].prompt).toContain("CONTRAINTE FINALE INTACTE");
+    await expect(mp.aiPostImage(ctx(c),{prompt:"x".repeat(mp.PUBLICATION_PROMPT_MAX_BYTES+1),aspect:"4:5",reference:png})).rejects.toThrow("trop long");
+    expect(oa.calls).toHaveLength(1);
+    setJsonSetting("ai.media.usage",{});
+  });
+
+  it("deux étapes : une scène peut utiliser un modèle sans typographie, jamais pour la composition finale",async()=>{
+    const m=MEDIA_MODELS.find(m=>m.provider==="fal"&&m.kind==="image"&&!m.caps.textInImage&&(m.caps.references??0)>=1)!;
+    confirmModel(`fal:${m.model}`,{unit:"image",perImage:.08});
+    setJsonSetting("ai.media.usage",{social_image:{primary:`fal:${m.model}`}});
+    const c=await client();await mp.aiPostImage(ctx(c),{prompt:"photo seule sans texte",aspect:"4:5",reference:png,photoOnly:true});
+    const sent=net.calls.filter(c=>c.url.startsWith("https://queue.fal.run/")&&c.body).length;expect(sent).toBe(1);
+    await expect(mp.aiPostImage(ctx(c),{prompt:"composition avec texte exact",aspect:"4:5",reference:png})).rejects.toThrow();
+    expect(net.calls.filter(c=>c.url.startsWith("https://queue.fal.run/")&&c.body)).toHaveLength(sent);
+    setJsonSetting("ai.media.usage",{});
+  });
+
 });

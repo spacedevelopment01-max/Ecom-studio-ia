@@ -204,7 +204,7 @@ async function engine(ctx: JobContext | null, p: Project, req: AdRequestV2, deps
       let conceptReview: AdReview | null = null;
       let reviewed = false;
       for (const [fi, f] of formats.entries()) {
-        const out = await oneFormat({ p, ctx, deps, concept, f, main: fi === 0 || !reviewed, images, pal, typo, art, logo, logoLight, cut, refPhoto: ownPhotos[0] ?? null, refId, insight, limits, stats, prior: conceptReview, features: feats });
+        const out = await oneFormat({ p, ctx, deps, concept, f, main: fi === 0 || !reviewed, images, pal, typo, art, logo, logoLight, cut, refPhoto: ownPhotos[0] ?? null, refId, insight, limits, stats, prior: conceptReview, features: feats, maxCostEur:Math.max(0,((currentTrace().costCapMicro ?? (req.maxCostEur ?? DEFAULT_AD_CAP_EUR)*EUR)-(jobId?one<{c:number}>("SELECT COALESCE(SUM(cost),0) c FROM ai_calls WHERE job_id=?",jobId)?.c ?? 0:0))/EUR) });
         if (out.review) {
           conceptReview = out.review;
           reviewed = true;
@@ -272,6 +272,7 @@ type OneInput = {
   concept: AdConcept & { claims: ClaimIssue[] };
   f: FormatSpec;
   main: boolean;
+  maxCostEur?: number;
   images: Map<AspectId, { assetId: string; data: Buffer; withProduct: boolean } | null>;
   pal: ReturnType<typeof palette>;
   typo: ReturnType<typeof brandTypo>;
@@ -293,7 +294,7 @@ type OneInput = {
 async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdReview | null }> {
   const { p, deps, concept, f, stats } = o;
   const jobId = o.ctx?.job.id ?? null;
-  const h = hash({ v: ADS_V2_VERSION, c: concept.id, copy: concept.copy, f: `${f.platform}:${f.aspect}`, pal: o.pal, typo: o.typo, layout: concept.visual.layout, dir: concept.direction ? `${concept.direction.id}:${concept.direction.layout}` : null, art: o.art.style, gen: !!deps.canGenerate });
+  const h = hash({ policy:"campaign-2", identity:p.brand, strategy:p.strategy, v: ADS_V2_VERSION, c: concept.id, copy: concept.copy, f: `${f.platform}:${f.aspect}`, pal: o.pal, typo: o.typo, layout: concept.visual.layout, dir: concept.direction ? `${concept.direction.id}:${concept.direction.layout}` : null, art: o.art.style, gen: !!deps.canGenerate });
   // Création modifiée par le client (éditeur visuel) : jamais écrasée en silence par une régénération.
   const docKey = engineDocKey(p.id, concept.id, f.platform, f.aspect);
   if (userOwned(p.id, docKey)) {
@@ -309,8 +310,8 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
   // Publicité finale créée ENTIÈREMENT par l'IA (branchement réel) : jamais une composition de gabarit. Bloquée
   // (IA indisponible, budget, essais refusés) : aucune création, la raison est dite.
   if (deps.finalAd) {
-    const aspect = (["1:1", "4:5", "9:16", "16:9"].includes(f.aspect) ? f.aspect : orientation(f.aspect)) as "1:1" | "4:5" | "9:16" | "16:9";
-    const r = await deps.finalAd({ conceptId: concept.id, angle: concept.angle.type, hook: concept.copy.hook, cta: concept.copy.cta, subject: [concept.visual.subject, concept.copy.visual].filter(Boolean).join(" — ").slice(0, 400), aspect, maxCostEur: 1 });
+    const aspect = f.aspect;
+    const r = await deps.finalAd({ conceptId: concept.id, confirmedOffer:o.insight.offer, campaignContext:JSON.stringify({angle:concept.angle,visual:concept.visual,audience:o.insight.audience}), platform:f.platform, copyApproved:(concept as AdConcept & {copyBy?:string}).copyBy==="ai", angle: concept.angle.type, hook: concept.copy.hook, cta: concept.copy.cta, subject: [concept.visual.subject, concept.copy.visual].filter(Boolean).join(" — "), aspect, maxCostEur: o.maxCostEur ?? DEFAULT_AD_CAP_EUR });
     stats.images++;
     if (r.assetId) run("UPDATE assets SET meta = json_set(meta, '$.adV2', json(?)) WHERE id = ?", JSON.stringify({ version: ADS_V2_VERSION, hash: h, conceptId: concept.id, angle: { type: concept.angle.type, material: concept.angle.material, lever: concept.angle.lever }, copy: concept.copy, platform: f.platform, aspect: f.aspect, layout: "ai", aiFinal: true }), r.assetId);
     return { outcome: { conceptId: concept.id, platform: f.platform, aspect: f.aspect, verdict: r.assetId ? "PROVISIONAL" : "REJECTED", score: null, codes: r.assetId ? [] : ["ai_blocked"], reason: r.assetId ? "publicité entièrement créée par l'IA, contrôlée (textes, produit, logo)" : r.reason ?? "publicité IA non créée", assetId: r.assetId, imageAssetId: null, attempts: 1, reused: false }, review: null };

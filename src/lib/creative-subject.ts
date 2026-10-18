@@ -34,10 +34,10 @@ const catalogReference = (projectId: string, originalId: string | null): string 
 /** Produits ou services proposés au client, selon le type du projet. */
 export function subjectOptions(p: Project): SubjectOption[] {
   if (p.business === "services") {
-    return (p.services?.services ?? []).filter((s) => s.name?.trim()).map((s) => ({ kind: "service" as const, key: s.name.trim(), name: s.name.trim(), summary: (s.description ?? "").slice(0, 300), referenceAssetId: null }));
+    return (p.services?.services ?? []).filter((s) => s.name?.trim()).map((s) => ({ kind: "service" as const, key: s.name.trim(), name: s.name.trim(), summary: s.description ?? "", referenceAssetId: null }));
   }
-  const main: SubjectOption = { kind: "product", key: MAIN_PRODUCT, name: p.product.name || p.product.category || "Produit", summary: (p.product.summary ?? "").slice(0, 300), referenceAssetId: productReferences(p.id)[0] ?? null };
-  const items = (p.catalog ?? []).map((i) => ({ kind: "product" as const, key: i.key, name: i.name, summary: (i.description ?? "").slice(0, 300), referenceAssetId: catalogReference(p.id, i.originalAssetId) }));
+  const main: SubjectOption = { kind: "product", key: MAIN_PRODUCT, name: p.product.name || p.product.category || "Produit", summary: p.product.summary ?? "", referenceAssetId: productReferences(p.id)[0] ?? null };
+  const items = (p.catalog ?? []).map((i) => ({ kind: "product" as const, key: i.key, name: i.name, summary: i.description ?? "", referenceAssetId: catalogReference(p.id, i.originalAssetId) }));
   return [main, ...items];
 }
 

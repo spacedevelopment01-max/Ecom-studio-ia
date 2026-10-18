@@ -1,3 +1,4 @@
+import {campaignConcept,campaignVerdict} from "./publication-fixtures";
 /**
  * Onglet Images : « Faire un visuel » en trois façons.
  *  - Gratuit (mise en page du studio) : jamais d'IA, même en secours.
@@ -36,7 +37,7 @@ describe("Faire un visuel (onglet Images)", async () => {
   const { generateAiPostImage, withClientTexts, aiPostBrief, AI_POST_ASPECT } = await import("@/lib/engine/ai-post-image");
   const { generateServiceSingleImage } = await import("@/lib/engine/service-media");
   const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
-  const png = () => sharp({ create: { width: 64, height: 80, channels: 3, background: "#335544" } }).png().toBuffer();
+  const png = () => sharp({ create: { width: 1080, height: 1350, channels: 3, background: "#335544" } }).png().toBuffer();
   const ctxOf = (id: string) => ({ job: { id, project_id: null }, progress: () => {}, step: async (_k: string, fn: () => Promise<unknown>) => fn() }) as any;
   const post = (pid: string, body: Record<string, unknown>) => fr(() => images.POST(new Request(`http://localhost:3000/api/projects/${pid}/images`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }), { params: Promise.resolve({ id: pid }) } as any));
   const user = async () => {
@@ -49,9 +50,9 @@ describe("Faire un visuel (onglet Images)", async () => {
     return {
       calls,
       deps: {
-        copy: async () => ({ headline: "Accroche de l'IA", subline: "Ligne de l'IA", cta: "Bouton IA", scene: "bright renovated bathroom, morning light" }),
-        generate: async (prompt: string, aspect: string, ref: Buffer | null) => (calls.prompts.push(prompt), calls.aspects.push(aspect), calls.refs.push(ref), (calls.spent += cost), png()),
-        review: async (_i: Buffer, _r: Buffer | null, texts: string[]) => ({ transcribed: texts, person: false, anatomyOk: true, productFaithful: true, textsExact: true, legible: true, score: 8.5, issues: [], fix: "" }),
+        copy: async () => ({ headline: "Accroche de l'IA", subline: "Ligne de l'IA", cta: "Bouton IA", scene: "bright renovated bathroom, morning light",concept:campaignConcept() }),
+        generate: async (prompt: string, aspect: string, ref: Buffer | null) => (calls.prompts.push(prompt), calls.aspects.push(aspect), calls.refs.push(ref), (calls.spent += cost), sharp({create:{width:aspect==="16:9"?1920:1080,height:aspect==="1:1"?1080:aspect==="9:16"?1920:aspect==="16:9"?1080:1350,channels:3,background:"#335544"}}).png().toBuffer()),
+        review: async (_i: Buffer, _r: Buffer | null, texts: string[]) => ({ ...campaignVerdict(), transcribed: texts, person: false, anatomyOk: true, productFaithful: true, textsExact: true, legible: true, score: 9.2, issues: [], fix: "" }),
         spentMicro: () => calls.spent,
         maxMicro: () => cost,
       },
@@ -90,7 +91,7 @@ describe("Faire un visuel (onglet Images)", async () => {
     const f = fakeDeps();
     const d = withClientTexts(f.deps as any, { headline: "Mon titre" });
     const c = await d.copy!({} as any, {} as any, { headline: "x", subline: "y", cta: "z", brand: "b" }, "k", false);
-    expect(c).toMatchObject({ headline: "Mon titre", subline: "Ligne de l'IA", cta: "Bouton IA", scene: "bright renovated bathroom, morning light" });
+    expect(c).toMatchObject({ headline: "Mon titre", subline: "Ligne de l'IA", cta: "Bouton IA", scene: "bright renovated bathroom, morning light",concept:campaignConcept() });
     expect(withClientTexts(f.deps as any, {})).toBe(f.deps);
     const u = await user();
     const p = loadProject(await seedThemeScenario(u.id, "artisan"));

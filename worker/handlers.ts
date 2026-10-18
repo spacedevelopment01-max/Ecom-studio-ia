@@ -66,8 +66,9 @@ export const handlers: Record<string, Handler> = {
   "image.single": async (ctx) => {
     const p = loadProject(ctx.payload.projectId);
     const { aiActiveFor } = await import("../src/lib/ai/access");
-    const { imageV2Kind, NO_AI_IMAGES } = await import("../src/lib/image-v2/ai-only");
+    const { TEXT_IMAGE_KINDS, imageV2Kind, NO_AI_IMAGES } = await import("../src/lib/image-v2/ai-only");
     if (!aiActiveFor(p.userId, p.id)) throw new UserFacingError(L(NO_AI_IMAGES.fr, NO_AI_IMAGES.en));
+    if (TEXT_IMAGE_KINDS.has(ctx.payload.request?.kind)) return (await import("../src/lib/engine/ai-post-image")).generateAiPostImage(ctx,p.id,ctx.payload.request);
     const { runImageEngineV2 } = await import("../src/lib/image-v2/engine");
     const r = await runImageEngineV2(ctx, p.id, { kind: imageV2Kind(p.business === "services", ctx.payload.request?.kind ?? "scene"), count: 1, allowGenerate: true, noStock: true, maxCostEur: 1 });
     return { outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, origin: o.origin })), stoppedByCostCap: r.stoppedByCostCap };
@@ -81,7 +82,8 @@ export const handlers: Record<string, Handler> = {
   "ads.v2": async (ctx) => {
     const { runAdEngineV2 } = await import("../src/lib/ads-v2/engine");
     const r = await runAdEngineV2(ctx, ctx.payload.projectId, ctx.payload.request ?? {});
-    return { concepts: r.concepts.length, outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, platform: o.platform, aspect: o.aspect })), stoppedByCostCap: r.stoppedByCostCap, stats: r.stats };
+    if(!ctx.payload.request?.copyOnly && !r.outcomes.some(o=>o.assetId))throw new UserFacingError(L("Aucune publicité n’a passé le contrôle : ","No ad passed the check: ")+r.outcomes.map(o=>o.reason).filter(Boolean).join(" ; ")+L(" Les essais et coûts restent conservés, aucun gabarit de secours."," Attempts and costs are preserved, without a template fallback."));
+    return { costMicro:r.costMicro, partial:r.outcomes.some(o=>!o.assetId), concepts: r.concepts.length, outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, platform: o.platform, aspect: o.aspect, reason:o.reason })), stoppedByCostCap: r.stoppedByCostCap, stats: r.stats };
   },
   /** Image V2 : brief local, recherche multisource ou génération routée, barrière V2, bibliothèque, réutilisation. */
   "image.v2": async (ctx) => {

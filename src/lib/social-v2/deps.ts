@@ -1,3 +1,4 @@
+import { usageExplicit } from "../ai/media-routing";
 /**
  * Outils du Social Engine V2 — branchés sur les moteurs V2 EXISTANTS (aucun moteur reconstruit) :
  *  - images : Image Engine V2 (`runImageEngineV2`, recherche multisource puis génération seulement si permise) ;
@@ -18,8 +19,8 @@ import { validCutouts } from "../engine/cutouts";
 import { isAutoUsable } from "../quality/usable";
 import { publishPost, alreadyPublished, type Connection, type PostRow, type PublishResult } from "../social/publish";
 import { platformSpec } from "./platforms";
-import { aiPostProbableMicro, capMicro, estimateMicro } from "../ai/estimate";
-import { aiPostMaxMicro } from "../ai/media-providers";
+import { aiPostProbableMicro, estimateTaskMicro, capMicro, estimateMicro } from "../ai/estimate";
+import { aiPostMaxMicro, textLayoutMaxMicro } from "../ai/media-providers";
 import type { CreativeSubject } from "../creative-subject";
 
 export type MediaBy = "library" | "local" | "image_v2" | "ads_v2" | "video_v2" | "ai_post";
@@ -231,8 +232,8 @@ export const AI_POST_ATTEMPTS = 3;
 
 /** PLAFOND d'une publication conçue par l'IA : trois essais au plus (image + contrôle) et l'accroche. Jamais montré comme prix (devis : `aiPostProbableMicro`). */
 export function aiPostEstimate(): number {
-  const one = aiPostMaxMicro() ?? estimateMicro("image");
-  return AI_POST_ATTEMPTS * one + Math.round(estimateMicro("blog") / 10);
+  const one = aiPostMaxMicro(2,usageExplicit("text_layout")) ?? estimateMicro("image");
+  return AI_POST_ATTEMPTS * (one + (usageExplicit("text_layout") ? textLayoutMaxMicro() ?? one : 0) + 2 * estimateTaskMicro("quality_control", { input: 24000, output: 2000 })) + estimateTaskMicro("copywriting", { input: 18000, output: 2000 });
 }
 
 export function realSocialDeps(ctx: JobContext | null, p: Project, aiActive: boolean): SocialDeps {
@@ -260,7 +261,7 @@ export function realSocialDeps(ctx: JobContext | null, p: Project, aiActive: boo
       const { designPostWithAi, realAiPostDeps } = await import("./ai-post");
       const { resolveSubject } = await import("../creative-subject");
       const a = aspectOf(post.network, post.format);
-      const aspect = a === "2:3" ? "4:5" : a;
+      const aspect = a;
       // Le produit (ou service) choisi par le client ; sinon le produit principal et sa photo de référence.
       const subject = resolveSubject(pp, post.subject);
       return designPostWithAi(pp, post, { aspect, maxCostEur: o.maxCostEur, reference: subject?.referenceAssetId ?? null, subject }, realAiPostDeps({ userId: pp.userId, projectId: pp.id, jobId: ctx?.job.id ?? null }));

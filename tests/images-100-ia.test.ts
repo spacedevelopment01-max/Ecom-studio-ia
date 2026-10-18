@@ -1,3 +1,4 @@
+import {campaignCopy,campaignVerdict} from "./publication-fixtures";
 /**
  * Images finales 100 % IA (règle du propriétaire) : chaque parcours d'image finale passe par un modèle d'images ;
  * sans IA, rien n'est composé à la place (ni gabarit, ni photo de banque). Outils simulés : aucun appel réel.
@@ -135,15 +136,15 @@ describe("Consigne de publication : seuls les textes permis par le rôle de l'im
       const asPost = aiPostPrompt(p, post, { aspect: "4:5", hasReference: true, hasLogo: true, texts: t, brief: buildGenerationBrief(p, { purpose: "post", subject: "x", aspect: "4:5", texts: { hook: t.headline, secondary: t.subline, cta: t.cta } }) });
       expect(asPost).toContain("social media post");
       expect(asPost).not.toContain("call-to-action");
-      expect(asPost).not.toContain(`"${t.cta}"`);
+      expect(t.cta).toBe("");
       expect(asPost).not.toMatch(/Post angle:\s+—/);
-      const asAd = aiPostPrompt(p, post, { aspect: "4:5", hasReference: true, hasLogo: true, texts: t, brief: buildGenerationBrief(p, { purpose: "ad", subject: "x", aspect: "4:5", texts: { hook: t.headline, secondary: t.subline, cta: t.cta } }) });
+      const asAd = aiPostPrompt(p, post, { aspect: "4:5", hasReference: true, hasLogo: true, texts: t, brief: buildGenerationBrief(p, { purpose: "ad", subject: "x", aspect: "4:5", texts: { hook: t.headline, secondary: t.subline, cta: "Découvrir" } }) });
       expect(asAd).toContain("social media advertisement");
-      expect(asAd).toContain(`call-to-action that clearly reads as a button or link: "${t.cta}"`);
+      expect(asAd).not.toContain("call-to-action"); // organic copy did not ask for a CTA
       expect(buildGenerationBrief(p, { purpose: "product_main", subject: "x", aspect: "1:1" }).logo).toBe("aucun logo dans l'image");
       // Produit entier exigé à chaque génération (bracelet tronqué constaté sur une publicité ARVEN).
-      expect(buildGenerationBrief(p, { purpose: "ad", subject: "x", aspect: "1:1" }).fidelity).toMatch(/produit ENTIER.*aucune partie coupée/);
-      expect(asAd).toMatch(/produit ENTIER/);
+      expect(buildGenerationBrief(p, { purpose: "ad", subject: "x", aspect: "1:1" }).fidelity).toMatch(/cadrage cohérent.*détail demandé/);
+      expect(asAd).toMatch(/détail demandé/);
     });
   });
 });
@@ -157,7 +158,7 @@ describe("Deux étapes : photo par Qwen, texte et logo par ChatGPT Images", asyn
   const { runWithLang } = await import("@/lib/i18n-server");
   const { seedImageFixture } = await import("./image-v2-fixtures");
   const sharp = (await import("sharp")).default;
-  const png = (c = "#886644") => sharp({ create: { width: 64, height: 80, channels: 3, background: c } }).png().toBuffer();
+  const png = (c = "#886644") => sharp({ create: { width: 1080, height: 1350, channels: 3, background: c } }).png().toBuffer();
   const post = { id: "two-steps", network: "instagram", format: "image", title: "Le temps", caption: "", pillar: null, objective: "convert", headline: "Le temps, bien porté", scheduled_at: null } as any;
 
   it("texte et logo : ChatGPT Images par défaut", () => expect(usagePrimary("text_layout").provider).toBe("openai"));
@@ -170,13 +171,15 @@ describe("Deux étapes : photo par Qwen, texte et logo par ChatGPT Images", asyn
     const run = async (verdicts: { text: boolean; product: boolean }[]) => {
       const log = { scenes: [] as string[], layouts: [] as { prompt: string; photo: Buffer }[] };
       let n = 0;
+      const op=String(Math.random());
       const deps = {
+        copy:campaignCopy, operationId:op,
         generate: async (prompt: string) => (log.scenes.push(prompt), png("#223344")),
         layout: async (photo: Buffer, prompt: string) => (log.layouts.push({ prompt, photo }), png("#445566")),
         layoutMaxMicro: () => 50_000,
         review: async (_i: Buffer, _r: Buffer | null, texts: string[]) => {
-          const v = verdicts[Math.min(n++, verdicts.length - 1)];
-          return { transcribed: v.text ? texts : ["Le tmps"], person: false, anatomyOk: true, productFaithful: v.product, textsExact: v.text, legible: true, score: 8.5, issues: v.text ? [] : ["faute"], fix: "" };
+          const v = texts.length?verdicts[Math.min(n++, verdicts.length - 1)]:{text:true,product:true};
+          return { ...campaignVerdict(), transcribed: v.text ? texts : ["Le tmps"], person: false, anatomyOk: true, productFaithful: v.product, textsExact: v.text, legible: true, score: 9.2, issues: v.text ? [] : ["faute"], fix: "" };
         },
         spentMicro: () => 0,
         maxMicro: () => 50_000,
@@ -194,6 +197,6 @@ describe("Deux étapes : photo par Qwen, texte et logo par ChatGPT Images", asyn
     expect(a.log.layouts[0].prompt).toMatch(/keep it EXACTLY as it is/);
     const b = await run([{ text: true, product: false }, { text: true, product: true }]);
     expect(b.r.assetId).toBeTruthy();
-    expect(b.log.scenes).toHaveLength(2); // produit en cause : photo refaite
+    expect(b.log.scenes).toHaveLength(1); // scene checked faithful: layout alone damaged it
   });
 });

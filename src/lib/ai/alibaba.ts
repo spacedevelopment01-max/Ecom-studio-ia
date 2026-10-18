@@ -71,7 +71,7 @@ export function noPeopleLine(people: boolean): string {
 }
 
 /** Tailles Qwen-Image (largeur*hauteur) par format du studio : préréglages documentés (1328², 16:9, 9:16, 3:4). */
-export const QWEN_SIZES: Record<string, string> = { "1:1": "1328*1328", "16:9": "1664*928", "9:16": "928*1664", "4:5": "1104*1472", "3:4": "1104*1472", "2:3": "1104*1472" };
+export const QWEN_SIZES: Record<string, string> = { "1:1": "1328*1328", "16:9": "1792*1008", "9:16": "1008*1792", "4:5": "1152*1440", "3:4": "1104*1472", "2:3": "1024*1536", "3:2":"1536*1024", "1.91:1":"1536*800", "3:1":"2304*768", "4:1":"3072*768" };
 export const qwenSize = (aspect: string) => QWEN_SIZES[aspect] ?? QWEN_SIZES["1:1"];
 
 /** Corps d'une génération / retouche Qwen-Image (point d'accès synchrone « multimodal-generation »). */
