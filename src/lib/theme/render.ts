@@ -735,6 +735,23 @@ export function routeFor(spec: ThemeSpec, pathname: string, search: URLSearchPar
   return { template: "404", status: 404 };
 }
 
+/** Réglages globaux du thème (défauts du schéma + settings_data) : les mêmes pour la page entière et les sections rechargées (tiroir du panier). */
+function globalSettingsFor(files: ThemeFiles, base: string): Record<string, any> {
+  const settingsSchemaRaw = JSON.parse(files.get("config/settings_schema.json") || "[]");
+  const gtypes = new Map<string, string>();
+  for (const g of settingsSchemaRaw) for (const s of g.settings ?? []) if (s.id) gtypes.set(s.id, s.type);
+  const settingsData = JSON.parse(stripComment(files.get("config/settings_data.json") || "{}")).current ?? {};
+  const defaults: Record<string, unknown> = {};
+  for (const g of settingsSchemaRaw) for (const s of g.settings ?? []) if (s.id && s.default !== undefined) defaults[s.id] = s.default;
+  const globalSettings = wrapSettings({ ...defaults, ...settingsData }, base, gtypes);
+  const schemes = (settingsData.color_schemes ?? {}) as Record<string, { settings: Record<string, string> }>;
+  globalSettings.color_schemes = Object.entries(schemes).map(([sid, sc]) => ({
+    id: sid,
+    settings: Object.fromEntries(Object.entries(sc.settings).map(([k, v]) => [k, new ColorDrop(v)])),
+  }));
+  return globalSettings;
+}
+
 export async function renderPage(opts: PreviewOptions, pathname: string, search: URLSearchParams): Promise<RenderResult> {
   const files = opts.files ?? compileTheme(opts.spec);
   const lang = themeLang(opts.spec);
@@ -745,18 +762,7 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
   const templateRaw = files.get(`templates/${tplKey}.json`);
   const template = templateRaw ? JSON.parse(stripComment(templateRaw)) : { sections: {}, order: [] };
 
-  const settingsSchemaRaw = JSON.parse(files.get("config/settings_schema.json") || "[]");
-  const gtypes = new Map<string, string>();
-  for (const g of settingsSchemaRaw) for (const s of g.settings ?? []) if (s.id) gtypes.set(s.id, s.type);
-  const settingsData = JSON.parse(stripComment(files.get("config/settings_data.json") || "{}")).current ?? {};
-  const defaults: Record<string, unknown> = {};
-  for (const g of settingsSchemaRaw) for (const s of g.settings ?? []) if (s.id && s.default !== undefined) defaults[s.id] = s.default;
-  const globalSettings = wrapSettings({ ...defaults, ...settingsData }, opts.base, gtypes);
-  const schemes = (settingsData.color_schemes ?? {}) as Record<string, { settings: Record<string, string> }>;
-  globalSettings.color_schemes = Object.entries(schemes).map(([sid, sc]) => ({
-    id: sid,
-    settings: Object.fromEntries(Object.entries(sc.settings).map(([k, v]) => [k, new ColorDrop(v)])),
-  }));
+  const globalSettings = globalSettingsFor(files, opts.base);
 
   let page: any = null;
   // Accueil : titre pour Google (Theme V2) quand il existe, sinon le nom de la boutique.
@@ -870,12 +876,12 @@ export async function renderSectionStandalone(engine: Liquid, files: ThemeFiles,
 /** Section seule (API de rendu de sections utilisée par le panier latéral). */
 export async function renderNamedSections(opts: PreviewOptions, names: string[], pathname: string): Promise<Record<string, string>> {
   const files = opts.files ?? compileTheme(opts.spec);
-  void pathname;
   const lang = themeLang(opts.spec);
   const engine = createEngine(files, opts.base, lang);
   const store = buildStore(opts);
   const out: Record<string, string> = {};
-  const scope: Record<string, unknown> = { __base: opts.base, __lang: lang, __collected: { css: [], js: [] }, __resolve: store.resolve, settings: {}, shop: store.shop, routes: store.routes, cart: store.cart, linklists: store.linklists };
+  // Mêmes réglages globaux que la page : le tiroir rechargé garde son titre, ses bandeaux et ses totaux.
+  const scope: Record<string, unknown> = { __base: opts.base, __lang: lang, __collected: { css: [], js: [] }, __resolve: store.resolve, settings: globalSettingsFor(files, opts.base), shop: store.shop, routes: store.routes, cart: store.cart, linklists: store.linklists, request: { page_type: "cart", locale: { iso_code: lang }, origin: "", design_mode: !!opts.designMode, path: pathname, host: "apercu" } };
   for (const name of names) {
     out[name] = await renderSectionStandalone(engine, files, scope, name, { type: name, settings: {} }, "static");
   }

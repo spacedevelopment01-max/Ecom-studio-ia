@@ -124,6 +124,9 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
     const { editorialProject } = await import("./lot2b-fixtures");
     const user = await createUser(`catalogue-references-${Date.now()}@example.invalid`, "isolated-test-only", "Références de test");
     for (const kind of ["products", "services"] as const) add((await editorialProject(user.id, kind)).spec);
+    // Les deux thèmes fidèles aux références Lumora / Pawish (issue #137) composent les sections « conversion ».
+    const { conversionProject } = await import("./lot2c-fixtures");
+    for (const kind of ["fraise", "onde"] as const) add((await conversionProject(user.id, kind)).spec);
     // Conteneurs vides par nature : code Liquid du marchand et blocs d'applications (rien à composer sans lui).
     const outside = new Set(["custom-liquid", "apps"]);
     const missing = SECTION_LIBRARY.map((e) => e.type).filter((t) => !outside.has(t) && !used.has(t));

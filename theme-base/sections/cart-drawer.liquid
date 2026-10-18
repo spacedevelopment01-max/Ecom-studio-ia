@@ -1,19 +1,74 @@
-<div class="es-drawer" id="CartDrawer" data-cart-drawer hidden>
+{%- comment -%}
+  Panier latéral. Réglages globaux « Panier » : titre et compteur, bandeau, bloc « commande réservée » (toujours marqué
+  « Démonstration fictive » : le studio ne réserve pas de stock), code de réduction (appliqué par la plateforme au
+  paiement), économies, total avec nombre d'articles, libellé et cadenas du bouton, logos de paiement confirmés,
+  protection des expéditions (visuelle, jamais précochée, aucun montant ajouté), invitation à se connecter.
+  Sans réglage activé, la présentation reste celle du thème.
+{%- endcomment -%}
+{%- liquid
+  assign cart_title = settings.cart_heading
+  if cart_title == blank
+    assign cart_title = 'cart.title' | t
+  endif
+  assign empty_title = settings.cart_empty_title
+  if empty_title == blank
+    assign empty_title = 'cart.empty' | t
+  endif
+  assign checkout_label = settings.cart_checkout_label
+  if checkout_label == blank
+    assign checkout_label = 'cart.checkout' | t
+  endif
+  assign original_total = 0
+  for item in cart.items
+    assign ref = item.variant.compare_at_price | default: 0
+    if ref < item.variant.price
+      assign ref = item.variant.price
+    endif
+    assign line_ref = ref | times: item.quantity
+    assign original_total = original_total | plus: line_ref
+  endfor
+  assign savings = original_total | minus: cart.total_price
+  assign preview = false
+  if request.host == 'apercu'
+    assign preview = true
+  endif
+-%}
+<div class="es-drawer{% if settings.conversion_profile != 'none' and settings.conversion_profile != blank %} es-drawer--cv{% endif %}" id="CartDrawer" data-cart-drawer hidden>
   <div class="es-drawer__overlay" data-cart-close></div>
   <aside class="es-drawer__panel color-scheme-1" role="dialog" aria-modal="true" aria-labelledby="CartDrawerTitle">
     <div class="es-drawer__head">
-      <h2 id="CartDrawerTitle" class="es-drawer__title">{{ 'cart.title' | t }} <span class="es-muted">({{ cart.item_count }})</span></h2>
-      <button type="button" class="es-icon-button" data-cart-close aria-label="{{ 'general.close' | t }}">{% render 'icon', name: 'close' %}</button>
+      <h2 id="CartDrawerTitle" class="es-drawer__title">{{ cart_title }} {% if settings.cart_show_count %}<span class="es-drawer__count" data-cart-drawer-count aria-label="{{ 'cart.items_badge' | t: count: cart.item_count }}">{{ cart.item_count }}</span>{% else %}<span class="es-muted">({{ cart.item_count }})</span>{% endif %}</h2>
+      <button type="button" class="es-icon-button" data-cart-close aria-label="{{ 'cart.close' | t }}">{% render 'icon', name: 'close' %}</button>
     </div>
+    {%- if cart.item_count > 0 and settings.cart_reservation -%}
+      <p class="es-drawer__band es-drawer__band--reserve" data-cart-reserve data-minutes="{{ settings.cart_reservation_minutes | default: 10 }}" data-template="{{ 'cart.reserved' | t: time: '%' | escape }}">
+        <span data-cart-reserve-text>{{ 'cart.reserved' | t: time: settings.cart_reservation_minutes | append: ' min' }}</span>
+        <small class="es-drawer__fictional">{{ 'cart.demo_fictional' | t }}</small>
+      </p>
+    {%- endif -%}
+    {%- if cart.item_count > 0 and settings.cart_promo_text != blank -%}
+      <p class="es-drawer__band es-drawer__band--promo">{{ settings.cart_promo_text | escape }}</p>
+    {%- endif -%}
     <div class="es-drawer__body" data-cart-items>
       {%- if cart.item_count == 0 -%}
         <div class="es-drawer__empty">
-          <p>{{ 'cart.empty' | t }}</p>
+          <p class="es-drawer__empty-title">{{ empty_title }}</p>
           <a href="{{ routes.all_products_collection_url }}" class="es-button">{{ 'cart.continue' | t }}</a>
+          {%- if settings.cart_show_login and shop.customer_accounts_enabled -%}
+            <p class="es-drawer__login"><span>{{ 'cart.have_account' | t }}</span><br><a href="{{ routes.account_login_url }}">{{ 'cart.login' | t }}</a> {{ 'cart.login_faster' | t }}</p>
+          {%- endif -%}
         </div>
       {%- else -%}
         <ul role="list" class="es-line-items">
           {%- for item in cart.items -%}
+            {%- liquid
+              assign item_ref = item.variant.compare_at_price | default: 0
+              if item_ref < item.variant.price
+                assign item_ref = item.variant.price
+              endif
+              assign item_original = item_ref | times: item.quantity
+              assign item_saving = item_original | minus: item.final_line_price
+            -%}
             <li class="es-line-item" data-line="{{ forloop.index }}" data-key="{{ item.key }}">
               <a href="{{ item.url }}" class="es-line-item__media">
                 {%- if item.image -%}{{ item.image | image_url: width: 240 | image_tag: loading: 'lazy', alt: item.title }}{%- endif -%}
@@ -21,7 +76,7 @@
               <div class="es-line-item__info">
                 <a href="{{ item.url }}" class="es-line-item__title">{{ item.product.title }}</a>
                 {%- unless item.product.has_only_default_variant -%}<p class="es-muted es-small">{{ item.variant.title }}</p>{%- endunless -%}
-                <p class="es-small">{{ item.final_line_price | money }}</p>
+                <p class="es-small es-line-item__prices">{% if item_saving > 0 %}<s class="es-line-item__compare"><span class="visually-hidden">{{ 'cart.compare_price' | t }} </span>{{ item_original | money }}</s> {% endif %}<span class="es-line-item__price">{{ item.final_line_price | money }}</span>{% if item_saving > 0 and settings.cart_show_savings %} <span class="es-line-item__saving">{{ 'purchase.save' | t }} {{ item_saving | money }}</span>{% endif %}</p>
                 {% unless item.properties._es_gift %}<div class="es-qty es-qty--small">
                   <button type="button" data-qty-change="{{ item.quantity | minus: 1 }}" aria-label="{{ 'cart.decrease' | t }}">{% render 'icon', name: 'minus' %}</button>
                   <span aria-live="polite">{{ item.quantity }}</span>
@@ -36,12 +91,42 @@
     </div>
     {%- if cart.item_count > 0 -%}
       <div class="es-drawer__foot">
-        <div class="es-drawer__total"><span>{{ 'cart.subtotal' | t }}</span><strong>{{ cart.total_price | money_with_currency }}</strong></div>
+        {%- if settings.cart_protection -%}
+          <div class="es-drawer__protect" data-cart-protect>
+            <span class="es-drawer__protect-icon" aria-hidden="true">{% render 'icon', name: 'shield' %}</span>
+            <div class="es-drawer__protect-copy">
+              <strong>{{ settings.cart_protection_title | escape }}</strong>
+              <p class="es-small">{{ settings.cart_protection_text | escape }}</p>
+              <p class="es-small es-drawer__protect-note" data-cart-protect-note hidden>{{ 'cart.protection_demo' | t }}</p>
+            </div>
+            <button type="button" class="es-switch" role="switch" aria-checked="false" data-cart-protect-toggle aria-label="{{ settings.cart_protection_title | escape }}"><span class="es-switch__knob"></span></button>
+          </div>
+        {%- endif -%}
+        {%- if settings.cart_discount_code -%}
+          <div class="es-drawer__discount" data-cart-discount data-preview="{{ preview }}" data-discount-url="{{ routes.root_url }}discount">
+            <label class="visually-hidden" for="CartDiscount">{{ 'cart.discount_label' | t }}</label>
+            <input id="CartDiscount" type="text" autocomplete="off" placeholder="{{ 'cart.discount_label' | t }}" data-cart-discount-input>
+            <button type="button" class="es-button es-button--secondary es-button--small" data-cart-discount-apply>{{ 'cart.discount_apply' | t }}</button>
+            <p class="es-small es-muted es-drawer__discount-note" data-cart-discount-note hidden>{% if preview %}{{ 'cart.discount_demo' | t }}{% else %}{{ 'cart.discount_redirect' | t }}{% endif %}</p>
+          </div>
+        {%- endif -%}
+        {%- if settings.cart_show_savings and savings > 0 -%}
+          <div class="es-drawer__row es-drawer__savings"><span>{{ 'cart.savings' | t }}</span><strong class="es-drawer__savings-tag">{% render 'icon', name: 'gift' %}−{{ savings | money }}</strong></div>
+        {%- endif -%}
+        <div class="es-drawer__total es-drawer__row">
+          <span>{% if settings.cart_total_count %}{{ 'cart.total_items' | t: count: cart.item_count }}{% else %}{{ 'cart.subtotal' | t }}{% endif %}</span>
+          <strong>{% if settings.cart_show_savings and savings > 0 %}<s class="es-drawer__compare">{{ original_total | money }}</s> {% endif %}{{ cart.total_price | money_with_currency }}</strong>
+        </div>
         <p class="es-muted es-small">{{ 'cart.taxes_and_shipping' | t }}</p>
         <form action="{{ routes.cart_url }}" method="post" id="CartDrawerForm">
-          <button type="submit" name="checkout" class="es-button es-button--full">{{ 'cart.checkout' | t }}</button>
+          <button type="submit" name="checkout" class="es-button es-button--full es-drawer__checkout">{% if settings.cart_checkout_lock %}<svg class="es-icon es-icon--lock" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>{% endif %}<span>{{ checkout_label }}</span></button>
         </form>
-        {%- if settings.cart_reassurance != blank -%}<p class="es-small es-center">{{ settings.cart_reassurance }}</p>{%- endif -%}
+        {%- if settings.cart_reassurance != blank -%}<p class="es-small es-center es-drawer__guarantee">{% render 'icon', name: 'shield' %}<span>{{ settings.cart_reassurance }}</span></p>{%- endif -%}
+        {%- if settings.cart_show_payment_icons and shop.enabled_payment_types.size > 0 -%}
+          <ul class="es-drawer__payments" role="list" aria-label="{{ 'cart.payment_methods' | t }}">
+            {%- for type in shop.enabled_payment_types -%}<li>{{ type | payment_type_svg_tag: class: 'es-payment-icon' }}</li>{%- endfor -%}
+          </ul>
+        {%- endif -%}
       </div>
     {%- endif -%}
   </aside>

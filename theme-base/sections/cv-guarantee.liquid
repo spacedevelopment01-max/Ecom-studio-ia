@@ -1,0 +1,45 @@
+{%- comment -%}
+  Bloc de garantie : icône bouclier, titre en deux temps, texte, bouton et petites coches. Les engagements doivent être
+  réels ou explicitement présentés comme exemples de démonstration.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+-%}
+<section class="es-section cv-guarantee color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;">
+  <div class="es-container cv-guarantee__inner">
+    <span class="cv-guarantee__icon" aria-hidden="true" data-reveal="up">{% render 'icon', name: 'shield' %}</span>
+    <h2 class="es-heading cv-title cv-title--h2" data-reveal="up">{% if s.heading_accent != blank %}<em class="cv-accent cv-accent--first">{{ s.heading_accent | escape }}</em> {% endif %}{{ s.heading | escape }}</h2>
+    {%- if s.text != blank -%}<div class="es-rte cv-guarantee__text" data-reveal="up">{{ s.text }}</div>{%- endif -%}
+    {%- if s.demo_note != blank -%}<p class="cv-fictional cv-fictional--tag" data-reveal="up">{{ s.demo_note | escape }}</p>{%- endif -%}
+    {%- if s.button_label != blank -%}<a class="es-button cv-button" href="{{ s.button_link | default: routes.all_products_collection_url }}" data-reveal="up">{{ s.button_label | escape }}</a>{%- endif -%}
+    {%- if section.blocks.size > 0 -%}
+      <ul class="cv-guarantee__checks" role="list" data-reveal="up">
+        {%- for block in section.blocks -%}<li {{ block.shopify_attributes }}>{% render 'icon', name: 'check' %}<span>{{ block.settings.text | escape }}</span></li>{%- endfor -%}
+      </ul>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Garantie",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Essayez sans risque" },
+    { "type": "text", "id": "heading_accent", "label": "Début du titre en accent", "info": "Ex. « 30 jours » ; affiché avant le titre, en style manuscrit." },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "demo_note", "label": "Mention de démonstration", "info": "Ex. « Exemple de politique — à remplacer par vos conditions réelles ». Vide : aucune mention." },
+    { "type": "text", "id": "button_label", "label": "Bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 },
+    { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 }
+  ],
+  "blocks": [
+    { "type": "check", "name": "Petite coche", "settings": [ { "type": "text", "id": "text", "label": "Texte", "default": "Un engagement" } ] }
+  ],
+  "max_blocks": 4,
+  "presets": [ { "name": "Garantie" } ]
+}
+{% endschema %}

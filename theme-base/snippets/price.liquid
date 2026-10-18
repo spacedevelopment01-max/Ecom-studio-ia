@@ -13,6 +13,7 @@
     <span class="visually-hidden">{{ 'products.product.price.sale_price' | t }}</span>
     <span class="es-price__current">{{ money_price }}</span>
     <s class="es-price__compare"><span class="visually-hidden">{{ 'products.product.price.regular_price' | t }}</span>{{ compare_at_price | money }}</s>
+    {%- if settings.conversion_profile != 'none' and settings.conversion_profile != blank -%}{%- assign saved = compare_at_price | minus: price | times: 100.0 | divided_by: compare_at_price | round -%}<span class="es-price__save">{{ 'conversion.save_percent' | t: percent: saved }}</span>{%- endif -%}
   {%- else -%}
     <span class="es-price__current">{% if product.price_varies and use_variant == false %}{{ 'products.product.price.from_price_html' | t: price: money_price }}{% else %}{{ money_price }}{% endif %}</span>
   {%- endif -%}

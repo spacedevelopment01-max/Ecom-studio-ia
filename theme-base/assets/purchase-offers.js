@@ -11,15 +11,15 @@
    if(requestedOffer){var wanted=radios.find(function(r){return r.value===requestedOffer;});if(wanted)selected=wanted;}
    function money(n) { return new Intl.NumberFormat(box.dataset.language || 'fr', { style: 'currency', currency: box.dataset.currency || 'EUR' }).format(n / 100); }
    function priceFor(r) {
-    var count = +r.dataset.quantity, sum = 0;
-    for (var i = 0; i < count; i++) { var v = variants.find(function (v) { return String(v.id) === retained[i]; }) || variants.find(function (v) { return v.available; }) || variants[0]; if (v.price == null) return null; sum += v.price; }
+    var count = +r.dataset.quantity, sum = 0, ref = 0;
+    for (var i = 0; i < count; i++) { var v = variants.find(function (v) { return String(v.id) === retained[i]; }) || variants.find(function (v) { return v.available; }) || variants[0]; if (v.price == null) return null; sum += v.price; ref += v.compare_at_price && v.compare_at_price > v.price ? v.compare_at_price : v.price; }
     var total = r.hasAttribute('data-fixed-total') ? +r.dataset.fixedTotal : Math.round(sum * (100 - +r.dataset.discount) / 100);
     if (!Number.isSafeInteger(total) || total < 0) return null;
-    return { base: sum, total: total, count: count };
+    return { base: sum, ref: ref, total: total, count: count };
    }
    function update() {
     retained = Array.from(area.querySelectorAll('select')).map(function (s) { return s.value; });
-    radios.forEach(function (r) { var p = priceFor(r), card = r.closest('label'); card.classList.toggle('is-selected', r === selected); card.querySelector('[data-offer-total]').textContent = p ? money(p.total) : strings.unavailable; card.querySelector('[data-offer-unit]').textContent = p ? money(Math.round(p.total / p.count)) + ' ' + strings.unit : ''; var save = card.querySelector('[data-offer-saving]'); save.hidden = !p || p.base <= p.total; save.textContent = p && p.base > p.total ? strings.save + ' ' + money(p.base - p.total) : ''; });
+    radios.forEach(function (r) { var p = priceFor(r), card = r.closest('label'); card.classList.toggle('is-selected', r === selected); card.querySelector('[data-offer-total]').textContent = p ? money(p.total) : strings.unavailable; card.querySelector('[data-offer-unit]').textContent = p ? money(Math.round(p.total / p.count)) + ' ' + strings.unit : ''; var save = card.querySelector('[data-offer-saving]'); save.hidden = !p || p.ref <= p.total; save.textContent = p && p.ref > p.total ? strings.save + ' ' + money(p.ref - p.total) : ''; var compare = card.querySelector('[data-offer-compare]'); if (compare) { compare.hidden = !p || p.ref <= p.total; compare.textContent = p && p.ref > p.total ? money(p.ref) : ''; } });
     var p = priceFor(selected); box.querySelector('[data-purchase-total]').textContent = p ? money(p.total) : strings.unavailable;
     var selectedLabel = (selected.closest('label').querySelector('.purchase__offer-copy>strong') || {}).textContent || '';
     var summaryLabel = box.querySelector('[data-purchase-summary-label]'), unitNode = box.querySelector('[data-purchase-unit-price]');
@@ -36,7 +36,7 @@
    if(finishes)finishes.className='purchase__finish-options';
    if(finishes) variants.forEach(function(v){var label=document.createElement('label'),input=document.createElement('input'),dot=document.createElement('i'),text=document.createElement('span');label.className='purchase__finish';dot.className='purchase__swatch';input.type='radio';input.name='finish-'+radios[0].name;input.value=v.id;input.dataset.finishId=v.id;input.disabled=!v.available;dot.setAttribute('aria-hidden','true');if(colors[v.title])dot.style.backgroundColor=colors[v.title];text.textContent=v.title;label.append(input,dot,text);finishes.append(label);input.addEventListener('change',function(){retained=Array.from(area.querySelectorAll('select')).map(function(s){return s.value;});retained[0]=String(v.id);choose();announce();});});
    function choose() {
-    area.replaceChildren(); selected.checked = true;
+    area.replaceChildren(); selected.checked = true; var variantBox = box.querySelector('.purchase__variants'); if (variantBox) variantBox.hidden = variants.length < 2;
     for (var i = 0; i < +selected.dataset.quantity; i++) {
      var label = document.createElement('label'), select = document.createElement('select'), span = document.createElement('span'); span.textContent = (i + 1) + ' / ' + selected.dataset.quantity; label.append(span, select);
      variants.forEach(function (v) { var option = document.createElement('option'); option.value = v.id; option.textContent = v.title + (!v.available ? ' — ' + strings.unavailable : ''); option.disabled = !v.available; select.append(option); });

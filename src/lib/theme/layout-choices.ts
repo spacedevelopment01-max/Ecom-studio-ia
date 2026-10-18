@@ -18,6 +18,10 @@ export type LayoutChoice = {
 const KEYS: Record<string, string[]> = {
   "purchase-offers": ["purchase_style", "purchase_enabled"],
   "featured-purchase": ["purchase_style", "image_fit", "purchase_enabled"],
+  "cv-hero": ["layout", "image_ratio", "heading_tag"],
+  "cv-cards": ["layout"],
+  "cv-feature": ["layout"],
+  "cv-stories": ["ratio", "size"],
   "ref-narrative": ["motion"],
   "ref-hero": ["layout", "heading_tag", "motion"],
   "ref-editorial": ["layout", "motion"],

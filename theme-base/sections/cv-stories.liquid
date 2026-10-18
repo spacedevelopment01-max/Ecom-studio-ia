@@ -1,0 +1,133 @@
+{%- comment -%}
+  Stories vidéo en cartes : liste réordonnable, format configurable, image d'attente (poster), source vidéo locale, fichier
+  du thème ou adresse directe (.mp4/.webm), titre, sous-titre, lien produit. Défilement tactile, flèches, clavier ;
+  lecteur dans une boîte de dialogue (lecture/pause, son, précédent/suivant, fermeture), chargement différé.
+  Sans vidéo : la carte affiche son poster avec la mention « Vidéo à venir » et aucun bouton de lecture ; l'emplacement
+  reste prêt pour une vraie vidéo. Les posters issus d'images IA portent la mention configurée.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign ai_label = s.ai_label
+  if ai_label == blank
+    assign ai_label = 'conversion.ai_demo' | t
+  endif
+-%}
+<section class="es-section cv-stories cv-stories--{{ s.ratio }} cv-stories--{{ s.size }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;" data-cv-stories>
+  <div class="es-container">
+    {%- if s.heading != blank or s.text != blank -%}
+      <header class="cv-head">
+        <h2 class="es-heading cv-title cv-title--h2" data-reveal="up">{{ s.heading | escape }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</h2>
+        {%- if s.text != blank -%}<div class="es-rte cv-head__text" data-reveal="up">{{ s.text }}</div>{%- endif -%}
+      </header>
+    {%- endif -%}
+    <div class="cv-stories__wrap">
+      <button type="button" class="cv-arrow cv-arrow--prev" data-cv-prev aria-label="{{ 'general.previous' | t }}">{% render 'icon', name: 'arrow-left' %}</button>
+      <ul class="cv-stories__track" role="list" data-cv-track tabindex="0" aria-label="{{ 'conversion.stories_region' | t }}">
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign v_src = ''
+            assign v_poster = ''
+            if block.settings.video != blank
+              for source in block.settings.video.sources
+                if source.mime_type == 'video/mp4'
+                  assign v_src = source.url
+                endif
+              endfor
+              assign v_poster = block.settings.video.preview_image | image_url: width: 1080
+            elsif block.settings.video_asset != blank
+              assign v_src = block.settings.video_asset | asset_url
+            elsif block.settings.video_url != blank
+              assign v_src = block.settings.video_url
+            endif
+            if block.settings.poster != blank
+              assign v_poster = block.settings.poster | image_url: width: 1080
+            elsif block.settings.poster_asset != blank
+              assign v_poster = block.settings.poster_asset | asset_url
+            endif
+            assign has_video = false
+            if v_src != blank
+              assign has_video = true
+            endif
+          -%}
+          <li class="cv-story{% unless has_video %} cv-story--empty{% endunless %}" data-cv-slide {{ block.shopify_attributes }}>
+            <article class="cv-story__card">
+              {%- if has_video -%}
+                <button type="button" class="cv-story__open" data-cv-story-open="{{ forloop.index0 }}" data-src="{{ v_src }}" data-poster="{{ v_poster }}" data-title="{{ block.settings.title | escape }}" data-subtitle="{{ block.settings.subtitle | escape }}" data-link="{{ block.settings.link }}" data-link-label="{{ block.settings.link_label | escape }}" aria-haspopup="dialog" aria-label="{{ 'conversion.open_story' | t }} : {{ block.settings.title | escape }}">
+                  {%- if v_poster != blank -%}<img src="{{ v_poster }}" alt="" width="540" height="960" loading="lazy" decoding="async" class="es-cover cv-story__poster">{%- else -%}<span class="cv-story__blank" aria-hidden="true"></span>{%- endif -%}
+                  <span class="cv-story__play" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg></span>
+                </button>
+              {%- else -%}
+                <div class="cv-story__still">
+                  {%- if v_poster != blank -%}<img src="{{ v_poster }}" alt="{{ block.settings.title | escape }}" width="540" height="960" loading="lazy" decoding="async" class="es-cover cv-story__poster">{%- else -%}<span class="cv-story__blank" aria-hidden="true"></span>{%- endif -%}
+                  <span class="cv-story__soon" title="{{ 'conversion.no_video_hint' | t | escape }}">{{ 'conversion.no_video' | t }}</span>
+                </div>
+              {%- endif -%}
+              {%- if block.settings.ai_poster -%}<span class="cv-story__ai">{{ ai_label | escape }}</span>{%- endif -%}
+              <div class="cv-story__caption">
+                {%- if block.settings.title != blank -%}<h3 class="cv-story__title">{{ block.settings.title | escape }}</h3>{%- endif -%}
+                {%- if block.settings.subtitle != blank -%}<p class="cv-story__subtitle">{{ block.settings.subtitle | escape }}</p>{%- endif -%}
+                {%- if block.settings.link != blank and block.settings.link_label != blank -%}<a class="cv-story__link" href="{{ block.settings.link }}">{{ block.settings.link_label | escape }}</a>{%- endif -%}
+              </div>
+            </article>
+          </li>
+        {%- endfor -%}
+      </ul>
+      <button type="button" class="cv-arrow cv-arrow--next" data-cv-next aria-label="{{ 'general.next' | t }}">{% render 'icon', name: 'arrow' %}</button>
+    </div>
+    <div class="cv-dots" data-cv-dots role="tablist" aria-label="{{ 'general.pagination' | t }}">
+      {%- for block in section.blocks -%}<button type="button" role="tab" class="cv-dot{% if forloop.first %} is-active{% endif %}" data-cv-dot="{{ forloop.index0 }}" aria-label="{{ forloop.index }} / {{ section.blocks.size }}"{% if forloop.first %} aria-selected="true"{% else %} aria-selected="false"{% endif %}></button>{%- endfor -%}
+    </div>
+  </div>
+  <dialog class="cv-player" data-cv-player aria-label="{{ s.heading | default: 'conversion.stories_region' | t | escape }}">
+    <div class="cv-player__stage">
+      <video class="cv-player__video" data-cv-video playsinline preload="none" muted></video>
+      <div class="cv-player__top">
+        <p class="cv-player__title" data-cv-player-title></p>
+        <button type="button" class="cv-player__btn" data-cv-player-pause aria-label="{{ 'general.pause' | t }}" data-label-pause="{{ 'general.pause' | t }}" data-label-play="{{ 'general.play' | t }}"><span class="cv-player__pause" aria-hidden="true"></span></button>
+        <button type="button" class="cv-player__btn" data-cv-player-sound aria-pressed="false" aria-label="{{ 'general.unmute' | t }}" data-label-mute="{{ 'general.mute' | t }}" data-label-unmute="{{ 'general.unmute' | t }}">{% render 'icon', name: 'sound' %}</button>
+        <button type="button" class="cv-player__btn" data-cv-player-close aria-label="{{ 'general.close' | t }}">{% render 'icon', name: 'close' %}</button>
+      </div>
+      <div class="cv-player__bottom">
+        <p class="cv-player__subtitle" data-cv-player-subtitle aria-live="polite"></p>
+        <a class="es-button es-button--small cv-player__link" data-cv-player-link href="#" hidden></a>
+      </div>
+      <button type="button" class="cv-player__nav cv-player__nav--prev" data-cv-player-prev aria-label="{{ 'general.previous' | t }}">{% render 'icon', name: 'arrow-left' %}</button>
+      <button type="button" class="cv-player__nav cv-player__nav--next" data-cv-player-next aria-label="{{ 'general.next' | t }}">{% render 'icon', name: 'arrow' %}</button>
+    </div>
+  </dialog>
+</section>
+
+{% schema %}
+{
+  "name": "Stories vidéo en cartes",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre", "default": "En situation" },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre en accent" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "select", "id": "ratio", "label": "Format des cartes", "default": "portrait", "options": [ { "value": "portrait", "label": "9 / 16" }, { "value": "tall", "label": "4 / 5" }, { "value": "square", "label": "Carré" } ] },
+    { "type": "select", "id": "size", "label": "Largeur des cartes", "default": "medium", "options": [ { "value": "small", "label": "Petites" }, { "value": "medium", "label": "Moyennes" }, { "value": "large", "label": "Grandes" } ] },
+    { "type": "text", "id": "ai_label", "label": "Mention des posters issus d'images IA", "info": "Vide : « Image IA — démonstration »." },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 },
+    { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 }
+  ],
+  "blocks": [
+    { "type": "story", "name": "Story", "settings": [
+      { "type": "image_picker", "id": "poster", "label": "Image d'attente (poster)" },
+      { "type": "text", "id": "poster_asset", "label": "Fichier poster fourni avec le thème" },
+      { "type": "checkbox", "id": "ai_poster", "label": "Poster issu d'une image IA (mention affichée)", "default": false },
+      { "type": "video", "id": "video", "label": "Vidéo (bibliothèque)" },
+      { "type": "text", "id": "video_asset", "label": "Fichier vidéo fourni avec le thème" },
+      { "type": "url", "id": "video_url", "label": "Adresse directe d'une vidéo (.mp4 ou .webm)" },
+      { "type": "text", "id": "title", "label": "Titre", "default": "Une story" },
+      { "type": "text", "id": "subtitle", "label": "Sous-titre" },
+      { "type": "url", "id": "link", "label": "Lien produit" },
+      { "type": "text", "id": "link_label", "label": "Libellé du lien" }
+    ] }
+  ],
+  "max_blocks": 12,
+  "presets": [ { "name": "Stories vidéo en cartes", "blocks": [ { "type": "story" }, { "type": "story" }, { "type": "story" } ] } ]
+}
+{% endschema %}

@@ -1,0 +1,76 @@
+{%- comment -%}
+  Ouverture « conversion » : grand visuel produit, ligne de note (toujours identifiée comme note fictive si elle ne vient
+  pas d'une application d'avis), titre en deux temps (gras + accent manuscrit), bénéfices cochés, grand bouton,
+  ligne de garantie. Mobile : visuel puis texte ; ordinateur : texte et visuel côte à côte.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign checks = section.blocks | where: 'type', 'check'
+  assign rating_note = s.rating_note
+  if rating_note == blank
+    assign rating_note = 'conversion.fictional_rating' | t
+  endif
+-%}
+<section class="es-section cv-hero cv-hero--{{ s.layout }} cv-hero--{{ s.image_ratio }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;" data-cv-hero>
+  <div class="es-container cv-hero__inner">
+    <div class="cv-hero__media">
+      {% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, loading: 'eager', focus_x: s.focus_x, focus_y: s.focus_y %}
+    </div>
+    <div class="cv-hero__copy">
+      {%- if s.rating_text != blank -%}
+        <p class="cv-rating" data-reveal="up">
+          <span class="es-stars" style="--pct:{{ s.rating_percent | default: 100 }}%" aria-hidden="true"></span>
+          <span class="cv-rating__text">{{ s.rating_text | escape }}</span>
+          <small class="cv-fictional" title="{{ 'conversion.demo_reviews' | t | escape }}">{{ rating_note | escape }}</small>
+        </p>
+      {%- endif -%}
+      <{{ s.heading_tag }} class="es-heading cv-title" data-reveal="up">{{ s.heading | escape | newline_to_br }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</{{ s.heading_tag }}>
+      {%- if s.text != blank -%}<div class="es-rte cv-hero__text" data-reveal="up">{{ s.text }}</div>{%- endif -%}
+      {%- if checks.size > 0 -%}
+        <ul class="cv-checks" role="list" data-reveal="up">
+          {%- for block in checks -%}<li {{ block.shopify_attributes }}><span class="cv-check" aria-hidden="true">{% render 'icon', name: 'check' %}</span><span>{{ block.settings.text | escape }}</span></li>{%- endfor -%}
+        </ul>
+      {%- endif -%}
+      {%- if s.button_label != blank -%}
+        <a class="es-button es-button--full cv-button" href="{{ s.button_link | default: routes.all_products_collection_url }}" data-reveal="up">{{ s.button_label | escape }}</a>
+      {%- endif -%}
+      {%- if s.guarantee_text != blank -%}<p class="cv-guarantee-line" data-reveal="up">{% render 'icon', name: 'shield' %}<span>{{ s.guarantee_text | escape }}</span></p>{%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Ouverture conversion",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Visuel du produit" },
+    { "type": "text", "id": "image_asset", "label": "Fichier image fourni avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Description du visuel" },
+    { "type": "text", "id": "media_role", "label": "Rôle du visuel attendu", "info": "Affiché à la place de l'image tant qu'elle n'est pas importée." },
+    { "type": "select", "id": "image_ratio", "label": "Format du visuel", "default": "square", "options": [ { "value": "square", "label": "Carré" }, { "value": "wide", "label": "Large" }, { "value": "tall", "label": "Haut" } ] },
+    { "type": "range", "id": "focus_x", "label": "Point focal horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "focus_y", "label": "Point focal vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "select", "id": "layout", "label": "Disposition sur ordinateur", "default": "image-right", "options": [ { "value": "image-right", "label": "Texte à gauche, visuel à droite" }, { "value": "image-left", "label": "Visuel à gauche, texte à droite" }, { "value": "stacked", "label": "Visuel au-dessus du texte" } ] },
+    { "type": "text", "id": "rating_text", "label": "Ligne de note", "info": "Ex. « 4,8/5 · 6 avis de démonstration ». Vide : aucune note." },
+    { "type": "range", "id": "rating_percent", "label": "Étoiles remplies", "min": 0, "max": 100, "step": 5, "unit": "%", "default": 100 },
+    { "type": "text", "id": "rating_note", "label": "Mention à côté de la note", "info": "Vide : « Note fictive ». Retirez-la seulement avec une vraie application d'avis." },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Un produit à découvrir" },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre en accent", "info": "Second temps du titre, en style manuscrit et couleur d'accent." },
+    { "type": "select", "id": "heading_tag", "label": "Niveau du titre", "default": "h1", "options": [ { "value": "h1", "label": "H1 (accueil)" }, { "value": "h2", "label": "H2" } ] },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "button_label", "label": "Bouton", "default": "Découvrir" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "text", "id": "guarantee_text", "label": "Ligne de garantie", "info": "Uniquement une politique réelle, ou un exemple identifié." },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 24 },
+    { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 48 }
+  ],
+  "blocks": [
+    { "type": "check", "name": "Bénéfice coché", "settings": [ { "type": "text", "id": "text", "label": "Texte", "default": "Un bénéfice visible" } ] }
+  ],
+  "max_blocks": 6,
+  "presets": [ { "name": "Ouverture conversion", "blocks": [ { "type": "check" }, { "type": "check" }, { "type": "check" } ] } ]
+}
+{% endschema %}
