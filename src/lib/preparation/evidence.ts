@@ -12,11 +12,11 @@ export function assertAnalysisRoute(withPhotos: boolean) {
 }
 /** Preuve issue du journal serveur, jamais du simple fournisseur choisi dans l'administration. */
 export function apiEvidence(projectId: string, usageKey: string, vision = false): ApiEvidence {
-  const row = one<{ provider: string; model: string; created_at: number }>(
-    "SELECT provider,COALESCE(served_model,requested_model) model,created_at FROM ai_calls WHERE project_id=? AND usage_key=? AND status='ok' ORDER BY created_at DESC LIMIT 1", projectId, usageKey,
+  const row = one<{ provider: string; model: string; usage_key: string; created_at: number }>(
+    "SELECT provider,COALESCE(served_model,requested_model) model,usage_key,created_at FROM ai_calls WHERE project_id=? AND usage_key IN (?,?,?,?) AND status='ok' ORDER BY created_at DESC,rowid DESC LIMIT 1", projectId, usageKey, `${usageKey}:fix1`, `${usageKey}:fix2`, `${usageKey}:fix3`,
   );
   if (!row) throw new Error("Résultat API sans trace de succès : étape en attente, données conservées.");
-  return { provider: row.provider, model: row.model, usageKey, vision, at: row.created_at };
+  return { provider: row.provider, model: row.model, usageKey: row.usage_key, vision, at: row.created_at };
 }
 export function analyzed(b: Brief) {
   return b.provenance === "simulation" || (b.provenance === "provider" && !!b.execution?.provider && !!b.execution.model && (!b.input.photoIds.length || b.execution.vision));
