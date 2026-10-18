@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
+import { PALETTE_ROLES, palettePresentation } from "../../src/lib/logo-v2/direction-palette";
 const dir = path.resolve(process.argv[2] || "");
 if (!path.basename(dir).startsWith("ecs-preparation-test-")) throw new Error("Dossier synthétique obligatoire.");
 const fixtures = JSON.parse(fs.readFileSync(path.join(dir, "mission-private.json"), "utf8"));
@@ -46,6 +47,25 @@ for (const f of fixtures) for (const mobile of [false, true]) {
   assert.equal(initial.state.stages.media.data.slots.length, f.business === "products" ? 11 : 12);
   await step(2);
   assert.equal(await page.locator("[data-direction]").count(), 3);
+  const directions = initial.state.stages.brand.data.directions;
+  for (const d of directions) {
+    const card = page.locator(`[data-direction="${d.id}"]`);
+    for (const role of PALETTE_ROLES) assert.equal(await card.locator(`[data-palette-role="${role}"]`).getAttribute("data-palette-color"), d.identity.palette[role]);
+    const colors = await card.locator("[data-palette-sample]").evaluate(node => {
+      const hex = (css: string) => `#${css.match(/\d+/g)!.slice(0, 3).map(n => Number(n).toString(16).padStart(2, "0")).join("")}`;
+      const use = (name: string) => getComputedStyle(node.querySelector(`[data-palette-use="${name}"]`)!);
+      return { background: hex(getComputedStyle(node).backgroundColor), text: hex(getComputedStyle(node).color), heading: hex(use("heading").color), surface: hex(use("surface").backgroundColor), surfaceText: hex(use("surface").color), button: hex(use("button").backgroundColor), buttonText: hex(use("button").color) };
+    });
+    assert.deepEqual(colors, palettePresentation(d.identity.palette));
+    const board = await page.evaluate(async id => {
+      const image = new Image(); image.src = `/api/files/${id}`; await image.decode();
+      const c = document.createElement("canvas"); c.width = image.width; c.height = image.height; const ctx = c.getContext("2d")!; ctx.drawImage(image, 0, 0);
+      const pixel = (x: number, y: number) => `#${Array.from(ctx.getImageData(x, y, 1, 1).data).slice(0, 3).map(n => n.toString(16).padStart(2, "0")).join("")}`;
+      return { background: pixel(0, 0), swatches: [0, 1, 2, 3, 4].map(i => pixel(80 + i * 248, 810)), surface: pixel(80, 1031) };
+    }, d.previewId);
+    assert.equal(board.background, colors.background); assert.equal(board.surface, colors.surface);
+    assert.deepEqual(board.swatches, PALETTE_ROLES.map(role => d.identity.palette[role]));
+  }
   await shot("directions");
   await page.locator("[data-direction]").last().scrollIntoViewIfNeeded(); await page.waitForTimeout(700);
   await step(3);
@@ -74,10 +94,29 @@ for (const f of fixtures) for (const mobile of [false, true]) {
     assert.equal(`${slot.pageKey}|${slot.sectionKey}`, chosen); assert.equal(slot.reviewed, false); assert.equal(after.ready, null);
     placementSaved = true;
   }
+  // Clic UI -> API native -> vrai handler de choix isolé -> sauvegarde -> rechargement.
+  await step(2);
+  const choice = directions[mobile ? 2 : 1];
+  const chosenCard = page.locator(`[data-direction="${choice.id}"]`);
+  const chooseResponse = page.waitForResponse(r => r.url().endsWith(`/projects/${f.pid}/brand/logo-v2`) && r.request().method() === "POST");
+  await chosenCard.getByRole("button", { name: "Choisir cette direction complète", exact: true }).click();
+  assert.equal((await chooseResponse).ok(), true);
+  await page.waitForFunction(async ({ pid, directionId }) => {
+    const r = await fetch(`/api/projects/${pid}/preparation`), data = await r.json();
+    return data.state.stages.brand.data.proposal.artIdentity?.directionId === directionId;
+  }, { pid: f.pid, directionId: choice.id }, { polling: 500, timeout: 60000 });
+  await page.reload({ waitUntil: "networkidle" }); await step(2);
+  const restored = (await state()).state.stages.brand.data;
+  assert.equal(restored.selectedLogo, choice.logoId);
+  assert.deepEqual(restored.proposal.palette, choice.identity.palette);
+  assert.deepEqual(restored.proposal.artIdentity.palette, choice.identity.palette);
+  assert.deepEqual(restored.proposal.artIdentity.colorRoles, choice.identity.colorRoles);
+  assert.equal(await page.locator(`[data-direction="${choice.id}"]`).getByRole("button", { name: "Direction choisie", exact: true }).count(), 1);
+  await shot("direction-choisie");
   assert.deepEqual(errors, []);
-  results.push({ case: name, simulation: true, directions: 3, ready: false, videoPlayedAndPaused: true, placementSavedAfterReload: placementSaved, externalRequestsBlocked: external, pageErrors: errors });
+  results.push({ case: name, simulation: true, directions: 3, ready: false, videoPlayedAndPaused: true, placementSavedAfterReload: placementSaved, fiveRolesMatchCardsAndBoards: true, wholePaletteAndRolesSavedAfterUiChoiceAndReload: true, chosenDirection: choice.id, chosenPalette: choice.identity.palette, externalRequestsBlocked: external, pageErrors: errors });
   const videoPath = await page.video()!.path(); await context.close(); fs.renameSync(videoPath, path.join(out, `${name}.webm`));
 }
 await browser.close();
 fs.writeFileSync(path.join(out, "browser-proof.json"), JSON.stringify({ simulation: true, results }, null, 2));
-console.log("12 captures et 4 vidéos du navigateur ; interface réelle, contenu synthétique, aucun appel fournisseur.");
+console.log("16 captures et 4 vidéos du navigateur ; palette/carte/planche et choix/rechargement vérifiés, contenu synthétique, aucun appel fournisseur.");

@@ -1,13 +1,13 @@
 /** Vrai moteur/stockage/charte, fournisseurs et verdicts INJECTÉS. Aucune qualité créative réelle démontrée. */
 import { describe, it, expect, vi } from "vitest";
-const control = vi.hoisted(() => ({ accepted: ["t1"] as string[], draws: [] as string[] }));
+const control = vi.hoisted(() => ({ accepted: ["t1"] as string[], draws: [] as string[], copiedPalettes: false }));
 vi.mock("@/lib/ai/llm", async original => ({ ...await original<object>(), llmConfigured: () => true }));
 vi.mock("@/lib/ai/media-providers", async original => ({ ...await original<object>(), mediaRouteFor: (usage: string) => usage === "logo" ? { provider: "openai", model: "gpt-image-2.5-sunburst", reason: "Route injectée de test" } : null }));
 vi.mock("@/lib/logo-v2/quote", () => ({ ARTWORK_SERIES: 3, BUILT_SERIES: 4, logoSeriesQuote: () => ({ mode: "artwork", creations: 3, images: 3, imageMaxMicro: 10000, maxMicro: 100000 }), logoRedrawQuote: () => null }));
 vi.mock("@/lib/logo-v2/identity", async original => ({ ...await original<object>(), isPlaceholderShape: async () => false }));
 vi.mock("@/lib/logo-v2/artwork", async original => ({ ...await original<object>(), faithfulSvg: async () => ({ ok: false, reason: "Vectorisation non testée dans ce scénario injecté." }) }));
 vi.mock("@/lib/logo-v2/ai", async original => ({ ...await original<object>(), realLogoV2Ai: () => ({
-  territories: async (brief: BrandBrief) => localTerritories(brief).slice(0, 3).map((t, i) => ({ ...t, identity: directionIdentity(i), source: "ai" })),
+  territories: async (brief: BrandBrief) => localTerritories(brief).slice(0, 3).map((t, i) => { const identity = directionIdentity(i); return { ...t, identity: control.copiedPalettes ? { ...identity, palette: { ...identity.palette, secondary: "#bfd0b4", accent: "#9b4f2c" } } : identity, source: "ai" }; }),
   artworkRoute: () => ({ provider: "openai", model: "gpt-image-2.5-sunburst" }),
   drawArtwork: async (t: Territory) => {
     control.draws.push(t.id);
@@ -43,6 +43,16 @@ const job = (uid: string, pid: string, type = "brand.logo.v2", payload: object =
   return new JobContext(getJob(j.id)!);
 };
 describe("trois directions, reprise, sélection et charte : chaîne réelle avec fournisseur injecté", () => {
+  it("bloque le duo secondaire/accent partagé avant le premier dessin, sans substitution locale", async () => {
+    const f = await fixture(); validatedBrand(f.pid, f.input); control.draws = []; control.copiedPalettes = true;
+    try {
+      await expect(runForUser(f.uid, () => runLogoEngineV2(job(f.uid, f.pid), f.pid), "normal", f.pid)).rejects.toThrow(/Palettes à revoir/);
+      expect(control.draws).toEqual([]);
+      expect(currentSeries(f.pid)?.status).toBe("partial");
+      expect(currentSeries(f.pid)?.directions).toEqual([]);
+      expect(all("SELECT id FROM ai_calls WHERE project_id=?", f.pid)).toEqual([]);
+    } finally { control.copiedPalettes = false; }
+  });
   it("répare seulement les directions manquantes, conserve le nom, choisit l'ensemble sans génération ni thème", async () => {
     const f = await fixture(); validatedBrand(f.pid, f.input); control.draws = []; control.accepted = ["t1"];
     const name = loadProject(f.pid).brand!.name;
@@ -68,6 +78,12 @@ describe("trois directions, reprise, sélection et charte : chaîne réelle avec
     expect(brand.fonts).toEqual(selected.identity.fonts);
     expect(brand.tone).toEqual(selected.identity.tone);
     expect(brand.artIdentity?.graphicLanguage).toBe(selected.identity.graphicLanguage);
+    // Rechargement du stockage, pas la référence en mémoire passée au service de choix.
+    const restored = JSON.parse(JSON.stringify(loadProject(f.pid).brand!));
+    expect(restored.palette).toEqual(selected.identity.palette);
+    expect(restored.artIdentity.colorRoles).toEqual(selected.identity.colorRoles);
+    expect(currentSeries(f.pid)?.selectedId).toBe(selected.id);
+    expect(currentSeries(f.pid)?.directions.find(d => d.id === selected.id)?.identity.palette).toEqual(restored.palette);
     for (const role of ["logo", "logo-light", "logo-white", "logo-mono", "brand-guide", "brand-book"]) expect(one("SELECT id FROM assets WHERE project_id=? AND role=? AND deleted_at IS NULL", f.pid, role)).toBeTruthy();
     const before = all("SELECT id FROM assets WHERE project_id=?", f.pid).length;
     expect(await chooseLogoV2(null, f.pid, selected.logoId)).toMatchObject({ main: applied.main, reused: true });

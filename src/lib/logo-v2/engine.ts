@@ -2,6 +2,7 @@ import { assertCanSpend } from "../billing";
 import { assertAiAllowed } from "../ai/access";
 import { saveDirectionPreview } from "./direction-preview";
 import { currentSeries, directionSeries, reserveDirectionSeries, updateDirectionSeries, DirectionIdentitySchema } from "./direction-series";
+import { directionSeriesPaletteIssues } from "./direction-palette";
 import { imageUnavailableReason, mediaRouteFor } from "../ai/media-providers";
 /**
  * Brand & Logo Engine V2 (phase 4A) : DÉCOUVERTE → TERRITOIRES → CONSTRUCTION → BARRIÈRE V2 → REPRISE CIBLÉE /
@@ -395,9 +396,11 @@ async function seriesSteps(ctx: JobContext, projectId: string, opts: EngineOptio
       if (sel.kept.length < n && sel.kept.every((k) => territoryDistance(k, t) >= MIN_DISTANCE)) sel.kept.push(t);
     }
   }
-  if (series && !series.territories.length) {
+  if (series) {
     if (sel.kept.length !== 3 || sel.kept.some(t => !DirectionIdentitySchema.safeParse(t.identity).success)) throw new UserFacingError("Série incomplète : trois directions complètes et distinctes sont nécessaires avant le dessin. Aucun remplissage local.");
-    updateDirectionSeries(projectId, series.id, s => { s.territories = sel.kept; });
+    const paletteIssues = directionSeriesPaletteIssues(sel.kept.map(t => t.identity!));
+    if (paletteIssues.length) throw new UserFacingError(`Palettes à revoir avant tout dessin : ${paletteIssues.join(" ")} Aucun dessin conservé n'est supprimé ; aucune recoloration automatique.`);
+    if (!series.territories.length) updateDirectionSeries(projectId, series.id, s => { s.territories = sel.kept; });
   }
   // 2. Construction, contrôle, reprises ciblées — territoire par territoire.
   live.directions(sel.kept.map((t) => ({ id: t.id, name: t.name, style: t.style ?? null })));
@@ -414,7 +417,7 @@ async function seriesSteps(ctx: JobContext, projectId: string, opts: EngineOptio
     ctx.progress(0.2 + (0.6 * i) / Math.max(1, sel.kept.length), useArt ? L(`Image de « ${t.name} » (IA d'images)`, `Image for "${t.name}" (image AI)`) : L(`Direction « ${t.name} »`, `Direction "${t.name}"`));
     live.dir(t.id, { status: "drawing" });
     try {
-      const directionBrief = t.identity ? { ...brief, palette: t.identity.palette, paletteLocked: true, fontsLocked: t.identity.fonts, tagline: null, brainContext: brief.brainContext + "\nDirection complète à contrôler : " + JSON.stringify(t.identity) } : brief;
+      const directionBrief = t.identity ? { ...brief, palette: t.identity.palette, paletteLocked: true, fontsLocked: t.identity.fonts, tagline: null, brainContext: brief.brainContext + "\nDirection complète à contrôler : " + JSON.stringify(t.identity) + "\nPalettes des trois directions à distinguer : " + JSON.stringify(sel.kept.map(d => ({ direction: d.name, palette: d.identity?.palette, roles: d.identity?.colorRoles }))) } : brief;
       const rs = await developTerritory(ctx, t.source === "local" ? null : ai, t, directionBrief, notes, t.source === "local" ? null : art, live);
       const r = rs[0];
       if (r) {

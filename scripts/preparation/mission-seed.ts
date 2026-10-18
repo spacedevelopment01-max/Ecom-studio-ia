@@ -39,7 +39,13 @@ await runWithLang({ ui: "fr", content: "fr" }, async () => {
       const series = reserveDirectionSeries(f.pid, "synthetic-browser");
       const directions: CompleteDirection[] = [];
       for (const [i, t] of territories.entries()) {
-        const data = await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="850"><rect width="1100" height="850" fill="#f6f2e9"/><path d="M220 430L400 ${170 + i * 50} 560 420 800 ${270 + i * 60}" fill="none" stroke="${t.identity.palette.primary}" stroke-width="32"/><text x="550" y="580" text-anchor="middle" font-size="50">${p.brand!.name}</text><text x="550" y="690" text-anchor="middle" font-size="23">DIRECTION ${i + 1} — SIMULATION</text></svg>`)).png().toBuffer();
+        const palette = t.identity.palette;
+        const mark = [
+          `<circle cx="550" cy="305" r="140" fill="none" stroke="${palette.primary}" stroke-width="24"/><path d="M460 360L540 240 650 350" fill="none" stroke="${palette.accent}" stroke-width="24"/>`,
+          `<rect x="400" y="190" width="125" height="230" rx="14" fill="${palette.primary}"/><rect x="550" y="260" width="150" height="160" rx="14" fill="${palette.accent}"/>`,
+          `<path d="M380 340C430 100 600 490 720 230M400 405L700 405" fill="none" stroke="${palette.primary}" stroke-width="24"/><circle cx="710" cy="200" r="30" fill="${palette.accent}"/>`,
+        ][i];
+        const data = await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="850"><rect width="1100" height="850" fill="${palette.light}"/>${mark}<text x="550" y="580" text-anchor="middle" font-size="50" fill="${palette.primary}">${p.brand!.name}</text><text x="550" y="690" text-anchor="middle" font-size="23" fill="${palette.dark}">DIRECTION ${i + 1} — SIMULATION</text></svg>`)).png().toBuffer();
         const logo = await saveAsset({ projectId: f.pid, userId: f.uid, data, name: `simulation-direction-${i + 1}.png`, mime: "image/png", role: "logo-v2", folderKey: "brand.logos", origin: "generated", status: "review", meta: { simulation: true, engine: "logo-v2", run: "synthetic-browser", territory: t, spec: buildCandidate(t, brandDiscovery(p), { family: "Inter", attempt: 0, symbol: null }).spec, artwork: { expected: { name: p.brand!.name }, provider: "simulation", textBox: null }, gate: { verdict: "FINAL", checker: "simulation" } } });
         const direction = { id: t.id, logoId: logo.id, label: t.name, concept: t.concept, identity: t.identity, territory: t, version: 1 };
         directions.push({ ...direction, previewId: await saveDirectionPreview(f.pid, f.uid, p.brand!.name, direction) });

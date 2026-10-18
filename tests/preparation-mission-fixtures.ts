@@ -13,8 +13,16 @@ import { JobContext, enqueue } from "@/lib/jobs";
 export function directionIdentity(i = 0): DirectionIdentity {
   return {
     signature: ["Le détail, au quotidien.", "Une approche claire.", "La matière prend place."][i % 3],
-    palette: { primary: ["#28504a", "#483d68", "#614024"][i % 3], secondary: "#e3ddcc", accent: "#b47b42", light: "#fcfaf5", dark: "#171f20" },
-    colorRoles: { primary: "Signature et titres", secondary: "Surfaces secondaires", accent: "Accent ponctuel", light: "Fond de lecture", dark: "Texte à contraste élevé" },
+    palette: [
+      { primary: "#28504a", secondary: "#bfd0b4", accent: "#9b4f2c", light: "#fcfaf5", dark: "#171f20" },
+      { primary: "#483d68", secondary: "#c4b7d6", accent: "#9a3662", light: "#f8f5fc", dark: "#201a2c" },
+      { primary: "#614024", secondary: "#d8b77c", accent: "#47657a", light: "#fbf6ed", dark: "#282019" },
+    ][i % 3],
+    colorRoles: [
+      { primary: "Vert profond : signature et titres précis", secondary: "Sauge douce : surfaces calmes", accent: "Terre cuite : appels à l’action chaleureux", light: "Ivoire neutre : fond de lecture", dark: "Encre neutre : texte courant" },
+      { primary: "Prune : titres éditoriaux", secondary: "Lavande grisée : surfaces posées", accent: "Baie : appels à l’action affirmés", light: "Blanc légèrement teinté : fond de lecture", dark: "Encre légèrement violacée : texte courant" },
+      { primary: "Brun : titres liés à la matière", secondary: "Sable : surfaces chaleureuses", accent: "Bleu ardoise : appels à l’action nets", light: "Papier neutre : fond de lecture", dark: "Encre brune neutre : texte courant" },
+    ][i % 3],
     fonts: { heading: ["jost_n6", "playfair_display_n6", "montserrat_n6"][i % 3], body: "inter_n4" },
     tone: { voice: ["Précis et direct", "Éditorial et posé", "Chaleureux et concret"][i % 3], do: ["Décrire les faits connus"], dont: ["Inventer une garantie"] },
     mood: ["Lumière diffuse, gestes simples", "Plans graphiques et espace", "Textures et lumière latérale"][i % 3],

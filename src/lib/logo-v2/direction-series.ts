@@ -7,12 +7,15 @@ import { loadProject, remember } from "../projects";
 import { planOfProject, requirePlan } from "../plan-gates";
 import { stableHash } from "../brain/hash";
 import type { Territory } from "./types";
+import { directionPaletteIssues, directionSeriesPaletteIssues } from "./direction-palette";
 
 const text = z.string().trim().min(1).max(1200);
 const color = z.string().regex(/^#[a-f0-9]{6}$/i);
 export const DirectionIdentitySchema = z.object({
   signature: text,
-  palette: z.object({ primary: color, secondary: color, accent: color, light: color, dark: color }),
+  palette: z.object({ primary: color, secondary: color, accent: color, light: color, dark: color }).superRefine((p, ctx) => {
+    for (const message of directionPaletteIssues(p)) ctx.addIssue({ code: z.ZodIssueCode.custom, message });
+  }),
   colorRoles: z.object({ primary: text, secondary: text, accent: text, light: text, dark: text }),
   fonts: z.object({ heading: text.refine(v => FONT_HANDLES.includes(v), "Police de titres absente du studio"), body: text.refine(v => FONT_HANDLES.includes(v), "Police de texte absente du studio") }),
   tone: z.object({ voice: text, do: z.array(text).min(1).max(6), dont: z.array(text).min(1).max(6) }),
@@ -23,10 +26,14 @@ export type CompleteDirection = { previewId?: string; id: string; logoId: string
 export type DirectionSeries = {
   id: string; projectId: string; ordinal: number; name: string; inputHash: string; createdAt: number;
   requestKeys: string[]; status: "partial" | "complete"; attempts: number;
-  territories: Territory[]; directions: CompleteDirection[]; selectedId?: string;
+  territories: Territory[]; directions: CompleteDirection[]; selectedId?: string; paletteIssues?: string[];
 };
 const KEY = "brand.direction.series.";
-export const directionSeries = (pid: string) => all<{ value: string }>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key LIKE ? ORDER BY created_at,rowid", pid, `${KEY}%`).map(r => json<DirectionSeries>(r.value, null!)).filter(Boolean);
+export const directionSeries = (pid: string) => all<{ value: string }>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key LIKE ? ORDER BY created_at,rowid", pid, `${KEY}%`).map(r => json<DirectionSeries>(r.value, null!)).filter(Boolean).map(s => {
+  // Relecture des séries historiques sans écraser leurs fichiers ni la marque déjà choisie.
+  const paletteIssues = directionSeriesPaletteIssues(s.directions.map(d => d.identity));
+  return { ...s, paletteIssues, status: s.status === "complete" && paletteIssues.length ? "partial" as const : s.status };
+});
 export const currentSeries = (pid: string) => directionSeries(pid).at(-1) ?? null;
 export function seriesRights(pid: string) {
   const plan = planOfProject(pid), used = directionSeries(pid).length;
@@ -65,7 +72,8 @@ export function updateDirectionSeries(pid: string, sid: string, change: (s: Dire
     if (!s) throw new HttpError(404, "Série introuvable.");
     change(s);
     s.directions.sort((a, b) => s.territories.findIndex(t => t.id === a.id) - s.territories.findIndex(t => t.id === b.id));
-    s.status = s.territories.length === 3 && s.directions.length === 3 && new Set(s.directions.map(d => d.id)).size === 3 && new Set(s.directions.map(d => d.logoId)).size === 3 && s.directions.every(d => DirectionIdentitySchema.safeParse(d.identity).success && s.territories.some(t => t.id === d.id)) ? "complete" : "partial";
+    s.paletteIssues = directionSeriesPaletteIssues(s.directions.map(d => d.identity));
+    s.status = s.territories.length === 3 && s.directions.length === 3 && !s.paletteIssues.length && new Set(s.directions.map(d => d.id)).size === 3 && new Set(s.directions.map(d => d.logoId)).size === 3 && s.directions.every(d => DirectionIdentitySchema.safeParse(d.identity).success && s.territories.some(t => t.id === d.id)) ? "complete" : "partial";
     writeSeries(s); return s;
   });
 }

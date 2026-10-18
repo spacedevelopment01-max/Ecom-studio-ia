@@ -116,7 +116,7 @@ describe("Logo V2 — devis et plafond de la série", async () => {
       if (sys.includes("TERRITOIRES CRÉATIFS")) return JSON.stringify({ territories: DRAFTS });
       if (sys.includes("logo complet dessiné par une IA d'images")) {
         const msg = JSON.stringify(params.messages);
-        if (msg.includes("Direction B") && firstA) {
+        if (msg.includes("Territoire « Direction B »") && firstA) {
           firstA = false;
           return JSON.stringify(artReview({ textRead: "NOM FAUX", nameExact: false, nameBox }));
         }
@@ -161,6 +161,13 @@ describe("Logo V2 — devis et plafond de la série", async () => {
     expect(r.shown.find((s) => s.territory.name === "Direction B")?.candidate.artwork?.textCorrected).toBe(true);
     // 1 territoires + 3 relectures + 1 relecture après la reprise.
     expect(llm.sent).toHaveLength(5);
+    // Même appel de relecture : logo original + véritable palette appliquée.
+    const reviews = llm.sent.filter(p => JSON.stringify(p.system).includes("logo complet dessiné par une IA d'images"));
+    expect(reviews).toHaveLength(4);
+    for (const p of reviews) {
+      expect(p.messages.flatMap((m: any) => Array.isArray(m.content) ? m.content.filter((c: any) => c.type === "image") : [])).toHaveLength(2);
+      expect(JSON.stringify(p.messages)).toContain("pas une distance numérique");
+    }
     const s = spent(ctx.job.id);
     expect(s).toBeGreaterThan(0);
     expect(s).toBeLessThanOrEqual(q.maxMicro);
