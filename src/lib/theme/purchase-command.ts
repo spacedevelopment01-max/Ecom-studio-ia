@@ -11,7 +11,7 @@ export function purchaseCommand(spec: ThemeSpec, message: string, selection: { t
   if (!/un article|une unit[eé]|single|one item|duo|trio|deux articles|trois articles|quatre articles|four items|two items|three items|(?:\d+|deux|trois|quatre)\s+(?:offres|articles|offers|items)/i.test(message)) return null;
   const answer = (reply: string, ops: ThemeOp[] = []) => ({ ops, reply, revert: false });
   const chosen = selection && spec.templates[selection.template]?.sections[selection.section];
-  if (!chosen || !["main-product", "purchase-offers"].includes(chosen.type) || !selection) return answer(L("Sélectionnez le bloc d’achat de la fiche à modifier.", "Select the product page's purchase block."));
+  if (!chosen || !["main-product", "purchase-offers", "featured-purchase"].includes(chosen.type) || !selection) return answer(L("Sélectionnez le bloc d’achat de la fiche à modifier.", "Select the product page's purchase block."));
   const products = storeProducts(spec).filter((p) => `product.${p.template_suffix}` === selection.template);
   if (products.length !== 1 || !products[0].contentTarget || spec.store.business === "services") return answer(L("Sélectionnez une fiche produit identifiée. Pour des prestations, utilisez les forfaits avec devis ou réservation.", "Select an identified product page. For services, use packages with quote or booking actions."));
   const p = products[0], normalized = message.toLowerCase();

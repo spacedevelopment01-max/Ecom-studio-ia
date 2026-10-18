@@ -52,7 +52,7 @@ describe("Lot 2B — moteur éditorial et parcours isolés",async()=>{
   spec.store.product.price=null;spec.store.product.variants.forEach(v=>v.price=null);expect(()=>addOfferToCart(spec,[],{target:"product:main",offer:"offer_1",variants:[1000]})).toThrow();
  });
  it("réutilise une source d'offres sans ambiguïté et ferme une source absente ou concurrente",async()=>{
-  const {spec}=await editorialProject(user.id,"products"),home=spec.templates.index.sections.purchase,main=spec.templates["product.editorial"].sections.main;
+  const {spec}=await editorialProject(user.id,"products"),home=spec.templates.index.sections.featured,main=spec.templates["product.editorial"].sections.main;
   expect(sharedPurchaseSection(spec,home).blocks).toEqual(main.blocks);main.blocks!.offer_2.settings.total_price=15000;expect(sharedPurchaseSection(spec,home).blocks!.offer_2.settings.total_price).toBe(15000);expect(total(addOfferToCart(spec,[],{target:"product:main",offer:"offer_2",variants:[1000,1001]}))).toBe(15000);
   home.settings.purchase_source="product.absent:missing";expect(sharedPurchaseSection(spec,home).settings.purchase_enabled).toBe(false);
   const duplicate=structuredClone(main);spec.templates["product.editorial"].sections.other=duplicate;spec.templates["product.editorial"].order.push("other");expect(()=>addOfferToCart(spec,[],{target:"product:main",offer:"offer_2",variants:[1000,1001]})).toThrow(/Offre/);

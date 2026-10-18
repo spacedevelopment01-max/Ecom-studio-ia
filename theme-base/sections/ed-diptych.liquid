@@ -1,6 +1,6 @@
 {% assign s = section.settings %}
 <section class="ed-section ed-diptych ed-diptych--{{ s.layout }} color-{{ s.color_scheme }}"{% if s.anchor != blank %} id="{{ s.anchor | handleize }}"{% endif %} data-ed-motion="{{ s.motion }}" style="--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;">
-<div class="ed-shell"><header class="ed-section-head"><p class="ed-kicker">{{ s.label | escape }}</p><h2 class="ed-title">{{ s.heading | escape }}</h2><div class="ed-prose">{{ s.text }}</div></header><div class="ed-diptych__grid">{% for block in section.blocks %}<figure class="ed-diptych__frame ed-ratio--{{ block.settings.ratio }}" {{ block.shopify_attributes }}>{% render 'ed-media', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.image_alt, role_label: block.settings.media_role, focus_x: block.settings.focus_x, focus_y: block.settings.focus_y %}<figcaption><h3>{{ block.settings.title | escape }}</h3><div class="ed-prose">{{ block.settings.text }}</div>{% if block.settings.link != blank %}<a class="ed-text-link" href="{{ block.settings.link }}">{{ block.settings.link_label | escape }}<span aria-hidden="true">↗</span></a>{% endif %}</figcaption></figure>{% endfor %}</div></div></section>
+<div class="ed-shell"><header class="ed-section-head"><p class="ed-kicker">{{ s.label | escape }}</p><h2 class="ed-title">{{ s.heading | escape }}</h2><div class="ed-prose">{{ s.text }}</div></header><div class="ed-diptych__grid">{% for block in section.blocks %}<figure class="ed-diptych__frame ed-ratio--{{ block.settings.ratio }}" {{ block.shopify_attributes }}>{% render 'ed-media', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.image_alt, role_label: block.settings.media_role, focus_x: block.settings.focus_x, focus_y: block.settings.focus_y, mobile_focus_x: block.settings.mobile_focus_x, mobile_focus_y: block.settings.mobile_focus_y %}<figcaption><h3>{{ block.settings.title | escape }}</h3><div class="ed-prose">{{ block.settings.text }}</div>{% if block.settings.link != blank %}<a class="ed-text-link" href="{{ block.settings.link }}">{{ block.settings.link_label | escape }}<span aria-hidden="true">↗</span></a>{% endif %}</figcaption></figure>{% endfor %}</div></div></section>
 {% schema %}
 {
   "name": "Diptyque éditorial",
@@ -150,6 +150,27 @@
           "type": "range",
           "id": "focus_y",
           "label": "Point focal vertical",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 50
+        },
+        {
+          "type": "range",
+          "id": "mobile_focus_x",
+          "label": "Point focal horizontal (mobile)",
+          "info": "Vide : même cadrage que sur ordinateur.",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 50
+        },
+        {
+          "type": "range",
+          "id": "mobile_focus_y",
+          "label": "Point focal vertical (mobile)",
           "min": 0,
           "max": 100,
           "step": 5,

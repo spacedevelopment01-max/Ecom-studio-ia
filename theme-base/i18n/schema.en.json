@@ -1825,5 +1825,17 @@
  "Adresse du bloc d’achat de référence : gabarit:section. Modifiez ses offres sur la fiche produit.": "Reference purchase block address: template:section. Edit its offers on the product page.",
  "Diptyque": "Diptych",
  "Index d’inspirations": "Inspiration index",
- "Finitions en contexte": "Finishes in context"
+ "Finitions en contexte": "Finishes in context",
+ "Produit à la une": "Featured product",
+ "Présentation courte": "Short presentation",
+ "Vide : nom du produit.": "Empty: product name.",
+ "Vide : description du produit.": "Empty: product description.",
+ "Nombre d’images de la galerie": "Number of gallery images",
+ "Cadrage des visuels": "Image framing",
+ "Produit entier": "Whole product",
+ "Plein cadre": "Full frame",
+ "Voir la fiche complète": "View the full product page",
+ "Point focal horizontal (mobile)": "Horizontal focal point (mobile)",
+ "Point focal vertical (mobile)": "Vertical focal point (mobile)",
+ "Vide : même cadrage que sur ordinateur.": "Empty: same framing as on desktop."
 }

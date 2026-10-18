@@ -105,7 +105,7 @@ function validateSettings(spec: ThemeSpec, type: string, blockType: string | nul
     if (c.ok) out[k] = c.value;
     else errors.push(c.reason);
   }
-  if (type === "purchase-offers" && blockType === null && values && Object.hasOwn(values, "product")) {
+  if (["purchase-offers", "featured-purchase"].includes(type) && blockType === null && values && Object.hasOwn(values, "product")) {
     const product = storeProducts(spec).find((p) => p.handle === values.product);
     if (values.product && !product?.contentTarget) errors.push(L("Produit absent du catalogue identifié.", "Product not found in the identified catalog."));
     else out.product_target = product?.contentTarget ?? "";

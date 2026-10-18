@@ -359,7 +359,11 @@
     "add": "Add to cart",
     "summary": "Your selection",
     "demo": "Preview: locally tested rules, no real payment.",
-    "item": "item"
+    "item": "item",
+    "view_product": "View the full product page",
+    "unit_price": "unit price",
+    "bar_total": "Selection total",
+    "bar_action": "View my selection"
   },
   "editorial": {
     "pending_media": "Image to import"

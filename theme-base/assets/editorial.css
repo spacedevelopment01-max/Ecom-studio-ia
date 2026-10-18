@@ -30,3 +30,96 @@ body:not(.motion-on) .ed-button{transition:none}body:not(.motion-on) .ed-button:
 .es-section>.es-container>.purchase{margin-inline:auto}body[data-editorial="journal"] .es-header__cta{background:transparent;color:var(--c-text);border:1px solid var(--c-text);border-radius:0;box-shadow:none}
 
 .ed-finishes__grid{display:grid;grid-template-columns:7fr 5fr;gap:48px;align-items:start}.ed-finishes__scene>.ed-media{aspect-ratio:4/3}.ed-finishes__views figure{margin:0}.ed-finishes__views img{width:100%;aspect-ratio:1;object-fit:contain}.ed-finishes__views .ed-media{aspect-ratio:1;height:auto}.ed-finishes__views figcaption{font-size:14px;padding-block:16px}.ed-finishes__selection fieldset{border:0;padding:0;margin:16px 0 24px;display:flex;flex-wrap:wrap;gap:20px}.ed-finishes__selection legend{font-size:13px;margin-bottom:16px}.ed-finishes__selection label{font-size:15px;display:flex;gap:8px;align-items:center;cursor:pointer}.ed-finishes__selection input{accent-color:var(--c-accent)}@media(max-width:749px){.ed-finishes__grid{grid-template-columns:1fr;gap:24px}}
+
+/* Produit à la une : visuels à gauche, présentation et achat à droite ; mobile compact (nom, image, choix, action). */
+.fp__grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);grid-template-areas:"media head" "media body";column-gap:clamp(40px,5vw,72px);row-gap:0;align-items:start}
+.fp__head{grid-area:head;min-width:0}.fp__media{grid-area:media;min-width:0;position:sticky;top:calc(var(--header-h,76px) + 24px)}.fp__body{grid-area:body;min-width:0}
+.fp__title{font-size:clamp(40px,3.6vw,56px);line-height:1.02;margin-bottom:14px;max-width:18ch}
+.fp__price{display:flex;align-items:baseline;gap:12px;margin:0 0 22px;font:500 22px/1.2 var(--font-body)}.fp__price .es-price{font-size:22px}.fp__price-note{font-size:13px;opacity:.72}
+.fp__text{font-size:17px;margin-bottom:26px;max-width:46ch}.fp__text:empty{display:none}
+.fp__stage{position:relative;display:grid;aspect-ratio:4/5;max-height:720px;background:var(--c-surface);overflow:hidden}
+.fp__slide{margin:0;grid-area:1/1;min-width:0;position:relative}.fp__slide[hidden]{display:none}
+.fp__img{display:block;width:100%;height:100%;object-fit:cover}.fp--contain .fp__slide--packshot .fp__img,.fp--contain .fp__img{object-fit:contain}.fp--cover .fp__slide:not(.fp__slide--packshot) .fp__img{object-fit:cover}
+.fp__stage .es-product__zoom{right:16px;bottom:16px}
+.fp__thumbs{display:flex;gap:10px;margin-top:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}.fp__thumbs::-webkit-scrollbar{display:none}
+.fp__thumb{flex:none;width:76px;aspect-ratio:1;padding:0;border:1px solid var(--c-border);border-radius:4px;overflow:hidden;background:var(--c-surface);cursor:pointer;opacity:.62;transition:opacity 180ms,border-color 180ms}.fp__thumb img{width:100%;height:100%;object-fit:cover}.fp__thumb.is-active{opacity:1;border-color:var(--c-text)}.fp__thumb:focus-visible{outline:3px solid var(--c-text);outline-offset:3px;opacity:1}
+.fp__buy .purchase{margin:0;max-width:none}.fp__buy .purchase__heading{font:500 15px/1.4 var(--font-body);margin-bottom:10px}
+.fp__link{margin-top:22px;font-size:15px}
+.fp .purchase__benefits{grid-template-columns:1fr;gap:8px;margin:0 0 22px}.fp .purchase__benefits li{font-size:15px}
+.fp .purchase__finishes{margin:0 0 20px}.fp .purchase__offers{gap:8px}.fp .purchase__offer{padding:14px 16px;min-height:0}.fp .purchase__offer-copy>strong{font-size:16px}.fp .purchase__variants{margin-top:16px!important}.fp .purchase__gift{padding:10px 12px}.fp .purchase__gift img{width:56px;height:56px;object-fit:contain}.fp .purchase__summary{margin:18px 0 10px}.fp .purchase__submit{min-height:56px}
+body[data-editorial="object"] .purchase__submit,body[data-editorial="object"] .purchase-bar__button{text-transform:none;letter-spacing:0;font-size:16px;border-radius:6px;box-shadow:none}
+body[data-editorial="object"] .fp .purchase__badge{background:var(--c-accent);color:var(--c-accent-text);border-radius:2px}
+@media(max-width:989px){.fp__grid{column-gap:28px}.fp__media{position:static}.fp__title{font-size:40px}}
+@media(max-width:749px){.fp__grid{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"head" "media" "body";row-gap:18px}.fp__head .ed-kicker{margin-bottom:12px}.fp__title{font-size:38px;margin-bottom:8px}.fp__price{margin-bottom:0}.fp__stage{aspect-ratio:1;max-height:none}.fp__thumb{width:60px}.fp__text{font-size:16px;margin-bottom:18px}.fp .purchase__benefits{display:none}.fp .purchase__offer{padding:12px 12px}.fp .purchase__variants [data-offer-variants]{grid-template-columns:1fr 1fr}}
+
+/* Barre d'achat fixe (mobile) : total et finition de la sélection, retour au vrai bouton ; espace réservé en bas de page. */
+.purchase-bar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px max(16px,env(safe-area-inset-left)) max(10px,env(safe-area-inset-bottom));background:var(--c-bg);color:var(--c-text);border-top:1px solid var(--c-border);box-shadow:0 -10px 30px -18px rgba(0,0,0,.35)}
+.purchase-bar[hidden]{display:none}.purchase-bar__meta{display:grid;gap:2px;margin:0;min-width:0;font-size:12px;line-height:1.3}.purchase-bar__meta span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.8}.purchase-bar__meta strong{font-size:17px}.purchase-bar__button{flex:none;min-height:46px;padding:0 20px}
+body.has-purchase-bar{padding-bottom:74px}
+@media(min-width:990px){.purchase-bar{display:none!important}body.has-purchase-bar{padding-bottom:0}}
+@media(prefers-reduced-motion:reduce){.fp__thumb{transition:none}}
+
+/* Fiche produit (profil objet) : achat compact sur mobile, bloc d'achat qui suit sur ordinateur avec arrêt naturel avant le pied de page. */
+@media(min-width:990px){body[data-editorial="object"] .es-product__sticky{position:sticky;top:calc(var(--header-h,76px) + 20px)}body[data-editorial="object"] .es-product__gallery{align-self:start}}
+@media(max-width:749px){body[data-editorial="object"] .es-product__sticky>*{margin-bottom:14px}body[data-editorial="object"] .purchase__benefits{grid-template-columns:1fr;gap:6px;margin:10px 0 14px}body[data-editorial="object"] .purchase__benefits li{font-size:14px}body[data-editorial="object"] .purchase__finishes{margin:10px 0 14px}body[data-editorial="object"] .purchase__offers{gap:8px}body[data-editorial="object"] .purchase__offer{padding:12px;min-height:0}body[data-editorial="object"] .purchase__offer-copy>span:not(.purchase__badge){font-size:.75rem}body[data-editorial="object"] .purchase__variants{margin-top:14px!important}body[data-editorial="object"] .purchase__variants [data-offer-variants]{grid-template-columns:1fr 1fr}body[data-editorial="object"] .purchase__gift{padding:10px}body[data-editorial="object"] .purchase__gift img{width:48px;height:48px}body[data-editorial="object"] .purchase__summary{margin:14px 0 8px}body[data-editorial="object"] .es-product__price .es-small{display:none}body[data-editorial="object"] .ed-product-intro{margin:10px 0 14px;font-size:16px}body[data-editorial="object"] .es-product__thumbs{margin-top:8px}body[data-editorial="object"] .es-product__thumb{width:56px}}
+@media(max-width:749px){.ed-image{object-position:var(--ed-fxm,var(--ed-fx,50%)) var(--ed-fym,var(--ed-fy,50%))}}
+
+/* Ouverture « promesse dans la scène » : la photographie est décalée vers la droite, le texte se pose sur sa partie calme avec un voile léger ; le titre garde ses trois lignes. */
+.ed-opening--immersive .ed-shell{grid-template-columns:repeat(12,minmax(0,1fr));min-height:0;align-items:center}
+.ed-opening--immersive .ed-opening__media{grid-column:4/-1;grid-row:1;height:clamp(520px,44vw,660px)}
+.ed-opening--immersive .ed-opening__copy{grid-column:1/8;grid-row:1;align-self:center;padding:40px 44px 44px 0;background:transparent;max-width:none}
+.ed-opening--immersive .ed-opening__copy>*{position:relative}
+.ed-opening--immersive .ed-opening__copy::before{content:"";position:absolute;inset:0 0 0 -60px;background:color-mix(in srgb,var(--c-bg) 88%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.ed-opening--immersive .ed-opening__title{font-size:clamp(56px,6.1vw,88px);max-width:20ch;line-height:1.02}
+.ed-opening--immersive .ed-kicker{margin-bottom:22px}
+@media(max-width:989px){.ed-opening--immersive .ed-opening__media{grid-column:3/-1;height:clamp(440px,58vw,560px)}.ed-opening--immersive .ed-opening__copy{grid-column:1/9;padding:28px 28px 32px 0}.ed-opening--immersive .ed-opening__copy::before{inset:0 0 0 -24px}}
+@media(max-width:749px){.ed-opening--immersive .ed-opening__copy{margin:0;padding:12px 0 28px;background:transparent}.ed-opening--immersive .ed-opening__copy::before{display:none}.ed-opening--immersive .ed-opening__media{height:auto}}
+/* Revue d'architecture : titre d'ouverture sur trois lignes maîtrisées, légende sous la photographie. */
+body[data-editorial="journal"] .ed-opening__title{font-size:clamp(56px,6.7vw,96px);max-width:none;line-height:1.02}
+body[data-editorial="journal"] .ed-opening--journal .ed-opening__copy{grid-template-columns:8fr 4fr;align-items:end}
+@media(max-width:749px){body[data-editorial="journal"] .ed-opening__title{font-size:48px}}
+/* Pied de page de référence : signature ample, colonnes utiles, aucune répétition du logo. */
+.es-footer--reference-shop .es-footer__brandcol:not(:has(*)),.es-footer--reference-studio .es-footer__brandcol:not(:has(*)){display:none}
+.es-footer--reference-shop .es-footer__layout,.es-footer--reference-studio .es-footer__layout{grid-template-columns:minmax(0,1.2fr) minmax(0,2fr);align-items:start}
+.es-footer--reference-shop .es-footer__layout:has(.es-footer__brandcol:not(:has(*))),.es-footer--reference-studio .es-footer__layout:has(.es-footer__brandcol:not(:has(*))){grid-template-columns:1fr}
+body[data-editorial] .es-footer__grid{grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:48px}
+body[data-editorial] .es-footer__heading{font-size:12px;letter-spacing:.14em}
+body[data-editorial] .es-footer__links a{opacity:1}
+body[data-editorial="object"] .ref-footer__signature{font-size:clamp(72px,15vw,236px);letter-spacing:-.04em;margin-bottom:56px}
+body[data-editorial="object"] .es-footer{padding-top:clamp(64px,8vw,112px)}
+body[data-editorial="journal"] .ref-footer__signature{font-size:clamp(52px,8.5vw,136px);font-weight:600;letter-spacing:-.05em;margin-bottom:64px}
+body[data-editorial="journal"] .es-footer .es-rte,body[data-editorial="journal"] .es-footer__links{font-size:15px}
+/* Revue d'architecture : chapitres numérotés, image qui suit les étapes sur ordinateur, lignes de prestations amples. */
+body[data-editorial="journal"] .ref-narrative__chapters{counter-reset:ed-chapter}
+body[data-editorial="journal"] .ref-narrative__chapter{counter-increment:ed-chapter;padding:28px 0}
+body[data-editorial="journal"] .ref-narrative__chapter summary>span:first-child{display:flex;gap:24px;align-items:baseline}
+body[data-editorial="journal"] .ref-narrative__chapter summary>span:first-child::before{content:counter(ed-chapter,decimal-leading-zero);font:500 13px/1 var(--font-body);letter-spacing:.1em;color:var(--c-accent);min-width:2.2em}
+body[data-editorial="journal"] .ref-narrative__chapter .ref-prose{padding-left:calc(2.2em + 24px);font-size:17px}
+body[data-editorial="journal"] .ref-narrative__chapter .ed-text-link{margin-left:calc(2.2em + 24px)}
+body[data-editorial="journal"] .ref-narrative__grid{align-items:start}
+body[data-editorial="journal"] .ref-section-head .ref-heading{max-width:16ch}
+@media(min-width:990px){body[data-editorial="journal"] .ref-narrative__visuals{position:sticky;top:calc(var(--header-h,76px) + 32px)}}
+body[data-editorial="journal"] .ref-offers--comparison .ref-offer{border-radius:0;padding:36px 28px}
+body[data-editorial="journal"] .ref-offers--comparison .ref-offer__copy h3{font-weight:600;letter-spacing:-.03em}
+body[data-editorial="journal"] .ref-offers--comparison .ref-offer__link{border-radius:0}
+/* Questions : lignes généreuses, titre dans la famille des titres, ouverture courte. */
+body[data-editorial] .v2-faq__item summary{padding:26px 0;font-size:clamp(1.15rem,1rem + .6vw,1.5rem);font-weight:500;letter-spacing:-.02em}
+body[data-editorial] .v2-faq__item .v2-rte{font-size:17px;line-height:1.6;padding-bottom:28px}
+body[data-editorial="journal"] .v2-faq__item summary{font-weight:600}
+body[data-editorial] .v2-faq__list{border-top:1px solid var(--c-border)}body[data-editorial] .v2-faq__item{border-bottom:1px solid var(--c-border)}
+/* Finitions en contexte : la vue de la finition choisie reste stable, légendes nettes. */
+.ed-finishes__views figure{background:var(--c-surface)}.ed-finishes__views figcaption{font-size:14px;padding:14px 0 0}
+.ed-finishes__selection label{border:1px solid var(--c-border);padding:10px 14px;border-radius:4px}.ed-finishes__selection label:has(input:checked){border-color:var(--c-text)}
+/* Diptyque : légendes en retrait et liens d'usage lisibles ; index d'inspirations avec légende de démonstration. */
+.ed-diptych figcaption{padding-top:4px}.ed-diptych .ed-text-link{font-size:15px}
+.ed-statement__aside>.ed-media{aspect-ratio:3/4}
+/* En-tête : 76 px sur ordinateur, 64 px sur mobile (profil objet) ; 80 px / 64 px pour la revue. */
+body[data-editorial="object"] .es-header__inner{min-height:76px}body[data-editorial="journal"] .es-header__inner{min-height:80px}
+@media(max-width:749px){body[data-editorial] .es-header__inner{min-height:64px}body[data-editorial] .es-header{--header-h:64px}}
+body[data-editorial] .es-footer__grid{max-width:900px;margin-left:auto}
+@media(max-width:749px){body[data-editorial] .es-footer__grid{grid-template-columns:1fr;gap:32px;margin-left:0}}
+/* Ajustements après revue : titre d'ouverture mobile 50 px, en-tête mobile 64 px, offres en deux colonnes sur la fiche mobile, ouverture tablette. */
+@media(max-width:749px){.ed-opening--immersive .ed-opening__title{font-size:50px;max-width:none}body[data-editorial="object"] .es-header{min-height:64px}
+body[data-editorial="object"] [data-main-product] .purchase__offers{grid-template-columns:1fr 1fr;gap:8px}body[data-editorial="object"] [data-main-product] .purchase__offer{grid-template-columns:20px minmax(0,1fr);grid-template-areas:"radio copy" "radio prices";align-items:start;padding:12px 10px;row-gap:8px}body[data-editorial="object"] [data-main-product] .purchase__offer input{grid-area:radio;margin-top:2px}body[data-editorial="object"] [data-main-product] .purchase__offer-copy{grid-area:copy}body[data-editorial="object"] [data-main-product] .purchase__prices{grid-area:prices;text-align:left;white-space:normal}body[data-editorial="object"] [data-main-product] .purchase__prices strong{font-size:1rem}}
+@media(min-width:750px) and (max-width:989px){.ed-opening--journal .ed-opening__copy{grid-template-columns:7fr 5fr;column-gap:40px}}
+.es-footer--reference-shop .es-footer__layout:not(:has(.es-footer__brandcol)),.es-footer--reference-studio .es-footer__layout:not(:has(.es-footer__brandcol)){grid-template-columns:1fr}

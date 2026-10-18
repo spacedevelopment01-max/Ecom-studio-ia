@@ -15,7 +15,7 @@ export function purchaseConfig(section: SectionInstance) {
 }
 /** Une présentation réutilisée lit les mêmes blocs que la fiche ; aucune deuxième règle tarifaire. */
 export function sharedPurchaseSection(spec: ThemeSpec, section: SectionInstance): SectionInstance {
- if(section.type!=="purchase-offers" || !section.settings.purchase_source)return section;
+ if(!["purchase-offers","featured-purchase"].includes(section.type) || !section.settings.purchase_source)return section;
  const parts=String(section.settings.purchase_source).split(":");
  const source=parts.length===2?spec.templates[parts[0]]?.sections[parts[1]]:undefined;
  if(!source || source.type!=="main-product" || source.settings.product_target!==section.settings.product_target) return {...section,settings:{...section.settings,purchase_enabled:false},blocks:{},block_order:[]};
@@ -23,7 +23,7 @@ export function sharedPurchaseSection(spec: ThemeSpec, section: SectionInstance)
 }
 export function productOfferSection(spec: ThemeSpec, product: StoreProduct) {
   const ownKey = product.template_suffix ? `product.${product.template_suffix}` : "product";
-  const candidates = Object.entries(spec.templates).flatMap(([key, template]) => (template.order ?? []).map((id) => ({ id, key, section: template.sections[id] }))).filter(({ key, section: s }) => s && !s.disabled && !s.settings.purchase_source && s.settings.purchase_enabled === true && ["main-product", "purchase-offers"].includes(s.type) && (s.settings.product_target ? s.settings.product_target === product.contentTarget : key === ownKey));
+  const candidates = Object.entries(spec.templates).flatMap(([key, template]) => (template.order ?? []).map((id) => ({ id, key, section: template.sections[id] }))).filter(({ key, section: s }) => s && !s.disabled && !s.settings.purchase_source && s.settings.purchase_enabled === true && ["main-product", "purchase-offers", "featured-purchase"].includes(s.type) && (s.settings.product_target ? s.settings.product_target === product.contentTarget : key === ownKey));
   // Deux configurations concurrentes ne deviennent jamais une règle commerciale devinée.
   return candidates.length === 1 ? candidates[0] : null;
 }
@@ -139,6 +139,6 @@ export function purchaseErrorMessage(error: unknown, lang: string) {
 
 /** Dossier de configuration transportable ; ne constitue jamais une activation dans un CMS. */
 export function purchaseExportManifest(spec: ThemeSpec) {
- const sections = Object.entries(spec.templates).flatMap(([template,t]) => Object.entries(t.sections).filter(([,s]) => ["main-product","purchase-offers"].includes(s.type) && purchaseConfig(s).offers.length).map(([section,s]) => ({ template, section, productTarget: s.settings.product_target ?? null, settings:s.settings, blocks:s.blocks, blockOrder:s.block_order, style: s.settings.purchase_style ?? "outlined", configuration: purchaseConfig(s) })));
+ const sections = Object.entries(spec.templates).flatMap(([template,t]) => Object.entries(t.sections).filter(([,s]) => ["main-product","purchase-offers","featured-purchase"].includes(s.type) && purchaseConfig(s).offers.length).map(([section,s]) => ({ template, section, productTarget: s.settings.product_target ?? null, settings:s.settings, blocks:s.blocks, blockOrder:s.block_order, style: s.settings.purchase_style ?? "outlined", configuration: purchaseConfig(s) })));
  return sections.length ? { version:1, commercialServerInstalled:false, checkoutVerified:false, instruction:"Configurer et vérifier les règles dans le système commercial de la plateforme avant activation. Ce fichier conserve les données ; il ne crée ni remise ni cadeau.", sections, catalog:storeProducts(spec).map((p)=>({target:p.contentTarget,handle:p.handle,currency:p.currency,variants:p.variants.map((v)=>({sku:v.sku,options:v.options,price:v.price,available:v.available}))})) } : null;
 }

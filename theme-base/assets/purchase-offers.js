@@ -7,7 +7,8 @@
    var variants = JSON.parse(box.querySelector('[data-purchase-variants]').textContent), strings = JSON.parse(box.querySelector('[data-purchase-strings]').textContent);
    var radios = Array.from(box.querySelectorAll('.purchase__offers input[type=radio]')), selected = radios.find(function (r) { return r.checked; }) || radios[0], retained = [], area = box.querySelector('[data-offer-variants]'), button = box.querySelector('[data-purchase-add]'), error = box.querySelector('[data-purchase-error]');
    if (!selected) return;
-   var requestedVariant=new URLSearchParams(location.search).get('variant');if(variants.some(function(v){return String(v.id)===requestedVariant&&v.available;}))retained[0]=requestedVariant;
+   var params=new URLSearchParams(location.search),requestedVariant=params.get('variant'),requestedOffer=params.get('offer');if(variants.some(function(v){return String(v.id)===requestedVariant&&v.available;}))retained[0]=requestedVariant;
+   if(requestedOffer){var wanted=radios.find(function(r){return r.value===requestedOffer;});if(wanted)selected=wanted;}
    function money(n) { return new Intl.NumberFormat(box.dataset.language || 'fr', { style: 'currency', currency: box.dataset.currency || 'EUR' }).format(n / 100); }
    function priceFor(r) {
     var count = +r.dataset.quantity, sum = 0;
@@ -20,6 +21,7 @@
     retained = Array.from(area.querySelectorAll('select')).map(function (s) { return s.value; });
     radios.forEach(function (r) { var p = priceFor(r), card = r.closest('label'); card.classList.toggle('is-selected', r === selected); card.querySelector('[data-offer-total]').textContent = p ? money(p.total) : strings.unavailable; card.querySelector('[data-offer-unit]').textContent = p ? money(Math.round(p.total / p.count)) + ' ' + strings.unit : ''; var save = card.querySelector('[data-offer-saving]'); save.hidden = !p || p.base <= p.total; save.textContent = p && p.base > p.total ? strings.save + ' ' + money(p.base - p.total) : ''; });
     var p = priceFor(selected); box.querySelector('[data-purchase-total]').textContent = p ? money(p.total) : strings.unavailable;
+    box.dispatchEvent(new CustomEvent('es:offer-total',{bubbles:true,detail:{total:p?money(p.total):strings.unavailable,count:p?p.count:0,offer:selected.value,label:(selected.closest('label').querySelector('.purchase__offer-copy>strong')||{}).textContent||''}}));
     var counts = {}; retained.forEach(function(id) { counts[id] = (counts[id] || 0) + 1; });
     button.disabled = !p || !retained.length || retained.some(function (id) { var v = variants.find(function (v) { return String(v.id) === id; }); return !v || !v.available || (v.inventory_management && v.inventory_quantity < counts[id]); });
     box.querySelectorAll('[data-gift]').forEach(function (g) { var eligible = +selected.dataset.quantity >= +g.dataset.threshold, available = g.dataset.available === 'true' && (!g.dataset.stock || +g.dataset.stock >= +g.dataset.giftQuantity); g.classList.toggle('is-unlocked', eligible && available); g.querySelector('[data-gift-state]').textContent = !available ? strings.unavailable : eligible ? strings.included : strings.locked + ' ' + g.dataset.threshold + ' ' + strings.items; });

@@ -1,6 +1,6 @@
 {% assign s = section.settings %}
 <section class="ed-section ed-scene ed-scene--{{ s.layout }} color-{{ s.color_scheme }}"{% if s.anchor != blank %} id="{{ s.anchor | handleize }}"{% endif %} data-ed-motion="{{ s.motion }}" style="--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;">
-<div class="ed-shell"><div class="ed-scene__media">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, focus_x: s.focus_x, focus_y: s.focus_y %}{% if s.caption != blank %}<p class="ed-caption">{{ s.caption | escape }}</p>{% endif %}</div><div class="ed-scene__copy"><p class="ed-kicker">{{ s.label | escape }}</p><h2 class="ed-title">{{ s.heading | escape }}</h2><div class="ed-prose">{{ s.text }}</div>{% if s.button_label != blank and s.button_link != blank %}<a class="ed-button" href="{{ s.button_link }}">{{ s.button_label | escape }}<span aria-hidden="true">↗</span></a>{% endif %}</div></div></section>
+<div class="ed-shell"><div class="ed-scene__media">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, focus_x: s.focus_x, focus_y: s.focus_y, mobile_focus_x: s.mobile_focus_x, mobile_focus_y: s.mobile_focus_y %}{% if s.caption != blank %}<p class="ed-caption">{{ s.caption | escape }}</p>{% endif %}</div><div class="ed-scene__copy"><p class="ed-kicker">{{ s.label | escape }}</p><h2 class="ed-title">{{ s.heading | escape }}</h2><div class="ed-prose">{{ s.text }}</div>{% if s.button_label != blank and s.button_link != blank %}<a class="ed-button" href="{{ s.button_link }}">{{ s.button_label | escape }}<span aria-hidden="true">↗</span></a>{% endif %}</div></div></section>
 {% schema %}
 {
   "name": "Scène et récit",
@@ -115,6 +115,27 @@
       "type": "range",
       "id": "focus_y",
       "label": "Point focal vertical",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "mobile_focus_x",
+      "label": "Point focal horizontal (mobile)",
+      "info": "Vide : même cadrage que sur ordinateur.",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "mobile_focus_y",
+      "label": "Point focal vertical (mobile)",
       "min": 0,
       "max": 100,
       "step": 5,

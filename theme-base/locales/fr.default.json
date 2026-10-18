@@ -359,7 +359,11 @@
     "add": "Ajouter au panier",
     "summary": "Votre sélection",
     "demo": "Aperçu : règles testées localement, aucun paiement réel.",
-    "item": "article"
+    "item": "article",
+    "view_product": "Voir la fiche complète",
+    "unit_price": "prix à l’unité",
+    "bar_total": "Total de la sélection",
+    "bar_action": "Voir ma sélection"
   },
   "editorial": {
     "pending_media": "Visuel à importer"

@@ -9,7 +9,7 @@
 -%}
 {% if has_offers %}
 <div class="purchase purchase--{{ offer_settings.purchase_style | default: 'outlined' }}" data-purchase data-target="{{ target | escape }}" data-preview="{% if request.host == 'apercu' %}true{% else %}false{% endif %}" data-add-url="{{ routes.cart_add_url }}" data-cart-url="{{ routes.cart_url }}" data-currency="{{ shop.currency | default: 'EUR' }}" data-language="{{ request.locale.iso_code }}">
- <h2 class="purchase__heading">{{ offer_settings.purchase_heading | escape }}</h2>
+ {% if offer_settings.purchase_heading != blank %}<h2 class="purchase__heading">{{ offer_settings.purchase_heading | escape }}</h2>{% endif %}
  <ul class="purchase__benefits" role="list">{% for benefit in blocks %}{% if benefit.type == 'purchase_benefit' and benefit.settings.title != blank %}<li {{ benefit.shopify_attributes }}>{% render 'icon', name: benefit.settings.icon %}<span>{{ benefit.settings.title | escape }}</span></li>{% endif %}{% endfor %}</ul>
  {% if offer_settings.show_finishes %}<fieldset class="purchase__finishes"><legend>{{ offer_settings.finish_label | escape }}</legend><div data-purchase-finishes></div></fieldset><script type="application/json" data-purchase-colors>{{ offer_settings.finish_colors | json }}</script>{% endif %}
  <fieldset class="purchase__offers"><legend class="visually-hidden">{{ 'purchase.summary' | t }}</legend>

@@ -662,7 +662,7 @@ function* renderSectionGen(engine: Liquid, ctx: Context, emitter: Emitter, files
   const types = new Map<string, string>();
   for (const s of schema.settings) if (s.id) types.set(s.id, s.type);
   const sectionSettings = { ...inst.settings };
-  if (["purchase-offers","ed-finishes"].includes(inst.type) && sectionSettings.product_target) sectionSettings.product = (ctx.getAll() as any).__purchaseTargets?.[String(sectionSettings.product_target)] ?? "";
+  if (["purchase-offers","ed-finishes","featured-purchase"].includes(inst.type) && sectionSettings.product_target) sectionSettings.product = (ctx.getAll() as any).__purchaseTargets?.[String(sectionSettings.product_target)] ?? "";
   const settings = wrapSettings(withDefaults(schema.settings, sectionSettings), base, types, resolve);
   const blocks = (inst.block_order ?? Object.keys(inst.blocks ?? {}))
     .map((bid) => ({ bid, b: inst.blocks?.[bid] }))
