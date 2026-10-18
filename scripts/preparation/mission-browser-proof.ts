@@ -103,10 +103,10 @@ for (const f of fixtures) for (const mobile of [false, true]) {
   const chooseResponse = page.waitForResponse(r => r.url().endsWith(`/projects/${f.pid}/brand/logo-v2`) && r.request().method() === "POST");
   await chosenCard.getByRole("button", { name: "Choisir cette direction complète", exact: true }).click();
   assert.equal((await chooseResponse).ok(), true);
-  await page.waitForFunction(async ({ pid, directionId }) => {
+  await page.waitForFunction(async ({ pid, directionId, logoId }) => {
     const r = await fetch(`/api/projects/${pid}/preparation`), data = await r.json();
-    return data.state.stages.brand.data.proposal.artIdentity?.directionId === directionId;
-  }, { pid: f.pid, directionId: choice.id }, { polling: 500, timeout: 60000 });
+    return data.state.stages.brand.data.selectedLogo === logoId && data.state.stages.brand.data.proposal.artIdentity?.directionId === directionId;
+  }, { pid: f.pid, directionId: choice.id, logoId: choice.logoId }, { polling: 500, timeout: 60000 });
   await page.reload({ waitUntil: "networkidle" }); await step(2);
   const restored = (await state()).state.stages.brand.data;
   assert.equal(restored.selectedLogo, choice.logoId);
