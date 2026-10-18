@@ -73,7 +73,7 @@ describe("Lot 2C — FRAISE GUMMIES (référence Lumora) et ONDE AUDIO (référe
     }));
   }
   it("les nouvelles sections sont dans la bibliothèque FR/EN avec un schéma traduit", () => {
-    for (const type of ["cv-hero", "cv-cards", "cv-reviews", "cv-feature", "cv-guarantee", "cv-stories", "cv-article", "cv-hotspots", "cv-alternating", "cv-steps", "cv-gallery", "cv-specs", "cv-banner"]) {
+    for (const type of ["cv-hero", "cv-cards", "cv-reviews", "cv-feature", "cv-guarantee", "cv-stories", "cv-article", "cv-hotspots", "cv-alternating", "cv-steps", "cv-gallery", "cv-specs", "cv-banner", "cv-ingredients", "cv-quote"]) {
       expect(libraryEntry(type, "fr")?.name, type).toBeTruthy(); expect(libraryEntry(type, "en")?.name, type).toBeTruthy();
       const en = sectionSchema(null, type, "en")!; expect(en.name).not.toMatch(/[éèà]/);
       for (const s of en.settings) if (s.label) expect(s.label, `${type}.${s.id}`).not.toMatch(/[éèàç]|Visuel|Titre/);
@@ -83,13 +83,13 @@ describe("Lot 2C — FRAISE GUMMIES (référence Lumora) et ONDE AUDIO (référe
   it("page « Bibliothèque de sections » : huit types rendus, animations réglables et désactivables par section, textes jamais masqués sans JavaScript", async () => fr(async () => {
     const f = await conversionProject(user.id, "fraise", pack), spec = f.spec, page = spec.templates["page.sections"];
     const types = new Set(Object.values(page.sections).map((s) => s.type));
-    for (const t of ["features-grid", "cv-hotspots", "cv-alternating", "cv-steps", "cv-gallery", "comparison-table", "cv-specs", "cv-banner"]) expect(types.has(t), t).toBe(true);
-    const animated = Object.values(page.sections).filter((s) => "animation" in s.settings); expect(animated.length).toBeGreaterThanOrEqual(8);
+    for (const t of ["features-grid", "cv-hotspots", "cv-alternating", "cv-steps", "cv-gallery", "comparison-table", "cv-specs", "cv-banner", "cv-ingredients", "cv-quote"]) expect(types.has(t), t).toBe(true);
+    const animated = Object.values(page.sections).filter((s) => "animation" in s.settings); expect(animated.length).toBeGreaterThanOrEqual(10);
     for (const s of animated) { const schema = sectionSchema(spec, s.type, "fr")!; expect(schema.settings.find((x) => x.id === "animation")?.options?.map((o) => o.value)).toEqual(["none", "fade", "rise", "zoom"]); expect(schema.settings.find((x) => x.id === "animation_speed")?.options?.map((o) => o.value)).toEqual(["slow", "normal", "fast"]); }
     // Contenu principal à partir de la première des huit sections (le titre de page et l'introduction sont des sections de base, hors réglage).
     const main = (r: { html: string }) => { const m = r.html.slice(r.html.indexOf("<main"), r.html.indexOf("</main>")); return m.slice(m.lastIndexOf("es-section-wrapper", m.indexOf("data-cols-m"))); };
     const rise = main(await render(spec, "/pages/sections"));
-    expect(rise).toContain('data-reveal="up" data-d="'); expect(rise).toContain("cv-anim--normal"); expect(rise).toContain('data-cols-m="2"'); expect(rise).toContain('data-layout="carousel"'); expect(rise).toContain("[data-cv-hotspots]".slice(1, -1)); expect(rise).toContain("data-cv-lightbox"); expect(rise).toContain("[À compléter]");
+    expect(rise).toContain('data-reveal="up" data-d="'); expect(rise).toContain("cv-anim--normal"); expect(rise).toContain('data-cols-m="2"'); expect(rise).toContain('data-layout="carousel"'); expect(rise).toContain("[data-cv-hotspots]".slice(1, -1)); expect(rise).toContain("data-cv-lightbox"); expect(rise).toContain("[À compléter]"); expect(rise).toContain("data-cv-ingredients"); expect(rise).toContain("data-cv-quote"); expect(rise).toContain("Avis fictif");
     // « Aucune » sur chaque section : plus aucune apparition au défilement produite par le réglage ; « Lente » : classe de vitesse.
     const off = structuredClone(spec); for (const s of Object.values(off.templates["page.sections"].sections)) if ("animation" in s.settings) { s.settings.animation = "none"; s.settings.animation_speed = "slow"; }
     expect(validateSpec(off)).toEqual([]);

@@ -59,9 +59,11 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
             const n = schema!.blocks.filter((b) => !b.type.startsWith("@")).length;
             return L(`Section de votre thème${schema!.blocks.length ? ` · ${n} type(s) de blocs` : ""}`, `Section from your theme${schema!.blocks.length ? ` · ${n} block type${n > 1 ? "s" : ""}` : ""}`);
           })(), keywords: t.replace(/-/g, " "), preview: null }))
-      : baseSectionTypes().filter(addable).map((t) => {
+      // Toutes les sections du thème de base : les ajoutables, et les composants structurels (catégorie « Structure »,
+      // retrouvables et réglables depuis la bibliothèque, mais ni ajoutés ni dupliqués).
+      : baseSectionTypes().map((t) => {
       const e = libraryEntry(t, ui);
-      return { type: t, name: e?.name ?? sectionSchema(null, t, ui)?.name ?? t, category: e?.category ?? "Avancé", description: e?.description ?? "", keywords: e?.keywords ?? "", preview: fs.existsSync(path.join(process.cwd(), "public", "sections", `${t}.jpg`)) ? `/sections/${t}.jpg` : null };
+      return { type: t, name: e?.name ?? sectionSchema(null, t, ui)?.name ?? t, category: e?.category ?? "Avancé", description: e?.description ?? "", keywords: e?.keywords ?? "", preview: fs.existsSync(path.join(process.cwd(), "public", "sections", `${t}.jpg`)) ? `/sections/${t}.jpg` : null, addable: addable(t) };
     }),
   });
 });

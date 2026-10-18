@@ -29,6 +29,8 @@ const KEYS: Record<string, string[]> = {
   "cv-gallery": ["layout", "ratio"],
   "cv-specs": ["layout"],
   "cv-banner": ["layout"],
+  "cv-ingredients": ["layout", "columns", "ratio"],
+  "cv-quote": ["layout", "ratio"],
   "features-grid": ["layout", "columns_mobile"],
   "ref-narrative": ["motion"],
   "ref-hero": ["layout", "heading_tag", "motion"],
@@ -74,3 +76,6 @@ export function layoutChoices(spec: ThemeSpec, section: SectionInstance, lang: L
   }
   return out.length ? out : undefined;
 }
+
+/** Carte type → réglages à proposer comme choix de disposition (exportée pour les contrôles de couverture). */
+export const LAYOUT_CHOICES: Record<string, string[]> = KEYS;

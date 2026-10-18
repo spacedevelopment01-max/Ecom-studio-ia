@@ -24,7 +24,10 @@ const f = await runWithLang({ content: "fr", ui: "fr" }, () => conversionProject
 saveThemeVersion(f.pid, f.spec, "Thème référence — vérification studio", "user");
 // Serveur Next.js de développement sur la même base (pas le lanceur « npm run dev », qui démarre aussi le worker).
 const dev = spawn("npx", ["next", "dev", "-p", String(PORT), "-H", "127.0.0.1"], { env: { ...process.env, DATA_DIR: temp, STOCK_OFFLINE: "1", NEXT_TELEMETRY_DISABLED: "1" }, stdio: ["ignore", "pipe", "pipe"], detached: true });
-const stopDev = () => { try { process.kill(-dev.pid!, "SIGTERM"); } catch { /* déjà arrêté */ } }; process.on("exit", stopDev);
+// Worker de tâches de fond (la discussion « shop.chat » y est traitée, moteur local sans IA connectée), même base temporaire.
+const worker = spawn("npx", ["tsx", "worker/index.ts"], { env: { ...process.env, DATA_DIR: temp, STOCK_OFFLINE: "1", NEXT_TELEMETRY_DISABLED: "1" }, stdio: ["ignore", "pipe", "pipe"], detached: true });
+let wlog = ""; worker.stdout.on("data", (d) => { wlog += d; }); worker.stderr.on("data", (d) => { wlog += d; });
+const stopDev = () => { for (const ch of [dev, worker]) { try { process.kill(-ch.pid!, "SIGTERM"); } catch { /* déjà arrêté */ } } }; process.on("exit", stopDev);
 let log = ""; dev.stdout.on("data", (d) => { log += d; }); dev.stderr.on("data", (d) => { log += d; });
 const started = Date.now();
 for (;;) { if (Date.now() - started > 240000) throw new Error("Studio non démarré :\n" + log.slice(-2000)); try { const r = await fetch(`${origin}/connexion`); if (r.ok) break; } catch { /* pas encore prêt */ } await new Promise((r) => setTimeout(r, 1500)); }
@@ -70,13 +73,39 @@ try {
   const otherImage = Object.keys(f.spec.files).find((k) => /scene|banniere/.test(k) && k.endsWith(".webp"))!;
   const ops = await context.request.post(`${origin}/api/projects/${f.pid}/theme/ops`, { data: { ops: [{ op: "set_setting", template: "index", section: added[0].id, key: "heading", value: "Titre modifié depuis le studio" }, { op: "set_setting", template: "index", section: added[0].id, key: "image_asset", value: otherImage }, { op: "toggle_section", template: "index", section: added[1].id, disabled: true }], summary: "Vérification : texte, image, masquage" } });
   assert.ok(ops.ok(), `opérations : ${ops.status()} ${await ops.text()}`);
-  // 5. Rechargement complet de la page du studio : tout est conservé.
+  // 5. Panneau « Modifier les réglages » (édition MANUELLE depuis l'interface) sur la section d'origine : titre, disposition,
+  //    bloc ajouté, titre d'un bloc. Chaque validation passe par /theme/ops et se voit dans l'aperçu.
+  const overlay = page.getByRole("button", { name: /^(Fermer le menu|Close the menu)$/ }); if (await overlay.count()) await overlay.click();
+  await page.getByRole("button", { name: /Actions pour « .*points interactifs »/i }).first().click(); await page.getByRole("menuitem", { name: /Modifier les réglages/ }).click();
+  const panel = page.locator("[data-section-settings='cv-hotspots']"); await panel.waitFor({ timeout: 30000 }); await page.waitForTimeout(600); await shot(page, "06-panneau-reglages");
+  const headingInput = panel.locator("[data-setting='heading'] input"); await headingInput.fill("Titre du panneau manuel"); await headingInput.press("Enter");
+  await frame().locator("[data-cv-hotspots] h2", { hasText: /Titre du panneau manuel/ }).first().waitFor({ timeout: 90000 });
+  await page.locator("[data-section-settings='cv-hotspots'] [data-setting='layout'] select").selectOption("stacked"); await frame().locator(".cv-hotspots--stacked").first().waitFor({ timeout: 90000 });
+  const dotsBefore = await frame().locator("[data-cv-hotspots]").first().locator("[data-cv-hotspot]").count();
+  await page.locator("[data-section-settings='cv-hotspots']").getByRole("button", { name: /^Ajouter/ }).click();
+  await frame().locator("[data-cv-hotspots]").first().locator("[data-cv-hotspot]").nth(dotsBefore).waitFor({ timeout: 90000 });
+  await page.locator("[data-section-settings='cv-hotspots'] [data-block]").nth(dotsBefore).waitFor({ timeout: 60000 }); await page.waitForTimeout(800);
+  const firstBlock = page.locator("[data-section-settings='cv-hotspots'] [data-block]").first(); await firstBlock.locator("button[aria-expanded]").first().click();
+  const blockTitle = firstBlock.locator("[data-setting='title'] input"); await blockTitle.waitFor({ timeout: 30000 }); await blockTitle.fill("Point modifié à la main"); await blockTitle.press("Enter");
+  await page.locator("[data-section-settings='cv-hotspots'] [data-block]").first().getByText("Point modifié à la main").first().waitFor({ timeout: 90000 });
+  await frame().locator("[data-cv-hotspots] .cv-hotspots__item .cv-hotspot__title", { hasText: /Point modifié à la main/ }).first().waitFor({ timeout: 90000 }); await page.waitForTimeout(500); await shot(page, "07-panneau-applique");
+  steps.push({ step: "panneau manuel : titre, disposition, bloc ajouté, titre de bloc (aperçu mis à jour)", ok: true, points: dotsBefore + 1 });
+  // 6. Discussion (moteur local, sans IA connectée) sur la MÊME donnée : masquer la section par son nom, puis revenir en
+  //    arrière : la section revient avec les réglages du panneau intacts (versions restaurables).
+  const chat = page.getByPlaceholder(/Modifie uniquement ce bouton/); await chat.fill("Masque la section points interactifs"); await page.getByRole("button", { name: /^(Envoyer|Send)$/ }).click();
+  await frame().locator("[data-cv-hotspots]").first().waitFor({ state: "detached", timeout: 90000 }); await page.waitForTimeout(1200);
+  assert.equal(await frame().locator("[data-cv-hotspots]").count(), 0, "section masquée par la discussion"); await shot(page, "08-masquee-par-discussion");
+  await chat.fill("Reviens à la version précédente"); await page.getByRole("button", { name: /^(Envoyer|Send)$/ }).click();
+  await frame().locator("[data-cv-hotspots] h2", { hasText: /Titre du panneau manuel/ }).first().waitFor({ timeout: 90000 }); await page.waitForTimeout(600);
+  assert.equal(await frame().locator(".cv-hotspots--stacked").count(), 1, "la restauration rend la section avec ses réglages du panneau");
+  steps.push({ step: "discussion (sans IA) : masquage par le nom puis retour à la version précédente, réglages du panneau conservés", ok: true });
+  // 7. Rechargement complet de la page du studio : tout est conservé.
   await page.reload({ waitUntil: "networkidle", timeout: 180000 }); await page.waitForTimeout(1500); await frame().locator("body").waitFor({ timeout: 120000 });
   await frame().locator("[data-cv-hotspots]").first().waitFor({ timeout: 60000 });
   const after = { visible: await frame().locator("[data-cv-hotspots]").count(), heading: await frame().locator("[data-cv-hotspots] h2").first().innerText(), image: await frame().locator("[data-cv-hotspots] img").first().getAttribute("src"), listed: await page.getByText(/points interactifs/i).count() };
-  assert.equal(after.visible, 1, "la copie masquée n'est plus rendue, l'originale reste"); assert.match(after.heading, /titre modifié depuis le studio/i); assert.ok((after.image ?? "").includes(otherImage), `image remplacée (${after.image})`); assert.ok(after.listed >= 2, "les deux sections restent listées (dont une masquée)");
-  await page.getByTitle(/^(Téléphone|Phone)$/).click(); await frame().locator("[data-cv-hotspots]").first().waitFor({ timeout: 60000 }); await frame().locator("[data-cv-hotspots]").first().scrollIntoViewIfNeeded(); await page.waitForTimeout(1500); await shot(page, "07-apres-rechargement"); steps.push({ step: "texte, image, masquage puis rechargement", ok: true, after });
+  assert.equal(after.visible, 1, "la copie masquée n'est plus rendue, l'originale reste"); assert.match(after.heading, /titre du panneau manuel/i); assert.equal(await frame().locator(".cv-hotspots--stacked").count(), 1, "disposition du panneau conservée"); assert.ok((await frame().locator("[data-cv-hotspots]").first().locator("[data-cv-hotspot]").count()) >= 4, "bloc ajouté conservé"); assert.ok((after.image ?? "").includes(otherImage), `image remplacée (${after.image})`); assert.ok(after.listed >= 2, "les deux sections restent listées (dont une masquée)");
+  await page.getByTitle(/^(Téléphone|Phone)$/).click(); await frame().locator("[data-cv-hotspots]").first().waitFor({ timeout: 60000 }); await frame().locator("[data-cv-hotspots]").first().scrollIntoViewIfNeeded(); await page.waitForTimeout(1500); await shot(page, "09-apres-rechargement"); steps.push({ step: "rechargement complet : panneau, discussion et opérations conservés", ok: true, after });
   assert.deepEqual(errors.filter((e) => !/ResizeObserver/.test(e)), [], "erreurs de page du studio");
   fs.writeFileSync(path.join(out, `${kind}-studio.json`), JSON.stringify({ kind, origin: "studio Next.js de développement, base temporaire", steps, date: new Date().toISOString() }, null, 2) + "\n");
   console.log(JSON.stringify({ ok: true, kind, steps }));
-} finally { await browser.close(); stopDev(); await new Promise((r) => setTimeout(r, 1500)); try { process.kill(-dev.pid!, "SIGKILL"); } catch { /* arrêté */ } fs.rmSync(temp, { recursive: true, force: true }); }
+} catch (e) { try { const pages = browser.contexts().flatMap((c) => c.pages()); if (pages[0]) await pages[0].screenshot({ path: path.join(out, `${kind}-99-echec.png`) }); } catch { /* capture impossible */ } throw e; } finally { await browser.close(); stopDev(); await new Promise((r) => setTimeout(r, 1500)); for (const ch of [dev, worker]) { try { process.kill(-ch.pid!, "SIGKILL"); } catch { /* arrêté */ } } if (process.exitCode) console.error("worker:", wlog.slice(-1500)); fs.rmSync(temp, { recursive: true, force: true }); }

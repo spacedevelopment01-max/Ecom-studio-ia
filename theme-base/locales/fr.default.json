@@ -298,7 +298,8 @@
     "login_faster": "pour commander plus rapidement.",
     "compare_price": "Prix avant remise",
     "payment_methods": "Moyens de paiement",
-    "close": "Fermer le panier"
+    "close": "Fermer le panier",
+    "preview_note": "Aperçu de démonstration · paiement désactivé"
   },
   "contact": {
     "name": "Nom",

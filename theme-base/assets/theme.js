@@ -126,7 +126,7 @@
     var d = drawerEl(); if (!d || !html) return;
     var tmp = document.createElement('div'); tmp.innerHTML = html;
     var fresh = $('[data-cart-drawer]', tmp);
-    if (fresh) { var panel = $('.es-drawer__panel', d); var newPanel = $('.es-drawer__panel', fresh); if (panel && newPanel) panel.innerHTML = newPanel.innerHTML; }
+    if (fresh) { var panel = $('.es-drawer__panel', d); var newPanel = $('.es-drawer__panel', fresh); var scroller = $('[data-cart-scroll]', d); var top = scroller ? scroller.scrollTop : 0; if (panel && newPanel) panel.innerHTML = newPanel.innerHTML; var again = $('[data-cart-scroll]', d); if (again && top) again.scrollTop = top; }
     bindDrawer();
   }
   function updateCount(count) {

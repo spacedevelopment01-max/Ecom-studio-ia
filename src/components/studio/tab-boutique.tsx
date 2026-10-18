@@ -1,7 +1,7 @@
 "use client";
 import { TimeInfo } from "../wait-time";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, Copy, FileStack, Crosshair, Replace, Maximize2, Minimize2, PanelTop, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2, MoreHorizontal } from "lucide-react";
+import { ArrowDown, ArrowUp, Copy, SlidersHorizontal, FileStack, Crosshair, Replace, Maximize2, Minimize2, PanelTop, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2, MoreHorizontal } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { useCostConfirm } from "./cost-confirm";
@@ -19,6 +19,7 @@ import type { DirectionCard } from "@/lib/theme/directions";
 import type { ImportReport } from "@/lib/theme/import";
 import { useT } from "../i18n";
 import { LayoutPanel, type LayoutChoice, type LayoutSection } from "./layout-panel";
+import { SectionSettingsPanel } from "./section-settings";
 import { ContentLangPicker, useContentLang } from "./content-lang";
 import { deliveryLabel, deliveryTone, isPlatform, platformInfo, PlatformPill, PLATFORM_IDS, type PlatformId } from "./platform-picker";
 import type { BusinessType } from "@/lib/project-types";
@@ -137,6 +138,8 @@ export default function TabBoutique() {
   const [full, setFull] = useState(false);
   // Panneau « Disposition » (en-tête et pied de page), flottant au-dessus de l'aperçu.
   const [layoutOpen, setLayoutOpen] = useState(false);
+  // Panneau « Réglages » d'une section (édition manuelle, mêmes opérations que l'IA).
+  const [settingsFor, setSettingsFor] = useState<{ template: string; section: string } | null>(null);
   const [layoutBusy, setLayoutBusy] = useState(false);
   useEffect(() => {
     if (!full) return;
@@ -506,7 +509,9 @@ export default function TabBoutique() {
     </div>
   );
 
-  const Structure = layoutOpen && layoutSections.length > 0 ? (
+  const Structure = settingsFor ? (
+    <SectionSettingsPanel key={`${settingsFor.template}:${settingsFor.section}:${theme.current?.versionId ?? ""}`} projectId={id} target={settingsFor} onClose={() => setSettingsFor(null)} onChanged={() => { reload(); reloadProject(); }} />
+  ) : layoutOpen && layoutSections.length > 0 ? (
     <div className="h-full overflow-y-auto p-4">
       <div className="mb-4 flex items-center justify-between gap-2">
         <p className="font-display text-lg font-semibold">{t("Disposition", "Layout")}</p>
@@ -554,6 +559,7 @@ export default function TabBoutique() {
                               <>
                                 {item(<ArrowUp className="size-4" />, t("Monter", "Move up"), () => ops([{ op: "move_section", template: tp.template, section: s.id, position: { index: Math.max(0, i - 1) } }], t(`${s.name} remontée`, `${s.name} moved up`)), { disabled: i === 0 })}
                                 {item(<ArrowDown className="size-4" />, t("Descendre", "Move down"), () => ops([{ op: "move_section", template: tp.template, section: s.id, position: { index: i + 1 } }], t(`${s.name} descendue`, `${s.name} moved down`)), { disabled: i === tp.sections.length - 1 })}
+                                {item(<SlidersHorizontal className="size-4" />, t("Modifier les réglages", "Edit settings"), () => { setLayoutOpen(false); setSettingsFor({ template: tp.template, section: s.id }); if (window.innerWidth < 1024) setView("structure"); })}
                                 {(!isPage || theme.v2) && s.layout?.length ? item(<PanelTop className="size-4" />, t("Choisir la disposition", "Choose the layout"), () => setLayoutOpen(true)) : null}
                                 {item(s.locked ? <Unlock className="size-4" /> : <Lock className="size-4" />, s.locked ? t("Déverrouiller", "Unlock") : t("Valider et verrouiller", "Approve and lock"), () => ops([{ op: "lock", template: tp.template, section: s.id, locked: !s.locked }], `${s.name} ${s.locked ? t("déverrouillée", "unlocked") : t("validée", "approved")}`))}
                                 {isPage && !s.type.startsWith("main-") && item(<Copy className="size-4" />, t("Dupliquer", "Duplicate"), () => ops([{ op: "duplicate_section", template: tp.template, section: s.id }], t(`${s.name} dupliquée`, `${s.name} duplicated`)))}
@@ -707,7 +713,7 @@ export default function TabBoutique() {
         </ul>
       </Modal>
       <ThemeImportModal open={!!importOpen} onClose={() => setImportOpen(null)} projectId={id} onImported={() => { reload(); reloadProject(); }} report={importOpen === "report" ? cur.imported?.report : null} />
-      <SectionLibrary open={!!libTarget} onClose={() => setLibTarget(null)} items={theme.library} onPick={addSection} where={libTarget?.label ?? ""} busy={adding} projectId={id} versionId={theme.current.versionId} template={libTarget?.template} aiAvailable={!!data?.ai.llm} onGenerate={generateSection} generateLocked={!!custom.data && !custom.data.sectionsAllowed} sameOrigin={!!theme.sandbox?.includes("allow-same-origin")} />
+      <SectionLibrary open={!!libTarget} onClose={() => setLibTarget(null)} items={theme.library} onPick={addSection} where={libTarget?.label ?? ""} busy={adding} projectId={id} versionId={theme.current.versionId} template={libTarget?.template} aiAvailable={!!data?.ai.llm} onGenerate={generateSection} generateLocked={!!custom.data && !custom.data.sectionsAllowed} sameOrigin={!!theme.sandbox?.includes("allow-same-origin")} onOpenExisting={(type) => { const hit = cur.structure.flatMap((tp) => tp.sections.map((x) => ({ template: tp.template, section: x }))).find((x) => x.section.type === type); setLibTarget(null); if (!hit) return toast("info", t("Ce composant n'est pas présent dans ce thème.", "This component is not present in this theme.")); const target = pages.find((pg) => pageTemplate(pg.path, theme) === hit.template); if (target && !hit.template.startsWith("group:")) setPage(target.path); setLayoutOpen(false); setSettingsFor({ template: hit.template, section: hit.section.id }); setView("structure"); }} />
       <ThemeGallery services={isServices} sandbox={theme.sandbox} open={galleryOpen} onClose={() => setGalleryOpen(false)} projectId={id} directions={theme.directions} current={cur.direction} canApply onApplied={() => (reload(), reloadProject())} />
       {pagesOpen && <PagesManager open onClose={() => setPagesOpen(false)} projectId={id} sandbox={theme.sandbox} onOpenPage={(path) => (setPage(path), setView("preview"))} onChanged={() => reload()} />}
       <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} projectId={id} versionId={versionId} fingerprint={cur.fingerprint} platform={data && isPlatform(data.project.platform) ? data.project.platform : "shopify"} business={data?.business ?? "products"} hasProductTemplates={!!cur.products?.some((p) => p.template_suffix)} />

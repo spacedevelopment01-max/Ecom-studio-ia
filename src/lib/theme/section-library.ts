@@ -6,12 +6,28 @@
  */
 import type { Lang } from "../i18n";
 
-export type SectionCategory = "Ouverture" | "Produit" | "Preuves" | "Animations" | "Images et vidéos" | "Collections" | "Textes" | "Conversion" | "Services" | "Avancé";
+export type SectionCategory = "Ouverture" | "Produit" | "Preuves" | "Animations" | "Images et vidéos" | "Collections" | "Textes" | "Conversion" | "Services" | "Avancé" | "Structure";
 
 export type LibraryEntry = { type: string; name: string; category: SectionCategory; description: string; keywords?: string };
 
 /** Noms, descriptions et mots-clés anglais (la catégorie reste la clé française, traduite par l'interface). */
 const SECTION_LIBRARY_EN: Record<string, { name: string; description: string; keywords: string }> = {
+  "cv-ingredients": { name: "Product composition", description: "What is inside: one card per component (icon or small visual, name, role, note, “[To complete]” tag when unconfirmed); cards, compact list or large visual + list; adjustable demo note.", keywords: "composition ingredients components materials product conversion" },
+  "cv-quote": { name: "Featured testimonial", description: "One highlighted quote: large and readable, initials and first name, detail, optional stars, “Fictional review” tag until a reviews app is connected; centered card, visual + quote or full-width band.", keywords: "testimonial quote review proof conversion" },
+  "header": { name: "Header", description: "Logo, menu, search and cart at the top of every page. Unique: adjustable (layout, menu, height), never duplicated.", keywords: "structure header logo menu navigation" },
+  "announcement-bar": { name: "Announcement bar", description: "Short message above the header (shipping, offer). In the header group: adjustable and hideable, not duplicated from the library.", keywords: "structure announcement bar promotion shipping" },
+  "footer": { name: "Footer", description: "Link columns, brand text, newsletter and legal links at the bottom of every page. Unique: adjustable (style, columns, logo), never duplicated.", keywords: "structure footer links newsletter" },
+  "cart-drawer": { name: "Cart drawer", description: "The cart drawer (band, items, protection, total, checkout): global cart settings of the theme. Unique, never duplicated.", keywords: "structure cart drawer" },
+  "main-product": { name: "Product page (body)", description: "Gallery, title, price, offers and buy button of the product page. Once per product page: adjustable, not added elsewhere.", keywords: "structure template product gallery buy" },
+  "main-collection": { name: "Collection (body)", description: "Product grid of a collection with filters and sorting. Once per collection page.", keywords: "structure template collection grid" },
+  "main-list-collections": { name: "Collections list (body)", description: "All collections as cards. Once on the collections page.", keywords: "structure template collections list" },
+  "main-cart": { name: "Cart page (body)", description: "Cart lines, quantities, summary and checkout of the cart page. Once; shares the global cart settings.", keywords: "structure template cart page" },
+  "main-page": { name: "Content page (body)", description: "Title and text of a page (about, legal…). Once per content page.", keywords: "structure template page text" },
+  "main-search": { name: "Search (body)", description: "Search field and results. Once on the search page.", keywords: "structure template search results" },
+  "main-blog": { name: "Blog (body)", description: "List of blog posts. Once on the blog page.", keywords: "structure template blog posts" },
+  "main-article": { name: "Article (body)", description: "Title, image, date and content of a post. Once per article page.", keywords: "structure template article blog" },
+  "main-404": { name: "Not found page (body)", description: "Message and return links of the 404 page. Once.", keywords: "structure template 404 not found" },
+  "main-password": { name: "Closed store (body)", description: "Page shown while the store is password-protected. Once.", keywords: "structure template password" },
   "ed-finishes": {name:"Finishes in context",description:"A scene and the selected product finish, with accessible choices.",keywords:"product finishes colors gallery"},
   "ed-opening": { name: "Photographic opening", description: "A heading within a scene or before a landscape, with editable framing.", keywords: "editorial composition scene photograph" },
   "ed-statement": { name: "Statement and notes", description: "A large statement and known facts, with an optional marginal photograph.", keywords: "editorial composition scene photograph" },
@@ -266,10 +282,38 @@ export const SECTION_LIBRARY: LibraryEntry[] = [
   { type: "exploded-view", name: "Vue éclatée animée", category: "Produit", description: "Des légendes reliées par des traits se déploient autour de l'image du produit au défilement. Idéal pour mettre en valeur les détails et les matières.", keywords: "vue éclatée points détails caractéristiques légendes produit défilement" },
   { type: "about", name: "À propos", category: "Textes", description: "Présente votre marque en une section : grand titre, photo, raison d'être, engagement et valeurs en cartes. Idéal pour la page « Notre histoire » ou le bas de l'accueil.", keywords: "à propos marque histoire valeurs mission engagement qui sommes-nous" },
   { type: "scroll-steps", name: "Étapes au défilement", category: "Animations", description: "Étapes épinglées à l'écran : à chaque défilement, le numéro, le texte et la photo changent. Idéal pour un « comment ça marche » de la commande à la livraison.", keywords: "étapes défilement épinglé sticky comment ça marche processus" },
+  { type: "cv-ingredients", name: "Composition du produit", category: "Produit", description: "Ce qu'il y a dedans : une carte par composant (icône ou petit visuel, nom, rôle, note, étiquette « [À compléter] » si non confirmé) ; cartes, liste compacte ou grand visuel + liste ; mention de démonstration réglable.", keywords: "composition ingrédients composants matières détails produit conversion" },
+  { type: "cv-quote", name: "Témoignage à la une", category: "Preuves", description: "Une seule citation mise en avant : grande, lisible, initiales et prénom, précision, étoiles facultatives, étiquette « Avis fictif » tant qu'aucune application d'avis n'est connectée ; carte centrée, visuel + citation ou bande pleine largeur.", keywords: "témoignage citation avis preuve conversion" },
+  // Composants structurels : présents dans tous les thèmes, retrouvables dans la bibliothèque (catégorie « Structure »)
+  // pour être réglés depuis leur panneau ; ils ne s'ajoutent ni ne se dupliquent (un seul en-tête, un seul panier…).
+  { type: "header", name: "En-tête", category: "Structure", description: "Logo, menu, recherche et panier en haut de chaque page. Unique : se règle (disposition, menu, hauteur), ne se duplique pas.", keywords: "structure en-tête header logo menu navigation" },
+  { type: "announcement-bar", name: "Bandeau d'annonce", category: "Structure", description: "Message court au-dessus de l'en-tête (livraison, offre). Dans le groupe d'en-tête : se règle et se masque, ne se duplique pas depuis la bibliothèque.", keywords: "structure bandeau annonce promotion livraison" },
+  { type: "footer", name: "Pied de page", category: "Structure", description: "Colonnes de liens, texte de marque, newsletter, mentions, en bas de chaque page. Unique : se règle (style, colonnes, logo), ne se duplique pas.", keywords: "structure pied de page footer liens newsletter" },
+  { type: "cart-drawer", name: "Panier latéral", category: "Structure", description: "Le tiroir du panier (bandeau, articles, protection, total, paiement) : réglages généraux du panier dans le thème. Unique, jamais dupliqué.", keywords: "structure panier tiroir cart" },
+  { type: "main-product", name: "Fiche produit (corps)", category: "Structure", description: "Galerie, titre, prix, offres et bouton d'achat de la page produit. Présente une fois par page produit : se règle, ne s'ajoute pas ailleurs.", keywords: "structure gabarit produit fiche galerie achat" },
+  { type: "main-collection", name: "Boutique (corps)", category: "Structure", description: "Grille des produits d'une collection avec filtres et tri. Présente une fois par page de collection.", keywords: "structure gabarit collection boutique grille" },
+  { type: "main-list-collections", name: "Liste des collections (corps)", category: "Structure", description: "Toutes les collections en cartes. Présente une fois sur la page des collections.", keywords: "structure gabarit collections liste" },
+  { type: "main-cart", name: "Page panier (corps)", category: "Structure", description: "Lignes du panier, quantités, résumé et paiement de la page panier. Présente une fois ; partage les réglages généraux du panier.", keywords: "structure gabarit panier page" },
+  { type: "main-page", name: "Page de contenu (corps)", category: "Structure", description: "Titre et texte d'une page (à propos, mentions…). Présente une fois par page de contenu.", keywords: "structure gabarit page texte" },
+  { type: "main-search", name: "Recherche (corps)", category: "Structure", description: "Champ de recherche et résultats. Présente une fois sur la page de recherche.", keywords: "structure gabarit recherche résultats" },
+  { type: "main-blog", name: "Blog (corps)", category: "Structure", description: "Liste des articles du blog. Présente une fois sur la page du blog.", keywords: "structure gabarit blog articles" },
+  { type: "main-article", name: "Article (corps)", category: "Structure", description: "Titre, image, date et contenu d'un article. Présente une fois par page d'article.", keywords: "structure gabarit article blog" },
+  { type: "main-404", name: "Page introuvable (corps)", category: "Structure", description: "Message et liens de retour de la page 404. Présente une fois.", keywords: "structure gabarit 404 introuvable" },
+  { type: "main-password", name: "Boutique fermée (corps)", category: "Structure", description: "Page affichée quand la boutique est protégée par mot de passe. Présente une fois.", keywords: "structure gabarit mot de passe fermeture" },
 ];
 
-export const SECTION_CATEGORIES: SectionCategory[] = ["Ouverture", "Produit", "Preuves", "Animations", "Images et vidéos", "Collections", "Textes", "Conversion", "Services", "Avancé"];
+export const SECTION_CATEGORIES: SectionCategory[] = ["Ouverture", "Produit", "Preuves", "Animations", "Images et vidéos", "Collections", "Textes", "Conversion", "Services", "Avancé", "Structure"];
 
 /** Sections qui ne s'ajoutent pas depuis la bibliothèque (structure de page, gabarits). */
 export const NOT_ADDABLE = new Set(["header", "footer", "announcement-bar", "cart-drawer"]);
 export const addable = (type: string) => !type.startsWith("main-") && !NOT_ADDABLE.has(type);
+/** Composant structurel : présent dans la bibliothèque pour être retrouvé et réglé, mais ni ajouté ni dupliqué. */
+export const structural = (type: string) => !addable(type);
+
+/** Couverture de la bibliothèque : chaque fichier de theme-base/sections doit avoir une entrée FR et EN (contrôle en test). */
+export function libraryCoverage(types: string[]): { covered: string[]; missingFr: string[]; missingEn: string[]; orphans: string[] } {
+  const missingFr = types.filter((t) => !SECTION_LIBRARY.some((e) => e.type === t));
+  const missingEn = types.filter((t) => !SECTION_LIBRARY_EN[t]);
+  const orphans = SECTION_LIBRARY.map((e) => e.type).filter((t) => !types.includes(t));
+  return { covered: types.filter((t) => !missingFr.includes(t) && !missingEn.includes(t)), missingFr, missingEn, orphans };
+}

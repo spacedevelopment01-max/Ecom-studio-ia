@@ -5,14 +5,14 @@
  * une section sur mesure avec l'IA à partir d'une description.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, Lock, Plus, Search, Sparkles, Wand2 } from "lucide-react";
+import { Loader2, Lock, Plus, Search, Settings2, Sparkles, Wand2 } from "lucide-react";
 import { Button, cx, Modal } from "../ui";
 import { useLang, useT } from "../i18n";
 import { intlLocale } from "@/lib/i18n";
 
-export type LibraryItem = { type: string; name: string; category: string; description: string; keywords: string; preview: string | null };
+export type LibraryItem = { type: string; name: string; category: string; description: string; keywords: string; preview: string | null; /** Faux pour un composant structurel (en-tête, pied de page, panier, corps de gabarit) : retrouvable et réglable, jamais ajouté ni dupliqué. */ addable?: boolean };
 
-const ORDER = ["Votre thème", "Ouverture", "Produit", "Preuves", "Animations", "Images et vidéos", "Collections", "Textes", "Conversion", "Services", "Avancé"];
+const ORDER = ["Votre thème", "Ouverture", "Produit", "Preuves", "Animations", "Images et vidéos", "Collections", "Textes", "Conversion", "Services", "Avancé", "Structure"];
 /** Libellés anglais des catégories (les clés restent celles du serveur). */
 const CATEGORY_EN: Record<string, string> = {
   Toutes: "All",
@@ -27,6 +27,7 @@ const CATEGORY_EN: Record<string, string> = {
   Conversion: "Conversion",
   Services: "Services",
   Avancé: "Advanced",
+  Structure: "Structure",
 };
 const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 const GENERATE = "__generate";
@@ -47,6 +48,7 @@ export function SectionLibrary({
   onGenerate,
   generateLocked,
   sameOrigin,
+  onOpenExisting,
 }: {
   open: boolean;
   onClose: () => void;
@@ -63,6 +65,8 @@ export function SectionLibrary({
   generateLocked?: boolean;
   /** Aperçu avec son origine (Codespaces), comme l'aperçu de la boutique. */
   sameOrigin?: boolean;
+  /** Composant structurel (déjà présent, non ajoutable) : ouvrir ses réglages dans le studio. */
+  onOpenExisting?: (type: string) => void;
 }) {
   const t = useT();
   const { lang } = useLang();
@@ -95,6 +99,8 @@ export function SectionLibrary({
   };
   const click = (type: string) => {
     if (type === GENERATE) return setSel(GENERATE);
+    // Composant structurel : jamais ajouté ; le clic montre son aperçu, le bouton ouvre ses réglages.
+    if (items.find((i) => i.type === type)?.addable === false) return setSel(type);
     // Ordinateur : un clic ajoute (comme dans Shopify). Tactile : le premier toucher montre l'aperçu.
     if (hoverable || sel === type) onPick(type);
     else setSel(type);
@@ -123,7 +129,7 @@ export function SectionLibrary({
                     <li key={i.type}>
                       <button type="button" role="option" aria-selected={sel === i.type} disabled={!!busy} onMouseEnter={() => hover(i.type)} onFocus={() => setSel(i.type)} onClick={() => click(i.type)} className={cx("group flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-sm disabled:opacity-60", sel === i.type ? "bg-paper-2 font-medium text-ink" : "text-ink-2 hover:bg-paper-2")}>
                         <span className="truncate">{i.name}</span>
-                        {busy === i.type ? <Loader2 className="size-3.5 animate-spin" /> : <Plus className={cx("size-3.5 shrink-0 text-muted", sel === i.type ? "opacity-100" : "opacity-0 group-hover:opacity-100")} />}
+                        {i.addable === false ? <Settings2 className="size-3.5 shrink-0 text-muted" aria-label={t("Déjà présente : réglages", "Already present: settings")} /> : busy === i.type ? <Loader2 className="size-3.5 animate-spin" /> : <Plus className={cx("size-3.5 shrink-0 text-muted", sel === i.type ? "opacity-100" : "opacity-0 group-hover:opacity-100")} />}
                       </button>
                     </li>
                   ))}
@@ -137,7 +143,7 @@ export function SectionLibrary({
           {sel === GENERATE || !current ? (
             <GeneratePane aiAvailable={aiAvailable} onGenerate={onGenerate} locked={!!generateLocked} />
           ) : (
-            <PreviewPane key={current.type} item={current} projectId={projectId} versionId={versionId} template={template} onAdd={() => onPick(current.type)} adding={busy === current.type} disabled={!!busy} sameOrigin={sameOrigin} />
+            <PreviewPane key={current.type} item={current} projectId={projectId} versionId={versionId} template={template} onAdd={() => (current.addable === false ? onOpenExisting?.(current.type) : onPick(current.type))} adding={busy === current.type} disabled={!!busy || (current.addable === false && !onOpenExisting)} sameOrigin={sameOrigin} />
           )}
         </div>
       </div>
@@ -198,7 +204,14 @@ function PreviewPane({ item, projectId, versionId, template, onAdd, adding, disa
           <p className="truncate font-semibold">{item.name}</p>
           <p className="line-clamp-2 text-xs text-muted">{item.description}</p>
         </div>
-        <Button size="sm" icon={<Plus className="size-4" />} loading={adding} disabled={disabled} onClick={onAdd}>{t("Ajouter cette section", "Add this section")}</Button>
+        {item.addable === false ? (
+          <div className="flex flex-col items-end gap-1">
+            <Button size="sm" variant="secondary" icon={<Settings2 className="size-4" />} disabled={disabled} onClick={onAdd}>{t("Déjà présente · ouvrir ses réglages", "Already present · open its settings")}</Button>
+            <p className="text-[11px] text-muted">{t("Composant structurel : unique, ni ajouté ni dupliqué.", "Structural component: unique, never added or duplicated.")}</p>
+          </div>
+        ) : (
+          <Button size="sm" icon={<Plus className="size-4" />} loading={adding} disabled={disabled} onClick={onAdd}>{t("Ajouter cette section", "Add this section")}</Button>
+        )}
       </div>
     </div>
   );

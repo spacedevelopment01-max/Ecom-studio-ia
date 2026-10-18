@@ -298,7 +298,8 @@
     "login_faster": "to check out faster.",
     "compare_price": "Price before discount",
     "payment_methods": "Payment methods",
-    "close": "Close cart"
+    "close": "Close cart",
+    "preview_note": "Demo preview · checkout disabled"
   },
   "contact": {
     "name": "Name",
