@@ -1,6 +1,20 @@
 # Lot 2B — ORBE et Atelier Rive, variante « direction artistique » (session Claude)
 
-**État : passe de finition livrée pour validation, en brouillon, sans fusion (PR #135).** Après comparaison des deux livraisons, Thomas a retenu la direction Atelier Rive, la section « Produit à la une » et les pieds de page de cette variante, et la composition immersive de Codex pour l'ouverture ORBE sur ordinateur. Cette passe applique ces choix et corrige les défauts signalés. Les captures, gros plans et vidéos contenant les 24 photographies du pack restent privés (ZIP remis dans la conversation, page privée) ; aucun média du pack n'est ajouté au dépôt public.
+**État : corrections de la revue du 18 octobre livrées pour validation, en brouillon, sans fusion (PR #135).** Après comparaison des deux livraisons, Thomas a retenu la direction Atelier Rive, la section « Produit à la une » et les pieds de page de cette variante, et la composition immersive de Codex pour l'ouverture ORBE sur ordinateur. Cette passe applique ces choix et corrige les défauts signalés. Les captures, gros plans et vidéos contenant les 24 photographies du pack restent privés (ZIP remis dans la conversation, page privée) ; aucun média du pack n'est ajouté au dépôt public.
+
+## Revue du 18 octobre (après-midi) : deux corrections et une livraison testable
+
+Revue reçue sur la PR #135 ([6250435016](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/135#issuecomment-6250435016)) : direction conservée, aucune refonte visuelle.
+
+| Demande | Réalisé | Vérifié |
+|---|---|---|
+| Images des variantes dans le panier (toutes les lignes montraient Dune) | Le rendu des lignes prend le média de la variante réellement choisie (`featured_media`), avec repli sur l'image du produit quand la variante n'a pas de média propre ; les données `cart.js` portent le même visuel (`image`, `featured_image`). Correction dans le moteur (`render.ts`, route d'aperçu), pas dans les données de démonstration. Calcul serveur, stocks, offres et cadeaux inchangés. | test avec trois variantes aux images distinctes (page, tiroir, quantité modifiée, repli) ; dans Chromium : page panier, tiroir, `cart.js`, rechargement, quantité modifiée, à 1440 et 390 px ; gros plans et vidéo « panier à trois finitions » |
+| Prix principal « 79,00 € » sans précision sur la fiche | Réglage « Libellé du prix unitaire » (texte, traduit) sur la fiche produit, la section « Produit à la une » et le bloc d'offres ; partagé par la source commune. ORBE : « 79,00 € par lampe » ; le même mot sert aux offres (« 71,10 € par lampe × 2 ») et à la barre mobile (« 63,20 € par lampe »). Vide : « par article ». | test ; contrôle des libellés dans Chromium sur la fiche, la section et la barre pour les offres 1/2/3/4 et les changements de variante ; gros plans |
+| Livraison réellement testable | Procédure [`LOT_2B_VERIFICATION_LOCALE.md`](LOT_2B_VERIFICATION_LOCALE.md) et script `scripts/lot2b-demo-local.ts` (installe les deux démonstrations avec les 24 images dans un studio local, affiche les adresses) ; descriptif de la PR mis à jour ; résultats des tests et de la CI distingués ci-dessous. | script exécuté sur une base temporaire : 12/12 médias par projet, adresses produites |
+
+Complément du 18 octobre attribué à cette passe ([6249565658](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/134#issuecomment-6249565658)) : sur mobile, le bouton « Ajouter au panier » de « Produit à la une » suit déjà les choix et le total (une seule commande principale, options transmises à la fiche) ; les pieds de page ORBE ont déjà un seul mot-symbole, sans marque secondaire (`show_wordmark`), colonnes et espacements vérifiés à 390 px. Captures jointes, rien à modifier.
+
+Pas de validation générale annoncée : la suite complète `npm test` n'est exécutée que par la CI (voir le tableau des vérifications).
 
 ## Passe de finition du 18 octobre (soir)
 
@@ -18,7 +32,7 @@
 ## Version, base et périmètre
 
 - Branche `claude/orbe-rive-direction-artistique`, créée sur `077a2106227e7a7a00c89e783f1a37f6775d54ae` (tête de `codex/lot-2a-themes-reference` au démarrage, inchangée à ce moment). La branche Codex et la PR #134 ne sont pas modifiées. Depuis, Codex a poussé sept commits (`9f8b6c43` à la rédaction) qui touchent en partie les mêmes fichiers : les deux branches sont deux réalisations distinctes, à comparer, pas à fusionner telles quelles.
-- Première livraison : `dbc52162` (application), `58a9b634` (rapport). Passe de finition : `24892334` (application), capturé tel quel, arbre propre (champ `testedCommit` de [`reports/lot2b-da/preuves.json`](../../reports/lot2b-da/preuves.json)). Base de comparaison visuelle : `dbc52162` pour cette variante, `563ab003` pour la composition Codex (reconstruite localement dans un second dossier de travail, voir les limites).
+- Première livraison : `dbc52162` (application), `58a9b634` (rapport). Passe de finition : `24892334`. Revue du 18 octobre : `3f8abb78` (application) puis `[DOCS_COMMIT]` (script de preuves et documentation) ; preuves capturées sur `[TESTED_COMMIT]`, arbre propre (champ `testedCommit` de [`reports/lot2b-da/preuves.json`](../../reports/lot2b-da/preuves.json)). Base de comparaison visuelle : `dbc52162` pour cette variante, `563ab003` pour la composition Codex (reconstruite localement dans un second dossier de travail, voir les limites).
 - Consignes lues intégralement : mission [6247457951](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/134#issuecomment-6247457951) (version 08:28:10 UTC), précision « Produit à la une » [6248929074](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/134#issuecomment-6248929074), coordination [6249203547](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/134#issuecomment-6249203547), `CLAUDE.md`, briefs du ZIP (`README.md`, `MESSAGE_CODEX.txt`, `ORBE.md`, `ATELIER_RIVE.md`, `RECETTE.md`, `ASSETS.md`, `manifest.json`), rapport et plan du lot 2B de Codex.
 - Aucun merge, déploiement, publication, changement de l'accueil public du studio, nouvelle connexion ni appel IA payant (`ai_calls` vide pour les deux projets de test, vérifié par le harnais).
 
@@ -94,14 +108,23 @@ Réponse à la précision de Thomas : une vraie section produit, pas une grille 
 
 ## Vérifications réellement exécutées
 
-Passe de finition (commit `24892334`) :
+Revue du 18 octobre (commit `[TESTED_COMMIT]`) :
 
-| Commande | Résultat |
-|---|---|
-| `npx tsc --noEmit` | réussi, sortie 0 |
-| `npx vitest run tests/lot2b-featured.test.ts tests/lot2b-editorial.test.ts tests/themes-catalogue.test.ts tests/theme-en.test.ts tests/theme.test.ts` | 39 tests réussis, 5 fichiers |
-| `scripts/verify-theme.sh` (complet, `JOBS=2`) | 137 cas réussis, zéro erreur Theme Check, ZIP client valide : « Thème : tout est valide. » |
-| `CHROMIUM=… npx tsx scripts/lot2b-da-proof.ts <dossier privé> <pack>/images` | 16 visites (4 pages × 1440 / 1024 / 768 / 390), 24 médias chargés, aucun débordement horizontal, un seul H1 par page, aucune erreur JavaScript, aucune image cassée ; scène du produit à la une égale à l'image affichée (`contain`) aux quatre largeurs ; barre mobile « Total 252,80 € » et « 63,20 € par article » ; ajout réel depuis la barre → 142,20 €, une ligne ; interactions et vidéos ci-dessous |
+| Contrôle | État | Détail |
+|---|---|---|
+| `npx tsc --noEmit` | réussite | sortie 0 |
+| `npx vitest run tests/lot2b-featured.test.ts tests/lot2b-editorial.test.ts tests/themes-catalogue.test.ts tests/theme-en.test.ts tests/theme.test.ts` | réussite | 40 tests, 5 fichiers (dont le nouveau test panier / libellé) |
+| `scripts/verify-theme.sh --rapide` | réussite | 25 cas, zéro erreur Theme Check, ZIP client valide |
+| `scripts/verify-theme.sh` complet (`JOBS=2`) | réussite : 137 cas, zéro erreur Theme Check, ZIP client valide | fichiers de thème identiques entre `3f8abb78` et `[TESTED_COMMIT]` |
+| `scripts/lot2b-da-proof.ts` complet (4 largeurs, vidéos) | réussite | 16 visites sans erreur JavaScript ni débordement, 24 médias, visuels du panier contrôlés (page, tiroir, `cart.js`, rechargement, quantité), « par lampe » sur la fiche, la section et la barre, ajout depuis l'accueil, la fiche et la barre, 6 vidéos |
+| `scripts/lot2b-demo-local.ts` sur une base temporaire | réussite | deux projets créés, 12/12 médias chacun |
+| Suite complète `npm test` en local | non exécutée | durée ; exécutée par la CI (ci-dessous) |
+| CI GitHub « Typecheck, tests, Theme Check, build » sur `be81697a` (tête précédente) | réussite | terminée à 13:37 UTC |
+| CI GitHub « Image Docker » sur `be81697a` | réussite | terminée à 13:20 UTC |
+| CI GitHub sur `[TESTED_COMMIT]` | [CI_NEW] | relevée au moment de la rédaction |
+| Exports CMS installés sur un CMS réel | non exécuté | hors périmètre, remises et cadeaux désactivés à l'export |
+
+Passe de finition (commit `24892334`) : tsc, 39 tests sur 5 fichiers, Theme Check complet valide (137 cas), passe de preuves complète réussie.
 
 Première livraison (commit `dbc52162`) : mêmes commandes, résultats équivalents (24 tests sur 3 fichiers à l'époque, Theme Check complet valide, passe de preuves complète).
 
@@ -116,7 +139,7 @@ La suite générale `npx vitest run` n'a pas été relancée intégralement dans
 
 ### Vidéos
 
-Quatre vidéos H.264 (MP4) issues du navigateur : ORBE ordinateur 36,5 s et mobile 36,1 s (défilement, finitions, offres, galerie, ajout au panier) ; Atelier Rive ordinateur 26,0 s et mobile 27,2 s (défilement, chapitres, FAQ, formulaire). Déposées dans le dossier privé.
+Quatre vidéos H.264 (MP4) issues du navigateur : ORBE ordinateur 36,5 s et mobile 36,1 s (défilement, finitions, offres, galerie, ajout au panier) ; Atelier Rive ordinateur 26,0 s et mobile 27,2 s (défilement, chapitres, FAQ, formulaire). Déposées dans le dossier privé. Revue du 18 octobre : deux vidéos supplémentaires « panier à trois finitions » (ordinateur 13,6 s, mobile 13,2 s) montrant la fiche avec son prix par lampe, le trio Dune / Argile / Charbon et le panier avec les bons visuels.
 
 ## Correspondance consignes et références → choix réalisés
 
