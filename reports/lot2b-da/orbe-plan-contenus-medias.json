@@ -1,0 +1,188 @@
+{
+  "isDemo": true,
+  "provenance": "Mission 6247457951, version 2026-10-18T08:28:10Z — données synthétiques de démonstration, aucun paiement",
+  "media": [
+    {
+      "role": "orbe-01-dune",
+      "file": "orbe-01-dune.webp"
+    },
+    {
+      "role": "orbe-02-chambre",
+      "file": "orbe-02-chambre.webp"
+    },
+    {
+      "role": "orbe-03-diner",
+      "file": "orbe-03-diner.webp"
+    },
+    {
+      "role": "orbe-04-lecture",
+      "file": "orbe-04-lecture.webp"
+    },
+    {
+      "role": "orbe-05-bureau",
+      "file": "orbe-05-bureau.webp"
+    },
+    {
+      "role": "orbe-06-duo",
+      "file": "orbe-06-duo.webp"
+    },
+    {
+      "role": "orbe-07-trio",
+      "file": "orbe-07-trio.webp"
+    },
+    {
+      "role": "orbe-08-lumiere",
+      "file": "orbe-08-lumiere.webp"
+    },
+    {
+      "role": "orbe-09-charbon",
+      "file": "orbe-09-charbon.webp"
+    },
+    {
+      "role": "orbe-10-argile",
+      "file": "orbe-10-argile.webp"
+    },
+    {
+      "role": "orbe-11-boite",
+      "file": "orbe-11-boite.webp"
+    },
+    {
+      "role": "orbe-12-pochette",
+      "file": "orbe-12-pochette.webp"
+    }
+  ],
+  "missing": [],
+  "visualValidation": "À inspecter par Thomas",
+  "pages": [
+    {
+      "page": "index",
+      "sections": [
+        {
+          "id": "opening",
+          "type": "ed-opening",
+          "media": [
+            "orbe-02-chambre"
+          ]
+        },
+        {
+          "id": "presence",
+          "type": "ed-statement",
+          "media": []
+        },
+        {
+          "id": "moments",
+          "type": "ed-diptych",
+          "media": [
+            "orbe-03-diner",
+            "orbe-04-lecture"
+          ]
+        },
+        {
+          "id": "night",
+          "type": "ed-scene",
+          "media": [
+            "orbe-08-lumiere"
+          ]
+        },
+        {
+          "id": "finishes",
+          "type": "ed-finishes",
+          "media": [
+            "orbe-07-trio"
+          ]
+        },
+        {
+          "id": "duo",
+          "type": "ed-scene",
+          "media": [
+            "orbe-06-duo"
+          ]
+        },
+        {
+          "id": "featured",
+          "type": "featured-purchase",
+          "media": []
+        },
+        {
+          "id": "accessories",
+          "type": "ed-diptych",
+          "media": [
+            "orbe-11-boite",
+            "orbe-12-pochette"
+          ]
+        },
+        {
+          "id": "questions",
+          "type": "v2-faq",
+          "media": []
+        },
+        {
+          "id": "closing",
+          "type": "ed-scene",
+          "media": [
+            "orbe-05-bureau"
+          ]
+        }
+      ]
+    },
+    {
+      "page": "product.editorial",
+      "sections": [
+        {
+          "id": "main",
+          "type": "main-product",
+          "media": [
+            "orbe-01-dune · galerie et finitions"
+          ]
+        },
+        {
+          "id": "moments",
+          "type": "ed-diptych",
+          "media": [
+            "orbe-03-diner",
+            "orbe-04-lecture"
+          ]
+        },
+        {
+          "id": "night",
+          "type": "ed-scene",
+          "media": [
+            "orbe-08-lumiere"
+          ]
+        },
+        {
+          "id": "finishes",
+          "type": "ed-finishes",
+          "media": [
+            "orbe-07-trio"
+          ]
+        },
+        {
+          "id": "duo",
+          "type": "ed-scene",
+          "media": [
+            "orbe-06-duo"
+          ]
+        },
+        {
+          "id": "accessories",
+          "type": "ed-diptych",
+          "media": [
+            "orbe-11-boite",
+            "orbe-12-pochette"
+          ]
+        },
+        {
+          "id": "questions",
+          "type": "v2-faq",
+          "media": []
+        },
+        {
+          "id": "back",
+          "type": "ed-statement",
+          "media": []
+        }
+      ]
+    }
+  ]
+}

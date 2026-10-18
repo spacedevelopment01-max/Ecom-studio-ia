@@ -1,0 +1,190 @@
+{
+  "isDemo": true,
+  "provenance": "Mission 6247457951, version 2026-10-18T08:28:10Z — données synthétiques de démonstration, aucun paiement",
+  "media": [
+    {
+      "role": "rive-01-salon",
+      "file": "rive-01-salon.webp"
+    },
+    {
+      "role": "rive-02-cuisine",
+      "file": "rive-02-cuisine.webp"
+    },
+    {
+      "role": "rive-03-chambre",
+      "file": "rive-03-chambre.webp"
+    },
+    {
+      "role": "rive-04-entree",
+      "file": "rive-04-entree.webp"
+    },
+    {
+      "role": "rive-05-salle-eau",
+      "file": "rive-05-salle-eau.webp"
+    },
+    {
+      "role": "rive-06-bibliotheque",
+      "file": "rive-06-bibliotheque.webp"
+    },
+    {
+      "role": "rive-07-matieres",
+      "file": "rive-07-matieres.webp"
+    },
+    {
+      "role": "rive-08-plans",
+      "file": "rive-08-plans.webp"
+    },
+    {
+      "role": "rive-09-volume",
+      "file": "rive-09-volume.webp"
+    },
+    {
+      "role": "rive-10-menuiserie",
+      "file": "rive-10-menuiserie.webp"
+    },
+    {
+      "role": "rive-11-repas",
+      "file": "rive-11-repas.webp"
+    },
+    {
+      "role": "rive-12-escalier",
+      "file": "rive-12-escalier.webp"
+    }
+  ],
+  "missing": [],
+  "visualValidation": "À inspecter par Thomas",
+  "pages": [
+    {
+      "page": "index",
+      "sections": [
+        {
+          "id": "opening",
+          "type": "ed-opening",
+          "media": [
+            "rive-01-salon"
+          ]
+        },
+        {
+          "id": "approach",
+          "type": "ed-statement",
+          "media": [
+            "rive-10-menuiserie"
+          ]
+        },
+        {
+          "id": "inspirations",
+          "type": "ed-diptych",
+          "media": [
+            "rive-02-cuisine",
+            "rive-03-chambre",
+            "rive-04-entree"
+          ]
+        },
+        {
+          "id": "materials",
+          "type": "ed-scene",
+          "media": [
+            "rive-07-matieres"
+          ]
+        },
+        {
+          "id": "offers",
+          "type": "ref-narrative",
+          "media": [
+            "rive-08-plans",
+            "rive-06-bibliotheque",
+            "rive-11-repas"
+          ]
+        },
+        {
+          "id": "report",
+          "type": "ed-scene",
+          "media": [
+            "rive-06-bibliotheque"
+          ]
+        },
+        {
+          "id": "method",
+          "type": "ref-narrative",
+          "media": []
+        },
+        {
+          "id": "study",
+          "type": "ed-study",
+          "media": [
+            "rive-09-volume"
+          ]
+        },
+        {
+          "id": "faq",
+          "type": "v2-faq",
+          "media": []
+        },
+        {
+          "id": "contact",
+          "type": "ed-contact",
+          "media": [
+            "rive-12-escalier"
+          ]
+        }
+      ]
+    },
+    {
+      "page": "page.piece",
+      "sections": [
+        {
+          "id": "opening",
+          "type": "ed-opening",
+          "media": [
+            "rive-06-bibliotheque"
+          ]
+        },
+        {
+          "id": "for",
+          "type": "ed-statement",
+          "media": []
+        },
+        {
+          "id": "prepare",
+          "type": "ed-statement",
+          "media": []
+        },
+        {
+          "id": "method",
+          "type": "ref-narrative",
+          "media": []
+        },
+        {
+          "id": "plans",
+          "type": "ed-diptych",
+          "media": [
+            "rive-08-plans",
+            "rive-07-matieres"
+          ]
+        },
+        {
+          "id": "compare",
+          "type": "ref-offers",
+          "media": []
+        },
+        {
+          "id": "study",
+          "type": "ed-study",
+          "media": [
+            "rive-09-volume"
+          ]
+        },
+        {
+          "id": "faq",
+          "type": "v2-faq",
+          "media": []
+        },
+        {
+          "id": "contact",
+          "type": "ed-contact",
+          "media": []
+        }
+      ]
+    }
+  ]
+}
