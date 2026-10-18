@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import vm from "node:vm";
 import { describe, expect, it } from "vitest";
 import { unzipSync, strFromU8 } from "fflate";
 import { sampleSpec } from "./fixtures";
@@ -12,6 +14,13 @@ import { prepareShopifyCsv } from "../scripts/cms-v2/prepare-shopify-csv";
 import { multiAxisSpec } from "./cms-catalogue-fixtures";
 
 describe("exports catalogue fiables", () => {
+  it("le compteur Woo Blocks suit les quantités serveur et masque le zéro", () => {
+    const runtime=fs.readFileSync("assets/cms/wordpress/es-woo.js","utf8");
+    let count=1, callback=()=>{}; const node={textContent:"",hidden:false};
+    vm.runInNewContext(runtime,{window:{wp:{data:{select:()=>({getCartData:()=>({itemsCount:count})}),subscribe:(fn:()=>void)=>{callback=fn;}}}},document:{querySelectorAll:()=>[node]}});
+    expect(node.textContent).toBe("1");count=2;callback();expect(node.textContent).toBe("2");expect(node.hidden).toBe(false);
+    count=0;callback();expect(node.textContent).toBe("0");expect(node.hidden).toBe(true);
+  });
   it("Shopify conserve trois axes, les SKU, les prix, le stock connu et les images de variante", () => {
     const s = multiAxisSpec(); const csv = shopifyProductsCsv(s);
     expect(csv).toContain("Option2 Name"); expect(csv).toContain("Option3 Value");

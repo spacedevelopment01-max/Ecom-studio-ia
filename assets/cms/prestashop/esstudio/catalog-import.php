@@ -67,7 +67,18 @@ function es_ps_catalog_import()
                 foreach (ImageType::getImagesTypes('products') as $type) if (!ImageManager::resize($mediaDir . '/' . $name, $dest . '-' . $type['name'] . '.jpg', (int) $type['width'], (int) $type['height'])) throw new RuntimeException('catalog_image_type');
                 $iid = $map['media'][$key] = (int) $img->id; $saveMap();
             }
+            if ((int) $img->id_product !== $id) throw new RuntimeException('catalog_image_mapping_mismatch');
+            // Réassocier une ancienne version sans recréer le fichier ni son identité.
+            if (!$img->associateTo([(int) $ctx->shop->id])) throw new RuntimeException('catalog_image_shop_association');
             $imageIds[$name] = $iid;
+        }
+        // Retirer de cette boutique les anciennes images de cet import seulement.
+        // Les objets/fichiers sont conservés pour un retour de version ; les photos ajoutées dans le CMS restent intactes.
+        foreach ($map['media'] as $key => $iid) if (strpos($key, $p['handle'] . ':') === 0 && !in_array((int) $iid, $imageIds, true)) {
+            $oldImage = new Image((int) $iid);
+            if (Validate::isLoadedObject($oldImage) && (int) $oldImage->id_product === $id) {
+                if (!Db::getInstance()->delete('image_shop', 'id_image=' . (int) $iid . ' AND id_product=' . $id . ' AND id_shop=' . (int) $ctx->shop->id)) throw new RuntimeException('catalog_image_shop_detach');
+            }
         }
         if ($imageIds) { Image::deleteCover($id); $cover = new Image(reset($imageIds)); $cover->cover = true; $cover->save(); }
         $keep = []; $product->deleteDefaultAttributes();

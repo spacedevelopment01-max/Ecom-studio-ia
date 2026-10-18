@@ -23,6 +23,8 @@ foreach($c['products'] as $p){
   if(!empty($v['image'])){$images=Db::getInstance()->executeS('SELECT id_image FROM '._DB_PREFIX_.'product_attribute_image WHERE id_product_attribute='.(int)$vid);$check(count($images)===1,'Association image absente');$expected=$p['handle'].':'.$v['image'].':'.$c['media'][$v['image']]['sha256'];$check((int)$images[0]['id_image']===$map['media'][$expected],'Mauvaise image variante');}
   $vars[]=['id'=>$vid,'options'=>$v['options'],'sku'=>$v['sku'],'price'=>$price,'stock'=>(int)$stock,'image'=>!empty($v['image'])?(int)$images[0]['id_image']:0];
  }
+ $expectedGallery=[];foreach($p['images'] as $name)$expectedGallery[]=(int)$map['media'][$p['handle'].':'.$name.':'.$c['media'][$name]['sha256']];
+ $actualGallery=array_map('intval',array_column(Image::getImages((int)$ctx->language->id,$id,null,(int)$ctx->shop->id),'id_image'));sort($actualGallery);sort($expectedGallery);$check($actualGallery===$expectedGallery,'Galerie native obsolète ou incomplète');
  $rows[]=['id'=>$id,'handle'=>$p['handle'],'url'=>$ctx->link->getProductLink($product),'active'=>(bool)$product->active,'variants'=>$vars];
 }
 echo json_encode(['products'=>$rows,'ownedProducts'=>count($map['products']),'ownedVariants'=>count($map['variants']),'ownedImages'=>count($map['media'])]);

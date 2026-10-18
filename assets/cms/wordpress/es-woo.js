@@ -5,7 +5,7 @@
   function sync() {
     var store = window.wp.data.select('wc/store/cart');
     if (!store || !store.getCartData) return;
-    var cart = store.getCartData(), count = cart && cart.items_count;
+    var cart = store.getCartData(), count = cart && (typeof cart.itemsCount === 'number' ? cart.itemsCount : cart.items_count);
     if (typeof count !== 'number' || count === last) return;
     last = count;
     document.querySelectorAll('span.es-cart-count').forEach(function (el) { el.textContent = String(count); el.hidden = count === 0; });

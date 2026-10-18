@@ -16,7 +16,7 @@ Le panier et le paiement restent ceux de WooCommerce. Les remises et cadeaux ava
 ## PrestaShop
 
 1. Téléverser le ZIP dans Apparence › Thème et logo et activer le thème enfant de Classic. Son module compagnon `esstudio` est fourni dans `dependencies/modules/`. Activer les URL simplifiées.
-2. Modules › E-COM STUDIO IA › Configurer : déclencher **Importer / mettre à jour le catalogue**. Les objets natifs créent catégories, produits désactivés, axes, déclinaisons, références et associations d’images depuis les fichiers du thème.
+2. Modules › E-COM STUDIO IA › Configurer : déclencher **Importer / mettre à jour le catalogue**. Les objets natifs créent catégories, produits désactivés, axes, déclinaisons, références et associations d’images depuis les fichiers du thème. À la réimportation, les anciennes images gérées par cet import sont détachées de la boutique courante quand elles quittent la galerie ; objets et fichiers restent disponibles pour un retour de version. Les images ajoutées directement dans le CMS sont conservées.
 3. Vérifier fiscalité, prix, stocks et produits, puis activer les produits. Une quantité absente n’est jamais remplacée par un stock fictif : un nouvel élément conserve le zéro natif ; un élément existant garde sa quantité. Cela peut empêcher l’achat tant que le stock n’est pas configuré.
 4. Une exportation modifiée reçoit un nouveau nom de thème, pour être installée sans supprimer la version précédente. Activer ce nouveau thème, vider le cache, puis relancer explicitement l’import. Les données du thème actif sont utilisées, même si plusieurs thèmes partagent le module. Les produits retirés sont désactivés et les anciennes combinaisons mises hors stock, sans suppression.
 
