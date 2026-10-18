@@ -1,0 +1,75 @@
+{
+  "at": "2026-10-18T23:36:46.285Z",
+  "kind": "INDICATIVE_REPOSITORY_DEFAULTS_NOT_APPROVED",
+  "actualProviderCalls": 0,
+  "actualProviderCostMicro": 0,
+  "deploymentConfiguration": "Unavailable in this workspace: no saved provider keys or ai_calls in the inspected runtime database. These are code defaults, not observed served models.",
+  "currency": "EUR",
+  "assumptions": {
+    "fxUsdToEur": 0.86,
+    "markup": 1,
+    "conceptTokens": {
+      "input": 18000,
+      "output": 2000
+    },
+    "controlTokens": {
+      "input": 24000,
+      "output": 2000
+    },
+    "imageCount": 1,
+    "referenceCount": "subject and logo when present; edit may require a third reference"
+  },
+  "declared": {
+    "image": {
+      "provider": "openai",
+      "model": "gpt-image-1",
+      "rate": {
+        "unit": "tokens",
+        "inputPerM": 5,
+        "outputPerM": 40,
+        "imageInputPerM": 10,
+        "imageOutputPerM": 40
+      }
+    },
+    "layout": {
+      "provider": "openai",
+      "model": "gpt-image-1",
+      "rate": {
+        "unit": "tokens",
+        "inputPerM": 5,
+        "outputPerM": 40,
+        "imageInputPerM": 10,
+        "imageOutputPerM": 40
+      }
+    },
+    "layoutEnabledByDefault": false,
+    "concept": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "rate": {
+        "unit": "tokens",
+        "inputPerM": 2,
+        "outputPerM": 10
+      }
+    },
+    "control": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "rate": {
+        "unit": "tokens",
+        "inputPerM": 2,
+        "outputPerM": 10
+      }
+    }
+  },
+  "stepsMicro": {
+    "concept": 48160,
+    "control": 58480,
+    "image": 259720,
+    "layout": 259720
+  },
+  "oneStepProbableMicro": 366360,
+  "twoStepProbableMicro": 684560,
+  "boundedThreeAttemptsIndicativeMicro": 1002760,
+  "approval": "No real call is approved by this file. Re-read actual configured routes, confirmed rates and remaining budget in the provider-configured environment; obtain targeted benchmark approval. Preserve 40% monthly HT / 50% recharge HT and the existing shared test cap; no matrix or new provider/key."
+}

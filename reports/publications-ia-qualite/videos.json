@@ -1,0 +1,66 @@
+[
+  {
+    "file": "produit-mobile.webm",
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "vp8",
+        "width": 390,
+        "height": 844
+      }
+    ],
+    "format": {
+      "duration": "6.080000",
+      "size": "643458"
+    }
+  },
+  {
+    "file": "produit-ordinateur.webm",
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "vp8",
+        "width": 1440,
+        "height": 1000
+      }
+    ],
+    "format": {
+      "duration": "9.600000",
+      "size": "1398990"
+    }
+  },
+  {
+    "file": "service-mobile.webm",
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "vp8",
+        "width": 390,
+        "height": 844
+      }
+    ],
+    "format": {
+      "duration": "5.880000",
+      "size": "609213"
+    }
+  },
+  {
+    "file": "service-ordinateur.webm",
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "vp8",
+        "width": 1440,
+        "height": 1000
+      }
+    ],
+    "format": {
+      "duration": "8.760000",
+      "size": "1283661"
+    }
+  }
+]
