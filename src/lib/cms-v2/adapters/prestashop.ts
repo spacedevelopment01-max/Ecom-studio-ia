@@ -286,7 +286,7 @@ export function adaptFeaturedProduct(spec: ThemeSpec, t: (fr: string, en: string
   let n = 0;
   for (const tpl of Object.values(spec.templates)) {
     for (const [id, sec] of Object.entries(tpl.sections)) {
-      if (sec.type !== "featured-product") continue;
+      if (sec.type !== "featured-product" || sec.disabled) continue;
       const handle = exportProductHandle(spec, sec);
       const prod = storeProductsOf(spec).find((x) => x.handle === handle);
       if (!prod) { tpl.sections[id] = { ...sec, disabled: true }; continue; }

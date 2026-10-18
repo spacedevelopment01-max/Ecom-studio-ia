@@ -40,7 +40,10 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   }
   if (!CMS_PLATFORMS.includes(platform as CmsPlatform)) throw new HttpError(400, L("Plateforme inconnue.", "Unknown platform."));
   const pf = platform as CmsPlatform;
-  const r = await exportAndRecord({ id: p.id, userId: user.id }, { spec: v.spec, number: v.version.number, id: v.version.id }, pf, uiLang());
+  const r = await exportAndRecord({ id: p.id, userId: user.id }, { spec: v.spec, number: v.version.number, id: v.version.id }, pf, uiLang()).catch((error: unknown) => {
+    if (error instanceof Error && error.message.startsWith("catalog_")) throw new HttpError(422, L(`Export non créé : ${error.message}. Vérifiez les identifiants et les variantes du catalogue ; les exports précédents sont conservés.`, `Export not created: ${error.message}. Check catalog identifiers and variants; previous exports are preserved.`));
+    throw error;
+  });
   if (r.verdict === "REJECTED") {
     throw new HttpError(422, L(`${r.message} Défauts : ${r.issues.slice(0, 4).join(" ; ")}`, `${r.message} Defects: ${r.issues.slice(0, 4).join("; ")}`));
   }

@@ -54,8 +54,11 @@ export async function cmsExport(platform: CmsPlatform, spec0: ThemeSpec, load: A
   const catalog = catalogSnapshot(spec, media, opts.projectId);
   const catalogFile = platform === "woocommerce" ? `${prefix}inc/catalogue.json` : platform === "prestashop" ? "dependencies/modules/esstudio/catalogue.json" : platform === "shopify" ? "assets/es-catalogue.json" : "catalogue.json";
   entries[catalogFile] = strToU8(JSON.stringify(catalog, null, 2));
+  // Données de reprise complètes, distinctes des composants effectivement rendus par le CMS.
+  const configuration = strToU8(JSON.stringify({ settings: spec.settings, groups: spec.groups, templates: spec.templates, customSections: spec.customSections, store: { ...spec.store, pages: spec.store.pages.filter(p => p.status !== "draft") } }, null, 2));
+  const configurationFile = platform === "woocommerce" ? `${prefix}inc/configuration-studio.json` : platform === "prestashop" ? "config/es-studio.json" : platform === "shopify" ? "assets/es-studio.json" : "configuration-studio.json";
+  entries[configurationFile] = configuration;
   if (platform === "wix" || platform === "squarespace") {
-    entries["configuration-studio.json"] = strToU8(JSON.stringify({ settings: spec.settings, groups: spec.groups, templates: spec.templates, store: { ...spec.store, pages: spec.store.pages.filter(p => p.status !== "draft") } }, null, 2));
     const guide = new TextDecoder().decode(entries["GUIDE.md"]);
     entries["GUIDE.md"] = strToU8(guide + "\n\n## Catalogue, pages et navigation / Catalog, pages and navigation\n\n`catalogue.json` conserve les axes, combinaisons, SKU, prix, associations d’images, pages et menus. `configuration-studio.json` conserve les réglages et tous les contenus des sections. Ces JSON et le CSV sont des données de reprise : aucun n’est annoncé comme un import natif validé. Reportez les colonnes dans le modèle actuel de la plateforme et affectez les fichiers de `medias/`. Aucune publication automatique.\n\n`catalogue.json` retains axes, combinations, SKUs, prices, image associations, pages and menus. `configuration-studio.json` retains section settings and complete contents. These JSON files and the CSV are rebuild data, not a verified native importer. Map columns to the platform’s current template and assign the files in `medias/`. No automatic publication.\n");
   }
