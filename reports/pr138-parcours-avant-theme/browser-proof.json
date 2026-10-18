@@ -8,6 +8,16 @@
       "ready": false,
       "videoPlayedAndPaused": true,
       "placementSavedAfterReload": true,
+      "fiveRolesMatchCardsAndBoards": true,
+      "wholePaletteAndRolesSavedAfterUiChoiceAndReload": true,
+      "chosenDirection": "t2",
+      "chosenPalette": {
+        "primary": "#483d68",
+        "secondary": "#c4b7d6",
+        "accent": "#9a3662",
+        "light": "#f8f5fc",
+        "dark": "#201a2c"
+      },
       "externalRequestsBlocked": [],
       "pageErrors": []
     },
@@ -18,6 +28,16 @@
       "ready": false,
       "videoPlayedAndPaused": true,
       "placementSavedAfterReload": false,
+      "fiveRolesMatchCardsAndBoards": true,
+      "wholePaletteAndRolesSavedAfterUiChoiceAndReload": true,
+      "chosenDirection": "t3",
+      "chosenPalette": {
+        "primary": "#614024",
+        "secondary": "#d8b77c",
+        "accent": "#47657a",
+        "light": "#fbf6ed",
+        "dark": "#282019"
+      },
       "externalRequestsBlocked": [],
       "pageErrors": []
     },
@@ -28,6 +48,16 @@
       "ready": false,
       "videoPlayedAndPaused": true,
       "placementSavedAfterReload": true,
+      "fiveRolesMatchCardsAndBoards": true,
+      "wholePaletteAndRolesSavedAfterUiChoiceAndReload": true,
+      "chosenDirection": "t2",
+      "chosenPalette": {
+        "primary": "#483d68",
+        "secondary": "#c4b7d6",
+        "accent": "#9a3662",
+        "light": "#f8f5fc",
+        "dark": "#201a2c"
+      },
       "externalRequestsBlocked": [],
       "pageErrors": []
     },
@@ -38,6 +68,16 @@
       "ready": false,
       "videoPlayedAndPaused": true,
       "placementSavedAfterReload": false,
+      "fiveRolesMatchCardsAndBoards": true,
+      "wholePaletteAndRolesSavedAfterUiChoiceAndReload": true,
+      "chosenDirection": "t3",
+      "chosenPalette": {
+        "primary": "#614024",
+        "secondary": "#d8b77c",
+        "accent": "#47657a",
+        "light": "#fbf6ed",
+        "dark": "#282019"
+      },
       "externalRequestsBlocked": [],
       "pageErrors": []
     }

@@ -19,6 +19,8 @@ Le contrat existant est enrichi de champs optionnels pour les anciennes sauvegar
 - `mediaPolicy`: dix images, une vidéo produit / deux vidéos service, source attendue et vidéo hero obligatoire.
 - `sources`, `research`, `warnings`, `approvals`: pages effectivement consultées, couverture et limites, hypothèses et approbations. Aucun volume SEO ou classement réel implicite.
 
+Complément palettes [6255416899](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/138#issuecomment-6255416899) : conserver les cinq rôles de la direction choisie, pas seulement `primary`. `primary` porte les titres/signatures, `secondary` les surfaces et `accent` les appels à l’action ; `light`/`dark` forment la base neutre. Les trois premiers rôles varient réellement entre les trois directions, les neutres peuvent être communs. `palettePresentation` dans `src/lib/logo-v2/direction-palette.ts` décrit les associations de comparaison contrôlées (4,5:1). Au raccordement, préserver les valeurs et descriptions de `brand.artIdentity.colorRoles`, vérifier les associations propres au thème et signaler une incompatibilité ; ne pas recolorer silencieusement ni tirer une autre palette du PNG. [Preuves et limites du complément](PR_138_PALETTES_DIRECTIONS.md).
+
 ## Médias à consommer
 
 | Projet | Photos finales | Vidéos finales | Références conservées à part |

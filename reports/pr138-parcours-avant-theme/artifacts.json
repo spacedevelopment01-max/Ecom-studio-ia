@@ -3,43 +3,48 @@
   "files": [
     {
       "file": "produit-charte.pdf",
-      "bytes": 1075482,
-      "sha256": "bbadb4469ac069d7d3226a67b4c89e12b3b424b016d7a4e444d7c713e3ea1079"
+      "bytes": 1074039,
+      "sha256": "cc2e81c1ffa647241e3d58ec6d5cd7dc33850c91a150613d9f50125783903fa2"
     },
     {
       "file": "produit-direction-1.png",
-      "bytes": 108378,
-      "sha256": "84136893a205a75b143d5b28a2fde8c3c6e3b8f3442b6cec317a79ed823bbc20"
+      "bytes": 168639,
+      "sha256": "6e4a4d9e679987b1b3970cc95438536ed405b6f67d0048dfe3da3a3c0dda31cc"
     },
     {
       "file": "produit-direction-2.png",
-      "bytes": 116979,
-      "sha256": "d136e1fbddf96374e6674c11aabb7f9c1bf4df4000c9fac5f4c884b088d45cca"
+      "bytes": 168456,
+      "sha256": "591ec914af5c19e0b8bf9b315501f6aa88ba5953c82047059f755cffc2488098"
     },
     {
       "file": "produit-direction-3.png",
-      "bytes": 108833,
-      "sha256": "46d2b63b6506440c0ee47f47a890146ff4effd950825251a6394f94125b4c3f4"
+      "bytes": 163280,
+      "sha256": "708ea50fad9cb1d686b3fdca15b925984835ff32e34782a65cdd384f31a872e0"
     },
     {
       "file": "produit-mobile-contenus-contact.png",
-      "bytes": 290786,
-      "sha256": "9a8233d3b3cc0a958952f096d243ff7834f7f621004337c326a03716702ae3aa"
+      "bytes": 319376,
+      "sha256": "4f494b6e7d973c2f343e543e6935737f40ff0715e95a667132820b42c1752e04"
+    },
+    {
+      "file": "produit-mobile-direction-choisie.png",
+      "bytes": 468645,
+      "sha256": "20f48e73b805e057841de621bbb51c755c1bf50f66cc02ec5ae717793e2f5615"
     },
     {
       "file": "produit-mobile-directions.png",
-      "bytes": 425418,
-      "sha256": "e614a0eb199b136e61a528b82259ab73d77b90d1342c30487a99eeb8a10bd1ee"
+      "bytes": 468948,
+      "sha256": "14ee07426d2d5d2d5f2db95d151c6c82dfdb4e31d6dd926341ef641b51ffe24b"
     },
     {
       "file": "produit-mobile-medias.png",
-      "bytes": 697805,
-      "sha256": "2d257b3d9ceedbd38356870d20372194fd11feb0bd855bbddfe076e8d62f02d8"
+      "bytes": 722739,
+      "sha256": "0225aa76fe47d58ee382aee0c26050a100a8ede3d43799fbf908fd8e296b2bc2"
     },
     {
       "file": "produit-mobile.mp4",
-      "bytes": 342239,
-      "sha256": "c84f81c690cde0e357d89d12f6081e906dcd567e8b2575eaedf9f2b9b4706009"
+      "bytes": 549279,
+      "sha256": "e1ba52e9042e9f8069d473ec93ed09a6bdf62485c568dd6af8bfd69d35885da4"
     },
     {
       "file": "produit-ordinateur-contenus-contact.png",
@@ -47,59 +52,69 @@
       "sha256": "f7444a47f2b3c81a89975274d874f42cff6ce88ac4817201bef238bd42820c2f"
     },
     {
+      "file": "produit-ordinateur-direction-choisie.png",
+      "bytes": 478746,
+      "sha256": "758c00955ecee01205185e471baef48b08d75ede6cfec86ae8b9caa8820e6f53"
+    },
+    {
       "file": "produit-ordinateur-directions.png",
-      "bytes": 431572,
-      "sha256": "eb9f1781b5d4cc32b4660a68529996bf50635f4fe17c64039678183517f27588"
+      "bytes": 467925,
+      "sha256": "c9ef65f2b5ed039d42dc1bafeddc4fa86951e4f109709582f4bd22f918521e1c"
     },
     {
       "file": "produit-ordinateur-medias.png",
-      "bytes": 805218,
-      "sha256": "a16a13f00199dcedc671241305e879d31ad8de1445406f3d0404b2f61fe841e6"
+      "bytes": 811100,
+      "sha256": "00a13a7c3765bcc0ba8420ea0d41791a8c65126f8c3d9a72e3e01005f357ebff"
     },
     {
       "file": "produit-ordinateur.mp4",
-      "bytes": 1360121,
-      "sha256": "9c7c071f96e81923fd8fb6f4a2ff0f268dd124476151b841c78ed4bd05b7563d"
+      "bytes": 2140094,
+      "sha256": "99a98654660992b8a3768c4c0eefbf908864bec99202171747f8b07afb149c18"
     },
     {
       "file": "service-charte.pdf",
-      "bytes": 1110050,
-      "sha256": "4671132869fdf61343dee0a71abeaa33072140d9d252b046ec78b17556e9ec76"
+      "bytes": 1109102,
+      "sha256": "748d0e619fe3d0120b7b0b4f90b4f09471153ebd7dece997f97a4bbcb84fc628"
     },
     {
       "file": "service-direction-1.png",
-      "bytes": 113173,
-      "sha256": "2c81bceaa04bdbe78d4b5074308056605936ae557ae95b41edb97f8f2f97134f"
+      "bytes": 175216,
+      "sha256": "8d33e5abc6084fd57dc3309c2bb9a2a10df7297fb002a480737c425cf60557ab"
     },
     {
       "file": "service-direction-2.png",
-      "bytes": 122832,
-      "sha256": "233cc97dff19d5236547b66f6f28d27de865fb9a8847686bd7b27544366b8cf5"
+      "bytes": 175928,
+      "sha256": "17f99e34fb416c4ffa0b1b16b2e1c1ef6f663dd78365d4843c9cc2c2a73b7f89"
     },
     {
       "file": "service-direction-3.png",
-      "bytes": 112712,
-      "sha256": "b3d51316ca68a736fe1d3e9f029424625ec307c760886cf7caebe0acf39a14ae"
+      "bytes": 168946,
+      "sha256": "00e53cd0c074bd9913f49265d0e73d8062593deae10dd3308e8a5635a58faca2"
     },
     {
       "file": "service-mobile-contenus-contact.png",
-      "bytes": 309137,
-      "sha256": "6207c763aaf506681013fece0c3d9be1a17d0fd65a1c83275936d1ee53cbb9d9"
+      "bytes": 337434,
+      "sha256": "4e6e4a8344328b66b8e078ca2859e43a1e9d381952d1bbf10116096c93f7ebd7"
+    },
+    {
+      "file": "service-mobile-direction-choisie.png",
+      "bytes": 477858,
+      "sha256": "8268c643bcafb3cd75c61a2e6282443f06c7e9999d920c5016629395d6071f29"
     },
     {
       "file": "service-mobile-directions.png",
-      "bytes": 431767,
-      "sha256": "afe42e844e8e4b53f7f896facb78d584d28707ed37db37943ca5e971d364907c"
+      "bytes": 478146,
+      "sha256": "3a341f992ed6801cce6d9747446612b43e2d640d47f0ef84ceb9a9d5e1907956"
     },
     {
       "file": "service-mobile-medias.png",
-      "bytes": 768309,
-      "sha256": "bcc5676e5f5df8e9b9c6df3d7cb8d1121f92290a40f1c7ff5eab307b23d6cd4c"
+      "bytes": 792731,
+      "sha256": "0a76207695f495d36d8191589f68b0707479c792dcff59ebc0d80687f36c6b38"
     },
     {
       "file": "service-mobile.mp4",
-      "bytes": 433689,
-      "sha256": "2f8ee86a7294333124aeff03d37b946aa313352ddbbd88d464940ca9998206a7"
+      "bytes": 518249,
+      "sha256": "d54be6a70b85879a40d8d82a5aee8143a514600314a243d2a72e1cb84eb18751"
     },
     {
       "file": "service-ordinateur-contenus-contact.png",
@@ -107,19 +122,24 @@
       "sha256": "e541543f2bb603cf53937de9e3bb27d34bc31b04fbc1412f8bdcd1e841d8aaf8"
     },
     {
+      "file": "service-ordinateur-direction-choisie.png",
+      "bytes": 489035,
+      "sha256": "6de8524448c48a8c6866dcb41f7166b1209f3762c9d5039dc05dadbfde2411d6"
+    },
+    {
       "file": "service-ordinateur-directions.png",
-      "bytes": 437089,
-      "sha256": "76a32ddcc25da1f353eadebd041c4974c890774dd07e66b7614f3b8122347f9b"
+      "bytes": 478259,
+      "sha256": "ca84ebceb7bc7c2b58f343eaa03d6b14a8cfcc24e0fb53bc935a02ed6e6378e3"
     },
     {
       "file": "service-ordinateur-medias.png",
-      "bytes": 885715,
-      "sha256": "200af441041a81450ee305e771da54d8925a7c0755fbd4fbed6d0c7d2b96ae28"
+      "bytes": 891826,
+      "sha256": "914d30ef764b11ca2af471a4afe4e13b960691dec2f24d10bdf86f57145afdb8"
     },
     {
       "file": "service-ordinateur.mp4",
-      "bytes": 1611698,
-      "sha256": "c490c894a90b104eebe33e51d2f342f7f5db49a8a3db51fe8cb8abfff456d83d"
+      "bytes": 2115591,
+      "sha256": "8a6b3b51f1d27deaac2a836ea0d7b77c34db4e01f0a3da76dc4179c06b4be55a"
     }
   ]
 }

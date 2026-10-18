@@ -4,14 +4,30 @@
   "projects": [
     {
       "business": "products",
-      "projectId": "bk6tupsdrbs9tggw",
+      "projectId": "pddw8n75439nkb7q",
       "simulation": true,
-      "revision": 13,
+      "revision": 14,
       "ready": false,
       "directions": 3,
-      "selectedDirection": "t1",
+      "selectedDirection": "t3",
+      "selectedPalette": {
+        "primary": "#614024",
+        "secondary": "#d8b77c",
+        "accent": "#47657a",
+        "light": "#fbf6ed",
+        "dark": "#282019"
+      },
+      "selectedColorRoles": {
+        "primary": "Brun : titres liés à la matière",
+        "secondary": "Sable : surfaces chaleureuses",
+        "accent": "Bleu ardoise : appels à l’action nets",
+        "light": "Papier neutre : fond de lecture",
+        "dark": "Encre brune neutre : texte courant"
+      },
       "seriesStatus": "complete",
       "slotCount": 11,
+      "contentStageAfterIdentityChange": "stale",
+      "mediaStageAfterIdentityChange": "stale",
       "media": [
         {
           "key": "final:image:1",
@@ -19,7 +35,7 @@
           "sourceContract": "ai",
           "aspect": "1:1",
           "pageKey": "brand",
-          "sectionKey": "gallery",
+          "sectionKey": "intent",
           "present": true,
           "reviewed": false
         },
@@ -127,14 +143,30 @@
     },
     {
       "business": "services",
-      "projectId": "9q37l5fxa2nzmqho",
+      "projectId": "3myth43bvejxxlc8",
       "simulation": true,
-      "revision": 13,
+      "revision": 14,
       "ready": false,
       "directions": 3,
-      "selectedDirection": "t1",
+      "selectedDirection": "t3",
+      "selectedPalette": {
+        "primary": "#614024",
+        "secondary": "#d8b77c",
+        "accent": "#47657a",
+        "light": "#fbf6ed",
+        "dark": "#282019"
+      },
+      "selectedColorRoles": {
+        "primary": "Brun : titres liés à la matière",
+        "secondary": "Sable : surfaces chaleureuses",
+        "accent": "Bleu ardoise : appels à l’action nets",
+        "light": "Papier neutre : fond de lecture",
+        "dark": "Encre brune neutre : texte courant"
+      },
       "seriesStatus": "complete",
       "slotCount": 12,
+      "contentStageAfterIdentityChange": "stale",
+      "mediaStageAfterIdentityChange": "stale",
       "media": [
         {
           "key": "final:image:1",
@@ -142,7 +174,7 @@
           "sourceContract": "pixabay",
           "aspect": "1:1",
           "pageKey": "brand",
-          "sectionKey": "gallery",
+          "sectionKey": "intent",
           "present": true,
           "reviewed": false
         },

@@ -2,41 +2,193 @@
   {
     "file": "produit-direction-1.png",
     "simulation": true,
-    "sha256": "84136893a205a75b143d5b28a2fde8c3c6e3b8f3442b6cec317a79ed823bbc20"
+    "directionId": "t1",
+    "chosenAtEnd": false,
+    "palette": {
+      "primary": "#28504a",
+      "secondary": "#bfd0b4",
+      "accent": "#9b4f2c",
+      "light": "#fcfaf5",
+      "dark": "#171f20"
+    },
+    "colorRoles": {
+      "primary": "Vert profond : signature et titres précis",
+      "secondary": "Sauge douce : surfaces calmes",
+      "accent": "Terre cuite : appels à l’action chaleureux",
+      "light": "Ivoire neutre : fond de lecture",
+      "dark": "Encre neutre : texte courant"
+    },
+    "presentation": {
+      "background": "#fcfaf5",
+      "text": "#171f20",
+      "heading": "#28504a",
+      "surface": "#bfd0b4",
+      "surfaceText": "#171f20",
+      "button": "#9b4f2c",
+      "buttonText": "#fcfaf5"
+    },
+    "sha256": "6e4a4d9e679987b1b3970cc95438536ed405b6f67d0048dfe3da3a3c0dda31cc"
   },
   {
     "file": "produit-direction-2.png",
     "simulation": true,
-    "sha256": "d136e1fbddf96374e6674c11aabb7f9c1bf4df4000c9fac5f4c884b088d45cca"
+    "directionId": "t2",
+    "chosenAtEnd": false,
+    "palette": {
+      "primary": "#483d68",
+      "secondary": "#c4b7d6",
+      "accent": "#9a3662",
+      "light": "#f8f5fc",
+      "dark": "#201a2c"
+    },
+    "colorRoles": {
+      "primary": "Prune : titres éditoriaux",
+      "secondary": "Lavande grisée : surfaces posées",
+      "accent": "Baie : appels à l’action affirmés",
+      "light": "Blanc légèrement teinté : fond de lecture",
+      "dark": "Encre légèrement violacée : texte courant"
+    },
+    "presentation": {
+      "background": "#f8f5fc",
+      "text": "#201a2c",
+      "heading": "#483d68",
+      "surface": "#c4b7d6",
+      "surfaceText": "#201a2c",
+      "button": "#9a3662",
+      "buttonText": "#f8f5fc"
+    },
+    "sha256": "591ec914af5c19e0b8bf9b315501f6aa88ba5953c82047059f755cffc2488098"
   },
   {
     "file": "produit-direction-3.png",
     "simulation": true,
-    "sha256": "46d2b63b6506440c0ee47f47a890146ff4effd950825251a6394f94125b4c3f4"
+    "directionId": "t3",
+    "chosenAtEnd": true,
+    "palette": {
+      "primary": "#614024",
+      "secondary": "#d8b77c",
+      "accent": "#47657a",
+      "light": "#fbf6ed",
+      "dark": "#282019"
+    },
+    "colorRoles": {
+      "primary": "Brun : titres liés à la matière",
+      "secondary": "Sable : surfaces chaleureuses",
+      "accent": "Bleu ardoise : appels à l’action nets",
+      "light": "Papier neutre : fond de lecture",
+      "dark": "Encre brune neutre : texte courant"
+    },
+    "presentation": {
+      "background": "#fbf6ed",
+      "text": "#282019",
+      "heading": "#614024",
+      "surface": "#d8b77c",
+      "surfaceText": "#282019",
+      "button": "#47657a",
+      "buttonText": "#fbf6ed"
+    },
+    "sha256": "708ea50fad9cb1d686b3fdca15b925984835ff32e34782a65cdd384f31a872e0"
   },
   {
     "file": "produit-charte.pdf",
     "simulation": true,
-    "sha256": "bbadb4469ac069d7d3226a67b4c89e12b3b424b016d7a4e444d7c713e3ea1079"
+    "chosenDirection": "t3",
+    "sha256": "cc2e81c1ffa647241e3d58ec6d5cd7dc33850c91a150613d9f50125783903fa2"
   },
   {
     "file": "service-direction-1.png",
     "simulation": true,
-    "sha256": "2c81bceaa04bdbe78d4b5074308056605936ae557ae95b41edb97f8f2f97134f"
+    "directionId": "t1",
+    "chosenAtEnd": false,
+    "palette": {
+      "primary": "#28504a",
+      "secondary": "#bfd0b4",
+      "accent": "#9b4f2c",
+      "light": "#fcfaf5",
+      "dark": "#171f20"
+    },
+    "colorRoles": {
+      "primary": "Vert profond : signature et titres précis",
+      "secondary": "Sauge douce : surfaces calmes",
+      "accent": "Terre cuite : appels à l’action chaleureux",
+      "light": "Ivoire neutre : fond de lecture",
+      "dark": "Encre neutre : texte courant"
+    },
+    "presentation": {
+      "background": "#fcfaf5",
+      "text": "#171f20",
+      "heading": "#28504a",
+      "surface": "#bfd0b4",
+      "surfaceText": "#171f20",
+      "button": "#9b4f2c",
+      "buttonText": "#fcfaf5"
+    },
+    "sha256": "8d33e5abc6084fd57dc3309c2bb9a2a10df7297fb002a480737c425cf60557ab"
   },
   {
     "file": "service-direction-2.png",
     "simulation": true,
-    "sha256": "233cc97dff19d5236547b66f6f28d27de865fb9a8847686bd7b27544366b8cf5"
+    "directionId": "t2",
+    "chosenAtEnd": false,
+    "palette": {
+      "primary": "#483d68",
+      "secondary": "#c4b7d6",
+      "accent": "#9a3662",
+      "light": "#f8f5fc",
+      "dark": "#201a2c"
+    },
+    "colorRoles": {
+      "primary": "Prune : titres éditoriaux",
+      "secondary": "Lavande grisée : surfaces posées",
+      "accent": "Baie : appels à l’action affirmés",
+      "light": "Blanc légèrement teinté : fond de lecture",
+      "dark": "Encre légèrement violacée : texte courant"
+    },
+    "presentation": {
+      "background": "#f8f5fc",
+      "text": "#201a2c",
+      "heading": "#483d68",
+      "surface": "#c4b7d6",
+      "surfaceText": "#201a2c",
+      "button": "#9a3662",
+      "buttonText": "#f8f5fc"
+    },
+    "sha256": "17f99e34fb416c4ffa0b1b16b2e1c1ef6f663dd78365d4843c9cc2c2a73b7f89"
   },
   {
     "file": "service-direction-3.png",
     "simulation": true,
-    "sha256": "b3d51316ca68a736fe1d3e9f029424625ec307c760886cf7caebe0acf39a14ae"
+    "directionId": "t3",
+    "chosenAtEnd": true,
+    "palette": {
+      "primary": "#614024",
+      "secondary": "#d8b77c",
+      "accent": "#47657a",
+      "light": "#fbf6ed",
+      "dark": "#282019"
+    },
+    "colorRoles": {
+      "primary": "Brun : titres liés à la matière",
+      "secondary": "Sable : surfaces chaleureuses",
+      "accent": "Bleu ardoise : appels à l’action nets",
+      "light": "Papier neutre : fond de lecture",
+      "dark": "Encre brune neutre : texte courant"
+    },
+    "presentation": {
+      "background": "#fbf6ed",
+      "text": "#282019",
+      "heading": "#614024",
+      "surface": "#d8b77c",
+      "surfaceText": "#282019",
+      "button": "#47657a",
+      "buttonText": "#fbf6ed"
+    },
+    "sha256": "00e53cd0c074bd9913f49265d0e73d8062593deae10dd3308e8a5635a58faca2"
   },
   {
     "file": "service-charte.pdf",
     "simulation": true,
-    "sha256": "4671132869fdf61343dee0a71abeaa33072140d9d252b046ec78b17556e9ec76"
+    "chosenDirection": "t3",
+    "sha256": "748d0e619fe3d0120b7b0b4f90b4f09471153ebd7dece997f97a4bbcb84fc628"
   }
 ]

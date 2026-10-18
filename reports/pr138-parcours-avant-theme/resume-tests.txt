@@ -1,5 +1,6 @@
-Commit testé : 418579b424359721ed0dc16633f8937b121b54da
-Suite complète : 269 fichiers, 2004 tests réussis, 3 ignorés ; 607.14 s.
+Code applicatif testé : dc85a6bd53af13d6101f51c478e6cf3abe0835bf
+Harnais navigateur : 9c0e64512ad6ef9fd84fb54e477d4646a1dcf004 (sources applicatives/tests identiques).
+Suite complète : 271 fichiers, 2021 tests réussis, 3 ignorés ; 646.56 s.
 TypeScript et build : code de sortie 0.
-Navigateur : 12 captures, 4 vidéos, aucune erreur JS ou débordement horizontal.
-0 appel IA réel ; 0 coût réel ; aucun thème client, merge ou déploiement.
+Navigateur : 16 captures, 4 vidéos, palettes carte/planche et choix/rechargement vérifiés, 0 erreur JS ou débordement horizontal.
+0 appel fournisseur réel ; 0 coût fournisseur ; aucun thème client, merge ou déploiement.

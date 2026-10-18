@@ -3,7 +3,7 @@
   "videos": [
     {
       "file": "produit-mobile.mp4",
-      "duration": 8.64,
+      "duration": 18.52,
       "stream": {
         "codec_name": "h264",
         "width": 390,
@@ -12,7 +12,7 @@
     },
     {
       "file": "produit-ordinateur.mp4",
-      "duration": 13.0,
+      "duration": 23.44,
       "stream": {
         "codec_name": "h264",
         "width": 1440,
@@ -21,7 +21,7 @@
     },
     {
       "file": "service-mobile.mp4",
-      "duration": 9.36,
+      "duration": 17.28,
       "stream": {
         "codec_name": "h264",
         "width": 390,
@@ -30,7 +30,7 @@
     },
     {
       "file": "service-ordinateur.mp4",
-      "duration": 12.76,
+      "duration": 22.0,
       "stream": {
         "codec_name": "h264",
         "width": 1440,
