@@ -32,7 +32,7 @@ Pas de validation générale annoncée : la suite complète `npm test` n'est ex�
 ## Version, base et périmètre
 
 - Branche `claude/orbe-rive-direction-artistique`, créée sur `077a2106227e7a7a00c89e783f1a37f6775d54ae` (tête de `codex/lot-2a-themes-reference` au démarrage, inchangée à ce moment). La branche Codex et la PR #134 ne sont pas modifiées. Depuis, Codex a poussé sept commits (`9f8b6c43` à la rédaction) qui touchent en partie les mêmes fichiers : les deux branches sont deux réalisations distinctes, à comparer, pas à fusionner telles quelles.
-- Première livraison : `dbc52162` (application), `58a9b634` (rapport). Passe de finition : `24892334`. Revue du 18 octobre : `3f8abb78` (application) puis `[DOCS_COMMIT]` (script de preuves et documentation) ; preuves capturées sur `[TESTED_COMMIT]`, arbre propre (champ `testedCommit` de [`reports/lot2b-da/preuves.json`](../../reports/lot2b-da/preuves.json)). Base de comparaison visuelle : `dbc52162` pour cette variante, `563ab003` pour la composition Codex (reconstruite localement dans un second dossier de travail, voir les limites).
+- Première livraison : `dbc52162` (application), `58a9b634` (rapport). Passe de finition : `24892334`. Revue du 18 octobre : `3f8abb78` (application), puis `9cc166fd` et `a84a5800` (documentation et recadrage d'un gros plan dans le script de preuves, aucun changement du thème ni du moteur) ; preuves capturées sur `a84a5800`, arbre propre (champ `testedCommit` de [`reports/lot2b-da/preuves.json`](../../reports/lot2b-da/preuves.json)). Base de comparaison visuelle : `dbc52162` pour cette variante, `563ab003` pour la composition Codex (reconstruite localement dans un second dossier de travail, voir les limites).
 - Consignes lues intégralement : mission [6247457951](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/134#issuecomment-6247457951) (version 08:28:10 UTC), précision « Produit à la une » [6248929074](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/134#issuecomment-6248929074), coordination [6249203547](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/134#issuecomment-6249203547), `CLAUDE.md`, briefs du ZIP (`README.md`, `MESSAGE_CODEX.txt`, `ORBE.md`, `ATELIER_RIVE.md`, `RECETTE.md`, `ASSETS.md`, `manifest.json`), rapport et plan du lot 2B de Codex.
 - Aucun merge, déploiement, publication, changement de l'accueil public du studio, nouvelle connexion ni appel IA payant (`ai_calls` vide pour les deux projets de test, vérifié par le harnais).
 
@@ -108,20 +108,20 @@ Réponse à la précision de Thomas : une vraie section produit, pas une grille 
 
 ## Vérifications réellement exécutées
 
-Revue du 18 octobre (commit `[TESTED_COMMIT]`) :
+Revue du 18 octobre (commit `a84a5800`) :
 
 | Contrôle | État | Détail |
 |---|---|---|
 | `npx tsc --noEmit` | réussite | sortie 0 |
 | `npx vitest run tests/lot2b-featured.test.ts tests/lot2b-editorial.test.ts tests/themes-catalogue.test.ts tests/theme-en.test.ts tests/theme.test.ts` | réussite | 40 tests, 5 fichiers (dont le nouveau test panier / libellé) |
 | `scripts/verify-theme.sh --rapide` | réussite | 25 cas, zéro erreur Theme Check, ZIP client valide |
-| `scripts/verify-theme.sh` complet (`JOBS=2`) | réussite : 137 cas, zéro erreur Theme Check, ZIP client valide | fichiers de thème identiques entre `3f8abb78` et `[TESTED_COMMIT]` |
+| `scripts/verify-theme.sh` complet (`JOBS=2`) | réussite : 137 cas, zéro erreur Theme Check, ZIP client valide | fichiers de thème identiques entre `3f8abb78` et `a84a5800` |
 | `scripts/lot2b-da-proof.ts` complet (4 largeurs, vidéos) | réussite | 16 visites sans erreur JavaScript ni débordement, 24 médias, visuels du panier contrôlés (page, tiroir, `cart.js`, rechargement, quantité), « par lampe » sur la fiche, la section et la barre, ajout depuis l'accueil, la fiche et la barre, 6 vidéos |
 | `scripts/lot2b-demo-local.ts` sur une base temporaire | réussite | deux projets créés, 12/12 médias chacun |
 | Suite complète `npm test` en local | non exécutée | durée ; exécutée par la CI (ci-dessous) |
 | CI GitHub « Typecheck, tests, Theme Check, build » sur `be81697a` (tête précédente) | réussite | terminée à 13:37 UTC |
 | CI GitHub « Image Docker » sur `be81697a` | réussite | terminée à 13:20 UTC |
-| CI GitHub sur `[TESTED_COMMIT]` | [CI_NEW] | relevée au moment de la rédaction |
+| CI GitHub sur `a84a5800` | réussite | « Typecheck, tests, Theme Check, build » (suite complète `npm test` incluse) terminé à 14:18 UTC, « Image Docker » à 14:04 UTC |
 | Exports CMS installés sur un CMS réel | non exécuté | hors périmètre, remises et cadeaux désactivés à l'export |
 
 Passe de finition (commit `24892334`) : tsc, 39 tests sur 5 fichiers, Theme Check complet valide (137 cas), passe de preuves complète réussie.

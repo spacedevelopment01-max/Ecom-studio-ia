@@ -1,7 +1,7 @@
 {
-  "testedCommit": "248923345b722d132e30b5905a62d4e8d1af28bc",
+  "testedCommit": "a84a58002001cd6accbbf873d27c4ecb061f3205",
   "workingTree": "clean",
-  "date": "2026-10-18T13:12:52.094Z",
+  "date": "2026-10-18T14:05:49.375Z",
   "renderMode": "es_raw=1 — thème issu des vraies routes, sans le bandeau flottant du studio",
   "widths": [
     1440,
@@ -290,6 +290,10 @@
           "display": "252,80 €"
         },
         {
+          "width": 1440,
+          "cartImages": "Charbon, Argile, Dune, pochette : quatre visuels distincts (page, tiroir, cart.js, rechargement)"
+        },
+        {
           "width": 390,
           "quantity": 1,
           "expectedTotal": 7900,
@@ -318,6 +322,10 @@
           "bar": "ajout réel depuis la barre fixe → 142,20 €, une ligne"
         },
         {
+          "width": 390,
+          "cartImages": "Charbon, Argile, Dune, pochette : quatre visuels distincts (page, tiroir, cart.js, rechargement)"
+        },
+        {
           "quantity": 3,
           "gift": "indisponible — stock zéro vérifié dans Chromium"
         }
@@ -326,7 +334,7 @@
         {
           "platform": "shopify",
           "kind": "theme",
-          "bytes": 1527606,
+          "bytes": 1527954,
           "issues": [
             "product_template_assignment_required",
             "purchase_rules_require_server"
@@ -337,7 +345,7 @@
         {
           "platform": "woocommerce",
           "kind": "theme",
-          "bytes": 1404283,
+          "bytes": 1404438,
           "issues": [
             "product_layouts_shared",
             "purchase_rules_require_server"
@@ -348,7 +356,7 @@
         {
           "platform": "prestashop",
           "kind": "theme",
-          "bytes": 1297755,
+          "bytes": 1297795,
           "issues": [
             "product_layouts_shared",
             "purchase_rules_require_server"
@@ -359,7 +367,7 @@
         {
           "platform": "wix",
           "kind": "kit",
-          "bytes": 1405178,
+          "bytes": 1405192,
           "issues": [
             "purchase_rules_require_server"
           ],
@@ -369,7 +377,7 @@
         {
           "platform": "squarespace",
           "kind": "kit",
-          "bytes": 1405133,
+          "bytes": 1405148,
           "issues": [
             "purchase_rules_require_server"
           ],
@@ -591,7 +599,7 @@
         {
           "platform": "shopify",
           "kind": "theme",
-          "bytes": 3123686,
+          "bytes": 3123988,
           "issues": [],
           "installed": false,
           "checkoutVerified": false
@@ -599,7 +607,7 @@
         {
           "platform": "woocommerce",
           "kind": "theme",
-          "bytes": 3016861,
+          "bytes": 3016885,
           "issues": [],
           "installed": false,
           "checkoutVerified": false
@@ -607,7 +615,7 @@
         {
           "platform": "prestashop",
           "kind": "theme",
-          "bytes": 2917158,
+          "bytes": 2917182,
           "issues": [],
           "installed": false,
           "checkoutVerified": false

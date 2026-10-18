@@ -4,7 +4,7 @@
 
 - Page privée de preuves (captures 1440 / 1024 / 768 / 390 px, gros plans, vidéos H.264, mesures) : https://claude.ai/artifact/9svdkBiprPc6Ji4ZNnpjUt — accessible au propriétaire du compte ; à partager depuis son menu Partager si quelqu'un d'autre doit la voir.
 - Rapport : [docs/coordination/LOT_2B_ORBE_RIVE_DA_CLAUDE.md](../../docs/coordination/LOT_2B_ORBE_RIVE_DA_CLAUDE.md). Procédure pour vérifier soi-même : [LOT_2B_VERIFICATION_LOCALE.md](../../docs/coordination/LOT_2B_VERIFICATION_LOCALE.md).
-- [preuves.json](preuves.json) : commit testé (`[TESTED_COMMIT]`, revue du 18 octobre), mesures des 16 visites (largeur, hauteur, H1, en-tête, médias manquants, position du bouton d'achat), interactions et exports générés.
+- [preuves.json](preuves.json) : commit testé (`a84a5800`, revue du 18 octobre), mesures des 16 visites (largeur, hauteur, H1, en-tête, médias manquants, position du bouton d'achat), interactions et exports générés.
 - Plans des contenus et des médias par page : [ORBE](orbe-plan-contenus-medias.json), [Atelier Rive](atelier-rive-plan-contenus-medias.json).
 
 ## Rejouer les preuves

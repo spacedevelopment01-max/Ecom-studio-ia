@@ -2,7 +2,7 @@
 
 Procédure reproductible pour lancer les deux démonstrations avec leurs données et les 24 photographies autorisées, puis dérouler les parcours de vérification. Aucun secret à fournir, aucun appel IA, aucune dépense. Les photographies restent sur le poste : elles ne sont jamais ajoutées au dépôt.
 
-**Commit testé** : `[TESTED_COMMIT]` (champ `testedCommit` de [`reports/lot2b-da/preuves.json`](../../reports/lot2b-da/preuves.json)).
+**Commit testé** : `a84a5800` (champ `testedCommit` de [`reports/lot2b-da/preuves.json`](../../reports/lot2b-da/preuves.json)).
 
 ## 1. Prérequis
 
@@ -73,7 +73,7 @@ Base temporaire isolée, réseau fournisseur interdit. Le script vérifie 16 vis
 | `scripts/lot2b-demo-local.ts` (base temporaire) | réussite | deux projets, 12/12 médias chacun, adresses produites |
 | Suite complète `npm test` en local | non exécutée | prise en charge par la CI |
 | CI GitHub sur `be81697a` (tête précédente) : « Typecheck, tests, Theme Check, build » et « Image Docker » | réussite | les deux contrôles terminés avec succès |
-| CI GitHub sur le commit testé | [CI_NEW] | relevée au moment de la rédaction |
+| CI GitHub sur le commit testé | réussite | « Typecheck, tests, Theme Check, build » (suite complète `npm test` incluse) terminé à 14:18 UTC, « Image Docker » à 14:04 UTC |
 | Manipulation indépendante par le reviewer | non exécutée | c'est l'objet de la procédure ci-dessus |
 | Exports installés sur un CMS | non exécuté | hors périmètre de cette mission |
 
