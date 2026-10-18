@@ -35,7 +35,7 @@ export type StoreProduct = {
   currency: string;
   options: string[];
   /** image : fichier de la galerie montré quand la variante est choisie (ex. le coloris). */
-  variants: { title: string; options: string[]; price: number | null; available: boolean; sku?: string; image?: string }[];
+  variants: { title: string; options: string[]; price: number | null; available: boolean; inventory_quantity?: number; sku?: string; image?: string }[];
   images: string[]; // noms de fichiers d'assets (aperçu) — ordre de la galerie
   tags: string[];
   /** Titre et méta-description du produit pour les moteurs de recherche (envoyés à la plateforme). */
@@ -128,6 +128,8 @@ export type ThemeSpec = {
   /** Données de la boutique (produit, pages, menus). Séparées du thème ; utilisées par l'aperçu et l'import. */
   store: {
     shopName: string;
+    /** Moyens de paiement confirmés ; aucun logo présumé dans l’aperçu. */
+    paymentTypes?: string[];
     /** Produit principal (mono-produit) ou produit phare du catalogue. */
     product: StoreProduct;
     /** Autres produits du catalogue (boutiques multi-produit et niche). */

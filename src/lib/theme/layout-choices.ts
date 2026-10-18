@@ -16,6 +16,8 @@ export type LayoutChoice = {
 
 /** Réglages proposés, dans l'ordre d'affichage. Seuls ceux présents dans le schéma de la section sont gardés. */
 const KEYS: Record<string, string[]> = {
+  "purchase-offers": ["purchase_style", "purchase_enabled"],
+  "ref-narrative": ["motion"],
   "ref-hero": ["layout", "heading_tag", "motion"],
   "ref-editorial": ["layout", "motion"],
   "ref-offers": ["layout"],

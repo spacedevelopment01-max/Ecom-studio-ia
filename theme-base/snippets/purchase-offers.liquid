@@ -1,0 +1,40 @@
+{%- liquid
+ assign target = offer_settings.product_target | default: product.es_content_target
+ assign has_offers = false
+ for offer in blocks
+   if offer.type == 'quantity_offer'
+     assign has_offers = true
+   endif
+ endfor
+-%}
+{% if has_offers %}
+<div class="purchase purchase--{{ offer_settings.purchase_style | default: 'outlined' }}" data-purchase data-target="{{ target | escape }}" data-preview="{% if request.host == 'apercu' %}true{% else %}false{% endif %}" data-add-url="{{ routes.cart_add_url }}" data-cart-url="{{ routes.cart_url }}" data-currency="{{ shop.currency | default: 'EUR' }}" data-language="{{ request.locale.iso_code }}">
+ <h2 class="purchase__heading">{{ offer_settings.purchase_heading | escape }}</h2>
+ <fieldset class="purchase__offers"><legend class="visually-hidden">{{ 'purchase.summary' | t }}</legend>
+ {% for offer in blocks %}{% if offer.type == 'quantity_offer' %}
+  <label class="purchase__offer" {{ offer.shopify_attributes }}>
+   <input type="radio" name="offer-{{ section_id }}" value="{{ offer.id }}" data-quantity="{{ offer.settings.quantity }}" data-discount="{{ offer.settings.discount | default: 0 }}"{% if offer.settings.price_mode == 'fixed_total' %} data-fixed-total="{{ offer.settings.total_price }}"{% endif %}{% if offer.settings.recommended %} checked{% endif %}>
+   <span class="purchase__offer-copy"><strong>{{ offer.settings.title | escape }}</strong><span>{{ offer.settings.quantity }} {% if offer.settings.quantity == 1 %}{{ 'purchase.item' | t }}{% else %}{{ 'purchase.items' | t }}{% endif %}</span>{% if offer.settings.recommended %}<span class="purchase__badge">{{ 'purchase.recommended' | t }}</span>{% elsif offer.settings.badge != blank %}<span class="purchase__badge">{{ offer.settings.badge | escape }}</span>{% endif %}</span>
+   <span class="purchase__prices"><strong data-offer-total></strong><span data-offer-unit></span><span data-offer-saving hidden></span></span>
+  </label>
+ {% endif %}{% endfor %}
+ </fieldset>
+ <fieldset class="purchase__variants"><legend>{{ 'purchase.choose' | t }}</legend><div data-offer-variants></div></fieldset>
+ <div class="purchase__gifts">{% for gift in blocks %}{% if gift.type == 'threshold_gift' %}
+  {% assign gift_product = all_products[gift.settings.gift_handle] %}{% assign gift_variant = gift_product.selected_or_first_available_variant %}
+  {% if gift.settings.sku != blank %}{% assign gift_variant = nil %}{% for variant in gift_product.variants %}{% if variant.sku == gift.settings.sku %}{% assign gift_variant = variant %}{% endif %}{% endfor %}{% endif %}
+  {% if gift_product != blank %}<div class="purchase__gift" data-gift data-threshold="{{ gift.settings.threshold }}" data-available="{{ gift_variant.available }}" data-stock="{{ gift_variant.inventory_quantity }}" data-gift-quantity="{{ gift.settings.quantity }}" {{ gift.shopify_attributes }}>
+    {% if gift_product.featured_image %}{{ gift_product.featured_image | image_url: width: 120 | image_tag: loading: 'lazy', alt: gift_product.title }}{% endif %}
+    <span><strong>{{ gift_product.title | escape }}</strong><span>{{ gift.settings.quantity }} {{ 'purchase.gift' | t }} · <span data-gift-state>{{ 'purchase.locked' | t }} {{ gift.settings.threshold }} {{ 'purchase.items' | t }}</span></span></span>
+  </div>{% endif %}
+ {% endif %}{% endfor %}</div>
+ <ul class="purchase__benefits" role="list">{% for benefit in blocks %}{% if benefit.type == 'purchase_benefit' and benefit.settings.title != blank %}<li {{ benefit.shopify_attributes }}>{% render 'icon', name: benefit.settings.icon %}<span>{{ benefit.settings.title | escape }}</span></li>{% endif %}{% endfor %}</ul>
+ <p class="purchase__summary" aria-live="polite"><span>{{ 'purchase.summary' | t }}</span><strong data-purchase-total></strong></p>
+ <button class="es-button purchase__submit" type="button" data-purchase-add>{{ 'purchase.add' | t }}</button>
+ <p class="es-form-error" role="alert" data-purchase-error hidden></p>
+ <noscript><p>{{ 'purchase.configure' | t }}</p>{% render 'product-buy', product: product, section_id: section_id, show_quantity: true, show_dynamic_checkout: false %}</noscript>
+ {% if request.host == 'apercu' %}<p class="purchase__notice">{{ 'purchase.demo' | t }}</p>{% endif %}
+ <script type="application/json" data-purchase-variants>{{ product.variants | json }}</script>
+ <script type="application/json" data-purchase-strings>{"unit":{{ 'purchase.unit' | t | json }},"save":{{ 'purchase.save' | t | json }},"included":{{ 'purchase.included' | t | json }},"locked":{{ 'purchase.locked' | t | json }},"items":{{ 'purchase.items' | t | json }},"unavailable":{{ 'purchase.unavailable' | t | json }}}</script>
+</div>
+{% else %}{% render 'product-buy', product: product, section_id: section_id, show_quantity: true, show_dynamic_checkout: false %}{% endif %}

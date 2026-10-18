@@ -9,6 +9,7 @@ import { currentTheme, themeVersion } from "@/lib/projects";
 import { compileTheme, importedBinary, themeAssetBinary } from "@/lib/theme/compile";
 import { libraryLoader } from "@/lib/theme/loader";
 import { fontFilePath, renderNamedSections, renderPage, variantId, type PreviewCartLine } from "@/lib/theme/render";
+import { addOfferToCart, reconcileOfferCart, purchaseErrorMessage, rebindOfferLines } from "@/lib/theme/purchase-offers";
 import { storeProducts } from "@/lib/theme/spec";
 import { previewTools, stockBadgeTool } from "@/lib/theme/preview-tools";
 import { stockPhotoLabel, stockPhotosInTheme } from "@/lib/theme/stock-notice";
@@ -91,9 +92,9 @@ function cartJson(spec: ThemeSpec, cart: PreviewCartLine[]) {
   const table = variantTable(spec);
   const items = cart.filter((l) => table.has(l.variantId)).map((l, i) => {
     const v = table.get(l.variantId)!;
-    return { key: `${l.variantId}:${i}`, id: l.variantId, quantity: l.quantity, title: v.title, price: v.price, final_line_price: v.price * l.quantity };
+    return { key: l.offerGroup ? `${l.offerGroup}:${l.variantId}:${l.gift ? "gift" : "item"}` : `${l.variantId}:${i}`, id: l.variantId, quantity: l.quantity, title: v.title, price: v.price, final_line_price: l.finalLinePrice ?? v.price * l.quantity };
   });
-  return { item_count: items.reduce((s, x) => s + x.quantity, 0), items, total_price: items.reduce((s, x) => s + x.final_line_price, 0), currency: "EUR" };
+  return { item_count: items.reduce((s, x) => s + x.quantity, 0), items, total_price: items.reduce((s, x) => s + x.final_line_price, 0), currency: spec.store.product.currency || "EUR" };
 }
 
 async function sectionsFor(spec: ThemeSpec, base: string, cart: PreviewCartLine[], names: string | null) {
@@ -147,7 +148,11 @@ async function get(req: Request, ctx: P): Promise<Response> {
     if (!f) return new Response(null, { status: 404 });
     return new Response(new Uint8Array(fs.readFileSync(f)), { headers: { "Content-Type": "font/ttf", "Cache-Control": "public, max-age=31536000, immutable" } });
   }
-  const cart = await readCart(id);
+  if (path === "/cart/change" && url.searchParams.has("quantity")) {
+    return post(new Request(req.url, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: url.searchParams.toString() }), ctx);
+  }
+  let cart: PreviewCartLine[];
+  try { cart = reconcileOfferCart(spec, await readCart(id)); } catch (e) { throw new HttpError(422, purchaseErrorMessage(e, spec.language ?? "fr")); }
   if (path === "/cart.js" || (path === "/cart" && req.headers.get("accept")?.includes("application/json"))) return Response.json(cartJson(spec, cart));
   if (url.searchParams.get("sections")) return Response.json(await sectionsFor(spec, base, cart, url.searchParams.get("sections")));
   const r = await renderPage({ spec, base, cart }, path, url.searchParams);
@@ -158,30 +163,44 @@ async function get(req: Request, ctx: P): Promise<Response> {
 async function post(req: Request, ctx: P): Promise<Response> {
   const { id, spec, segs, base } = await load(req, ctx);
   const path = "/" + segs.join("/");
-  let cart = await readCart(id);
+  let cart: PreviewCartLine[];
+  try { cart = rebindOfferLines(spec, await readCart(id)); } catch (e) { throw new HttpError(422, purchaseErrorMessage(e, spec.language ?? "fr")); }
   const ct = req.headers.get("content-type") ?? "";
-  const data: Record<string, any> = ct.includes("application/json") ? await req.json() : Object.fromEntries((await req.formData()).entries());
+  let data: Record<string, any>;
+  if (ct.includes("application/json")) data = await req.json();
+  else { const form = await req.formData(); data = Object.fromEntries(form.entries()); if (form.has("updates[]")) data.updates = form.getAll("updates[]").map(Number); }
   const table = variantTable(spec);
   if (path === "/cart/add" || path === "/cart/add.js") {
-    const requested = Number(data.id ?? data["items[0][id]"] ?? 1000);
-    const vid = table.has(requested) ? requested : 1000;
-    const qty = Math.max(1, Math.min(99, Number(data.quantity ?? 1)));
-    const line = cart.find((l) => l.variantId === vid);
-    if (line) line.quantity += qty;
-    else cart.push({ variantId: vid, quantity: qty });
+    try {
+      if (data.offer) cart = addOfferToCart(spec, cart, { target: String(data.target ?? ""), offer: String(data.offer), variants: Array.isArray(data.variants) ? data.variants.map(Number) : [] });
+      else {
+        const items = Array.isArray(data.items) ? data.items : [{ id: data.id ?? data["items[0][id]"], quantity: data.quantity ?? 1 }];
+        if (!items.length || items.length > 20) throw new Error("Quantité invalide.");
+        for (const item of items) {
+          const vid = Number(item.id), qty = Number(item.quantity);
+          if (!table.has(vid) || !Number.isSafeInteger(qty) || qty < 1 || qty > 99) throw new Error("Variante ou quantité invalide.");
+          const line = cart.find((l) => l.variantId === vid && !l.offerGroup);
+          if (line) line.quantity += qty; else cart.push({ variantId: vid, quantity: qty });
+        }
+      }
+    } catch (e) { return Response.json({ description: purchaseErrorMessage(e, spec.language ?? "fr") }, { status: 422 }); }
   } else if (path === "/cart/change" || path === "/cart/change.js") {
-    const key = String(data.id ?? data.line ?? "");
-    const qty = Math.max(0, Number(data.quantity ?? 0));
-    // Clé « variante:rang », identifiant de variante, ou numéro de ligne (1, 2, …).
-    const n = Number(key);
-    const vid = key.includes(":") ? Number(key.split(":")[0]) : n >= 1 && n < 100 ? cart[n - 1]?.variantId : n;
-    cart = cart.map((l) => (l.variantId === vid ? { ...l, quantity: qty } : l));
-  } else if (path === "/cart/update" || path === "/cart/update.js") {
-    const updates = Object.entries(data).filter(([k]) => k.startsWith("updates")).map(([, v]) => Number(v));
+    const key = String(data.id ?? data.line ?? ""), qty = Number(data.quantity ?? 0);
+    if (!Number.isSafeInteger(qty) || qty < 0 || qty > 99) return Response.json({ description: "Quantité invalide." }, { status: 422 });
+    const json = cartJson(spec, cart);
+    const exact = json.items.findIndex((item) => item.key === key);
+    const n = Number(key), index = exact >= 0 ? exact : n >= 1 && n < 100 ? n - 1 : cart.findIndex((l) => l.variantId === n && !l.gift);
+    if (cart[index]?.gift) return Response.json({ description: "Le cadeau est recalculé depuis son lot." }, { status: 422 });
+    cart = cart.map((l, i) => i === index ? { ...l, quantity: qty } : l);
+  } else if (path === "/cart/update" || path === "/cart/update.js" || (path === "/cart" && !Object.hasOwn(data, "checkout"))) {
+    const updates = Array.isArray(data.updates) ? data.updates : Object.entries(data).filter(([k]) => k.startsWith("updates")).map(([, v]) => Number(v));
+    if (updates.some((v) => !Number.isSafeInteger(v) || v < 0 || v > 99)) return Response.json({ description: "Quantité invalide." }, { status: 422 });
     cart = cart.map((l, i) => ({ ...l, quantity: updates[i] ?? l.quantity }));
   } else {
     return new Response(L("Action d'aperçu non prise en charge", "Preview action not supported"), { status: 404 });
   }
+  try { cart = reconcileOfferCart(spec, cart); } catch (e) { return Response.json({ description: purchaseErrorMessage(e, spec.language ?? "fr") }, { status: 422 }); }
+  if (cart.length > 20) return Response.json({ description: "Trop de lignes de panier." }, { status: 422 });
   await writeCart(id, cart);
   const sections = await sectionsFor({ ...spec }, base, cart, data.sections ?? null);
   if (ct.includes("application/json") || req.headers.get("accept")?.includes("application/json") || path.endsWith(".js") || data.sections) {

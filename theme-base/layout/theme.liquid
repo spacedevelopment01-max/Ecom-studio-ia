@@ -115,7 +115,10 @@
       };
       window.themeSettings = { moneyFormat: {{ shop.money_format | json }}, cartType: {{ settings.cart_type | json }}, motion: {{ settings.motion_enabled | json }}, parallax: {{ settings.motion_parallax | json }} };
     </script>
-  </head>
+    {{ 'purchase-offers.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'purchase-offers.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'reference-interactions.js' | asset_url }}" defer="defer"></script>
+</head>
 
   <body data-ds="{{ settings.ds_language | default: 'none' }}" data-density="{{ settings.ds_density | default: 'balanced' }}" class="es-body dir-{{ settings.style_preset }} template-{{ template.name }}{% if template.suffix %} template-{{ template.name }}-{{ template.suffix }}{% endif %} button-{{ settings.button_style }} header-{{ settings.header_shape }} card-{{ settings.card_style }}{% if settings.button_shine %} has-shine{% endif %}{% if settings.glow_enabled %} has-glow{% endif %}{% if settings.motion_enabled %} motion-on{% endif %} color-scheme-1">
     <a class="skip-link visually-hidden-focusable" href="#MainContent">{{ 'accessibility.skip_to_text' | t }}</a>

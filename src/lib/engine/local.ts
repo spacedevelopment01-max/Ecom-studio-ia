@@ -1,3 +1,4 @@
+import { purchaseCommand } from "../theme/purchase-command";
 /**
  * Moteur local : outils déterministes utilisés lorsque aucun fournisseur
  * d'IA n'est configuré (ou en secours). Ils produisent une base de travail
@@ -890,6 +891,8 @@ function buttonColorTargets(spec: ThemeSpec): { key: string; schemes: string[] }
  * la réponse suit la langue de l'interface (L), les textes ajoutés au thème celle des contenus (C).
  */
 export function localThemeCommand(spec: ThemeSpec, message: string, selection: { template: string; section: string; block?: string; kind?: string; path?: string; role?: string; text?: string } | null, business: BusinessType = "products"): { ops: ThemeOp[]; reply: string; revert: boolean; direction?: DirectionId } {
+  const commercial = purchaseCommand(spec, message, selection);
+  if (commercial) return commercial;
   const services = business === "services";
   const m = message.toLowerCase();
   if (/(reviens|revenir|annule|version précédente|\bundo\b|go back|revert|previous version|roll ?back)/.test(m)) return { ops: [], reply: L("Je reviens à la version précédente.", "Going back to the previous version."), revert: true };

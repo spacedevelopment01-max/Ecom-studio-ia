@@ -4,9 +4,11 @@
  *   MÉDIAS (refusés exclus) → REGISTRE DES CAPACITÉS → ADAPTATEUR DE LA PLATEFORME → CONTRÔLES → QUALITY GATE.
  * Une seule représentation (le ThemeSpec et ses gabarits), aucun générateur artistique par plateforme.
  */
+import { unzipSync, zipSync, strToU8 } from "fflate";
 import type { AssetLoader } from "../theme/compile";
 import { renderPage } from "../theme/render";
 import type { ThemeSpec } from "../theme/spec";
+import { guardPurchaseExport, purchaseExportManifest } from "../theme/purchase-offers";
 import { exportKit } from "../theme/platforms";
 import { exportShopify } from "./adapters/shopify";
 import { exportWordPress } from "./adapters/wordpress";
@@ -27,7 +29,8 @@ export function safeFileName(name: string): string {
 
 /** Génère l'export d'une plateforme. Les médias refusés ou fatals ne sont JAMAIS exportés. */
 export async function cmsExport(platform: CmsPlatform, spec0: ThemeSpec, load: AssetLoader, opts: { projectId?: string } = {}): Promise<PlatformExport> {
-  const spec = adaptForPlatform(spec0, platform);
+  const guardedOffers = guardPurchaseExport(spec0, platform);
+  const spec = adaptForPlatform(guardedOffers.spec, platform);
   const { forbidden } = forbiddenMedia(spec, opts.projectId);
   const blockedIds = new Set([...forbidden].map((f) => spec.files[f]));
   const guarded: AssetLoader = (id) => (blockedIds.has(id) ? null : load(id));
@@ -40,6 +43,15 @@ export async function cmsExport(platform: CmsPlatform, spec0: ThemeSpec, load: A
     exp = { platform, zip: k.zip, name: k.name, kind: "kit", files: [], issues: [], sections: [], media: Object.keys(spec.files).filter((f) => !forbidden.has(f)) };
   }
   exp.name = safeFileName(exp.name);
+  const purchaseRules = purchaseExportManifest(spec0);
+  if (purchaseRules) {
+    const entries = unzipSync(exp.zip);
+    const prefix = platform === "woocommerce" ? `${exp.files[0].split("/")[0]}/` : "";
+    const file = `${prefix}${["wix","squarespace"].includes(platform) ? "offres-a-configurer.json" : "assets/es-purchase-offers.json"}`;
+    entries[file] = strToU8(JSON.stringify({ ...purchaseRules, platform, activeDiscountsAndGifts:false }, null, 2));
+    exp.zip = Buffer.from(zipSync(entries)); if (!exp.files.includes(file)) exp.files.push(file);
+  }
+  if (guardedOffers.disabled.length) exp.issues.push({ code: "purchase_rules_require_server", severity: "warning", detail: `Offres avancées désactivées : ${guardedOffers.disabled.join(", ")}. Remises et cadeaux nécessitent un adaptateur commercial serveur installé et vérifié sur ${platform}. Configuration conservée dans le studio ; achat natif maintenu.` });
   for (const f of forbidden) exp.issues.push({ code: "rejected_media", severity: "blocking", detail: `média ${f} refusé : non exporté (à remplacer dans le studio)` });
   return exp;
 }

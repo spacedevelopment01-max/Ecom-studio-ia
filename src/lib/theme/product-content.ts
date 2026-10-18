@@ -91,6 +91,18 @@ export function bindProductContent(spec: ThemeSpec, p: Project, principalTemplat
         tpl.order.push("own_fact");
       }
     }
+    // Seulement la nouvelle composition générée ; une retouche client conservée n'est pas transformée.
+    if (spec.meta?.reference?.kind === "products" && templateSource === "generated") {
+      const ownImages = product.images.filter((f, i, list) => list.findIndex((x) => spec.files[x] === spec.files[f]) === i);
+      for (const section of Object.values(tpl.sections)) if (section.type === "scroll-story") {
+        section.type = "ref-narrative";
+        section.settings = { ...section.settings, motion: "reveal", padding_top: 80, padding_bottom: 80 };
+        (section.block_order ?? Object.keys(section.blocks ?? {})).forEach((id, i) => {
+          const b = section.blocks?.[id]; if (!b) return;
+          b.type = "chapter"; b.settings.image_asset = ownImages[i + 1] ?? ""; b.settings.image_alt = product.title;
+        });
+      }
+    }
     // Les IDs de sections sont propres au produit : un style ciblé sur une fiche ne colore pas ses voisines.
     if (templateSource === "generated") {
       const prefix = `p_${hash(target).slice(0, 8)}_`;

@@ -17,10 +17,11 @@
                 {%- unless item.product.has_only_default_variant -%}<p class="es-muted es-small">{{ item.variant.title }}</p>{%- endunless -%}
                 <p class="es-small">{{ item.final_price | money }}</p>
                 <label class="visually-hidden" for="Qty-{{ forloop.index }}">{{ 'products.product.quantity' | t }}</label>
-                <input class="es-qty-input" id="Qty-{{ forloop.index }}" type="number" name="updates[]" value="{{ item.quantity }}" min="0" data-cart-qty="{{ item.key }}">
+                <input class="es-qty-input" id="Qty-{{ forloop.index }}" type="number" name="updates[]" value="{{ item.quantity }}" min="0" data-cart-qty="{{ item.key }}"{% if item.properties._es_gift %} disabled{% endif %}>
+                {% if item.properties._es_gift %}<input type="hidden" name="updates[]" value="{{ item.quantity }}">{% endif %}
               </div>
               <div class="es-line-item__total">{{ item.final_line_price | money }}</div>
-              <a href="{{ item.url_to_remove }}" class="es-line-item__remove es-link-button">{{ 'cart.remove' | t }}</a>
+              {% unless item.properties._es_gift %}<a href="{{ item.url_to_remove }}" class="es-line-item__remove es-link-button">{{ 'cart.remove' | t }}</a>{% else %}<span class="es-small">{{ 'purchase.gift' | t }}</span>{% endunless %}
             </li>
           {%- endfor -%}
         </ul>

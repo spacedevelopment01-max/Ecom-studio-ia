@@ -42,6 +42,7 @@ export function SectionLibrary({
   busy,
   projectId,
   versionId,
+  template,
   aiAvailable,
   onGenerate,
   generateLocked,
@@ -55,6 +56,7 @@ export function SectionLibrary({
   busy?: string | null;
   projectId: string;
   versionId?: string;
+  template?: string;
   aiAvailable: boolean;
   onGenerate: (description: string) => Promise<void>;
   /** Forfait Créer : la génération d'une section par l'IA est réservée à Vendre et Dominer. */
@@ -135,7 +137,7 @@ export function SectionLibrary({
           {sel === GENERATE || !current ? (
             <GeneratePane aiAvailable={aiAvailable} onGenerate={onGenerate} locked={!!generateLocked} />
           ) : (
-            <PreviewPane key={current.type} item={current} projectId={projectId} versionId={versionId} onAdd={() => onPick(current.type)} adding={busy === current.type} disabled={!!busy} sameOrigin={sameOrigin} />
+            <PreviewPane key={current.type} item={current} projectId={projectId} versionId={versionId} template={template} onAdd={() => onPick(current.type)} adding={busy === current.type} disabled={!!busy} sameOrigin={sameOrigin} />
           )}
         </div>
       </div>
@@ -144,7 +146,7 @@ export function SectionLibrary({
 }
 
 /** Aperçu en direct : la section rendue seule dans le thème du projet, mise à l'échelle du panneau. */
-function PreviewPane({ item, projectId, versionId, onAdd, adding, disabled, sameOrigin }: { item: LibraryItem; projectId: string; versionId?: string; onAdd: () => void; adding: boolean; disabled: boolean; sameOrigin?: boolean }) {
+function PreviewPane({ item, projectId, versionId, template, onAdd, adding, disabled, sameOrigin }: { item: LibraryItem; projectId: string; versionId?: string; template?: string; onAdd: () => void; adding: boolean; disabled: boolean; sameOrigin?: boolean }) {
   const t = useT();
   const box = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
@@ -168,7 +170,7 @@ function PreviewPane({ item, projectId, versionId, onAdd, adding, disabled, same
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
-  const src = `/api/projects/${projectId}/theme/section-preview?type=${encodeURIComponent(item.type)}${versionId ? `&v=${versionId}` : ""}`;
+  const src = `/api/projects/${projectId}/theme/section-preview?type=${encodeURIComponent(item.type)}&template=${encodeURIComponent(template ?? "index")}${versionId ? `&v=${versionId}` : ""}`;
   return (
     <div className="flex h-full flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4">

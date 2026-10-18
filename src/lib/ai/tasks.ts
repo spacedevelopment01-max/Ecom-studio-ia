@@ -767,6 +767,8 @@ export async function aiThemeChat(
       prompt: `Page affichée dans l'aperçu : ${input.page}
 Structure de la boutique (gabarits concernés) :\n${outline(spec, templates)}
 Autres gabarits : ${Object.keys(spec.templates).join(", ")}
+Achat avancé (main-product ou purchase-offers) : source unique = réglages et blocs quantity_offer, threshold_gift, purchase_benefit. Ne crée aucune remise, prix barré, livraison offerte, cadeau, avis ou popularité sans information commerciale explicite du client. Si une règle manque, pose seulement la question nécessaire sans appliquer un lot partiel. Cadeaux : choisis gift_product dans le catalogue identifié ; gift_target conserve son identité stable. La remise/cadeau de l’aperçu ne constitue pas un support vérifié au paiement des exports. Acheter maintenant uniquement si le système commercial le prend réellement en charge. Les services utilisent comparaison/devis/réservation sans panier physique.
+Catalogue disponible pour ces réglages : ${JSON.stringify([spec.store.product, ...(spec.store.products ?? [])].map((p) => ({ target: p.contentTarget, handle: p.handle, title: p.title, price: p.price, currency: p.currency, variants: p.variants.map((v) => ({ title: v.title, sku: v.sku, available: v.available })) })))}
 Couleurs (set_scheme_color) : ${JSON.stringify(spec.settings.color_schemes)}
 Fichiers d'images du thème : ${Object.keys(spec.files).join(", ")}
 Pièces jointes du message (use_media avec assetId) : ${input.attachments.map((a) => `${a.name}=${a.assetId}`).join(", ") || "aucune"}

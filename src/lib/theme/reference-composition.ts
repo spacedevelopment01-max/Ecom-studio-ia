@@ -25,7 +25,7 @@ export function referenceHomeRows(input: BuildInput, c: ShopCopy, k: Kit, svc: S
   const questionRows: Row[] = faq.length ? [["v2-faq", { ...shared, heading: c.faq.heading, layout: svc ? "center" : "side" }, faq.map((x) => ({ type: "question", settings: { question: x.q, answer: html(x.a) } }))]] : [];
   const method: Row[] = k.v2.steps("line", 1).map((row): Row => {
     const blocks = row[2]?.filter((b) => real(String(b.settings.title ?? "")) && real(String(b.settings.text ?? ""))) ?? [];
-    return [row[0], row[1], blocks, { disabled: blocks.length < 2 }];
+    return ["ref-narrative", { ...row[1], heading: c.story.heading, motion: "reveal", padding_top: 80, padding_bottom: 80 }, blocks.map((b, i) => ({ type: "chapter", settings: { ...b.settings, image_asset: photos[i] ?? "", image_alt: String(b.settings.title ?? "") } })), { disabled: blocks.length < 2 }];
   });
   if (svc) {
     const offers: Row = ["ref-offers", { ...shared, layout: "studio", heading: t("Une réponse à votre projet", "An approach for your project"), text: "", button_label: svc.cta.label, button_link: svc.cta.url }, svc.services.map((s) => ({ type: "offer", settings: { title: s.name, text: html(s.description), image_asset: s.key ? im.byService?.[`service:${s.key}`] ?? "" : "", image_alt: s.name, price: s.price ?? "", duration: s.duration ?? "", link: svc.urls.services } }))];

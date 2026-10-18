@@ -84,7 +84,7 @@ class ColorDrop extends Drop {
 
 // ---------------------------------------------------------------- données
 
-export type PreviewCartLine = { variantId: number; quantity: number };
+export type PreviewCartLine = import("./purchase-offers").OfferLine;
 export type PreviewOptions = {
   spec: ThemeSpec;
   base: string; // ex. /preview/<projet>/v/<version>
@@ -129,8 +129,10 @@ function productDrop(sp: StoreProduct, pi: number, base: string) {
     option3: v.options[2] ?? null,
     price: v.price ?? sp.price,
     compare_at_price: sp.compare_at_price,
-    available: v.available,
+    available: v.available && (v.inventory_quantity === undefined || v.inventory_quantity > 0),
     sku: v.sku ?? "",
+    inventory_quantity: v.inventory_quantity,
+    inventory_management: v.inventory_quantity === undefined ? null : "shopify",
     url: `${url}?variant=${variantId(pi, i)}`,
     featured_media: withPreview[v.image ? Math.max(0, sp.images.indexOf(v.image)) : 0] ?? null,
     unit_price_measurement: null,
@@ -140,6 +142,7 @@ function productDrop(sp: StoreProduct, pi: number, base: string) {
   const prices = variants.map((v) => v.price ?? 0);
   return {
     id: pi + 1,
+    es_content_target: sp.contentTarget,
     title: sp.title,
     handle: sp.handle,
     url,
@@ -232,8 +235,9 @@ function buildStore(opts: PreviewOptions, current: { product?: string; collectio
     .map(({ l, hit }, i) => {
       const { v, p } = hit!;
       const price = v.price ?? 0;
+      const finalLine = l.finalLinePrice ?? price * l.quantity;
       return {
-        key: `${v.id}:${i}`,
+        key: l.offerGroup ? `${l.offerGroup}:${v.id}:${l.gift ? "gift" : "item"}` : `${v.id}:${i}`,
         id: v.id,
         quantity: l.quantity,
         title: p.has_only_default_variant ? p.title : `${p.title} - ${v.title}`,
@@ -241,10 +245,11 @@ function buildStore(opts: PreviewOptions, current: { product?: string; collectio
         image: p.featured_image ?? null,
         product: p,
         variant: v,
+        properties: l.gift ? { _es_gift: true } : {},
         price,
-        final_price: price,
+        final_price: l.quantity ? Math.round(finalLine / l.quantity) : price,
         line_price: price * l.quantity,
-        final_line_price: price * l.quantity,
+        final_line_price: finalLine,
         url_to_remove: `${base}/cart/change?line=${i + 1}&quantity=0`,
       };
     });
@@ -264,7 +269,7 @@ function buildStore(opts: PreviewOptions, current: { product?: string; collectio
     money_format: lang === "en" ? "€{{amount}}" : "{{amount_with_comma_separator}} €",
     customer_accounts_enabled: false,
     policies,
-    enabled_payment_types: ["visa", "master", "american_express", "paypal", "apple_pay", "google_pay"],
+    enabled_payment_types: spec.store.paymentTypes ?? [],
     password_message: "",
   };
   const routes = {
@@ -660,12 +665,14 @@ function* renderSectionGen(engine: Liquid, ctx: Context, emitter: Emitter, files
     .filter((x) => x.b && !x.b.disabled)
     .map(({ bid, b }) => {
       const bs = schema.blocks.find((x) => x.type === b!.type);
+      const blockSettings = { ...b!.settings };
+      if (b!.type === "threshold_gift") blockSettings.gift_handle = (ctx.getAll() as any).__purchaseTargets?.[String(b!.settings.gift_target)] ?? "";
       const btypes = new Map<string, string>();
       for (const s of bs?.settings ?? []) if (s.id) btypes.set(s.id, s.type);
       return {
         id: bid,
         type: b!.type,
-        settings: wrapSettings(withDefaults(bs?.settings, b!.settings), base, btypes, resolve),
+        settings: wrapSettings(withDefaults(bs?.settings, blockSettings), base, btypes, resolve),
         shopify_attributes: `data-es-block="${bid}"`,
       };
     });
@@ -791,6 +798,7 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     search: { performed: !!q, terms: q, results, results_count: results.length },
     recommendations: { performed: store.recommendations.length > 0, products: store.recommendations, products_count: store.recommendations.length },
     all_products: Object.fromEntries(store.products.map((p: any) => [p.handle, p])),
+    __purchaseTargets: Object.fromEntries(storeProducts(opts.spec).filter((p) => p.contentTarget).map((p) => [p.contentTarget!, p.handle])),
     customer: null,
     request: { page_type: tplKey.split(".")[0], locale: { iso_code: lang }, origin: "", design_mode: !!opts.designMode, path: pathname, host: "apercu" },
     template: { name: tplKey.split(".")[0], suffix: tplKey.includes(".") ? tplKey.split(".")[1] : null, directory: null },

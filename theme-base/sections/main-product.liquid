@@ -66,7 +66,7 @@
             {%- when 'text' -%}
               <div class="es-rte es-product__text" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
             {%- when 'buy_buttons' -%}
-              <div {{ block.shopify_attributes }} id="MainBuy">{% render 'product-buy', product: product, section_id: section.id, show_quantity: block.settings.show_quantity, show_dynamic_checkout: block.settings.show_dynamic_checkout, picker: block.settings.picker, price_in_button: block.settings.price_in_button %}</div>
+              <div {{ block.shopify_attributes }} id="MainBuy">{% if section.settings.purchase_enabled %}{% render 'purchase-offers', product: product, blocks: section.blocks, offer_settings: section.settings, section_id: section.id %}{% else %}{% render 'product-buy', product: product, section_id: section.id, show_quantity: block.settings.show_quantity, show_dynamic_checkout: block.settings.show_dynamic_checkout, picker: block.settings.picker, price_in_button: block.settings.price_in_button %}{% endif %}</div>
             {%- when 'description' -%}
               <div class="es-rte es-product__description" {{ block.shopify_attributes }}>{{ product.description }}</div>
             {%- when 'highlights' -%}
@@ -246,6 +246,10 @@
   "tag": "div",
   "class": "es-section-wrapper",
   "settings": [
+    {"type": "checkbox", "id": "purchase_enabled", "label": "Activer les offres par quantité", "default": false},
+    {"type": "select", "id": "purchase_style", "label": "Style des offres", "default": "outlined", "options": [{"value": "outlined", "label": "Cartes soulignées"}, {"value": "compact", "label": "Lignes compactes"}, {"value": "soft", "label": "Cartes douces"}]},
+    {"type": "text", "id": "product_target", "label": "Identité du produit", "info": "Identité stable du catalogue, jamais son nom. Vide : produit de la page."},
+    {"type": "text", "id": "purchase_heading", "label": "Titre des offres", "default": "Choisissez votre offre"},
     { "type": "checkbox", "id": "enable_zoom", "label": "Agrandissement des images au clic", "default": true },
     { "type": "select", "id": "gallery_layout", "label": "Galerie", "default": "stack", "options": [
       { "value": "stack", "label": "Images empilées" },
@@ -258,6 +262,9 @@
     { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
   ],
   "blocks": [
+    {"type": "quantity_offer", "name": "Offre par quantité", "settings": [{"type": "text", "id": "title", "label": "Libellé de l’offre", "default": "Votre offre"}, {"type": "range", "id": "quantity", "label": "Nombre d’articles", "min": 1, "max": 20, "step": 1, "default": 1}, {"type": "range", "id": "discount", "label": "Remise configurée (%)", "min": 0, "max": 100, "step": 1, "default": 0}, {"type": "checkbox", "id": "recommended", "label": "Offre recommandée", "default": false}, {"type": "text", "id": "badge", "label": "Badge éditorial", "info": "Sans classement ni popularité non vérifiée."}, {"type": "select", "id": "price_mode", "label": "Règle de prix", "default": "discount", "options": [{"value": "discount", "label": "Remise sur les prix unitaires"}, {"value": "fixed_total", "label": "Prix total fixe du lot"}]}, {"type": "number", "id": "total_price", "label": "Prix total du lot en centimes", "default": -1, "info": "À renseigner pour un prix fixe. Même total pour toutes les variantes du lot."}]},
+    {"type": "threshold_gift", "name": "Cadeau par palier", "settings": [{"type": "product", "id": "gift_product", "label": "Article cadeau du catalogue"}, {"type": "text", "id": "gift_target", "label": "Identité du cadeau au catalogue"}, {"type": "text", "id": "sku", "label": "SKU de la variante cadeau", "info": "Vide : première variante disponible."}, {"type": "range", "id": "threshold", "label": "Palier en articles", "min": 1, "max": 20, "step": 1, "default": 3}, {"type": "range", "id": "quantity", "label": "Quantité de cadeaux", "min": 1, "max": 20, "step": 1, "default": 1}, {"type": "text", "id": "gift_handle", "label": "Référence cadeau à l’export", "info": "Résolue depuis l’identité stable du catalogue par le studio."}]},
+    {"type": "purchase_benefit", "name": "Avantage vérifié", "settings": [{"type": "text", "id": "title", "label": "Avantage confirmé"}, {"type": "select", "id": "icon", "label": "Pictogramme", "default": "check", "options": [{"value": "check", "label": "Coche"}, {"value": "leaf", "label": "Feuille"}, {"value": "sparkle", "label": "Étincelle"}, {"value": "heart", "label": "Cœur"}]}]},
     { "type": "@app" },
     { "type": "eyebrow", "name": "Surtitre", "limit": 1, "settings": [ { "type": "text", "id": "text", "label": "Texte", "info": "Vide : nom du fabricant." } ] },
     { "type": "title", "name": "Titre", "limit": 1, "settings": [] },

@@ -1,0 +1,19 @@
+<section class="ref-section ref-narrative color-{{ section.settings.color_scheme }}" style="--ref-pt:{{ section.settings.padding_top }}px;--ref-pb:{{ section.settings.padding_bottom }}px" data-narrative data-motion="{{ section.settings.motion }}">
+ <div class="ref-shell"><div class="ref-section-head"><h2 class="ref-heading">{{ section.settings.heading | escape }}</h2></div>
+  <div class="ref-narrative__grid">
+   <div class="ref-narrative__chapters">{% for block in section.blocks %}
+    <details class="ref-narrative__chapter"{% if forloop.first %} open{% endif %} {{ block.shopify_attributes }} data-narrative-chapter="{{ forloop.index0 }}">
+     <summary><span>{{ block.settings.title | escape }}</span><span aria-hidden="true">+</span></summary><div class="ref-prose">{{ block.settings.text }}</div>
+    </details>
+   {% endfor %}</div>
+   <div class="ref-narrative__visuals">{% for block in section.blocks %}{% if block.settings.image_asset != blank or block.settings.image != blank %}
+    <figure data-narrative-image="{{ forloop.index0 }}"{% unless forloop.first %} hidden{% endunless %}>
+     {% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.image_alt, class: 'ref-image', sizes: '(min-width: 990px) 50vw, 100vw' %}
+     {% if block.settings.caption != blank %}<figcaption>{{ block.settings.caption | escape }}</figcaption>{% endif %}
+    </figure>{% endif %}{% endfor %}</div>
+  </div>
+ </div>
+</section>
+{% schema %}
+{"name":"Récit interactif","tag":"div","class":"reference-section","settings":[{"type":"text","id":"heading","label":"Titre","default":"Découvrez les détails"},{"type":"select","id":"motion","label":"Animation","default":"reveal","options":[{"value":"none","label":"Sans animation"},{"value":"reveal","label":"Apparition courte"}]},{"type":"color_scheme","id":"color_scheme","label":"Jeu de couleurs","default":"scheme-1"},{"type":"range","id":"padding_top","min":0,"max":160,"step":8,"unit":"px","label":"Marge haute","default":80},{"type":"range","id":"padding_bottom","min":0,"max":160,"step":8,"unit":"px","label":"Marge basse","default":80}],"blocks":[{"type":"chapter","name":"Chapitre","settings":[{"type":"text","id":"title","label":"Titre"},{"type":"richtext","id":"text","label":"Texte"},{"type":"image_picker","id":"image","label":"Image"},{"type":"text","id":"image_asset","label":"Image (fichier)"},{"type":"text","id":"image_alt","label":"Texte alternatif"},{"type":"text","id":"caption","label":"Légende"}]}],"presets":[{"name":"Récit interactif"}]}
+{% endschema %}

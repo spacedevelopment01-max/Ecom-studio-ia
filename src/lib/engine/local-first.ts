@@ -1,3 +1,4 @@
+import { purchaseCommand } from "../theme/purchase-command";
 /**
  * Le moteur local d'abord : quand une retouche de la boutique est simple et que le moteur local sait la faire
  * à coup sûr (couleur d'un élément ou d'une section, texte entre guillemets sur l'élément désigné, image
@@ -46,6 +47,11 @@ export function localFirst(
   business: BusinessType,
   mediaFile: (assetId: string) => { filename: string } | null,
 ): LocalFirst | null {
+  const commercial = !atts.length && purchaseCommand(spec, message, selection ?? null);
+  if (commercial) {
+    const dry = applyOps(spec, commercial.ops, { targeted: new Set(selection ? [`${selection.template}:${selection.section}`] : []) });
+    return dry.rejected.length ? null : commercial;
+  }
   if (!isSimpleRequest(message)) return null;
   const sel = selection ?? null;
   // Pièce jointe sans demande explicite de remplacement (inspiration, capture d'exemple) : l'IA la regarde.

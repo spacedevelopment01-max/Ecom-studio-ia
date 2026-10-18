@@ -6,6 +6,7 @@
  * explicitement visés.
  */
 import { z } from "zod";
+import { storeProducts } from "./store-products";
 import { Liquid } from "liquidjs";
 import {
   cloneSpec,
@@ -103,6 +104,16 @@ function validateSettings(spec: ThemeSpec, type: string, blockType: string | nul
     const c = coerceSetting(def, v);
     if (c.ok) out[k] = c.value;
     else errors.push(c.reason);
+  }
+  if (type === "purchase-offers" && blockType === null && values && Object.hasOwn(values, "product")) {
+    const product = storeProducts(spec).find((p) => p.handle === values.product);
+    if (values.product && !product?.contentTarget) errors.push(L("Produit absent du catalogue identifié.", "Product not found in the identified catalog."));
+    else out.product_target = product?.contentTarget ?? "";
+  }
+  if (blockType === "threshold_gift" && values && Object.hasOwn(values, "gift_product")) {
+    const product = storeProducts(spec).find((p) => p.handle === values.gift_product);
+    if (values.gift_product && !product?.contentTarget) errors.push(L("Cadeau absent du catalogue identifié.", "Gift not found in the identified catalog."));
+    else out.gift_target = product?.contentTarget ?? "";
   }
   return { settings: out, errors };
 }

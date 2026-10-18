@@ -12,6 +12,8 @@ export type LibraryEntry = { type: string; name: string; category: SectionCatego
 
 /** Noms, descriptions et mots-clés anglais (la catégorie reste la clé française, traduite par l'interface). */
 const SECTION_LIBRARY_EN: Record<string, { name: string; description: string; keywords: string }> = {
+  "purchase-offers": { name: "Offers and gifts", description: "Configurable quantities, per-item variants, discounts and catalog gifts. Commercial rules require server support on export.", keywords: "bundle offers quantity gift variants cart" },
+  "ref-narrative": { name: "Interactive story", description: "Accessible chapters reveal their associated photograph, using your own text and media.", keywords: "story chapters method demonstration gallery" },
   "ref-hero": { name: "Reference opening", description: "Object showcase, landscape opening or photographic poster. Editable copy, media and calls to action, with optional short entrance.", keywords: "reference opening product service landscape" },
   "ref-editorial": { name: "Visual editorial", description: "Offset copy, panoramic image or inset photograph, using project media.", keywords: "reference editorial image panorama" },
   "ref-offers": { name: "Editorial offers", description: "A real product collection or service rows with their own links.", keywords: "reference offers services collection" },
@@ -120,6 +122,8 @@ export function libraryEntry(type: string, lang: Lang): LibraryEntry | undefined
 }
 
 export const SECTION_LIBRARY: LibraryEntry[] = [
+  { type: "purchase-offers", name: "Offres et cadeaux", category: "Produit", description: "Lots configurables, variantes par article et cadeaux du catalogue. Remises et cadeaux nécessitent le support commercial serveur à l’export.", keywords: "lots offres cadeaux quantités variantes panier" },
+  { type: "ref-narrative", name: "Récit interactif", category: "Images et vidéos", description: "Chapitres accessibles et photographie associée, pour présenter les détails ou votre méthode.", keywords: "récit chapitres méthode démonstration galerie" },
   { type: "ref-hero", name: "Ouverture référence", category: "Ouverture", description: "Objet en vitrine, titre paysage ou affiche photo. Image entière, textes et appels à l'action éditables ; apparition courte facultative.", keywords: "référence ouverture produit service paysage photo vitrine" },
   { type: "ref-editorial", name: "Reportage visuel", category: "Images et vidéos", description: "Photo et texte en décalage, panorama légendé ou petite photo dans la marge. Les médias restent ceux du projet.", keywords: "référence reportage photo éditorial panorama matière" },
   { type: "ref-offers", name: "Offres éditoriales", category: "Collections", description: "Collection de produits avec leurs vrais prix et images, ou prestations en lignes avec leurs propres liens.", keywords: "référence offres prestations collection produits" },

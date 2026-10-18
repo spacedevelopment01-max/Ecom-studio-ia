@@ -112,6 +112,12 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
     }
     // Calendrier de réservation : posé par l'activité (salle de jeu sans service de réservation en ligne).
     add(serviceSpec("atelier", "fr", { ...serviceProfile, bookingUrl: "", hours: "Tous les jours, 10 h – 23 h" }, { activity: "Escape game" }));
+    // Le composant d'offres autonome est aussi réutilisé dans le bloc d'achat natif.
+    // Pas d'offre commerciale automatique : le marchand fournit ses quantités et ses règles.
+    if (used.has("main-product")) {
+      expect(fs.readFileSync(path.join(process.cwd(), "theme-base/sections/main-product.liquid"), "utf8")).toContain("render 'purchase-offers'");
+      used.add("purchase-offers");
+    }
     // Conteneurs vides par nature : code Liquid du marchand et blocs d'applications (rien à composer sans lui).
     const outside = new Set(["custom-liquid", "apps"]);
     const missing = SECTION_LIBRARY.map((e) => e.type).filter((t) => !outside.has(t) && !used.has(t));

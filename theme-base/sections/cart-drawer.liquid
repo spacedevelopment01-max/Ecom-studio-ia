@@ -22,13 +22,13 @@
                 <a href="{{ item.url }}" class="es-line-item__title">{{ item.product.title }}</a>
                 {%- unless item.product.has_only_default_variant -%}<p class="es-muted es-small">{{ item.variant.title }}</p>{%- endunless -%}
                 <p class="es-small">{{ item.final_line_price | money }}</p>
-                <div class="es-qty es-qty--small">
+                {% unless item.properties._es_gift %}<div class="es-qty es-qty--small">
                   <button type="button" data-qty-change="{{ item.quantity | minus: 1 }}" aria-label="{{ 'cart.decrease' | t }}">{% render 'icon', name: 'minus' %}</button>
                   <span aria-live="polite">{{ item.quantity }}</span>
                   <button type="button" data-qty-change="{{ item.quantity | plus: 1 }}" aria-label="{{ 'cart.increase' | t }}">{% render 'icon', name: 'plus' %}</button>
-                </div>
+                </div>{% else %}<span class="es-small">{{ 'purchase.gift' | t }}</span>{% endunless %}
               </div>
-              <button type="button" class="es-line-item__remove es-link-button" data-qty-change="0">{{ 'cart.remove' | t }}</button>
+              {% unless item.properties._es_gift %}<button type="button" class="es-line-item__remove es-link-button" data-qty-change="0">{{ 'cart.remove' | t }}</button>{% endunless %}
             </li>
           {%- endfor -%}
         </ul>

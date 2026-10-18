@@ -15,7 +15,7 @@ import type { ContentContext } from "./section-content";
 type Blocks = { type: string; settings?: Record<string, unknown> }[];
 
 /** Sections dont les blocs portent des images (galeries, cartes) : on les illustre aussi. */
-const BLOCK_IMAGES = new Set(["gallery-mosaic", "horizontal-gallery", "stack-cards", "story-circles", "routine-steps", "situations", "portfolio"]);
+const BLOCK_IMAGES = new Set(["gallery-mosaic", "horizontal-gallery", "stack-cards", "story-circles", "routine-steps", "situations", "portfolio", "ref-narrative"]);
 /** Sections « Services » sans photo de produit imposée (portraits d'équipe, cartes de contact, tarifs). */
 const NO_SECTION_IMAGE = new Set(["team", "booking", "booking-calendar", "practical-info", "pricing", "services-list"]);
 
@@ -40,18 +40,22 @@ export function mediaPools(spec: ThemeSpec) {
  * avec des textes rédigés à partir du projet (section-copy.ts).
  */
 export function withProjectMedia(spec: ThemeSpec, type: string, settings: Record<string, unknown> = {}, blocks?: Blocks, ctx?: ContentContext): { settings: Record<string, unknown>; blocks?: Blocks; samples?: boolean } {
-  const media = projectMediaOnly(spec, type, settings, blocks);
+  const scope = ctx?.mediaFiles;
+  const scopedSpec = scope ? { ...spec, files:Object.fromEntries(scope.filter((f)=>spec.files[f]).map((f)=>[f,spec.files[f]])) } : spec;
+  const media = projectMediaOnly(scopedSpec, type, settings, blocks, scope);
   const schema = sectionSchema(spec, type);
   if (!ctx || !schema) return media;
   // Les blocs du préréglage servent de base à la rédaction quand la section n'en a pas reçu.
   const preset = ((schema.presets?.[0] as { blocks?: Blocks } | undefined)?.blocks ?? []).filter((b) => !b.type.startsWith("@")).map((b) => ({ type: b.type, settings: { ...(b.settings ?? {}) } }));
-  return applySectionCopy(type, schema, ctx, { settings: media.settings, blocks: media.blocks ?? (preset.length ? preset : undefined) });
+  const filled = applySectionCopy(type, schema, ctx, { settings: media.settings, blocks: media.blocks ?? (preset.length ? preset : undefined) });
+  return type === "ref-narrative" ? { ...projectMediaOnly(scopedSpec, type, filled.settings, filled.blocks, scope), samples: filled.samples } : filled;
 }
 
-function projectMediaOnly(spec: ThemeSpec, type: string, settings: Record<string, unknown> = {}, blocks?: Blocks): { settings: Record<string, unknown>; blocks?: Blocks } {
+function projectMediaOnly(spec: ThemeSpec, type: string, settings: Record<string, unknown> = {}, blocks?: Blocks, ownPhotos?: string[]): { settings: Record<string, unknown>; blocks?: Blocks } {
   const schema = sectionSchema(spec, type);
   if (!schema) return { settings, blocks };
   const p = mediaPools(spec);
+  if (ownPhotos) { p.photos = ownPhotos.filter((f)=>!!spec.files[f]); p.life = p.photos; }
   if (PREMIUM_MEDIA_TYPES.has(type)) return premiumProjectMedia(type, schema, p, settings, blocks);
   if (SHOWCASE_MEDIA_TYPES.has(type)) return showcaseProjectMedia(type, schema, p, settings, blocks, spec.store.collections ?? []);
   if (BRAND_MEDIA_TYPES.has(type)) return brandProjectMedia(type, schema, p, settings, blocks);

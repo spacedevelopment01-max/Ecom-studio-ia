@@ -343,5 +343,21 @@
   "gift_card": {
     "title": "Gift card",
     "expired": "This gift card has expired."
+  },
+  "purchase": {
+    "configure": "Configure offers for this product.",
+    "recommended": "Recommended offer",
+    "unit": "per item",
+    "save": "Savings",
+    "choose": "Choose variants",
+    "gift": "Gift",
+    "locked": "From",
+    "items": "items",
+    "unavailable": "Unavailable",
+    "included": "Included",
+    "add": "Add to cart",
+    "summary": "Your selection",
+    "demo": "Preview: locally tested rules, no real payment.",
+    "item": "item"
   }
 }
