@@ -41,7 +41,13 @@ const viewport = (w: number) => ({ width: w, height: w === 390 ? 844 : w === 768
 async function loaded(page: Page) { await page.evaluate(async () => { const pause = (ms: number) => new Promise((r) => setTimeout(r, ms)); for (let y = 0; y < document.documentElement.scrollHeight; y += innerHeight * .8) { scrollTo({ top: y, behavior: "instant" }); await pause(80); } await document.fonts.ready; await Promise.all([...document.images].map(async (im) => { im.loading = "eager"; await im.decode().catch(() => {}); })); scrollTo({ top: 0, behavior: "instant" }); }); await page.waitForTimeout(700); }
 async function attach(page: Page) { await page.addInitScript("window.__name=(fn)=>fn"); await page.route("**/*", (r) => r.request().url().startsWith(origin + "/") ? r.continue() : r.abort()); }
 /** Part des pixels d'un élément qui diffèrent de son coin supérieur gauche : un logo réellement dessiné dépasse quelques pour cent. */
-async function ink(loc: { screenshot: () => Promise<Buffer> }) { const { data } = await sharp(await loc.screenshot()).ensureAlpha().raw().toBuffer({ resolveWithObject: true }); let diff = 0; for (let i = 0; i < data.length; i += 4) if (Math.abs(data[i] - data[0]) + Math.abs(data[i + 1] - data[1]) + Math.abs(data[i + 2] - data[2]) > 60) diff++; return diff / (data.length / 4); }
+async function ink(loc: { screenshot: () => Promise<Buffer> }) {
+  const { data } = await sharp(await loc.screenshot()).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  // Fond = couleur dominante (quantifiée) ; le coin peut tomber sur une bordure (bandeau d'annonce, trait).
+  const hist = new Map<number, number>(); for (let i = 0; i < data.length; i += 4) { const k = (data[i] >> 4) << 8 | (data[i + 1] >> 4) << 4 | (data[i + 2] >> 4); hist.set(k, (hist.get(k) ?? 0) + 1); }
+  const bgKey = [...hist.entries()].sort((x, y) => y[1] - x[1])[0][0], bg = [((bgKey >> 8) & 15) * 17, ((bgKey >> 4) & 15) * 17, (bgKey & 15) * 17];
+  let diff = 0; for (let i = 0; i < data.length; i += 4) if (Math.abs(data[i] - bg[0]) + Math.abs(data[i + 1] - bg[1]) + Math.abs(data[i + 2] - bg[2]) > 60) diff++; return diff / (data.length / 4);
+}
 /** Champ et bouton du code de réduction : texte entier, bouton dans la zone, aucune troncature (le débordement global de page ne la détecte pas). */
 async function discountField(scope: { evaluate: (fn: (d: Element, c: string) => unknown, arg: string) => Promise<unknown> }, container: string) {
   const field = await scope.evaluate((d, c) => { const box = d.querySelector(c)!.getBoundingClientRect(); const m = (el: Element | null) => { if (!el) return null; const r = el.getBoundingClientRect(); return { scrollWidth: el.scrollWidth, clientWidth: el.clientWidth, left: Math.round(r.left), right: Math.round(r.right), boxLeft: Math.round(box.left), boxRight: Math.round(box.right), text: (el as HTMLElement).innerText || (el as HTMLInputElement).placeholder }; }; return { apply: m(d.querySelector("[data-cart-discount-apply]")), input: m(d.querySelector("[data-cart-discount-input]")) }; }, container) as Record<string, { scrollWidth: number; clientWidth: number; left: number; right: number; boxLeft: number; boxRight: number; text: string } | null>;
@@ -84,6 +90,7 @@ try {
       if (width === 390 && (name === "accueil" || name === "produit" || name === "listicle" || name === "advertorial")) { const c = await compare(kind, name, path.join(dir, `${name}-${dev}.png`), dir); if (c) comparisons.push(path.basename(c)); }
       if (name === "accueil") {
         // Logos : l'image doit avoir une taille rendue et des pixels visibles (pas seulement un chargement sans erreur).
+        await page.evaluate(() => scrollTo({ top: 0, behavior: "instant" })); await page.waitForTimeout(600);
         const headerLogo = page.locator(".es-header__logo-img"), footerLogo = page.locator(".es-footer__brand img").first();
         const box = (loc: ReturnType<typeof page.locator>) => loc.evaluate((im) => { const r = im.getBoundingClientRect(); return { natural: [(im as HTMLImageElement).naturalWidth, (im as HTMLImageElement).naturalHeight], rect: [Math.round(r.width), Math.round(r.height)] }; });
         const hl = await box(headerLogo); assert.ok(hl.natural[0] > 0 && hl.rect[0] >= 80 && hl.rect[1] >= 24, `logo d'en-tête non rendu : ${JSON.stringify(hl)}`);
