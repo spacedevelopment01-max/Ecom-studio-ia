@@ -1,6 +1,6 @@
 # FRAISE GUMMIES et ONDE AUDIO — thèmes fidèles aux références Lumora / Pawish (issue #137)
 
-**État : livré pour revue, en brouillon, sans fusion ni déploiement.** Deux thèmes complets construits dans le moteur du studio sur la branche `claude/fraise-onde-themes-reference` (base `7aa726cf`, tête validée de la PR #135). Commit testé : `[TESTED_COMMIT]` (champ `testedCommit` de `reports/lot2c/preuves.json`). Les captures, comparaisons et vidéos contenant les 18 images IA et les logos du kit sont privées (ZIP remis à Thomas) ; rien de tout cela n'entre dans le dépôt public.
+**État : livré pour revue, en brouillon, sans fusion ni déploiement.** Deux thèmes complets construits dans le moteur du studio sur la branche `claude/fraise-onde-themes-reference` (base `7aa726cf`, tête validée de la PR #135). Commit testé : `db1eef78` (champ `testedCommit` de `reports/lot2c/preuves.json`). Les captures, comparaisons et vidéos contenant les 18 images IA et les logos du kit sont privées (ZIP remis à Thomas) ; rien de tout cela n'entre dans le dépôt public.
 
 Inventaire des références et correspondance section par section : [`LOT_2C_FRAISE_ONDE_INVENTAIRE.md`](LOT_2C_FRAISE_ONDE_INVENTAIRE.md). Manifeste des ressources et licences : [`reports/lot2c/ressources-licences.json`](../../reports/lot2c/ressources-licences.json).
 
@@ -30,24 +30,33 @@ Inventaire des références et correspondance section par section : [`LOT_2C_FRA
 
 ## Vérifications réellement exécutées
 
-Commit `[TESTED_COMMIT]` :
+Commit `db1eef78` :
 
 | Contrôle | État | Détail |
 |---|---|---|
-| `npx tsc --noEmit` | [TSC] | |
-| `npx vitest run` — thème, catalogue, EN, lot 2A, lot 2B, audit Boutique, lot 2C | [VITEST] | |
-| `scripts/verify-theme.sh --rapide` | [THEME_RAPIDE] | |
-| `scripts/verify-theme.sh` complet (`JOBS=2`) | [THEME_COMPLET] | |
-| `scripts/lot2c-proof.ts` (390 et 1440 px, vidéos, comparaisons) | [PROOF] | |
-| `scripts/lot2c-demo-local.ts` sur une base temporaire | [DEMO_LOCAL] | |
-| CI GitHub sur le commit testé | [CI] | |
+| `npx tsc --noEmit` | OK | |
+| `npx vitest run` — thème, catalogue, EN, lot 2A, lot 2B, audit Boutique, lot 2C | OK — 104 tests, 10 fichiers (`tests/theme*.test.ts`, `themes-catalogue`, `theme-en`, `lot2a`, `lot2b`, `boutique-audit`, `lot2c-conversion`, `cms-v2`) | |
+| `scripts/verify-theme.sh --rapide` | OK | |
+| `scripts/verify-theme.sh` complet (`JOBS=2`) | OK — « Thème : tout est valide », 0 erreur, 0 avertissement sur toutes les compositions FR/EN et le ZIP client | |
+| `scripts/lot2c-proof.ts` (390 et 1440 px, vidéos, comparaisons) | en cours (résultat au commit suivant) | |
+| `scripts/lot2c-demo-local.ts` sur une base temporaire | OK — 2 projets créés (`DATA_DIR` temporaire), 8/9 et 9/9 images, logos vectorisés, adresses d'aperçu signées affichées | |
+| CI GitHub sur le commit testé | en cours (résultat au commit suivant) | |
 | Suite complète `npm test` en local | non exécutée | prise en charge par la CI |
 | Import dans Shopify, WordPress/WooCommerce, PrestaShop et test du panier natif | **non exécuté** | critère de réception à réaliser avec Codex (voir « Raccordements ») |
 | Vues ordinateur et interactions des démonstrations de référence | **non observées** | kit limité aux captures mobiles |
 
 ### Interactions testées dans Chromium
 
-[INTERACTIONS]
+Exécutées à 1440 px puis à 390 px sur chaque thème (`preuves.json`, champ `interactions`) :
+
+- **Accueil** : menu ouvert et fermé au clavier (mobile), cartes stories sans vidéo sans bouton de lecture, 6 mentions « Avis fictif », flèche droite → deuxième avis, question de FAQ ouverte (FRAISE ; ONDE n'a pas de FAQ en accueil).
+- **Stories** : lecteur ouvert sur le clip de test (mire générée par ffmpeg, VP9), pause et reprise, son activé, Échap ferme la boîte de dialogue et décharge la vidéo ; les deux autres cartes restent « Vidéo à venir ».
+- **FRAISE, offres** : 1 / 2+1 / 3+2 → 24,90 / 49,80 / 74,70 €, prix de référence barré 104,70 € ; ajout du 2+1 → panier 49,80 €, 3 articles, économies affichées.
+- **ONDE, achat** : quantité 2 → ajout → tiroir ouvert « Total : 2 articles », 298,00 €, économies, bloc réservation marqué « Démonstration fictive », code DEMO10 → note « aucun code actif », total inchangé.
+- **Panier** : tiroir ouvert, protection jamais précochée (FRAISE : interrupteur → note « aucun montant ajouté »), quantité modifiée (ONDE : 2 → 1 = 149,00 €), ligne retirée → panier vide, tiroir vide capturé ; page panier remplie et vide capturées.
+- **Mobile** : barre d'achat fixe visible après défilement, menu plein écran.
+- **Vidéos** : parcours ordinateur et mobile enregistrés (accueil → fiche → ajout → panier → retrait), 19 à 24 s chacune.
+- **Mesures** : 22 visites par thème sans erreur JavaScript, sans débordement horizontal, sans image cassée, polices chargées ; aucun appel IA payant (`paidCalls: 0`).
 
 ## Écarts assumés et limites
 
