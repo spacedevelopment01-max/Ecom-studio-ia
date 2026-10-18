@@ -52,12 +52,12 @@ function Field(props: ComponentProps<typeof BaseField>) {
     <BaseField {...props} htmlFor={id}>
       {isValidElement(props.children)
         ? cloneElement(
-            props.children as ReactElement<{
-              id?: string;
-              "aria-label"?: string;
-            }>,
-            { id, "aria-label": props.label },
-          )
+          props.children as ReactElement<{
+            id?: string;
+            "aria-label"?: string;
+          }>,
+          { id, "aria-label": props.label },
+        )
         : props.children}
     </BaseField>
   );
@@ -178,7 +178,7 @@ export default function TabPreparation() {
         (name !== identity.proposal.name ||
           tagline !== identity.proposal.tagline ||
           JSON.stringify(palette) !==
-            JSON.stringify(identity.proposal.palette) ||
+          JSON.stringify(identity.proposal.palette) ||
           JSON.stringify(fonts) !== JSON.stringify(identity.proposal.fonts)))
     ) {
       setError(
@@ -282,13 +282,13 @@ export default function TabPreparation() {
         <h1 className="font-display text-3xl">
           {data.ready
             ? t(
-                "Votre projet est prêt pour le thème",
-                "Your project is ready for the theme",
-              )
+              "Votre projet est prêt pour le thème",
+              "Your project is ready for the theme",
+            )
             : t(
-                "Votre offre, votre marque, vos contenus",
-                "Your offer, your brand, your content",
-              )}
+              "Votre offre, votre marque, vos contenus",
+              "Your offer, your brand, your content",
+            )}
         </h1>
         <p className="mt-2 max-w-3xl text-sm text-muted">
           {t(
@@ -322,9 +322,9 @@ export default function TabPreparation() {
                     ? t("Validé", "Approved")
                     : state.stages[step]?.status === "stale"
                       ? t(
-                          "À reprendre : choix modifié",
-                          "Needs update: choice changed",
-                        )
+                        "À reprendre : choix modifié",
+                        "Needs update: choice changed",
+                      )
                       : state.stages[step]
                         ? t("À vérifier", "To review")
                         : t("À préparer", "To prepare")}
@@ -761,6 +761,11 @@ export default function TabPreparation() {
                   )}
                 </p>
               )}
+              {state.stages.research.data.angles.length === 3 && !state.stages.research.data.formatVersion && <div role="status" className="rounded-xl border border-line p-4" data-legacy-research>
+                <p>{t("Ancienne recherche : trois angles conservés avec votre choix. Vous pouvez demander cinq angles ; vos versions restent disponibles, sans lancement automatique.", "Legacy research: three angles and your choice are preserved. You can request five angles; versions remain available, with no automatic generation.")}</p>
+                <Button disabled={!enabled || busy || working || referencesDirty} onClick={() => prepare("research")} data-upgrade-research>{t("Préparer cinq angles", "Prepare five angles")}</Button>
+              </div>}
+              <p>{t(`${state.stages.research.data.angles.length} angles disponibles : des hypothèses à comparer, pas des résultats de marché certifiés.`, `${state.stages.research.data.angles.length} available angles: hypotheses to compare, not certified market findings.`)}</p>
               <p>{state.stages.research.data.recommendation}</p>
               {state.stages.research.data.angles.map((angle) => (
                 <label
@@ -780,6 +785,9 @@ export default function TabPreparation() {
                   />
                   <strong className="ml-2">{angle.title}</strong>
                   <p className="mt-2">{angle.positioning}</p>
+                  <p className="mt-2 text-sm">{t("Cible", "Audience")} : {angle.audience}</p>
+                  {angle.motivation && <p className="text-sm">{t("Motivation", "Motivation")} : {angle.motivation}</p>}
+                  {angle.message && <p className="text-sm">{t("Message", "Message")} : {angle.message}</p>}
                   <ul className="mt-2 list-inside list-disc text-sm">
                     {angle.arguments.map((a, i) => (
                       <li key={i}>{a}</li>
@@ -1028,6 +1036,7 @@ export default function TabPreparation() {
             </Button>
             {state.stages.content && (
               <>
+                <p role="status">{t("Les textes à compléter ne peuvent pas être validés. Une validation client ne remplace pas une relecture éditoriale IA. Les champs locaux du kit de liaison restent provisoires et sont listés dans le contrat.", "Incomplete copy cannot be approved. Client approval does not replace AI editorial review. Local layout fields remain provisional and are listed in the contract.")}</p>
                 <ol className="grid gap-3">
                   {state.stages.content.data.pages.map((page) => (
                     <li
@@ -1050,7 +1059,7 @@ export default function TabPreparation() {
                     className="rounded-xl border border-line p-3"
                   >
                     <summary>
-                      {item.doc.page.title} — {item.verdict}
+                      {item.doc.page.title} — {item.verdict === "FINAL" ? item.verdict : t("Brouillon à relire", "Draft to review")}
                     </summary>
                     <Button
                       size="sm"
@@ -1066,7 +1075,7 @@ export default function TabPreparation() {
                       )}
                     </Button>
                     <p className="my-3 text-sm text-muted">
-                      SEO : {item.doc.meta.seoTitle} ·{" "}
+                      SEO — {t("mots-clés hypothétiques, aucun volume ni classement vérifié", "hypothetical keywords, no verified volume or ranking")} : {item.doc.meta.seoTitle} ·{" "}
                       {item.doc.meta.metaDescription}
                     </p>
                     {item.doc.blocks.map((block: any) => (
@@ -1209,13 +1218,13 @@ export default function TabPreparation() {
           <p className="mt-2">
             {quote.maxBudgetPct == null
               ? t(
-                  "Coût indisponible : cet essai ne peut pas être confirmé.",
-                  "Cost unavailable: this attempt cannot be confirmed.",
-                )
+                "Coût indisponible : cet essai ne peut pas être confirmé.",
+                "Cost unavailable: this attempt cannot be confirmed.",
+              )
               : t(
-                  `Plafond : ${quote.maxBudgetPct.toFixed(1)} % du budget IA de ce projet.`,
-                  `Cap: ${quote.maxBudgetPct.toFixed(1)}% of this project’s AI budget.`,
-                )}
+                `Plafond : ${quote.maxBudgetPct.toFixed(1)} % du budget IA de ce projet.`,
+                `Cap: ${quote.maxBudgetPct.toFixed(1)}% of this project’s AI budget.`,
+              )}
           </p>
           <p className="mt-2 text-sm text-muted">{quote.note}</p>
           <div className="mt-4 flex gap-3">
@@ -1354,9 +1363,9 @@ function Slot({
         {slot.reviewed
           ? t("Visuel vérifié par vous", "Visual reviewed by you")
           : t(
-              "À créer ou à choisir puis vérifier",
-              "Create or choose, then review",
-            )}
+            "À créer ou à choisir puis vérifier",
+            "Create or choose, then review",
+          )}
       </p>
       {consentDirty && (
         <p role="status" className="text-sm text-warn">

@@ -124,6 +124,11 @@ describe("Parcours amont — moteur réel, fournisseurs injectés et données is
         ready.pages.every((p) => (p.kind !== "contact" ? !!p.docKey : true)),
       ).toBe(true);
       expect(ready.media.every((m) => m.reviewed && m.assetId)).toBe(true);
+      expect(ready.research.angles).toHaveLength(5);
+      const home = ready.documents.find(d => d.doc.page.key === "home")!.doc;
+      expect(ready.copy.hero.text).toBe(home.blocks.filter(b => b.kind === "p").map(b => "text" in b ? b.text : "").join("\n\n"));
+      expect(ready.copyReadiness.status).toBe("review_required");
+      expect(ready.copyReadiness.provisionalFields).toContain("shipping.body_html");
       expect(JSON.parse(JSON.stringify(readyContract(f.pid)))).toEqual(ready);
       expect(historyOf(f.pid).length).toBeGreaterThan(15);
       expect(
@@ -354,6 +359,16 @@ describe("Parcours amont — moteur réel, fournisseurs injectés et données is
     expect(() => accept(f.pid, "research", { choiceId: "usage" })).toThrow(
       /Aucune source/,
     );
+  });
+  it("un brouillon à compléter n’est jamais un contrat prêt, même après une ancienne validation", async () => {
+    const f = await fixture(); initialize(f.pid, f.input); await finish(f.pid);
+    const s = stateOf(f.pid)!, c = structuredClone(s.stages.content!.data), d = c.documents[0];
+    d.doc.blocks.push({ id: "missing", kind: "p", text: "[À compléter : conditions de l’offre]" });
+    saveContentVersion(f.pid, d.docKey, d.doc, { verdict: "PROVISIONAL" });
+    commitState(f.pid, s.revision, n => { n.stages.content!.data = c; });
+    expect(readyContract(f.pid)).toBeNull();
+    expect(blockers(f.pid).join(" ")).toMatch(/compléter/);
+    expect(() => accept(f.pid, "content")).toThrow(/compléter/);
   });
   it("textes refusés même après modification manuelle ; changement de texte invalide le contrat", async () => {
     const f = await fixture();

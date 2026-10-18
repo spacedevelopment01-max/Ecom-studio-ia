@@ -1,3 +1,6 @@
+import { projectChoices } from "./references";
+import { applyTitleEdit } from "./title-edit";
+import type { RequestScope } from "./request";
 /**
  * Branchement de l'orchestrateur sur les vrais parcours du studio (phase 3B).
  *
@@ -280,10 +283,15 @@ export const STEP_EXECUTORS: Partial<Record<StepKind, StepExecutorFn>> = {
   image_generate: async (ctx, p, s) => {
     const since = Date.now();
     const { runImageSetV2 } = await import("../image-v2/set");
-    await ctx.step(`plan:${s.id}`, async () => (await runImageSetV2(ctx, p.id)).created.length);
+    await ctx.step(`plan:${s.id}`, async () => (await runImageSetV2(ctx, p.id, undefined, { instructions: String(s.input.text || "") })).created.length);
     return outcome(ctx.job.id, "image_generate", since);
   },
   copy: async (ctx, p, s) => {
+    const titleEdit = (s.input.requestScope as RequestScope | undefined)?.titleEdit;
+    if (titleEdit) {
+      await ctx.step(`plan:${s.id}:title-only`, async () => applyTitleEdit(p.id, titleEdit).id);
+      return { note: "Titre seul enregistré en nouvelle version ; autres blocs et marque conservés, relecture nécessaire." };
+    }
     const since = Date.now();
     const { aiShopCopyChecked } = await import("../ai/tasks");
     const { llmConfigured } = await import("../ai/llm");
@@ -399,12 +407,16 @@ export async function runRequestPlan(ctx: JobContext): Promise<{ intent: IntentR
   const { projectId, text } = ctx.payload as { projectId: string; text: string };
   const p = loadProject(projectId);
   const env = routingEnv(p);
-  const intent = await understand({ text }, { aiActive: env.aiActive, classify: aiIntentClassifier({ userId: p.userId, projectId, jobId: ctx.job.id }) });
+  const intent = await understand({ text }, { aiActive: env.aiActive, choices: projectChoices(p.id), classify: aiIntentClassifier({ userId: p.userId, projectId, jobId: ctx.job.id }) });
   if (!intent.intents.length) return { intent, plan: null };
   const state = projectState(p);
-  const plan = loadOrCreatePlan({ projectId, userId: p.userId, requestKey: `job:${ctx.job.id}`, intents: intent.intents, state, input: { text }, forceGenerate: explicitGeneration(text) });
+  const plan = loadOrCreatePlan({ projectId, userId: p.userId, requestKey: `job:${ctx.job.id}`, intents: intent.intents, state, input: { text, requestScope: intent.scope }, scope: intent.scope, forceGenerate: explicitGeneration(text) });
   if (plan.steps.some((s) => s.kind === "understand" && s.status === "pending")) {
     plan.status = "stopped";
+    if (intent.scope?.narrow || intent.scope?.restrictions.length) {
+      plan.warnings.push("Analyse de l’offre nécessaire : le pipeline complet est bloqué par les éléments à préserver.");
+      savePlan(plan); return { intent: { ...intent, clarification: "Analysez d’abord l’offre dans la préparation ; aucun élément conservé n’a été modifié." }, plan };
+    }
     plan.warnings.push("project not analyzed yet: delegated to the creation pipeline (pipeline.run)");
     savePlan(plan);
     return { intent, plan, delegated: "pipeline.run" };

@@ -122,8 +122,32 @@ export async function researchProject(
       reason:
         "Alternative centrée sur le parcours : montrer les étapes sans inventer de délais ou de garanties.",
     },
+    {
+      id: "adequation",
+      title: "Choisir une offre adaptée à ses contraintes",
+      positioning: `Examiner les options de ${name} et les situations où l’offre ne convient pas.`,
+      arguments: ["Comparer uniquement les options connues et signaler les limites sans dévaloriser les alternatives."],
+      objections: [{ objection: "Est-ce adapté à mes contraintes particulières ?", answer: "Vérifier les informations fournies et demander les compléments utiles avant toute recommandation individuelle." }],
+      reason: "Hypothèse de personnalisation du choix, sans inventer une option absente.",
+    },
+    {
+      id: "continuite",
+      title: "Préparer la suite de l’expérience",
+      positioning: `Expliquer ce qui est connu après ${p.business === "services" ? "la prestation" : "la première utilisation"}, et les informations restant à demander.`,
+      arguments: ["Documenter les conditions connues pour l’entretien ou le suivi, sans garantie ni service ajouté."],
+      objections: [{ objection: "Comment poursuivre une fois cette première étape terminée ?", answer: "Présenter les consignes confirmées et identifier les conditions de suivi encore inconnues." }],
+      reason: "Hypothèse centrée sur la continuité, distincte du choix initial et des preuves.",
+    },
+  ];
+  const dimensions = [
+    { audience: `${audience} — personnes découvrant cette catégorie`, motivation: "Comprendre l’usage dans une situation concrète avant de décider", message: "Découvrez les usages et limites pour savoir à quoi sert cette offre." },
+    { audience: `${audience} — personnes comparant des informations vérifiables`, motivation: "Réduire l’incertitude sur les caractéristiques et preuves disponibles", message: "Comparez les faits confirmés et repérez ce qui reste à vérifier." },
+    { audience: `${audience} — personnes ayant besoin de repères pour démarrer`, motivation: "Savoir comment se déroule la première étape du parcours", message: "Voyez les étapes pour commencer et le moyen de contact approprié." },
+    { audience: `${audience} — personnes avec des contraintes de choix particulières`, motivation: "Vérifier la compatibilité avec ses contraintes individuelles", message: "Examinez les options connues et les limites avant de faire votre choix." },
+    { audience: `${audience} — personnes anticipant l’entretien ou le suivi`, motivation: "Préparer la continuité et les conditions après la première expérience", message: "Anticipez la suite avec les seules conditions d’entretien ou de suivi confirmées." },
   ];
   return {
+    formatVersion: 2,
     sources,
     observations: available.map((s) => ({
       sourceId: s.id,
@@ -131,7 +155,7 @@ export async function researchProject(
     })),
     angles: bases.map((a) => ({
       ...a,
-      audience,
+      ...dimensions[bases.indexOf(a)],
       sourceIds: available.map((s) => s.id),
       hypothesis: true,
     })),

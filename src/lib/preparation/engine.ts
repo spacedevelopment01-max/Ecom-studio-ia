@@ -1,3 +1,5 @@
+import { copyContract, incompleteDocument } from "./copy-contract";
+import { validateResearch, isLegacyResearch } from "./research-ai";
 /** Orchestration amont : points de reprise existants, validation client et contrat, jamais de thème. */
 import { all, id, json, now, one, run, tx } from "../db";
 import { HttpError } from "../auth";
@@ -143,7 +145,7 @@ export function assertFresh(projectId: string, s: State, step: Step) {
   if (
     i > 1 &&
     stableHash(p.strategy) !==
-      stableHash(strategyOf(stageOf(s, "research").data))
+    stableHash(strategyOf(stageOf(s, "research").data))
   )
     throw new HttpError(
       409,
@@ -195,6 +197,7 @@ export function blockers(projectId: string, s = stateOf(projectId)): string[] {
       "Les informations ont changé hors du parcours : revalidez le brief.",
     );
   for (const d of stageOf(s, "content").data.documents) {
+    if (incompleteDocument(d.doc)) out.push(`Texte à compléter avant utilisation : ${d.doc.page.title}.`);
     const cur = latestContent(projectId, d.docKey);
     if (!cur || stableHash(cur.doc) !== stableHash(d.doc))
       out.push(
@@ -238,7 +241,9 @@ export function readyContract(projectId: string): ReadyContract | null {
     services: p.business === "services" ? p.services : null,
     strategy: p.strategy!,
     brand: p.brand!,
-    copy: c.copy,
+    copy: copyContract(c).copy,
+    copyReadiness: copyContract(c).readiness,
+    research: stageOf(s, "research").data,
     pages: c.pages,
     documents: c.documents,
     media: stageOf(s, "media").data.slots,
@@ -254,6 +259,9 @@ export function readyContract(projectId: string): ReadyContract | null {
     ) as ReadyContract["approvals"],
     warnings: [
       ...c.notes,
+      ...(isLegacyResearch(stageOf(s, "research").data) ? ["Ancienne recherche à trois angles conservée ; mise à niveau vers cinq angles disponible sur demande, sans génération automatique."] : []),
+      "Les champs de liaison listés dans copyReadiness.provisionalFields restent à relire ; seuls les documents approuvés font référence.",
+      "Mots-clés : hypothèses sémantiques sans données fournisseur de volume, difficulté ou classement. Aucune position Google promise.",
       "Disponibilité juridique du nom et domaines non vérifiée.",
       "Prêt pour la composition, pas une autorisation de publication.",
     ],
@@ -300,6 +308,7 @@ export function approve(
           409,
           "Aucune source n’a pu être consultée. Ajoutez un lien public accessible.",
         );
+      validateResearch(r, true);
       if (!r.angles.some((a) => a.id === o.choiceId))
         throw new HttpError(400, "Choisissez une proposition disponible.");
       r.selectedId = o.choiceId;
@@ -358,16 +367,16 @@ export function approve(
         const scoped =
           item.doc.type === "service_page"
             ? {
-                ...p,
-                services: {
-                  ...p.services,
-                  services: [
-                    p.services.services[
-                      Number(item.doc.page.key.split(":")[1])
-                    ],
-                  ].filter(Boolean),
-                },
-              }
+              ...p,
+              services: {
+                ...p.services,
+                services: [
+                  p.services.services[
+                  Number(item.doc.page.key.split(":")[1])
+                  ],
+                ].filter(Boolean),
+              },
+            }
             : p;
         const checks = localContentChecks(
           item.doc,
@@ -381,6 +390,7 @@ export function approve(
           review: null,
           attempt: 2,
         });
+        if (checks.placeholders > 0) throw new HttpError(409, "Ce texte contient des informations à compléter. Corrigez-les avant de le valider.");
         if (decision.fatalCodes.length || decision.blockingCodes.length)
           throw new HttpError(
             409,
@@ -395,6 +405,7 @@ export function approve(
           409,
           "Les textes doivent être corrigés avant validation.",
         );
+      c.copy = copyContract(c).copy;
       remember(projectId, {
         kind: "artifact",
         key: "shop_copy",
@@ -429,8 +440,8 @@ export function approve(
         }),
         notes: previous.length
           ? [
-              "Les images existantes sont conservées ; vérifiez leur adéquation au nouveau contenu avant utilisation.",
-            ]
+            "Les images existantes sont conservées ; vérifiez leur adéquation au nouveau contenu avant utilisation.",
+          ]
           : [],
         provenance: "client",
       });
@@ -632,26 +643,27 @@ export function requestHash(
     action,
     ...(action === "logo"
       ? {
-          brand: s.stages.brand
-            ? identityHash(s.stages.brand.data.proposal)
-            : null,
-        }
+        brand: s.stages.brand
+          ? identityHash(s.stages.brand.data.proposal)
+          : null,
+      }
       : {}),
     ...(action === "image"
       ? {
-          slot: (() => {
-            const x = s.stages.media?.data.slots.find((x) => x.key === slot);
-            return x
-              ? {
-                  key: x.key,
-                  purpose: x.purpose,
-                  peopleConsent: x.peopleConsent === "this_slot",
-                }
-              : null;
-          })(),
-        }
+        slot: (() => {
+          const x = s.stages.media?.data.slots.find((x) => x.key === slot);
+          return x
+            ? {
+              key: x.key,
+              purpose: x.purpose,
+              peopleConsent: x.peopleConsent === "this_slot",
+            }
+            : null;
+        })(),
+      }
       : {}),
     ...(step === "content" ? { page: slot ?? null } : {}),
+    ...(step === "research" ? { researchFormat: 2 } : {}),
   });
 }
 export function queuePreparation(
@@ -692,7 +704,8 @@ export function queuePreparation(
       action === "generate" &&
       prev &&
       prev.inputHash === inputHash(s, step) &&
-      !opts.correction
+      !opts.correction &&
+      !(step === "research" && s.stages.research && isLegacyResearch(s.stages.research.data))
     )
       return { state: s, job: null, reused: true };
     const attempts =
@@ -782,8 +795,10 @@ export async function runPreparation(
         ctx.step(`prepare:${action}:${hash}`, async () => {
           if (action === "analyze")
             return deps.inspect(p, stageOf(s, "brief").data, ctx, paid);
-          if (step === "research")
-            return deps.research(p, stageOf(s, "brief").data, ctx, paid);
+          if (step === "research") {
+            const r = await deps.research(p, stageOf(s, "brief").data, ctx, paid);
+            return validateResearch(r);
+          }
           if (action === "logo") return deps.logos(p, ctx, capMicro);
           if (action === "image") {
             const slot = stageOf(s, "media").data.slots.find(

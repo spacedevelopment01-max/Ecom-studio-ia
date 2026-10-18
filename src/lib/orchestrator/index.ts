@@ -1,3 +1,4 @@
+import { projectChoices } from "./references";
 /**
  * Orchestrateur (phase 3A) : DEMANDE → INTENTION → PLAN → ÉTAPE → ROUTEUR → EXÉCUTION → RÉSULTAT CONTRÔLÉ →
  * CONTINUER / REPRENDRE / ARRÊTER. Branché sur les moteurs en 3B ; ici : comprendre, planifier, router, tracer.
@@ -43,7 +44,7 @@ export const stepContext = (p: Project, step: Pick<PlanStep, "requiredContext">)
  */
 export async function planRequest(p: Project, req: { action?: string; payload?: { regenerate?: boolean }; text?: string; requestKey: string }, opts: { classify?: Parameters<typeof understand>[1]["classify"] } = {}): Promise<{ intent: IntentResult; plan: TaskPlan | null }> {
   const aiActive = aiActiveFor(p.userId, p.id) && !!activeProviderKey("anthropic");
-  const intent = await understand(req, { aiActive, classify: opts.classify ?? aiIntentClassifier({ userId: p.userId, projectId: p.id }) });
+  const intent = await understand(req, { aiActive, choices: projectChoices(p.id), classify: opts.classify ?? aiIntentClassifier({ userId: p.userId, projectId: p.id }) });
   if (!intent.intents.length) return { intent, plan: null };
-  return { intent, plan: loadOrCreatePlan({ projectId: p.id, userId: p.userId, requestKey: req.requestKey, intents: intent.intents, state: projectState(p) }) };
+  return { intent, plan: loadOrCreatePlan({ projectId: p.id, userId: p.userId, requestKey: req.requestKey, intents: intent.intents, state: projectState(p), input: { text: req.text, requestScope: intent.scope }, scope: intent.scope }) };
 }

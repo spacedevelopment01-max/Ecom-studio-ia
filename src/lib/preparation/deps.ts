@@ -1,3 +1,4 @@
+import { copyContract } from "./copy-contract";
 /** Adaptateurs vers les moteurs réels du studio. Les dépendances injectées n'existent qu'au niveau des tests. */
 import { exactInstructions } from "./instructions";
 import { inspectBrief } from "./inspect";
@@ -112,8 +113,8 @@ export const realDependencies: Dependencies = {
       )?.docKey;
     const documents: Contents["documents"] = options?.pageKey
       ? (options.previous?.documents.filter(
-          (d) => d.doc.page.key !== options.pageKey,
-        ) ?? [])
+        (d) => d.doc.page.key !== options.pageKey,
+      ) ?? [])
       : [];
     const notes: string[] = [];
     if (paid) {
@@ -188,13 +189,9 @@ export const realDependencies: Dependencies = {
     }
     // Kit de liaison du moteur existant, puis superposition des documents de pages (pas de thème construit).
     const copy = localCopy(p.product, p.brand!, p);
-    return {
-      copy,
-      documents,
-      ...plan,
-      notes: [...new Set(notes)],
-      provenance: paid ? "provider" : "local",
-    };
+    const c: Contents = { copy, documents, ...plan, notes: [...new Set(notes)], provenance: paid ? "provider" : "local" };
+    c.copy = copyContract(c).copy;
+    return c;
   },
   async logos(p, ctx, cap) {
     assertAiAllowed(p.userId, p.id);

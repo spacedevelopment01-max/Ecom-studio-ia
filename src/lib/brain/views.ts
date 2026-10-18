@@ -188,13 +188,13 @@ export function brainItems(s: BrainSnapshot): BrainItem[] {
     });
 
   // Faits du produit / de l'activité.
-  const confirmed = pr.facts.filter((f) => f.status === "confirmed").slice(0, 20);
+  const confirmed = pr.facts.filter((f) => f.status === "confirmed");
   const inferred = pr.facts.filter((f) => f.status === "inferred").slice(0, 20);
-  const unknown = pr.facts.filter((f) => f.status === "unknown").slice(0, 20);
-  for (const f of confirmed) add({ id: `fact.${f.key}`, section: "facts", level: "hard", tier: 3, critical: true, scopes: [...TEXT, "brand", "all"], source: "project", text: `Fait CONFIRMÉ — ${f.label} : ${clip(f.value, 300)}`, data: { k: f.key, v: f.value, s: f.status } });
+  const unknown = pr.facts.filter((f) => f.status === "unknown");
+  for (const f of confirmed) add({ id: `fact.${f.key}`, section: "facts", level: "hard", tier: 3, critical: true, scopes: [...TEXT, "brand", "all"], source: "project", text: `Fait CONFIRMÉ — ${f.label} : ${f.value}`, data: { k: f.key, v: f.value, s: f.status } });
   for (const f of unknown) add({ id: `unknown.${f.key}`, section: "facts", level: "hard", tier: 3, critical: true, scopes: [...TEXT, "all"], source: "project", text: `INCONNU — ${f.label} : ne jamais l'inventer (écrire « ${ph} » si un texte en a besoin).`, data: { k: f.key, s: f.status } });
   for (const f of inferred) add({ id: `inferred.${f.key}`, section: "facts", level: "advisory", tier: 6, scopes: [...TEXT, "image", "all"], source: "project", text: `Observation (à formuler avec prudence, jamais comme une promesse) — ${f.label} : ${clip(f.value, 200)}`, data: { k: f.key, v: f.value, s: f.status } });
-  for (const q of pr.questions.filter((x) => x.answer).slice(0, 12)) add({ id: `answer.${q.id}`, section: "facts", level: "hard", tier: 3, critical: true, scopes: [...TEXT, "brand", "all"], source: "project", text: `Réponse du client — ${clip(q.question, 160)} → ${clip(q.answer, 300)}`, data: { q: q.id, a: q.answer } });
+  for (const q of pr.questions.filter((x) => x.answer)) add({ id: `answer.${q.id}`, section: "facts", level: "hard", tier: 3, critical: true, scopes: [...TEXT, "brand", "all"], source: "project", text: `Réponse du client — ${q.question} → ${q.answer}`, data: { q: q.id, a: q.answer } });
   if (pr.claimsToAvoid.length) add({ id: "claims.avoid", section: "facts", level: "hard", tier: 4, critical: true, scopes: [...TEXT, "image", "all"], source: "project", text: `Allégations interdites : ${pr.claimsToAvoid.join(" ; ")}`, data: pr.claimsToAvoid });
   if (!services) {
     add({ id: "product.price", section: "offer", level: "hard", tier: 3, critical: true, scopes: ["theme", "shop_copy", "advertising", "qc", "seo", "social", "video", "blog", "all"], source: "project", text: pr.price.amount !== null ? `Prix confirmé : ${(pr.price.amount / 100).toFixed(2)} ${pr.price.currency}` : "Prix : inconnu (ne jamais en inventer).", data: pr.price });
@@ -206,8 +206,8 @@ export function brainItems(s: BrainSnapshot): BrainItem[] {
   } else {
     const sv = p.services;
     const list = (sv.services ?? []).filter((x) => x.name.trim());
-    add({ id: "services.offer", section: "offer", level: "soft", tier: 3, critical: true, scopes: [...TEXT, "brand", "stock", "image", "all"], source: "project", text: list.length ? `Prestations (saisies par le client) : ${list.slice(0, 12).map((x) => `${x.name}${x.description?.trim() ? ` (${clip(x.description, 120)})` : ""}${x.duration?.trim() ? ` · durée : ${x.duration.trim()}` : ""} · tarif : ${x.price?.trim() || "non communiqué"}`).join(" ; ")}` : `Prestations : aucune liste fournie (ne pas en inventer ; écrire « ${ph} »).`, data: list });
-    if (sv.area?.trim()) add({ id: "services.area", section: "offer", level: "soft", tier: 4, critical: true, scopes: [...TEXT, "stock", "all"], source: "project", text: `Zone d'intervention : ${clip(sv.area, 200)}`, data: sv.area });
+    add({ id: "services.offer", section: "offer", level: "soft", tier: 3, critical: true, scopes: [...TEXT, "brand", "stock", "image", "all"], source: "project", text: list.length ? `Prestations (saisies par le client) : ${list.map((x) => `${x.name}${x.description?.trim() ? ` (${x.description})` : ""}${x.duration?.trim() ? ` · durée : ${x.duration.trim()}` : ""} · tarif : ${x.price?.trim() || "non communiqué"}`).join(" ; ")}` : `Prestations : aucune liste fournie (ne pas en inventer ; écrire « ${ph} »).`, data: list });
+    if (sv.area?.trim()) add({ id: "services.area", section: "offer", level: "soft", tier: 4, critical: true, scopes: [...TEXT, "stock", "all"], source: "project", text: `Zone d'intervention : ${sv.area}`, data: sv.area });
     add({
       id: "services.contact",
       section: "offer",
@@ -294,13 +294,13 @@ export function brainItems(s: BrainSnapshot): BrainItem[] {
     const fromUser = m.source === "user";
     if (m.kind === "rejection") {
       const n = json<{ count?: number }>(m.evidence_json, {}).count ?? 1;
-      add({ id: `rejection.${m.key}`, section: "rejections", level: "hard", tier: 1, critical: true, scopes: sc, source: "memory", text: `REFUS du client — ${clip(m.value, 240)}${n > 1 ? ` (écarté ${n} fois)` : ""} : ne pas reproduire cette direction.`, data: { k: m.key, v: m.value, s: m.scope, n } });
+      add({ id: `rejection.${m.key}`, section: "rejections", level: "hard", tier: 1, critical: true, scopes: sc, source: "memory", text: `REFUS du client — ${m.value}${n > 1 ? ` (écarté ${n} fois)` : ""} : ne pas reproduire cette direction.`, data: { k: m.key, v: m.value, s: m.scope, n } });
       continue;
     }
     const level: Level = m.status === "inferred" || !fromUser ? (m.kind === "correction" ? "soft" : "advisory") : m.kind === "correction" || m.kind === "decision" ? "hard" : "soft";
     const tier = m.kind === "correction" ? 1 : m.kind === "decision" ? 2 : 5;
     const label = { correction: "CORRECTION du client", decision: "Décision", preference: "Préférence", goal: "Objectif" }[m.kind as "correction"] ?? m.kind;
-    add({ id: `memory.${m.kind}.${m.key}`, section: "memory", level, tier, critical: level === "hard", scopes: sc, source: "memory", text: `${label}${fromUser ? "" : " (déduite)"} — ${m.key} : ${clip(m.value, 300)}`, data: { k: m.kind, key: m.key, v: m.value, st: m.status, src: m.source } });
+    add({ id: `memory.${m.kind}.${m.key}`, section: "memory", level, tier, critical: level === "hard", scopes: sc, source: "memory", text: `${label}${fromUser ? "" : " (déduite)"} — ${m.key} : ${level === "hard" ? m.value : clip(m.value, 300)}`, data: { k: m.kind, key: m.key, v: m.value, st: m.status, src: m.source } });
   }
 
   // ------------------------------------------------------------------ constats du contrôle qualité (signal faible)

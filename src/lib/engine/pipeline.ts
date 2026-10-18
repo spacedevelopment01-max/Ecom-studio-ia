@@ -110,7 +110,7 @@ export async function runPipeline(ctx: JobContext) {
   // Orchestrateur : plan de la création d'après l'état réel du projet (même clé que la tâche : reprise cohérente).
   const orch = pipelinePlan(ctx, loadProject(projectId), payload);
   try {
-    for (let i = Math.max(0, startIndex); i < total; i++) {
+    for (let i = Math.max(0, startIndex);i < total;i++) {
       const step = STEPS[i];
       const done = (ctx.checkpoint.__steps ?? {})[step.id]?.status;
       if (done === "done" || done === "skipped") continue;
@@ -246,15 +246,8 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
     case "analysis": {
       if (services) {
         const done = await analyzeService(ctx, payload);
-        // Photos dès maintenant (gratuites) : le site et ses aperçus ne restent pas vides jusqu'aux images.
-        await ctx.step("early-photos", async () => {
-          ctx.progress(0.9, L("Photos du métier (libres de droits)", "Trade photos (royalty-free)"));
-          const { earlyServicePhotos } = await import("./service-media");
-          return earlyServicePhotos(ctx, projectId).catch((e) => {
-            if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
-            return 0;
-          });
-        });
+        // L’analyse ne remplit plus le projet avec des photos de banque.
+        // Les originaux restent en place ; les créations passent par runImageSetV2 avec devis et contrôle.
         return done;
       }
       const cutouts = validCutouts(projectId);
@@ -456,7 +449,7 @@ async function pipelineAds(ctx: JobContext, projectId: string): Promise<number> 
   const { aiPostEstimate } = await import("../social-v2/deps");
   const subjects = subjectOptions(fresh);
   let made = 0;
-  for (let k = 0; k < CREATION_AI_ADS; k++) {
+  for (let k = 0;k < CREATION_AI_ADS;k++) {
     const ok = await ctx.step(`ai-ad:${k}`, async () => {
       ctx.progress(0.95, L(`Publicités par l'IA (${k + 1}/${CREATION_AI_ADS})`, `Ads by AI (${k + 1}/${CREATION_AI_ADS})`));
       const s = subjects.length ? subjects[k % subjects.length] : null;
@@ -535,7 +528,7 @@ async function creationExtraPosts(ctx: JobContext, projectId: string, planId: st
   const { designPostWithAi, realAiPostDeps } = await import("../social-v2/ai-post");
   const { aiPostEstimate } = await import("../social-v2/deps");
   const subjects = subjectOptions(fresh);
-  for (let k = 0; k < missing; k++) {
+  for (let k = 0;k < missing;k++) {
     await ctx.step(`creation-extra-post:${k}`, async () => {
       const s = subjects.length ? subjects[(rows.length + k) % subjects.length] : null;
       if (fresh.business !== "services" && s?.kind !== "service" && !s?.referenceAssetId) return null;

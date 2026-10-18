@@ -7,12 +7,12 @@ import type * as o from "@/lib/orchestrator";
 const sent: any[] = [];
 let reply = "ok";
 vi.mock("@anthropic-ai/sdk", () => {
-  class APIError extends Error {}
+  class APIError extends Error { }
   class Anthropic {
-    static AuthenticationError = class extends APIError {};
-    static BadRequestError = class extends APIError {};
-    static NotFoundError = class extends APIError {};
-    constructor(public opts: any) {}
+    static AuthenticationError = class extends APIError { };
+    static BadRequestError = class extends APIError { };
+    static NotFoundError = class extends APIError { };
+    constructor(public opts: any) { }
     private stream(params: any) {
       sent.push(params);
       const p = Promise.resolve({ model: params.model, stop_reason: "end_turn", content: [{ type: "text", text: reply }], usage: { input_tokens: 10, output_tokens: 5 } });
@@ -105,17 +105,17 @@ describe("Phase 3A — intention, plan, routeur", async () => {
 
   // ------------------------------------------------------------------ plan
 
-  it("plan avec dépendances : marque + boutique = comprendre, stratégie, logo, maquettes, photos libres, image, textes, thème, relecture", () => {
+  it("plan avec dépendances : marque + boutique : création IA directe et recherche documentaire distincte", () => {
     const p = plan(["CREATE_BRAND", "CREATE_SHOP"]);
-    expect(p.steps.map((s) => s.kind)).toEqual(["understand", "brand_strategy", "logo", "mockups", "stock_search", "image_generate", "copy", "theme", "quality_review"]);
+    expect(p.steps.map((s) => s.kind)).toEqual(["understand", "brand_strategy", "logo", "mockups", "image_generate", "copy", "theme", "quality_review"]);
     expect(step(p, "logo").dependencies).toEqual(["brand_strategy"]);
     expect(step(p, "mockups").dependencies).toEqual(["logo"]);
-    expect(step(p, "image_generate").after).toEqual(["stock_search"]);
+    expect(step(p, "image_generate").after).toEqual([]);
     expect(step(p, "theme").dependencies).toEqual(["copy"]);
-    expect(step(p, "theme").after).toEqual(["logo", "image_generate", "stock_search"]);
+    expect(step(p, "theme").after).toEqual(["logo", "image_generate"]);
     for (const s of p.steps) for (const k of ["id", "task", "dependencies", "input", "requiredContext", "qualityTarget", "costClass", "status"]) expect(s, `${s.kind}.${k}`).toHaveProperty(k);
     expect(step(p, "logo")).toMatchObject({ task: "logo_symbol", requiredContext: "logo", qualityTarget: POLICIES.logo_route.final, costClass: "high" });
-    expect(step(p, "stock_search")).toMatchObject({ task: "search", costClass: "free" });
+    expect(step(plan(["FIND_STOCK_IMAGE"]), "stock_search")).toMatchObject({ task: "search", costClass: "free" });
     expect(o.readySteps(p).map((s) => s.kind)).toEqual(["understand"]);
     // Même demande → même plan (identifiant stable).
     expect(plan(["CREATE_BRAND"], {}, "même").id).toBe(plan(["CREATE_BRAND"], {}, "même").id);
@@ -129,18 +129,18 @@ describe("Phase 3A — intention, plan, routeur", async () => {
     // « Crée ma marque » est explicite : la stratégie de marque est refaite même si une marque existe.
     expect(step(p, "brand_strategy").status).toBe("pending");
     // Boutique seule sur une marque existante : aucune étape de marque.
-    expect(plan(["CREATE_SHOP"], { analyzed: true, brandReady: true }).steps.map((s) => [s.kind, s.status])).toEqual([["understand", "skipped"], ["stock_search", "pending"], ["image_generate", "pending"], ["copy", "pending"], ["theme", "pending"], ["quality_review", "pending"]]);
+    expect(plan(["CREATE_SHOP"], { analyzed: true, brandReady: true }).steps.map((s) => [s.kind, s.status])).toEqual([["understand", "skipped"], ["image_generate", "pending"], ["copy", "pending"], ["theme", "pending"], ["quality_review", "pending"]]);
     // Demande explicite de textes : jamais sautée parce qu'une version existe.
     expect(step(plan(["WRITE_PRODUCT_COPY"], { copyFinal: true }), "copy").status).toBe("pending");
     // Une seule production : pas de relecture finale.
     expect(plan(["BLOG"]).steps.map((s) => s.kind)).toEqual(["blog"]);
   });
 
-  it("photo libre FINAL → aucune image IA générée ; photo libre insuffisante → génération", () => {
-    const a = plan(["GENERATE_IMAGE"]);
+  it("recherche documentaire FINAL ou refusée : ne remplace jamais une création IA", () => {
+    const a = plan(["GENERATE_IMAGE", "FIND_STOCK_IMAGE"]);
     o.applyResult(a, "stock_search", { verdict: "FINAL", score: 8.5 });
-    expect(step(a, "image_generate")).toMatchObject({ status: "skipped", reason: "stock photo FINAL: no AI image needed" });
-    const b = plan(["GENERATE_IMAGE"]);
+    expect(step(a, "image_generate")).toMatchObject({ status: "pending" });
+    const b = plan(["GENERATE_IMAGE", "FIND_STOCK_IMAGE"]);
     o.applyResult(b, "stock_search", { verdict: "REJECTED", score: 4 });
     expect(step(b, "image_generate").status).toBe("pending");
     expect(o.readySteps(b).map((s) => s.kind)).toEqual(["image_generate"]);
@@ -212,7 +212,7 @@ describe("Phase 3A — intention, plan, routeur", async () => {
       if (provider === "anthropic") expect(routeLlm({ task: t as any }), t).toMatchObject({ provider, model, effort, escalation: false, fallback: false });
     }
     // Historique de coûts : le léger paraît bien moins cher pour la création de logo ; le routeur garde le niveau fort.
-    for (let i = 0; i < 5; i++) run("INSERT INTO ai_calls (id, created_at, user_id, task, provider, requested_model, unit, cost, status) VALUES (?,?,?,?,?,?,?,?,?)", `c${i}${Date.now()}`, Date.now(), u.id, "logo_symbol", "anthropic", "claude-haiku-4-5", "tokens", 10, "ok");
+    for (let i = 0;i < 5;i++) run("INSERT INTO ai_calls (id, created_at, user_id, task, provider, requested_model, unit, cost, status) VALUES (?,?,?,?,?,?,?,?,?)", `c${i}${Date.now()}`, Date.now(), u.id, "logo_symbol", "anthropic", "claude-haiku-4-5", "tokens", 10, "ok");
     expect(o.route({ task: "logo_symbol", ...env }).model).toBe("claude-opus-5-5");
   });
 
@@ -254,7 +254,7 @@ describe("Phase 3A — intention, plan, routeur", async () => {
   // ------------------------------------------------------------------ Brain, trace, reprise
 
   it("chaque étape lit le scope du Project Brain de son moteur (aucun contexte reconstruit)", () => {
-    const p = plan(["CREATE_BRAND", "CREATE_SHOP", "SEO", "BLOG", "SOCIAL", "CREATE_AD", "CREATE_VIDEO"]);
+    const p = plan(["CREATE_BRAND", "CREATE_SHOP", "FIND_STOCK_IMAGE", "SEO", "BLOG", "SOCIAL", "CREATE_AD", "CREATE_VIDEO"]);
     const scopeOf = Object.fromEntries(ENGINE_SCOPES.map((e) => [e.engine, e.scope]));
     const map: Partial<Record<o.StepKind, string>> = { logo: "logo", stock_search: "stock", image_generate: "image", copy: "shop_copy", seo: "seo", theme: "theme", blog: "blog", social: "social", ad: "advertising", video: "video", quality_review: "qc", brand_strategy: "brand" };
     for (const [k, engine] of Object.entries(map)) expect(step(p, k as o.StepKind).requiredContext, k).toBe(scopeOf[engine]);

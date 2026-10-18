@@ -16,6 +16,8 @@
  *  - chaque essai laisse une trace : verdict (quality_checks), candidat (image_candidates), coût (ai_calls).
  */
 import crypto from "node:crypto";
+import { imagePolicy } from "./policy";
+import { brainView } from "../brain/facade";
 import type { JobContext } from "../jobs";
 import { JobCancelled, JobPaused, UserFacingError } from "../jobs";
 import { aiActiveFor } from "../ai/access";
@@ -105,7 +107,9 @@ export function targetedCorrection(d: GateDecision, r: ImageReview | null, brief
 const hash = (s: string) => crypto.createHash("sha256").update(s).digest("hex").slice(0, 16);
 
 export async function runImageEngineV2(ctx: JobContext | null, projectId: string, req: ImageRequestV2, injected?: ImageV2Deps): Promise<ImageRunResult> {
+  req = imagePolicy(req);
   const p = loadProject(projectId);
+  brainView(p, "image"); // Précontrôle avant tout appel, même si un adaptateur lit ensuite un brief local.
   const jobId = ctx?.job.id ?? null;
   const aiActive = aiActiveFor(p.userId, p.id);
   const deps = injected ?? realImageDeps(p, { jobId, aiActive });
@@ -134,7 +138,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ImageRequestV2, d
   const refsUsed = refs.length ? refs : undefined;
 
   try {
-    for (let i = 0; i < count; i++) {
+    for (let i = 0;i < count;i++) {
       let brief = buildBrief(p, { ...req, references: refsUsed, variant: count > 1 ? i : (req.variant ?? null) }, { rejectedDirections: rejectedDirs, peopleAllowed: req.peopleAllowed });
       const out = await one(ctx, p, req, deps, brief, stages, seriesHashes, result);
       if (out.outcome.verdict === "REJECTED" && out.changeDirection && stages.includes("generate")) {
@@ -171,7 +175,8 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
   if (stages.includes("reuse")) {
     const prev = reusableFor(p.id, bh);
     // Images 100 % IA : seule une image GÉNÉRÉE peut être reprise (jamais une photo de banque au même brief).
-    if (prev && (!req.noStock || prev.origin === "generated")) {
+    const previousMeta = prev ? JSON.parse(prev.meta || "{}") : {};
+    if (prev && (!req.noStock || (prev.origin === "generated" && !previousMeta.stock && previousMeta.imageV2?.origin !== "stock"))) {
       result.stats.reused++;
       seriesHashes.push(String((JSON.parse(prev.meta || "{}") as any).imageV2?.phash ?? ""));
       return { outcome: { briefHash: bh, verdict: "FINAL", score: null, codes: [], reason: "image FINAL réutilisée (même brief)", origin: "reused", assetId: prev.id, attempts: 0, candidateKey: null }, changeDirection: false };
@@ -286,7 +291,7 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
   const corrections: string[] = [];
   let correction: string | null = null;
   let last: ImageOutcome = none(lastReason);
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+  for (let attempt = 0;attempt < maxAttempts;attempt++) {
     // Vocabulaire du client (ex. ARVEN : « montre », jamais « chronographe ») : appliqué à chaque consigne.
     const prompt = applyWording(generationPrompt(brief, correction), wording);
     const ph = hash(prompt);

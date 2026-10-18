@@ -123,13 +123,15 @@ export function remember(projectId: string, item: { kind: string; key: string; v
   return tx(() => {
     // Même entrée active (même clé normalisée, ou ancienne ligne sans clé normalisée pour la même clé) : déduplication.
     const same = one<{ id: string; value: string; evidence_json: string }>(
-      "SELECT id, value, evidence_json FROM memory WHERE project_id = ? AND kind = ? AND state = 'active' AND (norm_key = ? OR (norm_key IS NULL AND key = ?)) ORDER BY created_at DESC LIMIT 1",
+      "SELECT id, value, evidence_json FROM memory WHERE project_id = ? AND kind = ? AND state = 'active' AND (norm_key = ? OR (norm_key IS NULL AND key = ?) OR (key = ? AND ? IN ('decision','correction'))) ORDER BY created_at DESC LIMIT 1",
       projectId,
       item.kind,
       n.normKey,
       item.key,
+      item.key,
+      item.kind,
     );
-    if (same && (item.kind !== "decision" || same.value === item.value)) {
+    if (same && (!["decision", "correction"].includes(item.kind) || same.value === item.value)) {
       const ev = json<{ count?: number }>(same.evidence_json, {});
       run("UPDATE memory SET norm_key = ?, status = ?, scope = ?, evidence_json = ?, updated_at = ? WHERE id = ?", n.normKey, status, scope, JSON.stringify({ ...ev, count: (ev.count ?? 1) + 1, lastAt: now() }), now(), same.id);
       return same.id;
@@ -182,7 +184,7 @@ export function themeVersion(projectId: string, versionId: string): { version: T
 }
 
 /** La version de référence d'une modification n'est plus la version en cours (autre onglet, double clic, tâche). */
-export class ThemeConflict extends Error {}
+export class ThemeConflict extends Error { }
 
 /**
  * Nouvelle version du thème. `expectedParent` : la modification a été préparée sur cette version ; si une autre

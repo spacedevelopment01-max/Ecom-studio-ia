@@ -52,6 +52,9 @@ export type Angle = {
   title: string;
   positioning: string;
   audience: string;
+  /** Absents des anciennes recherches à trois angles ; jamais inventés par migration. */
+  motivation?: string;
+  message?: string;
   arguments: string[];
   objections: { objection: string; answer: string }[];
   reason: string;
@@ -59,6 +62,7 @@ export type Angle = {
   hypothesis: boolean;
 };
 export type Research = {
+  formatVersion?: 2;
   sources: Source[];
   observations: { quote: string; sourceId: string }[];
   angles: Angle[];
@@ -152,4 +156,6 @@ export type ReadyContract = {
   sources: Source[];
   approvals: Record<Step, { candidateId: string; approvedAt: number }>;
   warnings: string[];
+  research: Research;
+  copyReadiness: { status: "review_required" | "mapped"; provisionalFields: string[]; documentKeys: string[] };
 };

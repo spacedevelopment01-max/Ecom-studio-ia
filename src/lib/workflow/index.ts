@@ -1,3 +1,5 @@
+import { projectChoices } from "../orchestrator/references";
+import { requestScope, MAX_REQUEST_CHARS } from "../orchestrator/request";
 /**
  * Studio Workflow V2 (phase 12A) — UNE demande du client devient un parcours complet, préparé, chiffré, autorisé,
  * exécuté et suivi. Ce n'est PAS un second orchestrateur : la demande passe par l'Intent Engine, le Task Planner et
@@ -281,6 +283,7 @@ const planKey = (wid: string) => `wf:${wid}`;
  */
 export async function prepareWorkflow(projectId: string, userId: string, text: string, o: { aiActive?: boolean; videos?: "ai" | "edited" | "none"; creationJobId?: string } = {}): Promise<Workflow> {
   const p = loadProject(projectId);
+  if (text.length > MAX_REQUEST_CHARS) throw new Error(`Demande trop longue (maximum ${MAX_REQUEST_CHARS} caractères) : aucune consigne n’a été tronquée ni exécutée.`);
   // Même demande déjà préparée, lancée ou terminée dans les dernières 24 h : on la reprend au lieu de tout refaire
   // (pas de deuxième calendrier, campagne ni export identiques). Une autre formulation crée une nouvelle demande.
   const same = all<{ id: string; request: string }>("SELECT id, request FROM workflows WHERE project_id = ? AND status IN ('draft','queued','running','done') AND created_at > ? ORDER BY created_at DESC", projectId, now() - 86_400_000).find((w) => sameAsk(w.request, text));
@@ -288,21 +291,21 @@ export async function prepareWorkflow(projectId: string, userId: string, text: s
   const aiActive = o.aiActive ?? workflowAiActive(userId, projectId);
   const wid = id();
   const t = now();
-  const intent = await understand({ text }, { aiActive: false });
+  const intent = await understand({ text }, { aiActive: false, choices: projectChoices(projectId) });
   if (!intent.intents.length) {
-    run("INSERT INTO workflows (id, project_id, user_id, request, intents_json, params_json, estimate_json, status, clarification, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)", wid, projectId, userId, text.slice(0, 4000), "[]", "{}", "{}", "needs_clarification", intent.clarification ?? null, t, t);
+    run("INSERT INTO workflows (id, project_id, user_id, request, intents_json, params_json, estimate_json, status, clarification, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)", wid, projectId, userId, text, "[]", "{}", "{}", "needs_clarification", intent.clarification ?? null, t, t);
     return loadWorkflow(wid)!;
   }
-  const { intents, params } = parseWorkflowRequest(text, intent.intents);
-  const creation = needsCreation(p);
-  const plan = loadOrCreatePlan({ projectId, userId, requestKey: planKey(wid), intents, state: projectState(p), input: stepInput(text, params) });
+  const { intents, params } = parseWorkflowRequest(intent.scope?.actionable || text, intent.intents);
+  const creation = needsCreation(p) && !intent.scope?.narrow && !intent.scope?.restrictions.length;
+  const plan = loadOrCreatePlan({ projectId, userId, requestKey: planKey(wid), intents, state: projectState(p), input: { ...stepInput(text, params), requestScope: intent.scope }, scope: intent.scope });
   const estimate = estimateWorkflow(p, plan, params, { aiActive, needsCreation: creation, videos: o.videos });
   // Création complète déjà lancée (formulaire de démarrage, coût accepté à ce moment-là) : pas comptée deux fois.
   if (o.creationJobId) for (const l of estimate.lines) if (l.kind === "pipeline") Object.assign(l, { mode: "done", paid: false, estimateMicro: 0, note: "création complète déjà lancée" });
   estimate.totalMicro = estimate.lines.reduce((a, l) => a + l.estimateMicro, 0);
   run(
     "INSERT INTO workflows (id, project_id, user_id, request, intents_json, params_json, estimate_json, status, plan_id, pipeline_job_id, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-    wid, projectId, userId, text.slice(0, 4000), JSON.stringify(intents), JSON.stringify(params), JSON.stringify(estimate), "draft", plan.id, o.creationJobId ?? null, t, t,
+    wid, projectId, userId, text, JSON.stringify(intents), JSON.stringify(params), JSON.stringify(estimate), "draft", plan.id, o.creationJobId ?? null, t, t,
   );
   return loadWorkflow(wid)!;
 }
@@ -348,6 +351,9 @@ export function startWorkflow(wid: string, o: { approveMicro?: number | null; ca
   if (total > 0 && (o.approveMicro == null || o.approveMicro < total)) throw new WorkflowError(402, L("Cette demande utilise l'IA payante : acceptez le devis avant de lancer.", "This request uses paid AI: accept the estimate before starting."));
   if (total > 0 && cap < total) throw new WorkflowError(402, L("Le plafond est inférieur au devis : augmentez-le ou retirez des étapes.", "The cap is below the estimate: raise it or remove steps."));
   const p = loadProject(wf.projectId);
+  const scope = requestScope(wf.request, projectChoices(p.id));
+  if (scope.clarification || !scope.actionable) throw new WorkflowError(409, scope.clarification || "Aucune modification autorisée.");
+  if (wf.estimate.needsCreation && (scope.narrow || scope.restrictions.length)) throw new WorkflowError(409, "La création complète modifierait des éléments à préserver. Repréparez la demande ciblée.");
   let pipelineJobId: string | null = wf.pipelineJobId;
   if (!pipelineJobId && wf.estimate.needsCreation && needsCreation(p)) {
     const active = one<{ id: string }>("SELECT id FROM jobs WHERE project_id = ? AND type = 'pipeline.run' AND status IN ('queued','running','paused') ORDER BY created_at DESC LIMIT 1", p.id);
@@ -406,10 +412,12 @@ export async function runWorkflow(ctx: JobContext) {
   try {
     const p = loadProject(wf.projectId);
     const allowPaid = workflowAllowsPaid(wf);
-    const plan = loadOrCreatePlan({ projectId: p.id, userId: p.userId, requestKey: planKey(wf.id), intents: wf.intents, state: projectState(p), input: stepInput(wf.request, wf.params) });
+    const scope = requestScope(wf.request, projectChoices(p.id));
+    if (scope.clarification || !scope.actionable) throw new Error(scope.clarification || "Aucune modification autorisée dans cette demande.");
+    const plan = loadOrCreatePlan({ projectId: p.id, userId: p.userId, requestKey: planKey(wf.id), intents: wf.intents, state: projectState(p), input: { ...stepInput(wf.request, wf.params), requestScope: scope }, scope });
     // Étapes de l'entrée enrichies de l'autorisation (montant accepté, plafond) : lues par les moteurs qui produisent.
     for (const s of plan.steps) {
-      s.input = { ...s.input, allowPaid, approvedMicro: wf.approvedMicro ?? 0, maxCostEur: (wf.capMicro ?? 0) / EUR, maxSocialDays: planCalendarDays(p.userId, p.id) || undefined, socialPlanId: `wf-social-${wf.id}` };
+      s.input = { ...s.input, requestScope: scope, allowPaid, approvedMicro: wf.approvedMicro ?? 0, maxCostEur: (wf.capMicro ?? 0) / EUR, maxSocialDays: planCalendarDays(p.userId, p.id) || undefined, socialPlanId: `wf-social-${wf.id}` };
       // Règle du forfait : l'étape n'est pas faite, la raison est affichée (jamais contournée).
       const gate = s.status === "pending" ? planGate(s.kind, p.userId, p.id) : null;
       if (gate) Object.assign(s, { status: "skipped", reason: `forfait : ${gate.fr}` });
@@ -522,11 +530,6 @@ function markCoveredByCreation(plan: TaskPlan, pipelineJobId: string | null) {
     if (!s) continue;
     if (st.status === "done") applyResult(plan, s.id, { note: `done by the full creation (job ${pipelineJobId.slice(0, 8)})` });
     // Étape sautée par la création (ex. calendrier de 7 jours remplacé par celui de la demande) : la demande la fait.
-  }
-  // Photos libres : la création complète a déjà cherché et composé les visuels.
-  if (steps.images?.status === "done") {
-    const s = plan.steps.find((x) => x.kind === "stock_search" && x.status === "pending");
-    if (s) applyResult(plan, s.id, { note: "visuals already searched and made by the full creation" });
   }
   // La création complète fait aussi le logo et la charte avec la marque.
   for (const k of ["logo", "mockups"] as StepKind[]) {
