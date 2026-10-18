@@ -34,7 +34,7 @@
       {%- if settings.logo != blank -%}
         {{ settings.logo | image_url: width: 600 | image_tag: class: 'es-header__logo-img', widths: '150, 300, 600', sizes: '200px', alt: shop.name, loading: 'eager' }}
       {%- elsif settings.logo_asset != blank -%}
-        <img src="{{ settings.logo_asset | asset_url }}" alt="{{ shop.name | escape }}" class="es-header__logo-img" width="{{ settings.logo_width }}" height="{{ settings.logo_width | divided_by: 3 }}" loading="eager">
+        <img src="{{ settings.logo_asset | asset_url }}" alt="{{ shop.name | escape }}" class="es-header__logo-img" width="{{ settings.logo_width }}" height="{{ settings.logo_width | divided_by: 3 | round }}" loading="eager">
       {%- else -%}
         <span class="es-header__wordmark">{{ shop.name }}</span>
       {%- endif -%}

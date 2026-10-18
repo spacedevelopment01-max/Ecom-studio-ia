@@ -409,6 +409,9 @@
     "save_percent": "−{{ percent }}%",
     "example_promo": "Example promotion",
     "guarantee": "Guarantee",
-    "verified_none": "No verified-purchase badge: demo review"
+    "verified_none": "No verified-purchase badge: demo review",
+    "demo_article": "Demo article",
+    "breadcrumb": "Breadcrumb",
+    "home": "Home"
   }
 }

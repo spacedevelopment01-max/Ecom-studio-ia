@@ -47,7 +47,8 @@ export async function vectorizeLogo(png: Buffer, palette: LogoColor[], faviconBo
   const layers = masks.map((m) => tracePaths(m, W, H)).map((d, k) => ({ d, color: colors[k].hex })).filter((l) => l.d);
   const union = tracePaths(all, W, H);
   const body = (fills: (k: number) => string) => layers.map((l, k) => `<path fill="${fills(k)}" fill-rule="evenodd" d="${l.d}"/>`).join("");
-  const wrap = (inner: string, vb = `0 0 ${W} ${H}`, extra = "") => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}"${extra}>${inner}</svg>`;
+  // Largeur et hauteur intrinsèques explicites : sans elles, un <img> en « width:auto » peut rendre le SVG à 0 × 0 (constaté dans Chromium).
+  const wrap = (inner: string, vb = `0 0 ${W} ${H}`, extra = "") => { const [, , vw, vh] = vb.split(" ").map(Number); return `<svg xmlns="http://www.w3.org/2000/svg" width="${vw}" height="${vh}" viewBox="${vb}"${extra}>${inner}</svg>`; };
   const color = wrap(body((k) => layers[k].color));
   const mono = wrap(`<path fill="currentColor" fill-rule="evenodd" d="${union}"/>`);
   const inverse = wrap(`<path fill="#ffffff" fill-rule="evenodd" d="${union}"/>`);

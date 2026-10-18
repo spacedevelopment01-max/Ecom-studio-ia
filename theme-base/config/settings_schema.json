@@ -660,6 +660,13 @@
         "content": "Présentation du panier"
       },
       {
+        "type": "color_scheme",
+        "id": "cart_color_scheme",
+        "label": "Schéma de couleurs du panier",
+        "default": "scheme-1",
+        "info": "Tiroir et page panier. Choisissez un schéma sombre pour un panier anthracite."
+      },
+      {
         "type": "text",
         "id": "cart_heading",
         "label": "Titre du panier",

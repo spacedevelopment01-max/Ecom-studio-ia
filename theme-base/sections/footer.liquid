@@ -38,7 +38,7 @@
               assign footer_logo = section.settings.logo_asset
             endif
           -%}
-          {%- if footer_logo != blank and style == 'centered' -%}<img src="{{ footer_logo | asset_url }}" alt="{{ shop.name | escape }}" width="{{ settings.logo_width }}" height="{{ settings.logo_width | divided_by: 3 }}" loading="lazy">{%- else -%}{{ shop.name }}{%- endif -%}
+          {%- if footer_logo != blank and style == 'centered' -%}<img src="{{ footer_logo | asset_url }}" alt="{{ shop.name | escape }}" width="{{ settings.logo_width }}" height="{{ settings.logo_width | divided_by: 3 | round }}" loading="lazy">{%- else -%}{{ shop.name }}{%- endif -%}
         </a>
         <ul role="list" class="es-footer__inline-links">
           {%- assign seen_links = '|' -%}
@@ -63,6 +63,9 @@
           assign has_brand_col = true
         endif
       -%}
+      {%- if has_brand_col == false and section.settings.logo_asset != blank -%}
+        <a href="{{ routes.root_url }}" class="es-footer__brand es-footer__brand--row"><img src="{{ section.settings.logo_asset | asset_url }}" alt="{{ shop.name | escape }}" width="{{ settings.logo_width }}" height="{{ settings.logo_width | divided_by: 3 | round }}" loading="lazy"></a>
+      {%- endif -%}
       {%- if has_brand_col -%}<div class="es-footer__layout">{%- endif -%}
       {%- if has_brand_col -%}
         {%- liquid
@@ -88,7 +91,7 @@
                 assign footer_logo = section.settings.logo_asset
               endif
             -%}
-            {%- if footer_logo != blank -%}<img src="{{ footer_logo | asset_url }}" alt="{{ shop.name | escape }}" width="{{ settings.logo_width }}" height="{{ settings.logo_width | divided_by: 3 }}" loading="lazy">{%- else -%}{{ shop.name }}{%- endif -%}
+            {%- if footer_logo != blank -%}<img src="{{ footer_logo | asset_url }}" alt="{{ shop.name | escape }}" width="{{ settings.logo_width }}" height="{{ settings.logo_width | divided_by: 3 | round }}" loading="lazy">{%- else -%}{{ shop.name }}{%- endif -%}
           </a>
           {%- endif -%}
           {%- if section.settings.tagline != blank -%}<p class="es-footer__tagline">{{ section.settings.tagline }}</p>{%- endif -%}
@@ -230,7 +233,7 @@
       ]
     },
     { "type": "text", "id": "tagline", "label": "Phrase sous le logo", "info": "Styles « Marque à gauche » et « Deux panneaux ». Facultatif." },
-    { "type": "text", "id": "logo_asset", "label": "Logo du pied de page (fichier assets)", "info": "Styles Centré, Marque à gauche et Deux panneaux : version du logo lisible sur le fond du pied de page. Vide : logo du thème." },
+    { "type": "text", "id": "logo_asset", "label": "Logo du pied de page (fichier assets)", "info": "Version du logo lisible sur le fond du pied de page. Styles Centré, Marque à gauche et Deux panneaux : remplace le logo du thème ; styles Colonnes, Carte et Signature : affiché au-dessus des colonnes. Vide : logo du thème (ou son nom)." },
     { "type": "checkbox", "id": "show_wordmark", "label": "Grand nom de marque", "default": true },
     { "type": "checkbox", "id": "show_policies", "label": "Liens vers les politiques", "default": true },
     { "type": "checkbox", "id": "show_payment", "label": "Moyens de paiement", "default": true },

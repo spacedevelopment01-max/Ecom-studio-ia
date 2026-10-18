@@ -95,7 +95,14 @@ Légende : **=** composition reproduite ; **≈** reproduite avec un écart déc
 
 ## Pages hors références
 
-Listicle et advertorial Lumora : pages marketing longues illustrées de portraits ; **non reproduites** (hors de la liste obligatoire, photographies de personnes exclues). Pages construites à la place pour chaque thème : boutique (collection), à propos, contact, FAQ, livraison et retours, mentions légales, confidentialité, conditions générales, 404, recherche, panier page et tiroir.
+Listicle et advertorial Lumora : **reproduits pour FRAISE** avec la section `cv-article` (blocs réordonnables), contenu français original, mises en scène produit sans personne à la place des portraits de la référence.
+
+| Référence Lumora | Section / page FRAISE | Correspondance |
+|---|---|---|
+| Listicle : bandeaux, en-tête, titre « 4 Reasons… », auteur avec portrait et date, 4 points numérotés illustrés, encadré bonus, bandeau risque de rupture, bouton noir, newsletter, bandeau défilant, pied de page | `/pages/listicle` : `cv-article` (style « liste de raisons », signature en initiales sans portrait, date, mention de démonstration, 4 points numérotés avec visuels 03/08/07/09, encadré « Bonus » accentué, encadré livraison/retour en exemple, bouton noir vers la fiche, lien vers le témoignage) → avis fictifs → newsletter (mode démonstration) → bandeau défilant → pied de page | « Sell-out risk : very high » remplacé par un encadré d'exemple ; portraits remplacés par le produit en situation ; emoji du titre retiré |
+| Advertorial : bandeau « ADVERTORIAL », fil d'Ariane, titre en deux couleurs, chapeau, visuel, auteur avec badge vérifié, note et nombre d'avis, récit en intertitres, listes cochées, avis clients, bouton noir, répartition des notes, notes par critère | `/pages/advertorial` : `cv-article` (style « récit », bandeau « Publi-rédactionnel de démonstration », fil d'Ariane Accueil › Gummies à la fraise › Témoignage, titre avec fin en accent, chapeau, signature « Claire D. » en initiales, ligne de note marquée fictive, mention de démonstration, 5 intertitres, 3 visuels, 2 listes cochées, citation, bouton noir, bloc « notes fictives » avec barres et critères) → avis fictifs → garantie (exemple) → newsletter | Badge « vérifié » et « 12 000+ avis » remplacés par la mention fictive ; promesses santé de la référence non reprises ; récit original sur le flacon refermable |
+
+Autres pages construites pour chaque thème : boutique (collection), à propos, contact, FAQ, livraison et retours, mentions légales, confidentialité, conditions générales, 404, recherche, panier page et tiroir.
 
 ## Non observé
 

@@ -22,6 +22,7 @@ const KEYS: Record<string, string[]> = {
   "cv-cards": ["layout"],
   "cv-feature": ["layout"],
   "cv-stories": ["ratio", "size"],
+  "cv-article": ["style", "width"],
   "ref-narrative": ["motion"],
   "ref-hero": ["layout", "heading_tag", "motion"],
   "ref-editorial": ["layout", "motion"],

@@ -1037,6 +1037,8 @@ body:has(.es-newsletter) .es-footer__card, body:has(.es-newsletter) .es-footer__
 .es-footer__inline { display: grid; gap: 22px; justify-items: center; text-align: center; }
 .es-footer__brand { font-family: var(--font-heading); font-size: clamp(1.6rem, 4vw, 2.6rem); text-decoration: none; text-transform: var(--heading-case); }
 .es-footer__brand img { width: var(--logo-width); height: auto; }
+.es-footer__brand--row { display: block; margin-bottom: clamp(28px, 4vw, 44px); line-height: 0; }
+.es-footer__brand--row img { max-width: min(220px, 60vw); object-fit: contain; object-position: left; }
 .es-footer__inline-links { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 26px; }
 .es-footer__inline-links a { text-decoration: none; opacity: .85; }
 .es-footer__inline-links a:hover { opacity: 1; text-decoration: underline; text-underline-offset: 4px; }

@@ -409,6 +409,9 @@
     "save_percent": "−{{ percent }} %",
     "example_promo": "Exemple de promotion",
     "guarantee": "Garantie",
-    "verified_none": "Sans badge d'achat vérifié : avis de démonstration"
+    "verified_none": "Sans badge d'achat vérifié : avis de démonstration",
+    "demo_article": "Article de démonstration",
+    "breadcrumb": "Fil d’Ariane",
+    "home": "Accueil"
   }
 }

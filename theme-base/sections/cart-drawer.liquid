@@ -35,7 +35,7 @@
 -%}
 <div class="es-drawer{% if settings.conversion_profile != 'none' and settings.conversion_profile != blank %} es-drawer--cv{% endif %}" id="CartDrawer" data-cart-drawer hidden>
   <div class="es-drawer__overlay" data-cart-close></div>
-  <aside class="es-drawer__panel color-scheme-1" role="dialog" aria-modal="true" aria-labelledby="CartDrawerTitle">
+  <aside class="es-drawer__panel color-{{ settings.cart_color_scheme | default: 'scheme-1' }}" role="dialog" aria-modal="true" aria-labelledby="CartDrawerTitle">
     <div class="es-drawer__head">
       <h2 id="CartDrawerTitle" class="es-drawer__title">{{ cart_title }} {% if settings.cart_show_count %}<span class="es-drawer__count" data-cart-drawer-count aria-label="{{ 'cart.items_badge' | t: count: cart.item_count }}">{{ cart.item_count }}</span>{% else %}<span class="es-muted">({{ cart.item_count }})</span>{% endif %}</h2>
       <button type="button" class="es-icon-button" data-cart-close aria-label="{{ 'cart.close' | t }}">{% render 'icon', name: 'close' %}</button>
@@ -115,7 +115,7 @@
         {%- endif -%}
         <div class="es-drawer__total es-drawer__row">
           <span>{% if settings.cart_total_count %}{{ 'cart.total_items' | t: count: cart.item_count }}{% else %}{{ 'cart.subtotal' | t }}{% endif %}</span>
-          <strong>{% if settings.cart_show_savings and savings > 0 %}<s class="es-drawer__compare">{{ original_total | money }}</s> {% endif %}{{ cart.total_price | money_with_currency }}</strong>
+          <strong>{% if settings.cart_show_savings and savings > 0 %}<s class="es-drawer__compare">{{ original_total | money }}</s> {% endif %}{{ cart.total_price | money }}</strong>
         </div>
         <p class="es-muted es-small">{{ 'cart.taxes_and_shipping' | t }}</p>
         <form action="{{ routes.cart_url }}" method="post" id="CartDrawerForm">

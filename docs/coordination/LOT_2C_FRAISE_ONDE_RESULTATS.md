@@ -1,6 +1,6 @@
 # FRAISE GUMMIES et ONDE AUDIO — thèmes fidèles aux références Lumora / Pawish (issue #137)
 
-**État : livré pour revue, en brouillon, sans fusion ni déploiement.** Deux thèmes complets construits dans le moteur du studio sur la branche `claude/fraise-onde-themes-reference` (base `7aa726cf`, tête validée de la PR #135). Commit testé : `26e71355` (champ `testedCommit` de `reports/lot2c/preuves.json`). Les captures, comparaisons et vidéos contenant les 18 images IA et les logos du kit sont privées (ZIP remis à Thomas) ; rien de tout cela n'entre dans le dépôt public.
+**État : corrigé après la revue du 18 octobre (commentaire 6252905535 de la PR #139), en brouillon, sans fusion ni déploiement.** Deux thèmes complets construits dans le moteur du studio sur la branche `claude/fraise-onde-themes-reference` (base `7aa726cf`, tête validée de la PR #135). Commit testé : `[COMMIT2]` (champ `testedCommit` de `reports/lot2c/preuves.json`) ; première livraison testée sur `26e71355`. Les captures, comparaisons et vidéos contenant les 18 images IA et les logos du kit sont privées (ZIP remis à Thomas) ; rien de tout cela n'entre dans le dépôt public.
 
 Inventaire des références et correspondance section par section : [`LOT_2C_FRAISE_ONDE_INVENTAIRE.md`](LOT_2C_FRAISE_ONDE_INVENTAIRE.md). Manifeste des ressources et licences : [`reports/lot2c/ressources-licences.json`](../../reports/lot2c/ressources-licences.json).
 
@@ -14,7 +14,9 @@ Inventaire des références et correspondance section par section : [`LOT_2C_FRA
 - **Panier (tiroir et page)** piloté par des réglages globaux, désactivés par défaut : titre et compteur, bandeau sous le titre, bloc « commande réservée » **toujours marqué « Démonstration fictive »** (le studio ne réserve pas de stock), champ code de réduction (transmis à la plateforme au paiement, note explicite dans l'aperçu), ligne « Économies » (prix barrés et offres), « Total : N articles », libellé et cadenas du bouton, logos des moyens de paiement confirmés uniquement, bloc protection des expéditions (**interrupteur visuel jamais précoché, aucun montant ajouté**), invitation à se connecter si les comptes clients existent. Traductions FR/EN naturelles (erreurs, états vides, accessibilité).
 - **Offres** : visuel facultatif par offre et prix de référence barré (prix barrés des variantes, sinon somme des prix) ; **badge de remise** sur le prix principal quand un prix barré existe ; **carte produit** qui montre le visuel de la variante par défaut (fond clair pour le catalogue et le panier).
 - **Formulaires** : contact et newsletter indiquent, dans l'aperçu du studio seulement, que l'envoi n'est pas actif ; la validation HTML des champs reste réelle.
-- **Logos** : vectorisation réelle des PNG du kit (`tests/lot2c-logo.ts`, tracé par couleur) en SVG couleur, monochrome, inverse pour fond sombre et favicon SVG + PNG ; aucun PNG encodé dans un SVG. Propositions non validées par Thomas : produites à la composition, jamais figées dans le dépôt.
+- **Article éditorial** (`cv-article`) : page « liste de raisons » ou « récit publi-rédactionnel » (bandeau d'étiquette, fil d'Ariane, titre en deux temps, chapeau, signature en initiales sans portrait, date, mention de démonstration séparée du texte ; blocs réordonnables : intertitre, paragraphe, visuel, point numéroté, liste cochée, citation, encadré, bouton, notes fictives à barres). Sert aux pages listicle et advertorial de FRAISE.
+- **Panier** : réglage global `cart_color_scheme` (tiroir et page) pour un panier anthracite (ONDE) ou clair (FRAISE) ; profil contrast : bandeau de réservation et bouton sur l'accent, zone basse distincte, champ clair et bouton « Appliquer » sombre, comme la référence Pawish.
+- **Logos** : vectorisation réelle des PNG du kit (`tests/lot2c-logo.ts`, tracé par couleur) en SVG couleur, monochrome, inverse pour fond sombre et favicon SVG + PNG ; aucun PNG encodé dans un SVG. Propositions non validées par Thomas : produites à la composition, jamais figées dans le dépôt. Les SVG portent désormais une taille intrinsèque (`width`/`height`) : sans elle, Chromium rendait l'image d'en-tête à 0 × 0 (constaté à la revue). Le pied de page « Colonnes » affiche le logo de section au-dessus des colonnes.
 
 ### Les deux démonstrations (`tests/lot2c-fixtures.ts`)
 
@@ -23,24 +25,37 @@ Inventaire des références et correspondance section par section : [`LOT_2C_FRA
 | Référence | Lumora (profil pop) | Pawish (profil contrast) |
 | Produit | Gummies à la fraise, 24,90 € (barré 34,90 €, « exemple de promotion ») | Casque ONDE Audio, 149,00 € (barré 189,00 €, « exemple de promotion ») |
 | Achat | offres 1 flacon / 2 + 1 offert (3) / 3 + 2 offerts (5) : 24,90 / 49,80 / 74,70 €, totaux fixes calculés par le serveur, barre d'achat mobile | achat simple avec quantité, barre fixe mobile |
-| Pages | accueil, fiche, boutique (1 produit, aucun catalogue inventé), à propos, contact, FAQ, livraison et retours (exemples identifiés), mentions légales, confidentialité, conditions (à compléter, rien d'inventé), 404, recherche, panier page et tiroir | idem |
+| Pages | accueil, fiche, boutique (1 produit, aucun catalogue inventé), **listicle et advertorial** (modèles Lumora, contenu original), à propos, contact, FAQ, livraison et retours (exemples identifiés), mentions légales, confidentialité, conditions (à compléter, rien d'inventé), 404, recherche, panier page et tiroir | idem, sans listicle ni advertorial (absents de Pawish) |
 | Avis | 6 avis fictifs étiquetés, note agrégée fictive | idem |
 | Images | 8 des 9 images du kit (`04-detail-gummies.webp` vide dans le ZIP → cadre « visuel à importer », non remplacé) | 9 images |
-| Panier | compteur, bandeau livraison (exemple), économies, total avec articles, « Paiement sécurisé » avec cadenas, protection des expéditions (visuelle), garantie en exemple | compteur, réservation marquée fictive, code de réduction, économies, total avec articles, « Paiement sécurisé », invitation à se connecter (si comptes) |
+| Panier | schéma clair, tête noire, bandeau corail ; compteur, bandeau livraison (exemple), économies, total avec articles, « Paiement sécurisé » avec cadenas, protection des expéditions (visuelle), garantie en exemple | **schéma anthracite, bandeau vert** ; compteur, réservation marquée fictive, code de réduction (champ clair, bouton sombre), économies, total avec articles, « Paiement sécurisé » vert à texte sombre, invitation à se connecter (si comptes) |
+| Contraste | texte blanc sur corail (boutons) : 3,9:1 ; texte noir ailleurs | texte **sombre** sur le vert vif (le blanc sur #4ECD01 était sous 2,2:1) ; identité verte conservée ; focus visible sur tous les boutons |
+
+## Réponse point par point à la revue du 18 octobre
+
+| Point | Correction | Fichiers | Preuve |
+|---|---|---|---|
+| 1. Logos invisibles | Cause : SVG sans `width`/`height` + règle `width:auto` du profil → image rendue 0 × 0. SVG avec taille intrinsèque, règle d'en-tête `width:var(--logo-width)`, logo du pied de page « Colonnes » au-dessus des colonnes (déclinaison inverse sur fond sombre) | `tests/lot2c-logo.ts`, `conversion.css`, `footer.liquid`, `theme.css` | passe de preuves : taille rendue ≥ 80 × 24 px **et** part de pixels dessinés > 4 % (`metrics.logos`), captures `logo-entete-*`, `logo-pied-*` |
+| 2. Panier ONDE blanc | Réglage global `cart_color_scheme` (tiroir + page), bandeau de réservation et zone basse du profil contrast, champ clair et bouton sombre, texte sombre sur le vert | `settings_schema.json`, `cart-drawer.liquid`, `main-cart.liquid`, `conversion.css`, fixtures | comparaisons **tiroir à tiroir** (référence recadrée sans chrome téléphone) `comparaison-tiroir-rempli-390`, `comparaison-tiroir-vide-390` ; `tiroir-*-panneau-mobile` |
+| 3. Bouton « Appliquer » rogné | Grille `minmax(0,1fr) auto`, champ `min-width:0`, bouton sans retour à la ligne | `conversion.css` | passe de preuves : `scrollWidth ≤ clientWidth` et bord droit dans la zone pour le bouton **et** le champ, tiroir et page panier (`interactions.discountDrawer`, `discountPage`) |
+| 4. Listicle et advertorial | Section `cv-article` et deux pages FRAISE (contenu original, visuels produit sans personne, liens : menu, pied de page « À lire », fil d'Ariane, boutons vers la fiche, lien croisé) | `cv-article.liquid`, `conversion.css`, bibliothèque, fixtures | captures `listicle-*`, `advertorial-*`, comparaisons `comparaison-listicle-390`, `comparaison-advertorial-390` |
+| 5. Contenus | Comparatif rempli (colonne « exemple fictif », aucune marque) ; chiffres d'exemple produit (60 douceurs, 3 formats, 30 jours…) ; FAQ, bandeau défilant, parcours et descriptions sans « calculé par le serveur », « identifiés comme démonstration », « étiquetés fictifs » ; mentions de démonstration conservées dans les notes de section et les étiquettes ; pastille d'aperçu en français (navigateur de preuve en `fr-FR`) | fixtures, `scripts/lot2c-proof.ts` | captures `comparatif-*`, accueil, vidéos |
+| 6. 18 images | **Pack corrigé non reçu** dans cette conversation (seul le ZIP d'origine, image 04 vide, est présent). Rien n'est prétendu : l'emplacement « visuel à importer » reste explicite. Dès réception du ZIP (SHA-256 `07a1e028…`), relancer `lot2c-demo-local.ts` et la passe de preuves : aucune modification de code nécessaire | — | `preuves.json` : `missing: ["04-detail-gummies"]` |
+| 7. Lisibilité, livraison, édition | Texte sombre sur vert, focus visibles ; pack source reproductible (archive git du commit testé + kit + instructions) ; **édition réelle** par les opérations du moteur (texte, image, visibilité, duplication, réordonnancement, bloc story avec adresse vidéo, en-tête, pied de page), nouvelle version enregistrée, page rechargée, version d'origine inchangée | fixtures, `conversion.css`, `scripts/lot2c-proof.ts` | captures `edition-avant-*`, `edition-apres-*`, `edition-stories-*` ; `preuves.json` : `editing.applied = 8, rejected = 0` |
 
 ## Vérifications réellement exécutées
 
-Commit `26e71355` :
+Commit `[COMMIT2]` :
 
 | Contrôle | État | Détail |
 |---|---|---|
-| `npx tsc --noEmit` | OK | |
-| `npx vitest run` — thème, catalogue, EN, lot 2A, lot 2B, audit Boutique, lot 2C | OK — 104 tests, 10 fichiers (`tests/theme*.test.ts`, `themes-catalogue`, `theme-en`, `lot2a`, `lot2b`, `boutique-audit`, `lot2c-conversion`, `cms-v2`) | |
-| `scripts/verify-theme.sh --rapide` | OK | |
-| `scripts/verify-theme.sh` complet (`JOBS=2`) | OK — « Thème : tout est valide », 0 erreur, 0 avertissement sur toutes les compositions FR/EN et le ZIP client | |
-| `scripts/lot2c-proof.ts` (390 et 1440 px, vidéos, comparaisons) | OK | 22 visites par thème, 0 erreur JavaScript, 0 débordement, 0 image cassée, 10 interactions et 4 comparaisons par thème, 2 vidéos par thème, 0 appel IA payant ; seul média manquant : `04-detail-gummies` (vide dans le kit) |
-| `scripts/lot2c-demo-local.ts` sur une base temporaire | OK — 2 projets créés (`DATA_DIR` temporaire), 8/9 et 9/9 images, logos vectorisés, adresses d'aperçu signées affichées | |
-| CI GitHub sur le commit testé | OK (succès) | https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/39146881089 |
+| `npx tsc --noEmit` | [TSC2] | |
+| `npx vitest run` — thème, catalogue, EN, lot 2A, lot 2B, audit Boutique, lot 2C, cms-v2 | [VITEST2] | |
+| `scripts/verify-theme.sh --rapide` | [RAPIDE2] | |
+| `scripts/verify-theme.sh` complet (`JOBS=2`) | [COMPLET2] | |
+| `scripts/lot2c-proof.ts` (390 et 1440 px, vidéos, comparaisons, logos, champ de réduction, édition) | [PROOF2] |
+| `scripts/lot2c-demo-local.ts` sur une base temporaire | [DEMO2] | |
+| CI GitHub sur le commit testé | [CI2] |
 | Suite complète `npm test` en local | non exécutée | prise en charge par la CI |
 | Import dans Shopify, WordPress/WooCommerce, PrestaShop et test du panier natif | **non exécuté** | critère de réception à réaliser avec Codex (voir « Raccordements ») |
 | Vues ordinateur et interactions des démonstrations de référence | **non observées** | kit limité aux captures mobiles |
@@ -56,7 +71,10 @@ Exécutées à 1440 px puis à 390 px sur chaque thème (`preuves.json`, champ `
 - **Panier** : tiroir ouvert, protection jamais précochée (FRAISE : interrupteur → note « aucun montant ajouté »), quantité modifiée (ONDE : 2 → 1 = 149,00 €), ligne retirée → panier vide, tiroir vide capturé ; page panier remplie et vide capturées.
 - **Mobile** : barre d'achat fixe visible après défilement, menu plein écran.
 - **Vidéos** : parcours ordinateur et mobile enregistrés (accueil → fiche → ajout → panier → retrait), 19 à 24 s chacune.
-- **Mesures** : 22 visites par thème sans erreur JavaScript, sans débordement horizontal, sans image cassée, polices chargées ; aucun appel IA payant (`paidCalls: 0`).
+- **Logos** : taille rendue et part de pixels dessinés mesurées en en-tête et pied de page, captures des deux logos.
+- **Code de réduction** (ONDE) : bouton « Appliquer » et champ mesurés (texte entier, dans la zone) dans le tiroir et sur la page panier.
+- **Édition** : 8 opérations du moteur appliquées (0 rejet), nouvelle version enregistrée, page rechargée, contrôles DOM (titre, image, section masquée, garantie dupliquée, ordre stories/avis, story ajoutée avec source, annonce, pied de page), version d'origine revisitée inchangée.
+- **Mesures** : [VISITES2] visites par thème sans erreur JavaScript, sans débordement horizontal, sans image cassée, polices chargées ; aucun appel IA payant (`paidCalls: 0`).
 
 ## Écarts assumés et limites
 
@@ -65,12 +83,13 @@ Exécutées à 1440 px puis à 390 px sur chaque thème (`preuves.json`, champ `
 - « Selling fast ! 44 people… », « #1 Bestseller », « Trusted by 13K+ », « Verified customer », logos de paiement : remplacés par des mentions de démonstration ou omis.
 - Colonnes « Autres » des tableaux comparatifs vides, à compléter : rien n'est affirmé sur d'autres marques.
 - Chiffres des sections « preuve » = faits de la démonstration (nombre de visuels, d'offres, d'avis fictifs), pas des résultats clients.
-- Accent manuscrit remplacé par un italique serif ; typographies « proches », pas identiques.
-- Listicle et advertorial Lumora non reproduits (hors liste obligatoire, photographies de personnes).
+- Accent manuscrit remplacé par Instrument Serif italique (fichier local du studio) ; typographies « proches », pas identiques. La disponibilité d'Instrument Serif dans la bibliothèque de polices Shopify est à confirmer à l'export, sinon basculer sur Cormorant italique.
+- Listicle et advertorial reproduits pour FRAISE seulement (Pawish n'en a pas) ; portraits de la référence remplacés par le produit en situation.
 - Compositions ordinateur : propositions cohérentes, non vérifiées contre les références (captures mobiles uniquement).
-- Image `04-detail-gummies.webp` vide dans le kit : emplacement « visuel à importer » explicite.
+- Image `04-detail-gummies.webp` vide dans le kit reçu ; le pack corrigé annoncé (SHA-256 `07a1e028…`) n'a pas été reçu dans cette conversation : emplacement « visuel à importer » explicite, à remplacer dès réception.
 - Les logos restent des propositions ; le packaging photographié FRAISE garde sa typographie d'origine.
-- Contraste texte blanc sur vert vif (ONDE, fidélité à Pawish) : en dessous des recommandations ; à arbitrer avant publication.
+- Contraste : ONDE utilise un texte sombre sur le vert (écart assumé avec le blanc sur vert de Pawish, illisible) ; FRAISE garde le blanc sur corail des boutons (3,9:1, texte en gras).
+- Le ZIP privé contient le code source du commit testé, le kit et les preuves : ce n'est pas un thème installable dans un CMS ; les exports et leurs tests d'installation restent à faire avec Codex.
 
 ## Raccordements à prévoir avec Codex (exports et catalogues)
 
