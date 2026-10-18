@@ -31,7 +31,7 @@
 
     {%- if style == 'centered' or style == 'minimal' -%}
       <div class="es-footer__inline">
-        <a href="{{ routes.root_url }}" class="es-footer__brand">
+        <a href="{{ routes.root_url }}" class="es-footer__brand{% if style == 'reference-shop' or style == 'reference-studio' %} color-scheme-1 ref-footer__logo-surface{% endif %}">
           {%- liquid
             assign footer_logo = settings.logo_asset
             if section.settings.logo_asset != blank
@@ -66,7 +66,7 @@
       {%- if has_brand_col -%}<div class="es-footer__layout">{%- endif -%}
       {%- if has_brand_col -%}
         <div class="es-footer__brandcol">
-          <a href="{{ routes.root_url }}" class="es-footer__brand">
+          <a href="{{ routes.root_url }}" class="es-footer__brand{% if style == 'reference-shop' or style == 'reference-studio' %} color-scheme-1 ref-footer__logo-surface{% endif %}">
             {%- liquid
               assign footer_logo = settings.logo_asset
               if section.settings.logo_asset != blank
