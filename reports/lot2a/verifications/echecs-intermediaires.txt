@@ -1,0 +1,7 @@
+Lancements de développement, pas des validations finales.
+1. Premiers tests ciblés : traduction manquante et catalogue natif absent ; corrigés.
+2. Suite sous charge : deux délais dépassés, lancement interrompu.
+3. Suite de consolidation (873,42 s) : 256 fichiers réussis, 5 en échec ; 1947 tests réussis, 6 en échec, 3 ignorés. Causes : nouveau type d’offres et styles non reconnus par deux assertions anciennes ; calendrier masqué et formulaire de secours perdus ; section de réassurance retirée ; étapes non renseignées visibles ; file de jobs non isolée dans le nouveau harnais.
+4. Régressions corrigées : 5 fichiers / 97 tests réussis.
+5. Suite finale sur code figé : 261 fichiers réussis, 1953 tests réussis, 3 ignorés, aucun échec (647,60 s).
+Les échecs intermédiaires ne sont pas comptés comme des validations ; aucune réponse IA réelle ni installation CMS testée.

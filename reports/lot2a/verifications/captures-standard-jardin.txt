@@ -1,0 +1,2 @@
+Captures dans /workspace/work/lot2a/generic-jardin : accueil-ordinateur.png, accueil-pied-ordinateur.png, accueil-pied-telephone.png, accueil-telephone.png, menu-ordinateur.png, menu-telephone.png
+✓ Aucun débordement horizontal.
