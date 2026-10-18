@@ -243,7 +243,8 @@ function buildStore(opts: PreviewOptions, current: { product?: string; collectio
         quantity: l.quantity,
         title: p.has_only_default_variant ? p.title : `${p.title} - ${v.title}`,
         url: v.url,
-        image: p.featured_image ?? null,
+        // Visuel de la variante réellement choisie (Dune, Argile, Charbon…) ; sans média propre : image du produit.
+        image: v.featured_media?.preview_image ?? v.featured_media ?? p.featured_image ?? null,
         product: p,
         variant: v,
         properties: l.gift ? { _es_gift: true } : {},

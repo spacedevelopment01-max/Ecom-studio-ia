@@ -60,7 +60,7 @@
             {%- when 'title' -%}
               {% if section.settings.display_heading != blank or section.settings.display_intro != blank %}<div data-ed-product-heading {{ block.shopify_attributes }}><h1 class="es-heading es-h2 es-product__title">{{ section.settings.display_heading | default: product.title | escape }}</h1>{% if section.settings.display_intro != blank %}<p class="ed-product-intro">{{ section.settings.display_intro | escape }}</p>{% endif %}</div>{% else %}<h1 class="es-heading es-h2 es-product__title" {{ block.shopify_attributes }}>{{ product.title }}</h1>{% endif %}
             {%- when 'price' -%}
-              <div class="es-product__price" {{ block.shopify_attributes }} data-price-wrap>{% render 'price', product: product, use_variant: true %}
+              <div class="es-product__price" {{ block.shopify_attributes }} data-price-wrap><div class="es-product__price-line">{% render 'price', product: product, use_variant: true %}{% if section.settings.purchase_enabled and section.settings.purchase_unit_label != blank %}<span class="es-product__price-note" data-price-note>{{ section.settings.purchase_unit_label | escape }}</span>{% endif %}</div>
                 <p class="es-small es-muted">{{ 'products.product.taxes_included' | t }}</p>
               </div>
             {%- when 'text' -%}
@@ -250,6 +250,7 @@
     {"type": "select", "id": "purchase_style", "label": "Style des offres", "default": "outlined", "options": [{"value": "outlined", "label": "Cartes soulignées"}, {"value": "compact", "label": "Lignes compactes"}, {"value": "soft", "label": "Cartes douces"}]},
     {"type": "text", "id": "product_target", "label": "Identité du produit", "info": "Identité stable du catalogue, jamais son nom. Vide : produit de la page."},
     {"type": "text", "id": "purchase_heading", "label": "Titre des offres", "default": "Choisissez votre offre"},
+    {"type": "text", "id": "purchase_unit_label", "label": "Libellé du prix unitaire", "info": "Affiché après le prix principal et dans les offres. Ex. « par lampe ». Vide : « par article »."},
     { "type": "checkbox", "id": "enable_zoom", "label": "Agrandissement des images au clic", "default": true },
     { "type": "select", "id": "gallery_layout", "label": "Galerie", "default": "stack", "options": [
       { "value": "stack", "label": "Images empilées" },

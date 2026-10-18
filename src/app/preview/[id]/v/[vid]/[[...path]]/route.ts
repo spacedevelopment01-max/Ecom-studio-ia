@@ -75,11 +75,12 @@ async function readCart(id: string): Promise<PreviewCartLine[]> {
 }
 
 /** Toutes les variantes de la boutique, par identifiant global. */
-function variantTable(spec: ThemeSpec) {
-  const map = new Map<number, { title: string; price: number }>();
+function variantTable(spec: ThemeSpec, base = "") {
+  const map = new Map<number, { title: string; productTitle: string; variantTitle: string; price: number; image: string | null }>();
   storeProducts(spec).forEach((p, pi) => {
     const variants = p.variants.length ? p.variants : [{ title: "Default Title", options: ["Default Title"], price: p.price, available: true }];
-    variants.forEach((v, vi) => map.set(variantId(pi, vi), { title: v.title === "Default Title" ? p.title : `${p.title} - ${v.title}`, price: v.price ?? p.price ?? 0 }));
+    // Visuel de la variante (même règle que le rendu des pages) : son média propre, sinon l'image du produit.
+    variants.forEach((v, vi) => { const file = (v.image && p.images.includes(v.image) ? v.image : null) ?? p.images[0] ?? null; map.set(variantId(pi, vi), { title: v.title === "Default Title" ? p.title : `${p.title} - ${v.title}`, productTitle: p.title, variantTitle: v.title, price: v.price ?? p.price ?? 0, image: file ? `${base}/assets/${file}` : null }); });
   });
   return map;
 }
@@ -89,11 +90,11 @@ async function writeCart(id: string, cart: PreviewCartLine[]) {
   if (carts.size > 500) carts.delete(carts.keys().next().value!);
 }
 
-function cartJson(spec: ThemeSpec, cart: PreviewCartLine[]) {
-  const table = variantTable(spec);
+function cartJson(spec: ThemeSpec, cart: PreviewCartLine[], base = "") {
+  const table = variantTable(spec, base);
   const items = cart.filter((l) => table.has(l.variantId)).map((l, i) => {
     const v = table.get(l.variantId)!;
-    return { key: l.offerGroup ? `${l.offerGroup}:${l.variantId}:${l.gift ? "gift" : "item"}` : `${l.variantId}:${i}`, id: l.variantId, quantity: l.quantity, title: v.title, price: v.price, final_line_price: l.finalLinePrice ?? v.price * l.quantity };
+    return { key: l.offerGroup ? `${l.offerGroup}:${l.variantId}:${l.gift ? "gift" : "item"}` : `${l.variantId}:${i}`, id: l.variantId, quantity: l.quantity, title: v.title, product_title: v.productTitle, variant_title: v.variantTitle, price: v.price, final_line_price: l.finalLinePrice ?? v.price * l.quantity, image: v.image, featured_image: v.image ? { url: v.image, alt: v.title } : null };
   });
   return { item_count: items.reduce((s, x) => s + x.quantity, 0), items, total_price: items.reduce((s, x) => s + x.final_line_price, 0), currency: spec.store.product.currency || "EUR" };
 }
@@ -154,7 +155,7 @@ async function get(req: Request, ctx: P): Promise<Response> {
   }
   let cart: PreviewCartLine[];
   try { cart = reconcileOfferCart(spec, await readCart(id)); } catch (e) { throw new HttpError(422, purchaseErrorMessage(e, spec.language ?? "fr")); }
-  if (path === "/cart.js" || (path === "/cart" && req.headers.get("accept")?.includes("application/json"))) return Response.json(cartJson(spec, cart));
+  if (path === "/cart.js" || (path === "/cart" && req.headers.get("accept")?.includes("application/json"))) return Response.json(cartJson(spec, cart, base));
   if (url.searchParams.get("sections")) return Response.json(await sectionsFor(spec, base, cart, url.searchParams.get("sections")));
   const r = await renderPage({ spec, base, cart }, path, url.searchParams);
   const html = url.searchParams.get("es_raw") === "1" ? r.html : r.html.replace("</body>", `${previewTools(uiLang(), spec.store.business, spec.meta?.demo?.contactTest === true && spec.meta.demo.isDemo === true)}${stockBadgeTool(stockPhotosInTheme(spec, getAsset, uiLang()).map((x) => ({ file: x.file, label: stockPhotoLabel(x.source, uiLang()) })))}</body>`);
@@ -197,7 +198,7 @@ async function post(req: Request, ctx: P): Promise<Response> {
   } else if (path === "/cart/change" || path === "/cart/change.js") {
     const key = String(data.id ?? data.line ?? ""), qty = Number(data.quantity ?? 0);
     if (!Number.isSafeInteger(qty) || qty < 0 || qty > 99) return Response.json({ description: "Quantité invalide." }, { status: 422 });
-    const json = cartJson(spec, cart);
+    const json = cartJson(spec, cart, base);
     const exact = json.items.findIndex((item) => item.key === key);
     const n = Number(key), index = exact >= 0 ? exact : n >= 1 && n < 100 ? n - 1 : cart.findIndex((l) => l.variantId === n && !l.gift);
     if (cart[index]?.gift) return Response.json({ description: "Le cadeau est recalculé depuis son lot." }, { status: 422 });
@@ -214,7 +215,7 @@ async function post(req: Request, ctx: P): Promise<Response> {
   await writeCart(id, cart);
   const sections = await sectionsFor({ ...spec }, base, cart, data.sections ?? null);
   if (ct.includes("application/json") || req.headers.get("accept")?.includes("application/json") || path.endsWith(".js") || data.sections) {
-    return Response.json({ ...cartJson(spec, cart), sections });
+    return Response.json({ ...cartJson(spec, cart, base), sections });
   }
   return new Response(null, { status: 303, headers: { Location: `${base}/cart` } });
 }

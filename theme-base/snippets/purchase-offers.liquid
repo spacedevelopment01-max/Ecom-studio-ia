@@ -1,5 +1,7 @@
 {%- liquid
  assign target = offer_settings.product_target | default: product.es_content_target
+ assign unit_default = 'purchase.unit' | t
+ assign unit_label = offer_settings.purchase_unit_label | default: unit_default
  assign has_offers = false
  for offer in blocks
    if offer.type == 'quantity_offer'
@@ -36,6 +38,6 @@
  <noscript><p>{{ 'purchase.configure' | t }}</p>{% render 'product-buy', product: product, section_id: section_id, show_quantity: true, show_dynamic_checkout: false %}</noscript>
  {% if request.host == 'apercu' %}<p class="purchase__notice">{{ 'purchase.demo' | t }}</p>{% endif %}
  <script type="application/json" data-purchase-variants>{{ product.variants | json }}</script>
- <script type="application/json" data-purchase-strings>{"unit":{{ 'purchase.unit' | t | json }},"save":{{ 'purchase.save' | t | json }},"included":{{ 'purchase.included' | t | json }},"locked":{{ 'purchase.locked' | t | json }},"items":{{ 'purchase.items' | t | json }},"unavailable":{{ 'purchase.unavailable' | t | json }},"total":{{ 'purchase.total' | t | json }},"choose_options":{{ 'purchase.choose_options' | t | json }},"item":{{ 'purchase.item' | t | json }}}</script>
+ <script type="application/json" data-purchase-strings>{"unit":{{ unit_label | json }},"save":{{ 'purchase.save' | t | json }},"included":{{ 'purchase.included' | t | json }},"locked":{{ 'purchase.locked' | t | json }},"items":{{ 'purchase.items' | t | json }},"unavailable":{{ 'purchase.unavailable' | t | json }},"total":{{ 'purchase.total' | t | json }},"choose_options":{{ 'purchase.choose_options' | t | json }},"item":{{ 'purchase.item' | t | json }}}</script>
 </div>
 {% else %}{% render 'product-buy', product: product, section_id: section_id, show_quantity: true, show_dynamic_checkout: false %}{% endif %}

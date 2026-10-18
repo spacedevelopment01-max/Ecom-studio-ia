@@ -392,6 +392,8 @@ a { color: inherit; }
 .es-product__sticky > * { margin-bottom: 22px; }
 .es-product__title { margin-bottom: 6px; }
 .es-product__price .es-price { font-size: 1.35rem; }
+.es-product__price-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; }
+.es-product__price-note { font-size: .9rem; opacity: .72; }
 .es-option { border: 0; padding: 0; margin: 0 0 18px; }
 .es-option__label { font-size: .86rem; margin-bottom: 10px; padding: 0; }
 .es-option__values { display: flex; flex-wrap: wrap; gap: 8px; }
