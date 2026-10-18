@@ -1,3 +1,6 @@
+import { requirePlan } from '@/lib/plan-gates';
+import { startPreparation } from '@/lib/preparation/start';
+import { stateOf } from '@/lib/preparation/store';
 import { HttpError } from "@/lib/auth";
 import { one, run } from "@/lib/db";
 import { attachStartRequest } from "@/lib/workflow";
@@ -19,6 +22,14 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const form = await readForm(req, 260 * 1048576);
   const { input, files, logo } = readStartForm(form);
   // « J'ai déjà mon site et mon logo » : le site est lu par le pilote (type d'activité et plateforme fixés ensuite).
+  if (input.flow === "preparation") {
+    requirePlan(user,p.id);
+    existingSiteFromInput(input);
+    if(stateOf(p.id)) throw new HttpError(409,"La préparation existe déjà : reprenez-la dans le Pilote.");
+    await saveStartFiles(p.id,user.id,files,logo,input.businessType);
+    startPreparation(p.id,input);
+    return ok({jobId:null,preparation:true});
+  }
   const site = existingSiteFromInput(input);
   if (site) {
     saveSettings(p.id, { ...p.settings, existingSite: { url: site.url, status: "pending" } });

@@ -116,6 +116,7 @@ export type VerifiedFacts = {
 };
 
 export type ContentBrief = {
+  instructions?: string;
   type: ContentType;
   intent: ContentIntent;
   lang: ContentLang;

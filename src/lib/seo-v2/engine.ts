@@ -42,6 +42,8 @@ export const SEO_V2_VERSION = "8a.1";
 export const DEFAULT_SEO_CAP_EUR = 0.6;
 
 export type ContentRequestV2 = {
+  /** Page prévue identifiée par l’orchestrateur amont ; aucune création de thème requise. */
+  target?: {page:PageRef;serviceIndex?:number};
   type: ContentType;
   /** Page visée (clé d'une page existante ou prévue) ; à défaut, la première page qui correspond au type. */
   pageKey?: string | null;
@@ -85,7 +87,8 @@ export function targetPage(pages: PageRef[], type: ContentType, pageKey: string 
 }
 
 export async function runContentEngineV2(ctx: JobContext | null, projectId: string, req: ContentRequestV2, injected?: SeoV2Deps): Promise<ContentRunResult & { strategy: SeoStrategy; stoppedByCostCap: boolean }> {
-  const p = loadProject(projectId);
+  let p = loadProject(projectId);
+  if(req.target?.serviceIndex!=null){const service=p.services.services[req.target.serviceIndex];if(p.business!=="services"||!service)throw new Error("Prestation cible absente.");p={...p,services:{...p.services,services:[service]}};}
   let deps = injected ?? realSeoDeps(ctx, p, aiActiveFor(p.userId, p.id));
   // Articles écrits par l'IA : inclus selon le forfait (comme le blog existant) ; sinon brouillon local gratuit.
   const blogBlocked = req.type === "blog_article" && deps.canWrite && !blogAiAllowed(p.userId, p.id);
@@ -110,7 +113,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   const pages = sitePages(p);
   const research = researchKeywords(p, lang, pages);
   const strategy = seoStrategy(p, lang, { pages, research });
-  const page = targetPage(pages, req.type, req.pageKey, strategy, req.keyword);
+  const page = req.target?.page ?? targetPage(pages, req.type, req.pageKey, strategy, req.keyword);
   const item = req.type === "product_page" ? p.catalog.find((c) => c.name.trim() === page.title.trim()) ?? null : null;
   const facts = verifiedFacts(p, item);
   const brief = buildBrief(p, { type: req.type, page, lang, strategy, request: req.request, keyword: req.keyword ?? null, facts });
@@ -126,7 +129,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   }
 
   // 6. Idempotence : même brief, mêmes faits, même moteur → le document déjà produit, sans rien refaire ni payer.
-  const memoKey = runKey({ v: SEO_V2_VERSION, docKey, type: req.type, lang, page: page.key, kw: brief.primaryKeyword?.term ?? null, intent: brief.intent, facts, links: brief.links.map((l) => [l.key, l.status, l.url]), ai: deps.canWrite, review: deps.canReview });
+  const memoKey = runKey({ v: SEO_V2_VERSION, docKey, type: req.type, lang, page: page.key, instructions:brief.instructions??null, kw: brief.primaryKeyword?.term ?? null, intent: brief.intent, facts, links: brief.links.map((l) => [l.key, l.status, l.url]), ai: deps.canWrite, review: deps.canReview });
   const memo = req.force ? null : contentRun(p.id, memoKey);
   if (memo) {
     const prev = latestContent(p.id, memo.docKey);

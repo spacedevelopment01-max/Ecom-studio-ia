@@ -46,6 +46,7 @@ export type ImageV2Deps = {
 export function reviewPrompt(b: VisualBrief): string {
   return `BRIEF — kind: ${b.kind}; support: ${b.support}; format: ${b.format.aspect}${b.format.textZone !== "none" ? ` (text area ${b.format.textZone})` : ""}.
 Subject that MUST be shown: ${b.subject}.${b.action ? ` Action: ${b.action}.` : ""}${b.environment ? ` Setting: ${b.environment}.` : ""}
+${b.instructions ? `Client instructions, also to verify: ${b.instructions}.` : ""}
 Art direction: ${b.artDirection} — composition: ${b.composition}; lighting: ${b.lighting}; camera: ${b.framing}.
 Relevant concepts: ${b.positive.slice(0, 8).join("; ")}.
 Off-topic (fail relevance if this is all the image shows): ${b.negative.slice(0, 10).join("; ")}.

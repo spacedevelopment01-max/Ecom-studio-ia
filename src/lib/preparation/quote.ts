@@ -1,0 +1,130 @@
+/** Devis local en % ; le garde-fou final reste la réservation native de chaque moteur. */
+import { id, json, now, one } from "../db";
+import { loadProject, remember } from "../projects";
+import { aiActiveFor, assertAiAllowed } from "../ai/access";
+import { aiAvailability } from "../ai/config";
+import { textProviderReady } from "../ai/llm";
+import { assertCanSpend } from "../billing";
+import { budgetPctOf } from "../ai/budget-pct";
+import { logoSeriesQuote } from "../logo-v2/quote";
+import { requirePlan } from "../plan-gates";
+import { HttpError } from "../auth";
+import { assertFresh, requestHash, type RunAction } from "./engine";
+import { requireUpstream, stateOf } from "./store";
+import type { Step } from "./types";
+export type Quote = {
+  id: string;
+  step: Step;
+  action: RunAction;
+  slot?: string;
+  revision: number;
+  inputHash: string;
+  capMicro: number;
+  paid: boolean;
+  createdAt: number;
+};
+export function createQuote(
+  projectId: string,
+  step: Step,
+  action: RunAction,
+  slot?: string,
+) {
+  if (
+    (action === "logo" && step !== "brand") ||
+    (action === "image" && (step !== "media" || !slot)) ||
+    (action === "analyze" && step !== "brief") ||
+    (action === "generate" && !["research", "brand", "content"].includes(step))
+  )
+    throw new HttpError(400, "Action incompatible avec cette étape.");
+  requirePlan(null, projectId);
+  const p = loadProject(projectId),
+    s = stateOf(projectId);
+  if (!s) throw new HttpError(409, "Parcours absent.");
+  requireUpstream(s, step);
+  assertFresh(projectId, s, step);
+  const paid = action === "logo" || action === "image" || textProviderReady();
+  if (action === "analyze" && !paid)
+    throw new HttpError(
+      409,
+      "Fournisseur d’analyse indisponible. Décrivez votre offre et confirmez ses informations ; aucune photo n’a été analysée par l’IA.",
+    );
+  let capMicro = 0;
+  if (paid) {
+    if ((action === "image" || action === "logo") && !aiAvailability().image)
+      throw new HttpError(
+        409,
+        "Fournisseur d’images indisponible. Votre projet et ses versions restent enregistrés ; aucun appel n’a été lancé.",
+      );
+    assertAiAllowed(p.userId, p.id);
+    capMicro =
+      action === "logo"
+        ? logoSeriesQuote().maxMicro
+        : action === "image"
+          ? 2_000_000
+          : ["research", "brand"].includes(step)
+            ? 1_000_000
+            : slot
+              ? 600_000
+              : Math.max(
+                  2,
+                  s.stages.content?.data.pages.length ??
+                    p.services.services.length + 3,
+                ) * 600_000;
+    assertCanSpend(p.userId, capMicro, p.id);
+  }
+  const pct = paid ? budgetPctOf(p.userId, capMicro, p.id) : 0;
+  if (paid && (pct == null || !Number.isFinite(pct)))
+    throw new HttpError(
+      409,
+      "Le coût ne peut pas être confirmé. Vérifiez l’abonnement du projet avant un nouvel essai.",
+    );
+  const q: Quote = {
+    id: id(),
+    step,
+    action,
+    slot,
+    revision: s.revision,
+    inputHash: requestHash(s, step, action, slot),
+    capMicro,
+    paid,
+    createdAt: now(),
+  };
+  remember(projectId, {
+    kind: "artifact",
+    key: `preparation.quote.${q.id}`,
+    value: JSON.stringify(q),
+    source: "local",
+  });
+  return {
+    id: q.id,
+    paid,
+    maxBudgetPct: pct,
+    mode: paid ? "provider" : "local",
+    note: paid
+      ? "Plafond de cet essai, contrôles et reprises internes compris. Aucune relance automatique en cas d’échec incertain."
+      : "Préparation locale gratuite, explicitement signalée ; aucune génération IA simulée.",
+  };
+}
+export function quoteOf(projectId: string, quoteId: string): Quote {
+  const q = json<Quote | null>(
+    one<{ value: string }>(
+      "SELECT value FROM memory WHERE project_id=? AND key=? AND kind='artifact'",
+      projectId,
+      `preparation.quote.${quoteId}`,
+    )?.value,
+    null,
+  );
+  const s = stateOf(projectId);
+  if (
+    !q ||
+    !s ||
+    now() - q.createdAt > 15 * 60000 ||
+    s.revision !== q.revision ||
+    q.inputHash !== requestHash(s, q.step, q.action, q.slot)
+  )
+    throw new HttpError(
+      409,
+      "Le devis n’est plus valable. Actualisez-le après vos modifications.",
+    );
+  return q;
+}

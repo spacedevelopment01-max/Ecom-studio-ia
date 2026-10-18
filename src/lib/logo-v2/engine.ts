@@ -32,6 +32,7 @@ import { ARTWORK_NEVER, artworkBoard, artworkText, cleanArtwork, correctArtworkT
 import type { ArtworkReview, BrandBrief, Candidate, EngineRun, LogoReview, LogoStyle, ProposalResult, Territory } from "./types";
 
 export type EngineOptions = {
+  instructions?: string;
   /** IA injectée (tests) ; null = sans IA ; absent = IA réelle si active pour le compte. */
   ai?: LogoV2Ai | null;
   /** Territoires construits (par défaut 4). */
@@ -332,7 +333,7 @@ async function seriesRun(ctx: JobContext, projectId: string, opts: EngineOptions
 
 async function seriesSteps(ctx: JobContext, projectId: string, opts: EngineOptions, live: LiveTracker): Promise<EngineRun> {
   const p = loadProject(projectId);
-  const brief = brandDiscovery(p, { style: opts.style });
+  const brief = brandDiscovery(p, { style: opts.style, instructions:opts.instructions });
   const ai = opts.ai !== undefined ? opts.ai : llmConfigured() ? realLogoV2Ai(ctx, { userId: p.userId, projectId }) : null;
   const notes: string[] = [];
   // Logo complet par le modèle d'images quand il sait écrire le nom (3 créations) ; sinon construction avec de vraies

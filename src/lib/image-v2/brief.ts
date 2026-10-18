@@ -21,6 +21,9 @@ import type { ArtDirectionId, AspectId, Support, VisualBrief, VisualKind } from 
 export const BRIEF_VERSION = "5a.1";
 
 export type BriefRequest = {
+  instructions?: string;
+  /** Autorisation explicite limitée à cette demande ; false interdit toute déduction depuis une autre photo. */
+  peopleAllowed?: boolean;
   kind: VisualKind;
   support?: Support;
   aspect?: AspectId;
@@ -63,7 +66,7 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
   // Règle de présence humaine : sans photo du client avec une personne ni accord explicite, aucune personne demandée.
   // Photo du produit réel générée d'après sa photo (référence) : jamais de personne (la consigne du modèle l'interdit ;
   // un brief qui en demanderait une se contredirait, et la personne d'une photo du client ne se reproduit pas).
-  const people = (req.references?.length ? false : undefined) ?? opts.peopleAllowed ?? peopleAllowedFor(p);
+  const people = req.peopleAllowed ?? (req.references?.length ? false : undefined) ?? opts.peopleAllowed ?? peopleAllowedFor(p);
   const angles = people ? ANGLES : ANGLES_NO_PEOPLE;
   const intents = people ? INTENTS : INTENTS_NO_PEOPLE;
   const noPerson = (xs: string[]) => (people ? xs : xs.filter((x) => !mentionsPerson(x)));
@@ -199,6 +202,7 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
 
   return {
     version: BRIEF_VERSION,
+    ...(req.instructions?{instructions:req.instructions}:{}),
     kind: req.kind,
     support,
     subject,
@@ -231,7 +235,7 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
 /** Empreinte stable du brief : même brief → même image réutilisable, même contrôle déjà payé. */
 export function briefHash(b: VisualBrief): string {
   // Sans personne : clé distincte (une image faite quand les personnes étaient permises n'est pas réutilisée).
-  const key = { v: b.version, k: b.kind, s: b.support, sub: b.subject, a: b.action, e: b.environment, d: b.artDirection, f: b.format.aspect, var: b.variant?.index ?? null, ref: b.references, fid: b.productFidelity, ...(b.shotKey ? { sh: b.shotKey } : {}), ...(b.people === false ? { np: 1 } : {}), ...(b.format.textZone !== FORMATS[b.format.aspect].textZone ? { tz: b.format.textZone } : {}) };
+  const key = { v: b.version, ...(b.instructions?{ins:b.instructions}:{}), k: b.kind, s: b.support, sub: b.subject, a: b.action, e: b.environment, d: b.artDirection, f: b.format.aspect, var: b.variant?.index ?? null, ref: b.references, fid: b.productFidelity, ...(b.shotKey ? { sh: b.shotKey } : {}), ...(b.people === false ? { np: 1 } : {}), ...(b.format.textZone !== FORMATS[b.format.aspect].textZone ? { tz: b.format.textZone } : {}) };
   return crypto.createHash("sha256").update(JSON.stringify(key)).digest("hex").slice(0, 16);
 }
 
@@ -251,8 +255,9 @@ export function generationPrompt(b: VisualBrief, extra?: string | null): string 
   // composition générique de la direction (« quelques accessoires raffinés » amenait des objets hors sujet).
   // Structure de la consigne du propriétaire (essai réel v4 réussi) : paragraphes, liste fermée d'objets, zone
   // dégagée, lumière, phrase finale ; aucune couleur en code ni matière du produit.
-  if (f.scene) return stillLifePrompt(f.scene, { aspect: b.format.aspect, zone: b.format.textZone, correction: extra });
-  if (f.productScene && b.productFidelity) return productScenePromptFr(f.productScene, { aspect: b.format.aspect, zone: b.format.textZone, mood: d.mood, correction: extra });
+  const exact=b.instructions?`\nConsignes exactes du client : ${b.instructions}. Ne pas écrire ces consignes sur l’image. Les restrictions de fidélité et de personnes restent obligatoires.`:"";
+  if (f.scene) return stillLifePrompt(f.scene, { aspect: b.format.aspect, zone: b.format.textZone, correction: extra })+exact;
+  if (f.productScene && b.productFidelity) return productScenePromptFr(f.productScene, { aspect: b.format.aspect, zone: b.format.textZone, mood: d.mood, correction: extra })+exact;
   return [
     `Photographie, style ${d.label}. Sujet : ${f.subject}.`,
     // Publicité : niveau campagne d'agence (lumière travaillée, matières, profondeur), un seul point focal, de l'air.
@@ -269,6 +274,7 @@ export function generationPrompt(b: VisualBrief, extra?: string | null): string 
     // brief pour la recherche et le contrôle, et le négatif du modèle exclut texte, logo et personnes.
     "Objets sans marque visible ; image purement photographique, rien n'est écrit sur l'image.",
     b.people === false ? NO_PEOPLE_FR : "",
+    b.instructions ? `Consignes du client : ${b.instructions}. Ces consignes décrivent la composition, elles ne sont pas du texte à inscrire. Les restrictions de fidélité et de personnes ci-dessus restent obligatoires.` : "",
     extra ? `Correction pour cet essai : ${extra}` : "",
   ]
     .filter(Boolean)

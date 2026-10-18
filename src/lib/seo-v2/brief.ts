@@ -73,6 +73,7 @@ export function buildBrief(p: Project, o: { type: ContentType; page: PageRef; la
   ];
   return {
     type: o.type,
+    ...(o.request ? {instructions:o.request} : {}),
     intent,
     lang: o.lang,
     page: o.page,

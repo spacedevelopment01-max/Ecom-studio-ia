@@ -135,12 +135,12 @@ async function engine(ctx: JobContext | null, p: Project, req: ImageRequestV2, d
 
   try {
     for (let i = 0; i < count; i++) {
-      let brief = buildBrief(p, { ...req, references: refsUsed, variant: count > 1 ? i : (req.variant ?? null) }, { rejectedDirections: rejectedDirs });
+      let brief = buildBrief(p, { ...req, references: refsUsed, variant: count > 1 ? i : (req.variant ?? null) }, { rejectedDirections: rejectedDirs, peopleAllowed: req.peopleAllowed });
       const out = await one(ctx, p, req, deps, brief, stages, seriesHashes, result);
       if (out.outcome.verdict === "REJECTED" && out.changeDirection && stages.includes("generate")) {
         // Scène hors sujet : une seule nouvelle direction, choisie localement (refus de celle-ci ajouté).
         result.stats.directionChanges++;
-        brief = buildBrief(p, { ...req, references: refsUsed, variant: count > 1 ? i : (req.variant ?? null) }, { rejectedDirections: [...rejectedDirs, brief.artDirection] });
+        brief = buildBrief(p, { ...req, references: refsUsed, variant: count > 1 ? i : (req.variant ?? null) }, { rejectedDirections: [...rejectedDirs, brief.artDirection], peopleAllowed: req.peopleAllowed });
         notes.push(`image ${i + 1} : direction changée (${out.outcome.reason})`);
         const second = await one(ctx, p, req, deps, brief, stages.filter((s) => s !== "search" && s !== "reuse"), seriesHashes, result);
         result.outcomes.push({ ...second.outcome, brief: briefSummary(brief), artDirection: brief.artDirection });

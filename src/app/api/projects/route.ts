@@ -1,3 +1,5 @@
+import { startPreparation } from '@/lib/preparation/start';
+import { stateOf } from '@/lib/preparation/store';
 import { requireUser, HttpError } from "@/lib/auth";
 import { all, id, now, one, run } from "@/lib/db";
 import { attachStartRequest } from "@/lib/workflow";
@@ -61,7 +63,7 @@ export const POST = handle(async (req: Request) => {
   const site = existingSiteFromInput(input);
   const services = !site && input.businessType === "services" ? serviceProfileFromInput(input) : null;
   // Site de services : la description de l'activité ou le lien du site existant est indispensable.
-  if (services && !hasProductInput(input, files)) throw new HttpError(400, L("Décrivez votre activité en quelques lignes ou indiquez le lien de votre site actuel.", "Describe your business in a few lines or give the link to your current website."));
+  if (input.flow === "legacy" && services && !hasProductInput(input, files)) throw new HttpError(400, L("Décrivez votre activité en quelques lignes ou indiquez le lien de votre site actuel.", "Describe your business in a few lines or give the link to your current website."));
   // UN ABONNEMENT = UN PROJET : il faut un abonnement payé pas encore rattaché (« en attente de création de projet »).
   // Supprimer, archiver ou dupliquer un projet ne libère jamais son abonnement (rattachement définitif en base).
   const wanted = new URL(req.url).searchParams.get("subscription");
@@ -101,6 +103,10 @@ export const POST = handle(async (req: Request) => {
   }
   ensureFolders(pid);
   await saveStartFiles(pid, user.id, site ? [] : files, logo, site ? "products" : input.businessType);
+  if (input.flow === "preparation") {
+    startPreparation(pid,input);
+    return ok({id:pid,jobId:null,started:true,preparation:true});
+  }
   if (!hasProductInput(input, files)) return ok({ id: pid, jobId: null, started: false });
   const job = launchPipeline(pid, user.id, input, files.length);
   if (input.request) await attachStartRequest(pid, user.id, input.request, job.id);

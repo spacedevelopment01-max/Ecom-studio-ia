@@ -12,6 +12,8 @@ import { L } from "./i18n-server";
 export const MAX_FILE = 25 * 1024 * 1024;
 
 export const StartInput = z.object({
+  flow: z.enum(["preparation", "legacy"]).default("preparation"),
+  target: z.string().max(1200).optional(),
   link: z.string().url({ error: () => L("Lien invalide.", "Invalid link.") }).optional().or(z.literal("")),
   description: z.string().max(8000).optional(),
   productName: z.string().max(120).optional(),

@@ -1,0 +1,1311 @@
+"use client";
+import {
+  cloneElement,
+  isValidElement,
+  useId,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentProps,
+  type ReactElement,
+} from "react";
+import {
+  api,
+  Badge,
+  Button as BaseButton,
+  Card,
+  Field as BaseField,
+  Input,
+  Select,
+  Textarea,
+  useApi,
+} from "../ui";
+import { useProject } from "./project-context";
+import { useT } from "../i18n";
+import { ContentPanel } from "./content-panel";
+import {
+  STEPS,
+  type Input as BriefInput,
+  type ReadyContract,
+  type State,
+  type Step,
+  type VisualSlot,
+} from "@/lib/preparation/types";
+function Button(props: ComponentProps<typeof BaseButton>) {
+  return (
+    <BaseButton
+      {...props}
+      className={`max-w-full py-2 ${props.className || ""}`}
+      style={{
+        whiteSpace: "normal",
+        height: "auto",
+        minHeight: 40,
+        ...props.style,
+      }}
+    />
+  );
+}
+/** Libellés associés aux champs : navigation clavier et lecteurs d’écran. */
+function Field(props: ComponentProps<typeof BaseField>) {
+  const id = useId();
+  return (
+    <BaseField {...props} htmlFor={id}>
+      {isValidElement(props.children)
+        ? cloneElement(
+            props.children as ReactElement<{
+              id?: string;
+              "aria-label"?: string;
+            }>,
+            { id, "aria-label": props.label },
+          )
+        : props.children}
+    </BaseField>
+  );
+}
+type AssetView = {
+  id: string;
+  name: string;
+  role: string;
+  origin: string;
+  status: string;
+  verdict: string | null;
+  url: string;
+};
+type View = {
+  state: State;
+  ready: ReadyContract | null;
+  blockers: string[];
+  history: { revision: number; at: number }[];
+  assets: AssetView[];
+};
+const LABEL: Record<Step, [string, string]> = {
+  brief: ["Votre offre", "Your offer"],
+  research: ["Recherche et stratégie", "Research and strategy"],
+  brand: ["Votre marque", "Your brand"],
+  content: ["Contenus et plan du site", "Content and site plan"],
+  media: ["Visuels et préparation finale", "Visuals and final preparation"],
+};
+export default function TabPreparation() {
+  const { id, reload: reloadProject } = useProject();
+  const t = useT();
+  const endpoint = `/api/projects/${id}/preparation`;
+  const {
+    data,
+    reload,
+    error: loadError,
+  } = useApi<View>(endpoint, { poll: 3000 });
+  const [active, setActive] = useState<Step>("brief"),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState("");
+  const [form, setForm] = useState<BriefInput | null>(null),
+    [urls, setUrls] = useState(""),
+    [choice, setChoice] = useState(""),
+    [logo, setLogo] = useState(""),
+    [name, setName] = useState(""),
+    [tagline, setTagline] = useState(""),
+    [correction, setCorrection] = useState("");
+  const [palette, setPalette] = useState<Record<string, string>>({}),
+    [fonts, setFonts] = useState({ heading: "", body: "" });
+  const [quote, setQuote] = useState<{
+    id: string;
+    paid: boolean;
+    maxBudgetPct: number | null;
+    note: string;
+  } | null>(null);
+  const resumed = useRef(false);
+  const state = data?.state;
+  const raw = state?.stages.brief?.data.input;
+  const identity = state?.stages.brand?.data;
+  useEffect(() => {
+    if (state && !resumed.current) {
+      resumed.current = true;
+      setActive(
+        STEPS.find((k) => state.stages[k]?.status !== "approved") || "media",
+      );
+    }
+  }, [state]);
+  useEffect(() => {
+    if (raw) {
+      setForm(raw);
+      setUrls(raw.referenceUrls.join("\n"));
+    }
+  }, [JSON.stringify(raw)]);
+  useEffect(() => {
+    if (identity) {
+      setName(identity.proposal.name);
+      setTagline(identity.proposal.tagline);
+      setPalette(identity.proposal.palette);
+      setFonts(identity.proposal.fonts);
+      setLogo(identity.selectedLogo || "");
+    }
+  }, [
+    identity?.proposal.name,
+    identity?.proposal.tagline,
+    JSON.stringify(identity?.proposal.palette),
+    JSON.stringify(identity?.proposal.fonts),
+  ]);
+  async function send(body: Record<string, unknown>) {
+    if (!state) return;
+    setBusy(true);
+    setError("");
+    try {
+      const r = await api<View>(endpoint, {
+        body: { ...body, revision: state.revision },
+      });
+      await reload();
+      await reloadProject();
+      return r;
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function prepare(step: Step, runAction = "generate", slot?: string) {
+    if (!state) return;
+    setBusy(true);
+    setError("");
+    try {
+      const r = await api<{ quote: NonNullable<typeof quote> }>(endpoint, {
+        body: {
+          action: "quote",
+          step,
+          runAction,
+          slot,
+          revision: state.revision,
+        },
+      });
+      if (r.quote.paid) setQuote(r.quote);
+      else await send({ action: "generate", quoteId: r.quote.id, correction });
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  const saveBrief = async () => {
+    const r = await send({ action: "edit-brief", input: form });
+    if (r) {
+      setError("");
+    }
+  };
+  const approve = async (step: Step) => {
+    const r = await send({
+      action: "approve",
+      step,
+      choiceId: choice || state?.stages.research?.data.recommendedId,
+      logoId: logo,
+    });
+    if (r && step !== "media") setActive(STEPS[STEPS.indexOf(step) + 1]);
+  };
+  if (!data || !state || !form)
+    return (
+      <Card className="p-6">
+        {loadError ||
+          t("Chargement de votre préparation…", "Loading your preparation…")}
+      </Card>
+    );
+  const approved = (s: Step) => state.stages[s]?.status === "approved";
+  const enabled = STEPS.slice(0, STEPS.indexOf(active)).every(approved);
+  const working = !!state.pending;
+  const field = (key: keyof BriefInput, value: unknown) =>
+    setForm({ ...form, [key]: value });
+  return (
+    <div className="grid gap-5" data-preparation>
+      <Card className="p-5 sm:p-7">
+        <p className="text-sm text-muted">
+          {t(
+            "Construisons les bases de votre projet",
+            "Build your project foundations",
+          )}
+        </p>
+        <h1 className="font-display text-3xl">
+          {data.ready
+            ? t(
+                "Votre projet est prêt pour le thème",
+                "Your project is ready for the theme",
+              )
+            : t(
+                "Votre offre, votre marque, vos contenus",
+                "Your offer, your brand, your content",
+              )}
+        </h1>
+        <p className="mt-2 max-w-3xl text-sm text-muted">
+          {t(
+            "Vous choisissez les orientations importantes. Le studio conserve vos informations et vos versions. Chaque création IA payante demande votre accord sur son devis. Aucun thème ni publication n’est lancé à cette étape.",
+            "You choose the important directions. The studio keeps your information and versions. Each paid AI creation requires your quote approval. No theme or publishing starts at this stage.",
+          )}
+        </p>
+        {state.simulation && (
+          <p className="mt-3 rounded-xl bg-warn-soft p-3 text-sm" role="note">
+            Parcours de vérification : réponses fournisseurs simulées et médias
+            synthétiques. Aucun appel IA réel ni coût fournisseur.
+          </p>
+        )}
+        <ol className="mt-5 grid gap-2 sm:grid-cols-5">
+          {STEPS.map((step, i) => (
+            <li key={step}>
+              <button
+                type="button"
+                onClick={() => {
+                  setActive(step);
+                  setQuote(null);
+                }}
+                className={`w-full rounded-xl border p-3 text-left text-sm ${step === active ? "border-signal bg-signal-soft" : "border-line"}`}
+                aria-current={step === active ? "step" : undefined}
+              >
+                <span>
+                  {i + 1}. {t(...LABEL[step])}
+                </span>
+                <span className="mt-1 block text-xs text-muted">
+                  {approved(step)
+                    ? t("Validé", "Approved")
+                    : state.stages[step]?.status === "stale"
+                      ? t(
+                          "À reprendre : choix modifié",
+                          "Needs update: choice changed",
+                        )
+                      : state.stages[step]
+                        ? t("À vérifier", "To review")
+                        : t("À préparer", "To prepare")}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ol>
+      </Card>
+      {(error || loadError || state.error) && (
+        <Card className="border-bad p-4" role="alert">
+          <p>{error || loadError || state.error?.message}</p>
+          <p className="mt-2 text-sm text-muted">
+            {t(
+              "Vos résultats précédents sont conservés. Corrigez le point signalé avant de demander un nouvel essai.",
+              "Your previous results are kept. Fix the reported issue before requesting another attempt.",
+            )}
+          </p>
+        </Card>
+      )}
+      {working && (
+        <Card className="p-4" role="status">
+          {t(
+            "Le studio prépare votre proposition. Vous pouvez quitter puis revenir : l’avancement est enregistré.",
+            "The studio is preparing your proposal. You can leave and return: progress is saved.",
+          )}
+        </Card>
+      )}
+      {state.stages[active]?.status === "stale" && (
+        <Card className="bg-warn-soft p-4">
+          {t(
+            "Un choix en amont a changé. Cette version est conservée, mais doit être reprise et validée avant la suite.",
+            "An earlier choice changed. This version is kept, but must be updated and approved before continuing.",
+          )}
+        </Card>
+      )}
+      {!enabled && (
+        <Card className="p-4">
+          {t(
+            "Validez les étapes précédentes avant de préparer celle-ci. Vous pouvez toujours consulter les versions conservées.",
+            "Approve the previous steps before preparing this one. You can still view saved versions.",
+          )}
+        </Card>
+      )}
+      {active === "brief" && (
+        <Card className="grid gap-4 p-5 sm:p-7">
+          <h2 className="font-display text-2xl">
+            {t("Ce que vous proposez", "What you offer")}
+          </h2>
+          <Field label={t("Votre activité", "Your business")}>
+            <Select
+              value={form.business}
+              onChange={(e) => field("business", e.target.value)}
+            >
+              <option value="products">{t("Produit", "Product")}</option>
+              <option value="services">
+                {t("Prestation de services", "Service business")}
+              </option>
+            </Select>
+          </Field>
+          <Field
+            label={t(
+              "Nom du produit ou de l’activité",
+              "Product or business name",
+            )}
+          >
+            <Input
+              value={form.offerName}
+              onChange={(e) => field("offerName", e.target.value)}
+              data-brief-name
+            />
+          </Field>
+          <Field
+            label={t("Votre description exacte", "Your exact description")}
+          >
+            <Textarea
+              rows={5}
+              value={form.description}
+              onChange={(e) => field("description", e.target.value)}
+              data-brief-description
+            />
+          </Field>
+          <Field
+            label={t(
+              "Lien fourni pour cette offre, si disponible",
+              "Source link for this offer, if available",
+            )}
+          >
+            <Input
+              value={form.offerUrl || ""}
+              onChange={(e) => field("offerUrl", e.target.value)}
+            />
+          </Field>
+          <Button
+            variant="secondary"
+            disabled={
+              busy || working || JSON.stringify(raw) !== JSON.stringify(form)
+            }
+            onClick={() => prepare("brief", "analyze")}
+          >
+            {t(
+              "Analyser mes informations et mes photos par l’IA",
+              "Analyze my information and photos with AI",
+            )}
+          </Button>
+          {state.stages.brief?.data.observations && (
+            <div className="rounded-xl border border-line p-3">
+              <p className="font-semibold">Proposition d’analyse à vérifier</p>
+              <p>
+                {state.stages.brief.data.profile.name} ·{" "}
+                {state.stages.brief.data.profile.category}
+              </p>
+              {state.stages.brief.data.observations.map((x, i) => (
+                <p key={i} className="mt-2 text-sm">
+                  {x}
+                </p>
+              ))}
+            </div>
+          )}
+          <Field
+            label={t("À qui s’adresse cette offre ?", "Who is this offer for?")}
+          >
+            <Input
+              value={form.target}
+              onChange={(e) => field("target", e.target.value)}
+              data-brief-target
+            />
+          </Field>
+          <Field
+            label={t(
+              "Consignes et contraintes à conserver",
+              "Instructions and constraints to keep",
+            )}
+          >
+            <Textarea
+              value={form.constraints}
+              onChange={(e) => field("constraints", e.target.value)}
+            />
+          </Field>
+          {form.business === "products" && (
+            <Field
+              label={t("Prix confirmé, si connu", "Confirmed price, if known")}
+            >
+              <Input
+                value={form.price}
+                onChange={(e) => field("price", e.target.value)}
+              />
+            </Field>
+          )}
+          {form.business === "services" && (
+            <div className="grid gap-3">
+              <h3 className="font-semibold">
+                {t(
+                  "Vos prestations et votre contact",
+                  "Your services and contact",
+                )}
+              </h3>
+              {form.services.services.map((service, i) => (
+                <div
+                  key={i}
+                  className="grid gap-2 rounded-xl border border-line p-3"
+                >
+                  <Input
+                    aria-label={t("Prestation", "Service")}
+                    value={service.name}
+                    onChange={(e) =>
+                      field("services", {
+                        ...form.services,
+                        services: form.services.services.map((x, j) =>
+                          j === i ? { ...x, name: e.target.value } : x,
+                        ),
+                      })
+                    }
+                  />
+                  <Textarea
+                    aria-label={t(
+                      "Description de la prestation",
+                      "Service description",
+                    )}
+                    value={service.description}
+                    onChange={(e) =>
+                      field("services", {
+                        ...form.services,
+                        services: form.services.services.map((x, j) =>
+                          j === i ? { ...x, description: e.target.value } : x,
+                        ),
+                      })
+                    }
+                  />
+                </div>
+              ))}
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  field("services", {
+                    ...form.services,
+                    services: [
+                      ...form.services.services,
+                      { name: "", description: "" },
+                    ],
+                  })
+                }
+              >
+                {t("Ajouter une prestation", "Add a service")}
+              </Button>
+              {(["email", "phone", "area", "hours", "bookingUrl"] as const).map(
+                (key) => (
+                  <Field
+                    key={key}
+                    label={
+                      {
+                        email: t("E-mail", "Email"),
+                        phone: t("Téléphone", "Phone"),
+                        area: t("Zone ou adresse", "Area or address"),
+                        hours: t("Horaires", "Opening hours"),
+                        bookingUrl: t(
+                          "Lien de rendez-vous, si disponible",
+                          "Booking link, if available",
+                        ),
+                      }[key]
+                    }
+                  >
+                    <Input
+                      value={form.services[key]}
+                      onChange={(e) =>
+                        field("services", {
+                          ...form.services,
+                          [key]: e.target.value,
+                        })
+                      }
+                    />
+                  </Field>
+                ),
+              )}
+              <Field
+                label={t(
+                  "Prochaine étape pour vos visiteurs",
+                  "Next step for your visitors",
+                )}
+              >
+                <Select
+                  value={form.services.contactMode}
+                  onChange={(e) =>
+                    field("services", {
+                      ...form.services,
+                      contactMode: e.target.value,
+                      contactModes: [e.target.value],
+                    })
+                  }
+                >
+                  <option value="form">Contact</option>
+                  <option value="quote">Devis</option>
+                  <option value="call">Appel</option>
+                  <option value="booking">Rendez-vous</option>
+                </Select>
+              </Field>
+            </div>
+          )}
+          {!!form.photoIds.length && (
+            <div className="flex flex-wrap gap-3">
+              {form.photoIds.map((assetId) => (
+                <img
+                  key={assetId}
+                  src={`/api/files/${assetId}?thumb=1`}
+                  alt={t(
+                    "Photo fournie pour ce projet",
+                    "Photo provided for this project",
+                  )}
+                  className="size-28 rounded-xl object-contain"
+                />
+              ))}
+            </div>
+          )}
+          <p className="text-sm text-muted">
+            {t(
+              "Les photos sont conservées comme références. Une photo ne confirme pas une matière, une certification ou un résultat.",
+              "Photos are kept as references. A photo does not confirm a material, certification or result.",
+            )}
+          </p>
+          {!!state.stages.brief?.data.missing.length && (
+            <ul className="list-inside list-disc text-sm text-warn">
+              {state.stages.brief.data.missing.map((m) => (
+                <li key={m}>{m}</li>
+              ))}
+            </ul>
+          )}
+          <div className="flex flex-wrap gap-3">
+            <Button onClick={saveBrief} loading={busy} data-save-brief>
+              {t("Enregistrer mes informations", "Save my information")}
+            </Button>
+            <Button
+              onClick={() => approve("brief")}
+              disabled={
+                busy || working || !!state.stages.brief?.data.missing.length
+              }
+              data-approve-brief
+            >
+              {t("Confirmer ces informations", "Confirm this information")}
+            </Button>
+          </div>
+        </Card>
+      )}
+      {active === "research" && (
+        <Card className="grid gap-4 p-5 sm:p-7">
+          <h2 className="font-display text-2xl">
+            {t(
+              "Comprendre le marché et choisir votre approche",
+              "Understand the market and choose your approach",
+            )}
+          </h2>
+          <p className="text-sm text-muted">
+            {t(
+              "Le studio recherche des références publiques. Vous pouvez ajouter jusqu’à quatre liens concurrents ou sectoriels. Les observations citées restent distinctes des hypothèses marketing ; aucun volume de marché n’est inventé.",
+              "The studio searches public references. You may add up to four competitor or sector links. Cited observations stay separate from marketing hypotheses; no market volumes are invented.",
+            )}
+          </p>
+          <Field
+            label={t(
+              "Références, un lien par ligne",
+              "References, one link per line",
+            )}
+          >
+            <Textarea value={urls} onChange={(e) => setUrls(e.target.value)} />
+          </Field>
+          <Button
+            variant="secondary"
+            onClick={() =>
+              send({
+                action: "references",
+                urls: urls
+                  .split("\n")
+                  .map((s) => s.trim())
+                  .filter(Boolean),
+              })
+            }
+            disabled={busy || working}
+          >
+            {t("Enregistrer ces références", "Save these references")}
+          </Button>
+          <Button
+            onClick={() => prepare("research")}
+            disabled={!enabled || working || busy}
+            data-generate-research
+          >
+            {t(
+              "Rechercher et préparer les approches",
+              "Research and prepare approaches",
+            )}
+          </Button>
+          {state.stages.research && (
+            <>
+              <ul className="grid gap-3">
+                {state.stages.research.data.sources.map((source) => (
+                  <li
+                    key={source.id}
+                    className="rounded-xl border border-line p-3"
+                  >
+                    <a
+                      href={source.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-medium underline"
+                    >
+                      {source.title}
+                    </a>
+                    <Badge>
+                      {source.status === "consulted"
+                        ? t("Source consultée", "Source consulted")
+                        : t("Lecture impossible", "Unavailable")}
+                    </Badge>
+                    <p className="mt-2 text-sm">
+                      {source.status === "consulted"
+                        ? source.excerpt.slice(0, 500)
+                        : source.error}
+                    </p>
+                    {source.provenance === "simulation" && (
+                      <p className="text-xs text-warn">
+                        Source simulée pour le test
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              {!state.stages.research.data.sources.length && (
+                <p role="alert">
+                  {t(
+                    "Aucune source accessible. Ajoutez des liens publics avant de valider une étude.",
+                    "No accessible source. Add public links before approving research.",
+                  )}
+                </p>
+              )}
+              <p>{state.stages.research.data.recommendation}</p>
+              {state.stages.research.data.angles.map((angle) => (
+                <label
+                  key={angle.id}
+                  className="block rounded-2xl border border-line p-4"
+                >
+                  <input
+                    type="radio"
+                    name="strategy"
+                    value={angle.id}
+                    checked={
+                      (choice ||
+                        state.stages.research?.data.selectedId ||
+                        state.stages.research?.data.recommendedId) === angle.id
+                    }
+                    onChange={() => setChoice(angle.id)}
+                  />
+                  <strong className="ml-2">{angle.title}</strong>
+                  <p className="mt-2">{angle.positioning}</p>
+                  <ul className="mt-2 list-inside list-disc text-sm">
+                    {angle.arguments.map((a, i) => (
+                      <li key={i}>{a}</li>
+                    ))}
+                  </ul>
+                  <p className="mt-2 text-sm">{angle.reason}</p>
+                  <dl className="mt-3 grid gap-2 text-sm">
+                    {angle.objections.map((x, i) => (
+                      <div key={i}>
+                        <dt className="font-medium">{x.objection}</dt>
+                        <dd className="text-muted">{x.answer}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <p className="text-xs text-muted">
+                    {t(
+                      "Hypothèse à valider. Aucune promesse ni preuve chiffrée ajoutée.",
+                      "Hypothesis to approve. No invented promises or quantified proof.",
+                    )}
+                  </p>
+                </label>
+              ))}
+              <Button
+                onClick={() => approve("research")}
+                disabled={!enabled || busy || working}
+                data-approve-research
+              >
+                {t("Choisir cette stratégie", "Choose this strategy")}
+              </Button>
+            </>
+          )}
+        </Card>
+      )}
+      {active === "brand" && (
+        <Card className="grid gap-4 p-5 sm:p-7">
+          <h2 className="font-display text-2xl">
+            {t(
+              "Une identité cohérente avec votre stratégie",
+              "An identity matching your strategy",
+            )}
+          </h2>
+          <Button
+            onClick={() => prepare("brand")}
+            disabled={!enabled || busy || working}
+            data-generate-brand
+          >
+            {t(
+              "Préparer une proposition de marque",
+              "Prepare a brand proposal",
+            )}
+          </Button>
+          {identity && (
+            <>
+              <Field label={t("Nom de marque", "Brand name")}>
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  data-brand-name
+                />
+              </Field>
+              <p className="text-sm text-muted">
+                {t("Autres pistes :", "Alternatives:")}{" "}
+                {identity.proposal.alternatives.join(" · ")}
+              </p>
+              <Field label="Slogan">
+                <Input
+                  value={tagline}
+                  onChange={(e) => setTagline(e.target.value)}
+                />
+              </Field>
+              <p>{identity.proposal.positioning}</p>
+              <details>
+                <summary>
+                  {t(
+                    "Règles de rédaction et d’usage",
+                    "Writing and usage rules",
+                  )}
+                </summary>
+                <p>{identity.proposal.tone.voice}</p>
+                <ul className="list-inside list-disc text-sm">
+                  {identity.proposal.tone.do.map((x, i) => (
+                    <li key={i}>{x}</li>
+                  ))}
+                  {identity.proposal.tone.dont.map((x, i) => (
+                    <li key={"no" + i}>À éviter : {x}</li>
+                  ))}
+                </ul>
+              </details>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+                {Object.entries(palette).map(([role, color]) => (
+                  <Field
+                    key={role}
+                    label={
+                      (
+                        {
+                          primary: "Principale",
+                          secondary: "Fond secondaire",
+                          accent: "Accent",
+                          light: "Fond clair",
+                          dark: "Texte sombre",
+                        } as Record<string, string>
+                      )[role] || role
+                    }
+                  >
+                    <input
+                      aria-label={role}
+                      type="color"
+                      value={color}
+                      onChange={(e) =>
+                        setPalette({ ...palette, [role]: e.target.value })
+                      }
+                      className="h-10 w-full"
+                    />
+                  </Field>
+                ))}
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field label={t("Police des titres", "Heading font")}>
+                  <Input
+                    value={fonts.heading}
+                    onChange={(e) =>
+                      setFonts({ ...fonts, heading: e.target.value })
+                    }
+                  />
+                </Field>
+                <Field label={t("Police des textes", "Body font")}>
+                  <Input
+                    value={fonts.body}
+                    onChange={(e) =>
+                      setFonts({ ...fonts, body: e.target.value })
+                    }
+                  />
+                </Field>
+              </div>
+              <p className="text-sm text-muted">
+                {t(
+                  "Disponibilité juridique et nom de domaine non vérifiés. Couleurs : ancrage sombre, couleur principale, accent et neutres ; deux polices cohérentes.",
+                  "Legal and domain availability not checked. Colors: dark anchor, brand color, accent and neutrals; two matching fonts.",
+                )}
+              </p>
+              <Button
+                onClick={() =>
+                  send({
+                    action: "identity",
+                    identity: { name, tagline, palette, fonts },
+                  })
+                }
+                disabled={!enabled || busy || working}
+                data-confirm-identity
+              >
+                {t(
+                  "Valider ce nom et cette identité",
+                  "Approve this name and identity",
+                )}
+              </Button>
+              {identity.identityConfirmed && (
+                <>
+                  <p className="text-sm">
+                    {t(
+                      "Choisissez votre logo fourni ou demandez des propositions au moteur IA configuré. Un essai refusé ne devient pas un logo final.",
+                      "Choose your supplied logo or request proposals from the configured AI engine. A rejected attempt cannot become a final logo.",
+                    )}
+                  </p>
+                  <Button
+                    variant="secondary"
+                    onClick={() => prepare("brand", "logo")}
+                    disabled={busy || working}
+                  >
+                    {t(
+                      "Créer des propositions de logo",
+                      "Create logo proposals",
+                    )}
+                  </Button>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {data.assets
+                      .filter(
+                        (a) =>
+                          ["logo", "logo-v2"].includes(a.role) &&
+                          (a.origin === "upload" ||
+                            identity.logoCandidates.includes(a.id)) &&
+                          (a.origin === "upload" || a.verdict === "FINAL"),
+                      )
+                      .map((a) => (
+                        <label
+                          key={a.id}
+                          className="rounded-xl border border-line p-3"
+                        >
+                          <img
+                            src={a.url}
+                            alt={a.name}
+                            className="aspect-square w-full object-contain"
+                          />
+                          <input
+                            type="radio"
+                            name="logo"
+                            value={a.id}
+                            checked={logo === a.id}
+                            onChange={() => setLogo(a.id)}
+                          />
+                          <span className="ml-2 text-xs">{a.name}</span>
+                        </label>
+                      ))}
+                  </div>
+                  <Button
+                    onClick={() => approve("brand")}
+                    disabled={!logo || busy || working}
+                    data-approve-brand
+                  >
+                    {t(
+                      "Valider la marque et ce logo",
+                      "Approve the brand and this logo",
+                    )}
+                  </Button>
+                </>
+              )}
+            </>
+          )}
+        </Card>
+      )}
+      {active === "content" && (
+        <>
+          <Card className="grid gap-4 p-5 sm:p-7">
+            <h2 className="font-display text-2xl">
+              {t(
+                "Pages, textes et visuels à prévoir",
+                "Pages, copy and visual plan",
+              )}
+            </h2>
+            <Button
+              onClick={() => prepare("content")}
+              disabled={!enabled || busy || working}
+              data-generate-content
+            >
+              {t(
+                "Préparer les contenus et le plan",
+                "Prepare content and the plan",
+              )}
+            </Button>
+            {state.stages.content && (
+              <>
+                <ol className="grid gap-3">
+                  {state.stages.content.data.pages.map((page) => (
+                    <li
+                      key={page.key}
+                      className="rounded-xl border border-line p-3"
+                    >
+                      <h3 className="font-semibold">{page.title}</h3>
+                      <p className="text-sm">{page.goal}</p>
+                      <ul className="mt-2 list-inside list-disc text-xs text-muted">
+                        {page.sections.map((sec) => (
+                          <li key={sec.key}>{sec.purpose}</li>
+                        ))}
+                      </ul>
+                    </li>
+                  ))}
+                </ol>
+                {state.stages.content.data.documents.map((item) => (
+                  <details
+                    key={item.docKey}
+                    className="rounded-xl border border-line p-3"
+                  >
+                    <summary>
+                      {item.doc.page.title} — {item.verdict}
+                    </summary>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() =>
+                        prepare("content", "generate", item.doc.page.key)
+                      }
+                      disabled={busy || working || !correction.trim()}
+                    >
+                      {t(
+                        "Corriger seulement cette page",
+                        "Correct only this page",
+                      )}
+                    </Button>
+                    <p className="my-3 text-sm text-muted">
+                      SEO : {item.doc.meta.seoTitle} ·{" "}
+                      {item.doc.meta.metaDescription}
+                    </p>
+                    {item.doc.blocks.map((block: any) => (
+                      <div key={block.id} className="my-3 whitespace-pre-wrap">
+                        {block.text || block.q || block.items?.join("\n")}
+                        {block.a && <p>{block.a}</p>}
+                      </div>
+                    ))}
+                  </details>
+                ))}
+                {!!state.stages.content.data.notes.length && (
+                  <details>
+                    <summary>
+                      {t("Points à vérifier", "Points to review")}
+                    </summary>
+                    <ul className="list-inside list-disc text-sm">
+                      {state.stages.content.data.notes.map((n, i) => (
+                        <li key={i}>{n}</li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
+                <Button
+                  variant="secondary"
+                  onClick={() => send({ action: "refresh-content" })}
+                  disabled={busy || working}
+                >
+                  {t(
+                    "Reprendre les textes corrigés dans l’éditeur",
+                    "Load copy corrected in the editor",
+                  )}
+                </Button>
+                <Button
+                  onClick={() => approve("content")}
+                  disabled={!enabled || busy || working}
+                  data-approve-content
+                >
+                  {t(
+                    "Valider ces contenus et le plan",
+                    "Approve this content and the plan",
+                  )}
+                </Button>
+              </>
+            )}
+          </Card>
+          {state.stages.content && (
+            <ContentPanel
+              types={[
+                "home_page",
+                "product_page",
+                "service_page",
+                "brand_page",
+              ]}
+              title={t(
+                "Corriger et versionner vos textes",
+                "Edit and version your copy",
+              )}
+            />
+          )}
+        </>
+      )}
+      {active === "media" && (
+        <Card className="grid gap-4 p-5 sm:p-7">
+          <h2 className="font-display text-2xl">
+            {t(
+              "Les bons visuels, au bon endroit",
+              "The right visuals in the right place",
+            )}
+          </h2>
+          <p className="text-sm text-muted">
+            {t(
+              "Les créations passent par le moteur IA existant avec les références du projet. Aucune photo de banque ni autre marque ne remplace votre produit. Par défaut, aucune personne n’est ajoutée.",
+              "Creations use the existing AI engine and project references. No stock photo or other brand replaces your product. By default, no person is added.",
+            )}
+          </p>
+          {state.stages.media?.data.slots.map((slot) => (
+            <Slot
+              key={slot.key}
+              slot={slot}
+              assets={data.assets}
+              busy={busy || working || !enabled}
+              consentChange={(peopleConsent) =>
+                send({ action: "consent", slot: slot.key, peopleConsent })
+              }
+              generate={() => prepare("media", "image", slot.key)}
+              assign={(assetId, peopleConsent) =>
+                send({
+                  action: "assign",
+                  slot: slot.key,
+                  assetId,
+                  peopleConsent,
+                })
+              }
+            />
+          ))}
+          <Button
+            onClick={() => approve("media")}
+            disabled={!enabled || busy || working}
+            data-approve-media
+          >
+            {t(
+              "Valider les visuels et vérifier le projet",
+              "Approve visuals and check the project",
+            )}
+          </Button>
+        </Card>
+      )}
+      <Card className="grid gap-3 p-5">
+        <Field
+          label={t(
+            "Défaut précis à corriger pour un nouvel essai",
+            "Specific issue to fix for another attempt",
+          )}
+        >
+          <Textarea
+            value={correction}
+            onChange={(e) => setCorrection(e.target.value)}
+            placeholder={t(
+              "Ex. : conserver le nom exact et corriger la hiérarchie du texte.",
+              "E.g.: keep the exact name and correct text hierarchy.",
+            )}
+          />
+        </Field>
+        <p className="text-xs text-muted">
+          {t(
+            "Deux demandes au plus pour les mêmes données. Une reprise payante a son devis ; aucun essai n’est relancé automatiquement après un échec.",
+            "At most two requests for the same inputs. A paid retry has its own quote; failures are never retried automatically.",
+          )}
+        </p>
+      </Card>
+      {quote && (
+        <Card
+          className="border-signal p-5"
+          role="dialog"
+          aria-label={t("Confirmer cet essai", "Confirm this attempt")}
+        >
+          <h2 className="font-semibold">
+            {t("Avant de lancer", "Before starting")}
+          </h2>
+          <p className="mt-2">
+            {quote.maxBudgetPct == null
+              ? t(
+                  "Coût indisponible : cet essai ne peut pas être confirmé.",
+                  "Cost unavailable: this attempt cannot be confirmed.",
+                )
+              : t(
+                  `Plafond : ${quote.maxBudgetPct.toFixed(1)} % du budget IA de ce projet.`,
+                  `Cap: ${quote.maxBudgetPct.toFixed(1)}% of this project’s AI budget.`,
+                )}
+          </p>
+          <p className="mt-2 text-sm text-muted">{quote.note}</p>
+          <div className="mt-4 flex gap-3">
+            <Button
+              disabled={busy || quote.maxBudgetPct == null}
+              onClick={async () => {
+                const q = quote;
+                setQuote(null);
+                await send({ action: "generate", quoteId: q.id, correction });
+              }}
+            >
+              {t("Confirmer cet essai", "Confirm this attempt")}
+            </Button>
+            <Button variant="secondary" onClick={() => setQuote(null)}>
+              {t("Annuler", "Cancel")}
+            </Button>
+          </div>
+        </Card>
+      )}
+      <Card className="p-5">
+        <h2 className="font-display text-2xl">
+          {data.ready
+            ? t("Prêt pour le moteur de thèmes", "Ready for the theme engine")
+            : t("Ce qui reste avant le thème", "What remains before the theme")}
+        </h2>
+        {data.ready ? (
+          <>
+            <p className="mt-2">
+              {t(
+                "Votre marque validée, votre stratégie, vos contenus et leurs médias sont reliés et enregistrés. La construction du thème sera une étape distincte.",
+                "Your approved brand, strategy, content and media are linked and saved. Building the theme will be a separate step.",
+              )}
+            </p>
+            <Button
+              className="mt-4"
+              variant="secondary"
+              onClick={() => {
+                const blob = new Blob([JSON.stringify(data.ready, null, 2)], {
+                  type: "application/json",
+                });
+                const u = URL.createObjectURL(blob),
+                  a = document.createElement("a");
+                a.href = u;
+                a.download = "projet-pret-pour-theme.json";
+                a.click();
+                URL.revokeObjectURL(u);
+              }}
+            >
+              {t(
+                "Télécharger les données préparées",
+                "Download the prepared data",
+              )}
+            </Button>
+          </>
+        ) : (
+          <ul className="mt-3 list-inside list-disc text-sm">
+            {data.blockers.map((b, i) => (
+              <li key={i}>{b}</li>
+            ))}
+          </ul>
+        )}
+        <details className="mt-5">
+          <summary>{t("Versions enregistrées", "Saved versions")}</summary>
+          <ul className="mt-3 grid gap-2">
+            {data.history.map((v) => (
+              <li
+                key={v.revision}
+                className="flex items-center justify-between gap-3 text-sm"
+              >
+                <span>
+                  Version {v.revision} — {new Date(v.at).toLocaleString()}
+                </span>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={busy || working || v.revision === state.revision}
+                  onClick={() =>
+                    send({ action: "restore", version: v.revision })
+                  }
+                >
+                  {t("Reprendre pour vérification", "Restore for review")}
+                </Button>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs text-muted">
+            {t(
+              "Une reprise conserve les versions actuelles et remet les choix à vérifier avant propagation.",
+              "Restoring keeps current versions and requires choices to be reviewed before propagation.",
+            )}
+          </p>
+        </details>
+      </Card>
+    </div>
+  );
+}
+function Slot({
+  slot,
+  assets,
+  busy,
+  generate,
+  assign,
+  consentChange,
+}: {
+  slot: VisualSlot;
+  assets: AssetView[];
+  busy: boolean;
+  generate: () => void;
+  consentChange: (consent: VisualSlot["peopleConsent"]) => Promise<unknown>;
+  assign: (id: string, people: VisualSlot["peopleConsent"]) => Promise<unknown>;
+}) {
+  const t = useT(),
+    [selected, setSelected] = useState(slot.assetId || ""),
+    [consent, setConsent] = useState<VisualSlot["peopleConsent"]>(
+      slot.peopleConsent || "none_confirmed",
+    );
+  useEffect(() => setSelected(slot.assetId || ""), [slot.assetId]);
+  return (
+    <div className="grid gap-3 rounded-2xl border border-line p-4">
+      <h3 className="font-semibold">{slot.purpose}</h3>
+      <p className="text-xs text-muted">
+        {slot.pageKey} · {slot.sectionKey}
+      </p>
+      {slot.assetId && (
+        <img
+          src={`/api/files/${slot.assetId}`}
+          alt={slot.purpose}
+          className="max-h-72 w-full rounded-xl object-contain"
+        />
+      )}
+      <p>
+        {slot.reviewed
+          ? t("Visuel vérifié par vous", "Visual reviewed by you")
+          : t(
+              "À créer ou à choisir puis vérifier",
+              "Create or choose, then review",
+            )}
+      </p>
+      <Button variant="secondary" onClick={generate} disabled={busy}>
+        {t("Créer ce visuel par l’IA", "Create this visual with AI")}
+      </Button>
+      <Field
+        label={t(
+          "Ou choisir une de vos images du projet",
+          "Or choose a project image",
+        )}
+      >
+        <Select value={selected} onChange={(e) => setSelected(e.target.value)}>
+          <option value="">{t("Choisir une image", "Choose an image")}</option>
+          {assets
+            .filter((a) => a.origin === "upload" || a.verdict === "FINAL")
+            .map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.name}
+              </option>
+            ))}
+        </Select>
+      </Field>
+      <Field
+        label={t(
+          "Présence humaine dans cette utilisation",
+          "People in this use",
+        )}
+      >
+        <Select
+          value={consent}
+          onChange={(e) =>
+            setConsent(e.target.value as VisualSlot["peopleConsent"])
+          }
+        >
+          <option value="none_confirmed">
+            {t(
+              "Je confirme l’absence de personne",
+              "I confirm there are no people",
+            )}
+          </option>
+          <option value="this_slot">
+            {t(
+              "J’autorise cette utilisation précise avec une personne",
+              "I authorize this specific use with a person",
+            )}
+          </option>
+        </Select>
+      </Field>
+      <Button
+        variant="secondary"
+        onClick={() => consentChange(consent)}
+        disabled={busy}
+      >
+        {t(
+          "Enregistrer cette autorisation pour ce visuel",
+          "Save this permission for this visual",
+        )}
+      </Button>
+      <Button
+        onClick={() => assign(selected, consent)}
+        disabled={!selected || busy}
+      >
+        {t(
+          "J’ai vérifié : utiliser cette image ici",
+          "I reviewed it: use this image here",
+        )}
+      </Button>
+    </div>
+  );
+}

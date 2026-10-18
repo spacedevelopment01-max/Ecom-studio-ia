@@ -40,6 +40,7 @@ type Handler = (ctx: JobContext) => Promise<unknown>;
 export const handlers: Record<string, Handler> = {
   // Création complète : passe par le planner à l'intérieur (étapes déjà acquises sautées, marque existante gardée).
   "pipeline.run": runPipeline,
+  "project.prepare": async (ctx) => (await import("../src/lib/preparation/engine")).runPreparation(ctx),
 
   /** Demande libre du client : intention → plan → moteurs existants (Router V2, barrière de qualité). */
   "plan.run": runRequestPlan,

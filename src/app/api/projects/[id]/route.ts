@@ -1,3 +1,4 @@
+import {stateOf} from '@/lib/preparation/store';
 import { z } from "zod";
 import { all, json, now, one, run } from "@/lib/db";
 import { body, handle, ok } from "@/lib/http";
@@ -47,6 +48,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     brand: p.brand,
     strategy: p.strategy,
     settings: p.settings,
+    preparation: stateOf(p.id) ? {revision:stateOf(p.id)!.revision} : null,
     pipeline: pipeline ? { job: publicJob(pipeline), steps: pipelineState(pipeline, p.business, p.settings.existingSite) } : null,
     active: active.map(publicJob),
     counts,

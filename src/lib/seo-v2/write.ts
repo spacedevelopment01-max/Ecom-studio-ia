@@ -354,6 +354,7 @@ export function writePrompt(brief: ContentBrief, f: VerifiedFacts, o: { fix?: st
   const links = brief.links.filter((l) => l.status === "existing" && l.url).map((l) => ({ title: l.title, url: l.url }));
   const planned = brief.links.filter((l) => l.status !== "existing").map((l) => l.title);
   return [
+    ...(brief.instructions ? [`CONSIGNES CLIENT À RESPECTER (ne pas les publier comme du contenu) : ${JSON.stringify(brief.instructions)}`] : []),
     `Type : ${brief.type}. Intention : ${brief.intent} (${INTENT_GOAL[brief.intent].fr}).`,
     `Mot-clé visé (hypothèse sémantique, sans donnée de volume) : ${brief.primaryKeyword?.term ?? "aucun"}. Variantes : ${brief.secondaryKeywords.map((k) => k.term).join(", ") || "aucune"}.`,
     `Questions des lecteurs : ${brief.questions.join(" | ") || "aucune"}.`,
