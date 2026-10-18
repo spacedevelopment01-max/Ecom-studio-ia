@@ -39,6 +39,7 @@ describe("Lot 2A — références intégrées", async () => {
     for (const ref of [product, service]) {
       expect(validateSpec(ref.spec)).toEqual([]);
       for (const def of settingsSchema(ref.spec).flatMap((group) => group.settings ?? []).filter((s) => s.type === "range")) {
+        if (!def.id) continue;
         const value = ref.spec.settings[def.id];
         if (value != null) expect(coerceSetting(def, value), `${ref.kind}/${def.id}`).toEqual({ ok: true, value });
       }
