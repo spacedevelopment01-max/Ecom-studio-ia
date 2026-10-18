@@ -1,7 +1,7 @@
 {
-  "testedCommit": "dbc52162fb7d0da4d27c6a872a1c1dee2e85d3cc",
+  "testedCommit": "248923345b722d132e30b5905a62d4e8d1af28bc",
   "workingTree": "clean",
-  "date": "2026-10-18T12:13:13.127Z",
+  "date": "2026-10-18T13:12:52.094Z",
   "renderMode": "es_raw=1 — thème issu des vraies routes, sans le bandeau flottant du studio",
   "widths": [
     1440,
@@ -24,16 +24,33 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 11384,
+            "height": 11275,
             "h1": 1,
             "h1Size": "87.84px",
+            "h1Lines": 3,
             "images": 25,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 77,
             "addToCartTop": null,
-            "featuredTop": 6083
+            "featuredTop": 1522,
+            "featuredStage": {
+              "stage": [
+                576,
+                720
+              ],
+              "img": [
+                576,
+                720
+              ],
+              "natural": [
+                792,
+                990
+              ],
+              "fit": "contain",
+              "classes": "ed-section fp fp--contain color-scheme-1"
+            }
           },
           "javascriptErrors": []
         },
@@ -44,16 +61,33 @@
           "metrics": {
             "width": 1024,
             "scrollWidth": 1024,
-            "height": 9861,
+            "height": 9631,
             "h1": 1,
             "h1Size": "62.464px",
+            "h1Lines": 3,
             "images": 28,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 77,
             "addToCartTop": null,
-            "featuredTop": 5061
+            "featuredTop": 1339,
+            "featuredStage": {
+              "stage": [
+                497,
+                622
+              ],
+              "img": [
+                497,
+                622
+              ],
+              "natural": [
+                563,
+                703
+              ],
+              "fit": "contain",
+              "classes": "ed-section fp fp--contain color-scheme-1"
+            }
           },
           "javascriptErrors": []
         },
@@ -64,16 +98,33 @@
           "metrics": {
             "width": 768,
             "scrollWidth": 768,
-            "height": 9680,
+            "height": 9421,
             "h1": 1,
-            "h1Size": "56px",
+            "h1Size": "44px",
+            "h1Lines": 3,
             "images": 28,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 77,
             "addToCartTop": null,
-            "featuredTop": 4767
+            "featuredTop": 1261,
+            "featuredStage": {
+              "stage": [
+                404,
+                505
+              ],
+              "img": [
+                404,
+                505
+              ],
+              "natural": [
+                768,
+                960
+              ],
+              "fit": "contain",
+              "classes": "ed-section fp fp--contain color-scheme-1"
+            }
           },
           "javascriptErrors": []
         },
@@ -84,16 +135,33 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 11865,
+            "height": 11851,
             "h1": 1,
             "h1Size": "50px",
+            "h1Lines": 3,
             "images": 28,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 65,
             "addToCartTop": null,
-            "featuredTop": 6412
+            "featuredTop": 1798,
+            "featuredStage": {
+              "stage": [
+                350,
+                350
+              ],
+              "img": [
+                350,
+                350
+              ],
+              "natural": [
+                390,
+                487
+              ],
+              "fit": "contain",
+              "classes": "ed-section fp fp--contain color-scheme-1"
+            }
           },
           "javascriptErrors": []
         },
@@ -104,16 +172,18 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 9289,
+            "height": 7667,
             "h1": 1,
             "h1Size": "57.6px",
-            "images": 30,
+            "h1Lines": 2,
+            "images": 26,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 77,
-            "addToCartTop": 1425.375,
-            "featuredTop": null
+            "addToCartTop": 1431.125,
+            "featuredTop": null,
+            "featuredStage": null
           },
           "javascriptErrors": []
         },
@@ -124,16 +194,18 @@
           "metrics": {
             "width": 1024,
             "scrollWidth": 1024,
-            "height": 8009,
+            "height": 6738,
             "h1": 1,
             "h1Size": "42px",
-            "images": 27,
+            "h1Lines": 2,
+            "images": 23,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 77,
-            "addToCartTop": 1392.9375,
-            "featuredTop": null
+            "addToCartTop": 1398.6875,
+            "featuredTop": null,
+            "featuredStage": null
           },
           "javascriptErrors": []
         },
@@ -144,16 +216,18 @@
           "metrics": {
             "width": 768,
             "scrollWidth": 768,
-            "height": 7930,
+            "height": 6658,
             "h1": 1,
             "h1Size": "42px",
-            "images": 27,
+            "h1Lines": 2,
+            "images": 23,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 77,
-            "addToCartTop": 1540.234375,
-            "featuredTop": null
+            "addToCartTop": 1545.984375,
+            "featuredTop": null,
+            "featuredStage": null
           },
           "javascriptErrors": []
         },
@@ -164,16 +238,18 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 9653,
+            "height": 8127,
             "h1": 1,
             "h1Size": "42px",
-            "images": 27,
+            "h1Lines": 2,
+            "images": 23,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 65,
-            "addToCartTop": 1656.84375,
-            "featuredTop": null
+            "addToCartTop": 1662.59375,
+            "featuredTop": null,
+            "featuredStage": null
           },
           "javascriptErrors": []
         }
@@ -238,6 +314,10 @@
           "display": "252,80 €"
         },
         {
+          "width": 390,
+          "bar": "ajout réel depuis la barre fixe → 142,20 €, une ligne"
+        },
+        {
           "quantity": 3,
           "gift": "indisponible — stock zéro vérifié dans Chromium"
         }
@@ -246,7 +326,7 @@
         {
           "platform": "shopify",
           "kind": "theme",
-          "bytes": 1527051,
+          "bytes": 1527606,
           "issues": [
             "product_template_assignment_required",
             "purchase_rules_require_server"
@@ -257,7 +337,7 @@
         {
           "platform": "woocommerce",
           "kind": "theme",
-          "bytes": 1403354,
+          "bytes": 1404283,
           "issues": [
             "product_layouts_shared",
             "purchase_rules_require_server"
@@ -268,7 +348,7 @@
         {
           "platform": "prestashop",
           "kind": "theme",
-          "bytes": 1297204,
+          "bytes": 1297755,
           "issues": [
             "product_layouts_shared",
             "purchase_rules_require_server"
@@ -279,7 +359,7 @@
         {
           "platform": "wix",
           "kind": "kit",
-          "bytes": 1405174,
+          "bytes": 1405178,
           "issues": [
             "purchase_rules_require_server"
           ],
@@ -289,7 +369,7 @@
         {
           "platform": "squarespace",
           "kind": "kit",
-          "bytes": 1405129,
+          "bytes": 1405133,
           "issues": [
             "purchase_rules_require_server"
           ],
@@ -313,16 +393,18 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 12030,
+            "height": 11806,
             "h1": 1,
             "h1Size": "96px",
+            "h1Lines": 3,
             "images": 13,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 81,
             "addToCartTop": null,
-            "featuredTop": null
+            "featuredTop": null,
+            "featuredStage": null
           },
           "javascriptErrors": []
         },
@@ -333,16 +415,18 @@
           "metrics": {
             "width": 1024,
             "scrollWidth": 1024,
-            "height": 10007,
+            "height": 9783,
             "h1": 1,
             "h1Size": "68.608px",
+            "h1Lines": 3,
             "images": 13,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 81,
             "addToCartTop": null,
-            "featuredTop": null
+            "featuredTop": null,
+            "featuredStage": null
           },
           "javascriptErrors": []
         },
@@ -353,16 +437,18 @@
           "metrics": {
             "width": 768,
             "scrollWidth": 768,
-            "height": 9190,
+            "height": 8988,
             "h1": 1,
-            "h1Size": "56px",
+            "h1Size": "52.224px",
+            "h1Lines": 2,
             "images": 13,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 81,
             "addToCartTop": null,
-            "featuredTop": null
+            "featuredTop": null,
+            "featuredStage": null
           },
           "javascriptErrors": []
         },
@@ -373,16 +459,18 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 11791,
+            "height": 11613,
             "h1": 1,
-            "h1Size": "48px",
+            "h1Size": "44px",
+            "h1Lines": 2,
             "images": 13,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 65,
             "addToCartTop": null,
-            "featuredTop": null
+            "featuredTop": null,
+            "featuredStage": null
           },
           "javascriptErrors": []
         },
@@ -393,16 +481,18 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 8719,
+            "height": 8527,
             "h1": 1,
             "h1Size": "96px",
+            "h1Lines": 3,
             "images": 5,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 81,
             "addToCartTop": null,
-            "featuredTop": null
+            "featuredTop": null,
+            "featuredStage": null
           },
           "javascriptErrors": []
         },
@@ -413,16 +503,18 @@
           "metrics": {
             "width": 1024,
             "scrollWidth": 1024,
-            "height": 8117,
+            "height": 7925,
             "h1": 1,
             "h1Size": "68.608px",
+            "h1Lines": 3,
             "images": 5,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 81,
             "addToCartTop": null,
-            "featuredTop": null
+            "featuredTop": null,
+            "featuredStage": null
           },
           "javascriptErrors": []
         },
@@ -433,16 +525,18 @@
           "metrics": {
             "width": 768,
             "scrollWidth": 768,
-            "height": 8065,
+            "height": 7888,
             "h1": 1,
-            "h1Size": "56px",
+            "h1Size": "52.224px",
+            "h1Lines": 3,
             "images": 5,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 81,
             "addToCartTop": null,
-            "featuredTop": null
+            "featuredTop": null,
+            "featuredStage": null
           },
           "javascriptErrors": []
         },
@@ -453,16 +547,18 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 9946,
+            "height": 9847,
             "h1": 1,
-            "h1Size": "48px",
+            "h1Size": "44px",
+            "h1Lines": 3,
             "images": 5,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 65,
             "addToCartTop": null,
-            "featuredTop": null
+            "featuredTop": null,
+            "featuredStage": null
           },
           "javascriptErrors": []
         }
@@ -495,7 +591,7 @@
         {
           "platform": "shopify",
           "kind": "theme",
-          "bytes": 3122693,
+          "bytes": 3123686,
           "issues": [],
           "installed": false,
           "checkoutVerified": false
@@ -503,7 +599,7 @@
         {
           "platform": "woocommerce",
           "kind": "theme",
-          "bytes": 3016029,
+          "bytes": 3016861,
           "issues": [],
           "installed": false,
           "checkoutVerified": false
@@ -511,7 +607,7 @@
         {
           "platform": "prestashop",
           "kind": "theme",
-          "bytes": 2916520,
+          "bytes": 2917158,
           "issues": [],
           "installed": false,
           "checkoutVerified": false
@@ -519,7 +615,7 @@
         {
           "platform": "wix",
           "kind": "kit",
-          "bytes": 2961677,
+          "bytes": 2961631,
           "issues": [],
           "installed": false,
           "checkoutVerified": false
@@ -527,7 +623,7 @@
         {
           "platform": "squarespace",
           "kind": "kit",
-          "bytes": 2961684,
+          "bytes": 2961638,
           "issues": [],
           "installed": false,
           "checkoutVerified": false

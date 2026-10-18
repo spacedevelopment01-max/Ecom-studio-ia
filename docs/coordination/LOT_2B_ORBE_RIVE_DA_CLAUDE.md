@@ -18,7 +18,7 @@
 ## Version, base et périmètre
 
 - Branche `claude/orbe-rive-direction-artistique`, créée sur `077a2106227e7a7a00c89e783f1a37f6775d54ae` (tête de `codex/lot-2a-themes-reference` au démarrage, inchangée à ce moment). La branche Codex et la PR #134 ne sont pas modifiées. Depuis, Codex a poussé sept commits (`9f8b6c43` à la rédaction) qui touchent en partie les mêmes fichiers : les deux branches sont deux réalisations distinctes, à comparer, pas à fusionner telles quelles.
-- Première livraison : `dbc52162` (application), `58a9b634` (rapport). Passe de finition : voir le commit indiqué dans le champ `testedCommit` de [`reports/lot2b-da/preuves.json`](../../reports/lot2b-da/preuves.json), qui identifie la version réellement capturée.
+- Première livraison : `dbc52162` (application), `58a9b634` (rapport). Passe de finition : `24892334` (application), capturé tel quel, arbre propre (champ `testedCommit` de [`reports/lot2b-da/preuves.json`](../../reports/lot2b-da/preuves.json)). Base de comparaison visuelle : `dbc52162` pour cette variante, `563ab003` pour la composition Codex (reconstruite localement dans un second dossier de travail, voir les limites).
 - Consignes lues intégralement : mission [6247457951](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/134#issuecomment-6247457951) (version 08:28:10 UTC), précision « Produit à la une » [6248929074](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/134#issuecomment-6248929074), coordination [6249203547](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/134#issuecomment-6249203547), `CLAUDE.md`, briefs du ZIP (`README.md`, `MESSAGE_CODEX.txt`, `ORBE.md`, `ATELIER_RIVE.md`, `RECETTE.md`, `ASSETS.md`, `manifest.json`), rapport et plan du lot 2B de Codex.
 - Aucun merge, déploiement, publication, changement de l'accueil public du studio, nouvelle connexion ni appel IA payant (`ai_calls` vide pour les deux projets de test, vérifié par le harnais).
 
@@ -94,21 +94,23 @@ Réponse à la précision de Thomas : une vraie section produit, pas une grille 
 
 ## Vérifications réellement exécutées
 
+Passe de finition (commit `24892334`) :
+
 | Commande | Résultat |
 |---|---|
 | `npx tsc --noEmit` | réussi, sortie 0 |
-| `npx vitest run tests/lot2b-featured.test.ts tests/lot2b-editorial.test.ts tests/theme.test.ts` | 24 tests réussis, 3 fichiers |
-| `npx vitest run tests/lot2b-editorial.test.ts tests/themes-catalogue.test.ts tests/theme-en.test.ts` | réussi après adaptation d'un identifiant de section dans le test existant (`purchase` → `featured`) |
-| `scripts/verify-theme.sh --rapide` | 25 cas, zéro erreur Theme Check, ZIP client valide |
+| `npx vitest run tests/lot2b-featured.test.ts tests/lot2b-editorial.test.ts tests/themes-catalogue.test.ts tests/theme-en.test.ts tests/theme.test.ts` | 39 tests réussis, 5 fichiers |
 | `scripts/verify-theme.sh` (complet, `JOBS=2`) | 137 cas réussis, zéro erreur Theme Check, ZIP client valide : « Thème : tout est valide. » |
-| `CHROMIUM=… npx tsx scripts/lot2b-da-proof.ts <dossier privé> <pack>/images` | 16 visites (4 pages × 1440 / 1024 / 768 / 390), 24 médias chargés, aucun cadre « Visuel à importer », aucun débordement, un seul H1 par page, aucune erreur JavaScript, aucune image cassée ; interactions et vidéos ci-dessous |
+| `CHROMIUM=… npx tsx scripts/lot2b-da-proof.ts <dossier privé> <pack>/images` | 16 visites (4 pages × 1440 / 1024 / 768 / 390), 24 médias chargés, aucun débordement horizontal, un seul H1 par page, aucune erreur JavaScript, aucune image cassée ; scène du produit à la une égale à l'image affichée (`contain`) aux quatre largeurs ; barre mobile « Total 252,80 € » et « 63,20 € par article » ; ajout réel depuis la barre → 142,20 €, une ligne ; interactions et vidéos ci-dessous |
+
+Première livraison (commit `dbc52162`) : mêmes commandes, résultats équivalents (24 tests sur 3 fichiers à l'époque, Theme Check complet valide, passe de preuves complète).
 
 La suite générale `npx vitest run` n'a pas été relancée intégralement dans cette session (durée et dépassements de délai déjà documentés par Codex sur le test du calendrier, hors périmètre) : elle reste **non vérifiée** ici ; les tests du thème, du lot 2B, du catalogue et de la langue anglaise le sont.
 
 ### Interactions vérifiées dans Chromium (bureau et mobile)
 
-- Accueil ORBE, section Produit à la une : finition Charbon → grand visuel Charbon ; trio → pochette débloquée ; lien « Voir la fiche complète » porte `variant=1002&offer=offer_3` ; ajout au panier depuis l'accueil → sous-total 201,45 €.
-- Fiche ORBE : offres 1/2/3/4 → 79,00 / 142,20 / 201,45 / 252,80 € ; cadeau débloqué à partir de 3 ; finition par article ; galerie qui suit la finition ; zoom ouvert et fermé au clavier ; trio mixte → panier 201,45 € avec cadeau non modifiable ; trio → duo au panier → 142,20 € et cadeau retiré ; suppression du lot → panier vide ; stock de pochette à zéro → cadeau indisponible ; barre d'achat mobile visible quand le bouton est hors écran, avec le total courant.
+- Accueil ORBE, section Produit à la une (3e position) : finition Charbon → grand visuel Charbon ; trio → pochette débloquée ; lien « Voir la fiche complète » porte `variant=1002&offer=offer_3` ; ajout au panier depuis l'accueil → sous-total 201,45 € ; scène isolée capturée pour Dune, Argile et Charbon à 1440 et 390 px, socle entier.
+- Fiche ORBE : offres 1/2/3/4 → 79,00 / 142,20 / 201,45 / 252,80 € ; cadeau débloqué à partir de 3 ; finition par article ; galerie qui suit la finition ; zoom ouvert et fermé au clavier ; trio mixte → panier 201,45 € avec cadeau non modifiable ; trio → duo au panier → 142,20 € et cadeau retiré ; suppression du lot → panier vide ; stock de pochette à zéro → cadeau indisponible ; barre d'achat mobile visible quand le bouton est hors écran, avec finition, prix par article et total ; son bouton « Ajouter au panier » a réellement ajouté le duo (142,20 €, une ligne) par la requête serveur habituelle.
 - Accueil Rive : chapitre 2 → image bibliothèque ; étude en deux vues ; FAQ ouverte. Prestation Rive : formulaire → « Demande de test enregistrée. Aucun e-mail envoyé. », fichier de reçu réellement écrit ; comparaison des trois accompagnements.
 - Mouvement réduit : zéro animation active ; menu mobile ouvert, fermé par Échap, focus rendu au bouton.
 
@@ -132,6 +134,10 @@ Quatre vidéos H.264 (MP4) issues du navigateur : ORBE ordinateur 36,5 s et mobi
 Les sites de référence n'ont pas été rouverts dans cette session : les choix s'appuient sur les axes d'étude écrits dans la mission et sur les compositions détaillées. Aucun média, texte ou marque des références n'est repris.
 
 ## Écarts restants et limites
+
+- Page privée ChatGPT de Codex inaccessible depuis cette session (nom de domaine non résolu) : la composition immersive de Codex a été reconstruite localement depuis le code de `563ab003` et les 24 images, puis comparée. Les rendus Codex eux-mêmes n'ont donc pas été vus.
+- Contrôles non automatisés : la lecture des pages avec un lecteur d'écran et le test sur de vrais appareils (iPhone / Android, Safari) n'ont pas été faits ; les captures viennent de Chromium à quatre largeurs. Navigation clavier et mouvement réduit sont vérifiés par le harnais, pas à la main.
+- Les autres thèmes du catalogue (28) passent le Theme Check complet mais leur rendu visuel après ces changements de `editorial.css` / `editorial.js` n'a pas été re-capturé ; les règles ajoutées sont ciblées (`ed-opening--immersive`, `fp`, `purchase-bar`, titres du profil « journal »).
 
 - Les photographies sont des concepts de démonstration ; aucune donnée technique, avis, délai ou réalisation client n'est ajouté.
 - Exports CMS : générés pour les deux projets (Shopify, WooCommerce, PrestaShop, Wix, Squarespace) dans le dossier privé, non installés ; remises et cadeaux restent désactivés à l'export (`purchase_rules_require_server`) comme dans le lot 2B. La section « Produit à la une » est transmise avec ses fichiers CSS/JS comme les autres sections éditoriales ; son rendu natif dans un CMS installé n'est pas vérifié.

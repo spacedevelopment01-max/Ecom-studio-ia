@@ -70,6 +70,11 @@
           "media": []
         },
         {
+          "id": "featured",
+          "type": "featured-purchase",
+          "media": []
+        },
+        {
           "id": "moments",
           "type": "ed-diptych",
           "media": [
@@ -97,11 +102,6 @@
           "media": [
             "orbe-06-duo"
           ]
-        },
-        {
-          "id": "featured",
-          "type": "featured-purchase",
-          "media": []
         },
         {
           "id": "accessories",
@@ -148,13 +148,6 @@
           "type": "ed-scene",
           "media": [
             "orbe-08-lumiere"
-          ]
-        },
-        {
-          "id": "finishes",
-          "type": "ed-finishes",
-          "media": [
-            "orbe-07-trio"
           ]
         },
         {
