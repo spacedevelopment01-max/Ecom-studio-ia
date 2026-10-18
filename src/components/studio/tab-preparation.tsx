@@ -143,6 +143,7 @@ export default function TabPreparation() {
     identity?.proposal.tagline,
     JSON.stringify(identity?.proposal.palette),
     JSON.stringify(identity?.proposal.fonts),
+    identity?.selectedLogo,
   ]);
   async function send(body: Record<string, unknown>) {
     if (!state) return;
@@ -163,6 +164,28 @@ export default function TabPreparation() {
   }
   async function prepare(step: Step, runAction = "generate", slot?: string) {
     if (!state) return;
+    if (
+      (step === "brief" && JSON.stringify(form) !== JSON.stringify(raw)) ||
+      (step === "research" &&
+        JSON.stringify(
+          urls
+            .split("\n")
+            .map((x) => x.trim())
+            .filter(Boolean),
+        ) !== JSON.stringify(raw?.referenceUrls ?? [])) ||
+      (runAction === "logo" &&
+        identity &&
+        (name !== identity.proposal.name ||
+          tagline !== identity.proposal.tagline ||
+          JSON.stringify(palette) !==
+            JSON.stringify(identity.proposal.palette) ||
+          JSON.stringify(fonts) !== JSON.stringify(identity.proposal.fonts)))
+    ) {
+      setError(
+        "Enregistrez ou validez vos modifications avant de préparer cette proposition.",
+      );
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -193,11 +216,34 @@ export default function TabPreparation() {
     const r = await send({
       action: "approve",
       step,
-      choiceId: choice || state?.stages.research?.data.recommendedId,
+      choiceId:
+        choice ||
+        state?.stages.research?.data.selectedId ||
+        state?.stages.research?.data.recommendedId,
       logoId: logo,
     });
     if (r && step !== "media") setActive(STEPS[STEPS.indexOf(step) + 1]);
   };
+  async function restore(version: number) {
+    const r = await send({ action: "restore", version });
+    if (!r) return;
+    const input = r.state.stages.brief?.data.input;
+    if (input) {
+      setForm(input);
+      setUrls(input.referenceUrls.join("\n"));
+    }
+    const brand = r.state.stages.brand?.data;
+    setChoice(r.state.stages.research?.data.selectedId || "");
+    setLogo(brand?.selectedLogo || "");
+    if (brand) {
+      setName(brand.proposal.name);
+      setTagline(brand.proposal.tagline);
+      setPalette(brand.proposal.palette);
+      setFonts(brand.proposal.fonts);
+    }
+    setActive("brief");
+  }
+
   if (!data || !state || !form)
     return (
       <Card className="p-6">
@@ -208,6 +254,20 @@ export default function TabPreparation() {
   const approved = (s: Step) => state.stages[s]?.status === "approved";
   const enabled = STEPS.slice(0, STEPS.indexOf(active)).every(approved);
   const working = !!state.pending;
+  const briefDirty = JSON.stringify(form) !== JSON.stringify(raw);
+  const referencesDirty =
+    JSON.stringify(
+      urls
+        .split("\n")
+        .map((x) => x.trim())
+        .filter(Boolean),
+    ) !== JSON.stringify(raw?.referenceUrls ?? []);
+  const identityDirty =
+    !!identity &&
+    (name !== identity.proposal.name ||
+      tagline !== identity.proposal.tagline ||
+      JSON.stringify(palette) !== JSON.stringify(identity.proposal.palette) ||
+      JSON.stringify(fonts) !== JSON.stringify(identity.proposal.fonts));
   const field = (key: keyof BriefInput, value: unknown) =>
     setForm({ ...form, [key]: value });
   return (
@@ -577,6 +637,14 @@ export default function TabPreparation() {
               ))}
             </ul>
           )}
+          {briefDirty && (
+            <p role="status" className="text-sm text-warn">
+              {t(
+                "Enregistrez vos modifications avant de confirmer l’offre.",
+                "Save changes before confirming your offer.",
+              )}
+            </p>
+          )}
           <div className="flex flex-wrap gap-3">
             <Button onClick={saveBrief} loading={busy} data-save-brief>
               {t("Enregistrer mes informations", "Save my information")}
@@ -584,7 +652,10 @@ export default function TabPreparation() {
             <Button
               onClick={() => approve("brief")}
               disabled={
-                busy || working || !!state.stages.brief?.data.missing.length
+                busy ||
+                working ||
+                briefDirty ||
+                !!state.stages.brief?.data.missing.length
               }
               data-approve-brief
             >
@@ -630,9 +701,17 @@ export default function TabPreparation() {
           >
             {t("Enregistrer ces références", "Save these references")}
           </Button>
+          {referencesDirty && (
+            <p role="status" className="text-sm text-warn">
+              {t(
+                "Enregistrez ces références avant de lancer la recherche.",
+                "Save these references before starting research.",
+              )}
+            </p>
+          )}
           <Button
             onClick={() => prepare("research")}
-            disabled={!enabled || working || busy}
+            disabled={!enabled || working || busy || referencesDirty}
             data-generate-research
           >
             {t(
@@ -725,7 +804,7 @@ export default function TabPreparation() {
               ))}
               <Button
                 onClick={() => approve("research")}
-                disabled={!enabled || busy || working}
+                disabled={!enabled || busy || working || referencesDirty}
                 data-approve-research
               >
                 {t("Choisir cette stratégie", "Choose this strategy")}
@@ -856,6 +935,14 @@ export default function TabPreparation() {
                   "Approve this name and identity",
                 )}
               </Button>
+              {identityDirty && (
+                <p role="status" className="text-sm text-warn">
+                  {t(
+                    "Validez les modifications de votre identité avant de créer ou choisir son logo.",
+                    "Approve identity changes before creating or selecting its logo.",
+                  )}
+                </p>
+              )}
               {identity.identityConfirmed && (
                 <>
                   <p className="text-sm">
@@ -867,7 +954,7 @@ export default function TabPreparation() {
                   <Button
                     variant="secondary"
                     onClick={() => prepare("brand", "logo")}
-                    disabled={busy || working}
+                    disabled={busy || working || identityDirty}
                   >
                     {t(
                       "Créer des propositions de logo",
@@ -906,7 +993,7 @@ export default function TabPreparation() {
                   </div>
                   <Button
                     onClick={() => approve("brand")}
-                    disabled={!logo || busy || working}
+                    disabled={!logo || busy || working || identityDirty}
                     data-approve-brand
                   >
                     {t(
@@ -1205,9 +1292,7 @@ export default function TabPreparation() {
                   size="sm"
                   variant="secondary"
                   disabled={busy || working || v.revision === state.revision}
-                  onClick={() =>
-                    send({ action: "restore", version: v.revision })
-                  }
+                  onClick={() => restore(v.revision)}
                 >
                   {t("Reprendre pour vérification", "Restore for review")}
                 </Button>
@@ -1246,6 +1331,12 @@ function Slot({
       slot.peopleConsent || "none_confirmed",
     );
   useEffect(() => setSelected(slot.assetId || ""), [slot.assetId]);
+  useEffect(
+    () => setConsent(slot.peopleConsent || "none_confirmed"),
+    [slot.peopleConsent, slot.key],
+  );
+  const consentDirty =
+    (consent === "this_slot") !== (slot.peopleConsent === "this_slot");
   return (
     <div className="grid gap-3 rounded-2xl border border-line p-4">
       <h3 className="font-semibold">{slot.purpose}</h3>
@@ -1267,7 +1358,19 @@ function Slot({
               "Create or choose, then review",
             )}
       </p>
-      <Button variant="secondary" onClick={generate} disabled={busy}>
+      {consentDirty && (
+        <p role="status" className="text-sm text-warn">
+          {t(
+            "Enregistrez cette autorisation avant de créer le visuel.",
+            "Save this permission before creating the visual.",
+          )}
+        </p>
+      )}
+      <Button
+        variant="secondary"
+        onClick={generate}
+        disabled={busy || consentDirty}
+      >
         {t("Créer ce visuel par l’IA", "Create this visual with AI")}
       </Button>
       <Field

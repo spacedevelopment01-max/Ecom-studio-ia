@@ -26,8 +26,9 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     requirePlan(user,p.id);
     existingSiteFromInput(input);
     if(stateOf(p.id)) throw new HttpError(409,"La préparation existe déjà : reprenez-la dans le Pilote.");
-    await saveStartFiles(p.id,user.id,files,logo,input.businessType);
-    startPreparation(p.id,input);
+    const preparationInput={...input,businessType:form.has("businessType")?input.businessType:p.business};
+    await saveStartFiles(p.id,user.id,files,logo,preparationInput.businessType);
+    startPreparation(p.id,preparationInput);
     return ok({jobId:null,preparation:true});
   }
   const site = existingSiteFromInput(input);

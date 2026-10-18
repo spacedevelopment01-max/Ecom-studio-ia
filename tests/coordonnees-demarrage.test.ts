@@ -69,7 +69,6 @@ describe("coordonnées saisies une seule fois", () => {
     // Formulaire de démarrage : coordonnées laissées vides, sauf la zone (nouvelle).
     const r = await POST(
       start(pid, {
-        businessType: "services",
         productName: "Carrossier",
         target: "Automobilistes locaux",
         description: "Carrossier à Mâcon, débosselage, peinture",
@@ -86,6 +85,7 @@ describe("coordonnées saisies une seule fois", () => {
     );
     expect(r.status).toBe(200);
     const draft = stateOf(pid)!.stages.brief!.data;
+    expect(draft.input.business).toBe("services");
     expect(draft.services).toMatchObject({
       phone: known.phone,
       address: known.address,
