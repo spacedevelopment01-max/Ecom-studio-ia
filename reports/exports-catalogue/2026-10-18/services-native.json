@@ -1,0 +1,12 @@
+{
+  "woocommerce": {
+    "before": 7,
+    "after": 7
+  },
+  "prestashop": {
+    "before": 23,
+    "after": 23
+  },
+  "catalogImport": "not-run-services",
+  "externalEmail": "disabled"
+}

@@ -1,0 +1,11 @@
+
+ RUN  v5.0.3 /workspace/work/exports-catalogue
+
+
+ Test Files  265 passed (265)
+      Tests  2005 passed (2005)
+   Start at  13:23:18
+   Duration  829.86s (tests 78%, import 21%, transform 1%)
+
+    Isolate  265 workers spawned · ~111ms startup each (spawn + environment, per file)
+             at least ~14.60s faster with isolate: false — reuses workers across files instead of one per file

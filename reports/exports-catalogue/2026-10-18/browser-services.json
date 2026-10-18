@@ -1,0 +1,55 @@
+{
+  "results": [
+    {
+      "platform": "woocommerce",
+      "mode": "services",
+      "width": 1440,
+      "home": {
+        "overflow": 0,
+        "broken": [],
+        "h1": 1
+      },
+      "errors": [],
+      "consoleErrors": []
+    },
+    {
+      "platform": "woocommerce",
+      "mode": "services",
+      "width": 390,
+      "home": {
+        "overflow": 0,
+        "broken": [],
+        "h1": 1
+      },
+      "errors": [],
+      "consoleErrors": []
+    },
+    {
+      "platform": "prestashop",
+      "mode": "services",
+      "width": 1440,
+      "home": {
+        "overflow": 0,
+        "broken": [],
+        "h1": 1
+      },
+      "errors": [],
+      "consoleErrors": []
+    },
+    {
+      "platform": "prestashop",
+      "mode": "services",
+      "width": 390,
+      "home": {
+        "overflow": 0,
+        "broken": [],
+        "h1": 1
+      },
+      "errors": [],
+      "consoleErrors": []
+    }
+  ],
+  "payment": "not-run",
+  "externalEmail": "disabled",
+  "paidCalls": 0
+}
