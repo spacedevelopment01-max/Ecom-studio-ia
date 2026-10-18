@@ -1,5 +1,7 @@
 # Lot 2A — deux références améliorées, passe du 18 octobre 2026
 
+**Mise à jour du contrôle PHP :** [archives WordPress corrigées, recette d’exécution et limites](../verification-php/README.md). Les ZIP WordPress initiaux conservés dans ce dossier précèdent ce correctif. Les captures et vidéos restent inchangées.
+
 Code réellement rendu : `f40ef52dca145344d9972cf14727eeba6c992588`. Sources inchangées pendant la capture. Aucun paiement réel, CMS installé ou appel IA dans cette recette.
 
 Les liens « PNG original » et les vidéos ouvrent les fichiers téléchargeables. Les aperçus WebP sont séparés : haut de page comparé, pas la page entière. Les originaux PNG restent intacts. Dans une adresse GitHub au commit livré, les liens relatifs gardent ce même commit.
@@ -42,7 +44,7 @@ Les liens « PNG original » et les vidéos ouvrent les fichiers téléchargeabl
 
 [Plan des contenus et médias](products/plan-contenus-medias.json) · [Provenance](products/provenance-medias.json) · [Modèle réellement utilisé](products/theme-spec.json)
 
-[ZIP Shopify](products/shopify.zip?raw=1) · [WordPress/WooCommerce](products/woocommerce.zip?raw=1) · [PrestaShop](products/prestashop.zip?raw=1)
+[ZIP Shopify](products/shopify.zip?raw=1) · [WordPress/WooCommerce](../verification-php/products-woocommerce.zip?raw=1) · [PrestaShop](products/prestashop.zip?raw=1)
 
 ## Jardin — prestations
 
@@ -69,7 +71,7 @@ Les liens « PNG original » et les vidéos ouvrent les fichiers téléchargeabl
 
 [Plan des contenus et médias](services/plan-contenus-medias.json) · [Provenance](services/provenance-medias.json) · [Modèle réellement utilisé](services/theme-spec.json)
 
-[ZIP Shopify](services/shopify.zip?raw=1) · [WordPress/WooCommerce](services/woocommerce.zip?raw=1) · [PrestaShop](services/prestashop.zip?raw=1)
+[ZIP Shopify](services/shopify.zip?raw=1) · [WordPress/WooCommerce](../verification-php/services-woocommerce.zip?raw=1) · [PrestaShop](services/prestashop.zip?raw=1)
 
 ## Vérifications et limites
 

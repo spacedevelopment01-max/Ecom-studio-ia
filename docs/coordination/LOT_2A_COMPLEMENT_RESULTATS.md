@@ -1,5 +1,7 @@
 # Lot 2A — complément du 18 octobre 2026 : thèmes et offres configurables
 
+**Mise à jour d’exécution PHP :** [correctif et recette complémentaire](LOT_2A_VERIFICATION_EXPORTS_PHP.md), code `3bc50910ef4c950946813340b79196467e1d68f3` : **1 983 tests réussis, aucun ignoré**, types/build réussis, 103 fichiers PHP analysés et 24 sections éditoriales exécutées. La grille commerciale WooCommerce reste à adapter et est maintenant signalée. Les captures/vidéos et la recette historique ci-dessous sont conservées.
+
 Statut : livraison pour revue, sans fusion. Les deux références sont proposées pour validation visuelle ; les 28 autres ne sont pas engagés. **Les remises et cadeaux sont vérifiés dans le panier serveur d’aperçu, pas au paiement d’une boutique CMS. Ils sont désactivés dans les exports tant qu’aucun adaptateur commercial approprié n’est installé et vérifié.**
 
 Mission : [commentaire complet](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/134#issuecomment-6244332584), copié dans [LOT_2A_COMPLEMENT_2026-10-18.md](LOT_2A_COMPLEMENT_2026-10-18.md). Accusé de réception publié dans [#134](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/134#issuecomment-6244410291). Branche `codex/lot-2a-themes-reference`, base distante vérifiée `8bcba3006db2e144b2f6e20e83f47ae44c26650c`. La PR reste empilée sur le lot 1 non fusionné. Aucun changement concurrent constaté au départ ; dernier état distant revérifié avant envoi.
