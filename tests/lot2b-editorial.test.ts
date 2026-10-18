@@ -101,7 +101,7 @@ describe("Lot 2B — moteur éditorial et parcours isolés",async()=>{
   const dir=fs.mkdtempSync(path.join(session.dir,'media-pack-')),sharp=(await import('sharp')).default;
   const bytes=await sharp({create:{width:600,height:800,channels:3,background:'#776655'}}).webp().toBuffer(),sha256=createHash('sha256').update(bytes).digest('hex');
   const assets=MEDIA_ROLES.orbe.map(id=>({id,path:id+'.webp',sha256,width:600,height:800,alt_fr:'Image de test '+id}));for(const a of assets)fs.writeFileSync(path.join(dir,a.path),bytes);fs.writeFileSync(path.join(dir,'manifest.json'),JSON.stringify({assets}));
-  const f=await editorialProject(user.id,'products',dir),other=await editorialProject(user.id,'products');expect(f.missing).toEqual([]);expect(f.media).toHaveLength(12);expect(missingEditorialMedia(f.spec).filter(m=>m.page!=='product')).toEqual([]);
+  const f=await editorialProject(user.id,'products',dir),other=await editorialProject(user.id,'products');expect(f.missing).toEqual([]);expect(f.media).toHaveLength(12);expect(missingEditorialMedia(f.spec)).toEqual([]);
   const version=saveThemeVersion(f.pid,f.spec,'Médias de test','user');expect(currentTheme(f.pid)!.version.id).toBe(version.id);expect(currentTheme(f.pid)!.spec.files).toEqual(f.spec.files);expect(Object.keys(currentTheme(f.pid)!.spec.files)).toHaveLength(12);expect(other.spec.files).toEqual({});
   const {libraryLoader}=await import('@/lib/theme/loader');for(const m of f.media)expect(createHash('sha256').update(libraryLoader(m.asset)!.data).digest('hex')).toBe(sha256);
   const html=(await renderPage({spec:currentTheme(f.pid)!.spec,base:'',cart:[]},f.detail,new URLSearchParams())).html;expect(html).not.toContain('ed-media--pending');expect(html).toContain('data-purchase-quick');

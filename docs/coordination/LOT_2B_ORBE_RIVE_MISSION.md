@@ -3,6 +3,8 @@ Version du commentaire : 2026-10-18T10:48:03Z — complément 6248929074 (10:48:
 
 # Consignes de reprise pour Codex — ORBE et Atelier Rive
 
+**Dernière précision — 18/10/2026, 12 h 46 (Paris) : l'accueil ORBE doit comporter une section « Produit à la une » complète. Les packs sont intégrés à la présentation et à l'achat du produit ; voir la précision dans la partie Accueil ORBE ci-dessous.**
+
 **Demande de Thomas du 18 octobre 2026 : publier uniquement les consignes pour que la session Codex de développement les récupère.** Ce commentaire contient la mission complète ; il n'est pas nécessaire d'attendre un autre fichier de consignes.
 
 ## 0. Mise à jour du 18 octobre 2026 — références directes et exigence de rendu professionnel
