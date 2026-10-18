@@ -520,9 +520,8 @@ body[data-conversion="contrast"] .cv-ingr__role{color:var(--c-text);opacity:.8}
 /* ===== Témoignage à la une ===== */
 .cv-quote__inner{display:grid;gap:22px;justify-items:center}
 .cv-quote__card{margin:0;max-width:720px;width:100%;padding:clamp(22px,4vw,40px);border-radius:var(--cv-card-radius);background:var(--c-surface);border:var(--cv-border);box-shadow:var(--cv-shadow);display:grid;gap:14px;text-align:center;justify-items:center}
-.cv-quote__stars{margin:0;display:inline-flex;gap:3px;color:var(--c-accent)}
-.cv-quote__stars .es-icon,.cv-star .es-icon{width:18px;height:18px}
-.cv-star--off{opacity:.25}
+.cv-quote__stars{margin:0;display:inline-flex;color:var(--c-accent)}
+.cv-quote__stars .es-stars{font-size:1.15rem}
 .cv-quote__text{margin:0;position:relative;font-family:var(--font-heading);font-weight:700;font-size:clamp(1.25rem,3.2vw,1.75rem);line-height:1.3;text-wrap:balance}
 .cv-quote__mark{position:absolute;left:-.55em;top:-.35em;font-size:2.4em;line-height:1;color:var(--c-accent);opacity:.35}
 .cv-quote__author{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px 12px}

@@ -26,7 +26,8 @@
     <figure class="cv-quote__card"{% render 'cv-reveal', animation: s.animation, index: 1 %}>
       {%- if s.eyebrow != blank -%}<p class="cv-eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
       {%- if s.rating > 0 -%}
-        <p class="cv-quote__stars" aria-label="{{ 'products.product.rating_of' | t: rating: s.rating, max: 5 }}">{% for i in (1..5) %}<span class="cv-star{% if i > s.rating %} cv-star--off{% endif %}" aria-hidden="true">{% render 'icon', name: 'star' %}</span>{% endfor %}</p>
+        {%- assign pct = s.rating | times: 20 -%}
+        <p class="cv-quote__stars" aria-label="{{ 'products.product.rating_of' | t: rating: s.rating, max: 5 | escape }}"><span class="es-stars cv-stars--boxed" style="--pct:{{ pct }}%" aria-hidden="true"></span></p>
       {%- endif -%}
       <blockquote class="cv-quote__text"><span class="cv-quote__mark" aria-hidden="true">“</span>{{ s.quote | newline_to_br }}</blockquote>
       <figcaption class="cv-quote__author">
