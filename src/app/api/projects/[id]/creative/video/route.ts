@@ -13,6 +13,8 @@ import { aiPostMaxMicro, wanClipMaxMicro } from "@/lib/ai/media-providers";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { resolveSubject, subjectOptions } from "@/lib/creative-subject";
 import { quoteScenes, SCENE_LIMITS, type ThreeScenesRequest } from "@/lib/video-v2/three-scenes";
+import { loadCreativeMemory } from "@/lib/video-v2/creative-memory";
+import { voiceAvailable } from "@/lib/video-v2/voice";
 import type { Project } from "@/lib/projects";
 
 export const runtime = "nodejs";
@@ -57,7 +59,7 @@ function list(projectId: string) {
 
 export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
-  return ok({ videos: list(p.id), ai: aiActiveFor(p.userId, p.id), limits: SCENE_LIMITS, subjects: subjectOptions(p).map((x) => ({ kind: x.kind, key: x.key, name: x.name, hasPhoto: !!x.referenceAssetId, photoId: x.referenceAssetId })) });
+  return ok({ voiceAvailable:voiceAvailable(),voice:loadCreativeMemory(p.id,p).preferences, videos: list(p.id), ai: aiActiveFor(p.userId, p.id), limits: SCENE_LIMITS, subjects: subjectOptions(p).map((x) => ({ kind: x.kind, key: x.key, name: x.name, hasPhoto: !!x.referenceAssetId, photoId: x.referenceAssetId })) });
 });
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {

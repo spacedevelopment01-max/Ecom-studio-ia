@@ -137,7 +137,7 @@ export function localScript(i: AdInsight, st: CreativeStrategy, intent: VideoInt
   const durations = allocate(kept, st.durationS);
   const lines = voiceLines(i, st, intent);
   const cap = (x: string) => x.charAt(0).toLocaleUpperCase() + x.slice(1);
-  const sections = kept.map((part, k) => ({ part, durationS: durations[k], voice: fitWords(lines[part].voice, durations[k]), onScreen: cap(lines[part].onScreen.slice(0, 60)) }));
+  const sections = kept.map((part, k) => ({ part, durationS: durations[k], voice: lines[part].voice, onScreen: cap(lines[part].onScreen.slice(0, 60)) }));
   return { style: st.style.narrative, sections, by: "local", issues: scriptIssues(sections, { proofs: st.proofs, facts: i.facts, claimsToAvoid: i.claimsToAvoid }) };
 }
 

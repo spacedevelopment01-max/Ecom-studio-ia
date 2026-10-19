@@ -30,14 +30,17 @@ async function fixture(service = false) {
 }
 
 describe("Mission vidéo : refus explicites et acquis conservés (fournisseurs simulés)", () => {
-  it("la carte de fin de la direction artistique est comprise dans les 20 secondes", async () => {
+  it("quatre clips de cinq secondes entiers, conclusion superposée sur le dernier", async () => {
     const { p } = await fixture();
     const brief = buildCreativeBrief(p, { durationS: 20, width: 1080, height: 1920, platform: "reels" });
     const timing = sceneTiming(4, 20, brief.ctaHoldS);
     const plan = localScenePlan(p, null, { as: "ad", scenes: 4, totalS: 20 });
     const doc = buildSceneDoc(p, plan.scenes.map((_, k) => ({ assetId: `clip-${k}`, durationS: 5, generated: true })), plan, "9:16", "ad", timing, true, brief);
     expect(Math.abs(timeline(doc).total - 20)).toBeLessThan(.03);
-    expect(doc.clips.at(-1)!.durationS).toBeCloseTo(brief.ctaHoldS, 1);
+    expect(doc.clips).toHaveLength(4);
+    expect(doc.clips.every(c=>c.source.kind === "video" && c.durationS === 5)).toBe(true);
+    expect(doc.meta.ending?.holdS).toBe(brief.ctaHoldS);
+    expect(doc.clips.at(-1)!.overlays.some(l=>l.id.startsWith("closing-"))).toBe(true);
   });
   it("refuse le couple 1 scène / 60 secondes avant devis et avant tout fournisseur", async () => {
     const { p, deps } = await fixture();

@@ -59,7 +59,7 @@ describe("Vidéo en scènes", async () => {
     expect(f.calls.keyframe[0]).toContain("No text");
     expect(timeline(f.calls.rendered).total).toBeCloseTo(15, 0);
     // Carte de fin (bouton, marque) ; aucune mention « vidéo générée par IA » sur une vidéo produit.
-    expect(f.calls.rendered.clips.at(-1).source.kind).toBe("doc");
+    expect(f.calls.rendered.clips.at(-1).source.kind).toBe("video");
     expect(f.calls.rendered.disclosure).toBeNull();
   });
 

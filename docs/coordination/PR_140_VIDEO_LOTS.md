@@ -18,6 +18,21 @@ Vérifications réellement exécutées : `npx tsc --noEmit` (succès), puis `npx
 
 L'affiche casque noir/bleu est écartée. Recherche effectuée dans les pièces jointes accessibles, les ressources locales et l'arbre distant de la branche `claude/fraise-onde-themes-reference` (consultée en lecture uniquement). Le script `scripts/lot2c-demo-local.ts` de cette branche exige un pack privé `Pack_Claude_Fraise_Onde/ONDE_AUDIO/` ; les neuf images et logos ne sont pas embarqués dans Git. Le dossier correspondant n'est pas présent dans cet environnement. Les pièces jointes disponibles contiennent l'ancien poster bleu et le ZIP ORBE/Rive, pas ce pack. **Référence noir/vert et logo non ouverts ici : contrôle visuel impossible pour le moment.** Aucun substitut ONDE créé ou publié. Les essais suivants utilisent des projets fictifs explicitement identifiés ; ils ne valident pas ONDE.
 
-## État des lots suivants
+## Lot 2 — voix, sous-titres et montage
 
-Lot 2 (voix/montage) et lot 3 (devis/reprises/parcours UI) à réaliser dans cet ordre. Les essais payants restent reportés ; aucun thème, déploiement, publication sociale ou merge.
+- Quatre scènes de cinq secondes occupent désormais les vingt secondes : pas de cinquième carte obligatoire. La conclusion et le vrai fichier du logo sont des calques du dernier clip, éditables dans le document existant. CTA commercial facultatif pour les contenus organiques.
+- Voix locale française raccordée aux deux parcours existants. Choix et accord pour une voix synthétique persistés dans la mémoire du projet ; aucune voix ONDE préexistante ou clonée supposée. Le menu guidé expose le choix disponible ; l'absence des fichiers vocaux requis est indiquée. Un échec d'une voix choisie bloque le résultat attendu.
+- Phrases entières conservées, même trop longues : erreur explicite et demande d'adaptation. Suppression de la réduction automatique des phrases du script local V2. Durée réelle du WAV mesurée ; nettoyage des silences avant mesure ; mixage conservant cette durée ; musique atténuée sous la voix. Sous-titres par phrase mesurée, groupes répartis proportionnellement : **pas d'alignement mot à mot**.
+- Réparation des sous-titres V2 fondée sur les durées audio enregistrées, et non sur la seule durée des plans.
+
+Vérifications : TypeScript sans erreur ; **52 tests ciblés réussis / 9 fichiers** (`lot2-tests.txt`). `scripts/verify-video-lots.ts` : quatre vrais encodages locaux H.264/AAC, 20 s, 30 images/s, avec synthèse française, musique, SRT/VTT ; produit/service × publicité/organique, interruptions/reprises et version client conservée. Fournisseurs images/clips et relectures visuelles **simulés** ; mires explicitement fictives. Zéro ligne `ai_calls`, coût API réel **0 €** ; coût CPU/stockage non mesuré.
+
+La voix a réellement été installée et exécutée dans un dossier temporaire isolé : modèle libre du dépôt officiel sherpa-onnx, interpréteur Python avec dépendances temporaires, sans changement de configuration client. Échantillon : `reports/pr140-video-lots/voix-francaise-test.wav`. Cela prouve une synthèse exécutée et un fichier lisible, pas la qualité naturelle validée par une écoute humaine indépendante.
+
+Inspection des images extraites : chevauchement du titre par le médaillon initial détecté et corrigé. `scripts/verify-video-ending.ts` a rendu les quatre fins corrigées à 19 s, dans le moteur natif ; captures `*-fin-corrigee.png`, mesures `lot2-ending-checks.json`. Les quatre premiers MP4 sont un **précontrôle d'encodage antérieur à ce dernier ajustement de calques**, pas les vidéos finales de livraison. Le lot 3 doit refaire les parcours UI et leurs rendus finaux avec cet ajustement.
+
+Fichiers supplémentaires : `creative-memory.ts`, `voice.ts`, `audio.ts`, `deps.ts`, `final-check.ts`, route `videos/creative-memory`, `guided-video.tsx`, tests `video-voice-timing.test.ts`, scripts de preuve vidéo. Ni modèle vocal ni pack client privés ajoutés au dépôt.
+
+## État du lot suivant
+
+Lot 3 (devis/reprises/parcours UI) à réaliser ensuite. Les essais payants restent reportés ; aucun thème, déploiement, publication sociale ou merge.

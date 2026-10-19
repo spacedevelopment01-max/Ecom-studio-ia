@@ -64,7 +64,7 @@ describe("Vidéos de la création", async () => {
     expect(f.calls.docs.map((d) => d.aspect)).toEqual(CREATION_VIDEOS.map((v) => v.aspect));
     for (const d of f.calls.docs) {
       expect(timeline(d).total).toBeCloseTo(15, 0);
-      expect(d.clips.at(-1).source.kind).toBe("doc");
+      expect(d.clips.at(-1).source.kind).toBe("video");
       expect(d.audio.music).toBeTruthy();
     }
   });

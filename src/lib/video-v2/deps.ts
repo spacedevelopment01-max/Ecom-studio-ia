@@ -6,6 +6,9 @@
  */
 import { skillReference } from "../ai/skills";
 import sharp from "sharp";
+import fs from "node:fs";
+import path from "node:path";
+import { tmpDir } from "../storage";
 import { llmConfigured, llmJson } from "../ai/llm";
 import { brainView } from "../ai/context";
 import { activeProviderKey, routeFor } from "../ai/config";
@@ -25,6 +28,8 @@ import { ScriptSchema, type ScriptDraft } from "./script";
 import { SHOT_REVIEW_SYSTEM, ShotReviewSchema, VIDEO_REVIEW_SYSTEM, VideoReviewSchema } from "./quality";
 import type { Inventory } from "./storyboard";
 import { findStockClip, type StockClipRequest } from "../stock/stock-clip";
+import { projectVoice, voiceAvailable, synthLine } from "./voice";
+import { loadCreativeMemory } from "./creative-memory";
 import type { ShotReview, VideoReview } from "./types";
 
 export type ClipRequest = { provider: string; model: string; image: Buffer; prompt: string; aspect: "16:9" | "9:16"; seconds: number; people: boolean };
@@ -42,6 +47,7 @@ export type VideoV2Deps = {
   image: (req: ImageRequestV2) => Promise<{ assetId: string; data: Buffer } | null>;
   generateClip: (req: ClipRequest, key: string) => Promise<Buffer>;
   /** Voix off : null quand aucun fournisseur de synthèse vocale n'est configuré (cas actuel du studio). */
+  voiceId?:string|null;
   voice: null | ((text: string, voiceId: string | null, key: string) => Promise<{ data: Buffer; mime: string }>);
   available: (provider: string) => boolean;
   preferred: { provider: string; model: string } | null;
@@ -86,6 +92,7 @@ export function projectInventory(p: Project): Inventory {
 export function realVideoDeps(ctx: JobContext | null, p: Project, aiActive: boolean): VideoV2Deps {
   const base = { userId: p.userId, projectId: p.id, jobId: ctx?.job.id ?? null };
   const ai = aiActive && llmConfigured();
+  const chosenVoice = projectVoice(loadCreativeMemory(p.id,p).preferences);
   const small = (b: Buffer) => sharp(b).resize(768, 768, { fit: "inside" }).jpeg({ quality: 82 }).toBuffer();
   // Usage du plan (Images & Vidéos) : principal ou choix automatique de « Vidéos produit » ou « Vidéos UGC ».
   const prefer = (u: MediaUsage) => {
@@ -126,7 +133,14 @@ export function realVideoDeps(ctx: JobContext | null, p: Project, aiActive: bool
     },
     // Aucun fournisseur de synthèse vocale branché dans le studio (vérifié) : la voix reste à enregistrer ou à
     // brancher (phase 7B) ; le message passe par les sous-titres et le texte à l'écran.
-    voice: null,
+    voiceId: chosenVoice ? `kokoro:${chosenVoice}` : null,
+    voice: chosenVoice ? async(text,_id,key)=>{
+      if(!voiceAvailable()) throw new Error("Voix du projet non installée ; aucun rendu sans la voix demandée.");
+      const voice=chosenVoice;
+      const dir=tmpDir("voice-v2");
+      try {const out=path.join(dir,"voice.wav");await synthLine(text,out,{voice,lang:p.settings?.language==="en"?"en":"fr",speed:1});return {data:fs.readFileSync(out),mime:"audio/wav"};}
+      finally {fs.rmSync(dir,{recursive:true,force:true});}
+    } : null,
     stockClip: (req, exclude) => findStockClip(base, p, req, exclude),
     // Musique : la bibliothèque du studio (morceaux choisis par le propriétaire) d'abord, puis la banque Openverse.
     music: async (mood, durationS, style) =>

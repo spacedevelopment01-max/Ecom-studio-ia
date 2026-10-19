@@ -136,9 +136,9 @@ describe("Guide créatif vidéo", async () => {
     expect(t2.font.size).toBeLessThanOrEqual(88);
     expect(t2.anim?.in).toBeDefined();
     const end = rendered.clips.at(-1);
-    expect(end.durationS).toBeGreaterThanOrEqual(2.5);
-    expect(end.durationS).toBeLessThanOrEqual(4);
-    expect(end.source.doc.layers.find((l: any) => l.kind === "button").font.size).toBeGreaterThanOrEqual(48);
+    expect(rendered.meta.ending.holdS).toBeGreaterThanOrEqual(2.5);
+    expect(rendered.meta.ending.holdS).toBeLessThanOrEqual(4);
+    expect(end.overlays.find((l: any) => l.kind === "button").font.size).toBeGreaterThanOrEqual(48);
     expect(r.brief?.family).toBe("artisan");
     // Mémoire créative : concept utilisé et provenance des plans, relus à la vidéo suivante (autre concept).
     const mem = loadCreativeMemory(a.id);

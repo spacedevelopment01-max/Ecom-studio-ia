@@ -18,7 +18,7 @@ import { VideoDocModal } from "./video-v2-panel";
 
 type Quote = { mode: "ai" | "stock"; allowed: boolean; reason: string | null; estimateMicro: number; scenes: number; totalS: number; clipS: number };
 type VideoItem = { id: string; docKey: string | null; url: string; aspect: string | null; durationS: number | null; as: "post" | "ad"; mode: string | null; subject: string | null; request: string | null; reviewRequired: boolean; warnings: string[]; at: number };
-type Data = { videos: VideoItem[]; ai: boolean; subjects: SubjectView[]; limits: { scenes: [number, number]; totalS: [number, number] } };
+type Data = { voiceAvailable:boolean; voice:{voice?:"on"|"off";voiceId?:string;voiceConsent?:string}; videos: VideoItem[]; ai: boolean; subjects: SubjectView[]; limits: { scenes: [number, number]; totalS: [number, number] } };
 const ASPECTS = [
   { v: "9:16", fr: "Vertical 9:16 (Reels, TikTok, Stories)", en: "Vertical 9:16 (Reels, TikTok, Stories)" },
   { v: "4:5", fr: "Portrait 4:5 (fil d'actualité)", en: "Portrait 4:5 (feed)" },
@@ -88,7 +88,7 @@ export function GuidedVideo({ as }: { as: "post" | "ad" }) {
     }
   };
   const videos = (data?.videos ?? []).filter((v) => v.as === as);
-  const perScene = Math.round(((totalS - 2.5) / scenes) * 10) / 10;
+  const perScene = Math.round((totalS / scenes) * 10) / 10;
   return (
     <section className="mb-8" data-guided-video={as}>
       <SectionTitle title={as === "ad" ? t("Publicité vidéo guidée", "Guided video ad") : t("Publication vidéo guidée", "Guided video post")}>
@@ -127,7 +127,7 @@ export function GuidedVideo({ as }: { as: "post" | "ad" }) {
                 </button>
               ))}
             </div>
-            <p className="mt-1.5 text-xs text-muted">{t(`≈ ${perScene} s par scène, puis la carte de fin avec votre logo.`, `≈ ${perScene} s per scene, then the end card with your logo.`)}</p>
+            <p className="mt-1.5 text-xs text-muted">{t(`≈ ${perScene} s par scène ; logo et conclusion sur le dernier plan.`, `≈ ${perScene} s per scene; logo and closing message on the last clip.`)}</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -135,6 +135,14 @@ export function GuidedVideo({ as }: { as: "post" | "ad" }) {
           <MusicChoice value={music} onChange={setMusic} />
           <p className="text-xs text-muted">{music ? t("Morceau composé par le studio dans le style de votre marque (droits inclus).", "Track composed by the studio in your brand's style (rights included).") : t("Vidéo sans musique.", "Video without music.")}</p>
         </div>
+        <label className="flex flex-wrap items-center gap-3 text-sm">
+          {t("Voix du projet", "Project voice")}
+          <select data-video-voice value={data?.voice.voice === "on" ? data?.voice.voiceId??"off" : "off"} onChange={async e=>{const value=e.target.value;try {await api(`/api/projects/${id}/videos/creative-memory`,{method:"PATCH",body:value==="off"?{voice:"off"}:{voice:"on",voiceId:value,voiceConsent:"synthetic"}});reload();}catch(error){toast("bad",(error as Error).message);}}} className="rounded-lg border border-line bg-paper px-3 py-2">
+            <option value="off">{t("Sans voix", "No voice")}</option>
+            <option value="ff_siwis" disabled={!data?.voiceAvailable}>{t("Voix française de synthèse autorisée", "Authorized French synthetic voice")}</option>
+          </select>
+          <span className="text-xs text-muted">{data?.voiceAvailable?t("Choix enregistré pour ce projet. Sous-titres calés par phrase, pas mot à mot.","Saved for this project. Phrase-level subtitle timing, not word alignment."):t("Modèle vocal non installé sur ce serveur.","Voice model is not installed on this server.")}</span>
+        </label>
         <div className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between" data-video-price>
           <p className="text-sm">
             {!quote ? t("Calcul du prix…", "Calculating the price…") : !quote.allowed ? <span className="text-warn">{quote.reason}</span> : quote.estimateMicro === 0 ? <span className="font-medium text-ok">{t("Gratuit : plans libres de droits de votre métier, montés par le studio.", "Free: royalty-free footage of your trade, edited by the studio.")}</span> : t(<>Coût probable : <strong>{budget.label(quote.estimateMicro)}</strong> ({quote.mode === "ai" ? `${quote.scenes} image${quote.scenes > 1 ? "s" : ""} + ${quote.scenes} plan${quote.scenes > 1 ? "s" : ""} Wan 2.6` : "contrôle des plans"}). Une reprise éventuelle est décomptée et annoncée.</>, <>Likely cost: <strong>{budget.label(quote.estimateMicro)}</strong> ({quote.mode === "ai" ? `${quote.scenes} image${quote.scenes > 1 ? "s" : ""} + ${quote.scenes} Wan 2.6 shot${quote.scenes > 1 ? "s" : ""}` : "shot checks"}). Any redo is counted and announced.</>)}

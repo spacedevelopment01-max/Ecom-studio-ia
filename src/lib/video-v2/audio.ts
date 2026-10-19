@@ -52,7 +52,7 @@ export async function mixAudio(doc: VideoDocument, files: AudioFiles, out: strin
     if (!f || start == null) continue;
     const i = add(f);
     const ms = Math.round((start + v.offsetS) * 1000);
-    chains.push(`[${i}:a]aformat=sample_rates=44100:channel_layouts=stereo,${trim},atrim=0:${Math.max(0.1, v.durationS + 0.4)},volume=${v.gainDb}dB,adelay=${ms}|${ms}[v${voices.length}]`);
+    chains.push(`[${i}:a]aformat=sample_rates=44100:channel_layouts=stereo,atrim=0:${Math.max(0.1, v.durationS + 0.4)},volume=${v.gainDb}dB,adelay=${ms}|${ms}[v${voices.length}]`);
     voices.push(`[v${voices.length}]`);
   }
   for (const s of doc.audio.sfx) {

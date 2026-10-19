@@ -13,6 +13,7 @@
 import { organicVideo, videoContext, editorialVideoIssues } from "./editorial";
 import { projectForSubject } from "../social-v2/ai-post";
 import { resolveSubject } from "../creative-subject";
+import { measuredCues } from "./voice";
 import { projectRights } from "../plan-gates";
 import crypto from "node:crypto";
 import fs from "node:fs";
@@ -178,6 +179,7 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
     const icons = intent.kind === "ugc" ? [] : await promoIcons(p, pal);
     // Vocabulaire du client (ex. « montre », jamais « chronographe ») : textes à l'écran et voix, avant l'enregistrement.
     let doc = applyWordingDeep(assemble({ p, intent, strategy, shots, media, inv, pal, typo, size, safe, insight, runId, thumbs, icons }), loadWordingRules(p.id));
+    doc.meta.editorial=videoContext(p,intent.kind === "social_content"?"post":"ad",req.ask.text,req.ask.subject,req.ask.editorial);
     // Voix off : seulement si un fournisseur de synthèse vocale existe (sinon la voix reste à enregistrer).
     if (deps.voice) await recordVoices(p, deps, doc, jobId, notes);
     else if (doc.audio.voice.length) notes.push("voix off : aucun fournisseur de synthèse vocale configuré — texte prêt à enregistrer, porté par les sous-titres");
@@ -680,14 +682,23 @@ function assemble(a: AssembleInput): VideoDocument {
 }
 
 async function recordVoices(p: Project, deps: VideoV2Deps, doc: VideoDocument, jobId: string | null, notes: string[]) {
+  doc.audio.voiceId=deps.voiceId??doc.audio.voiceId;
   for (const v of doc.audio.voice) {
     try {
       const r = await deps.voice!(v.text, doc.audio.voiceId, `${jobId ?? "video2"}:video2:voice:${hash({ t: v.text, id: doc.audio.voiceId })}`);
       const a = await saveAsset({ projectId: p.id, userId: p.userId, data: r.data, name: `voix-${v.clipId}.${r.mime.includes("mpeg") ? "mp3" : "wav"}`, mime: r.mime, role: "voice", folderKey: "videos.ads", origin: "generated", meta: { videoV2Voice: { clipId: v.clipId } } });
       v.assetId = a.id;
+      const file=path.join(tmpDir("voice-measure"),"voice");
+      let actual:number|null=null;
+      try {fs.writeFileSync(file,r.data);actual=await probeDuration(file);} finally {fs.rmSync(path.dirname(file),{recursive:true,force:true});}
+      const clip=doc.clips.find(c=>c.id===v.clipId)!;
+      if(!actual || actual>clip.durationS-v.offsetS-.1) throw new Error(`Phrase du plan ${v.clipId} trop longue ou illisible ; adaptez sa durée, aucun texte supprimé.`);
+      v.durationS=actual;
+      doc.subtitles.cues=doc.subtitles.cues.filter(c=>c.clipId!==v.clipId);
+      doc.subtitles.cues.push(...measuredCues(v.clipId,v.text,actual,doc.subtitles.style.maxChars,v.offsetS));
     } catch (e) {
       if (e instanceof JobCancelled || e instanceof JobPaused || e instanceof CostCapReached) throw e;
-      notes.push(`voix du plan ${v.clipId} indisponible (${(e as Error).message.slice(0, 60)})`);
+      throw new Error(`Voix du plan ${v.clipId} incomplète : ${(e as Error).message}. Version et texte conservés.`);
     }
   }
 }
@@ -711,8 +722,8 @@ async function targetedFix(o: FixInput): Promise<VideoDocument | null> {
     if (grown) o.notes.push(`reprise ciblée : ${grown} texte(s) agrandi(s) (gratuit)`);
     doc.subtitles.style = { ...doc.subtitles.style, size: Math.round(Math.max(doc.subtitles.style.size, Math.min(doc.width, doc.height) * 0.05)), maxChars: Math.max(18, doc.subtitles.style.maxChars - 4), offsetY: 0 };
     // Débit : chaque carton est re-découpé sur la voix du plan.
-    const voices = new Map(doc.audio.voice.map((v) => [v.clipId, v.text]));
-    doc.subtitles.cues = doc.clips.flatMap((c) => (voices.get(c.id) ? cuesForVoice(c.id, voices.get(c.id)!, c.durationS, doc.subtitles.style.maxChars, `q-${c.shotId}-r`) : doc.subtitles.cues.filter((q) => q.clipId === c.id)));
+    const voices = new Map(doc.audio.voice.map((v) => [v.clipId, v]));
+    doc.subtitles.cues = doc.clips.flatMap((c) => (voices.get(c.id) ? measuredCues(c.id, voices.get(c.id)!.text, voices.get(c.id)!.durationS, doc.subtitles.style.maxChars, voices.get(c.id)!.offsetS) : doc.subtitles.cues.filter((q) => q.clipId === c.id)));
     o.notes.push("reprise ciblée : sous-titres agrandis et redécoupés (gratuit)");
     return doc;
   }

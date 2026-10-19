@@ -36,7 +36,7 @@ import { buildCreativeBrief, type CreativeBrief } from "./creative-brief";
 import { buildStoryboard, usable, type Storyboard } from "./ad-storyboard";
 import { allowedBrands, brandIssuesInTexts } from "./brand-guard";
 import { loadCreativeMemory, productReferences, rememberDirection, rememberMedia } from "./creative-memory";
-import { countWords, subtitleChunks, synthLine, voiceAvailable, wordBudget } from "./voice";
+import { countWords, subtitleChunks, synthLine, voiceAvailable, wordBudget, measuredCues, projectVoice } from "./voice";
 import { brainView } from "../brain/facade";
 import { storagePath, tmpDir } from "../storage";
 import { llmConfigured } from "../ai/llm";
@@ -49,16 +49,15 @@ export const SCENE_LIMITS = { scenes: [1, 6], totalS: [6, 60] } as const;
 export type SceneAspect = "9:16" | "16:9" | "1:1" | "4:5";
 
 /**
- * Découpage : durée à l'écran de chaque scène (la carte de fin complète la durée totale) et durée du plan à générer
+ * Découpage : chaque scène occupe sa part de la durée totale et durée du plan à générer
  * (un peu plus longue, puis coupée ; 2 à 15 s par plan).
  */
 export function sceneTiming(scenes = SCENES, totalS = DEFAULT_TOTAL_S, endCardS = END_CARD_S): { showS: number; clipS: number; endS: number } {
   const n = Math.max(SCENE_LIMITS.scenes[0], Math.min(SCENE_LIMITS.scenes[1], Math.round(scenes)));
   const total = Math.max(SCENE_LIMITS.totalS[0], Math.min(SCENE_LIMITS.totalS[1], totalS));
-  const holdS = Math.max(END_CARD_S, Math.min(4, endCardS));
-  const showS = Math.min(15, Math.round(((total - holdS) / n) * 100) / 100);
-  const clipS = Math.max(2, Math.min(15, Math.ceil(showS + 0.3)));
-  const endS = Math.round(Math.max(holdS, total - showS * n) * 100) / 100;
+  const showS = Math.min(15, Math.round((total / n) * 1000) / 1000);
+  const clipS = Math.max(2, Math.min(15, Math.ceil(showS)));
+  const endS = Math.round(Math.max(0, total - showS * n) * 100) / 100;
   return { showS: Math.min(showS, clipS), clipS, endS };
 }
 
@@ -81,7 +80,7 @@ export type ThreeScenesRequest = {
   aspect?: SceneAspect;
   /** Nombre de scènes (1 à 6, défaut 3). */
   scenes?: number;
-  /** Durée totale voulue en secondes (6 à 60, défaut 15), carte de fin comprise. */
+  /** Durée totale voulue en secondes (6 à 60, défaut 15), conclusion sur le dernier clip. */
   totalS?: number;
   /** ai : plans créés par l'IA (produit) ; stock : plans libres de droits (service). Défaut : selon le projet. */
   mode?: "ai" | "stock";
@@ -220,7 +219,7 @@ export function scenesMaxMicro(scenes: number, imageMaxMicro: number, clipMaxMic
   return scenes * (imageMaxMicro + clipMaxMicro) + planMicro;
 }
 
-/** Montage : 3 plans (titres courts en calques) + carte de fin (vrai logo, phrase, bouton), musique du studio. */
+/** Montage : vrais plans, titres en calques, logo et conclusion sur le dernier clip, musique du studio. */
 export function buildSceneDoc(p: Project, clips: { assetId: string; durationS: number; generated: boolean }[], plan: ScenePlan, aspect: SceneAspect, as: "post" | "ad", timing = sceneTiming(clips.length), music = true, brief?: CreativeBrief): VideoDocument {
   const pal = palette(p);
   const typo = brandTypo(p);
@@ -254,17 +253,26 @@ export function buildSceneDoc(p: Project, clips: { assetId: string; durationS: n
     generated: c.generated,
   }));
   const logoId = p.brand?.logo?.assetId ?? null;
-  out.push({
-    id: "end-card",
-    shotId: "end-card",
-    label: C("Carte de fin", "End card"),
-    part: "cta",
-    // La carte de fin complète la durée voulue (plans plus courts que prévu : elle dure un peu plus, 4 s au plus).
-    durationS: Math.round(Math.min(4, Math.max(brief?.ctaHoldS ?? END_CARD_S, timing.endS + timing.showS * clips.length - out.reduce((t, c) => t + c.durationS, 0))) * 100) / 100,
-    source: { kind: "doc", doc: endCardDoc({ w: size.w, h: size.h, safe, pal, typo, brand: p.brand?.name ?? "", cta: plan.cta, line: plan.line || undefined, logoId, big: plan.endCard === "large", ...(brief ? { px: { line: brief.sizes.benefit, cta: brief.sizes.cta, padX: Math.round(36 * (Math.min(size.w, size.h) / 1080)), padY: Math.round(22 * (Math.min(size.w, size.h) / 1080)) } } : {}) }), animate: "rise" },
-    overlays: [],
-    transitionIn: { kind: "fade", durationS: 0.6 },
-  });
+  const last = out.at(-1);
+  const holdS = Math.min(last?.durationS??0, brief?.ctaHoldS ?? END_CARD_S);
+  if(last) {
+    const closing = endCardDoc({w:size.w,h:size.h,safe,pal,typo,brand:p.brand?.name??"",cta:plan.cta,line:plan.line||undefined,logoId,big:plan.endCard==="large",...(brief?{px:{line:brief.sizes.benefit,cta:brief.sizes.cta,padX:36,padY:22}}:{})});
+    const short=Math.min(size.w,size.h), gap=short*.024;
+    const logoW=short*.22,logoH=short*.10;
+    const dockY=size.h-safe.bottom-short*.54;
+    const lineH=(brief?.sizes.benefit??short*.05)*2.6;
+    const layers=closing.layers.filter(l=>l.role!=="background" && !(l.kind==="button" && !plan.cta)).map(l=>{
+      const layer={...l,id:`closing-${l.id}`,anim:{in:"fade" as const,delay:Math.max(0,last.durationS-holdS),dur:.35}};
+      if(l.id==="logo-card") return {...layer,x:safe.side,y:dockY,w:logoW,h:logoH};
+      if(l.id==="logo") return {...layer,x:safe.side+logoW*.08,y:dockY+logoH*.08,w:logoW*.84,h:logoH*.84};
+      if(l.id==="brand") return {...layer,x:safe.side,y:dockY,w:logoW,h:lineH};
+      if(l.id==="line") return {...layer,x:safe.side+logoW+gap,y:dockY,w:size.w-safe.side*2-logoW-gap,h:lineH};
+      if(l.kind==="button") return {...layer,y:dockY+lineH+gap};
+      return layer;
+    });
+    last.overlays.push(...layers);
+  }
+
   const doc: VideoDocument = {
     version: VIDEO_DOC_VERSION,
     width: size.w,
@@ -278,7 +286,7 @@ export function buildSceneDoc(p: Project, clips: { assetId: string; durationS: n
     audio: { voice: [], voiceId: null, music: music ? { source: "synth", mood: brief?.music.mood ?? "warm", gainDb: -12, style: songStyleFor(p), seed: p.id } : null, sfx: [], duckingDb: -10, loudnessLufs: -14 },
     brand: { palette: { ...pal }, fonts: { heading: typo.heading, body: typo.body }, name: p.brand?.name ?? "" },
     disclosure: null,
-    meta: { intent: as === "ad" ? "video_ad" : "social_content", source: "engine", createdFrom: null, runId: null, promo: true },
+    meta: { intent: as === "ad" ? "video_ad" : "social_content", source: "engine", createdFrom: null, runId: null, promo: as === "ad", ending:{kind:"last_clip",holdS} },
   };
   return doc;
 }
@@ -415,6 +423,7 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
   if (plan.line && !usable(plan.line)) plan.line = "";
   if (plan.voiceEnd && !usable(plan.voiceEnd)) plan.voiceEnd = "";
 
+  if(projectVoice(memory.preferences) && !voiceAvailable()) throw new UserFacingError("La voix du projet n’est pas installée : aucun média payant lancé.");
   const clips: { assetId: string; durationS: number; generated: boolean }[] = [];
   // Scènes réellement obtenues (une étape sans plan est retirée AVEC son titre et sa voix : rien ne se décale).
   const kept: number[] = [];
@@ -513,15 +522,14 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
 
   doc.meta.editorial = videoContext(p0,req.as,req.request,req.subject,req.editorial);
 
-  // 5. Voix off (voix locale, gratuite) et sous-titres calés sur la voix RÉELLE ; sinon sans voix (dit dans l'aperçu).
-  if (memory.preferences.voice !== "off" && voiceAvailable()) {
-    try {
-      await addVoice(projectId, p0.userId, doc, plan, brief, key, guide.script.wordsPer30s);
-    } catch (e) {
-      if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
-      notes.push(C(`voix off non produite : ${(e as Error).message.slice(0, 120)}`, `voice-over not produced: ${(e as Error).message.slice(0, 120)}`));
-    }
-  } else if (memory.preferences.voice !== "off") notes.push(C("Voix off : le modèle de voix n'est pas installé sur ce serveur ; vidéo sans voix (musique et titres).", "Voice-over: the voice model isn't installed on this server; video without voice (music and titles)."));
+  // 5. Voice only after an explicitly saved synthetic choice. A failed/missing requested voice is not a completed result.
+  const chosenVoice = projectVoice(memory.preferences);
+  if(chosenVoice) {
+    if(!voiceAvailable()) throw new UserFacingError("La voix choisie n'est pas installée : vidéo incomplète, médias conservés. Activez la voix sur le serveur ou choisissez explicitement sans voix.");
+    brief.voice.kokoroVoice=chosenVoice;
+    await addVoice(projectId,p0.userId,doc,plan,brief,key,guide.script.wordsPer30s);
+    notes.push(C("Voix synthétique choisie pour le projet. Sous-titres synchronisés par phrase mesurée, groupes répartis proportionnellement ; pas d'alignement mot à mot.","Project-selected synthetic voice. Subtitles timed by measured phrase, proportionally split; not word aligned."));
+  } else notes.push(C("Sans voix : aucune voix synthétique autorisée choisie pour ce projet.","No voice: no authorized synthetic voice chosen for this project."));
 
   preserveClientVersion();
   await step(`${key}:document`, async () => saveVideoVersion(projectId, docKey, doc, { note: C(`Vidéo en ${clips.length} scènes`, `${clips.length}-scene video`) }));
@@ -545,41 +553,24 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
 }
 
 /** Voix off par scène + phrase de fin ; durée mesurée ; sous-titres découpés par groupes de sens (2 lignes). */
-async function addVoice(projectId: string, userId: string, doc: VideoDocument, plan: ScenePlan, brief: CreativeBrief, key: string, words30: [number, number]) {
-  const lang = C("fr", "en") === "en" ? "en" : "fr";
-  const lines = doc.clips.map((c, k) => ({ clip: c, text: (c.id === "end-card" ? plan.voiceEnd : plan.scenes[k]?.voice)?.trim() ?? "" }));
-  const budget = wordBudget(doc.clips.reduce((t, c) => t + c.durationS, 0), words30);
-  let total = lines.reduce((t, l) => t + countWords(l.text), 0);
-  // Au-delà du budget de mots : les phrases des plans de détail sont retirées d'abord (jamais l'accroche ni la fin).
-  for (let k = lines.length - 2; k > 0 && total > budget.max; k--) {
-    total -= countWords(lines[k].text);
-    lines[k].text = "";
-  }
-  const dir = tmpDir("voice");
+export async function addVoice(projectId: string, userId: string, doc: VideoDocument, plan: ScenePlan, brief: CreativeBrief, key: string, words30: [number, number], synth = synthLine) {
+  const lang = C("fr","en") === "en" ? "en" : "fr";
+  const lines = doc.clips.map((clip,k)=>({clip,text:[plan.scenes[k]?.voice??"",k===doc.clips.length-1?plan.voiceEnd??"":""].filter(Boolean).join(" ").trim()}));
+  const dir=tmpDir("voice");
+  const pending:VideoDocument["audio"]["voice"]=[];
+  const cues:VideoDocument["subtitles"]["cues"]=[];
   try {
-    for (const [k, l] of lines.entries()) {
-      if (!l.text) continue;
-      const wav = path.join(dir, `v-${k}.wav`);
-      const dur = await synthLine(l.text, wav, { voice: brief.voice.kokoroVoice, speed: brief.voice.speed, lang });
-      // Une phrase plus longue que son plan n'est jamais coupée : elle est retirée (le titre reste à l'écran).
-      if (dur > l.clip.durationS - 0.3) continue;
-      const a = await saveAsset({ projectId, userId, data: fs.readFileSync(wav), name: `voix-${k + 1}.wav`, mime: "audio/wav", role: "voice", folderKey: doc.meta.intent === "video_ad" ? "videos.ads" : "videos.social", origin: "generated", status: "ready", meta: { voice: { engine: "kokoro", key, text: l.text } } });
-      doc.audio.voice.push({ id: `voice-${l.clip.id}`, clipId: l.clip.id, assetId: a.id, text: l.text, offsetS: 0.2, durationS: dur, gainDb: 0 });
-      doc.audio.voiceId = `kokoro:${brief.voice.kokoroVoice}`;
-      // Sous-titres : groupes de sens, répartis sur la durée réelle de la phrase.
-      const chunks = subtitleChunks(l.text, doc.subtitles.style.maxChars);
-      const totalChars = chunks.reduce((t, c) => t + c.length, 0);
-      let at = 0.2;
-      for (const [j, chunk] of chunks.entries()) {
-        const d = (dur * chunk.length) / totalChars;
-        doc.subtitles.cues.push({ id: `cue-${l.clip.id}-${j}`, clipId: l.clip.id, fromS: Math.round(at * 100) / 100, toS: Math.round((at + d) * 100) / 100, text: chunk });
-        at += d;
-      }
+    for(const [k,l] of lines.entries()) {
+      if(!l.text) continue;
+      const wav=path.join(dir,`v-${k}.wav`);
+      const durationS=await synth(l.text,wav,{voice:brief.voice.kokoroVoice,speed:brief.voice.speed,lang});
+      if(!Number.isFinite(durationS)||durationS<=0||durationS>l.clip.durationS-.3) throw new UserFacingError(`Voix de la scène ${k+1} : phrase entière de ${durationS.toFixed(2)} s pour un plan de ${l.clip.durationS} s. Adaptez le texte ou la durée ; aucune phrase supprimée.`);
+      const a=await saveAsset({projectId,userId,data:fs.readFileSync(wav),name:`voix-${k+1}.wav`,mime:"audio/wav",role:"voice",folderKey:doc.meta.intent==="video_ad"?"videos.ads":"videos.social",origin:"generated",status:"ready",meta:{voice:{engine:"kokoro",id:brief.voice.kokoroVoice,consent:"synthetic",key,text:l.text,measuredDurationS:durationS,alignment:"measured_phrase_proportional_chunks"}}});
+      pending.push({id:`voice-${l.clip.id}`,clipId:l.clip.id,assetId:a.id,text:l.text,offsetS:.2,durationS,gainDb:0});
+      cues.push(...measuredCues(l.clip.id,l.text,durationS,doc.subtitles.style.maxChars));
     }
-    doc.audio.duckingDb = -12;
-  } finally {
-    fs.rmSync(dir, { recursive: true, force: true });
-  }
+    doc.audio.voice=pending;doc.subtitles.cues=cues;doc.audio.voiceId=`kokoro:${brief.voice.kokoroVoice}`;doc.audio.duckingDb=-12;
+  } finally {fs.rmSync(dir,{recursive:true,force:true});}
 }
 
 /** Branchement réel : Qwen (images), Wan 2.6 (plans), Pixabay (plans libres), rendu du studio, coûts du journal. */
