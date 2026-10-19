@@ -14,18 +14,18 @@ describe("Création vidéo guidée : droits natifs, sans fournisseur", async () 
   const { seedImageFixture } = await import("./image-v2-fixtures");
   const { saveAsset } = await import("@/lib/library");
   const route = await import("@/app/api/projects/[id]/creative/video/route");
-  it("choisir une photo conserve le scénario déjà rédigé sans nouvelle tâche texte",async()=>{
+  it.each(["staged",undefined] as const)("choisir une photo conserve le scénario %s déjà rédigé sans nouvelle tâche texte",async(generation)=>{
     const {loadProject}=await import("@/lib/projects");const {enqueue,claimNext,completeJob}=await import("@/lib/jobs");
     const {videoScope,sceneApprovalRequest}=await import("@/lib/video-v2/approval");const {localScenePlan}=await import("@/lib/video-v2/three-scenes");
     const u=await createUser(`scenario-photo-${crypto.randomUUID()}@test.invalid`,"motdepasse-test","Fixture");sessionUser=u;
-    const pid=seedImageFixture(u.id,"hightech"),p=loadProject(pid),request={generation:"staged" as const,as:"post" as const,scenes:3,totalS:15};
+    const pid=seedImageFixture(u.id,"hightech"),p=loadProject(pid),request={...(generation?{generation}:{}),as:"post" as const,scenes:3,totalS:15};
     getSubscription(u.id);run("UPDATE subscriptions SET status='active',plan='creer' WHERE user_id=?",u.id);syncAllowance(u.id);
     const scenario=localScenePlan(p,null,request);scenario.scenes[0].title="Titre conservé";
     const j=enqueue({userId:u.id,projectId:pid,type:"video.scenario",label:"Scénario simulé",payload:{request}});
     expect(claimNext(["video.scenario"])?.id).toBe(j.id);completeJob(j.id,{scenario,scope:videoScope(p,sceneApprovalRequest(request))});
     const photo=await saveAsset({projectId:pid,userId:u.id,data:Buffer.from("photo simulée"),name:"source.jpg",mime:"image/jpeg",role:"scene",origin:"upload"});
     // A scene photo is not a stable original product reference: it changes only the selected image.
-    const response=await route.POST(new Request("http://localhost",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action:"plan",...request,sceneImages:[{assetId:photo.id,use:"reuse"}],draftPlan:scenario,scenarioJobId:j.id})}),{params:Promise.resolve({id:pid})});
+    const response=await route.POST(new Request("http://localhost",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action:"plan",...request,generation:"staged",sceneImages:[{assetId:photo.id,use:"reuse"}],draftPlan:scenario,scenarioJobId:j.id})}),{params:Promise.resolve({id:pid})});
     const next=await response.json();expect(response.status,JSON.stringify(next)).toBe(200);expect(next.scenario.scenes[0].title).toBe("Titre conservé");expect(next.approvalToken).toBeTruthy();
     expect(all("SELECT id FROM jobs WHERE project_id=? AND type='video.scenario'",pid)).toHaveLength(1);
   });

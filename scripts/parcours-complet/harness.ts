@@ -180,7 +180,11 @@ if (command === "seed") {
       const stock = slot.source === "pixabay" ? { source: "pixabay", id: `SIMULATION-${p.id}-${i}`, author: "Fictif", page: "https://pixabay.com/", license: "SIMULATION : aucun fichier Pixabay réellement collecté" } : undefined;
       const base = { projectId: p.id, userId: p.userId, origin: slot.source === "pixabay" ? "import" as const : "generated" as const, status: "approved" as const, meta: { simulation: true, stock, gate: { verdict: "FINAL", fatal: false, checker: "simulation" } } };
       let a, posterId: string | undefined;
-      if (slot.kind === "video") {
+      if(slot.kind==="video"&&slot.assetId&&process.env.VIDEO_BEGINNER_PROOF==="1"){
+        a=getAsset(slot.assetId)!;if(!a||a.project_id!==p.id)throw Error("Vidéo de test absente");
+        posterId=all<{id:string}>("SELECT id FROM assets WHERE project_id=? AND source_asset_id=? AND role='video-poster'",p.id,a.id)[0]?.id;
+        run("UPDATE assets SET status='approved',meta=json_set(meta,'$.gate',json(?)) WHERE id=?",JSON.stringify({verdict:"FINAL",checked:true,fatal:false,checker:"simulation"}),a.id);
+      }else if (slot.kind === "video") {
         a = await saveAsset({ ...base, data: fs.readFileSync(path.join(dir!, `video-test-${i % 2}.mp4`)), name: `simulation-${i}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.shop" });
         posterId = (await saveAsset({ ...base, origin: "generated", data: await syntheticPng(1280, 720, "POSTER VIDÉO FICTIVE", i), name: `poster-${i}.png`, mime: "image/png", role: "video-poster", sourceAssetId: a.id })).id;
       } else {
@@ -193,11 +197,14 @@ if (command === "seed") {
     },
   };
   for (;;) {
-    const j = claimNext(["project.prepare", "brand.logo.v2", "brand.logo.v2.choose", "social.initial", ...(process.env.VIDEO_BEGINNER_PROOF==="1"?["video.scenario","video.scenes","video.v2.render"]:[])]);
+    const j = claimNext(["project.prepare", "brand.logo.v2", "brand.logo.v2.choose", "social.initial", ...(process.env.VIDEO_BEGINNER_PROOF==="1"?["video.scenario","video.scenes","video.v2.render","shop.direction"]:[])]);
     if (!j) { await new Promise(resolve => setTimeout(resolve, 200)); continue; }
     const ctx = new JobContext(j);
     try {
       const output = await runWithLang({ ui: "fr", content: "fr" }, () => runForUser(j.user_id, async () => {
+        if(j.type==="shop.direction"){
+          const {withAiDisabled}=await import("../../src/lib/ai/access");const {switchDirection}=await import("../../src/lib/engine/shop");return withAiDisabled("Recette isolée : composition locale seulement, aucun fournisseur",()=>switchDirection(ctx,j.project_id!,ctx.payload.direction));
+        }
         if(j.type.startsWith("video.")){
           const {runBeginnerVideoJob}=await import("../video-beginners/worker");
           return runBeginnerVideoJob(ctx,dir!);

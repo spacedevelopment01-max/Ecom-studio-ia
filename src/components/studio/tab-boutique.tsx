@@ -148,6 +148,7 @@ export default function TabBoutique() {
   // Panneau « Réglages » d'une section (édition manuelle, mêmes opérations que l'IA).
   const [settingsFor, setSettingsFor] = useState<{ template: string; section: string } | null>(null);
   const [layoutBusy, setLayoutBusy] = useState(false);
+  const [initialDirection,setInitialDirection]=useState<string|null>(null);
   useEffect(() => {
     if (!full) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setFull(false);
@@ -380,7 +381,7 @@ export default function TabBoutique() {
         </Empty>
         <h2 className="mb-1 mt-10 font-display text-2xl font-semibold">{t("Les thèmes disponibles", "Available themes")}</h2>
         <p className="mb-5 text-sm text-muted">{t("Le studio choisit une direction selon votre produit ; vous pourrez en changer à tout moment avec le bouton « Thèmes » de l'éditeur.", "The studio picks a direction based on your product; you can change it at any time with the editor's “Themes” button.")}</p>
-        <ThemeGrid services={isServices} directions={theme.directions} recommendation={theme.recommendation} />
+        <div data-initial-theme-grid><ThemeGrid services={isServices} directions={theme.directions} recommendation={theme.recommendation} projectId={id} sandbox={theme.sandbox} plan={(data?.plan??null) as import("@/lib/plans").PlanId|null} busy={initialDirection??(chatJobs.length?"running":null)} onPick={data?.brand&&!discovery?async direction=>{if(!(await cost.confirm("theme",{localOk:true})))return;setInitialDirection(direction.id);try{await api(`/api/projects/${id}/theme/build`,{body:{direction:direction.id},lang:cl.lang});reloadProject();}catch(error){toast("bad",(error as Error).message);}finally{setInitialDirection(null);}}:undefined}/></div>
       </div>
     );
 

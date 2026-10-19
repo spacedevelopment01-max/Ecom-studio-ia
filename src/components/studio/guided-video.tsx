@@ -102,6 +102,7 @@ export function GuidedVideo({ as,initialSlot }: { as: "post" | "ad";initialSlot?
       await api(`/api/projects/${id}/creative/video`, { body: { approvalToken:scenario.approvalToken, action: "create",generation,purpose:initialSlot?"site":undefined,initialSlot, as, subject, request: request.trim() || undefined, aspect, totalS, scenes, music,sceneImages, approvedEstimateMicro: quote.estimateMicro } });
       toast("ok", t("Vidéo en préparation : elle apparaît ici dès qu'elle est prête.", "Video being prepared: it appears here as soon as it's ready."));
     } catch (e) {
+      setScenario(old=>old?{...old,approvalToken:undefined}:old);
       toast("bad", (e as Error).message);
     } finally {
       setBusy(false);

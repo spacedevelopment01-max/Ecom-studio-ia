@@ -40,8 +40,8 @@ export function deliverContent(spec: ThemeSpec, p: Project, lang: string) {
   const referenceDoc = (...args: Parameters<typeof referenceContent>) => {
     const selected = referenceContent(...args);
     if (!selected) return null;
-    const { doc, version } = selected;
-    traces.set(`${version.docKey}:${version.version}`, { docKey: version.docKey, version: version.version, target: doc.page.key, runId: doc.meta2.runId, contextHash: doc.meta2.contract?.contextHash ?? null });
+    const { doc, version,target } = selected;
+    traces.set(`${version.docKey}:${version.version}`, { docKey: version.docKey, version: version.version, target, runId: doc.meta2.runId, contextHash: doc.meta2.contract?.contextHash ?? null });
     return doc;
   };
   const body = (doc: NonNullable<ReturnType<typeof referenceDoc>>) => {
@@ -100,6 +100,23 @@ export function deliverContent(spec: ThemeSpec, p: Project, lang: string) {
     const page = pages.find((x) => x.kind === "collection" && x.url === `/collections/${collection.handle}`);
     const doc = page && referenceDoc(p.id, "category_page", lang, page.key);
     if (doc) collection.description = body(doc);
+  }
+  // Contact garde son formulaire natif : le corps rédactionnel s'ajoute au même gabarit.
+  const contact=referenceDoc(p.id,"contact_page",lang,"contact");
+  if(contact){
+    const page=spec.store.pages.find(page=>page.contentTarget==="contact"||page.handle==="contact");
+    if(page){
+      const suffix=page.template_suffix??"contact";
+      const template=spec.templates[`page.${suffix}`]??spec.templates.page;
+      if(template){
+        const own=`prepared-contact-${crypto.createHash("sha256").update(p.id).digest("hex").slice(0,10)}`;
+        const cloned=structuredClone(template),id="prepared_contact_body";
+        const title=contact.blocks.find(b=>b.kind==="h1");if(title&&"text"in title)page.title=stripInline(title.text);
+        const rendersBody=Object.values(cloned.sections).some(s=>["main-page","legal-page"].includes(s.type));
+        if(!rendersBody){cloned.sections[id]=section(body(contact));cloned.order=[...cloned.order.slice(0,1),id,...cloned.order.slice(1).filter(x=>x!==id)];const opening=cloned.sections[cloned.order[0]];if(opening&&"heading"in opening.settings)opening.settings.heading=page.title;}
+        spec.templates[`page.${own}`]=cloned;page.template_suffix=own;page.contentTarget="contact";page.body_html=body(contact);page.seo={title:contact.meta.seoTitle,description:contact.meta.metaDescription};
+      }
+    }
   }
   for (const page of pages) {
     const type = page.kind === "service" ? "service_page" : page.kind === "brand" ? "brand_page" : page.kind === "local" ? "local_page" : null;

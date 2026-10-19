@@ -5,6 +5,7 @@
  * Ainsi un même texte n'existe jamais en deux versions contradictoires : ce qui est modifié dans l'éditeur V2 est ce
  * que la boutique et les exports (Theme Engine, CMS Engine) affichent.
  */
+import {preparedContentTarget} from "../project-handoff/content-targets";
 import type { ShopCopy } from "../theme/copy";
 import { usableContent, listContents } from "./store";
 import { inlineHtml, stripInline, toHtml } from "./doc";
@@ -14,7 +15,7 @@ import type { Block, ContentDoc, ContentType } from "./types";
 
 /** Document V2 de référence d'un type dans la langue de la boutique : le plus récent, jamais un brouillon refusé. */
 export function referenceContent(projectId: string, type: ContentType | ContentType[], lang: string, target?: string) {
-  const pages = sitePages(loadProject(projectId));
+  const p=loadProject(projectId);const pages = sitePages(p);
   const types = Array.isArray(type) ? type : [type];
   const key = target ?? (types[0] === "product_page" ? "product:main" : types[0] === "home_page" ? "home:accueil" : types[0] === "brand_page" ? "brand:a-propos" : null);
   if (!key) return null;
@@ -23,7 +24,7 @@ export function referenceContent(projectId: string, type: ContentType | ContentT
   candidates.sort((a, b) => Number(b.version.source !== "engine") - Number(a.version.source !== "engine") || b.version.createdAt - a.version.createdAt || b.version.id.localeCompare(a.version.id));
   for (const { version: v, doc: d } of candidates) {
     if (v.lang !== lang) continue;
-    if (d.page.key === key || resolvePage(pages, d.page.key)?.key === key) return { doc: d, version: v };
+    if (d.page.key === key || resolvePage(pages, d.page.key)?.key === key || preparedContentTarget(p,v.docKey,d)===key) return { doc: d, version: v, target:key };
   }
   return null;
 }
