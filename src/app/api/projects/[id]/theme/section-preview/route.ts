@@ -17,6 +17,7 @@ import { pick } from "@/lib/i18n";
 import { themeLang } from "@/lib/theme/spec";
 import { sectionSchema, type ThemeSpec } from "@/lib/theme/spec";
 import { previewCsp, previewSegment } from "@/lib/theme/preview-access";
+import { resolveLibraryType } from "@/lib/theme/family-gallery";
 
 export const runtime = "nodejs";
 
@@ -27,10 +28,13 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
   const cur = currentTheme(p.id);
   if (!cur) throw new HttpError(409, L("Aucune boutique.", "No store yet."));
-  const type = new URL(req.url).searchParams.get("type") ?? "";
+  const asked = new URL(req.url).searchParams.get("type") ?? "";
+  // Élément de galerie par famille (« fam:<fonction>~<disposition> ») : section du thème et réglages de la disposition.
+  const lib = /^fam:[a-z]+\.[a-z0-9-]+(~[a-z0-9-]+)?$/.test(asked) ? resolveLibraryType(asked) : { type: asked, settings: {} as Record<string, unknown> };
+  const type = lib.type;
   if (!/^[\w-]{1,80}$/.test(type) || !sectionSchema(cur.spec, type)) throw new HttpError(404, L("Section inconnue.", "Unknown section."));
   const targetTemplate = new URL(req.url).searchParams.get("template") ?? "index";
-  const key = `${cur.version.id}:${targetTemplate}:${type}`;
+  const key = `${cur.version.id}:${targetTemplate}:${asked}`;
   // En développement, les fichiers du thème de base changent : pas de mémoire des rendus.
   // Fichiers du thème lus par l'aperçu cloisonné (sans cookie) : clé d'aperçu dans l'adresse.
   const base = `/preview/${p.id}/v/${cur.version.id}`;
@@ -38,7 +42,7 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   let html = process.env.NODE_ENV === "production" ? cache.get(key) : undefined;
   if (!html) {
     const cctx = sectionContentContext(p, cur.spec, true, targetTemplate);
-    const filled = withProjectMedia(cur.spec, type, {}, undefined, cctx);
+    const filled = withProjectMedia(cur.spec, type, { ...lib.settings }, undefined, cctx);
     // Séparateurs : rendus entre deux sections voisines factices, sinon on ne voit qu'une bande.
     const around = sectionSchema(cur.spec, "rich-text") ? previewNeighbors(type, filled.settings, sectionSchema(cur.spec, type)!, cctx, cur.spec) : null;
     const res = applyOps(cur.spec, [

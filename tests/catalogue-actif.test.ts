@@ -63,6 +63,9 @@ describe("Catalogue actif : quatre thèmes proposés, trente lisibles", () => {
     expect(legacy.templates.index.order.length).toBeGreaterThan(3);
     // Les sections « ref-* » ne sont plus déclarées pour Vitrine / Jardin (retirés) : un projet FRAISE ne les reçoit pas non plus.
     expect(fr(() => sectionIncompatibility(sampleSpec("fraise"), "ref-hero", "specialty", "fr"))).not.toBe("");
-    expect(fr(() => sectionIncompatibility(sampleSpec("orbe"), "ref-hero", "catalog", "fr"))).toBe("");
+    // Bibliothèques par famille (issue #141) : « ref-hero » n'est plus proposée non plus en e-commerce (l'ouverture d'ORBE
+    // est « ed-opening ») ; sans catégorie (lecture d'un projet enregistré), elle reste rendue par ORBE.
+    expect(fr(() => sectionIncompatibility(sampleSpec("orbe"), "ref-hero", "catalog", "fr"))).not.toBe("");
+    expect(fr(() => sectionIncompatibility(sampleSpec("orbe"), "ref-hero", null, "fr"))).toBe("");
   });
 });

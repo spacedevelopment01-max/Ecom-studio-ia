@@ -1,0 +1,291 @@
+{%- comment -%}
+Avis clients (e-commerce) / témoignages (services) : grille, carrousel, ou un avis en avant et les autres à côté.
+  Note facultative par avis (0 : non affichée). La note moyenne et sa source sont du texte que la marque renseigne
+  depuis son outil d'avis : la section n'invente aucune note ni aucun nombre d'avis.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign prof = 'es'
+  if settings.conversion_profile != blank and settings.conversion_profile != 'none'
+    assign prof = 'cv'
+  elsif settings.editorial_profile != blank and settings.editorial_profile != 'none'
+    assign prof = 'ed'
+  endif
+  assign fx = s.effect
+  assign cards = 'fs-card'
+-%}
+<section id="fs-{{ section.id }}" class="fs fs-reviews fs-reviews--{{ s.layout | default: 'base' }} fs--{{ prof }}{% if prof == 'ed' %} ed-section{% else %} es-section{% endif %}{% if s.background != blank and s.background != 'scheme' %} fs--{{ s.background }}{% endif %}{% if s.hover %} fs--hover{% endif %} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;--fs-angle:{{ s.gradient_angle | default: 165 }}deg;"{% if fx == 'none' %} data-ed-motion="none"{% endif %} >
+  <div class="{% if prof == 'ed' %}ed-shell{% else %}es-container{% endif %} fs__inner">
+    {%- render 'fs-head', prof: prof, eyebrow: s.eyebrow, heading: s.heading, accent: s.heading_accent, text: s.text, align: s.align, effect: fx, button_label: s.button_label, button_link: s.button_link -%}
+    {%- if s.rating_text != blank -%}<p class="fs-reviews__summary"{% render 'fs-reveal', effect: fx %}><span class="fs-stars" aria-hidden="true">★★★★★</span>{{ s.rating_text | escape }}{% if s.source_label != blank and s.source_link != blank %} · <a class="fs-link" href="{{ s.source_link }}">{{ s.source_label | escape }}</a>{% elsif s.source_label != blank %} · {{ s.source_label | escape }}{% endif %}</p>{%- endif -%}
+    <div class="fs-reviews__wrap{% if s.layout == 'carousel' %} fs-carousel{% endif %}"{% if s.layout == 'carousel' %} data-fs-carousel{% endif %}>
+      <ul class="fs-reviews__list fs-reviews__list--{{ s.layout }}{% if s.layout == 'grid' %} fs-grid fs-grid--{{ section.blocks.size | at_most: 3 | at_least: 1 }}{% endif %}" role="list"{% if s.layout == 'carousel' %} data-fs-track tabindex="0"{% endif %}>
+        {%- for block in section.blocks -%}{%- if s.stagger -%}{%- assign ix = forloop.index0 -%}{%- else -%}{%- assign ix = '' -%}{%- endif -%}
+          {%- assign r = block.settings.rating | default: 0 -%}
+          <li class="fs-review {{ cards }}{% if s.layout == 'featured' and forloop.first %} fs-review--featured{% endif %}" data-fs-slide{% render 'fs-reveal', effect: fx, index: ix %} {{ block.shopify_attributes }}>
+            <figure>
+              {%- if r > 0 -%}<p class="fs-stars" role="img" aria-label="{{ r }} / 5">{% for i in (1..5) %}{% if i <= r %}★{% else %}☆{% endif %}{% endfor %}</p>{%- endif -%}
+              {%- if block.settings.title != blank -%}<p class="fs-item__title">{{ block.settings.title | escape }}</p>{%- endif -%}
+              <blockquote class="fs-review__quote">{{ block.settings.quote }}</blockquote>
+              <figcaption class="fs-review__by">
+                {%- if block.settings.image != blank or block.settings.image_asset != blank -%}<span class="fs-review__media">{% render 'ed-media', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.detail %}</span>{%- endif -%}
+                <span><strong>{{ block.settings.author | escape }}</strong>{% if block.settings.detail != blank %}<span class="fs-meta">{{ block.settings.detail | escape }}</span>{% endif %}{% if block.settings.date_text != blank %}<span class="fs-meta">{{ block.settings.date_text | escape }}</span>{% endif %}</span>
+              </figcaption>
+            </figure>
+          </li>
+        {%- endfor -%}
+      </ul>
+      {%- if s.layout == 'carousel' -%}<div class="fs-carousel__nav"><button type="button" class="fs-carousel__btn" data-fs-prev aria-label="{{ 'general.previous' | t }}">←</button><button type="button" class="fs-carousel__btn" data-fs-next aria-label="{{ 'general.next' | t }}">→</button></div>{%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Avis clients",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Repère"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Titre"
+    },
+    {
+      "type": "text",
+      "id": "heading_accent",
+      "label": "Fin du titre mise en valeur"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texte"
+    },
+    {
+      "type": "select",
+      "id": "align",
+      "label": "Alignement de l'en-tête",
+      "options": [
+        {
+          "value": "center",
+          "label": "Centré"
+        },
+        {
+          "value": "left",
+          "label": "À gauche"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Libellé du bouton"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Lien du bouton"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Disposition",
+      "options": [
+        {
+          "value": "grid",
+          "label": "Grille"
+        },
+        {
+          "value": "carousel",
+          "label": "Carrousel"
+        },
+        {
+          "value": "featured",
+          "label": "Un avis en avant"
+        }
+      ],
+      "default": "grid"
+    },
+    {
+      "type": "text",
+      "id": "rating_text",
+      "label": "Note moyenne (texte de votre outil d'avis)"
+    },
+    {
+      "type": "text",
+      "id": "source_label",
+      "label": "Source des avis (ex. Avis vérifiés par…)"
+    },
+    {
+      "type": "url",
+      "id": "source_link",
+      "label": "Lien de la source"
+    },
+    {
+      "type": "header",
+      "content": "Effets et fond"
+    },
+    {
+      "type": "select",
+      "id": "effect",
+      "label": "Effet d'apparition",
+      "options": [
+        {
+          "value": "none",
+          "label": "Aucun"
+        },
+        {
+          "value": "fade",
+          "label": "Fondu"
+        },
+        {
+          "value": "rise",
+          "label": "Montée"
+        },
+        {
+          "value": "zoom",
+          "label": "Zoom"
+        },
+        {
+          "value": "curtain",
+          "label": "Révélation des images"
+        }
+      ],
+      "default": "rise"
+    },
+    {
+      "type": "checkbox",
+      "id": "stagger",
+      "label": "Apparition décalée des éléments",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "hover",
+      "label": "Survol léger des cartes",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "background",
+      "label": "Fond",
+      "options": [
+        {
+          "value": "scheme",
+          "label": "Couleur du schéma"
+        },
+        {
+          "value": "gradient-soft",
+          "label": "Dégradé léger"
+        },
+        {
+          "value": "gradient-strong",
+          "label": "Dégradé marqué"
+        }
+      ],
+      "default": "scheme"
+    },
+    {
+      "type": "range",
+      "id": "gradient_angle",
+      "label": "Angle du dégradé",
+      "min": 0,
+      "max": 360,
+      "step": 15,
+      "unit": "°",
+      "default": 165
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Marge haute",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Marge basse",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "default": 96
+    }
+  ],
+  "blocks": [
+    {
+      "type": "review",
+      "name": "Avis",
+      "settings": [
+        {
+          "type": "range",
+          "id": "rating",
+          "label": "Note (0 : non affichée)",
+          "min": 0,
+          "max": 5,
+          "step": 1,
+          "default": 0
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Titre"
+        },
+        {
+          "type": "richtext",
+          "id": "quote",
+          "label": "Avis"
+        },
+        {
+          "type": "text",
+          "id": "author",
+          "label": "Auteur"
+        },
+        {
+          "type": "text",
+          "id": "detail",
+          "label": "Précision (ex. produit acheté, prestation)"
+        },
+        {
+          "type": "text",
+          "id": "date_text",
+          "label": "Date"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Photo du produit ou du chantier"
+        },
+        {
+          "type": "text",
+          "id": "image_asset",
+          "label": "Fichier du projet"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Avis clients",
+      "settings": {
+        "layout": "grid"
+      }
+    }
+  ],
+  "max_blocks": 12
+}
+{% endschema %}

@@ -14,6 +14,10 @@ import type { Project } from "../projects";
 import type { ActivityCategory, ServiceProfile } from "../project-types";
 import { cloneSpec, storeProducts, themeLang, type SectionInstance, type TemplateJson, type ThemeSpec } from "./spec";
 import { applyOps } from "./ops";
+import { projectKind } from "./project-kind";
+import { familyTypes, isStructuralType, type FamilyId } from "./section-families";
+import { resolveLibraryType } from "./family-gallery";
+import { sectionIncompatibility } from "./section-compat";
 import { mediaPools, withProjectMedia } from "./section-defaults";
 import { contentContext } from "./section-content";
 
@@ -330,6 +334,27 @@ export function buildContext(spec: ThemeSpec, project: Pick<Project, "services">
  * les informations du projet. Mise en page produit : la section Produit (prix, variantes, achat) est reprise de la
  * fiche produit commune, reliée au catalogue réel.
  */
+/**
+ * Équivalent, dans la bibliothèque de la famille du projet (issue #141), d'une section ancienne d'un modèle de page :
+ * mêmes titres, textes et boutons, section de la famille et réglages de sa disposition. null : rien d'équivalent.
+ */
+const MODEL_REMAP: Record<FamilyId, Record<string, string | string[] | null>> = {
+  specialty: { reassurance: ["specialty.guarantees~shield", "specialty.guarantees~grid"], "video-showcase": "specialty.video~wide", "how-to": ["specialty.howto~cards", "specialty.howto~journey"], "v2-benefits": "specialty.benefits~grid", "specs-list": ["specialty.specs~side", "specialty.specs~tabs"], "alternating-content": ["specialty.situations~alternate", "specialty.story~image-left"], situations: ["specialty.situations~mosaic", "specialty.story~image-left"], "hero-split": ["specialty.hero~image-right", "specialty.story~image-left"], "v2-hero": ["specialty.hero~stacked", "specialty.story~statement"], "gallery-mosaic": ["specialty.situations~mosaic", "specialty.story~image-left"], portfolio: ["specialty.situations~grid", "specialty.story~image-left"], "services-list": null, "practical-info": null, booking: null, "booking-calendar": null },
+  catalog: { reassurance: "catalog.commitments~grid", "video-showcase": null, "how-to": "catalog.care~list", "v2-benefits": "catalog.commitments~grid", "specs-list": "catalog.dimensions~table", "alternating-content": "catalog.uses~side", situations: "catalog.lookbook~split", "hero-split": "catalog.hero~journal", "v2-hero": "catalog.hero~journal", "gallery-mosaic": "catalog.uses~pair", timeline: "catalog.atelier~timeline", about: "catalog.heritage~statement", portfolio: "catalog.uses~index", "services-list": null, "practical-info": null, booking: null, "booking-calendar": null },
+  services: { reassurance: "services.commitments~grid", "features-grid": "services.commitments~grid", "v2-benefits": "services.commitments~grid", "video-showcase": null, "hero-split": "services.hero~journal", "v2-hero": "services.hero~journal", "gallery-mosaic": "services.portfolio~grid", "image-with-text": "services.history~statement", "alternating-content": "services.needs~scene", situations: "services.needs~cards", "specs-list": "services.detail~columns", "comparison-table": null, "cta-banner": "services.contact~band" },
+};
+function familyRow(row: Row, family: FamilyId, spec: ThemeSpec): Row | null {
+  if (familyTypes(family).has(row.type) || isStructuralType(row.type)) return row;
+  const ids = MODEL_REMAP[family][row.type];
+  if (ids === null) return null;
+  // Première disposition que le thème installé sait rendre ; thème ancien sans équivalent : la section d'origine reste.
+  for (const id of ids === undefined ? [] : Array.isArray(ids) ? ids : [ids]) {
+    const lib = resolveLibraryType(`fam:${id}`);
+    if (!sectionIncompatibility(spec, lib.type, null)) return { ...row, type: lib.type, settings: { ...(row.settings ?? {}), ...lib.settings }, blocks: undefined };
+  }
+  return row;
+}
+
 export function buildModelTemplate(spec: ThemeSpec, project: Project, model: PageModel, c: BuildContext): TemplateJson {
   const key = model.kind === "product" ? "product.__modele" : "page.__modele";
   let work = cloneSpec(spec);
@@ -355,7 +380,11 @@ export function buildModelTemplate(spec: ThemeSpec, project: Project, model: Pag
     if (["gallery-mosaic", "portfolio"].includes(row.type)) return [{ ...row, disabled: true }];
     return [row];
   });
-  for (const row of rows) {
+  const family = projectKind(project);
+  for (const raw of rows) {
+    // Bibliothèque de la famille du projet (issue #141) : une section ancienne du modèle prend son équivalent.
+    const row = familyRow(raw, family, work);
+    if (!row) continue;
     const filled = withProjectMedia(work, row.type, {}, undefined, ctx);
     const settings = { ...filled.settings, ...(row.settings ?? {}) };
     const blocks = row.blocks ? row.blocks(filled.blocks) : filled.blocks;

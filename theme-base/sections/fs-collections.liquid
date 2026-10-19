@@ -1,0 +1,281 @@
+{%- comment -%}
+Collections et catégories (e-commerce) : accès visuels aux familles de produits — grille, une grande et des petites,
+  carrousel, ou index typographique avec aperçu de l'image au survol (vignette visible sur téléphone).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign prof = 'es'
+  if settings.conversion_profile != blank and settings.conversion_profile != 'none'
+    assign prof = 'cv'
+  elsif settings.editorial_profile != blank and settings.editorial_profile != 'none'
+    assign prof = 'ed'
+  endif
+  assign fx = s.effect
+  assign cards = 'fs-card'
+-%}
+<section id="fs-{{ section.id }}" class="fs fs-collections fs-collections--{{ s.layout | default: 'base' }} fs--{{ prof }}{% if prof == 'ed' %} ed-section{% else %} es-section{% endif %}{% if s.background != blank and s.background != 'scheme' %} fs--{{ s.background }}{% endif %}{% if s.hover %} fs--hover{% endif %} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;--fs-angle:{{ s.gradient_angle | default: 165 }}deg;"{% if fx == 'none' %} data-ed-motion="none"{% endif %} >
+  <div class="{% if prof == 'ed' %}ed-shell{% else %}es-container{% endif %} fs__inner">
+    {%- render 'fs-head', prof: prof, eyebrow: s.eyebrow, heading: s.heading, accent: s.heading_accent, text: s.text, align: s.align, effect: fx, button_label: s.button_label, button_link: s.button_link -%}
+    {%- if s.layout == 'index' -%}
+      <ol class="fs-coll__index" role="list" data-fs-index>
+        {%- for block in section.blocks -%}{%- if s.stagger -%}{%- assign ix = forloop.index0 -%}{%- else -%}{%- assign ix = '' -%}{%- endif -%}
+          {%- assign c = collections[block.settings.collection] | default: block.settings.collection -%}
+          <li class="fs-coll__row"{% render 'fs-reveal', effect: fx, index: ix %} {{ block.shopify_attributes }}>
+            <a class="fs-coll__link" href="{{ block.settings.link | default: c.url | default: '#' }}">
+              <span class="fs-coll__thumb">{% render 'ed-media', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.title %}</span>
+              <span class="fs-coll__name">{{ block.settings.title | default: c.title | escape }}</span>
+              {%- if s.show_count and c.products_count -%}<span class="fs-meta">{{ c.products_count }}</span>{%- endif -%}
+              <span class="fs-coll__arrow" aria-hidden="true">→</span>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ol>
+    {%- else -%}
+      <div class="fs-coll__wrap{% if s.layout == 'carousel' %} fs-carousel{% endif %}"{% if s.layout == 'carousel' %} data-fs-carousel{% endif %}>
+        <ul class="fs-coll__list fs-coll__list--{{ s.layout }}{% if s.layout == 'grid' %} fs-grid fs-grid--{{ section.blocks.size | at_most: 4 | at_least: 2 }}{% endif %}" role="list"{% if s.layout == 'carousel' %} data-fs-track tabindex="0"{% endif %}>
+          {%- for block in section.blocks -%}{%- if s.stagger -%}{%- assign ix = forloop.index0 -%}{%- else -%}{%- assign ix = '' -%}{%- endif -%}
+            {%- assign c = collections[block.settings.collection] | default: block.settings.collection -%}
+            <li class="fs-coll__tile" data-fs-slide{% render 'fs-reveal', effect: fx, index: ix %} {{ block.shopify_attributes }}>
+              <a class="fs-coll__card" href="{{ block.settings.link | default: c.url | default: '#' }}">
+                <span class="fs-coll__media">{% render 'ed-media', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.title, role_label: 'Photo de la collection' %}</span>
+                <span class="fs-coll__label"><span class="fs-coll__name">{{ block.settings.title | default: c.title | escape }}</span>{% if block.settings.text != blank %}<span class="fs-meta">{{ block.settings.text | escape }}</span>{% endif %}<span class="fs-coll__arrow" aria-hidden="true">→</span></span>
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+        {%- if s.layout == 'carousel' -%}<div class="fs-carousel__nav"><button type="button" class="fs-carousel__btn" data-fs-prev aria-label="{{ 'general.previous' | t }}">←</button><button type="button" class="fs-carousel__btn" data-fs-next aria-label="{{ 'general.next' | t }}">→</button></div>{%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Collections",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Repère"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Titre"
+    },
+    {
+      "type": "text",
+      "id": "heading_accent",
+      "label": "Fin du titre mise en valeur"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texte"
+    },
+    {
+      "type": "select",
+      "id": "align",
+      "label": "Alignement de l'en-tête",
+      "options": [
+        {
+          "value": "center",
+          "label": "Centré"
+        },
+        {
+          "value": "left",
+          "label": "À gauche"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Libellé du bouton"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Lien du bouton"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Disposition",
+      "options": [
+        {
+          "value": "grid",
+          "label": "Grille"
+        },
+        {
+          "value": "asym",
+          "label": "Une grande et des petites"
+        },
+        {
+          "value": "carousel",
+          "label": "Carrousel"
+        },
+        {
+          "value": "index",
+          "label": "Index avec aperçu"
+        }
+      ],
+      "default": "grid"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_count",
+      "label": "Nombre de produits",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Effets et fond"
+    },
+    {
+      "type": "select",
+      "id": "effect",
+      "label": "Effet d'apparition",
+      "options": [
+        {
+          "value": "none",
+          "label": "Aucun"
+        },
+        {
+          "value": "fade",
+          "label": "Fondu"
+        },
+        {
+          "value": "rise",
+          "label": "Montée"
+        },
+        {
+          "value": "zoom",
+          "label": "Zoom"
+        },
+        {
+          "value": "curtain",
+          "label": "Révélation des images"
+        }
+      ],
+      "default": "rise"
+    },
+    {
+      "type": "checkbox",
+      "id": "stagger",
+      "label": "Apparition décalée des éléments",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "hover",
+      "label": "Survol léger des cartes",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "background",
+      "label": "Fond",
+      "options": [
+        {
+          "value": "scheme",
+          "label": "Couleur du schéma"
+        },
+        {
+          "value": "gradient-soft",
+          "label": "Dégradé léger"
+        },
+        {
+          "value": "gradient-strong",
+          "label": "Dégradé marqué"
+        }
+      ],
+      "default": "scheme"
+    },
+    {
+      "type": "range",
+      "id": "gradient_angle",
+      "label": "Angle du dégradé",
+      "min": 0,
+      "max": 360,
+      "step": 15,
+      "unit": "°",
+      "default": 165
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Marge haute",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Marge basse",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "default": 96
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "Collection",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Titre (vide : celui de la collection)"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Sous-titre"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "image_asset",
+          "label": "Fichier du projet"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Lien (vide : la collection)"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collections",
+      "settings": {
+        "layout": "grid"
+      }
+    }
+  ],
+  "max_blocks": 8
+}
+{% endschema %}

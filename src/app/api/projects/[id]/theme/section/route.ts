@@ -5,6 +5,8 @@ import { currentTheme } from "@/lib/projects";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { libraryEntry, structural } from "@/lib/theme/section-library";
 import { containerOf, sectionSchema } from "@/lib/theme/spec";
+import { familyPanel } from "@/lib/theme/family-ops";
+import { projectKind } from "@/lib/theme/project-kind";
 
 /**
  * Panneau « Réglages » d'une section : son schéma (libellés dans la langue de l'interface), ses réglages actuels et ses
@@ -37,6 +39,9 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   return ok({
     template, id, type: s.type, name: entry?.name ?? schema.name, disabled: !!s.disabled, locked: cur.spec.locks.includes(`${template}:${id}`), structural: structural(s.type),
     settings: s.settings ?? {}, blocks, schema: { settings: schema.settings, blocks: schema.blocks, max_blocks: schema.max_blocks }, schemes, files, videos,
+    // Bibliothèque par famille (issue #141) : fonction de la section et ses dispositions, ou les cinq dispositions de
+    // l'en-tête / du pied de page de la famille du projet.
+    family: cur.spec.imported ? null : familyPanel(cur.spec, projectKind(p), s, ui),
     versionId: cur.version.id,
   });
 });

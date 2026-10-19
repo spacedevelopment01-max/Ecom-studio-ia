@@ -1,0 +1,13 @@
+{%- comment -%}
+  Bouton des sections de bibliothèque, dans le style du thème installé. Paramètres : prof (cv | ed | es), label, link,
+  secondary (vrai : bouton secondaire), class (classes supplémentaires).
+{%- endcomment -%}
+{%- if label != blank and link != blank -%}
+  {%- if prof == 'cv' -%}
+    <a class="es-button{% unless secondary %} cv-button{% endunless %}{% if secondary %} es-button--secondary{% endif %} fs-button {{ class }}" href="{{ link }}">{{ label | escape }}</a>
+  {%- elsif prof == 'ed' -%}
+    <a class="ed-button{% if secondary %} fs-button--ghost{% endif %} fs-button {{ class }}" href="{{ link }}">{{ label | escape }}<span aria-hidden="true">↗</span></a>
+  {%- else -%}
+    <a class="es-button{% if secondary %} es-button--secondary{% endif %} fs-button {{ class }}" href="{{ link }}">{{ label | escape }}</a>
+  {%- endif -%}
+{%- endif -%}

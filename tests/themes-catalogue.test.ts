@@ -136,6 +136,9 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
     const outside = new Set(["custom-liquid", "apps"]);
     // Panier latéral : rendu par le gabarit général (layout/theme.liquid) sur toutes les pages, pas une instance de gabarit.
     expect(fs.readFileSync(path.join(process.cwd(), "theme-base/layout/theme.liquid"), "utf8")).toMatch(/section ['"]cart-drawer['"]/); outside.add("cart-drawer");
+    // Sections créées pour les bibliothèques par famille (issue #141) : elles servent par la galerie de leur famille.
+    const { ALL_ENTRIES } = await import("@/lib/theme/section-families");
+    for (const e of ALL_ENTRIES) for (const d of e.dispositions) if (d.type.startsWith("fs-")) used.add(d.type);
     const missing = SECTION_LIBRARY.map((e) => e.type).filter((t) => !outside.has(t) && !used.has(t));
     expect(missing).toEqual([]);
   });

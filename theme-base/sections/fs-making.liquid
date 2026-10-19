@@ -1,0 +1,281 @@
+{%- comment -%}
+Fabrication et savoir-faire (boutique spécialisée) / Fabrication et ateliers (e-commerce) : étapes illustrées, image
+  fixe pendant le récit (l'image suit l'étape lue), frise qui progresse au défilement, ou cartes.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign prof = 'es'
+  if settings.conversion_profile != blank and settings.conversion_profile != 'none'
+    assign prof = 'cv'
+  elsif settings.editorial_profile != blank and settings.editorial_profile != 'none'
+    assign prof = 'ed'
+  endif
+  assign fx = s.effect
+  assign cards = 'fs-card'
+-%}
+<section id="fs-{{ section.id }}" class="fs fs-making fs-making--{{ s.layout | default: 'base' }} fs--{{ prof }}{% if prof == 'ed' %} ed-section{% else %} es-section{% endif %}{% if s.background != blank and s.background != 'scheme' %} fs--{{ s.background }}{% endif %}{% if s.hover %} fs--hover{% endif %} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;--fs-angle:{{ s.gradient_angle | default: 165 }}deg;"{% if fx == 'none' %} data-ed-motion="none"{% endif %} >
+  <div class="{% if prof == 'ed' %}ed-shell{% else %}es-container{% endif %} fs__inner">
+    {%- render 'fs-head', prof: prof, eyebrow: s.eyebrow, heading: s.heading, accent: s.heading_accent, text: s.text, align: s.align, effect: fx, button_label: s.button_label, button_link: s.button_link -%}
+    <div class="fs-making__body">
+      {%- if s.layout == 'sticky' -%}
+        <div class="fs-making__visual" data-fs-sticky-visual>
+          <div class="fs-making__frame">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role %}</div>
+          {%- for block in section.blocks -%}{%- if block.settings.image != blank or block.settings.image_asset != blank -%}<div class="fs-making__frame fs-making__frame--step" data-fs-step-visual="{{ forloop.index0 }}">{% render 'ed-media', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.title %}</div>{%- endif -%}{%- endfor -%}
+        </div>
+      {%- endif -%}
+      <ol class="fs-making__steps{% if s.layout == 'grid' or s.layout == 'steps' %} fs-grid fs-grid--{{ section.blocks.size | at_most: 4 | at_least: 2 }}{% endif %}" role="list"{% if s.layout == 'timeline' %} data-fs-progress{% endif %}{% if s.layout == 'sticky' %} data-fs-sticky-steps{% endif %}>
+        {%- for block in section.blocks -%}{%- if s.stagger -%}{%- assign ix = forloop.index0 -%}{%- else -%}{%- assign ix = '' -%}{%- endif -%}
+          <li class="fs-making__step{% if s.layout == 'grid' %} {{ cards }}{% endif %}"{% render 'fs-reveal', effect: fx, index: ix %} data-fs-step="{{ forloop.index0 }}" {{ block.shopify_attributes }}>
+            {%- if s.layout == 'steps' and block.settings.image != blank or s.layout == 'steps' and block.settings.image_asset != blank -%}<div class="fs-card__media">{% render 'ed-media', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.title %}</div>{%- endif -%}
+            <span class="fs-making__num" aria-hidden="true">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>
+            <div class="fs-making__copy">
+              {%- if block.settings.tag != blank -%}<span class="fs-chip">{{ block.settings.tag | escape }}</span>{%- endif -%}
+              <h3 class="fs-item__title">{{ block.settings.title | escape }}</h3>
+              {%- if block.settings.text != blank -%}<div class="fs-item__text">{{ block.settings.text }}</div>{%- endif -%}
+            </div>
+          </li>
+        {%- endfor -%}
+      </ol>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Fabrication",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Repère"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Titre"
+    },
+    {
+      "type": "text",
+      "id": "heading_accent",
+      "label": "Fin du titre mise en valeur"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texte"
+    },
+    {
+      "type": "select",
+      "id": "align",
+      "label": "Alignement de l'en-tête",
+      "options": [
+        {
+          "value": "center",
+          "label": "Centré"
+        },
+        {
+          "value": "left",
+          "label": "À gauche"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Libellé du bouton"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Lien du bouton"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Disposition",
+      "options": [
+        {
+          "value": "steps",
+          "label": "Étapes illustrées"
+        },
+        {
+          "value": "sticky",
+          "label": "Image fixe pendant le récit"
+        },
+        {
+          "value": "timeline",
+          "label": "Frise qui progresse"
+        },
+        {
+          "value": "grid",
+          "label": "Cartes"
+        }
+      ],
+      "default": "steps"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "image_asset",
+      "label": "Fichier du projet"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Description de l’image"
+    },
+    {
+      "type": "text",
+      "id": "media_role",
+      "label": "Média attendu (aperçu du studio)"
+    },
+    {
+      "type": "header",
+      "content": "Effets et fond"
+    },
+    {
+      "type": "select",
+      "id": "effect",
+      "label": "Effet d'apparition",
+      "options": [
+        {
+          "value": "none",
+          "label": "Aucun"
+        },
+        {
+          "value": "fade",
+          "label": "Fondu"
+        },
+        {
+          "value": "rise",
+          "label": "Montée"
+        },
+        {
+          "value": "zoom",
+          "label": "Zoom"
+        },
+        {
+          "value": "curtain",
+          "label": "Révélation des images"
+        }
+      ],
+      "default": "rise"
+    },
+    {
+      "type": "checkbox",
+      "id": "stagger",
+      "label": "Apparition décalée des éléments",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "hover",
+      "label": "Survol léger des cartes",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "background",
+      "label": "Fond",
+      "options": [
+        {
+          "value": "scheme",
+          "label": "Couleur du schéma"
+        },
+        {
+          "value": "gradient-soft",
+          "label": "Dégradé léger"
+        },
+        {
+          "value": "gradient-strong",
+          "label": "Dégradé marqué"
+        }
+      ],
+      "default": "scheme"
+    },
+    {
+      "type": "range",
+      "id": "gradient_angle",
+      "label": "Angle du dégradé",
+      "min": 0,
+      "max": 360,
+      "step": 15,
+      "unit": "°",
+      "default": 165
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Marge haute",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Marge basse",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "default": 96
+    }
+  ],
+  "blocks": [
+    {
+      "type": "step",
+      "name": "Étape",
+      "settings": [
+        {
+          "type": "text",
+          "id": "tag",
+          "label": "Étiquette (ex. Contrôle qualité)"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Titre"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Texte"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "image_asset",
+          "label": "Fichier du projet"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Fabrication",
+      "settings": {
+        "layout": "steps"
+      }
+    }
+  ],
+  "max_blocks": 8
+}
+{% endschema %}

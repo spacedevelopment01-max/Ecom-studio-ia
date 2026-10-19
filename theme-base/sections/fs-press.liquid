@@ -1,0 +1,285 @@
+{%- comment -%}
+Presse et distinctions : citations de médias, bandeau de logos, une citation à la une ou liste de récompenses.
+  Rien n'est inventé : chaque citation renvoie à sa publication (lien) ; en aperçu, les exemples sont signalés.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign prof = 'es'
+  if settings.conversion_profile != blank and settings.conversion_profile != 'none'
+    assign prof = 'cv'
+  elsif settings.editorial_profile != blank and settings.editorial_profile != 'none'
+    assign prof = 'ed'
+  endif
+  assign fx = s.effect
+  assign cards = 'fs-card'
+-%}
+<section id="fs-{{ section.id }}" class="fs fs-press fs-press--{{ s.layout | default: 'base' }} fs--{{ prof }}{% if prof == 'ed' %} ed-section{% else %} es-section{% endif %}{% if s.background != blank and s.background != 'scheme' %} fs--{{ s.background }}{% endif %}{% if s.hover %} fs--hover{% endif %} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;--fs-angle:{{ s.gradient_angle | default: 165 }}deg;"{% if fx == 'none' %} data-ed-motion="none"{% endif %} >
+  <div class="{% if prof == 'ed' %}ed-shell{% else %}es-container{% endif %} fs__inner">
+    {%- render 'fs-head', prof: prof, eyebrow: s.eyebrow, heading: s.heading, accent: s.heading_accent, text: s.text, align: s.align, effect: fx, button_label: '', button_link: '' -%}
+    {%- if s.layout == 'awards' -%}
+      <ul class="fs-press__awards" role="list">
+        {%- for block in section.blocks -%}{%- if s.stagger -%}{%- assign ix = forloop.index0 -%}{%- else -%}{%- assign ix = '' -%}{%- endif -%}
+          <li class="fs-press__award {{ cards }}"{% render 'fs-reveal', effect: fx, index: ix %} {{ block.shopify_attributes }}>
+            <span class="fs-press__badge">{%- if block.settings.image != blank or block.settings.image_asset != blank -%}{% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.title, class: 'fs-logo' %}{%- else -%}{% render 'fs-icon', name: 'award' %}{%- endif -%}</span>
+            <span class="fs-press__award-copy"><strong class="fs-item__title">{{ block.settings.title | default: block.settings.outlet | escape }}</strong><span class="fs-meta">{{ block.settings.outlet | escape }}{% if block.settings.date_text != blank %} · {{ block.settings.date_text | escape }}{% endif %}</span></span>
+            {%- if block.settings.link != blank -%}<a class="fs-link" href="{{ block.settings.link }}">{{ s.link_label | default: 'Voir' | escape }}</a>{%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- elsif s.layout == 'logos' -%}
+      <ul class="fs-press__logos" role="list"{% render 'fs-reveal', effect: fx %}>
+        {%- for block in section.blocks -%}
+          <li class="fs-press__logo" {{ block.shopify_attributes }}>{%- if block.settings.image != blank or block.settings.image_asset != blank -%}{% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.outlet, class: 'fs-logo' %}{%- else -%}<span class="fs-press__name">{{ block.settings.outlet | escape }}</span>{%- endif -%}</li>
+        {%- endfor -%}
+      </ul>
+      {%- assign lead = section.blocks | first -%}
+      {%- if lead.settings.quote != blank -%}<blockquote class="fs-press__lead"{% render 'fs-reveal', effect: fx %}><p>« {{ lead.settings.quote | escape }} »</p><footer class="fs-meta">{{ lead.settings.outlet | escape }}{% if lead.settings.date_text != blank %} · {{ lead.settings.date_text | escape }}{% endif %}</footer></blockquote>{%- endif -%}
+    {%- elsif s.layout == 'featured' -%}
+      {%- assign lead = section.blocks | first -%}
+      {%- if lead -%}<blockquote class="fs-press__featured"{% render 'fs-reveal', effect: fx %} {{ lead.shopify_attributes }}><p>« {{ lead.settings.quote | escape }} »</p><footer>{%- if lead.settings.image != blank or lead.settings.image_asset != blank -%}{% render 'es-image', image: lead.settings.image, asset: lead.settings.image_asset, alt: lead.settings.outlet, class: 'fs-logo' %}{%- else -%}<strong>{{ lead.settings.outlet | escape }}</strong>{%- endif -%}{% if lead.settings.date_text != blank %}<span class="fs-meta">{{ lead.settings.date_text | escape }}</span>{% endif %}{% if lead.settings.link != blank %}<a class="fs-link" href="{{ lead.settings.link }}">{{ s.link_label | default: 'Lire' | escape }}</a>{% endif %}</footer></blockquote>{%- endif -%}
+      {%- if section.blocks.size > 1 -%}<ul class="fs-press__logos fs-press__logos--small" role="list">{%- for block in section.blocks offset: 1 -%}<li class="fs-press__logo">{%- if block.settings.image != blank or block.settings.image_asset != blank -%}{% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.outlet, class: 'fs-logo' %}{%- else -%}<span class="fs-press__name">{{ block.settings.outlet | escape }}</span>{%- endif -%}</li>{%- endfor -%}</ul>{%- endif -%}
+    {%- else -%}
+      <div class="fs-grid fs-grid--3">
+        {%- for block in section.blocks -%}{%- if s.stagger -%}{%- assign ix = forloop.index0 -%}{%- else -%}{%- assign ix = '' -%}{%- endif -%}
+          <blockquote class="fs-press__quote {{ cards }}"{% render 'fs-reveal', effect: fx, index: ix %} {{ block.shopify_attributes }}>
+            <header class="fs-press__source">{%- if block.settings.image != blank or block.settings.image_asset != blank -%}{% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.outlet, class: 'fs-logo' %}{%- else -%}<strong class="fs-press__name">{{ block.settings.outlet | escape }}</strong>{%- endif -%}</header>
+            <p class="fs-press__text">« {{ block.settings.quote | escape }} »</p>
+            <footer class="fs-meta">{% if block.settings.date_text != blank %}{{ block.settings.date_text | escape }}{% endif %}{% if block.settings.link != blank %} <a class="fs-link" href="{{ block.settings.link }}">{{ s.link_label | default: 'Lire' | escape }}</a>{% endif %}</footer>
+          </blockquote>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+    {%- if s.note != blank -%}<p class="fs-note">{{ s.note | escape }}</p>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Presse et distinctions",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Repère"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Titre"
+    },
+    {
+      "type": "text",
+      "id": "heading_accent",
+      "label": "Fin du titre mise en valeur"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texte"
+    },
+    {
+      "type": "select",
+      "id": "align",
+      "label": "Alignement de l'en-tête",
+      "options": [
+        {
+          "value": "center",
+          "label": "Centré"
+        },
+        {
+          "value": "left",
+          "label": "À gauche"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Disposition",
+      "options": [
+        {
+          "value": "quotes",
+          "label": "Citations de presse"
+        },
+        {
+          "value": "logos",
+          "label": "Bandeau de logos"
+        },
+        {
+          "value": "featured",
+          "label": "Une citation à la une"
+        },
+        {
+          "value": "awards",
+          "label": "Distinctions"
+        }
+      ],
+      "default": "quotes"
+    },
+    {
+      "type": "text",
+      "id": "link_label",
+      "label": "Libellé des liens",
+      "default": "Lire l'article"
+    },
+    {
+      "type": "text",
+      "id": "note",
+      "label": "Note (sources, vérification)"
+    },
+    {
+      "type": "header",
+      "content": "Effets et fond"
+    },
+    {
+      "type": "select",
+      "id": "effect",
+      "label": "Effet d'apparition",
+      "options": [
+        {
+          "value": "none",
+          "label": "Aucun"
+        },
+        {
+          "value": "fade",
+          "label": "Fondu"
+        },
+        {
+          "value": "rise",
+          "label": "Montée"
+        },
+        {
+          "value": "zoom",
+          "label": "Zoom"
+        },
+        {
+          "value": "curtain",
+          "label": "Révélation des images"
+        }
+      ],
+      "default": "rise"
+    },
+    {
+      "type": "checkbox",
+      "id": "stagger",
+      "label": "Apparition décalée des éléments",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "hover",
+      "label": "Survol léger des cartes",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "background",
+      "label": "Fond",
+      "options": [
+        {
+          "value": "scheme",
+          "label": "Couleur du schéma"
+        },
+        {
+          "value": "gradient-soft",
+          "label": "Dégradé léger"
+        },
+        {
+          "value": "gradient-strong",
+          "label": "Dégradé marqué"
+        }
+      ],
+      "default": "scheme"
+    },
+    {
+      "type": "range",
+      "id": "gradient_angle",
+      "label": "Angle du dégradé",
+      "min": 0,
+      "max": 360,
+      "step": 15,
+      "unit": "°",
+      "default": 165
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Marge haute",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Marge basse",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "default": 96
+    }
+  ],
+  "blocks": [
+    {
+      "type": "mention",
+      "name": "Parution ou distinction",
+      "settings": [
+        {
+          "type": "text",
+          "id": "outlet",
+          "label": "Média ou organisme"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Logo"
+        },
+        {
+          "type": "text",
+          "id": "image_asset",
+          "label": "Fichier du logo"
+        },
+        {
+          "type": "textarea",
+          "id": "quote",
+          "label": "Citation exacte"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Distinction (intitulé)"
+        },
+        {
+          "type": "text",
+          "id": "date_text",
+          "label": "Date ou année"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Lien vers la publication"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Presse et distinctions",
+      "settings": {
+        "layout": "quotes"
+      }
+    }
+  ],
+  "max_blocks": 12
+}
+{% endschema %}
