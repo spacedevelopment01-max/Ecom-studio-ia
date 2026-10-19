@@ -105,7 +105,7 @@ function RecommendedReferences({ recommendation: r }: { recommendation: ThemeRec
     {r.reasons.map((reason, i) => <p key={i} className="text-sm">{reason}</p>)}
     {r.status === "clarification_required"
       ? <p className="text-sm" role="status" data-recommendation-clarification>{t("Confirmez le type de site adapté à votre offre. Vos textes et médias restent enregistrés ; aucune ancienne démonstration n’est choisie à votre place.", "Confirm the website category that fits your offer. Your copy and media remain saved; no former demonstration is selected for you.")}</p>
-      : <p className="text-sm" role="status" data-recommendation-pending>{t("Le raccordement de ces références au moteur est en cours. Vous pouvez préparer et valider vos textes et médias ; aucun thème n’est installé ni présenté comme construit à cette étape.", "These references are being connected to the engine. You can prepare and approve copy and media; no theme is installed or presented as built at this stage.")}</p>}
+      : <p className="text-sm" role="status" data-recommendation-pending>{t("Ces références sont consultables dans Boutique. Préparez et validez vos textes et médias avant de choisir et construire votre thème. Aucun thème installé n’est modifié à cette étape.", "View these reference themes in Storefront. Prepare and approve copy and media before choosing and building your theme. No installed theme is changed at this stage.")}</p>}
     {r.selectedId && <p className="text-xs">{t("Votre ancien choix reste conservé avec votre projet et ses versions. Il ne fait plus partie des nouvelles sélections.", "Your former selection is preserved with the project and its versions. It is no longer offered for new selections.")}</p>}
   </section>;
 }
