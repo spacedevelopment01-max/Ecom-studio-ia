@@ -22,3 +22,5 @@ Le premier lancement produit, sa pause et sa reprise ont précédé la coupure :
 Les captures `*-lecteur-*` cadrent les lecteurs avec la navigation réelle ; `*-final-*` montrent la section complète (les barres fixes du studio peuvent y apparaître au milieu lors de la capture longue). Ouvrir les PNG en taille originale. [Persistance et concordance des téléchargements](persistence-final-checks.json). Les numéros de versions sont vérifiés après chargement dans `*-edition-ordinateur.png`.
 
 [Télécharger ensemble les huit captures lisibles, quatre MP4, sous-titres et mesures (ZIP)](captures-et-videos-tests.zip?raw=true). Les enregistrements longs des interactions restent disponibles séparément ci-dessus.
+
+Bilan final local : **2 211 réussites, 3 tests PHP ignorés, 292 fichiers**, typage réussi ; [code testé et empreinte](code-tested.json). La CI distante finale reste à attendre ; le Theme Check historique en échec n’est pas déclaré corrigé.

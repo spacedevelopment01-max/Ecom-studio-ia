@@ -2,6 +2,8 @@
 
 Mission : commentaire [6266974136](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/140#issuecomment-6266974136), lu intégralement. Base examinée : `6477ef1b7e832d92040f8744eaf00adab951207a`. Branche : `codex/publications-ia-qualite`. Travail de Claude sur les thèmes conservé, sans fusion de sa branche.
 
+**Bilan final local : 2 211 tests réussis, 3 ignorés (PHP absent), 292 fichiers ; typage réussi. Quatre parcours ordinateur et quatre lectures mobiles terminés, preuves publiées. Fournisseurs/vision simulés, voix et encodages locaux réels ; coût API 0 €. Code applicatif/tests : `8122545d36cff5451861bed394596181735392a2`. La CI GitHub finale reste en attente, elle n’est pas annoncée verte.**
+
 ## Lot 1 — contrat et médias
 
 - Le moteur V2 reçoit le contrat organique existant au complet : demande, texte, blocs, sources, objectifs, produit/service choisi. Les formats carré et paysage ne deviennent plus systématiquement verticaux. Le document versionné conserve le contexte et l'identité ; les mots originaux de ce contexte ne sont pas des textes affichés.
@@ -161,6 +163,16 @@ Le devis natif conditionnel pour la chaîne 20 s / quatre plans est **1,272156 �
 
 ### Derniers contrôles et reste à réceptionner
 
-La CI de `4c056ac2` a donné **2 212 tests réussis, un échec / 292 fichiers** ; typage et Docker réussis, Theme Check/build ignorés après l'échec. Le test `song-composer.test.ts` exigeait un calage rythmique tout en utilisant tous les passages vidéo jusqu'à leur fin : ces contraintes ne permettent pas de rallonger un plan sans sortir de sa fenêtre. Le test vérifie maintenant le calage sur un montage composé où les plans filmés peuvent être raccourcis, et un cas séparé garantit la conservation de toutes les coupes lorsque le rythme dépasserait les passages approuvés. **14 tests / 2 fichiers réussis** après cet ajustement ; `npx tsc --noEmit` réussi. Aucun relâchement de la barrière de durée source. La dernière suite complète et la CI du code final sont consignées ci-dessous dès leur résultat effectif.
+La CI de `4c056ac2` a donné **2 212 tests réussis, un échec / 292 fichiers** ; typage et Docker réussis, Theme Check/build ignorés après l'échec. Le test `song-composer.test.ts` exigeait un calage rythmique tout en utilisant tous les passages vidéo jusqu'à leur fin : ces contraintes ne permettent pas de rallonger un plan sans sortir de sa fenêtre. Le test vérifie maintenant le calage sur un montage composé où les plans filmés peuvent être raccourcis, et un cas séparé garantit la conservation de toutes les coupes lorsque le rythme dépasserait les passages approuvés. **14 tests / 2 fichiers réussis** après cet ajustement ; `npx tsc --noEmit` réussi. Aucun relâchement de la barrière de durée source. Le résultat du dernier passage complet figure ci-dessous ; la CI distante est distinguée de ce résultat local.
 
 Restent hors validation : vrais fournisseurs et Pixabay en ligne, neuf photos/leur logo ONDE noir/vert privés absents (liste plus haut), naturalité vocale et contrôle continu humain de vraies scènes, facturation fournisseur/production, chemin initial automatique et UI anglaise avec une recette équivalente. Le défaut Theme Check `lookbook / niche` observé sur `c91812ed` reste à diagnostiquer dans son périmètre ; aucun thème modifié. UGC, publication sociale, nouveaux thèmes, merge et déploiement non engagés.
+
+### Gates finales exécutées
+
+`npx vitest run --maxWorkers=2` : **2 211 réussites, 3 ignorés, 292 fichiers réussis / 292, 906,25 s**, code applicatif/tests `8122545d`. Les trois tests ignorés dépendent de PHP, absent ici : deux dans `calendrier-reservation.test.ts`, un dans `cms-v2.test.ts`. Ce ne sont pas trois essais fournisseurs. Aucun nouveau dépassement de délai, aucun nouveau processus tué pour manque de mémoire dans cette passe. `npx tsc --noEmit` : succès, revérifié après les scripts de capture. `git diff --check` : succès.
+
+Les arbres `src/` et `tests/` sont identiques entre le commit applicatif et celui des captures `b65c231dbc205f8492994ee3afbf20638f7e6ebf` : [empreinte et résultats](../../reports/pr140-video-lots/code-tested.json). Les fichiers finaux de bilan ne changent pas le code testé.
+
+**CI distante finale non achevée** : les jobs du [passage des preuves](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/39280066718) sont encore `queued` lors du relevé ; aucun runner/démarrage de job n’est observable. Le commit documentaire final déclenche sa propre CI. Aucun succès global distant ni build de production final prétendu. Les échecs historiques détaillés plus haut restent visibles ; le défaut Theme Check observé n’est pas considéré corrigé par la suite Vitest.
+
+Livraison : branche `codex/publications-ia-qualite`, même PR #140 ouverte sans fusion. Captures, quatre MP4, SRT/VTT, huit enregistrements d’interactions, séquence d’interruption préservée, mesures, devis et ZIP consultable dans l’index. Aucun secret, base, session ou pack privé publié. Les fichiers de travail et la base isolée restent conservés localement ; aucun projet client utilisé.

@@ -32,3 +32,12 @@ npx tsc --noEmit : exit 0 (types-code-final.txt).
 DATA_DIR=<dossier isolé> npx tsx scripts/verify-video-ui-browser.ts : 4 ordinateurs + 4 mobiles, reprise sur résultats conservés, exit 0.
 DATA_DIR=<dossier isolé> npx tsx scripts/verify-video-final-files.ts : exit 0 ; 4 fichiers MP4 H264/AAC/20s/1080x1920/30fps, 4 phrases exportées chacun.
 DATA_DIR=<dossier isolé> npx tsx scripts/verify-video-proof-captures.ts : 8 captures après lecture et devis chargé ; consultation seule + calcul gratuit du devis ; aucun nouveau rendu.
+
+GATE FINALE : npx vitest run --maxWorkers=2 — exit 0.
+Test Files 292 passed (292)
+Tests 2211 passed | 3 skipped (2214)
+Start at 15:38:29 UTC, 19/10/2026
+Duration 906.25s
+Les 3 tests PHP ignorés : calendrier-reservation.test.ts (2), cms-v2.test.ts (1), PHP absent.
+npx tsc --noEmit revérifié après les scripts de capture : exit 0 (types-proof-final.txt).
+Aucun changement de src/tests depuis 8122545d.
