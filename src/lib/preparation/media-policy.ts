@@ -6,12 +6,15 @@ import { assetData, getAsset, type Asset } from "../library";
 import { json } from "../db";
 import type { Project } from "../projects";
 import type { VisualSlot } from "./types";
+import { inspectSiteMediaLineage } from "../project-handoff/media-pool";
 export const expectedMedia = (business: Project["business"]) => ({ images: 10, videos: business === "products" ? 1 : 2 });
 /** Ne compte ni originaux, ni brouillons, ni échecs, même si l'utilisateur a coché « vérifié ». */
 export function slotIssues(p: Pick<Project, "id" | "business">, slot: VisualSlot, a: Asset | null | undefined): string[] {
   const issues: string[] = [];
   if (!a || a.project_id !== p.id || a.deleted_at || a.status === "rejected") return ["Média absent, étranger ou refusé."];
   const meta = json<any>(a.meta, {}), kind = slot.kind ?? "image";
+  const lineage = inspectSiteMediaLineage(a, p.id, getAsset);
+  if (lineage.issue) issues.push(lineage.issue);
   if (a.kind !== kind) issues.push("Type de fichier incompatible avec cet emplacement.");
   if (meta.gate?.verdict !== "FINAL" || meta.gate?.fatal) issues.push("Contrôle final accepté requis.");
   if (a.origin === "upload" || /original|trial|essai/i.test(a.role ?? "")) issues.push("Un original ou essai ne compte pas parmi les médias finaux.");

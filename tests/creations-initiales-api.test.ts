@@ -9,6 +9,31 @@ import { GET, POST } from "@/app/api/projects/[id]/social/initial/route";
 import { initialCreativesView } from "@/lib/social-v2/initial";
 afterEach(() => vi.unstubAllGlobals());
 describe("Création initiale depuis les vraies API, sans fournisseurs", () => {
+    it.each(["photo", "logo", "too-many"])("entrée %s refusée avant de consommer l’abonnement ou sauvegarder un fichier", async (kind) => {
+        user = await createUser(`initial-invalid-${crypto.randomUUID()}@test.invalid`, "motdepasse-test", "Test isolé");
+        getSubscription(user.id);
+        run("UPDATE subscriptions SET owner_user_id=?,status='active',plan='dominer',billing='monthly' WHERE user_id=?", user.id, user.id);
+        syncAllowance(user.id);
+        const form = () => { const f = new FormData(); f.set('flow','preparation'); f.set('description','Description synthétique assez longue pour le test.'); return f; };
+        const f = form();
+        if (kind === 'too-many') for (let n=0;n<9;n++) f.append('photos',new File(['source synthétique'],'source.png',{type:'image/png'}));
+        else { f.append('photos',new File(['source synthétique'],'source.png',{type:'image/png'})); f.append(kind === 'logo' ? 'logo' : 'photos',new File(['fichier refusé'],'refuse.txt',{type:'text/plain'})); }
+        const r = await create(new Request('http://localhost/api/projects',{method:'POST',body:f}));
+        expect(r.status).toBe(kind === 'too-many' ? 400 : 415);
+        expect(all('SELECT id FROM projects WHERE user_id=?',user.id)).toHaveLength(0);
+        expect(all('SELECT id FROM assets WHERE user_id=?',user.id)).toHaveLength(0);
+        expect((await create(new Request('http://localhost/api/projects',{method:'POST',body:form()}))).status).toBe(200);
+    });
+    it('deux enregistrements simultanés ne créent qu’un projet pour l’abonnement', async () => {
+        user = await createUser(`initial-double-${crypto.randomUUID()}@test.invalid`, "motdepasse-test", "Test isolé"); getSubscription(user.id);
+        run("UPDATE subscriptions SET owner_user_id=?,status='active',plan='dominer',billing='monthly' WHERE user_id=?", user.id,user.id); syncAllowance(user.id);
+        const make = () => { const f=new FormData(); f.set('flow','preparation'); f.set('description','Description synthétique pour double clic.'); return new Request('http://localhost/api/projects',{method:'POST',body:f}); };
+        const rs=await Promise.all([create(make()),create(make())]);
+        expect(rs.filter(r=>r.status===200)).toHaveLength(1);
+        expect(rs.filter(r=>[402,409].includes(r.status))).toHaveLength(1);
+        expect(all('SELECT id FROM projects WHERE user_id=?',user.id)).toHaveLength(1);
+        expect(all('SELECT id FROM ai_calls WHERE user_id=?',user.id)).toHaveLength(0);
+    });
     it.each(["products", "services"])("nouveau projet %s : lot préparé sans bloquer ni lancer d’IA", async (business) => {
         vi.stubGlobal("fetch", () => { throw Error("Appel réseau interdit"); });
         user = await createUser(`initial-api-${crypto.randomUUID()}@test.invalid`, "motdepasse-test", "Test isolé");

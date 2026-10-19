@@ -5,7 +5,7 @@ import { HttpError } from "@/lib/auth";
 import { one, run } from "@/lib/db";
 import { attachStartRequest } from "@/lib/workflow";
 import { handle, ok, readForm } from "@/lib/http";
-import { existingSiteFromInput, hasProductInput, launchPipeline, readStartForm, saveStartFiles, serviceProfileFromInput } from "@/lib/project-start";
+import { existingSiteFromInput, hasProductInput, launchPipeline, readStartForm, saveStartFiles, validateStartFiles, serviceProfileFromInput } from "@/lib/project-start";
 import { saveServices, saveSettings } from "@/lib/projects";
 import { mergeServiceProfile } from "@/lib/engine/local";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
@@ -21,6 +21,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   }
   const form = await readForm(req, 260 * 1048576);
   const { input, files, logo } = readStartForm(form);
+  validateStartFiles(input.existingSite ? [] : files, logo);
   // « J'ai déjà mon site et mon logo » : le site est lu par le pilote (type d'activité et plateforme fixés ensuite).
   if (input.flow === "preparation") {
     requirePlan(user,p.id);

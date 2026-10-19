@@ -32,6 +32,7 @@ import {
   stageOf,
 } from "@/lib/preparation/store";
 import { latestContent } from "@/lib/seo-v2/store";
+import { tryStartInitialFromConsent } from "@/lib/social-v2/initial-authorization";
 export const runtime = "nodejs";
 const input = z.object({
   offerUrl: z.url().max(1000).optional().or(z.literal("")),
@@ -80,10 +81,11 @@ const input = z.object({
   }),
 });
 function view(projectId: string) {
+  const ready = readyContract(projectId);
   return {
     state: stateOf(projectId),
-    blockers: blockers(projectId),
-    ready: readyContract(projectId),
+    blockers: [...blockers(projectId), ...(ready?.handoff?.issues ?? [])],
+    ready,
     history: historyOf(projectId).map((s) => ({
       revision: s.revision,
       at: s.updatedAt,
@@ -224,6 +226,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       choiceId: b.choiceId,
       logoId: b.logoId,
     });
+    if (b.step === "brand") tryStartInitialFromConsent(p.id);
   }
   if (b.action === "identity") {
     if (!b.identity) throw new HttpError(400, "Identité manquante.");

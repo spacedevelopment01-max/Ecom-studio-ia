@@ -1,7 +1,7 @@
 import { assertCanSpend } from "../billing";
 import { assertAiAllowed } from "../ai/access";
 import { saveDirectionPreview } from "./direction-preview";
-import { currentSeries, directionSeries, reserveDirectionSeries, updateDirectionSeries, DirectionIdentitySchema } from "./direction-series";
+import { currentSeries, directionSeries, reserveDirectionSeries, updateDirectionSeries, DirectionIdentitySchema, directionSetIssues, directionNamingBrand } from "./direction-series";
 import { directionSeriesPaletteIssues } from "./direction-palette";
 import { imageUnavailableReason, mediaRouteFor } from "../ai/media-providers";
 /**
@@ -38,6 +38,8 @@ import { ARTWORK_NEVER, artworkBoard, artworkText, cleanArtwork, correctArtworkT
 import type { ArtworkReview, BrandBrief, Candidate, EngineRun, LogoReview, LogoStyle, ProposalResult, Territory } from "./types";
 
 export type EngineOptions = {
+  /** Contrat de série complet aussi avec un fournisseur injecté dans une vérification isolée. */
+  completeSeries?: boolean;
   expectedSeriesId?: string | null;
   renew?: boolean;
   correction?: string;
@@ -55,6 +57,7 @@ export type EngineOptions = {
 };
 
 const stopping = (e: unknown) => e instanceof JobCancelled || e instanceof JobPaused || e instanceof CostCapReached;
+const uncertain = (e: unknown) => (e as { uncertain?: boolean })?.uncertain === true || /résultat incertain|uncertain result/i.test((e as Error)?.message ?? "");
 
 /**
  * LOGO COMPLET par le modèle d'images (phase LA) : une seule image payée par territoire, gardée telle quelle
@@ -79,7 +82,7 @@ export async function developArtwork(ctx: JobContext, ai: LogoV2Ai, t: Territory
     const prev = opts.live?.state.directions.find((d) => d.id === t.id)?.progress;
     opts.live?.dir(t.id, { progress: { phase: "saved", partials: prev?.partials, atMs: prev?.atMs, streamed: prev?.streamed } });
   } catch (e) {
-    if (stopping(e)) throw e;
+    if (stopping(e) || uncertain(e)) throw e;
     const reason = (e as Error).message.slice(0, 300);
     notes.push(`${t.name} : logo complet non dessiné (${reason})`);
     opts.live?.dir(t.id, { status: "failed", reason: `image non dessinée : ${reason}` });
@@ -106,7 +109,7 @@ export async function developArtwork(ctx: JobContext, ai: LogoV2Ai, t: Territory
       d = gateArtwork(review, t, expected, c.attempt);
     } catch (e) {
       // Plafond atteint au moment de la relecture : l'image déjà payée est gardée (essai non contrôlé), jamais perdue.
-      if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+      if (e instanceof JobCancelled || e instanceof JobPaused || uncertain(e)) throw e;
       if (e instanceof CostCapReached) notes.push(`${t.name} : relecture non faite (${e.message})`);
       d = decide("logo_artwork", { checker: "ai", score: null, error: (e as Error).message.slice(0, 200) }, { attempt: c.attempt });
     }
@@ -315,6 +318,14 @@ function withSeriesCap<T>(ctx: JobContext, quoteMicro: number, capMicro: number 
 
 /** Série complète de propositions pour un projet (tâche de fond « brand.logo.v2 »), dans la limite de son devis. */
 export async function runLogoEngineV2(ctx: JobContext, projectId: string, opts: EngineOptions = {}): Promise<EngineRun> {
+  if (opts.ai === undefined || opts.completeSeries) {
+    const { stateOf, assertFresh } = await import("../preparation/engine");
+    const preparation = stateOf(projectId);
+    if (preparation?.stages.brand) assertFresh(projectId, preparation, "brand");
+  }
+  const receipt = ctx.checkpoint["logo:uncertain"] as { reservationIds?: string[] } | undefined;
+  const reconciled = !!receipt?.reservationIds?.length && receipt.reservationIds.every(rid => one<{ status: string }>("SELECT status FROM ai_reservations WHERE id=? AND project_id=?", rid, projectId)?.status === "reconciled");
+  if ((receipt && !reconciled) || one("SELECT id FROM ai_reservations WHERE project_id=? AND status='uncertain' AND job_id IN (SELECT id FROM jobs WHERE project_id=? AND (type LIKE 'brand.logo%' OR (type='project.prepare' AND json_extract(payload,'$.action')='logo'))) LIMIT 1", projectId, projectId)) throw new UserFacingError("Un résultat de logo reste incertain : vérifiez la consommation chez le fournisseur avant toute reprise. Aucun nouveau dessin ni relais lancé.");
   if (opts.ai === undefined && !mediaRouteFor("logo", { text: true })) throw new UserFacingError(imageUnavailableReason("logo") || "Dessin du logo en attente.");
   let quote: ReturnType<typeof logoSeriesQuote>;
   try {
@@ -324,12 +335,12 @@ export async function runLogoEngineV2(ctx: JobContext, projectId: string, opts: 
     liveTracker(projectId, ctx.job.id).set({ stage: "failed", error: (e as Error).message.slice(0, 500) });
     throw e;
   }
-  if (opts.ai === undefined) {
+  if (opts.ai === undefined || opts.completeSeries) {
     const p = loadProject(projectId);
     assertAiAllowed(p.userId, projectId);
     assertCanSpend(p.userId, opts.capMicro ?? quote.maxMicro, projectId);
-    if (!llmConfigured()) throw new UserFacingError("Fournisseur de stratégie/vision indisponible : les droits de série sont conservés.");
-    if (quote.mode !== "artwork") throw new UserFacingError("Dessin du logo en attente : aucun logo local de remplacement.");
+    if (opts.ai === undefined && !llmConfigured()) throw new UserFacingError("Fournisseur de stratégie/vision indisponible : les droits de série sont conservés.");
+    if (opts.ai === undefined && quote.mode !== "artwork") throw new UserFacingError("Dessin du logo en attente : aucun logo local de remplacement.");
     reserveDirectionSeries(projectId, ctx.job.id, { renew: opts.renew ?? ctx.payload.renew, correction: opts.correction ?? ctx.payload.correction, ...("expectedSeriesId" in opts ? { expectedId: opts.expectedSeriesId } : "expectedSeriesId" in ctx.payload ? { expectedId: ctx.payload.expectedSeriesId } : {}) });
   }
   return withSeriesCap(ctx, quote.maxMicro, opts.capMicro, () => seriesRun(ctx, projectId, opts));
@@ -342,6 +353,7 @@ async function seriesRun(ctx: JobContext, projectId: string, opts: EngineOptions
   } catch (e) {
     // Pause et annulation : la tâche reprendra ou s'arrête à la demande du client (pas une erreur).
     if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+    if (uncertain(e)) ctx.save("logo:uncertain", { at: Date.now(), reason: (e as Error).message.slice(0, 400), reservationIds: all<{ id: string }>("SELECT id FROM ai_reservations WHERE project_id=? AND job_id=? AND status='uncertain'", projectId, ctx.job.id).map(r => r.id) });
     // Toute autre interruption est ÉCRITE (étape « échec » et raison) avant de remonter : jamais une barre qui disparaît.
     live.set({ stage: "failed", error: (e as Error).message.slice(0, 500) });
     for (const d of live.state.directions) if (d.status === "waiting" || d.status === "drawing" || d.status === "checking") live.dir(d.id, { status: "failed", reason: "série interrompue" });
@@ -350,7 +362,8 @@ async function seriesRun(ctx: JobContext, projectId: string, opts: EngineOptions
 }
 
 async function seriesSteps(ctx: JobContext, projectId: string, opts: EngineOptions, live: LiveTracker): Promise<EngineRun> {
-  const p = loadProject(projectId);
+  const loaded = loadProject(projectId);
+  const p = opts.ai === undefined || opts.completeSeries ? { ...loaded, brand: directionNamingBrand(projectId) } : loaded;
   const brief = brandDiscovery(p, { style: opts.style, instructions:opts.instructions });
   const ai = opts.ai !== undefined ? opts.ai : llmConfigured() ? realLogoV2Ai(ctx, { userId: p.userId, projectId }) : null;
   const notes: string[] = [];
@@ -362,7 +375,7 @@ async function seriesSteps(ctx: JobContext, projectId: string, opts: EngineOptio
     if ("unavailable" in r) notes.push(`logo complet par l'IA d'images indisponible (${r.unavailable}) — logos construits avec de vraies polices`);
     else art = { provider: `${r.provider}:${r.model}` };
   }
-  const strict = opts.ai === undefined;
+  const strict = opts.ai === undefined || !!opts.completeSeries;
   if (strict && (!ai || !art)) throw new UserFacingError("Directions IA en attente : texte/vision ou dessin du modèle demandé indisponible. Aucun remplacement local.");
   const series = strict ? currentSeries(projectId) : null;
   const n = strict ? 3 : opts.territories ?? (art ? ARTWORK_SERIES : BUILT_SERIES);
@@ -398,6 +411,8 @@ async function seriesSteps(ctx: JobContext, projectId: string, opts: EngineOptio
   }
   if (series) {
     if (sel.kept.length !== 3 || sel.kept.some(t => !DirectionIdentitySchema.safeParse(t.identity).success)) throw new UserFacingError("Série incomplète : trois directions complètes et distinctes sont nécessaires avant le dessin. Aucun remplissage local.");
+    const identityIssues = directionSetIssues(sel.kept);
+    if (identityIssues.length) throw new UserFacingError(`Identités à revoir avant tout dessin : ${identityIssues.join(" ")} Vos propositions et votre identité active restent conservées.`);
     const paletteIssues = directionSeriesPaletteIssues(sel.kept.map(t => t.identity!));
     if (paletteIssues.length) throw new UserFacingError(`Palettes à revoir avant tout dessin : ${paletteIssues.join(" ")} Aucun dessin conservé n'est supprimé ; aucune recoloration automatique.`);
     if (!series.territories.length) updateDirectionSeries(projectId, series.id, s => { s.territories = sel.kept; });
@@ -407,7 +422,11 @@ async function seriesSteps(ctx: JobContext, projectId: string, opts: EngineOptio
   live.set({ stage: "images" });
   const results: ProposalResult[] = [];
   for (const [i, t] of sel.kept.entries()) {
-    if (series?.directions.some(d => d.id === t.id)) continue; // Réparation : aucun dessin déjà accepté repayé.
+    const kept = series?.directions.find(d => d.id === t.id);
+    if (kept) {
+      live.dir(t.id, { status: "done", verdict: "FINAL", assetId: kept.logoId, reason: "Direction contrôlée réutilisée, aucun nouveau dessin.", progress: { phase: "saved" } });
+      continue; // Réparation : aucun dessin déjà accepté repayé.
+    }
 
     if (stoppedByCostCap) {
       live.dir(t.id, { status: "failed", reason: "non faite : plafond de dépense atteint" });
@@ -425,6 +444,22 @@ async function seriesSteps(ctx: JobContext, projectId: string, opts: EngineOptio
         for (const x of rs.slice(1)) if (x.verdict === "FINAL" || x.verdict === "PROVISIONAL") Object.assign(x, { verdict: "REJECTED", reason: `${x.reason} — un autre essai de la même direction a été retenu` });
         results.push(...rs);
         live.dir(t.id, { status: "done", verdict: r.verdict, score: r.score, reason: r.reason });
+        if (series) {
+          const h = r.candidate.artwork?.hash;
+          const previousHashes = all<{ h: string }>("SELECT json_extract(meta,'$.artwork.hash') h FROM assets WHERE project_id=? AND role='logo-v2' AND deleted_at IS NULL AND status!='rejected' AND json_extract(meta,'$.gate.verdict')='FINAL'", projectId).map(x => x.h).filter(Boolean);
+          if (h && previousHashes.some(prior => hashDistance(prior, h) <= SAME_LOGO_BITS)) {
+            Object.assign(r, { verdict: "REJECTED", codes: [...r.codes, "duplicate"], reason: "Copie quasi identique d’une direction déjà conservée : pas une création distincte." });
+            live.dir(t.id, { verdict: "REJECTED", reason: r.reason });
+          }
+          // Chaque réponse est enregistrée AVANT la prochaine génération : une
+          // interruption ultérieure ne fait pas perdre ni racheter les bons dessins.
+          for (const [j, result] of rs.entries()) result.assetId = await ctx.step(`v2:save:${t.id}:${j}`, () => saveProposal(ctx, p.userId, projectId, result));
+          if (r.verdict === "FINAL" && r.assetId && t.identity) {
+            const direction = { id: t.id, logoId: r.assetId, label: t.name, concept: t.concept, identity: t.identity, territory: t, version: 1 };
+            const previewId = await ctx.step(`direction-preview:${t.id}`, () => saveDirectionPreview(projectId, p.userId, series.name, direction));
+            updateDirectionSeries(projectId, series.id, s => { if (!s.directions.some(d => d.id === direction.id)) s.directions.push({ ...direction, previewId }); });
+          }
+        }
       } else if (live.state.directions.find((d) => d.id === t.id)?.status !== "failed") live.dir(t.id, { status: "failed", reason: notes.filter((x) => x.startsWith(`${t.name} :`)).at(-1)?.slice(t.name.length + 3) ?? "aucune proposition construite" });
     } catch (e) {
       if (e instanceof CostCapReached) {
@@ -439,6 +474,7 @@ async function seriesSteps(ctx: JobContext, projectId: string, opts: EngineOptio
   const priorHashes = strict ? all<{ h: string }>("SELECT json_extract(meta,'$.artwork.hash') h FROM assets WHERE project_id=? AND role='logo-v2' AND deleted_at IS NULL AND status!='rejected' AND json_extract(meta,'$.gate.verdict')='FINAL' AND json_extract(meta,'$.run')!=?", projectId, ctx.job.id).map(r => r.h).filter(Boolean) : [];
   // Copies : une image quasi identique à une autre de la série n'est jamais présentée comme une création distincte.
   for (const [i, r] of results.entries()) {
+    if (series) continue; // Contrôle fait avant la sauvegarde progressive de chaque direction.
     const h = r.candidate.artwork?.hash;
     const twin = h ? results.slice(0, i).find((o) => o.candidate.artwork?.hash && hashDistance(o.candidate.artwork.hash, h) <= SAME_LOGO_BITS) : null;
     if (!twin && !(h && priorHashes.some(prior => hashDistance(prior, h) <= SAME_LOGO_BITS))) continue;
@@ -471,7 +507,7 @@ async function seriesSteps(ctx: JobContext, projectId: string, opts: EngineOptio
   const discarded = results.filter((r) => r.verdict !== "FINAL" && r.verdict !== "PROVISIONAL");
   const ids = await ctx.step("v2:save", async () => {
     const out: Record<string, string> = {};
-    for (const r of results) out[r.territory.id] = await saveProposal(ctx, p.userId, projectId, r);
+    for (const r of results) out[r.territory.id] = r.assetId ?? await saveProposal(ctx, p.userId, projectId, r);
     return out;
   });
   for (const r of results) {
@@ -484,7 +520,8 @@ async function seriesSteps(ctx: JobContext, projectId: string, opts: EngineOptio
   remember(projectId, { kind: "artifact", key: "logo_v2_run", value: JSON.stringify({ runId: run.runId, at: Date.now(), style: brief.style, territories: run.territories.map((t) => ({ id: t.id, name: t.name, markType: t.markType, style: t.style, source: t.source })), shown: shown.map((r) => r.assetId), studio: studio.map((r) => r.assetId), discarded: discarded.map((r) => r.assetId), rejected: sel.rejected, failures, ai: aiState, art: art?.provider ?? null, stoppedByCostCap, best, notes: notes.slice(0, 20) }), source: ai ? "ai" : "local" });
   if (series) {
     for (const r of shown) if (r.assetId && r.territory.identity) {
-      const direction = { id: r.territory.id, logoId: r.assetId, label: r.territory.name, concept: r.territory.concept, identity: r.territory.identity, territory: r.territory, version: 1 };
+      const territory = sel.kept.find(t => r.territory.id === t.id || r.territory.id === `${t.id}-relais`)!;
+      const direction = { id: territory.id, logoId: r.assetId, label: territory.name, concept: territory.concept, identity: territory.identity!, territory, version: 1 };
       const previewId = await ctx.step(`direction-preview:${direction.id}`, () => saveDirectionPreview(projectId, p.userId, series.name, direction));
       updateDirectionSeries(projectId, series.id, s => { if (!s.directions.some(d => d.id === direction.id)) s.directions.push({ ...direction, previewId }); });
     }

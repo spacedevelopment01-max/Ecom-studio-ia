@@ -11,6 +11,7 @@ export function DirectionCards({ series, selected, disabled, onChoose }: { serie
   return <section className="grid min-w-0 gap-4" data-direction-series={series.id}>
     <p role="status">{series.name} · {t("Série", "Series")} {series.ordinal} · {series.directions.length}/3 {series.status === "complete" ? t("directions complètes", "complete directions") : t("— série incomplète", "— incomplete series")}</p>
     {!!issues.length && <p role="alert">{t("Palettes à revoir : couleurs répétées ou associations illisibles. Les versions existantes sont conservées ; aucun choix d’ensemble incomplet.", "Palettes need review: repeated colours or unreadable combinations. Existing versions are preserved; an incomplete set cannot be selected.")}</p>}
+    {!!series.integrityIssues?.length && <p role="alert">{series.integrityIssues.join(" ")}</p>}
     <div className="grid min-w-0 gap-4 lg:grid-cols-3">
       {series.directions.map(d => <article key={d.id} className="min-w-0 overflow-hidden rounded-xl border border-line p-4" data-direction={d.id}>
         <img src={`/api/files/${d.logoId}`} alt={`${series.name} — ${d.label}`} className="aspect-square w-full object-contain" />
@@ -31,7 +32,7 @@ export function DirectionCards({ series, selected, disabled, onChoose }: { serie
           <div><dt>{t("Langage graphique", "Graphic language")}</dt><dd>{d.identity.graphicLanguage}</dd></div>
         </dl>
         <ul className="mb-3 list-inside list-disc text-sm">{d.identity.rules.map((rule, i) => <li key={i}>{rule}</li>)}</ul>
-        <Button disabled={disabled || series.status !== "complete" || !!issues.length} onClick={() => onChoose(d.logoId)} variant={selected === d.logoId ? "primary" : "secondary"}>{selected === d.logoId ? t("Direction choisie", "Selected direction") : t("Choisir cette direction complète", "Choose this complete direction")}</Button>
+        <Button disabled={disabled || series.status !== "complete" || !!issues.length} onClick={() => onChoose(d.logoId)} variant={selected === d.logoId ? "primary" : "secondary"}>{selected === d.logoId ? t("Proposition choisie", "Selected proposal") : t("Choisir cette direction complète", "Choose this complete direction")}</Button>
       </article>)}
     </div>
   </section>;

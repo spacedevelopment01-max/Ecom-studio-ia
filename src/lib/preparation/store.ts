@@ -119,3 +119,17 @@ export function stageOf<K extends Step>(s: State, step: K): Stage<K> {
     );
   return x as Stage<K>;
 }
+/** Une retouche dans Logo/Identité doit aussi être visible dans le parcours, sans réécriture des contenus. */
+export function synchronizeBrandEdit(projectId: string, brand: import("../project-types").Brand) {
+  const previous = stateOf(projectId);
+  if (!previous?.stages.brand || stableHash(previous.stages.brand.data.proposal) === stableHash(brand)) return previous;
+  return commitState(projectId, previous.revision, s => {
+    const st = stageOf(s, "brand");
+    st.data.proposal = structuredClone(brand);
+    st.data.identityConfirmed = ["validated", "provided"].includes(brand.nameStatus);
+    st.data.selectedLogo = brand.logo.proposalId ?? brand.logo.assetId;
+    st.status = "draft";
+    delete st.approvedAt;
+    invalidateAfter(s, "brand");
+  });
+}

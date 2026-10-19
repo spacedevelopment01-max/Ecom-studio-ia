@@ -127,7 +127,7 @@ it.each(["missing-slot", "missing-text", "repeated-text", "unknown-block", "unkn
   if (defect === "missing-text") out.blocks.pop();
   if (defect === "repeated-text") out.blocks.push(structuredClone(out.blocks[0]));
   if (defect === "unknown-block") out.blocks[0].blockIds = ["inexistant"];
-  if (defect === "unknown-theme") out.recommendation.recommendedId = "theme-invente";
+  if (defect === "unknown-theme") (out.recommendation as any).recommendedReferenceId = "theme-invente";
   if (defect === "unrelated-slot") out.blocks[0].mediaSlotKeys = [content.slots.find(s => s.pageKey !== "home")!.key];
   if (defect === "same-scene") out.slots[1].scene = out.slots[0].scene;
   if (defect === "missing-contact") out.blocks = out.blocks.filter(b => b.pageKey !== "contact");
@@ -138,16 +138,17 @@ it("changer une recommandation ne remplace pas le choix validé et ne construit 
   const { content, out } = await editorialFixture(f.pid);
   const bound = bindEditorial(content, out, recommendationCatalogue(loadProject(f.pid)));
   commitState(f.pid, stateOf(f.pid)!.revision, s => { draft(s, "content", bound); });
-  chooseRecommendedTheme(f.pid, stateOf(f.pid)!.revision, "clinique");
+  commitState(f.pid, stateOf(f.pid)!.revision, s => { s.stages.content!.data.recommendation!.selectedId = "clinique"; }); // Ancien projet : lecture historique uniquement, jamais nouvelle sélection.
   const changed = bindEditorial(stateOf(f.pid)!.stages.content!.data, out, recommendationCatalogue(loadProject(f.pid)));
   expect(changed.recommendation!.selectedId).toBe("clinique");
   expect(readyContract(f.pid)).toBeNull();
 });
-it("thèmes hors forfait ou en cours exclus du choix disponible", async () => {
+it("seules les quatre références actives sont exposées, sans fausse installation disponible", async () => {
   const f = await fixture(); validatedBrand(f.pid, f.input); run("UPDATE subscriptions SET plan='creer' WHERE owner_user_id=?", f.uid);
   const catalogue = recommendationCatalogue(loadProject(f.pid));
-  expect(catalogue.filter(x => x.status === "available")).toHaveLength(10);
-  expect(catalogue.every(x => x.status !== "available" || !!x.id)).toBe(true);
+  expect(catalogue.map(x => x.id)).toEqual(["fraise", "onde", "orbe", "atelier-rive"]);
+  expect(catalogue.filter(x => x.status === "available")).toHaveLength(0);
+  expect(catalogue.every(x => x.engineThemeId === null)).toBe(true);
   expect(catalogue.some(x => x.status === "incompatible")).toBe(true);
 });
 it("recherche : dix pages lues, liens et contenus dupliqués éliminés ; limite partielle explicite", async () => {

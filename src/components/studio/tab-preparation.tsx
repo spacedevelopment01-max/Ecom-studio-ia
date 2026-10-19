@@ -1,6 +1,8 @@
 "use client";
 import { LogoV2Panel } from "./logo-v2-panel";
 import { InitialCreatives } from "./initial-creatives";
+import { InitialAuthorization } from "./initial-authorization";
+import { PreparationHandoff } from "./preparation-handoff";
 import {
   cloneElement,
   isValidElement,
@@ -32,7 +34,9 @@ import {
   type State,
   type Step,
   type VisualSlot,
+  type ThemeRecommendation,
 } from "@/lib/preparation/types";
+import { REFERENCE_THEMES } from "@/lib/project-handoff/categories";
 function Button(props: ComponentProps<typeof BaseButton>) {
   return (
     <BaseButton
@@ -88,6 +92,22 @@ const LABEL: Record<Step, [string, string]> = {
   content: ["Contenus et plan du site", "Content and site plan"],
   media: ["Visuels et préparation finale", "Visuals and final preparation"],
 };
+function RecommendedReferences({ recommendation: r }: { recommendation: ThemeRecommendation }) {
+  const t = useT();
+  const references = [r.recommendedReferenceId, ...(r.alternativesReferenceIds ?? [])].filter((referenceId): referenceId is NonNullable<typeof referenceId> => !!referenceId);
+  const active = REFERENCE_THEMES.filter(reference => references.includes(reference.referenceId));
+  return <section className="grid gap-3 rounded-xl border border-line p-4" data-recommendation-references>
+    <h3 className="font-semibold">{t("Références de thème pour votre offre", "Theme references for your offer")}</h3>
+    {active.map(reference => <div key={reference.referenceId} data-recommendation-reference={reference.referenceId}>
+      <p className="font-medium">{reference.name}{r.recommendedReferenceId === reference.referenceId ? t(" — référence conseillée", " — recommended reference") : ""}</p>
+    </div>)}
+    {r.reasons.map((reason, i) => <p key={i} className="text-sm">{reason}</p>)}
+    {r.status === "clarification_required"
+      ? <p className="text-sm" role="status" data-recommendation-clarification>{t("Confirmez le type de site adapté à votre offre. Vos textes et médias restent enregistrés ; aucune ancienne démonstration n’est choisie à votre place.", "Confirm the website category that fits your offer. Your copy and media remain saved; no former demonstration is selected for you.")}</p>
+      : <p className="text-sm" role="status" data-recommendation-pending>{t("Le raccordement de ces références au moteur est en cours. Vous pouvez préparer et valider vos textes et médias ; aucun thème n’est installé ni présenté comme construit à cette étape.", "These references are being connected to the engine. You can prepare and approve copy and media; no theme is installed or presented as built at this stage.")}</p>}
+    {r.selectedId && <p className="text-xs">{t("Votre ancien choix reste conservé avec votre projet et ses versions. Il ne fait plus partie des nouvelles sélections.", "Your former selection is preserved with the project and its versions. It is no longer offered for new selections.")}</p>}
+  </section>;
+}
 export default function TabPreparation() {
   const { id, reload: reloadProject } = useProject();
   const t = useT();
@@ -276,6 +296,8 @@ export default function TabPreparation() {
   return (
     <div className="grid gap-5" data-preparation>
       <InitialCreatives onChange={reload}/>
+      <InitialAuthorization/>
+      {(active === 'content' || active === 'media') && <PreparationHandoff onChange={reload}/>}
       <Card className="p-5 sm:p-7">
         <p className="text-sm text-muted">
           {t(
@@ -284,7 +306,7 @@ export default function TabPreparation() {
           )}
         </p>
         <h1 className="font-display text-3xl">
-          {data.ready
+          {data.ready?.handoff?.status === 'ready'
             ? t(
               "Votre projet est prêt pour le thème",
               "Your project is ready for the theme",
@@ -1003,8 +1025,8 @@ export default function TabPreparation() {
                     data-approve-brand
                   >
                     {t(
-                      identity.seriesId ? "Valider cette direction complète" : "Valider la marque et ce logo",
-                      identity.seriesId ? "Approve this complete direction" : "Approve the brand and this logo",
+                      identity.seriesId ? state.stages.brand?.status === "approved" ? "Identité complète validée" : "Valider les retouches de l’identité active" : "Valider la marque et ce logo",
+                      identity.seriesId ? state.stages.brand?.status === "approved" ? "Complete identity approved" : "Approve active identity edits" : "Approve the brand and this logo",
                     )}
                   </Button>
                 </>
@@ -1036,11 +1058,7 @@ export default function TabPreparation() {
               <>
                 {state.stages.content.data.pending && <p role="alert" className="rounded-xl border border-warn p-3">{state.stages.content.data.pending}</p>}
                 <p role="status">{t("Les textes à compléter ne peuvent pas être validés. Valider un brouillon ne remplace pas une relecture éditoriale. Certains textes des sections restent à relire avant de créer le thème.", "Incomplete copy cannot be approved. Approving a draft does not replace editorial review. Some section copy still needs review before building the theme.")}</p>
-                {state.stages.content.data.recommendation && <section className="grid gap-3 rounded-xl border border-line p-4">
-                  <h3 className="font-semibold">{t("Choisir le thème recommandé avant composition", "Choose a recommended theme before composition")}</h3>
-                  {[{ id: state.stages.content.data.recommendation.recommendedId, reasons: state.stages.content.data.recommendation.reasons }, ...state.stages.content.data.recommendation.alternatives].map(option => <div key={option.id}><p>{state.stages.content?.data.recommendation?.catalogue.find(x => x.id === option.id)?.name || option.id} — {option.reasons.join(" · ")}</p><Button variant="secondary" disabled={busy || working} onClick={() => send({ action: "theme-choice", choiceId: option.id })}>{state.stages.content?.data.recommendation?.selectedId === option.id ? t("Choisi", "Selected") : t("Choisir", "Choose")}</Button></div>)}
-                  <p className="text-xs">{t("Proposition argumentée, aucune composition ni publication lancée.", "Reasoned proposal; no composition or publication started.")}</p>
-                </section>}
+                {state.stages.content.data.recommendation && <RecommendedReferences recommendation={state.stages.content.data.recommendation} />}
                 <ol className="grid gap-3">
                   {state.stages.content.data.pages.map((page) => (
                     <li
@@ -1261,11 +1279,11 @@ export default function TabPreparation() {
       )}
       <Card className="p-5">
         <h2 className="font-display text-2xl">
-          {data.ready
+          {data.ready?.handoff?.status === 'ready'
             ? t("Prêt pour le moteur de thèmes", "Ready for the theme engine")
             : t("Ce qui reste avant le thème", "What remains before the theme")}
         </h2>
-        {data.ready ? (
+        {data.ready?.handoff?.status === 'ready' ? (
           <>
             <p className="mt-2">
               {t(

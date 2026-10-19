@@ -15,6 +15,7 @@ export function InitialCreatives({ ads = false, onChange }: {
     const { id } = useProject(), t = useT(), url = `/api/projects/${id}/social/initial`;
     const { data, reload } = useApi<{
         initial: View | null;
+        authorization?: { status: string };
     }>(url, { poll: 3000 });
     const [quote, setQuote] = useState<Quote | null>(null), [error, setError] = useState(""), [busy, setBusy] = useState(false);
     const initial = data?.initial;
@@ -50,7 +51,7 @@ export function InitialCreatives({ ads = false, onChange }: {
   {initial.reason && <p className="mt-2 text-sm" role="status">{initial.reason}</p>}
   {initial.legacy && !initial.ready && <Button style={buttonStyle} className="mt-3" disabled={busy} onClick={() => act("confirm-context")} data-initial-confirm>{t("Je confirme le brief, la stratégie et la charte pour les vingt créations", "Confirm brief, strategy and identity for the twenty creations")}</Button>}
   {initial.actualBudgetPct != null && initial.actualBudgetPct > 0 && <p className="mt-2 text-sm">{t("Consommation réelle de l’ensemble", "Actual set usage")} : {initial.actualBudgetPct.toFixed(2)} % {t("du budget IA du mois", "of monthly AI budget")}</p>}
-  {initial.ready && initial.status !== "complete" && initial.status !== "running" && <Button style={buttonStyle} className="mt-3" disabled={busy} onClick={() => act("quote")} data-initial-quote>{t("Devis global des créations manquantes", "Global quote for missing creations")}</Button>}
+  {initial.ready && initial.status !== "complete" && initial.status !== "running" && data?.authorization?.status !== 'authorized' && <Button style={buttonStyle} className="mt-3" disabled={busy} onClick={() => act("quote")} data-initial-quote>{t("Devis global des créations manquantes", "Global quote for missing creations")}</Button>}
   {quote && <div className="mt-3 text-sm" data-initial-estimate><p>{quote.organicMissing} {t("publications", "posts")} + {quote.adsMissing} {t("publicités", "ads")} = {quote.missing} {t("créations indépendantes", "independent creations")}</p><p>{t("Coût probable", "Likely cost")} : {quote.probableBudgetPct == null ? "—" : `${quote.probableBudgetPct.toFixed(1)} %`} · {t("plafond avec corrections", "cap including corrections")} : {quote.maxBudgetPct == null ? "—" : `${quote.maxBudgetPct.toFixed(1)} %`} {t("du budget IA du mois", "of monthly AI budget")}</p><p className="mt-1">{quote.note}</p><Button style={buttonStyle} className="mt-2" disabled={busy || quote.maxBudgetPct == null} onClick={() => act("generate")} data-initial-generate>{t("J’accepte le devis global et lance l’ensemble initial", "Accept global quote and start initial set")}</Button></div>}
   {group.slots.length > 0 && <ul className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-5">{group.slots.map(s => <li key={s.index}>{s.index % 10 + 1} · {s.aspect} · {s.accepted ? t("acceptée", "accepted") : t("à terminer", "unfinished")}</li>)}</ul>}
   {error && <p className="mt-2 text-sm text-red-700" role="alert">{error}</p>}

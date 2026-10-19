@@ -1,6 +1,6 @@
 /** Vrai moteur/stockage/charte, fournisseurs et verdicts INJECTÉS. Aucune qualité créative réelle démontrée. */
 import { describe, it, expect, vi } from "vitest";
-const control = vi.hoisted(() => ({ accepted: ["t1"] as string[], draws: [] as string[], copiedPalettes: false }));
+const control = vi.hoisted(() => ({ accepted: ["t1"] as string[], draws: [] as string[], copiedPalettes: false, failAt: null as null | string, uncertain: false, relayCalls: 0, enableRelay: false }));
 vi.mock("@/lib/ai/llm", async original => ({ ...await original<object>(), llmConfigured: () => true }));
 vi.mock("@/lib/ai/media-providers", async original => ({ ...await original<object>(), mediaRouteFor: (usage: string) => usage === "logo" ? { provider: "openai", model: "gpt-image-2.5-sunburst", reason: "Route injectée de test" } : null }));
 vi.mock("@/lib/logo-v2/quote", () => ({ ARTWORK_SERIES: 3, BUILT_SERIES: 4, logoSeriesQuote: () => ({ mode: "artwork", creations: 3, images: 3, imageMaxMicro: 10000, maxMicro: 100000 }), logoRedrawQuote: () => null }));
@@ -9,8 +9,14 @@ vi.mock("@/lib/logo-v2/artwork", async original => ({ ...await original<object>(
 vi.mock("@/lib/logo-v2/ai", async original => ({ ...await original<object>(), realLogoV2Ai: () => ({
   territories: async (brief: BrandBrief) => localTerritories(brief).slice(0, 3).map((t, i) => { const identity = directionIdentity(i); return { ...t, identity: control.copiedPalettes ? { ...identity, palette: { ...identity.palette, secondary: "#bfd0b4", accent: "#9b4f2c" } } : identity, source: "ai" }; }),
   artworkRoute: () => ({ provider: "openai", model: "gpt-image-2.5-sunburst" }),
+  relayRoute: () => control.enableRelay ? { provider: "simulation", model: "injected-relay" } : { unavailable: "Relais désactivé dans ce scénario." },
+  drawArtworkRelay: async () => { control.relayCalls++; throw new Error("Relais simulé qui ne devait pas être appelé après un résultat incertain."); },
   drawArtwork: async (t: Territory) => {
     control.draws.push(t.id);
+    if (t.id === control.failAt) {
+      if (control.uncertain) throw Object.assign(new Error("Résultat incertain simulé : consommation à vérifier."), { uncertain: true });
+      throw new JobCancelled("Interruption simulée après la première direction enregistrée.");
+    }
     const n = Number(t.id.slice(1));
     const cells = Array.from({ length: 30 }, (_, i) => `<rect x="${80 + (i * (113 + n * 71)) % 800}" y="${80 + (i * (79 + n * 37)) % 650}" width="${20 + (i * 23) % 120}" height="${20 + (i * 31) % 100}" fill="${i % n === 0 ? "#244c45" : "#a26531"}"/>`).join("");
     return sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024"><rect width="1024" height="1024" fill="white"/>${cells}<text x="120" y="920" font-size="38">SIMULATION UNIQUEMENT ${n}</text></svg>`)).png().toBuffer();
@@ -29,7 +35,7 @@ import { validatedBrand, directionIdentity } from "./preparation-mission-fixture
 import { currentSeries, directionSeries } from "@/lib/logo-v2/direction-series";
 import { runForUser } from "@/lib/ai/access";
 import { all, one, run } from "@/lib/db";
-import { JobContext, enqueue, getJob } from "@/lib/jobs";
+import { JobContext, JobCancelled, enqueue, getJob } from "@/lib/jobs";
 import { loadProject } from "@/lib/projects";
 import { runRequestPlan } from "@/lib/orchestrator/execute";
 import { prepareWorkflow, startWorkflow, runWorkflow, loadWorkflow } from "@/lib/workflow";
@@ -43,6 +49,33 @@ const job = (uid: string, pid: string, type = "brand.logo.v2", payload: object =
   return new JobContext(getJob(j.id)!);
 };
 describe("trois directions, reprise, sélection et charte : chaîne réelle avec fournisseur injecté", () => {
+  it("une interruption conserve la première direction avant les appels suivants et la reprise ne la redessine pas", async () => {
+    const f = await fixture(); validatedBrand(f.pid, f.input); control.draws = []; control.accepted = ["t1", "t2", "t3"]; control.failAt = "t2";
+    try {
+      await expect(runForUser(f.uid, () => runLogoEngineV2(job(f.uid, f.pid), f.pid), "normal", f.pid)).rejects.toThrow(/Interruption simulée/);
+      const kept = currentSeries(f.pid)!.directions[0];
+      expect(currentSeries(f.pid)?.directions).toHaveLength(1);
+      control.failAt = null;
+      await runForUser(f.uid, () => runLogoEngineV2(job(f.uid, f.pid, "brand.logo.v2", { correction: "Reprendre uniquement après l’interruption du traitement." }), f.pid), "normal", f.pid);
+      expect(control.draws).toEqual(["t1", "t2", "t2", "t3"]);
+      expect(currentSeries(f.pid)?.directions[0].logoId).toBe(kept.logoId);
+      expect(currentSeries(f.pid)?.status).toBe("complete");
+    } finally { control.failAt = null; control.uncertain = false; }
+  });
+  it("un résultat incertain arrête la série sans relais ni reprise du même appel ; les directions acceptées restent enregistrées", async () => {
+    const f = await fixture(); validatedBrand(f.pid, f.input); control.draws = []; control.accepted = ["t1", "t2", "t3"]; control.failAt = "t2"; control.uncertain = true; control.enableRelay = true; control.relayCalls = 0;
+    const ctx = job(f.uid, f.pid);
+    try {
+      await expect(runForUser(f.uid, () => runLogoEngineV2(ctx, f.pid), "normal", f.pid)).rejects.toThrow(/incertain/);
+      expect(currentSeries(f.pid)?.directions).toHaveLength(1);
+      expect(ctx.checkpoint["logo:uncertain"]).toBeTruthy();
+      control.failAt = null;
+      await expect(runForUser(f.uid, () => runLogoEngineV2(ctx, f.pid), "normal", f.pid)).rejects.toThrow(/incertain/);
+      expect(control.draws).toEqual(["t1", "t2"]);
+      expect(control.relayCalls).toBe(0);
+      expect(all("SELECT id FROM ai_calls WHERE project_id=?", f.pid)).toEqual([]);
+    } finally { control.failAt = null; control.uncertain = false; control.enableRelay = false; }
+  });
   it("bloque le duo secondaire/accent partagé avant le premier dessin, sans substitution locale", async () => {
     const f = await fixture(); validatedBrand(f.pid, f.input); control.draws = []; control.copiedPalettes = true;
     try {

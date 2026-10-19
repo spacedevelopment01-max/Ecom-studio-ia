@@ -6,7 +6,7 @@ import { all, id, now, one, run } from "@/lib/db";
 import { attachStartRequest } from "@/lib/workflow";
 import { handle, ok, readForm } from "@/lib/http";
 import { ensureFolders } from "@/lib/library";
-import { existingSiteFromInput, hasProductInput, launchPipeline, readStartForm, saveStartFiles, serviceProfileFromInput } from "@/lib/project-start";
+import { existingSiteFromInput, hasProductInput, launchPipeline, readStartForm, saveStartFiles, validateStartFiles, serviceProfileFromInput } from "@/lib/project-start";
 import { aiUsage } from "@/lib/ai/access";
 import { createProjectWithSubscription, NoFreeSubscription, pendingSubscriptions, subscriptionOfProject, subscriptionsOf } from "@/lib/project-billing";
 import { DEFAULT_SETTINGS } from "@/lib/projects";
@@ -62,6 +62,7 @@ export const POST = handle(async (req: Request) => {
   const { input, files, logo } = readStartForm(await readForm(req, 260 * 1048576));
   // « J'ai déjà mon site et mon logo » : adresse et accord vérifiés ; type d'activité et plateforme fixés après lecture du site.
   const site = existingSiteFromInput(input);
+  validateStartFiles(site ? [] : files, logo);
   const services = !site && input.businessType === "services" ? serviceProfileFromInput(input) : null;
   // Site de services : la description de l'activité ou le lien du site existant est indispensable.
   if (input.flow === "legacy" && services && !hasProductInput(input, files)) throw new HttpError(400, L("Décrivez votre activité en quelques lignes ou indiquez le lien de votre site actuel.", "Describe your business in a few lines or give the link to your current website."));

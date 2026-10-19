@@ -112,19 +112,27 @@ export function serviceProfileFromInput(input: StartInput): ServiceProfile {
   };
 }
 
-/** Enregistre les photos et le logo fournis. */
-export async function saveStartFiles(projectId: string, userId: string, files: File[], logo: File | null, business: "products" | "services" = "products") {
-  for (const [i, f] of files.slice(0, 8).entries()) {
+/** Validate the entire request before attaching a subscription or saving any source file. */
+export function validateStartFiles(files: File[], logo: File | null) {
+  if (files.length > 8) throw new HttpError(400, L('Ajoutez au plus huit photos par envoi. Aucun fichier n’a été écarté ou enregistré.', 'Add at most eight photos per upload. No file has been discarded or saved.'));
+  for (const f of files) {
     if (f.size > MAX_FILE) throw new HttpError(413, L(`La photo « ${f.name} » dépasse 25 Mo.`, `The photo "${f.name}" exceeds 25 MB.`));
     if (!/^image\/(jpeg|png|webp|avif|heic|heif)$/.test(f.type)) throw new HttpError(415, L(`Format non pris en charge pour « ${f.name} » (JPEG, PNG, WebP, AVIF).`, `Unsupported format for "${f.name}" (JPEG, PNG, WebP, AVIF).`));
+  }
+  if (logo) {
+    if (logo.size > MAX_FILE) throw new HttpError(413, L(`Le logo « ${logo.name} » dépasse 25 Mo.`, `The logo "${logo.name}" exceeds 25 MB.`));
+    if (!/^image\/(jpeg|png|webp|avif|svg\+xml)$/.test(logo.type)) throw new HttpError(415, L(`Format de logo non pris en charge pour « ${logo.name} » (PNG, JPEG, WebP, AVIF, SVG).`, `Unsupported logo format for "${logo.name}" (PNG, JPEG, WebP, AVIF, SVG).`));
+  }
+}
+/** Enregistre les photos et le logo fournis. */
+export async function saveStartFiles(projectId: string, userId: string, files: File[], logo: File | null, business: "products" | "services" = "products") {
+  validateStartFiles(files, logo);
+  for (const [i, f] of files.entries()) {
     // Services : photos de l'activité (réalisations, équipe, lieu), utilisées telles quelles — jamais détourées.
     if (business === "services") await saveAsset({ projectId, userId, data: Buffer.from(await f.arrayBuffer()), name: f.name || `photo-${i + 1}.jpg`, mime: f.type, role: "lifestyle", folderKey: "images.scenes", origin: "upload", meta: { uploadedAt: now(), activityPhoto: true } });
     else await saveAsset({ projectId, userId, data: Buffer.from(await f.arrayBuffer()), name: f.name || `photo-${i + 1}.jpg`, mime: f.type, role: "original", folderKey: "product.originals", origin: "upload", meta: { uploadedAt: now() } });
   }
   if (logo) {
-    // Logo fourni : une image (PNG, JPEG, WebP, AVIF ou SVG) de 25 Mo au plus — jamais un autre type de fichier.
-    if (logo.size > MAX_FILE) throw new HttpError(413, L(`Le logo « ${logo.name} » dépasse 25 Mo.`, `The logo "${logo.name}" exceeds 25 MB.`));
-    if (!/^image\/(jpeg|png|webp|avif|svg\+xml)$/.test(logo.type)) throw new HttpError(415, L(`Format de logo non pris en charge pour « ${logo.name} » (PNG, JPEG, WebP, AVIF, SVG).`, `Unsupported logo format for "${logo.name}" (PNG, JPEG, WebP, AVIF, SVG).`));
     await saveAsset({ projectId, userId, data: Buffer.from(await logo.arrayBuffer()), name: logo.name || "logo.png", mime: logo.type, kind: "image", role: "logo", folderKey: "brand.logos", origin: "upload", meta: { provided: true } });
   }
 }

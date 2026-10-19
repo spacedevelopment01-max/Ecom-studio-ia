@@ -1,4 +1,5 @@
-import { directionSeries, seriesRights, currentSeries } from "@/lib/logo-v2/direction-series";
+import { directionSeries, seriesRights, currentSeries, directionOf } from "@/lib/logo-v2/direction-series";
+import { pendingDirection, selectCompleteDirection, assertSelectedDirection } from "@/lib/logo-v2/selection";
 import { z } from "zod";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
@@ -27,7 +28,8 @@ function progressView(projectId: string) {
     projectId,
   );
   const live = readLive(projectId);
-  return { job: job ? { ...job, error: job.error ? job.error.slice(0, 600) : null, stalled: logoJobStalled(job) } : null, live: live && (!job || live.jobId === job.id) ? live : null };
+  const applicationJob = one<{ id: string; status: string; error: string | null }>("SELECT id,status,error FROM jobs WHERE project_id=? AND type='brand.logo.v2.choose' ORDER BY created_at DESC,rowid DESC LIMIT 1", projectId);
+  return { applicationJob, job: job ? { ...job, error: job.error ? job.error.slice(0, 600) : null, stalled: logoJobStalled(job) } : null, live: live && (!job || live.jobId === job.id) ? live : null };
 }
 
 export const runtime = "nodejs";
@@ -41,8 +43,8 @@ function view(projectId: string) {
   const p = loadProject(projectId);
   // Slogan : écrit dans un logo seulement s'il est validé ; sinon c'est une proposition (jamais une info du client).
   const tagline = p.brand?.tagline?.trim() ? { text: p.brand.tagline.trim(), validated: isLocked(p.brand, "tagline") } : null;
-  const series = directionSeries(projectId), rights = seriesRights(projectId);
-  if (!run) return { series, rights, run: null, proposals: [], studio: [], discarded: [], applied: p.brand?.logo.proposalId ?? null, tagline, styles: LOGO_STYLES, ...progressView(projectId) };
+  const series = directionSeries(projectId), rights = seriesRights(projectId), selection = pendingDirection(projectId);
+  if (!run) return { series, rights, selection, run: null, proposals: [], studio: [], discarded: [], applied: p.brand?.logo.proposalId ?? null, tagline, styles: LOGO_STYLES, ...progressView(projectId) };
   const rows = all<{ id: string; role: string; meta: string }>("SELECT id, role, meta FROM assets WHERE project_id = ? AND role IN ('logo-v2','logo-v2-studio','logo-v2-trial') AND json_extract(meta, '$.run') = ? AND deleted_at IS NULL ORDER BY created_at", projectId, run.runId);
   const originals = new Map(all<{ id: string; source_asset_id: string }>("SELECT id, source_asset_id FROM assets WHERE project_id = ? AND role = 'logo-v2-original' AND deleted_at IS NULL", projectId).map((o) => [o.source_asset_id, o.id] as const));
   const item = (r: { id: string; meta: string }) => {
@@ -66,7 +68,7 @@ function view(projectId: string) {
     };
   };
   return {
-    series, rights,
+    series, rights, selection,
     run: { id: run.runId, at: run.at, ai: run.ai, art: run.art ?? null, style: run.style ?? "auto", stoppedByCostCap: !!run.stoppedByCostCap, best: run.best ?? null, territories: run.territories, rejected: run.rejected ?? [], failures: run.failures ?? [], notes: (run.notes ?? []).slice(0, 12) },
     ...progressView(projectId),
     tagline,
@@ -89,7 +91,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  const b = await body(req, z.object({ action: z.enum(["generate", "choose", "reject", "redraw", "quote", "stop"]), assetId: z.string().max(40).optional(), style: z.enum([...LOGO_STYLES, "auto"]).optional(), feedback: z.string().max(400).optional(), renew: z.boolean().optional() }));
+  const b = await body(req, z.object({ action: z.enum(["generate", "select", "choose", "reject", "redraw", "quote", "stop"]), assetId: z.string().max(40).optional(), style: z.enum([...LOGO_STYLES, "auto"]).optional(), feedback: z.string().max(400).optional(), renew: z.boolean().optional() }));
   if (!p.brand) throw new HttpError(409, L("La marque n'est pas encore créée.", "The brand has not been created yet."));
   // « Arrêter » : la création de logo en cours (ou bloquée, studio arrêté) est annulée ; l'onglet est libéré. Les images
   // déjà reçues restent enregistrées ; aucune dépense ne continue (le worker s'arrête à son prochain point d'avancement).
@@ -98,6 +100,10 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     return ok(view(p.id));
   }
   if (one(`SELECT 1 FROM jobs WHERE project_id = ? AND type IN ${LOGO_JOBS} AND status IN ('queued','running','paused')`, p.id)) throw new HttpError(409, L("Une création de logo est déjà en cours : attendez qu'elle se termine, ou cliquez sur « Arrêter » sous la barre d'avancement.", "A logo task is already running: wait for it to finish, or click \"Stop\" under the progress bar."));
+  if (b.action === "select") {
+    selectCompleteDirection(p.id, b.assetId ?? "");
+    return ok(view(p.id));
+  }
   if (b.action === "reject") {
     // Direction écartée par le client : refus mémorisé (le type de logo ne sera plus proposé).
     const meta = json<any>(one<{ meta: string }>("SELECT meta FROM assets WHERE id = ? AND project_id = ? AND role IN ('logo-v2','logo-v2-studio')", b.assetId ?? "", p.id)?.meta, null);
@@ -124,9 +130,10 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     return ok({ jobId: job.id, ...view(p.id) });
   }
   if (b.action === "choose") {
+    const selection = b.assetId && directionOf(p.id, b.assetId) ? assertSelectedDirection(p.id, b.assetId) : null;
     const row = b.assetId ? one<{ role: string; meta: string }>("SELECT role, meta FROM assets WHERE id = ? AND project_id = ? AND role IN ('logo-v2','logo-v2-studio','logo-v2-trial') AND deleted_at IS NULL", b.assetId, p.id) : null;
     if (!row || (row.role === "logo-v2-trial" && !artworkChoosable(json<any>(row.meta, {})))) throw new HttpError(404, L("Proposition introuvable.", "Proposal not found."));
-    const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.logo.v2.choose", label: L("Logo choisi : déclinaisons et charte", "Chosen logo: variations and guidelines"), payload: { projectId: p.id, assetId: b.assetId } });
+    const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.logo.v2.choose", idempotencyKey: selection ? `direction-validation:${p.id}:${selection.logoId}:${selection.selectedAt}:${selection.brandHash}` : undefined, label: L("Logo choisi : déclinaisons et charte", "Chosen logo: variations and guidelines"), payload: { projectId: p.id, assetId: b.assetId, ...(selection ? { selectionBrandHash: selection.brandHash } : {}) } });
     return ok({ jobId: job.id, ...view(p.id) });
   }
   const rights = seriesRights(p.id);

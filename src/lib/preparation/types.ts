@@ -166,8 +166,23 @@ export type State = {
   pending?: { step: Step; jobId: string; inputHash: string };
   simulation?: boolean;
 };
-export type ThemeRecommendation = { recommendedId: string; alternatives: { id: string; reasons: string[] }[]; reasons: string[]; selectedId?: string; status: "proposal" | "selected"; catalogue: { id: string; name?: string; status: "available" | "in_progress" | "incompatible"; reason: string }[] };
+export type ThemeRecommendation = {
+  projectCategory?: import("../project-handoff/categories").CategoryRecommendation;
+  /** Ancienne projection installable : conservée à la lecture, jamais remplie avec un identifiant de référence. */
+  recommendedId: string;
+  alternatives: { id: string; reasons: string[] }[];
+  recommendedReferenceId?: import("../project-handoff/categories").ReferenceThemeId | null;
+  alternativesReferenceIds?: import("../project-handoff/categories").ReferenceThemeId[];
+  engineThemeId?: string | null;
+  reasons: string[];
+  selectedId?: string;
+  status: "proposal" | "selected" | "reference_pending" | "clarification_required";
+  catalogue: { id: string; referenceId?: import("../project-handoff/categories").ReferenceThemeId; engineThemeId?: string | null; category?: import("../project-handoff/categories").ProjectCategory; name?: string; status: "available" | "in_progress" | "incompatible"; reason: string }[];
+};
 export type ReadyContract = {
+  handoff?: import("../project-handoff/contract").ProjectHandoff;
+  dataReadiness: "ready" | "review_required";
+  themeConsumerStatus: "awaiting_theme_consumer";
   schemaVersion: 1;
   kind: "project_ready_for_theme";
   projectId: string;

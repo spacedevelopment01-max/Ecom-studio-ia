@@ -3,7 +3,9 @@ import { analyzeLocally } from "@/lib/preparation/brief";
 import type { DirectionIdentity, CompleteDirection } from "@/lib/logo-v2/direction-series";
 import type { Input, Contents } from "@/lib/preparation/types";
 import type { z } from "zod";
-import type { EditorialSchema } from "@/lib/preparation/editorial";
+import { recommendationCatalogue, type EditorialSchema } from "@/lib/preparation/editorial";
+import { categoryForProject, recordCategoryChoice } from "@/lib/project-handoff/category-store";
+import { stateOf } from "@/lib/preparation/store";
 import { localBrand } from "@/lib/engine/local";
 import { loadProject, saveBrand, saveStrategy, saveProduct, saveServices } from "@/lib/projects";
 import { localTerritories } from "@/lib/logo-v2/territories";
@@ -46,6 +48,9 @@ export async function syntheticDirections(pid: string) {
 }
 export async function editorialFixture(pid: string): Promise<{ content: Contents; out: z.infer<typeof EditorialSchema> }> {
   const p = loadProject(pid);
+  const category = categoryForProject(p, stateOf(pid)?.stages.brief?.data.input);
+  if (category.recommendation.status === "clarification_required") recordCategoryChoice(p, stateOf(pid)?.stages.brief?.data.input, p.business === "services" ? "services" : "specialized", category.contextHash);
+  const eligible = recommendationCatalogue(p).filter(c => c.status === "in_progress" && c.referenceId).map(c => c.referenceId!);
   const ctx = new JobContext(enqueue({ userId: p.userId, projectId: pid, type: "project.prepare", payload: {}, maxAttempts: 1 }));
   const content = await simulatedDependencies.contents(p, ctx, false);
   // Un vrai bloc distinct par section ; tous les blocs édités sont conservés dans l'affectation.
@@ -58,6 +63,6 @@ export async function editorialFixture(pid: string): Promise<{ content: Contents
     missing: [],
     slots: content.slots.map((s, i) => ({ key: s.key, pageKey: s.pageKey, sectionKey: s.sectionKey, scene: `Composition distincte ${i + 1} : sujet, cadrage et lumière pour ${s.purpose}`, queries: ["activité objet", "usage contexte"], caption: "Proposition à contrôler", alt: "Description à contrôler", rationale: "En rapport avec la section prévue" })),
     blocks: content.pages.flatMap(pg => pg.sections.map(section => ({ pageKey: pg.key, sectionKey: section.key, objective: section.purpose, message: "Information liée aux faits déclarés", docKey: content.documents.find(d => d.doc.page.key === pg.key)!.docKey, blockIds: [`${pg.key}-${section.key}`], mediaSlotKeys: content.slots.filter(s => s.pageKey === pg.key && s.sectionKey === section.key).map(s => s.key), rationale: "Présenter la même information que le média adjacent" }))),
-    recommendation: { recommendedId: "atelier", reasons: ["Composition présente dans le catalogue et adaptée au contenu"], alternatives: [{ id: "clinique", reasons: ["Autre composition disponible"] }] },
+    recommendation: { recommendedReferenceId: eligible[0] ?? null, reasons: ["Référence active compatible avec la catégorie déclarée dans ce test synthétique ; raccordement moteur non simulé comme terminé."], alternativesReferenceIds: eligible.slice(1) },
   } };
 }

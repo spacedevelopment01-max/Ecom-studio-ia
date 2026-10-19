@@ -11,7 +11,7 @@ import type { VisualSlot } from "@/lib/preparation/types";
 import { json, run } from "@/lib/db";
 
 const slot: VisualSlot = { key: "final:image:1", pageKey: "product:main", sectionKey: "detail", purpose: "Vue du produit", required: true, kind: "image", source: "ai", aspect: "1:1", alignment: { status: "accepted", reason: "Contrôle injecté de test" } };
-const asset: Asset = { id: "a", project_id: "p", user_id: "u", folder_id: null, name: "image-test.png", kind: "image", role: "scene", mime: "image/png", size: 1000, width: 1024, height: 1024, duration: null, storage_key: "test", thumb_key: null, origin: "generated", meta: JSON.stringify({ gate: { verdict: "FINAL" }, imageV2: { origin: "edited" } }), source_asset_id: "ref", version_of: null, version: 1, status: "review", starred: 0, deleted_at: null, created_at: 1 };
+const asset: Asset = { id: "a", project_id: "p", user_id: "u", folder_id: null, name: "image-test.png", kind: "image", role: "scene", mime: "image/png", size: 1000, width: 1024, height: 1024, duration: null, storage_key: "test", thumb_key: null, origin: "generated", meta: JSON.stringify({ gate: { verdict: "FINAL" }, imageV2: { origin: "edited" } }), source_asset_id: null, version_of: null, version: 1, status: "review", starred: 0, deleted_at: null, created_at: 1 };
 const p = { id: "p", business: "products" as const };
 it("un résultat non relu par le client n'est pas pour autant un lot complet", () => {
   expect(slotIssues(p, slot, asset)).toEqual([]);

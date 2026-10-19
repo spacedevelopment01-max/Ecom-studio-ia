@@ -1,4 +1,7 @@
 import { placementHash, receiptFor } from "./media-context";
+import { buildProjectHandoff } from "../project-handoff/contract";
+import { categoryForProject } from "../project-handoff/category-store";
+import { recommendationDataReady, recommendationCatalogue } from "./editorial";
 import { finalMediaIssues, slotIssues } from "./media-policy";
 import { currentSeries, directionOf } from "../logo-v2/direction-series";
 import { analyzed } from "./evidence";
@@ -195,7 +198,7 @@ export function blockers(projectId: string, s = stateOf(projectId)): string[] {
   const contents = stageOf(s, "content").data;
   if (contents.pending) out.push(contents.pending);
   if (!s.simulation && copyContract(contents).readiness.status !== "mapped") out.push("Copie de liaison à compléter avant thème.");
-  if (!s.simulation && (!contents.execution || !contents.editorial?.length || contents.recommendation?.status !== "selected" || contents.documents.some(d => d.doc.meta2.by !== "ai" || d.verdict !== "FINAL") || contents.pages.some(pg => !contents.documents.some(d => d.doc.page.key === pg.key)))) out.push("Rédaction API ou plan éditorial complet à reprendre avant thème.");
+  if (!s.simulation && (!contents.execution || !contents.editorial?.length || !activeRecommendationReady(projectId, s, contents.recommendation) || contents.documents.some(d => d.doc.meta2.by !== "ai" || d.verdict !== "FINAL") || contents.pages.some(pg => !contents.documents.some(d => d.doc.page.key === pg.key)))) out.push("Rédaction API, plan éditorial ou catégorie du site à compléter. Le raccordement des quatre thèmes reste une étape distincte.");
   if (!s.simulation && !stageOf(s, "research").data.execution) out.push("Recherche stratégique API à reprendre avant thème.");
   if (!s.simulation && !loadProject(projectId).brand?.artIdentity) out.push("Direction complète et charte à valider avant thème.");
   if (!analyzed(b)) out.push("Compréhension IA du brief en attente ; le brouillon local ne suffit pas.");
@@ -236,12 +239,22 @@ export function blockers(projectId: string, s = stateOf(projectId)): string[] {
   }
   return out;
 }
+/** Préparer les données ne promet ni un thème installé ni un rendu déjà construit. */
+function activeRecommendationReady(projectId: string, s: State, r: import("./types").ThemeRecommendation | undefined) {
+  if (!recommendationDataReady(r)) return false;
+  const category = categoryForProject(loadProject(projectId), s.stages.brief?.data.input).recommendation;
+  const eligible = new Set(category.eligibleThemes.map(x => x.referenceId));
+  const references = [r?.recommendedReferenceId, ...(r?.alternativesReferenceIds ?? [])].filter((referenceId): referenceId is NonNullable<typeof referenceId> => !!referenceId);
+  return category.status === "recommended" && !!category.category && references.length > 0 && references.every(referenceId => eligible.has(referenceId));
+}
 export function readyContract(projectId: string): ReadyContract | null {
   const s = stateOf(projectId);
   if (!s || blockers(projectId, s).length) return null;
   const p = loadProject(projectId);
   const c = stageOf(s, "content").data;
-  return {
+  const contract: ReadyContract = {
+    dataReadiness: "review_required",
+    themeConsumerStatus: "awaiting_theme_consumer",
     schemaVersion: 1,
     kind: "project_ready_for_theme",
     projectId,
@@ -281,6 +294,10 @@ export function readyContract(projectId: string): ReadyContract | null {
       "Prêt pour la composition, pas une autorisation de publication.",
     ],
   };
+  contract.handoff = buildProjectHandoff(p, contract, all<Asset>("SELECT * FROM assets WHERE project_id=?", projectId), categoryForProject(p, contract.clientBrief).recommendation);
+  if (contract.recommendation) contract.recommendation = { ...contract.recommendation, projectCategory: contract.handoff.category };
+  contract.dataReadiness = contract.handoff.status;
+  return contract;
 }
 export function approve(
   projectId: string,
@@ -292,6 +309,7 @@ export function approve(
     requireUpstream(s, step);
     assertFresh(projectId, s, step);
     const st = stageOf(s, step);
+    const unchangedApproval = st.status === "approved" && (step !== "research" || !o.choiceId || s.stages.research?.data.selectedId === o.choiceId) && (step !== "brand" || !o.logoId || s.stages.brand?.data.selectedLogo === o.logoId);
     if (st.inputHash !== inputHash(s, step))
       throw new HttpError(
         409,
@@ -353,7 +371,7 @@ export function approve(
       if (!s.simulation && asset.origin !== "upload" && (!selection || selection.series.status !== "complete" || loadProject(projectId).brand?.logo.proposalId !== asset.id)) throw new HttpError(409, "Choisissez une direction complète et attendez ses déclinaisons avant de valider.");
       const logoMeta = json<any>(asset.meta, {});
       if (
-        logoMeta.preparation?.identityHash &&
+        !selection && logoMeta.preparation?.identityHash &&
         logoMeta.preparation.identityHash !== identityHash(b.proposal)
       )
         throw new HttpError(
@@ -378,7 +396,7 @@ export function approve(
       const p = loadProject(projectId);
       if (c.pending) throw new HttpError(409, c.pending);
       if (!s.simulation && copyContract(c).readiness.status !== "mapped") throw new HttpError(409, "Copie de liaison encore provisoire : aucune livraison finale avant correction.");
-      if (c.provenance !== "simulation" && (c.provenance !== "provider" || !c.execution || !c.editorial?.length || c.recommendation?.status !== "selected")) throw new HttpError(409, "Rédaction API, plan éditorial complet et choix de thème sont requis ; aucun gabarit local final.");
+      if (c.provenance !== "simulation" && (c.provenance !== "provider" || !c.execution || !c.editorial?.length || !activeRecommendationReady(projectId, s, c.recommendation))) throw new HttpError(409, "Rédaction API, plan éditorial complet et catégorie du site confirmée sont requis. Les références actives peuvent rester en attente de raccordement ; aucun thème n’est présenté comme construit.");
       for (const page of c.pages) if (!c.documents.some(d => d.doc.page.key === page.key)) throw new HttpError(409, `Document absent : ${page.title}.`);
       for (const item of c.documents) {
         if (c.provenance !== "simulation" && (item.doc.meta2.by !== "ai" || item.verdict !== "FINAL")) throw new HttpError(409, "Texte API final contrôlé requis pour chaque page.");
@@ -446,11 +464,11 @@ export function approve(
         if (slot.assetId) usableAsset(projectId, slot.assetId);
       }
     }
-    invalidateAfter(s, step);
+    if (!unchangedApproval) invalidateAfter(s, step);
     st.status = "approved";
-    st.approvedAt = now();
+    st.approvedAt ??= now();
     // Changer un choix important rend la suite obsolète, mais conserve toutes ses données et versions.
-    if (step === "content") {
+    if (step === "content" && !unchangedApproval) {
       const previous = s.stages.media?.data.slots ?? [];
       draft(s, "media", {
         slots: stageOf(s, "content").data.slots.map((slot) => {
@@ -530,15 +548,13 @@ export function references(
     b.inputHash = inputHash(s, "brief");
   });
 }
-/** Choix volontaire d'un catalogue existant ; une nouvelle suggestion ne l'écrase pas. */
+/** Les projets historiques restent lisibles ; aucun ancien thème ne redevient une nouvelle sélection. */
 export function chooseRecommendedTheme(projectId: string, revision: number, themeId: string) {
   return commitState(projectId, revision, s => {
-    const c = stageOf(s, "content");
-    const item = c.data.recommendation?.catalogue.find(x => x.id === themeId);
-    if (!item || item.status !== "available") throw new HttpError(409, "Thème absent, en cours ou incompatible avec les droits du projet.");
-    c.data.recommendation!.selectedId = themeId;
-    c.data.recommendation!.status = "selected";
-    c.status = "draft"; invalidateAfter(s, "content");
+    stageOf(s, "content");
+    const item = recommendationCatalogue(loadProject(projectId)).find(x => x.id === themeId);
+    if (!item) throw new HttpError(409, "Cet ancien thème ne fait plus partie des nouvelles sélections. Votre thème existant, vos contenus et vos versions restent conservés.");
+    throw new HttpError(409, item.status === "incompatible" ? "Cette référence ne correspond pas à la catégorie confirmée de votre site. Aucun thème installé n’est modifié." : "Cette référence active attend son raccordement au moteur. Vos textes et médias peuvent être préparés et validés, mais aucune installation n’est annoncée.");
   });
 }
 export function moveMedia(projectId: string, revision: number, key: string, placement: { pageKey: string; sectionKey: string }) {
@@ -609,7 +625,7 @@ export function confirmIdentity(
     b.identityConfirmed = true;
     invalidateAfter(s, "brand");
     st.status = "draft";
-    saveBrand(projectId, b.proposal);
+    if (!loadProject(projectId).brand?.artIdentity) saveBrand(projectId, b.proposal);
   });
 }
 export function assignMedia(
@@ -854,6 +870,7 @@ export async function runPreparation(
     capMicro: number;
     slot?: string;
   };
+  let savedRevision: number | undefined;
   try {
     const s = stateOf(projectId);
     if (
@@ -968,8 +985,11 @@ export async function runPreparation(
     const next = commitState(projectId, expectedRevision, (n) => {
       if (action === "collect") { stageOf(n, "media").status = "draft"; }
       else if (action === "logo") {
-        invalidateAfter(n, "brand");
-        stageOf(n, "brand").status = "draft";
+        // Renouveler les propositions ne remplace ni l'identité active ni ses validations.
+        if (!loadProject(projectId).brand?.artIdentity) {
+          invalidateAfter(n, "brand");
+          stageOf(n, "brand").status = "draft";
+        }
         stageOf(n, "brand").data.logoCandidates = output as string[];
         const series = !deps.simulation && currentSeries(projectId);
         if (series) { stageOf(n, "brand").data.seriesId = series.id; stageOf(n, "brand").data.directions = series.directions; }
@@ -990,6 +1010,7 @@ export async function runPreparation(
       delete n.pending;
       delete n.error;
     });
+    savedRevision = next.revision;
     if (step === "content" && (output as any)?.pending) throw new UserFacingError((output as any).pending);
     if (action === "logo" && !deps.simulation && currentSeries(projectId)?.status !== "complete") throw new UserFacingError(`Série incomplète : ${currentSeries(projectId)?.directions.length ?? 0}/3 directions complètes conservées ; reprise ciblée nécessaire.`);
     ctx.progress(1, "Proposition disponible pour votre vérification");
@@ -1003,7 +1024,7 @@ export async function runPreparation(
   } catch (e) {
     if (e instanceof JobPaused) throw e;
     const current = stateOf(projectId);
-    if (current)
+    if (current && (current.pending?.jobId === ctx.job.id || current.revision === savedRevision))
       commitState(projectId, current.revision, (n) => {
         if (n.pending?.jobId === ctx.job.id) delete n.pending;
         n.error = {
