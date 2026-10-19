@@ -25,7 +25,16 @@ try {
   if(results.some(r=>r.slug===item.slug&&r.desktop))continue;
   const {context,page,errors}=await setup(item);const section=await navigate(page,item);const stages:string[]=[];console.log(`${item.slug}: entrée`);
   console.log(`${item.slug}: recherche résultat existant`);
-  const prior=(await(await page.request.get(`${base}/api/projects/${item.pid}/creative/video`,{timeout:120000})).json()).videos.find((v:any)=>v.request?.startsWith('TEST ISOLÉ'));
+  const snapshot=await(await page.request.get(`${base}/api/projects/${item.pid}/creative/video`,{timeout:120000})).json();
+  let prior=snapshot.videos.find((v:any)=>v.request?.startsWith('TEST ISOLÉ'));
+  const recoverable=snapshot.drafts?.find((d:any)=>d.docKey&&d.as===(item.slug.includes('organique')?'post':'ad'));
+  if(!prior&&recoverable){
+    const resume=section.locator(`[data-video-resume-render="${recoverable.docKey}"]`);await resume.waitFor();await resume.click();const modal=page.getByRole('dialog');await modal.waitFor();assert(!(await modal.innerText()).includes('[object Object]'));
+    await modal.screenshot({path:path.join(out,`${item.slug}-reprise-encodage.png`)});
+    const submitted=page.waitForResponse((r:any)=>r.url().includes('/videos/v2/')&&r.request().method()==='POST'&&r.request().postDataJSON()?.action==='render');await modal.getByRole('button',{name:'Rendre la vidéo',exact:true}).click();const response=await submitted;assert.equal(response.status(),200);const queued=await response.json();
+    for(let k=0;k<300;k++){const jobs=(await(await page.request.get(`${base}/api/projects/${item.pid}/jobs`)).json()).jobs;const j=jobs.find((j:any)=>j.id===queued.jobId);if(j?.status==='failed')throw Error(j.error);if(j?.status==='done')break;assert(k<299,'resume render timeout');await page.waitForTimeout(2000);}
+    await page.reload();await navigate(page,item);prior=(await(await page.request.get(`${base}/api/projects/${item.pid}/creative/video`)).json()).videos.find((v:any)=>v.docKey===recoverable.docKey);assert(prior,'resumed render must appear in guided list');stages.push('first-encode-resumed-without-regenerating-media');
+  }
   if(!prior) {
   await section.locator('[data-video-duration="20"]').click();await section.locator('[data-video-scenes="4"]').click();
   await section.locator('[data-subject-request]').fill(`TEST ISOLÉ ${item.slug} : quatre scènes distinctes. Conserver les références et les textes. ${item.slug.includes("organique")?"Conseil utile, aucun achat ni devis forcé.":"Présenter l’offre confirmée sans promesse inventée."}`);

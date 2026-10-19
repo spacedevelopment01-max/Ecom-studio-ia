@@ -93,7 +93,7 @@ export function mockVideoDeps(o: {
     },
     async generateClip(req) {
       log.clips.push({ provider: req.provider, model: req.model, seconds: req.seconds, people: req.people, prompt: req.prompt });
-      return mockMp4(Math.min(req.seconds, 6));
+      return mockMp4(req.seconds);
     },
     stockClip: p.business === "services" && !o.noStock ? async(req,exclude)=>{
       const a=await saveAsset({projectId:p.id,userId:p.userId,data:mockMp4(req.durationS+.2),name:`stock-simule-${exclude.size}.mp4`,mime:"video/mp4",role:"clip",origin:"import",status:"review",meta:{simulation:true,provenance:"Mire synthétique, aucun média Pixabay",durationS:req.durationS+.2,gate:{verdict:"FINAL",checked:true,fatal:false}}});

@@ -6,15 +6,16 @@
  */
 import { skillReference } from "../ai/skills";
 import sharp from "sharp";
+import {execFileSync} from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { tmpDir } from "../storage";
+import { tmpDir,storagePath } from "../storage";
 import { llmConfigured, llmJson } from "../ai/llm";
 import { brainView } from "../ai/context";
 import { activeProviderKey, routeFor } from "../ai/config";
 import { aiClip } from "../ai/media-providers";
 import { selectMedia, usageNeed, usagePrimary, type MediaUsage } from "../ai/media-routing";
-import { all, json } from "../db";
+import { all, json,run } from "../db";
 import type { JobContext } from "../jobs";
 import { assetData, getAsset, type Asset } from "../library";
 import type { Project } from "../projects";
@@ -84,7 +85,11 @@ export function projectInventory(p: Project): Inventory {
     cutout: cut ? { id: cut.id } : null,
     logo: logo && !logo.deleted_at ? { id: logo.id } : null,
     photos: photos.filter((a) => a.kind === "image" && !seen.has(a.id) && seen.add(a.id)).map((a) => ({ id: a.id, role: a.role ?? "", origin: a.origin ?? "" })),
-    videos: videos.map((a) => ({ id: a.id, durationS: Number((a as unknown as { duration?: number }).duration ?? json<any>(a.meta as any, {})?.durationS ?? 0) || 4, role: a.role ?? "" })),
+    videos: videos.flatMap((a) => {
+      const meta=json<any>(a.meta as any,{});let durationS=Number(meta.durationS??0);
+      if(!(durationS>0))try{durationS=Number(execFileSync("ffprobe",["-v","error","-show_entries","format=duration","-of","default=nw=1:nk=1",storagePath(a.storage_key)],{timeout:4000,encoding:"utf8",stdio:["ignore","pipe","ignore"]}).trim());if(durationS>0)run("UPDATE assets SET meta=json_set(COALESCE(meta,'{}'),'$.durationS',?) WHERE id=?",durationS,a.id);}catch{durationS=0;}
+      return durationS>0?[{id:a.id,durationS,role:a.role??""}]:[];
+    }),
     screens: screens.map((a) => ({ id: a.id })),
   };
 }

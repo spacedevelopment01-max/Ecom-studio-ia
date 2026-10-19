@@ -660,7 +660,7 @@ Reply { "scenes": [{ "still": "", "motion": "", "title": "" }, ...${req.scenes ?
     spentMicro: (prefix) => all<{ c: number }>("SELECT COALESCE(SUM(cost), 0) c FROM ai_calls WHERE usage_key LIKE ?", `${prefix}%`)[0]?.c ?? 0,
     async render(p, docKey, doc, meta) {
       const initialVersion=latestVideo(p.id,docKey)?.version.id??null;
-      let ex = await renderVideoFile(p.id, doc);
+      let ex = await renderVideoFile(p.id, doc,{onProgress:x=>ctx?.progress(.86+x*.08,L(`Rendu ${Math.round(x*100)} %`,`Rendering ${Math.round(x*100)} %`))});
       try {
         // Contrôle du fichier final (grille du guide créatif), mesuré sur la vidéo rendue, enregistré avec elle.
         // Titre peu lisible : seuls les plans concernés changent de couleur, puis UN nouveau rendu (gratuit, local).

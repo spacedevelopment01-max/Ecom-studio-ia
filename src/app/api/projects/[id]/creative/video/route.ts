@@ -1,3 +1,5 @@
+import crypto from "node:crypto";
+import {latestVideo} from "@/lib/video-v2/store";
 import { z } from "zod";
 import { getAsset,assetMeta } from "@/lib/library";
 import { hasUncertainVideoReceipt } from "@/lib/video-v2/receipts";
@@ -67,7 +69,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     const signed=approveVideoScenario(p,sceneApprovalRequest(payload.request),result.scenario,Math.max(0,q.capMicro-spent),{quoteTotalMicro:q.capMicro,retakeMicro:q.oneSceneRetakeMicro,scenarioJobId:j.id});
     return [{...q,request:payload.request,scenarioJobId:j.id,scenario:result.scenario,approvalToken:signed.token}];
   });
-  return ok({ scenarios,drafts:all<{id:string;error:string;payload:string}>("SELECT id,error,payload FROM jobs WHERE project_id=? AND type='video.scenes' AND status='failed' ORDER BY created_at DESC LIMIT 4",p.id).map(j=>{const r=json<{request:ThreeScenesRequest}>(j.payload,{} as never).request;return {id:j.id,error:j.error,scenes:r?.scenes??3,as:r?.as??"ad",used:!!r?.repair || !!one("SELECT 1 FROM jobs WHERE project_id=? AND json_extract(payload,'$.request.repair.rootJobId')=?",p.id,j.id),retakeMicro:r?quote(p,r).oneSceneRetakeMicro:0};}), voiceAvailable:voiceAvailable(),voice:loadCreativeMemory(p.id,p).preferences, videos: list(p.id), ai: aiActiveFor(p.userId, p.id), limits: SCENE_LIMITS, subjects: subjectOptions(p).map((x) => ({ kind: x.kind, key: x.key, name: x.name, hasPhoto: !!x.referenceAssetId, photoId: x.referenceAssetId })) });
+  return ok({ scenarios,drafts:all<{id:string;error:string;payload:string;created_at:number}>("SELECT id,error,payload,created_at FROM jobs WHERE project_id=? AND type='video.scenes' AND status='failed' ORDER BY created_at DESC LIMIT 4",p.id).map(j=>{const r=json<{request:ThreeScenesRequest}>(j.payload,{} as never).request;const key=r?(r.key??(r.approval?`scenes:${p.id}:${r.approval.scope.slice(0,20)}`:guidedRunKey(p,r))):null;const docKey=key?`vid:${crypto.createHash("sha256").update(key).digest("hex").slice(0,20)}`:null;const saved=docKey?latestVideo(p.id,docKey):null;if(saved?.version.renderedAssetId && saved.version.createdAt>=j.created_at)return null;return {docKey:saved?docKey:null,id:j.id,error:j.error,scenes:r?.scenes??3,as:r?.as??"ad",used:!!r?.repair || !!one("SELECT 1 FROM jobs WHERE project_id=? AND json_extract(payload,'$.request.repair.rootJobId')=?",p.id,j.id),retakeMicro:r?quote(p,r).oneSceneRetakeMicro:0};}).filter(d=>d!==null).filter((d,i,a)=>!d.docKey||a.findIndex(other=>other.docKey===d.docKey)===i), voiceAvailable:voiceAvailable(),voice:loadCreativeMemory(p.id,p).preferences, videos: list(p.id), ai: aiActiveFor(p.userId, p.id), limits: SCENE_LIMITS, subjects: subjectOptions(p).map((x) => ({ kind: x.kind, key: x.key, name: x.name, hasPhoto: !!x.referenceAssetId, photoId: x.referenceAssetId })) });
 });
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {

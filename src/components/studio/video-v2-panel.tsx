@@ -18,7 +18,7 @@ import { MusicChoice } from "./music-choice";
 
 type VideoItem = { docKey: string; version: number; edited: boolean; intent: string | null; aspect: string | null; platform: string | null; durationS: number; clips: number; url: string | null; renderedAssetId: string | null; renderedVersion: number | null; needsRender: boolean; status: string | null; verdict: string | null; at: number };
 type Plan = { approvalToken?:string; shots: { id: string; part: string; durationS: number; subject: string; method: string; paid: boolean; estimateMicro: number }[]; estimateMicro: number; notes: string[]; script?: { hook?: string } | null };
-type DocView = { docKey: string; version: number; versions: { version: number; source: string; note: string; renderedAssetId: string | null; createdAt: number }[]; problems: string[]; durationS: number; doc: { aspect: string; audio?: { music?: unknown | null }; clips: { id: string; durationS: number; source?: { kind?: string }; text?: { value?: string }[] }[] } };
+type DocView = { docKey: string; version: {version:number}; versions: { version: number; source: string; note: string; renderedAssetId: string | null; createdAt: number }[]; problems: string[]; durationS: number; doc: { aspect: string; audio?: { music?: unknown | null }; clips: { id: string; durationS: number; source?: { kind?: string }; text?: { value?: string }[] }[] } };
 
 const KINDS: [string, string, string][] = [
   ["video_ad", "Publicité vidéo", "Video ad"],
@@ -161,7 +161,7 @@ export function VideoDocModal({ docKey, onClose }: { docKey: string; onClose: ()
     <Modal open onClose={onClose} title={t("Document vidéo", "Video document")}>
       {!data ? null : (
         <div className="grid gap-4 text-sm">
-          <p className="text-xs text-muted">{t(`Version ${data.version} · ${data.durationS} s · ${data.doc.clips.length} plan(s) · format ${data.doc.aspect}`, `Version ${data.version} · ${data.durationS} s · ${data.doc.clips.length} shot(s) · ${data.doc.aspect} format`)}</p>
+          <p className="text-xs text-muted">{t(`Version ${data.version.version} · ${data.durationS} s · ${data.doc.clips.length} plan(s) · format ${data.doc.aspect}`, `Version ${data.version.version} · ${data.durationS} s · ${data.doc.clips.length} shot(s) · ${data.doc.aspect} format`)}</p>
           <ol className="grid gap-1 text-xs">
             {data.doc.clips.map((c, i) => <li key={c.id} className="rounded-lg bg-paper-2 px-2 py-1">{i + 1}. {c.durationS} s{c.text?.[0]?.value ? ` — « ${c.text[0].value} »` : ""}</li>)}
           </ol>
@@ -207,7 +207,7 @@ export function VideoDocModal({ docKey, onClose }: { docKey: string; onClose: ()
               {data.versions.map((v) => (
                 <li key={v.version} className="flex items-center justify-between gap-2">
                   <span>v{v.version} · {v.note || v.source}</span>
-                  {v.version !== data.version && <button className="underline" onClick={() => post({ action: "restore", version: v.version }, t("Version restaurée.", "Version restored."), `r${v.version}`)}>{t("Restaurer", "Restore")}</button>}
+                  {v.version !== data.version.version && <button className="underline" onClick={() => post({ action: "restore", version: v.version }, t("Version restaurée.", "Version restored."), `r${v.version}`)}>{t("Restaurer", "Restore")}</button>}
                 </li>
               ))}
             </ul>

@@ -42,6 +42,7 @@ describe("habillage publicitaire des vidéos", async () => {
     const shots = clips.map((c) => ({ id: c.shotId, part: c.part, onScreen: "", voice: "", method: "kinetic_type" })) as any;
     const out = dressPromo(clips, shots, { p, pal, typo: { heading: "Archivo", body: "Jost" }, w: 1080, h: 1920, safe: { top: 120, bottom: 300, side: 60 }, brand: "Sébastien Blanc", logoId: null, thumbs: [], cta: "Demander un devis", message: "" });
     expect(out.every((c) => c.source.kind === "video")).toBe(true);
+    expect(out.every(c=>c.source.kind!=="video"||(c.source.inS>=0&&c.source.outS<=2))).toBe(true);
     const texts = (c: any) => c.overlays.filter((l: any) => l.kind === "text").map((l: any) => l.text).join(" | ");
     expect(texts(out[0])).toContain("Plâtrier peintre");
     expect(texts(out[1])).toContain("Nos prestations");

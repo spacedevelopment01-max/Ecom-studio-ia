@@ -1,3 +1,4 @@
+import {L} from "../i18n-server";
 /**
  * Rendu du document vidéo V2 (serveur) : chaque image est dessinée par le même moteur de calques que l'éditeur
  * publicitaire (`ad-doc/render`) — compositions, textes, carte de fin — avec les photos animées (mouvement de
@@ -38,7 +39,7 @@ class FrameReader {
   private last: Buffer | null = null;
   private proc;
   constructor(file: string, inS: number, durS: number, private w: number, private h: number, fps: number, grade: string = GRADE_FFMPEG.default) {
-    this.proc = spawn("ffmpeg", ["-v", "error", "-ss", String(Math.max(0, inS)), "-t", String(Math.max(0.05, durS)), "-i", file, "-an", "-vf", `scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h},fps=${fps},${grade}`, "-f", "rawvideo", "-pix_fmt", "rgba", "pipe:1"], { stdio: ["ignore", "pipe", "ignore"] });
+    this.proc = spawn("ffmpeg", ["-v", "error", "-threads", "2", "-filter_threads", "1", "-ss", String(Math.max(0, inS)), "-t", String(Math.max(0.05, durS)), "-i", file, "-an", "-vf", `scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h},fps=${fps},${grade}`, "-f", "rawvideo", "-pix_fmt", "rgba", "pipe:1"], { stdio: ["ignore", "pipe", "ignore"] });
     this.proc.stdout.on("data", (d: Buffer) => {
       this.chunks.push(d);
       this.queued += d.length;
@@ -263,10 +264,7 @@ async function drawClip(ctx: Ctx, doc: VideoDocument, c: Clip, local: number, sr
       ctx.drawImage(scratch.canvas, (cw - cw * z) / 2, (ch - ch * z) / 2, cw * z, ch * z);
       ctx.restore();
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
-    } else {
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, W, H);
-    }
+    } else throw new Error(L("Plan vidéo illisible ou absent : aucun plan noir substitué. Document et médias conservés.","Video shot unreadable or missing: no black substitute. Document and media preserved."));
   } else renderDoc(ctx, animatedDoc(s.doc, local, s.animate), env);
   if (c.overlays.length) {
     const ov: AdDocument = { version: 1, width: W, height: H, background: "transparent", safe: doc.safe, format: { platform: null, aspect: doc.aspect }, layers: c.overlays, brand: doc.brand, meta: { conceptId: null, source: "engine", createdFrom: null } };
@@ -337,9 +335,9 @@ export async function renderVideoDoc(doc: VideoDocument, src: VideoSources, outF
   const cues = o.burnSubtitles === false || !doc.subtitles.style.enabled ? [] : absoluteCues(doc);
   fs.mkdirSync(path.dirname(outFile), { recursive: true });
 
-  const args = ["-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgba", "-s", `${OW}x${OH}`, "-r", String(fps), "-i", "pipe:0"];
+  const args = ["-y", "-v", "error", "-filter_threads", "1", "-f", "rawvideo", "-pix_fmt", "rgba", "-s", `${OW}x${OH}`, "-r", String(fps), "-i", "pipe:0"];
   if (o.audioFile) args.push("-i", o.audioFile);
-  args.push("-c:v", "libx264", "-preset", scale < 1 ? "veryfast" : "medium", "-crf", "19", "-pix_fmt", "yuv420p", "-profile:v", "high", "-movflags", "+faststart");
+  args.push("-c:v", "libx264", "-threads", "2", "-preset", scale < 1 ? "veryfast" : "medium", "-crf", "19", "-pix_fmt", "yuv420p", "-profile:v", "high", "-movflags", "+faststart");
   if (o.audioFile) args.push("-c:a", "aac", "-b:a", "192k", "-shortest");
   args.push("-t", String(total), outFile);
   const ff = spawn("ffmpeg", args, { stdio: ["pipe", "ignore", "pipe"] });
@@ -394,7 +392,8 @@ export async function renderVideoDoc(doc: VideoDocument, src: VideoSources, outF
       if (!ff.stdin.write(canvas.data())) await Promise.race([new Promise((r) => ff.stdin.once("drain", r)), done.catch(() => {})]);
       if (o.onProgress && i % 15 === 0) o.onProgress(i / frames);
     }
-  } finally {
+  } catch(error) {ff.kill("SIGKILL");throw error;}
+  finally {
     reader?.close();
     ff.stdin.end();
   }
@@ -414,7 +413,7 @@ export async function renderStill(doc: VideoDocument, src: VideoSources, atS: nu
   const ctx = canvas.getContext("2d");
   const scratchCanvas = createCanvas(OW, OH);
   const local = atS - starts[ci];
-  const reader = c.source.kind === "video" && src.videos.get(c.source.assetId) ? new FrameReader(src.videos.get(c.source.assetId)!, c.source.inS + local, 0.5, OW, OH, 2, GRADE_FFMPEG[doc.grade ?? "default"]) : null;
+  const reader = c.source.kind === "video" && src.videos.get(c.source.assetId) ? new FrameReader(src.videos.get(c.source.assetId)!, c.source.inS + local, 0.5, OW, OH, Math.max(30,doc.fps), GRADE_FFMPEG[doc.grade ?? "default"]) : null;
   ctx.setTransform(scale, 0, 0, scale, 0, 0);
   try {
     await drawClip(ctx, doc, c, local, src, reader, { canvas: scratchCanvas, ctx: scratchCanvas.getContext("2d") }, scale);

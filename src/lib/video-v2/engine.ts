@@ -106,7 +106,7 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
   const notes: string[] = [];
   const stats = { generated: 0, reused: 0, retries: 0, localShots: 0, skippedForBudget: 0, reviews: 0 };
 
-  if(req.approval && videoScope(p,{ask:req.ask,offer:req.offer??null})!==req.approval.scope) throw new Error("Contexte modifié depuis l’accord vidéo : poursuite bloquée.");
+  if(req.approval && videoScope(loadProject(p.id),{ask:req.ask,offer:req.offer??null})!==req.approval.scope) throw new Error("Contexte modifié depuis l’accord vidéo : poursuite bloquée.");
   // 1-2. Intention et stratégie (gratuites).
   const intent0 = videoIntent(p, req.ask);
   // Forfait du projet (revérifié dans le worker) : Créer = montage sans plans filmés par l'IA ; Développer = vidéos
@@ -222,7 +222,14 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
     for (let attempt = 0; attempt <= POLICIES.video_v2.maxRetries; attempt++) {
       ctx?.progress(0.7, "Rendu de la vidéo");
       const beforeEncode=(await import("./store")).latestVideo(p.id,docKey)?.version.id??null;
-      const ex = await renderVideoFile(p.id, doc, { scale: req.renderScale, fps: req.fps, onProgress: (x) => ctx?.progress(0.7 + x * 0.2, `Rendu ${Math.round(x * 100)} %`) });
+      let ex:Awaited<ReturnType<typeof renderVideoFile>>;
+      try {ex = await renderVideoFile(p.id, doc, { scale: req.renderScale, fps: req.fps, onProgress: (x) => ctx?.progress(0.7 + x * 0.2, `Rendu ${Math.round(x * 100)} %`) });}
+      catch(error) {
+        const changed=((await import("./store")).latestVideo(p.id,docKey)?.version.id??null)!==beforeEncode || !!(req.approval&&videoScope(loadProject(p.id),{ask:req.ask,offer:req.offer??null})!==req.approval.scope);
+        const target=changed?`${docKey}:conflict:${crypto.randomUUID().slice(0,8)}`:docKey;
+        saveVideoVersion(p.id,target,doc,{note:"Document conservé après interruption du rendu"});
+        throw error;
+      }
       try {
         const probe = await probeDuration(ex.file);
         const local = localVideoChecks(doc, { targetS: strategy.durationS, scriptIssues: [...script.issues], audio: ex.audio, fileDurationS: probe });
@@ -360,19 +367,20 @@ function localMedia(s: ShotPlan): Media {
   return { kind: "doc", assetId: null };
 }
 
-export async function clipFrames(buf: Buffer): Promise<Buffer[]> {
+export async function clipFrames(buf: Buffer): Promise<Buffer[]> {return (await inspectClip(buf)).frames;}
+async function inspectClip(buf:Buffer):Promise<{frames:Buffer[];durationS:number|null}> {
   const dir = tmpDir("video2-frames");
   try {
     const f = path.join(dir, "in.mp4");
     fs.writeFileSync(f, buf);
-    const d = (await probeDuration(f)) ?? 4;
+    const durationS=await probeDuration(f),d=durationS??4;
     const out: Buffer[] = [];
     for (const [k, t] of [d * 0.08, d * 0.5, d * 0.92].entries()) {
       const img = path.join(dir, `f${k}.jpg`);
       await exec("ffmpeg", ["-y", "-v", "error", "-ss", String(t), "-i", f, "-frames:v", "1", "-q:v", "3", img]).catch(() => null);
       if (fs.existsSync(img)) out.push(fs.readFileSync(img));
     }
-    return out;
+    return {frames:out,durationS};
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
@@ -438,6 +446,7 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
   if (s.source.kind !== "generate") {
     stats.localShots++;
     const m = localMedia(s);
+    if(m.kind==="video")m.durationS=o.inv.videos.find(v=>v.id===m.assetId)?.durationS;
     return { media: m, outcome: { ...base, assetId: m.assetId, reason: s.why } };
   }
 
@@ -461,7 +470,7 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
   const memo = shotMemo(p.id, key);
   if (memo?.verdict === "FINAL" && memo.assetId) {
     stats.reused++;
-    return { media: { kind: "video", assetId: memo.assetId, generated: true }, outcome: { ...base, verdict: "FINAL", assetId: memo.assetId, reused: true, reason: "plan déjà accepté : réutilisé (aucun coût)" }, characterRef: s.character && startAsset ? { assetId: startAsset, data: start } : null };
+    return { media: { kind: "video", assetId: memo.assetId, generated: true,durationS:Number(JSON.parse(getAsset(memo.assetId)?.meta??"{}").durationS)||undefined }, outcome: { ...base, verdict: "FINAL", assetId: memo.assetId, reused: true, reason: "plan déjà accepté : réutilisé (aucun coût)" }, characterRef: s.character && startAsset ? { assetId: startAsset, data: start } : null };
   }
   const capability = VIDEO_CAPABILITIES.find((c) => c.provider === provider && c.model === model);
   const seconds = capability ? shootDuration(capability, s.durationS) : Math.ceil(s.durationS);
@@ -482,7 +491,7 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
     o.budget.spentMicro += est;
     spent += est;
     stats.generated++;
-    const frames = await clipFrames(buf);
+    const inspected=await inspectClip(buf),frames=inspected.frames;
     let review = null;
     let error: string | null = null;
     try {
@@ -492,9 +501,10 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
       error = (e as Error).message;
     }
     if (!frames.length) error = "plan illisible (aucune image extraite)";
+    if(!inspected.durationS || inspected.durationS+.12<s.durationS)error="Plan reçu plus court que la scène demandée : aucun arrêt sur image ajouté.";
     const d = gateShot({ review, error, expectsProduct: s.showsProduct, expectsCharacter: s.character && !!o.characterRef, attempt, peopleAllowed: o.intent.people !== false });
     const g = gateSave({ userId: p.userId, projectId: p.id, jobId: o.ctx?.job.id ?? null, candidateId: `video2:${s.id}` }, d);
-    const asset = await saveAsset({ projectId: p.id, userId: p.userId, data: buf, name: `plan-${s.id}-${s.part}${attempt ? `-essai-${attempt + 1}` : ""}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "generated", sourceAssetId: startAsset ?? null, status: d.verdict === "FINAL" ? "review" : "rejected", meta: { videoV2Shot: { key, shotId: s.id, provider, model, attempt, verdict: d.verdict }, ...g.meta } });
+    const asset = await saveAsset({ projectId: p.id, userId: p.userId, data: buf, name: `plan-${s.id}-${s.part}${attempt ? `-essai-${attempt + 1}` : ""}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "generated", sourceAssetId: startAsset ?? null, status: d.verdict === "FINAL" ? "review" : "rejected", meta: {durationS:inspected.durationS, videoV2Shot: { key, shotId: s.id, provider, model, attempt, verdict: d.verdict }, ...g.meta } });
     last = { verdict: d.verdict, codes: [...d.fatalCodes, ...d.blockingCodes], reason: [d.reason, d.feedback].filter(Boolean).join(" — "), assetId: asset.id };
     if (d.verdict === "FINAL") break;
     if (d.verdict !== "RETRY" || d.action !== "regenerate") break;
@@ -502,7 +512,7 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
     feedback = d.feedback || review?.issues.join("; ");
   }
   rememberShot(p.id, key, { assetId: last.verdict === "FINAL" ? last.assetId : null, method: s.method, verdict: last.verdict, provider, model, costMicro: spent, attempts: maxAttempts, reason: last.reason });
-  if (last.verdict === "FINAL" && last.assetId) return { media: { kind: "video", assetId: last.assetId, generated: true }, outcome: { ...base, verdict: "FINAL", assetId: last.assetId, attempts: maxAttempts, costMicro: spent, reason: "plan généré accepté au contrôle", codes: [] }, characterRef: s.character && startAsset ? { assetId: startAsset, data: start } : null };
+  if (last.verdict === "FINAL" && last.assetId) return { media: { kind: "video", assetId: last.assetId, generated: true,durationS:Number(JSON.parse(getAsset(last.assetId)?.meta??"{}").durationS)||undefined }, outcome: { ...base, verdict: "FINAL", assetId: last.assetId, attempts: maxAttempts, costMicro: spent, reason: "plan généré accepté au contrôle", codes: [] }, characterRef: s.character && startAsset ? { assetId: startAsset, data: start } : null };
   throw new Error(`Scène ${s.id} non obtenue ou refusée : ${last.reason || last.codes.join(", ")}. Versions conservées, aucun plan simplifié substitué.`);
 }
 
@@ -645,6 +655,8 @@ export function snapToBeat(clips: Clip[], beatS: number): Clip[] {
     prev = cuts[cuts.length - 1];
   }
   const bounds = [0, ...cuts, total];
+  // A musical cut never extends an approved filmed passage past its source window.
+  if(clips.some((c,k)=>c.source.kind==="video"&&bounds[k+1]-bounds[k]>Math.min(c.durationS,c.source.outS-c.source.inS)+.001))return clips.map(c=>structuredClone(c));
   return clips.map((c, k) => {
     const d = Math.round((bounds[k + 1] - bounds[k]) * 1000) / 1000;
     const source = c.source.kind === "video" ? { ...c.source, outS: c.source.inS + d } : c.source;
@@ -819,11 +831,19 @@ export async function regenerateClip(ctx: JobContext | null, projectId: string, 
  * Vidéo en scènes (création guidée ou création du projet) : son étiquette (sujet, demande, publication ou publicité)
  * suit ses nouveaux rendus et ses copies (autre format), pour qu'elles restent rangées avec les vidéos du client.
  */
-function scenesMetaOf(projectId: string, docKey: string, createdFrom: string | null): Record<string, unknown> | null {
+function scenesMetaOf(projectId: string, docKey: string, createdFrom: string | null, doc:VideoDocument): Record<string, unknown> | null {
   for (const key of [docKey, createdFrom]) {
     if (!key) continue;
     const r = one<{ m: string | null }>("SELECT json_extract(meta, '$.scenes') m FROM assets WHERE project_id = ? AND json_extract(meta, '$.videoV2.docKey') = ? AND json_extract(meta, '$.scenes') IS NOT NULL ORDER BY created_at DESC LIMIT 1", projectId, key);
     if (r?.m) return JSON.parse(r.m);
+  }
+  // Interrupted first encode: no prior rendered asset exists, but the complete guided document survives.
+  const e=doc.meta.editorial;
+  if(doc.meta.ending?.kind==="last_clip" && e) {
+    const raw=e.subject as {kind?:unknown;key?:unknown;name?:unknown}|null;
+    const selected=raw?.kind==="product"&&typeof raw.key==="string"?{kind:"product" as const,key:raw.key}:raw?.kind==="service"&&typeof raw.name==="string"?{kind:"service" as const,name:raw.name}:null;
+    const subject=resolveSubject(loadProject(projectId),selected);
+    return {key:docKey,mode:doc.clips.some(c=>c.generated)?"ai":"stock",as:e.purpose==="ad"?"ad":"post",subject:subject?{kind:subject.kind,key:subject.key,name:subject.name}:null,request:typeof e.request==="string"?e.request:null,music:!!doc.audio.music};
   }
   return null;
 }
@@ -841,7 +861,7 @@ export async function renderLatest(ctx: JobContext | null, projectId: string, do
     // Rendu d'une version modifiée par le client : au mieux PROVISOIRE (le client valide lui-même).
     const d = gateVideo({ local, review: null, attempt: 0 });
     const g = gateSave({ userId: p.userId, projectId, jobId: ctx?.job.id ?? null, candidateId: `video2:${docKey}` }, d);
-    const scenes = scenesMetaOf(projectId, docKey, cur.doc.meta.createdFrom);
+    const scenes = scenesMetaOf(projectId, docKey, cur.doc.meta.createdFrom,cur.doc);
     const changed=latestVideo(projectId,docKey)?.version.id!==cur.version.id || videoScope(loadProject(projectId),{docKey})!==scopeBefore;
     const targetKey=changed?`${docKey}:conflict:${crypto.randomUUID().slice(0,8)}`:docKey;
     const saved = await saveRendered(projectId, p.userId, targetKey, cur.doc, ex, { ...g.meta, videoV2Render: { version: cur.version.version }, ...(scenes ? { scenes: { ...scenes, music: !!cur.doc.audio.music } } : {}) });

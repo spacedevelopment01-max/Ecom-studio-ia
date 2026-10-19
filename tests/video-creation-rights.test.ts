@@ -27,6 +27,17 @@ describe("Création vidéo guidée : droits natifs, sans fournisseur", async () 
     const next=await response.json();expect(response.status,JSON.stringify(next)).toBe(200);expect(next.scenario.scenes[0].title).toBe("Titre conservé");expect(next.approvalToken).toBeTruthy();
     expect(all("SELECT id FROM jobs WHERE project_id=? AND type='video.scenario'",pid)).toHaveLength(1);
   });
+  it("expose le document conservé après échec du premier encodage, puis retire la carte d'erreur après rendu",async()=>{
+    const {loadProject}=await import("@/lib/projects");const {buildSceneDoc,localScenePlan}=await import("@/lib/video-v2/three-scenes");const {saveVideoVersion}=await import("@/lib/video-v2/store");
+    const u=await createUser(`resume-encode-${crypto.randomUUID()}@test.invalid`,"motdepasse-test","Fixture");sessionUser=u;const pid=seedImageFixture(u.id,"restaurant"),p=loadProject(pid);
+    const request={as:"post" as const,key:"fixture-first-encode"};const docKey=`vid:${(await import("node:crypto")).default.createHash("sha256").update(request.key).digest("hex").slice(0,20)}`;
+    const {enqueue}=await import("@/lib/jobs");const job=enqueue({userId:u.id,projectId:pid,type:"video.scenes",label:"Échec simulé",payload:{request}});run("UPDATE jobs SET status='failed',error='Encodeur interrompu' WHERE id=?",job.id);
+    const plan=localScenePlan(p,null,request),doc=buildSceneDoc(p,[0,1,2].map(k=>({assetId:`source${k}`,durationS:5,generated:false})),plan,"9:16","post");saveVideoVersion(pid,docKey,doc);
+    const ctx={params:Promise.resolve({id:pid})},get=()=>route.GET(new Request("http://localhost"),ctx);
+    expect((await(await get()).json()).drafts[0].docKey).toBe(docKey);
+    saveVideoVersion(pid,docKey,doc,{renderedAssetId:"fixture-rendered"});expect((await(await get()).json()).drafts).toHaveLength(0);
+    expect(all("SELECT id FROM jobs WHERE project_id=?",pid)).toHaveLength(1);
+  });
   it("devis consultable, création refusée sans forfait même pour montage gratuit ; propriétaire payé accepté, étranger refusé", async () => {
     const u = await createUser(`video-droits-${crypto.randomUUID()}@test.fr`, "motdepasse-test", "Test isolé");
     sessionUser = u;
