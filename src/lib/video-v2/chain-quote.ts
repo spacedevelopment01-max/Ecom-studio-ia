@@ -1,6 +1,6 @@
 /** Quote for the guided chain actually executed, not a generic social-poster package. */
 import {sceneGenerationRoute} from "./scene-generation";
-import { aiPostMaxMicro,wanClipMaxMicro } from "../ai/media-providers";
+import { mediaReservationMaxMicro,aiPostMaxMicro,wanClipMaxMicro } from "../ai/media-providers";
 import { estimateTaskMicro } from "../ai/estimate";
 import { routeFor,usdToEur,FX_SAFETY } from "../ai/config";
 import { projectRights } from "../plan-gates";
@@ -34,7 +34,7 @@ export function sceneChainQuote(p:Project,req:ThreeScenesRequest) {
  ];
  const firstMicro=steps.reduce((sum,s)=>sum+s.totalMicro,0);
  const oneSceneRetakeMicro=image+imageQc+clip+clipQc;
- const maximumMicro=firstMicro+oneSceneRetakeMicro;
+ const maximumMicro=req.generation?mediaReservationMaxMicro(firstMicro+oneSceneRetakeMicro):firstMicro+oneSceneRetakeMicro;
  const missingReference=req.generation==="reference"&&!productReferences(p.id).length&&!resolveSubject(p,req.subject??null)?.referenceAssetId&&Array.from({length:n},(_,k)=>req.sceneImages?.[k]).some(x=>!x);
  const missingContext=!p.brand?.name.trim()?"Validez le nom et l’identité de votre projet dans sa préparation.":!(p.business==="services"?p.services.services.some(s=>s.name.trim()):p.product.name.trim())?"Quel produit ou quelle prestation souhaitez-vous présenter ? Renseignez cette offre dans le projet.":null;
  const reason=missingContext??(missingReference?"Choisissez une photo autorisée pour chaque scène, ou le mode direct sans référence.":null)??common.reason??(route&&!route.allowed?route.reason:null)??(common.mode==="ai"&&!review?"Contrôle visuel indisponible : aucun clip IA ne sera lancé.":null);

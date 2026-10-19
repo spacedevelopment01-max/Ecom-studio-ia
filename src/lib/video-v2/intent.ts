@@ -118,7 +118,7 @@ export function videoIntent(p: Project, ask: VideoAsk = {}): VideoIntent {
     reasons.push("UGC impossible sans génération autorisée : contenu social monté à partir de l'existant");
   }
   // Règle de présence humaine : un UGC (personnage face caméra) exige l'autorisation du client, même demandé.
-  const people = ask.peopleAllowed ?? peopleAllowedFor(p);
+  const people = ask.generation?false:ask.peopleAllowed ?? peopleAllowedFor(p);
   if (kind === "ugc" && !people) {
     kind = "social_content";
     reasons.push("UGC impossible : aucune personne autorisée par le client (aucune photo du client avec une personne, aucun accord explicite) — contenu social sans personnage");

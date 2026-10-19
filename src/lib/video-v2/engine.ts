@@ -87,6 +87,7 @@ type Budget = { capMicro: number; spentMicro: number };
 const hash = (x: unknown) => crypto.createHash("sha256").update(JSON.stringify(x)).digest("hex").slice(0, 16);
 
 export async function runVideoEngineV2(ctx: JobContext | null, projectId: string, req: VideoRequestV2, injected?: VideoV2Deps): Promise<VideoRunResult> {
+  if(req.ask.generation&&!req.planOnly&&(!req.approval||!req.approveGeneration))throw new Error("Accord explicite sur le scénario et les clips IA requis ; aucun montage simplifié substitué.");
   const p = loadProject(projectId);
   const jobId = ctx?.job.id ?? null;
   const selected = resolveSubject(p, req.ask.subject ?? null);
@@ -131,6 +132,7 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
   const sbIssues = storyboardIssues(storyboard, strategy.durationS);
   if (sbIssues.length) notes.push(...sbIssues.map((x) => `storyboard : ${x}`));
   const canGenerate = req.ask.allowGeneration !== false && deps.generationAllowed && deps.canReview;
+  if(intent.generation&&!canGenerate)throw new Error("Les clips IA demandés ne sont pas disponibles ou contrôlables ; aucun stock ni montage local substitué.");
   if (req.ask.allowGeneration !== false && !deps.canReview && deps.generationAllowed) notes.push("contrôle de vision indisponible : aucun plan généré (il ne pourrait pas être validé)");
   const planning = planShots(storyboard, {
     intent,
@@ -148,6 +150,7 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
   // Accord du client : sans accord explicite, les plans payants deviennent des plans locaux (rien n'est dépensé).
   let shots = planning.shots;
   if (planning.estimateMicro > 0 && !req.approveGeneration) {
+    if(intent.generation)throw new Error("Accord clips IA manquant ; aucun remplacement local.");
     notes.push(`génération non approuvée (coût probable ${budgetPctText(p.userId, planning.estimateMicro, p.id)}) : vidéo montée sans plan généré`);
     shots = planShots(storyboard, { intent, strategy, inv, allowGeneration: false, provider: () => null, budgetMicro: 0 }).shots;
     result.shots = shots;

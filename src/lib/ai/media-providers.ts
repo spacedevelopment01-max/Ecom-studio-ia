@@ -197,6 +197,8 @@ export const mediaPoll = { veoMs: 10_000, falVideoMs: 6000, falImageMs: 3000, wa
 
 /** Marge prudente sur le coût d'une génération (jetons d'image variables selon la taille et la qualité). */
 const MEDIA_MAX_FACTOR = 1.25;
+/** Même borne que la réservation native ; les devis ne peuvent pas promettre un plafond inférieur. */
+export const mediaReservationMaxMicro=(micro:number)=>Math.ceil(micro*MEDIA_MAX_FACTOR*FX_SAFETY*Math.max(1,getJsonSetting<number>("billing.markup",1)));
 
 /**
  * Avant une génération : quota du forfait (message clair s'il est épuisé), plafond de la tâche, puis réservation
@@ -207,7 +209,7 @@ function gate(ctx: Ctx, micro: number, media: "image" | "video", provider: strin
   assertAiAllowed(ctx.userId, ctx.projectId);
   const q = quotaFor(media);
   if (q) assertQuota(ctx.userId, q);
-  const max = Math.ceil(micro * MEDIA_MAX_FACTOR * FX_SAFETY * Math.max(1, getJsonSetting<number>("billing.markup", 1)));
+  const max = mediaReservationMaxMicro(micro);
   assertUnderCostCap(max);
   const t = mediaTrace.getStore();
   // Hors trace (appel direct, jamais en pratique) : la génération serait sans suivi de réservation — refusée.
@@ -557,7 +559,7 @@ export function textLayoutMaxMicro(): number | null {
   if (!r) return null;
   const prompt = "x".repeat(PUBLICATION_PROMPT_MAX_BYTES);
   const micro = r.provider === "openai" ? openaiImageMax(r.model, { prompt, images: 2, size: "1024x1536", quality: "high" }) : r.provider === "google" ? geminiImageMax(r.model, { prompt, images: 2 }) : cost(r.provider, r.model, { images: 1 }).micro;
-  return Math.ceil(micro * MEDIA_MAX_FACTOR * FX_SAFETY * Math.max(1, getJsonSetting<number>("billing.markup", 1)));
+  return mediaReservationMaxMicro(micro);
 }
 
 export const prepareImageReference=(data:Buffer,max=768)=>sharp(data).rotate().resize(max,max,{fit:"inside",withoutEnlargement:true}).png().toBuffer();
@@ -693,7 +695,7 @@ export function logoRelayMaxMicro(): number | null {
   const r = logoQualityRelay();
   if (!r) return null;
   const micro = openaiImageMax(r.model, { prompt: "x".repeat(LOGO_PROMPT_MAX_BYTES), images: 0, size: "1024x1024", quality: "high" });
-  return Math.ceil(micro * MEDIA_MAX_FACTOR * FX_SAFETY * Math.max(1, getJsonSetting<number>("billing.markup", 1)));
+  return mediaReservationMaxMicro(micro);
 }
 
 /** Taille maximale d'une demande de logo complet : borne le coût maximal du devis (jamais dépassé). */
@@ -716,7 +718,7 @@ export function logoArtworkMaxMicro(opts: { text?: boolean } = { text: true }): 
   const prompt = "x".repeat(LOGO_PROMPT_MAX_BYTES);
   const model = r.model;
   const micro = r.provider === "openai" ? openaiImageMax(model, { prompt, images: 0, size: "1024x1024", quality: "high" }) : r.provider === "google" ? geminiImageMax(model, { prompt, images: 0 }) : cost(r.provider, model, { images: 1 }).micro;
-  return Math.ceil(micro * MEDIA_MAX_FACTOR * FX_SAFETY * Math.max(1, getJsonSetting<number>("billing.markup", 1)));
+  return mediaReservationMaxMicro(micro);
 }
 
 /** Coût MAXIMAL d'une publication conçue par l'IA (même calcul que la réservation faite avant l'appel). null : aucun modèle. */
@@ -725,7 +727,7 @@ export function aiPostMaxMicro(references = 2,photoOnly=false): number | null {
   if (!r) return null;
   const prompt = "x".repeat(PUBLICATION_PROMPT_MAX_BYTES);
   const micro = r.provider === "openai" ? openaiImageMax(r.model, { prompt, images: references, size: "1024x1536", quality: "high" }) : r.provider === "google" ? geminiImageMax(r.model, { prompt, images: references }) : cost(r.provider, r.model, { images: references }).micro;
-  return Math.ceil(micro * MEDIA_MAX_FACTOR * FX_SAFETY * Math.max(1, getJsonSetting<number>("billing.markup", 1)));
+  return mediaReservationMaxMicro(micro);
 }
 
 /**
