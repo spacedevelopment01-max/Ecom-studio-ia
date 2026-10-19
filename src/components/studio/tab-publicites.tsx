@@ -101,7 +101,7 @@ export default function TabPublicites() {
           <>
             <Card className="p-4 text-sm text-ink-2">{t("Publicités vidéo et vidéos UGC (personnage synthétique, toujours signalé). Elles restent dans Publicités : les vidéos des publications organiques se créent dans Publications › Publication vidéo.", "Video ads and UGC videos (synthetic presenter, always disclosed). They stay in Ads: organic post videos are created in Posts › Video post.")}</Card>
             <GuidedVideo as="ad" />
-            <VideoV2Panel scope="ad" />
+            <details className="mt-5 rounded-xl border border-line p-4"><summary className="cursor-pointer font-medium">{t("Montage avancé de vos médias", "Advanced media editing")}</summary><VideoV2Panel scope="ad" /></details>
           </>
         )}
         {section === "campagnes" && <CampaignsPanel autoNew={newCampaign} />}
