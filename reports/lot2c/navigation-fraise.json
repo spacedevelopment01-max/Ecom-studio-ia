@@ -1,7 +1,7 @@
 {
   "kind": "fraise",
-  "dir": "<copie retéléchargée de l'aperçu livré>/fraise",
-  "date": "2026-10-19T08:27:26.755Z",
+  "dir": "<local>/delivered-r9/fraise",
+  "date": "2026-10-19T09:31:24.506Z",
   "report": [
     {
       "device": "mobile",
@@ -83,7 +83,7 @@
       ],
       "anchor": {
         "hash": "#MainContent",
-        "parentScrollY": 4279
+        "parentScrollY": 4273
       },
       "cart": {
         "before": 0,
@@ -170,7 +170,7 @@
       ],
       "anchor": {
         "hash": "#MainContent",
-        "parentScrollY": 4257
+        "parentScrollY": 4284
       },
       "cart": {
         "before": 0,

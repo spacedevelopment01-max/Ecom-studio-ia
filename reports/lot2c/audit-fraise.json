@@ -1,7 +1,7 @@
 {
   "kind": "fraise",
-  "dir": "<copie retéléchargée de l'aperçu livré>/fraise",
-  "date": "2026-10-19T08:29:19.091Z",
+  "dir": "<local>/delivered-r9/fraise",
+  "date": "2026-10-19T09:33:21.189Z",
   "pages": 16,
   "viewports": [
     "360x740",
@@ -13,8 +13,7 @@
   ],
   "focusStops": 40,
   "summary": {
-    "tap-target-small": 34,
-    "covered-by-fixed": 9
+    "tap-target-small": 34
   },
   "grouped": {
     "tap-target-small": {
@@ -79,21 +78,6 @@
         "li.cv-story > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 213×22 px « Voir les gummies »",
         "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 213×22 px « Voir les gummies »",
         "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 213×22 px « Voir les gummies »"
-      ]
-    },
-    "covered-by-fixed": {
-      "produit.html @ 360x560": [
-        "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb.is-active — haut : « Afficher l'image 1 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
-        "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb — haut : « Afficher l'image 2 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
-        "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb — haut : « Afficher l'image 3 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
-        "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb — haut : « Afficher l'image 4 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar"
-      ],
-      "produit.html @ 390x620": [
-        "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb.is-active — haut : « Afficher l'image 1 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
-        "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb — haut : « Afficher l'image 2 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
-        "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb — haut : « Afficher l'image 3 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
-        "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb — haut : « Afficher l'image 4 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
-        "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb — haut : « Afficher l'image 5 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar"
       ]
     }
   },
@@ -288,34 +272,6 @@
       "selector": "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
     },
     {
-      "kind": "covered-by-fixed",
-      "page": "produit.html",
-      "viewport": "360x560",
-      "detail": "haut : « Afficher l'image 1 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
-      "selector": "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb.is-active"
-    },
-    {
-      "kind": "covered-by-fixed",
-      "page": "produit.html",
-      "viewport": "360x560",
-      "detail": "haut : « Afficher l'image 2 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
-      "selector": "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb"
-    },
-    {
-      "kind": "covered-by-fixed",
-      "page": "produit.html",
-      "viewport": "360x560",
-      "detail": "haut : « Afficher l'image 3 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
-      "selector": "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb"
-    },
-    {
-      "kind": "covered-by-fixed",
-      "page": "produit.html",
-      "viewport": "360x560",
-      "detail": "haut : « Afficher l'image 4 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
-      "selector": "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb"
-    },
-    {
       "kind": "tap-target-small",
       "page": "accueil.html",
       "viewport": "390x620",
@@ -363,41 +319,6 @@
       "viewport": "390x620",
       "detail": "213×22 px « Voir les gummies »",
       "selector": "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
-    },
-    {
-      "kind": "covered-by-fixed",
-      "page": "produit.html",
-      "viewport": "390x620",
-      "detail": "haut : « Afficher l'image 1 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
-      "selector": "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb.is-active"
-    },
-    {
-      "kind": "covered-by-fixed",
-      "page": "produit.html",
-      "viewport": "390x620",
-      "detail": "haut : « Afficher l'image 2 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
-      "selector": "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb"
-    },
-    {
-      "kind": "covered-by-fixed",
-      "page": "produit.html",
-      "viewport": "390x620",
-      "detail": "haut : « Afficher l'image 3 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
-      "selector": "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb"
-    },
-    {
-      "kind": "covered-by-fixed",
-      "page": "produit.html",
-      "viewport": "390x620",
-      "detail": "haut : « Afficher l'image 4 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
-      "selector": "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb"
-    },
-    {
-      "kind": "covered-by-fixed",
-      "page": "produit.html",
-      "viewport": "390x620",
-      "detail": "haut : « Afficher l'image 5 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
-      "selector": "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb"
     }
   ]
 }

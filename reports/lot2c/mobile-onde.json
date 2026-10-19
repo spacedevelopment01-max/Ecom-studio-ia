@@ -1,7 +1,7 @@
 {
   "kind": "onde",
-  "dir": "<copie retéléchargée de l'aperçu livré>/onde",
-  "date": "2026-10-19T03:00:11.791Z",
+  "dir": "<local>/delivered-r9/onde",
+  "date": "2026-10-19T09:35:02.502Z",
   "report": [
     {
       "dev": "390x620",
@@ -73,6 +73,18 @@
     },
     {
       "dev": "390x620",
+      "purchaseBar": {
+        "atTop": 0,
+        "thumbsReachable": 4,
+        "afterScroll": {
+          "top": 485.640625,
+          "bottom": 620,
+          "height": 134.359375
+        }
+      }
+    },
+    {
+      "dev": "390x620",
       "cart": {
         "opening": {
           "viewport": 620,
@@ -139,8 +151,6 @@
             "visible": true
           },
           "chip": {
-            "top": 0,
-            "bottom": 0,
             "visible": false
           }
         },
@@ -209,8 +219,6 @@
             "visible": true
           },
           "chip": {
-            "top": 0,
-            "bottom": 0,
             "visible": false
           }
         },
@@ -292,6 +300,18 @@
     },
     {
       "dev": "360x560",
+      "purchaseBar": {
+        "atTop": 0,
+        "thumbsReachable": 4,
+        "afterScroll": {
+          "top": 425.640625,
+          "bottom": 560,
+          "height": 134.359375
+        }
+      }
+    },
+    {
+      "dev": "360x560",
       "cart": {
         "opening": {
           "viewport": 560,
@@ -358,8 +378,6 @@
             "visible": true
           },
           "chip": {
-            "top": 0,
-            "bottom": 0,
             "visible": false
           }
         },
@@ -428,8 +446,6 @@
             "visible": true
           },
           "chip": {
-            "top": 0,
-            "bottom": 0,
             "visible": false
           }
         },

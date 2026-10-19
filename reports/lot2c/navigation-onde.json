@@ -1,7 +1,7 @@
 {
   "kind": "onde",
-  "dir": "<copie retéléchargée de l'aperçu livré>/onde",
-  "date": "2026-10-19T03:02:07.412Z",
+  "dir": "<local>/delivered-r9/onde",
+  "date": "2026-10-19T09:36:46.674Z",
   "report": [
     {
       "device": "mobile",
@@ -83,11 +83,11 @@
       ],
       "anchor": {
         "hash": "#MainContent",
-        "parentScrollY": 3311
+        "parentScrollY": 3339
       },
       "cart": {
-        "before": 775,
-        "after": 775
+        "before": 818,
+        "after": 818
       }
     },
     {
@@ -170,11 +170,11 @@
       ],
       "anchor": {
         "hash": "#MainContent",
-        "parentScrollY": 2980
+        "parentScrollY": 3008
       },
       "cart": {
-        "before": 0,
-        "after": 0
+        "before": 26,
+        "after": 26
       }
     }
   ]

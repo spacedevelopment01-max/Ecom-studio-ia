@@ -1,7 +1,7 @@
 {
-  "testedCommit": "b6a878a27498c3c26532e706000548386937e614",
+  "testedCommit": "b86eb1da2b3342fc70f2fa41d2a80998a6972d78",
   "workingTree": "clean",
-  "date": "2026-10-19T08:16:30.735Z",
+  "date": "2026-10-19T09:40:37.762Z",
   "renderMode": "es_raw=1 — thème issu des vraies routes, sans le bandeau flottant du studio",
   "widths": [
     1440,
@@ -191,7 +191,7 @@
           "metrics": {
             "width": 768,
             "scrollWidth": 768,
-            "height": 11701,
+            "height": 11627,
             "h1": 1,
             "images": 28,
             "brokenImages": [],
@@ -209,7 +209,7 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 12413,
+            "height": 12339,
             "h1": 1,
             "images": 28,
             "brokenImages": [],
@@ -227,7 +227,7 @@
           "metrics": {
             "width": 360,
             "scrollWidth": 360,
-            "height": 12586,
+            "height": 12512,
             "h1": 1,
             "images": 28,
             "brokenImages": [],

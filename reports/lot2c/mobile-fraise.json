@@ -1,7 +1,7 @@
 {
   "kind": "fraise",
-  "dir": "<copie retéléchargée de l'aperçu livré>/fraise",
-  "date": "2026-10-19T08:25:44.795Z",
+  "dir": "<local>/delivered-r9/fraise",
+  "date": "2026-10-19T09:29:40.871Z",
   "report": [
     {
       "dev": "390x620",
@@ -131,6 +131,18 @@
     },
     {
       "dev": "390x620",
+      "purchaseBar": {
+        "atTop": 0,
+        "thumbsReachable": 4,
+        "afterScroll": {
+          "top": 543.71875,
+          "bottom": 620,
+          "height": 76.28125
+        }
+      }
+    },
+    {
+      "dev": "390x620",
       "cart": {
         "opening": {
           "viewport": 620,
@@ -201,8 +213,6 @@
             "visible": true
           },
           "chip": {
-            "top": 0,
-            "bottom": 0,
             "visible": false
           }
         },
@@ -275,8 +285,6 @@
             "visible": true
           },
           "chip": {
-            "top": 0,
-            "bottom": 0,
             "visible": false
           }
         },
@@ -416,6 +424,18 @@
     },
     {
       "dev": "360x560",
+      "purchaseBar": {
+        "atTop": 0,
+        "thumbsReachable": 4,
+        "afterScroll": {
+          "top": 483.71875,
+          "bottom": 560,
+          "height": 76.28125
+        }
+      }
+    },
+    {
+      "dev": "360x560",
       "cart": {
         "opening": {
           "viewport": 560,
@@ -486,8 +506,6 @@
             "visible": true
           },
           "chip": {
-            "top": 0,
-            "bottom": 0,
             "visible": false
           }
         },
@@ -560,8 +578,6 @@
             "visible": true
           },
           "chip": {
-            "top": 0,
-            "bottom": 0,
             "visible": false
           }
         },
