@@ -1,0 +1,23 @@
+[
+  {
+    "variant": "demux-loop",
+    "exit": 0,
+    "seconds": 1.69,
+    "bytes": 7938078,
+    "stderr": ""
+  },
+  {
+    "variant": "demux-loop",
+    "exit": 0,
+    "seconds": 1.65,
+    "bytes": 7938078,
+    "stderr": ""
+  },
+  {
+    "variant": "demux-loop",
+    "exit": 0,
+    "seconds": 1.65,
+    "bytes": 7938078,
+    "stderr": ""
+  }
+]

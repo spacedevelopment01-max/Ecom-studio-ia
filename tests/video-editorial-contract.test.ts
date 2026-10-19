@@ -28,6 +28,13 @@ describe("Contrat éditorial vidéo commun, aucun appel fournisseur",()=>{
   expect(plan.cta).toBe("");expect(plan.scenes.map(s=>s.voice)).toEqual(["Dépoussiérer.","Laisser sécher.",""]);
   expect(videoContext(p,"post",post.request,post.subject,editorial).editorial).toEqual(editorial);
  });
+ it("accepte le scénario IA organique sans exiger un CTA ni repayer sa rédaction",async()=>{
+  const u=await createUser(`organic-script-${crypto.randomUUID()}@test.invalid`,"motdepasse-test","Fixture");const p=loadProject(seedImageFixture(u.id,"hightech"));
+  const {mockVideoDeps,shortVideoScript}=await import("./video-v2-mock");const {runVideoEngineV2}=await import("@/lib/video-v2/engine");
+  const {deps,log}=mockVideoDeps({userId:p.userId,projectId:p.id,canWrite:true,generationAllowed:false,script:shortVideoScript});
+  const r=await runVideoEngineV2(null,p.id,{ask:{purpose:"organic",text:"Expliquer un point à vérifier.",durationS:15},renderScale:.1,fps:2},deps);
+  expect(r.script.by,JSON.stringify({notes:r.notes,issues:r.script.issues})).toBe("ai");expect(r.script.sections.some(s=>s.part==="cta")).toBe(false);expect(r.script.issues).toEqual([]);expect(log.scripts).toBe(1);
+ },30000);
  it("ne raccourcit pas les blocs longs pour faire croire qu'ils tiennent",async()=>{
   const u=await createUser(`video-long-${crypto.randomUUID()}@test.invalid`,"motdepasse-test","Fixture");
   const p=loadProject(seedImageFixture(u.id,"hightech"));

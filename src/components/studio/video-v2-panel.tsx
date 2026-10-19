@@ -17,7 +17,7 @@ import { AD_VIDEO_INTENTS } from "@/lib/media/bank";
 import { MusicChoice } from "./music-choice";
 
 type VideoItem = { docKey: string; version: number; edited: boolean; intent: string | null; aspect: string | null; platform: string | null; durationS: number; clips: number; url: string | null; renderedAssetId: string | null; renderedVersion: number | null; needsRender: boolean; status: string | null; verdict: string | null; at: number };
-type Plan = { shots: { id: string; part: string; durationS: number; subject: string; method: string; paid: boolean; estimateMicro: number }[]; estimateMicro: number; notes: string[]; script?: { hook?: string } | null };
+type Plan = { approvalToken?:string; shots: { id: string; part: string; durationS: number; subject: string; method: string; paid: boolean; estimateMicro: number }[]; estimateMicro: number; notes: string[]; script?: { hook?: string } | null };
 type DocView = { docKey: string; version: number; versions: { version: number; source: string; note: string; renderedAssetId: string | null; createdAt: number }[]; problems: string[]; durationS: number; doc: { aspect: string; audio?: { music?: unknown | null }; clips: { id: string; durationS: number; source?: { kind?: string }; text?: { value?: string }[] }[] } };
 
 const KINDS: [string, string, string][] = [
@@ -48,7 +48,7 @@ export function VideoV2Panel({ scope }: { scope?: "ad" | "organic" } = {}) {
   const [busy, setBusy] = useState<string | null>(null);
   const [open, setOpen] = useState<string | null>(null);
   const aiVideo = !!data?.ai.video;
-  const ask = () => ({ kind: form.kind, platform: form.platform, text: form.text.trim() || undefined, allowGeneration: form.allowGeneration && aiVideo });
+  const ask = () => ({ purpose:scope==="organic"?"organic":scope==="ad"?"ad":undefined, kind: form.kind, platform: form.platform, text: form.text.trim() || undefined, allowGeneration: form.allowGeneration && aiVideo });
   async function preparePlan() {
     setBusy("plan");
     try {
@@ -63,7 +63,7 @@ export function VideoV2Panel({ scope }: { scope?: "ad" | "organic" } = {}) {
     setBusy("go");
     try {
       // Accord explicite : les plans payants ne sont produits qu'après avoir vu l'estimation (sinon montage local).
-      await api(`/api/projects/${id}/videos/v2`, { body: { action: "generate", ask: ask(), approveGeneration: !!plan && plan.estimateMicro > 0 && form.allowGeneration && aiVideo } });
+      await api(`/api/projects/${id}/videos/v2`, { body: { approvalToken:plan?.approvalToken, action: "generate", ask: ask(), approveGeneration: !!plan && plan.estimateMicro > 0 && form.allowGeneration && aiVideo } });
       toast("ok", t("Vidéo en préparation : elle apparaît ci-dessous à la fin du rendu.", "Video in progress: it appears below once rendered."));
       setPlan(null);
       reload();
@@ -88,7 +88,7 @@ export function VideoV2Panel({ scope }: { scope?: "ad" | "organic" } = {}) {
           <Select id="v2vplat" value={form.platform} onChange={(e) => (setForm({ ...form, platform: e.target.value }), setPlan(null))}>{PLATFORMS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</Select>
         </Field>
         <div className="sm:col-span-2"><Field label={t("Votre demande (facultatif)", "Your request (optional)")} htmlFor="v2vtext">
-          <Textarea id="v2vtext" rows={2} maxLength={600} value={form.text} onChange={(e) => (setForm({ ...form, text: e.target.value }), setPlan(null))} placeholder={t("Ex. 20 secondes, montrer la texture et finir sur la boutique", "E.g. 20 seconds, show the texture and end on the store")} />
+          <Textarea id="v2vtext" rows={2} maxLength={12000} value={form.text} onChange={(e) => (setForm({ ...form, text: e.target.value }), setPlan(null))} placeholder={t("Ex. 20 secondes, montrer la texture et finir sur la boutique", "E.g. 20 seconds, show the texture and end on the store")} />
         </Field></div>
       </div>
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">

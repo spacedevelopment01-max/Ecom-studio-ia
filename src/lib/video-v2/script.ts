@@ -128,17 +128,17 @@ export function localScript(i: AdInsight, st: CreativeStrategy, intent: VideoInt
     const content = e.blocks.length ? e.blocks.map(b=>b.text) : [e.caption];
     const lines = [e.title, ...content.filter(Boolean)];
     const seconds = st.durationS / lines.length;
-    const sections:ScriptSection[] = lines.map((text,k)=>({part:k===0?"hook":"development",durationS:seconds,voice:text,onScreen:k===0?e.title:""}));
-    return {style:st.style.narrative,sections,by:"local",issues:scriptIssues(sections,{proofs:st.proofs,facts:i.facts,ctaRequired:!organicVideo(e)})};
+    const sections:ScriptSection[] = lines.map((text,k)=>({part:k===0?"hook":e.blocks[k-1]?.kind==="cta"?"cta":"development",durationS:seconds,voice:text,onScreen:k===0?e.title:""}));
+    return {style:st.style.narrative,sections,by:"local",issues:scriptIssues(sections,{proofs:st.proofs,facts:i.facts,ctaRequired:e.purpose==="ad"})};
   }
-  const parts: ScriptPart[] = ["hook", "development", "demonstration", ...(st.proofs.length ? (["proof"] as const) : []), "conclusion", "cta"];
+  const parts: ScriptPart[] = ["hook", "development", "demonstration", ...(st.proofs.length ? (["proof"] as const) : []), "conclusion", ...(intent.purpose === "organic" ? [] : ["cta" as const])];
   // Vidéo très courte : on garde l'essentiel (accroche, démonstration, CTA).
   const kept = st.durationS < 10 ? parts.filter((p) => p === "hook" || p === "demonstration" || p === "cta") : parts;
   const durations = allocate(kept, st.durationS);
   const lines = voiceLines(i, st, intent);
   const cap = (x: string) => x.charAt(0).toLocaleUpperCase() + x.slice(1);
   const sections = kept.map((part, k) => ({ part, durationS: durations[k], voice: lines[part].voice, onScreen: cap(lines[part].onScreen.slice(0, 60)) }));
-  return { style: st.style.narrative, sections, by: "local", issues: scriptIssues(sections, { proofs: st.proofs, facts: i.facts, claimsToAvoid: i.claimsToAvoid }) };
+  return { style: st.style.narrative, sections, by: "local", issues: scriptIssues(sections, { proofs: st.proofs, facts: i.facts, claimsToAvoid: i.claimsToAvoid,ctaRequired:intent.purpose!=="organic" }) };
 }
 
 export const ScriptSchema = z.object({
@@ -162,6 +162,7 @@ export function scriptSystem(lang: "fr" | "en"): string {
 export function scriptPrompt(i: AdInsight, st: CreativeStrategy, intent: VideoIntent, durations: { part: ScriptPart; durationS: number }[], feedback?: string): string {
   return [
     videoEditorialInstruction(intent.editorial),
+    intent.purpose === "organic" ? "Organic content: useful advice or explanation, no forced commercial CTA." : "",
     `Intention : ${intent.kind} — but : ${intent.goal}. Plateforme : ${intent.platform}. Durée totale : ${st.durationS} s.`,
     `Marque : ${i.brand}. Offre : ${i.offerName} (${i.category.label}). Audience : ${st.audience}.`,
     `Angle : ${st.angle}. Message : ${st.message}. Émotion : ${st.emotion}. Style narratif : ${st.style.narrative}.`,
@@ -178,7 +179,11 @@ export function scriptPrompt(i: AdInsight, st: CreativeStrategy, intent: VideoIn
 /** Brouillon IA → sections aux durées prévues (une partie inconnue ou une preuve sans matière est écartée). */
 export function fromDraft(d: ScriptDraft, base: VideoScript, hasProof: boolean): ScriptSection[] {
   const plan = new Map(base.sections.map((s) => [s.part, s.durationS]));
-  return d.sections
+  const sections=d.sections
     .filter((s) => plan.has(s.part) && (s.part !== "proof" || hasProof))
     .map((s) => ({ part: s.part, durationS: plan.get(s.part)!, voice: s.voice.trim(), onScreen: s.onScreen.trim().slice(0, 60) }));
+  // A missing optional section must not shorten the approved total duration.
+  const total=base.sections.reduce((n,s)=>n+s.durationS,0),weight=sections.reduce((n,s)=>n+s.durationS,0);
+  let assigned=0;
+  return sections.map((s,k)=>{const durationS=Math.round((k===sections.length-1?total-assigned:s.durationS*total/weight)*10)/10;assigned+=durationS;return {...s,durationS};});
 }

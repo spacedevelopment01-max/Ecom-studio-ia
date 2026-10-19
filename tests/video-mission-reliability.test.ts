@@ -30,6 +30,20 @@ async function fixture(service = false) {
 }
 
 describe("Mission vidéo : refus explicites et acquis conservés (fournisseurs simulés)", () => {
+  it("sans voix, conserve toutes les phrases en sous-titres et dans le document",async()=>{
+    const {p,deps}=await fixture();const plan=localScenePlan(p,null,{as:"post"});
+    plan.scenes.forEach((s,k)=>{s.voice=`Phrase complète de la scène ${k+1}, conserver les mots et les faits.`;});plan.voiceEnd="";
+    deps.writePlan=async()=>plan;
+    const result=await runThreeScenes(null,p.id,{as:"post"},deps);const doc=latestVideo(p.id,result.docKey)!.doc;
+    expect(doc.audio.voice).toHaveLength(0);
+    for(const scene of plan.scenes)expect(doc.subtitles.cues.map(c=>c.text).join(" ")).toContain(scene.voice);
+  });
+  it("un scénario omettant une section facultative conserve la durée totale",async()=>{
+    const {fromDraft}=await import("@/lib/video-v2/script");
+    const base={style:"direct",by:"local",issues:[],sections:[{part:"hook",durationS:3,voice:"Observer.",onScreen:""},{part:"proof",durationS:4,voice:"Fait.",onScreen:""},{part:"cta",durationS:3,voice:"Découvrir.",onScreen:""}]} as const;
+    const sections=fromDraft({sections:[{part:"hook",voice:"Phrase complète.",onScreen:""},{part:"cta",voice:"Découvrir.",onScreen:""}]},structuredClone(base) as any,true);
+    expect(sections.reduce((n,s)=>n+s.durationS,0)).toBe(10);expect(sections[0].voice).toBe("Phrase complète.");
+  });
   it("quatre clips de cinq secondes entiers, conclusion superposée sur le dernier", async () => {
     const { p } = await fixture();
     const brief = buildCreativeBrief(p, { durationS: 20, width: 1080, height: 1920, platform: "reels" });
@@ -70,22 +84,21 @@ describe("Mission vidéo : refus explicites et acquis conservés (fournisseurs s
     expect((await import("@/lib/quality/usable")).isAutoUsable(images[0])).toBe(false);
   });
 
-  it("une reprise après échec du mouvement conserve le scénario et l'image déjà obtenus", async () => {
+  it("une interruption après réception du clip reprend le fichier sans nouvelle génération", async () => {
     const { p, deps } = await fixture();
     const checkpoints = new Map<string, unknown>();
-    const progress: number[] = [];
+    const progress: number[] = [];let interrupted=false;
     const ctx = { job: { id: "test-job" }, progress: (x: number) => progress.push(x), step: async <T,>(key: string, fn: () => Promise<T>) => {
       if (checkpoints.has(key)) return checkpoints.get(key) as T;
-      const value = await fn(); checkpoints.set(key, value); return value;
+      const value = await fn(); if(key.endsWith(":clip-asset-0") && !interrupted){interrupted=true;throw new Error("interruption après réception");} checkpoints.set(key, value); return value;
     } } as unknown as JobContext;
-    let failed = false;
-    deps.clip = vi.fn(async () => { if (!failed) { failed = true; throw new Error("échec confirmé avant production"); } return Buffer.from("clip simulé"); });
+    deps.clip = vi.fn(async () => Buffer.from("clip simulé"));
     const req = { as: "post", key: "test-video-reprise", scenes: 6, totalS: 30 } as const;
-    await expect(runThreeScenes(ctx, p.id, req, deps)).rejects.toThrow("échec confirmé");
+    await expect(runThreeScenes(ctx, p.id, req, deps)).rejects.toThrow("interruption après réception");
     await runThreeScenes(ctx, p.id, req, deps);
     expect(deps.writePlan).toHaveBeenCalledTimes(1);
     expect(deps.keyframe).toHaveBeenCalledTimes(6);
-    expect(deps.clip).toHaveBeenCalledTimes(7);
+    expect(deps.clip).toHaveBeenCalledTimes(6);
     const count = all<{ n: number }>("SELECT COUNT(*) n FROM video_documents WHERE project_id = ?", p.id)[0].n;
     await runThreeScenes(ctx, p.id, req, deps);
     expect(deps.render).toHaveBeenCalledTimes(1);
@@ -102,6 +115,32 @@ describe("Mission vidéo : refus explicites et acquis conservés (fournisseurs s
     await expect(runThreeScenes(null, p.id, { as: "ad", scenes: 3, totalS: 15 }, deps)).rejects.toThrow(/scènes|scenes/i);
     expect(deps.render).not.toHaveBeenCalled();
     expect(deps.keyframe).not.toHaveBeenCalled();
+  });
+
+  it("une reprise ciblée conserve les plans acceptés et ne refait que l'image refusée",async()=>{
+    const {p,deps}=await fixture();
+    const req={as:"ad",key:`target-${crypto.randomUUID()}`,scenes:4,totalS:20} as const;
+    const {approveVideoScenario,sceneApprovalRequest}=await import("@/lib/video-v2/approval");
+    const approval=approveVideoScenario(p,sceneApprovalRequest(req),localScenePlan(p,null,req),5000000).approval;
+    let reject=true;
+    deps.reviewMedia=vi.fn(async(_f,_r,_t,key)=>({score:reject&&key.endsWith(":image:1")?1:9,sameProduct:!(reject&&key.endsWith(":image:1")),productAltered:false,characterConsistent:null,offTopic:false,artifacts:false,personVisible:false,issues:[]}));
+    await expect(runThreeScenes(null,p.id,{...req,approval},deps)).rejects.toThrow(/vérifier/);
+    const firstClip=all<any>("SELECT * FROM assets WHERE project_id=? AND role='clip'",p.id)[0];
+    const rejected=all<any>("SELECT * FROM assets WHERE project_id=? AND status='rejected'",p.id);
+    expect(rejected.length).toBeGreaterThan(0);reject=false;
+    await runThreeScenes(null,p.id,{...req,approval,repair:{rootJobId:"isolated",index:1,kind:"image"}},deps);
+    expect(deps.keyframe).toHaveBeenCalledTimes(5);expect(deps.clip).toHaveBeenCalledTimes(4);
+    expect(all<any>("SELECT * FROM assets WHERE id=?",firstClip.id)[0].storage_key).toBe(firstClip.storage_key);
+    expect((await import("@/lib/quality/usable")).isAutoUsable(rejected[0])).toBe(false);
+  });
+
+  it("réutilise les photos fournies sans les régénérer ni modifier les originaux",async()=>{
+    const {p,deps}=await fixture();
+    const ref=(await import("@/lib/video-v2/creative-memory")).productReferences(p.id)[0].assetId;
+    const before=(await import("@/lib/library")).getAsset(ref)!;
+    await runThreeScenes(null,p.id,{as:"post",scenes:3,sceneImages:[0,1,2].map(()=>({assetId:ref,use:"reuse" as const}))},deps);
+    expect(deps.keyframe).not.toHaveBeenCalled();expect(deps.clip).toHaveBeenCalledTimes(3);
+    expect((await import("@/lib/library")).getAsset(ref)).toEqual(before);
   });
 
   it("une version retouchée par le client n'est pas écrasée par une reprise", async () => {

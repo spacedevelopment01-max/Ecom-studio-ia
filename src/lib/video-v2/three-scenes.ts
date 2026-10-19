@@ -8,6 +8,8 @@
  * modifiable ensuite, et remis à jour quand la marque change. Aucun personnage généré ; coût maximal annoncé avant.
  */
 import { z } from "zod";
+import { videoReceipt } from "./receipts";
+import { videoScope,sceneApprovalRequest,guidedRunKey,type VideoApproval } from "./approval";
 import { videoContext, organicVideo, videoEditorialInstruction, editorialVideoIssues, type VideoEditorial } from "./editorial";
 import { gateShot } from "./quality";
 import { gateSave, statusFor } from "../quality/store";
@@ -26,7 +28,7 @@ import { localIdeas } from "../prompt-ideas";
 import { brandTypo, palette } from "../engine/images";
 import { SIZES, VIDEO_DOC_VERSION, defaultSubtitleStyle, endCardDoc, overlayText, safeZone } from "./doc";
 import { songStyleFor } from "../media/song";
-import { renderVideoFile, saveRendered, saveVideoVersion, videoUserOwned } from "./store";
+import { latestVideo, renderVideoFile, saveRendered, saveVideoVersion, videoUserOwned } from "./store";
 import type { Clip, VideoDocument, VideoPlatform } from "./types";
 import fs from "node:fs";
 import path from "node:path";
@@ -72,6 +74,9 @@ export function sceneTimingIssue(scenes = SCENES, totalS = DEFAULT_TOTAL_S): str
 export const SCENE_VIDEO_MODEL = "wan2.6-i2v-flash";
 
 export type ThreeScenesRequest = {
+  sceneImages?:({assetId:string;use:"reuse"|"reference"}|null)[];
+  repair?:{rootJobId:string;index:number;kind:"image"|"clip";instruction?:string};
+  approval?:VideoApproval<ScenePlan>;
   editorial?: VideoEditorial;
   subject?: CreativeSubject | null;
   request?: string | null;
@@ -114,7 +119,7 @@ export type Scene = {
 export type ScenePlan = { scenes: Scene[]; line: string; cta: string; endCard?: "standard" | "large"; /** Voix de la carte de fin. */ voiceEnd?: string };
 
 export const ScenePlanSchema = z.object({
-  scenes: z.array(z.object({ still: z.string().min(10).max(500), motion: z.string().min(10).max(400), title: z.string().max(40).default(""), place: z.enum(["top", "lower"]).optional(), titleSize: z.enum(["standard", "large"]).optional(), voice: z.string().max(200).optional() })).min(1).max(6),
+  scenes: z.array(z.object({ still: z.string().min(10).max(20000), motion: z.string().min(10).max(400), title: z.string().max(40).default(""), place: z.enum(["top", "lower"]).optional(), titleSize: z.enum(["standard", "large"]).optional(),role:z.string().max(80).optional(),intent:z.string().max(1000).optional(),stock:z.object({queries:z.array(z.string().max(120)).max(6),must:z.array(z.string().max(80)).max(20),need:z.array(z.array(z.string().max(80))).max(10).optional()}).optional(), voice: z.string().max(200).optional() })).min(1).max(6),
   line: z.string().max(70).default(""),
   cta: z.string().max(80),
   endCard: z.enum(["standard", "large"]).optional(),
@@ -197,7 +202,8 @@ function localVoiceLine(p: Project, name: string, role: string, title: string, i
 function localVoiceEnd(p: Project, req: ThreeScenesRequest): string {
   if (req.as === "post") return "";
   const cta = ctaOf(p, req.as);
-  return p.business === "services" ? C(`${cta} : ${p.brand?.name ?? ""} vous répond.`, `${cta}: ${p.brand?.name ?? ""} gets back to you.`) : C(`${p.product.name}, chez ${p.brand?.name ?? ""}.`, `${p.product.name}, by ${p.brand?.name ?? ""}.`);
+  return req.as === "ad" ? cta : "";
+
 }
 
 /** Consigne de l'image de départ d'une scène : la scène seule, aucun texte, le vrai produit identique. */
@@ -212,7 +218,7 @@ No text, no letters, no brand name, no logo, no watermark anywhere: nothing writ
 }
 
 /** Consigne du mouvement (Wan) : le décor bouge, le produit reste identique. */
-export const motionPrompt = (scene: Scene) => `${scene.motion}. Only the camera and the light move: nothing else in the scene moves (no flowing water, no leaves, no clouds, no smoke, no liquid). The product stays perfectly still and exactly identical (same shape, colours, details, printed text). Photorealistic, smooth, slow, elegant motion. Single continuous shot, no cuts. No text, no logo, no brand, no people, no hands.`;
+export const motionPrompt = (scene: Scene) => `${scene.motion}. Only the camera and the light move: nothing else in the scene moves (no flowing water, no leaves, no clouds, no smoke, no liquid). Maintain the documented reference viewpoint; no orbit and no view of an undocumented back or hidden part. The product stays perfectly still and exactly identical (same shape, colours, details, printed text). Photorealistic, smooth, slow, elegant motion. Single continuous shot, no cuts. No text, no logo, no brand, no people, no hands.`;
 
 /** Coût maximal (micro-euros) d'une vidéo IA : une image et un plan par scène (`clipMaxMicro` : un plan de la durée découpée). */
 export function scenesMaxMicro(scenes: number, imageMaxMicro: number, clipMaxMicro: number, planMicro = 0): number {
@@ -358,14 +364,17 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
   const timingIssue = sceneTimingIssue(req.scenes, req.totalS);
   if (timingIssue) throw new UserFacingError(timingIssue);
   // Clé stable (tâche + demande) : une reprise retrouve les images et plans déjà payés, jamais une nouvelle génération.
-  const key = req.key ?? `scenes:${projectId}:${crypto.createHash("sha1").update(JSON.stringify([req, ctx?.job.id ?? null])).digest("hex").slice(0, 12)}`;
+  const key = guidedRunKey(p0,req);
   const docKey = `vid:${crypto.createHash("sha256").update(key).digest("hex").slice(0, 20)}`;
   const step = <T,>(k: string, fn: () => Promise<T>) => (ctx ? ctx.step(k, fn) : fn());
   // Une tâche terminée rend son résultat acquis ; une interruption reprend les sous-étapes enregistrées.
   return step(`${key}:complete`, async () => {
   const notes: string[] = [];
   const folderKey = req.as === "ad" ? "videos.ads" : "videos.social";
+  const assetKey=(index:number,kind:"image"|"clip")=>req.repair?.index===index && (req.repair.kind==="image" || kind==="clip")?`${key}:retake:1:${index}`:key;
+  const savedScene=(index:number,role:string)=>all<import("../library").Asset>("SELECT * FROM assets WHERE project_id=? AND role=? AND deleted_at IS NULL AND json_extract(meta,'$.scenes.key')=? AND json_extract(meta,'$.scenes.index')=? ORDER BY created_at DESC LIMIT 1",projectId,role,assetKey(index,role==="scene"?"image":"clip"),index)[0];
   const preserveClientVersion = () => {
+    if(req.approval && videoScope(loadProject(projectId),sceneApprovalRequest(req))!==req.approval.scope) throw new UserFacingError("Contexte ou scénario modifié depuis l’accord : acquis conservés, poursuite automatique bloquée.");
     if (videoUserOwned(projectId, docKey)) throw new UserFacingError(L("Cette vidéo a été modifiée depuis son lancement. Version client conservée ; reprise automatique bloquée.", "This video was edited since it was started. Client version preserved; automatic resume blocked."));
   };
   preserveClientVersion();
@@ -391,14 +400,14 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
     }
   })();
   // Une erreur peut suivre un appel facturé ou incertain : elle ne se transforme pas en scénario simplifié.
-  const written = await step(`${key}:plan`, () => req.editorial ? Promise.resolve(localScenePlan(p,s,req,storyboard)) : deps.writePlan ? deps.writePlan(p, s, req, `${key}:plan`, { storyboard, brief, brain }) : Promise.resolve(null));
+  const written = await step(`${key}:plan`, () => req.approval ? Promise.resolve(req.approval.scenario) : req.editorial ? Promise.resolve(localScenePlan(p,s,req,storyboard)) : deps.writePlan ? deps.writePlan(p, s, req, `${key}:plan`, { storyboard, brief, brain }) : Promise.resolve(null));
   if (!written) notes.push(C("Scénario local utilisé : aucune rédaction IA obtenue.", "Local script used: no AI-written plan obtained."));
   const fallback = localScenePlan(p, s, req, storyboard);
   // Nombre de scènes demandé respecté ; les recherches d'étape (services) et le rôle viennent toujours du storyboard.
   // Vocabulaire du client (ex. « montre », jamais « chronographe ») : appliqué aux titres, à la voix et à l'action.
   const wording = loadWordingRules(projectId);
   const plan: ScenePlan = applyWordingDeep(written
-    ? { ...written, voiceEnd: written.voiceEnd ?? fallback.voiceEnd, scenes: Array.from({ length: fallback.scenes.length }, (_, k) => ({ ...(written.scenes[k] ?? fallback.scenes[k]), role: fallback.scenes[k].role, intent: fallback.scenes[k].intent, stock: fallback.scenes[k].stock, voice: written.scenes[k]?.voice ?? fallback.scenes[k].voice })) }
+    ? { ...written, voiceEnd: written.voiceEnd ?? fallback.voiceEnd, scenes: Array.from({ length: fallback.scenes.length }, (_, k) => ({ ...(written.scenes[k] ?? fallback.scenes[k]), role:written.scenes[k]?.role??fallback.scenes[k].role, intent:written.scenes[k]?.intent??fallback.scenes[k].intent, stock:written.scenes[k]?.stock??fallback.scenes[k].stock, voice: written.scenes[k]?.voice ?? fallback.scenes[k].voice })) }
     : fallback, wording);
 
   const editorialIssues = editorialVideoIssues(req.editorial, plan.cta);
@@ -423,6 +432,7 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
   if (plan.line && !usable(plan.line)) plan.line = "";
   if (plan.voiceEnd && !usable(plan.voiceEnd)) plan.voiceEnd = "";
 
+  if(projectVoice(memory.preferences)) {const max=Math.floor((timing.showS-.3)*2.4);const long=plan.scenes.findIndex((s,k)=>countWords(`${s.voice??""} ${k===n-1?plan.voiceEnd??"":""}`)>max);if(long>=0) throw new UserFacingError(`Voix de la scène ${long+1} trop longue : adaptez le scénario ou la durée avant les médias. Aucun texte supprimé.`);}
   if(projectVoice(memory.preferences) && !voiceAvailable()) throw new UserFacingError("La voix du projet n’est pas installée : aucun média payant lancé.");
   const clips: { assetId: string; durationS: number; generated: boolean }[] = [];
   // Scènes réellement obtenues (une étape sans plan est retirée AVEC son titre et sa voix : rien ne se décale).
@@ -438,17 +448,26 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
     const refBuf = ref && !ref.deleted_at ? assetData(ref) : null;
     if (!refBuf) throw new UserFacingError(L("Ajoutez d'abord une photo de ce produit : la vidéo part de votre vrai produit, l'IA ne l'invente pas.", "Add a photo of this product first: the video starts from your real product, the AI never invents it."));
     for (const [k, scene] of plan.scenes.entries()) {
+      const selected=req.sceneImages?.[k];
+      const photo=selected?getAsset(selected.assetId):null;
+      if(selected && (!photo || photo.project_id!==projectId || photo.deleted_at || photo.kind!=="image" || assetMeta<any>(photo).gate?.fatal)) throw new UserFacingError("Photo de scène indisponible ou refusée : choisissez une référence valide du projet.");
+      const sceneReference=photo?assetData(photo):refBuf;
       ctx?.progress(0.1 + (k * 0.65) / n, L(`Scène ${k + 1} : image puis mouvement`, `Scene ${k + 1}: image then motion`));
       const clipId = await step(`${key}:scene-${k}`, async () => {
         const stillId = await step(`${key}:still-${k}`, async () => {
-          const still = await deps.keyframe(keyframePrompt(p, s, scene, aspect, true), aspect, refBuf, `${key}:still:${k}`);
-          return (await saveAsset({ projectId, userId: p.userId, data: still, name: `scene-${k + 1}-image.png`, mime: "image/png", role: "scene", folderKey, origin: "generated", status: "review", sourceAssetId: refId, meta: { gate:{verdict:"PROVISIONAL",checked:false,fatal:false,reason:"Image à contrôler",provisional:{use:"manual"}}, scenes: { key, index: k, as: req.as, prompt: scene.still, role: scene.role ?? null }, recipe: "Image de départ d'une scène vidéo (IA d'images, produit réel en référence)" } })).id;
+          const prior=savedScene(k,"scene");if(prior) return prior.id;
+          preserveClientVersion();ctx?.progress(.1+k*.65/n);
+          const still = selected?.use==="reuse" && photo ? assetData(photo) : await videoReceipt(projectId,`${assetKey(k,"image")}:still:${k}`,()=>deps.keyframe(keyframePrompt(p, s, scene, aspect, true), aspect, sceneReference, `${assetKey(k,"image")}:still:${k}`));
+          return (await saveAsset({ projectId, userId: p.userId, data: still, name: `scene-${k + 1}-image.png`, mime: "image/png", role: "scene", folderKey, origin: "generated", status: "review", sourceAssetId: photo?.id??refId, meta: { gate:{verdict:"PROVISIONAL",checked:false,fatal:false,reason:"Image à contrôler",provisional:{use:"manual"}}, scenes: { key:assetKey(k,"image"),rootKey:key, index: k, as: req.as, prompt: scene.still, role: scene.role ?? null }, recipe: "Image de départ d'une scène vidéo (IA d'images, produit réel en référence)" } })).id;
         });
         const stillAsset = getAsset(stillId);
         if (!stillAsset || stillAsset.project_id !== projectId || stillAsset.deleted_at) throw new UserFacingError(L("L'image de scène enregistrée n'est plus disponible : reprise bloquée, aucune régénération automatique.", "The saved scene image is unavailable: resume blocked, no automatic regeneration."));
         const reviewAsset = async (asset: NonNullable<ReturnType<typeof getAsset>>, frames:Buffer[], kind:string) => {
+          if(assetMeta<any>(asset).gate?.fatal) throw new UserFacingError("Média refusé pour défaut fatal : inspection seule ; demandez une reprise ciblée.");
+          if(isAutoUsable(asset) && assetMeta<any>(asset).gate?.checked === true) return;
           const checked = await step(`${key}:review-${kind}-${k}`, async()=>{
-            const review = frames.length && deps.reviewMedia ? await deps.reviewMedia(frames,refBuf,`${scene.intent??scene.still}. Marque : ${p.brand?.name}. Comparer références et cohérence des images. Évaluer le mouvement uniquement dans les limites des images échantillonnées.`,`${key}:qc:${kind}:${k}`) : null;
+            preserveClientVersion();ctx?.progress(.1+k*.65/n);
+            const review = frames.length && deps.reviewMedia ? JSON.parse((await videoReceipt(projectId,`${assetKey(k,kind==="image"?"image":"clip")}:qc:${kind}:${k}`,async()=>Buffer.from(JSON.stringify(await deps.reviewMedia!(frames,refBuf,`${scene.intent??scene.still}. Marque : ${p.brand?.name}. Comparer références et cohérence des images. Évaluer le mouvement uniquement dans les limites des images échantillonnées.`,`${assetKey(k,kind==="image"?"image":"clip")}:qc:${kind}:${k}`))))).toString()) as ShotReview : null;
             const decision = gateShot({review,expectsProduct:true,expectsCharacter:false,attempt:0,peopleAllowed:false});
             // Une identité inconnue n'est pas une identité contrôlée.
             if(review && review.sameProduct == null && decision.verdict === "FINAL") return {...decision,verdict:"PROVISIONAL" as const,checked:false,reason:"Fidélité au produit non vérifiée",provisional:{use:"manual" as const,label:"needs_improvement" as const}};
@@ -463,8 +482,10 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
         const still = assetData(stillAsset);
         await reviewAsset(stillAsset,[still],"image");
         const savedClipId = await step(`${key}:clip-asset-${k}`, async()=>{
-        const mp4 = await deps.clip(still, motionPrompt(scene), aspect, timing.clipS, `${key}:clip:${k}`);
-        const a = await saveAsset({ projectId, userId: p.userId, data: mp4, name: `scene-${k + 1}.mp4`, mime: "video/mp4", role: "clip", folderKey, origin: "generated", status: "review", sourceAssetId: stillAsset.id, meta: { gate:{verdict:"PROVISIONAL",checked:false,fatal:false,reason:"Plan à contrôler",provisional:{use:"manual"}}, scenes: { key, index: k, as: req.as, motion: scene.motion, model: SCENE_VIDEO_MODEL } } });
+        const prior=savedScene(k,"clip");if(prior) return prior.id;
+        preserveClientVersion();ctx?.progress(.1+k*.65/n);
+        const mp4 = await videoReceipt(projectId,`${assetKey(k,"clip")}:clip:${k}`,()=>deps.clip(still, motionPrompt(scene), aspect, timing.clipS, `${assetKey(k,"clip")}:clip:${k}`));
+        const a = await saveAsset({ projectId, userId: p.userId, data: mp4, name: `scene-${k + 1}.mp4`, mime: "video/mp4", role: "clip", folderKey, origin: "generated", status: "review", sourceAssetId: stillAsset.id, meta: { gate:{verdict:"PROVISIONAL",checked:false,fatal:false,reason:"Plan à contrôler",provisional:{use:"manual"}}, scenes: { key:assetKey(k,"clip"),rootKey:key, index: k, as: req.as, motion: scene.motion, model: SCENE_VIDEO_MODEL } } });
         return a.id;
         });
         const savedClip = getAsset(savedClipId)!;
@@ -483,8 +504,11 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
       const topic = `${s?.name ?? ""} ${scene.intent ?? scene.still}`.slice(0, 200);
       // Une absence n'est pas un acquis : une reprise peut rechercher cette scène, sans refaire les autres.
       const found = await step(`${key}:stock-${k}`, async () => {
-        const clip = await deps.stock(p, k, topic, aspect, timing.showS, exclude, `${key}:stock:${k}`, scene.stock);
+        const previous=savedScene(k,"clip");
+        const clip = previous ? {assetId:previous.id,durationS:previous.duration??Number(assetMeta<any>(previous).durationS??0)} : await deps.stock(p, k, topic, aspect, timing.showS, exclude, `${key}:stock:${k}`, scene.stock);
         if (!clip || clip.durationS + 0.05 < timing.showS) throw new UserFacingError(L(`Scène ${k + 1} manquante ou trop courte : vidéo non livrée. Les autres scènes obtenues sont conservées.`, `Scene ${k + 1} missing or too short: video not delivered. Previously obtained scenes are preserved.`));
+        const {run}=await import("../db");
+        run("UPDATE assets SET meta=json_set(COALESCE(meta,'{}'),'$.scenes',json(?)) WHERE id=?",JSON.stringify({key:assetKey(k,"clip"),rootKey:key,index:k,as:req.as}),clip.assetId);
         return clip;
       });
       if (found) {
@@ -520,6 +544,8 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
   ctx?.progress(0.86, L("Montage : titres, logo, voix, musique", "Editing: titles, logo, voice, music"));
   const doc = applyWordingDeep(buildSceneDoc(p0, clips, plan, aspect, req.as, timing, req.music !== false, brief), wording);
 
+  doc.meta.retakeCount=req.repair?1:0;
+  if(req.approval) doc.meta.retakeBudgetMicro=req.approval.retakeMicro??Math.floor(req.approval.capMicro/(n+1));
   doc.meta.editorial = videoContext(p0,req.as,req.request,req.subject,req.editorial);
 
   // 5. Voice only after an explicitly saved synthetic choice. A failed/missing requested voice is not a completed result.
@@ -529,13 +555,19 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
     brief.voice.kokoroVoice=chosenVoice;
     await addVoice(projectId,p0.userId,doc,plan,brief,key,guide.script.wordsPer30s);
     notes.push(C("Voix synthétique choisie pour le projet. Sous-titres synchronisés par phrase mesurée, groupes répartis proportionnellement ; pas d'alignement mot à mot.","Project-selected synthetic voice. Subtitles timed by measured phrase, proportionally split; not word aligned."));
-  } else notes.push(C("Sans voix : aucune voix synthétique autorisée choisie pour ce projet.","No voice: no authorized synthetic voice chosen for this project."));
+  } else {
+    doc.subtitles.cues=doc.clips.flatMap((clip,k)=>{
+      const text=[plan.scenes[k]?.voice??"",k===doc.clips.length-1?plan.voiceEnd??"":""].filter(Boolean).join(" ").trim();
+      return text?measuredCues(clip.id,text,Math.max(.1,clip.durationS-.4),doc.subtitles.style.maxChars):[];
+    });
+    notes.push(C("Sans voix : texte intégral conservé en sous-titres, répartis sur la durée des scènes ; aucun alignement audio.","No voice: full text kept as captions across scene duration; no audio alignment."));
+  }
 
   preserveClientVersion();
   await step(`${key}:document`, async () => saveVideoVersion(projectId, docKey, doc, { note: C(`Vidéo en ${clips.length} scènes`, `${clips.length}-scene video`) }));
   const texts: Record<string, string | undefined> = { ...fields, line: plan.line, cta: plan.cta, voiceEnd: plan.voiceEnd };
   plan.scenes.forEach((sc, k) => Object.assign(texts, { [`title-${k}`]: sc.title, [`voice-${k}`]: sc.voice }));
-  const videoAssetId = await deps.render(p0, docKey, doc, { scenes: { key, mode, subject: s ? { kind: s.kind, key: s.key, name: s.name } : null, request: req.request ?? null, as: req.as, music: req.music !== false }, creative: { family: brief.family, concept: brief.concept, goal: brief.goal, storyboard: storyboard.shots.map((x) => ({ role: x.role, intent: x.intent })), notes }, check: { texts, allowed } });
+  const videoAssetId = await deps.render(p0, docKey, doc, { generationCapMicro:req.approval?.capMicro,approvalScope:req.approval?.scope,approvalRequest:sceneApprovalRequest(req), scenes: { key, mode, subject: s ? { kind: s.kind, key: s.key, name: s.name } : null, request: req.request ?? null, as: req.as, music: req.music !== false }, creative: { family: brief.family, concept: brief.concept, goal: brief.goal, storyboard: storyboard.shots.map((x) => ({ role: x.role, intent: x.intent })), notes }, check: { texts, allowed } });
 
   // 6. Mémoire créative : concept utilisé, médias et leur provenance (relus à la prochaine vidéo).
   try {
@@ -592,16 +624,16 @@ export function realThreeScenesDeps(ctx: JobContext | null, base: { userId: stri
               system: `${videoEditorialInstruction(req.editorial)}\nPurpose: ${req.as === "post" ? "useful organic editorial content, no forced commercial CTA" : "commercial advertising"}. You are the director of a creative agency writing a ${req.totalS ?? DEFAULT_TOTAL_S}-second film in ${req.scenes ?? SCENES} scenes. Answer with JSON only.${pc?.brain ? `\n\nPROJECT BRAIN (facts you may use; never invent anything else):\n${pc.brain}` : ""}`,
               prompt: `Brand "${p.brand?.name ?? ""}" (personality: ${(p.brand?.personality ?? []).join(", ")}). ${s?.kind === "service" ? "Service" : "Product"}: ${s?.name ?? p.product.name} — ${(s?.summary || p.product.summary || "").slice(0, 300)}.
 ${req.request ? `Client's brief (follow it): ${req.request}\n` : ""}${pc ? `Creative sheet: concept "${pc.brief.concept}", treatment ${pc.brief.family}, goal ${pc.brief.goal}, rhythm ${pc.brief.rhythm}, voice ${pc.brief.voice.tone}.${pc.brief.audience ? ` Audience: ${pc.brief.audience}.` : ""}${pc.brief.benefit ? ` Main benefit: ${pc.brief.benefit}.` : ""}${pc.brief.proofs.length ? ` Available proofs: ${pc.brief.proofs.join("; ")}.` : " No proof available: claim nothing."}${pc.brief.objections.length ? ` Objections to answer: ${pc.brief.objections.slice(0, 3).join("; ")}.` : ""}
-STORYBOARD to follow, one shot per scene, in this order (each shot brings a different information): ${pc.storyboard.shots.map((x, k) => `${k + 1}. ${x.role} — ${x.intent}${x.still ? ` (${x.still})` : ""}`).join(" | ")}.
+STORYBOARD starting proposal: adapt it to the exact client content and purpose, preserving trade relevance and coherent progression. One distinct shot per scene (each shot brings a different information): ${pc.storyboard.shots.map((x, k) => `${k + 1}. ${x.role} — ${x.intent}${x.still ? ` (${x.still})` : ""}`).join(" | ")}.
 ${pc.storyboard.route === "products" ? "PRODUCT: always the real product of the reference photo, never a look-alike or substitute; only the camera and the light move." : "SERVICE: each scene shows one real step or benefit of the service (royalty-free footage), never presented as the client's own work."}
 ONLY the brand "${p.brand?.name ?? ""}" may appear or be spoken: never any other brand, logo or trademark anywhere (text, voice, objects, clothes, screens).
 ` : ""}Write ${req.scenes ?? SCENES} different scenes for a ${req.as === "ad" ? "paid ad" : "social post"} video: for each, "still" (in English: the setting, light and mood of the opening image, the ${s?.kind === "service" ? "craft shown through tools, materials and results" : "real product as the hero"}), "motion" (in English: the slow camera move and what moves in the scene, the product itself never changes) and "title" (in ${lang}, 2 to 5 words shown on screen, or empty).
 Then "line" (in ${lang}, a short brand line, max 8 words, no claim) and "cta" (${req.as === "post" ? "empty: no forced commercial action in an organic post" : `in ${lang}, 2-3 words button`}).
 Per scene also "voice" (in ${lang}, natural spoken sentence, simple words, max 12 words, nothing invented) and "voiceEnd" (in ${lang}, closing sentence with the call to action, max 10 words). About ${Math.round((65 * (req.totalS ?? DEFAULT_TOTAL_S)) / 30)} words of voice in total.
-Never any person, face, hand or body. Never numbers, prices, percentages, promises, awards or reviews.
+Never any person, face, hand or body. Use only confirmed facts. Never invent numbers, prices, percentages, promises, awards or reviews. Preserve exact client-supplied text and sources. SERVICE scenes also include role, intent and stock:{queries:[precise English trade/gesture/environment searches],must:[required trade words],need:[[trade terms],[gesture terms]]}.
 Optional per scene: "place": "lower" when the product fills the top of the frame; "titleSize": "large" only when it reads better or looks better (short punchy title, busy image), otherwise leave the usual size. Optional "endCard": "large" for a bold end card.
 Reply { "scenes": [{ "still": "", "motion": "", "title": "" }, ...${req.scenes ?? SCENES}], "line": "", "cta": "" }.`,
-              maxTokens: 1200,
+              maxTokens: 4000,
             },
             ScenePlanSchema,
           );
@@ -613,7 +645,7 @@ Reply { "scenes": [{ "still": "", "motion": "", "title": "" }, ...${req.scenes ?
     } : undefined,
     async keyframe(prompt, aspect, reference, key) {
       const { aiPostImage } = await import("../ai/media-providers");
-      return aiPostImage({ ...base, jobId, usageKey: key }, { prompt, aspect, reference, logo: null });
+      return aiPostImage({ ...base, jobId, usageKey: key }, { prompt, aspect, reference, logo: null,photoOnly:true });
     },
     async clip(image, prompt, aspect, seconds, key) {
       const { aiClip } = await import("../ai/media-providers");
@@ -627,6 +659,7 @@ Reply { "scenes": [{ "still": "", "motion": "", "title": "" }, ...${req.scenes ?
     visualCheck: llmConfigured(),
     spentMicro: (prefix) => all<{ c: number }>("SELECT COALESCE(SUM(cost), 0) c FROM ai_calls WHERE usage_key LIKE ?", `${prefix}%`)[0]?.c ?? 0,
     async render(p, docKey, doc, meta) {
+      const initialVersion=latestVideo(p.id,docKey)?.version.id??null;
       let ex = await renderVideoFile(p.id, doc);
       try {
         // Contrôle du fichier final (grille du guide créatif), mesuré sur la vidéo rendue, enregistré avec elle.
@@ -654,7 +687,15 @@ Reply { "scenes": [{ "still": "", "motion": "", "title": "" }, ...${req.scenes ?
             check = { error: (e as Error).message.slice(0, 200) };
           }
         }
+        if(typeof meta.generationCapMicro==="number" && ctx) {const spent=all<{cost:number}>("SELECT COALESCE(SUM(cost),0) cost FROM ai_calls WHERE job_id=?",ctx.job.id)[0]?.cost??0;doc.meta.retakeBudgetMicro=Math.max(0,Math.min(doc.meta.retakeBudgetMicro??0,meta.generationCapMicro-spent));}
         const { check: _c, ...rest } = meta;
+        if((latestVideo(p.id,docKey)?.version.id??null)!==initialVersion || (meta.approvalScope && videoScope(loadProject(p.id),meta.approvalRequest)!==meta.approvalScope)) {
+          const conflictKey=`${docKey}:conflict:${crypto.randomUUID().slice(0,8)}`;
+          const preserved=await saveRendered(p.id,p.userId,conflictKey,doc,ex,{...rest,editConflict:true,gate:{verdict:"PROVISIONAL",checked:false,fatal:false,provisional:{use:"manual",label:"needs_improvement"},reason:"Modification pendant le rendu"}});
+          saveVideoVersion(p.id,conflictKey,doc,{note:"Rendu isolé : modification concurrente conservée",renderedAssetId:preserved.videoId});
+          throw new UserFacingError("Vidéo modifiée pendant l'encodage : version client conservée ; rendu isolé dans la bibliothèque pour vérification.");
+        }
+        ctx?.progress(.96,"Enregistrement du rendu");
         const saved = await saveRendered(p.id, p.userId, docKey, doc, ex, { ...rest, finalCheck: check, gate:{verdict:"PROVISIONAL",fatal:false,checked:false,reason:"Montage rendu, validation créative requise",provisional:{use:"manual",label:"needs_improvement"}} });
         saveVideoVersion(p.id, docKey, doc, { note: C("Rendu", "Render"), renderedAssetId: saved.videoId });
         return saved.videoId;
@@ -663,4 +704,22 @@ Reply { "scenes": [{ "still": "", "motion": "", "title": "" }, ...${req.scenes ?
       }
     },
   };
+}
+
+/** Existing scene director, run alone so the client reviews its script before any image/clip. */
+export async function runSceneScenario(ctx:JobContext|null,projectId:string,req:ThreeScenesRequest,injected?:ThreeScenesDeps["writePlan"]) {
+ const root=loadProject(projectId),subject=resolveSubject(root,req.subject??null),p=projectForSubject(root,subject);
+ const scope=videoScope(root,sceneApprovalRequest(req));
+ const size=SIZES[req.aspect??"9:16"],guide=loadVideoGuide();
+ const brief=buildCreativeBrief(p,{request:req.request,durationS:req.totalS??15,width:size.w,height:size.h,platform:"reels",guide,memory:loadCreativeMemory(projectId,root)});
+ const storyboard=buildStoryboard(p,req.scenes??3,{serviceName:subject?.kind==="service"?subject.name:null,productName:subject?.kind==="service"?null:subject?.name??p.product.name});
+ const writer=injected??realThreeScenesDeps(ctx,{userId:root.userId,projectId},{aiText:true}).writePlan;
+ if(!writer) throw new UserFacingError("Rédaction du scénario indisponible ; aucun média lancé.");
+ const key=`scenario:${projectId}:${scope}:${ctx?.job.id??"direct"}`;
+ ctx?.progress(.1,"Rédaction du scénario, avant les médias");
+ const raw=await videoReceipt(projectId,key,async()=>Buffer.from(JSON.stringify(await writer(p,subject,req,key,{storyboard,brief,brain:brainView(root,"video").stable}))));
+ const scenario=ScenePlanSchema.parse(JSON.parse(raw.toString()));
+ if(scenario.scenes.length!==(req.scenes??3)) throw new UserFacingError("Scénario incomplet : nombre de scènes non respecté, aucun média lancé.");
+ if(videoScope(loadProject(projectId),sceneApprovalRequest(req))!==scope) throw new UserFacingError("Projet modifié pendant la rédaction : scénario conservé, validation à reprendre.");
+ return {scope,request:sceneApprovalRequest(req),scenario:applyWordingDeep(scenario,loadWordingRules(projectId))};
 }

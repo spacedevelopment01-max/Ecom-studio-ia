@@ -56,6 +56,7 @@ export function mockVideoDeps(o: {
   perSecondMicro?: number;
   voice?: boolean;
   noImage?: boolean;
+  noStock?: boolean;
 }): { deps: VideoV2Deps; log: VideoMockLog } {
   const log: VideoMockLog = { scripts: 0, shotReviews: 0, videoReviews: 0, clips: [], images: 0, voices: 0 };
   let seed = 400;
@@ -94,10 +95,18 @@ export function mockVideoDeps(o: {
       log.clips.push({ provider: req.provider, model: req.model, seconds: req.seconds, people: req.people, prompt: req.prompt });
       return mockMp4(Math.min(req.seconds, 6));
     },
+    stockClip: p.business === "services" && !o.noStock ? async(req,exclude)=>{
+      const a=await saveAsset({projectId:p.id,userId:p.userId,data:mockMp4(req.durationS+.2),name:`stock-simule-${exclude.size}.mp4`,mime:"video/mp4",role:"clip",origin:"import",status:"review",meta:{simulation:true,provenance:"Mire synthétique, aucun média Pixabay",durationS:req.durationS+.2,gate:{verdict:"FINAL",checked:true,fatal:false}}});
+      return {assetId:a.id,durationS:req.durationS+.2};
+    }:undefined,
     voice: o.voice
       ? async (text) => {
           log.voices++;
-          return { data: mockVoice(Math.max(1, Math.min(4, text.split(/\s+/).length / 2.4))), mime: "audio/wav" };
+          const d=tmp(),f=path.join(d,"trim.wav");
+          try {fs.writeFileSync(path.join(d,"source.wav"),mockVoice(Math.max(.6,text.length/18,text.split(/\s+/).length/2.4)));
+            execFileSync("ffmpeg",["-y","-v","error","-i",path.join(d,"source.wav"),"-af","silenceremove=start_periods=1:start_threshold=-50dB",f]);
+            return {data:fs.readFileSync(f),mime:"audio/wav"};
+          } finally {fs.rmSync(d,{recursive:true,force:true});}
         }
       : null,
     available: o.available ?? ((x) => x === "google" || x === "fal"),
@@ -111,3 +120,6 @@ export function mockVideoDeps(o: {
   };
   return { deps, log };
 }
+
+/** Short, complete phrases for orchestration tests; no creative quality is inferred. */
+export const shortVideoScript = (): ScriptDraft => ({sections:[{part:"hook",voice:"Observer ici.",onScreen:"Observer"},{part:"development",voice:"Observer la matière.",onScreen:""},{part:"demonstration",voice:"Vérifier les finitions.",onScreen:""},{part:"conclusion",voice:"Voir l’ensemble.",onScreen:""},{part:"cta",voice:"Découvrir.",onScreen:"Découvrir"}]});

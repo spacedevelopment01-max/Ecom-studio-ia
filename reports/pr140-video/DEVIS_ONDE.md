@@ -1,5 +1,7 @@
 # Devis fournisseur conditionnel — ONDE, sans génération
 
+> Historique de la première passe. Référence noir/bleu écartée par la mission suivante ; les maillons et chiffres ci-dessous ne décrivent plus la chaîne corrigée. Consulter le [devis actualisé noir/vert, références manquantes et limites](../pr140-video-lots/DEVIS_CHAINE.md).
+
 Relevé du **19 octobre 2026**. Demande [6266012060](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/140#issuecomment-6266012060), ajoutée à la [mission vidéo 6265941030](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/140#issuecomment-6265941030). [Rapport technique](../../docs/coordination/PR_140_VIDEO.md) · [Calculs et hypothèses](devis-calcul.json).
 
 **Aucun appel fournisseur, achat ou débit de crédits : coût réellement engagé 0 €. Le rendu complet demandé n'est pas exécutable aujourd'hui dans le parcours guidé. Les montants ci-dessous sont conditionnels, pas un prix client ni un coût moyen constaté.**

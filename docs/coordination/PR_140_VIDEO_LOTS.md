@@ -18,6 +18,22 @@ Vérifications réellement exécutées : `npx tsc --noEmit` (succès), puis `npx
 
 L'affiche casque noir/bleu est écartée. Recherche effectuée dans les pièces jointes accessibles, les ressources locales et l'arbre distant de la branche `claude/fraise-onde-themes-reference` (consultée en lecture uniquement). Le script `scripts/lot2c-demo-local.ts` de cette branche exige un pack privé `Pack_Claude_Fraise_Onde/ONDE_AUDIO/` ; les neuf images et logos ne sont pas embarqués dans Git. Le dossier correspondant n'est pas présent dans cet environnement. Les pièces jointes disponibles contiennent l'ancien poster bleu et le ZIP ORBE/Rive, pas ce pack. **Référence noir/vert et logo non ouverts ici : contrôle visuel impossible pour le moment.** Aucun substitut ONDE créé ou publié. Les essais suivants utilisent des projets fictifs explicitement identifiés ; ils ne valident pas ONDE.
 
+Fichiers précisément attendus d'après `tests/lot2c-fixtures.ts` et `reports/lot2c/ressources-licences.json`, commit Claude `84251d659ede` (lecture seule), tous absents ici :
+
+- `Pack_Claude_Fraise_Onde/ONDE_AUDIO/images/01-hero.webp`
+- `Pack_Claude_Fraise_Onde/ONDE_AUDIO/images/02-fond-clair.webp`
+- `Pack_Claude_Fraise_Onde/ONDE_AUDIO/images/03-autre-angle.webp`
+- `Pack_Claude_Fraise_Onde/ONDE_AUDIO/images/04-detail-coussinet.webp`
+- `Pack_Claude_Fraise_Onde/ONDE_AUDIO/images/05-detail-arceau.webp`
+- `Pack_Claude_Fraise_Onde/ONDE_AUDIO/images/06-banniere.webp`
+- `Pack_Claude_Fraise_Onde/ONDE_AUDIO/images/07-scene-salon.webp`
+- `Pack_Claude_Fraise_Onde/ONDE_AUDIO/images/08-scene-train.webp`
+- `Pack_Claude_Fraise_Onde/ONDE_AUDIO/images/09-scene-studio.webp`
+- `Pack_Claude_Fraise_Onde/ONDE_AUDIO/logos/logo-proposition.png`
+
+Les descriptions textuelles et l'inventaire ne remplacent pas l'ouverture des images. Aucun fichier privé de ce pack republié.
+
+
 ## Lot 2 — voix, sous-titres et montage
 
 - Quatre scènes de cinq secondes occupent désormais les vingt secondes : pas de cinquième carte obligatoire. La conclusion et le vrai fichier du logo sont des calques du dernier clip, éditables dans le document existant. CTA commercial facultatif pour les contenus organiques.
@@ -35,4 +51,71 @@ Fichiers supplémentaires : `creative-memory.ts`, `voice.ts`, `audio.ts`, `deps.
 
 ## État du lot suivant
 
-Lot 3 (devis/reprises/parcours UI) à réaliser ensuite. Les essais payants restent reportés ; aucun thème, déploiement, publication sociale ou merge.
+État au commit du lot 2 : lot 3 (devis/reprises/parcours UI) à réaliser ensuite. Voir sa réception ci-dessous. Les essais payants restent reportés ; aucun thème, déploiement, publication sociale ou merge.
+
+## Lot 3 — accords, devis, reprise et réception
+
+**Réception en cours au premier commit du lot 3.** Code et calculs disponibles pour revue ; premier parcours produit publicitaire vérifié jusqu’au nouveau rendu et téléchargement. Les trois autres parcours et les captures mobiles restent à terminer. Les liens des preuves finales seront ajoutés dans un commit séparé, sans annoncer les anciennes mires comme une livraison ONDE.
+
+
+### Changements
+
+- Le scénario guidé est une tâche native `video.scenario`, séparée des médias. Son coût texte est montré avant le clic ; scénario relu/modifiable, puis accord couvrant la demande, le contexte, les références, la voix, les routes, le devis et une expiration. Un contrat éditorial fourni ou une correction du scénario ne redéclenche pas la rédaction IA. Les scénarios enregistrés et encore compatibles peuvent être repris depuis l’interface après rechargement. Le coût de la rédaction déjà consommé est retiré de l'enveloppe restante. Choisir une photo conserve le scénario à corriger et ne commande pas une nouvelle rédaction.
+- Devis par étapes réellement raccordées : scénario, images nécessaires (réemploi des photos possible), contrôles images, durée totale de clips générés, contrôles de passages, calcul local. Politique guidée propre : zéro régénération créative automatique, une reprise explicite d'une scène au plus, un éventuel ajustement local de contraste. Le plafond couvre premier passage + cette reprise ; réservations et budget disponible natifs s'appliquent toujours. Aucun droit de forfait changé : Créer n'obtient pas de clips IA.
+- Reçus privés avant envoi, fichier reçu enregistré avant décodage/asset. Une reprise réutilise le fichier reçu et les scènes déjà acceptées. Une réponse perdue, un traitement concurrent ou un reçu incertain bloque un nouvel envoi. Fenêtre non garantie : arrêt entre réception réseau et écriture durable ; rapprochement fournisseur manuel nécessaire, pas de promesse de transaction atomique entre deux systèmes.
+- Le guidé reprend la scène refusée et termine les scènes encore absentes ; il ne repaie pas les scènes acceptées. Une erreur incertaine n'ouvre pas une régénération aveugle. Les versions refusées restent non réutilisables comme finales.
+- Rendus V2 et guidé : une édition concurrente conserve la version du client et range le rendu obtenu dans une lignée isolée. La reprise ne recharge pas le plafond initial. Le remplacement explicite d'un clip V2 est limité à une reprise ; l'ancienne version reste consultable.
+- Services V2 : même si le planificateur proposait une génération, recherche de plans de métier avant montage ; manque explicite, pas de substitution. Une section facultative omise dans un scénario n'enlève plus sa durée du total. Texte entier en sous-titres même sans voix ; timing par durée de scène alors signalé sans alignement audio.
+- La relecture finale V2 de quelques images ne prétend plus prouver le mouvement continu ou la naturalité audio : résultat manuel provisoire lorsque ces contrôles restent inconnus.
+
+Fichiers principaux : `approval.ts`, `receipts.ts`, `chain-quote.ts`, `three-scenes.ts`, `engine.ts`, `script.ts`, `quality.ts`, `store.ts`, `types.ts`, `deps.ts`, `strategy.ts`, `intent.ts` dans `src/lib/video-v2/` ; routes `creative/video` et `videos/v2`, `guided-video.tsx`, `video-v2-panel.tsx`, `subject-picker.tsx`, handler natif `worker/handlers.ts`. Tests nouveaux : reçus/accords, conflit d'encodage réel, préservation des phrases, photos réemployées, reprise d'une seule scène ; tests existants mis à jour pour les nouvelles exigences (quatre clips entiers, absence de substitut après refus).
+
+### Protocole et preuves
+
+Harnais isolé : `scripts/verify-video-lots.ts` (`SEED_ONLY=1` pour préparer les quatre comptes/projets fictifs), `verify-video-network-guard.mjs` (serveur local seulement), `verify-video-ui-runtime.ts` (tâches natives avec fournisseurs simulés), `verify-video-ui-browser.ts` (Chromium réel) et `verify-video-chain-quote.ts` (calcul natif sans requête fournisseur). Les faux identifiants fournisseurs résident uniquement dans la base temporaire ; aucun export de cette base, des sessions, reçus privés ou journaux HTTP.
+
+Le script historique du lot 2 reste un précontrôle. Sa simulation d'interruption a été adaptée : arrêt avant envoi, et non erreur fournisseur incertaine que la nouvelle protection interdit de relancer. Les nouvelles preuves finales proviennent des parcours UI du lot 3, pas des anciens MP4.
+
+**Incident de reprise du 19/10** : les 76 tests ciblés annoncés avant la coupure avaient réussi. Le premier contrôle navigateur ne s'était pas terminé : mauvais sélecteur de carte après le premier rendu. La première suite complète donnait 2 187 réussites, 11 échecs, 3 ignorés / 290 fichiers. Les attentes obsolètes (carte de fin séparée et substitut local), fixtures vocales et stock ont été révisées ; problèmes réels de sélection service et durée de scénario corrigés. Le serveur local a aussi été arrêté pendant une surcharge mémoire de l'environnement : données et MP4 conservés, relance des vérifications avec concurrence réduite, sans régénération fournisseur. Les bilans finaux figurent plus bas.
+
+### Matrice de réception
+
+| Élément | Branché | Test local | Simulation / limite réelle |
+|---|---|---|---|
+| Contrat complet, publicité/organique, produit/prestation sélectionnés | Deux moteurs existants | Contrats, API et documents versionnés | Rédaction fournisseur non appelée ; qualité créative réelle non attestée |
+| Recherche de plans service, étapes, provenance et non-répétition | Recherche native stock | Orchestration et sélection contrôlées par tests | Fichiers de mire remplacent Pixabay dans le navigateur ; pertinence sur vraies vidéos à vérifier |
+| Photos → images → vrais clips produit | Adaptateurs existants, contrôles avant montage | Images, reçus, refus et reprise ciblée | Images/clips/vision simulés ; fidélité ONDE non testée |
+| Voix française et choix persistant | Synthèse locale installable, deux parcours | Vrais WAV, mesure, mixage et MP4 | Naturalité non validée par écoute humaine indépendante |
+| Sous-titres complets | Documents + SRT/VTT | Durées de phrases mesurées, export et absence de coupe | Répartition proportionnelle dans les phrases, pas d'alignement mot à mot |
+| Musique et conclusion sur le dernier plan | Calques et audio existants | Vrais encodages et images extraites | Aucun achat de piste ; vérifier la licence du morceau choisi en exploitation |
+| Accord, coût, plafonds, reçus, interruption, versions concurrentes | API/worker/budget natifs | Tests ciblés, annulation/concurrence, reprise UI | Rapprochement d'une tâche distante incertaine non automatisé |
+| Lancement → suivi → lecture → modification/rendu → téléchargement | Vraie interface du studio | Parcours et captures du lot 3 | Base de test exclusivement ; aucun environnement client/de production validé |
+| UGC, thèmes, publication sociale, déploiement | Hors de cette réception | Aucun | Attendent validation/autorisation ; aucune modification des thèmes Claude |
+
+### Validation réelle future — préparée, NON exécutée
+
+1. Fournir dans le projet isolé autorisé les **neuf images ONDE noir/vert et le logo séparé** du pack privé, vérifier visuellement identité, droits et angles montrables. Aucun usage de l'ancien poster noir/bleu ; pas d'invention d'une face invisible. Choisir une voix synthétique et enregistrer son accord.
+2. Relever les routes, tarifs, devise/région, solde et droits effectifs ; recalculer le devis natif et le coût facturable des références. Faire approuver scénario exact 4 × 5 s et enveloppe globale avant médias. Une nouvelle autorisation écrite reste nécessaire : les essais payants sont reportés.
+3. Produit : quatre vrais clips distincts, produit entier et identique, logo/couleurs/matières cohérents, pas de personne ni de caractéristiques inventées, mouvement continu regardé sur chaque clip. Dernier clip avec logo/CTA, pas de cinquième carte. Écouter intégralement la voix et la musique, contrôler toutes les phrases, sous-titres et durée.
+4. Service : choisir une prestation vérifiable (par exemple préparation et peinture d'une pièce), chercher des passages précisément associés aux étapes, garder source/licence et mention d'illustration dans le studio. Aucun plan stock présenté comme réalisation du client ; personnes selon autorisation. Contrôler pertinence et distinction de chaque scène, puis contenu organique sans CTA commercial imposé.
+5. Généralisation hors cas utilisés ici : réparation de vélos, entretien de pompes à chaleur, conseil comptable ; produit alimentaire emballé et accessoire à plusieurs variantes. Critères identiques, faits et photos propres à chacun ; aucune condition sur le nom d'une démo. Réserver des cas inconnus jusqu'à la réception, sans développer de nouvelles règles pour leurs noms.
+6. Déclencher un refus sur une seule scène et vérifier conservation des autres ; une reprise explicite au maximum et coût de celle-ci seulement si exécutée. Simuler interruption/annulation ; si statut distant incertain, rapprocher reçus et facturation avant tout envoi supplémentaire. Modifier pendant un encodage et vérifier préservation de la version client.
+7. Réception ordinateur/téléphone : lecture réelle, historique après modification et nouveau rendu, MP4/SRT/VTT téléchargés et rouverts, durée/résolution/codecs mesurés, visionnage intégral/écoute. Noter dépenses **observées** séparément des réservations. Un succès technique n'est pas une validation professionnelle.
+
+### Limites qui subsistent
+
+Pack ONDE noir/vert privé absent : aucune vérification visuelle du véritable casque ou du logo. Le lien de prévisualisation Claude fourni précédemment n'était pas accessible ici. Les fournisseurs réels, l'index Pixabay courant, les droits d'une piste externe, la facturation réelle et l'environnement de production n'ont pas été testés. Aucun coût CPU/stockage/contrôle humain mesuré. Aucun rendu synthétique présenté comme publicité ONDE finale. Les reçus bloquent les doublons évitables, sans résoudre automatiquement les tâches distantes incertaines. Un changement de demande/contexte peut ouvrir une nouvelle lignée et nécessite un nouveau devis ; la réutilisation ne garantit pas un cache global de toutes les demandes voisines.
+
+La création initiale automatique partage le moteur et le refus des substitutions, mais son storyboard préalable et son accord global de création n’ont pas reçu ici une recette UI séparée équivalente aux deux écrans vidéo. Ce point demeure à vérifier avant d’étendre les conclusions à tous les chemins de création.
+
+Périmètre des reçus : scénario/images/clips/contrôles du guidé et clips générés V2. Les sous-moteurs V2 existants (rédaction, images, stock) gardent aussi leurs propres barrières natives ; leur réception à chaque fenêtre de panne n’est pas attestée comme un protocole transactionnel unique. V2 conserve ses politiques historiques de contrôle/reprise, lues dans son devis ; la limite guidée d’une seule reprise n’est pas attribuée à tous les anciens sous-chemins V2.
+
+Le passage complet sous charge a localisé trois dépassements de délai dans des mixages FFmpeg (processus actifs, sortie WAV vide). Relancer exactement l'un de ces filtres seul a terminé ; une variante de filtre a aussi dépassé huit secondes. **La cause exacte demeure une hypothèse de concurrence/ordonnancement, pas un défaut déterministe démontré.** Le graphe audio complexe est désormais limité à un thread ; un test exécute trois mixages réels avec voix courtes retardées et fond musical plus long, avec durée, signal et crêtes mesurés. Les trois processus orphelins appartenant précisément au dossier de cette suite ont été arrêtés ; aucun autre processus n'a été touché. Les résultats après correction sont consignés dans le bilan final.
+
+Le contrôle global suivant a terminé : **2 199 réussites, 3 dépassements de délai, 3 ignorés, 290 fichiers** (24 min 28 s). Les trois délais concernent des mixages audio dans les deux fichiers V2. Le simple bornage des threads n'a pas suffi : une autre passe ciblée a encore rencontré un délai. La boucle musicale `aloop` à tampon très large a donc été remplacée par une répétition du fichier fini à l'entrée FFmpeg ; le passage musical choisi est préparé avant répétition lorsque son départ n'est pas zéro, puis nettoyé. Les phrases et durées des voix restent intactes. Trois répétitions du cas audio isolé ont terminé en environ 1,7 s chacune ; ce relevé et le test réel sont conservés, sans prétendre démontrer l'absence de toute panne future.
+
+Commandes supplémentaires exécutées : `SEED_ONLY=1 DATA_DIR=/tmp/ecs-test-video-mission-reproduction-20261019 npx tsx scripts/verify-video-lots.ts` (quatre projets fictifs, aucun média généré) ; `npx vitest run tests/video-audio-termination.test.ts tests/video-creation-rights.test.ts tests/audit-ecrans.test.ts --maxWorkers=1` (20 réussites) ; `npx vitest run tests/video-editorial-contract.test.ts tests/video-audio-termination.test.ts --maxWorkers=1` (5 réussites) ; `npx vitest run tests/video-creation-rights.test.ts tests/video-editorial-contract.test.ts --maxWorkers=1` (6 réussites). TypeScript revérifié après les modifications. Les comptes de tests se recouvrent : ne pas les additionner comme des tests distincts.
+
+Le scénario IA organique V2 n'est plus rejeté faute de CTA commercial (le contrôle est cohérent avec l'intention). Un bloc explicitement marqué CTA conserve son rôle. Les photos de scènes proposées dans le guidé sont réservées au produit : une photo ne peut pas être acceptée puis ignorée dans le montage vidéo illustratif d'un service. Le choix manuel de vidéos client dans ce guidé reste à réceptionner ; l'inventaire vidéo du moteur V2 existant est conservé. Captures UI en français seulement, version anglaise non réceptionnée ici.
+
+Après remplacement de la boucle musicale : `npx vitest run tests/video-audio-termination.test.ts tests/video-v2-engine.test.ts tests/video-v2-bench.test.ts --maxWorkers=1` : **19 réussites, 3 fichiers, 158,26 s**. Cela inclut les cinq activités du benchmark et les deux fichiers qui dépassaient les délais. Les autres résultats du passage global restent distingués de cette nouvelle passe ciblée ; aucun ancien échec masqué. Aucun fournisseur IA réel utilisé.

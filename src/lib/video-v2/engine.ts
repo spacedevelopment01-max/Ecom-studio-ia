@@ -13,6 +13,8 @@
 import { organicVideo, videoContext, editorialVideoIssues } from "./editorial";
 import { projectForSubject } from "../social-v2/ai-post";
 import { resolveSubject } from "../creative-subject";
+import { videoScope,type VideoApproval } from "./approval";
+import { videoReceipt } from "./receipts";
 import { measuredCues } from "./voice";
 import { projectRights } from "../plan-gates";
 import crypto from "node:crypto";
@@ -64,6 +66,7 @@ export const VIDEO_V2_VERSION = "7a.1";
 export const DEFAULT_VIDEO_CAP_EUR = 6;
 
 export type VideoRequestV2 = {
+  approval?:VideoApproval<VideoScript>;
   ask: VideoAsk;
   offer?: string | null;
   /** Plafond de dépense RÉEL de la tâche (euros). */
@@ -92,8 +95,8 @@ export async function runVideoEngineV2(ctx: JobContext | null, projectId: string
   const before = jobId ? (all<{ c: number }>("SELECT COALESCE(SUM(cost), 0) c FROM ai_calls WHERE job_id = ?", jobId)[0]?.c ?? 0) : 0;
   const capMicro = Math.round((req.maxCostEur ?? DEFAULT_VIDEO_CAP_EUR) * EUR);
   const cur = currentTrace();
-  const own = before + capMicro;
-  return withTrace({ ...(jobId ? { jobId } : {}), projectId, ...(cur.intent ? {} : { intent: "CREATE_VIDEO" }), costCapMicro: cur.costCapMicro != null ? Math.min(cur.costCapMicro, own) : own }, () => engine(ctx, focused, req, deps, { capMicro, spentMicro: 0 }));
+  const own = capMicro;
+  return withTrace({ ...(jobId ? { jobId } : {}), projectId, ...(cur.intent ? {} : { intent: "CREATE_VIDEO" }), costCapMicro: cur.costCapMicro != null ? Math.min(cur.costCapMicro, own) : own }, () => engine(ctx, focused, req, deps, { capMicro, spentMicro: before }));
 }
 
 async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, deps: VideoV2Deps, budget: Budget): Promise<VideoRunResult> {
@@ -103,6 +106,7 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
   const notes: string[] = [];
   const stats = { generated: 0, reused: 0, retries: 0, localShots: 0, skippedForBudget: 0, reviews: 0 };
 
+  if(req.approval && videoScope(p,{ask:req.ask,offer:req.offer??null})!==req.approval.scope) throw new Error("Contexte modifié depuis l’accord vidéo : poursuite bloquée.");
   // 1-2. Intention et stratégie (gratuites).
   const intent0 = videoIntent(p, req.ask);
   // Forfait du projet (revérifié dans le worker) : Créer = montage sans plans filmés par l'IA ; Développer = vidéos
@@ -116,7 +120,7 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
 
   // 3. Script : local d'abord, IA ensuite (contrôlée, une reprise ciblée au plus).
   // Plan seul (estimation affichée avant accord) : script local, aucun appel d'IA.
-  const script = await writeScript(p, deps, insight, strategy, intent, jobId, notes, !req.planOnly);
+  const script = req.approval?.scenario ?? await writeScript(p, deps, insight, strategy, intent, jobId, notes, !req.planOnly);
   if (intent.editorial && script.issues.length) throw new Error(`Contenu vidéo à adapter avant les médias : ${script.issues.join(" ; ")}`);
   const ugc = intent.kind === "ugc";
   const persona: PersonaSheet | null = ugc ? personaSheet(p.id, insight) : null;
@@ -179,7 +183,7 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
     const icons = intent.kind === "ugc" ? [] : await promoIcons(p, pal);
     // Vocabulaire du client (ex. « montre », jamais « chronographe ») : textes à l'écran et voix, avant l'enregistrement.
     let doc = applyWordingDeep(assemble({ p, intent, strategy, shots, media, inv, pal, typo, size, safe, insight, runId, thumbs, icons }), loadWordingRules(p.id));
-    doc.meta.editorial=videoContext(p,intent.kind === "social_content"?"post":"ad",req.ask.text,req.ask.subject,req.ask.editorial);
+    doc.meta.editorial=videoContext(p,intent.purpose==="organic" || intent.kind === "social_content"?"post":"ad",req.ask.text,req.ask.subject,req.ask.editorial);
     // Voix off : seulement si un fournisseur de synthèse vocale existe (sinon la voix reste à enregistrer).
     if (deps.voice) await recordVoices(p, deps, doc, jobId, notes);
     else if (doc.audio.voice.length) notes.push("voix off : aucun fournisseur de synthèse vocale configuré — texte prêt à enregistrer, porté par les sous-titres");
@@ -217,6 +221,7 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
     let renderedId: string | null = null;
     for (let attempt = 0; attempt <= POLICIES.video_v2.maxRetries; attempt++) {
       ctx?.progress(0.7, "Rendu de la vidéo");
+      const beforeEncode=(await import("./store")).latestVideo(p.id,docKey)?.version.id??null;
       const ex = await renderVideoFile(p.id, doc, { scale: req.renderScale, fps: req.fps, onProgress: (x) => ctx?.progress(0.7 + x * 0.2, `Rendu ${Math.round(x * 100)} %`) });
       try {
         const probe = await probeDuration(ex.file);
@@ -234,8 +239,17 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
           }
         }
         decision = gateVideo({ local, review, reviewError, shotCodes, attempt, peopleAllowed: intent.people !== false });
+        if(!decision.fatal && !local.codes.length && !shotCodes.length && review?.unchecked?.length) decision={...decision,verdict:"PROVISIONAL",action:"none",checked:false,provisional:{use:"manual",label:"needs_improvement"},reason:`Vérification humaine requise : ${review.unchecked.join(", ")}`};
         result.issues = [...local.issues, ...(review?.issues ?? [])];
         const g = gateSave({ userId: p.userId, projectId: p.id, jobId, candidateId: `video2:${docKey}` }, decision);
+        const conflict=((await import("./store")).latestVideo(p.id,docKey)?.version.id??null)!==beforeEncode || !!(req.approval && videoScope(loadProject(p.id),{ask:req.ask,offer:req.offer??null})!==req.approval.scope);
+        if(conflict) {
+          const conflictKey=`${docKey}:conflict:${crypto.randomUUID().slice(0,8)}`;
+          const preserved=await saveRendered(p.id,p.userId,conflictKey,doc,ex,{editConflict:true,gate:{verdict:"PROVISIONAL",checked:false,fatal:false,provisional:{use:"manual",label:"needs_improvement"}}});
+          saveVideoVersion(p.id,conflictKey,doc,{note:"Rendu isolé après modification concurrente",renderedAssetId:preserved.videoId});
+          throw new Error("Modification pendant le rendu : version client conservée et rendu isolé.");
+        }
+        if(req.approval) doc.meta.retakeBudgetMicro=Math.max(0,req.approval.capMicro-(jobId?all<{c:number}>("SELECT COALESCE(SUM(cost),0) c FROM ai_calls WHERE job_id=?",jobId)[0]?.c??0:budget.spentMicro));
         const saved = await saveRendered(p.id, p.userId, docKey, doc, ex, { ...g.meta, videoV2Run: { runId, version: VIDEO_V2_VERSION, attempt, verdict: decision.verdict, codes: [...decision.fatalCodes, ...decision.blockingCodes] } });
         renderedId = saved.videoId;
         saveVideoVersion(p.id, docKey, doc, { note: `moteur — essai ${attempt + 1} (${decision.verdict})`, renderedAssetId: renderedId });
@@ -294,7 +308,7 @@ async function writeScript(p: Project, deps: VideoV2Deps, i: AdInsight, st: Crea
     return { ...s, sections, issues: [...s.issues.filter((x) => !bad.includes(x))] };
   };
   if (intent.editorial || !allowAi || !deps.canWrite || intent.complexity === "simple") return ugcFix(local);
-  const material = { proofs: st.proofs, facts: i.facts, claimsToAvoid: i.claimsToAvoid };
+  const material = { proofs: st.proofs, facts: i.facts, claimsToAvoid: i.claimsToAvoid,ctaRequired:intent.purpose!=="organic" };
   let feedback: string | undefined;
   for (let round = 0; round < 2; round++) {
     try {
@@ -406,7 +420,7 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
   // Plan libre de droits (Pixabay d'abord) : chaque moment de la vidéo qui ne montre pas le produit et n'a pas de
   // vidéo du client reçoit SON plan vidéo réel, cherché pour lui (métier, prestation, univers du produit) — gratuit.
   // Les plans du produit (photos réelles, packshot), la preuve, la conclusion et l'appel à l'action restent composés.
-  if (deps.stockClip && s.source.kind !== "generate" && s.method !== "existing_video" && stockFor(o.p, s)) {
+  if (deps.stockClip && (p.business === "services" || s.source.kind !== "generate") && s.method !== "existing_video" && stockFor(o.p, s)) {
     const clip = await deps
       .stockClip({ topic: s.subject, part: s.part, aspect: o.intent.aspect === "16:9" ? "16:9" : o.intent.aspect === "1:1" ? "1:1" : o.intent.aspect === "4:5" ? "4:5" : "9:16", durationS: s.durationS, index: o.stockIndex ? o.stockIndex.n++ : 0, key: `${o.ctx?.job.id ?? "video"}:${s.id}` }, o.stockTaken ?? new Set())
       .catch((e) => {
@@ -464,7 +478,7 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
       break;
     }
     o.ctx?.progress(0.3, `Tournage du plan ${s.id}`);
-    const buf = await withCandidate(`video2:${s.id}`, attempt, () => deps.generateClip({ provider, model, image: start!, prompt: shotPrompt(s, o.strategy, o.persona, feedback, o.intent.people !== false), aspect: o.intent.aspect === "16:9" ? "16:9" : "9:16", seconds, people: s.character }, `${o.ctx?.job.id ?? "video2"}:video2:shot:${key}:${attempt}`));
+    const buf = await videoReceipt(p.id,`${o.ctx?.job.id??"video2"}:video2:${key}:${attempt}`,()=>withCandidate(`video2:${s.id}`, attempt, () => deps.generateClip({ provider, model, image: start!, prompt: shotPrompt(s, o.strategy, o.persona, feedback, o.intent.people !== false), aspect: o.intent.aspect === "16:9" ? "16:9" : "9:16", seconds, people: s.character }, `${o.ctx?.job.id ?? "video2"}:video2:shot:${key}:${attempt}`)));
     o.budget.spentMicro += est;
     spent += est;
     stats.generated++;
@@ -647,7 +661,7 @@ function assemble(a: AssembleInput): VideoDocument {
     const target = [...clips].reverse().find((c) => c.source.kind !== "video");
     if (target) target.durationS = Math.round((target.durationS + lost) * 100) / 100;
   }
-  const promo = !organicVideo(a.intent.editorial) && a.intent.kind !== "ugc" && clips.some((c) => c.source.kind === "video");
+  const promo = !organicVideo(a.intent.editorial) && a.intent.purpose!=="organic" && a.intent.kind !== "ugc" && clips.some((c) => c.source.kind === "video");
   if (promo && a.strategy.style.music !== "none") clips = snapToBeat(clips, songGrid(songStyleFor(a.p), clips.reduce((t, c) => t + c.durationS, 0)).beatS);
   // Direction artistique de la marque : la même ligne que les publications (typographie, élément graphique, rythme, lumière).
   const look = artDirection(adArt(a.p, a.typo)).video;
@@ -767,21 +781,26 @@ export async function regenerateClip(ctx: JobContext | null, projectId: string, 
   if (!cur) throw new Error("vidéo introuvable");
   const k = cur.doc.clips.findIndex((c) => c.id === clipId);
   if (k < 0) throw new Error("plan introuvable");
+  if(o.approve && ((cur.doc.meta.retakeCount??0)>=1 || one("SELECT 1 FROM jobs WHERE project_id=? AND type='video.v2.clip' AND json_extract(payload,'$.docKey')=? AND id<>? LIMIT 1",projectId,docKey,ctx?.job.id??""))) throw new Error("Limite de reprise ciblée atteinte : version utilisable conservée ; nouveau scénario et devis requis.");
   const clip = cur.doc.clips[k];
+  const oldClip=clip.source.kind === "video" ? getAsset(clip.source.assetId) : null;
+  const originalStill=oldClip?.source_asset_id?getAsset(oldClip.source_asset_id):null;
+  const referenceId=originalStill?.project_id === projectId && originalStill.kind === "image" ? originalStill.id : null;
   const intent = videoIntent(p, { kind: cur.doc.meta.intent as never, aspect: cur.doc.aspect, platform: cur.doc.platform, durationS: Math.round(cur.doc.clips.reduce((t, c) => t + c.durationS, 0)) });
   const insight = adInsight(p, {});
   const strategy = videoStrategy(p, intent, { insight });
   const inv = deps.inventory();
   const notes: string[] = [];
-  const shot: ShotPlan = { id: clip.shotId, durationS: clip.durationS, part: clip.part ?? "development", subject: o.instruction?.trim() || clip.label, action: "plan de remplacement", environment: strategy.style.camera, framing: "medium", camera: "push_in", lighting: strategy.style.light, reference: { assetId: inv.photos[0]?.id ?? null, note: "photo réelle" }, voice: "", onScreen: "", sound: "", transition: clip.transitionIn.kind, purpose: "remplacer la séquence", showsProduct: !!inv.cutout && p.business === "products", character: intent.kind === "ugc", method: "ai_video", source: { kind: "compose" }, why: "" };
-  const choice = o.approve && deps.generationAllowed && deps.canReview ? chooseProvider({ imageToVideo: true, people: shot.character, nativeAudio: false, aspect: cur.doc.aspect, durationS: clip.durationS }, { available: deps.available, preferred: deps.preferredFor ? deps.preferredFor(!!shot.character) : deps.preferred, estimate: deps.estimate ?? estimateMicro }) : null;
+  const shot: ShotPlan = { id: clip.shotId, durationS: clip.durationS, part: clip.part ?? "development", subject: o.instruction?.trim() || clip.label, action: "plan de remplacement", environment: strategy.style.camera, framing: "medium", camera: "push_in", lighting: strategy.style.light, reference: { assetId: referenceId??inv.photos[0]?.id ?? null, note: "photo réelle" }, voice: "", onScreen: "", sound: "", transition: clip.transitionIn.kind, purpose: "remplacer la séquence", showsProduct: !!inv.cutout && p.business === "products", character: intent.kind === "ugc", method: "ai_video", source: { kind: "compose" }, why: "" };
+  const choice = (p.business!=="services" || intent.kind==="ugc") && o.approve && deps.generationAllowed && deps.canReview ? chooseProvider({ imageToVideo: true, people: shot.character, nativeAudio: false, aspect: cur.doc.aspect, durationS: clip.durationS }, { available: deps.available, preferred: deps.preferredFor ? deps.preferredFor(!!shot.character) : deps.preferred, estimate: deps.estimate ?? estimateMicro }) : null;
   if (choice) shot.source = { kind: "generate", assetId: shot.reference.assetId, provider: choice.provider, model: choice.model, estimateMicro: choice.estimateMicro };
   else {
+    if(o.approve && p.business!=="services") throw new Error("Aucun fournisseur compatible : ancien clip conservé, aucun remplacement local.");
     notes.push(o.approve ? "aucun fournisseur vidéo compatible et disponible : plan local" : "génération non approuvée : plan local");
     shot.method = shot.reference.assetId ? "animated_image" : "kinetic_type";
     shot.source = shot.reference.assetId ? { kind: "asset", assetId: shot.reference.assetId } : { kind: "compose" };
   }
-  const budget = { capMicro: Math.round((o.maxCostEur ?? 2) * EUR), spentMicro: 0 };
+  const budget = { capMicro: Math.min(cur.doc.meta.retakeBudgetMicro??Infinity,Math.round((o.maxCostEur ?? 2) * EUR)), spentMicro: 0 };
   const stats = { generated: 0, reused: 0, retries: 0, localShots: 0, skippedForBudget: 0, reviews: 0 };
   const pal = palette(p);
   const typo = brandTypo(p);
@@ -790,7 +809,7 @@ export async function regenerateClip(ctx: JobContext | null, projectId: string, 
   );
   const doc = structuredClone(cur.doc);
   doc.clips[k] = { ...clipFor(shot, out.media, { pal, typo, size: { w: doc.width, h: doc.height }, safe: doc.safe, insight, inv, strategy }, k), id: clip.id, overlays: clip.overlays, transitionIn: clip.transitionIn, durationS: clip.durationS };
-  doc.meta = { ...doc.meta, source: out.media.generated ? "ai" : "user" };
+  doc.meta = { ...doc.meta,retakeCount:(cur.doc.meta.retakeCount??0)+(o.approve?1:0), source: out.media.generated ? "ai" : "user" };
   saveVideoVersion(projectId, docKey, doc, { note: `plan ${clip.shotId} remplacé (${out.outcome.reason})` });
   return { doc, outcome: out.outcome, notes };
 }
@@ -814,6 +833,7 @@ export async function renderLatest(ctx: JobContext | null, projectId: string, do
   const p = loadProject(projectId);
   const cur = latestVideo(projectId, docKey);
   if (!cur) throw new Error("vidéo introuvable");
+  const scopeBefore=videoScope(p,{docKey});
   const ex = await renderVideoFile(projectId, cur.doc, { scale: o.scale, fps: o.fps, onProgress: (x) => ctx?.progress(x * 0.9, `Rendu ${Math.round(x * 100)} %`) });
   try {
     const { timeline } = await import("./doc");
@@ -822,8 +842,11 @@ export async function renderLatest(ctx: JobContext | null, projectId: string, do
     const d = gateVideo({ local, review: null, attempt: 0 });
     const g = gateSave({ userId: p.userId, projectId, jobId: ctx?.job.id ?? null, candidateId: `video2:${docKey}` }, d);
     const scenes = scenesMetaOf(projectId, docKey, cur.doc.meta.createdFrom);
-    const saved = await saveRendered(projectId, p.userId, docKey, cur.doc, ex, { ...g.meta, videoV2Render: { version: cur.version.version }, ...(scenes ? { scenes: { ...scenes, music: !!cur.doc.audio.music } } : {}) });
-    saveVideoVersion(projectId, docKey, cur.doc, { note: `rendu de la version ${cur.version.version}`, renderedAssetId: saved.videoId });
+    const changed=latestVideo(projectId,docKey)?.version.id!==cur.version.id || videoScope(loadProject(projectId),{docKey})!==scopeBefore;
+    const targetKey=changed?`${docKey}:conflict:${crypto.randomUUID().slice(0,8)}`:docKey;
+    const saved = await saveRendered(projectId, p.userId, targetKey, cur.doc, ex, { ...g.meta, videoV2Render: { version: cur.version.version }, ...(scenes ? { scenes: { ...scenes, music: !!cur.doc.audio.music } } : {}) });
+    saveVideoVersion(projectId, targetKey, cur.doc, { note: `rendu de la version ${cur.version.version}`, renderedAssetId: saved.videoId });
+    if(changed) throw new Error("Modification pendant l’encodage : version client conservée et rendu isolé dans la bibliothèque.");
     return { videoAssetId: saved.videoId, verdict: d.verdict, issues: local.issues };
   } finally {
     fs.rmSync(ex.dir, { recursive: true, force: true });

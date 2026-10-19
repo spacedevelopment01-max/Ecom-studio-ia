@@ -10,15 +10,16 @@ import { Clapperboard, Download, Pencil, Wand2 } from "lucide-react";
 import { api, Button, Card, cx, useApi, useToast } from "../ui";
 import { useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
-import { JobProgress, SectionTitle, useActive } from "./common";
+import { JobProgress, SectionTitle, useActive,MediaPicker } from "./common";
 import { useBudgetPct } from "../billing-client";
 import { SubjectPicker, subjectChoice, type SubjectView } from "./subject-picker";
 import { MusicChoice } from "./music-choice";
+import type { ThreeScenesRequest } from "@/lib/video-v2/three-scenes";
 import { VideoDocModal } from "./video-v2-panel";
 
-type Quote = { mode: "ai" | "stock"; allowed: boolean; reason: string | null; estimateMicro: number; scenes: number; totalS: number; clipS: number };
+type Quote = { request?:ThreeScenesRequest; steps?:{id:string;count:number}[]; scriptMicro?:number;scenarioJobId?:string; approvalToken?:string;scenario?:{scenes:{title:string;voice?:string;intent?:string}[];cta:string}; mode: "ai" | "stock"; allowed: boolean; reason: string | null; estimateMicro: number; scenes: number; totalS: number; clipS: number };
 type VideoItem = { id: string; docKey: string | null; url: string; aspect: string | null; durationS: number | null; as: "post" | "ad"; mode: string | null; subject: string | null; request: string | null; reviewRequired: boolean; warnings: string[]; at: number };
-type Data = { voiceAvailable:boolean; voice:{voice?:"on"|"off";voiceId?:string;voiceConsent?:string}; videos: VideoItem[]; ai: boolean; subjects: SubjectView[]; limits: { scenes: [number, number]; totalS: [number, number] } };
+type Data = { scenarios:Quote[]; drafts:{id:string;error:string;scenes:number;as:"ad"|"post";used:boolean;retakeMicro:number}[]; voiceAvailable:boolean; voice:{voice?:"on"|"off";voiceId?:string;voiceConsent?:string}; videos: VideoItem[]; ai: boolean; subjects: SubjectView[]; limits: { scenes: [number, number]; totalS: [number, number] } };
 const ASPECTS = [
   { v: "9:16", fr: "Vertical 9:16 (Reels, TikTok, Stories)", en: "Vertical 9:16 (Reels, TikTok, Stories)" },
   { v: "4:5", fr: "Portrait 4:5 (fil d'actualité)", en: "Portrait 4:5 (feed)" },
@@ -33,8 +34,8 @@ export function GuidedVideo({ as }: { as: "post" | "ad" }) {
   const { lang } = useLang();
   const budget = useBudgetPct();
   const toast = useToast();
-  const { data, reload } = useApi<Data>(`/api/projects/${id}/creative/video`);
-  const jobs = useActive(["video.scenes", "video.v2.render"]);
+  const { data, reload } = useApi<Data>(`/api/projects/${id}/creative/video`,{poll:4000});
+  const jobs = useActive(["video.scenario","video.scenes", "video.v2.render"]);
   const [editing, setEditing] = useState<string | null>(null);
   const reformat = async (docKey: string, to: string) => {
     try {
@@ -52,34 +53,45 @@ export function GuidedVideo({ as }: { as: "post" | "ad" }) {
   const [scenes, setScenes] = useState(3);
   const [music, setMusic] = useState(true);
   const [quote, setQuote] = useState<Quote | null>(null);
+  const [sceneImages,setSceneImages]=useState<({assetId:string;use:"reuse"|"reference"}|null)[]>([]);
+  const [imageScene,setImageScene]=useState<number|null>(null);
+  const [repairScene,setRepairScene]=useState<Record<string,number>>({});
+  const [scenario,setScenario]=useState<Quote|null>(null);
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     if (!subjectKey && subjects[0]) setSubjectKey(subjects[0].key);
   }, [subjects, subjectKey]);
   const subject = subjectChoice(subjects.find((s) => s.key === subjectKey) ?? subjects[0]);
+  const quoteContext=useRef("");
   // Prix recalculé à chaque réglage (format, durée, scènes, produit ou service).
   useEffect(() => {
     if (!subjects.length) return;
     let off = false;
     setQuote(null);
-    api<Quote>(`/api/projects/${id}/creative/video`, { body: { action: "quote", as, subject, aspect, totalS, scenes } })
+    const context=JSON.stringify([id,as,subjectKey,aspect,totalS,scenes,request,music,data?.voice.voiceId,data?.voice.voice]);
+    if(quoteContext.current!==context) setScenario(null);
+    else setScenario(old=>old?{...old,approvalToken:undefined}:old);
+    quoteContext.current=context;
+    api<Quote>(`/api/projects/${id}/creative/video`, { body: { action: "quote", as, subject, aspect, totalS, scenes,request,music,sceneImages } })
       .then((q) => !off && setQuote(q))
       .catch(() => !off && setQuote(null));
     return () => {
       off = true;
     };
-  }, [id, as, subjectKey, aspect, totalS, scenes, subjects.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [id, as, subjectKey, aspect, totalS, scenes, subjects.length,request,music,data?.voice.voiceId,data?.voice.voice,JSON.stringify(sceneImages)]); // eslint-disable-line react-hooks/exhaustive-deps
   const running = jobs.length > 0;
   const was = useRef(running);
   useEffect(() => {
     if (was.current && !running) reload();
     was.current = running;
   }, [running, reload]);
+  useEffect(()=>{if(!scenario?.scenarioJobId || scenario.scenario)return;const ready=data?.scenarios?.find(s=>s.scenarioJobId===scenario.scenarioJobId);if(ready)setScenario(ready);},[data?.scenarios,scenario?.scenarioJobId,scenario?.scenario]);
   const create = async () => {
     if (!quote?.allowed) return;
     setBusy(true);
     try {
-      await api(`/api/projects/${id}/creative/video`, { body: { action: "create", as, subject, request: request.trim() || undefined, aspect, totalS, scenes, music, approvedEstimateMicro: quote.estimateMicro } });
+      if(!scenario?.approvalToken) {setScenario(await api<Quote>(`/api/projects/${id}/creative/video`,{body:{scenarioJobId:scenario?.scenarioJobId,approvedScriptMicro:quote.scriptMicro??0,draftPlan:scenario?.scenario,action:"plan",as,subject,request:request.trim()||undefined,aspect,totalS,scenes,music,sceneImages}}));return;}
+      await api(`/api/projects/${id}/creative/video`, { body: { approvalToken:scenario.approvalToken, action: "create", as, subject, request: request.trim() || undefined, aspect, totalS, scenes, music,sceneImages, approvedEstimateMicro: quote.estimateMicro } });
       toast("ok", t("Vidéo en préparation : elle apparaît ici dès qu'elle est prête.", "Video being prepared: it appears here as soon as it's ready."));
     } catch (e) {
       toast("bad", (e as Error).message);
@@ -91,9 +103,19 @@ export function GuidedVideo({ as }: { as: "post" | "ad" }) {
   const perScene = Math.round((totalS / scenes) * 10) / 10;
   return (
     <section className="mb-8" data-guided-video={as}>
+      <MediaPicker open={imageScene!==null} onClose={()=>setImageScene(null)} kinds={["image"]} onPick={assets=>{if(imageScene===null||!assets[0])return;const index=imageScene;setSceneImages(old=>Array.from({length:scenes},(_,k)=>k===index?{assetId:assets[0].id,use:"reuse"}:old[k]??null));setImageScene(null);}} />
       <SectionTitle title={as === "ad" ? t("Publicité vidéo guidée", "Guided video ad") : t("Publication vidéo guidée", "Guided video post")}>
-        {t("Choisissez le produit ou le service, décrivez votre idée, puis le format, la durée et le nombre de scènes. Produit : scènes créées par l'IA à partir de votre vrai produit ; service : plans réels de votre métier.", "Pick the product or service, describe your idea, then the format, length and number of scenes. Product: scenes made by AI from your real product; service: real footage of your trade.")}
+        {t("Choisissez le produit ou le service, décrivez votre idée, puis le format, la durée et le nombre de scènes. Produit : scènes créées par l'IA à partir de votre vrai produit ; service : plans illustratifs de votre métier, avec leur provenance.", "Pick the product or service, describe your idea, then the format, length and number of scenes. Product: scenes made by AI from your real product; service: illustrative footage of your trade with provenance.")}
       </SectionTitle>
+      {(data?.drafts??[]).filter(d=>d.as===as).map(d=><Card key={d.id} className="mb-4 grid gap-3 p-4" data-video-incomplete><p className="font-medium">{t("Vidéo incomplète — acquis conservés","Incomplete video — obtained media preserved")}</p><p className="text-sm">{d.error}</p>{!d.used&&<div className="flex flex-wrap gap-3"><select aria-label={t("Scène à reprendre","Scene to repair")} value={repairScene[d.id]??0} onChange={e=>setRepairScene(old=>({...old,[d.id]:Number(e.target.value)}))}>{Array.from({length:d.scenes},(_,k)=><option value={k} key={k}>{t("Scène","Scene")} {k+1}</option>)}</select><Button variant="secondary" onClick={async()=>{try {await api(`/api/projects/${id}/creative/video`,{body:{action:"repair",jobId:d.id,index:repairScene[d.id]??0,kind:"image"}});reload();}catch(e){toast("bad",(e as Error).message);}}}>{t("Reprendre cette scène uniquement","Repair only this scene")} · {budget.label(d.retakeMicro)}</Button></div>}</Card>)}
+      {!scenario && (data?.scenarios??[]).filter(s=>s.request?.as===as).map(saved=><Card key={saved.scenarioJobId} className="mb-3 flex flex-wrap items-center justify-between gap-3 p-4" data-video-saved-scenario>
+        <p className="text-sm">{saved.request?.request || saved.scenario?.scenes[0]?.title || t("Scénario préparé", "Prepared scenario")}</p>
+        <Button variant="secondary" className="h-auto max-w-full whitespace-normal text-left" onClick={()=>{
+          const r=saved.request!;const key=r.subject?.kind==="service"?r.subject.name:r.subject?.key??subjectKey;
+          quoteContext.current=JSON.stringify([id,as,key,r.aspect??"9:16",r.totalS??15,r.scenes??3,r.request??"",r.music!==false,data?.voice.voiceId,data?.voice.voice]);
+          setSubjectKey(key);setRequest(r.request??"");setAspect(r.aspect??"9:16");setTotalS(r.totalS??15);setScenes(r.scenes??3);setMusic(r.music!==false);setSceneImages(r.sceneImages??[]);setScenario({...saved,approvalToken:undefined});
+        }}>{t("Reprendre ce scénario sans nouvelle rédaction", "Resume scenario without rewriting")}</Button>
+      </Card>)}
       <Card className="grid gap-5 p-5">
         {jobs[0] && <JobProgress job={jobs[0]} />}
         <SubjectPicker subjects={subjects} value={subjectKey} onChange={setSubjectKey} request={request} onRequest={setRequest} idPrefix={`video-${as}`} video surface={as === "ad" ? "ad_video" : "post_video"} />
@@ -143,12 +165,13 @@ export function GuidedVideo({ as }: { as: "post" | "ad" }) {
           </select>
           <span className="text-xs text-muted">{data?.voiceAvailable?t("Choix enregistré pour ce projet. Sous-titres calés par phrase, pas mot à mot.","Saved for this project. Phrase-level subtitle timing, not word alignment."):t("Modèle vocal non installé sur ce serveur.","Voice model is not installed on this server.")}</span>
         </label>
+        {scenario?.scenario && <div data-video-scenario className="rounded-xl border border-line p-4 text-sm"><p className="font-medium">{t("Scénario à vérifier avant lancement", "Review the scenario before starting")}</p><ol className="mt-2 list-decimal space-y-2 pl-5">{scenario.scenario.scenes.map((s,k)=><li key={k}>{quote?.mode==="ai"&&<><Button size="sm" variant="secondary" onClick={()=>setImageScene(k)}>{sceneImages[k]?t("Changer la photo fournie","Change supplied photo"):t("Utiliser une photo de Mes images","Use a photo from My images")}</Button>{sceneImages[k]&&<button type="button" className="ml-2 underline" onClick={()=>setSceneImages(old=>old.map((s,i)=>i===k?null:s))}>{t("Créer une image de scène","Create a scene image")}</button>}</>}<label>{t("Titre", "Title")}<input data-video-scene-title={k} maxLength={40} value={s.title} className="my-1 block w-full rounded border border-line bg-paper px-2 py-1" onChange={e=>setScenario(old=>old?.scenario?{...old,approvalToken:undefined,scenario:{...old.scenario,scenes:old.scenario.scenes.map((sc,i)=>i===k?{...sc,title:e.target.value}:sc)}}:old)}/></label><label>{t("Voix", "Voice")}<textarea data-video-scene-voice={k} maxLength={200} value={s.voice??""} className="my-1 block w-full rounded border border-line bg-paper px-2 py-1" onChange={e=>setScenario(old=>old?.scenario?{...old,approvalToken:undefined,scenario:{...old.scenario,scenes:old.scenario.scenes.map((sc,i)=>i===k?{...sc,voice:e.target.value}:sc)}}:old)}/></label></li>)}</ol></div>}
         <div className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between" data-video-price>
           <p className="text-sm">
-            {!quote ? t("Calcul du prix…", "Calculating the price…") : !quote.allowed ? <span className="text-warn">{quote.reason}</span> : quote.estimateMicro === 0 ? <span className="font-medium text-ok">{t("Gratuit : plans libres de droits de votre métier, montés par le studio.", "Free: royalty-free footage of your trade, edited by the studio.")}</span> : t(<>Coût probable : <strong>{budget.label(quote.estimateMicro)}</strong> ({quote.mode === "ai" ? `${quote.scenes} image${quote.scenes > 1 ? "s" : ""} + ${quote.scenes} plan${quote.scenes > 1 ? "s" : ""} Wan 2.6` : "contrôle des plans"}). Une reprise éventuelle est décomptée et annoncée.</>, <>Likely cost: <strong>{budget.label(quote.estimateMicro)}</strong> ({quote.mode === "ai" ? `${quote.scenes} image${quote.scenes > 1 ? "s" : ""} + ${quote.scenes} Wan 2.6 shot${quote.scenes > 1 ? "s" : ""}` : "shot checks"}). Any redo is counted and announced.</>)}
+            {!quote ? t("Calcul du prix…", "Calculating the price…") : !quote.allowed ? <span className="text-warn">{quote.reason}</span> : quote.estimateMicro === 0 ? <span className="font-medium text-ok">{t("Gratuit : plans libres de droits de votre métier, montés par le studio.", "Free: royalty-free footage of your trade, edited by the studio.")}</span> : t(<>Coût probable : <strong>{budget.label(quote.estimateMicro)}</strong> ({quote.mode === "ai" ? `${quote.steps?.find(s=>s.id==="reference_images")?.count??quote.scenes} image(s) + ${quote.scenes} plan${quote.scenes > 1 ? "s" : ""} Wan 2.6` : "contrôle des plans"}). Une reprise éventuelle est décomptée et annoncée.</>, <>Likely cost: <strong>{budget.label(quote.estimateMicro)}</strong> ({quote.mode === "ai" ? `${quote.steps?.find(s=>s.id==="reference_images")?.count??quote.scenes} image(s) + ${quote.scenes} Wan 2.6 shot${quote.scenes > 1 ? "s" : ""}` : "shot checks"}). Any redo is counted and announced.</>)}
           </p>
           <Button onClick={create} loading={busy} disabled={busy || running || !quote?.allowed || !subjects.length} icon={<Wand2 className="size-4" />} data-guided-video-submit>
-            {as === "ad" ? t("Créer la publicité vidéo", "Create the video ad") : t("Créer la vidéo", "Create the video")}
+            {scenario?.approvalToken?t("Valider et créer la vidéo","Approve and create video"):t("Préparer le scénario","Prepare scenario")}{!scenario?.approvalToken && (quote?.scriptMicro??0)>0?` · ${t("rédaction","script")} ${budget.label(quote!.scriptMicro!)}`:""}
             {quote?.allowed && quote.estimateMicro > 0 ? ` · ${budget.label(quote.estimateMicro)}` : ""}
           </Button>
         </div>

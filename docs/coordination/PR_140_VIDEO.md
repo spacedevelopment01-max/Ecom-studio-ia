@@ -1,5 +1,7 @@
 # PR #140 — parcours vidéo, corrections ciblées et devis ONDE
 
+> Suite de la mission : [trois lots vidéo, devis et réception actualisés](PR_140_VIDEO_LOTS.md). Ce document conserve le diagnostic initial ; ses anciennes limites et références ne constituent pas le bilan final.
+
 État du 19 octobre 2026. Missions lues intégralement : [6265941030, vidéo existante](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/140#issuecomment-6265941030) et [6266012060, devis ONDE sans génération](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/140#issuecomment-6266012060). Accusé de réception [6266084576](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/140#issuecomment-6266084576).
 
 **Livraison partielle du parcours vidéo, avec défauts techniques corrigés et trous fonctionnels identifiés. Le rendu premium ONDE complet et une conception organique vidéo réellement distincte ne sont pas déclarés livrés. Aucun appel IA payant, achat, débit de crédits, publication sociale, merge ou déploiement. Coût fournisseur réellement engagé : 0 €.**

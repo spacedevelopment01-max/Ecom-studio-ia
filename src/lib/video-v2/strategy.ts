@@ -90,12 +90,12 @@ export function videoStrategy(p: Project, intent: VideoIntent, opts: { offer?: s
   const i = opts.insight ?? adInsight(p, { audience: intent.audience, offer: opts.offer });
   const lang = visualLanguage(i, p.product.sector ?? null);
   const L = LANGUAGE[lang];
-  const narrative = organicVideo(intent.editorial) ? "educational" : narrativeFor(intent, L.narrative);
+  const narrative = (organicVideo(intent.editorial) || intent.purpose === "organic") ? "educational" : narrativeFor(intent, L.narrative);
   const hooks = hookCandidates(i, intent);
   const hook = hooks[seeded(`${p.id}:${intent.kind}`, hooks.length)] ?? i.offerName;
   const proofs = [...i.facts.map((f) => `${f.label} : ${f.value}`), ...i.proofs].slice(0, 4);
   const ctas = CTAS[i.business][contentLang()];
-  const cta = organicVideo(intent.editorial) ? "" : intent.kind === "product_tutorial" || intent.kind === "explainer" ? ctas[Math.min(1, ctas.length - 1)] : ctas[0];
+  const cta = (organicVideo(intent.editorial) || intent.purpose === "organic") ? "" : intent.kind === "product_tutorial" || intent.kind === "explainer" ? ctas[Math.min(1, ctas.length - 1)] : ctas[0];
   // Rythme : plus nerveux pour la publicité et le contenu social, plus posé pour les présentations.
   const fast = intent.kind === "video_ad" || intent.kind === "social_content" || intent.kind === "ugc" || intent.kind === "launch";
   const avgShotS = Math.max(1.6, Math.round((fast ? L.avgShotS * 0.8 : L.avgShotS) * 10) / 10);

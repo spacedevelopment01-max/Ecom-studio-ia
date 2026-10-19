@@ -120,6 +120,10 @@ export const handlers: Record<string, Handler> = {
     return { docKey: r.docKey, videoAssetId: r.videoAssetId, verdict: r.verdict, codes: r.codes, estimateMicro: r.estimateMicro, stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, notes: r.notes.slice(0, 20) };
   },
   /** Vidéo en scènes (création guidée) : images Qwen + plans Wan 2.6 (produit) ou plans libres (service), montage du studio. */
+  "video.scenario": async(ctx)=>{
+    const {runSceneScenario}=await import("../src/lib/video-v2/three-scenes");
+    return runSceneScenario(ctx,ctx.payload.projectId,ctx.payload.request);
+  },
   "video.scenes": async (ctx) => {
     const { runThreeScenes, realThreeScenesDeps } = await import("../src/lib/video-v2/three-scenes");
     const { llmConfigured } = await import("../src/lib/ai/llm");

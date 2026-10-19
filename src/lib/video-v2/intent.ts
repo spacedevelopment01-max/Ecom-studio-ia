@@ -65,6 +65,7 @@ const INTENT_DURATION: Partial<Record<VideoIntentKind, number>> = {
 };
 
 export type VideoAsk = {
+  purpose?:"ad"|"organic";
   editorial?: import("./editorial").VideoEditorial;
   subject?: import("../creative-subject").CreativeSubject|null;
   text?: string | null;
@@ -125,7 +126,7 @@ export function videoIntent(p: Project, ask: VideoAsk = {}): VideoIntent {
   const goal = (ask.text ?? "").trim() || goalFor(kind, services);
   const placeholder = (x: string | null | undefined) => !x?.trim() || /\[(À|A) (compléter|définir|préciser)|\[To (complete|define|specify)/i.test(x);
   const audience = !placeholder(ask.audience) ? ask.audience!.trim() : !placeholder(p.brand?.audience) ? p.brand!.audience!.trim() : null;
-  return { kind, goal, audience, platform, aspect, durationS, complexity, reasons, people, editorial:ask.editorial };
+  return { kind, goal, audience, platform, aspect, durationS, complexity, reasons, people, purpose:ask.purpose, editorial:ask.editorial };
 }
 
 function goalFor(kind: VideoIntentKind, services: boolean): string {

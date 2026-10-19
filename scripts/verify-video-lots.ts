@@ -14,7 +14,7 @@ globalThis.fetch = async () => { throw Error("Aucun réseau autorisé dans ce ha
 const { createUser } = await import("../src/lib/auth");
 const { all, now, run } = await import("../src/lib/db");
 const { loadProject } = await import("../src/lib/projects");
-const { enqueue, JobContext, UserFacingError } = await import("../src/lib/jobs");
+const { enqueue, JobContext, UserFacingError, JobPaused } = await import("../src/lib/jobs");
 const { saveAsset, getAsset, assetData } = await import("../src/lib/library");
 const { seedImageFixture, seedCutout } = await import("../tests/image-v2-fixtures");
 const { runThreeScenes, localScenePlan, realThreeScenesDeps } = await import("../src/lib/video-v2/three-scenes");
@@ -47,6 +47,7 @@ for (const [slug, kind, purpose, aspect, scenes, totalS] of [
   // Les anciennes fixtures ont des noms de démos : ce sont ici des mires, jamais une instance du projet ONDE.
   run("UPDATE projects SET name=?, product_json=json_set(product_json,'$.name',?), brand_json=json_set(brand_json,'$.name',?) WHERE id=?", `TEST LOCAL ${slug}`, `Mire technique ${slug}`, "Studio de test fictif", pid);
   if (kind === "hightech") await seedCutout(u.id, pid);
+  if(process.env.SEED_ONLY === "1") continue;
   const p = loadProject(pid);
   const plan = localScenePlan(p, null, { as: purpose, scenes, totalS });
   // Titres neutres de mire : aucune qualité créative ou phrase du client n'est validée ici.
@@ -65,7 +66,7 @@ for (const [slug, kind, purpose, aspect, scenes, totalS] of [
     keyframe: async () => { calls.still++; return sharp({ create: { width: 270, height: 480, channels: 3, background: "#37526a" } }).png().toBuffer(); },
     clip: async (_im, _prompt, _aspect, seconds, key) => {
       calls.clip++;
-      if (fail && key.endsWith(":1")) { fail = false; throw new UserFacingError("Interruption simulée après la deuxième image, avant son clip"); }
+
       return source(seconds, Number(key.split(":").at(-1)));
     },
     stock: async (_p, k, _topic, _aspect, seconds) => {
@@ -77,18 +78,21 @@ for (const [slug, kind, purpose, aspect, scenes, totalS] of [
     visualCheck: false,
   };
   const job = enqueue({ userId: u.id, projectId: pid, type: "video.scenes", label: "TEST LOCAL — fournisseurs simulés", payload: {} });
-  const ctx = new JobContext(job), req = { as: purpose, aspect, scenes, totalS, key: `reception:${pid}` };
+  const ctx = new JobContext(job);
+  const progress=ctx.progress.bind(ctx);
+  ctx.progress=(value,message)=>{if(fail && calls.still===2 && calls.clip===1){fail=false;throw new JobPaused("Interruption avant envoi du deuxième clip");}return progress(value,message);};
+  const req = { as: purpose, aspect, scenes, totalS, key: `reception:${pid}` };
   let interruption: unknown = null;
   if (kind === "hightech") {
     try { await runWithLang({ ui: "fr", content: "fr" }, () => runThreeScenes(ctx, pid, req, deps)); } catch (e) { interruption = { error: (e as Error).message, calls: { ...calls } }; }
-    assert.equal(calls.still, 2); assert.equal(calls.clip, 2); assert.equal(calls.render, 0);
+    assert.equal(calls.still, 2); assert.equal(calls.clip, 1); assert.equal(calls.render, 0);
   }
   const result = await runWithLang({ ui: "fr", content: "fr" }, () => runThreeScenes(new JobContext(all<any>("SELECT * FROM jobs WHERE id=?", job.id)[0]), pid, req, deps));
   run("UPDATE jobs SET status='done',result=?,progress=1 WHERE id=?", JSON.stringify(result), job.id);
   const before = { ...calls }, versions = listVideoVersions(pid, result.docKey).length;
   await runThreeScenes(new JobContext(all<any>("SELECT * FROM jobs WHERE id=?", job.id)[0]), pid, req, deps);
   assert.deepEqual(calls, before); assert.equal(listVideoVersions(pid, result.docKey).length, versions);
-  if (kind === "hightech") { assert.equal(calls.still, 4); assert.equal(calls.clip, 5); assert.equal(calls.plan, 1); }
+  if (kind === "hightech") { assert.equal(calls.still, 4); assert.equal(calls.clip, 4); assert.equal(calls.plan, 1); }
   const a = getAsset(result.videoAssetId!)!, file = path.join(out, `${slug}.mp4`);
   fs.writeFileSync(file, assetData(a));
   const probe = JSON.parse(execFileSync("ffprobe", ["-v", "error", "-show_streams", "-show_format", "-of", "json", file]).toString());
@@ -112,4 +116,4 @@ for (const [slug, kind, purpose, aspect, scenes, totalS] of [
 assert.equal(all<any>("SELECT COUNT(*) n FROM ai_calls")[0].n, 0);
 fs.writeFileSync(path.join(dir, "private-ui.json"), JSON.stringify({ token, ui }), { mode: 0o600 });
 fs.writeFileSync(path.join(out, "validation.json"), JSON.stringify({ simulation: true, providerCalls: 0, realProviderCostEur: 0, cpuStorageCostMeasured:false, voiceModelAvailableInThisEnvironment: voiceAvailable(), results: evidence }, null, 2));
-console.log("Quatre MP4 locaux avec vraie synthèse française, références et fournisseurs images/clips/vision simulés ; aucun appel fournisseur payant, coût API réel 0 €.");
+console.log(process.env.SEED_ONLY === "1" ? "Quatre projets isolés préparés, aucun média généré." : "Quatre MP4 locaux avec vraie synthèse française, références et fournisseurs images/clips/vision simulés ; aucun appel fournisseur payant, coût API réel 0 €.");
