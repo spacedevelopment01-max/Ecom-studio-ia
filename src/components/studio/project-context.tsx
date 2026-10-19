@@ -5,6 +5,7 @@ import type { Brand, BusinessType, ProductProfile, ProjectSettings, ServiceProfi
 
 export type JobView = { id: string; type: string; label: string; status: string; progress: number; message: string; error: string | null; result: any; createdAt: number; updatedAt: number; finishedAt: number | null; alive?: boolean; idleMs?: number; estimate?: { ms: number; source: "history" | "default" } | null; startedAt?: number };
 export type Overview = {
+  preparation?: {revision:number}|null;
   /** Forfait du projet (null : découverte, sans abonnement). */
   plan?: string | null;
   project: { id: string; name: string; status: string; platform: string; storeUrl: string | null; createdAt: number; updatedAt: number; sectorLabel: string; business: BusinessType };

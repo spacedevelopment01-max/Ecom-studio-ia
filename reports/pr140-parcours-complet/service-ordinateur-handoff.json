@@ -1,0 +1,2271 @@
+{
+  "ready": true,
+  "approvalsComplete": true,
+  "blockers": [],
+  "category": {
+    "status": "recommended",
+    "category": "services",
+    "salesModel": "service",
+    "goal": "quote",
+    "reasons": [
+      "Vous avez confirmé ce modèle de site pour votre offre actuelle ; ce choix prime sur les indices automatiques."
+    ],
+    "evidence": [
+      {
+        "source": "business",
+        "value": "services"
+      },
+      {
+        "source": "client_choice",
+        "value": "services"
+      }
+    ],
+    "clarification": null,
+    "eligibleThemes": [
+      {
+        "referenceId": "atelier-rive",
+        "name": "Atelier Rive",
+        "engineThemeId": null,
+        "status": "awaiting_integration"
+      }
+    ]
+  },
+  "categoryContextHash": "cff5629328428d10",
+  "categoryChoice": {
+    "category": "services",
+    "contextHash": "cff5629328428d10",
+    "chosenAt": 1792407203094
+  },
+  "categoryChoiceStale": false,
+  "contract": {
+    "schemaVersion": 1,
+    "kind": "theme_data_handoff",
+    "projectId": "0t0thn912l98vevq",
+    "revision": 43,
+    "provenance": "simulation",
+    "clientBrief": {
+      "offerUrl": "",
+      "description": "Accompagnement des petites entreprises pour organiser les espaces de travail. Diagnostic et atelier participatif.",
+      "offerName": "Respire Bureau",
+      "brandName": "",
+      "target": "Responsables de petites entreprises",
+      "constraints": "Pas de chiffres de productivité, pas de panier.",
+      "business": "services",
+      "photoIds": [
+        "duzdf09nsm6di603"
+      ],
+      "referenceUrls": [
+        "https://reference.example/espaces"
+      ],
+      "price": "",
+      "services": {
+        "services": [
+          {
+            "name": "Diagnostic",
+            "description": "Étudier les usages du bureau."
+          },
+          {
+            "name": "Atelier participatif",
+            "description": "Recueillir les besoins de l’équipe."
+          }
+        ],
+        "area": "Nantes",
+        "address": "",
+        "phone": "",
+        "email": "contact@example.test",
+        "hours": "",
+        "bookingUrl": "",
+        "contactMode": "quote",
+        "contactModes": [
+          "quote"
+        ]
+      }
+    },
+    "offer": {
+      "business": "services",
+      "product": {
+        "name": "Respire Bureau",
+        "nameStatus": "provided",
+        "category": "Coaching et accompagnement",
+        "sector": "coaching",
+        "summary": "Accompagnement des petites entreprises pour organiser les espaces de travail. Diagnostic et atelier participatif.",
+        "facts": [],
+        "visual": {
+          "colors": []
+        },
+        "price": {
+          "amount": null,
+          "currency": "EUR",
+          "status": "unknown"
+        },
+        "variants": [],
+        "questions": [],
+        "claimsToAvoid": [],
+        "sources": [],
+        "analyzedBy": "local"
+      },
+      "services": {
+        "services": [
+          {
+            "name": "Diagnostic",
+            "description": "Étudier les usages du bureau."
+          },
+          {
+            "name": "Atelier participatif",
+            "description": "Recueillir les besoins de l’équipe."
+          }
+        ],
+        "area": "Nantes",
+        "address": "",
+        "phone": "",
+        "email": "contact@example.test",
+        "hours": "",
+        "bookingUrl": "",
+        "contactMode": "quote",
+        "contactModes": [
+          "quote"
+        ]
+      },
+      "storeType": "mono",
+      "catalogue": [],
+      "strategy": {
+        "audience": [
+          {
+            "label": "Responsables de petites entreprises — personnes découvrant cette catégorie",
+            "needs": [
+              "Accompagnement des petites entreprises pour organiser les espaces de travail. Diagnostic et atelier participatif."
+            ],
+            "objections": [
+              "Cette offre répond-elle à ma situation ?"
+            ]
+          }
+        ],
+        "angles": [
+          {
+            "title": "Expliquer l’usage de Respire Bureau",
+            "idea": "Aider Responsables de petites entreprises à comprendre Respire Bureau avant de décider."
+          }
+        ],
+        "pillars": [
+          "Accompagnement des petites entreprises pour organiser les espaces de travail. Diagnostic et atelier participatif."
+        ],
+        "keyMessages": [
+          "Accompagnement des petites entreprises pour organiser les espaces de travail. Diagnostic et atelier participatif."
+        ],
+        "platform": {
+          "persona": "Responsables de petites entreprises — personnes découvrant cette catégorie",
+          "problem": "Aider Responsables de petites entreprises à comprendre Respire Bureau avant de décider.",
+          "alternatives": "Une offre comparable à Respire Bureau. La page décrit les usages et conditions de présentation. Les modalités de contact sont visibles. Ceci est une source synthétique pour vérifier la persistance, pas une étude réelle.",
+          "difference": "Angle recommandé pour clarifier une offre : il utilise les informations fournies et réserve les preuves manquantes.",
+          "proofs": [
+            {
+              "claim": "Accompagnement des petites entreprises pour organiser les espaces de travail. Diagnostic et atelier participatif.",
+              "proof": "Hypothèse validée par le client ; aucune preuve chiffrée ajoutée.",
+              "status": "missing"
+            }
+          ],
+          "objections": [
+            {
+              "objection": "Cette offre répond-elle à ma situation ?",
+              "answer": "Montrer les usages et limites confirmés, sans promettre un résultat non démontré."
+            }
+          ]
+        },
+        "generatedBy": "local"
+      }
+    },
+    "identity": {
+      "name": "Respire Bureau",
+      "nameStatus": "validated",
+      "alternatives": [],
+      "tagline": "Une approche claire.",
+      "positioning": "Aider Responsables de petites entreprises à comprendre Respire Bureau avant de décider.",
+      "audience": "Responsables de petites entreprises — personnes découvrant cette catégorie",
+      "personality": [],
+      "tone": {
+        "voice": "Éditorial et posé",
+        "do": [
+          "Décrire les faits connus"
+        ],
+        "dont": [
+          "Inventer une garantie"
+        ]
+      },
+      "story": "",
+      "values": [],
+      "validated": [
+        "name",
+        "tagline",
+        "palette",
+        "fonts",
+        "logo"
+      ],
+      "generatedBy": "local",
+      "palette": {
+        "primary": "#483d68",
+        "secondary": "#c4b7d6",
+        "accent": "#9a3662",
+        "light": "#f8f5fc",
+        "dark": "#201a2c"
+      },
+      "fonts": {
+        "heading": "playfair_display_n6",
+        "body": "inter_n4"
+      },
+      "direction": "elan",
+      "logo": {
+        "concept": "Monogramme construit — Une initiale construite comme une marque réduite, associée au nom : mémorisable et nette en très petit.",
+        "status": "validated",
+        "assetId": "sbguqqbjipos7crp",
+        "markAssetId": "dl4vtlzi15nvwwk6",
+        "proposal": "typo",
+        "proposalId": "lzo7rjsyh17thyzp",
+        "provisional": false,
+        "engine": "v2"
+      },
+      "paletteMode": "client",
+      "clientPalette": {
+        "primary": "#483d68",
+        "secondary": "#c4b7d6",
+        "accent": "#9a3662",
+        "light": "#f8f5fc",
+        "dark": "#201a2c"
+      },
+      "artIdentity": {
+        "signature": "Une approche claire.",
+        "palette": {
+          "primary": "#483d68",
+          "secondary": "#c4b7d6",
+          "accent": "#9a3662",
+          "light": "#f8f5fc",
+          "dark": "#201a2c"
+        },
+        "colorRoles": {
+          "primary": "Prune : titres éditoriaux",
+          "secondary": "Lavande grisée : surfaces posées",
+          "accent": "Baie : appels à l’action affirmés",
+          "light": "Blanc légèrement teinté : fond de lecture",
+          "dark": "Encre légèrement violacée : texte courant"
+        },
+        "fonts": {
+          "heading": "playfair_display_n6",
+          "body": "inter_n4"
+        },
+        "tone": {
+          "voice": "Éditorial et posé",
+          "do": [
+            "Décrire les faits connus"
+          ],
+          "dont": [
+            "Inventer une garantie"
+          ]
+        },
+        "mood": "Plans graphiques et espace",
+        "graphicLanguage": "Contraste de tailles et marges",
+        "rules": [
+          "Conserver une zone calme autour du logo",
+          "Un seul style de traits"
+        ],
+        "sampleText": "Découvrez l’offre et ses caractéristiques confirmées.",
+        "seriesId": "ncw7ak8n2pw7a08k",
+        "directionId": "t2"
+      }
+    },
+    "identityAssets": [
+      {
+        "assetId": "h7roeigagbyrtuvl",
+        "role": "brand-guide",
+        "mime": "text/markdown",
+        "width": null,
+        "height": null,
+        "url": "/api/files/h7roeigagbyrtuvl",
+        "sourceAssetId": "sbguqqbjipos7crp"
+      },
+      {
+        "assetId": "0hc20xyaediuf7y1",
+        "role": "brand-book",
+        "mime": "application/pdf",
+        "width": null,
+        "height": null,
+        "url": "/api/files/0hc20xyaediuf7y1",
+        "sourceAssetId": "sbguqqbjipos7crp"
+      },
+      {
+        "assetId": "sbguqqbjipos7crp",
+        "role": "logo",
+        "mime": "image/png",
+        "width": 1012,
+        "height": 971,
+        "url": "/api/files/sbguqqbjipos7crp",
+        "sourceAssetId": "lzo7rjsyh17thyzp"
+      },
+      {
+        "assetId": "prli9gslw9pwgn9q",
+        "role": "logo-light",
+        "mime": "image/png",
+        "width": 1012,
+        "height": 971,
+        "url": "/api/files/prli9gslw9pwgn9q",
+        "sourceAssetId": "sbguqqbjipos7crp"
+      },
+      {
+        "assetId": "apnoe249dctg3rc8",
+        "role": "logo-mono",
+        "mime": "image/png",
+        "width": 1012,
+        "height": 971,
+        "url": "/api/files/apnoe249dctg3rc8",
+        "sourceAssetId": "sbguqqbjipos7crp"
+      },
+      {
+        "assetId": "f3v5vamnizvu4wtw",
+        "role": "logo-white",
+        "mime": "image/png",
+        "width": 1012,
+        "height": 971,
+        "url": "/api/files/f3v5vamnizvu4wtw",
+        "sourceAssetId": "sbguqqbjipos7crp"
+      },
+      {
+        "assetId": "dl4vtlzi15nvwwk6",
+        "role": "logo-mark",
+        "mime": "image/png",
+        "width": 1024,
+        "height": 1024,
+        "url": "/api/files/dl4vtlzi15nvwwk6",
+        "sourceAssetId": "sbguqqbjipos7crp"
+      },
+      {
+        "assetId": "2ug4swyl7enptaq7",
+        "role": "favicon",
+        "mime": "image/png",
+        "width": 192,
+        "height": 192,
+        "url": "/api/files/2ug4swyl7enptaq7",
+        "sourceAssetId": "sbguqqbjipos7crp"
+      },
+      {
+        "assetId": "yv7x4pb1d5ycjb24",
+        "role": "logo-webp",
+        "mime": "image/webp",
+        "width": 1012,
+        "height": 971,
+        "url": "/api/files/yv7x4pb1d5ycjb24",
+        "sourceAssetId": "sbguqqbjipos7crp"
+      },
+      {
+        "assetId": "dgfpv5pbzpuu7ouk",
+        "role": "logo-light-webp",
+        "mime": "image/webp",
+        "width": 1012,
+        "height": 971,
+        "url": "/api/files/dgfpv5pbzpuu7ouk",
+        "sourceAssetId": "sbguqqbjipos7crp"
+      },
+      {
+        "assetId": "aa3zzrvwre0ugw31",
+        "role": "logo-mark-svg",
+        "mime": "image/svg+xml",
+        "width": 512,
+        "height": 512,
+        "url": "/api/files/aa3zzrvwre0ugw31",
+        "sourceAssetId": "sbguqqbjipos7crp"
+      },
+      {
+        "assetId": "2bvvbzj2ebv7ppf1",
+        "role": "logo-svg",
+        "mime": "image/svg+xml",
+        "width": 512,
+        "height": 491,
+        "url": "/api/files/2bvvbzj2ebv7ppf1",
+        "sourceAssetId": "sbguqqbjipos7crp"
+      },
+      {
+        "assetId": "w06q7k2poqp1atxt",
+        "role": "brand-board",
+        "mime": "image/png",
+        "width": 2400,
+        "height": 1972,
+        "url": "/api/files/w06q7k2poqp1atxt",
+        "sourceAssetId": "sbguqqbjipos7crp"
+      }
+    ],
+    "colorRoles": {
+      "primary": "Prune : titres éditoriaux",
+      "secondary": "Lavande grisée : surfaces posées",
+      "accent": "Baie : appels à l’action affirmés",
+      "light": "Blanc légèrement teinté : fond de lecture",
+      "dark": "Encre légèrement violacée : texte courant"
+    },
+    "pages": [
+      {
+        "key": "home",
+        "path": "/",
+        "title": "Accueil",
+        "kind": "home",
+        "goal": "Présenter Respire Bureau à Responsables de petites entreprises — personnes découvrant cette catégorie",
+        "sections": [
+          {
+            "key": "hero",
+            "purpose": "Offre et promesse vérifiable",
+            "mediaSlot": "final:video:1",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "hero",
+                "objective": "Offre et promesse vérifiable",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:2dcba4be18e1864e001a",
+                "blockIds": [
+                  "home-title",
+                  "home-hero"
+                ],
+                "mediaSlotKeys": [
+                  "final:video:1"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Accueil\n\nRespire Bureau : Accompagnement des petites entreprises pour organiser les espaces de travail. Diagnostic et atelier participatif."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-title",
+                "kind": "h1",
+                "text": "Accueil"
+              },
+              {
+                "id": "home-hero",
+                "kind": "p",
+                "text": "Respire Bureau : Accompagnement des petites entreprises pour organiser les espaces de travail. Diagnostic et atelier participatif."
+              }
+            ],
+            "text": "Accueil\n\nRespire Bureau : Accompagnement des petites entreprises pour organiser les espaces de travail. Diagnostic et atelier participatif.",
+            "mediaSlotKeys": [
+              "final:video:1"
+            ]
+          },
+          {
+            "key": "offer",
+            "purpose": "Prestations et méthode",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "offer",
+                "objective": "Prestations et méthode",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:2dcba4be18e1864e001a",
+                "blockIds": [
+                  "home-offer"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:3",
+                  "final:image:5"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Les prestations proposées sont Diagnostic et Atelier participatif. Consultez leur présentation pour préciser votre besoin."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-offer",
+                "kind": "p",
+                "text": "Les prestations proposées sont Diagnostic et Atelier participatif. Consultez leur présentation pour préciser votre besoin."
+              }
+            ],
+            "text": "Les prestations proposées sont Diagnostic et Atelier participatif. Consultez leur présentation pour préciser votre besoin.",
+            "mediaSlotKeys": [
+              "final:image:3",
+              "final:image:5"
+            ]
+          },
+          {
+            "key": "proofs",
+            "purpose": "Preuves disponibles uniquement",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "proofs",
+                "objective": "Preuves disponibles uniquement",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:2dcba4be18e1864e001a",
+                "blockIds": [
+                  "home-proofs"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Pour vous faire une idée de l’offre, parcourez les vues et les informations présentées. Les illustrations accompagnent les explications sans remplacer les caractéristiques décrites."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-proofs",
+                "kind": "p",
+                "text": "Pour vous faire une idée de l’offre, parcourez les vues et les informations présentées. Les illustrations accompagnent les explications sans remplacer les caractéristiques décrites."
+              }
+            ],
+            "text": "Pour vous faire une idée de l’offre, parcourez les vues et les informations présentées. Les illustrations accompagnent les explications sans remplacer les caractéristiques décrites.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "faq",
+            "purpose": "Objections et réponses confirmées",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "faq",
+                "objective": "Objections et réponses confirmées",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:2dcba4be18e1864e001a",
+                "blockIds": [
+                  "home-faq"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Une question avant de vous décider ? Repérez les points qui comptent pour votre usage et contactez-nous pour les préciser."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-faq",
+                "kind": "p",
+                "text": "Une question avant de vous décider ? Repérez les points qui comptent pour votre usage et contactez-nous pour les préciser."
+              }
+            ],
+            "text": "Une question avant de vous décider ? Repérez les points qui comptent pour votre usage et contactez-nous pour les préciser.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "contact",
+            "purpose": "Devis, contact ou rendez-vous",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "contact",
+                "objective": "Devis, contact ou rendez-vous",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:2dcba4be18e1864e001a",
+                "blockIds": [
+                  "home-contact"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Votre projet se situe à Nantes ? Décrivez-nous votre besoin afin d’échanger sur la prestation qui vous intéresse."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-contact",
+                "kind": "p",
+                "text": "Votre projet se situe à Nantes ? Décrivez-nous votre besoin afin d’échanger sur la prestation qui vous intéresse."
+              }
+            ],
+            "text": "Votre projet se situe à Nantes ? Décrivez-nous votre besoin afin d’échanger sur la prestation qui vous intéresse.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "gallery",
+            "purpose": "Galerie de scènes distinctes",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "gallery",
+                "objective": "Galerie de scènes distinctes",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:2dcba4be18e1864e001a",
+                "blockIds": [
+                  "home-gallery"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:8"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Passez d’une vue à l’autre pour situer l’offre dans son contexte. Chaque image apporte un angle de lecture complémentaire au texte."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-gallery",
+                "kind": "p",
+                "text": "Passez d’une vue à l’autre pour situer l’offre dans son contexte. Chaque image apporte un angle de lecture complémentaire au texte."
+              }
+            ],
+            "text": "Passez d’une vue à l’autre pour situer l’offre dans son contexte. Chaque image apporte un angle de lecture complémentaire au texte.",
+            "mediaSlotKeys": [
+              "final:image:8"
+            ]
+          },
+          {
+            "key": "story",
+            "purpose": "Formats verticaux : lecture sans déformation",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "story",
+                "objective": "Formats verticaux : lecture sans déformation",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:2dcba4be18e1864e001a",
+                "blockIds": [
+                  "home-story"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Le format vertical propose une autre lecture de la présentation. Sur téléphone, poursuivez la découverte sans quitter le fil des informations."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-story",
+                "kind": "p",
+                "text": "Le format vertical propose une autre lecture de la présentation. Sur téléphone, poursuivez la découverte sans quitter le fil des informations."
+              }
+            ],
+            "text": "Le format vertical propose une autre lecture de la présentation. Sur téléphone, poursuivez la découverte sans quitter le fil des informations.",
+            "mediaSlotKeys": []
+          }
+        ],
+        "docKey": "cnt:2dcba4be18e1864e001a",
+        "documentKey": "cnt:2dcba4be18e1864e001a",
+        "document": {
+          "version": 1,
+          "type": "home_page",
+          "lang": "fr",
+          "page": {
+            "key": "home",
+            "title": "Accueil",
+            "kind": "home",
+            "status": "planned",
+            "url": null
+          },
+          "primaryKeyword": null,
+          "meta": {
+            "seoTitle": "Accueil | Respire Bureau",
+            "metaDescription": "Accueil : découvrez l’offre de Respire Bureau, sa présentation et les informations utiles pour prendre contact.",
+            "slug": "",
+            "canonical": null,
+            "robots": "index,follow"
+          },
+          "blocks": [
+            {
+              "id": "home-title",
+              "kind": "h1",
+              "text": "Accueil"
+            },
+            {
+              "id": "home-hero",
+              "kind": "p",
+              "text": "Respire Bureau : Accompagnement des petites entreprises pour organiser les espaces de travail. Diagnostic et atelier participatif."
+            },
+            {
+              "id": "home-offer",
+              "kind": "p",
+              "text": "Les prestations proposées sont Diagnostic et Atelier participatif. Consultez leur présentation pour préciser votre besoin."
+            },
+            {
+              "id": "home-proofs",
+              "kind": "p",
+              "text": "Pour vous faire une idée de l’offre, parcourez les vues et les informations présentées. Les illustrations accompagnent les explications sans remplacer les caractéristiques décrites."
+            },
+            {
+              "id": "home-faq",
+              "kind": "p",
+              "text": "Une question avant de vous décider ? Repérez les points qui comptent pour votre usage et contactez-nous pour les préciser."
+            },
+            {
+              "id": "home-contact",
+              "kind": "p",
+              "text": "Votre projet se situe à Nantes ? Décrivez-nous votre besoin afin d’échanger sur la prestation qui vous intéresse."
+            },
+            {
+              "id": "home-gallery",
+              "kind": "p",
+              "text": "Passez d’une vue à l’autre pour situer l’offre dans son contexte. Chaque image apporte un angle de lecture complémentaire au texte."
+            },
+            {
+              "id": "home-story",
+              "kind": "p",
+              "text": "Le format vertical propose une autre lecture de la présentation. Sur téléphone, poursuivez la découverte sans quitter le fil des informations."
+            }
+          ],
+          "links": [],
+          "schema": [],
+          "meta2": {
+            "source": "engine",
+            "by": "ai",
+            "createdFrom": null,
+            "runId": "simulation:0t0thn912l98vevq:home"
+          }
+        },
+        "seo": {
+          "seoTitle": "Accueil | Respire Bureau",
+          "metaDescription": "Accueil : découvrez l’offre de Respire Bureau, sa présentation et les informations utiles pour prendre contact.",
+          "slug": "",
+          "canonical": null,
+          "robots": "index,follow"
+        }
+      },
+      {
+        "key": "service:0",
+        "path": "/pages/prestation-1",
+        "title": "Diagnostic",
+        "kind": "service",
+        "goal": "Étudier les usages du bureau.",
+        "sections": [
+          {
+            "key": "presentation",
+            "purpose": "Étudier les usages du bureau.",
+            "mediaSlot": "service:0:presentation",
+            "editorial": [
+              {
+                "pageKey": "service:0",
+                "sectionKey": "presentation",
+                "objective": "Étudier les usages du bureau.",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:9ecc731896ec7751d350",
+                "blockIds": [
+                  "service:0-title",
+                  "service:0-presentation"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:1"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Diagnostic\n\nÉtudier les usages du bureau."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "service:0-title",
+                "kind": "h1",
+                "text": "Diagnostic"
+              },
+              {
+                "id": "service:0-presentation",
+                "kind": "p",
+                "text": "Étudier les usages du bureau."
+              }
+            ],
+            "text": "Diagnostic\n\nÉtudier les usages du bureau.",
+            "mediaSlotKeys": [
+              "final:image:1"
+            ]
+          },
+          {
+            "key": "method",
+            "purpose": "Méthode et conditions connues",
+            "editorial": [
+              {
+                "pageKey": "service:0",
+                "sectionKey": "method",
+                "objective": "Méthode et conditions connues",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:9ecc731896ec7751d350",
+                "blockIds": [
+                  "service:0-method"
+                ],
+                "mediaSlotKeys": [
+                  "final:video:2"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Pour diagnostic, commençons par votre situation et vos attentes. Nous pourrons ainsi préciser ensemble le cadre de l’accompagnement à Nantes."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "service:0-method",
+                "kind": "p",
+                "text": "Pour diagnostic, commençons par votre situation et vos attentes. Nous pourrons ainsi préciser ensemble le cadre de l’accompagnement à Nantes."
+              }
+            ],
+            "text": "Pour diagnostic, commençons par votre situation et vos attentes. Nous pourrons ainsi préciser ensemble le cadre de l’accompagnement à Nantes.",
+            "mediaSlotKeys": [
+              "final:video:2"
+            ]
+          },
+          {
+            "key": "contact",
+            "purpose": "quote",
+            "editorial": [
+              {
+                "pageKey": "service:0",
+                "sectionKey": "contact",
+                "objective": "quote",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:9ecc731896ec7751d350",
+                "blockIds": [
+                  "service:0-contact"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Vous souhaitez parler de cette prestation ? Contactez-nous via contact@example.test, en indiquant votre demande pour diagnostic."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "service:0-contact",
+                "kind": "p",
+                "text": "Vous souhaitez parler de cette prestation ? Contactez-nous via contact@example.test, en indiquant votre demande pour diagnostic."
+              }
+            ],
+            "text": "Vous souhaitez parler de cette prestation ? Contactez-nous via contact@example.test, en indiquant votre demande pour diagnostic.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "gallery",
+            "purpose": "Galerie de scènes distinctes",
+            "editorial": [
+              {
+                "pageKey": "service:0",
+                "sectionKey": "gallery",
+                "objective": "Galerie de scènes distinctes",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:9ecc731896ec7751d350",
+                "blockIds": [
+                  "service:0-gallery"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:2",
+                  "final:image:6"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Ces scènes illustrent le contexte de l’activité. Elles accompagnent la description de la prestation et ne constituent pas des réalisations attribuées à l’entreprise."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "service:0-gallery",
+                "kind": "p",
+                "text": "Ces scènes illustrent le contexte de l’activité. Elles accompagnent la description de la prestation et ne constituent pas des réalisations attribuées à l’entreprise."
+              }
+            ],
+            "text": "Ces scènes illustrent le contexte de l’activité. Elles accompagnent la description de la prestation et ne constituent pas des réalisations attribuées à l’entreprise.",
+            "mediaSlotKeys": [
+              "final:image:2",
+              "final:image:6"
+            ]
+          },
+          {
+            "key": "story",
+            "purpose": "Formats verticaux : lecture sans déformation",
+            "editorial": [
+              {
+                "pageKey": "service:0",
+                "sectionKey": "story",
+                "objective": "Formats verticaux : lecture sans déformation",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:9ecc731896ec7751d350",
+                "blockIds": [
+                  "service:0-story"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:9"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "La présentation verticale conserve les repères utiles à la découverte de la prestation. Poursuivez ensuite vers les informations de contact."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "service:0-story",
+                "kind": "p",
+                "text": "La présentation verticale conserve les repères utiles à la découverte de la prestation. Poursuivez ensuite vers les informations de contact."
+              }
+            ],
+            "text": "La présentation verticale conserve les repères utiles à la découverte de la prestation. Poursuivez ensuite vers les informations de contact.",
+            "mediaSlotKeys": [
+              "final:image:9"
+            ]
+          }
+        ],
+        "docKey": "cnt:9ecc731896ec7751d350",
+        "documentKey": "cnt:9ecc731896ec7751d350",
+        "document": {
+          "version": 1,
+          "type": "service_page",
+          "lang": "fr",
+          "page": {
+            "key": "service:0",
+            "title": "Diagnostic",
+            "kind": "service",
+            "status": "planned",
+            "url": null
+          },
+          "primaryKeyword": null,
+          "meta": {
+            "seoTitle": "Diagnostic | Respire Bureau",
+            "metaDescription": "Diagnostic : découvrez l’offre de Respire Bureau, sa présentation et les informations utiles pour prendre contact.",
+            "slug": "prestation-1",
+            "canonical": null,
+            "robots": "index,follow"
+          },
+          "blocks": [
+            {
+              "id": "service:0-title",
+              "kind": "h1",
+              "text": "Diagnostic"
+            },
+            {
+              "id": "service:0-presentation",
+              "kind": "p",
+              "text": "Étudier les usages du bureau."
+            },
+            {
+              "id": "service:0-method",
+              "kind": "p",
+              "text": "Pour diagnostic, commençons par votre situation et vos attentes. Nous pourrons ainsi préciser ensemble le cadre de l’accompagnement à Nantes."
+            },
+            {
+              "id": "service:0-contact",
+              "kind": "p",
+              "text": "Vous souhaitez parler de cette prestation ? Contactez-nous via contact@example.test, en indiquant votre demande pour diagnostic."
+            },
+            {
+              "id": "service:0-gallery",
+              "kind": "p",
+              "text": "Ces scènes illustrent le contexte de l’activité. Elles accompagnent la description de la prestation et ne constituent pas des réalisations attribuées à l’entreprise."
+            },
+            {
+              "id": "service:0-story",
+              "kind": "p",
+              "text": "La présentation verticale conserve les repères utiles à la découverte de la prestation. Poursuivez ensuite vers les informations de contact."
+            }
+          ],
+          "links": [],
+          "schema": [],
+          "meta2": {
+            "source": "engine",
+            "by": "ai",
+            "createdFrom": null,
+            "runId": "simulation:0t0thn912l98vevq:service:0"
+          }
+        },
+        "seo": {
+          "seoTitle": "Diagnostic | Respire Bureau",
+          "metaDescription": "Diagnostic : découvrez l’offre de Respire Bureau, sa présentation et les informations utiles pour prendre contact.",
+          "slug": "prestation-1",
+          "canonical": null,
+          "robots": "index,follow"
+        }
+      },
+      {
+        "key": "service:1",
+        "path": "/pages/prestation-2",
+        "title": "Atelier participatif",
+        "kind": "service",
+        "goal": "Recueillir les besoins de l’équipe.",
+        "sections": [
+          {
+            "key": "presentation",
+            "purpose": "Recueillir les besoins de l’équipe.",
+            "mediaSlot": "service:1:presentation",
+            "editorial": [
+              {
+                "pageKey": "service:1",
+                "sectionKey": "presentation",
+                "objective": "Recueillir les besoins de l’équipe.",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:f9b0961ef7c4e34531f4",
+                "blockIds": [
+                  "service:1-title",
+                  "service:1-presentation"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Atelier participatif\n\nRecueillir les besoins de l’équipe."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "service:1-title",
+                "kind": "h1",
+                "text": "Atelier participatif"
+              },
+              {
+                "id": "service:1-presentation",
+                "kind": "p",
+                "text": "Recueillir les besoins de l’équipe."
+              }
+            ],
+            "text": "Atelier participatif\n\nRecueillir les besoins de l’équipe.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "method",
+            "purpose": "Méthode et conditions connues",
+            "editorial": [
+              {
+                "pageKey": "service:1",
+                "sectionKey": "method",
+                "objective": "Méthode et conditions connues",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:f9b0961ef7c4e34531f4",
+                "blockIds": [
+                  "service:1-method"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Pour atelier participatif, commençons par votre situation et vos attentes. Nous pourrons ainsi préciser ensemble le cadre de l’accompagnement à Nantes."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "service:1-method",
+                "kind": "p",
+                "text": "Pour atelier participatif, commençons par votre situation et vos attentes. Nous pourrons ainsi préciser ensemble le cadre de l’accompagnement à Nantes."
+              }
+            ],
+            "text": "Pour atelier participatif, commençons par votre situation et vos attentes. Nous pourrons ainsi préciser ensemble le cadre de l’accompagnement à Nantes.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "contact",
+            "purpose": "quote",
+            "editorial": [
+              {
+                "pageKey": "service:1",
+                "sectionKey": "contact",
+                "objective": "quote",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:f9b0961ef7c4e34531f4",
+                "blockIds": [
+                  "service:1-contact"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Vous souhaitez parler de cette prestation ? Contactez-nous via contact@example.test, en indiquant votre demande pour atelier participatif."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "service:1-contact",
+                "kind": "p",
+                "text": "Vous souhaitez parler de cette prestation ? Contactez-nous via contact@example.test, en indiquant votre demande pour atelier participatif."
+              }
+            ],
+            "text": "Vous souhaitez parler de cette prestation ? Contactez-nous via contact@example.test, en indiquant votre demande pour atelier participatif.",
+            "mediaSlotKeys": []
+          }
+        ],
+        "docKey": "cnt:f9b0961ef7c4e34531f4",
+        "documentKey": "cnt:f9b0961ef7c4e34531f4",
+        "document": {
+          "version": 1,
+          "type": "service_page",
+          "lang": "fr",
+          "page": {
+            "key": "service:1",
+            "title": "Atelier participatif",
+            "kind": "service",
+            "status": "planned",
+            "url": null
+          },
+          "primaryKeyword": null,
+          "meta": {
+            "seoTitle": "Atelier participatif | Respire Bureau",
+            "metaDescription": "Atelier participatif : découvrez l’offre de Respire Bureau, sa présentation et les informations utiles pour prendre contact.",
+            "slug": "prestation-2",
+            "canonical": null,
+            "robots": "index,follow"
+          },
+          "blocks": [
+            {
+              "id": "service:1-title",
+              "kind": "h1",
+              "text": "Atelier participatif"
+            },
+            {
+              "id": "service:1-presentation",
+              "kind": "p",
+              "text": "Recueillir les besoins de l’équipe."
+            },
+            {
+              "id": "service:1-method",
+              "kind": "p",
+              "text": "Pour atelier participatif, commençons par votre situation et vos attentes. Nous pourrons ainsi préciser ensemble le cadre de l’accompagnement à Nantes."
+            },
+            {
+              "id": "service:1-contact",
+              "kind": "p",
+              "text": "Vous souhaitez parler de cette prestation ? Contactez-nous via contact@example.test, en indiquant votre demande pour atelier participatif."
+            }
+          ],
+          "links": [],
+          "schema": [],
+          "meta2": {
+            "source": "engine",
+            "by": "ai",
+            "createdFrom": null,
+            "runId": "simulation:0t0thn912l98vevq:service:1"
+          }
+        },
+        "seo": {
+          "seoTitle": "Atelier participatif | Respire Bureau",
+          "metaDescription": "Atelier participatif : découvrez l’offre de Respire Bureau, sa présentation et les informations utiles pour prendre contact.",
+          "slug": "prestation-2",
+          "canonical": null,
+          "robots": "index,follow"
+        }
+      },
+      {
+        "key": "brand",
+        "path": "/pages/a-propos",
+        "title": "À propos",
+        "kind": "brand",
+        "goal": "Présenter la marque sans histoire inventée",
+        "sections": [
+          {
+            "key": "intent",
+            "purpose": "Positionnement et engagements vérifiables",
+            "editorial": [
+              {
+                "pageKey": "brand",
+                "sectionKey": "intent",
+                "objective": "Positionnement et engagements vérifiables",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:fd7b2f743050123dbdcc",
+                "blockIds": [
+                  "brand-title",
+                  "brand-intent"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "À propos\n\nRespire Bureau s’adresse à Responsables de petites entreprises — personnes découvrant cette catégorie. Le projet se concentre sur diagnostic et atelier participatif, avec une présentation attentive aux besoins déclarés."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "brand-title",
+                "kind": "h1",
+                "text": "À propos"
+              },
+              {
+                "id": "brand-intent",
+                "kind": "p",
+                "text": "Respire Bureau s’adresse à Responsables de petites entreprises — personnes découvrant cette catégorie. Le projet se concentre sur diagnostic et atelier participatif, avec une présentation attentive aux besoins déclarés."
+              }
+            ],
+            "text": "À propos\n\nRespire Bureau s’adresse à Responsables de petites entreprises — personnes découvrant cette catégorie. Le projet se concentre sur diagnostic et atelier participatif, avec une présentation attentive aux besoins déclarés.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "gallery",
+            "purpose": "Galerie de scènes distinctes",
+            "editorial": [
+              {
+                "pageKey": "brand",
+                "sectionKey": "gallery",
+                "objective": "Galerie de scènes distinctes",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:fd7b2f743050123dbdcc",
+                "blockIds": [
+                  "brand-gallery"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:4",
+                  "final:image:7"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "L’univers visuel accompagne la lecture de la marque. Il met en relation les scènes de présentation et les informations concrètes de l’offre."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "brand-gallery",
+                "kind": "p",
+                "text": "L’univers visuel accompagne la lecture de la marque. Il met en relation les scènes de présentation et les informations concrètes de l’offre."
+              }
+            ],
+            "text": "L’univers visuel accompagne la lecture de la marque. Il met en relation les scènes de présentation et les informations concrètes de l’offre.",
+            "mediaSlotKeys": [
+              "final:image:4",
+              "final:image:7"
+            ]
+          },
+          {
+            "key": "story",
+            "purpose": "Formats verticaux : lecture sans déformation",
+            "editorial": [
+              {
+                "pageKey": "brand",
+                "sectionKey": "story",
+                "objective": "Formats verticaux : lecture sans déformation",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:fd7b2f743050123dbdcc",
+                "blockIds": [
+                  "brand-story"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:10"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Au fil des images, retrouvez les repères de cette identité. La mise en page verticale conserve les contrastes et la lisibilité sur petit écran."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "brand-story",
+                "kind": "p",
+                "text": "Au fil des images, retrouvez les repères de cette identité. La mise en page verticale conserve les contrastes et la lisibilité sur petit écran."
+              }
+            ],
+            "text": "Au fil des images, retrouvez les repères de cette identité. La mise en page verticale conserve les contrastes et la lisibilité sur petit écran.",
+            "mediaSlotKeys": [
+              "final:image:10"
+            ]
+          }
+        ],
+        "docKey": "cnt:fd7b2f743050123dbdcc",
+        "documentKey": "cnt:fd7b2f743050123dbdcc",
+        "document": {
+          "version": 1,
+          "type": "brand_page",
+          "lang": "fr",
+          "page": {
+            "key": "brand",
+            "title": "À propos",
+            "kind": "brand",
+            "status": "planned",
+            "url": null
+          },
+          "primaryKeyword": null,
+          "meta": {
+            "seoTitle": "À propos | Respire Bureau",
+            "metaDescription": "À propos : découvrez l’offre de Respire Bureau, sa présentation et les informations utiles pour prendre contact.",
+            "slug": "a-propos",
+            "canonical": null,
+            "robots": "index,follow"
+          },
+          "blocks": [
+            {
+              "id": "brand-title",
+              "kind": "h1",
+              "text": "À propos"
+            },
+            {
+              "id": "brand-intent",
+              "kind": "p",
+              "text": "Respire Bureau s’adresse à Responsables de petites entreprises — personnes découvrant cette catégorie. Le projet se concentre sur diagnostic et atelier participatif, avec une présentation attentive aux besoins déclarés."
+            },
+            {
+              "id": "brand-gallery",
+              "kind": "p",
+              "text": "L’univers visuel accompagne la lecture de la marque. Il met en relation les scènes de présentation et les informations concrètes de l’offre."
+            },
+            {
+              "id": "brand-story",
+              "kind": "p",
+              "text": "Au fil des images, retrouvez les repères de cette identité. La mise en page verticale conserve les contrastes et la lisibilité sur petit écran."
+            }
+          ],
+          "links": [],
+          "schema": [],
+          "meta2": {
+            "source": "engine",
+            "by": "ai",
+            "createdFrom": null,
+            "runId": "simulation:0t0thn912l98vevq:brand"
+          }
+        },
+        "seo": {
+          "seoTitle": "À propos | Respire Bureau",
+          "metaDescription": "À propos : découvrez l’offre de Respire Bureau, sa présentation et les informations utiles pour prendre contact.",
+          "slug": "a-propos",
+          "canonical": null,
+          "robots": "index,follow"
+        }
+      },
+      {
+        "key": "contact",
+        "path": "/pages/contact",
+        "title": "Contact",
+        "kind": "contact",
+        "goal": "quote",
+        "sections": [
+          {
+            "key": "contact",
+            "purpose": "Coordonnées et formulaire",
+            "editorial": [
+              {
+                "pageKey": "contact",
+                "sectionKey": "contact",
+                "objective": "Coordonnées et formulaire",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:50ea59ebb181b44b0679",
+                "blockIds": [
+                  "contact-title",
+                  "contact-contact"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Contact\n\nPour échanger avec Respire Bureau, utilisez contact@example.test. Indiquez la prestation recherchée et votre situation à Nantes afin de préparer la conversation."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "contact-title",
+                "kind": "h1",
+                "text": "Contact"
+              },
+              {
+                "id": "contact-contact",
+                "kind": "p",
+                "text": "Pour échanger avec Respire Bureau, utilisez contact@example.test. Indiquez la prestation recherchée et votre situation à Nantes afin de préparer la conversation."
+              }
+            ],
+            "text": "Contact\n\nPour échanger avec Respire Bureau, utilisez contact@example.test. Indiquez la prestation recherchée et votre situation à Nantes afin de préparer la conversation.",
+            "mediaSlotKeys": []
+          }
+        ],
+        "docKey": "cnt:50ea59ebb181b44b0679",
+        "documentKey": "cnt:50ea59ebb181b44b0679",
+        "document": {
+          "version": 1,
+          "type": "contact_page",
+          "lang": "fr",
+          "page": {
+            "key": "contact",
+            "title": "Contact",
+            "kind": "page",
+            "status": "planned",
+            "url": null
+          },
+          "primaryKeyword": null,
+          "meta": {
+            "seoTitle": "Contact | Respire Bureau",
+            "metaDescription": "Contact : découvrez l’offre de Respire Bureau, sa présentation et les informations utiles pour prendre contact.",
+            "slug": "contact",
+            "canonical": null,
+            "robots": "index,follow"
+          },
+          "blocks": [
+            {
+              "id": "contact-title",
+              "kind": "h1",
+              "text": "Contact"
+            },
+            {
+              "id": "contact-contact",
+              "kind": "p",
+              "text": "Pour échanger avec Respire Bureau, utilisez contact@example.test. Indiquez la prestation recherchée et votre situation à Nantes afin de préparer la conversation."
+            }
+          ],
+          "links": [],
+          "schema": [],
+          "meta2": {
+            "source": "engine",
+            "by": "ai",
+            "createdFrom": null,
+            "runId": "simulation:0t0thn912l98vevq:contact"
+          }
+        },
+        "seo": {
+          "seoTitle": "Contact | Respire Bureau",
+          "metaDescription": "Contact : découvrez l’offre de Respire Bureau, sa présentation et les informations utiles pour prendre contact.",
+          "slug": "contact",
+          "canonical": null,
+          "robots": "index,follow"
+        }
+      }
+    ],
+    "media": [
+      {
+        "key": "final:image:1",
+        "pageKey": "service:0",
+        "sectionKey": "presentation",
+        "kind": "image",
+        "aspect": "1:1",
+        "source": "pixabay",
+        "purpose": "Composition 1 de Respire Bureau : service:0/presentation",
+        "required": true,
+        "scene": "Scène distincte de test 1 : Composition 1 de Respire Bureau : service:0/presentation",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 1 de Respire Bureau : service:0/presentation",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "hprssyztzlyntx5p",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "46ae1dbb02337a7b"
+        },
+        "inputHash": "8a1c091a5146e562",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "hprssyztzlyntx5p",
+          "url": "/api/files/hprssyztzlyntx5p",
+          "mime": "image/png",
+          "width": 1080,
+          "height": 1080,
+          "duration": null,
+          "origin": "import",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-0t0thn912l98vevq-0",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:2",
+        "pageKey": "service:0",
+        "sectionKey": "gallery",
+        "kind": "image",
+        "aspect": "1:1",
+        "source": "pixabay",
+        "purpose": "Composition 2 de Respire Bureau : service:0/gallery",
+        "required": true,
+        "scene": "Scène distincte de test 2 : Composition 2 de Respire Bureau : service:0/gallery",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 2 de Respire Bureau : service:0/gallery",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "qmoemxw7vvligcey",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "1ad1f4729af5f29d"
+        },
+        "inputHash": "8a1c091a5146e562",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "qmoemxw7vvligcey",
+          "url": "/api/files/qmoemxw7vvligcey",
+          "mime": "image/png",
+          "width": 1080,
+          "height": 1080,
+          "duration": null,
+          "origin": "import",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-0t0thn912l98vevq-1",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:3",
+        "pageKey": "home",
+        "sectionKey": "offer",
+        "kind": "image",
+        "aspect": "1:1",
+        "source": "pixabay",
+        "purpose": "Composition 3 de Respire Bureau : home/offer",
+        "required": true,
+        "scene": "Scène distincte de test 3 : Composition 3 de Respire Bureau : home/offer",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 3 de Respire Bureau : home/offer",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "x8qofzwszhqvkn3t",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "402003c8fbb7ffba"
+        },
+        "inputHash": "8a1c091a5146e562",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "x8qofzwszhqvkn3t",
+          "url": "/api/files/x8qofzwszhqvkn3t",
+          "mime": "image/png",
+          "width": 1080,
+          "height": 1080,
+          "duration": null,
+          "origin": "import",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-0t0thn912l98vevq-2",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:4",
+        "pageKey": "brand",
+        "sectionKey": "gallery",
+        "kind": "image",
+        "aspect": "1:1",
+        "source": "pixabay",
+        "purpose": "Composition 4 de Respire Bureau : brand/gallery",
+        "required": true,
+        "scene": "Scène distincte de test 4 : Composition 4 de Respire Bureau : brand/gallery",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 4 de Respire Bureau : brand/gallery",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "rc6n8c4gobdadyic",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "974d0f570d8699fd"
+        },
+        "inputHash": "8a1c091a5146e562",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "rc6n8c4gobdadyic",
+          "url": "/api/files/rc6n8c4gobdadyic",
+          "mime": "image/png",
+          "width": 1080,
+          "height": 1080,
+          "duration": null,
+          "origin": "import",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-0t0thn912l98vevq-3",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:5",
+        "pageKey": "home",
+        "sectionKey": "offer",
+        "kind": "image",
+        "aspect": "16:9",
+        "source": "pixabay",
+        "purpose": "Composition 5 de Respire Bureau : home/offer",
+        "required": true,
+        "scene": "Scène distincte de test 5 : Composition 5 de Respire Bureau : home/offer",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 5 de Respire Bureau : home/offer",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "hiqunigyjm50xi8x",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "776a98b633460884"
+        },
+        "inputHash": "8a1c091a5146e562",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "hiqunigyjm50xi8x",
+          "url": "/api/files/hiqunigyjm50xi8x",
+          "mime": "image/png",
+          "width": 1600,
+          "height": 900,
+          "duration": null,
+          "origin": "import",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-0t0thn912l98vevq-4",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:6",
+        "pageKey": "service:0",
+        "sectionKey": "gallery",
+        "kind": "image",
+        "aspect": "16:9",
+        "source": "pixabay",
+        "purpose": "Composition 6 de Respire Bureau : service:0/gallery",
+        "required": true,
+        "scene": "Scène distincte de test 6 : Composition 6 de Respire Bureau : service:0/gallery",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 6 de Respire Bureau : service:0/gallery",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "n751ottlt77xuigl",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "1a038f187f8f56a6"
+        },
+        "inputHash": "8a1c091a5146e562",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "n751ottlt77xuigl",
+          "url": "/api/files/n751ottlt77xuigl",
+          "mime": "image/png",
+          "width": 1600,
+          "height": 900,
+          "duration": null,
+          "origin": "import",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-0t0thn912l98vevq-5",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:7",
+        "pageKey": "brand",
+        "sectionKey": "gallery",
+        "kind": "image",
+        "aspect": "16:9",
+        "source": "pixabay",
+        "purpose": "Composition 7 de Respire Bureau : brand/gallery",
+        "required": true,
+        "scene": "Scène distincte de test 7 : Composition 7 de Respire Bureau : brand/gallery",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 7 de Respire Bureau : brand/gallery",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "xnsgbay729m9zpnf",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "3d66a84f01b29509"
+        },
+        "inputHash": "8a1c091a5146e562",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "xnsgbay729m9zpnf",
+          "url": "/api/files/xnsgbay729m9zpnf",
+          "mime": "image/png",
+          "width": 1600,
+          "height": 900,
+          "duration": null,
+          "origin": "import",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-0t0thn912l98vevq-6",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:8",
+        "pageKey": "home",
+        "sectionKey": "gallery",
+        "kind": "image",
+        "aspect": "16:9",
+        "source": "pixabay",
+        "purpose": "Composition 8 de Respire Bureau : home/gallery",
+        "required": true,
+        "scene": "Scène distincte de test 8 : Composition 8 de Respire Bureau : home/gallery",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 8 de Respire Bureau : home/gallery",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "zemspekr5qqvdxz4",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "4bfe2ed808ae26da"
+        },
+        "inputHash": "8a1c091a5146e562",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "zemspekr5qqvdxz4",
+          "url": "/api/files/zemspekr5qqvdxz4",
+          "mime": "image/png",
+          "width": 1600,
+          "height": 900,
+          "duration": null,
+          "origin": "import",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-0t0thn912l98vevq-7",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:9",
+        "pageKey": "service:0",
+        "sectionKey": "story",
+        "kind": "image",
+        "aspect": "9:16",
+        "source": "pixabay",
+        "purpose": "Composition 9 de Respire Bureau : service:0/story",
+        "required": true,
+        "scene": "Scène distincte de test 9 : Composition 9 de Respire Bureau : service:0/story",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 9 de Respire Bureau : service:0/story",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "vrnkgefdcis4uqog",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "8526c7b8e86bdf0d"
+        },
+        "inputHash": "8a1c091a5146e562",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "vrnkgefdcis4uqog",
+          "url": "/api/files/vrnkgefdcis4uqog",
+          "mime": "image/png",
+          "width": 900,
+          "height": 1600,
+          "duration": null,
+          "origin": "import",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-0t0thn912l98vevq-8",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:10",
+        "pageKey": "brand",
+        "sectionKey": "story",
+        "kind": "image",
+        "aspect": "9:16",
+        "source": "pixabay",
+        "purpose": "Composition 10 de Respire Bureau : brand/story",
+        "required": true,
+        "scene": "Scène distincte de test 10 : Composition 10 de Respire Bureau : brand/story",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 10 de Respire Bureau : brand/story",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "4rinktm9s4utvaws",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "b9397a4ac3fd79b7"
+        },
+        "inputHash": "8a1c091a5146e562",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "4rinktm9s4utvaws",
+          "url": "/api/files/4rinktm9s4utvaws",
+          "mime": "image/png",
+          "width": 900,
+          "height": 1600,
+          "duration": null,
+          "origin": "import",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-0t0thn912l98vevq-9",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:video:1",
+        "pageKey": "home",
+        "sectionKey": "hero",
+        "kind": "video",
+        "aspect": "16:9",
+        "source": "pixabay",
+        "purpose": "Ambiance hero pertinente, zone de texte lisible ; jamais une preuve sur le produit exact ou les locaux réels",
+        "required": true,
+        "playback": {
+          "muted": true,
+          "playsInline": true,
+          "loop": true,
+          "pauseControl": true,
+          "reducedMotion": "poster",
+          "mobileFallback": "poster"
+        },
+        "scene": "Scène distincte de test 11 : Ambiance hero pertinente, zone de texte lisible ; jamais une preuve sur le produit exact ou les locaux réels",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Ambiance hero pertinente, zone de texte lisible ; jamais une preuve sur le produit exact ou les locaux réels",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "ij5bz5ezmiam0api",
+        "posterId": "b1ecri0fe5okvata",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "ade3f57eb3933b18"
+        },
+        "inputHash": "8a1c091a5146e562",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "ij5bz5ezmiam0api",
+          "url": "/api/files/ij5bz5ezmiam0api",
+          "mime": "video/mp4",
+          "width": 1280,
+          "height": 720,
+          "duration": 3,
+          "origin": "import",
+          "role": "clip"
+        },
+        "poster": {
+          "assetId": "b1ecri0fe5okvata",
+          "url": "/api/files/b1ecri0fe5okvata",
+          "mime": "image/png",
+          "width": 1280,
+          "height": 720
+        },
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-0t0thn912l98vevq-10",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": true
+        }
+      },
+      {
+        "key": "final:video:2",
+        "pageKey": "service:0",
+        "sectionKey": "method",
+        "kind": "video",
+        "aspect": "16:9",
+        "source": "pixabay",
+        "purpose": "Présentation du métier, illustration déclarée",
+        "required": true,
+        "playback": {
+          "muted": true,
+          "playsInline": true,
+          "loop": true,
+          "pauseControl": true,
+          "reducedMotion": "poster",
+          "mobileFallback": "poster"
+        },
+        "scene": "Scène distincte de test 12 : Présentation du métier, illustration déclarée",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Présentation du métier, illustration déclarée",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "9k425h6032sy2my9",
+        "posterId": "6lg4rw3dse5h55b4",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "ec4c1077363aed2d"
+        },
+        "inputHash": "8a1c091a5146e562",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "9k425h6032sy2my9",
+          "url": "/api/files/9k425h6032sy2my9",
+          "mime": "video/mp4",
+          "width": 1280,
+          "height": 720,
+          "duration": 3,
+          "origin": "import",
+          "role": "clip"
+        },
+        "poster": {
+          "assetId": "6lg4rw3dse5h55b4",
+          "url": "/api/files/6lg4rw3dse5h55b4",
+          "mime": "image/png",
+          "width": 1280,
+          "height": 720
+        },
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-0t0thn912l98vevq-11",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": true
+        }
+      }
+    ],
+    "category": {
+      "status": "recommended",
+      "category": "services",
+      "salesModel": "service",
+      "goal": "quote",
+      "reasons": [
+        "Vous avez confirmé ce modèle de site pour votre offre actuelle ; ce choix prime sur les indices automatiques."
+      ],
+      "evidence": [
+        {
+          "source": "business",
+          "value": "services"
+        },
+        {
+          "source": "client_choice",
+          "value": "services"
+        }
+      ],
+      "clarification": null,
+      "eligibleThemes": [
+        {
+          "referenceId": "atelier-rive",
+          "name": "Atelier Rive",
+          "engineThemeId": null,
+          "status": "awaiting_integration"
+        }
+      ]
+    },
+    "sourceHash": "95c172982575ccdb",
+    "status": "ready",
+    "issues": [],
+    "socialAssetsIncluded": false,
+    "integration": {
+      "status": "awaiting_theme_consumer",
+      "installedThemeChanged": false,
+      "required": [
+        "Raccorder les identifiants des quatre thèmes aux références et catégories explicites.",
+        "Consommer identité, documents complets, blocs éditoriaux, SEO et médias affectés dans le moteur existant.",
+        "Filtrer la bibliothèque et les opérations manuelles/IA par thème installé ET catégorie ; préserver les retouches et signaler les conflits."
+      ]
+    }
+  },
+  "routing": [
+    {
+      "stage": "understanding",
+      "processing": "api",
+      "alias": "text:vision_analysis:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": true,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "web_sources",
+      "processing": "web_fetch",
+      "alias": "research:web-search-and-source-fetch",
+      "provider": null,
+      "configuration": "configured_not_tested",
+      "modelConfigured": false,
+      "executed": false,
+      "reason": "Découverte web et lecture des sources avec les connecteurs existants ; couverture et accès réels à vérifier.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "research_strategy",
+      "processing": "api",
+      "alias": "text:strategy:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": false,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "name",
+      "processing": "api",
+      "alias": "text:strategy:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": false,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "art_directions",
+      "processing": "api",
+      "alias": "text:logo_symbol:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": false,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "logo",
+      "processing": "api",
+      "alias": "image:logo",
+      "provider": "openai",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "executed": false,
+      "reason": "Fournisseur, adaptateur, tarif et capacité résolus localement ; aucun appel effectué.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "identity_variants",
+      "processing": "local_preparation",
+      "alias": "identity:approved-logo-variants",
+      "provider": null,
+      "configuration": "local",
+      "modelConfigured": false,
+      "executed": false,
+      "reason": "Déclinaisons et charte dérivées du logo actif ; aucun nouveau dessin payant dans cette préparation locale.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "copywriting_seo",
+      "processing": "api",
+      "alias": "text:copywriting:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": false,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "site_stock",
+      "processing": "api",
+      "alias": "stock:pixabay",
+      "provider": "pixabay",
+      "configuration": "unavailable",
+      "modelConfigured": false,
+      "executed": false,
+      "reason": "Accès Pixabay absent ou désactivé.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "visual_review",
+      "processing": "api",
+      "alias": "text:quality_control:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": true,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "initial_twenty_concepts",
+      "processing": "api",
+      "alias": "text:copywriting:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": false,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "initial_twenty_images",
+      "processing": "api",
+      "alias": "image:social_image",
+      "provider": "openai",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "executed": false,
+      "reason": "Fournisseur, adaptateur, tarif et capacité résolus localement ; aucun appel effectué.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "theme_handoff",
+      "processing": "local_preparation",
+      "alias": "theme:structured-contract",
+      "provider": null,
+      "configuration": "local",
+      "modelConfigured": false,
+      "executed": false,
+      "reason": "Projection des données approuvées, sans génération ni création d’un thème.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    }
+  ],
+  "generationStarted": false,
+  "themeChanged": false,
+  "themeConsumerVerified": false
+}

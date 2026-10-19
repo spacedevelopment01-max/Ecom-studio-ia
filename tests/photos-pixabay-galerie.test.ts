@@ -36,13 +36,14 @@ describe("Photos libres : Pixabay d'abord, galerie fournie", async () => {
       const hits = Array.from({ length: 30 }, () => ({ id: ++n, largeImageURL: `https://cdn.example/${n}.jpg`, pageURL: `https://pixabay.com/p/${n}`, user: "x", imageWidth: 4000, imageHeight: 2600, tags: "escape room, padlock, key" }));
       return new Response(JSON.stringify({ hits, photos: [], results: [] }), { status: 200 });
     });
-    const few = await searchStock(["escape room"], "landscape", "en", new Set());
+    const unique = `galerie-http-${Date.now()}`; // Ne pas réutiliser le cache légitime d'un autre scénario.
+    const few = await searchStock([unique], "landscape", "en", new Set());
     expect(urls[0]).toMatch(/^https:\/\/pixabay\.com\/api\//);
     expect(urls[0]).toContain("per_page=60");
     expect(urls[0]).toContain("min_width=1600");
     expect(few.length).toBeGreaterThanOrEqual(12);
     urls.length = 0;
-    const many = await searchStock(["escape room", "padlock old key", "vintage keys"], "landscape", "en", new Set(), 80);
+    const many = await searchStock([unique, `${unique} padlock old key`, `${unique} vintage keys`], "landscape", "en", new Set(), 80);
     expect(many.length).toBeGreaterThanOrEqual(80);
     expect(many.every((p) => p.source === "pixabay")).toBe(true);
   });

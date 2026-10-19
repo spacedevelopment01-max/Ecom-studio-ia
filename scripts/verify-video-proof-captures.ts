@@ -1,0 +1,23 @@
+/** Read-only recapture of stored isolated renders; no job launch, version edit or provider request. */
+import fs from 'node:fs';import path from 'node:path';import assert from 'node:assert/strict';import {chromium} from 'playwright';
+const dir=process.env.DATA_DIR??'';if(!path.basename(dir).startsWith('ecs-test-video-mission-'))throw Error('Dossier isolé requis');
+const {ui}=JSON.parse(fs.readFileSync(path.join(dir,'private-ui.json'),'utf8')),out=path.join(dir,'public'),base='http://127.0.0.1:3134';
+const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});const results=[];
+try{for(const item of ui.filter((x:any)=>!process.env.PROOF_SLUG||x.slug===process.env.PROOF_SLUG))for(const mobile of process.env.MOBILE_ONLY?[true]:[false,true]){
+ const context=await browser.newContext({viewport:mobile?{width:390,height:844}:{width:1440,height:1000}});await context.addCookies([{name:'ecs_session',value:item.token,url:base},{name:'ecs-lang',value:'fr',url:base}]);
+ await context.addInitScript(()=>{sessionStorage.setItem('ecsSeen','1');localStorage.setItem('ecs-lang','fr');});
+ await context.route('**/*',route=>{const r=route.request();const quote=r.method()==='POST'&&r.url().endsWith('/creative/video')&&r.postDataJSON()?.action==='quote';if(new URL(r.url()).origin!==base||(!['GET','HEAD'].includes(r.method())&&!quote))return route.abort();return route.continue();});
+ const page=await context.newPage();page.setDefaultTimeout(120000);const organic=item.slug.includes('organique');await page.goto(`${base}/studio/${item.pid}/${organic?'publications':'publicites'}#video`);
+ const sec=page.locator(`[data-guided-video=${organic?'post':'ad'}]`);await sec.waitFor();const dismiss=page.locator('[data-tuto-nudge] button[aria-label="Masquer"]');if(await dismiss.count())await dismiss.click();
+ const list=await(await page.request.get(`${base}/api/projects/${item.pid}/creative/video`)).json();const final=list.videos.find((v:any)=>v.request?.startsWith('TEST ISOLÉ'));assert(final?.docKey);
+ const native=await(await page.request.get(`${base}/api/projects/${item.pid}/videos/v2/${encodeURIComponent(final.docKey)}`)).json();const source=`/api/files/${native.version.renderedAssetId}`;
+ const card=sec.locator('[data-guided-videos] > div').filter({has:page.locator(`video[src="${source}"]`)}).first();assert.equal(await card.count(),1);
+ // Decode a real frame in every visible player; reload screenshots must not show empty players.
+ for(const el of await sec.locator('video').all())await el.evaluate(async(v:HTMLVideoElement)=>{v.muted=true;await v.play();v.currentTime=Math.min(18,Math.max(0,v.duration-.5));await new Promise<void>(resolve=>v.requestVideoFrameCallback(()=>resolve()));v.pause();});
+ await page.waitForFunction(()=>{const p=document.querySelector('[data-video-price]');return p&&!p.textContent?.includes('Calcul du prix');});const sizes=await sec.evaluate((e:HTMLElement)=>({width:e.clientWidth,scroll:e.scrollWidth,wide:[...e.querySelectorAll<HTMLElement>('*')].filter(x=>x.scrollWidth>x.clientWidth+2).map(x=>({tag:x.tagName,cls:x.className,text:x.innerText?.slice(0,100),width:x.clientWidth,scroll:x.scrollWidth,whiteSpace:getComputedStyle(x).whiteSpace,display:getComputedStyle(x).display})).slice(0,20)}));if(sizes.scroll>sizes.width+1){await page.screenshot({path:path.join(out,'overflow-diagnostic.png'),fullPage:true});throw Error(JSON.stringify({slug:item.slug,mobile,overflow:sizes}));}
+ const review=card.locator('[data-video-review] summary');if(await review.count())await review.click();
+ await card.locator('video').evaluate((v:HTMLVideoElement)=>v.scrollIntoView({block:'start'}));await page.evaluate(()=>window.scrollBy(0,-80));await page.screenshot({path:path.join(out,`${item.slug}-lecteur-${mobile?'mobile':'ordinateur'}.png`)});
+ await sec.screenshot({path:path.join(out,`${item.slug}-final-${mobile?'mobile':'ordinateur'}.png`)});
+ if(!mobile){await card.locator('[data-guided-video-edit]').click();const modal=page.getByRole('dialog');await modal.waitFor();await modal.getByText(/^Version [0-9]+ ·/).waitFor();assert(!(await modal.innerText()).includes('[object Object]'));await modal.screenshot({path:path.join(out,`${item.slug}-edition-ordinateur.png`)});}
+ results.push({slug:item.slug,mobile,docKey:final.docKey,version:native.version.version,renderedAssetId:native.version.renderedAssetId,readOnly:true,realFrameDecoded:true});await context.close();console.log(`${item.slug} ${mobile?'mobile':'ordinateur'} : capture relue`);
+}}finally{await browser.close();}fs.writeFileSync(path.join(out,'captures-final-checks.json'),JSON.stringify({providerCalls:0,results},null,2));

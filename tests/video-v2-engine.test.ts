@@ -23,7 +23,8 @@ describe("Video Engine V2 — moteur et rendu", async () => {
   const { timeline } = await import("@/lib/video-v2/doc");
   const { measureAudio } = await import("@/lib/video-v2/audio");
   const { seedImageFixture, seedCutout } = await import("./image-v2-fixtures");
-  const { mockVideoDeps, goodShot, videoReview } = await import("./video-v2-mock");
+  const { mockVideoDeps: baseMockVideoDeps, shortVideoScript, goodShot, videoReview } = await import("./video-v2-mock");
+  const mockVideoDeps=(o:Parameters<typeof baseMockVideoDeps>[0])=>baseMockVideoDeps({canWrite:true,script:shortVideoScript,...o});
   const fr = <T,>(fn: () => Promise<T>) => runWithLang({ ui: "fr", content: "fr" }, fn);
   const u = await createUser(`v2e-${Date.now()}@test.fr`, "motdepasse-test", "V");
   const R = { renderScale: 0.2, fps: 8 } as const;
@@ -46,7 +47,7 @@ describe("Video Engine V2 — moteur et rendu", async () => {
     const p = await cosmetic();
     const { deps, log } = mockVideoDeps({ userId: u.id, projectId: p.id, voice: true });
     const r = await fr(() => runVideoEngineV2(null, p.id, { ask: { text: "Publicité Instagram de 15 secondes" }, approveGeneration: true, ...R }, deps));
-    expect(r.verdict).toBe("FINAL");
+    expect(r.verdict,JSON.stringify({reason:r.reason,codes:r.codes,issues:r.issues,notes:r.notes})).toBe("FINAL");
     expect(r.videoAssetId).toBeTruthy();
     const pr = probe(r.videoAssetId!);
     expect(pr.streams.map((s: any) => s.codec_name).sort()).toEqual(["aac", "h264"]);
@@ -103,18 +104,13 @@ describe("Video Engine V2 — moteur et rendu", async () => {
     expect(b.verdict).not.toBe("FINAL");
   }, 120_000);
 
-  it("fidélité produit : un plan au produit transformé est refusé (fatal), jamais monté ni réutilisé ; plan local à la place", async () => {
-    const p = await cosmetic();
-    const { deps, log } = mockVideoDeps({ userId: u.id, projectId: p.id, shot: () => goodShot({ productAltered: true, score: 8 }) });
-    const r = await fr(() => runVideoEngineV2(null, p.id, { ask: { text: "Publicité Instagram" }, approveGeneration: true, ...R }, deps));
-    expect(log.clips.length).toBe(r.shots.filter((s) => s.source.kind === "generate").length); // fatal : aucune reprise
-    const doc = latestVideo(p.id, r.docKey!)!.doc;
-    expect(doc.clips.some((c) => c.generated)).toBe(false);
-    const rejected = all<{ status: string }>("SELECT status FROM assets WHERE project_id = ? AND role = 'clip'", p.id);
-    expect(rejected.every((a) => a.status === "rejected")).toBe(true);
-    expect(r.outcomes.some((o) => o.codes.includes("product_altered"))).toBe(true);
-    expect(r.notes.join(" ")).toMatch(/refusé/);
-  }, 120_000);
+  it("fidélité produit : un produit transformé est refusé, acquis conservés et aucun substitut local", async () => {
+    const p=await cosmetic();const {deps,log}=mockVideoDeps({userId:u.id,projectId:p.id,shot:()=>goodShot({productAltered:true,score:8})});
+    await expect(fr(()=>runVideoEngineV2(null,p.id,{ask:{text:"Publicité Instagram"},approveGeneration:true,...R},deps))).rejects.toThrow(/refusée|refusé/);
+    expect(log.clips).toHaveLength(1);
+    const rejected=all<{status:string}>("SELECT status FROM assets WHERE project_id=? AND role='clip'",p.id);
+    expect(rejected.length).toBe(1);expect(rejected.every(a=>a.status==="rejected")).toBe(true);
+  },120_000);
 
   it("UGC : personnage synthétique signalé, même image de départ pour tous ses plans ; incohérence → reprise ciblée du plan ; faux témoignage écarté", async () => {
     const p = await cosmetic();
@@ -142,9 +138,9 @@ describe("Video Engine V2 — moteur et rendu", async () => {
     const r = await fr(() => runVideoEngineV2(null, p.id, { ask: { text: "Publicité Instagram de 20 secondes" }, approveGeneration: true, ...R }, deps));
     const paid = r.shots.filter((s) => s.source.kind === "generate").length;
     // Une seule séquence refaite (un plan de plus que le nombre de plans payants), jamais toute la vidéo.
-    expect(log.clips.length).toBe(paid + 1);
+    expect(log.clips.length,JSON.stringify({reason:r.reason,codes:r.codes,issues:r.issues,notes:r.notes})).toBe(paid + 1);
     expect(r.notes.join(" ")).toMatch(/reprise ciblée : plan s\d+ seul/);
-    expect(r.verdict).toBe("FINAL");
+    expect(r.verdict,JSON.stringify({reason:r.reason,codes:r.codes,issues:r.issues,notes:r.notes})).toBe("FINAL");
     expect(listVideoVersions(p.id, r.docKey!).length).toBe(2);
   }, 180_000);
 
@@ -204,7 +200,7 @@ describe("Video Engine V2 — moteur et rendu", async () => {
     expect(log.clips).toHaveLength(1);
   }, 120_000);
 
-  it("vidéo longue (> 30 s) en plusieurs séquences, format 16:9 ; Image Engine V2 sollicité pour les plans sans visuel", async () => {
+  it("vidéo de service longue (> 30 s), format 16:9 ; plans stock distincts sans génération d’image", async () => {
     const p = loadProject(seedImageFixture(u.id, "artisan"));
     const { deps, log } = mockVideoDeps({ userId: u.id, projectId: p.id });
     const r = await fr(() => runVideoEngineV2(null, p.id, { ask: { text: "Présentation de l'entreprise pour YouTube, 45 secondes" }, approveGeneration: true, ...R }, deps));
@@ -212,7 +208,8 @@ describe("Video Engine V2 — moteur et rendu", async () => {
     expect(doc.aspect).toBe("16:9");
     expect(timeline(doc).total).toBeGreaterThan(40);
     expect(doc.clips.length).toBeGreaterThanOrEqual(8);
-    expect(log.images).toBeGreaterThan(0);
+    expect(log.images).toBe(0);
+    expect(doc.clips.every(c=>c.source.kind==="video")).toBe(true);
     // Chaque plan généré dure ce que le fournisseur sait faire ; la vidéo longue est un assemblage.
     for (const c of log.clips) expect([5, 8, 10]).toContain(c.seconds);
     expect(probe(r.videoAssetId!).format.duration * 1).toBeGreaterThan(40);

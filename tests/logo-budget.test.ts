@@ -1,3 +1,4 @@
+import { directionIdentity } from "./preparation-mission-fixtures";
 /**
  * Logo V2 — devis et plafond (fournisseurs SIMULÉS, aucun appel payant) : vraie chaîne d'appels (garde-fous, réservations
  * et coûts tracés), OpenAI Images et Anthropic remplacés par des simulateurs.
@@ -105,7 +106,7 @@ describe("Logo V2 — devis et plafond de la série", async () => {
     { name: "Direction A", markType: "wordmark", composition: "wordmark_only", construction: "typographic", sobriety: 2, style: "typographic", symbolIdea: null },
     { name: "Direction B", markType: "symbol_wordmark", composition: "stacked", construction: "geometric", sobriety: 3, style: "minimal", symbolIdea: "un signe tiré de l'activité" },
     { name: "Direction C", markType: "emblem", composition: "badge", construction: "organic", sobriety: 4, style: "premium", symbolIdea: "un sceau sobre" },
-  ].map((o) => ({ concept: `Concept ${o.name} pour la marque.`, whyItFits: "Traduit la personnalité de la marque pour sa clientèle.", typography: { style: "grotesque", weight: "bold", case: "upper", tracking: "normal", rationale: "" }, colorRole: { ink: "dark", accent: "primary", rationale: "" }, distinctive: "", avoid: [], ...o }));
+  ].map((o, i) => ({ identity: directionIdentity(i), concept: `Concept ${o.name} pour la marque.`, whyItFits: "Traduit la personnalité de la marque pour sa clientèle.", typography: { style: "grotesque", weight: "bold", case: "upper", tracking: "normal", rationale: "" }, colorRole: { ink: "dark", accent: "primary", rationale: "" }, distinctive: "", avoid: [], ...o }));
   const artReview = (o: Record<string, unknown> = {}) => ({ criteria: Object.fromEntries(ART_CRITERIA.map((k) => [k, 8.6])), textRead: "", nameExact: true, extraText: false, nameBox: null, clumsyCliche: false, resemblesKnownBrand: false, amateur: false, artifacts: false, issues: [], needsSimplifiedMark: true, ...o });
   /** Relectures : la première de « Direction B » (symbole + nom) lit un nom faux (zone connue) → nom réécrit puis relu. */
   function respond(name: string) {
@@ -115,7 +116,7 @@ describe("Logo V2 — devis et plafond de la série", async () => {
       if (sys.includes("TERRITOIRES CRÉATIFS")) return JSON.stringify({ territories: DRAFTS });
       if (sys.includes("logo complet dessiné par une IA d'images")) {
         const msg = JSON.stringify(params.messages);
-        if (msg.includes("Direction B") && firstA) {
+        if (msg.includes("Territoire « Direction B »") && firstA) {
           firstA = false;
           return JSON.stringify(artReview({ textRead: "NOM FAUX", nameExact: false, nameBox }));
         }
@@ -140,6 +141,8 @@ describe("Logo V2 — devis et plafond de la série", async () => {
     llm.sent = [];
     setSetting("ai.prices.checkedAt", String(Date.now()));
     for (const k of ["ai.routes", "ai.media.backup", "ai.media.mode", "ai.media.models", "ai.media.usage", "ai.prices"]) setJsonSetting(k, {});
+    setJsonSetting("ai.media.models", { "openai:gpt-image-2.5-sunburst": { confirmedAt: Date.now(), enabled: true } });
+    setJsonSetting("ai.prices", { "openai:gpt-image-2.5-sunburst": { unit: "image", perImage: 0.22 } });
   });
   afterEach(() => vi.unstubAllGlobals());
 
@@ -158,6 +161,13 @@ describe("Logo V2 — devis et plafond de la série", async () => {
     expect(r.shown.find((s) => s.territory.name === "Direction B")?.candidate.artwork?.textCorrected).toBe(true);
     // 1 territoires + 3 relectures + 1 relecture après la reprise.
     expect(llm.sent).toHaveLength(5);
+    // Même appel de relecture : logo original + véritable palette appliquée.
+    const reviews = llm.sent.filter(p => JSON.stringify(p.system).includes("logo complet dessiné par une IA d'images"));
+    expect(reviews).toHaveLength(4);
+    for (const p of reviews) {
+      expect(p.messages.flatMap((m: any) => Array.isArray(m.content) ? m.content.filter((c: any) => c.type === "image") : [])).toHaveLength(2);
+      expect(JSON.stringify(p.messages)).toContain("pas une distance numérique");
+    }
     const s = spent(ctx.job.id);
     expect(s).toBeGreaterThan(0);
     expect(s).toBeLessThanOrEqual(q.maxMicro);

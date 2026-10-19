@@ -406,6 +406,22 @@
           {
             "value": "lancement",
             "label": "Lancement — sortie de produit"
+          },
+          {
+            "value": "fraise",
+            "label": "Fraise — page de vente pop (référence)"
+          },
+          {
+            "value": "onde",
+            "label": "Onde — contraste sombre, accent vif (référence)"
+          },
+          {
+            "value": "orbe",
+            "label": "Orbe — objet et ambiances (référence)"
+          },
+          {
+            "value": "rive",
+            "label": "Atelier Rive — journal et espaces (référence)"
           }
         ]
       },
@@ -654,6 +670,122 @@
         "id": "cart_reassurance",
         "label": "Message sous le bouton de commande",
         "info": "N'indiquez que des engagements réels (livraison, retours)."
+      },
+      {
+        "type": "header",
+        "content": "Présentation du panier"
+      },
+      {
+        "type": "color_scheme",
+        "id": "cart_color_scheme",
+        "label": "Schéma de couleurs du panier",
+        "default": "scheme-1",
+        "info": "Tiroir et page panier. Choisissez un schéma sombre pour un panier anthracite."
+      },
+      {
+        "type": "text",
+        "id": "cart_heading",
+        "label": "Titre du panier",
+        "info": "Vide : « Panier »."
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_show_count",
+        "label": "Nombre d'articles dans le titre",
+        "default": false
+      },
+      {
+        "type": "text",
+        "id": "cart_promo_text",
+        "label": "Bandeau sous le titre",
+        "info": "Ex. « Livraison offerte dès 2 articles ». N'indiquez qu'une offre réelle ; vide : aucun bandeau."
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_reservation",
+        "label": "Bloc « commande réservée » avec compte à rebours",
+        "default": false,
+        "info": "Le studio ne réserve pas le stock : ce bloc est toujours marqué « Démonstration fictive ». Laissez-le désactivé sur une boutique réelle sans réservation effective."
+      },
+      {
+        "type": "range",
+        "id": "cart_reservation_minutes",
+        "label": "Durée affichée",
+        "min": 5,
+        "max": 30,
+        "step": 1,
+        "unit": "min",
+        "default": 10
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_discount_code",
+        "label": "Champ « Code de réduction »",
+        "default": false,
+        "info": "Le code est appliqué par la plateforme au paiement ; dans l'aperçu du studio, aucun code n'est actif."
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_show_savings",
+        "label": "Ligne « Économies » (prix barrés et offres)",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_total_count",
+        "label": "Total avec le nombre d'articles",
+        "default": false
+      },
+      {
+        "type": "text",
+        "id": "cart_checkout_label",
+        "label": "Libellé du bouton de commande",
+        "info": "Vide : « Passer commande »."
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_checkout_lock",
+        "label": "Cadenas dans le bouton de commande",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_show_payment_icons",
+        "label": "Logos des moyens de paiement confirmés",
+        "default": false,
+        "info": "Uniquement les moyens réellement activés sur la boutique ; aucun logo présumé."
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_protection",
+        "label": "Bloc « Protection des expéditions » (interrupteur visuel, jamais précoché)",
+        "default": false,
+        "info": "Aucun montant n'est ajouté : reliez un service réel avant d'activer une facturation."
+      },
+      {
+        "type": "text",
+        "id": "cart_protection_title",
+        "label": "Titre du bloc protection",
+        "default": "Protection des expéditions"
+      },
+      {
+        "type": "text",
+        "id": "cart_protection_text",
+        "label": "Texte du bloc protection",
+        "default": "Protégez votre commande contre les dommages, la perte ou le vol pendant l'expédition."
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_show_login",
+        "label": "Invitation à se connecter sous le panier vide",
+        "default": false,
+        "info": "Affichée seulement si les comptes clients sont activés sur la plateforme."
+      },
+      {
+        "type": "text",
+        "id": "cart_empty_title",
+        "label": "Titre du panier vide",
+        "info": "Vide : « Votre panier est vide. »"
       }
     ]
   },
@@ -694,6 +826,52 @@
         "type": "image_picker",
         "id": "share_image",
         "label": "Image de partage par défaut"
+      }
+    ]
+  },
+  {
+    "name": "Composition éditoriale",
+    "settings": [
+      {
+        "type": "select",
+        "id": "editorial_profile",
+        "label": "Univers éditorial",
+        "default": "none",
+        "options": [
+          {
+            "value": "none",
+            "label": "Style existant"
+          },
+          {
+            "value": "object",
+            "label": "Objet et ambiances"
+          },
+          {
+            "value": "journal",
+            "label": "Journal et espaces"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "conversion_profile",
+        "label": "Profil « conversion »",
+        "default": "none",
+        "info": "Pages de vente denses : ouverture produit, bénéfices cochés, avis, chiffres, comparatif, garantie, FAQ.",
+        "options": [
+          {
+            "value": "none",
+            "label": "Aucun"
+          },
+          {
+            "value": "pop",
+            "label": "Pop clair : fond crème, accent vif, boutons bordés"
+          },
+          {
+            "value": "contrast",
+            "label": "Contraste sombre : ouverture anthracite, accent vert, boutons arrondis"
+          }
+        ]
       }
     ]
   }

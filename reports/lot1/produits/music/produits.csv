@@ -1,0 +1,16 @@
+Handle,Title,Body (HTML),Vendor,Type,Tags,Published,Option1 Name,Option1 Value,Variant SKU,Variant Price,Variant Compare At Price,Variant Requires Shipping,Variant Taxable,Image Src,Image Position,Image Alt Text,Status
+"diagnostic","Diagnostic","<p>Notice client du produit 1. Les informations déclarées pour cet objet restent disponibles. Notice client du produit 1. Les informations déclarées pour cet objet restent disponibles. Notice client du produit 1. Les informations déclarées pour cet objet restent disponibles. Notice client du produit 1. Les informations déclarées pour cet objet restent disponibles. Notice client du produit 1. Les informations déclarées pour cet objet restent disponibles. </p>
+<p>Fin du texte client du produit 1, conservée dans sa propre fiche.</p>
+<div class=""faq"">
+<details><summary>Comment préparer le produit 1 ?</summary><p>Réponse client propre au produit 1.</p></details>
+</div>","Boutique synthétique indépendante","","Cordes frottées","FALSE","Title","Default Title","","49.00","","TRUE","TRUE","","","","draft"
+"diagnostic-2","Diagnostic","<p>Les caractéristiques de ce produit restent à renseigner.</p>
+<p>Fin du texte client du produit 3, conservée dans sa propre fiche.</p>
+<div class=""faq"">
+<details><summary>Comment préparer le produit 3 ?</summary><p>Réponse client propre au produit 3.</p></details>
+</div>","Boutique synthétique indépendante","","Cordes frottées","FALSE","Title","Default Title","","9.00","","TRUE","TRUE","","","","draft"
+"diagnostic-3","Diagnostic","<p>Notice client du produit 2. Les informations déclarées pour cet objet restent disponibles. Notice client du produit 2. Les informations déclarées pour cet objet restent disponibles. Notice client du produit 2. Les informations déclarées pour cet objet restent disponibles. Notice client du produit 2. Les informations déclarées pour cet objet restent disponibles. Notice client du produit 2. Les informations déclarées pour cet objet restent disponibles. </p>
+<p>Fin du texte client du produit 2, conservée dans sa propre fiche.</p>
+<div class=""faq"">
+<details><summary>Comment préparer le produit 2 ?</summary><p>Réponse client propre au produit 2.</p></details>
+</div>","Boutique synthétique indépendante","Étuis","Étuis, Étuis","FALSE","Title","Default Title","","21.00","","TRUE","TRUE","","","","draft"

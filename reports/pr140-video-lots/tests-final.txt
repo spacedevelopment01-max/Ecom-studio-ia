@@ -1,0 +1,43 @@
+RÉCEPTION ISOLÉE — fournisseurs simulés, aucun appel payant.
+Moteur/encodages testés : 4c056ac22539bb4c77c2953b38348a98ac4fbda6
+Code final (bouton mobile) : 8122545d36cff5451861bed394596181735392a2
+Les sélections se recouvrent ; ne pas additionner les nombres.
+
+Commande : npx vitest run tests/video-audio-termination.test.ts tests/video-v2-engine.test.ts tests/video-v2-bench.test.ts --maxWorkers=1
+Test Files  3 passed (3)
+Tests  19 passed (19)
+Start at  14:36:35
+Duration  158.26s (tests 96%, import 3%, transform 1%)
+
+Commande : npx vitest run tests/video-v2-engine.test.ts tests/video-v2-bench.test.ts tests/video-promo.test.ts tests/video-render-missing.test.ts tests/video-render-conflict.test.ts tests/video-creation-rights.test.ts --maxWorkers=1
+Test Files  6 passed (6)
+Tests  33 passed (33)
+Start at  15:09:22
+Duration  159.16s (tests 93%, import 6%, transform 1%)
+
+Commande : npx vitest run tests/video-receipts-approval.test.ts tests/video-render-conflict.test.ts tests/video-render-missing.test.ts tests/video-creation-rights.test.ts --maxWorkers=1
+Test Files  4 passed (4)
+Tests  16 passed (16)
+Start at  15:13:55
+Duration  14.43s (tests 58%, import 40%, transform 1%)
+
+npx tsc --noEmit : exit 0 après les derniers correctifs (journal types-final-resource.txt vide).
+git diff --check : exit 0.
+Passage global local historique : 2199 réussites, 3 délais, 3 ignorés / 290 fichiers ; ne constitue pas un succès global.
+Les délais de mixage ont été suivis des corrections et sélections ci-dessus.
+La suite complète distante, exécutée sans la recette navigateur locale, figure dans les preuves CI.
+
+npx vitest run tests/song-composer.test.ts tests/video-promo.test.ts --maxWorkers=1 : 14 réussites / 2 fichiers / 5,66 s.
+npx tsc --noEmit : exit 0 (types-code-final.txt).
+DATA_DIR=<dossier isolé> npx tsx scripts/verify-video-ui-browser.ts : 4 ordinateurs + 4 mobiles, reprise sur résultats conservés, exit 0.
+DATA_DIR=<dossier isolé> npx tsx scripts/verify-video-final-files.ts : exit 0 ; 4 fichiers MP4 H264/AAC/20s/1080x1920/30fps, 4 phrases exportées chacun.
+DATA_DIR=<dossier isolé> npx tsx scripts/verify-video-proof-captures.ts : 8 captures après lecture et devis chargé ; consultation seule + calcul gratuit du devis ; aucun nouveau rendu.
+
+GATE FINALE : npx vitest run --maxWorkers=2 — exit 0.
+Test Files 292 passed (292)
+Tests 2211 passed | 3 skipped (2214)
+Start at 15:38:29 UTC, 19/10/2026
+Duration 906.25s
+Les 3 tests PHP ignorés : calendrier-reservation.test.ts (2), cms-v2.test.ts (1), PHP absent.
+npx tsc --noEmit revérifié après les scripts de capture : exit 0 (types-proof-final.txt).
+Aucun changement de src/tests depuis 8122545d.

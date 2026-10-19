@@ -1,0 +1,727 @@
+{
+  "isDemo": true,
+  "provenance": "Mission 6247457951, version 2026-10-18T08:28:10Z — données synthétiques de démonstration, aucun paiement",
+  "media": [],
+  "missing": [
+    "orbe-01-dune",
+    "orbe-02-chambre",
+    "orbe-03-diner",
+    "orbe-04-lecture",
+    "orbe-05-bureau",
+    "orbe-06-duo",
+    "orbe-07-trio",
+    "orbe-08-lumiere",
+    "orbe-09-charbon",
+    "orbe-10-argile",
+    "orbe-11-boite",
+    "orbe-12-pochette"
+  ],
+  "visualValidation": "BLOQUÉE — pack photo absent ou incomplet",
+  "pages": [
+    {
+      "page": "index",
+      "sections": [
+        {
+          "id": "opening",
+          "type": "ed-opening",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "focus_x": 50,
+            "focus_y": 50,
+            "layout": "immersive",
+            "heading_tag": "h1",
+            "heading": "La lumière change\nde place.\nL'atmosphère aussi.",
+            "text": "<p>Du chevet à la table, une même silhouette accompagne les moments de la maison.</p>",
+            "label": "ORBE — LUMIÈRE NOMADE",
+            "button_label": "Découvrir ORBE",
+            "button_link": "/products/lampe-nomade",
+            "image_asset": "",
+            "media_role": "orbe-02-chambre",
+            "image_alt": "orbe 02 chambre"
+          },
+          "blocks": {},
+          "block_order": []
+        },
+        {
+          "id": "presence",
+          "type": "ed-statement",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "focus_x": 50,
+            "focus_y": 50,
+            "heading": "Une présence discrète. Une ambiance qui reste.",
+            "text": "<p>Un même objet, plusieurs façons de l'installer.</p>"
+          },
+          "blocks": {
+            "b0": {
+              "type": "point",
+              "settings": {
+                "title": "Silhouette arrondie"
+              }
+            },
+            "b1": {
+              "type": "point",
+              "settings": {
+                "title": "Trois finitions"
+              }
+            },
+            "b2": {
+              "type": "point",
+              "settings": {
+                "title": "À poser au fil de vos envies"
+              }
+            }
+          },
+          "block_order": [
+            "b0",
+            "b1",
+            "b2"
+          ]
+        },
+        {
+          "id": "moments",
+          "type": "ed-diptych",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "layout": "pair",
+            "heading": "Le temps d'un dîner. Le calme d'une lecture.",
+            "anchor": "ambiances"
+          },
+          "blocks": {
+            "b0": {
+              "type": "frame",
+              "settings": {
+                "focus_x": 50,
+                "focus_y": 50,
+                "ratio": "landscape",
+                "image_asset": "",
+                "media_role": "orbe-03-diner",
+                "image_alt": "orbe 03 diner",
+                "title": "Autour de la table",
+                "text": "<p>Une lumière qui trouve sa place lorsque l'on se retrouve.</p>",
+                "link": "/products/lampe-nomade?media=orbe-03-diner",
+                "link_label": "Explorer cette intention"
+              }
+            },
+            "b1": {
+              "type": "frame",
+              "settings": {
+                "focus_x": 50,
+                "focus_y": 50,
+                "ratio": "portrait",
+                "image_asset": "",
+                "media_role": "orbe-04-lecture",
+                "image_alt": "orbe 04 lecture",
+                "title": "Le temps pour soi",
+                "text": "<p>Un point de lumière au fil des pages.</p>",
+                "link": "/products/lampe-nomade?media=orbe-04-lecture",
+                "link_label": "Explorer cette intention"
+              }
+            }
+          },
+          "block_order": [
+            "b0",
+            "b1"
+          ]
+        },
+        {
+          "id": "night",
+          "type": "ed-scene",
+          "settings": {
+            "color_scheme": "scheme-2",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "focus_x": 50,
+            "focus_y": 50,
+            "layout": "split",
+            "heading": "Quand la pièce ralentit.",
+            "text": "<p>Une lumière d'ambiance et des lignes simples pour composer un coin plus intime.</p>",
+            "image_asset": "",
+            "media_role": "orbe-08-lumiere",
+            "image_alt": "orbe 08 lumiere"
+          },
+          "blocks": {},
+          "block_order": []
+        },
+        {
+          "id": "finishes",
+          "type": "ed-finishes",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "focus_x": 50,
+            "focus_y": 50,
+            "heading": "Dune. Argile. Charbon.",
+            "text": "<p>Trois tonalités pour trouver votre place dans la pièce.</p>",
+            "image_asset": "",
+            "media_role": "orbe-07-trio",
+            "image_alt": "orbe 07 trio",
+            "product_target": "product:main",
+            "anchor": "finitions",
+            "button_label": "Choisir ma finition",
+            "button_link": "/products/lampe-nomade#MainBuy"
+          },
+          "blocks": {},
+          "block_order": []
+        },
+        {
+          "id": "duo",
+          "type": "ed-scene",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "focus_x": 50,
+            "focus_y": 50,
+            "layout": "panorama",
+            "heading": "Deux points de lumière, un même équilibre.",
+            "text": "<p>De part et d'autre d'une pièce ou dans deux espaces de la maison, composez le duo qui vous ressemble.</p>",
+            "image_asset": "",
+            "media_role": "orbe-06-duo",
+            "image_alt": "orbe 06 duo",
+            "button_label": "Découvrir les offres",
+            "button_link": "/products/lampe-nomade#MainBuy"
+          },
+          "blocks": {},
+          "block_order": []
+        },
+        {
+          "id": "purchase",
+          "type": "purchase-offers",
+          "settings": {
+            "purchase_enabled": true,
+            "purchase_style": "outlined",
+            "purchase_heading": "Votre ORBE, à votre façon.",
+            "color_scheme": "scheme-1",
+            "padding_top": 32,
+            "padding_bottom": 32,
+            "show_finishes": true,
+            "finish_label": "Votre première finition",
+            "product_target": "product:main",
+            "finish_colors": "Dune=#D8CCB9\nArgile=#9B4F36\nCharbon=#29251F",
+            "purchase_source": "product.editorial:main"
+          },
+          "blocks": {},
+          "block_order": []
+        },
+        {
+          "id": "accessories",
+          "type": "ed-diptych",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "layout": "pair",
+            "heading": "À offrir. À emporter."
+          },
+          "blocks": {
+            "b0": {
+              "type": "frame",
+              "settings": {
+                "focus_x": 50,
+                "focus_y": 50,
+                "ratio": "landscape",
+                "image_asset": "",
+                "media_role": "orbe-11-boite",
+                "image_alt": "orbe 11 boite",
+                "title": "La boîte",
+                "text": "<p>Une présentation dédiée. Accessoire distinct : aucune inclusion automatique dans les offres.</p>",
+                "link": "",
+                "link_label": ""
+              }
+            },
+            "b1": {
+              "type": "frame",
+              "settings": {
+                "focus_x": 50,
+                "focus_y": 50,
+                "ratio": "portrait",
+                "image_asset": "",
+                "media_role": "orbe-12-pochette",
+                "image_alt": "orbe 12 pochette",
+                "title": "La pochette",
+                "text": "<p>Une pochette offerte par lot à partir de trois lampes, selon le stock de démonstration.</p>",
+                "link": "",
+                "link_label": ""
+              }
+            }
+          },
+          "block_order": [
+            "b0",
+            "b1"
+          ]
+        },
+        {
+          "id": "questions",
+          "type": "v2-faq",
+          "settings": {
+            "layout": "side",
+            "heading": "Les réponses, simplement.",
+            "color_scheme": "scheme-1",
+            "padding_top": 96,
+            "padding_bottom": 96
+          },
+          "blocks": {
+            "b0": {
+              "type": "question",
+              "settings": {
+                "question": "Quelles finitions puis-je choisir ?",
+                "answer": "<p>Dune, Argile et Charbon. Chaque lampe d'un lot peut avoir sa propre finition.</p>"
+              }
+            },
+            "b1": {
+              "type": "question",
+              "settings": {
+                "question": "Puis-je mélanger les couleurs dans un lot ?",
+                "answer": "<p>Oui. Sélectionnez votre offre puis la finition de chaque lampe avant de l'ajouter au panier de test.</p>"
+              }
+            },
+            "b2": {
+              "type": "question",
+              "settings": {
+                "question": "Quand la pochette est-elle ajoutée ?",
+                "answer": "<p>Une pochette par lot de trois ou quatre lampes, selon le stock de démonstration. Elle est retirée si le lot passe sous trois lampes.</p>"
+              }
+            },
+            "b3": {
+              "type": "question",
+              "settings": {
+                "question": "La boîte est-elle un cadeau automatique ?",
+                "answer": "<p>Non. La boîte et la pochette sont deux accessoires distincts ; seule la pochette suit la condition affichée.</p>"
+              }
+            },
+            "b4": {
+              "type": "question",
+              "settings": {
+                "question": "Où trouver les caractéristiques techniques ?",
+                "answer": "<p>Autonomie, puissance, dimensions et alimentation restent à confirmer. Cette démonstration ne présente pas de performances ni de délais de livraison inventés.</p>"
+              }
+            }
+          },
+          "block_order": [
+            "b0",
+            "b1",
+            "b2",
+            "b3",
+            "b4"
+          ]
+        },
+        {
+          "id": "closing",
+          "type": "ed-scene",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "focus_x": 50,
+            "focus_y": 50,
+            "layout": "panorama",
+            "heading": "Faites une place à la lumière.",
+            "text": "<p>Commencez par une finition, puis composez votre ensemble.</p>",
+            "image_asset": "",
+            "media_role": "orbe-05-bureau",
+            "image_alt": "orbe 05 bureau",
+            "button_label": "Composer mon ORBE",
+            "button_link": "/products/lampe-nomade#MainBuy"
+          },
+          "blocks": {},
+          "block_order": []
+        }
+      ]
+    },
+    {
+      "page": "product.editorial",
+      "sections": [
+        {
+          "id": "main",
+          "type": "main-product",
+          "settings": {
+            "purchase_enabled": true,
+            "purchase_style": "outlined",
+            "purchase_heading": "Votre ORBE, à votre façon.",
+            "enable_zoom": true,
+            "gallery_layout": "carousel",
+            "sticky_bar": true,
+            "color_scheme": "scheme-1",
+            "padding_top": 48,
+            "padding_bottom": 64,
+            "show_finishes": true,
+            "finish_label": "Votre première finition",
+            "product_target": "product:main",
+            "finish_colors": "Dune=#D8CCB9\nArgile=#9B4F36\nCharbon=#29251F",
+            "display_heading": "La lumière, là où vous vivez.",
+            "display_intro": "Lampe nomade — choisissez votre finition et composez votre ensemble.",
+            "media_role": "orbe-01-dune · galerie et finitions à importer"
+          },
+          "blocks": {
+            "b0": {
+              "type": "eyebrow",
+              "settings": {
+                "text": "ORBE"
+              }
+            },
+            "b1": {
+              "type": "title",
+              "settings": {}
+            },
+            "b2": {
+              "type": "price",
+              "settings": {}
+            },
+            "b3": {
+              "type": "buy_buttons",
+              "settings": {
+                "picker": "buttons",
+                "show_quantity": true,
+                "show_dynamic_checkout": false,
+                "price_in_button": false
+              }
+            },
+            "offer_1": {
+              "type": "quantity_offer",
+              "settings": {
+                "title": "Une ORBE",
+                "quantity": 1,
+                "discount": 0,
+                "recommended": false,
+                "price_mode": "fixed_total",
+                "total_price": 7900,
+                "badge": ""
+              }
+            },
+            "offer_2": {
+              "type": "quantity_offer",
+              "settings": {
+                "title": "Le duo",
+                "quantity": 2,
+                "discount": 0,
+                "recommended": true,
+                "price_mode": "fixed_total",
+                "total_price": 14220,
+                "badge": "Notre sélection"
+              }
+            },
+            "offer_3": {
+              "type": "quantity_offer",
+              "settings": {
+                "title": "Le trio",
+                "quantity": 3,
+                "discount": 0,
+                "recommended": false,
+                "price_mode": "fixed_total",
+                "total_price": 20145,
+                "badge": ""
+              }
+            },
+            "offer_4": {
+              "type": "quantity_offer",
+              "settings": {
+                "title": "Quatre ORBE",
+                "quantity": 4,
+                "discount": 0,
+                "recommended": false,
+                "price_mode": "fixed_total",
+                "total_price": 25280,
+                "badge": ""
+              }
+            },
+            "b8": {
+              "type": "threshold_gift",
+              "settings": {
+                "threshold": 3,
+                "quantity": 1,
+                "gift_target": "product:catalog:pouch",
+                "sku": "DEMO-POUCH"
+              }
+            },
+            "b9": {
+              "type": "purchase_benefit",
+              "settings": {
+                "icon": "check",
+                "title": "Silhouette arrondie"
+              }
+            },
+            "b10": {
+              "type": "purchase_benefit",
+              "settings": {
+                "icon": "check",
+                "title": "Trois finitions"
+              }
+            },
+            "b11": {
+              "type": "purchase_benefit",
+              "settings": {
+                "icon": "check",
+                "title": "À poser au fil de vos envies"
+              }
+            }
+          },
+          "block_order": [
+            "b0",
+            "b1",
+            "b2",
+            "b3",
+            "offer_1",
+            "offer_2",
+            "offer_3",
+            "offer_4",
+            "b8",
+            "b9",
+            "b10",
+            "b11"
+          ]
+        },
+        {
+          "id": "moments",
+          "type": "ed-diptych",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "layout": "pair",
+            "heading": "Le temps d'un dîner. Le calme d'une lecture.",
+            "anchor": "ambiances"
+          },
+          "blocks": {
+            "b0": {
+              "type": "frame",
+              "settings": {
+                "focus_x": 50,
+                "focus_y": 50,
+                "ratio": "landscape",
+                "image_asset": "",
+                "media_role": "orbe-03-diner",
+                "image_alt": "orbe 03 diner",
+                "title": "Autour de la table",
+                "text": "<p>Une lumière qui trouve sa place lorsque l'on se retrouve.</p>",
+                "link": "/products/lampe-nomade?media=orbe-03-diner",
+                "link_label": "Explorer cette intention"
+              }
+            },
+            "b1": {
+              "type": "frame",
+              "settings": {
+                "focus_x": 50,
+                "focus_y": 50,
+                "ratio": "portrait",
+                "image_asset": "",
+                "media_role": "orbe-04-lecture",
+                "image_alt": "orbe 04 lecture",
+                "title": "Le temps pour soi",
+                "text": "<p>Un point de lumière au fil des pages.</p>",
+                "link": "/products/lampe-nomade?media=orbe-04-lecture",
+                "link_label": "Explorer cette intention"
+              }
+            }
+          },
+          "block_order": [
+            "b0",
+            "b1"
+          ]
+        },
+        {
+          "id": "night",
+          "type": "ed-scene",
+          "settings": {
+            "color_scheme": "scheme-2",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "focus_x": 50,
+            "focus_y": 50,
+            "layout": "split",
+            "heading": "Quand la pièce ralentit.",
+            "text": "<p>Une lumière d'ambiance et des lignes simples pour composer un coin plus intime.</p>",
+            "image_asset": "",
+            "media_role": "orbe-08-lumiere",
+            "image_alt": "orbe 08 lumiere"
+          },
+          "blocks": {},
+          "block_order": []
+        },
+        {
+          "id": "finishes",
+          "type": "ed-finishes",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "focus_x": 50,
+            "focus_y": 50,
+            "heading": "Dune. Argile. Charbon.",
+            "text": "<p>Trois tonalités pour trouver votre place dans la pièce.</p>",
+            "image_asset": "",
+            "media_role": "orbe-07-trio",
+            "image_alt": "orbe 07 trio",
+            "product_target": "product:main",
+            "anchor": "finitions",
+            "button_label": "Choisir ma finition",
+            "button_link": "/products/lampe-nomade#MainBuy"
+          },
+          "blocks": {},
+          "block_order": []
+        },
+        {
+          "id": "duo",
+          "type": "ed-scene",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "focus_x": 50,
+            "focus_y": 50,
+            "layout": "panorama",
+            "heading": "Deux points de lumière, un même équilibre.",
+            "text": "<p>De part et d'autre d'une pièce ou dans deux espaces de la maison, composez le duo qui vous ressemble.</p>",
+            "image_asset": "",
+            "media_role": "orbe-06-duo",
+            "image_alt": "orbe 06 duo",
+            "button_label": "Découvrir les offres",
+            "button_link": "/products/lampe-nomade#MainBuy"
+          },
+          "blocks": {},
+          "block_order": []
+        },
+        {
+          "id": "accessories",
+          "type": "ed-diptych",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "layout": "pair",
+            "heading": "À offrir. À emporter."
+          },
+          "blocks": {
+            "b0": {
+              "type": "frame",
+              "settings": {
+                "focus_x": 50,
+                "focus_y": 50,
+                "ratio": "landscape",
+                "image_asset": "",
+                "media_role": "orbe-11-boite",
+                "image_alt": "orbe 11 boite",
+                "title": "La boîte",
+                "text": "<p>Une présentation dédiée. Accessoire distinct : aucune inclusion automatique dans les offres.</p>",
+                "link": "",
+                "link_label": ""
+              }
+            },
+            "b1": {
+              "type": "frame",
+              "settings": {
+                "focus_x": 50,
+                "focus_y": 50,
+                "ratio": "portrait",
+                "image_asset": "",
+                "media_role": "orbe-12-pochette",
+                "image_alt": "orbe 12 pochette",
+                "title": "La pochette",
+                "text": "<p>Une pochette offerte par lot à partir de trois lampes, selon le stock de démonstration.</p>",
+                "link": "",
+                "link_label": ""
+              }
+            }
+          },
+          "block_order": [
+            "b0",
+            "b1"
+          ]
+        },
+        {
+          "id": "questions",
+          "type": "v2-faq",
+          "settings": {
+            "layout": "side",
+            "heading": "Avant de choisir.",
+            "color_scheme": "scheme-1",
+            "padding_top": 96,
+            "padding_bottom": 96
+          },
+          "blocks": {
+            "b0": {
+              "type": "question",
+              "settings": {
+                "question": "Quelles finitions puis-je choisir ?",
+                "answer": "<p>Dune, Argile et Charbon. Chaque lampe d'un lot peut avoir sa propre finition.</p>"
+              }
+            },
+            "b1": {
+              "type": "question",
+              "settings": {
+                "question": "Puis-je mélanger les couleurs dans un lot ?",
+                "answer": "<p>Oui. Sélectionnez votre offre puis la finition de chaque lampe avant de l'ajouter au panier de test.</p>"
+              }
+            },
+            "b2": {
+              "type": "question",
+              "settings": {
+                "question": "Quand la pochette est-elle ajoutée ?",
+                "answer": "<p>Une pochette par lot de trois ou quatre lampes, selon le stock de démonstration. Elle est retirée si le lot passe sous trois lampes.</p>"
+              }
+            },
+            "b3": {
+              "type": "question",
+              "settings": {
+                "question": "La boîte est-elle un cadeau automatique ?",
+                "answer": "<p>Non. La boîte et la pochette sont deux accessoires distincts ; seule la pochette suit la condition affichée.</p>"
+              }
+            },
+            "b4": {
+              "type": "question",
+              "settings": {
+                "question": "Où trouver les caractéristiques techniques ?",
+                "answer": "<p>Autonomie, puissance, dimensions et alimentation restent à confirmer. Cette démonstration ne présente pas de performances ni de délais de livraison inventés.</p>"
+              }
+            }
+          },
+          "block_order": [
+            "b0",
+            "b1",
+            "b2",
+            "b3",
+            "b4"
+          ]
+        },
+        {
+          "id": "back",
+          "type": "ed-statement",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "focus_x": 50,
+            "focus_y": 50,
+            "heading": "Votre lumière commence ici.",
+            "text": "<p>Retrouvez votre sélection et les offres de démonstration.</p>",
+            "button_label": "Composer mon ORBE",
+            "button_link": "#MainBuy"
+          },
+          "blocks": {},
+          "block_order": []
+        }
+      ]
+    }
+  ]
+}

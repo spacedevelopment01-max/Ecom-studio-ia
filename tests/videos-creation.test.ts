@@ -20,7 +20,9 @@ describe("Vidéos de la création", async () => {
       calls,
       deps: {
         scenes: {
-          keyframe: async () => png(),
+          frames: async()=>[Buffer.from("image de contrôle simulée")],
+        reviewMedia: async()=>({score:9,sameProduct:true,productAltered:false,characterConsistent:null,offTopic:false,artifacts:false,personVisible:false,issues:[]}),
+        keyframe: async () => png(),
           clip: async () => {
             if (o.failClip) throw new Error("fournisseur indisponible");
             calls.clip++;
@@ -62,21 +64,23 @@ describe("Vidéos de la création", async () => {
     expect(f.calls.docs.map((d) => d.aspect)).toEqual(CREATION_VIDEOS.map((v) => v.aspect));
     for (const d of f.calls.docs) {
       expect(timeline(d).total).toBeCloseTo(15, 0);
-      expect(d.clips.at(-1).source.kind).toBe("doc");
+      expect(d.clips.at(-1).source.kind).toBe("video");
       expect(d.audio.music).toBeTruthy();
     }
   });
 
-  it("prix refusé ou échec du fournisseur : montage local à la place, jamais de blocage", async () => {
+  it("prix refusé ou échec du fournisseur : incomplet explicite, aucun remplacement", async () => {
     const u = await createUser(`vc3-${Date.now()}-${Math.random()}@test.fr`, "motdepasse-test", "P");
     const pid = seedImageFixture(u.id, "hightech");
     await seedCutout(u.id, pid);
     const p = loadProject(pid);
     const refused = deps(p, { allowed: false });
-    expect(await creationSceneVideos(null, pid, "ai", refused.deps)).toEqual(["local-0", "local-1"]);
+    await expect(creationSceneVideos(null,pid,"ai",refused.deps)).rejects.toThrow(/incomplète/);
+    expect(refused.calls.local).toEqual([]);
     expect(refused.calls.clip).toBe(0);
     const failing = deps(p, { failClip: true });
-    expect(await creationSceneVideos(null, pid, "ai", failing.deps)).toEqual(["local-0", "local-1"]);
+    await expect(creationSceneVideos(null,pid,"ai",failing.deps)).rejects.toThrow(/incomplète/);
+    expect(failing.calls.local).toEqual([]);
   });
 
   it("service : plans libres de droits du métier, aucune génération", async () => {

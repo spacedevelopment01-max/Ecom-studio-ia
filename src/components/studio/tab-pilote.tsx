@@ -1,4 +1,5 @@
 "use client";
+import TabPreparation from "./tab-preparation";
 import { TimeInfo } from "../wait-time";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
@@ -300,6 +301,7 @@ export default function TabPilote() {
   const t = useT();
   const [busy, setBusy] = useState<string | null>(null);
   if (!data) return null;
+  if(data.preparation) return <TabPreparation/>;
   const pl = data.pipeline;
   const running = pl && (pl.job.status === "running" || pl.job.status === "queued");
   const awaiting = data.project.status === "awaiting_validation";

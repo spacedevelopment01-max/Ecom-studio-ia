@@ -1,0 +1,34 @@
+{
+  "code": "11114f1f5e38e59ab3b8ffc66d292f0d088c516f",
+  "simulation": true,
+  "results": [
+    {
+      "case": "produit",
+      "pid": "7k2x63gfp3h01y7a",
+      "revision": 35,
+      "selectedChoicePreserved": true,
+      "documentsAndMediaPreserved": true,
+      "unsavedBriefBlocked": true,
+      "unsavedIdentityBlocked": true,
+      "unsavedReferencesBlocked": true,
+      "unsavedConsentBlocksGeneration": true,
+      "generationRequests": 0,
+      "downloadMatchesApi": true,
+      "errors": []
+    },
+    {
+      "case": "service",
+      "pid": "qsisomq0s7db7on6",
+      "revision": 38,
+      "selectedChoicePreserved": true,
+      "documentsAndMediaPreserved": true,
+      "unsavedBriefBlocked": true,
+      "unsavedIdentityBlocked": true,
+      "unsavedReferencesBlocked": true,
+      "unsavedConsentBlocksGeneration": true,
+      "generationRequests": 0,
+      "downloadMatchesApi": true,
+      "errors": []
+    }
+  ]
+}

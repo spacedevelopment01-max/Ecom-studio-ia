@@ -1,0 +1,325 @@
+{%- comment -%}
+Boutiques et points de vente (e-commerce) / contact et assistance (boutique spécialisée) : adresses avec horaires et
+  itinéraire, ou canaux de contact (téléphone, courriel, messagerie) avec leurs délais de réponse.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign prof = 'es'
+  if settings.conversion_profile != blank and settings.conversion_profile != 'none'
+    assign prof = 'cv'
+  elsif settings.editorial_profile != blank and settings.editorial_profile != 'none'
+    assign prof = 'ed'
+  endif
+  assign fx = s.effect
+  assign cards = 'fs-card'
+-%}
+<section id="fs-{{ section.id }}" class="fs fs-stores fs-stores--{{ s.layout | default: 'base' }} fs--{{ prof }}{% if prof == 'ed' %} ed-section{% else %} es-section{% endif %}{% if s.background != blank and s.background != 'scheme' %} fs--{{ s.background }}{% endif %}{% if s.hover %} fs--hover{% endif %} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;--fs-angle:{{ s.gradient_angle | default: 165 }}deg;"{% if fx == 'none' %} data-ed-motion="none"{% endif %} >
+  <div class="{% if prof == 'ed' %}ed-shell{% else %}es-container{% endif %} fs__inner">
+    {%- render 'fs-head', prof: prof, eyebrow: s.eyebrow, heading: s.heading, accent: s.heading_accent, text: s.text, align: s.align, effect: fx, button_label: s.button_label, button_link: s.button_link -%}
+    <ul class="fs-stores__list fs-stores__list--{{ s.layout }} fs-grid fs-grid--{{ section.blocks.size | at_most: 3 | at_least: 1 }}" role="list">
+      {%- for block in section.blocks -%}{%- if s.stagger -%}{%- assign ix = forloop.index0 -%}{%- else -%}{%- assign ix = '' -%}{%- endif -%}
+        {%- if block.type == 'store' -%}
+          <li class="fs-store {{ cards }}"{% render 'fs-reveal', effect: fx, index: ix %} {{ block.shopify_attributes }}>
+            {%- if block.settings.image != blank or block.settings.image_asset != blank -%}<div class="fs-card__media">{% render 'ed-media', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.title %}</div>{%- endif -%}
+            <h3 class="fs-item__title">{{ block.settings.title | escape }}</h3>
+            {%- if block.settings.address != blank -%}<p class="fs-store__line"><span class="fs-commit__icon">{% render 'fs-icon', name: 'pin' %}</span><span>{{ block.settings.address | escape | newline_to_br }}</span></p>{%- endif -%}
+            {%- if block.settings.hours != blank -%}<p class="fs-store__line"><span class="fs-commit__icon">{% render 'fs-icon', name: 'clock' %}</span><span>{{ block.settings.hours | escape | newline_to_br }}</span></p>{%- endif -%}
+            {%- if block.settings.phone != blank -%}<p class="fs-store__line"><span class="fs-commit__icon">{% render 'fs-icon', name: 'phone' %}</span><a href="tel:{{ block.settings.phone | remove: ' ' }}">{{ block.settings.phone | escape }}</a></p>{%- endif -%}
+            {%- if block.settings.link != blank -%}<a class="fs-link" href="{{ block.settings.link }}">{{ block.settings.link_label | default: 'Itinéraire' | escape }}</a>{%- endif -%}
+          </li>
+        {%- else -%}
+          <li class="fs-channel {{ cards }}"{% render 'fs-reveal', effect: fx, index: ix %} {{ block.shopify_attributes }}>
+            <span class="fs-commit__icon">{% render 'fs-icon', name: block.settings.icon %}</span>
+            <h3 class="fs-item__title">{{ block.settings.title | escape }}</h3>
+            {%- if block.settings.text != blank -%}<div class="fs-item__text">{{ block.settings.text }}</div>{%- endif -%}
+            {%- if block.settings.delay_text != blank -%}<p class="fs-meta">{{ block.settings.delay_text | escape }}</p>{%- endif -%}
+            {%- if block.settings.link != blank -%}<a class="fs-link" href="{{ block.settings.link }}">{{ block.settings.link_label | default: 'Nous écrire' | escape }}</a>{%- endif -%}
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Points de vente",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Repère"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Titre"
+    },
+    {
+      "type": "text",
+      "id": "heading_accent",
+      "label": "Fin du titre mise en valeur"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texte"
+    },
+    {
+      "type": "select",
+      "id": "align",
+      "label": "Alignement de l'en-tête",
+      "options": [
+        {
+          "value": "center",
+          "label": "Centré"
+        },
+        {
+          "value": "left",
+          "label": "À gauche"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Libellé du bouton"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Lien du bouton"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Disposition",
+      "options": [
+        {
+          "value": "stores",
+          "label": "Adresses et horaires"
+        },
+        {
+          "value": "channels",
+          "label": "Canaux de contact"
+        }
+      ],
+      "default": "stores"
+    },
+    {
+      "type": "header",
+      "content": "Effets et fond"
+    },
+    {
+      "type": "select",
+      "id": "effect",
+      "label": "Effet d'apparition",
+      "options": [
+        {
+          "value": "none",
+          "label": "Aucun"
+        },
+        {
+          "value": "fade",
+          "label": "Fondu"
+        },
+        {
+          "value": "rise",
+          "label": "Montée"
+        },
+        {
+          "value": "zoom",
+          "label": "Zoom"
+        },
+        {
+          "value": "curtain",
+          "label": "Révélation des images"
+        }
+      ],
+      "default": "rise"
+    },
+    {
+      "type": "checkbox",
+      "id": "stagger",
+      "label": "Apparition décalée des éléments",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "hover",
+      "label": "Survol léger des cartes",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "background",
+      "label": "Fond",
+      "options": [
+        {
+          "value": "scheme",
+          "label": "Couleur du schéma"
+        },
+        {
+          "value": "gradient-soft",
+          "label": "Dégradé léger"
+        },
+        {
+          "value": "gradient-strong",
+          "label": "Dégradé marqué"
+        }
+      ],
+      "default": "scheme"
+    },
+    {
+      "type": "range",
+      "id": "gradient_angle",
+      "label": "Angle du dégradé",
+      "min": 0,
+      "max": 360,
+      "step": 15,
+      "unit": "°",
+      "default": 165
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Marge haute",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Marge basse",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "default": 96
+    }
+  ],
+  "blocks": [
+    {
+      "type": "store",
+      "name": "Adresse",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Nom du lieu"
+        },
+        {
+          "type": "textarea",
+          "id": "address",
+          "label": "Adresse"
+        },
+        {
+          "type": "textarea",
+          "id": "hours",
+          "label": "Horaires"
+        },
+        {
+          "type": "text",
+          "id": "phone",
+          "label": "Téléphone"
+        },
+        {
+          "type": "text",
+          "id": "link_label",
+          "label": "Libellé du lien",
+          "default": "Itinéraire"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Lien (itinéraire)"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "image_asset",
+          "label": "Fichier du projet"
+        }
+      ]
+    },
+    {
+      "type": "channel",
+      "name": "Canal de contact",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icône",
+          "options": [
+            {
+              "value": "phone",
+              "label": "Téléphone"
+            },
+            {
+              "value": "mail",
+              "label": "Courriel"
+            },
+            {
+              "value": "chat",
+              "label": "Messagerie"
+            },
+            {
+              "value": "pin",
+              "label": "Rendez-vous"
+            }
+          ],
+          "default": "mail"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Titre"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Texte"
+        },
+        {
+          "type": "text",
+          "id": "delay_text",
+          "label": "Délai de réponse (ex. Sous 24 h ouvrées)"
+        },
+        {
+          "type": "text",
+          "id": "link_label",
+          "label": "Libellé du lien"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Lien"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Points de vente",
+      "settings": {
+        "layout": "stores"
+      }
+    }
+  ],
+  "max_blocks": 6
+}
+{% endschema %}

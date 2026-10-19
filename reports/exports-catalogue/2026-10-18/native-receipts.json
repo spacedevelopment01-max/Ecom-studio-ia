@@ -1,0 +1,20 @@
+{
+  "woocommerce": {
+    "contactReceipts": 2,
+    "nativeCartQuantities": [
+      2,
+      2
+    ]
+  },
+  "prestashop": {
+    "contactReceipts": 8,
+    "nativeCartQuantities": [
+      2,
+      2
+    ],
+    "emailMethod": 3
+  },
+  "payment": "not-run",
+  "externalEmail": "disabled",
+  "method": "read-only native database state after browser submission"
+}

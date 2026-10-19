@@ -1,3 +1,5 @@
+import {stableHash} from "@/lib/brain/hash";
+import { publicationReadiness } from "@/lib/social-v2/ai-post";
 import { z } from "zod";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
@@ -28,8 +30,9 @@ export const POST = handle(async (req: Request, ctx: ImgCtx) => {
   const b = await body(
     req,
     z.object({
+      operationId:z.string().min(8).max(100).optional(),
       action: z.enum(["reformat", "quote", "redo"]),
-      aspect: z.enum(["1:1", "4:5", "9:16", "16:9"]),
+      aspect: z.enum(["1:1", "4:5", "2:3", "3:2", "9:16", "16:9", "1.91:1", "3:1", "4:1"]),
       instruction: z.string().max(400).optional(),
       approvedEstimateMicro: z.number().int().min(0).nullable().optional(),
     }),
@@ -41,13 +44,14 @@ export const POST = handle(async (req: Request, ctx: ImgCtx) => {
   }
   // Devis au coût probable (un essai), dit en % du budget IA ; le plafond de la tâche permet les reprises.
   const estimateMicro = aiPostProbableMicro();
-  const ai = aiActiveFor(p.userId, p.id);
-  if (b.action === "quote") return ok({ ai, estimateMicro, pct: budgetPctOf(p.userId, estimateMicro, p.id) });
+  const readiness=await publicationReadiness(p,1);
+  const ai = aiActiveFor(p.userId, p.id) && readiness.ready;
+  if (b.action === "quote") return ok({ ai, ...readiness, estimateMicro, pct: budgetPctOf(p.userId, estimateMicro, p.id) });
   if (!ai) throw new HttpError(402, L("L'IA n'est pas active pour ce projet (pas d'abonnement, budget IA épuisé ou fournisseur désactivé).", "AI isn't active for this project (no subscription, AI budget used up or provider disabled)."));
   if (b.approvedEstimateMicro == null || b.approvedEstimateMicro < estimateMicro) throw new HttpError(409, L("Prix à accepter avant de lancer (il a pu changer) : vérifiez-le puis relancez.", "Price to accept before starting (it may have changed): check it and start again."));
   if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'image.ai_post' AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Un visuel IA est déjà en préparation.", "An AI visual is already being prepared."));
   const meta = assetMeta<Record<string, any>>(a);
   const request = redoRequest(meta, { aspect: b.aspect, instruction: b.instruction });
-  const job = enqueue({ userId: user.id, projectId: p.id, type: "image.ai_post", label: meta.aiAd ? L("Publicité IA : nouvelle version", "AI ad: new version") : L("Publication IA : nouvelle version", "AI post: new version"), payload: { projectId: p.id, costCapMicro: aiPostCapMicro(), request } });
+  const job = enqueue({ userId: user.id, projectId: p.id, type: "image.ai_post", idempotencyKey:b.operationId?`ad-redo:${p.id}:${a.id}:${b.operationId}:${stableHash("redo-intent",{aspect:b.aspect,instruction:b.instruction})}`:undefined, label: meta.aiAd ? L("Publicité IA : nouvelle version", "AI ad: new version") : L("Publication IA : nouvelle version", "AI post: new version"), payload: { projectId: p.id, costCapMicro: aiPostCapMicro(), request: {...request,sourceAssetId:a.id} } });
   return ok({ jobId: job.id, estimateMicro });
 });

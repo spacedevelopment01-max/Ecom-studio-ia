@@ -14,7 +14,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 /** Prépare une demande : plan de l'orchestrateur et devis. Rien n'est lancé ni dépensé. */
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  const b = await body(req, z.object({ text: z.string().min(3).max(4000), videos: z.enum(["ai", "edited", "none"]).optional() }));
+  const b = await body(req, z.object({ text: z.string().min(3).max(32000), videos: z.enum(["ai", "edited", "none"]).optional() }));
   const wf = await prepareWorkflow(p.id, user.id, b.text, { videos: b.videos });
   return ok(workflowView(wf.id));
 });

@@ -31,8 +31,11 @@ function es_url($path) {
 	$tail = (isset($p['query']) ? '?' . $p['query'] : '') . (isset($p['fragment']) ? '#' . $p['fragment'] : '');
 	if ($route === '/') return home_url('/') . $tail;
 	if (preg_match('#^/(pages|policies)/([\w-]+)$#', $route, $m)) {
-		$ids = (array) get_option('es_pages', []);
+		$source = es_site()['catalogSource'] ?? '';
+		$maps = get_option('es_page_maps', []);
+		$ids = $source ? ($maps[$source] ?? []) : (array) get_option('es_pages', []);
 		$id = $ids[$m[2]] ?? 0;
+		if ($source) return $id && get_post_type($id) === 'page' && get_post_meta($id, '_es_page_owner', true) === $source && get_post_status($id) !== 'trash' ? get_permalink($id) . $tail : home_url('/?es_missing_page=' . rawurlencode($m[2]));
 		return ($id && get_post_status($id) === 'publish' ? get_permalink($id) : home_url('/' . $m[2] . '/')) . $tail;
 	}
 	// Produits, collections, panier, compte : fournis par l'intégration e-commerce quand elle est présente.
@@ -47,6 +50,9 @@ function es_rewrite_links($html) {
 		return $m[1] . '="' . esc_url(es_url(html_entity_decode($m[2], ENT_QUOTES))) . '"';
 	}, $html);
 }
+add_action('template_redirect', function () {
+	if (isset($_GET['es_missing_page'])) { status_header(404); nocache_headers(); wp_die(esc_html__('Page introuvable.', 'es-theme'), '', ['response' => 404]); }
+});
 
 /** Destination des formulaires des sections (inscription, contact) : traités par le thème, voir es_handle_form. */
 function es_form_action($type) { return admin_url('admin-post.php'); }
@@ -63,7 +69,11 @@ function es_linklists() {
 			foreach ($items as $it) $byParent[(int) $it->menu_item_parent][] = $it;
 			$tree = function ($parent, $depth) use (&$tree, $byParent) {
 				$list = [];
-				foreach ($byParent[$parent] ?? [] as $it) $list[] = ['title' => $it->title, 'url' => $it->url, 'active' => false, 'links' => $depth < 2 ? $tree((int) $it->ID, $depth + 1) : []];
+				foreach ($byParent[$parent] ?? [] as $it) {
+					$origin = get_post_meta($it->ID, '_es_studio_route', true); $generated = get_post_meta($it->ID, '_es_studio_generated_url', true);
+					$url = $origin && $it->url === $generated ? es_url($origin) : $it->url;
+					$list[] = ['title' => $it->title, 'url' => $url, 'active' => false, 'links' => $depth < 2 ? $tree((int) $it->ID, $depth + 1) : []];
+				}
 				return $list;
 			};
 			$links = $tree(0, 0);
@@ -157,6 +167,7 @@ add_action('init', function () {
 	$schemas = [];
 	foreach (es_site()['schemas'] ?? [] as $t => $s) if (empty($s['hidden'])) $schemas[$t] = $s;
 	wp_add_inline_script('es-editor', 'window.esSchemas = ' . wp_json_encode($schemas) . ';', 'before');
+	wp_add_inline_script('es-editor', 'window.esCatalogCollections = ' . wp_json_encode((es_site()['business'] ?? '') === 'products' ? (es_site()['catalogCollections'] ?? []) : null) . ';', 'before');
 	register_block_type('es/section', [
 		'api_version' => 3,
 		'editor_script' => 'es-editor',
@@ -273,24 +284,37 @@ add_action('after_switch_theme', function () {
 	}
 	// Page publiée existante : conservée et reliée. Page non publiée au même nom (ex. le brouillon « privacy-policy »
 	// de WordPress) : laissée intacte, la page du site est créée à côté (adresse unique) et reliée.
-	$ids = (array) get_option('es_pages', []);
+	$source = $site['catalogSource'] ?? ''; $pageMaps = get_option('es_page_maps', []);
+	$ids = $source ? ($pageMaps[$source] ?? []) : (array) get_option('es_pages', []);
 	foreach (array_merge($site['pages'] ?? [], $site['policies'] ?? []) as $p) {
-		if (!empty($ids[$p['handle']]) && get_post_status($ids[$p['handle']]) === 'publish') continue;
+		if (!empty($ids[$p['handle']]) && ($source || get_post_status($ids[$p['handle']]) === 'publish')) continue;
 		$existing = get_page_by_path($p['handle']);
-		if ($existing && $existing->post_status === 'publish') { $ids[$p['handle']] = $existing->ID; continue; }
+		if ($existing && $existing->post_status === 'publish' && (!$source || get_post_meta($existing->ID, '_es_page_owner', true) === $source)) { $ids[$p['handle']] = $existing->ID; continue; }
 		$id = wp_insert_post(['post_type' => 'page', 'post_status' => 'publish', 'post_title' => $p['title'], 'post_name' => $p['handle'], 'post_content' => wp_kses_post($p['body_html'] ?? '')]);
-		if ($id && !is_wp_error($id)) $ids[$p['handle']] = $id;
+		if ($id && !is_wp_error($id)) {
+			$ids[$p['handle']] = $id;
+			if ($source) update_post_meta($id, '_es_page_owner', $source);
+			if (!empty($p['template'])) update_post_meta($id, '_wp_page_template', $p['template']);
+		}
 	}
 	update_option('es_pages', $ids);
+	if ($source) { $pageMaps[$source] = $ids; update_option('es_page_maps', $pageMaps, false); }
 	$locations = get_theme_mod('nav_menu_locations', []);
 	foreach ($site['menus'] ?? [] as $handle => $menu) {
-		if (!empty($locations[$handle])) continue;
-		$name = ($site['shopName'] ?? '') . ' — ' . ($menu['title'] ?? $handle);
+		if (!empty($locations[$handle]) && (!$source || !get_term_meta($locations[$handle], '_es_menu_owner', true) || get_term_meta($locations[$handle], '_es_menu_owner', true) === $source)) continue;
+		$name = ($site['shopName'] ?? '') . ' — ' . ($menu['title'] ?? $handle) . ($source ? ' ' . substr($source, 0, 8) : '');
 		$existing = wp_get_nav_menu_object($name);
 		$menuId = $existing ? $existing->term_id : wp_create_nav_menu($name);
 		if (is_wp_error($menuId)) continue;
-		if (!$existing) foreach ($menu['links'] ?? [] as $i => $l) {
-			wp_update_nav_menu_item($menuId, 0, ['menu-item-title' => $l['title'], 'menu-item-url' => es_url($l['url']), 'menu-item-status' => 'publish', 'menu-item-type' => 'custom', 'menu-item-position' => $i + 1]);
+		if (!$existing) {
+			if ($source) update_term_meta($menuId, '_es_menu_owner', $source);
+			$insert = function ($links, $parent = 0, $depth = 0) use (&$insert, $menuId) {
+				foreach ($links as $i => $l) {
+					$url = es_url($l['url']);
+					$item = wp_update_nav_menu_item($menuId, 0, ['menu-item-title' => $l['title'], 'menu-item-url' => $url, 'menu-item-parent-id' => $parent, 'menu-item-status' => 'publish', 'menu-item-type' => 'custom', 'menu-item-position' => $i + 1]);
+					if ($item && !is_wp_error($item)) { update_post_meta($item, '_es_studio_route', $l['url']); update_post_meta($item, '_es_studio_generated_url', $url); if ($depth < 2) $insert($l['links'] ?? [], $item, $depth + 1); }
+				}
+			}; $insert($menu['links'] ?? []);
 		}
 		$locations[$handle] = $menuId;
 	}

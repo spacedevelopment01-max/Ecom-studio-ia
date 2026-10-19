@@ -1,0 +1,23 @@
+/** Reconstitution d’un ancien projet dans la seule base synthétique de captures ; aucune génération. */
+import fs from "node:fs";
+import path from "node:path";
+import { stateOf, readyContract } from "@/lib/preparation/engine";
+import { commitState } from "@/lib/preparation/store";
+import { all } from "@/lib/db";
+const dir=process.env.DATA_DIR || "";
+if (!path.isAbsolute(dir) || !path.basename(dir).startsWith("ecs-preparation-test-")) throw new Error("Données isolées obligatoires");
+const entry=JSON.parse(fs.readFileSync(path.join(dir,"captures/browser-proof.json"),"utf8")).results.find((x:any)=>x.case==="produit");
+const s=stateOf(entry.pid)!;
+if (!readyContract(entry.pid)) throw new Error("Restaurer et valider d’abord le parcours de test");
+const beforeJobs=all("SELECT id FROM jobs WHERE project_id=?",entry.pid).length;
+const selected=s.stages.research!.data.selectedId;
+if (!s.stages.research!.data.angles.slice(0,3).some(a=>a.id===selected)) throw new Error("Le choix sélectionné doit rester présent dans la fixture ancienne");
+commitState(entry.pid,s.revision,n=>{
+ const r=n.stages.research!.data;
+ delete r.formatVersion;
+ r.angles=r.angles.slice(0,3).map(a=>{const x={...a};delete x.motivation;delete x.message;return x;});
+});
+const after=stateOf(entry.pid)!;
+const proof={simulation:true,fixture:"Ancien format reconstitué dans une base de test, jamais un projet client",projectId:entry.pid,beforeRevision:s.revision,afterRevision:after.revision,selectedBefore:selected,selectedAfter:after.stages.research!.data.selectedId,angles:after.stages.research!.data.angles.length,jobsBefore:beforeJobs,jobsAfter:all("SELECT id FROM jobs WHERE project_id=?",entry.pid).length};
+fs.writeFileSync("reports/audit-138/donnees/legacy-fixture.json",JSON.stringify(proof,null,2));
+console.log("Fixture trois angles conservée, aucune génération ajoutée");

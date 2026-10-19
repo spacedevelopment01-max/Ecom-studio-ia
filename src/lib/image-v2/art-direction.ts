@@ -1,3 +1,5 @@
+import { stableHash } from "../brain/hash";
+import { peopleAllowedFor } from "../people-policy";
 /**
  * DIRECTION ARTISTIQUE PROPRE À CHAQUE CLIENT (guide images, règles 3, 4, 12, 13, 14).
  *
@@ -19,6 +21,8 @@ import { loadImageGuide, share, type ImageCreativeGuide, type ImagePurpose } fro
 
 export type ArtDirection = {
   version: number;
+  inputHash?: string;
+  source?: "local" | "user" | "ai";
   universe: string;
   idea: string;
   composition: string[];
@@ -108,18 +112,20 @@ function universesUsedElsewhere(p: Project): Map<string, number> {
 
 /** Direction artistique enregistrée du projet (dernière version), ou null. */
 export function loadArtDirection(projectId: string): ArtDirection | null {
-  const r = one<{ value: string }>("SELECT value FROM memory WHERE project_id = ? AND scope = 'images' AND key = 'image.art_direction' AND status != 'rejected' ORDER BY created_at DESC LIMIT 1", projectId);
+  const r = one<{ value: string;source:string }>("SELECT value,source FROM memory WHERE project_id = ? AND scope = 'images' AND key = 'image.art_direction' AND status != 'rejected' ORDER BY created_at DESC LIMIT 1", projectId);
   try {
-    return r ? (JSON.parse(r.value) as ArtDirection) : null;
+    const v=r?(JSON.parse(r.value) as ArtDirection):null;
+    return v?{...v,source:r?.source==="user"?"user":v.source??"local"}:null;
   } catch {
     return null;
   }
 }
 
 /** Enregistre une nouvelle VERSION (l'ancienne reste en historique, marquée « rejected »). */
-export function saveArtDirection(projectId: string, ad: ArtDirection, source: "user" | "ai" = "ai"): ArtDirection {
+export function saveArtDirection(projectId: string, ad: ArtDirection, source: "user" | "ai" | "local" = "user"): ArtDirection {
   const prev = loadArtDirection(projectId);
-  const next = { ...ad, version: (prev?.version ?? 0) + 1 };
+  const last=one<{v:number}>("SELECT MAX(CAST(json_extract(value,'$.version') AS INTEGER)) v FROM memory WHERE project_id=? AND key='image.art_direction' AND json_valid(value)",projectId);
+  const next = { ...ad, source, version: Math.max(last?.v ?? 0,prev?.version ?? 0) + 1 };
   run("UPDATE memory SET status = 'rejected', updated_at = ? WHERE project_id = ? AND scope = 'images' AND key = 'image.art_direction' AND status != 'rejected'", now(), projectId);
   run("INSERT INTO memory (id, project_id, kind, key, value, status, source, scope, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)", id(), projectId, "decision", "image.art_direction", JSON.stringify(next), "confirmed", source, "images", now(), now());
   return next;
@@ -128,7 +134,8 @@ export function saveArtDirection(projectId: string, ad: ArtDirection, source: "u
 /** Direction artistique du projet : celle enregistrée, sinon définie à partir du projet puis enregistrée. */
 export function artDirectionFor(p: Project, o: { refresh?: boolean } = {}): ArtDirection {
   const saved = !o.refresh ? loadArtDirection(p.id) : null;
-  if (saved) return saved;
+  const inputHash = stableHash("image-art", { identity: p.brand, strategy: p.strategy, product: p.product, services: p.services, people: peopleAllowedFor(p) });
+  if (saved?.inputHash === inputHash) return saved;
   const t = subjectText(p);
   const list = UNIVERSES.find((u) => u.when.test(t))?.list ?? GENERIC;
   const used = universesUsedElsewhere(p);
@@ -139,21 +146,23 @@ export function artDirectionFor(p: Project, o: { refresh?: boolean } = {}): ArtD
   const typo = brandTypo(p);
   const guide = loadImageGuide();
   const avoid = guide.cliches.filter((c) => c.when.test(t)).map((c) => c.avoid);
+  const user=saved?.source==="user"?saved:null;
   return saveArtDirection(p.id, {
-    version: 0,
-    universe: u.id,
-    idea: u.idea,
-    composition: u.composition,
-    palette: { dominant: pal.light, text: pal.dark, accent: pal.accent, secondary: pal.primary },
-    typography: `titres ${typo.heading}${typo.uppercase ? " en capitales" : ""}, textes ${typo.body} ; deux familles au plus`,
-    light: u.light,
-    setting: u.setting,
-    style: u.style,
+    ...(user ?? {}),
+    version: 0, inputHash, source: "local",
+    universe: user?.universe ?? u.id,
+    idea: user?.idea ?? (peopleAllowedFor(p) ? u.idea : u.idea.replace(/mains|gestes?[^,:]*/gi, "matières et outils sans présence humaine")),
+    composition: user?.composition ?? u.composition,
+    palette: { dominant: pal.light, text: pal.dark, accent: pal.accent, secondary: p.brand?.palette.secondary ?? p.brand?.artIdentity?.palette.secondary ?? pal.primary },
+    typography: `titres ${p.brand?.fonts?.heading ?? p.brand?.artIdentity?.fonts.heading ?? typo.heading}${typo.uppercase ? " en capitales" : ""}, textes ${p.brand?.fonts?.body ?? p.brand?.artIdentity?.fonts.body ?? typo.body} ; deux familles au plus`,
+    light: user?.light ?? u.light,
+    setting: user?.setting ?? u.setting,
+    style: user?.style ?? u.style,
     density: u.density,
     emotion: u.emotion,
-    avoid: [...avoid, "marques tierces, faux logos, filigranes", "texte décoratif inventé"],
+    avoid: [...(user?.avoid ?? []),...avoid, "marques tierces, faux logos, filigranes", "texte décoratif inventé"],
     why: `${p.business === "services" ? "Prestation" : "Produit"} « ${p.business === "services" ? (p.services?.services ?? []).map((s) => s.name).slice(0, 2).join(", ") : p.product.name} » ; univers « ${u.id} » choisi parmi ${list.length} possibles${used.size ? ` (le moins utilisé par les autres projets du secteur)` : ""} ; couleurs de la charte de la marque.`,
-  });
+  }, user?"user":"local");
 }
 
 export type GenerationBrief = {
@@ -179,7 +188,7 @@ export type GenerationBrief = {
  * Brief de génération en 16 points. `recent` : compositions des créations récentes du projet (à ne pas répéter).
  * Les textes exacts sont donnés entre délimiteurs « » ; leur taille est traduite en part de la largeur.
  */
-export function buildGenerationBrief(p: Project, o: { purpose: ImagePurpose; subject: string; aspect: string; texts?: { hook?: string; secondary?: string; benefit?: string; cta?: string }; references?: string[]; recent?: string[]; guide?: ImageCreativeGuide; ad?: ArtDirection }): GenerationBrief {
+export function buildGenerationBrief(p: Project, o: { scene?: string; purpose: ImagePurpose; subject: string; aspect: string; texts?: { hook?: string; secondary?: string; benefit?: string; cta?: string }; references?: string[]; recent?: string[]; guide?: ImageCreativeGuide; ad?: ArtDirection }): GenerationBrief {
   const g = o.guide ?? loadImageGuide();
   const ad = o.ad ?? artDirectionFor(p);
   const purpose = g.purposes[o.purpose];
@@ -196,7 +205,7 @@ export function buildGenerationBrief(p: Project, o: { purpose: ImagePurpose; sub
     objective: `${o.purpose} — ${purpose.note}`,
     subject: o.subject,
     references: o.references ?? [],
-    concept: ad.idea,
+    concept: o.scene || ad.idea,
     composition,
     framing: composition === "gros plan" ? "plan serré" : composition === "plein cadre" ? "sujet qui occupe le cadre" : "plan moyen avec respiration",
     setting: ad.setting,
@@ -205,10 +214,10 @@ export function buildGenerationBrief(p: Project, o: { purpose: ImagePurpose; sub
     typography: texts.length ? ad.typography : "aucun texte dans l'image",
     exactTexts: texts,
     // Image sans texte (produit seul, ambiance, bannière) : aucun logo dessiné par le modèle.
-    logo: purpose.text === "none" ? "aucun logo dans l'image" : p.brand?.logo?.assetId ? "logo du projet fourni en référence : à reproduire exactement, ou laisser l'emplacement libre" : "aucun logo",
+    logo: purpose.text === "none" ? "aucun logo dans l'image" : p.brand?.logo?.assetId ? "logo du projet fourni en référence : à reproduire exactement, jamais omis ni redessiné librement" : "aucun logo",
     fidelity: services
-      ? "geste, outils, posture et matériaux exacts du métier ; mains correctes ; illustration (jamais un chantier, un salarié ou un témoignage réels)"
-      : "le produit de la référence à l'identique : forme, proportions, matières, couleurs réelles, détails, nombre de pièces ; aucune fonction ni accessoire inventés ; le produit ENTIER dans le cadre, aucune partie coupée, cachée ou manquante (ex. une montre : le bracelet complet, ses deux brins et la boucle, comme sur la référence)",
+      ? "outils, résultat et matériaux exacts du métier ; présence humaine seulement si autorisée ; illustration (jamais un chantier, un salarié ou un témoignage réels)"
+      : "le produit de la référence à l'identique : forme, proportions, matières, couleurs réelles, détails, nombre de pièces ; aucune fonction ni accessoire inventés ; cadrage cohérent avec le concept : entier ou détail demandé sur une partie documentée ; ne jamais inventer une face inconnue",
     forbidden: [...ad.avoid, "aucune autre marque que celle du projet", ...g.effectsNeedIntent.map((e) => `${e} sans raison`), purpose.cta ? "" : "aucun bouton", purpose.text === "none" ? "aucun texte, aucune lettre" : ""].filter(Boolean),
     format: `${o.aspect}, marges extérieures ${g.layout.marginPx.min}–${g.layout.marginPx.max} px pour 1080 px${purpose.calmZone ? ", grande zone calme réservée au texte du site" : ""}`,
     validation: g.grid.map((x) => x.label),
@@ -251,11 +260,12 @@ export function briefScenePrompt(b: GenerationBrief, o: { photoOnly?: boolean } 
     `Composition: ${b.composition}; framing: ${b.framing}; one clear focal point; generous breathing space${textLater ? "; keep a calm, uncluttered area (plain wall, sky, table surface, soft blur) where a headline will be added later, never on the product" : ""}.`,
     `Setting (objects and place, not words): ${b.setting}. Light: ${b.light}; coherent light direction, temperature, perspective, contact shadows and reflections; nothing floating.`,
     `Colour mood: ${b.palette}.`,
+    !photoOnly && b.exactTexts.length ? `Typography: ${b.typography}.` : "",
     `Fidelity: ${b.fidelity}.`,
     `Avoid: ${b.forbidden.filter((f) => !/texte|bouton|lettre/i.test(f)).join("; ")}.`,
     "Decor objects stay blank: no writing, letters, title or logo on books, notebooks, papers, labels, boxes or signs.",
     `Format: ${b.format}.`,
-    photoOnly ? "OUTPUT: a PHOTOGRAPH ONLY — absolutely no text, letters, numbers, words, logo, label, caption, watermark, frame or graphic element anywhere (the text printed on the real product itself stays as on the reference)." : "",
+    photoOnly ? "OUTPUT: a PHOTOGRAPH ONLY — absolutely no text, letters, numbers, words, logo, label, caption, watermark anywhere; justified graphic shapes and a planned panel may support the concept (the text printed on the real product itself stays as on the reference)." : "",
   ].filter(Boolean).join("\n");
 }
 
@@ -264,17 +274,18 @@ export function briefScenePrompt(b: GenerationBrief, o: { photoOnly?: boolean } 
  * sans toucher à la photo. Tailles en part de la largeur (guide : px pour 1080 px), contraste 4,5:1, marges.
  */
 export function layoutPrompt(b: GenerationBrief, o: { hasLogo: boolean; brand: string; textColor: string; accent: string }): string {
+  const organic=b.objective.startsWith("organic");
   const lines = b.exactTexts.map((t) => `- ${ROLE_EN[t.role] ?? t.role}: "${t.text}" (cap height about ${t.sharePct}% of the image width)`);
   return [
-    "Graphic design step on an existing photograph.",
-    "Image 1 is the finished campaign photograph: keep it EXACTLY as it is — same product, same framing, same light, same colours; do not redraw, move, crop, retouch or recolour anything in it.",
+    organic ? "Editorial typography on an approved visual base (diagram, illustration, advice card or photograph)." : "Graphic design step on an existing photograph.",
+    organic ? "Image 1 is the approved editorial visual base: preserve its diagram geometry, subjects, light and colours. Add the ordered content blocks without inventing data, dropping an explanation or converting the page into a sales poster." : "Image 1 is the finished campaign photograph: keep it EXACTLY as it is — same product, same framing, same light, same colours; do not redraw, move, crop, retouch or recolour anything in it.",
     "Add ONLY the typography" + (o.hasLogo ? " and the brand logo" : "") + " on top of it, as the art director of a top agency would: in the calm area of the photo, never covering the product, clear reading order (headline first).",
     "Texts to set — spell them EXACTLY, letter for letter, with the same accents and punctuation; write nothing else:",
     ...lines,
-    o.hasLogo ? `Logo: image 2 is the brand's real logo — place it small and clean, reproduced exactly (same emblem, same letters "${o.brand}", same colours); no other logo, no invented emblem.` : `Brand: no logo is provided — do not draw any logo or brand name.`,
+    o.hasLogo ? `Logo: image 2 is the brand's real logo — place it small and clean, reproduced exactly (same emblem, same letters "${o.brand}", same colours); no other logo, no invented emblem.` : `Brand: no logo is provided — typeset the brand name "${o.brand}" as a modest signature, spelled exactly; never invent an emblem.`,
     `Typography: ${b.typography}; two font families at most, two or three hierarchy levels, clean alignment, outer margins about 6–8% of the width.`,
-    `Colours: text ${o.textColor}${b.exactTexts.some((t) => t.role === "bouton") ? `, button filled with ${o.accent} (the only highlighted element)` : ""}; contrast at least 4.5:1 — if needed a soft local gradient on the photo behind the text, never a solid band or box.`,
-    "Forbidden: any other word, label, note, colour code, swatch, price, percentage, claim, hashtag, website, watermark, frame or second product.",
+    `Colours: ${b.palette}; suggested dark ${o.textColor} only on light areas, use the contrasting light role on dark areas${b.exactTexts.some((t) => t.role === "bouton") ? `, button filled with ${o.accent} (the only highlighted element)` : ""}; contrast at least 4.5:1 — if needed a soft local gradient on the photo behind the text, a graphic panel or a solid reading area is allowed when justified by the concept; choose text colours from the full palette to fit the background.`,
+    "Forbidden: any other word, label, note, colour code, swatch, unconfirmed price, invented percentage, unsupported claim, hashtag, website, watermark, frame or second product.",
     `Format: ${b.format.split(",")[0]}.`,
   ].join("\n");
 }

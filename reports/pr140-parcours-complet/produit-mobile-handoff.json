@@ -1,0 +1,2065 @@
+{
+  "ready": true,
+  "approvalsComplete": true,
+  "blockers": [],
+  "category": {
+    "status": "recommended",
+    "category": "specialized",
+    "salesModel": "focused_offer",
+    "goal": "purchase",
+    "reasons": [
+      "Vous avez confirmé ce modèle de site pour votre offre actuelle ; ce choix prime sur les indices automatiques."
+    ],
+    "evidence": [
+      {
+        "source": "business",
+        "value": "products"
+      },
+      {
+        "source": "client_choice",
+        "value": "specialized"
+      }
+    ],
+    "clarification": null,
+    "eligibleThemes": [
+      {
+        "referenceId": "fraise",
+        "name": "FRAISE",
+        "engineThemeId": null,
+        "status": "awaiting_integration"
+      },
+      {
+        "referenceId": "onde",
+        "name": "ONDE",
+        "engineThemeId": null,
+        "status": "awaiting_integration"
+      }
+    ]
+  },
+  "categoryContextHash": "dec033ed6a36e87a",
+  "categoryChoice": {
+    "category": "specialized",
+    "contextHash": "dec033ed6a36e87a",
+    "chosenAt": 1792407268842
+  },
+  "categoryChoiceStale": false,
+  "contract": {
+    "schemaVersion": 1,
+    "kind": "theme_data_handoff",
+    "projectId": "u2wypa76klyqoxab",
+    "revision": 41,
+    "provenance": "simulation",
+    "clientBrief": {
+      "offerUrl": "",
+      "description": "Tasse à thé en grès émaillé, fabrication en petites séries. Boutique spécialisée dans une gamme ciblée pour le thé.",
+      "offerName": "Clair Céramique",
+      "brandName": "Clair Céramique",
+      "target": "Amateurs de thé",
+      "constraints": "Aucun label inventé.",
+      "business": "products",
+      "photoIds": [
+        "330kyfn0oqzbn20m"
+      ],
+      "referenceUrls": [
+        "https://reference.example/ceramique"
+      ],
+      "price": "32",
+      "services": {
+        "services": [],
+        "area": "",
+        "address": "",
+        "phone": "",
+        "email": "",
+        "hours": "",
+        "bookingUrl": "",
+        "contactMode": "form",
+        "contactModes": [
+          "form"
+        ]
+      }
+    },
+    "offer": {
+      "business": "products",
+      "product": {
+        "name": "Clair Céramique",
+        "nameStatus": "provided",
+        "category": "",
+        "sector": "artisanat",
+        "summary": "Tasse à thé en grès émaillé, fabrication en petites séries. Boutique spécialisée dans une gamme ciblée pour le thé.",
+        "facts": [
+          {
+            "key": "materials",
+            "label": "Matière",
+            "value": "grès",
+            "status": "confirmed",
+            "source": "description"
+          },
+          {
+            "key": "shipping",
+            "label": "Délais et frais de livraison",
+            "value": "",
+            "status": "unknown",
+            "source": "ai"
+          },
+          {
+            "key": "returns",
+            "label": "Conditions de retour",
+            "value": "",
+            "status": "unknown",
+            "source": "ai"
+          },
+          {
+            "key": "origin",
+            "label": "Fabrication",
+            "value": "",
+            "status": "unknown",
+            "source": "ai"
+          }
+        ],
+        "visual": {
+          "colors": [],
+          "description": ""
+        },
+        "price": {
+          "amount": 3200,
+          "currency": "EUR",
+          "status": "confirmed"
+        },
+        "variants": [],
+        "questions": [
+          {
+            "id": "s-making",
+            "question": "Qui le fabrique, où et comment ? (ex. dans notre atelier à Nantes, tourné à la main)",
+            "why": "La fabrication est l'histoire de la marque : elle doit être exacte pour être dite.",
+            "required": false,
+            "factKey": "origin"
+          },
+          {
+            "id": "shipping",
+            "question": "Quels sont vos délais et frais de livraison ?",
+            "why": "Affichés dans la FAQ et la page Livraison ; rien ne sera inventé.",
+            "required": false,
+            "factKey": "shipping"
+          },
+          {
+            "id": "returns",
+            "question": "Quelles sont vos conditions de retour ?",
+            "why": "Obligatoire pour la page Livraison et retours.",
+            "required": false,
+            "factKey": "returns"
+          }
+        ],
+        "claimsToAvoid": [],
+        "sources": [],
+        "analyzedBy": "local"
+      },
+      "services": null,
+      "storeType": "mono",
+      "catalogue": [],
+      "strategy": {
+        "audience": [
+          {
+            "label": "Amateurs de thé — personnes découvrant cette catégorie",
+            "needs": [
+              "Tasse à thé en grès émaillé, fabrication en petites séries. Boutique spécialisée dans une gamme ciblée pour le thé.",
+              "Matière : grès"
+            ],
+            "objections": [
+              "Cette offre répond-elle à ma situation ?"
+            ]
+          }
+        ],
+        "angles": [
+          {
+            "title": "Expliquer l’usage de Clair Céramique",
+            "idea": "Aider Amateurs de thé à comprendre Clair Céramique avant de décider."
+          }
+        ],
+        "pillars": [
+          "Tasse à thé en grès émaillé, fabrication en petites séries. Boutique spécialisée dans une gamme ciblée pour le thé.",
+          "Matière : grès"
+        ],
+        "keyMessages": [
+          "Tasse à thé en grès émaillé, fabrication en petites séries. Boutique spécialisée dans une gamme ciblée pour le thé.",
+          "Matière : grès"
+        ],
+        "platform": {
+          "persona": "Amateurs de thé — personnes découvrant cette catégorie",
+          "problem": "Aider Amateurs de thé à comprendre Clair Céramique avant de décider.",
+          "alternatives": "Une offre comparable à Clair Céramique. La page décrit les usages et conditions de présentation. Les modalités de contact sont visibles. Ceci est une source synthétique pour vérifier la persistance, pas une étude réelle.",
+          "difference": "Angle recommandé pour clarifier une offre : il utilise les informations fournies et réserve les preuves manquantes.",
+          "proofs": [
+            {
+              "claim": "Tasse à thé en grès émaillé, fabrication en petites séries. Boutique spécialisée dans une gamme ciblée pour le thé.",
+              "proof": "Hypothèse validée par le client ; aucune preuve chiffrée ajoutée.",
+              "status": "missing"
+            },
+            {
+              "claim": "Matière : grès",
+              "proof": "Hypothèse validée par le client ; aucune preuve chiffrée ajoutée.",
+              "status": "missing"
+            }
+          ],
+          "objections": [
+            {
+              "objection": "Cette offre répond-elle à ma situation ?",
+              "answer": "Montrer les usages et limites confirmés, sans promettre un résultat non démontré."
+            }
+          ]
+        },
+        "generatedBy": "local"
+      }
+    },
+    "identity": {
+      "name": "Clair Céramique",
+      "nameStatus": "validated",
+      "alternatives": [],
+      "tagline": "La matière prend place.",
+      "positioning": "Aider Amateurs de thé à comprendre Clair Céramique avant de décider.",
+      "audience": "Amateurs de thé — personnes découvrant cette catégorie",
+      "personality": [],
+      "tone": {
+        "voice": "Chaleureux et concret",
+        "do": [
+          "Décrire les faits connus"
+        ],
+        "dont": [
+          "Inventer une garantie"
+        ]
+      },
+      "palette": {
+        "primary": "#614024",
+        "secondary": "#d8b77c",
+        "accent": "#47657a",
+        "light": "#fbf6ed",
+        "dark": "#282019"
+      },
+      "fonts": {
+        "heading": "montserrat_n6",
+        "body": "inter_n4"
+      },
+      "logo": {
+        "concept": "Marque abstraite — Une forme abstraite tirée du geste de l'activité, au-dessus du nom : évoque sans illustrer.",
+        "status": "validated",
+        "assetId": "tgqcovvdqrbzn5lz",
+        "markAssetId": "trj41hdfp9rajgv8",
+        "proposal": "concept",
+        "proposalId": "osk2u9vzeoxr7zxj",
+        "provisional": false,
+        "engine": "v2"
+      },
+      "story": "",
+      "values": [],
+      "direction": "galerie",
+      "validated": [
+        "name",
+        "tagline",
+        "palette",
+        "fonts",
+        "logo"
+      ],
+      "generatedBy": "local",
+      "paletteMode": "client",
+      "clientPalette": {
+        "primary": "#614024",
+        "secondary": "#d8b77c",
+        "accent": "#47657a",
+        "light": "#fbf6ed",
+        "dark": "#282019"
+      },
+      "artIdentity": {
+        "signature": "La matière prend place.",
+        "palette": {
+          "primary": "#614024",
+          "secondary": "#d8b77c",
+          "accent": "#47657a",
+          "light": "#fbf6ed",
+          "dark": "#282019"
+        },
+        "colorRoles": {
+          "primary": "Brun : titres liés à la matière",
+          "secondary": "Sable : surfaces chaleureuses",
+          "accent": "Bleu ardoise : appels à l’action nets",
+          "light": "Papier neutre : fond de lecture",
+          "dark": "Encre brune neutre : texte courant"
+        },
+        "fonts": {
+          "heading": "montserrat_n6",
+          "body": "inter_n4"
+        },
+        "tone": {
+          "voice": "Chaleureux et concret",
+          "do": [
+            "Décrire les faits connus"
+          ],
+          "dont": [
+            "Inventer une garantie"
+          ]
+        },
+        "mood": "Textures et lumière latérale",
+        "graphicLanguage": "Formes organiques et aplats",
+        "rules": [
+          "Conserver une zone calme autour du logo",
+          "Un seul style de traits"
+        ],
+        "sampleText": "Découvrez l’offre et ses caractéristiques confirmées.",
+        "seriesId": "ejqt77obi5v76ot7",
+        "directionId": "t3"
+      }
+    },
+    "identityAssets": [
+      {
+        "assetId": "lljbyndcnl5a0nc0",
+        "role": "brand-guide",
+        "mime": "text/markdown",
+        "width": null,
+        "height": null,
+        "url": "/api/files/lljbyndcnl5a0nc0",
+        "sourceAssetId": "tgqcovvdqrbzn5lz"
+      },
+      {
+        "assetId": "s4345sf5obkjbtfs",
+        "role": "brand-book",
+        "mime": "application/pdf",
+        "width": null,
+        "height": null,
+        "url": "/api/files/s4345sf5obkjbtfs",
+        "sourceAssetId": "tgqcovvdqrbzn5lz"
+      },
+      {
+        "assetId": "tgqcovvdqrbzn5lz",
+        "role": "logo",
+        "mime": "image/png",
+        "width": 936,
+        "height": 967,
+        "url": "/api/files/tgqcovvdqrbzn5lz",
+        "sourceAssetId": "osk2u9vzeoxr7zxj"
+      },
+      {
+        "assetId": "odaa6asahhv1enqv",
+        "role": "logo-light",
+        "mime": "image/png",
+        "width": 936,
+        "height": 967,
+        "url": "/api/files/odaa6asahhv1enqv",
+        "sourceAssetId": "tgqcovvdqrbzn5lz"
+      },
+      {
+        "assetId": "vsd41qodrqucu1m1",
+        "role": "logo-mono",
+        "mime": "image/png",
+        "width": 936,
+        "height": 967,
+        "url": "/api/files/vsd41qodrqucu1m1",
+        "sourceAssetId": "tgqcovvdqrbzn5lz"
+      },
+      {
+        "assetId": "8jzetgi9ck9fsg9u",
+        "role": "logo-white",
+        "mime": "image/png",
+        "width": 936,
+        "height": 967,
+        "url": "/api/files/8jzetgi9ck9fsg9u",
+        "sourceAssetId": "tgqcovvdqrbzn5lz"
+      },
+      {
+        "assetId": "trj41hdfp9rajgv8",
+        "role": "logo-mark",
+        "mime": "image/png",
+        "width": 1024,
+        "height": 1024,
+        "url": "/api/files/trj41hdfp9rajgv8",
+        "sourceAssetId": "tgqcovvdqrbzn5lz"
+      },
+      {
+        "assetId": "vgei0zpr1iohmkk4",
+        "role": "favicon",
+        "mime": "image/png",
+        "width": 192,
+        "height": 192,
+        "url": "/api/files/vgei0zpr1iohmkk4",
+        "sourceAssetId": "tgqcovvdqrbzn5lz"
+      },
+      {
+        "assetId": "a79ti60zslm0cdxg",
+        "role": "logo-webp",
+        "mime": "image/webp",
+        "width": 936,
+        "height": 967,
+        "url": "/api/files/a79ti60zslm0cdxg",
+        "sourceAssetId": "tgqcovvdqrbzn5lz"
+      },
+      {
+        "assetId": "nuxibq90e1me43eb",
+        "role": "logo-light-webp",
+        "mime": "image/webp",
+        "width": 936,
+        "height": 967,
+        "url": "/api/files/nuxibq90e1me43eb",
+        "sourceAssetId": "tgqcovvdqrbzn5lz"
+      },
+      {
+        "assetId": "s5lifp39xs863tr1",
+        "role": "logo-mark-svg",
+        "mime": "image/svg+xml",
+        "width": 512,
+        "height": 512,
+        "url": "/api/files/s5lifp39xs863tr1",
+        "sourceAssetId": "tgqcovvdqrbzn5lz"
+      },
+      {
+        "assetId": "12yyb0mwizekimmb",
+        "role": "logo-svg",
+        "mime": "image/svg+xml",
+        "width": 496,
+        "height": 512,
+        "url": "/api/files/12yyb0mwizekimmb",
+        "sourceAssetId": "tgqcovvdqrbzn5lz"
+      },
+      {
+        "assetId": "wz4intp3yvd81xak",
+        "role": "brand-board",
+        "mime": "image/png",
+        "width": 2400,
+        "height": 1972,
+        "url": "/api/files/wz4intp3yvd81xak",
+        "sourceAssetId": "tgqcovvdqrbzn5lz"
+      }
+    ],
+    "colorRoles": {
+      "primary": "Brun : titres liés à la matière",
+      "secondary": "Sable : surfaces chaleureuses",
+      "accent": "Bleu ardoise : appels à l’action nets",
+      "light": "Papier neutre : fond de lecture",
+      "dark": "Encre brune neutre : texte courant"
+    },
+    "pages": [
+      {
+        "key": "home",
+        "path": "/",
+        "title": "Accueil",
+        "kind": "home",
+        "goal": "Présenter Clair Céramique à Amateurs de thé — personnes découvrant cette catégorie",
+        "sections": [
+          {
+            "key": "hero",
+            "purpose": "Offre et promesse vérifiable",
+            "mediaSlot": "final:video:1",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "hero",
+                "objective": "Offre et promesse vérifiable",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:df76a38fa3bdd5781223",
+                "blockIds": [
+                  "home-title",
+                  "home-hero"
+                ],
+                "mediaSlotKeys": [
+                  "final:video:1"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Accueil\n\nClair Céramique : Tasse à thé en grès émaillé, fabrication en petites séries. Boutique spécialisée dans une gamme ciblée pour le thé."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-title",
+                "kind": "h1",
+                "text": "Accueil"
+              },
+              {
+                "id": "home-hero",
+                "kind": "p",
+                "text": "Clair Céramique : Tasse à thé en grès émaillé, fabrication en petites séries. Boutique spécialisée dans une gamme ciblée pour le thé."
+              }
+            ],
+            "text": "Accueil\n\nClair Céramique : Tasse à thé en grès émaillé, fabrication en petites séries. Boutique spécialisée dans une gamme ciblée pour le thé.",
+            "mediaSlotKeys": [
+              "final:video:1"
+            ]
+          },
+          {
+            "key": "offer",
+            "purpose": "Usages et caractéristiques",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "offer",
+                "objective": "Usages et caractéristiques",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:df76a38fa3bdd5781223",
+                "blockIds": [
+                  "home-offer"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:3",
+                  "final:image:5"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "L’offre s’adresse à Amateurs de thé — personnes découvrant cette catégorie. La fiche détaille le produit pour vous aider à préparer votre choix."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-offer",
+                "kind": "p",
+                "text": "L’offre s’adresse à Amateurs de thé — personnes découvrant cette catégorie. La fiche détaille le produit pour vous aider à préparer votre choix."
+              }
+            ],
+            "text": "L’offre s’adresse à Amateurs de thé — personnes découvrant cette catégorie. La fiche détaille le produit pour vous aider à préparer votre choix.",
+            "mediaSlotKeys": [
+              "final:image:3",
+              "final:image:5"
+            ]
+          },
+          {
+            "key": "proofs",
+            "purpose": "Preuves disponibles uniquement",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "proofs",
+                "objective": "Preuves disponibles uniquement",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:df76a38fa3bdd5781223",
+                "blockIds": [
+                  "home-proofs"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Pour vous faire une idée de l’offre, parcourez les vues et les informations présentées. Les illustrations accompagnent les explications sans remplacer les caractéristiques décrites."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-proofs",
+                "kind": "p",
+                "text": "Pour vous faire une idée de l’offre, parcourez les vues et les informations présentées. Les illustrations accompagnent les explications sans remplacer les caractéristiques décrites."
+              }
+            ],
+            "text": "Pour vous faire une idée de l’offre, parcourez les vues et les informations présentées. Les illustrations accompagnent les explications sans remplacer les caractéristiques décrites.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "faq",
+            "purpose": "Objections et réponses confirmées",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "faq",
+                "objective": "Objections et réponses confirmées",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:df76a38fa3bdd5781223",
+                "blockIds": [
+                  "home-faq"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Une question avant de vous décider ? Repérez les points qui comptent pour votre usage et contactez-nous pour les préciser."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-faq",
+                "kind": "p",
+                "text": "Une question avant de vous décider ? Repérez les points qui comptent pour votre usage et contactez-nous pour les préciser."
+              }
+            ],
+            "text": "Une question avant de vous décider ? Repérez les points qui comptent pour votre usage et contactez-nous pour les préciser.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "contact",
+            "purpose": "Choisir le produit",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "contact",
+                "objective": "Choisir le produit",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:df76a38fa3bdd5781223",
+                "blockIds": [
+                  "home-contact"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Retrouvez les détails de Clair Céramique sur sa fiche. Prenez le temps de comparer ces informations avec votre utilisation prévue."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-contact",
+                "kind": "p",
+                "text": "Retrouvez les détails de Clair Céramique sur sa fiche. Prenez le temps de comparer ces informations avec votre utilisation prévue."
+              }
+            ],
+            "text": "Retrouvez les détails de Clair Céramique sur sa fiche. Prenez le temps de comparer ces informations avec votre utilisation prévue.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "gallery",
+            "purpose": "Galerie de scènes distinctes",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "gallery",
+                "objective": "Galerie de scènes distinctes",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:df76a38fa3bdd5781223",
+                "blockIds": [
+                  "home-gallery"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:8"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Passez d’une vue à l’autre pour situer l’offre dans son contexte. Chaque image apporte un angle de lecture complémentaire au texte."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-gallery",
+                "kind": "p",
+                "text": "Passez d’une vue à l’autre pour situer l’offre dans son contexte. Chaque image apporte un angle de lecture complémentaire au texte."
+              }
+            ],
+            "text": "Passez d’une vue à l’autre pour situer l’offre dans son contexte. Chaque image apporte un angle de lecture complémentaire au texte.",
+            "mediaSlotKeys": [
+              "final:image:8"
+            ]
+          },
+          {
+            "key": "story",
+            "purpose": "Formats verticaux : lecture sans déformation",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "story",
+                "objective": "Formats verticaux : lecture sans déformation",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:df76a38fa3bdd5781223",
+                "blockIds": [
+                  "home-story"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Le format vertical propose une autre lecture de la présentation. Sur téléphone, poursuivez la découverte sans quitter le fil des informations."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-story",
+                "kind": "p",
+                "text": "Le format vertical propose une autre lecture de la présentation. Sur téléphone, poursuivez la découverte sans quitter le fil des informations."
+              }
+            ],
+            "text": "Le format vertical propose une autre lecture de la présentation. Sur téléphone, poursuivez la découverte sans quitter le fil des informations.",
+            "mediaSlotKeys": []
+          }
+        ],
+        "docKey": "cnt:df76a38fa3bdd5781223",
+        "documentKey": "cnt:df76a38fa3bdd5781223",
+        "document": {
+          "version": 1,
+          "type": "home_page",
+          "lang": "fr",
+          "page": {
+            "key": "home",
+            "title": "Accueil",
+            "kind": "home",
+            "status": "planned",
+            "url": null
+          },
+          "primaryKeyword": null,
+          "meta": {
+            "seoTitle": "Accueil | Clair Céramique",
+            "metaDescription": "Accueil : découvrez l’offre de Clair Céramique, sa présentation et les informations utiles pour prendre contact.",
+            "slug": "",
+            "canonical": null,
+            "robots": "index,follow"
+          },
+          "blocks": [
+            {
+              "id": "home-title",
+              "kind": "h1",
+              "text": "Accueil"
+            },
+            {
+              "id": "home-hero",
+              "kind": "p",
+              "text": "Clair Céramique : Tasse à thé en grès émaillé, fabrication en petites séries. Boutique spécialisée dans une gamme ciblée pour le thé."
+            },
+            {
+              "id": "home-offer",
+              "kind": "p",
+              "text": "L’offre s’adresse à Amateurs de thé — personnes découvrant cette catégorie. La fiche détaille le produit pour vous aider à préparer votre choix."
+            },
+            {
+              "id": "home-proofs",
+              "kind": "p",
+              "text": "Pour vous faire une idée de l’offre, parcourez les vues et les informations présentées. Les illustrations accompagnent les explications sans remplacer les caractéristiques décrites."
+            },
+            {
+              "id": "home-faq",
+              "kind": "p",
+              "text": "Une question avant de vous décider ? Repérez les points qui comptent pour votre usage et contactez-nous pour les préciser."
+            },
+            {
+              "id": "home-contact",
+              "kind": "p",
+              "text": "Retrouvez les détails de Clair Céramique sur sa fiche. Prenez le temps de comparer ces informations avec votre utilisation prévue."
+            },
+            {
+              "id": "home-gallery",
+              "kind": "p",
+              "text": "Passez d’une vue à l’autre pour situer l’offre dans son contexte. Chaque image apporte un angle de lecture complémentaire au texte."
+            },
+            {
+              "id": "home-story",
+              "kind": "p",
+              "text": "Le format vertical propose une autre lecture de la présentation. Sur téléphone, poursuivez la découverte sans quitter le fil des informations."
+            }
+          ],
+          "links": [],
+          "schema": [],
+          "meta2": {
+            "source": "engine",
+            "by": "ai",
+            "createdFrom": null,
+            "runId": "simulation:u2wypa76klyqoxab:home"
+          }
+        },
+        "seo": {
+          "seoTitle": "Accueil | Clair Céramique",
+          "metaDescription": "Accueil : découvrez l’offre de Clair Céramique, sa présentation et les informations utiles pour prendre contact.",
+          "slug": "",
+          "canonical": null,
+          "robots": "index,follow"
+        }
+      },
+      {
+        "key": "product:main",
+        "path": "/products/produit-principal",
+        "title": "Clair Céramique",
+        "kind": "product",
+        "goal": "Tasse à thé en grès émaillé, fabrication en petites séries. Boutique spécialisée dans une gamme ciblée pour le thé.",
+        "sections": [
+          {
+            "key": "detail",
+            "purpose": "Montrer le produit exact",
+            "mediaSlot": "product:main:detail",
+            "editorial": [
+              {
+                "pageKey": "product:main",
+                "sectionKey": "detail",
+                "objective": "Montrer le produit exact",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:32c96fbd378e3f7ec5be",
+                "blockIds": [
+                  "product:main-title",
+                  "product:main-detail"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:1"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Clair Céramique\n\nTasse à thé en grès émaillé, fabrication en petites séries. Boutique spécialisée dans une gamme ciblée pour le thé."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "product:main-title",
+                "kind": "h1",
+                "text": "Clair Céramique"
+              },
+              {
+                "id": "product:main-detail",
+                "kind": "p",
+                "text": "Tasse à thé en grès émaillé, fabrication en petites séries. Boutique spécialisée dans une gamme ciblée pour le thé."
+              }
+            ],
+            "text": "Clair Céramique\n\nTasse à thé en grès émaillé, fabrication en petites séries. Boutique spécialisée dans une gamme ciblée pour le thé.",
+            "mediaSlotKeys": [
+              "final:image:1"
+            ]
+          },
+          {
+            "key": "facts",
+            "purpose": "Caractéristiques confirmées",
+            "editorial": [
+              {
+                "pageKey": "product:main",
+                "sectionKey": "facts",
+                "objective": "Caractéristiques confirmées",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:32c96fbd378e3f7ec5be",
+                "blockIds": [
+                  "product:main-facts"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Les éléments renseignés pour ce produit : Matière grès."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "product:main-facts",
+                "kind": "p",
+                "text": "Les éléments renseignés pour ce produit : Matière grès."
+              }
+            ],
+            "text": "Les éléments renseignés pour ce produit : Matière grès.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "options",
+            "purpose": "Options et prix connus",
+            "editorial": [
+              {
+                "pageKey": "product:main",
+                "sectionKey": "options",
+                "objective": "Options et prix connus",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:32c96fbd378e3f7ec5be",
+                "blockIds": [
+                  "product:main-options"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Ce produit est proposé à 32,00 €. Vérifiez que votre sélection correspond à votre besoin avant de poursuivre."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "product:main-options",
+                "kind": "p",
+                "text": "Ce produit est proposé à 32,00 €. Vérifiez que votre sélection correspond à votre besoin avant de poursuivre."
+              }
+            ],
+            "text": "Ce produit est proposé à 32,00 €. Vérifiez que votre sélection correspond à votre besoin avant de poursuivre.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "faq",
+            "purpose": "Questions utiles avant achat",
+            "editorial": [
+              {
+                "pageKey": "product:main",
+                "sectionKey": "faq",
+                "objective": "Questions utiles avant achat",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:32c96fbd378e3f7ec5be",
+                "blockIds": [
+                  "product:main-faq"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Qu’aimeriez-vous savoir avant de choisir ? Notez votre question et indiquez le produit concerné pour faciliter la réponse."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "product:main-faq",
+                "kind": "p",
+                "text": "Qu’aimeriez-vous savoir avant de choisir ? Notez votre question et indiquez le produit concerné pour faciliter la réponse."
+              }
+            ],
+            "text": "Qu’aimeriez-vous savoir avant de choisir ? Notez votre question et indiquez le produit concerné pour faciliter la réponse.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "gallery",
+            "purpose": "Galerie de scènes distinctes",
+            "editorial": [
+              {
+                "pageKey": "product:main",
+                "sectionKey": "gallery",
+                "objective": "Galerie de scènes distinctes",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:32c96fbd378e3f7ec5be",
+                "blockIds": [
+                  "product:main-gallery"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:2",
+                  "final:image:6"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Regardez Clair Céramique sous plusieurs angles. La galerie complète la description écrite et permet de revenir sur un détail."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "product:main-gallery",
+                "kind": "p",
+                "text": "Regardez Clair Céramique sous plusieurs angles. La galerie complète la description écrite et permet de revenir sur un détail."
+              }
+            ],
+            "text": "Regardez Clair Céramique sous plusieurs angles. La galerie complète la description écrite et permet de revenir sur un détail.",
+            "mediaSlotKeys": [
+              "final:image:2",
+              "final:image:6"
+            ]
+          },
+          {
+            "key": "story",
+            "purpose": "Formats verticaux : lecture sans déformation",
+            "editorial": [
+              {
+                "pageKey": "product:main",
+                "sectionKey": "story",
+                "objective": "Formats verticaux : lecture sans déformation",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:32c96fbd378e3f7ec5be",
+                "blockIds": [
+                  "product:main-story"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:9"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Une composition verticale accompagne la découverte sur mobile. Le cadrage conserve une lecture naturelle de l’objet et de son contexte."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "product:main-story",
+                "kind": "p",
+                "text": "Une composition verticale accompagne la découverte sur mobile. Le cadrage conserve une lecture naturelle de l’objet et de son contexte."
+              }
+            ],
+            "text": "Une composition verticale accompagne la découverte sur mobile. Le cadrage conserve une lecture naturelle de l’objet et de son contexte.",
+            "mediaSlotKeys": [
+              "final:image:9"
+            ]
+          }
+        ],
+        "docKey": "cnt:32c96fbd378e3f7ec5be",
+        "documentKey": "cnt:32c96fbd378e3f7ec5be",
+        "document": {
+          "version": 1,
+          "type": "product_page",
+          "lang": "fr",
+          "page": {
+            "key": "product:main",
+            "title": "Clair Céramique",
+            "kind": "product",
+            "status": "planned",
+            "url": null
+          },
+          "primaryKeyword": null,
+          "meta": {
+            "seoTitle": "Clair Céramique | Clair Céramique",
+            "metaDescription": "Clair Céramique : découvrez l’offre de Clair Céramique, sa présentation et les informations utiles pour prendre contact.",
+            "slug": "produit-principal",
+            "canonical": null,
+            "robots": "index,follow"
+          },
+          "blocks": [
+            {
+              "id": "product:main-title",
+              "kind": "h1",
+              "text": "Clair Céramique"
+            },
+            {
+              "id": "product:main-detail",
+              "kind": "p",
+              "text": "Tasse à thé en grès émaillé, fabrication en petites séries. Boutique spécialisée dans une gamme ciblée pour le thé."
+            },
+            {
+              "id": "product:main-facts",
+              "kind": "p",
+              "text": "Les éléments renseignés pour ce produit : Matière grès."
+            },
+            {
+              "id": "product:main-options",
+              "kind": "p",
+              "text": "Ce produit est proposé à 32,00 €. Vérifiez que votre sélection correspond à votre besoin avant de poursuivre."
+            },
+            {
+              "id": "product:main-faq",
+              "kind": "p",
+              "text": "Qu’aimeriez-vous savoir avant de choisir ? Notez votre question et indiquez le produit concerné pour faciliter la réponse."
+            },
+            {
+              "id": "product:main-gallery",
+              "kind": "p",
+              "text": "Regardez Clair Céramique sous plusieurs angles. La galerie complète la description écrite et permet de revenir sur un détail."
+            },
+            {
+              "id": "product:main-story",
+              "kind": "p",
+              "text": "Une composition verticale accompagne la découverte sur mobile. Le cadrage conserve une lecture naturelle de l’objet et de son contexte."
+            }
+          ],
+          "links": [],
+          "schema": [],
+          "meta2": {
+            "source": "engine",
+            "by": "ai",
+            "createdFrom": null,
+            "runId": "simulation:u2wypa76klyqoxab:product:main"
+          }
+        },
+        "seo": {
+          "seoTitle": "Clair Céramique | Clair Céramique",
+          "metaDescription": "Clair Céramique : découvrez l’offre de Clair Céramique, sa présentation et les informations utiles pour prendre contact.",
+          "slug": "produit-principal",
+          "canonical": null,
+          "robots": "index,follow"
+        }
+      },
+      {
+        "key": "brand",
+        "path": "/pages/a-propos",
+        "title": "À propos",
+        "kind": "brand",
+        "goal": "Présenter la marque sans histoire inventée",
+        "sections": [
+          {
+            "key": "intent",
+            "purpose": "Positionnement et engagements vérifiables",
+            "editorial": [
+              {
+                "pageKey": "brand",
+                "sectionKey": "intent",
+                "objective": "Positionnement et engagements vérifiables",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:76bcac1fee2a7035bb40",
+                "blockIds": [
+                  "brand-title",
+                  "brand-intent"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "À propos\n\nClair Céramique s’adresse à Amateurs de thé — personnes découvrant cette catégorie. Le projet se concentre sur Clair Céramique, avec une présentation attentive aux besoins déclarés."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "brand-title",
+                "kind": "h1",
+                "text": "À propos"
+              },
+              {
+                "id": "brand-intent",
+                "kind": "p",
+                "text": "Clair Céramique s’adresse à Amateurs de thé — personnes découvrant cette catégorie. Le projet se concentre sur Clair Céramique, avec une présentation attentive aux besoins déclarés."
+              }
+            ],
+            "text": "À propos\n\nClair Céramique s’adresse à Amateurs de thé — personnes découvrant cette catégorie. Le projet se concentre sur Clair Céramique, avec une présentation attentive aux besoins déclarés.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "gallery",
+            "purpose": "Galerie de scènes distinctes",
+            "editorial": [
+              {
+                "pageKey": "brand",
+                "sectionKey": "gallery",
+                "objective": "Galerie de scènes distinctes",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:76bcac1fee2a7035bb40",
+                "blockIds": [
+                  "brand-gallery"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:4",
+                  "final:image:7"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "L’univers visuel accompagne la lecture de la marque. Il met en relation les scènes de présentation et les informations concrètes de l’offre."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "brand-gallery",
+                "kind": "p",
+                "text": "L’univers visuel accompagne la lecture de la marque. Il met en relation les scènes de présentation et les informations concrètes de l’offre."
+              }
+            ],
+            "text": "L’univers visuel accompagne la lecture de la marque. Il met en relation les scènes de présentation et les informations concrètes de l’offre.",
+            "mediaSlotKeys": [
+              "final:image:4",
+              "final:image:7"
+            ]
+          },
+          {
+            "key": "story",
+            "purpose": "Formats verticaux : lecture sans déformation",
+            "editorial": [
+              {
+                "pageKey": "brand",
+                "sectionKey": "story",
+                "objective": "Formats verticaux : lecture sans déformation",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:76bcac1fee2a7035bb40",
+                "blockIds": [
+                  "brand-story"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:10"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Au fil des images, retrouvez les repères de cette identité. La mise en page verticale conserve les contrastes et la lisibilité sur petit écran."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "brand-story",
+                "kind": "p",
+                "text": "Au fil des images, retrouvez les repères de cette identité. La mise en page verticale conserve les contrastes et la lisibilité sur petit écran."
+              }
+            ],
+            "text": "Au fil des images, retrouvez les repères de cette identité. La mise en page verticale conserve les contrastes et la lisibilité sur petit écran.",
+            "mediaSlotKeys": [
+              "final:image:10"
+            ]
+          }
+        ],
+        "docKey": "cnt:76bcac1fee2a7035bb40",
+        "documentKey": "cnt:76bcac1fee2a7035bb40",
+        "document": {
+          "version": 1,
+          "type": "brand_page",
+          "lang": "fr",
+          "page": {
+            "key": "brand",
+            "title": "À propos",
+            "kind": "brand",
+            "status": "planned",
+            "url": null
+          },
+          "primaryKeyword": null,
+          "meta": {
+            "seoTitle": "À propos | Clair Céramique",
+            "metaDescription": "À propos : découvrez l’offre de Clair Céramique, sa présentation et les informations utiles pour prendre contact.",
+            "slug": "a-propos",
+            "canonical": null,
+            "robots": "index,follow"
+          },
+          "blocks": [
+            {
+              "id": "brand-title",
+              "kind": "h1",
+              "text": "À propos"
+            },
+            {
+              "id": "brand-intent",
+              "kind": "p",
+              "text": "Clair Céramique s’adresse à Amateurs de thé — personnes découvrant cette catégorie. Le projet se concentre sur Clair Céramique, avec une présentation attentive aux besoins déclarés."
+            },
+            {
+              "id": "brand-gallery",
+              "kind": "p",
+              "text": "L’univers visuel accompagne la lecture de la marque. Il met en relation les scènes de présentation et les informations concrètes de l’offre."
+            },
+            {
+              "id": "brand-story",
+              "kind": "p",
+              "text": "Au fil des images, retrouvez les repères de cette identité. La mise en page verticale conserve les contrastes et la lisibilité sur petit écran."
+            }
+          ],
+          "links": [],
+          "schema": [],
+          "meta2": {
+            "source": "engine",
+            "by": "ai",
+            "createdFrom": null,
+            "runId": "simulation:u2wypa76klyqoxab:brand"
+          }
+        },
+        "seo": {
+          "seoTitle": "À propos | Clair Céramique",
+          "metaDescription": "À propos : découvrez l’offre de Clair Céramique, sa présentation et les informations utiles pour prendre contact.",
+          "slug": "a-propos",
+          "canonical": null,
+          "robots": "index,follow"
+        }
+      },
+      {
+        "key": "contact",
+        "path": "/pages/contact",
+        "title": "Contact",
+        "kind": "contact",
+        "goal": "Demande d’information",
+        "sections": [
+          {
+            "key": "contact",
+            "purpose": "Coordonnées et formulaire",
+            "editorial": [
+              {
+                "pageKey": "contact",
+                "sectionKey": "contact",
+                "objective": "Coordonnées et formulaire",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:dda9e28f51d3fa742d48",
+                "blockIds": [
+                  "contact-title",
+                  "contact-contact"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Contact\n\nUne question sur Clair Céramique ? Décrivez votre demande dans le formulaire de contact et précisez les points que vous souhaitez éclaircir."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "contact-title",
+                "kind": "h1",
+                "text": "Contact"
+              },
+              {
+                "id": "contact-contact",
+                "kind": "p",
+                "text": "Une question sur Clair Céramique ? Décrivez votre demande dans le formulaire de contact et précisez les points que vous souhaitez éclaircir."
+              }
+            ],
+            "text": "Contact\n\nUne question sur Clair Céramique ? Décrivez votre demande dans le formulaire de contact et précisez les points que vous souhaitez éclaircir.",
+            "mediaSlotKeys": []
+          }
+        ],
+        "docKey": "cnt:dda9e28f51d3fa742d48",
+        "documentKey": "cnt:dda9e28f51d3fa742d48",
+        "document": {
+          "version": 1,
+          "type": "contact_page",
+          "lang": "fr",
+          "page": {
+            "key": "contact",
+            "title": "Contact",
+            "kind": "page",
+            "status": "planned",
+            "url": null
+          },
+          "primaryKeyword": null,
+          "meta": {
+            "seoTitle": "Contact | Clair Céramique",
+            "metaDescription": "Contact : découvrez l’offre de Clair Céramique, sa présentation et les informations utiles pour prendre contact.",
+            "slug": "contact",
+            "canonical": null,
+            "robots": "index,follow"
+          },
+          "blocks": [
+            {
+              "id": "contact-title",
+              "kind": "h1",
+              "text": "Contact"
+            },
+            {
+              "id": "contact-contact",
+              "kind": "p",
+              "text": "Une question sur Clair Céramique ? Décrivez votre demande dans le formulaire de contact et précisez les points que vous souhaitez éclaircir."
+            }
+          ],
+          "links": [],
+          "schema": [],
+          "meta2": {
+            "source": "engine",
+            "by": "ai",
+            "createdFrom": null,
+            "runId": "simulation:u2wypa76klyqoxab:contact"
+          }
+        },
+        "seo": {
+          "seoTitle": "Contact | Clair Céramique",
+          "metaDescription": "Contact : découvrez l’offre de Clair Céramique, sa présentation et les informations utiles pour prendre contact.",
+          "slug": "contact",
+          "canonical": null,
+          "robots": "index,follow"
+        }
+      }
+    ],
+    "media": [
+      {
+        "key": "final:image:1",
+        "pageKey": "product:main",
+        "sectionKey": "detail",
+        "kind": "image",
+        "aspect": "1:1",
+        "source": "ai",
+        "purpose": "Composition 1 de Clair Céramique : product:main/detail",
+        "required": true,
+        "scene": "Scène distincte de test 1 : Composition 1 de Clair Céramique : product:main/detail",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 1 de Clair Céramique : product:main/detail",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "2b5uq3qxuewwgacz",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "63d11386ff26402a"
+        },
+        "inputHash": "0eb1a1dc5d98a3cc",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "2b5uq3qxuewwgacz",
+          "url": "/api/files/2b5uq3qxuewwgacz",
+          "mime": "image/png",
+          "width": 1080,
+          "height": 1080,
+          "duration": null,
+          "origin": "generated",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "ai",
+          "originalAssetId": null,
+          "illustrationOnly": false
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": true,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:2",
+        "pageKey": "product:main",
+        "sectionKey": "gallery",
+        "kind": "image",
+        "aspect": "1:1",
+        "source": "ai",
+        "purpose": "Composition 2 de Clair Céramique : product:main/gallery",
+        "required": true,
+        "scene": "Scène distincte de test 2 : Composition 2 de Clair Céramique : product:main/gallery",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 2 de Clair Céramique : product:main/gallery",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "vj4rm59ek5s2puro",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "41a5d80ada491281"
+        },
+        "inputHash": "0eb1a1dc5d98a3cc",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "vj4rm59ek5s2puro",
+          "url": "/api/files/vj4rm59ek5s2puro",
+          "mime": "image/png",
+          "width": 1080,
+          "height": 1080,
+          "duration": null,
+          "origin": "generated",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "ai",
+          "originalAssetId": null,
+          "illustrationOnly": false
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": true,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:3",
+        "pageKey": "home",
+        "sectionKey": "offer",
+        "kind": "image",
+        "aspect": "1:1",
+        "source": "ai",
+        "purpose": "Composition 3 de Clair Céramique : home/offer",
+        "required": true,
+        "scene": "Scène distincte de test 3 : Composition 3 de Clair Céramique : home/offer",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 3 de Clair Céramique : home/offer",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "zw7a84mtcnlrfukf",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "6e8047e959c69c0c"
+        },
+        "inputHash": "0eb1a1dc5d98a3cc",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "zw7a84mtcnlrfukf",
+          "url": "/api/files/zw7a84mtcnlrfukf",
+          "mime": "image/png",
+          "width": 1080,
+          "height": 1080,
+          "duration": null,
+          "origin": "generated",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "ai",
+          "originalAssetId": null,
+          "illustrationOnly": false
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": true,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:4",
+        "pageKey": "brand",
+        "sectionKey": "gallery",
+        "kind": "image",
+        "aspect": "1:1",
+        "source": "ai",
+        "purpose": "Composition 4 de Clair Céramique : brand/gallery",
+        "required": true,
+        "scene": "Scène distincte de test 4 : Composition 4 de Clair Céramique : brand/gallery",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 4 de Clair Céramique : brand/gallery",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "rrvbzae628sif55j",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "97c805dbff0e8c97"
+        },
+        "inputHash": "0eb1a1dc5d98a3cc",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "rrvbzae628sif55j",
+          "url": "/api/files/rrvbzae628sif55j",
+          "mime": "image/png",
+          "width": 1080,
+          "height": 1080,
+          "duration": null,
+          "origin": "generated",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "ai",
+          "originalAssetId": null,
+          "illustrationOnly": false
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": true,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:5",
+        "pageKey": "home",
+        "sectionKey": "offer",
+        "kind": "image",
+        "aspect": "16:9",
+        "source": "ai",
+        "purpose": "Composition 5 de Clair Céramique : home/offer",
+        "required": true,
+        "scene": "Scène distincte de test 5 : Composition 5 de Clair Céramique : home/offer",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 5 de Clair Céramique : home/offer",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "cycerr18snb74sf2",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "e396390c40bbf7f4"
+        },
+        "inputHash": "0eb1a1dc5d98a3cc",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "cycerr18snb74sf2",
+          "url": "/api/files/cycerr18snb74sf2",
+          "mime": "image/png",
+          "width": 1600,
+          "height": 900,
+          "duration": null,
+          "origin": "generated",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "ai",
+          "originalAssetId": null,
+          "illustrationOnly": false
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": true,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:6",
+        "pageKey": "product:main",
+        "sectionKey": "gallery",
+        "kind": "image",
+        "aspect": "16:9",
+        "source": "ai",
+        "purpose": "Composition 6 de Clair Céramique : product:main/gallery",
+        "required": true,
+        "scene": "Scène distincte de test 6 : Composition 6 de Clair Céramique : product:main/gallery",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 6 de Clair Céramique : product:main/gallery",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "6vl0vlz6xi7m5qs1",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "033890074d192865"
+        },
+        "inputHash": "0eb1a1dc5d98a3cc",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "6vl0vlz6xi7m5qs1",
+          "url": "/api/files/6vl0vlz6xi7m5qs1",
+          "mime": "image/png",
+          "width": 1600,
+          "height": 900,
+          "duration": null,
+          "origin": "generated",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "ai",
+          "originalAssetId": null,
+          "illustrationOnly": false
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": true,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:7",
+        "pageKey": "brand",
+        "sectionKey": "gallery",
+        "kind": "image",
+        "aspect": "16:9",
+        "source": "ai",
+        "purpose": "Composition 7 de Clair Céramique : brand/gallery",
+        "required": true,
+        "scene": "Scène distincte de test 7 : Composition 7 de Clair Céramique : brand/gallery",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 7 de Clair Céramique : brand/gallery",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "e23ynh2gt20h6uxn",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "56ce53bd47496ca4"
+        },
+        "inputHash": "0eb1a1dc5d98a3cc",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "e23ynh2gt20h6uxn",
+          "url": "/api/files/e23ynh2gt20h6uxn",
+          "mime": "image/png",
+          "width": 1600,
+          "height": 900,
+          "duration": null,
+          "origin": "generated",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "ai",
+          "originalAssetId": null,
+          "illustrationOnly": false
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": true,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:8",
+        "pageKey": "home",
+        "sectionKey": "gallery",
+        "kind": "image",
+        "aspect": "16:9",
+        "source": "ai",
+        "purpose": "Composition 8 de Clair Céramique : home/gallery",
+        "required": true,
+        "scene": "Scène distincte de test 8 : Composition 8 de Clair Céramique : home/gallery",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 8 de Clair Céramique : home/gallery",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "7ccciawmqnep0zfz",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "73c50701220b9770"
+        },
+        "inputHash": "0eb1a1dc5d98a3cc",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "7ccciawmqnep0zfz",
+          "url": "/api/files/7ccciawmqnep0zfz",
+          "mime": "image/png",
+          "width": 1600,
+          "height": 900,
+          "duration": null,
+          "origin": "generated",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "ai",
+          "originalAssetId": null,
+          "illustrationOnly": false
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": true,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:9",
+        "pageKey": "product:main",
+        "sectionKey": "story",
+        "kind": "image",
+        "aspect": "9:16",
+        "source": "ai",
+        "purpose": "Composition 9 de Clair Céramique : product:main/story",
+        "required": true,
+        "scene": "Scène distincte de test 9 : Composition 9 de Clair Céramique : product:main/story",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 9 de Clair Céramique : product:main/story",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "140fu92a3q9mrr2e",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "098717b683f92a36"
+        },
+        "inputHash": "0eb1a1dc5d98a3cc",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "140fu92a3q9mrr2e",
+          "url": "/api/files/140fu92a3q9mrr2e",
+          "mime": "image/png",
+          "width": 900,
+          "height": 1600,
+          "duration": null,
+          "origin": "generated",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "ai",
+          "originalAssetId": null,
+          "illustrationOnly": false
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": true,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:10",
+        "pageKey": "brand",
+        "sectionKey": "story",
+        "kind": "image",
+        "aspect": "9:16",
+        "source": "ai",
+        "purpose": "Composition 10 de Clair Céramique : brand/story",
+        "required": true,
+        "scene": "Scène distincte de test 10 : Composition 10 de Clair Céramique : brand/story",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 10 de Clair Céramique : brand/story",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "it0g9ghjvm8nckq7",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "e6c653f9eaa4c5be"
+        },
+        "inputHash": "0eb1a1dc5d98a3cc",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "it0g9ghjvm8nckq7",
+          "url": "/api/files/it0g9ghjvm8nckq7",
+          "mime": "image/png",
+          "width": 900,
+          "height": 1600,
+          "duration": null,
+          "origin": "generated",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "ai",
+          "originalAssetId": null,
+          "illustrationOnly": false
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": true,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:video:1",
+        "pageKey": "home",
+        "sectionKey": "hero",
+        "kind": "video",
+        "aspect": "16:9",
+        "source": "pixabay",
+        "purpose": "Ambiance hero pertinente, zone de texte lisible ; jamais une preuve sur le produit exact ou les locaux réels",
+        "required": true,
+        "playback": {
+          "muted": true,
+          "playsInline": true,
+          "loop": true,
+          "pauseControl": true,
+          "reducedMotion": "poster",
+          "mobileFallback": "poster"
+        },
+        "scene": "Scène distincte de test 11 : Ambiance hero pertinente, zone de texte lisible ; jamais une preuve sur le produit exact ou les locaux réels",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Ambiance hero pertinente, zone de texte lisible ; jamais une preuve sur le produit exact ou les locaux réels",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "hdc9o70zkkmnlku3",
+        "posterId": "ar8hyd89ejuonh2c",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "0f7db03a0a24ef99"
+        },
+        "inputHash": "0eb1a1dc5d98a3cc",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "hdc9o70zkkmnlku3",
+          "url": "/api/files/hdc9o70zkkmnlku3",
+          "mime": "video/mp4",
+          "width": 1280,
+          "height": 720,
+          "duration": 3,
+          "origin": "import",
+          "role": "clip"
+        },
+        "poster": {
+          "assetId": "ar8hyd89ejuonh2c",
+          "url": "/api/files/ar8hyd89ejuonh2c",
+          "mime": "image/png",
+          "width": 1280,
+          "height": 720
+        },
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-u2wypa76klyqoxab-10",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": true,
+          "mobilePosterFallback": true
+        }
+      }
+    ],
+    "category": {
+      "status": "recommended",
+      "category": "specialized",
+      "salesModel": "focused_offer",
+      "goal": "purchase",
+      "reasons": [
+        "Vous avez confirmé ce modèle de site pour votre offre actuelle ; ce choix prime sur les indices automatiques."
+      ],
+      "evidence": [
+        {
+          "source": "business",
+          "value": "products"
+        },
+        {
+          "source": "client_choice",
+          "value": "specialized"
+        }
+      ],
+      "clarification": null,
+      "eligibleThemes": [
+        {
+          "referenceId": "fraise",
+          "name": "FRAISE",
+          "engineThemeId": null,
+          "status": "awaiting_integration"
+        },
+        {
+          "referenceId": "onde",
+          "name": "ONDE",
+          "engineThemeId": null,
+          "status": "awaiting_integration"
+        }
+      ]
+    },
+    "sourceHash": "e8a67408d164b4fb",
+    "status": "ready",
+    "issues": [],
+    "socialAssetsIncluded": false,
+    "integration": {
+      "status": "awaiting_theme_consumer",
+      "installedThemeChanged": false,
+      "required": [
+        "Raccorder les identifiants des quatre thèmes aux références et catégories explicites.",
+        "Consommer identité, documents complets, blocs éditoriaux, SEO et médias affectés dans le moteur existant.",
+        "Filtrer la bibliothèque et les opérations manuelles/IA par thème installé ET catégorie ; préserver les retouches et signaler les conflits."
+      ]
+    }
+  },
+  "routing": [
+    {
+      "stage": "understanding",
+      "processing": "api",
+      "alias": "text:vision_analysis:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": true,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "web_sources",
+      "processing": "web_fetch",
+      "alias": "research:web-search-and-source-fetch",
+      "provider": null,
+      "configuration": "configured_not_tested",
+      "modelConfigured": false,
+      "executed": false,
+      "reason": "Découverte web et lecture des sources avec les connecteurs existants ; couverture et accès réels à vérifier.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "research_strategy",
+      "processing": "api",
+      "alias": "text:strategy:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": false,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "name",
+      "processing": "api",
+      "alias": "text:strategy:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": false,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "art_directions",
+      "processing": "api",
+      "alias": "text:logo_symbol:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": false,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "logo",
+      "processing": "api",
+      "alias": "image:logo",
+      "provider": "openai",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "executed": false,
+      "reason": "Fournisseur, adaptateur, tarif et capacité résolus localement ; aucun appel effectué.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "identity_variants",
+      "processing": "local_preparation",
+      "alias": "identity:approved-logo-variants",
+      "provider": null,
+      "configuration": "local",
+      "modelConfigured": false,
+      "executed": false,
+      "reason": "Déclinaisons et charte dérivées du logo actif ; aucun nouveau dessin payant dans cette préparation locale.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "copywriting_seo",
+      "processing": "api",
+      "alias": "text:copywriting:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": false,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "site_images",
+      "processing": "api",
+      "alias": "image:product_edit",
+      "provider": "openai",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "executed": false,
+      "reason": "Fournisseur, adaptateur, tarif et capacité résolus localement ; aucun appel effectué.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "site_stock",
+      "processing": "api",
+      "alias": "stock:pixabay",
+      "provider": "pixabay",
+      "configuration": "unavailable",
+      "modelConfigured": false,
+      "executed": false,
+      "reason": "Accès Pixabay absent ou désactivé.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "visual_review",
+      "processing": "api",
+      "alias": "text:quality_control:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": true,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "initial_twenty_concepts",
+      "processing": "api",
+      "alias": "text:copywriting:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": false,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "initial_twenty_images",
+      "processing": "api",
+      "alias": "image:social_image",
+      "provider": "openai",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "executed": false,
+      "reason": "Fournisseur, adaptateur, tarif et capacité résolus localement ; aucun appel effectué.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "theme_handoff",
+      "processing": "local_preparation",
+      "alias": "theme:structured-contract",
+      "provider": null,
+      "configuration": "local",
+      "modelConfigured": false,
+      "executed": false,
+      "reason": "Projection des données approuvées, sans génération ni création d’un thème.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    }
+  ],
+  "generationStarted": false,
+  "themeChanged": false,
+  "themeConsumerVerified": false
+}

@@ -1,0 +1,204 @@
+{
+  "sourceCommit": "fb0e78b96d44a6e0c17d2bcf1f6e3e51d7b11c2a",
+  "generatedAt": "2026-10-17T23:10:51.102Z",
+  "isolated": true,
+  "aiCalls": 0,
+  "cmsInstalled": false,
+  "syntheticImages": "aplats géométriques de test uniquement, aucune image IA",
+  "beforeCommit": "21ce77cc419b08ed0d3504bf9be54a53f2597368",
+  "beforeEvidence": "reports/lot1/rattachement/products/page-2.html et theme.zip (conservés)",
+  "cases": [
+    {
+      "domain": "lab",
+      "pages": [
+        {
+          "target": "product:main",
+          "url": "/products/diagnostic",
+          "template": "product.ecp-24b76c1d174e416c",
+          "exportedTemplate": "templates/product.ecp-24b76c1d174e416c.json",
+          "templateSuffix": "ecp-24b76c1d174e416c",
+          "endingPresent": true,
+          "otherProductFactsAbsent": true,
+          "ownImages": [
+            "es-galerie-packshot-ap0afm.png"
+          ],
+          "screenshots": [
+            {
+              "file": "produit-1-ordinateur.png",
+              "width": 1440,
+              "overflow": 0,
+              "missingImages": 0
+            },
+            {
+              "file": "produit-1-mobile.png",
+              "width": 390,
+              "overflow": 0,
+              "missingImages": 0
+            }
+          ]
+        },
+        {
+          "target": "product:catalog:steel",
+          "url": "/products/diagnostic-2",
+          "template": "product.ecp-0a60e9cd87458b58",
+          "exportedTemplate": "templates/product.ecp-0a60e9cd87458b58.json",
+          "templateSuffix": "ecp-0a60e9cd87458b58",
+          "endingPresent": true,
+          "otherProductFactsAbsent": true,
+          "ownImages": [
+            "es-diagnostic-2-1-k3j6ax.png"
+          ],
+          "screenshots": [
+            {
+              "file": "produit-2-ordinateur.png",
+              "width": 1440,
+              "overflow": 0,
+              "missingImages": 0
+            },
+            {
+              "file": "produit-2-mobile.png",
+              "width": 390,
+              "overflow": 0,
+              "missingImages": 0
+            }
+          ]
+        },
+        {
+          "target": "product:catalog:blank",
+          "url": "/products/diagnostic-3",
+          "template": "product.ecp-7cae64d869f2b4a9",
+          "exportedTemplate": "templates/product.ecp-7cae64d869f2b4a9.json",
+          "templateSuffix": "ecp-7cae64d869f2b4a9",
+          "endingPresent": true,
+          "otherProductFactsAbsent": true,
+          "ownImages": [
+            "es-diagnostic-3-1-a1u0of.png"
+          ],
+          "screenshots": [
+            {
+              "file": "produit-3-ordinateur.png",
+              "width": 1440,
+              "overflow": 0,
+              "missingImages": 0
+            },
+            {
+              "file": "produit-3-mobile.png",
+              "width": 390,
+              "overflow": 0,
+              "missingImages": 0
+            }
+          ]
+        }
+      ],
+      "currentVersionUnchanged": true,
+      "themeCheck": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "exportIssues": [
+        {
+          "code": "product_template_assignment_required",
+          "severity": "warning"
+        }
+      ],
+      "offlineAssignment": "manual-required",
+      "installed": false
+    },
+    {
+      "domain": "music",
+      "pages": [
+        {
+          "target": "product:main",
+          "url": "/products/diagnostic",
+          "template": "product.ecp-24b76c1d174e416c",
+          "exportedTemplate": "templates/product.ecp-24b76c1d174e416c.json",
+          "templateSuffix": "ecp-24b76c1d174e416c",
+          "endingPresent": true,
+          "otherProductFactsAbsent": true,
+          "ownImages": [
+            "es-galerie-packshot-yw4c47.png"
+          ],
+          "screenshots": [
+            {
+              "file": "produit-1-ordinateur.png",
+              "width": 1440,
+              "overflow": 0,
+              "missingImages": 0
+            },
+            {
+              "file": "produit-1-mobile.png",
+              "width": 390,
+              "overflow": 0,
+              "missingImages": 0
+            }
+          ]
+        },
+        {
+          "target": "product:catalog:steel",
+          "url": "/products/diagnostic-3",
+          "template": "product.ecp-0a60e9cd87458b58",
+          "exportedTemplate": "templates/product.ecp-0a60e9cd87458b58.json",
+          "templateSuffix": "ecp-0a60e9cd87458b58",
+          "endingPresent": true,
+          "otherProductFactsAbsent": true,
+          "ownImages": [
+            "es-diagnostic-3-1-629xsn.png"
+          ],
+          "screenshots": [
+            {
+              "file": "produit-2-ordinateur.png",
+              "width": 1440,
+              "overflow": 0,
+              "missingImages": 0
+            },
+            {
+              "file": "produit-2-mobile.png",
+              "width": 390,
+              "overflow": 0,
+              "missingImages": 0
+            }
+          ]
+        },
+        {
+          "target": "product:catalog:blank",
+          "url": "/products/diagnostic-2",
+          "template": "product.ecp-7cae64d869f2b4a9",
+          "exportedTemplate": "templates/product.ecp-7cae64d869f2b4a9.json",
+          "templateSuffix": "ecp-7cae64d869f2b4a9",
+          "endingPresent": true,
+          "otherProductFactsAbsent": true,
+          "ownImages": [
+            "es-diagnostic-2-1-lje5ck.png"
+          ],
+          "screenshots": [
+            {
+              "file": "produit-3-ordinateur.png",
+              "width": 1440,
+              "overflow": 0,
+              "missingImages": 0
+            },
+            {
+              "file": "produit-3-mobile.png",
+              "width": 390,
+              "overflow": 0,
+              "missingImages": 0
+            }
+          ]
+        }
+      ],
+      "currentVersionUnchanged": true,
+      "themeCheck": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "exportIssues": [
+        {
+          "code": "product_template_assignment_required",
+          "severity": "warning"
+        }
+      ],
+      "offlineAssignment": "manual-required",
+      "installed": false
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "code": "70924680ea11592220c9965a142fb3335845c5ed",
+  "at": "2026-10-18T17:25:35.544Z",
+  "simulation": true,
+  "realAiCalls": 0,
+  "results": [
+    {
+      "business": "products",
+      "name": "Fibre Atelier",
+      "ready": true,
+      "revision": 21,
+      "pages": [
+        {
+          "key": "home",
+          "kind": "home",
+          "title": "Accueil"
+        },
+        {
+          "key": "product:main",
+          "kind": "product",
+          "title": "Kit de tissage mural"
+        },
+        {
+          "key": "brand",
+          "kind": "brand",
+          "title": "À propos"
+        },
+        {
+          "key": "contact",
+          "kind": "contact",
+          "title": "Contact"
+        }
+      ],
+      "simulation": true
+    },
+    {
+      "business": "services",
+      "name": "Grain de Son",
+      "ready": true,
+      "revision": 24,
+      "pages": [
+        {
+          "key": "home",
+          "kind": "home",
+          "title": "Accueil"
+        },
+        {
+          "key": "service:0",
+          "kind": "service",
+          "title": "Diagnostic instrumental"
+        },
+        {
+          "key": "service:1",
+          "kind": "service",
+          "title": "Réglage mécanique"
+        },
+        {
+          "key": "brand",
+          "kind": "brand",
+          "title": "À propos"
+        },
+        {
+          "key": "contact",
+          "kind": "contact",
+          "title": "Contact"
+        }
+      ],
+      "simulation": true
+    }
+  ]
+}

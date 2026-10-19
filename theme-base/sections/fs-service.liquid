@@ -1,0 +1,339 @@
+{%- comment -%}
+Prestation détaillée (services) : ce qui est compris, ce qui est remis et ce qui ne l'est pas, avec durée, public et
+  prix indicatif écrits par la marque. Image fixe et listes, image puis listes, ou trois colonnes.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign prof = 'es'
+  if settings.conversion_profile != blank and settings.conversion_profile != 'none'
+    assign prof = 'cv'
+  elsif settings.editorial_profile != blank and settings.editorial_profile != 'none'
+    assign prof = 'ed'
+  endif
+  assign fx = s.effect
+  assign cards = 'fs-card'
+-%}
+<section id="fs-{{ section.id }}" class="fs fs-service fs-service--{{ s.layout | default: 'base' }} fs--{{ prof }}{% if prof == 'ed' %} ed-section{% else %} es-section{% endif %}{% if s.background != blank and s.background != 'scheme' %} fs--{{ s.background }}{% endif %}{% if s.hover %} fs--hover{% endif %} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;--fs-angle:{{ s.gradient_angle | default: 165 }}deg;"{% if fx == 'none' %} data-ed-motion="none"{% endif %} >
+  <div class="{% if prof == 'ed' %}ed-shell{% else %}es-container{% endif %} fs__inner">
+    {%- render 'fs-head', prof: prof, eyebrow: s.eyebrow, heading: s.heading, accent: s.heading_accent, text: s.text, align: s.align, effect: fx, button_label: '', button_link: '' -%}
+    <div class="fs-service__body">
+      {%- if s.layout != 'columns' -%}<div class="fs-service__media"{% render 'fs-reveal', effect: 'curtain' %}>{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role %}</div>{%- endif -%}
+      <div class="fs-service__copy">
+        {%- if s.duration_text != blank or s.audience_text != blank or s.price_text != blank -%}
+          <dl class="fs-service__facts"{% render 'fs-reveal', effect: fx %}>
+            {%- if s.duration_text != blank -%}<div><dt>{{ s.label_duration | default: 'Durée' | escape }}</dt><dd>{{ s.duration_text | escape }}</dd></div>{%- endif -%}
+            {%- if s.audience_text != blank -%}<div><dt>{{ s.label_audience | default: 'Pour qui' | escape }}</dt><dd>{{ s.audience_text | escape }}</dd></div>{%- endif -%}
+            {%- if s.price_text != blank -%}<div><dt>{{ s.label_price | default: 'Tarif' | escape }}</dt><dd>{{ s.price_text | escape }}{% if s.price_note != blank %}<span class="fs-meta">{{ s.price_note | escape }}</span>{% endif %}</dd></div>{%- endif -%}
+          </dl>
+        {%- endif -%}
+        <div class="fs-service__groups{% if s.layout == 'columns' %} fs-grid fs-grid--3{% endif %}">
+          {%- assign kinds = 'included,deliverable,excluded' | split: ',' -%}
+          {%- for k in kinds -%}
+            {%- capture rows -%}{%- for block in section.blocks -%}{%- if block.type == k -%}<li {{ block.shopify_attributes }}><span class="fs-commit__icon">{% if k == 'excluded' %}{% render 'fs-icon', name: 'cross' %}{% elsif k == 'deliverable' %}{% render 'fs-icon', name: 'doc' %}{% else %}{% render 'fs-icon', name: 'check' %}{% endif %}</span><span>{{ block.settings.text | escape }}</span></li>{%- endif -%}{%- endfor -%}{%- endcapture -%}
+            {%- if rows != blank -%}
+              <div class="fs-service__group{% if s.layout == 'columns' %} {{ cards }}{% endif %} fs-service__group--{{ k }}"{% render 'fs-reveal', effect: fx, index: forloop.index %}>
+                <h3 class="fs-item__title">{% case k %}{% when 'included' %}{{ s.label_included | default: 'Compris' | escape }}{% when 'deliverable' %}{{ s.label_deliverable | default: 'Ce qui vous est remis' | escape }}{% else %}{{ s.label_excluded | default: 'Non compris' | escape }}{% endcase %}</h3>
+                <ul role="list">{{ rows }}</ul>
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+        {%- if s.cta_label != blank and s.cta_link != blank -%}<p class="fs-service__cta">{% render 'fs-button', prof: prof, label: s.cta_label, link: s.cta_link %}</p>{%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Prestation détaillée",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Repère"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Titre"
+    },
+    {
+      "type": "text",
+      "id": "heading_accent",
+      "label": "Fin du titre mise en valeur"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texte"
+    },
+    {
+      "type": "select",
+      "id": "align",
+      "label": "Alignement de l'en-tête",
+      "options": [
+        {
+          "value": "center",
+          "label": "Centré"
+        },
+        {
+          "value": "left",
+          "label": "À gauche"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Disposition",
+      "options": [
+        {
+          "value": "split",
+          "label": "Image fixe et détails"
+        },
+        {
+          "value": "stacked",
+          "label": "Image puis détails"
+        },
+        {
+          "value": "columns",
+          "label": "Trois colonnes"
+        }
+      ],
+      "default": "split"
+    },
+    {
+      "type": "text",
+      "id": "duration_text",
+      "label": "Durée (ex. Une demi-journée)"
+    },
+    {
+      "type": "text",
+      "id": "audience_text",
+      "label": "Pour qui"
+    },
+    {
+      "type": "text",
+      "id": "price_text",
+      "label": "Tarif indicatif (texte de la marque)"
+    },
+    {
+      "type": "text",
+      "id": "price_note",
+      "label": "Précision sur le tarif (ex. Devis gratuit)"
+    },
+    {
+      "type": "text",
+      "id": "label_duration",
+      "label": "Intitulé : durée",
+      "default": "Durée"
+    },
+    {
+      "type": "text",
+      "id": "label_audience",
+      "label": "Intitulé : public",
+      "default": "Pour qui"
+    },
+    {
+      "type": "text",
+      "id": "label_price",
+      "label": "Intitulé : tarif",
+      "default": "Tarif"
+    },
+    {
+      "type": "text",
+      "id": "label_included",
+      "label": "Intitulé : compris",
+      "default": "Compris"
+    },
+    {
+      "type": "text",
+      "id": "label_deliverable",
+      "label": "Intitulé : remis",
+      "default": "Ce qui vous est remis"
+    },
+    {
+      "type": "text",
+      "id": "label_excluded",
+      "label": "Intitulé : non compris",
+      "default": "Non compris"
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "Libellé du bouton"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "Lien du bouton"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "image_asset",
+      "label": "Fichier du projet"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Description de l’image"
+    },
+    {
+      "type": "text",
+      "id": "media_role",
+      "label": "Média attendu (aperçu du studio)"
+    },
+    {
+      "type": "header",
+      "content": "Effets et fond"
+    },
+    {
+      "type": "select",
+      "id": "effect",
+      "label": "Effet d'apparition",
+      "options": [
+        {
+          "value": "none",
+          "label": "Aucun"
+        },
+        {
+          "value": "fade",
+          "label": "Fondu"
+        },
+        {
+          "value": "rise",
+          "label": "Montée"
+        },
+        {
+          "value": "zoom",
+          "label": "Zoom"
+        },
+        {
+          "value": "curtain",
+          "label": "Révélation des images"
+        }
+      ],
+      "default": "rise"
+    },
+    {
+      "type": "checkbox",
+      "id": "stagger",
+      "label": "Apparition décalée des éléments",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "hover",
+      "label": "Survol léger des cartes",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "background",
+      "label": "Fond",
+      "options": [
+        {
+          "value": "scheme",
+          "label": "Couleur du schéma"
+        },
+        {
+          "value": "gradient-soft",
+          "label": "Dégradé léger"
+        },
+        {
+          "value": "gradient-strong",
+          "label": "Dégradé marqué"
+        }
+      ],
+      "default": "scheme"
+    },
+    {
+      "type": "range",
+      "id": "gradient_angle",
+      "label": "Angle du dégradé",
+      "min": 0,
+      "max": 360,
+      "step": 15,
+      "unit": "°",
+      "default": 165
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Marge haute",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Marge basse",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "default": 96
+    }
+  ],
+  "blocks": [
+    {
+      "type": "included",
+      "name": "Compris",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Élément compris"
+        }
+      ]
+    },
+    {
+      "type": "deliverable",
+      "name": "Remis",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Élément remis"
+        }
+      ]
+    },
+    {
+      "type": "excluded",
+      "name": "Non compris",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Élément non compris"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Prestation détaillée",
+      "settings": {
+        "layout": "split"
+      }
+    }
+  ],
+  "max_blocks": 18
+}
+{% endschema %}

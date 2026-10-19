@@ -10,6 +10,7 @@
 import { storeProducts as storeProductsOf } from "../../theme/spec";
 import fs from "node:fs";
 import path from "node:path";
+import { createHash } from "node:crypto";
 import { zipSync, strToU8 } from "fflate";
 import { compileTheme, themeAssetBinary, type AssetLoader } from "../../theme/compile";
 import { themeLang, type SectionInstance, type ThemeSpec } from "../../theme/spec";
@@ -18,6 +19,7 @@ import { wooProductsCsv } from "../../theme/catalog-export";
 import { designLayer } from "../design";
 import { flatStrings, normalizedSection, phpTemplates, sectionSchemaOf, themeSettings, type SectionSchema } from "../liquid";
 import type { ExportIssue, PlatformExport } from "../types";
+import { exportProductHandle } from "../catalog";
 
 const ROOT = process.cwd();
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "site";
@@ -81,10 +83,19 @@ export async function exportWordPress(spec: ThemeSpec, load: AssetLoader): Promi
         // panier réels), retrouvé par le SKU du produit importé (= son adresse dans le studio). Le formulaire d'achat
         // Shopify ne fonctionnerait pas dans WordPress.
         if (s.type === "featured-product") {
-          const handle = String(s.settings.product ?? "") || spec.store.product?.handle || "";
-          if (services || !handle) return "";
+          const handle = exportProductHandle(spec, s);
+          if (services) return "";
+          if (!handle || !storeProductsOf(spec).some(p => p.handle === handle)) {
+            issues.push({ code: "product_target_missing", severity: "blocking", detail: `${where}/${id} : produit cible absent, aucun produit de remplacement.` });
+            return "";
+          }
           adapted.add("featured-product");
-          return `<!-- wp:group {"className":"es-wc es-wc-featured","layout":{"type":"default"}} -->\n<div class="wp-block-group es-wc es-wc-featured"><!-- wp:shortcode -->\n[product_page sku="${handle.replace(/[^a-z0-9-]/gi, "")}"]\n<!-- /wp:shortcode --></div>\n<!-- /wp:group -->`;
+          return `<!-- wp:group {"className":"es-wc es-wc-featured","layout":{"type":"default"}} -->\n<div class="wp-block-group es-wc es-wc-featured"><!-- wp:shortcode -->\n[es_product handle="${handle.replace(/[^a-z0-9-]/gi, "")}"]\n<!-- /wp:shortcode --></div>\n<!-- /wp:group -->`;
+        }
+        if (s.type === "featured-collection" || (s.type === "ref-offers" && s.settings.layout === "shop")) {
+          if (services) return "";
+          adapted.add(s.type);
+          return `<!-- wp:es/catalog ${blockAttrs({ sectionId: id, originalType: s.type, settings: s.settings, onlyFor })} /-->`;
         }
         const schema = schemaOf(s.type);
         if (!schema) {
@@ -130,7 +141,7 @@ export async function exportWordPress(spec: ThemeSpec, load: AssetLoader): Promi
     // Fiche produit : blocs natifs de WooCommerce (prix, déclinaisons, stock, ajout au panier réels) + sections V2
     // propres au produit (caractéristiques, questions) affichées sur sa fiche seulement.
     const extra = spec.templates.product ? render(spec.templates.product, "fiche produit", (s) => s.type.startsWith("v2-"), spec.store.product.handle) : "";
-    put("templates/single-product.html", page(`<!-- wp:group {"className":"es-wc","layout":{"type":"default"}} -->\n<div class="wp-block-group es-wc"><!-- wp:columns {"align":"wide"} -->\n<div class="wp-block-columns alignwide"><!-- wp:column {"width":"55%"} -->\n<div class="wp-block-column" style="flex-basis:55%"><!-- wp:woocommerce/product-image-gallery /--></div>\n<!-- /wp:column --><!-- wp:column -->\n<div class="wp-block-column"><!-- wp:post-title {"level":1,"__woocommerceNamespace":"woocommerce/product-query/product-title"} /--><!-- wp:woocommerce/product-price /--><!-- wp:post-excerpt {"__woocommerceNamespace":"woocommerce/product-query/product-summary"} /--><!-- wp:woocommerce/add-to-cart-form /--><!-- wp:woocommerce/product-meta /--></div>\n<!-- /wp:column --></div>\n<!-- /wp:columns --><!-- wp:woocommerce/product-details {"align":"wide"} /--></div>\n<!-- /wp:group -->\n${extra}\n<!-- wp:group {"className":"es-wc","layout":{"type":"default"}} -->\n<div class="wp-block-group es-wc"><!-- wp:woocommerce/related-products {"align":"wide"} /--></div>\n<!-- /wp:group -->`, "es-main es-product"));
+    put("templates/single-product.html", page(`<!-- wp:group {"className":"es-wc product","layout":{"type":"default"}} -->\n<div class="wp-block-group es-wc product"><!-- wp:columns {"align":"wide"} -->\n<div class="wp-block-columns alignwide"><!-- wp:column {"width":"55%"} -->\n<div class="wp-block-column" style="flex-basis:55%"><!-- wp:woocommerce/product-image-gallery /--></div>\n<!-- /wp:column --><!-- wp:column -->\n<div class="wp-block-column"><!-- wp:post-title {"level":1,"__woocommerceNamespace":"woocommerce/product-query/product-title"} /--><!-- wp:woocommerce/product-price /--><!-- wp:post-excerpt {"__woocommerceNamespace":"woocommerce/product-query/product-summary"} /--><!-- wp:woocommerce/add-to-cart-form /--><!-- wp:woocommerce/product-meta /--></div>\n<!-- /wp:column --></div>\n<!-- /wp:columns --><!-- wp:woocommerce/product-details {"align":"wide"} /--></div>\n<!-- /wp:group -->\n${extra}\n<!-- wp:group {"className":"es-wc","layout":{"type":"default"}} -->\n<div class="wp-block-group es-wc"><!-- wp:woocommerce/related-products {"align":"wide"} /--></div>\n<!-- /wp:group -->`, "es-main es-product"));
     put("templates/archive-product.html", page(`<!-- wp:group {"className":"es-wc","layout":{"type":"default"}} -->\n<div class="wp-block-group es-wc"><!-- wp:query-title {"type":"archive"} /--><!-- wp:woocommerce/product-collection {"query":{"perPage":12,"pages":0,"offset":0,"postType":"product","order":"asc","orderBy":"title","search":"","exclude":[],"inherit":true,"taxQuery":{},"isProductCollectionBlock":true,"woocommerceAttributes":[],"woocommerceStockStatus":["instock","outofstock","onbackorder"]},"displayLayout":{"type":"flex","columns":3}} -->\n<div class="wp-block-woocommerce-product-collection"><!-- wp:woocommerce/product-template -->\n<!-- wp:woocommerce/product-image /--><!-- wp:post-title {"textAlign":"center","level":3,"isLink":true,"__woocommerceNamespace":"woocommerce/product-collection/product-title"} /--><!-- wp:woocommerce/product-price {"isDescendentOfQueryLoop":true,"textAlign":"center"} /--><!-- wp:woocommerce/product-button {"isDescendentOfQueryLoop":true,"textAlign":"center"} /-->\n<!-- /wp:woocommerce/product-template --></div>\n<!-- /wp:woocommerce/product-collection --></div>\n<!-- /wp:group -->`));
   }
 
@@ -148,6 +159,8 @@ export async function exportWordPress(spec: ThemeSpec, load: AssetLoader): Promi
   // Intégration e-commerce : seulement pour une boutique (un site vitrine ne contient aucune trace de WooCommerce).
   if (!services) {
     put("inc/es-woo.php", fs.readFileSync(path.join(ROOT, "assets/cms/wordpress/es-woo.php")));
+    put("inc/es-catalog-import.php", fs.readFileSync(path.join(ROOT, "assets/cms/wordpress/es-catalog-import.php")));
+    put("assets/js/es-woo.js", fs.readFileSync(path.join(ROOT, "assets/cms/wordpress/es-woo.js")));
     put("assets/css/es-woo.css", fs.readFileSync(path.join(ROOT, "assets/cms/wordpress/es-woo.css")));
   }
 
@@ -159,7 +172,7 @@ export async function exportWordPress(spec: ThemeSpec, load: AssetLoader): Promi
   }
   put("assets/css/es-design.css", `/* ${commentSafe(spec.store.shopName)} — design extrait du studio (E-COM STUDIO IA) */\n${design.css}\n`);
   put("assets/css/es-wp.css", fs.readFileSync(path.join(ROOT, "assets/cms/wordpress/es-wp.css")));
-  const js = files.get("assets/theme.js");
+  const js = ["theme.js", "reference-interactions.js", "purchase-offers.js", "editorial.js"].map((name) => files.get(`assets/${name}`)).filter(Boolean).join("\n;\n");
   if (js) put("assets/js/theme.js", js);
   put("assets/js/es-editor.js", fs.readFileSync(path.join(ROOT, "assets/cms/wordpress/es-editor.js")));
   for (const f of design.fonts) {
@@ -181,8 +194,10 @@ export async function exportWordPress(spec: ThemeSpec, load: AssetLoader): Promi
   }
 
   // ------------------------------------------------------------ données du site, réglages, fichiers WordPress
+  const assetHash = createHash("sha256");
+  for (const name of Object.keys(out).filter(p => p.startsWith("assets/")).sort()) assetHash.update(name).update(out[name]);
   const site = {
-    version: "1.0.0",
+    version: `1.0.0-${assetHash.digest("hex").slice(0,12)}`,
     generator: "E-COM STUDIO IA — CMS Engine V2",
     shopName: spec.store.shopName,
     lang,
@@ -192,8 +207,10 @@ export async function exportWordPress(spec: ThemeSpec, load: AssetLoader): Promi
     stylesheets: design.stylesheets,
     menus: spec.store.menus,
     policies: (spec.store.policies ?? []).map((p) => ({ handle: p.handle, title: p.title, body_html: p.body_html })),
-    pages: pages.map((p) => ({ handle: p.handle, title: p.title, body_html: p.body_html })),
+    pages: pages.map((p) => ({ handle: p.handle, title: p.title, body_html: p.body_html, template: p.template === "page" ? "" : `page-${p.handle}` })),
     product: services ? null : { handle: spec.store.product.handle, title: spec.store.product.title },
+    catalogCollections: services ? [] : spec.store.collections ?? [],
+    catalogHandles: services ? [] : storeProductsOf(spec).map(p => p.handle),
     schemas,
     strings: flatStrings(files, lang),
     themeStrings: { addToCart: t("Ajouter au panier", "Add to cart"), soldOut: t("Épuisé", "Sold out"), unavailable: t("Indisponible", "Unavailable"), added: t("Ajouté", "Added"), error: t("Une erreur est survenue", "Something went wrong") },
@@ -231,8 +248,14 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: es-theme
 */
 `);
-  put("functions.php", `<?php\n/** ${commentSafe(spec.store.shopName)} — thème généré par E-COM STUDIO IA (CMS Engine V2). */\nrequire_once __DIR__ . '/inc/es-theme.php';\n`);
-  if (!services) put("import/produits-woocommerce.csv", "﻿" + wooProductsCsv(spec));
+  put("functions.php", `<?php\n/** ${commentSafe(spec.store.shopName)} — thème généré par E-COM STUDIO IA (CMS Engine V2). */\nrequire_once __DIR__ . '/inc/es-theme.php';\n${services ? "" : "require_once __DIR__ . '/inc/es-catalog-import.php';\n"}`);
+  if (!services) {
+    try { put("import/produits-woocommerce.csv", "﻿" + wooProductsCsv(spec)); }
+    catch (error) {
+      if (!(error instanceof Error) || !/^catalog_(?:attribute_collision|csv_value_collision)/.test(error.message)) throw error;
+      issues.push({ code: "csv_requires_local_import", severity: "warning", detail: t("Libellés ambigus pour le CSV natif WooCommerce : utiliser Outils › Catalogue E-COM STUDIO. L’import local conserve les libellés et des identifiants d’attribut distincts.", "Ambiguous labels for WooCommerce native CSV: use Tools › E-COM STUDIO Catalog. Local import preserves labels with distinct attribute identifiers.") });
+    }
+  }
   put(t("LISEZMOI.txt", "README.txt"), installGuide(spec, services, lang, pages));
   const shot = media.find((f) => /hero|scene|packshot|detoure/.test(f));
   if (shot) {
@@ -265,10 +288,12 @@ function installGuide(spec: ThemeSpec, services: boolean, lang: "fr" | "en", pag
     t("2. À l'activation, le thème crée les pages du site (si elles n'existent pas) et prérègle les menus (Apparence › Menus).", "2. On activation, the theme creates the site's pages (if missing) and pre-fills the menus (Appearance › Menus)."),
     ...(services ? [] : [
       t("3. Installez et activez WooCommerce (Extensions › Ajouter).", "3. Install and activate WooCommerce (Plugins › Add New)."),
-      t("4. Produits › Importer : choisissez import/produits-woocommerce.csv (prix et déclinaisons tels que saisis dans le studio ; rien n'est inventé). Les produits arrivent en brouillon : ajoutez leurs photos (dossier assets/es du thème) si la colonne Images est vide, vérifiez-les puis publiez-les.", "4. Products › Import: choose import/produits-woocommerce.csv (prices and variants as entered in the studio; nothing is made up). Products arrive as drafts: add their photos (theme folder assets/es) if the Images column is empty, check them, then publish."),
+      t("4. Outils › Catalogue E-COM STUDIO : cliquez sur Importer / mettre à jour les brouillons. Le thème lit son catalogue livré et associe ses fichiers locaux aux produits et variantes, sans URL publique. Vérifiez les prix, taxes et stocks, puis publiez vous-même les produits. Une réimportation met à jour les éléments reliés ; les produits retirés du catalogue passent en brouillon et les anciennes variantes deviennent privées, sans suppression. Les champs de prix et les photos inconnus dans le studio conservent les valeurs CMS existantes.", "4. Tools › E-COM STUDIO Catalog: import/update drafts. The theme reads the delivered catalog and associates local files with products and variants without a public URL. Check prices, taxes and stock, then publish products yourself. Reimport updates linked records; removed products become drafts and old variants become private without deletion. Unknown studio prices and photos preserve existing CMS values."),
+      t("Alternative CSV : import/produits-woocommerce.csv, si présent, conserve tous les axes et SKU. Ne cumulez pas un premier import CSV et un premier import local du même catalogue : le contrôle de propriété refuse d’adopter automatiquement les SKU étrangers. Pour réimporter un CSV natif existant, cochez Mettre à jour les produits existants. Les libellés que le CSV ne distingue pas doivent passer par l’import local (termes natifs à identifiants distincts).", "CSV alternative: import/produits-woocommerce.csv, when present, preserves all axes and SKUs. Do not combine initial CSV and initial local imports of the same catalog: ownership checks reject automatic adoption of existing SKUs. To reimport existing native CSV records, select Update existing products. Labels ambiguous in CSV must use local import with distinct native term identifiers."),
       t("5. Réglez les paiements et la livraison dans WooCommerce › Réglages : le thème ne gère aucun paiement.", "5. Set up payments and shipping in WooCommerce › Settings: the theme handles no payment."),
     ]),
     "",
+    t("Mise à jour : téléversez le nouveau ZIP et choisissez le remplacement du thème. Conservez l’ancien ZIP pour revenir en arrière. Les pages et menus déjà modifiés dans WordPress sont conservés ; l’import du catalogue reste une action séparée.", "Update: upload the new ZIP and replace the theme. Keep the previous ZIP for rollback. Pages and menus edited in WordPress are preserved; catalog import remains a separate action."),
     t("Modifier le site", "Editing the site"),
     t("- Apparence › Éditeur › Modèles : chaque section est un bloc « Section E-COM STUDIO » ; ses textes, liens, images, disposition, couleurs et marges se modifient dans la barre latérale.", "- Appearance › Editor › Templates: each section is an « E-COM STUDIO Section » block; edit its text, links, images, layout, colours and spacing in the sidebar."),
     t("- Menus : Apparence › Menus. Nom du site : Réglages › Général.", "- Menus: Appearance › Menus. Site name: Settings › General."),

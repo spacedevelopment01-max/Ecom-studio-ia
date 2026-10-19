@@ -1,0 +1,73 @@
+{%- comment -%}
+  Témoignage à la une : une seule citation mise en avant (grande, lisible), avec initiales, nom, précision, note en
+  étoiles facultative, étiquette (« Avis fictif » tant qu'aucune application d'avis n'est connectée) et visuel du
+  produit. Dispositions : carte centrée, visuel + citation côte à côte, ou bande pleine largeur. Jamais de photo de
+  personne ; aucune mention « vérifié ».
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign speed = s.animation_speed | default: 'normal'
+  assign words = s.author | split: ' '
+  assign initials = ''
+  for w in words limit: 2
+    assign initials = initials | append: w | slice: 0, 1
+  endfor
+  assign initials = initials | upcase
+  assign has_media = false
+  if s.image != blank or s.image_asset != blank
+    assign has_media = true
+  endif
+-%}
+<section class="es-section cv-quote cv-quote--{{ s.layout }}{% if has_media %} cv-quote--media{% endif %} cv-anim cv-anim--{{ speed }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;" data-cv-quote>
+  <div class="es-container cv-quote__inner">
+    {%- if has_media -%}
+      <div class="cv-quote__media cv-quote__media--{{ s.ratio }} cv-zoomable"{% render 'cv-reveal', animation: s.animation %}>{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, focus_x: s.focus_x, focus_y: s.focus_y %}</div>
+    {%- endif -%}
+    <figure class="cv-quote__card"{% render 'cv-reveal', animation: s.animation, index: 1 %}>
+      {%- if s.eyebrow != blank -%}<p class="cv-eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
+      {%- if s.rating > 0 -%}
+        {%- assign pct = s.rating | times: 20 -%}
+        <p class="cv-quote__stars" aria-label="{{ 'products.product.rating_of' | t: rating: s.rating, max: 5 | escape }}"><span class="es-stars cv-stars--boxed" style="--pct:{{ pct }}%" aria-hidden="true"></span></p>
+      {%- endif -%}
+      <blockquote class="cv-quote__text"><span class="cv-quote__mark" aria-hidden="true">“</span>{{ s.quote | newline_to_br }}</blockquote>
+      <figcaption class="cv-quote__author">
+        <span class="cv-quote__avatar" aria-hidden="true">{{ initials }}</span>
+        <span class="cv-quote__who"><strong>{{ s.author | escape }}</strong>{% if s.detail != blank %}<span>{{ s.detail | escape }}</span>{% endif %}</span>
+        {%- if s.label != blank -%}<span class="cv-fictional">{{ s.label | escape }}</span>{%- endif -%}
+      </figcaption>
+      {%- if s.button_label != blank -%}<a class="es-button cv-button cv-quote__button" href="{{ s.button_link | default: routes.all_products_collection_url }}">{{ s.button_label | escape }}</a>{%- endif -%}
+    </figure>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Témoignage à la une",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "textarea", "id": "quote", "label": "Citation", "default": "Un témoignage de démonstration : remplacez-le par un avis réel et autorisé." },
+    { "type": "text", "id": "author", "label": "Prénom et initiale", "default": "Camille R." },
+    { "type": "text", "id": "detail", "label": "Précision", "info": "Ex. « Cliente depuis 3 mois ». Rien d'inventé." },
+    { "type": "range", "id": "rating", "label": "Note en étoiles", "min": 0, "max": 5, "step": 1, "default": 5, "info": "0 : pas d'étoiles." },
+    { "type": "text", "id": "label", "label": "Étiquette", "default": "Avis fictif", "info": "Gardée tant qu'aucune application d'avis n'est connectée." },
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "card", "options": [ { "value": "card", "label": "Carte centrée" }, { "value": "split", "label": "Visuel et citation côte à côte" }, { "value": "band", "label": "Bande pleine largeur" } ] },
+    { "type": "image_picker", "id": "image", "label": "Visuel du produit" },
+    { "type": "text", "id": "image_asset", "label": "Fichier image fourni avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Description du visuel" },
+    { "type": "text", "id": "media_role", "label": "Rôle du visuel attendu" },
+    { "type": "range", "id": "focus_x", "label": "Point focal horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "focus_y", "label": "Point focal vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "select", "id": "ratio", "label": "Format du visuel", "default": "square", "options": [ { "value": "square", "label": "Carré" }, { "value": "portrait", "label": "Portrait 4:5" }, { "value": "landscape", "label": "Paysage 4:3" } ] },
+    { "type": "text", "id": "button_label", "label": "Bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "select", "id": "animation", "label": "Animation", "default": "rise", "options": [ { "value": "none", "label": "Aucune" }, { "value": "fade", "label": "Fondu" }, { "value": "rise", "label": "Montée en fondu" }, { "value": "zoom", "label": "Léger zoom" } ] },
+    { "type": "select", "id": "animation_speed", "label": "Vitesse", "default": "normal", "options": [ { "value": "slow", "label": "Lente" }, { "value": "normal", "label": "Normale" }, { "value": "fast", "label": "Rapide" } ] },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 },
+    { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 }
+  ],
+  "presets": [ { "name": "Témoignage à la une" } ]
+}
+{% endschema %}

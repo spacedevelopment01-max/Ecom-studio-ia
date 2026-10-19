@@ -1,0 +1,21 @@
+{
+  "simulation": true,
+  "codeVersion": {
+    "commit": "abad7c08391d0411946119e0152400c2a629974b",
+    "source": "compiled-build"
+  },
+  "readyBeforeTheme": true,
+  "initialVideoIdsPreserved": [
+    "riuytp04urxp2e7d",
+    "j1d0zh0idgvxx3hq"
+  ],
+  "themeApplied": "rive",
+  "themeVersion": "3odwbdk78x44no4p",
+  "editedVersion": "y37i7cq45839db0z",
+  "versionsPreserved": true,
+  "library": 91,
+  "localEditViaNativeApiThenUiReload": true,
+  "previewEditVerified": true,
+  "providerCalls": 0,
+  "errors": []
+}

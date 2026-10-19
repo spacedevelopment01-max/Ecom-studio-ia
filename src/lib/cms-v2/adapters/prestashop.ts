@@ -11,6 +11,7 @@
 import { storeProducts as storeProductsOf } from "../../theme/spec";
 import fs from "node:fs";
 import path from "node:path";
+import { createHash } from "node:crypto";
 import { zipSync, strToU8 } from "fflate";
 import { compileTheme, themeAssetBinary, type AssetLoader } from "../../theme/compile";
 import { renderPage } from "../../theme/render";
@@ -18,6 +19,7 @@ import { cloneSpec, themeLang, type ThemeSpec } from "../../theme/spec";
 import { pick } from "../../i18n";
 import { designLayer } from "../design";
 import type { ExportIssue, PlatformExport } from "../types";
+import { exportProductHandle } from "../catalog";
 
 const ROOT = process.cwd();
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "") || "site";
@@ -72,7 +74,8 @@ export function toSmarty(html: string, themeName = ""): string {
   s = s.replace(/(<input type="hidden" name="form_type" value="[^"]*"[^>]*>)/g, (m) => `${m}<input type="hidden" name="token" value="${dyn("{$static_token}")}"><input type="hidden" name="back" value="${dyn("{$urls.current_url|escape:'html':'UTF-8'}")}">`);
   // Médias du thème.
   // (Dans un thème enfant, « theme_assets » désigne le thème parent : chemin explicite du thème.)
-  s = s.replace(/\b(src|srcset|poster)="\/assets\/([^"]+)"/g, (_m, attr: string, f: string) => `${attr}="${dyn("{$urls.base_url}")}themes/${themeName}/assets/es/${f}"`);
+  const mediaUrls = (value: string) => value.replace(/\/assets\/([A-Za-z0-9_.-]+)/g, (_m, f: string) => `${dyn("{$urls.base_url}")}themes/${themeName}/assets/es/${f}`);
+  s = s.replace(/\b(src|srcset|poster|style)="([^"]*)"/g, (_m, attr: string, value: string) => `${attr}="${mediaUrls(value)}"`);
   // Moyens de paiement : affichés par Shopify selon la boutique ; ici aucun n'est configuré → liste vide (jamais d'icône inventée).
   s = s.replace(/(<ul class="es-footer__payment"[^>]*>)[\s\S]*?(<\/ul>)/g, "$1$2");
   // Compteur du panier de l'en-tête.
@@ -86,14 +89,35 @@ export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Pro
   // Panier de PrestaShop (pas de tiroir Shopify) ; le reste du design est identique.
   const spec = cloneSpec(spec0);
   spec.settings = { ...spec.settings, cart_type: "page" };
+  const invalidTargets = Object.entries(spec.templates).flatMap(([page, tpl]) => Object.entries(tpl.sections).filter(([, sec]) => !sec.disabled && sec.type === "featured-product" && spec.store.business !== "services" && !storeProductsOf(spec).some(p => p.handle === exportProductHandle(spec, sec))).map(([id]) => `${page}/${id}`));
   // Bloc d'achat de l'accueil : son formulaire est celui de Shopify. Dans PrestaShop, le produit y est présenté (photo,
   // prix, texte) avec un bouton vers SA fiche PrestaShop, où se trouvent les déclinaisons et le vrai panier.
   const adaptedHome = adaptFeaturedProduct(spec, (fr, en) => pick(lang, fr, en));
   const files = compileTheme(spec);
   const design = await designLayer(spec, files);
+  // L'adaptation introduit un composant V2 même dans un projet historique sans ds_language.
+  // Livrer sa dépendance existante ; ne pas modifier les gabarits ou styles sources du studio.
+  if (adaptedHome && !design.stylesheets.includes("theme-v2.css")) {
+    design.stylesheets.push("theme-v2.css");
+    const configured = Number(spec.settings.ds_ratio);
+    const ratio = (Number.isFinite(configured) && configured > 0 ? configured : 125) / 100;
+    design.css += `\n:root { --v2-r1: ${ratio}; --v2-r2: ${ratio ** 2}; --v2-r4: ${ratio ** 4}; --v2-r6: ${ratio ** 6}; }\n`;
+  }
   const services = spec.store.business === "services";
-  const name = `es${slug(spec.store.shopName)}`.slice(0, 30);
+  // Nouvelle archive modifiée = nouveau thème installable : Presta refuse l'écrasement d'un nom existant.
+  const identity = createHash("sha256").update(JSON.stringify(spec));
+  for (const file of [...files.keys()].sort()) identity.update(file).update(files.get(file)!);
+  const fingerprintFiles = (dir: string) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true }).sort((a,b) => a.name.localeCompare(b.name))) {
+      const file = path.join(dir,entry.name);
+      if (entry.isDirectory()) fingerprintFiles(file); else identity.update(path.relative(ROOT,file)).update(fs.readFileSync(file));
+    }
+  };
+  fingerprintFiles(path.join(ROOT,"assets/cms/prestashop"));
+  for (const file of ["assets/cms/php/es-catalog.php", "src/lib/cms-v2/adapters/prestashop.ts", "src/lib/cms-v2/export.ts"]) identity.update(fs.readFileSync(path.join(ROOT,file)));
+  const name = `es${slug(spec.store.shopName).slice(0, 18)}${identity.digest("hex").slice(0,8)}`;
   const issues: ExportIssue[] = [];
+  for (const target of invalidTargets) issues.push({ code: "product_target_missing", severity: "blocking", detail: `${target} : produit cible absent, aucun produit de remplacement.` });
   if (adaptedHome) issues.push({ code: "featured_product_adapted", severity: "warning", detail: t("accueil : le bloc d'achat devient une présentation du produit avec un lien vers sa fiche PrestaShop (achat sur la fiche)", "home: the buy box becomes a product presentation linking to its PrestaShop product page (purchase on that page)") });
   const out: Record<string, Uint8Array> = {};
   const put = (p: string, data: string | Uint8Array | Buffer) => (out[p] = typeof data === "string" ? strToU8(data) : new Uint8Array(data));
@@ -123,6 +147,7 @@ export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Pro
     const z = pageZones(r.html);
     for (const x of topSections(z.main)) sections.add(x.type);
     put(`${mod}/views/templates/pages/${p.handle}.tpl`, toSmarty(z.main, name));
+    put(`templates/es/pages/${p.handle}.tpl`, toSmarty(z.main, name));
     pages.push({ handle: p.handle, title: p.title });
   }
   const policies: { handle: string; title: string }[] = [];
@@ -130,13 +155,18 @@ export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Pro
     const r = await renderPage({ spec, base: "", files, cart: [] }, `/policies/${p.handle}`, new URLSearchParams());
     if (r.status !== 200) continue;
     put(`${mod}/views/templates/pages/${p.handle}.tpl`, toSmarty(pageZones(r.html).main, name));
+    put(`templates/es/pages/${p.handle}.tpl`, toSmarty(pageZones(r.html).main, name));
     policies.push({ handle: p.handle, title: p.title });
   }
   // Sections propres à la fiche produit (caractéristiques, questions) : ajoutées sous la fiche native.
   if (!services && spec.templates.product) {
     const pz = pageZones(await render(`/products/${spec.store.product.handle}`));
     const v2 = topSections(pz.main).filter((x) => x.type.startsWith("v2-"));
-    if (v2.length) put(`${mod}/views/templates/hook/product.tpl`, toSmarty(v2.map((x) => x.html).join("\n"), name));
+    if (v2.length) {
+      const extra = toSmarty(v2.map((x) => x.html).join("\n"), name);
+      put(`${mod}/views/templates/hook/product.tpl`, extra);
+      put("templates/es/product-extra.tpl", extra);
+    }
   }
 
   // ------------------------------------------------------------ module compagnon
@@ -148,6 +178,7 @@ export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Pro
     }
   };
   walk(modDir, "");
+  put(`${mod}/catalog-validation.php`, fs.readFileSync(path.join(ROOT, "assets/cms/php/es-catalog.php")));
   put(`${mod}/site.json`, JSON.stringify({ shopName: spec.store.shopName, lang, business: services ? "services" : "products", pages, policies, product: services ? null : { handle: spec.store.product.handle } }, null, 1));
 
   // ------------------------------------------------------------ thème enfant
@@ -172,7 +203,7 @@ export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Pro
   put("assets/css/es-design.css", `/* ${spec.store.shopName.replace(/\*\//g, "")} — design extrait du studio (E-COM STUDIO IA) */\n${design.css}\n`);
   put("assets/css/es-ps.css", fs.readFileSync(path.join(ROOT, "assets/cms/prestashop/theme/assets/es-ps.css")));
   css.push({ id: "es-design", path: "assets/css/es-design.css" }, { id: "es-ps", path: "assets/css/es-ps.css" });
-  const js = files.get("assets/theme.js");
+  const js = ["theme.js", "reference-interactions.js", "purchase-offers.js", "editorial.js"].map((name) => files.get(`assets/${name}`)).filter(Boolean).join("\n;\n");
   if (js) put("assets/js/es-theme.js", js);
   put("assets/js/es-ps.js", fs.readFileSync(path.join(ROOT, "assets/cms/prestashop/theme/assets/es-ps.js")));
   for (const f of design.fonts) {
@@ -232,10 +263,12 @@ theme_settings:
     t(`${spec.store.shopName} — thème PrestaShop généré par E-COM STUDIO IA`, `${spec.store.shopName} — PrestaShop theme generated by E-COM STUDIO IA`),
     "",
     t("1. Apparence › Thème et logo › Ajouter un nouveau thème : importez ce ZIP, puis « Utiliser ce thème ». Le module « E-COM STUDIO IA » s'installe avec le thème.", "1. Design › Theme & Logo › Add new theme: import this ZIP, then « Use this theme ». The « E-COM STUDIO IA » module is installed with the theme."),
+    t("Si le module esstudio existe déjà : Modules › Gestionnaire de modules › Installer un module, téléversez import/module-esstudio.zip extrait de cette archive, puis lancez sa mise à niveau si proposée. Ne désinstallez pas le module : ses correspondances et messages doivent rester conservés. Le changement de thème seul ne garantit pas la mise à jour du code du module.", "If esstudio already exists: Modules › Module Manager › Upload a module, upload import/module-esstudio.zip extracted from this archive, then run its upgrade if offered. Do not uninstall the module: mappings and messages must be retained. Changing the theme alone does not guarantee companion code is updated."),
     t("2. Paramètres de la boutique › Trafic et SEO : activez les URL simplifiées (adresses /pages/… du site).", "2. Shop Parameters › Traffic & SEO: enable friendly URLs (site addresses /pages/…)."),
-    ...(services ? [] : [t(`3. Catalogue › Produits : créez vos produits ; donnez au produit principal l'adresse simplifiée « ${spec.store.product.handle} » pour que les liens du site y mènent.`, `3. Catalog › Products: create your products; give the main product the friendly URL « ${spec.store.product.handle} » so the site's links lead to it.`)]),
+    ...(services ? [] : [t(`3. Modules › E-COM STUDIO IA › Configurer : Importer / mettre à jour le catalogue. Les produits sont créés désactivés ; les catégories, tous les axes, déclinaisons, SKU et fichiers d’images sont associés nativement. Vérifiez les taxes et stocks, puis activez les produits dans Catalogue. Sans quantité connue, PrestaShop conserve son stock existant ou zéro pour un nouvel élément : aucun stock fictif n’est ajouté.`, `3. Modules › E-COM STUDIO IA › Configure: import/update the catalog. Products are created inactive; categories, all axes, combinations, SKUs and image files are associated natively. Check taxes and stock, then enable products in Catalog. With unknown quantity, PrestaShop keeps existing stock or zero for new records; no stock is invented.`)]),
     t("4. Paiement et livraison : à configurer dans PrestaShop ; le thème ne gère aucun paiement.", "4. Payment and shipping: set them up in PrestaShop; the theme handles no payment."),
     t("5. Messages des formulaires du site : Modules › E-COM STUDIO IA › Configurer.", "5. Messages from the site's forms: Modules › E-COM STUDIO IA › Configure."),
+    t("Nouvelle exportation modifiée : un nouveau nom de thème permet son installation sans supprimer la version précédente. Activez ce thème puis relancez explicitement l’import du catalogue : les identifiants liés restent stables. Les produits retirés sont désactivés et les anciennes déclinaisons mises hors stock, sans suppression. Videz le cache PrestaShop après le changement de thème. Les réglages inconnus du studio conservent les prix et photos CMS existants.", "A changed export gets a new theme name so it can be installed without deleting the previous version. Enable it then explicitly rerun catalog import: linked identifiers stay stable. Removed products become inactive and old combinations go out of stock without deletion. Clear PrestaShop cache after switching themes. Unknown studio values preserve existing CMS prices and photos."),
     t("Les textes des sections viennent du studio : modifiez-les dans E-COM STUDIO IA puis importez le nouveau thème.", "Section texts come from the studio: edit them in E-COM STUDIO IA, then import the new theme."),
     "",
   ].join("\n"));
@@ -262,11 +295,13 @@ export function adaptFeaturedProduct(spec: ThemeSpec, t: (fr: string, en: string
   let n = 0;
   for (const tpl of Object.values(spec.templates)) {
     for (const [id, sec] of Object.entries(tpl.sections)) {
-      if (sec.type !== "featured-product") continue;
-      const handle = String(sec.settings.product ?? "") || spec.store.product.handle;
-      const prod = [spec.store.product, ...(spec.store.products ?? [])].find((x) => x.handle === handle) ?? spec.store.product;
-      const price = prod.price != null ? new Intl.NumberFormat(t("fr-FR", "en-GB"), { style: "currency", currency: prod.currency || "EUR" }).format(prod.price / 100) : "";
-      const text = [price ? `<p><strong>${price}</strong></p>` : "", String(sec.settings.text ?? "")].join("");
+      if (sec.type !== "featured-product" || sec.disabled) continue;
+      const handle = exportProductHandle(spec, sec);
+      const prod = storeProductsOf(spec).find((x) => x.handle === handle);
+      if (!prod) { tpl.sections[id] = { ...sec, disabled: true }; continue; }
+      const initialPrice = prod.variants[0]?.price ?? prod.price;
+      const price = initialPrice != null ? new Intl.NumberFormat(t("fr-FR", "en-GB"), { style: "currency", currency: prod.currency || "EUR" }).format(initialPrice / 100) : "";
+      const text = [price ? `<p><strong>${price}</strong></p>` : "", String(sec.settings.text ?? "") || prod.description_html].join("");
       tpl.sections[id] = {
         type: "v2-split",
         settings: { layout: "media-left", fit: "v2-contain", eyebrow: String(sec.settings.eyebrow ?? ""), heading: prod.title, text, image_asset: String(sec.settings.image_asset ?? "") || prod.images[0] || "", image_alt: prod.title, button_label: t("Choisir et commander", "Choose and order"), button_link: `/products/${prod.handle}`, color_scheme: String(sec.settings.color_scheme ?? "scheme-1"), padding_top: 96, padding_bottom: 96 },

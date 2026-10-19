@@ -1,8 +1,9 @@
 /**
  * Accès aux fonctions « sur mesure » du thème, selon le forfait (source de vérité : PLANS[plan].theme) :
  *  - Créer (« composed ») : thème composé avec la bibliothèque de sections ;
- *  - Développer (« custom-sections ») : en plus, sections sur mesure écrites par l'IA (« Générer ») ;
- *  - Dominer (« fully-custom ») : en plus, thème entièrement sur mesure (chaque section écrite par l'IA).
+ *  - Développer (« custom-sections ») : bibliothèque de sections, modèles de pages ;
+ *  - Dominer (« fully-custom ») : en plus, sections sur mesure écrites par l'IA (« Générer », en plus des 20 sections de
+ *    la bibliothèque de la famille, issue #141) et thème entièrement sur mesure (chaque section écrite par l'IA).
  * L'administrateur n'est jamais bloqué. Messages clairs, sans crédits ni euros d'IA.
  */
 import { HttpError, type User } from "../auth";
@@ -17,10 +18,10 @@ export { CUSTOM_THEMES_PER_MONTH };
 /** Forfait du PROJET (un abonnement par projet) : le compte n'a pas de forfait global. */
 const planFor = (_user: Pick<User, "id" | "role">, projectId: string): PlanId | null => projectPlan(projectId);
 
-/** Génération d'une section par l'IA : forfaits Vendre et Dominer. */
+/** Génération d'une section par l'IA : forfait Dominer uniquement (vérifié côté serveur, quel que soit l'écran). */
 export function sectionGenerationAllowed(user: Pick<User, "id" | "role">, projectId: string): boolean {
   const plan = planFor(user, projectId);
-  return !!plan && PLANS[plan].theme !== "composed";
+  return !!plan && PLANS[plan].theme === "fully-custom";
 }
 
 export function assertSectionGeneration(user: Pick<User, "id" | "role">, projectId: string) {
@@ -28,8 +29,8 @@ export function assertSectionGeneration(user: Pick<User, "id" | "role">, project
   throw new HttpError(
     402,
     L(
-      "Les sections sur mesure écrites par l'IA sont incluses dans les forfaits Développer et Dominer. Vous pouvez ajouter toutes les sections de la bibliothèque, ou changer de forfait dans « Mon compte ».",
-      "Custom sections written by AI are included in the Grow and Dominate plans. You can add any section from the library, or change your plan in “My account”.",
+      "Les sections sur mesure écrites par l'IA sont incluses dans le forfait Dominer. Vous pouvez ajouter toutes les sections de la bibliothèque, ou changer de forfait dans « Mon compte ».",
+      "Custom sections written by AI are included in the Dominate plan. You can add any section from the library, or change your plan in “My account”.",
     ),
     "plan_required",
   );

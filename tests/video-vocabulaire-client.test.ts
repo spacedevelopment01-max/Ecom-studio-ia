@@ -25,7 +25,9 @@ describe("vidéo : vocabulaire du client appliqué", async () => {
     const p = loadProject(pid);
     let rendered: any = null;
     const deps = {
-      keyframe: async () => png(),
+      frames: async()=>[Buffer.from("image de contrôle simulée")],
+        reviewMedia: async()=>({score:9,sameProduct:true,productAltered:false,characterConsistent:null,offTopic:false,artifacts:false,personVisible:false,issues:[]}),
+        keyframe: async () => png(),
       clip: async () => Buffer.from("mp4"),
       stock: async (_p: unknown, k: number) => ({ assetId: (await saveAsset({ projectId: p.id, userId: p.userId, data: Buffer.from(`c${k}`), name: `c${k}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", status: "ready", meta: {} })).id, durationS: 8 }),
       spentMicro: () => 0,
@@ -34,7 +36,7 @@ describe("vidéo : vocabulaire du client appliqué", async () => {
       writePlan: async () => ({ line: "Voici Chronographe acier et cuir", cta: "Découvrir le chronographe", voiceEnd: "Le chronographe ARVEN.", scenes: [0, 1, 2].map(() => ({ title: "Chronographe", voice: "Voici Chronographe acier et cuir." })) }),
     };
     await runThreeScenes(null, p.id, { as: "post", scenes: 3, totalS: 15, aspect: "9:16" }, deps as any);
-    const text = JSON.stringify(rendered);
+    const text = JSON.stringify({...rendered,meta:{}});
     expect(text).not.toMatch(/chronographe/i);
     expect(text).toMatch(/Montre acier et cuir/);
   });

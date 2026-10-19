@@ -1,0 +1,74 @@
+{
+  "kind": "onde",
+  "origin": "studio Next.js de développement, base temporaire",
+  "steps": [
+    {
+      "step": "aperçu du studio : lien du pied de page → nouvelle page en haut",
+      "ok": true,
+      "scrollY": 0,
+      "path": "/preview/ewdt8o8esk6rjz7k/v/0h6al9je3rb6nq9h~tn5tpo.1-aJJwAXt2AQLQqNjS9EL67UGdIQ6QX9/pages/faq"
+    },
+    {
+      "step": "ajout depuis le bouton Sections",
+      "ok": true,
+      "id": "cv_quote_1",
+      "position": 10
+    },
+    {
+      "step": "panneau : citation, fichier du thème, image de « Mes images », disposition",
+      "ok": true,
+      "themeImage": "onde-04-detail-coussinet.webp",
+      "myImage": "onde-favicon-180.png",
+      "image_asset": "es-logo-izxtja.png",
+      "src": "/preview/ewdt8o8esk6rjz7k/v/lplrvhct9pz5acd2~tn5tsg.eW6Hze3KQJ1O31XBEWA60_TxMZ3s8lKV/assets/es-logo-izxtja.png"
+    },
+    {
+      "step": "déplacement (Monter)",
+      "ok": true,
+      "from": 10,
+      "to": 9,
+      "renderedOrderSample": []
+    },
+    {
+      "step": "duplication puis modification de la copie seule (original intact)",
+      "ok": true,
+      "original": "Citation d'origine, modifiée à la main.",
+      "copy": "Citation de la COPIE, indépendante."
+    },
+    {
+      "step": "masquage de la copie",
+      "ok": true
+    },
+    {
+      "step": "suppression de la copie",
+      "ok": true
+    },
+    {
+      "step": "restauration depuis Versions : copie revenue (masquée, texte propre), original intact, nouvelle version créée",
+      "ok": true
+    },
+    {
+      "step": "pied de page (phrase) et en-tête (liste) modifiés par le panneau",
+      "ok": true,
+      "headerSetting": "layout",
+      "headerBefore": "logo-center",
+      "headerNew": "logo-left"
+    },
+    {
+      "step": "story : fichier vidéo du thème, poster, puis vidéo de « Mes vidéos » appliqués depuis le panneau du bloc ; lecteur ouvert",
+      "ok": true,
+      "clip": "onde-clip-test.webm",
+      "posterNew": "onde-01-hero.webp",
+      "myVideo": "onde-clip-test.webm",
+      "video_asset": "es-lifestyle-36bfwh.webm"
+    },
+    {
+      "step": "rechargement complet : ordre, réglages, médias, indépendance original/copie, pied de page, historique",
+      "ok": true,
+      "versionsBefore": 1,
+      "versionsListed": 16,
+      "versionCount": 17
+    }
+  ],
+  "date": "2026-10-19T03:05:09.306Z"
+}

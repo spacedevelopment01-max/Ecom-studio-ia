@@ -1,0 +1,34 @@
+{
+  "code": "70924680ea11592220c9965a142fb3335845c5ed",
+  "simulation": true,
+  "results": [
+    {
+      "case": "produit",
+      "pid": "gqmycuts10wz7fwn",
+      "revision": 35,
+      "selectedChoicePreserved": true,
+      "documentsAndMediaPreserved": true,
+      "unsavedBriefBlocked": true,
+      "unsavedIdentityBlocked": true,
+      "unsavedReferencesBlocked": true,
+      "unsavedConsentBlocksGeneration": true,
+      "generationRequests": 0,
+      "downloadMatchesApi": true,
+      "errors": []
+    },
+    {
+      "case": "service",
+      "pid": "c4pylalq40be6mcy",
+      "revision": 38,
+      "selectedChoicePreserved": true,
+      "documentsAndMediaPreserved": true,
+      "unsavedBriefBlocked": true,
+      "unsavedIdentityBlocked": true,
+      "unsavedReferencesBlocked": true,
+      "unsavedConsentBlocksGeneration": true,
+      "generationRequests": 0,
+      "downloadMatchesApi": true,
+      "errors": []
+    }
+  ]
+}

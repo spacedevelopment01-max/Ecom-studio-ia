@@ -65,6 +65,10 @@ const INTENT_DURATION: Partial<Record<VideoIntentKind, number>> = {
 };
 
 export type VideoAsk = {
+  generation?:"direct"|"reference";
+  purpose?:"ad"|"organic";
+  editorial?: import("./editorial").VideoEditorial;
+  subject?: import("../creative-subject").CreativeSubject|null;
   text?: string | null;
   kind?: VideoIntentKind | null;
   platform?: VideoPlatform | null;
@@ -114,7 +118,7 @@ export function videoIntent(p: Project, ask: VideoAsk = {}): VideoIntent {
     reasons.push("UGC impossible sans génération autorisée : contenu social monté à partir de l'existant");
   }
   // Règle de présence humaine : un UGC (personnage face caméra) exige l'autorisation du client, même demandé.
-  const people = ask.peopleAllowed ?? peopleAllowedFor(p);
+  const people = ask.generation?false:ask.peopleAllowed ?? peopleAllowedFor(p);
   if (kind === "ugc" && !people) {
     kind = "social_content";
     reasons.push("UGC impossible : aucune personne autorisée par le client (aucune photo du client avec une personne, aucun accord explicite) — contenu social sans personnage");
@@ -123,7 +127,7 @@ export function videoIntent(p: Project, ask: VideoAsk = {}): VideoIntent {
   const goal = (ask.text ?? "").trim() || goalFor(kind, services);
   const placeholder = (x: string | null | undefined) => !x?.trim() || /\[(À|A) (compléter|définir|préciser)|\[To (complete|define|specify)/i.test(x);
   const audience = !placeholder(ask.audience) ? ask.audience!.trim() : !placeholder(p.brand?.audience) ? p.brand!.audience!.trim() : null;
-  return { kind, goal, audience, platform, aspect, durationS, complexity, reasons, people };
+  return {generation:ask.generation, kind, goal, audience, platform, aspect, durationS, complexity, reasons, people, purpose:ask.purpose, editorial:ask.editorial };
 }
 
 function goalFor(kind: VideoIntentKind, services: boolean): string {

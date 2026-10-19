@@ -1,0 +1,162 @@
+[
+  {
+    "file": "produit-ordinateur-ambiance.mp4",
+    "sha256": "d80d22afb5365e116822c9ce32086cb551b43048035b61fab25d903a25f7a983",
+    "duration": 10.0,
+    "streams": [
+      {
+        "type": "video",
+        "codec": "h264",
+        "width": 1920,
+        "height": 1080
+      },
+      {
+        "type": "audio",
+        "codec": "aac",
+        "width": null,
+        "height": null
+      }
+    ],
+    "fullDecode": true
+  },
+  {
+    "file": "produit-ordinateur-publicite.mp4",
+    "sha256": "e59284eafd3bb78e19bf5bb11d05957f47a91fa373dec7fd2109f313a1d26341",
+    "duration": 10.0,
+    "streams": [
+      {
+        "type": "video",
+        "codec": "h264",
+        "width": 1080,
+        "height": 1920
+      },
+      {
+        "type": "audio",
+        "codec": "aac",
+        "width": null,
+        "height": null
+      }
+    ],
+    "fullDecode": true
+  },
+  {
+    "file": "service-ordinateur-ambiance.mp4",
+    "sha256": "931a6124c566e0dba1756c6efabdc5b217bf7d95245e226292fcfa77d538d709",
+    "duration": 10.0,
+    "streams": [
+      {
+        "type": "video",
+        "codec": "h264",
+        "width": 1920,
+        "height": 1080
+      },
+      {
+        "type": "audio",
+        "codec": "aac",
+        "width": null,
+        "height": null
+      }
+    ],
+    "fullDecode": true
+  },
+  {
+    "file": "service-ordinateur-publicite.mp4",
+    "sha256": "6a399f2e6014db3bb9414a22f6b85207490e847c68e8d080ce7fa8e36cbc5d9e",
+    "duration": 10.0,
+    "streams": [
+      {
+        "type": "video",
+        "codec": "h264",
+        "width": 1080,
+        "height": 1920
+      },
+      {
+        "type": "audio",
+        "codec": "aac",
+        "width": null,
+        "height": null
+      }
+    ],
+    "fullDecode": true
+  },
+  {
+    "file": "produit-mobile-ambiance.mp4",
+    "sha256": "1ec9c8642a28e2df2e3ef4a216b099cf687f7fa25fede807eb197b02eb04aa4e",
+    "duration": 10.0,
+    "streams": [
+      {
+        "type": "video",
+        "codec": "h264",
+        "width": 1920,
+        "height": 1080
+      },
+      {
+        "type": "audio",
+        "codec": "aac",
+        "width": null,
+        "height": null
+      }
+    ],
+    "fullDecode": true
+  },
+  {
+    "file": "produit-mobile-publicite.mp4",
+    "sha256": "1f7d29804d879781a69d788387902acb02576b612330c6dfe8d519760e0871ce",
+    "duration": 10.0,
+    "streams": [
+      {
+        "type": "video",
+        "codec": "h264",
+        "width": 1080,
+        "height": 1920
+      },
+      {
+        "type": "audio",
+        "codec": "aac",
+        "width": null,
+        "height": null
+      }
+    ],
+    "fullDecode": true
+  },
+  {
+    "file": "service-mobile-ambiance.mp4",
+    "sha256": "68dbec6ab548a11dff9f82894553cd6652cce4565a12509adb2aa43754f5bd74",
+    "duration": 10.0,
+    "streams": [
+      {
+        "type": "video",
+        "codec": "h264",
+        "width": 1920,
+        "height": 1080
+      },
+      {
+        "type": "audio",
+        "codec": "aac",
+        "width": null,
+        "height": null
+      }
+    ],
+    "fullDecode": true
+  },
+  {
+    "file": "service-mobile-publicite.mp4",
+    "sha256": "d4897b040ab84def70391aadab2e1eb4c1a5426af046a49bc9590b28b2f8a66f",
+    "duration": 10.0,
+    "streams": [
+      {
+        "type": "video",
+        "codec": "h264",
+        "width": 1080,
+        "height": 1920
+      },
+      {
+        "type": "audio",
+        "codec": "aac",
+        "width": null,
+        "height": null
+      }
+    ],
+    "fullDecode": true
+  }
+]

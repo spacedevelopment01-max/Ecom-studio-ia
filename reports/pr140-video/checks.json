@@ -1,0 +1,61 @@
+{
+  "codeCommit": "c5f74c437b3c3644024329b3d86bb45e2a500f18",
+  "auditedCommit": "1565275c8edf57044159971dba8c28c5ee3f71da",
+  "date": "2026-10-19",
+  "simulation": true,
+  "noPaidGeneration": true,
+  "actualProviderCostEur": 0,
+  "commands": [
+    {
+      "command": "npx tsc --noEmit",
+      "exitCode": 0
+    },
+    {
+      "command": "npx vitest run",
+      "exitCode": 0,
+      "filesPassed": 286,
+      "testsPassed": 2182,
+      "testsSkipped": 3,
+      "testsTotal": 2185,
+      "durationSeconds": 792.59
+    },
+    {
+      "command": "DATA_DIR=/tmp/ecs-test-video-mission-20261019-reception STOCK_OFFLINE=1 npx tsx scripts/verify-video-mission.ts",
+      "exitCode": 0,
+      "realLocalMp4": 3,
+      "providerCalls": 0
+    },
+    {
+      "command": "DATA_DIR=/tmp/ecs-test-video-mission-20261019-reception npx tsx scripts/verify-video-mission-browser.ts",
+      "exitCode": 0,
+      "cases": 6,
+      "javascriptErrors": 0,
+      "externalRequests": 0,
+      "allowedGenerationRequests": 0
+    },
+    {
+      "command": "DATA_DIR=/tmp/ecs-test-video-quote-20261019-final STOCK_OFFLINE=1 npx tsx scripts/verify-video-quote.ts",
+      "exitCode": 0,
+      "projectsCreated": 0,
+      "providerCalls": 0
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "scope": "Code applicatif, tests et harnais avant ajout des exports VTT"
+    },
+    {
+      "command": "git -c core.whitespace=-blank-at-eof diff --cached --check",
+      "exitCode": 0,
+      "scope": "Pièces finales : les VTT sans cues nécessitent une ligne vide après WEBVTT ; les exports bruts sont conservés"
+    }
+  ],
+  "limitations": [
+    "Aucun fournisseur ni configuration de production vérifié",
+    "Aucune voix ONDE ni qualité créative réelle validée",
+    "Parcours guidé testé via outils injectés, UI limitée à lecture, avertissements et devis",
+    "Trois segments vidéo de test : pas des enregistrements de navigation",
+    "Pas de nouveau build de production, aucun déploiement",
+    "Défauts restants et plafond cible non attestable explicités dans le rapport"
+  ]
+}

@@ -13,27 +13,100 @@ vi.mock("@/lib/auth", async (orig) => {
 import { createUser } from "@/lib/auth";
 import { id, now, run } from "@/lib/db";
 import { loadProject } from "@/lib/projects";
+import { getSubscription, alignPeriod, syncAllowance } from "@/lib/billing";
+import { stateOf, approve } from "@/lib/preparation/engine";
 import { emptyServiceProfile } from "@/lib/project-types";
+import { commitState } from "@/lib/preparation/store";
 
-const ctx = (params: Record<string, string>) => ({ params: Promise.resolve(params) }) as any;
+const ctx = (params: Record<string, string>) =>
+  ({ params: Promise.resolve(params) }) as any;
 const start = (pid: string, fields: Record<string, string>) => {
   const fd = new FormData();
   for (const [k, v] of Object.entries(fields)) fd.set(k, v);
-  return new Request(`http://x/api/projects/${pid}/start`, { method: "POST", body: fd });
+  return new Request(`http://x/api/projects/${pid}/start`, {
+    method: "POST",
+    body: fd,
+  });
 };
 
 describe("coordonnées saisies une seule fois", () => {
   it("démarrer la création garde les coordonnées connues et enregistre les nouvelles", async () => {
-    const u = await createUser(`coord${Date.now()}@test.fr`, "motdepasse-test", "C");
+    const u = await createUser(
+      `coord${Date.now()}@test.fr`,
+      "motdepasse-test",
+      "C",
+    );
     sessionUser = u;
+    getSubscription(u.id);
+    run(
+      "UPDATE subscriptions SET status='active',plan='dominer' WHERE user_id=?",
+      u.id,
+    );
+    alignPeriod(u.id, Date.now());
+    syncAllowance(u.id);
     const pid = id();
-    const known = { ...emptyServiceProfile(), phone: "03 85 00 00 00", address: "12 rue des Lilas, 71000 Mâcon", hours: "Lun–Ven 8h–18h", email: "contact@autodim.fr" };
-    run("INSERT INTO projects (id, user_id, name, status, platform, business_type, business_json, settings_json, sources_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)", pid, u.id, "AutoDim", "draft", "woocommerce", "services", JSON.stringify(known), "{}", "[]", now(), now());
+    const known = {
+      ...emptyServiceProfile(),
+      phone: "03 85 00 00 00",
+      address: "12 rue des Lilas, 71000 Mâcon",
+      hours: "Lun–Ven 8h–18h",
+      email: "contact@autodim.fr",
+    };
+    run(
+      "INSERT INTO projects (id, user_id, name, status, platform, business_type, business_json, settings_json, sources_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+      pid,
+      u.id,
+      "AutoDim",
+      "draft",
+      "woocommerce",
+      "services",
+      JSON.stringify(known),
+      "{}",
+      "[]",
+      now(),
+      now(),
+    );
     const { POST } = await import("@/app/api/projects/[id]/start/route");
     // Formulaire de démarrage : coordonnées laissées vides, sauf la zone (nouvelle).
-    const r = await POST(start(pid, { businessType: "services", description: "Carrossier à Mâcon, débosselage, peinture", area: "Mâcon et 30 km", phone: "", address: "", hours: "", email: "", services: "[]" }), ctx({ id: pid }));
+    const r = await POST(
+      start(pid, {
+        productName: "Carrossier",
+        target: "Automobilistes locaux",
+        description: "Carrossier à Mâcon, débosselage, peinture",
+        area: "Mâcon et 30 km",
+        phone: "",
+        address: "",
+        hours: "",
+        email: "",
+        services: JSON.stringify([
+          { name: "Débosselage", description: "Examen des impacts" },
+        ]),
+      }),
+      ctx({ id: pid }),
+    );
     expect(r.status).toBe(200);
+    const draft = stateOf(pid)!.stages.brief!.data;
+    expect(draft.input.business).toBe("services");
+    expect(draft.services).toMatchObject({
+      phone: known.phone,
+      address: known.address,
+      hours: known.hours,
+      email: known.email,
+      area: "Mâcon et 30 km",
+    });
+    // Le choix du client est encore attendu ; les coordonnées existantes restent en place.
+    expect(loadProject(pid).services.area).toBe(known.area);
+    expect(() => approve(pid, stateOf(pid)!.revision, "brief")).toThrow(/analyse IA/);
+    // Seule l'analyse est simulée ; l'approbation et la sauvegarde des coordonnées restent celles du studio.
+    commitState(pid, stateOf(pid)!.revision, s => { s.simulation = true; s.stages.brief!.data.provenance = "simulation"; });
+    approve(pid, stateOf(pid)!.revision, "brief");
     const s = loadProject(pid).services;
-    expect(s).toMatchObject({ phone: "03 85 00 00 00", address: "12 rue des Lilas, 71000 Mâcon", hours: "Lun–Ven 8h–18h", email: "contact@autodim.fr", area: "Mâcon et 30 km" });
+    expect(s).toMatchObject({
+      phone: "03 85 00 00 00",
+      address: "12 rue des Lilas, 71000 Mâcon",
+      hours: "Lun–Ven 8h–18h",
+      email: "contact@autodim.fr",
+      area: "Mâcon et 30 km",
+    });
   });
 });

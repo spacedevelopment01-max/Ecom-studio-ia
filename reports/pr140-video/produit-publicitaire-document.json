@@ -1,0 +1,500 @@
+{
+  "simulation": true,
+  "version": 1,
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "aspect": "9:16",
+  "platform": "reels",
+  "safe": {
+    "top": 230,
+    "bottom": 384,
+    "side": 65
+  },
+  "clips": [
+    {
+      "id": "scene-1",
+      "shotId": "scene-1",
+      "label": "Scène 1",
+      "part": null,
+      "durationS": 4.3,
+      "source": {
+        "kind": "video",
+        "assetId": "bag92jtw9l0mkugn",
+        "inS": 0,
+        "outS": 4.3,
+        "muted": true
+      },
+      "overlays": [
+        {
+          "id": "ov-text",
+          "name": "Texte à l'écran",
+          "role": "title",
+          "x": 65,
+          "y": 268.4,
+          "w": 950,
+          "h": 282.72,
+          "rotation": 0,
+          "opacity": 1,
+          "visible": true,
+          "locked": false,
+          "anchor": {
+            "h": "center",
+            "v": "middle"
+          },
+          "kind": "text",
+          "text": "TEST LOCAL 1",
+          "font": {
+            "family": "Lora",
+            "weight": 500,
+            "size": 114,
+            "italic": false
+          },
+          "color": "#FFFFFF",
+          "align": "center",
+          "lineHeight": 1.04,
+          "letterSpacing": 0,
+          "uppercase": false,
+          "autoFit": {
+            "minSize": 63
+          },
+          "shadow": {
+            "color": "rgba(0,0,0,0.65)",
+            "blur": 34,
+            "x": 0,
+            "y": 5
+          },
+          "anim": {
+            "in": "left",
+            "delay": 0.25,
+            "dur": 0.4
+          }
+        }
+      ],
+      "transitionIn": {
+        "kind": "cut",
+        "durationS": 0
+      },
+      "generated": true
+    },
+    {
+      "id": "scene-2",
+      "shotId": "scene-2",
+      "label": "Scène 2",
+      "part": null,
+      "durationS": 4.3,
+      "source": {
+        "kind": "video",
+        "assetId": "bmkz6jqxpzwani9x",
+        "inS": 0,
+        "outS": 4.3,
+        "muted": true
+      },
+      "overlays": [
+        {
+          "id": "ov-text",
+          "name": "Texte à l'écran",
+          "role": "title",
+          "x": 65,
+          "y": 268.4,
+          "w": 950,
+          "h": 193.44,
+          "rotation": 0,
+          "opacity": 1,
+          "visible": true,
+          "locked": false,
+          "anchor": {
+            "h": "center",
+            "v": "middle"
+          },
+          "kind": "text",
+          "text": "TEST LOCAL 2",
+          "font": {
+            "family": "Lora",
+            "weight": 500,
+            "size": 78,
+            "italic": false
+          },
+          "color": "#FFFFFF",
+          "align": "center",
+          "lineHeight": 1.04,
+          "letterSpacing": 0,
+          "uppercase": false,
+          "autoFit": {
+            "minSize": 43
+          },
+          "shadow": {
+            "color": "rgba(0,0,0,0.65)",
+            "blur": 23,
+            "x": 0,
+            "y": 3
+          },
+          "anim": {
+            "in": "left",
+            "delay": 0.25,
+            "dur": 0.4
+          }
+        }
+      ],
+      "transitionIn": {
+        "kind": "cut",
+        "durationS": 0
+      },
+      "generated": true
+    },
+    {
+      "id": "scene-3",
+      "shotId": "scene-3",
+      "label": "Scène 3",
+      "part": null,
+      "durationS": 4.3,
+      "source": {
+        "kind": "video",
+        "assetId": "32gegq2347qc63zk",
+        "inS": 0,
+        "outS": 4.3,
+        "muted": true
+      },
+      "overlays": [
+        {
+          "id": "ov-text",
+          "name": "Texte à l'écran",
+          "role": "title",
+          "x": 65,
+          "y": 268.4,
+          "w": 950,
+          "h": 193.44,
+          "rotation": 0,
+          "opacity": 1,
+          "visible": true,
+          "locked": false,
+          "anchor": {
+            "h": "center",
+            "v": "middle"
+          },
+          "kind": "text",
+          "text": "TEST LOCAL 3",
+          "font": {
+            "family": "Lora",
+            "weight": 500,
+            "size": 78,
+            "italic": false
+          },
+          "color": "#FFFFFF",
+          "align": "center",
+          "lineHeight": 1.04,
+          "letterSpacing": 0,
+          "uppercase": false,
+          "autoFit": {
+            "minSize": 43
+          },
+          "shadow": {
+            "color": "rgba(0,0,0,0.65)",
+            "blur": 23,
+            "x": 0,
+            "y": 3
+          },
+          "anim": {
+            "in": "left",
+            "delay": 0.25,
+            "dur": 0.4
+          }
+        }
+      ],
+      "transitionIn": {
+        "kind": "cut",
+        "durationS": 0
+      },
+      "generated": true
+    },
+    {
+      "id": "scene-4",
+      "shotId": "scene-4",
+      "label": "Scène 4",
+      "part": null,
+      "durationS": 4.3,
+      "source": {
+        "kind": "video",
+        "assetId": "7k6yvkgzjikodtwu",
+        "inS": 0,
+        "outS": 4.3,
+        "muted": true
+      },
+      "overlays": [
+        {
+          "id": "ov-text",
+          "name": "Texte à l'écran",
+          "role": "title",
+          "x": 65,
+          "y": 268.4,
+          "w": 950,
+          "h": 193.44,
+          "rotation": 0,
+          "opacity": 1,
+          "visible": true,
+          "locked": false,
+          "anchor": {
+            "h": "center",
+            "v": "middle"
+          },
+          "kind": "text",
+          "text": "TEST LOCAL 4",
+          "font": {
+            "family": "Lora",
+            "weight": 500,
+            "size": 78,
+            "italic": false
+          },
+          "color": "#FFFFFF",
+          "align": "center",
+          "lineHeight": 1.04,
+          "letterSpacing": 0,
+          "uppercase": false,
+          "autoFit": {
+            "minSize": 43
+          },
+          "shadow": {
+            "color": "rgba(0,0,0,0.65)",
+            "blur": 23,
+            "x": 0,
+            "y": 3
+          },
+          "anim": {
+            "in": "left",
+            "delay": 0.25,
+            "dur": 0.4
+          }
+        }
+      ],
+      "transitionIn": {
+        "kind": "cut",
+        "durationS": 0
+      },
+      "generated": true
+    },
+    {
+      "id": "end-card",
+      "shotId": "end-card",
+      "label": "Carte de fin",
+      "part": "cta",
+      "durationS": 2.8,
+      "source": {
+        "kind": "doc",
+        "doc": {
+          "version": 1,
+          "width": 1080,
+          "height": 1920,
+          "background": "#131416",
+          "safe": {
+            "top": 0,
+            "bottom": 0,
+            "side": 0
+          },
+          "format": {
+            "platform": null,
+            "aspect": "1080x1920"
+          },
+          "layers": [
+            {
+              "id": "bg",
+              "name": "Fond",
+              "role": "background",
+              "x": 0,
+              "y": 0,
+              "w": 1080,
+              "h": 1920,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "anchor": {
+                "h": "center",
+                "v": "middle"
+              },
+              "kind": "shape",
+              "shape": "rect",
+              "fill": "#131416",
+              "stroke": null,
+              "radius": 0,
+              "shadow": null
+            },
+            {
+              "id": "brand",
+              "name": "Marque",
+              "role": "title",
+              "x": 65,
+              "y": 537.6,
+              "w": 950,
+              "h": 230.39999999999998,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "anchor": {
+                "h": "center",
+                "v": "middle"
+              },
+              "kind": "text",
+              "text": "Studio de test fictif",
+              "font": {
+                "family": "Lora",
+                "weight": 500,
+                "size": 92,
+                "italic": false
+              },
+              "color": "#FFFFFF",
+              "align": "center",
+              "lineHeight": 1.12,
+              "letterSpacing": 0,
+              "uppercase": false,
+              "autoFit": {
+                "minSize": 51
+              },
+              "shadow": null
+            },
+            {
+              "id": "line",
+              "name": "Phrase",
+              "role": "subtitle",
+              "x": 65,
+              "y": 883.2,
+              "w": 950,
+              "h": 145.6,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "anchor": {
+                "h": "center",
+                "v": "middle"
+              },
+              "kind": "text",
+              "text": "La technologie, sans détour.",
+              "font": {
+                "family": "Lora",
+                "weight": 500,
+                "size": 56,
+                "italic": false
+              },
+              "color": "#FFFFFF",
+              "align": "center",
+              "lineHeight": 1.12,
+              "letterSpacing": 0,
+              "uppercase": false,
+              "autoFit": {
+                "minSize": 31
+              },
+              "shadow": null
+            },
+            {
+              "id": "cta",
+              "name": "Bouton",
+              "role": "cta",
+              "x": 270,
+              "y": 1152,
+              "w": 540,
+              "h": 114,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "anchor": {
+                "h": "center",
+                "v": "middle"
+              },
+              "kind": "button",
+              "text": "Commander",
+              "font": {
+                "family": "Jost",
+                "weight": 600,
+                "size": 56,
+                "italic": false
+              },
+              "fill": "#307ACF",
+              "color": "#FFFFFF",
+              "radius": 57,
+              "stroke": null,
+              "shadow": null
+            }
+          ],
+          "brand": {
+            "palette": {
+              "primary": "#34363D",
+              "secondary": "#DFE0E2",
+              "accent": "#307ACF",
+              "light": "#F7F7F8",
+              "dark": "#131416"
+            },
+            "fonts": {
+              "heading": "Lora",
+              "body": "Jost"
+            },
+            "name": "Studio de test fictif"
+          },
+          "meta": {
+            "conceptId": null,
+            "source": "engine",
+            "createdFrom": null
+          }
+        },
+        "animate": "rise"
+      },
+      "overlays": [],
+      "transitionIn": {
+        "kind": "fade",
+        "durationS": 0.6
+      }
+    }
+  ],
+  "subtitles": {
+    "style": {
+      "enabled": true,
+      "family": "Jost",
+      "weight": 700,
+      "size": 50,
+      "color": "#FFFFFF",
+      "background": null,
+      "position": "bottom",
+      "offsetY": 0,
+      "maxChars": 32,
+      "uppercase": false
+    },
+    "cues": []
+  },
+  "audio": {
+    "voice": [],
+    "voiceId": null,
+    "music": {
+      "source": "synth",
+      "mood": "pulse",
+      "gainDb": -12,
+      "style": "pop",
+      "seed": "b04yzaz7f3j8h7d8"
+    },
+    "sfx": [],
+    "duckingDb": -10,
+    "loudnessLufs": -14
+  },
+  "brand": {
+    "palette": {
+      "primary": "#34363D",
+      "secondary": "#DFE0E2",
+      "accent": "#307ACF",
+      "light": "#F7F7F8",
+      "dark": "#131416"
+    },
+    "fonts": {
+      "heading": "Lora",
+      "body": "Jost"
+    },
+    "name": "Studio de test fictif"
+  },
+  "disclosure": null,
+  "meta": {
+    "intent": "video_ad",
+    "source": "engine",
+    "createdFrom": null,
+    "runId": null,
+    "promo": true
+  }
+}

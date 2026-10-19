@@ -1,0 +1,245 @@
+{
+  "codeCommit": "c5f74c437b3c3644024329b3d86bb45e2a500f18",
+  "simulation": true,
+  "excludes": [
+    "manifest.json (auto-référence)",
+    "base, sessions et fichiers privés de test"
+  ],
+  "files": [
+    {
+      "path": "DEVIS_ONDE.md",
+      "bytes": 13222,
+      "sha256": "6885697629dd7ac2cbcb95de5c8fae31f59e43d8dd97414c95fe804582667428"
+    },
+    {
+      "path": "README.md",
+      "bytes": 4756,
+      "sha256": "07fbfa8c7ca0548e1a0d2b327e27881e13c3a650a0464afd453f27054234451e"
+    },
+    {
+      "path": "checks.json",
+      "bytes": 2093,
+      "sha256": "53bdfdde72617bd9c4e7dbd95913c1f05a1b77bf26d0103b7ba7646ab5a929ab"
+    },
+    {
+      "path": "devis-calcul.json",
+      "bytes": 2932,
+      "sha256": "71cbd3e3022c59d6e60f3f015fb1561366c8dc701c0efbc70e82255385abb06b"
+    },
+    {
+      "path": "devis-natif-conditionnel.json",
+      "bytes": 683,
+      "sha256": "ae993443b563e8fe1e2417f9d7601cded5b1e55bdfd1dd7c5a6889b63b769855"
+    },
+    {
+      "path": "produit-publicitaire-1.jpg",
+      "bytes": 65261,
+      "sha256": "1cd5471d166cd05145b8d21d375b128f12991e68e1c194e49fea2498dc291a07"
+    },
+    {
+      "path": "produit-publicitaire-2.jpg",
+      "bytes": 67380,
+      "sha256": "4bfc8c833d24cc2aeb1248edb2b933927fad06ca224c0aa5468f0202c543249a"
+    },
+    {
+      "path": "produit-publicitaire-3.jpg",
+      "bytes": 67980,
+      "sha256": "d127d9f570dbd67bd882f73c5757e5f4c5c29aa72d9060c7ab1b2462cba035f0"
+    },
+    {
+      "path": "produit-publicitaire-4.jpg",
+      "bytes": 35777,
+      "sha256": "3270d1cc7a06028a99ef00c271b35ae8f7fe0119800b3e7f1020913ec9084b6d"
+    },
+    {
+      "path": "produit-publicitaire-document.json",
+      "bytes": 11662,
+      "sha256": "4567b398963d2bec4629511a3021f2ed4b62b21624c57813e9cbbdab5e03993f"
+    },
+    {
+      "path": "produit-publicitaire-mobile-lecture.png",
+      "bytes": 71136,
+      "sha256": "94b31a1bbbc7cdab5bc1c73661d874c762e5abf519a62d0ef8a2cf5307368b5b"
+    },
+    {
+      "path": "produit-publicitaire-mobile.png",
+      "bytes": 201890,
+      "sha256": "f21dfac52455dd82f667dd8a5e3f3a59f60822e701240f8195d1dfea3458a0f8"
+    },
+    {
+      "path": "produit-publicitaire-ordinateur-lecture.png",
+      "bytes": 49242,
+      "sha256": "6eb7bc193e8649a4a73de7288ef5cb7d12e2cdf3a5bd08c789c2f137c580f830"
+    },
+    {
+      "path": "produit-publicitaire-ordinateur.png",
+      "bytes": 194205,
+      "sha256": "bc6891d9b46cc541858ebeebbdc748d53808a177b598cbf0cb8873495cd67b39"
+    },
+    {
+      "path": "produit-publicitaire.mp4",
+      "bytes": 6253640,
+      "sha256": "78eefead659c769e50a16c23dc6f1fd9364b5f69a97fb23d4df6682065ed3bdf"
+    },
+    {
+      "path": "produit-publicitaire.srt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "produit-publicitaire.vtt",
+      "bytes": 8,
+      "sha256": "8eb5aec53542eaedb7502b22fb677161abba1e265b1338f1af1369a1f689837c"
+    },
+    {
+      "path": "service-organique-1.jpg",
+      "bytes": 41341,
+      "sha256": "9b3fb41bcb858aae977105ee655d1b323c18939ed95aa6d2234387c140ade046"
+    },
+    {
+      "path": "service-organique-2.jpg",
+      "bytes": 33994,
+      "sha256": "f57412fa77bbcbb48904e8b3028fc28b14455ad57a2a0721935469a6feaa883b"
+    },
+    {
+      "path": "service-organique-3.jpg",
+      "bytes": 34128,
+      "sha256": "e8f00a87915e20b9923c72eac722b29026d9c516b813c371b96c1fe7564be854"
+    },
+    {
+      "path": "service-organique-4.jpg",
+      "bytes": 32469,
+      "sha256": "5170f6f50a96c9406cc8b0eedb191331c626edca096d4d1af1c739ecd30e904b"
+    },
+    {
+      "path": "service-organique-document.json",
+      "bytes": 8164,
+      "sha256": "b5551775e3f9c8c743b456e800f816dc4f00931f27b51249988852b886c80428"
+    },
+    {
+      "path": "service-organique-mobile-lecture.png",
+      "bytes": 32401,
+      "sha256": "5726bdd0faf3efd04e1926ccb67862c1876026bed96fb79daf88be0d64ed8c16"
+    },
+    {
+      "path": "service-organique-mobile.png",
+      "bytes": 177488,
+      "sha256": "bcc40defed943a7fdcf5772b1a95ac4d67d58c17321c940e92d39fae3d14a697"
+    },
+    {
+      "path": "service-organique-ordinateur-lecture.png",
+      "bytes": 27188,
+      "sha256": "5e581e766beb5ebacee08b5947a8fb5667be56344a5a7dc1d417ece7f231bb0a"
+    },
+    {
+      "path": "service-organique-ordinateur.png",
+      "bytes": 201830,
+      "sha256": "3283b71b33c4ecd9a9e58f413dd55fc7a7d0a56226a24402bb40bbe801398a54"
+    },
+    {
+      "path": "service-organique.mp4",
+      "bytes": 1730708,
+      "sha256": "203b242aa7773fc0861a5a7e92b4406326b3a6bbf54261b9068d487faf35914b"
+    },
+    {
+      "path": "service-organique.srt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "service-organique.vtt",
+      "bytes": 8,
+      "sha256": "8eb5aec53542eaedb7502b22fb677161abba1e265b1338f1af1369a1f689837c"
+    },
+    {
+      "path": "service-publicitaire-1.jpg",
+      "bytes": 50008,
+      "sha256": "eefc26ac389e5d48797689aede32fbbd5295ab3723db911a2174726d720e268f"
+    },
+    {
+      "path": "service-publicitaire-2.jpg",
+      "bytes": 41860,
+      "sha256": "6302401b908ea803047a2bea2a04c80c875b11c112a0398066eb071d54daf6e3"
+    },
+    {
+      "path": "service-publicitaire-3.jpg",
+      "bytes": 42024,
+      "sha256": "3288fc293252b91dd242392d1638184bf2357466aa51d3f4f7af454c8dc560d3"
+    },
+    {
+      "path": "service-publicitaire-4.jpg",
+      "bytes": 33772,
+      "sha256": "0ee6caf88cb459e4950bbd8ba14e168238d2cbf82661316115a95b9361e7510e"
+    },
+    {
+      "path": "service-publicitaire-document.json",
+      "bytes": 8180,
+      "sha256": "80865ecefc3febc4c73bad9e56e5837eeaa2911229443d3f5d16a12cec8b7dac"
+    },
+    {
+      "path": "service-publicitaire-mobile-duree-refusee.png",
+      "bytes": 188995,
+      "sha256": "22a0a154c09ef522100a282db37b467025aaa440e4ed525092fcb780142ab404"
+    },
+    {
+      "path": "service-publicitaire-mobile-lecture.png",
+      "bytes": 55171,
+      "sha256": "6010827759f4d6a99b365ed0e0abb55da64ed5f8f594b61f6ada437a1220add2"
+    },
+    {
+      "path": "service-publicitaire-mobile.png",
+      "bytes": 189470,
+      "sha256": "989c509560c8a5ee2a10008fec06a8c2681bb5ff5d62b6abb3863c443f2bc8a3"
+    },
+    {
+      "path": "service-publicitaire-ordinateur-duree-refusee.png",
+      "bytes": 203183,
+      "sha256": "c69cba3eb86c59b4930c0bb505820c4f2e42ee3bc95ddb2904c41cf9fe1755a0"
+    },
+    {
+      "path": "service-publicitaire-ordinateur-lecture.png",
+      "bytes": 35662,
+      "sha256": "39622705db75ec699121cc24faef1f97e80b3c8cfd2f97a3c5bb6ec0087e2e8f"
+    },
+    {
+      "path": "service-publicitaire-ordinateur.png",
+      "bytes": 201008,
+      "sha256": "030004ea0c5210e7d4c9db2a0c3d44a98e6e9613fb1597a89fa16fb22867d46a"
+    },
+    {
+      "path": "service-publicitaire.mp4",
+      "bytes": 2215484,
+      "sha256": "b6605d954dfaa35c0f94e2348864116457071c6e9b177a3fce2796c7555efdd9"
+    },
+    {
+      "path": "service-publicitaire.srt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "service-publicitaire.vtt",
+      "bytes": 8,
+      "sha256": "8eb5aec53542eaedb7502b22fb677161abba1e265b1338f1af1369a1f689837c"
+    },
+    {
+      "path": "source-fingerprints.json",
+      "bytes": 1981,
+      "sha256": "cb7a6284f68ced1215816b00d7d1cd33c1d0d67dc9ec1b20f7dccc9779ddfbb4"
+    },
+    {
+      "path": "tests-summary.txt",
+      "bytes": 356,
+      "sha256": "30d3883c4f62de2dfff6f02ea50fd3d10c859a607905f4dac64afedb41cf91c0"
+    },
+    {
+      "path": "validation-ui.json",
+      "bytes": 4753,
+      "sha256": "d8c4b963f55e9df004e3cb479a15a89e81ae2a3da1e35c12763d3975b6dada9a"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 13571,
+      "sha256": "6cae9fe8cb2d072ff45aa285c9a9e6e7256ef554e3e8e48935bed73b67231fdf"
+    }
+  ]
+}

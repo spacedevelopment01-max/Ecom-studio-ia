@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-18T16:21:22.315Z",
+  "type": "lecture web réelle, aucune IA",
+  "results": [
+    {
+      "url": "https://www.bing.com/search?format=rss&q=carnet+croquis+liege+concurrence",
+      "ok": false,
+      "error": "getaddrinfo EAI_AGAIN www.bing.com"
+    },
+    {
+      "url": "https://www.rhodia.com/",
+      "ok": false,
+      "error": "getaddrinfo EAI_AGAIN www.rhodia.com"
+    }
+  ]
+}

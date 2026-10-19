@@ -1,0 +1,12 @@
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "Diagnostic",
+    "description": "Diagnostic. Matière cellulose, diamètre 47 mm. Ajouter au panier.",
+    "brand": {
+      "@type": "Brand",
+      "name": "Catalogue synthétique 0"
+    }
+  }
+]

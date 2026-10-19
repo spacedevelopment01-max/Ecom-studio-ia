@@ -1,0 +1,29 @@
+{
+  "simulation": true,
+  "seedScope": "accounts, subscriptions, fake keys, session cookies and test files only",
+  "projectCountAfterSeed": 0,
+  "realPayments": 0,
+  "providerCalls": 0,
+  "cases": [
+    {
+      "slug": "produit-ordinateur",
+      "business": "products",
+      "mobile": false
+    },
+    {
+      "slug": "service-ordinateur",
+      "business": "services",
+      "mobile": false
+    },
+    {
+      "slug": "produit-mobile",
+      "business": "products",
+      "mobile": true
+    },
+    {
+      "slug": "service-mobile",
+      "business": "services",
+      "mobile": true
+    }
+  ]
+}

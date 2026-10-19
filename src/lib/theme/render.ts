@@ -1,3 +1,4 @@
+import { purchaseTargetHandles } from "./purchase-offers";
 /**
  * Moteur d'aperçu : interprète les fichiers Liquid compilés du thème avec
  * LiquidJS et des objets compatibles Shopify (produit, panier, menus…).
@@ -18,6 +19,8 @@ import { sampleBlogs } from "./preview-samples";
 
 /** Correspondance des polices Shopify utilisées par les directions → fichiers locaux. */
 export const FONT_FILES: Record<string, { family: string; files: Record<number, string>; italic?: Record<number, string>; fallback: string }> = {
+  // Instrument Serif (italique d'accent des profils « conversion ») : fichiers locaux ; à confirmer dans la bibliothèque de polices Shopify à l'export.
+  instrument_serif: { family: "Instrument Serif", files: { 400: "InstrumentSerif-400.ttf" }, italic: { 400: "InstrumentSerif-400italic.ttf" }, fallback: "serif" },
   cormorant: { family: "Cormorant", files: { 400: "Cormorant-400.ttf", 500: "Cormorant-500.ttf", 600: "Cormorant-600.ttf" }, italic: { 400: "Cormorant-500italic.ttf", 500: "Cormorant-500italic.ttf" }, fallback: "serif" },
   inter: { family: "Inter", files: { 400: "Inter-400.ttf", 500: "Inter-500.ttf", 600: "Inter-600.ttf", 700: "Inter-700.ttf", 800: "Inter-700.ttf" }, fallback: "sans-serif" },
   jost: { family: "Jost", files: { 400: "Jost-400.ttf", 500: "Jost-500.ttf", 600: "Jost-600.ttf", 700: "Jost-600.ttf" }, fallback: "sans-serif" },
@@ -84,7 +87,7 @@ class ColorDrop extends Drop {
 
 // ---------------------------------------------------------------- données
 
-export type PreviewCartLine = { variantId: number; quantity: number };
+export type PreviewCartLine = import("./purchase-offers").OfferLine;
 export type PreviewOptions = {
   spec: ThemeSpec;
   base: string; // ex. /preview/<projet>/v/<version>
@@ -129,10 +132,12 @@ function productDrop(sp: StoreProduct, pi: number, base: string) {
     option3: v.options[2] ?? null,
     price: v.price ?? sp.price,
     compare_at_price: sp.compare_at_price,
-    available: v.available,
+    available: v.available && (v.inventory_quantity === undefined || v.inventory_quantity > 0),
     sku: v.sku ?? "",
+    inventory_quantity: v.inventory_quantity,
+    inventory_management: v.inventory_quantity === undefined ? null : "shopify",
     url: `${url}?variant=${variantId(pi, i)}`,
-    featured_media: withPreview[v.image ? Math.max(0, sp.images.indexOf(v.image)) : 0] ?? null,
+    featured_media: v.image ? withPreview[sp.images.indexOf(v.image)] ?? null : sp.variants.some(x=>!!x.image) ? null : withPreview[0] ?? null,
     unit_price_measurement: null,
   }));
   const hasOnlyDefault = variants.length === 1 && variants[0].title === "Default Title";
@@ -140,6 +145,7 @@ function productDrop(sp: StoreProduct, pi: number, base: string) {
   const prices = variants.map((v) => v.price ?? 0);
   return {
     id: pi + 1,
+    es_content_target: sp.contentTarget,
     title: sp.title,
     handle: sp.handle,
     url,
@@ -232,19 +238,22 @@ function buildStore(opts: PreviewOptions, current: { product?: string; collectio
     .map(({ l, hit }, i) => {
       const { v, p } = hit!;
       const price = v.price ?? 0;
+      const finalLine = l.finalLinePrice ?? price * l.quantity;
       return {
-        key: `${v.id}:${i}`,
+        key: l.offerGroup ? `${l.offerGroup}:${v.id}:${l.gift ? "gift" : "item"}` : `${v.id}:${i}`,
         id: v.id,
         quantity: l.quantity,
         title: p.has_only_default_variant ? p.title : `${p.title} - ${v.title}`,
         url: v.url,
-        image: p.featured_image ?? null,
+        // Visuel de la variante réellement choisie (Dune, Argile, Charbon…) ; sans média propre : image du produit.
+        image: v.featured_media?.preview_image ?? v.featured_media ?? p.featured_image ?? null,
         product: p,
         variant: v,
+        properties: l.gift ? { _es_gift: true } : {},
         price,
-        final_price: price,
+        final_price: l.quantity ? Math.round(finalLine / l.quantity) : price,
         line_price: price * l.quantity,
-        final_line_price: price * l.quantity,
+        final_line_price: finalLine,
         url_to_remove: `${base}/cart/change?line=${i + 1}&quantity=0`,
       };
     });
@@ -263,8 +272,9 @@ function buildStore(opts: PreviewOptions, current: { product?: string; collectio
     description: spec.store.shopName,
     money_format: lang === "en" ? "€{{amount}}" : "{{amount_with_comma_separator}} €",
     customer_accounts_enabled: false,
+    es_demo_contact: spec.meta?.demo?.isDemo === true && spec.meta.demo.contactTest === true,
     policies,
-    enabled_payment_types: ["visa", "master", "american_express", "paypal", "apple_pay", "google_pay"],
+    enabled_payment_types: spec.store.paymentTypes ?? [],
     password_message: "",
   };
   const routes = {
@@ -578,7 +588,8 @@ export function createEngine(files: ThemeFiles, base: string, lang: Lang = "fr")
     const label: Record<string, string> = { visa: "VISA", master: "MC", american_express: "AMEX", paypal: "PayPal", apple_pay: "Pay", google_pay: "GPay" };
     return `<svg class="${o.class ?? ""}" viewBox="0 0 38 24" width="38" height="24" role="img" aria-label="${type}"><rect x=".5" y=".5" width="37" height="23" rx="3" fill="#fff" stroke="#ccc"/><text x="19" y="15.5" text-anchor="middle" font-size="7" font-family="Arial" font-weight="700" fill="#333">${label[type] ?? type}</text></svg>`;
   });
-  f("payment_button", () => `<div class="shopify-payment-button"><button type="button" class="es-button es-button--secondary es-button--full" disabled title="${pick(lang, "Affiché par Shopify sur la boutique réelle", "Displayed by Shopify on the live store")}">${pick(lang, "Paiement accéléré (Shop Pay, Apple Pay…)", "Express checkout (Shop Pay, Apple Pay…)")}</button></div>`);
+  // Aperçu : Shopify ajoute lui-même ses boutons de paiement accéléré sur la boutique en ligne ; ici une simple mention, jamais un faux bouton.
+  f("payment_button", () => `<p class="shopify-payment-button es-express-note">${pick(lang, "Paiement accéléré (Shop Pay, Apple Pay…) : ajouté par Shopify sur la boutique en ligne.", "Express checkout (Shop Pay, Apple Pay…): added by Shopify on the live store.")}</p>`);
   f("handleize", (s: string) => String(s ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""));
   f("handle", (s: string) => String(s ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "-"));
   f("link_to", (text: string, url: string) => `<a href="${url}">${text}</a>`);
@@ -601,6 +612,9 @@ export function createEngine(files: ThemeFiles, base: string, lang: Lang = "fr")
   f("color_mix", (a: unknown, b: unknown, w: unknown) => { const x = hexOf(a), y = hexOf(b), k = Number(w ?? 50) / 100; return toHex(x.red * k + y.red * (1 - k), x.green * k + y.green * (1 - k), x.blue * k + y.blue * (1 - k)); });
   f("color_lighten", (c: unknown, n: unknown) => { const d = hexOf(c), k = Number(n ?? 0) / 100; return toHex(d.red + (255 - d.red) * k, d.green + (255 - d.green) * k, d.blue + (255 - d.blue) * k); });
   f("color_darken", (c: unknown, n: unknown) => { const d = hexOf(c), k = 1 - Number(n ?? 0) / 100; return toHex(d.red * k, d.green * k, d.blue * k); });
+  // Rapport de contraste WCAG entre deux couleurs (filtre Shopify `color_contrast`) : sert au thème pour dériver des accents lisibles.
+  const lum = (d: { red: number; green: number; blue: number }) => [d.red, d.green, d.blue].map((v) => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }).reduce((acc, x, i) => acc + x * [0.2126, 0.7152, 0.0722][i], 0);
+  f("color_contrast", (a: unknown, b: unknown) => { const l1 = lum(hexOf(a)), l2 = lum(hexOf(b)); return Math.round(((Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05)) * 100) / 100; });
   for (const n of ["color_saturate", "color_desaturate", "color_to_hex"]) f(n, (c: unknown) => hexOf(c).hex);
   f("color_to_hsl", (c: unknown) => { const d = hexOf(c); const r = d.red / 255, g = d.green / 255, b = d.blue / 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b); const l = (mx + mn) / 2; let h = 0, s2 = 0; if (mx !== mn) { const dd = mx - mn; s2 = l > 0.5 ? dd / (2 - mx - mn) : dd / (mx + mn); h = mx === r ? (g - b) / dd + (g < b ? 6 : 0) : mx === g ? (b - r) / dd + 2 : (r - g) / dd + 4; h *= 60; } return `hsl(${Math.round(h)}, ${Math.round(s2 * 100)}%, ${Math.round(l * 100)}%)`; });
   f("inline_asset_content", (name: string) => files.get(`assets/${name}`) ?? "");
@@ -654,18 +668,22 @@ function* renderSectionGen(engine: Liquid, ctx: Context, emitter: Emitter, files
   const resolve = (ctx.getAll() as any).__resolve as ((type: string, v: unknown) => unknown) | undefined;
   const types = new Map<string, string>();
   for (const s of schema.settings) if (s.id) types.set(s.id, s.type);
-  const settings = wrapSettings(withDefaults(schema.settings, inst.settings), base, types, resolve);
+  const sectionSettings = { ...inst.settings };
+  if (["purchase-offers","ed-finishes","featured-purchase"].includes(inst.type) && sectionSettings.product_target) sectionSettings.product = (ctx.getAll() as any).__purchaseTargets?.[String(sectionSettings.product_target)] ?? "";
+  const settings = wrapSettings(withDefaults(schema.settings, sectionSettings), base, types, resolve);
   const blocks = (inst.block_order ?? Object.keys(inst.blocks ?? {}))
     .map((bid) => ({ bid, b: inst.blocks?.[bid] }))
     .filter((x) => x.b && !x.b.disabled)
     .map(({ bid, b }) => {
       const bs = schema.blocks.find((x) => x.type === b!.type);
+      const blockSettings = { ...b!.settings };
+      if (b!.type === "threshold_gift") blockSettings.gift_handle = (ctx.getAll() as any).__purchaseTargets?.[String(b!.settings.gift_target)] ?? "";
       const btypes = new Map<string, string>();
       for (const s of bs?.settings ?? []) if (s.id) btypes.set(s.id, s.type);
       return {
         id: bid,
         type: b!.type,
-        settings: wrapSettings(withDefaults(bs?.settings, b!.settings), base, btypes, resolve),
+        settings: wrapSettings(withDefaults(bs?.settings, blockSettings), base, btypes, resolve),
         shopify_attributes: `data-es-block="${bid}"`,
       };
     });
@@ -723,6 +741,23 @@ export function routeFor(spec: ThemeSpec, pathname: string, search: URLSearchPar
   return { template: "404", status: 404 };
 }
 
+/** Réglages globaux du thème (défauts du schéma + settings_data) : les mêmes pour la page entière et les sections rechargées (tiroir du panier). */
+function globalSettingsFor(files: ThemeFiles, base: string): Record<string, any> {
+  const settingsSchemaRaw = JSON.parse(files.get("config/settings_schema.json") || "[]");
+  const gtypes = new Map<string, string>();
+  for (const g of settingsSchemaRaw) for (const s of g.settings ?? []) if (s.id) gtypes.set(s.id, s.type);
+  const settingsData = JSON.parse(stripComment(files.get("config/settings_data.json") || "{}")).current ?? {};
+  const defaults: Record<string, unknown> = {};
+  for (const g of settingsSchemaRaw) for (const s of g.settings ?? []) if (s.id && s.default !== undefined) defaults[s.id] = s.default;
+  const globalSettings = wrapSettings({ ...defaults, ...settingsData }, base, gtypes);
+  const schemes = (settingsData.color_schemes ?? {}) as Record<string, { settings: Record<string, string> }>;
+  globalSettings.color_schemes = Object.entries(schemes).map(([sid, sc]) => ({
+    id: sid,
+    settings: Object.fromEntries(Object.entries(sc.settings).map(([k, v]) => [k, new ColorDrop(v)])),
+  }));
+  return globalSettings;
+}
+
 export async function renderPage(opts: PreviewOptions, pathname: string, search: URLSearchParams): Promise<RenderResult> {
   const files = opts.files ?? compileTheme(opts.spec);
   const lang = themeLang(opts.spec);
@@ -733,18 +768,7 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
   const templateRaw = files.get(`templates/${tplKey}.json`);
   const template = templateRaw ? JSON.parse(stripComment(templateRaw)) : { sections: {}, order: [] };
 
-  const settingsSchemaRaw = JSON.parse(files.get("config/settings_schema.json") || "[]");
-  const gtypes = new Map<string, string>();
-  for (const g of settingsSchemaRaw) for (const s of g.settings ?? []) if (s.id) gtypes.set(s.id, s.type);
-  const settingsData = JSON.parse(stripComment(files.get("config/settings_data.json") || "{}")).current ?? {};
-  const defaults: Record<string, unknown> = {};
-  for (const g of settingsSchemaRaw) for (const s of g.settings ?? []) if (s.id && s.default !== undefined) defaults[s.id] = s.default;
-  const globalSettings = wrapSettings({ ...defaults, ...settingsData }, opts.base, gtypes);
-  const schemes = (settingsData.color_schemes ?? {}) as Record<string, { settings: Record<string, string> }>;
-  globalSettings.color_schemes = Object.entries(schemes).map(([sid, sc]) => ({
-    id: sid,
-    settings: Object.fromEntries(Object.entries(sc.settings).map(([k, v]) => [k, new ColorDrop(v)])),
-  }));
+  const globalSettings = globalSettingsFor(files, opts.base);
 
   let page: any = null;
   // Accueil : titre pour Google (Theme V2) quand il existe, sinon le nom de la boutique.
@@ -759,7 +783,11 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     if (sp) page = { title: sp.title, content: sp.body_html, handle: sp.handle, url: `${opts.base}/pages/${sp.handle}`, template_suffix: sp.template_suffix };
     pageTitle = sp?.seo?.title || sp?.title || pageTitle;
     seoDescription = sp?.seo?.description || null;
-  } else if (tplKey === "product" || tplKey.startsWith("product.")) pageTitle = store.product.title;
+  } else if (tplKey === "product" || tplKey.startsWith("product.")) {
+    const product = storeProducts(opts.spec).find((p) => p.handle === route.handle);
+    pageTitle = product?.seo?.title || store.product.title;
+    seoDescription = product?.seo?.description || null;
+  }
   else if (tplKey === "collection") pageTitle = store.collection.title;
   else if (tplKey === "404") pageTitle = pick(lang, "Page introuvable", "Page not found");
 
@@ -787,6 +815,7 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     search: { performed: !!q, terms: q, results, results_count: results.length },
     recommendations: { performed: store.recommendations.length > 0, products: store.recommendations, products_count: store.recommendations.length },
     all_products: Object.fromEntries(store.products.map((p: any) => [p.handle, p])),
+    __purchaseTargets: purchaseTargetHandles(opts.spec),
     customer: null,
     request: { page_type: tplKey.split(".")[0], locale: { iso_code: lang }, origin: "", design_mode: !!opts.designMode, path: pathname, host: "apercu" },
     template: { name: tplKey.split(".")[0], suffix: tplKey.includes(".") ? tplKey.split(".")[1] : null, directory: null },
@@ -853,12 +882,12 @@ export async function renderSectionStandalone(engine: Liquid, files: ThemeFiles,
 /** Section seule (API de rendu de sections utilisée par le panier latéral). */
 export async function renderNamedSections(opts: PreviewOptions, names: string[], pathname: string): Promise<Record<string, string>> {
   const files = opts.files ?? compileTheme(opts.spec);
-  void pathname;
   const lang = themeLang(opts.spec);
   const engine = createEngine(files, opts.base, lang);
   const store = buildStore(opts);
   const out: Record<string, string> = {};
-  const scope: Record<string, unknown> = { __base: opts.base, __lang: lang, __collected: { css: [], js: [] }, __resolve: store.resolve, settings: {}, shop: store.shop, routes: store.routes, cart: store.cart, linklists: store.linklists };
+  // Mêmes réglages globaux que la page : le tiroir rechargé garde son titre, ses bandeaux et ses totaux.
+  const scope: Record<string, unknown> = { __base: opts.base, __lang: lang, __collected: { css: [], js: [] }, __resolve: store.resolve, settings: globalSettingsFor(files, opts.base), shop: store.shop, routes: store.routes, cart: store.cart, linklists: store.linklists, request: { page_type: "cart", locale: { iso_code: lang }, origin: "", design_mode: !!opts.designMode, path: pathname, host: "apercu" } };
   for (const name of names) {
     out[name] = await renderSectionStandalone(engine, files, scope, name, { type: name, settings: {} }, "static");
   }

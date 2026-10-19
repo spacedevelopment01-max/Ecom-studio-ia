@@ -1,0 +1,65 @@
+[
+  {
+    "handle": "prestations",
+    "title": "Prestations",
+    "template_suffix": "services",
+    "body_html": ""
+  },
+  {
+    "handle": "a-propos",
+    "title": "À propos",
+    "template_suffix": "about",
+    "body_html": ""
+  },
+  {
+    "handle": "contact",
+    "title": "Demande de devis",
+    "template_suffix": "contact",
+    "body_html": ""
+  },
+  {
+    "handle": "faq",
+    "title": "Questions fréquentes",
+    "template_suffix": "faq",
+    "body_html": ""
+  },
+  {
+    "handle": "mentions-legales",
+    "title": "Mentions légales",
+    "template_suffix": "legal",
+    "body_html": ""
+  },
+  {
+    "handle": "texte-service-creation",
+    "title": "Création de jardin",
+    "contentTarget": "service:creation",
+    "template_suffix": "seo-service-creation",
+    "body_html": "<p>Dessiner les volumes, choisir les végétaux et organiser les cheminements. Un projet pensé pour votre terrain et votre façon de vivre dehors.</p>\n<h2>Un projet qui part de vos usages.</h2>\n<p>Nous commençons par préciser les envies, les usages et les contraintes du lieu. Le périmètre des travaux et les matériaux sont discutés avant l’établissement du devis.</p>\n<h2>Ce que nous préparons ensemble.</h2>\n<ul><li>Les espaces à aménager et leur utilisation.</li><li>Les matières et les plantations à envisager.</li><li>Le périmètre de la prestation et les informations nécessaires au devis.</li></ul>\n<p>Entreprise fictive et illustration de démonstration. Aucun engagement commercial réel.</p>",
+    "seo": {
+      "title": "Création de jardin — Racines & Pierres",
+      "description": "Dessiner les volumes, choisir les végétaux et organiser les cheminements. Un projet pensé pour votre terrain et votre façon de vivre dehors."
+    }
+  },
+  {
+    "handle": "texte-service-terrasse",
+    "title": "Terrasses et aménagements",
+    "contentTarget": "service:terrasse",
+    "template_suffix": "seo-service-terrasse",
+    "body_html": "<p>Bois, pierre sèche, jardinières et éclairage : composer des espaces où l’on aime s’installer, recevoir et circuler.</p>\n<h2>Un projet qui part de vos usages.</h2>\n<p>Nous commençons par préciser les envies, les usages et les contraintes du lieu. Le périmètre des travaux et les matériaux sont discutés avant l’établissement du devis.</p>\n<h2>Ce que nous préparons ensemble.</h2>\n<ul><li>Les espaces à aménager et leur utilisation.</li><li>Les matières et les plantations à envisager.</li><li>Le périmètre de la prestation et les informations nécessaires au devis.</li></ul>\n<p>Entreprise fictive et illustration de démonstration. Aucun engagement commercial réel.</p>",
+    "seo": {
+      "title": "Terrasses et aménagements — Racines & Pierres",
+      "description": "Bois, pierre sèche, jardinières et éclairage : composer des espaces où l’on aime s’installer, recevoir et circuler."
+    }
+  },
+  {
+    "handle": "texte-service-entretien",
+    "title": "Entretien à l’année",
+    "contentTarget": "service:entretien",
+    "template_suffix": "seo-service-entretien",
+    "body_html": "<p>Taille, tonte, désherbage et suivi des plantations. Accompagner le jardin au fil des saisons, selon ses besoins.</p>\n<h2>Un projet qui part de vos usages.</h2>\n<p>Nous commençons par préciser les envies, les usages et les contraintes du lieu. Le périmètre des travaux et les matériaux sont discutés avant l’établissement du devis.</p>\n<h2>Ce que nous préparons ensemble.</h2>\n<ul><li>Les espaces à aménager et leur utilisation.</li><li>Les matières et les plantations à envisager.</li><li>Le périmètre de la prestation et les informations nécessaires au devis.</li></ul>\n<p>Entreprise fictive et illustration de démonstration. Aucun engagement commercial réel.</p>",
+    "seo": {
+      "title": "Entretien à l’année — Racines & Pierres",
+      "description": "Taille, tonte, désherbage et suivi des plantations. Accompagner le jardin au fil des saisons, selon ses besoins."
+    }
+  }
+]

@@ -12,6 +12,7 @@
  * le contexte est recalculé à chaque appel ; le registre ne fait que relier un texte stable à ses métadonnées.
  */
 import type { Project } from "../projects";
+import { currentRequest } from "./request-scope";
 import { brainSnapshot } from "./snapshot";
 import { BUDGETS, contextFor, type BrainItem, type ContextView, type Scope } from "./views";
 
@@ -47,6 +48,7 @@ export function legacyView(p: Project, scope: LegacyScope = "all"): ContextView 
   const m = LEGACY_SCOPES[scope] ?? LEGACY_SCOPES.all;
   const label = scope === "all" ? "all" : `legacy:${scope}`;
   const view = contextFor(brainSnapshot(p), m.scope, { extra: m.extra, label, budget: BUDGETS.all });
+  assertCompleteContext(view);
   remember(view.stable, { projectId: p.id, scope: view.label, hash: view.hash, version: view.brainVersion, volatile: view.volatile });
   return view;
 }
@@ -57,7 +59,18 @@ export function legacyView(p: Project, scope: LegacyScope = "all"): ContextView 
  */
 export function brainView(p: Project, scope: Exclude<Scope, "all">): ContextView {
   if ((scope as Scope) === "all") throw new Error("brainView : un moteur reçoit un scope précis, jamais « all ».");
-  const view = contextFor(brainSnapshot(p), scope);
+  const snapshot = brainSnapshot(p);
+  const request = currentRequest(p.id);
+  if (request) snapshot.memory.push({ kind: "decision", key: "demande.en_cours", value: request, status: "confirmed", source: "user", scope: "all", origin: "user", evidence_json: null });
+  const facts = new Map<string, string>();
+  for (const f of p.product.facts.filter(f => f.status === "confirmed")) {
+    if (facts.has(f.key) && facts.get(f.key) !== f.value) throw new Error(`Contexte contradictoire : confirmez la valeur du fait ${f.label} avant toute création.`);
+    facts.set(f.key, f.value);
+  }
+  let view = contextFor(snapshot, scope);
+  // Reconstruire sans perte dans une enveloppe bornée avant de refuser une création.
+  if (view.criticalDropped.length) view = contextFor(snapshot, scope, { budget: BUDGETS.all });
+  assertCompleteContext(view);
   remember(view.stable, { projectId: p.id, scope: view.label, hash: view.hash, version: view.brainVersion, volatile: view.volatile });
   return view;
 }
@@ -87,4 +100,9 @@ export function brainMetaOf(context: string | undefined, projectId: string | nul
   const m = registry.get(context.slice(a, b + CLOSE.length));
   if (!m) return null;
   return { ...m, volatile: projectId && m.projectId === projectId ? m.volatile : "" };
+}
+
+/** Les vues de diagnostic restent consultables ; un moteur ne reçoit jamais un contexte critique incomplet. */
+export function assertCompleteContext(view: ContextView) {
+  if (view.criticalDropped.length) throw new Error(`Contexte critique incomplet (${view.label}) : ${view.criticalDropped.join(", ")}. Réduisez ou clarifiez la mémoire du projet avant toute création ; aucune contrainte ne sera ignorée.`);
 }

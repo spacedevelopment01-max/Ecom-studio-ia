@@ -13,7 +13,9 @@ import { servicesPlan } from "./services-site";
 import { bookingCalendar, bookingNeed } from "./booking-need";
 import { tidyComposition } from "./tidy";
 import { planForTheme, themeRank } from "./theme-access";
+import { isActiveThemeId } from "./theme-fit";
 import { CATALOG_THEMES, catalogTheme, type CatalogThemeId, type Kit, type PaletteKit, type Row } from "./theme-catalog";
+import { isReferenceTheme, referenceHomeRows } from "./reference-composition";
 
 /** Onze directions d'origine, puis les thèmes du catalogue (theme-catalog.ts) : trente compositions distinctes. */
 export type BaseDirectionId = "atelier" | "clinique" | "brut" | "terroir" | "nocturne" | "pop" | "galerie" | "elan" | "flux" | "joaillerie" | "gourmand";
@@ -148,6 +150,15 @@ export const DIRECTIONS: Direction[] = [
   ...CATALOG_THEMES.map((x): Direction => ({ id: x.id, name: x.name, tagline: x.tagline, description: x.description, bestFor: x.bestFor, fonts: x.fonts, previewFonts: x.previewFonts, motion: x.motion })),
 ];
 
+/**
+ * Catalogue actif (consigne du 19 octobre, commentaire 6264783184) : les quatre thèmes de référence. `DIRECTIONS` garde
+ * toutes les définitions pour composer et rendre les projets existants ; tout ce qui PROPOSE un thème (galerie, onglet
+ * Marque, IA, commandes locales, recommandation, découverte, vignettes) part de cette liste.
+ */
+export const ACTIVE_DIRECTIONS: Direction[] = DIRECTIONS.filter((d) => isActiveThemeId(d.id));
+/** Thème retiré du catalogue (défini, mais plus proposé) ; false pour un thème actif ou inconnu. */
+export const isRetiredDirection = (id: string) => !isActiveThemeId(id) && DIRECTIONS.some((d) => d.id === id);
+
 /** Présentation des directions en anglais (le français est dans DIRECTIONS). */
 export const DIRECTIONS_EN: Record<DirectionId, { tagline: string; description: string; bestFor: string[] }> = {
   ...(Object.fromEntries(CATALOG_THEMES.map((x) => [x.id, x.en])) as Record<CatalogThemeId, { tagline: string; description: string; bestFor: string[] }>),
@@ -182,13 +193,21 @@ export type BrandPalette = { primary: string; secondary: string; accent: string;
 type Scheme = { background: string; surface: string; text: string; muted: string; accent: string; accent_text: string; border: string };
 
 function scheme(bg: string, text: string, accent: string, surfaceT = 0.045): Scheme {
-  const t = ensureContrast(text, bg, 7);
+  // Texte visé à 7:1 ; quand ce n'est pas atteignable (fond de luminosité moyenne, rouge FRAISE), on garde le meilleur
+  // des deux : jamais un texte sombre basculé en blanc moins lisible (3,98:1) que le sombre d'origine (4,62:1).
+  const t7 = ensureContrast(text, bg, 7);
+  const t = contrast(t7, bg) >= contrast(text, bg) ? t7 : text;
   const acc = contrast(accent, bg) >= 3 ? accent : ensureContrast(accent, bg, 3);
+  const surface = mix(bg, t, surfaceT);
+  // Texte atténué lisible (4,5:1) sur le fond ET sur la surface des cartes (audit du 19 octobre : 4,07:1 sur une carte sombre).
+  const m0 = ensureContrast(ensureContrast(mix(t, bg, 0.42), bg, 4.5), surface, 4.5);
+  // Même garde-fou que pour le texte : si l'atténuation n'atteint pas 4,5:1, le texte plein reste préférable.
+  const muted = Math.min(contrast(m0, bg), contrast(m0, surface)) >= 4.5 || contrast(m0, bg) >= contrast(t, bg) ? m0 : t;
   return {
     background: bg,
-    surface: mix(bg, t, surfaceT),
+    surface,
     text: t,
-    muted: ensureContrast(mix(t, bg, 0.42), bg, 4.5),
+    muted,
     accent: acc,
     accent_text: onColor(acc),
     border: mix(bg, t, 0.14),
@@ -206,8 +225,16 @@ function brandAccent(bg: string, ...candidates: string[]): string {
   return candidates.find((c) => contrast(c, bg) >= 3) ?? ensureContrast(candidates[0], bg, 3);
 }
 
-/** Bloc plein de la couleur de marque (bandeau, appel à l'action) : texte noir ou blanc lisible dessus. */
-const filled = (c: string) => scheme(c, onColor(c), onColor(c));
+/**
+ * Bloc plein de la couleur de marque (bandeau, pied de page, appel à l'action) : texte noir ou blanc lisible dessus.
+ * Quand ni le noir ni le blanc n'atteint 4,5:1 sur la couleur (rouge FRAISE #E4473F : 3,98:1 avec le blanc), la
+ * couleur de fond est assombrie ou éclaircie juste assez — la teinte est gardée, jamais le texte rendu illisible.
+ */
+const filled = (c: string) => {
+  const on = onColor(c);
+  const bg = contrast(on, c) >= 4.5 ? c : ensureContrast(c, on, 4.5);
+  return scheme(bg, on, on);
+};
 
 export function colorSchemes(direction: DirectionId, p: BrandPalette): Record<string, { settings: Scheme }> {
   const warmLight = withLightness(p.light, Math.max(0.93, hsl(p.light)[2]), 0.6);
@@ -362,6 +389,19 @@ function blocksOf(ids: Ids, list: { type: string; settings: Record<string, unkno
   return { blocks, block_order: order };
 }
 
+/** Sections qui rendent elles-mêmes le h1 de la page (ouvertures, gabarits principaux, pages légales). */
+const TITLE_SECTIONS = new Set(["main-page", "legal-page", "hero", "hero-split", "hero-flex", "hero-fullbleed", "hero-editorial", "ref-hero", "v2-hero", "cv-hero", "cv-article", "ed-opening", "main-404", "main-article", "main-blog", "main-cart", "main-collection", "main-list-collections", "main-password", "main-product", "main-search"]);
+function ensurePageTitles(ids: Ids, templates: Record<string, TemplateJson>) {
+  for (const [key, t] of Object.entries(templates)) {
+    if (!key.startsWith("page")) continue;
+    const first = t.order.map((id) => t.sections[id]).find((s) => s && !s.disabled);
+    if (!first || TITLE_SECTIONS.has(first.type)) continue;
+    const sid = ids.next("main-page");
+    t.sections[sid] = { type: "main-page", settings: { width: "wide", color_scheme: "scheme-1", padding_top: 40, padding_bottom: 0 } };
+    t.order.unshift(sid);
+  }
+}
+
 function tpl(ids: Ids, sections: Row[]): TemplateJson {
   const out: TemplateJson = { sections: {}, order: [] };
   for (const [type, settings, blocks, opts] of sections) {
@@ -384,6 +424,8 @@ export type ImageSlots = {
   lifestyle2?: string;
   hero?: string; // image large, scène ou bannière
   cutout?: string; // produit détouré (PNG)
+  /** Photo verticale (produit entier) : ouverture sur téléphone, cadrage indépendant de l'ordinateur. */
+  portrait?: string;
   packshot?: string;
   detail1?: string;
   detail2?: string;
@@ -483,11 +525,17 @@ export function directionPreview(id: string): string {
 
 /** Directions présentées dans la galerie : description, aperçu et combinaison d'en-tête / pied de page (langue de l'interface). */
 /** Cartes de la galerie, dans l'ordre de la bibliothèque (1 → 30), avec le premier forfait qui ouvre chaque thème. */
-export function directionCards(lang: Lang = "fr") {
+/**
+ * Cartes des thèmes proposés : les thèmes actifs, plus (`include`) le thème déjà installé par le projet s'il est retiré
+ * du catalogue — affiché comme « thème actuel, retiré », jamais proposé à un autre projet.
+ */
+export function directionCards(lang: Lang = "fr", include: readonly string[] = []) {
   const cl = CHROME_LABEL[lang];
   const rank = (id: string) => themeRank(id) ?? 99;
-  return [...DIRECTIONS].sort((a, b) => rank(a.id) - rank(b.id)).map((d) => ({
+  const list = [...ACTIVE_DIRECTIONS, ...DIRECTIONS.filter((d) => include.includes(d.id) && !isActiveThemeId(d.id))];
+  return list.sort((a, b) => rank(a.id) - rank(b.id)).map((d) => ({
     id: d.id,
+    retired: !isActiveThemeId(d.id),
     name: d.name,
     tagline: pick(lang, d.tagline, DIRECTIONS_EN[d.id].tagline),
     description: pick(lang, d.description, DIRECTIONS_EN[d.id].description),
@@ -573,7 +621,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   const glowFeatures = features.map((f) => ({ ...f, settings: { ...f.settings, link_label: t("Découvrir", "Discover"), link: productUrl } }));
   const feat = (sch: 1 | 2 | 3, style = "glow", cols = Math.min(3, Math.max(2, features.length))): [string, Record<string, unknown>, typeof features] => [
     "features-grid",
-    { eyebrow: "", heading: c.features.heading, heading_align: "left", columns: cols, style, link_label: "", color_scheme: scheme(sch), ...pad(104) },
+    { eyebrow: "", heading: c.features.heading, heading_align: "left", columns: cols, columns_mobile: features.length === 4 ? "2" : "1", style, link_label: "", color_scheme: scheme(sch), ...pad(104) },
     style === "glow" ? glowFeatures : features,
   ];
   const iwt = (sch: 1 | 2 | 3 | 4, layout: string, asset = im.scene1, reveal = "zoom"): [string, Record<string, unknown>] => ["image-with-text", { eyebrow: c.detail.eyebrow, heading: c.detail.heading, text: p(c.detail.text), image_asset: img(asset), layout, ratio: "portrait", reveal, parallax: false, color_scheme: scheme(sch), ...pad(104) }];
@@ -597,7 +645,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   const specList = (sch: 1 | 2 | 3): [string, Record<string, unknown>, typeof specs] => ["specs-list", { heading: c.specs.heading, color_scheme: scheme(sch), ...pad(104) }, specs];
   const faqSec = (sch: 1 | 2, limit = 5, style = "cards"): Row => ["faq", { heading: c.faq.heading, style, structured_data: true, color_scheme: scheme(sch), ...pad(104) }, faq.slice(0, limit), faqHidden ? { disabled: true } : undefined];
   const marq = (sch: 1 | 2 | 3 | 4, size: string, reverse = false): [string, Record<string, unknown>] => ["marquee", { items: marquee, separator: d.id === "brut" ? "●" : d.id === "pop" ? "★" : "✦", size, speed: size === "huge" ? 40 : 30, reverse, color_scheme: scheme(sch) }];
-  const cta = (sch: 1 | 3 | 4, asset = im.scene3 ?? im.scene2 ?? im.banner ?? im.hero): [string, Record<string, unknown>] => ["cta-banner", { heading: c.cta.heading, text: p(c.cta.text), button_label: c.cta.button, button_link: productUrl, image_asset: img(asset), overlay: 45, style: "center", parallax: true, color_scheme: scheme(sch), ...pad(152) }];
+  const cta = (sch: 1 | 3 | 4, asset = im.scene3 ?? im.scene2 ?? im.banner ?? im.hero): [string, Record<string, unknown>] => ["cta-banner", { heading: c.cta.heading, text: p(c.cta.text), button_label: c.cta.button, button_link: productUrl, image_asset: img(asset), overlay: 60, style: "center", parallax: true, color_scheme: scheme(sch), ...pad(152) }];
   const newsletter = (sch: 1 | 2 | 3 | 4): [string, Record<string, unknown>] => ["newsletter", { heading: c.newsletter.heading, text: p(c.newsletter.text), button_label: t("S'inscrire", "Subscribe"), legal: t("Désinscription possible à tout moment.", "Unsubscribe at any time."), color_scheme: scheme(sch), ...pad(104) }];
   const hgallery = (sch: 1 | 2 | 3): [string, Record<string, unknown>, typeof gallerySlides] => ["horizontal-gallery", { heading: c.gallery.heading, color_scheme: scheme(sch), ...pad(104) }, gallerySlides];
   const mosaicSec = (sch: 1 | 2, layout = "editorial"): [string, Record<string, unknown>, typeof mosaic] => ["gallery-mosaic", { heading: c.gallery.heading, layout, color_scheme: scheme(sch), ...pad(104) }, mosaic];
@@ -713,7 +761,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   const lib: Kit["lib"] = (type, sch, settings = {}, opts = {}) => {
     const base = { ...settings, color_scheme: scheme(sch), ...(DIVIDERS.has(type) ? {} : FULL_BLEED.has(type) ? pad(0) : pad(96)) };
     if (!input.fill) return [type, base, [], { disabled: true }];
-    const r = input.fill(type, base, undefined, { dropBlocks: opts.dropBlocks });
+    const r = input.fill(type, base, opts.blocks, { dropBlocks: opts.dropBlocks });
     // Site de services : aucun lien vers une fiche produit ou une collection, les boutons mènent à la prise de contact.
     // Un bouton sans lien mènerait au catalogue par défaut : il reçoit lui aussi le lien de prise de contact.
     const relink = (o: Record<string, unknown>) => {
@@ -973,9 +1021,38 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     }
   }
 
+  const reference = referenceHomeRows(input, c, kit, svc);
+  if (reference) {
+    // Conserver aussi le calendrier masqué et le formulaire de secours lorsque les horaires manquent.
+    const bookingRows = index.filter((r) => r[0] === "booking-calendar" || (booking?.hidden && r[0] === "booking" && !r[3]?.disabled));
+    const reassurance = index.find((r) => r[0] === "reassurance");
+    const collections = index.find((r) => r[0] === "collection-list");
+    index = reference;
+    if (bookingRows.length) index.splice(index.length - 1, 0, ...bookingRows);
+    if (reassurance && !svc) index.splice(index.length - 1, 0, reassurance);
+    if (collections && !svc) index.splice(3, 0, collections);
+  }
+
   // Catalogue : les textes rédigés pour le produit principal ne s'affichent que sur sa fiche.
   const only = isCatalog ? { product_handle: input.product.handle } : {};
-  const productTabs = c.product.tabs.map((tab) => ({ type: "collapsible", settings: { heading: tab.heading, content: p(tab.content_html), open: false, ...(/livraison|retour|shipping|deliver|return/i.test(tab.heading) ? {} : only) } }));
+  // Un onglet dont tout le contenu est « [À compléter : …] » n'est pas posé : rien d'inachevé sur la fiche (l'information manquante
+  // reste signalée dans le studio ; l'onglet se rajoute depuis la bibliothèque une fois renseigné).
+  const todoOnly = (html: string) => !html.replace(/\[(À compléter|To complete)[^\]]*\]/g, "").replace(/<[^>]+>/g, "").trim();
+  const productTabs = c.product.tabs.filter((tab) => !todoOnly(tab.content_html)).map((tab) => ({ type: "collapsible", settings: { heading: tab.heading, content: p(tab.content_html), open: false, ...(/livraison|retour|shipping|deliver|return/i.test(tab.heading) ? {} : only) } }));
+  // La description répète souvent l'accroche puis les faits (déjà en points forts et dans l'onglet « Caractéristiques ») :
+  // elle n'est posée que si, une fois ces textes retirés, il reste quelque chose à lire.
+  function descriptionAddsSomething(): boolean {
+    const norm = (s: string) => stripTags(s).toLowerCase().replace(/\s+/g, " ").trim();
+    const letters = (s: string) => s.normalize("NFD").replace(/[^a-z0-9]/g, "");
+    let rest = norm(input.product.description_html);
+    if (rest === norm(c.product.short)) return false;
+    const known = [c.product.short, ...c.product.highlights, ...c.product.tabs.map((x) => x.content_html)].map(norm).filter(Boolean);
+    for (const t of known) rest = rest.split(t).join(" ");
+    // Ce qui reste, lettres seules, dont on retire encore chaque fragment connu (intitulés et valeurs des onglets).
+    let left = letters(rest);
+    for (const t of known) for (const frag of t.split(/[,;:•·\n]/).map(letters).filter((x) => x.length >= 4)) left = left.split(frag).join("");
+    return left.length > 24;
+  }
   const productBlocks = [
     { type: "eyebrow", settings: { text: input.shopName } },
     { type: "title", settings: {} },
@@ -987,19 +1064,22 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     ...(c.product.highlights.length ? [{ type: "highlights", settings: { items: c.product.highlights.join("\n"), ...only } }] : []),
     // La description n'est affichée que si elle apporte plus que l'accroche courte.
     // En catalogue, chaque fiche a besoin de sa description ; sur la fiche principale, masquée si elle répète l'accroche.
-    ...(stripTags(input.product.description_html) !== stripTags(c.product.short) ? [{ type: "description", settings: {} }] : isCatalog ? [{ type: "description", settings: { hide_for_handle: input.product.handle } }] : []),
+    ...(descriptionAddsSomething() ? [{ type: "description", settings: {} }] : isCatalog ? [{ type: "description", settings: { hide_for_handle: input.product.handle } }] : []),
     ...productTabs,
     ...(c.product.reassurance.length
       ? [{ type: "reassurance", settings: { item1: c.product.reassurance[0] ?? "", icon1: "truck", item2: c.product.reassurance[1] ?? "", icon2: "return", item3: c.product.reassurance[2] ?? "", icon3: "shield" } }]
       : []),
   ];
-  const productTpl = tpl(ids, [
-    ["main-product", { gallery_layout: gallery, sticky_bar: true, color_scheme: "scheme-1", padding_top: 32, padding_bottom: 96 }, productBlocks],
+  const mainProductRow: Row = ["main-product", { gallery_layout: gallery, sticky_bar: true, color_scheme: "scheme-1", padding_top: 32, padding_bottom: 96, ...(cat?.mainProduct ?? {}) }, productBlocks];
+  const recommendationsRow: Row = ["product-recommendations", { heading: t("Vous aimerez aussi", "You may also like"), limit: 4, color_scheme: "scheme-1", padding_top: 64, padding_bottom: 96 }];
+  // Thème de référence : sa propre suite de sections sous le corps de la fiche (avis, arguments, caractéristiques, FAQ).
+  const productTpl = tpl(ids, cat?.product ? [mainProductRow, ...flat(cat.product(kit)), recommendationsRow] : [
+    mainProductRow,
     ["product-reviews", { heading: t("Avis des clients", "Customer reviews"), anchor: reviewsAnchor, color_scheme: "scheme-1", padding_top: 32, padding_bottom: 32 }],
     story(2),
     ...(specs.length ? [specList(1)] : []),
     faqSec(2, 4),
-    ["product-recommendations", { heading: t("Vous aimerez aussi", "You may also like"), limit: 4, color_scheme: "scheme-1", padding_top: 64, padding_bottom: 96 }],
+    recommendationsRow,
   ]);
 
   const aboutTpl = tpl(ids, [
@@ -1135,9 +1215,15 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     social_facebook: input.social?.facebook ?? "",
     social_youtube: input.social?.youtube ?? "",
     social_pinterest: input.social?.pinterest ?? "",
+    // Thème de référence : profils globaux (« conversion », éditorial) qui portent son caractère.
+    ...(cat?.settings ?? {}),
   };
 
-  return tidyComposition({
+  // Chaque page de contenu commence par un titre de page (h1) quand sa première section visible n'en porte pas
+  // (FAQ, contact, prestations, à propos…) : un seul h1 par page, pour l'accessibilité et le référencement.
+  ensurePageTitles(ids, templates);
+
+  const result = tidyComposition({
     v: 1,
     name: `${input.shopName} · ${d.name}`,
     direction: d.id,
@@ -1193,4 +1279,25 @@ export function buildSpec(input: BuildInput): ThemeSpec {
       ],
     },
   });
+  if (isReferenceTheme(d.id, !!svc)) {
+    result.meta = { ...result.meta, reference: { version: 1, kind: svc ? "services" : "products", links: [] } };
+    // Identités enregistrées au moment de la construction, pas déduites plus tard des titres ou de l'ordre.
+    if (svc) for (const [sid, section] of Object.entries(result.templates.index.sections)) if (section.type === "ref-offers") {
+      const services = input.services!.services.filter((s) => s.name.trim());
+      (section.block_order ?? []).forEach((bid, i) => result.meta!.reference!.links.push({ template: "index", section: sid, block: bid, target: `service:${services[i].key || `legacy-${i}`}` }));
+    }
+    const header = Object.values(result.groups.header.sections).find((s) => s.type === "header");
+    const footer = Object.values(result.groups.footer.sections).find((s) => s.type === "footer");
+    if (header) Object.assign(header.settings, { layout: svc ? "reference-studio" : "reference-shop", shape: "bar", icons: "plain", mobile_menu: "sheet", transparent_on_home: false });
+    if (footer) Object.assign(footer.settings, { style: svc ? "reference-studio" : "reference-shop", show_wordmark: true });
+    result.settings.fab_contact_link = "";
+    result.settings.fab_back_to_top = false;
+    Object.assign(result.settings, { type_heading_font: input.fonts?.heading ?? (svc ? "archivo_n6" : "cormorant_n5"), type_body_font: input.fonts?.body ?? (svc ? "work_sans_n4" : "dm_sans_n4"), page_width: 1500, spacing_scale: 100, ds_language: svc ? "craft" : "maison", ds_density: "balanced", heading_scale: 100, heading_tracking: 0, button_radius: svc ? 4 : 0, card_radius: 0, button_uppercase: false, button_shine: false, glow_enabled: false, motion_intensity: "subtle", motion_parallax: false });
+    for (const section of Object.values(result.templates.product.sections)) if (section.type === "main-product") {
+      section.settings.sticky_bar = false;
+      section.settings.gallery_layout = "carousel";
+      for (const block of Object.values(section.blocks ?? {})) if (block.type === "buy_buttons") block.settings.show_dynamic_checkout = false;
+    }
+  }
+  return result;
 }

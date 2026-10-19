@@ -1,0 +1,97 @@
+{%- comment -%}
+  Avis en carrousel : note agrégée et cartes (étoiles, titre, citation, initiales, nom). Chaque carte issue de la
+  démonstration porte la mention visible « Avis fictif » ; la note agrégée est marquée fictive. Aucune photo de personne,
+  aucun badge « achat vérifié ». Défilement tactile, flèches et clavier ; points de position.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign fictional_label = s.fictional_label
+  if fictional_label == blank
+    assign fictional_label = 'conversion.fictional_review' | t
+  endif
+  assign rating_note = s.rating_note
+  if rating_note == blank
+    assign rating_note = 'conversion.fictional_rating' | t
+  endif
+-%}
+<section class="es-section cv-anim cv-anim--{{ section.settings.animation_speed | default: 'normal' }} cv-reviews color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;" data-cv-reviews>
+  <div class="es-container">
+    <header class="cv-head">
+      {%- if s.heading != blank -%}<h2 class="es-heading cv-title cv-title--h2"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.heading | escape }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</h2>{%- endif -%}
+      {%- if s.rating_text != blank -%}
+        <p class="cv-rating cv-rating--center"{% render 'cv-reveal', animation: section.settings.animation %}>
+          <span class="es-stars cv-stars--boxed" style="--pct:{{ s.rating_percent | default: 100 }}%" aria-hidden="true"></span>
+          <span class="cv-rating__text">{{ s.rating_text | escape }}</span>
+          <small class="cv-fictional" title="{{ 'conversion.demo_reviews' | t | escape }}">{{ rating_note | escape }}</small>
+        </p>
+      {%- endif -%}
+      {%- if s.text != blank -%}<div class="es-rte cv-head__text"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.text }}</div>{%- endif -%}
+    </header>
+    {%- if section.blocks.size > 0 -%}
+      <div class="cv-reviews__wrap">
+        <button type="button" class="cv-arrow cv-arrow--prev" data-cv-prev aria-label="{{ 'general.previous' | t }}">{% render 'icon', name: 'arrow-left' %}</button>
+        <ul class="cv-reviews__track" role="list" data-cv-track tabindex="0" aria-label="{{ s.heading | default: 'sections.reviews.title' | t | escape }}">
+          {%- for block in section.blocks -%}
+            {%- liquid
+              assign stars = block.settings.rating | plus: 0
+              assign pct = stars | times: 20
+              assign initials = block.settings.author | strip | slice: 0, 1
+            -%}
+            <li class="cv-review" data-cv-slide {{ block.shopify_attributes }}>
+              <article class="cv-review__card">
+                <p class="cv-review__stars" aria-label="{{ 'products.product.rating_of' | t: rating: stars, max: 5 | escape }}"><span class="es-stars cv-stars--boxed" style="--pct:{{ pct }}%" aria-hidden="true"></span></p>
+                {%- if block.settings.title != blank -%}<h3 class="cv-review__title">{{ block.settings.title | escape }}</h3>{%- endif -%}
+                <blockquote class="cv-review__quote">{{ block.settings.quote }}</blockquote>
+                <footer class="cv-review__who">
+                  <span class="cv-review__avatar" aria-hidden="true">{{ initials | upcase }}</span>
+                  <span class="cv-review__name"><b>{{ block.settings.author | escape }}</b>{% if block.settings.detail != blank %} <span class="cv-review__detail">{{ block.settings.detail | escape }}</span>{% endif %}</span>
+                  {%- if block.settings.fictional -%}<span class="cv-fictional cv-fictional--tag">{{ fictional_label | escape }}</span>{%- endif -%}
+                </footer>
+              </article>
+            </li>
+          {%- endfor -%}
+        </ul>
+        <button type="button" class="cv-arrow cv-arrow--next" data-cv-next aria-label="{{ 'general.next' | t }}">{% render 'icon', name: 'arrow' %}</button>
+      </div>
+      <div class="cv-dots" data-cv-dots role="tablist" aria-label="{{ 'general.pagination' | t }}">
+        {%- for block in section.blocks -%}<button type="button" role="tab" class="cv-dot{% if forloop.first %} is-active{% endif %}" data-cv-dot="{{ forloop.index0 }}" aria-label="{{ forloop.index }} / {{ section.blocks.size }}"{% if forloop.first %} aria-selected="true"{% else %} aria-selected="false"{% endif %}></button>{%- endfor -%}
+      </div>
+    {%- elsif request.design_mode -%}
+      <p class="es-reviews__hint">{{ 'sections.reviews.testimonials_hint' | t }}</p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Avis en carrousel",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Ce qu'ils en disent" },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre en accent" },
+    { "type": "text", "id": "rating_text", "label": "Note agrégée", "info": "Ex. « Excellent 4,8/5 · 6 avis ». Vide : aucune note." },
+    { "type": "range", "id": "rating_percent", "label": "Étoiles remplies", "min": 0, "max": 100, "step": 5, "unit": "%", "default": 100 },
+    { "type": "text", "id": "rating_note", "label": "Mention à côté de la note", "info": "Vide : « Note fictive ». Retirez-la seulement avec une vraie application d'avis." },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "fictional_label", "label": "Mention des avis de démonstration", "info": "Vide : « Avis fictif ». Affichée sur chaque carte cochée « avis de démonstration »." },
+    { "type": "select", "id": "animation", "label": "Animation", "default": "rise", "options": [ { "value": "none", "label": "Aucune" }, { "value": "fade", "label": "Fondu" }, { "value": "rise", "label": "Montée en fondu" }, { "value": "zoom", "label": "Léger zoom" } ] },
+    { "type": "select", "id": "animation_speed", "label": "Vitesse", "default": "normal", "options": [ { "value": "slow", "label": "Lente" }, { "value": "normal", "label": "Normale" }, { "value": "fast", "label": "Rapide" } ] },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 },
+    { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 }
+  ],
+  "blocks": [
+    { "type": "review", "name": "Avis", "settings": [
+      { "type": "text", "id": "title", "label": "Titre de l'avis" },
+      { "type": "richtext", "id": "quote", "label": "Citation", "default": "<p>Un avis court.</p>" },
+      { "type": "text", "id": "author", "label": "Prénom et initiale", "default": "Camille R." },
+      { "type": "text", "id": "detail", "label": "Précision", "info": "Ex. « Lyon », « utilisatrice depuis 2 mois ». Aucun badge d'achat vérifié." },
+      { "type": "range", "id": "rating", "label": "Note", "min": 1, "max": 5, "step": 1, "default": 5 },
+      { "type": "checkbox", "id": "fictional", "label": "Avis de démonstration (mention « Avis fictif » affichée)", "default": true }
+    ] }
+  ],
+  "max_blocks": 12,
+  "presets": [ { "name": "Avis en carrousel", "blocks": [ { "type": "review" }, { "type": "review" }, { "type": "review" } ] } ]
+}
+{% endschema %}

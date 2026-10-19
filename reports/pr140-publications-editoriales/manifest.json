@@ -1,0 +1,917 @@
+{
+  "privateReferencesIncluded": false,
+  "simulation": true,
+  "codeCommitTested": "4597b28f69cf474d3cf5ab1f23fb38082a987dfa",
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 25950,
+      "sha256": "8e3b4547eae4c7b23eea222eeed598a4ad2c63eb81f60311553025d6e125a189"
+    },
+    {
+      "file": "logs/build.log",
+      "bytes": 12984,
+      "sha256": "31616a5ac2777225d843e32fe9ce7df18e23806bd2b31def7a11e31655d9a766"
+    },
+    {
+      "file": "logs/publications-navigateur.log",
+      "bytes": 68,
+      "sha256": "85ac114e2d88ffed89564952dc843df291c926da707b2fe07629c81692e7c111"
+    },
+    {
+      "file": "logs/publicite-campagnes-navigateur.log",
+      "bytes": 82,
+      "sha256": "23b4bfea86c9975383adaec846df2f692190b7c713bc26be2d057b2eed23ccac"
+    },
+    {
+      "file": "logs/publicite-unitaire-navigateur.log",
+      "bytes": 75,
+      "sha256": "4a15949832f3b859c9cba1b3c9150efd73106fecec00fba4ee76eba41d727959"
+    },
+    {
+      "file": "logs/tests-cibles-avis.log",
+      "bytes": 188,
+      "sha256": "67b2a44947386557a80b30861b1ccf23a4ccd644cba777f54633301adf6db5ec"
+    },
+    {
+      "file": "logs/tests-cibles-origine.log",
+      "bytes": 188,
+      "sha256": "6167c12f215784ddaaf207698b2b858188ba1b44ab151ca328620f32c1fadb95"
+    },
+    {
+      "file": "logs/tests-complets.log",
+      "bytes": 410,
+      "sha256": "797ace2f1f09fd03c583ad13c1db90bf003d9bbac15ca1a9bf49144642bc18f7"
+    },
+    {
+      "file": "logs/types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "medias-verifies.json",
+      "bytes": 22983,
+      "sha256": "007b5c22d2babd0a1548d9c5e2e51b155d8d23a3f9fd7c8725b987337b637412"
+    },
+    {
+      "file": "moteur-simulation.json",
+      "bytes": 1763145,
+      "sha256": "2ea1a65b9584b7dc94938c85044c97af2d4c225ce39ba1ec02861b1170b5774b"
+    },
+    {
+      "file": "publications/produit-mobile-01-conseil-saisie-vue.png",
+      "bytes": 61584,
+      "sha256": "958e8b1c3b82f7001d21efa48683a59d327ff163aed0a0c63eaac89c7e5ff918"
+    },
+    {
+      "file": "publications/produit-mobile-01-conseil-saisie.png",
+      "bytes": 175487,
+      "sha256": "6fb12c3b29d793b757bb37b9448e2284eee4bdb9e97ba65b13d3c40efcd9847d"
+    },
+    {
+      "file": "publications/produit-mobile-02-conseil-sauvegarde-vue.png",
+      "bytes": 49997,
+      "sha256": "d0d903fd41add86bdcc038584546ff97075189777741175f49f4e8921cd12e40"
+    },
+    {
+      "file": "publications/produit-mobile-02-conseil-sauvegarde.png",
+      "bytes": 120277,
+      "sha256": "61420de6ecc38860b15a3c0c99385357d71ae6ebdbdb653161f7f38117140e06"
+    },
+    {
+      "file": "publications/produit-mobile-03-faq-vue.png",
+      "bytes": 50421,
+      "sha256": "371f7eeae27485ec03240b99da3947c458e49dd2bfbbc88b0c51304301259ae2"
+    },
+    {
+      "file": "publications/produit-mobile-03-faq.png",
+      "bytes": 133386,
+      "sha256": "7ec6b74fb3cd29639943880a649346090bf5ad7dc63ad07177b66e90f2f39875"
+    },
+    {
+      "file": "publications/produit-mobile-04-checklist-vue.png",
+      "bytes": 48912,
+      "sha256": "e8b9f8c792f0e1d38ced83f7b87cfc7f4e14c2bbda2c36d79dcc85b9f7486aa3"
+    },
+    {
+      "file": "publications/produit-mobile-04-checklist.png",
+      "bytes": 140542,
+      "sha256": "05172ec3bb0d9bd19a718ba44c78cfaed361226051964403f8b6f070373aef2b"
+    },
+    {
+      "file": "publications/produit-mobile-05-carrousel-page2-vue.png",
+      "bytes": 52550,
+      "sha256": "21f9986e89b27116c13aecd9fb20a1a71bfeb7e92835fa8a79f2c7a66460a6f4"
+    },
+    {
+      "file": "publications/produit-mobile-05-carrousel-page2.png",
+      "bytes": 161362,
+      "sha256": "588b35abfb4286fbca440e4aa5bf8622694133e26c13ddd3e9eb40000f9fe67f"
+    },
+    {
+      "file": "publications/produit-mobile-06-review-vue.png",
+      "bytes": 50404,
+      "sha256": "73fe7f2ff3c94bdcb5898bd654b1ec084529a2b4c24f422a6197380d31747803"
+    },
+    {
+      "file": "publications/produit-mobile-06-review.png",
+      "bytes": 150358,
+      "sha256": "5f0a1953eed8ecffa6cb42b6db28e527eb7fe7f3755ade79a783217bb1ce69ad"
+    },
+    {
+      "file": "publications/produit-mobile-07-ordre-repris-vue.png",
+      "bytes": 54327,
+      "sha256": "6d28d3e80d9ca6be185738171b836f94d6067ff241256d3a1272d8fba560263d"
+    },
+    {
+      "file": "publications/produit-mobile-07-ordre-repris.png",
+      "bytes": 163136,
+      "sha256": "50626127b374bf86e76471877c0d16c19d18d2739a5aca2051a4150dc63f7efa"
+    },
+    {
+      "file": "publications/produit-mobile-08-bibliotheque-vue.png",
+      "bytes": 56549,
+      "sha256": "0e876f170356ee462dd695dcedcdfa0d6fccdbc4a8abde2372238c04b187073a"
+    },
+    {
+      "file": "publications/produit-mobile-08-bibliotheque.png",
+      "bytes": 61557,
+      "sha256": "5bacc99829a227c0d6d3f59c0e55543671bc5364fbd2d6e3bd718587219124fd"
+    },
+    {
+      "file": "publications/produit-mobile-09-devis-lot-vue.png",
+      "bytes": 71827,
+      "sha256": "04b7131860a2638a3f41efe9256a5cb945188451fb836939af536eeebf6b5ef1"
+    },
+    {
+      "file": "publications/produit-mobile-09-devis-lot.png",
+      "bytes": 172563,
+      "sha256": "a89bc0f08d1845a8084db07348e5f8778f2d39458303ce6d1fda4113cb3803b1"
+    },
+    {
+      "file": "publications/produit-mobile-10-calendrier-lot-vue.png",
+      "bytes": 63781,
+      "sha256": "68fa22bb31c2a4b07ebb9888ef8ff8ca67f18159a7142695d8c960cd4d9eeb67"
+    },
+    {
+      "file": "publications/produit-mobile-10-calendrier-lot.png",
+      "bytes": 195986,
+      "sha256": "b7514e5f496b3c9ff567115106eb8322c2b28bcc4b0ee4420594d0e4e8d90e1e"
+    },
+    {
+      "file": "publications/produit-mobile-natif-1-SIMULATION.png",
+      "bytes": 63960,
+      "sha256": "3168e25771e680eb4260fb5a413c619e7e0def04a37b717c8162a9abab92aea5"
+    },
+    {
+      "file": "publications/produit-mobile-natif-2-SIMULATION.png",
+      "bytes": 63716,
+      "sha256": "8af451ef4a3470f356bcf78fad79a1757e5330c248719d78eed2dc924875aa2f"
+    },
+    {
+      "file": "publications/produit-mobile-natif-3-SIMULATION.png",
+      "bytes": 64082,
+      "sha256": "74e51812906c28fbae96f8764d2b1df202cc792c23315fcf1bf7248690928c86"
+    },
+    {
+      "file": "publications/produit-mobile-natif-4-SIMULATION.png",
+      "bytes": 56030,
+      "sha256": "8c3d3a326a3ebc72e11b91552f6b5ca7ba62d8cd4fac45c91f9e576af32c8186"
+    },
+    {
+      "file": "publications/produit-mobile.webm",
+      "bytes": 1808577,
+      "sha256": "a82ef7cd4e4ce838532b360def25533e575265338ea4c74c0756c45a973321b2"
+    },
+    {
+      "file": "publications/produit-ordinateur-01-conseil-saisie-vue.png",
+      "bytes": 157212,
+      "sha256": "5f3d0936c89f94c522e4d59e32e6cc0d71f277fad78be62c9c26d16905316215"
+    },
+    {
+      "file": "publications/produit-ordinateur-01-conseil-saisie.png",
+      "bytes": 237747,
+      "sha256": "249ca52825f9d073c5f99d031e4bd0db2ed1c780aa5f8241c0843869a4cdabea"
+    },
+    {
+      "file": "publications/produit-ordinateur-02-conseil-sauvegarde-vue.png",
+      "bytes": 186716,
+      "sha256": "5b7f428f06616eb03f248c473c30b945626ba917646f69e75e87189118da32df"
+    },
+    {
+      "file": "publications/produit-ordinateur-02-conseil-sauvegarde.png",
+      "bytes": 186716,
+      "sha256": "5b7f428f06616eb03f248c473c30b945626ba917646f69e75e87189118da32df"
+    },
+    {
+      "file": "publications/produit-ordinateur-03-faq-vue.png",
+      "bytes": 187411,
+      "sha256": "f67331cd95386bac63d73623cfb6768e372b107bac7c7ac65c9d47f06a458acf"
+    },
+    {
+      "file": "publications/produit-ordinateur-03-faq.png",
+      "bytes": 187120,
+      "sha256": "16af3ff711b82ea23f1001f13403756a65c7211cf1ccca0f1c0e9f0615122ffe"
+    },
+    {
+      "file": "publications/produit-ordinateur-04-checklist-vue.png",
+      "bytes": 184641,
+      "sha256": "64177ca08b9268c3a5199532120fc70b330afafed5b1db8e7e5d0d849f840bc6"
+    },
+    {
+      "file": "publications/produit-ordinateur-04-checklist.png",
+      "bytes": 184347,
+      "sha256": "7ec7747823fa03944c811f1448d1442d654c42c45e3dfaf727b53ca42c26b58a"
+    },
+    {
+      "file": "publications/produit-ordinateur-05-carrousel-page2-vue.png",
+      "bytes": 182354,
+      "sha256": "bd62da56dc776c605149a1cee8c918747112d65ff7f383c7dfe3af0c7b39777a"
+    },
+    {
+      "file": "publications/produit-ordinateur-05-carrousel-page2.png",
+      "bytes": 182095,
+      "sha256": "38a987487d518499bdb80393560d16996da8b7907b6042b83709fff855ce456f"
+    },
+    {
+      "file": "publications/produit-ordinateur-06-review-vue.png",
+      "bytes": 194410,
+      "sha256": "ab1710e993cde9c6124201cb3a4756ccc2371f6d9bf17d57ca37fd2526971bd5"
+    },
+    {
+      "file": "publications/produit-ordinateur-06-review.png",
+      "bytes": 194402,
+      "sha256": "4d35409213df32e789258ee0b42c18ea07fafecbb134f144143ded4f7082208a"
+    },
+    {
+      "file": "publications/produit-ordinateur-07-ordre-repris-vue.png",
+      "bytes": 184057,
+      "sha256": "d35fdaacc5df89b8a45207fa1365fc6d625a53b9492171de81b4d4ae571fc435"
+    },
+    {
+      "file": "publications/produit-ordinateur-07-ordre-repris.png",
+      "bytes": 183800,
+      "sha256": "9498496a0c0ab5676d44e74b8174c50fc3bc160e6151bf25119f66143f962eec"
+    },
+    {
+      "file": "publications/produit-ordinateur-08-bibliotheque-vue.png",
+      "bytes": 159732,
+      "sha256": "8e622efd1c77bbb7141af2f582880e6d7e6b2643194c92ecf607e9207841d427"
+    },
+    {
+      "file": "publications/produit-ordinateur-08-bibliotheque.png",
+      "bytes": 174843,
+      "sha256": "dc81bcc5ad4fe9e61712ca54c835cb34e84c395e3b18088dcb71a70b13a99e30"
+    },
+    {
+      "file": "publications/produit-ordinateur-09-devis-lot-vue.png",
+      "bytes": 162965,
+      "sha256": "237a77150ad77609f173914a1331f2591cdb0cc3104c41d2c2701f3200d72fdf"
+    },
+    {
+      "file": "publications/produit-ordinateur-09-devis-lot.png",
+      "bytes": 237437,
+      "sha256": "9bbc5d10cc2e0840644530843e8b24570b617b08c3ecb5b0f0dcb174d1c6e34c"
+    },
+    {
+      "file": "publications/produit-ordinateur-10-calendrier-lot-vue.png",
+      "bytes": 123005,
+      "sha256": "c272bf15680fa4ce9aea5d04d34721f704e7e43655d6bb4ab8ef2f79a7502777"
+    },
+    {
+      "file": "publications/produit-ordinateur-10-calendrier-lot.png",
+      "bytes": 174586,
+      "sha256": "e51e04f8d73b8bf4b787d7f63d1f65bf8cf04a1567d12a969f5f38794e37d92a"
+    },
+    {
+      "file": "publications/produit-ordinateur-natif-1-SIMULATION.png",
+      "bytes": 63960,
+      "sha256": "3168e25771e680eb4260fb5a413c619e7e0def04a37b717c8162a9abab92aea5"
+    },
+    {
+      "file": "publications/produit-ordinateur-natif-2-SIMULATION.png",
+      "bytes": 63716,
+      "sha256": "8af451ef4a3470f356bcf78fad79a1757e5330c248719d78eed2dc924875aa2f"
+    },
+    {
+      "file": "publications/produit-ordinateur-natif-3-SIMULATION.png",
+      "bytes": 64082,
+      "sha256": "74e51812906c28fbae96f8764d2b1df202cc792c23315fcf1bf7248690928c86"
+    },
+    {
+      "file": "publications/produit-ordinateur-natif-4-SIMULATION.png",
+      "bytes": 56030,
+      "sha256": "8c3d3a326a3ebc72e11b91552f6b5ca7ba62d8cd4fac45c91f9e576af32c8186"
+    },
+    {
+      "file": "publications/produit-ordinateur.webm",
+      "bytes": 2894662,
+      "sha256": "a4709b09bb5de053c4ce50203041c1373b6bf1ae5605355baebbc26886b63f77"
+    },
+    {
+      "file": "publications/service-mobile-01-conseil-saisie-vue.png",
+      "bytes": 61444,
+      "sha256": "45c463763f5d0d38421dbd5025bba9838934c2f89063cab274c314fbc6116b87"
+    },
+    {
+      "file": "publications/service-mobile-01-conseil-saisie.png",
+      "bytes": 179855,
+      "sha256": "8a08064c53de48f9301c68d2c96d0e5b8b533a152643df00551528dab8e8704f"
+    },
+    {
+      "file": "publications/service-mobile-02-conseil-sauvegarde-vue.png",
+      "bytes": 51109,
+      "sha256": "e8eff178a0c7a6028e3e305bdc733e51db73115deea42fb4808058026d45e7ce"
+    },
+    {
+      "file": "publications/service-mobile-02-conseil-sauvegarde.png",
+      "bytes": 124663,
+      "sha256": "c8c3d1676d4591adafb943bec59aff082d7bae38a7b34dff414c4abb67c75ff8"
+    },
+    {
+      "file": "publications/service-mobile-03-faq-vue.png",
+      "bytes": 51264,
+      "sha256": "d8aed77953f34686b219609f6c4c6f01c08a258692c64e07886f608305e3f4f8"
+    },
+    {
+      "file": "publications/service-mobile-03-faq.png",
+      "bytes": 135733,
+      "sha256": "3b3ea659da3d71d12d419bd9fb2d5d32f594864e75d3037b0a4b8eb5b13c972b"
+    },
+    {
+      "file": "publications/service-mobile-04-checklist-vue.png",
+      "bytes": 49782,
+      "sha256": "e3914b506dde8e4178bc3f97f2805393f04b247e7f2e1992a7c1e734151c8619"
+    },
+    {
+      "file": "publications/service-mobile-04-checklist.png",
+      "bytes": 143003,
+      "sha256": "41bca6660e4c74269bc0925ce29ae6bc815001fe33c0dc737d30d1b3e73c738e"
+    },
+    {
+      "file": "publications/service-mobile-05-carrousel-page2-vue.png",
+      "bytes": 54141,
+      "sha256": "fbdc2b2f54595fde71779cd863e530f777cffdb1ffe36eda66fd4062aa77203b"
+    },
+    {
+      "file": "publications/service-mobile-05-carrousel-page2.png",
+      "bytes": 165626,
+      "sha256": "8ba32d62c684f1d165531f1dc5d6967e6b80b3fe168391ae451f9228a459b4ee"
+    },
+    {
+      "file": "publications/service-mobile-06-review-vue.png",
+      "bytes": 52737,
+      "sha256": "72d674f00bd01cf18e9c22f5be4fc535da8cbff28dd555cffbb7e94b3c8309a6"
+    },
+    {
+      "file": "publications/service-mobile-06-review.png",
+      "bytes": 154556,
+      "sha256": "111bdaae54d9f61e50b9b4e85fd13d327909540068b8c654c26cefebe1bcee62"
+    },
+    {
+      "file": "publications/service-mobile-07-ordre-repris-vue.png",
+      "bytes": 55856,
+      "sha256": "14bd05d5d0d79a11796870ee9d3ca6631ff896cdb17e03945cf4a53ed6f757df"
+    },
+    {
+      "file": "publications/service-mobile-07-ordre-repris.png",
+      "bytes": 167340,
+      "sha256": "ade31722e4b849aeda60cac24fb18dbb4e989ae4ef3ee0347d32483f7e87fdc7"
+    },
+    {
+      "file": "publications/service-mobile-08-bibliotheque-vue.png",
+      "bytes": 57922,
+      "sha256": "549c90f9f895bdf568aaae7020842a031e62922df61f04801e0c75c06d96ea38"
+    },
+    {
+      "file": "publications/service-mobile-08-bibliotheque.png",
+      "bytes": 117520,
+      "sha256": "a5b810719def332d8dd9b9f2f3b55d1b9f6ed1660174e4a57214fa5252c85c0d"
+    },
+    {
+      "file": "publications/service-mobile-09-devis-lot-vue.png",
+      "bytes": 71935,
+      "sha256": "648b58b4640bf79080e642f124194bcef9c189672c7692ce69e05871f035db86"
+    },
+    {
+      "file": "publications/service-mobile-09-devis-lot.png",
+      "bytes": 172520,
+      "sha256": "065a824df5891a1332bc8dfd061e34cd0c7a3214d649b9e21d8e82bba77da9d9"
+    },
+    {
+      "file": "publications/service-mobile-10-calendrier-lot-vue.png",
+      "bytes": 69055,
+      "sha256": "c5d84aac11fba6bb0ab1d27b96bc8cad60ea1e03f4f613b7fa4fe2f352319da8"
+    },
+    {
+      "file": "publications/service-mobile-10-calendrier-lot.png",
+      "bytes": 205030,
+      "sha256": "c571c472007d4ba3e34845235d82687b98165ee00809854e58fb32ce59e28e2b"
+    },
+    {
+      "file": "publications/service-mobile-natif-1-SIMULATION.png",
+      "bytes": 63960,
+      "sha256": "3168e25771e680eb4260fb5a413c619e7e0def04a37b717c8162a9abab92aea5"
+    },
+    {
+      "file": "publications/service-mobile-natif-2-SIMULATION.png",
+      "bytes": 63716,
+      "sha256": "8af451ef4a3470f356bcf78fad79a1757e5330c248719d78eed2dc924875aa2f"
+    },
+    {
+      "file": "publications/service-mobile-natif-3-SIMULATION.png",
+      "bytes": 64082,
+      "sha256": "74e51812906c28fbae96f8764d2b1df202cc792c23315fcf1bf7248690928c86"
+    },
+    {
+      "file": "publications/service-mobile-natif-4-SIMULATION.png",
+      "bytes": 56030,
+      "sha256": "8c3d3a326a3ebc72e11b91552f6b5ca7ba62d8cd4fac45c91f9e576af32c8186"
+    },
+    {
+      "file": "publications/service-mobile.webm",
+      "bytes": 1874690,
+      "sha256": "7cf31ef667729a6ba0d047bbde29198eb827029666df1c33c38e4c5451d9eb7c"
+    },
+    {
+      "file": "publications/service-ordinateur-01-conseil-saisie-vue.png",
+      "bytes": 155095,
+      "sha256": "6c3bcd0a0834b4b9421de7e76e9ed1e837c9b283c97d79d750d67fbf94f98ada"
+    },
+    {
+      "file": "publications/service-ordinateur-01-conseil-saisie.png",
+      "bytes": 239693,
+      "sha256": "abbe84fa2a4fdb79d9cd268488278864314a8c9fd67bab8ead8d5f52c9b734df"
+    },
+    {
+      "file": "publications/service-ordinateur-02-conseil-sauvegarde-vue.png",
+      "bytes": 186725,
+      "sha256": "528f348193845244e616ddfd9841fc39e4488219ecbbc53f4335769032a83b75"
+    },
+    {
+      "file": "publications/service-ordinateur-02-conseil-sauvegarde.png",
+      "bytes": 186410,
+      "sha256": "109208c88cd59272f27ca6c58b16f2ec0cfae198d3e2e8123ede1c94481ecb7d"
+    },
+    {
+      "file": "publications/service-ordinateur-03-faq-vue.png",
+      "bytes": 187274,
+      "sha256": "0bc2dd2575dc7e85adf66651800ba3c111f51677ff0f6729a8014ad6932c472c"
+    },
+    {
+      "file": "publications/service-ordinateur-03-faq.png",
+      "bytes": 186969,
+      "sha256": "2b4095bb0a523eb3b7d74e891ca11f896a1c5cc7b0b6e9b3338c4ab2fb8a94e1"
+    },
+    {
+      "file": "publications/service-ordinateur-04-checklist-vue.png",
+      "bytes": 183922,
+      "sha256": "d0fe61e0297ff11c14ae9672d1bb2b65f7f6b6b386c62693f2989bc757d6f8f8"
+    },
+    {
+      "file": "publications/service-ordinateur-04-checklist.png",
+      "bytes": 239965,
+      "sha256": "4f42090d9185d4cb41d1c8f9663fc0f3872c39e3ca1eb11dc10343be2c0f7d08"
+    },
+    {
+      "file": "publications/service-ordinateur-05-carrousel-page2-vue.png",
+      "bytes": 182369,
+      "sha256": "9ef9b42b10d8f155875fbb8a264500ef515436144869701ce385a3948426c6f1"
+    },
+    {
+      "file": "publications/service-ordinateur-05-carrousel-page2.png",
+      "bytes": 182369,
+      "sha256": "9ef9b42b10d8f155875fbb8a264500ef515436144869701ce385a3948426c6f1"
+    },
+    {
+      "file": "publications/service-ordinateur-06-review-vue.png",
+      "bytes": 193806,
+      "sha256": "82b914a5bae3e6940007efc134bcadcdda2cbf25aa7254030cac4222b18bbf3a"
+    },
+    {
+      "file": "publications/service-ordinateur-06-review.png",
+      "bytes": 193797,
+      "sha256": "82a1e6daba7c9cc366a277418a4e1487d4026450fee34dbf68c3016c24db1047"
+    },
+    {
+      "file": "publications/service-ordinateur-07-ordre-repris-vue.png",
+      "bytes": 184087,
+      "sha256": "1ca4c5dd593862547bee36a52a6f6d491dc1eb73820464f87b182d7d86d360eb"
+    },
+    {
+      "file": "publications/service-ordinateur-07-ordre-repris.png",
+      "bytes": 248360,
+      "sha256": "3f3539ebdc97b24daabfb586acf882e9c4085d28fb462e3bee7227f06621aa79"
+    },
+    {
+      "file": "publications/service-ordinateur-08-bibliotheque-vue.png",
+      "bytes": 157804,
+      "sha256": "fbd919f03b76c5c52b6db234398531346815143255ea58bf52230b585110954a"
+    },
+    {
+      "file": "publications/service-ordinateur-08-bibliotheque.png",
+      "bytes": 157804,
+      "sha256": "fbd919f03b76c5c52b6db234398531346815143255ea58bf52230b585110954a"
+    },
+    {
+      "file": "publications/service-ordinateur-09-devis-lot-vue.png",
+      "bytes": 161186,
+      "sha256": "2fef9357c84262bc18b06620cd6cea24322b090c521c1b8cfdf249bac1ca71c0"
+    },
+    {
+      "file": "publications/service-ordinateur-09-devis-lot.png",
+      "bytes": 235502,
+      "sha256": "275d85b9fc16df8fb8c803ea06e8b935a2a38c5a33a4d5d8e9386abef4e9a670"
+    },
+    {
+      "file": "publications/service-ordinateur-10-calendrier-lot-vue.png",
+      "bytes": 121490,
+      "sha256": "33d516f810634b163f36dbb720c2394dde7e9b51a8b1077300f0a08bd9ca1710"
+    },
+    {
+      "file": "publications/service-ordinateur-10-calendrier-lot.png",
+      "bytes": 173509,
+      "sha256": "45959db9b7b11f03de4dda92b16c6da25589d2503037bc96542b1b3f70665cd4"
+    },
+    {
+      "file": "publications/service-ordinateur-natif-1-SIMULATION.png",
+      "bytes": 63960,
+      "sha256": "3168e25771e680eb4260fb5a413c619e7e0def04a37b717c8162a9abab92aea5"
+    },
+    {
+      "file": "publications/service-ordinateur-natif-2-SIMULATION.png",
+      "bytes": 63716,
+      "sha256": "8af451ef4a3470f356bcf78fad79a1757e5330c248719d78eed2dc924875aa2f"
+    },
+    {
+      "file": "publications/service-ordinateur-natif-3-SIMULATION.png",
+      "bytes": 64082,
+      "sha256": "74e51812906c28fbae96f8764d2b1df202cc792c23315fcf1bf7248690928c86"
+    },
+    {
+      "file": "publications/service-ordinateur-natif-4-SIMULATION.png",
+      "bytes": 56030,
+      "sha256": "8c3d3a326a3ebc72e11b91552f6b5ca7ba62d8cd4fac45c91f9e576af32c8186"
+    },
+    {
+      "file": "publications/service-ordinateur.webm",
+      "bytes": 2542204,
+      "sha256": "b51d353834b7b218a3900572c5ea08ecad89495ac8f937ceb6e824b38040cb31"
+    },
+    {
+      "file": "publications/validation-browser.json",
+      "bytes": 8221,
+      "sha256": "c9231890a9f1ac29856de33c615dbbf42e8ffafc34782e25f8e96f3525bb8f89"
+    },
+    {
+      "file": "publicite-campagnes/produit-mobile-01-direction-devis-vue.png",
+      "bytes": 77123,
+      "sha256": "6e8f1532a26067d95c459b3d859a6997256931c693d207cea89b22b0e0eede11"
+    },
+    {
+      "file": "publicite-campagnes/produit-mobile-01-direction-devis.png",
+      "bytes": 195449,
+      "sha256": "6d47e44914a7d26a27ebff35287acaca4d86a11dbab96965d110847f9ef17d01"
+    },
+    {
+      "file": "publicite-campagnes/produit-mobile-02-lot-reouvert-vue.png",
+      "bytes": 53289,
+      "sha256": "0edaa0e4e95498bd87751a988815700992a4de5d12f4e4f1da4b4b9b75494ecb"
+    },
+    {
+      "file": "publicite-campagnes/produit-mobile-02-lot-reouvert.png",
+      "bytes": 191727,
+      "sha256": "79c3e2ac2bae63ee21178378c7f966ad06b604f051e959e5c18c5a170cd2c079"
+    },
+    {
+      "file": "publicite-campagnes/produit-mobile.webm",
+      "bytes": 549530,
+      "sha256": "029738f8717f2b307bde24ed1924da5450529b4f0148b0c5e0487d45e39f1964"
+    },
+    {
+      "file": "publicite-campagnes/produit-ordinateur-01-direction-devis-vue.png",
+      "bytes": 267851,
+      "sha256": "5401e00a2fc2273307cf758887e944a243de17924d94ee6081418fe4aac94d0b"
+    },
+    {
+      "file": "publicite-campagnes/produit-ordinateur-01-direction-devis.png",
+      "bytes": 326026,
+      "sha256": "1d0e92ff1f5dc6983afc60ae340c51894dbfe97e343cc7cbc4c87b750cba1b13"
+    },
+    {
+      "file": "publicite-campagnes/produit-ordinateur-02-lot-reouvert-vue.png",
+      "bytes": 155445,
+      "sha256": "2c8fa51a3c88c9d613d22ed68a36795bae823df42678a8dc51cd7020253a35a2"
+    },
+    {
+      "file": "publicite-campagnes/produit-ordinateur-02-lot-reouvert.png",
+      "bytes": 248763,
+      "sha256": "59635cd996015ba7caf28d45a8e625ea197801a23ef3ebd6c37c110f14797d15"
+    },
+    {
+      "file": "publicite-campagnes/produit-ordinateur.webm",
+      "bytes": 1079751,
+      "sha256": "c7f51d3b59189184a414ea26911060892f8206de08485697b6eec3ae8bf41bc6"
+    },
+    {
+      "file": "publicite-campagnes/service-mobile-01-direction-devis-vue.png",
+      "bytes": 77419,
+      "sha256": "875b7b28a0774811b59338ba521a889c26b8877f142938e69cdb9b3e39c8d849"
+    },
+    {
+      "file": "publicite-campagnes/service-mobile-01-direction-devis.png",
+      "bytes": 200643,
+      "sha256": "76c533171b7bbee069154cb76d9ae6b0ba8c14f649e30d93485bae67c39d7f3d"
+    },
+    {
+      "file": "publicite-campagnes/service-mobile-02-lot-reouvert-vue.png",
+      "bytes": 53491,
+      "sha256": "ff265b44095c05f514eeb4c647007d4c95de6f529fcc9b3fdb2ef644a160bd99"
+    },
+    {
+      "file": "publicite-campagnes/service-mobile-02-lot-reouvert.png",
+      "bytes": 196787,
+      "sha256": "5ed76088ef11943e1f061432b093fb3f1d1791f9a05ea6f5e62b5e05f6a5687b"
+    },
+    {
+      "file": "publicite-campagnes/service-mobile.webm",
+      "bytes": 550181,
+      "sha256": "13950166e2aa65fc8df28875e4336d4d8e25ecd802f2972bab6b75b3cc47baac"
+    },
+    {
+      "file": "publicite-campagnes/service-ordinateur-01-direction-devis-vue.png",
+      "bytes": 244919,
+      "sha256": "ec19aa076cddd4de15dc01ad73eaaed2a7f4297f02a1c10638f4a51bb278ab5e"
+    },
+    {
+      "file": "publicite-campagnes/service-ordinateur-01-direction-devis.png",
+      "bytes": 313957,
+      "sha256": "463a7551a2f83b6d4e952400b29592cb95d25c6dd412f438246445d4a53a17da"
+    },
+    {
+      "file": "publicite-campagnes/service-ordinateur-02-lot-reouvert-vue.png",
+      "bytes": 153713,
+      "sha256": "e0f32472bf9f3599e204126a42b46acdfda3128ac3aad9a311aa4f7e07294e89"
+    },
+    {
+      "file": "publicite-campagnes/service-ordinateur-02-lot-reouvert.png",
+      "bytes": 251172,
+      "sha256": "f9ea3cbdd7929f186408aecf3bee9cfbdff5530509913152e655d91e26084aed"
+    },
+    {
+      "file": "publicite-campagnes/service-ordinateur.webm",
+      "bytes": 1072597,
+      "sha256": "e8d6554ae5dfcdc58ac6884494a7408f5241e79e3f0db1c842abe50ccd21a0fd"
+    },
+    {
+      "file": "publicite-campagnes/validation-browser.json",
+      "bytes": 1941,
+      "sha256": "e4c3302f94c29340854ef067e9c04c1a4a29836bdf5880f41ede92106039f770"
+    },
+    {
+      "file": "publicite-unitaire/browser-proof.json",
+      "bytes": 2933,
+      "sha256": "492b4c65b4a95525ae4104599d32f08223fb73dc518bf08fdb431ac507184c43"
+    },
+    {
+      "file": "publicite-unitaire/produit-1x1-SIMULATION.png",
+      "bytes": 56030,
+      "sha256": "8c3d3a326a3ebc72e11b91552f6b5ca7ba62d8cd4fac45c91f9e576af32c8186"
+    },
+    {
+      "file": "publicite-unitaire/produit-2x3-SIMULATION.png",
+      "bytes": 70167,
+      "sha256": "f946039b360063be6a4c9c87bbfe3ae0dd65f05db5a688cba240ec1668db2409"
+    },
+    {
+      "file": "publicite-unitaire/produit-4x5-SIMULATION.png",
+      "bytes": 64519,
+      "sha256": "89a1e8aaf9e0c6b5aa9bbcf78d1c97d116dc633ffafd90f5868e5a2e8500a603"
+    },
+    {
+      "file": "publicite-unitaire/produit-mobile-02-creation-enregistree-vue.png",
+      "bytes": 65683,
+      "sha256": "35a244e8b91d5e2d3e509b8bda984bd6d5dd8ec21a989008d35874a5ff618177"
+    },
+    {
+      "file": "publicite-unitaire/produit-mobile-02-creation-enregistree.png",
+      "bytes": 145586,
+      "sha256": "77c63935fd59021b9be17e4b72b9f5b4d47fcef547c64945ccdcebdcb09b84df"
+    },
+    {
+      "file": "publicite-unitaire/produit-mobile-03-retouche-format-vue.png",
+      "bytes": 61959,
+      "sha256": "37c3716922c3a1624efb8e114de09297958e476b7768717547e4e0635617b085"
+    },
+    {
+      "file": "publicite-unitaire/produit-mobile-03-retouche-format.png",
+      "bytes": 172898,
+      "sha256": "632db63cb3f143689a429e176c012d42bd0fbfc433bb620a1d9a7f1b0f6f4981"
+    },
+    {
+      "file": "publicite-unitaire/produit-mobile-04-reprise-vue.png",
+      "bytes": 47364,
+      "sha256": "ac5d3a67981533699ae926b6cf2a2ea464e49701f1bb81b302d49f0dc944c46f"
+    },
+    {
+      "file": "publicite-unitaire/produit-mobile-04-reprise.png",
+      "bytes": 155813,
+      "sha256": "d1a37694980df787f4ff0571d4343f8948e9bcdceb12be212b1e99102208ab1d"
+    },
+    {
+      "file": "publicite-unitaire/produit-mobile-05-bibliotheque-vue.png",
+      "bytes": 56411,
+      "sha256": "645313a28a9aaa7021cdfd7462547a1b35b2b39f1f5acdf2eb3bb7524e7bc2b4"
+    },
+    {
+      "file": "publicite-unitaire/produit-mobile-05-bibliotheque.png",
+      "bytes": 122263,
+      "sha256": "6effa078046a27274e1bd91df64c2d9b9cff6b951b38c463f7e56df08ce02ddd"
+    },
+    {
+      "file": "publicite-unitaire/produit-mobile.webm",
+      "bytes": 669631,
+      "sha256": "7390c1961fca129e5be02323c603b95f6be117c8c9ecb9cd6b8d3a6d301c1801"
+    },
+    {
+      "file": "publicite-unitaire/produit-ordinateur-01-demande-vue.png",
+      "bytes": 173358,
+      "sha256": "01c13d1b769ca015ab49b518db622ae249a6d25cfcecf75b88b6e884d9905fbe"
+    },
+    {
+      "file": "publicite-unitaire/produit-ordinateur-01-demande.png",
+      "bytes": 192223,
+      "sha256": "ea707b8bcef7b50c5fa096e4a6af4f66157c9546112fec75669b2c9ad3ec52ed"
+    },
+    {
+      "file": "publicite-unitaire/produit-ordinateur-02-creation-enregistree-vue.png",
+      "bytes": 146852,
+      "sha256": "060accc9ad8b02bb49778173c42f08ce73e0e8f67347b7e88cbf0f000669c762"
+    },
+    {
+      "file": "publicite-unitaire/produit-ordinateur-02-creation-enregistree.png",
+      "bytes": 197544,
+      "sha256": "a87840cb318c76dc3a15bcf5d33f8f83f9d146f6becfaa0014c9306a1faa7a07"
+    },
+    {
+      "file": "publicite-unitaire/produit-ordinateur-03-retouche-format-vue.png",
+      "bytes": 139446,
+      "sha256": "a616ee2f180f0bd595d28d3c996d87fc584da0d1e845f2067bce3e76fb95a6b6"
+    },
+    {
+      "file": "publicite-unitaire/produit-ordinateur-03-retouche-format.png",
+      "bytes": 233055,
+      "sha256": "5bf976788553c34ab3bd86b4984044b3442858449edc45ace970ed591c2f5714"
+    },
+    {
+      "file": "publicite-unitaire/produit-ordinateur-04-reprise-vue.png",
+      "bytes": 146645,
+      "sha256": "e3cab5793910f144acc964e31ed3a41c68de2c4932c6d8361460424fd992da96"
+    },
+    {
+      "file": "publicite-unitaire/produit-ordinateur-04-reprise.png",
+      "bytes": 203232,
+      "sha256": "4c6ce615a875997db632fdbab9fb940488e89092a574e7bb5c4442a630072713"
+    },
+    {
+      "file": "publicite-unitaire/produit-ordinateur-05-bibliotheque-vue.png",
+      "bytes": 152856,
+      "sha256": "1c4cb57fe4481e7a25608742e0c5f188265128a9190d21c35505cdeabb32e250"
+    },
+    {
+      "file": "publicite-unitaire/produit-ordinateur-05-bibliotheque.png",
+      "bytes": 167917,
+      "sha256": "1acfef583b77e40285561ea8e95d005b1c2d0906c56f480e646168eb60aa0324"
+    },
+    {
+      "file": "publicite-unitaire/produit-ordinateur.webm",
+      "bytes": 1254750,
+      "sha256": "b2b2a4a991004e555be45f1bb27420c76f7a6c6c09a607b6e5f4f77cf3d5eb79"
+    },
+    {
+      "file": "publicite-unitaire/service-1x1-SIMULATION.png",
+      "bytes": 56030,
+      "sha256": "8c3d3a326a3ebc72e11b91552f6b5ca7ba62d8cd4fac45c91f9e576af32c8186"
+    },
+    {
+      "file": "publicite-unitaire/service-2x3-SIMULATION.png",
+      "bytes": 70167,
+      "sha256": "f946039b360063be6a4c9c87bbfe3ae0dd65f05db5a688cba240ec1668db2409"
+    },
+    {
+      "file": "publicite-unitaire/service-4x5-SIMULATION.png",
+      "bytes": 64519,
+      "sha256": "89a1e8aaf9e0c6b5aa9bbcf78d1c97d116dc633ffafd90f5868e5a2e8500a603"
+    },
+    {
+      "file": "publicite-unitaire/service-mobile-02-creation-enregistree-vue.png",
+      "bytes": 66038,
+      "sha256": "a62d6565bccc30841badf7b3fe513c199be0a95aa0fbc014704729a22fc83bf6"
+    },
+    {
+      "file": "publicite-unitaire/service-mobile-02-creation-enregistree.png",
+      "bytes": 150480,
+      "sha256": "f838f5fbb6a44a82110d702cf2829dcc713b66cbe9b9aceb0626ee755ac97d87"
+    },
+    {
+      "file": "publicite-unitaire/service-mobile-03-retouche-format-vue.png",
+      "bytes": 58452,
+      "sha256": "e14496cd3e8587795001fe3077076cadf32d8a7429330a732994bf5af755f2e2"
+    },
+    {
+      "file": "publicite-unitaire/service-mobile-03-retouche-format.png",
+      "bytes": 172938,
+      "sha256": "c6274caa87ae01f3b69f4d8d4f1650e64443eb9d013103caca73a52282769fee"
+    },
+    {
+      "file": "publicite-unitaire/service-mobile-04-reprise-vue.png",
+      "bytes": 47854,
+      "sha256": "bd6007686b3064b559246f84a1edb1b133509197ed74726929b6560c2de5de59"
+    },
+    {
+      "file": "publicite-unitaire/service-mobile-04-reprise.png",
+      "bytes": 161533,
+      "sha256": "c1f0fe1e207f5fde390d87185a6e48ad30eb770765db221a0be567c3771d309d"
+    },
+    {
+      "file": "publicite-unitaire/service-mobile-05-bibliotheque-vue.png",
+      "bytes": 57781,
+      "sha256": "9a507ff68c2d697246a189433bee4484abacb572e489f78daf5e385287812f51"
+    },
+    {
+      "file": "publicite-unitaire/service-mobile-05-bibliotheque.png",
+      "bytes": 121383,
+      "sha256": "dace2417cc30b20c7012eccbb918033259894b296a55876232ad10da28a1bf0d"
+    },
+    {
+      "file": "publicite-unitaire/service-mobile.webm",
+      "bytes": 770265,
+      "sha256": "676919feee72f66491468780d2ccf1787637569360bd2a3486bd65abe9b37804"
+    },
+    {
+      "file": "publicite-unitaire/service-ordinateur-01-demande-vue.png",
+      "bytes": 175716,
+      "sha256": "02ab74111158d5d083b9da9635aac23a820edac732c3cb4df0a0abea3f251f8b"
+    },
+    {
+      "file": "publicite-unitaire/service-ordinateur-01-demande.png",
+      "bytes": 193774,
+      "sha256": "0572d337f99ed7dd83fffecfae403034e6dd4d4b4765c91dbe69e16dfda6870d"
+    },
+    {
+      "file": "publicite-unitaire/service-ordinateur-02-creation-enregistree-vue.png",
+      "bytes": 149669,
+      "sha256": "4e8232d27fc7df7994912c6a576504eff3cb53ce873ea2ae87ae55a94ef82555"
+    },
+    {
+      "file": "publicite-unitaire/service-ordinateur-02-creation-enregistree.png",
+      "bytes": 200283,
+      "sha256": "8b3a44fcb862319851e4378d085a87178be0a8ff1e28fdf27b6d99df5d978d50"
+    },
+    {
+      "file": "publicite-unitaire/service-ordinateur-03-retouche-format-vue.png",
+      "bytes": 138738,
+      "sha256": "a89047a725727461463e7fa0a7750438dc9aebafb450261f57e6da56a38d5cb0"
+    },
+    {
+      "file": "publicite-unitaire/service-ordinateur-03-retouche-format.png",
+      "bytes": 232269,
+      "sha256": "eacd643985f6513fe6e7f79c82a3f67652af085f183c8092a818354c2b5a6dc5"
+    },
+    {
+      "file": "publicite-unitaire/service-ordinateur-04-reprise-vue.png",
+      "bytes": 149167,
+      "sha256": "9d81e1022b02c6eeb9d6acf8ed068e5574b651d5af258447c968c0798adabbec"
+    },
+    {
+      "file": "publicite-unitaire/service-ordinateur-04-reprise.png",
+      "bytes": 205426,
+      "sha256": "b8fd33cea22485c97dc349d0b4b0a2d6dc3f8934bae5309844e61a42e05af77c"
+    },
+    {
+      "file": "publicite-unitaire/service-ordinateur-05-bibliotheque-vue.png",
+      "bytes": 150662,
+      "sha256": "4b59bf2080ff3f98eba6c25a4daec309f374259d3c382491148009b5ed76247e"
+    },
+    {
+      "file": "publicite-unitaire/service-ordinateur-05-bibliotheque.png",
+      "bytes": 165729,
+      "sha256": "2c9d4aeb3ddecd0b33b21cfe83afb84d65a52f8169cb5332ee9ca744e3cbd6dc"
+    },
+    {
+      "file": "publicite-unitaire/service-ordinateur.webm",
+      "bytes": 1331527,
+      "sha256": "f0a806855882b53d264108a5868834a2b5b8978943446523b07adfd3b22c209c"
+    },
+    {
+      "file": "sources-testees-sha256.json",
+      "bytes": 3351,
+      "sha256": "b0f82208ae245e2a484e106172c404c7c1e5054f7375d5e2b59feb6ea769e1d5"
+    },
+    {
+      "file": "validation.json",
+      "bytes": 3099,
+      "sha256": "75af58e1230abc0a2c88ca06effc85921c2ac7c09d68d4a871d497925894d5e7"
+    }
+  ]
+}

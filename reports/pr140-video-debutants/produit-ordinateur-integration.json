@@ -1,0 +1,20 @@
+{
+  "simulation": true,
+  "codeVersion": {
+    "commit": "abad7c08391d0411946119e0152400c2a629974b",
+    "source": "compiled-build"
+  },
+  "readyBeforeTheme": true,
+  "initialVideoIdsPreserved": [
+    "f2gs4v09fru7t9t4"
+  ],
+  "themeApplied": "orbe",
+  "themeVersion": "yipgtyuu5c102iz9",
+  "editedVersion": "3qpar0zi2lcyqbww",
+  "versionsPreserved": true,
+  "library": 118,
+  "localEditViaNativeApiThenUiReload": true,
+  "previewEditVerified": true,
+  "providerCalls": 0,
+  "errors": []
+}

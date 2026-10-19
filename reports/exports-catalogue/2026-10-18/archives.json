@@ -1,0 +1,99 @@
+{
+  "testedCommit": "3ecdcef4e21d8f3912910a6a50c04c4cfbcde973",
+  "workingTree": "clean",
+  "results": [
+    {
+      "kind": "products",
+      "platform": "shopify",
+      "files": 189,
+      "products": 4,
+      "media": 8,
+      "issues": []
+    },
+    {
+      "kind": "products",
+      "platform": "woocommerce",
+      "files": 125,
+      "products": 4,
+      "media": 8,
+      "issues": [
+        {
+          "code": "csv_requires_local_import",
+          "severity": "warning",
+          "detail": "Libellés ambigus pour le CSV natif WooCommerce : utiliser Outils › Catalogue E-COM STUDIO. L’import local conserve les libellés et des identifiants d’attribut distincts."
+        }
+      ]
+    },
+    {
+      "kind": "products",
+      "platform": "prestashop",
+      "files": 62,
+      "products": 4,
+      "media": 8,
+      "issues": [
+        {
+          "code": "featured_product_adapted",
+          "severity": "warning",
+          "detail": "accueil : le bloc d'achat devient une présentation du produit avec un lien vers sa fiche PrestaShop (achat sur la fiche)"
+        }
+      ]
+    },
+    {
+      "kind": "products",
+      "platform": "wix",
+      "files": 20,
+      "products": 4,
+      "media": 8,
+      "issues": []
+    },
+    {
+      "kind": "products",
+      "platform": "squarespace",
+      "files": 20,
+      "products": 4,
+      "media": 8,
+      "issues": []
+    },
+    {
+      "kind": "services",
+      "platform": "shopify",
+      "files": 185,
+      "products": 0,
+      "media": 3,
+      "issues": []
+    },
+    {
+      "kind": "services",
+      "platform": "woocommerce",
+      "files": 125,
+      "products": 0,
+      "media": 3,
+      "issues": []
+    },
+    {
+      "kind": "services",
+      "platform": "prestashop",
+      "files": 56,
+      "products": 0,
+      "media": 3,
+      "issues": []
+    },
+    {
+      "kind": "services",
+      "platform": "wix",
+      "files": 14,
+      "products": 0,
+      "media": 3,
+      "issues": []
+    },
+    {
+      "kind": "services",
+      "platform": "squarespace",
+      "files": 14,
+      "products": 0,
+      "media": 3,
+      "issues": []
+    }
+  ],
+  "paidCalls": 0
+}

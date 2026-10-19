@@ -1,0 +1,21 @@
+{%- comment -%}
+  Apparition au défilement d'un élément des sections de bibliothèque (réglage « Effet d'apparition » de la section).
+  Paramètres : effect (none | fade | rise | zoom | curtain), index (rang pour l'apparition décalée, vide : simultanée).
+  Le thème laisse tout visible sans JavaScript, avec « réduire les animations » ou animations coupées (réglage global),
+  et révèle tout au bout de 3 s : aucun contenu ne reste masqué, le défilement n'est jamais bloqué.
+{%- endcomment -%}
+{%- liquid
+  case effect
+    when 'none'
+      assign rv = ''
+    when 'fade'
+      assign rv = 'fade'
+    when 'zoom'
+      assign rv = 'zoom'
+    when 'curtain'
+      assign rv = 'curtain'
+    else
+      assign rv = 'up'
+  endcase
+-%}
+{%- if rv != '' %} data-reveal="{{ rv }}"{% if index != blank %} data-d="{{ index | at_most: 11 }}"{% endif %}{%- endif -%}

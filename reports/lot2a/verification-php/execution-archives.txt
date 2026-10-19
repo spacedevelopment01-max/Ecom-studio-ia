@@ -1,0 +1,1 @@
+{"sourceBase":"0964f10f8b48ac82317e242535b63ce080bc62ae","results":[{"kind":"products","files":131,"phpSyntaxChecked":52,"editorialPassed":11,"commerceDifferences":["featured-collection"]},{"kind":"services","files":139,"phpSyntaxChecked":51,"editorialPassed":13,"commerceDifferences":[]}]}

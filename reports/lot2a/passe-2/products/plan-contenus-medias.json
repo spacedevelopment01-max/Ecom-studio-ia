@@ -1,0 +1,170 @@
+{
+  "demo": true,
+  "note": "Photographies autorisées existantes ; répétitions éventuelles = même prise de vue, jamais annoncées comme de nouveaux projets. Accessoire cadeau fictif sans visuel.",
+  "pages": [
+    {
+      "template": "index",
+      "sections": [
+        {
+          "id": "ref_hero_1",
+          "type": "ref-hero",
+          "role": "présentation",
+          "assets": [
+            {
+              "file": "es-en-situation-1-kj0a7v.jpg",
+              "asset": "kj0a7v38h0irsp3j"
+            }
+          ]
+        },
+        {
+          "id": "featured_collection_1",
+          "type": "featured-collection",
+          "role": "information / orientation",
+          "assets": []
+        },
+        {
+          "id": "ref_editorial_1",
+          "type": "ref-editorial",
+          "role": "information / orientation",
+          "assets": [
+            {
+              "file": "es-hero-n8quha.jpg",
+              "asset": "n8quhaqsaza2n1ve"
+            }
+          ]
+        },
+        {
+          "id": "v2_benefits_1",
+          "type": "v2-benefits",
+          "role": "information / orientation",
+          "assets": [
+            {
+              "file": "es-detail-1-fkobnv.jpg",
+              "asset": "fkobnvs5hxrx029x"
+            },
+            {
+              "file": "es-scene-1-n8quha.jpg",
+              "asset": "n8quhaqsaza2n1ve"
+            },
+            {
+              "file": "es-packshot-ydmt8c.jpg",
+              "asset": "ydmt8ckfx7sdmqox"
+            }
+          ]
+        },
+        {
+          "id": "ref_editorial_2",
+          "type": "ref-editorial",
+          "role": "information / orientation",
+          "assets": [
+            {
+              "file": "es-detail-1-fkobnv.jpg",
+              "asset": "fkobnvs5hxrx029x"
+            }
+          ]
+        },
+        {
+          "id": "v2_specs_1",
+          "type": "v2-specs",
+          "role": "information / orientation",
+          "assets": []
+        },
+        {
+          "id": "v2_media_1",
+          "type": "v2-media",
+          "role": "contexte",
+          "assets": [
+            {
+              "file": "es-scene-1-n8quha.jpg",
+              "asset": "n8quhaqsaza2n1ve"
+            },
+            {
+              "file": "es-detail-1-fkobnv.jpg",
+              "asset": "fkobnvs5hxrx029x"
+            },
+            {
+              "file": "es-packshot-ydmt8c.jpg",
+              "asset": "ydmt8ckfx7sdmqox"
+            }
+          ]
+        },
+        {
+          "id": "v2_faq_1",
+          "type": "v2-faq",
+          "role": "information / orientation",
+          "assets": []
+        },
+        {
+          "id": "reassurance_1",
+          "type": "reassurance",
+          "role": "information / orientation",
+          "assets": []
+        },
+        {
+          "id": "v2_cta_1",
+          "type": "v2-cta",
+          "role": "information / orientation",
+          "assets": []
+        }
+      ]
+    },
+    {
+      "template": "product.ecp-24b76c1d174e416c",
+      "sections": [
+        {
+          "id": "p_24b76c1d_main_product_1",
+          "type": "main-product",
+          "role": "présentation",
+          "assets": []
+        },
+        {
+          "id": "p_24b76c1d_product_reviews_1",
+          "type": "product-reviews",
+          "role": "information / orientation",
+          "assets": []
+        },
+        {
+          "id": "p_24b76c1d_scroll_story_1",
+          "type": "ref-narrative",
+          "role": "détails / méthode",
+          "assets": [
+            {
+              "file": "es-packshot-ydmt8c.jpg",
+              "asset": "ydmt8ckfx7sdmqox"
+            },
+            {
+              "file": "es-galerie-lifestyle-kj0a-kj0a7v.jpg",
+              "asset": "kj0a7v38h0irsp3j"
+            },
+            {
+              "file": "es-galerie-detail-fkob-fkobnv.jpg",
+              "asset": "fkobnvs5hxrx029x"
+            },
+            {
+              "file": "es-galerie-scene-n8qu-n8quha.jpg",
+              "asset": "n8quhaqsaza2n1ve"
+            }
+          ]
+        },
+        {
+          "id": "p_24b76c1d_specs_list_1",
+          "type": "specs-list",
+          "role": "information / orientation",
+          "assets": []
+        },
+        {
+          "id": "p_24b76c1d_faq_1",
+          "type": "faq",
+          "role": "information / orientation",
+          "assets": []
+        },
+        {
+          "id": "p_24b76c1d_product_recommendations_1",
+          "type": "product-recommendations",
+          "role": "information / orientation",
+          "assets": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "simulation": true,
+  "projectsCreated": 0,
+  "persistedVersions": 0,
+  "results": [
+    {
+      "case": "produit-ordinateur",
+      "pages": [
+        {
+          "key": "home",
+          "blocks": 8,
+          "characters": 942
+        },
+        {
+          "key": "product:main",
+          "blocks": 7,
+          "characters": 661
+        },
+        {
+          "key": "brand",
+          "blocks": 4,
+          "characters": 426
+        },
+        {
+          "key": "contact",
+          "blocks": 2,
+          "characters": 140
+        }
+      ],
+      "nativeChecksPassed": true
+    },
+    {
+      "case": "service-ordinateur",
+      "pages": [
+        {
+          "key": "home",
+          "blocks": 8,
+          "characters": 955
+        },
+        {
+          "key": "service:0",
+          "blocks": 6,
+          "characters": 618
+        },
+        {
+          "key": "service:1",
+          "blocks": 4,
+          "characters": 347
+        },
+        {
+          "key": "brand",
+          "blocks": 4,
+          "characters": 474
+        },
+        {
+          "key": "contact",
+          "blocks": 2,
+          "characters": 169
+        }
+      ],
+      "nativeChecksPassed": true
+    },
+    {
+      "case": "produit-mobile",
+      "pages": [
+        {
+          "key": "home",
+          "blocks": 8,
+          "characters": 958
+        },
+        {
+          "key": "product:main",
+          "blocks": 7,
+          "characters": 682
+        },
+        {
+          "key": "brand",
+          "blocks": 4,
+          "characters": 436
+        },
+        {
+          "key": "contact",
+          "blocks": 2,
+          "characters": 148
+        }
+      ],
+      "nativeChecksPassed": true
+    },
+    {
+      "case": "service-mobile",
+      "pages": [
+        {
+          "key": "home",
+          "blocks": 8,
+          "characters": 871
+        },
+        {
+          "key": "service:0",
+          "blocks": 6,
+          "characters": 643
+        },
+        {
+          "key": "brand",
+          "blocks": 4,
+          "characters": 446
+        },
+        {
+          "key": "contact",
+          "blocks": 2,
+          "characters": 157
+        }
+      ],
+      "nativeChecksPassed": true
+    }
+  ]
+}

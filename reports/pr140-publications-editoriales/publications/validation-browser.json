@@ -1,0 +1,343 @@
+{
+  "providerCalls": 0,
+  "actualCostMicro": 0,
+  "simulation": true,
+  "results": [
+    {
+      "profile": "produit-ordinateur",
+      "simulation": true,
+      "posts": [
+        {
+          "type": "advice",
+          "id": "kk75ymt2mwu7v2b5",
+          "media": [
+            "p14osy87h22qds49"
+          ]
+        },
+        {
+          "type": "faq",
+          "id": "kht13mfo0lq1z3m0",
+          "media": [
+            "8ztwjff3jfl9mj08"
+          ]
+        },
+        {
+          "type": "checklist",
+          "id": "99t4mv8npfz50lk0",
+          "media": [
+            "nog0w7yk9owbd4r4"
+          ]
+        },
+        {
+          "type": "review",
+          "id": "ttd7xs9gyep0gace",
+          "media": [
+            "rf6sj8tsrxern5ta"
+          ]
+        },
+        {
+          "type": "carousel",
+          "id": "uivzm0qheaqk3yxe",
+          "media": [
+            "b50nz29b359vpao8",
+            "h9vc4w6gp9p9672n",
+            "1ugfq3y3eohax1jc"
+          ]
+        }
+      ],
+      "uiAdviceCreated": true,
+      "apiFaqChecklistReviewCarouselCreated": true,
+      "organicBatchLaunchedInUI": true,
+      "batchIds": [
+        "5whef2go3sxe3etq",
+        "zim92hpr1sffmuob"
+      ],
+      "carouselReorderedInUI": true,
+      "reloaded": true,
+      "retouchedViaNativeAPI": true,
+      "originalPreserved": true,
+      "natives": [
+        {
+          "file": "produit-ordinateur-natif-1-SIMULATION.png",
+          "width": 1080,
+          "height": 1350,
+          "bytes": 63960
+        },
+        {
+          "file": "produit-ordinateur-natif-2-SIMULATION.png",
+          "width": 1080,
+          "height": 1350,
+          "bytes": 63716
+        },
+        {
+          "file": "produit-ordinateur-natif-3-SIMULATION.png",
+          "width": 1080,
+          "height": 1350,
+          "bytes": 64082
+        },
+        {
+          "file": "produit-ordinateur-natif-4-SIMULATION.png",
+          "width": 1080,
+          "height": 1080,
+          "bytes": 56030
+        }
+      ],
+      "unauthorizedReviewHttpStatus": 400,
+      "errors": [],
+      "external": [],
+      "video": "produit-ordinateur.webm"
+    },
+    {
+      "profile": "produit-mobile",
+      "simulation": true,
+      "posts": [
+        {
+          "type": "advice",
+          "id": "5cgyx82dsfqattb1",
+          "media": [
+            "exec53344dsu9j3s"
+          ]
+        },
+        {
+          "type": "faq",
+          "id": "nmp8pjx6zi44hb6c",
+          "media": [
+            "z27rfvs207hl7j6f"
+          ]
+        },
+        {
+          "type": "checklist",
+          "id": "h202f6u2ffxyv72s",
+          "media": [
+            "zp4xwl60d8qcpu7x"
+          ]
+        },
+        {
+          "type": "review",
+          "id": "gikmqe3yisox40ik",
+          "media": [
+            "qcdvgixwkf9fhg1y"
+          ]
+        },
+        {
+          "type": "carousel",
+          "id": "5xsvbopgm6jlvs6k",
+          "media": [
+            "ye1j7iyfxkk0mpkm",
+            "imxh7dmfqvi67btl",
+            "zbqev4pfspinbo8t"
+          ]
+        }
+      ],
+      "uiAdviceCreated": true,
+      "apiFaqChecklistReviewCarouselCreated": true,
+      "organicBatchLaunchedInUI": true,
+      "batchIds": [
+        "5jdsog6nemiv7p2c",
+        "1wgv26bvye3cotr1"
+      ],
+      "carouselReorderedInUI": true,
+      "reloaded": true,
+      "retouchedViaNativeAPI": true,
+      "originalPreserved": true,
+      "natives": [
+        {
+          "file": "produit-mobile-natif-1-SIMULATION.png",
+          "width": 1080,
+          "height": 1350,
+          "bytes": 63960
+        },
+        {
+          "file": "produit-mobile-natif-2-SIMULATION.png",
+          "width": 1080,
+          "height": 1350,
+          "bytes": 63716
+        },
+        {
+          "file": "produit-mobile-natif-3-SIMULATION.png",
+          "width": 1080,
+          "height": 1350,
+          "bytes": 64082
+        },
+        {
+          "file": "produit-mobile-natif-4-SIMULATION.png",
+          "width": 1080,
+          "height": 1080,
+          "bytes": 56030
+        }
+      ],
+      "unauthorizedReviewHttpStatus": 400,
+      "errors": [],
+      "external": [],
+      "video": "produit-mobile.webm"
+    },
+    {
+      "profile": "service-ordinateur",
+      "simulation": true,
+      "posts": [
+        {
+          "type": "advice",
+          "id": "ft9g6mzt9zz0he5g",
+          "media": [
+            "imojzbml3oxp102a"
+          ]
+        },
+        {
+          "type": "faq",
+          "id": "g8w93jr4ebvlxpz2",
+          "media": [
+            "78ega5ruqpmp9ckl"
+          ]
+        },
+        {
+          "type": "checklist",
+          "id": "9f59ra0gz9w74g9p",
+          "media": [
+            "dov1h0dd6jo95y8d"
+          ]
+        },
+        {
+          "type": "review",
+          "id": "axfdicak057zsihr",
+          "media": [
+            "fefdfkkeqyjchbxj"
+          ]
+        },
+        {
+          "type": "carousel",
+          "id": "ln7ji9r7vt87l0oz",
+          "media": [
+            "vodgeo7q92z79cvw",
+            "0ggqdr1kqiqsjla8",
+            "hkgwj3xobg4uooym"
+          ]
+        }
+      ],
+      "uiAdviceCreated": true,
+      "apiFaqChecklistReviewCarouselCreated": true,
+      "organicBatchLaunchedInUI": true,
+      "batchIds": [
+        "o4ypeufo23odw1tr",
+        "i8ovqcg6g377a8e4"
+      ],
+      "carouselReorderedInUI": true,
+      "reloaded": true,
+      "retouchedViaNativeAPI": true,
+      "originalPreserved": true,
+      "natives": [
+        {
+          "file": "service-ordinateur-natif-1-SIMULATION.png",
+          "width": 1080,
+          "height": 1350,
+          "bytes": 63960
+        },
+        {
+          "file": "service-ordinateur-natif-2-SIMULATION.png",
+          "width": 1080,
+          "height": 1350,
+          "bytes": 63716
+        },
+        {
+          "file": "service-ordinateur-natif-3-SIMULATION.png",
+          "width": 1080,
+          "height": 1350,
+          "bytes": 64082
+        },
+        {
+          "file": "service-ordinateur-natif-4-SIMULATION.png",
+          "width": 1080,
+          "height": 1080,
+          "bytes": 56030
+        }
+      ],
+      "unauthorizedReviewHttpStatus": 400,
+      "errors": [],
+      "external": [],
+      "video": "service-ordinateur.webm"
+    },
+    {
+      "profile": "service-mobile",
+      "simulation": true,
+      "posts": [
+        {
+          "type": "advice",
+          "id": "n0maxpjqpmbx8otc",
+          "media": [
+            "0d8t1n6cy9n2aduf"
+          ]
+        },
+        {
+          "type": "faq",
+          "id": "h2259tvkkm3l74bk",
+          "media": [
+            "47kquigpploezezc"
+          ]
+        },
+        {
+          "type": "checklist",
+          "id": "8j9jmyjz7h8avbbc",
+          "media": [
+            "ki2hg70g420dja65"
+          ]
+        },
+        {
+          "type": "review",
+          "id": "691vii0ma0muriyu",
+          "media": [
+            "bh9kqvx6zj3g8zpk"
+          ]
+        },
+        {
+          "type": "carousel",
+          "id": "2sq8zkjs5nngk7ud",
+          "media": [
+            "5i9aov71px7l5re1",
+            "yp1xt9qmjloydfy7",
+            "tf0gv8ayylpc9q0q"
+          ]
+        }
+      ],
+      "uiAdviceCreated": true,
+      "apiFaqChecklistReviewCarouselCreated": true,
+      "organicBatchLaunchedInUI": true,
+      "batchIds": [
+        "u3hz1v33kurzf2su",
+        "8c78dynhvbukymad"
+      ],
+      "carouselReorderedInUI": true,
+      "reloaded": true,
+      "retouchedViaNativeAPI": true,
+      "originalPreserved": true,
+      "natives": [
+        {
+          "file": "service-mobile-natif-1-SIMULATION.png",
+          "width": 1080,
+          "height": 1350,
+          "bytes": 63960
+        },
+        {
+          "file": "service-mobile-natif-2-SIMULATION.png",
+          "width": 1080,
+          "height": 1350,
+          "bytes": 63716
+        },
+        {
+          "file": "service-mobile-natif-3-SIMULATION.png",
+          "width": 1080,
+          "height": 1350,
+          "bytes": 64082
+        },
+        {
+          "file": "service-mobile-natif-4-SIMULATION.png",
+          "width": 1080,
+          "height": 1080,
+          "bytes": 56030
+        }
+      ],
+      "unauthorizedReviewHttpStatus": 400,
+      "errors": [],
+      "external": [],
+      "video": "service-mobile.webm"
+    }
+  ]
+}

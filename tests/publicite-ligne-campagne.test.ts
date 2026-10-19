@@ -1,3 +1,4 @@
+import { campaignVerdict, campaignConcept, campaignCopy } from "./publication-fixtures";
 /**
  * Choix du propriétaire (15/10/2026) :
  *  - toutes les publications conçues par l'IA visent un rendu digne des plus grandes campagnes ; AUCUNE mise en page
@@ -19,14 +20,14 @@ describe("Ligne « campagne » et Qwen-Image 3.0 Pro par défaut", async () => {
   const { seedImageFixture } = await import("./image-v2-fixtures");
   const { designPostWithAi, aiPostPrompt } = await import("@/lib/social-v2/ai-post");
   const routing = await import("@/lib/ai/media-routing");
-  const png = (c = "#335544") => sharp({ create: { width: 64, height: 64, channels: 3, background: c } }).png().toBuffer();
+  const png = (c = "#335544") => sharp({ create: { width: 1920, height: 1920, channels: 3, background: c } }).png().toBuffer();
   const post = { id: "post-camp-1", network: "instagram", format: "image", title: "Le temps", caption: "", pillar: "Produit", objective: "sell", headline: "Le temps vous va bien", scheduled_at: null };
 
   it("consigne : niveau des plus grandes campagnes, mise en page libre, même angle que la photo, aucun texte dans le décor", async () => {
     const u = await createUser(`camp-${Date.now()}@test.fr`, "motdepasse-test", "P");
     const p = loadProject(seedImageFixture(u.id, "cosmetic"));
     const withLogo = aiPostPrompt(p, post as any, { aspect: "9:16", hasReference: true, hasLogo: true });
-    expect(withLogo).toMatch(/SAME angle and viewpoint/);
+    expect(withLogo).toMatch(/documented views and details/);
     expect(withLogo).toMatch(/brand logo from the second reference image, reproduced faithfully/);
     // Aucune mise en page imposée : seul le niveau est exigé.
     expect(withLogo).toMatch(/never a fixed template/);
@@ -47,8 +48,9 @@ describe("Ligne « campagne » et Qwen-Image 3.0 Pro par défaut", async () => {
     const ref = await saveAsset({ projectId: pid, userId: u.id, data: await png(), name: "ref.png", mime: "image/png", role: "cutout", folderKey: "images.cutouts", origin: "generated", status: "approved", meta: {} });
     const seen: { logo: Buffer | null | undefined; reviewLogo: Buffer | null | undefined; expected: string[] } = { logo: undefined, reviewLogo: undefined, expected: [] };
     const deps = {
-      generate: async (_pr: string, _a: string, _r: Buffer | null, _k: string, l?: Buffer | null) => ((seen.logo = l), png()),
-      review: async (_i: Buffer, _r: Buffer | null, texts: string[], _k: string, _pp?: boolean, l?: Buffer | null) => ((seen.reviewLogo = l), (seen.expected = texts), { transcribed: texts, person: false, anatomyOk: true, productFaithful: true, textsExact: true, legible: true, score: 8.5, issues: [], fix: "" }),
+      copy: campaignCopy,
+      generate: async (_pr: string, _a: string, _r: Buffer | null, _k: string, l?: Buffer | null) => ((seen.logo = l), sharp({create:{width:1080,height:1920,channels:3,background:"#334455"}}).png().toBuffer()),
+      review: async (_i: Buffer, _r: Buffer | null, texts: string[], _k: string, _pp?: boolean, l?: Buffer | null) => ((seen.reviewLogo = l), (seen.expected = texts), { transcribed: texts, person: false, anatomyOk: true, ...campaignVerdict(), productFaithful: true, textsExact: true, legible: true, score: 9.2, issues: [], fix: "" }),
       spentMicro: () => 0,
       maxMicro: () => 50_000,
     };
@@ -65,7 +67,8 @@ describe("Ligne « campagne » et Qwen-Image 3.0 Pro par défaut", async () => {
     for (const k of ["ai.routes", "ai.media.models", "ai.prices", "ai.media.usage"]) setJsonSetting(k, {});
     expect(routing.mediaPrimary("image")).toEqual({ provider: "alibaba", model: "qwen-image-3.0-pro" });
     // Tous les usages d'images le suivent, texte et logo compris (aucune deuxième étape par une autre IA).
-    for (const u of ["logo", "product_image", "ad_visual", "social_image", "scene", "text_layout"] as const) expect(routing.usagePrimary(u)).toMatchObject({ provider: "alibaba", model: "qwen-image-3.0-pro" });
+    for (const u of ["product_image", "ad_visual", "social_image", "scene", "text_layout"] as const) expect(routing.usagePrimary(u)).toMatchObject({ provider: "alibaba", model: "qwen-image-3.0-pro" });
+    expect(routing.usagePrimary("logo")).toMatchObject({ provider: "openai", model: "gpt-image-2.5-sunburst" });
     expect(routing.usageExplicit("text_layout")).toBe(false);
     // Un choix de l'administration reste prioritaire.
     setJsonSetting("ai.routes", { image_generation: { provider: "google", model: "gemini-2.5-flash-image" } });

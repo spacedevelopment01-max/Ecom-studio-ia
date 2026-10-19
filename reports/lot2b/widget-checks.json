@@ -1,0 +1,21 @@
+[
+  {
+    "kind": "products",
+    "finish": "Vue Charbon et premier article synchronisés",
+    "cta": "Sélection conservée vers la fiche",
+    "keyboard": "Offres duo → trio → duo",
+    "actualPhotos": 0,
+    "galleryAndZoom": "non vérifiés — pack manquant"
+  },
+  {
+    "kind": "services",
+    "navigation": [
+      "Accueil → accompagnements",
+      "Accompagnements → prestation",
+      "Prestation → inspirations",
+      "Contact"
+    ],
+    "h1": "unique sur les destinations",
+    "paidCalls": 0
+  }
+]

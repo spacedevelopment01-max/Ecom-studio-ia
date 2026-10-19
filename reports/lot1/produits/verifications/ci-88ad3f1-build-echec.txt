@@ -1,0 +1,47 @@
+CI de la livraison intermédiaire 88ad3f1eec8f5b4b85fa4c7981bf61ced3f4995d
+Exécution : https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/39078687034
+Job Docker 117531040953 : échec du build Next avant démarrage du conteneur.
+Extrait du journal (hors installation et métadonnées de checkout) :
+Failed to compile.
+2026-10-17T23:23:26.8012516Z #13 27.24 
+2026-10-17T23:23:26.9614606Z #13 27.24 ./src/lib/auth.ts
+2026-10-17T23:23:26.9620686Z #13 27.24 Error:   x You're importing a component that needs "next/headers". That only works in a Server Component which is not supported in the pages/ directory. Read more: https://nextjs.org/docs/app/building-your-application/rendering/server-components
+2026-10-17T23:23:26.9623052Z #13 27.24   |
+2026-10-17T23:23:26.9623868Z #13 27.24 
+2026-10-17T23:23:26.9637296Z #13 27.24    ,-[/app/src/lib/auth.ts:3:1]
+2026-10-17T23:23:26.9638387Z #13 27.24  1 | /** Comptes et sessions (cookie httpOnly, jeton haché en base). */
+2026-10-17T23:23:26.9639466Z #13 27.24  2 | import bcrypt from "bcryptjs";
+2026-10-17T23:23:26.9640322Z #13 27.24  3 | import { cookies } from "next/headers";
+2026-10-17T23:23:26.9641772Z #13 27.24    : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-17T23:23:26.9642705Z #13 27.24  4 | import { id, now, one, run } from "./db";
+2026-10-17T23:23:26.9643672Z #13 27.24  5 | import { randomToken, sha256 } from "./secrets";
+2026-10-17T23:23:26.9644590Z #13 27.24  6 | import { L } from "./i18n-server";
+2026-10-17T23:23:26.9645401Z #13 27.24    `----
+2026-10-17T23:23:26.9645923Z #13 27.24 
+2026-10-17T23:23:26.9646434Z #13 27.24 Import trace for requested module:
+2026-10-17T23:23:26.9647102Z #13 27.24 ./src/lib/auth.ts
+2026-10-17T23:23:26.9647671Z #13 27.24 ./src/lib/library.ts
+2026-10-17T23:23:26.9648266Z #13 27.24 ./src/lib/theme/imported.ts
+2026-10-17T23:23:26.9648857Z #13 27.24 ./src/lib/theme/spec.ts
+2026-10-17T23:23:26.9649456Z #13 27.24 ./src/lib/theme/tidy.ts
+2026-10-17T23:23:26.9650062Z #13 27.24 ./src/lib/theme/directions.ts
+2026-10-17T23:23:26.9650923Z #13 27.24 ./src/components/studio/tab-marque.tsx
+2026-10-17T23:23:26.9651596Z #13 27.24 ./src/components/studio/tabs.tsx
+2026-10-17T23:23:26.9652169Z #13 27.24 
+2026-10-17T23:23:26.9652592Z #13 27.25 
+2026-10-17T23:23:26.9653103Z #13 27.25 > Build failed because of webpack errors
+2026-10-17T23:23:27.7514505Z #13 ERROR: process "/bin/sh -c npm run build" did not complete successfully: exit code: 1
+2026-10-17T23:23:27.7713894Z ------
+2026-10-17T23:23:27.7714192Z  > [build 7/7] RUN npm run build:
+2026-10-17T23:23:27.7714473Z 27.24 ./src/lib/library.ts
+2026-10-17T23:23:27.7714745Z 27.24 ./src/lib/theme/imported.ts
+2026-10-17T23:23:27.7715204Z 27.24 ./src/lib/theme/spec.ts
+2026-10-17T23:23:27.7715448Z 27.24 ./src/lib/theme/tidy.ts
+2026-10-17T23:23:27.7715685Z 27.24 ./src/lib/theme/directions.ts
+2026-10-17T23:23:27.7715969Z 27.24 ./src/components/studio/tab-marque.tsx
+2026-10-17T23:23:27.7716260Z 27.24 ./src/components/studio/tabs.tsx
+2026-10-17T23:23:27.7716516Z 27.24 
+2026-10-17T23:23:27.7716691Z 27.25 
+2026-10-17T23:23:27.7717032Z 27.25 > Build failed because of webpack errors
+2026-10-17T23:23:27.7717438Z ------
+2026-10-17T23:23:27.7726512Z

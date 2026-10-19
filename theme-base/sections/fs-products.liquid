@@ -1,0 +1,317 @@
+{%- comment -%}
+Sélection de produits (e-commerce) et produits complémentaires (boutique spécialisée) : une seule section, plusieurs
+  modes d'alimentation (sélection manuelle, nouveautés, une collection — ex. meilleures ventes) et dispositions
+  (grille, carrousel, liste éditoriale). Cartes produit du thème : prix, photo secondaire au survol, lien vers la fiche.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign prof = 'es'
+  if settings.conversion_profile != blank and settings.conversion_profile != 'none'
+    assign prof = 'cv'
+  elsif settings.editorial_profile != blank and settings.editorial_profile != 'none'
+    assign prof = 'ed'
+  endif
+  assign fx = s.effect
+  assign cards = 'fs-card'
+-%}
+<section id="fs-{{ section.id }}" class="fs fs-products fs-products--{{ s.layout | default: 'base' }} fs--{{ prof }}{% if prof == 'ed' %} ed-section{% else %} es-section{% endif %}{% if s.background != blank and s.background != 'scheme' %} fs--{{ s.background }}{% endif %}{% if s.hover %} fs--hover{% endif %} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;--fs-angle:{{ s.gradient_angle | default: 165 }}deg;"{% if fx == 'none' %} data-ed-motion="none"{% endif %} >
+  <div class="{% if prof == 'ed' %}ed-shell{% else %}es-container{% endif %} fs__inner">
+    {%- render 'fs-head', prof: prof, eyebrow: s.eyebrow, heading: s.heading, accent: s.heading_accent, text: s.text, align: s.align, effect: fx, button_label: s.button_label, button_link: s.button_link -%}
+{%- liquid
+  assign limit = s.limit | default: 4
+  assign src = s.source | default: 'manual'
+  assign coll = s.collection | default: collections.all
+-%}
+    {%- capture items -%}
+      {%- if src == 'manual' -%}
+        {%- for block in section.blocks -%}{%- if block.settings.product != blank -%}{%- assign p = all_products[block.settings.product] | default: block.settings.product -%}{%- if p.title != blank -%}<li class="fs-products__item" data-fs-slide {{ block.shopify_attributes }}>{% render 'product-card', product_card: p, show_secondary: s.show_secondary, ratio: s.ratio %}{%- if block.settings.note != blank -%}<p class="fs-meta">{{ block.settings.note | escape }}</p>{%- endif -%}</li>{%- endif -%}{%- endif -%}{%- endfor -%}
+      {%- elsif src == 'newest' -%}
+        {%- assign list = collections.all.products | sort: 'created_at' | reverse -%}
+        {%- for p in list limit: limit -%}<li class="fs-products__item" data-fs-slide>{% render 'product-card', product_card: p, show_secondary: s.show_secondary, ratio: s.ratio %}</li>{%- endfor -%}
+      {%- else -%}
+        {%- for p in coll.products limit: limit -%}<li class="fs-products__item" data-fs-slide>{% render 'product-card', product_card: p, show_secondary: s.show_secondary, ratio: s.ratio %}</li>{%- endfor -%}
+      {%- endif -%}
+    {%- endcapture -%}
+    {%- if items != blank -%}
+      {%- if s.mode_label != blank -%}<p class="fs-products__mode"><span class="fs-chip">{{ s.mode_label | escape }}</span></p>{%- endif -%}
+      <div class="fs-products__wrap{% if s.layout == 'carousel' %} fs-carousel{% endif %}"{% if s.layout == 'carousel' %} data-fs-carousel{% endif %}{% render 'fs-reveal', effect: fx %}>
+        <ul class="fs-products__list fs-products__list--{{ s.layout }}{% if s.layout == 'grid' %} fs-grid fs-grid--{{ s.columns }}{% endif %}" role="list"{% if s.layout == 'carousel' %} data-fs-track tabindex="0"{% endif %}>{{ items }}</ul>
+        {%- if s.layout == 'carousel' -%}<div class="fs-carousel__nav"><button type="button" class="fs-carousel__btn" data-fs-prev aria-label="{{ 'general.previous' | t }}">←</button><button type="button" class="fs-carousel__btn" data-fs-next aria-label="{{ 'general.next' | t }}">→</button></div>{%- endif -%}
+      </div>
+    {%- elsif request.host == 'apercu' -%}
+      <div class="ed-media ed-media--pending fs-pending"><p>{{ 'editorial.pending_media' | t }}<span>{{ 'collections.view_all' | t }}</span></p></div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Sélection de produits",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Repère"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Titre"
+    },
+    {
+      "type": "text",
+      "id": "heading_accent",
+      "label": "Fin du titre mise en valeur"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texte"
+    },
+    {
+      "type": "select",
+      "id": "align",
+      "label": "Alignement de l'en-tête",
+      "options": [
+        {
+          "value": "center",
+          "label": "Centré"
+        },
+        {
+          "value": "left",
+          "label": "À gauche"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Libellé du bouton"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Lien du bouton"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Disposition",
+      "options": [
+        {
+          "value": "grid",
+          "label": "Grille"
+        },
+        {
+          "value": "carousel",
+          "label": "Carrousel"
+        },
+        {
+          "value": "list",
+          "label": "Liste éditoriale"
+        }
+      ],
+      "default": "grid"
+    },
+    {
+      "type": "select",
+      "id": "source",
+      "label": "Produits montrés",
+      "options": [
+        {
+          "value": "manual",
+          "label": "Sélection manuelle"
+        },
+        {
+          "value": "newest",
+          "label": "Nouveautés"
+        },
+        {
+          "value": "collection",
+          "label": "Une collection (ex. meilleures ventes)"
+        }
+      ],
+      "default": "manual"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "text",
+      "id": "mode_label",
+      "label": "Étiquette du mode (ex. Nouveautés)"
+    },
+    {
+      "type": "range",
+      "id": "limit",
+      "label": "Nombre de produits",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "Colonnes sur ordinateur",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "ratio",
+      "label": "Format des photos",
+      "options": [
+        {
+          "value": "portrait",
+          "label": "Portrait"
+        },
+        {
+          "value": "square",
+          "label": "Carré"
+        }
+      ],
+      "default": "portrait"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secondary",
+      "label": "Deuxième photo au survol",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Effets et fond"
+    },
+    {
+      "type": "select",
+      "id": "effect",
+      "label": "Effet d'apparition",
+      "options": [
+        {
+          "value": "none",
+          "label": "Aucun"
+        },
+        {
+          "value": "fade",
+          "label": "Fondu"
+        },
+        {
+          "value": "rise",
+          "label": "Montée"
+        },
+        {
+          "value": "zoom",
+          "label": "Zoom"
+        },
+        {
+          "value": "curtain",
+          "label": "Révélation des images"
+        }
+      ],
+      "default": "rise"
+    },
+    {
+      "type": "checkbox",
+      "id": "stagger",
+      "label": "Apparition décalée des éléments",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "hover",
+      "label": "Survol léger des cartes",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "background",
+      "label": "Fond",
+      "options": [
+        {
+          "value": "scheme",
+          "label": "Couleur du schéma"
+        },
+        {
+          "value": "gradient-soft",
+          "label": "Dégradé léger"
+        },
+        {
+          "value": "gradient-strong",
+          "label": "Dégradé marqué"
+        }
+      ],
+      "default": "scheme"
+    },
+    {
+      "type": "range",
+      "id": "gradient_angle",
+      "label": "Angle du dégradé",
+      "min": 0,
+      "max": 360,
+      "step": 15,
+      "unit": "°",
+      "default": 165
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Marge haute",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Marge basse",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "default": 96
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product",
+      "name": "Produit",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Produit"
+        },
+        {
+          "type": "text",
+          "id": "note",
+          "label": "Note (ex. accessoire conseillé)"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Sélection de produits",
+      "settings": {
+        "layout": "grid",
+        "source": "manual"
+      }
+    }
+  ],
+  "max_blocks": 12
+}
+{% endschema %}

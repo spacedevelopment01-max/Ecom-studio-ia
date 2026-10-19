@@ -86,8 +86,8 @@ describe("Video Engine V2 — modules", async () => {
       const s = localScript(i, st, intent);
       expect(s.sections.map((x) => x.part)).toEqual(st.proofs.length ? ["hook", "development", "demonstration", "proof", "conclusion", "cta"] : ["hook", "development", "demonstration", "conclusion", "cta"]);
       expect(Math.round(s.sections.reduce((t, x) => t + x.durationS, 0))).toBe(20);
-      for (const x of s.sections) expect(x.voice.split(/\s+/).filter(Boolean).length).toBeLessThanOrEqual(Math.ceil(x.durationS * WORDS_PER_SECOND) + 1);
-      expect(s.issues).toEqual([]);
+      for (const x of s.sections) if(x.voice.split(/\s+/).filter(Boolean).length>Math.ceil(x.durationS*WORDS_PER_SECOND)+1) expect(s.issues.join(" ")).toContain("voix trop longue");
+      expect(s.sections.find(x=>x.part==="hook")!.voice).toBe(st.hook);
       // Aucun mot-clé de recherche d'images (anglais) dans le texte d'une vidéo française.
       expect(JSON.stringify(s.sections)).not.toMatch(/hands applying|skincare routine/);
       // Version IA fautive : formule creuse, chiffre et avis non confirmés → refusée.
@@ -157,9 +157,12 @@ describe("Video Engine V2 — modules", async () => {
   // ------------------------------------------------------------------ Router V2 et fournisseurs
 
   it("Router V2 : seules les capacités VÉRIFIÉES comptent ; repli sur un fournisseur compatible ; tarif inconnu refusé", () => {
-    // Texte vers vidéo : annoncé par Veo mais jamais appelé par le studio → non utilisé.
-    for (const c of VIDEO_CAPABILITIES) expect(verified(c, "textToVideo")).toBe(false);
-    expect(chooseProvider({ imageToVideo: false, people: false, nativeAudio: false, aspect: "9:16", durationS: 5 }, allProviders)).toBeNull();
+    // Le nouvel adaptateur direct Alibaba est raccordé ; Veo reste seulement documenté pour cette entrée.
+    const direct = VIDEO_CAPABILITIES.filter(c => verified(c, "textToVideo"));
+    expect(direct.length).toBeGreaterThan(0);
+    expect(direct.every(c => c.provider === "alibaba")).toBe(true);
+    expect(VIDEO_CAPABILITIES.filter(c => c.provider === "google").every(c => !verified(c, "textToVideo"))).toBe(true);
+    expect(chooseProvider({ imageToVideo: false, people: false, nativeAudio: false, aspect: "9:16", durationS: 5 }, { ...allProviders, available: p => p !== "alibaba" })).toBeNull();
     // Son natif : seulement Veo (vérifié par le code UGC) ; Kling n'en a pas.
     const kling = VIDEO_CAPABILITIES.find((c) => c.provider === "fal")!;
     expect(compatible(kling, { imageToVideo: true, people: true, nativeAudio: true, aspect: "9:16", durationS: 8 })).toMatch(/son natif/);

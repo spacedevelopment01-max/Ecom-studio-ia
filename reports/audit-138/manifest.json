@@ -1,0 +1,137 @@
+{
+  "codeSha": "11114f1f5e38e59ab3b8ffc66d292f0d088c516f",
+  "captures": 8,
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 4937,
+      "sha256": "b8e18588da54bdc6da7c54a92cb624917500d85555b152e2aa6e8477ddac6c82"
+    },
+    {
+      "path": "captures/produit-ancien-trois-angles-mobile.png",
+      "bytes": 327056,
+      "sha256": "e1c223705a1a58f15affda63d60ce990d12faca5ece49f5defc58b6c80ef8dc3",
+      "width": 390,
+      "height": 4029
+    },
+    {
+      "path": "captures/produit-ancien-trois-angles-ordinateur.png",
+      "bytes": 365620,
+      "sha256": "b037ada935635e4dc23db51d8ab3825d30d61915c10d36d2851804c83768c03e",
+      "width": 1440,
+      "height": 2537
+    },
+    {
+      "path": "captures/produit-cinq-angles-mobile.png",
+      "bytes": 445092,
+      "sha256": "baec898592daa67efd86170f7ad3d4383e1cd5c7b9f93d3f232dd7b0044c7051",
+      "width": 390,
+      "height": 5203
+    },
+    {
+      "path": "captures/produit-cinq-angles-ordinateur.png",
+      "bytes": 487965,
+      "sha256": "681ef530684e30ef319ccb8e458aa1d5a30d09995aa48af75d039a92c03b33e2",
+      "width": 1440,
+      "height": 3115
+    },
+    {
+      "path": "captures/produit-contenus-ordinateur.png",
+      "bytes": 246889,
+      "sha256": "cd6ce788eda8442bba0ff570bbca7f6b5a3cc5bc6e6370d46dc74f52b56adb84",
+      "width": 1440,
+      "height": 2141
+    },
+    {
+      "path": "captures/service-cinq-angles-mobile.png",
+      "bytes": 467381,
+      "sha256": "f234250ee49d4595b915baca6c6ffc56154fff882e49c0a252e0c67865921662",
+      "width": 390,
+      "height": 5463
+    },
+    {
+      "path": "captures/service-cinq-angles-ordinateur.png",
+      "bytes": 502608,
+      "sha256": "e9731a5d27ccda9cf6aa2fc0653cf603bd974158cf0a2b58b0b47a05e93b1cfd",
+      "width": 1440,
+      "height": 3115
+    },
+    {
+      "path": "captures/service-contenus-mobile.png",
+      "bytes": 262493,
+      "sha256": "be523f09f2724d76e9ff1adce0dd485af30a28d7fedd2bc162ef15b9073624cb",
+      "width": 390,
+      "height": 3745
+    },
+    {
+      "path": "donnees/browser-proof.json",
+      "bytes": 555,
+      "sha256": "4d7912c7d9cc53b31b0d6a59caa36ade7a122e6750574a88400413d6004917dd"
+    },
+    {
+      "path": "donnees/captures-proof.json",
+      "bytes": 653,
+      "sha256": "8fb4f64f1516bb417c692530d41e8b55c7adc5785ebf30e1fa63f060bf28ca93"
+    },
+    {
+      "path": "donnees/legacy-captures-proof.json",
+      "bytes": 346,
+      "sha256": "2ec0d1de1218b9fa9e55eb68bb4f6235d8175d0ff9c73c38f4a219236f096272"
+    },
+    {
+      "path": "donnees/legacy-fixture.json",
+      "bytes": 319,
+      "sha256": "ff980d6c957fd2aa2147d35fc925b5a259cd21b2565a308a8699d51d07a4e632"
+    },
+    {
+      "path": "donnees/persistence-proof.json",
+      "bytes": 78544,
+      "sha256": "32a5cd943153997833773c18378a949dbeab6e902f179218059ce7a884a89f32"
+    },
+    {
+      "path": "donnees/produit-restored-download.json",
+      "bytes": 28741,
+      "sha256": "e2d6944090bf64adeaad1207075177e52702d9aac547ebc3b082f6cdc2e385ec"
+    },
+    {
+      "path": "donnees/restoration-proof.json",
+      "bytes": 931,
+      "sha256": "9005038753d81e3c5bc8562c543a54f6e41de1889066d773c70b3240c7f972e6"
+    },
+    {
+      "path": "donnees/service-restored-download.json",
+      "bytes": 34073,
+      "sha256": "604372907bf9efa557994fa689b798ae02ed2dbee6bb631fbd8e49c1af090362"
+    },
+    {
+      "path": "regressions-avant.txt",
+      "bytes": 1459,
+      "sha256": "7100b467db1d16b51b7e91a96589286633fa7e8ab065df1a4181906e0a8cf01d"
+    },
+    {
+      "path": "reproduction/captures.mjs",
+      "bytes": 3371,
+      "sha256": "65a2394a84b1628dc71a1229c8f58f846202c6ddc3d2077bec55e11031bff220"
+    },
+    {
+      "path": "reproduction/legacy-fixture.ts.txt",
+      "bytes": 1878,
+      "sha256": "0912d37f7bbe3fa3bea8d360a2107c24aa1635b78779291e3cdfece316e339e8"
+    },
+    {
+      "path": "reproduction/regressions-avant.test.ts.txt",
+      "bytes": 2684,
+      "sha256": "cc4c7a681e8b1b077a19a55da918f30ac28f626e13160a68d235366bf04f86d3"
+    },
+    {
+      "path": "resume-tests.txt",
+      "bytes": 354,
+      "sha256": "6498e7f28e08a748bac7afae4bca5c86cc3fae80cc61f35bfdbcd0f5e44a9ca7"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 3792,
+      "sha256": "c135ee21a6ecba395a5880d49394299375b184f655220a0c3bd02eaa845ab4fd"
+    }
+  ]
+}

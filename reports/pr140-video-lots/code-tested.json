@@ -1,0 +1,16 @@
+{
+  "appAndTestsCommit": "8122545d36cff5451861bed394596181735392a2",
+  "proofsCommit": "b65c231dbc205f8492994ee3afbf20638f7e6ebf",
+  "sameSrcAndTestsTree": true,
+  "gitTreeListingSha256": "638d0eb6e2ae3e2f922cd99786e57e82a95a7a5f62119b140e0a5795bb511f57",
+  "fullSuiteCommand": "npx vitest run --maxWorkers=2",
+  "fullSuiteStatus": "passed",
+  "note": "Aucun changement de src/ ni tests/ entre ces deux commits ; aucune donn\u00e9e client dans ce relev\u00e9.",
+  "filesPassed": 292,
+  "testsPassed": 2211,
+  "testsSkipped": 3,
+  "testsFailed": 0,
+  "durationS": 906.25,
+  "typecheck": "passed",
+  "skipReason": "PHP absent ; calendrier-reservation (2), cms-v2 (1)"
+}

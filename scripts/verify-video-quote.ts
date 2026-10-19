@@ -1,0 +1,27 @@
+/** Devis conditionnel : configuration synthétique isolée, zéro projet, réseau interdit. */
+import fs from 'node:fs';
+const dir=process.env.DATA_DIR||'';
+if(!dir.startsWith('/tmp/ecs-test-video-quote-')) throw Error('Dossier isolé requis');
+globalThis.fetch=async()=>{throw Error('Aucun réseau autorisé');};
+const root=process.cwd();
+const {setSetting,setJsonSetting}=await import(root+'/src/lib/settings.ts');
+const {MEDIA_MODELS}=await import(root+'/src/lib/ai/media-models.ts');
+const {aiPostMaxMicro,wanClipMaxMicro}=await import(root+'/src/lib/ai/media-providers.ts');
+const {estimateMicro,aiPostProbableMicro}=await import(root+'/src/lib/ai/estimate.ts');
+const {quoteScenes,SCENE_VIDEO_MODEL}=await import(root+'/src/lib/video-v2/three-scenes.ts');
+const {emptyProduct}=await import(root+'/src/lib/project-types.ts');
+const {all}=await import(root+'/src/lib/db.ts');
+setSetting('ai.prices.checkedAt',String(Date.now()));
+const model=MEDIA_MODELS.find((m:{provider:string;kind:string;legacyDefault?:boolean})=>m.provider==='alibaba'&&m.kind==='image'&&m.legacyDefault)!;
+const route=`${model.provider}:${model.model}`;
+setSetting('provider.alibaba.apiKey','synthetic-quote-only-never-used',true);
+setJsonSetting('ai.media.usage',{social_image:{primary:route}});
+setJsonSetting('ai.media.models',{[route]:{enabled:true,confirmedAt:Date.now()}});
+const params={imageMaxMicro:aiPostMaxMicro(),clipMaxMicro:(s:number)=>wanClipMaxMicro(s),textMicro:Math.round(estimateMicro('blog')/10),videosRight:'advanced' as const,aiActive:true};
+const p={id:'quote-only-no-project',userId:'no-account',business:'products',product:emptyProduct(),settings:{language:'fr'},brand:null} as any;
+const req={as:'ad' as const,scenes:4,totalS:20};
+const max=quoteScenes(p,req,params);
+const probable=quoteScenes(p,req,{...params,imageMaxMicro:aiPostProbableMicro()});
+const evidence={simulation:true,configuration:'hypothèse isolée Alibaba, jamais configuration déployée',createdProjects:all('SELECT id FROM projects').length,providerCalls:all('SELECT id FROM ai_calls').length,modelRoutes:{image:route,video:SCENE_VIDEO_MODEL},inputs:{Imax:params.imageMaxMicro,Iprob:aiPostProbableMicro(),V5:wanClipMaxMicro(5),T:params.textMicro},max,probable,capMicro:Math.max(max.estimateMicro,probable.estimateMicro)};
+fs.writeFileSync(root+'/reports/pr140-video/devis-natif-conditionnel.json',JSON.stringify(evidence,null,2)+'\n');
+console.log(JSON.stringify(evidence,null,2));

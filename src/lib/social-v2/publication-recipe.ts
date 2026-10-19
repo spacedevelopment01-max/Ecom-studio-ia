@@ -1,0 +1,109 @@
+/** Durable, project-scoped stage receipts. A dispatched stage with unknown outcome is never repaid automatically. */
+import { one, run, id, now } from "../db";
+import { stableHash } from "../brain/hash";
+import { assetData, getAsset, saveAsset } from "../library";
+import type { Project } from "../projects";
+export function publicationKey(projectId: string, data: unknown) {
+  return `ai-post:${projectId}:${stableHash("campaign-2", data)}`;
+}
+type Receipt<T> = { state: "pending" | "done"; value?: T };
+const memoryKey = (key: string) => `publication.stage.${key}`;
+export async function publicationStage<T>(
+  projectId: string,
+  key: string,
+  fn: () => Promise<T>,
+  replaySafe = false,
+): Promise<T> {
+  const row = one<{ id: string; value: string }>(
+    "SELECT id,value FROM memory WHERE project_id = ? AND key = ? ORDER BY rowid DESC LIMIT 1",
+    projectId,
+    memoryKey(key),
+  );
+  if (row) {
+    const v = JSON.parse(row.value) as Receipt<T>;
+    if (v.state === "done") return v.value as T;
+    if (replaySafe) {
+      const value = await fn();
+      run(
+        "UPDATE memory SET value=?,updated_at=? WHERE id=?",
+        JSON.stringify({ state: "done", value }),
+        now(),
+        row.id,
+      );
+      return value;
+    }
+    throw new Error(
+      "Étape déjà envoyée, résultat incertain ou en cours : reprise automatique bloquée pour éviter un double paiement.",
+    );
+  }
+  // Synchronous claim before first await also serializes callers in the worker process.
+  const rid = id();
+  const claim = run(
+    "INSERT INTO memory (id,project_id,kind,key,value,status,source,scope,created_at,updated_at) SELECT ?,?,?,?,?,?,?,?,?,? WHERE NOT EXISTS (SELECT 1 FROM memory WHERE project_id=? AND key=?)",
+    rid,
+    projectId,
+    "artifact",
+    memoryKey(key),
+    JSON.stringify({ state: "pending" }),
+    "confirmed",
+    "local",
+    "publication-receipts",
+    now(),
+    now(),
+    projectId,
+    memoryKey(key),
+  );
+  if (!claim.changes) return publicationStage(projectId, key, fn, replaySafe);
+  const value = await fn();
+  run(
+    "UPDATE memory SET value = ?, updated_at = ? WHERE id = ?",
+    JSON.stringify({ state: "done", value }),
+    now(),
+    rid,
+  );
+  return value;
+}
+export async function publicationImageStage(
+  p: Project,
+  key: string,
+  prompt: string,
+  fn: () => Promise<Buffer>,
+) {
+  const aid = await publicationStage(p.id, key, async () => {
+    const data = await fn();
+    const { imageRequestReceipt } = await import("../ai/media-providers");
+    const receipt = imageRequestReceipt(data);
+    const a = await saveAsset({
+      projectId: p.id,
+      userId: p.userId,
+      data,
+      name: "publication-etape-native.png",
+      mime: "image/png",
+      role: "social-trial",
+      folderKey: "content.calendar",
+      origin: "generated",
+      status: "draft",
+      meta: {
+        publicationStage: key,
+        effectivePrompt: receipt?.prompt ?? prompt,
+        imageRequest: receipt ?? { transport: "injected, not verified" },
+      },
+    });
+    return a.id;
+  });
+  const a = getAsset(aid);
+  if (!a || a.project_id !== p.id || a.deleted_at)
+    throw new Error(
+      "Étape conservée indisponible : aucune régénération payante automatique.",
+    );
+  return { data: assetData(a), assetId: aid };
+}
+
+export function publicationStageDone(projectId: string, key: string) {
+  const r = one<{ value: string }>(
+    "SELECT value FROM memory WHERE project_id=? AND key=? ORDER BY rowid DESC LIMIT 1",
+    projectId,
+    memoryKey(key),
+  );
+  return !!r && JSON.parse(r.value).state === "done";
+}

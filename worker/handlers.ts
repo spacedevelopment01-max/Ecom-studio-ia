@@ -1,5 +1,6 @@
 /** Gestionnaires des tâches d'arrière-plan. */
 import { isAutoUsable } from "../src/lib/quality/usable";
+import { projectKind } from "@/lib/theme/project-kind";
 import { all, json, now, one, run } from "../src/lib/db";
 import { sectionGenerationAllowed } from "../src/lib/theme/custom-access";
 import { JobCancelled, JobContext, JobPaused, PermanentError, UserFacingError } from "../src/lib/jobs";
@@ -38,8 +39,13 @@ import { ACTION_STEPS, findStockPhotos, orchestrated, runRequestPlan } from "../
 type Handler = (ctx: JobContext) => Promise<unknown>;
 
 export const handlers: Record<string, Handler> = {
+  "social.initial": async(ctx)=>{
+    const {runInitialCreatives}=await import("../src/lib/social-v2/initial");
+    return runInitialCreatives(ctx);
+  },
   // Création complète : passe par le planner à l'intérieur (étapes déjà acquises sautées, marque existante gardée).
   "pipeline.run": runPipeline,
+  "project.prepare": async (ctx) => (await import("../src/lib/preparation/engine")).runPreparation(ctx),
 
   /** Demande libre du client : intention → plan → moteurs existants (Router V2, barrière de qualité). */
   "plan.run": runRequestPlan,
@@ -65,8 +71,9 @@ export const handlers: Record<string, Handler> = {
   "image.single": async (ctx) => {
     const p = loadProject(ctx.payload.projectId);
     const { aiActiveFor } = await import("../src/lib/ai/access");
-    const { imageV2Kind, NO_AI_IMAGES } = await import("../src/lib/image-v2/ai-only");
+    const { TEXT_IMAGE_KINDS, imageV2Kind, NO_AI_IMAGES } = await import("../src/lib/image-v2/ai-only");
     if (!aiActiveFor(p.userId, p.id)) throw new UserFacingError(L(NO_AI_IMAGES.fr, NO_AI_IMAGES.en));
+    if (TEXT_IMAGE_KINDS.has(ctx.payload.request?.kind)) return (await import("../src/lib/engine/ai-post-image")).generateAiPostImage(ctx,p.id,ctx.payload.request);
     const { runImageEngineV2 } = await import("../src/lib/image-v2/engine");
     const r = await runImageEngineV2(ctx, p.id, { kind: imageV2Kind(p.business === "services", ctx.payload.request?.kind ?? "scene"), count: 1, allowGenerate: true, noStock: true, maxCostEur: 1 });
     return { outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, origin: o.origin })), stoppedByCostCap: r.stoppedByCostCap };
@@ -80,7 +87,8 @@ export const handlers: Record<string, Handler> = {
   "ads.v2": async (ctx) => {
     const { runAdEngineV2 } = await import("../src/lib/ads-v2/engine");
     const r = await runAdEngineV2(ctx, ctx.payload.projectId, ctx.payload.request ?? {});
-    return { concepts: r.concepts.length, outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, platform: o.platform, aspect: o.aspect })), stoppedByCostCap: r.stoppedByCostCap, stats: r.stats };
+    if(!ctx.payload.request?.copyOnly && !r.outcomes.some(o=>o.assetId))throw new UserFacingError(L("Aucune publicité n’a passé le contrôle : ","No ad passed the check: ")+r.outcomes.map(o=>o.reason).filter(Boolean).join(" ; ")+L(" Les essais et coûts restent conservés, aucun gabarit de secours."," Attempts and costs are preserved, without a template fallback."));
+    return { costMicro:r.costMicro, partial:r.outcomes.some(o=>!o.assetId), concepts: r.concepts.length, outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, platform: o.platform, aspect: o.aspect, reason:o.reason })), stoppedByCostCap: r.stoppedByCostCap, stats: r.stats };
   },
   /** Image V2 : brief local, recherche multisource ou génération routée, barrière V2, bibliothèque, réutilisation. */
   "image.v2": async (ctx) => {
@@ -104,7 +112,7 @@ export const handlers: Record<string, Handler> = {
   "content.v2": async (ctx) => {
     const { runContentEngineV2 } = await import("../src/lib/seo-v2/engine");
     const r = await runContentEngineV2(ctx, ctx.payload.projectId, ctx.payload.request);
-    return { docKey: r.docKey, verdict: r.verdict, codes: r.codes, by: r.by, costMicro: r.costMicro, skipped: r.skipped, stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, notes: r.notes.slice(0, 20) };
+    return { docKey: r.docKey, verdict: r.verdict, codes: r.codes, by: r.by, costMicro: r.costMicro, skipped: r.skipped, stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, notes: r.notes.slice(0, 20), delivery: r.delivery };
   },
   /** Vidéo V2 : intention, stratégie, script, storyboard, plans, document éditable, rendu, barrière vidéo. */
   "video.v2": async (ctx) => {
@@ -113,6 +121,10 @@ export const handlers: Record<string, Handler> = {
     return { docKey: r.docKey, videoAssetId: r.videoAssetId, verdict: r.verdict, codes: r.codes, estimateMicro: r.estimateMicro, stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, notes: r.notes.slice(0, 20) };
   },
   /** Vidéo en scènes (création guidée) : images Qwen + plans Wan 2.6 (produit) ou plans libres (service), montage du studio. */
+  "video.scenario": async(ctx)=>{
+    const {runSceneScenario}=await import("../src/lib/video-v2/three-scenes");
+    return runSceneScenario(ctx,ctx.payload.projectId,ctx.payload.request);
+  },
   "video.scenes": async (ctx) => {
     const { runThreeScenes, realThreeScenesDeps } = await import("../src/lib/video-v2/three-scenes");
     const { llmConfigured } = await import("../src/lib/ai/llm");
@@ -154,15 +166,18 @@ export const handlers: Record<string, Handler> = {
 
   /** Logo : nouvelles pistes (IA, plusieurs minutes) ou application de la piste choisie. */
   "brand.fulllogo": async (ctx) => {
-    const { generateFullLogos } = await import("../src/lib/engine/full-logo");
-    return { created: (await generateFullLogos(ctx, ctx.payload.projectId, { autoApply: !!ctx.job.parent_id })).length };
+    // Ancienne action conservée, nouvelles créations routées vers les séries et droits communs.
+    return handlers["brand.logo.v2"](ctx);
   },
 
   /** Logo V2 : territoires créatifs, construction hybride, barrière V2 (aucun mockup avant le choix). */
   "brand.logo.v2": async (ctx) => {
     const { runLogoEngineV2 } = await import("../src/lib/logo-v2/engine");
-    const r = await runLogoEngineV2(ctx, ctx.payload.projectId, { avoid: ctx.payload.avoid, style: ctx.payload.style });
-    return { shown: r.shown.length, discarded: r.discarded.length, territories: r.territories.length, stoppedByCostCap: r.stoppedByCostCap };
+    const r = await runLogoEngineV2(ctx, ctx.payload.projectId, { avoid: ctx.payload.avoid, style: ctx.payload.style, renew: ctx.payload.renew, correction: ctx.payload.correction });
+    const { currentSeries } = await import("../src/lib/logo-v2/direction-series");
+    const series = currentSeries(ctx.payload.projectId);
+    if (series && series.status !== "complete") throw new UserFacingError(`Série incomplète : ${series.directions.length}/3 directions complètes. Les résultats acceptés sont conservés ; reprise ciblée nécessaire.`);
+    return { shown: series?.directions.length ?? r.shown.length, generated: r.shown.length, discarded: r.discarded.length, territories: r.territories.length, stoppedByCostCap: r.stoppedByCostCap };
   },
   /** Logo V2 : nouvelle version d'un logo complet, demandée par le client (une image, coût accepté). */
   "brand.logo.v2.redraw": async (ctx) => {
@@ -219,7 +234,7 @@ export const handlers: Record<string, Handler> = {
       return a && a.project_id === projectId ? { filename: themeFileName(a, a.role ?? "media") } : null;
     };
     // Le moteur local d'abord : une retouche simple qu'il sait faire à coup sûr ne consomme aucun crédit IA.
-    const quick = llmConfigured() ? localFirst(cur.spec, message, selection, atts.map((a) => ({ assetId: a.id, name: a.name, kind: a.kind })), p.business, mediaFileOf) : null;
+    const quick = llmConfigured() ? localFirst(cur.spec, message, selection, atts.map((a) => ({ assetId: a.id, name: a.name, kind: a.kind })), p.business, mediaFileOf, projectKind(p)) : null;
     if (quick) {
       reply = `${quick.reply}\n\n${L("⚡ Fait par le moteur du studio, sans IA : aucun crédit utilisé.", "⚡ Done by the studio engine, without AI: no credits used.")}`;
       ops = quick.ops;
@@ -260,7 +275,7 @@ export const handlers: Record<string, Handler> = {
         reply = media.reply;
         ops = media.ops;
       } else {
-        const r = localThemeCommand(cur.spec, message, selection, p.business);
+        const r = localThemeCommand(cur.spec, message, selection, p.business, projectKind(p));
         reply = r.reply;
         ops = r.ops;
         revert = r.revert;
@@ -287,7 +302,7 @@ export const handlers: Record<string, Handler> = {
     } else if (ops.length) {
       const targeted = new Set<string>();
       if (selection) targeted.add(`${selection.template}:${selection.section}`);
-      const res = applyOps(cur.spec, ops, { targeted, mediaFile: mediaFileOf });
+      const res = applyOps(cur.spec, ops, { targeted, mediaFile: mediaFileOf, storeKind: projectKind(p) });
       let next = res.spec;
       applied = res.applied;
       let refused = res.rejected;
@@ -297,7 +312,7 @@ export const handlers: Record<string, Handler> = {
           ctx.progress(0.8, L("Correction des opérations refusées", "Fixing the rejected operations"));
           const fix = await ctx.step("repair", () => aiRepairOps({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:repair` }, p, next, { request: message, page: page || "index", rejected: refused }));
           if (fix.ops.length) {
-            const again = applyOps(next, fix.ops, { targeted, mediaFile: mediaFileOf });
+            const again = applyOps(next, fix.ops, { targeted, mediaFile: mediaFileOf, storeKind: projectKind(p) });
             if (again.applied.length && !validateSpec(again.spec).length) {
               next = again.spec;
               applied = [...applied, ...again.applied];
@@ -368,7 +383,9 @@ export const handlers: Record<string, Handler> = {
     const { aiActiveFor } = await import("../src/lib/ai/access");
     const p = loadProject(ctx.payload.projectId);
     const deps = realSocialDeps(ctx, p, aiActiveFor(p.userId, p.id));
-    return ctx.step("produce", () => produceBatch(p, ctx.payload.ids ?? [], deps, { allowPaid: !!ctx.payload.allowPaid, maxCostEur: Number(ctx.payload.maxCostEur ?? 0), approvedEstimateMicro: ctx.payload.approvedEstimateMicro ?? null, distinctImages: ctx.payload.distinctImages ?? null, aiImages: ctx.payload.aiImages ?? null, aiBackground: !!ctx.payload.aiBackground, replace: !!ctx.payload.replace }));
+    const result=await ctx.step("produce", () => produceBatch(p, ctx.payload.ids ?? [], deps, { allowPaid: !!ctx.payload.allowPaid, maxCostEur: Number(ctx.payload.maxCostEur ?? 0), approvedEstimateMicro: ctx.payload.approvedEstimateMicro ?? null, distinctImages: ctx.payload.distinctImages ?? null, aiImages: ctx.payload.aiImages ?? null, aiBackground: !!ctx.payload.aiBackground, replace: !!ctx.payload.replace }));
+    if(!result.produced && (result.failed||result.skipped))throw new UserFacingError(L("Aucune publication complète produite : ","No complete post produced: ")+result.notes.join(" ; "));
+    return {...result,partial:!!(result.failed||result.skipped)};
   },
   "post.publish": async (ctx) => {
     // Social Engine V2 : prise en charge atomique, version approuvée, journal des tentatives, état incertain en cas

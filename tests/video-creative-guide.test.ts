@@ -136,9 +136,9 @@ describe("Guide créatif vidéo", async () => {
     expect(t2.font.size).toBeLessThanOrEqual(88);
     expect(t2.anim?.in).toBeDefined();
     const end = rendered.clips.at(-1);
-    expect(end.durationS).toBeGreaterThanOrEqual(2.5);
-    expect(end.durationS).toBeLessThanOrEqual(4);
-    expect(end.source.doc.layers.find((l: any) => l.kind === "button").font.size).toBeGreaterThanOrEqual(48);
+    expect(rendered.meta.ending.holdS).toBeGreaterThanOrEqual(2.5);
+    expect(rendered.meta.ending.holdS).toBeLessThanOrEqual(4);
+    expect(end.overlays.find((l: any) => l.kind === "button").font.size).toBeGreaterThanOrEqual(48);
     expect(r.brief?.family).toBe("artisan");
     // Mémoire créative : concept utilisé et provenance des plans, relus à la vidéo suivante (autre concept).
     const mem = loadCreativeMemory(a.id);
@@ -149,22 +149,20 @@ describe("Guide créatif vidéo", async () => {
     expect(buildCreativeBrief(a, { durationS: 15, width: 1080, height: 1920, platform: "reels" }).family).toBe("premium");
   });
 
-  it("une étape sans plan est retirée avec son titre : les titres suivants ne glissent jamais sur un autre plan", async () => {
+  it("une étape sans plan bloque la livraison : aucun titre déplacé ni vidéo incomplète", async () => {
     const a = await painter();
     let rendered: any = null;
-    await runThreeScenes(null, a.id, { as: "ad", scenes: 3, totalS: 15, aspect: "9:16" }, {
+    await expect(runThreeScenes(null, a.id, { as: "ad", scenes: 3, totalS: 15, aspect: "9:16" }, {
       keyframe: async () => Buffer.from(""),
       clip: async () => Buffer.from(""),
       stock: async (p: any, k: number) => (k === 1 ? null : { assetId: (await saveAsset({ projectId: p.id, userId: p.userId, data: Buffer.from(`c${k}`), name: `c${k}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", status: "ready", meta: {} })).id, durationS: 8 }),
       spentMicro: () => 0,
       render: async (_p: unknown, _k: string, doc: unknown) => ((rendered = doc), "v"),
-    });
-    const titles = rendered.clips.filter((c: any) => c.id !== "end-card").map((c: any) => c.overlays[0]?.text ?? "");
-    expect(titles).toHaveLength(2);
-    expect(titles[1]).toBe("La pièce terminée");
+    })).rejects.toThrow(/Scène 2/);
+    expect(rendered).toBeNull();
   });
 
-  it("sans contrôle visuel des plans : aucun titre d'étape n'affirme ce que le plan montre (seule l'accroche reste)", async () => {
+  it("sans contrôle visuel : contenus conservés et vérification explicitement requise", async () => {
     const a = await painter();
     let rendered: any = null;
     const r = await runThreeScenes(null, a.id, { as: "ad", scenes: 3, totalS: 15, aspect: "9:16" }, {
@@ -175,9 +173,9 @@ describe("Guide créatif vidéo", async () => {
       spentMicro: () => 0,
       render: async (_p: unknown, _k: string, doc: unknown) => ((rendered = doc), "v"),
     });
-    expect(rendered.clips[1].overlays).toHaveLength(0);
-    expect(rendered.clips[2].overlays).toHaveLength(0);
-    expect(r.notes.join(" ")).toContain("titres d'étapes retirés");
+    expect(rendered.clips[1].overlays.length).toBeGreaterThan(0);
+    expect(rendered.clips[2].overlays.length).toBeGreaterThan(0);
+    expect(r.notes.join(" ")).toContain("contrôle visuel indisponible");
   });
 
   it("voix et sous-titres : 55–75 mots pour 30 s au prorata ; sous-titres découpés par groupes de sens, deux lignes au plus", () => {

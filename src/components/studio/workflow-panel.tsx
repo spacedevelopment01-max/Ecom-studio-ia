@@ -313,7 +313,7 @@ export function BrandPropagationCard() {
   const budget = useBudgetPct();
   const items = data?.items ?? [];
   if (!items.length && !result) return null;
-  const CH: Record<string, Bi> = { name: { fr: "nom", en: "name" }, palette: { fr: "couleurs", en: "colours" }, fonts: { fr: "typographies", en: "fonts" }, logo: { fr: "logo", en: "logo" } };
+  const CH: Record<string, Bi> = { identity: { fr: "direction complète", en: "complete direction" }, name: { fr: "nom", en: "name" }, palette: { fr: "couleurs", en: "colours" }, fonts: { fr: "typographies", en: "fonts" }, logo: { fr: "logo", en: "logo" } };
   // Payant (visuel fait par l'IA) : jamais coché d'office, le client choisit en voyant le prix.
   const isOn = (it: Item) => picked[it.key] ?? (it.updatable && !it.userEdited && !it.paidMicro);
   const paidTotal = items.filter((it) => it.paidMicro && isOn(it)).reduce((n, it) => n + (it.paidMicro ?? 0), 0);

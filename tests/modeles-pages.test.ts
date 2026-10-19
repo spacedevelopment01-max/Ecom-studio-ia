@@ -97,8 +97,9 @@ describe("modèles de pages et pages multiples", async () => {
     const rb = await preview(spec, `/products/${b}`);
     expect(ra.template).toBe(`product.${pa.template_suffix}`);
     expect(rb.template).toBe(`product.${pb.template_suffix}`);
-    expect(rb.html).toContain('data-es-type="how-to"');
-    expect(ra.html).not.toContain('data-es-type="how-to"');
+    // « Comment ça marche » du modèle : la fonction « Mode d'emploi » de la famille du projet (issue #141).
+    expect(rb.html).toMatch(/data-es-type="(cv-steps|timeline)"/);
+    expect(ra.html).not.toMatch(/data-es-type="(cv-steps|timeline)"/);
     // Retour à la fiche commune : toujours possible ; la mise en page reste disponible.
     expect((await call(u, pid, { action: "assign_layout", product: a, layout: null })).status).toBe(200);
     spec = currentTheme(pid)!.spec;
@@ -247,7 +248,7 @@ describe("modèles de pages et pages multiples", async () => {
     const files = fr(() => compileTheme(spec));
     expect(files.has(`templates/page.${page.template_suffix}.json`)).toBe(true);
     const ptpl = JSON.parse(String(files.get(`templates/product.${suffix}.json`)).replace(/^\/\*[\s\S]*?\*\/\s*/, ""));
-    expect(Object.values(ptpl.sections).map((x: any) => x.type)).toContain("how-to");
+    expect(Object.values(ptpl.sections).map((x: any) => x.type).some((t: string) => t === "cv-steps" || t === "timeline")).toBe(true);
     // WooCommerce : la page garde son gabarit ; le brouillon n'est pas créé ; la limite produit est annoncée.
     const wp = await fr(() => cmsExport("woocommerce", spec, libraryLoader, { projectId: pid }));
     expect(wp.files.some((f) => f.endsWith(`templates/page-${page.handle}.html`))).toBe(true);

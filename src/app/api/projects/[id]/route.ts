@@ -1,3 +1,4 @@
+import {stateOf} from '@/lib/preparation/store';
 import { z } from "zod";
 import { all, json, now, one, run } from "@/lib/db";
 import { body, handle, ok } from "@/lib/http";
@@ -47,6 +48,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     brand: p.brand,
     strategy: p.strategy,
     settings: p.settings,
+    preparation: stateOf(p.id) ? {revision:stateOf(p.id)!.revision} : null,
     pipeline: pipeline ? { job: publicJob(pipeline), steps: pipelineState(pipeline, p.business, p.settings.existingSite) } : null,
     active: active.map(publicJob),
     counts,
@@ -86,7 +88,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
       /** Offre de services (projets « entreprise de services »). */
       services: z
         .object({
-          services: z.array(z.object({ name: z.string().max(160), description: z.string().max(1000), price: z.string().max(60).optional(), duration: z.string().max(60).optional() })).max(40),
+          services: z.array(z.object({ key: z.string().max(80).optional(), name: z.string().max(160), description: z.string().max(1000), price: z.string().max(60).optional(), duration: z.string().max(60).optional() })).max(40),
           area: z.string().max(300),
           address: z.string().max(300),
           phone: z.string().max(40),

@@ -562,13 +562,15 @@ export function dressPromo(clips: Clip[], shots: ShotPlan[], o: PromoInput): Cli
     if (source.kind === "doc" && !(s?.method === "packshot")) {
       // Reprise d'un plan réel : le moins utilisé, jamais celui du plan précédent, à un autre moment du plan.
       const prevId = k > 0 && out[k - 1]?.source.kind === "video" ? (out[k - 1].source as { assetId: string }).assetId : null;
-      const pool2 = videos.filter((v) => v.source.kind === "video" && (v.source as { assetId: string }).assetId !== prevId);
-      const v = [...(pool2.length ? pool2 : videos)].sort((a, b) => (uses.get((a.source as { assetId: string }).assetId) ?? 0) - (uses.get((b.source as { assetId: string }).assetId) ?? 0))[0];
+      const eligible=videos.filter(v=>v.source.kind==="video"&&v.source.outS-v.source.inS>=c.durationS);
+      const pool2 = eligible.filter((v) => (v.source as { assetId: string }).assetId !== prevId);
+      const v = [...(pool2.length ? pool2 : eligible)].sort((a, b) => (uses.get((a.source as { assetId: string }).assetId) ?? 0) - (uses.get((b.source as { assetId: string }).assetId) ?? 0))[0];
       if (v?.source.kind === "video") {
         const n = uses.get(v.source.assetId) ?? 1;
-        const inS = Math.max(0, v.source.outS + (n - 1) * (c.durationS + 0.4));
+        const desired=v.source.inS+(n-1)*(c.durationS+.4);
+        const inS = Math.max(v.source.inS,Math.min(desired,v.source.outS-c.durationS));
         source = { ...v.source, inS, outS: inS + c.durationS };
-      }
+      } else {out.push(structuredClone(c));continue;} // Keep the planned composition instead of seeking beyond a clip.
       reuse++;
     }
     if (source.kind === "video") uses.set(source.assetId, (uses.get(source.assetId) ?? 0) + 1);

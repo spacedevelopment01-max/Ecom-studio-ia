@@ -1,3 +1,6 @@
+import { createHash } from "node:crypto";
+import type { AspectId } from "../image-v2/types";
+import { REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVIDER } from "./logo-policy";
 /**
  * Fournisseurs de génération d'images et de vidéo.
  * Principe de fidélité : le produit n'est jamais « réinventé ».
@@ -28,7 +31,7 @@ import { route, type InputType, type RouteDecision } from "../orchestrator/route
 import { balance } from "../billing";
 import { incompatibility, mediaBackup, mediaStatus, modelForProvider, selectMedia, USAGE_INFO, usageBackup, usageExplicit, usageOff, type MediaChoice, type MediaNeed, type MediaUsage } from "./media-routing";
 import { mediaModel, type MediaKind } from "./media-models";
-import { alibabaBase, alibabaError, alibabaHeaders, qwenImageBody, qwenImageUrl, wanTask, wanTaskKey, wanVideoBody } from "./alibaba";
+import { alibabaBase, alibabaError, alibabaHeaders, qwenImageBody, qwenSize, qwenImageUrl, wanTask, wanTaskKey, wanVideoBody } from "./alibaba";
 
 /** brain : contexte du Brain d'où vient la consigne de la génération (portée, empreinte, version), tracé dans ai_calls. */
 type Ctx = { userId: string; projectId: string; jobId?: string | null; usageKey?: string; brain?: { scope: string; hash: string; version: string } };
@@ -139,6 +142,7 @@ const mediaExclude = new AsyncLocalStorage<{ exclude: string[]; only: string; fo
 
 /** Secours utilisable pour cet usage (sinon ce type) : confirmé, tarifé, clé active, adaptateur réel (coût couvert). */
 function usableBackup(kind: MediaKind, usage?: MediaUsage): { provider: string; model: string } | null {
+  if (usage === "logo") return null;
   const b = usage ? usageBackup(usage) : mediaBackup(kind);
   const m = b ? mediaModel(b.provider, b.model) : null;
   return b && m && mediaStatus(m).usable ? b : null;
@@ -184,6 +188,7 @@ function budgetLeft(userId?: string): number | null {
 /** Modèle à appeler chez ce fournisseur pour la génération en cours (choix tracé, sinon modèle historique). */
 function pickModel(provider: string, kind: MediaKind): string {
   const t = mediaTrace.getStore();
+  if (kind === "image" && t?.usage === "logo") { if (provider !== REQUIRED_LOGO_PROVIDER) throw new PermanentError("Fournisseur interdit pour le dessin des logos."); return REQUIRED_LOGO_MODEL; }
   return modelForProvider(provider, kind, t?.choice ?? null, t?.usage);
 }
 
@@ -192,6 +197,8 @@ export const mediaPoll = { veoMs: 10_000, falVideoMs: 6000, falImageMs: 3000, wa
 
 /** Marge prudente sur le coût d'une génération (jetons d'image variables selon la taille et la qualité). */
 const MEDIA_MAX_FACTOR = 1.25;
+/** Même borne que la réservation native ; les devis ne peuvent pas promettre un plafond inférieur. */
+export const mediaReservationMaxMicro=(micro:number)=>Math.ceil(micro*MEDIA_MAX_FACTOR*FX_SAFETY*Math.max(1,getJsonSetting<number>("billing.markup",1)));
 
 /**
  * Avant une génération : quota du forfait (message clair s'il est épuisé), plafond de la tâche, puis réservation
@@ -202,7 +209,7 @@ function gate(ctx: Ctx, micro: number, media: "image" | "video", provider: strin
   assertAiAllowed(ctx.userId, ctx.projectId);
   const q = quotaFor(media);
   if (q) assertQuota(ctx.userId, q);
-  const max = Math.ceil(micro * MEDIA_MAX_FACTOR * FX_SAFETY * Math.max(1, getJsonSetting<number>("billing.markup", 1)));
+  const max = mediaReservationMaxMicro(micro);
   assertUnderCostCap(max);
   const t = mediaTrace.getStore();
   // Hors trace (appel direct, jamais en pratique) : la génération serait sans suivi de réservation — refusée.
@@ -242,11 +249,11 @@ async function providerHttpError(r: Response, label: string): Promise<Error> {
 }
 
 /** Après une génération : consommation réelle (budget caché) et décompte du quota. */
-function recordMedia(u: Parameters<typeof recordUsage>[0]) {
+function recordMedia(u: Parameters<typeof recordUsage>[0],reportedModel:string|null=null) {
   const t = mediaTrace.getStore();
   const billed = recordUsage(u, { reservationId: t?.reservation ?? null });
   if (t) t.recorded = true;
-  const callId = recordCall({ userId: u.userId, projectId: u.projectId, jobId: u.jobId, task: u.task, provider: u.provider, requestedModel: t?.model ?? u.model, servedModel: u.model, unit: u.unit as "tokens" | "image" | "video_second", inputTokens: u.unit === "tokens" ? u.inputUnits : 0, outputTokens: u.unit === "tokens" ? u.outputUnits : 0, quantity: u.quantity, latencyMs: t?.started ? Date.now() - t.started : null, costMicro: u.costMicro, estimated: u.estimated, usageKey: u.idempotencyKey ?? null, usageEventId: billed.eventId, billingDedup: billed.dedup, status: "ok" , ...brainCols(t?.ctx), ...routingCols(t) });
+  const callId = recordCall({ userId: u.userId, projectId: u.projectId, jobId: u.jobId, task: u.task, provider: u.provider, requestedModel: t?.model ?? u.model, servedModel: reportedModel, unit: u.unit as "tokens" | "image" | "video_second", inputTokens: u.unit === "tokens" ? u.inputUnits : 0, outputTokens: u.unit === "tokens" ? u.outputUnits : 0, quantity: u.quantity, latencyMs: t?.started ? Date.now() - t.started : null, costMicro: u.costMicro, estimated: u.estimated, usageKey: u.idempotencyKey ?? null, usageEventId: billed.eventId, billingDedup: billed.dedup, status: "ok" , ...brainCols(t?.ctx), ...routingCols(t) });
   if (t) t.callId = callId;
   const q = quotaFor(u.task === "video_generation" ? "video" : "image");
   if (q) consumeQuota(u.userId, q, 1, u.idempotencyKey ? `${q}:${u.idempotencyKey}` : null);
@@ -354,6 +361,15 @@ export function routeMedia(task: "image_generation" | "video_generation", inputT
   if (t && usage) t.usage = usage;
   // Usage coupé par l'administration (retouches produit) : aucun modèle, pas de repli historique.
   if (usage && usageOff(usage)) return null;
+  // Usage logo verrouillé : ni secours, ni route historique, ni substitution par une autre génération.
+  if (usage === "logo") {
+    const m = mediaModel(REQUIRED_LOGO_PROVIDER, REQUIRED_LOGO_MODEL);
+    const n = { kind: "image", text: true, ...need } as MediaNeed;
+    if (!m?.adapter || !mediaStatus(m).usable || !mediaStatus(m).enabled || incompatibility(m, n)) return null;
+    const reason = "modèle logo imposé par le propriétaire";
+    if (t) { t.choice = { provider: m.provider, model: m.model, role: "primary", reason }; t.routing = { reason, fallback: false, escalation: false }; }
+    return { mode: kind, provider: m.provider, model: m.model, tier: "strong", reason, fallback: false, escalation: false, qualityTarget: null };
+  }
   // Relais de qualité (logos) : le modèle désigné, s'il est utilisable (clé, tarif) et capable — sinon rien.
   if (relay?.force) {
     const [fp, ...fm] = relay.only.split(":");
@@ -399,6 +415,7 @@ export function imageProviderAvailable(need?: Partial<MediaNeed>): "openai" | "g
 /** Pourquoi aucune image IA ne peut être faite maintenant (affiché au client et dans le diagnostic). */
 export function imageUnavailableReason(usage?: MediaUsage): string | null {
   if (imageProviderAvailable(usage ? { usage } : undefined)) return null;
+  if (usage === "logo") return L("Le modèle logo demandé est en attente : vérifier clé OpenAI active, modèle autorisé et plafond par image vérifié. Aucun remplacement automatique.", "Required logo model is pending: verify active OpenAI key, model access and verified per-image bound. No automatic substitute.");
   if (!currentUserHasAiCredits()) return L("IA non active pour ce compte (forfait ou budget IA épuisé)", "AI not active for this account (plan or AI budget used up)");
   const u = currentAiUser();
   if (u && !userPlan(u)) return L("aucun forfait actif : les images IA sont réservées aux forfaits", "no active plan: AI images come with the plans");
@@ -478,7 +495,7 @@ async function openaiSceneImpl(ctx: Ctx, input: { composite: Buffer; productMask
   if (!b64) throw new Error(L("Réponse d'image vide.", "Empty image response."));
   const u = res.usage ?? {};
   const c = cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 });
-  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: c.micro, estimated: !res.usage, idempotencyKey: ctx.usageKey });
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: c.micro, estimated: !res.usage || requirePrice("openai", model).unit !== "tokens", idempotencyKey: ctx.usageKey });
   return Buffer.from(b64, "base64");
 }
 
@@ -529,22 +546,42 @@ Image purement photographique : rien n'est écrit ni ajouté sur l'image.${/pré
  * l'IA de l'usage « Texte et logo » (seulement s'il est réglé) pose les textes exacts, le bouton et le vrai logo.
  * La photo est envoyée en grand (1536 px) pour que le produit ne perde rien ; le logo suit en seconde image.
  */
-export async function aiTextLayout(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; image: Buffer; logo?: Buffer | null }) {
-  return generateImage(ctx, { text: clampBytes(input.prompt, LOGO_PROMPT_MAX_BYTES), aspect: input.aspect, reference: input.image, refMax: 1536, extraRefs: input.logo ? [input.logo] : [], quality: "high", strictQuality: true, usage: "text_layout", need: { text: true, references: input.logo ? 2 : 1 } });
+export async function aiTextLayout(ctx: Ctx, input: { prompt: string; aspect: AspectId; image: Buffer; logo?: Buffer | null; people?:boolean }) {
+  let receipt:ImageRequestReceipt|undefined;
+  const result=await generateImage(ctx, { onRequest:r=>{receipt=r;}, text: publicationPrompt(input.prompt), aspect: input.aspect, reference: null, refMax: 1536, references: [{role:"scene",data:input.image,essential:true},...(input.logo?[{role:"logo" as const,data:input.logo,essential:true}]:[])], quality: "high", strictQuality: true, usage: "text_layout", need: { text: true, people:!!input.people, references: input.logo ? 2 : 1 } });
+  if (receipt) imageReceipts.set(result,receipt);
+  return result;
 }
 
 /** Coût maximal d'une pose de texte et de logo (étape 2), null si aucun modèle n'est utilisable. */
 export function textLayoutMaxMicro(): number | null {
   const r = mediaRouteFor("text_layout", { text: true, references: 2 });
   if (!r) return null;
-  const prompt = "x".repeat(LOGO_PROMPT_MAX_BYTES);
+  const prompt = "x".repeat(PUBLICATION_PROMPT_MAX_BYTES);
   const micro = r.provider === "openai" ? openaiImageMax(r.model, { prompt, images: 2, size: "1024x1536", quality: "high" }) : r.provider === "google" ? geminiImageMax(r.model, { prompt, images: 2 }) : cost(r.provider, r.model, { images: 1 }).micro;
-  return Math.ceil(micro * MEDIA_MAX_FACTOR * FX_SAFETY * Math.max(1, getJsonSetting<number>("billing.markup", 1)));
+  return mediaReservationMaxMicro(micro);
 }
 
-export async function aiPostImage(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; logo?: Buffer | null }) {
+export const prepareImageReference=(data:Buffer,max=768)=>sharp(data).rotate().resize(max,max,{fit:"inside",withoutEnlargement:true}).png().toBuffer();
+
+export const PUBLICATION_PROMPT_MAX_BYTES=24000;
+
+export type ImageRequestReceipt = {provider:string;requestedModel:string;aspect:string;quality:string;nativeSize:string|null;prompt:string;references:{role:string;sha256:string;bytes:number}[]};
+const imageReceipts=new WeakMap<Buffer,ImageRequestReceipt>();
+export const imageRequestReceipt=(b:Buffer)=>imageReceipts.get(b);
+const referenceDataUri=(b:Buffer)=>`data:image/${b[0]===137?"png":"jpeg"};base64,${b.toString("base64")}`;
+
+function publicationPrompt(prompt: string) {
+  if (bytes(prompt) > PUBLICATION_PROMPT_MAX_BYTES-2048) throw new UserFacingError("Brief image trop long : aucune consigne tronquée. Réduisez le brief avant de lancer.");
+  return prompt;
+}
+
+export async function aiPostImage(ctx: Ctx, input: { prompt: string; aspect: AspectId; reference: Buffer | null; logo?: Buffer | null; previous?: Buffer | null; people?:boolean; photoOnly?:boolean }) {
   // Logo de la marque transmis en seconde image de référence (Qwen-Image, OpenAI) : l'IA le reproduit au lieu de l'inventer.
-  return generateImage(ctx, { text: clampBytes(input.prompt, LOGO_PROMPT_MAX_BYTES), aspect: input.aspect, reference: input.reference, extraRefs: input.logo ? [input.logo] : [], quality: "high", strictQuality: true, usage: "social_image", need: { text: true } });
+  let receipt:ImageRequestReceipt|undefined;
+  const result=await generateImage(ctx, { onRequest:r=>{receipt=r;}, text: publicationPrompt(input.prompt), aspect: input.aspect, reference: null, references: [...(input.reference ? [{role:"product" as const,data:input.reference,essential:true}]:[]),...(input.logo?[{role:"logo" as const,data:input.logo,essential:true}]:[]),...(input.previous?[{role:"style" as const,data:input.previous,essential:true}]:[])], quality: "high", strictQuality: true, usage: "social_image", need: { text: !input.photoOnly,people:!!input.people } });
+  if (receipt) imageReceipts.set(result,receipt);
+  return result;
 }
 
 /**
@@ -622,7 +659,7 @@ export async function fullLogoImage(ctx: Ctx, input: { brief: string; name: stri
 ${input.colors?.length ? `Couleurs : UNIQUEMENT celles de la marque, ${input.colors.join(", ")} (plus du blanc ou un presque noir si besoin) ; le logo suit la charte graphique.
 ` : ""}Texte du logo, écrit EXACTEMENT, accents compris : le nom « ${input.name} »${input.descriptor ? ` et, plus petite, la ligne d'activités « ${input.descriptor} »` : ""}${input.tagline ? ` et, en plus petit encore, le slogan de la marque « ${input.tagline} »` : ""}. Aucun autre mot${input.tagline ? "" : ", aucun slogan"}, aucune fausse lettre.
 Niveau attendu : un logo moderne et professionnel pour une vraie petite entreprise, original, fait pour cette marque seulement, jamais la copie d'un logo existant. Suis la composition et le style choisis dans le brief. Contours nets, logo centré, marges généreuses, sur un fond transparent ou blanc pur. Aucune maquette, aucun papier, aucun mur, aucune photo en fond, aucun cadre autour de l'image.`;
-  return generateImage(ctx, { text, aspect: "1:1", reference: null, quality: "high", transparent: true, usage: "logo", need: { text: true, transparent: true } });
+  return generateImage(ctx, { text, aspect: "1:1", reference: null, quality: "high", strictQuality: true, usage: "logo", need: { text: true } });
 }
 
 /**
@@ -631,7 +668,7 @@ Niveau attendu : un logo moderne et professionnel pour une vraie petite entrepri
  * (style, texte exact) ; haute qualité, fond transparent quand le modèle le permet.
  */
 export async function logoArtworkImage(ctx: Ctx, input: { prompt: string }) {
-  return generateImage(ctx, { text: clampBytes(input.prompt, LOGO_PROMPT_MAX_BYTES), aspect: "1:1", reference: null, quality: "high", transparent: true, usage: "logo", need: { text: true, transparent: true } });
+  return generateImage(ctx, { text: clampBytes(input.prompt, LOGO_PROMPT_MAX_BYTES), aspect: "1:1", reference: null, quality: "high", strictQuality: true, usage: "logo", need: { text: true } });
 }
 
 /**
@@ -641,23 +678,15 @@ export async function logoArtworkImage(ctx: Ctx, input: { prompt: string }) {
  * active, tarif connu) et différent du principal. null : aucun relais possible (la raison est dite au client).
  */
 export function logoQualityRelay(): { provider: string; model: string } | null {
-  const primary = mediaRouteFor("logo", { text: true, transparent: true });
-  const b = usageBackup("logo");
-  for (const c of [b?.provider === "openai" ? b : null, { provider: "openai", model: "gpt-image-1" }]) {
-    if (!c) continue;
-    const m = mediaModel(c.provider, c.model);
-    if (!m?.adapter || !mediaStatus(m).usable || incompatibility(m, { ...USAGE_INFO.logo.need, kind: "image", text: true } as MediaNeed)) continue;
-    if (primary && primary.provider === c.provider && primary.model === c.model) return null;
-    return { provider: c.provider, model: c.model };
-  }
-  return null;
+  return null; // Aucun autre modèle autorisé pour le dessin du logo.
+
 }
 
 /** Logo complet redessiné par le relais de qualité (OpenAI) : même demande, réservation et plafond propres. */
 export async function logoArtworkRelayImage(ctx: Ctx, input: { prompt: string }) {
   const relay = logoQualityRelay();
   if (!relay) throw new PermanentError(L("Relais OpenAI indisponible pour les logos (clé OpenAI absente ou désactivée, ou tarif inconnu).", "OpenAI relay unavailable for logos (OpenAI key missing or disabled, or unknown price)."));
-  const primary = mediaRouteFor("logo", { text: true, transparent: true });
+  const primary = mediaRouteFor("logo", { text: true });
   return mediaExclude.run({ exclude: primary ? [`${primary.provider}:${primary.model}`] : [], only: `${relay.provider}:${relay.model}`, force: true }, () => logoArtworkImage(ctx, input));
 }
 
@@ -666,7 +695,7 @@ export function logoRelayMaxMicro(): number | null {
   const r = logoQualityRelay();
   if (!r) return null;
   const micro = openaiImageMax(r.model, { prompt: "x".repeat(LOGO_PROMPT_MAX_BYTES), images: 0, size: "1024x1024", quality: "high" });
-  return Math.ceil(micro * MEDIA_MAX_FACTOR * FX_SAFETY * Math.max(1, getJsonSetting<number>("billing.markup", 1)));
+  return mediaReservationMaxMicro(micro);
 }
 
 /** Taille maximale d'une demande de logo complet : borne le coût maximal du devis (jamais dépassé). */
@@ -684,21 +713,21 @@ const clampBytes = (t: string, max: number) => {
  * modèle d'images utilisable (aucun logo complet possible).
  */
 export function logoArtworkMaxMicro(opts: { text?: boolean } = { text: true }): number | null {
-  const r = mediaRouteFor("logo", opts.text === false ? {} : { text: true, transparent: true });
+  const r = mediaRouteFor("logo", opts.text === false ? {} : { text: true });
   if (!r) return null;
   const prompt = "x".repeat(LOGO_PROMPT_MAX_BYTES);
   const model = r.model;
   const micro = r.provider === "openai" ? openaiImageMax(model, { prompt, images: 0, size: "1024x1024", quality: "high" }) : r.provider === "google" ? geminiImageMax(model, { prompt, images: 0 }) : cost(r.provider, model, { images: 1 }).micro;
-  return Math.ceil(micro * MEDIA_MAX_FACTOR * FX_SAFETY * Math.max(1, getJsonSetting<number>("billing.markup", 1)));
+  return mediaReservationMaxMicro(micro);
 }
 
 /** Coût MAXIMAL d'une publication conçue par l'IA (même calcul que la réservation faite avant l'appel). null : aucun modèle. */
-export function aiPostMaxMicro(): number | null {
-  const r = mediaRouteFor("social_image", { text: true, references: 1 });
+export function aiPostMaxMicro(references = 2,photoOnly=false): number | null {
+  const r = mediaRouteFor("social_image", { text: !photoOnly, references });
   if (!r) return null;
-  const prompt = "x".repeat(LOGO_PROMPT_MAX_BYTES);
-  const micro = r.provider === "openai" ? openaiImageMax(r.model, { prompt, images: 1, size: "1024x1536", quality: "high" }) : r.provider === "google" ? geminiImageMax(r.model, { prompt, images: 1 }) : cost(r.provider, r.model, { images: 1 }).micro;
-  return Math.ceil(micro * MEDIA_MAX_FACTOR * FX_SAFETY * Math.max(1, getJsonSetting<number>("billing.markup", 1)));
+  const prompt = "x".repeat(PUBLICATION_PROMPT_MAX_BYTES);
+  const micro = r.provider === "openai" ? openaiImageMax(r.model, { prompt, images: references, size: "1024x1536", quality: "high" }) : r.provider === "google" ? geminiImageMax(r.model, { prompt, images: references }) : cost(r.provider, r.model, { images: references }).micro;
+  return mediaReservationMaxMicro(micro);
 }
 
 /**
@@ -719,29 +748,32 @@ export function imageQuality(usage: MediaUsage | undefined, asked: "medium" | "h
   return v === "medium" || v === "high" ? v : asked;
 }
 
-async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; /** Taille maximale de la référence envoyée (768 px par défaut ; photo à mettre en page : plus grande). */ refMax?: number; /** Images de référence en plus (logo de la marque), pour les modèles qui en acceptent plusieurs. */ extraRefs?: Buffer[]; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed>; /** Qualité demandée gardée (publication complète conçue par l'IA : texte net). */ strictQuality?: boolean; /** Exclusions en plus pour le négatif du modèle (Qwen-Image). */ negative?: string }) {
+async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: AspectId; reference: Buffer | null; /** Taille maximale de la référence envoyée (768 px par défaut ; photo à mettre en page : plus grande). */ refMax?: number; /** Images de référence en plus (logo de la marque), pour les modèles qui en acceptent plusieurs. */ onRequest?: (receipt:ImageRequestReceipt)=>void; extraRefs?: Buffer[]; references?: { role: "product" | "logo" | "scene" | "style"; data: Buffer; essential: boolean }[]; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed>; /** Qualité demandée gardée (publication complète conçue par l'IA : texte net). */ strictQuality?: boolean; /** Exclusions en plus pour le négatif du modèle (Qwen-Image). */ negative?: string }) {
   const input = { ...input0, quality: input0.strictQuality ? input0.quality : imageQuality(input0.usage, input0.quality) };
-  const provider = imageProviderAvailable({ references: input.reference ? 1 : 0, ...(input.usage ? { usage: input.usage } : {}), ...input.need });
+  const typed = input.references ?? [...(input.reference ? [{ role: "product" as const, data: input.reference, essential: true }] : []), ...(input.extraRefs ?? []).map(data => ({ role: "logo" as const, data, essential: true }))];
+  // Every supplied reference is required. Routing may reject a model, never silently discard a client's logo.
+  const provider = imageProviderAvailable({ ...(input.usage ? { usage: input.usage } : {}), ...input.need, references: typed.length });
   if (!provider) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini, OpenAI ou fal.ai).", "No image provider configured (Google Gemini, OpenAI or fal.ai)."));
-  const text = input.text;
+  const text = input.text + (typed.length ? "\nTRANSMITTED REFERENCES (ordered): " + typed.map((r, i) => `image ${i + 1}: ${r.role} (essential, reproduce faithfully)`).join("; ") : "");
   const rm = input.refMax ?? 768;
-  const ref = input.reference ? await sharp(input.reference).rotate().resize(rm, rm, { fit: "inside", withoutEnlargement: true }).jpeg({ quality: rm > 768 ? 92 : 85 }).toBuffer() : null;
-  if (provider === "fal") return falImage(ctx, pickModel("fal", "image"), text, ref ? [ref] : [], input.aspect);
-  const extras = await Promise.all((input.extraRefs ?? []).map((b) => sharp(b).rotate().resize(768, 768, { fit: "inside" }).flatten({ background: "#ffffff" }).jpeg({ quality: 88 }).toBuffer()));
-  if (provider === "alibaba") {
-    const model = pickModel("alibaba", "image");
-    const max = mediaModel("alibaba", model)?.caps.references ?? 1;
-    // Aucun texte demandé (photo, décor, produit en scène) : le négatif exclut aussi toute écriture.
-    // Sauf avec une photo du produit en référence : ses inscriptions réelles (chiffres, étiquette) doivent rester.
-    return alibabaImage(ctx, model, text, [...(ref ? [ref] : []), ...extras].slice(0, Math.max(1, max)), input.aspect, !!input.need?.people, !input.need?.text && !ref && !extras.length, input.negative);
-  }
+  const refs = await Promise.all(typed.map(r => prepareImageReference(r.data,rm)));
+  const ref = refs[0] ?? null;
+  const extras = refs.slice(1);
+  const selected = pickModel(provider, "image");
+  const max = mediaModel(provider, selected)?.caps.references ?? 0;
+  if (refs.length > max) throw new UserFacingError(`Le modèle ${selected} ne peut pas recevoir les ${refs.length} références essentielles. Aucune référence supprimée.`);
+  const [aw, ah] = input.aspect.split(":").map(Number);
+  const nativeSize=provider==="openai"?(aw>ah?"1536x1024":aw===ah?"1024x1024":"1024x1536"):provider==="alibaba"?qwenSize(input.aspect):null;
+  input.onRequest?.({provider,requestedModel:selected,aspect:input.aspect,quality:input.quality,nativeSize,prompt:text,references:refs.map((b,i)=>({role:typed[i].role,sha256:createHash("sha256").update(b).digest("hex"),bytes:b.length}))});
+  if (provider === "fal") return falImage(ctx, selected, text, refs, input.aspect);
+  if (provider === "alibaba") return alibabaImage(ctx, selected, text, refs, input.aspect, !!input.need?.people, !input.need?.text && !refs.length, input.negative);
   if (provider === "google") {
     const key = activeProviderKey("google")!;
     const model = pickModel("google", "image");
-    const gmax = geminiImageMax(model, { prompt: text, images: ref ? 1 : 0 });
+    const gmax = geminiImageMax(model, { prompt: text, images: refs.length });
     gate(ctx, gmax, "image", "google", model);
     const parts: any[] = [{ text }];
-    if (ref) parts.push({ inline_data: { mime_type: "image/jpeg", data: ref.toString("base64") } });
+    for (const r of refs) parts.push({ inline_data: { mime_type: "image/png", data: r.toString("base64") } });
     const r = await providerFetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": key },
@@ -754,19 +786,19 @@ async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: "1:1"
     const img = j.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData || p.inline_data);
     const b64 = img?.inlineData?.data ?? img?.inline_data?.data;
     if (!b64) throw new Error(L("Gemini n'a pas renvoyé d'image (contenu filtré ou indisponible).", "Gemini returned no image (content filtered or unavailable)."));
-    recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "google", model, unit: "image", quantity: 1, costMicro: gmax, estimated: true, idempotencyKey: ctx.usageKey });
+    recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "google", model, unit: "image", quantity: 1, costMicro: gmax, estimated: true, idempotencyKey: ctx.usageKey },typeof j.modelVersion==="string"?j.modelVersion:null);
     return Buffer.from(b64, "base64");
   }
   const key = activeProviderKey("openai")!;
   const model = pickModel("openai", "image");
-  const size = input.aspect === "16:9" ? "1536x1024" : input.aspect === "1:1" ? "1024x1024" : "1024x1536";
+  const size = aw > ah ? "1536x1024" : aw === ah ? "1024x1024" : "1024x1536";
   const oaExtras = ref ? extras : [];
   gate(ctx, openaiImageMax(model, { prompt: text, images: ref ? 1 + oaExtras.length : 0, size, quality: input.quality }), "image", "openai", model);
   const client = openaiClient(key);
   let res: Awaited<ReturnType<typeof openaiImage>>;
   try {
     res = ref
-      ? await openaiImage(client, "edit", { model, image: [await toFile(ref, "reference.jpg", { type: "image/jpeg" }), ...(await Promise.all(oaExtras.map((b, i) => toFile(b, `reference-${i + 2}.jpg`, { type: "image/jpeg" }))))], prompt: text, size, quality: input.quality, n: 1 }, sent)
+      ? await openaiImage(client, "edit", { model, image: [await toFile(ref, "reference.png", { type: "image/png" }), ...(await Promise.all(oaExtras.map((b, i) => toFile(b, `reference-${i + 2}.png`, { type: "image/png" }))))], prompt: text, size, quality: input.quality, n: 1 }, sent)
       : await openaiImage(client, "generate", { model, prompt: text, size, quality: input.quality, n: 1, ...(input.transparent && openaiTransparent(model) ? { background: "transparent", output_format: "png" } : {}) }, sent);
   } catch (e: any) {
     if (e?.status === 401 || e?.status === 403) throw refusal(new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel.")));
@@ -777,9 +809,9 @@ async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: "1:1"
   if (!b64) throw new Error(L("OpenAI n'a pas renvoyé d'image.", "OpenAI returned no image."));
   const u = res.usage ?? {};
   const billed = cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro;
-  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: billed, estimated: !res.usage, idempotencyKey: ctx.usageKey });
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: billed, estimated: !res.usage || requirePrice("openai", model).unit !== "tokens", idempotencyKey: ctx.usageKey });
   // Coût réel de cette image transmis au moteur qui l'a demandée (affiché sur la carte de la proposition).
-  if (res.usage) emitMediaProgress({ phase: "billed", atMs: res.ms, streamed: res.streamed, costMicro: billed });
+  if (res.usage && requirePrice("openai", model).unit === "tokens") emitMediaProgress({ phase: "billed", atMs: res.ms, streamed: res.streamed, costMicro: billed });
   return Buffer.from(b64, "base64");
 }
 
@@ -878,7 +910,7 @@ Authentic smartphone video still, natural light, realistic skin and hands, no te
     const img = j.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData || p.inline_data);
     const b64 = img?.inlineData?.data ?? img?.inline_data?.data;
     if (!b64) throw new Error(L("Gemini n'a pas renvoyé d'image (contenu filtré ou indisponible).", "Gemini returned no image (content filtered or unavailable)."));
-    recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "google", model, unit: "image", quantity: 1, costMicro: gmax, estimated: true, idempotencyKey: ctx.usageKey });
+    recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "google", model, unit: "image", quantity: 1, costMicro: gmax, estimated: true, idempotencyKey: ctx.usageKey },typeof j.modelVersion==="string"?j.modelVersion:null);
     return Buffer.from(b64, "base64");
   }
   const key = activeProviderKey("openai")!;
@@ -900,7 +932,7 @@ Authentic smartphone video still, natural light, realistic skin and hands, no te
   const b64 = res.b64;
   if (!b64) throw new Error(L("OpenAI n'a pas renvoyé d'image.", "OpenAI returned no image."));
   const u = res.usage ?? {};
-  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro, estimated: !res.usage, idempotencyKey: ctx.usageKey });
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro, estimated: !res.usage || requirePrice("openai", model).unit !== "tokens", idempotencyKey: ctx.usageKey });
   return Buffer.from(b64, "base64");
 }
 
@@ -979,7 +1011,7 @@ async function falImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[],
   const max = cost("fal", model, { images: 1 }).micro;
   gate(ctx, max, "image", "fal", model);
   const headers = { ...falAuth(key), "Content-Type": "application/json" };
-  const r = await providerFetch(`https://queue.fal.run/${model}`, { method: "POST", headers, body: JSON.stringify({ prompt, image_urls: refs.map((b) => `data:image/jpeg;base64,${b.toString("base64")}`), num_images: 1, output_format: "png", aspect_ratio: aspect }) });
+  const r = await providerFetch(`https://queue.fal.run/${model}`, { method: "POST", headers, body: JSON.stringify({ prompt, image_urls: refs.map(referenceDataUri), num_images: 1, output_format: "png", aspect_ratio: aspect }) });
   if (r.status === 401 || r.status === 403) throw refusal(new PermanentError(falRefusal(r.status, await r.text().catch(() => ""))));
   // Dépôt dans la file fal : aucune génération créée en cas d'erreur (facturation à la fin) : refus net.
   if (!r.ok) throw refusal(new PermanentError(L("fal.ai a refusé la demande : ", "fal.ai rejected the request: ") + (await r.text()).slice(0, 300)));
@@ -1015,7 +1047,7 @@ async function alibabaImage(ctx: Ctx, model: string, prompt: string, refs: Buffe
   const max = cost("alibaba", model, { images: 1 }).micro;
   gate(ctx, max, "image", "alibaba", model);
   const { base } = alibabaBase();
-  const body = qwenImageBody({ model, prompt, aspect, references: refs.map((b) => `data:image/jpeg;base64,${b.toString("base64")}`), people, noText, extraNegative });
+  const body = qwenImageBody({ model, prompt, aspect, references: refs.map(referenceDataUri), people, noText, extraNegative });
   const r = await providerFetch(`${base}/services/aigc/multimodal-generation/generation`, { method: "POST", headers: alibabaHeaders(key), body: JSON.stringify(body) });
   if (!r.ok) {
     const e = alibabaError(r.status, await r.text().catch(() => ""));
@@ -1208,5 +1240,5 @@ export const ugcFrame = withMediaBackup("image", traced("image_generation", ugcF
 export const falClip = traced("video_generation", falClipImpl);
 export const wanClip = traced("video_generation", wanClipImpl);
 /** Texte vers vidéo Wan (vidéo publicitaire, motion design) : prêt pour les moteurs, aucune image de départ. */
-export const wanTextClip = traced("video_generation", (ctx: Ctx, input: { prompt: string; seconds?: number; model?: string; usage?: MediaUsage }, onWait?: (msg: string) => void) => wanClipImpl(ctx, { ...input, image: null, usage: input.usage ?? "text_video" }, onWait));
+export const wanTextClip = traced("video_generation", (ctx: Ctx, input: { prompt: string; aspect?:"16:9"|"9:16";seconds?: number; model?: string; usage?: MediaUsage }, onWait?: (msg: string) => void) => wanClipImpl(ctx, { ...input, image: null, usage: input.usage ?? "text_video" }, onWait));
 const generateImage = withMediaBackup("image", traced("image_generation", generateImageImpl), { usage: (_c, i) => i.usage });

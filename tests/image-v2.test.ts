@@ -269,7 +269,7 @@ describe("Phase 5A — Image & Search Engine V2", async () => {
   it("forfait sans IA : photo du métier gardée sur sa description seulement → PROVISOIRE, jamais FINAL", async () => {
     const p = withPeople("artisan");
     const { deps } = mockDeps({ providers: [mockProvider("pexels", () => [candidate("ok", "plasterer applying plaster with trowel")])], canReview: false, canGenerate: false });
-    const r = await fr(() => runImageEngineV2(null, p.id, { kind: "trade_photo", aspect: "16:9" }, deps));
+    const r = await fr(() => runImageEngineV2(null, p.id, { kind: "trade_photo", aspect: "16:9", allowGenerate: false }, deps));
     expect(r.outcomes[0]).toMatchObject({ verdict: "PROVISIONAL", origin: "stock" });
     expect(json<any>(getAsset(r.outcomes[0].assetId!)!.meta, {}).gate.provisional).toMatchObject({ use: "auto", label: "needs_improvement" });
   });
@@ -372,7 +372,7 @@ describe("Phase 5A — Image & Search Engine V2", async () => {
     const img = await mockImage(8, 2400, 1600);
     const prov = mockProvider("pexels", () => [candidate("d1", "team working laptop clean desk office"), candidate("d2", "focused work laptop clean desk"), candidate("d3", "online learning laptop home")]);
     const { deps } = mockDeps({ providers: [prov], images: { d1: img, d2: img }, canGenerate: false });
-    const r = await fr(() => runImageEngineV2(null, p.id, { kind: "site_image", aspect: "16:9", count: 2 }, deps));
+    const r = await fr(() => runImageEngineV2(null, p.id, { kind: "site_image", aspect: "16:9", count: 2, allowGenerate: false }, deps));
     const ids = r.outcomes.map((o) => o.assetId).filter(Boolean);
     expect(new Set(ids).size).toBe(ids.length);
     const hashes = ids.map((x) => json<any>(getAsset(x!)!.meta, {}).imageV2.phash);

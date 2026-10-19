@@ -1,0 +1,122 @@
+{
+  "status": "VERIFIE_EN_SIMULATION_QUALITE_CREATIVE_REELLE_NON_VERIFIEE",
+  "branch": "codex/publications-ia-qualite",
+  "baseCommit": "65733463c006aae56b7b886add22c0f9769109a9",
+  "testedCodeCommit": "a553236653f41bb271197407ec4cd94d71752b94",
+  "sourceHashes": "sources-testees-sha256.json",
+  "simulation": true,
+  "actualProviderCalls": 0,
+  "actualProviderCostMicro": 0,
+  "creativeQualityVerified": false,
+  "implementedQuota": {
+    "organic": 10,
+    "ads": 10,
+    "perGroup": {
+      "square": 4,
+      "portrait4x5": 3,
+      "story9x16": 3
+    }
+  },
+  "verification": {
+    "targeted": {
+      "passed": 33,
+      "files": 3,
+      "durationSeconds": 49.89,
+      "exitCode": 0,
+      "scope": "Sources finales après confirmation des quatre carrés Facebook ; quatre cas vérifient le brief et le contexte de plateforme.",
+      "commit": "a553236653f41bb271197407ec4cd94d71752b94"
+    },
+    "fullSuite": {
+      "passed": 2092,
+      "skipped": 3,
+      "files": 277,
+      "durationSeconds": 741.23,
+      "exitCode": 0,
+      "commit": "d22c623c9815f8980f1969d37445f6ead12efa50",
+      "scope": "Version vingt créations avant la dernière précision plateforme Facebook. Le delta final est revérifié par les 33 tests ciblés/types/build/navigateur ; ne pas attribuer la suite complète au commit final."
+    },
+    "types": {
+      "result": "passed",
+      "exitCode": 0,
+      "commit": "a553236653f41bb271197407ec4cd94d71752b94"
+    },
+    "build": {
+      "result": "passed",
+      "exitCode": 0,
+      "commit": "a553236653f41bb271197407ec4cd94d71752b94"
+    },
+    "browserProfiles": [
+      {
+        "profile": "produit-ordinateur",
+        "accepted": 20,
+        "organic": 10,
+        "ads": 10,
+        "partialAccepted": null,
+        "parentListUpdatedWithoutReload": true,
+        "errors": [],
+        "externalRequests": []
+      },
+      {
+        "profile": "produit-mobile",
+        "accepted": 20,
+        "organic": 10,
+        "ads": 10,
+        "partialAccepted": null,
+        "parentListUpdatedWithoutReload": false,
+        "errors": [],
+        "externalRequests": []
+      },
+      {
+        "profile": "service-ordinateur",
+        "accepted": 20,
+        "organic": 10,
+        "ads": 10,
+        "partialAccepted": 3,
+        "parentListUpdatedWithoutReload": true,
+        "errors": [],
+        "externalRequests": []
+      },
+      {
+        "profile": "service-mobile",
+        "accepted": 20,
+        "organic": 10,
+        "ads": 10,
+        "partialAccepted": null,
+        "parentListUpdatedWithoutReload": false,
+        "errors": [],
+        "externalRequests": []
+      }
+    ],
+    "uiPng": 44,
+    "nativePng": 40,
+    "videos": 4,
+    "browserCommit": "a553236653f41bb271197407ec4cd94d71752b94"
+  },
+  "limits": [
+    "Fournisseurs, images et jugements simulés : qualité/diversité créative réelle non vérifiée.",
+    "Budgets et crédits factices dans une base strictement isolée, réservations et droits natifs conservés.",
+    "Aucun thème/export/CMS, envoi réseau, nouvelle connexion, merge ou déploiement."
+  ],
+  "confirmedAdsDistribution": {
+    "facebookSquare1x1": 4,
+    "instagramFeed4x5": 3,
+    "stories9x16": 3
+  },
+  "commands": [
+    "npx vitest run",
+    "npx vitest run tests/publications-initiales.test.ts tests/creations-initiales-api.test.ts tests/publications-editoriales.test.ts",
+    "npx tsc --noEmit",
+    "npm run build",
+    "DATA_DIR=…/ecs-publication-test-initial-facebook STOCK_OFFLINE=1 npx tsx scripts/publications/proof-harness.ts seed",
+    "… npx tsx scripts/publications/initial-proof-worker.ts prepare",
+    "… npx tsx scripts/publications/initial-proof-worker.ts worker",
+    "PLAYWRIGHT_BROWSERS_PATH=… npx tsx scripts/publications/initial-browser-proof.ts …/ecs-publication-test-initial-facebook",
+    "… npx tsx scripts/publications/initial-proof-worker.ts evidence",
+    "ffprobe -v quiet -show_format -show_streams -of json …webm",
+    "git diff --check"
+  ],
+  "claudePr139": {
+    "head": "4758bfba300f6e6a19ac6b6258d0028a3923a603",
+    "overlap": []
+  }
+}

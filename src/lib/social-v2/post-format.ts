@@ -51,13 +51,14 @@ export async function mediaInFormat(p: Project, assetId: string, aspect: ImageAs
 export async function duplicatePostInFormat(p: Project, postId: string, aspect: ImageAspect): Promise<{ id: string; assetId: string | null }> {
   const r = one<{ project_id: string; media: string | null }>("SELECT project_id, media FROM posts WHERE id = ?", postId);
   if (!r || r.project_id !== p.id) throw new Error("publication introuvable");
-  const first = json<string[]>(r.media, [])[0] ?? null;
-  const assetId = first ? await mediaInFormat(p, first, aspect) : null;
+  const originals=json<string[]>(r.media,[]),media:string[]=[];
+  for(const aid of originals){const converted=await mediaInFormat(p,aid,aspect);if(!converted)throw new Error("Adaptation incomplète : les originaux sont conservés, aucune séquence tronquée.");media.push(converted);}
+  const assetId=media[0]??null;
   const nid = duplicatePostV2(p, postId);
   if (assetId) {
     // Le type de publication du réseau (image, story…) reste celui de l'originale : seul le visuel change de format.
-    run("UPDATE posts SET media = ? WHERE id = ?", JSON.stringify([assetId]), nid);
-    addUsage(assetId, "post", nid, "Publication");
+    run("UPDATE posts SET media = ? WHERE id = ?", JSON.stringify(media), nid);
+    for(const aid of media)addUsage(aid, "post", nid, "Publication");
   }
   return { id: nid, assetId };
 }

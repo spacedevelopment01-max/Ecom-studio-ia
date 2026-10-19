@@ -1,0 +1,2049 @@
+{
+  "simulation": true,
+  "aiCalls": 0,
+  "actualProviderCostMicro": 0,
+  "themes": 0,
+  "assets": [
+    {
+      "id": "7i98mrdk4p1wb9ky",
+      "status": "ready",
+      "width": 1080,
+      "height": 1350,
+      "quality": {
+        "logoFaithful": true,
+        "fixTarget": "none",
+        "grid": {
+          "relevance": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour relevance, non constatée par un fournisseur."
+          },
+          "hierarchy": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour hierarchy, non constatée par un fournisseur."
+          },
+          "product": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour product, non constatée par un fournisseur."
+          },
+          "identity": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour identity, non constatée par un fournisseur."
+          },
+          "text": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour text, non constatée par un fournisseur."
+          },
+          "mobile": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour mobile, non constatée par un fournisseur."
+          },
+          "lightMaterials": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour lightMaterials, non constatée par un fournisseur."
+          },
+          "artifacts": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour artifacts, non constatée par un fournisseur."
+          },
+          "diversity": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour diversity, non constatée par un fournisseur."
+          }
+        },
+        "fatal": [],
+        "transcribed": [
+          "Casque de test",
+          "Casque de test",
+          "Commander"
+        ],
+        "person": false,
+        "anatomyOk": true,
+        "productFaithful": true,
+        "textsExact": true,
+        "legible": true,
+        "score": 9.2,
+        "issues": [],
+        "fix": ""
+      },
+      "mode": "one-step",
+      "source": "840ry0lflieb5rfa",
+      "brief": {
+        "objective": "ad — un bénéfice clair et un appel à l'action",
+        "subject": "Casque de test — Casque de test",
+        "references": [
+          "image 1: real subject reference",
+          "image 2: exact logo"
+        ],
+        "concept": "Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement.",
+        "composition": "Diagonale documentée, texte sur zone calme et logo en retrait",
+        "framing": "Produit ou résultat du métier documenté, plan moyen",
+        "setting": "Lieu cohérent avec le projet et son usage",
+        "light": "Lumière naturelle latérale cohérente",
+        "palette": "{\"palette\":{\"primary\":\"#735B45\",\"secondary\":\"#DBD6D1\",\"accent\":\"#B4B074\",\"light\":\"#F7F5F2\",\"dark\":\"#1F1914\"},\"roles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"}}",
+        "typography": "titres lora_n6, textes inter_n4 ; deux familles au plus; Familles de la marque et hiérarchie contrastée",
+        "exactTexts": [
+          {
+            "role": "accroche",
+            "text": "Casque de test",
+            "sharePct": 8.5
+          },
+          {
+            "role": "titre secondaire",
+            "text": "Casque de test",
+            "sharePct": 5.4
+          },
+          {
+            "role": "bouton",
+            "text": "Commander",
+            "sharePct": 3.9
+          }
+        ],
+        "logo": "logo du projet fourni en référence : à reproduire exactement, jamais omis ni redessiné librement",
+        "fidelity": "le produit de la référence à l'identique : forme, proportions, matières, couleurs réelles, détails, nombre de pièces ; aucune fonction ni accessoire inventés ; cadrage cohérent avec le concept : entier ou détail demandé sur une partie documentée ; ne jamais inventer une face inconnue",
+        "forbidden": [
+          "néons cyan/magenta par défaut",
+          "podium sous le produit par défaut",
+          "marques tierces, faux logos, filigranes",
+          "texte décoratif inventé",
+          "aucune autre marque que celle du projet",
+          "podium sans raison",
+          "halo sans raison",
+          "fumée sans raison",
+          "éclaboussure sans raison",
+          "produit flottant sans raison",
+          "néon sans raison"
+        ],
+        "format": "4:5, marges extérieures 60–90 px pour 1080 px",
+        "validation": [
+          "Pertinence (le sujet exact, le message)",
+          "Fidélité du produit (forme, proportions, matières, couleurs, détails, nombre de pièces) et produit entier (aucune partie coupée ou manquante)",
+          "Cohérence du service (geste, outils, posture, matériaux)",
+          "Mains et objets sans défaut",
+          "Lisibilité, orthographe (texte exact), contraste",
+          "Marges et zones de respiration",
+          "Logo du projet exact (orthographe, forme, couleurs)",
+          "Aucune marque tierce ni filigrane",
+          "Aucun artefact",
+          "Différente des créations récentes du projet"
+        ]
+      },
+      "contract": {
+        "identity": {
+          "name": "Test Audio",
+          "nameStatus": "validated",
+          "alternatives": [],
+          "tagline": "La technologie, sans détour.",
+          "positioning": "[À définir avec vous : pour qui, pour quel usage, avec quelle différence]",
+          "audience": "[À préciser]",
+          "personality": [],
+          "tone": {
+            "voice": "Clair, précis et chaleureux",
+            "do": [
+              "Parler concret",
+              "Citer les caractéristiques vérifiées"
+            ],
+            "dont": [
+              "Promettre sans preuve",
+              "Superlatifs vides"
+            ]
+          },
+          "palette": {
+            "primary": "#735B45",
+            "secondary": "#DBD6D1",
+            "accent": "#B4B074",
+            "light": "#F7F5F2",
+            "dark": "#1F1914"
+          },
+          "fonts": {
+            "heading": "lora_n6",
+            "body": "inter_n4"
+          },
+          "logo": {
+            "concept": "Logotype typographique en Lora",
+            "status": "proposed",
+            "assetId": "bqedl4sydgfa1quq"
+          },
+          "story": "",
+          "values": [],
+          "direction": "nocturne",
+          "validated": [],
+          "generatedBy": "local",
+          "artIdentity": {
+            "directionId": "test-direction",
+            "seriesId": "test-series",
+            "signature": "Identité synthétique de preuve",
+            "palette": {
+              "primary": "#735B45",
+              "secondary": "#DBD6D1",
+              "accent": "#B4B074",
+              "light": "#F7F5F2",
+              "dark": "#1F1914"
+            },
+            "colorRoles": {
+              "primary": "Couleur de marque",
+              "secondary": "Appui",
+              "accent": "Action",
+              "light": "Respiration",
+              "dark": "Ancrage"
+            },
+            "fonts": {
+              "heading": "lora_n6",
+              "body": "inter_n4"
+            },
+            "tone": {
+              "voice": "Clair et concret",
+              "do": [
+                "Messages factuels"
+              ],
+              "dont": [
+                "Promesses inventées"
+              ]
+            },
+            "mood": "Propre au projet",
+            "graphicLanguage": "Contrastes et espaces calmes",
+            "rules": [
+              "Logo fidèle",
+              "Aucun humain sans autorisation"
+            ],
+            "sampleText": "Message de test"
+          }
+        },
+        "strategy": {
+          "audience": [],
+          "angles": [
+            {
+              "title": "Le produit en détail",
+              "idea": "Montrer les détails réels de l'objet."
+            },
+            {
+              "title": "Usage",
+              "idea": "Le produit dans son contexte."
+            }
+          ],
+          "pillars": [
+            "Produit",
+            "Usage",
+            "Coulisses"
+          ],
+          "keyMessages": [],
+          "platform": {
+            "persona": "[À définir avec vous : qui achète, pour quel moment d'usage]",
+            "problem": "[À définir avec vous : ce que le produit aide à régler au quotidien]",
+            "alternatives": "",
+            "difference": "[À définir avec vous : ce qui le distingue des produits similaires, et la preuve]",
+            "proofs": [],
+            "objections": [
+              {
+                "objection": "Est-ce facile à prendre en main ?",
+                "answer": "[À compléter : prise en main et réglages]"
+              },
+              {
+                "objection": "Quelles sont ses caractéristiques ?",
+                "answer": "[À compléter : caractéristiques techniques]"
+              },
+              {
+                "objection": "Que contient la boîte ?",
+                "answer": "[À compléter : contenu du colis]"
+              },
+              {
+                "objection": "Est-il compatible avec mon matériel ?",
+                "answer": "[À compléter : compatibilités]"
+              }
+            ]
+          },
+          "generatedBy": "local"
+        },
+        "facts": [],
+        "peopleAllowed": false,
+        "request": "Vérification isolée : conserver le sujet choisi et la charte. Lumière latérale, texte lisible. Aucun humain. Les visuels de ce test sont synthétiques.",
+        "aspect": "4:5",
+        "mode": "one-step",
+        "recent": [],
+        "referenceManifest": {
+          "authorized": [
+            {
+              "role": "product",
+              "assetId": "i5n5kjb7gizxn11e"
+            },
+            {
+              "role": "logo",
+              "assetId": "bqedl4sydgfa1quq"
+            }
+          ],
+          "transports": [
+            {
+              "transport": "injected, not verified"
+            }
+          ]
+        },
+        "brief": {
+          "objective": "ad — un bénéfice clair et un appel à l'action",
+          "subject": "Casque de test — Casque de test",
+          "references": [
+            "image 1: real subject reference",
+            "image 2: exact logo"
+          ],
+          "concept": "Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement.",
+          "composition": "Diagonale documentée, texte sur zone calme et logo en retrait",
+          "framing": "Produit ou résultat du métier documenté, plan moyen",
+          "setting": "Lieu cohérent avec le projet et son usage",
+          "light": "Lumière naturelle latérale cohérente",
+          "palette": "{\"palette\":{\"primary\":\"#735B45\",\"secondary\":\"#DBD6D1\",\"accent\":\"#B4B074\",\"light\":\"#F7F5F2\",\"dark\":\"#1F1914\"},\"roles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"}}",
+          "typography": "titres lora_n6, textes inter_n4 ; deux familles au plus; Familles de la marque et hiérarchie contrastée",
+          "exactTexts": [
+            {
+              "role": "accroche",
+              "text": "Casque de test",
+              "sharePct": 8.5
+            },
+            {
+              "role": "titre secondaire",
+              "text": "Casque de test",
+              "sharePct": 5.4
+            },
+            {
+              "role": "bouton",
+              "text": "Commander",
+              "sharePct": 3.9
+            }
+          ],
+          "logo": "logo du projet fourni en référence : à reproduire exactement, jamais omis ni redessiné librement",
+          "fidelity": "le produit de la référence à l'identique : forme, proportions, matières, couleurs réelles, détails, nombre de pièces ; aucune fonction ni accessoire inventés ; cadrage cohérent avec le concept : entier ou détail demandé sur une partie documentée ; ne jamais inventer une face inconnue",
+          "forbidden": [
+            "néons cyan/magenta par défaut",
+            "podium sous le produit par défaut",
+            "marques tierces, faux logos, filigranes",
+            "texte décoratif inventé",
+            "aucune autre marque que celle du projet",
+            "podium sans raison",
+            "halo sans raison",
+            "fumée sans raison",
+            "éclaboussure sans raison",
+            "produit flottant sans raison",
+            "néon sans raison"
+          ],
+          "format": "4:5, marges extérieures 60–90 px pour 1080 px",
+          "validation": [
+            "Pertinence (le sujet exact, le message)",
+            "Fidélité du produit (forme, proportions, matières, couleurs, détails, nombre de pièces) et produit entier (aucune partie coupée ou manquante)",
+            "Cohérence du service (geste, outils, posture, matériaux)",
+            "Mains et objets sans défaut",
+            "Lisibilité, orthographe (texte exact), contraste",
+            "Marges et zones de respiration",
+            "Logo du projet exact (orthographe, forme, couleurs)",
+            "Aucune marque tierce ni filigrane",
+            "Aucun artefact",
+            "Différente des créations récentes du projet"
+          ]
+        }
+      },
+      "effectivePrompt": "Create a finished, ultra-premium social media advertisement (meta, aspect ratio 4:5) for the brand \"Test Audio\", at the level of a top brand's advertising campaign: real campaign photography and refined typography in one image, ready to publish.\nSubject (context for you only — NEVER write this description or any product detail in the image): Casque de test — Données entièrement synthétiques pour vérifier le parcours. Aucune promesse commerciale réelle.\nPost angle: ad — Casque de test.\nClient's brief for THIS visual (follow it closely; it has priority over the post angle, but never breaks the rules below): Vérification isolée : conserver le sujet choisi et la charte. Lumière latérale, texte lisible. Aucun humain. Les visuels de ce test sont synthétiques.\nUniverse of THIS post (its own setting, light and mood — not a generic template): Documented subject in a specific setting with coherent side lighting\nThe product in the first reference image is the hero: reproduce it EXACTLY, use only documented views and details (same shape, proportions, materials, colours and markings); a justified faithful detail crop is allowed, never invent an unseen side or redesign it, never add a word or logo on it that is not on the reference, never add copies beyond the explicitly requested quantity. If the reference shows it worn or held by someone, take only the product.\nFinish: real light (key light, rim light, crisp reflections), depth of field and sharpness chosen for the specific concept, credible materials, coherent contact shadows and perspective. Background blur is optional, never automatic. No text, letters or signs anywhere in the decor.\nCLIENT ART DIRECTION (specific to this brand — follow it; never a generic look, never the model's default style):\nART DIRECTION NOTES — instructions for you only: never write any of these words, labels, colour codes or notes in the image.\nConcept (an idea to convey with the picture only — never write it): Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement..\nComposition: Diagonale documentée, texte sur zone calme et logo en retrait; framing: Produit ou résultat du métier documenté, plan moyen; one clear focal point; generous breathing space.\nSetting (objects and place, not words): Lieu cohérent avec le projet et son usage. Light: Lumière naturelle latérale cohérente; coherent light direction, temperature, perspective, contact shadows and reflections; nothing floating.\nColour mood: {\"palette\":{\"primary\":\"#735B45\",\"secondary\":\"#DBD6D1\",\"accent\":\"#B4B074\",\"light\":\"#F7F5F2\",\"dark\":\"#1F1914\"},\"roles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"}}.\nTypography: titres lora_n6, textes inter_n4 ; deux familles au plus; Familles de la marque et hiérarchie contrastée.\nFidelity: le produit de la référence à l'identique : forme, proportions, matières, couleurs réelles, détails, nombre de pièces ; aucune fonction ni accessoire inventés ; cadrage cohérent avec le concept : entier ou détail demandé sur une partie documentée ; ne jamais inventer une face inconnue.\nAvoid: néons cyan/magenta par défaut; podium sous le produit par défaut; marques tierces, faux logos, filigranes; aucune autre marque que celle du projet; podium sans raison; halo sans raison; fumée sans raison; éclaboussure sans raison; produit flottant sans raison; néon sans raison.\nDecor objects stay blank: no writing, letters, title or logo on books, notebooks, papers, labels, boxes or signs.\nFormat: 4:5, marges extérieures 60–90 px pour 1080 px.\nElements to include:\n- the brand logo from the second reference image, reproduced faithfully (same emblem, same letters), placed where it looks best;\n- the headline \"Casque de test\" (the hero text, cap height about 8.5% of the image width);\n- the small line \"Casque de test\";\n- a call-to-action that clearly reads as a button or link: \"Commander\".\nBrand colours to build the whole design with: #1F1914, #735B45, #DBD6D1, #B4B074, #F7F5F2 (dark, primary, secondary, accent, light; use the validated roles from the identity, with contrasting text rather than always dark text); strong hierarchy, maximum legibility (strong contrast behind every text).\nWrite ONLY these texts, spelled EXACTLY (same accents, same punctuation), nothing else: \"Casque de test\", \"Casque de test\", \"Commander\" (plus the brand name inside the logo, as on the logo: \"Test Audio\").\nNo other words (no description paragraph, no small print), no colour swatches or palette blocks, no fake letters, no unconfirmed prices, invented percentages, unsupported claims, fabricated reviews or stars, no hashtags, no website, no watermark. No people, no hands, no faces, no body parts.\nVALIDATED IDENTITY: {\"name\":\"Test Audio\",\"nameStatus\":\"validated\",\"alternatives\":[],\"tagline\":\"La technologie, sans détour.\",\"positioning\":\"[À définir avec vous : pour qui, pour quel usage, avec quelle différence]\",\"audience\":\"[À préciser]\",\"personality\":[],\"tone\":{\"voice\":\"Clair, précis et chaleureux\",\"do\":[\"Parler concret\",\"Citer les caractéristiques vérifiées\"],\"dont\":[\"Promettre sans preuve\",\"Superlatifs vides\"]},\"palette\":{\"primary\":\"#735B45\",\"secondary\":\"#DBD6D1\",\"accent\":\"#B4B074\",\"light\":\"#F7F5F2\",\"dark\":\"#1F1914\"},\"fonts\":{\"heading\":\"lora_n6\",\"body\":\"inter_n4\"},\"logo\":{\"concept\":\"Logotype typographique en Lora\",\"status\":\"proposed\",\"assetId\":\"bqedl4sydgfa1quq\"},\"story\":\"\",\"values\":[],\"direction\":\"nocturne\",\"validated\":[],\"generatedBy\":\"local\",\"artIdentity\":{\"directionId\":\"test-direction\",\"seriesId\":\"test-series\",\"signature\":\"Identité synthétique de preuve\",\"palette\":{\"primary\":\"#735B45\",\"secondary\":\"#DBD6D1\",\"accent\":\"#B4B074\",\"light\":\"#F7F5F2\",\"dark\":\"#1F1914\"},\"colorRoles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"},\"fonts\":{\"heading\":\"lora_n6\",\"body\":\"inter_n4\"},\"tone\":{\"voice\":\"Clair et concret\",\"do\":[\"Messages factuels\"],\"dont\":[\"Promesses inventées\"]},\"mood\":\"Propre au projet\",\"graphicLanguage\":\"Contrastes et espaces calmes\",\"rules\":[\"Logo fidèle\",\"Aucun humain sans autorisation\"],\"sampleText\":\"Message de test\"}}\nVocabulary preferences apply to generic prose only. Proper brand names, the supplied logo and real product markings stay exactly as validated.\nDELIVERY 1080×1350, ratio 4:5. Compose for this ratio, never stretch. If the model returns a wider/taller native canvas, keep ALL essential text/logo/product inside the centered 4:5 rectangle (only expendable outer background may be trimmed). Keep 8% outer safe margins; for 9:16 reserve top 14% and bottom 20% for platform UI. Full native and final crop will be checked side by side, including text at 360px phone width. Avoid excessive compression, oversharpening and fine illegible lettering.",
+      "models": []
+    },
+    {
+      "id": "zcom264cz8cl9ypp",
+      "status": "ready",
+      "width": 1080,
+      "height": 1620,
+      "quality": {
+        "logoFaithful": true,
+        "fixTarget": "none",
+        "grid": {
+          "relevance": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour relevance, non constatée par un fournisseur."
+          },
+          "hierarchy": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour hierarchy, non constatée par un fournisseur."
+          },
+          "product": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour product, non constatée par un fournisseur."
+          },
+          "identity": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour identity, non constatée par un fournisseur."
+          },
+          "text": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour text, non constatée par un fournisseur."
+          },
+          "mobile": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour mobile, non constatée par un fournisseur."
+          },
+          "lightMaterials": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour lightMaterials, non constatée par un fournisseur."
+          },
+          "artifacts": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour artifacts, non constatée par un fournisseur."
+          },
+          "diversity": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour diversity, non constatée par un fournisseur."
+          }
+        },
+        "fatal": [],
+        "transcribed": [
+          "Casque de test",
+          "Casque de test",
+          "Commander"
+        ],
+        "person": false,
+        "anatomyOk": true,
+        "productFaithful": true,
+        "textsExact": true,
+        "legible": true,
+        "score": 9.2,
+        "issues": [],
+        "fix": ""
+      },
+      "mode": "one-step",
+      "source": "7i98mrdk4p1wb9ky",
+      "brief": {
+        "objective": "ad — un bénéfice clair et un appel à l'action",
+        "subject": "Casque de test — Casque de test",
+        "references": [
+          "image 1: real subject reference",
+          "image 2: exact logo"
+        ],
+        "concept": "Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement.",
+        "composition": "Diagonale documentée, texte sur zone calme et logo en retrait",
+        "framing": "Produit ou résultat du métier documenté, plan moyen",
+        "setting": "Lieu cohérent avec le projet et son usage",
+        "light": "Lumière naturelle latérale cohérente",
+        "palette": "{\"palette\":{\"primary\":\"#735B45\",\"secondary\":\"#DBD6D1\",\"accent\":\"#B4B074\",\"light\":\"#F7F5F2\",\"dark\":\"#1F1914\"},\"roles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"}}",
+        "typography": "titres lora_n6, textes inter_n4 ; deux familles au plus; Familles de la marque et hiérarchie contrastée",
+        "exactTexts": [
+          {
+            "role": "accroche",
+            "text": "Casque de test",
+            "sharePct": 8.5
+          },
+          {
+            "role": "titre secondaire",
+            "text": "Casque de test",
+            "sharePct": 5.4
+          },
+          {
+            "role": "bouton",
+            "text": "Commander",
+            "sharePct": 3.9
+          }
+        ],
+        "logo": "logo du projet fourni en référence : à reproduire exactement, jamais omis ni redessiné librement",
+        "fidelity": "le produit de la référence à l'identique : forme, proportions, matières, couleurs réelles, détails, nombre de pièces ; aucune fonction ni accessoire inventés ; cadrage cohérent avec le concept : entier ou détail demandé sur une partie documentée ; ne jamais inventer une face inconnue",
+        "forbidden": [
+          "néons cyan/magenta par défaut",
+          "podium sous le produit par défaut",
+          "marques tierces, faux logos, filigranes",
+          "texte décoratif inventé",
+          "aucune autre marque que celle du projet",
+          "podium sans raison",
+          "halo sans raison",
+          "fumée sans raison",
+          "éclaboussure sans raison",
+          "produit flottant sans raison",
+          "néon sans raison"
+        ],
+        "format": "2:3, marges extérieures 60–90 px pour 1080 px",
+        "validation": [
+          "Pertinence (le sujet exact, le message)",
+          "Fidélité du produit (forme, proportions, matières, couleurs, détails, nombre de pièces) et produit entier (aucune partie coupée ou manquante)",
+          "Cohérence du service (geste, outils, posture, matériaux)",
+          "Mains et objets sans défaut",
+          "Lisibilité, orthographe (texte exact), contraste",
+          "Marges et zones de respiration",
+          "Logo du projet exact (orthographe, forme, couleurs)",
+          "Aucune marque tierce ni filigrane",
+          "Aucun artefact",
+          "Différente des créations récentes du projet"
+        ]
+      },
+      "contract": {
+        "identity": {
+          "name": "Test Audio",
+          "nameStatus": "validated",
+          "alternatives": [],
+          "tagline": "La technologie, sans détour.",
+          "positioning": "[À définir avec vous : pour qui, pour quel usage, avec quelle différence]",
+          "audience": "[À préciser]",
+          "personality": [],
+          "tone": {
+            "voice": "Clair, précis et chaleureux",
+            "do": [
+              "Parler concret",
+              "Citer les caractéristiques vérifiées"
+            ],
+            "dont": [
+              "Promettre sans preuve",
+              "Superlatifs vides"
+            ]
+          },
+          "palette": {
+            "primary": "#735B45",
+            "secondary": "#DBD6D1",
+            "accent": "#B4B074",
+            "light": "#F7F5F2",
+            "dark": "#1F1914"
+          },
+          "fonts": {
+            "heading": "lora_n6",
+            "body": "inter_n4"
+          },
+          "logo": {
+            "concept": "Logotype typographique en Lora",
+            "status": "proposed",
+            "assetId": "bqedl4sydgfa1quq"
+          },
+          "story": "",
+          "values": [],
+          "direction": "nocturne",
+          "validated": [],
+          "generatedBy": "local",
+          "artIdentity": {
+            "directionId": "test-direction",
+            "seriesId": "test-series",
+            "signature": "Identité synthétique de preuve",
+            "palette": {
+              "primary": "#735B45",
+              "secondary": "#DBD6D1",
+              "accent": "#B4B074",
+              "light": "#F7F5F2",
+              "dark": "#1F1914"
+            },
+            "colorRoles": {
+              "primary": "Couleur de marque",
+              "secondary": "Appui",
+              "accent": "Action",
+              "light": "Respiration",
+              "dark": "Ancrage"
+            },
+            "fonts": {
+              "heading": "lora_n6",
+              "body": "inter_n4"
+            },
+            "tone": {
+              "voice": "Clair et concret",
+              "do": [
+                "Messages factuels"
+              ],
+              "dont": [
+                "Promesses inventées"
+              ]
+            },
+            "mood": "Propre au projet",
+            "graphicLanguage": "Contrastes et espaces calmes",
+            "rules": [
+              "Logo fidèle",
+              "Aucun humain sans autorisation"
+            ],
+            "sampleText": "Message de test"
+          }
+        },
+        "strategy": {
+          "audience": [],
+          "angles": [
+            {
+              "title": "Le produit en détail",
+              "idea": "Montrer les détails réels de l'objet."
+            },
+            {
+              "title": "Usage",
+              "idea": "Le produit dans son contexte."
+            }
+          ],
+          "pillars": [
+            "Produit",
+            "Usage",
+            "Coulisses"
+          ],
+          "keyMessages": [],
+          "platform": {
+            "persona": "[À définir avec vous : qui achète, pour quel moment d'usage]",
+            "problem": "[À définir avec vous : ce que le produit aide à régler au quotidien]",
+            "alternatives": "",
+            "difference": "[À définir avec vous : ce qui le distingue des produits similaires, et la preuve]",
+            "proofs": [],
+            "objections": [
+              {
+                "objection": "Est-ce facile à prendre en main ?",
+                "answer": "[À compléter : prise en main et réglages]"
+              },
+              {
+                "objection": "Quelles sont ses caractéristiques ?",
+                "answer": "[À compléter : caractéristiques techniques]"
+              },
+              {
+                "objection": "Que contient la boîte ?",
+                "answer": "[À compléter : contenu du colis]"
+              },
+              {
+                "objection": "Est-il compatible avec mon matériel ?",
+                "answer": "[À compléter : compatibilités]"
+              }
+            ]
+          },
+          "generatedBy": "local"
+        },
+        "facts": [],
+        "peopleAllowed": false,
+        "request": "Vérification isolée : conserver le sujet choisi et la charte. Lumière latérale, texte lisible. Aucun humain. Les visuels de ce test sont synthétiques.. Modification demandée : Éclaircir la lumière ; conserver le sujet, le logo et les textes.",
+        "aspect": "2:3",
+        "mode": "one-step",
+        "recent": [
+          {
+            "assetId": "7i98mrdk4p1wb9ky",
+            "composition": "Diagonale documentée, texte sur zone calme et logo en retrait",
+            "concept": "Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement."
+          }
+        ],
+        "referenceManifest": {
+          "authorized": [
+            {
+              "role": "product",
+              "assetId": "i5n5kjb7gizxn11e"
+            },
+            {
+              "role": "logo",
+              "assetId": "bqedl4sydgfa1quq"
+            }
+          ],
+          "transports": [
+            {
+              "transport": "injected, not verified"
+            }
+          ]
+        },
+        "brief": {
+          "objective": "ad — un bénéfice clair et un appel à l'action",
+          "subject": "Casque de test — Casque de test",
+          "references": [
+            "image 1: real subject reference",
+            "image 2: exact logo"
+          ],
+          "concept": "Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement.",
+          "composition": "Diagonale documentée, texte sur zone calme et logo en retrait",
+          "framing": "Produit ou résultat du métier documenté, plan moyen",
+          "setting": "Lieu cohérent avec le projet et son usage",
+          "light": "Lumière naturelle latérale cohérente",
+          "palette": "{\"palette\":{\"primary\":\"#735B45\",\"secondary\":\"#DBD6D1\",\"accent\":\"#B4B074\",\"light\":\"#F7F5F2\",\"dark\":\"#1F1914\"},\"roles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"}}",
+          "typography": "titres lora_n6, textes inter_n4 ; deux familles au plus; Familles de la marque et hiérarchie contrastée",
+          "exactTexts": [
+            {
+              "role": "accroche",
+              "text": "Casque de test",
+              "sharePct": 8.5
+            },
+            {
+              "role": "titre secondaire",
+              "text": "Casque de test",
+              "sharePct": 5.4
+            },
+            {
+              "role": "bouton",
+              "text": "Commander",
+              "sharePct": 3.9
+            }
+          ],
+          "logo": "logo du projet fourni en référence : à reproduire exactement, jamais omis ni redessiné librement",
+          "fidelity": "le produit de la référence à l'identique : forme, proportions, matières, couleurs réelles, détails, nombre de pièces ; aucune fonction ni accessoire inventés ; cadrage cohérent avec le concept : entier ou détail demandé sur une partie documentée ; ne jamais inventer une face inconnue",
+          "forbidden": [
+            "néons cyan/magenta par défaut",
+            "podium sous le produit par défaut",
+            "marques tierces, faux logos, filigranes",
+            "texte décoratif inventé",
+            "aucune autre marque que celle du projet",
+            "podium sans raison",
+            "halo sans raison",
+            "fumée sans raison",
+            "éclaboussure sans raison",
+            "produit flottant sans raison",
+            "néon sans raison"
+          ],
+          "format": "2:3, marges extérieures 60–90 px pour 1080 px",
+          "validation": [
+            "Pertinence (le sujet exact, le message)",
+            "Fidélité du produit (forme, proportions, matières, couleurs, détails, nombre de pièces) et produit entier (aucune partie coupée ou manquante)",
+            "Cohérence du service (geste, outils, posture, matériaux)",
+            "Mains et objets sans défaut",
+            "Lisibilité, orthographe (texte exact), contraste",
+            "Marges et zones de respiration",
+            "Logo du projet exact (orthographe, forme, couleurs)",
+            "Aucune marque tierce ni filigrane",
+            "Aucun artefact",
+            "Différente des créations récentes du projet"
+          ]
+        }
+      },
+      "effectivePrompt": "Create a finished, ultra-premium social media advertisement (meta, aspect ratio 2:3) for the brand \"Test Audio\", at the level of a top brand's advertising campaign: real campaign photography and refined typography in one image, ready to publish.\nSubject (context for you only — NEVER write this description or any product detail in the image): Casque de test — Données entièrement synthétiques pour vérifier le parcours. Aucune promesse commerciale réelle.\nPost angle: ad — Casque de test.\nClient's brief for THIS visual (follow it closely; it has priority over the post angle, but never breaks the rules below): Vérification isolée : conserver le sujet choisi et la charte. Lumière latérale, texte lisible. Aucun humain. Les visuels de ce test sont synthétiques.. Modification demandée : Éclaircir la lumière ; conserver le sujet, le logo et les textes.\nUniverse of THIS post (its own setting, light and mood — not a generic template): Documented subject in a specific setting with coherent side lighting\nThe product in the first reference image is the hero: reproduce it EXACTLY, use only documented views and details (same shape, proportions, materials, colours and markings); a justified faithful detail crop is allowed, never invent an unseen side or redesign it, never add a word or logo on it that is not on the reference, never add copies beyond the explicitly requested quantity. If the reference shows it worn or held by someone, take only the product.\nFinish: real light (key light, rim light, crisp reflections), depth of field and sharpness chosen for the specific concept, credible materials, coherent contact shadows and perspective. Background blur is optional, never automatic. No text, letters or signs anywhere in the decor.\nCLIENT ART DIRECTION (specific to this brand — follow it; never a generic look, never the model's default style):\nART DIRECTION NOTES — instructions for you only: never write any of these words, labels, colour codes or notes in the image.\nConcept (an idea to convey with the picture only — never write it): Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement..\nComposition: Diagonale documentée, texte sur zone calme et logo en retrait; framing: Produit ou résultat du métier documenté, plan moyen; one clear focal point; generous breathing space.\nSetting (objects and place, not words): Lieu cohérent avec le projet et son usage. Light: Lumière naturelle latérale cohérente; coherent light direction, temperature, perspective, contact shadows and reflections; nothing floating.\nColour mood: {\"palette\":{\"primary\":\"#735B45\",\"secondary\":\"#DBD6D1\",\"accent\":\"#B4B074\",\"light\":\"#F7F5F2\",\"dark\":\"#1F1914\"},\"roles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"}}.\nTypography: titres lora_n6, textes inter_n4 ; deux familles au plus; Familles de la marque et hiérarchie contrastée.\nFidelity: le produit de la référence à l'identique : forme, proportions, matières, couleurs réelles, détails, nombre de pièces ; aucune fonction ni accessoire inventés ; cadrage cohérent avec le concept : entier ou détail demandé sur une partie documentée ; ne jamais inventer une face inconnue.\nAvoid: néons cyan/magenta par défaut; podium sous le produit par défaut; marques tierces, faux logos, filigranes; aucune autre marque que celle du projet; podium sans raison; halo sans raison; fumée sans raison; éclaboussure sans raison; produit flottant sans raison; néon sans raison.\nDecor objects stay blank: no writing, letters, title or logo on books, notebooks, papers, labels, boxes or signs.\nFormat: 2:3, marges extérieures 60–90 px pour 1080 px.\nElements to include:\n- the brand logo from the second reference image, reproduced faithfully (same emblem, same letters), placed where it looks best;\n- the headline \"Casque de test\" (the hero text, cap height about 8.5% of the image width);\n- the small line \"Casque de test\";\n- a call-to-action that clearly reads as a button or link: \"Commander\".\nBrand colours to build the whole design with: #1F1914, #735B45, #DBD6D1, #B4B074, #F7F5F2 (dark, primary, secondary, accent, light; use the validated roles from the identity, with contrasting text rather than always dark text); strong hierarchy, maximum legibility (strong contrast behind every text).\nWrite ONLY these texts, spelled EXACTLY (same accents, same punctuation), nothing else: \"Casque de test\", \"Casque de test\", \"Commander\" (plus the brand name inside the logo, as on the logo: \"Test Audio\").\nNo other words (no description paragraph, no small print), no colour swatches or palette blocks, no fake letters, no unconfirmed prices, invented percentages, unsupported claims, fabricated reviews or stars, no hashtags, no website, no watermark. No people, no hands, no faces, no body parts.\nVALIDATED IDENTITY: {\"name\":\"Test Audio\",\"nameStatus\":\"validated\",\"alternatives\":[],\"tagline\":\"La technologie, sans détour.\",\"positioning\":\"[À définir avec vous : pour qui, pour quel usage, avec quelle différence]\",\"audience\":\"[À préciser]\",\"personality\":[],\"tone\":{\"voice\":\"Clair, précis et chaleureux\",\"do\":[\"Parler concret\",\"Citer les caractéristiques vérifiées\"],\"dont\":[\"Promettre sans preuve\",\"Superlatifs vides\"]},\"palette\":{\"primary\":\"#735B45\",\"secondary\":\"#DBD6D1\",\"accent\":\"#B4B074\",\"light\":\"#F7F5F2\",\"dark\":\"#1F1914\"},\"fonts\":{\"heading\":\"lora_n6\",\"body\":\"inter_n4\"},\"logo\":{\"concept\":\"Logotype typographique en Lora\",\"status\":\"proposed\",\"assetId\":\"bqedl4sydgfa1quq\"},\"story\":\"\",\"values\":[],\"direction\":\"nocturne\",\"validated\":[],\"generatedBy\":\"local\",\"artIdentity\":{\"directionId\":\"test-direction\",\"seriesId\":\"test-series\",\"signature\":\"Identité synthétique de preuve\",\"palette\":{\"primary\":\"#735B45\",\"secondary\":\"#DBD6D1\",\"accent\":\"#B4B074\",\"light\":\"#F7F5F2\",\"dark\":\"#1F1914\"},\"colorRoles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"},\"fonts\":{\"heading\":\"lora_n6\",\"body\":\"inter_n4\"},\"tone\":{\"voice\":\"Clair et concret\",\"do\":[\"Messages factuels\"],\"dont\":[\"Promesses inventées\"]},\"mood\":\"Propre au projet\",\"graphicLanguage\":\"Contrastes et espaces calmes\",\"rules\":[\"Logo fidèle\",\"Aucun humain sans autorisation\"],\"sampleText\":\"Message de test\"}}\nVocabulary preferences apply to generic prose only. Proper brand names, the supplied logo and real product markings stay exactly as validated.\nDELIVERY 1080×1620, ratio 2:3. Compose for this ratio, never stretch. If the model returns a wider/taller native canvas, keep ALL essential text/logo/product inside the centered 2:3 rectangle (only expendable outer background may be trimmed). Keep 8% outer safe margins; for 9:16 reserve top 14% and bottom 20% for platform UI. Full native and final crop will be checked side by side, including text at 360px phone width. Avoid excessive compression, oversharpening and fine illegible lettering.",
+      "models": []
+    },
+    {
+      "id": "srifzxlhyu6o9wq8",
+      "status": "ready",
+      "width": 1080,
+      "height": 1080,
+      "quality": {
+        "logoFaithful": true,
+        "fixTarget": "none",
+        "grid": {
+          "relevance": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour relevance, non constatée par un fournisseur."
+          },
+          "hierarchy": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour hierarchy, non constatée par un fournisseur."
+          },
+          "product": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour product, non constatée par un fournisseur."
+          },
+          "identity": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour identity, non constatée par un fournisseur."
+          },
+          "text": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour text, non constatée par un fournisseur."
+          },
+          "mobile": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour mobile, non constatée par un fournisseur."
+          },
+          "lightMaterials": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour lightMaterials, non constatée par un fournisseur."
+          },
+          "artifacts": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour artifacts, non constatée par un fournisseur."
+          },
+          "diversity": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour diversity, non constatée par un fournisseur."
+          }
+        },
+        "fatal": [],
+        "transcribed": [
+          "Casque de test",
+          "Casque de test",
+          "Commander"
+        ],
+        "person": false,
+        "anatomyOk": true,
+        "productFaithful": true,
+        "textsExact": true,
+        "legible": true,
+        "score": 9.2,
+        "issues": [],
+        "fix": ""
+      },
+      "mode": "one-step",
+      "source": "7i98mrdk4p1wb9ky",
+      "brief": {
+        "objective": "ad — un bénéfice clair et un appel à l'action",
+        "subject": "Casque de test — Casque de test",
+        "references": [
+          "image 1: real subject reference",
+          "image 2: exact logo"
+        ],
+        "concept": "Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement.",
+        "composition": "Diagonale documentée, texte sur zone calme et logo en retrait",
+        "framing": "Produit ou résultat du métier documenté, plan moyen",
+        "setting": "Lieu cohérent avec le projet et son usage",
+        "light": "Lumière naturelle latérale cohérente",
+        "palette": "{\"palette\":{\"primary\":\"#735B45\",\"secondary\":\"#DBD6D1\",\"accent\":\"#B4B074\",\"light\":\"#F7F5F2\",\"dark\":\"#1F1914\"},\"roles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"}}",
+        "typography": "titres lora_n6, textes inter_n4 ; deux familles au plus; Familles de la marque et hiérarchie contrastée",
+        "exactTexts": [
+          {
+            "role": "accroche",
+            "text": "Casque de test",
+            "sharePct": 8.5
+          },
+          {
+            "role": "titre secondaire",
+            "text": "Casque de test",
+            "sharePct": 5.4
+          },
+          {
+            "role": "bouton",
+            "text": "Commander",
+            "sharePct": 3.9
+          }
+        ],
+        "logo": "logo du projet fourni en référence : à reproduire exactement, jamais omis ni redessiné librement",
+        "fidelity": "le produit de la référence à l'identique : forme, proportions, matières, couleurs réelles, détails, nombre de pièces ; aucune fonction ni accessoire inventés ; cadrage cohérent avec le concept : entier ou détail demandé sur une partie documentée ; ne jamais inventer une face inconnue",
+        "forbidden": [
+          "néons cyan/magenta par défaut",
+          "podium sous le produit par défaut",
+          "marques tierces, faux logos, filigranes",
+          "texte décoratif inventé",
+          "aucune autre marque que celle du projet",
+          "podium sans raison",
+          "halo sans raison",
+          "fumée sans raison",
+          "éclaboussure sans raison",
+          "produit flottant sans raison",
+          "néon sans raison"
+        ],
+        "format": "1:1, marges extérieures 60–90 px pour 1080 px",
+        "validation": [
+          "Pertinence (le sujet exact, le message)",
+          "Fidélité du produit (forme, proportions, matières, couleurs, détails, nombre de pièces) et produit entier (aucune partie coupée ou manquante)",
+          "Cohérence du service (geste, outils, posture, matériaux)",
+          "Mains et objets sans défaut",
+          "Lisibilité, orthographe (texte exact), contraste",
+          "Marges et zones de respiration",
+          "Logo du projet exact (orthographe, forme, couleurs)",
+          "Aucune marque tierce ni filigrane",
+          "Aucun artefact",
+          "Différente des créations récentes du projet"
+        ]
+      },
+      "contract": {
+        "identity": {
+          "name": "Test Audio",
+          "nameStatus": "validated",
+          "alternatives": [],
+          "tagline": "La technologie, sans détour.",
+          "positioning": "[À définir avec vous : pour qui, pour quel usage, avec quelle différence]",
+          "audience": "[À préciser]",
+          "personality": [],
+          "tone": {
+            "voice": "Clair, précis et chaleureux",
+            "do": [
+              "Parler concret",
+              "Citer les caractéristiques vérifiées"
+            ],
+            "dont": [
+              "Promettre sans preuve",
+              "Superlatifs vides"
+            ]
+          },
+          "palette": {
+            "primary": "#735B45",
+            "secondary": "#DBD6D1",
+            "accent": "#B4B074",
+            "light": "#F7F5F2",
+            "dark": "#1F1914"
+          },
+          "fonts": {
+            "heading": "lora_n6",
+            "body": "inter_n4"
+          },
+          "logo": {
+            "concept": "Logotype typographique en Lora",
+            "status": "proposed",
+            "assetId": "bqedl4sydgfa1quq"
+          },
+          "story": "",
+          "values": [],
+          "direction": "nocturne",
+          "validated": [],
+          "generatedBy": "local",
+          "artIdentity": {
+            "directionId": "test-direction",
+            "seriesId": "test-series",
+            "signature": "Identité synthétique de preuve",
+            "palette": {
+              "primary": "#735B45",
+              "secondary": "#DBD6D1",
+              "accent": "#B4B074",
+              "light": "#F7F5F2",
+              "dark": "#1F1914"
+            },
+            "colorRoles": {
+              "primary": "Couleur de marque",
+              "secondary": "Appui",
+              "accent": "Action",
+              "light": "Respiration",
+              "dark": "Ancrage"
+            },
+            "fonts": {
+              "heading": "lora_n6",
+              "body": "inter_n4"
+            },
+            "tone": {
+              "voice": "Clair et concret",
+              "do": [
+                "Messages factuels"
+              ],
+              "dont": [
+                "Promesses inventées"
+              ]
+            },
+            "mood": "Propre au projet",
+            "graphicLanguage": "Contrastes et espaces calmes",
+            "rules": [
+              "Logo fidèle",
+              "Aucun humain sans autorisation"
+            ],
+            "sampleText": "Message de test"
+          }
+        },
+        "strategy": {
+          "audience": [],
+          "angles": [
+            {
+              "title": "Le produit en détail",
+              "idea": "Montrer les détails réels de l'objet."
+            },
+            {
+              "title": "Usage",
+              "idea": "Le produit dans son contexte."
+            }
+          ],
+          "pillars": [
+            "Produit",
+            "Usage",
+            "Coulisses"
+          ],
+          "keyMessages": [],
+          "platform": {
+            "persona": "[À définir avec vous : qui achète, pour quel moment d'usage]",
+            "problem": "[À définir avec vous : ce que le produit aide à régler au quotidien]",
+            "alternatives": "",
+            "difference": "[À définir avec vous : ce qui le distingue des produits similaires, et la preuve]",
+            "proofs": [],
+            "objections": [
+              {
+                "objection": "Est-ce facile à prendre en main ?",
+                "answer": "[À compléter : prise en main et réglages]"
+              },
+              {
+                "objection": "Quelles sont ses caractéristiques ?",
+                "answer": "[À compléter : caractéristiques techniques]"
+              },
+              {
+                "objection": "Que contient la boîte ?",
+                "answer": "[À compléter : contenu du colis]"
+              },
+              {
+                "objection": "Est-il compatible avec mon matériel ?",
+                "answer": "[À compléter : compatibilités]"
+              }
+            ]
+          },
+          "generatedBy": "local"
+        },
+        "facts": [],
+        "peopleAllowed": false,
+        "request": "Vérification isolée : conserver le sujet choisi et la charte. Lumière latérale, texte lisible. Aucun humain. Les visuels de ce test sont synthétiques.. Modification demandée : Éclaircir la lumière ; conserver le sujet, le logo et les textes.",
+        "aspect": "1:1",
+        "mode": "one-step",
+        "recent": [
+          {
+            "assetId": "zcom264cz8cl9ypp",
+            "composition": "Diagonale documentée, texte sur zone calme et logo en retrait",
+            "concept": "Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement."
+          },
+          {
+            "assetId": "7i98mrdk4p1wb9ky",
+            "composition": "Diagonale documentée, texte sur zone calme et logo en retrait",
+            "concept": "Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement."
+          }
+        ],
+        "referenceManifest": {
+          "authorized": [
+            {
+              "role": "product",
+              "assetId": "i5n5kjb7gizxn11e"
+            },
+            {
+              "role": "logo",
+              "assetId": "bqedl4sydgfa1quq"
+            }
+          ],
+          "transports": [
+            {
+              "transport": "injected, not verified"
+            }
+          ]
+        },
+        "brief": {
+          "objective": "ad — un bénéfice clair et un appel à l'action",
+          "subject": "Casque de test — Casque de test",
+          "references": [
+            "image 1: real subject reference",
+            "image 2: exact logo"
+          ],
+          "concept": "Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement.",
+          "composition": "Diagonale documentée, texte sur zone calme et logo en retrait",
+          "framing": "Produit ou résultat du métier documenté, plan moyen",
+          "setting": "Lieu cohérent avec le projet et son usage",
+          "light": "Lumière naturelle latérale cohérente",
+          "palette": "{\"palette\":{\"primary\":\"#735B45\",\"secondary\":\"#DBD6D1\",\"accent\":\"#B4B074\",\"light\":\"#F7F5F2\",\"dark\":\"#1F1914\"},\"roles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"}}",
+          "typography": "titres lora_n6, textes inter_n4 ; deux familles au plus; Familles de la marque et hiérarchie contrastée",
+          "exactTexts": [
+            {
+              "role": "accroche",
+              "text": "Casque de test",
+              "sharePct": 8.5
+            },
+            {
+              "role": "titre secondaire",
+              "text": "Casque de test",
+              "sharePct": 5.4
+            },
+            {
+              "role": "bouton",
+              "text": "Commander",
+              "sharePct": 3.9
+            }
+          ],
+          "logo": "logo du projet fourni en référence : à reproduire exactement, jamais omis ni redessiné librement",
+          "fidelity": "le produit de la référence à l'identique : forme, proportions, matières, couleurs réelles, détails, nombre de pièces ; aucune fonction ni accessoire inventés ; cadrage cohérent avec le concept : entier ou détail demandé sur une partie documentée ; ne jamais inventer une face inconnue",
+          "forbidden": [
+            "néons cyan/magenta par défaut",
+            "podium sous le produit par défaut",
+            "marques tierces, faux logos, filigranes",
+            "texte décoratif inventé",
+            "aucune autre marque que celle du projet",
+            "podium sans raison",
+            "halo sans raison",
+            "fumée sans raison",
+            "éclaboussure sans raison",
+            "produit flottant sans raison",
+            "néon sans raison"
+          ],
+          "format": "1:1, marges extérieures 60–90 px pour 1080 px",
+          "validation": [
+            "Pertinence (le sujet exact, le message)",
+            "Fidélité du produit (forme, proportions, matières, couleurs, détails, nombre de pièces) et produit entier (aucune partie coupée ou manquante)",
+            "Cohérence du service (geste, outils, posture, matériaux)",
+            "Mains et objets sans défaut",
+            "Lisibilité, orthographe (texte exact), contraste",
+            "Marges et zones de respiration",
+            "Logo du projet exact (orthographe, forme, couleurs)",
+            "Aucune marque tierce ni filigrane",
+            "Aucun artefact",
+            "Différente des créations récentes du projet"
+          ]
+        }
+      },
+      "effectivePrompt": "Create a finished, ultra-premium social media advertisement (meta, aspect ratio 1:1) for the brand \"Test Audio\", at the level of a top brand's advertising campaign: real campaign photography and refined typography in one image, ready to publish.\nSubject (context for you only — NEVER write this description or any product detail in the image): Casque de test — Données entièrement synthétiques pour vérifier le parcours. Aucune promesse commerciale réelle.\nPost angle: ad — Casque de test.\nClient's brief for THIS visual (follow it closely; it has priority over the post angle, but never breaks the rules below): Vérification isolée : conserver le sujet choisi et la charte. Lumière latérale, texte lisible. Aucun humain. Les visuels de ce test sont synthétiques.. Modification demandée : Éclaircir la lumière ; conserver le sujet, le logo et les textes.\nUniverse of THIS post (its own setting, light and mood — not a generic template): Documented subject in a specific setting with coherent side lighting\nThe product in the first reference image is the hero: reproduce it EXACTLY, use only documented views and details (same shape, proportions, materials, colours and markings); a justified faithful detail crop is allowed, never invent an unseen side or redesign it, never add a word or logo on it that is not on the reference, never add copies beyond the explicitly requested quantity. If the reference shows it worn or held by someone, take only the product.\nFinish: real light (key light, rim light, crisp reflections), depth of field and sharpness chosen for the specific concept, credible materials, coherent contact shadows and perspective. Background blur is optional, never automatic. No text, letters or signs anywhere in the decor.\nCLIENT ART DIRECTION (specific to this brand — follow it; never a generic look, never the model's default style):\nART DIRECTION NOTES — instructions for you only: never write any of these words, labels, colour codes or notes in the image.\nConcept (an idea to convey with the picture only — never write it): Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement..\nComposition: Diagonale documentée, texte sur zone calme et logo en retrait; framing: Produit ou résultat du métier documenté, plan moyen; one clear focal point; generous breathing space.\nSetting (objects and place, not words): Lieu cohérent avec le projet et son usage. Light: Lumière naturelle latérale cohérente; coherent light direction, temperature, perspective, contact shadows and reflections; nothing floating.\nColour mood: {\"palette\":{\"primary\":\"#735B45\",\"secondary\":\"#DBD6D1\",\"accent\":\"#B4B074\",\"light\":\"#F7F5F2\",\"dark\":\"#1F1914\"},\"roles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"}}.\nTypography: titres lora_n6, textes inter_n4 ; deux familles au plus; Familles de la marque et hiérarchie contrastée.\nFidelity: le produit de la référence à l'identique : forme, proportions, matières, couleurs réelles, détails, nombre de pièces ; aucune fonction ni accessoire inventés ; cadrage cohérent avec le concept : entier ou détail demandé sur une partie documentée ; ne jamais inventer une face inconnue.\nAvoid: néons cyan/magenta par défaut; podium sous le produit par défaut; marques tierces, faux logos, filigranes; aucune autre marque que celle du projet; podium sans raison; halo sans raison; fumée sans raison; éclaboussure sans raison; produit flottant sans raison; néon sans raison.\nDecor objects stay blank: no writing, letters, title or logo on books, notebooks, papers, labels, boxes or signs.\nFormat: 1:1, marges extérieures 60–90 px pour 1080 px.\nElements to include:\n- the brand logo from the second reference image, reproduced faithfully (same emblem, same letters), placed where it looks best;\n- the headline \"Casque de test\" (the hero text, cap height about 8.5% of the image width);\n- the small line \"Casque de test\";\n- a call-to-action that clearly reads as a button or link: \"Commander\".\nBrand colours to build the whole design with: #1F1914, #735B45, #DBD6D1, #B4B074, #F7F5F2 (dark, primary, secondary, accent, light; use the validated roles from the identity, with contrasting text rather than always dark text); strong hierarchy, maximum legibility (strong contrast behind every text).\nWrite ONLY these texts, spelled EXACTLY (same accents, same punctuation), nothing else: \"Casque de test\", \"Casque de test\", \"Commander\" (plus the brand name inside the logo, as on the logo: \"Test Audio\").\nNo other words (no description paragraph, no small print), no colour swatches or palette blocks, no fake letters, no unconfirmed prices, invented percentages, unsupported claims, fabricated reviews or stars, no hashtags, no website, no watermark. No people, no hands, no faces, no body parts.\nVALIDATED IDENTITY: {\"name\":\"Test Audio\",\"nameStatus\":\"validated\",\"alternatives\":[],\"tagline\":\"La technologie, sans détour.\",\"positioning\":\"[À définir avec vous : pour qui, pour quel usage, avec quelle différence]\",\"audience\":\"[À préciser]\",\"personality\":[],\"tone\":{\"voice\":\"Clair, précis et chaleureux\",\"do\":[\"Parler concret\",\"Citer les caractéristiques vérifiées\"],\"dont\":[\"Promettre sans preuve\",\"Superlatifs vides\"]},\"palette\":{\"primary\":\"#735B45\",\"secondary\":\"#DBD6D1\",\"accent\":\"#B4B074\",\"light\":\"#F7F5F2\",\"dark\":\"#1F1914\"},\"fonts\":{\"heading\":\"lora_n6\",\"body\":\"inter_n4\"},\"logo\":{\"concept\":\"Logotype typographique en Lora\",\"status\":\"proposed\",\"assetId\":\"bqedl4sydgfa1quq\"},\"story\":\"\",\"values\":[],\"direction\":\"nocturne\",\"validated\":[],\"generatedBy\":\"local\",\"artIdentity\":{\"directionId\":\"test-direction\",\"seriesId\":\"test-series\",\"signature\":\"Identité synthétique de preuve\",\"palette\":{\"primary\":\"#735B45\",\"secondary\":\"#DBD6D1\",\"accent\":\"#B4B074\",\"light\":\"#F7F5F2\",\"dark\":\"#1F1914\"},\"colorRoles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"},\"fonts\":{\"heading\":\"lora_n6\",\"body\":\"inter_n4\"},\"tone\":{\"voice\":\"Clair et concret\",\"do\":[\"Messages factuels\"],\"dont\":[\"Promesses inventées\"]},\"mood\":\"Propre au projet\",\"graphicLanguage\":\"Contrastes et espaces calmes\",\"rules\":[\"Logo fidèle\",\"Aucun humain sans autorisation\"],\"sampleText\":\"Message de test\"}}\nVocabulary preferences apply to generic prose only. Proper brand names, the supplied logo and real product markings stay exactly as validated.\nDELIVERY 1080×1080, ratio 1:1. Compose for this ratio, never stretch. If the model returns a wider/taller native canvas, keep ALL essential text/logo/product inside the centered 1:1 rectangle (only expendable outer background may be trimmed). Keep 8% outer safe margins; for 9:16 reserve top 14% and bottom 20% for platform UI. Full native and final crop will be checked side by side, including text at 360px phone width. Avoid excessive compression, oversharpening and fine illegible lettering.",
+      "models": []
+    },
+    {
+      "id": "0kp7qnjj6foqznuq",
+      "status": "ready",
+      "width": 1080,
+      "height": 1350,
+      "quality": {
+        "logoFaithful": true,
+        "fixTarget": "none",
+        "grid": {
+          "relevance": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour relevance, non constatée par un fournisseur."
+          },
+          "hierarchy": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour hierarchy, non constatée par un fournisseur."
+          },
+          "product": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour product, non constatée par un fournisseur."
+          },
+          "identity": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour identity, non constatée par un fournisseur."
+          },
+          "text": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour text, non constatée par un fournisseur."
+          },
+          "mobile": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour mobile, non constatée par un fournisseur."
+          },
+          "lightMaterials": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour lightMaterials, non constatée par un fournisseur."
+          },
+          "artifacts": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour artifacts, non constatée par un fournisseur."
+          },
+          "diversity": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour diversity, non constatée par un fournisseur."
+          }
+        },
+        "fatal": [],
+        "transcribed": [
+          "Préparation des supports",
+          "Préparation des supports",
+          "Demander un devis"
+        ],
+        "person": false,
+        "anatomyOk": true,
+        "productFaithful": true,
+        "textsExact": true,
+        "legible": true,
+        "score": 9.2,
+        "issues": [],
+        "fix": ""
+      },
+      "mode": "one-step",
+      "source": "og8rrxrvt98pa19j",
+      "brief": {
+        "objective": "ad — un bénéfice clair et un appel à l'action",
+        "subject": "Préparation des supports — Préparation des supports",
+        "references": [
+          "image 1: exact logo"
+        ],
+        "concept": "Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement.",
+        "composition": "Diagonale documentée, texte sur zone calme et logo en retrait",
+        "framing": "Produit ou résultat du métier documenté, plan moyen",
+        "setting": "Lieu cohérent avec le projet et son usage",
+        "light": "Lumière naturelle latérale cohérente",
+        "palette": "{\"palette\":{\"primary\":\"#446274\",\"secondary\":\"#D0D8DD\",\"accent\":\"#747FB4\",\"light\":\"#F2F5F7\",\"dark\":\"#141B1F\"},\"roles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"}}",
+        "typography": "titres archivo_n8 en capitales, textes inter_n4 ; deux familles au plus; Familles de la marque et hiérarchie contrastée",
+        "exactTexts": [
+          {
+            "role": "accroche",
+            "text": "Préparation des supports",
+            "sharePct": 8.5
+          },
+          {
+            "role": "titre secondaire",
+            "text": "Préparation des supports",
+            "sharePct": 5.4
+          },
+          {
+            "role": "bouton",
+            "text": "Demander un devis",
+            "sharePct": 3.9
+          }
+        ],
+        "logo": "logo du projet fourni en référence : à reproduire exactement, jamais omis ni redessiné librement",
+        "fidelity": "outils, résultat et matériaux exacts du métier ; présence humaine seulement si autorisée ; illustration (jamais un chantier, un salarié ou un témoignage réels)",
+        "forbidden": [
+          "podium sous le produit par défaut",
+          "artisan souriant devant un décor générique, bandeau de couleur identique",
+          "marques tierces, faux logos, filigranes",
+          "texte décoratif inventé",
+          "aucune autre marque que celle du projet",
+          "podium sans raison",
+          "halo sans raison",
+          "fumée sans raison",
+          "éclaboussure sans raison",
+          "produit flottant sans raison",
+          "néon sans raison"
+        ],
+        "format": "4:5, marges extérieures 60–90 px pour 1080 px",
+        "validation": [
+          "Pertinence (le sujet exact, le message)",
+          "Fidélité du produit (forme, proportions, matières, couleurs, détails, nombre de pièces) et produit entier (aucune partie coupée ou manquante)",
+          "Cohérence du service (geste, outils, posture, matériaux)",
+          "Mains et objets sans défaut",
+          "Lisibilité, orthographe (texte exact), contraste",
+          "Marges et zones de respiration",
+          "Logo du projet exact (orthographe, forme, couleurs)",
+          "Aucune marque tierce ni filigrane",
+          "Aucun artefact",
+          "Différente des créations récentes du projet"
+        ]
+      },
+      "contract": {
+        "identity": {
+          "name": "Test Finitions",
+          "nameStatus": "validated",
+          "alternatives": [],
+          "tagline": "Finitions intérieures, Zone fictive de test.",
+          "positioning": "[À définir avec vous : pour quels clients, quelles prestations, dans quelle zone, avec quelle différence]",
+          "audience": "[À compléter : clients visés]",
+          "personality": [],
+          "tone": {
+            "voice": "Professionnel, rassurant et accessible",
+            "do": [
+              "Expliquer simplement chaque prestation",
+              "Donner les informations pratiques (zone, horaires, contact)",
+              "Montrer le vrai travail"
+            ],
+            "dont": [
+              "Inventer des tarifs, des délais ou des avis",
+              "Promettre un résultat",
+              "Jargon sans explication"
+            ]
+          },
+          "story": "",
+          "values": [],
+          "validated": [],
+          "generatedBy": "local",
+          "palette": {
+            "primary": "#446274",
+            "secondary": "#D0D8DD",
+            "accent": "#747FB4",
+            "light": "#F2F5F7",
+            "dark": "#141B1F"
+          },
+          "fonts": {
+            "heading": "archivo_n8",
+            "body": "inter_n4"
+          },
+          "direction": "brut",
+          "logo": {
+            "concept": "Logotype typographique en Archivo",
+            "status": "proposed",
+            "assetId": "jrt7mtetwa87vk4a"
+          },
+          "artIdentity": {
+            "directionId": "test-direction",
+            "seriesId": "test-series",
+            "signature": "Identité synthétique de preuve",
+            "palette": {
+              "primary": "#446274",
+              "secondary": "#D0D8DD",
+              "accent": "#747FB4",
+              "light": "#F2F5F7",
+              "dark": "#141B1F"
+            },
+            "colorRoles": {
+              "primary": "Couleur de marque",
+              "secondary": "Appui",
+              "accent": "Action",
+              "light": "Respiration",
+              "dark": "Ancrage"
+            },
+            "fonts": {
+              "heading": "archivo_n8",
+              "body": "inter_n4"
+            },
+            "tone": {
+              "voice": "Clair et concret",
+              "do": [
+                "Messages factuels"
+              ],
+              "dont": [
+                "Promesses inventées"
+              ]
+            },
+            "mood": "Propre au projet",
+            "graphicLanguage": "Contrastes et espaces calmes",
+            "rules": [
+              "Logo fidèle",
+              "Aucun humain sans autorisation"
+            ],
+            "sampleText": "Message de test"
+          }
+        },
+        "strategy": {
+          "audience": [],
+          "angles": [
+            {
+              "title": "Préparation des supports",
+              "idea": "Prestation fictive, illustration générée non présentée comme réalisation réelle."
+            },
+            {
+              "title": "Finitions peintes",
+              "idea": "Prestation fictive, illustration générée non présentée comme réalisation réelle."
+            },
+            {
+              "title": "Le savoir-faire en action",
+              "idea": "Montrer le vrai travail : gestes, outils, coulisses d'une prestation."
+            },
+            {
+              "title": "Avant / après",
+              "idea": "Uniquement de vraies réalisations, photographiées avec l'accord des clients."
+            },
+            {
+              "title": "Conseils d'expert",
+              "idea": "Partager des conseils utiles du métier, sans promesse de résultat."
+            },
+            {
+              "title": "L'équipe",
+              "idea": "Présenter les personnes qui accueillent ou interviennent, avec leur accord."
+            },
+            {
+              "title": "Prise de rendez-vous",
+              "idea": "Rappeler simplement comment réserver (« Nous contacter »), la zone et les horaires."
+            }
+          ],
+          "pillars": [
+            "Savoir-faire",
+            "Réalisations",
+            "Conseils",
+            "Coulisses",
+            "Prise de rendez-vous"
+          ],
+          "keyMessages": [
+            "Prestations : Préparation des supports, Finitions peintes, Conseil couleur",
+            "Zone d'intervention : Zone fictive de test",
+            "Nous contacter"
+          ],
+          "generatedBy": "local"
+        },
+        "facts": [],
+        "peopleAllowed": false,
+        "request": "Vérification isolée : conserver le sujet choisi et la charte. Lumière latérale, texte lisible. Aucun humain. Les visuels de ce test sont synthétiques.",
+        "aspect": "4:5",
+        "mode": "one-step",
+        "recent": [],
+        "referenceManifest": {
+          "authorized": [
+            {
+              "role": "logo",
+              "assetId": "jrt7mtetwa87vk4a"
+            }
+          ],
+          "transports": [
+            {
+              "transport": "injected, not verified"
+            }
+          ]
+        },
+        "brief": {
+          "objective": "ad — un bénéfice clair et un appel à l'action",
+          "subject": "Préparation des supports — Préparation des supports",
+          "references": [
+            "image 1: exact logo"
+          ],
+          "concept": "Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement.",
+          "composition": "Diagonale documentée, texte sur zone calme et logo en retrait",
+          "framing": "Produit ou résultat du métier documenté, plan moyen",
+          "setting": "Lieu cohérent avec le projet et son usage",
+          "light": "Lumière naturelle latérale cohérente",
+          "palette": "{\"palette\":{\"primary\":\"#446274\",\"secondary\":\"#D0D8DD\",\"accent\":\"#747FB4\",\"light\":\"#F2F5F7\",\"dark\":\"#141B1F\"},\"roles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"}}",
+          "typography": "titres archivo_n8 en capitales, textes inter_n4 ; deux familles au plus; Familles de la marque et hiérarchie contrastée",
+          "exactTexts": [
+            {
+              "role": "accroche",
+              "text": "Préparation des supports",
+              "sharePct": 8.5
+            },
+            {
+              "role": "titre secondaire",
+              "text": "Préparation des supports",
+              "sharePct": 5.4
+            },
+            {
+              "role": "bouton",
+              "text": "Demander un devis",
+              "sharePct": 3.9
+            }
+          ],
+          "logo": "logo du projet fourni en référence : à reproduire exactement, jamais omis ni redessiné librement",
+          "fidelity": "outils, résultat et matériaux exacts du métier ; présence humaine seulement si autorisée ; illustration (jamais un chantier, un salarié ou un témoignage réels)",
+          "forbidden": [
+            "podium sous le produit par défaut",
+            "artisan souriant devant un décor générique, bandeau de couleur identique",
+            "marques tierces, faux logos, filigranes",
+            "texte décoratif inventé",
+            "aucune autre marque que celle du projet",
+            "podium sans raison",
+            "halo sans raison",
+            "fumée sans raison",
+            "éclaboussure sans raison",
+            "produit flottant sans raison",
+            "néon sans raison"
+          ],
+          "format": "4:5, marges extérieures 60–90 px pour 1080 px",
+          "validation": [
+            "Pertinence (le sujet exact, le message)",
+            "Fidélité du produit (forme, proportions, matières, couleurs, détails, nombre de pièces) et produit entier (aucune partie coupée ou manquante)",
+            "Cohérence du service (geste, outils, posture, matériaux)",
+            "Mains et objets sans défaut",
+            "Lisibilité, orthographe (texte exact), contraste",
+            "Marges et zones de respiration",
+            "Logo du projet exact (orthographe, forme, couleurs)",
+            "Aucune marque tierce ni filigrane",
+            "Aucun artefact",
+            "Différente des créations récentes du projet"
+          ]
+        }
+      },
+      "effectivePrompt": "Create a finished, ultra-premium social media advertisement (meta, aspect ratio 4:5) for the brand \"Test Finitions\", at the level of a top brand's advertising campaign: real campaign photography and refined typography in one image, ready to publish.\nSubject (context for you only — NEVER write this description or any product detail in the image): Préparation des supports — Prestation fictive, illustration générée non présentée comme réalisation réelle.\nPost angle: ad — Préparation des supports.\nClient's brief for THIS visual (follow it closely; it has priority over the post angle, but never breaks the rules below): Vérification isolée : conserver le sujet choisi et la charte. Lumière latérale, texte lisible. Aucun humain. Les visuels de ce test sont synthétiques.\nUniverse of THIS post (its own setting, light and mood — not a generic template): Documented subject in a specific setting with coherent side lighting\nFinish: real light (key light, rim light, crisp reflections), depth of field and sharpness chosen for the specific concept, credible materials, coherent contact shadows and perspective. Background blur is optional, never automatic. No text, letters or signs anywhere in the decor.\nCLIENT ART DIRECTION (specific to this brand — follow it; never a generic look, never the model's default style):\nART DIRECTION NOTES — instructions for you only: never write any of these words, labels, colour codes or notes in the image.\nConcept (an idea to convey with the picture only — never write it): Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement..\nComposition: Diagonale documentée, texte sur zone calme et logo en retrait; framing: Produit ou résultat du métier documenté, plan moyen; one clear focal point; generous breathing space.\nSetting (objects and place, not words): Lieu cohérent avec le projet et son usage. Light: Lumière naturelle latérale cohérente; coherent light direction, temperature, perspective, contact shadows and reflections; nothing floating.\nColour mood: {\"palette\":{\"primary\":\"#446274\",\"secondary\":\"#D0D8DD\",\"accent\":\"#747FB4\",\"light\":\"#F2F5F7\",\"dark\":\"#141B1F\"},\"roles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"}}.\nTypography: titres archivo_n8 en capitales, textes inter_n4 ; deux familles au plus; Familles de la marque et hiérarchie contrastée.\nFidelity: outils, résultat et matériaux exacts du métier ; présence humaine seulement si autorisée ; illustration (jamais un chantier, un salarié ou un témoignage réels).\nAvoid: podium sous le produit par défaut; artisan souriant devant un décor générique, bandeau de couleur identique; marques tierces, faux logos, filigranes; aucune autre marque que celle du projet; podium sans raison; halo sans raison; fumée sans raison; éclaboussure sans raison; produit flottant sans raison; néon sans raison.\nDecor objects stay blank: no writing, letters, title or logo on books, notebooks, papers, labels, boxes or signs.\nFormat: 4:5, marges extérieures 60–90 px pour 1080 px.\nElements to include:\n- the brand logo from the first reference image, reproduced faithfully (same emblem, same letters), placed where it looks best;\n- the headline \"Préparation des supports\" (the hero text, cap height about 8.5% of the image width);\n- the small line \"Préparation des supports\";\n- a call-to-action that clearly reads as a button or link: \"Demander un devis\".\nBrand colours to build the whole design with: #141B1F, #446274, #D0D8DD, #747FB4, #F2F5F7 (dark, primary, secondary, accent, light; use the validated roles from the identity, with contrasting text rather than always dark text); strong hierarchy, maximum legibility (strong contrast behind every text).\nWrite ONLY these texts, spelled EXACTLY (same accents, same punctuation), nothing else: \"Préparation des supports\", \"Préparation des supports\", \"Demander un devis\" (plus the brand name inside the logo, as on the logo: \"Test Finitions\").\nNo other words (no description paragraph, no small print), no colour swatches or palette blocks, no fake letters, no unconfirmed prices, invented percentages, unsupported claims, fabricated reviews or stars, no hashtags, no website, no watermark. No people, no hands, no faces, no body parts.\nVALIDATED IDENTITY: {\"name\":\"Test Finitions\",\"nameStatus\":\"validated\",\"alternatives\":[],\"tagline\":\"Finitions intérieures, Zone fictive de test.\",\"positioning\":\"[À définir avec vous : pour quels clients, quelles prestations, dans quelle zone, avec quelle différence]\",\"audience\":\"[À compléter : clients visés]\",\"personality\":[],\"tone\":{\"voice\":\"Professionnel, rassurant et accessible\",\"do\":[\"Expliquer simplement chaque prestation\",\"Donner les informations pratiques (zone, horaires, contact)\",\"Montrer le vrai travail\"],\"dont\":[\"Inventer des tarifs, des délais ou des avis\",\"Promettre un résultat\",\"Jargon sans explication\"]},\"story\":\"\",\"values\":[],\"validated\":[],\"generatedBy\":\"local\",\"palette\":{\"primary\":\"#446274\",\"secondary\":\"#D0D8DD\",\"accent\":\"#747FB4\",\"light\":\"#F2F5F7\",\"dark\":\"#141B1F\"},\"fonts\":{\"heading\":\"archivo_n8\",\"body\":\"inter_n4\"},\"direction\":\"brut\",\"logo\":{\"concept\":\"Logotype typographique en Archivo\",\"status\":\"proposed\",\"assetId\":\"jrt7mtetwa87vk4a\"},\"artIdentity\":{\"directionId\":\"test-direction\",\"seriesId\":\"test-series\",\"signature\":\"Identité synthétique de preuve\",\"palette\":{\"primary\":\"#446274\",\"secondary\":\"#D0D8DD\",\"accent\":\"#747FB4\",\"light\":\"#F2F5F7\",\"dark\":\"#141B1F\"},\"colorRoles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"},\"fonts\":{\"heading\":\"archivo_n8\",\"body\":\"inter_n4\"},\"tone\":{\"voice\":\"Clair et concret\",\"do\":[\"Messages factuels\"],\"dont\":[\"Promesses inventées\"]},\"mood\":\"Propre au projet\",\"graphicLanguage\":\"Contrastes et espaces calmes\",\"rules\":[\"Logo fidèle\",\"Aucun humain sans autorisation\"],\"sampleText\":\"Message de test\"}}\nVocabulary preferences apply to generic prose only. Proper brand names, the supplied logo and real product markings stay exactly as validated.\nDELIVERY 1080×1350, ratio 4:5. Compose for this ratio, never stretch. If the model returns a wider/taller native canvas, keep ALL essential text/logo/product inside the centered 4:5 rectangle (only expendable outer background may be trimmed). Keep 8% outer safe margins; for 9:16 reserve top 14% and bottom 20% for platform UI. Full native and final crop will be checked side by side, including text at 360px phone width. Avoid excessive compression, oversharpening and fine illegible lettering.",
+      "models": []
+    },
+    {
+      "id": "028ktv1gsx7knkow",
+      "status": "ready",
+      "width": 1080,
+      "height": 1620,
+      "quality": {
+        "logoFaithful": true,
+        "fixTarget": "none",
+        "grid": {
+          "relevance": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour relevance, non constatée par un fournisseur."
+          },
+          "hierarchy": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour hierarchy, non constatée par un fournisseur."
+          },
+          "product": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour product, non constatée par un fournisseur."
+          },
+          "identity": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour identity, non constatée par un fournisseur."
+          },
+          "text": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour text, non constatée par un fournisseur."
+          },
+          "mobile": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour mobile, non constatée par un fournisseur."
+          },
+          "lightMaterials": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour lightMaterials, non constatée par un fournisseur."
+          },
+          "artifacts": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour artifacts, non constatée par un fournisseur."
+          },
+          "diversity": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour diversity, non constatée par un fournisseur."
+          }
+        },
+        "fatal": [],
+        "transcribed": [
+          "Préparation des supports",
+          "Préparation des supports",
+          "Demander un devis"
+        ],
+        "person": false,
+        "anatomyOk": true,
+        "productFaithful": true,
+        "textsExact": true,
+        "legible": true,
+        "score": 9.2,
+        "issues": [],
+        "fix": ""
+      },
+      "mode": "one-step",
+      "source": "0kp7qnjj6foqznuq",
+      "brief": {
+        "objective": "ad — un bénéfice clair et un appel à l'action",
+        "subject": "Préparation des supports — Préparation des supports",
+        "references": [
+          "image 1: exact logo"
+        ],
+        "concept": "Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement.",
+        "composition": "Diagonale documentée, texte sur zone calme et logo en retrait",
+        "framing": "Produit ou résultat du métier documenté, plan moyen",
+        "setting": "Lieu cohérent avec le projet et son usage",
+        "light": "Lumière naturelle latérale cohérente",
+        "palette": "{\"palette\":{\"primary\":\"#446274\",\"secondary\":\"#D0D8DD\",\"accent\":\"#747FB4\",\"light\":\"#F2F5F7\",\"dark\":\"#141B1F\"},\"roles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"}}",
+        "typography": "titres archivo_n8 en capitales, textes inter_n4 ; deux familles au plus; Familles de la marque et hiérarchie contrastée",
+        "exactTexts": [
+          {
+            "role": "accroche",
+            "text": "Préparation des supports",
+            "sharePct": 8.5
+          },
+          {
+            "role": "titre secondaire",
+            "text": "Préparation des supports",
+            "sharePct": 5.4
+          },
+          {
+            "role": "bouton",
+            "text": "Demander un devis",
+            "sharePct": 3.9
+          }
+        ],
+        "logo": "logo du projet fourni en référence : à reproduire exactement, jamais omis ni redessiné librement",
+        "fidelity": "outils, résultat et matériaux exacts du métier ; présence humaine seulement si autorisée ; illustration (jamais un chantier, un salarié ou un témoignage réels)",
+        "forbidden": [
+          "podium sous le produit par défaut",
+          "artisan souriant devant un décor générique, bandeau de couleur identique",
+          "marques tierces, faux logos, filigranes",
+          "texte décoratif inventé",
+          "aucune autre marque que celle du projet",
+          "podium sans raison",
+          "halo sans raison",
+          "fumée sans raison",
+          "éclaboussure sans raison",
+          "produit flottant sans raison",
+          "néon sans raison"
+        ],
+        "format": "2:3, marges extérieures 60–90 px pour 1080 px",
+        "validation": [
+          "Pertinence (le sujet exact, le message)",
+          "Fidélité du produit (forme, proportions, matières, couleurs, détails, nombre de pièces) et produit entier (aucune partie coupée ou manquante)",
+          "Cohérence du service (geste, outils, posture, matériaux)",
+          "Mains et objets sans défaut",
+          "Lisibilité, orthographe (texte exact), contraste",
+          "Marges et zones de respiration",
+          "Logo du projet exact (orthographe, forme, couleurs)",
+          "Aucune marque tierce ni filigrane",
+          "Aucun artefact",
+          "Différente des créations récentes du projet"
+        ]
+      },
+      "contract": {
+        "identity": {
+          "name": "Test Finitions",
+          "nameStatus": "validated",
+          "alternatives": [],
+          "tagline": "Finitions intérieures, Zone fictive de test.",
+          "positioning": "[À définir avec vous : pour quels clients, quelles prestations, dans quelle zone, avec quelle différence]",
+          "audience": "[À compléter : clients visés]",
+          "personality": [],
+          "tone": {
+            "voice": "Professionnel, rassurant et accessible",
+            "do": [
+              "Expliquer simplement chaque prestation",
+              "Donner les informations pratiques (zone, horaires, contact)",
+              "Montrer le vrai travail"
+            ],
+            "dont": [
+              "Inventer des tarifs, des délais ou des avis",
+              "Promettre un résultat",
+              "Jargon sans explication"
+            ]
+          },
+          "story": "",
+          "values": [],
+          "validated": [],
+          "generatedBy": "local",
+          "palette": {
+            "primary": "#446274",
+            "secondary": "#D0D8DD",
+            "accent": "#747FB4",
+            "light": "#F2F5F7",
+            "dark": "#141B1F"
+          },
+          "fonts": {
+            "heading": "archivo_n8",
+            "body": "inter_n4"
+          },
+          "direction": "brut",
+          "logo": {
+            "concept": "Logotype typographique en Archivo",
+            "status": "proposed",
+            "assetId": "jrt7mtetwa87vk4a"
+          },
+          "artIdentity": {
+            "directionId": "test-direction",
+            "seriesId": "test-series",
+            "signature": "Identité synthétique de preuve",
+            "palette": {
+              "primary": "#446274",
+              "secondary": "#D0D8DD",
+              "accent": "#747FB4",
+              "light": "#F2F5F7",
+              "dark": "#141B1F"
+            },
+            "colorRoles": {
+              "primary": "Couleur de marque",
+              "secondary": "Appui",
+              "accent": "Action",
+              "light": "Respiration",
+              "dark": "Ancrage"
+            },
+            "fonts": {
+              "heading": "archivo_n8",
+              "body": "inter_n4"
+            },
+            "tone": {
+              "voice": "Clair et concret",
+              "do": [
+                "Messages factuels"
+              ],
+              "dont": [
+                "Promesses inventées"
+              ]
+            },
+            "mood": "Propre au projet",
+            "graphicLanguage": "Contrastes et espaces calmes",
+            "rules": [
+              "Logo fidèle",
+              "Aucun humain sans autorisation"
+            ],
+            "sampleText": "Message de test"
+          }
+        },
+        "strategy": {
+          "audience": [],
+          "angles": [
+            {
+              "title": "Préparation des supports",
+              "idea": "Prestation fictive, illustration générée non présentée comme réalisation réelle."
+            },
+            {
+              "title": "Finitions peintes",
+              "idea": "Prestation fictive, illustration générée non présentée comme réalisation réelle."
+            },
+            {
+              "title": "Le savoir-faire en action",
+              "idea": "Montrer le vrai travail : gestes, outils, coulisses d'une prestation."
+            },
+            {
+              "title": "Avant / après",
+              "idea": "Uniquement de vraies réalisations, photographiées avec l'accord des clients."
+            },
+            {
+              "title": "Conseils d'expert",
+              "idea": "Partager des conseils utiles du métier, sans promesse de résultat."
+            },
+            {
+              "title": "L'équipe",
+              "idea": "Présenter les personnes qui accueillent ou interviennent, avec leur accord."
+            },
+            {
+              "title": "Prise de rendez-vous",
+              "idea": "Rappeler simplement comment réserver (« Nous contacter »), la zone et les horaires."
+            }
+          ],
+          "pillars": [
+            "Savoir-faire",
+            "Réalisations",
+            "Conseils",
+            "Coulisses",
+            "Prise de rendez-vous"
+          ],
+          "keyMessages": [
+            "Prestations : Préparation des supports, Finitions peintes, Conseil couleur",
+            "Zone d'intervention : Zone fictive de test",
+            "Nous contacter"
+          ],
+          "generatedBy": "local"
+        },
+        "facts": [],
+        "peopleAllowed": false,
+        "request": "Vérification isolée : conserver le sujet choisi et la charte. Lumière latérale, texte lisible. Aucun humain. Les visuels de ce test sont synthétiques.. Modification demandée : Éclaircir la lumière ; conserver le sujet, le logo et les textes.",
+        "aspect": "2:3",
+        "mode": "one-step",
+        "recent": [
+          {
+            "assetId": "0kp7qnjj6foqznuq",
+            "composition": "Diagonale documentée, texte sur zone calme et logo en retrait",
+            "concept": "Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement."
+          }
+        ],
+        "referenceManifest": {
+          "authorized": [
+            {
+              "role": "logo",
+              "assetId": "jrt7mtetwa87vk4a"
+            }
+          ],
+          "transports": [
+            {
+              "transport": "injected, not verified"
+            }
+          ]
+        },
+        "brief": {
+          "objective": "ad — un bénéfice clair et un appel à l'action",
+          "subject": "Préparation des supports — Préparation des supports",
+          "references": [
+            "image 1: exact logo"
+          ],
+          "concept": "Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement.",
+          "composition": "Diagonale documentée, texte sur zone calme et logo en retrait",
+          "framing": "Produit ou résultat du métier documenté, plan moyen",
+          "setting": "Lieu cohérent avec le projet et son usage",
+          "light": "Lumière naturelle latérale cohérente",
+          "palette": "{\"palette\":{\"primary\":\"#446274\",\"secondary\":\"#D0D8DD\",\"accent\":\"#747FB4\",\"light\":\"#F2F5F7\",\"dark\":\"#141B1F\"},\"roles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"}}",
+          "typography": "titres archivo_n8 en capitales, textes inter_n4 ; deux familles au plus; Familles de la marque et hiérarchie contrastée",
+          "exactTexts": [
+            {
+              "role": "accroche",
+              "text": "Préparation des supports",
+              "sharePct": 8.5
+            },
+            {
+              "role": "titre secondaire",
+              "text": "Préparation des supports",
+              "sharePct": 5.4
+            },
+            {
+              "role": "bouton",
+              "text": "Demander un devis",
+              "sharePct": 3.9
+            }
+          ],
+          "logo": "logo du projet fourni en référence : à reproduire exactement, jamais omis ni redessiné librement",
+          "fidelity": "outils, résultat et matériaux exacts du métier ; présence humaine seulement si autorisée ; illustration (jamais un chantier, un salarié ou un témoignage réels)",
+          "forbidden": [
+            "podium sous le produit par défaut",
+            "artisan souriant devant un décor générique, bandeau de couleur identique",
+            "marques tierces, faux logos, filigranes",
+            "texte décoratif inventé",
+            "aucune autre marque que celle du projet",
+            "podium sans raison",
+            "halo sans raison",
+            "fumée sans raison",
+            "éclaboussure sans raison",
+            "produit flottant sans raison",
+            "néon sans raison"
+          ],
+          "format": "2:3, marges extérieures 60–90 px pour 1080 px",
+          "validation": [
+            "Pertinence (le sujet exact, le message)",
+            "Fidélité du produit (forme, proportions, matières, couleurs, détails, nombre de pièces) et produit entier (aucune partie coupée ou manquante)",
+            "Cohérence du service (geste, outils, posture, matériaux)",
+            "Mains et objets sans défaut",
+            "Lisibilité, orthographe (texte exact), contraste",
+            "Marges et zones de respiration",
+            "Logo du projet exact (orthographe, forme, couleurs)",
+            "Aucune marque tierce ni filigrane",
+            "Aucun artefact",
+            "Différente des créations récentes du projet"
+          ]
+        }
+      },
+      "effectivePrompt": "Create a finished, ultra-premium social media advertisement (meta, aspect ratio 2:3) for the brand \"Test Finitions\", at the level of a top brand's advertising campaign: real campaign photography and refined typography in one image, ready to publish.\nSubject (context for you only — NEVER write this description or any product detail in the image): Préparation des supports — Prestation fictive, illustration générée non présentée comme réalisation réelle.\nPost angle: ad — Préparation des supports.\nClient's brief for THIS visual (follow it closely; it has priority over the post angle, but never breaks the rules below): Vérification isolée : conserver le sujet choisi et la charte. Lumière latérale, texte lisible. Aucun humain. Les visuels de ce test sont synthétiques.. Modification demandée : Éclaircir la lumière ; conserver le sujet, le logo et les textes.\nUniverse of THIS post (its own setting, light and mood — not a generic template): Documented subject in a specific setting with coherent side lighting\nFinish: real light (key light, rim light, crisp reflections), depth of field and sharpness chosen for the specific concept, credible materials, coherent contact shadows and perspective. Background blur is optional, never automatic. No text, letters or signs anywhere in the decor.\nCLIENT ART DIRECTION (specific to this brand — follow it; never a generic look, never the model's default style):\nART DIRECTION NOTES — instructions for you only: never write any of these words, labels, colour codes or notes in the image.\nConcept (an idea to convey with the picture only — never write it): Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement..\nComposition: Diagonale documentée, texte sur zone calme et logo en retrait; framing: Produit ou résultat du métier documenté, plan moyen; one clear focal point; generous breathing space.\nSetting (objects and place, not words): Lieu cohérent avec le projet et son usage. Light: Lumière naturelle latérale cohérente; coherent light direction, temperature, perspective, contact shadows and reflections; nothing floating.\nColour mood: {\"palette\":{\"primary\":\"#446274\",\"secondary\":\"#D0D8DD\",\"accent\":\"#747FB4\",\"light\":\"#F2F5F7\",\"dark\":\"#141B1F\"},\"roles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"}}.\nTypography: titres archivo_n8 en capitales, textes inter_n4 ; deux familles au plus; Familles de la marque et hiérarchie contrastée.\nFidelity: outils, résultat et matériaux exacts du métier ; présence humaine seulement si autorisée ; illustration (jamais un chantier, un salarié ou un témoignage réels).\nAvoid: podium sous le produit par défaut; artisan souriant devant un décor générique, bandeau de couleur identique; marques tierces, faux logos, filigranes; aucune autre marque que celle du projet; podium sans raison; halo sans raison; fumée sans raison; éclaboussure sans raison; produit flottant sans raison; néon sans raison.\nDecor objects stay blank: no writing, letters, title or logo on books, notebooks, papers, labels, boxes or signs.\nFormat: 2:3, marges extérieures 60–90 px pour 1080 px.\nElements to include:\n- the brand logo from the first reference image, reproduced faithfully (same emblem, same letters), placed where it looks best;\n- the headline \"Préparation des supports\" (the hero text, cap height about 8.5% of the image width);\n- the small line \"Préparation des supports\";\n- a call-to-action that clearly reads as a button or link: \"Demander un devis\".\nBrand colours to build the whole design with: #141B1F, #446274, #D0D8DD, #747FB4, #F2F5F7 (dark, primary, secondary, accent, light; use the validated roles from the identity, with contrasting text rather than always dark text); strong hierarchy, maximum legibility (strong contrast behind every text).\nWrite ONLY these texts, spelled EXACTLY (same accents, same punctuation), nothing else: \"Préparation des supports\", \"Préparation des supports\", \"Demander un devis\" (plus the brand name inside the logo, as on the logo: \"Test Finitions\").\nNo other words (no description paragraph, no small print), no colour swatches or palette blocks, no fake letters, no unconfirmed prices, invented percentages, unsupported claims, fabricated reviews or stars, no hashtags, no website, no watermark. No people, no hands, no faces, no body parts.\nVALIDATED IDENTITY: {\"name\":\"Test Finitions\",\"nameStatus\":\"validated\",\"alternatives\":[],\"tagline\":\"Finitions intérieures, Zone fictive de test.\",\"positioning\":\"[À définir avec vous : pour quels clients, quelles prestations, dans quelle zone, avec quelle différence]\",\"audience\":\"[À compléter : clients visés]\",\"personality\":[],\"tone\":{\"voice\":\"Professionnel, rassurant et accessible\",\"do\":[\"Expliquer simplement chaque prestation\",\"Donner les informations pratiques (zone, horaires, contact)\",\"Montrer le vrai travail\"],\"dont\":[\"Inventer des tarifs, des délais ou des avis\",\"Promettre un résultat\",\"Jargon sans explication\"]},\"story\":\"\",\"values\":[],\"validated\":[],\"generatedBy\":\"local\",\"palette\":{\"primary\":\"#446274\",\"secondary\":\"#D0D8DD\",\"accent\":\"#747FB4\",\"light\":\"#F2F5F7\",\"dark\":\"#141B1F\"},\"fonts\":{\"heading\":\"archivo_n8\",\"body\":\"inter_n4\"},\"direction\":\"brut\",\"logo\":{\"concept\":\"Logotype typographique en Archivo\",\"status\":\"proposed\",\"assetId\":\"jrt7mtetwa87vk4a\"},\"artIdentity\":{\"directionId\":\"test-direction\",\"seriesId\":\"test-series\",\"signature\":\"Identité synthétique de preuve\",\"palette\":{\"primary\":\"#446274\",\"secondary\":\"#D0D8DD\",\"accent\":\"#747FB4\",\"light\":\"#F2F5F7\",\"dark\":\"#141B1F\"},\"colorRoles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"},\"fonts\":{\"heading\":\"archivo_n8\",\"body\":\"inter_n4\"},\"tone\":{\"voice\":\"Clair et concret\",\"do\":[\"Messages factuels\"],\"dont\":[\"Promesses inventées\"]},\"mood\":\"Propre au projet\",\"graphicLanguage\":\"Contrastes et espaces calmes\",\"rules\":[\"Logo fidèle\",\"Aucun humain sans autorisation\"],\"sampleText\":\"Message de test\"}}\nVocabulary preferences apply to generic prose only. Proper brand names, the supplied logo and real product markings stay exactly as validated.\nDELIVERY 1080×1620, ratio 2:3. Compose for this ratio, never stretch. If the model returns a wider/taller native canvas, keep ALL essential text/logo/product inside the centered 2:3 rectangle (only expendable outer background may be trimmed). Keep 8% outer safe margins; for 9:16 reserve top 14% and bottom 20% for platform UI. Full native and final crop will be checked side by side, including text at 360px phone width. Avoid excessive compression, oversharpening and fine illegible lettering.",
+      "models": []
+    },
+    {
+      "id": "6u07a7djtbn7q8fe",
+      "status": "ready",
+      "width": 1080,
+      "height": 1080,
+      "quality": {
+        "logoFaithful": true,
+        "fixTarget": "none",
+        "grid": {
+          "relevance": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour relevance, non constatée par un fournisseur."
+          },
+          "hierarchy": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour hierarchy, non constatée par un fournisseur."
+          },
+          "product": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour product, non constatée par un fournisseur."
+          },
+          "identity": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour identity, non constatée par un fournisseur."
+          },
+          "text": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour text, non constatée par un fournisseur."
+          },
+          "mobile": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour mobile, non constatée par un fournisseur."
+          },
+          "lightMaterials": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour lightMaterials, non constatée par un fournisseur."
+          },
+          "artifacts": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour artifacts, non constatée par un fournisseur."
+          },
+          "diversity": {
+            "score": 9.2,
+            "evidence": "Observation SIMULÉE pour diversity, non constatée par un fournisseur."
+          }
+        },
+        "fatal": [],
+        "transcribed": [
+          "Préparation des supports",
+          "Préparation des supports",
+          "Demander un devis"
+        ],
+        "person": false,
+        "anatomyOk": true,
+        "productFaithful": true,
+        "textsExact": true,
+        "legible": true,
+        "score": 9.2,
+        "issues": [],
+        "fix": ""
+      },
+      "mode": "one-step",
+      "source": "0kp7qnjj6foqznuq",
+      "brief": {
+        "objective": "ad — un bénéfice clair et un appel à l'action",
+        "subject": "Préparation des supports — Préparation des supports",
+        "references": [
+          "image 1: exact logo"
+        ],
+        "concept": "Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement.",
+        "composition": "Diagonale documentée, texte sur zone calme et logo en retrait",
+        "framing": "Produit ou résultat du métier documenté, plan moyen",
+        "setting": "Lieu cohérent avec le projet et son usage",
+        "light": "Lumière naturelle latérale cohérente",
+        "palette": "{\"palette\":{\"primary\":\"#446274\",\"secondary\":\"#D0D8DD\",\"accent\":\"#747FB4\",\"light\":\"#F2F5F7\",\"dark\":\"#141B1F\"},\"roles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"}}",
+        "typography": "titres archivo_n8 en capitales, textes inter_n4 ; deux familles au plus; Familles de la marque et hiérarchie contrastée",
+        "exactTexts": [
+          {
+            "role": "accroche",
+            "text": "Préparation des supports",
+            "sharePct": 8.5
+          },
+          {
+            "role": "titre secondaire",
+            "text": "Préparation des supports",
+            "sharePct": 5.4
+          },
+          {
+            "role": "bouton",
+            "text": "Demander un devis",
+            "sharePct": 3.9
+          }
+        ],
+        "logo": "logo du projet fourni en référence : à reproduire exactement, jamais omis ni redessiné librement",
+        "fidelity": "outils, résultat et matériaux exacts du métier ; présence humaine seulement si autorisée ; illustration (jamais un chantier, un salarié ou un témoignage réels)",
+        "forbidden": [
+          "podium sous le produit par défaut",
+          "artisan souriant devant un décor générique, bandeau de couleur identique",
+          "marques tierces, faux logos, filigranes",
+          "texte décoratif inventé",
+          "aucune autre marque que celle du projet",
+          "podium sans raison",
+          "halo sans raison",
+          "fumée sans raison",
+          "éclaboussure sans raison",
+          "produit flottant sans raison",
+          "néon sans raison"
+        ],
+        "format": "1:1, marges extérieures 60–90 px pour 1080 px",
+        "validation": [
+          "Pertinence (le sujet exact, le message)",
+          "Fidélité du produit (forme, proportions, matières, couleurs, détails, nombre de pièces) et produit entier (aucune partie coupée ou manquante)",
+          "Cohérence du service (geste, outils, posture, matériaux)",
+          "Mains et objets sans défaut",
+          "Lisibilité, orthographe (texte exact), contraste",
+          "Marges et zones de respiration",
+          "Logo du projet exact (orthographe, forme, couleurs)",
+          "Aucune marque tierce ni filigrane",
+          "Aucun artefact",
+          "Différente des créations récentes du projet"
+        ]
+      },
+      "contract": {
+        "identity": {
+          "name": "Test Finitions",
+          "nameStatus": "validated",
+          "alternatives": [],
+          "tagline": "Finitions intérieures, Zone fictive de test.",
+          "positioning": "[À définir avec vous : pour quels clients, quelles prestations, dans quelle zone, avec quelle différence]",
+          "audience": "[À compléter : clients visés]",
+          "personality": [],
+          "tone": {
+            "voice": "Professionnel, rassurant et accessible",
+            "do": [
+              "Expliquer simplement chaque prestation",
+              "Donner les informations pratiques (zone, horaires, contact)",
+              "Montrer le vrai travail"
+            ],
+            "dont": [
+              "Inventer des tarifs, des délais ou des avis",
+              "Promettre un résultat",
+              "Jargon sans explication"
+            ]
+          },
+          "story": "",
+          "values": [],
+          "validated": [],
+          "generatedBy": "local",
+          "palette": {
+            "primary": "#446274",
+            "secondary": "#D0D8DD",
+            "accent": "#747FB4",
+            "light": "#F2F5F7",
+            "dark": "#141B1F"
+          },
+          "fonts": {
+            "heading": "archivo_n8",
+            "body": "inter_n4"
+          },
+          "direction": "brut",
+          "logo": {
+            "concept": "Logotype typographique en Archivo",
+            "status": "proposed",
+            "assetId": "jrt7mtetwa87vk4a"
+          },
+          "artIdentity": {
+            "directionId": "test-direction",
+            "seriesId": "test-series",
+            "signature": "Identité synthétique de preuve",
+            "palette": {
+              "primary": "#446274",
+              "secondary": "#D0D8DD",
+              "accent": "#747FB4",
+              "light": "#F2F5F7",
+              "dark": "#141B1F"
+            },
+            "colorRoles": {
+              "primary": "Couleur de marque",
+              "secondary": "Appui",
+              "accent": "Action",
+              "light": "Respiration",
+              "dark": "Ancrage"
+            },
+            "fonts": {
+              "heading": "archivo_n8",
+              "body": "inter_n4"
+            },
+            "tone": {
+              "voice": "Clair et concret",
+              "do": [
+                "Messages factuels"
+              ],
+              "dont": [
+                "Promesses inventées"
+              ]
+            },
+            "mood": "Propre au projet",
+            "graphicLanguage": "Contrastes et espaces calmes",
+            "rules": [
+              "Logo fidèle",
+              "Aucun humain sans autorisation"
+            ],
+            "sampleText": "Message de test"
+          }
+        },
+        "strategy": {
+          "audience": [],
+          "angles": [
+            {
+              "title": "Préparation des supports",
+              "idea": "Prestation fictive, illustration générée non présentée comme réalisation réelle."
+            },
+            {
+              "title": "Finitions peintes",
+              "idea": "Prestation fictive, illustration générée non présentée comme réalisation réelle."
+            },
+            {
+              "title": "Le savoir-faire en action",
+              "idea": "Montrer le vrai travail : gestes, outils, coulisses d'une prestation."
+            },
+            {
+              "title": "Avant / après",
+              "idea": "Uniquement de vraies réalisations, photographiées avec l'accord des clients."
+            },
+            {
+              "title": "Conseils d'expert",
+              "idea": "Partager des conseils utiles du métier, sans promesse de résultat."
+            },
+            {
+              "title": "L'équipe",
+              "idea": "Présenter les personnes qui accueillent ou interviennent, avec leur accord."
+            },
+            {
+              "title": "Prise de rendez-vous",
+              "idea": "Rappeler simplement comment réserver (« Nous contacter »), la zone et les horaires."
+            }
+          ],
+          "pillars": [
+            "Savoir-faire",
+            "Réalisations",
+            "Conseils",
+            "Coulisses",
+            "Prise de rendez-vous"
+          ],
+          "keyMessages": [
+            "Prestations : Préparation des supports, Finitions peintes, Conseil couleur",
+            "Zone d'intervention : Zone fictive de test",
+            "Nous contacter"
+          ],
+          "generatedBy": "local"
+        },
+        "facts": [],
+        "peopleAllowed": false,
+        "request": "Vérification isolée : conserver le sujet choisi et la charte. Lumière latérale, texte lisible. Aucun humain. Les visuels de ce test sont synthétiques.. Modification demandée : Éclaircir la lumière ; conserver le sujet, le logo et les textes.",
+        "aspect": "1:1",
+        "mode": "one-step",
+        "recent": [
+          {
+            "assetId": "028ktv1gsx7knkow",
+            "composition": "Diagonale documentée, texte sur zone calme et logo en retrait",
+            "concept": "Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement."
+          },
+          {
+            "assetId": "0kp7qnjj6foqznuq",
+            "composition": "Diagonale documentée, texte sur zone calme et logo en retrait",
+            "concept": "Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement."
+          }
+        ],
+        "referenceManifest": {
+          "authorized": [
+            {
+              "role": "logo",
+              "assetId": "jrt7mtetwa87vk4a"
+            }
+          ],
+          "transports": [
+            {
+              "transport": "injected, not verified"
+            }
+          ]
+        },
+        "brief": {
+          "objective": "ad — un bénéfice clair et un appel à l'action",
+          "subject": "Préparation des supports — Préparation des supports",
+          "references": [
+            "image 1: exact logo"
+          ],
+          "concept": "Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement.",
+          "composition": "Diagonale documentée, texte sur zone calme et logo en retrait",
+          "framing": "Produit ou résultat du métier documenté, plan moyen",
+          "setting": "Lieu cohérent avec le projet et son usage",
+          "light": "Lumière naturelle latérale cohérente",
+          "palette": "{\"palette\":{\"primary\":\"#446274\",\"secondary\":\"#D0D8DD\",\"accent\":\"#747FB4\",\"light\":\"#F2F5F7\",\"dark\":\"#141B1F\"},\"roles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"}}",
+          "typography": "titres archivo_n8 en capitales, textes inter_n4 ; deux familles au plus; Familles de la marque et hiérarchie contrastée",
+          "exactTexts": [
+            {
+              "role": "accroche",
+              "text": "Préparation des supports",
+              "sharePct": 8.5
+            },
+            {
+              "role": "titre secondaire",
+              "text": "Préparation des supports",
+              "sharePct": 5.4
+            },
+            {
+              "role": "bouton",
+              "text": "Demander un devis",
+              "sharePct": 3.9
+            }
+          ],
+          "logo": "logo du projet fourni en référence : à reproduire exactement, jamais omis ni redessiné librement",
+          "fidelity": "outils, résultat et matériaux exacts du métier ; présence humaine seulement si autorisée ; illustration (jamais un chantier, un salarié ou un témoignage réels)",
+          "forbidden": [
+            "podium sous le produit par défaut",
+            "artisan souriant devant un décor générique, bandeau de couleur identique",
+            "marques tierces, faux logos, filigranes",
+            "texte décoratif inventé",
+            "aucune autre marque que celle du projet",
+            "podium sans raison",
+            "halo sans raison",
+            "fumée sans raison",
+            "éclaboussure sans raison",
+            "produit flottant sans raison",
+            "néon sans raison"
+          ],
+          "format": "1:1, marges extérieures 60–90 px pour 1080 px",
+          "validation": [
+            "Pertinence (le sujet exact, le message)",
+            "Fidélité du produit (forme, proportions, matières, couleurs, détails, nombre de pièces) et produit entier (aucune partie coupée ou manquante)",
+            "Cohérence du service (geste, outils, posture, matériaux)",
+            "Mains et objets sans défaut",
+            "Lisibilité, orthographe (texte exact), contraste",
+            "Marges et zones de respiration",
+            "Logo du projet exact (orthographe, forme, couleurs)",
+            "Aucune marque tierce ni filigrane",
+            "Aucun artefact",
+            "Différente des créations récentes du projet"
+          ]
+        }
+      },
+      "effectivePrompt": "Create a finished, ultra-premium social media advertisement (meta, aspect ratio 1:1) for the brand \"Test Finitions\", at the level of a top brand's advertising campaign: real campaign photography and refined typography in one image, ready to publish.\nSubject (context for you only — NEVER write this description or any product detail in the image): Préparation des supports — Prestation fictive, illustration générée non présentée comme réalisation réelle.\nPost angle: ad — Préparation des supports.\nClient's brief for THIS visual (follow it closely; it has priority over the post angle, but never breaks the rules below): Vérification isolée : conserver le sujet choisi et la charte. Lumière latérale, texte lisible. Aucun humain. Les visuels de ce test sont synthétiques.. Modification demandée : Éclaircir la lumière ; conserver le sujet, le logo et les textes.\nUniverse of THIS post (its own setting, light and mood — not a generic template): Documented subject in a specific setting with coherent side lighting\nFinish: real light (key light, rim light, crisp reflections), depth of field and sharpness chosen for the specific concept, credible materials, coherent contact shadows and perspective. Background blur is optional, never automatic. No text, letters or signs anywhere in the decor.\nCLIENT ART DIRECTION (specific to this brand — follow it; never a generic look, never the model's default style):\nART DIRECTION NOTES — instructions for you only: never write any of these words, labels, colour codes or notes in the image.\nConcept (an idea to convey with the picture only — never write it): Le sujet dans un environnement adapté à son usage. Documented subject in a specific setting with coherent side lighting. Materials: Matières documentées sans texture inventée. Effects: aucun. Justification: La matière et la hiérarchie expliquent le message de cette publication.. Diversity: Cette composition est comparée aux visuels récents ; fixture de test uniquement..\nComposition: Diagonale documentée, texte sur zone calme et logo en retrait; framing: Produit ou résultat du métier documenté, plan moyen; one clear focal point; generous breathing space.\nSetting (objects and place, not words): Lieu cohérent avec le projet et son usage. Light: Lumière naturelle latérale cohérente; coherent light direction, temperature, perspective, contact shadows and reflections; nothing floating.\nColour mood: {\"palette\":{\"primary\":\"#446274\",\"secondary\":\"#D0D8DD\",\"accent\":\"#747FB4\",\"light\":\"#F2F5F7\",\"dark\":\"#141B1F\"},\"roles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"}}.\nTypography: titres archivo_n8 en capitales, textes inter_n4 ; deux familles au plus; Familles de la marque et hiérarchie contrastée.\nFidelity: outils, résultat et matériaux exacts du métier ; présence humaine seulement si autorisée ; illustration (jamais un chantier, un salarié ou un témoignage réels).\nAvoid: podium sous le produit par défaut; artisan souriant devant un décor générique, bandeau de couleur identique; marques tierces, faux logos, filigranes; aucune autre marque que celle du projet; podium sans raison; halo sans raison; fumée sans raison; éclaboussure sans raison; produit flottant sans raison; néon sans raison.\nDecor objects stay blank: no writing, letters, title or logo on books, notebooks, papers, labels, boxes or signs.\nFormat: 1:1, marges extérieures 60–90 px pour 1080 px.\nElements to include:\n- the brand logo from the first reference image, reproduced faithfully (same emblem, same letters), placed where it looks best;\n- the headline \"Préparation des supports\" (the hero text, cap height about 8.5% of the image width);\n- the small line \"Préparation des supports\";\n- a call-to-action that clearly reads as a button or link: \"Demander un devis\".\nBrand colours to build the whole design with: #141B1F, #446274, #D0D8DD, #747FB4, #F2F5F7 (dark, primary, secondary, accent, light; use the validated roles from the identity, with contrasting text rather than always dark text); strong hierarchy, maximum legibility (strong contrast behind every text).\nWrite ONLY these texts, spelled EXACTLY (same accents, same punctuation), nothing else: \"Préparation des supports\", \"Préparation des supports\", \"Demander un devis\" (plus the brand name inside the logo, as on the logo: \"Test Finitions\").\nNo other words (no description paragraph, no small print), no colour swatches or palette blocks, no fake letters, no unconfirmed prices, invented percentages, unsupported claims, fabricated reviews or stars, no hashtags, no website, no watermark. No people, no hands, no faces, no body parts.\nVALIDATED IDENTITY: {\"name\":\"Test Finitions\",\"nameStatus\":\"validated\",\"alternatives\":[],\"tagline\":\"Finitions intérieures, Zone fictive de test.\",\"positioning\":\"[À définir avec vous : pour quels clients, quelles prestations, dans quelle zone, avec quelle différence]\",\"audience\":\"[À compléter : clients visés]\",\"personality\":[],\"tone\":{\"voice\":\"Professionnel, rassurant et accessible\",\"do\":[\"Expliquer simplement chaque prestation\",\"Donner les informations pratiques (zone, horaires, contact)\",\"Montrer le vrai travail\"],\"dont\":[\"Inventer des tarifs, des délais ou des avis\",\"Promettre un résultat\",\"Jargon sans explication\"]},\"story\":\"\",\"values\":[],\"validated\":[],\"generatedBy\":\"local\",\"palette\":{\"primary\":\"#446274\",\"secondary\":\"#D0D8DD\",\"accent\":\"#747FB4\",\"light\":\"#F2F5F7\",\"dark\":\"#141B1F\"},\"fonts\":{\"heading\":\"archivo_n8\",\"body\":\"inter_n4\"},\"direction\":\"brut\",\"logo\":{\"concept\":\"Logotype typographique en Archivo\",\"status\":\"proposed\",\"assetId\":\"jrt7mtetwa87vk4a\"},\"artIdentity\":{\"directionId\":\"test-direction\",\"seriesId\":\"test-series\",\"signature\":\"Identité synthétique de preuve\",\"palette\":{\"primary\":\"#446274\",\"secondary\":\"#D0D8DD\",\"accent\":\"#747FB4\",\"light\":\"#F2F5F7\",\"dark\":\"#141B1F\"},\"colorRoles\":{\"primary\":\"Couleur de marque\",\"secondary\":\"Appui\",\"accent\":\"Action\",\"light\":\"Respiration\",\"dark\":\"Ancrage\"},\"fonts\":{\"heading\":\"archivo_n8\",\"body\":\"inter_n4\"},\"tone\":{\"voice\":\"Clair et concret\",\"do\":[\"Messages factuels\"],\"dont\":[\"Promesses inventées\"]},\"mood\":\"Propre au projet\",\"graphicLanguage\":\"Contrastes et espaces calmes\",\"rules\":[\"Logo fidèle\",\"Aucun humain sans autorisation\"],\"sampleText\":\"Message de test\"}}\nVocabulary preferences apply to generic prose only. Proper brand names, the supplied logo and real product markings stay exactly as validated.\nDELIVERY 1080×1080, ratio 1:1. Compose for this ratio, never stretch. If the model returns a wider/taller native canvas, keep ALL essential text/logo/product inside the centered 1:1 rectangle (only expendable outer background may be trimmed). Keep 8% outer safe margins; for 9:16 reserve top 14% and bottom 20% for platform UI. Full native and final crop will be checked side by side, including text at 360px phone width. Avoid excessive compression, oversharpening and fine illegible lettering.",
+      "models": []
+    }
+  ]
+}

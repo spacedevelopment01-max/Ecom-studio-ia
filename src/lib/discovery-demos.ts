@@ -1,7 +1,6 @@
 /**
  * Studio Découverte : seuls des visuels sans défaut sont montrés. Pour certaines démonstrations, le propriétaire a
- * fixé la liste des fichiers gardés (ex. montre ARVEN : gabarits « Chronographe », montre coupée ou planche fautive
- * retirés). Tout autre fichier de ces démonstrations est masqué ; une rubrique sans visuel valable n'affiche rien
+ * fixé la liste des fichiers gardés (ex. une ancienne démo aux gabarits fautifs). Tout autre fichier de ces démonstrations est masqué ; une rubrique sans visuel valable n'affiche rien
  * pour elle (pas de trou, pas d'image cassée, aucun gabarit à la place). Le manifeste n'est pas modifié (partagé
  * avec la page d'accueil).
  */
@@ -12,7 +11,7 @@ import type { Demo } from "@/components/landing-client";
  * le même fichier). « photo » : photo de départ du produit (entrée du client), entière, boucle visible.
  */
 export const DISCOVERY_KEEP: Record<string, readonly string[]> = {
-  montre: ["photo", "logo", "cutout-1", "packshot-1", "lifestyle-1", "publicite-ia-1"],
+  // Quatre démonstrations seulement (19 octobre 2026) : aucune liste restreinte, les fichiers absents sont déjà omis.
 };
 
 const stem = (src: string) => (src.split("/").pop() ?? "").replace(/(\.en)?\.[^.]+$/, "");
@@ -51,5 +50,5 @@ export const fullDemo = (d: Demo) => !!(d.photo && d.logo && d.shopDesktop && d.
  * a elle-même été créée par l'IA pour la démonstration : l'étiquette serait alors fausse.
  */
 export function startingPhotoIsClients(d: Demo): boolean {
-  return !/photo d'origine créés par l'IA|photos de jardins ont été créées par l'IA|original photo created by AI|garden photos were created by AI/i.test(d.source?.note ?? "");
+  return !/photo d'origine créés par l'IA|photos de jardins ont été créées par l'IA|original photo created by AI|garden photos were created by AI|Images IA créées|AI images created|visuels IA|images IA|AI visuals|AI images/i.test(`${d.source?.supplier ?? ""} ${d.source?.note ?? ""}`);
 }

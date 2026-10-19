@@ -1,0 +1,37 @@
+{
+  "simulation": true,
+  "results": [
+    {
+      "project": "produit",
+      "viewport": "1440x960",
+      "angles": 5,
+      "legacy": false,
+      "overflow": 0,
+      "errors": []
+    },
+    {
+      "project": "produit",
+      "viewport": "390x844",
+      "angles": 5,
+      "legacy": false,
+      "overflow": 0,
+      "errors": []
+    },
+    {
+      "project": "service",
+      "viewport": "1440x960",
+      "angles": 5,
+      "legacy": false,
+      "overflow": 0,
+      "errors": []
+    },
+    {
+      "project": "service",
+      "viewport": "390x844",
+      "angles": 5,
+      "legacy": false,
+      "overflow": 0,
+      "errors": []
+    }
+  ]
+}

@@ -34,9 +34,9 @@ describe("disposition de l'en-tête et du pied de page", () => {
     expect(mega.options!.find((o) => o.value === "cards")!.label).toBe("Image cards + promos");
   });
 
-  it("pied de page : les 9 styles", () => {
+  it("pied de page : les 11 styles, dont les deux références", () => {
     const style = layoutChoices(spec, g("footer").s, "fr")!.find((x) => x.key === "style")!;
-    expect(style.options!.map((o) => o.value)).toEqual(["columns", "wordmark", "card", "centered", "minimal", "brand-left", "split", "stacked", "boxed"]);
+    expect(style.options!.map((o) => o.value)).toEqual(["columns", "wordmark", "card", "centered", "minimal", "brand-left", "split", "stacked", "boxed", "reference-shop", "reference-studio"]);
   });
 
   it("autres sections et thème importé : aucun choix proposé", () => {

@@ -1,0 +1,37 @@
+{
+  "simulation": true,
+  "codeCommit": "2b64054be0ff29fe297027552f009186fcc502f2",
+  "harnessCommit": "836379b42cf80c12b99e2415ff10b7fb793e1803",
+  "scope": "Preflight D, not four-profile final acceptance",
+  "phase": "explicit renewal after ready handoff",
+  "nativeJobType": "brand.logo.v2",
+  "nativeJobStatus": "done",
+  "renewRequested": true,
+  "shown": 0,
+  "discarded": [
+    {
+      "verdict": "REJECTED",
+      "codes": [
+        "duplicate"
+      ],
+      "reason": "Copie quasi identique d’une direction déjà conservée : pas une création distincte."
+    },
+    {
+      "verdict": "REJECTED",
+      "codes": [
+        "duplicate"
+      ],
+      "reason": "Copie quasi identique d’une direction déjà conservée : pas une création distincte."
+    },
+    {
+      "verdict": "REJECTED",
+      "codes": [
+        "duplicate"
+      ],
+      "reason": "Copie quasi identique d’une direction déjà conservée : pas une création distincte."
+    }
+  ],
+  "diagnosis": "Injected drawArtwork used only t1/t2/t3, so renewal returned the same drawings. Native duplicate guard correctly rejected all three. No production fix justified.",
+  "realProviderCalls": 0,
+  "actualCostMicro": 0
+}

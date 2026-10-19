@@ -230,7 +230,7 @@ describe("thème entièrement sur mesure (IA simulée)", () => {
     expect(JSON.stringify(await res.json())).toMatch(/forfait Dominer/);
   });
 
-  it("génération d'une section par l'IA : refusée avec Créer (402), acceptée avec Vendre", async () => {
+  it("génération d'une section par l'IA : réservée à Dominer (issue #141) — refusée avec Créer et Développer (402)", async () => {
     const { assertSectionGeneration, sectionGenerationAllowed } = await import("@/lib/theme/custom-access");
     const creer = await setup("creer");
     const allowed = async (plan: Parameters<typeof setup>[0], role?: Parameters<typeof setup>[1]) => {
@@ -238,11 +238,12 @@ describe("thème entièrement sur mesure (IA simulée)", () => {
       return sectionGenerationAllowed(x.user, x.pid);
     };
     expect(sectionGenerationAllowed(creer.user, creer.pid)).toBe(false);
-    expect(() => assertSectionGeneration(creer.user, creer.pid)).toThrow(/Développer et Dominer/);
-    expect(await allowed("vendre")).toBe(true);
+    expect(() => assertSectionGeneration(creer.user, creer.pid)).toThrow(/forfait Dominer/);
+    expect(await allowed("vendre")).toBe(false);
     expect(await allowed("dominer")).toBe(true);
     expect(await allowed(null, "admin")).toBe(false);
-    expect(await allowed("vendre", "admin")).toBe(true);
+    expect(await allowed("vendre", "admin")).toBe(false);
+    expect(await allowed("dominer", "admin")).toBe(true);
 
     const { POST } = await import("@/app/api/projects/[id]/theme/chat/route");
     const send = (pid: string, generate: boolean) =>
@@ -250,12 +251,15 @@ describe("thème entièrement sur mesure (IA simulée)", () => {
     await login(creer.user.id);
     const refused = await send(creer.pid, true);
     expect(refused.status).toBe(402);
-    expect(JSON.stringify(await refused.json())).toMatch(/Développer et Dominer/);
+    expect(JSON.stringify(await refused.json())).toMatch(/forfait Dominer/);
     // Une retouche ordinaire par la discussion reste ouverte à Créer.
     expect((await send(creer.pid, false)).status).toBe(200);
     const vendre = await setup("vendre");
     await login(vendre.user.id);
-    expect((await send(vendre.pid, true)).status).toBe(200);
+    expect((await send(vendre.pid, true)).status).toBe(402);
+    const dominer = await setup("dominer");
+    await login(dominer.user.id);
+    expect((await send(dominer.pid, true)).status).toBe(200);
   });
 });
 

@@ -23,8 +23,8 @@ export function verifiedFacts(p: Project, item?: CatalogItem | null): VerifiedFa
   const itemFacts = item ? item.features.filter((f) => f.trim()).map((f) => ({ label: "", value: f.trim() })) : [];
   const facts = item ? itemFacts : confirmed.map((f) => ({ label: f.label.trim(), value: f.value.trim() }));
   if (!facts.length) unknowns.push(services ? "détails des prestations (matériaux, étapes, délais)" : "caractéristiques confirmées du produit (dimensions, matières, contenance…)");
-  const shipping = find(/livraison|shipping|envoi|delivery/i);
-  const returns = find(/retour|return|rembourse|refund/i);
+  const shipping = item ? null : find(/livraison|shipping|envoi|delivery/i);
+  const returns = item ? null : find(/retour|return|rembourse|refund/i);
   if (!services && !shipping) unknowns.push("conditions de livraison");
   if (!services && !returns) unknowns.push("conditions de retour");
   const price = item ? (item.price != null ? `${(item.price / 100).toFixed(2).replace(".", ",")} €` : null) : p.product.price.status === "confirmed" && p.product.price.amount != null ? `${(p.product.price.amount / 100).toFixed(2).replace(".", ",")} ${p.product.price.currency === "EUR" ? "€" : p.product.price.currency}` : null;
@@ -34,13 +34,13 @@ export function verifiedFacts(p: Project, item?: CatalogItem | null): VerifiedFa
   if (!i.proofs.length) unknowns.push("preuves (garanties, labels, certifications) — aucune ne sera affirmée");
   return {
     brand: i.brand,
-    offerName: item?.name?.trim() || i.offerName,
-    category: item?.category?.trim() || p.product.category?.trim() || i.category.label,
+    offerName: item ? item.name.trim() : i.offerName,
+    category: item ? item.category.trim() : p.product.category?.trim() || i.category.label,
     business: p.business,
     facts,
-    answers: p.product.questions.filter((q) => q.answer?.trim()).map((q) => ({ q: q.question.trim(), a: q.answer!.trim() })),
-    objections: i.objections,
-    proofs: i.proofs,
+    answers: item ? [] : p.product.questions.filter((q) => q.answer?.trim()).map((q) => ({ q: q.question.trim(), a: q.answer!.trim() })),
+    objections: item ? [] : i.objections,
+    proofs: item ? [] : i.proofs,
     services: services ? s.services.filter((x) => x.name.trim()).map((x) => ({ name: x.name.trim(), description: (x.description ?? "").trim(), ...(x.price ? { price: x.price } : {}), ...(x.duration ? { duration: x.duration } : {}) })) : [],
     area: services ? clean(s.area) : null,
     contact: { phone: clean(s?.phone), email: clean(s?.email), address: clean(s?.address), hours: clean(s?.hours), bookingUrl: clean(s?.bookingUrl), mode: services ? (s.contactMode ?? null) : null },
@@ -51,7 +51,7 @@ export function verifiedFacts(p: Project, item?: CatalogItem | null): VerifiedFa
     tone: i.tone,
     audience: i.audience.declared ?? i.audience.persona,
     difference: item ? clean(item.description) : i.difference,
-    problem: i.problem,
+    problem: item ? null : i.problem,
     unknowns,
   };
 }

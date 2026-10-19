@@ -1,0 +1,44 @@
+
+ RUN  v5.0.3 /workspace/Ecom-studio-ia
+
+ ❯ tests/lot1-produits-sections.test.ts (16 tests | 2 failed | 14 skipped) 212ms
+   ❯ Lot 1 — sections propres au produit (16)
+     × une retouche de style seule est conservée sur sa fiche, sans dépendre d'un changement de texte 102ms
+     × SEO client nouveau et FAQ ciblée : les retouches antérieures du corps restent disponibles 108ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/lot1-produits-sections.test.ts > Lot 1 — sections propres au produit > une retouche de style seule est conservée sur sa fiche, sans dépendre d'un changement de texte
+TypeError: undefined is not iterable (cannot read property Symbol(Symbol.iterator))
+ ❯ tests/lot1-produits-sections.test.ts:219:37
+    217|     spec.elementStyles = [style]; saveThemeVersion(pid, spec, "Couleur…
+    218|     const next = await composeThemeV2(pid);
+    219|     expect(next.spec.elementStyles).toContainEqual(style);
+       |                                     ^
+    220|     const other = storeProducts(next.spec).find((x) => x.contentTarget…
+    221|     expect(Object.keys(next.spec.templates[`product.${other.template_s…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/lot1-produits-sections.test.ts > Lot 1 — sections propres au produit > SEO client nouveau et FAQ ciblée : les retouches antérieures du corps restent disponibles
+AssertionError: expected 'Ancien SEO manuel' to be 'NOUVEAU_SEO_CLIENT' // Object.is equality
+
+Expected: "NOUVEAU_SEO_CLIENT"
+Received: "Ancien SEO manuel"
+
+ ❯ tests/lot1-produits-sections.test.ts:234:32
+    232|     saveUserEdit(pid, faq.docKey!, { ...faq.doc!, blocks: [{ id: "ques…
+    233|     const next = await composeThemeV2(pid), product = storeProducts(ne…
+    234|     expect(product.seo?.title).toBe("NOUVEAU_SEO_CLIENT");
+       |                                ^
+    235|     expect(product.description_html).toContain("CORPS_MANUEL_A_PRESERV…
+    236|     expect(product.description_html).toContain("NOUVELLE_REPONSE_ACCES…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 14 skipped (16)
+   Start at  23:01:01
+   Duration  4.41s (import 53%, transform 42%, tests 5%)
+

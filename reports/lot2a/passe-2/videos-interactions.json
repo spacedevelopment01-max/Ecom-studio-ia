@@ -1,0 +1,25 @@
+{
+  "sourceCommit": "f40ef52dca145344d9972cf14727eeba6c992588",
+  "sourceDirty": false,
+  "recorder": "filmer-interactions.mjs",
+  "recorderSha256": "8f1b96e5ed6bc29e739d0f60aac518c6a84bea787cc6695948734ba411580dc5",
+  "aiCalls": 0,
+  "cmsInstalled": false,
+  "fixtures": "referenceProject + referencePurchase ; mêmes données de démonstration que les PNG, projets temporaires distincts",
+  "results": [
+    {
+      "kind": "products",
+      "file": "products/interactions.mp4",
+      "javascriptErrors": [],
+      "scroll": "défilement smooth du navigateur, sans montage de maquette",
+      "submission": false
+    },
+    {
+      "kind": "services",
+      "file": "services/interactions.mp4",
+      "javascriptErrors": [],
+      "scroll": "défilement smooth du navigateur, sans montage de maquette",
+      "submission": false
+    }
+  ]
+}

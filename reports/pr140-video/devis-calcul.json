@@ -1,0 +1,74 @@
+{
+  "dateConsultation": "2026-10-19",
+  "productionConfigurationObserved": false,
+  "noPaidCalls": true,
+  "actualProviderCostEur": 0,
+  "currency": "USD",
+  "conversion": {
+    "usdToEur": 0.86,
+    "source": "src/lib/ai/config.ts::usdToEur, valeur de repli de cette copie ; aucune cotation de marché ou configuration de production constatée"
+  },
+  "targetAssumptions": {
+    "clipCount": 4,
+    "generatedSecondsPerClip": 5,
+    "generatedSeconds": 20,
+    "editedSeconds": 20,
+    "output": "1080x1920",
+    "imageOutputResolution": "1008x1792, palier 2K retenu par prudence",
+    "imageReferenceCountPerScene": 1,
+    "scenarioTokensInput": 8000,
+    "scenarioTokensOutput": 2000,
+    "imageReviewTokensInputPerScene": 4000,
+    "imageReviewTokensOutputPerScene": 1000,
+    "clipReviewTokensInputPerScene": 6000,
+    "clipReviewTokensOutputPerScene": 1000,
+    "finalReviewTokensInput": 8000,
+    "finalReviewTokensOutput": 1500,
+    "cacheDiscountAssumed": false,
+    "taxesOrMarkupIncluded": false,
+    "inputTokenRateUsdPerMillion": 2.5,
+    "outputTokenRateUsdPerMillion": 10,
+    "cacheWriteAssumption": "Toutes les entrées valorisées au tarif de création de cache 5 minutes par prudence ; aucune remise de lecture supposée. Quantités hypothétiques, non mesurées."
+  },
+  "target": {
+    "firstPassUsd": 1.317,
+    "firstPassEur": 1.13262,
+    "oneClipRedoUsd": 1.5645,
+    "oneClipRedoEur": 1.34547,
+    "maximumTargetUsd": null,
+    "maximumTargetReason": "Contrôle vision des clips et carte de fin sur le quatrième clip non raccordés dans le parcours guidé ; aucune politique de reprise complète de ce rendu ne peut être attestée."
+  },
+  "existingGuidedConditionalBudget": {
+    "sameAssumedRoutes": true,
+    "firstQuoteEur": 1.3631,
+    "maxFormulaEur": 1.389332,
+    "comment": "Budget calculé selon les fonctions actuelles du studio, pas un prix fournisseur du brief premium ni une garantie de livraison. Iprob inclut conception/contrôle social non appelés pour chaque image vidéo.",
+    "proof": "devis-natif-conditionnel.json ; fonctions natives exécutées dans une configuration synthétique isolée, zéro projet et zéro appel fournisseur"
+  },
+  "monthlyBudgetAtListPriceTtc": {
+    "creer": 16.333333,
+    "developper": 29.666666,
+    "dominer": 43.0
+  },
+  "monthlyConsumptionPct": {
+    "creer": {
+      "first": 6.9344,
+      "oneClipRedo": 8.2376,
+      "targetMaximumFormula": "100*Cmax/Bmois",
+      "creerVideoGenerationRight": false
+    },
+    "developper": {
+      "first": 3.8178,
+      "oneClipRedo": 4.5353,
+      "targetMaximumFormula": "100*Cmax/Bmois",
+      "creerVideoGenerationRight": null
+    },
+    "dominer": {
+      "first": 2.634,
+      "oneClipRedo": 3.129,
+      "targetMaximumFormula": "100*Cmax/Bmois",
+      "creerVideoGenerationRight": null
+    }
+  },
+  "scope": "Une vidéo finale, aucune déclinaison ni publication, aucun nouveau produit ONDE créé."
+}

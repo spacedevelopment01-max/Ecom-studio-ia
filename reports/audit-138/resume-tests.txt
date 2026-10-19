@@ -1,0 +1,10 @@
+Code testé : 11114f1f5e38e59ab3b8ffc66d292f0d088c516f
+
+Test Files  261 passed (261)
+Tests  1931 passed | 3 skipped (1934)
+Start at  18:41:59
+Duration  659.76s (tests 82%, import 17%, transform 1%)
+
+Tests ciblés : 114 réussis, 8 fichiers.
+Types et build réussis.
+Fournisseurs : simulés. Appels IA réels : 0. Dépense fournisseur de cette passe : 0.

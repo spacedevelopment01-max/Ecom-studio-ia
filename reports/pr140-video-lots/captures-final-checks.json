@@ -1,0 +1,77 @@
+{
+  "providerCalls": 0,
+  "results": [
+    {
+      "slug": "produit-publicitaire",
+      "mobile": false,
+      "docKey": "vid:dc9b3b713f1f7aab70a4",
+      "version": 14,
+      "renderedAssetId": "gjm8d3h21unm628t",
+      "readOnly": true,
+      "realFrameDecoded": true
+    },
+    {
+      "slug": "produit-publicitaire",
+      "mobile": true,
+      "docKey": "vid:dc9b3b713f1f7aab70a4",
+      "version": 14,
+      "renderedAssetId": "gjm8d3h21unm628t",
+      "readOnly": true,
+      "realFrameDecoded": true
+    },
+    {
+      "slug": "service-publicitaire",
+      "mobile": false,
+      "docKey": "vid:0c2337ea0b4a9758bdb3",
+      "version": 5,
+      "renderedAssetId": "ofw8c9s35n3po7xn",
+      "readOnly": true,
+      "realFrameDecoded": true
+    },
+    {
+      "slug": "service-publicitaire",
+      "mobile": true,
+      "docKey": "vid:0c2337ea0b4a9758bdb3",
+      "version": 5,
+      "renderedAssetId": "ofw8c9s35n3po7xn",
+      "readOnly": true,
+      "realFrameDecoded": true
+    },
+    {
+      "slug": "produit-organique",
+      "mobile": false,
+      "docKey": "vid:b9d6e735bfff951c511f",
+      "version": 5,
+      "renderedAssetId": "vrjdurl15eet4oez",
+      "readOnly": true,
+      "realFrameDecoded": true
+    },
+    {
+      "slug": "produit-organique",
+      "mobile": true,
+      "docKey": "vid:b9d6e735bfff951c511f",
+      "version": 5,
+      "renderedAssetId": "vrjdurl15eet4oez",
+      "readOnly": true,
+      "realFrameDecoded": true
+    },
+    {
+      "slug": "service-organique",
+      "mobile": false,
+      "docKey": "vid:ff9fc49844ff5f861ad4",
+      "version": 5,
+      "renderedAssetId": "p6tx4wgq23nvi6im",
+      "readOnly": true,
+      "realFrameDecoded": true
+    },
+    {
+      "slug": "service-organique",
+      "mobile": true,
+      "docKey": "vid:ff9fc49844ff5f861ad4",
+      "version": 5,
+      "renderedAssetId": "p6tx4wgq23nvi6im",
+      "readOnly": true,
+      "realFrameDecoded": true
+    }
+  ]
+}

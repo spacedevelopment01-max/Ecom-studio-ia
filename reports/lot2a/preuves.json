@@ -1,0 +1,461 @@
+{
+  "sourceCommit": "4097eec6ae5a6d6361093219e11afc2fc0abdb0a",
+  "sourceDirty": false,
+  "generatedAt": "2026-10-18T01:22:22.112Z",
+  "environment": "Chromium local, routes GET/POST d'aperçu réelles, base temporaire, réseau fournisseur bloqué",
+  "aiCalls": 0,
+  "cmsInstalled": false,
+  "cases": [
+    {
+      "kind": "products",
+      "direction": "vitrine",
+      "sections": [
+        "ref-hero",
+        "featured-collection",
+        "ref-editorial",
+        "v2-benefits",
+        "ref-editorial",
+        "v2-specs",
+        "v2-media",
+        "v2-faq",
+        "reassurance",
+        "v2-cta"
+      ],
+      "visibleSections": 9,
+      "pages": [
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 1440,
+          "file": "accueil-ordinateur.png",
+          "measurements": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 6468,
+            "h1": 1,
+            "images": 13,
+            "cls": 0.016168828039601013,
+            "lcp": 2188,
+            "duration": 2328.10000000149,
+            "transferBytes": null
+          },
+          "missingImages": 0,
+          "javascriptErrors": []
+        },
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 390,
+          "file": "accueil-mobile.png",
+          "measurements": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 7232,
+            "h1": 1,
+            "images": 13,
+            "cls": 0,
+            "lcp": 496,
+            "duration": 563.1000000014901,
+            "transferBytes": null
+          },
+          "missingImages": 0,
+          "javascriptErrors": []
+        },
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 768,
+          "file": null,
+          "measurements": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 6968,
+            "h1": 1,
+            "images": 13,
+            "cls": 0.00034631287374614205,
+            "lcp": 1080,
+            "duration": 1154.2000000029802,
+            "transferBytes": null
+          },
+          "missingImages": 0,
+          "javascriptErrors": []
+        },
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 1024,
+          "file": null,
+          "measurements": {
+            "width": 1024,
+            "scrollWidth": 1024,
+            "height": 5849,
+            "h1": 1,
+            "images": 13,
+            "cls": 0.0008462591965993245,
+            "lcp": 548,
+            "duration": 581,
+            "transferBytes": null
+          },
+          "missingImages": 0,
+          "javascriptErrors": []
+        },
+        {
+          "name": "produit",
+          "route": "/products/montre-acier-et-cuir",
+          "width": 1440,
+          "file": "produit-ordinateur.png",
+          "measurements": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 3993,
+            "h1": 1,
+            "images": 12,
+            "cls": 0.0002202039260759602,
+            "lcp": 2076,
+            "duration": 1977.8999999985099,
+            "transferBytes": null
+          },
+          "missingImages": 0,
+          "javascriptErrors": []
+        },
+        {
+          "name": "produit",
+          "route": "/products/montre-acier-et-cuir",
+          "width": 390,
+          "file": "produit-mobile.png",
+          "measurements": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 4884,
+            "h1": 1,
+            "images": 12,
+            "cls": 0,
+            "lcp": 492,
+            "duration": 785.5,
+            "transferBytes": null
+          },
+          "missingImages": 0,
+          "javascriptErrors": []
+        },
+        {
+          "name": "produit",
+          "route": "/products/montre-acier-et-cuir",
+          "width": 768,
+          "file": null,
+          "measurements": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 5765,
+            "h1": 1,
+            "images": 12,
+            "cls": 0.00011841995804398149,
+            "lcp": 1324,
+            "duration": 1462.5,
+            "transferBytes": null
+          },
+          "missingImages": 0,
+          "javascriptErrors": []
+        },
+        {
+          "name": "produit",
+          "route": "/products/montre-acier-et-cuir",
+          "width": 1024,
+          "file": null,
+          "measurements": {
+            "width": 1024,
+            "scrollWidth": 1024,
+            "height": 4124,
+            "h1": 1,
+            "images": 12,
+            "cls": 0.0003035958111286163,
+            "lcp": 1280,
+            "duration": 1126,
+            "transferBytes": null
+          },
+          "missingImages": 0,
+          "javascriptErrors": []
+        }
+      ],
+      "keyRoutes": [
+        "/collections/all",
+        "/pages/contact"
+      ],
+      "exports": [
+        {
+          "platform": "shopify",
+          "kind": "theme",
+          "bytes": 3096883,
+          "files": 176,
+          "media": 11,
+          "issues": [
+            {
+              "code": "product_template_assignment_required",
+              "severity": "warning",
+              "detail": "Shopify : le ZIP et le CSV seuls n'affectent pas les gabarits aux produits. Suivre assets/es-product-templates.json : choisir puis enregistrer le modèle de chaque produit dans Shopify. Installation réelle non vérifiée."
+            }
+          ]
+        },
+        {
+          "platform": "woocommerce",
+          "kind": "theme",
+          "bytes": 4165716,
+          "files": 129,
+          "media": 11,
+          "issues": [
+            {
+              "code": "product_layouts_shared",
+              "severity": "warning",
+              "detail": "WooCommerce : une seule fiche produit pour tous les produits ; les mises en page propres à Montre acier et cuir ne sont pas reprises (elles le sont dans l'export Shopify)"
+            }
+          ]
+        },
+        {
+          "platform": "prestashop",
+          "kind": "theme",
+          "bytes": 3501625,
+          "files": 47,
+          "media": 11,
+          "issues": [
+            {
+              "code": "product_layouts_shared",
+              "severity": "warning",
+              "detail": "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Montre acier et cuir ne sont pas reprises (elles le sont dans l'export Shopify)"
+            }
+          ]
+        }
+      ],
+      "interactions": {
+        "gallery": true,
+        "cart": true,
+        "faq": true,
+        "mobileMenu": true,
+        "escape": true,
+        "focusReturned": true,
+        "focus": {
+          "style": "solid",
+          "width": "3px"
+        },
+        "emailValidation": true,
+        "reducedMotion": "none",
+        "contactDelivery": "non vérifiée : aucune soumission externe"
+      }
+    },
+    {
+      "kind": "services",
+      "direction": "jardin",
+      "sections": [
+        "ref-hero",
+        "ref-editorial",
+        "ref-offers",
+        "ref-editorial",
+        "ref-notes",
+        "v2-steps",
+        "v2-media",
+        "v2-faq",
+        "v2-facts",
+        "v2-cta"
+      ],
+      "visibleSections": 10,
+      "pages": [
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 1440,
+          "file": "accueil-ordinateur.png",
+          "measurements": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 7953,
+            "h1": 1,
+            "images": 11,
+            "cls": 0.00047254919986175416,
+            "lcp": 764,
+            "duration": 709.9000000022352,
+            "transferBytes": null
+          },
+          "missingImages": 0,
+          "javascriptErrors": []
+        },
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 390,
+          "file": "accueil-mobile.png",
+          "measurements": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 8698,
+            "h1": 1,
+            "images": 11,
+            "cls": 0.0000346476511516605,
+            "lcp": 724,
+            "duration": 917.5999999977648,
+            "transferBytes": null
+          },
+          "missingImages": 0,
+          "javascriptErrors": []
+        },
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 768,
+          "file": null,
+          "measurements": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 7126,
+            "h1": 1,
+            "images": 11,
+            "cls": 0.000015473090277777776,
+            "lcp": 696,
+            "duration": 587.0999999977648,
+            "transferBytes": null
+          },
+          "missingImages": 0,
+          "javascriptErrors": []
+        },
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 1024,
+          "file": null,
+          "measurements": {
+            "width": 1024,
+            "scrollWidth": 1024,
+            "height": 7345,
+            "h1": 1,
+            "images": 11,
+            "cls": 0.0005566309558020698,
+            "lcp": 1156,
+            "duration": 1216.7000000029802,
+            "transferBytes": null
+          },
+          "missingImages": 0,
+          "javascriptErrors": []
+        },
+        {
+          "name": "prestation",
+          "route": "/pages/texte-service-creation",
+          "width": 1440,
+          "file": "prestation-ordinateur.png",
+          "measurements": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 2615,
+            "h1": 1,
+            "images": 3,
+            "cls": 0.00038911911450295784,
+            "lcp": 496,
+            "duration": 470,
+            "transferBytes": null
+          },
+          "missingImages": 0,
+          "javascriptErrors": []
+        },
+        {
+          "name": "prestation",
+          "route": "/pages/texte-service-creation",
+          "width": 390,
+          "file": "prestation-mobile.png",
+          "measurements": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 2899,
+            "h1": 1,
+            "images": 3,
+            "cls": 0.000059361841775618424,
+            "lcp": 1520,
+            "duration": 1588.5,
+            "transferBytes": null
+          },
+          "missingImages": 0,
+          "javascriptErrors": []
+        },
+        {
+          "name": "prestation",
+          "route": "/pages/texte-service-creation",
+          "width": 768,
+          "file": null,
+          "measurements": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 2601,
+            "h1": 1,
+            "images": 3,
+            "cls": 0.000026277141806520064,
+            "lcp": 536,
+            "duration": 546.6999999992549,
+            "transferBytes": null
+          },
+          "missingImages": 0,
+          "javascriptErrors": []
+        },
+        {
+          "name": "prestation",
+          "route": "/pages/texte-service-creation",
+          "width": 1024,
+          "file": null,
+          "measurements": {
+            "width": 1024,
+            "scrollWidth": 1024,
+            "height": 2564,
+            "h1": 1,
+            "images": 3,
+            "cls": 0.00046719382206598914,
+            "lcp": 2552,
+            "duration": 2503.10000000149,
+            "transferBytes": null
+          },
+          "missingImages": 0,
+          "javascriptErrors": []
+        }
+      ],
+      "keyRoutes": [
+        "/pages/prestations",
+        "/pages/a-propos",
+        "/pages/contact"
+      ],
+      "exports": [
+        {
+          "platform": "shopify",
+          "kind": "theme",
+          "bytes": 4659919,
+          "files": 180,
+          "media": 13,
+          "issues": []
+        },
+        {
+          "platform": "woocommerce",
+          "kind": "theme",
+          "bytes": 6353137,
+          "files": 137,
+          "media": 13,
+          "issues": []
+        },
+        {
+          "platform": "prestashop",
+          "kind": "theme",
+          "bytes": 5322540,
+          "files": 52,
+          "media": 13,
+          "issues": []
+        }
+      ],
+      "interactions": {
+        "gallery": false,
+        "cart": false,
+        "faq": true,
+        "mobileMenu": true,
+        "escape": true,
+        "focusReturned": true,
+        "focus": {
+          "style": "solid",
+          "width": "3px"
+        },
+        "emailValidation": true,
+        "reducedMotion": "none",
+        "contactDelivery": "non vérifiée : aucune soumission externe"
+      }
+    }
+  ]
+}

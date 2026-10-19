@@ -16,7 +16,7 @@ class EsStudio extends Module
     {
         $this->name = 'esstudio';
         $this->tab = 'front_office_features';
-        $this->version = '1.0.0';
+        $this->version = '1.1.0';
         $this->author = 'E-COM STUDIO IA';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = ['min' => '8.0.0', 'max' => _PS_VERSION_];
@@ -39,7 +39,8 @@ class EsStudio extends Module
     {
         static $s = null;
         if ($s === null) {
-            $s = json_decode((string) @file_get_contents(__DIR__ . '/site.json'), true) ?: [];
+            $file = defined('_PS_THEME_DIR_') && is_file(_PS_THEME_DIR_ . 'config/es-site.json') ? _PS_THEME_DIR_ . 'config/es-site.json' : __DIR__ . '/site.json';
+            $s = json_decode((string) @file_get_contents($file), true) ?: [];
         }
         return $s;
     }
@@ -67,10 +68,11 @@ class EsStudio extends Module
         if (is_array($rewrite)) {
             $rewrite = reset($rewrite);
         }
-        if (empty($site['product']['handle']) || $rewrite !== $site['product']['handle'] || !is_file(__DIR__ . '/views/templates/hook/product.tpl')) {
+        $file = defined('_PS_THEME_DIR_') && is_file(_PS_THEME_DIR_ . 'config/es-site.json') ? _PS_THEME_DIR_ . 'templates/es/product-extra.tpl' : __DIR__ . '/views/templates/hook/product.tpl';
+        if (empty($site['product']['handle']) || $rewrite !== $site['product']['handle'] || !is_file($file)) {
             return '';
         }
-        return $this->fetch('module:esstudio/views/templates/hook/product.tpl');
+        return $this->context->smarty->fetch($file);
     }
 
     /** Message après l'envoi d'un formulaire de section. */
@@ -89,6 +91,18 @@ class EsStudio extends Module
     /** Configuration : messages reçus par les formulaires du site. */
     public function getContent()
     {
+        $catalogHtml = '';
+        if (is_file(__DIR__ . '/catalogue.json') && (self::site()['business'] ?? '') !== 'services') {
+            if (Tools::isSubmit('es_catalog_import')) {
+                try {
+                    if (!hash_equals(Tools::getAdminTokenLite('AdminModules'), (string) Tools::getValue('token'))) throw new RuntimeException('catalog_csrf_invalid');
+                    require_once __DIR__ . '/catalog-import.php';
+                    $imported = es_ps_catalog_import();
+                    $catalogHtml .= $this->displayConfirmation(count($imported) . ' produits importés ou mis à jour. Vérifiez puis activez les nouveaux produits dans Catalogue.');
+                } catch (Throwable $e) { $catalogHtml .= $this->displayError($e->getMessage()); }
+            }
+            $catalogHtml .= '<div class="panel"><h3>Catalogue</h3><p>Import local des fichiers livrés. Nouveaux produits désactivés ; éléments reliés mis à jour. Aucun prix ni stock inconnu inventé. Vérifiez les taxes, stocks et produits avant publication.</p><form method="post"><input type="hidden" name="token" value="' . htmlspecialchars(Tools::getAdminTokenLite('AdminModules'), ENT_QUOTES) . '"><button class="btn btn-default" name="es_catalog_import" value="1">Importer / mettre à jour le catalogue</button></form></div>';
+        }
         $rows = json_decode((string) Configuration::get('ES_FORM_ENTRIES'), true) ?: [];
         $html = '<div class="panel"><h3>' . htmlspecialchars($this->trans('Messages du site', [], 'Modules.Esstudio.Admin')) . '</h3>';
         $html .= '<p>' . htmlspecialchars($this->trans('Les textes des sections viennent du studio : pour les modifier, modifiez-les dans E-COM STUDIO IA puis importez le nouveau thème.', [], 'Modules.Esstudio.Admin')) . '</p>';
@@ -96,6 +110,6 @@ class EsStudio extends Module
         foreach (array_reverse($rows) as $r) {
             $html .= '<tr><td>' . htmlspecialchars($r['date']) . '</td><td>' . htmlspecialchars($r['type']) . '</td><td>' . htmlspecialchars($r['email']) . '</td><td>' . htmlspecialchars($r['name']) . '</td><td>' . nl2br(htmlspecialchars($r['body'])) . '</td></tr>';
         }
-        return $html . '</tbody></table></div>';
+        return $catalogHtml . $html . '</tbody></table></div>';
     }
 }

@@ -1,0 +1,259 @@
+{
+  "sourceCommit": "4097eec6ae5a6d6361093219e11afc2fc0abdb0a",
+  "originalPng": [
+    {
+      "theme": "vitrine",
+      "file": "products/accueil-mobile.png",
+      "download": "vitrine-accueil-mobile.png",
+      "width": 390,
+      "height": 7232,
+      "bytes": 1194693,
+      "sha256": "65ac6df6bf9408219f53b2ec7dd468676e0575a3c9b049fe6fb43e9cc8bef763"
+    },
+    {
+      "theme": "vitrine",
+      "file": "products/accueil-ordinateur.png",
+      "download": "vitrine-accueil-ordinateur.png",
+      "width": 1440,
+      "height": 6468,
+      "bytes": 2962716,
+      "sha256": "2129471ab1b4f577a7b3fc5a1af1d06886e91f484420a1ffede3c8f4d3fd27b6"
+    },
+    {
+      "theme": "vitrine",
+      "file": "products/entete-mobile.png",
+      "download": "vitrine-entete-mobile.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 140067,
+      "sha256": "1acf8246dae8cc56f767e082066489a3ef4111a4a7b64fccd8cf34c5aa829e80"
+    },
+    {
+      "theme": "vitrine",
+      "file": "products/entete-ordinateur.png",
+      "download": "vitrine-entete-ordinateur.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 565710,
+      "sha256": "7319f32537234ff196a90abe1adeb868bbcd8983ef1ed55b4f391971fe8fab04"
+    },
+    {
+      "theme": "vitrine",
+      "file": "products/pied-mobile.png",
+      "download": "vitrine-pied-mobile.png",
+      "width": 390,
+      "height": 1172,
+      "bytes": 54711,
+      "sha256": "b7ba2cde587a05c648177a80f828c94a26af57c17039125a457c6562beb9108b"
+    },
+    {
+      "theme": "vitrine",
+      "file": "products/pied-ordinateur.png",
+      "download": "vitrine-pied-ordinateur.png",
+      "width": 1440,
+      "height": 740,
+      "bytes": 66445,
+      "sha256": "df09e17b72cb6f338ad56dc69d5e9440707cf9ab501faf7dc844b768fb16cded"
+    },
+    {
+      "theme": "vitrine",
+      "file": "products/produit-mobile.png",
+      "download": "vitrine-produit-mobile.png",
+      "width": 390,
+      "height": 4884,
+      "bytes": 504512,
+      "sha256": "02b5ea074fcbc8ad126b2fe833ef8f35fa32f467e15e67471ceec8ac7d22eba6"
+    },
+    {
+      "theme": "vitrine",
+      "file": "products/produit-ordinateur.png",
+      "download": "vitrine-produit-ordinateur.png",
+      "width": 1440,
+      "height": 3993,
+      "bytes": 885737,
+      "sha256": "60af0778c3619888504a2a71bb26d8ac5689df9027c7db2effed308eb94cb82d"
+    },
+    {
+      "theme": "vitrine",
+      "file": "products/section-mobile.png",
+      "download": "vitrine-section-mobile.png",
+      "width": 390,
+      "height": 645,
+      "bytes": 187282,
+      "sha256": "3abda688957477152dcdbc6d9a00bc7bc121f888e23224ba60d0b4d427944736"
+    },
+    {
+      "theme": "vitrine",
+      "file": "products/section-ordinateur.png",
+      "download": "vitrine-section-ordinateur.png",
+      "width": 1440,
+      "height": 807,
+      "bytes": 652823,
+      "sha256": "21a68c4ab633eac6c060b9d54000aa40d4bfb486c26c63bf50c2ee62e258451b"
+    },
+    {
+      "theme": "jardin",
+      "file": "services/accueil-mobile.png",
+      "download": "jardin-accueil-mobile.png",
+      "width": 390,
+      "height": 8698,
+      "bytes": 1744864,
+      "sha256": "984c676a7283ddba48c2b76a30018ee32e18740e0bef2aea0c01cc5724a0093f"
+    },
+    {
+      "theme": "jardin",
+      "file": "services/accueil-ordinateur.png",
+      "download": "jardin-accueil-ordinateur.png",
+      "width": 1440,
+      "height": 7953,
+      "bytes": 4779318,
+      "sha256": "40d6517f62a7b7113be2550d7662969eeafc2a4ba979bec123329facb8cf3769"
+    },
+    {
+      "theme": "jardin",
+      "file": "services/entete-mobile.png",
+      "download": "jardin-entete-mobile.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 205348,
+      "sha256": "832fddc5e12958de3cf6c56543068331bc8ab573706268416549329439cb0625"
+    },
+    {
+      "theme": "jardin",
+      "file": "services/entete-ordinateur.png",
+      "download": "jardin-entete-ordinateur.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 706107,
+      "sha256": "3a1dc6c59e50ed4dd055c529832b7270d9275aa1d08bd3e862f43ae2b62c75a8"
+    },
+    {
+      "theme": "jardin",
+      "file": "services/pied-mobile.png",
+      "download": "jardin-pied-mobile.png",
+      "width": 390,
+      "height": 1145,
+      "bytes": 77104,
+      "sha256": "12d8070a369eee94334e7384e067756f83726d3ad0f22f7960af00f71dfc4d26"
+    },
+    {
+      "theme": "jardin",
+      "file": "services/pied-ordinateur.png",
+      "download": "jardin-pied-ordinateur.png",
+      "width": 1440,
+      "height": 873,
+      "bytes": 91832,
+      "sha256": "73490c5f887f48a359dd8622c7c88082027a214513f064d4405a8e273e3e1f80"
+    },
+    {
+      "theme": "jardin",
+      "file": "services/prestation-mobile.png",
+      "download": "jardin-prestation-mobile.png",
+      "width": 390,
+      "height": 2899,
+      "bytes": 487426,
+      "sha256": "3d41e4814d742d18c35d87fe481f79deda0b4b6c5bdf521a453a6acf4c173612"
+    },
+    {
+      "theme": "jardin",
+      "file": "services/prestation-ordinateur.png",
+      "download": "jardin-prestation-ordinateur.png",
+      "width": 1440,
+      "height": 2615,
+      "bytes": 1498538,
+      "sha256": "8543b0de0b055f26f362fdaf9a419c2c8137cca122ec578532bed8a43f5ecaa2"
+    },
+    {
+      "theme": "jardin",
+      "file": "services/section-mobile.png",
+      "download": "jardin-section-mobile.png",
+      "width": 390,
+      "height": 662,
+      "bytes": 170752,
+      "sha256": "114a0264f93b0542ebb5339c9598cacdecb9eaa33ae7f8cbd0da5b2d9756ad28"
+    },
+    {
+      "theme": "jardin",
+      "file": "services/section-ordinateur.png",
+      "download": "jardin-section-ordinateur.png",
+      "width": 1440,
+      "height": 593,
+      "bytes": 358328,
+      "sha256": "1485f7339d032f2bab7520474738e1ef27651c2f22751f1cb23bdc6edd4f5a54"
+    }
+  ],
+  "videos": [
+    {
+      "theme": "vitrine",
+      "file": "products/parcours.mp4",
+      "bytes": 823601,
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1280,
+          "height": 800,
+          "r_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "16.360000"
+      }
+    },
+    {
+      "theme": "vitrine",
+      "file": "products/parcours.webm",
+      "bytes": 1775430,
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1280,
+          "height": 800,
+          "r_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "16.360000"
+      }
+    },
+    {
+      "theme": "jardin",
+      "file": "services/parcours.mp4",
+      "bytes": 882332,
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1280,
+          "height": 800,
+          "r_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "17.280000"
+      }
+    },
+    {
+      "theme": "jardin",
+      "file": "services/parcours.webm",
+      "bytes": 1942925,
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1280,
+          "height": 800,
+          "r_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "17.280000"
+      }
+    }
+  ]
+}

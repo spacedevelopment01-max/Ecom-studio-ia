@@ -1,0 +1,74 @@
+{
+  "kind": "fraise",
+  "origin": "studio Next.js de développement, base temporaire",
+  "steps": [
+    {
+      "step": "aperçu du studio : lien du pied de page → nouvelle page en haut",
+      "ok": true,
+      "scrollY": 0,
+      "path": "/preview/4et3s77p15uze5mv/v/kj92nedoo5732psp~tn5tzs.VO-1nIwcyeudvNE_4tgHMFFZgVyEvPlR/pages/faq"
+    },
+    {
+      "step": "ajout depuis le bouton Sections",
+      "ok": true,
+      "id": "cv_quote_1",
+      "position": 14
+    },
+    {
+      "step": "panneau : citation, fichier du thème, image de « Mes images », disposition",
+      "ok": true,
+      "themeImage": "fraise-05-detail-packaging.webp",
+      "myImage": "fraise-favicon-180.png",
+      "image_asset": "es-logo-dsstwn.png",
+      "src": "/preview/4et3s77p15uze5mv/v/tryin0fk3zi9sqeo~tn5u1w.VnAbyW5pEQs5yXv4S6s1Y2Pfysa93TQs/assets/es-logo-dsstwn.png"
+    },
+    {
+      "step": "déplacement (Monter)",
+      "ok": true,
+      "from": 14,
+      "to": 13,
+      "renderedOrderSample": []
+    },
+    {
+      "step": "duplication puis modification de la copie seule (original intact)",
+      "ok": true,
+      "original": "Citation d'origine, modifiée à la main.",
+      "copy": "Citation de la COPIE, indépendante."
+    },
+    {
+      "step": "masquage de la copie",
+      "ok": true
+    },
+    {
+      "step": "suppression de la copie",
+      "ok": true
+    },
+    {
+      "step": "restauration depuis Versions : copie revenue (masquée, texte propre), original intact, nouvelle version créée",
+      "ok": true
+    },
+    {
+      "step": "pied de page (phrase) et en-tête (liste) modifiés par le panneau",
+      "ok": true,
+      "headerSetting": "layout",
+      "headerBefore": "logo-center",
+      "headerNew": "logo-left"
+    },
+    {
+      "step": "story : fichier vidéo du thème, poster, puis vidéo de « Mes vidéos » appliqués depuis le panneau du bloc ; lecteur ouvert",
+      "ok": true,
+      "clip": "fraise-clip-test.webm",
+      "posterNew": "fraise-01-hero.webp",
+      "myVideo": "fraise-clip-test.webm",
+      "video_asset": "es-lifestyle-bgi84p.webm"
+    },
+    {
+      "step": "rechargement complet : ordre, réglages, médias, indépendance original/copie, pied de page, historique",
+      "ok": true,
+      "versionsBefore": 1,
+      "versionsListed": 16,
+      "versionCount": 17
+    }
+  ],
+  "date": "2026-10-19T03:10:36.086Z"
+}

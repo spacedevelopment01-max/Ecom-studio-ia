@@ -20,7 +20,7 @@ describe("Texte et SEO du site", async () => {
   it("accueil : titre principal de la page rédigée, titres et descriptions Google bornés, appel final selon le mode de contact", async () => {
     const u = await createUser(`seo${Date.now()}@test.fr`, "motdepasse-test", "S");
     const pid = await seedThemeScenario(u.id, "artisan");
-    await fr(() => runContentEngineV2(null, pid, { type: "home_page" }));
+    const written = await fr(() => runContentEngineV2(null, pid, { type: "home_page" }));
     await fr(() => buildShopV2(null, pid));
     const spec = currentTheme(pid)!.spec;
     // Titre et description de l'accueil pour Google.
@@ -35,12 +35,13 @@ describe("Texte et SEO du site", async () => {
       expect(pg.seo!.title.length).toBeLessThanOrEqual(60);
       expect(pg.seo!.description.length).toBeLessThanOrEqual(155);
     }
-    // Titre principal = celui de la page d'accueil rédigée (métier + ville), sans le nom de marque en suffixe.
+    // Titre principal intégral du document, sans suppression ni suffixe ajouté par la composition.
     const hero = Object.values((spec.templates.index as any).sections).find((s: any) => s.type === "v2-hero") as any;
     const h1 = `${hero.settings.heading} ${hero.settings.heading_em ?? ""}`;
     const p = loadProject(pid);
     expect(h1.toLowerCase()).toContain((p.product.category ?? "").toLowerCase().split(/\s+/)[0]);
-    expect(h1).not.toMatch(/—/);
+    const docHeading = written.doc!.blocks.find((b) => b.kind === "h1")!;
+    expect(h1.trim()).toBe("text" in docHeading ? docHeading.text : "");
   });
 
   it("réservation : l'appel final invite à réserver, pas à décrire un projet sur devis", async () => {

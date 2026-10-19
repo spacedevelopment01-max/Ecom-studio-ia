@@ -1,0 +1,1635 @@
+{
+  "testedCommit": "d95d9f64fa663971846af19298b5a18c7dd197c0",
+  "workingTree": "clean",
+  "date": "2026-10-18T09:21:42.814Z",
+  "renderMode": "es_raw=1 — thème issu des vraies routes, sans le bandeau flottant du studio",
+  "evidence": [
+    {
+      "kind": "products",
+      "provenance": "Mission 6247457951, version 2026-10-18T08:28:10Z — données synthétiques de démonstration, aucun paiement",
+      "mediaCount": 0,
+      "missing": [
+        "orbe-01-dune",
+        "orbe-02-chambre",
+        "orbe-03-diner",
+        "orbe-04-lecture",
+        "orbe-05-bureau",
+        "orbe-06-duo",
+        "orbe-07-trio",
+        "orbe-08-lumiere",
+        "orbe-09-charbon",
+        "orbe-10-argile",
+        "orbe-11-boite",
+        "orbe-12-pochette"
+      ],
+      "visualResult": "PARTIEL — rendu photographique bloqué",
+      "pages": [
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 1440,
+          "metrics": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 10228,
+            "h1": 1,
+            "images": 0,
+            "brokenImages": [],
+            "missingMedia": 12,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 390,
+          "metrics": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 10430,
+            "h1": 1,
+            "images": 0,
+            "brokenImages": [],
+            "missingMedia": 12,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 8386,
+            "h1": 1,
+            "images": 0,
+            "brokenImages": [],
+            "missingMedia": 12,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 1024,
+          "metrics": {
+            "width": 1024,
+            "scrollWidth": 1024,
+            "height": 8704,
+            "h1": 1,
+            "images": 0,
+            "brokenImages": [],
+            "missingMedia": 12,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "produit",
+          "route": "/products/lampe-nomade",
+          "width": 1440,
+          "metrics": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 8733,
+            "h1": 1,
+            "images": 0,
+            "brokenImages": [],
+            "missingMedia": 11,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "produit",
+          "route": "/products/lampe-nomade",
+          "width": 390,
+          "metrics": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 9235,
+            "h1": 1,
+            "images": 0,
+            "brokenImages": [],
+            "missingMedia": 11,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "produit",
+          "route": "/products/lampe-nomade",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 7341,
+            "h1": 1,
+            "images": 0,
+            "brokenImages": [],
+            "missingMedia": 11,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "produit",
+          "route": "/products/lampe-nomade",
+          "width": 1024,
+          "metrics": {
+            "width": 1024,
+            "scrollWidth": 1024,
+            "height": 7477,
+            "h1": 1,
+            "images": 0,
+            "brokenImages": [],
+            "missingMedia": 11,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        }
+      ],
+      "interactions": [
+        {
+          "width": 1440,
+          "quantity": 1,
+          "expectedTotal": 7900,
+          "display": "79,00 €"
+        },
+        {
+          "width": 1440,
+          "quantity": 2,
+          "expectedTotal": 14220,
+          "display": "142,20 €"
+        },
+        {
+          "width": 1440,
+          "quantity": 3,
+          "expectedTotal": 20145,
+          "display": "201,45 €"
+        },
+        {
+          "width": 1440,
+          "quantity": 4,
+          "expectedTotal": 25280,
+          "display": "252,80 €"
+        },
+        {
+          "width": 390,
+          "quantity": 1,
+          "expectedTotal": 7900,
+          "display": "79,00 €"
+        },
+        {
+          "width": 390,
+          "quantity": 2,
+          "expectedTotal": 14220,
+          "display": "142,20 €"
+        },
+        {
+          "width": 390,
+          "quantity": 3,
+          "expectedTotal": 20145,
+          "display": "201,45 €"
+        },
+        {
+          "width": 390,
+          "quantity": 4,
+          "expectedTotal": 25280,
+          "display": "252,80 €"
+        },
+        {
+          "quantity": 3,
+          "gift": "indisponible — stock zéro vérifié dans Chromium"
+        }
+      ],
+      "exports": [
+        {
+          "platform": "shopify",
+          "kind": "theme",
+          "bytes": 448940,
+          "issues": [
+            {
+              "code": "product_template_assignment_required",
+              "severity": "warning",
+              "detail": "Shopify : le ZIP et le CSV seuls n'affectent pas les gabarits aux produits. Suivre assets/es-product-templates.json : choisir puis enregistrer le modèle de chaque produit dans Shopify. Installation réelle non vérifiée."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/opening : image requise absente (orbe-02-chambre). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/moments : image requise absente (orbe-03-diner). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/moments : image requise absente (orbe-04-lecture). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/night : image requise absente (orbe-08-lumiere). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/finishes : image requise absente (orbe-07-trio). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/duo : image requise absente (orbe-06-duo). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/accessories : image requise absente (orbe-11-boite). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/accessories : image requise absente (orbe-12-pochette). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/closing : image requise absente (orbe-05-bureau). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product/main : image requise absente (orbe-01-dune · galerie et finitions à importer). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/main : image requise absente (orbe-01-dune · galerie et finitions à importer). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/moments : image requise absente (orbe-03-diner). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/moments : image requise absente (orbe-04-lecture). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/night : image requise absente (orbe-08-lumiere). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/finishes : image requise absente (orbe-07-trio). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/duo : image requise absente (orbe-06-duo). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/accessories : image requise absente (orbe-11-boite). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/accessories : image requise absente (orbe-12-pochette). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "purchase_rules_require_server",
+              "severity": "warning",
+              "detail": "Offres avancées désactivées : index:purchase, product.editorial:main. Remises et cadeaux nécessitent un adaptateur commercial serveur installé et vérifié sur shopify. Configuration conservée dans le studio ; achat natif maintenu."
+            }
+          ],
+          "installed": false,
+          "checkoutVerified": false
+        },
+        {
+          "platform": "woocommerce",
+          "kind": "theme",
+          "bytes": 327318,
+          "issues": [
+            {
+              "code": "product_layouts_shared",
+              "severity": "warning",
+              "detail": "WooCommerce : une seule fiche produit pour tous les produits ; les mises en page propres à Lampe nomade ORBE ne sont pas reprises (elles le sont dans l'export Shopify)"
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/opening : image requise absente (orbe-02-chambre). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/moments : image requise absente (orbe-03-diner). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/moments : image requise absente (orbe-04-lecture). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/night : image requise absente (orbe-08-lumiere). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/finishes : image requise absente (orbe-07-trio). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/duo : image requise absente (orbe-06-duo). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/accessories : image requise absente (orbe-11-boite). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/accessories : image requise absente (orbe-12-pochette). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/closing : image requise absente (orbe-05-bureau). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product/main : image requise absente (orbe-01-dune · galerie et finitions à importer). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/main : image requise absente (orbe-01-dune · galerie et finitions à importer). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/moments : image requise absente (orbe-03-diner). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/moments : image requise absente (orbe-04-lecture). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/night : image requise absente (orbe-08-lumiere). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/finishes : image requise absente (orbe-07-trio). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/duo : image requise absente (orbe-06-duo). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/accessories : image requise absente (orbe-11-boite). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/accessories : image requise absente (orbe-12-pochette). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "purchase_rules_require_server",
+              "severity": "warning",
+              "detail": "Offres avancées désactivées : index:purchase, product.editorial:main. Remises et cadeaux nécessitent un adaptateur commercial serveur installé et vérifié sur woocommerce. Configuration conservée dans le studio ; achat natif maintenu."
+            }
+          ],
+          "installed": false,
+          "checkoutVerified": false
+        },
+        {
+          "platform": "prestashop",
+          "kind": "theme",
+          "bytes": 221882,
+          "issues": [
+            {
+              "code": "product_layouts_shared",
+              "severity": "warning",
+              "detail": "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Lampe nomade ORBE ne sont pas reprises (elles le sont dans l'export Shopify)"
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/opening : image requise absente (orbe-02-chambre). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/moments : image requise absente (orbe-03-diner). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/moments : image requise absente (orbe-04-lecture). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/night : image requise absente (orbe-08-lumiere). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/finishes : image requise absente (orbe-07-trio). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/duo : image requise absente (orbe-06-duo). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/accessories : image requise absente (orbe-11-boite). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/accessories : image requise absente (orbe-12-pochette). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/closing : image requise absente (orbe-05-bureau). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product/main : image requise absente (orbe-01-dune · galerie et finitions à importer). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/main : image requise absente (orbe-01-dune · galerie et finitions à importer). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/moments : image requise absente (orbe-03-diner). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/moments : image requise absente (orbe-04-lecture). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/night : image requise absente (orbe-08-lumiere). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/finishes : image requise absente (orbe-07-trio). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/duo : image requise absente (orbe-06-duo). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/accessories : image requise absente (orbe-11-boite). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/accessories : image requise absente (orbe-12-pochette). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "purchase_rules_require_server",
+              "severity": "warning",
+              "detail": "Offres avancées désactivées : index:purchase, product.editorial:main. Remises et cadeaux nécessitent un adaptateur commercial serveur installé et vérifié sur prestashop. Configuration conservée dans le studio ; achat natif maintenu."
+            }
+          ],
+          "installed": false,
+          "checkoutVerified": false
+        },
+        {
+          "platform": "wix",
+          "kind": "kit",
+          "bytes": 337251,
+          "issues": [
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/opening : image requise absente (orbe-02-chambre). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/moments : image requise absente (orbe-03-diner). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/moments : image requise absente (orbe-04-lecture). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/night : image requise absente (orbe-08-lumiere). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/finishes : image requise absente (orbe-07-trio). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/duo : image requise absente (orbe-06-duo). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/accessories : image requise absente (orbe-11-boite). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/accessories : image requise absente (orbe-12-pochette). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/closing : image requise absente (orbe-05-bureau). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product/main : image requise absente (orbe-01-dune · galerie et finitions à importer). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/main : image requise absente (orbe-01-dune · galerie et finitions à importer). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/moments : image requise absente (orbe-03-diner). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/moments : image requise absente (orbe-04-lecture). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/night : image requise absente (orbe-08-lumiere). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/finishes : image requise absente (orbe-07-trio). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/duo : image requise absente (orbe-06-duo). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/accessories : image requise absente (orbe-11-boite). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/accessories : image requise absente (orbe-12-pochette). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "purchase_rules_require_server",
+              "severity": "warning",
+              "detail": "Offres avancées désactivées : index:purchase, product.editorial:main. Remises et cadeaux nécessitent un adaptateur commercial serveur installé et vérifié sur wix. Configuration conservée dans le studio ; achat natif maintenu."
+            }
+          ],
+          "installed": false,
+          "checkoutVerified": false
+        },
+        {
+          "platform": "squarespace",
+          "kind": "kit",
+          "bytes": 337205,
+          "issues": [
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/opening : image requise absente (orbe-02-chambre). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/moments : image requise absente (orbe-03-diner). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/moments : image requise absente (orbe-04-lecture). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/night : image requise absente (orbe-08-lumiere). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/finishes : image requise absente (orbe-07-trio). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/duo : image requise absente (orbe-06-duo). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/accessories : image requise absente (orbe-11-boite). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/accessories : image requise absente (orbe-12-pochette). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/closing : image requise absente (orbe-05-bureau). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product/main : image requise absente (orbe-01-dune · galerie et finitions à importer). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/main : image requise absente (orbe-01-dune · galerie et finitions à importer). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/moments : image requise absente (orbe-03-diner). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/moments : image requise absente (orbe-04-lecture). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/night : image requise absente (orbe-08-lumiere). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/finishes : image requise absente (orbe-07-trio). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/duo : image requise absente (orbe-06-duo). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/accessories : image requise absente (orbe-11-boite). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "product.editorial/accessories : image requise absente (orbe-12-pochette). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "purchase_rules_require_server",
+              "severity": "warning",
+              "detail": "Offres avancées désactivées : index:purchase, product.editorial:main. Remises et cadeaux nécessitent un adaptateur commercial serveur installé et vérifié sur squarespace. Configuration conservée dans le studio ; achat natif maintenu."
+            }
+          ],
+          "installed": false,
+          "checkoutVerified": false
+        }
+      ],
+      "paidCalls": 0
+    },
+    {
+      "kind": "services",
+      "provenance": "Mission 6247457951, version 2026-10-18T08:28:10Z — données synthétiques de démonstration, aucun paiement",
+      "mediaCount": 0,
+      "missing": [
+        "rive-01-salon",
+        "rive-02-cuisine",
+        "rive-03-chambre",
+        "rive-04-entree",
+        "rive-05-salle-eau",
+        "rive-06-bibliotheque",
+        "rive-07-matieres",
+        "rive-08-plans",
+        "rive-09-volume",
+        "rive-10-menuiserie",
+        "rive-11-repas",
+        "rive-12-escalier"
+      ],
+      "visualResult": "PARTIEL — rendu photographique bloqué",
+      "pages": [
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 1440,
+          "metrics": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 11442,
+            "h1": 1,
+            "images": 0,
+            "brokenImages": [],
+            "missingMedia": 13,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 390,
+          "metrics": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 11149,
+            "h1": 1,
+            "images": 0,
+            "brokenImages": [],
+            "missingMedia": 13,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 8790,
+            "h1": 1,
+            "images": 0,
+            "brokenImages": [],
+            "missingMedia": 13,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "accueil",
+          "route": "/",
+          "width": 1024,
+          "metrics": {
+            "width": 1024,
+            "scrollWidth": 1024,
+            "height": 9465,
+            "h1": 1,
+            "images": 0,
+            "brokenImages": [],
+            "missingMedia": 13,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "prestation",
+          "route": "/pages/amenagement-une-piece",
+          "width": 1440,
+          "metrics": {
+            "width": 1440,
+            "scrollWidth": 1440,
+            "height": 7978,
+            "h1": 1,
+            "images": 0,
+            "brokenImages": [],
+            "missingMedia": 5,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "prestation",
+          "route": "/pages/amenagement-une-piece",
+          "width": 390,
+          "metrics": {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 9001,
+            "h1": 1,
+            "images": 0,
+            "brokenImages": [],
+            "missingMedia": 5,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "prestation",
+          "route": "/pages/amenagement-une-piece",
+          "width": 768,
+          "metrics": {
+            "width": 768,
+            "scrollWidth": 768,
+            "height": 7348,
+            "h1": 1,
+            "images": 0,
+            "brokenImages": [],
+            "missingMedia": 5,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        },
+        {
+          "name": "prestation",
+          "route": "/pages/amenagement-une-piece",
+          "width": 1024,
+          "metrics": {
+            "width": 1024,
+            "scrollWidth": 1024,
+            "height": 7301,
+            "h1": 1,
+            "images": 0,
+            "brokenImages": [],
+            "missingMedia": 5,
+            "fonts": "loaded"
+          },
+          "javascriptErrors": []
+        }
+      ],
+      "interactions": [
+        {
+          "width": 1440,
+          "contact": "Écriture locale réellement constatée, aucun envoi",
+          "receipts": 1
+        },
+        {
+          "width": 390,
+          "contact": "Écriture locale réellement constatée, aucun envoi",
+          "receipts": 2
+        }
+      ],
+      "exports": [
+        {
+          "platform": "shopify",
+          "kind": "theme",
+          "bytes": 453782,
+          "issues": [
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/opening : image requise absente (rive-01-salon). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/approach : image requise absente (rive-10-menuiserie). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/inspirations : image requise absente (rive-02-cuisine). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/inspirations : image requise absente (rive-03-chambre). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/inspirations : image requise absente (rive-04-entree). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/materials : image requise absente (rive-07-matieres). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/offers : image requise absente (rive-08-plans). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/offers : image requise absente (rive-06-bibliotheque). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/offers : image requise absente (rive-11-repas). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/report : image requise absente (rive-12-escalier). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/study : image requise absente (rive-09-volume). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/study : image requise absente (rive-01-salon). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/contact : image requise absente (rive-05-salle-eau). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/opening : image requise absente (rive-06-bibliotheque). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/plans : image requise absente (rive-08-plans). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/plans : image requise absente (rive-07-matieres). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/study : image requise absente (rive-09-volume). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/study : image requise absente (rive-01-salon). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.contact-test/small : image requise absente (rive-05-salle-eau). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.accompagnements/offers : image requise absente (rive-08-plans). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.accompagnements/offers : image requise absente (rive-06-bibliotheque). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.accompagnements/offers : image requise absente (rive-11-repas). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/inspirations : image requise absente (rive-02-cuisine). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/inspirations : image requise absente (rive-03-chambre). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/inspirations : image requise absente (rive-04-entree). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/study : image requise absente (rive-09-volume). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/study : image requise absente (rive-01-salon). Composition exportée pour travail, rendu photographique incomplet."
+            }
+          ],
+          "installed": false,
+          "checkoutVerified": false
+        },
+        {
+          "platform": "woocommerce",
+          "kind": "theme",
+          "bytes": 350786,
+          "issues": [
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/opening : image requise absente (rive-01-salon). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/approach : image requise absente (rive-10-menuiserie). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/inspirations : image requise absente (rive-02-cuisine). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/inspirations : image requise absente (rive-03-chambre). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/inspirations : image requise absente (rive-04-entree). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/materials : image requise absente (rive-07-matieres). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/offers : image requise absente (rive-08-plans). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/offers : image requise absente (rive-06-bibliotheque). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/offers : image requise absente (rive-11-repas). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/report : image requise absente (rive-12-escalier). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/study : image requise absente (rive-09-volume). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/study : image requise absente (rive-01-salon). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/contact : image requise absente (rive-05-salle-eau). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/opening : image requise absente (rive-06-bibliotheque). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/plans : image requise absente (rive-08-plans). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/plans : image requise absente (rive-07-matieres). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/study : image requise absente (rive-09-volume). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/study : image requise absente (rive-01-salon). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.contact-test/small : image requise absente (rive-05-salle-eau). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.accompagnements/offers : image requise absente (rive-08-plans). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.accompagnements/offers : image requise absente (rive-06-bibliotheque). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.accompagnements/offers : image requise absente (rive-11-repas). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/inspirations : image requise absente (rive-02-cuisine). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/inspirations : image requise absente (rive-03-chambre). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/inspirations : image requise absente (rive-04-entree). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/study : image requise absente (rive-09-volume). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/study : image requise absente (rive-01-salon). Composition exportée pour travail, rendu photographique incomplet."
+            }
+          ],
+          "installed": false,
+          "checkoutVerified": false
+        },
+        {
+          "platform": "prestashop",
+          "kind": "theme",
+          "bytes": 251765,
+          "issues": [
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/opening : image requise absente (rive-01-salon). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/approach : image requise absente (rive-10-menuiserie). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/inspirations : image requise absente (rive-02-cuisine). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/inspirations : image requise absente (rive-03-chambre). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/inspirations : image requise absente (rive-04-entree). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/materials : image requise absente (rive-07-matieres). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/offers : image requise absente (rive-08-plans). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/offers : image requise absente (rive-06-bibliotheque). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/offers : image requise absente (rive-11-repas). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/report : image requise absente (rive-12-escalier). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/study : image requise absente (rive-09-volume). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/study : image requise absente (rive-01-salon). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/contact : image requise absente (rive-05-salle-eau). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/opening : image requise absente (rive-06-bibliotheque). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/plans : image requise absente (rive-08-plans). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/plans : image requise absente (rive-07-matieres). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/study : image requise absente (rive-09-volume). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/study : image requise absente (rive-01-salon). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.contact-test/small : image requise absente (rive-05-salle-eau). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.accompagnements/offers : image requise absente (rive-08-plans). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.accompagnements/offers : image requise absente (rive-06-bibliotheque). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.accompagnements/offers : image requise absente (rive-11-repas). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/inspirations : image requise absente (rive-02-cuisine). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/inspirations : image requise absente (rive-03-chambre). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/inspirations : image requise absente (rive-04-entree). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/study : image requise absente (rive-09-volume). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/study : image requise absente (rive-01-salon). Composition exportée pour travail, rendu photographique incomplet."
+            }
+          ],
+          "installed": false,
+          "checkoutVerified": false
+        },
+        {
+          "platform": "wix",
+          "kind": "kit",
+          "bytes": 302969,
+          "issues": [
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/opening : image requise absente (rive-01-salon). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/approach : image requise absente (rive-10-menuiserie). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/inspirations : image requise absente (rive-02-cuisine). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/inspirations : image requise absente (rive-03-chambre). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/inspirations : image requise absente (rive-04-entree). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/materials : image requise absente (rive-07-matieres). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/offers : image requise absente (rive-08-plans). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/offers : image requise absente (rive-06-bibliotheque). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/offers : image requise absente (rive-11-repas). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/report : image requise absente (rive-12-escalier). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/study : image requise absente (rive-09-volume). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/study : image requise absente (rive-01-salon). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/contact : image requise absente (rive-05-salle-eau). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/opening : image requise absente (rive-06-bibliotheque). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/plans : image requise absente (rive-08-plans). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/plans : image requise absente (rive-07-matieres). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/study : image requise absente (rive-09-volume). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/study : image requise absente (rive-01-salon). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.contact-test/small : image requise absente (rive-05-salle-eau). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.accompagnements/offers : image requise absente (rive-08-plans). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.accompagnements/offers : image requise absente (rive-06-bibliotheque). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.accompagnements/offers : image requise absente (rive-11-repas). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/inspirations : image requise absente (rive-02-cuisine). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/inspirations : image requise absente (rive-03-chambre). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/inspirations : image requise absente (rive-04-entree). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/study : image requise absente (rive-09-volume). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/study : image requise absente (rive-01-salon). Composition exportée pour travail, rendu photographique incomplet."
+            }
+          ],
+          "installed": false,
+          "checkoutVerified": false
+        },
+        {
+          "platform": "squarespace",
+          "kind": "kit",
+          "bytes": 302976,
+          "issues": [
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/opening : image requise absente (rive-01-salon). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/approach : image requise absente (rive-10-menuiserie). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/inspirations : image requise absente (rive-02-cuisine). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/inspirations : image requise absente (rive-03-chambre). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/inspirations : image requise absente (rive-04-entree). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/materials : image requise absente (rive-07-matieres). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/offers : image requise absente (rive-08-plans). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/offers : image requise absente (rive-06-bibliotheque). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/offers : image requise absente (rive-11-repas). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/report : image requise absente (rive-12-escalier). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/study : image requise absente (rive-09-volume). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/study : image requise absente (rive-01-salon). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "index/contact : image requise absente (rive-05-salle-eau). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/opening : image requise absente (rive-06-bibliotheque). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/plans : image requise absente (rive-08-plans). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/plans : image requise absente (rive-07-matieres). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/study : image requise absente (rive-09-volume). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.piece/study : image requise absente (rive-01-salon). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.contact-test/small : image requise absente (rive-05-salle-eau). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.accompagnements/offers : image requise absente (rive-08-plans). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.accompagnements/offers : image requise absente (rive-06-bibliotheque). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.accompagnements/offers : image requise absente (rive-11-repas). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/inspirations : image requise absente (rive-02-cuisine). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/inspirations : image requise absente (rive-03-chambre). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/inspirations : image requise absente (rive-04-entree). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/study : image requise absente (rive-09-volume). Composition exportée pour travail, rendu photographique incomplet."
+            },
+            {
+              "code": "editorial_media_missing",
+              "severity": "blocking",
+              "detail": "page.inspirations/study : image requise absente (rive-01-salon). Composition exportée pour travail, rendu photographique incomplet."
+            }
+          ],
+          "installed": false,
+          "checkoutVerified": false
+        }
+      ],
+      "paidCalls": 0
+    }
+  ]
+}

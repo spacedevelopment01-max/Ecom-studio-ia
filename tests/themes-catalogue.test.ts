@@ -33,11 +33,14 @@ const products = Object.fromEntries(DIRECTIONS.map((d) => [d.id, sampleSpec(d.id
 const services = Object.fromEntries(DIRECTIONS.map((d) => [d.id, serviceSpec(d.id, "fr", undefined, { rich: true })])) as Record<DirectionId, Spec>;
 
 describe("Catalogue de thèmes : trente choix réellement différents", () => {
-  it("compte 30 thèmes (11 d'origine + 19 du catalogue), présentés en français et en anglais", () => {
-    expect(DIRECTIONS).toHaveLength(30);
-    expect(new Set(DIRECTIONS.map((d) => d.id)).size).toBe(30);
-    expect(new Set(DIRECTIONS.map((d) => d.name)).size).toBe(30);
-    for (const lang of ["fr", "en"] as const) for (const c of directionCards(lang)) {
+  it("définit 34 thèmes (30 anciens, lisibles seulement, + 4 de référence) et n'en propose que 4 (catalogue actif, consigne 6264783184), présentés en français et en anglais", () => {
+    expect(DIRECTIONS).toHaveLength(34);
+    expect(new Set(DIRECTIONS.map((d) => d.id)).size).toBe(34);
+    expect(new Set(DIRECTIONS.map((d) => d.name)).size).toBe(34);
+    expect(directionCards("fr").map((c) => c.id)).toEqual(["fraise", "onde", "orbe", "rive"]);
+    // Le thème installé d'un projet existant, s'il est retiré, reste listé pour ce projet seulement, signalé « retiré ».
+    expect(directionCards("fr", ["vitrine"]).map((c) => [c.id, c.retired])).toEqual([["vitrine", true], ["fraise", false], ["onde", false], ["orbe", false], ["rive", false]]);
+    for (const lang of ["fr", "en"] as const) for (const c of directionCards(lang, DIRECTIONS.map((d) => d.id))) {
       expect(c.tagline, c.id).toBeTruthy();
       expect(c.description.length, c.id).toBeGreaterThan(80);
       expect(c.chrome.every(Boolean), c.id).toBe(true);
@@ -87,9 +90,9 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
       if (n < 4) alike.push(`${a} ~ ${d.id} (${n} différences)`);
     }
     expect(alike).toEqual([]);
-    // Typographies : aucune paire titre / texte identique entre deux des 30 thèmes.
+    // Typographies : aucune paire titre / texte identique entre deux des 34 thèmes.
     const pairs = DIRECTIONS.map((d) => `${d.fonts.heading}/${d.fonts.body}`);
-    expect(new Set(pairs).size).toBe(30);
+    expect(new Set(pairs).size).toBe(DIRECTIONS.length);
   });
 
   it("les couleurs de chaque thème du catalogue restent lisibles (texte et boutons contrastés)", async () => {
@@ -101,9 +104,11 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
     }
   });
 
-  it("toutes les sections de la bibliothèque servent dans au moins un thème (sauf les deux conteneurs techniques)", () => {
+  it("toutes les sections de la bibliothèque servent dans un thème ou une composition de référence (sauf les deux conteneurs techniques)", async () => {
     const used = new Set<string>();
-    const add = (spec: Spec) => { for (const t of Object.values(spec.templates)) for (const id of t.order) used.add(t.sections[id].type); };
+    // Gabarits ET groupes (en-tête, pied de page) : les composants structurels de la bibliothèque (catégorie « Structure »)
+    // vivent dans les groupes ou dans le gabarit général (panier latéral).
+    const add = (spec: Spec) => { for (const t of [...Object.values(spec.templates), ...Object.values((spec as { groups?: Record<string, { order: string[]; sections: Record<string, { type: string }> }> }).groups ?? {})]) for (const id of t.order) if (t.sections[id]) used.add(t.sections[id].type); };
     for (const d of DIRECTIONS) {
       add(products[d.id]);
       add(services[d.id]);
@@ -112,8 +117,28 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
     }
     // Calendrier de réservation : posé par l'activité (salle de jeu sans service de réservation en ligne).
     add(serviceSpec("atelier", "fr", { ...serviceProfile, bookingUrl: "", hours: "Tous les jours, 10 h – 23 h" }, { activity: "Escape game" }));
+    // Le composant d'offres autonome est aussi réutilisé dans le bloc d'achat natif.
+    // Pas d'offre commerciale automatique : le marchand fournit ses quantités et ses règles.
+    if (used.has("main-product")) {
+      expect(fs.readFileSync(path.join(process.cwd(), "theme-base/sections/main-product.liquid"), "utf8")).toContain("render 'purchase-offers'");
+      used.add("purchase-offers");
+    }
+    // Les deux compositions de référence sont examinées avant toute déclinaison du catalogue.
+    // On vérifie leur usage réel des composants, sans les dispenser de couverture par une liste d'exceptions.
+    const { createUser } = await import("@/lib/auth");
+    const { editorialProject } = await import("./lot2b-fixtures");
+    const user = await createUser(`catalogue-references-${Date.now()}@example.invalid`, "isolated-test-only", "Références de test");
+    for (const kind of ["products", "services"] as const) add((await editorialProject(user.id, kind)).spec);
+    // Les deux thèmes fidèles aux références Lumora / Pawish (issue #137) composent les sections « conversion ».
+    const { conversionProject } = await import("./lot2c-fixtures");
+    for (const kind of ["fraise", "onde"] as const) add((await conversionProject(user.id, kind)).spec);
     // Conteneurs vides par nature : code Liquid du marchand et blocs d'applications (rien à composer sans lui).
     const outside = new Set(["custom-liquid", "apps"]);
+    // Panier latéral : rendu par le gabarit général (layout/theme.liquid) sur toutes les pages, pas une instance de gabarit.
+    expect(fs.readFileSync(path.join(process.cwd(), "theme-base/layout/theme.liquid"), "utf8")).toMatch(/section ['"]cart-drawer['"]/); outside.add("cart-drawer");
+    // Sections créées pour les bibliothèques par famille (issue #141) : elles servent par la galerie de leur famille.
+    const { ALL_ENTRIES } = await import("@/lib/theme/section-families");
+    for (const e of ALL_ENTRIES) for (const d of e.dispositions) if (d.type.startsWith("fs-")) used.add(d.type);
     const missing = SECTION_LIBRARY.map((e) => e.type).filter((t) => !outside.has(t) && !used.has(t));
     expect(missing).toEqual([]);
   });
@@ -144,14 +169,17 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
 
   it("le chat change de thème quand on le demande, jamais pour un mot courant (« jardin », « signal »…)", () => {
     const spec = sampleSpec("atelier");
-    expect(localThemeCommand(spec, "applique la direction Jardin", null).direction).toBe("jardin");
-    expect(localThemeCommand(spec, "passe en style brut", null).direction).toBe("brut");
-    expect(localThemeCommand(spec, "je veux le thème Récré", null).direction).toBe("recre");
-    expect(localThemeCommand(spec, "switch to the Velours theme", null).direction).toBe("velours");
-    expect(localThemeCommand(spec, "apply the Velours style", null).direction).toBe("velours");
-    expect(localThemeCommand(spec, "style velours", null).direction).toBe("velours");
+    expect(localThemeCommand(spec, "applique la direction Onde", null).direction).toBe("onde");
+    expect(localThemeCommand(spec, "passe en style fraise", null).direction).toBe("fraise");
+    expect(localThemeCommand(spec, "je veux le thème Orbe", null).direction).toBe("orbe");
+    expect(localThemeCommand(spec, "switch to the Rive theme", null).direction).toBe("rive");
+    expect(localThemeCommand(spec, "apply the Rive style", null).direction).toBe("rive");
+    expect(localThemeCommand(spec, "style rive", null).direction).toBe("rive");
     expect(localThemeCommand(spec, "mets une photo du jardin dans le style de la marque", null).direction).toBeUndefined();
     expect(localThemeCommand(spec, "ajoute un signal de confiance", null).direction).toBeUndefined();
+    // Ancien catalogue (retiré) : plus jamais appliqué, même nommé explicitement.
+    expect(localThemeCommand(spec, "applique la direction Jardin", null).direction).toBeUndefined();
+    expect(localThemeCommand(spec, "switch to the Velours theme", null).direction).toBeUndefined();
   });
 
   it("un thème qui utilise des sections V2 charge leur feuille de style (langage visuel déclaré)", () => {

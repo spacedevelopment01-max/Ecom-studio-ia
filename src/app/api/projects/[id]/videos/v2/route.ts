@@ -1,4 +1,9 @@
 import { z } from "zod";
+import { approveVideoScenario,readVideoApproval } from "@/lib/video-v2/approval";
+import { v2ChainQuote } from "@/lib/video-v2/chain-quote";
+import { POLICIES } from "@/lib/quality/policies";
+import type { VideoScript } from "@/lib/video-v2/types";
+import { VideoEditorialSchema } from "@/lib/video-v2/editorial";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
 import { enqueue } from "@/lib/jobs";
@@ -12,12 +17,16 @@ import { VIDEO_FORMATS, VIDEO_INTENTS, VIDEO_PLATFORMS, type VideoDocument } fro
 export const runtime = "nodejs";
 
 const AskSchema = z.object({
-  text: z.string().max(600).optional(),
+  purpose:z.enum(["ad","organic"]).optional(),
+  subject:z.discriminatedUnion("kind",[z.object({kind:z.literal("product"),key:z.string().max(80)}),z.object({kind:z.literal("service"),name:z.string().max(120)})]).optional(),
+  text: z.string().max(12000).optional(),
   kind: z.enum(VIDEO_INTENTS).optional(),
   platform: z.enum(VIDEO_PLATFORMS).optional(),
   aspect: z.enum(VIDEO_FORMATS).optional(),
   durationS: z.number().min(6).max(600).optional(),
   audience: z.string().max(300).optional(),
+  editorial:VideoEditorialSchema.optional(),
+  generation:z.enum(["direct","reference"]).optional(),
   allowGeneration: z.boolean().optional(),
 });
 
@@ -67,17 +76,21 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
  */
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  const b = await body(req, z.object({ action: z.enum(["plan", "generate"]), ask: AskSchema.default({}), offer: z.string().max(200).optional(), approveGeneration: z.boolean().optional(), maxCostEur: z.number().min(0).max(50).optional() }));
+  const b = await body(req, z.object({ action: z.enum(["plan", "generate"]), ask: AskSchema.default({}), offer: z.string().max(200).optional(), approvalToken:z.string().max(100000).optional(), approveGeneration: z.boolean().optional(), maxCostEur: z.number().min(0).max(50).optional() }));
   if (!p.brand) throw new HttpError(409, L("La marque n'est pas encore créée.", "The brand has not been created yet."));
   if (b.action === "plan") {
     const r = await runVideoEngineV2(null, p.id, { ask: b.ask, offer: b.offer, planOnly: true, maxCostEur: b.maxCostEur });
-    return ok({ intent: r.intent, strategy: r.strategy, script: r.script, shots: r.shots.map((s) => ({ id: s.id, part: s.part, durationS: s.durationS, subject: s.subject, method: s.method, why: s.why, paid: s.source.kind === "generate", estimateMicro: s.source.estimateMicro ?? 0 })), estimateMicro: r.estimateMicro, notes: r.notes });
+    const chain=v2ChainQuote(r);
+    const maximumMicro=chain.shotsMicro*(POLICIES.video_shot_v2.maxRetries+1)+r.shots.filter(s=>s.source.kind==="generate").length*chain.clipReviews*(POLICIES.video_shot_v2.maxRetries+1)+chain.conditionalStartImages*chain.imageUnitMicro*3+chain.finalReview*(POLICIES.video_v2.maxRetries+1);
+    const approved=approveVideoScenario(p,{ask:b.ask,offer:b.offer??null},r.script,Math.min(Math.round((b.maxCostEur??6)*1e6),maximumMicro));
+    return ok({ approvalToken:approved.token,chain:{...chain,maximumMicro}, intent: r.intent, strategy: r.strategy, script: r.script, shots: r.shots.map((s) => ({ id: s.id, part: s.part, durationS: s.durationS, subject: s.subject, method: s.method, why: s.why, paid: s.source.kind === "generate", estimateMicro: s.source.estimateMicro ?? 0 })), estimateMicro: chain.firstMicro, notes: r.notes });
   }
   // Montage sans IA (photos et vidéos du projet) : tout forfait ; plans filmés par l'IA : vidéos IA du forfait du
   // projet (Développer : courtes, Dominer : avancées) ; UGC : Dominer.
   if (b.ask.kind === "ugc" || b.approveGeneration) requireCreationPlan(user, p.id, b.ask.kind === "ugc" ? "ugc" : "videos");
   else requirePlan(user, p.id);
+  const approval=readVideoApproval<VideoScript>(p,{ask:b.ask,offer:b.offer??null},b.approvalToken);
   if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type LIKE 'video.v2%' AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Une vidéo est déjà en préparation.", "A video is already being prepared."));
-  const job = enqueue({ userId: user.id, projectId: p.id, type: "video.v2", label: L("Vidéo : script, plans, montage", "Video: script, shots, editing"), payload: { projectId: p.id, request: { ask: b.ask, offer: b.offer, approveGeneration: !!b.approveGeneration, maxCostEur: b.maxCostEur } } });
+  const job = enqueue({ userId: user.id, projectId: p.id, type: "video.v2", label: L("Vidéo : script, plans, montage", "Video: script, shots, editing"), payload: { projectId: p.id, request: { approval, ask: b.ask, offer: b.offer, approveGeneration: !!b.approveGeneration, maxCostEur: approval.capMicro/1e6 } } });
   return ok({ jobId: job.id });
 });

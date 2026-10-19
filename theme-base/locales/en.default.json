@@ -200,7 +200,8 @@
   "newsletter": {
     "label": "Your email address",
     "button": "Subscribe",
-    "success": "Thanks, you're subscribed."
+    "success": "Thanks, you're subscribed.",
+    "preview_demo": "Studio preview: the subscription is not recorded in this demo."
   },
   "products": {
     "product": {
@@ -273,7 +274,32 @@
     "remove": "Remove",
     "note": "Order note",
     "increase": "Increase quantity",
-    "decrease": "Decrease quantity"
+    "decrease": "Decrease quantity",
+    "secure_checkout": "Secure checkout",
+    "discount_label": "Discount code",
+    "discount_apply": "Apply",
+    "discount_demo": "Studio preview: codes are applied at checkout, no code is active in the demo.",
+    "discount_redirect": "The code will be checked at checkout.",
+    "savings": "Savings",
+    "total": "Total",
+    "total_items": {
+      "one": "Total: {{ count }} item",
+      "other": "Total: {{ count }} items"
+    },
+    "items_badge": {
+      "one": "{{ count }} item",
+      "other": "{{ count }} items"
+    },
+    "reserved": "Your order is reserved for {{ time }}",
+    "demo_fictional": "Fictional demo",
+    "protection_demo": "Service not active: no amount is added to the order.",
+    "have_account": "Have an account?",
+    "login": "Log in",
+    "login_faster": "to check out faster.",
+    "compare_price": "Price before discount",
+    "payment_methods": "Payment methods",
+    "close": "Close cart",
+    "preview_note": "Demo preview · checkout disabled"
   },
   "contact": {
     "name": "Name",
@@ -281,7 +307,9 @@
     "phone": "Phone",
     "message": "Message",
     "send": "Send",
-    "success": "Thanks, we'll get back to you shortly."
+    "success": "Thanks, we'll get back to you shortly.",
+    "error": "Please check your request before trying again.",
+    "preview_demo": "Studio preview: sending is not active in this demo; the form validation itself is real."
   },
   "customer": {
     "account": "My account",
@@ -343,5 +371,53 @@
   "gift_card": {
     "title": "Gift card",
     "expired": "This gift card has expired."
+  },
+  "purchase": {
+    "configure": "Configure offers for this product.",
+    "recommended": "Recommended offer",
+    "unit": "per item",
+    "save": "Savings",
+    "choose": "Choose variants",
+    "gift": "Gift",
+    "locked": "From",
+    "items": "items",
+    "unavailable": "Unavailable",
+    "included": "Included",
+    "add": "Add to cart",
+    "summary": "Your selection",
+    "demo": "Preview: locally tested rules, no real payment.",
+    "item": "item",
+    "view_product": "View the full product page",
+    "unit_price": "unit price",
+    "bar_total": "Selection total",
+    "bar_action": "View my selection",
+    "total": "Total",
+    "choose_options": "Choose my options"
+  },
+  "editorial": {
+    "pending_media": "Image to import"
+  },
+  "conversion": {
+    "fictional_review": "Fictional review",
+    "fictional_rating": "Fictional rating",
+    "demo_reviews": "Reviews written for the demo: no real customer.",
+    "ai_demo": "AI image — demo",
+    "no_video": "Video coming soon",
+    "no_video_hint": "Slot ready for a real video",
+    "open_story": "Open story",
+    "stories_region": "Stories",
+    "rating_based": "based on",
+    "save_percent": "−{{ percent }}%",
+    "example_promo": "Example promotion",
+    "guarantee": "Guarantee",
+    "verified_none": "No verified-purchase badge: demo review",
+    "demo_article": "Demo article",
+    "breadcrumb": "Breadcrumb",
+    "home": "Home",
+    "hotspot_open": "Detail:",
+    "hotspot_list": "Product details",
+    "step": "Step",
+    "gallery": "Gallery",
+    "gallery_open": "Enlarge:"
   }
 }

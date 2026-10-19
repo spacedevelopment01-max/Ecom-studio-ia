@@ -37,23 +37,6 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
   const [photos, setPhotos] = useState<File[]>([]);
   const [mode, setMode] = useState<"photo" | "link" | "text">("photo");
   const [more, setMore] = useState(false);
-  // Vidéos de la création complète : choix annoncé dès le départ. Les plans filmés par l'IA utilisent
-  // 2 vidéos IA du forfait (la création initiale de la boutique ne décompte pas les visuels).
-  const [videos, setVideos] = useState<"ai" | "edited" | "none">("ai");
-  // Vidéos IA : selon le forfait du projet (Créer : aucune ; Développer : courtes ; Dominer : avancées), dans son budget IA.
-  const { data: projSub } = useApi<{ subscription: { plan: PlanId; status: string } | null }>(projectId && !plan ? `/api/projects/${projectId}/subscription` : null);
-  const effPlan: PlanId | null = plan ?? (projSub?.subscription && ["active", "manual"].includes(projSub.subscription.status) ? projSub.subscription.plan : null);
-  const videoAiBlocked: string | null =
-    projectId && !plan && !projSub
-      ? null
-      : !effPlan
-        ? t("Inclus dans les forfaits Développer et Dominer.", "Included in the Grow and Dominate plans.")
-        : PLANS[effPlan].videos === "none"
-          ? t("Les vidéos IA sont incluses à partir du forfait Développer.", "AI videos are included from the Grow plan.")
-          : null;
-  useEffect(() => {
-    if (videoAiBlocked && videos === "ai") setVideos("edited");
-  }, [videoAiBlocked, videos]);
   const [busy, setBusy] = useState(false);
   const [drag, setDrag] = useState(false);
   const [typed, setTyped] = useState(false);
@@ -75,7 +58,6 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
   const svc = business === "services";
   const hasInput = (!svc && photos.length > 0) || typed;
   const input = useRef<HTMLInputElement>(null);
-  const cost = useCostConfirm();
   const addFiles = (list: FileList | null) => {
     if (!list) return;
     const next = [...photos, ...Array.from(list).filter((f) => f.type.startsWith("image/"))].slice(0, 8);
@@ -117,18 +99,19 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
     fd.delete("photos");
     if (!existing) photos.forEach((p) => fd.append("photos", p));
     if (svc && !existing) fd.set("services", JSON.stringify(cleanServices(services)));
-    if ((hasInput || existing) && !(await cost.confirm("pipeline", { videos }))) return;
+    // La préparation initiale est locale ; les moteurs payants ont leur devis au moment du choix.
+    fd.set("flow","preparation");
     setBusy(true);
     try {
       if (projectId) {
         await api(`/api/projects/${projectId}/start`, { form: fd });
-        toast("ok", t("C'est parti : le studio se met au travail.", "Here we go: the studio is getting to work."));
+        toast("ok", t("C'est parti : votre préparation est enregistrée.", "Here we go: your preparation is saved."));
         onDone?.(projectId);
         setBusy(false);
         return;
       }
       const r = await api<{ id: string; started: boolean }>(`/api/projects${subscription ? `?subscription=${encodeURIComponent(subscription)}` : ""}`, { form: fd });
-      toast("ok", r.started ? t("Projet créé : le studio se met au travail.", "Project created: the studio is getting to work.") : t("Projet créé. Ajoutez votre produit quand vous voulez depuis le Pilote ou l'onglet Produit.", "Project created. Add your product whenever you like from the Pilot or the Product tab."));
+      toast("ok", r.started ? t("Projet créé : votre préparation est enregistrée.", "Project created: your preparation is saved.") : t("Projet créé. Ajoutez votre produit quand vous voulez depuis le Pilote ou l'onglet Produit.", "Project created. Add your product whenever you like from the Pilot or the Product tab."));
       onDone?.(r.id);
       router.push(`/studio/${r.id}/pilote`);
     } catch (err) {
@@ -188,7 +171,6 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
       className="grid gap-6"
       noValidate
     >
-      {cost.dialog}
       <input type="hidden" name="businessType" value={business} />
       {existing && <input type="hidden" name="existingSite" value="1" />}
       <fieldset>
@@ -197,7 +179,7 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
           {([
             ["products", Store, t("Une boutique", "An online store"), t("Je vends des produits.", "I sell products.")],
             ["services", Briefcase, t("Le site de mon entreprise de services", "My services business website"), t("Artisan, coach, salon, cabinet, agence, restaurant, photographe, professeur…", "Tradesperson, coach, salon, practice, agency, restaurant, photographer, tutor…")],
-            ["site", Globe, t("J'ai déjà mon site et mon logo", "I already have my website and logo"), t("Le studio récupère votre site, votre logo et vos produits, et vous utilisez tout le reste : images, vidéos, publications, publicités, calendrier.", "The studio retrieves your website, your logo and your products, and you use everything else: images, videos, posts, ads, calendar.")],
+            ["site", Globe, t("J'ai déjà mon site et mon logo", "I already have my website and logo"), t("Votre site sert de référence pour préparer le projet. Vous vérifiez votre activité et vos informations avant toute création.", "Your website is a reference for project preparation. You review your business and information before creating anything.")],
           ] as const).map(([id, Icon, label, hint]) => {
             const on = id === "site" ? existing : !existing && business === id;
             return (
@@ -231,13 +213,7 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
           {storeType !== "mono" && <p className="mt-2 text-xs text-muted">{t("Commencez par votre produit phare : les autres produits s'ajoutent ensuite dans l'onglet Produit (photo, nom, prix), et la boutique se recompose avec ses collections.", "Start with your hero product: other products are added afterwards in the Product tab (photo, name, price), and the store reorganizes itself into collections.")}</p>}
         </fieldset>
       )}
-      <fieldset className="grid gap-2">
-        <legend className="mb-1">
-          <span className="block font-display text-xl font-semibold">{svc ? t("Où sera publié votre site ?", "Where will your website live?") : t("Sur quelle plateforme vendrez-vous ?", "Which platform will you sell on?")}</span>
-          <span className="mt-0.5 block text-xs text-muted">{svc ? t("Conseil : WordPress pour un site de services ; Shopify convient aussi. Modifiable à tout moment dans le studio.", "Tip: WordPress for a services website; Shopify works too. You can change it anytime in the studio.") : t("Modifiable à tout moment dans le studio.", "You can change it anytime in the studio.")}</span>
-        </legend>
-        <PlatformCards name="platform" value={platform} onChange={(p) => (setPlatform(p), setPlatformTouched(true))} business={business} compact={compact} />
-      </fieldset>
+      <input type="hidden" name="platform" value={platform} />
       {!projectId && (
         <Field label={svc ? t("Langue du site et des contenus", "Website and content language") : t("Langue de la boutique et des contenus", "Store and content language")} htmlFor="language" hint={t("Vous pourrez choisir une autre langue pour une action précise (par exemple des publicités en anglais).", "You can pick another language for a specific action later (for example, ads in French).")}>
           <Select id="language" name="language" defaultValue={lang} key={lang}>
@@ -311,36 +287,15 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
       )}
       </>
       )}
-      <Field label={t("Tout ce que vous voulez obtenir (facultatif)", "Everything you want to get (optional)")} hint={t("Exemple : « Crée ma marque, ma boutique Shopify, mes publicités et prépare mes publications Instagram pour les 30 prochains jours. » Le studio prépare un plan et un devis ; rien de payant n'est lancé sans votre accord.", "Example: \"Create my brand, my Shopify store, my ads and prepare my Instagram posts for the next 30 days.\" The studio prepares a plan and an estimate; nothing paid is started without your approval.")} htmlFor="request">
+      <Field label={t("Tout ce que vous voulez obtenir (facultatif)", "Everything you want to get (optional)")} hint={t("Exemple : « Crée ma marque, ma boutique Shopify, mes publicités et prépare mes publications Instagram pour les 30 prochains jours. » Le studio conserve vos consignes pour les étapes suivantes ; rien de payant n'est lancé sans votre accord.", "Example: \"Create my brand, my Shopify store, my ads and prepare my Instagram posts for the next 30 days.\" The studio prepares a plan and an estimate; nothing paid is started without your approval.")} htmlFor="request">
         <Textarea id="request" name="request" rows={2} maxLength={4000} placeholder={t("Ma marque, ma boutique, mes publicités, mes publications…", "My brand, my store, my ads, my posts…")} />
       </Field>
-      <fieldset className="grid gap-2">
-        <legend className="mb-1">
-          <span className="block font-display text-xl font-semibold">{t("Vidéos de la création", "Videos in the creation")}</span>
-          <span className="mt-0.5 block text-xs text-muted">{t("Vous pourrez toujours en créer d'autres plus tard dans l'onglet Vidéos.", "You can always create more later in the Videos tab.")}</span>
-        </legend>
-        <input type="hidden" name="videos" value={videos} />
-        <div role="radiogroup" aria-label={t("Vidéos de la création", "Videos in the creation")} className="grid gap-2">
-          {([
-            ["ai", Sparkles, t("Avec plans filmés par l'IA", "With AI-filmed shots"), t("Meilleur rendu : chaque vidéo contient un plan tourné par l'IA à partir de votre produit. Utilise le budget IA de ce projet.", "Best result: each video includes a shot filmed by AI from your product. Uses this project's AI budget."), videoAiBlocked],
-            ["edited", Film, t("Montées à partir de vos images", "Edited from your images"), t("Animation, textes et musique à partir de vos photos. N'utilise pas vos vidéos IA.", "Animation, captions and music from your photos. Doesn't use your AI videos."), null],
-            ["none", X, t("Pas de vidéo pour l'instant", "No video for now"), t("Aucune vidéo : vous les créerez plus tard, quand vous voudrez, dans l'onglet Vidéos.", "No video: you'll create them later, whenever you like, in the Videos tab."), null],
-          ] as const).map(([id, Icon, label, hint, blocked]) => {
-            const disabled = !!blocked;
-            return (
-            <button key={id} type="button" role="radio" aria-checked={videos === id} disabled={disabled} onClick={() => setVideos(id)} className={cx("flex items-start gap-3 rounded-2xl border-2 p-3.5 text-left transition disabled:cursor-not-allowed disabled:opacity-50", videos === id ? "border-signal bg-signal-soft" : "border-line bg-card hover:border-ink")}>
-              <span className={cx("grid size-9 shrink-0 place-items-center rounded-xl", videos === id ? "bg-signal text-signal-ink" : "bg-paper-2")}><Icon className="size-4" aria-hidden /></span>
-              <span className="min-w-0">
-                <span className="block text-sm font-semibold leading-tight">{label}</span>
-                <span className="mt-1 block text-xs text-muted">{hint}</span>
-                {blocked && <span className="mt-1.5 block text-xs font-medium text-warn">{blocked}</span>}</span>
-            </button>
-            );
-          })}
-        </div>
-      </fieldset>
+      <input type="hidden" name="videos" value="none" />
+      <input type="hidden" name="mode" value="guided" />
+      <Field label={t("À qui s’adresse votre offre ? (si connu)", "Who is your offer for? (if known)")} htmlFor="target"><Input id="target" name="target" maxLength={1200} /></Field>
+      <p className="rounded-xl bg-paper-2 p-3 text-sm">{t("D’abord votre offre, puis la recherche, votre marque, vos textes et vos visuels. Vous validez les choix importants ; les thèmes et la publication viennent ensuite.","First your offer, research, brand, copy and visuals. You approve important choices; themes and publishing come later.")}</p>
       <button type="button" onClick={() => setMore((v) => !v)} aria-expanded={more} className="justify-self-start text-sm font-medium text-ink-2 underline underline-offset-4">
-        {more ? t("Moins d'options", "Fewer options") : svc || existing ? t("Mode de travail…", "Workflow…") : t("Nom, marque, prix, logo, mode de travail…", "Name, brand, price, logo, workflow…")}
+        {more ? t("Moins d'options", "Fewer options") : svc || existing ? t("Options du projet…", "Project options…") : t("Nom, marque, prix, logo…", "Name, brand, price, logo…")}
       </button>
       {more && (
         <div className="grid gap-4 sm:grid-cols-2">
@@ -352,20 +307,15 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
               <Field label={t("Votre logo (facultatif)", "Your logo (optional)")} htmlFor="logo" hint={t("S'il est fourni, il est conservé tel quel.", "If provided, it is kept exactly as is.")}><LogoInput /></Field>
             </>
           )}
-          <Field label={t("Mode de travail", "Workflow")} htmlFor="mode">
-            <Select id="mode" name="mode" defaultValue="autopilot">
-              <option value="autopilot">{t("L'IA enchaîne tout, je retouche ensuite", "AI runs everything, I fine-tune afterwards")}</option>
-              <option value="guided">{t("Je valide la marque avant la suite", "I approve the brand before moving on")}</option>
-            </Select>
-          </Field>
+
         </div>
       )}
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" variant="signal" size="lg" loading={busy} disabled={!existing && !svc && !!projectId && !hasInput && !existingPhotos}>
-          {existing ? t("Récupérer mon site", "Retrieve my website") : hasInput || projectId || svc ? t("Lancer la création", "Start creating") : t("Ouvrir le studio", "Open the studio")} <ArrowRight className="size-4" />
+          {existing ? t("Préparer à partir de mon site", "Prepare from my website") : hasInput || projectId || svc ? t("Préparer mon projet", "Prepare my project") : t("Ouvrir le studio", "Open the studio")} <ArrowRight className="size-4" />
         </Button>
         {!existing && !svc && !!projectId && !hasInput && existingPhotos > 0 && <p className="text-sm text-muted">{t(`${existingPhotos} photo(s) déjà ajoutée(s) dans l'onglet Produit seront utilisées.`, `${existingPhotos} photo${existingPhotos > 1 ? "s" : ""} already added in the Product tab will be used.`)}</p>}
-        {!existing && !svc && !projectId && !hasInput && <p className="text-sm text-muted">{t("Pas encore de photo ? Le projet est créé vide : vous ajouterez le produit plus tard.", "No photo yet? The project is created empty: you can add the product later.")}</p>}
+        {!existing && !svc && !projectId && !hasInput && <p className="text-sm text-muted">{t("La préparation sera enregistrée : vous pourrez compléter votre offre dans le Pilote.", "Preparation will be saved: you can complete your offer in the Pilot.")}</p>}
         {!existing && svc && !hasInput && <p className="text-sm text-muted">{t("Quelques lignes sur votre activité suffisent pour démarrer.", "A few lines about your business are enough to get started.")}</p>}
       </div>
     </form>
@@ -532,7 +482,7 @@ export function StudioHome() {
             <div>
               <p className="text-sm font-medium uppercase tracking-[.18em] text-signal">{t("Nouveau projet", "New project")}</p>
               <h1 className="mt-3 font-display text-4xl font-semibold leading-[0.95] sm:text-5xl">{t("Une boutique ou le site de votre activité.", "An online store, or your business website.")}</h1>
-              <p className="mt-4 max-w-md text-lg text-ink-2">{t("Vous vendez des produits, ou vous proposez des services (artisan, coach, salon, cabinet, agence, restaurant…) : le studio analyse, construit la marque, le site, les images, les vidéos et un premier calendrier de publications. Vous suivez l'avancement en direct et intervenez quand vous voulez.", "Whether you sell products or offer services (trades, coaching, salon, practice, agency, restaurant…), the studio analyzes, then builds the brand, the website, the images, the videos and a first posting calendar. You follow progress live and step in whenever you want.")}</p>
+              <p className="mt-4 max-w-md text-lg text-ink-2">{t("Vous vendez des produits, ou vous proposez des services (artisan, coach, salon, cabinet, agence, restaurant…) : le studio vous accompagne dans la préparation de l’offre, la recherche, la marque, les textes et les visuels. Vos choix et vos versions sont conservés avant la construction du thème.", "Whether you sell products or offer services (trades, coaching, salon, practice, agency, restaurant…), the studio guides your offer, research, brand, copy and visuals. Your choices and versions are kept before theme construction.")}</p>
               <div className="mt-6 rounded-2xl border border-line bg-card p-4 text-sm">
                 <p className="font-medium">{t(`Abonnement utilisé : ${PLANS[freeSub.plan].name.fr}`, `Subscription used: ${PLANS[freeSub.plan].name.en}`)}</p>
                 <p className="mt-1 text-ink-2">{t("Ce projet lui sera rattaché définitivement (1 abonnement = 1 projet).", "This project will be tied to it for good (1 subscription = 1 project).")}</p>

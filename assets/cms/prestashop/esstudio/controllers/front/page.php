@@ -18,11 +18,12 @@ class EsStudioPageModuleFrontController extends ModuleFrontController
                 $title = $p['title'];
             }
         }
-        $file = _PS_MODULE_DIR_ . 'esstudio/views/templates/pages/' . $handle . '.tpl';
+        $themeFile = _PS_THEME_DIR_ . 'templates/es/pages/' . $handle . '.tpl';
+        $file = is_file($themeFile) ? $themeFile : _PS_MODULE_DIR_ . 'esstudio/views/templates/pages/' . $handle . '.tpl';
         if ($title === '' || !is_file($file)) {
             Tools::redirect('index.php?controller=404');
         }
-        $this->context->smarty->assign(['es_page_tpl' => 'module:esstudio/views/templates/pages/' . $handle . '.tpl', 'es_page_title' => $title]);
+        $this->context->smarty->assign(['es_page_tpl' => is_file($themeFile) ? $themeFile : 'module:esstudio/views/templates/pages/' . $handle . '.tpl', 'es_page_title' => $title]);
         $this->setTemplate('module:esstudio/views/templates/front/page.tpl');
     }
 

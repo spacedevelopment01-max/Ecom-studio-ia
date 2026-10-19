@@ -8,12 +8,12 @@ import type * as o from "@/lib/orchestrator";
 const sent: any[] = [];
 let keys: Record<string, string | null> = { anthropic: "sk-ant-test-1234567890abcdef", openai: "sk-openai-test-123456", google: "cle-google-test-123456", fal: null };
 vi.mock("@anthropic-ai/sdk", () => {
-  class APIError extends Error {}
+  class APIError extends Error { }
   class Anthropic {
-    static AuthenticationError = class extends APIError {};
-    static BadRequestError = class extends APIError {};
-    static NotFoundError = class extends APIError {};
-    constructor(public opts: any) {}
+    static AuthenticationError = class extends APIError { };
+    static BadRequestError = class extends APIError { };
+    static NotFoundError = class extends APIError { };
+    constructor(public opts: any) { }
     private stream(params: any) {
       sent.push(params);
       const p = Promise.resolve({ model: params.model, stop_reason: "end_turn", content: [{ type: "text", text: "ok" }], usage: { input_tokens: 10, output_tokens: 5 } });
@@ -162,12 +162,12 @@ describe("Phase 3B — orchestrateur branché", async () => {
     expect(fr(() => ex.pipelinePlan(job("pipeline.run", { projectId: sbId }), fresh, {})).skipped("brand")).toBeNull();
   });
 
-  it("stock avant image IA : photo libre FINALE → aucune image générée ; image demandée expressément → génération directe", async () => {
+  it("création IA directe : une recherche documentaire ne remplace pas la demande", async () => {
     const [, , , d] = await fr(() => allScenarios(fresh()));
     expect(d.plan).toEqual(["stock_search"]);
     const p = orch.buildPlan({ projectId: sbId, userId: u.id, requestKey: "s1", intents: ["GENERATE_IMAGE"], state: fr(() => orch.projectState(loadProject(sbId))) });
     orch.applyResult(p, "stock_search", { verdict: "FINAL", score: 8 });
-    expect(p.steps.find((s) => s.kind === "image_generate")!.status).toBe("skipped");
+    expect(p.steps.find((s) => s.kind === "image_generate")!.status).toBe("pending");
     expect(ex.explicitGeneration("Génère une image de bannière")).toBe(true);
     expect(ex.explicitGeneration("Trouve-moi une photo")).toBe(false);
     const forced = orch.buildPlan({ projectId: sbId, userId: u.id, requestKey: "s2", intents: ["GENERATE_IMAGE"], state: fr(() => orch.projectState(loadProject(sbId))), forceGenerate: true });
@@ -226,7 +226,7 @@ describe("Phase 3B — orchestrateur branché", async () => {
     expect(all("SELECT id FROM task_plans WHERE request_key = ?", `job:${ctx.job.id}`)).toHaveLength(1);
     // Interruption au milieu d'un plan complet (scénario F) : aucune étape terminée relancée.
     const f = (await fr(() => allScenarios(fresh())))[5];
-    for (const k of ["brand_strategy", "stock_search"]) expect(f.executions[k], k).toBe(1);
+    for (const k of ["brand_strategy", "image_generate"]) expect(f.executions[k], k).toBe(1);
     expect(f.executions.copy).toBe(1);
   });
 
@@ -236,7 +236,7 @@ describe("Phase 3B — orchestrateur branché", async () => {
     for (const [t, want] of [
       ["Refais ce logo", ["logo"]],
       ["Améliore uniquement mon logo", ["logo"]],
-      ["Génère une image de bannière pour ma boutique", ["stock_search", "image_generate"]],
+      ["Génère une image de bannière pour ma boutique", ["image_generate"]],
       ["Écris un article de blog pour mon site", ["blog"]],
     ] as const) {
       const r = orch.intentsFromRules(t);
@@ -257,7 +257,7 @@ describe("Phase 3B — orchestrateur branché", async () => {
   it("benchmarks déterministes A–F : intention, plan, étapes exécutées et sautées, routage, qualité, repli, coût", async () => {
     const [a, b, c, d, e, f] = await fr(() => allScenarios(fresh()));
     expect(a.intent.intents).toEqual(["CREATE_BRAND", "CREATE_SHOP"]);
-    expect(a.skipped.map((s) => s.step)).toEqual(["understand", "image_generate"]);
+    expect(a.skipped.map((s) => s.step)).toEqual(["understand"]);
     expect(a.routing.find((x) => x.step === "brand_strategy")).toMatchObject({ model: "claude-opus-5-5", reason: "complex creative direction" });
     // Phase 5A : la famille du produit est comprise, plus d'avertissement de repli générique.
     expect(b.warnings.join()).not.toMatch(/GENERIC/);

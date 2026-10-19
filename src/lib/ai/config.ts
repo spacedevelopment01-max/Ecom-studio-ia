@@ -148,6 +148,7 @@ export const DEFAULT_PRICES: Record<string, Price> = {
   "anthropic:claude-sonnet-5-5": { unit: "tokens", inputPerM: 2, outputPerM: 10 },
   "anthropic:claude-haiku-5-5": { unit: "tokens", inputPerM: 0.1, outputPerM: 0.5 },
   "anthropic:claude-haiku-4-5": { unit: "tokens", inputPerM: 1, outputPerM: 5 },
+  "openai:gpt-image-2.5-sunburst": { unit: "tokens", inputPerM: 5, outputPerM: 30, imageInputPerM: 8, imageOutputPerM: 30 },
   "openai:gpt-image-1": { unit: "tokens", inputPerM: 5, outputPerM: 40, imageInputPerM: 10, imageOutputPerM: 40 },
   "google:gemini-2.5-flash-image": { unit: "image", perImage: 0.039, inputPerM: 0.3 },
   "google:veo-3.0-generate-001": { unit: "video_second", perSecond: 0.4 },

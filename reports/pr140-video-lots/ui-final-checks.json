@@ -1,0 +1,102 @@
+{
+  "providerCalls": 0,
+  "scope": "Native UI/API/jobs, synthetic images/clips/reviews, real local French voice and encodes",
+  "results": [
+    {
+      "slug": "produit-publicitaire",
+      "desktop": true,
+      "stages": [
+        "existing-completed-render-resumed-without-regeneration",
+        "real-playback",
+        "local-edit-new-version",
+        "edited-version-rendered-locally",
+        "native-download"
+      ],
+      "docKey": "vid:dc9b3b713f1f7aab70a4",
+      "versionBeforeEdit": 11,
+      "versionAfterEdit": 12,
+      "clips": 4,
+      "voicePhrases": 4,
+      "errors": []
+    },
+    {
+      "slug": "service-publicitaire",
+      "desktop": true,
+      "stages": [
+        "saved-scenario-resumed-without-rewriting",
+        "scenario-reviewed-and-edited",
+        "native-launch",
+        "real-playback",
+        "local-edit-new-version",
+        "edited-version-rendered-locally",
+        "native-download"
+      ],
+      "docKey": "vid:0c2337ea0b4a9758bdb3",
+      "versionBeforeEdit": 2,
+      "versionAfterEdit": 3,
+      "clips": 4,
+      "voicePhrases": 4,
+      "errors": []
+    },
+    {
+      "slug": "produit-organique",
+      "desktop": true,
+      "stages": [
+        "first-encode-resumed-without-regenerating-media",
+        "existing-completed-render-resumed-without-regeneration",
+        "real-playback",
+        "local-edit-new-version",
+        "edited-version-rendered-locally",
+        "native-download"
+      ],
+      "docKey": "vid:b9d6e735bfff951c511f",
+      "versionBeforeEdit": 2,
+      "versionAfterEdit": 3,
+      "clips": 4,
+      "voicePhrases": 4,
+      "errors": []
+    },
+    {
+      "slug": "service-organique",
+      "desktop": true,
+      "stages": [
+        "scenario-reviewed-and-edited",
+        "native-launch",
+        "real-playback",
+        "local-edit-new-version",
+        "edited-version-rendered-locally",
+        "native-download"
+      ],
+      "docKey": "vid:ff9fc49844ff5f861ad4",
+      "versionBeforeEdit": 2,
+      "versionAfterEdit": 3,
+      "clips": 4,
+      "voicePhrases": 4,
+      "errors": []
+    },
+    {
+      "slug": "produit-publicitaire",
+      "mobile": true,
+      "playback": true,
+      "errors": []
+    },
+    {
+      "slug": "service-publicitaire",
+      "mobile": true,
+      "playback": true,
+      "errors": []
+    },
+    {
+      "slug": "produit-organique",
+      "mobile": true,
+      "playback": true,
+      "errors": []
+    },
+    {
+      "slug": "service-organique",
+      "mobile": true,
+      "playback": true,
+      "errors": []
+    }
+  ]
+}

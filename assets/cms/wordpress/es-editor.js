@@ -124,4 +124,19 @@
 		},
 		save: function () { return null; },
 	});
+	if (window.esCatalogCollections) wp.blocks.registerBlockType('es/catalog', {
+		title: __('Collection de produits E-COM STUDIO', 'es-theme'), icon: 'products', category: 'widgets',
+		attributes: { sectionId: { type: 'string' }, originalType: { type: 'string' }, settings: { type: 'object', default: {} }, onlyFor: { type: 'string' } },
+		edit: function (props) {
+			var a = props.attributes, settings = a.settings || {};
+			var update = function (key, value) { var next = Object.assign({}, settings); next[key] = value; props.setAttributes({ settings: next }); };
+			return h(Fragment, null,
+				h(be.InspectorControls, null, h(c.PanelBody, { title: __('Catalogue', 'es-theme') },
+					h(c.TextControl, { label: __('Titre', 'es-theme'), value: settings.heading || '', onChange: function (v) { update('heading', v); } }),
+					h(c.SelectControl, { label: __('Collection', 'es-theme'), value: settings.collection || 'all', options: [{ value: 'all', label: __('Tous les produits', 'es-theme') }].concat(window.esCatalogCollections.map(function (v) { return { value: v.handle, label: v.title }; })), onChange: function (v) { update('collection', v); } }),
+					h(c.RangeControl, { label: __('Nombre de produits', 'es-theme'), min: 1, max: 12, value: settings.limit || 12, onChange: function (v) { update('limit', v); } }),
+					h(c.RangeControl, { label: __('Colonnes', 'es-theme'), min: 1, max: 4, value: settings.columns || 3, onChange: function (v) { update('columns', v); } }))),
+				h('div', be.useBlockProps(), h(SSR, { block: 'es/catalog', attributes: a })));
+		}, save: function () { return null; }
+	});
 })(window.wp);

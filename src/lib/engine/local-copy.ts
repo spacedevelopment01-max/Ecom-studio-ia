@@ -201,6 +201,8 @@ export function localCopy(product: ProductProfile, brand: Pick<Brand, "name" | "
       description_html: `<p>${summary}</p>${featureFacts.length ? `<ul>${featureFacts.map((f) => `<li><strong>${f.label}</strong>${C(" : ", ": ")}${f.value}</li>`).join("")}</ul>` : ""}${toConfirm.length ? `<p><strong>${C("Bon à savoir", "Good to know")}${C(" :", ":")}</strong> ${toConfirm.map((f) => unkLabel(f.label)).join(" ")}</p>` : ""}`,
       // Points forts courts (2 à 6 mots) : la valeur seule quand elle est brève, sinon le libellé et une valeur courte.
       highlights: featureFacts.map((f) => {
+        // Valeur en liste (« Dune, Argile et Charbon ») : l'intitulé et la liste entière, jamais le premier mot seul.
+        if (/,|\bet\b|\band\b/.test(f.value) && `${f.label} : ${f.value}`.length <= 64) return `${f.label}${C(" : ", ": ")}${f.value}`;
         const head = f.value.split(/[,:;(]/)[0].trim();
         return head.length >= 3 && head.length <= 40 ? sentence(head).replace(/\.$/, "") : f.label;
       }).slice(0, 4),

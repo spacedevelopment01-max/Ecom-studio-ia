@@ -1,0 +1,62 @@
+{
+  "simulation": true,
+  "recording": "real Chromium screen capture of simulated-provider native UI",
+  "records": [
+    {
+      "file": "produit-ordinateur.webm",
+      "sha256": "31b4a5501cbb510caf67241a053e6079bccc574b8ba76c3fcda11ab55c4666f4",
+      "durationSeconds": 84.84,
+      "bytes": 8709340,
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1440,
+          "height": 1000
+        }
+      ],
+      "fullDecodeVerified": true
+    },
+    {
+      "file": "service-ordinateur.webm",
+      "sha256": "0f5adfda111a3f4cd8e086aa100959877ddbf67a46ed4dd2f49f16d5c9e32854",
+      "durationSeconds": 75.6,
+      "bytes": 7588324,
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1440,
+          "height": 1000
+        }
+      ],
+      "fullDecodeVerified": true
+    },
+    {
+      "file": "produit-mobile.webm",
+      "sha256": "e94101732bbee518b88c1e7b3854916df1f71e43f7ac0c3534e91df31eb136aa",
+      "durationSeconds": 64.88,
+      "bytes": 4583418,
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 390,
+          "height": 844
+        }
+      ],
+      "fullDecodeVerified": true
+    },
+    {
+      "file": "service-mobile.webm",
+      "sha256": "644d83a1130172b0fa84bdb58c5f42c6f7ed6864243048d29fd6f151916f49e3",
+      "durationSeconds": 66.56,
+      "bytes": 4923194,
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 390,
+          "height": 844
+        }
+      ],
+      "fullDecodeVerified": true
+    }
+  ]
+}

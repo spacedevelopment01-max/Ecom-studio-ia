@@ -110,10 +110,11 @@ describe("Social V2 — parcours", async () => {
     expect(capped.log.paid).toBeLessThanOrEqual(2);
     expect(capped.log.local).toBe(0);
     expect(paid.stoppedByCap).toBe(true);
-    // Une image IA déjà validée du projet peut être reprise sans repayer (bibliothèque) ; rien d'autre.
+    // Une création portant un autre contenu ne remplace pas un conseil/FAQ ; pas de reprise hors sujet.
     const reuse = await produceBatch(p, ids.slice(0, 2), deps, { allowPaid: false, maxCostEur: 0 });
     expect(reuse.spentMicro).toBe(0);
-    expect(reuse.byMethod.library).toBe(2);
+    expect(reuse.produced).toBe(0);
+    expect(reuse.byMethod.library ?? 0).toBe(0);
     // IA coupée : aucune dépense même si demandée.
     const off = mockSocialDeps({ aiActive: false });
     expect(estimateProduction(p, ids, off.deps, { allowPaid: true }).notes.join(" ")).toMatch(/IA non disponible/);

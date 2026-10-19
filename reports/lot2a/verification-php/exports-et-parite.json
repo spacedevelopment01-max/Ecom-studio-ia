@@ -1,0 +1,203 @@
+{
+  "sourceBase": "0964f10f8b48ac82317e242535b63ce080bc62ae",
+  "sourceFiles": {
+    "assets/cms/php/es-liquid.php": "2723232aa66fb9493213f8f875c119c1a6d192b54a22ca2b465bcfb9cda206bf",
+    "src/lib/cms-v2/adapters/wordpress.ts": "6ad5bbb44943fe80af43c2e3d31603301f5f4f4ccd04832f7a1d28c188d3b5ce",
+    "tests/lot2a-php-export.test.ts": "58da72868ecdfd7f83a8eb139ae8d70c4f22634a23f89647f121c0962161dba7"
+  },
+  "phpVersion": "PHP 8.3.35 (cli) (built: Sep 25 2026 17:43:50) (NTS)",
+  "cmsInstalled": false,
+  "realCheckoutVerified": false,
+  "aiCalls": 0,
+  "results": [
+    {
+      "kind": "products",
+      "archive": "products-woocommerce.zip",
+      "sha256": "452e0b804c0455c9ddc36afe176c8ca9905690f09471fe9ee49148d755c442ba",
+      "files": 131,
+      "phpSyntaxChecked": 52,
+      "issues": [
+        {
+          "code": "catalog_collection_requires_native_block",
+          "severity": "warning",
+          "detail": "accueil : la grille « La collection » ne reçoit pas le catalogue WooCommerce dans le moteur Liquid. Remplacer cette grille par un bloc natif Collection de produits dans WordPress, puis vérifier produits, images et liens. Le ZIP seul ne prouve pas son fonctionnement."
+        },
+        {
+          "code": "product_layouts_shared",
+          "severity": "warning",
+          "detail": "WooCommerce : une seule fiche produit pour tous les produits ; les mises en page propres à Montre acier et cuir ne sont pas reprises (elles le sont dans l'export Shopify)"
+        },
+        {
+          "code": "purchase_rules_require_server",
+          "severity": "warning",
+          "detail": "Offres avancées désactivées : product.ecp-24b76c1d174e416c:p_24b76c1d_main_product_1. Remises et cadeaux nécessitent un adaptateur commercial serveur installé et vérifié sur woocommerce. Configuration conservée dans le studio ; achat natif maintenu."
+        }
+      ],
+      "comparisons": [
+        {
+          "where": "index:ref_hero_1",
+          "type": "ref-hero",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        },
+        {
+          "where": "index:featured_collection_1",
+          "type": "featured-collection",
+          "same": false,
+          "commerceRequiresNativeBlock": true,
+          "diff": "studio: …ad es-section-head--split es-fcoll__head es-fcoll__head--few\"><div><h2 class=\"es-heading es-h2\" data-reveal=\"words\">La collection</h2></div><a class=\"es-link-ar…\n   php: …ad es-section-head--split es-fcoll__head\"><div><h2 class=\"es-heading es-h2\" data-reveal=\"words\">La collection</h2></div><a class=\"es-link-arrow\" data-reveal=\"up…"
+        },
+        {
+          "where": "index:ref_editorial_1",
+          "type": "ref-editorial",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        },
+        {
+          "where": "index:v2_benefits_1",
+          "type": "v2-benefits",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        },
+        {
+          "where": "index:ref_editorial_2",
+          "type": "ref-editorial",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        },
+        {
+          "where": "index:v2_specs_1",
+          "type": "v2-specs",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        },
+        {
+          "where": "index:v2_media_1",
+          "type": "v2-media",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        },
+        {
+          "where": "index:v2_faq_1",
+          "type": "v2-faq",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        },
+        {
+          "where": "index:v2_cta_1",
+          "type": "v2-cta",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        },
+        {
+          "where": "group:header:announcement_bar_1",
+          "type": "announcement-bar",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        },
+        {
+          "where": "group:header:header_1",
+          "type": "header",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        },
+        {
+          "where": "group:footer:footer_1",
+          "type": "footer",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        }
+      ]
+    },
+    {
+      "kind": "services",
+      "archive": "services-woocommerce.zip",
+      "sha256": "fab781aecb89896e356a2496c1d251c1401857d9af877fcb0039f5f3e5ac78dd",
+      "files": 139,
+      "phpSyntaxChecked": 51,
+      "issues": [],
+      "comparisons": [
+        {
+          "where": "index:ref_hero_1",
+          "type": "ref-hero",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        },
+        {
+          "where": "index:ref_editorial_1",
+          "type": "ref-editorial",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        },
+        {
+          "where": "index:ref_offers_1",
+          "type": "ref-offers",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        },
+        {
+          "where": "index:ref_editorial_2",
+          "type": "ref-editorial",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        },
+        {
+          "where": "index:ref_notes_1",
+          "type": "ref-notes",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        },
+        {
+          "where": "index:ref_narrative_1",
+          "type": "ref-narrative",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        },
+        {
+          "where": "index:v2_media_1",
+          "type": "v2-media",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        },
+        {
+          "where": "index:v2_faq_1",
+          "type": "v2-faq",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        },
+        {
+          "where": "index:v2_facts_1",
+          "type": "v2-facts",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        },
+        {
+          "where": "index:v2_cta_1",
+          "type": "v2-cta",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        },
+        {
+          "where": "group:header:announcement_bar_1",
+          "type": "announcement-bar",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        },
+        {
+          "where": "group:header:header_1",
+          "type": "header",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        },
+        {
+          "where": "group:footer:footer_1",
+          "type": "footer",
+          "same": true,
+          "commerceRequiresNativeBlock": false
+        }
+      ]
+    }
+  ],
+  "codeCommitAfterVerification": "3bc50910ef4c950946813340b79196467e1d68f3",
+  "sourceFilesMatchCommit": true
+}

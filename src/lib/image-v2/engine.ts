@@ -1,3 +1,5 @@
+import { saveAsset } from "../library";
+import sharp from "sharp";
 /**
  * Image & Search Engine V2 (phase 5A) — moteur central.
  *
@@ -16,6 +18,8 @@
  *  - chaque essai laisse une trace : verdict (quality_checks), candidat (image_candidates), coût (ai_calls).
  */
 import crypto from "node:crypto";
+import { imagePolicy } from "./policy";
+import { brainView } from "../brain/facade";
 import type { JobContext } from "../jobs";
 import { JobCancelled, JobPaused, UserFacingError } from "../jobs";
 import { aiActiveFor } from "../ai/access";
@@ -45,6 +49,7 @@ import type { ArtDirectionId, ImageOutcome, ImageReview, VisualBrief } from "./t
 export const IMAGE_V2_VERSION = "5a.1";
 
 export type ImageRequestV2 = BriefRequest & {
+  preserveOriginal?: boolean;
   /** Nombre d'images (série diversifiée) ; 1 par défaut. */
   count?: number;
   /** Génération permise en dernier recours (sinon recherche seule). */
@@ -105,7 +110,9 @@ export function targetedCorrection(d: GateDecision, r: ImageReview | null, brief
 const hash = (s: string) => crypto.createHash("sha256").update(s).digest("hex").slice(0, 16);
 
 export async function runImageEngineV2(ctx: JobContext | null, projectId: string, req: ImageRequestV2, injected?: ImageV2Deps): Promise<ImageRunResult> {
+  req = imagePolicy(req);
   const p = loadProject(projectId);
+  brainView(p, "image"); // Précontrôle avant tout appel, même si un adaptateur lit ensuite un brief local.
   const jobId = ctx?.job.id ?? null;
   const aiActive = aiActiveFor(p.userId, p.id);
   const deps = injected ?? realImageDeps(p, { jobId, aiActive });
@@ -134,13 +141,13 @@ async function engine(ctx: JobContext | null, p: Project, req: ImageRequestV2, d
   const refsUsed = refs.length ? refs : undefined;
 
   try {
-    for (let i = 0; i < count; i++) {
-      let brief = buildBrief(p, { ...req, references: refsUsed, variant: count > 1 ? i : (req.variant ?? null) }, { rejectedDirections: rejectedDirs });
+    for (let i = 0;i < count;i++) {
+      let brief = buildBrief(p, { ...req, references: refsUsed, variant: count > 1 ? i : (req.variant ?? null) }, { rejectedDirections: rejectedDirs, peopleAllowed: req.peopleAllowed });
       const out = await one(ctx, p, req, deps, brief, stages, seriesHashes, result);
       if (out.outcome.verdict === "REJECTED" && out.changeDirection && stages.includes("generate")) {
         // Scène hors sujet : une seule nouvelle direction, choisie localement (refus de celle-ci ajouté).
         result.stats.directionChanges++;
-        brief = buildBrief(p, { ...req, references: refsUsed, variant: count > 1 ? i : (req.variant ?? null) }, { rejectedDirections: [...rejectedDirs, brief.artDirection] });
+        brief = buildBrief(p, { ...req, references: refsUsed, variant: count > 1 ? i : (req.variant ?? null) }, { rejectedDirections: [...rejectedDirs, brief.artDirection], peopleAllowed: req.peopleAllowed });
         notes.push(`image ${i + 1} : direction changée (${out.outcome.reason})`);
         const second = await one(ctx, p, req, deps, brief, stages.filter((s) => s !== "search" && s !== "reuse"), seriesHashes, result);
         result.outcomes.push({ ...second.outcome, brief: briefSummary(brief), artDirection: brief.artDirection });
@@ -171,7 +178,8 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
   if (stages.includes("reuse")) {
     const prev = reusableFor(p.id, bh);
     // Images 100 % IA : seule une image GÉNÉRÉE peut être reprise (jamais une photo de banque au même brief).
-    if (prev && (!req.noStock || prev.origin === "generated")) {
+    const previousMeta = prev ? JSON.parse(prev.meta || "{}") : {};
+    if (prev && (!req.noStock || (prev.origin === "generated" && !previousMeta.stock && previousMeta.imageV2?.origin !== "stock"))) {
       result.stats.reused++;
       seriesHashes.push(String((JSON.parse(prev.meta || "{}") as any).imageV2?.phash ?? ""));
       return { outcome: { briefHash: bh, verdict: "FINAL", score: null, codes: [], reason: "image FINAL réutilisée (même brief)", origin: "reused", assetId: prev.id, attempts: 0, candidateKey: null }, changeDirection: false };
@@ -286,7 +294,7 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
   const corrections: string[] = [];
   let correction: string | null = null;
   let last: ImageOutcome = none(lastReason);
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+  for (let attempt = 0;attempt < maxAttempts;attempt++) {
     // Vocabulaire du client (ex. ARVEN : « montre », jamais « chronographe ») : appliqué à chaque consigne.
     const prompt = applyWording(generationPrompt(brief, correction), wording);
     const ph = hash(prompt);
@@ -333,6 +341,12 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
       service: req.service?.name ?? null,
       sourceAssetId: brief.references[0] ?? null,
     });
+    if (req.preserveOriginal) {
+      const format = (await sharp(gen.img).metadata()).format;
+      const ext = format === "jpeg" ? "jpg" : format;
+      if (!["png", "jpg", "webp"].includes(ext ?? "")) throw new Error("Format original fournisseur non reconnu : original non présenté comme PNG.");
+      await saveAsset({ projectId: p.id, userId: p.userId, data: gen.img, name: `${req.slot?.replaceAll(":", "-") || "image"}-original.${ext}`, mime: format === "jpeg" ? "image/jpeg" : `image/${format}`, origin: "generated", role: "image-original", folderKey: "images.scenes", sourceAssetId: asset.id, status: "review", meta: { provider: gen.provider, model: gen.model, original: true, attempt } });
+    }
     remember(p.id, `gen:${ph}`, bh, { verdict: d.verdict === "FINAL" ? "FINAL" : "REJECTED", score: d.score, codes: [...d.fatalCodes, ...d.blockingCodes], check_id: g.meta.gate.checkId, asset_id: asset.id, phash: local.hash });
     last = { briefHash: bh, verdict: d.verdict, score: d.score, codes: [...d.fatalCodes, ...d.blockingCodes], reason: d.reason, origin: "generated", assetId: d.verdict === "FINAL" ? asset.id : null, attempts: attempt + 1, candidateKey: `gen:${ph}` };
     if (d.verdict === "FINAL") {

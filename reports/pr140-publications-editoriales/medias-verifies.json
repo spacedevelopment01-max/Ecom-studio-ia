@@ -1,0 +1,956 @@
+{
+  "videos": [
+    {
+      "file": "publications/produit-mobile.webm",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 390,
+          "height": 844
+        }
+      ],
+      "format": {
+        "duration": "16.240000"
+      }
+    },
+    {
+      "file": "publications/produit-ordinateur.webm",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1440,
+          "height": 1000
+        }
+      ],
+      "format": {
+        "duration": "23.080000"
+      }
+    },
+    {
+      "file": "publications/service-mobile.webm",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 390,
+          "height": 844
+        }
+      ],
+      "format": {
+        "duration": "17.240000"
+      }
+    },
+    {
+      "file": "publications/service-ordinateur.webm",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1440,
+          "height": 1000
+        }
+      ],
+      "format": {
+        "duration": "20.240000"
+      }
+    },
+    {
+      "file": "publicite-campagnes/produit-mobile.webm",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 390,
+          "height": 844
+        }
+      ],
+      "format": {
+        "duration": "5.560000"
+      }
+    },
+    {
+      "file": "publicite-campagnes/produit-ordinateur.webm",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1440,
+          "height": 1000
+        }
+      ],
+      "format": {
+        "duration": "7.280000"
+      }
+    },
+    {
+      "file": "publicite-campagnes/service-mobile.webm",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 390,
+          "height": 844
+        }
+      ],
+      "format": {
+        "duration": "5.360000"
+      }
+    },
+    {
+      "file": "publicite-campagnes/service-ordinateur.webm",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1440,
+          "height": 1000
+        }
+      ],
+      "format": {
+        "duration": "6.800000"
+      }
+    },
+    {
+      "file": "publicite-unitaire/produit-mobile.webm",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 390,
+          "height": 844
+        }
+      ],
+      "format": {
+        "duration": "6.360000"
+      }
+    },
+    {
+      "file": "publicite-unitaire/produit-ordinateur.webm",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1440,
+          "height": 1000
+        }
+      ],
+      "format": {
+        "duration": "9.080000"
+      }
+    },
+    {
+      "file": "publicite-unitaire/service-mobile.webm",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 390,
+          "height": 844
+        }
+      ],
+      "format": {
+        "duration": "6.920000"
+      }
+    },
+    {
+      "file": "publicite-unitaire/service-ordinateur.webm",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1440,
+          "height": 1000
+        }
+      ],
+      "format": {
+        "duration": "9.320000"
+      }
+    }
+  ],
+  "png": [
+    {
+      "file": "publications/produit-mobile-01-conseil-saisie-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publications/produit-mobile-01-conseil-saisie.png",
+      "width": 390,
+      "height": 2543
+    },
+    {
+      "file": "publications/produit-mobile-02-conseil-sauvegarde-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publications/produit-mobile-02-conseil-sauvegarde.png",
+      "width": 390,
+      "height": 2045
+    },
+    {
+      "file": "publications/produit-mobile-03-faq-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publications/produit-mobile-03-faq.png",
+      "width": 390,
+      "height": 2170
+    },
+    {
+      "file": "publications/produit-mobile-04-checklist-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publications/produit-mobile-04-checklist.png",
+      "width": 390,
+      "height": 2295
+    },
+    {
+      "file": "publications/produit-mobile-05-carrousel-page2-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publications/produit-mobile-05-carrousel-page2.png",
+      "width": 390,
+      "height": 2545
+    },
+    {
+      "file": "publications/produit-mobile-06-review-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publications/produit-mobile-06-review.png",
+      "width": 390,
+      "height": 2420
+    },
+    {
+      "file": "publications/produit-mobile-07-ordre-repris-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publications/produit-mobile-07-ordre-repris.png",
+      "width": 390,
+      "height": 2545
+    },
+    {
+      "file": "publications/produit-mobile-08-bibliotheque-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publications/produit-mobile-08-bibliotheque.png",
+      "width": 390,
+      "height": 931
+    },
+    {
+      "file": "publications/produit-mobile-09-devis-lot-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publications/produit-mobile-09-devis-lot.png",
+      "width": 390,
+      "height": 2608
+    },
+    {
+      "file": "publications/produit-mobile-10-calendrier-lot-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publications/produit-mobile-10-calendrier-lot.png",
+      "width": 390,
+      "height": 2423
+    },
+    {
+      "file": "publications/produit-mobile-natif-1-SIMULATION.png",
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "publications/produit-mobile-natif-2-SIMULATION.png",
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "publications/produit-mobile-natif-3-SIMULATION.png",
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "publications/produit-mobile-natif-4-SIMULATION.png",
+      "width": 1080,
+      "height": 1080
+    },
+    {
+      "file": "publications/produit-ordinateur-01-conseil-saisie-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/produit-ordinateur-01-conseil-saisie.png",
+      "width": 1440,
+      "height": 1734
+    },
+    {
+      "file": "publications/produit-ordinateur-02-conseil-sauvegarde-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/produit-ordinateur-02-conseil-sauvegarde.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/produit-ordinateur-03-faq-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/produit-ordinateur-03-faq.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/produit-ordinateur-04-checklist-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/produit-ordinateur-04-checklist.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/produit-ordinateur-05-carrousel-page2-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/produit-ordinateur-05-carrousel-page2.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/produit-ordinateur-06-review-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/produit-ordinateur-06-review.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/produit-ordinateur-07-ordre-repris-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/produit-ordinateur-07-ordre-repris.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/produit-ordinateur-08-bibliotheque-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/produit-ordinateur-08-bibliotheque.png",
+      "width": 1440,
+      "height": 1293
+    },
+    {
+      "file": "publications/produit-ordinateur-09-devis-lot-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/produit-ordinateur-09-devis-lot.png",
+      "width": 1440,
+      "height": 1724
+    },
+    {
+      "file": "publications/produit-ordinateur-10-calendrier-lot-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/produit-ordinateur-10-calendrier-lot.png",
+      "width": 1440,
+      "height": 1761
+    },
+    {
+      "file": "publications/produit-ordinateur-natif-1-SIMULATION.png",
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "publications/produit-ordinateur-natif-2-SIMULATION.png",
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "publications/produit-ordinateur-natif-3-SIMULATION.png",
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "publications/produit-ordinateur-natif-4-SIMULATION.png",
+      "width": 1080,
+      "height": 1080
+    },
+    {
+      "file": "publications/service-mobile-01-conseil-saisie-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publications/service-mobile-01-conseil-saisie.png",
+      "width": 390,
+      "height": 2573
+    },
+    {
+      "file": "publications/service-mobile-02-conseil-sauvegarde-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publications/service-mobile-02-conseil-sauvegarde.png",
+      "width": 390,
+      "height": 2041
+    },
+    {
+      "file": "publications/service-mobile-03-faq-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publications/service-mobile-03-faq.png",
+      "width": 390,
+      "height": 2166
+    },
+    {
+      "file": "publications/service-mobile-04-checklist-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publications/service-mobile-04-checklist.png",
+      "width": 390,
+      "height": 2291
+    },
+    {
+      "file": "publications/service-mobile-05-carrousel-page2-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publications/service-mobile-05-carrousel-page2.png",
+      "width": 390,
+      "height": 2541
+    },
+    {
+      "file": "publications/service-mobile-06-review-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publications/service-mobile-06-review.png",
+      "width": 390,
+      "height": 2416
+    },
+    {
+      "file": "publications/service-mobile-07-ordre-repris-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publications/service-mobile-07-ordre-repris.png",
+      "width": 390,
+      "height": 2541
+    },
+    {
+      "file": "publications/service-mobile-08-bibliotheque-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publications/service-mobile-08-bibliotheque.png",
+      "width": 390,
+      "height": 2023
+    },
+    {
+      "file": "publications/service-mobile-09-devis-lot-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publications/service-mobile-09-devis-lot.png",
+      "width": 390,
+      "height": 2572
+    },
+    {
+      "file": "publications/service-mobile-10-calendrier-lot-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publications/service-mobile-10-calendrier-lot.png",
+      "width": 390,
+      "height": 2387
+    },
+    {
+      "file": "publications/service-mobile-natif-1-SIMULATION.png",
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "publications/service-mobile-natif-2-SIMULATION.png",
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "publications/service-mobile-natif-3-SIMULATION.png",
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "publications/service-mobile-natif-4-SIMULATION.png",
+      "width": 1080,
+      "height": 1080
+    },
+    {
+      "file": "publications/service-ordinateur-01-conseil-saisie-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/service-ordinateur-01-conseil-saisie.png",
+      "width": 1440,
+      "height": 1734
+    },
+    {
+      "file": "publications/service-ordinateur-02-conseil-sauvegarde-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/service-ordinateur-02-conseil-sauvegarde.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/service-ordinateur-03-faq-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/service-ordinateur-03-faq.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/service-ordinateur-04-checklist-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/service-ordinateur-04-checklist.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/service-ordinateur-05-carrousel-page2-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/service-ordinateur-05-carrousel-page2.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/service-ordinateur-06-review-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/service-ordinateur-06-review.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/service-ordinateur-07-ordre-repris-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/service-ordinateur-07-ordre-repris.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/service-ordinateur-08-bibliotheque-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/service-ordinateur-08-bibliotheque.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/service-ordinateur-09-devis-lot-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/service-ordinateur-09-devis-lot.png",
+      "width": 1440,
+      "height": 1724
+    },
+    {
+      "file": "publications/service-ordinateur-10-calendrier-lot-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publications/service-ordinateur-10-calendrier-lot.png",
+      "width": 1440,
+      "height": 1761
+    },
+    {
+      "file": "publications/service-ordinateur-natif-1-SIMULATION.png",
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "publications/service-ordinateur-natif-2-SIMULATION.png",
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "publications/service-ordinateur-natif-3-SIMULATION.png",
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "publications/service-ordinateur-natif-4-SIMULATION.png",
+      "width": 1080,
+      "height": 1080
+    },
+    {
+      "file": "publicite-campagnes/produit-mobile-01-direction-devis-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publicite-campagnes/produit-mobile-01-direction-devis.png",
+      "width": 390,
+      "height": 2751
+    },
+    {
+      "file": "publicite-campagnes/produit-mobile-02-lot-reouvert-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publicite-campagnes/produit-mobile-02-lot-reouvert.png",
+      "width": 390,
+      "height": 3083
+    },
+    {
+      "file": "publicite-campagnes/produit-ordinateur-01-direction-devis-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publicite-campagnes/produit-ordinateur-01-direction-devis.png",
+      "width": 1440,
+      "height": 1641
+    },
+    {
+      "file": "publicite-campagnes/produit-ordinateur-02-lot-reouvert-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publicite-campagnes/produit-ordinateur-02-lot-reouvert.png",
+      "width": 1440,
+      "height": 2010
+    },
+    {
+      "file": "publicite-campagnes/service-mobile-01-direction-devis-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publicite-campagnes/service-mobile-01-direction-devis.png",
+      "width": 390,
+      "height": 2781
+    },
+    {
+      "file": "publicite-campagnes/service-mobile-02-lot-reouvert-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publicite-campagnes/service-mobile-02-lot-reouvert.png",
+      "width": 390,
+      "height": 3113
+    },
+    {
+      "file": "publicite-campagnes/service-ordinateur-01-direction-devis-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publicite-campagnes/service-ordinateur-01-direction-devis.png",
+      "width": 1440,
+      "height": 1641
+    },
+    {
+      "file": "publicite-campagnes/service-ordinateur-02-lot-reouvert-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publicite-campagnes/service-ordinateur-02-lot-reouvert.png",
+      "width": 1440,
+      "height": 2010
+    },
+    {
+      "file": "publicite-unitaire/produit-1x1-SIMULATION.png",
+      "width": 1080,
+      "height": 1080
+    },
+    {
+      "file": "publicite-unitaire/produit-2x3-SIMULATION.png",
+      "width": 1080,
+      "height": 1620
+    },
+    {
+      "file": "publicite-unitaire/produit-4x5-SIMULATION.png",
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "publicite-unitaire/produit-mobile-02-creation-enregistree-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publicite-unitaire/produit-mobile-02-creation-enregistree.png",
+      "width": 390,
+      "height": 2085
+    },
+    {
+      "file": "publicite-unitaire/produit-mobile-03-retouche-format-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publicite-unitaire/produit-mobile-03-retouche-format.png",
+      "width": 390,
+      "height": 2452
+    },
+    {
+      "file": "publicite-unitaire/produit-mobile-04-reprise-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publicite-unitaire/produit-mobile-04-reprise.png",
+      "width": 390,
+      "height": 2418
+    },
+    {
+      "file": "publicite-unitaire/produit-mobile-05-bibliotheque-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publicite-unitaire/produit-mobile-05-bibliotheque.png",
+      "width": 390,
+      "height": 2016
+    },
+    {
+      "file": "publicite-unitaire/produit-ordinateur-01-demande-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publicite-unitaire/produit-ordinateur-01-demande.png",
+      "width": 1440,
+      "height": 1218
+    },
+    {
+      "file": "publicite-unitaire/produit-ordinateur-02-creation-enregistree-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publicite-unitaire/produit-ordinateur-02-creation-enregistree.png",
+      "width": 1440,
+      "height": 1591
+    },
+    {
+      "file": "publicite-unitaire/produit-ordinateur-03-retouche-format-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publicite-unitaire/produit-ordinateur-03-retouche-format.png",
+      "width": 1440,
+      "height": 1954
+    },
+    {
+      "file": "publicite-unitaire/produit-ordinateur-04-reprise-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publicite-unitaire/produit-ordinateur-04-reprise.png",
+      "width": 1440,
+      "height": 1641
+    },
+    {
+      "file": "publicite-unitaire/produit-ordinateur-05-bibliotheque-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publicite-unitaire/produit-ordinateur-05-bibliotheque.png",
+      "width": 1440,
+      "height": 1293
+    },
+    {
+      "file": "publicite-unitaire/service-1x1-SIMULATION.png",
+      "width": 1080,
+      "height": 1080
+    },
+    {
+      "file": "publicite-unitaire/service-2x3-SIMULATION.png",
+      "width": 1080,
+      "height": 1620
+    },
+    {
+      "file": "publicite-unitaire/service-4x5-SIMULATION.png",
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "publicite-unitaire/service-mobile-02-creation-enregistree-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publicite-unitaire/service-mobile-02-creation-enregistree.png",
+      "width": 390,
+      "height": 2115
+    },
+    {
+      "file": "publicite-unitaire/service-mobile-03-retouche-format-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publicite-unitaire/service-mobile-03-retouche-format.png",
+      "width": 390,
+      "height": 2482
+    },
+    {
+      "file": "publicite-unitaire/service-mobile-04-reprise-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publicite-unitaire/service-mobile-04-reprise.png",
+      "width": 390,
+      "height": 2448
+    },
+    {
+      "file": "publicite-unitaire/service-mobile-05-bibliotheque-vue.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "publicite-unitaire/service-mobile-05-bibliotheque.png",
+      "width": 390,
+      "height": 1980
+    },
+    {
+      "file": "publicite-unitaire/service-ordinateur-01-demande-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publicite-unitaire/service-ordinateur-01-demande.png",
+      "width": 1440,
+      "height": 1218
+    },
+    {
+      "file": "publicite-unitaire/service-ordinateur-02-creation-enregistree-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publicite-unitaire/service-ordinateur-02-creation-enregistree.png",
+      "width": 1440,
+      "height": 1591
+    },
+    {
+      "file": "publicite-unitaire/service-ordinateur-03-retouche-format-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publicite-unitaire/service-ordinateur-03-retouche-format.png",
+      "width": 1440,
+      "height": 1954
+    },
+    {
+      "file": "publicite-unitaire/service-ordinateur-04-reprise-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publicite-unitaire/service-ordinateur-04-reprise.png",
+      "width": 1440,
+      "height": 1641
+    },
+    {
+      "file": "publicite-unitaire/service-ordinateur-05-bibliotheque-vue.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "publicite-unitaire/service-ordinateur-05-bibliotheque.png",
+      "width": 1440,
+      "height": 1293
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{%- comment -%}
+  Composition : ce qu'il y a dedans (ingrédients, composants, matières). Une carte par bloc : icône ou petit visuel,
+  nom, rôle, note. Dispositions : cartes, liste compacte, ou grand visuel + liste. Aucune valeur inventée : les
+  quantités ou certifications non confirmées se notent « [À compléter] » ; mention de démonstration réglable.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign speed = s.animation_speed | default: 'normal'
+-%}
+<section class="es-section cv-ingr cv-ingr--{{ s.layout }} cv-ingr--{{ s.ratio }} cv-anim cv-anim--{{ speed }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;--cols:{{ s.columns }}" data-cv-ingredients>
+  <div class="es-container cv-ingr__inner">
+    <header class="cv-head cv-ingr__head"{% render 'cv-reveal', animation: s.animation %}>
+      {%- if s.eyebrow != blank -%}<p class="cv-eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
+      {%- if s.heading != blank -%}<h2 class="es-heading cv-title cv-title--h2">{{ s.heading | escape }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</h2>{%- endif -%}
+      {%- if s.text != blank -%}<div class="es-rte cv-head__text">{{ s.text }}</div>{%- endif -%}
+    </header>
+    {%- if s.layout == 'split' -%}
+      <div class="cv-ingr__media cv-zoomable"{% render 'cv-reveal', animation: s.animation %}>{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, focus_x: s.focus_x, focus_y: s.focus_y %}</div>
+    {%- endif -%}
+    <ul class="cv-ingr__list" role="list">
+      {%- for block in section.blocks -%}
+        <li class="cv-ingr__item" {{ block.shopify_attributes }}{% render 'cv-reveal', animation: s.animation, index: forloop.index0 %}>
+          <div class="cv-ingr__visual">
+            {%- if block.settings.image != blank or block.settings.image_asset != blank -%}
+              {% render 'ed-media', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.image_alt, role_label: block.settings.media_role, focus_x: 50, focus_y: 50 %}
+            {%- else -%}
+              <span class="cv-ingr__icon" aria-hidden="true">{% render 'icon', name: block.settings.icon %}</span>
+            {%- endif -%}
+          </div>
+          <div class="cv-ingr__copy">
+            <p class="cv-ingr__name">{{ block.settings.name | escape }}{% if block.settings.badge != blank %} <span class="cv-ingr__badge">{{ block.settings.badge | escape }}</span>{% endif %}</p>
+            {%- if block.settings.role != blank -%}<p class="cv-ingr__role">{{ block.settings.role | escape }}</p>{%- endif -%}
+            {%- if block.settings.note != blank -%}<div class="es-rte cv-ingr__note">{{ block.settings.note }}</div>{%- endif -%}
+          </div>
+        </li>
+      {%- endfor -%}
+    </ul>
+    {%- if s.note != blank -%}<p class="cv-fictional-note"><span class="cv-fictional">{{ s.note | escape }}</span></p>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Composition du produit",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Ce qu'il y a dedans" },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre en accent" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "cards", "options": [ { "value": "cards", "label": "Cartes" }, { "value": "list", "label": "Liste compacte" }, { "value": "split", "label": "Grand visuel et liste" } ] },
+    { "type": "range", "id": "columns", "label": "Colonnes des cartes sur ordinateur", "min": 2, "max": 4, "step": 1, "default": 3 },
+    { "type": "image_picker", "id": "image", "label": "Visuel (disposition « Grand visuel »)" },
+    { "type": "text", "id": "image_asset", "label": "Fichier image fourni avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Description du visuel" },
+    { "type": "text", "id": "media_role", "label": "Rôle du visuel attendu" },
+    { "type": "range", "id": "focus_x", "label": "Point focal horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "focus_y", "label": "Point focal vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "select", "id": "ratio", "label": "Format du grand visuel", "default": "portrait", "options": [ { "value": "square", "label": "Carré" }, { "value": "portrait", "label": "Portrait 4:5" }, { "value": "landscape", "label": "Paysage 4:3" } ] },
+    { "type": "text", "id": "note", "label": "Mention", "info": "Ex. « Composition à confirmer avant publication ». Vide : aucune mention." },
+    { "type": "select", "id": "animation", "label": "Animation", "default": "rise", "options": [ { "value": "none", "label": "Aucune" }, { "value": "fade", "label": "Fondu" }, { "value": "rise", "label": "Montée en fondu" }, { "value": "zoom", "label": "Léger zoom" } ] },
+    { "type": "select", "id": "animation_speed", "label": "Vitesse", "default": "normal", "options": [ { "value": "slow", "label": "Lente" }, { "value": "normal", "label": "Normale" }, { "value": "fast", "label": "Rapide" } ] },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 },
+    { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 }
+  ],
+  "blocks": [
+    { "type": "ingredient", "name": "Composant", "settings": [
+      { "type": "select", "id": "icon", "label": "Icône", "default": "leaf", "options": [ { "value": "leaf", "label": "Feuille" }, { "value": "drop", "label": "Goutte" }, { "value": "sparkle", "label": "Étincelle" }, { "value": "heart", "label": "Cœur" }, { "value": "shield", "label": "Bouclier" }, { "value": "bolt", "label": "Éclair" }, { "value": "check", "label": "Coche" }, { "value": "star", "label": "Étoile" }, { "value": "hand", "label": "Main" }, { "value": "waves", "label": "Ondes" }, { "value": "sound", "label": "Son" }, { "value": "clock", "label": "Horloge" }, { "value": "globe", "label": "Globe" } ] },
+      { "type": "image_picker", "id": "image", "label": "Petit visuel (remplace l'icône)" },
+      { "type": "text", "id": "image_asset", "label": "Fichier image fourni avec le thème" },
+      { "type": "text", "id": "image_alt", "label": "Description du visuel" },
+      { "type": "text", "id": "media_role", "label": "Rôle du visuel attendu" },
+      { "type": "text", "id": "name", "label": "Nom", "default": "Un composant" },
+      { "type": "text", "id": "role", "label": "Rôle en une ligne" },
+      { "type": "richtext", "id": "note", "label": "Note" },
+      { "type": "text", "id": "badge", "label": "Étiquette", "info": "Ex. « [À compléter] », « Origine France » si confirmé." }
+    ] }
+  ],
+  "max_blocks": 8,
+  "presets": [ { "name": "Composition du produit", "blocks": [ { "type": "ingredient" }, { "type": "ingredient", "settings": { "icon": "drop" } }, { "type": "ingredient", "settings": { "icon": "sparkle" } } ] } ]
+}
+{% endschema %}

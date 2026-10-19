@@ -1,0 +1,97 @@
+{
+  "codeCommitTested": "4597b28f69cf474d3cf5ab1f23fb38082a987dfa",
+  "baseCommit": "823bd3d23432164c7f4da4a5d37ad57c7ca468f6",
+  "branch": "codex/publications-ia-qualite",
+  "missions": [
+    6256824908,
+    6256864171
+  ],
+  "simulation": true,
+  "actualProviderCalls": 0,
+  "actualProviderCostMicro": 0,
+  "actualThemesCreated": 0,
+  "realCreativeQualityVerified": false,
+  "tests": {
+    "command": "npx vitest run",
+    "exitCode": 0,
+    "filesPassed": 275,
+    "passed": 2069,
+    "skipped": 3,
+    "total": 2072,
+    "durationSeconds": 713.87
+  },
+  "types": {
+    "command": "npx tsc --noEmit",
+    "exitCode": 0
+  },
+  "build": {
+    "command": "npm run build",
+    "exitCode": 0,
+    "deployment": false
+  },
+  "browser": {
+    "engine": "Chromium",
+    "productAndService": true,
+    "desktop": [
+      1440,
+      1000
+    ],
+    "mobile": [
+      390,
+      844
+    ],
+    "flows": {
+      "advertisingGuided": "Initial creation on desktop; saved asset reopened in fresh mobile session; retouch, native format and original preserved on all 4 profiles.",
+      "advertisingCampaign": "Existing form submitted on all 4 profiles, 2 saved assets each, reopened in Advertising, none attached to organic posts.",
+      "publications": "Advice through form on all 4 profiles; FAQ/checklist/authorized fictitious review/3-page carousel through native API then UI; UI reorder/save/reopen; 2-post batch through existing UI/calendar on all 4; redo through native API; unauthorized review HTTP400."
+    },
+    "javascriptErrors": 0,
+    "externalRequests": 0,
+    "horizontalOverflow": 0,
+    "uiScreenshots": 132,
+    "nativePngDownloads": 22,
+    "actualChromiumVideos": 12,
+    "syntheticPosts": 28,
+    "syntheticFinalAssets": 54,
+    "sourceRoleFolderCounts": [
+      {
+        "entryPoint": "ads-campaign",
+        "purpose": "ad",
+        "role": "ad",
+        "folder": "images.ads",
+        "count": 8
+      },
+      {
+        "entryPoint": "ads-guided",
+        "purpose": "ad",
+        "role": "ad",
+        "folder": "images.ads",
+        "count": 6
+      },
+      {
+        "entryPoint": "publications",
+        "purpose": "organic",
+        "role": "social",
+        "folder": "content.calendar",
+        "count": 40
+      }
+    ]
+  },
+  "preserved": {
+    "claudePr139Head": "ba1cf4bc793c70c5f4de0556f1a6acb2c2dd6178",
+    "changedFilesOverlapWithPr139": [],
+    "previousCorrections": true,
+    "monthlyHtBudgetPercent": 40,
+    "rechargeHtBudgetPercent": 50
+  },
+  "limits": [
+    "Provider conception, generation, review scores and costs are simulated, not real output quality.",
+    "Review source/authorization is attested input; no external review platform was independently verified.",
+    "Campaign planning uses the existing local path; final visual dependencies are injected.",
+    "No social sending, themes, CMS, exports, new connections, merge or deployment.",
+    "Private reference images, databases, settings and sessions excluded."
+  ],
+  "sourceFreezeFile": "sources-testees-sha256.json",
+  "proofMediaMetadata": "medias-verifies.json",
+  "logDirectory": "logs"
+}

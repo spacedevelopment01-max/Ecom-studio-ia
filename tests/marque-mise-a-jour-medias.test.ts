@@ -39,7 +39,7 @@ describe("Changement de marque : images et vidéos mises à jour", async () => {
     const now = snapshotOf(loadProject(pid).brand)!;
     const next = prop.rebrandVideoDoc(doc, old, now, null);
     const end = next.clips.at(-1)!.source as any;
-    const texts = end.doc.layers.filter((l: any) => l.kind === "text" || l.kind === "button");
+    const texts = (next.clips.at(-1)!.overlays as any[]).filter((l: any) => l.kind === "text" || l.kind === "button");
     expect(texts.length).toBeGreaterThan(0);
     if (old.fonts) for (const l of texts) expect([old.fonts.heading, old.fonts.body].filter((f) => f !== now.fonts!.heading && f !== now.fonts!.body)).not.toContain(l.font.family);
     expect(next.brand.name).toBe("Nouvelle Marque");

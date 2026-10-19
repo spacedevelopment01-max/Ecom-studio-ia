@@ -1,0 +1,18 @@
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { createUser } from "@/lib/auth";
+import { composeThemeV2 } from "@/lib/theme-v2/engine";
+import { renderPage } from "@/lib/theme/render";
+import { storeProducts } from "@/lib/theme/spec";
+import { productTrio, productMainHtml } from "./lot1-produits-fixtures";
+beforeEach(() => vi.stubGlobal("fetch", async () => { throw new Error("Réseau fournisseur interdit"); }));
+describe("Reproduction P1 sur 21ce77c", async () => {
+  const user = await createUser("repro-p1@example.invalid", "isolated-test-only", "Synthétique");
+  it("aucune caractéristique du principal dans la fiche accessoire", async () => {
+    const { pid, primaryFacts } = await productTrio(user.id, { homonyms: true });
+    const { spec } = await composeThemeV2(pid);
+    const a = storeProducts(spec).find((p) => p.contentTarget === "product:catalog:steel")!;
+    const html = productMainHtml((await renderPage({ spec, base: "", cart: [] }, `/products/${a.handle}`, new URLSearchParams())).html);
+    expect(html.length).toBeGreaterThan(100);
+    expect(primaryFacts.some((f) => html.includes(f)), "faits du principal sur la fiche accessoire").toBe(false);
+  });
+});

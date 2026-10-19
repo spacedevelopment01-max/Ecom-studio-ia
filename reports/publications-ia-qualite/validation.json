@@ -1,0 +1,114 @@
+{
+  "mission": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/138#issuecomment-6255978201",
+  "baseCommit": "301e948407adc11712c0165dfadfa6f8fb949b66",
+  "codeCommit": "5ee845f10d3a9a846468421b9630385cc42e32aa",
+  "branch": "codex/publications-ia-qualite",
+  "fullSuite": {
+    "command": "npx vitest run",
+    "exitCode": 0,
+    "filesPassed": 274,
+    "testsPassed": 2057,
+    "testsSkipped": 3,
+    "durationSeconds": 681.34
+  },
+  "typecheck": {
+    "command": "npx tsc --noEmit",
+    "exitCode": 0
+  },
+  "build": {
+    "command": "npm run build",
+    "exitCode": 0,
+    "deployment": false
+  },
+  "targeted": {
+    "testsPassed": 78,
+    "filesPassed": 6,
+    "providers": "simulated"
+  },
+  "browser": {
+    "status": "passed",
+    "profiles": 4,
+    "desktopViewport": "1440x1000",
+    "mobileViewport": "390x844",
+    "fullCaptures": 18,
+    "viewportCaptures": 18,
+    "videos": 4,
+    "nativePNGs": 6,
+    "providerCalls": 0,
+    "javascriptErrors": 0,
+    "externalRequests": 0,
+    "fileLibraryHorizontalOverflowPx": 0,
+    "allCaptureWidthsVerified": true,
+    "engine": "real application, injected simulated concept/image/review dependencies"
+  },
+  "realProviderCalls": 0,
+  "actualProviderCostMicroEUR": 0,
+  "realCreativeQualityValidated": false,
+  "privateReferences": {
+    "receivedAndOpened": [
+      "1000032787",
+      "1000032785",
+      "1000032788",
+      "1000032789",
+      "1000032790",
+      "1000032792",
+      "1000032793",
+      "1000032791"
+    ],
+    "missing": [],
+    "published": false,
+    "missingAtInitialDelivery": [
+      "1000032793",
+      "1000032792",
+      "1000032791"
+    ],
+    "supplement": {
+      "documentsOnly": true,
+      "codeUnchanged": true,
+      "applicationTestsRerun": false,
+      "imagesActuallyOpened": [
+        {
+          "file": "1000032792.jpg",
+          "width": 1280,
+          "height": 670
+        },
+        {
+          "file": "1000032793.jpg",
+          "width": 1024,
+          "height": 1280
+        },
+        {
+          "file": "1000032791.jpg",
+          "width": 1280,
+          "height": 1280
+        }
+      ]
+    }
+  },
+  "runtimeReadOnlyInspection": {
+    "aiCallRows": 0,
+    "storedProviderKeySettingsPresent": false,
+    "deploymentAvailabilityConcluded": false
+  },
+  "excluded": [
+    "themes",
+    "exports",
+    "CMS",
+    "social posting",
+    "deployment",
+    "merge",
+    "real upstream complete test"
+  ],
+  "preserved": [
+    "PR138 at baseCommit",
+    "PR139 theme work",
+    "billing budget caps 40% monthly HT / 50% topup HT",
+    "uncertain provider call protection",
+    "customer data",
+    "previous usable versions"
+  ],
+  "proofGuard": {
+    "missingDATA_DIR": "refused before application imports"
+  },
+  "claudePR139CheckedHead": "2f336202c5156a1d6449235412b9985f2ddd1c0c"
+}

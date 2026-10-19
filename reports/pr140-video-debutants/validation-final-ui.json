@@ -1,0 +1,46 @@
+[
+  {
+    "profile": "produit-ordinateur",
+    "version": {
+      "commit": "abad7c08391d0411946119e0152400c2a629974b",
+      "source": "compiled-build"
+    },
+    "nativePlayback": true,
+    "overflow": false,
+    "providerCalls": 0,
+    "errors": []
+  },
+  {
+    "profile": "service-ordinateur",
+    "version": {
+      "commit": "abad7c08391d0411946119e0152400c2a629974b",
+      "source": "compiled-build"
+    },
+    "nativePlayback": true,
+    "overflow": false,
+    "providerCalls": 0,
+    "errors": []
+  },
+  {
+    "profile": "produit-mobile",
+    "version": {
+      "commit": "abad7c08391d0411946119e0152400c2a629974b",
+      "source": "compiled-build"
+    },
+    "nativePlayback": true,
+    "overflow": false,
+    "providerCalls": 0,
+    "errors": []
+  },
+  {
+    "profile": "service-mobile",
+    "version": {
+      "commit": "abad7c08391d0411946119e0152400c2a629974b",
+      "source": "compiled-build"
+    },
+    "nativePlayback": true,
+    "overflow": false,
+    "providerCalls": 0,
+    "errors": []
+  }
+]

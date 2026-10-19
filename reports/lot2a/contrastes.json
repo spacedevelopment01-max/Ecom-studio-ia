@@ -1,0 +1,62 @@
+{
+  "sourceCommit": "4097eec6ae5a6d6361093219e11afc2fc0abdb0a",
+  "method": "Calcul sRGB des couleurs export\u00e9es. Pas un audit WCAG de toutes les opacit\u00e9s, images et interactions.",
+  "values": [
+    {
+      "kind": "products",
+      "scheme": "scheme-1",
+      "text": 17.314098,
+      "muted": 5.218413,
+      "button": 16.021617
+    },
+    {
+      "kind": "products",
+      "scheme": "scheme-2",
+      "text": 16.78147,
+      "muted": 5.160884,
+      "button": 16.021617
+    },
+    {
+      "kind": "products",
+      "scheme": "scheme-3",
+      "text": 16.021617,
+      "muted": 6.265531,
+      "button": 18.422536
+    },
+    {
+      "kind": "products",
+      "scheme": "scheme-4",
+      "text": 15.600289,
+      "muted": 5.036153,
+      "button": 16.021617
+    },
+    {
+      "kind": "services",
+      "scheme": "scheme-1",
+      "text": 13.688775,
+      "muted": 4.502869,
+      "button": 6.152381
+    },
+    {
+      "kind": "services",
+      "scheme": "scheme-2",
+      "text": 11.973346,
+      "muted": 5.112593,
+      "button": 6.152381
+    },
+    {
+      "kind": "services",
+      "scheme": "scheme-3",
+      "text": 11.894539,
+      "muted": 5.070133,
+      "button": 8.489897
+    },
+    {
+      "kind": "services",
+      "scheme": "scheme-4",
+      "text": 10.107596,
+      "muted": 4.712405,
+      "button": 14.922759
+    }
+  ]
+}

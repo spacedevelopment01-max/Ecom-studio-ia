@@ -1,3 +1,4 @@
+import { DirectionIdentitySchema } from "./direction-series";
 /**
  * Territoires créatifs (Logo V2) : plusieurs directions RÉELLEMENT différentes, décrites avant toute image.
  *
@@ -15,6 +16,7 @@ import { COMPOSITIONS, CONSTRUCTIONS, LOGO_STYLES, MARK_TYPES, TYPE_STYLES, type
 const ROLE = z.enum(["primary", "secondary", "accent", "light", "dark"]);
 
 export const TerritorySchema = z.object({
+  identity: DirectionIdentitySchema.optional(),
   name: z.string().min(2).max(60),
   concept: z.string().min(10).max(500),
   whyItFits: z.string().min(10).max(500),

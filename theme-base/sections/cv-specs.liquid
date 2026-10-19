@@ -1,0 +1,78 @@
+{%- comment -%}
+  Caractéristiques et contenu du colis : groupes dépliables (titre + lignes « Libellé : valeur », une par ligne) et
+  liste du contenu de la boîte. Tout vient des réglages : aucune caractéristique n'est inventée ; les valeurs à
+  confirmer se notent « [À compléter] ».
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign speed = s.animation_speed | default: 'normal'
+-%}
+<section class="es-section cv-specs cv-specs--{{ s.layout }} cv-anim cv-anim--{{ speed }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;">
+  <div class="es-container cv-specs__inner">
+    <header class="cv-head cv-specs__head"{% render 'cv-reveal', animation: s.animation %}>
+      {%- if s.eyebrow != blank -%}<p class="cv-eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
+      {%- if s.heading != blank -%}<h2 class="es-heading cv-title cv-title--h2">{{ s.heading | escape }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</h2>{%- endif -%}
+      {%- if s.text != blank -%}<div class="es-rte cv-head__text">{{ s.text }}</div>{%- endif -%}
+    </header>
+    <div class="cv-specs__groups">
+      {%- for block in section.blocks -%}
+        {%- case block.type -%}
+          {%- when 'group' -%}
+            <details class="cv-specs__group" {{ block.shopify_attributes }}{% if block.settings.open %} open{% endif %}{% render 'cv-reveal', animation: s.animation, index: forloop.index0 %}>
+              <summary class="cv-specs__summary"><span>{{ block.settings.title | escape }}</span><span class="es-faq__icon" aria-hidden="true"><i></i><i></i></span></summary>
+              <dl class="cv-specs__rows">
+                {%- assign lines = block.settings.rows | newline_to_br | split: '<br />' -%}
+                {%- for item in lines -%}{%- assign line = item | strip -%}{%- if line != blank -%}
+                  {%- assign parts = line | split: ' : ' -%}
+                  <div class="cv-specs__row"><dt>{{ parts[0] | escape }}</dt><dd>{% if parts.size > 1 %}{{ parts[1] | escape }}{% else %}&nbsp;{% endif %}</dd></div>
+                {%- endif -%}{%- endfor -%}
+              </dl>
+            </details>
+          {%- when 'box' -%}
+            <div class="cv-specs__box" {{ block.shopify_attributes }}{% render 'cv-reveal', animation: s.animation, index: forloop.index0 %}>
+              <h3 class="cv-specs__box-title">{{ block.settings.title | escape }}</h3>
+              <ul class="cv-specs__items" role="list">
+                {%- assign items = block.settings.items | newline_to_br | split: '<br />' -%}
+                {%- for item in items -%}{%- assign line = item | strip -%}{%- if line != blank -%}<li><span class="cv-check" aria-hidden="true">{% render 'icon', name: 'check' %}</span><span>{{ line | escape }}</span></li>{%- endif -%}{%- endfor -%}
+              </ul>
+            </div>
+        {%- endcase -%}
+      {%- endfor -%}
+    </div>
+    {%- if s.note != blank -%}<p class="cv-fictional-note"><span class="cv-fictional">{{ s.note | escape }}</span></p>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Fiche et contenu du colis",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Caractéristiques" },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre en accent" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "stacked", "options": [ { "value": "stacked", "label": "Titre puis groupes" }, { "value": "side", "label": "Titre à gauche, groupes à droite sur ordinateur" } ] },
+    { "type": "text", "id": "note", "label": "Mention", "info": "Ex. « Valeurs à confirmer avant publication ». Vide : aucune mention." },
+    { "type": "select", "id": "animation", "label": "Animation", "default": "rise", "options": [ { "value": "none", "label": "Aucune" }, { "value": "fade", "label": "Fondu" }, { "value": "rise", "label": "Montée en fondu" }, { "value": "zoom", "label": "Léger zoom" } ] },
+    { "type": "select", "id": "animation_speed", "label": "Vitesse", "default": "normal", "options": [ { "value": "slow", "label": "Lente" }, { "value": "normal", "label": "Normale" }, { "value": "fast", "label": "Rapide" } ] },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 },
+    { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 }
+  ],
+  "blocks": [
+    { "type": "group", "name": "Groupe dépliable", "settings": [
+      { "type": "text", "id": "title", "label": "Titre", "default": "Dimensions et matières" },
+      { "type": "textarea", "id": "rows", "label": "Lignes", "info": "Une par ligne, « Libellé : valeur ». Notez « [À compléter] » pour une valeur non confirmée." },
+      { "type": "checkbox", "id": "open", "label": "Ouvert par défaut", "default": false }
+    ] },
+    { "type": "box", "name": "Contenu du colis", "settings": [
+      { "type": "text", "id": "title", "label": "Titre", "default": "Dans la boîte" },
+      { "type": "textarea", "id": "items", "label": "Éléments", "info": "Un par ligne." }
+    ] }
+  ],
+  "max_blocks": 8,
+  "presets": [ { "name": "Fiche et contenu du colis", "blocks": [ { "type": "group", "settings": { "open": true } }, { "type": "group" }, { "type": "box" } ] } ]
+}
+{% endschema %}

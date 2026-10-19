@@ -1,3 +1,4 @@
+import { FONT_HANDLES } from "../theme/render";
 /**
  * Accès à l'IA du moteur Logo V2 (injecté : réel ici, simulé dans les tests). Chaque appel a une raison :
  *  - territoires : UN appel (directeur artistique, niveau fort) pour toutes les directions ;
@@ -22,6 +23,9 @@ import { z } from "zod";
 import type { ArtworkReview, BrandBrief, LogoReview, Territory } from "./types";
 import { ART_CRITERIA, LOGO_STYLES } from "./types";
 import { ARTWORK_REVIEW_SYSTEM, artworkPrompt, STYLE_GUIDE } from "./artwork";
+import { directionSeriesPaletteIssues } from "./direction-palette";
+import { renderDirectionPreview } from "./direction-preview";
+import { loadProject } from "../projects";
 
 export type LogoV2Ai = {
   territories(brief: BrandBrief, n: number, avoid: string[]): Promise<TerritoryDraft[]>;
@@ -68,7 +72,9 @@ export const ArtworkReviewSchema = z.object({
 
 const fontsList = () => Object.entries(STYLE_FONTS).map(([s, f]) => `${s} (${f.join(", ")})`).join(" ; ");
 
-export const TERRITORIES_SYSTEM = () => `Rôle : directeur artistique senior, spécialiste des logos de petites entreprises, artisans, commerces et indépendants. Avant tout dessin, tu proposes des TERRITOIRES CRÉATIFS de logo pour la marque décrite dans le contexte.
+export const TERRITORIES_SYSTEM = () => `Pour chaque territoire, ajoute identity : { signature (proposition, jamais une preuve), palette: {primary,secondary,accent,light,dark} (HEX), colorRoles: {primary,secondary,accent,light,dark} (rôle détaillé), fonts: {heading,body} (identifiants de polices disponibles), tone: {voice,do:[],dont:[]}, mood, graphicLanguage, rules:[] (au moins deux), sampleText }. Polices autorisées : ${FONT_HANDLES.join(", ")}. Le nom de marque est UNIQUE et identique dans les trois directions. Palette, typographies, écriture, ambiance et langage graphique doivent former un ensemble distinct, pas une recoloration. Utilise les couleurs identity.palette dans colors et imageBrief ; utilise identity.fonts pour la typographie.
+PALETTES COMPLÈTES : chaque direction possède ses propres primary, secondary ET accent, chacun distinct des deux autres dans cette direction ET du même rôle dans les autres directions. Ne partage pas un duo secondary/accent en ne changeant que primary. Justifie dans colorRoles l'accord de ces trois fonctions avec le même nom, la stratégie et l'univers proposé : signature/titres, surfaces, appels à l'action. Cherche une harmonie intentionnelle, pas une distance numérique ni des couleurs criardes. light et dark forment une base neutre claire/sombre lisible, commune aux directions ou légèrement teintée ; ce ne sont pas deux accents supplémentaires. Les rendus utiliseront primary pour les titres sur light, dark pour le texte sur light, secondary pour les surfaces avec le plus lisible de dark/light, accent pour le CTA avec le plus lisible de dark/light. Chacune de ces associations doit atteindre 4.5:1. Vérifie la cohérence et la distinction visuelle des trois ensembles avant de répondre. Aucune couleur hors palette ni correction automatique au rendu.
+Rôle : directeur artistique senior, spécialiste des logos de petites entreprises, artisans, commerces et indépendants. Avant tout dessin, tu proposes des TERRITOIRES CRÉATIFS de logo pour la marque décrite dans le contexte.
 Ce que veulent ces entreprises et leurs clients : un logo BEAU, soigné, chaleureux et professionnel, qui fait comprendre le métier AU PREMIER REGARD. Les éléments reconnaissables du métier (ses outils, ses matières, ses produits, son lieu, ses gestes), dessinés avec talent, sont le cœur du logo, pas des clichés à fuir. Un emblème rond ou un arc, une icône au-dessus du nom, un nom en écriture script élégante, deux couleurs franches : ce sont des solutions appréciées quand elles sont bien exécutées. Jamais un concept abstrait qu'il faudrait expliquer.
 Démarche : comprends l'entreprise, son activité réelle, sa clientèle, sa personnalité ; repère les codes visuels de son secteur et sers-t'en avec un niveau de finition supérieur.
 Chaque territoire est RÉELLEMENT différent des autres sur au moins trois de ces axes : style, type de marque (markType), composition, style typographique, construction graphique, niveau de sobriété. Jamais « le même logo dans une autre couleur ».
@@ -113,6 +119,8 @@ export function realLogoV2Ai(ctx: JobContext | null, b: { userId: string; projec
   const key = (k: string) => (ctx ? `${ctx.job.id}:logo-v2:${k}` : undefined);
   return {
     async territories(brief, n, avoid) {
+      const proposedAlternatives = !!loadProject(b.projectId).brand?.artIdentity;
+      const alternativeScope = proposedAlternatives ? "NOUVELLES PROPOSITIONS : l’identité complète déjà choisie (palette et polices verrouillées dans le contexte) reste appliquée tant que le client n’en choisit pas une autre. Cette demande autorise trois ensembles alternatifs, chacun avec sa propre palette complète et ses polices. Ne recopie pas la palette du choix précédent dans les trois propositions. Respecte toujours les interdits et les contraintes explicites du client. Aucun changement de la marque existante à cette étape." : "";
       const r = await llmJson(
         {
           task: "logo_symbol",
@@ -120,15 +128,17 @@ export function realLogoV2Ai(ctx: JobContext | null, b: { userId: string; projec
           usageKey: key("territories"),
           promptKey: "logo-v2-territories",
           system: TERRITORIES_SYSTEM(),
-          context: brief.brainContext,
+          context: [brief.brainContext, alternativeScope].filter(Boolean).join("\n"),
           prompt: `Nom exact de la marque : « ${brief.name} ». Activité : ${brief.activity}. Métier compris : ${brief.trade.label}${brief.trade.actions.length ? ` (gestes : ${brief.trade.actions.join(", ")})` : ""}.
 Activités réelles (seules autorisées dans « descriptor ») : ${brief.activities.join(", ") || brief.activity || "[À compléter : activités]"}.
 Symboles convenus du secteur (à styliser avec talent si tu les utilises, jamais en icône de banque d'images) : ${brief.cliches.slice(0, 12).join(", ")}.
 ${brief.style !== "auto" ? `Style choisi par le client : ${brief.style} — tous les territoires dans ce style, différents sur les autres axes.\n` : "Style : propose plusieurs styles différents, adaptés à cette entreprise.\n"}
-${brief.rejectedMarkTypes.length ? `Types de logo refusés par le client (ne pas proposer) : ${brief.rejectedMarkTypes.join(", ")}.\n` : ""}${avoid.length ? `Territoires déjà montrés (ne pas reprendre) : ${avoid.join(" ; ")}.\n` : ""}${brief.fontsLocked ? `Typographie validée par le client (à garder) : ${brief.fontsLocked.heading}.\n` : ""}${brief.positioning ? `Positionnement : ${brief.positioning}.\n` : ""}${brief.audience ? `Clientèle : ${brief.audience}.\n` : ""}${brief.personality.length ? `Personnalité : ${brief.personality.join(", ")}.\n` : ""}${brief.paletteLocked ? `Palette validée par le client (à garder, « colors » vide) : ${Object.values(brief.palette).join(", ")}.\n` : "Palette non validée : choisis les couleurs de chaque territoire (« colors »).\n"}Propose ${n} territoires. Réponds { "territories": [ { "name", "concept", "whyItFits", "style", "descriptor", "markType", "composition", "typography": { "style", "weight", "case", "tracking", "rationale" }, "colorRole": { "ink", "accent", "rationale" }, "sobriety", "construction", "symbolIdea", "distinctive", "avoid": [], "imageBrief", "colors": [] } ] }.`,
+${brief.rejectedMarkTypes.length ? `Types de logo refusés par le client (ne pas proposer) : ${brief.rejectedMarkTypes.join(", ")}.\n` : ""}${avoid.length ? `Territoires déjà montrés (ne pas reprendre) : ${avoid.join(" ; ")}.\n` : ""}${brief.fontsLocked && !proposedAlternatives ? `Typographie validée par le client (à garder) : ${brief.fontsLocked.heading}.\n` : ""}${brief.positioning ? `Positionnement : ${brief.positioning}.\n` : ""}${brief.audience ? `Clientèle : ${brief.audience}.\n` : ""}${brief.personality.length ? `Personnalité : ${brief.personality.join(", ")}.\n` : ""}${proposedAlternatives ? `${alternativeScope}\n` : brief.paletteLocked ? `Palette validée par le client (à garder, « colors » vide) : ${Object.values(brief.palette).join(", ")}. Si cette contrainte empêche trois palettes distinctes, le signaler : ne pas la contourner ni prétendre à trois ensembles valides.\n` : "Palette non validée : choisis les couleurs de chaque territoire (« colors »).\n"}Propose ${n} territoires. Réponds { "territories": [ { "name", "concept", "whyItFits", "style", "descriptor", "markType", "composition", "typography": { "style", "weight", "case", "tracking", "rationale" }, "colorRole": { "ink", "accent", "rationale" }, "sobriety", "construction", "symbolIdea", "distinctive", "avoid": [], "imageBrief", "colors": [] } ] }.`,
           maxTokens: 9000,
         },
-        TerritoriesSchema,
+        TerritoriesSchema.refine(v => v.territories.every(t => !!t.identity), "Chaque direction doit contenir son identité complète.").superRefine((v, ctx) => {
+          if (v.territories.every(t => !!t.identity)) for (const message of directionSeriesPaletteIssues(v.territories.map(t => t.identity!))) ctx.addIssue({ code: z.ZodIssueCode.custom, message });
+        }),
       );
       return r.territories;
     },
@@ -160,7 +170,7 @@ ${brief.rejectedMarkTypes.length ? `Types de logo refusés par le client (ne pas
     },
     artworkRoute() {
       // Logo complet : le modèle doit savoir écrire le nom (même décision que la génération pour l'usage « Logos »).
-      const r = mediaRouteFor("logo", { text: true, transparent: true });
+      const r = mediaRouteFor("logo", { text: true });
       return r ?? { unavailable: imageUnavailableReason("logo") ?? L("aucun modèle d'images capable d'écrire le nom pour les logos", "no image model able to write the name for logos") };
     },
     relayRoute() {
@@ -175,6 +185,9 @@ ${brief.rejectedMarkTypes.length ? `Types de logo refusés par le client (ne pas
       return logoArtworkImage({ ...base, usageKey: key(`art:${t.id}${feedback ? `:r${feedback.length}` : ""}`) }, { prompt: artworkPrompt(t, brief, feedback) });
     },
     async reviewArtwork(board, t, brief, expected) {
+      // Même palette et mêmes associations que la carte/planche. Relecture existante,
+      // sans nouvel appel séparé et toujours sous les plafonds du contrôle qualité.
+      const paletteBoard = t.identity ? await renderDirectionPreview(expected.name, { id: t.id, logoId: "", label: t.name, concept: t.concept, identity: t.identity, territory: t, version: 1 }, board) : null;
       return llmJson(
         {
           task: "quality_control",
@@ -184,8 +197,8 @@ ${brief.rejectedMarkTypes.length ? `Types de logo refusés par le client (ne pas
           routing: { difficulty: "complex", deliverable: "logo_v2" },
           system: ARTWORK_REVIEW_SYSTEM(t.style),
           context: brief.brainContext,
-          images: [{ data: board, label: L("planche de contrôle du logo complet", "full logo review board") }],
-          prompt: `Territoire « ${t.name} » — concept : ${t.concept}\nStyle : ${t.style} ; type : ${t.markType}.\nNom attendu (exact) : « ${expected.name} ».${expected.descriptor ? ` Ligne d'activités autorisée : « ${expected.descriptor} ».` : ""}${expected.tagline ? ` Slogan validé autorisé : « ${expected.tagline} ».` : ""}\nRéponds { "criteria": { ${ART_CRITERIA.map((k) => `"${k}": 0`).join(", ")} }, "textRead": "…", "nameExact": true, "extraText": false, "nameBox": { "x": 0, "y": 0, "w": 0, "h": 0 }, "clumsyCliche": false, "resemblesKnownBrand": false, "amateur": false, "artifacts": false, "person": false, "genericConcept": false, "issues": [], "fix": { "target": "symbol|typography|composition|colour|concept|none", "instruction": "…" }, "needsSimplifiedMark": true }.`,
+          images: [{ data: board, label: L("planche de contrôle du logo complet", "full logo review board") }, ...(paletteBoard ? [{ data: paletteBoard, label: L("palette complète et associations réelles : fond, titres, surfaces, texte, CTA", "complete palette and actual uses: background, headings, surfaces, text, CTA") }] : [])],
+          prompt: `Territoire « ${t.name} » — concept : ${t.concept}\nStyle : ${t.style} ; type : ${t.markType}.\nNom attendu (exact) : « ${expected.name} ».${expected.descriptor ? ` Ligne d'activités autorisée : « ${expected.descriptor} ».` : ""}${expected.tagline ? ` Slogan validé autorisé : « ${expected.tagline} ».` : ""}\n${paletteBoard ? "La deuxième image présente l’identité appliquée, pas un deuxième logo. Dans colour, juge l'harmonie des cinq rôles et la lisibilité des associations, leur cohérence avec le même nom et la stratégie, la distinction face aux palettes des autres directions dans le contexte. Les trois premiers rôles doivent avoir des fonctions chromatiques distinctes ; les deux derniers sont des neutres. Refuse une palette arbitrairement criarde, incohérente ou une simple variation de primary ; décris précisément le problème dans issues/fix. Ne confonds pas une distance numérique avec une qualité artistique. textRead et nameBox concernent seulement le logo original dans la première image, pas les textes d’exemple de la planche.\n" : ""}Réponds { "criteria": { ${ART_CRITERIA.map((k) => `"${k}": 0`).join(", ")} }, "textRead": "…", "nameExact": true, "extraText": false, "nameBox": { "x": 0, "y": 0, "w": 0, "h": 0 }, "clumsyCliche": false, "resemblesKnownBrand": false, "amateur": false, "artifacts": false, "person": false, "genericConcept": false, "issues": [], "fix": { "target": "symbol|typography|composition|colour|concept|none", "instruction": "…" }, "needsSimplifiedMark": true }.`,
           maxTokens: 3000,
         },
         ArtworkReviewSchema,

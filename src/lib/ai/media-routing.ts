@@ -17,6 +17,7 @@ import { usdToEur } from "./config";
 import { all } from "../db";
 import { getJsonSetting } from "../settings";
 import { L } from "../i18n-server";
+import { REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVIDER } from "./logo-policy";
 
 export const MEDIA_TASK: Record<MediaKind, TaskId> = { image: "image_generation", video: "video_generation" };
 
@@ -33,7 +34,7 @@ export const USAGE_INFO: Record<MediaUsage, { kind: MediaKind; need: Omit<MediaN
     kind: "image",
     need: {},
     label: { fr: "Logos", en: "Logos" },
-    detail: { fr: "Concepts graphiques des symboles (Logo Engine V2 et studio), logo complet dessiné. Le studio vectorise ensuite et écrit le nom avec de vraies polices.", en: "Graphic concepts of the symbols (Logo Engine V2 and studio), full drawn logo. The studio then vectorizes and sets the name with real fonts." },
+    detail: { fr: "Nouveaux logos : modèle imposé par le propriétaire, indépendant des images produit. En attente si clé, coût ou modèle indisponible. Original PNG conservé ; vectorisation vérifiée séparément.", en: "New logos: owner-required model, independent of product images. Pending if key, cost or model is unavailable. Original PNG retained; vectorization checked separately." },
   },
   product_image: {
     kind: "image",
@@ -100,9 +101,10 @@ const splitKey = (v: string) => {
   return { provider, model: rest.join(":") };
 };
 /** Mode de l'usage (sinon celui de son type). */
-export const usageMode = (u: MediaUsage): MediaMode => usageSettings()[u]?.mode ?? (USAGE_INFO[u].parent ? usageMode(USAGE_INFO[u].parent!) : mediaMode(USAGE_INFO[u].kind));
+export const usageMode = (u: MediaUsage): MediaMode => u === "logo" ? "manual" : usageSettings()[u]?.mode ?? (USAGE_INFO[u].parent ? usageMode(USAGE_INFO[u].parent!) : mediaMode(USAGE_INFO[u].kind));
 /** Principal de l'usage (sinon celui de son type) et son origine. */
 export function usagePrimary(u: MediaUsage): { provider: string; model: string; inherited: boolean } {
+  if (u === "logo") return { provider: REQUIRED_LOGO_PROVIDER, model: REQUIRED_LOGO_MODEL, inherited: false };
   const v = usageSettings()[u]?.primary;
   if (v) return { ...splitKey(v), inherited: false };
   const parent = USAGE_INFO[u].parent;
@@ -110,6 +112,7 @@ export function usagePrimary(u: MediaUsage): { provider: string; model: string; 
 }
 /** Secours de l'usage : le sien s'il est réglé (null = aucun, choisi), sinon celui de son type. */
 export function usageBackup(u: MediaUsage): { provider: string; model: string } | null {
+  if (u === "logo") return null;
   const s = usageSettings()[u];
   if (s && "backup" in s) return s.backup ? splitKey(s.backup) : null;
   const parent = USAGE_INFO[u].parent;
@@ -213,6 +216,7 @@ export function priceUnitFits(m: Pick<MediaModel, "kind" | "provider">, unit: st
 
 /** Capacité manquante pour ce besoin (null : compatible). */
 export function incompatibility(m: MediaModel, n: MediaNeed): string | null {
+  if (m.provider === REQUIRED_LOGO_PROVIDER && m.model === REQUIRED_LOGO_MODEL && n.usage !== "logo") return L("réservé au dessin des logos", "reserved for logo artwork");
   if (m.kind !== n.kind) return L("autre type de média", "other media type");
   const c = m.caps;
   if (n.mask && !c.maskEdit) return L("pas de retouche par masque", "no mask editing");
@@ -323,6 +327,10 @@ export function selectMedia(n0: MediaNeed, o: SelectOptions = {}): MediaChoice |
   const n: MediaNeed = u ? { ...USAGE_INFO[u].need, ...n0 } : n0;
   const mode = o.mode ?? (u ? usageMode(u) : mediaMode(n.kind));
   const status = o.status ?? ((m: MediaModel) => mediaStatus(m));
+  if (u === "logo") {
+    const m = mediaModel(REQUIRED_LOGO_PROVIDER, REQUIRED_LOGO_MODEL);
+    return m && status(m).usable && status(m).enabled && !incompatibility(m, n) && !o.exclude?.includes(`${m.provider}:${m.model}`) ? { provider: m.provider, model: m.model, role: "primary", reason: "modèle logo imposé par le propriétaire" } : null;
+  }
   if (mode === "auto") {
     const best = rankMedia(n, o).find((r) => !r.excluded);
     if (best) return { provider: best.model.provider, model: best.model.model, role: "auto", reason: `auto${u ? ` [${u}]` : ""}: ${best.model.label}, score ${best.score}` };

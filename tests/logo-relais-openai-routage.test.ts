@@ -1,8 +1,5 @@
-/**
- * Relais de qualité des logos dans le moteur multimédia — fournisseurs SIMULÉS, aucun appel payant :
- * Qwen-Image 3.0 Pro est le modèle des logos ; le relais appelle OpenAI GPT Image 1 (sa propre réservation), jamais
- * Qwen ; pas de relais sans clé OpenAI ni quand OpenAI est déjà le principal ; le devis annonce le relais à part.
- */
+import { REQUIRED_LOGO_MODEL } from "@/lib/ai/logo-policy";
+/** Politique propriétaire du 18/10 : un seul modèle logo, aucun relais. Fournisseurs simulés. */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.hoisted(() => {
@@ -66,37 +63,43 @@ describe("relais de qualité des logos (OpenAI)", async () => {
     net.calls = [];
     vi.stubGlobal("fetch", fakeFetch);
     setSetting("ai.prices.checkedAt", String(Date.now()));
-    for (const k of ["ai.routes", "ai.media.backup", "ai.media.mode", "ai.media.models", "ai.prices", "ai.media.usages"]) setJsonSetting(k, {});
+    for (const k of ["ai.routes", "ai.media.backup", "ai.media.mode", "ai.media.models", "ai.prices", "ai.media.usage"]) setJsonSetting(k, {});
+    setJsonSetting("ai.media.models", { [`openai:${REQUIRED_LOGO_MODEL}`]: { confirmedAt: Date.now(), enabled: true } });
+    setJsonSetting("ai.prices", { [`openai:${REQUIRED_LOGO_MODEL}`]: { unit: "image", perImage: 0.22 } }); // Prix injecté, pas coût officiel réel.
   });
 
-  it("Qwen dessine les logos ; le relais appelle OpenAI GPT Image 1 (jamais Qwen) avec sa propre réservation", async () => {
-    const principal = mp.mediaRouteFor("logo", { text: true, transparent: true });
-    expect(principal?.provider).toBe("alibaba");
-    expect(mp.logoQualityRelay()).toEqual({ provider: "openai", model: "gpt-image-1" });
+  it("le modèle imposé dessine, les anciennes routes logo n'ont aucun effet sur lui", async () => {
+    setJsonSetting("ai.media.usage", { logo: { primary: "alibaba:qwen-image-max" } });
+    setJsonSetting("ai.media.quality", { logo: "medium" }); // La demande de qualité haute du logo reste prioritaire.
+    expect(mp.mediaRouteFor("logo", { text: true })).toMatchObject({ provider: "openai", model: REQUIRED_LOGO_MODEL });
+    expect(mp.logoQualityRelay()).toBeNull();
     const c = await client();
-    const before = net.calls.length;
-    await fr(() => runForUser(c.userId, () => mp.logoArtworkRelayImage({ ...c, usageKey: "relais-1" }, { prompt: "Dessine un beau logo professionnel pour « Côte à Côte »." })));
+    await fr(() => runForUser(c.userId, () => mp.logoArtworkImage({ ...c, usageKey: "mandatory-1" }, { prompt: "Dessine le logo de la marque de test." })));
     expect(oa.calls).toHaveLength(1);
-    expect(oa.calls[0]).toMatchObject({ kind: "generate", model: "gpt-image-1" });
-    expect(net.calls.slice(before).some((u) => u.includes("aigc"))).toBe(false);
-    const res = all<{ provider: string; model: string; status: string }>("SELECT provider, model, status FROM ai_reservations WHERE user_id = ?", c.userId);
-    expect(res).toEqual([{ provider: "openai", model: "gpt-image-1", status: "settled" }]);
+    expect(oa.calls[0]).toMatchObject({ kind: "generate", model: REQUIRED_LOGO_MODEL, quality: "high" });
+    expect(net.calls).toEqual([]);
+    expect(all("SELECT * FROM ai_reservations WHERE user_id=? AND status='settled'", c.userId)).toHaveLength(1);
+    expect(all<{ estimated: number }>("SELECT estimated FROM ai_calls WHERE user_id=?", c.userId)[0].estimated).toBe(1);
   });
-
-  it("devis : coût probable de la série, relais annoncé à part (seulement s'il a lieu), plafond qui le couvre", () => {
+  it("le devis couvre trois dessins et leurs contrôles, sans relais vers un autre modèle", () => {
     const q = logoSeriesQuote();
-    expect(q.mode).toBe("artwork");
-    expect(q.relayMicro).toBeGreaterThan(0);
-    expect(q.probableMicro).toBeGreaterThan(0);
-    expect(q.maxMicro).toBeGreaterThanOrEqual(q.probableMicro! + 3 * mp.logoRelayMaxMicro()!);
+    expect(q.mode).toBe("artwork"); expect(q.creations).toBe(3);
+    expect(q.relayMicro).toBeNull(); expect(q.probableMicro).toBeGreaterThan(0);
+    expect(q.maxMicro).toBeGreaterThanOrEqual(q.probableMicro!);
   });
-
-  it("pas de relais sans clé OpenAI, ni quand OpenAI est déjà le modèle des logos", () => {
+  it("sans OpenAI : aucun Qwen, ancien modèle ou dessin local de remplacement", async () => {
     keys.openai = null;
+    expect(mp.mediaRouteFor("logo", { text: true })).toBeNull();
     expect(mp.logoQualityRelay()).toBeNull();
-    expect(logoSeriesQuote().relayMicro).toBeNull();
-    keys = { anthropic: "sk-ant-test-1234567890abcdef", openai: "sk-openai-test-123456" };
-    expect(mp.mediaRouteFor("logo", { text: true, transparent: true })?.provider).toBe("openai");
-    expect(mp.logoQualityRelay()).toBeNull();
+    expect(() => logoSeriesQuote()).toThrow(/en attente/);
+    const c = await client();
+    await expect(fr(() => runForUser(c.userId, () => mp.logoArtworkImage({ ...c, usageKey: "blocked" }, { prompt: "Logo test" })))).rejects.toThrow();
+    expect(oa.calls).toEqual([]); expect(net.calls).toEqual([]);
+  });
+  it("clé disponible mais borne de consommation inconnue : refus avant toute API", () => {
+    setJsonSetting("ai.prices", {}); // Tarif officiel au jeton disponible, pas de borne inventée.
+    expect(() => logoSeriesQuote()).toThrow(/Plafond.*en attente/);
+    try { logoSeriesQuote(); } catch (error) { expect((error as { status: number }).status).toBe(409); }
+    expect(oa.calls).toEqual([]);
   });
 });

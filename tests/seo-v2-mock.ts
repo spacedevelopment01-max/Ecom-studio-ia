@@ -41,10 +41,10 @@ export function faithfulDraft(prompt: string): AiDraft {
   return { seoTitle: `${offer} | ${facts.marque}`.slice(0, 60), metaDescription: `${offer} : informations confirmées par ${facts.marque}.`, blocks, unknowns: [] };
 }
 
-export type MockLog = { writes: string[]; reviews: number; rewrites: number; kinds: string[]; keys: string[] };
+export type MockLog = { writes: string[]; reviews: number; rewrites: number; rewritePrompts: string[]; kinds: string[]; keys: string[] };
 
-export function mockSeoDeps(o: { drafts?: (AiDraft | ((prompt: string, n: number) => AiDraft))[]; reviews?: (EditorialReview | Error)[]; rewrite?: RewriteOut; costMicro?: number; canWrite?: boolean; canReview?: boolean; estimate?: number } = {}): { deps: SeoV2Deps; log: MockLog } {
-  const log: MockLog = { writes: [], reviews: 0, rewrites: 0, kinds: [], keys: [] };
+export function mockSeoDeps(o: { drafts?: (AiDraft | ((prompt: string, n: number) => AiDraft))[]; reviews?: (EditorialReview | Error)[]; rewrite?: RewriteOut | ((prompt: string, n: number) => RewriteOut); costMicro?: number; canWrite?: boolean; canReview?: boolean; estimate?: number } = {}): { deps: SeoV2Deps; log: MockLog } {
+  const log: MockLog = { writes: [], reviews: 0, rewrites: 0, rewritePrompts: [], kinds: [], keys: [] };
   const cost = o.costMicro ?? 2_000;
   const deps: SeoV2Deps = {
     canWrite: o.canWrite ?? true,
@@ -64,9 +64,10 @@ export function mockSeoDeps(o: { drafts?: (AiDraft | ((prompt: string, n: number
       if (r instanceof Error) throw r;
       return { value: r, costMicro: cost / 2 };
     },
-    async rewrite() {
+    async rewrite(_system, prompt) {
+      log.rewritePrompts.push(prompt);
       log.rewrites++;
-      return { value: o.rewrite ?? { blocks: [], note: "" }, costMicro: cost / 2 };
+      return { value: typeof o.rewrite === "function" ? o.rewrite(prompt, log.rewrites - 1) : o.rewrite ?? { blocks: [], note: "" }, costMicro: cost / 2 };
     },
     estimate: () => o.estimate ?? cost,
   };

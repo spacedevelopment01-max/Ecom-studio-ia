@@ -95,6 +95,11 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
     else if (logoColors) Object.assign(brand, { paletteMode: "client", clientPalette: logoColors, palette: { ...logoColors } });
     else Object.assign(brand, { paletteMode: "direction", clientPalette: p.brand?.clientPalette, palette: directionPalette(brand.direction) });
   }
+  // Une direction déjà choisie reste l'autorité, y compris dans le chemin historique de création complète.
+  if (p.brand?.artIdentity) {
+    brand.artIdentity = p.brand.artIdentity;
+    brand.tone = p.brand.tone;
+  }
   saveBrand(projectId, brand);
   // Site existant : jamais de logo généré (celui du site ou du client est conservé).
   if (!site && !clientLogo && !keepValidated.includes("logo")) {
@@ -108,7 +113,7 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
     await ctx.step("logo-v2:apply", async () => (await applyBestLogoV2(ctx, projectId, [...run.shown, ...run.studio]))?.assetId ?? null);
   }
   // Charte finale seulement avec un logo réel (fourni, choisi ou validé par la barrière), jamais sur un logo provisoire.
-  if (!loadProject(projectId).brand?.logo.provisional) {
+  if (loadProject(projectId).brand?.logo.assetId && !loadProject(projectId).brand?.logo.provisional) {
     await saveBrandGuide(projectId);
     ctx.progress(0.9, L("Charte de marque (PDF)", "Brand guidelines (PDF)"));
     await saveBrandBook(projectId);
@@ -117,9 +122,9 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
 }
 
 /** Charte mise en page (PDF + planches), à partir du logo et des choix actuels. */
-export async function saveBrandBook(projectId: string) {
+export async function saveBrandBook(projectId: string, brandOverride?: NonNullable<ReturnType<typeof loadProject>["brand"]>) {
   const p = loadProject(projectId);
-  const b = p.brand;
+  const b = brandOverride ?? p.brand;
   if (!b) return null;
   const latest = (role: string) => all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", projectId, role)[0];
   const main = b.logo.assetId ? getAsset(b.logo.assetId) ?? latest("logo") : latest("logo");
@@ -128,9 +133,12 @@ export async function saveBrandBook(projectId: string) {
   const d = directionById(b.direction);
   // Piste de logo retenue : la charte reprend ses typographies (logo, kit et charte parlent d'une seule voix).
   const route = b.logo.route;
-  const kit = latestSocialKit(projectId);
+  // Un ancien kit social peut contenir l'ancien logo : il reste archivé, mais ne
+  // devient jamais une planche de la nouvelle identité avant son adaptation.
+  const kit = brandOverride ? null : latestSocialKit(projectId);
   // Planche d'identité refaite avec la charte (logo, couleurs et photos du moment), placée en page 2.
-  const boardAsset = await saveIdentityBoard(projectId).catch((e) => (console.error(`[planche] ${projectId} : ${(e as Error).message}`), null));
+  const boardAsset = brandOverride ? await saveIdentityBoard(projectId, b) : await saveIdentityBoard(projectId).catch((e) => (console.error(`[planche] ${projectId} : ${(e as Error).message}`), null));
+  if (brandOverride && !boardAsset) throw new Error("Planche de la nouvelle identité absente ; identité active conservée.");
   const { pages, pdf } = renderBrandBook({
     board: await img(boardAsset ?? undefined),
     // Couleurs de la piste de logo retenue (celles du site et des visuels), pas la palette de départ.
@@ -139,7 +147,7 @@ export async function saveBrandBook(projectId: string) {
     headingFamily: route?.heading ?? canvasFamily(b.fonts.heading ?? d.fonts.heading, "Cormorant"),
     bodyFamily: route?.body ?? canvasFamily(b.fonts.body ?? d.fonts.body, "Jost"),
     social: kit ? await img(kit.sheet) : null,
-    voice: b.social ?? null,
+    voice: brandOverride ? null : b.social ?? null,
     logo: await img(main),
     logoLight: await img(derived("logo-light")),
     logoWeb: await img(derived("logo-horizontal") ?? main),
@@ -151,15 +159,15 @@ export async function saveBrandBook(projectId: string) {
   });
   const batch = Date.now().toString(36);
   const prev = latest("brand-book");
-  const book = await saveAsset({ projectId, userId: p.userId, data: pdf, name: `${C("charte", "brand-guidelines")}-${b.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.pdf`, mime: "application/pdf", kind: "document", role: "brand-book", folderKey: "brand.guide", origin: "generated", versionOf: prev ? prev.version_of ?? prev.id : null, meta: { pages: pages.length, batch } });
+  const book = await saveAsset({ projectId, userId: p.userId, data: pdf, name: `${C("charte", "brand-guidelines")}-${b.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.pdf`, mime: "application/pdf", kind: "document", role: "brand-book", folderKey: "brand.guide", origin: "generated", sourceAssetId: main?.id, versionOf: prev ? prev.version_of ?? prev.id : null, meta: { pages: pages.length, batch } });
   for (const [i, jpg] of pages.entries()) await saveAsset({ projectId, userId: p.userId, data: jpg, name: `${C("charte-planche", "brand-guidelines-page")}-${i + 1}.jpg`, mime: "image/jpeg", role: "brand-book-page", folderKey: "brand.guide", origin: "generated", sourceAssetId: book.id, meta: { page: i + 1, batch } });
   return book;
 }
 
 /** Charte de marque au format Markdown (rangée dans « Charte & palette »). */
-export async function saveBrandGuide(projectId: string) {
+export async function saveBrandGuide(projectId: string, brandOverride?: NonNullable<ReturnType<typeof loadProject>["brand"]>) {
   const p = loadProject(projectId);
-  const b0 = p.brand;
+  const b0 = brandOverride ?? p.brand;
   if (!b0) return;
   // Couleurs de la piste de logo retenue.
   const b = { ...b0, palette: effectivePalette(b0) ?? b0.palette };
@@ -240,5 +248,5 @@ ${b.checks?.length ? `## To check\n${b.checks.map((c) => `- ${c}`).join("\n")}\n
 _Document generated by E-COM STUDIO IA (${b.generatedBy === "ai" ? "AI" : "simplified version"}). Items marked "To complete" still need to be confirmed._
 `);
   const prev = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'brand-guide' AND deleted_at IS NULL ORDER BY version DESC LIMIT 1", projectId)[0];
-  await saveAsset({ projectId, userId: p.userId, data: Buffer.from(md, "utf8"), name: C("charte-de-marque.md", "brand-guidelines.md"), mime: "text/markdown", kind: "document", role: "brand-guide", folderKey: "brand.guide", origin: "generated", versionOf: prev ? prev.version_of ?? prev.id : null, meta: { recipe: C("Charte de marque", "Brand guidelines") } });
+  await saveAsset({ projectId, userId: p.userId, data: Buffer.from(md + (b.artIdentity ? `\n## ${L("Direction complète validée", "Approved complete direction")}\n${b.artIdentity.mood}\n\n${b.artIdentity.graphicLanguage}\n\n${b.artIdentity.rules.map(r => `- ${r}`).join("\n")}\n\n${Object.entries(b.artIdentity.colorRoles).map(([role, meaning]) => `- ${role}: ${meaning}`).join("\n")}\n\n> ${b.artIdentity.sampleText}\n` : ""), "utf8"), name: C("charte-de-marque.md", "brand-guidelines.md"), mime: "text/markdown", kind: "document", role: "brand-guide", folderKey: "brand.guide", origin: "generated", sourceAssetId: b.logo.assetId, versionOf: prev ? prev.version_of ?? prev.id : null, meta: { recipe: C("Charte de marque", "Brand guidelines") } });
 }

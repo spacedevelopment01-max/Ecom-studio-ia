@@ -54,16 +54,26 @@ export function loadProject(projectId: string): Project {
     catalog: json<CatalogItem[]>(row.catalog_json, []),
     sources: json(row.sources_json, []),
     business: ((row as any).business_type === "services" ? "services" : "products") as BusinessType,
-    services: { ...emptyServiceProfile(), ...json<Partial<ServiceProfile>>((row as any).business_json, {}) },
+    services: (() => {
+      const s = { ...emptyServiceProfile(), ...json<Partial<ServiceProfile>>((row as any).business_json, {}) };
+      return { ...s, services: s.services.map((item, i) => ({ ...item, key: item.key || `legacy-${i}` })) };
+    })(),
   };
 }
 
 /** Offre de services (entreprises de services). */
 export function saveServices(projectId: string, services: ServiceProfile) {
+  const previous = loadProject(projectId).services.services;
+  services = { ...services, services: services.services.map((s, i) => {
+    const old = previous.find((x) => s.key ? x.key === s.key : x.name === s.name);
+    return { ...s, key: old?.key || s.key || id(), contentAliases: [...new Set([...(old?.contentAliases ?? []), ...(s.contentAliases ?? []), ...(old ? [old.name] : []), s.name])] };
+  }) };
   run("UPDATE projects SET business_json = ?, updated_at = ? WHERE id = ?", JSON.stringify(services), now(), projectId);
 }
 
 export function saveProduct(projectId: string, product: ProductProfile) {
+  const previous = loadProject(projectId).product;
+  product = { ...product, contentAliases: [...new Set([...(previous.contentAliases ?? []), ...(product.contentAliases ?? []), previous.name, product.name].filter(Boolean))] };
   run("UPDATE projects SET product_json = ?, sector = ?, updated_at = ? WHERE id = ?", JSON.stringify(product), product.sector, now(), projectId);
 }
 export function saveBrand(projectId: string, brand: Brand) {
@@ -76,6 +86,8 @@ export function saveStrategy(projectId: string, s: Strategy) {
   run("UPDATE projects SET strategy_json = ?, updated_at = ? WHERE id = ?", JSON.stringify(s), now(), projectId);
 }
 export function saveCatalog(projectId: string, catalog: CatalogItem[], storeType?: StoreType) {
+  const previous = loadProject(projectId).catalog;
+  catalog = catalog.map((c) => ({ ...c, contentAliases: [...new Set([...(previous.find((x) => x.key === c.key)?.contentAliases ?? []), ...(c.contentAliases ?? []), previous.find((x) => x.key === c.key)?.name ?? c.name, c.name])] }));
   run("UPDATE projects SET catalog_json = ?, store_type = COALESCE(?, store_type), updated_at = ? WHERE id = ?", JSON.stringify(catalog), storeType ?? null, now(), projectId);
 }
 export function saveSettings(projectId: string, s: ProjectSettings) {
@@ -123,13 +135,15 @@ export function remember(projectId: string, item: { kind: string; key: string; v
   return tx(() => {
     // Même entrée active (même clé normalisée, ou ancienne ligne sans clé normalisée pour la même clé) : déduplication.
     const same = one<{ id: string; value: string; evidence_json: string }>(
-      "SELECT id, value, evidence_json FROM memory WHERE project_id = ? AND kind = ? AND state = 'active' AND (norm_key = ? OR (norm_key IS NULL AND key = ?)) ORDER BY created_at DESC LIMIT 1",
+      "SELECT id, value, evidence_json FROM memory WHERE project_id = ? AND kind = ? AND state = 'active' AND (norm_key = ? OR (norm_key IS NULL AND key = ?) OR (key = ? AND ? IN ('decision','correction'))) ORDER BY created_at DESC LIMIT 1",
       projectId,
       item.kind,
       n.normKey,
       item.key,
+      item.key,
+      item.kind,
     );
-    if (same && (item.kind !== "decision" || same.value === item.value)) {
+    if (same && (!["decision", "correction"].includes(item.kind) || same.value === item.value)) {
       const ev = json<{ count?: number }>(same.evidence_json, {});
       run("UPDATE memory SET norm_key = ?, status = ?, scope = ?, evidence_json = ?, updated_at = ? WHERE id = ?", n.normKey, status, scope, JSON.stringify({ ...ev, count: (ev.count ?? 1) + 1, lastAt: now() }), now(), same.id);
       return same.id;
@@ -182,18 +196,20 @@ export function themeVersion(projectId: string, versionId: string): { version: T
 }
 
 /** La version de référence d'une modification n'est plus la version en cours (autre onglet, double clic, tâche). */
-export class ThemeConflict extends Error {}
+export class ThemeConflict extends Error { }
 
 /**
  * Nouvelle version du thème. `expectedParent` : la modification a été préparée sur cette version ; si une autre
  * modification est passée entre-temps, rien n'est écrit (ThemeConflict) au lieu d'écraser silencieusement.
  */
-export function saveThemeVersion(projectId: string, spec: ThemeSpec, summary: string, author: "ai" | "user" | "system", qc?: unknown, expectedParent?: string): ThemeVersion {
+export function saveThemeVersion(projectId: string, spec: ThemeSpec, summary: string, author: "ai" | "user" | "system", qc?: unknown, expectedParent?: string | null, options: { activate?: boolean } = {}): ThemeVersion {
   // Vocabulaire du client (ex. « montre », jamais « chronographe ») : appliqué à tous les textes du site enregistré.
   spec = applyWordingDeep(spec, loadWordingRules(projectId));
   return tx(() => {
     const cur = one<{ current_theme_version_id: string | null }>("SELECT current_theme_version_id FROM projects WHERE id = ?", projectId);
-    if (expectedParent && cur?.current_theme_version_id !== expectedParent) throw new ThemeConflict("theme_conflict");
+    const gate = (qc as { gate?: { verdict?: string; checked?: boolean } } | null)?.gate;
+    const activate = options.activate !== false && gate?.verdict !== "REJECTED" && !(gate?.verdict === "RETRY" && gate.checked !== false);
+    if (activate && expectedParent !== undefined && (cur?.current_theme_version_id ?? null) !== expectedParent) throw new ThemeConflict("theme_conflict");
     const n = (one<{ n: number }>("SELECT MAX(number) n FROM theme_versions WHERE project_id = ?", projectId)?.n ?? 0) + 1;
     const vid = id();
     run(
@@ -208,7 +224,7 @@ export function saveThemeVersion(projectId: string, spec: ThemeSpec, summary: st
       qc ? JSON.stringify(qc) : null,
       now(),
     );
-    run("UPDATE projects SET current_theme_version_id = ?, updated_at = ? WHERE id = ?", vid, now(), projectId);
+    if (activate) run("UPDATE projects SET current_theme_version_id = ?, updated_at = ? WHERE id = ?", vid, now(), projectId);
     return one<ThemeVersion>("SELECT * FROM theme_versions WHERE id = ?", vid)!;
   });
 }
