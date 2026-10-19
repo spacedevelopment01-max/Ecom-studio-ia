@@ -460,7 +460,7 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
     const refId = stable?.assetId ?? s?.referenceAssetId ?? null;
     if (stable?.reconstructed) notes.push(C("Produit reconstruit (partie manquante complétée à partir de vos photos) : reconstruction plausible, pas une forme retrouvée à l'identique — à vérifier dans l'aperçu.", "Product reconstructed (missing part completed from your photos): a plausible reconstruction, not an exactly recovered shape — check it in the preview."));
     const ref = refId ? getAsset(refId) : null;
-    const refBuf = ref && !ref.deleted_at ? assetData(ref) : null;
+    const refBuf = ref && ref.project_id===projectId&&ref.kind==="image"&&!ref.deleted_at ? assetData(ref) : null;
     if (!refBuf && (!req.generation || (req.generation==="reference"&&Array.from({length:n},(_,k)=>req.sceneImages?.[k]).some(photo=>!photo)))) throw new UserFacingError(L("Ajoutez d'abord une photo de ce produit : la vidéo part de votre vrai produit, l'IA ne l'invente pas.", "Add a photo of this product first: the video starts from your real product, the AI never invents it."));
     const direct=req.generation && req.generation!=="staged";
     if(direct){

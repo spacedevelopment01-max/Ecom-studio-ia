@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 let sessionUser: any = null;
+let injectedQuote=false;
+vi.mock("@/lib/video-v2/chain-quote",async original=>{const real=await original<typeof import("@/lib/video-v2/chain-quote")>();return {...real,sceneChainQuote:(...args:Parameters<typeof real.sceneChainQuote>)=>{const q=real.sceneChainQuote(...args);return injectedQuote?{...q,allowed:true,reason:null,mode:"ai" as const,estimateMicro:50_000,capMicro:100_000,scriptMicro:0}:q;}};});
 vi.mock("@/lib/auth", async original => {
   const real = await original<typeof import("@/lib/auth")>();
   return { ...real, requireUser: async () => sessionUser ?? (() => { throw new real.HttpError(401, "Connexion requise"); })() };
@@ -62,4 +64,13 @@ describe("Création vidéo guidée : droits natifs, sans fournisseur", async () 
     sessionUser = await createUser(`video-etranger-${crypto.randomUUID()}@test.fr`, "motdepasse-test", "Étranger isolé");
     expect((await route.POST(req("quote"), ctx)).status).toBe(404);
   });
+});
+
+it('devis injecté, budget natif épuisé après accord : refus serveur avant toute tâche ou appel de clip direct',async()=>{
+ const{createUser}=await import('@/lib/auth');const{loadProject}=await import('@/lib/projects');const{seedImageFixture}=await import('./image-v2-fixtures');const{getSubscription,syncAllowance,balance,reserve,release}=await import('@/lib/billing');const{accountKeyFor}=await import('@/lib/project-billing');const{run,all,now}=await import('@/lib/db');const{localScenePlan}=await import('@/lib/video-v2/three-scenes');const route=await import('@/app/api/projects/[id]/creative/video/route');
+ const u=await createUser(`video-budget-${crypto.randomUUID()}@test.invalid`,'motdepasse-test','Fictif');sessionUser=u;const pid=seedImageFixture(u.id,'restaurant');getSubscription(u.id);run("UPDATE subscriptions SET status='active',plan='dominer' WHERE user_id=?",u.id);syncAllowance(u.id);
+ injectedQuote=true; // Devis injecté seulement ; les droits, l’accord signé et le budget restent natifs.
+ const req={as:'ad' as const,generation:'direct' as const,scenes:2,totalS:10};const ctx={params:Promise.resolve({id:pid})};const post=(data:unknown)=>route.POST(new Request('http://localhost',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)}),ctx);
+ const quotation=await(await post({action:'quote',...req})).json();expect(quotation.allowed,quotation.reason).toBe(true);const plan=await(await post({action:'plan',...req,draftPlan:localScenePlan(loadProject(pid),null,req)})).json();expect(plan.approvalToken).toBeTruthy();
+ const held=reserve(u.id,balance(accountKeyFor(u.id,pid)).available,{task:'test-isolated-budget-hold',provider:'alibaba',model:'fixture',projectId:pid});try{const response=await post({action:'create',...req,approvalToken:plan.approvalToken,approvedEstimateMicro:quotation.estimateMicro});expect(response.status).toBe(422);expect((await response.json()).error).toMatch(/100|budget|épuisé/i);expect(all('SELECT id FROM jobs WHERE project_id=?',pid)).toHaveLength(0);expect(all('SELECT id FROM ai_calls WHERE project_id=?',pid)).toHaveLength(0);}finally{release(held);injectedQuote=false;}
 });
