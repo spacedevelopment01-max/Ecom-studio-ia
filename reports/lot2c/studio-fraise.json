@@ -20,15 +20,24 @@
       "reason": "menu absent"
     },
     {
-      "step": "texte, image, masquage puis rechargement",
+      "step": "panneau manuel : titre, disposition, bloc ajouté, titre de bloc (aperçu mis à jour)",
+      "ok": true,
+      "points": 4
+    },
+    {
+      "step": "discussion (sans IA) : masquage par le nom puis retour à la version précédente, réglages du panneau conservés",
+      "ok": true
+    },
+    {
+      "step": "rechargement complet : panneau, discussion et opérations conservés",
       "ok": true,
       "after": {
         "visible": 1,
-        "heading": "TITRE MODIFIÉ DEPUIS LE STUDIO",
-        "image": "/preview/knx8omhqt0ldkydj/v/bsyaqw6v9rxk0pcz~tn5eqr.IFxJz8ggbInhEIusjW9qGY1hHwGTgWck/assets/fraise-06-banniere.webp",
-        "listed": 2
+        "heading": "TITRE DU PANNEAU MANUEL",
+        "image": "/preview/s0hgi8ivc2b0g0r7/v/zzdogfnhvlw1nadf~tn5j2g.ygzvPpKUiP5jjAfG6A_86udRizE6J1Aa/assets/fraise-06-banniere.webp",
+        "listed": 3
       }
     }
   ],
-  "date": "2026-10-18T21:37:48.116Z"
+  "date": "2026-10-18T23:11:12.250Z"
 }

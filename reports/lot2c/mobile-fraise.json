@@ -1,0 +1,577 @@
+{
+  "kind": "fraise",
+  "dir": "/tmp/claude-0/-home-user/f42e41aa-36e1-5b4c-ac34-eb3ff7528781/scratchpad/static-final-r6/fraise",
+  "date": "2026-10-18T23:47:13.286Z",
+  "report": [
+    {
+      "dev": "390x620",
+      "faq": "faq",
+      "present": true,
+      "open": [
+        {
+          "q": {
+            "bg": "rgb(251, 247, 242)",
+            "color": "rgb(20, 20, 20)",
+            "px": 19.2,
+            "bold": true
+          },
+          "a": {
+            "bg": "rgb(251, 247, 242)",
+            "color": "rgb(20, 20, 20)",
+            "visible": true
+          },
+          "contrast": [
+            17.3,
+            17.3
+          ]
+        },
+        {
+          "q": {
+            "bg": "rgb(251, 247, 242)",
+            "color": "rgb(20, 20, 20)",
+            "px": 19.2,
+            "bold": true
+          },
+          "a": {
+            "bg": "rgb(251, 247, 242)",
+            "color": "rgb(20, 20, 20)",
+            "visible": true
+          },
+          "contrast": [
+            17.3,
+            17.3
+          ]
+        }
+      ],
+      "closed": [
+        {
+          "q": {
+            "bg": "rgb(228, 71, 63)",
+            "color": "rgb(255, 255, 255)",
+            "px": 19.2,
+            "bold": true
+          },
+          "contrast": 4,
+          "threshold": 3
+        },
+        {
+          "q": {
+            "bg": "rgb(228, 71, 63)",
+            "color": "rgb(255, 255, 255)",
+            "px": 19.2,
+            "bold": true
+          },
+          "contrast": 4,
+          "threshold": 3
+        }
+      ]
+    },
+    {
+      "dev": "390x620",
+      "faq": "accueil",
+      "present": true,
+      "open": [
+        {
+          "q": {
+            "bg": "rgb(251, 247, 242)",
+            "color": "rgb(20, 20, 20)",
+            "px": 19.2,
+            "bold": true
+          },
+          "a": {
+            "bg": "rgb(251, 247, 242)",
+            "color": "rgb(20, 20, 20)",
+            "visible": true
+          },
+          "contrast": [
+            17.3,
+            17.3
+          ]
+        },
+        {
+          "q": {
+            "bg": "rgb(251, 247, 242)",
+            "color": "rgb(20, 20, 20)",
+            "px": 19.2,
+            "bold": true
+          },
+          "a": {
+            "bg": "rgb(251, 247, 242)",
+            "color": "rgb(20, 20, 20)",
+            "visible": true
+          },
+          "contrast": [
+            17.3,
+            17.3
+          ]
+        }
+      ],
+      "closed": [
+        {
+          "q": {
+            "bg": "rgb(228, 71, 63)",
+            "color": "rgb(255, 255, 255)",
+            "px": 19.2,
+            "bold": true
+          },
+          "contrast": 4,
+          "threshold": 3
+        },
+        {
+          "q": {
+            "bg": "rgb(228, 71, 63)",
+            "color": "rgb(255, 255, 255)",
+            "px": 19.2,
+            "bold": true
+          },
+          "contrast": 4,
+          "threshold": 3
+        }
+      ]
+    },
+    {
+      "dev": "390x620",
+      "cart": {
+        "opening": {
+          "viewport": 620,
+          "head": {
+            "top": 0,
+            "bottom": 68,
+            "visible": true
+          },
+          "scroll": {
+            "top": 68,
+            "bottom": 477,
+            "visible": true
+          },
+          "bands": [
+            {
+              "top": 68,
+              "bottom": 119
+            }
+          ],
+          "line": {
+            "top": 133,
+            "bottom": 251,
+            "visible": true
+          },
+          "title": {
+            "top": 135,
+            "bottom": 155,
+            "visible": true
+          },
+          "price": {
+            "top": 166,
+            "bottom": 182,
+            "visible": true
+          },
+          "qty": {
+            "top": 213,
+            "bottom": 251,
+            "visible": true
+          },
+          "remove": {
+            "top": 133,
+            "bottom": 155,
+            "visible": true
+          },
+          "protect": {
+            "top": 330,
+            "bottom": 360,
+            "visible": true
+          },
+          "guarantee": {
+            "top": 480,
+            "bottom": 546,
+            "visible": true
+          },
+          "foot": {
+            "top": 477,
+            "bottom": 620,
+            "visible": true
+          },
+          "checkout": {
+            "top": 526,
+            "bottom": 582,
+            "visible": true
+          },
+          "close": {
+            "top": 12,
+            "bottom": 56,
+            "visible": true
+          },
+          "chip": {
+            "top": 0,
+            "bottom": 0,
+            "visible": false
+          }
+        },
+        "bottom": {
+          "viewport": 620,
+          "head": {
+            "top": 0,
+            "bottom": 68,
+            "visible": true
+          },
+          "scroll": {
+            "top": 68,
+            "bottom": 477,
+            "visible": true
+          },
+          "bands": [
+            {
+              "top": -28,
+              "bottom": 23
+            }
+          ],
+          "line": {
+            "top": 37,
+            "bottom": 155,
+            "visible": true
+          },
+          "title": {
+            "top": 39,
+            "bottom": 59,
+            "visible": true
+          },
+          "price": {
+            "top": 70,
+            "bottom": 86,
+            "visible": true
+          },
+          "qty": {
+            "top": 117,
+            "bottom": 155,
+            "visible": true
+          },
+          "remove": {
+            "top": 37,
+            "bottom": 59,
+            "visible": true
+          },
+          "protect": {
+            "top": 234,
+            "bottom": 264,
+            "visible": true
+          },
+          "guarantee": {
+            "top": 384,
+            "bottom": 450,
+            "visible": true
+          },
+          "foot": {
+            "top": 477,
+            "bottom": 620,
+            "visible": true
+          },
+          "checkout": {
+            "top": 526,
+            "bottom": 582,
+            "visible": true
+          },
+          "close": {
+            "top": 12,
+            "bottom": 56,
+            "visible": true
+          },
+          "chip": {
+            "top": 0,
+            "bottom": 0,
+            "visible": false
+          }
+        },
+        "afterPlus": {
+          "total": "139,60 € 99,60 €",
+          "before": "104,70 € 49,80 €"
+        },
+        "removed": true,
+        "closed": true
+      }
+    },
+    {
+      "dev": "360x560",
+      "faq": "faq",
+      "present": true,
+      "open": [
+        {
+          "q": {
+            "bg": "rgb(251, 247, 242)",
+            "color": "rgb(20, 20, 20)",
+            "px": 19.2,
+            "bold": true
+          },
+          "a": {
+            "bg": "rgb(251, 247, 242)",
+            "color": "rgb(20, 20, 20)",
+            "visible": true
+          },
+          "contrast": [
+            17.3,
+            17.3
+          ]
+        },
+        {
+          "q": {
+            "bg": "rgb(251, 247, 242)",
+            "color": "rgb(20, 20, 20)",
+            "px": 19.2,
+            "bold": true
+          },
+          "a": {
+            "bg": "rgb(251, 247, 242)",
+            "color": "rgb(20, 20, 20)",
+            "visible": true
+          },
+          "contrast": [
+            17.3,
+            17.3
+          ]
+        }
+      ],
+      "closed": [
+        {
+          "q": {
+            "bg": "rgb(228, 71, 63)",
+            "color": "rgb(255, 255, 255)",
+            "px": 19.2,
+            "bold": true
+          },
+          "contrast": 4,
+          "threshold": 3
+        },
+        {
+          "q": {
+            "bg": "rgb(228, 71, 63)",
+            "color": "rgb(255, 255, 255)",
+            "px": 19.2,
+            "bold": true
+          },
+          "contrast": 4,
+          "threshold": 3
+        }
+      ]
+    },
+    {
+      "dev": "360x560",
+      "faq": "accueil",
+      "present": true,
+      "open": [
+        {
+          "q": {
+            "bg": "rgb(251, 247, 242)",
+            "color": "rgb(20, 20, 20)",
+            "px": 19.2,
+            "bold": true
+          },
+          "a": {
+            "bg": "rgb(251, 247, 242)",
+            "color": "rgb(20, 20, 20)",
+            "visible": true
+          },
+          "contrast": [
+            17.3,
+            17.3
+          ]
+        },
+        {
+          "q": {
+            "bg": "rgb(251, 247, 242)",
+            "color": "rgb(20, 20, 20)",
+            "px": 19.2,
+            "bold": true
+          },
+          "a": {
+            "bg": "rgb(251, 247, 242)",
+            "color": "rgb(20, 20, 20)",
+            "visible": true
+          },
+          "contrast": [
+            17.3,
+            17.3
+          ]
+        }
+      ],
+      "closed": [
+        {
+          "q": {
+            "bg": "rgb(228, 71, 63)",
+            "color": "rgb(255, 255, 255)",
+            "px": 19.2,
+            "bold": true
+          },
+          "contrast": 4,
+          "threshold": 3
+        },
+        {
+          "q": {
+            "bg": "rgb(228, 71, 63)",
+            "color": "rgb(255, 255, 255)",
+            "px": 19.2,
+            "bold": true
+          },
+          "contrast": 4,
+          "threshold": 3
+        }
+      ]
+    },
+    {
+      "dev": "360x560",
+      "cart": {
+        "opening": {
+          "viewport": 560,
+          "head": {
+            "top": 0,
+            "bottom": 68,
+            "visible": true
+          },
+          "scroll": {
+            "top": 68,
+            "bottom": 417,
+            "visible": true
+          },
+          "bands": [
+            {
+              "top": 68,
+              "bottom": 119
+            }
+          ],
+          "line": {
+            "top": 133,
+            "bottom": 251,
+            "visible": true
+          },
+          "title": {
+            "top": 135,
+            "bottom": 155,
+            "visible": true
+          },
+          "price": {
+            "top": 166,
+            "bottom": 182,
+            "visible": true
+          },
+          "qty": {
+            "top": 213,
+            "bottom": 251,
+            "visible": true
+          },
+          "remove": {
+            "top": 133,
+            "bottom": 155,
+            "visible": true
+          },
+          "protect": {
+            "top": 344,
+            "bottom": 374,
+            "visible": true
+          },
+          "guarantee": {
+            "top": 507,
+            "bottom": 573,
+            "visible": true
+          },
+          "foot": {
+            "top": 417,
+            "bottom": 560,
+            "visible": true
+          },
+          "checkout": {
+            "top": 466,
+            "bottom": 522,
+            "visible": true
+          },
+          "close": {
+            "top": 12,
+            "bottom": 56,
+            "visible": true
+          },
+          "chip": {
+            "top": 0,
+            "bottom": 0,
+            "visible": false
+          }
+        },
+        "bottom": {
+          "viewport": 560,
+          "head": {
+            "top": 0,
+            "bottom": 68,
+            "visible": true
+          },
+          "scroll": {
+            "top": 68,
+            "bottom": 417,
+            "visible": true
+          },
+          "bands": [
+            {
+              "top": -115,
+              "bottom": -64
+            }
+          ],
+          "line": {
+            "top": -50,
+            "bottom": 68,
+            "visible": true
+          },
+          "title": {
+            "top": -48,
+            "bottom": -28,
+            "visible": true
+          },
+          "price": {
+            "top": -17,
+            "bottom": -1,
+            "visible": true
+          },
+          "qty": {
+            "top": 30,
+            "bottom": 68,
+            "visible": true
+          },
+          "remove": {
+            "top": -50,
+            "bottom": -28,
+            "visible": true
+          },
+          "protect": {
+            "top": 161,
+            "bottom": 191,
+            "visible": true
+          },
+          "guarantee": {
+            "top": 324,
+            "bottom": 390,
+            "visible": true
+          },
+          "foot": {
+            "top": 417,
+            "bottom": 560,
+            "visible": true
+          },
+          "checkout": {
+            "top": 466,
+            "bottom": 522,
+            "visible": true
+          },
+          "close": {
+            "top": 12,
+            "bottom": 56,
+            "visible": true
+          },
+          "chip": {
+            "top": 0,
+            "bottom": 0,
+            "visible": false
+          }
+        },
+        "afterPlus": {
+          "total": "139,60 € 99,60 €",
+          "before": "104,70 € 49,80 €"
+        },
+        "removed": true,
+        "closed": true
+      }
+    }
+  ]
+}

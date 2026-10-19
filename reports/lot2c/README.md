@@ -26,3 +26,5 @@ CHROMIUM=/chemin/vers/chrome npx tsx scripts/lot2c-studio-check.ts <dossier-capt
 
 Rapport complet : `docs/coordination/LOT_2C_FRAISE_ONDE_RESULTATS.md`. Inventaire des références :
 `docs/coordination/LOT_2C_FRAISE_ONDE_INVENTAIRE.md`.
+
+`mobile-fraise.json` / `mobile-onde.json` : mesures de la preuve mobile « petite hauteur » (couleurs calculées de la FAQ, géométrie du tiroir du panier à chaque étape) sur l'aperçu statique du commit testé.

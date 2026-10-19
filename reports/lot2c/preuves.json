@@ -1,7 +1,7 @@
 {
-  "testedCommit": "7e04880d0986d99586be7c444687043dae2f2f4f",
+  "testedCommit": "d1b682cd7be411bc6cb65ebf5f500ea098ad5ba8",
   "workingTree": "clean",
-  "date": "2026-10-18T21:58:53.533Z",
+  "date": "2026-10-18T23:45:13.292Z",
   "renderMode": "es_raw=1 — thème issu des vraies routes, sans le bandeau flottant du studio",
   "widths": [
     1440,
@@ -145,7 +145,7 @@
           "metrics": {
             "width": 360,
             "scrollWidth": 360,
-            "height": 10782,
+            "height": 10753,
             "h1": 1,
             "images": 8,
             "brokenImages": [],
@@ -211,7 +211,7 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 12401,
+            "height": 12393,
             "h1": 1,
             "images": 26,
             "brokenImages": [],
@@ -229,7 +229,7 @@
           "metrics": {
             "width": 360,
             "scrollWidth": 360,
-            "height": 12576,
+            "height": 12566,
             "h1": 1,
             "images": 26,
             "brokenImages": [],
@@ -499,7 +499,7 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 3517,
+            "height": 3509,
             "h1": 1,
             "images": 2,
             "brokenImages": [],
@@ -517,7 +517,7 @@
           "metrics": {
             "width": 360,
             "scrollWidth": 360,
-            "height": 3543,
+            "height": 3534,
             "h1": 1,
             "images": 2,
             "brokenImages": [],
@@ -823,14 +823,14 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 11261,
+            "height": 12885,
             "h1": 1,
-            "images": 21,
+            "images": 23,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 114.546875,
-            "fictionalTags": 11
+            "fictionalTags": 13
           },
           "javascriptErrors": []
         },
@@ -841,14 +841,14 @@
           "metrics": {
             "width": 768,
             "scrollWidth": 768,
-            "height": 12666,
+            "height": 15524,
             "h1": 1,
-            "images": 21,
+            "images": 23,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 73,
-            "fictionalTags": 11
+            "fictionalTags": 13
           },
           "javascriptErrors": []
         },
@@ -859,14 +859,14 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 12532,
+            "height": 14910,
             "h1": 1,
-            "images": 21,
+            "images": 23,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 65,
-            "fictionalTags": 11
+            "fictionalTags": 13
           },
           "javascriptErrors": []
         },
@@ -877,14 +877,14 @@
           "metrics": {
             "width": 360,
             "scrollWidth": 360,
-            "height": 12465,
+            "height": 14846,
             "h1": 1,
-            "images": 21,
+            "images": 23,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 65,
-            "fictionalTags": 11
+            "fictionalTags": 13
           },
           "javascriptErrors": []
         },
@@ -1880,14 +1880,14 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 11185,
+            "height": 12809,
             "h1": 1,
-            "images": 21,
+            "images": 23,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 112.125,
-            "fictionalTags": 11
+            "fictionalTags": 13
           },
           "javascriptErrors": []
         },
@@ -1898,14 +1898,14 @@
           "metrics": {
             "width": 768,
             "scrollWidth": 768,
-            "height": 12565,
+            "height": 15421,
             "h1": 1,
-            "images": 21,
+            "images": 23,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 73,
-            "fictionalTags": 11
+            "fictionalTags": 13
           },
           "javascriptErrors": []
         },
@@ -1916,14 +1916,14 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 12295,
+            "height": 14670,
             "h1": 1,
-            "images": 21,
+            "images": 23,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 65,
-            "fictionalTags": 11
+            "fictionalTags": 13
           },
           "javascriptErrors": []
         },
@@ -1934,14 +1934,14 @@
           "metrics": {
             "width": 360,
             "scrollWidth": 360,
-            "height": 12201,
+            "height": 14611,
             "h1": 1,
-            "images": 21,
+            "images": 23,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
             "headerHeight": 65,
-            "fictionalTags": 11
+            "fictionalTags": 13
           },
           "javascriptErrors": []
         },

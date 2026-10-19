@@ -40,7 +40,53 @@ Aucun environnement hébergé du studio n'est accessible depuis cette session (p
 - recherche (états avec et sans résultat pré-rendus), contact et newsletter (validation HTML réelle, aucun envoi) ; mention « Aperçu statique de démonstration · paiement désactivé » toujours visible ;
 - vérification Chromium `scripts/lot2c-static-check.ts` (390 et 1440 px) : chaque page se charge sans erreur ni ressource manquante, un seul h1, aucun débordement ; menu → fiche → galerie ; ajout → tiroir → quantité → retrait → page panier ; stories ; recherche ; contact.
 
-Publication : deux pages privées claude.ai (compte de Thomas), une par thème, avec page d'entrée listant les pages et les limites. Liens dans la PR #139. Mise à jour du 18 octobre (commit `7e04880d`) : page « Bibliothèque de sections » ajoutée ; **l'aperçu livré a été vérifié tel quel** : les 59 + 58 fichiers publiés ont été retéléchargés depuis claude.ai, comparés au local (identiques, sauf la page d'entrée enveloppée par la plateforme) et repassés dans `lot2c-static-check.ts` (390 et 1440 px, tout vert). Ce n'est ni un déploiement ni un site de paiement : les exports CMS restent à faire avec Codex.
+Publication : deux pages privées claude.ai (compte de Thomas), une par thème, avec page d'entrée listant les pages et les limites. Liens dans la PR #139. Mise à jour du 19 octobre (commit `d1b682cd`, versions d'artefact `1792367363-7625` FRAISE et `1792367374-00aa` ONDE ; précédente : commit `7e04880d`) : page « Bibliothèque de sections » (dix sections de démonstration), tiroir du panier et FAQ corrigés ; **l'aperçu livré a été vérifié tel quel** : les 59 + 58 fichiers publiés ont été retéléchargés depuis claude.ai, comparés au local (identiques, sauf la page d'entrée enveloppée par la plateforme) et repassés dans `lot2c-static-check.ts` (390 et 1440 px, tout vert). Ce n'est ni un déploiement ni un site de paiement : les exports CMS restent à faire avec Codex.
+
+## Revue du 18 octobre, 22 h 14 (commentaires 6255031332, 6255612438, 6255637317, 6255813800) — panier, FAQ, bibliothèque exhaustive, édition manuelle
+
+Partie E (quatre thèmes) **toujours suspendue, non relancée**. Commits du code : `436cc174` (corrections, bibliothèque, panneau, nouvelles sections), `d1b682cd` (étoiles du témoignage : commit des preuves régénérées) et `2f336202` (correction d'un test de catalogue, seule cause de l'échec CI de `436cc174`) ; documentation : commit suivant. CI complète (typecheck, 2 005 tests, Theme Check, build) : voir le badge de la PR.
+
+### 1. Défauts bloquants : reproduits, corrigés, mesurés sur l'aperçu livré
+
+| Défaut (capture de Thomas) | Reproduit tel quel | Cause | Correction | Après (mesuré sur l'aperçu statique régénéré, `scripts/lot2c-mobile-proof.ts`) |
+|---|---|---|---|---|
+| Tiroir panier FRAISE : bandeau livraison sur le haut de la ligne, quantités coupées par le pied, fenêtre minuscule pour les articles | Oui, à 390 × 620 px (hauteur utile d'un téléphone avec les barres de l'application) : zone des articles réduite à **44 px**, pied de **518 px** débordant de l'écran, ligne produit sous le pied | Le panneau empilait en-tête, bandeaux, zone des articles (seule à défiler) et un pied fixe énorme (protection, code, économies, total, taxes, bouton, réassurance) ; sur petite hauteur la zone des articles s'écrasait | **Un seul corps défilable** (`.es-drawer__scroll`) : bandeaux, articles, protection, code, économies, taxes, réassurance ; **pied fixe compact** : total + bouton + mention d'aperçu (hauteur réservée) ; en-tête et bandeaux compacts sous 720 px de haut ; position de défilement conservée au re-rendu ; pastille « Démo » masquée quand le tiroir est ouvert (la mention est dans le pied du tiroir) | 390 × 620 : zone des articles **409 px**, pied 143 px ; dès l'ouverture la ligne complète (image, titre, prix, quantités, « Retirer ») est visible sous le bandeau, rien sous le pied ; 360 × 560 : zone 349 px, même résultat ; ONDE identique ; protection, économies et réassurance atteintes par défilement ; +1 → total mis à jour ; retrait → panier vide ; fermeture. Vidéos `panier-sequence-390x620.webm` / `360x560.webm` par thème, captures `panier-1…4-*.png`, mesures `*-mobile.json` |
+| FAQ FRAISE : accordéons ouverts fond clair, question et réponse blanches | Oui : ouvert = fond `rgba(20,20,20,.05)` (règle de la section pour le style « cartes »), texte blanc (règle du profil « pop ») | La règle `.es-faq--cards .es-faq__item[open]` posait un fond clair sans changer la couleur du texte ; le profil « pop » laissait le texte accent-text | État **ouvert** : fond `--c-bg` (ivoire), question **et** réponse en `--c-text` (sombre), bordure et icône accent ; état fermé : rouge / blanc avec question en **grand texte gras (19 px)** pour atteindre le seuil AA « grand texte » ; liens de réponse en accent soulignés ; focus visible dans les deux états ; transitions fond + texte synchrones ; mouvement réduit : aucune transition | Mesuré (couleurs calculées) : ouvert `rgb(251,247,242)` / `rgb(20,20,20)` → contraste **17,4:1** question et réponse ; fermé `rgb(228,71,63)` / blanc → 3,3:1 sur 19 px gras (seuil 3:1) ; captures 2 ouvertes + 2 fermées : `faq-faq-*.png` (page FAQ) et `faq-accueil-*.png` (« La recette », accueil) ; ONDE vérifié sans régression |
+
+### 2. Bibliothèque exhaustive (demande explicite)
+
+- **137 sections** dans `theme-base/sections/` : **123 ajoutables** et **14 composants structurels** (en-tête, bandeau d'annonce, pied de page, panier latéral, corps des gabarits produit / collection / collections / panier / page / recherche / blog / article / 404 / mot de passe), tous présents dans la bibliothèque FR et EN. Les structurels sont dans la catégorie **« Structure »** : visibles et retrouvables dans « Ajouter une section », avec contrainte explicite (unique, ni ajouté ni dupliqué) et un bouton **« Déjà présente · ouvrir ses réglages »** qui ouvre leur panneau (et la page concernée).
+- Inventaire complet (section, nom, catégorie, famille d'origine, fichiers qui l'utilisent, variantes, réglages par type, blocs, bibliothèque, animation, visuel par fichier) : `docs/coordination/BIBLIOTHEQUE_SECTIONS_COUVERTURE.md`, généré par `scripts/sections-inventory.ts`.
+- **Contrôle de couverture automatique** : `tests/section-library-coverage.test.ts` — un fichier de section sans entrée FR/EN, sans catégorie connue, sans préréglage (si ajoutable), ou absent de l'inventaire fait échouer la CI.
+- Réutilisation sans duplication : les variantes sont des réglages (`layout`, `style`, `ratio`, `columns`, `columns_mobile`…) d'un même composant ; aucune section recyclée sous un autre nom.
+
+### 3. Bilan exact des sections de la consigne de 22 h 41 (existant / enrichi / nouveau)
+
+| Statut | Sections | Ce qui change visuellement |
+|---|---|---|
+| Existant, enrichi | `features-grid` (grille de bénéfices) | + Disposition grille / rangée / carrousel, + Colonnes sur téléphone 1–2, + animation |
+| Existant, enrichi | `comparison-table` (comparatif) | + prix et lien par colonne, + animation ; colonne « exemple fictif » |
+| Nouveau (22 h 41) | `cv-hotspots`, `cv-alternating`, `cv-steps`, `cv-gallery`, `cv-specs`, `cv-banner` | points interactifs ; image + texte alternés ; étapes cartes / frise ; galerie grille / carrousel / mosaïque + visionneuse ; fiche dépliable + contenu du colis ; bannière d'achat visuel gauche / droite / fond |
+| **Nouveau (22 h 14)** | `cv-ingredients` — Composition du produit | une carte par composant (icône ou petit visuel, nom, rôle, note, étiquette « [À compléter] ») ; cartes / liste compacte / grand visuel + liste ; mention réglable |
+| **Nouveau (22 h 14)** | `cv-quote` — Témoignage à la une | une seule citation mise en avant : initiales, prénom, précision, étoiles facultatives, étiquette « Avis fictif » ; carte centrée / visuel + citation / bande pleine largeur |
+
+Les deux nouvelles sont sur la page de démonstration « Bibliothèque de sections » des deux thèmes (dispositions « grand visuel + liste » et « côte à côte »).
+
+### 4. Édition manuelle ET par IA sur la même source (exécuté dans le vrai studio)
+
+- Nouveau panneau **« Modifier les réglages »** (menu « … » de toute section, en-tête et pied de page compris ; `src/components/studio/section-settings.tsx`, API `GET /theme/section`) : chaque réglage du schéma avec le contrôle adapté (texte, zone de texte, HTML simple, liste, interrupteur, curseur, couleur, schéma de couleurs, fichier image du thème + « Mes images » du projet), blocs (ajouter, déplier, monter / descendre, supprimer, régler), masquer / afficher. Chaque validation = une opération `/theme/ops` = **une version restaurable**.
+- Preuve `scripts/lot2c-studio-check.ts` (studio Next.js + worker lancés sur une base temporaire, Chromium piloté, FRAISE et ONDE) : ajout depuis le bouton Sections → point ouvert → duplication → **panneau** : titre, disposition « Titre, visuel, puis liste », bloc « Point » ajouté (3 → 4), titre d'un bloc modifié, chaque fois visible dans l'aperçu → **discussion sans IA connectée** (moteur local) : « Masque la section points interactifs » masque la section ; « Reviens à la version précédente » la rétablit **avec les réglages du panneau intacts** → **rechargement complet** : titre, disposition, bloc et image conservés, copie masquée toujours listée. Captures `studio-bouton-sections/<thème>-01…09.png`, journal `reports/lot2c/studio-<thème>.json`.
+- Limite dite telle quelle : sans fournisseur d'IA connecté, la discussion n'exécute que les commandes du moteur local ; avec l'IA, les mêmes opérations sont produites par le modèle (même route, même validation).
+
+### 5. Export réellement éditable
+
+Contrat d'édition et manques par plateforme : `docs/coordination/LOT_2C_CONTRAT_EDITION_EXPORT.md` (types de réglages → contrôles de l'éditeur Shopify ; `image_asset` = champ texte dans Shopify, l'image native passe par `image` ; WordPress = bloc dynamique à attributs ; PrestaShop = fichiers du thème, pas d'éditeur visuel ; Wix / Squarespace = kit ; **aucune IA après export** ; installation réelle non vérifiée). PR #138 non touchée.
+
+### Exécuté / simulé / non testé
+
+- **Exécuté** : reproduction et mesure des deux défauts ; corrections ; preuves mobiles petite hauteur sur l'aperçu statique régénéré (vidéos) ; test complet du studio (bouton, panneau, discussion, restauration, rechargement) ; tests `vitest` (dont couverture de bibliothèque, traductions, rendu des 10 sections de démonstration, animations) ; Theme Check ; passe de preuves 4 largeurs ; aperçus republiés et retéléchargés.
+- **Simulé** : le téléphone de Thomas est imité par Chromium à 390 × 620 et 360 × 560 (tactile) ; la discussion est testée sans IA connectée (moteur local).
+- **Non testé** : installation sur une vraie boutique ; capture sur l'appareil réel de Thomas (à confirmer par lui sur les liens régénérés).
 
 ## Consigne du 18 octobre, 22 h 41 — corrections mobile, huit sections, animations
 

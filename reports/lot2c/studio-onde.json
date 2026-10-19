@@ -20,15 +20,24 @@
       "reason": "menu absent"
     },
     {
-      "step": "texte, image, masquage puis rechargement",
+      "step": "panneau manuel : titre, disposition, bloc ajouté, titre de bloc (aperçu mis à jour)",
+      "ok": true,
+      "points": 4
+    },
+    {
+      "step": "discussion (sans IA) : masquage par le nom puis retour à la version précédente, réglages du panneau conservés",
+      "ok": true
+    },
+    {
+      "step": "rechargement complet : panneau, discussion et opérations conservés",
       "ok": true,
       "after": {
         "visible": 1,
-        "heading": "Titre modifié depuis le studio",
-        "image": "/preview/f1pydt1tdy2fy4hn/v/5dat3u5352fq257b~tn5etq.UiQtNlLecmlIATb759KTcaSOAe5jcTwK/assets/onde-06-banniere.webp",
-        "listed": 2
+        "heading": "Titre du panneau manuel",
+        "image": "/preview/fdyoh9qhnlcg9qht/v/xpy3ill1nkkqudro~tn5j8n.sOig0T-g-J50rYS5GrzqfIxF4FLIpQVs/assets/onde-06-banniere.webp",
+        "listed": 3
       }
     }
   ],
-  "date": "2026-10-18T21:39:35.807Z"
+  "date": "2026-10-18T23:14:54.400Z"
 }
