@@ -28,6 +28,7 @@ describe('Vingt créations initiales distinctes — simulations', () => {
         expect(v).toMatchObject({ accepted: 20, status: 'complete', ads: { accepted: 10 }, organic: { accepted: 10 } });
         expect(d.calls.map(x => x.aspect)).toEqual([...INITIAL_ASPECTS, ...INITIAL_ASPECTS]);
         expect(d.calls.filter(x => x.purpose === 'ad')).toHaveLength(10);
+        expect(d.calls.filter(x => x.purpose === 'ad').map(x => [x.network,x.advertisingNetwork])).toEqual(Array.from({length:10},(_,i)=>i<4?['facebook','facebook']:['instagram','instagram']));
         expect(d.visuals).toHaveLength(20);
         expect(d.visuals.at(-1)!.accepted).toHaveLength(19);
         expect(new Set(v.slots.map(s => s.assetId)).size).toBe(20);

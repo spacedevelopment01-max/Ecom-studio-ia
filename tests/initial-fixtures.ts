@@ -38,6 +38,8 @@ export function injectedInitial() {
         slot: string;
         aspect: string;
         purpose: string;
+        network: string;
+        advertisingNetwork?: string;
     }[] = [], paid: {
         key: string;
         cost: number;
@@ -52,7 +54,7 @@ export function injectedInitial() {
             next.posts[i] = fresh.posts[i];
             next.posts[i].concept.idea += ' ; perspective analytique nouvelle';
             next.posts[i].concept.composition += repairs.length % 2 ? ' ; lecture en éventail et échelle alternative' : ' ; vue analytique en coupe et parcours vertical';
-        } return next; }, reviewVisual: async (_p, _plan, index, _aid, accepted) => { visuals.push({ index, accepted: accepted.map(x => x.index) }); return { accepted: true, duplicateOf: null, reason: 'Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée.' }; }, render: async (p, post, aspect, _cap, _ctx, attemptLimit) => { calls.push({ slot: post.id, aspect, purpose: post.entryPoint === 'ads-campaign' ? 'ad' : 'organic' }); if (calls.length === failAt)
+        } return next; }, reviewVisual: async (_p, _plan, index, _aid, accepted) => { visuals.push({ index, accepted: accepted.map(x => x.index) }); return { accepted: true, duplicateOf: null, reason: 'Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée.' }; }, render: async (p, post, aspect, _cap, _ctx, attemptLimit) => { calls.push({ slot: post.id, aspect, purpose: post.entryPoint === 'ads-campaign' ? 'ad' : 'organic', network: post.network, advertisingNetwork: (post.advertising as any)?.platform?.network }); if (calls.length === failAt)
             throw Error('Fournisseur indisponible de test'); return designPostWithAi(p, post, { as: post.entryPoint === 'ads-campaign' ? 'ad' : 'post', aspect, reference: p.business === 'products' ? all<{
                 id: string;
             }>("SELECT id FROM assets WHERE project_id=? AND role='original' AND deleted_at IS NULL", p.id)[0]?.id ?? null : null, maxCostEur: 1, maxAttempts: attemptLimit }, ai); } };
