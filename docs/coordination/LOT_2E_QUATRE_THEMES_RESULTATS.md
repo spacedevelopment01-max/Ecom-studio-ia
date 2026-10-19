@@ -5,9 +5,9 @@
 | | |
 |---|---|
 | **Consignes suivies** | commentaires 6263159896 (08 h 37) et 6263246796 (08 h 42) — mission E ; commentaire **6264718511 (10 h 06) : périmètre restreint aux quatre démonstrations conservées** ; commentaire **6264783184 (10 h 09) : les trente anciens thèmes quittent le catalogue actif**, seuls FRAISE, ONDE, ORBE et Atelier Rive sont proposés |
-| **Commit testé** | `84251d65` (code ; ce rapport est complété par le commit suivant) (toutes les vérifications ci-dessous exécutées sur cet arbre de travail) |
+| **Commit testé** | `d12013d0` (code : mission E `84251d65` + reprise ORBE et corrections CI ; ce rapport est complété par le commit de documentation qui suit, sans changement de code) — toutes les vérifications ci-dessous exécutées sur cet arbre de travail |
 | **Branche** | `claude/fraise-onde-themes-reference`, PR #139 en brouillon ; aucune fusion, aucun déploiement, aucun appel IA payant, aucun envoi externe ; fichiers Codex (`src/lib/cms-v2/**`, `src/lib/theme/catalog-export.ts`, `assets/cms/**`) non modifiés ; PR #138 / PR #140 non touchées |
-| **Aperçus consultables** | https://claude.ai/artifact/Fh8L9hmmEKTygrPRHbVnou (version `1792412098-2e57`, page d'entrée avec la matrice de statut ; dossiers `fraise/`, `onde/`, `orbe/`, `rive/`, `fraise-en-onde/`, `onde-en-fraise/` — export statique des pages rendues par le vrai moteur, panier simulé). Les aperçus FRAISE / ONDE du lot 2C (https://claude.ai/artifact/76G1kbkrCrk47173e39MLM et https://claude.ai/artifact/To1HtwE7JbUpaypAVtFUk2) restent ceux des fixtures du lot 2C, inchangés |
+| **Aperçus consultables** | https://claude.ai/artifact/Fh8L9hmmEKTygrPRHbVnou (version `1792416743-97ec`, page d'entrée avec la matrice de statut et les captures avant / après d'ORBE ; dossiers `fraise/`, `onde/`, `orbe/`, `rive/`, `fraise-en-onde/`, `onde-en-fraise/`, `preuves/` — export statique des pages rendues par le vrai moteur, panier simulé). Les aperçus FRAISE / ONDE du lot 2C (https://claude.ai/artifact/76G1kbkrCrk47173e39MLM et https://claude.ai/artifact/To1HtwE7JbUpaypAVtFUk2) restent ceux des fixtures du lot 2C, inchangés |
 | **ZIP privé** | `QUATRE_THEMES_Claude_issue137_<commit>.zip` (visuels du kit, captures, aperçus statiques, audits, rapports) — les visuels des démonstrations et les vignettes des thèmes **ne sont pas dans GitHub** (voir « Décisions demandées ») |
 
 ## 1. Démonstrations : quatre conservées, les autres retirées
@@ -143,14 +143,14 @@ Légende : **exécuté** = vérifié par un script ou un test sur le commit test
 | Contrôle | Résultat |
 |---|---|
 | `npx tsc --noEmit` | OK |
-| `npx vitest run` (suite complète, hors `migration-v2` qui dépasse 120 s dans cet environnement et passe en CI) | 270 fichiers, 2 015 tests : **2 012 OK, 2 suspendus explicitement** (films : anciennes démos), 1 dépassement de délai sous charge (`workflow-v2`, 240 s, pendant les audits Chromium) — rejoué seul : voir ligne suivante |
-| `npx vitest run tests/workflow-v2.test.ts` (seul) | __WF__ |
+| `npx vitest run` (suite complète, hors `migration-v2` qui dépasse 120 s dans cet environnement et passe en CI) | 270 fichiers, 2 016 tests : **2 009 OK, 2 suspendus explicitement** (films : anciennes démos), 5 échecs : 2 dus aux deux derniers correctifs encore en cours pendant la suite (`handoff-contrat` alias, `lot2b-editorial`), **rejoués seuls sur le commit testé : 11 / 11 OK** ; 3 dépassements de délai sous charge (`workflow-v2`, 240 s, pendant les audits Chromium) — rejoué seul : voir ligne suivante |
+| `npx vitest run tests/workflow-v2.test.ts` (seul, sur le commit testé) | **11 / 11 OK** en 430 s (les dépassements de délai de la suite complète venaient de la charge machine, pas du code) |
 | `bash scripts/verify-theme.sh --rapide` (Theme Check) | OK — « Thème : tout est valide » (après chaque modification Liquid / CSS) |
 | `scripts/reference-static-preview.ts --cross` (6 compositions, vrai moteur, routes d'aperçu réelles) | OK — FRAISE / ONDE / ORBE : 11 pages + 13 états de panier ; Atelier Rive : 10 pages ; 0 visuel manquant |
 | `scripts/reference-static-check.ts` × 6 (390 et 1 440 px : chaque page, 1 seul h1, aucun débordement, menu → boutique ou prestations, fiche → panier → retrait, recherche, formulaire, 0 ressource manquante, 0 erreur console) | OK × 6 |
 | `scripts/lot2c-responsive-audit.ts` × 6 (360 / 390 / 768 / 1 440 px + 360 × 560 et 390 × 620) | 0 débordement, 0 élément hors cadre, 0 texte coupé, 0 image déformée, 0 élément recouvert, 0 cible < 24 px ; contrastes : 0 défaut mesurable, **5 titres blancs sur photo + voile (non mesurables)** |
 | `tests/demos-quatre-themes.test.ts`, `catalogue-actif`, `categories-sections`, `carry-over`, `handoff-contrat`, `themes-catalogue`, `permissions-forfaits`, `accueil-audit`, `decouverte-visuels` | OK |
-| CI GitHub | __CI__ |
+| CI GitHub | **OK** — exécution 39260276111 sur `d12013d0` (typecheck, tests sans kit privé, Theme Check 30 thèmes, build de production, image Docker construite et démarrée) : https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/39260276111 ; l'exécution précédente `84251d65` (39250244250) avait échoué (accueil sans démonstration installée, images de connexion, fixtures sans kit) — corrigé dans `d12013d0` |
 
 ## 10. Décisions demandées et restant
 
