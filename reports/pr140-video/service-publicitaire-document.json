@@ -1,0 +1,345 @@
+{
+  "simulation": true,
+  "version": 1,
+  "width": 1080,
+  "height": 1350,
+  "fps": 30,
+  "aspect": "4:5",
+  "platform": "meta_feed",
+  "safe": {
+    "top": 68,
+    "bottom": 108,
+    "side": 54
+  },
+  "clips": [
+    {
+      "id": "scene-1",
+      "shotId": "scene-1",
+      "label": "Scène 1",
+      "part": null,
+      "durationS": 2.4,
+      "source": {
+        "kind": "video",
+        "assetId": "6dsnpeudtzh27ml4",
+        "inS": 0,
+        "outS": 2.4,
+        "muted": true
+      },
+      "overlays": [
+        {
+          "id": "ov-text",
+          "name": "Texte à l'écran",
+          "role": "title",
+          "x": 54,
+          "y": 95,
+          "w": 972,
+          "h": 282.72,
+          "rotation": 0,
+          "opacity": 1,
+          "visible": true,
+          "locked": false,
+          "anchor": {
+            "h": "center",
+            "v": "middle"
+          },
+          "kind": "text",
+          "text": "TEST LOCAL 1",
+          "font": {
+            "family": "Libre Baskerville",
+            "weight": 500,
+            "size": 114,
+            "italic": false
+          },
+          "color": "#FFFFFF",
+          "align": "center",
+          "lineHeight": 1.04,
+          "letterSpacing": 0,
+          "uppercase": false,
+          "autoFit": {
+            "minSize": 63
+          },
+          "shadow": {
+            "color": "rgba(0,0,0,0.65)",
+            "blur": 34,
+            "x": 0,
+            "y": 5
+          },
+          "anim": {
+            "in": "rise",
+            "delay": 0.25,
+            "dur": 0.325
+          }
+        }
+      ],
+      "transitionIn": {
+        "kind": "cut",
+        "durationS": 0
+      },
+      "generated": false
+    },
+    {
+      "id": "scene-2",
+      "shotId": "scene-2",
+      "label": "Scène 2",
+      "part": null,
+      "durationS": 2.4,
+      "source": {
+        "kind": "video",
+        "assetId": "aps88kms1niiq3t3",
+        "inS": 0,
+        "outS": 2.4,
+        "muted": true
+      },
+      "overlays": [],
+      "transitionIn": {
+        "kind": "cut",
+        "durationS": 0
+      },
+      "generated": false
+    },
+    {
+      "id": "scene-3",
+      "shotId": "scene-3",
+      "label": "Scène 3",
+      "part": null,
+      "durationS": 2.4,
+      "source": {
+        "kind": "video",
+        "assetId": "gbu6up828aam9e8f",
+        "inS": 0,
+        "outS": 2.4,
+        "muted": true
+      },
+      "overlays": [],
+      "transitionIn": {
+        "kind": "cut",
+        "durationS": 0
+      },
+      "generated": false
+    },
+    {
+      "id": "end-card",
+      "shotId": "end-card",
+      "label": "Carte de fin",
+      "part": "cta",
+      "durationS": 2.8,
+      "source": {
+        "kind": "doc",
+        "doc": {
+          "version": 1,
+          "width": 1080,
+          "height": 1350,
+          "background": "#141B1F",
+          "safe": {
+            "top": 0,
+            "bottom": 0,
+            "side": 0
+          },
+          "format": {
+            "platform": null,
+            "aspect": "1080x1350"
+          },
+          "layers": [
+            {
+              "id": "bg",
+              "name": "Fond",
+              "role": "background",
+              "x": 0,
+              "y": 0,
+              "w": 1080,
+              "h": 1350,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "anchor": {
+                "h": "center",
+                "v": "middle"
+              },
+              "kind": "shape",
+              "shape": "rect",
+              "fill": "#141B1F",
+              "stroke": null,
+              "radius": 0,
+              "shadow": null
+            },
+            {
+              "id": "brand",
+              "name": "Marque",
+              "role": "title",
+              "x": 54,
+              "y": 378.00000000000006,
+              "w": 972,
+              "h": 162,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "anchor": {
+                "h": "center",
+                "v": "middle"
+              },
+              "kind": "text",
+              "text": "Studio de test fictif",
+              "font": {
+                "family": "Libre Baskerville",
+                "weight": 500,
+                "size": 92,
+                "italic": false
+              },
+              "color": "#FFFFFF",
+              "align": "center",
+              "lineHeight": 1.12,
+              "letterSpacing": 0,
+              "uppercase": false,
+              "autoFit": {
+                "minSize": 51
+              },
+              "shadow": null
+            },
+            {
+              "id": "line",
+              "name": "Phrase",
+              "role": "subtitle",
+              "x": 54,
+              "y": 621,
+              "w": 972,
+              "h": 145.6,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "anchor": {
+                "h": "center",
+                "v": "middle"
+              },
+              "kind": "text",
+              "text": "Restaurant bistrot, Lyon 4e.",
+              "font": {
+                "family": "Libre Baskerville",
+                "weight": 500,
+                "size": 56,
+                "italic": false
+              },
+              "color": "#FFFFFF",
+              "align": "center",
+              "lineHeight": 1.12,
+              "letterSpacing": 0,
+              "uppercase": false,
+              "autoFit": {
+                "minSize": 31
+              },
+              "shadow": null
+            },
+            {
+              "id": "cta",
+              "name": "Bouton",
+              "role": "cta",
+              "x": 268.8,
+              "y": 810,
+              "w": 542.4,
+              "h": 114,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "anchor": {
+                "h": "center",
+                "v": "middle"
+              },
+              "kind": "button",
+              "text": "Nous contacter",
+              "font": {
+                "family": "Work Sans",
+                "weight": 600,
+                "size": 56,
+                "italic": false
+              },
+              "fill": "#747FB4",
+              "color": "#FFFFFF",
+              "radius": 57,
+              "stroke": null,
+              "shadow": null
+            }
+          ],
+          "brand": {
+            "palette": {
+              "primary": "#446274",
+              "secondary": "#D0D8DD",
+              "accent": "#747FB4",
+              "light": "#F2F5F7",
+              "dark": "#141B1F"
+            },
+            "fonts": {
+              "heading": "Libre Baskerville",
+              "body": "Work Sans"
+            },
+            "name": "Studio de test fictif"
+          },
+          "meta": {
+            "conceptId": null,
+            "source": "engine",
+            "createdFrom": null
+          }
+        },
+        "animate": "rise"
+      },
+      "overlays": [],
+      "transitionIn": {
+        "kind": "fade",
+        "durationS": 0.6
+      }
+    }
+  ],
+  "subtitles": {
+    "style": {
+      "enabled": true,
+      "family": "Work Sans",
+      "weight": 700,
+      "size": 50,
+      "color": "#FFFFFF",
+      "background": null,
+      "position": "bottom",
+      "offsetY": 0,
+      "maxChars": 32,
+      "uppercase": false
+    },
+    "cues": []
+  },
+  "audio": {
+    "voice": [],
+    "voiceId": null,
+    "music": {
+      "source": "synth",
+      "mood": "warm",
+      "gainDb": -12,
+      "style": "bistro",
+      "seed": "e02tmusi4k914yne"
+    },
+    "sfx": [],
+    "duckingDb": -10,
+    "loudnessLufs": -14
+  },
+  "brand": {
+    "palette": {
+      "primary": "#446274",
+      "secondary": "#D0D8DD",
+      "accent": "#747FB4",
+      "light": "#F2F5F7",
+      "dark": "#141B1F"
+    },
+    "fonts": {
+      "heading": "Libre Baskerville",
+      "body": "Work Sans"
+    },
+    "name": "Studio de test fictif"
+  },
+  "disclosure": null,
+  "meta": {
+    "intent": "video_ad",
+    "source": "engine",
+    "createdFrom": null,
+    "runId": null,
+    "promo": true
+  }
+}

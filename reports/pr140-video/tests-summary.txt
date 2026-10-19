@@ -1,0 +1,7 @@
+Test Files  286 passed (286)
+      Tests  2182 passed | 3 skipped (2185)
+   Start at  11:47:59
+   Duration  792.59s (tests 80%, import 19%, transform 1%)
+
+    Isolate  286 workers spawned · ~125ms startup each (spawn + environment, per file)
+             at least ~11.79s faster with isolate: false — reuses workers across files instead of one per file
