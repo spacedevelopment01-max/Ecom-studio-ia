@@ -435,6 +435,7 @@ async function designSinglePostWithAi(
     subject?: SubjectOption | null;
     as?: "post" | "ad";
     mode?: "one-step" | "two-step";
+    maxAttempts?: number;
   },
   deps: AiPostDeps,
 ): Promise<MediaResult> {
@@ -699,7 +700,7 @@ async function designSinglePostWithAi(
     let fix = "",
       sceneVersion = 0;
     const pal = effectivePalette(p.brand) ?? p.brand?.palette;
-    for (let attempt = 0; attempt < AI_POST_ATTEMPTS; attempt++) {
+    for (let attempt = 0; attempt < Math.min(AI_POST_ATTEMPTS,Math.max(1,o.maxAttempts??AI_POST_ATTEMPTS)); attempt++) {
       const key = `${prefix}:${attempt}`;
       const result = await publicationStage(
         p.id,

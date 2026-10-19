@@ -59,6 +59,8 @@ const aiFinal = (a: Asset) => {
 };
 
 function pick(r: Row, opts: { allowPaid: boolean; ai?: boolean; bg?: boolean }, pools: { image: Asset[]; video: Asset[] }): { method: ProduceMethod; paid: boolean } {
+  // Initial slots belong to their own consent, cap and receipts. Generic batch must not race or repay them.
+  if(r.editorialData?.initialCreative)return {method:"none",paid:false};
   if (needsVideo(r)) return pools.video.length ? { method: "library", paid: false } : { method: "video_v2", paid: opts.allowPaid };
   // Image : toujours créée par l'IA (publication complète) ; sinon une image IA déjà validée du projet ; sinon rien.
   if (opts.allowPaid) return { method: "ai_post", paid: true };
@@ -128,7 +130,7 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
     let out: MediaResult | null = null;
     try {
       if (m.method === "none") {
-        out = { assetId: null, costMicro: 0, by: "local", note: `publication ${r.id.slice(0, 6)} : ${WAITING_AI}` };
+        out = { assetId: null, costMicro: 0, by: "local", note: r.editorialData?.initialCreative ? "Publication initiale : utilisez le suivi des vingt créations pour reprendre les seules créations manquantes, sans doublon." : `publication ${r.id.slice(0, 6)} : ${WAITING_AI}` };
       } else if (m.method === "library") {
         const pool = needsVideo(r) ? pools.video : pools.image.filter(a=>aiFinal(a)&&matchesEditorial(a,r));
         const a = [...pool].sort((x, y) => (used.get(x.id) ?? 0) - (used.get(y.id) ?? 0))[0];

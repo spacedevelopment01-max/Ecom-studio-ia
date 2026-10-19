@@ -38,6 +38,10 @@ import { ACTION_STEPS, findStockPhotos, orchestrated, runRequestPlan } from "../
 type Handler = (ctx: JobContext) => Promise<unknown>;
 
 export const handlers: Record<string, Handler> = {
+  "social.initial": async(ctx)=>{
+    const {runInitialCreatives}=await import("../src/lib/social-v2/initial");
+    return runInitialCreatives(ctx);
+  },
   // Création complète : passe par le planner à l'intérieur (étapes déjà acquises sautées, marque existante gardée).
   "pipeline.run": runPipeline,
   "project.prepare": async (ctx) => (await import("../src/lib/preparation/engine")).runPreparation(ctx),

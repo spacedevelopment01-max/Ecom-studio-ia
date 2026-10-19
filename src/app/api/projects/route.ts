@@ -1,4 +1,5 @@
 import { startPreparation } from '@/lib/preparation/start';
+import { prepareInitialCreatives } from '@/lib/social-v2/initial';
 import { stateOf } from '@/lib/preparation/store';
 import { requireUser, HttpError } from "@/lib/auth";
 import { all, id, now, one, run } from "@/lib/db";
@@ -102,6 +103,7 @@ export const POST = handle(async (req: Request) => {
     throw e;
   }
   ensureFolders(pid);
+  prepareInitialCreatives(pid);
   await saveStartFiles(pid, user.id, site ? [] : files, logo, site ? "products" : input.businessType);
   if (input.flow === "preparation") {
     startPreparation(pid,input);

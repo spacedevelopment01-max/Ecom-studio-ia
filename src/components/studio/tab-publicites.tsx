@@ -18,6 +18,7 @@ import { VideoV2Panel } from "./video-v2-panel";
 import { GuidedVideo } from "./guided-video";
 import { CampaignsPanel, StrategyPanel, type Campaign } from "./ad-campaigns";
 import { isAdVisual } from "@/lib/media/bank";
+import { InitialCreatives } from "./initial-creatives";
 
 const SECTIONS = [
   ["vue", "Vue d'ensemble", "Overview", Gauge, "piloter"],
@@ -87,6 +88,7 @@ export default function TabPublicites() {
         </Card>
       </aside>
       <div className="grid min-w-0 grid-cols-1 content-start gap-5">
+        <InitialCreatives ads onChange={reload}/>
         {section === "vue" && <AdsOverview counts={counts} onGo={go} />}
         {section === "strategie" && <AdsStrategy campaigns={camps?.campaigns ?? null} onGo={go} />}
         {section === "image" && (

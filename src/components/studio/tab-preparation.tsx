@@ -1,5 +1,6 @@
 "use client";
 import { LogoV2Panel } from "./logo-v2-panel";
+import { InitialCreatives } from "./initial-creatives";
 import {
   cloneElement,
   isValidElement,
@@ -274,6 +275,7 @@ export default function TabPreparation() {
     setForm({ ...form, [key]: value });
   return (
     <div className="grid gap-5" data-preparation>
+      <InitialCreatives onChange={reload}/>
       <Card className="p-5 sm:p-7">
         <p className="text-sm text-muted">
           {t(
