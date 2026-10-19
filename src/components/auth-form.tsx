@@ -10,7 +10,8 @@ import { safeNextPath } from "@/lib/safe-path";
 
 /** `plan` : forfait choisi sur la page d'accueil (inscription) ; après l'inscription, direction Mon compte pour le paiement. */
 /** `next` : page demandée avant la connexion (chemin interne vérifié), où l'on revient ensuite. */
-export function AuthForm({ mode, plan, next: nextPath }: { mode: "login" | "register"; plan?: { id: PlanId; billing: Billing } | null; next?: string | null }) {
+/** `background` : photo de démonstration (kit privé) passée par la page quand le fichier existe ; sinon un fond uni, jamais une image cassée. */
+export function AuthForm({ mode, plan, next: nextPath, background }: { mode: "login" | "register"; plan?: { id: PlanId; billing: Billing } | null; next?: string | null; background?: string | null }) {
   const router = useRouter();
   const t = useT();
   const { lang } = useLang();
@@ -87,7 +88,7 @@ export function AuthForm({ mode, plan, next: nextPath }: { mode: "login" | "regi
         </div>
       </div>
       <div className="relative hidden overflow-hidden bg-ink lg:block">
-        <img src="/demo/onde/07-scene-salon.webp" alt="" className="absolute inset-0 size-full object-cover" />
+        {background && <img src={background} alt="" className="absolute inset-0 size-full object-cover" />}
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" aria-hidden />
         <div className="absolute inset-x-10 bottom-10 text-white">
           <p className="font-display text-4xl leading-tight">{t("« Une photo. Une marque. ", "“One photo. One brand. ")}<span className="serif-i">{t("Une boutique.", "One store.")}</span>{t(" »", "”")}</p>

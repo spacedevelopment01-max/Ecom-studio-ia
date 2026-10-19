@@ -66,7 +66,7 @@ export function savedCopy(projectId: string): ShopCopy | null {
   return overlayV2Copy(kit, projectId, p.settings.language ?? contentLang(), p.business).copy;
 }
 
-export function collectImages(projectId: string): { slots: ImageSlots; files: Record<string, string>; gallery: string[] } {
+export function collectImages(projectId: string): { slots: ImageSlots; files: Record<string, string>; gallery: string[]; variantImages: Record<string, string> } {
   const files: Record<string, string> = {};
   const slots: ImageSlots = {};
   const put = (slot: Exclude<keyof ImageSlots, "reels" | "byService">, a: Asset | undefined, hint?: string) => {
@@ -150,7 +150,20 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
     files[f] = a.id;
     gallery.push(f);
   }
-  return { slots, files, gallery };
+  // Image propre à une variante (finition, coloris…) : un asset dont `meta.variant` porte la valeur de l'option.
+  // Elle entre dans la galerie et sert d'image de la variante (sélecteur, finitions, panier). Rien n'est déduit du nom.
+  const variantImages: Record<string, string> = {};
+  for (const a of all<Asset>("SELECT * FROM assets WHERE project_id = ? AND deleted_at IS NULL AND status != 'rejected' AND json_extract(meta, '$.variant') IS NOT NULL ORDER BY (status = 'approved') DESC, created_at ASC", projectId).filter(isAutoUsable)) {
+    const value = json<{ variant?: string }>(a.meta, {}).variant?.trim();
+    if (!value || variantImages[value]) continue;
+    const f = themeFileName(a, `galerie-variante-${a.id.slice(0, 4)}`);
+    const existing = Object.entries(files).find(([, id]) => id === a.id && gallery.includes(files[f] ? f : ""))?.[0];
+    const name = gallery.find((g) => files[g] === a.id) ?? existing ?? f;
+    files[name] = a.id;
+    if (!gallery.includes(name)) gallery.push(name);
+    variantImages[value] = name;
+  }
+  return { slots, files, gallery, variantImages };
 }
 
 /**
@@ -190,12 +203,14 @@ function serviceSlots(projectId: string, slots: ImageSlots, files: Record<string
   if (!slots.hero && slots.lifestyle) slots.hero = slots.lifestyle;
 }
 
-export function storeProduct(p: Project, copy: ShopCopy, gallery: string[]): StoreProduct {
-  // Toutes les options du produit (Coloris, Taille…), combinées comme dans Shopify.
+export function storeProduct(p: Project, copy: ShopCopy, gallery: string[], variantImages: Record<string, string> = {}): StoreProduct {
+  // Toutes les options du produit (Coloris, Taille…), combinées comme dans Shopify ; image de la variante quand un asset la porte.
   const combos = variantCombinations(p.product.variants);
   const variants = combos.length
-    ? combos.map((o) => ({ title: o.join(" / "), options: o, price: p.product.price.amount, available: true }))
+    ? combos.map((o) => { const image = o.map((v) => variantImages[v]).find(Boolean); return { title: o.join(" / "), options: o, price: p.product.price.amount, available: true, ...(image ? { image } : {}) }; })
     : [{ title: "Default Title", options: ["Default Title"], price: p.product.price.amount, available: true }];
+  const variantFirst = [...new Set(variants.map((v) => v.image).filter((x): x is string => !!x && gallery.includes(x)))];
+  const images = variantFirst.length ? [...variantFirst, ...gallery.filter((g) => !variantFirst.includes(g))] : gallery;
   return {
     title: copy.product.title || p.product.name || p.name,
     handle: slug(copy.product.title || p.product.name || p.name),
@@ -206,7 +221,7 @@ export function storeProduct(p: Project, copy: ShopCopy, gallery: string[]): Sto
     currency: p.product.price.currency || "EUR",
     options: combos.length ? cleanVariants(p.product.variants).slice(0, MAX_PRODUCT_OPTIONS).map((v) => v.name) : [],
     variants,
-    images: gallery,
+    images,
     tags: [],
   };
 }
@@ -244,7 +259,7 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
   // Rédaction : celle du contrat amont quand il la dit prête, sinon celle enregistrée pour le projet, sinon locale.
   const copy = handoffCopy(projectId) ?? savedCopy(projectId) ?? localCopy(p.product, brand, p);
   if (prepare) await ensureVariantMedia(ctx ?? null, projectId);
-  const { slots, files, gallery } = collectImages(projectId);
+  const { slots, files, gallery, variantImages } = collectImages(projectId);
   // Médias du contrat amont (10 images + vidéo d'ouverture, ou 10 photos + 2 vidéos) : affectés explicitement aux
   // emplacements du thème ; un média sans emplacement est listé « non placé », un emplacement sans média reste vide.
   const handoff = applyHandoff(projectId, slots, files, (assetId, hint) => {
@@ -254,7 +269,7 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
   const services = p.business === "services";
   // Entreprise de services : les photos du marchand (rôle « lifestyle ») illustrent ouverture, prestations, méthode et réalisations.
   if (services) serviceSlots(projectId, slots, files);
-  const main = storeProduct(p, copy, gallery);
+  const main = storeProduct(p, copy, gallery, variantImages);
   main.contentTarget = "product:main";
   attachVariantMedia(projectId, main, files, themeFileName);
   // Boutique multi-produit ou niche : les autres produits sont détourés, mis en packshot et rangés en collections.

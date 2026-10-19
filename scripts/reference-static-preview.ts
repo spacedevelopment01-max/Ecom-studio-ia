@@ -18,6 +18,8 @@ if (process.env.DATA_DIR || process.env.DATABASE_FILE) throw new Error("Base exi
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "ecs-static-")); process.env.DATA_DIR = temp; process.env.STOCK_OFFLINE = "1";
 globalThis.fetch = async () => { throw new Error("Réseau fournisseur interdit"); };
 const args = process.argv.slice(2), cross = args.includes("--cross");
+// --only=orbe,rive : n'exporter que ces compositions (reprise ciblée).
+const only = args.find((a) => a.startsWith("--only="))?.slice(7).split(",").filter(Boolean) ?? null;
 const out = path.resolve(args.find((a) => !a.startsWith("--")) ?? "reports/reference-static"); fs.mkdirSync(out, { recursive: true });
 const { demoProject } = await import("../tests/demo-fixtures");
 type DemoId = "fraise" | "onde" | "orbe" | "rive";
@@ -40,7 +42,7 @@ const runs: { id: DemoId; direction: DemoId; name: string }[] = [
 ];
 const summary: Record<string, unknown>[] = [];
 try {
-  for (const run of runs) await runWithLang({ content: "fr", ui: "fr" }, async () => {
+  for (const run of runs.filter((r) => !only || only.includes(r.name))) await runWithLang({ content: "fr", ui: "fr" }, async () => {
     const f = await demoProject(user.id, run.id, run.direction === run.id ? {} : { direction: run.direction }), { spec, pid, services } = f, version = saveThemeVersion(pid, spec, "Aperçu statique", "user");
     const base = `/preview/${pid}/v/${previewSegment(version.id, user.id, pid)}`, dir = path.join(out, run.name); fs.rmSync(dir, { recursive: true, force: true }); fs.mkdirSync(path.join(dir, "assets"), { recursive: true }); fs.mkdirSync(path.join(dir, "fonts")); if (!services) fs.mkdirSync(path.join(dir, "panier"));
     const title = f.demo.brand, productHandle = services ? null : spec.store.product.handle, productTitle = services ? f.demo.brand : spec.store.product.title;

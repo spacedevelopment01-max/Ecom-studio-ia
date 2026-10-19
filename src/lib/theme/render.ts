@@ -588,7 +588,8 @@ export function createEngine(files: ThemeFiles, base: string, lang: Lang = "fr")
     const label: Record<string, string> = { visa: "VISA", master: "MC", american_express: "AMEX", paypal: "PayPal", apple_pay: "Pay", google_pay: "GPay" };
     return `<svg class="${o.class ?? ""}" viewBox="0 0 38 24" width="38" height="24" role="img" aria-label="${type}"><rect x=".5" y=".5" width="37" height="23" rx="3" fill="#fff" stroke="#ccc"/><text x="19" y="15.5" text-anchor="middle" font-size="7" font-family="Arial" font-weight="700" fill="#333">${label[type] ?? type}</text></svg>`;
   });
-  f("payment_button", () => `<div class="shopify-payment-button"><button type="button" class="es-button es-button--secondary es-button--full" disabled title="${pick(lang, "Affiché par Shopify sur la boutique réelle", "Displayed by Shopify on the live store")}">${pick(lang, "Paiement accéléré (Shop Pay, Apple Pay…)", "Express checkout (Shop Pay, Apple Pay…)")}</button></div>`);
+  // Aperçu : Shopify ajoute lui-même ses boutons de paiement accéléré sur la boutique en ligne ; ici une simple mention, jamais un faux bouton.
+  f("payment_button", () => `<p class="shopify-payment-button es-express-note">${pick(lang, "Paiement accéléré (Shop Pay, Apple Pay…) : ajouté par Shopify sur la boutique en ligne.", "Express checkout (Shop Pay, Apple Pay…): added by Shopify on the live store.")}</p>`);
   f("handleize", (s: string) => String(s ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""));
   f("handle", (s: string) => String(s ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "-"));
   f("link_to", (text: string, url: string) => `<a href="${url}">${text}</a>`);

@@ -19,6 +19,8 @@ import { themeLang } from "./spec";
 export type ContentContext = {
   /** Médias appartenant explicitement à la fiche ciblée ; tableau vide = aucun média connu. */
   mediaFiles?: string[];
+  /** Visuels de la galerie du produit principal, pour les légendes et choix de cadres (ne restreint pas les médias disponibles). */
+  galleryFiles?: string[];
   /** Langue des textes de la boutique (celle du thème). */
   lang: Lang;
   /** Aperçu de la bibliothèque : exemples réalistes autorisés, marqués « Exemple ». */
@@ -44,6 +46,7 @@ export function contentContext(project: Project, spec: ThemeSpec, sample: boolea
     lang,
     sample,
     shopName: b?.name || project.name,
+    galleryFiles: spec.store.product?.images ?? [],
     brand: b ? { name: b.name, tagline: b.tagline, story: b.story, positioning: b.positioning, audience: b.audience, personality: b.personality ?? [], values: b.values ?? [] } : null,
     product: {
       handle: spec.store.product.handle, target: spec.store.product.contentTarget,

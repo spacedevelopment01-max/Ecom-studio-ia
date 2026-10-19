@@ -63,6 +63,16 @@ describe("Contrat amont → thème", async () => {
     expect(projectStoreKind(p)).toMatchObject({ kind: "specialty", source: "preparation" });
   });
 
+  it("alias de la livraison Codex (PR #140) : recommendedReferenceId / alternativesReferenceIds et catégorie specialized | ecommerce | services sont lus tels quels", () => {
+    const pid2 = seedHoldout(user.id, 0, "Alias");
+    remember(pid2, { kind: "artifact", key: READY_CONTRACT_KEY, value: JSON.stringify({ revision: 1, provenance: "simulation", category: "ecommerce", recommendation: { recommendedReferenceId: "orbe", alternativesReferenceIds: ["fraise", "vitrine"], status: "proposal" } }), source: "import" });
+    const r = themeRecommendation(loadProject(pid2), "fr");
+    expect(r.category).toMatchObject({ kind: "catalog", source: "preparation" });
+    expect(r.recommended).toBe("orbe");
+    expect(r.alternatives).toEqual([]); // fraise : boutique spécialisée, hors catégorie ; vitrine : retiré du catalogue
+    expect(r.warnings.some((w) => /vitrine/.test(w))).toBe(true);
+  });
+
   it("placement des médias : chaque média du contrat va à un emplacement explicite, l'asset inconnu est « non placé », la vidéo absente laisse l'emplacement vide", async () => {
     const { spec } = await fr(() => composeShop(pid, "fraise", null, false));
     const h = spec.meta?.handoff as { placed: { slot: string; key: string }[]; unplaced: { key: string }[]; empty: string[]; copy: string; revision: number };

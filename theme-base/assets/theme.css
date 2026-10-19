@@ -705,6 +705,9 @@ input:checked + .es-chip { background: var(--c-accent); color: var(--c-accent-te
 
 /* ---------- Boutons flottants ---------- */
 .es-fab { position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); z-index: 60; display: grid; gap: 14px; justify-items: center; transition: bottom .5s var(--ease-out); }
+/* Téléphone : un seul petit bouton flottant (contact), sans halo ; le retour en haut n'y a pas sa place (deux gros ronds masquaient les médias). */
+@media (max-width: 749px) { .es-fab { gap: 8px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); } .es-fab__button { width: 46px; height: 46px; } .es-fab__button .es-icon { width: 20px; height: 20px; } .es-fab__button--top { display: none; } .es-fab__button--contact::before { display: none; } }
+.es-express-note { margin: 10px 0 0; font-size: .8rem; line-height: 1.45; color: var(--c-muted); }
 .has-sticky-buy .es-fab { bottom: 92px; }
 .es-fab__button { position: relative; display: grid; place-items: center; width: 58px; height: 58px; border-radius: 50%; color: var(--c-accent-text); text-decoration: none;
   background: linear-gradient(145deg, color-mix(in srgb, var(--c-accent) 72%, #fff), var(--c-accent) 60%, color-mix(in srgb, var(--c-accent) 75%, #000));

@@ -22,7 +22,23 @@ type ContractRecommendation = {
   status?: "proposal" | "selected";
   catalogue?: { id: string; name?: string; status?: "available" | "in_progress" | "incompatible"; reason?: string }[];
 };
-type Contract = { revision?: number; provenance?: string; builtAt?: number; recommendation?: ContractRecommendation; clientBrief?: { business?: "products" | "services" }; strategy?: { platform?: { objective?: string } } };
+type Contract = { revision?: number; provenance?: string; builtAt?: number; recommendation?: ContractRecommendation; category?: StoreKind | null; clientBrief?: { business?: "products" | "services" }; strategy?: { platform?: { objective?: string } } };
+
+/**
+ * Noms de champs de la livraison Codex (PR #140, commentaire 6265769310) acceptés en plus de ceux de la PR #138 :
+ * `recommendedReferenceId` / `alternativesReferenceIds`, et la catégorie `specialized | ecommerce | services`
+ * (clés du studio : `specialty | catalog | services`). Lecture seule : rien n'est recalculé, rien n'est réécrit dans le contrat.
+ */
+const CATEGORY_ALIASES: Record<string, StoreKind> = { specialized: "specialty", specialty: "specialty", ecommerce: "catalog", "e-commerce": "catalog", catalog: "catalog", services: "services", service: "services" };
+function normalizeContract(raw: Record<string, unknown>): Contract {
+  const c = { ...raw } as Contract & Record<string, unknown>;
+  const r = (c.recommendation ?? {}) as ContractRecommendation & Record<string, unknown>;
+  const rec = { ...r } as ContractRecommendation & Record<string, unknown>;
+  if (!rec.recommendedId && typeof rec.recommendedReferenceId === "string") rec.recommendedId = rec.recommendedReferenceId;
+  if (!rec.alternatives?.length && Array.isArray(rec.alternativesReferenceIds)) rec.alternatives = (rec.alternativesReferenceIds as unknown[]).filter((x): x is string => typeof x === "string").map((id) => ({ id }));
+  const cat = [c.category, (c as Record<string, unknown>).projectCategory, (c as Record<string, unknown>).storeKind, (c.clientBrief as Record<string, unknown> | undefined)?.category].find((x) => typeof x === "string") as string | undefined;
+  return { ...c, recommendation: Object.keys(rec).length ? rec : undefined, category: cat ? CATEGORY_ALIASES[cat.toLowerCase()] ?? null : null };
+}
 
 export const READY_CONTRACT_KEY = "project.ready_for_theme";
 
@@ -30,8 +46,8 @@ export const READY_CONTRACT_KEY = "project.ready_for_theme";
 export function readyContractOf(projectId: string): Contract | null {
   const row = memory(projectId).find((m) => m.kind === "artifact" && m.key === READY_CONTRACT_KEY);
   if (!row) return null;
-  const c = json<Contract | null>(row.value, null);
-  return c && typeof c === "object" ? c : null;
+  const c = json<Record<string, unknown> | null>(row.value, null);
+  return c && typeof c === "object" ? normalizeContract(c) : null;
 }
 
 /** Catégorie portée par le contrat amont, quand il la nomme (thème recommandé classé par ses compatibilités). */
@@ -40,7 +56,8 @@ export function preparedRecommendation(projectId: string): { kind: StoreKind | n
   if (!c?.recommendation) return null;
   const id = c.recommendation.selectedId ?? c.recommendation.recommendedId ?? null;
   const kinds = id ? themeKinds(id) : [];
-  return { kind: kinds.length === 1 ? kinds[0] : null, recommendedId: id, revision: c.revision ?? null, provenance: c.provenance ?? null };
+  // Catégorie : celle que le contrat nomme (clés Codex traduites), sinon celle du thème recommandé quand il n'en sert qu'une.
+  return { kind: c.category ?? (kinds.length === 1 ? kinds[0] : null), recommendedId: id, revision: c.revision ?? null, provenance: c.provenance ?? null };
 }
 
 export type ThemeRecommendationContract = {

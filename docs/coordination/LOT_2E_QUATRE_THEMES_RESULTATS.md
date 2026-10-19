@@ -5,9 +5,9 @@
 | | |
 |---|---|
 | **Consignes suivies** | commentaires 6263159896 (08 h 37) et 6263246796 (08 h 42) — mission E ; commentaire **6264718511 (10 h 06) : périmètre restreint aux quatre démonstrations conservées** ; commentaire **6264783184 (10 h 09) : les trente anciens thèmes quittent le catalogue actif**, seuls FRAISE, ONDE, ORBE et Atelier Rive sont proposés |
-| **Commit testé** | `__TESTED__` (toutes les vérifications ci-dessous exécutées sur cet arbre de travail) |
+| **Commit testé** | `84251d65` (code ; ce rapport est complété par le commit suivant) (toutes les vérifications ci-dessous exécutées sur cet arbre de travail) |
 | **Branche** | `claude/fraise-onde-themes-reference`, PR #139 en brouillon ; aucune fusion, aucun déploiement, aucun appel IA payant, aucun envoi externe ; fichiers Codex (`src/lib/cms-v2/**`, `src/lib/theme/catalog-export.ts`, `assets/cms/**`) non modifiés ; PR #138 / PR #140 non touchées |
-| **Aperçus consultables** | __ARTIFACT__ |
+| **Aperçus consultables** | https://claude.ai/artifact/Fh8L9hmmEKTygrPRHbVnou (version `1792412098-2e57`, page d'entrée avec la matrice de statut ; dossiers `fraise/`, `onde/`, `orbe/`, `rive/`, `fraise-en-onde/`, `onde-en-fraise/` — export statique des pages rendues par le vrai moteur, panier simulé). Les aperçus FRAISE / ONDE du lot 2C (https://claude.ai/artifact/76G1kbkrCrk47173e39MLM et https://claude.ai/artifact/To1HtwE7JbUpaypAVtFUk2) restent ceux des fixtures du lot 2C, inchangés |
 | **ZIP privé** | `QUATRE_THEMES_Claude_issue137_<commit>.zip` (visuels du kit, captures, aperçus statiques, audits, rapports) — les visuels des démonstrations et les vignettes des thèmes **ne sont pas dans GitHub** (voir « Décisions demandées ») |
 
 ## 1. Démonstrations : quatre conservées, les autres retirées
@@ -101,19 +101,56 @@ Chacun a sa palette (`direction-palettes.ts`), son préréglage `style_preset`, 
 | Bouton « Envoyer » invisible (anthracite sur anthracite, 1,12:1) sur la section sombre de la FAQ en profil « conversion » avec la palette ONDE (preuve d'adaptation) | Variable CSS `--cv-button-bg` calculée une fois sur `:root` avec l'accent de la page : redéclarée dans chaque section à schéma (`conversion.css`) |
 | Palettes de direction FRAISE / ONDE refusées par les contrôles de marque (principal 3,7:1 et 2,1:1 sur le clair, secondaire trop sombre pour un fond doux) | Principal assombri (`#C4312A`, `#257A10`), secondaire pâle, accent d'identité inchangé — ce sont les couleurs de repli d'un projet sans palette ; les démonstrations gardent leurs propres rôles de couleur |
 
+## 6 bis. Reprise visuelle d'ORBE (commentaires 6267178241 et 6267186666, 12 h 26 / 12 h 27)
+
+Thomas a testé l'aperçu sur son téléphone : accordéons « À compléter », titres et slogan répétés, grands vides, deux vues
+proches empilées, produit coupé, deux gros boutons flottants, paiement accéléré grisé ; « la mise en page n'est pas belle ».
+Reproduit sur l'aperçu livré (commit `84251d65`, dossiers `orbe/`) et **diagnostiqué dans les données composées**, pas d'après les captures :
+
+| Défaut constaté | Cause réelle (où) | Correction |
+|---|---|---|
+| Même slogan et même résumé dans cinq sections (ouverture, déclaration, diptyque, scène, finitions, étude) ; « Lampe nomade ORBE » deux fois dans le diptyque | `section-copy-editorial.ts` donnait à toute section `ed-*` la signature de la marque, le résumé et le nom du produit | Rédaction **par rôle** : ouverture = signature + résumé ; déclaration = histoire courte + repères (faits confirmés) ; diptyque = « Vue complète et détail », cadres légendés par le rôle du visuel ; scène = positionnement ; finitions = fait « finitions » ; étude = deux vues légendées. Un texte « [À définir / À compléter] » compte pour vide |
+| Cadres gris vides (diptyque, finitions, étude) | Cadres du préréglage sans image ; sélecteur de finition avec une seule variante « Default Title » ; images différées non chargées dans les captures | Diptyque : cadres sans image non rendus, cadres pris dans la galerie (vue complète + second détail) ; finitions : sélecteur seulement avec de vraies variantes ; captures après défilement complet |
+| « Default Title / Choisir les variantes » | Produit ORBE sans variante alors que le kit montre trois finitions | Démonstration ORBE : option **Finition** (Dune, Argile, Charbon), une image par finition (`meta.variant`), reprise par le moteur (`collectImages` → `variantImages`, image de variante dans la galerie, sélecteur, finitions, panier) ; les images de variantes ouvrent la galerie dans l'ordre des options |
+| Accordéons « [À compléter : caractéristiques / matières / livraison] » visibles | Onglets posés même sans contenu | Onglet dont tout le contenu est « à compléter » non posé (tous les thèmes) ; faits ORBE descriptifs (finitions, silhouette) → onglet « Caractéristiques » réel |
+| Résumé lu trois fois (texte, description, onglet) et points forts tronqués (« Dune ») | Description = résumé + faits ; point fort = premier mot avant la virgule | Description posée seulement si elle apporte autre chose que l'accroche, les points forts et les onglets (`directions.ts`, `product-content.ts`) ; point fort en liste = intitulé + liste entière |
+| Produit coupé en haut et en bas | Cadre de galerie par défaut | ORBE : cadre portrait (images 4:5 du kit, rien de coupé) |
+| Deux boutons flottants volumineux sur les médias | Retour en haut + contact, 58 px, halo | Téléphone : un seul bouton (contact) de 46 px sans halo ; retour en haut masqué |
+| Paiement accéléré : gros bouton grisé | Bouton factice désactivé dans l'aperçu | Mention discrète : « ajouté par Shopify sur la boutique en ligne » — aucun paiement promis |
+| Ouverture ordinateur : titre sombre sur photo sombre | Voile radial trop léger (55 %) | Voile renforcé (92 % au centre) : titre lisible sur toute photo, photo visible à droite |
+| Composition sans hiérarchie ni ensembles texte/image | Enchaînement accueil / fiche hérité | **Accueil** : ouverture en situation (h1) → déclaration + repères → diptyque vue complète / détail → scène du soir → finitions avec sélecteur et accès à la fiche → FAQ (masquée sans réponses) → appel à l'action. **Fiche** : galerie portrait + titre / prix / finition / achat regroupés, points forts, onglet Caractéristiques → finitions (vues par finition) → scène. Marges 72 px, un rôle par section, aucune répétition |
+
+Vérifié visuellement (captures pleine page 390 et 1 440 px, après défilement) : accueil, fiche, boutique, FAQ, contact, livraison, histoire, panier vide / rempli, recherche, 404. Composants partagés touchés (rédaction `ed-*`, onglets, description, points forts, boutons flottants, mention de paiement, voile d'ouverture) : les trois autres thèmes sont **ré-exportés et revérifiés** (contrôle statique + audit, tableau §9). Atelier Rive : sa composition « boutique » de repli prend une étude à la place du diptyque (distinction des enchaînements). Le téléphone de Thomas n'est pas testé directement.
+
 ## 7. Exports : réglages à signaler (pour Codex, sans toucher `cms-v2`)
 
 Réglages propres aux thèmes de référence que les exports non Shopify doivent **signaler comme non pris en charge** quand leur adaptateur ne les rend pas (jamais les ignorer en silence) : `conversion_profile`, `editorial_profile`, `look_*` (en-tête flottant, halo, bouton), `heading_tag`, `columns_mobile`, `gallery_ratio`, `sticky_bar`, `animation` / `animation_speed`, blocs `cv-*` et `ed-*`. Le thème Shopify les exporte nativement (schémas, `settings_schema.json`). Contrat détaillé : [`LOT_2C_CONTRAT_EDITION_EXPORT.md`](LOT_2C_CONTRAT_EDITION_EXPORT.md), §3 bis.
 
 ## 8. Matrice de statut par thème
 
-__MATRIX__
+| Thème | Identité | Remplissage | Bibliothèque | Édition | Responsive | Export |
+|---|---|---|---|---|---|---|
+| FRAISE (`fraise`) | **exécuté** : palette, polices, profil « pop », logo et favicon du kit, aperçu complet (11 pages) | **exécuté** (visuels du projet par rôles, 13 images) · **simulé** (contrat Codex : test avec contrat simulé) | **exécuté** (moteur, route, tests) · interface non rejouée | **simulé** (opérations, report des retouches testés) · interface rejouée lors des lots précédents | **exécuté** : 6 cadres, 0 débordement, 0 texte coupé, 0 élément recouvert, 0 cible < 24 px, 0 contraste < seuil | **exécuté** Theme Check (Shopify) · autres plateformes **non vérifié** (Codex) |
+| ONDE (`onde`) | **exécuté** (profil « contrast », ouverture h1, logo et favicon) | idem FRAISE | idem | idem FRAISE | **exécuté** : idem ; 1 titre blanc sur photo + voile 60 % **non mesurable** par l'audit | idem |
+| ORBE (`orbe`) | **exécuté** (profil éditorial « object », 13 images ; pas de logo dans le kit → nom en toutes lettres) | **exécuté** (visuels) · **simulé** (contrat) | **exécuté** (moteur, route, tests) | **simulé** (opérations) · interface **non vérifiée** dans ce lot | **exécuté** : idem ; 1 titre sur photo **non mesurable** | idem |
+| Atelier Rive (`rive`) | **exécuté** (profil « journal », 14 photos, prestations, pas de logo dans le kit) | **exécuté** (visuels) · **simulé** (contrat services) | **exécuté** (sections de prestations seulement, boutique exclue) | **simulé** (opérations) · interface **non vérifiée** dans ce lot | **exécuté** : idem ; 2 titres sur photo **non mesurables** | idem |
+| Adaptation FRAISE → ONDE et ONDE → FRAISE | **exécuté** (nom, couleurs et visuels de l'une dans la composition de l'autre) | **exécuté** | — | — | **exécuté** (0 défaut mesurable, 1 titre sur photo non mesurable) | — |
 
 Légende : **exécuté** = vérifié par un script ou un test sur le commit testé ; **simulé** = vérifié par le moteur (tests, opérations) sans passage par l'interface du studio ; **non vérifié** = rien d'exécuté dans ce lot.
 
 ## 9. Vérifications exécutées
 
-__CHECKS__
+| Contrôle | Résultat |
+|---|---|
+| `npx tsc --noEmit` | OK |
+| `npx vitest run` (suite complète, hors `migration-v2` qui dépasse 120 s dans cet environnement et passe en CI) | 270 fichiers, 2 015 tests : **2 012 OK, 2 suspendus explicitement** (films : anciennes démos), 1 dépassement de délai sous charge (`workflow-v2`, 240 s, pendant les audits Chromium) — rejoué seul : voir ligne suivante |
+| `npx vitest run tests/workflow-v2.test.ts` (seul) | __WF__ |
+| `bash scripts/verify-theme.sh --rapide` (Theme Check) | OK — « Thème : tout est valide » (après chaque modification Liquid / CSS) |
+| `scripts/reference-static-preview.ts --cross` (6 compositions, vrai moteur, routes d'aperçu réelles) | OK — FRAISE / ONDE / ORBE : 11 pages + 13 états de panier ; Atelier Rive : 10 pages ; 0 visuel manquant |
+| `scripts/reference-static-check.ts` × 6 (390 et 1 440 px : chaque page, 1 seul h1, aucun débordement, menu → boutique ou prestations, fiche → panier → retrait, recherche, formulaire, 0 ressource manquante, 0 erreur console) | OK × 6 |
+| `scripts/lot2c-responsive-audit.ts` × 6 (360 / 390 / 768 / 1 440 px + 360 × 560 et 390 × 620) | 0 débordement, 0 élément hors cadre, 0 texte coupé, 0 image déformée, 0 élément recouvert, 0 cible < 24 px ; contrastes : 0 défaut mesurable, **5 titres blancs sur photo + voile (non mesurables)** |
+| `tests/demos-quatre-themes.test.ts`, `catalogue-actif`, `categories-sections`, `carry-over`, `handoff-contrat`, `themes-catalogue`, `permissions-forfaits`, `accueil-audit`, `decouverte-visuels` | OK |
+| CI GitHub | __CI__ |
 
 ## 10. Décisions demandées et restant
 

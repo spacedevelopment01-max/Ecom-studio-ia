@@ -25,10 +25,12 @@ describe("Onglet Boutique — audit", async () => {
   const { overlayV2Copy, docHtml } = await import("@/lib/seo-v2/theme-copy");
 
   it("les aperçus des thèmes existent aussi en anglais (pas de « .en.jpg » cassé)", () => {
+    // Vignettes générées depuis le kit privé (public/demo/directions, hors dépôt) : leur présence n'est vérifiée que si le kit est installé.
+    const installed = fs.existsSync(path.join(process.cwd(), "public", "demo", "directions"));
     for (const lang of ["fr", "en"] as const) {
       for (const c of directionCards(lang)) {
         expect(c.preview).not.toMatch(/\.en\./);
-        expect(fs.existsSync(path.join(process.cwd(), "public", c.preview))).toBe(true);
+        if (installed) expect(fs.existsSync(path.join(process.cwd(), "public", c.preview))).toBe(true);
       }
     }
     expect(directionPreview("atelier")).toBe("/demo/directions/atelier.jpg");

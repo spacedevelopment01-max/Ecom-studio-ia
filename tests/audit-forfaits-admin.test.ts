@@ -38,9 +38,12 @@ describe("abonnement payé en vigueur (hasPaidSubscription)", async () => {
 
 describe("pages de connexion et d'administration", () => {
   it("chaque image de la page de connexion / inscription existe (aucune image cassée en anglais)", () => {
-    const imgs = [...src("src/components/auth-form.tsx").matchAll(/"(\/demo\/[^"]+\.(?:jpg|png|webp))"/g)].map((m) => m[1]);
+    // La photo de fond vient des pages (connexion / inscription), qui ne la passent que si le fichier du kit privé est installé.
+    const imgs = [...`${src("src/app/connexion/page.tsx")}${src("src/app/inscription/page.tsx")}`.matchAll(/"(\/demo\/[^"]+\.(?:jpg|png|webp))"/g)].map((m) => m[1]);
     expect(imgs.length).toBeGreaterThan(0);
-    for (const i of imgs) expect(fs.existsSync(path.join(process.cwd(), "public", i)), i).toBe(true);
+    expect(src("src/components/auth-form.tsx")).toContain("{background && <img");
+    const installed = fs.existsSync(path.join(process.cwd(), "public", "demo", "onde"));
+    if (installed) for (const i of imgs) expect(fs.existsSync(path.join(process.cwd(), "public", i)), i).toBe(true);
   });
 
   it("cartes des fournisseurs : contenu en haut (pas étiré) et pastille d'état sur une ligne", () => {

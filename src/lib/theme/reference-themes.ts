@@ -143,28 +143,29 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
     kinds: ["catalog"],
     look: look({ headerLayout: "logo-left", shape: "bar", menu: "drawer", footer: "minimal", ann: "static", card: "minimal", button: "solid", radius: { button: 6, card: 0 }, headingScale: 110, tracking: -1, pageWidth: 1416, gallery: "carousel", ds: "maison", density: "airy" }),
     settings: { editorial_profile: "object", conversion_profile: "none", motion_intensity: "subtle" },
-    mainProduct: { gallery_layout: "carousel", enable_zoom: true, sticky_bar: false, color_scheme: "scheme-1" },
+    // Galerie en cadre portrait (la lampe est verticale : rien de coupé en haut ni en bas), zoom, sans barre fixe.
+    mainProduct: { gallery_layout: "carousel", gallery_ratio: "portrait", enable_zoom: true, sticky_bar: false, color_scheme: "scheme-1" },
     palette: (k) => {
       const cream = k.light("#F4F0E8");
       const ink = k.night(0.14, 0.12);
       return [k.scheme(cream, ink, k.onLight(cream)), k.scheme(ink, cream, k.onDark(ink), 0.06), k.scheme("#FFFFFF", ink, k.onLight("#FFFFFF")), k.filled(k.p.accent)];
     },
+    // Accueil (reprise du 19 octobre) : un rôle par section, aucune répétition — ouverture en situation (signature),
+    // déclaration (histoire + repères), diptyque vue complète / détail, scène du soir (positionnement), finitions avec
+    // accès à la fiche, questions quand elles ont des réponses, appel à l'action. Pas de « produit à la une » en lots.
     home: (k) => [
-      k.lib("ed-opening", 1, { layout: "immersive", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.scene1, copy_surface: false }),
-      k.lib("ed-statement", 1),
-      k.lib("ed-diptych", 1),
-      k.lib("ed-scene", 2, { layout: "split", image_asset: k.im.scene2 ?? k.im.scene1 }),
-      k.lib("ed-finishes", 1, { image_asset: k.im.packshot ?? k.im.detail1 }),
-      k.lib("featured-purchase", 3),
-      k.v2.cards("below", 1),
-      k.lib("ed-study", 1),
-      k.v2.faq("side", 1),
-      k.cta(4),
+      k.lib("ed-opening", 1, { layout: "immersive", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.scene1, copy_surface: true, padding_top: 0, padding_bottom: 0 }),
+      k.lib("ed-statement", 3, { padding_top: 72, padding_bottom: 72 }),
+      k.lib("ed-diptych", 1, { layout: "offset", padding_top: 72, padding_bottom: 72 }),
+      k.lib("ed-scene", 2, { layout: "split", image_asset: k.im.scene1 ?? k.im.scene2 ?? k.im.lifestyle2, padding_top: 72, padding_bottom: 72 }),
+      k.lib("ed-finishes", 1, { image_asset: k.im.detail1 ?? k.im.packshot, button_label: k.t("Voir la fiche produit", "See the product page"), padding_top: 72, padding_bottom: 72 }),
+      k.v2.faq("side", 3),
+      k.cta(4, k.im.scene2 ?? k.im.scene3 ?? k.im.banner),
     ],
+    // Fiche : galerie et achat, puis finitions (vues par finition) et scène ; la FAQ seulement avec des réponses.
     product: (k) => [
-      k.lib("ed-diptych", 1),
-      k.lib("ed-finishes", 1, { image_asset: k.im.packshot ?? k.im.detail1 }),
-      k.lib("ed-scene", 2, { layout: "split", image_asset: k.im.scene2 ?? k.im.scene1 }),
+      k.lib("ed-finishes", 3, { image_asset: k.im.detail1 ?? k.im.packshot, padding_top: 72, padding_bottom: 72 }),
+      k.lib("ed-scene", 2, { layout: "split", image_asset: k.im.scene2 ?? k.im.scene1, padding_top: 72, padding_bottom: 72 }),
       k.faqSec(1, 4, "lines"),
     ],
     services: (k) => [
@@ -201,7 +202,8 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
     home: (k) => [
       k.lib("ed-scene", 1, { layout: "split", image_asset: k.im.lifestyle ?? k.im.hero }),
       k.lib("ed-statement", 1),
-      k.lib("ed-diptych", 1),
+      // Composition « boutique » de repli (Atelier Rive sert les prestations) : une étude de deux vues, pas le diptyque d'ORBE.
+      k.lib("ed-study", 1),
       k.feat(3, "plain", 2),
       k.faqSec(1, 4, "lines"),
       k.cta(4),

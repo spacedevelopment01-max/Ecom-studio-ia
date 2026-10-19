@@ -1,5 +1,6 @@
 /** Données isolées des deux références. Médias autorisés déjà présents, aucune génération. */
 import fs from "node:fs";
+import sharp from "sharp";
 import path from "node:path";
 import { seedHoldout } from "./lot1-holdout-fixtures";
 import { emptyProduct, emptyServiceProfile } from "@/lib/project-types";
@@ -28,8 +29,11 @@ export async function referenceProject(userId: string, kind: "products" | "servi
   const add = async (demo: string, file: string, role: string, meta: Record<string, unknown> = {}) => {
     if (opts.media === false) return null;
     const source = `public/demo/${demo}/${file}`;
-    if (!fs.existsSync(path.resolve(source))) return null;
-    const a = await saveAsset({ projectId: pid, userId, data: fs.readFileSync(path.resolve(source)), mime: file.endsWith(".png") ? "image/png" : file.endsWith(".webp") ? "image/webp" : "image/jpeg", name: file, role, origin: "upload", status: "approved", meta: { ...meta, lot2a: { demo: true, source } } });
+    // Kit privé absent (dépôt sans visuels, CI) : image synthétique unie de la bonne forme — la fixture reste exécutable et honnête.
+    const synthetic = !fs.existsSync(path.resolve(source));
+    const square = /packshot|cutout|logo|detail/.test(role) || /packshot|cutout|logo/.test(file);
+    const data = synthetic ? await sharp({ create: { width: square ? 1000 : 1600, height: square ? 1000 : 1067, channels: 4, background: role === "logo" || role === "cutout" ? { r: 40, g: 44, b: 60, alpha: 1 } : { r: 196, g: 180, b: 160, alpha: 1 } } }).png().toBuffer() : fs.readFileSync(path.resolve(source));
+    const a = await saveAsset({ projectId: pid, userId, data, mime: synthetic ? "image/png" : file.endsWith(".png") ? "image/png" : file.endsWith(".webp") ? "image/webp" : "image/jpeg", name: file, role, origin: "upload", status: "approved", meta: { ...meta, lot2a: { demo: true, source } } });
     media.push({ file, id: a.id, role, source }); return a.id;
   };
   // Visuels : ceux des quatre démonstrations conservées (kit privé, public/demo/<id>/, hors dépôt) ; un fichier absent est

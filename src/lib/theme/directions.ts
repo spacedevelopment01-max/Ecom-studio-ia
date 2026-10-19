@@ -1033,7 +1033,24 @@ export function buildSpec(input: BuildInput): ThemeSpec {
 
   // Catalogue : les textes rédigés pour le produit principal ne s'affichent que sur sa fiche.
   const only = isCatalog ? { product_handle: input.product.handle } : {};
-  const productTabs = c.product.tabs.map((tab) => ({ type: "collapsible", settings: { heading: tab.heading, content: p(tab.content_html), open: false, ...(/livraison|retour|shipping|deliver|return/i.test(tab.heading) ? {} : only) } }));
+  // Un onglet dont tout le contenu est « [À compléter : …] » n'est pas posé : rien d'inachevé sur la fiche (l'information manquante
+  // reste signalée dans le studio ; l'onglet se rajoute depuis la bibliothèque une fois renseigné).
+  const todoOnly = (html: string) => !html.replace(/\[(À compléter|To complete)[^\]]*\]/g, "").replace(/<[^>]+>/g, "").trim();
+  const productTabs = c.product.tabs.filter((tab) => !todoOnly(tab.content_html)).map((tab) => ({ type: "collapsible", settings: { heading: tab.heading, content: p(tab.content_html), open: false, ...(/livraison|retour|shipping|deliver|return/i.test(tab.heading) ? {} : only) } }));
+  // La description répète souvent l'accroche puis les faits (déjà en points forts et dans l'onglet « Caractéristiques ») :
+  // elle n'est posée que si, une fois ces textes retirés, il reste quelque chose à lire.
+  function descriptionAddsSomething(): boolean {
+    const norm = (s: string) => stripTags(s).toLowerCase().replace(/\s+/g, " ").trim();
+    const letters = (s: string) => s.normalize("NFD").replace(/[^a-z0-9]/g, "");
+    let rest = norm(input.product.description_html);
+    if (rest === norm(c.product.short)) return false;
+    const known = [c.product.short, ...c.product.highlights, ...c.product.tabs.map((x) => x.content_html)].map(norm).filter(Boolean);
+    for (const t of known) rest = rest.split(t).join(" ");
+    // Ce qui reste, lettres seules, dont on retire encore chaque fragment connu (intitulés et valeurs des onglets).
+    let left = letters(rest);
+    for (const t of known) for (const frag of t.split(/[,;:•·\n]/).map(letters).filter((x) => x.length >= 4)) left = left.split(frag).join("");
+    return left.length > 24;
+  }
   const productBlocks = [
     { type: "eyebrow", settings: { text: input.shopName } },
     { type: "title", settings: {} },
@@ -1045,7 +1062,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     ...(c.product.highlights.length ? [{ type: "highlights", settings: { items: c.product.highlights.join("\n"), ...only } }] : []),
     // La description n'est affichée que si elle apporte plus que l'accroche courte.
     // En catalogue, chaque fiche a besoin de sa description ; sur la fiche principale, masquée si elle répète l'accroche.
-    ...(stripTags(input.product.description_html) !== stripTags(c.product.short) ? [{ type: "description", settings: {} }] : isCatalog ? [{ type: "description", settings: { hide_for_handle: input.product.handle } }] : []),
+    ...(descriptionAddsSomething() ? [{ type: "description", settings: {} }] : isCatalog ? [{ type: "description", settings: { hide_for_handle: input.product.handle } }] : []),
     ...productTabs,
     ...(c.product.reassurance.length
       ? [{ type: "reassurance", settings: { item1: c.product.reassurance[0] ?? "", icon1: "truck", item2: c.product.reassurance[1] ?? "", icon2: "return", item3: c.product.reassurance[2] ?? "", icon3: "shield" } }]

@@ -9,6 +9,24 @@ import { escapeHtml, storeProducts, type ProductContentBinding, type TemplateJso
 
 const hash = (x: unknown) => crypto.createHash("sha256").update(JSON.stringify(x) ?? "null").digest("hex");
 const dynamicBlocks = new Set(["title", "price", "buy_buttons", "description"]);
+/**
+ * La description du produit répète-t-elle seulement ce que la fiche montre déjà (accroche du bloc « texte », points forts,
+ * onglets dépliables) ? Dans ce cas la poser en plus ferait lire trois fois les mêmes phrases (défaut ORBE du 19 octobre).
+ */
+function descriptionRepeatsBlocks(main: { blocks?: Record<string, { type: string; settings: Record<string, unknown> }> }, descriptionHtml: string): boolean {
+  const letters = (s: string) => String(s ?? "").replace(/<[^>]+>/g, " ").toLowerCase().normalize("NFD").replace(/[^a-z0-9]/g, "");
+  let rest = letters(descriptionHtml);
+  if (!rest) return true;
+  const known: string[] = [];
+  for (const b of Object.values(main.blocks ?? {})) {
+    if (b.type === "text") known.push(String(b.settings.text ?? ""));
+    if (b.type === "highlights") known.push(...String(b.settings.items ?? "").split("\n"));
+    if (b.type === "collapsible") known.push(String(b.settings.content ?? ""), ...String(b.settings.content ?? "").replace(/<[^>]+>/g, "\n").split(/[\n,;:•·]/));
+  }
+  for (const k of known.map(letters).filter((x) => x.length >= 4).sort((a, b) => b.length - a.length)) rest = rest.split(k).join("");
+  return rest.length <= 24;
+}
+
 export function neutralProductTemplate(source: TemplateJson): TemplateJson {
   const out = structuredClone(source);
   out.order = out.order.filter((id) => ["main-product", "product-recommendations"].includes(out.sections[id]?.type));
@@ -17,7 +35,7 @@ export function neutralProductTemplate(source: TemplateJson): TemplateJson {
     s.block_order = (s.block_order ?? Object.keys(s.blocks ?? {})).filter((id) => dynamicBlocks.has(s.blocks?.[id]?.type ?? ""));
     s.blocks = Object.fromEntries(s.block_order.map((id) => [id, s.blocks![id]]));
     for (const b of Object.values(s.blocks)) { delete b.settings.product_handle; delete b.settings.hide_for_handle; }
-    if (!Object.values(s.blocks).some((b) => b.type === "description")) { s.blocks.own_description = { type: "description", settings: {} }; s.block_order.push("own_description"); }
+    if (!Object.values(s.blocks).some((b) => b.type === "description") && !descriptionRepeatsBlocks(s as never, "")) { s.blocks.own_description = { type: "description", settings: {} }; s.block_order.push("own_description"); }
   }
   return out;
 }
@@ -126,7 +144,7 @@ export function bindProductContent(spec: ThemeSpec, p: Project, principalTemplat
     }
     if (seoSource === "user") product.seo = structuredClone(old!.seo);
     const main = Object.values(tpl.sections).find((s) => s.type === "main-product");
-    if (main && !Object.values(main.blocks ?? {}).some((b) => b.type === "description")) {
+    if (main && !Object.values(main.blocks ?? {}).some((b) => b.type === "description") && !descriptionRepeatsBlocks(main as never, product.description_html)) {
       main.blocks ??= {}; main.block_order ??= Object.keys(main.blocks);
       main.blocks.own_description = { type: "description", settings: {} }; main.block_order.push("own_description");
     }

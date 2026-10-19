@@ -28,6 +28,7 @@ try {
       await page.goto(`${origin}/${file}`, { waitUntil: "networkidle" }); await page.waitForTimeout(300);
       const m = await page.evaluate(() => ({ h1: document.querySelectorAll("h1").length, sw: document.documentElement.scrollWidth, w: innerWidth, note: !!document.getElementById("es-static-note") }));
       assert.equal(m.h1, 1, `${file} : ${m.h1} h1`); assert.ok(m.sw <= m.w + 1, `${file} déborde (${m.sw} > ${m.w})`); assert.ok(m.note, `${file} : mention d'aperçu absente`);
+      if (/^(accueil|produit|page-prestations)\.html$/.test(file)) { await page.evaluate(async () => { const h = document.documentElement.scrollHeight; for (let y = 0; y < h; y += 500) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); } window.scrollTo(0, 0); }); await page.waitForLoadState("networkidle"); await page.waitForTimeout(400); }
       await shot(file.replace(/\.html$/, ""), /^(accueil|produit|page-prestations)\.html$/.test(file));
     }
     // Menu : vers la boutique (produits) ou les prestations (services).
