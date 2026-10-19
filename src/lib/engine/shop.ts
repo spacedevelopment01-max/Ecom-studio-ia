@@ -5,15 +5,18 @@
  * direction artistique fournit une composition éprouvée.
  */
 import { decide } from "../quality/gate";
+import { applyHandoff, handoffCopy } from "../theme/handoff";
+import { projectKind } from "../theme/project-kind";
+import { describeReport, preservation, preserve } from "../theme/carry-over";
 import { gateMeta, saveCheck } from "../quality/store";
 import { isAutoUsable } from "../quality/usable";
 import { sectionSchema } from "../theme/spec";
 import { all, json, one } from "../db";
 import { getAsset, type Asset } from "../library";
-import { loadProject, saveThemeVersion, currentTheme, type Project } from "../projects";
+import { currentTheme, listThemeVersions, loadProject, saveThemeVersion, themeVersion, type Project } from "../projects";
 import { tradeText } from "../brain/trade";
 import { cleanVariants, MAX_PRODUCT_OPTIONS, variantCombinations } from "../project-types";
-import { buildSpec, directionById, type DirectionId, type ImageSlots } from "../theme/directions";
+import { ACTIVE_DIRECTIONS, buildSpec, directionById, type DirectionId, type ImageSlots } from "../theme/directions";
 import { libraryFiller } from "../theme/library-fill";
 import { contentContext } from "../theme/section-content";
 import type { ShopCopy } from "../theme/copy";
@@ -22,6 +25,9 @@ import type { StoreProduct, ThemeSpec } from "../theme/spec";
 import { localCopy } from "./local-copy";
 import { serviceTermsHtml } from "./services-text";
 import { attachVariantMedia, catalogStore, ensureCatalogMedia, ensureVariantMedia } from "./catalog";
+import { deliverContent } from "../seo-v2/theme-delivery";
+import { bindProductContent } from "../theme/product-content";
+import { bindReferenceOffers } from "../theme/reference-delivery";
 import { assetsByRole, latestAsset } from "./images";
 import { aiDesignHome, aiReviewHome } from "../ai/tasks";
 import { snapshotTheme } from "../theme/snapshot";
@@ -44,7 +50,7 @@ const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,
 
 /** Nom de fichier stable dans le dossier assets du thème pour un média. */
 export function themeFileName(a: Asset, hint?: string): string {
-  const ext = a.kind === "video" ? "mp4" : a.mime === "image/png" || a.role === "cutout" || a.role === "logo" ? "png" : "jpg";
+  const ext = a.kind === "video" ? (/webm/.test(a.mime) ? "webm" : "mp4") : a.mime === "image/png" || a.role === "cutout" || a.role === "logo" ? "png" : "jpg";
   return `es-${slug(hint ?? a.role ?? "media")}-${a.id.slice(0, 6)}.${ext}`;
 }
 
@@ -60,7 +66,7 @@ export function savedCopy(projectId: string): ShopCopy | null {
   return overlayV2Copy(kit, projectId, p.settings.language ?? contentLang(), p.business).copy;
 }
 
-export function collectImages(projectId: string): { slots: ImageSlots; files: Record<string, string>; gallery: string[] } {
+export function collectImages(projectId: string): { slots: ImageSlots; files: Record<string, string>; gallery: string[]; variantImages: Record<string, string> } {
   const files: Record<string, string> = {};
   const slots: ImageSlots = {};
   const put = (slot: Exclude<keyof ImageSlots, "reels" | "byService">, a: Asset | undefined, hint?: string) => {
@@ -105,10 +111,16 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
   put("packshot", packshot, "packshot");
   put("detail1", pick("detail", 0), "detail-1");
   put("detail2", pick("detail", 1), "detail-2");
-  put("scene1", life[1] ?? pick("scene", 0), "scene-1");
-  put("scene2", pick("scene", 1), "scene-2");
+  // Scènes : les photos rangées « scène » d'abord ; la seconde photo en situation ne sert de scène que s'il n'y en a aucune
+  // (sinon la même image revenait deux fois sur l'accueil : en situation et en scène — défaut constaté sur ORBE).
+  put("scene1", pick("scene", 0) ?? life[1], "scene-1");
+  put("scene2", pick("scene", 1) ?? life[2], "scene-2");
   put("scene3", pick("scene", 2) ?? amb[1] ?? amb[0], "scene-3");
   put("banner", pick("banner"), "banniere");
+  // Ouverture sur téléphone : la première photo verticale en situation ou en scène (le produit entier dans le cadre),
+  // jamais un recadrage automatique centré d'une photo horizontale qui ferait disparaître le produit.
+  const tall = (a: Asset) => !!a.width && !!a.height && a.height > a.width;
+  put("portrait", life.find(tall) ?? [pick("scene", 0), pick("scene", 1), pick("scene", 2)].find((a) => a && tall(a)), "ouverture-telephone");
   put("hero", pick("scene", 0) ?? pick("banner") ?? packshot, "hero");
   const video = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'video' AND deleted_at IS NULL AND (json_extract(meta, '$.format') = '16:9') ORDER BY created_at DESC LIMIT 6", projectId).filter(isAutoUsable)[0];
   if (video) {
@@ -144,7 +156,20 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
     files[f] = a.id;
     gallery.push(f);
   }
-  return { slots, files, gallery };
+  // Image propre à une variante (finition, coloris…) : un asset dont `meta.variant` porte la valeur de l'option.
+  // Elle entre dans la galerie et sert d'image de la variante (sélecteur, finitions, panier). Rien n'est déduit du nom.
+  const variantImages: Record<string, string> = {};
+  for (const a of all<Asset>("SELECT * FROM assets WHERE project_id = ? AND deleted_at IS NULL AND status != 'rejected' AND json_extract(meta, '$.variant') IS NOT NULL ORDER BY (status = 'approved') DESC, created_at ASC", projectId).filter(isAutoUsable)) {
+    const value = json<{ variant?: string }>(a.meta, {}).variant?.trim();
+    if (!value || variantImages[value]) continue;
+    const f = themeFileName(a, `galerie-variante-${a.id.slice(0, 4)}`);
+    const existing = Object.entries(files).find(([, id]) => id === a.id && gallery.includes(files[f] ? f : ""))?.[0];
+    const name = gallery.find((g) => files[g] === a.id) ?? existing ?? f;
+    files[name] = a.id;
+    if (!gallery.includes(name)) gallery.push(name);
+    variantImages[value] = name;
+  }
+  return { slots, files, gallery, variantImages };
 }
 
 /**
@@ -166,23 +191,32 @@ function serviceSlots(projectId: string, slots: ImageSlots, files: Record<string
   });
   // Photo propre à chaque prestation (votre photo d'abord, puis photo libre, puis image IA) : la carte « Carrelage » montre du
   // carrelage, jamais la photo d'une autre prestation.
-  const tagged = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role IN ('lifestyle','original') AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' AND json_extract(meta, '$.service') IS NOT NULL ORDER BY (origin IN ('upload','site')) DESC, (json_extract(meta, '$.stock') IS NOT NULL) DESC, (status = 'approved') DESC, (json_extract(meta, '$.qcWarning') IS NULL) DESC, created_at DESC", projectId).filter(isAutoUsable);
+  const tagged = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role IN ('lifestyle','original') AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' AND (json_extract(meta, '$.service') IS NOT NULL OR json_extract(meta, '$.serviceKey') IS NOT NULL) ORDER BY (origin IN ('upload','site')) DESC, (json_extract(meta, '$.stock') IS NOT NULL) DESC, (status = 'approved') DESC, (json_extract(meta, '$.qcWarning') IS NULL) DESC, created_at DESC", projectId).filter(isAutoUsable);
+  const services = loadProject(projectId).services.services;
   for (const a of tagged) {
-    const key = serviceKey(json<{ service?: string }>(a.meta, {}).service ?? "");
-    if (!key || slots.byService?.[key]) continue;
+    const meta = json<{ service?: string; serviceKey?: string }>(a.meta, {});
+    const key = serviceKey(meta.service ?? "");
+    if (!key && !meta.serviceKey) continue;
     const f = themeFileName(a, `prestation-${a.id.slice(0, 6)}`);
     files[f] = a.id;
-    slots.byService = { ...(slots.byService ?? {}), [key]: f };
+    slots.byService ??= {};
+    if (key) slots.byService[key] ??= f;
+    // Les références nouvelles utilisent l'identité stable. Un ancien nom n'est utilisable que s'il
+    // désigne une seule offre ; les homonymes restent sans image plutôt que recevoir celle d'une autre.
+    const candidates = services.filter((s) => meta.serviceKey ? s.key === meta.serviceKey : [s.name, ...(s.contentAliases ?? [])].some((name) => serviceKey(name) === key));
+    if (candidates.length === 1 && candidates[0].key) slots.byService[`service:${candidates[0].key}`] ??= f;
   }
   if (!slots.hero && slots.lifestyle) slots.hero = slots.lifestyle;
 }
 
-export function storeProduct(p: Project, copy: ShopCopy, gallery: string[]): StoreProduct {
-  // Toutes les options du produit (Coloris, Taille…), combinées comme dans Shopify.
+export function storeProduct(p: Project, copy: ShopCopy, gallery: string[], variantImages: Record<string, string> = {}): StoreProduct {
+  // Toutes les options du produit (Coloris, Taille…), combinées comme dans Shopify ; image de la variante quand un asset la porte.
   const combos = variantCombinations(p.product.variants);
   const variants = combos.length
-    ? combos.map((o) => ({ title: o.join(" / "), options: o, price: p.product.price.amount, available: true }))
+    ? combos.map((o) => { const image = o.map((v) => variantImages[v]).find(Boolean); return { title: o.join(" / "), options: o, price: p.product.price.amount, available: true, ...(image ? { image } : {}) }; })
     : [{ title: "Default Title", options: ["Default Title"], price: p.product.price.amount, available: true }];
+  const variantFirst = [...new Set(variants.map((v) => v.image).filter((x): x is string => !!x && gallery.includes(x)))];
+  const images = variantFirst.length ? [...variantFirst, ...gallery.filter((g) => !variantFirst.includes(g))] : gallery;
   return {
     title: copy.product.title || p.product.name || p.name,
     handle: slug(copy.product.title || p.product.name || p.name),
@@ -193,7 +227,7 @@ export function storeProduct(p: Project, copy: ShopCopy, gallery: string[]): Sto
     currency: p.product.price.currency || "EUR",
     options: combos.length ? cleanVariants(p.product.variants).slice(0, MAX_PRODUCT_OPTIONS).map((v) => v.name) : [],
     variants,
-    images: gallery,
+    images,
     tags: [],
   };
 }
@@ -227,14 +261,23 @@ export function routeFonts(route: { heading: string; headingWeight: number; body
 export async function composeShop(projectId: string, directionOpt?: DirectionId, ctx?: JobContext | null, prepare = ctx !== undefined) {
   const p = loadProject(projectId);
   const brand = p.brand;
+  const preparedIdentity=(await import("../preparation/store")).stateOf(projectId)?.stages.brand?.status==="approved";
   if (!brand) throw new Error(L("La marque doit être définie avant la boutique.", "The brand must be defined before the store."));
-  const copy = savedCopy(projectId) ?? localCopy(p.product, brand, p);
+  // Rédaction : celle du contrat amont quand il la dit prête, sinon celle enregistrée pour le projet, sinon locale.
+  const copy = handoffCopy(projectId) ?? savedCopy(projectId) ?? localCopy(p.product, brand, p);
   if (prepare) await ensureVariantMedia(ctx ?? null, projectId);
-  const { slots, files, gallery } = collectImages(projectId);
+  const { slots, files, gallery, variantImages } = collectImages(projectId);
+  // Médias du contrat amont (10 images + vidéo d'ouverture, ou 10 photos + 2 vidéos) : affectés explicitement aux
+  // emplacements du thème ; un média sans emplacement est listé « non placé », un emplacement sans média reste vide.
+  const handoff = applyHandoff(projectId, slots, files, (assetId, hint) => {
+    const a = getAsset(assetId);
+    return a && a.project_id === projectId && !a.deleted_at ? { filename: themeFileName(a, hint) } : null;
+  });
   const services = p.business === "services";
   // Entreprise de services : les photos du marchand (rôle « lifestyle ») illustrent ouverture, prestations, méthode et réalisations.
   if (services) serviceSlots(projectId, slots, files);
-  const main = storeProduct(p, copy, gallery);
+  const main = storeProduct(p, copy, gallery, variantImages);
+  main.contentTarget = "product:main";
   attachVariantMedia(projectId, main, files, themeFileName);
   // Boutique multi-produit ou niche : les autres produits sont détourés, mis en packshot et rangés en collections.
   let catalog: ReturnType<typeof catalogStore> | null = null;
@@ -253,10 +296,10 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
     shopName: brand.name,
     // Palette verrouillée par la direction (ou « Vos couleurs » du client) ; ancienne marque dans sa direction
     // actuelle : couleurs de la piste de logo retenue, comme avant.
-    palette: brand.paletteMode || direction !== brand.direction ? paletteFor(brand, direction) : (effectivePalette(brand) ?? brand.palette),
+    palette: preparedIdentity?brand.palette:brand.paletteMode || direction !== brand.direction ? paletteFor(brand, direction) : (effectivePalette(brand) ?? brand.palette),
     // Typographies de la piste de logo retenue (logo, site et réseaux parlent d'une seule voix), quelle que soit la
     // direction ; à défaut, celles de la marque si elles ont été choisies (IA ou client), pas recopiées d'une direction.
-    fonts: routeFonts(brand.logo?.route) ?? ((directionOpt && directionOpt !== brand.direction) || brand.generatedBy === "local" ? undefined : brand.fonts),
+    fonts: preparedIdentity?brand.fonts:routeFonts(brand.logo?.route) ?? ((directionOpt && directionOpt !== brand.direction) || brand.generatedBy === "local" ? undefined : brand.fonts),
     copy,
     images: slots,
     files,
@@ -266,17 +309,29 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
     ...(services ? { business: "services" as const, services: p.services, servicesTermsHtml: serviceTermsHtml(p.services), activity: tradeText(p) } : {}),
     ...(catalog ? { storeType: p.storeType, products: catalog.products, collections: catalog.collections } : {}),
   });
+  if (handoff) spec.meta = { ...spec.meta, handoff: handoff as unknown as Record<string, unknown> };
+  const delivered = deliverContent(spec, p, spec.language ?? contentLang());
+  bindReferenceOffers(spec, p, new Set(delivered.map((d) => d.target)));
+  if (!services) bindProductContent(spec, p);
   return { p, direction, services, catalog, spec };
 }
 
 export async function buildShop(ctx: JobContext | null, projectId: string, opts: { direction?: DirectionId; useAi?: boolean; summary?: Bi; engine?: "v1" | "v2"; language?: LanguageId } = {}) {
+  if((await import("../preparation/store")).stateOf(projectId)){
+    const target=opts.direction??currentTheme(projectId)?.spec.direction;
+    const selected=ACTIVE_DIRECTIONS.find(d=>d.id===target);
+    if(!selected||opts.engine==="v2")throw new UserFacingError(L("Choisissez un thème disponible dans la galerie avant de composer ce projet. Aucun gabarit générique n’est substitué.","Choose an available gallery theme before building this project. No generic template is substituted."));
+    opts={...opts,direction:selected.id,engine:"v1"};
+  }
+
+  const parent = currentTheme(projectId)?.version.id ?? null;
   // Theme Engine V2 (phase 10A) par défaut pour toute nouvelle composition ; une direction V1 explicitement choisie
   // (galerie des thèmes, « change de direction ») ou un projet réglé sur l'ancien moteur garde le moteur V1.
   const engine = opts.engine ?? (opts.direction || (loadProject(projectId).settings as { themeEngine?: string }).themeEngine === "v1" ? "v1" : "v2");
   if (engine === "v2") {
     const { buildShopV2 } = await import("../theme-v2/engine");
     const r = await buildShopV2(ctx, projectId, { language: opts.language, summary: opts.summary });
-    return { versionId: r.versionId, number: r.number };
+    return { versionId: r.versionId, number: r.number, delivery: r.delivery };
   }
   const { p, direction, services, catalog, spec: built } = await composeShop(projectId, opts.direction, ctx);
   let spec = built;
@@ -352,21 +407,56 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
       console.warn("[shop] relecture visuelle indisponible :", (e as Error).message);
     }
   }
+  // Changement de thème ou nouveau remplissage : les sections ajoutées par le client et ses réglages sont reportés sur
+  // la nouvelle composition (une section incompatible avec le thème ou la catégorie reste masquée, jamais supprimée ;
+  // en cas de conflit avec une nouvelle valeur automatique, la valeur du client gagne et le conflit est signalé).
+  if (opts.direction) {
+    const prev = currentTheme(projectId);
+    if (prev && !prev.spec.imported) {
+      const kind = projectKind(p);
+      const lang = (spec.language ?? "fr") as "fr" | "en";
+      const baseline = compositionBaseline(projectId, prev.version.number);
+      const kept = preserve(spec, preservation(baseline, prev.spec), baseline, kind, lang);
+      const problemsAfter = validateSpec(kept.spec);
+      if (!problemsAfter.length) {
+        spec = kept.spec;
+        spec.meta = { ...spec.meta, carryOver: kept.report as unknown as Record<string, unknown> };
+        const text = describeReport(kept.report, lang);
+        if (text) append(inBothLangs(() => L(` · ${describeReport(kept.report, "fr")}`, ` · ${describeReport(kept.report, "en")}`)));
+      } else console.warn("[shop] report des retouches du client impossible :", problemsAfter.join(" ; "));
+    }
+  }
   const problems = validateSpec(spec);
   if (problems.length) throw new Error(L(`Thème invalide : ${problems.join(" ; ")}`, `Invalid theme: ${problems.join("; ")}`));
   // Niveau de qualité dit honnêtement (Phase 1 : comportement technique inchangé). 8/10 et plus : FINAL ; de 5 à
   // moins de 8 : PROVISOIRE, à améliorer (utilisable, jamais présenté comme un résultat final) ; sous 5 : refusé
   // (la composition de l'IA est alors écartée, celle de la direction gardée, non relue). Sans relecture : non contrôlé.
-  const quality = decide("theme_home", reviewed && reviewedKept ? { checker: "ai", score: reviewed.score } : { checker: "none", score: null });
+  const checked = decide("theme_home", reviewed && reviewedKept ? { checker: "ai", score: reviewed.score } : { checker: "none", score: null });
+  const quality = checked.verdict === "RETRY" && checked.action === "recheck" ? { ...checked, verdict: "PROVISIONAL" as const, action: "none" as const, reason: L("Structure vérifiée ; rendu visuel non vérifié, à relire.", "Structure checked; visual result unchecked, review required."), provisional: { use: "manual" as const, label: "needs_improvement" as const } } : checked;
   const qcId = saveCheck(quality, { userId: p.userId, projectId, jobId: ctx?.job.id ?? null, candidateId: `theme:${projectId}:${direction}` });
   if (reviewed && !reviewedKept) saveCheck(decide("theme_home", { checker: "ai", score: reviewed.score }), { userId: p.userId, projectId, jobId: ctx?.job.id ?? null, candidateId: `theme-ai-layout:${projectId}:${direction}` });
-  if (quality.verdict === "PROVISIONAL") append(inBothLangs(() => L(" · niveau provisoire, à améliorer (moins de 8/10)", " · provisional level, needs improvement (below 8/10)")));
-  const v = saveThemeVersion(projectId, spec, JSON.stringify(summary), author, { checks: L(["structure", "schémas des sections", "contraste des couleurs"], ["structure", "section schemas", "color contrast"]), problems, gate: gateMeta(quality, qcId) });
+  if (quality.verdict === "PROVISIONAL") append(inBothLangs(() => L(" · niveau provisoire, à vérifier et améliorer", " · provisional level, review and improve")));
+  const conflict = (currentTheme(projectId)?.version.id ?? null) !== parent;
+  const v = saveThemeVersion(projectId, spec, JSON.stringify(summary), author, { checks: L(["structure", "schémas des sections", "contraste des couleurs"], ["structure", "section schemas", "color contrast"]), problems, gate: gateMeta(quality, qcId) }, parent, { activate: !conflict });
   ctx?.progress(0.95, L("Boutique enregistrée", "Store saved"));
-  return { versionId: v.id, number: v.number };
+  const active = currentTheme(projectId)?.version.id === v.id;
+  return { versionId: v.id, number: v.number, delivery: { state: active ? quality.verdict === "FINAL" ? "ready" : "to_verify" : "blocked", active, message: active ? L("Thème enregistré ; consultez son contrôle avant utilisation.", "Theme saved; review its check before use.") : L("Tentative conservée en brouillon ; version courante protégée.", "Attempt saved as a draft; current version protected."), reasons: [quality.reason] } };
 }
 
-/** Change de direction en conservant les retouches de contenu ? Non : nouvelle version complète, l'ancienne reste restaurable. */
+/**
+ * Dernière composition automatique (version enregistrée avec son contrôle de qualité « gate ») au plus tard à la
+ * version donnée : c'est la base de comparaison pour reconnaître les ajouts et réglages du client.
+ */
+function compositionBaseline(projectId: string, upToNumber: number): ThemeSpec | null {
+  const versions = listThemeVersions(projectId).filter((v) => v.number <= upToNumber);
+  for (const v of versions) {
+    const qc = json<{ gate?: unknown }>((v as { qc?: string }).qc ?? "{}", {});
+    if (qc && typeof qc === "object" && "gate" in qc) return themeVersion(projectId, v.id)?.spec ?? null;
+  }
+  return null;
+}
+
+/** Change de direction : nouvelle version complète (l'ancienne reste restaurable), ajouts et réglages du client reportés. */
 export async function switchDirection(ctx: JobContext | null, projectId: string, direction: DirectionId) {
   // Thèmes du forfait du projet (10, 20 ou 30) — revérifié ici, dans le worker, quel que soit le chemin (écran, chat).
   const { assertThemeAllowed } = await import("../plan-gates");
@@ -377,7 +467,8 @@ export async function switchDirection(ctx: JobContext | null, projectId: string,
   }
   // La marque prend la direction et ses couleurs (logo, charte) avant la construction du site.
   const { adoptDirection } = await import("./brand-direction");
-  await adoptDirection(projectId, direction);
+  // Le choix de mise en page ne recolore pas une identité déjà approuvée dans le parcours amont.
+  if((await import("../preparation/store")).stateOf(projectId)?.stages.brand?.status!=="approved")await adoptDirection(projectId, direction);
   return buildShop(ctx, projectId, { direction, useAi: false, summary: inBothLangs(() => L(`Direction ${directionById(direction).name} appliquée`, `${directionById(direction).name} direction applied`)) });
 }
 

@@ -1,7 +1,9 @@
 "use client";
 import { TimeInfo } from "../wait-time";
+import type { ThemeRecommendationContract } from "@/lib/theme/theme-recommendation";
+import type { StoreKindVerdict } from "@/lib/theme/store-kind";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, Copy, FileStack, Crosshair, Replace, Maximize2, Minimize2, PanelTop, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2, MoreHorizontal } from "lucide-react";
+import { ArrowDown, ArrowUp, Copy, SlidersHorizontal, FileStack, Crosshair, Replace, Maximize2, Minimize2, PanelTop, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2, MoreHorizontal } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { useCostConfirm } from "./cost-confirm";
@@ -19,6 +21,7 @@ import type { DirectionCard } from "@/lib/theme/directions";
 import type { ImportReport } from "@/lib/theme/import";
 import { useT } from "../i18n";
 import { LayoutPanel, type LayoutChoice, type LayoutSection } from "./layout-panel";
+import { SectionSettingsPanel } from "./section-settings";
 import { ContentLangPicker, useContentLang } from "./content-lang";
 import { deliveryLabel, deliveryTone, isPlatform, platformInfo, PlatformPill, PLATFORM_IDS, type PlatformId } from "./platform-picker";
 import type { BusinessType } from "@/lib/project-types";
@@ -32,6 +35,7 @@ const PREVIEW_SANDBOX = "allow-scripts allow-forms allow-popups allow-popups-to-
 type TFn = <T>(fr: T, en: T) => T;
 
 type ThemeData = {
+  quality?: { verdict: string; reason: string; checked: boolean } | null;
   /** Attribut « sandbox » des aperçus, fourni par le serveur (Codespaces : avec l'origine). */
   sandbox?: string;
   current: null | {
@@ -53,6 +57,11 @@ type ThemeData = {
   messages: { id: string; role: string; content: string; attachments: string[]; selection: any; theme_version_id: string | null; job_id: string | null; created_at: number }[];
   directions: DirectionCard[];
   library: LibraryItem[];
+  /** Catégorie du projet et contrat de recommandation (catégorie / thèmes éligibles / justification). */
+  storeKind?: StoreKindVerdict;
+  recommendation?: ThemeRecommendationContract;
+  /** Sections du thème devenues incompatibles avec le thème installé ou la catégorie : signalées, jamais supprimées. */
+  incompatible?: { template: string; id: string; type: string; name: string; reason: string }[];
   /** Theme Engine V2 : langage visuel, plan des pages et informations à compléter (absent pour l'ancien moteur). */
   /** Photos libres de droits placées sur le site : signalées au client, remplaçables (aiBlocked : réglage « Pixabay seulement »). */
   stock?: { photos: { file: string; assetId: string; source: string; author: string | null; page: string | null; where: string; thumbUrl: string }[]; aiBlocked: boolean };
@@ -136,7 +145,10 @@ export default function TabBoutique() {
   const [full, setFull] = useState(false);
   // Panneau « Disposition » (en-tête et pied de page), flottant au-dessus de l'aperçu.
   const [layoutOpen, setLayoutOpen] = useState(false);
+  // Panneau « Réglages » d'une section (édition manuelle, mêmes opérations que l'IA).
+  const [settingsFor, setSettingsFor] = useState<{ template: string; section: string } | null>(null);
   const [layoutBusy, setLayoutBusy] = useState(false);
+  const [initialDirection,setInitialDirection]=useState<string|null>(null);
   useEffect(() => {
     if (!full) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setFull(false);
@@ -186,6 +198,8 @@ export default function TabBoutique() {
   });
   const desktopScale = device === "desktop" && boxW > 0 && boxW < DESKTOP_W ? boxW / DESKTOP_W : 1;
   const scrollY = useRef(0);
+  // Dernier chemin chargé dans l'aperçu (pour ne restaurer le défilement que sur la même page).
+  const loadedPath = useRef<string | null>(null);
   const chatEnd = useRef<HTMLDivElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -209,9 +223,14 @@ export default function TabBoutique() {
       if (d.type === "ready" && pickingRef.current) iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "pick", on: true }, "*");
       if (d.type === "scroll") scrollY.current = d.y;
       if (d.type === "loaded") {
-        iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "scroll", y: scrollY.current }, "*");
-        if (pickingRef.current) iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "pick", on: true }, "*");
         const path = String(d.path).replace(/^\/preview\/[^/]+\/v\/[^/]+/, "") || "/";
+        // Position de défilement conservée SEULEMENT quand la même page est rendue à nouveau (réglage, version, panier) ;
+        // une autre page (lien du pied de page, menu) s'ouvre en haut, et une ancre va à sa cible.
+        const samePage = path === loadedPath.current, hash = Boolean(d.hash);
+        loadedPath.current = path;
+        if (samePage && !hash) iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "scroll", y: scrollY.current }, "*");
+        else scrollY.current = 0;
+        if (pickingRef.current) iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "pick", on: true }, "*");
         if (path !== page) setPage(path);
       }
     };
@@ -356,12 +375,13 @@ export default function TabBoutique() {
         {site?.status === "read" && site.decision === "reproduce" && <div className="mb-6"><ReproductionBanner site={site} /></div>}
         <ThemeImportModal open={!!importOpen} onClose={() => setImportOpen(null)} projectId={id} onImported={() => { reload(); reloadProject(); }} />
         {chatJobs[0] && <JobProgress job={chatJobs[0]} className="mb-6" />}
-        <Empty title={isServices ? t("Le site n'est pas encore composé", "The website hasn't been built yet") : t("La boutique n'est pas encore composée", "The store hasn't been built yet")} icon={<Store className="size-5" />} action={<div className="flex flex-wrap items-center justify-center gap-2">{data?.brand && <><Button onClick={async () => { if (!(await cost.confirm("theme"))) return; await api(`/api/projects/${id}/theme/build`, { body: {}, lang: cl.lang }); reloadProject(); }}>{isServices ? t("Composer le site maintenant", "Build the website now") : t("Composer la boutique maintenant", "Build the store now")}</Button><ContentLangPicker {...cl} compact /></>}<Button variant="secondary" icon={<Upload className="size-4" />} onClick={() => setImportOpen("upload")}>{t("Importer mon thème Shopify", "Import my Shopify theme")}</Button></div>}>
+        {!!theme.versions.length && <Card className="mb-6 p-5"><p className="font-semibold">{t("Tentatives conservées, à corriger avant utilisation", "Saved attempts, correction needed before use")}</p><p className="mt-2 text-sm text-muted">{t("Aucun thème utilisable n'est encore activé. Les brouillons restent consultables ; complétez les informations puis relancez la composition.", "No usable theme is active yet. Drafts remain available; complete the information and rebuild.")}</p><ul className="mt-3 grid gap-2">{theme.versions.map((v) => <li key={v.id}><a className="underline" href={`/preview/${id}/v/${v.id}`} target="_blank" rel="noreferrer">{t(`Consulter la tentative ${v.number}`, `View attempt ${v.number}`)}</a><p className="text-xs text-muted">{v.summary}</p></li>)}</ul></Card>}
+        <Empty title={isServices ? t("Le site n'est pas encore composé", "The website hasn't been built yet") : t("La boutique n'est pas encore composée", "The store hasn't been built yet")} icon={<Store className="size-5" />} action={<div className="flex flex-wrap items-center justify-center gap-2">{data?.brand && <><Button onClick={async () => { if(data?.preparation){document.querySelector("[data-initial-theme-grid]")?.scrollIntoView({behavior:"smooth",block:"start"});return;} if (!(await cost.confirm("theme"))) return; await api(`/api/projects/${id}/theme/build`, { body: {}, lang: cl.lang }); reloadProject(); }}>{data?.preparation?t("Choisir le thème du site", "Choose the website theme"):isServices ? t("Composer le site maintenant", "Build the website now") : t("Composer la boutique maintenant", "Build the store now")}</Button><ContentLangPicker {...cl} compact /></>}<Button variant="secondary" icon={<Upload className="size-4" />} onClick={() => setImportOpen("upload")}>{t("Importer mon thème Shopify", "Import my Shopify theme")}</Button></div>}>
           {data?.brand ? t("La marque est prête : vous pouvez lancer la composition.", "The brand is ready: you can start building the store.") : t("Elle sera créée après la marque et les textes (voir le Pilote).", "It will be created after the brand and the copy (see Pilot).")}
         </Empty>
         <h2 className="mb-1 mt-10 font-display text-2xl font-semibold">{t("Les thèmes disponibles", "Available themes")}</h2>
         <p className="mb-5 text-sm text-muted">{t("Le studio choisit une direction selon votre produit ; vous pourrez en changer à tout moment avec le bouton « Thèmes » de l'éditeur.", "The studio picks a direction based on your product; you can change it at any time with the editor's “Themes” button.")}</p>
-        <ThemeGrid directions={theme.directions} />
+        <div data-initial-theme-grid><ThemeGrid services={isServices} directions={theme.directions} recommendation={theme.recommendation} projectId={id} sandbox={theme.sandbox} plan={(data?.plan??null) as import("@/lib/plans").PlanId|null} busy={initialDirection??(chatJobs.length?"running":null)} onPick={data?.brand&&!discovery?async direction=>{if(!(await cost.confirm("theme",{localOk:true})))return;setInitialDirection(direction.id);try{await api(`/api/projects/${id}/theme/build`,{body:{direction:direction.id},lang:cl.lang});reloadProject();}catch(error){toast("bad",(error as Error).message);}finally{setInitialDirection(null);}}:undefined}/></div>
       </div>
     );
 
@@ -504,7 +524,9 @@ export default function TabBoutique() {
     </div>
   );
 
-  const Structure = layoutOpen && layoutSections.length > 0 ? (
+  const Structure = settingsFor ? (
+    <SectionSettingsPanel key={`${settingsFor.template}:${settingsFor.section}`} version={theme.current?.versionId ?? ""} projectId={id} target={settingsFor} onClose={() => setSettingsFor(null)} onChanged={() => { reload(); reloadProject(); }} />
+  ) : layoutOpen && layoutSections.length > 0 ? (
     <div className="h-full overflow-y-auto p-4">
       <div className="mb-4 flex items-center justify-between gap-2">
         <p className="font-display text-lg font-semibold">{t("Disposition", "Layout")}</p>
@@ -552,6 +574,7 @@ export default function TabBoutique() {
                               <>
                                 {item(<ArrowUp className="size-4" />, t("Monter", "Move up"), () => ops([{ op: "move_section", template: tp.template, section: s.id, position: { index: Math.max(0, i - 1) } }], t(`${s.name} remontée`, `${s.name} moved up`)), { disabled: i === 0 })}
                                 {item(<ArrowDown className="size-4" />, t("Descendre", "Move down"), () => ops([{ op: "move_section", template: tp.template, section: s.id, position: { index: i + 1 } }], t(`${s.name} descendue`, `${s.name} moved down`)), { disabled: i === tp.sections.length - 1 })}
+                                {item(<SlidersHorizontal className="size-4" />, t("Modifier les réglages", "Edit settings"), () => { setLayoutOpen(false); setSettingsFor({ template: tp.template, section: s.id }); if (window.innerWidth < 1024) setView("structure"); })}
                                 {(!isPage || theme.v2) && s.layout?.length ? item(<PanelTop className="size-4" />, t("Choisir la disposition", "Choose the layout"), () => setLayoutOpen(true)) : null}
                                 {item(s.locked ? <Unlock className="size-4" /> : <Lock className="size-4" />, s.locked ? t("Déverrouiller", "Unlock") : t("Valider et verrouiller", "Approve and lock"), () => ops([{ op: "lock", template: tp.template, section: s.id, locked: !s.locked }], `${s.name} ${s.locked ? t("déverrouillée", "unlocked") : t("validée", "approved")}`))}
                                 {isPage && !s.type.startsWith("main-") && item(<Copy className="size-4" />, t("Dupliquer", "Duplicate"), () => ops([{ op: "duplicate_section", template: tp.template, section: s.id }], t(`${s.name} dupliquée`, `${s.name} duplicated`)))}
@@ -668,6 +691,7 @@ export default function TabBoutique() {
 
   return (
     <div className="-mx-4 -my-6 sm:-mx-6 lg:-mx-8">
+      {theme.quality && theme.quality.verdict !== "FINAL" && <div className="m-3 rounded-xl border border-line bg-paper-2 p-3 text-sm"><p className="font-medium">{t("Thème enregistré, à vérifier avant utilisation", "Theme saved, review before use")}</p><p className="mt-1 text-muted">{theme.quality.reason}</p></div>}
       {chatJobs.filter((j) => j.type !== "shop.chat").map((j) => <JobProgress key={j.id} job={j} className="m-4" />)}
       {/* Photos libres de droits sur le site : toujours visibles (ordinateur et téléphone), jamais en silence. */}
       {!!theme.stock?.photos.length && <StockStrip stock={theme.stock} projectId={id} onReplaced={() => (reload(), reloadProject())} onHeight={setStockH} />}
@@ -704,10 +728,10 @@ export default function TabBoutique() {
         </ul>
       </Modal>
       <ThemeImportModal open={!!importOpen} onClose={() => setImportOpen(null)} projectId={id} onImported={() => { reload(); reloadProject(); }} report={importOpen === "report" ? cur.imported?.report : null} />
-      <SectionLibrary open={!!libTarget} onClose={() => setLibTarget(null)} items={theme.library} onPick={addSection} where={libTarget?.label ?? ""} busy={adding} projectId={id} versionId={theme.current.versionId} aiAvailable={!!data?.ai.llm} onGenerate={generateSection} generateLocked={!!custom.data && !custom.data.sectionsAllowed} sameOrigin={!!theme.sandbox?.includes("allow-same-origin")} />
-      <ThemeGallery services={isServices} sandbox={theme.sandbox} open={galleryOpen} onClose={() => setGalleryOpen(false)} projectId={id} directions={theme.directions} current={cur.direction} canApply onApplied={() => (reload(), reloadProject())} />
+      <SectionLibrary open={!!libTarget} onClose={() => setLibTarget(null)} items={theme.library} onPick={addSection} where={libTarget?.label ?? ""} busy={adding} projectId={id} versionId={theme.current.versionId} template={libTarget?.template} aiAvailable={!!data?.ai.llm} onGenerate={generateSection} generateLocked={!!custom.data && !custom.data.sectionsAllowed} sameOrigin={!!theme.sandbox?.includes("allow-same-origin")} onOpenExisting={(type) => { const hit = cur.structure.flatMap((tp) => tp.sections.map((x) => ({ template: tp.template, section: x }))).find((x) => x.section.type === type); setLibTarget(null); if (!hit) return toast("info", t("Ce composant n'est pas présent dans ce thème.", "This component is not present in this theme.")); const target = pages.find((pg) => pageTemplate(pg.path, theme) === hit.template); if (target && !hit.template.startsWith("group:")) setPage(target.path); setLayoutOpen(false); setSettingsFor({ template: hit.template, section: hit.section.id }); setView("structure"); }} />
+      <ThemeGallery recommendation={theme.recommendation} onKindChanged={() => reload()} services={isServices} sandbox={theme.sandbox} open={galleryOpen} onClose={() => setGalleryOpen(false)} projectId={id} directions={theme.directions} current={cur.direction} canApply onApplied={() => (reload(), reloadProject())} />
       {pagesOpen && <PagesManager open onClose={() => setPagesOpen(false)} projectId={id} sandbox={theme.sandbox} onOpenPage={(path) => (setPage(path), setView("preview"))} onChanged={() => reload()} />}
-      <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} projectId={id} versionId={versionId} fingerprint={cur.fingerprint} platform={data && isPlatform(data.project.platform) ? data.project.platform : "shopify"} business={data?.business ?? "products"} />
+      <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} projectId={id} versionId={versionId} fingerprint={cur.fingerprint} platform={data && isPlatform(data.project.platform) ? data.project.platform : "shopify"} business={data?.business ?? "products"} hasProductTemplates={!!cur.products?.some((p) => p.template_suffix)} />
     </div>
   );
 }
@@ -827,7 +851,7 @@ function pageTemplate(path: string, theme: ThemeData | null): string {
   return "404";
 }
 
-function ExportModal({ open, onClose, projectId, versionId, fingerprint, platform, business }: { open: boolean; onClose: () => void; projectId: string; versionId: string | null; fingerprint: string; platform: PlatformId; business: BusinessType }) {
+function ExportModal({ open, onClose, projectId, versionId, fingerprint, platform, business, hasProductTemplates }: { open: boolean; onClose: () => void; projectId: string; versionId: string | null; fingerprint: string; platform: PlatformId; business: BusinessType; hasProductTemplates: boolean }) {
   const toast = useToast();
   const t = useT();
   const { reload } = useProject();
@@ -858,6 +882,7 @@ function ExportModal({ open, onClose, projectId, versionId, fingerprint, platfor
         <p className="mt-1 text-xs text-ink-2">{main.text}</p>
         <ExportDownload url={`/api/projects/${projectId}/theme/export?platform=${platform}${q}`} label={main.kind === "theme" ? t(`Vérifier et télécharger le thème ${main.short}`, `Check and download the ${main.short} theme`) : t(`Télécharger le kit ${main.short}`, `Download the ${main.short} kit`)} onDone={() => setChecked((n) => n + 1)} />
         <p className="mt-2 text-xs text-muted">{howTo[platform]}</p>
+        {platform === "shopify" && !svc && hasProductTemplates && <p className="mt-2 text-xs text-muted">{t("Après l'import du thème et des produits, affectez à chaque produit son modèle dans Shopify. Les correspondances sont dans assets/es-product-templates.json du ZIP ; le CSV seul ne les affecte pas.", "After importing the theme and products, assign each product its template in Shopify. The mapping is in assets/es-product-templates.json inside the ZIP; the CSV alone does not assign templates.")}</p>}
         <PlatformExportDetails projectId={projectId} platform={platform} reloadKey={checked} />
         {csv && (
           <a href={`/api/projects/${projectId}/theme/export?platform=${csv[0]}${q}`} className="mt-3 flex items-center gap-3 rounded-2xl border border-line bg-card p-3 hover:border-ink">

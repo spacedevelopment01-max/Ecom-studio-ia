@@ -11,6 +11,8 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const b = await body(req, z.object({ versionId: z.string() }));
   const v = themeVersion(p.id, b.versionId);
   if (!v) throw new HttpError(404, L("Version introuvable.", "Version not found."));
+  const qc = v.version.qc ? JSON.parse(v.version.qc) : null;
+  if (["REJECTED", "RETRY"].includes(qc?.gate?.verdict)) throw new HttpError(409, L("Cette tentative nécessite une correction avant activation. Elle reste disponible dans les versions et l'aperçu.", "This attempt needs correction before activation. It remains available in versions and preview."));
   const nv = saveThemeVersion(p.id, v.spec, L(`Restauration de la version ${v.version.number}`, `Restored version ${v.version.number}`), "user");
   return ok({ versionId: nv.id, number: nv.number });
 });

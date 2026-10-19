@@ -32,7 +32,7 @@ describe("Accueil en mots simples", () => {
   });
 
   it("thèmes : simples captures, galerie publique du site (le retour ramène à l'accueil)", () => {
-    expect(page).toContain('T("30 modèles de boutique,", "30 store designs,")');
+    expect(page).toContain('T("Quatre modèles de référence,", "Four reference designs,")');
     expect(page).not.toContain("Trente points de départ.");
     expect(page).toContain('<Link href="/themes"');
     expect(page).toContain("<ThemesWall");

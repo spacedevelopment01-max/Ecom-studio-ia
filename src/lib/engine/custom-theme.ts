@@ -11,6 +11,8 @@
  * du thème : la version précédente reste restaurable.
  */
 import { decide } from "../quality/gate";
+import { compatibleSectionTypes } from "../theme/section-compat";
+import { projectKind } from "../theme/project-kind";
 import { gateMeta, saveCheck } from "../quality/store";
 import { z } from "zod";
 import { loadProject, currentTheme, notify, saveThemeVersion, themeVersion, type Project } from "../projects";
@@ -126,7 +128,7 @@ function filesList(spec: ThemeSpec): string {
 
 /** Plan de page : suite de sections pensées pour la marque. */
 export async function aiCustomThemePlan(b: Base, p: Project, spec: ThemeSpec): Promise<CustomPlan> {
-  const library = availableSectionTypes(spec).filter((t) => !/^(main-|header|footer|announcement|cart-drawer|apps|custom-liquid|legal-page)/.test(t));
+  const library = compatibleSectionTypes(spec, projectKind(p)).filter((t) => !/^(main-|header|footer|announcement|cart-drawer|apps|custom-liquid|legal-page)/.test(t));
   const catalog = (spec.store.products?.length ?? 0) > 0;
   return llmJson(
     {

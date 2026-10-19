@@ -49,7 +49,8 @@ async function fakeFetch(url: string, init?: RequestInit): Promise<Response> {
   const body = init?.body ? JSON.parse(String(init.body)) : null;
   net.calls.push({ url, body });
   const json = (j: unknown, status = 200) => new Response(JSON.stringify(j), { status });
-  if (url.includes(":generateContent")) return json({ candidates: [{ content: { parts: [{ inlineData: { data: PNG } }] } }] });
+  if (url.includes("multimodal-generation/generation")) return json({output:{choices:[{message:{content:[{image:"https://img.test/alibaba.png"}]}}]}});
+  if (url.includes(":generateContent")) return json({ modelVersion:"reported-version-simulation",candidates: [{ content: { parts: [{ inlineData: { data: PNG } }] } }] });
   if (url.includes(":predictLongRunning")) return net.veo503 ? json({ error: { message: "indisponible" } }, 503) : json({ name: "operations/op1" });
   if (url.includes("/operations/op1")) return json({ done: true, response: { generateVideoResponse: { generatedSamples: [{ video: { uri: "https://video.test/clip.mp4" } }] } } });
   if (url.startsWith("https://queue.fal.run/") && init?.method === "POST") return json({ status_url: "https://queue.fal.run/x/requests/1/status", response_url: "https://queue.fal.run/x/requests/1" });
@@ -101,6 +102,7 @@ describe("routage multimédia V2", async () => {
     vi.stubGlobal("fetch", fakeFetch);
     setSetting("ai.prices.checkedAt", String(Date.now()));
     for (const k of ["ai.routes", "ai.media.backup", "ai.media.mode", "ai.media.models", "ai.prices"]) setJsonSetting(k, {});
+    confirmModel("openai:gpt-image-2.5-sunburst", { unit: "image", perImage: 0.2 }); // Prix synthétique.
   });
   afterEach(() => vi.unstubAllGlobals());
 
@@ -120,11 +122,11 @@ describe("routage multimédia V2", async () => {
     expect(mediaModel("google", "veo-3.0-generate-001")?.replacement).toBe("google:veo-3.1-generate-preview");
   });
 
-  it("manuel par défaut : principal actuel inchangé (logo complet → OpenAI GPT Image 1, réservation réglée)", async () => {
+  it("logo complet : modèle imposé et réservation réglée", async () => {
     const c = await client();
     await fr(() => mp.fullLogoImage(ctx(c), { brief: "monogramme", name: "Somnéa" }));
-    expect(oa.calls[0]).toMatchObject({ kind: "generate", model: "gpt-image-1", background: "transparent" });
-    expect(reservations(c.userId)).toEqual([{ status: "settled", provider: "openai", model: "gpt-image-1" }]);
+    expect(oa.calls[0]).toMatchObject({ kind: "generate", model: "gpt-image-2.5-sunburst", quality: "high" });
+    expect(reservations(c.userId)).toEqual([{ status: "settled", provider: "openai", model: "gpt-image-2.5-sunburst" }]);
   });
 
   it("logo complet : nom, activités et slogan validé écrits tels quels dans la demande ; sans slogan, « aucun slogan »", async () => {
@@ -236,11 +238,11 @@ describe("routage multimédia V2", async () => {
     const c = await client();
     setJsonSetting("ai.media.backup", { image: "google:gemini-2.5-flash-image" });
     oa.mode = "503";
-    await expect(fr(() => mp.logoSymbolImage(ctx(c), { concept: "une vague" }))).rejects.toThrow();
+    await expect(fr(() => mp.ambianceImage(ctx(c), { prompt: "une vague", aspect: "1:1" }))).rejects.toThrow();
     expect(reservations(c.userId).map((r) => `${r.status}:${r.provider}`)).toEqual(["uncertain:openai"]);
     run("DELETE FROM ai_reservations WHERE user_id = ?", c.userId);
     oa.mode = "429";
-    await fr(() => mp.logoSymbolImage(ctx(c), { concept: "une vague" }));
+    await fr(() => mp.ambianceImage(ctx(c), { prompt: "une vague", aspect: "1:1" }));
     expect(reservations(c.userId).map((r) => `${r.status}:${r.provider}`)).toEqual(["released:openai", "settled:google"]);
     keys.openai = null;
     expect(fr(() => mp.imageProviderAvailable())).toBe("google");
@@ -252,7 +254,7 @@ describe("routage multimédia V2", async () => {
     setJsonSetting("ai.prices", { "google:gemini-3.1-flash-image": { unit: "image", perImage: 0.067 } });
     setJsonSetting("ai.media.backup", { image: "google:gemini-3.1-flash-image" });
     oa.mode = "429";
-    await expect(fr(() => mp.logoSymbolImage(ctx(c), { concept: "une vague" }))).rejects.toThrow();
+    await expect(fr(() => mp.ambianceImage(ctx(c), { prompt: "une vague", aspect: "1:1" }))).rejects.toThrow();
     expect(net.calls.length).toBe(0);
     expect(reservations(c.userId).map((r) => r.status)).toEqual(["released"]);
   });
@@ -261,7 +263,7 @@ describe("routage multimédia V2", async () => {
     const c = await client();
     setJsonSetting("ai.media.backup", { image: "google:gemini-2.5-flash-image" });
     run("UPDATE wallets SET monthly_used = monthly_allowance - 50, topup_balance = 0 WHERE user_id = ?", c.userId);
-    await expect(fr(() => mp.logoSymbolImage(ctx(c), { concept: "une vague" }))).rejects.toThrow();
+    await expect(fr(() => mp.ambianceImage(ctx(c), { prompt: "une vague", aspect: "1:1" }))).rejects.toThrow();
     expect(oa.calls.length + net.calls.length).toBe(0);
     expect(reservations(c.userId)).toHaveLength(0);
   });
@@ -270,10 +272,10 @@ describe("routage multimédia V2", async () => {
     const c = await client();
     confirmModel("openai:gpt-image-2", { unit: "tokens", inputPerM: 5, outputPerM: 40 });
     setJsonSetting("ai.routes", { image_generation: { provider: "openai", model: "gpt-image-2" } });
-    await expect(fr(() => mp.logoSymbolImage(ctx(c), { concept: "une vague" }))).rejects.toThrow(/tarif par image/);
+    await expect(fr(() => mp.ambianceImage(ctx(c), { prompt: "une vague", aspect: "1:1" }))).rejects.toThrow(/tarif par image/);
     expect(oa.calls).toHaveLength(0);
     confirmModel("openai:gpt-image-2", { unit: "image", perImage: 0.2 });
-    await fr(() => mp.logoSymbolImage(ctx(c), { concept: "une vague" }));
+    await fr(() => mp.ambianceImage(ctx(c), { prompt: "une vague", aspect: "1:1" }));
     expect(oa.calls[0].model).toBe("gpt-image-2");
   });
 
@@ -296,4 +298,67 @@ describe("routage multimédia V2", async () => {
     expect(routing.mediaMode("image")).toBe("manual");
     expect(routing.mediaMode("video")).toBe("manual");
   });
+  it.each(["google","fal","openai","alibaba"])("publication : %s reçoit le logo AVEC et SANS photo — transport simulé réellement inspecté",async provider => {
+    keys[provider]="cle-synthetique-pour-test";
+    const model=MEDIA_MODELS.find(m=>m.provider===provider && m.kind==="image" && !!m.caps.textInImage && (m.caps.references??0)>=2)!;
+    expect(model).toBeTruthy();
+    confirmModel(`${provider}:${model.model}`,{unit:"image",perImage:.08});
+    setJsonSetting("ai.media.usage",{social_image:{primary:`${provider}:${model.model}`}});
+    const c=await client();
+    for (const product of [true,false]) {
+      await mp.aiPostImage(ctx(c),{prompt:"Logo exact, sujet documenté",aspect:"4:5",reference:product?png:null,logo:png});
+      const n=product?2:1;
+      const ledger=all<{served_model:string|null}>("SELECT served_model FROM ai_calls WHERE user_id=? AND status='ok' ORDER BY created_at,rowid",c.userId);
+      expect(ledger.at(-1)?.served_model).toBe(provider==="google"?"reported-version-simulation":null);
+      if (provider==="openai") {
+        expect(oa.calls.at(-1).kind).toBe("edit");
+        expect(oa.calls.at(-1).image).toHaveLength(n);
+      } else if (provider==="google") {
+        const call=net.calls.filter(c=>c.url.includes(":generateContent")).at(-1)!;
+        expect(call.body.contents[0].parts.filter((p:any)=>p.inline_data)).toHaveLength(n);
+      } else if (provider==="fal") {
+        const call=net.calls.filter(c=>c.url.startsWith("https://queue.fal.run/")&&c.body).at(-1)!;
+        expect(call.body.image_urls).toHaveLength(n);
+      } else {
+        const call=net.calls.filter(c=>c.url.includes("multimodal-generation/generation")).at(-1)!;
+        expect(call.body.input.messages[0].content.filter((p:any)=>p.image)).toHaveLength(n);
+      }
+    }
+    setJsonSetting("ai.media.usage",{});
+  });
+
+  it("aucune référence essentielle supprimée pour tenir dans la capacité du modèle",async()=>{
+    keys={alibaba:"cle-test"};
+    const m=MEDIA_MODELS.find(m=>m.provider==="alibaba"&&m.kind==="image"&&m.caps.references===2)!;
+    confirmModel(`alibaba:${m.model}`,{unit:"image",perImage:.08});
+    setJsonSetting("ai.media.usage",{social_image:{primary:`alibaba:${m.model}`}});
+    const c=await client();
+    await expect(mp.aiPostImage(ctx(c),{prompt:"retouche avec trois références essentielles",aspect:"4:5",reference:png,logo:png,previous:png})).rejects.toThrow();
+    expect(net.calls).toHaveLength(0);expect(oa.calls).toHaveLength(0);
+    setJsonSetting("ai.media.usage",{});
+  });
+
+  it("brief de publication complet au-delà de la limite logo ; limite dédiée explicite, jamais tronquée",async()=>{
+    const m=MEDIA_MODELS.find(m=>m.provider==="openai"&&m.kind==="image"&&m.caps.textInImage)!;
+    confirmModel(`openai:${m.model}`,{unit:"image",perImage:.08});
+    setJsonSetting("ai.media.usage",{social_image:{primary:`openai:${m.model}`}});
+    const c=await client();
+    await mp.aiPostImage(ctx(c),{prompt:"Contexte ".repeat(800)+"CONTRAINTE FINALE INTACTE",aspect:"4:5",reference:png,logo:png});
+    expect(oa.calls[0].prompt).toContain("CONTRAINTE FINALE INTACTE");
+    await expect(mp.aiPostImage(ctx(c),{prompt:"x".repeat(mp.PUBLICATION_PROMPT_MAX_BYTES+1),aspect:"4:5",reference:png})).rejects.toThrow("trop long");
+    expect(oa.calls).toHaveLength(1);
+    setJsonSetting("ai.media.usage",{});
+  });
+
+  it("deux étapes : une scène peut utiliser un modèle sans typographie, jamais pour la composition finale",async()=>{
+    const m=MEDIA_MODELS.find(m=>m.provider==="fal"&&m.kind==="image"&&!m.caps.textInImage&&(m.caps.references??0)>=1)!;
+    confirmModel(`fal:${m.model}`,{unit:"image",perImage:.08});
+    setJsonSetting("ai.media.usage",{social_image:{primary:`fal:${m.model}`}});
+    const c=await client();await mp.aiPostImage(ctx(c),{prompt:"photo seule sans texte",aspect:"4:5",reference:png,photoOnly:true});
+    const sent=net.calls.filter(c=>c.url.startsWith("https://queue.fal.run/")&&c.body).length;expect(sent).toBe(1);
+    await expect(mp.aiPostImage(ctx(c),{prompt:"composition avec texte exact",aspect:"4:5",reference:png})).rejects.toThrow();
+    expect(net.calls.filter(c=>c.url.startsWith("https://queue.fal.run/")&&c.body)).toHaveLength(sent);
+    setJsonSetting("ai.media.usage",{});
+  });
+
 });

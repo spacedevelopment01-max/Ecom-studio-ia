@@ -18,6 +18,7 @@ import { VIDEO_CRITERIA, type ShotReview, type VideoCriterion, type VideoDocumen
 
 const score = z.coerce.number().min(0).max(10).catch(0);
 export const ShotReviewSchema = z.object({
+  foreignBrands:z.array(z.string()).optional(),textCorrect:z.boolean().nullable().optional(),
   score,
   sameProduct: z.boolean().nullable().catch(null),
   productAltered: z.boolean().catch(false),
@@ -36,7 +37,7 @@ export const VideoReviewSchema = z.object({
 
 export const SHOT_REVIEW_SYSTEM = `Rôle : chef opérateur et contrôleur qualité d'une agence vidéo exigeante. Tu juges UN plan vidéo généré à partir de trois images (début, milieu, fin) et, si fournies, de l'image de référence du produit réel et de l'image de référence du personnage.
 score : qualité globale du plan sur 10. sameProduct : le produit montré est-il le même que la référence (forme, couleurs, proportions, logo, packaging, textes) ? productAltered : le produit est-il déformé ou transformé à un moment du plan ? characterConsistent : le personnage (visage, tenue) est-il le même que sur la référence ? offTopic : le plan est-il hors du sujet demandé ? artifacts : artefacts majeurs (mains, visages, objets fondus, texte inventé) ? personVisible : une personne, un visage, une main, un corps ou une silhouette est-il visible, même flou ou partiel ?
-Sois strict : un produit transformé n'est jamais acceptable.`;
+Marques tierces : foreignBrands liste toute marque non autorisée visible ; textCorrect vaut false si des lettres inventées ou une faute sont visibles. Trois images ne prouvent ni le mouvement continu, ni le son, ni toutes les images du clip. Sois strict : un produit transformé n'est jamais acceptable.`;
 
 export const VIDEO_REVIEW_SYSTEM = `Rôle : directeur de création d'une agence vidéo (niveau 2026). Tu juges UNE vidéo commerciale à partir d'images clés, de son script et de ses mesures techniques.
 Note de 0 à 10 : relevance, narrative (le récit tient-il de l'accroche au CTA ?), visual, continuity, product_fidelity, brand, realism, motion, editing, audio, sync, subtitles, commercial (exploitable pour vendre ?). personVisible : une personne, un visage, une main, un corps ou une silhouette est-il visible sur l'une des images, même flou ou partiel ?
@@ -47,6 +48,8 @@ export function shotCodes(r: ShotReview, o: { expectsProduct: boolean; expectsCh
   const codes: string[] = [];
   // Personne visible sans autorisation du client : plan refusé (défaut fatal), jamais monté.
   codes.push(...personCodes(r.personVisible, o.peopleAllowed === true));
+  if(r.foreignBrands?.length) codes.push("forbidden");
+  if(r.textCorrect===false || (o.expectsProduct && r.sameProduct==null)) codes.push("major_artifacts");
   if (o.expectsProduct && (r.productAltered || r.sameProduct === false)) codes.push(r.sameProduct === false ? "wrong_product" : "product_altered");
   if (o.expectsCharacter && r.characterConsistent === false) codes.push("character_inconsistent");
   if (r.offTopic) codes.push("off_topic");

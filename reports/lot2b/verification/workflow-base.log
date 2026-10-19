@@ -1,0 +1,9 @@
+
+ RUN  v5.0.3 /workspace/work/lot2b/baseline
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 10 skipped (11)
+   Start at  09:23:24
+   Duration  104.61s (tests 94%, import 3%, transform 3%)
+

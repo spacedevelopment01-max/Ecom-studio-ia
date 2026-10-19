@@ -45,7 +45,13 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     run("INSERT INTO jobs (id, user_id, project_id, type, label, payload, status, run_at, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)", jid, u.id, projectId, type, type, JSON.stringify({ projectId }), "running", Date.now(), Date.now(), Date.now());
     return new JobContext(one<any>("SELECT * FROM jobs WHERE id = ?", jid));
   };
-  const sb = () => fr(() => seedLogoFixture(u.id, "artisan"));
+  const sb = () => fr(() => {
+    const pid = seedLogoFixture(u.id, "artisan"), key = `synthetic-logo-${pid}`;
+    // Un abonnement isolé par projet : la sélection ne contourne pas les droits de production.
+    run("INSERT INTO subscriptions (user_id,status,plan,owner_user_id,project_id,source,created_at,updated_at) VALUES (?,'active','creer',?,?,'admin',?,?)", key, u.id, pid, Date.now(), Date.now());
+    syncAllowance(key);
+    return pid;
+  });
 
   // ---- images simulées (aucun appel) : aplats (minimaliste), matière bruitée (texturé, illustré)
   const svgPng = (body: string) => sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024"><rect width="1024" height="1024" fill="#FFFFFF"/>${body}</svg>`)).png().toBuffer();

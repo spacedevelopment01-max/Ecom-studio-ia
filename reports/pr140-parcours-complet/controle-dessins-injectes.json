@@ -1,0 +1,43 @@
+{
+  "simulation": true,
+  "realProviderCalls": 0,
+  "persistedAssets": 0,
+  "results": [
+    {
+      "case": "produit-ordinateur",
+      "drawings": 6,
+      "sameKeySameBytes": true,
+      "nativeCleanApplied": true,
+      "nativeDuplicateThreshold": 4,
+      "minimumDistance": 19,
+      "allPairsDistinct": true
+    },
+    {
+      "case": "service-ordinateur",
+      "drawings": 6,
+      "sameKeySameBytes": true,
+      "nativeCleanApplied": true,
+      "nativeDuplicateThreshold": 4,
+      "minimumDistance": 17,
+      "allPairsDistinct": true
+    },
+    {
+      "case": "produit-mobile",
+      "drawings": 6,
+      "sameKeySameBytes": true,
+      "nativeCleanApplied": true,
+      "nativeDuplicateThreshold": 4,
+      "minimumDistance": 19,
+      "allPairsDistinct": true
+    },
+    {
+      "case": "service-mobile",
+      "drawings": 6,
+      "sameKeySameBytes": true,
+      "nativeCleanApplied": true,
+      "nativeDuplicateThreshold": 4,
+      "minimumDistance": 18,
+      "allPairsDistinct": true
+    }
+  ]
+}

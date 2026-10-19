@@ -1,0 +1,118 @@
+{
+  "date": "2026-10-19T13:51:29.950Z",
+  "configuration": "Isolated configured fixture; production configuration unknown",
+  "reference": "Correct ONDE black/green pack and logo unavailable here; no ONDE created, no blue poster used",
+  "providerCalls": 0,
+  "quote": {
+    "mode": "ai",
+    "allowed": true,
+    "reason": null,
+    "estimateMicro": 1272156,
+    "scenes": 4,
+    "totalS": 20,
+    "clipS": 5,
+    "capMicro": 1576435,
+    "firstMicro": 1272156,
+    "scriptMicro": 55040,
+    "oneSceneRetakeMicro": 304279,
+    "maximumMicro": 1576435,
+    "steps": [
+      {
+        "id": "scenario",
+        "count": 1,
+        "unit": "AI scenario, then client review before media",
+        "unitMicro": 55040,
+        "totalMicro": 55040
+      },
+      {
+        "id": "reference_images",
+        "count": 4,
+        "unit": "one scene image, one supplied reference",
+        "unitMicro": 91429,
+        "totalMicro": 365716
+      },
+      {
+        "id": "image_checks",
+        "count": 4,
+        "unit": "one image visual review",
+        "unitMicro": 23220,
+        "totalMicro": 92880
+      },
+      {
+        "id": "clips",
+        "count": 4,
+        "unit": "5 generated seconds per clip",
+        "unitMicro": 161250,
+        "totalMicro": 645000
+      },
+      {
+        "id": "clip_checks",
+        "count": 4,
+        "unit": "three sampled frames",
+        "unitMicro": 28380,
+        "totalMicro": 113520
+      },
+      {
+        "id": "voice_music_encode_final_checks",
+        "count": 1,
+        "unit": "local tools, CPU/storage not measured",
+        "unitMicro": 0,
+        "totalMicro": 0
+      }
+    ],
+    "policy": {
+      "version": "guided-video-1",
+      "automaticGenerationRetries": 0,
+      "maxTargetedSceneRetakes": 1,
+      "automaticRechecks": 0,
+      "localContrastReencodes": 1
+    },
+    "generatedSeconds": 20,
+    "routes": {
+      "quality": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5-5",
+        "effort": "low"
+      }
+    },
+    "exchange": {
+      "eurPerUsd": 0.86,
+      "source": "configured rate; no live FX quote",
+      "safety": 1.05
+    },
+    "hypotheses": [
+      "Token counts are planning allowances, not measured consumption.",
+      "Image unit uses the configured maximum reservation for one reference.",
+      "No paid final audiovisual review is executed by this chain.",
+      "No automatic paid regeneration; one explicit targeted retake at most."
+    ]
+  },
+  "routes": {
+    "scenario": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "effort": "high"
+    },
+    "quality": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "effort": "low"
+    },
+    "image": {
+      "provider": "alibaba",
+      "model": "qwen-image-3.0-pro",
+      "reason": "admin primary [social_image]"
+    },
+    "video": {
+      "provider": "alibaba",
+      "model": "wan2.6-i2v-flash"
+    }
+  },
+  "budget": {
+    "subscription": "40% of paid subscription HT",
+    "topup": "50% of paid topup HT",
+    "remainingAndNativeReservationsApply": true,
+    "creerAiClips": false
+  },
+  "costsActuallyCharged": 0
+}

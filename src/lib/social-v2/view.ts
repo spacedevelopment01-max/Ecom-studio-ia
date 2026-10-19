@@ -14,6 +14,7 @@ export function postViewV2(p: Project, r: any, o: { gate?: boolean } = {}) {
   const g = o.gate ? checkPost(p, r.id) : null;
   return {
     ...base,
+    editorial:json<{editorial?:unknown}>(r.brief??"{}",{}).editorial??null,
     engine: r.engine ?? "v1",
     // Semaine éditoriale : le nom du rôle (« Question fréquente »), jamais son code interne (« 5:faq »).
     pillar: (/^\d:/.test(r.pillar ?? "") ? json<{ roleTitle?: string }>(r.brief ?? "{}", {}).roleTitle : null) ?? r.pillar ?? null,

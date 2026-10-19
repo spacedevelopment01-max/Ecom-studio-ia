@@ -1,0 +1,36 @@
+
+ RUN  v5.0.3 /workspace/Ecom-studio-ia
+
+ ❯ tests/video-v2-engine.test.ts (12 tests | 1 failed | 11 skipped) 733ms
+   ❯ Video Engine V2 — moteur et rendu (12)
+     × vidéo publicitaire complète : plans, document éditable, MP4 H.264 + AAC à la bonne durée, sous-titres SRT/VTT, affiche ; FINAL après relecture 726ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/video-v2-engine.test.ts > Video Engine V2 — moteur et rendu > vidéo publicitaire complète : plans, document éditable, MP4 H.264 + AAC à la bonne durée, sous-titres SRT/VTT, affiche ; FINAL après relecture
+Error: spawnSync ffmpeg EPERM
+ ❯ mockMp4 tests/video-v2-mock.ts:24:3
+     22|   const d = tmp();
+     23|   const f = path.join(d, "c.mp4");
+     24|   execFileSync("ffmpeg", ["-y", "-v", "error", "-f", "lavfi", "-i", `$…
+       |   ^
+     25|   const b = fs.readFileSync(f);
+     26|   fs.rmSync(d, { recursive: true, force: true });
+ ❯ Object.generateClip tests/video-v2-mock.ts:95:14
+ ❯ src/lib/video-v2/engine.ts:459:75
+ ❯ withCandidate src/lib/ai/trace.ts:45:16
+ ❯ resolveShot src/lib/video-v2/engine.ts:459:23
+ ❯ engine src/lib/video-v2/engine.ts:164:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 11 skipped (12)
+   Start at  02:13:56
+   Duration  14.68s (transform 49%, import 46%, tests 5%)
+
+  Transform  transforming modules took 6.77s · 49% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

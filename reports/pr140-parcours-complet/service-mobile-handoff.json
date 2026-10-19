@@ -1,0 +1,2104 @@
+{
+  "ready": true,
+  "approvalsComplete": true,
+  "blockers": [],
+  "category": {
+    "status": "recommended",
+    "category": "services",
+    "salesModel": "service",
+    "goal": "call",
+    "reasons": [
+      "Vous avez confirmé ce modèle de site pour votre offre actuelle ; ce choix prime sur les indices automatiques."
+    ],
+    "evidence": [
+      {
+        "source": "business",
+        "value": "services"
+      },
+      {
+        "source": "client_choice",
+        "value": "services"
+      }
+    ],
+    "clarification": null,
+    "eligibleThemes": [
+      {
+        "referenceId": "atelier-rive",
+        "name": "Atelier Rive",
+        "engineThemeId": null,
+        "status": "awaiting_integration"
+      }
+    ]
+  },
+  "categoryContextHash": "faf4bbe4ac6b439b",
+  "categoryChoice": {
+    "category": "services",
+    "contextHash": "faf4bbe4ac6b439b",
+    "chosenAt": 1792407332522
+  },
+  "categoryChoiceStale": false,
+  "contract": {
+    "schemaVersion": 1,
+    "kind": "theme_data_handoff",
+    "projectId": "zdnzm8ce4l5lil95",
+    "revision": 43,
+    "provenance": "simulation",
+    "clientBrief": {
+      "offerUrl": "",
+      "description": "Cours de piano pour adultes débutants à domicile.",
+      "offerName": "Accord Piano",
+      "brandName": "",
+      "target": "Adultes découvrant le piano",
+      "constraints": "Aucune promesse de progression chiffrée.",
+      "business": "services",
+      "photoIds": [
+        "grkwg1njy4zc576f"
+      ],
+      "referenceUrls": [
+        "https://reference.example/cours"
+      ],
+      "price": "",
+      "services": {
+        "services": [
+          {
+            "name": "Cours découverte",
+            "description": "Découvrir le clavier et une première pratique."
+          }
+        ],
+        "area": "Rennes",
+        "address": "",
+        "phone": "0102030405",
+        "email": "",
+        "hours": "",
+        "bookingUrl": "",
+        "contactMode": "call",
+        "contactModes": [
+          "call"
+        ]
+      }
+    },
+    "offer": {
+      "business": "services",
+      "product": {
+        "name": "Accord Piano",
+        "nameStatus": "provided",
+        "category": "",
+        "sector": null,
+        "summary": "Cours de piano pour adultes débutants à domicile.",
+        "facts": [],
+        "visual": {
+          "colors": []
+        },
+        "price": {
+          "amount": null,
+          "currency": "EUR",
+          "status": "unknown"
+        },
+        "variants": [],
+        "questions": [],
+        "claimsToAvoid": [],
+        "sources": [],
+        "analyzedBy": "local"
+      },
+      "services": {
+        "services": [
+          {
+            "name": "Cours découverte",
+            "description": "Découvrir le clavier et une première pratique."
+          }
+        ],
+        "area": "Rennes",
+        "address": "",
+        "phone": "0102030405",
+        "email": "",
+        "hours": "",
+        "bookingUrl": "",
+        "contactMode": "call",
+        "contactModes": [
+          "call"
+        ]
+      },
+      "storeType": "mono",
+      "catalogue": [],
+      "strategy": {
+        "audience": [
+          {
+            "label": "Adultes découvrant le piano — personnes découvrant cette catégorie",
+            "needs": [
+              "Cours de piano pour adultes débutants à domicile."
+            ],
+            "objections": [
+              "Cette offre répond-elle à ma situation ?"
+            ]
+          }
+        ],
+        "angles": [
+          {
+            "title": "Expliquer l’usage de Accord Piano",
+            "idea": "Aider Adultes découvrant le piano à comprendre Accord Piano avant de décider."
+          }
+        ],
+        "pillars": [
+          "Cours de piano pour adultes débutants à domicile."
+        ],
+        "keyMessages": [
+          "Cours de piano pour adultes débutants à domicile."
+        ],
+        "platform": {
+          "persona": "Adultes découvrant le piano — personnes découvrant cette catégorie",
+          "problem": "Aider Adultes découvrant le piano à comprendre Accord Piano avant de décider.",
+          "alternatives": "Une offre comparable à Accord Piano. La page décrit les usages et conditions de présentation. Les modalités de contact sont visibles. Ceci est une source synthétique pour vérifier la persistance, pas une étude réelle.",
+          "difference": "Angle recommandé pour clarifier une offre : il utilise les informations fournies et réserve les preuves manquantes.",
+          "proofs": [
+            {
+              "claim": "Cours de piano pour adultes débutants à domicile.",
+              "proof": "Hypothèse validée par le client ; aucune preuve chiffrée ajoutée.",
+              "status": "missing"
+            }
+          ],
+          "objections": [
+            {
+              "objection": "Cette offre répond-elle à ma situation ?",
+              "answer": "Montrer les usages et limites confirmés, sans promettre un résultat non démontré."
+            }
+          ]
+        },
+        "generatedBy": "local"
+      }
+    },
+    "identity": {
+      "name": "Accord Piano",
+      "nameStatus": "validated",
+      "alternatives": [],
+      "tagline": "La matière prend place.",
+      "positioning": "Aider Adultes découvrant le piano à comprendre Accord Piano avant de décider.",
+      "audience": "Adultes découvrant le piano — personnes découvrant cette catégorie",
+      "personality": [],
+      "tone": {
+        "voice": "Chaleureux et concret",
+        "do": [
+          "Décrire les faits connus"
+        ],
+        "dont": [
+          "Inventer une garantie"
+        ]
+      },
+      "story": "",
+      "values": [],
+      "validated": [
+        "name",
+        "tagline",
+        "palette",
+        "fonts",
+        "logo"
+      ],
+      "generatedBy": "local",
+      "palette": {
+        "primary": "#614024",
+        "secondary": "#d8b77c",
+        "accent": "#47657a",
+        "light": "#fbf6ed",
+        "dark": "#282019"
+      },
+      "fonts": {
+        "heading": "montserrat_n6",
+        "body": "inter_n4"
+      },
+      "direction": "atelier",
+      "logo": {
+        "concept": "Marque abstraite — Une forme abstraite tirée du geste de l'activité, au-dessus du nom : évoque sans illustrer.",
+        "status": "validated",
+        "assetId": "jv7cmzg323wzivxb",
+        "markAssetId": "vo4xx9pi66m8on5u",
+        "proposal": "concept",
+        "proposalId": "9wkpzghcs6jzxsv3",
+        "provisional": false,
+        "engine": "v2"
+      },
+      "paletteMode": "client",
+      "clientPalette": {
+        "primary": "#614024",
+        "secondary": "#d8b77c",
+        "accent": "#47657a",
+        "light": "#fbf6ed",
+        "dark": "#282019"
+      },
+      "artIdentity": {
+        "signature": "La matière prend place.",
+        "palette": {
+          "primary": "#614024",
+          "secondary": "#d8b77c",
+          "accent": "#47657a",
+          "light": "#fbf6ed",
+          "dark": "#282019"
+        },
+        "colorRoles": {
+          "primary": "Brun : titres liés à la matière",
+          "secondary": "Sable : surfaces chaleureuses",
+          "accent": "Bleu ardoise : appels à l’action nets",
+          "light": "Papier neutre : fond de lecture",
+          "dark": "Encre brune neutre : texte courant"
+        },
+        "fonts": {
+          "heading": "montserrat_n6",
+          "body": "inter_n4"
+        },
+        "tone": {
+          "voice": "Chaleureux et concret",
+          "do": [
+            "Décrire les faits connus"
+          ],
+          "dont": [
+            "Inventer une garantie"
+          ]
+        },
+        "mood": "Textures et lumière latérale",
+        "graphicLanguage": "Formes organiques et aplats",
+        "rules": [
+          "Conserver une zone calme autour du logo",
+          "Un seul style de traits"
+        ],
+        "sampleText": "Découvrez l’offre et ses caractéristiques confirmées.",
+        "seriesId": "q3t6bzya4x095v2u",
+        "directionId": "t3"
+      }
+    },
+    "identityAssets": [
+      {
+        "assetId": "184wc4hysi3e47wu",
+        "role": "brand-guide",
+        "mime": "text/markdown",
+        "width": null,
+        "height": null,
+        "url": "/api/files/184wc4hysi3e47wu",
+        "sourceAssetId": "jv7cmzg323wzivxb"
+      },
+      {
+        "assetId": "bsa0s7jrqy8rl27c",
+        "role": "brand-book",
+        "mime": "application/pdf",
+        "width": null,
+        "height": null,
+        "url": "/api/files/bsa0s7jrqy8rl27c",
+        "sourceAssetId": "jv7cmzg323wzivxb"
+      },
+      {
+        "assetId": "jv7cmzg323wzivxb",
+        "role": "logo",
+        "mime": "image/png",
+        "width": 934,
+        "height": 957,
+        "url": "/api/files/jv7cmzg323wzivxb",
+        "sourceAssetId": "9wkpzghcs6jzxsv3"
+      },
+      {
+        "assetId": "4s81ei72qgcgi58h",
+        "role": "logo-light",
+        "mime": "image/png",
+        "width": 934,
+        "height": 957,
+        "url": "/api/files/4s81ei72qgcgi58h",
+        "sourceAssetId": "jv7cmzg323wzivxb"
+      },
+      {
+        "assetId": "wd15o22voxoe7osj",
+        "role": "logo-mono",
+        "mime": "image/png",
+        "width": 934,
+        "height": 957,
+        "url": "/api/files/wd15o22voxoe7osj",
+        "sourceAssetId": "jv7cmzg323wzivxb"
+      },
+      {
+        "assetId": "91smj4kw15dwqfoc",
+        "role": "logo-white",
+        "mime": "image/png",
+        "width": 934,
+        "height": 957,
+        "url": "/api/files/91smj4kw15dwqfoc",
+        "sourceAssetId": "jv7cmzg323wzivxb"
+      },
+      {
+        "assetId": "vo4xx9pi66m8on5u",
+        "role": "logo-mark",
+        "mime": "image/png",
+        "width": 1024,
+        "height": 1024,
+        "url": "/api/files/vo4xx9pi66m8on5u",
+        "sourceAssetId": "jv7cmzg323wzivxb"
+      },
+      {
+        "assetId": "xt3tlx8zahawydxh",
+        "role": "favicon",
+        "mime": "image/png",
+        "width": 192,
+        "height": 192,
+        "url": "/api/files/xt3tlx8zahawydxh",
+        "sourceAssetId": "jv7cmzg323wzivxb"
+      },
+      {
+        "assetId": "jdwasq8getrzvouv",
+        "role": "logo-webp",
+        "mime": "image/webp",
+        "width": 934,
+        "height": 957,
+        "url": "/api/files/jdwasq8getrzvouv",
+        "sourceAssetId": "jv7cmzg323wzivxb"
+      },
+      {
+        "assetId": "e8vz1xh7opc4xfp6",
+        "role": "logo-light-webp",
+        "mime": "image/webp",
+        "width": 934,
+        "height": 957,
+        "url": "/api/files/e8vz1xh7opc4xfp6",
+        "sourceAssetId": "jv7cmzg323wzivxb"
+      },
+      {
+        "assetId": "n9ktzx559bqmtjw0",
+        "role": "logo-mark-svg",
+        "mime": "image/svg+xml",
+        "width": 512,
+        "height": 512,
+        "url": "/api/files/n9ktzx559bqmtjw0",
+        "sourceAssetId": "jv7cmzg323wzivxb"
+      },
+      {
+        "assetId": "yv6xudcu3z6il0lb",
+        "role": "logo-svg",
+        "mime": "image/svg+xml",
+        "width": 500,
+        "height": 512,
+        "url": "/api/files/yv6xudcu3z6il0lb",
+        "sourceAssetId": "jv7cmzg323wzivxb"
+      },
+      {
+        "assetId": "p9zprsn8z35i62dd",
+        "role": "brand-board",
+        "mime": "image/png",
+        "width": 2400,
+        "height": 1972,
+        "url": "/api/files/p9zprsn8z35i62dd",
+        "sourceAssetId": "jv7cmzg323wzivxb"
+      }
+    ],
+    "colorRoles": {
+      "primary": "Brun : titres liés à la matière",
+      "secondary": "Sable : surfaces chaleureuses",
+      "accent": "Bleu ardoise : appels à l’action nets",
+      "light": "Papier neutre : fond de lecture",
+      "dark": "Encre brune neutre : texte courant"
+    },
+    "pages": [
+      {
+        "key": "home",
+        "path": "/",
+        "title": "Accueil",
+        "kind": "home",
+        "goal": "Présenter Accord Piano à Adultes découvrant le piano — personnes découvrant cette catégorie",
+        "sections": [
+          {
+            "key": "hero",
+            "purpose": "Offre et promesse vérifiable",
+            "mediaSlot": "final:video:1",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "hero",
+                "objective": "Offre et promesse vérifiable",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:172ce04c0d66ceaba2f1",
+                "blockIds": [
+                  "home-title",
+                  "home-hero"
+                ],
+                "mediaSlotKeys": [
+                  "final:video:1"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Accueil\n\nAccord Piano : Cours de piano pour adultes débutants à domicile."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-title",
+                "kind": "h1",
+                "text": "Accueil"
+              },
+              {
+                "id": "home-hero",
+                "kind": "p",
+                "text": "Accord Piano : Cours de piano pour adultes débutants à domicile."
+              }
+            ],
+            "text": "Accueil\n\nAccord Piano : Cours de piano pour adultes débutants à domicile.",
+            "mediaSlotKeys": [
+              "final:video:1"
+            ]
+          },
+          {
+            "key": "offer",
+            "purpose": "Prestations et méthode",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "offer",
+                "objective": "Prestations et méthode",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:172ce04c0d66ceaba2f1",
+                "blockIds": [
+                  "home-offer"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:3",
+                  "final:image:5"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Les prestations proposées sont Cours découverte. Consultez leur présentation pour préciser votre besoin."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-offer",
+                "kind": "p",
+                "text": "Les prestations proposées sont Cours découverte. Consultez leur présentation pour préciser votre besoin."
+              }
+            ],
+            "text": "Les prestations proposées sont Cours découverte. Consultez leur présentation pour préciser votre besoin.",
+            "mediaSlotKeys": [
+              "final:image:3",
+              "final:image:5"
+            ]
+          },
+          {
+            "key": "proofs",
+            "purpose": "Preuves disponibles uniquement",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "proofs",
+                "objective": "Preuves disponibles uniquement",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:172ce04c0d66ceaba2f1",
+                "blockIds": [
+                  "home-proofs"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Pour vous faire une idée de l’offre, parcourez les vues et les informations présentées. Les illustrations accompagnent les explications sans remplacer les caractéristiques décrites."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-proofs",
+                "kind": "p",
+                "text": "Pour vous faire une idée de l’offre, parcourez les vues et les informations présentées. Les illustrations accompagnent les explications sans remplacer les caractéristiques décrites."
+              }
+            ],
+            "text": "Pour vous faire une idée de l’offre, parcourez les vues et les informations présentées. Les illustrations accompagnent les explications sans remplacer les caractéristiques décrites.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "faq",
+            "purpose": "Objections et réponses confirmées",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "faq",
+                "objective": "Objections et réponses confirmées",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:172ce04c0d66ceaba2f1",
+                "blockIds": [
+                  "home-faq"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Une question avant de vous décider ? Repérez les points qui comptent pour votre usage et contactez-nous pour les préciser."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-faq",
+                "kind": "p",
+                "text": "Une question avant de vous décider ? Repérez les points qui comptent pour votre usage et contactez-nous pour les préciser."
+              }
+            ],
+            "text": "Une question avant de vous décider ? Repérez les points qui comptent pour votre usage et contactez-nous pour les préciser.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "contact",
+            "purpose": "Devis, contact ou rendez-vous",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "contact",
+                "objective": "Devis, contact ou rendez-vous",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:172ce04c0d66ceaba2f1",
+                "blockIds": [
+                  "home-contact"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Votre projet se situe à Rennes ? Décrivez-nous votre besoin afin d’échanger sur la prestation qui vous intéresse."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-contact",
+                "kind": "p",
+                "text": "Votre projet se situe à Rennes ? Décrivez-nous votre besoin afin d’échanger sur la prestation qui vous intéresse."
+              }
+            ],
+            "text": "Votre projet se situe à Rennes ? Décrivez-nous votre besoin afin d’échanger sur la prestation qui vous intéresse.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "gallery",
+            "purpose": "Galerie de scènes distinctes",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "gallery",
+                "objective": "Galerie de scènes distinctes",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:172ce04c0d66ceaba2f1",
+                "blockIds": [
+                  "home-gallery"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:8"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Passez d’une vue à l’autre pour situer l’offre dans son contexte. Chaque image apporte un angle de lecture complémentaire au texte."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-gallery",
+                "kind": "p",
+                "text": "Passez d’une vue à l’autre pour situer l’offre dans son contexte. Chaque image apporte un angle de lecture complémentaire au texte."
+              }
+            ],
+            "text": "Passez d’une vue à l’autre pour situer l’offre dans son contexte. Chaque image apporte un angle de lecture complémentaire au texte.",
+            "mediaSlotKeys": [
+              "final:image:8"
+            ]
+          },
+          {
+            "key": "story",
+            "purpose": "Formats verticaux : lecture sans déformation",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "story",
+                "objective": "Formats verticaux : lecture sans déformation",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:172ce04c0d66ceaba2f1",
+                "blockIds": [
+                  "home-story"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Le format vertical propose une autre lecture de la présentation. Sur téléphone, poursuivez la découverte sans quitter le fil des informations."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-story",
+                "kind": "p",
+                "text": "Le format vertical propose une autre lecture de la présentation. Sur téléphone, poursuivez la découverte sans quitter le fil des informations."
+              }
+            ],
+            "text": "Le format vertical propose une autre lecture de la présentation. Sur téléphone, poursuivez la découverte sans quitter le fil des informations.",
+            "mediaSlotKeys": []
+          }
+        ],
+        "docKey": "cnt:172ce04c0d66ceaba2f1",
+        "documentKey": "cnt:172ce04c0d66ceaba2f1",
+        "document": {
+          "version": 1,
+          "type": "home_page",
+          "lang": "fr",
+          "page": {
+            "key": "home",
+            "title": "Accueil",
+            "kind": "home",
+            "status": "planned",
+            "url": null
+          },
+          "primaryKeyword": null,
+          "meta": {
+            "seoTitle": "Accueil | Accord Piano",
+            "metaDescription": "Accueil : découvrez l’offre de Accord Piano, sa présentation et les informations utiles pour prendre contact.",
+            "slug": "",
+            "canonical": null,
+            "robots": "index,follow"
+          },
+          "blocks": [
+            {
+              "id": "home-title",
+              "kind": "h1",
+              "text": "Accueil"
+            },
+            {
+              "id": "home-hero",
+              "kind": "p",
+              "text": "Accord Piano : Cours de piano pour adultes débutants à domicile."
+            },
+            {
+              "id": "home-offer",
+              "kind": "p",
+              "text": "Les prestations proposées sont Cours découverte. Consultez leur présentation pour préciser votre besoin."
+            },
+            {
+              "id": "home-proofs",
+              "kind": "p",
+              "text": "Pour vous faire une idée de l’offre, parcourez les vues et les informations présentées. Les illustrations accompagnent les explications sans remplacer les caractéristiques décrites."
+            },
+            {
+              "id": "home-faq",
+              "kind": "p",
+              "text": "Une question avant de vous décider ? Repérez les points qui comptent pour votre usage et contactez-nous pour les préciser."
+            },
+            {
+              "id": "home-contact",
+              "kind": "p",
+              "text": "Votre projet se situe à Rennes ? Décrivez-nous votre besoin afin d’échanger sur la prestation qui vous intéresse."
+            },
+            {
+              "id": "home-gallery",
+              "kind": "p",
+              "text": "Passez d’une vue à l’autre pour situer l’offre dans son contexte. Chaque image apporte un angle de lecture complémentaire au texte."
+            },
+            {
+              "id": "home-story",
+              "kind": "p",
+              "text": "Le format vertical propose une autre lecture de la présentation. Sur téléphone, poursuivez la découverte sans quitter le fil des informations."
+            }
+          ],
+          "links": [],
+          "schema": [],
+          "meta2": {
+            "source": "engine",
+            "by": "ai",
+            "createdFrom": null,
+            "runId": "simulation:zdnzm8ce4l5lil95:home"
+          }
+        },
+        "seo": {
+          "seoTitle": "Accueil | Accord Piano",
+          "metaDescription": "Accueil : découvrez l’offre de Accord Piano, sa présentation et les informations utiles pour prendre contact.",
+          "slug": "",
+          "canonical": null,
+          "robots": "index,follow"
+        }
+      },
+      {
+        "key": "service:0",
+        "path": "/pages/prestation-1",
+        "title": "Cours découverte",
+        "kind": "service",
+        "goal": "Découvrir le clavier et une première pratique.",
+        "sections": [
+          {
+            "key": "presentation",
+            "purpose": "Découvrir le clavier et une première pratique.",
+            "mediaSlot": "service:0:presentation",
+            "editorial": [
+              {
+                "pageKey": "service:0",
+                "sectionKey": "presentation",
+                "objective": "Découvrir le clavier et une première pratique.",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:f46d1ffc9769bd58367a",
+                "blockIds": [
+                  "service:0-title",
+                  "service:0-presentation"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:1"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Cours découverte\n\nDécouvrir le clavier et une première pratique."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "service:0-title",
+                "kind": "h1",
+                "text": "Cours découverte"
+              },
+              {
+                "id": "service:0-presentation",
+                "kind": "p",
+                "text": "Découvrir le clavier et une première pratique."
+              }
+            ],
+            "text": "Cours découverte\n\nDécouvrir le clavier et une première pratique.",
+            "mediaSlotKeys": [
+              "final:image:1"
+            ]
+          },
+          {
+            "key": "method",
+            "purpose": "Méthode et conditions connues",
+            "editorial": [
+              {
+                "pageKey": "service:0",
+                "sectionKey": "method",
+                "objective": "Méthode et conditions connues",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:f46d1ffc9769bd58367a",
+                "blockIds": [
+                  "service:0-method"
+                ],
+                "mediaSlotKeys": [
+                  "final:video:2"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Pour cours découverte, commençons par votre situation et vos attentes. Nous pourrons ainsi préciser ensemble le cadre de l’accompagnement à Rennes."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "service:0-method",
+                "kind": "p",
+                "text": "Pour cours découverte, commençons par votre situation et vos attentes. Nous pourrons ainsi préciser ensemble le cadre de l’accompagnement à Rennes."
+              }
+            ],
+            "text": "Pour cours découverte, commençons par votre situation et vos attentes. Nous pourrons ainsi préciser ensemble le cadre de l’accompagnement à Rennes.",
+            "mediaSlotKeys": [
+              "final:video:2"
+            ]
+          },
+          {
+            "key": "contact",
+            "purpose": "call",
+            "editorial": [
+              {
+                "pageKey": "service:0",
+                "sectionKey": "contact",
+                "objective": "call",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:f46d1ffc9769bd58367a",
+                "blockIds": [
+                  "service:0-contact"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Vous souhaitez parler de cette prestation ? Contactez-nous via 0102030405, en indiquant votre demande pour cours découverte."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "service:0-contact",
+                "kind": "p",
+                "text": "Vous souhaitez parler de cette prestation ? Contactez-nous via 0102030405, en indiquant votre demande pour cours découverte."
+              }
+            ],
+            "text": "Vous souhaitez parler de cette prestation ? Contactez-nous via 0102030405, en indiquant votre demande pour cours découverte.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "gallery",
+            "purpose": "Galerie de scènes distinctes",
+            "editorial": [
+              {
+                "pageKey": "service:0",
+                "sectionKey": "gallery",
+                "objective": "Galerie de scènes distinctes",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:f46d1ffc9769bd58367a",
+                "blockIds": [
+                  "service:0-gallery"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:2",
+                  "final:image:6"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Ces scènes illustrent le contexte de l’activité. Elles accompagnent la description de la prestation et ne constituent pas des réalisations attribuées à l’entreprise."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "service:0-gallery",
+                "kind": "p",
+                "text": "Ces scènes illustrent le contexte de l’activité. Elles accompagnent la description de la prestation et ne constituent pas des réalisations attribuées à l’entreprise."
+              }
+            ],
+            "text": "Ces scènes illustrent le contexte de l’activité. Elles accompagnent la description de la prestation et ne constituent pas des réalisations attribuées à l’entreprise.",
+            "mediaSlotKeys": [
+              "final:image:2",
+              "final:image:6"
+            ]
+          },
+          {
+            "key": "story",
+            "purpose": "Formats verticaux : lecture sans déformation",
+            "editorial": [
+              {
+                "pageKey": "service:0",
+                "sectionKey": "story",
+                "objective": "Formats verticaux : lecture sans déformation",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:f46d1ffc9769bd58367a",
+                "blockIds": [
+                  "service:0-story"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:9"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "La présentation verticale conserve les repères utiles à la découverte de la prestation. Poursuivez ensuite vers les informations de contact."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "service:0-story",
+                "kind": "p",
+                "text": "La présentation verticale conserve les repères utiles à la découverte de la prestation. Poursuivez ensuite vers les informations de contact."
+              }
+            ],
+            "text": "La présentation verticale conserve les repères utiles à la découverte de la prestation. Poursuivez ensuite vers les informations de contact.",
+            "mediaSlotKeys": [
+              "final:image:9"
+            ]
+          }
+        ],
+        "docKey": "cnt:f46d1ffc9769bd58367a",
+        "documentKey": "cnt:f46d1ffc9769bd58367a",
+        "document": {
+          "version": 1,
+          "type": "service_page",
+          "lang": "fr",
+          "page": {
+            "key": "service:0",
+            "title": "Cours découverte",
+            "kind": "service",
+            "status": "planned",
+            "url": null
+          },
+          "primaryKeyword": null,
+          "meta": {
+            "seoTitle": "Cours découverte | Accord Piano",
+            "metaDescription": "Cours découverte : découvrez l’offre de Accord Piano, sa présentation et les informations utiles pour prendre contact.",
+            "slug": "prestation-1",
+            "canonical": null,
+            "robots": "index,follow"
+          },
+          "blocks": [
+            {
+              "id": "service:0-title",
+              "kind": "h1",
+              "text": "Cours découverte"
+            },
+            {
+              "id": "service:0-presentation",
+              "kind": "p",
+              "text": "Découvrir le clavier et une première pratique."
+            },
+            {
+              "id": "service:0-method",
+              "kind": "p",
+              "text": "Pour cours découverte, commençons par votre situation et vos attentes. Nous pourrons ainsi préciser ensemble le cadre de l’accompagnement à Rennes."
+            },
+            {
+              "id": "service:0-contact",
+              "kind": "p",
+              "text": "Vous souhaitez parler de cette prestation ? Contactez-nous via 0102030405, en indiquant votre demande pour cours découverte."
+            },
+            {
+              "id": "service:0-gallery",
+              "kind": "p",
+              "text": "Ces scènes illustrent le contexte de l’activité. Elles accompagnent la description de la prestation et ne constituent pas des réalisations attribuées à l’entreprise."
+            },
+            {
+              "id": "service:0-story",
+              "kind": "p",
+              "text": "La présentation verticale conserve les repères utiles à la découverte de la prestation. Poursuivez ensuite vers les informations de contact."
+            }
+          ],
+          "links": [],
+          "schema": [],
+          "meta2": {
+            "source": "engine",
+            "by": "ai",
+            "createdFrom": null,
+            "runId": "simulation:zdnzm8ce4l5lil95:service:0"
+          }
+        },
+        "seo": {
+          "seoTitle": "Cours découverte | Accord Piano",
+          "metaDescription": "Cours découverte : découvrez l’offre de Accord Piano, sa présentation et les informations utiles pour prendre contact.",
+          "slug": "prestation-1",
+          "canonical": null,
+          "robots": "index,follow"
+        }
+      },
+      {
+        "key": "brand",
+        "path": "/pages/a-propos",
+        "title": "À propos",
+        "kind": "brand",
+        "goal": "Présenter la marque sans histoire inventée",
+        "sections": [
+          {
+            "key": "intent",
+            "purpose": "Positionnement et engagements vérifiables",
+            "editorial": [
+              {
+                "pageKey": "brand",
+                "sectionKey": "intent",
+                "objective": "Positionnement et engagements vérifiables",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:bcea4bbadd0771cc0360",
+                "blockIds": [
+                  "brand-title",
+                  "brand-intent"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "À propos\n\nAccord Piano s’adresse à Adultes découvrant le piano — personnes découvrant cette catégorie. Le projet se concentre sur cours découverte, avec une présentation attentive aux besoins déclarés."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "brand-title",
+                "kind": "h1",
+                "text": "À propos"
+              },
+              {
+                "id": "brand-intent",
+                "kind": "p",
+                "text": "Accord Piano s’adresse à Adultes découvrant le piano — personnes découvrant cette catégorie. Le projet se concentre sur cours découverte, avec une présentation attentive aux besoins déclarés."
+              }
+            ],
+            "text": "À propos\n\nAccord Piano s’adresse à Adultes découvrant le piano — personnes découvrant cette catégorie. Le projet se concentre sur cours découverte, avec une présentation attentive aux besoins déclarés.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "gallery",
+            "purpose": "Galerie de scènes distinctes",
+            "editorial": [
+              {
+                "pageKey": "brand",
+                "sectionKey": "gallery",
+                "objective": "Galerie de scènes distinctes",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:bcea4bbadd0771cc0360",
+                "blockIds": [
+                  "brand-gallery"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:4",
+                  "final:image:7"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "L’univers visuel accompagne la lecture de la marque. Il met en relation les scènes de présentation et les informations concrètes de l’offre."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "brand-gallery",
+                "kind": "p",
+                "text": "L’univers visuel accompagne la lecture de la marque. Il met en relation les scènes de présentation et les informations concrètes de l’offre."
+              }
+            ],
+            "text": "L’univers visuel accompagne la lecture de la marque. Il met en relation les scènes de présentation et les informations concrètes de l’offre.",
+            "mediaSlotKeys": [
+              "final:image:4",
+              "final:image:7"
+            ]
+          },
+          {
+            "key": "story",
+            "purpose": "Formats verticaux : lecture sans déformation",
+            "editorial": [
+              {
+                "pageKey": "brand",
+                "sectionKey": "story",
+                "objective": "Formats verticaux : lecture sans déformation",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:bcea4bbadd0771cc0360",
+                "blockIds": [
+                  "brand-story"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:10"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Au fil des images, retrouvez les repères de cette identité. La mise en page verticale conserve les contrastes et la lisibilité sur petit écran."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "brand-story",
+                "kind": "p",
+                "text": "Au fil des images, retrouvez les repères de cette identité. La mise en page verticale conserve les contrastes et la lisibilité sur petit écran."
+              }
+            ],
+            "text": "Au fil des images, retrouvez les repères de cette identité. La mise en page verticale conserve les contrastes et la lisibilité sur petit écran.",
+            "mediaSlotKeys": [
+              "final:image:10"
+            ]
+          }
+        ],
+        "docKey": "cnt:bcea4bbadd0771cc0360",
+        "documentKey": "cnt:bcea4bbadd0771cc0360",
+        "document": {
+          "version": 1,
+          "type": "brand_page",
+          "lang": "fr",
+          "page": {
+            "key": "brand",
+            "title": "À propos",
+            "kind": "brand",
+            "status": "planned",
+            "url": null
+          },
+          "primaryKeyword": null,
+          "meta": {
+            "seoTitle": "À propos | Accord Piano",
+            "metaDescription": "À propos : découvrez l’offre de Accord Piano, sa présentation et les informations utiles pour prendre contact.",
+            "slug": "a-propos",
+            "canonical": null,
+            "robots": "index,follow"
+          },
+          "blocks": [
+            {
+              "id": "brand-title",
+              "kind": "h1",
+              "text": "À propos"
+            },
+            {
+              "id": "brand-intent",
+              "kind": "p",
+              "text": "Accord Piano s’adresse à Adultes découvrant le piano — personnes découvrant cette catégorie. Le projet se concentre sur cours découverte, avec une présentation attentive aux besoins déclarés."
+            },
+            {
+              "id": "brand-gallery",
+              "kind": "p",
+              "text": "L’univers visuel accompagne la lecture de la marque. Il met en relation les scènes de présentation et les informations concrètes de l’offre."
+            },
+            {
+              "id": "brand-story",
+              "kind": "p",
+              "text": "Au fil des images, retrouvez les repères de cette identité. La mise en page verticale conserve les contrastes et la lisibilité sur petit écran."
+            }
+          ],
+          "links": [],
+          "schema": [],
+          "meta2": {
+            "source": "engine",
+            "by": "ai",
+            "createdFrom": null,
+            "runId": "simulation:zdnzm8ce4l5lil95:brand"
+          }
+        },
+        "seo": {
+          "seoTitle": "À propos | Accord Piano",
+          "metaDescription": "À propos : découvrez l’offre de Accord Piano, sa présentation et les informations utiles pour prendre contact.",
+          "slug": "a-propos",
+          "canonical": null,
+          "robots": "index,follow"
+        }
+      },
+      {
+        "key": "contact",
+        "path": "/pages/contact",
+        "title": "Contact",
+        "kind": "contact",
+        "goal": "call",
+        "sections": [
+          {
+            "key": "contact",
+            "purpose": "Coordonnées et formulaire",
+            "editorial": [
+              {
+                "pageKey": "contact",
+                "sectionKey": "contact",
+                "objective": "Coordonnées et formulaire",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:16eafade06592ee4fb52",
+                "blockIds": [
+                  "contact-title",
+                  "contact-contact"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Contact\n\nPour échanger avec Accord Piano, utilisez 0102030405. Indiquez la prestation recherchée et votre situation à Rennes afin de préparer la conversation."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "contact-title",
+                "kind": "h1",
+                "text": "Contact"
+              },
+              {
+                "id": "contact-contact",
+                "kind": "p",
+                "text": "Pour échanger avec Accord Piano, utilisez 0102030405. Indiquez la prestation recherchée et votre situation à Rennes afin de préparer la conversation."
+              }
+            ],
+            "text": "Contact\n\nPour échanger avec Accord Piano, utilisez 0102030405. Indiquez la prestation recherchée et votre situation à Rennes afin de préparer la conversation.",
+            "mediaSlotKeys": []
+          }
+        ],
+        "docKey": "cnt:16eafade06592ee4fb52",
+        "documentKey": "cnt:16eafade06592ee4fb52",
+        "document": {
+          "version": 1,
+          "type": "contact_page",
+          "lang": "fr",
+          "page": {
+            "key": "contact",
+            "title": "Contact",
+            "kind": "page",
+            "status": "planned",
+            "url": null
+          },
+          "primaryKeyword": null,
+          "meta": {
+            "seoTitle": "Contact | Accord Piano",
+            "metaDescription": "Contact : découvrez l’offre de Accord Piano, sa présentation et les informations utiles pour prendre contact.",
+            "slug": "contact",
+            "canonical": null,
+            "robots": "index,follow"
+          },
+          "blocks": [
+            {
+              "id": "contact-title",
+              "kind": "h1",
+              "text": "Contact"
+            },
+            {
+              "id": "contact-contact",
+              "kind": "p",
+              "text": "Pour échanger avec Accord Piano, utilisez 0102030405. Indiquez la prestation recherchée et votre situation à Rennes afin de préparer la conversation."
+            }
+          ],
+          "links": [],
+          "schema": [],
+          "meta2": {
+            "source": "engine",
+            "by": "ai",
+            "createdFrom": null,
+            "runId": "simulation:zdnzm8ce4l5lil95:contact"
+          }
+        },
+        "seo": {
+          "seoTitle": "Contact | Accord Piano",
+          "metaDescription": "Contact : découvrez l’offre de Accord Piano, sa présentation et les informations utiles pour prendre contact.",
+          "slug": "contact",
+          "canonical": null,
+          "robots": "index,follow"
+        }
+      }
+    ],
+    "media": [
+      {
+        "key": "final:image:1",
+        "pageKey": "service:0",
+        "sectionKey": "presentation",
+        "kind": "image",
+        "aspect": "1:1",
+        "source": "pixabay",
+        "purpose": "Composition 1 de Accord Piano : service:0/presentation",
+        "required": true,
+        "scene": "Scène distincte de test 1 : Composition 1 de Accord Piano : service:0/presentation",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 1 de Accord Piano : service:0/presentation",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "c6kvcfqgni4x599p",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "a25f1d8a272accab"
+        },
+        "inputHash": "8ca74d10c1c0df04",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "c6kvcfqgni4x599p",
+          "url": "/api/files/c6kvcfqgni4x599p",
+          "mime": "image/png",
+          "width": 1080,
+          "height": 1080,
+          "duration": null,
+          "origin": "import",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-zdnzm8ce4l5lil95-0",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:2",
+        "pageKey": "service:0",
+        "sectionKey": "gallery",
+        "kind": "image",
+        "aspect": "1:1",
+        "source": "pixabay",
+        "purpose": "Composition 2 de Accord Piano : service:0/gallery",
+        "required": true,
+        "scene": "Scène distincte de test 2 : Composition 2 de Accord Piano : service:0/gallery",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 2 de Accord Piano : service:0/gallery",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "ivcic73s8sovahiu",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "85859fb09b68f657"
+        },
+        "inputHash": "8ca74d10c1c0df04",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "ivcic73s8sovahiu",
+          "url": "/api/files/ivcic73s8sovahiu",
+          "mime": "image/png",
+          "width": 1080,
+          "height": 1080,
+          "duration": null,
+          "origin": "import",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-zdnzm8ce4l5lil95-1",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:3",
+        "pageKey": "home",
+        "sectionKey": "offer",
+        "kind": "image",
+        "aspect": "1:1",
+        "source": "pixabay",
+        "purpose": "Composition 3 de Accord Piano : home/offer",
+        "required": true,
+        "scene": "Scène distincte de test 3 : Composition 3 de Accord Piano : home/offer",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 3 de Accord Piano : home/offer",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "hh4z4p2si79gsce2",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "91a77a3e1c0c6c0d"
+        },
+        "inputHash": "8ca74d10c1c0df04",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "hh4z4p2si79gsce2",
+          "url": "/api/files/hh4z4p2si79gsce2",
+          "mime": "image/png",
+          "width": 1080,
+          "height": 1080,
+          "duration": null,
+          "origin": "import",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-zdnzm8ce4l5lil95-2",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:4",
+        "pageKey": "brand",
+        "sectionKey": "gallery",
+        "kind": "image",
+        "aspect": "1:1",
+        "source": "pixabay",
+        "purpose": "Composition 4 de Accord Piano : brand/gallery",
+        "required": true,
+        "scene": "Scène distincte de test 4 : Composition 4 de Accord Piano : brand/gallery",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 4 de Accord Piano : brand/gallery",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "tztrsqr9mm99132t",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "e0f85de0aa2f883f"
+        },
+        "inputHash": "8ca74d10c1c0df04",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "tztrsqr9mm99132t",
+          "url": "/api/files/tztrsqr9mm99132t",
+          "mime": "image/png",
+          "width": 1080,
+          "height": 1080,
+          "duration": null,
+          "origin": "import",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-zdnzm8ce4l5lil95-3",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:5",
+        "pageKey": "home",
+        "sectionKey": "offer",
+        "kind": "image",
+        "aspect": "16:9",
+        "source": "pixabay",
+        "purpose": "Composition 5 de Accord Piano : home/offer",
+        "required": true,
+        "scene": "Scène distincte de test 5 : Composition 5 de Accord Piano : home/offer",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 5 de Accord Piano : home/offer",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "mntajj0w75l0bg09",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "34dbb3119ff82526"
+        },
+        "inputHash": "8ca74d10c1c0df04",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "mntajj0w75l0bg09",
+          "url": "/api/files/mntajj0w75l0bg09",
+          "mime": "image/png",
+          "width": 1600,
+          "height": 900,
+          "duration": null,
+          "origin": "import",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-zdnzm8ce4l5lil95-4",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:6",
+        "pageKey": "service:0",
+        "sectionKey": "gallery",
+        "kind": "image",
+        "aspect": "16:9",
+        "source": "pixabay",
+        "purpose": "Composition 6 de Accord Piano : service:0/gallery",
+        "required": true,
+        "scene": "Scène distincte de test 6 : Composition 6 de Accord Piano : service:0/gallery",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 6 de Accord Piano : service:0/gallery",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "mqnk6wsqwqoa89s9",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "514e14309efe5083"
+        },
+        "inputHash": "8ca74d10c1c0df04",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "mqnk6wsqwqoa89s9",
+          "url": "/api/files/mqnk6wsqwqoa89s9",
+          "mime": "image/png",
+          "width": 1600,
+          "height": 900,
+          "duration": null,
+          "origin": "import",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-zdnzm8ce4l5lil95-5",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:7",
+        "pageKey": "brand",
+        "sectionKey": "gallery",
+        "kind": "image",
+        "aspect": "16:9",
+        "source": "pixabay",
+        "purpose": "Composition 7 de Accord Piano : brand/gallery",
+        "required": true,
+        "scene": "Scène distincte de test 7 : Composition 7 de Accord Piano : brand/gallery",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 7 de Accord Piano : brand/gallery",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "5z85ze1qv52bo97d",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "7d42127b1d358df9"
+        },
+        "inputHash": "8ca74d10c1c0df04",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "5z85ze1qv52bo97d",
+          "url": "/api/files/5z85ze1qv52bo97d",
+          "mime": "image/png",
+          "width": 1600,
+          "height": 900,
+          "duration": null,
+          "origin": "import",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-zdnzm8ce4l5lil95-6",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:8",
+        "pageKey": "home",
+        "sectionKey": "gallery",
+        "kind": "image",
+        "aspect": "16:9",
+        "source": "pixabay",
+        "purpose": "Composition 8 de Accord Piano : home/gallery",
+        "required": true,
+        "scene": "Scène distincte de test 8 : Composition 8 de Accord Piano : home/gallery",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 8 de Accord Piano : home/gallery",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "jiw3x6oycdda7kfd",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "23aad7c148dc09cf"
+        },
+        "inputHash": "8ca74d10c1c0df04",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "jiw3x6oycdda7kfd",
+          "url": "/api/files/jiw3x6oycdda7kfd",
+          "mime": "image/png",
+          "width": 1600,
+          "height": 900,
+          "duration": null,
+          "origin": "import",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-zdnzm8ce4l5lil95-7",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:9",
+        "pageKey": "service:0",
+        "sectionKey": "story",
+        "kind": "image",
+        "aspect": "9:16",
+        "source": "pixabay",
+        "purpose": "Composition 9 de Accord Piano : service:0/story",
+        "required": true,
+        "scene": "Scène distincte de test 9 : Composition 9 de Accord Piano : service:0/story",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 9 de Accord Piano : service:0/story",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "zxq8sldzekbjym0d",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "0d837c874008f2a3"
+        },
+        "inputHash": "8ca74d10c1c0df04",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "zxq8sldzekbjym0d",
+          "url": "/api/files/zxq8sldzekbjym0d",
+          "mime": "image/png",
+          "width": 900,
+          "height": 1600,
+          "duration": null,
+          "origin": "import",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-zdnzm8ce4l5lil95-8",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:10",
+        "pageKey": "brand",
+        "sectionKey": "story",
+        "kind": "image",
+        "aspect": "9:16",
+        "source": "pixabay",
+        "purpose": "Composition 10 de Accord Piano : brand/story",
+        "required": true,
+        "scene": "Scène distincte de test 10 : Composition 10 de Accord Piano : brand/story",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 10 de Accord Piano : brand/story",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "bmhjvuvdfqsskcl8",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "6b6c1384e3a17006"
+        },
+        "inputHash": "8ca74d10c1c0df04",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "bmhjvuvdfqsskcl8",
+          "url": "/api/files/bmhjvuvdfqsskcl8",
+          "mime": "image/png",
+          "width": 900,
+          "height": 1600,
+          "duration": null,
+          "origin": "import",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-zdnzm8ce4l5lil95-9",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:video:1",
+        "pageKey": "home",
+        "sectionKey": "hero",
+        "kind": "video",
+        "aspect": "16:9",
+        "source": "pixabay",
+        "purpose": "Ambiance hero pertinente, zone de texte lisible ; jamais une preuve sur le produit exact ou les locaux réels",
+        "required": true,
+        "playback": {
+          "muted": true,
+          "playsInline": true,
+          "loop": true,
+          "pauseControl": true,
+          "reducedMotion": "poster",
+          "mobileFallback": "poster"
+        },
+        "scene": "Scène distincte de test 11 : Ambiance hero pertinente, zone de texte lisible ; jamais une preuve sur le produit exact ou les locaux réels",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Ambiance hero pertinente, zone de texte lisible ; jamais une preuve sur le produit exact ou les locaux réels",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "03097v5flx6z8ig7",
+        "posterId": "n65zcoveopmyzze5",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "3ded6aa04d68c522"
+        },
+        "inputHash": "8ca74d10c1c0df04",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "03097v5flx6z8ig7",
+          "url": "/api/files/03097v5flx6z8ig7",
+          "mime": "video/mp4",
+          "width": 1280,
+          "height": 720,
+          "duration": 3,
+          "origin": "import",
+          "role": "clip"
+        },
+        "poster": {
+          "assetId": "n65zcoveopmyzze5",
+          "url": "/api/files/n65zcoveopmyzze5",
+          "mime": "image/png",
+          "width": 1280,
+          "height": 720
+        },
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-zdnzm8ce4l5lil95-10",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": true
+        }
+      },
+      {
+        "key": "final:video:2",
+        "pageKey": "service:0",
+        "sectionKey": "method",
+        "kind": "video",
+        "aspect": "16:9",
+        "source": "pixabay",
+        "purpose": "Présentation du métier, illustration déclarée",
+        "required": true,
+        "playback": {
+          "muted": true,
+          "playsInline": true,
+          "loop": true,
+          "pauseControl": true,
+          "reducedMotion": "poster",
+          "mobileFallback": "poster"
+        },
+        "scene": "Scène distincte de test 12 : Présentation du métier, illustration déclarée",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Présentation du métier, illustration déclarée",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "4d024kxax85zo860",
+        "posterId": "yj0iiviiuinygerm",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "d5689376a001db63"
+        },
+        "inputHash": "8ca74d10c1c0df04",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "4d024kxax85zo860",
+          "url": "/api/files/4d024kxax85zo860",
+          "mime": "video/mp4",
+          "width": 1280,
+          "height": 720,
+          "duration": 3,
+          "origin": "import",
+          "role": "clip"
+        },
+        "poster": {
+          "assetId": "yj0iiviiuinygerm",
+          "url": "/api/files/yj0iiviiuinygerm",
+          "mime": "image/png",
+          "width": 1280,
+          "height": 720
+        },
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-zdnzm8ce4l5lil95-11",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": false,
+          "mobilePosterFallback": true
+        }
+      }
+    ],
+    "category": {
+      "status": "recommended",
+      "category": "services",
+      "salesModel": "service",
+      "goal": "call",
+      "reasons": [
+        "Vous avez confirmé ce modèle de site pour votre offre actuelle ; ce choix prime sur les indices automatiques."
+      ],
+      "evidence": [
+        {
+          "source": "business",
+          "value": "services"
+        },
+        {
+          "source": "client_choice",
+          "value": "services"
+        }
+      ],
+      "clarification": null,
+      "eligibleThemes": [
+        {
+          "referenceId": "atelier-rive",
+          "name": "Atelier Rive",
+          "engineThemeId": null,
+          "status": "awaiting_integration"
+        }
+      ]
+    },
+    "sourceHash": "5e3387a0cabc69eb",
+    "status": "ready",
+    "issues": [],
+    "socialAssetsIncluded": false,
+    "integration": {
+      "status": "awaiting_theme_consumer",
+      "installedThemeChanged": false,
+      "required": [
+        "Raccorder les identifiants des quatre thèmes aux références et catégories explicites.",
+        "Consommer identité, documents complets, blocs éditoriaux, SEO et médias affectés dans le moteur existant.",
+        "Filtrer la bibliothèque et les opérations manuelles/IA par thème installé ET catégorie ; préserver les retouches et signaler les conflits."
+      ]
+    }
+  },
+  "routing": [
+    {
+      "stage": "understanding",
+      "processing": "api",
+      "alias": "text:vision_analysis:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": true,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "web_sources",
+      "processing": "web_fetch",
+      "alias": "research:web-search-and-source-fetch",
+      "provider": null,
+      "configuration": "configured_not_tested",
+      "modelConfigured": false,
+      "executed": false,
+      "reason": "Découverte web et lecture des sources avec les connecteurs existants ; couverture et accès réels à vérifier.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "research_strategy",
+      "processing": "api",
+      "alias": "text:strategy:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": false,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "name",
+      "processing": "api",
+      "alias": "text:strategy:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": false,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "art_directions",
+      "processing": "api",
+      "alias": "text:logo_symbol:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": false,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "logo",
+      "processing": "api",
+      "alias": "image:logo",
+      "provider": "openai",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "executed": false,
+      "reason": "Fournisseur, adaptateur, tarif et capacité résolus localement ; aucun appel effectué.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "identity_variants",
+      "processing": "local_preparation",
+      "alias": "identity:approved-logo-variants",
+      "provider": null,
+      "configuration": "local",
+      "modelConfigured": false,
+      "executed": false,
+      "reason": "Déclinaisons et charte dérivées du logo actif ; aucun nouveau dessin payant dans cette préparation locale.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "copywriting_seo",
+      "processing": "api",
+      "alias": "text:copywriting:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": false,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "site_stock",
+      "processing": "api",
+      "alias": "stock:pixabay",
+      "provider": "pixabay",
+      "configuration": "unavailable",
+      "modelConfigured": false,
+      "executed": false,
+      "reason": "Accès Pixabay absent ou désactivé.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "visual_review",
+      "processing": "api",
+      "alias": "text:quality_control:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": true,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "initial_twenty_concepts",
+      "processing": "api",
+      "alias": "text:copywriting:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": false,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "initial_twenty_images",
+      "processing": "api",
+      "alias": "image:social_image",
+      "provider": "openai",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "executed": false,
+      "reason": "Fournisseur, adaptateur, tarif et capacité résolus localement ; aucun appel effectué.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "theme_handoff",
+      "processing": "local_preparation",
+      "alias": "theme:structured-contract",
+      "provider": null,
+      "configuration": "local",
+      "modelConfigured": false,
+      "executed": false,
+      "reason": "Projection des données approuvées, sans génération ni création d’un thème.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    }
+  ],
+  "generationStarted": false,
+  "themeChanged": false,
+  "themeConsumerVerified": false
+}

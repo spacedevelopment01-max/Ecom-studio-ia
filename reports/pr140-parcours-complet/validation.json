@@ -1,0 +1,103 @@
+{
+  "codeCommitTested": "2b64054be0ff29fe297027552f009186fcc502f2",
+  "harnessCommitTested": "390a9dd556d25911da6459cbbe5302f655759989",
+  "applicationAndUnitTestsIdenticalAcrossCommits": true,
+  "simulation": true,
+  "realProviderCalls": 0,
+  "realProviderCostEUR": 0,
+  "realProviderQualityVerified": false,
+  "themeConsumerVerified": false,
+  "seededProjects": 0,
+  "browserJourneys": 4,
+  "captures": 144,
+  "additionalReadOnlyInspectionCaptures": 8,
+  "videos": [
+    {
+      "file": "produit-ordinateur.webm",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1440,
+          "height": 1000
+        }
+      ],
+      "format": {
+        "duration": "84.840000",
+        "size": "8709340"
+      }
+    },
+    {
+      "file": "service-ordinateur.webm",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1440,
+          "height": 1000
+        }
+      ],
+      "format": {
+        "duration": "75.600000",
+        "size": "7588324"
+      }
+    },
+    {
+      "file": "produit-mobile.webm",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 390,
+          "height": 844
+        }
+      ],
+      "format": {
+        "duration": "64.880000",
+        "size": "4583418"
+      }
+    },
+    {
+      "file": "service-mobile.webm",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 390,
+          "height": 844
+        }
+      ],
+      "format": {
+        "duration": "66.560000",
+        "size": "4923194"
+      }
+    }
+  ],
+  "scope": "real UI, native orchestration/persistence/budget; injected provider answers and verdicts",
+  "commands": {
+    "suite": "npm test",
+    "types": "npx tsc --noEmit --incremental false",
+    "build": "npm run build",
+    "browser": "PLAYWRIGHT_BROWSERS_PATH=/workspace/work/publications-browser-cache npx tsx scripts/parcours-complet/browser.ts /tmp/ecs-parcours-test-20261019-f"
+  },
+  "unitSuite": {
+    "files": 284,
+    "passed": 2175,
+    "skipped": 3,
+    "total": 2178,
+    "durationSeconds": 770.95,
+    "exitCode": 0
+  },
+  "gates": {
+    "applicationTypecheckExitCode": 0,
+    "finalHarnessTypecheckExitCode": 0,
+    "applicationBuildExitCode": 0,
+    "browserExitCode": 0,
+    "evidenceExitCode": 0
+  },
+  "browserPlan": "Dominer; synthetic native top-up, no real purchase"
+}

@@ -1,0 +1,111 @@
+/*
+ * Fichier généré par E-COM STUDIO IA. Modifiable dans l'éditeur de thème Shopify.
+ */
+{
+  "sections": {
+    "p_0a60e9cd_main_product_1": {
+      "type": "main-product",
+      "settings": {
+        "gallery_layout": "stack",
+        "sticky_bar": true,
+        "color_scheme": "scheme-1",
+        "padding_top": 32,
+        "padding_bottom": 96,
+        "enable_zoom": true
+      },
+      "blocks": {
+        "title_1": {
+          "type": "title",
+          "settings": {}
+        },
+        "price_1": {
+          "type": "price",
+          "settings": {}
+        },
+        "buy_buttons_1": {
+          "type": "buy_buttons",
+          "settings": {
+            "picker": "buttons",
+            "show_quantity": true,
+            "show_dynamic_checkout": true
+          }
+        },
+        "description_1": {
+          "type": "description",
+          "settings": {}
+        },
+        "own_highlights": {
+          "type": "highlights",
+          "settings": {
+            "items": "Matière : acier inoxydable\nMasse : 210 g",
+            "icon": "check",
+            "columns": 1
+          }
+        }
+      },
+      "block_order": [
+        "title_1",
+        "price_1",
+        "buy_buttons_1",
+        "description_1",
+        "own_highlights"
+      ]
+    },
+    "p_0a60e9cd_product_recommendations_1": {
+      "type": "product-recommendations",
+      "settings": {
+        "heading": "Vous aimerez aussi",
+        "limit": 4,
+        "color_scheme": "scheme-1",
+        "padding_top": 64,
+        "padding_bottom": 96
+      }
+    },
+    "p_0a60e9cd_own_specs": {
+      "type": "v2-specs",
+      "settings": {
+        "layout": "table",
+        "eyebrow": "Fiche",
+        "heading": "Caractéristiques",
+        "image_asset": "",
+        "note": "",
+        "color_scheme": "scheme-1",
+        "padding_top": 64,
+        "padding_bottom": 64
+      },
+      "blocks": {
+        "fact_0": {
+          "type": "spec",
+          "settings": {
+            "label": "Type",
+            "value": "Supports"
+          }
+        },
+        "fact_1": {
+          "type": "spec",
+          "settings": {
+            "label": "Caractéristique",
+            "value": "Matière : acier inoxydable"
+          }
+        },
+        "fact_2": {
+          "type": "spec",
+          "settings": {
+            "label": "Caractéristique",
+            "value": "Masse : 210 g"
+          }
+        }
+      },
+      "block_order": [
+        "fact_0",
+        "fact_1",
+        "fact_2"
+      ]
+    }
+  },
+  "order": [
+    "p_0a60e9cd_main_product_1",
+    "p_0a60e9cd_product_recommendations_1",
+    "p_0a60e9cd_own_specs"
+  ]
+}

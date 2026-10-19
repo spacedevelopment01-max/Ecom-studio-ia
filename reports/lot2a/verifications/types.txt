@@ -1,0 +1,3 @@
+Code : 4097eec6ae5a6d6361093219e11afc2fc0abdb0a
+Commande : npx tsc --noEmit
+Sortie : aucune erreur. Code de sortie : 0.

@@ -1,0 +1,67 @@
+import { describe, it, expect, vi, afterEach } from "vitest";
+let user: any = null;
+vi.mock("@/lib/auth", async (original) => ({ ...await original<typeof import("@/lib/auth")>(), requireUser: async () => user, currentUser: async () => user }));
+import { createUser } from "@/lib/auth";
+import { getSubscription, syncAllowance } from "@/lib/billing";
+import { all, run } from "@/lib/db";
+import { POST as create } from "@/app/api/projects/route";
+import { GET, POST } from "@/app/api/projects/[id]/social/initial/route";
+import { initialCreativesView } from "@/lib/social-v2/initial";
+afterEach(() => vi.unstubAllGlobals());
+describe("Création initiale depuis les vraies API, sans fournisseurs", () => {
+    it.each(["photo", "logo", "too-many"])("entrée %s refusée avant de consommer l’abonnement ou sauvegarder un fichier", async (kind) => {
+        user = await createUser(`initial-invalid-${crypto.randomUUID()}@test.invalid`, "motdepasse-test", "Test isolé");
+        getSubscription(user.id);
+        run("UPDATE subscriptions SET owner_user_id=?,status='active',plan='dominer',billing='monthly' WHERE user_id=?", user.id, user.id);
+        syncAllowance(user.id);
+        const form = () => { const f = new FormData(); f.set('flow','preparation'); f.set('description','Description synthétique assez longue pour le test.'); return f; };
+        const f = form();
+        if (kind === 'too-many') for (let n=0;n<9;n++) f.append('photos',new File(['source synthétique'],'source.png',{type:'image/png'}));
+        else { f.append('photos',new File(['source synthétique'],'source.png',{type:'image/png'})); f.append(kind === 'logo' ? 'logo' : 'photos',new File(['fichier refusé'],'refuse.txt',{type:'text/plain'})); }
+        const r = await create(new Request('http://localhost/api/projects',{method:'POST',body:f}));
+        expect(r.status).toBe(kind === 'too-many' ? 400 : 415);
+        expect(all('SELECT id FROM projects WHERE user_id=?',user.id)).toHaveLength(0);
+        expect(all('SELECT id FROM assets WHERE user_id=?',user.id)).toHaveLength(0);
+        expect((await create(new Request('http://localhost/api/projects',{method:'POST',body:form()}))).status).toBe(200);
+    });
+    it('deux enregistrements simultanés ne créent qu’un projet pour l’abonnement', async () => {
+        user = await createUser(`initial-double-${crypto.randomUUID()}@test.invalid`, "motdepasse-test", "Test isolé"); getSubscription(user.id);
+        run("UPDATE subscriptions SET owner_user_id=?,status='active',plan='dominer',billing='monthly' WHERE user_id=?", user.id,user.id); syncAllowance(user.id);
+        const make = () => { const f=new FormData(); f.set('flow','preparation'); f.set('description','Description synthétique pour double clic.'); return new Request('http://localhost/api/projects',{method:'POST',body:f}); };
+        const rs=await Promise.all([create(make()),create(make())]);
+        expect(rs.filter(r=>r.status===200)).toHaveLength(1);
+        expect(rs.filter(r=>[402,409].includes(r.status))).toHaveLength(1);
+        expect(all('SELECT id FROM projects WHERE user_id=?',user.id)).toHaveLength(1);
+        expect(all('SELECT id FROM ai_calls WHERE user_id=?',user.id)).toHaveLength(0);
+    });
+    it.each(["products", "services"])("nouveau projet %s : lot préparé sans bloquer ni lancer d’IA", async (business) => {
+        vi.stubGlobal("fetch", () => { throw Error("Appel réseau interdit"); });
+        user = await createUser(`initial-api-${crypto.randomUUID()}@test.invalid`, "motdepasse-test", "Test isolé");
+        getSubscription(user.id);
+        run("UPDATE subscriptions SET owner_user_id=?,status='active',plan='dominer',billing='monthly' WHERE user_id=?", user.id, user.id);
+        syncAllowance(user.id);
+        const f = new FormData();
+        f.set("flow", "preparation");
+        f.set("businessType", business);
+        f.set("description", "Brief synthétique de test, aucun fournisseur appelé.");
+        f.set("productName", "Projet initial de test");
+        const r = await create(new Request("http://localhost/api/projects", { method: "POST", body: f }));
+        expect(r.status).toBe(200);
+        const made = await r.json();
+        expect(made.jobId).toBeNull();
+        expect(initialCreativesView(made.id)).toMatchObject({ required: 20, accepted: 0, missing: 20, status: "waiting_validation", ads: { required: 10 }, themeMediaIncluded: false });
+        const ctx = { params: Promise.resolve({ id: made.id }) }, view = await GET(new Request("http://localhost"), ctx);
+        expect(view.status).toBe(200);
+        expect((await view.json()).initial.required).toBe(20);
+        const denied = await POST(new Request("http://localhost", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "generate" }) }), ctx);
+        expect(denied.status).toBe(400);
+        const quote = await POST(new Request("http://localhost", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "quote" }) }), ctx);
+        expect(quote.status).toBe(409);
+        expect(all("SELECT id FROM jobs WHERE project_id=?", made.id)).toHaveLength(0);
+        expect(all("SELECT id FROM ai_calls WHERE project_id=?", made.id)).toHaveLength(0);
+        const owner = user;
+        user = await createUser(`foreign-${crypto.randomUUID()}@test.invalid`, "motdepasse-test", "Autre");
+        expect((await GET(new Request("http://localhost"), ctx)).status).toBe(404);
+        user = owner;
+    });
+});

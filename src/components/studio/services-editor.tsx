@@ -71,7 +71,7 @@ export function ContactModePicker({ value, onChange }: { value: ContactMode[]; o
 /** Prestations sans lignes vides (avant envoi). */
 export const cleanServices = (list: ServiceItem[]) =>
   list
-    .map((s) => ({ name: s.name.trim(), description: s.description.trim(), ...(s.price?.trim() ? { price: s.price.trim() } : {}), ...(s.duration?.trim() ? { duration: s.duration.trim() } : {}) }))
+    .map((s) => ({ ...(s.key ? { key: s.key } : {}), name: s.name.trim(), description: s.description.trim(), ...(s.price?.trim() ? { price: s.price.trim() } : {}), ...(s.duration?.trim() ? { duration: s.duration.trim() } : {}) }))
     .filter((s) => s.name);
 
 /** Informations essentielles d'un site de services encore manquantes (jamais devinées : le client les complète). */

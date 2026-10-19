@@ -1,0 +1,31 @@
+{
+  "simulation": true,
+  "preflightsNotFinalReception": true,
+  "initialTariffConfiguration": {
+    "scope": "test fixture only",
+    "observedApiStatus": 409,
+    "observedApiMessage": "Plafond du modèle logo requis non vérifié : série en attente. Aucun tarif forfaitaire inventé, aucun appel lancé.",
+    "applicationGuardCorrect": true,
+    "fixtureCorrection": "Added a synthetic bounded per-image price for the existing required logo alias. No production tariff or provider configuration changed.",
+    "actualProviderCalls": 0
+  },
+  "completedSeriesNotShownWithoutReload": {
+    "reproduced": true,
+    "backendStatus": "done",
+    "storedSeriesStatus": "complete",
+    "directions": 3,
+    "browserWaitMs": 60000,
+    "missingSelector": "[data-direction-series]",
+    "browserLog": "parcours-browser-b.log",
+    "sourceBeforeFixSha256": "cf9087d89c86a5f0a100a2bfb3bafda51a93262737f5095394bd2aef6267ba0b",
+    "rootCause": "The logo panel did not track the submitted series job; it could miss a short job between project polling intervals.",
+    "actualProviderCalls": 0
+  },
+  "budgetMessage": {
+    "observedUiRemaining": "100%",
+    "observedRefusalClaim": "IA du forfait utilisée à 100%",
+    "actualProviderCalls": 0,
+    "scope": "The envelope exceeded available funds; no actual consumption had occurred.",
+    "screenshot": "produit-ordinateur-04a-budget-refuse-vue.png"
+  }
+}

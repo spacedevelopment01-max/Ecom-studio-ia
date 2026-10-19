@@ -39,6 +39,9 @@ export type VideoPlatform = (typeof VIDEO_PLATFORMS)[number];
 export type Complexity = "simple" | "standard" | "production";
 
 export type VideoIntent = {
+  generation?:"direct"|"reference";
+  purpose?:"ad"|"organic";
+  editorial?: import("./editorial").VideoEditorial;
   kind: VideoIntentKind;
   goal: string;
   audience: string | null;
@@ -238,7 +241,7 @@ export type VideoDocument = {
   disclosure: string | null;
   /** Étalonnage de la direction artistique (plans filmés et photos) ; absent : étalonnage par défaut. */
   grade?: VideoGrade;
-  meta: { intent: VideoIntentKind; source: "engine" | "user" | "ai_local" | "ai"; createdFrom: string | null; runId: string | null; /** Habillage publicitaire (titres, panneau, carte de fin posés sur les plans réels). */ promo?: boolean };
+  meta: { initialSlot?:string;siteAmbience?:boolean;retakeCount?:number; retakeBudgetMicro?:number; ending?:{kind:"last_clip";holdS:number}; editorial?: Record<string, unknown>; intent: VideoIntentKind; source: "engine" | "user" | "ai_local" | "ai"; createdFrom: string | null; runId: string | null; /** Habillage publicitaire (titres, panneau, carte de fin posés sur les plans réels). */ promo?: boolean };
 };
 
 // ------------------------------------------------------------------------------------------- qualité et résultat
@@ -247,6 +250,7 @@ export const VIDEO_CRITERIA = ["relevance", "narrative", "visual", "continuity",
 export type VideoCriterion = (typeof VIDEO_CRITERIA)[number];
 
 export type ShotReview = {
+  foreignBrands?:string[];textCorrect?:boolean|null;
   score: number;
   sameProduct: boolean | null;
   productAltered: boolean;
@@ -258,7 +262,7 @@ export type ShotReview = {
   issues: string[];
 };
 
-export type VideoReview = { criteria: Record<VideoCriterion, number>; issues: string[]; personVisible?: boolean; fix: { target: "shot" | "audio" | "subtitles" | "editing" | "script" | "none"; shotId: string | null; instruction: string } };
+export type VideoReview = { criteria: Record<VideoCriterion, number>; issues: string[]; unchecked?:string[]; personVisible?: boolean; fix: { target: "shot" | "audio" | "subtitles" | "editing" | "script" | "none"; shotId: string | null; instruction: string } };
 
 export type ShotOutcome = {
   shotId: string;

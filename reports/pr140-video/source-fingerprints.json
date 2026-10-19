@@ -1,0 +1,50 @@
+{
+  "codeCommit": "c5f74c437b3c3644024329b3d86bb45e2a500f18",
+  "files": [
+    {
+      "path": "scripts/verify-video-mission-browser.ts",
+      "sha256": "597230966cf06b499eaee467429f7a676f567c7e0bb164190316702a9cecb5bb",
+      "gitBlob": "a0216052a834af8de37f9e7eff06e9a63351e3f9"
+    },
+    {
+      "path": "scripts/verify-video-mission.ts",
+      "sha256": "fcd4baff06ffe27f3a43a9a4cf66ea5ccc1fe372f13d1dbe67c75b3d31d3b55b",
+      "gitBlob": "8063938e284e33ba7ca4d78dd1b9fbd057e5fd0f"
+    },
+    {
+      "path": "scripts/verify-video-quote.ts",
+      "sha256": "19a1a395b4058097ab49d33a7783a1c824dabf2d01053b7bdde0b3a6bd51520f",
+      "gitBlob": "b4f62c37b85e8a544c0789be28a05bf216ba0848"
+    },
+    {
+      "path": "src/app/api/projects/[id]/creative/video/route.ts",
+      "sha256": "76eea51a8287c8bd79de0ce854575af70d71c4d332d24d68ac535d38ff7439ff",
+      "gitBlob": "ef9e55289d41eb8b298b366d0d2f959f7b855ddc"
+    },
+    {
+      "path": "src/components/studio/guided-video.tsx",
+      "sha256": "4df29caba8f0107c4d300a65bb064ddedd68c4fcbb3bf7e4aabe232795db1199",
+      "gitBlob": "4be1c061b237a2c2f4b1acb0bb0647b5b899f1c5"
+    },
+    {
+      "path": "src/lib/video-v2/three-scenes.ts",
+      "sha256": "8f6788a5d69221233b560eacbb80ff3457f1818b7048d9b314f038ad12e0b155",
+      "gitBlob": "c1421dad24c37f810356ea44e9d844a434dd7a65"
+    },
+    {
+      "path": "tests/video-creation-rights.test.ts",
+      "sha256": "c2ae93836a43c32d97b735a06d33b895f3a2954d8f49c7c9cb52c9922a1fd762",
+      "gitBlob": "78207339d1a059ca01a2218a61b83e461cc05a21"
+    },
+    {
+      "path": "tests/video-creative-guide.test.ts",
+      "sha256": "2214a074ee66143d13d4f9bd35b91c5e002697ea25cab0ed45452c6f4356b85d",
+      "gitBlob": "9c6d2e7592dc8850a6e44cc9cd8269134f17e92d"
+    },
+    {
+      "path": "tests/video-mission-reliability.test.ts",
+      "sha256": "bf81140abd4ffcb3502fa37abf65e100e116a59372e4652fd0c7e0bbf0199cb8",
+      "gitBlob": "ced817e42a3eab6c8cb1692a996a7ae01cafdbc7"
+    }
+  ]
+}

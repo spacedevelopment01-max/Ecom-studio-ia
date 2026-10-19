@@ -48,7 +48,7 @@ describe("site d'entreprise de services", () => {
       const home = (await renderPage({ spec, base: "/p", files, cart: [] }, "/", new URLSearchParams())).html;
       if (CATALOG.has(dir)) {
         // Thèmes du catalogue : chacun sa composition, mais toujours l'offre et un moyen de joindre l'entreprise.
-        expect(["services-list", "v2-index", "v2-hero"].some((t) => home.includes(`data-es-type="${t}"`)), `${dir} offre`).toBe(true);
+        expect(["services-list", "v2-index", "v2-hero", "ref-offers"].some((t) => home.includes(`data-es-type="${t}"`)), `${dir} offre`).toBe(true);
         expect(["practical-info", "v2-facts", "booking", "booking-calendar", "contact-form"].some((t) => home.includes(`data-es-type="${t}"`)), `${dir} contact`).toBe(true);
       } else for (const type of ["services-list", "practical-info", "portfolio", "testimonials", "faq", "cta-banner"]) expect(home, `${dir} ${type}`).toContain(`data-es-type="${type}"`);
       // Pas d'« Équipe » à compléter sur l'accueil : elle reste sur la page À propos.

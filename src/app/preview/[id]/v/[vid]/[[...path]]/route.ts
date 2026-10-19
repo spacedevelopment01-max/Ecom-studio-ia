@@ -3,12 +3,14 @@
  * avec LiquidJS. Gère pages, médias, polices et panier de démonstration.
  */
 import fs from "node:fs";
+import { recordPreviewContact } from "@/lib/theme/preview-contact";
 import { HttpError, currentUser, ownedProject } from "@/lib/auth";
 import { handle } from "@/lib/http";
 import { currentTheme, themeVersion } from "@/lib/projects";
 import { compileTheme, importedBinary, themeAssetBinary } from "@/lib/theme/compile";
 import { libraryLoader } from "@/lib/theme/loader";
 import { fontFilePath, renderNamedSections, renderPage, variantId, type PreviewCartLine } from "@/lib/theme/render";
+import { addOfferToCart, reconcileOfferCart, purchaseErrorMessage, rebindOfferLines } from "@/lib/theme/purchase-offers";
 import { storeProducts } from "@/lib/theme/spec";
 import { previewTools, stockBadgeTool } from "@/lib/theme/preview-tools";
 import { stockPhotoLabel, stockPhotosInTheme } from "@/lib/theme/stock-notice";
@@ -17,7 +19,7 @@ import { L, uiLang } from "@/lib/i18n-server";
 import { previewCsp, previewCors, previewSegment, splitPreviewSegment, verifyPreview } from "@/lib/theme/preview-access";
 import type { ThemeSpec } from "@/lib/theme/spec";
 import { one } from "@/lib/db";
-import { DIRECTIONS, type DirectionId } from "@/lib/theme/directions";
+import { DIRECTIONS, isRetiredDirection, type DirectionId } from "@/lib/theme/directions";
 import { composedDirectionSpec } from "@/lib/theme/direction-thumb";
 import { modelById, previewModelSpec } from "@/lib/theme/page-templates";
 import { loadProject } from "@/lib/projects";
@@ -45,6 +47,8 @@ async function load(req: Request, ctx: P) {
   if (vid.startsWith("dir-")) {
     const d = vid.slice(4);
     if (!DIRECTIONS.some((x) => x.id === d) || !one("SELECT 1 FROM projects WHERE id = ? AND brand_json IS NOT NULL AND brand_json != 'null'", id)) throw new HttpError(404, L("Direction introuvable.", "Direction not found."));
+    // Thème retiré du catalogue : prévisualisé seulement s'il est déjà celui du projet (jamais proposé à un nouveau choix).
+    if (isRetiredDirection(d) && currentTheme(id)?.spec.direction !== d) throw new HttpError(404, L("Thème retiré du catalogue.", "Theme withdrawn from the catalogue."));
     const spec = await composedDirectionSpec(id, d as DirectionId, currentTheme(id)?.spec.language ?? uiLang());
     return { id, vid, spec, segs: path ?? [], base: `/preview/${id}/v/${seg}`, redirect };
   }
@@ -73,11 +77,12 @@ async function readCart(id: string): Promise<PreviewCartLine[]> {
 }
 
 /** Toutes les variantes de la boutique, par identifiant global. */
-function variantTable(spec: ThemeSpec) {
-  const map = new Map<number, { title: string; price: number }>();
+function variantTable(spec: ThemeSpec, base = "") {
+  const map = new Map<number, { title: string; productTitle: string; variantTitle: string; price: number; image: string | null }>();
   storeProducts(spec).forEach((p, pi) => {
     const variants = p.variants.length ? p.variants : [{ title: "Default Title", options: ["Default Title"], price: p.price, available: true }];
-    variants.forEach((v, vi) => map.set(variantId(pi, vi), { title: v.title === "Default Title" ? p.title : `${p.title} - ${v.title}`, price: v.price ?? p.price ?? 0 }));
+    // Visuel de la variante (même règle que le rendu des pages) : son média propre, sinon l'image du produit.
+    variants.forEach((v, vi) => { const file = (v.image && p.images.includes(v.image) ? v.image : null) ?? p.images[0] ?? null; map.set(variantId(pi, vi), { title: v.title === "Default Title" ? p.title : `${p.title} - ${v.title}`, productTitle: p.title, variantTitle: v.title, price: v.price ?? p.price ?? 0, image: file ? `${base}/assets/${file}` : null }); });
   });
   return map;
 }
@@ -87,13 +92,13 @@ async function writeCart(id: string, cart: PreviewCartLine[]) {
   if (carts.size > 500) carts.delete(carts.keys().next().value!);
 }
 
-function cartJson(spec: ThemeSpec, cart: PreviewCartLine[]) {
-  const table = variantTable(spec);
+function cartJson(spec: ThemeSpec, cart: PreviewCartLine[], base = "") {
+  const table = variantTable(spec, base);
   const items = cart.filter((l) => table.has(l.variantId)).map((l, i) => {
     const v = table.get(l.variantId)!;
-    return { key: `${l.variantId}:${i}`, id: l.variantId, quantity: l.quantity, title: v.title, price: v.price, final_line_price: v.price * l.quantity };
+    return { key: l.offerGroup ? `${l.offerGroup}:${l.variantId}:${l.gift ? "gift" : "item"}` : `${l.variantId}:${i}`, id: l.variantId, quantity: l.quantity, title: v.title, product_title: v.productTitle, variant_title: v.variantTitle, price: v.price, final_line_price: l.finalLinePrice ?? v.price * l.quantity, image: v.image, featured_image: v.image ? { url: v.image, alt: v.title } : null };
   });
-  return { item_count: items.reduce((s, x) => s + x.quantity, 0), items, total_price: items.reduce((s, x) => s + x.final_line_price, 0), currency: "EUR" };
+  return { item_count: items.reduce((s, x) => s + x.quantity, 0), items, total_price: items.reduce((s, x) => s + x.final_line_price, 0), currency: spec.store.product.currency || "EUR" };
 }
 
 async function sectionsFor(spec: ThemeSpec, base: string, cart: PreviewCartLine[], names: string | null) {
@@ -147,45 +152,72 @@ async function get(req: Request, ctx: P): Promise<Response> {
     if (!f) return new Response(null, { status: 404 });
     return new Response(new Uint8Array(fs.readFileSync(f)), { headers: { "Content-Type": "font/ttf", "Cache-Control": "public, max-age=31536000, immutable" } });
   }
-  const cart = await readCart(id);
-  if (path === "/cart.js" || (path === "/cart" && req.headers.get("accept")?.includes("application/json"))) return Response.json(cartJson(spec, cart));
+  if (path === "/cart/change" && url.searchParams.has("quantity")) {
+    return post(new Request(req.url, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: url.searchParams.toString() }), ctx);
+  }
+  let cart: PreviewCartLine[];
+  try { cart = reconcileOfferCart(spec, await readCart(id)); } catch (e) { throw new HttpError(422, purchaseErrorMessage(e, spec.language ?? "fr")); }
+  if (path === "/cart.js" || (path === "/cart" && req.headers.get("accept")?.includes("application/json"))) return Response.json(cartJson(spec, cart, base));
   if (url.searchParams.get("sections")) return Response.json(await sectionsFor(spec, base, cart, url.searchParams.get("sections")));
   const r = await renderPage({ spec, base, cart }, path, url.searchParams);
-  const html = url.searchParams.get("es_raw") === "1" ? r.html : r.html.replace("</body>", `${previewTools(uiLang(), spec.store.business)}${stockBadgeTool(stockPhotosInTheme(spec, getAsset, uiLang()).map((x) => ({ file: x.file, label: stockPhotoLabel(x.source, uiLang()) })))}</body>`);
+  const html = url.searchParams.get("es_raw") === "1" ? r.html : r.html.replace("</body>", `${previewTools(uiLang(), spec.store.business, spec.meta?.demo?.contactTest === true && spec.meta.demo.isDemo === true)}${stockBadgeTool(stockPhotosInTheme(spec, getAsset, uiLang()).map((x) => ({ file: x.file, label: stockPhotoLabel(x.source, uiLang()) })))}</body>`);
   return new Response(html, { status: r.status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Frame-Options": "SAMEORIGIN", "Content-Security-Policy": previewCsp(), "Referrer-Policy": "no-referrer" } });
 }
 
 async function post(req: Request, ctx: P): Promise<Response> {
   const { id, spec, segs, base } = await load(req, ctx);
   const path = "/" + segs.join("/");
-  let cart = await readCart(id);
+  if (path === "/contact") {
+    if (Number(req.headers.get("content-length")) > 16000) throw new HttpError(413, "Request too large");
+    const raw = await req.text();
+    if (Buffer.byteLength(raw) > 16000) throw new HttpError(413, "Request too large");
+    let data: unknown;
+    try { data = (req.headers.get("content-type") ?? "").includes("application/json") ? JSON.parse(raw) : Object.fromEntries(new URLSearchParams(raw)); }
+    catch { throw new HttpError(400, "Invalid form"); }
+    return Response.json(recordPreviewContact(id, spec, data));
+  }
+  let cart: PreviewCartLine[];
+  try { cart = rebindOfferLines(spec, await readCart(id)); } catch (e) { throw new HttpError(422, purchaseErrorMessage(e, spec.language ?? "fr")); }
   const ct = req.headers.get("content-type") ?? "";
-  const data: Record<string, any> = ct.includes("application/json") ? await req.json() : Object.fromEntries((await req.formData()).entries());
+  let data: Record<string, any>;
+  if (ct.includes("application/json")) data = await req.json();
+  else { const form = await req.formData(); data = Object.fromEntries(form.entries()); if (form.has("updates[]")) data.updates = form.getAll("updates[]").map(Number); }
   const table = variantTable(spec);
   if (path === "/cart/add" || path === "/cart/add.js") {
-    const requested = Number(data.id ?? data["items[0][id]"] ?? 1000);
-    const vid = table.has(requested) ? requested : 1000;
-    const qty = Math.max(1, Math.min(99, Number(data.quantity ?? 1)));
-    const line = cart.find((l) => l.variantId === vid);
-    if (line) line.quantity += qty;
-    else cart.push({ variantId: vid, quantity: qty });
+    try {
+      if (data.offer) cart = addOfferToCart(spec, cart, { target: String(data.target ?? ""), offer: String(data.offer), variants: Array.isArray(data.variants) ? data.variants.map(Number) : [] });
+      else {
+        const items = Array.isArray(data.items) ? data.items : [{ id: data.id ?? data["items[0][id]"], quantity: data.quantity ?? 1 }];
+        if (!items.length || items.length > 20) throw new Error("Quantité invalide.");
+        for (const item of items) {
+          const vid = Number(item.id), qty = Number(item.quantity);
+          if (!table.has(vid) || !Number.isSafeInteger(qty) || qty < 1 || qty > 99) throw new Error("Variante ou quantité invalide.");
+          const line = cart.find((l) => l.variantId === vid && !l.offerGroup);
+          if (line) line.quantity += qty; else cart.push({ variantId: vid, quantity: qty });
+        }
+      }
+    } catch (e) { return Response.json({ description: purchaseErrorMessage(e, spec.language ?? "fr") }, { status: 422 }); }
   } else if (path === "/cart/change" || path === "/cart/change.js") {
-    const key = String(data.id ?? data.line ?? "");
-    const qty = Math.max(0, Number(data.quantity ?? 0));
-    // Clé « variante:rang », identifiant de variante, ou numéro de ligne (1, 2, …).
-    const n = Number(key);
-    const vid = key.includes(":") ? Number(key.split(":")[0]) : n >= 1 && n < 100 ? cart[n - 1]?.variantId : n;
-    cart = cart.map((l) => (l.variantId === vid ? { ...l, quantity: qty } : l));
-  } else if (path === "/cart/update" || path === "/cart/update.js") {
-    const updates = Object.entries(data).filter(([k]) => k.startsWith("updates")).map(([, v]) => Number(v));
+    const key = String(data.id ?? data.line ?? ""), qty = Number(data.quantity ?? 0);
+    if (!Number.isSafeInteger(qty) || qty < 0 || qty > 99) return Response.json({ description: "Quantité invalide." }, { status: 422 });
+    const json = cartJson(spec, cart, base);
+    const exact = json.items.findIndex((item) => item.key === key);
+    const n = Number(key), index = exact >= 0 ? exact : n >= 1 && n < 100 ? n - 1 : cart.findIndex((l) => l.variantId === n && !l.gift);
+    if (cart[index]?.gift) return Response.json({ description: "Le cadeau est recalculé depuis son lot." }, { status: 422 });
+    cart = cart.map((l, i) => i === index ? { ...l, quantity: qty } : l);
+  } else if (path === "/cart/update" || path === "/cart/update.js" || (path === "/cart" && !Object.hasOwn(data, "checkout"))) {
+    const updates = Array.isArray(data.updates) ? data.updates : Object.entries(data).filter(([k]) => k.startsWith("updates")).map(([, v]) => Number(v));
+    if (updates.some((v) => !Number.isSafeInteger(v) || v < 0 || v > 99)) return Response.json({ description: "Quantité invalide." }, { status: 422 });
     cart = cart.map((l, i) => ({ ...l, quantity: updates[i] ?? l.quantity }));
   } else {
     return new Response(L("Action d'aperçu non prise en charge", "Preview action not supported"), { status: 404 });
   }
+  try { cart = reconcileOfferCart(spec, cart); } catch (e) { return Response.json({ description: purchaseErrorMessage(e, spec.language ?? "fr") }, { status: 422 }); }
+  if (cart.length > 20) return Response.json({ description: "Trop de lignes de panier." }, { status: 422 });
   await writeCart(id, cart);
   const sections = await sectionsFor({ ...spec }, base, cart, data.sections ?? null);
   if (ct.includes("application/json") || req.headers.get("accept")?.includes("application/json") || path.endsWith(".js") || data.sections) {
-    return Response.json({ ...cartJson(spec, cart), sections });
+    return Response.json({ ...cartJson(spec, cart, base), sections });
   }
   return new Response(null, { status: 303, headers: { Location: `${base}/cart` } });
 }

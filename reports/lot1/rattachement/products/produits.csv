@@ -1,0 +1,3 @@
+Handle,Title,Body (HTML),Vendor,Type,Tags,Published,Option1 Name,Option1 Value,Variant SKU,Variant Price,Variant Compare At Price,Variant Requires Shipping,Variant Taxable,Image Src,Image Position,Image Alt Text,Status
+"diagnostic","Diagnostic","<p>Texte intégral de l'offre 1, à conserver sur sa propre page.</p>","Catalogue synthétique 0","","Consommables de laboratoire","FALSE","Title","Default Title","","","","TRUE","TRUE","","","","draft"
+"diagnostic-2","Diagnostic","<p>Texte intégral de l'offre 2, à conserver sur sa propre page.</p>","Catalogue synthétique 0","Accessoires","Accessoires, Accessoires","FALSE","Title","Default Title","","12.00","","TRUE","TRUE","","","","draft"

@@ -1,7 +1,7 @@
 /**
  * Migration V1 → V2 : les parcours clients appellent réellement les moteurs V2 (aucun appel d'IA, fournisseurs absents).
- *  - création complète : logo par Brand & Logo Engine V2 (version du studio provisoire sans IA, jamais présentée comme
- *    finale), aucune nouvelle piste de l'ancien moteur ;
+ *  - création complète : logo par Brand & Logo Engine V2 ; fournisseur absent = attente explicite, aucun
+ *    nouveau dessin local de remplacement ;
  *  - images : jeu d'images orchestré par Image Engine V2 (composants locaux seulement + moteur V2) ;
  *  - calendrier de la création : Social V2, une seule fois par projet (reprise sans doublon) ;
  *  - anciennes routes : plus de nouvelle génération V1 ; l'ancien point d'accès des publications ne contourne pas V2 ;
@@ -61,29 +61,18 @@ describe("migration V1 → V2 : moteurs réellement appelés", async () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ctx = (params: Record<string, string>) => ({ params: Promise.resolve(params) }) as any;
 
-  it("création complète — marque : logo par Brand & Logo Engine V2, aucune piste de l'ancien moteur", async () => {
+  it("création complète — marque : fournisseur absent, attente explicite ; aucun nouveau logo local ni remplacement", async () => {
     const pid = await seedPaid("cosmetic");
     const before = all("SELECT id FROM assets WHERE project_id = ? AND role = 'logo-proposal'", pid).length;
     const { buildBrand } = await import("@/lib/engine/brand");
-    await fr(() => buildBrand(ctxFor(pid), pid, {}));
-    const b = loadProject(pid).brand!;
-    expect(b.logo.engine).toBe("v2");
-    // Sans IA : version du studio appliquée comme logo PROVISOIRE, jamais présentée comme finale.
-    expect(b.logo.provisional).toBe(true);
-    expect(b.logo.status).toBe("proposed");
-    expect(all("SELECT id FROM assets WHERE project_id = ? AND role = 'logo-v2-studio'", pid).length).toBeGreaterThan(0);
-    expect(all("SELECT id FROM assets WHERE project_id = ? AND role = 'logo-v2'", pid)).toHaveLength(0);
+    await expect(fr(() => buildBrand(ctxFor(pid), pid, {}))).rejects.toThrow(/attente|indisponible/);
+    expect(all("SELECT id FROM assets WHERE project_id=? AND role IN ('logo-v2-studio','logo-v2','logo')", pid)).toHaveLength(0);
     expect(all("SELECT id FROM assets WHERE project_id = ? AND role = 'logo-proposal'", pid).length).toBe(before);
-    // Le logo appliqué alimente le site (déclinaisons).
-    expect(one("SELECT 1 FROM assets WHERE project_id = ? AND role = 'logo' AND id = ?", pid, b.logo.assetId)).toBeTruthy();
-    // Changement de nom : le même logo V2 est reconstruit (sans IA), toujours provisoire.
-    const { reapplyLogoV2 } = await import("@/lib/logo-v2/choose");
-    saveBrand(pid, { ...b, name: "Nouveau Nom" });
-    expect(await fr(() => reapplyLogoV2(null, pid))).toBe(true);
-    expect(loadProject(pid).brand!.logo.provisional).toBe(true);
-    // Un logo validé par le client n'est jamais remplacé par la création complète.
+    expect(all("SELECT id FROM ai_calls WHERE project_id=?", pid)).toHaveLength(0);
+    // Un logo déjà choisi garde sa protection même si le moteur de dessin est absent.
     const { applyBestLogoV2 } = await import("@/lib/logo-v2/choose");
-    saveBrand(pid, { ...loadProject(pid).brand!, validated: ["logo"], logo: { ...loadProject(pid).brand!.logo, status: "validated" } });
+    const b = loadProject(pid).brand!;
+    saveBrand(pid, { ...b, validated: ["logo"], logo: { ...b.logo, status: "validated" } });
     expect(await fr(() => applyBestLogoV2(null, pid, [{ assetId: "x", verdict: "FINAL", score: 9 }]))).toBeNull();
   }, 120_000);
 

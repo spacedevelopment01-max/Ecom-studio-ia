@@ -1,6 +1,5 @@
 /**
- * Fournisseurs vidéo (Router V2) : capacités DÉCLARÉES et leur niveau de vérification. « code » = capacité déjà
- * utilisée par le studio (appel réel écrit et en service) ; « documented » = annoncée par le fournisseur mais jamais
+ * Fournisseurs vidéo (Router V2) : capacités DÉCLARÉES et leur niveau de vérification. « code » = adaptateur raccordé dans le studio (chemin écrit, sans garantie de qualité ni recette fournisseur réelle) ; « documented » = annoncée par le fournisseur mais jamais
  * appelée ici — elle n'est donc PAS utilisée par le moteur tant qu'elle n'a pas été vérifiée (benchmark 7B).
  *
  * Le choix suit le Router V2 (modèles déclarés dans `orchestrator/capabilities.ts`, clés actives) ; un fournisseur
@@ -80,7 +79,7 @@ for (const m of MEDIA_MODELS) {
     people: !!m.caps.people,
     crossShotConsistency: "start_frame",
     nativeAudio: !!m.caps.audio,
-    verification: { imageToVideo: "code", people: "code", ...(m.caps.audio ? { nativeAudio: "code" as const } : {}), ...(m.caps.textToVideo ? { textToVideo: "documented" as const } : {}) },
+    verification: { imageToVideo: "code", people: "code", ...(m.caps.audio ? { nativeAudio: "code" as const } : {}), ...(m.caps.textToVideo ? { textToVideo: (m.adapter==="alibaba_video"?"code":"documented") as "code"|"documented" } : {}) },
   });
 }
 

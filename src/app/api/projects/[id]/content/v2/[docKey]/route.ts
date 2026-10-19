@@ -55,8 +55,8 @@ export const PUT = handle(async (req: Request, ctx: DocCtx) => {
   const { project: p } = await projectFromCtx(ctx as Ctx);
   const { docKey } = await ctx.params;
   if (!latestContent(p.id, docKey)) throw new HttpError(404, L("Contenu introuvable.", "Content not found."));
-  const b = await body(req, z.object({ doc: ContentDocSchema, note: z.string().max(200).optional() }));
-  saveUserEdit(p.id, docKey, normalizeIds(b.doc as ContentDoc), b.note ?? "modification du client");
+  const b = await body(req, z.object({ doc: ContentDocSchema, note: z.string().max(200).optional(), expectedVersion: z.number().int().min(1).optional() }));
+  saveUserEdit(p.id, docKey, normalizeIds(b.doc as ContentDoc), b.note ?? "modification du client", b.expectedVersion);
   return ok(view(p, docKey));
 });
 

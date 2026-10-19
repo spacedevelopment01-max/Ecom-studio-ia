@@ -149,4 +149,14 @@ describe("Publications, banques et stratégie", async () => {
     const en = runWithLang({ ui: "en", content: "en" }, () => longTermStrategy(p, socialStrategy(p, { lang: "en" }), { lang: "en", start: new Date("2026-10-15T00:00:00Z") }));
     expect(en.roadmap[0].title).toBe("Lay the foundations");
   });
+  it("API unitaire : devis par page, carrousel sauvegardé comme séquence et avis non autorisé refusé",async()=>{
+    const p=await project();aiOn=true;
+    const q=await (await call(social,p.id,'social/v2',{action:'quote_one',kind:'carousel',mode:'ai_post',networks:1,pages:3})).json();
+    const single=await (await call(social,p.id,'social/v2',{action:'quote_one',kind:'image',mode:'ai_post',networks:1})).json();
+    expect(q.estimateMicro).toBe(single.estimateMicro*3);
+    const r=await call(social,p.id,'social/v2',{action:'create_one',kind:'carousel',mode:'free',date:tomorrow,time:'11:30',timezone:'UTC',platforms:[{platform:'instagram'}],caption:'Préparer les outils.\n\nProtéger le sol.',editorial:{structure:'checklist',blocks:[{kind:'check',text:'Préparer les outils.'},{kind:'check',text:'Protéger le sol.'}]}});
+    expect(r.status).toBe(200);const result=await r.json();const row=one<any>('SELECT * FROM posts WHERE id=?',result.ids[0]);expect(row.format).toBe('carousel');expect(JSON.parse(row.brief).editorial.blocks).toHaveLength(2);
+    const invalid=await call(social,p.id,'social/v2',{action:'create_one',kind:'image',mode:'free',date:tomorrow,time:'12:30',timezone:'UTC',platforms:[{platform:'instagram'}],editorial:{structure:'quote',testimonial:{quote:'Citation fournie',source:'Retour test',verified:true,authorized:false}}});expect(invalid.status).toBe(400);
+  });
+
 });

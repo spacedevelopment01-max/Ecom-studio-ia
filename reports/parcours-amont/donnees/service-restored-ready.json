@@ -1,0 +1,754 @@
+{
+  "schemaVersion": 1,
+  "kind": "project_ready_for_theme",
+  "projectId": "c4pylalq40be6mcy",
+  "revision": 38,
+  "provenance": "simulation",
+  "builtAt": 1792344460073,
+  "clientBrief": {
+    "offerUrl": "",
+    "description": "Accompagnement des petites entreprises pour organiser les espaces de travail. Diagnostic et atelier participatif.",
+    "offerName": "Respire Bureau",
+    "brandName": "Respire Bureau",
+    "target": "Responsables de petites entreprises",
+    "constraints": "Pas de chiffres de productivité, pas de panier.",
+    "business": "services",
+    "photoIds": [
+      "2afauf68lk57ez81"
+    ],
+    "referenceUrls": [
+      "https://reference.example/espaces"
+    ],
+    "price": "",
+    "services": {
+      "services": [
+        {
+          "name": "Diagnostic",
+          "description": "Étudier les usages du bureau."
+        },
+        {
+          "name": "Atelier participatif",
+          "description": "Recueillir les besoins de l’équipe."
+        }
+      ],
+      "area": "Nantes",
+      "address": "",
+      "phone": "",
+      "email": "contact@example.test",
+      "hours": "",
+      "bookingUrl": "",
+      "contactMode": "quote",
+      "contactModes": [
+        "quote"
+      ]
+    }
+  },
+  "profile": {
+    "name": "Respire Bureau",
+    "nameStatus": "provided",
+    "category": "Coaching et accompagnement",
+    "sector": "coaching",
+    "summary": "Accompagnement des petites entreprises pour organiser les espaces de travail. Diagnostic et atelier participatif.",
+    "facts": [],
+    "visual": {
+      "colors": []
+    },
+    "price": {
+      "amount": null,
+      "currency": "EUR",
+      "status": "unknown"
+    },
+    "variants": [],
+    "questions": [],
+    "claimsToAvoid": [],
+    "sources": [],
+    "analyzedBy": "local"
+  },
+  "services": {
+    "services": [
+      {
+        "name": "Diagnostic",
+        "description": "Étudier les usages du bureau."
+      },
+      {
+        "name": "Atelier participatif",
+        "description": "Recueillir les besoins de l’équipe."
+      }
+    ],
+    "area": "Nantes",
+    "address": "",
+    "phone": "",
+    "email": "contact@example.test",
+    "hours": "",
+    "bookingUrl": "",
+    "contactMode": "quote",
+    "contactModes": [
+      "quote"
+    ]
+  },
+  "strategy": {
+    "audience": [
+      {
+        "label": "Responsables de petites entreprises",
+        "needs": [
+          "Compléter les éléments de preuve avant toute promesse chiffrée."
+        ],
+        "objections": [
+          "Que peut-on réellement vérifier ?"
+        ]
+      }
+    ],
+    "angles": [
+      {
+        "title": "Décider sur des éléments vérifiables",
+        "idea": "Présenter Respire Bureau à Responsables de petites entreprises par ses caractéristiques et conditions vérifiables."
+      }
+    ],
+    "pillars": [
+      "Compléter les éléments de preuve avant toute promesse chiffrée."
+    ],
+    "keyMessages": [
+      "Compléter les éléments de preuve avant toute promesse chiffrée."
+    ],
+    "platform": {
+      "persona": "Responsables de petites entreprises",
+      "problem": "Présenter Respire Bureau à Responsables de petites entreprises par ses caractéristiques et conditions vérifiables.",
+      "alternatives": "Une offre comparable à Respire Bureau. La page décrit les usages et conditions de présentation. Les modalités de contact sont visibles. Ceci est une source synthétique pour vérifier la persistance, pas une étude réelle.",
+      "difference": "Alternative centrée sur les preuves : utile si la comparaison et les objections dominent le choix.",
+      "proofs": [
+        {
+          "claim": "Compléter les éléments de preuve avant toute promesse chiffrée.",
+          "proof": "Hypothèse validée par le client ; aucune preuve chiffrée ajoutée.",
+          "status": "missing"
+        }
+      ],
+      "objections": [
+        {
+          "objection": "Que peut-on réellement vérifier ?",
+          "answer": "Distinguer les faits du projet, les observations des sources et les éléments restant à confirmer."
+        }
+      ]
+    },
+    "generatedBy": "local"
+  },
+  "brand": {
+    "name": "Respire Bureau",
+    "nameStatus": "validated",
+    "alternatives": [],
+    "tagline": "Coaching et accompagnement, Nantes.",
+    "positioning": "Présenter Respire Bureau à Responsables de petites entreprises par ses caractéristiques et conditions vérifiables.",
+    "audience": "Responsables de petites entreprises",
+    "personality": [],
+    "tone": {
+      "voice": "Professionnel, rassurant et accessible",
+      "do": [
+        "Expliquer simplement chaque prestation",
+        "Donner les informations pratiques (zone, horaires, contact)",
+        "Montrer le vrai travail"
+      ],
+      "dont": [
+        "Inventer des tarifs, des délais ou des avis",
+        "Promettre un résultat",
+        "Jargon sans explication"
+      ]
+    },
+    "story": "",
+    "values": [],
+    "validated": [
+      "name",
+      "tagline",
+      "palette",
+      "fonts",
+      "logo"
+    ],
+    "generatedBy": "local",
+    "palette": {
+      "primary": "#446274",
+      "secondary": "#D0D8DD",
+      "accent": "#747FB4",
+      "light": "#F2F5F7",
+      "dark": "#141B1F"
+    },
+    "fonts": {
+      "heading": "montserrat_n8",
+      "body": "inter_n4"
+    },
+    "direction": "elan",
+    "logo": {
+      "concept": "Logo à choisir",
+      "status": "validated",
+      "assetId": "lnl32djz1bnv05i4",
+      "provisional": false
+    }
+  },
+  "copy": {
+    "seo": {
+      "title": "Coaching et accompagnement à Nantes | Respire Bureau",
+      "description": "Accompagnement des petites entreprises pour organiser les espaces de travail. Diagnostic et atelier participatif. Demander un devis."
+    },
+    "announcement": [],
+    "hero": {
+      "eyebrow": "Coaching et accompagnement",
+      "heading": "Coaching et accompagnement, Nantes.",
+      "line1": "Respire Bureau",
+      "line2": "Coaching et accompagnement, Nantes.",
+      "text": "Accompagnement des petites entreprises pour organiser les espaces de travail.",
+      "cta": "Demander un devis"
+    },
+    "statement": {
+      "eyebrow": "Respire Bureau",
+      "heading": "Accompagnement des petites entreprises pour organiser les espaces de travail.",
+      "text": ""
+    },
+    "features": {
+      "heading": "Nos prestations",
+      "items": [
+        {
+          "title": "Diagnostic",
+          "text": "Étudier les usages du bureau.",
+          "icon": "sparkle"
+        },
+        {
+          "title": "Atelier participatif",
+          "text": "Recueillir les besoins de l’équipe.",
+          "icon": "hand"
+        }
+      ]
+    },
+    "story": {
+      "heading": "Comment ça se passe",
+      "steps": [
+        {
+          "title": "Votre demande",
+          "text": "Décrivez votre besoin via le formulaire de contact ou par e-mail à contact@example.test pour recevoir un devis."
+        },
+        {
+          "title": "Le devis",
+          "text": "[À compléter : comment le devis est établi et envoyé]"
+        },
+        {
+          "title": "La prestation",
+          "text": "[À compléter : comment se déroule la prestation]"
+        }
+      ]
+    },
+    "detail": {
+      "eyebrow": "Coaching et accompagnement",
+      "heading": "Respire Bureau",
+      "text": "Accompagnement des petites entreprises pour organiser les espaces de travail. Diagnostic et atelier participatif."
+    },
+    "specs": {
+      "heading": "Infos pratiques",
+      "items": [
+        {
+          "label": "Zone d'intervention",
+          "value": "Nantes"
+        },
+        {
+          "label": "Adresse",
+          "value": "[À compléter : adresse d'accueil]"
+        },
+        {
+          "label": "Horaires",
+          "value": "[À compléter : horaires]"
+        },
+        {
+          "label": "E-mail",
+          "value": "contact@example.test"
+        },
+        {
+          "label": "Rendez-vous",
+          "value": "Décrivez votre besoin via le formulaire de contact ou par e-mail à contact@example.test pour recevoir un devis."
+        }
+      ]
+    },
+    "faq": {
+      "heading": "Questions fréquentes",
+      "items": [
+        {
+          "q": "Comment obtenir un devis ?",
+          "a": "Décrivez votre besoin via le formulaire de contact ou par e-mail à contact@example.test pour recevoir un devis."
+        },
+        {
+          "q": "Quels sont vos tarifs ?",
+          "a": "Chaque demande fait l'objet d'un devis. [À compléter : modalités du devis]"
+        },
+        {
+          "q": "Où intervenez-vous ?",
+          "a": "Nantes"
+        },
+        {
+          "q": "Quels sont vos horaires ?",
+          "a": "[À compléter : horaires]"
+        },
+        {
+          "q": "Quand puis-je avoir un rendez-vous ?",
+          "a": "[À compléter : délai habituel pour un rendez-vous]"
+        },
+        {
+          "q": "Que comprend le devis ?",
+          "a": "[À compléter : contenu du devis, validité et acompte éventuel]"
+        }
+      ]
+    },
+    "marquee": [
+      "Diagnostic",
+      "Atelier participatif",
+      "Nantes"
+    ],
+    "gallery": {
+      "heading": "Les séances en images",
+      "captions": []
+    },
+    "cta": {
+      "heading": "Parlons de votre projet",
+      "text": "Décrivez votre besoin via le formulaire de contact ou par e-mail à contact@example.test pour recevoir un devis.",
+      "button": "Demander un devis"
+    },
+    "newsletter": {
+      "heading": "Restons en contact",
+      "text": "Conseils et actualités, sans excès."
+    },
+    "product": {
+      "title": "Respire Bureau",
+      "short": "Accompagnement des petites entreprises pour organiser les espaces de travail. Diagnostic et atelier participatif.",
+      "description_html": "<p>Accompagnement des petites entreprises pour organiser les espaces de travail. Diagnostic et atelier participatif.</p><ul><li><strong>Diagnostic</strong> : Étudier les usages du bureau.</li><li><strong>Atelier participatif</strong> : Recueillir les besoins de l’équipe.</li></ul>",
+      "highlights": [
+        "Diagnostic",
+        "Atelier participatif"
+      ],
+      "tabs": [
+        {
+          "heading": "Prestations",
+          "content_html": "<ul><li><strong>Diagnostic</strong> : Étudier les usages du bureau.</li><li><strong>Atelier participatif</strong> : Recueillir les besoins de l’équipe.</li></ul>"
+        },
+        {
+          "heading": "Tarifs",
+          "content_html": "<p>Chaque demande fait l'objet d'un devis. [À compléter : modalités du devis]</p>"
+        },
+        {
+          "heading": "Infos pratiques",
+          "content_html": "<p><strong>Zone d'intervention :</strong> Nantes</p><p><strong>Adresse :</strong> [À compléter : adresse d'accueil]</p><p><strong>Horaires :</strong> [À compléter : horaires]</p><p><strong>E-mail :</strong> contact@example.test</p><p><strong>Rendez-vous :</strong> Décrivez votre besoin via le formulaire de contact ou par e-mail à contact@example.test pour recevoir un devis.</p>"
+        }
+      ],
+      "reassurance": []
+    },
+    "about": {
+      "heading": "Avancer ensemble",
+      "intro": "[À compléter : votre parcours et votre façon de travailler]",
+      "blocks": [
+        {
+          "heading": "Notre métier",
+          "text": "Accompagnement des petites entreprises pour organiser les espaces de travail. Diagnostic et atelier participatif."
+        },
+        {
+          "heading": "Zone d'intervention",
+          "text": "Nantes"
+        }
+      ],
+      "values": [
+        {
+          "title": "Des prestations claires",
+          "text": "Chaque prestation est décrite sur ce site, avec ses tarifs dès qu'ils sont indiqués."
+        },
+        {
+          "title": "Un contact direct",
+          "text": "Décrivez votre besoin via le formulaire de contact ou par e-mail à contact@example.test pour recevoir un devis."
+        }
+      ]
+    },
+    "shipping": {
+      "heading": "Infos pratiques",
+      "body_html": "<p><strong>Zone d'intervention :</strong> Nantes</p><p><strong>Adresse :</strong> [À compléter : adresse d'accueil]</p><p><strong>Horaires :</strong> [À compléter : horaires]</p><p><strong>E-mail :</strong> contact@example.test</p><p><strong>Rendez-vous :</strong> Décrivez votre besoin via le formulaire de contact ou par e-mail à contact@example.test pour recevoir un devis.</p><h3>Conditions de prestation</h3><p><strong>Prestations</strong><br>Diagnostic ; Atelier participatif.</p><p><strong>Tarifs</strong><br>Chaque demande fait l'objet d'un devis. [À compléter : modalités du devis]</p><p><strong>Devis et réservation</strong><br>[À compléter : conditions de devis, d'acompte et de confirmation]</p><p><strong>Annulation et report</strong><br>[À compléter : délai et conditions d'annulation]</p><p><strong>Paiement</strong><br>[À compléter : moyens et échéances de paiement]</p><p><strong>Responsabilité et assurance</strong><br>[À compléter : assurance professionnelle et responsabilités]</p>"
+    },
+    "contact": {
+      "heading": "Demander un devis",
+      "text": "Une question, un projet ? Décrivez votre besoin via le formulaire de contact ou par e-mail à contact@example.test pour recevoir un devis."
+    },
+    "footer": {
+      "about": "Coaching et accompagnement, Nantes.",
+      "newsletter": "Conseils et actualités, sans excès."
+    }
+  },
+  "pages": [
+    {
+      "key": "home",
+      "path": "/",
+      "title": "Accueil",
+      "kind": "home",
+      "goal": "Présenter Respire Bureau à Responsables de petites entreprises",
+      "sections": [
+        {
+          "key": "hero",
+          "purpose": "Offre et promesse vérifiable",
+          "mediaSlot": "home:hero"
+        },
+        {
+          "key": "offer",
+          "purpose": "Prestations et méthode"
+        },
+        {
+          "key": "proofs",
+          "purpose": "Preuves disponibles uniquement"
+        },
+        {
+          "key": "faq",
+          "purpose": "Objections et réponses confirmées"
+        },
+        {
+          "key": "contact",
+          "purpose": "Devis, contact ou rendez-vous"
+        }
+      ],
+      "docKey": "cnt:29287466e0ea91667367"
+    },
+    {
+      "key": "service:0",
+      "path": "/pages/prestation-1",
+      "title": "Diagnostic",
+      "kind": "service",
+      "goal": "Étudier les usages du bureau.",
+      "sections": [
+        {
+          "key": "presentation",
+          "purpose": "Étudier les usages du bureau.",
+          "mediaSlot": "service:0:presentation"
+        },
+        {
+          "key": "method",
+          "purpose": "Méthode et conditions connues"
+        },
+        {
+          "key": "contact",
+          "purpose": "quote"
+        }
+      ],
+      "docKey": "cnt:1c868db0f49564995c65"
+    },
+    {
+      "key": "service:1",
+      "path": "/pages/prestation-2",
+      "title": "Atelier participatif",
+      "kind": "service",
+      "goal": "Recueillir les besoins de l’équipe.",
+      "sections": [
+        {
+          "key": "presentation",
+          "purpose": "Recueillir les besoins de l’équipe.",
+          "mediaSlot": "service:1:presentation"
+        },
+        {
+          "key": "method",
+          "purpose": "Méthode et conditions connues"
+        },
+        {
+          "key": "contact",
+          "purpose": "quote"
+        }
+      ],
+      "docKey": "cnt:2e75913ce6f745e70276"
+    },
+    {
+      "key": "brand",
+      "path": "/pages/a-propos",
+      "title": "À propos",
+      "kind": "brand",
+      "goal": "Présenter la marque sans histoire inventée",
+      "sections": [
+        {
+          "key": "intent",
+          "purpose": "Positionnement et engagements vérifiables"
+        }
+      ],
+      "docKey": "cnt:1e07a5a0c924bbab8cd8"
+    },
+    {
+      "key": "contact",
+      "path": "/pages/contact",
+      "title": "Contact",
+      "kind": "contact",
+      "goal": "quote",
+      "sections": [
+        {
+          "key": "contact",
+          "purpose": "Coordonnées et formulaire"
+        }
+      ]
+    }
+  ],
+  "documents": [
+    {
+      "docKey": "cnt:29287466e0ea91667367",
+      "doc": {
+        "version": 1,
+        "type": "home_page",
+        "lang": "fr",
+        "page": {
+          "key": "home",
+          "title": "Accueil",
+          "kind": "home",
+          "status": "planned",
+          "url": null
+        },
+        "primaryKeyword": null,
+        "intent": "informational",
+        "meta": {
+          "seoTitle": "Accueil | Respire Bureau",
+          "metaDescription": "Présenter Respire Bureau à Responsables de petites entreprises. Découvrez les informations et les possibilités de contact.",
+          "slug": "",
+          "canonical": null,
+          "robots": "index,follow"
+        },
+        "blocks": [
+          {
+            "id": "h1",
+            "kind": "h1",
+            "text": "Accueil"
+          },
+          {
+            "id": "p",
+            "kind": "p",
+            "text": "Présenter Respire Bureau à Responsables de petites entreprises"
+          },
+          {
+            "id": "detail",
+            "kind": "p",
+            "text": "Respire Bureau s’adresse à Responsables de petites entreprises. "
+          }
+        ],
+        "links": [],
+        "schema": [],
+        "meta2": {
+          "source": "engine",
+          "by": "ai",
+          "createdFrom": null,
+          "runId": "9ylu3n5id87wjkw8"
+        }
+      },
+      "verdict": "FINAL"
+    },
+    {
+      "docKey": "cnt:1c868db0f49564995c65",
+      "doc": {
+        "version": 1,
+        "type": "service_page",
+        "lang": "fr",
+        "page": {
+          "key": "service:0",
+          "title": "Diagnostic",
+          "kind": "service",
+          "status": "planned",
+          "url": null
+        },
+        "primaryKeyword": null,
+        "intent": "informational",
+        "meta": {
+          "seoTitle": "Diagnostic | Respire Bureau",
+          "metaDescription": "Étudier les usages du bureau.. Découvrez les informations et les possibilités de contact.",
+          "slug": "prestation-1",
+          "canonical": null,
+          "robots": "index,follow"
+        },
+        "blocks": [
+          {
+            "id": "h1",
+            "kind": "h1",
+            "text": "Diagnostic"
+          },
+          {
+            "id": "p",
+            "kind": "p",
+            "text": "Étudier les usages du bureau."
+          },
+          {
+            "id": "detail",
+            "kind": "p",
+            "text": "Respire Bureau s’adresse à Responsables de petites entreprises. "
+          }
+        ],
+        "links": [],
+        "schema": [],
+        "meta2": {
+          "source": "engine",
+          "by": "ai",
+          "createdFrom": null,
+          "runId": "6zj8p4x4ftu6kh31"
+        }
+      },
+      "verdict": "FINAL"
+    },
+    {
+      "docKey": "cnt:2e75913ce6f745e70276",
+      "doc": {
+        "version": 1,
+        "type": "service_page",
+        "lang": "fr",
+        "page": {
+          "key": "service:1",
+          "title": "Atelier participatif",
+          "kind": "service",
+          "status": "planned",
+          "url": null
+        },
+        "primaryKeyword": null,
+        "intent": "informational",
+        "meta": {
+          "seoTitle": "Atelier participatif | Respire Bureau",
+          "metaDescription": "Recueillir les besoins de l’équipe.. Découvrez les informations et les possibilités de contact.",
+          "slug": "prestation-2",
+          "canonical": null,
+          "robots": "index,follow"
+        },
+        "blocks": [
+          {
+            "id": "h1",
+            "kind": "h1",
+            "text": "Atelier participatif"
+          },
+          {
+            "id": "p",
+            "kind": "p",
+            "text": "Recueillir les besoins de l’équipe."
+          },
+          {
+            "id": "detail",
+            "kind": "p",
+            "text": "Respire Bureau s’adresse à Responsables de petites entreprises. "
+          }
+        ],
+        "links": [],
+        "schema": [],
+        "meta2": {
+          "source": "engine",
+          "by": "ai",
+          "createdFrom": null,
+          "runId": "g833vb1r8ooewi4a"
+        }
+      },
+      "verdict": "FINAL"
+    },
+    {
+      "docKey": "cnt:1e07a5a0c924bbab8cd8",
+      "doc": {
+        "version": 1,
+        "type": "brand_page",
+        "lang": "fr",
+        "page": {
+          "key": "brand",
+          "title": "À propos",
+          "kind": "brand",
+          "status": "planned",
+          "url": null
+        },
+        "primaryKeyword": null,
+        "intent": "informational",
+        "meta": {
+          "seoTitle": "À propos | Respire Bureau",
+          "metaDescription": "Présenter la marque sans histoire inventée. Découvrez les informations et les possibilités de contact.",
+          "slug": "a-propos",
+          "canonical": null,
+          "robots": "index,follow"
+        },
+        "blocks": [
+          {
+            "id": "h1",
+            "kind": "h1",
+            "text": "À propos"
+          },
+          {
+            "id": "p",
+            "kind": "p",
+            "text": "Présenter la marque sans histoire inventée"
+          },
+          {
+            "id": "detail",
+            "kind": "p",
+            "text": "Respire Bureau s’adresse à Responsables de petites entreprises. "
+          }
+        ],
+        "links": [],
+        "schema": [],
+        "meta2": {
+          "source": "engine",
+          "by": "ai",
+          "createdFrom": null,
+          "runId": "7ao7pigd8te5ah5r"
+        }
+      },
+      "verdict": "FINAL"
+    }
+  ],
+  "media": [
+    {
+      "key": "home:hero",
+      "pageKey": "home",
+      "sectionKey": "hero",
+      "purpose": "Offre et promesse vérifiable",
+      "required": true,
+      "assetId": "wsp01uttcou141c7",
+      "reviewed": true,
+      "peopleConsent": "none_confirmed",
+      "inputHash": "663a38d3ee35e376"
+    },
+    {
+      "key": "service:0:presentation",
+      "pageKey": "service:0",
+      "sectionKey": "presentation",
+      "purpose": "Étudier les usages du bureau.",
+      "required": true,
+      "assetId": "5jizeezln5txd4am",
+      "reviewed": true,
+      "peopleConsent": "none_confirmed",
+      "inputHash": "663a38d3ee35e376"
+    },
+    {
+      "key": "service:1:presentation",
+      "pageKey": "service:1",
+      "sectionKey": "presentation",
+      "purpose": "Recueillir les besoins de l’équipe.",
+      "required": true,
+      "assetId": "ne6dg9rbrjmkyite",
+      "reviewed": true,
+      "peopleConsent": "none_confirmed",
+      "inputHash": "663a38d3ee35e376"
+    }
+  ],
+  "sources": [
+    {
+      "id": "source-1",
+      "url": "https://reference.example/espaces",
+      "title": "Référence synthétique consultée par le double de test",
+      "excerpt": "Une offre comparable à Respire Bureau. La page décrit les usages et conditions de présentation. Les modalités de contact sont visibles. Ceci est une source synthétique pour vérifier la persistance, pas une étude réelle.",
+      "consultedAt": 1792344386000,
+      "status": "consulted",
+      "provenance": "simulation"
+    }
+  ],
+  "approvals": {
+    "brief": {
+      "candidateId": "moc40xbg0kv1n6ky",
+      "approvedAt": 1792344455092
+    },
+    "research": {
+      "candidateId": "n5pngkizfuna2ly7",
+      "approvedAt": 1792344456446
+    },
+    "brand": {
+      "candidateId": "zu33a82tuywnkwej",
+      "approvedAt": 1792344457443
+    },
+    "content": {
+      "candidateId": "hc8134lo97s97r3l",
+      "approvedAt": 1792344457957
+    },
+    "media": {
+      "candidateId": "vfvwkf8dgn1uo9io",
+      "approvedAt": 1792344460073
+    }
+  },
+  "warnings": [
+    "Fournisseurs simulés ; qualité de rédaction IA réelle non vérifiée.",
+    "Disponibilité juridique du nom et domaines non vérifiée.",
+    "Prêt pour la composition, pas une autorisation de publication."
+  ]
+}

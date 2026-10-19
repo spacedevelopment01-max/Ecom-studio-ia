@@ -1,3 +1,4 @@
+import { REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVIDER } from "@/lib/ai/logo-policy";
 import { z } from "zod";
 import { body, handle, ok } from "@/lib/http";
 import { HttpError, requireAdmin } from "@/lib/auth";
@@ -167,6 +168,7 @@ export const POST = handle(async (req: Request) => {
   }
   if (b.mediaUsage) {
     const u = b.mediaUsage.usage;
+    if (u === "logo" && ((b.mediaUsage.primary && b.mediaUsage.primary !== `${REQUIRED_LOGO_PROVIDER}:${REQUIRED_LOGO_MODEL}`) || b.mediaUsage.backup || b.mediaUsage.mode === "auto")) throw new HttpError(400, "Le dessin des logos utilise exclusivement le modèle imposé, sans secours ni sélection automatique.");
     const info = USAGE_INFO[u];
     const settings = usageSettings();
     const cur: UsageSetting = { ...(settings[u] ?? {}) };

@@ -58,9 +58,9 @@ describe("compositeur de musique des vidéos", () => {
     expect(lateEnergy).toBeGreaterThan(100); // l'accord final sonne encore
   }, 60_000);
 
-  it("montage calé sur les temps : chaque coupe tombe sur un temps, durée totale inchangée", () => {
+  it("montage composé calé sur les temps : plans filmés raccourcis seulement, durée totale inchangée", () => {
     const { beatS } = songGrid("acoustic", 15);
-    const clip = (d: number) => ({ id: String(d), shotId: "s", label: "", part: "development", durationS: d, source: { kind: "video", assetId: "v", inS: 0, outS: d, muted: true }, overlays: [], transitionIn: { kind: "cut", durationS: 0 } }) as any;
+    const clip = (d: number) => ({ id: String(d), shotId: "s", label: "", part: "development", durationS: d, source: d === 3.6 ? { kind: "video", assetId: "v", inS: 0, outS: d, muted: true } : { kind:"doc",assetId:null }, overlays: [], transitionIn: { kind: "cut", durationS: 0 } }) as any;
     const out = snapToBeat([clip(1.8), clip(3.6), clip(2), clip(1.9), clip(1.9), clip(1.6), clip(2.2)], beatS);
     const total = out.reduce((t, c) => t + c.durationS, 0);
     expect(Math.abs(total - 15)).toBeLessThan(0.01);
@@ -73,4 +73,13 @@ describe("compositeur de musique des vidéos", () => {
     const s1 = out[1].source as { inS: number; outS: number };
     expect(s1.outS - s1.inS).toBeCloseTo(out[1].durationS, 3);
   });
+  it("garde les coupes initiales si le rythme dépasserait les passages filmés approuvés", () => {
+    const clips = [1.8,3.6,2,1.9,1.9,1.6,2.2].map((durationS,k)=>({id:String(k),shotId:String(k),label:"",part:"development",durationS,source:{kind:"video",assetId:"v",inS:2,outS:2+durationS,muted:true},overlays:[],transitionIn:{kind:"cut",durationS:0}})) as any;
+    const before=structuredClone(clips);
+    const out=snapToBeat(clips,songGrid("acoustic",15).beatS);
+    expect(out).toEqual(before);
+    expect(clips).toEqual(before);
+    expect(out.reduce((sum:number,c:any)=>sum+c.durationS,0)).toBeCloseTo(15,6);
+  });
+
 });

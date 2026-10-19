@@ -1,0 +1,60 @@
+/*
+ * Fichier généré par E-COM STUDIO IA. Modifiable dans l'éditeur de thème Shopify.
+ */
+{
+  "sections": {
+    "p_7cae64d8_main_product_1": {
+      "type": "main-product",
+      "settings": {
+        "gallery_layout": "stack",
+        "sticky_bar": true,
+        "color_scheme": "scheme-1",
+        "padding_top": 32,
+        "padding_bottom": 96,
+        "enable_zoom": true
+      },
+      "blocks": {
+        "title_1": {
+          "type": "title",
+          "settings": {}
+        },
+        "price_1": {
+          "type": "price",
+          "settings": {}
+        },
+        "buy_buttons_1": {
+          "type": "buy_buttons",
+          "settings": {
+            "picker": "buttons",
+            "show_quantity": true,
+            "show_dynamic_checkout": true
+          }
+        },
+        "description_1": {
+          "type": "description",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "title_1",
+        "price_1",
+        "buy_buttons_1",
+        "description_1"
+      ]
+    },
+    "p_7cae64d8_product_recommendations_1": {
+      "type": "product-recommendations",
+      "settings": {
+        "heading": "Vous aimerez aussi",
+        "limit": 4,
+        "color_scheme": "scheme-1",
+        "padding_top": 64,
+        "padding_bottom": 96
+      }
+    }
+  },
+  "order": [
+    "p_7cae64d8_main_product_1",
+    "p_7cae64d8_product_recommendations_1"
+  ]
+}

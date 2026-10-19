@@ -33,7 +33,7 @@ export type ImpactItem = {
   key: string;
   kind: ImpactKind;
   label: string;
-  changes: ("name" | "palette" | "fonts" | "logo")[];
+  changes: ("name" | "palette" | "fonts" | "logo" | "identity")[];
   /** Modifié par le client : mis à jour seulement s'il le demande expressément. */
   userEdited: boolean;
   /** Mise à jour automatique possible (sinon : signalé, à reprendre dans l'éditeur). */
@@ -48,6 +48,7 @@ export type ImpactItem = {
 function diff(a: BrandSnapshot | null, b: BrandSnapshot | null): ImpactItem["changes"] {
   if (!a || !b) return [];
   const out: ImpactItem["changes"] = [];
+  if (JSON.stringify(a.identity) !== JSON.stringify(b.identity) || JSON.stringify(a.tone) !== JSON.stringify(b.tone)) out.push("identity");
   if (a.name !== b.name) out.push("name");
   if (JSON.stringify(Object.entries(a.palette).sort()) !== JSON.stringify(Object.entries(b.palette).sort())) out.push("palette");
   if (JSON.stringify(a.fonts) !== JSON.stringify(b.fonts)) out.push("fonts");
@@ -109,9 +110,10 @@ export function brandImpact(p: Project): { current: string; items: ImpactItem[] 
     items.push({ key: `ai_image:${r.id}`, kind: "ai_image", label: ad ? L("Publicité faite par l'IA (nouvelle version payante)", "AI-made ad (paid new version)") : L("Publication faite par l'IA (nouvelle version payante)", "AI-made post (paid new version)"), changes: ch, userEdited: false, updatable: true, paidMicro: aiImageRedoMicro(), createdAt: r.created_at });
   }
   for (const r of all<{ doc_key: string; created_at: number }>("SELECT d.doc_key, d.created_at FROM content_documents d WHERE d.project_id = ? AND d.version = (SELECT MAX(version) FROM content_documents x WHERE x.doc_key = d.doc_key)", p.id)) {
-    const ch = stale(r.created_at).filter((c) => c === "name");
+    const ch = stale(r.created_at).filter((c) => c === "name" || c === "identity");
     if (ch.length) items.push({ key: `text:${r.doc_key}`, kind: "text", label: L("Texte rédigé (nom de marque à revoir)", "Written text (brand name to review)"), changes: ch, userEdited: false, updatable: false, createdAt: r.created_at });
   }
+  for (const item of items) if (item.changes.includes("identity")) { item.updatable = false; item.label += L(" — direction complète à adapter dans l’éditeur", " — complete direction to adapt in the editor"); }
   return { current: fp, items };
 }
 

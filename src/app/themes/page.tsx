@@ -14,12 +14,12 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await serverLang();
-  const title = pick(lang, "Les 30 thèmes de boutique · E-COM STUDIO IA", "The 30 store themes · E-COM STUDIO IA");
-  const description = pick(lang, "Les 30 modèles de boutique du studio, montrés avec la gourde de démonstration Cime. L'IA part de l'un d'eux ou en crée un nouveau à vos couleurs.", "The studio's 30 store designs, shown with the Cime demo water bottle. The AI starts from one of them or creates a new one in your colors.");
+  const title = pick(lang, "Les quatre thèmes de référence · E-COM STUDIO IA", "The four reference themes · E-COM STUDIO IA");
+  const description = pick(lang, "Les modèles de boutique du studio, montrés avec les démonstrations FRAISE, ONDE, ORBE et Atelier Rive. L'IA part de l'un d'eux ou en crée un nouveau à vos couleurs.", "The studio's store designs, shown with the FRAISE, ONDE, ORBE and Atelier Rive demos. The AI starts from one of them or creates a new one in your colors.");
   return { title: { absolute: title }, description, alternates: { canonical: "/themes" } };
 }
 
-/** Galerie publique des 30 thèmes (page du site, pas du studio) : le retour ramène à l'accueil. */
+/** Galerie publique des quatre thèmes de référence (page du site, pas du studio) : le retour ramène à l'accueil. */
 export default async function ThemesGallery() {
   const lang = await serverLang();
   const T = (fr: string, en: string) => pick(lang, fr, en);
@@ -47,8 +47,8 @@ export default async function ThemesGallery() {
           <ArrowLeft className="size-4" aria-hidden /> {T("Retour à l'accueil", "Back to the home page")}
         </Link>
         <p className="hp-eyebrow mt-8">{T("Les thèmes", "The themes")}</p>
-        <h1 className="hp-title mt-4 text-[clamp(2.2rem,5vw,4rem)]">{T("30 modèles de boutique,", "30 store designs,")} <span className="hp-accent">{T("à vos couleurs.", "in your colors.")}</span></h1>
-        <p className="hp-lead mt-5 max-w-2xl">{T("Chaque capture montre la même gourde de démonstration (Cime) dans un modèle différent. Pour votre projet, l'IA part de l'un d'eux ou en crée un tout nouveau, avec votre logo, vos couleurs et vos photos.", "Each screenshot shows the same demo water bottle (Cime) in a different design. For your project, the AI starts from one of them or creates a brand-new one, with your logo, colors and photos.")}</p>
+        <h1 className="hp-title mt-4 text-[clamp(2.2rem,5vw,4rem)]">{T("Quatre modèles de référence,", "Four reference designs,")} <span className="hp-accent">{T("à vos couleurs.", "in your colors.")}</span></h1>
+        <p className="hp-lead mt-5 max-w-2xl">{T("Chaque capture montre une démonstration du studio (FRAISE, ONDE, ORBE ou Atelier Rive) dans un modèle différent. Pour votre projet, l'IA part de l'un d'eux ou en crée un tout nouveau, avec votre logo, vos couleurs et vos photos.", "Each screenshot shows one of the studio demos (FRAISE, ONDE, ORBE or Atelier Rive) in a different design. For your project, the AI starts from one of them or creates a brand-new one, with your logo, colors and photos.")}</p>
         <ul className="mt-12 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
           {themes.map((d) => (
             <li key={d.id}>

@@ -1,0 +1,2053 @@
+{
+  "ready": true,
+  "approvalsComplete": true,
+  "blockers": [],
+  "category": {
+    "status": "recommended",
+    "category": "ecommerce",
+    "salesModel": "catalogue",
+    "goal": "purchase",
+    "reasons": [
+      "Vous avez confirmé ce modèle de site pour votre offre actuelle ; ce choix prime sur les indices automatiques."
+    ],
+    "evidence": [
+      {
+        "source": "business",
+        "value": "products"
+      },
+      {
+        "source": "client_choice",
+        "value": "ecommerce"
+      }
+    ],
+    "clarification": null,
+    "eligibleThemes": [
+      {
+        "referenceId": "orbe",
+        "name": "ORBE",
+        "engineThemeId": null,
+        "status": "awaiting_integration"
+      }
+    ]
+  },
+  "categoryContextHash": "07dd46a7141ebab8",
+  "categoryChoice": {
+    "category": "ecommerce",
+    "contextHash": "07dd46a7141ebab8",
+    "chosenAt": 1792407117682
+  },
+  "categoryChoiceStale": false,
+  "contract": {
+    "schemaVersion": 1,
+    "kind": "theme_data_handoff",
+    "projectId": "hiyjjzjr150eis2r",
+    "revision": 43,
+    "provenance": "simulation",
+    "clientBrief": {
+      "offerUrl": "",
+      "description": "Carnet de croquis à couverture en liège, pages sans lignes. Produit phare vendu directement aux particuliers.",
+      "offerName": "Sillage",
+      "brandName": "Sillage",
+      "target": "Illustrateurs nomades",
+      "constraints": "Tutoiement interdit. Aucun avis ni origine certifiée à inventer. Ne jamais promettre une certification.",
+      "business": "products",
+      "photoIds": [
+        "jp0r1xukbh9tp42j"
+      ],
+      "referenceUrls": [
+        "https://reference.example/carnets"
+      ],
+      "price": "28,50",
+      "services": {
+        "services": [],
+        "area": "",
+        "address": "",
+        "phone": "",
+        "email": "",
+        "hours": "",
+        "bookingUrl": "",
+        "contactMode": "form",
+        "contactModes": [
+          "form"
+        ]
+      }
+    },
+    "offer": {
+      "business": "products",
+      "product": {
+        "name": "Sillage",
+        "nameStatus": "provided",
+        "category": "",
+        "sector": "artisanat",
+        "summary": "Carnet de croquis à couverture en liège, pages sans lignes. Produit phare vendu directement aux particuliers.",
+        "facts": [
+          {
+            "key": "materials",
+            "label": "Matière",
+            "value": "liège",
+            "status": "confirmed",
+            "source": "description"
+          },
+          {
+            "key": "shipping",
+            "label": "Délais et frais de livraison",
+            "value": "",
+            "status": "unknown",
+            "source": "ai"
+          },
+          {
+            "key": "returns",
+            "label": "Conditions de retour",
+            "value": "",
+            "status": "unknown",
+            "source": "ai"
+          },
+          {
+            "key": "origin",
+            "label": "Fabrication",
+            "value": "",
+            "status": "unknown",
+            "source": "ai"
+          }
+        ],
+        "visual": {
+          "colors": [],
+          "description": ""
+        },
+        "price": {
+          "amount": 2850,
+          "currency": "EUR",
+          "status": "confirmed"
+        },
+        "variants": [],
+        "questions": [
+          {
+            "id": "s-making",
+            "question": "Qui le fabrique, où et comment ? (ex. dans notre atelier à Nantes, tourné à la main)",
+            "why": "La fabrication est l'histoire de la marque : elle doit être exacte pour être dite.",
+            "required": false,
+            "factKey": "origin"
+          },
+          {
+            "id": "shipping",
+            "question": "Quels sont vos délais et frais de livraison ?",
+            "why": "Affichés dans la FAQ et la page Livraison ; rien ne sera inventé.",
+            "required": false,
+            "factKey": "shipping"
+          },
+          {
+            "id": "returns",
+            "question": "Quelles sont vos conditions de retour ?",
+            "why": "Obligatoire pour la page Livraison et retours.",
+            "required": false,
+            "factKey": "returns"
+          }
+        ],
+        "claimsToAvoid": [],
+        "sources": [],
+        "analyzedBy": "local"
+      },
+      "services": null,
+      "storeType": "mono",
+      "catalogue": [],
+      "strategy": {
+        "audience": [
+          {
+            "label": "Illustrateurs nomades — personnes découvrant cette catégorie",
+            "needs": [
+              "Carnet de croquis à couverture en liège, pages sans lignes. Produit phare vendu directement aux particuliers.",
+              "Matière : liège"
+            ],
+            "objections": [
+              "Cette offre répond-elle à ma situation ?"
+            ]
+          }
+        ],
+        "angles": [
+          {
+            "title": "Expliquer l’usage de Sillage",
+            "idea": "Aider Illustrateurs nomades à comprendre Sillage avant de décider."
+          }
+        ],
+        "pillars": [
+          "Carnet de croquis à couverture en liège, pages sans lignes. Produit phare vendu directement aux particuliers.",
+          "Matière : liège"
+        ],
+        "keyMessages": [
+          "Carnet de croquis à couverture en liège, pages sans lignes. Produit phare vendu directement aux particuliers.",
+          "Matière : liège"
+        ],
+        "platform": {
+          "persona": "Illustrateurs nomades — personnes découvrant cette catégorie",
+          "problem": "Aider Illustrateurs nomades à comprendre Sillage avant de décider.",
+          "alternatives": "Une offre comparable à Sillage. La page décrit les usages et conditions de présentation. Les modalités de contact sont visibles. Ceci est une source synthétique pour vérifier la persistance, pas une étude réelle.",
+          "difference": "Angle recommandé pour clarifier une offre : il utilise les informations fournies et réserve les preuves manquantes.",
+          "proofs": [
+            {
+              "claim": "Carnet de croquis à couverture en liège, pages sans lignes. Produit phare vendu directement aux particuliers.",
+              "proof": "Hypothèse validée par le client ; aucune preuve chiffrée ajoutée.",
+              "status": "missing"
+            },
+            {
+              "claim": "Matière : liège",
+              "proof": "Hypothèse validée par le client ; aucune preuve chiffrée ajoutée.",
+              "status": "missing"
+            }
+          ],
+          "objections": [
+            {
+              "objection": "Cette offre répond-elle à ma situation ?",
+              "answer": "Montrer les usages et limites confirmés, sans promettre un résultat non démontré."
+            }
+          ]
+        },
+        "generatedBy": "local"
+      }
+    },
+    "identity": {
+      "name": "Sillage",
+      "nameStatus": "validated",
+      "alternatives": [],
+      "tagline": "Une approche claire.",
+      "positioning": "Aider Illustrateurs nomades à comprendre Sillage avant de décider.",
+      "audience": "Illustrateurs nomades — personnes découvrant cette catégorie",
+      "personality": [],
+      "tone": {
+        "voice": "Éditorial et posé",
+        "do": [
+          "Décrire les faits connus"
+        ],
+        "dont": [
+          "Inventer une garantie"
+        ]
+      },
+      "palette": {
+        "primary": "#483d68",
+        "secondary": "#c4b7d6",
+        "accent": "#9a3662",
+        "light": "#f8f5fc",
+        "dark": "#201a2c"
+      },
+      "fonts": {
+        "heading": "playfair_display_n6",
+        "body": "inter_n4"
+      },
+      "logo": {
+        "concept": "Monogramme construit — Une initiale construite comme une marque réduite, associée au nom : mémorisable et nette en très petit.",
+        "status": "validated",
+        "assetId": "gk6xzu2l1nfljwdp",
+        "markAssetId": "awltj2pswyg6wa1p",
+        "proposal": "typo",
+        "proposalId": "415i3xroyo6mxbna",
+        "provisional": false,
+        "engine": "v2"
+      },
+      "story": "",
+      "values": [],
+      "direction": "galerie",
+      "validated": [
+        "name",
+        "tagline",
+        "palette",
+        "fonts",
+        "logo"
+      ],
+      "generatedBy": "local",
+      "paletteMode": "client",
+      "clientPalette": {
+        "primary": "#483d68",
+        "secondary": "#c4b7d6",
+        "accent": "#9a3662",
+        "light": "#f8f5fc",
+        "dark": "#201a2c"
+      },
+      "artIdentity": {
+        "signature": "Une approche claire.",
+        "palette": {
+          "primary": "#483d68",
+          "secondary": "#c4b7d6",
+          "accent": "#9a3662",
+          "light": "#f8f5fc",
+          "dark": "#201a2c"
+        },
+        "colorRoles": {
+          "primary": "Prune : titres éditoriaux",
+          "secondary": "Lavande grisée : surfaces posées",
+          "accent": "Baie : appels à l’action affirmés",
+          "light": "Blanc légèrement teinté : fond de lecture",
+          "dark": "Encre légèrement violacée : texte courant"
+        },
+        "fonts": {
+          "heading": "playfair_display_n6",
+          "body": "inter_n4"
+        },
+        "tone": {
+          "voice": "Éditorial et posé",
+          "do": [
+            "Décrire les faits connus"
+          ],
+          "dont": [
+            "Inventer une garantie"
+          ]
+        },
+        "mood": "Plans graphiques et espace",
+        "graphicLanguage": "Contraste de tailles et marges",
+        "rules": [
+          "Conserver une zone calme autour du logo",
+          "Un seul style de traits"
+        ],
+        "sampleText": "Découvrez l’offre et ses caractéristiques confirmées.",
+        "seriesId": "ii3p358zckkjyshs",
+        "directionId": "t2"
+      }
+    },
+    "identityAssets": [
+      {
+        "assetId": "gk6xzu2l1nfljwdp",
+        "role": "logo",
+        "mime": "image/png",
+        "width": 1012,
+        "height": 971,
+        "url": "/api/files/gk6xzu2l1nfljwdp",
+        "sourceAssetId": "415i3xroyo6mxbna"
+      },
+      {
+        "assetId": "b4wtr5vxw459xlkw",
+        "role": "logo-light",
+        "mime": "image/png",
+        "width": 1012,
+        "height": 971,
+        "url": "/api/files/b4wtr5vxw459xlkw",
+        "sourceAssetId": "gk6xzu2l1nfljwdp"
+      },
+      {
+        "assetId": "o8fi8s0l0mjwa12l",
+        "role": "logo-mono",
+        "mime": "image/png",
+        "width": 1012,
+        "height": 971,
+        "url": "/api/files/o8fi8s0l0mjwa12l",
+        "sourceAssetId": "gk6xzu2l1nfljwdp"
+      },
+      {
+        "assetId": "vdjgquq3hvbtpf2i",
+        "role": "logo-white",
+        "mime": "image/png",
+        "width": 1012,
+        "height": 971,
+        "url": "/api/files/vdjgquq3hvbtpf2i",
+        "sourceAssetId": "gk6xzu2l1nfljwdp"
+      },
+      {
+        "assetId": "awltj2pswyg6wa1p",
+        "role": "logo-mark",
+        "mime": "image/png",
+        "width": 1024,
+        "height": 1024,
+        "url": "/api/files/awltj2pswyg6wa1p",
+        "sourceAssetId": "gk6xzu2l1nfljwdp"
+      },
+      {
+        "assetId": "0micrtrq8ydt5v86",
+        "role": "favicon",
+        "mime": "image/png",
+        "width": 192,
+        "height": 192,
+        "url": "/api/files/0micrtrq8ydt5v86",
+        "sourceAssetId": "gk6xzu2l1nfljwdp"
+      },
+      {
+        "assetId": "vjeoxaeyja9juz61",
+        "role": "logo-webp",
+        "mime": "image/webp",
+        "width": 1012,
+        "height": 971,
+        "url": "/api/files/vjeoxaeyja9juz61",
+        "sourceAssetId": "gk6xzu2l1nfljwdp"
+      },
+      {
+        "assetId": "7rn1oxlxbn0lveme",
+        "role": "logo-light-webp",
+        "mime": "image/webp",
+        "width": 1012,
+        "height": 971,
+        "url": "/api/files/7rn1oxlxbn0lveme",
+        "sourceAssetId": "gk6xzu2l1nfljwdp"
+      },
+      {
+        "assetId": "purfqf5wcbeuhgff",
+        "role": "logo-mark-svg",
+        "mime": "image/svg+xml",
+        "width": 512,
+        "height": 512,
+        "url": "/api/files/purfqf5wcbeuhgff",
+        "sourceAssetId": "gk6xzu2l1nfljwdp"
+      },
+      {
+        "assetId": "25x90fokgk18c2xh",
+        "role": "logo-svg",
+        "mime": "image/svg+xml",
+        "width": 512,
+        "height": 491,
+        "url": "/api/files/25x90fokgk18c2xh",
+        "sourceAssetId": "gk6xzu2l1nfljwdp"
+      },
+      {
+        "assetId": "ed3z9t5kubvccp3w",
+        "role": "brand-board",
+        "mime": "image/png",
+        "width": 2400,
+        "height": 1972,
+        "url": "/api/files/ed3z9t5kubvccp3w",
+        "sourceAssetId": "gk6xzu2l1nfljwdp"
+      },
+      {
+        "assetId": "bjenw8lma6mmlt1i",
+        "role": "brand-guide",
+        "mime": "text/markdown",
+        "width": null,
+        "height": null,
+        "url": "/api/files/bjenw8lma6mmlt1i",
+        "sourceAssetId": "gk6xzu2l1nfljwdp"
+      },
+      {
+        "assetId": "ndqkti0oe01i9cgv",
+        "role": "brand-book",
+        "mime": "application/pdf",
+        "width": null,
+        "height": null,
+        "url": "/api/files/ndqkti0oe01i9cgv",
+        "sourceAssetId": "gk6xzu2l1nfljwdp"
+      }
+    ],
+    "colorRoles": {
+      "primary": "Prune : titres éditoriaux",
+      "secondary": "Lavande grisée : surfaces posées",
+      "accent": "Baie : appels à l’action affirmés",
+      "light": "Blanc légèrement teinté : fond de lecture",
+      "dark": "Encre légèrement violacée : texte courant"
+    },
+    "pages": [
+      {
+        "key": "home",
+        "path": "/",
+        "title": "Accueil",
+        "kind": "home",
+        "goal": "Présenter Sillage à Illustrateurs nomades — personnes découvrant cette catégorie",
+        "sections": [
+          {
+            "key": "hero",
+            "purpose": "Offre et promesse vérifiable",
+            "mediaSlot": "final:video:1",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "hero",
+                "objective": "Offre et promesse vérifiable",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:5e73a53735dca9714cff",
+                "blockIds": [
+                  "home-title",
+                  "home-hero"
+                ],
+                "mediaSlotKeys": [
+                  "final:video:1"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Accueil\n\nSillage : Carnet de croquis à couverture en liège, pages sans lignes. Produit phare vendu directement aux particuliers."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-title",
+                "kind": "h1",
+                "text": "Accueil"
+              },
+              {
+                "id": "home-hero",
+                "kind": "p",
+                "text": "Sillage : Carnet de croquis à couverture en liège, pages sans lignes. Produit phare vendu directement aux particuliers."
+              }
+            ],
+            "text": "Accueil\n\nSillage : Carnet de croquis à couverture en liège, pages sans lignes. Produit phare vendu directement aux particuliers.",
+            "mediaSlotKeys": [
+              "final:video:1"
+            ]
+          },
+          {
+            "key": "offer",
+            "purpose": "Usages et caractéristiques",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "offer",
+                "objective": "Usages et caractéristiques",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:5e73a53735dca9714cff",
+                "blockIds": [
+                  "home-offer"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:3",
+                  "final:image:5"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "L’offre s’adresse à Illustrateurs nomades — personnes découvrant cette catégorie. La fiche détaille le produit pour vous aider à préparer votre choix."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-offer",
+                "kind": "p",
+                "text": "L’offre s’adresse à Illustrateurs nomades — personnes découvrant cette catégorie. La fiche détaille le produit pour vous aider à préparer votre choix."
+              }
+            ],
+            "text": "L’offre s’adresse à Illustrateurs nomades — personnes découvrant cette catégorie. La fiche détaille le produit pour vous aider à préparer votre choix.",
+            "mediaSlotKeys": [
+              "final:image:3",
+              "final:image:5"
+            ]
+          },
+          {
+            "key": "proofs",
+            "purpose": "Preuves disponibles uniquement",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "proofs",
+                "objective": "Preuves disponibles uniquement",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:5e73a53735dca9714cff",
+                "blockIds": [
+                  "home-proofs"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Pour vous faire une idée de l’offre, parcourez les vues et les informations présentées. Les illustrations accompagnent les explications sans remplacer les caractéristiques décrites."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-proofs",
+                "kind": "p",
+                "text": "Pour vous faire une idée de l’offre, parcourez les vues et les informations présentées. Les illustrations accompagnent les explications sans remplacer les caractéristiques décrites."
+              }
+            ],
+            "text": "Pour vous faire une idée de l’offre, parcourez les vues et les informations présentées. Les illustrations accompagnent les explications sans remplacer les caractéristiques décrites.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "faq",
+            "purpose": "Objections et réponses confirmées",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "faq",
+                "objective": "Objections et réponses confirmées",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:5e73a53735dca9714cff",
+                "blockIds": [
+                  "home-faq"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Une question avant de vous décider ? Repérez les points qui comptent pour votre usage et contactez-nous pour les préciser."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-faq",
+                "kind": "p",
+                "text": "Une question avant de vous décider ? Repérez les points qui comptent pour votre usage et contactez-nous pour les préciser."
+              }
+            ],
+            "text": "Une question avant de vous décider ? Repérez les points qui comptent pour votre usage et contactez-nous pour les préciser.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "contact",
+            "purpose": "Choisir le produit",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "contact",
+                "objective": "Choisir le produit",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:5e73a53735dca9714cff",
+                "blockIds": [
+                  "home-contact"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Retrouvez les détails de Sillage sur sa fiche. Prenez le temps de comparer ces informations avec votre utilisation prévue."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-contact",
+                "kind": "p",
+                "text": "Retrouvez les détails de Sillage sur sa fiche. Prenez le temps de comparer ces informations avec votre utilisation prévue."
+              }
+            ],
+            "text": "Retrouvez les détails de Sillage sur sa fiche. Prenez le temps de comparer ces informations avec votre utilisation prévue.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "gallery",
+            "purpose": "Galerie de scènes distinctes",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "gallery",
+                "objective": "Galerie de scènes distinctes",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:5e73a53735dca9714cff",
+                "blockIds": [
+                  "home-gallery"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:8"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Passez d’une vue à l’autre pour situer l’offre dans son contexte. Chaque image apporte un angle de lecture complémentaire au texte."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-gallery",
+                "kind": "p",
+                "text": "Passez d’une vue à l’autre pour situer l’offre dans son contexte. Chaque image apporte un angle de lecture complémentaire au texte."
+              }
+            ],
+            "text": "Passez d’une vue à l’autre pour situer l’offre dans son contexte. Chaque image apporte un angle de lecture complémentaire au texte.",
+            "mediaSlotKeys": [
+              "final:image:8"
+            ]
+          },
+          {
+            "key": "story",
+            "purpose": "Formats verticaux : lecture sans déformation",
+            "editorial": [
+              {
+                "pageKey": "home",
+                "sectionKey": "story",
+                "objective": "Formats verticaux : lecture sans déformation",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:5e73a53735dca9714cff",
+                "blockIds": [
+                  "home-story"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Le format vertical propose une autre lecture de la présentation. Sur téléphone, poursuivez la découverte sans quitter le fil des informations."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "home-story",
+                "kind": "p",
+                "text": "Le format vertical propose une autre lecture de la présentation. Sur téléphone, poursuivez la découverte sans quitter le fil des informations."
+              }
+            ],
+            "text": "Le format vertical propose une autre lecture de la présentation. Sur téléphone, poursuivez la découverte sans quitter le fil des informations.",
+            "mediaSlotKeys": []
+          }
+        ],
+        "docKey": "cnt:5e73a53735dca9714cff",
+        "documentKey": "cnt:5e73a53735dca9714cff",
+        "document": {
+          "version": 1,
+          "type": "home_page",
+          "lang": "fr",
+          "page": {
+            "key": "home",
+            "title": "Accueil",
+            "kind": "home",
+            "status": "planned",
+            "url": null
+          },
+          "primaryKeyword": null,
+          "meta": {
+            "seoTitle": "Accueil | Sillage",
+            "metaDescription": "Accueil : découvrez l’offre de Sillage, sa présentation et les informations utiles pour prendre contact.",
+            "slug": "",
+            "canonical": null,
+            "robots": "index,follow"
+          },
+          "blocks": [
+            {
+              "id": "home-title",
+              "kind": "h1",
+              "text": "Accueil"
+            },
+            {
+              "id": "home-hero",
+              "kind": "p",
+              "text": "Sillage : Carnet de croquis à couverture en liège, pages sans lignes. Produit phare vendu directement aux particuliers."
+            },
+            {
+              "id": "home-offer",
+              "kind": "p",
+              "text": "L’offre s’adresse à Illustrateurs nomades — personnes découvrant cette catégorie. La fiche détaille le produit pour vous aider à préparer votre choix."
+            },
+            {
+              "id": "home-proofs",
+              "kind": "p",
+              "text": "Pour vous faire une idée de l’offre, parcourez les vues et les informations présentées. Les illustrations accompagnent les explications sans remplacer les caractéristiques décrites."
+            },
+            {
+              "id": "home-faq",
+              "kind": "p",
+              "text": "Une question avant de vous décider ? Repérez les points qui comptent pour votre usage et contactez-nous pour les préciser."
+            },
+            {
+              "id": "home-contact",
+              "kind": "p",
+              "text": "Retrouvez les détails de Sillage sur sa fiche. Prenez le temps de comparer ces informations avec votre utilisation prévue."
+            },
+            {
+              "id": "home-gallery",
+              "kind": "p",
+              "text": "Passez d’une vue à l’autre pour situer l’offre dans son contexte. Chaque image apporte un angle de lecture complémentaire au texte."
+            },
+            {
+              "id": "home-story",
+              "kind": "p",
+              "text": "Le format vertical propose une autre lecture de la présentation. Sur téléphone, poursuivez la découverte sans quitter le fil des informations."
+            }
+          ],
+          "links": [],
+          "schema": [],
+          "meta2": {
+            "source": "engine",
+            "by": "ai",
+            "createdFrom": null,
+            "runId": "simulation:hiyjjzjr150eis2r:home"
+          }
+        },
+        "seo": {
+          "seoTitle": "Accueil | Sillage",
+          "metaDescription": "Accueil : découvrez l’offre de Sillage, sa présentation et les informations utiles pour prendre contact.",
+          "slug": "",
+          "canonical": null,
+          "robots": "index,follow"
+        }
+      },
+      {
+        "key": "product:main",
+        "path": "/products/produit-principal",
+        "title": "Sillage",
+        "kind": "product",
+        "goal": "Carnet de croquis à couverture en liège, pages sans lignes. Produit phare vendu directement aux particuliers.",
+        "sections": [
+          {
+            "key": "detail",
+            "purpose": "Montrer le produit exact",
+            "mediaSlot": "product:main:detail",
+            "editorial": [
+              {
+                "pageKey": "product:main",
+                "sectionKey": "detail",
+                "objective": "Montrer le produit exact",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:8af845f3f59697f9541a",
+                "blockIds": [
+                  "product:main-title",
+                  "product:main-detail"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:1"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Sillage\n\nCarnet de croquis à couverture en liège, pages sans lignes. Produit phare vendu directement aux particuliers."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "product:main-title",
+                "kind": "h1",
+                "text": "Sillage"
+              },
+              {
+                "id": "product:main-detail",
+                "kind": "p",
+                "text": "Carnet de croquis à couverture en liège, pages sans lignes. Produit phare vendu directement aux particuliers."
+              }
+            ],
+            "text": "Sillage\n\nCarnet de croquis à couverture en liège, pages sans lignes. Produit phare vendu directement aux particuliers.",
+            "mediaSlotKeys": [
+              "final:image:1"
+            ]
+          },
+          {
+            "key": "facts",
+            "purpose": "Caractéristiques confirmées",
+            "editorial": [
+              {
+                "pageKey": "product:main",
+                "sectionKey": "facts",
+                "objective": "Caractéristiques confirmées",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:8af845f3f59697f9541a",
+                "blockIds": [
+                  "product:main-facts"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Les éléments renseignés pour ce produit : Matière liège."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "product:main-facts",
+                "kind": "p",
+                "text": "Les éléments renseignés pour ce produit : Matière liège."
+              }
+            ],
+            "text": "Les éléments renseignés pour ce produit : Matière liège.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "options",
+            "purpose": "Options et prix connus",
+            "editorial": [
+              {
+                "pageKey": "product:main",
+                "sectionKey": "options",
+                "objective": "Options et prix connus",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:8af845f3f59697f9541a",
+                "blockIds": [
+                  "product:main-options"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Ce produit est proposé à 28,50 €. Vérifiez que votre sélection correspond à votre besoin avant de poursuivre."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "product:main-options",
+                "kind": "p",
+                "text": "Ce produit est proposé à 28,50 €. Vérifiez que votre sélection correspond à votre besoin avant de poursuivre."
+              }
+            ],
+            "text": "Ce produit est proposé à 28,50 €. Vérifiez que votre sélection correspond à votre besoin avant de poursuivre.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "faq",
+            "purpose": "Questions utiles avant achat",
+            "editorial": [
+              {
+                "pageKey": "product:main",
+                "sectionKey": "faq",
+                "objective": "Questions utiles avant achat",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:8af845f3f59697f9541a",
+                "blockIds": [
+                  "product:main-faq"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Qu’aimeriez-vous savoir avant de choisir ? Notez votre question et indiquez le produit concerné pour faciliter la réponse."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "product:main-faq",
+                "kind": "p",
+                "text": "Qu’aimeriez-vous savoir avant de choisir ? Notez votre question et indiquez le produit concerné pour faciliter la réponse."
+              }
+            ],
+            "text": "Qu’aimeriez-vous savoir avant de choisir ? Notez votre question et indiquez le produit concerné pour faciliter la réponse.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "gallery",
+            "purpose": "Galerie de scènes distinctes",
+            "editorial": [
+              {
+                "pageKey": "product:main",
+                "sectionKey": "gallery",
+                "objective": "Galerie de scènes distinctes",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:8af845f3f59697f9541a",
+                "blockIds": [
+                  "product:main-gallery"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:2",
+                  "final:image:6"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Regardez Sillage sous plusieurs angles. La galerie complète la description écrite et permet de revenir sur un détail."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "product:main-gallery",
+                "kind": "p",
+                "text": "Regardez Sillage sous plusieurs angles. La galerie complète la description écrite et permet de revenir sur un détail."
+              }
+            ],
+            "text": "Regardez Sillage sous plusieurs angles. La galerie complète la description écrite et permet de revenir sur un détail.",
+            "mediaSlotKeys": [
+              "final:image:2",
+              "final:image:6"
+            ]
+          },
+          {
+            "key": "story",
+            "purpose": "Formats verticaux : lecture sans déformation",
+            "editorial": [
+              {
+                "pageKey": "product:main",
+                "sectionKey": "story",
+                "objective": "Formats verticaux : lecture sans déformation",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:8af845f3f59697f9541a",
+                "blockIds": [
+                  "product:main-story"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:9"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Une composition verticale accompagne la découverte sur mobile. Le cadrage conserve une lecture naturelle de l’objet et de son contexte."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "product:main-story",
+                "kind": "p",
+                "text": "Une composition verticale accompagne la découverte sur mobile. Le cadrage conserve une lecture naturelle de l’objet et de son contexte."
+              }
+            ],
+            "text": "Une composition verticale accompagne la découverte sur mobile. Le cadrage conserve une lecture naturelle de l’objet et de son contexte.",
+            "mediaSlotKeys": [
+              "final:image:9"
+            ]
+          }
+        ],
+        "docKey": "cnt:8af845f3f59697f9541a",
+        "documentKey": "cnt:8af845f3f59697f9541a",
+        "document": {
+          "version": 1,
+          "type": "product_page",
+          "lang": "fr",
+          "page": {
+            "key": "product:main",
+            "title": "Sillage",
+            "kind": "product",
+            "status": "planned",
+            "url": null
+          },
+          "primaryKeyword": null,
+          "meta": {
+            "seoTitle": "Sillage | Sillage",
+            "metaDescription": "Sillage : découvrez l’offre de Sillage, sa présentation et les informations utiles pour prendre contact.",
+            "slug": "produit-principal",
+            "canonical": null,
+            "robots": "index,follow"
+          },
+          "blocks": [
+            {
+              "id": "product:main-title",
+              "kind": "h1",
+              "text": "Sillage"
+            },
+            {
+              "id": "product:main-detail",
+              "kind": "p",
+              "text": "Carnet de croquis à couverture en liège, pages sans lignes. Produit phare vendu directement aux particuliers."
+            },
+            {
+              "id": "product:main-facts",
+              "kind": "p",
+              "text": "Les éléments renseignés pour ce produit : Matière liège."
+            },
+            {
+              "id": "product:main-options",
+              "kind": "p",
+              "text": "Ce produit est proposé à 28,50 €. Vérifiez que votre sélection correspond à votre besoin avant de poursuivre."
+            },
+            {
+              "id": "product:main-faq",
+              "kind": "p",
+              "text": "Qu’aimeriez-vous savoir avant de choisir ? Notez votre question et indiquez le produit concerné pour faciliter la réponse."
+            },
+            {
+              "id": "product:main-gallery",
+              "kind": "p",
+              "text": "Regardez Sillage sous plusieurs angles. La galerie complète la description écrite et permet de revenir sur un détail."
+            },
+            {
+              "id": "product:main-story",
+              "kind": "p",
+              "text": "Une composition verticale accompagne la découverte sur mobile. Le cadrage conserve une lecture naturelle de l’objet et de son contexte."
+            }
+          ],
+          "links": [],
+          "schema": [],
+          "meta2": {
+            "source": "engine",
+            "by": "ai",
+            "createdFrom": null,
+            "runId": "simulation:hiyjjzjr150eis2r:product:main"
+          }
+        },
+        "seo": {
+          "seoTitle": "Sillage | Sillage",
+          "metaDescription": "Sillage : découvrez l’offre de Sillage, sa présentation et les informations utiles pour prendre contact.",
+          "slug": "produit-principal",
+          "canonical": null,
+          "robots": "index,follow"
+        }
+      },
+      {
+        "key": "brand",
+        "path": "/pages/a-propos",
+        "title": "À propos",
+        "kind": "brand",
+        "goal": "Présenter la marque sans histoire inventée",
+        "sections": [
+          {
+            "key": "intent",
+            "purpose": "Positionnement et engagements vérifiables",
+            "editorial": [
+              {
+                "pageKey": "brand",
+                "sectionKey": "intent",
+                "objective": "Positionnement et engagements vérifiables",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:e8844ca88f8e8fe633aa",
+                "blockIds": [
+                  "brand-title",
+                  "brand-intent"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "À propos\n\nSillage s’adresse à Illustrateurs nomades — personnes découvrant cette catégorie. Le projet se concentre sur Sillage, avec une présentation attentive aux besoins déclarés."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "brand-title",
+                "kind": "h1",
+                "text": "À propos"
+              },
+              {
+                "id": "brand-intent",
+                "kind": "p",
+                "text": "Sillage s’adresse à Illustrateurs nomades — personnes découvrant cette catégorie. Le projet se concentre sur Sillage, avec une présentation attentive aux besoins déclarés."
+              }
+            ],
+            "text": "À propos\n\nSillage s’adresse à Illustrateurs nomades — personnes découvrant cette catégorie. Le projet se concentre sur Sillage, avec une présentation attentive aux besoins déclarés.",
+            "mediaSlotKeys": []
+          },
+          {
+            "key": "gallery",
+            "purpose": "Galerie de scènes distinctes",
+            "editorial": [
+              {
+                "pageKey": "brand",
+                "sectionKey": "gallery",
+                "objective": "Galerie de scènes distinctes",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:e8844ca88f8e8fe633aa",
+                "blockIds": [
+                  "brand-gallery"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:4",
+                  "final:image:7"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "L’univers visuel accompagne la lecture de la marque. Il met en relation les scènes de présentation et les informations concrètes de l’offre."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "brand-gallery",
+                "kind": "p",
+                "text": "L’univers visuel accompagne la lecture de la marque. Il met en relation les scènes de présentation et les informations concrètes de l’offre."
+              }
+            ],
+            "text": "L’univers visuel accompagne la lecture de la marque. Il met en relation les scènes de présentation et les informations concrètes de l’offre.",
+            "mediaSlotKeys": [
+              "final:image:4",
+              "final:image:7"
+            ]
+          },
+          {
+            "key": "story",
+            "purpose": "Formats verticaux : lecture sans déformation",
+            "editorial": [
+              {
+                "pageKey": "brand",
+                "sectionKey": "story",
+                "objective": "Formats verticaux : lecture sans déformation",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:e8844ca88f8e8fe633aa",
+                "blockIds": [
+                  "brand-story"
+                ],
+                "mediaSlotKeys": [
+                  "final:image:10"
+                ],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Au fil des images, retrouvez les repères de cette identité. La mise en page verticale conserve les contrastes et la lisibilité sur petit écran."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "brand-story",
+                "kind": "p",
+                "text": "Au fil des images, retrouvez les repères de cette identité. La mise en page verticale conserve les contrastes et la lisibilité sur petit écran."
+              }
+            ],
+            "text": "Au fil des images, retrouvez les repères de cette identité. La mise en page verticale conserve les contrastes et la lisibilité sur petit écran.",
+            "mediaSlotKeys": [
+              "final:image:10"
+            ]
+          }
+        ],
+        "docKey": "cnt:e8844ca88f8e8fe633aa",
+        "documentKey": "cnt:e8844ca88f8e8fe633aa",
+        "document": {
+          "version": 1,
+          "type": "brand_page",
+          "lang": "fr",
+          "page": {
+            "key": "brand",
+            "title": "À propos",
+            "kind": "brand",
+            "status": "planned",
+            "url": null
+          },
+          "primaryKeyword": null,
+          "meta": {
+            "seoTitle": "À propos | Sillage",
+            "metaDescription": "À propos : découvrez l’offre de Sillage, sa présentation et les informations utiles pour prendre contact.",
+            "slug": "a-propos",
+            "canonical": null,
+            "robots": "index,follow"
+          },
+          "blocks": [
+            {
+              "id": "brand-title",
+              "kind": "h1",
+              "text": "À propos"
+            },
+            {
+              "id": "brand-intent",
+              "kind": "p",
+              "text": "Sillage s’adresse à Illustrateurs nomades — personnes découvrant cette catégorie. Le projet se concentre sur Sillage, avec une présentation attentive aux besoins déclarés."
+            },
+            {
+              "id": "brand-gallery",
+              "kind": "p",
+              "text": "L’univers visuel accompagne la lecture de la marque. Il met en relation les scènes de présentation et les informations concrètes de l’offre."
+            },
+            {
+              "id": "brand-story",
+              "kind": "p",
+              "text": "Au fil des images, retrouvez les repères de cette identité. La mise en page verticale conserve les contrastes et la lisibilité sur petit écran."
+            }
+          ],
+          "links": [],
+          "schema": [],
+          "meta2": {
+            "source": "engine",
+            "by": "ai",
+            "createdFrom": null,
+            "runId": "simulation:hiyjjzjr150eis2r:brand"
+          }
+        },
+        "seo": {
+          "seoTitle": "À propos | Sillage",
+          "metaDescription": "À propos : découvrez l’offre de Sillage, sa présentation et les informations utiles pour prendre contact.",
+          "slug": "a-propos",
+          "canonical": null,
+          "robots": "index,follow"
+        }
+      },
+      {
+        "key": "contact",
+        "path": "/pages/contact",
+        "title": "Contact",
+        "kind": "contact",
+        "goal": "Demande d’information",
+        "sections": [
+          {
+            "key": "contact",
+            "purpose": "Coordonnées et formulaire",
+            "editorial": [
+              {
+                "pageKey": "contact",
+                "sectionKey": "contact",
+                "objective": "Coordonnées et formulaire",
+                "message": "Information du brief fictif",
+                "docKey": "cnt:76c194bcfb439df9217d",
+                "blockIds": [
+                  "contact-title",
+                  "contact-contact"
+                ],
+                "mediaSlotKeys": [],
+                "rationale": "Affectation explicite : aucun texte coupé ni bloc perdu",
+                "text": "Contact\n\nUne question sur Sillage ? Décrivez votre demande dans le formulaire de contact et précisez les points que vous souhaitez éclaircir."
+              }
+            ],
+            "blocks": [
+              {
+                "id": "contact-title",
+                "kind": "h1",
+                "text": "Contact"
+              },
+              {
+                "id": "contact-contact",
+                "kind": "p",
+                "text": "Une question sur Sillage ? Décrivez votre demande dans le formulaire de contact et précisez les points que vous souhaitez éclaircir."
+              }
+            ],
+            "text": "Contact\n\nUne question sur Sillage ? Décrivez votre demande dans le formulaire de contact et précisez les points que vous souhaitez éclaircir.",
+            "mediaSlotKeys": []
+          }
+        ],
+        "docKey": "cnt:76c194bcfb439df9217d",
+        "documentKey": "cnt:76c194bcfb439df9217d",
+        "document": {
+          "version": 1,
+          "type": "contact_page",
+          "lang": "fr",
+          "page": {
+            "key": "contact",
+            "title": "Contact",
+            "kind": "page",
+            "status": "planned",
+            "url": null
+          },
+          "primaryKeyword": null,
+          "meta": {
+            "seoTitle": "Contact | Sillage",
+            "metaDescription": "Contact : découvrez l’offre de Sillage, sa présentation et les informations utiles pour prendre contact.",
+            "slug": "contact",
+            "canonical": null,
+            "robots": "index,follow"
+          },
+          "blocks": [
+            {
+              "id": "contact-title",
+              "kind": "h1",
+              "text": "Contact"
+            },
+            {
+              "id": "contact-contact",
+              "kind": "p",
+              "text": "Une question sur Sillage ? Décrivez votre demande dans le formulaire de contact et précisez les points que vous souhaitez éclaircir."
+            }
+          ],
+          "links": [],
+          "schema": [],
+          "meta2": {
+            "source": "engine",
+            "by": "ai",
+            "createdFrom": null,
+            "runId": "simulation:hiyjjzjr150eis2r:contact"
+          }
+        },
+        "seo": {
+          "seoTitle": "Contact | Sillage",
+          "metaDescription": "Contact : découvrez l’offre de Sillage, sa présentation et les informations utiles pour prendre contact.",
+          "slug": "contact",
+          "canonical": null,
+          "robots": "index,follow"
+        }
+      }
+    ],
+    "media": [
+      {
+        "key": "final:image:1",
+        "pageKey": "product:main",
+        "sectionKey": "detail",
+        "kind": "image",
+        "aspect": "1:1",
+        "source": "ai",
+        "purpose": "Composition 1 de Sillage : product:main/detail",
+        "required": true,
+        "scene": "Scène distincte de test 1 : Composition 1 de Sillage : product:main/detail",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 1 de Sillage : product:main/detail",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "f59t8u6es9a5kblb",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "d438b4ed5de321f1"
+        },
+        "inputHash": "238faae8730c272d",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "f59t8u6es9a5kblb",
+          "url": "/api/files/f59t8u6es9a5kblb",
+          "mime": "image/png",
+          "width": 1080,
+          "height": 1080,
+          "duration": null,
+          "origin": "generated",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "ai",
+          "originalAssetId": null,
+          "illustrationOnly": false
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": true,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:2",
+        "pageKey": "product:main",
+        "sectionKey": "gallery",
+        "kind": "image",
+        "aspect": "1:1",
+        "source": "ai",
+        "purpose": "Composition 2 de Sillage : product:main/gallery",
+        "required": true,
+        "scene": "Scène distincte de test 2 : Composition 2 de Sillage : product:main/gallery",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 2 de Sillage : product:main/gallery",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "r2wuswsz4q6ybobq",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "36a3d09353be1c77"
+        },
+        "inputHash": "238faae8730c272d",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "r2wuswsz4q6ybobq",
+          "url": "/api/files/r2wuswsz4q6ybobq",
+          "mime": "image/png",
+          "width": 1080,
+          "height": 1080,
+          "duration": null,
+          "origin": "generated",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "ai",
+          "originalAssetId": null,
+          "illustrationOnly": false
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": true,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:3",
+        "pageKey": "home",
+        "sectionKey": "offer",
+        "kind": "image",
+        "aspect": "1:1",
+        "source": "ai",
+        "purpose": "Composition 3 de Sillage : home/offer",
+        "required": true,
+        "scene": "Scène distincte de test 3 : Composition 3 de Sillage : home/offer",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 3 de Sillage : home/offer",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "8j9eoc26n0f0owza",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "6f972214d91bcd69"
+        },
+        "inputHash": "238faae8730c272d",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "8j9eoc26n0f0owza",
+          "url": "/api/files/8j9eoc26n0f0owza",
+          "mime": "image/png",
+          "width": 1080,
+          "height": 1080,
+          "duration": null,
+          "origin": "generated",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "ai",
+          "originalAssetId": null,
+          "illustrationOnly": false
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": true,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:4",
+        "pageKey": "brand",
+        "sectionKey": "gallery",
+        "kind": "image",
+        "aspect": "1:1",
+        "source": "ai",
+        "purpose": "Composition 4 de Sillage : brand/gallery",
+        "required": true,
+        "scene": "Scène distincte de test 4 : Composition 4 de Sillage : brand/gallery",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 4 de Sillage : brand/gallery",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "dw8vtwotsu26egk0",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "029e24f254145254"
+        },
+        "inputHash": "238faae8730c272d",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "dw8vtwotsu26egk0",
+          "url": "/api/files/dw8vtwotsu26egk0",
+          "mime": "image/png",
+          "width": 1080,
+          "height": 1080,
+          "duration": null,
+          "origin": "generated",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "ai",
+          "originalAssetId": null,
+          "illustrationOnly": false
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": true,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:5",
+        "pageKey": "home",
+        "sectionKey": "offer",
+        "kind": "image",
+        "aspect": "16:9",
+        "source": "ai",
+        "purpose": "Composition 5 de Sillage : home/offer",
+        "required": true,
+        "scene": "Scène distincte de test 5 : Composition 5 de Sillage : home/offer",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 5 de Sillage : home/offer",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "uppi14myg4y1js9y",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "35fd6b29bdf31788"
+        },
+        "inputHash": "238faae8730c272d",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "uppi14myg4y1js9y",
+          "url": "/api/files/uppi14myg4y1js9y",
+          "mime": "image/png",
+          "width": 1600,
+          "height": 900,
+          "duration": null,
+          "origin": "generated",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "ai",
+          "originalAssetId": null,
+          "illustrationOnly": false
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": true,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:6",
+        "pageKey": "product:main",
+        "sectionKey": "gallery",
+        "kind": "image",
+        "aspect": "16:9",
+        "source": "ai",
+        "purpose": "Composition 6 de Sillage : product:main/gallery",
+        "required": true,
+        "scene": "Scène distincte de test 6 : Composition 6 de Sillage : product:main/gallery",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 6 de Sillage : product:main/gallery",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "jz8dqu7dv1esqrtg",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "b57885b0cdb1ef09"
+        },
+        "inputHash": "238faae8730c272d",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "jz8dqu7dv1esqrtg",
+          "url": "/api/files/jz8dqu7dv1esqrtg",
+          "mime": "image/png",
+          "width": 1600,
+          "height": 900,
+          "duration": null,
+          "origin": "generated",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "ai",
+          "originalAssetId": null,
+          "illustrationOnly": false
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": true,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:7",
+        "pageKey": "brand",
+        "sectionKey": "gallery",
+        "kind": "image",
+        "aspect": "16:9",
+        "source": "ai",
+        "purpose": "Composition 7 de Sillage : brand/gallery",
+        "required": true,
+        "scene": "Scène distincte de test 7 : Composition 7 de Sillage : brand/gallery",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 7 de Sillage : brand/gallery",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "p6nax7tikcqetmre",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "f72d1724ca286bc6"
+        },
+        "inputHash": "238faae8730c272d",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "p6nax7tikcqetmre",
+          "url": "/api/files/p6nax7tikcqetmre",
+          "mime": "image/png",
+          "width": 1600,
+          "height": 900,
+          "duration": null,
+          "origin": "generated",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "ai",
+          "originalAssetId": null,
+          "illustrationOnly": false
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": true,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:8",
+        "pageKey": "home",
+        "sectionKey": "gallery",
+        "kind": "image",
+        "aspect": "16:9",
+        "source": "ai",
+        "purpose": "Composition 8 de Sillage : home/gallery",
+        "required": true,
+        "scene": "Scène distincte de test 8 : Composition 8 de Sillage : home/gallery",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 8 de Sillage : home/gallery",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "xh0i0cqrwb0mhu1z",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "3592f795999f61dc"
+        },
+        "inputHash": "238faae8730c272d",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "xh0i0cqrwb0mhu1z",
+          "url": "/api/files/xh0i0cqrwb0mhu1z",
+          "mime": "image/png",
+          "width": 1600,
+          "height": 900,
+          "duration": null,
+          "origin": "generated",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "ai",
+          "originalAssetId": null,
+          "illustrationOnly": false
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": true,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:9",
+        "pageKey": "product:main",
+        "sectionKey": "story",
+        "kind": "image",
+        "aspect": "9:16",
+        "source": "ai",
+        "purpose": "Composition 9 de Sillage : product:main/story",
+        "required": true,
+        "scene": "Scène distincte de test 9 : Composition 9 de Sillage : product:main/story",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 9 de Sillage : product:main/story",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "4lmj0xylwkcogacy",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "2878c48c9af9764c"
+        },
+        "inputHash": "238faae8730c272d",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "4lmj0xylwkcogacy",
+          "url": "/api/files/4lmj0xylwkcogacy",
+          "mime": "image/png",
+          "width": 900,
+          "height": 1600,
+          "duration": null,
+          "origin": "generated",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "ai",
+          "originalAssetId": null,
+          "illustrationOnly": false
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": true,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:image:10",
+        "pageKey": "brand",
+        "sectionKey": "story",
+        "kind": "image",
+        "aspect": "9:16",
+        "source": "ai",
+        "purpose": "Composition 10 de Sillage : brand/story",
+        "required": true,
+        "scene": "Scène distincte de test 10 : Composition 10 de Sillage : brand/story",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Composition 10 de Sillage : brand/story",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "4ogdccegs7m57jwh",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "75674bbd96ede15e"
+        },
+        "inputHash": "238faae8730c272d",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "4ogdccegs7m57jwh",
+          "url": "/api/files/4ogdccegs7m57jwh",
+          "mime": "image/png",
+          "width": 900,
+          "height": 1600,
+          "duration": null,
+          "origin": "generated",
+          "role": "scene"
+        },
+        "poster": null,
+        "provenance": {
+          "source": "ai",
+          "originalAssetId": null,
+          "illustrationOnly": false
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": true,
+          "mobilePosterFallback": false
+        }
+      },
+      {
+        "key": "final:video:1",
+        "pageKey": "home",
+        "sectionKey": "hero",
+        "kind": "video",
+        "aspect": "16:9",
+        "source": "pixabay",
+        "purpose": "Ambiance hero pertinente, zone de texte lisible ; jamais une preuve sur le produit exact ou les locaux réels",
+        "required": true,
+        "playback": {
+          "muted": true,
+          "playsInline": true,
+          "loop": true,
+          "pauseControl": true,
+          "reducedMotion": "poster",
+          "mobileFallback": "poster"
+        },
+        "scene": "Scène distincte de test 11 : Ambiance hero pertinente, zone de texte lisible ; jamais une preuve sur le produit exact ou les locaux réels",
+        "queries": [
+          "activité fictive",
+          "usage test"
+        ],
+        "caption": "Média synthétique à contrôler",
+        "alt": "Illustration de test : Ambiance hero pertinente, zone de texte lisible ; jamais une preuve sur le produit exact ou les locaux réels",
+        "rationale": "Liaison de test avec le texte de cette section",
+        "reviewed": true,
+        "assetId": "juie1zs5io0znhgo",
+        "posterId": "wjltsrnds2nrmgk4",
+        "alignment": {
+          "status": "accepted",
+          "reason": "Verdict d’alignement injecté pour le test seulement",
+          "contextHash": "baa7bf318ac4e5d3"
+        },
+        "inputHash": "238faae8730c272d",
+        "peopleConsent": "none_confirmed",
+        "pool": "website",
+        "file": {
+          "assetId": "juie1zs5io0znhgo",
+          "url": "/api/files/juie1zs5io0znhgo",
+          "mime": "video/mp4",
+          "width": 1280,
+          "height": 720,
+          "duration": 3,
+          "origin": "import",
+          "role": "clip"
+        },
+        "poster": {
+          "assetId": "wjltsrnds2nrmgk4",
+          "url": "/api/files/wjltsrnds2nrmgk4",
+          "mime": "image/png",
+          "width": 1280,
+          "height": 720
+        },
+        "provenance": {
+          "source": "pixabay",
+          "stock": {
+            "source": "pixabay",
+            "id": "SIMULATION-hiyjjzjr150eis2r-10",
+            "author": "Fictif",
+            "page": "https://pixabay.com/",
+            "license": "SIMULATION : aucun fichier Pixabay réellement collecté"
+          },
+          "illustrationOnly": true
+        },
+        "framing": {
+          "preserveAspectRatio": true,
+          "productMustRemainWhole": true,
+          "mobilePosterFallback": true
+        }
+      }
+    ],
+    "category": {
+      "status": "recommended",
+      "category": "ecommerce",
+      "salesModel": "catalogue",
+      "goal": "purchase",
+      "reasons": [
+        "Vous avez confirmé ce modèle de site pour votre offre actuelle ; ce choix prime sur les indices automatiques."
+      ],
+      "evidence": [
+        {
+          "source": "business",
+          "value": "products"
+        },
+        {
+          "source": "client_choice",
+          "value": "ecommerce"
+        }
+      ],
+      "clarification": null,
+      "eligibleThemes": [
+        {
+          "referenceId": "orbe",
+          "name": "ORBE",
+          "engineThemeId": null,
+          "status": "awaiting_integration"
+        }
+      ]
+    },
+    "sourceHash": "b9723d77be91afb1",
+    "status": "ready",
+    "issues": [],
+    "socialAssetsIncluded": false,
+    "integration": {
+      "status": "awaiting_theme_consumer",
+      "installedThemeChanged": false,
+      "required": [
+        "Raccorder les identifiants des quatre thèmes aux références et catégories explicites.",
+        "Consommer identité, documents complets, blocs éditoriaux, SEO et médias affectés dans le moteur existant.",
+        "Filtrer la bibliothèque et les opérations manuelles/IA par thème installé ET catégorie ; préserver les retouches et signaler les conflits."
+      ]
+    }
+  },
+  "routing": [
+    {
+      "stage": "understanding",
+      "processing": "api",
+      "alias": "text:vision_analysis:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": true,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "web_sources",
+      "processing": "web_fetch",
+      "alias": "research:web-search-and-source-fetch",
+      "provider": null,
+      "configuration": "configured_not_tested",
+      "modelConfigured": false,
+      "executed": false,
+      "reason": "Découverte web et lecture des sources avec les connecteurs existants ; couverture et accès réels à vérifier.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "research_strategy",
+      "processing": "api",
+      "alias": "text:strategy:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": false,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "name",
+      "processing": "api",
+      "alias": "text:strategy:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": false,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "art_directions",
+      "processing": "api",
+      "alias": "text:logo_symbol:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": false,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "logo",
+      "processing": "api",
+      "alias": "image:logo",
+      "provider": "openai",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "executed": false,
+      "reason": "Fournisseur, adaptateur, tarif et capacité résolus localement ; aucun appel effectué.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "identity_variants",
+      "processing": "local_preparation",
+      "alias": "identity:approved-logo-variants",
+      "provider": null,
+      "configuration": "local",
+      "modelConfigured": false,
+      "executed": false,
+      "reason": "Déclinaisons et charte dérivées du logo actif ; aucun nouveau dessin payant dans cette préparation locale.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "copywriting_seo",
+      "processing": "api",
+      "alias": "text:copywriting:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": false,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "site_images",
+      "processing": "api",
+      "alias": "image:product_edit",
+      "provider": "openai",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "executed": false,
+      "reason": "Fournisseur, adaptateur, tarif et capacité résolus localement ; aucun appel effectué.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "site_stock",
+      "processing": "api",
+      "alias": "stock:pixabay",
+      "provider": "pixabay",
+      "configuration": "unavailable",
+      "modelConfigured": false,
+      "executed": false,
+      "reason": "Accès Pixabay absent ou désactivé.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "visual_review",
+      "processing": "api",
+      "alias": "text:quality_control:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": true,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "initial_twenty_concepts",
+      "processing": "api",
+      "alias": "text:copywriting:strong",
+      "provider": "anthropic",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "vision": false,
+      "executed": false,
+      "reason": "Route résolue localement ; aucun appel effectué par ce diagnostic.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "initial_twenty_images",
+      "processing": "api",
+      "alias": "image:social_image",
+      "provider": "openai",
+      "configuration": "usable",
+      "modelConfigured": true,
+      "executed": false,
+      "reason": "Fournisseur, adaptateur, tarif et capacité résolus localement ; aucun appel effectué.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    },
+    {
+      "stage": "theme_handoff",
+      "processing": "local_preparation",
+      "alias": "theme:structured-contract",
+      "provider": null,
+      "configuration": "local",
+      "modelConfigured": false,
+      "executed": false,
+      "reason": "Projection des données approuvées, sans génération ni création d’un thème.",
+      "environment": "simulation",
+      "realProviderValidated": false
+    }
+  ],
+  "generationStarted": false,
+  "themeChanged": false,
+  "themeConsumerVerified": false
+}

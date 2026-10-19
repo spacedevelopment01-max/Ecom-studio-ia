@@ -46,6 +46,7 @@ export type Fact = { key: string; label: string; value: string; status: "confirm
 export type Question = { id: string; question: string; why: string; required: boolean; factKey: string; answer?: string };
 
 export type ProductProfile = {
+  contentAliases?: string[];
   name: string;
   nameStatus: "provided" | "detected" | "proposed" | "unknown";
   category: string;
@@ -69,6 +70,7 @@ export type ProductProfile = {
 };
 
 export type Brand = {
+  artIdentity?: import("./logo-v2/direction-series").DirectionIdentity & { directionId: string; seriesId: string };
   name: string;
   nameStatus: "provided" | "proposed" | "validated";
   alternatives: string[];
@@ -156,7 +158,7 @@ export type BrandPlatform = {
  * l'activité (nom, résumé, secteur, faits confirmés) et `services` détaille l'offre.
  */
 export type BusinessType = "products" | "services";
-export type ServiceItem = { name: string; description: string; price?: string; duration?: string };
+export type ServiceItem = { key?: string; contentAliases?: string[]; name: string; description: string; price?: string; duration?: string };
 export type ServiceProfile = {
   /** Prestations proposées (texte fourni par le client ; prix et durées seulement s'il les donne). */
   services: ServiceItem[];
@@ -196,6 +198,7 @@ export const storeTypeInfo = (t: StoreType, lang: "fr" | "en" = "fr") => (lang =
 /** Produit du catalogue (en plus du produit principal analysé en détail). */
 export type CatalogItem = {
   key: string;
+  contentAliases?: string[];
   name: string;
   category: string;
   price: number | null; // centimes
@@ -227,6 +230,11 @@ export type ProjectSettings = {
    * Absente : déduite du projet (voir activityOf dans theme/page-templates.ts), jamais imposée.
    */
   activity?: ActivityCategory;
+  /**
+   * Catégorie du projet confirmée ou corrigée par le client (prestations de services, e-commerce, boutique spécialisée).
+   * Absente : déduite du projet (voir theme/project-kind.ts), jamais imposée ; une ambiguïté pose une question.
+   */
+  storeKind?: "services" | "catalog" | "specialty";
 };
 
 /** Vente en ligne, prestations sur rendez-vous, artisan sur devis, commerce de proximité, ou activité mixte. */

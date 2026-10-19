@@ -1,0 +1,49 @@
+# Lot 2C — FRAISE GUMMIES et ONDE AUDIO (issue #137)
+
+Preuves publiques de la livraison des deux thèmes fidèles aux références Lumora et Pawish.
+
+- `preuves.json` — produit par `scripts/lot2c-proof.ts` : commit testé (`testedCommit`), état de l'arbre de travail, largeurs
+  (1440, 768, 390 et 360 px), mesures par page (largeur de défilement, h1, images cassées, médias manquants, polices, erreurs
+  JavaScript), interactions exécutées dans Chromium, comparaisons réalisées, appels IA payants (toujours 0).
+- `ressources-licences.json` — manifeste des ressources (images du kit, logos, polices, icônes, clip de test) et de leurs
+  licences ou provenances.
+
+Les captures, comparaisons côte à côte et vidéos de parcours contiennent les images IA et les propositions de logos du
+kit : elles restent privées (ZIP remis au propriétaire) et n'entrent pas dans le dépôt.
+
+Rejouer la passe de preuves (Chromium préinstallé, base isolée, aucun appel réseau) :
+
+```bash
+PROOF_WIDTHS=1440,768,390,360 CHROMIUM=/chemin/vers/chrome npx tsx scripts/lot2c-proof.ts <dossier-sortie> <kit>/Pack_Claude_Fraise_Onde
+```
+
+Rejouer le test du vrai bouton « Ajouter une section » du studio (serveur Next.js de développement sur une base temporaire,
+Chromium piloté ; FRAISE puis ONDE) :
+
+```bash
+CHROMIUM=/chemin/vers/chrome npx tsx scripts/lot2c-studio-check.ts <dossier-captures> <kit>/Pack_Claude_Fraise_Onde fraise
+```
+
+Rapport complet : `docs/coordination/LOT_2C_FRAISE_ONDE_RESULTATS.md`. Inventaire des références :
+`docs/coordination/LOT_2C_FRAISE_ONDE_INVENTAIRE.md`.
+
+Rejouer le scénario de persistance et de restauration depuis l'interface du studio (ajout, panneau, déplacement, duplication,
+masquage, suppression, restauration depuis « Versions », pied de page, en-tête, story vidéo, rechargement) :
+
+```bash
+CHROMIUM=/chemin/vers/chrome npx tsx scripts/lot2c-persistence-check.ts <dossier-captures> <kit>/Pack_Claude_Fraise_Onde fraise
+```
+
+Preuve de navigation et audit responsive sur un aperçu statique livré (dossier produit par `scripts/lot2c-static-preview.ts`) :
+
+```bash
+CHROMIUM=/chemin/vers/chrome npx tsx scripts/lot2c-nav-proof.ts <aperçu>/fraise fraise <dossier-sortie>
+CHROMIUM=/chemin/vers/chrome npx tsx scripts/lot2c-responsive-audit.ts <aperçu>/fraise fraise <dossier-sortie>
+```
+
+`persistance-<thème>.json` : journal du scénario de persistance (étapes, identifiants, réglages relus par l'API, nombre de
+versions). `navigation-<thème>.json` : mesures de navigation (position après un lien du pied de page, direct et dans une
+enveloppe, ancre, retour, panier). `audit-<thème>.json` : résultat de l'audit responsive (résumé par catégorie, défauts
+groupés par page et cadre).
+
+`mobile-fraise.json` / `mobile-onde.json` : mesures de la preuve mobile « petite hauteur » (couleurs calculées de la FAQ, géométrie du tiroir du panier à chaque étape) sur l'aperçu statique du commit testé.

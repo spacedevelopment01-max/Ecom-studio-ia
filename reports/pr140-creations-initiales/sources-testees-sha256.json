@@ -1,0 +1,18 @@
+{
+  "src/app/api/projects/[id]/social/initial/route.ts": "c8042bbc275594d49e0f28e08cbd084103d0dc7bdadd3325a39cf17d370a3341",
+  "src/components/studio/initial-creatives.tsx": "9cd9e7d22eeeb10c819775ede8dab2838167be981d3194f535a281ee4365e90f",
+  "src/lib/social-v2/initial-diversity.ts": "538ba076c4670476632a2e197b2860c58db0becaf0e5198b2eea25a4b023c7f0",
+  "src/lib/social-v2/initial.ts": "d5aef727fd163f50843b029204c3b96f49487fbfa02aab7cbb829e8810fdb34f",
+  "tests/creations-initiales-api.test.ts": "79674428bd183586f58a303777cac739d23e6c6108a51ae77faad0fc42c44125",
+  "tests/initial-fixtures.ts": "17ed7ff06ab8d4b6c04fd5d52797ba2ca93edce67a8ebf8ca4db2057e69c4572",
+  "tests/publications-initiales.test.ts": "0fa805cd9edc71f1bba0525e1fc6f28be16b84137eed3d564e07dfad4c68d272",
+  "src/app/api/projects/route.ts": "a607661d31a2d4abf76379ee1f9a307b9b47b66d252a40762cc11513c7d7eada",
+  "src/components/studio/social-studio.tsx": "42a9c3e60aeb38627dafedd433a78c1e59b0db877e72057269ec4772a76ece73",
+  "src/components/studio/tab-preparation.tsx": "73d5eab0c9575c69ed88614a2e766e13200ddcaa9cca417632b37b5e949cdbfa",
+  "src/components/studio/tab-publicites.tsx": "f09b4c249c8a0b39a3239aaade16be9410a3e6ed5d2e55f676a712df9eb2e6d0",
+  "src/lib/social-v2/ai-post.ts": "2ac3431129fbb9d91449fed857a6f58d46603b7de010fce39789d51f2ed832f3",
+  "src/lib/social-v2/production.ts": "3e462ba821d91fac4e400af6042bbcd28aa6ee42962426b7aeafb400b242c50e",
+  "worker/handlers.ts": "651bd8a043b096b125794d366b0a5579876efc3f3bd8aa9eae2a96f47c716ebd",
+  "scripts/publications/initial-proof-worker.ts": "3a8ab414731ebf13c98c4042a434492b31abb014bf023a4f96853db97fe8d785",
+  "scripts/publications/initial-browser-proof.ts": "9cea78b8f0500e98a383a349a7891b01fe5f7f0f69d6819da66136071f68ccbc"
+}

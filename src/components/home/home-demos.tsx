@@ -79,6 +79,8 @@ export function StoreDevices({ stores }: { stores: StoreDemo[] }) {
   const [i, setI] = useState(0);
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const s = stores[i];
+  // Sans capture de boutique installée (visuels du kit absents du dépôt) : rien à montrer, jamais une page en erreur.
+  if (!s) return null;
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -225,6 +227,7 @@ export function SeoDocDemo({ docs }: { docs: Doc[] }) {
   const d = docs[i];
   const mark = (key: string) => setEdited((e) => (e[key] ? e : { ...e, [key]: true }));
   const anyEdited = Object.keys(edited).some((k) => k.startsWith(`${i}-`));
+  if (!d) return null;
   const Text = ({ text }: { text: string }) => {
     // Les manques restent visibles : « [À compléter : …] » est surligné.
     const parts = text.split(/(\[[^\]]+\])/g);

@@ -29,7 +29,7 @@ describe("Formats et copies", async () => {
     return saveAsset({ projectId: p.id, userId: p.userId, data: await png(1080, 1350), name: "pub-ia.png", mime: "image/png", role: ad ? "ad" : "social", folderKey: ad ? "images.ads" : "content.calendar", origin: "generated", status: "ready", meta: { ...(ad ? { aiAd: true } : {}), aspect: "4:5", aiPost: { texts: { headline: "Son pur" }, subject: { kind: "product", key: "main", name: "Casque" }, request: "sur un bureau en noyer" } } });
   }
 
-  it("vidéo : autre format recomposé (taille, plateforme, textes et carte de fin dans le cadre), durée et musique gardées", async () => {
+  it("vidéo : autre format recomposé (taille, plateforme et surimpression finale dans le cadre), durée et musique gardées", async () => {
     const p = await project();
     const plan = localScenePlan(p, null, { as: "post" });
     const doc = buildSceneDoc(p, plan.scenes.map((_, k) => ({ assetId: `a${k}`, durationS: 5, generated: true })), plan, "9:16", "post");
@@ -38,8 +38,10 @@ describe("Formats et copies", async () => {
     expect(timeline(wide).total).toBe(timeline(doc).total);
     expect(wide.audio.music).toEqual(doc.audio.music);
     const end = wide.clips.at(-1)!.source as any;
-    expect(end.kind).toBe("doc");
-    expect([end.doc.width, end.doc.height]).toEqual([1920, 1080]);
+    expect(end.kind).toBe("video");
+    expect(wide.clips).toHaveLength(plan.scenes.length);
+    expect(wide.clips.at(-1)!.overlays.length).toBeGreaterThan(0);
+    expect(wide.meta.ending).toEqual(doc.meta.ending);
     for (const c of wide.clips) for (const l of c.overlays) expect(l.x + l.w).toBeLessThanOrEqual(1920 + 1);
     expect(doc.width).toBe(1080); // l'original n'est pas touché
   });

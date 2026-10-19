@@ -1,0 +1,12 @@
+{
+  "scope": "Preflight E, not final acceptance",
+  "simulation": true,
+  "applicationCommit": "2b64054be0ff29fe297027552f009186fcc502f2",
+  "harnessBeforeFix": "c3fefc4a8d1f1e895453b7d339fbccb3d8b793cf",
+  "harnessAfterFix": "390a9dd556d25911da6459cbbe5302f655759989",
+  "failure": "The script clicked a desktop-only hidden data-section control on mobile. It did not prove a mobile application failure.",
+  "nativeMobileControl": "select aria-label=Rubrique",
+  "diagnosticAfterNavigationFix": "Mobile navigation, 10 post cards, ads, copy, website media, video playback and handoff/reload exercised on the existing E project; not a new-project or live-growth proof.",
+  "finalAcceptanceRequirements": "New F projects; native dropdown; list mounted before completion; cardsBefore<10; cardsAfter=10; no document reload or section change after completion.",
+  "actualProviderCalls": 0
+}

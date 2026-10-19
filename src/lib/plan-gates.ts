@@ -10,7 +10,8 @@ import { HttpError, type User } from "./auth";
 import { one } from "./db";
 import { PLANS, type Plan, type PlanId } from "./plans";
 import { projectPlan } from "./project-billing";
-import { themeAllowed, planForTheme, themeRank } from "./theme/theme-access";
+import { themeAllowed, planForTheme, themeRank, themeStatus } from "./theme/theme-access";
+import { retiredThemeReason } from "./theme/theme-fit";
 import { L } from "./i18n-server";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 
@@ -81,6 +82,8 @@ export function assertThemeAllowed(projectId: string, directionId: string, curre
   if (currentDirection && currentDirection === directionId) return;
   const plan = requirePlan(null, projectId);
   if (themeRank(directionId) == null) throw new HttpError(400, L("Thème inconnu.", "Unknown theme."));
+  // Ancien catalogue (retiré le 19 octobre) : jamais pour une nouvelle sélection, même avec le forfait le plus large.
+  if (themeStatus(directionId) === "retired") throw new HttpError(400, L(retiredThemeReason("fr"), retiredThemeReason("en")));
   if (!themeAllowed(plan, directionId)) {
     const need = planForTheme(directionId);
     throw new HttpError(402, L(`Ce thème n'est pas inclus dans le forfait ${name(plan)} (${PLANS[plan].themes} thèmes). ${needPlan(need)}`, `This theme isn't included in the ${name(plan)} plan (${PLANS[plan].themes} themes). ${needPlan(need)}`), "plan_upgrade");

@@ -1,3 +1,4 @@
+import { EditorialSchema } from "@/lib/social-v2/creative-contract";
 import { z } from "zod";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
@@ -35,7 +36,7 @@ export const GET = handle(async (_req: Request, ctx: PostCtx) => {
 export const PATCH = handle(async (req: Request, ctx: PostCtx) => {
   const { project: p } = await projectFromCtx(ctx as Ctx);
   const { postId } = await ctx.params;
-  const b = await body(req, z.object({ title: z.string().max(200).optional(), caption: z.string().max(5000).optional(), hashtags: z.string().max(500).optional(), link: z.string().max(500).nullable().optional(), media: z.array(z.string().max(40)).max(10).optional(), scheduledAt: z.number().optional(), network: z.enum(PLATFORMS).optional(), connectionId: z.string().max(40).nullable().optional() }));
+  const b = await body(req, z.object({ title: z.string().max(200).optional(), caption: z.string().max(12000).optional(), editorial:EditorialSchema.optional(), hashtags: z.string().max(500).optional(), link: z.string().max(500).nullable().optional(), media: z.array(z.string().max(40)).max(10).optional(), scheduledAt: z.number().optional(), network: z.enum(PLATFORMS).optional(), connectionId: z.string().max(40).nullable().optional() }));
   try {
     const r = editPostV2(p, postId, b);
     return ok({ ...view(p, postId), reapproval: r.reapproval });

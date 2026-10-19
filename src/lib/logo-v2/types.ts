@@ -69,6 +69,7 @@ export type Construction = (typeof CONSTRUCTIONS)[number];
 
 /** Territoire créatif : décrit STRUCTURELLEMENT avant toute génération visuelle. */
 export type Territory = {
+  identity?: import("./direction-series").DirectionIdentity;
   id: string;
   name: string;
   concept: string;

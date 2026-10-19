@@ -51,7 +51,7 @@ export function PromptIdeas({ subjectKey, surface, onPick }: { subjectKey: strin
   );
 }
 
-export function SubjectPicker({ subjects, value, onChange, request, onRequest, idPrefix, video, surface }: { subjects: SubjectView[]; value: string; onChange: (key: string) => void; request: string; onRequest: (v: string) => void; idPrefix: string; video?: boolean; /** Usage des idées proposées (publication ou publicité, image ou vidéo). */ surface?: IdeaSurface }) {
+export function SubjectPicker({ subjects, value, onChange, request, onRequest, idPrefix, video, surface,photoOptional }: { subjects: SubjectView[]; value: string; onChange: (key: string) => void; request: string; onRequest: (v: string) => void; idPrefix: string; video?: boolean;photoOptional?:boolean; /** Usage des idées proposées (publication ou publicité, image ou vidéo). */ surface?: IdeaSurface }) {
   const t = useT();
   const kind = subjects[0]?.kind ?? "product";
   return (
@@ -65,16 +65,16 @@ export function SubjectPicker({ subjects, value, onChange, request, onRequest, i
                 {s.photoId ? <img src={`/api/files/${s.photoId}?thumb=1`} alt="" className="size-10 shrink-0 rounded-lg bg-paper-2 object-contain" /> : <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-paper-2 text-xs text-muted" aria-hidden>{s.name.slice(0, 2).toUpperCase()}</span>}
                 <span className="min-w-0">
                   <span className="block truncate font-medium">{s.name}</span>
-                  {s.kind === "product" && !s.hasPhoto && <span className="block text-[11px] text-warn">{t("Sans photo : ajoutez-en une pour l'IA", "No photo: add one for the AI")}</span>}
+                  {s.kind === "product" && !s.hasPhoto&&!photoOptional && <span className="block text-[11px] text-warn">{t("Sans photo : ajoutez-en une pour l'IA", "No photo: add one for the AI")}</span>}
                 </span>
               </button>
             ))}
           </div>
         </div>
       )}
-      <Field label={video ? t("Décrivez la vidéo voulue (facultatif)", "Describe the video you want (optional)") : t("Décrivez le visuel voulu (facultatif)", "Describe the visual you want (optional)")} htmlFor={`${idPrefix}-request`} hint={t("Écrivez comme vous le diriez à un graphiste : ambiance, décor, lumière, idée. L'IA respecte toujours le vrai produit et votre marque.", "Write it as you would to a designer: mood, setting, light, idea. The AI always keeps the real product and your brand.")}>
+      <Field label={video ? t("Décrivez la vidéo voulue (facultatif)", "Describe the video you want (optional)") : t("Décrivez le visuel voulu (facultatif)", "Describe the visual you want (optional)")} htmlFor={`${idPrefix}-request`} hint={video ? t("Décrivez l’ambiance, le décor, la lumière et l’idée. Votre produit et votre marque servent de références ; les points non vérifiés sont signalés.", "Describe the mood, setting, light and idea. Your product and brand serve as references; unchecked points are flagged.") : t("Écrivez comme vous le diriez à un graphiste : ambiance, décor, lumière, idée. L'IA respecte toujours le vrai produit et votre marque.", "Write it as you would to a designer: mood, setting, light, idea. The AI always keeps the real product and your brand.")}>
         <PromptIdeas subjectKey={value} surface={surface ?? (video ? "post_video" : "post_image")} onPick={onRequest} />
-        <Textarea id={`${idPrefix}-request`} value={request} maxLength={600} rows={3} onChange={(e) => onRequest(e.target.value)} placeholder={video ? t("Ex. : le produit posé sur une table en bois au lever du soleil, la caméra tourne lentement autour…", "E.g. the product on a wooden table at sunrise, the camera slowly circles it…") : t("Ex. : le produit sur un rocher au bord de la mer, lumière dorée du soir, ambiance aventure…", "E.g. the product on a rock by the sea, golden evening light, adventure mood…")} data-subject-request />
+        <Textarea id={`${idPrefix}-request`} value={request} maxLength={video ? 12000 : 600} rows={3} onChange={(e) => onRequest(e.target.value)} placeholder={video ? t("Ex. : le produit posé sur une table en bois au lever du soleil, la lumière révèle les détails, sans montrer de face absente des références…", "E.g. the product on a wooden table at sunrise, light reveals its details without exposing unreferenced sides…") : t("Ex. : le produit sur un rocher au bord de la mer, lumière dorée du soir, ambiance aventure…", "E.g. the product on a rock by the sea, golden evening light, adventure mood…")} data-subject-request />
       </Field>
     </div>
   );

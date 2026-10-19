@@ -1,13 +1,13 @@
-<section class="es-section es-features es-features--{{ section.settings.style }}{% if section.settings.style == 'glow' %} es-ambient es-ambient--left{% endif %} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+<section data-layout="{{ section.settings.layout | default: 'grid' }}" data-cols-m="{{ section.settings.columns_mobile | default: 1 }}" class="es-section cv-anim cv-anim--{{ section.settings.animation_speed | default: 'normal' }} es-features es-features--{{ section.settings.style }}{% if section.settings.style == 'glow' %} es-ambient es-ambient--left{% endif %} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
   <div class="es-container">
     <header class="es-section-head es-section-head--{{ section.settings.heading_align }}">
-      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
-      {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2>{%- endif -%}
-      {%- if section.settings.link_label != blank -%}<a class="es-link-arrow" href="{{ section.settings.link | default: routes.all_products_collection_url }}" data-reveal="up">{{ section.settings.link_label }} {% render 'icon', name: 'arrow' %}</a>{%- endif -%}
+      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow"{% render 'cv-reveal', animation: section.settings.animation %}>{{ section.settings.eyebrow }}</p>{%- endif -%}
+      {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2"{% if section.settings.animation != 'none' %} data-reveal="words"{% endif %}>{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2>{%- endif -%}
+      {%- if section.settings.link_label != blank -%}<a class="es-link-arrow" href="{{ section.settings.link | default: routes.all_products_collection_url }}"{% render 'cv-reveal', animation: section.settings.animation %}>{{ section.settings.link_label }} {% render 'icon', name: 'arrow' %}</a>{%- endif -%}
     </header>
-    <div class="es-features__grid" style="--cols: {{ section.settings.columns }}" data-reveal-stagger>
+    <div class="es-features__grid" style="--cols: {{ section.settings.columns }}; --cols-m: {{ section.settings.columns_mobile | default: 1 }}; --cols-t: {{ section.settings.columns | at_most: 2 | at_least: section.settings.columns_mobile | default: 2 }}" data-reveal-stagger>
       {%- for block in section.blocks -%}
-        <article class="es-feature{% if section.settings.style == 'glow' %} es-glow{% endif %}" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+        <article class="es-feature{% if section.settings.style == 'glow' %} es-glow{% endif %}"{% render 'cv-reveal', animation: section.settings.animation %} style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
           {%- if section.settings.style == 'glow' -%}
             <span class="es-feature__index">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>
             {%- assign tile_icon = block.settings.icon -%}
@@ -53,7 +53,11 @@
     { "type": "url", "id": "link", "label": "Adresse du lien" },
     { "type": "select", "id": "heading_align", "label": "Alignement du titre", "default": "left", "options": [ { "value": "left", "label": "Gauche" }, { "value": "center", "label": "Centré" } ] },
     { "type": "range", "id": "columns", "min": 2, "max": 4, "step": 1, "label": "Colonnes", "default": 3 },
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "grid", "options": [ { "value": "grid", "label": "Grille" }, { "value": "row", "label": "Ligne centrée" }, { "value": "carousel", "label": "Carrousel sur téléphone, grille sur ordinateur" } ] },
+    { "type": "select", "id": "columns_mobile", "label": "Colonnes sur téléphone", "default": "1", "options": [ { "value": "1", "label": "1 colonne" }, { "value": "2", "label": "2 colonnes" } ] },
     { "type": "select", "id": "style", "label": "Style", "default": "plain", "options": [ { "value": "glow", "label": "Cartes lumineuses (néon)" }, { "value": "plain", "label": "Épuré" }, { "value": "cards", "label": "Cartes" }, { "value": "lines", "label": "Filets" } ] },
+    { "type": "select", "id": "animation", "label": "Animation", "default": "rise", "options": [ { "value": "none", "label": "Aucune" }, { "value": "fade", "label": "Fondu" }, { "value": "rise", "label": "Montée en fondu" }, { "value": "zoom", "label": "Léger zoom" } ] },
+    { "type": "select", "id": "animation_speed", "label": "Vitesse", "default": "normal", "options": [ { "value": "slow", "label": "Lente" }, { "value": "normal", "label": "Normale" }, { "value": "fast", "label": "Rapide" } ] },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
     { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }

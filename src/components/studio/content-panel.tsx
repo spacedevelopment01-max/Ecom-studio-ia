@@ -22,7 +22,7 @@ type Block =
   | { id: string; kind: "ul" | "ol"; items: string[] }
   | { id: string; kind: "faq"; q: string; a: string }
   | { id: string; kind: "cta"; text: string; url: string | null };
-type Doc = { version: number; type: string; lang: Lang; page: PageRef; primaryKeyword: string | null; meta: { seoTitle: string; metaDescription: string; slug: string; canonical: string | null; robots: string }; blocks: Block[]; schema: Record<string, unknown>[]; links: PageRef[]; meta2: { source: string; by: string; runId: string | null; createdFrom: string | null } };
+type Doc = { version: number; type: string; lang: Lang; page: PageRef; primaryKeyword: string | null; meta: { seoTitle: string; metaDescription: string; slug: string; canonical: string | null; robots: string }; blocks: Block[]; schema: Record<string, unknown>[]; links: PageRef[]; meta2: { source: string; by: string; runId: string | null; createdFrom: string | null; contract?: { request: string; target: string; contextHash: string; checks: { checked: string[]; issues: string[]; unchecked: string[] } } } };
 type Version = { version: number; source: string; verdict: string | null; note: string; createdAt: number; title: string; type: string; docKey: string; lang: string };
 type TechItem = { check: string; status: "ok" | "issue" | "needs_crawl"; detail: string; page?: string };
 type Overview = {
@@ -66,6 +66,7 @@ const VERDICT: Record<string, ["ok" | "info" | "warn" | "bad", string, string]> 
   FINAL: ["ok", "Validé", "Approved"],
   PROVISIONAL: ["warn", "À relire", "To review"],
   REJECTED: ["bad", "Refusé", "Rejected"],
+  RETRY: ["warn", "En correction", "Needs correction"],
 };
 
 export function ContentPanel({ types, title }: { types: string[]; title?: string }) {
@@ -92,7 +93,7 @@ export function ContentPanel({ types, title }: { types: string[]; title?: string
           poller.stop();
           setJob(null);
           await reload();
-          if (j.status === "done" && j.result?.docKey) setOpen(j.result.docKey);
+          if (j.status === "done" && j.result?.docKey) { setOpen(j.result.docKey); if (j.result.delivery) toast(j.result.delivery.state === "ready" ? "ok" : "info", j.result.delivery.message); }
           else if (j.status === "failed") toast("bad", j.error ?? t("La rédaction a échoué.", "Writing failed."));
         }
       } catch {}
@@ -107,12 +108,12 @@ export function ContentPanel({ types, title }: { types: string[]; title?: string
   const generate = async () => {
     setBusy(true);
     try {
-      const r = await api<{ docKey?: string; jobId?: string; notes?: string[] }>(`/api/projects/${id}/content/v2`, { body: { type, pageKey: type === "blog_article" ? null : pageKey || null, lang, request: ask || null, keyword: type === "blog_article" && pageKey ? pageKey : null } });
+      const r = await api<{ docKey?: string; jobId?: string; notes?: string[]; delivery?: { state: string; message: string } }>(`/api/projects/${id}/content/v2`, { body: { type, pageKey: type === "blog_article" ? null : pageKey || pages[0]?.key || null, lang, request: ask || null, keyword: type === "blog_article" && pageKey ? pageKey : null } });
       if (r.jobId) setJob(r.jobId);
       else if (r.docKey) {
         await reload();
         setOpen(r.docKey);
-        toast("ok", t("Texte rédigé à partir de vos informations (sans IA, gratuit). Complétez les passages marqués « À compléter ».", "Text written from your information (no AI, free). Fill in the parts marked “To complete”."));
+        toast(r.delivery?.state === "ready" ? "ok" : "info", r.delivery?.message ?? t("Texte enregistré, à relire et compléter.", "Content saved, review and complete it."));
       }
     } catch (e) {
       toast("bad", (e as Error).message);
@@ -161,7 +162,7 @@ export function ContentPanel({ types, title }: { types: string[]; title?: string
           </Field>
         ) : <div />}
         <Field label={t("Demande particulière (facultatif)", "Specific request (optional)")} htmlFor="cnt-ask">
-          <Input id="cnt-ask" value={ask} onChange={(e) => setAsk(e.target.value)} placeholder={t("Ex. rassurer sur l'entretien", "E.g. reassure about care")} />
+          <Input id="cnt-ask" value={ask} maxLength={600} onChange={(e) => setAsk(e.target.value)} placeholder={t("Ex. rassurer sur l'entretien", "E.g. reassure about care")} />
         </Field>
         <div className="flex items-end">
           <Button variant="signal" icon={<Sparkles className="size-4" />} loading={busy || !!job} onClick={generate}>{data.ai ? t("Rédiger", "Write") : t("Rédiger (sans IA, gratuit)", "Write (no AI, free)")}</Button>
@@ -318,7 +319,7 @@ function DocEditor({ projectId, docKey, onSaved }: { projectId: string; docKey: 
   const save = async () => {
     setBusy(true);
     try {
-      await api(base, { method: "PUT", body: { doc } });
+      await api(base, { method: "PUT", body: { doc, expectedVersion: data.version.version } });
       setDirty(false);
       await reload();
       onSaved();
@@ -389,6 +390,14 @@ function DocEditor({ projectId, docKey, onSaved }: { projectId: string; docKey: 
         </div>
         <p className="text-xs text-muted sm:col-span-2">{t("60 et 155 caractères sont des repères éditoriaux, pas une garantie d'affichage par Google.", "60 and 155 characters are editorial targets, not a guarantee of how Google displays them.")}{doc.primaryKeyword ? t(` Requête visée (hypothèse) : « ${doc.primaryKeyword} ».`, ` Target query (hypothesis): “${doc.primaryKeyword}”.`) : ""}</p>
       </div>
+
+      {doc.meta2.contract && <div className="rounded-xl border border-line p-3 text-sm">
+        <p className="font-medium">{t("Consignes et contrôles", "Instructions and checks")}</p>
+        {doc.meta2.contract.request && <p className="mt-1 whitespace-pre-wrap">{doc.meta2.contract.request}</p>}
+        <p className="mt-1 text-xs text-muted">{doc.meta2.contract.target} · {t("Contexte", "Context")} {doc.meta2.contract.contextHash.slice(0, 12)}</p>
+        {!!doc.meta2.contract.checks.checked.length && <p className="mt-2">{t("Contrôles exécutés : ", "Checks performed: ")}{doc.meta2.contract.checks.checked.join(" ; ")}</p>}
+        {[...doc.meta2.contract.checks.issues, ...doc.meta2.contract.checks.unchecked].map((text, i) => <p key={i} className="mt-1 text-muted">{text}</p>)}
+      </div>}
 
       {preview ? (
         <article className="text-[15px] leading-relaxed [&_a]:text-signal [&_a]:underline [&_details]:my-2 [&_h1]:font-display [&_h1]:text-2xl [&_h1]:font-semibold [&_h2]:mt-5 [&_h2]:font-display [&_h2]:text-xl [&_h2]:font-semibold [&_h3]:mt-3 [&_h3]:font-semibold [&_li]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-2 [&_summary]:font-medium [&_ul]:list-disc [&_ul]:pl-5" dangerouslySetInnerHTML={{ __html: data.html }} />

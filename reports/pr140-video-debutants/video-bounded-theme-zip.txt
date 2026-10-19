@@ -1,0 +1,4 @@
+ok démo atelier : 0 erreur(s), 0 autre(s)
+ok démo gourmand : 0 erreur(s), 0 autre(s)
+ok démo flux : 0 erreur(s), 0 autre(s)
+ok démo atelier + section sur mesure : 0 erreur(s), 0 autre(s)

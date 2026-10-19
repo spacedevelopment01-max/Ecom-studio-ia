@@ -1,0 +1,127 @@
+{
+  "simulation": true,
+  "providerCalls": 0,
+  "actualProviderCostMicro": 0,
+  "results": [
+    {
+      "case": "produit",
+      "mobile": false,
+      "simulation": true,
+      "created": true,
+      "retouchedAndReformatted": true,
+      "saved": true,
+      "reloaded": true,
+      "originalPreserved": true,
+      "downloads": [
+        {
+          "aspect": "4:5",
+          "file": "produit-4x5-SIMULATION.png",
+          "bytes": 62764,
+          "width": 1080,
+          "height": 1350
+        },
+        {
+          "aspect": "2:3",
+          "file": "produit-2x3-SIMULATION.png",
+          "bytes": 70167,
+          "width": 1080,
+          "height": 1620
+        }
+      ],
+      "externalBlocked": [],
+      "errors": [],
+      "overflow": 0,
+      "video": "produit-ordinateur.webm"
+    },
+    {
+      "case": "produit",
+      "mobile": true,
+      "simulation": true,
+      "created": false,
+      "retouchedAndReformatted": true,
+      "saved": true,
+      "reloaded": true,
+      "originalPreserved": true,
+      "downloads": [
+        {
+          "aspect": "4:5",
+          "file": "produit-4x5-SIMULATION.png",
+          "bytes": 62764,
+          "width": 1080,
+          "height": 1350
+        },
+        {
+          "aspect": "1:1",
+          "file": "produit-1x1-SIMULATION.png",
+          "bytes": 56030,
+          "width": 1080,
+          "height": 1080
+        }
+      ],
+      "externalBlocked": [],
+      "errors": [],
+      "overflow": 0,
+      "video": "produit-mobile.webm"
+    },
+    {
+      "case": "service",
+      "mobile": false,
+      "simulation": true,
+      "created": true,
+      "retouchedAndReformatted": true,
+      "saved": true,
+      "reloaded": true,
+      "originalPreserved": true,
+      "downloads": [
+        {
+          "aspect": "4:5",
+          "file": "service-4x5-SIMULATION.png",
+          "bytes": 62764,
+          "width": 1080,
+          "height": 1350
+        },
+        {
+          "aspect": "2:3",
+          "file": "service-2x3-SIMULATION.png",
+          "bytes": 70167,
+          "width": 1080,
+          "height": 1620
+        }
+      ],
+      "externalBlocked": [],
+      "errors": [],
+      "overflow": 0,
+      "video": "service-ordinateur.webm"
+    },
+    {
+      "case": "service",
+      "mobile": true,
+      "simulation": true,
+      "created": false,
+      "retouchedAndReformatted": true,
+      "saved": true,
+      "reloaded": true,
+      "originalPreserved": true,
+      "downloads": [
+        {
+          "aspect": "4:5",
+          "file": "service-4x5-SIMULATION.png",
+          "bytes": 62764,
+          "width": 1080,
+          "height": 1350
+        },
+        {
+          "aspect": "1:1",
+          "file": "service-1x1-SIMULATION.png",
+          "bytes": 56030,
+          "width": 1080,
+          "height": 1080
+        }
+      ],
+      "externalBlocked": [],
+      "errors": [],
+      "overflow": 0,
+      "video": "service-mobile.webm"
+    }
+  ]
+}

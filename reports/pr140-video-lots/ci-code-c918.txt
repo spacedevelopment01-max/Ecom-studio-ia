@@ -1,0 +1,14 @@
+Commit vérifié : c91812edb628470f296a245c83a8b06f9ac3b506
+CI : https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/39271195248
+Job : 118123620811
+Vérification TypeScript : succès.
+Test Files: 291 passed (291)
+Tests: 2207 passed (2207)
+Durée des tests : 636,35 secondes.
+Construction et démarrage de l'image Docker : succès (job 118123620372).
+CI globale : échec ultérieur pendant Theme Check, configuration lookbook / niche.
+TypeError: Cannot read properties of undefined (reading '$schema')
+Origine exacte non établie. Aucun fichier de thème modifié dans les lots vidéo.
+Build de production : ignoré après cet échec.
+Les correctifs complémentaires de reprise/mémoire sont dans le commit suivant, testé séparément.
+Ce fichier extrait seulement les résultats ; aucun journal HTTP, secret ou donnée client n'est inclus.

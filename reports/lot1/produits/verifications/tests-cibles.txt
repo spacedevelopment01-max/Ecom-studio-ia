@@ -1,0 +1,13 @@
+
+ RUN  v5.0.3 /workspace/Ecom-studio-ia
+
+
+ Test Files  12 passed (12)
+      Tests  137 passed (137)
+   Start at  23:10:10
+   Duration  113.55s (tests 62%, import 33%, transform 5%)
+
+     Import  321 modules were evaluated 429 times · 36.36s total, 33% of tracked time
+             ~9.15s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+

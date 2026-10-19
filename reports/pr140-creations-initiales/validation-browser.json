@@ -1,0 +1,3905 @@
+{
+  "simulation": true,
+  "actualProviderCalls": 0,
+  "actualProviderCostMicro": 0,
+  "results": [
+    {
+      "profile": "produit-ordinateur",
+      "simulation": true,
+      "source": "real Posts tab",
+      "initial": {
+        "required": 20,
+        "accepted": 20,
+        "inProgress": 0,
+        "missing": 0,
+        "actualCostMicro": 0,
+        "actualBudgetPct": 0,
+        "legacy": true,
+        "hash": "305c35d12db6895c",
+        "ready": true,
+        "reason": "",
+        "status": "complete",
+        "jobId": "36ff69f3b6xevbue",
+        "formats": {
+          "perGroup": {
+            "square": 4,
+            "portrait": 3,
+            "story": 3
+          },
+          "portraitAspect": "4:5"
+        },
+        "organic": {
+          "required": 10,
+          "accepted": 10,
+          "inProgress": 0,
+          "missing": 0,
+          "slots": [
+            {
+              "index": 0,
+              "group": "organic",
+              "aspect": "1:1",
+              "creativeId": "2ixhyt9q6ejhugjl",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "s4kjdyqlfffk5lwn",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "dzu671nxxpft7s9t",
+              "assetId": "s4kjdyqlfffk5lwn",
+              "accepted": true
+            },
+            {
+              "index": 1,
+              "group": "organic",
+              "aspect": "1:1",
+              "creativeId": "ivawwbvocbgvdlgr",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "rbdi0ntadmt8i8bb",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "f0fvupirxxszh0kp",
+              "assetId": "rbdi0ntadmt8i8bb",
+              "accepted": true
+            },
+            {
+              "index": 2,
+              "group": "organic",
+              "aspect": "1:1",
+              "creativeId": "gt8vc37zg8owod55",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "o5mle1sff5dg6m1n",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "t9zn1j9itmgkl4xt",
+              "assetId": "o5mle1sff5dg6m1n",
+              "accepted": true
+            },
+            {
+              "index": 3,
+              "group": "organic",
+              "aspect": "1:1",
+              "creativeId": "izdu1jrygilzq2rp",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "qikh25nuyskk3rxa",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "2fzg58kylh18s0ob",
+              "assetId": "qikh25nuyskk3rxa",
+              "accepted": true
+            },
+            {
+              "index": 4,
+              "group": "organic",
+              "aspect": "4:5",
+              "creativeId": "qml2jt82dh7rrnfd",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "a3gtq5r657d2waks",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "qilng2om5fpgqhcb",
+              "assetId": "a3gtq5r657d2waks",
+              "accepted": true
+            },
+            {
+              "index": 5,
+              "group": "organic",
+              "aspect": "4:5",
+              "creativeId": "grr5pgmbtcmkeie2",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "vv43zgk5o0gqt2nh",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "bmiqac0t3toqy6w0",
+              "assetId": "vv43zgk5o0gqt2nh",
+              "accepted": true
+            },
+            {
+              "index": 6,
+              "group": "organic",
+              "aspect": "4:5",
+              "creativeId": "vtswtpo3xn2fd0dr",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "guc5xvc2snbukjja",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "nqwax444gjva7qon",
+              "assetId": "guc5xvc2snbukjja",
+              "accepted": true
+            },
+            {
+              "index": 7,
+              "group": "organic",
+              "aspect": "9:16",
+              "creativeId": "9fkywlxtpkotz3ix",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "f7zp95hqtmm517fz",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "v942pcbkneex02lj",
+              "assetId": "f7zp95hqtmm517fz",
+              "accepted": true
+            },
+            {
+              "index": 8,
+              "group": "organic",
+              "aspect": "9:16",
+              "creativeId": "fiih0klts386cafr",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "h5ices65v1ut4pwj",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "rfzfepgw69odwcqa",
+              "assetId": "h5ices65v1ut4pwj",
+              "accepted": true
+            },
+            {
+              "index": 9,
+              "group": "organic",
+              "aspect": "9:16",
+              "creativeId": "vxt74myq4mpttsa1",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "nh08cmvlvjrsezdo",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "mnf8k60fl8mnn3u1",
+              "assetId": "nh08cmvlvjrsezdo",
+              "accepted": true
+            }
+          ]
+        },
+        "ads": {
+          "required": 10,
+          "accepted": 10,
+          "inProgress": 0,
+          "missing": 0,
+          "slots": [
+            {
+              "index": 10,
+              "group": "ad",
+              "aspect": "1:1",
+              "creativeId": "19yer8qfn6xu26cb",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "id5s0d69rog0413w",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "id5s0d69rog0413w",
+              "accepted": true
+            },
+            {
+              "index": 11,
+              "group": "ad",
+              "aspect": "1:1",
+              "creativeId": "8w20cj4oljvy03fs",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "q4p1i8k56actudjo",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "q4p1i8k56actudjo",
+              "accepted": true
+            },
+            {
+              "index": 12,
+              "group": "ad",
+              "aspect": "1:1",
+              "creativeId": "i3ghdv0ruuf3al4m",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "ccyhln5pwg7j7q88",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "ccyhln5pwg7j7q88",
+              "accepted": true
+            },
+            {
+              "index": 13,
+              "group": "ad",
+              "aspect": "1:1",
+              "creativeId": "svxlb8qfrd3lqyxb",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "ckftjrpkcehp9r26",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "ckftjrpkcehp9r26",
+              "accepted": true
+            },
+            {
+              "index": 14,
+              "group": "ad",
+              "aspect": "4:5",
+              "creativeId": "pfa7zimdahhx2n7k",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "08exsaw10luuphbo",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "08exsaw10luuphbo",
+              "accepted": true
+            },
+            {
+              "index": 15,
+              "group": "ad",
+              "aspect": "4:5",
+              "creativeId": "keh41oywnj7a96x2",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "7jjl2l5gz3eu1odv",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "7jjl2l5gz3eu1odv",
+              "accepted": true
+            },
+            {
+              "index": 16,
+              "group": "ad",
+              "aspect": "4:5",
+              "creativeId": "y5s4w3bjapzw9fp5",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "19681lumt161x8bd",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "19681lumt161x8bd",
+              "accepted": true
+            },
+            {
+              "index": 17,
+              "group": "ad",
+              "aspect": "9:16",
+              "creativeId": "88q60vq099e4ij26",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "y8ynaysr8qt5i0o3",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "y8ynaysr8qt5i0o3",
+              "accepted": true
+            },
+            {
+              "index": 18,
+              "group": "ad",
+              "aspect": "9:16",
+              "creativeId": "fomebbbyv309ew11",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "n87pfpk149wrforb",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "n87pfpk149wrforb",
+              "accepted": true
+            },
+            {
+              "index": 19,
+              "group": "ad",
+              "aspect": "9:16",
+              "creativeId": "g9dbg9t4sl96won8",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "cqbufv6jtc9y4usi",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "cqbufv6jtc9y4usi",
+              "accepted": true
+            }
+          ]
+        },
+        "themeMediaIncluded": false,
+        "slots": [
+          {
+            "index": 0,
+            "group": "organic",
+            "aspect": "1:1",
+            "creativeId": "2ixhyt9q6ejhugjl",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "s4kjdyqlfffk5lwn",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "dzu671nxxpft7s9t",
+            "assetId": "s4kjdyqlfffk5lwn",
+            "accepted": true
+          },
+          {
+            "index": 1,
+            "group": "organic",
+            "aspect": "1:1",
+            "creativeId": "ivawwbvocbgvdlgr",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "rbdi0ntadmt8i8bb",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "f0fvupirxxszh0kp",
+            "assetId": "rbdi0ntadmt8i8bb",
+            "accepted": true
+          },
+          {
+            "index": 2,
+            "group": "organic",
+            "aspect": "1:1",
+            "creativeId": "gt8vc37zg8owod55",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "o5mle1sff5dg6m1n",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "t9zn1j9itmgkl4xt",
+            "assetId": "o5mle1sff5dg6m1n",
+            "accepted": true
+          },
+          {
+            "index": 3,
+            "group": "organic",
+            "aspect": "1:1",
+            "creativeId": "izdu1jrygilzq2rp",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "qikh25nuyskk3rxa",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "2fzg58kylh18s0ob",
+            "assetId": "qikh25nuyskk3rxa",
+            "accepted": true
+          },
+          {
+            "index": 4,
+            "group": "organic",
+            "aspect": "4:5",
+            "creativeId": "qml2jt82dh7rrnfd",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "a3gtq5r657d2waks",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "qilng2om5fpgqhcb",
+            "assetId": "a3gtq5r657d2waks",
+            "accepted": true
+          },
+          {
+            "index": 5,
+            "group": "organic",
+            "aspect": "4:5",
+            "creativeId": "grr5pgmbtcmkeie2",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "vv43zgk5o0gqt2nh",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "bmiqac0t3toqy6w0",
+            "assetId": "vv43zgk5o0gqt2nh",
+            "accepted": true
+          },
+          {
+            "index": 6,
+            "group": "organic",
+            "aspect": "4:5",
+            "creativeId": "vtswtpo3xn2fd0dr",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "guc5xvc2snbukjja",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "nqwax444gjva7qon",
+            "assetId": "guc5xvc2snbukjja",
+            "accepted": true
+          },
+          {
+            "index": 7,
+            "group": "organic",
+            "aspect": "9:16",
+            "creativeId": "9fkywlxtpkotz3ix",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "f7zp95hqtmm517fz",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "v942pcbkneex02lj",
+            "assetId": "f7zp95hqtmm517fz",
+            "accepted": true
+          },
+          {
+            "index": 8,
+            "group": "organic",
+            "aspect": "9:16",
+            "creativeId": "fiih0klts386cafr",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "h5ices65v1ut4pwj",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "rfzfepgw69odwcqa",
+            "assetId": "h5ices65v1ut4pwj",
+            "accepted": true
+          },
+          {
+            "index": 9,
+            "group": "organic",
+            "aspect": "9:16",
+            "creativeId": "vxt74myq4mpttsa1",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "nh08cmvlvjrsezdo",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "mnf8k60fl8mnn3u1",
+            "assetId": "nh08cmvlvjrsezdo",
+            "accepted": true
+          },
+          {
+            "index": 10,
+            "group": "ad",
+            "aspect": "1:1",
+            "creativeId": "19yer8qfn6xu26cb",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "id5s0d69rog0413w",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "id5s0d69rog0413w",
+            "accepted": true
+          },
+          {
+            "index": 11,
+            "group": "ad",
+            "aspect": "1:1",
+            "creativeId": "8w20cj4oljvy03fs",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "q4p1i8k56actudjo",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "q4p1i8k56actudjo",
+            "accepted": true
+          },
+          {
+            "index": 12,
+            "group": "ad",
+            "aspect": "1:1",
+            "creativeId": "i3ghdv0ruuf3al4m",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "ccyhln5pwg7j7q88",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "ccyhln5pwg7j7q88",
+            "accepted": true
+          },
+          {
+            "index": 13,
+            "group": "ad",
+            "aspect": "1:1",
+            "creativeId": "svxlb8qfrd3lqyxb",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "ckftjrpkcehp9r26",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "ckftjrpkcehp9r26",
+            "accepted": true
+          },
+          {
+            "index": 14,
+            "group": "ad",
+            "aspect": "4:5",
+            "creativeId": "pfa7zimdahhx2n7k",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "08exsaw10luuphbo",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "08exsaw10luuphbo",
+            "accepted": true
+          },
+          {
+            "index": 15,
+            "group": "ad",
+            "aspect": "4:5",
+            "creativeId": "keh41oywnj7a96x2",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "7jjl2l5gz3eu1odv",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "7jjl2l5gz3eu1odv",
+            "accepted": true
+          },
+          {
+            "index": 16,
+            "group": "ad",
+            "aspect": "4:5",
+            "creativeId": "y5s4w3bjapzw9fp5",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "19681lumt161x8bd",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "19681lumt161x8bd",
+            "accepted": true
+          },
+          {
+            "index": 17,
+            "group": "ad",
+            "aspect": "9:16",
+            "creativeId": "88q60vq099e4ij26",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "y8ynaysr8qt5i0o3",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "y8ynaysr8qt5i0o3",
+            "accepted": true
+          },
+          {
+            "index": 18,
+            "group": "ad",
+            "aspect": "9:16",
+            "creativeId": "fomebbbyv309ew11",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "n87pfpk149wrforb",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "n87pfpk149wrforb",
+            "accepted": true
+          },
+          {
+            "index": 19,
+            "group": "ad",
+            "aspect": "9:16",
+            "creativeId": "g9dbg9t4sl96won8",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "cqbufv6jtc9y4usi",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "cqbufv6jtc9y4usi",
+            "accepted": true
+          }
+        ],
+        "history": [
+          {
+            "hash": "305c35d12db6895c",
+            "accepted": 20,
+            "jobId": "36ff69f3b6xevbue"
+          }
+        ]
+      },
+      "partialAccepted": null,
+      "priorAcceptedAssetsPreserved": false,
+      "createdAndQuotedInUI": true,
+      "parentListUpdatedWithoutReload": true,
+      "reopened": true,
+      "adsSeparated": true,
+      "noNetworkScheduling": true,
+      "natives": [
+        {
+          "file": "produit-1-1x1-SIMULATION.png",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "file": "produit-2-1x1-SIMULATION.png",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "file": "produit-3-1x1-SIMULATION.png",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "file": "produit-4-1x1-SIMULATION.png",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "file": "produit-5-4x5-SIMULATION.png",
+          "width": 1080,
+          "height": 1350
+        },
+        {
+          "file": "produit-6-4x5-SIMULATION.png",
+          "width": 1080,
+          "height": 1350
+        },
+        {
+          "file": "produit-7-4x5-SIMULATION.png",
+          "width": 1080,
+          "height": 1350
+        },
+        {
+          "file": "produit-8-9x16-SIMULATION.png",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "file": "produit-9-9x16-SIMULATION.png",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "file": "produit-10-9x16-SIMULATION.png",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "file": "produit-11-1x1-SIMULATION.png",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "file": "produit-12-1x1-SIMULATION.png",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "file": "produit-13-1x1-SIMULATION.png",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "file": "produit-14-1x1-SIMULATION.png",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "file": "produit-15-4x5-SIMULATION.png",
+          "width": 1080,
+          "height": 1350
+        },
+        {
+          "file": "produit-16-4x5-SIMULATION.png",
+          "width": 1080,
+          "height": 1350
+        },
+        {
+          "file": "produit-17-4x5-SIMULATION.png",
+          "width": 1080,
+          "height": 1350
+        },
+        {
+          "file": "produit-18-9x16-SIMULATION.png",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "file": "produit-19-9x16-SIMULATION.png",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "file": "produit-20-9x16-SIMULATION.png",
+          "width": 1080,
+          "height": 1920
+        }
+      ],
+      "errors": [],
+      "external": [],
+      "video": "produit-ordinateur.webm"
+    },
+    {
+      "profile": "produit-mobile",
+      "simulation": true,
+      "source": "real Posts tab",
+      "initial": {
+        "required": 20,
+        "accepted": 20,
+        "inProgress": 0,
+        "missing": 0,
+        "actualCostMicro": 0,
+        "actualBudgetPct": 0,
+        "legacy": true,
+        "hash": "305c35d12db6895c",
+        "ready": true,
+        "reason": "",
+        "status": "complete",
+        "jobId": "36ff69f3b6xevbue",
+        "formats": {
+          "perGroup": {
+            "square": 4,
+            "portrait": 3,
+            "story": 3
+          },
+          "portraitAspect": "4:5"
+        },
+        "organic": {
+          "required": 10,
+          "accepted": 10,
+          "inProgress": 0,
+          "missing": 0,
+          "slots": [
+            {
+              "index": 0,
+              "group": "organic",
+              "aspect": "1:1",
+              "creativeId": "2ixhyt9q6ejhugjl",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "s4kjdyqlfffk5lwn",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "dzu671nxxpft7s9t",
+              "assetId": "s4kjdyqlfffk5lwn",
+              "accepted": true
+            },
+            {
+              "index": 1,
+              "group": "organic",
+              "aspect": "1:1",
+              "creativeId": "ivawwbvocbgvdlgr",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "rbdi0ntadmt8i8bb",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "f0fvupirxxszh0kp",
+              "assetId": "rbdi0ntadmt8i8bb",
+              "accepted": true
+            },
+            {
+              "index": 2,
+              "group": "organic",
+              "aspect": "1:1",
+              "creativeId": "gt8vc37zg8owod55",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "o5mle1sff5dg6m1n",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "t9zn1j9itmgkl4xt",
+              "assetId": "o5mle1sff5dg6m1n",
+              "accepted": true
+            },
+            {
+              "index": 3,
+              "group": "organic",
+              "aspect": "1:1",
+              "creativeId": "izdu1jrygilzq2rp",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "qikh25nuyskk3rxa",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "2fzg58kylh18s0ob",
+              "assetId": "qikh25nuyskk3rxa",
+              "accepted": true
+            },
+            {
+              "index": 4,
+              "group": "organic",
+              "aspect": "4:5",
+              "creativeId": "qml2jt82dh7rrnfd",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "a3gtq5r657d2waks",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "qilng2om5fpgqhcb",
+              "assetId": "a3gtq5r657d2waks",
+              "accepted": true
+            },
+            {
+              "index": 5,
+              "group": "organic",
+              "aspect": "4:5",
+              "creativeId": "grr5pgmbtcmkeie2",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "vv43zgk5o0gqt2nh",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "bmiqac0t3toqy6w0",
+              "assetId": "vv43zgk5o0gqt2nh",
+              "accepted": true
+            },
+            {
+              "index": 6,
+              "group": "organic",
+              "aspect": "4:5",
+              "creativeId": "vtswtpo3xn2fd0dr",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "guc5xvc2snbukjja",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "nqwax444gjva7qon",
+              "assetId": "guc5xvc2snbukjja",
+              "accepted": true
+            },
+            {
+              "index": 7,
+              "group": "organic",
+              "aspect": "9:16",
+              "creativeId": "9fkywlxtpkotz3ix",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "f7zp95hqtmm517fz",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "v942pcbkneex02lj",
+              "assetId": "f7zp95hqtmm517fz",
+              "accepted": true
+            },
+            {
+              "index": 8,
+              "group": "organic",
+              "aspect": "9:16",
+              "creativeId": "fiih0klts386cafr",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "h5ices65v1ut4pwj",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "rfzfepgw69odwcqa",
+              "assetId": "h5ices65v1ut4pwj",
+              "accepted": true
+            },
+            {
+              "index": 9,
+              "group": "organic",
+              "aspect": "9:16",
+              "creativeId": "vxt74myq4mpttsa1",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "nh08cmvlvjrsezdo",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "mnf8k60fl8mnn3u1",
+              "assetId": "nh08cmvlvjrsezdo",
+              "accepted": true
+            }
+          ]
+        },
+        "ads": {
+          "required": 10,
+          "accepted": 10,
+          "inProgress": 0,
+          "missing": 0,
+          "slots": [
+            {
+              "index": 10,
+              "group": "ad",
+              "aspect": "1:1",
+              "creativeId": "19yer8qfn6xu26cb",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "id5s0d69rog0413w",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "id5s0d69rog0413w",
+              "accepted": true
+            },
+            {
+              "index": 11,
+              "group": "ad",
+              "aspect": "1:1",
+              "creativeId": "8w20cj4oljvy03fs",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "q4p1i8k56actudjo",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "q4p1i8k56actudjo",
+              "accepted": true
+            },
+            {
+              "index": 12,
+              "group": "ad",
+              "aspect": "1:1",
+              "creativeId": "i3ghdv0ruuf3al4m",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "ccyhln5pwg7j7q88",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "ccyhln5pwg7j7q88",
+              "accepted": true
+            },
+            {
+              "index": 13,
+              "group": "ad",
+              "aspect": "1:1",
+              "creativeId": "svxlb8qfrd3lqyxb",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "ckftjrpkcehp9r26",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "ckftjrpkcehp9r26",
+              "accepted": true
+            },
+            {
+              "index": 14,
+              "group": "ad",
+              "aspect": "4:5",
+              "creativeId": "pfa7zimdahhx2n7k",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "08exsaw10luuphbo",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "08exsaw10luuphbo",
+              "accepted": true
+            },
+            {
+              "index": 15,
+              "group": "ad",
+              "aspect": "4:5",
+              "creativeId": "keh41oywnj7a96x2",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "7jjl2l5gz3eu1odv",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "7jjl2l5gz3eu1odv",
+              "accepted": true
+            },
+            {
+              "index": 16,
+              "group": "ad",
+              "aspect": "4:5",
+              "creativeId": "y5s4w3bjapzw9fp5",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "19681lumt161x8bd",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "19681lumt161x8bd",
+              "accepted": true
+            },
+            {
+              "index": 17,
+              "group": "ad",
+              "aspect": "9:16",
+              "creativeId": "88q60vq099e4ij26",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "y8ynaysr8qt5i0o3",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "y8ynaysr8qt5i0o3",
+              "accepted": true
+            },
+            {
+              "index": 18,
+              "group": "ad",
+              "aspect": "9:16",
+              "creativeId": "fomebbbyv309ew11",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "n87pfpk149wrforb",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "n87pfpk149wrforb",
+              "accepted": true
+            },
+            {
+              "index": 19,
+              "group": "ad",
+              "aspect": "9:16",
+              "creativeId": "g9dbg9t4sl96won8",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "cqbufv6jtc9y4usi",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "cqbufv6jtc9y4usi",
+              "accepted": true
+            }
+          ]
+        },
+        "themeMediaIncluded": false,
+        "slots": [
+          {
+            "index": 0,
+            "group": "organic",
+            "aspect": "1:1",
+            "creativeId": "2ixhyt9q6ejhugjl",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "s4kjdyqlfffk5lwn",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "dzu671nxxpft7s9t",
+            "assetId": "s4kjdyqlfffk5lwn",
+            "accepted": true
+          },
+          {
+            "index": 1,
+            "group": "organic",
+            "aspect": "1:1",
+            "creativeId": "ivawwbvocbgvdlgr",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "rbdi0ntadmt8i8bb",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "f0fvupirxxszh0kp",
+            "assetId": "rbdi0ntadmt8i8bb",
+            "accepted": true
+          },
+          {
+            "index": 2,
+            "group": "organic",
+            "aspect": "1:1",
+            "creativeId": "gt8vc37zg8owod55",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "o5mle1sff5dg6m1n",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "t9zn1j9itmgkl4xt",
+            "assetId": "o5mle1sff5dg6m1n",
+            "accepted": true
+          },
+          {
+            "index": 3,
+            "group": "organic",
+            "aspect": "1:1",
+            "creativeId": "izdu1jrygilzq2rp",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "qikh25nuyskk3rxa",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "2fzg58kylh18s0ob",
+            "assetId": "qikh25nuyskk3rxa",
+            "accepted": true
+          },
+          {
+            "index": 4,
+            "group": "organic",
+            "aspect": "4:5",
+            "creativeId": "qml2jt82dh7rrnfd",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "a3gtq5r657d2waks",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "qilng2om5fpgqhcb",
+            "assetId": "a3gtq5r657d2waks",
+            "accepted": true
+          },
+          {
+            "index": 5,
+            "group": "organic",
+            "aspect": "4:5",
+            "creativeId": "grr5pgmbtcmkeie2",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "vv43zgk5o0gqt2nh",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "bmiqac0t3toqy6w0",
+            "assetId": "vv43zgk5o0gqt2nh",
+            "accepted": true
+          },
+          {
+            "index": 6,
+            "group": "organic",
+            "aspect": "4:5",
+            "creativeId": "vtswtpo3xn2fd0dr",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "guc5xvc2snbukjja",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "nqwax444gjva7qon",
+            "assetId": "guc5xvc2snbukjja",
+            "accepted": true
+          },
+          {
+            "index": 7,
+            "group": "organic",
+            "aspect": "9:16",
+            "creativeId": "9fkywlxtpkotz3ix",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "f7zp95hqtmm517fz",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "v942pcbkneex02lj",
+            "assetId": "f7zp95hqtmm517fz",
+            "accepted": true
+          },
+          {
+            "index": 8,
+            "group": "organic",
+            "aspect": "9:16",
+            "creativeId": "fiih0klts386cafr",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "h5ices65v1ut4pwj",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "rfzfepgw69odwcqa",
+            "assetId": "h5ices65v1ut4pwj",
+            "accepted": true
+          },
+          {
+            "index": 9,
+            "group": "organic",
+            "aspect": "9:16",
+            "creativeId": "vxt74myq4mpttsa1",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "nh08cmvlvjrsezdo",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "mnf8k60fl8mnn3u1",
+            "assetId": "nh08cmvlvjrsezdo",
+            "accepted": true
+          },
+          {
+            "index": 10,
+            "group": "ad",
+            "aspect": "1:1",
+            "creativeId": "19yer8qfn6xu26cb",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "id5s0d69rog0413w",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "id5s0d69rog0413w",
+            "accepted": true
+          },
+          {
+            "index": 11,
+            "group": "ad",
+            "aspect": "1:1",
+            "creativeId": "8w20cj4oljvy03fs",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "q4p1i8k56actudjo",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "q4p1i8k56actudjo",
+            "accepted": true
+          },
+          {
+            "index": 12,
+            "group": "ad",
+            "aspect": "1:1",
+            "creativeId": "i3ghdv0ruuf3al4m",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "ccyhln5pwg7j7q88",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "ccyhln5pwg7j7q88",
+            "accepted": true
+          },
+          {
+            "index": 13,
+            "group": "ad",
+            "aspect": "1:1",
+            "creativeId": "svxlb8qfrd3lqyxb",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "ckftjrpkcehp9r26",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "ckftjrpkcehp9r26",
+            "accepted": true
+          },
+          {
+            "index": 14,
+            "group": "ad",
+            "aspect": "4:5",
+            "creativeId": "pfa7zimdahhx2n7k",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "08exsaw10luuphbo",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "08exsaw10luuphbo",
+            "accepted": true
+          },
+          {
+            "index": 15,
+            "group": "ad",
+            "aspect": "4:5",
+            "creativeId": "keh41oywnj7a96x2",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "7jjl2l5gz3eu1odv",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "7jjl2l5gz3eu1odv",
+            "accepted": true
+          },
+          {
+            "index": 16,
+            "group": "ad",
+            "aspect": "4:5",
+            "creativeId": "y5s4w3bjapzw9fp5",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "19681lumt161x8bd",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "19681lumt161x8bd",
+            "accepted": true
+          },
+          {
+            "index": 17,
+            "group": "ad",
+            "aspect": "9:16",
+            "creativeId": "88q60vq099e4ij26",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "y8ynaysr8qt5i0o3",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "y8ynaysr8qt5i0o3",
+            "accepted": true
+          },
+          {
+            "index": 18,
+            "group": "ad",
+            "aspect": "9:16",
+            "creativeId": "fomebbbyv309ew11",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "n87pfpk149wrforb",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "n87pfpk149wrforb",
+            "accepted": true
+          },
+          {
+            "index": 19,
+            "group": "ad",
+            "aspect": "9:16",
+            "creativeId": "g9dbg9t4sl96won8",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "cqbufv6jtc9y4usi",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "cqbufv6jtc9y4usi",
+            "accepted": true
+          }
+        ],
+        "history": [
+          {
+            "hash": "305c35d12db6895c",
+            "accepted": 20,
+            "jobId": "36ff69f3b6xevbue"
+          }
+        ]
+      },
+      "partialAccepted": null,
+      "priorAcceptedAssetsPreserved": false,
+      "createdAndQuotedInUI": false,
+      "parentListUpdatedWithoutReload": false,
+      "reopened": true,
+      "adsSeparated": true,
+      "noNetworkScheduling": true,
+      "natives": [],
+      "errors": [],
+      "external": [],
+      "video": "produit-mobile.webm"
+    },
+    {
+      "profile": "service-ordinateur",
+      "simulation": true,
+      "source": "real Posts tab",
+      "initial": {
+        "required": 20,
+        "accepted": 20,
+        "inProgress": 0,
+        "missing": 0,
+        "actualCostMicro": 0,
+        "actualBudgetPct": 0,
+        "legacy": true,
+        "hash": "1af7b575c0c84acb",
+        "ready": true,
+        "reason": "",
+        "status": "complete",
+        "jobId": "lv1t2lhnu0fe5etk",
+        "formats": {
+          "perGroup": {
+            "square": 4,
+            "portrait": 3,
+            "story": 3
+          },
+          "portraitAspect": "4:5"
+        },
+        "organic": {
+          "required": 10,
+          "accepted": 10,
+          "inProgress": 0,
+          "missing": 0,
+          "slots": [
+            {
+              "index": 0,
+              "group": "organic",
+              "aspect": "1:1",
+              "creativeId": "eqv2027n9ih0egv4",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "6bw9tqmumaud19d2",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "bqvzdqv5xmm52ykp",
+              "assetId": "6bw9tqmumaud19d2",
+              "accepted": true
+            },
+            {
+              "index": 1,
+              "group": "organic",
+              "aspect": "1:1",
+              "creativeId": "2j4pvlnwl79aklr8",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "ybeeotitth3eivfh",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "rbkpuyfpdvbcmytv",
+              "assetId": "ybeeotitth3eivfh",
+              "accepted": true
+            },
+            {
+              "index": 2,
+              "group": "organic",
+              "aspect": "1:1",
+              "creativeId": "f5rww0emt50rjzk2",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "yk7alr3b1mgx9hok",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "4lmyxykz672i0tts",
+              "assetId": "yk7alr3b1mgx9hok",
+              "accepted": true
+            },
+            {
+              "index": 3,
+              "group": "organic",
+              "aspect": "1:1",
+              "creativeId": "5rln2tpajpvz3xk2",
+              "attempts": 2,
+              "candidates": [
+                {
+                  "assetId": "gbc8304wmz125gt2",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "cw4ke03hmnllk15f",
+              "assetId": "gbc8304wmz125gt2",
+              "accepted": true
+            },
+            {
+              "index": 4,
+              "group": "organic",
+              "aspect": "4:5",
+              "creativeId": "ujk3tfab21xxjdm1",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "pyhj4smhaaiqg7se",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "kje6qeb52ffs3zz2",
+              "assetId": "pyhj4smhaaiqg7se",
+              "accepted": true
+            },
+            {
+              "index": 5,
+              "group": "organic",
+              "aspect": "4:5",
+              "creativeId": "b7xg2oeunfvao0s5",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "a9vx8swf47u1y5lr",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "cfeor96e0ow9j8oq",
+              "assetId": "a9vx8swf47u1y5lr",
+              "accepted": true
+            },
+            {
+              "index": 6,
+              "group": "organic",
+              "aspect": "4:5",
+              "creativeId": "84dweulr5yrn8psf",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "enmt0nm16d1mwrr4",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "8qgkkgarztnb240k",
+              "assetId": "enmt0nm16d1mwrr4",
+              "accepted": true
+            },
+            {
+              "index": 7,
+              "group": "organic",
+              "aspect": "9:16",
+              "creativeId": "jyr33pne26o2qth0",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "d33xg6au7ykn4a4x",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "ia9fq079d82en2sm",
+              "assetId": "d33xg6au7ykn4a4x",
+              "accepted": true
+            },
+            {
+              "index": 8,
+              "group": "organic",
+              "aspect": "9:16",
+              "creativeId": "jbmhcf89iknbvk60",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "q154ve89moelrb38",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "5zr1uztufm0rq5zv",
+              "assetId": "q154ve89moelrb38",
+              "accepted": true
+            },
+            {
+              "index": 9,
+              "group": "organic",
+              "aspect": "9:16",
+              "creativeId": "vmdwn1cn1wte66a7",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "rp7um0gqobvebjr6",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "cvauus76hfo92weh",
+              "assetId": "rp7um0gqobvebjr6",
+              "accepted": true
+            }
+          ]
+        },
+        "ads": {
+          "required": 10,
+          "accepted": 10,
+          "inProgress": 0,
+          "missing": 0,
+          "slots": [
+            {
+              "index": 10,
+              "group": "ad",
+              "aspect": "1:1",
+              "creativeId": "n1abkcd4sco8y18i",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "qzcfud6pxr6qy87x",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "qzcfud6pxr6qy87x",
+              "accepted": true
+            },
+            {
+              "index": 11,
+              "group": "ad",
+              "aspect": "1:1",
+              "creativeId": "gjfpjk6e3il78u7c",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "dqc2gr361wknwnnu",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "dqc2gr361wknwnnu",
+              "accepted": true
+            },
+            {
+              "index": 12,
+              "group": "ad",
+              "aspect": "1:1",
+              "creativeId": "tb4n9w9itnjye2xw",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "tzq26jrosbhrope7",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "tzq26jrosbhrope7",
+              "accepted": true
+            },
+            {
+              "index": 13,
+              "group": "ad",
+              "aspect": "1:1",
+              "creativeId": "6j7yne3ryh5x524b",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "4dwr399wrmlzihw5",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "4dwr399wrmlzihw5",
+              "accepted": true
+            },
+            {
+              "index": 14,
+              "group": "ad",
+              "aspect": "4:5",
+              "creativeId": "guldh1paea5x178z",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "wif1anafoh44pdts",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "wif1anafoh44pdts",
+              "accepted": true
+            },
+            {
+              "index": 15,
+              "group": "ad",
+              "aspect": "4:5",
+              "creativeId": "h2kxe1oql23f81zq",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "ip9nivvebn8m0ss4",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "ip9nivvebn8m0ss4",
+              "accepted": true
+            },
+            {
+              "index": 16,
+              "group": "ad",
+              "aspect": "4:5",
+              "creativeId": "5xb5j8yvjauvb3uj",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "z84yxtw6wjhzxz9x",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "z84yxtw6wjhzxz9x",
+              "accepted": true
+            },
+            {
+              "index": 17,
+              "group": "ad",
+              "aspect": "9:16",
+              "creativeId": "tioau6imq66o2m4g",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "71f6lujaqg5ys2gh",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "71f6lujaqg5ys2gh",
+              "accepted": true
+            },
+            {
+              "index": 18,
+              "group": "ad",
+              "aspect": "9:16",
+              "creativeId": "xiat257cw09waywo",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "7t4oixn7ttinnwud",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "7t4oixn7ttinnwud",
+              "accepted": true
+            },
+            {
+              "index": 19,
+              "group": "ad",
+              "aspect": "9:16",
+              "creativeId": "0g6tnbyt9oe7bfx7",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "hts0ao3gdaa9lctn",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "hts0ao3gdaa9lctn",
+              "accepted": true
+            }
+          ]
+        },
+        "themeMediaIncluded": false,
+        "slots": [
+          {
+            "index": 0,
+            "group": "organic",
+            "aspect": "1:1",
+            "creativeId": "eqv2027n9ih0egv4",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "6bw9tqmumaud19d2",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "bqvzdqv5xmm52ykp",
+            "assetId": "6bw9tqmumaud19d2",
+            "accepted": true
+          },
+          {
+            "index": 1,
+            "group": "organic",
+            "aspect": "1:1",
+            "creativeId": "2j4pvlnwl79aklr8",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "ybeeotitth3eivfh",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "rbkpuyfpdvbcmytv",
+            "assetId": "ybeeotitth3eivfh",
+            "accepted": true
+          },
+          {
+            "index": 2,
+            "group": "organic",
+            "aspect": "1:1",
+            "creativeId": "f5rww0emt50rjzk2",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "yk7alr3b1mgx9hok",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "4lmyxykz672i0tts",
+            "assetId": "yk7alr3b1mgx9hok",
+            "accepted": true
+          },
+          {
+            "index": 3,
+            "group": "organic",
+            "aspect": "1:1",
+            "creativeId": "5rln2tpajpvz3xk2",
+            "attempts": 2,
+            "candidates": [
+              {
+                "assetId": "gbc8304wmz125gt2",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "cw4ke03hmnllk15f",
+            "assetId": "gbc8304wmz125gt2",
+            "accepted": true
+          },
+          {
+            "index": 4,
+            "group": "organic",
+            "aspect": "4:5",
+            "creativeId": "ujk3tfab21xxjdm1",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "pyhj4smhaaiqg7se",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "kje6qeb52ffs3zz2",
+            "assetId": "pyhj4smhaaiqg7se",
+            "accepted": true
+          },
+          {
+            "index": 5,
+            "group": "organic",
+            "aspect": "4:5",
+            "creativeId": "b7xg2oeunfvao0s5",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "a9vx8swf47u1y5lr",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "cfeor96e0ow9j8oq",
+            "assetId": "a9vx8swf47u1y5lr",
+            "accepted": true
+          },
+          {
+            "index": 6,
+            "group": "organic",
+            "aspect": "4:5",
+            "creativeId": "84dweulr5yrn8psf",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "enmt0nm16d1mwrr4",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "8qgkkgarztnb240k",
+            "assetId": "enmt0nm16d1mwrr4",
+            "accepted": true
+          },
+          {
+            "index": 7,
+            "group": "organic",
+            "aspect": "9:16",
+            "creativeId": "jyr33pne26o2qth0",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "d33xg6au7ykn4a4x",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "ia9fq079d82en2sm",
+            "assetId": "d33xg6au7ykn4a4x",
+            "accepted": true
+          },
+          {
+            "index": 8,
+            "group": "organic",
+            "aspect": "9:16",
+            "creativeId": "jbmhcf89iknbvk60",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "q154ve89moelrb38",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "5zr1uztufm0rq5zv",
+            "assetId": "q154ve89moelrb38",
+            "accepted": true
+          },
+          {
+            "index": 9,
+            "group": "organic",
+            "aspect": "9:16",
+            "creativeId": "vmdwn1cn1wte66a7",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "rp7um0gqobvebjr6",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "cvauus76hfo92weh",
+            "assetId": "rp7um0gqobvebjr6",
+            "accepted": true
+          },
+          {
+            "index": 10,
+            "group": "ad",
+            "aspect": "1:1",
+            "creativeId": "n1abkcd4sco8y18i",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "qzcfud6pxr6qy87x",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "qzcfud6pxr6qy87x",
+            "accepted": true
+          },
+          {
+            "index": 11,
+            "group": "ad",
+            "aspect": "1:1",
+            "creativeId": "gjfpjk6e3il78u7c",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "dqc2gr361wknwnnu",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "dqc2gr361wknwnnu",
+            "accepted": true
+          },
+          {
+            "index": 12,
+            "group": "ad",
+            "aspect": "1:1",
+            "creativeId": "tb4n9w9itnjye2xw",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "tzq26jrosbhrope7",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "tzq26jrosbhrope7",
+            "accepted": true
+          },
+          {
+            "index": 13,
+            "group": "ad",
+            "aspect": "1:1",
+            "creativeId": "6j7yne3ryh5x524b",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "4dwr399wrmlzihw5",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "4dwr399wrmlzihw5",
+            "accepted": true
+          },
+          {
+            "index": 14,
+            "group": "ad",
+            "aspect": "4:5",
+            "creativeId": "guldh1paea5x178z",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "wif1anafoh44pdts",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "wif1anafoh44pdts",
+            "accepted": true
+          },
+          {
+            "index": 15,
+            "group": "ad",
+            "aspect": "4:5",
+            "creativeId": "h2kxe1oql23f81zq",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "ip9nivvebn8m0ss4",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "ip9nivvebn8m0ss4",
+            "accepted": true
+          },
+          {
+            "index": 16,
+            "group": "ad",
+            "aspect": "4:5",
+            "creativeId": "5xb5j8yvjauvb3uj",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "z84yxtw6wjhzxz9x",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "z84yxtw6wjhzxz9x",
+            "accepted": true
+          },
+          {
+            "index": 17,
+            "group": "ad",
+            "aspect": "9:16",
+            "creativeId": "tioau6imq66o2m4g",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "71f6lujaqg5ys2gh",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "71f6lujaqg5ys2gh",
+            "accepted": true
+          },
+          {
+            "index": 18,
+            "group": "ad",
+            "aspect": "9:16",
+            "creativeId": "xiat257cw09waywo",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "7t4oixn7ttinnwud",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "7t4oixn7ttinnwud",
+            "accepted": true
+          },
+          {
+            "index": 19,
+            "group": "ad",
+            "aspect": "9:16",
+            "creativeId": "0g6tnbyt9oe7bfx7",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "hts0ao3gdaa9lctn",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "hts0ao3gdaa9lctn",
+            "accepted": true
+          }
+        ],
+        "history": [
+          {
+            "hash": "1af7b575c0c84acb",
+            "accepted": 20,
+            "jobId": "lv1t2lhnu0fe5etk"
+          }
+        ]
+      },
+      "partialAccepted": 3,
+      "priorAcceptedAssetsPreserved": true,
+      "createdAndQuotedInUI": true,
+      "parentListUpdatedWithoutReload": true,
+      "reopened": true,
+      "adsSeparated": true,
+      "noNetworkScheduling": true,
+      "natives": [
+        {
+          "file": "service-1-1x1-SIMULATION.png",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "file": "service-2-1x1-SIMULATION.png",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "file": "service-3-1x1-SIMULATION.png",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "file": "service-4-1x1-SIMULATION.png",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "file": "service-5-4x5-SIMULATION.png",
+          "width": 1080,
+          "height": 1350
+        },
+        {
+          "file": "service-6-4x5-SIMULATION.png",
+          "width": 1080,
+          "height": 1350
+        },
+        {
+          "file": "service-7-4x5-SIMULATION.png",
+          "width": 1080,
+          "height": 1350
+        },
+        {
+          "file": "service-8-9x16-SIMULATION.png",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "file": "service-9-9x16-SIMULATION.png",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "file": "service-10-9x16-SIMULATION.png",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "file": "service-11-1x1-SIMULATION.png",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "file": "service-12-1x1-SIMULATION.png",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "file": "service-13-1x1-SIMULATION.png",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "file": "service-14-1x1-SIMULATION.png",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "file": "service-15-4x5-SIMULATION.png",
+          "width": 1080,
+          "height": 1350
+        },
+        {
+          "file": "service-16-4x5-SIMULATION.png",
+          "width": 1080,
+          "height": 1350
+        },
+        {
+          "file": "service-17-4x5-SIMULATION.png",
+          "width": 1080,
+          "height": 1350
+        },
+        {
+          "file": "service-18-9x16-SIMULATION.png",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "file": "service-19-9x16-SIMULATION.png",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "file": "service-20-9x16-SIMULATION.png",
+          "width": 1080,
+          "height": 1920
+        }
+      ],
+      "errors": [],
+      "external": [],
+      "video": "service-ordinateur.webm"
+    },
+    {
+      "profile": "service-mobile",
+      "simulation": true,
+      "source": "real Posts tab",
+      "initial": {
+        "required": 20,
+        "accepted": 20,
+        "inProgress": 0,
+        "missing": 0,
+        "actualCostMicro": 0,
+        "actualBudgetPct": 0,
+        "legacy": true,
+        "hash": "1af7b575c0c84acb",
+        "ready": true,
+        "reason": "",
+        "status": "complete",
+        "jobId": "lv1t2lhnu0fe5etk",
+        "formats": {
+          "perGroup": {
+            "square": 4,
+            "portrait": 3,
+            "story": 3
+          },
+          "portraitAspect": "4:5"
+        },
+        "organic": {
+          "required": 10,
+          "accepted": 10,
+          "inProgress": 0,
+          "missing": 0,
+          "slots": [
+            {
+              "index": 0,
+              "group": "organic",
+              "aspect": "1:1",
+              "creativeId": "eqv2027n9ih0egv4",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "6bw9tqmumaud19d2",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "bqvzdqv5xmm52ykp",
+              "assetId": "6bw9tqmumaud19d2",
+              "accepted": true
+            },
+            {
+              "index": 1,
+              "group": "organic",
+              "aspect": "1:1",
+              "creativeId": "2j4pvlnwl79aklr8",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "ybeeotitth3eivfh",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "rbkpuyfpdvbcmytv",
+              "assetId": "ybeeotitth3eivfh",
+              "accepted": true
+            },
+            {
+              "index": 2,
+              "group": "organic",
+              "aspect": "1:1",
+              "creativeId": "f5rww0emt50rjzk2",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "yk7alr3b1mgx9hok",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "4lmyxykz672i0tts",
+              "assetId": "yk7alr3b1mgx9hok",
+              "accepted": true
+            },
+            {
+              "index": 3,
+              "group": "organic",
+              "aspect": "1:1",
+              "creativeId": "5rln2tpajpvz3xk2",
+              "attempts": 2,
+              "candidates": [
+                {
+                  "assetId": "gbc8304wmz125gt2",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "cw4ke03hmnllk15f",
+              "assetId": "gbc8304wmz125gt2",
+              "accepted": true
+            },
+            {
+              "index": 4,
+              "group": "organic",
+              "aspect": "4:5",
+              "creativeId": "ujk3tfab21xxjdm1",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "pyhj4smhaaiqg7se",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "kje6qeb52ffs3zz2",
+              "assetId": "pyhj4smhaaiqg7se",
+              "accepted": true
+            },
+            {
+              "index": 5,
+              "group": "organic",
+              "aspect": "4:5",
+              "creativeId": "b7xg2oeunfvao0s5",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "a9vx8swf47u1y5lr",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "cfeor96e0ow9j8oq",
+              "assetId": "a9vx8swf47u1y5lr",
+              "accepted": true
+            },
+            {
+              "index": 6,
+              "group": "organic",
+              "aspect": "4:5",
+              "creativeId": "84dweulr5yrn8psf",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "enmt0nm16d1mwrr4",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "8qgkkgarztnb240k",
+              "assetId": "enmt0nm16d1mwrr4",
+              "accepted": true
+            },
+            {
+              "index": 7,
+              "group": "organic",
+              "aspect": "9:16",
+              "creativeId": "jyr33pne26o2qth0",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "d33xg6au7ykn4a4x",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "ia9fq079d82en2sm",
+              "assetId": "d33xg6au7ykn4a4x",
+              "accepted": true
+            },
+            {
+              "index": 8,
+              "group": "organic",
+              "aspect": "9:16",
+              "creativeId": "jbmhcf89iknbvk60",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "q154ve89moelrb38",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "5zr1uztufm0rq5zv",
+              "assetId": "q154ve89moelrb38",
+              "accepted": true
+            },
+            {
+              "index": 9,
+              "group": "organic",
+              "aspect": "9:16",
+              "creativeId": "vmdwn1cn1wte66a7",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "rp7um0gqobvebjr6",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "postId": "cvauus76hfo92weh",
+              "assetId": "rp7um0gqobvebjr6",
+              "accepted": true
+            }
+          ]
+        },
+        "ads": {
+          "required": 10,
+          "accepted": 10,
+          "inProgress": 0,
+          "missing": 0,
+          "slots": [
+            {
+              "index": 10,
+              "group": "ad",
+              "aspect": "1:1",
+              "creativeId": "n1abkcd4sco8y18i",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "qzcfud6pxr6qy87x",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "qzcfud6pxr6qy87x",
+              "accepted": true
+            },
+            {
+              "index": 11,
+              "group": "ad",
+              "aspect": "1:1",
+              "creativeId": "gjfpjk6e3il78u7c",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "dqc2gr361wknwnnu",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "dqc2gr361wknwnnu",
+              "accepted": true
+            },
+            {
+              "index": 12,
+              "group": "ad",
+              "aspect": "1:1",
+              "creativeId": "tb4n9w9itnjye2xw",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "tzq26jrosbhrope7",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "tzq26jrosbhrope7",
+              "accepted": true
+            },
+            {
+              "index": 13,
+              "group": "ad",
+              "aspect": "1:1",
+              "creativeId": "6j7yne3ryh5x524b",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "4dwr399wrmlzihw5",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "4dwr399wrmlzihw5",
+              "accepted": true
+            },
+            {
+              "index": 14,
+              "group": "ad",
+              "aspect": "4:5",
+              "creativeId": "guldh1paea5x178z",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "wif1anafoh44pdts",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "wif1anafoh44pdts",
+              "accepted": true
+            },
+            {
+              "index": 15,
+              "group": "ad",
+              "aspect": "4:5",
+              "creativeId": "h2kxe1oql23f81zq",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "ip9nivvebn8m0ss4",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "ip9nivvebn8m0ss4",
+              "accepted": true
+            },
+            {
+              "index": 16,
+              "group": "ad",
+              "aspect": "4:5",
+              "creativeId": "5xb5j8yvjauvb3uj",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "z84yxtw6wjhzxz9x",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "z84yxtw6wjhzxz9x",
+              "accepted": true
+            },
+            {
+              "index": 17,
+              "group": "ad",
+              "aspect": "9:16",
+              "creativeId": "tioau6imq66o2m4g",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "71f6lujaqg5ys2gh",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "71f6lujaqg5ys2gh",
+              "accepted": true
+            },
+            {
+              "index": 18,
+              "group": "ad",
+              "aspect": "9:16",
+              "creativeId": "xiat257cw09waywo",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "7t4oixn7ttinnwud",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "7t4oixn7ttinnwud",
+              "accepted": true
+            },
+            {
+              "index": 19,
+              "group": "ad",
+              "aspect": "9:16",
+              "creativeId": "0g6tnbyt9oe7bfx7",
+              "attempts": 1,
+              "candidates": [
+                {
+                  "assetId": "hts0ao3gdaa9lctn",
+                  "costMicro": 0,
+                  "attempts": 1,
+                  "review": {
+                    "accepted": true,
+                    "duplicateOf": null,
+                    "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                  }
+                }
+              ],
+              "assetId": "hts0ao3gdaa9lctn",
+              "accepted": true
+            }
+          ]
+        },
+        "themeMediaIncluded": false,
+        "slots": [
+          {
+            "index": 0,
+            "group": "organic",
+            "aspect": "1:1",
+            "creativeId": "eqv2027n9ih0egv4",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "6bw9tqmumaud19d2",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "bqvzdqv5xmm52ykp",
+            "assetId": "6bw9tqmumaud19d2",
+            "accepted": true
+          },
+          {
+            "index": 1,
+            "group": "organic",
+            "aspect": "1:1",
+            "creativeId": "2j4pvlnwl79aklr8",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "ybeeotitth3eivfh",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "rbkpuyfpdvbcmytv",
+            "assetId": "ybeeotitth3eivfh",
+            "accepted": true
+          },
+          {
+            "index": 2,
+            "group": "organic",
+            "aspect": "1:1",
+            "creativeId": "f5rww0emt50rjzk2",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "yk7alr3b1mgx9hok",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "4lmyxykz672i0tts",
+            "assetId": "yk7alr3b1mgx9hok",
+            "accepted": true
+          },
+          {
+            "index": 3,
+            "group": "organic",
+            "aspect": "1:1",
+            "creativeId": "5rln2tpajpvz3xk2",
+            "attempts": 2,
+            "candidates": [
+              {
+                "assetId": "gbc8304wmz125gt2",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "cw4ke03hmnllk15f",
+            "assetId": "gbc8304wmz125gt2",
+            "accepted": true
+          },
+          {
+            "index": 4,
+            "group": "organic",
+            "aspect": "4:5",
+            "creativeId": "ujk3tfab21xxjdm1",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "pyhj4smhaaiqg7se",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "kje6qeb52ffs3zz2",
+            "assetId": "pyhj4smhaaiqg7se",
+            "accepted": true
+          },
+          {
+            "index": 5,
+            "group": "organic",
+            "aspect": "4:5",
+            "creativeId": "b7xg2oeunfvao0s5",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "a9vx8swf47u1y5lr",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "cfeor96e0ow9j8oq",
+            "assetId": "a9vx8swf47u1y5lr",
+            "accepted": true
+          },
+          {
+            "index": 6,
+            "group": "organic",
+            "aspect": "4:5",
+            "creativeId": "84dweulr5yrn8psf",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "enmt0nm16d1mwrr4",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "8qgkkgarztnb240k",
+            "assetId": "enmt0nm16d1mwrr4",
+            "accepted": true
+          },
+          {
+            "index": 7,
+            "group": "organic",
+            "aspect": "9:16",
+            "creativeId": "jyr33pne26o2qth0",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "d33xg6au7ykn4a4x",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "ia9fq079d82en2sm",
+            "assetId": "d33xg6au7ykn4a4x",
+            "accepted": true
+          },
+          {
+            "index": 8,
+            "group": "organic",
+            "aspect": "9:16",
+            "creativeId": "jbmhcf89iknbvk60",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "q154ve89moelrb38",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "5zr1uztufm0rq5zv",
+            "assetId": "q154ve89moelrb38",
+            "accepted": true
+          },
+          {
+            "index": 9,
+            "group": "organic",
+            "aspect": "9:16",
+            "creativeId": "vmdwn1cn1wte66a7",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "rp7um0gqobvebjr6",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "postId": "cvauus76hfo92weh",
+            "assetId": "rp7um0gqobvebjr6",
+            "accepted": true
+          },
+          {
+            "index": 10,
+            "group": "ad",
+            "aspect": "1:1",
+            "creativeId": "n1abkcd4sco8y18i",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "qzcfud6pxr6qy87x",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "qzcfud6pxr6qy87x",
+            "accepted": true
+          },
+          {
+            "index": 11,
+            "group": "ad",
+            "aspect": "1:1",
+            "creativeId": "gjfpjk6e3il78u7c",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "dqc2gr361wknwnnu",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "dqc2gr361wknwnnu",
+            "accepted": true
+          },
+          {
+            "index": 12,
+            "group": "ad",
+            "aspect": "1:1",
+            "creativeId": "tb4n9w9itnjye2xw",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "tzq26jrosbhrope7",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "tzq26jrosbhrope7",
+            "accepted": true
+          },
+          {
+            "index": 13,
+            "group": "ad",
+            "aspect": "1:1",
+            "creativeId": "6j7yne3ryh5x524b",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "4dwr399wrmlzihw5",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "4dwr399wrmlzihw5",
+            "accepted": true
+          },
+          {
+            "index": 14,
+            "group": "ad",
+            "aspect": "4:5",
+            "creativeId": "guldh1paea5x178z",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "wif1anafoh44pdts",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "wif1anafoh44pdts",
+            "accepted": true
+          },
+          {
+            "index": 15,
+            "group": "ad",
+            "aspect": "4:5",
+            "creativeId": "h2kxe1oql23f81zq",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "ip9nivvebn8m0ss4",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "ip9nivvebn8m0ss4",
+            "accepted": true
+          },
+          {
+            "index": 16,
+            "group": "ad",
+            "aspect": "4:5",
+            "creativeId": "5xb5j8yvjauvb3uj",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "z84yxtw6wjhzxz9x",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "z84yxtw6wjhzxz9x",
+            "accepted": true
+          },
+          {
+            "index": 17,
+            "group": "ad",
+            "aspect": "9:16",
+            "creativeId": "tioau6imq66o2m4g",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "71f6lujaqg5ys2gh",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "71f6lujaqg5ys2gh",
+            "accepted": true
+          },
+          {
+            "index": 18,
+            "group": "ad",
+            "aspect": "9:16",
+            "creativeId": "xiat257cw09waywo",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "7t4oixn7ttinnwud",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "7t4oixn7ttinnwud",
+            "accepted": true
+          },
+          {
+            "index": 19,
+            "group": "ad",
+            "aspect": "9:16",
+            "creativeId": "0g6tnbyt9oe7bfx7",
+            "attempts": 1,
+            "candidates": [
+              {
+                "assetId": "hts0ao3gdaa9lctn",
+                "costMicro": 0,
+                "attempts": 1,
+                "review": {
+                  "accepted": true,
+                  "duplicateOf": null,
+                  "reason": "Évaluation de diversité SIMULÉE ; aucune qualité réelle démontrée."
+                }
+              }
+            ],
+            "assetId": "hts0ao3gdaa9lctn",
+            "accepted": true
+          }
+        ],
+        "history": [
+          {
+            "hash": "1af7b575c0c84acb",
+            "accepted": 20,
+            "jobId": "lv1t2lhnu0fe5etk"
+          }
+        ]
+      },
+      "partialAccepted": null,
+      "priorAcceptedAssetsPreserved": false,
+      "createdAndQuotedInUI": false,
+      "parentListUpdatedWithoutReload": false,
+      "reopened": true,
+      "adsSeparated": true,
+      "noNetworkScheduling": true,
+      "natives": [],
+      "errors": [],
+      "external": [],
+      "video": "service-mobile.webm"
+    }
+  ]
+}

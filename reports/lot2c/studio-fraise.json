@@ -1,0 +1,43 @@
+{
+  "kind": "fraise",
+  "origin": "studio Next.js de développement, base temporaire",
+  "steps": [
+    {
+      "step": "ajout depuis le bouton Sections",
+      "ok": true
+    },
+    {
+      "step": "point interactif ouvert dans l'aperçu (vue Téléphone)",
+      "ok": true
+    },
+    {
+      "step": "duplication",
+      "ok": true
+    },
+    {
+      "step": "choix de disposition",
+      "ok": false,
+      "reason": "menu absent"
+    },
+    {
+      "step": "panneau manuel : titre, disposition, bloc ajouté, titre de bloc (aperçu mis à jour)",
+      "ok": true,
+      "points": 4
+    },
+    {
+      "step": "discussion (sans IA) : masquage par le nom puis retour à la version précédente, réglages du panneau conservés",
+      "ok": true
+    },
+    {
+      "step": "rechargement complet : panneau, discussion et opérations conservés",
+      "ok": true,
+      "after": {
+        "visible": 1,
+        "heading": "TITRE DU PANNEAU MANUEL",
+        "image": "/preview/zp22brik2k0q5k4h/v/j7jwjn2zdufixj02~tn5tb2.oiPB0ZsODvdlROQKnVqPLy5EIcxZiOy5/assets/fraise-06-banniere.webp",
+        "listed": 3
+      }
+    }
+  ],
+  "date": "2026-10-19T02:52:24.758Z"
+}

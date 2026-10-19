@@ -1,0 +1,94 @@
+{
+  "at": "2026-10-18T22:11:30.833349+00:00",
+  "auditedBase": "09e0a86ac09cc3d76430fa12e34186e8f4d92a74",
+  "previousDelivery": "9c19dc38120df19a1ef6ed01c6c90ab5e7aeacc5",
+  "testedCodeCommit": "dc85a6bd53af13d6101f51c478e6cf3abe0835bf",
+  "browserHarnessCommit": "9c0e64512ad6ef9fd84fb54e477d4646a1dcf004",
+  "applicationAndUnitTestsUnchangedSinceTestedCommit": true,
+  "branch": "codex/parcours-amont-projet",
+  "pr": 138,
+  "mode": "Fournisseurs et verdicts injectés ; moteurs, fichiers, PDF, API/worker de choix et navigateur réellement exécutés sur données synthétiques. Aucune qualité créative fournisseur réelle démontrée.",
+  "checks": [
+    {
+      "command": "npx vitest run --maxWorkers=4",
+      "commit": "dc85a6bd53af13d6101f51c478e6cf3abe0835bf",
+      "exitCode": 0,
+      "logSha256": "d9bef67fa0f842c028d5b2c84c6aebc06bd2fd09a58d721b353ac266c96e12cf",
+      "filesPassed": 271,
+      "testsPassed": 2021,
+      "testsSkipped": 3,
+      "durationSeconds": 646.56,
+      "skippedReason": "PHP absent : deux contrôles calendrier et un contrôle CMS"
+    },
+    {
+      "command": "npx tsc --noEmit",
+      "commit": "9c0e64512ad6ef9fd84fb54e477d4646a1dcf004",
+      "exitCode": 0,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": "DATA_DIR=<dossier synthétique isolé> STOCK_OFFLINE=1 npm run build",
+      "commit": "dc85a6bd53af13d6101f51c478e6cf3abe0835bf",
+      "exitCode": 0,
+      "logSha256": "85f6d88d93b9b6298414d3411c9c565eba313cb61043358456b540d2aa9cd6ea"
+    },
+    {
+      "command": "PLAYWRIGHT_BROWSERS_PATH=/workspace/work/pw-browsers npx tsx scripts/preparation/mission-browser-proof.ts <dossier synthétique isolé>",
+      "commit": "9c0e64512ad6ef9fd84fb54e477d4646a1dcf004",
+      "exitCode": 0,
+      "logSha256": "d7174d27715daebb759e6fba25d03cf806b4ff379ab931b8491440e795135210",
+      "applicationBuiltCommit": "dc85a6bd53af13d6101f51c478e6cf3abe0835bf",
+      "screenshots": 16,
+      "profiles": 4,
+      "videos": 4,
+      "pageErrors": 0,
+      "horizontalOverflows": 0,
+      "fiveRolesMatchCardsAndBoards": true,
+      "wholePaletteAndRolesSavedAfterUiChoiceAndReload": true,
+      "placementEditTestedOn": "ordinateur ; consultation après déplacement sur mobile"
+    },
+    {
+      "command": "npx vitest run tests/directions-palettes-completes.test.ts tests/preparation-directions-integration.test.ts tests/logo-budget.test.ts --maxWorkers=3",
+      "commit": "77bbd9b5b388c6e7fe68d9f261d6969f6fcd5838",
+      "exitCode": 0,
+      "logSha256": "de215d55ed0caa250ac2afb96fc7ad623bfe0767be7f32bf8fc06e315e9f8282",
+      "testsPassed": 20,
+      "note": "Passage ciblé intermédiaire ; suite finale couvre les sources/tests définitifs."
+    },
+    {
+      "command": "npx vitest run tests/directions-palettes-consignes.test.ts --maxWorkers=1",
+      "commit": "dc85a6bd53af13d6101f51c478e6cf3abe0835bf",
+      "exitCode": 0,
+      "logSha256": "80d0747ec074da64c1fc5b58586afcd6d8d79127b4cce7c67993457ace43cb87",
+      "testsPassed": 2
+    },
+    {
+      "command": "npx vitest run tests/logo-budget.test.ts --maxWorkers=1",
+      "commit": "77bbd9b5b388c6e7fe68d9f261d6969f6fcd5838",
+      "exitCode": 0,
+      "logSha256": "81ead893d243972179c37766cdd21608e6a4f3ebd5a9dbd530cdf3dd6fc320b6",
+      "testsPassed": 4
+    }
+  ],
+  "realSupplierCalls": 0,
+  "realSupplierCost": 0,
+  "costCurrency": "EUR",
+  "costExplanation": "Aucun appel fournisseur réel ; montants des bases de tests synthétiques, aucune facture interrogée.",
+  "screenshots": 16,
+  "directionBoards": 6,
+  "brandBookPdfs": 2,
+  "browserVideos": 4,
+  "themeFilesChanged": false,
+  "productionThemeBuilt": false,
+  "cmsTested": [],
+  "merge": false,
+  "deployment": false,
+  "pendingRealChecks": [
+    "Accès/authentification du modèle logo requis et borne de coût exploitable",
+    "Compréhension/recherche/copywriting et qualité/harmonie des trois identités avec fournisseurs réels",
+    "Fidélité/diversité des dix images produit et pertinence des ressources Pixabay réelles",
+    "Raccordement effectif et contrôles thèmes/exports/CMS"
+  ],
+  "intermediateRuns": "Passages ciblés défaillants de simulateurs corrigés ; suite sandbox interrompue après ffmpeg EPERM ; suite intermédiaire arrêtée pour la dernière correction ; harnais navigateur corrigé pour helper tsx puis attente synchrone effective au lieu de waitForFunction async. Aucun de ces passages incomplets ne compte comme succès final.",
+  "security": "Aucune base, session, clé ou journal brut publié ; données synthétiques exclusivement."
+}

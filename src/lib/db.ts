@@ -886,6 +886,15 @@ CREATE TABLE IF NOT EXISTS content_runs (
   created_at INTEGER NOT NULL,
   PRIMARY KEY (project_id, run_key)
 );
+-- Un seul rédacteur par cible, même avec plusieurs processus. Ce verrou ne contient aucun texte client.
+CREATE TABLE IF NOT EXISTS content_target_locks (
+  project_id TEXT NOT NULL,
+  target TEXT NOT NULL,
+  owner TEXT NOT NULL,
+  job_id TEXT,
+  expires_at INTEGER NOT NULL,
+  PRIMARY KEY(project_id, target)
+);
 
 -- Idées de prompts propres à chaque produit ou service (écrites à la création du projet, réécrites si le catalogue,
 -- les services ou la marque changent) : proposées au client dans la création guidée par l'IA.

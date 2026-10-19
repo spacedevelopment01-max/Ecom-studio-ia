@@ -1,3 +1,4 @@
+import type { AspectId } from "../image-v2/types";
 /**
  * Outils du moteur publicitaire V2 : rédaction (IA), relecture (IA de vision), image (Image Engine V2), détourage
  * et logo de la marque. Injectables : le studio et le benchmark utilisent `realAdDeps` ; les tests, des outils
@@ -62,7 +63,7 @@ export type AdsV2Deps = {
    * référence), contrôlée puis corrigée. Toujours présent dans le branchement réel ; null + raison : bloqué (IA
    * indisponible, budget, essais refusés) — jamais un gabarit à la place.
    */
-  finalAd?: (i: { conceptId: string; angle: string; hook: string; cta: string; subject: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; maxCostEur: number }) => Promise<{ assetId: string | null; costMicro: number; reason?: string }>;
+  finalAd?: (i: { conceptId: string; copyApproved?: boolean; confirmedOffer?:string|null; campaignContext?:string; platform?: string; angle: string; hook: string; cta: string; subject: string; aspect: AspectId; maxCostEur: number }) => Promise<{ assetId: string | null; costMicro: number; reason?: string }>;
 };
 
 export function realAdDeps(ctx: JobContext | null, p: Project, aiActive: boolean): AdsV2Deps {
@@ -71,13 +72,15 @@ export function realAdDeps(ctx: JobContext | null, p: Project, aiActive: boolean
   return {
     async finalAd(i) {
       if (!aiActive) return { assetId: null, costMicro: 0, reason: "IA indisponible pour ce projet (forfait, budget ou fournisseur) : publicité non créée — aucun gabarit à la place" };
+      const { withClientTexts } = await import("../engine/ai-post-image");
       const { designPostWithAi, realAiPostDeps } = await import("../social-v2/ai-post");
       const { validCutouts } = await import("../engine/cutouts");
       const ref = p.business === "services" ? null : (validCutouts(p.id)[0]?.id ?? all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'original' AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at DESC LIMIT 1", p.id)[0]?.id ?? null);
-      const post = { id: `ad-${i.conceptId}-${i.aspect.replace(":", "x")}`, network: "instagram", format: "image", title: i.hook, headline: i.hook, caption: "", pillar: i.angle, objective: "convert", request: i.subject } as unknown as import("../social-v2/deps").PostBrief;
-      const d = realAiPostDeps(base);
+      const campaign=i.campaignContext?JSON.parse(i.campaignContext):{};
+      const post = { entryPoint:"ads-campaign", id: `ad-${i.conceptId}-${i.aspect.replace(":", "x")}`, network: i.platform ?? "instagram", format: "image", title: i.hook, headline: i.hook, caption: campaign.copy?.primary ?? "", advertising:campaign, pillar: i.angle, objective: "convert", request: [i.subject,i.campaignContext,i.confirmedOffer?`Offre réelle confirmée et demandée par le client : ${i.confirmedOffer}`:null].filter(Boolean).join("\n") } as unknown as import("../social-v2/deps").PostBrief;
+      const d = {...realAiPostDeps(base),confirmedCommercialTexts:i.confirmedOffer?[i.confirmedOffer]:[]};
       // Textes du moteur (contrôlés) gardés tels quels : pas de réécriture par l'IA de texte.
-      const r = await designPostWithAi(p, post, { aspect: i.aspect, maxCostEur: i.maxCostEur, reference: ref, as: "ad" }, { ...d, copy: undefined });
+      const r = await designPostWithAi(p, post, { aspect: i.aspect, maxCostEur: i.maxCostEur, reference: ref, as: "ad" }, i.copyApproved ? withClientTexts(d,{headline:i.hook,subline:campaign.copy?.sub ?? undefined,cta:i.cta}) : d);
       return { assetId: r.assetId, costMicro: r.costMicro, reason: r.note };
     },
     canWrite: ai,

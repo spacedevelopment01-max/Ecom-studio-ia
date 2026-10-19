@@ -10,6 +10,8 @@
  * Module sans dépendance serveur : il est aussi lu par l'interface (galerie des thèmes, onglet Marque).
  */
 import type { BaseDirectionId, BrandPalette, ImageSlots } from "./directions";
+import type { StoreKind } from "./store-kind";
+import { REFERENCE_CATALOG } from "./reference-themes";
 
 export type Sch = 1 | 2 | 3 | 4;
 type Blocks = { type: string; settings: Record<string, unknown> }[];
@@ -86,7 +88,7 @@ export type Kit = {
    * Section de la bibliothèque remplie avec le projet (textes vrais, photos du projet). Masquée d'office s'il lui
    * manque une information du marchand ou ses médias ; `hide` la masque dans tous les cas.
    */
-  lib: (type: string, sch: Sch, settings?: Record<string, unknown>, opts?: { hide?: boolean; dropBlocks?: string[] }) => Row;
+  lib: (type: string, sch: Sch, settings?: Record<string, unknown>, opts?: { hide?: boolean; dropBlocks?: string[]; /** Blocs posés explicitement par la composition (ex. : cadres d'un diptyque avec leurs fichiers), rédigés ensuite. */ blocks?: { type: string; settings: Record<string, unknown> }[] }) => Row;
   /** Première section affichable parmi plusieurs (sinon la première, masquée). */
   either: (...rows: (Row | Row[])[]) => Row[];
   /** Site de services : sections de prestations, méthode, réalisations, avis, infos pratiques… */
@@ -137,6 +139,14 @@ export type CatalogTheme = {
   home: (k: Kit) => (Row | Row[])[];
   /** Accueil d'un site d'entreprise de services. */
   services: (k: Kit) => (Row | Row[])[];
+  /** Catégories de projet servies (theme-fit.ts) ; absent : les trois. */
+  kinds?: StoreKind[];
+  /** Réglages globaux propres au thème (profils « conversion » / éditorial, mouvement…), par-dessus ceux de la direction. */
+  settings?: Record<string, unknown>;
+  /** Réglages du corps de la fiche produit (galerie, barre fixe, schéma). */
+  mainProduct?: Record<string, unknown>;
+  /** Sections de la fiche produit après le corps (sinon : avis, récit, caractéristiques, FAQ de la direction). */
+  product?: (k: Kit) => (Row | Row[])[];
 };
 
 const look = (l: Partial<ThemeLook> & Pick<ThemeLook, "headerLayout" | "shape" | "menu" | "footer" | "ann" | "card" | "button" | "radius">): ThemeLook => ({
@@ -157,7 +167,7 @@ const look = (l: Partial<ThemeLook> & Pick<ThemeLook, "headerLayout" | "shape" |
 });
 
 /** Identifiants des thèmes du catalogue (dans l'ordre de présentation). */
-export const CATALOG_IDS = ["vitrine", "manifeste", "laboratoire", "magazine", "cinema", "rituel", "horizon", "lookbook", "marche", "signal", "jardin", "reception", "cabinet", "recre", "epure", "tribu", "etabli", "velours", "lancement"] as const;
+export const CATALOG_IDS = ["vitrine", "manifeste", "laboratoire", "magazine", "cinema", "rituel", "horizon", "lookbook", "marche", "signal", "jardin", "reception", "cabinet", "recre", "epure", "tribu", "etabli", "velours", "lancement", "fraise", "onde", "orbe", "rive"] as const;
 export type CatalogThemeId = (typeof CATALOG_IDS)[number];
 
 export const CATALOG_THEMES: (CatalogTheme & { id: CatalogThemeId })[] = [
@@ -904,5 +914,8 @@ export const CATALOG_THEMES: (CatalogTheme & { id: CatalogThemeId })[] = [
     ],
   },
 ];
+
+// Thèmes de référence de l'issue #137 (reference-themes.ts) : mêmes contrats, rangés après les 19 du catalogue.
+CATALOG_THEMES.push(...(REFERENCE_CATALOG as typeof CATALOG_THEMES));
 
 export const catalogTheme = (id: string): CatalogTheme | undefined => CATALOG_THEMES.find((x) => x.id === id);

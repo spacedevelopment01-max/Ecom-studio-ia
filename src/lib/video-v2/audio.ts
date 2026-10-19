@@ -41,9 +41,12 @@ export async function mixAudio(doc: VideoDocument, files: AudioFiles, out: strin
   const chains: string[] = [];
   const voices: string[] = [];
   const effects: string[] = [];
-  const add = (file: string) => {
+  let inputCount=0;
+  const cleanup:string[]=[];
+  const add = (file: string,loop=false) => {
+    if(loop) inputs.push("-stream_loop","-1");
     inputs.push("-i", file);
-    return inputs.length / 2 - 1;
+    return inputCount++;
   };
   const trim = "silenceremove=start_periods=1:start_threshold=-50dB,areverse,silenceremove=start_periods=1:start_threshold=-50dB,areverse";
   for (const v of doc.audio.voice) {
@@ -52,7 +55,7 @@ export async function mixAudio(doc: VideoDocument, files: AudioFiles, out: strin
     if (!f || start == null) continue;
     const i = add(f);
     const ms = Math.round((start + v.offsetS) * 1000);
-    chains.push(`[${i}:a]aformat=sample_rates=44100:channel_layouts=stereo,${trim},atrim=0:${Math.max(0.1, v.durationS + 0.4)},volume=${v.gainDb}dB,adelay=${ms}|${ms}[v${voices.length}]`);
+    chains.push(`[${i}:a]aformat=sample_rates=44100:channel_layouts=stereo,atrim=0:${Math.max(0.1, v.durationS + 0.4)},volume=${v.gainDb}dB,adelay=${ms}|${ms}[v${voices.length}]`);
     voices.push(`[v${voices.length}]`);
   }
   for (const s of doc.audio.sfx) {
@@ -66,13 +69,20 @@ export async function mixAudio(doc: VideoDocument, files: AudioFiles, out: strin
   }
   let music: string | null = null;
   if (files.music && doc.audio.music) {
-    const i = add(files.music);
+    let musicFile=files.music;
+    const start=doc.audio.music.source==="library"?doc.audio.music.startS??0:0;
+    if(start>0) {
+      const segment=`${out}.music-segment.wav`;fs.mkdirSync(path.dirname(out),{recursive:true});
+      try {await exec("ffmpeg",["-y","-v","error","-ss",String(start),"-i",files.music,"-t",String(total),"-ar","44100","-ac","2",segment]);}
+      catch(error){fs.rmSync(segment,{force:true});throw error;}
+      musicFile=segment;cleanup.push(segment);
+    }
+    // Loop the finite selected file at the demuxer, not an enormous aloop filter buffer.
+    const i = add(musicFile,true);
     // Piste de la banque : entrée et sortie en fondu (jamais une coupure sèche à la fin de la vidéo).
     const fades = doc.audio.music.source === "library" ? `,afade=t=in:st=0:d=0.5,afade=t=out:st=${Math.max(0, total - 1.6).toFixed(2)}:d=1.6` : "";
     // Piste de la banque : lue à partir du moment où elle est lancée (introduction calme sautée).
-    const start = doc.audio.music.source === "library" ? doc.audio.music.startS ?? 0 : 0;
-    const skip = start > 0 ? `atrim=start=${start.toFixed(2)},asetpts=PTS-STARTPTS,` : "";
-    chains.push(`[${i}:a]aformat=sample_rates=44100:channel_layouts=stereo,${skip}aloop=loop=-1:size=2e9,atrim=0:${total}${fades},volume=${doc.audio.music.gainDb}dB[mus]`);
+    chains.push(`[${i}:a]aformat=sample_rates=44100:channel_layouts=stereo,atrim=0:${total},asetpts=PTS-STARTPTS${fades},volume=${doc.audio.music.gainDb}dB[mus]`);
     music = "[mus]";
   }
   let mixInputs: string[] = [...effects];
@@ -95,7 +105,9 @@ export async function mixAudio(doc: VideoDocument, files: AudioFiles, out: strin
   // remonter les crêtes de 4 dB au-dessus du maximum sur une musique dense (saturation audible).
   chains.push(`${mixInputs.join("")}amix=inputs=${mixInputs.length}:normalize=0,apad,atrim=0:${total},loudnorm=I=${doc.audio.loudnessLufs}:TP=-2:LRA=11,aresample=44100,lowpass=f=15000,alimiter=limit=0.55:level=false:attack=3:release=60[out]`);
   fs.mkdirSync(path.dirname(out), { recursive: true });
-  await exec("ffmpeg", ["-y", "-v", "error", ...inputs, "-filter_complex", chains.join(";"), "-map", "[out]", "-t", String(total), out], { maxBuffer: 16 * 1024 * 1024 });
+  // Bound the complex mix graph: multiple short voices and looping music otherwise compete for filter workers.
+  try {await exec("ffmpeg", ["-y", "-v", "error", "-filter_complex_threads", "1", ...inputs, "-filter_complex", chains.join(";"), "-map", "[out]", "-t", String(total), out], { maxBuffer: 16 * 1024 * 1024 });}
+  finally {for(const file of cleanup)fs.rmSync(file,{force:true});}
   return out;
 }
 

@@ -11,7 +11,7 @@ import { artDirectionFor, loadArtDirection, saveArtDirection } from "@/lib/image
 export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
   const saved = loadArtDirection(p.id);
-  return ok({ artDirection: saved ?? artDirectionFor(p), saved: !!saved });
+  return ok({ artDirection: artDirectionFor(p), saved: !!saved });
 });
 
 /** Le client ajuste la direction (idée, lumière, décor, émotion, à éviter…) ou en demande une autre : nouvelle version. */

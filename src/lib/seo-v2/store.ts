@@ -5,8 +5,11 @@
  * n'est refait ni repayé).
  */
 import crypto from "node:crypto";
-import { all, id, json, now, one, run } from "../db";
+import { all, id, json, now, one, run, tx } from "../db";
 import type { ContentDoc, ContentLang, ContentType } from "./types";
+import { checkRequirements, requirementsOf } from "./requirements";
+import { HttpError } from "../auth";
+import { L } from "../i18n-server";
 
 export type ContentVersion = { id: string; docKey: string; version: number; type: ContentType; lang: ContentLang; title: string; source: ContentDoc["meta2"]["source"]; verdict: string | null; note: string; createdAt: number };
 
@@ -15,8 +18,27 @@ export const contentKey = (projectId: string, type: ContentType, pageKey: string
 
 const row = (r: any): ContentVersion => ({ id: r.id, docKey: r.doc_key, version: r.version, type: r.type, lang: r.lang, title: r.title, source: r.source, verdict: r.verdict, note: r.note, createdAt: r.created_at });
 
-export function saveContentVersion(projectId: string, docKey: string, doc: ContentDoc, o: { note?: string; verdict?: string | null } = {}): ContentVersion {
+export class ContentConflict extends HttpError {
+  constructor(_reason?: string) { super(409, L("Le texte a changé depuis son ouverture. Votre version enregistrée est conservée ; rechargez avant de modifier.", "The content changed since it was opened. The saved version is kept; reload before editing.")); }
+}
+
+export function lockContentTarget(projectId: string, target: string, owner: string, jobId: string | null) {
+  return tx(() => {
+    run("DELETE FROM content_target_locks WHERE project_id=? AND target=? AND expires_at<? AND (job_id IS NULL OR NOT EXISTS (SELECT 1 FROM jobs WHERE id=job_id AND status IN ('running','paused'))) AND NOT EXISTS (SELECT 1 FROM ai_reservations WHERE job_id=content_target_locks.job_id AND status='held')", projectId, target, now());
+    return run("INSERT OR IGNORE INTO content_target_locks (project_id,target,owner,job_id,expires_at) VALUES (?,?,?,?,?)", projectId, target, owner, jobId, now() + 15 * 60_000).changes === 1;
+  });
+}
+export function releaseContentTarget(projectId: string, target: string, owner: string) {
+  run("DELETE FROM content_target_locks WHERE project_id=? AND target=? AND owner=?", projectId, target, owner);
+}
+export function renewContentTarget(projectId: string, target: string, owner: string) {
+  run("UPDATE content_target_locks SET expires_at=? WHERE project_id=? AND target=? AND owner=?", now() + 15 * 60_000, projectId, target, owner);
+}
+export function saveContentVersion(projectId: string, docKey: string, doc: ContentDoc, o: { note?: string; verdict?: string | null; expectedVersion?: number } = {}): ContentVersion {
+  if (doc.meta2.contract) doc = { ...doc, meta2: { ...doc.meta2, contract: { ...doc.meta2.contract, checks: checkRequirements(doc, requirementsOf(doc.meta2.contract.request)) } } };
+  return tx(() => {
   const version = (one<{ v: number }>("SELECT MAX(version) v FROM content_documents WHERE doc_key = ?", docKey)?.v ?? 0) + 1;
+  if (o.expectedVersion != null && version - 1 !== o.expectedVersion) throw new ContentConflict("content_conflict");
   const vid = id();
   const at = now();
   run(
@@ -24,6 +46,14 @@ export function saveContentVersion(projectId: string, docKey: string, doc: Conte
     vid, projectId, docKey, version, doc.type, doc.lang, doc.page.title.slice(0, 200), doc.meta2.source, o.verdict ?? null, (o.note ?? "").slice(0, 200), JSON.stringify(doc), at,
   );
   return { id: vid, docKey, version, type: doc.type, lang: doc.lang, title: doc.page.title, source: doc.meta2.source, verdict: o.verdict ?? null, note: o.note ?? "", createdAt: at };
+  });
+}
+
+/** Référence livrable : une tentative bloquée n'efface pas le dernier texte utilisable de sa lignée. */
+export function usableContent(projectId: string, docKey: string) {
+  const versions = listContentVersions(projectId, docKey);
+  const v = versions.find((v) => v.verdict !== "REJECTED" && v.verdict !== "RETRY");
+  return v ? { version: v, doc: contentVersionDoc(projectId, docKey, v.version)! } : null;
 }
 
 export function latestContent(projectId: string, docKey: string): { doc: ContentDoc; version: ContentVersion } | null {

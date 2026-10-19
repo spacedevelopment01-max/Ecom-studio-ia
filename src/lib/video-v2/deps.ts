@@ -6,12 +6,16 @@
  */
 import { skillReference } from "../ai/skills";
 import sharp from "sharp";
+import {execFileSync} from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import { tmpDir,storagePath } from "../storage";
 import { llmConfigured, llmJson } from "../ai/llm";
 import { brainView } from "../ai/context";
 import { activeProviderKey, routeFor } from "../ai/config";
-import { aiClip } from "../ai/media-providers";
+import { aiClip,wanTextClip } from "../ai/media-providers";
 import { selectMedia, usageNeed, usagePrimary, type MediaUsage } from "../ai/media-routing";
-import { all, json } from "../db";
+import { all, json,run } from "../db";
 import type { JobContext } from "../jobs";
 import { assetData, getAsset, type Asset } from "../library";
 import type { Project } from "../projects";
@@ -25,9 +29,11 @@ import { ScriptSchema, type ScriptDraft } from "./script";
 import { SHOT_REVIEW_SYSTEM, ShotReviewSchema, VIDEO_REVIEW_SYSTEM, VideoReviewSchema } from "./quality";
 import type { Inventory } from "./storyboard";
 import { findStockClip, type StockClipRequest } from "../stock/stock-clip";
+import { projectVoice, voiceAvailable, synthLine } from "./voice";
+import { loadCreativeMemory } from "./creative-memory";
 import type { ShotReview, VideoReview } from "./types";
 
-export type ClipRequest = { provider: string; model: string; image: Buffer; prompt: string; aspect: "16:9" | "9:16"; seconds: number; people: boolean };
+export type ClipRequest = { provider: string; model: string; image: Buffer|null; prompt: string; aspect: "16:9" | "9:16"; seconds: number; people: boolean };
 
 export type VideoV2Deps = {
   /** Rédaction IA disponible (sinon : script local). */
@@ -42,6 +48,7 @@ export type VideoV2Deps = {
   image: (req: ImageRequestV2) => Promise<{ assetId: string; data: Buffer } | null>;
   generateClip: (req: ClipRequest, key: string) => Promise<Buffer>;
   /** Voix off : null quand aucun fournisseur de synthèse vocale n'est configuré (cas actuel du studio). */
+  voiceId?:string|null;
   voice: null | ((text: string, voiceId: string | null, key: string) => Promise<{ data: Buffer; mime: string }>);
   available: (provider: string) => boolean;
   preferred: { provider: string; model: string } | null;
@@ -78,7 +85,11 @@ export function projectInventory(p: Project): Inventory {
     cutout: cut ? { id: cut.id } : null,
     logo: logo && !logo.deleted_at ? { id: logo.id } : null,
     photos: photos.filter((a) => a.kind === "image" && !seen.has(a.id) && seen.add(a.id)).map((a) => ({ id: a.id, role: a.role ?? "", origin: a.origin ?? "" })),
-    videos: videos.map((a) => ({ id: a.id, durationS: Number((a as unknown as { duration?: number }).duration ?? json<any>(a.meta as any, {})?.durationS ?? 0) || 4, role: a.role ?? "" })),
+    videos: videos.flatMap((a) => {
+      const meta=json<any>(a.meta as any,{});let durationS=Number(meta.durationS??0);
+      if(!(durationS>0))try{durationS=Number(execFileSync("ffprobe",["-v","error","-show_entries","format=duration","-of","default=nw=1:nk=1",storagePath(a.storage_key)],{timeout:4000,encoding:"utf8",stdio:["ignore","pipe","ignore"]}).trim());if(durationS>0)run("UPDATE assets SET meta=json_set(COALESCE(meta,'{}'),'$.durationS',?) WHERE id=?",durationS,a.id);}catch{durationS=0;}
+      return durationS>0?[{id:a.id,durationS,role:a.role??""}]:[];
+    }),
     screens: screens.map((a) => ({ id: a.id })),
   };
 }
@@ -86,6 +97,7 @@ export function projectInventory(p: Project): Inventory {
 export function realVideoDeps(ctx: JobContext | null, p: Project, aiActive: boolean): VideoV2Deps {
   const base = { userId: p.userId, projectId: p.id, jobId: ctx?.job.id ?? null };
   const ai = aiActive && llmConfigured();
+  const chosenVoice = projectVoice(loadCreativeMemory(p.id,p).preferences);
   const small = (b: Buffer) => sharp(b).resize(768, 768, { fit: "inside" }).jpeg({ quality: 82 }).toBuffer();
   // Usage du plan (Images & Vidéos) : principal ou choix automatique de « Vidéos produit » ou « Vidéos UGC ».
   const prefer = (u: MediaUsage) => {
@@ -104,11 +116,12 @@ export function realVideoDeps(ctx: JobContext | null, p: Project, aiActive: bool
       const images = [...(await Promise.all(frames.map(small))).map((data, k) => ({ data, label: L(`image ${k + 1} du plan`, `shot frame ${k + 1}`) }))];
       if (refs.product) images.push({ data: await small(refs.product), label: L("référence : produit réel", "reference: real product") });
       if (refs.character) images.push({ data: await small(refs.character), label: L("référence : personnage", "reference: character") });
-      return (await llmJson({ task: "quality_control", ...base, usageKey: key, promptKey: "video-v2-shot-review", routing: { difficulty: "complex", deliverable: "video_shot_v2" }, system: SHOT_REVIEW_SYSTEM, context: brainView(p, "qc").stable, images, prompt: `${text}\n${personCheckFr(peopleAllowedFor(p))}\nRéponds { "score": 0, "sameProduct": null, "productAltered": false, "characterConsistent": null, "offTopic": false, "artifacts": false, "personVisible": false, "issues": [] }.`, maxTokens: 1500 }, ShotReviewSchema)) as ShotReview;
+      return (await llmJson({ task: "quality_control", ...base, usageKey: key, promptKey: "video-v2-shot-review", routing: { difficulty: "complex", deliverable: "video_shot_v2" }, system: SHOT_REVIEW_SYSTEM, context: brainView(p, "qc").stable, images, prompt: `${text}\n${personCheckFr(peopleAllowedFor(p))}\nRéponds { "score": 0, "sameProduct": null, "foreignBrands":[], "textCorrect":null, "productAltered": false, "characterConsistent": null, "offTopic": false, "artifacts": false, "personVisible": false, "issues": [] }.`, maxTokens: 1500 }, ShotReviewSchema)) as ShotReview;
     },
     async reviewVideo(frames, text, key) {
       const images = (await Promise.all(frames.map(small))).map((data, k) => ({ data, label: L(`image clé ${k + 1}`, `key frame ${k + 1}`) }));
-      return (await llmJson({ task: "quality_control", ...base, usageKey: key, promptKey: "video-v2-review", routing: { difficulty: "complex", deliverable: "video_v2" }, system: VIDEO_REVIEW_SYSTEM, context: brainView(p, "video").stable, images, prompt: `${text}\n${personCheckFr(peopleAllowedFor(p))}\nRéponds { "criteria": { "relevance": 0, "narrative": 0, "visual": 0, "continuity": 0, "product_fidelity": 0, "brand": 0, "realism": 0, "motion": 0, "editing": 0, "audio": 0, "sync": 0, "subtitles": 0, "commercial": 0 }, "issues": [], "personVisible": false, "fix": { "target": "shot|audio|subtitles|editing|script|none", "shotId": null, "instruction": "…" } }.`, maxTokens: 2500 }, VideoReviewSchema)) as VideoReview;
+      const review = (await llmJson({ task: "quality_control", ...base, usageKey: key, promptKey: "video-v2-review", routing: { difficulty: "complex", deliverable: "video_v2" }, system: VIDEO_REVIEW_SYSTEM, context: brainView(p, "video").stable, images, prompt: `${text}\n${personCheckFr(peopleAllowedFor(p))}\nRéponds { "criteria": { "relevance": 0, "narrative": 0, "visual": 0, "continuity": 0, "product_fidelity": 0, "brand": 0, "realism": 0, "motion": 0, "editing": 0, "audio": 0, "sync": 0, "subtitles": 0, "commercial": 0 }, "issues": [], "personVisible": false, "fix": { "target": "shot|audio|subtitles|editing|script|none", "shotId": null, "instruction": "…" } }.`, maxTokens: 2500 }, VideoReviewSchema)) as VideoReview;
+      return {...review,unchecked:["continuous_motion","audio_naturalness","word_alignment"]};
     },
     async image(req) {
       const { runImageEngineV2 } = await import("../image-v2/engine");
@@ -121,12 +134,20 @@ export function realVideoDeps(ctx: JobContext | null, p: Project, aiActive: bool
       // Barrières existantes : forfait, budget IA, plafond de la tâche, tarif connu — vérifiées AVANT l'envoi.
       const usage = { ...base, usageKey: key };
       // Modèle choisi par le moteur (catalogue) ; relais vers le secours compatible si le principal échoue sans coût.
+      if(!req.image){if(req.provider!=="alibaba"||req.people)throw new Error("Adaptateur direct sans personne indisponible pour cette route.");return wanTextClip(usage,{prompt:req.prompt,aspect:req.aspect,seconds:req.seconds,model:req.model,usage:"text_video"});}
       if (req.provider === "google" || req.provider === "fal" || req.provider === "alibaba") return aiClip(req.provider, usage, { image: req.image, prompt: req.prompt, aspect: req.aspect, seconds: req.seconds, people: req.people, model: req.model, usage: req.people ? "ugc_video" : "product_video" }, (m) => ctx?.progress(ctx.job.progress ?? 0.5, m));
       throw new Error(`fournisseur vidéo non pris en charge : ${req.provider}`);
     },
     // Aucun fournisseur de synthèse vocale branché dans le studio (vérifié) : la voix reste à enregistrer ou à
     // brancher (phase 7B) ; le message passe par les sous-titres et le texte à l'écran.
-    voice: null,
+    voiceId: chosenVoice ? `kokoro:${chosenVoice}` : null,
+    voice: chosenVoice ? async(text,_id,key)=>{
+      if(!voiceAvailable()) throw new Error("Voix du projet non installée ; aucun rendu sans la voix demandée.");
+      const voice=chosenVoice;
+      const dir=tmpDir("voice-v2");
+      try {const out=path.join(dir,"voice.wav");await synthLine(text,out,{voice,lang:p.settings?.language==="en"?"en":"fr",speed:1});return {data:fs.readFileSync(out),mime:"audio/wav"};}
+      finally {fs.rmSync(dir,{recursive:true,force:true});}
+    } : null,
     stockClip: (req, exclude) => findStockClip(base, p, req, exclude),
     // Musique : la bibliothèque du studio (morceaux choisis par le propriétaire) d'abord, puis la banque Openverse.
     music: async (mood, durationS, style) =>

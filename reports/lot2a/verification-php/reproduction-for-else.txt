@@ -1,0 +1,16 @@
+
+Fatal error: Uncaught Liquid\Exception\ParseException: for does not expect else tag in /workspace/Ecom-studio-ia/assets/cms/php/liquid/Liquid/AbstractBlock.php:226
+Stack trace:
+#0 /workspace/Ecom-studio-ia/assets/cms/php/liquid/Liquid/AbstractBlock.php(106): Liquid\AbstractBlock->unknownTag('else', '', Array)
+#1 /workspace/Ecom-studio-ia/assets/cms/php/liquid/Liquid/AbstractTag.php(60): Liquid\AbstractBlock->parse(Array)
+#2 /workspace/Ecom-studio-ia/assets/cms/php/liquid/Liquid/Tag/TagFor.php(74): Liquid\AbstractTag->__construct('p in coll.produ...', Array, Object(Liquid\LocalFileSystem))
+#3 /workspace/Ecom-studio-ia/assets/cms/php/liquid/Liquid/AbstractBlock.php(101): Liquid\Tag\TagFor->__construct('p in coll.produ...', Array, Object(Liquid\LocalFileSystem))
+#4 /workspace/Ecom-studio-ia/assets/cms/php/liquid/Liquid/AbstractTag.php(60): Liquid\AbstractBlock->parse(Array)
+#5 /workspace/Ecom-studio-ia/assets/cms/php/liquid/Liquid/Document.php(31): Liquid\AbstractTag->__construct('', Array, Object(Liquid\LocalFileSystem))
+#6 /workspace/Ecom-studio-ia/assets/cms/php/liquid/Liquid/Template.php(213): Liquid\Document->__construct(Array, Object(Liquid\LocalFileSystem))
+#7 /workspace/Ecom-studio-ia/assets/cms/php/liquid/Liquid/Template.php(188): Liquid\Template->parseAlways('{%- assign coll...')
+#8 /workspace/Ecom-studio-ia/assets/cms/php/es-liquid.php(130): Liquid\Template->parse('{%- assign coll...')
+#9 /workspace/Ecom-studio-ia/assets/cms/php/render-cli.php(12): es_liquid_render_section('/tmp/es-php-fu6...', 'featured-collec...', Array, Array)
+#10 {main}
+  thrown in /workspace/Ecom-studio-ia/assets/cms/php/liquid/Liquid/AbstractBlock.php on line 226
+

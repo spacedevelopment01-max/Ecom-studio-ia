@@ -6,6 +6,9 @@
  * explicitement visés.
  */
 import { z } from "zod";
+import { sectionIncompatibility } from "./section-compat";
+import type { StoreKind } from "./store-kind";
+import { storeProducts } from "./store-products";
 import { Liquid } from "liquidjs";
 import {
   cloneSpec,
@@ -59,6 +62,12 @@ export type ApplyContext = {
   mediaFile?: (assetId: string) => { filename: string } | null;
   /** Le client a demandé une refonte globale : les verrous sont levés. */
   overrideLocks?: boolean;
+  /**
+   * Catégorie du projet (prestations de services, e-commerce, boutique spécialisée) : une section incompatible avec
+   * le thème installé ou cette catégorie est refusée à l'ajout, par tous les chemins (écran, discussion, IA, serveur).
+   * Absente : seules les règles liées au thème installé s'appliquent.
+   */
+  storeKind?: StoreKind | null;
 };
 
 export type ApplyResult = { spec: ThemeSpec; applied: string[]; rejected: { op: ThemeOp; reason: string }[] };
@@ -103,6 +112,16 @@ function validateSettings(spec: ThemeSpec, type: string, blockType: string | nul
     const c = coerceSetting(def, v);
     if (c.ok) out[k] = c.value;
     else errors.push(c.reason);
+  }
+  if (["purchase-offers", "featured-purchase"].includes(type) && blockType === null && values && Object.hasOwn(values, "product")) {
+    const product = storeProducts(spec).find((p) => p.handle === values.product);
+    if (values.product && !product?.contentTarget) errors.push(L("Produit absent du catalogue identifié.", "Product not found in the identified catalog."));
+    else out.product_target = product?.contentTarget ?? "";
+  }
+  if (blockType === "threshold_gift" && values && Object.hasOwn(values, "gift_product")) {
+    const product = storeProducts(spec).find((p) => p.handle === values.gift_product);
+    if (values.gift_product && !product?.contentTarget) errors.push(L("Cadeau absent du catalogue identifié.", "Gift not found in the identified catalog."));
+    else out.gift_target = product?.contentTarget ?? "";
   }
   return { settings: out, errors };
 }
@@ -323,6 +342,7 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
             reject(v.errors.join(" ; "));
             break;
           }
+          if (Object.entries(v.settings).every(([k, value]) => JSON.stringify(target.settings[k]) === JSON.stringify(value))) break;
           target.settings = { ...target.settings, ...v.settings };
           applied.push(L(`${op.block ? `Bloc ${op.block}` : `Section ${op.section}`} : « ${key} » mis à jour`, `${op.block ? `Block ${op.block}` : `Section ${op.section}`}: "${key}" updated`));
           break;
@@ -337,6 +357,13 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
           if (!schema) {
             reject(L(`type de section inconnu « ${op.type} »`, `unknown section type "${op.type}"`));
             break;
+          }
+          {
+            const why = sectionIncompatibility(spec, op.type, ctx.storeKind ?? null, uiLang());
+            if (why) {
+              reject(L(`section « ${op.type} » incompatible : ${why}`, `section "${op.type}" incompatible: ${why}`));
+              break;
+            }
           }
           const group = op.template.startsWith("group:") ? op.template.slice(6) : null;
           if (group && !schema.enabled_on?.groups?.includes(group) && !op.type.startsWith("es-custom-")) {
@@ -459,6 +486,13 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
           if (!schema) {
             reject(L(`type de section inconnu « ${op.type} »`, `unknown section type "${op.type}"`));
             break;
+          }
+          {
+            const why = sectionIncompatibility(spec, op.type, ctx.storeKind ?? null, uiLang());
+            if (why) {
+              reject(L(`section « ${op.type} » incompatible : ${why}`, `section "${op.type}" incompatible: ${why}`));
+              break;
+            }
           }
           // Conserve les réglages compatibles (titres, textes, images) pour ne rien perdre.
           const carry: Record<string, unknown> = {};

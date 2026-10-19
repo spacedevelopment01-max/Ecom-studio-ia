@@ -1,0 +1,85 @@
+{
+  "simulation": true,
+  "beforeExplicitChoice": {
+    "status": "recommended",
+    "category": "specialized",
+    "salesModel": "focused_offer",
+    "goal": "purchase",
+    "reasons": [
+      "Le modèle de vente met en avant une offre phare ou une gamme ciblée : explication, démonstration et choix de l’offre."
+    ],
+    "evidence": [
+      {
+        "source": "business",
+        "value": "products"
+      },
+      {
+        "source": "storeType",
+        "value": "mono"
+      },
+      {
+        "source": "catalogue",
+        "value": "0 produit(s) complémentaire(s) déclaré(s)"
+      },
+      {
+        "source": "client",
+        "value": "Tasse à thé en grès émaillé, fabrication en petites séries. Boutique spécialisée dans une gamme ciblée pour le thé.\nAucun label inventé."
+      },
+      {
+        "source": "strategy",
+        "value": "Aider Amateurs de thé à comprendre Clair Céramique avant de décider. Tasse à thé en grès émaillé, fabrication en petites séries. Boutique spécialisée dans une gamme ciblée pour le thé. Matière : grès Angle recommandé pour clarifier une offre : il utilise les informations fournies et réserve les preuves manquantes."
+      }
+    ],
+    "clarification": null,
+    "eligibleThemes": [
+      {
+        "referenceId": "fraise",
+        "name": "FRAISE",
+        "engineThemeId": null,
+        "status": "awaiting_integration"
+      },
+      {
+        "referenceId": "onde",
+        "name": "ONDE",
+        "engineThemeId": null,
+        "status": "awaiting_integration"
+      }
+    ]
+  },
+  "clientSelected": "specialized",
+  "afterExplicitChoice": {
+    "status": "recommended",
+    "category": "specialized",
+    "salesModel": "focused_offer",
+    "goal": "purchase",
+    "reasons": [
+      "Vous avez confirmé ce modèle de site pour votre offre actuelle ; ce choix prime sur les indices automatiques."
+    ],
+    "evidence": [
+      {
+        "source": "business",
+        "value": "products"
+      },
+      {
+        "source": "client_choice",
+        "value": "specialized"
+      }
+    ],
+    "clarification": null,
+    "eligibleThemes": [
+      {
+        "referenceId": "fraise",
+        "name": "FRAISE",
+        "engineThemeId": null,
+        "status": "awaiting_integration"
+      },
+      {
+        "referenceId": "onde",
+        "name": "ONDE",
+        "engineThemeId": null,
+        "status": "awaiting_integration"
+      }
+    ]
+  },
+  "inferenceIsNotPaidAi": true
+}

@@ -1,3 +1,13 @@
+import { requirePlan } from "../plan-gates";
+import { directionOf, directionSeries, updateDirectionSeries, directionNamingBrand } from "./direction-series";
+import { all, one, tx, now } from "../db";
+import { remember } from "../projects";
+import { stableHash } from "../brain/hash";
+import { withAiDisabled } from "../ai/access";
+import { commitState, stateOf, invalidateAfter, requireUpstream, inputHash } from "../preparation/store";
+import { assertFresh } from "../preparation/engine";
+import type { Brand } from "../project-types";
+import { completeDirectionSelection } from "./selection";
 /**
  * Choix du client (Logo V2) → décision du Project Brain → déclinaisons → système de marque.
  * Seulement APRÈS le choix : variantes utiles (principale, horizontale, empilée si pertinente, marque réduite, noir
@@ -66,15 +76,20 @@ function proposalOf(projectId: string, assetId: string, opts: { byClient?: boole
  * (favicon, tampon, broderie), version SVG seulement si elle est fidèle, typographie des titres, boutique mise à
  * jour, planche d'identité ; charte seulement pour un logo non provisoire.
  */
-async function applyArtwork(ctx: JobContext | null, projectId: string, assetId: string, meta: any, opts: { provisional: boolean; png?: Buffer }) {
+async function applyArtwork(ctx: JobContext | null, projectId: string, assetId: string, meta: any, opts: { provisional: boolean; png?: Buffer; deferTheme?: boolean; stagedBrand?: Brand }) {
   const p = loadProject(projectId);
+  // Une direction n'est active qu'après réception de TOUT son kit. Les rendus locaux
+  // travaillent sur cette copie, sans exposer un logo neuf avec une ancienne charte.
+  let stagedBrand = opts.stagedBrand;
+  const brand = () => stagedBrand ?? loadProject(projectId).brand!;
+  const storeBrand = (b: Brand) => { if (stagedBrand) stagedBrand = b; else saveBrand(projectId, b); };
   const t: Territory = { ...meta.territory, style: meta.territory.style ?? defaultStyle(meta.territory) };
   const spec: LogoSpec = meta.spec;
   const png = opts.png ?? assetData(getAsset(assetId)!);
   ctx?.progress(0.3, L("Déclinaisons fidèles du logo", "Faithful logo variations"));
-  const cur = loadProject(projectId).brand!;
+  const cur = brand();
   const handle = shopifyHandle(spec.family, spec.weight);
-  if (handle && !(cur.validated ?? []).includes("fonts")) saveBrand(projectId, { ...cur, fonts: { ...cur.fonts, heading: handle } });
+  if (handle && !(cur.validated ?? []).includes("fonts")) storeBrand({ ...cur, fonts: { ...cur.fonts, heading: handle } });
   const base = { projectId, userId: p.userId, folderKey: "brand.logos", origin: "generated" as const, meta: { engine: "logo-v2", artwork: true, territory: t.id, proposal: assetId } };
   const main = await saveAsset({ ...base, data: png, name: C("logo-principal.png", "logo-main.png"), mime: "image/png", role: "logo", sourceAssetId: assetId, status: "approved" });
   const lightPng = await onDarkVersion(png);
@@ -109,15 +124,15 @@ async function applyArtwork(ctx: JobContext | null, projectId: string, assetId: 
   await saveAsset({ ...base, data: await webp(lightPng), name: C("logo-fond-sombre.webp", "logo-dark-background.webp"), mime: "image/webp", role: "logo-light-webp", sourceAssetId: main.id });
   if (symbol) await saveAsset({ ...base, data: await webp(symbol), name: C("symbole-seul.webp", "symbol-only.webp"), mime: "image/webp", role: "logo-mark-webp", sourceAssetId: mark.id });
   // Couleurs de la marque = couleurs mesurées dans le logo (sauf palette validée par le client).
-  const after = loadProject(projectId).brand!;
+  const after = brand();
   const inks = await artworkInks(png);
   // Palette verrouillée par la direction (ou couleurs du client) : le logo ne la remplace pas.
   const fromLogo = isLocked(after, "palette") || after.paletteMode ? null : paletteFromInks(inks);
-  saveBrand(projectId, { ...after, ...(fromLogo ? { palette: fromLogo } : {}), logo: { ...after.logo, assetId: main.id, markAssetId: mark.id, concept: `${t.name} — ${t.concept}`, status: "proposed", proposal: KEY[t.markType], proposalId: assetId, route: undefined, provisional: opts.provisional, engine: "v2" } });
-  markBrandLogo(projectId, main.id);
+  storeBrand({ ...after, ...(fromLogo ? { palette: fromLogo } : {}), logo: { ...after.logo, assetId: main.id, markAssetId: mark.id, concept: `${t.name} — ${t.concept}`, status: "proposed", proposal: KEY[t.markType], proposalId: assetId, route: undefined, provisional: opts.provisional, engine: "v2" } });
+  if (!stagedBrand) markBrandLogo(projectId, main.id);
   const { swapThemeLogos } = await import("../engine/identity");
-  const fresh = loadProject(projectId).brand!;
-  swapThemeLogos(projectId, { logo: main.id, light: light.id, favicon: fav.id }, isLocked(fresh, "fonts") ? null : { heading: fresh.fonts.heading, body: fresh.fonts.body }, fromLogo);
+  const fresh = brand();
+  if (!opts.deferTheme) swapThemeLogos(projectId, { logo: main.id, light: light.id, favicon: fav.id }, isLocked(fresh, "fonts") ? null : { heading: fresh.fonts.heading, body: fresh.fonts.body }, fromLogo);
   // Versions vectorielles (calcul le plus long, sans IA) APRÈS la mise à jour de la marque et de la boutique : le
   // nouveau logo apparaît partout sans attendre le tracé.
   ctx?.progress(0.55, L("Versions vectorielles", "Vector versions"));
@@ -151,12 +166,17 @@ async function applyArtwork(ctx: JobContext | null, projectId: string, assetId: 
     });
     await saveAsset({ ...base, data: board, name: C("planche-identite.png", "identity-board.png"), mime: "image/png", role: "brand-board", sourceAssetId: main.id });
   }
-  if (opts.provisional) return { main, svg: svg.ok };
+  if (opts.provisional) return { main, svg: svg.ok, brand: brand() };
   ctx?.progress(0.9, L("Charte de marque", "Brand guidelines"));
   const { saveBrandBook, saveBrandGuide } = await import("../engine/brand");
-  await saveBrandGuide(projectId).catch((e) => console.error(`[charte] ${projectId} : ${(e as Error).message}`));
-  await saveBrandBook(projectId).catch((e) => console.error(`[charte] ${projectId} : ${(e as Error).message}`));
-  return { main, svg: svg.ok };
+  if (stagedBrand) {
+    await saveBrandGuide(projectId, brand());
+    await saveBrandBook(projectId, brand());
+  } else {
+    await saveBrandGuide(projectId).catch((e) => console.error(`[charte] ${projectId} : ${(e as Error).message}`));
+    await saveBrandBook(projectId).catch((e) => console.error(`[charte] ${projectId} : ${(e as Error).message}`));
+  }
+  return { main, svg: svg.ok, brand: brand() };
 }
 
 /**
@@ -194,7 +214,15 @@ async function applyProposal(ctx: JobContext | null, projectId: string, assetId:
  * ce logo). Le choix du client vaut contrôle humain : une version du studio choisie par lui devient son logo.
  */
 export async function chooseLogoV2(ctx: JobContext | null, projectId: string, assetId: string) {
+  requirePlan(null, projectId);
+  const chosen = directionOf(projectId, assetId);
+  if (chosen) {
+    if (ctx?.payload.selectionBrandHash && ctx.payload.selectionBrandHash !== stableHash("direction-active", loadProject(projectId).brand)) throw new UserFacingError("L’identité a été retouchée après votre validation. Vos modifications sont conservées ; resélectionnez la proposition avant de continuer.");
+    return applyCompleteDirection(ctx, projectId, assetId);
+  }
+
   const { meta, verdict } = proposalOf(projectId, assetId, { byClient: true });
+  if (directionSeries(projectId).some(s => s.requestKeys.includes(meta.run))) throw new UserFacingError("Cet essai appartient à une série de directions complètes. Reprenez les éléments manquants ; un logo isolé ne valide pas l’identité.");
   const t: Territory = meta.territory;
   // 1. Décision du client (Project Brain) — avant tout le reste.
   recordBrandDecision(projectId, "logo", `${t.name} — ${t.concept.slice(0, 160)} (${assetId})${verdict === "PROVISIONAL" ? " [version du studio choisie par le client]" : verdict === "CLIENT" ? " [logo complet non validé par le contrôle, choisi par le client]" : ""}`);
@@ -212,6 +240,7 @@ export async function chooseLogoV2(ctx: JobContext | null, projectId: string, as
  * logo PROVISOIRE. Un logo fourni ou validé par le client n'est jamais remplacé.
  */
 export async function applyBestLogoV2(ctx: JobContext | null, projectId: string, results: { assetId?: string; verdict: string; score: number | null }[]) {
+  if (results.some(r => r.assetId && directionOf(projectId, r.assetId))) return null; // Le client choisit l’ensemble ; aucune application de la « meilleure » en silence.
   const brand = loadProject(projectId).brand;
   if (!brand || brand.logo.status === "validated" || brand.logo.status === "provided" || (brand.validated ?? []).includes("logo")) return null;
   const rank = (r: { verdict: string; score: number | null }) => (r.verdict === "FINAL" ? 100 : 0) + (r.score ?? 0);
@@ -273,4 +302,54 @@ async function reapplyArtwork(ctx: JobContext | null, projectId: string, assetId
     saveBrand(projectId, { ...after, logo: { ...after.logo, status: "validated" } });
   }
   return true;
+}
+
+/** Point commun préparation / Marque / chat. Aucun appel payant lors de la sélection. */
+async function applyCompleteDirection(ctx: JobContext | null, projectId: string, assetId: string) {
+  const { series, direction } = directionOf(projectId, assetId)!;
+  if (series.status !== "complete" || series.directions.length !== 3) throw new UserFacingError("Série incomplète : trois directions complètes requises avant choix.");
+  const p = loadProject(projectId), identity = direction.identity;
+  if (directionNamingBrand(projectId)?.name !== series.name) throw new UserFacingError("Le nom a changé : cette direction historique ne peut pas remplacer le nouveau nom.");
+  const { meta, verdict } = proposalOf(projectId, assetId);
+  if (verdict !== "FINAL" || !meta.artwork) throw new UserFacingError("Direction sans dessin final contrôlé : sélection impossible.");
+  if (meta.artwork.expected?.name !== series.name || meta.spec?.name !== series.name) throw new UserFacingError("Le dessin contrôlé ne correspond pas au nom de cette série. Identité active conservée, aucune application.");
+  const key = `brand.direction.application.${series.id}.${direction.id}`;
+  const done = json<{ main: string; identityHash: string } | null>(one<{ value: string }>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key=?", projectId, key)?.value, null);
+  const hash = stableHash("direction", identity);
+  if (done && done.identityHash === hash && p.brand?.artIdentity?.directionId === direction.id && p.brand.logo.assetId === done.main) return { main: done.main, territory: direction.id, reused: true };
+  const prior = stateOf(projectId);
+  if (prior?.stages.brand) {
+    requireUpstream(prior, "brand");
+    assertFresh(projectId, prior, "brand");
+    if (prior.stages.brand.inputHash !== inputHash(prior, "brand")) throw new UserFacingError("La stratégie a changé : reprenez l’identité avant validation. Votre identité active reste conservée.");
+  }
+  const activeHash = stableHash("direction-active", p.brand);
+  const priorAssets = all<{ id: string }>("SELECT id FROM assets WHERE project_id=? AND deleted_at IS NULL", projectId).map(x => x.id);
+  const candidate: Brand = { ...p.brand!, name: series.name, tagline: identity.signature, palette: identity.palette, fonts: identity.fonts, tone: identity.tone, paletteMode: "client", clientPalette: identity.palette, artIdentity: { ...identity, seriesId: series.id, directionId: direction.id }, validated: ["name", "tagline", "palette", "fonts"] };
+  const applied = await withAiDisabled("validation d’identité : aucun nouveau contenu payant", () => applyArtwork(ctx, projectId, assetId, meta, { provisional: false, deferTheme: true, stagedBrand: candidate }));
+  // Aucune ancienne charte ne peut masquer l'échec du kit choisi : chaque fichier
+  // doit être issu du NOUVEAU logo principal et appartenir au même projet.
+  for (const role of ["logo-light", "logo-mono", "logo-white", "logo-mark", "favicon", "brand-board", "brand-guide", "brand-book"]) if (!one("SELECT id FROM assets WHERE project_id=? AND role=? AND source_asset_id=? AND deleted_at IS NULL AND status!='rejected'", projectId, role, applied.main.id)) throw new UserFacingError(`Application partielle : ${role} de la nouvelle identité manquant. L’identité active et les retouches restent conservées ; validation finale en attente.`);
+  tx(() => {
+    if (stableHash("direction-active", loadProject(projectId).brand) !== activeHash) throw new UserFacingError("Votre identité a été retouchée pendant la préparation du kit. Vos modifications et les nouveaux fichiers sont conservés ; resélectionnez la direction pour la valider.");
+    if ((stateOf(projectId)?.revision ?? null) !== (prior?.revision ?? null)) throw new UserFacingError("Le parcours a changé pendant la préparation du kit : validation arrêtée, données conservées.");
+    remember(projectId, { kind: "artifact", key: `brand.before-direction.${now()}`, value: JSON.stringify(p.brand), source: "user" });
+    const fresh = applied.brand;
+    saveBrand(projectId, { ...fresh, validated: [...new Set([...fresh.validated, "logo"])], logo: { ...fresh.logo, status: "validated", provisional: false } });
+    markBrandLogo(projectId, applied.main.id);
+    recordBrandDecision(projectId, "direction", `${series.name} — ${direction.label} (${series.id}/${direction.id}), ensemble complet validé`);
+    updateDirectionSeries(projectId, series.id, s => { s.selectedId = direction.id; });
+    remember(projectId, { kind: "artifact", key: "brand.adaptation", value: JSON.stringify({ directionId: direction.id, seriesId: series.id, state: "review_required", assetIds: priorAssets, documentKeys: prior?.stages.content?.data.documents.map(d => d.docKey) ?? [], note: "Contenus antérieurs à vérifier et adapter sur demande. Aucun contenu approuvé écrasé, aucun thème reconstruit ni appel payant." }), source: "user" });
+    remember(projectId, { kind: "artifact", key, value: JSON.stringify({ main: applied.main.id, identityHash: hash }), source: "user" });
+    completeDirectionSelection(projectId, assetId);
+    if (prior?.stages.brand) commitState(projectId, prior.revision, n => {
+      const b = n.stages.brand!;
+      b.data.proposal = loadProject(projectId).brand!;
+      b.data.selectedLogo = assetId; b.data.identityConfirmed = true; b.data.seriesId = series.id; b.data.directions = series.directions;
+      b.status = "approved"; b.approvedAt = now(); invalidateAfter(n, "brand");
+    });
+  });
+  const { tryStartInitialFromConsent } = await import("../social-v2/initial-authorization");
+  tryStartInitialFromConsent(projectId);
+  return { main: applied.main.id, territory: direction.id };
 }

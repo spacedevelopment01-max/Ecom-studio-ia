@@ -35,9 +35,9 @@ export function boardIcons(text: string, business: "products" | "services"): str
   return [...new Set([...trade.slice(0, 3), ...GENERIC[business]])].slice(0, 6);
 }
 
-export async function saveIdentityBoard(projectId: string): Promise<Asset | null> {
+export async function saveIdentityBoard(projectId: string, brandOverride?: Brand): Promise<Asset | null> {
   const p = loadProject(projectId);
-  const b = p.brand;
+  const b = brandOverride ?? p.brand;
   if (!b) return null;
   const latest = (role: string, source?: string) =>
     all<Asset>(`SELECT * FROM assets WHERE project_id = ? AND role = ? AND deleted_at IS NULL ${source ? "AND source_asset_id = ?" : ""} ORDER BY created_at DESC LIMIT 1`, projectId, role, ...(source ? [source] : []))[0];

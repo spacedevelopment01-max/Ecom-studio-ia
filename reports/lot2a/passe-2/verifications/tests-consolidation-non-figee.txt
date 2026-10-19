@@ -1,0 +1,124 @@
+
+ RUN  v5.0.3 /workspace/Ecom-studio-ia
+
+ ❯ tests/audit-contenus.test.ts (15 tests | 1 failed) 4976ms
+   ❯ I-3 sections sur mesure et aperçus cloisonnés (4)
+     × route d'aperçu : bac à sable (CSP), clé sans cookie, redirection depuis la session, 401 sinon, CORS pour l'origine opaque 656ms
+ ❯ tests/lot2a-purchase.test.ts (15 tests | 2 failed) 1995ms
+   ❯ Lot 2A complément — offres commerciales (15)
+     × routes signées réelles : ajout, lecture, rendu du panier, baisse, retrait et échec atomique 27ms
+     × galerie réelle : aperçu et insertion reprennent le produit ciblé, ses faits et ses médias 600ms
+ ❯ tests/theme.test.ts (12 tests | 1 failed) 4885ms
+   ❯ commandes locales de fiche produit (2)
+     × pastilles entre guillemets, lots et prix dans le bouton s'appliquent 8ms
+ ❯ tests/i18n-content.test.ts (4 tests | 1 failed) 124ms
+   ❯ contenus en anglais (moteur local) (4)
+     × le chat local comprend l'anglais et répond dans la langue de l'interface 36ms
+stderr | tests/editeur-sections.test.ts > éditeur de sections > remplacer une section : nouveau type, mêmes titre et image, au même endroit, nouvelle version
+TypeError: (0 , __vite_ssr_import_9__.sectionContentContext) is not a function
+    at /workspace/Ecom-studio-ia/src/app/api/projects/[id]/theme/sections/route.ts:23:68
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at run (/workspace/Ecom-studio-ia/src/lib/http.ts:25:14)
+    at /workspace/Ecom-studio-ia/tests/editeur-sections.test.ts:41:17
+    at file:///workspace/Ecom-studio-ia/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:2783:20
+
+ ❯ tests/editeur-sections.test.ts (4 tests | 1 failed) 62ms
+   ❯ éditeur de sections (4)
+     × remplacer une section : nouveau type, mêmes titre et image, au même endroit, nouvelle version 28ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/audit-contenus.test.ts > I-3 sections sur mesure et aperçus cloisonnés > route d'aperçu : bac à sable (CSP), clé sans cookie, redirection depuis la session, 401 sinon, CORS pour l'origine opaque
+AssertionError: expected undefined to be 2 // Object.is equality
+
+- Expected:
+2
+
++ Received:
+undefined
+
+ ❯ tests/audit-contenus.test.ts:246:43
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  tests/editeur-sections.test.ts > éditeur de sections > remplacer une section : nouveau type, mêmes titre et image, au même endroit, nouvelle version
+AssertionError: expected 500 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 500
+
+ ❯ tests/editeur-sections.test.ts:42:24
+     40|     const old = home.sections[sid].settings;
+     41|     const res = await fr(() => post({ type: "v2-banner", template: "in…
+     42|     expect(res.status).toBe(200);
+       |                        ^
+     43|     const after = currentTheme(pid)!;
+     44|     expect(after.version.number).toBe(before.version.number + 1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  tests/i18n-content.test.ts > contenus en anglais (moteur local) > le chat local comprend l'anglais et répond dans la langue de l'interface
+AssertionError: add bundles: expected 0 to be greater than 0
+ ❯ tests/i18n-content.test.ts:70:35
+     68|       for (const msg of ["add estimated delivery 2 to 4 days", 'add ba…
+     69|         const r = localThemeCommand(sampleSpec(), msg, null);
+     70|         expect(r.ops.length, msg).toBeGreaterThan(0);
+       |                                   ^
+     71|         expect(frenchIn([r.reply, r.ops]), msg).toEqual([]);
+     72|       }
+ ❯ runWithLang src/lib/i18n-server.ts:19:14
+ ❯ tests/i18n-content.test.ts:67:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  tests/lot2a-purchase.test.ts > Lot 2A complément — offres commerciales > routes signées réelles : ajout, lecture, rendu du panier, baisse, retrait et échec atomique
+AssertionError: expected 422 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 422
+
+ ❯ tests/lot2a-purchase.test.ts:97:139
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  tests/lot2a-purchase.test.ts > Lot 2A complément — offres commerciales > galerie réelle : aperçu et insertion reprennent le produit ciblé, ses faits et ses médias
+TypeError: sectionContentContext is not a function
+ ❯ tests/lot2a-purchase.test.ts:171:17
+    169|   const {pid,spec,project}=await referenceProject(user.id,"products",{…
+    170|   const bottle=storeProducts(spec).find((p)=>p.contentTarget==="produc…
+    171|   const context=sectionContentContext(project,spec,false,template), na…
+       |                 ^
+    172|   expect(context.product.name).toBe("Gourde Cime");expect(JSON.stringi…
+    173|   for(const b of narrative.blocks??[])if(b.settings?.image_asset)expec…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  tests/theme.test.ts > commandes locales de fiche produit > pastilles entre guillemets, lots et prix dans le bouton s'appliquent
+AssertionError: ajoute des lots: expected 0 to be greater than 0
+ ❯ tests/theme.test.ts:152:33
+    150|     for (const msg of ["ajoute des pastilles « Vegan » « Sans sucre aj…
+    151|       const r = localThemeCommand(spec, msg, null);
+    152|       expect(r.ops.length, msg).toBeGreaterThan(0);
+       |                                 ^
+    153|       const res = applyOps(spec, r.ops);
+    154|       expect(res.rejected, msg).toHaveLength(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  5 failed | 257 passed (262)
+      Tests  6 failed | 1962 passed | 3 skipped (1971)
+   Start at  02:15:20
+   Duration  650.52s (tests 79%, import 20%, transform 1%)
+
+    Isolate  262 workers spawned · ~128ms startup each (spawn + environment, per file)
+             at least ~11.05s faster with isolate: false — reuses workers across files instead of one per file
+

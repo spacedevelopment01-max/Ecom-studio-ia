@@ -69,12 +69,12 @@ describe("SEO V2 — moteur", async () => {
 
   it("reprise ciblée : seulement avec un défaut identifié (blocs et consigne) ; une bonne première version n'est jamais refaite", async () => {
     const pid = seed("cosmetic");
-    const { deps, log } = mockSeoDeps({ drafts: [(p) => ({ ...faithfulDraft(p), blocks: [...faithfulDraft(p).blocks, { kind: "p", text: "Certifié bio et livraison gratuite en 24h." }] }), (p) => faithfulDraft(p)] });
+    const { deps, log } = mockSeoDeps({ drafts: [(p) => ({ ...faithfulDraft(p), blocks: [...faithfulDraft(p).blocks, { kind: "p", text: "Certifié bio et livraison gratuite en 24h." }] })], rewrite: (p) => ({ blocks: JSON.parse(p.match(/Blocs à modifier : (\[.*\])/ )![1]).map((b: any) => ({ id: b.id, text: "Les caractéristiques sont indiquées dans les informations confirmées." })), note: "correction ciblée" }) });
     const r = await fr(() => runContentEngineV2(null, pid, { type: "product_page" }, deps));
     expect(r.stats.retries).toBe(1);
-    expect(log.writes[1]).toMatch(/CORRECTION CIBLÉE/);
-    expect(log.writes[1]).toMatch(/affirmation non confirmée|information commerciale non confirmée/);
-    expect(log.writes[1]).toMatch(/blocs : b/);
+    expect(log.rewritePrompts[0]).toMatch(/CORRECTION CIBLÉE/);
+    expect(log.rewritePrompts[0]).toMatch(/affirmation non confirmée|information commerciale non confirmée/);
+    expect(log.rewritePrompts[0]).toMatch(/blocs : b/);
     expect(toMarkdown(r.doc!)).not.toMatch(/bio|livraison gratuite/i);
     const pid2 = seed("hightech");
     const m2 = mockSeoDeps();
@@ -86,15 +86,16 @@ describe("SEO V2 — moteur", async () => {
   it("texte IA qui invente encore après les reprises : écarté, remplacé par le texte local construit sur les faits", async () => {
     const pid = seed("cosmetic");
     const liar = (p: string) => ({ ...faithfulDraft(p), blocks: [...faithfulDraft(p).blocks, { kind: "p" as const, text: "Selon une étude, 92 % des utilisatrices voient un effet anti-âge prouvé." }] });
-    const { deps, log } = mockSeoDeps({ drafts: [liar] });
+    const { deps, log } = mockSeoDeps({ drafts: [liar], rewrite: (p, n) => ({ blocks: JSON.parse(p.match(/Blocs à modifier : (\[.*\])/ )![1]).map((b: any) => ({ id: b.id, text: `Selon une étude, ${93 + n} % des utilisatrices voient un effet anti-âge prouvé.` })), note: "essai encore fautif" }) });
     const r = await fr(() => runContentEngineV2(null, pid, { type: "product_page" }, deps));
-    expect(log.writes.length).toBe(3);
+    expect(log.writes.length).toBe(1);
+    expect(log.rewrites).toBe(2);
     expect(r.by).toBe("local");
     expect(r.notes.join(" ")).toMatch(/texte IA écarté/);
     expect(toMarkdown(r.doc!)).not.toMatch(/étude|92 %|anti-âge/);
   });
 
-  it("relecture en panne : jamais validé ; relecture qui trouve une invention : reprise", async () => {
+  it("relecture en panne : jamais validé ; défaut non localisé : aucun remplacement global", async () => {
     const pid = seed("hightech");
     const { deps } = mockSeoDeps({ reviews: [new Error("délai dépassé")] });
     const r = await fr(() => runContentEngineV2(null, pid, { type: "faq" }, deps));
@@ -102,9 +103,9 @@ describe("SEO V2 — moteur", async () => {
     const pid2 = seed("hightech");
     const m = mockSeoDeps({ reviews: [review(8.5, { invented: ["étanche"] }), review(8.8)] });
     const r2 = await fr(() => runContentEngineV2(null, pid2, { type: "faq" }, m.deps));
-    expect(r2.stats.retries).toBe(1);
-    expect(m.log.writes[1]).toMatch(/inventé : étanche/);
-    expect(r2.verdict).toBe("FINAL");
+    expect(r2.stats.retries).toBe(0);
+    expect(m.log.rewrites).toBe(0);
+    expect(r2.verdict).not.toBe("FINAL");
   });
 
   it("plafond de coût : appel refusé AVANT l'envoi, texte local gardé, arrêt signalé", async () => {
@@ -133,6 +134,28 @@ describe("SEO V2 — moteur", async () => {
     expect(log.writes).toHaveLength(2);
     const d = await fr(() => runContentEngineV2(null, pid, { type: "faq", force: true }, deps));
     expect(d.skipped).toBe(false);
+  });
+
+  it("reprise d'un ancien contexte : sa version précise, jamais la dernière page d'un autre brief", async () => {
+    const pid = seed("hightech");
+    const mark = (suffix: string) => (prompt: string) => {
+      const doc = faithfulDraft(prompt);
+      doc.blocks.push({ kind: "p" as const, text: `Consultez les informations de cette page pour découvrir les caractéristiques et usages décrits. ${suffix}` });
+      return doc;
+    };
+    const { deps, log } = mockSeoDeps({ drafts: [mark("Version alpha."), mark("Version bêta.")] });
+    const a = await fr(() => runContentEngineV2(null, pid, { type: "faq", request: "Présenter les usages de façon précise." }, deps));
+    const b = await fr(() => runContentEngineV2(null, pid, { type: "faq", request: "Présenter les informations dans un ton plus éditorial." }, deps));
+    expect(b.docKey).toBe(a.docKey);
+    expect(b.doc).not.toEqual(a.doc);
+    const restored = await fr(() => runContentEngineV2(null, pid, { type: "faq", request: "Présenter les usages de façon précise." }, deps));
+    expect(restored.skipped).toBe(true);
+    expect(restored.costMicro).toBe(0);
+    expect(restored.doc).toEqual(a.doc);
+    expect(restored.docKey).not.toBe(b.docKey);
+    expect(latestContent(pid, b.docKey!)?.doc).toEqual(b.doc);
+    expect(latestContent(pid, restored.docKey!)?.doc).toEqual(a.doc);
+    expect(log.writes).toHaveLength(2);
   });
 
   it("modifications du client : manuelles sans IA, versionnées ; jamais écrasées par une nouvelle rédaction ; restauration = copie", async () => {

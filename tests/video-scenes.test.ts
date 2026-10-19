@@ -26,6 +26,8 @@ describe("Vidéo en scènes", async () => {
     return {
       calls,
       deps: {
+        frames: async()=>[Buffer.from("image de contrôle simulée")],
+        reviewMedia: async()=>({score:9,sameProduct:true,productAltered:false,characterConsistent:null,offTopic:false,artifacts:false,personVisible:false,issues:[]}),
         keyframe: async (prompt: string) => (calls.keyframe.push(prompt), png()),
         clip: async (_i: Buffer, _p: string, _a: string, seconds: number) => (calls.clip.push(seconds), Buffer.from("mp4")),
         stock: async (_p: unknown, k: number) => (calls.stock++, { assetId: (await saveAsset({ projectId: p.id, userId: p.userId, data: Buffer.from(`clip${k}`), name: `c${k}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", status: "ready", meta: {} })).id, durationS: 8 }),
@@ -57,7 +59,7 @@ describe("Vidéo en scènes", async () => {
     expect(f.calls.keyframe[0]).toContain("No text");
     expect(timeline(f.calls.rendered).total).toBeCloseTo(15, 0);
     // Carte de fin (bouton, marque) ; aucune mention « vidéo générée par IA » sur une vidéo produit.
-    expect(f.calls.rendered.clips.at(-1).source.kind).toBe("doc");
+    expect(f.calls.rendered.clips.at(-1).source.kind).toBe("video");
     expect(f.calls.rendered.disclosure).toBeNull();
   });
 

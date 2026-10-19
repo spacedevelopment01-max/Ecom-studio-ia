@@ -34,18 +34,18 @@ const TREES: Record<Lang, Tree> = {
 
 const FILES_BY_LANG: Record<Lang, Files> = {
   fr: [
-    { from: "IMG_4821.jpg", to: "gourde-photo-originale.jpg", parent: 0, kid: "Photos originales" },
-    { from: "capture (3).png", to: "gourde-detouree.png", parent: 0, kid: "Détourages" },
+    { from: "IMG_4821.jpg", to: "lampe-photo-originale.jpg", parent: 0, kid: "Photos originales" },
+    { from: "capture (3).png", to: "lampe-detouree.png", parent: 0, kid: "Détourages" },
     { from: "logo ok.svg", to: "logo-principal.svg", parent: 1, kid: "Logos" },
-    { from: "Sans titre.jpg", to: "gourde-post-4x5.jpg", parent: 2, kid: "Réseaux sociaux" },
-    { from: "video_final_v2.mp4", to: "gourde-pub-9x16.mp4", parent: 3, kid: "Publicités", video: true },
+    { from: "Sans titre.jpg", to: "lampe-post-4x5.jpg", parent: 2, kid: "Réseaux sociaux" },
+    { from: "video_final_v2.mp4", to: "lampe-pub-9x16.mp4", parent: 3, kid: "Publicités", video: true },
   ],
   en: [
-    { from: "IMG_4821.jpg", to: "bottle-original-photo.jpg", parent: 0, kid: "Original photos" },
-    { from: "screenshot (3).png", to: "bottle-cutout.png", parent: 0, kid: "Cutouts" },
+    { from: "IMG_4821.jpg", to: "lamp-original-photo.jpg", parent: 0, kid: "Original photos" },
+    { from: "screenshot (3).png", to: "lamp-cutout.png", parent: 0, kid: "Cutouts" },
     { from: "logo ok.svg", to: "logo-main.svg", parent: 1, kid: "Logos" },
-    { from: "Untitled.jpg", to: "bottle-post-4x5.jpg", parent: 2, kid: "Social media" },
-    { from: "video_final_v2.mp4", to: "bottle-ad-9x16.mp4", parent: 3, kid: "Ads", video: true },
+    { from: "Untitled.jpg", to: "lamp-post-4x5.jpg", parent: 2, kid: "Social media" },
+    { from: "video_final_v2.mp4", to: "lamp-ad-9x16.mp4", parent: 3, kid: "Ads", video: true },
   ],
 };
 const FILES_COUNT = FILES_BY_LANG.fr.length;
@@ -123,7 +123,7 @@ export function FilesSorter() {
     >
       <div className="flex items-center gap-2 border-b border-line px-4 py-3">
         <span className="size-2.5 rounded-full bg-line" /><span className="size-2.5 rounded-full bg-line" /><span className="size-2.5 rounded-full bg-line" />
-        <span className="ml-2 text-xs text-muted">{t("Fichiers · Cime", "Files · Cime")}</span>
+        <span className="ml-2 text-xs text-muted">{t("Fichiers · ORBE", "Files · ORBE")}</span>
         <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-signal-soft px-2.5 py-1 text-xs font-medium text-signal">
           <Sparkles className={cx("size-3", step > 0 && done < FILES.length && "animate-spin [animation-duration:2.4s]", paused && "[animation-play-state:paused]")} />
           {done < FILES.length ? t(`L'IA range… ${done}/${FILES.length}`, `AI is sorting… ${done}/${FILES.length}`) : t("Tout est rangé", "All sorted")}

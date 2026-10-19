@@ -127,7 +127,7 @@ describe("Alibaba Cloud — Qwen-Image et Wan", async () => {
     const call = net.calls.find((x) => x.url.includes("multimodal-generation"))!;
     expect(call.url).toBe("https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation");
     expect(call.headers).toMatchObject({ Authorization: "Bearer sk-alibaba-test-1234567890", "X-DashScope-WorkSpace": "ws-test" });
-    expect(call.body).toMatchObject({ model: "qwen-image-2.0-pro", parameters: { n: 1, size: "1664*928", watermark: false, prompt_extend: false } });
+    expect(call.body).toMatchObject({ model: "qwen-image-2.0-pro", parameters: { n: 1, size: "1792*1008", watermark: false, prompt_extend: false } });
     expect(call.body.parameters.negative_prompt).toMatch(/people.*face/);
     expect(JSON.stringify(call.body.input)).toMatch(/Scène sans aucune présence humaine/);
     expect(reservations(c.userId)).toEqual([{ status: "settled", provider: "alibaba", model: "qwen-image-2.0-pro" }]);

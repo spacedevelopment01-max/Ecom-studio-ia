@@ -4,29 +4,31 @@ import { describe, expect, it } from "vitest";
 import { buttonColors, storyMedia } from "@/components/home/story-media";
 
 const read = (f: string) => fs.readFileSync(path.join(process.cwd(), f), "utf8");
+const exists = (f: string) => fs.existsSync(path.join(process.cwd(), "public", f));
+const OLD_DEMO_PATHS = /\/demo\/(montre|tribunes|gourde|casque|paysagiste|fleuriste|services|pub-video|drone)\//;
 
-// Démonstration ARVEN telle que dans public/demo/manifest.json : ni packshot ni détail, scènes « En situation ».
-const arven = {
-  photo: "/demo/montre/photo.jpg",
+// Démonstration sans packshot ni détail, scènes « En situation » : la carte « Images » ne promet rien de plus.
+const sparse = {
+  photo: "/demo/x/photo.jpg",
   images: [
-    { label: "Détourage", src: "/demo/montre/cutout-1.webp" },
-    { label: "En situation", src: "/demo/montre/lifestyle-1.jpg" },
-    { label: "En situation", src: "/demo/montre/lifestyle-2.jpg" },
-    { label: "En situation", src: "/demo/montre/lifestyle-3.jpg" },
+    { label: "Détourage", src: "/demo/x/cutout-1.webp" },
+    { label: "En situation", src: "/demo/x/lifestyle-1.jpg" },
+    { label: "En situation", src: "/demo/x/lifestyle-2.jpg" },
+    { label: "En situation", src: "/demo/x/lifestyle-3.jpg" },
   ],
-  posts: ["/demo/montre/post-1.jpg", "/demo/montre/post-2.jpg", "/demo/montre/post-3.jpg"],
+  posts: ["/demo/x/post-1.jpg", "/demo/x/post-2.jpg", "/demo/x/post-3.jpg"],
 };
 
 describe("Accueil : parcours « 03 Images » sans fausse promesse", () => {
-  it("n'affiche jamais la photo d'origine du fournisseur comme une création, ni deux fois la même image", () => {
-    const m = storyMedia(arven);
+  it("n'affiche jamais la photo d'origine comme une création, ni deux fois la même image", () => {
+    const m = storyMedia(sparse);
     const srcs = m.tiles.map((x) => x.src);
-    expect(srcs).not.toContain(arven.photo);
+    expect(srcs).not.toContain(sparse.photo);
     expect(new Set(srcs).size).toBe(srcs.length);
-    for (const k of ["scene1", "scene2", "packshot", "detail", "ad", "social", "banner"] as const) expect(m[k]).not.toBe(arven.photo);
+    for (const k of ["scene1", "scene2", "packshot", "detail", "ad", "social", "banner"] as const) expect(m[k]).not.toBe(sparse.photo);
   });
   it("chaque case porte la vraie nature de l'image (« En situation » = mise en situation, pas « Fond blanc » ni « Détail »)", () => {
-    const m = storyMedia(arven);
+    const m = storyMedia(sparse);
     expect(m.tiles.map((x) => x.kind)).toEqual(["cutout", "scene", "scene", "scene"]);
   });
   it("une démonstration complète garde ses packshot, détail et scène", () => {
@@ -64,144 +66,61 @@ describe("Intro animée en anglais", () => {
     expect(src).toContain("if(d.documentElement.lang==='en')");
     expect(src).toContain('skip: "Skip"');
     expect(src).toContain('sub: "The all-in-one e-commerce platform"');
-    // Le fichier fourni par le propriétaire reste intact (copie exacte, voir intro-splash.test.ts).
     expect(read("src/components/intro/intro-source.ts")).toContain(">Passer</button>");
   });
 });
 
-describe("Accueil : démo montre (ARVEN) sans aucun visuel fait par gabarit du studio", async () => {
-  const { curateForHome, HOME_EXCLUDED_FILES } = await import("@/components/home/demo-curation");
-  const { demos, localizeDemo } = await import("@/lib/demo-content");
+describe("Accueil : les quatre démonstrations seulement, de vrais visuels ou rien (priorité du 19 octobre 2026)", async () => {
+  const { curateForHome, HOME_CURATION, HOME_EXCLUDED_FILES, DEMO_FILMS, CALENDAR_POSTS, SECTION_DEMO, wallExtras, homeExtras, allowsLiveAd } = await import("@/components/home/demo-curation");
+  const { demos, DEMO_IDS, localizeDemo } = await import("@/lib/demo-content");
   const all = [...demos(), ...demos("manifest.en.json"), ...demos().map((d) => localizeDemo(d, "en"))].map(curateForHome);
-  const montre = all.find((d) => d.id === "montre")!;
 
-  it("aucun fichier gabarit de la montre (publications, planche, vidéo, affiche) n'est référencé", () => {
-    expect(montre).toBeTruthy();
-    const json = JSON.stringify(all);
-    for (const f of HOME_EXCLUDED_FILES) expect(json).not.toContain(f);
+  it("seules FRAISE, ONDE, ORBE et Atelier Rive ; aucune ancienne démonstration dans les sources de l'accueil ni de la découverte", () => {
+    expect([...new Set(all.map((d) => d.id))]).toEqual([...DEMO_IDS]);
+    for (const f of ["src/app/page.tsx", "src/app/studio/decouverte/page.tsx", "src/components/home/demo-curation.ts", "src/lib/discovery-demos.ts", "src/lib/demo-content.ts", "src/components/auth-form.tsx", "src/app/themes/page.tsx"]) {
+      expect(read(f), f).not.toMatch(OLD_DEMO_PATHS);
+      expect(read(f), f).not.toMatch(/ARVEN|Racines & Pierres|Atelier Pivoine|\bCime\b|Les Tribunes|\bSonore\b|Ostral/);
+    }
+    expect(HOME_CURATION).toEqual({});
+    expect(HOME_EXCLUDED_FILES).toEqual([]);
+    expect(DEMO_FILMS).toEqual([]);
+    expect(CALENDAR_POSTS).toEqual([]);
+    for (const id of DEMO_IDS) { expect(wallExtras(id)).toEqual([]); expect(homeExtras(id)).toEqual({ editorAd: null, social: [] }); expect(allowsLiveAd(id)).toBe(true); }
   });
-  it("carte « Images » : quatre visuels différents choisis par le propriétaire (découpé, fond blanc, mise en situation, publicité IA)", () => {
-    expect(montre.images.map((x) => x.src)).toEqual(["/demo/montre/cutout-1.webp", "/demo/montre/lifestyle-1.jpg", "/demo/montre/packshot-1.jpg", "/demo/montre/publicite-ia-1.jpg"]);
-    for (const x of montre.images) expect(fs.existsSync(path.join(process.cwd(), "public", x.src))).toBe(true);
-    expect(montre.posts).toEqual([]);
-    expect(montre.board).toBeUndefined();
-    // Film et affiche : ceux du film publicitaire ARVEN vérifié image par image (plus l'ancien montage du studio).
-    expect([montre.video, montre.videoPoster]).toEqual(["/demo/montre/film-ia.mp4", "/demo/montre/film-ia.jpg"]);
-    const m = storyMedia(montre);
-    expect(m.tiles.map((x) => x.kind)).toEqual(["cutout", "packshot", "scene", "ad"]);
-    expect(new Set(m.tiles.map((x) => x.src)).size).toBe(4);
+  it("chaque visuel annoncé existe ; une création absente laisse la case vide, jamais un gabarit ni une photo d'une autre démo", () => {
+    for (const d of all) {
+      const shown = [d.photo, d.logo, d.shopDesktop, d.shopMobile, d.video, d.videoPoster, d.board ?? "", ...d.images.map((x) => x.src), ...(d.posts ?? [])].filter(Boolean);
+      for (const s of shown) { expect(exists(s), `${d.id} : ${s}`).toBe(true); expect(s, `${d.id} : ${s}`).toContain(`/demo/${d.id}/`); }
+      const m = storyMedia(d);
+      expect(m.tiles.map((x) => x.src)).not.toContain(d.photo);
+      expect(new Set(m.tiles.map((x) => x.src)).size).toBe(m.tiles.length);
+      for (const x of m.tiles) expect(["cutout", "packshot", "detail", "scene", "banner", "social", "ad", "post"]).toContain(x.kind);
+      expect(d.posts ?? []).toEqual([]);
+      expect(d.board).toBeUndefined();
+      expect(d.video).toBe("");
+    }
   });
-  it("la publicité tout IA n'est pas présentée comme une publicité modifiable, ni comme une publication du calendrier", () => {
-    const m = storyMedia(montre);
-    expect([m.ad, m.social, m.banner]).toEqual(["", "", ""]);
+  it("les sections tournent entre les quatre démos (produits et services mêlés), jamais deux fois de suite la même", () => {
+    const order = [SECTION_DEMO.boards, SECTION_DEMO.stores, "onde" /* vignettes des thèmes */, SECTION_DEMO.beforeAfter, SECTION_DEMO.feeds, SECTION_DEMO.seo, SECTION_DEMO.calendar, SECTION_DEMO.control];
+    for (let i = 1; i < order.length; i++) expect(order[i], `position ${i}`).not.toBe(order[i - 1]);
+    expect(order).toContain("rive");
+    expect(new Set(order).size).toBe(4);
+    for (const id of order) expect(DEMO_IDS as readonly string[]).toContain(id);
   });
-  it("les visuels refusés par le propriétaire ne sont jamais utilisés (detail-1, ad-1, image coupée des films)", () => {
-    const json = JSON.stringify(all) + read("src/components/home/demo-curation.ts").replace(/\/\/.*|\*.*$/gm, "");
-    for (const f of ["/demo/montre/detail-1", "/demo/montre/ad-1", "plan2-cuir"]) expect(json).not.toContain(f);
-  });
-  it("boutique refaite (montre entière), sans éditeur de publicité en direct pour la montre", async () => {
-    const { allowsLiveAd } = await import("@/components/home/demo-curation");
-    expect([montre.shopDesktop, montre.shopMobile]).toEqual(["/demo/montre/boutique-ia-bureau.jpg", "/demo/montre/boutique-ia-mobile.jpg"]);
-    for (const f of [montre.shopDesktop, montre.shopMobile, montre.video, montre.videoPoster]) expect(fs.existsSync(path.join(process.cwd(), "public", f))).toBe(true);
-    expect(montre.direction).toBe("atelier");
-    expect(allowsLiveAd("montre")).toBe(false);
-    expect(allowsLiveAd("gourde")).toBe(true);
+  it("la page applique la sélection et les panneaux savent s'afficher sans image ni vidéo", () => {
     const page = read("src/app/page.tsx");
+    expect(page).toContain(".map(curateForHome)");
     expect(page).toContain("allowsLiveAd(hero.id)");
     expect(page).toContain(".filter((d) => d.shopDesktop && d.shopMobile)");
-    expect(read("src/components/home/home-story.tsx")).toContain('if (k === "store" && !(d.shopDesktop && d.shopMobile))');
-  });
-  it("mur : les deux publications IA d'ARVEN, en entier (format vertical), une par rangée", async () => {
-    const { wallExtras } = await import("@/components/home/demo-curation");
-    expect(wallExtras("montre")).toEqual(["/demo/montre/publicite-ia-1.jpg", "/demo/montre/publication-ia-1.jpg"]);
-    for (const f of wallExtras("montre")) expect(fs.existsSync(path.join(process.cwd(), "public", f))).toBe(true);
-    expect(read("src/components/home/home-showcase.tsx")).toContain('x.tall ? "aspect-[9/16]');
-    expect(read("src/app/page.tsx")).toContain("tall: true");
-  });
-  it("équilibre : les vitrines ne commencent pas toutes par la même démo", () => {
-    const page = read("src/app/page.tsx");
     expect(page).toContain("startAt(list.filter((d) => d.board), SECTION_DEMO.boards)");
-    expect(page).toContain("startAt(list.filter((d) => (d.posts?.length ?? 0) >= 4), SECTION_DEMO.feeds)");
-  });
-  it("la page applique la sélection et les panneaux savent s'afficher sans image", () => {
-    expect(read("src/app/page.tsx")).toContain(".map(curateForHome)");
+    expect(page).toContain("CALENDAR_POSTS.slice(0, 4)");
+    expect(page).toContain("{posts.length > 0 && (");
+    expect(page).toContain("{films.length > 0 && (");
     const story = read("src/components/home/home-story.tsx");
+    expect(story).toContain('if (k === "store" && !(d.shopDesktop && d.shopMobile))');
     expect(story).toContain("{!d.ad ? null : (");
     expect(story).toContain("if (!d.videoPoster)");
     expect(read("src/components/home/home-demos.tsx")).toContain("{p.image && <img");
-  });
-});
-
-describe("Accueil : parcours ARVEN, un vrai résultat à chaque étape", async () => {
-  const { homeExtras, HOME_CURATION } = await import("@/components/home/demo-curation");
-  const x = homeExtras("montre");
-  const exists = (f: string) => fs.existsSync(path.join(process.cwd(), "public", f));
-
-  it("publicités : la publicité créée par l'IA choisie par le propriétaire, dans les quatre formats, sans gabarit du studio", () => {
-    expect(x.editorAd?.title).toBe("Un classique à votre rythme.");
-    // Aucune publicité composée par le gabarit de l'éditeur sur l'accueil (demande du propriétaire, 16/10).
-    for (const f of x.editorAd!.formats) expect(f.src).toMatch(/\/demo\/montre\/publicite-ia-/);
-    expect(JSON.stringify(x.social)).not.toContain("pub-editeur");
-    expect(x.editorAd?.formats.map((f) => f.aspect).sort()).toEqual(["16:9", "1:1", "4:5", "9:16"]);
-    for (const f of x.editorAd!.formats) expect(exists(f.src)).toBe(true);
-    const story = read("src/components/home/home-story.tsx");
-    expect(story).toContain("{d.adTitle ?? t(");
-    expect(story).toContain('aria-label={t("Formats de la publicité", "Ad formats")}');
-  });
-  it("vidéos : le film est lu (sans le son, en boucle) avec son affiche", () => {
-    expect(read("src/components/home/home-story.tsx")).toContain("<video src={d.video} poster={d.videoPoster} muted loop playsInline");
-  });
-  it("réseaux sociaux : quatre publications vérifiées, légendes FR/EN, jamais « chronographe »", () => {
-    expect(x.social).toHaveLength(4);
-    for (const p of x.social) {
-      expect(exists(p.src)).toBe(true);
-      for (const c of p.caption) expect(c.toLowerCase()).not.toContain("chronographe");
-    }
-    expect(read("src/app/page.tsx")).toContain("socialPosts: extras.social.map(");
-    expect(read("src/components/home/home-story.tsx")).toContain("const sp = d.socialPosts ?? [];");
-  });
-  it("aucun texte de la sélection n'écrit « chronographe » (vocabulaire du client : « montre »)", () => {
-    expect(JSON.stringify(HOME_CURATION).toLowerCase()).not.toMatch(/chronograph(e|s)?"/);
-    expect(JSON.stringify(x).toLowerCase()).not.toContain("chronographe");
-  });
-  it("les scripts de fabrication sont locaux et gratuits (moteur de thème, éditeur de publicités, aucun appel IA)", () => {
-    const b = read("scripts/demo-arven-boutique.ts");
-    const a = read("scripts/demo-arven-pubs.ts");
-    expect(b).toContain("compileTheme(spec)");
-    expect(a).toContain("composeAd({");
-    for (const src of [a, b]) expect(src).not.toMatch(/@\/lib\/ai\/|openai|dashscope|fal\.run/i);
-    expect(a).toContain('headline: process.env.HEADLINE ?? "Acier et cuir véritable."');
-  });
-  it("l'article de blog de démonstration n'écrit plus « son montre »", () => {
-    expect(read("src/app/page.tsx")).not.toContain("Comment bien choisir son ${story.product.toLowerCase()}");
-  });
-});
-
-describe("Accueil : les sections tournent entre les démos, chacune avec de vrais visuels", async () => {
-  const { SECTION_DEMO, DEMO_FILMS, CALENDAR_POSTS } = await import("@/components/home/demo-curation");
-  const exists = (f: string) => fs.existsSync(path.join(process.cwd(), "public", f));
-  const order = [SECTION_DEMO.boards, SECTION_DEMO.stores, "gourde" /* thèmes */, SECTION_DEMO.beforeAfter, SECTION_DEMO.feeds, SECTION_DEMO.seo, SECTION_DEMO.calendar, SECTION_DEMO.control];
-
-  it("jamais deux sections consécutives avec la même démo, produits et services mêlés", () => {
-    for (let i = 1; i < order.length; i++) expect(order[i]).not.toBe(order[i - 1]);
-    expect(order.some((d) => d === "paysagiste" || d === "fleuriste")).toBe(true);
-    expect(new Set(order).size).toBeGreaterThanOrEqual(5);
-  });
-  it("vidéos de démonstration : une par démo retenue, fichiers présents, produits et services", () => {
-    expect(DEMO_FILMS.map((f) => f.id)).toEqual(["montre", "paysagiste", "casque", "fleuriste", "tribunes"]);
-    expect(DEMO_FILMS.map((f) => f.id)).not.toContain("gourde");
-    for (const f of DEMO_FILMS) expect(exists(f.src) && exists(f.poster)).toBe(true);
-    expect(JSON.stringify(DEMO_FILMS)).not.toContain("/demo/montre/video");
-    const films = read("src/components/home/home-films.tsx");
-    expect(films).toContain("muted={muted}");
-    expect(films).toContain('preload="none"');
-    expect(read("src/app/page.tsx")).toContain("<DemoFilms films={films} />");
-  });
-  it("calendrier « Votre semaine de publications » : quatre publications de Racines & Pierres avec leurs images", () => {
-    expect(CALENDAR_POSTS).toHaveLength(4);
-    for (const p of CALENDAR_POSTS) expect(exists(p.src)).toBe(true);
-    expect(CALENDAR_POSTS.map((p) => p.src)).not.toContain("/demo/paysagiste/post-7.jpg");
-    expect(read("src/app/page.tsx")).toContain("CALENDAR_POSTS.slice(0, 4)");
   });
 });
 

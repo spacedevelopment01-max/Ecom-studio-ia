@@ -1,3 +1,7 @@
+import { selectedDirectionCommand } from "../logo-v2/commands";
+import { projectChoices } from "./references";
+import { applyTitleEdit } from "./title-edit";
+import type { RequestScope } from "./request";
 /**
  * Branchement de l'orchestrateur sur les vrais parcours du studio (phase 3B).
  *
@@ -249,21 +253,28 @@ export const STEP_EXECUTORS: Partial<Record<StepKind, StepExecutorFn>> = {
     const since = Date.now();
     const { buildBrand } = await import("../engine/brand");
     await ctx.step(`plan:${s.id}`, async () => (await buildBrand(ctx, p.id, {})).name);
-    // La création de marque fait aussi les pistes de logo et la charte : résultats reportés, pas de second moteur.
+    // Une série de directions attend le choix explicite du client : ne pas annoncer la charte déjà produite.
     const logo = outcome(ctx.job.id, "logo", since);
-    const provisional = !!loadProject(p.id).brand?.logo.provisional;
-    return { note: "brand built", covered: { logo, mockups: { note: provisional ? "logo provisional: brand book deferred until a real logo" : "brand book done by brand_strategy" } } };
+    const fresh = loadProject(p.id);
+    const { currentSeries } = await import("../logo-v2/direction-series");
+    if (currentSeries(p.id) && !fresh.brand?.artIdentity) return { note: "Stratégie conservée ; directions à choisir avant les déclinaisons et la charte.", covered: { logo } };
+    const provisional = !!fresh.brand?.logo.provisional;
+    return { note: "brand built", covered: { logo, ...(provisional ? {} : { mockups: { note: "brand book done by brand_strategy" } }) } };
   },
   // Logo (Brand & Logo Engine V2) : nouvelles directions contrôlées ; la meilleure est appliquée comme proposition
   // (jamais à la place d'un logo choisi, validé ou fourni par le client, qui reste en place).
   logo: async (ctx, p, s) => {
     const since = Date.now();
     const { runLogoEngineV2 } = await import("../logo-v2/engine");
-    const { applyBestLogoV2 } = await import("../logo-v2/choose");
-    await ctx.step(`plan:${s.id}`, async () => {
-      const run = await runLogoEngineV2(ctx, p.id);
-      return (await applyBestLogoV2(ctx, p.id, [...run.shown, ...run.studio]))?.assetId ?? null;
-    });
+    const choice = s.input.directionChoice as { logoId: string } | undefined;
+    if (choice) {
+      const { chooseLogoV2 } = await import("../logo-v2/choose");
+      await ctx.step(`plan:${s.id}:choose`, () => chooseLogoV2(ctx, p.id, choice.logoId));
+      return { note: "Direction complète choisie : déclinaisons et charte enregistrées, aucun nouveau dessin.", ownedRetries: true };
+    }
+    const run = await ctx.step(`plan:${s.id}`, () => runLogoEngineV2(ctx, p.id, { expectedSeriesId: (s.input.expectedSeriesId as string | null | undefined) ?? null, renew: (s.input.requestScope as RequestScope | undefined)?.renewDirections, correction: String(s.input.text ?? "") }));
+    const { currentSeries } = await import("../logo-v2/direction-series");
+    if (currentSeries(p.id)?.status !== "complete") return { failed: `Série incomplète : ${currentSeries(p.id)?.directions.length ?? run.shown.length}/3 directions conservées.`, ownedRetries: true };
     return outcome(ctx.job.id, "logo", since);
   },
   stock_search: async (ctx, p, s) => {
@@ -280,10 +291,15 @@ export const STEP_EXECUTORS: Partial<Record<StepKind, StepExecutorFn>> = {
   image_generate: async (ctx, p, s) => {
     const since = Date.now();
     const { runImageSetV2 } = await import("../image-v2/set");
-    await ctx.step(`plan:${s.id}`, async () => (await runImageSetV2(ctx, p.id)).created.length);
+    await ctx.step(`plan:${s.id}`, async () => (await runImageSetV2(ctx, p.id, undefined, { instructions: String(s.input.text || "") })).created.length);
     return outcome(ctx.job.id, "image_generate", since);
   },
   copy: async (ctx, p, s) => {
+    const titleEdit = (s.input.requestScope as RequestScope | undefined)?.titleEdit;
+    if (titleEdit) {
+      await ctx.step(`plan:${s.id}:title-only`, async () => applyTitleEdit(p.id, titleEdit).id);
+      return { note: "Titre seul enregistré en nouvelle version ; autres blocs et marque conservés, relecture nécessaire." };
+    }
     const since = Date.now();
     const { aiShopCopyChecked } = await import("../ai/tasks");
     const { llmConfigured } = await import("../ai/llm");
@@ -398,13 +414,25 @@ export const STEP_EXECUTORS: Partial<Record<StepKind, StepExecutorFn>> = {
 export async function runRequestPlan(ctx: JobContext): Promise<{ intent: IntentResult; plan: TaskPlan | null; delegated?: string }> {
   const { projectId, text } = ctx.payload as { projectId: string; text: string };
   const p = loadProject(projectId);
+  const { currentSeries } = await import("../logo-v2/direction-series");
+  const expectedSeriesId = "expectedSeriesId" in ctx.payload ? ctx.payload.expectedSeriesId : currentSeries(projectId)?.id ?? null;
   const env = routingEnv(p);
-  const intent = await understand({ text }, { aiActive: env.aiActive, classify: aiIntentClassifier({ userId: p.userId, projectId, jobId: ctx.job.id }) });
+  const intent = await understand({ text }, { aiActive: env.aiActive, choices: projectChoices(p.id), classify: aiIntentClassifier({ userId: p.userId, projectId, jobId: ctx.job.id }) });
+  const choice = selectedDirectionCommand(p.id, intent.scope);
+  if (choice) {
+    const { chooseLogoV2 } = await import("../logo-v2/choose");
+    await ctx.step("requested-direction", () => chooseLogoV2(ctx, p.id, choice.logoId));
+    return { intent: { ...intent, clarification: "Direction complète choisie ; déclinaisons et charte enregistrées sans nouveau dessin." }, plan: null };
+  }
   if (!intent.intents.length) return { intent, plan: null };
   const state = projectState(p);
-  const plan = loadOrCreatePlan({ projectId, userId: p.userId, requestKey: `job:${ctx.job.id}`, intents: intent.intents, state, input: { text }, forceGenerate: explicitGeneration(text) });
+  const plan = loadOrCreatePlan({ projectId, userId: p.userId, requestKey: `job:${ctx.job.id}`, intents: intent.intents, state, input: { text, expectedSeriesId, requestScope: intent.scope }, scope: intent.scope, forceGenerate: explicitGeneration(text) });
   if (plan.steps.some((s) => s.kind === "understand" && s.status === "pending")) {
     plan.status = "stopped";
+    if (intent.scope?.narrow || intent.scope?.restrictions.length) {
+      plan.warnings.push("Analyse de l’offre nécessaire : le pipeline complet est bloqué par les éléments à préserver.");
+      savePlan(plan); return { intent: { ...intent, clarification: "Analysez d’abord l’offre dans la préparation ; aucun élément conservé n’a été modifié." }, plan };
+    }
     plan.warnings.push("project not analyzed yet: delegated to the creation pipeline (pipeline.run)");
     savePlan(plan);
     return { intent, plan, delegated: "pipeline.run" };

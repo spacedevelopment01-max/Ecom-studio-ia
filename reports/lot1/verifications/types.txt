@@ -1,0 +1,4 @@
+Commit de code : bb51140ded044c30118e1cc7f422be8c584925a0
+Commande : ./node_modules/.bin/tsc --noEmit
+Résultat : code de sortie 0 ; sortie standard/erreur vide.
+Environnement : Node v24.19.0, dépendances installées du dépôt.

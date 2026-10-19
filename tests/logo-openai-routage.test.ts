@@ -76,14 +76,25 @@ describe("Logos avec OpenAI seul (routage automatique)", async () => {
 
   it("devis de la série : compte le modèle réellement choisi pour les directions (tarif de Sol), pas la route manuelle", async () => {
     const { setJsonSetting: sj } = await import("@/lib/settings");
-    sj("ai.prices", { ...getJsonSetting<Record<string, unknown>>("ai.prices", {}), "openai:gpt-image-2": { unit: "image", perImage: 0.22 } });
-    sj("ai.media.models", { "openai:gpt-image-2": { confirmedAt: Date.now(), enabled: true } });
-    sj("ai.media.usage", { logo: { primary: "openai:gpt-image-2" } });
+    sj("ai.prices", { ...getJsonSetting<Record<string, unknown>>("ai.prices", {}), "openai:gpt-image-2.5-sunburst": { unit: "image", perImage: 0.22 } });
+    sj("ai.media.models", { "openai:gpt-image-2.5-sunburst": { confirmedAt: Date.now(), enabled: true } });
+    sj("ai.media.usage", { logo: { primary: "openai:gpt-image-2.5-sunburst" } });
     confirm("openai:gpt-5.6-terra", "openai:gpt-5.6-sol");
     const { logoSeriesQuote } = await import("@/lib/logo-v2/quote");
     const q1 = fr(() => logoSeriesQuote()).maxMicro;
     price("openai:gpt-5.6-sol", { unit: "tokens", inputPerM: 50, outputPerM: 300 });
     const q2 = fr(() => logoSeriesQuote()).maxMicro;
     expect(q2).toBeGreaterThan(q1);
+  });
+  it("conversation : un fournisseur texte OpenAI prêt suffit, l'abonnement reste obligatoire", async () => {
+    confirm("openai:gpt-5.6-terra", "openai:gpt-5.6-sol");
+    const { fixture } = await import("./preparation-fixtures");
+    const { workflowAiActive } = await import("@/lib/workflow");
+    const { run } = await import("@/lib/db");
+    const f = await fixture();
+    expect(keys.anthropic).toBeFalsy();
+    expect(workflowAiActive(f.uid, f.pid)).toBe(true);
+    run("UPDATE subscriptions SET status='canceled' WHERE owner_user_id=?", f.uid);
+    expect(workflowAiActive(f.uid, f.pid)).toBe(false);
   });
 });

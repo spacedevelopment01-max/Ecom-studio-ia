@@ -1,0 +1,345 @@
+{
+  "simulation": true,
+  "version": 1,
+  "width": 1080,
+  "height": 1080,
+  "fps": 30,
+  "aspect": "1:1",
+  "platform": "meta_feed",
+  "safe": {
+    "top": 54,
+    "bottom": 86,
+    "side": 54
+  },
+  "clips": [
+    {
+      "id": "scene-1",
+      "shotId": "scene-1",
+      "label": "Scène 1",
+      "part": null,
+      "durationS": 2.4,
+      "source": {
+        "kind": "video",
+        "assetId": "wgyobpbc0ooxkzqg",
+        "inS": 0,
+        "outS": 2.4,
+        "muted": true
+      },
+      "overlays": [
+        {
+          "id": "ov-text",
+          "name": "Texte à l'écran",
+          "role": "title",
+          "x": 54,
+          "y": 75.6,
+          "w": 972,
+          "h": 282.72,
+          "rotation": 0,
+          "opacity": 1,
+          "visible": true,
+          "locked": false,
+          "anchor": {
+            "h": "center",
+            "v": "middle"
+          },
+          "kind": "text",
+          "text": "TEST LOCAL 1",
+          "font": {
+            "family": "Archivo",
+            "weight": 800,
+            "size": 114,
+            "italic": false
+          },
+          "color": "#FFFFFF",
+          "align": "center",
+          "lineHeight": 1.04,
+          "letterSpacing": 0,
+          "uppercase": false,
+          "autoFit": {
+            "minSize": 63
+          },
+          "shadow": {
+            "color": "rgba(0,0,0,0.65)",
+            "blur": 34,
+            "x": 0,
+            "y": 5
+          },
+          "anim": {
+            "in": "rise",
+            "delay": 0.25,
+            "dur": 0.325
+          }
+        }
+      ],
+      "transitionIn": {
+        "kind": "cut",
+        "durationS": 0
+      },
+      "generated": false
+    },
+    {
+      "id": "scene-2",
+      "shotId": "scene-2",
+      "label": "Scène 2",
+      "part": null,
+      "durationS": 2.4,
+      "source": {
+        "kind": "video",
+        "assetId": "636zahb4oivwr0cm",
+        "inS": 0,
+        "outS": 2.4,
+        "muted": true
+      },
+      "overlays": [],
+      "transitionIn": {
+        "kind": "cut",
+        "durationS": 0
+      },
+      "generated": false
+    },
+    {
+      "id": "scene-3",
+      "shotId": "scene-3",
+      "label": "Scène 3",
+      "part": null,
+      "durationS": 2.4,
+      "source": {
+        "kind": "video",
+        "assetId": "x2n5fl5928ql70ru",
+        "inS": 0,
+        "outS": 2.4,
+        "muted": true
+      },
+      "overlays": [],
+      "transitionIn": {
+        "kind": "cut",
+        "durationS": 0
+      },
+      "generated": false
+    },
+    {
+      "id": "end-card",
+      "shotId": "end-card",
+      "label": "Carte de fin",
+      "part": "cta",
+      "durationS": 2.8,
+      "source": {
+        "kind": "doc",
+        "doc": {
+          "version": 1,
+          "width": 1080,
+          "height": 1080,
+          "background": "#141B1F",
+          "safe": {
+            "top": 0,
+            "bottom": 0,
+            "side": 0
+          },
+          "format": {
+            "platform": null,
+            "aspect": "1080x1080"
+          },
+          "layers": [
+            {
+              "id": "bg",
+              "name": "Fond",
+              "role": "background",
+              "x": 0,
+              "y": 0,
+              "w": 1080,
+              "h": 1080,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "anchor": {
+                "h": "center",
+                "v": "middle"
+              },
+              "kind": "shape",
+              "shape": "rect",
+              "fill": "#141B1F",
+              "stroke": null,
+              "radius": 0,
+              "shadow": null
+            },
+            {
+              "id": "brand",
+              "name": "Marque",
+              "role": "title",
+              "x": 54,
+              "y": 302.40000000000003,
+              "w": 972,
+              "h": 129.6,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "anchor": {
+                "h": "center",
+                "v": "middle"
+              },
+              "kind": "text",
+              "text": "Studio de test fictif",
+              "font": {
+                "family": "Archivo",
+                "weight": 800,
+                "size": 92,
+                "italic": false
+              },
+              "color": "#FFFFFF",
+              "align": "center",
+              "lineHeight": 1.12,
+              "letterSpacing": 0,
+              "uppercase": true,
+              "autoFit": {
+                "minSize": 51
+              },
+              "shadow": null
+            },
+            {
+              "id": "line",
+              "name": "Phrase",
+              "role": "subtitle",
+              "x": 54,
+              "y": 496.8,
+              "w": 972,
+              "h": 145.6,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "anchor": {
+                "h": "center",
+                "v": "middle"
+              },
+              "kind": "text",
+              "text": "Plâtrier peintre, Mâcon et 30 km autour.",
+              "font": {
+                "family": "Archivo",
+                "weight": 800,
+                "size": 56,
+                "italic": false
+              },
+              "color": "#FFFFFF",
+              "align": "center",
+              "lineHeight": 1.12,
+              "letterSpacing": 0,
+              "uppercase": false,
+              "autoFit": {
+                "minSize": 31
+              },
+              "shadow": null
+            },
+            {
+              "id": "cta",
+              "name": "Bouton",
+              "role": "cta",
+              "x": 218.40000000000003,
+              "y": 648,
+              "w": 643.1999999999999,
+              "h": 114,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "anchor": {
+                "h": "center",
+                "v": "middle"
+              },
+              "kind": "button",
+              "text": "Demander un devis",
+              "font": {
+                "family": "Jost",
+                "weight": 600,
+                "size": 56,
+                "italic": false
+              },
+              "fill": "#747FB4",
+              "color": "#FFFFFF",
+              "radius": 57,
+              "stroke": null,
+              "shadow": null
+            }
+          ],
+          "brand": {
+            "palette": {
+              "primary": "#446274",
+              "secondary": "#D0D8DD",
+              "accent": "#747FB4",
+              "light": "#F2F5F7",
+              "dark": "#141B1F"
+            },
+            "fonts": {
+              "heading": "Archivo",
+              "body": "Jost"
+            },
+            "name": "Studio de test fictif"
+          },
+          "meta": {
+            "conceptId": null,
+            "source": "engine",
+            "createdFrom": null
+          }
+        },
+        "animate": "rise"
+      },
+      "overlays": [],
+      "transitionIn": {
+        "kind": "fade",
+        "durationS": 0.6
+      }
+    }
+  ],
+  "subtitles": {
+    "style": {
+      "enabled": true,
+      "family": "Jost",
+      "weight": 700,
+      "size": 50,
+      "color": "#FFFFFF",
+      "background": null,
+      "position": "bottom",
+      "offsetY": 0,
+      "maxChars": 32,
+      "uppercase": false
+    },
+    "cues": []
+  },
+  "audio": {
+    "voice": [],
+    "voiceId": null,
+    "music": {
+      "source": "synth",
+      "mood": "warm",
+      "gainDb": -12,
+      "style": "acoustic",
+      "seed": "kwgk3r0zxtdlbaop"
+    },
+    "sfx": [],
+    "duckingDb": -10,
+    "loudnessLufs": -14
+  },
+  "brand": {
+    "palette": {
+      "primary": "#446274",
+      "secondary": "#D0D8DD",
+      "accent": "#747FB4",
+      "light": "#F2F5F7",
+      "dark": "#141B1F"
+    },
+    "fonts": {
+      "heading": "Archivo",
+      "body": "Jost"
+    },
+    "name": "Studio de test fictif"
+  },
+  "disclosure": null,
+  "meta": {
+    "intent": "social_content",
+    "source": "engine",
+    "createdFrom": null,
+    "runId": null,
+    "promo": true
+  }
+}

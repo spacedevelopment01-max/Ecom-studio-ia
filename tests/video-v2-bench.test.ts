@@ -13,7 +13,7 @@ describe("Benchmark Vidéo V2 — 5 scénarios simulés", async () => {
   const { latestVideo } = await import("@/lib/video-v2/store");
   const { timeline } = await import("@/lib/video-v2/doc");
   const { seedImageFixture, seedCutout } = await import("./image-v2-fixtures");
-  const { mockVideoDeps } = await import("./video-v2-mock");
+  const { mockVideoDeps, shortVideoScript } = await import("./video-v2-mock");
   const { SCENARIO_ASK, SCENARIO_FIXTURE, VIDEO_SCENARIOS } = await import("./video-v2-fixtures");
   const u = await createUser(`v2b-${Date.now()}@test.fr`, "motdepasse-test", "V");
   const runs: Record<string, any> = {};
@@ -30,7 +30,7 @@ describe("Benchmark Vidéo V2 — 5 scénarios simulés", async () => {
     it(`scénario ${sc} (${SCENARIO_FIXTURE[sc]}) : intention, langage visuel, durée, vidéo rendue, barrière`, async () => {
       const p = loadProject(seedImageFixture(u.id, SCENARIO_FIXTURE[sc]));
       if (p.business === "products" && SCENARIO_FIXTURE[sc] !== "saas") await seedCutout(u.id, p.id);
-      const { deps, log } = mockVideoDeps({ userId: u.id, projectId: p.id, voice: true });
+      const { deps, log } = mockVideoDeps({ userId: u.id, projectId: p.id, voice: true,canWrite:true,script:shortVideoScript });
       const r = await runWithLang({ ui: "fr", content: "fr" }, () => runVideoEngineV2(null, p.id, { ask: SCENARIO_ASK[sc], approveGeneration: true, renderScale: 0.15, fps: 6 }, deps));
       const e = expected[sc];
       expect(r.intent.kind).toMatch(e.kind);
@@ -39,7 +39,7 @@ describe("Benchmark Vidéo V2 — 5 scénarios simulés", async () => {
       const doc = latestVideo(p.id, r.docKey!)!.doc;
       expect(Math.abs(timeline(doc).total - e.durationS)).toBeLessThanOrEqual(Math.max(1.5, e.durationS * 0.1));
       expect(r.videoAssetId).toBeTruthy();
-      expect(r.verdict).toBe("FINAL");
+      expect(r.verdict,JSON.stringify({reason:r.reason,codes:r.codes,issues:r.issues})).toBe("FINAL");
       // Services : aucun produit montré ; logiciel : animation d'interface, pas de génération inutile.
       if (p.business === "services") expect(r.shots.some((s) => s.showsProduct)).toBe(false);
       if (sc === "E") {

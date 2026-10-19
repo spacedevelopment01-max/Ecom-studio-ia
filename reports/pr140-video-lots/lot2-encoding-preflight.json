@@ -1,0 +1,503 @@
+{
+  "simulation": true,
+  "providerCalls": 0,
+  "realProviderCostEur": 0,
+  "cpuStorageCostMeasured": false,
+  "voiceModelAvailableInThisEnvironment": true,
+  "results": [
+    {
+      "slug": "produit-publicitaire",
+      "simulation": true,
+      "scope": "orchestration, checkpoints natifs et encodage réel ; pas une validation créative",
+      "interruption": {
+        "error": "Interruption simulée après la deuxième image, avant son clip",
+        "calls": {
+          "plan": 1,
+          "still": 2,
+          "clip": 2,
+          "stock": 0,
+          "render": 0
+        }
+      },
+      "calls": {
+        "plan": 1,
+        "still": 4,
+        "clip": 5,
+        "stock": 0,
+        "render": 1
+      },
+      "versionsBeforeUserEdit": 2,
+      "userEditPreserved": true,
+      "completeReplayNoCalls": true,
+      "frame": {
+        "width": 1080,
+        "height": 1920,
+        "codec": "h264",
+        "fps": "30/1"
+      },
+      "audio": {
+        "codec": "aac",
+        "lufs": -15.4,
+        "truePeakDb": -4.6,
+        "durationS": 20,
+        "silent": false
+      },
+      "durationS": 20,
+      "notes": [
+        "Voix synthétique choisie pour le projet. Sous-titres synchronisés par phrase mesurée, groupes répartis proportionnellement ; pas d'alignement mot à mot."
+      ],
+      "quality": {
+        "items": [
+          {
+            "id": "scenes",
+            "label": "Plusieurs scènes utiles, cohérentes et différentes",
+            "status": "ok",
+            "detail": "4 scène(s), 4 source(s) différente(s)"
+          },
+          {
+            "id": "contrast",
+            "label": "Contraste suffisant à plusieurs instants",
+            "status": "ok",
+            "detail": "titres lisibles aux trois instants mesurés"
+          },
+          {
+            "id": "text_size",
+            "label": "Textes lisibles (tailles du guide, sur téléphone)",
+            "status": "ok",
+            "detail": "titres ≥ 64 px, aucun texte sous 28 px"
+          },
+          {
+            "id": "hierarchy",
+            "label": "Hiérarchie : 3 niveaux au plus par scène, 2 polices au plus",
+            "status": "ok",
+            "detail": "1 police(s)"
+          },
+          {
+            "id": "third_party_brand",
+            "label": "Aucune marque tierce (texte, voix, images)",
+            "status": "ok",
+            "detail": "aucune marque tierce dans les textes ni la voix (images : contrôle visuel des plans quand l'IA est active)"
+          },
+          {
+            "id": "cta",
+            "label": "Appel à l'action adapté et visible 2,5 à 4 s",
+            "status": "ok",
+            "detail": "Éléments de fin sur le dernier clip : 2.8 s ; bouton présent. Le bouton dessiné n'est pas cliquable."
+          },
+          {
+            "id": "logo",
+            "label": "Logo du projet exact (posé, jamais généré)",
+            "status": "ok",
+            "detail": "Vrai fichier du logo superposé au dernier clip"
+          },
+          {
+            "id": "audio",
+            "label": "Qualité audio (musique sous la voix)",
+            "status": "ok",
+            "detail": "-15.4 LUFS, crête -4.6 dB, voix sous laquelle la musique baisse de 12 dB"
+          },
+          {
+            "id": "sync",
+            "label": "Synchronisation voix / sous-titres / plans",
+            "status": "ok",
+            "detail": "4 sous-titre(s) calés sur la durée mesurée de la voix"
+          },
+          {
+            "id": "format",
+            "label": "Respect du format",
+            "status": "ok",
+            "detail": "1080×1920, 20.0 s (prévu 20.0 s)"
+          },
+          {
+            "id": "product",
+            "label": "Fidélité du produit (même forme, couleurs, matières, détails)",
+            "status": "unchecked",
+            "detail": "non vérifié automatiquement : à regarder dans l'aperçu"
+          },
+          {
+            "id": "spelling",
+            "label": "Orthographe",
+            "status": "unchecked",
+            "detail": "non vérifié automatiquement (textes repris du client ou du studio)"
+          }
+        ],
+        "summary": {
+          "ok": 10,
+          "issues": [],
+          "unchecked": [
+            "Fidélité du produit (même forme, couleurs, matières, détails)",
+            "Orthographe"
+          ]
+        }
+      },
+      "sha256": "471de84ef0f8d9dcd482c5aec4e9680c7f686e989eac5c5bcef0dd474d3aab9d"
+    },
+    {
+      "slug": "service-publicitaire",
+      "simulation": true,
+      "scope": "orchestration, checkpoints natifs et encodage réel ; pas une validation créative",
+      "interruption": null,
+      "calls": {
+        "plan": 1,
+        "still": 0,
+        "clip": 0,
+        "stock": 4,
+        "render": 1
+      },
+      "versionsBeforeUserEdit": 2,
+      "userEditPreserved": true,
+      "completeReplayNoCalls": true,
+      "frame": {
+        "width": 1080,
+        "height": 1350,
+        "codec": "h264",
+        "fps": "30/1"
+      },
+      "audio": {
+        "codec": "aac",
+        "lufs": -15.6,
+        "truePeakDb": -5,
+        "durationS": 20,
+        "silent": false
+      },
+      "durationS": 20,
+      "notes": [
+        "Plans d'illustration libres de droits (Pixabay) : ils ne sont pas présentés comme des réalisations du client.",
+        "Plans sélectionnés sur leurs mots-clés : contrôle visuel indisponible, contenu à vérifier. Aucune réalisation client affirmée.",
+        "Voix synthétique choisie pour le projet. Sous-titres synchronisés par phrase mesurée, groupes répartis proportionnellement ; pas d'alignement mot à mot."
+      ],
+      "quality": {
+        "items": [
+          {
+            "id": "scenes",
+            "label": "Plusieurs scènes utiles, cohérentes et différentes",
+            "status": "ok",
+            "detail": "4 scène(s), 4 source(s) différente(s)"
+          },
+          {
+            "id": "contrast",
+            "label": "Contraste suffisant à plusieurs instants",
+            "status": "ok",
+            "detail": "titres lisibles aux trois instants mesurés"
+          },
+          {
+            "id": "text_size",
+            "label": "Textes lisibles (tailles du guide, sur téléphone)",
+            "status": "ok",
+            "detail": "titres ≥ 64 px, aucun texte sous 28 px"
+          },
+          {
+            "id": "hierarchy",
+            "label": "Hiérarchie : 3 niveaux au plus par scène, 2 polices au plus",
+            "status": "ok",
+            "detail": "1 police(s)"
+          },
+          {
+            "id": "third_party_brand",
+            "label": "Aucune marque tierce (texte, voix, images)",
+            "status": "ok",
+            "detail": "aucune marque tierce dans les textes ni la voix (images : contrôle visuel des plans quand l'IA est active)"
+          },
+          {
+            "id": "cta",
+            "label": "Appel à l'action adapté et visible 2,5 à 4 s",
+            "status": "ok",
+            "detail": "Éléments de fin sur le dernier clip : 2.8 s ; bouton présent. Le bouton dessiné n'est pas cliquable."
+          },
+          {
+            "id": "logo",
+            "label": "Logo du projet exact (posé, jamais généré)",
+            "status": "ok",
+            "detail": "Vrai fichier du logo superposé au dernier clip"
+          },
+          {
+            "id": "audio",
+            "label": "Qualité audio (musique sous la voix)",
+            "status": "ok",
+            "detail": "-15.6 LUFS, crête -5 dB, voix sous laquelle la musique baisse de 12 dB"
+          },
+          {
+            "id": "sync",
+            "label": "Synchronisation voix / sous-titres / plans",
+            "status": "ok",
+            "detail": "4 sous-titre(s) calés sur la durée mesurée de la voix"
+          },
+          {
+            "id": "format",
+            "label": "Respect du format",
+            "status": "ok",
+            "detail": "1080×1350, 20.0 s (prévu 20.0 s)"
+          },
+          {
+            "id": "product",
+            "label": "Fidélité du produit (même forme, couleurs, matières, détails)",
+            "status": "unchecked",
+            "detail": "non vérifié automatiquement : à regarder dans l'aperçu"
+          },
+          {
+            "id": "spelling",
+            "label": "Orthographe",
+            "status": "unchecked",
+            "detail": "non vérifié automatiquement (textes repris du client ou du studio)"
+          }
+        ],
+        "summary": {
+          "ok": 10,
+          "issues": [],
+          "unchecked": [
+            "Fidélité du produit (même forme, couleurs, matières, détails)",
+            "Orthographe"
+          ]
+        }
+      },
+      "sha256": "32d149e6997ed37f60e616eed4235ca61841c45af68a645a54abf8303742e5f4"
+    },
+    {
+      "slug": "produit-organique",
+      "simulation": true,
+      "scope": "orchestration, checkpoints natifs et encodage réel ; pas une validation créative",
+      "interruption": {
+        "error": "Interruption simulée après la deuxième image, avant son clip",
+        "calls": {
+          "plan": 1,
+          "still": 2,
+          "clip": 2,
+          "stock": 0,
+          "render": 0
+        }
+      },
+      "calls": {
+        "plan": 1,
+        "still": 4,
+        "clip": 5,
+        "stock": 0,
+        "render": 1
+      },
+      "versionsBeforeUserEdit": 2,
+      "userEditPreserved": true,
+      "completeReplayNoCalls": true,
+      "frame": {
+        "width": 1080,
+        "height": 1080,
+        "codec": "h264",
+        "fps": "30/1"
+      },
+      "audio": {
+        "codec": "aac",
+        "lufs": -15.2,
+        "truePeakDb": -4.5,
+        "durationS": 20,
+        "silent": false
+      },
+      "durationS": 20,
+      "notes": [
+        "Voix synthétique choisie pour le projet. Sous-titres synchronisés par phrase mesurée, groupes répartis proportionnellement ; pas d'alignement mot à mot."
+      ],
+      "quality": {
+        "items": [
+          {
+            "id": "scenes",
+            "label": "Plusieurs scènes utiles, cohérentes et différentes",
+            "status": "ok",
+            "detail": "4 scène(s), 4 source(s) différente(s)"
+          },
+          {
+            "id": "contrast",
+            "label": "Contraste suffisant à plusieurs instants",
+            "status": "ok",
+            "detail": "titres lisibles aux trois instants mesurés"
+          },
+          {
+            "id": "text_size",
+            "label": "Textes lisibles (tailles du guide, sur téléphone)",
+            "status": "ok",
+            "detail": "titres ≥ 64 px, aucun texte sous 28 px"
+          },
+          {
+            "id": "hierarchy",
+            "label": "Hiérarchie : 3 niveaux au plus par scène, 2 polices au plus",
+            "status": "ok",
+            "detail": "1 police(s)"
+          },
+          {
+            "id": "third_party_brand",
+            "label": "Aucune marque tierce (texte, voix, images)",
+            "status": "ok",
+            "detail": "aucune marque tierce dans les textes ni la voix (images : contrôle visuel des plans quand l'IA est active)"
+          },
+          {
+            "id": "cta",
+            "label": "Appel à l'action adapté et visible 2,5 à 4 s",
+            "status": "ok",
+            "detail": "Contenu organique : CTA commercial facultatif"
+          },
+          {
+            "id": "logo",
+            "label": "Logo du projet exact (posé, jamais généré)",
+            "status": "ok",
+            "detail": "Vrai fichier du logo superposé au dernier clip"
+          },
+          {
+            "id": "audio",
+            "label": "Qualité audio (musique sous la voix)",
+            "status": "ok",
+            "detail": "-15.2 LUFS, crête -4.5 dB, voix sous laquelle la musique baisse de 12 dB"
+          },
+          {
+            "id": "sync",
+            "label": "Synchronisation voix / sous-titres / plans",
+            "status": "ok",
+            "detail": "4 sous-titre(s) calés sur la durée mesurée de la voix"
+          },
+          {
+            "id": "format",
+            "label": "Respect du format",
+            "status": "ok",
+            "detail": "1080×1080, 20.0 s (prévu 20.0 s)"
+          },
+          {
+            "id": "product",
+            "label": "Fidélité du produit (même forme, couleurs, matières, détails)",
+            "status": "unchecked",
+            "detail": "non vérifié automatiquement : à regarder dans l'aperçu"
+          },
+          {
+            "id": "spelling",
+            "label": "Orthographe",
+            "status": "unchecked",
+            "detail": "non vérifié automatiquement (textes repris du client ou du studio)"
+          }
+        ],
+        "summary": {
+          "ok": 10,
+          "issues": [],
+          "unchecked": [
+            "Fidélité du produit (même forme, couleurs, matières, détails)",
+            "Orthographe"
+          ]
+        }
+      },
+      "sha256": "a8b41cf5714518ca92adcc8690736c75eba74fc55f8f0ce79fd81bb083ea544a"
+    },
+    {
+      "slug": "service-organique",
+      "simulation": true,
+      "scope": "orchestration, checkpoints natifs et encodage réel ; pas une validation créative",
+      "interruption": null,
+      "calls": {
+        "plan": 1,
+        "still": 0,
+        "clip": 0,
+        "stock": 4,
+        "render": 1
+      },
+      "versionsBeforeUserEdit": 2,
+      "userEditPreserved": true,
+      "completeReplayNoCalls": true,
+      "frame": {
+        "width": 1080,
+        "height": 1080,
+        "codec": "h264",
+        "fps": "30/1"
+      },
+      "audio": {
+        "codec": "aac",
+        "lufs": -15.9,
+        "truePeakDb": -3.9,
+        "durationS": 20,
+        "silent": false
+      },
+      "durationS": 20,
+      "notes": [
+        "Plans d'illustration libres de droits (Pixabay) : ils ne sont pas présentés comme des réalisations du client.",
+        "Plans sélectionnés sur leurs mots-clés : contrôle visuel indisponible, contenu à vérifier. Aucune réalisation client affirmée.",
+        "Voix synthétique choisie pour le projet. Sous-titres synchronisés par phrase mesurée, groupes répartis proportionnellement ; pas d'alignement mot à mot."
+      ],
+      "quality": {
+        "items": [
+          {
+            "id": "scenes",
+            "label": "Plusieurs scènes utiles, cohérentes et différentes",
+            "status": "ok",
+            "detail": "4 scène(s), 4 source(s) différente(s)"
+          },
+          {
+            "id": "contrast",
+            "label": "Contraste suffisant à plusieurs instants",
+            "status": "ok",
+            "detail": "titres lisibles aux trois instants mesurés"
+          },
+          {
+            "id": "text_size",
+            "label": "Textes lisibles (tailles du guide, sur téléphone)",
+            "status": "ok",
+            "detail": "titres ≥ 64 px, aucun texte sous 28 px"
+          },
+          {
+            "id": "hierarchy",
+            "label": "Hiérarchie : 3 niveaux au plus par scène, 2 polices au plus",
+            "status": "ok",
+            "detail": "1 police(s)"
+          },
+          {
+            "id": "third_party_brand",
+            "label": "Aucune marque tierce (texte, voix, images)",
+            "status": "ok",
+            "detail": "aucune marque tierce dans les textes ni la voix (images : contrôle visuel des plans quand l'IA est active)"
+          },
+          {
+            "id": "cta",
+            "label": "Appel à l'action adapté et visible 2,5 à 4 s",
+            "status": "ok",
+            "detail": "Contenu organique : CTA commercial facultatif"
+          },
+          {
+            "id": "logo",
+            "label": "Logo du projet exact (posé, jamais généré)",
+            "status": "ok",
+            "detail": "Vrai fichier du logo superposé au dernier clip"
+          },
+          {
+            "id": "audio",
+            "label": "Qualité audio (musique sous la voix)",
+            "status": "ok",
+            "detail": "-15.9 LUFS, crête -3.9 dB, voix sous laquelle la musique baisse de 12 dB"
+          },
+          {
+            "id": "sync",
+            "label": "Synchronisation voix / sous-titres / plans",
+            "status": "ok",
+            "detail": "4 sous-titre(s) calés sur la durée mesurée de la voix"
+          },
+          {
+            "id": "format",
+            "label": "Respect du format",
+            "status": "ok",
+            "detail": "1080×1080, 20.0 s (prévu 20.0 s)"
+          },
+          {
+            "id": "product",
+            "label": "Fidélité du produit (même forme, couleurs, matières, détails)",
+            "status": "unchecked",
+            "detail": "non vérifié automatiquement : à regarder dans l'aperçu"
+          },
+          {
+            "id": "spelling",
+            "label": "Orthographe",
+            "status": "unchecked",
+            "detail": "non vérifié automatiquement (textes repris du client ou du studio)"
+          }
+        ],
+        "summary": {
+          "ok": 10,
+          "issues": [],
+          "unchecked": [
+            "Fidélité du produit (même forme, couleurs, matières, détails)",
+            "Orthographe"
+          ]
+        }
+      },
+      "sha256": "0b3805df6549a3f9154eefd8b9fc169c0fc9d0a6ad2b392bc46b9483c7462781"
+    }
+  ]
+}

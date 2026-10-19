@@ -1,0 +1,42 @@
+[
+  {
+    "file": "banner-1.jpg",
+    "role": "lifestyle",
+    "source": "public/demo/paysagiste/banner-1.jpg"
+  },
+  {
+    "file": "scene-2.jpg",
+    "role": "lifestyle",
+    "source": "public/demo/paysagiste/scene-2.jpg"
+  },
+  {
+    "file": "scene-1.jpg",
+    "role": "lifestyle",
+    "source": "public/demo/paysagiste/scene-1.jpg"
+  },
+  {
+    "file": "photo.jpg",
+    "role": "lifestyle",
+    "source": "public/demo/paysagiste/photo.jpg"
+  },
+  {
+    "file": "scene-1.jpg",
+    "role": "original",
+    "source": "public/demo/paysagiste/scene-1.jpg"
+  },
+  {
+    "file": "scene-2.jpg",
+    "role": "original",
+    "source": "public/demo/paysagiste/scene-2.jpg"
+  },
+  {
+    "file": "banner-1.jpg",
+    "role": "original",
+    "source": "public/demo/paysagiste/banner-1.jpg"
+  },
+  {
+    "file": "logo.png",
+    "role": "logo",
+    "source": "public/demo/paysagiste/logo.png"
+  }
+]

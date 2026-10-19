@@ -1,0 +1,753 @@
+{
+  "isDemo": true,
+  "provenance": "Mission 6247457951, version 2026-10-18T08:28:10Z — données synthétiques de démonstration, aucun paiement",
+  "media": [],
+  "missing": [
+    "rive-01-salon",
+    "rive-02-cuisine",
+    "rive-03-chambre",
+    "rive-04-entree",
+    "rive-05-salle-eau",
+    "rive-06-bibliotheque",
+    "rive-07-matieres",
+    "rive-08-plans",
+    "rive-09-volume",
+    "rive-10-menuiserie",
+    "rive-11-repas",
+    "rive-12-escalier"
+  ],
+  "visualValidation": "BLOQUÉE — pack photo absent ou incomplet",
+  "pages": [
+    {
+      "page": "index",
+      "sections": [
+        {
+          "id": "opening",
+          "type": "ed-opening",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "focus_x": 50,
+            "focus_y": 50,
+            "layout": "journal",
+            "heading_tag": "h1",
+            "heading": "Des espaces qui vous ressemblent.",
+            "text": "<p>Des volumes plus lisibles, des matières qui se répondent et une place pensée pour chaque usage.</p>",
+            "label": "AMÉNAGEMENT INTÉRIEUR",
+            "button_label": "Parlons de votre intérieur",
+            "button_link": "/pages/contact",
+            "image_asset": "",
+            "media_role": "rive-01-salon",
+            "image_alt": "rive 01 salon"
+          },
+          "blocks": {},
+          "block_order": []
+        },
+        {
+          "id": "approach",
+          "type": "ed-statement",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "focus_x": 50,
+            "focus_y": 50,
+            "heading": "Partir de votre quotidien. Dessiner ce qui lui manque.",
+            "text": "<p>Un projet commence par la façon dont vous habitez : les passages, les gestes, la lumière et les objets que vous voulez garder.</p>",
+            "label": "01 / L'APPROCHE",
+            "anchor": "approche",
+            "image_asset": "",
+            "media_role": "rive-10-menuiserie",
+            "image_alt": "rive 10 menuiserie"
+          },
+          "blocks": {},
+          "block_order": []
+        },
+        {
+          "id": "inspirations",
+          "type": "ed-diptych",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "layout": "index",
+            "heading": "Des volumes, des usages, des intentions.",
+            "anchor": "inspirations",
+            "label": "PROJETS D'INTENTION — IMAGES DE DÉMONSTRATION"
+          },
+          "blocks": {
+            "b0": {
+              "type": "frame",
+              "settings": {
+                "focus_x": 50,
+                "focus_y": 50,
+                "ratio": "landscape",
+                "image_asset": "",
+                "media_role": "rive-02-cuisine",
+                "image_alt": "rive 02 cuisine",
+                "title": "Une cuisine qui ouvre la pièce.",
+                "text": "<p>Des circulations lisibles et une place pour préparer, échanger, se retrouver.</p>",
+                "link": "",
+                "link_label": ""
+              }
+            },
+            "b1": {
+              "type": "frame",
+              "settings": {
+                "focus_x": 50,
+                "focus_y": 50,
+                "ratio": "portrait",
+                "image_asset": "",
+                "media_role": "rive-03-chambre",
+                "image_alt": "rive 03 chambre",
+                "title": "Une chambre pour ralentir.",
+                "text": "<p>Une palette apaisée et des volumes qui laissent respirer les usages.</p>",
+                "link": "",
+                "link_label": ""
+              }
+            },
+            "b2": {
+              "type": "frame",
+              "settings": {
+                "focus_x": 50,
+                "focus_y": 50,
+                "ratio": "landscape",
+                "image_asset": "",
+                "media_role": "rive-04-entree",
+                "image_alt": "rive 04 entree",
+                "title": "Une entrée qui trouve sa place.",
+                "text": "<p>Accueillir, déposer, circuler : organiser le seuil de la maison.</p>",
+                "link": "",
+                "link_label": ""
+              }
+            }
+          },
+          "block_order": [
+            "b0",
+            "b1",
+            "b2"
+          ]
+        },
+        {
+          "id": "materials",
+          "type": "ed-scene",
+          "settings": {
+            "color_scheme": "scheme-2",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "focus_x": 50,
+            "focus_y": 50,
+            "layout": "split",
+            "heading": "Le caractère d'un lieu se joue aussi dans la matière.",
+            "text": "<p>Bois, pierre et textiles composent une palette cohérente, pensée à l'échelle de votre intérieur.</p>",
+            "image_asset": "",
+            "media_role": "rive-07-matieres",
+            "image_alt": "rive 07 matieres",
+            "caption": "Matières d'intention — démonstration"
+          },
+          "blocks": {},
+          "block_order": []
+        },
+        {
+          "id": "offers",
+          "type": "ref-narrative",
+          "settings": {
+            "heading": "Trois façons d'avancer.",
+            "motion": "reveal",
+            "color_scheme": "scheme-1",
+            "padding_top": 80,
+            "padding_bottom": 80
+          },
+          "blocks": {
+            "b0": {
+              "type": "chapter",
+              "settings": {
+                "title": "Conseil & direction",
+                "text": "<p>Préciser l'ambiance et les choix qui donneront une direction à votre intérieur.</p>",
+                "image_asset": "",
+                "media_role": "rive-08-plans",
+                "image_alt": "rive 08 plans",
+                "focus_x": 50,
+                "focus_y": 50,
+                "caption": "Projet d'intention — image de démonstration",
+                "link": "/pages/conseil",
+                "link_label": "Découvrir l'accompagnement"
+              }
+            },
+            "b1": {
+              "type": "chapter",
+              "settings": {
+                "title": "Aménagement d'une pièce",
+                "text": "<p>Organiser les usages, la circulation et les matières à l'échelle d'une pièce.</p>",
+                "image_asset": "",
+                "media_role": "rive-06-bibliotheque",
+                "image_alt": "rive 06 bibliotheque",
+                "focus_x": 50,
+                "focus_y": 50,
+                "caption": "Projet d'intention — image de démonstration",
+                "link": "/pages/amenagement-une-piece",
+                "link_label": "Découvrir l'accompagnement"
+              }
+            },
+            "b2": {
+              "type": "chapter",
+              "settings": {
+                "title": "Projet d'ensemble",
+                "text": "<p>Relier plusieurs espaces autour d'une intention commune, avec un périmètre à définir ensemble.</p>",
+                "image_asset": "",
+                "media_role": "rive-11-repas",
+                "image_alt": "rive 11 repas",
+                "focus_x": 50,
+                "focus_y": 50,
+                "caption": "Projet d'intention — image de démonstration",
+                "link": "/pages/ensemble",
+                "link_label": "Découvrir l'accompagnement"
+              }
+            }
+          },
+          "block_order": [
+            "b0",
+            "b1",
+            "b2"
+          ]
+        },
+        {
+          "id": "report",
+          "type": "ed-scene",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "focus_x": 50,
+            "focus_y": 50,
+            "layout": "panorama",
+            "heading": "Donner une fonction aux espaces oubliés.",
+            "text": "<p>Un passage peut accueillir un usage. Un angle peut retrouver une place dans la pièce. L'aménagement commence aussi par ces petits espaces que l'on traverse sans les regarder.</p>",
+            "image_asset": "",
+            "media_role": "rive-12-escalier",
+            "image_alt": "rive 12 escalier",
+            "caption": "Projet d'intention — image de démonstration"
+          },
+          "blocks": {},
+          "block_order": []
+        },
+        {
+          "id": "method",
+          "type": "ref-narrative",
+          "settings": {
+            "heading": "Échanger. Clarifier. Concevoir. Vous accompagner.",
+            "motion": "reveal",
+            "color_scheme": "scheme-1",
+            "padding_top": 80,
+            "padding_bottom": 80
+          },
+          "blocks": {
+            "b0": {
+              "type": "chapter",
+              "settings": {
+                "title": "01 — Échanger",
+                "text": "<p>Nous partons de votre quotidien : les gestes, les circulations et ce qui manque à la pièce. Vos priorités et les contraintes du lieu servent de point de départ, sans présumer du périmètre final.</p>"
+              }
+            },
+            "b1": {
+              "type": "chapter",
+              "settings": {
+                "title": "02 — Clarifier",
+                "text": "<p>Nous mettons en relation les volumes, la lumière et les matières. Des pistes d'ambiance permettent de discuter de vos préférences avant de retenir une direction.</p>"
+              }
+            },
+            "b2": {
+              "type": "chapter",
+              "settings": {
+                "title": "03 — Concevoir",
+                "text": "<p>L'implantation donne une place à chaque usage. Le choix des matières et du mobilier s'organise autour de cette proposition, avec les éléments à conserver et ceux à faire évoluer.</p>"
+              }
+            },
+            "b3": {
+              "type": "chapter",
+              "settings": {
+                "title": "04 — Vous accompagner",
+                "text": "<p>Nous reprenons ensemble les choix retenus et les points à approfondir. Le périmètre, le budget et le calendrier sont définis lors des échanges, sans engagement inventé dans cette démonstration.</p>"
+              }
+            }
+          },
+          "block_order": [
+            "b0",
+            "b1",
+            "b2",
+            "b3"
+          ]
+        },
+        {
+          "id": "study",
+          "type": "ed-study",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "focus_x": 50,
+            "focus_y": 50,
+            "aligned": false,
+            "control_label": "Comparer les vues",
+            "heading": "D'un volume à une intention.",
+            "label": "ÉTUDE FICTIVE",
+            "text": "<p>Deux vues d'intention pour discuter des usages et de la place du mobilier. Simulation de démonstration : ces images ne prouvent pas une réalisation client ni un avant/après parfaitement aligné.</p>",
+            "image_asset": "",
+            "media_role": "rive-09-volume",
+            "image_alt": "rive 09 volume",
+            "second_asset": "",
+            "second_role": "rive-01-salon",
+            "second_alt": "Simulation d'aménagement du salon",
+            "first_label": "Volume de départ — simulation",
+            "second_label": "Proposition d'aménagement — simulation"
+          },
+          "blocks": {},
+          "block_order": []
+        },
+        {
+          "id": "faq",
+          "type": "v2-faq",
+          "settings": {
+            "layout": "side",
+            "heading": "Avant notre premier échange.",
+            "color_scheme": "scheme-1",
+            "padding_top": 96,
+            "padding_bottom": 96
+          },
+          "blocks": {
+            "b0": {
+              "type": "question",
+              "settings": {
+                "question": "Puis-je commencer avec une seule pièce ?",
+                "answer": "<p>Oui. La page Aménagement d'une pièce présente cette approche ; le périmètre se précise au premier échange.</p>"
+              }
+            },
+            "b1": {
+              "type": "question",
+              "settings": {
+                "question": "Faut-il déjà avoir un budget défini ?",
+                "answer": "<p>Une enveloppe ou des priorités permettent d'orienter la discussion. Aucun tarif ni budget de réalisation n'est validé dans cette démonstration.</p>"
+              }
+            },
+            "b2": {
+              "type": "question",
+              "settings": {
+                "question": "Peut-on conserver du mobilier existant ?",
+                "answer": "<p>Les éléments à garder font partie des premières informations à partager pour organiser la proposition.</p>"
+              }
+            },
+            "b3": {
+              "type": "question",
+              "settings": {
+                "question": "Les photographies présentent-elles des réalisations clients ?",
+                "answer": "<p>Non. Il s'agit de projets d'intention et d'images de démonstration, sans avis ni résultats clients revendiqués.</p>"
+              }
+            },
+            "b4": {
+              "type": "question",
+              "settings": {
+                "question": "Quel est le délai pour mon projet ?",
+                "answer": "<p>Le calendrier dépend du périmètre défini ensemble. Aucun délai d'intervention ni disponibilité n'est promis ici.</p>"
+              }
+            }
+          },
+          "block_order": [
+            "b0",
+            "b1",
+            "b2",
+            "b3",
+            "b4"
+          ]
+        },
+        {
+          "id": "contact",
+          "type": "ed-contact",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "room_label": "Type de pièce",
+            "room_placeholder": "Choisir une pièce",
+            "rooms": "Salon\nCuisine\nChambre\nEntrée\nSalle d'eau\nAutre",
+            "submit_label": "Présenter mon projet",
+            "anchor": "contact",
+            "label": "PREMIER ÉCHANGE",
+            "heading": "Et si l'on commençait par votre pièce ?",
+            "text": "<p>Décrivez la pièce, ce que vous souhaitez y vivre et les points qui vous interrogent. Cette démonstration enregistre une demande de test : aucun e-mail n'est envoyé.</p>",
+            "image_asset": "",
+            "media_role": "rive-05-salle-eau",
+            "image_alt": "rive 05 salle eau",
+            "focus_x": 50,
+            "focus_y": 50
+          },
+          "blocks": {},
+          "block_order": []
+        }
+      ]
+    },
+    {
+      "page": "page.piece",
+      "sections": [
+        {
+          "id": "opening",
+          "type": "ed-opening",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "focus_x": 50,
+            "focus_y": 50,
+            "layout": "journal",
+            "heading_tag": "h1",
+            "heading": "Repensons la pièce que vous vivez le plus.",
+            "text": "<p>Une proposition d'aménagement pour faire dialoguer vos usages, la lumière et les matières.</p>",
+            "label": "AMÉNAGEMENT D'UNE PIÈCE",
+            "button_label": "Parler de ma pièce",
+            "button_link": "#contact",
+            "image_asset": "",
+            "media_role": "rive-06-bibliotheque",
+            "image_alt": "rive 06 bibliotheque"
+          },
+          "blocks": {},
+          "block_order": []
+        },
+        {
+          "id": "for",
+          "type": "ed-statement",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "focus_x": 50,
+            "focus_y": 50,
+            "heading": "Pour quel projet ?",
+            "text": "<p>Un salon, une pièce de repas ou une entrée : l'échelle d'une pièce permet de travailler les relations entre usages et volumes.</p>"
+          },
+          "blocks": {
+            "b0": {
+              "type": "point",
+              "settings": {
+                "title": "Salon — se retrouver, lire, recevoir"
+              }
+            },
+            "b1": {
+              "type": "point",
+              "settings": {
+                "title": "Pièce de repas — partager et circuler"
+              }
+            },
+            "b2": {
+              "type": "point",
+              "settings": {
+                "title": "Entrée — accueillir et organiser"
+              }
+            }
+          },
+          "block_order": [
+            "b0",
+            "b1",
+            "b2"
+          ]
+        },
+        {
+          "id": "prepare",
+          "type": "ed-statement",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "focus_x": 50,
+            "focus_y": 50,
+            "heading": "Ce que nous préparons ensemble.",
+            "text": "<p>La proposition s'appuie sur les informations que vous partagez et sur le périmètre convenu. Les livrables ci-dessous constituent une intention de démonstration, à adapter au projet.</p>"
+          },
+          "blocks": {
+            "b0": {
+              "type": "point",
+              "settings": {
+                "title": "Les besoins et les éléments à conserver"
+              }
+            },
+            "b1": {
+              "type": "point",
+              "settings": {
+                "title": "Une direction d'ambiance"
+              }
+            },
+            "b2": {
+              "type": "point",
+              "settings": {
+                "title": "Une proposition d'implantation"
+              }
+            },
+            "b3": {
+              "type": "point",
+              "settings": {
+                "title": "Des pistes de matières et de mobilier"
+              }
+            }
+          },
+          "block_order": [
+            "b0",
+            "b1",
+            "b2",
+            "b3"
+          ]
+        },
+        {
+          "id": "method",
+          "type": "ref-narrative",
+          "settings": {
+            "heading": "Échanger. Clarifier. Concevoir. Vous accompagner.",
+            "motion": "reveal",
+            "color_scheme": "scheme-1",
+            "padding_top": 80,
+            "padding_bottom": 80
+          },
+          "blocks": {
+            "b0": {
+              "type": "chapter",
+              "settings": {
+                "title": "01 — Échanger",
+                "text": "<p>Nous partons de votre quotidien : les gestes, les circulations et ce qui manque à la pièce. Vos priorités et les contraintes du lieu servent de point de départ, sans présumer du périmètre final.</p>"
+              }
+            },
+            "b1": {
+              "type": "chapter",
+              "settings": {
+                "title": "02 — Clarifier",
+                "text": "<p>Nous mettons en relation les volumes, la lumière et les matières. Des pistes d'ambiance permettent de discuter de vos préférences avant de retenir une direction.</p>"
+              }
+            },
+            "b2": {
+              "type": "chapter",
+              "settings": {
+                "title": "03 — Concevoir",
+                "text": "<p>L'implantation donne une place à chaque usage. Le choix des matières et du mobilier s'organise autour de cette proposition, avec les éléments à conserver et ceux à faire évoluer.</p>"
+              }
+            },
+            "b3": {
+              "type": "chapter",
+              "settings": {
+                "title": "04 — Vous accompagner",
+                "text": "<p>Nous reprenons ensemble les choix retenus et les points à approfondir. Le périmètre, le budget et le calendrier sont définis lors des échanges, sans engagement inventé dans cette démonstration.</p>"
+              }
+            }
+          },
+          "block_order": [
+            "b0",
+            "b1",
+            "b2",
+            "b3"
+          ]
+        },
+        {
+          "id": "plans",
+          "type": "ed-diptych",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "layout": "pair",
+            "heading": "Du plan aux matières.",
+            "label": "ÉLÉMENTS D'INTENTION — DÉMONSTRATION"
+          },
+          "blocks": {
+            "b0": {
+              "type": "frame",
+              "settings": {
+                "focus_x": 50,
+                "focus_y": 50,
+                "ratio": "landscape",
+                "image_asset": "",
+                "media_role": "rive-08-plans",
+                "image_alt": "rive 08 plans",
+                "title": "L'implantation",
+                "text": "<p>Lire les passages, les proportions et les relations entre les usages.</p>",
+                "link": "",
+                "link_label": ""
+              }
+            },
+            "b1": {
+              "type": "frame",
+              "settings": {
+                "focus_x": 50,
+                "focus_y": 50,
+                "ratio": "portrait",
+                "image_asset": "",
+                "media_role": "rive-07-matieres",
+                "image_alt": "rive 07 matieres",
+                "title": "Les accords de matières",
+                "text": "<p>Faire dialoguer la lumière, les textures et les teintes.</p>",
+                "link": "",
+                "link_label": ""
+              }
+            }
+          },
+          "block_order": [
+            "b0",
+            "b1"
+          ]
+        },
+        {
+          "id": "compare",
+          "type": "ref-offers",
+          "settings": {
+            "layout": "comparison",
+            "heading": "Choisir le bon périmètre.",
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 80,
+            "padding_bottom": 80,
+            "text": "<p>Trois échelles de travail. Le contenu, le budget et le calendrier sont définis lors du premier échange ; aucun tarif n'est validé ici.</p>"
+          },
+          "blocks": {
+            "b0": {
+              "type": "offer",
+              "settings": {
+                "title": "Conseil & direction",
+                "text": "<p>Préciser l'ambiance et les choix qui donneront une direction à votre intérieur.</p>",
+                "link": "/pages/conseil"
+              }
+            },
+            "b1": {
+              "type": "offer",
+              "settings": {
+                "title": "Aménagement d'une pièce",
+                "text": "<p>Organiser les usages, la circulation et les matières à l'échelle d'une pièce.</p>",
+                "link": "/pages/amenagement-une-piece"
+              }
+            },
+            "b2": {
+              "type": "offer",
+              "settings": {
+                "title": "Projet d'ensemble",
+                "text": "<p>Relier plusieurs espaces autour d'une intention commune, avec un périmètre à définir ensemble.</p>",
+                "link": "/pages/ensemble"
+              }
+            }
+          },
+          "block_order": [
+            "b0",
+            "b1",
+            "b2"
+          ]
+        },
+        {
+          "id": "study",
+          "type": "ed-study",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "focus_x": 50,
+            "focus_y": 50,
+            "aligned": false,
+            "control_label": "Comparer les vues",
+            "heading": "D'un volume à une intention.",
+            "label": "ÉTUDE FICTIVE",
+            "text": "<p>Deux vues d'intention pour discuter des usages et de la place du mobilier. Simulation de démonstration : ces images ne prouvent pas une réalisation client ni un avant/après parfaitement aligné.</p>",
+            "image_asset": "",
+            "media_role": "rive-09-volume",
+            "image_alt": "rive 09 volume",
+            "second_asset": "",
+            "second_role": "rive-01-salon",
+            "second_alt": "Simulation d'aménagement du salon",
+            "first_label": "Volume de départ — simulation",
+            "second_label": "Proposition d'aménagement — simulation"
+          },
+          "blocks": {},
+          "block_order": []
+        },
+        {
+          "id": "faq",
+          "type": "v2-faq",
+          "settings": {
+            "layout": "side",
+            "heading": "Préciser votre projet.",
+            "color_scheme": "scheme-1",
+            "padding_top": 96,
+            "padding_bottom": 96
+          },
+          "blocks": {
+            "b0": {
+              "type": "question",
+              "settings": {
+                "question": "Puis-je commencer avec une seule pièce ?",
+                "answer": "<p>Oui. La page Aménagement d'une pièce présente cette approche ; le périmètre se précise au premier échange.</p>"
+              }
+            },
+            "b1": {
+              "type": "question",
+              "settings": {
+                "question": "Faut-il déjà avoir un budget défini ?",
+                "answer": "<p>Une enveloppe ou des priorités permettent d'orienter la discussion. Aucun tarif ni budget de réalisation n'est validé dans cette démonstration.</p>"
+              }
+            },
+            "b2": {
+              "type": "question",
+              "settings": {
+                "question": "Peut-on conserver du mobilier existant ?",
+                "answer": "<p>Les éléments à garder font partie des premières informations à partager pour organiser la proposition.</p>"
+              }
+            },
+            "b3": {
+              "type": "question",
+              "settings": {
+                "question": "Les photographies présentent-elles des réalisations clients ?",
+                "answer": "<p>Non. Il s'agit de projets d'intention et d'images de démonstration, sans avis ni résultats clients revendiqués.</p>"
+              }
+            },
+            "b4": {
+              "type": "question",
+              "settings": {
+                "question": "Quel est le délai pour mon projet ?",
+                "answer": "<p>Le calendrier dépend du périmètre défini ensemble. Aucun délai d'intervention ni disponibilité n'est promis ici.</p>"
+              }
+            }
+          },
+          "block_order": [
+            "b0",
+            "b1",
+            "b2",
+            "b3",
+            "b4"
+          ]
+        },
+        {
+          "id": "contact",
+          "type": "ed-contact",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "room_label": "Type de pièce",
+            "room_placeholder": "Choisir une pièce",
+            "rooms": "Salon\nCuisine\nChambre\nEntrée\nSalle d'eau\nAutre",
+            "submit_label": "Demander un premier échange",
+            "anchor": "contact",
+            "label": "PREMIER ÉCHANGE",
+            "heading": "Et si l'on commençait par votre pièce ?",
+            "text": "<p>Décrivez la pièce, ce que vous souhaitez y vivre et les points qui vous interrogent. Cette démonstration enregistre une demande de test : aucun e-mail n'est envoyé.</p>"
+          },
+          "blocks": {},
+          "block_order": []
+        }
+      ]
+    }
+  ]
+}

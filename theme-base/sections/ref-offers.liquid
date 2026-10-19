@@ -1,0 +1,175 @@
+{%- assign s = section.settings -%}
+<section class="ref-section ref-offers ref-offers--{{ s.layout }} color-{{ s.color_scheme }}" data-reference="offers" data-ref-motion="{{ s.motion }}" style="--ref-pt: {{ s.padding_top }}px; --ref-pb: {{ s.padding_bottom }}px;">
+  <div class="ref-shell">
+    <div class="ref-section-head"><h2 class="ref-heading"{% if s.motion == 'reveal' %} data-reveal="up"{% endif %}>{{ s.heading | escape }}</h2><div class="ref-prose">{{ s.text }}</div></div>
+    {% if s.layout == 'shop' %}
+      {% assign coll = s.collection | default: collections.all %}
+      <div class="ref-offers__products">{% for item in coll.products limit: 12 %}{% render 'product-card', product_card: item, show_secondary: true, ratio: 'square' %}{% endfor %}</div>
+    {% else %}
+      <div class="ref-offers__list">{% for block in section.blocks %}<article class="ref-offer" {{ block.shopify_attributes }}>
+        {% if block.settings.image != blank or block.settings.image_asset != blank %}<div class="ref-offer__media">{% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.image_alt, class: 'ref-image', sizes: '(min-width: 990px) 20vw, 100vw' %}</div>{% endif %}
+        <div class="ref-offer__copy"><h3>{{ block.settings.title | escape }}</h3><div class="ref-prose">{{ block.settings.text }}</div>{% if block.settings.price != blank or block.settings.duration != blank %}<p class="ref-offer__meta">{{ block.settings.price | escape }}{% if block.settings.duration != blank %} <span>{{ block.settings.duration | escape }}</span>{% endif %}</p>{% endif %}</div>
+        {% if block.settings.link != blank %}<a class="ref-offer__link" href="{{ block.settings.link }}"><span class="visually-hidden">{{ block.settings.title | escape }}</span><span aria-hidden="true">↗</span></a>{% endif %}
+      </article>{% endfor %}</div>
+    {% endif %}
+    <div class="ref-offers__action">{%- if s.button_label != blank and s.button_link != blank -%}<a class="ref-button" href="{{ s.button_link }}">{{ s.button_label | escape }}<span aria-hidden="true">↗</span></a>{%- endif -%}</div>
+  </div>
+</section>
+{% schema %}
+{
+  "name": "Offres éditoriales",
+  "tag": "div",
+  "class": "reference-section",
+  "settings": [
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Composition",
+      "default": "shop",
+      "options": [
+        {
+          "value": "shop",
+          "label": "Collection de produits"
+        },
+        {
+          "value": "comparison",
+          "label": "Comparaison de prestations"
+        },
+        {
+          "value": "studio",
+          "label": "Prestations en lignes"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Titre",
+      "default": "Votre titre"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texte"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Jeu de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "select",
+      "id": "motion",
+      "label": "Animation",
+      "default": "reveal",
+      "options": [
+        {
+          "value": "none",
+          "label": "Sans animation"
+        },
+        {
+          "value": "reveal",
+          "label": "Apparition courte"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Marge haute",
+      "min": 0,
+      "max": 160,
+      "step": 8,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Marge basse",
+      "min": 0,
+      "max": 160,
+      "step": 8,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Texte du bouton"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Lien du bouton"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Offres éditoriales",
+      "blocks": [
+        {
+          "type": "offer"
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "type": "offer",
+      "name": "Prestation",
+      "settings": [
+        { "type": "text", "id": "content_target", "label": "Identité de la prestation" },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Titre",
+          "default": "Votre prestation"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Texte"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "image_asset",
+          "label": "Image du projet (fichier)"
+        },
+        {
+          "type": "text",
+          "id": "image_alt",
+          "label": "Description de l’image"
+        },
+        {
+          "type": "text",
+          "id": "price",
+          "label": "Prix fourni"
+        },
+        {
+          "type": "text",
+          "id": "duration",
+          "label": "Durée fournie"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Lien"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 50
+}
+{% endschema %}

@@ -1,0 +1,35 @@
+{
+  "simulation": true,
+  "configuration": "hypothèse isolée Alibaba, jamais configuration déployée",
+  "createdProjects": 0,
+  "providerCalls": 0,
+  "modelRoutes": {
+    "image": "alibaba:qwen-image-3.0-pro",
+    "video": "wan2.6-i2v-flash"
+  },
+  "inputs": {
+    "Imax": 182858,
+    "Iprob": 176300,
+    "V5": 161250,
+    "T": 12900
+  },
+  "max": {
+    "mode": "ai",
+    "allowed": true,
+    "reason": null,
+    "estimateMicro": 1389332,
+    "scenes": 4,
+    "totalS": 20,
+    "clipS": 5
+  },
+  "probable": {
+    "mode": "ai",
+    "allowed": true,
+    "reason": null,
+    "estimateMicro": 1363100,
+    "scenes": 4,
+    "totalS": 20,
+    "clipS": 5
+  },
+  "capMicro": 1389332
+}

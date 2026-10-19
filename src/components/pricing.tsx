@@ -27,7 +27,7 @@ const LEVEL = {
 /** Les avantages affichés sur la carte d'un forfait (le détail est dans le tableau). Uniquement ce qui est configuré. */
 function planLines(p: Plan, t: TFn): Line[] {
   const lines: Line[] = [
-    { text: t(`${p.themes} thèmes premium au choix`, `${p.themes} premium themes to choose from`) },
+    { text: t("Les quatre thèmes de référence (un par catégorie de projet)", "The four reference themes (one per project category)") },
     { text: t("Boutique, logo et images créés par l'IA", "Store, logo and images created by AI") },
     { text: t(`Publicités IA ${LEVEL[p.ads].fr}`, `${LEVEL[p.ads].en[0].toUpperCase()}${LEVEL[p.ads].en.slice(1)} AI ads`) },
   ];
@@ -95,7 +95,7 @@ function DiscoveryCard({ loggedIn }: { loggedIn?: boolean }) {
   const t = useT();
   const lines = [
     t("Studio de démonstration interactif", "Interactive demo studio"),
-    t("Les 30 thèmes en aperçu", "All 30 themes in preview"),
+    t("Les quatre thèmes de référence en aperçu", "The four reference themes in preview"),
     t("Exemples de logos, images, publicités, vidéos", "Sample logos, images, ads, videos"),
     t("Aucun projet réel, aucune publication", "No real project, no posting"),
   ];

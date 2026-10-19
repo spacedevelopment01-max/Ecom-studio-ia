@@ -1,3 +1,4 @@
+import { campaignVerdict, campaignConcept, campaignCopy } from "./publication-fixtures";
 /**
  * Création guidée (Publications et Publicités) : le client choisit le produit (principal ou du catalogue) ou le
  * service du projet, puis décrit librement le visuel. Le sujet est vérifié contre le projet, la photo de référence est
@@ -17,8 +18,8 @@ describe("Création guidée par produit ou service", async () => {
   const { designPostWithAi } = await import("@/lib/social-v2/ai-post");
   const { createOnePost } = await import("@/lib/social-v2/single");
   const { produceBatch } = await import("@/lib/social-v2/production");
-  const png = () => sharp({ create: { width: 64, height: 80, channels: 3, background: "#335544" } }).png().toBuffer();
-  const ok = { productFaithful: true, textsExact: true, legible: true, score: 8.5, issues: [] as string[], fix: "", person: false, anatomyOk: true };
+  const png = () => sharp({ create: { width: 1080, height: 1350, channels: 3, background: "#335544" } }).png().toBuffer();
+  const ok = { ...campaignVerdict(), productFaithful: true, textsExact: true, legible: true, score: 9.2, issues: [] as string[], fix: "", person: false, anatomyOk: true };
 
   async function productProject() {
     const u = await createUser(`cg-${Date.now()}-${Math.random()}@test.fr`, "motdepasse-test", "P");
@@ -58,6 +59,7 @@ describe("Création guidée par produit ou service", async () => {
     let spent = 0;
     const subject = resolveSubject(p, { kind: "product", key: "etui" });
     const r = await designPostWithAi(p, { id: one1.ids[0], network: "instagram", format: "image", title: "Partez serein", caption: "", pillar: null, objective: null, headline: "Partez serein", scheduled_at: null, subject: { kind: "product", key: "etui" }, request: brief.request }, { aspect: "4:5", maxCostEur: 1, reference: subject!.referenceAssetId, subject }, {
+      copy: campaignCopy,
       generate: async (prompt) => (prompts.push(prompt), (spent += 40_000), png()),
       review: async (_i, _r, texts) => ({ ...ok, transcribed: texts }),
       spentMicro: () => spent,
@@ -73,6 +75,7 @@ describe("Création guidée par produit ou service", async () => {
     const { p, cut } = await productProject();
     let spent = 0;
     const r = await designPostWithAi(p, { id: "pub-guidee", network: "meta", format: "image", title: "Le son net", caption: "", pillar: null, objective: "convert", headline: "Le son net", scheduled_at: null }, { aspect: "1:1", maxCostEur: 1, reference: cut, subject: resolveSubject(p, null), as: "ad" }, {
+      copy: campaignCopy,
       generate: async () => ((spent += 40_000), png()),
       review: async (_i, _r, texts) => ({ ...ok, transcribed: texts }),
       spentMicro: () => spent,

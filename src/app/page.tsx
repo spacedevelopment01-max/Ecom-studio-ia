@@ -210,7 +210,7 @@ export default async function Home() {
       ]
     : [];
 
-  // Section « Votre semaine de publications » : une autre démo que le parcours ARVEN, avec ses vraies publications.
+  // Section « Votre semaine de publications » : une autre démo que le parcours, avec ses vraies publications (vide tant qu'aucune n'est préparée).
   const calDemo = list.find((d) => d.id === SECTION_DEMO.calendar);
   const slots = [{ day: 0, time: "18:00" }, { day: 2, time: "12:30" }, { day: 4, time: "20:00" }, { day: 5, time: "11:00" }];
   const posts: SocialPost[] = calDemo ? CALENDAR_POSTS.slice(0, 4).map((x, k) => ({ ...slots[k], network: x.network, image: W(x.src), caption: T(...x.caption) })) : [];
@@ -246,7 +246,7 @@ export default async function Home() {
   // Mur : les publications des marques entremêlées (jamais deux d'une même marque côte à côte).
   const wall: WallItem[] = [];
   for (let k = 0; k < 8; k++) for (const f of feeds) if (f.posts[k]) wall.push({ src: f.posts[k], brand: f.brand });
-  // Publications créées par l'IA (ARVEN) : une au milieu de chaque rangée du mur, jamais côte à côte.
+  // Publications créées par l'IA (wallExtras) : une au milieu de chaque rangée du mur, jamais côte à côte.
   const iaWall: WallItem[] = list.flatMap((d) => wallExtras(d.id).map((src) => ({ src: W(src), brand: d.brand, tall: true })));
   const wallBrands = new Set([...feeds.map((f) => f.brand), ...iaWall.map((x) => x.brand)]).size;
   if (wall.length >= 6)
@@ -287,7 +287,7 @@ export default async function Home() {
     [T("Le thème Shopify est-il vraiment installable ?", "Can the Shopify theme really be installed?"), T("Oui. C'est un thème Shopify complet (pages, panier, recherche, réglages), vérifié par l'outil officiel de Shopify. Vous l'importez en un seul fichier. L'envoi direct dans votre boutique est prêt, mais pas encore essayé sur une vraie boutique.", "Yes. It's a complete Shopify theme (pages, cart, search, settings), checked by Shopify's official tool. You import it as a single file. Sending it directly to your store is built, but not yet tried on a real store.")],
     [T("Que se passe-t-il si une information manque ?", "What happens if some information is missing?"), T("Elle reste visible « à compléter » dans les textes, et le studio vous pose la question. Quand vous répondez, seuls les passages concernés sont mis à jour, sans écraser ce que vous avez validé.", "It stays visible as \"to complete\" in the copy, and the studio asks you about it. When you answer, only the relevant passages are updated, without overwriting what you've approved.")],
     [T("Mes publications partent-elles toutes seules ?", "Do my posts go out on their own?"), T("Seulement celles que vous avez approuvées, et une fois vos comptes connectés. La publication par les connexions officielles (Instagram, Facebook, TikTok, YouTube, Pinterest) est développée mais pas encore essayée sur de vrais comptes ; pour LinkedIn, le studio prépare les publications à publier vous-même.", "Only the ones you've approved, once your accounts are connected. Publishing through the official connections (Instagram, Facebook, TikTok, YouTube, Pinterest) is built but not yet tried on real accounts; for LinkedIn, the studio prepares posts for you to publish yourself.")],
-    [T("La découverte gratuite, c'est quoi ?", "What is the free discovery?"), T("Un compte gratuit, sans carte bancaire, qui ouvre le studio de démonstration : les 30 thèmes en aperçu, des marques, boutiques, publicités, vidéos et calendriers d'exemple que vous manipulez dans votre navigateur. Aucun projet réel, aucun appel IA, aucune publication ni export. Pour créer votre projet, choisissez un forfait.", "A free account, with no credit card, that opens the demo studio: all 30 themes in preview, plus sample brands, stores, ads, videos and calendars you can play with in your browser. No real project, no AI calls, no posting or export. To create your project, choose a plan.")],
+    [T("La découverte gratuite, c'est quoi ?", "What is the free discovery?"), T("Un compte gratuit, sans carte bancaire, qui ouvre le studio de démonstration : les quatre thèmes de référence en aperçu, des marques, boutiques, publicités, vidéos et calendriers d'exemple que vous manipulez dans votre navigateur. Aucun projet réel, aucun appel IA, aucune publication ni export. Pour créer votre projet, choisissez un forfait.", "A free account, with no credit card, that opens the demo studio: the four reference themes in preview, plus sample brands, stores, ads, videos and calendars you can play with in your browser. No real project, no AI calls, no posting or export. To create your project, choose a plan.")],
     [T("Un abonnement permet-il de créer plusieurs projets ?", "Can one subscription create several projects?"), T("Non : 1 abonnement = 1 projet unique (une boutique ou un site), définitivement. Supprimer, archiver ou dupliquer un projet ne libère pas son abonnement. Pour une nouvelle activité, vous souscrivez un nouvel abonnement.", "No: 1 subscription = 1 unique project (a store or a website), for good. Deleting, archiving or duplicating a project doesn't free its subscription. For a new business, you take out a new subscription.")],
     [T("Puis-je gérer plusieurs activités ?", "Can I manage several businesses?"), T("Oui, depuis un seul compte : chaque projet a son propre abonnement, son budget IA, ses recharges et ses droits. Vous pouvez changer le forfait d'un projet ou le résilier sans toucher aux autres.", "Yes, from a single account: each project has its own subscription, AI budget, top-ups and features. You can change one project's plan or cancel it without affecting the others.")],
     [T("Et si le budget IA de mon projet est épuisé ?", "What if my project's AI budget runs out?"), T(`Vous ajoutez une recharge de ${TOPUP_PRICE_EUR} € à ce projet (elle n'expire pas), ou vous attendez le renouvellement. En attendant, le moteur local du studio continue sans IA.`, `You add a €${TOPUP_PRICE_EUR} top-up to that project (it never expires), or you wait for the renewal. Meanwhile, the studio's local engine keeps working without AI.`)],
@@ -436,7 +436,7 @@ export default async function Home() {
                   [T("Blocs sur mesure", "Custom blocks"), T("Avec l'IA, un bloc nouveau peut être créé pour votre idée, puis réglé dans l'éditeur.", "With AI, a new block can be created for your idea, then adjusted in the editor.")],
                   [T("Vérifiée à l'écran", "Checked on screen"), T("La boutique est regardée sur ordinateur et sur téléphone, puis corrigée.", "The store is looked at on desktop and mobile, then corrected.")],
                   [T("Retouches", "Edits"), T("Seul ce que vous changez bouge, et vous pouvez toujours revenir en arrière.", "Only what you change moves, and you can always go back.")],
-                  [T("Trente thèmes", "Thirty themes"), T("Une bibliothèque de 30 thèmes : 10 avec Créer, 20 avec Développer, les 30 avec Dominer.", "A library of 30 themes: 10 with Create, 20 with Grow, all 30 with Dominate.")],
+                  [T("Quatre thèmes de référence", "Four reference themes"), T("FRAISE, ONDE, ORBE et Atelier Rive : un thème conçu pour chaque catégorie de projet, inclus dans tout forfait.", "FRAISE, ONDE, ORBE and Atelier Rive: a theme designed for each project category, included in every plan.")],
                 ].map(([t, d], i) => (
                   <li key={t} className="reveal flex gap-4 border-t border-line py-5" style={{ ["--d" as any]: i % 2 }}>
                     <span className="font-display text-sm font-semibold tabular-nums text-signal">{String(i + 1).padStart(2, "0")}</span>
@@ -448,19 +448,19 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* Les 30 thèmes : de simples captures qui défilent ; la galerie complète est une page du site (/themes). */}
+        {/* Les quatre thèmes de référence : de simples captures qui défilent ; la galerie complète est une page du site (/themes). */}
         <section id="themes" className="scroll-mt-16 overflow-hidden bg-paper-2 py-24 sm:py-28">
           <div className="mx-auto grid max-w-7xl items-end gap-6 px-4 sm:px-6 lg:grid-cols-2 lg:gap-12">
             <div>
               <p className="hp-eyebrow reveal">{T("Les thèmes", "The themes")}</p>
-              <h2 className="hp-title reveal mt-4 text-[clamp(2.2rem,5vw,4rem)]">{T("30 modèles de boutique,", "30 store designs,")} <span className="hp-accent">{T("à vos couleurs.", "in your colors.")}</span></h2>
+              <h2 className="hp-title reveal mt-4 text-[clamp(2.2rem,5vw,4rem)]">{T("Quatre modèles de référence,", "Four reference designs,")} <span className="hp-accent">{T("à vos couleurs.", "in your colors.")}</span></h2>
             </div>
             <div>
               <p className="hp-lead reveal">{T("L'IA part de l'un de ces modèles ou en crée un tout nouveau pour vous. Tout reste modifiable : en écrivant au studio, puis dans l'éditeur de votre plateforme.", "The AI starts from one of these designs or creates a brand-new one for you. Everything stays editable: by writing to the studio, then in your platform's editor.")}</p>
               <Link href="/themes" className="hp-btn hp-btn-ghost reveal mt-5">{T("Voir la galerie", "View the gallery")} <ArrowUpRight className="size-4" aria-hidden /></Link>
             </div>
           </div>
-          <div className="mt-12"><ThemesWall themes={themes.map((c) => ({ id: c.id, name: c.name, src: c.preview }))} label={T("Captures des 30 thèmes de boutique, avec la gourde de démonstration Cime", "Screenshots of the 30 store themes, with the Cime demo water bottle")} /></div>
+          <div className="mt-12"><ThemesWall themes={themes.map((c) => ({ id: c.id, name: c.name, src: c.preview }))} label={T("Captures des thèmes de boutique, avec les démonstrations du studio (FRAISE, ONDE, ORBE, Atelier Rive)", "Screenshots of the store themes, with the studio demos (FRAISE, ONDE, ORBE, Atelier Rive)")} /></div>
         </section>
 
         {/* ───────────── Images et publicités ───────────── */}
@@ -717,7 +717,7 @@ export default async function Home() {
             <h2 className="hp-title max-w-3xl text-[clamp(2.4rem,6vw,4.8rem)] text-white">
               {T("Toute votre activité e-commerce.", "Your entire e-commerce business.")} <span className="bg-gradient-to-r from-[#AEB7FF] to-[#C9B8FF] bg-clip-text text-transparent">{T("Un seul studio.", "One studio.")}</span>
             </h2>
-            <p className="mt-5 max-w-xl text-lg text-white/75">{T("Commencez par la découverte gratuite, sans carte bancaire : explorez le studio, les 30 thèmes et les exemples. Choisissez ensuite un forfait pour créer votre projet.", "Start with the free discovery, no credit card: explore the studio, the 30 themes and the examples. Then choose a plan to create your project.")}</p>
+            <p className="mt-5 max-w-xl text-lg text-white/75">{T("Commencez par la découverte gratuite, sans carte bancaire : explorez le studio, les quatre thèmes et les exemples. Choisissez ensuite un forfait pour créer votre projet.", "Start with the free discovery, no credit card: explore the studio, the four themes and the examples. Then choose a plan to create your project.")}</p>
             <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link href={cta} className="hp-btn !min-h-14 bg-white !px-7 !text-base text-[#0B1533] hover:-translate-y-0.5">{user ? T("Ouvrir mon studio", "Open my studio") : T("Commencer mon projet", "Start my project")} <ArrowRight className="size-4" aria-hidden /></Link>
               <a href="#themes" className="hp-btn !min-h-14 border border-white/25 !px-7 !text-base text-white hover:border-white/60">{T("Revoir les thèmes", "See the themes again")}</a>

@@ -1,0 +1,39 @@
+
+ RUN  v5.0.3 /workspace/Ecom-studio-ia
+
+ ❯ tests/lot2a-php-export.test.ts (9 tests | 7 failed) 6907ms
+   ❯ Lot 2A — moteur PHP exporté (9)
+     × for/else : collection vide 535ms
+     × for/else : collection remplie 118ms
+     × for/else : corps sans sortie 122ms
+     × for/else : offset au-delà du dernier article 129ms
+     × for/else : conditions et boucles imbriquées 96ms
+     × for/else : intervalle numérique 84ms
+     × for/else : arrêt de boucle 77ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/lot2a-php-export.test.ts > Lot 2A — moteur PHP exporté > for/else : collection vide
+ FAIL  tests/lot2a-php-export.test.ts > Lot 2A — moteur PHP exporté > for/else : collection remplie
+ FAIL  tests/lot2a-php-export.test.ts > Lot 2A — moteur PHP exporté > for/else : corps sans sortie
+ FAIL  tests/lot2a-php-export.test.ts > Lot 2A — moteur PHP exporté > for/else : offset au-delà du dernier article
+ FAIL  tests/lot2a-php-export.test.ts > Lot 2A — moteur PHP exporté > for/else : conditions et boucles imbriquées
+ FAIL  tests/lot2a-php-export.test.ts > Lot 2A — moteur PHP exporté > for/else : intervalle numérique
+ FAIL  tests/lot2a-php-export.test.ts > Lot 2A — moteur PHP exporté > for/else : arrêt de boucle
+TypeError: Cannot read properties of undefined (reading 'slice')
+ ❯ tests/lot2a-php-export.test.ts:34:28
+     32|       const files = unzipSync(exp.zip);
+     33|       const runtime = Object.keys(files).find((p) => p.endsWith("/inc/…
+     34|       const root = runtime.slice(0, -"es-liquid.php".length);
+       |                            ^
+     35|       for (const [file, content] of Object.entries(files)) if (file.st…
+     36|         const dest = path.join(dir, file); fs.mkdirSync(path.dirname(d…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  7 failed | 35 passed (42)
+   Start at  03:19:26
+   Duration  96.59s (tests 84%, import 11%, transform 4%)
+

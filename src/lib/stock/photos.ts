@@ -1,3 +1,7 @@
+import { createHash } from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
+import { DATA_DIR } from "../db";
 /**
  * Photos libres de droits (entreprises de services) : vraies photos du métier, gratuites, cherchées avant toute
  * image payante. Pexels et Pixabay (clés gratuites, saisies dans Administration › Fournisseurs IA), puis Openverse
@@ -14,10 +18,32 @@ export type StockPhoto = { source: StockSource; id: string; url: string; page: s
 export type Orientation = "landscape" | "portrait" | "square";
 
 const TIMEOUT = 15_000;
+// Les conditions API imposent une mise en cache des recherches ; jamais de clé dans les fichiers ou journaux.
+const searchCache = new Map<string, { at: number; data: unknown }>();
 const get = async (url: string, headers: Record<string, string> = {}) => {
+  const cacheKey = createHash("sha256").update(url + JSON.stringify(headers)).digest("hex");
+  // La réponse publique reste en cache après redémarrage du worker. Ni l'URL signée ni la clé ne sont stockées.
+  const cacheDir = path.join(DATA_DIR, "cache", "stock-search");
+  const cachePath = path.join(cacheDir, `${cacheKey}.json`);
+  let cached = searchCache.get(cacheKey);
+  if (!cached) try { cached = JSON.parse(fs.readFileSync(cachePath, "utf8")); } catch { /* absent ou invalide : recherche normale */ }
+  if (cached && Date.now() - cached.at < 24 * 3600_000) return cached.data as any;
   const r = await fetch(url, { headers: { "User-Agent": "E-COM-STUDIO-IA", ...headers }, signal: AbortSignal.timeout(TIMEOUT) });
   if (!r.ok) throw new Error(`${new URL(url).hostname} ${r.status}`);
-  return r.json() as Promise<any>;
+  const data = await r.json();
+  if (searchCache.size >= 100) searchCache.delete(searchCache.keys().next().value!);
+  const entry = { at: Date.now(), data };
+  searchCache.set(cacheKey, entry);
+  fs.mkdirSync(cacheDir, { recursive: true });
+  const tmp = `${cachePath}.${process.pid}.${Math.random().toString(36).slice(2)}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(entry), { mode: 0o600 });
+  fs.renameSync(tmp, cachePath);
+  // Une recherche périmée n'est pas conservée indéfiniment.
+  for (const name of fs.readdirSync(cacheDir)) if (/^[a-f0-9]{64}\.json$/.test(name)) {
+    const file = path.join(cacheDir, name);
+    try { if (Date.now() - fs.statSync(file).mtimeMs > 24 * 3600_000) fs.unlinkSync(file); } catch { /* autre worker */ }
+  }
+  return data as any;
 };
 
 /** Tests automatiques : jamais d'appel aux banques d'images réelles (réseau lent ou absent, résultats changeants). */
@@ -118,12 +144,12 @@ export const emptyVideoReport = (): StockVideoReport => ({ noKey: false, errors:
 export const aiGeneratedTags = (tags: string) => /\bai[- ]?(generated|genere|generee|generes|generees)\b|\bgeneree? par (l )?ia\b/i.test(tags.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/'/g, " "));
 
 /** Vidéos libres de droits (Pexels, Pixabay : clés gratuites) ; fichier HD de taille raisonnable choisi. */
-export async function searchStockVideos(queries: VideoQuery[], orientation: "landscape" | "portrait", lang: "fr" | "en", exclude: Set<string>, enough = 6, report: StockVideoReport = emptyVideoReport()): Promise<StockVideo[]> {
+export async function searchStockVideos(queries: VideoQuery[], orientation: "landscape" | "portrait", lang: "fr" | "en", exclude: Set<string>, enough = 6, report: StockVideoReport = emptyVideoReport(), options: { sourceOnly?: "pixabay" } = {}): Promise<StockVideo[]> {
   const out: StockVideo[] = [];
   const spare: StockVideo[] = [];
   if (offline()) return out;
   const pixabay = activeProviderKey("pixabay");
-  const pexels = pixabayOnly() ? null : activeProviderKey("pexels");
+  const pexels = options.sourceOnly === "pixabay" || pixabayOnly() ? null : activeProviderKey("pexels");
   if (!pixabay && !pexels) {
     report.noKey = true;
     return out;

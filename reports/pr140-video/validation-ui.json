@@ -1,0 +1,54 @@
+{
+  "scope": "navigation, limites visibles, lecture et refus d'une durée impossible ; pas de création IA depuis le navigateur",
+  "simulation": true,
+  "results": [
+    {
+      "name": "produit-publicitaire-ordinateur",
+      "warnings": "Vidéo rendue — à vérifier\n\nLe fichier est disponible. Le rendu ne prouve pas le respect de toutes vos demandes.\n\nVoix off : le modèle de voix n'est pas installé sur ce serveur ; vidéo sans voix (musique et titres).\naucun logo du projet sur la carte de fin\nNon vérifié : Fidélité du produit (même forme, couleurs, matières, détails)\nNon vérifié : Orthographe",
+      "playbackCurrentTime": 1.883147,
+      "errors": [],
+      "externalBlocked": [],
+      "generationRequestsAllowed": 0
+    },
+    {
+      "name": "service-publicitaire-ordinateur",
+      "warnings": "Vidéo rendue — à vérifier\n\nLe fichier est disponible. Le rendu ne prouve pas le respect de toutes vos demandes.\n\nPlans d'illustration libres de droits (Pixabay) : ils ne sont pas présentés comme des réalisations du client.\nPlans choisis sur leurs mots-clés seulement (contrôle visuel par l'IA indisponible) : titres d'étapes retirés, plans à vérifier dans l'aperçu.\nVoix off : le modèle de voix n'est pas installé sur ce serveur ; vidéo sans voix (musique et titres).\naucun logo du projet sur la carte de fin\nNon vérifié : Fidélité du produit (même forme, couleurs, matières, détails)\nNon vérifié : Orthographe",
+      "playbackCurrentTime": 1.388369,
+      "errors": [],
+      "externalBlocked": [],
+      "generationRequestsAllowed": 0
+    },
+    {
+      "name": "service-organique-ordinateur",
+      "warnings": "Vidéo rendue — à vérifier\n\nLe fichier est disponible. Le rendu ne prouve pas le respect de toutes vos demandes.\n\nPlans d'illustration libres de droits (Pixabay) : ils ne sont pas présentés comme des réalisations du client.\nPlans choisis sur leurs mots-clés seulement (contrôle visuel par l'IA indisponible) : titres d'étapes retirés, plans à vérifier dans l'aperçu.\nVoix off : le modèle de voix n'est pas installé sur ce serveur ; vidéo sans voix (musique et titres).\naucun logo du projet sur la carte de fin\nNon vérifié : Fidélité du produit (même forme, couleurs, matières, détails)\nNon vérifié : Orthographe",
+      "playbackCurrentTime": 1.523871,
+      "errors": [],
+      "externalBlocked": [],
+      "generationRequestsAllowed": 0
+    },
+    {
+      "name": "produit-publicitaire-mobile",
+      "warnings": "Vidéo rendue — à vérifier\n\nLe fichier est disponible. Le rendu ne prouve pas le respect de toutes vos demandes.\n\nVoix off : le modèle de voix n'est pas installé sur ce serveur ; vidéo sans voix (musique et titres).\naucun logo du projet sur la carte de fin\nNon vérifié : Fidélité du produit (même forme, couleurs, matières, détails)\nNon vérifié : Orthographe",
+      "playbackCurrentTime": 1.370038,
+      "errors": [],
+      "externalBlocked": [],
+      "generationRequestsAllowed": 0
+    },
+    {
+      "name": "service-publicitaire-mobile",
+      "warnings": "Vidéo rendue — à vérifier\n\nLe fichier est disponible. Le rendu ne prouve pas le respect de toutes vos demandes.\n\nPlans d'illustration libres de droits (Pixabay) : ils ne sont pas présentés comme des réalisations du client.\nPlans choisis sur leurs mots-clés seulement (contrôle visuel par l'IA indisponible) : titres d'étapes retirés, plans à vérifier dans l'aperçu.\nVoix off : le modèle de voix n'est pas installé sur ce serveur ; vidéo sans voix (musique et titres).\naucun logo du projet sur la carte de fin\nNon vérifié : Fidélité du produit (même forme, couleurs, matières, détails)\nNon vérifié : Orthographe",
+      "playbackCurrentTime": 1.360898,
+      "errors": [],
+      "externalBlocked": [],
+      "generationRequestsAllowed": 0
+    },
+    {
+      "name": "service-organique-mobile",
+      "warnings": "Vidéo rendue — à vérifier\n\nLe fichier est disponible. Le rendu ne prouve pas le respect de toutes vos demandes.\n\nPlans d'illustration libres de droits (Pixabay) : ils ne sont pas présentés comme des réalisations du client.\nPlans choisis sur leurs mots-clés seulement (contrôle visuel par l'IA indisponible) : titres d'étapes retirés, plans à vérifier dans l'aperçu.\nVoix off : le modèle de voix n'est pas installé sur ce serveur ; vidéo sans voix (musique et titres).\naucun logo du projet sur la carte de fin\nNon vérifié : Fidélité du produit (même forme, couleurs, matières, détails)\nNon vérifié : Orthographe",
+      "playbackCurrentTime": 1.446372,
+      "errors": [],
+      "externalBlocked": [],
+      "generationRequestsAllowed": 0
+    }
+  ]
+}

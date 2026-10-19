@@ -10,7 +10,7 @@ import { balance, EUR } from "../billing";
 import { getJsonSetting } from "../settings";
 import { priceFor, routeFor, usdToEur, type TaskId } from "./config";
 import { mediaRouteFor } from "./media-providers";
-import type { MediaUsage } from "./media-routing";
+import { usageExplicit, type MediaUsage } from "./media-routing";
 import { L } from "../i18n-server";
 import { budgetPctOf } from "./budget-pct";
 import { CAP_FACTOR, formatBudgetPct } from "../budget-pct";
@@ -34,7 +34,7 @@ const ACTIONS: Record<CostAction, { fr: string; en: string }> = {
  */
 function routeOf(task: TaskId, usage?: MediaUsage): { provider: string; model: string } {
   if (task === "image_generation" || task === "video_generation") {
-    const m = mediaRouteFor(usage ?? (task === "video_generation" ? "product_video" : "product_image"));
+    const m = mediaRouteFor(usage ?? (task === "video_generation" ? "product_video" : "product_image"), usage==="social_image"?{text:!usageExplicit("text_layout"),references:2}:usage==="text_layout"?{text:true,references:2}:{});
     if (m) return m;
   }
   return routeFor(task);
@@ -46,7 +46,7 @@ function usd(task: TaskId, units: { input?: number; output?: number; images?: nu
   if (!p) return 0;
   if (p.unit === "tokens") {
     // Images : jetons d'image (gpt-image-1) ; texte : entrée / sortie.
-    if (units.images) return units.images * ((400 * p.inputPerM + 1500 * (p.imageInputPerM ?? p.inputPerM) + 6300 * (p.imageOutputPerM ?? p.outputPerM)) / 1e6);
+    if (units.images) return units.images * ((400 * p.inputPerM + (usage==="social_image"||usage==="text_layout"?3000:1500) * (p.imageInputPerM ?? p.inputPerM) + 6300 * (p.imageOutputPerM ?? p.outputPerM)) / 1e6);
     return ((units.input ?? 0) * p.inputPerM + (units.output ?? 0) * p.outputPerM) / 1e6;
   }
   if (p.unit === "image") return (units.images ?? 0) * p.perImage;
@@ -129,9 +129,10 @@ export const capMicro = (probableMicro: number) => Math.round(probableMicro * CA
  * publications, son contrôle lettre par lettre, et l'accroche.
  */
 export function aiPostProbableMicro(): number {
-  const qc = usd("quality_control", { input: 4000, output: 600 });
-  const caption = (usd("blog_writing", { input: 16000, output: 7000 }) + usd("quality_control", { input: 14000, output: 2000 })) / 10;
-  return toMicro(usd("image_generation", { images: 1 }, "social_image") + qc + caption);
+  const two = usageExplicit("text_layout");
+  const qc = usd("quality_control", { input: 24000, output: 2000 }) * (two ? 2 : 1);
+  const concept = usd("copywriting", { input: 18000, output: 2000 });
+  return toMicro(usd("image_generation", { images: 1 }, "social_image") + (two ? usd("image_generation", { images: 1 }, "text_layout") : 0) + qc + concept);
 }
 
 export function estimateFor(userId: string, action: CostAction, opts: { beats?: number; videos?: VideoChoice } = {}) {

@@ -1,0 +1,41 @@
+{
+  "simulation": true,
+  "videos": [
+    {
+      "file": "produit-mobile.mp4",
+      "duration": 18.52,
+      "stream": {
+        "codec_name": "h264",
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "file": "produit-ordinateur.mp4",
+      "duration": 23.44,
+      "stream": {
+        "codec_name": "h264",
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "file": "service-mobile.mp4",
+      "duration": 17.28,
+      "stream": {
+        "codec_name": "h264",
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "file": "service-ordinateur.mp4",
+      "duration": 22.0,
+      "stream": {
+        "codec_name": "h264",
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ]
+}

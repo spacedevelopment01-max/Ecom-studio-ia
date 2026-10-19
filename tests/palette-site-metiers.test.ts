@@ -45,7 +45,7 @@ describe("Palette verrouillée par la direction", async () => {
     // Autre direction : la marque prend SA palette, le site change de couleurs.
     const { grantProjectPlan } = await import("@/lib/project-subscriptions");
     grantProjectPlan(pid, "dominer");
-    const target = loadProject(pid).brand!.direction === "nocturne" ? "terroir" : "nocturne";
+    const target = loadProject(pid).brand!.direction === "onde" ? "fraise" : "onde"; // thèmes actifs seulement (les anciens sont retirés du catalogue)
     const r = await patch({ direction: target });
     expect(r.status).toBe(200);
     const out = await r.json();

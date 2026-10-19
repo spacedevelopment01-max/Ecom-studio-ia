@@ -250,11 +250,12 @@ export function releaseJob(jid: string) {
 }
 
 export function completeJob(jid: string, result: unknown) {
+  const delivery = (result as { delivery?: { message?: string; state?: string } } | null)?.delivery;
   run(
     "UPDATE jobs SET status='done', progress=1, result=?, error=NULL, locked_by=NULL, locked_until=NULL, message=?, finished_at=?, updated_at=? WHERE id=? AND ((status IN ('running','paused') AND (locked_by IS NULL OR locked_by=?)) OR (status='queued' AND locked_by=?))",
     JSON.stringify(result ?? null),
     // Message au client porté par le résultat (ex. reprise débitée, annoncée en % du budget IA).
-    typeof (result as { notice?: unknown } | null)?.notice === "string" ? `${L("Terminé", "Done")} · ${(result as { notice: string }).notice}` : L("Terminé", "Done"),
+    delivery?.message ?? (typeof (result as { notice?: unknown } | null)?.notice === "string" ? `${L("Terminé", "Done")} · ${(result as { notice: string }).notice}` : L("Terminé", "Done")),
     now(),
     now(),
     jid,

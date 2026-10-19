@@ -172,7 +172,10 @@ describe("Logos : relais OpenAI et jamais zéro logo", async () => {
     // … « Arrêter » l'annule et libère l'onglet.
     expect((await route.POST(req({ action: "stop" }), ctx)).status).toBe(200);
     expect(one<{ status: string }>("SELECT status FROM jobs WHERE id = ?", `stuck-${pid}`)!.status).toBe("cancelled");
-    expect((await route.POST(req({ action: "generate" }), ctx)).status).toBe(200);
+    // Nouvelle politique : le bouton est libéré, mais aucun dessin sans le modèle obligatoire et un plafond connu.
+    const pending = await route.POST(req({ action: "generate" }), ctx);
+    expect(pending.status).toBe(409);
+    expect(JSON.stringify(await pending.json())).toMatch(/en attente/);
     run("UPDATE worker_heartbeat SET beat_at = ?", now());
   });
 });

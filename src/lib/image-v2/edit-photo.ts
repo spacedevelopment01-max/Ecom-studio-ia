@@ -5,7 +5,7 @@
  * l'image d'origine est gardée (nouvelle image liée à la première) : le client peut toujours revenir en arrière.
  */
 import sharp from "sharp";
-import { assetData, getAsset, saveAsset } from "../library";
+import { assetData, assetMeta, getAsset, saveAsset } from "../library";
 import { editPhoto } from "../ai/media-providers";
 import { UserFacingError, type JobContext } from "../jobs";
 import { L } from "../i18n-server";
@@ -24,6 +24,16 @@ export async function editProjectPhoto(ctx: JobContext, projectId: string, asset
   if (!src || src.project_id !== projectId || src.deleted_at || !/^image\//.test(src.mime)) throw new UserFacingError(L("Photo introuvable dans ce projet.", "Photo not found in this project."));
   const ask = instruction.trim();
   if (ask.length < 3) throw new UserFacingError(L("Décrivez la modification souhaitée.", "Describe the change you want."));
+  const recipe=assetMeta<Record<string,any>>(src);
+  if (recipe.aiPost) {
+    const { generateAiPostImage }=await import("../engine/ai-post-image");
+    const { redoRequest }=await import("../media/ai-image-variants");
+    const { nearestAspect }=await import("./formats");
+    const dimensions=await sharp(assetData(src)).metadata();
+    const req=redoRequest(recipe,{aspect:nearestAspect(dimensions.width??1080,dimensions.height??1350),instruction:ask});
+    const out=await generateAiPostImage(ctx,projectId,{...req,sourceAssetId:src.id});
+    return {assetId:out.assetId,sourceAssetId:src.id};
+  }
   const data = assetData(src);
   const meta = await sharp(data, { failOn: "none" }).metadata();
   const aspect = editAspect(meta.width ?? 1, meta.height ?? 1);

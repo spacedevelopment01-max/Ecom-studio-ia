@@ -3,6 +3,8 @@
  * interdits, liens internes possibles (existants ou prévus) et appel à l'action. Gratuit, déterministe.
  */
 import type { Project } from "../projects";
+import { brainView } from "../ai/context";
+import { requirementsOf } from "./requirements";
 import { verifiedFacts } from "./facts";
 import { contentIntent, INTENT_GOAL } from "./intent";
 import { fold, langPack } from "./lang";
@@ -14,6 +16,8 @@ function outlineFor(type: ContentType, f: VerifiedFacts, lang: ContentLang): Out
   const H = langPack(lang).headings;
   const o = (heading: string, purpose: string, required = true) => ({ heading, purpose, required });
   switch (type) {
+    case "contact_page":
+      return [o("H1", "Contacter la marque"), o(H.intro, "Motif du contact et informations utiles à transmettre, sans inventer de délai"), o(H.contact, "Coordonnées réellement connues, moyen de contact configuré et CTA")];
     case "product_page":
       return [
         o("H1", "nom du produit + ce qu'il est"),
@@ -50,13 +54,14 @@ function outlineFor(type: ContentType, f: VerifiedFacts, lang: ContentLang): Out
 /** Appel à l'action adapté au type et au mode de contact réel. */
 export function ctaFor(type: ContentType, f: VerifiedFacts, lang: ContentLang): string | null {
   const C = langPack(lang).cta;
+  if (type === "contact_page") return lang === "fr" ? "Envoyer ma demande" : lang === "es" ? "Enviar mi consulta" : "Send my inquiry";
   if (type === "blog_article") return f.business === "services" ? C.quote : C.discover;
   if (type === "metadata" || type === "faq") return null;
   if (f.business === "services") return f.contact.bookingUrl ? C.book : f.contact.mode === "call" && f.contact.phone ? C.call : f.contact.mode === "booking" ? C.book : C.quote;
   return type === "product_page" ? C.buy : C.discover;
 }
 
-export function buildBrief(p: Project, o: { type: ContentType; page: PageRef; lang: ContentLang; strategy: SeoStrategy; request?: string | null; keyword?: Keyword | null; facts?: VerifiedFacts }): ContentBrief {
+export function buildBrief(p: Project, o: { type: ContentType; page: PageRef; lang: ContentLang; strategy: SeoStrategy; request?: string | null; keyword?: Keyword | null; facts?: VerifiedFacts; context?: ContentBrief["context"] }): ContentBrief {
   const f = o.facts ?? verifiedFacts(p);
   const cluster = o.strategy.clusters.find((c) => c.page?.key === o.page.key) ?? (o.keyword ? o.strategy.clusters.find((c) => fold(c.primary.term) === fold(o.keyword!.term)) : undefined);
   const primary = o.keyword ?? cluster?.primary ?? null;
@@ -72,7 +77,11 @@ export function buildBrief(p: Project, o: { type: ContentType; page: PageRef; la
     ...(f.price ? [`prix : ${f.price}`] : []),
   ];
   return {
+    request: o.request ?? "",
+    context: o.context ?? (() => { const v = brainView(p, "seo"); return { scope: v.label, hash: v.hash, version: v.brainVersion, stable: v.stable }; })(),
+    requirements: requirementsOf(o.request ?? ""),
     type: o.type,
+    ...(o.request ? {instructions:o.request} : {}),
     intent,
     lang: o.lang,
     page: o.page,

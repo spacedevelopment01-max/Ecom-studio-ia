@@ -4,6 +4,8 @@
  */
 import { describe, expect, it, vi } from "vitest";
 
+// Le devis est injecté : ce test vérifie les routes, pas la disponibilité d’un fournisseur réel.
+vi.mock("@/lib/logo-v2/quote", async original => ({ ...await original<object>(), logoSeriesQuote: () => ({ mode: "artwork", creations: 3, images: 3, maxMicro: 100000 }), logoRedrawQuote: () => ({ mode: "artwork", creations: 1, images: 1, maxMicro: 40000 }) }));
 let sessionUser: any = null;
 vi.mock("@/lib/auth", async (orig) => {
   const real = await orig<typeof import("@/lib/auth")>();

@@ -206,7 +206,8 @@ describe("I7 — découverte gratuite : images, vidéos et UGC réservées aux f
     expect((await videos(post(`/api/projects/${pid}/videos`, { format: "9:16" }), ctx({ id: pid }))).status).toBe(410);
     run("UPDATE projects SET brand_json = ? WHERE id = ?", JSON.stringify({ name: "Marque" }), pid);
     const v2 = (await import("@/app/api/projects/[id]/videos/v2/route")).POST;
-    expect((await v2(post(`/api/projects/${pid}/videos/v2`, { action: "generate", ask: { kind: "video_ad" } }), ctx({ id: pid }))).status).toBe(200);
+    const approvedVideo=await(await v2(post(`/api/projects/${pid}/videos/v2`,{action:"plan",ask:{kind:"video_ad"}}),ctx({id:pid}))).json();
+    expect((await v2(post(`/api/projects/${pid}/videos/v2`, { action: "generate", ask: { kind: "video_ad" },approvalToken:approvedVideo.approvalToken }), ctx({ id: pid }))).status).toBe(200);
   });
 
   it("GET /api/billing indique si la création est ouverte (forfait ou administrateur)", async () => {

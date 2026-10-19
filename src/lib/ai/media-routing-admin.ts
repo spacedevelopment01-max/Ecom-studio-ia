@@ -9,6 +9,7 @@ import { getJsonSetting, getSetting } from "../settings";
 import { priceFor, providerEnabled, providerKey } from "./config";
 import { ALIBABA_REGIONS, alibabaBase, alibabaRegion } from "./alibaba";
 import { MEDIA_MODELS, type MediaKind, type MediaModel } from "./media-models";
+import { REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVIDER } from "./logo-policy";
 import { incompatibility, MEDIA_USAGES, mediaBackup, mediaMode, usageMode, mediaPrimary, mediaStats, mediaStatus, rankMedia, selectMedia, shutDown, typicalCostMicro, USAGE_INFO, usageBackup, usageExplicit, usageNeed, usageOff, usagePrimary, usageSettings } from "./media-routing";
 
 const eur = (micro: number | null) => (micro == null ? null : Math.round((micro / EUR) * 1000) / 1000);
@@ -114,15 +115,15 @@ export function mediaUsageOverview() {
       // Principal hérité qui ne convient pas à cet usage (ex. modèle sans retouche par masque) : signalé.
       primaryProblem: pm ? incompatibility(pm, need) : L("modèle hors catalogue", "model not in the catalog"),
       backup: key(backup),
-      backupInherited: !("backup" in own),
+      backupInherited: u !== "logo" && !("backup" in own),
       off,
       canBeOff: !!info.canBeOff,
       current: pick ? { key: `${pick.provider}:${pick.model}`, role: pick.role } : null,
       explicit: usageExplicit(u),
-      options: MEDIA_MODELS.filter((m) => m.kind === info.kind).map((m) => {
+      options: MEDIA_MODELS.filter((m) => m.kind === info.kind && (u !== "logo" || (m.provider === REQUIRED_LOGO_PROVIDER && m.model === REQUIRED_LOGO_MODEL))).map((m) => {
         const st = mediaStatus(m);
         const priced = !st.reasons.some((r) => /tarif|price/i.test(r));
-        return { key: st.key, label: m.label, incompatible: incompatibility(m, need), canBePrimary: !!m.adapter && st.confirmed && priced, canBeBackup: st.usable };
+        return { key: st.key, label: m.label, incompatible: incompatibility(m, need), canBePrimary: !!m.adapter && st.confirmed && priced, canBeBackup: u !== "logo" && st.usable };
       }),
     };
   });

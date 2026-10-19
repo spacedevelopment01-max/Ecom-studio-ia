@@ -1,0 +1,104 @@
+{
+  "appCodeCommit": "8122545d36cff5451861bed394596181735392a2",
+  "fixtureOnly": true,
+  "aiCallsRecorded": 0,
+  "results": [
+    {
+      "slug": "produit-publicitaire",
+      "docKey": "vid:dc9b3b713f1f7aab70a4",
+      "versionsRetained": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "currentVersion": 14,
+      "downloadMatchesStoredAssetSha256": "f7e66c8692a320c869ace0fc3c357d9f6b25db7b793f810a210a5b8b10d85b8f",
+      "sceneDurationsS": [
+        5,
+        5,
+        5,
+        5
+      ],
+      "voicePhrases": 4,
+      "endingKind": "last_clip",
+      "versionWithMusicOffRetained": true
+    },
+    {
+      "slug": "service-publicitaire",
+      "docKey": "vid:0c2337ea0b4a9758bdb3",
+      "versionsRetained": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "currentVersion": 5,
+      "downloadMatchesStoredAssetSha256": "7a2fa6d757c434852e8a7d87c408c3ec2e3416bb4285cff4f064c93d285f3235",
+      "sceneDurationsS": [
+        5,
+        5,
+        5,
+        5
+      ],
+      "voicePhrases": 4,
+      "endingKind": "last_clip",
+      "versionWithMusicOffRetained": true
+    },
+    {
+      "slug": "produit-organique",
+      "docKey": "vid:b9d6e735bfff951c511f",
+      "versionsRetained": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "currentVersion": 5,
+      "downloadMatchesStoredAssetSha256": "fe8b4e3c8b73c956f745585f2d703a35da4693de57323ff0df7d053f6753ae30",
+      "sceneDurationsS": [
+        5,
+        5,
+        5,
+        5
+      ],
+      "voicePhrases": 4,
+      "endingKind": "last_clip",
+      "versionWithMusicOffRetained": true
+    },
+    {
+      "slug": "service-organique",
+      "docKey": "vid:ff9fc49844ff5f861ad4",
+      "versionsRetained": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "currentVersion": 5,
+      "downloadMatchesStoredAssetSha256": "2bf9ca3254efc8eba06318eca91bfd93848bc9c36916231881a26e320ac11fc1",
+      "sceneDurationsS": [
+        5,
+        5,
+        5,
+        5
+      ],
+      "voicePhrases": 4,
+      "endingKind": "last_clip",
+      "versionWithMusicOffRetained": true
+    }
+  ]
+}

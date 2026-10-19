@@ -1,0 +1,127 @@
+{
+  "sourceCommit": "92b9295b234f9f526005c66fc8fa78e1eb82da9f",
+  "generatedAt": "2026-10-17T21:52:29.057Z",
+  "isolated": true,
+  "aiCalls": 0,
+  "data": "synthétiques uniquement",
+  "cases": [
+    {
+      "business": "services",
+      "pages": [
+        {
+          "target": "service:offer-1",
+          "url": "/pages/prestation-1",
+          "seo": {
+            "title": "Référencement de l'offre 1",
+            "description": "Description précise de l'offre 1, sans mélange avec une autre prestation."
+          },
+          "textPresent": true,
+          "otherTextAbsent": true,
+          "nativeExportBodyPresent": true,
+          "metadataInContentExport": true,
+          "screenshots": [
+            {
+              "file": "page-1-ordinateur.png",
+              "width": 1440,
+              "overflow": 0
+            },
+            {
+              "file": "page-1-mobile.png",
+              "width": 390,
+              "overflow": 0
+            }
+          ]
+        },
+        {
+          "target": "service:offer-2",
+          "url": "/pages/prestation-2",
+          "seo": {
+            "title": "Référencement de l'offre 2",
+            "description": "Description précise de l'offre 2, sans mélange avec une autre prestation."
+          },
+          "textPresent": true,
+          "otherTextAbsent": true,
+          "nativeExportBodyPresent": true,
+          "metadataInContentExport": true,
+          "screenshots": [
+            {
+              "file": "page-2-ordinateur.png",
+              "width": 1440,
+              "overflow": 0
+            },
+            {
+              "file": "page-2-mobile.png",
+              "width": 390,
+              "overflow": 0
+            }
+          ]
+        }
+      ],
+      "themeCheck": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "versionUnchanged": true,
+      "missingMedia": 0
+    },
+    {
+      "business": "products",
+      "pages": [
+        {
+          "target": "product:main",
+          "url": "/products/diagnostic",
+          "seo": {
+            "title": "Référencement de l'offre 1",
+            "description": "Description précise de l'offre 1, sans mélange avec une autre prestation."
+          },
+          "textPresent": true,
+          "otherTextAbsent": true,
+          "nativeExportBodyPresent": true,
+          "metadataInContentExport": true,
+          "screenshots": [
+            {
+              "file": "page-1-ordinateur.png",
+              "width": 1440,
+              "overflow": 0
+            },
+            {
+              "file": "page-1-mobile.png",
+              "width": 390,
+              "overflow": 0
+            }
+          ]
+        },
+        {
+          "target": "product:catalog:accessory",
+          "url": "/products/diagnostic-2",
+          "seo": {
+            "title": "Référencement de l'offre 2",
+            "description": "Description précise de l'offre 2, sans mélange avec une autre prestation."
+          },
+          "textPresent": true,
+          "otherTextAbsent": true,
+          "nativeExportBodyPresent": true,
+          "metadataInContentExport": true,
+          "screenshots": [
+            {
+              "file": "page-2-ordinateur.png",
+              "width": 1440,
+              "overflow": 0
+            },
+            {
+              "file": "page-2-mobile.png",
+              "width": 390,
+              "overflow": 0
+            }
+          ]
+        }
+      ],
+      "themeCheck": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "versionUnchanged": true,
+      "missingMedia": 0
+    }
+  ]
+}

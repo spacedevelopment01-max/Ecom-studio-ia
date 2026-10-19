@@ -1,0 +1,680 @@
+{
+  "schemaVersion": 1,
+  "kind": "project_ready_for_theme",
+  "projectId": "gqmycuts10wz7fwn",
+  "revision": 26,
+  "provenance": "simulation",
+  "builtAt": 1792344363246,
+  "clientBrief": {
+    "offerUrl": "",
+    "description": "Carnet de croquis à couverture en liège, pages sans lignes.",
+    "offerName": "Sillage",
+    "brandName": "Sillage",
+    "target": "Illustrateurs nomades",
+    "constraints": "Tutoiement interdit. Aucun avis ni origine certifiée à inventer. Ne jamais promettre une certification.",
+    "business": "products",
+    "photoIds": [
+      "49usn3h0pryshk9g"
+    ],
+    "referenceUrls": [
+      "https://reference.example/carnets"
+    ],
+    "price": "28,50",
+    "services": {
+      "services": [],
+      "area": "",
+      "address": "",
+      "phone": "",
+      "email": "",
+      "hours": "",
+      "bookingUrl": "",
+      "contactMode": "form",
+      "contactModes": [
+        "form"
+      ]
+    }
+  },
+  "profile": {
+    "name": "Sillage",
+    "nameStatus": "provided",
+    "category": "",
+    "sector": "artisanat",
+    "summary": "Carnet de croquis à couverture en liège, pages sans lignes.",
+    "facts": [
+      {
+        "key": "materials",
+        "label": "Matière",
+        "value": "liège",
+        "status": "confirmed",
+        "source": "description"
+      },
+      {
+        "key": "shipping",
+        "label": "Délais et frais de livraison",
+        "value": "",
+        "status": "unknown",
+        "source": "ai"
+      },
+      {
+        "key": "returns",
+        "label": "Conditions de retour",
+        "value": "",
+        "status": "unknown",
+        "source": "ai"
+      },
+      {
+        "key": "origin",
+        "label": "Fabrication",
+        "value": "",
+        "status": "unknown",
+        "source": "ai"
+      }
+    ],
+    "visual": {
+      "colors": [],
+      "description": ""
+    },
+    "price": {
+      "amount": 2850,
+      "currency": "EUR",
+      "status": "confirmed"
+    },
+    "variants": [],
+    "questions": [
+      {
+        "id": "s-making",
+        "question": "Qui le fabrique, où et comment ? (ex. dans notre atelier à Nantes, tourné à la main)",
+        "why": "La fabrication est l'histoire de la marque : elle doit être exacte pour être dite.",
+        "required": false,
+        "factKey": "origin"
+      },
+      {
+        "id": "shipping",
+        "question": "Quels sont vos délais et frais de livraison ?",
+        "why": "Affichés dans la FAQ et la page Livraison ; rien ne sera inventé.",
+        "required": false,
+        "factKey": "shipping"
+      },
+      {
+        "id": "returns",
+        "question": "Quelles sont vos conditions de retour ?",
+        "why": "Obligatoire pour la page Livraison et retours.",
+        "required": false,
+        "factKey": "returns"
+      }
+    ],
+    "claimsToAvoid": [],
+    "sources": [],
+    "analyzedBy": "local"
+  },
+  "services": null,
+  "strategy": {
+    "audience": [
+      {
+        "label": "Illustrateurs nomades",
+        "needs": [
+          "Matière : liège"
+        ],
+        "objections": [
+          "Que peut-on réellement vérifier ?"
+        ]
+      }
+    ],
+    "angles": [
+      {
+        "title": "Décider sur des éléments vérifiables",
+        "idea": "Présenter Sillage à Illustrateurs nomades par ses caractéristiques et conditions vérifiables."
+      }
+    ],
+    "pillars": [
+      "Matière : liège"
+    ],
+    "keyMessages": [
+      "Matière : liège"
+    ],
+    "platform": {
+      "persona": "Illustrateurs nomades",
+      "problem": "Présenter Sillage à Illustrateurs nomades par ses caractéristiques et conditions vérifiables.",
+      "alternatives": "Une offre comparable à Sillage. La page décrit les usages et conditions de présentation. Les modalités de contact sont visibles. Ceci est une source synthétique pour vérifier la persistance, pas une étude réelle.",
+      "difference": "Alternative centrée sur les preuves : utile si la comparaison et les objections dominent le choix.",
+      "proofs": [
+        {
+          "claim": "Matière : liège",
+          "proof": "Hypothèse validée par le client ; aucune preuve chiffrée ajoutée.",
+          "status": "missing"
+        }
+      ],
+      "objections": [
+        {
+          "objection": "Que peut-on réellement vérifier ?",
+          "answer": "Distinguer les faits du projet, les observations des sources et les éléments restant à confirmer."
+        }
+      ]
+    },
+    "generatedBy": "local"
+  },
+  "brand": {
+    "name": "Sillage",
+    "nameStatus": "validated",
+    "alternatives": [],
+    "tagline": "Fait avec soin.",
+    "positioning": "Présenter Sillage à Illustrateurs nomades par ses caractéristiques et conditions vérifiables.",
+    "audience": "Illustrateurs nomades",
+    "personality": [],
+    "tone": {
+      "voice": "Clair, précis et chaleureux",
+      "do": [
+        "Parler concret",
+        "Citer les caractéristiques vérifiées"
+      ],
+      "dont": [
+        "Promettre sans preuve",
+        "Superlatifs vides"
+      ]
+    },
+    "palette": {
+      "primary": "#735B45",
+      "secondary": "#DBD6D1",
+      "accent": "#B4B074",
+      "light": "#F7F5F2",
+      "dark": "#1F1914"
+    },
+    "fonts": {
+      "heading": "libre_baskerville_n4",
+      "body": "inter_n4"
+    },
+    "logo": {
+      "concept": "Logo à choisir",
+      "status": "validated",
+      "assetId": "tiugqmkt5xipdb5z",
+      "provisional": false
+    },
+    "story": "",
+    "values": [],
+    "direction": "galerie",
+    "validated": [
+      "name",
+      "tagline",
+      "palette",
+      "fonts",
+      "logo"
+    ],
+    "generatedBy": "local"
+  },
+  "copy": {
+    "seo": {
+      "title": "Sillage | Sillage",
+      "description": "Carnet de croquis à couverture en liège, pages sans lignes."
+    },
+    "announcement": [],
+    "hero": {
+      "eyebrow": "Atelier",
+      "heading": "Fait avec soin.",
+      "line1": "Sillage",
+      "line2": "Fait avec soin.",
+      "text": "Carnet de croquis à couverture en liège, pages sans lignes.",
+      "cta": "Voir Sillage"
+    },
+    "statement": {
+      "eyebrow": "Matière",
+      "heading": "Liège",
+      "text": ""
+    },
+    "features": {
+      "heading": "Ce qu'il faut savoir",
+      "items": [
+        {
+          "title": "Dimensions",
+          "text": "[À compléter : dimensions]",
+          "icon": "hand"
+        },
+        {
+          "title": "Matières et fabrication",
+          "text": "liège",
+          "icon": "leaf"
+        }
+      ]
+    },
+    "story": {
+      "heading": "Sillage, en détail",
+      "steps": [
+        {
+          "title": "Matière",
+          "text": "liège"
+        },
+        {
+          "title": "Le détail",
+          "text": "[À compléter : caractéristique à mettre en avant]"
+        }
+      ]
+    },
+    "detail": {
+      "eyebrow": "Atelier",
+      "heading": "Sillage",
+      "text": "Carnet de croquis à couverture en liège, pages sans lignes."
+    },
+    "specs": {
+      "heading": "Caractéristiques",
+      "items": [
+        {
+          "label": "Matière",
+          "value": "liège"
+        },
+        {
+          "label": "Délais et frais de livraison",
+          "value": "[À compléter : délais et frais de livraison]"
+        },
+        {
+          "label": "Conditions de retour",
+          "value": "[À compléter : conditions de retour]"
+        },
+        {
+          "label": "Fabrication",
+          "value": "[À compléter : fabrication]"
+        }
+      ]
+    },
+    "faq": {
+      "heading": "Questions fréquentes",
+      "items": [
+        {
+          "q": "Comment est-il fabriqué ?",
+          "a": "[À compléter : fabrication]"
+        },
+        {
+          "q": "En quelles matières ?",
+          "a": "Liège."
+        },
+        {
+          "q": "Comment l'entretenir ?",
+          "a": "[À compléter : conseils d'entretien]"
+        },
+        {
+          "q": "Comment l'utiliser ?",
+          "a": "[À compléter : mode d'emploi]"
+        },
+        {
+          "q": "Quels sont les délais de livraison ?",
+          "a": "[À compléter : délais et tarifs de livraison]"
+        },
+        {
+          "q": "Puis-je retourner ma commande ?",
+          "a": "[À compléter : conditions de retour]"
+        }
+      ]
+    },
+    "marquee": [
+      "Matière : liège",
+      "Fait avec soin"
+    ],
+    "gallery": {
+      "heading": "En images",
+      "captions": []
+    },
+    "cta": {
+      "heading": "Adopter Sillage",
+      "text": "",
+      "button": "Commander"
+    },
+    "newsletter": {
+      "heading": "Restons en contact",
+      "text": "Nouveautés et coulisses, sans excès."
+    },
+    "product": {
+      "title": "Sillage",
+      "short": "Carnet de croquis à couverture en liège, pages sans lignes.",
+      "description_html": "<p>Carnet de croquis à couverture en liège, pages sans lignes.</p><ul><li><strong>Matière</strong> : liège</li></ul><p><strong>Bon à savoir :</strong> [À compléter : fabrication]</p>",
+      "highlights": [
+        "Liège"
+      ],
+      "tabs": [
+        {
+          "heading": "Caractéristiques",
+          "content_html": "<ul><li><strong>Matière :</strong> liège</li><li><strong>Délais et frais de livraison :</strong> [À compléter : délais et frais de livraison]</li><li><strong>Conditions de retour :</strong> [À compléter : conditions de retour]</li><li><strong>Fabrication :</strong> [À compléter : fabrication]</li></ul>"
+        },
+        {
+          "heading": "Matières et fabrication",
+          "content_html": "<p>liège</p>"
+        },
+        {
+          "heading": "Livraison et retours",
+          "content_html": "<p>[À compléter : délais et tarifs de livraison]</p><p>[À compléter : conditions de retour]</p>"
+        }
+      ],
+      "reassurance": []
+    },
+    "about": {
+      "heading": "Le geste, la matière, le temps",
+      "intro": "[À compléter : histoire de la marque]",
+      "blocks": [
+        {
+          "heading": "Pourquoi ce produit",
+          "text": "Carnet de croquis à couverture en liège, pages sans lignes."
+        }
+      ],
+      "values": [
+        {
+          "title": "Savoir-faire",
+          "text": "Les étapes de fabrication sont décrites."
+        },
+        {
+          "title": "Matières",
+          "text": "Des matières nommées et expliquées."
+        }
+      ]
+    },
+    "shipping": {
+      "heading": "Livraison et retours",
+      "body_html": "<p><strong>Livraison :</strong> [À compléter : délais et tarifs de livraison]</p><p><strong>Retours :</strong> [À compléter : conditions de retour]</p><p><strong>Contact :</strong> [À compléter : adresse e-mail du service client]</p>"
+    },
+    "contact": {
+      "heading": "Écrivez-nous",
+      "text": "Une question sur une commande ou un produit ? Nous vous répondons."
+    },
+    "footer": {
+      "about": "Fait avec soin.",
+      "newsletter": "Nouveautés et coulisses, sans excès."
+    }
+  },
+  "pages": [
+    {
+      "key": "home",
+      "path": "/",
+      "title": "Accueil",
+      "kind": "home",
+      "goal": "Présenter Sillage à Illustrateurs nomades",
+      "sections": [
+        {
+          "key": "hero",
+          "purpose": "Offre et promesse vérifiable",
+          "mediaSlot": "home:hero"
+        },
+        {
+          "key": "offer",
+          "purpose": "Usages et caractéristiques"
+        },
+        {
+          "key": "proofs",
+          "purpose": "Preuves disponibles uniquement"
+        },
+        {
+          "key": "faq",
+          "purpose": "Objections et réponses confirmées"
+        },
+        {
+          "key": "contact",
+          "purpose": "Choisir le produit"
+        }
+      ],
+      "docKey": "cnt:e90962b731933cac2d56"
+    },
+    {
+      "key": "product:main",
+      "path": "/products/produit-principal",
+      "title": "Sillage",
+      "kind": "product",
+      "goal": "Carnet de croquis à couverture en liège, pages sans lignes.",
+      "sections": [
+        {
+          "key": "detail",
+          "purpose": "Montrer le produit exact",
+          "mediaSlot": "product:main:detail"
+        },
+        {
+          "key": "facts",
+          "purpose": "Caractéristiques confirmées"
+        },
+        {
+          "key": "options",
+          "purpose": "Options et prix connus"
+        },
+        {
+          "key": "faq",
+          "purpose": "Questions utiles avant achat"
+        }
+      ],
+      "docKey": "cnt:9448d9d3158d51e393c4"
+    },
+    {
+      "key": "brand",
+      "path": "/pages/a-propos",
+      "title": "À propos",
+      "kind": "brand",
+      "goal": "Présenter la marque sans histoire inventée",
+      "sections": [
+        {
+          "key": "intent",
+          "purpose": "Positionnement et engagements vérifiables"
+        }
+      ],
+      "docKey": "cnt:61f6138c372a299f38ba"
+    },
+    {
+      "key": "contact",
+      "path": "/pages/contact",
+      "title": "Contact",
+      "kind": "contact",
+      "goal": "Demande d’information",
+      "sections": [
+        {
+          "key": "contact",
+          "purpose": "Coordonnées et formulaire"
+        }
+      ]
+    }
+  ],
+  "documents": [
+    {
+      "docKey": "cnt:e90962b731933cac2d56",
+      "doc": {
+        "version": 1,
+        "type": "home_page",
+        "lang": "fr",
+        "page": {
+          "key": "home",
+          "title": "Accueil",
+          "kind": "home",
+          "status": "planned",
+          "url": null
+        },
+        "primaryKeyword": null,
+        "intent": "informational",
+        "meta": {
+          "seoTitle": "Accueil | Sillage",
+          "metaDescription": "Présenter Sillage à Illustrateurs nomades. Découvrez les informations et les possibilités de contact.",
+          "slug": "",
+          "canonical": null,
+          "robots": "index,follow"
+        },
+        "blocks": [
+          {
+            "id": "h1",
+            "kind": "h1",
+            "text": "Accueil"
+          },
+          {
+            "id": "p",
+            "kind": "p",
+            "text": "Présenter Sillage à Illustrateurs nomades"
+          },
+          {
+            "id": "detail",
+            "kind": "p",
+            "text": "Sillage s’adresse à Illustrateurs nomades. "
+          }
+        ],
+        "links": [],
+        "schema": [],
+        "meta2": {
+          "source": "engine",
+          "by": "ai",
+          "createdFrom": null,
+          "runId": "zzqv25uxj5aju9ff"
+        }
+      },
+      "verdict": "FINAL"
+    },
+    {
+      "docKey": "cnt:9448d9d3158d51e393c4",
+      "doc": {
+        "version": 1,
+        "type": "product_page",
+        "lang": "fr",
+        "page": {
+          "key": "product:main",
+          "title": "Sillage",
+          "kind": "product",
+          "status": "planned",
+          "url": null
+        },
+        "primaryKeyword": null,
+        "intent": "informational",
+        "meta": {
+          "seoTitle": "Sillage | Sillage",
+          "metaDescription": "Carnet de croquis à couverture en liège, pages sans lignes.. Découvrez les informations et les possibilités de contact.",
+          "slug": "produit-principal",
+          "canonical": null,
+          "robots": "index,follow"
+        },
+        "blocks": [
+          {
+            "id": "h1",
+            "kind": "h1",
+            "text": "Sillage"
+          },
+          {
+            "id": "p",
+            "kind": "p",
+            "text": "Carnet de croquis à couverture en liège, pages sans lignes."
+          },
+          {
+            "id": "detail",
+            "kind": "p",
+            "text": "Sillage s’adresse à Illustrateurs nomades. "
+          }
+        ],
+        "links": [],
+        "schema": [],
+        "meta2": {
+          "source": "engine",
+          "by": "ai",
+          "createdFrom": null,
+          "runId": "lccrsxkdxziqaxak"
+        }
+      },
+      "verdict": "FINAL"
+    },
+    {
+      "docKey": "cnt:61f6138c372a299f38ba",
+      "doc": {
+        "version": 1,
+        "type": "brand_page",
+        "lang": "fr",
+        "page": {
+          "key": "brand",
+          "title": "À propos",
+          "kind": "brand",
+          "status": "planned",
+          "url": null
+        },
+        "primaryKeyword": null,
+        "intent": "informational",
+        "meta": {
+          "seoTitle": "À propos | Sillage",
+          "metaDescription": "Présenter la marque sans histoire inventée. Découvrez les informations et les possibilités de contact.",
+          "slug": "a-propos",
+          "canonical": null,
+          "robots": "index,follow"
+        },
+        "blocks": [
+          {
+            "id": "h1",
+            "kind": "h1",
+            "text": "À propos"
+          },
+          {
+            "id": "p",
+            "kind": "p",
+            "text": "Présenter la marque sans histoire inventée"
+          },
+          {
+            "id": "detail",
+            "kind": "p",
+            "text": "Sillage s’adresse à Illustrateurs nomades. "
+          }
+        ],
+        "links": [],
+        "schema": [],
+        "meta2": {
+          "source": "engine",
+          "by": "ai",
+          "createdFrom": null,
+          "runId": "uzj3nngdl61az8gk"
+        }
+      },
+      "verdict": "FINAL"
+    }
+  ],
+  "media": [
+    {
+      "key": "home:hero",
+      "pageKey": "home",
+      "sectionKey": "hero",
+      "purpose": "Offre et promesse vérifiable",
+      "required": true,
+      "reviewed": true,
+      "assetId": "l42m8uwls4qffgmz",
+      "inputHash": "1e6eb1c37d85564e",
+      "peopleConsent": "none_confirmed"
+    },
+    {
+      "key": "product:main:detail",
+      "pageKey": "product:main",
+      "sectionKey": "detail",
+      "purpose": "Montrer le produit exact",
+      "required": true,
+      "reviewed": true,
+      "assetId": "fewgxdkarjuwfo4t",
+      "inputHash": "1e6eb1c37d85564e",
+      "peopleConsent": "none_confirmed"
+    }
+  ],
+  "sources": [
+    {
+      "id": "source-1",
+      "url": "https://reference.example/carnets",
+      "title": "Référence synthétique consultée par le double de test",
+      "excerpt": "Une offre comparable à Sillage. La page décrit les usages et conditions de présentation. Les modalités de contact sont visibles. Ceci est une source synthétique pour vérifier la persistance, pas une étude réelle.",
+      "consultedAt": 1792344336366,
+      "status": "consulted",
+      "provenance": "simulation"
+    }
+  ],
+  "approvals": {
+    "brief": {
+      "candidateId": "6qsnhxpuv4ll5l1t",
+      "approvedAt": 1792344333173
+    },
+    "research": {
+      "candidateId": "svnpqxg0aivqril9",
+      "approvedAt": 1792344339675
+    },
+    "brand": {
+      "candidateId": "ec36ip9sj0ix7c8f",
+      "approvedAt": 1792344348064
+    },
+    "content": {
+      "candidateId": "cz9xc1gts0q1hiur",
+      "approvedAt": 1792344354201
+    },
+    "media": {
+      "candidateId": "o375r28g0lknunj8",
+      "approvedAt": 1792344363246
+    }
+  },
+  "warnings": [
+    "Fournisseurs simulés ; qualité de rédaction IA réelle non vérifiée.",
+    "Disponibilité juridique du nom et domaines non vérifiée.",
+    "Prêt pour la composition, pas une autorisation de publication."
+  ]
+}

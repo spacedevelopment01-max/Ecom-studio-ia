@@ -1,0 +1,30 @@
+[
+  {
+    "slug": "produit-publicitaire",
+    "clips": 4,
+    "durationS": 20,
+    "logoTitleOverlap": false,
+    "source": "native still render at 19s; synthetic source clips"
+  },
+  {
+    "slug": "service-publicitaire",
+    "clips": 4,
+    "durationS": 20,
+    "logoTitleOverlap": false,
+    "source": "native still render at 19s; synthetic source clips"
+  },
+  {
+    "slug": "produit-organique",
+    "clips": 4,
+    "durationS": 20,
+    "logoTitleOverlap": false,
+    "source": "native still render at 19s; synthetic source clips"
+  },
+  {
+    "slug": "service-organique",
+    "clips": 4,
+    "durationS": 20,
+    "logoTitleOverlap": false,
+    "source": "native still render at 19s; synthetic source clips"
+  }
+]

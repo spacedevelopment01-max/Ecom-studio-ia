@@ -1,0 +1,181 @@
+{
+  "kind": "onde",
+  "dir": "<local>/delivered-r9/onde",
+  "date": "2026-10-19T09:36:46.674Z",
+  "report": [
+    {
+      "device": "mobile",
+      "direct": [
+        {
+          "from": "accueil.html",
+          "to": "produit.html",
+          "scrollY": 0
+        },
+        {
+          "from": "accueil.html",
+          "to": "boutique.html",
+          "scrollY": 0
+        },
+        {
+          "from": "accueil.html",
+          "to": "page-a-propos.html",
+          "scrollY": 0
+        },
+        {
+          "from": "accueil.html",
+          "to": "page-faq.html",
+          "scrollY": 0
+        },
+        {
+          "from": "produit.html",
+          "to": "accueil.html",
+          "scrollY": 0
+        },
+        {
+          "from": "produit.html",
+          "to": "boutique.html",
+          "scrollY": 0
+        },
+        {
+          "from": "produit.html",
+          "to": "page-a-propos.html",
+          "scrollY": 0
+        },
+        {
+          "from": "produit.html",
+          "to": "page-faq.html",
+          "scrollY": 0
+        },
+        {
+          "from": "page-faq.html",
+          "to": "accueil.html",
+          "scrollY": 0
+        },
+        {
+          "from": "page-faq.html",
+          "to": "produit.html",
+          "scrollY": 0
+        },
+        {
+          "from": "page-faq.html",
+          "to": "boutique.html",
+          "scrollY": 0
+        },
+        {
+          "from": "page-faq.html",
+          "to": "page-a-propos.html",
+          "scrollY": 0
+        }
+      ],
+      "framed": [
+        {
+          "to": "page-faq.html",
+          "parentScrollY": 60
+        },
+        {
+          "to": "page-contact.html",
+          "parentScrollY": 60
+        },
+        {
+          "to": "produit.html",
+          "parentScrollY": 60
+        }
+      ],
+      "anchor": {
+        "hash": "#MainContent",
+        "parentScrollY": 3339
+      },
+      "cart": {
+        "before": 818,
+        "after": 818
+      }
+    },
+    {
+      "device": "ordinateur",
+      "direct": [
+        {
+          "from": "accueil.html",
+          "to": "produit.html",
+          "scrollY": 0
+        },
+        {
+          "from": "accueil.html",
+          "to": "boutique.html",
+          "scrollY": 0
+        },
+        {
+          "from": "accueil.html",
+          "to": "page-a-propos.html",
+          "scrollY": 0
+        },
+        {
+          "from": "accueil.html",
+          "to": "page-faq.html",
+          "scrollY": 0
+        },
+        {
+          "from": "produit.html",
+          "to": "accueil.html",
+          "scrollY": 0
+        },
+        {
+          "from": "produit.html",
+          "to": "boutique.html",
+          "scrollY": 0
+        },
+        {
+          "from": "produit.html",
+          "to": "page-a-propos.html",
+          "scrollY": 0
+        },
+        {
+          "from": "produit.html",
+          "to": "page-faq.html",
+          "scrollY": 0
+        },
+        {
+          "from": "page-faq.html",
+          "to": "accueil.html",
+          "scrollY": 0
+        },
+        {
+          "from": "page-faq.html",
+          "to": "produit.html",
+          "scrollY": 0
+        },
+        {
+          "from": "page-faq.html",
+          "to": "boutique.html",
+          "scrollY": 0
+        },
+        {
+          "from": "page-faq.html",
+          "to": "page-a-propos.html",
+          "scrollY": 0
+        }
+      ],
+      "framed": [
+        {
+          "to": "page-faq.html",
+          "parentScrollY": 60
+        },
+        {
+          "to": "page-contact.html",
+          "parentScrollY": 60
+        },
+        {
+          "to": "produit.html",
+          "parentScrollY": 60
+        }
+      ],
+      "anchor": {
+        "hash": "#MainContent",
+        "parentScrollY": 3008
+      },
+      "cart": {
+        "before": 26,
+        "after": 26
+      }
+    }
+  ]
+}

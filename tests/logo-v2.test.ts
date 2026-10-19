@@ -1,3 +1,4 @@
+import { directionIdentity } from "./preparation-mission-fixtures";
 /**
  * Phase 4A — Brand & Logo Engine V2 (fournisseurs simulés : aucun appel payant).
  */
@@ -62,7 +63,13 @@ describe("Phase 4A — Brand & Logo Engine V2", async () => {
     run("INSERT INTO jobs (id, user_id, project_id, type, label, payload, status, run_at, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)", jid, u.id, projectId, type, type, JSON.stringify({ projectId }), "running", Date.now(), Date.now(), Date.now());
     return new JobContext(one<any>("SELECT * FROM jobs WHERE id = ?", jid));
   };
-  const sb = () => fr(() => seedLogoFixture(u.id, "artisan"));
+  const sb = () => fr(() => {
+    const pid = seedLogoFixture(u.id, "artisan"), key = `synthetic-logo-${pid}`;
+    // Un abonnement isolé par projet : la sélection ne contourne pas les droits de production.
+    run("INSERT INTO subscriptions (user_id,status,plan,owner_user_id,project_id,source,created_at,updated_at) VALUES (?,'active','creer',?,?,'admin',?,?)", key, u.id, pid, Date.now(), Date.now());
+    syncAllowance(key);
+    return pid;
+  });
   const runEngine = (pid: string, ai: any, ctx = job(pid)) => fr(() => runLogoEngineV2(ctx, pid, { ai }));
 
   it("découverte : nom EXACT, métier compris, clichés du métier, refus du client — sans appel à l'IA", () => {
@@ -228,14 +235,14 @@ describe("Phase 4A — Brand & Logo Engine V2", async () => {
     const b = fr(() => brandDiscovery(loadProject(pid)));
     respond = (params: any) => {
       const sys = JSON.stringify(params.system);
-      if (sys.includes("TERRITOIRES CRÉATIFS")) return JSON.stringify({ territories: draftsFor(b).slice(0, 3) });
+      if (sys.includes("TERRITOIRES CRÉATIFS")) return JSON.stringify({ territories: draftsFor(b).slice(0, 3).map((t, i) => ({ ...t, identity: directionIdentity(i) })) });
       if (sys.includes("SYMBOLE d'un territoire")) return JSON.stringify({ idea: "forme", svg: SVG_OK });
       const exp = /Texte attendu \(exact\) : « ([^»]+) »/.exec(JSON.stringify(params.messages))?.[1] ?? "";
       return JSON.stringify(review(8.7, exp));
     };
     const ctx = job(pid);
     const r = await fr(() => runLogoEngineV2(ctx, pid, { ai: realLogoV2Ai(ctx, { userId: u.id, projectId: pid }) }));
-    expect(r.shown.length).toBe(3);
+    expect(r.shown.length, r.notes.join("\n")).toBe(3);
     const calls = all<any>("SELECT task, requested_model, routing_reason, prompt_key, cost, brain_scope FROM ai_calls WHERE job_id = ? ORDER BY created_at, rowid", ctx.job.id);
     expect(calls[0]).toMatchObject({ task: "logo_symbol", requested_model: "claude-opus-5-5", prompt_key: "logo-v2-territories", brain_scope: "logo" });
     const reviews = calls.filter((c) => c.prompt_key === "logo-v2-review");

@@ -49,7 +49,7 @@ export async function creationSceneVideos(ctx: JobContext | null, projectId: str
       try {
         if (mode === "ai") {
           const q = deps.quote(p, req);
-          if (!q.allowed) return deps.local(k);
+          if (!q.allowed) throw new Error(q.reason ?? "Plans IA indisponibles ; aucun remplacement automatique.");
           // Plafond : jamais plus que le prix maximal de cette vidéo (images + plans), en plus de ce que la tâche a déjà dépensé.
           const cap = deps.spentByJob() + q.estimateMicro;
           const cur = currentTrace().costCapMicro;
@@ -58,8 +58,7 @@ export async function creationSceneVideos(ctx: JobContext | null, projectId: str
         return (await runThreeScenes(ctx, projectId, req, deps.scenes)).videoAssetId;
       } catch (e) {
         if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
-        console.warn(`[création] vidéo en scènes n° ${k + 1} remplacée par le montage local : ${(e as Error).message}`);
-        return deps.local(k);
+        throw new Error(`Vidéo ${k+1} incomplète : ${(e as Error).message}. Les médias obtenus sont conservés.`);
       }
     };
     const id = ctx ? await ctx.step(`creation-video:${k}`, one) : await one();

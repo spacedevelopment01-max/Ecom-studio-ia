@@ -139,11 +139,13 @@ a { color: inherit; }
 @media (max-width: 989px) {
   .es-header__nav { display: none; }
   .es-header__burger { display: inline-grid; }
-  .es-header__inner, .es-header--logo-center .es-header__inner, .es-header--split .es-header__inner { grid-template-columns: 1fr minmax(0, auto) 1fr; grid-template-areas: "burger logo icons"; gap: 8px; }
+  /* Colonnes latérales à leur contenu (pas deux « 1fr » égales : avec trois icônes à droite, le nom de la marque était
+     rogné à 60 px sur un téléphone de 360 px) ; le logo prend l'espace restant et s'y centre. */
+  .es-header__inner, .es-header--logo-center .es-header__inner, .es-header--split .es-header__inner { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "burger logo icons"; gap: 8px; }
   .es-header__burger { grid-area: burger; justify-self: start; }
   .es-header__logo { grid-area: logo; justify-self: center; min-width: 0; max-width: 100%; }
   .es-header__logo-img { max-width: min(var(--logo-width), 46vw); max-height: 48px; }
-  .es-header__wordmark { font-size: 1.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .es-header__wordmark { font-size: clamp(0.95rem, 4.2vw, 1.15rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .es-header__icons { grid-area: icons; }
   .es-hide-mobile { display: none; }
 }
@@ -318,9 +320,11 @@ a { color: inherit; }
 .es-card:hover .es-card__img--hover { opacity: 1; }
 .es-card__info { padding-top: 14px; display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
 .es-card__title { font-size: 1rem; margin: 0; font-weight: var(--font-body-weight-bold); }
-.es-card__title a { text-decoration: none; }
+.es-card__title a { text-decoration: none; display: inline-block; padding: 3px 0; }
 .es-badge { position: absolute; top: 12px; left: 12px; background: var(--c-bg); color: var(--c-text); font-size: .72rem; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: .08em; }
 .es-price { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.es-card__info .es-price { flex: none; white-space: nowrap; }
+.es-card__info .es-card__title { min-width: 0; }
 .es-price__compare { color: var(--c-muted); font-size: .9em; }
 .es-price--sale .es-price__current { color: var(--c-accent); }
 
@@ -392,6 +396,8 @@ a { color: inherit; }
 .es-product__sticky > * { margin-bottom: 22px; }
 .es-product__title { margin-bottom: 6px; }
 .es-product__price .es-price { font-size: 1.35rem; }
+.es-product__price-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; }
+.es-product__price-note { font-size: .9rem; opacity: .72; }
 .es-option { border: 0; padding: 0; margin: 0 0 18px; }
 .es-option__label { font-size: .86rem; margin-bottom: 10px; padding: 0; }
 .es-option__values { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -466,9 +472,13 @@ input:focus-visible + .es-chip { outline: 2px solid var(--c-accent); outline-off
 .es-drawer.is-open .es-drawer__panel { transform: none; }
 .es-drawer__head { display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; border-bottom: 1px solid var(--c-border); }
 .es-drawer__title { margin: 0; font-size: 1.15rem; font-family: var(--font-heading); }
-.es-drawer__body { flex: 1; overflow-y: auto; padding: 22px; }
+.es-drawer__scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; }
+.es-drawer__body { flex: none; padding: 22px; }
+.es-drawer__scroll > .es-drawer__band { flex: none; }
 .es-drawer__empty { display: grid; gap: 16px; justify-items: start; }
-.es-drawer__foot { padding: 20px 22px; border-top: 1px solid var(--c-border); display: grid; gap: 10px; }
+.es-drawer__foot { flex: none; padding: 16px 22px calc(16px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--c-border); display: grid; gap: 10px; }
+.es-drawer__details { display: grid; gap: 10px; padding: 0 22px 18px; }
+.es-drawer__head { flex: none; }
 .es-drawer__total { display: flex; justify-content: space-between; font-size: 1.05rem; }
 .es-drawer.is-loading .es-drawer__body { opacity: .5; pointer-events: none; }
 
@@ -697,6 +707,9 @@ input:checked + .es-chip { background: var(--c-accent); color: var(--c-accent-te
 
 /* ---------- Boutons flottants ---------- */
 .es-fab { position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); z-index: 60; display: grid; gap: 14px; justify-items: center; transition: bottom .5s var(--ease-out); }
+/* Téléphone : un seul petit bouton flottant (contact), sans halo ; le retour en haut n'y a pas sa place (deux gros ronds masquaient les médias). */
+@media (max-width: 749px) { .es-fab { gap: 8px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); } .es-fab__button { width: 46px; height: 46px; } .es-fab__button .es-icon { width: 20px; height: 20px; } .es-fab__button--top { display: none; } .es-fab__button--contact::before { display: none; } }
+.es-express-note { margin: 10px 0 0; font-size: .8rem; line-height: 1.45; color: var(--c-muted); }
 .has-sticky-buy .es-fab { bottom: 92px; }
 .es-fab__button { position: relative; display: grid; place-items: center; width: 58px; height: 58px; border-radius: 50%; color: var(--c-accent-text); text-decoration: none;
   background: linear-gradient(145deg, color-mix(in srgb, var(--c-accent) 72%, #fff), var(--c-accent) 60%, color-mix(in srgb, var(--c-accent) 75%, #000));
@@ -1035,6 +1048,8 @@ body:has(.es-newsletter) .es-footer__card, body:has(.es-newsletter) .es-footer__
 .es-footer__inline { display: grid; gap: 22px; justify-items: center; text-align: center; }
 .es-footer__brand { font-family: var(--font-heading); font-size: clamp(1.6rem, 4vw, 2.6rem); text-decoration: none; text-transform: var(--heading-case); }
 .es-footer__brand img { width: var(--logo-width); height: auto; }
+.es-footer__brand--row { display: block; margin-bottom: clamp(28px, 4vw, 44px); line-height: 0; }
+.es-footer__brand--row img { max-width: min(220px, 60vw); object-fit: contain; object-position: left; }
 .es-footer__inline-links { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 26px; }
 .es-footer__inline-links a { text-decoration: none; opacity: .85; }
 .es-footer__inline-links a:hover { opacity: 1; text-decoration: underline; text-underline-offset: 4px; }
@@ -1335,4 +1350,13 @@ body:has(.es-newsletter) .es-footer__card, body:has(.es-newsletter) .es-footer__
 .dir-lancement .es-heading { letter-spacing: -.035em; line-height: .9; }
 .dir-lancement .es-marquee { transform: rotate(-1.5deg) scale(1.02); }
 .dir-lancement .es-card, .dir-lancement .es-media-frame { box-shadow: 0 0 0 1px rgba(var(--c-accent-rgb), .6); }
+/* Thèmes de référence (issue #137) : le caractère est porté par les profils « conversion » / éditorial ; ici, les signatures légères. */
+.dir-fraise .es-heading { letter-spacing: -.02em; }
+.dir-fraise .es-button { border-width: 2px; box-shadow: 3px 3px 0 var(--c-text); }
+.dir-onde .es-heading { letter-spacing: -.03em; }
+.dir-onde .es-button { border-radius: 999px; }
+.dir-orbe .es-heading { letter-spacing: -.01em; line-height: 1.05; }
+.dir-orbe .es-media-frame { border-radius: 0; }
+.dir-rive .es-heading { letter-spacing: -.02em; line-height: .98; }
+.dir-rive .es-button { border-radius: 0; }
 .dir-lancement .es-eyebrow { color: var(--c-accent); letter-spacing: .3em; }

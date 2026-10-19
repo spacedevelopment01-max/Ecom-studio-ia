@@ -1,0 +1,25 @@
+{
+  "simulation": true,
+  "results": [
+    {
+      "case": "produit",
+      "pid": "gqmycuts10wz7fwn",
+      "readyRevision": 26,
+      "persistedAfterReload": true,
+      "downloadedContractMatchesApi": true,
+      "staleAfterChange": true,
+      "overflowMobile": 0,
+      "errors": []
+    },
+    {
+      "case": "service",
+      "pid": "c4pylalq40be6mcy",
+      "readyRevision": 28,
+      "persistedAfterReload": true,
+      "downloadedContractMatchesApi": true,
+      "staleAfterChange": true,
+      "overflowMobile": 0,
+      "errors": []
+    }
+  ]
+}

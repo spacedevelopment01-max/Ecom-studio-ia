@@ -1,6 +1,6 @@
 /**
  * Images du parcours de l'accueil (« 03 Images », publicité, vidéo, calendrier) choisies parmi les VRAIES créations
- * de la démonstration, chacune avec sa vraie nature. Avant, une image absente (ex. ARVEN n'a ni packshot ni détail,
+ * de la démonstration, chacune avec sa vraie nature. Avant, une image absente (ex. une démo sans packshot ni détail,
  * et ses scènes s'appellent « En situation ») était remplacée par la photo d'origine du fournisseur, affichée trois
  * fois sous les étiquettes « Fond blanc », « Scène » et « Détail » : une promesse fausse. Ici, rien n'est inventé :
  * une case sans création réelle disparaît, la photo d'origine n'est utilisée qu'en tout dernier recours, et une
@@ -81,7 +81,7 @@ export function storyMedia(d: { photo: string; images: { src: string; label: str
   return { cutout, tiles, packshot, detail, scene1, scene2, social, ad, banner };
 }
 
-/** Couleurs de la marque proposées pour le bouton de la démo « Personnalisation », sans doublon (ARVEN : l'ancrage et
+/** Couleurs de la marque proposées pour le bouton de la démo « Personnalisation », sans doublon (l'ancrage et
  *  la couleur du texte sont le même noir, deux pastilles identiques s'affichaient). */
 export function buttonColors(palette: string[]): string[] {
   const rgb = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
@@ -89,7 +89,7 @@ export function buttonColors(palette: string[]): string[] {
     const [x, y] = [rgb(a), rgb(b)];
     return Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]) < 40;
   };
-  // Deux couleurs presque identiques (ex. Les Tribunes : #0D0D0D et #050505) ne font qu'une pastille.
+  // Deux couleurs presque identiques (ex. #0D0D0D et #050505) ne font qu'une pastille.
   const out: string[] = [];
   for (const c of [palette[0] ?? "#454873", palette[2] ?? "#8D74B4", palette[4] ?? "#14151F"]) if (!out.some((o) => near(o, c))) out.push(c);
   return out;

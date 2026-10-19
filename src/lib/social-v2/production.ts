@@ -18,6 +18,8 @@ import { afterEdit } from "./approval";
 import { JobCancelled, JobPaused } from "../jobs";
 import type { MediaResult, PostBrief, SocialCostKind, SocialDeps } from "./deps";
 import { budgetPctText, retryNotice } from "../ai/budget-pct";
+import { creativeContract, publicationUnits, type Editorial } from "./creative-contract";
+import { stableHash } from "../brain/hash";
 
 export type ProduceMethod = "library" | "local" | "image_v2" | "ads_v2" | "video_v2" | "ai_post" | "none";
 /** Coût probable d'une production (devis montré au client) ; à défaut, le plafond. */
@@ -57,11 +59,19 @@ const aiFinal = (a: Asset) => {
 };
 
 function pick(r: Row, opts: { allowPaid: boolean; ai?: boolean; bg?: boolean }, pools: { image: Asset[]; video: Asset[] }): { method: ProduceMethod; paid: boolean } {
+  // Initial slots belong to their own consent, cap and receipts. Generic batch must not race or repay them.
+  if(r.editorialData?.initialCreative)return {method:"none",paid:false};
   if (needsVideo(r)) return pools.video.length ? { method: "library", paid: false } : { method: "video_v2", paid: opts.allowPaid };
   // Image : toujours créée par l'IA (publication complète) ; sinon une image IA déjà validée du projet ; sinon rien.
   if (opts.allowPaid) return { method: "ai_post", paid: true };
-  if (pools.image.some(aiFinal)) return { method: "library", paid: false };
+  if (pools.image.some(a=>aiFinal(a)&&matchesEditorial(a,r))) return { method: "library", paid: false };
   return { method: "none", paid: false };
+}
+
+function matchesEditorial(a:Asset,r:PostBrief) {
+  const m=json<any>(a.meta,{});
+  if(r.format==="carousel")return m.carousel?.postId===r.id && m.carousel.assetIds?.length>=2;
+  try{return m.finalImage?.purpose==="post" && m.finalImage?.editorialFingerprint===stableHash("editorial",creativeContract(r,"organic"));}catch{return false;}
 }
 
 /** Pourquoi une publication attend son visuel (affiché au client, jamais remplacé par un gabarit). */
@@ -70,8 +80,8 @@ const WAITING_AI = "visuel en attente : les images des publications sont créée
 const selectRows = (projectId: string, ids: string[]) =>
   ids.length
     ? all<Row>(`SELECT * FROM posts WHERE project_id = ? AND id IN (${ids.map(() => "?").join(",")}) ORDER BY scheduled_at`, projectId, ...ids).map((r) => {
-        const b = json<{ headline?: string; subject?: PostBrief["subject"]; request?: string }>(r.brief, {});
-        return { ...r, headline: b.headline ?? r.title, subject: b.subject ?? null, request: b.request ?? null };
+        const b = json<{ headline?: string; subject?: PostBrief["subject"]; request?: string; editorial?:Editorial } & Record<string,unknown>>(r.brief, {});
+        return { ...r, headline: b.headline ?? r.title, subject: b.subject ?? null, request: b.request ?? null,editorial:b.editorial,editorialData:b,entryPoint:"publications" as const };
       })
     : [];
 
@@ -90,7 +100,8 @@ export function estimateProduction(p: Project, ids: string[], deps: Pick<SocialD
     // Visuels IA demandés pour N publications : seules celles-là sont payantes, les autres restent gratuites.
     const m = pick(r, { allowPaid: allowPaid && (!opts.aiImages || aiIds.has(r.id)), ai: aiIds.has(r.id), bg: opts.aiBackground }, pools);
     const kind = m.method === "video_v2" ? "video" : m.method === "ads_v2" ? "ad" : m.method === "ai_post" ? "ai_post" : "image";
-    return { postId: r.id, method: m.method, paid: m.paid, estimateMicro: m.paid ? probableOf(deps, kind) : 0, capMicro: m.paid ? deps.estimate(kind) : 0 };
+    let units=1;try{units=publicationUnits(r);}catch{units=0;}
+    return { postId: r.id, method: m.method, paid: m.paid, estimateMicro: m.paid ? units*probableOf(deps, kind) : 0, capMicro: m.paid ? units*deps.estimate(kind) : 0 };
   });
   const notes: string[] = [];
   if (!deps.aiActive) notes.push("IA non disponible pour ce compte : aucune image de publication ne peut être créée (elles sont toutes faites par l'IA) ; seules les images IA déjà validées du projet peuvent être reprises");
@@ -119,14 +130,14 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
     let out: MediaResult | null = null;
     try {
       if (m.method === "none") {
-        out = { assetId: null, costMicro: 0, by: "local", note: `publication ${r.id.slice(0, 6)} : ${WAITING_AI}` };
+        out = { assetId: null, costMicro: 0, by: "local", note: r.editorialData?.initialCreative ? "Publication initiale : utilisez le suivi des vingt créations pour reprendre les seules créations manquantes, sans doublon." : `publication ${r.id.slice(0, 6)} : ${WAITING_AI}` };
       } else if (m.method === "library") {
-        const pool = needsVideo(r) ? pools.video : pools.image.filter(aiFinal);
+        const pool = needsVideo(r) ? pools.video : pools.image.filter(a=>aiFinal(a)&&matchesEditorial(a,r));
         const a = [...pool].sort((x, y) => (used.get(x.id) ?? 0) - (used.get(y.id) ?? 0))[0];
-        out = a ? { assetId: a.id, costMicro: 0, by: "library" } : null;
+        out = a ? { assetId: a.id,assetIds:r.format==="carousel"?json<any>(a.meta,{}).carousel.assetIds:undefined, costMicro: 0, by: "library" } : null;
       } else {
         const kind = m.method === "video_v2" ? "video" : m.method === "ads_v2" ? "ad" : m.method === "ai_post" ? "ai_post" : "image";
-        const est = m.paid ? deps.estimate(kind) : 0;
+        const est = m.paid ? deps.estimate(kind)*publicationUnits(r) : 0;
         if (m.paid && res.spentMicro + est > cap) {
           res.stoppedByCap = true;
           notes.push(`plafond atteint (${budgetPctText(p.userId, cap, p.id)}) : production arrêtée, les publications suivantes attendent leur visuel IA (aucun gabarit à la place)`);
@@ -154,8 +165,11 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
       continue;
     }
     used.set(out.assetId, (used.get(out.assetId) ?? 0) + 1);
-    run("UPDATE posts SET media = ?, production = ?, status = CASE WHEN status IN ('planned','draft','failed') THEN 'review' ELSE status END, updated_at = ? WHERE id = ? AND (media = '[]' OR ?)", JSON.stringify([out.assetId]), JSON.stringify({ by: out.by, costMicro: out.costMicro, at: now() }), now(), r.id, o.replace ? 1 : 0);
-    addUsage(out.assetId, "post", r.id, "Publication (Social V2)");
+    const media=out.assetIds??[out.assetId];
+    if(r.format==="carousel" && (media.length<2 || new Set(media).size!==media.length)){res.failed++;notes.push("Carrousel incomplet : plusieurs images distinctes et ordonnées sont requises.");continue;}
+    if(media.some(aid=>{const a=getAsset(aid);return !a||a.project_id!==p.id||a.deleted_at||a.status==="rejected";})){res.failed++;notes.push("Média indisponible : version précédente conservée.");continue;}
+    run("UPDATE posts SET media = ?, production = ?, status = CASE WHEN status IN ('planned','draft','failed') THEN 'review' ELSE status END, updated_at = ? WHERE id = ? AND (media = '[]' OR ?)", JSON.stringify(media), JSON.stringify({ by: out.by, costMicro: out.costMicro, at: now() }), now(), r.id, o.replace ? 1 : 0);
+    for(const aid of media)addUsage(aid, "post", r.id, "Publication (Social V2)");
     // L'empreinte change (nouveau média) : une approbation antérieure ne couvre plus cette version.
     afterEdit(r.id);
     run("UPDATE posts SET user_edited = ? WHERE id = ?", r.user_edited, r.id);

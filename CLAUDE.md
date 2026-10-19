@@ -44,10 +44,16 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
 - **Réponses courtes et claires**, sans jargon ; ne pas reposer une question à laquelle il a déjà répondu.
 - **Ne pas décider à sa place** : un retrait de contenu ou un changement visible important se propose, il ne s'applique
   qu'après son accord. Retirer un visuel raté sans rien mettre à la place n'est pas une correction.
-- **Démonstrations** : les seules sont la montre ARVEN, la gourde Cime, Les Tribunes (t-shirt « FRANCE 10 »), le casque
-  Sonore, le paysagiste Racines & Pierres et le fleuriste Atelier Pivoine. **Page d'accueil** : chaque section montre de
-  vrais visuels (jamais vide) et les sections tournent entre ces démos, en alternant produits et services ; une
-  explication en plusieurs étapes peut suivre une seule démo du début à la fin.
+- **Catalogue de thèmes actif** (consigne du 19 octobre 2026, issue #137, commentaire 6264783184) : seuls **fraise**, **onde**,
+  **orbe** et **rive** sont proposés (galerie, IA, commandes, recommandation, tarifs). Les 30 anciens thèmes ne sont ni
+  sélectionnables ni recommandés ; un projet qui en utilise un le garde (compatibilité de lecture), jamais de migration
+  silencieuse, jamais de repli vers l'ancien catalogue. Ne pas les moderniser ni créer leurs remplaçants sans consigne.
+- **Démonstrations** (priorité du 19 octobre 2026, issue #137) : les seules sont **FRAISE** (gummies, boutique spécialisée),
+  **ONDE** (casque audio, boutique spécialisée), **ORBE** (lampe, e-commerce) et **Atelier Rive** (prestations de services).
+  Les anciennes démos (ARVEN, Cime, Les Tribunes, Sonore, Racines & Pierres, Atelier Pivoine, Ostral) sont abandonnées :
+  ne pas les adapter ni les maintenir. Leurs visuels viennent du kit privé de Thomas (`public/demo/<id>/`, hors dépôt).
+  **Page d'accueil** : chaque section montre de vrais visuels (sinon rien, jamais un gabarit) et les sections tournent
+  entre ces quatre démos, en alternant produits et services.
 
 ## Travail en plusieurs conversations (choix du propriétaire)
 
@@ -98,7 +104,7 @@ npx vitest run
 
 - `src/app` — pages, studio (`src/app/studio/[projectId]`), API (`src/app/api`) ; `src/components/studio/tab-*.tsx` — onglets.
 - `worker/handlers.ts` — tâches de fond (création, retouches de la boutique `shop.chat`, publications…).
-- `src/lib/theme` — moteur de thème : `directions.ts` (11 directions), `compile.ts`, `render.ts` (aperçu Liquid),
+- `src/lib/theme` — moteur de thème : `directions.ts` (34 directions définies, dont seules les 4 de référence sont proposées — `ACTIVE_DIRECTIONS` ; les 30 anciennes restent lisibles pour les projets existants), `compile.ts`, `render.ts` (aperçu Liquid),
   `ops.ts` (opérations de retouche validées), `preview-tools.ts` (sélection d'un élément dans l'aperçu).
 - `theme-base/` — sections, snippets, `assets/theme.css`, `assets/theme.js` du thème Shopify.
 - `src/lib/engine` — pipeline et moteur local ; `src/lib/ai` — fournisseurs, prompts, tâches IA.

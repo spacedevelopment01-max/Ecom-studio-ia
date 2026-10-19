@@ -28,7 +28,7 @@ const placeholder = (s: string | null | undefined) => !s || /\[(À|A) (compléte
  */
 const GENERIC_CLICHES = ["globe", "swoosh", "lightbulb", "ampoule", "handshake", "poignée de main", "check mark", "coche"];
 
-export function brandDiscovery(p: Project, opts: { style?: LogoStyle | "auto" } = {}): BrandBrief {
+export function brandDiscovery(p: Project, opts: { style?: LogoStyle | "auto"; instructions?:string } = {}): BrandBrief {
   const s = brainSnapshot(p);
   const brand = p.brand ?? localBrand(p.product, p.product.name || p.name, p).brand;
   const st = p.strategy;
@@ -57,7 +57,7 @@ export function brandDiscovery(p: Project, opts: { style?: LogoStyle | "auto" } 
     rejectedMarkTypes,
     rejections: logoRejections.map((m) => m.value),
     cliches: [...new Set([...s.trade.icons.avoid, ...s.trade.icons.keywords.map((k) => `${k} (literal)`), ...GENERIC_CLICHES])],
-    brainContext: brainContext(p, "logo"),
+    brainContext: brainContext(p, "logo")+(opts.instructions?`\nConsignes exactes du client (ne pas inscrire comme texte dans le logo) : ${opts.instructions}`:""),
     activities: [...new Set([...(p.business === "services" ? p.services.services.map((x) => x.name) : []), p.product.category ?? ""].map((x) => x.trim()).filter(Boolean))].slice(0, 12),
     tagline: isLocked(p.brand, "tagline") && p.brand?.tagline?.trim() ? p.brand.tagline.trim() : null,
     style: opts.style ?? "auto",

@@ -115,14 +115,14 @@ export async function finalCheck(doc: VideoDocument, ex: Pick<VideoExport, "file
     const brands = brandIssuesInTexts(o.texts, o.allowed);
     items.push({ id: "third_party_brand", label: label("third_party_brand"), status: brands.length ? "issue" : "ok", detail: brands.length ? brands.map((b) => `${b.brand} (${b.field})`).join(", ") : "aucune marque tierce dans les textes ni la voix (images : contrôle visuel des plans quand l'IA est active)" });
 
-    // Carte de fin : visible 2,5 à 4 s, avec un bouton.
-    const end = doc.clips.find((c) => c.id === "end-card");
-    const hasCta = !!end && end.source.kind === "doc" && end.source.doc.layers.some((l) => l.kind === "button");
-    items.push({ id: "cta", label: label("cta"), status: end && hasCta && end.durationS >= g.cta.holdS[0] - 0.01 && end.durationS <= g.cta.holdS[1] + 0.01 ? "ok" : "issue", detail: end ? `carte de fin ${end.durationS} s${hasCta ? ", bouton présent" : ", bouton absent"} (le bouton dessiné n'est pas cliquable : le vrai bouton est celui de la plateforme)` : "carte de fin absente" });
-
-    // Logo du projet : posé en image (jamais généré).
-    const logo = end?.source.kind === "doc" ? end.source.doc.layers.find((l) => l.role === "logo") : null;
-    items.push({ id: "logo", label: label("logo"), status: logo ? "ok" : "issue", detail: logo ? "vrai fichier du logo posé sur la carte de fin" : "aucun logo du projet sur la carte de fin" });
+    const ending=doc.meta?.ending?.kind === "last_clip" ? doc.clips.at(-1) : doc.clips.find(c=>c.id === "end-card");
+    const layers=ending?.source.kind === "doc" ? ending.source.doc.layers : ending?.overlays??[];
+    const holdS=doc.meta?.ending?.holdS??ending?.durationS??0;
+    const hasCta=layers.some(l=>l.kind==="button");
+    const organic=doc.meta?.editorial?.purpose === "organic";
+    items.push({id:"cta",label:label("cta"),status:organic || (ending && hasCta && holdS>=Math.min(ending.durationS,g.cta.holdS[0])-.01 && holdS<=g.cta.holdS[1]+.01)?"ok":"issue",detail:organic?"Contenu organique : CTA commercial facultatif":`Éléments de fin sur le dernier clip : ${holdS} s ; bouton ${hasCta?"présent":"absent"}. Le bouton dessiné n'est pas cliquable.`});
+    const logo=layers.find(l=>l.role==="logo");
+    items.push({id:"logo",label:label("logo"),status:logo?"ok":"issue",detail:logo?"Vrai fichier du logo superposé au dernier clip":"Aucun fichier du logo du projet dans les éléments de fin"});
 
     // Audio : présent, non saturé ; voix et sous-titres alignés.
     const a = ex.audio;

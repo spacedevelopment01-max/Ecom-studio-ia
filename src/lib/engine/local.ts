@@ -1,3 +1,6 @@
+import { purchaseCommand } from "../theme/purchase-command";
+import { compatibleSectionTypes } from "../theme/section-compat";
+import type { StoreKind } from "../theme/store-kind";
 /**
  * Moteur local : outils déterministes utilisés lorsque aucun fournisseur
  * d'IA n'est configuré (ou en secours). Ils produisent une base de travail
@@ -12,7 +15,7 @@ import type { VideoSpec } from "../media/video";
 import { contactModesOf, emptyProduct, emptyServiceProfile, type Brand, type BusinessType, type Fact, type ProductProfile, type ProductSectorId, type SectorId, type ServiceItem, type ServiceProfile, type ServiceSectorId, type Strategy } from "../project-types";
 import { objectionAnswers } from "./local-copy";
 import { contactCta, isServicesBusiness, serviceDirection, serviceNames, serviceShowcase, serviceTaglines, type BusinessInfo } from "./services-text";
-import { DIRECTIONS, type DirectionId } from "../theme/directions";
+import { ACTIVE_DIRECTIONS, DIRECTIONS, type DirectionId } from "../theme/directions";
 import type { ThemeOp } from "../theme/ops";
 import type { ThemeSpec } from "../theme/spec";
 import { parseBrief } from "../activity-brief";
@@ -63,28 +66,33 @@ export function guessSector(text: string, business: BusinessType = "products"): 
   return best?.s ?? null;
 }
 
+/**
+ * Direction par défaut du moteur local, dans le catalogue actif (consigne du 19 octobre) : un produit du secteur
+ * « son / high-tech » part d'ONDE, les autres produits de FRAISE (boutique spécialisée : un produit phare) ; une boutique
+ * à plusieurs produits part d'ORBE ; une entreprise de services part d'Atelier Rive. Jamais un thème retiré.
+ */
 export const SECTOR_DIRECTION: Record<SectorId, DirectionId> = {
-  beaute: "atelier",
-  mode: "flux",
-  bijoux: "joaillerie",
-  maison: "terroir",
-  hightech: "nocturne",
-  sport: "elan",
-  alimentation: "gourmand",
-  enfants: "pop",
-  animaux: "pop",
-  artisanat: "galerie",
-  batiment: serviceDirection({ sector: "batiment" }),
-  bienetre: serviceDirection({ sector: "bienetre" }),
-  sante: serviceDirection({ sector: "sante" }),
-  coaching: serviceDirection({ sector: "coaching" }),
-  conseil: serviceDirection({ sector: "conseil" }),
-  restauration: serviceDirection({ sector: "restauration" }),
-  immobilier: serviceDirection({ sector: "immobilier" }),
-  formation: serviceDirection({ sector: "formation" }),
-  evenementiel: serviceDirection({ sector: "evenementiel" }),
-  domicile: serviceDirection({ sector: "domicile" }),
-  agence: serviceDirection({ sector: "agence" }),
+  beaute: "fraise",
+  mode: "fraise",
+  bijoux: "fraise",
+  maison: "fraise",
+  hightech: "onde",
+  sport: "onde",
+  alimentation: "fraise",
+  enfants: "fraise",
+  animaux: "fraise",
+  artisanat: "fraise",
+  batiment: "rive",
+  bienetre: "rive",
+  sante: "rive",
+  coaching: "rive",
+  conseil: "rive",
+  restauration: "rive",
+  immobilier: "rive",
+  formation: "rive",
+  evenementiel: "rive",
+  domicile: "rive",
+  agence: "rive",
 };
 
 /** Matières reconnues dans un texte libre (FR/EN), des formes les plus précises aux plus courtes. */
@@ -535,7 +543,7 @@ function proposeNames(sector: string, seed: string): string[] {
 export function localBrand(p: ProductProfile, providedBrand?: string, biz?: BusinessInfo | null): { brand: Brand; strategy: Strategy; logoSpec: Omit<LogoSpec, "color"> } {
   const services = isServicesBusiness(biz);
   const sector = (p.sector ?? "maison") as SectorId;
-  const direction = services ? serviceDirection(p) : SECTOR_DIRECTION[sector] ?? SECTOR_DIRECTION.maison;
+  const direction: DirectionId = services ? "rive" : ((biz as { storeType?: string } | null | undefined)?.storeType === "multi" ? "orbe" : SECTOR_DIRECTION[sector] ?? SECTOR_DIRECTION.maison);
   const d = DIRECTIONS.find((x) => x.id === direction)!;
   const seed = p.visual.colors.map((c) => c.hex).join("") + (p.name ?? "");
   const proposals = services ? serviceNames(p, seed) : proposeNames(sector, seed);
@@ -889,7 +897,9 @@ function buttonColorTargets(spec: ThemeSpec): { key: string; schemes: string[] }
  * Les demandes sont comprises en français comme en anglais, quelle que soit la langue :
  * la réponse suit la langue de l'interface (L), les textes ajoutés au thème celle des contenus (C).
  */
-export function localThemeCommand(spec: ThemeSpec, message: string, selection: { template: string; section: string; block?: string; kind?: string; path?: string; role?: string; text?: string } | null, business: BusinessType = "products"): { ops: ThemeOp[]; reply: string; revert: boolean; direction?: DirectionId } {
+export function localThemeCommand(spec: ThemeSpec, message: string, selection: { template: string; section: string; block?: string; kind?: string; path?: string; role?: string; text?: string } | null, business: BusinessType = "products", kind: StoreKind | null = null): { ops: ThemeOp[]; reply: string; revert: boolean; direction?: DirectionId } {
+  const commercial = purchaseCommand(spec, message, selection);
+  if (commercial) return commercial;
   const services = business === "services";
   const m = message.toLowerCase();
   if (/(reviens|revenir|annule|version précédente|\bundo\b|go back|revert|previous version|roll ?back)/.test(m)) return { ops: [], reply: L("Je reviens à la version précédente.", "Going back to the previous version."), revert: true };
@@ -918,7 +928,7 @@ export function localThemeCommand(spec: ThemeSpec, message: string, selection: {
   // sont aussi des mots courants : « la photo du jardin » ne change jamais de thème).
   const plain = (x: string) => x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const pm = plain(m);
-  const dir = DIRECTIONS.find((d) => [...new Set([plain(d.name), d.id])].some((w) => new RegExp(`(?:direction|theme|style|look|passe[rz]?\\s+(?:en|au|sur)|switch\\s+to|apply(?:\\s+the)?)\\s+(?:[a-z'’]+\\s+){0,2}?[«"]?\\s*${w}(?![a-z])`).test(pm)));
+  const dir = ACTIVE_DIRECTIONS.find((d) => [...new Set([plain(d.name), d.id])].some((w) => new RegExp(`(?:direction|theme|style|look|passe[rz]?\\s+(?:en|au|sur)|switch\\s+to|apply(?:\\s+the)?)\\s+(?:[a-z'’]+\\s+){0,2}?[«"]?\\s*${w}(?![a-z])`).test(pm)));
   if (dir) return { ops: [], reply: L(`J'applique la direction ${dir.name} en conservant vos textes et images.`, `Applying the ${dir.name} direction while keeping your copy and images.`), revert: false, direction: dir.id };
   // Élément ou section désigné dans l'aperçu : la couleur ne touche QUE lui, jamais tout le site.
   // Élément précis désigné (titre, texte, bouton…) : ses couleurs à lui seul (texte, fond).
@@ -1007,9 +1017,11 @@ export function localThemeCommand(spec: ThemeSpec, message: string, selection: {
   if (/ajoute|ajouter|insère|\badd\b|insert/.test(m)) {
     const hit = adds.find(([re]) => re.test(m));
     if (hit) {
-      const available = new Set(availableSectionTypes(spec));
+      // Mêmes règles que la galerie « Sections » : seules les sections compatibles avec le thème installé et la
+      // catégorie du projet sont candidates (jamais une section d'une autre activité ou d'un autre style).
+      const available = new Set(compatibleSectionTypes(spec, kind));
       const type = hit[1].find((t) => available.has(t));
-      if (!type) return { ops: [], reply: L("Votre thème ne propose pas de section de ce genre. Ouvrez « + Section » pour voir celles qu'il contient.", "Your theme doesn't offer a section like this. Open \"+ Section\" to see the ones it includes."), revert: false };
+      if (!type) return { ops: [], reply: L("Votre thème ne propose pas de section de ce genre pour cette activité. Ouvrez « + Section » pour voir celles qu'il contient.", "Your theme doesn't offer a section like this for this activity. Open \"+ Section\" to see the ones it includes."), revert: false };
       ops.push({ op: "add_section", template: selection?.template ?? "index", type, position: selection ? { after: selection.section } : undefined });
       return { ops, reply: L("Section ajoutée avec un contenu de départ à personnaliser.", "Section added with starter content for you to customize."), revert: false };
     }

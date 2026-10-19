@@ -97,9 +97,9 @@ describe("Choisir une direction applique ses couleurs partout", async () => {
     saveBrand(pid, { ...p.brand!, direction: "atelier", palette: mine, paletteMode: "client", clientPalette: mine });
     // Couleurs du client : pas de modification à la main non plus.
     expect((await patch(pid, { palette: { ...mine, accent: "#00FF00" } })).status).toBe(409);
-    expect((await patch(pid, { direction: "signal" })).status).toBe(200);
+    expect((await patch(pid, { direction: "onde" })).status).toBe(200);
     let b = loadProject(pid).brand!;
-    expect(b.palette).toEqual(DIRECTION_PALETTES.signal);
+    expect(b.palette).toEqual(DIRECTION_PALETTES.onde);
     expect(b.clientPalette).toEqual(mine);
     expect((await patch(pid, { paletteMode: "client" })).status).toBe(200);
     b = loadProject(pid).brand!;

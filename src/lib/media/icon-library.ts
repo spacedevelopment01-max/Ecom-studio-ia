@@ -52,7 +52,7 @@ const FR_EN: [RegExp, string[]][] = [
   [/fleur|fleuriste/i, ["flower", "plant"]],
   [/serrur/i, ["key", "lock"]],
   [/couture|retouche|textile/i, ["needle-thread", "scissors", "shirt"]],
-  // Produits des boutiques (démos : casque Sonore, montre ARVEN, gourde Cime).
+  // Produits des boutiques (ex. casque audio, montre, gourde).
   [/casque audio|[ée]couteur|\baudio\b|enceinte|musique/i, ["headphones", "music", "volume"]],
   [/\bmontres?\b|horlog/i, ["device-watch", "clock"]],
   [/gourde|bouteille isotherme/i, ["bottle", "droplet", "mountain"]],

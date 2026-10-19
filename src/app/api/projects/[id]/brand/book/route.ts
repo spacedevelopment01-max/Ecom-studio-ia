@@ -13,7 +13,9 @@ const pagesOf = (projectId: string, bookId: string) =>
 /** Dernière charte mise en page (PDF et planches). */
 export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
-  const book = all<{ id: string; name: string; created_at: number }>("SELECT id, name, created_at FROM assets WHERE project_id = ? AND role = 'brand-book' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", p.id)[0];
+  const book = p.brand?.artIdentity
+    ? all<{ id: string; name: string; created_at: number }>("SELECT id,name,created_at FROM assets WHERE project_id=? AND role='brand-book' AND source_asset_id=? AND deleted_at IS NULL ORDER BY created_at DESC,rowid DESC LIMIT 1", p.id, p.brand.logo.assetId ?? "")[0]
+    : all<{ id: string; name: string; created_at: number }>("SELECT id, name, created_at FROM assets WHERE project_id = ? AND role = 'brand-book' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", p.id)[0];
   return ok({ book: book ? { id: book.id, name: book.name, createdAt: book.created_at, pdf: `/api/files/${book.id}?download=1`, pages: pagesOf(p.id, book.id) } : null });
 });
 

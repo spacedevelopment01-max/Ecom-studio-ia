@@ -17,6 +17,7 @@ import { L } from "@/lib/i18n-server";
 import { brandIssues } from "@/lib/engine/brand-check";
 import { applyPaletteToSite, applyTaglineToCreations, applyTaglineToSite } from "@/lib/workflow/propagation";
 import { saveIdentityBoard } from "@/lib/engine/identity-board";
+import { synchronizeBrandEdit } from "@/lib/preparation/store";
 
 const hex = z.string().regex(/^#[0-9A-Fa-f]{6}$/);
 
@@ -76,6 +77,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
   if (b.validate?.length || b.unvalidate?.length) recordBrandDecision(p.id, "verrous", [...brand.validated].sort().join(", ") || "aucun");
   // Points à vérifier recalculés sur la version du client (ses choix sont gardés, seulement signalés).
   brand.checks = brandIssues(brand, p, p.strategy).filter((i) => i.blocking).map((i) => i.message);
+  if (brand.artIdentity) brand.artIdentity = { ...brand.artIdentity, signature: brand.tagline, palette: brand.palette, fonts: brand.fonts, tone: brand.tone };
   saveBrand(p.id, brand);
   // Le logo suit le nom, la signature et la palette (sauf logo fourni par le client).
   const touchesLogo = (b.name !== undefined && b.name !== p.brand.name) || (b.tagline !== undefined && b.tagline !== p.brand.tagline) || (b.palette !== undefined && JSON.stringify(b.palette) !== JSON.stringify(p.brand.palette));
@@ -101,6 +103,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
   // Planche d'identité refaite dès que l'identité change (signature, nom, couleurs, polices), localement, sans IA.
   const identityChanged = taglineChanged || paletteChanged || (b.name !== undefined && b.name !== p.brand.name) || ((b as { fonts?: unknown }).fonts !== undefined && JSON.stringify((b as { fonts?: unknown }).fonts) !== JSON.stringify(p.brand.fonts));
   if (identityChanged) await saveIdentityBoard(p.id).catch((e) => console.warn("[brand] planche", (e as Error).message));
+  synchronizeBrandEdit(p.id, loadProject(p.id).brand!);
   return ok({ brand: loadProject(p.id).brand ?? brand, logoUpdated: v2 || (regenerate && latestProposals(p.id).length > 0) || recolored, recolored, siteUpdated: siteUpdated || taglineOnSite, logoKept: touchesLogo && logoLocked && !recolored });
 });
 

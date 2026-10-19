@@ -1,0 +1,79 @@
+{
+  "simulation": true,
+  "beforeExplicitChoice": {
+    "status": "recommended",
+    "category": "specialized",
+    "salesModel": "focused_offer",
+    "goal": "purchase",
+    "reasons": [
+      "Le modèle de vente met en avant une offre phare ou une gamme ciblée : explication, démonstration et choix de l’offre."
+    ],
+    "evidence": [
+      {
+        "source": "business",
+        "value": "products"
+      },
+      {
+        "source": "storeType",
+        "value": "mono"
+      },
+      {
+        "source": "catalogue",
+        "value": "0 produit(s) complémentaire(s) déclaré(s)"
+      },
+      {
+        "source": "client",
+        "value": "Carnet de croquis à couverture en liège, pages sans lignes. Produit phare vendu directement aux particuliers.\nTutoiement interdit. Aucun avis ni origine certifiée à inventer. Ne jamais promettre une certification."
+      },
+      {
+        "source": "strategy",
+        "value": "Aider Illustrateurs nomades à comprendre Sillage avant de décider. Carnet de croquis à couverture en liège, pages sans lignes. Produit phare vendu directement aux particuliers. Matière : liège Angle recommandé pour clarifier une offre : il utilise les informations fournies et réserve les preuves manquantes."
+      }
+    ],
+    "clarification": null,
+    "eligibleThemes": [
+      {
+        "referenceId": "fraise",
+        "name": "FRAISE",
+        "engineThemeId": null,
+        "status": "awaiting_integration"
+      },
+      {
+        "referenceId": "onde",
+        "name": "ONDE",
+        "engineThemeId": null,
+        "status": "awaiting_integration"
+      }
+    ]
+  },
+  "clientSelected": "ecommerce",
+  "afterExplicitChoice": {
+    "status": "recommended",
+    "category": "ecommerce",
+    "salesModel": "catalogue",
+    "goal": "purchase",
+    "reasons": [
+      "Vous avez confirmé ce modèle de site pour votre offre actuelle ; ce choix prime sur les indices automatiques."
+    ],
+    "evidence": [
+      {
+        "source": "business",
+        "value": "products"
+      },
+      {
+        "source": "client_choice",
+        "value": "ecommerce"
+      }
+    ],
+    "clarification": null,
+    "eligibleThemes": [
+      {
+        "referenceId": "orbe",
+        "name": "ORBE",
+        "engineThemeId": null,
+        "status": "awaiting_integration"
+      }
+    ]
+  },
+  "inferenceIsNotPaidAi": true
+}

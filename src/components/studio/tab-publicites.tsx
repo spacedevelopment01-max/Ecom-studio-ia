@@ -18,6 +18,7 @@ import { VideoV2Panel } from "./video-v2-panel";
 import { GuidedVideo } from "./guided-video";
 import { CampaignsPanel, StrategyPanel, type Campaign } from "./ad-campaigns";
 import { isAdVisual } from "@/lib/media/bank";
+import { InitialCreatives } from "./initial-creatives";
 
 const SECTIONS = [
   ["vue", "Vue d'ensemble", "Overview", Gauge, "piloter"],
@@ -87,6 +88,7 @@ export default function TabPublicites() {
         </Card>
       </aside>
       <div className="grid min-w-0 grid-cols-1 content-start gap-5">
+        <InitialCreatives ads onChange={reload}/>
         {section === "vue" && <AdsOverview counts={counts} onGo={go} />}
         {section === "strategie" && <AdsStrategy campaigns={camps?.campaigns ?? null} onGo={go} />}
         {section === "image" && (
@@ -99,7 +101,7 @@ export default function TabPublicites() {
           <>
             <Card className="p-4 text-sm text-ink-2">{t("Publicités vidéo et vidéos UGC (personnage synthétique, toujours signalé). Elles restent dans Publicités : les vidéos des publications organiques se créent dans Publications › Publication vidéo.", "Video ads and UGC videos (synthetic presenter, always disclosed). They stay in Ads: organic post videos are created in Posts › Video post.")}</Card>
             <GuidedVideo as="ad" />
-            <VideoV2Panel scope="ad" />
+            <details className="mt-5 rounded-xl border border-line p-4"><summary className="cursor-pointer font-medium">{t("Montage avancé de vos médias", "Advanced media editing")}</summary><VideoV2Panel scope="ad" /></details>
           </>
         )}
         {section === "campagnes" && <CampaignsPanel autoNew={newCampaign} />}

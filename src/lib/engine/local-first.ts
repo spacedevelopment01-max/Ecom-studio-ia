@@ -1,3 +1,5 @@
+import { purchaseCommand } from "../theme/purchase-command";
+import type { StoreKind } from "../theme/store-kind";
 /**
  * Le moteur local d'abord : quand une retouche de la boutique est simple et que le moteur local sait la faire
  * à coup sûr (couleur d'un élément ou d'une section, texte entre guillemets sur l'élément désigné, image
@@ -45,7 +47,13 @@ export function localFirst(
   atts: MediaAttachment[],
   business: BusinessType,
   mediaFile: (assetId: string) => { filename: string } | null,
+  kind: StoreKind | null = null,
 ): LocalFirst | null {
+  const commercial = !atts.length && purchaseCommand(spec, message, selection ?? null);
+  if (commercial) {
+    const dry = applyOps(spec, commercial.ops, { targeted: new Set(selection ? [`${selection.template}:${selection.section}`] : []) });
+    return dry.rejected.length ? null : commercial;
+  }
   if (!isSimpleRequest(message)) return null;
   const sel = selection ?? null;
   // Pièce jointe sans demande explicite de remplacement (inspiration, capture d'exemple) : l'IA la regarde.
@@ -62,7 +70,7 @@ export function localFirst(
     const dryV2 = applyOps(spec, v2.ops, { targeted: new Set<string>(sel ? [`${sel.template}:${sel.section}`] : []), mediaFile });
     return dryV2.rejected.length || !dryV2.applied.length ? null : { ops: v2.ops, reply: v2.reply, revert: false };
   }
-  const r = localThemeCommand(spec, message, sel, business);
+  const r = localThemeCommand(spec, message, sel, business, kind);
   if (r.revert) return { ops: [], reply: r.reply, revert: true };
   if (r.direction) return { ops: [], reply: r.reply, revert: false, direction: r.direction };
   if (!r.ops.length) return null;
@@ -107,7 +115,7 @@ export function localFirst(
   }
   // Vérification à blanc : la moindre opération refusée → l'IA s'en charge.
   const targeted = new Set<string>(sel ? [`${sel.template}:${sel.section}`] : []);
-  const dry = applyOps(spec, r.ops, { targeted, mediaFile });
+  const dry = applyOps(spec, r.ops, { targeted, mediaFile, storeKind: kind });
   if (dry.rejected.length || !dry.applied.length) return null;
   return { ops: r.ops, reply: r.reply, revert: false };
 }

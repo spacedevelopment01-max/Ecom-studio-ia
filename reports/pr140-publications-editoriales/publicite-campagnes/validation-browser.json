@@ -1,0 +1,75 @@
+{
+  "providerCalls": 0,
+  "simulation": true,
+  "actualProviderCostMicro": 0,
+  "results": [
+    {
+      "profile": "produit-ordinateur",
+      "simulation": true,
+      "tab": "publicites",
+      "campaignSubmittedFromExistingForm": true,
+      "requestedCount": 2,
+      "actualAssets": [
+        "jyuzqexaex28q8a8",
+        "75nhg6nnwey2qhby"
+      ],
+      "jobId": "e54h1jp4yh2a9zll",
+      "reopenedInAdvertising": true,
+      "notAttachedToOrganicPosts": true,
+      "errors": [],
+      "external": [],
+      "video": "produit-ordinateur.webm"
+    },
+    {
+      "profile": "produit-mobile",
+      "simulation": true,
+      "tab": "publicites",
+      "campaignSubmittedFromExistingForm": true,
+      "requestedCount": 2,
+      "actualAssets": [
+        "6p21n8c3votofzv3",
+        "nb1viex3bo82lm9m"
+      ],
+      "jobId": "q8k99009wh4qp3ke",
+      "reopenedInAdvertising": true,
+      "notAttachedToOrganicPosts": true,
+      "errors": [],
+      "external": [],
+      "video": "produit-mobile.webm"
+    },
+    {
+      "profile": "service-ordinateur",
+      "simulation": true,
+      "tab": "publicites",
+      "campaignSubmittedFromExistingForm": true,
+      "requestedCount": 2,
+      "actualAssets": [
+        "3ijzbgn5i3f2ie49",
+        "psju701ruab9kw3p"
+      ],
+      "jobId": "whczzcc6bnfdsnl8",
+      "reopenedInAdvertising": true,
+      "notAttachedToOrganicPosts": true,
+      "errors": [],
+      "external": [],
+      "video": "service-ordinateur.webm"
+    },
+    {
+      "profile": "service-mobile",
+      "simulation": true,
+      "tab": "publicites",
+      "campaignSubmittedFromExistingForm": true,
+      "requestedCount": 2,
+      "actualAssets": [
+        "wjdahiubmvzbz96u",
+        "q8efq7q6irjghxeb"
+      ],
+      "jobId": "3ky4loqmck701rp3",
+      "reopenedInAdvertising": true,
+      "notAttachedToOrganicPosts": true,
+      "errors": [],
+      "external": [],
+      "video": "service-mobile.webm"
+    }
+  ]
+}
