@@ -2085,5 +2085,9 @@
   "Fraise — page de vente pop (référence)": "Fraise — pop sales page (reference)",
   "Onde — contraste sombre, accent vif (référence)": "Onde — dark contrast, bright accent (reference)",
   "Orbe — objet et ambiances (référence)": "Orbe — object and atmospheres (reference)",
-  "Atelier Rive — journal et espaces (référence)": "Atelier Rive — journal and spaces (reference)"
+  "Atelier Rive — journal et espaces (référence)": "Atelier Rive — journal and spaces (reference)",
+  "Côte à côte (deux colonnes, aussi sur téléphone)": "Side by side (two columns, on phones too)",
+  "Image sur téléphone": "Image on phones",
+  "Cadrage vertical propre au téléphone (le produit entier, visible). Vide : l’image principale est recadrée selon le point focal mobile.": "Vertical framing for phones (the whole product, visible). Empty: the main image is cropped to the mobile focal point.",
+  "Fichier du projet (téléphone)": "Project file (phone)"
 }
