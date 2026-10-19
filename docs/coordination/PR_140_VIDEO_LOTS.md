@@ -55,7 +55,7 @@ Fichiers supplémentaires : `creative-memory.ts`, `voice.ts`, `audio.ts`, `deps.
 
 ## Lot 3 — accords, devis, reprise et réception
 
-**Réception en cours au premier commit du lot 3.** Code et calculs disponibles pour revue ; premier parcours produit publicitaire vérifié jusqu’au nouveau rendu et téléchargement. Les trois autres parcours et les captures mobiles restent à terminer. Les liens des preuves finales seront ajoutés dans un commit séparé, sans annoncer les anciennes mires comme une livraison ONDE.
+Le premier commit du lot 3 a été livré avec une réception encore partielle. La **réception complémentaire finale** ci-dessous distingue les parcours effectivement terminés, les preuves téléchargées et les limites ; les précontrôles du lot 2 ne sont pas présentés comme la livraison ONDE.
 
 
 ### Changements
@@ -131,3 +131,36 @@ Le refus de rendre un clip absent en écran noir a aussi révélé une lecture h
 L'accord V2 est vérifié sur le projet racine comme dans l'API, tout en donnant au scénario la prestation sélectionnée ; cela évite d'invalider à tort l'accord lorsqu'on cible la deuxième prestation. La conservation en cas d'échec respecte aussi une modification concurrente.
 
 Vérifications après ces ajustements : **33 tests réussis / 6 fichiers** (moteur V2, cinq scénarios, habillage, absence de clip, reprise de rendu, droits), puis **16 réussites / 4 fichiers** pour les protections et nouveaux cas d'interruption/sélection ; TypeScript sans erreur. Ces deux listes se recouvrent. La recette navigateur finale et les mesures des téléchargements suivent séparément.
+
+### CI distante observée
+
+Commit `c91812edb628470f296a245c83a8b06f9ac3b506` : **2 207 tests réussis, 291 fichiers**, en 636,35 s ; TypeScript et construction/démarrage de l'image Docker réussis. [CI et preuves extraites](../../reports/pr140-video-lots/ci-code-c918.txt). Le job global échoue ensuite pendant Theme Check sur **lookbook / niche**, avec `TypeError: Cannot read properties of undefined (reading '$schema')` ; origine exacte non déterminée. Le build de production est alors ignoré. Aucun fichier de thème n'est modifié par ces lots ; ce contrôle n'est pas annoncé réussi. Le complément de reprise est le commit `4c056ac22539bb4c77c2953b38348a98ac4fbda6` ; sa CI et ses preuves navigateur sont suivies séparément.
+
+## Réception finale après la coupure — 19 octobre 2026
+
+**Code final : `8122545d36cff5451861bed394596181735392a2`**. Les deux MP4 publicitaires ont été conservés depuis le moteur `c91812ed` ; les deux MP4 organiques ont été rendus avec `4c056ac2`. Les quatre documents et téléchargements ont ensuite été relus dans le code final `8122545d` ; ce dernier complément ne change que le formulaire mobile, son harnais et le test de calage musical. Aucune image ni aucun clip déjà reçu n'a été régénéré pendant la reprise d'encodage. Le harnais de recapture consulte les résultats, recalcule gratuitement le devis et ouvre l'éditeur sans modification du document.
+
+Les **quatre parcours ordinateur et les quatre lectures mobiles sont terminés**, sans erreur JavaScript collectée : publicité produit, publicité service, publication organique produit, publication organique service. Passage par les onglets existants, scénario relu/modifié avant lancement, suivi de tâche, lecture du résultat, musique retirée puis rétablie en versions distinctes, nouveau rendu local de la version modifiée, téléchargement natif MP4/SRT/VTT. Les premiers parcours déjà terminés ont été réutilisés après la coupure. Le refus d'image et sa correction ciblée précèdent la reprise gratuite du document dont le premier encodage avait été interrompu ; preuves et reçus conservés.
+
+Le navigateur a révélé un **débordement réel du formulaire mobile après chargement du devis** : le bouton héritait d'un texte sans retour à la ligne et imposait sa largeur minimale à la grille. `guided-video.tsx` borne la grille et le bouton, permet de répartir les éléments et fait revenir son libellé à la ligne. Le contrôle est repris avec le devis chargé, et non pendant « Calcul du prix… ». Les huit captures finales ont été refaites après décodage de vraies images dans les lecteurs ; le tutoriel de première visite est fermé avec son bouton natif. Les images longues des sections peuvent inclure les barres fixes du studio ; les vues `*-lecteur-*` montrent aussi le cadrage normal de l'écran.
+
+Résultats mesurés sur les **fichiers réellement téléchargés après modification/rendu** :
+
+| Parcours | Durée / image | Audio mesuré | Sous-titres / stockage |
+|---|---|---|---|
+| Produit publicité | 20 s · 1080 × 1920 · 30 i/s · H.264 | AAC · −16,4 LUFS · crête −4,7 dB | Quatre phrases, SRT/VTT ; empreinte identique à l'asset de la dernière version |
+| Service publicité | idem | AAC · −16,2 LUFS · crête −4,1 dB | idem |
+| Produit organique | idem | AAC · −16,4 LUFS · crête −4,5 dB | idem |
+| Service organique | idem | AAC · −16,4 LUFS · crête −4,0 dB | idem |
+
+Décodage intégral des quatre MP4 sans erreur. Seize images extraites ouvertes (1, 8, 13,5 et 19 s), vues ordinateur/mobile et dialogues d'édition inspectés. Les scènes restent des **mires synthétiques** ; ces mesures ne prouvent ni la pertinence d'un fournisseur réel, ni la qualité professionnelle d'ONDE, ni une écoute humaine complète et indépendante. Les montages organiques ne comportent pas de bouton commercial imposé. Chaque historique contient toujours la version sans musique ; le document courant garde quatre plans et quatre phrases vocales. Relecture de la base isolée : **zéro ligne `ai_calls`, coût API réel 0 €**. Coût CPU/stockage non mesuré.
+
+**Preuves consultables :** [index des captures, enregistrements et MP4](../../reports/pr140-video-lots/README.md), [contrôles navigateur](../../reports/pr140-video-lots/ui-final-checks.json), [recaptures après chargement](../../reports/pr140-video-lots/captures-final-checks.json), [mesures/SHA-256](../../reports/pr140-video-lots/final-media-checks.json), [versions et concordance des fichiers](../../reports/pr140-video-lots/persistence-final-checks.json), [commandes/tests](../../reports/pr140-video-lots/tests-final.txt).
+
+Le devis natif conditionnel pour la chaîne 20 s / quatre plans est **1,272156 € au premier passage**, **0,304279 € pour refaire une scène**, **1,576435 € au plafond**. Ce sont des estimations de configuration isolée, avec hypothèses de tokens, conversion configurée et plafonds de réservation des images ; pas une facture ni un prix garanti en production. [Détail des routes, postes et limites](../../reports/pr140-video-lots/DEVIS_CHAINE.md). L'interface client conserve les pourcentages du budget, aucun nouveau paiement ni fournisseur ajouté.
+
+### Derniers contrôles et reste à réceptionner
+
+La CI de `4c056ac2` a donné **2 212 tests réussis, un échec / 292 fichiers** ; typage et Docker réussis, Theme Check/build ignorés après l'échec. Le test `song-composer.test.ts` exigeait un calage rythmique tout en utilisant tous les passages vidéo jusqu'à leur fin : ces contraintes ne permettent pas de rallonger un plan sans sortir de sa fenêtre. Le test vérifie maintenant le calage sur un montage composé où les plans filmés peuvent être raccourcis, et un cas séparé garantit la conservation de toutes les coupes lorsque le rythme dépasserait les passages approuvés. **14 tests / 2 fichiers réussis** après cet ajustement ; `npx tsc --noEmit` réussi. Aucun relâchement de la barrière de durée source. La dernière suite complète et la CI du code final sont consignées ci-dessous dès leur résultat effectif.
+
+Restent hors validation : vrais fournisseurs et Pixabay en ligne, neuf photos/leur logo ONDE noir/vert privés absents (liste plus haut), naturalité vocale et contrôle continu humain de vraies scènes, facturation fournisseur/production, chemin initial automatique et UI anglaise avec une recette équivalente. Le défaut Theme Check `lookbook / niche` observé sur `c91812ed` reste à diagnostiquer dans son périmètre ; aucun thème modifié. UGC, publication sociale, nouveaux thèmes, merge et déploiement non engagés.

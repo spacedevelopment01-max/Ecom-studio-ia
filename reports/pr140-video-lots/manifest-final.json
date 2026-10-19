@@ -1,0 +1,451 @@
+{
+  "appCodeCommit": "8122545d36cff5451861bed394596181735392a2",
+  "fixturesOnly": true,
+  "files": [
+    {
+      "path": "DEVIS_CHAINE.md",
+      "bytes": 4474,
+      "sha256": "5379c9c7588c5f0a25401981f0d954af9d8ef3c884412c9081fbd4ef61451302"
+    },
+    {
+      "path": "README.md",
+      "bytes": 4433,
+      "sha256": "78789c0d11d8d047454756332359cb2d69713d1971c5e600c1e1707e789e7fbb"
+    },
+    {
+      "path": "audio-demux-experiment.json",
+      "bytes": 341,
+      "sha256": "e103a69bfd9c8965024f02ecef0fb4e4662cc3c2b19aab7ce77027da56eb10c3"
+    },
+    {
+      "path": "captures-et-videos-tests.zip",
+      "bytes": 27861352,
+      "sha256": "7012443d45632c432ea91f99835151a3b3ed79e89820dcd665de9025255e77dc"
+    },
+    {
+      "path": "captures-final-checks.json",
+      "bytes": 1933,
+      "sha256": "8b9f65fd0b7adace52b1bd54e4bf5786670fbb0076f589581cf165ee70946672"
+    },
+    {
+      "path": "chain-quote.json",
+      "bytes": 3132,
+      "sha256": "8c1b27d733f518ee19b1f6dd7bbcb7352b19f59c9ecae5898d75ea517dbfc28d"
+    },
+    {
+      "path": "ci-code-4c.txt",
+      "bytes": 668,
+      "sha256": "548fe7a3334a8c02d9b19fba8ad172bcde89eba21646e9970c008cfae4d5a33a"
+    },
+    {
+      "path": "ci-code-c918.txt",
+      "bytes": 859,
+      "sha256": "186a117d0ae64c2994b5b170b2582a76eaf8e7f46e0c9a171dc08d4c4d09b506"
+    },
+    {
+      "path": "final-media-checks.json",
+      "bytes": 2668,
+      "sha256": "60f01ccbc5d1fb6f10b5c230092db245809900c5baadf673a8cff907659cde4e"
+    },
+    {
+      "path": "lancement-interruption-controle.jpg",
+      "bytes": 97002,
+      "sha256": "68fb3be1d0d00d4f9a0ced294ba5517308f8a3a9fa7f1e7892a97709e5d4ec7d"
+    },
+    {
+      "path": "lot1-tests.log",
+      "bytes": 189,
+      "sha256": "3422d6459778a2bd83d52bec7b5f2cb0bb6f37c099b2a8467389ded9a8a303e8"
+    },
+    {
+      "path": "lot1-tests.txt",
+      "bytes": 186,
+      "sha256": "a994290b2271ac8bafd91b74792aa54b7bdb1b14b9ced234318143edb59c9cca"
+    },
+    {
+      "path": "lot1-types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "lot2-encoding-preflight.json",
+      "bytes": 17344,
+      "sha256": "12ec0321098396620fe64fbee238376a2f8b20cfdcdb690b33b73fcd4e40a91b"
+    },
+    {
+      "path": "lot2-ending-checks.json",
+      "bytes": 716,
+      "sha256": "9495f0e4366b50827b21e23069fe8e67f30c30f5b509d18feb3dc8b4fb3d4fd7"
+    },
+    {
+      "path": "lot2-tests.txt",
+      "bytes": 186,
+      "sha256": "ff61343ec05e8a87da5e1e644b5a5c4f530171bbab180764c43deb2a9ec163b4"
+    },
+    {
+      "path": "persistence-final-checks.json",
+      "bytes": 2238,
+      "sha256": "c49d14c7d4996dd43572811566cf8b6cce9b16b2d1075dbbccc128a9cc251520"
+    },
+    {
+      "path": "produit-organique-controle-1.jpg",
+      "bytes": 69351,
+      "sha256": "f065b235a2534d5b099fb91dc7d72b49e8415eb30cb0520c9292dc1fb994b217"
+    },
+    {
+      "path": "produit-organique-controle-2.jpg",
+      "bytes": 72462,
+      "sha256": "7c38c699cdf8335eb11f5c8f88fd75568b7ad605d6e33bb96812b215fb99a86b"
+    },
+    {
+      "path": "produit-organique-controle-3.jpg",
+      "bytes": 71234,
+      "sha256": "52cc96fda53d4d7ac8eac1315de8a8fcda708775fdd6c14fbe0ec7c988d02d88"
+    },
+    {
+      "path": "produit-organique-controle-4.jpg",
+      "bytes": 72840,
+      "sha256": "4b1fabd2a6459a312e0d88cdbf9de6216b55ba555bd5c6c53fc79fdff6e5eac0"
+    },
+    {
+      "path": "produit-organique-edition-ordinateur.png",
+      "bytes": 45015,
+      "sha256": "01eeb1e902ad3ee20737338ae956606ae9902518358e001b25bb010e23eb6b44"
+    },
+    {
+      "path": "produit-organique-fin-corrigee.png",
+      "bytes": 91704,
+      "sha256": "9bcfe228a4cd3497ca761933e0798668f74a03dac4f07cfa8a2b0e00c46a4521"
+    },
+    {
+      "path": "produit-organique-final-mobile.png",
+      "bytes": 340502,
+      "sha256": "6022055c0b5956832f5a9bac47ca734764c3315094b340fb29105f2e6e28b693"
+    },
+    {
+      "path": "produit-organique-final-ordinateur.png",
+      "bytes": 290508,
+      "sha256": "c2cfe27cd990c06c1c7bd18406cbc3b592b431cdac119fb2b9c440197e4187bb"
+    },
+    {
+      "path": "produit-organique-final.mp4",
+      "bytes": 6242573,
+      "sha256": "fe8b4e3c8b73c956f745585f2d703a35da4693de57323ff0df7d053f6753ae30"
+    },
+    {
+      "path": "produit-organique-final.srt",
+      "bytes": 236,
+      "sha256": "1c40ad938ba59fc428195b842b63314ed1ce3d368caea8910ddea047915cac02"
+    },
+    {
+      "path": "produit-organique-final.vtt",
+      "bytes": 236,
+      "sha256": "cf29ed0978ba2a002f653b0951c7eac26533d746b2f85c1c47a541ac2ba821f4"
+    },
+    {
+      "path": "produit-organique-interaction-mobile.webm",
+      "bytes": 552924,
+      "sha256": "9da66dde8eb49a3f9b3c16ccbd4f1de7a8c826b80199d6fa7fedc18b2d33ef48"
+    },
+    {
+      "path": "produit-organique-interaction-ordinateur.webm",
+      "bytes": 13028013,
+      "sha256": "d967b96ee7b7c87a6c8e928820f9a8c745ad23f95175e57c839abe7e5647702b"
+    },
+    {
+      "path": "produit-organique-lecteur-mobile.png",
+      "bytes": 136835,
+      "sha256": "4fac67b64fc94ceed625a394a76a092bcafff760a860acb4c40e4dd54563a534"
+    },
+    {
+      "path": "produit-organique-lecteur-ordinateur.png",
+      "bytes": 246449,
+      "sha256": "833c4fa5a0590ee569f3bee209f2a132f8da5a0ce215185df7d595795c8fe28c"
+    },
+    {
+      "path": "produit-organique-rejet-qualite.png",
+      "bytes": 20427,
+      "sha256": "0206fbddf9edcc2625f397fda91ac68e6694df3e34207d8930b5c37e99d9035e"
+    },
+    {
+      "path": "produit-organique-reprise-encodage.png",
+      "bytes": 5854,
+      "sha256": "142e7812ab5f71926350585d484253dabc8cb2ad7c3157c68a0de79a73b12af0"
+    },
+    {
+      "path": "produit-organique-scenario-ordinateur.png",
+      "bytes": 218629,
+      "sha256": "27d83b0e377b511bf1d93941a11dc24df6c452c745d0ddac75cb6a6d8582ab73"
+    },
+    {
+      "path": "produit-publicitaire-controle-1.jpg",
+      "bytes": 68239,
+      "sha256": "73d2ba529177b3611b80242fbe7f9a14bc8b909bbc7cef952e492dd7c2dfcff2"
+    },
+    {
+      "path": "produit-publicitaire-controle-2.jpg",
+      "bytes": 68278,
+      "sha256": "5f97fe631f52920ae693c80ccfc7e2a51c7a53129d5c9d9b22fb979bd9fcc915"
+    },
+    {
+      "path": "produit-publicitaire-controle-3.jpg",
+      "bytes": 64403,
+      "sha256": "96038d45d21b5407f8952aabda932c3be3daf3bae574aedad000f7bdf47bec91"
+    },
+    {
+      "path": "produit-publicitaire-controle-4.jpg",
+      "bytes": 72814,
+      "sha256": "e5be8f016fe1cfd11bcdac3449cb4104cea3f29c420084ba3786af84a3be82fa"
+    },
+    {
+      "path": "produit-publicitaire-edition-ordinateur.png",
+      "bytes": 44973,
+      "sha256": "1df70319b3a91328e6db13b86ccc86197f9de997438713572af5c778fd4ba52f"
+    },
+    {
+      "path": "produit-publicitaire-fin-corrigee.png",
+      "bytes": 143496,
+      "sha256": "7ebc62f6db53c6a54de71df852830d57feb75d91353c99278e7f73edd15d8cb2"
+    },
+    {
+      "path": "produit-publicitaire-final-mobile.png",
+      "bytes": 505434,
+      "sha256": "90c30a09fdb2d80d1135650c8d31a4c47cbbc45b3c4b72d8c83d8f5c8679b4e8"
+    },
+    {
+      "path": "produit-publicitaire-final-ordinateur.png",
+      "bytes": 319357,
+      "sha256": "2c7198aa76ca63d36b1a01feec5db3d21f74cd00df4c34d0010a548a218ac9ad"
+    },
+    {
+      "path": "produit-publicitaire-final.mp4",
+      "bytes": 6891734,
+      "sha256": "f7e66c8692a320c869ace0fc3c357d9f6b25db7b793f810a210a5b8b10d85b8f"
+    },
+    {
+      "path": "produit-publicitaire-final.srt",
+      "bytes": 246,
+      "sha256": "8b9f41438c57adcd58d1c9c26ccf58ec7c7ca18e6d72e90f81c4347e54c2a1ad"
+    },
+    {
+      "path": "produit-publicitaire-final.vtt",
+      "bytes": 246,
+      "sha256": "7ff4d5dc30f7741016d52a46f7fcd849da256304748b9254ef15667eadd147fc"
+    },
+    {
+      "path": "produit-publicitaire-interaction-mobile.webm",
+      "bytes": 654441,
+      "sha256": "364e0d2cc1f035bcc0db5754e0d9dd418f9d046e3ff4531d774b6d5a7c384ca9"
+    },
+    {
+      "path": "produit-publicitaire-interaction-ordinateur.webm",
+      "bytes": 10187600,
+      "sha256": "4613cd09db0557299d573d7a6c549abffc316f35dd50a67fe8fbdee72b5b3117"
+    },
+    {
+      "path": "produit-publicitaire-lancement-interruption.webm",
+      "bytes": 29098820,
+      "sha256": "3530efcd4fb83b1dd54226e7deeff65bb7ee28adecbd61a06e77fef7fe5b25e0"
+    },
+    {
+      "path": "produit-publicitaire-lecteur-mobile.png",
+      "bytes": 140329,
+      "sha256": "27d2c125042e555299913c1efcc4ac6ed242925ae6cd437b1665ea9c82fc2abd"
+    },
+    {
+      "path": "produit-publicitaire-lecteur-ordinateur.png",
+      "bytes": 273793,
+      "sha256": "fc177e2fda4d7e15108f405122a5dcabd7700f0fc28a2ab2359e8805e00e6aae"
+    },
+    {
+      "path": "produit-publicitaire-reprise-ordinateur.png",
+      "bytes": 256774,
+      "sha256": "bb9a48329720cb4f9c854d2972915f5e63dd1d413a63add0306ee3de556b5548"
+    },
+    {
+      "path": "produit-publicitaire-scenario-ordinateur.png",
+      "bytes": 244956,
+      "sha256": "005b942d70dbf9ab4d4e0dfb69859e95cbcf8d54a4fc5ff94d720aeb62a79a0d"
+    },
+    {
+      "path": "service-organique-controle-1.jpg",
+      "bytes": 68895,
+      "sha256": "ece349a256c34bb411672fb75d1308cc26a396550fa4588512d2101ebc88d964"
+    },
+    {
+      "path": "service-organique-controle-2.jpg",
+      "bytes": 67748,
+      "sha256": "73b152aa66424ecd9fefd75aadb5a0e3efb169f552e0ad474996b0f1c351fd47"
+    },
+    {
+      "path": "service-organique-controle-3.jpg",
+      "bytes": 66090,
+      "sha256": "b26cc5aa3799e00093b281a16252e4d28648add998159b4e3906f1c81f1fe5e5"
+    },
+    {
+      "path": "service-organique-controle-4.jpg",
+      "bytes": 76290,
+      "sha256": "26ba3fe23cf5b90ee1d6f0b2857cb7a45f3eb22e0aa4a974ee0d84044c2d3d06"
+    },
+    {
+      "path": "service-organique-edition-ordinateur.png",
+      "bytes": 45015,
+      "sha256": "01eeb1e902ad3ee20737338ae956606ae9902518358e001b25bb010e23eb6b44"
+    },
+    {
+      "path": "service-organique-fin-corrigee.png",
+      "bytes": 96807,
+      "sha256": "ce38119bee313117d6333b576628c458176111baad54accbdc2f94f69ac157c1"
+    },
+    {
+      "path": "service-organique-final-mobile.png",
+      "bytes": 347976,
+      "sha256": "4625cf88effb0b436bbc791105cb91434c09f50cb3ddb564356fb7ef0d0e4e05"
+    },
+    {
+      "path": "service-organique-final-ordinateur.png",
+      "bytes": 294944,
+      "sha256": "73d4115bc0b907e72c30d254e993fd14c5ac447125c17e740bd19392d041687a"
+    },
+    {
+      "path": "service-organique-final.mp4",
+      "bytes": 6185723,
+      "sha256": "2bf9ca3254efc8eba06318eca91bfd93848bc9c36916231881a26e320ac11fc1"
+    },
+    {
+      "path": "service-organique-final.srt",
+      "bytes": 236,
+      "sha256": "1c40ad938ba59fc428195b842b63314ed1ce3d368caea8910ddea047915cac02"
+    },
+    {
+      "path": "service-organique-final.vtt",
+      "bytes": 236,
+      "sha256": "cf29ed0978ba2a002f653b0951c7eac26533d746b2f85c1c47a541ac2ba821f4"
+    },
+    {
+      "path": "service-organique-interaction-mobile.webm",
+      "bytes": 512865,
+      "sha256": "a83fe445564c3187d8d9692cb8c761384ce80b84a9d712129c60330751485ffa"
+    },
+    {
+      "path": "service-organique-interaction-ordinateur.webm",
+      "bytes": 17432823,
+      "sha256": "7799bf0149474a9f4ff2ef1c9c02f5b08a94962002571674bcad8663f22b9535"
+    },
+    {
+      "path": "service-organique-lecteur-mobile.png",
+      "bytes": 139111,
+      "sha256": "cea0fd4120e51875c8e977574118be6b7a2fc542ef2d954066f2bb5deb7be737"
+    },
+    {
+      "path": "service-organique-lecteur-ordinateur.png",
+      "bytes": 248875,
+      "sha256": "7f4b217dc65173fbd2657ee35d92e31fdf7a2d65be388ebfe0e26943c1d2bb21"
+    },
+    {
+      "path": "service-organique-scenario-ordinateur.png",
+      "bytes": 210187,
+      "sha256": "e35fbd357da421324f9f13aa79e76d2bd838db86806e82c7036f55bc2bb9c4d0"
+    },
+    {
+      "path": "service-publicitaire-controle-1.jpg",
+      "bytes": 70240,
+      "sha256": "21c35351611ad018685170335c10acf5742f1e616f6701c3b1a7dfb7f92460af"
+    },
+    {
+      "path": "service-publicitaire-controle-2.jpg",
+      "bytes": 68611,
+      "sha256": "74f9ce22c367047c02f8b1cb76b2fecdd32a4f79bb29bd6c6d5f720afb862cea"
+    },
+    {
+      "path": "service-publicitaire-controle-3.jpg",
+      "bytes": 66736,
+      "sha256": "085dbdadd36ba672f0763a469a47bb02b173ad699f5cb883e78305b758579ee9"
+    },
+    {
+      "path": "service-publicitaire-controle-4.jpg",
+      "bytes": 74762,
+      "sha256": "e690dd0618b55e5f229296c13fe6814a275269e9959e0c7f4d346176ac6c094f"
+    },
+    {
+      "path": "service-publicitaire-edition-ordinateur.png",
+      "bytes": 44935,
+      "sha256": "b27786c06478fcc33281272d37cd3e7b1548ce46bbe29c05e36b777dccb27824"
+    },
+    {
+      "path": "service-publicitaire-fin-corrigee.png",
+      "bytes": 116562,
+      "sha256": "e4859cc50b41ae477bae1269d86271cd19bde920e72f558eaae30828f651138f"
+    },
+    {
+      "path": "service-publicitaire-final-mobile.png",
+      "bytes": 366386,
+      "sha256": "76c6e6750ab27f3c54f22db4f461f877834e15039f60e77bdba9bf3be177a14f"
+    },
+    {
+      "path": "service-publicitaire-final-ordinateur.png",
+      "bytes": 304710,
+      "sha256": "126a606bd2c435ae76f223cd9cc0a6b36d4e7837696f6437bf05297ebf9ddeb3"
+    },
+    {
+      "path": "service-publicitaire-final.mp4",
+      "bytes": 6938283,
+      "sha256": "7a2fa6d757c434852e8a7d87c408c3ec2e3416bb4285cff4f064c93d285f3235"
+    },
+    {
+      "path": "service-publicitaire-final.srt",
+      "bytes": 251,
+      "sha256": "d94dec8c4b6230fd4777c34d4a83f0832ae2499e922e4b0a963b50425d94f04b"
+    },
+    {
+      "path": "service-publicitaire-final.vtt",
+      "bytes": 251,
+      "sha256": "dcbf9e6a9e3d6a6dc5491aa35c1c6c085edef043ae9673e4a2c9366af5531272"
+    },
+    {
+      "path": "service-publicitaire-interaction-mobile.webm",
+      "bytes": 539765,
+      "sha256": "cb110b47c3c2495fa81f7a5d25873d6a5ff8c8073fbb0076163027c1c40c1192"
+    },
+    {
+      "path": "service-publicitaire-interaction-ordinateur.webm",
+      "bytes": 15400234,
+      "sha256": "a9dae6880c723fe43b9c38bd8325aef72488d239c6ad1a20bc05dbae3d4c9e16"
+    },
+    {
+      "path": "service-publicitaire-lecteur-mobile.png",
+      "bytes": 143703,
+      "sha256": "4d944f2b01a02eff9925d959dde65c8156627b29509d239522338d771d88f53d"
+    },
+    {
+      "path": "service-publicitaire-lecteur-ordinateur.png",
+      "bytes": 258922,
+      "sha256": "0ad9999b7d4755b72a6d1c5433da5586544dfe97682fa26613b68540abb2866c"
+    },
+    {
+      "path": "service-publicitaire-scenario-ordinateur.png",
+      "bytes": 212331,
+      "sha256": "8c2489397ec33ca7efdf5469c181e949b3797b14ba9126e2baccfe1e3716723b"
+    },
+    {
+      "path": "tests-final.txt",
+      "bytes": 2285,
+      "sha256": "51085091a8848936900ba7eef92f05c79d46afc8fda28e7b0eaacd61dd4009b8"
+    },
+    {
+      "path": "ui-final-checks.json",
+      "bytes": 2548,
+      "sha256": "5cb9d7785f452776554866e638a9a595aa62ca16ed38b3a9a7fdc197589311e0"
+    },
+    {
+      "path": "ui-worker-checks.json",
+      "bytes": 5622,
+      "sha256": "cf925b1ffd3406737da5263b9fc67ba2ea62be66bdd7ded60de3e5abf99892cf"
+    },
+    {
+      "path": "voix-francaise-test.wav",
+      "bytes": 217742,
+      "sha256": "8dab41dff5c0e04dfc60b48833f864fde24934681700cbc6afff7ee0ee4eafb8"
+    }
+  ]
+}

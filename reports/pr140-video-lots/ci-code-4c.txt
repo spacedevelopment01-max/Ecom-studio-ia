@@ -1,0 +1,9 @@
+Commit : 4c056ac22539bb4c77c2953b38348a98ac4fbda6
+https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/39276461634
+TypeScript : succès. Docker construction/démarrage : succès.
+Tests : 2212 passed | 1 failed (2213), 291 fichiers réussis | 1 échec (292), 792,71 s.
+Échec song-composer.test.ts:70 : calage de toutes les coupes attendu sur des passages sans réserve de durée.
+AssertionError: expected 0.13043478260869534 to be less than 0.01
+Theme Check et build ignorés après l’échec des tests.
+Cas musical ajusté au commit 8122545d ; tests ciblés 14/14 réussis.
+Cet échec est conservé dans le bilan, pas présenté comme une CI verte.

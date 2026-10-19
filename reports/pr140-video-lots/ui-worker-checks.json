@@ -1,0 +1,291 @@
+[
+  {
+    "jobId": "zyerpd9cuc4ce1r7",
+    "projectId": "62vxtk8l06n56ta9",
+    "slug": "produit-publicitaire",
+    "calls": {
+      "images": 0,
+      "clips": 0,
+      "reviews": 0,
+      "stock": 0,
+      "renders": 0
+    },
+    "events": [
+      "completed"
+    ],
+    "providerSimulation": true
+  },
+  {
+    "jobId": "ksxr5ow5sa4sprbu",
+    "projectId": "62vxtk8l06n56ta9",
+    "slug": "produit-publicitaire",
+    "calls": {
+      "images": 2,
+      "clips": 1,
+      "reviews": 3,
+      "stock": 0,
+      "renders": 0
+    },
+    "events": [
+      "pause-after-image-2",
+      "paused"
+    ],
+    "providerSimulation": true
+  },
+  {
+    "jobId": "ksxr5ow5sa4sprbu",
+    "projectId": "62vxtk8l06n56ta9",
+    "slug": "produit-publicitaire",
+    "calls": {
+      "images": 2,
+      "clips": 3,
+      "reviews": 5,
+      "stock": 0,
+      "renders": 1
+    },
+    "events": [
+      "completed"
+    ],
+    "providerSimulation": true
+  },
+  {
+    "jobId": "64w9bca4htgfw3wf",
+    "projectId": "62vxtk8l06n56ta9",
+    "slug": "produit-publicitaire",
+    "calls": {
+      "images": 0,
+      "clips": 0,
+      "reviews": 0,
+      "stock": 0,
+      "renders": 0
+    },
+    "events": [
+      "completed"
+    ],
+    "providerSimulation": true
+  },
+  {
+    "jobId": "nfq9hvpe5a43mqed",
+    "projectId": "62vxtk8l06n56ta9",
+    "slug": "produit-publicitaire",
+    "calls": {
+      "images": 0,
+      "clips": 0,
+      "reviews": 0,
+      "stock": 0,
+      "renders": 0
+    },
+    "events": [
+      "completed"
+    ],
+    "providerSimulation": true
+  },
+  {
+    "jobId": "061qljxrx436unyr",
+    "projectId": "62vxtk8l06n56ta9",
+    "slug": "produit-publicitaire",
+    "calls": {
+      "images": 0,
+      "clips": 0,
+      "reviews": 0,
+      "stock": 0,
+      "renders": 0
+    },
+    "events": [
+      "completed"
+    ],
+    "providerSimulation": true
+  },
+  {
+    "jobId": "e0w3eiaei9ymselv",
+    "projectId": "iintqobrdfz8jtbk",
+    "slug": "service-publicitaire",
+    "calls": {
+      "images": 0,
+      "clips": 0,
+      "reviews": 0,
+      "stock": 0,
+      "renders": 0
+    },
+    "events": [
+      "completed"
+    ],
+    "providerSimulation": true
+  },
+  {
+    "jobId": "s2tvsa3i3ag3cdpg",
+    "projectId": "62vxtk8l06n56ta9",
+    "slug": "produit-publicitaire",
+    "calls": {
+      "images": 0,
+      "clips": 0,
+      "reviews": 0,
+      "stock": 0,
+      "renders": 0
+    },
+    "events": [
+      "completed"
+    ],
+    "providerSimulation": true
+  },
+  {
+    "jobId": "u4847ympr073e0f7",
+    "projectId": "iintqobrdfz8jtbk",
+    "slug": "service-publicitaire",
+    "calls": {
+      "images": 0,
+      "clips": 0,
+      "reviews": 0,
+      "stock": 4,
+      "renders": 1
+    },
+    "events": [
+      "completed"
+    ],
+    "providerSimulation": true
+  },
+  {
+    "jobId": "2mv7j28fd5yh899t",
+    "projectId": "iintqobrdfz8jtbk",
+    "slug": "service-publicitaire",
+    "calls": {
+      "images": 0,
+      "clips": 0,
+      "reviews": 0,
+      "stock": 0,
+      "renders": 0
+    },
+    "events": [
+      "completed"
+    ],
+    "providerSimulation": true
+  },
+  {
+    "jobId": "g94kiypc3rjhuxyc",
+    "projectId": "fddwmrxjekxu41q4",
+    "slug": "produit-organique",
+    "calls": {
+      "images": 0,
+      "clips": 0,
+      "reviews": 0,
+      "stock": 0,
+      "renders": 0
+    },
+    "events": [
+      "completed"
+    ],
+    "providerSimulation": true
+  },
+  {
+    "jobId": "l90jt4i9plgi149k",
+    "projectId": "fddwmrxjekxu41q4",
+    "slug": "produit-organique",
+    "calls": {
+      "images": 2,
+      "clips": 1,
+      "reviews": 3,
+      "stock": 0,
+      "renders": 0
+    },
+    "events": [
+      "failed:Scène 2, image à vérifier : défaut rédhibitoire : wrong_product. Version conservée, aucune relance payante automatique."
+    ],
+    "providerSimulation": true
+  },
+  {
+    "jobId": "abxwyxt03fjbxnzc",
+    "projectId": "fddwmrxjekxu41q4",
+    "slug": "produit-organique",
+    "calls": {
+      "images": 3,
+      "clips": 3,
+      "reviews": 6,
+      "stock": 0,
+      "renders": 1
+    },
+    "events": [
+      "failed:encodage vidéo impossible (ffmpeg null) : "
+    ],
+    "providerSimulation": true
+  },
+  {
+    "jobId": "ipwbs85sxydrbgg6",
+    "projectId": "fddwmrxjekxu41q4",
+    "slug": "produit-organique",
+    "calls": {
+      "images": 0,
+      "clips": 0,
+      "reviews": 0,
+      "stock": 0,
+      "renders": 0
+    },
+    "events": [
+      "completed"
+    ],
+    "providerSimulation": true
+  },
+  {
+    "jobId": "frfzf8avtry9f7s6",
+    "projectId": "fddwmrxjekxu41q4",
+    "slug": "produit-organique",
+    "calls": {
+      "images": 0,
+      "clips": 0,
+      "reviews": 0,
+      "stock": 0,
+      "renders": 0
+    },
+    "events": [
+      "completed"
+    ],
+    "providerSimulation": true
+  },
+  {
+    "jobId": "vuf1bdohdwqa83ma",
+    "projectId": "mgfgk3esyk6m9bka",
+    "slug": "service-organique",
+    "calls": {
+      "images": 0,
+      "clips": 0,
+      "reviews": 0,
+      "stock": 0,
+      "renders": 0
+    },
+    "events": [
+      "completed"
+    ],
+    "providerSimulation": true
+  },
+  {
+    "jobId": "394duyx4j6zj9rju",
+    "projectId": "mgfgk3esyk6m9bka",
+    "slug": "service-organique",
+    "calls": {
+      "images": 0,
+      "clips": 0,
+      "reviews": 0,
+      "stock": 4,
+      "renders": 1
+    },
+    "events": [
+      "completed"
+    ],
+    "providerSimulation": true
+  },
+  {
+    "jobId": "kvwjfoodtgerkp11",
+    "projectId": "mgfgk3esyk6m9bka",
+    "slug": "service-organique",
+    "calls": {
+      "images": 0,
+      "clips": 0,
+      "reviews": 0,
+      "stock": 0,
+      "renders": 0
+    },
+    "events": [
+      "completed"
+    ],
+    "providerSimulation": true
+  }
+]

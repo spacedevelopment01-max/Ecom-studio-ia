@@ -1,0 +1,103 @@
+{
+  "providerCalls": 0,
+  "actualApiCostEur": 0,
+  "cpuStorageCostMeasured": false,
+  "results": [
+    {
+      "slug": "produit-publicitaire",
+      "simulation": true,
+      "video": {
+        "codec": "h264",
+        "width": 1080,
+        "height": 1920,
+        "fps": "30/1",
+        "durationS": 20
+      },
+      "audio": {
+        "codec": "aac",
+        "sampleRate": "44100",
+        "lufs": -16.4,
+        "truePeakDb": -4.7,
+        "durationS": 20,
+        "silent": false
+      },
+      "allFourPhrasesExported": true,
+      "decodeErrors": 0,
+      "bytes": 6891734,
+      "sha256": "f7e66c8692a320c869ace0fc3c357d9f6b25db7b793f810a210a5b8b10d85b8f",
+      "renderCodeCommit": "c91812edb628470f296a245c83a8b06f9ac3b506"
+    },
+    {
+      "slug": "service-publicitaire",
+      "simulation": true,
+      "video": {
+        "codec": "h264",
+        "width": 1080,
+        "height": 1920,
+        "fps": "30/1",
+        "durationS": 20
+      },
+      "audio": {
+        "codec": "aac",
+        "sampleRate": "44100",
+        "lufs": -16.2,
+        "truePeakDb": -4.1,
+        "durationS": 20,
+        "silent": false
+      },
+      "allFourPhrasesExported": true,
+      "decodeErrors": 0,
+      "bytes": 6938283,
+      "sha256": "7a2fa6d757c434852e8a7d87c408c3ec2e3416bb4285cff4f064c93d285f3235",
+      "renderCodeCommit": "c91812edb628470f296a245c83a8b06f9ac3b506"
+    },
+    {
+      "slug": "produit-organique",
+      "simulation": true,
+      "video": {
+        "codec": "h264",
+        "width": 1080,
+        "height": 1920,
+        "fps": "30/1",
+        "durationS": 20
+      },
+      "audio": {
+        "codec": "aac",
+        "sampleRate": "44100",
+        "lufs": -16.4,
+        "truePeakDb": -4.5,
+        "durationS": 20,
+        "silent": false
+      },
+      "allFourPhrasesExported": true,
+      "decodeErrors": 0,
+      "bytes": 6242573,
+      "sha256": "fe8b4e3c8b73c956f745585f2d703a35da4693de57323ff0df7d053f6753ae30",
+      "renderCodeCommit": "4c056ac22539bb4c77c2953b38348a98ac4fbda6"
+    },
+    {
+      "slug": "service-organique",
+      "simulation": true,
+      "video": {
+        "codec": "h264",
+        "width": 1080,
+        "height": 1920,
+        "fps": "30/1",
+        "durationS": 20
+      },
+      "audio": {
+        "codec": "aac",
+        "sampleRate": "44100",
+        "lufs": -16.4,
+        "truePeakDb": -4,
+        "durationS": 20,
+        "silent": false
+      },
+      "allFourPhrasesExported": true,
+      "decodeErrors": 0,
+      "bytes": 6185723,
+      "sha256": "2bf9ca3254efc8eba06318eca91bfd93848bc9c36916231881a26e320ac11fc1",
+      "renderCodeCommit": "4c056ac22539bb4c77c2953b38348a98ac4fbda6"
+    }
+  ]
+}
