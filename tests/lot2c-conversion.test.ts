@@ -80,9 +80,9 @@ describe("Lot 2C — FRAISE GUMMIES (référence Lumora) et ONDE AUDIO (référe
       for (const [id, scheme] of Object.entries(spec.settings.color_schemes as Record<string, { settings: Record<string, string> }>)) {
         const block = home.match(new RegExp(`\\.color-${id},[^}]*}`))?.[0] ?? ""; expect(block, `${kind} ${id}`).toContain("--c-accent-ink:");
         const ink = block.match(/--c-accent-ink: (#[0-9a-f]{6})/i)![1], fill = block.match(/--c-accent-fill: (#[0-9a-f]{6})/i)![1];
-        expect(contrast(ink, scheme.settings.background), `${kind} ${id} ink ${ink}`).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(ink, scheme.settings.background), `${kind} ${id} ink ${ink}`).toBeGreaterThanOrEqual(4.5); expect(contrast(ink, scheme.settings.surface), `${kind} ${id} ink/surface ${ink}`).toBeGreaterThanOrEqual(4.5);
         expect(contrast(fill, scheme.settings.accent_text), `${kind} ${id} fill ${fill}`).toBeGreaterThanOrEqual(4.5);
-        if (contrast(scheme.settings.accent, scheme.settings.background) >= 4.5) expect(ink.toLowerCase()).toBe(scheme.settings.accent.toLowerCase());
+        if (contrast(scheme.settings.accent, scheme.settings.background) >= 4.5 && contrast(scheme.settings.accent, scheme.settings.surface) >= 4.5) expect(ink.toLowerCase()).toBe(scheme.settings.accent.toLowerCase());
         if (contrast(scheme.settings.accent, scheme.settings.accent_text) >= 4.5) expect(fill.toLowerCase()).toBe(scheme.settings.accent.toLowerCase());
       }
     }

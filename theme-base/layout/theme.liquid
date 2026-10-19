@@ -58,7 +58,8 @@
             assign accent_ink = scheme.settings.accent
             for i in (1..8)
               assign ink_ratio = accent_ink | color_contrast: scheme.settings.background
-              if ink_ratio < 4.5
+              assign ink_surface = accent_ink | color_contrast: scheme.settings.surface
+              if ink_ratio < 4.5 or ink_surface < 4.5
                 assign accent_ink = accent_ink | color_mix: scheme.settings.text, 82
               endif
             endfor

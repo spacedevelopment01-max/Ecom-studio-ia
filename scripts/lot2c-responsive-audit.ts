@@ -1,7 +1,7 @@
 /** Audit responsive automatique d'un aperçu statique LIVRÉ : pour chaque page et chaque largeur (360, 390, 768, 1440) —
  * et deux petites hauteurs (360×560, 390×620) — relève les défauts mesurables : débordement horizontal de la page,
  * éléments qui dépassent du cadre, textes coupés (ellipse ou rognés), images déformées (rapport rendu ≠ rapport natif,
- * hors `object-fit`), boutons ou liens recouverts par un élément fixe, cibles tactiles trop petites, contrastes
+ * hors `object-fit`), boutons ou liens recouverts par un élément fixe, cibles tactiles sous 24 × 24 px (WCAG 2.5.8), contrastes
  * insuffisants des textes (AA : 4,5:1, 3:1 en grand texte) et hiérarchie des titres. Résultat JSON + résumé lisible.
  *
  *   CHROMIUM=/chemin/chrome npx tsx scripts/lot2c-responsive-audit.ts <aperçu>/fraise fraise <dossier-de-sortie>
@@ -53,7 +53,7 @@ try {
           // 4. Image déformée (hors object-fit cover/contain et SVG).
           if (e.tagName === "IMG") { const img = e as HTMLImageElement; if (img.naturalWidth > 0 && !/^(cover|contain|scale-down)$/.test(cs.objectFit) && !/\.svg(\?|$)/.test(img.currentSrc)) { const nat = img.naturalWidth / img.naturalHeight, ren = r.width / r.height; if (Math.abs(nat - ren) / nat > 0.04) out.push({ kind: "image-distorted", page: file, viewport: vp, detail: `natif ${nat.toFixed(2)} rendu ${ren.toFixed(2)} (${Math.round(r.width)}×${Math.round(r.height)})`, selector: sel(e) }); } }
           // 5. Cible tactile trop petite (mobile) : boutons et liens interactifs < 40 px dans les deux sens (icônes, non texte courant).
-          if (mobile && (e.tagName === "BUTTON" || (e.tagName === "A" && e.hasAttribute("href")) || (e.tagName === "INPUT" && /checkbox|radio/.test((e as HTMLInputElement).type)))) { const lbl = (e as HTMLElement).innerText?.trim() ?? ""; const isInline = e.tagName === "A" && lbl.length > 0 && cs.display === "inline" && e.parentElement && ["P", "LI", "SPAN", "TD", "DD", "FIGCAPTION", "SMALL"].includes(e.parentElement.tagName); if (!isInline && r.width < 40 && r.height < 40 && r.width > 0) out.push({ kind: "tap-target-small", page: file, viewport: vp, detail: `${Math.round(r.width)}×${Math.round(r.height)} px « ${lbl.slice(0, 30) || e.getAttribute("aria-label") || ""} »`, selector: sel(e) }); }
+          if (mobile && (e.tagName === "BUTTON" || (e.tagName === "A" && e.hasAttribute("href")) || (e.tagName === "INPUT" && /checkbox|radio/.test((e as HTMLInputElement).type)))) { const lbl = (e as HTMLElement).innerText?.trim() ?? ""; const isInline = e.tagName === "A" && lbl.length > 0 && cs.display === "inline" && e.parentElement && ["P", "LI", "SPAN", "TD", "DD", "FIGCAPTION", "SMALL"].includes(e.parentElement.tagName); const inLabel = e.tagName === "INPUT" && !!e.closest("label"); if (!isInline && !inLabel && (r.width < 24 || r.height < 24) && r.width > 0) out.push({ kind: "tap-target-small", page: file, viewport: vp, detail: `${Math.round(r.width)}×${Math.round(r.height)} px « ${lbl.slice(0, 30) || e.getAttribute("aria-label") || ""} »`, selector: sel(e) }); }
         }
         // 6. Éléments fixes qui recouvrent un bouton ou un lien (en bas de page, au repos et en bas de défilement).
         const fixed = all.filter((e) => visible(e) && getComputedStyle(e).position === "fixed" && !e.closest("dialog, .es-drawer, [aria-hidden='true']") && !e.matches("#es-static-note, #es-static-note *"));

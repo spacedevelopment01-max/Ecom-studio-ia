@@ -334,7 +334,7 @@ body[data-conversion="contrast"] .es-drawer__savings-tag{background:#111;color:#
 .cv-article__box .es-rte p{margin:0}
 .cv-article__cta{display:grid;gap:8px;text-align:center}
 .cv-article__button{background:var(--c-text);color:var(--c-bg);border-color:var(--c-text);box-shadow:none}
-body[data-conversion="contrast"] .cv-article__button{background:var(--cv-button-bg);color:var(--c-accent-text)}
+:is(body[data-conversion="pop"],body[data-conversion="contrast"]) .cv-article__button{background:var(--cv-button-bg);color:var(--c-accent-text)}
 .cv-article__scores{display:grid;gap:14px;padding:22px;border:var(--cv-border);border-radius:var(--cv-card-radius);background:var(--c-surface)}
 .cv-article__score{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;margin:0;font-size:1.1rem}
 .cv-article__bars{list-style:none;margin:0;padding:0;display:grid;gap:8px}
@@ -385,6 +385,7 @@ body[data-conversion="contrast"] .cv-article__button{background:var(--cv-button-
 /* Accent employé en texte sur le fond du schéma : version lisible (AA), identique à l'accent quand il l'est déjà. */
 :is(body[data-conversion="pop"],body[data-conversion="contrast"]) :is(.es-eyebrow,.es-price--sale .es-price__current,.es-404__code,.es-bundle__price,.es-link-arrow,.es-drawer__protect-note,.es-stat__value--accent){color:var(--c-accent-ink,var(--c-accent))}
 body[data-conversion="contrast"] .es-stat__value{color:var(--c-accent-ink,var(--c-accent))}
+:is(body[data-conversion="pop"],body[data-conversion="contrast"]) .es-ctable__badge{background:var(--c-accent-fill,var(--c-accent))}
 .cv-fictional-note{margin:18px 0 0;text-align:center}
 @media(prefers-reduced-motion:reduce){.cv-zoomable .ed-media img{transition:none!important;transform:none!important}}
 
@@ -508,7 +509,7 @@ body[data-conversion="contrast"] .es-stat__value{color:var(--c-accent-ink,var(--
 .cv-ingr__icon .es-icon{width:26px;height:26px}
 .cv-ingr__name{margin:0;font-weight:800;font-size:1.05rem;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .cv-ingr__badge{display:inline-flex;padding:2px 8px;border-radius:999px;border:1px dashed currentColor;font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.85}
-.cv-ingr__role{margin:2px 0 0;font-weight:600;color:var(--c-accent)}
+.cv-ingr__role{margin:2px 0 0;font-weight:600;color:var(--c-accent-ink,var(--c-accent))}
 body[data-conversion="contrast"] .cv-ingr__role{color:var(--c-text);opacity:.8}
 .cv-ingr__note{margin-top:6px;font-size:.95rem}
 .cv-ingr__note p{margin:0}

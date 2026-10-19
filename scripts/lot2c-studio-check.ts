@@ -87,7 +87,8 @@ try {
   await page.locator("[data-section-settings='cv-hotspots'] [data-block]").nth(dotsBefore).waitFor({ timeout: 60000 }); await page.waitForTimeout(800);
   const firstBlock = page.locator("[data-section-settings='cv-hotspots'] [data-block]").first(); await firstBlock.locator("button[aria-expanded]").first().click();
   const blockTitle = firstBlock.locator("[data-setting='title'] input"); await blockTitle.waitFor({ timeout: 30000 }); await blockTitle.fill("Point modifié à la main"); await blockTitle.press("Enter");
-  await page.locator("[data-section-settings='cv-hotspots'] [data-block]").first().getByText("Point modifié à la main").first().waitFor({ timeout: 90000 });
+  // Le panneau reste monté d'une version à l'autre : le bloc reste déplié, le champ garde la valeur appliquée (relue du serveur).
+  await page.waitForFunction(() => (document.querySelector("[data-section-settings='cv-hotspots'] [data-block] [data-setting='title'] input") as HTMLInputElement | null)?.value === "Point modifié à la main", undefined, { timeout: 90000 });
   await frame().locator("[data-cv-hotspots] .cv-hotspots__item .cv-hotspot__title", { hasText: /Point modifié à la main/ }).first().waitFor({ timeout: 90000 }); await page.waitForTimeout(500); await shot(page, "07-panneau-applique");
   steps.push({ step: "panneau manuel : titre, disposition, bloc ajouté, titre de bloc (aperçu mis à jour)", ok: true, points: dotsBefore + 1 });
   // 6. Discussion (moteur local, sans IA connectée) sur la MÊME donnée : masquer la section par son nom, puis revenir en

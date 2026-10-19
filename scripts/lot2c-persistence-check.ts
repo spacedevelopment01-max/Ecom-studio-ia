@@ -34,6 +34,10 @@ try {
   // Clic dans l'aperçu « Ordinateur » (réduit par une transformation CSS pour tenir dans la colonne, ce qui fausse les
   // coordonnées d'un clic automatisé) : déclenché sur l'élément lui-même, comme le ferait un doigt ou une souris dessus.
   const clickIn = (loc: ReturnType<FrameLocator["locator"]>) => loc.first().evaluate((el) => (el as HTMLElement).click());
+  // Après une opération, l'aperçu est rechargé avec la nouvelle version : un instant, le cadre est vide. On attend qu'il
+  // soit stable (pas de rechargement pendant 1,5 s) et qu'une section soit rendue avant de compter ou de cliquer.
+  const settle = async () => { for (let i = 0; i < 12; i++) { await frame().locator("body").evaluate(() => { (window as unknown as { __esStable?: number }).__esStable = 1; }).catch(() => null); await page.waitForTimeout(1500); if (await frame().locator("body").evaluate(() => (window as unknown as { __esStable?: number }).__esStable === 1).catch(() => false)) break; } await frame().locator("main, [data-section-type]").first().waitFor({ timeout: 60000 }); };
+  const waitCount = async (n: number, what: string) => { for (let i = 0; i < 40; i++) { await settle(); if ((await quotes().count()) === n) return; await page.waitForTimeout(1000); } assert.equal(await quotes().count(), n, what); };
   const closeOverlay = async () => { const overlay = page.getByRole("button", { name: /^(Fermer le menu|Close the menu)$/ }); if (await overlay.count()) await overlay.click(); };
   const openSettings = async (actionsName: RegExp, index = 0) => { await closeOverlay(); await page.getByRole("button", { name: actionsName }).nth(index).click(); await page.getByRole("menuitem", { name: /Modifier les réglages/ }).click(); };
   const versionsBefore = (await theme()).versions.length;
@@ -81,7 +85,7 @@ try {
 
   // 4. Duplication, puis modification de la copie seule.
   await closeOverlay(); await page.getByRole("button", { name: /Actions pour « .*témoignage à la une »/i }).first().click(); await page.getByRole("menuitem", { name: /^Dupliquer$/ }).click();
-  await quotes().nth(1).waitFor({ timeout: 90000 }); await page.waitForTimeout(800);
+  await waitCount(2, "section dupliquée : deux citations rendues");
   t = await theme(); const both = index().sections.filter((s) => s.type === "cv-quote"); assert.equal(both.length, 2); const copy = both.find((s) => s.id !== original)!.id;
   const copyIndex = both.findIndex((s) => s.id === copy);
   await openSettings(/Actions pour « .*témoignage à la une »/i, copyIndex);
@@ -93,8 +97,8 @@ try {
   await page.getByRole("button", { name: /^← Structure$/ }).click(); await page.waitForTimeout(400);
 
   // 5. Masquage de la copie (icône œil de la colonne Structure).
-  await page.getByRole("button", { name: /Masquer « .*témoignage à la une »/i }).nth(copyIndex).click(); await quotes().nth(1).waitFor({ state: "detached", timeout: 90000 }); await page.waitForTimeout(600);
-  assert.equal(await quotes().count(), 1); assert.equal((await sectionData("index", copy)).disabled, true); await shot(page, "copie-masquee"); steps.push({ step: "masquage de la copie", ok: true });
+  await page.getByRole("button", { name: /Masquer « .*témoignage à la une »/i }).nth(copyIndex).click(); await waitCount(1, "copie masquée : une seule citation rendue");
+  assert.equal((await sectionData("index", copy)).disabled, true); await shot(page, "copie-masquee"); steps.push({ step: "masquage de la copie", ok: true });
 
   // 6. Suppression de la copie (boîte de confirmation du navigateur acceptée).
   page.once("dialog", (dlg) => { void dlg.accept(); });
@@ -147,7 +151,7 @@ try {
     await frame().locator(`[data-cv-story-open][data-src*='${b2.settings.video_asset}']`).first().waitFor({ timeout: 90000 });
     // Lecture réelle : la carte s'ouvre, la vidéo du bloc 2 est chargée dans le lecteur. L'aperçu vient d'être rechargé avec la
     // nouvelle version : on attend qu'il soit stable (plus de rechargement pendant 2 s) avant de cliquer.
-    for (let i = 0; i < 10; i++) { await frame().locator("body").evaluate(() => { (window as unknown as { __esStable?: number }).__esStable = 1; }); await page.waitForTimeout(2000); if (await frame().locator("body").evaluate(() => (window as unknown as { __esStable?: number }).__esStable === 1)) break; }
+    await settle();
     await frame().locator("[data-cv-stories]").first().scrollIntoViewIfNeeded(); await clickIn(frame().locator(`[data-cv-story-open][data-src*='${b2.settings.video_asset}']`));
     const player = frame().locator("[data-cv-player]"); await player.locator("[data-cv-video][src*='es-']").waitFor({ timeout: 10000 }).catch(() => null); await page.waitForTimeout(600);
     assert.ok(await player.evaluate((el) => (el as HTMLDialogElement).open), "lecteur ouvert"); assert.match((await player.locator("[data-cv-video]").getAttribute("src")) ?? "", /es-.*\.webm/);
@@ -157,11 +161,11 @@ try {
   } else steps.push({ step: "story vidéo", ok: false, reason: "aucune section stories dans ce thème" });
 
   // 10. Rechargement complet : tout est conservé.
-  await page.reload({ waitUntil: "networkidle", timeout: 180000 }); await page.waitForTimeout(1500); await frame().locator("body").waitFor({ timeout: 120000 }); await quotes().first().waitFor({ timeout: 60000 });
+  await page.reload({ waitUntil: "networkidle", timeout: 180000 }); await page.waitForTimeout(1500); await frame().locator("body").waitFor({ timeout: 120000 }); await waitCount(1, "après rechargement : une seule citation rendue");
   t = await theme(); const finalQuotes = index().sections.filter((s) => s.type === "cv-quote");
   const fo = await sectionData("index", original), fc = await sectionData("index", finalQuotes.find((s) => s.id !== original)!.id), ff = await sectionData("group:footer", footerSec.id);
   assert.equal(index().sections.findIndex((s) => s.id === original), posMoved, "ordre conservé"); assert.equal(fo.settings.layout, "split"); assert.match(String(fo.settings.quote), /Citation d'origine/); assert.match(String(fo.settings.image_asset), /^es-/);
-  assert.match(String(fc.settings.quote), /COPIE/); assert.equal(fc.disabled, true); assert.equal(await quotes().count(), 1, "une seule citation rendue (la copie masquée ne l'est pas)");
+  assert.match(String(fc.settings.quote), /COPIE/); assert.equal(fc.disabled, true);
   assert.match(String(ff.settings.tagline), /modifiée à la main/); assert.ok(await frame().locator("footer", { hasText: /Phrase du pied de page modifiée/ }).count());
   assert.ok(await frame().locator(".cv-quote--split img[src*='es-']").count(), "image de « Mes images » rendue après rechargement");
   const versionCount = t.versions.length;

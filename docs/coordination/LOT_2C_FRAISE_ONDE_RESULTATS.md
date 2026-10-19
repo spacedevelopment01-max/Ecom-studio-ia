@@ -1,8 +1,51 @@
 # FRAISE GUMMIES et ONDE AUDIO — thèmes fidèles aux références Lumora / Pawish (issue #137)
 
-**État : corrigé après la revue du 18 octobre (commentaire 6252905535 de la PR #139), en brouillon, sans fusion ni déploiement.** Deux thèmes complets construits dans le moteur du studio sur la branche `claude/fraise-onde-themes-reference` (base `7aa726cf`, tête validée de la PR #135). Commit testé : `7649674a` (champ `testedCommit` de `reports/lot2c/preuves.json`) ; première livraison testée sur `26e71355`. Le commit suivant n'ajoute que ce rapport, `preuves.json` et la mise en capitales des initiales de signature de `cv-article` (tests lot 2C et Theme Check rapide rejoués, OK). Les captures, comparaisons et vidéos contenant les 18 images IA et les logos du kit sont privées (ZIP remis à Thomas) ; rien de tout cela n'entre dans le dépôt public.
+## État courant (19 octobre, mission « finition et vérification complète », commentaires 6256994995 et 6257020151)
 
-Inventaire des références et correspondance section par section : [`LOT_2C_FRAISE_ONDE_INVENTAIRE.md`](LOT_2C_FRAISE_ONDE_INVENTAIRE.md). Manifeste des ressources et licences : [`reports/lot2c/ressources-licences.json`](../../reports/lot2c/ressources-licences.json).
+| | |
+|---|---|
+| **Commit réellement testé** | `__CODE__` — toutes les vérifications ci-dessous ont été exécutées sur ce commit (arbre de travail identique, aucune modification de code pendant la passe) |
+| **Commit livré (tête de la branche)** | `__DOCS__` — n'ajoute que ce rapport, les journaux publics `reports/lot2c/*.json` et `reports/lot2c/preuves.json` ; aucun fichier du thème, du studio ni des scripts n'est modifié entre les deux |
+| **CI GitHub** | `__CODE__` : __CI_CODE__ · `__DOCS__` : __CI_DOCS__ |
+| **Aperçus livrés** | FRAISE https://claude.ai/artifact/76G1kbkrCrk47173e39MLM (version `__VF__`) · ONDE https://claude.ai/artifact/To1HtwE7JbUpaypAVtFUk2 (version `__VO__`) — mêmes liens que les livraisons précédentes, contenu **remplacé**, commit affiché sur la page d'entrée ; fichiers retéléchargés depuis claude.ai et repassés dans les vérifications (navigation, mobile, audit) |
+| **ZIP privé** | `FRAISE_ONDE_themes_Claude_issue137___DOCS__.zip` (même état fonctionnel que les aperçus ; `VERIFICATION.txt` : SHA-256 identiques à GitHub) |
+| **Branche** | `claude/fraise-onde-themes-reference`, PR #139 en brouillon ; aucune fusion, aucun déploiement, aucun appel IA payant, aucun envoi externe ; partie E (quatre thèmes) **suspendue, non relancée** ; chantier Codex PR #138 / PR #140 non touché |
+
+### Synthèse : défaut → correction → vérification → limite restante
+
+| Défaut | Correction (commit `__CODE__`) | Vérification exécutée | Limite restante |
+|---|---|---|---|
+| **Lien du pied de page → la nouvelle page reste en bas** (signalé par Thomas à 1 h 58) | Reproduit **uniquement dans une enveloppe** : servi directement, chaque page s'ouvre déjà en haut ; dans le visualiseur claude.ai, l'aperçu est un cadre de toute sa hauteur dans une page parente qui défile, et c'est la **page parente** qui reste en bas. Correction dans le script de l'aperçu statique (`scripts/lot2c-static-demo.js`) : à l'arrivée sur une page affichée dans un cadre, sans ancre et hors précédent / suivant, le haut du document est ramené en vue (`scrollIntoView`) ; rien n'est appelé au re-rendu d'une section, au panier ni à une ancre. Dans le **studio**, la position de défilement de l'aperçu n'est plus restaurée que si la **même page** est rendue à nouveau (réglage, version, panier) ; une autre page ou une ancre s'ouvre à sa place (`tab-boutique.tsx`, `preview-tools.ts`). | `scripts/lot2c-nav-proof.ts` sur les aperçus **retéléchargés** : téléphone et ordinateur, départ du bas de l'accueil, de la fiche et de la FAQ vers 4 pages chacune, en direct (position 0) et dans une enveloppe d'une autre origine (page parente revenue à ≤ 60 px) ; ancre `#MainContent` → cible, pas de remise en haut ; « précédent » → position restaurée ; +1 dans le panier → aucune variation. Vidéos `10-navigation/*.webm`. Studio : étape 0 de `lot2c-persistence-check.ts` (lien FAQ dans l'aperçu → `scrollY` 0, chemin `/pages/faq`). | Le comportement exact du visualiseur claude.ai sur l'appareil de Thomas n'est reproduit que par l'enveloppe de test (cadre haut d'une autre origine) : à confirmer par lui sur les liens régénérés. |
+| **Réglages non utilisables depuis les panneaux** : vidéo / poster des stories, « Mes vidéos » absents ; panneau remonté à chaque version (blocs repliés, défilement perdu) ; panneau plus large que sa colonne ; phrase du pied de page sans effet en style « Colonnes » | Panneau : réglage `video` expliqué (vidéo de la plateforme), `video_asset` avec les fichiers vidéo du thème **et « Mes vidéos »** (`use_media`, extension conservée), posters par les fichiers image et « Mes images » ; le panneau reste monté d'une version à l'autre et relit ses données quand la version change ailleurs (discussion, historique) ; largeur de colonne respectée. Pied de page : la phrase s'affiche aussi en tête des colonnes (schéma et traduction mis à jour). | Scénario complet depuis l'interface (ci-dessous), FRAISE et ONDE. | Édition par une **IA fournisseur non testée** (aucune clé, aucun appel payant) : seules les commandes du moteur local sont exercées (« Masque la section… », « Reviens à la version précédente »). `image_asset` / `video_asset` restent des champs texte dans l'éditeur Shopify (contrat d'export). |
+| **Persistance et restauration non prouvées de bout en bout** | — (comportement déjà en place) | `scripts/lot2c-persistence-check.ts` dans le **vrai studio** (Next.js + worker, base temporaire), par thème : lien du pied de page dans l'aperçu → ajout « Témoignage à la une » depuis le bouton Sections → panneau : citation, fichier image du thème, image de « Mes images », disposition « côte à côte » → Monter → Dupliquer → citation de la **copie seule** (original relu intact) → masquage de la copie → suppression (confirmation) → **Restaurer** la version précédente depuis « Versions » (copie revenue, toujours masquée, avec son texte ; nouvelle version créée) → pied de page (phrase) et en-tête (disposition) par le même panneau → story : fichier vidéo du thème, poster, puis vidéo de « Mes vidéos » ; lecteur ouvert sur cette vidéo → **rechargement complet** : ordre, réglages, références de médias, indépendance original / copie, pied de page conservés ; 17 versions dont 16 restaurables. 12 captures et journal par thème (`11-persistance-studio/`). | Scénario joué par Chromium, pas sur l'appareil de Thomas. |
+| **Finition responsive** : accents de texte peu lisibles (vert ONDE sur blanc 2,1:1, rouge FRAISE sur crème 3,7:1 pour les surtitres et prix), blanc sur rouge des boutons FRAISE à 3,98:1, points de carrousel de 10 px, phrase du pied de page | Variables dérivées **par schéma** dans le thème (filtre `color_contrast`, natif Shopify) : `--c-accent-ink` pour l'accent employé en texte, rapproché du texte par petits pas jusqu'à 4,5:1 ; `--c-accent-fill` pour un fond d'accent sous le texte d'accent (boutons, pastilles, cases du comparatif), rapproché du noir ou du blanc jusqu'à 4,5:1. Un accent déjà lisible reste **strictement identique** (ONDE : boutons inchangés, texte sombre sur vert 9:1 ; FRAISE : bandes et fonds de schéma inchangés). Points de carrousel : zone tactile 24 px (point visible 10 px) ; points interactifs 40 px. | Test `accents lisibles` (rendu des deux thèmes : chaque schéma ≥ 4,5:1, inchangé si déjà lisible) ; audit automatique `scripts/lot2c-responsive-audit.ts` sur les aperçus livrés : 6 cadres (360 × 740, 390 × 844, 768 × 1024, 1440 × 900, 360 × 560, 390 × 620), toutes les pages — __AUDIT__ ; parcours clavier de 40 arrêts avec indicateur de focus visible ; mouvement réduit respecté (`prefers-reduced-motion`). | Rouge des boutons FRAISE légèrement assombri sous texte blanc (E4473F → fond `--c-accent-fill`, 4,6:1) : écart assumé avec le rouge pur de Lumora, limité aux fonds portant du texte. Restent, volontairement : la barre d'achat fixe de la fiche recouvre les vignettes de la galerie tant qu'on n'a pas défilé (360 × 560), le défilement en « peek » de la galerie mobile (le visuel suivant dépasse à droite : disposition voulue). |
+| **Rapport** : en-tête annonçant encore l'ancien commit testé `7649674a` | Cette synthèse d'état courant remplace l'en-tête ; l'historique des revues précédentes est conservé plus bas, daté, sans valeur d'état courant. | — | — |
+
+### Vérifications réellement exécutées sur `__CODE__`
+
+| Contrôle | Résultat |
+|---|---|
+| `npx tsc --noEmit` | OK |
+| `npx vitest run` (suite complète, locale) | OK — __VITEST__ |
+| `bash scripts/verify-theme.sh --rapide` (Theme Check) | OK — « Thème : tout est valide » |
+| `scripts/lot2c-proof.ts` 1440 / 768 / 390 / 360 px | __PROOF__ |
+| `scripts/lot2c-static-preview.ts` → aperçus republiés, retéléchargés, `lot2c-static-check.ts` (390 et 1440 px) | __STATIC__ |
+| `scripts/lot2c-mobile-proof.ts` (390 × 620, 360 × 560 : FAQ, tiroir du panier) sur les aperçus retéléchargés | __MOBILE__ |
+| `scripts/lot2c-nav-proof.ts` (navigation, direct + enveloppe, ancre, précédent, panier) sur les aperçus retéléchargés | __NAV__ |
+| `scripts/lot2c-responsive-audit.ts` (6 cadres, toutes les pages) sur les aperçus retéléchargés | __AUDIT__ |
+| `scripts/lot2c-studio-check.ts` (bouton Sections, panneau, discussion locale, restauration, rechargement) | __STUDIO__ |
+| `scripts/lot2c-persistence-check.ts` (scénario complet ci-dessus) | __PERSIST__ |
+| CI GitHub | `__CODE__` : __CI_CODE__ |
+
+**Exécuté / simulé / non vérifié.** Exécuté : tout le tableau ci-dessus, dans Chromium, sur le commit testé et sur les fichiers réellement livrés. Simulé : téléphone, tablette et petites hauteurs imités par Chromium (tactile, mouvement réduit) ; visualiseur imité par une enveloppe d'une autre origine ; discussion sans IA connectée (moteur local). Non vérifié : appareil réel de Thomas ; IA fournisseur ; installation et édition native sur Shopify, WordPress / WooCommerce, PrestaShop (PrestaShop et les kits Wix / Squarespace ne satisfont pas l'objectif d'édition native universelle, voir le contrat d'export) ; image `04-detail-gummies` : **le pack corrigé n'a toujours pas été reçu** dans cette conversation (seul le ZIP d'origine, image vide, est présent) — l'emplacement « visuel à importer » reste explicite, rien n'est remplacé.
+
+Inventaire des références et correspondance section par section : [`LOT_2C_FRAISE_ONDE_INVENTAIRE.md`](LOT_2C_FRAISE_ONDE_INVENTAIRE.md). Couverture de la bibliothèque : [`BIBLIOTHEQUE_SECTIONS_COUVERTURE.md`](BIBLIOTHEQUE_SECTIONS_COUVERTURE.md). Contrat d'édition et d'export : [`LOT_2C_CONTRAT_EDITION_EXPORT.md`](LOT_2C_CONTRAT_EDITION_EXPORT.md). Manifeste des ressources et licences : [`reports/lot2c/ressources-licences.json`](../../reports/lot2c/ressources-licences.json). Les captures, comparaisons et vidéos contenant les 18 images IA et les logos du kit sont privées (ZIP remis à Thomas).
+
+---
+
+# Historique des livraisons précédentes (conservé tel quel, sans valeur d'état courant)
+
+> Les sections ci-dessous décrivent les revues du 18 octobre dans l'ordre inverse de leur date. Les commits qu'elles citent (`7649674a`, `26e71355`, `7e04880d`, `436cc174`, `d1b682cd`, `2f336202`, `ba1cf4bc`) sont **antérieurs** au commit testé actuel ; les constats de la première livraison (« Vérifications réellement exécutées » de `7649674a`) ne décrivent plus l'état livré.
 
 ## Ce qui a été construit
 
@@ -158,7 +201,7 @@ Aucun blocage rencontré. À signaler pour les exports : les huit sections ont d
 | 8. Finitions vérifiées sur les pages complètes (revue du soir) | Planches contact des premiers écrans et détails (390 et 1440 px) relues : logos entiers avec le sous-texte « AUDIO », boutons, comparatifs remplis, stories, paniers ; un défaut corrigé : titre de carte produit coupé dans le mot sur la boutique mobile (titre puis prix l'un sous l'autre, césure interdite) | `conversion.css` | captures `boutique-mobile`, planches privées |
 | 7. Lisibilité, livraison, édition | Texte sombre sur vert, focus visibles ; pack source reproductible (archive git du commit testé + kit + instructions) ; **édition réelle** par les opérations du moteur (texte, image, visibilité, duplication, réordonnancement, bloc story avec adresse vidéo, en-tête, pied de page), nouvelle version enregistrée, page rechargée, version d'origine inchangée | fixtures, `conversion.css`, `scripts/lot2c-proof.ts` | captures `edition-avant-*`, `edition-apres-*`, `edition-stories-*` ; `preuves.json` : `editing` — FRAISE 8 opérations appliquées, ONDE 7 (la 8e, même image d'ouverture, est sans effet), 0 rejet |
 
-## Vérifications réellement exécutées
+## Vérifications de la première livraison (commit `7649674a`, 18 octobre — historique)
 
 Commit `7649674a` :
 
@@ -203,7 +246,7 @@ Exécutées à 1440 px puis à 390 px sur chaque thème (`preuves.json`, champ `
 - Compositions ordinateur : propositions cohérentes, non vérifiées contre les références (captures mobiles uniquement).
 - Image `04-detail-gummies.webp` vide dans le kit reçu ; le pack corrigé annoncé (SHA-256 `07a1e028…`) n'a pas été reçu dans cette conversation : emplacement « visuel à importer » explicite, à remplacer dès réception.
 - Les logos restent des propositions ; le packaging photographié FRAISE garde sa typographie d'origine.
-- Contraste : ONDE utilise un texte sombre sur le vert (écart assumé avec le blanc sur vert de Pawish, illisible) ; FRAISE garde le blanc sur corail des boutons (3,9:1, texte en gras).
+- Contraste : ONDE utilise un texte sombre sur le vert (écart assumé avec le blanc sur vert de Pawish, illisible). Depuis le 19 octobre, les accents employés en texte et les fonds d'accent sous texte d'accent sont dérivés par schéma à 4,5:1 au moins (`--c-accent-ink`, `--c-accent-fill`) : le rouge des boutons FRAISE est légèrement assombri sous le texte blanc.
 - Le ZIP privé contient le code source du commit testé, le kit et les preuves : ce n'est pas un thème installable dans un CMS ; les exports et leurs tests d'installation restent à faire avec Codex.
 
 ## Raccordements à prévoir avec Codex (exports et catalogues)
