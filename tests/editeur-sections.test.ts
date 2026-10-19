@@ -38,12 +38,13 @@ describe("éditeur de sections", async () => {
     const sid = home.order.find((k) => home.sections[k].type === "v2-split")!;
     expect(sid).toBeTruthy();
     const old = home.sections[sid].settings;
-    const res = await fr(() => post({ type: "v2-banner", template: "index", replace: sid }));
+    // Remplacement par une section de la bibliothèque de la famille du projet (issue #141).
+    const res = await fr(() => post({ type: "image-with-text", template: "index", replace: sid }));
     expect(res.status).toBe(200);
     const after = currentTheme(pid)!;
     expect(after.version.number).toBe(before.version.number + 1);
     const s = after.spec.templates.index.sections[sid];
-    expect(s.type).toBe("v2-banner");
+    expect(s.type).toBe("image-with-text");
     expect(s.settings.heading).toBe(old.heading);
     expect(s.settings.image_asset).toBe(old.image_asset);
     expect(after.spec.templates.index.order.indexOf(sid)).toBe(home.order.indexOf(sid));

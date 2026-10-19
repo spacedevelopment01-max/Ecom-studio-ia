@@ -1,0 +1,34 @@
+{%- comment -%}
+  En-tête des sections de bibliothèque (familles, issue #141) : repère, titre en deux temps, texte, bouton.
+  Mise en forme empruntée au profil du thème installé : « conversion » (FRAISE, ONDE), « éditorial » (ORBE, Atelier
+  Rive) ou thème sans profil. Paramètres : prof (cv | ed | es), eyebrow, heading, accent, text, align (center | left),
+  effect (animation d'apparition), button_label, button_link, tag (h2 par défaut).
+{%- endcomment -%}
+{%- liquid
+  assign htag = tag | default: 'h2'
+  assign al = align | default: 'center'
+-%}
+{%- if heading != blank or text != blank or eyebrow != blank -%}
+  {%- if prof == 'cv' -%}
+    <header class="cv-head fs-head fs-head--{{ al }}">
+      {%- if eyebrow != blank -%}<p class="fs-eyebrow"{% render 'fs-reveal', effect: effect %}>{{ eyebrow | escape }}</p>{%- endif -%}
+      {%- if heading != blank -%}<{{ htag }} class="es-heading cv-title cv-title--h2{% if al == 'left' %} cv-title--left{% endif %}"{% render 'fs-reveal', effect: effect %}>{{ heading | escape }}{% if accent != blank %} <em class="cv-accent">{{ accent | escape }}</em>{% endif %}</{{ htag }}>{%- endif -%}
+      {%- if text != blank -%}<div class="es-rte cv-head__text"{% render 'fs-reveal', effect: effect %}>{{ text }}</div>{%- endif -%}
+      {%- if button_label != blank and button_link != blank -%}<p class="fs-head__cta">{% render 'fs-button', prof: prof, label: button_label, link: button_link %}</p>{%- endif -%}
+    </header>
+  {%- elsif prof == 'ed' -%}
+    <header class="ed-section-head fs-head fs-head--{{ al }}">
+      {%- if eyebrow != blank -%}<p class="ed-kicker"{% render 'fs-reveal', effect: effect %}>{{ eyebrow | escape }}</p>{%- endif -%}
+      {%- if heading != blank -%}<{{ htag }} class="ed-title"{% render 'fs-reveal', effect: effect %}>{{ heading | escape }}{% if accent != blank %} <em class="fs-accent">{{ accent | escape }}</em>{% endif %}</{{ htag }}>{%- endif -%}
+      {%- if text != blank -%}<div class="ed-prose"{% render 'fs-reveal', effect: effect %}>{{ text }}</div>{%- endif -%}
+      {%- if button_label != blank and button_link != blank -%}<p class="fs-head__cta">{% render 'fs-button', prof: prof, label: button_label, link: button_link %}</p>{%- endif -%}
+    </header>
+  {%- else -%}
+    <header class="fs-head fs-head--{{ al }}">
+      {%- if eyebrow != blank -%}<p class="es-eyebrow"{% render 'fs-reveal', effect: effect %}>{{ eyebrow | escape }}</p>{%- endif -%}
+      {%- if heading != blank -%}<{{ htag }} class="es-heading es-h2"{% render 'fs-reveal', effect: effect %}>{{ heading | escape }}{% if accent != blank %} <em class="fs-accent">{{ accent | escape }}</em>{% endif %}</{{ htag }}>{%- endif -%}
+      {%- if text != blank -%}<div class="es-rte"{% render 'fs-reveal', effect: effect %}>{{ text }}</div>{%- endif -%}
+      {%- if button_label != blank and button_link != blank -%}<p class="fs-head__cta">{% render 'fs-button', prof: prof, label: button_label, link: button_link %}</p>{%- endif -%}
+    </header>
+  {%- endif -%}
+{%- endif -%}

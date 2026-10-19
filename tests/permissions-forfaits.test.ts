@@ -63,11 +63,13 @@ describe("droits des forfaits, vérifiés côté serveur", async () => {
     expect(SHORT_VIDEO_MAX_S).toBe(30);
   });
 
-  it("sections IA : Développer et Dominer ; Créer modifie et ajoute les sections de la bibliothèque", async () => {
+  it("sections IA : Dominer seulement (issue #141) ; Créer et Développer modifient et ajoutent les sections de la bibliothèque", async () => {
     const creer = await projectWith("creer");
     const vendre = await projectWith("vendre");
-    expect(() => gates.assertAiSections(creer.pid)).toThrow(/Développer/);
-    expect(gates.assertAiSections(vendre.pid)).toBe("vendre");
+    const dominer = await projectWith("dominer");
+    expect(() => gates.assertAiSections(creer.pid)).toThrow(/Dominer/);
+    expect(() => gates.assertAiSections(vendre.pid)).toThrow(/Dominer/);
+    expect(gates.assertAiSections(dominer.pid)).toBe("dominer");
   });
 
   it("calendrier 7 / 30 / 90 jours et 1 / 3 / 5 publications programmées par jour", async () => {

@@ -113,7 +113,7 @@ export const PLANS: Record<PlanId, Plan> = {
     videos: "short",
     videoQuality: "fast",
     ugc: false,
-    aiSections: true,
+    aiSections: false,
     pageModels: true,
     ads: "advanced",
     seo: "advanced",

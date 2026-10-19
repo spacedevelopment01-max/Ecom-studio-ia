@@ -7,6 +7,7 @@ import { LANGUAGES } from "@/lib/theme-v2/art-direction";
 import { LANGUAGE_LABEL_EN } from "@/lib/theme-v2/engine";
 import path from "node:path";
 import { addable, libraryEntry } from "@/lib/theme/section-library";
+import { familyGallery } from "@/lib/theme/family-gallery";
 import { L, uiLang } from "@/lib/i18n-server";
 import { all, json } from "@/lib/db";
 import { handle, ok } from "@/lib/http";
@@ -74,9 +75,14 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
       // retrouvables et réglables depuis la bibliothèque, mais ni ajoutés ni dupliqués).
       // Galerie contextuelle : seules les sections compatibles avec le thème installé ET la catégorie du projet
       // (métadonnées déclarées, section-fit.ts) ; les composants structurels restent listés pour leurs réglages.
-      : baseSectionTypes().filter((t) => !addable(t) || !sectionIncompatibility(cur.spec, t, kind, ui)).map((t) => {
-      const e = libraryEntry(t, ui);
-      return { type: t, name: e?.name ?? sectionSchema(null, t, ui)?.name ?? t, category: e?.category ?? "Avancé", description: e?.description ?? "", keywords: e?.keywords ?? "", preview: fs.existsSync(path.join(process.cwd(), "public", "sections", `${t}.jpg`)) ? `/sections/${t}.jpg` : null, addable: addable(t) };
-    }),
+      // Bibliothèque de la famille du projet (issue #141) : ses 20 fonctions et leurs dispositions, rien d'autre ; une
+      // disposition dont la section ne convient pas au thème installé n'est pas proposée.
+      : [
+          ...familyGallery(kind, ui, (t) => !sectionIncompatibility(cur.spec, t, kind, ui)),
+          ...baseSectionTypes().filter((t) => !addable(t)).map((t) => {
+            const e = libraryEntry(t, ui);
+            return { type: t, name: e?.name ?? sectionSchema(null, t, ui)?.name ?? t, category: e?.category ?? "Structure", description: e?.description ?? "", keywords: e?.keywords ?? "", preview: fs.existsSync(path.join(process.cwd(), "public", "sections", `${t}.jpg`)) ? `/sections/${t}.jpg` : null, addable: false };
+          }),
+        ],
   });
 });

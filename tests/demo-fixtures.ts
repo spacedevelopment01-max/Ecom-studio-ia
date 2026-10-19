@@ -17,6 +17,7 @@ import { composeShop } from "../src/lib/engine/shop";
 import { loadProject, saveBrand, saveProduct, saveServices, saveStrategy, saveSettings } from "../src/lib/projects";
 import { saveAsset } from "../src/lib/library";
 import { seedHoldout } from "./lot1-holdout-fixtures";
+import { conversionProject } from "./lot2c-fixtures";
 import type { DirectionId } from "../src/lib/theme/directions";
 
 export type DemoId = "fraise" | "onde" | "orbe" | "rive";
@@ -84,8 +85,19 @@ const roleOf = (label: string) => (/packshot|fond blanc/i.test(label) ? "packsho
  * le thème de référence avec le vrai moteur et renvoie le thème composé. `direction` permet de composer la même
  * identité dans un autre thème (preuve d'adaptation).
  */
-export async function demoProject(userId: string, id: DemoId, options: { direction?: DirectionId } = {}) {
+export async function demoProject(userId: string, id: DemoId, options: { direction?: DirectionId; testVideo?: string } = {}) {
   const d = demoManifest(id), ident = IDENTITY[id];
+  // FRAISE et ONDE dans leur propre thème : la composition complète validée du lot 2C (références Lumora et Pawish :
+  // accueil et fiche riches, offres, avis fictifs étiquetés, comparatif, garantie en exemple, stories, FAQ, pages, menus),
+  // avec le kit du dossier public/demo/<id>/. Le parcours « thème du catalogue » (ci-dessous) masque toute section sans
+  // contenu : composées ainsi, ces deux démonstrations se réduisaient à quelques blocs (retour de Thomas, 19 octobre, 15 h 07).
+  // Il ne sert plus, pour elles, qu'à la preuve d'adaptation d'une identité dans l'autre thème (`direction`).
+  if ((id === "fraise" || id === "onde") && !options.direction) {
+    const c = await conversionProject(userId, id, path.join(process.cwd(), "public", "demo"), { testVideo: options.testVideo });
+    run("UPDATE projects SET store_type = ?, business_type = ?, updated_at = ? WHERE id = ?", d.storeType ?? "mono", "products", now(), c.pid);
+    saveSettings(c.pid, { ...loadProject(c.pid).settings, storeKind: d.category as "services" | "catalog" | "specialty" });
+    return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
+  }
   const services = d.business === "services";
   const pid = seedHoldout(userId, services ? 2 : 0, `Démo ${d.brand}`);
   const product = { ...emptyProduct(), name: d.product, nameStatus: "provided" as const, category: d.sector, sector: (services ? "services" : "maison") as never, summary: ident.summary, facts: (ident.facts ?? []).map((f) => ({ key: f.label.toLowerCase(), label: f.label, value: f.value, status: "confirmed" as const, source: "user" as const })), variants: ident.variants ?? [] };

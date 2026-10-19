@@ -1,0 +1,368 @@
+{%- comment -%}
+Dimensions et guide des tailles (e-commerce) : un format par bloc avec hauteur, largeur, profondeur et poids. Schéma
+  coté (dessiné par le thème, aucune image requise), photo cotée avec la liste des mesures, ou tableau comparatif.
+  Les mesures ne sont jamais inventées : un format sans mesure affiche « à compléter » dans l'aperçu du studio.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign prof = 'es'
+  if settings.conversion_profile != blank and settings.conversion_profile != 'none'
+    assign prof = 'cv'
+  elsif settings.editorial_profile != blank and settings.editorial_profile != 'none'
+    assign prof = 'ed'
+  endif
+  assign fx = s.effect
+  assign cards = 'fs-card'
+-%}
+<section id="fs-{{ section.id }}" class="fs fs-dimensions fs-dimensions--{{ s.layout | default: 'base' }} fs--{{ prof }}{% if prof == 'ed' %} ed-section{% else %} es-section{% endif %}{% if s.background != blank and s.background != 'scheme' %} fs--{{ s.background }}{% endif %}{% if s.hover %} fs--hover{% endif %} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;--fs-angle:{{ s.gradient_angle | default: 165 }}deg;"{% if fx == 'none' %} data-ed-motion="none"{% endif %} >
+  <div class="{% if prof == 'ed' %}ed-shell{% else %}es-container{% endif %} fs__inner">
+    {%- render 'fs-head', prof: prof, eyebrow: s.eyebrow, heading: s.heading, accent: s.heading_accent, text: s.text, align: s.align, effect: fx, button_label: s.button_label, button_link: s.button_link -%}
+    {%- assign u = s.unit | default: 'cm' -%}
+    {%- if s.layout == 'table' -%}
+      <div class="fs-table-wrap"{% render 'fs-reveal', effect: fx %}>
+        <table class="fs-table">
+          <thead><tr><th scope="col">{{ s.label_format | default: 'Format' | escape }}</th><th scope="col">{{ s.label_height | default: 'Hauteur' | escape }}</th><th scope="col">{{ s.label_width | default: 'Largeur' | escape }}</th><th scope="col">{{ s.label_depth | default: 'Profondeur' | escape }}</th>{% if s.show_weight %}<th scope="col">{{ s.label_weight | default: 'Poids' | escape }}</th>{% endif %}</tr></thead>
+          <tbody>
+            {%- for block in section.blocks -%}
+              <tr {{ block.shopify_attributes }}><th scope="row">{{ block.settings.title | escape }}{% if block.settings.note != blank %}<span class="fs-meta">{{ block.settings.note | escape }}</span>{% endif %}</th><td>{% if block.settings.height != blank %}{{ block.settings.height | escape }} {{ u }}{% else %}—{% endif %}</td><td>{% if block.settings.width != blank %}{{ block.settings.width | escape }} {{ u }}{% else %}—{% endif %}</td><td>{% if block.settings.depth != blank %}{{ block.settings.depth | escape }} {{ u }}{% else %}—{% endif %}</td>{% if s.show_weight %}<td>{{ block.settings.weight_text | default: '—' | escape }}</td>{% endif %}</tr>
+            {%- endfor -%}
+          </tbody>
+        </table>
+      </div>
+    {%- else -%}
+      <div class="fs-dim__body{% if s.layout == 'photo' %} fs-split{% endif %}">
+        {%- if s.layout == 'photo' -%}<div class="fs-split__media"{% render 'fs-reveal', effect: 'curtain' %}>{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role %}</div>{%- endif -%}
+        <ul class="fs-dim__list{% if s.layout == 'drawing' %} fs-grid fs-grid--{{ section.blocks.size | at_most: 3 | at_least: 1 }}{% endif %}" role="list">
+          {%- for block in section.blocks -%}{%- if s.stagger -%}{%- assign ix = forloop.index0 -%}{%- else -%}{%- assign ix = '' -%}{%- endif -%}
+            <li class="fs-dim__item {{ cards }}"{% render 'fs-reveal', effect: fx, index: ix %} {{ block.shopify_attributes }}>
+              {%- if s.layout == 'drawing' -%}
+                <svg class="fs-dim__drawing" viewBox="0 0 240 170" role="img" aria-label="{{ block.settings.title | escape }} : {{ block.settings.height }} × {{ block.settings.width }} × {{ block.settings.depth }} {{ u }}">
+                  <path class="fs-dim__shape" d="M40 40h120v100H40z M160 40l40-24v100l-40 24 M40 40l40-24h120"/>
+                  <path class="fs-dim__rule" d="M40 156h120 M40 151v10 M160 151v10 M22 40v100 M17 40h10 M17 140h10 M170 146l36-22"/>
+                  <text x="100" y="168" text-anchor="middle">{% if block.settings.width != blank %}{{ block.settings.width | escape }} {{ u }}{% else %}L{% endif %}</text>
+                  <text x="14" y="94" text-anchor="middle" transform="rotate(-90 14 94)">{% if block.settings.height != blank %}{{ block.settings.height | escape }} {{ u }}{% else %}H{% endif %}</text>
+                  <text x="212" y="140" text-anchor="start">{% if block.settings.depth != blank %}{{ block.settings.depth | escape }} {{ u }}{% else %}P{% endif %}</text>
+                </svg>
+              {%- endif -%}
+              <h3 class="fs-item__title">{{ block.settings.title | escape }}</h3>
+              <dl class="fs-dim__measures">
+                <div><dt>{{ s.label_height | default: 'Hauteur' | escape }}</dt><dd>{% if block.settings.height != blank %}{{ block.settings.height | escape }} {{ u }}{% else %}—{% endif %}</dd></div>
+                <div><dt>{{ s.label_width | default: 'Largeur' | escape }}</dt><dd>{% if block.settings.width != blank %}{{ block.settings.width | escape }} {{ u }}{% else %}—{% endif %}</dd></div>
+                <div><dt>{{ s.label_depth | default: 'Profondeur' | escape }}</dt><dd>{% if block.settings.depth != blank %}{{ block.settings.depth | escape }} {{ u }}{% else %}—{% endif %}</dd></div>
+                {%- if s.show_weight and block.settings.weight_text != blank -%}<div><dt>{{ s.label_weight | default: 'Poids' | escape }}</dt><dd>{{ block.settings.weight_text | escape }}</dd></div>{%- endif -%}
+              </dl>
+              {%- if block.settings.note != blank -%}<p class="fs-meta">{{ block.settings.note | escape }}</p>{%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+      </div>
+    {%- endif -%}
+    {%- if s.note != blank -%}<p class="fs-note">{{ s.note | escape }}</p>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Dimensions",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Repère"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Titre"
+    },
+    {
+      "type": "text",
+      "id": "heading_accent",
+      "label": "Fin du titre mise en valeur"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texte"
+    },
+    {
+      "type": "select",
+      "id": "align",
+      "label": "Alignement de l'en-tête",
+      "options": [
+        {
+          "value": "center",
+          "label": "Centré"
+        },
+        {
+          "value": "left",
+          "label": "À gauche"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Libellé du bouton"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Lien du bouton"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Disposition",
+      "options": [
+        {
+          "value": "drawing",
+          "label": "Schéma coté"
+        },
+        {
+          "value": "photo",
+          "label": "Photo et mesures"
+        },
+        {
+          "value": "table",
+          "label": "Tableau des formats"
+        }
+      ],
+      "default": "drawing"
+    },
+    {
+      "type": "select",
+      "id": "unit",
+      "label": "Unité",
+      "options": [
+        {
+          "value": "cm",
+          "label": "cm"
+        },
+        {
+          "value": "mm",
+          "label": "mm"
+        },
+        {
+          "value": "m",
+          "label": "m"
+        },
+        {
+          "value": "in",
+          "label": "pouces"
+        }
+      ],
+      "default": "cm"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_weight",
+      "label": "Afficher le poids",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "label_format",
+      "label": "Intitulé : format",
+      "default": "Format"
+    },
+    {
+      "type": "text",
+      "id": "label_height",
+      "label": "Intitulé : hauteur",
+      "default": "Hauteur"
+    },
+    {
+      "type": "text",
+      "id": "label_width",
+      "label": "Intitulé : largeur",
+      "default": "Largeur"
+    },
+    {
+      "type": "text",
+      "id": "label_depth",
+      "label": "Intitulé : profondeur",
+      "default": "Profondeur"
+    },
+    {
+      "type": "text",
+      "id": "label_weight",
+      "label": "Intitulé : poids",
+      "default": "Poids"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "image_asset",
+      "label": "Fichier du projet"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Description de l’image"
+    },
+    {
+      "type": "text",
+      "id": "media_role",
+      "label": "Média attendu (aperçu du studio)"
+    },
+    {
+      "type": "text",
+      "id": "note",
+      "label": "Note (ex. tolérance de fabrication)"
+    },
+    {
+      "type": "header",
+      "content": "Effets et fond"
+    },
+    {
+      "type": "select",
+      "id": "effect",
+      "label": "Effet d'apparition",
+      "options": [
+        {
+          "value": "none",
+          "label": "Aucun"
+        },
+        {
+          "value": "fade",
+          "label": "Fondu"
+        },
+        {
+          "value": "rise",
+          "label": "Montée"
+        },
+        {
+          "value": "zoom",
+          "label": "Zoom"
+        },
+        {
+          "value": "curtain",
+          "label": "Révélation des images"
+        }
+      ],
+      "default": "rise"
+    },
+    {
+      "type": "checkbox",
+      "id": "stagger",
+      "label": "Apparition décalée des éléments",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "hover",
+      "label": "Survol léger des cartes",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "background",
+      "label": "Fond",
+      "options": [
+        {
+          "value": "scheme",
+          "label": "Couleur du schéma"
+        },
+        {
+          "value": "gradient-soft",
+          "label": "Dégradé léger"
+        },
+        {
+          "value": "gradient-strong",
+          "label": "Dégradé marqué"
+        }
+      ],
+      "default": "scheme"
+    },
+    {
+      "type": "range",
+      "id": "gradient_angle",
+      "label": "Angle du dégradé",
+      "min": 0,
+      "max": 360,
+      "step": 15,
+      "unit": "°",
+      "default": 165
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Marge haute",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Marge basse",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "default": 96
+    }
+  ],
+  "blocks": [
+    {
+      "type": "size",
+      "name": "Format",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Nom du format"
+        },
+        {
+          "type": "text",
+          "id": "height",
+          "label": "Hauteur"
+        },
+        {
+          "type": "text",
+          "id": "width",
+          "label": "Largeur"
+        },
+        {
+          "type": "text",
+          "id": "depth",
+          "label": "Profondeur"
+        },
+        {
+          "type": "text",
+          "id": "weight_text",
+          "label": "Poids (avec unité)"
+        },
+        {
+          "type": "text",
+          "id": "note",
+          "label": "Précision"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Dimensions",
+      "settings": {
+        "layout": "drawing"
+      }
+    }
+  ],
+  "max_blocks": 8
+}
+{% endschema %}

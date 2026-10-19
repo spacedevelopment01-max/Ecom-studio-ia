@@ -1,0 +1,267 @@
+{%- comment -%}
+Matériel et moyens (services) : outils, véhicules, locaux et méthodes mis en œuvre. Grille illustrée, liste, ou
+  grande image et liste.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign prof = 'es'
+  if settings.conversion_profile != blank and settings.conversion_profile != 'none'
+    assign prof = 'cv'
+  elsif settings.editorial_profile != blank and settings.editorial_profile != 'none'
+    assign prof = 'ed'
+  endif
+  assign fx = s.effect
+  assign cards = 'fs-card'
+-%}
+<section id="fs-{{ section.id }}" class="fs fs-equipment fs-equipment--{{ s.layout | default: 'base' }} fs--{{ prof }}{% if prof == 'ed' %} ed-section{% else %} es-section{% endif %}{% if s.background != blank and s.background != 'scheme' %} fs--{{ s.background }}{% endif %}{% if s.hover %} fs--hover{% endif %} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;--fs-angle:{{ s.gradient_angle | default: 165 }}deg;"{% if fx == 'none' %} data-ed-motion="none"{% endif %} >
+  <div class="{% if prof == 'ed' %}ed-shell{% else %}es-container{% endif %} fs__inner">
+    {%- render 'fs-head', prof: prof, eyebrow: s.eyebrow, heading: s.heading, accent: s.heading_accent, text: s.text, align: s.align, effect: fx, button_label: s.button_label, button_link: s.button_link -%}
+    <div class="fs-equip{% if s.layout == 'split' %} fs-split{% endif %}">
+      {%- if s.layout == 'split' -%}<div class="fs-split__media"{% render 'fs-reveal', effect: 'curtain' %}>{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role %}</div>{%- endif -%}
+      <ul class="fs-equip__list fs-equip__list--{{ s.layout }}{% if s.layout == 'grid' %} fs-grid fs-grid--{{ section.blocks.size | at_most: 4 | at_least: 2 }}{% endif %}" role="list">
+        {%- for block in section.blocks -%}{%- if s.stagger -%}{%- assign ix = forloop.index0 -%}{%- else -%}{%- assign ix = '' -%}{%- endif -%}
+          <li class="fs-equip__item{% if s.layout == 'grid' %} {{ cards }}{% endif %}"{% render 'fs-reveal', effect: fx, index: ix %} {{ block.shopify_attributes }}>
+            {%- if s.layout == 'grid' -%}<div class="fs-card__media">{% render 'ed-media', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.title, role_label: 'Photo du matériel' %}</div>{%- else -%}<span class="fs-commit__icon">{% render 'fs-icon', name: 'tool' %}</span>{%- endif -%}
+            <div>{%- if block.settings.tag != blank -%}<span class="fs-chip">{{ block.settings.tag | escape }}</span>{%- endif -%}<h3 class="fs-item__title">{{ block.settings.title | escape }}</h3>{% if block.settings.text != blank %}<div class="fs-item__text">{{ block.settings.text }}</div>{% endif %}</div>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Matériel et moyens",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Repère"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Titre"
+    },
+    {
+      "type": "text",
+      "id": "heading_accent",
+      "label": "Fin du titre mise en valeur"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texte"
+    },
+    {
+      "type": "select",
+      "id": "align",
+      "label": "Alignement de l'en-tête",
+      "options": [
+        {
+          "value": "center",
+          "label": "Centré"
+        },
+        {
+          "value": "left",
+          "label": "À gauche"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Libellé du bouton"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Lien du bouton"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Disposition",
+      "options": [
+        {
+          "value": "grid",
+          "label": "Grille illustrée"
+        },
+        {
+          "value": "list",
+          "label": "Liste"
+        },
+        {
+          "value": "split",
+          "label": "Grande image et liste"
+        }
+      ],
+      "default": "grid"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "image_asset",
+      "label": "Fichier du projet"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Description de l’image"
+    },
+    {
+      "type": "text",
+      "id": "media_role",
+      "label": "Média attendu (aperçu du studio)"
+    },
+    {
+      "type": "header",
+      "content": "Effets et fond"
+    },
+    {
+      "type": "select",
+      "id": "effect",
+      "label": "Effet d'apparition",
+      "options": [
+        {
+          "value": "none",
+          "label": "Aucun"
+        },
+        {
+          "value": "fade",
+          "label": "Fondu"
+        },
+        {
+          "value": "rise",
+          "label": "Montée"
+        },
+        {
+          "value": "zoom",
+          "label": "Zoom"
+        },
+        {
+          "value": "curtain",
+          "label": "Révélation des images"
+        }
+      ],
+      "default": "rise"
+    },
+    {
+      "type": "checkbox",
+      "id": "stagger",
+      "label": "Apparition décalée des éléments",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "hover",
+      "label": "Survol léger des cartes",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "background",
+      "label": "Fond",
+      "options": [
+        {
+          "value": "scheme",
+          "label": "Couleur du schéma"
+        },
+        {
+          "value": "gradient-soft",
+          "label": "Dégradé léger"
+        },
+        {
+          "value": "gradient-strong",
+          "label": "Dégradé marqué"
+        }
+      ],
+      "default": "scheme"
+    },
+    {
+      "type": "range",
+      "id": "gradient_angle",
+      "label": "Angle du dégradé",
+      "min": 0,
+      "max": 360,
+      "step": 15,
+      "unit": "°",
+      "default": 165
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Marge haute",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Marge basse",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "default": 96
+    }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Moyen",
+      "settings": [
+        {
+          "type": "text",
+          "id": "tag",
+          "label": "Étiquette"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Nom"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Texte"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "image_asset",
+          "label": "Fichier du projet"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Matériel et moyens",
+      "settings": {
+        "layout": "grid"
+      }
+    }
+  ],
+  "max_blocks": 8
+}
+{% endschema %}

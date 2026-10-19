@@ -10,6 +10,8 @@ import { ArrowDown, ArrowUp, Check, ChevronDown, ChevronRight, Eye, EyeOff, Film
 import { api, Button, cx, useToast } from "../ui";
 import { useT } from "../i18n";
 import type { AssetView } from "./common";
+import type { FamilyPanel } from "@/lib/theme/family-ops";
+import { thumbSvg } from "@/lib/theme/family-gallery";
 
 type Setting = { type: string; id?: string; label?: string; info?: string; default?: unknown; options?: { value: string; label: string }[]; min?: number; max?: number; step?: number; unit?: string; placeholder?: string };
 type BlockSchema = { type: string; name?: string; settings?: Setting[]; limit?: number };
@@ -17,6 +19,8 @@ type Block = { id: string; type: string; name: string; settings: Record<string, 
 export type SectionData = {
   template: string; id: string; type: string; name: string; disabled: boolean; locked: boolean; structural: boolean;
   settings: Record<string, unknown>; blocks: Block[]; schema: { settings: Setting[]; blocks: BlockSchema[]; max_blocks?: number }; schemes: { id: string; label: string }[]; files: string[]; videos?: string[]; versionId: string;
+  /** Bibliothèque par famille : fonction et dispositions de la section, ou dispositions de l'en-tête / du pied de page. */
+  family?: FamilyPanel | null;
 };
 type Op = Record<string, unknown>;
 
@@ -65,6 +69,14 @@ export function SectionSettingsPanel({ projectId, target, version, onClose, onCh
         </div>
       </div>
       {data.locked && <p className="mb-3 flex items-center gap-2 rounded-xl bg-warn-soft px-3 py-2 text-xs text-warn"><Lock className="size-3.5" /> {t("Section validée (verrouillée) : déverrouillez-la dans le menu « … » pour la modifier.", "Approved (locked) section: unlock it from the “…” menu to edit it.")}</p>}
+      {data.family && <Dispositions family={data.family} disabled={busy || data.locked} onPick={async (choice) => {
+        setBusy(true);
+        try {
+          const r = await api<{ unchanged?: boolean }>(`/api/projects/${projectId}/theme/disposition`, { body: choice.chrome ? { chrome: choice.chrome } : { template: data.template, section: data.id, disposition: choice.disposition } });
+          if (!r.unchanged) { await load(); onChanged(); }
+        } catch (e) { toast("bad", (e as Error).message); }
+        finally { setBusy(false); }
+      }} />}
       <fieldset disabled={busy || data.locked} className="grid min-w-0 gap-3 disabled:opacity-60">
         {data.schema.settings.map((s, i) => <Field key={s.id ?? `h${i}`} setting={s} value={data.settings[s.id ?? ""]} data={data} projectId={projectId} onApply={(v) => setSetting(s, v)} onMedia={(assetId) => useMedia(s, assetId)} />)}
       </fieldset>
@@ -101,6 +113,32 @@ export function SectionSettingsPanel({ projectId, target, version, onClose, onCh
       )}
       <p className="mt-5 text-[11px] leading-relaxed text-muted">{t("Chaque changement est enregistré aussitôt et crée une version que vous pouvez restaurer (bouton Historique). La discussion et l'IA modifient exactement les mêmes réglages.", "Each change is saved at once and creates a version you can restore (History button). The chat and the AI edit exactly the same settings.")}</p>
     </div>
+  );
+}
+
+/** Dispositions de la fonction (bibliothèque par famille) ou de l'en-tête / du pied de page : vignettes cliquables. */
+function Dispositions({ family, disabled, onPick }: { family: FamilyPanel; disabled: boolean; onPick: (c: { disposition?: string; chrome?: { part: "header" | "footer"; preset: string } }) => void }) {
+  const t = useT();
+  const items = family.chrome
+    ? family.chrome.presets.map((x) => ({ id: x.id, label: x.label, hint: x.description, thumb: x.thumb, current: x.current }))
+    : (family.dispositions ?? []).map((x) => ({ id: x.id, label: x.label, hint: "", thumb: x.thumb, current: x.current }));
+  if (!items.length) return null;
+  const title = family.chrome ? (family.chrome.part === "header" ? t("Disposition de l'en-tête", "Header layout") : t("Disposition du pied de page", "Footer layout")) : t("Disposition", "Layout");
+  return (
+    <section className="mb-4 rounded-2xl border border-line bg-paper p-3" data-dispositions={family.chrome?.part ?? family.entry?.key}>
+      <p className="mb-1 text-xs font-semibold uppercase tracking-[.12em] text-muted">{title}</p>
+      <p className="mb-2 text-[11px] leading-relaxed text-muted">{family.chrome ? t("Cinq dispositions prévues pour ce type de projet. Logo, menus, textes et couleurs sont conservés.", "Five layouts designed for this kind of project. Logo, menus, text and colours are kept.") : t("Même contenu, autre mise en page : textes, images et réglages suivent.", "Same content, another layout: text, images and settings follow.")}</p>
+      <ul className="grid grid-cols-2 gap-2" role="list">
+        {items.map((x) => (
+          <li key={x.id}>
+            <button type="button" disabled={disabled || x.current} onClick={() => onPick(family.chrome ? { chrome: { part: family.chrome.part, preset: x.id } } : { disposition: x.id })} aria-pressed={x.current} title={x.hint || x.label} data-disposition={x.id} className={cx("grid w-full gap-1 rounded-xl border p-1.5 text-left text-[11px] leading-tight transition-colors disabled:cursor-default", x.current ? "border-signal bg-card" : "border-line bg-card hover:border-ink disabled:opacity-60")}>
+              <img src={thumbSvg(x.thumb)} alt="" className="aspect-[16/10] w-full rounded-lg" />
+              <span className="flex items-center gap-1 font-medium">{x.current && <Check className="size-3 shrink-0 text-signal" aria-hidden />}{x.label}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

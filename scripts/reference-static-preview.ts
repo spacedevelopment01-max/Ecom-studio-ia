@@ -22,6 +22,8 @@ const args = process.argv.slice(2), cross = args.includes("--cross");
 const only = args.find((a) => a.startsWith("--only="))?.slice(7).split(",").filter(Boolean) ?? null;
 const out = path.resolve(args.find((a) => !a.startsWith("--")) ?? "reports/reference-static"); fs.mkdirSync(out, { recursive: true });
 const { demoProject } = await import("../tests/demo-fixtures");
+// Stories FRAISE / ONDE : un clip de test (mire générée, jamais une vraie vidéo produit) prouve le lecteur, comme au lot 2C.
+const testVideo = path.join(out, "clip-test.webm"); try { execFileSync("ffmpeg", ["-y", "-f", "lavfi", "-i", "testsrc=size=540x960:rate=24", "-t", "8", "-c:v", "libvpx-vp9", "-b:v", "400k", "-an", testVideo], { stdio: "ignore" }); } catch { console.warn("ffmpeg absent : stories sans clip de test"); }
 type DemoId = "fraise" | "onde" | "orbe" | "rive";
 const { createUser } = await import("../src/lib/auth");
 const { saveThemeVersion } = await import("../src/lib/projects"); const { previewSegment } = await import("../src/lib/theme/preview-access");
@@ -43,7 +45,7 @@ const runs: { id: DemoId; direction: DemoId; name: string }[] = [
 const summary: Record<string, unknown>[] = [];
 try {
   for (const run of runs.filter((r) => !only || only.includes(r.name))) await runWithLang({ content: "fr", ui: "fr" }, async () => {
-    const f = await demoProject(user.id, run.id, run.direction === run.id ? {} : { direction: run.direction }), { spec, pid, services } = f, version = saveThemeVersion(pid, spec, "Aperçu statique", "user");
+    const f = await demoProject(user.id, run.id, run.direction === run.id ? { testVideo: fs.existsSync(testVideo) ? testVideo : undefined } : { direction: run.direction }), { spec, pid, services } = f, version = saveThemeVersion(pid, spec, "Aperçu statique", "user");
     const base = `/preview/${pid}/v/${previewSegment(version.id, user.id, pid)}`, dir = path.join(out, run.name); fs.rmSync(dir, { recursive: true, force: true }); fs.mkdirSync(path.join(dir, "assets"), { recursive: true }); fs.mkdirSync(path.join(dir, "fonts")); if (!services) fs.mkdirSync(path.join(dir, "panier"));
     const title = f.demo.brand, productHandle = services ? null : spec.store.product.handle, productTitle = services ? f.demo.brand : spec.store.product.title;
     const pageHandles = spec.store.pages.map((p) => p.handle);

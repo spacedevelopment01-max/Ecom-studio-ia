@@ -7,6 +7,8 @@
 import { STRATEGY_JARGON } from "../copy-voice";
 import { projectKind } from "../theme/project-kind";
 import { compatibleSectionTypes } from "../theme/section-compat";
+import { FAMILY_LABEL, FAMILY_LIBRARY, familyOf } from "../theme/section-families";
+import { chromePresets } from "../theme/family-chrome";
 import type { StoreKind } from "../theme/store-kind";
 import { skillReference, type SkillIntent } from "./skills";
 import { decide } from "../quality/gate";
@@ -789,11 +791,24 @@ const OPS_HELP = `Forme exacte : « ops » est une liste d'objets, chacun avec s
 Opérations : set_setting{template,section,block?,key,value}, set_global{key,value}, set_scheme_color{scheme,key,value} (TOUT le site : chaque section sur ce schéma change), section_colors{template,section,colors{background?,text?,accent?,…}} (couleurs d'UNE seule section, schéma dédié), element_style{template,section,path,role,text,color?,background?,scale?} (couleurs ou taille — scale 0,8 à 1,6 — d'UN seul élément désigné : reprends exactement son chemin ; tous les boutons du site : set_global button_scale en %), add_section{template,type,settings,blocks,position{after|before|index}}, remove_section, move_section{position}, toggle_section{disabled}, duplicate_section{template,section,position?} (copie juste après), replace_section{template,section,type,settings,blocks} (refaire une section dans un autre style en gardant ses contenus), add_block, remove_block, move_block, use_media{template,section,block?,key,assetId}, custom_section{type,name,liquid}, lock{template,section,locked}.
 Le gabarit d'une section du groupe d'en-tête est « group:header », du pied de page « group:footer ».`;
 
+/**
+ * Bibliothèque de la famille du projet (issue #141) : les 20 fonctions et, pour chacune, la section du thème et les
+ * réglages de chaque disposition. L'IA choisit une fonction puis une disposition, jamais une ancienne section.
+ */
+function familyGuide(spec: ThemeSpec, kind: StoreKind | null): string {
+  const family = familyOf(kind, spec.direction);
+  if (!family) return "";
+  const lines = FAMILY_LIBRARY[family].map((e) => `${e.n}. ${e.name.fr} — ${e.dispositions.map((d) => `${d.label.fr} : ${d.type}${d.settings && Object.keys(d.settings).length ? ` ${JSON.stringify(d.settings)}` : ""}`).join(" | ")}`);
+  const chrome = (part: "header" | "footer") => chromePresets(family, part).map((x) => `${x.label.fr} ${JSON.stringify(x.settings)}`).join(" | ");
+  return `Bibliothèque « ${FAMILY_LABEL[family].fr} » (20 fonctions ; une fonction = une section, ses dispositions sont des réglages) :\n${lines.join("\n")}\nEn-tête (réglages de la section header, 5 dispositions) : ${chrome("header")}\nPied de page (réglages de la section footer, 5 dispositions) : ${chrome("footer")}\nNe reprends jamais le nom, les textes, les images ni les couleurs d'une démonstration (FRAISE, ONDE, ORBE, Atelier Rive) : seulement l'identité et les contenus de ce projet ; une information absente s'écrit « [À compléter : …] ».`;
+}
+
 /** Référence stable du thème (mise en cache entre les appels) : sections, réglages, couleurs, opérations. */
 export function themeReference(spec: ThemeSpec, withOps = false, kind: StoreKind | null = null): string {
   return [
     "<reference_theme>",
     `Catalogue des sections (seules celles compatibles avec ce thème et cette catégorie de projet ; toute autre section est refusée) :\n${sectionCatalog(spec, [...compatibleSectionTypes(spec, kind), ...Object.keys(spec?.customSections ?? {})])}`,
+    ...(spec.imported ? [] : [familyGuide(spec, kind)]),
     `Réglages généraux disponibles (set_global) : ${globalSettingsCatalog(spec)}`,
     spec.imported
       ? `Thème importé par le client (« ${spec.imported.name} ») : n'utilise que ses propres sections et réglages listés ci-dessus ; conserve son style, améliore sans le dénaturer.`
