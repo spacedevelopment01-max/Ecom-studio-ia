@@ -1,0 +1,9 @@
+
+ RUN  v5.0.3 /workspace/work/publications-qualite
+
+
+ Test Files  9 passed (9)
+      Tests  61 passed (61)
+   Start at  18:27:59
+   Duration  18.99s (import 53%, tests 36%, transform 11%)
+
