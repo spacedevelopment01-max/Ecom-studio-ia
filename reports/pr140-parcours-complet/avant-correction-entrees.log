@@ -1,0 +1,68 @@
+npm error code EPERM
+npm error syscall connect
+npm error errno EPERM
+npm error FetchError: request to https://registry.npmjs.org/vitest failed, reason: connect EPERM 172.31.7.77:8080 - Local (undefined:undefined)
+npm error     at ClientRequest.<anonymous> (/opt/codex/runtimes/codex-primary-runtime/dependencies/node/lib/node_modules/npm/node_modules/minipass-fetch/lib/index.js:130:14)
+npm error     at ClientRequest.emit (node:events:509:28)
+npm error     at emitErrorEvent (node:_http_client:112:11)
+npm error     at _destroy (node:_http_client:1144:9)
+npm error     at onSocketNT (node:_http_client:1165:5)
+npm error     at process.processTicksAndRejections (node:internal/process/task_queues:91:21) {
+npm error   code: 'EPERM',
+npm error   errno: 'EPERM',
+npm error   syscall: 'connect',
+npm error   address: '172.31.7.77',
+npm error   port: 8080,
+npm error   type: 'system'
+npm error }
+npm error
+npm error The operation was rejected by your operating system.
+npm error It is likely you do not have the permissions to access this file as the current user
+npm error
+npm error If you believe this might be a permissions issue, please double-check the
+npm error permissions of the file and its containing directories, or try running
+npm error the command again as root/Administrator.
+npm error Log files were not written due to an error writing to the directory: /home/agent/.npm/_logs
+npm error You can rerun the command with `--loglevel=verbose` to see the logs in your terminal
+L  tests/creations-initiales-api.test.ts > Création initiale depuis les vraies API, sans fournisseurs > entrée logo refusée avant de consommer l’abonnement ou sauvegarder un fichier
+AssertionError: expected [ { id: 'i8pgtbrv614rmo02' } ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/creations-initiales-api.test.ts:23:72
+     21|         const r = await create(new Request('http://localhost/api/proje…
+     22|         expect(r.status).toBe(kind === 'too-many' ? 400 : 415);
+     23|         expect(all('SELECT id FROM projects WHERE user_id=?',user.id))…
+       |                                                                        ^
+     24|         expect(all('SELECT id FROM assets WHERE user_id=?',user.id)).t…
+     25|         expect((await create(new Request('http://localhost/api/project…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  tests/creations-initiales-api.test.ts > Création initiale depuis les vraies API, sans fournisseurs > entrée too-many refusée avant de consommer l’abonnement ou sauvegarder un fichier
+AssertionError: expected 200 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 200
+
+ ❯ tests/creations-initiales-api.test.ts:22:26
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 3 skipped (6)
+   Start at  09:39:39
+   Duration  6.34s (transform 51%, import 38%, tests 11%)
+
+  Transform  transforming modules took 3.18s · 51% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns

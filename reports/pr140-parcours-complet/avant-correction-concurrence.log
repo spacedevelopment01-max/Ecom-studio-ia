@@ -1,0 +1,150 @@
+RUN  v5.0.3 /workspace/work/publications-qualite
+
+ ❯ tests/initial-context-concurrency.test.ts (2 tests | 2 failed) 1390ms
+   × changement pendant le rendu : image reçue conservée, aucune relecture payante suivante ni association au post 717ms
+   × changement pendant la réparation : aucune revue ni nouvelle image sous l’ancien accord, résultat précédent conservé 672ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/initial-context-concurrency.test.ts > changement pendant le rendu : image reçue conservée, aucune relecture payante suivante ni association au post
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/initial-context-concurrency.test.ts:28:36
+     26|   d.deps.reviewVisual = async (...args) => { actualVisualReviews++; re…
+     27|   await expect(executeInitial(f.pid, d.deps)).rejects.toThrow();
+     28|   expect.soft(actualVisualReviews).toBe(0);
+       |                                    ^
+     29|   expect.soft(attachedPosts(f.pid)).toHaveLength(0);
+     30|   expect(d.calls).toHaveLength(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  tests/initial-context-concurrency.test.ts > changement pendant le rendu : image reçue conservée, aucune relecture payante suivante ni association au post
+AssertionError: expected [ { media: '["uztjxrl3vgmkfgub"]' } ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/initial-context-concurrency.test.ts:29:37
+     27|   await expect(executeInitial(f.pid, d.deps)).rejects.toThrow();
+     28|   expect.soft(actualVisualReviews).toBe(0);
+     29|   expect.soft(attachedPosts(f.pid)).toHaveLength(0);
+       |                                     ^
+     30|   expect(d.calls).toHaveLength(1);
+     31|   expect(all("SELECT id FROM assets WHERE project_id=? AND role='socia…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  tests/initial-context-concurrency.test.ts > changement pendant la réparation : aucune revue ni nouvelle image sous l’ancien accord, résultat précédent conservé
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/initial-context-concurrency.test.ts:53:39
+     51|   };
+     52|   await expect(executeInitial(f.pid, d.deps)).rejects.toThrow();
+     53|   expect.soft(planReviewsAfterChange).toBe(0);
+       |                                       ^
+     54|   expect.soft(d.calls).toHaveLength(1);
+     55|   expect.soft(d.paid).toHaveLength(callsAtChange);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  tests/initial-context-concurrency.test.ts > changement pendant la réparation : aucune revue ni nouvelle image sous l’ancien accord, résultat précédent conservé
+AssertionError: expected [ …(2) ] to have a length of 1 but got 2
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ tests/initial-context-concurrency.test.ts:54:24
+     52|   await expect(executeInitial(f.pid, d.deps)).rejects.toThrow();
+     53|   expect.soft(planReviewsAfterChange).toBe(0);
+     54|   expect.soft(d.calls).toHaveLength(1);
+       |                        ^
+     55|   expect.soft(d.paid).toHaveLength(callsAtChange);
+     56|   expect.soft(visualReviews).toBe(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  tests/initial-context-concurrency.test.ts > changement pendant la réparation : aucune revue ni nouvelle image sous l’ancien accord, résultat précédent conservé
+AssertionError: expected [ { …(2) }, { …(2) }, { …(2) }, …(3) ] to have a length of 3 but got 6
+
+- Expected
++ Received
+
+- 3
++ 6
+
+ ❯ tests/initial-context-concurrency.test.ts:55:23
+     53|   expect.soft(planReviewsAfterChange).toBe(0);
+     54|   expect.soft(d.calls).toHaveLength(1);
+     55|   expect.soft(d.paid).toHaveLength(callsAtChange);
+       |                       ^
+     56|   expect.soft(visualReviews).toBe(1);
+     57|   expect.soft(attachedPosts(f.pid)).toHaveLength(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  tests/initial-context-concurrency.test.ts > changement pendant la réparation : aucune revue ni nouvelle image sous l’ancien accord, résultat précédent conservé
+AssertionError: expected 2 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ tests/initial-context-concurrency.test.ts:56:30
+     54|   expect.soft(d.calls).toHaveLength(1);
+     55|   expect.soft(d.paid).toHaveLength(callsAtChange);
+     56|   expect.soft(visualReviews).toBe(1);
+       |                              ^
+     57|   expect.soft(attachedPosts(f.pid)).toHaveLength(0);
+     58|   expect(all("SELECT id FROM assets WHERE project_id=? AND role='socia…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  tests/initial-context-concurrency.test.ts > changement pendant la réparation : aucune revue ni nouvelle image sous l’ancien accord, résultat précédent conservé
+AssertionError: expected [ { media: '["p9bngq78wc8ve3i3"]' } ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/initial-context-concurrency.test.ts:57:37
+     55|   expect.soft(d.paid).toHaveLength(callsAtChange);
+     56|   expect.soft(visualReviews).toBe(1);
+     57|   expect.soft(attachedPosts(f.pid)).toHaveLength(0);
+       |                                     ^
+     58|   expect(all("SELECT id FROM assets WHERE project_id=? AND role='socia…
+     59|   expect(loadProject(f.pid).brand?.tagline).toBe(changed);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  09:53:45
+   Duration  7.74s (transform 44%, import 37%, tests 18%)
+
+  Transform  transforming modules took 3.35s · 44% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns

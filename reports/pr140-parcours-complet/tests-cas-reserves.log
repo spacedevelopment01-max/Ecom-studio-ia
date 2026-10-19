@@ -1,0 +1,68 @@
+{
+  "testedSourceCommit": "2b64054be0ff29fe297027552f009186fcc502f2",
+  "casesPassed": 6,
+  "actualProviderCalls": 0,
+  "networkCalls": 0,
+  "output": "/tmp/handoff-cas-reserves-resultats.json",
+  "summaries": [
+    {
+      "case": "pieces-instruments",
+      "category": "ecommerce",
+      "references": [
+        "orbe"
+      ],
+      "status": "ready",
+      "pages": 4,
+      "websiteMedia": 11
+    },
+    {
+      "case": "offre-alimentaire",
+      "category": "specialized",
+      "references": [
+        "fraise",
+        "onde"
+      ],
+      "status": "ready",
+      "pages": 4,
+      "websiteMedia": 11
+    },
+    {
+      "case": "accessoire-ambigu",
+      "category": null,
+      "references": [],
+      "status": "review_required",
+      "pages": 4,
+      "websiteMedia": 11
+    },
+    {
+      "case": "diagnostic-acoustique",
+      "category": "services",
+      "references": [
+        "atelier-rive"
+      ],
+      "status": "ready",
+      "pages": 5,
+      "websiteMedia": 12
+    },
+    {
+      "case": "audit-agricole",
+      "category": "services",
+      "references": [
+        "atelier-rive"
+      ],
+      "status": "ready",
+      "pages": 5,
+      "websiteMedia": 12
+    },
+    {
+      "case": "cours-lsf",
+      "category": "services",
+      "references": [
+        "atelier-rive"
+      ],
+      "status": "ready",
+      "pages": 5,
+      "websiteMedia": 12
+    }
+  ]
+}

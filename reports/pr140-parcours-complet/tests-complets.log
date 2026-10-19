@@ -1,0 +1,15 @@
+
+> ecom-studio-ia@1.0.0 test
+> vitest run
+
+
+ RUN  v5.0.3 /workspace/work/publications-qualite
+
+
+ Test Files  284 passed (284)
+      Tests  2175 passed | 3 skipped (2178)
+   Start at  10:20:11
+   Duration  770.95s (tests 78%, import 21%, transform 1%)
+
+    Isolate  284 workers spawned · ~137ms startup each (spawn + environment, per file)
+             at least ~12.82s faster with isolate: false — reuses workers across files instead of one per file

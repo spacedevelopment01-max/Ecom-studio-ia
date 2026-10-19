@@ -1,0 +1,87 @@
+{
+  "simulation": true,
+  "context": "read-only after reopening, not live-growth proof",
+  "records": [
+    {
+      "profile": "produit-ordinateur",
+      "mobile": false,
+      "context": "read-only after reopening, not live-growth proof",
+      "providerSimulation": true,
+      "readOnlyAfterReopening": true,
+      "liveGrowthProof": false,
+      "historicalSetAfterIntentionalIdentityChange": true,
+      "currentInitialAccepted": 0,
+      "actualDomCards": 10,
+      "blockedExternalRequests": [],
+      "externalRequestsAllowed": 0,
+      "files": [
+        "produit-ordinateur-18-inspection-cartes-vue.png",
+        "produit-ordinateur-18-inspection-cartes.png"
+      ]
+    },
+    {
+      "profile": "service-ordinateur",
+      "mobile": false,
+      "context": "read-only after reopening, not live-growth proof",
+      "providerSimulation": true,
+      "readOnlyAfterReopening": true,
+      "liveGrowthProof": false,
+      "historicalSetAfterIntentionalIdentityChange": false,
+      "currentInitialAccepted": 20,
+      "actualDomCards": 10,
+      "blockedExternalRequests": [],
+      "externalRequestsAllowed": 0,
+      "files": [
+        "service-ordinateur-18-inspection-cartes-vue.png",
+        "service-ordinateur-18-inspection-cartes.png"
+      ]
+    },
+    {
+      "profile": "produit-mobile",
+      "mobile": true,
+      "context": "read-only after reopening, not live-growth proof",
+      "providerSimulation": true,
+      "readOnlyAfterReopening": true,
+      "liveGrowthProof": false,
+      "historicalSetAfterIntentionalIdentityChange": false,
+      "currentInitialAccepted": 20,
+      "actualDomCards": 10,
+      "blockedExternalRequests": [],
+      "externalRequestsAllowed": 0,
+      "files": [
+        "produit-mobile-18-inspection-cartes-vue.png",
+        "produit-mobile-18-inspection-cartes.png"
+      ]
+    },
+    {
+      "profile": "service-mobile",
+      "mobile": true,
+      "context": "read-only after reopening, not live-growth proof",
+      "providerSimulation": true,
+      "readOnlyAfterReopening": true,
+      "liveGrowthProof": false,
+      "historicalSetAfterIntentionalIdentityChange": false,
+      "currentInitialAccepted": 20,
+      "actualDomCards": 10,
+      "blockedExternalRequests": [],
+      "externalRequestsAllowed": 0,
+      "files": [
+        "service-mobile-18-inspection-cartes-vue.png",
+        "service-mobile-18-inspection-cartes.png"
+      ]
+    }
+  ],
+  "preliminaryInspection": {
+    "context": "Earlier read-only inspection before skipping the introductory splash; not primary acceptance evidence",
+    "blockedExternalRequests": [
+      "fonts.googleapis.com"
+    ],
+    "externalRequestsAllowed": 0,
+    "oauthOrAccountConnectionCreated": false,
+    "mobileSplashDetectedOnVisualReview": true,
+    "invalidMobileScreenshotsReplaced": true,
+    "finalInspectionUsesSameLocalIntroPreferenceAsPrimaryHarness": true,
+    "fontUrlsRewritten": false,
+    "applicationOrHarnessSourcesChanged": false
+  }
+}

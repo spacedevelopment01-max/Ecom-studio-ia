@@ -1,0 +1,33 @@
+{
+  "scope": "First complementary read-only inspection, not primary acceptance; two mobile views were masked by introductory overlay and were retaken before delivery.",
+  "simulation": true,
+  "externalAllowed": 0,
+  "requests": [
+    {
+      "profile": "produit-ordinateur",
+      "blockedExternalRequests": [
+        "fonts.googleapis.com"
+      ]
+    },
+    {
+      "profile": "service-ordinateur",
+      "blockedExternalRequests": [
+        "fonts.googleapis.com"
+      ]
+    },
+    {
+      "profile": "produit-mobile",
+      "blockedExternalRequests": [
+        "fonts.googleapis.com"
+      ]
+    },
+    {
+      "profile": "service-mobile",
+      "blockedExternalRequests": [
+        "fonts.googleapis.com"
+      ]
+    }
+  ],
+  "newGoogleAccountConnection": false,
+  "productionChange": false
+}

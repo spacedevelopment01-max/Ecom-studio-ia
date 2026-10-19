@@ -1,0 +1,57 @@
+{
+  "simulation": true,
+  "beforeExplicitChoice": {
+    "status": "recommended",
+    "category": "services",
+    "salesModel": "service",
+    "goal": "call",
+    "reasons": [
+      "Une offre de prestations avec un parcours appel, sans panier imposé."
+    ],
+    "evidence": [
+      {
+        "source": "business",
+        "value": "services"
+      }
+    ],
+    "clarification": null,
+    "eligibleThemes": [
+      {
+        "referenceId": "atelier-rive",
+        "name": "Atelier Rive",
+        "engineThemeId": null,
+        "status": "awaiting_integration"
+      }
+    ]
+  },
+  "clientSelected": "services",
+  "afterExplicitChoice": {
+    "status": "recommended",
+    "category": "services",
+    "salesModel": "service",
+    "goal": "call",
+    "reasons": [
+      "Vous avez confirmé ce modèle de site pour votre offre actuelle ; ce choix prime sur les indices automatiques."
+    ],
+    "evidence": [
+      {
+        "source": "business",
+        "value": "services"
+      },
+      {
+        "source": "client_choice",
+        "value": "services"
+      }
+    ],
+    "clarification": null,
+    "eligibleThemes": [
+      {
+        "referenceId": "atelier-rive",
+        "name": "Atelier Rive",
+        "engineThemeId": null,
+        "status": "awaiting_integration"
+      }
+    ]
+  },
+  "inferenceIsNotPaidAi": true
+}
