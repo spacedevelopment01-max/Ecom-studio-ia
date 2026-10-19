@@ -1,7 +1,7 @@
 {
   "kind": "fraise",
-  "dir": "/tmp/claude-0/-home-user/f42e41aa-36e1-5b4c-ac34-eb3ff7528781/scratchpad/static-final-r6/fraise",
-  "date": "2026-10-18T23:47:13.286Z",
+  "dir": "<copie retéléchargée de l'aperçu livré>/fraise",
+  "date": "2026-10-19T02:54:33.281Z",
   "report": [
     {
       "dev": "390x620",
@@ -46,22 +46,22 @@
       "closed": [
         {
           "q": {
-            "bg": "rgb(228, 71, 63)",
+            "bg": "rgb(205, 64, 57)",
             "color": "rgb(255, 255, 255)",
             "px": 19.2,
             "bold": true
           },
-          "contrast": 4,
+          "contrast": 4.8,
           "threshold": 3
         },
         {
           "q": {
-            "bg": "rgb(228, 71, 63)",
+            "bg": "rgb(205, 64, 57)",
             "color": "rgb(255, 255, 255)",
             "px": 19.2,
             "bold": true
           },
-          "contrast": 4,
+          "contrast": 4.8,
           "threshold": 3
         }
       ]
@@ -109,22 +109,22 @@
       "closed": [
         {
           "q": {
-            "bg": "rgb(228, 71, 63)",
+            "bg": "rgb(205, 64, 57)",
             "color": "rgb(255, 255, 255)",
             "px": 19.2,
             "bold": true
           },
-          "contrast": 4,
+          "contrast": 4.8,
           "threshold": 3
         },
         {
           "q": {
-            "bg": "rgb(228, 71, 63)",
+            "bg": "rgb(205, 64, 57)",
             "color": "rgb(255, 255, 255)",
             "px": 19.2,
             "bold": true
           },
-          "contrast": 4,
+          "contrast": 4.8,
           "threshold": 3
         }
       ]
@@ -331,22 +331,22 @@
       "closed": [
         {
           "q": {
-            "bg": "rgb(228, 71, 63)",
+            "bg": "rgb(205, 64, 57)",
             "color": "rgb(255, 255, 255)",
             "px": 19.2,
             "bold": true
           },
-          "contrast": 4,
+          "contrast": 4.8,
           "threshold": 3
         },
         {
           "q": {
-            "bg": "rgb(228, 71, 63)",
+            "bg": "rgb(205, 64, 57)",
             "color": "rgb(255, 255, 255)",
             "px": 19.2,
             "bold": true
           },
-          "contrast": 4,
+          "contrast": 4.8,
           "threshold": 3
         }
       ]
@@ -394,22 +394,22 @@
       "closed": [
         {
           "q": {
-            "bg": "rgb(228, 71, 63)",
+            "bg": "rgb(205, 64, 57)",
             "color": "rgb(255, 255, 255)",
             "px": 19.2,
             "bold": true
           },
-          "contrast": 4,
+          "contrast": 4.8,
           "threshold": 3
         },
         {
           "q": {
-            "bg": "rgb(228, 71, 63)",
+            "bg": "rgb(205, 64, 57)",
             "color": "rgb(255, 255, 255)",
             "px": 19.2,
             "bold": true
           },
-          "contrast": 4,
+          "contrast": 4.8,
           "threshold": 3
         }
       ]

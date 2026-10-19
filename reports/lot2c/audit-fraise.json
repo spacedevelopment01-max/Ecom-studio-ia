@@ -1,0 +1,403 @@
+{
+  "kind": "fraise",
+  "dir": "<copie retéléchargée de l'aperçu livré>/fraise",
+  "date": "2026-10-19T02:58:33.461Z",
+  "pages": 16,
+  "viewports": [
+    "360x740",
+    "390x844",
+    "768x1024",
+    "1440x900",
+    "360x560",
+    "390x620"
+  ],
+  "focusStops": 40,
+  "summary": {
+    "tap-target-small": 34,
+    "covered-by-fixed": 9
+  },
+  "grouped": {
+    "tap-target-small": {
+      "accueil.html @ 360x740": [
+        "li.cv-story > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 192×22 px « Voir les gummies »",
+        "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 192×22 px « Voir les gummies »",
+        "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 192×22 px « Voir les gummies »"
+      ],
+      "boutique.html @ 360x740": [
+        "article.es-card.es-card--portrait > div.es-card__info > h3.es-card__title > a — 153×20 px « Gummies à la fraise »"
+      ],
+      "produit.html @ 360x740": [
+        "li.cv-story > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 192×22 px « Voir les gummies »",
+        "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 192×22 px « Voir les gummies »",
+        "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 192×22 px « Voir les gummies »"
+      ],
+      "accueil.html @ 390x844": [
+        "li.cv-story > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 213×22 px « Voir les gummies »",
+        "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 213×22 px « Voir les gummies »",
+        "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 213×22 px « Voir les gummies »"
+      ],
+      "boutique.html @ 390x844": [
+        "article.es-card.es-card--portrait > div.es-card__info > h3.es-card__title > a — 153×20 px « Gummies à la fraise »"
+      ],
+      "produit.html @ 390x844": [
+        "li.cv-story > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 213×22 px « Voir les gummies »",
+        "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 213×22 px « Voir les gummies »",
+        "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 213×22 px « Voir les gummies »"
+      ],
+      "accueil.html @ 768x1024": [
+        "li.cv-story > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 228×22 px « Voir les gummies »",
+        "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 228×22 px « Voir les gummies »",
+        "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 228×22 px « Voir les gummies »"
+      ],
+      "produit.html @ 768x1024": [
+        "li.cv-story > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 228×22 px « Voir les gummies »",
+        "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 228×22 px « Voir les gummies »",
+        "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 228×22 px « Voir les gummies »"
+      ],
+      "accueil.html @ 360x560": [
+        "li.cv-story > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 192×22 px « Voir les gummies »",
+        "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 192×22 px « Voir les gummies »",
+        "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 192×22 px « Voir les gummies »"
+      ],
+      "boutique.html @ 360x560": [
+        "article.es-card.es-card--portrait > div.es-card__info > h3.es-card__title > a — 153×20 px « Gummies à la fraise »"
+      ],
+      "produit.html @ 360x560": [
+        "li.cv-story > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 192×22 px « Voir les gummies »",
+        "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 192×22 px « Voir les gummies »",
+        "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 192×22 px « Voir les gummies »"
+      ],
+      "accueil.html @ 390x620": [
+        "li.cv-story > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 213×22 px « Voir les gummies »",
+        "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 213×22 px « Voir les gummies »",
+        "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 213×22 px « Voir les gummies »"
+      ],
+      "boutique.html @ 390x620": [
+        "article.es-card.es-card--portrait > div.es-card__info > h3.es-card__title > a — 153×20 px « Gummies à la fraise »"
+      ],
+      "produit.html @ 390x620": [
+        "li.cv-story > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 213×22 px « Voir les gummies »",
+        "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 213×22 px « Voir les gummies »",
+        "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link — 213×22 px « Voir les gummies »"
+      ]
+    },
+    "covered-by-fixed": {
+      "produit.html @ 360x560": [
+        "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb.is-active — haut : « Afficher l'image 1 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
+        "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb — haut : « Afficher l'image 2 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
+        "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb — haut : « Afficher l'image 3 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
+        "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb — haut : « Afficher l'image 4 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar"
+      ],
+      "produit.html @ 390x620": [
+        "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb.is-active — haut : « Afficher l'image 1 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
+        "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb — haut : « Afficher l'image 2 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
+        "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb — haut : « Afficher l'image 3 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
+        "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb — haut : « Afficher l'image 4 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
+        "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb — haut : « Afficher l'image 5 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar"
+      ]
+    }
+  },
+  "issues": [
+    {
+      "kind": "tap-target-small",
+      "page": "accueil.html",
+      "viewport": "360x740",
+      "detail": "192×22 px « Voir les gummies »",
+      "selector": "li.cv-story > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "accueil.html",
+      "viewport": "360x740",
+      "detail": "192×22 px « Voir les gummies »",
+      "selector": "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "accueil.html",
+      "viewport": "360x740",
+      "detail": "192×22 px « Voir les gummies »",
+      "selector": "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "boutique.html",
+      "viewport": "360x740",
+      "detail": "153×20 px « Gummies à la fraise »",
+      "selector": "article.es-card.es-card--portrait > div.es-card__info > h3.es-card__title > a"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "produit.html",
+      "viewport": "360x740",
+      "detail": "192×22 px « Voir les gummies »",
+      "selector": "li.cv-story > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "produit.html",
+      "viewport": "360x740",
+      "detail": "192×22 px « Voir les gummies »",
+      "selector": "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "produit.html",
+      "viewport": "360x740",
+      "detail": "192×22 px « Voir les gummies »",
+      "selector": "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "accueil.html",
+      "viewport": "390x844",
+      "detail": "213×22 px « Voir les gummies »",
+      "selector": "li.cv-story > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "accueil.html",
+      "viewport": "390x844",
+      "detail": "213×22 px « Voir les gummies »",
+      "selector": "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "accueil.html",
+      "viewport": "390x844",
+      "detail": "213×22 px « Voir les gummies »",
+      "selector": "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "boutique.html",
+      "viewport": "390x844",
+      "detail": "153×20 px « Gummies à la fraise »",
+      "selector": "article.es-card.es-card--portrait > div.es-card__info > h3.es-card__title > a"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "produit.html",
+      "viewport": "390x844",
+      "detail": "213×22 px « Voir les gummies »",
+      "selector": "li.cv-story > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "produit.html",
+      "viewport": "390x844",
+      "detail": "213×22 px « Voir les gummies »",
+      "selector": "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "produit.html",
+      "viewport": "390x844",
+      "detail": "213×22 px « Voir les gummies »",
+      "selector": "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "accueil.html",
+      "viewport": "768x1024",
+      "detail": "228×22 px « Voir les gummies »",
+      "selector": "li.cv-story > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "accueil.html",
+      "viewport": "768x1024",
+      "detail": "228×22 px « Voir les gummies »",
+      "selector": "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "accueil.html",
+      "viewport": "768x1024",
+      "detail": "228×22 px « Voir les gummies »",
+      "selector": "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "produit.html",
+      "viewport": "768x1024",
+      "detail": "228×22 px « Voir les gummies »",
+      "selector": "li.cv-story > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "produit.html",
+      "viewport": "768x1024",
+      "detail": "228×22 px « Voir les gummies »",
+      "selector": "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "produit.html",
+      "viewport": "768x1024",
+      "detail": "228×22 px « Voir les gummies »",
+      "selector": "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "accueil.html",
+      "viewport": "360x560",
+      "detail": "192×22 px « Voir les gummies »",
+      "selector": "li.cv-story > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "accueil.html",
+      "viewport": "360x560",
+      "detail": "192×22 px « Voir les gummies »",
+      "selector": "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "accueil.html",
+      "viewport": "360x560",
+      "detail": "192×22 px « Voir les gummies »",
+      "selector": "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "boutique.html",
+      "viewport": "360x560",
+      "detail": "153×20 px « Gummies à la fraise »",
+      "selector": "article.es-card.es-card--portrait > div.es-card__info > h3.es-card__title > a"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "produit.html",
+      "viewport": "360x560",
+      "detail": "192×22 px « Voir les gummies »",
+      "selector": "li.cv-story > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "produit.html",
+      "viewport": "360x560",
+      "detail": "192×22 px « Voir les gummies »",
+      "selector": "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "produit.html",
+      "viewport": "360x560",
+      "detail": "192×22 px « Voir les gummies »",
+      "selector": "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "covered-by-fixed",
+      "page": "produit.html",
+      "viewport": "360x560",
+      "detail": "haut : « Afficher l'image 1 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
+      "selector": "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb.is-active"
+    },
+    {
+      "kind": "covered-by-fixed",
+      "page": "produit.html",
+      "viewport": "360x560",
+      "detail": "haut : « Afficher l'image 2 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
+      "selector": "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb"
+    },
+    {
+      "kind": "covered-by-fixed",
+      "page": "produit.html",
+      "viewport": "360x560",
+      "detail": "haut : « Afficher l'image 3 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
+      "selector": "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb"
+    },
+    {
+      "kind": "covered-by-fixed",
+      "page": "produit.html",
+      "viewport": "360x560",
+      "detail": "haut : « Afficher l'image 4 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
+      "selector": "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "accueil.html",
+      "viewport": "390x620",
+      "detail": "213×22 px « Voir les gummies »",
+      "selector": "li.cv-story > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "accueil.html",
+      "viewport": "390x620",
+      "detail": "213×22 px « Voir les gummies »",
+      "selector": "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "accueil.html",
+      "viewport": "390x620",
+      "detail": "213×22 px « Voir les gummies »",
+      "selector": "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "boutique.html",
+      "viewport": "390x620",
+      "detail": "153×20 px « Gummies à la fraise »",
+      "selector": "article.es-card.es-card--portrait > div.es-card__info > h3.es-card__title > a"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "produit.html",
+      "viewport": "390x620",
+      "detail": "213×22 px « Voir les gummies »",
+      "selector": "li.cv-story > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "produit.html",
+      "viewport": "390x620",
+      "detail": "213×22 px « Voir les gummies »",
+      "selector": "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "tap-target-small",
+      "page": "produit.html",
+      "viewport": "390x620",
+      "detail": "213×22 px « Voir les gummies »",
+      "selector": "li.cv-story.cv-story--empty > article.cv-story__card > div.cv-story__caption > a.cv-story__link"
+    },
+    {
+      "kind": "covered-by-fixed",
+      "page": "produit.html",
+      "viewport": "390x620",
+      "detail": "haut : « Afficher l'image 1 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
+      "selector": "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb.is-active"
+    },
+    {
+      "kind": "covered-by-fixed",
+      "page": "produit.html",
+      "viewport": "390x620",
+      "detail": "haut : « Afficher l'image 2 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
+      "selector": "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb"
+    },
+    {
+      "kind": "covered-by-fixed",
+      "page": "produit.html",
+      "viewport": "390x620",
+      "detail": "haut : « Afficher l'image 3 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
+      "selector": "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb"
+    },
+    {
+      "kind": "covered-by-fixed",
+      "page": "produit.html",
+      "viewport": "390x620",
+      "detail": "haut : « Afficher l'image 4 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
+      "selector": "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb"
+    },
+    {
+      "kind": "covered-by-fixed",
+      "page": "produit.html",
+      "viewport": "390x620",
+      "detail": "haut : « Afficher l'image 5 » sous main#MainContent > div#shopify-section-template--es__main > section.es-section.es-product > div.purchase-bar",
+      "selector": "div.es-container.es-product__grid > div.es-product__gallery > div.es-product__thumbs > button.es-product__thumb"
+    }
+  ]
+}

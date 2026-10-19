@@ -1,7 +1,7 @@
 {
-  "testedCommit": "d1b682cd7be411bc6cb65ebf5f500ea098ad5ba8",
+  "testedCommit": "e2a33888d8ff6c078ee5ad4ba9f4ffd65bf650d8",
   "workingTree": "clean",
-  "date": "2026-10-18T23:45:13.292Z",
+  "date": "2026-10-19T02:38:58.874Z",
   "renderMode": "es_raw=1 — thème issu des vraies routes, sans le bandeau flottant du studio",
   "widths": [
     1440,
@@ -55,7 +55,7 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 9811,
+            "height": 9831,
             "h1": 1,
             "images": 8,
             "brokenImages": [],
@@ -85,7 +85,7 @@
           "metrics": {
             "width": 768,
             "scrollWidth": 768,
-            "height": 10012,
+            "height": 10032,
             "h1": 1,
             "images": 8,
             "brokenImages": [],
@@ -115,7 +115,7 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 10684,
+            "height": 10704,
             "h1": 1,
             "images": 8,
             "brokenImages": [],
@@ -145,7 +145,7 @@
           "metrics": {
             "width": 360,
             "scrollWidth": 360,
-            "height": 10753,
+            "height": 10773,
             "h1": 1,
             "images": 8,
             "brokenImages": [],
@@ -175,7 +175,7 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 11476,
+            "height": 11496,
             "h1": 1,
             "images": 26,
             "brokenImages": [],
@@ -193,7 +193,7 @@
           "metrics": {
             "width": 768,
             "scrollWidth": 768,
-            "height": 11681,
+            "height": 11701,
             "h1": 1,
             "images": 26,
             "brokenImages": [],
@@ -211,7 +211,7 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 12393,
+            "height": 12413,
             "h1": 1,
             "images": 26,
             "brokenImages": [],
@@ -229,7 +229,7 @@
           "metrics": {
             "width": 360,
             "scrollWidth": 360,
-            "height": 12566,
+            "height": 12586,
             "h1": 1,
             "images": 26,
             "brokenImages": [],
@@ -679,7 +679,7 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 6975,
+            "height": 6985,
             "h1": 1,
             "images": 7,
             "brokenImages": [],
@@ -697,7 +697,7 @@
           "metrics": {
             "width": 768,
             "scrollWidth": 768,
-            "height": 6894,
+            "height": 6904,
             "h1": 1,
             "images": 7,
             "brokenImages": [],
@@ -715,7 +715,7 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 6342,
+            "height": 6352,
             "h1": 1,
             "images": 7,
             "brokenImages": [],
@@ -733,7 +733,7 @@
           "metrics": {
             "width": 360,
             "scrollWidth": 360,
-            "height": 6300,
+            "height": 6310,
             "h1": 1,
             "images": 7,
             "brokenImages": [],
@@ -751,7 +751,7 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 7413,
+            "height": 7423,
             "h1": 1,
             "images": 5,
             "brokenImages": [],
@@ -769,7 +769,7 @@
           "metrics": {
             "width": 768,
             "scrollWidth": 768,
-            "height": 7124,
+            "height": 7134,
             "h1": 1,
             "images": 5,
             "brokenImages": [],
@@ -787,7 +787,7 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 7438,
+            "height": 7448,
             "h1": 1,
             "images": 5,
             "brokenImages": [],
@@ -805,7 +805,7 @@
           "metrics": {
             "width": 360,
             "scrollWidth": 360,
-            "height": 7578,
+            "height": 7588,
             "h1": 1,
             "images": 5,
             "brokenImages": [],
@@ -823,7 +823,7 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 12885,
+            "height": 12895,
             "h1": 1,
             "images": 23,
             "brokenImages": [],
@@ -841,7 +841,7 @@
           "metrics": {
             "width": 768,
             "scrollWidth": 768,
-            "height": 15524,
+            "height": 15534,
             "h1": 1,
             "images": 23,
             "brokenImages": [],
@@ -859,7 +859,7 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 14910,
+            "height": 14920,
             "h1": 1,
             "images": 23,
             "brokenImages": [],
@@ -877,7 +877,7 @@
           "metrics": {
             "width": 360,
             "scrollWidth": 360,
-            "height": 14846,
+            "height": 14856,
             "h1": 1,
             "images": 23,
             "brokenImages": [],
@@ -1256,7 +1256,7 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 7335,
+            "height": 7355,
             "h1": 1,
             "images": 10,
             "brokenImages": [],
@@ -1286,7 +1286,7 @@
           "metrics": {
             "width": 768,
             "scrollWidth": 768,
-            "height": 8179,
+            "height": 8199,
             "h1": 1,
             "images": 10,
             "brokenImages": [],
@@ -1316,7 +1316,7 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 8316,
+            "height": 8336,
             "h1": 1,
             "images": 10,
             "brokenImages": [],
@@ -1346,7 +1346,7 @@
           "metrics": {
             "width": 360,
             "scrollWidth": 360,
-            "height": 8382,
+            "height": 8402,
             "h1": 1,
             "images": 10,
             "brokenImages": [],
@@ -1376,7 +1376,7 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 8310,
+            "height": 8330,
             "h1": 1,
             "images": 28,
             "brokenImages": [],
@@ -1394,7 +1394,7 @@
           "metrics": {
             "width": 768,
             "scrollWidth": 768,
-            "height": 9135,
+            "height": 9155,
             "h1": 1,
             "images": 28,
             "brokenImages": [],
@@ -1412,7 +1412,7 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 9402,
+            "height": 9422,
             "h1": 1,
             "images": 28,
             "brokenImages": [],
@@ -1430,7 +1430,7 @@
           "metrics": {
             "width": 360,
             "scrollWidth": 360,
-            "height": 9524,
+            "height": 9544,
             "h1": 1,
             "images": 28,
             "brokenImages": [],
@@ -1880,7 +1880,7 @@
           "metrics": {
             "width": 1440,
             "scrollWidth": 1440,
-            "height": 12809,
+            "height": 12819,
             "h1": 1,
             "images": 23,
             "brokenImages": [],
@@ -1898,7 +1898,7 @@
           "metrics": {
             "width": 768,
             "scrollWidth": 768,
-            "height": 15421,
+            "height": 15431,
             "h1": 1,
             "images": 23,
             "brokenImages": [],
@@ -1916,7 +1916,7 @@
           "metrics": {
             "width": 390,
             "scrollWidth": 390,
-            "height": 14670,
+            "height": 14680,
             "h1": 1,
             "images": 23,
             "brokenImages": [],
@@ -1934,7 +1934,7 @@
           "metrics": {
             "width": 360,
             "scrollWidth": 360,
-            "height": 14611,
+            "height": 14621,
             "h1": 1,
             "images": 23,
             "brokenImages": [],
