@@ -17,7 +17,7 @@ import { MusicChoice } from "./music-choice";
 import { VideoDocModal } from "./video-v2-panel";
 
 type Quote = { mode: "ai" | "stock"; allowed: boolean; reason: string | null; estimateMicro: number; scenes: number; totalS: number; clipS: number };
-type VideoItem = { id: string; docKey: string | null; url: string; aspect: string | null; durationS: number | null; as: "post" | "ad"; mode: string | null; subject: string | null; request: string | null; at: number };
+type VideoItem = { id: string; docKey: string | null; url: string; aspect: string | null; durationS: number | null; as: "post" | "ad"; mode: string | null; subject: string | null; request: string | null; reviewRequired: boolean; warnings: string[]; at: number };
 type Data = { videos: VideoItem[]; ai: boolean; subjects: SubjectView[]; limits: { scenes: [number, number]; totalS: [number, number] } };
 const ASPECTS = [
   { v: "9:16", fr: "Vertical 9:16 (Reels, TikTok, Stories)", en: "Vertical 9:16 (Reels, TikTok, Stories)" },
@@ -146,7 +146,7 @@ export function GuidedVideo({ as }: { as: "post" | "ad" }) {
         </div>
       </Card>
       {videos.length > 0 && (
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4" data-guided-videos>
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3" data-guided-videos>
           {videos.map((v) => (
             <Card key={v.id} className="overflow-hidden p-0">
               <video src={v.url} controls playsInline preload="metadata" className="w-full bg-ink" style={{ aspectRatio: (v.aspect ?? "9:16").replace(":", " / ") }} />
@@ -159,6 +159,13 @@ export function GuidedVideo({ as }: { as: "post" | "ad" }) {
                   <Download className="size-3.5" /> MP4
                 </a>
               </div>
+              {v.reviewRequired && (
+                <details className="border-t border-line px-3 py-2 text-xs text-muted" data-video-review>
+                  <summary className="cursor-pointer font-medium text-warn">{t("Vidéo rendue — à vérifier", "Video rendered — review required")}</summary>
+                  <p className="mt-2">{t("Le fichier est disponible. Le rendu ne prouve pas le respect de toutes vos demandes.", "The file is available. Rendering does not establish that every requirement was met.")}</p>
+                  {v.warnings.length > 0 && <ul className="mt-2 grid list-disc gap-1 pl-4">{v.warnings.map((warning, i) => <li key={i}>{warning}</li>)}</ul>}
+                </details>
+              )}
               {v.docKey && (
                 <div className="flex flex-wrap items-center gap-1.5 border-t border-line px-3 py-2" data-guided-video-actions>
                   <button type="button" onClick={() => setEditing(v.docKey)} className="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium text-ink-2 hover:bg-paper-2" data-guided-video-edit>

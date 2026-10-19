@@ -5,7 +5,7 @@ import { all, json, one } from "@/lib/db";
 import { enqueue } from "@/lib/jobs";
 import { L } from "@/lib/i18n-server";
 import { aiActiveFor } from "@/lib/ai/access";
-import { projectRights } from "@/lib/plan-gates";
+import { projectRights, requirePlan } from "@/lib/plan-gates";
 import { aiPostProbableMicro, estimateMicro } from "@/lib/ai/estimate";
 import { budgetPctOf } from "@/lib/ai/budget-pct";
 import { aiPostMaxMicro, wanClipMaxMicro } from "@/lib/ai/media-providers";
@@ -43,7 +43,13 @@ function list(projectId: string) {
   const seen = new Set<string>();
   return all<{ id: string; meta: string; created_at: number }>("SELECT id, meta, created_at FROM assets WHERE project_id = ? AND role = 'video' AND deleted_at IS NULL AND json_extract(meta, '$.scenes') IS NOT NULL ORDER BY created_at DESC LIMIT 40", projectId).map((r) => {
     const m = json<any>(r.meta, {});
-    return { id: r.id, url: `/api/files/${r.id}`, docKey: m.videoV2?.docKey ?? null, aspect: m.format ?? null, durationS: m.videoV2?.durationS ?? null, as: m.scenes?.as ?? "post", mode: m.scenes?.mode ?? null, subject: m.scenes?.subject?.name ?? null, request: m.scenes?.request ?? null, music: m.scenes?.music !== false, at: r.created_at };
+    // Un MP4 rendu n'est pas une création validée : conserver les limites du worker jusque dans la carte client.
+    const notes = Array.isArray(m.creative?.notes) ? m.creative.notes.filter((s: unknown) => typeof s === "string") : [];
+    const unchecked = Array.isArray(m.finalCheck?.summary?.unchecked) ? m.finalCheck.summary.unchecked.filter((s: unknown) => typeof s === "string") : [];
+    const issues = Array.isArray(m.finalCheck?.summary?.issues) ? m.finalCheck.summary.issues.map((i: any) => String(i.detail || i.label || "")) : [];
+    const warnings = [...notes, ...issues, ...unchecked.map((s: string) => L(`Non vérifié : ${s}`, `Not checked: ${s}`))];
+    if (!m.finalCheck?.summary) warnings.push(L("Contrôle du fichier final indisponible : résultat à vérifier.", "Final file check unavailable: review this result."));
+    return { id: r.id, url: `/api/files/${r.id}`, docKey: m.videoV2?.docKey ?? null, aspect: m.format ?? null, durationS: m.videoV2?.durationS ?? null, as: m.scenes?.as ?? "post", mode: m.scenes?.mode ?? null, subject: m.scenes?.subject?.name ?? null, request: m.scenes?.request ?? null, music: m.scenes?.music !== false, reviewRequired: true, warnings: [...new Set(warnings)], at: r.created_at };
   }).filter((v) => !v.docKey || (!seen.has(v.docKey) && !!seen.add(v.docKey))); // dernier rendu de chaque vidéo seulement
 }
 
@@ -60,6 +66,8 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const r: ThreeScenesRequest = { as: b.as, subject: b.subject ?? null, request: b.request?.trim() || null, aspect: b.aspect, scenes: b.scenes, totalS: b.totalS, music: b.music };
   const q = quote(p, r);
   if (b.action === "quote") return ok(q);
+  // Le montage gratuit ne dispense pas du forfait actif nécessaire à toute création.
+  requirePlan(user, p.id);
   if (!p.brand) throw new HttpError(409, L("La marque n'est pas encore créée.", "The brand has not been created yet."));
   if (!q.allowed) throw new HttpError(402, q.reason ?? L("Vidéo impossible pour ce projet.", "Video not possible for this project."));
   if (q.estimateMicro > 0 && (b.approvedEstimateMicro == null || b.approvedEstimateMicro < q.estimateMicro)) throw new HttpError(409, L("Prix à accepter avant de lancer (il a pu changer) : vérifiez-le puis relancez.", "Price to accept before starting (it may have changed): check it and start again."));

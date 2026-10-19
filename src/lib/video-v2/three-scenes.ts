@@ -20,7 +20,7 @@ import { localIdeas } from "../prompt-ideas";
 import { brandTypo, palette } from "../engine/images";
 import { SIZES, VIDEO_DOC_VERSION, defaultSubtitleStyle, endCardDoc, overlayText, safeZone } from "./doc";
 import { songStyleFor } from "../media/song";
-import { renderVideoFile, saveRendered, saveVideoVersion } from "./store";
+import { renderVideoFile, saveRendered, saveVideoVersion, videoUserOwned } from "./store";
 import type { Clip, VideoDocument, VideoPlatform } from "./types";
 import fs from "node:fs";
 import path from "node:path";
@@ -46,13 +46,22 @@ export type SceneAspect = "9:16" | "16:9" | "1:1" | "4:5";
  * Découpage : durée à l'écran de chaque scène (la carte de fin complète la durée totale) et durée du plan à générer
  * (un peu plus longue, puis coupée ; 2 à 15 s par plan).
  */
-export function sceneTiming(scenes = SCENES, totalS = DEFAULT_TOTAL_S): { showS: number; clipS: number; endS: number } {
+export function sceneTiming(scenes = SCENES, totalS = DEFAULT_TOTAL_S, endCardS = END_CARD_S): { showS: number; clipS: number; endS: number } {
   const n = Math.max(SCENE_LIMITS.scenes[0], Math.min(SCENE_LIMITS.scenes[1], Math.round(scenes)));
   const total = Math.max(SCENE_LIMITS.totalS[0], Math.min(SCENE_LIMITS.totalS[1], totalS));
-  const showS = Math.min(15, Math.round(((total - END_CARD_S) / n) * 100) / 100);
+  const holdS = Math.max(END_CARD_S, Math.min(4, endCardS));
+  const showS = Math.min(15, Math.round(((total - holdS) / n) * 100) / 100);
   const clipS = Math.max(2, Math.min(15, Math.ceil(showS + 0.3)));
-  const endS = Math.round(Math.max(END_CARD_S, total - showS * n) * 100) / 100;
+  const endS = Math.round(Math.max(holdS, total - showS * n) * 100) / 100;
   return { showS: Math.min(showS, clipS), clipS, endS };
+}
+
+/** Un couple durée/scènes impossible ne doit jamais devenir une vidéo raccourcie silencieusement. */
+export function sceneTimingIssue(scenes = SCENES, totalS = DEFAULT_TOTAL_S): string | null {
+  const t = sceneTiming(scenes, totalS);
+  return t.endS > 4
+    ? L("Cette durée exige davantage de scènes (15 secondes au plus par plan). Augmentez le nombre de scènes ou réduisez la durée.", "This length requires more scenes (at most 15 seconds per shot). Add scenes or shorten the video.")
+    : null;
 }
 /** Modèle des plans IA (choix du propriétaire : Wan 2.6, bien moins cher que 3.0). */
 export const SCENE_VIDEO_MODEL = "wan2.6-i2v-flash";
@@ -268,6 +277,8 @@ export function quoteScenes(p: Project, req: ThreeScenesRequest, o: { imageMaxMi
   const totalS = Math.max(SCENE_LIMITS.totalS[0], Math.min(SCENE_LIMITS.totalS[1], req.totalS ?? DEFAULT_TOTAL_S));
   const t = sceneTiming(n, totalS);
   const mode = sceneMode(p, s, req);
+  const timingIssue = sceneTimingIssue(n, totalS);
+  if (timingIssue) return { mode, allowed: false, reason: timingIssue, estimateMicro: 0, scenes: n, totalS, clipS: t.clipS };
   if (mode === "stock") return { mode, allowed: true, reason: null, estimateMicro: o.aiActive ? Math.round(o.textMicro * (1 + n / 4)) : 0, scenes: n, totalS, clipS: t.clipS };
   const reason = !o.aiActive ? L("L'IA n'est pas active pour ce projet (forfait Découverte, budget IA épuisé ou fournisseur désactivé).", "AI isn't active for this project (Discovery plan, AI budget used up or provider disabled).") : !o.videosRight || o.videosRight === "none" ? L("Les vidéos filmées par l'IA sont incluses dans les forfaits Développer et Dominer.", "AI-filmed videos are included in the Grow and Dominate plans.") : o.videosRight === "short" && totalS > 30 ? L("Vidéos de 30 s au plus avec le forfait Développer.", "Videos of 30 s at most with the Grow plan.") : o.imageMaxMicro == null ? L("Aucun modèle d'images disponible pour les images de départ.", "No image model available for the opening images.") : null;
   return { mode, allowed: !reason, reason, estimateMicro: reason ? 0 : scenesMaxMicro(n, o.imageMaxMicro!, o.clipMaxMicro(t.clipS), o.textMicro), scenes: n, totalS, clipS: t.clipS };
@@ -316,12 +327,21 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
   const p = projectForSubject(p0, s);
   const aspect = req.aspect ?? "9:16";
   const mode = sceneMode(p0, s, req);
-  const timing = sceneTiming(req.scenes ?? SCENES, req.totalS ?? DEFAULT_TOTAL_S);
+  let timing = sceneTiming(req.scenes ?? SCENES, req.totalS ?? DEFAULT_TOTAL_S);
+  const timingIssue = sceneTimingIssue(req.scenes, req.totalS);
+  if (timingIssue) throw new UserFacingError(timingIssue);
   // Clé stable (tâche + demande) : une reprise retrouve les images et plans déjà payés, jamais une nouvelle génération.
   const key = req.key ?? `scenes:${projectId}:${crypto.createHash("sha1").update(JSON.stringify([req, ctx?.job.id ?? null])).digest("hex").slice(0, 12)}`;
   const docKey = `vid:${crypto.createHash("sha256").update(key).digest("hex").slice(0, 20)}`;
-  const notes: string[] = [];
   const step = <T,>(k: string, fn: () => Promise<T>) => (ctx ? ctx.step(k, fn) : fn());
+  // Une tâche terminée rend son résultat acquis ; une interruption reprend les sous-étapes enregistrées.
+  return step(`${key}:complete`, async () => {
+  const notes: string[] = [];
+  const folderKey = req.as === "ad" ? "videos.ads" : "videos.social";
+  const preserveClientVersion = () => {
+    if (videoUserOwned(projectId, docKey)) throw new UserFacingError(L("Cette vidéo a été modifiée depuis son lancement. Version client conservée ; reprise automatique bloquée.", "This video was edited since it was started. Client version preserved; automatic resume blocked."));
+  };
+  preserveClientVersion();
 
   // 1. Brief → service/produit → fiche créative (guide créatif + mémoire du projet) → storyboard.
   const guide: VideoCreativeGuide = loadVideoGuide();
@@ -330,6 +350,8 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
   const totalS = req.totalS ?? DEFAULT_TOTAL_S;
   const brief = buildCreativeBrief(p, { request: req.request, durationS: totalS, width: size.w, height: size.h, platform: aspect === "9:16" ? "reels" : "meta_feed", guide, memory });
   const n = Math.max(1, Math.min(6, req.scenes ?? SCENES));
+  // La carte de fin fait partie de la durée demandée ; sa durée propre ne s'ajoute pas après le découpage.
+  timing = sceneTiming(n, totalS, brief.ctaHoldS);
   const storyboard = buildStoryboard(p, n, { serviceName: s?.kind === "service" ? s.name : null, productName: s?.kind === "service" ? null : s?.name ?? p.product.name });
   notes.push(...storyboard.notes);
 
@@ -341,10 +363,9 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
       return "";
     }
   })();
-  const written = deps.writePlan ? await deps.writePlan(p, s, req, `${key}:plan`, { storyboard, brief, brain }).catch((e) => {
-    if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
-    return null;
-  }) : null;
+  // Une erreur peut suivre un appel facturé ou incertain : elle ne se transforme pas en scénario simplifié.
+  const written = await step(`${key}:plan`, () => deps.writePlan ? deps.writePlan(p, s, req, `${key}:plan`, { storyboard, brief, brain }) : Promise.resolve(null));
+  if (!written) notes.push(C("Scénario local utilisé : aucune rédaction IA obtenue.", "Local script used: no AI-written plan obtained."));
   const fallback = localScenePlan(p, s, req, storyboard);
   // Nombre de scènes demandé respecté ; les recherches d'étape (services) et le rôle viennent toujours du storyboard.
   // Vocabulaire du client (ex. « montre », jamais « chronographe ») : appliqué aux titres, à la voix et à l'action.
@@ -386,12 +407,18 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
     const refBuf = ref && !ref.deleted_at ? assetData(ref) : null;
     if (!refBuf) throw new UserFacingError(L("Ajoutez d'abord une photo de ce produit : la vidéo part de votre vrai produit, l'IA ne l'invente pas.", "Add a photo of this product first: the video starts from your real product, the AI never invents it."));
     for (const [k, scene] of plan.scenes.entries()) {
-      ctx?.progress(0.1 + k * 0.28, L(`Scène ${k + 1} : image puis mouvement (Wan 2.6)`, `Scene ${k + 1}: image then motion (Wan 2.6)`));
+      ctx?.progress(0.1 + (k * 0.65) / n, L(`Scène ${k + 1} : image puis mouvement`, `Scene ${k + 1}: image then motion`));
       const clipId = await step(`${key}:scene-${k}`, async () => {
-        const still = await deps.keyframe(keyframePrompt(p, s, scene, aspect, true), aspect, refBuf, `${key}:still:${k}`);
-        const stillAsset = await saveAsset({ projectId, userId: p.userId, data: still, name: `scene-${k + 1}-image.png`, mime: "image/png", role: "scene", folderKey: "videos.ads", origin: "generated", status: "ready", sourceAssetId: refId, meta: { scenes: { key, index: k, prompt: scene.still, role: scene.role ?? null }, recipe: "Image de départ d'une scène vidéo (IA d'images, produit réel en référence)" } });
+        const stillId = await step(`${key}:still-${k}`, async () => {
+          const still = await deps.keyframe(keyframePrompt(p, s, scene, aspect, true), aspect, refBuf, `${key}:still:${k}`);
+          return (await saveAsset({ projectId, userId: p.userId, data: still, name: `scene-${k + 1}-image.png`, mime: "image/png", role: "scene", folderKey, origin: "generated", status: "ready", sourceAssetId: refId, meta: { scenes: { key, index: k, as: req.as, prompt: scene.still, role: scene.role ?? null }, recipe: "Image de départ d'une scène vidéo (IA d'images, produit réel en référence)" } })).id;
+        });
+        const stillAsset = getAsset(stillId);
+        if (!stillAsset || stillAsset.project_id !== projectId || stillAsset.deleted_at) throw new UserFacingError(L("L'image de scène enregistrée n'est plus disponible : reprise bloquée, aucune régénération automatique.", "The saved scene image is unavailable: resume blocked, no automatic regeneration."));
+        ctx?.progress(0.1 + (k * 0.65) / n);
+        const still = assetData(stillAsset);
         const mp4 = await deps.clip(still, motionPrompt(scene), aspect, timing.clipS, `${key}:clip:${k}`);
-        const a = await saveAsset({ projectId, userId: p.userId, data: mp4, name: `scene-${k + 1}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "generated", status: "ready", sourceAssetId: stillAsset.id, meta: { scenes: { key, index: k, motion: scene.motion, model: SCENE_VIDEO_MODEL } } });
+        const a = await saveAsset({ projectId, userId: p.userId, data: mp4, name: `scene-${k + 1}.mp4`, mime: "video/mp4", role: "clip", folderKey, origin: "generated", status: "ready", sourceAssetId: stillAsset.id, meta: { scenes: { key, index: k, as: req.as, motion: scene.motion, model: SCENE_VIDEO_MODEL } } });
         return a.id;
       });
       clips.push({ assetId: clipId, durationS: timing.clipS, generated: true });
@@ -402,9 +429,14 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
     // générales du métier) ; plans d'illustration, jamais présentés comme des réalisations du client.
     const exclude = new Set<string>();
     for (const [k, scene] of plan.scenes.entries()) {
-      ctx?.progress(0.1 + k * 0.25, L(`Scène ${k + 1} : plan libre de droits lié au métier`, `Scene ${k + 1}: royalty-free shot linked to the trade`));
+      ctx?.progress(0.1 + (k * 0.65) / n, L(`Scène ${k + 1} : plan libre de droits lié au métier`, `Scene ${k + 1}: royalty-free shot linked to the trade`));
       const topic = `${s?.name ?? ""} ${scene.intent ?? scene.still}`.slice(0, 200);
-      const found = await step(`${key}:stock-${k}`, () => deps.stock(p, k, topic, aspect, timing.showS, exclude, `${key}:stock:${k}`, scene.stock));
+      // Une absence n'est pas un acquis : une reprise peut rechercher cette scène, sans refaire les autres.
+      const found = await step(`${key}:stock-${k}`, async () => {
+        const clip = await deps.stock(p, k, topic, aspect, timing.showS, exclude, `${key}:stock:${k}`, scene.stock);
+        if (!clip || clip.durationS + 0.05 < timing.showS) throw new UserFacingError(L(`Scène ${k + 1} manquante ou trop courte : vidéo non livrée. Les autres scènes obtenues sont conservées.`, `Scene ${k + 1} missing or too short: video not delivered. Previously obtained scenes are preserved.`));
+        return clip;
+      });
       if (found) {
         clips.push({ ...found, generated: false });
         kept.push(k);
@@ -451,7 +483,8 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
     }
   } else if (memory.preferences.voice !== "off") notes.push(C("Voix off : le modèle de voix n'est pas installé sur ce serveur ; vidéo sans voix (musique et titres).", "Voice-over: the voice model isn't installed on this server; video without voice (music and titles)."));
 
-  saveVideoVersion(projectId, docKey, doc, { note: C(`Vidéo en ${clips.length} scènes`, `${clips.length}-scene video`) });
+  preserveClientVersion();
+  await step(`${key}:document`, async () => saveVideoVersion(projectId, docKey, doc, { note: C(`Vidéo en ${clips.length} scènes`, `${clips.length}-scene video`) }));
   const texts: Record<string, string | undefined> = { ...fields, line: plan.line, cta: plan.cta, voiceEnd: plan.voiceEnd };
   plan.scenes.forEach((sc, k) => Object.assign(texts, { [`title-${k}`]: sc.title, [`voice-${k}`]: sc.voice }));
   const videoAssetId = await deps.render(p0, docKey, doc, { scenes: { key, mode, subject: s ? { kind: s.kind, key: s.key, name: s.name } : null, request: req.request ?? null, as: req.as, music: req.music !== false }, creative: { family: brief.family, concept: brief.concept, goal: brief.goal, storyboard: storyboard.shots.map((x) => ({ role: x.role, intent: x.intent })), notes }, check: { texts, allowed } });
@@ -468,6 +501,7 @@ export async function runThreeScenes(ctx: JobContext | null, projectId: string, 
     // La mémoire est un confort : son échec ne bloque jamais la vidéo.
   }
   return { docKey, videoAssetId, costMicro: deps.spentMicro(key), mode, notes, brief, storyboard };
+  });
 }
 
 /** Voix off par scène + phrase de fin ; durée mesurée ; sous-titres découpés par groupes de sens (2 lignes). */
@@ -489,7 +523,7 @@ async function addVoice(projectId: string, userId: string, doc: VideoDocument, p
       const dur = await synthLine(l.text, wav, { voice: brief.voice.kokoroVoice, speed: brief.voice.speed, lang });
       // Une phrase plus longue que son plan n'est jamais coupée : elle est retirée (le titre reste à l'écran).
       if (dur > l.clip.durationS - 0.3) continue;
-      const a = await saveAsset({ projectId, userId, data: fs.readFileSync(wav), name: `voix-${k + 1}.wav`, mime: "audio/wav", role: "voice", folderKey: "videos.ads", origin: "generated", status: "ready", meta: { voice: { engine: "kokoro", key, text: l.text } } });
+      const a = await saveAsset({ projectId, userId, data: fs.readFileSync(wav), name: `voix-${k + 1}.wav`, mime: "audio/wav", role: "voice", folderKey: doc.meta.intent === "video_ad" ? "videos.ads" : "videos.social", origin: "generated", status: "ready", meta: { voice: { engine: "kokoro", key, text: l.text } } });
       doc.audio.voice.push({ id: `voice-${l.clip.id}`, clipId: l.clip.id, assetId: a.id, text: l.text, offsetS: 0.2, durationS: dur, gainDb: 0 });
       doc.audio.voiceId = `kokoro:${brief.voice.kokoroVoice}`;
       // Sous-titres : groupes de sens, répartis sur la durée réelle de la phrase.
