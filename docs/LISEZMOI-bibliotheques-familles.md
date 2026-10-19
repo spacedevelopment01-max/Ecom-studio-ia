@@ -1,7 +1,9 @@
 # Bibliothèques de sections par famille — rapport (issue #141)
 
-État courant de la branche `claude/bibliotheques-sections-familles`. Version vérifiée : voir la pull request et la
-galerie de contrôle (le numéro de version est affiché en haut de chaque page de la galerie). **À valider par Thomas.**
+État courant de la branche `claude/bibliotheques-sections-familles` (pull request
+spacedevelopment01-max/Ecom-studio-ia#143). Code vérifié : commit `8d95933d` (CI verte : typecheck, tests, Theme Check,
+build). Galerie de contrôle de cette version (page privée) : https://claude.ai/artifact/AQ4xXZvpWQfanCcjBc17mt — le
+numéro de version est affiché en haut de chaque page. **À valider par Thomas.**
 
 ## Ce qui change pour l'utilisateur du studio
 
@@ -58,9 +60,9 @@ fichiers restent : un projet enregistré qui les utilise s'affiche et s'exporte 
 |---|---|---|
 | Quatre thèmes validés avant / après (accueil, fiche, toutes les pages, panier, tiroir ; 360, 390, 430, 1440 px) | 227 captures identiques au pixel sur 236 ; 9 écarts de 0 à 49 pixels (minuterie de démonstration du panier « 58 s / 59 s », lissage) | exécuté |
 | Studio réel (Next.js, base temporaire) — FRAISE, ORBE, Atelier Rive : galerie de 20, autre famille introuvable, aperçu d'une disposition, ajout, changement de disposition (titre conservé), titre modifié, déplacement, en-tête et pied de page, rechargement | réussi pour les trois | exécuté (`scripts/family-studio-check.ts`) |
-| Galerie de contrôle : 3 familles × 2 marques, 20 pages par famille (toutes les dispositions), 5 en-têtes, 5 pieds de page | 390 et 1440 px, débordements mesurés | exécuté (`scripts/family-gallery-export.ts`) |
+| Galerie de contrôle : 3 familles × 2 marques, 20 pages par famille (toutes les dispositions), 5 en-têtes, 5 pieds de page | 360 pages mesurées à 390 et 1440 px : aucun débordement | exécuté (`scripts/family-gallery-export.ts`) |
 | Deux marques de la même famille sans retouche (FRAISE / ONDE ; ORBE / marque test B ; Atelier Rive / marque test B) | noms, textes, palettes et polices propres à chaque projet | exécuté (galerie) + test automatique |
-| Tests automatiques (registre, routes, séparation, disposition, en-têtes/pieds, droits « Générer ») | voir la pull request | exécuté |
+| Tests automatiques (registre, routes, séparation, disposition, en-têtes/pieds, droits « Générer ») + suite complète | CI verte sur `8d95933d` ; en local 2026/2031, écarts corrigés ou dus à la lenteur de la machine (`migration-v2` : 104 s ici, 108 s sur la base, limite 120 s) | exécuté |
 | Theme Check (Shopify) | valide | exécuté |
 | Génération IA d'une section | refus / acceptation selon le forfait | simulé (aucun appel IA) |
 | Téléphone réel de Thomas | — | non vérifié |
