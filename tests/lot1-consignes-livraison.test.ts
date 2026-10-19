@@ -269,6 +269,7 @@ describe("Lot 1 — consignes et livraison", async () => {
       return faithfulDraft(promptOf(p));
     };
     const next = await fr(() => runContentEngineV2(null, pid, { ...req, force: true }));
+    expect(writes()).toHaveLength(2); // Nouvelle rédaction volontaire : nouvel appel réellement comptabilisé.
     expect(next.docKey).not.toBe(a.docKey);
     expect(latestContent(pid, a.docKey!)?.doc.blocks).toContainEqual(expect.objectContaining({ id: "user-during" }));
     expect(referenceDoc(pid, "product_page", "fr")?.blocks).toContainEqual(expect.objectContaining({ id: "user-during" }));

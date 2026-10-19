@@ -120,11 +120,11 @@ describe("un abonnement = un projet", async () => {
     // Budget de chaque projet : 40 % du HT de SON forfait.
     expect(balance(u.id, a).available).toBe(Math.floor(0.4 * (49 / 1.2) * EUR));
     expect(balance(u.id, b).available).toBe(Math.floor(0.4 * (89 / 1.2) * EUR));
-    // Le projet A épuise son budget : B n'est pas touché, et une dépense de A n'est jamais prise sur B.
+    // Le projet A engage son budget : B n'est pas touché, et une dépense de A n'est jamais prise sur B.
     reserve(u.id, balance(u.id, a).available, { task: "t", provider: "anthropic", model: "m", projectId: a });
     expect(aiActiveFor(u.id, a)).toBe(false);
     expect(aiActiveFor(u.id, b)).toBe(true);
-    expect(() => reserve(u.id, 1 * EUR, { task: "t", provider: "anthropic", model: "m", projectId: a })).toThrow(/100 %/);
+    expect(() => reserve(u.id, 1 * EUR, { task: "t", provider: "anthropic", model: "m", projectId: a })).toThrow(/engagé.*génération en cours/);
     expect(balance(u.id, b).available).toBe(Math.floor(0.4 * (89 / 1.2) * EUR));
     // Changement de forfait du projet B : A inchangé.
     grantProjectPlan(b, "dominer", "active");

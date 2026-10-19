@@ -124,7 +124,9 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   const runId = crypto.randomUUID();
   const notes: string[] = [];
   const stats = { writes: 0, reviews: 0, retries: 0, rewrites: 0 };
-  const jobKey = ctx?.job.id ?? "seo2";
+  // Sans job persistant, une réécriture explicitement demandée est une nouvelle opération.
+  // La constante historique réutilisait la même clé payante pour deux demandes indépendantes.
+  const jobKey = ctx?.job.id ?? runId;
 
   // 1-4. Pages, mots-clés (hypothèses), stratégie, brief : gratuits et déterministes.
   const pages = sitePages(p);

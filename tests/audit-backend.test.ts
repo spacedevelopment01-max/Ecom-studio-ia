@@ -478,8 +478,8 @@ describe("I12 : publication réservée aux forfaits", () => {
     run("UPDATE posts SET status = 'scheduled' WHERE id = ?", postId);
     expect(planOfUserId(u.id, pid)).toBe(null);
     const { handlers } = await import("../worker/handlers");
-    const { JobContext } = await import("@/lib/jobs");
-    const ctx = new JobContext({ id: "j", user_id: u.id, project_id: null, type: "post.publish", payload: JSON.stringify({ postId }), checkpoint: "{}", attempts: 1, max_attempts: 3 } as any);
+    const { JobContext, enqueue } = await import("@/lib/jobs");
+    const ctx = new JobContext(enqueue({ userId: u.id, projectId: pid, type: "post.publish", payload: { postId } }));
     expect(await handlers["post.publish"](ctx)).toMatchObject({ skipped: "sans forfait" });
     expect(one<{ status: string }>("SELECT status FROM posts WHERE id = ?", postId)!.status).toBe("review");
   });

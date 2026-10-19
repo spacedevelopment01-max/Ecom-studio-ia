@@ -62,7 +62,7 @@ for(const [index,a] of accounts.entries()){
   assert((await generated).ok());
   const running=await until(state,s=>s.job?.status==="running"&&s.job.progress===.25,"réservation en cours"), jid=running.job.id;
   for(const mobile of [false,true]){await p.setViewportSize({width:mobile?390:1440,height:mobile?844:1000});await p.reload();await p.getByText("Analyse simulée en cours ; les informations saisies sont enregistrées",{exact:true}).waitFor();await shot(p,`${slug}-03-en-cours-${mobile?"mobile":"ordinateur"}`);}
-  await p.goto(BASE+"/studio/compte#ia");await p.getByText(/Une génération utilise temporairement le budget disponible/).waitFor();await shot(p,slug+"-04-budget-engage");
+  await p.goto(BASE+"/studio/compte");await p.getByRole("button",{name:"Gérer",exact:true}).click();await p.getByText(/Une génération utilise temporairement le budget disponible/).waitFor();await shot(p,slug+"-04-budget-engage");
   control("mode",pid,product?"fail-after-save":"interrupt-after-save");
   await p.goto(`${BASE}/studio/${pid}/pilote`);
   if(product){
@@ -84,13 +84,13 @@ for(const [index,a] of accounts.entries()){
   const denied=p.waitForResponse(r=>r.url().endsWith("/preparation")&&r.request().postDataJSON()?.action==="quote");
   await p.getByRole("button",{name:"Analyser mes informations et mes photos par l’IA",exact:true}).click();
   const denial=await denied;assert([402,422].includes(denial.status()));await p.locator("[data-preparation] [role=alert]").first().waitFor();await shot(p,slug+"-07-budget-insuffisant");
-  results.push({business:a.business,projectId:pid,jobId:jid,inputKept:true,photoAccessible:true,reconnected:true,workerInterrupted:!product,explicitRetryViaOwnerApi:true,insufficientBudgetHttp:denial.status(),provenance:"simulation"});
+  results.push({business:a.business,projectId:pid,jobId:jid,photoId:before.photoIds[0],inputKept:true,photoAccessible:true,reconnected:true,workerInterrupted:!product,explicitRetryViaOwnerApi:true,insufficientBudgetHttp:denial.status(),provenance:"simulation"});
   await c.close();
 }
 // Isolation des routes par compte : résultats, suivi, médias et modification de tâche.
 for(const [i,a] of accounts.entries()){
  const {c,p}=await boot(a);const foreign=results[1-i];
- for(const url of [`/api/projects/${foreign.projectId}/preparation`,`/api/projects/${foreign.projectId}/jobs`,`/api/jobs/${foreign.jobId}`]){const r=await c.request.get(BASE+url);assert.equal(r.status(),404);}
+ for(const url of [`/api/projects/${foreign.projectId}/preparation`,`/api/projects/${foreign.projectId}/jobs`,`/api/projects/${foreign.projectId}/subscription`,`/api/jobs/${foreign.jobId}`,`/api/files/${foreign.photoId}`]){const r=await c.request.get(BASE+url);assert.equal(r.status(),404);}
  const denied=await c.request.post(`${BASE}/api/jobs/${foreign.jobId}`,{data:{action:"retry"}});assert.equal(denied.status(),404);await c.close();
 }
 assert.equal(errors.length,0,errors.join("\n"));control("report");
