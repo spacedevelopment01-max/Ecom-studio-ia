@@ -4,7 +4,7 @@
  <header class="ed-opening__copy">{% if s.label != blank %}<p class="ed-kicker">{{ s.label | escape }}</p>{% endif %}
  <{{ s.heading_tag }} class="ed-title ed-opening__title" data-ed-title>{{ s.heading | escape | newline_to_br }}</{{ s.heading_tag }}>
  <div class="ed-prose">{{ s.text }}</div>{% if s.button_label != blank and s.button_link != blank %}<a class="ed-button" href="{{ s.button_link }}">{{ s.button_label | escape }}<span aria-hidden="true">↗</span></a>{% endif %}</header>
- <div class="ed-opening__media">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, focus_x: s.focus_x, focus_y: s.focus_y, mobile_focus_x: s.mobile_focus_x, mobile_focus_y: s.mobile_focus_y, loading: 'eager' %}</div>
+ <div class="ed-opening__media">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, focus_x: s.focus_x, focus_y: s.focus_y, mobile_focus_x: s.mobile_focus_x, mobile_focus_y: s.mobile_focus_y, mobile_image: s.mobile_image, mobile_asset: s.mobile_image_asset, loading: 'eager' %}</div>
  {% if s.caption != blank %}<p class="ed-caption">{{ s.caption | escape }}</p>{% endif %}
 </div></section>
 {% schema %}
@@ -96,6 +96,17 @@
       "type": "text",
       "id": "image_asset",
       "label": "Fichier du projet"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Image sur téléphone",
+      "info": "Cadrage vertical propre au téléphone (le produit entier, visible). Vide : l’image principale est recadrée selon le point focal mobile."
+    },
+    {
+      "type": "text",
+      "id": "mobile_image_asset",
+      "label": "Fichier du projet (téléphone)"
     },
     {
       "type": "text",

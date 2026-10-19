@@ -36,7 +36,7 @@ const is = (s: Slot, re: RegExp) => re.test(text(s));
 /** Ordre d'affectation : chaque média du contrat va au premier emplacement du thème compatible encore libre. */
 function targetsFor(s: Slot): (keyof ImageSlots)[] {
   if (s.kind === "video") return s.aspect === "9:16" ? [] : ["video"];
-  if (s.aspect === "9:16") return ["scene3", "lifestyle2"];
+  if (s.aspect === "9:16") return ["portrait", "scene3", "lifestyle2"];
   if (s.aspect === "1:1") return is(s, /packshot|fond|pack|product|produit|hero|ouverture|opening/) ? ["packshot", "detail1", "detail2"] : ["detail1", "detail2", "packshot"];
   // Paysage : ouverture, bannière, scènes.
   if (is(s, /hero|ouverture|opening|accueil|home|cover/)) return ["lifestyle", "hero", "banner", "scene1", "scene2", "scene3"];
@@ -82,7 +82,7 @@ export function applyHandoff(projectId: string, slots: ImageSlots, files: Record
     report.placed.push({ slot: String(target), key: s.key, assetId, purpose: s.purpose ?? "" });
   }
   if (reels.length) slots.reels = reels;
-  for (const k of ["lifestyle", "hero", "packshot", "detail1", "detail2", "scene1", "scene2", "scene3", "banner", "video"] as (keyof ImageSlots)[]) if (!slots[k]) report.empty.push(String(k));
+  for (const k of ["lifestyle", "hero", "portrait", "packshot", "detail1", "detail2", "scene1", "scene2", "scene3", "banner", "video"] as (keyof ImageSlots)[]) if (!slots[k]) report.empty.push(String(k));
   return report;
 }
 

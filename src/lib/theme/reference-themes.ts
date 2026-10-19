@@ -150,22 +150,25 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       const ink = k.night(0.14, 0.12);
       return [k.scheme(cream, ink, k.onLight(cream)), k.scheme(ink, cream, k.onDark(ink), 0.06), k.scheme("#FFFFFF", ink, k.onLight("#FFFFFF")), k.filled(k.p.accent)];
     },
-    // Accueil (reprise du 19 octobre) : un rôle par section, aucune répétition — ouverture en situation (signature),
-    // déclaration (histoire + repères), diptyque vue complète / détail, scène du soir (positionnement), finitions avec
-    // accès à la fiche, questions quand elles ont des réponses, appel à l'action. Pas de « produit à la une » en lots.
+    // Accueil (reprise du 19 octobre, retour de 13 h 40) : chaque visuel a un rôle et n'apparaît qu'une fois par écran —
+    // ouverture (photo horizontale sur ordinateur, photo verticale dédiée sur téléphone : le produit entier, titre et
+    // bouton vers la collection), déclaration (histoire + repères, sans image), bande des finitions (toutes visibles,
+    // petites cartes, accès à la fiche : la collection compacte), scène en situation (positionnement), deux usages
+    // côte à côte (petits cadres, aussi sur téléphone), questions quand elles ont des réponses, appel à l'action sans
+    // photo (pas une grande image de plus). Aucun « produit à la une » en lots, aucune photo répétée.
     home: (k) => [
-      k.lib("ed-opening", 1, { layout: "immersive", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.scene1, copy_surface: true, padding_top: 0, padding_bottom: 0 }),
-      k.lib("ed-statement", 3, { padding_top: 72, padding_bottom: 72 }),
-      k.lib("ed-diptych", 1, { layout: "offset", padding_top: 72, padding_bottom: 72 }),
-      k.lib("ed-scene", 2, { layout: "split", image_asset: k.im.scene1 ?? k.im.scene2 ?? k.im.lifestyle2, padding_top: 72, padding_bottom: 72 }),
-      k.lib("ed-finishes", 1, { image_asset: k.im.detail1 ?? k.im.packshot, button_label: k.t("Voir la fiche produit", "See the product page"), padding_top: 72, padding_bottom: 72 }),
+      k.lib("ed-opening", 1, { layout: "immersive", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.scene1, mobile_image_asset: k.im.portrait ?? "", copy_surface: true, padding_top: 0, padding_bottom: 0 }),
+      k.lib("ed-statement", 3, { padding_top: 48, padding_bottom: 64 }),
+      k.lib("ed-finishes", 1, { button_label: k.t("Voir la fiche produit", "See the product page"), padding_top: 64, padding_bottom: 64 }),
+      k.lib("ed-scene", 2, { layout: "split", image_asset: k.im.scene1 ?? k.im.lifestyle2, padding_top: 72, padding_bottom: 72 }),
+      k.lib("ed-diptych", 1, { layout: "side", padding_top: 64, padding_bottom: 64 }, { blocks: [k.im.scene2, k.im.scene3].filter((f): f is string => !!f).map((f) => ({ type: "frame", settings: { image_asset: f, ratio: "portrait", title: "" } })) }),
       k.v2.faq("side", 3),
-      k.cta(4, k.im.scene2 ?? k.im.scene3 ?? k.im.banner),
+      k.cta(4, ""),
     ],
-    // Fiche : galerie et achat, puis finitions (vues par finition) et scène ; la FAQ seulement avec des réponses.
+    // Fiche : galerie (toutes les vues, finitions en tête) et achat, puis une scène d'usage différente de l'accueil ;
+    // pas de section « finitions » en plus (le sélecteur et la galerie les montrent déjà) ; la FAQ seulement avec des réponses.
     product: (k) => [
-      k.lib("ed-finishes", 3, { image_asset: k.im.detail1 ?? k.im.packshot, padding_top: 72, padding_bottom: 72 }),
-      k.lib("ed-scene", 2, { layout: "split", image_asset: k.im.scene2 ?? k.im.scene1, padding_top: 72, padding_bottom: 72 }),
+      k.lib("ed-scene", 2, { layout: "split", image_asset: k.im.scene2 ?? k.im.scene3 ?? k.im.scene1, padding_top: 72, padding_bottom: 72 }),
       k.faqSec(1, 4, "lines"),
     ],
     services: (k) => [
@@ -215,10 +218,10 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       k.lib("ref-narrative", 1),
       k.R.servicesList(3, "list"),
       k.R.method(1, "timeline"),
-      k.lib("ed-diptych", 1),
+      // Pas de diptyque sur l'accueil : il reprenait la photo d'ouverture (contrôle du 19 octobre) ; les réalisations montrent déjà quatre photos distinctes.
       ...k.R.portfolio(1, "editorial"),
       k.R.testimonials(2),
-      k.lib("ed-scene", 1, { layout: "split", image_asset: k.im.scene2 ?? k.im.scene1 }),
+      k.lib("ed-scene", 1, { layout: "split", image_asset: k.im.detail2 ?? k.im.lifestyle2 ?? k.im.scene3 }),
       k.R.practical(3),
       k.faqSec(1, 5, "lines"),
       k.R.contactForm(1, "Et si l'on commençait par votre projet ?"),

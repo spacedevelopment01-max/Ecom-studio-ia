@@ -88,7 +88,7 @@ export type Kit = {
    * Section de la bibliothèque remplie avec le projet (textes vrais, photos du projet). Masquée d'office s'il lui
    * manque une information du marchand ou ses médias ; `hide` la masque dans tous les cas.
    */
-  lib: (type: string, sch: Sch, settings?: Record<string, unknown>, opts?: { hide?: boolean; dropBlocks?: string[] }) => Row;
+  lib: (type: string, sch: Sch, settings?: Record<string, unknown>, opts?: { hide?: boolean; dropBlocks?: string[]; /** Blocs posés explicitement par la composition (ex. : cadres d'un diptyque avec leurs fichiers), rédigés ensuite. */ blocks?: { type: string; settings: Record<string, unknown> }[] }) => Row;
   /** Première section affichable parmi plusieurs (sinon la première, masquée). */
   either: (...rows: (Row | Row[])[]) => Row[];
   /** Site de services : sections de prestations, méthode, réalisations, avis, infos pratiques… */

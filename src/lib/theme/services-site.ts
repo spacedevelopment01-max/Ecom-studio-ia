@@ -142,6 +142,10 @@ export function servicesPlan(input: { lang: Lang; shopName: string; services: Se
   // Photos du projet (réalisations, prestations, À propos).
   // (Bannières et packshots exclus : ce sont des visuels publicitaires ou de produit.)
   const photos = [im.scene1, im.scene2, im.scene3, im.lifestyle2, im.detail1, im.detail2].filter((x, i, a): x is string => !!x && a.indexOf(x) === i);
+  // Chaque photo n'illustre qu'une section de la page : la méthode prend la deuxième photo, les réalisations prennent les
+  // autres (répétition constatée sur Atelier Rive le 19 octobre). Affectation sans état : les compositions sont rejouées
+  // plusieurs fois par construction (pages, comparaisons), un compteur partagé viderait la seconde passe.
+  const methodPhoto = photos[1] ?? photos[0];
   // Image d'une carte de prestation : la photo faite pour cette prestation ; sinon une photo générale du métier qui
   // n'est la photo d'aucune autre prestation (jamais de peinture sur la carte « Carrelage ») ; sinon pas d'image.
   const tagged = new Set(Object.values(im.byService ?? {}));
@@ -188,12 +192,13 @@ export function servicesPlan(input: { lang: Lang; shopName: string; services: Se
     method: (sch: number, kind: "howto-v" | "howto-h" | "timeline"): Row => {
       const heading = t("Comment ça se passe", "How it works");
       if (kind === "timeline")
-        return ["timeline", { eyebrow: t("Notre méthode", "Our approach"), heading, heading_accent: "", image_asset: photos[1] ?? photos[0] ?? im.lifestyle ?? "", color_scheme: scheme(sch), ...pad(104) }, steps.map((s) => ({ type: "step", settings: { title: s.title, text: p(s.text) } }))];
+        return ["timeline", { eyebrow: t("Notre méthode", "Our approach"), heading, heading_accent: "", image_asset: methodPhoto ?? im.lifestyle ?? "", color_scheme: scheme(sch), ...pad(104) }, steps.map((s) => ({ type: "step", settings: { title: s.title, text: p(s.text) } }))];
       return ["how-to", { eyebrow: t("Notre méthode", "Our approach"), heading, text: "", layout: kind === "howto-h" ? "horizontal" : "vertical", media_ratio: "landscape", button_label: cta.label, button_link: cta.url, color_scheme: scheme(sch), ...pad(104) }, steps.map((s, i) => ({ type: "step", settings: { title: s.title, text: p(s.text), duration: "", tip: "", image_asset: kind === "howto-v" && photos.length >= 6 ? photos[3 + (i % (photos.length - 3))] : "" } }))];
     },
     /** Réalisations : seulement avec au moins deux vraies photos (jamais de cadres vides sur l'accueil). */
     portfolio: (sch: number, layout: "grid" | "editorial"): Row[] => {
-      const list = photos.slice(0, layout === "editorial" ? 4 : photos.length >= 6 ? 6 : 3);
+      const free = photos.length > 2 ? photos.filter((f) => f !== methodPhoto) : photos;
+      const list = free.slice(0, layout === "editorial" ? 4 : free.length >= 6 ? 6 : 3);
       if (list.length < 2) return [];
       return [["portfolio", { eyebrow: t("Réalisations", "Our work"), heading: t("Quelques réalisations", "A few recent projects"), text: "", layout, label_before: t("Avant", "Before"), label_after: t("Après", "After"), button_label: "", button_link: "", color_scheme: scheme(sch), ...pad(104) }, list.map((f) => ({ type: "project", settings: { image_asset: f, title: todo("nom du projet", "project name"), caption: todo("ce qui a été réalisé", "what was done"), tag: "" } }))]];
     },

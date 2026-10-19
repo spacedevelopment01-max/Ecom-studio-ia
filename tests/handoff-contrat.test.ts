@@ -83,7 +83,7 @@ describe("Contrat amont → thème", async () => {
     expect(slotOf("product.pack")).toBe("packshot");
     expect(slotOf("product.detail")).toBe("detail1");
     expect(slotOf("home.scene")).toBe("scene1");
-    expect(slotOf("home.story")).toBe("scene3");
+    expect(slotOf("home.story")).toBe("portrait"); // image verticale : ouverture sur téléphone (produit entier), avant les scènes
     expect(h.unplaced.map((x) => x.key)).toEqual(["absent"]);
     expect(h.empty).toContain("video");
     // Les fichiers du thème référencent bien ces assets, et les sections les emploient.

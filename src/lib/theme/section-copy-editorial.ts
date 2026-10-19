@@ -32,6 +32,8 @@ const copy = (type: string): CopyFn => (ctx, base) => {
     case "ed-opening":
       // Ouverture : la signature de la marque et le résumé du produit, une seule fois sur la page.
       set("label", brand?.name || ctx.shopName); set("heading", tagline); set("text", p(ctx.product.summary)); set("heading_tag", "h2"); set("layout", ctx.business === "services" ? "journal" : "immersive");
+      // Boutique : un accès direct à la collection dès l'ouverture (demande du 19 octobre) ; site de services : rien (lien vers le contact posé par le thème).
+      if (ctx.business !== "services") { set("button_label", label("Découvrir la collection", "Discover the collection")); set("button_link", "/collections/all"); }
       break;
     case "ed-statement":
       // Déclaration : l'histoire ou le positionnement (jamais la signature déjà en ouverture) ; repères = faits confirmés.
@@ -46,11 +48,18 @@ const copy = (type: string): CopyFn => (ctx, base) => {
       break;
     case "ed-diptych": {
       // Diptyque : deux regards différents sur le produit (vue complète, puis détail ou situation), chacun légendé par son rôle.
-      set("label", label("Regards", "Views")); set("heading", label("Vue complète et détail", "Full view and detail"));
+      // Composition « côte à côte » : deux usages (scènes) différents de la scène principale, sans légende répétée.
+      const side = settings.layout === "side";
+      set("label", side ? label("Usages", "Uses") : label("Regards", "Views")); set("heading", side ? label("Au fil de la journée", "Through the day") : label("Vue complète et détail", "Full view and detail"));
       // Cadres déjà pourvus d'une image (choix du client) ou d'un rôle de média attendu (cadre à remplir, signalé dans l'aperçu) :
       // gardés, légendés par le rôle du visuel ou le nom du produit ; sinon deux regards pris dans les visuels du produit.
-      if (blocks?.length && blocks.every((b) => b.settings?.image_asset || b.settings?.image || b.settings?.media_role)) blocks = blocks.map((b) => ({ ...b, settings: { ...b.settings, title: b.settings?.title || (b.settings?.image_asset ? roleLabel(String(b.settings.image_asset)) : ctx.product.name) } }));
-      else {
+      if (blocks?.length && blocks.every((b) => b.settings?.image_asset || b.settings?.image || b.settings?.media_role)) { if (!side) blocks = blocks.map((b) => ({ ...b, settings: { ...b.settings, title: b.settings?.title || (b.settings?.image_asset ? roleLabel(String(b.settings.image_asset)) : ctx.product.name) } })); }
+      else if (side) {
+        // La première scène sert à la section « en situation » : les deux suivantes forment la paire (sinon les deux premières).
+        const scenes = media.filter((f) => roleOf(f) === "scene").sort();
+        const pair = scenes.length >= 3 ? scenes.slice(1, 3) : scenes.slice(0, 2);
+        blocks = pair.map((file) => ({ type: "frame", settings: { title: "", image_asset: file, image_alt: ctx.product.name, ratio: "portrait" } }));
+      } else {
         const first = media.find((f) => roleOf(f) === "packshot") ?? media[0];
         // Second regard : le second détail quand il y en a deux (le premier sert déjà à la section « finitions »), sinon une scène.
         const details = media.filter((f) => f !== first && roleOf(f) === "detail");

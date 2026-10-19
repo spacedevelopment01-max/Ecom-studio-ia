@@ -111,10 +111,16 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
   put("packshot", packshot, "packshot");
   put("detail1", pick("detail", 0), "detail-1");
   put("detail2", pick("detail", 1), "detail-2");
-  put("scene1", life[1] ?? pick("scene", 0), "scene-1");
-  put("scene2", pick("scene", 1), "scene-2");
+  // Scènes : les photos rangées « scène » d'abord ; la seconde photo en situation ne sert de scène que s'il n'y en a aucune
+  // (sinon la même image revenait deux fois sur l'accueil : en situation et en scène — défaut constaté sur ORBE).
+  put("scene1", pick("scene", 0) ?? life[1], "scene-1");
+  put("scene2", pick("scene", 1) ?? life[2], "scene-2");
   put("scene3", pick("scene", 2) ?? amb[1] ?? amb[0], "scene-3");
   put("banner", pick("banner"), "banniere");
+  // Ouverture sur téléphone : la première photo verticale en situation ou en scène (le produit entier dans le cadre),
+  // jamais un recadrage automatique centré d'une photo horizontale qui ferait disparaître le produit.
+  const tall = (a: Asset) => !!a.width && !!a.height && a.height > a.width;
+  put("portrait", life.find(tall) ?? [pick("scene", 0), pick("scene", 1), pick("scene", 2)].find((a) => a && tall(a)), "ouverture-telephone");
   put("hero", pick("scene", 0) ?? pick("banner") ?? packshot, "hero");
   const video = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'video' AND deleted_at IS NULL AND (json_extract(meta, '$.format') = '16:9') ORDER BY created_at DESC LIMIT 6", projectId).filter(isAutoUsable)[0];
   if (video) {

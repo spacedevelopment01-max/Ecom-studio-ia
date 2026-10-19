@@ -38,12 +38,19 @@ const hero: CopyFn = (ctx, base) => ({
 });
 
 const feature: CopyFn = (ctx, base) => {
-  const angle = ctx.strategy?.angles?.[0];
+  // Le rôle du visuel décide du propos (deux sections « produit en détail » identiques sur FRAISE, constat du 19 octobre) :
+  // détail ou packshot → le produit de près (histoire de la marque, sinon résumé) ; scène ou situation → l'usage (positionnement).
+  const file = String(base.settings.image_asset ?? "");
+  const inUse = /scene|situation|lifestyle|hero|banni/.test(file);
+  const angle = ctx.strategy?.angles?.[inUse ? 1 : 0] ?? ctx.strategy?.angles?.[0];
+  // Les idées d'angle du moteur local sont des consignes de contenu (« Montrer les détails réels… »), jamais un texte de site.
+  const story = real(ctx.brand?.story) ? ctx.brand!.story : "";
+  const positioning = real(ctx.brand?.positioning) ? ctx.brand!.positioning : "";
   const lines = shortLines(ctx, 4);
   return {
     settings: fill(base.settings, {
-      heading: real(angle?.title) ? angle!.title : real(ctx.brand?.positioning) ? ctx.brand!.positioning : heading(ctx), heading_accent: "",
-      text: html(real(angle?.idea) ? angle!.idea : ctx.product.summary), button_label: buyLabel(ctx), button_link: productLink(ctx), image_alt: ctx.product.name, guarantee_text: "",
+      heading: real(angle?.title) ? angle!.title : inUse ? tr(ctx, "En situation", "In use") : tr(ctx, "Le produit en détail", "The product up close"), heading_accent: "",
+      text: html(inUse ? positioning || story || ctx.product.summary : story || positioning || ctx.product.summary), button_label: buyLabel(ctx), button_link: productLink(ctx), image_alt: ctx.product.name, guarantee_text: "",
     }),
     blocks: base.blocks?.some((b) => b.settings?.text || b.settings?.title) ? base.blocks : lines.map((text) => ({ type: "pill", settings: { text } })),
     samples: false,

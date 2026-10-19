@@ -15,7 +15,7 @@ const TYPES: Record<string, string> = { ".html": "text/html; charset=utf-8", ".c
 const server = http.createServer((req, res) => { const p = path.join(dir, decodeURIComponent(new URL(req.url!, "http://x").pathname)); if (!p.startsWith(dir) || !fs.existsSync(p) || fs.statSync(p).isDirectory()) return res.writeHead(404).end(); res.writeHead(200, { "content-type": TYPES[path.extname(p)] ?? "application/octet-stream" }); fs.createReadStream(p).pipe(res); });
 await new Promise<void>((r) => server.listen(0, "127.0.0.1", r)); const origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
 const pages = fs.readdirSync(dir).filter((f) => f.endsWith(".html") && !/^(index|recherche-aucun|recherche-resultat)\.html$/.test(f)).sort();
-const VIEWPORTS: [number, number, boolean][] = [[360, 740, true], [390, 844, true], [768, 1024, true], [1440, 900, false], [360, 560, true], [390, 620, true]];
+const VIEWPORTS: [number, number, boolean][] = [[360, 740, true], [390, 844, true], [430, 932, true], [768, 1024, true], [1440, 900, false], [360, 560, true], [390, 620, true]];
 type Issue = { kind: string; page: string; viewport: string; detail: string; selector?: string };
 const issues: Issue[] = []; const summary: Record<string, number> = {};
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM ?? "/usr/bin/chromium", args: ["--no-sandbox"] });

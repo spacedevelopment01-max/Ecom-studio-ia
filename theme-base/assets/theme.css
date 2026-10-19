@@ -323,6 +323,8 @@ a { color: inherit; }
 .es-card__title a { text-decoration: none; display: inline-block; padding: 3px 0; }
 .es-badge { position: absolute; top: 12px; left: 12px; background: var(--c-bg); color: var(--c-text); font-size: .72rem; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: .08em; }
 .es-price { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.es-card__info .es-price { flex: none; white-space: nowrap; }
+.es-card__info .es-card__title { min-width: 0; }
 .es-price__compare { color: var(--c-muted); font-size: .9em; }
 .es-price--sale .es-price__current { color: var(--c-accent); }
 

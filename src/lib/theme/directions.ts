@@ -424,6 +424,8 @@ export type ImageSlots = {
   lifestyle2?: string;
   hero?: string; // image large, scène ou bannière
   cutout?: string; // produit détouré (PNG)
+  /** Photo verticale (produit entier) : ouverture sur téléphone, cadrage indépendant de l'ordinateur. */
+  portrait?: string;
   packshot?: string;
   detail1?: string;
   detail2?: string;
@@ -759,7 +761,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   const lib: Kit["lib"] = (type, sch, settings = {}, opts = {}) => {
     const base = { ...settings, color_scheme: scheme(sch), ...(DIVIDERS.has(type) ? {} : FULL_BLEED.has(type) ? pad(0) : pad(96)) };
     if (!input.fill) return [type, base, [], { disabled: true }];
-    const r = input.fill(type, base, undefined, { dropBlocks: opts.dropBlocks });
+    const r = input.fill(type, base, opts.blocks, { dropBlocks: opts.dropBlocks });
     // Site de services : aucun lien vers une fiche produit ou une collection, les boutons mènent à la prise de contact.
     // Un bouton sans lien mènerait au catalogue par défaut : il reçoit lui aussi le lien de prise de contact.
     const relink = (o: Record<string, unknown>) => {

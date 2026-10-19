@@ -34,14 +34,19 @@ const IDENTITY: Record<DemoId, { tagline: string; summary: string; story: string
     // Ce que le kit montre réellement : trois finitions (une image par finition), une silhouette. Aucune donnée technique inventée.
     variants: [{ name: "Finition", values: ["Dune", "Argile", "Charbon"] }],
     facts: [{ label: "Finitions", value: "Dune, Argile et Charbon" }, { label: "Silhouette", value: "Abat-jour arrondi sur pied fin, socle rond" }],
+    // Plan de médias (retour du 19 octobre, 13 h 40) : un rôle précis par visuel, le dernier importé d'un rôle devient le
+    // premier emplacement du thème. Ordinateur : ouverture = dîner (horizontale, lampe allumée au centre) ; téléphone :
+    // ouverture = lampe allumée (verticale, lampe entière). Finitions : trois packshots. Scène : bureau. Usages : chambre
+    // et lecture. Les trois finitions ensemble (07-trio) : galerie de la fiche seulement.
     media: {
       // Packshots par finition ; Dune en dernier : le packshot le plus récent devient la vue par défaut du thème.
       "orbe-09-charbon.webp": { role: "packshot", variant: "Charbon" }, "orbe-10-argile.webp": { role: "packshot", variant: "Argile" }, "orbe-01-dune.webp": { role: "packshot", variant: "Dune" },
-      // Détails : la lampe allumée d'abord, puis les trois finitions (le dernier importé devient le premier « détail » du thème).
-      "orbe-08-lumiere.webp": { role: "detail" }, "orbe-07-trio.webp": { role: "detail" },
-      "orbe-02-chambre.webp": { role: "lifestyle" }, "orbe-06-duo.webp": { role: "lifestyle" },
-      "orbe-03-diner.webp": { role: "scene" }, "orbe-04-lecture.webp": { role: "scene" }, "orbe-05-bureau.webp": { role: "scene" },
-      // 11-boite et 12-pochette (emballage) : non utilisés — rien à affirmer sur la livraison.
+      "orbe-07-trio.webp": { role: "detail" },
+      // En situation : la verticale d'abord, l'horizontale ensuite (la plus récente horizontale ouvre sur ordinateur, la verticale sur téléphone).
+      "orbe-08-lumiere.webp": { role: "lifestyle" }, "orbe-03-diner.webp": { role: "lifestyle" },
+      "orbe-02-chambre.webp": { role: "scene" }, "orbe-04-lecture.webp": { role: "scene" }, "orbe-05-bureau.webp": { role: "scene" },
+      // Non importés : 06-duo (chambre vue de loin : les lampes y sont à peine visibles — le défaut signalé), 11-boite et
+      // 12-pochette (emballage : rien à affirmer sur la livraison).
     },
   },
   rive: {
@@ -54,6 +59,13 @@ const IDENTITY: Record<DemoId, { tagline: string; summary: string; story: string
         { key: "ensemble", name: "Projet d'ensemble", description: "Relier plusieurs espaces autour d'une intention commune." },
       ],
       contactMode: "form", contactModes: ["form"],
+    },
+    // Photos du client (rôle « photo » d'un site de services) : le moteur les range dans l'ordre d'import, la dernière
+    // importée ouvre le site. Un rôle par photo : ouverture (salon), réalisations (cuisine, bibliothèque, matières, repas),
+    // méthode (plans), scène « chez vous » (chambre, verticale) ; les cinq autres restent jointes sans emplacement.
+    media: {
+      "rive-12-escalier.webp": { role: "lifestyle" }, "rive-10-menuiserie.webp": { role: "lifestyle" }, "rive-09-volume.webp": { role: "lifestyle" }, "rive-05-salle-eau.webp": { role: "lifestyle" }, "rive-04-entree.webp": { role: "lifestyle" },
+      "rive-07-matieres.webp": { role: "lifestyle" }, "rive-03-chambre.webp": { role: "lifestyle" }, "rive-11-repas.webp": { role: "lifestyle" }, "rive-06-bibliotheque.webp": { role: "lifestyle" }, "rive-08-plans.webp": { role: "lifestyle" }, "rive-02-cuisine.webp": { role: "lifestyle" }, "rive-01-salon.webp": { role: "lifestyle" },
     },
   },
 };

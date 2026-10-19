@@ -17,11 +17,11 @@ const browser = await chromium.launch({ executablePath: process.env.CHROMIUM ?? 
 const services = !fs.existsSync(path.join(dir, "produit.html"));
 const results: Record<string, unknown> = {};
 try {
-  for (const width of [390, 1440]) {
-    const page = await browser.newPage({ viewport: { width, height: width === 390 ? 844 : 900 }, reducedMotion: "reduce" });
+  for (const width of [360, 390, 430, 1440]) {
+    const page = await browser.newPage({ viewport: { width, height: width < 750 ? 844 : 900 }, reducedMotion: "reduce" });
     const errors: string[] = [], missing: string[] = [];
     page.on("console", (m) => { if (m.type() === "error" && !/favicon\.ico/.test(m.location().url ?? "")) errors.push(`${m.text()} (${m.location().url ?? ""})`); }); page.on("pageerror", (e) => errors.push(String(e))); page.on("response", (r) => { if (r.status() >= 400) missing.push(r.url()); });
-    const dev = width === 390 ? "mobile" : "ordinateur", shot = async (name: string, full = false) => { if (shots) await page.screenshot({ path: path.join(shots, `${kind}-${name}-${dev}.png`), fullPage: full }); };
+    const dev = width === 390 ? "mobile" : width < 750 ? `mobile-${width}` : "ordinateur", shot = async (name: string, full = false) => { if (shots) await page.screenshot({ path: path.join(shots, `${kind}-${name}-${dev}.png`), fullPage: full }); };
     const settle = async () => { await page.waitForLoadState("networkidle"); await page.waitForTimeout(500); };
     const htmls = fs.readdirSync(dir).filter((f) => f.endsWith(".html") && !/^recherche-(aucun|resultat)\.html$|^index\.html$/.test(f));
     for (const file of htmls) {
@@ -34,7 +34,7 @@ try {
     // Menu : vers la boutique (produits) ou les prestations (services).
     await page.goto(`${origin}/accueil.html`, { waitUntil: "networkidle" }); await settle();
     const target = services ? "page-prestations.html" : "boutique.html";
-    if (width === 390) { await page.locator("[data-menu-open]").click(); await page.waitForTimeout(400); await shot("menu"); const link = page.locator(`#MobileMenu a[href="${target}"]`).first(); if (!(await link.isVisible())) { await page.locator("#MobileMenu details.es-mm__group summary").first().click(); await page.waitForTimeout(300); } await page.locator(`#MobileMenu a[href="${target}"]:visible`).first().click(); }
+    if (width < 750) { await page.locator("[data-menu-open]").click(); await page.waitForTimeout(400); await shot("menu"); const link = page.locator(`#MobileMenu a[href="${target}"]`).first(); if (!(await link.isVisible())) { await page.locator("#MobileMenu details.es-mm__group summary").first().click(); await page.waitForTimeout(300); } await page.locator(`#MobileMenu a[href="${target}"]:visible`).first().click(); }
     else await page.locator(`.es-header__nav a[href="${target}"]`).first().click();
     await settle(); assert.ok(page.url().endsWith(`/${target}`), `lien du menu vers ${target} (${page.url()})`); assert.equal(await page.locator("h1").count(), 1);
     if (!services) {
