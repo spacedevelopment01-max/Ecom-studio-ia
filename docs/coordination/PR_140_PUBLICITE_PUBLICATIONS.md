@@ -1,3 +1,5 @@
+> Complément suivant : [vingt créations initiales distinctes, devis global et diversité](PR_140_CREATIONS_INITIALES.md). La réception ci-dessous reste celle du commit indiqué.
+
 # PR140 — Publicité et Publications organiques
 
 Mission : [clarification prioritaire 6256824908](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/140#issuecomment-6256824908), complétée par [deux onglets distincts, 6256864171](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/140#issuecomment-6256864171). Base : `823bd3d23432164c7f4da4a5d37ad57c7ca468f6`, branche `codex/publications-ia-qualite`. **Code testé : 4597b28f69cf474d3cf5ab1f23fb38082a987dfa.**
