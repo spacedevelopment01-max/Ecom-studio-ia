@@ -86,6 +86,10 @@ for (const f of cases) {
     const queued = await started; assert(queued.ok(), `Génération logo HTTP ${queued.status()} : ${await queued.text()}`);
   }
   const step = async (index: number) => { await page.locator("[data-preparation] ol").first().locator("button").nth(index).click(); await page.waitForTimeout(250); };
+  const goSocialSection = async (section: "publications" | "vue") => {
+    if (f.mobile) await page.getByRole("combobox", { name: "Rubrique", exact: true }).selectOption(section);
+    else await page.locator(`[data-section='${section}']`).click();
+  };
 
   if (!diagnosticResume) {
   // ZERO seeded projects: the native form, native POST, attachment save and native preparation initialization.
@@ -179,19 +183,27 @@ for (const f of cases) {
   let partial: InitialView | null = null;
   if (f.input.business === "services") {
     partial = await until(initial, v => v.status === "incomplete" && v.accepted === 3, "interruption après trois créations"); assert.equal(partial.accepted, 3); await page.waitForTimeout(3300); await shot("08a-interruption-trois-acquis");
-    await page.locator("[data-section=publications]").click();
+    await goSocialSection("publications");
     for (const slot of partial.organic.slots.filter(s => s.accepted)) await page.locator(`[data-post='${slot.postId}']`).waitFor();
-    await page.locator("[data-section=vue]").click();
+    await goSocialSection("vue");
     await sendClick(page.locator("[data-initial-quote]"), "quote", "/social/initial");
     assert.match(await page.locator("[data-initial-estimate]").innerText(), /17/); await shot("08b-reprise-seulement-manquantes");
     await sendClick(page.locator("[data-initial-generate]"), "generate", "/social/initial");
   }
+  // Keep the actual parent list OPEN while the native job finishes. No section switch after completion.
+  await goSocialSection("publications");
+  const acceptedWhenListOpened = (await initial()).accepted;
+  assert(acceptedWhenListOpened < 20, "La liste doit être ouverte avant la fin du traitement");
+  const listCardsBeforeCompletion = await page.locator("[data-post]").count();
+  assert(listCardsBeforeCompletion < 10, "La liste visible doit commencer avec moins de dix publications");
   const completed = await until(initial, v => v.status === "complete", "vingt créations acceptées");
   assert.equal(completed.accepted, 20); assert.equal(completed.organic.accepted, 10); assert.equal(completed.ads.accepted, 10);
   assert.equal(new Set(completed.slots.map(s => s.assetId)).size, 20);
   if (partial) assert.deepEqual(completed.slots.slice(0, 3).map(s => s.assetId), partial.slots.slice(0, 3).map(s => s.assetId));
   await until(async () => page.locator("[data-initial-total]").innerText(), s => s.includes("20/20"), "compteur réactif sans rechargement");
-  await page.locator("[data-section=publications]").click(); for (const slot of completed.organic.slots) await page.locator(`[data-post='${slot.postId}']`).waitFor();
+  for (const slot of completed.organic.slots) await page.locator(`[data-post='${slot.postId}']`).waitFor();
+  const listCardsAfterCompletion = await page.locator("[data-post]").count();
+  assert.equal(listCardsAfterCompletion, 10); assert(listCardsAfterCompletion > listCardsBeforeCompletion, "La liste déjà affichée doit s’enrichir sans action ni rechargement");
   assert.equal(await page.evaluate(() => performance.timeOrigin), documentBeforeLiveUpdate, "Liste ET compteur mis à jour sans rafraîchissement, y compris mobile"); await shot("09-dix-publications-reactives");
   const posts = await api<{ posts: { id: string; scheduledAt: unknown; connectionId: unknown }[] }>(`/api/projects/${pid}/social/v2`);
   for (const slot of completed.organic.slots) { const post = posts.posts.find(p => p.id === slot.postId)!; assert(post); assert.equal(post.scheduledAt, null); assert.equal(post.connectionId, null); }
@@ -278,7 +290,7 @@ for (const f of cases) {
   const secondPart = page.video()!; await page.close(); await secondPart.saveAs(path.join(out, `${f.slug}-apres-reouverture.webm`)); await context.close();
   const concat = path.join(out, `${f.slug}-concat.txt`); fs.writeFileSync(concat, [`${f.slug}-avant-reouverture.webm`, `${f.slug}-apres-reouverture.webm`].map(file => `file '${file}'`).join("\n"));
   execFileSync("ffmpeg", ["-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", concat, "-c", "copy", path.join(out, `${f.slug}.webm`)], { stdio: "pipe" });
-  results.push({ profile: f.slug, simulation: true, diagnosticResume, completeNewProjectProof: !diagnosticResume, projectCreatedThroughUiInThisRun: !diagnosticResume, seededProject: false, originalPhotoBytesDecodedInInjectedAnalysis: !diagnosticResume, realProviderVisionVerified: false, exactInputPreserved: !diagnosticResume, budgetRefusedBeforeSyntheticTopup: !diagnosticResume, consentBeforeFinalIdentity: true, automaticStartWithoutSecondConsent: true, threeCompleteDirections: true, selectedDoesNotApplyUntilValidated: true, choicePreservedAfterPageClose: true, fullIdentityApplied: true, initialAccepted: 20, organic: 10, ads: 10, partialAccepted: partial?.accepted ?? null, acceptedAssetIdsPreservedAfterResume: !!partial, parentListUpdatedWithoutReload: true, acceptedBeforeLiveUpdate, mobileListExplicitlyTested: f.mobile, allFourPageKinds: true, siteMedia: media.slots.length, websiteAndSocialPoolsDisjoint: true, videoActuallyPlayed: true, handoffReadyBeforeAnyIdentityChange: true, identityChange, themeConsumerVerified: false, category: handoff.contract.category, restoredAfterReload: true, foreignAccountDenied: 404, noSocialScheduling: true, errors, external, captures, events, videos: [`${f.slug}.webm`] });
+  results.push({ profile: f.slug, simulation: true, diagnosticResume, completeNewProjectProof: !diagnosticResume, projectCreatedThroughUiInThisRun: !diagnosticResume, seededProject: false, originalPhotoBytesDecodedInInjectedAnalysis: !diagnosticResume, realProviderVisionVerified: false, exactInputPreserved: !diagnosticResume, budgetRefusedBeforeSyntheticTopup: !diagnosticResume, consentBeforeFinalIdentity: true, automaticStartWithoutSecondConsent: true, threeCompleteDirections: true, selectedDoesNotApplyUntilValidated: true, choicePreservedAfterPageClose: true, fullIdentityApplied: true, initialAccepted: 20, organic: 10, ads: 10, partialAccepted: partial?.accepted ?? null, acceptedAssetIdsPreservedAfterResume: !!partial, parentListUpdatedWithoutReload: true, acceptedBeforeLiveUpdate, acceptedWhenListOpened, listCardsBeforeCompletion, listCardsAfterCompletion, mobileListExplicitlyTested: f.mobile, allFourPageKinds: true, siteMedia: media.slots.length, websiteAndSocialPoolsDisjoint: true, videoActuallyPlayed: true, handoffReadyBeforeAnyIdentityChange: true, identityChange, themeConsumerVerified: false, category: handoff.contract.category, restoredAfterReload: true, foreignAccountDenied: 404, noSocialScheduling: true, errors, external, captures, events, videos: [`${f.slug}.webm`] });
   fs.writeFileSync(path.join(out, "validation-browser.json"), JSON.stringify({ simulation: true, actualProviderCalls: 0, actualProviderCostMicro: 0, results }, null, 2));
   } catch (error) {
     if (page && !page.isClosed()) {
