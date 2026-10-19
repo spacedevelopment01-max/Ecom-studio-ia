@@ -28,7 +28,7 @@ const { grantProjectPlan } =
 const { getSubscription, syncAllowance } =
   await import("../../src/lib/billing");
 const { all, run, now } = await import("../../src/lib/db");
-const { saveAsset, assetMeta, getAsset } =
+const { saveAsset, assetMeta, getAsset, assetData } =
   await import("../../src/lib/library");
 const { FORMATS } = await import("../../src/lib/image-v2/formats");
 const { MEDIA_MODELS } = await import("../../src/lib/ai/media-models");
@@ -69,6 +69,7 @@ if (command === "seed") {
       category: kind === "hightech" ? "Casque audio" : "Finitions intérieures",
       sector:
         kind === "hightech" ? ("hightech" as const) : ("batiment" as const),
+      facts:[{key:"material-test",label:"Matière de test",value:"Structure synthétique documentée",status:"confirmed" as const,source:"user" as const},{key:"usage-test",label:"Usage de test",value:"Démonstration de préparation",status:"confirmed" as const,source:"user" as const}],
       summary:
         "Données entièrement synthétiques pour vérifier le parcours. Aucune promesse commerciale réelle.",
     };
@@ -223,7 +224,7 @@ if (command === "seed") {
   if (!fs.existsSync(path.join(dir, "private.json")))
     throw new Error("Seed de test requis");
   for (;;) {
-    const j = claimNext(["image.ai_post"]);
+    const j = claimNext(["image.ai_post","social.v2.produce","ads.v2"]);
     if (!j) {
       await new Promise((r) => setTimeout(r, 250));
       continue;
@@ -231,18 +232,18 @@ if (command === "seed") {
     try {
       const payload = JSON.parse(j.payload);
       const ctx = new JobContext(j);
-      const out = await runWithLang({ ui: "fr", content: "fr" }, () =>
-        generateAiPostImage(ctx, payload.projectId, payload.request, {
-          copy: campaignCopy,
-          operationId: payload.request.sourceAssetId ? j.id : undefined,
+      let pageLabel="";
+      const deps:import("../../src/lib/social-v2/ai-post").AiPostDeps = {
+          copy:async(p,post,...rest)=>{pageLabel=post.series?`Page ${post.series.index} / ${post.series.total}`:"Contenu simulé";return campaignCopy(p,post,rest[0]);},
+          operationId: payload.request?.sourceAssetId ? j.id : undefined,
           generate: async (_pr, aspect) => {
             const f = FORMATS[aspect];
             return png(
               f.width,
               f.height,
-              payload.request.sourceAssetId
+              payload.request?.sourceAssetId
                 ? "Retouche simulée"
-                : "Création simulée",
+                : `${pageLabel} — simulation`,
             );
           },
           review: async (_i, _r, texts) => ({
@@ -259,12 +260,25 @@ if (command === "seed") {
           }),
           maxMicro: () => 0,
           spentMicro: () => 0,
-        }),
-      );
-      run(
-        "UPDATE assets SET meta=json_set(meta,'$.simulation',json('true')) WHERE id=?",
-        out.assetId,
-      );
+        };
+      const out = await runWithLang({ui:"fr",content:"fr"},async()=>{
+        if(j.type==="ads.v2"){
+          const {runAdEngineV2}=await import('../../src/lib/ads-v2/engine');const {designPostWithAi}=await import('../../src/lib/social-v2/ai-post');
+          const p=loadProject(payload.projectId);
+          return runAdEngineV2(ctx,p.id,payload.request,{canWrite:false,canReview:false,canGenerate:false,writeCopy:async()=>{throw Error("Fournisseur réel interdit");},review:async()=>{throw Error("Fournisseur réel interdit");},image:async()=>null,cutout:()=>null,logo:()=>null,
+            finalAd:async i=>{const ref=p.business==="products"?all<{id:string}>("SELECT id FROM assets WHERE project_id=? AND role='original' AND deleted_at IS NULL",p.id)[0]?.id:null;
+              const r=await designPostWithAi(p,{id:`campaign-${i.conceptId}`,entryPoint:"ads-campaign",network:i.platform??"meta_feed",format:"image",title:i.hook,headline:i.hook,caption:"",pillar:i.angle,objective:"convert",scheduled_at:null,request:i.subject,advertising:JSON.parse(i.campaignContext??"{}")},{aspect:i.aspect,reference:ref??null,maxCostEur:i.maxCostEur,as:"ad"},deps);return {assetId:r.assetId,costMicro:r.costMicro,reason:r.note};}
+          });
+        }
+        if(j.type==="social.v2.produce"){
+          const {produceBatch}=await import('../../src/lib/social-v2/production');
+          const {realSocialDeps}=await import('../../src/lib/social-v2/deps');
+          const {designPostWithAi}=await import('../../src/lib/social-v2/ai-post');
+          const p=loadProject(payload.projectId);
+          return produceBatch(p,payload.ids,{...realSocialDeps(ctx,p,true),estimate:()=>0,probable:()=>0,aiPost:async(pp,post,o)=>designPostWithAi(pp,post,{aspect:"4:5",reference:null,maxCostEur:o.maxCostEur},deps)},payload);
+        }
+        return generateAiPostImage(ctx,payload.projectId,payload.request,deps);
+      });
       completeJob(j.id, out);
     } catch (e) {
       failJob(j, e, { permanent: true });
@@ -286,9 +300,12 @@ if (command === "seed") {
     aiCalls: all("SELECT id FROM ai_calls").length,
     actualProviderCostMicro: 0,
     themes: all("SELECT id FROM theme_versions").length,
+    posts:all("SELECT id,format,title,caption,media,brief,status FROM posts"),
     assets: assets.map((a) => ({
       id: a.id,
       status: a.status,
+      role: getAsset(a.id)?.role,
+      folder: all<{system_key:string}>("SELECT system_key FROM folders WHERE id=?",getAsset(a.id)?.folder_id??"")[0]?.system_key??null,
       width: a.width,
       height: a.height,
       quality: JSON.parse(a.meta).finalImage?.quality,

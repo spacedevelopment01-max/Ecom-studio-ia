@@ -22,11 +22,13 @@ import { platformSpec } from "./platforms";
 import { aiPostProbableMicro, estimateTaskMicro, capMicro, estimateMicro } from "../ai/estimate";
 import { aiPostMaxMicro, textLayoutMaxMicro } from "../ai/media-providers";
 import type { CreativeSubject } from "../creative-subject";
+import type { Editorial } from "./creative-contract";
 
 export type MediaBy = "library" | "local" | "image_v2" | "ads_v2" | "video_v2" | "ai_post";
 /** `attempts` : essais payés pour obtenir ce visuel (plus d'un : la reprise est annoncée au client). */
-export type MediaResult = { assetId: string | null; costMicro: number; by: MediaBy; note?: string; attempts?: number };
+export type MediaResult = { assetId: string | null; assetIds?: string[]; partialAssetIds?: string[]; costMicro: number; by: MediaBy; note?: string; attempts?: number };
 export type PostBrief = {
+  entryPoint?:"ads-guided"|"ads-campaign"|"publications"|"images";
   id: string;
   network: string;
   format: string;
@@ -40,6 +42,11 @@ export type PostBrief = {
   subject?: CreativeSubject | null;
   /** Demande libre du client pour ce visuel (création guidée). */
   request?: string | null;
+  editorial?: Editorial;
+  /** Whole persisted planner brief, including roles, material and any future editorial fields. */
+  editorialData?: Record<string, unknown>;
+  advertising?: Record<string, unknown>;
+  series?: { id: string; index: number; total: number; pages: unknown[]; family?:unknown };
 };
 export type MediaOpts = { allowPaid: boolean; maxCostEur: number };
 
@@ -264,7 +271,7 @@ export function realSocialDeps(ctx: JobContext | null, p: Project, aiActive: boo
       const aspect = a;
       // Le produit (ou service) choisi par le client ; sinon le produit principal et sa photo de référence.
       const subject = resolveSubject(pp, post.subject);
-      return designPostWithAi(pp, post, { aspect, maxCostEur: o.maxCostEur, reference: subject?.referenceAssetId ?? null, subject }, realAiPostDeps({ userId: pp.userId, projectId: pp.id, jobId: ctx?.job.id ?? null }));
+      return designPostWithAi(pp, {...post,entryPoint:"publications"}, { as:"post", aspect, maxCostEur: o.maxCostEur, reference: subject?.referenceAssetId ?? null, subject }, realAiPostDeps({ userId: pp.userId, projectId: pp.id, jobId: ctx?.job.id ?? null }));
     },
     local: (pp, post, o) => localRender(pp, post, ctx, o),
     async rewrite(pp, post, instruction, key) {

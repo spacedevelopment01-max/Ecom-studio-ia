@@ -18,6 +18,7 @@ import { parseSocialAsk } from "./intent";
 import { createPlanV2, type PlanRequest } from "./planner";
 import { adaptForPlatform, nativeFormatFor, PLATFORMS, type Platform, type PostFormat } from "./platforms";
 import { afterEdit, approvePosts } from "./approval";
+import { EditorialSchema, type Editorial } from "./creative-contract";
 import { checkPost } from "./quality";
 import { produceBatch } from "./production";
 import { moveRefusal, setPlanPaused } from "./scheduler";
@@ -69,7 +70,7 @@ export function planFromAsk(p: Project, text: string, o: { at?: number; lang?: "
   return { ...r, ask, request: req, notes };
 }
 
-export type ManualPatch = { title?: string; caption?: string; hashtags?: string; link?: string | null; media?: string[]; scheduledAt?: number; network?: Platform; connectionId?: string | null };
+export type ManualPatch = { title?: string; caption?: string; editorial?:Editorial; hashtags?: string; link?: string | null; media?: string[]; scheduledAt?: number; network?: Platform; connectionId?: string | null };
 
 /** Modification manuelle (gratuite, aucune IA). Une version approuvée modifiée redevient « à valider ». */
 export function editPostV2(p: Project, postId: string, patch: ManualPatch): { reapproval: boolean } {
@@ -88,7 +89,13 @@ export function editPostV2(p: Project, postId: string, patch: ManualPatch): { re
   }
   const sets: [string, unknown][] = [];
   if (patch.title !== undefined) sets.push(["title", patch.title.slice(0, 200)]);
-  if (patch.caption !== undefined) sets.push(["caption", patch.caption.slice(0, 5000)]);
+  if (patch.caption !== undefined) sets.push(["caption", patch.caption]);
+  if(patch.editorial!==undefined || patch.title!==undefined){
+    const b=json<Record<string,unknown>>(one<{brief:string}>("SELECT brief FROM posts WHERE id=?",postId)?.brief??"{}",{});
+    if(patch.editorial!==undefined)b.editorial=EditorialSchema.parse(patch.editorial);
+    if(patch.title!==undefined)b.headline=patch.title;
+    sets.push(["brief",JSON.stringify(b)]);
+  }
   if (patch.hashtags !== undefined) sets.push(["hashtags", patch.hashtags.slice(0, 500)]);
   if (patch.link !== undefined) sets.push(["link", patch.link]);
   if (patch.media) sets.push(["media", JSON.stringify(patch.media)]);

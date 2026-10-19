@@ -1,4 +1,6 @@
 import { authorizedPublicationTexts } from "./publication-copy-policy";
+import { creativeContract, creativeInstruction, editorialPages, commercialCta, EditorialBlockSchema, type CreativeContract, type EditorialBlock } from "./creative-contract";
+import { platformSpec } from "./platforms";
 import { publicationIdentity } from "../image-v2/publication-identity";
 import sharp from "sharp";
 import { brainView } from "../brain/facade";
@@ -28,7 +30,7 @@ import { estimateTaskMicro } from "../ai/estimate";
  * Coût vérifié avant chaque appel (plafond du lot) ; jamais sans IA active ni accord.
  */
 import { z } from "zod";
-import { all } from "../db";
+import { all, run } from "../db";
 import { assetData, getAsset, assetMeta, saveAsset } from "../library";
 import { loadProject as loadProjectForReview, type Project } from "../projects";
 import { effectivePalette } from "../route-palette";
@@ -60,7 +62,7 @@ import {
 
 export const AiPostReviewSchema = z.object({
   /** Textes lus dans l'image, recopiés lettre pour lettre (comparés ensuite par le studio, pas par l'IA). */
-  transcribed: z.array(z.string()).max(12).default([]),
+  transcribed: z.array(z.string()).max(80).default([]),
   /** Une personne (visage, corps, mains, silhouette) apparaît : refusé (aucun humain généré sans photo du client). */
   person: z.boolean().default(false),
   /** Personne (autorisée) réaliste : visage, mains et doigts corrects, posture naturelle. */
@@ -80,6 +82,7 @@ export type AiPostReview = z.infer<typeof AiPostReviewSchema>;
 
 /** Accroche et direction artistique écrites par l'IA de texte pour une publication (comme une agence). */
 export const AiPostCopySchema = z.object({
+  blocks:z.array(EditorialBlockSchema).max(24).optional(),
   headline: z.string().min(2).max(60),
   subline: z.string().max(60).default(""),
   cta: z.string().max(28),
@@ -108,7 +111,22 @@ export type AiPostTexts = {
   brand: string;
   scene?: string;
   concept?: AiPostCopy["concept"];
+  blocks?: EditorialBlock[];
 };
+
+/** Editorial composition may be a diagram, checklist, advice card or photograph; photography is not imposed. */
+function organicVisualPrompt(p:Project, post:PostBrief, o:{aspect:string;hasReference:boolean;hasLogo?:boolean;brief:GenerationBrief;fix?:string;people?:boolean}, sceneOnly=false) {
+  const c=creativeContract(post,"organic");
+  return `${creativeInstruction(c)}
+CONTRAT ÉDITORIAL COMPLET (contexte, pas du texte à recopier) : ${JSON.stringify(c)}.
+Créer ${sceneOnly?"la base visuelle SANS texte ni logo, pour une mise en page éditoriale ensuite":"le visuel éditorial complet, entièrement créé par IA"}, ${post.network}, ratio ${o.aspect}, avec la finition d'une publication professionnelle.
+${sceneOnly?`Concept : ${o.brief.concept}. Composition : ${o.brief.composition}. Cadrage : ${o.brief.framing}. Décor : ${o.brief.setting}. Lumière : ${o.brief.light}. Palette : ${o.brief.palette}. Réserver les espaces des blocs et de la hiérarchie. Aucun texte, aucune lettre, aucun logo.`:briefPrompt(o.brief)}
+La structure peut être graphique : un schéma doit expliquer uniquement des faits vérifiables, pas inventer des mesures ou chiffres. Une photo éditoriale n'est ni une publicité ni une fausse réalisation client. Aucun produit héros obligatoire : s'il apparaît, respecter strictement la référence, sans changement de couleur, matière ou face inventée. ${o.hasReference?"La première référence documente le sujet, elle n'impose pas sa présence.":"Le sujet peut être expliqué par des outils, matériaux et repères graphiques pertinents."}
+${sceneOnly?"":o.hasLogo?`Logo exact fourni dans la référence ${o.hasReference?2:1}, jamais réinventé.`:`Signature de marque exacte : « ${p.brand?.name ?? ""} ». Aucun emblème inventé.`}
+${o.people?"Présence humaine uniquement selon l'autorisation du projet, anatomie crédible.":"Aucune personne, main, visage, silhouette ni corps."}
+Pas d'incitation commerciale imposée. Les contenus et citations fournis restent exacts ; aucune information supplémentaire, aucun avis fabriqué. Typographie, espaces et blocs lisibles à 360 px ; si le contenu est trop dense, ne jamais prétendre qu'une image illisible est finale.
+${o.fix?`Correction ciblée : ${o.fix}`:""}`;
+}
 
 /** Textes écrits dans la publication, mot pour mot (titre, ligne du produit, bouton, nom de la marque). */
 export function aiPostTexts(p: Project, post: PostBrief): AiPostTexts {
@@ -171,6 +189,7 @@ export function aiPostPrompt(
     /** Brief structuré (direction artistique du client) : remplace la direction libre générique. */ brief?: GenerationBrief;
   },
 ): string {
+  if(o.brief?.objective.startsWith("organic")) return organicVisualPrompt(p,post,{...o,brief:o.brief});
   const t = o.texts ?? aiPostTexts(p, post);
   const pal = effectivePalette(p.brand) ?? p.brand?.palette;
   const colors = pal
@@ -247,6 +266,8 @@ export const aiPostAccepted = (
   qualityGridPasses(r.grid);
 
 export type PublicationContext = {
+  creative?: CreativeContract;
+  renderedBlocks?:EditorialBlock[];
   stage?: "scene" | "final";
   peopleAllowed?: boolean;
   brief?: GenerationBrief;
@@ -325,6 +346,7 @@ export function aiScenePrompt(
     fix?: string;
   },
 ): string {
+  if(o.brief.objective.startsWith("organic")) return organicVisualPrompt(p,post,o,true);
   return `Create a premium campaign PHOTOGRAPH (aspect ratio ${o.aspect}) for the brand's ${post.network} ${o.brief.objective.startsWith("ad") ? "advertisement" : "post"}. Text and logo will be added afterwards by a designer: the photograph itself contains no text at all.
 Subject (context for you only — never write it): ${p.product.name || p.product.category} — ${p.product.summary?.slice(0, 300) ?? ""}
 ${post.request ? `Client's brief for this visual (follow it closely): ${post.request}\n` : ""}${
@@ -384,7 +406,26 @@ export function projectForSubject(
   };
 }
 
-export async function designPostWithAi(
+export async function designPostWithAi(p:Project,post:PostBrief,o:Parameters<typeof designSinglePostWithAi>[2],deps:AiPostDeps):Promise<MediaResult> {
+  if(post.format!=="carousel" || o.as==="ad") return designSinglePostWithAi(p,post,o,deps);
+  let pages:ReturnType<typeof editorialPages>;
+  try {pages=editorialPages(post); if(pages.length>platformSpec(post.network).carouselMax)throw new Error("Ce réseau ne permet pas ce nombre de pages de carrousel ; choisissez un réseau compatible.");}
+  catch(e){return {assetId:null,costMicro:0,by:"image_v2",note:String((e as Error).message)};}
+  const ids:string[]=[],group=stableHash("editorial-series-1",{project:p.id,post,aspect:o.aspect});let cost=0,attempts=0;let family:unknown;
+  for(const [index,page] of pages.entries()) {
+    const r=await designSinglePostWithAi(p,{...post,id:`${post.id}:page:${index+1}`,format:"image",headline:page.title,title:page.title,
+      editorial:{...post.editorial,slides:undefined,steps:undefined,blocks:page.blocks},
+      series:{id:group,index:index+1,total:pages.length,pages,family}}, {...o,maxCostEur:Math.max(0,o.maxCostEur-cost/1e6)},deps);
+    cost+=r.costMicro;attempts+=r.attempts??0;
+    if(!r.assetId)return {assetId:null,partialAssetIds:ids,costMicro:cost,attempts,by:"image_v2",note:`Carrousel incomplet, page ${index+1}/${pages.length} : ${r.note??"contrôle refusé"}. Pages utilisables conservées, aucune publication complète annoncée.`};
+    ids.push(r.assetId);
+    if(index===0){const b=assetMeta<any>(getAsset(r.assetId)!).finalImage.brief;family={typography:b.typography,palette:b.palette,readingGrid:b.composition};}
+  }
+  for(const [index,aid] of ids.entries())run("UPDATE assets SET meta=json_set(meta,'$.carousel',json(?)) WHERE id=?",JSON.stringify({id:group,postId:post.id,index:index+1,total:ids.length,assetIds:ids}),aid);
+  return {assetId:ids[0],assetIds:ids,costMicro:cost,attempts,by:"image_v2"};
+}
+
+async function designSinglePostWithAi(
   p0: Project,
   post: PostBrief,
   o: {
@@ -400,6 +441,9 @@ export async function designPostWithAi(
   const p = projectForSubject(p0, o.subject),
     isAd = o.as === "ad",
     people = peopleAllowedFor(p);
+  let creative:CreativeContract;
+  try {creative=creativeContract(post,isAd?"ad":"organic");}
+  catch(e){return {assetId:null,costMicro:0,by:"image_v2",note:(e as Error).message};}
   const capMicro = Math.round(o.maxCostEur * 1e6);
   const ref = o.reference ? getAsset(o.reference) : null;
   if (
@@ -416,7 +460,7 @@ export async function designPostWithAi(
       note: "Référence indisponible dans ce projet.",
     };
   const refBuf = ref ? assetData(ref) : null;
-  if (p.business !== "services" && !refBuf)
+  if (isAd && p.business !== "services" && !refBuf)
     return {
       assetId: null,
       costMicro: 0,
@@ -471,6 +515,7 @@ export async function designPostWithAi(
     rules,
     brain: view.hash,
     operation: deps.operationId ?? null,
+    creative,
   });
   const spent = () => deps.spentMicro(prefix);
   const blocked = (note: string): MediaResult => ({
@@ -502,6 +547,7 @@ export async function designPostWithAi(
         };
       });
     const context: PublicationContext = {
+      creative,
       identity: publicationIdentity(p),
       strategy: p.strategy,
       facts: [
@@ -532,6 +578,7 @@ export async function designPostWithAi(
       ],
     };
     const base = aiPostTexts(p, post);
+    if(!creative.allowCommercial)base.cta="";
     const written = await publicationStage(p.id, `${prefix}:copy`, async () => {
       if (!fits(deps.conceptMaxMicro?.() ?? 0))
         throw new Error(
@@ -586,7 +633,11 @@ export async function designPostWithAi(
       headline: W(t0.headline),
       subline: W(t0.subline),
       cta: W(t0.cta),
+      blocks: isAd ? [] : (post.editorial?.blocks?.length || post.editorial?.steps?.length || post.editorial?.testimonial || post.series ? creative.blocks : written.blocks ?? creative.blocks),
     };
+    if(!isAd && ["advice","faq","checklist","tutorial","infographic","comparison"].includes(creative.structure) && !(t.blocks??[]).some(b=>b.text.trim().length>0 && b.text.trim()!==t.headline.trim() && !commercialCta(b.text)))return blocked("Contenu éditorial utile manquant : fournir ou concevoir les explications à partir de faits/sources avant de générer l'image. Aucun conseil réduit à un slogan.");
+    context.renderedBlocks=t.blocks;
+    if(!creative.allowCommercial && commercialCta(t.cta)) return blocked("CTA commercial imposé à un contenu organique : conception à corriger, aucun appel image.");
     const brief = buildGenerationBrief(p, {
       purpose: isAd ? "ad" : "post",
       subject: `${p.product.name || p.product.category} — ${post.title}`,
@@ -621,6 +672,14 @@ export async function designPostWithAi(
         x.role === "bouton" ? { ...x, role: "link" } : x,
       );
     context.brief = brief;
+    if(!isAd) {
+      brief.objective=`organic — ${creative.structure} — ${creative.goal}`;
+      brief.fidelity="Le produit peut être absent ; tout sujet représenté respecte ses références. Explication et diagrammes factuels uniquement, aucune réalisation client inventée.";
+      for(const [i,b] of (t.blocks??[]).entries())for(const text of [b.title,b.text].filter((x):x is string=>!!x))
+        if(!brief.exactTexts.some(x=>x.text===text))brief.exactTexts.push({role:`${b.kind} ${i+1}`,text,sharePct:3.8});
+      if(t.cta && !brief.exactTexts.some(x=>x.text===t.cta))brief.exactTexts.push({role:"editorial action",text:t.cta,sharePct:3.8});
+      brief.typography=`${art.typography}; ${c?.typography??""}; distinguer titre, contenu utile, sources ; aucune étape ou citation réduite à un slogan`;
+    }
     const authorizedReferences = context.referenceManifest;
     const P = (x: string) =>
       [
@@ -825,6 +884,9 @@ export async function designPostWithAi(
               ...(isAd ? { aiAd: true } : { post: post.id, socialV2: true }),
               aspect: o.aspect,
               finalImage: {
+                creative,
+                editorialBlocks:t.blocks,
+                editorialFingerprint:stableHash("editorial",creative),
                 purpose: isAd ? "ad" : "post",
                 composition: brief.composition,
                 universe: art.universe,
@@ -956,17 +1018,20 @@ export function realAiPostDeps(base: {
           usageKey: key,
           promptKey: "social-ai-post-copy",
           routing: { difficulty: "standard", deliverable: "ad_v2" },
-          system:
-            "You are the creative director of a top advertising agency. You write French ad copy for social media posts. Answer with JSON only.",
+          system: context?.creative?.purpose==="ad"
+            ? "You are an advertising creative director. Preserve the established campaign strategy and direction. Answer with JSON only."
+            : "You are an editorial art director. Design useful organic content, not sales advertising. Preserve educational content, evidence and narrative. Answer with JSON only.",
           context: view.stable,
-          prompt: `Design ONE distinctive campaign for THIS subject and destination, not a sector template. Identity, confirmed facts, complete client brief, explicit client text and recent concepts: ${facts}.
+          prompt: `${context?.creative?creativeInstruction(context.creative):"Respect the explicit ad or editorial purpose."}
+Design ONE specific ${context?.creative?.purpose==="ad"?"commercial campaign":"editorial composition"} for THIS subject and destination, not a sector template. Identity, confirmed facts, complete client brief, explicit client text, complete useful caption, blocks and recent concepts: ${facts}.
 Headline, image, light, physical materials, type and logo must be conceived together. Keep proper brand names exactly as validated, even when vocabulary preferences replace generic product terms. Reply in ${p.settings.language === "en" ? "English" : "French"}, image scene instructions may be English. No invented claims. A confirmed/requested price or promotion is allowed; preserve explicit clientTexts verbatim. Choose no CTA, a discreet link or button according to objective; organic posts need no button. A service scene is a generated illustration, never evidence of actual client work. ${people ? "Human presence permitted, anatomy must be credible." : "NO humans, hands, faces, bodies, silhouettes or mannequins; use tools, finished spaces, materials and documented products."}
 If previousCreative is provided, preserve its exact texts and usable composition unless THIS client modification explicitly requests changing them. Do not treat a lighting retouch as a new campaign. Reformatting may recompose for the new ratio while preserving subject, logo and exact text.
 Use ALL five identity palette roles and validated heading/body families appropriately without recolouring the product. Deliberately vary concept, layout, lighting, location and scale from recent work; justify any wave, panel or special effect. Sharp detail or a documented closeup is allowed; never invent hidden faces. Explain the hierarchy, safe areas for ${context?.aspect}, logo placement, negative space and differentiation. No universal blur or luxury style. Text must be concise and useful.
-Return headline, subline (may be empty), cta (may be empty), scene (specific setting), concept:{idea,composition,framing,setting,light,materials,typography,effects,rationale,diversity,ctaStyle:"none"|"link"|"button"}.`,
+For organic content return blocks:[{kind:"paragraph|tip|step|question|answer|check|quote|source",title?:"...",text:"..."}]. Develop useful explanations, not just a slogan. Use confirmed facts and verified sources; missing knowledge is a reason to request material, not invent an answer. Preserve explicitly supplied blocks and authorized quotes verbatim. A photograph or community question may deliberately have no body blocks; advice, FAQ, checklist and tutorials need useful substance. A factual diagram needs documented data, never fabricated measurements. Ads may omit blocks.
+Return blocks, headline, subline (may be empty), cta (may be empty), scene (specific setting), concept:{idea,composition,framing,setting,light,materials,typography,effects,rationale,diversity,ctaStyle:"none"|"link"|"button"}.`,
           maxTokens: 2000,
         },
-        AiPostCopySchema.required({ concept: true }),
+        AiPostCopySchema.required({ concept: true,...(context?.creative?.purpose==="organic"?{blocks:true as const}:{}) }),
       );
     },
     async generate(prompt, aspect, reference, key, logo, options) {
@@ -1063,12 +1128,14 @@ Return headline, subline (may be empty), cta (may be empty), scene (specific set
           ],
           context: brainView(loadProjectForReview(base.projectId), "image")
             .stable,
-          prompt: `STAGE: ${context?.stage ?? "final"}. ${context?.stage === "scene" ? "This is the scene BEFORE layout: overlay texts and brand logo are deliberately absent, not missing. Score text/logo criteria as not applicable with evidence; do not demand the future overlay. Still check product, consent, light, materials, perspective, artifacts and diversity." : "This is the final composition: every required exact text and supplied logo must be present and faithful."}
+          prompt: `${context?.creative?creativeInstruction(context.creative):""}
+Evaluate relevance and hierarchy against the declared purpose. Organic content must teach, help, explain or invite dialogue according to its role; never penalize absence of a commercial CTA, hero product or photography. Product fidelity means faithful if depicted, or legitimately absent for an editorial subject. Every useful block/step/authorized quotation must remain intact and readable. Invented review, attribution, proof or diagram data is fatal. A carousel page must match its declared order and series, not repeat the same sales poster.
+STAGE: ${context?.stage ?? "final"}. ${context?.stage === "scene" ? "This is the scene BEFORE layout: overlay texts and brand logo are deliberately absent, not missing. Score text/logo criteria as not applicable with evidence; do not demand the future overlay. Still check product, consent, light, materials, perspective, artifacts and diversity." : "This is the final composition: every required exact text and supplied logo must be present and faithful."}
 Check the post against this FULL contract: ${JSON.stringify(context ? { ...context, native: undefined, scene: undefined } : null)}.
 Set fixTarget to scene for wrong setting/light/materials or composition already wrong BEFORE layout; layout for misspelled/missing text/logo or damage introduced ONLY by layout; both only when both stages need repair; none when accepted. Never discard a faithful scene to fix typography.
 Report logoFaithful explicitly: false for any changed emblem, missing or misspelled logo, even if overall design is attractive. Compare the final crop against native and layout against scene: no essential text/logo/subject cut or changed. Mobile viewing at 360px: hierarchy, safe margins, crisp letters, no interface overlap. No fabricated facts or false real-service evidence.
 Give grid entries for relevance,hierarchy,product,identity,text,mobile,lightMaterials,artifacts,diversity; each {score:0..10,evidence:"visible specific observation (not generic praise)"}. Inspect materials/reflections/contact shadows, perspective, artifacts, product details and recent image similarity, not just JSON validity. Target 9/10, with each criterion >=8. Missing, inaccurate text/logo/product, unauthorized person, unreadable mobile, unsafe crop or unsupported claim is fatal regardless of average. issues must list every actionable defect; fatal lists critical ones. Never approve without evidence.
-Check the post.\n- transcribed: every piece of text of the DESIGN (headline, lines, button, brand name), copied EXACTLY letter by letter as it is drawn (keep any wrong letter, accent or typo as you see it; one item per text block). Do NOT include text printed on the product itself (it belongs to the real product, compare it with the reference instead)${logo ? " nor the text inside the brand logo (emblem, brand name, trade line or slogan drawn as part of the logo: compare it with the logo reference; a logo that is altered, misspelled, missing or invented is a fatal refusal)" : ""}.\n- textsExact: true only if the design contains exactly these texts, each spelled exactly (accents included), and no other words (text printed on the product, when it matches the reference, is allowed): ${texts.map((x) => `"${x}"`).join(", ")}.\n- legible: every text is clearly readable (contrast, size).\n- person: true if any person, face, hand, body part or human silhouette appears.\n- anatomyOk: ${people ? "false if a person looks fake or has a wrong face, hands, fingers, limbs or posture; true otherwise" : "true"}.\n- productFaithful: ${reference ? "the product in the post is the same as the reference (shape, colour, details, printed text); false if altered, invented or duplicated" : "true"}.\n- score: overall quality 0-10 for a premium brand.\n- issues: short list of problems; fix: one instruction to correct them.\nReply { "transcribed": ["..."], "person": false, "anatomyOk": true, "productFaithful": true, "textsExact": true, "legible": true, "score": 0, "logoFaithful": false, "grid": {"criterion":{"score":0,"evidence":"observation"}}, "fatal": [], "issues": [], "fix": "", "fixTarget":"none" }.`,
+Check the post.\n- transcribed: every piece of text of the DESIGN (headline, lines, button, brand name), copied EXACTLY letter by letter as it is drawn (keep any wrong letter, accent or typo as you see it; one item per text block). Do NOT include text printed on the product itself (it belongs to the real product, compare it with the reference instead)${logo ? " nor the text inside the brand logo (emblem, brand name, trade line or slogan drawn as part of the logo: compare it with the logo reference; a logo that is altered, misspelled, missing or invented is a fatal refusal)" : ""}.\n- textsExact: true only if the design contains exactly these texts, each spelled exactly (accents included), and no other words (text printed on the product, when it matches the reference, is allowed): ${texts.map((x) => `"${x}"`).join(", ")}.\n- legible: every text is clearly readable (contrast, size).\n- person: true if any person, face, hand, body part or human silhouette appears.\n- anatomyOk: ${people ? "false if a person looks fake or has a wrong face, hands, fingers, limbs or posture; true otherwise" : "true"}.\n- productFaithful: ${reference ? `${context?.creative?.purpose === "organic" ? "If the product is absent for this editorial composition, true; if depicted, " : ""}the product in the post is the same as the reference (shape, colour, details, printed text); false if altered, invented or duplicated` : "true"}.\n- score: overall quality 0-10 for a premium brand.\n- issues: short list of problems; fix: one instruction to correct them.\nReply { "transcribed": ["..."], "person": false, "anatomyOk": true, "productFaithful": true, "textsExact": true, "legible": true, "score": 0, "logoFaithful": false, "grid": {"criterion":{"score":0,"evidence":"observation"}}, "fatal": [], "issues": [], "fix": "", "fixTarget":"none" }.`,
           maxTokens: 2000,
         },
         AiPostReviewSchema.required({

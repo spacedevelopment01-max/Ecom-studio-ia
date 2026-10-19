@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { addDays, format } from "date-fns";
 import { Clapperboard, ImageIcon, Sparkles, Wand2 } from "lucide-react";
-import { api, Badge, Button, Card, cx, Field, Input, Select, useApi, useToast } from "../ui";
+import { api, Badge, Button, Card, cx, Field, Input, Select, Textarea, useApi, useToast } from "../ui";
 import { useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
 import { JobProgress, useActive, type AssetView } from "./common";
@@ -74,6 +74,15 @@ export function CreateOnePanel({ data, kind, reload, onCreated }: { data: Data; 
   const [time, setTime] = useState("11:30");
   const [pillar, setPillar] = useState("");
   const [headline, setHeadline] = useState("");
+  const [content, setContent] = useState("");
+  const [contentKind, setContentKind] = useState("");
+  const [carousel, setCarousel] = useState(false);
+  const [reviewAuthor,setReviewAuthor]=useState("");
+  const [reviewSource,setReviewSource]=useState("");
+  const [reviewAllowed,setReviewAllowed]=useState(false);
+  const paragraphs=content.split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean);
+  const pages=carousel?paragraphs.length:1;
+  const requestKind=kind==="image"&&carousel?"carousel":kind;
   const [bg, setBg] = useState("");
   const subjects = data.subjects ?? [];
   const [subjectKey, setSubjectKey] = useState(subjects[0]?.key ?? "");
@@ -85,25 +94,27 @@ export function CreateOnePanel({ data, kind, reload, onCreated }: { data: Data; 
   const jobs = useActive(["social.v2"]);
   const { data: bank } = useApi<{ assets: AssetView[] }>(kind === "image" ? `/api/projects/${id}/files?role=${BANK_IMAGE_ROLES.join(",")}` : null);
   const images = (bank?.assets ?? []).filter((a) => a.kind === "image" && a.status !== "rejected").slice(0, 36);
-  const usable = data.platforms.filter((pl) => (kind === "video" ? pl.formats.some((f) => VIDEO_FORMATS.has(f)) : pl.formats.some((f) => f === "image" || f === "carousel" || f === "pin")));
+  const usable = data.platforms.filter((pl) => (kind === "video" ? pl.formats.some((f) => VIDEO_FORMATS.has(f)) : pl.formats.some((f) => carousel ? f === "carousel" : f === "image" || f === "carousel" || f === "pin")));
   // Prix demandé au studio dès qu'un choix payant est fait (une production par réseau choisi).
   useEffect(() => {
     if (mode === "free" || !nets.length) return setQuote(mode === "free" ? 0 : null);
     let off = false;
     setQuote(null);
-    api<{ estimateMicro: number }>(`/api/projects/${id}/social/v2`, { body: { action: "quote_one", kind, mode, networks: nets.length } })
+    api<{ estimateMicro: number }>(`/api/projects/${id}/social/v2`, { body: { action: "quote_one", kind:requestKind, mode, networks: nets.length, pages:Math.max(1,Math.min(10,pages)) } })
       .then((r) => !off && setQuote(r.estimateMicro))
       .catch(() => !off && setQuote(null));
     return () => {
       off = true;
     };
-  }, [id, kind, mode, nets.length]);
+  }, [id, kind, mode, nets.length, pages,requestKind]);
   const create = async () => {
+    if(carousel&&(pages<2||pages>10))return toast("bad",t("Un carrousel demande 2 à 10 blocs utiles, séparés par une ligne vide.","A carousel needs 2 to 10 useful blocks separated by a blank line."));
+    if(contentKind==="quote"&&(!reviewAllowed||!content.trim()||!reviewSource.trim()))return toast("bad",t("Fournissez la citation exacte, sa source et votre autorisation.","Supply the exact quote, its source and your authorization."));
     if (!nets.length) return toast("bad", t("Choisissez au moins un réseau.", "Choose at least one network."));
     setBusy(true);
     try {
       const r = await api<{ ids: string[]; jobId?: string; produced?: number; notes?: string[]; warnings: string[] }>(`/api/projects/${id}/social/v2`, {
-        body: { action: "create_one", kind, mode, date, time, timezone: data.timezone || "Europe/Paris", platforms: nets.map((platform) => ({ platform, connectionId: data.accounts.find((a) => a.provider === platform && a.status === "active")?.id ?? null })), pillar: pillar || undefined, headline: headline.trim() || undefined, ...(mode !== "free" ? { subject: subjectChoice(subjects.find((x) => x.key === subjectKey) ?? subjects[0]), request: request.trim() || undefined } : {}), approvedEstimateMicro: mode === "free" ? undefined : quote },
+        body: { action: "create_one", kind:requestKind, mode,caption:content||undefined,editorial:kind==="image"?{structure:contentKind||undefined,blocks:contentKind==="quote"?[]:paragraphs.map(text=>({kind:contentKind==="checklist"?"check":contentKind==="tutorial"?"step":"paragraph",text})),...(contentKind==="quote"?{testimonial:{quote:content,author:reviewAuthor||undefined,source:reviewSource,verified:reviewAllowed,authorized:reviewAllowed}}:{})}:undefined, date, time, timezone: data.timezone || "Europe/Paris", platforms: nets.map((platform) => ({ platform, connectionId: data.accounts.find((a) => a.provider === platform && a.status === "active")?.id ?? null })), pillar: pillar || undefined, headline: headline.trim() || undefined, subject:subjectChoice(subjects.find((x) => x.key === subjectKey) ?? subjects[0]),request:request.trim()||undefined, approvedEstimateMicro: mode === "free" ? undefined : quote },
       });
       toast("ok", r.jobId ? t("Publication créée : son visuel se prépare avec l'IA, puis elle attend votre validation.", "Post created: its visual is being made with AI, then it waits for your approval.") : t(`Publication créée (${r.ids.length} réseau${r.ids.length > 1 ? "x" : ""}) : relisez-la puis validez-la.`, `Post created (${r.ids.length} network${r.ids.length > 1 ? "s" : ""}): review it, then approve it.`));
       for (const w of [...(r.warnings ?? []), ...(r.notes ?? [])].slice(0, 3)) toast("info", w);
@@ -117,7 +128,7 @@ export function CreateOnePanel({ data, kind, reload, onCreated }: { data: Data; 
   };
   const paid = mode !== "free";
   return (
-    <Card className="grid gap-6 p-5 sm:p-7" data-create-one={kind}>
+    <Card className="grid min-w-0 gap-6 p-5 sm:p-7" data-create-one={kind}>
       {jobs.map((j) => <JobProgress key={j.id} job={j} />)}
       <div className="flex items-start gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-paper-2">{kind === "image" ? <ImageIcon className="size-5" /> : <Clapperboard className="size-5" />}</span>
@@ -126,7 +137,7 @@ export function CreateOnePanel({ data, kind, reload, onCreated }: { data: Data; 
           <p className="mt-1 text-sm text-muted">{kind === "image" ? t("Une publication prête à relire : texte adapté à chaque réseau et visuel à votre marque.", "A post ready to review: copy adapted to each network and a branded visual.") : t("Une vidéo courte (reel, TikTok, short) avec son texte, prête à relire.", "A short video (reel, TikTok, short) with its copy, ready to review.")}</p>
         </div>
       </div>
-      <section className="grid gap-2">
+      <section className="grid min-w-0 gap-2">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t("1 · Avec ou sans IA", "1 · With or without AI")}</p>
         {kind === "image" ? (
           <VisualChoice value={imageMode} onChange={setImageMode} ai={!!data.ai} name={`one-${kind}`} prices={quote && imageMode !== "free" ? { [imageMode]: t(`Payant · ${budget.label(quote)}`, `Paid · ${budget.label(quote)}`) } : undefined} />
@@ -140,7 +151,7 @@ export function CreateOnePanel({ data, kind, reload, onCreated }: { data: Data; 
           <SubjectPicker subjects={subjects} value={subjectKey} onChange={setSubjectKey} request={request} onRequest={setRequest} idPrefix={`one-${kind}`} video={kind === "video"} />
         </section>
       )}
-      <section className="grid gap-3">
+      <section className="grid min-w-0 gap-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t("2 · Où et quand", "2 · Where and when")}</p>
         <div className="flex flex-wrap gap-2" role="group" aria-label={t("Réseaux", "Networks")}>
           {usable.map((pl) => {
@@ -163,17 +174,31 @@ export function CreateOnePanel({ data, kind, reload, onCreated }: { data: Data; 
           </Field>
         </div>
       </section>
-      <section className="grid gap-3">
+      <section className="grid min-w-0 gap-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t("3 · Le message (facultatif)", "3 · The message (optional)")}</p>
         <Field label={t("Titre de la publication", "Post headline")} htmlFor={`one-head-${kind}`}><Input id={`one-head-${kind}`} value={headline} maxLength={70} onChange={(e) => setHeadline(e.target.value)} placeholder={t("Laissé vide : le studio le propose d'après votre activité", "Left empty: the studio suggests it from your business")} /></Field>
       </section>
+      {kind === "image" && <section className="grid gap-3" data-editorial-content>
+        <Field label={t("Rôle du contenu", "Content role")} htmlFor="editorial-role"><Select id="editorial-role" value={contentKind} onChange={e=>setContentKind(e.target.value)}>
+          <option value="">{t("Selon la stratégie et votre demande", "According to strategy and your request")}</option>
+          {[["advice","Conseil / erreur à éviter","Advice / mistake to avoid"],["faq","FAQ","FAQ"],["checklist","Checklist","Checklist"],["tutorial","Tutoriel / étapes","Tutorial / steps"],["infographic","Schéma / décryptage","Diagram / explanation"],["quote","Avis réel autorisé","Authorized real review"],["editorial_photo","Photo éditoriale","Editorial photo"],["community","Communauté","Community"],["offer","Présentation d'une offre","Offer presentation"]].map(([v,fr,en])=><option key={v} value={v}>{t(fr,en)}</option>)}
+        </Select></Field>
+        <Field label={contentKind==="quote"?t("Citation exacte du client", "Exact customer quote"):t("Contenu utile et légende", "Useful content and caption")} htmlFor="editorial-content" hint={t("Conservez les conseils, questions/réponses et étapes. Un bloc par paragraphe ; pour un carrousel, un paragraphe par page.","Keep advice, questions/answers and steps. One block per paragraph; for a carousel, one paragraph per page.")}><Textarea id="editorial-content" rows={6} maxLength={12000} value={content} onChange={e=>setContent(e.target.value)} /></Field>
+        {contentKind==="quote"&&<>
+          <Field label={t("Auteur (facultatif)", "Author (optional)")} htmlFor="review-author"><Input id="review-author" value={reviewAuthor} onChange={e=>setReviewAuthor(e.target.value)} /></Field>
+          <Field label={t("Source vérifiable de l'avis", "Verifiable review source")} htmlFor="review-source"><Input id="review-source" value={reviewSource} onChange={e=>setReviewSource(e.target.value)} /></Field>
+          <label className="flex gap-2 text-sm"><input type="checkbox" checked={reviewAllowed} onChange={e=>setReviewAllowed(e.target.checked)} />{t("Je confirme cet avis et dispose de l'autorisation de l'utiliser.","I confirm this review and have permission to use it.")}</label>
+        </>}
+        <label className="flex gap-2 text-sm"><input type="checkbox" checked={carousel} onChange={e=>{setCarousel(e.target.checked);if(e.target.checked)setNets(nets.filter(n=>data.platforms.find(p=>p.id===n)?.formats.includes("carousel")));}} />{t("Carrousel : plusieurs visuels IA ordonnés", "Carousel: several ordered AI visuals")}</label>
+        {carousel&&<p className="text-xs text-muted">{t(`${pages} pages prévues. Le devis inclut chaque page et son contrôle.`,`${pages} planned pages. The quote includes each page and its review.`)}</p>}
+      </section>}
       <div className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between" data-one-price>
         <p className="text-sm">
           {!paid ? <span className="font-medium text-ok">{t("Gratuit : aucun budget IA utilisé.", "Free: no AI budget used.")}</span> : quote == null ? t("Calcul du prix…", "Calculating the price…") : t(<>Coût probable : <strong>{budget.label(quote)}</strong> pour {nets.length} réseau{nets.length > 1 ? "x" : ""}. Si le contrôle demande une 2e image, elle est décomptée et vous êtes prévenu. Rien n'est lancé sans votre clic.</>, <>Likely cost: <strong>{budget.label(quote)}</strong> for {nets.length} network{nets.length > 1 ? "s" : ""}. If the check needs a 2nd image, it is counted and you are told. Nothing starts without your click.</>)}
         </p>
-        <Button onClick={create} loading={busy} disabled={busy || !nets.length || (paid && quote == null)} icon={<Wand2 className="size-4" />} data-create-one-submit>
-          {kind === "image" ? t("Créer la publication", "Create the post") : t("Créer la vidéo", "Create the video")}
-          {paid && quote != null ? ` · ${budget.label(quote)}` : ""}
+        <Button className="h-auto min-h-11 w-full py-3 sm:w-auto" onClick={create} loading={busy} disabled={busy || !nets.length || (paid && quote == null)} icon={<Wand2 className="size-4" />} data-create-one-submit>
+          <span className="min-w-0 whitespace-normal text-center">{kind === "image" ? t("Créer la publication", "Create the post") : t("Créer la vidéo", "Create the video")}
+          {paid && quote != null ? ` · ${budget.label(quote)}` : ""}</span>
         </Button>
       </div>
     </Card>

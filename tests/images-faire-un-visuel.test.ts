@@ -80,7 +80,7 @@ describe("Faire un visuel (onglet Images)", async () => {
     const pid = await seedThemeScenario(u.id, "artisan");
     const mine = await saveAsset({ projectId: pid, userId: u.id, data: await png(), name: "chantier.png", mime: "image/png", role: "lifestyle", folderKey: "images.scenes", origin: "upload", status: "approved", meta: {} });
     const f = fakeDeps();
-    await fr(() => generateAiPostImage(ctxOf("job-fv-2"), pid, { kind: "quote", format: "square", photoId: mine.id }, f.deps as any));
+    await fr(() => generateAiPostImage(ctxOf("job-fv-2"), pid, { kind: "info", format: "square", photoId: mine.id }, f.deps as any));
     expect(f.calls.refs[0]).toBeInstanceOf(Buffer);
     expect(f.calls.aspects[0]).toBe("1:1");
     const prod = seedImageFixture(u.id, "cosmetic");

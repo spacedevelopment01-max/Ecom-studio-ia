@@ -21,6 +21,7 @@ import { remember as rememberUse, usedHooks, usesOf } from "./memory";
 import { fold } from "../seo-v2/lang";
 import { planOfProject } from "../plan-gates";
 import { PLANS } from "../plans";
+import { commercialCta } from "./creative-contract";
 
 export type FormatKind = "image" | "carousel" | "video" | "text";
 export type PlanRequest = {
@@ -167,7 +168,10 @@ export function createPlanV2(p: Project, req: PlanRequest, o: { planId?: string 
     if (!factsOfItem.has(cat.key)) factsOfItem.set(cat.key, verifiedFacts(p, cat));
     return factsOfItem.get(cat.key)!;
   };
-  const cta = (pl: Pillar, i: number) => strategy.ctas[(i + (pl.objective === "convert" ? 0 : 1)) % strategy.ctas.length];
+  const cta = (pl: Pillar, i: number) => {
+    const choices=pl.objective==="convert"?strategy.ctas:strategy.ctas.filter(x=>!commercialCta(x));
+    return choices.length?choices[i%choices.length]:"";
+  };
   let created = 0;
   let existing = 0;
   // Un même créneau publié sur plusieurs réseaux partage la matière (même idée), adaptée à chaque réseau.
@@ -222,7 +226,7 @@ export function createPlanV2(p: Project, req: PlanRequest, o: { planId?: string 
       }
       const a = adaptForPlatform(s.platform, { caption: d.caption, title: d.title, hashtags: d.hashtags, link: req.link ?? null, format: s.format, mediaCount: 0 }, lang);
       const pid = id();
-      const brief = { kind: d.visual, headline: d.headline, subline: "", layout: "editorial", material: d.material, adapt: a.notes, ...(aboutOf.get(s.groupId ?? key)?.length ? { items: aboutOf.get(s.groupId ?? key) } : {}), ...(s.role ? { role: s.role.id, roleKind: s.role.kind, roleTitle: s.role.title[lang] } : {}) };
+      const brief = { kind: d.visual, headline: d.headline, subline: "", layout: "editorial", material: d.material, fullCaption:d.caption, verifiedFacts:itemFacts(null), editorialObjective:s.pillar.objective, adapt: a.notes, ...(aboutOf.get(s.groupId ?? key)?.length ? { items: aboutOf.get(s.groupId ?? key) } : {}), ...(s.role ? { role: s.role.id, roleKind: s.role.kind, roleTitle: s.role.title[lang],roleIdea:s.role.idea[lang] } : {}) };
       const row = { network: s.platform, format: a.format, title: a.title, caption: a.caption, hashtags: a.hashtags.join(" "), link: a.link, media: "[]" };
       run(
         `INSERT INTO posts (id, project_id, plan_id, connection_id, network, format, status, scheduled_at, timezone, title, caption, hashtags, link, angle, media, brief, publish_key, created_at, updated_at, engine, pillar, objective, content_hash, group_id)

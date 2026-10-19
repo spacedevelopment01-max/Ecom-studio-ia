@@ -274,10 +274,11 @@ export function briefScenePrompt(b: GenerationBrief, o: { photoOnly?: boolean } 
  * sans toucher à la photo. Tailles en part de la largeur (guide : px pour 1080 px), contraste 4,5:1, marges.
  */
 export function layoutPrompt(b: GenerationBrief, o: { hasLogo: boolean; brand: string; textColor: string; accent: string }): string {
+  const organic=b.objective.startsWith("organic");
   const lines = b.exactTexts.map((t) => `- ${ROLE_EN[t.role] ?? t.role}: "${t.text}" (cap height about ${t.sharePct}% of the image width)`);
   return [
-    "Graphic design step on an existing photograph.",
-    "Image 1 is the finished campaign photograph: keep it EXACTLY as it is — same product, same framing, same light, same colours; do not redraw, move, crop, retouch or recolour anything in it.",
+    organic ? "Editorial typography on an approved visual base (diagram, illustration, advice card or photograph)." : "Graphic design step on an existing photograph.",
+    organic ? "Image 1 is the approved editorial visual base: preserve its diagram geometry, subjects, light and colours. Add the ordered content blocks without inventing data, dropping an explanation or converting the page into a sales poster." : "Image 1 is the finished campaign photograph: keep it EXACTLY as it is — same product, same framing, same light, same colours; do not redraw, move, crop, retouch or recolour anything in it.",
     "Add ONLY the typography" + (o.hasLogo ? " and the brand logo" : "") + " on top of it, as the art director of a top agency would: in the calm area of the photo, never covering the product, clear reading order (headline first).",
     "Texts to set — spell them EXACTLY, letter for letter, with the same accents and punctuation; write nothing else:",
     ...lines,

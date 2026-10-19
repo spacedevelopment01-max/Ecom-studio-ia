@@ -1,3 +1,4 @@
+import { EditorialSchema } from "@/lib/social-v2/creative-contract";
 import { TEXT_IMAGE_KINDS } from "@/lib/image-v2/ai-only";
 import crypto from "node:crypto";
 import { z } from "zod";
@@ -24,6 +25,8 @@ const Req = z.object({
   headline: z.string().max(120).optional(),
   subline: z.string().max(200).optional(),
   cta: z.string().max(40).optional(),
+  caption:z.string().max(12000).optional(),
+  editorial:EditorialSchema.optional(),
   useAi: z.boolean().optional(),
   sourceCutoutId: z.string().optional(),
   serviceIndex: z.number().int().min(0).max(50).optional(),
@@ -108,7 +111,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     return ok({ jobId: job.id, engine: "image-set-ai" });
   }
   if (b.visual === "ai_post" || TEXT_KINDS.has(kind)) {
-    const job = enqueue({ userId: user.id, projectId: p.id, idempotencyKey: dedup, type: "image.ai_post", label: L("Visuel entièrement conçu par l'IA", "Visual fully designed by AI"), payload: { projectId: p.id, request: { kind, format: b.format, headline: b.headline, subline: b.subline, cta: b.cta, serviceIndex: b.serviceIndex, photoId: b.photoId } } });
+    const job = enqueue({ userId: user.id, projectId: p.id, idempotencyKey: dedup, type: "image.ai_post", label: L("Visuel entièrement conçu par l'IA", "Visual fully designed by AI"), payload: { projectId: p.id, request: { entryPoint:"images", kind, format: b.format, headline: b.headline, subline: b.subline, cta: b.cta, serviceIndex: b.serviceIndex, photoId: b.photoId,caption:b.caption,editorial:b.editorial,as:kind==="ad"||kind==="service"||kind==="promo"||kind==="booking"?"ad":"post" } } });
     return ok({ jobId: job.id, engine: "ai-post" });
   }
   const f = b.format ? FORMATS[b.format as keyof typeof FORMATS] : null;

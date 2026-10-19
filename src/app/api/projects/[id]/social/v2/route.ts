@@ -1,3 +1,4 @@
+import { EditorialSchema, editorialPages, creativeContract, type Editorial } from "@/lib/social-v2/creative-contract";
 import { z } from "zod";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
@@ -108,10 +109,10 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       z.object({ action: z.literal("resume"), planId: z.string().max(80) }),
       z.object({ action: z.literal("edit"), text: z.string().min(3).max(600), confirm: z.boolean().optional(), maxCostEur: z.number().min(0).max(20).optional(), maxCostPct: z.number().min(0).max(100).optional(), planId: z.string().max(80).optional() }),
       z.object({ action: z.literal("automation"), kind: z.enum(AUTOMATION_KINDS), config: z.record(z.string(), z.unknown()).optional() }),
-      z.object({ action: z.literal("quote_one"), kind: z.enum(["image", "video"]), mode: z.enum(["free", "ai_image", "ai_post", "ai_video"]), networks: z.number().int().min(1).max(6) }),
+      z.object({ action: z.literal("quote_one"), kind: z.enum(["image", "carousel", "video"]), mode: z.enum(["free", "ai_image", "ai_post", "ai_video"]), networks: z.number().int().min(1).max(6), pages:z.number().int().min(1).max(10).optional() }),
       z.object({
         action: z.literal("create_one"),
-        kind: z.enum(["image", "video"]),
+        kind: z.enum(["image", "carousel", "video"]),
         mode: z.enum(["free", "ai_image", "ai_post", "ai_video"]),
         date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
         time: z.string().regex(/^\d{2}:\d{2}$/),
@@ -124,7 +125,9 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
         /** Produit (clé, « main » pour le principal) ou service choisi pour le visuel (création guidée). */
         subject: z.discriminatedUnion("kind", [z.object({ kind: z.literal("product"), key: z.string().min(1).max(80) }), z.object({ kind: z.literal("service"), name: z.string().min(1).max(120) })]).optional(),
         /** Demande libre du client pour ce visuel. */
-        request: z.string().max(600).optional(),
+        request: z.string().max(8000).optional(),
+        caption:z.string().max(12000).optional(),
+        editorial:EditorialSchema.optional(),
         /** Prix vu et accepté par le client (payant). */
         approvedEstimateMicro: z.number().int().min(0).nullable().optional(),
       }),
@@ -193,7 +196,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     {
       // Devis au coût probable (un essai), montré en % du budget IA du mois ; jamais en euros.
       const deps = realSocialDeps(null, p, aiActiveFor(p.userId, p.id));
-      const estimateMicro = quoteOne(b.kind, b.mode, b.networks, (k) => probableOf(deps, k));
+      const estimateMicro = quoteOne(b.kind, b.mode, b.networks, (k) => probableOf(deps, k), b.pages);
       return ok({ ai: aiActiveFor(p.userId, p.id), estimateMicro, pct: budgetPctOf(p.userId, estimateMicro, p.id) });
     }
     case "create_one": {
@@ -202,12 +205,21 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       assertPerDayRequest(p.id, 1);
       for (const x of b.platforms) if (x.connectionId && !projectAccounts(p).some((a) => a.id === x.connectionId)) throw new HttpError(400, L("Compte inconnu.", "Unknown account."));
       if (b.mode === "ai_video" && b.kind !== "video") throw new HttpError(400, L("Mode réservé aux vidéos.", "Mode for videos only."));
-      if ((b.mode === "ai_image" || b.mode === "ai_post") && b.kind !== "image") throw new HttpError(400, L("Mode réservé aux images.", "Mode for images only."));
+      if ((b.mode === "ai_image" || b.mode === "ai_post") && b.kind === "video") throw new HttpError(400, L("Mode réservé aux images.", "Mode for images only."));
       const ai = aiActiveFor(p.userId, p.id);
       const deps = realSocialDeps(null, p, ai);
-      const quote = quoteOne(b.kind, b.mode, b.platforms.length, (k) => probableOf(deps, k));
+      let pages=1;
+      try {
+        const draft={id:"quote",network:b.platforms[0].platform,format:b.kind,title:b.headline??"Publication",headline:b.headline??"Publication",caption:b.caption??"",pillar:b.pillar??null,objective:null,scheduled_at:null,editorial:b.editorial};
+        if(b.kind!=="video")creativeContract(draft,"organic");
+        if(b.kind==="carousel") {
+          pages=editorialPages(draft).length;
+          if(b.platforms.some(x=>!PLATFORM_SPECS[x.platform].formats.includes("carousel")||pages>PLATFORM_SPECS[x.platform].carouselMax))throw new Error("Réseau incompatible avec ce carrousel.");
+        }
+      } catch(e) {throw new HttpError(400,(e as Error).message);}
+      const quote = quoteOne(b.kind, b.mode, b.platforms.length, (k) => probableOf(deps, k),pages);
       // Plafond de la tâche (reprises comprises) : seul le coût réel est débité.
-      const capOne = quoteOne(b.kind, b.mode, b.platforms.length, deps.estimate);
+      const capOne = quoteOne(b.kind, b.mode, b.platforms.length, deps.estimate,pages);
       if (b.mode !== "free") {
         if (!ai) throw new HttpError(402, L("L'IA n'est pas active pour ce projet (forfait Découverte, budget IA épuisé ou fournisseur désactivé) : choisissez la version gratuite.", "AI isn't active for this project (Discovery plan, AI budget used up or provider disabled): choose the free version."));
         if (b.approvedEstimateMicro == null || b.approvedEstimateMicro < quote) throw new HttpError(409, L("Prix à accepter avant de lancer (il a pu changer) : vérifiez-le puis relancez.", "Price to accept before starting (it may have changed): check it and start again."));
@@ -215,7 +227,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       // Sujet vérifié contre le projet (jamais un produit ou service d'un autre projet).
       const subject = b.subject ? resolveSubject(p, b.subject) : null;
       if (b.subject && (!subject || subject.kind !== b.subject.kind || subject.key !== (b.subject.kind === "service" ? b.subject.name.trim() : b.subject.key))) throw new HttpError(400, L("Produit ou service introuvable dans ce projet.", "Product or service not found in this project."));
-      const one = createOnePost(p, { kind: b.kind, date: b.date, time: b.time, timezone: b.timezone, platforms: b.platforms, pillar: b.pillar, headline: b.headline, lang: p.settings.language === "en" ? "en" : "fr", subject: b.subject ?? null, request: b.request ?? null });
+      const one = createOnePost(p, { kind: b.kind, date: b.date, time: b.time, timezone: b.timezone, platforms: b.platforms, pillar: b.pillar, headline: b.headline, lang: p.settings.language === "en" ? "en" : "fr", subject: b.subject ?? null, request: b.request ?? null,caption:b.caption,editorial:b.editorial });
       const params = produceParams(b.kind, b.mode);
       if (params.allowPaid) {
         const job = enqueue({ userId: user.id, projectId: p.id, type: "social.v2.produce", label: b.kind === "video" ? L("Publication vidéo", "Video post") : L("Publication image", "Image post"), payload: { projectId: p.id, ids: one.ids, allowPaid: true, maxCostEur: capOne / 1e6, approvedEstimateMicro: quote, aiImages: params.aiImages ?? null, aiBackground: !!params.aiBackground } });

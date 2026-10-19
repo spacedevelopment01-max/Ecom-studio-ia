@@ -76,10 +76,11 @@ export function realAdDeps(ctx: JobContext | null, p: Project, aiActive: boolean
       const { designPostWithAi, realAiPostDeps } = await import("../social-v2/ai-post");
       const { validCutouts } = await import("../engine/cutouts");
       const ref = p.business === "services" ? null : (validCutouts(p.id)[0]?.id ?? all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'original' AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at DESC LIMIT 1", p.id)[0]?.id ?? null);
-      const post = { id: `ad-${i.conceptId}-${i.aspect.replace(":", "x")}`, network: i.platform ?? "instagram", format: "image", title: i.hook, headline: i.hook, caption: "", pillar: i.angle, objective: "convert", request: [i.subject,i.campaignContext,i.confirmedOffer?`Offre réelle confirmée et demandée par le client : ${i.confirmedOffer}`:null].filter(Boolean).join("\n") } as unknown as import("../social-v2/deps").PostBrief;
+      const campaign=i.campaignContext?JSON.parse(i.campaignContext):{};
+      const post = { entryPoint:"ads-campaign", id: `ad-${i.conceptId}-${i.aspect.replace(":", "x")}`, network: i.platform ?? "instagram", format: "image", title: i.hook, headline: i.hook, caption: campaign.copy?.primary ?? "", advertising:campaign, pillar: i.angle, objective: "convert", request: [i.subject,i.campaignContext,i.confirmedOffer?`Offre réelle confirmée et demandée par le client : ${i.confirmedOffer}`:null].filter(Boolean).join("\n") } as unknown as import("../social-v2/deps").PostBrief;
       const d = {...realAiPostDeps(base),confirmedCommercialTexts:i.confirmedOffer?[i.confirmedOffer]:[]};
       // Textes du moteur (contrôlés) gardés tels quels : pas de réécriture par l'IA de texte.
-      const r = await designPostWithAi(p, post, { aspect: i.aspect, maxCostEur: i.maxCostEur, reference: ref, as: "ad" }, i.copyApproved ? withClientTexts(d,{headline:i.hook,cta:i.cta}) : d);
+      const r = await designPostWithAi(p, post, { aspect: i.aspect, maxCostEur: i.maxCostEur, reference: ref, as: "ad" }, i.copyApproved ? withClientTexts(d,{headline:i.hook,subline:campaign.copy?.sub ?? undefined,cta:i.cta}) : d);
       return { assetId: r.assetId, costMicro: r.costMicro, reason: r.note };
     },
     canWrite: ai,

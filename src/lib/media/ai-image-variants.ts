@@ -44,14 +44,16 @@ export async function reformatAiImage(projectId: string, assetId: string, aspect
     origin: "generated",
     status: "draft",
     sourceAssetId: a.id,
-    meta: { ...rest, aspect, gate:{verdict:"RETRY",fatal:false}, qualityNotice:"Aperçu local avec marges : ni recomposition IA ni campagne validée. Recomposer avec l’IA pour livrer.", reformat: { from: a.id, method: "studio", fromAspect: meta.aspect ?? null } },
+    meta: { ...rest,priorCreative:meta.finalImage?.creative??meta.priorCreative, aspect, gate:{verdict:"RETRY",fatal:false}, qualityNotice:"Aperçu local avec marges : ni recomposition IA ni campagne validée. Recomposer avec l’IA pour livrer.", reformat: { from: a.id, method: "studio", fromAspect: meta.aspect ?? null } },
   });
 }
 
 /** Demande pour une nouvelle version IA : même sujet, demande d'origine complétée par la modification du client. */
 export function redoRequest(meta: Record<string, any>, o: { aspect: ImageAspect; instruction?: string | null }) {
+  const creative=meta.finalImage?.creative??meta.priorCreative;
+  const editorial=creative?.purpose==="organic"?{role:creative.role,goal:creative.goal,structure:creative.structure,blocks:creative.blocks,sources:creative.sources,testimonial:creative.testimonial??undefined}:undefined;
   const s = meta.aiPost?.subject as { kind: "product" | "service"; key: string } | null | undefined;
   const subject: CreativeSubject | undefined = s ? (s.kind === "service" ? { kind: "service", name: s.key } : { kind: "product", key: s.key }) : undefined;
   const request = [meta.aiPost?.request, o.instruction?.trim() ? `Modification demandée : ${o.instruction.trim()}` : null].filter(Boolean).join(". ") || undefined;
-  return { sourceAssetId: meta.reformat?.from ?? meta.sourceAssetId, as: meta.aiAd ? ("ad" as const) : ("post" as const), kind: meta.aiAd ? "ad" : undefined, format: o.aspect, subject, request, ...(meta.finalImage?.mode ? {mode:meta.finalImage.mode}:{}), priorRecipe:meta.finalImage?.brief };
+  return { entryPoint:creative?.entryPoint??undefined, sourceAssetId: meta.reformat?.from ?? meta.sourceAssetId, as: meta.aiAd ? ("ad" as const) : ("post" as const), kind: meta.aiAd ? "ad" : undefined, format: o.aspect, subject, request,editorial,caption:creative?.caption,advertising:creative?.advertising??undefined,editorialData:creative?.editorialData,series:creative?.series??undefined, ...(meta.finalImage?.mode ? {mode:meta.finalImage.mode}:{}), priorRecipe:meta.finalImage?.brief };
 }

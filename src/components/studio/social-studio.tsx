@@ -23,7 +23,10 @@ import { BatchVisuals, CreateOnePanel } from "./social-create";
 import { EditedVideos } from "./video-gallery";
 import { GuidedVideo } from "./guided-video";
 
+import type { Editorial } from "@/lib/social-v2/creative-contract";
+
 export type PostV = {
+  editorial?:Editorial|null;
   id: string; network: string; format: string; status: string; scheduledAt: number | null; timezone: string; title: string; caption: string; hashtags: string; link: string | null;
   media: AssetView[]; connectionId: string | null; connectionName: string | null; planId: string | null; error: string | null; remoteUrl: string | null; publishedAt: number | null;
   engine: string; pillar: string | null; objective: string | null; approvedValid: boolean; approvedHash: string | null; userEdited: boolean; blocking: string[]; issues: string[]; level: string;
@@ -849,11 +852,11 @@ function PostEditorV2({ postId, data, onClose, onChanged }: { postId: string; da
   const base = `/api/projects/${id}/social/v2/posts/${postId}`;
   const { data: v, reload } = useApi<{ post: PostV; attempts: { attempt: number; started_at: number; outcome: string; detail: string }[]; platform: { label: string; captionMax: number; hashtags: [number, number]; level: string; formats: string[] }; variants?: { id: string; network: string; label: string; format: string; status: string; blocking: string[] }[] }>(base);
   const tz = data.timezone || "Europe/Paris";
-  const [f, setF] = useState<{ title: string; caption: string; hashtags: string; link: string; date: string; time: string; media: AssetView[]; network: string; connectionId: string } | null>(null);
+  const [f, setF] = useState<{ title: string; caption: string; editorial?:Editorial; hashtags: string; link: string; date: string; time: string; media: AssetView[]; network: string; connectionId: string } | null>(null);
   const [picker, setPicker] = useState(false);
   const [busy, setBusy] = useState(false);
   useEffect(() => {
-    if (v && !f) setF({ title: v.post.title, caption: v.post.caption, hashtags: v.post.hashtags, link: v.post.link ?? "", date: v.post.scheduledAt ? formatInTimeZone(v.post.scheduledAt, tz, "yyyy-MM-dd") : "", time: v.post.scheduledAt ? formatInTimeZone(v.post.scheduledAt, tz, "HH:mm") : "10:00", media: v.post.media, network: v.post.network, connectionId: v.post.connectionId ?? "" });
+    if (v && !f) setF({ title: v.post.title, caption: v.post.caption,editorial:v.post.editorial??undefined, hashtags: v.post.hashtags, link: v.post.link ?? "", date: v.post.scheduledAt ? formatInTimeZone(v.post.scheduledAt, tz, "yyyy-MM-dd") : "", time: v.post.scheduledAt ? formatInTimeZone(v.post.scheduledAt, tz, "HH:mm") : "10:00", media: v.post.media, network: v.post.network, connectionId: v.post.connectionId ?? "" });
   }, [v, f, tz]);
   const refresh = useCallback(async () => {
     await reload();
@@ -873,7 +876,7 @@ function PostEditorV2({ postId, data, onClose, onChanged }: { postId: string; da
     }
   };
   const save = () => run(async () => {
-    const r = await api<{ reapproval: boolean }>(base, { method: "PATCH", body: { title: f.title, caption: f.caption, hashtags: f.hashtags, link: f.link || null, media: f.media.map((m) => m.id), scheduledAt: f.date ? fromZonedTime(`${f.date}T${f.time}:00`, tz).getTime() : undefined, network: f.network, connectionId: f.connectionId || null } });
+    const r = await api<{ reapproval: boolean }>(base, { method: "PATCH", body: { title: f.title, caption: f.caption,editorial:f.editorial, hashtags: f.hashtags, link: f.link || null, media: f.media.map((m) => m.id), scheduledAt: f.date ? fromZonedTime(`${f.date}T${f.time}:00`, tz).getTime() : undefined, network: f.network, connectionId: f.connectionId || null } });
     toast("ok", r.reapproval ? t("Enregistré : la version a changé, une nouvelle approbation est nécessaire.", "Saved: the version changed, a new approval is needed.") : t("Enregistré.", "Saved."));
     setF(null);
     await refresh();
@@ -918,6 +921,11 @@ function PostEditorV2({ postId, data, onClose, onChanged }: { postId: string; da
           <Field label={t("Titre", "Title")} htmlFor="pe-title"><Input id="pe-title" disabled={locked} value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} /></Field>
           <Field label={t("Réseau", "Network")} htmlFor="pe-net"><Select id="pe-net" disabled={locked} value={f.network} onChange={(e) => setF({ ...f, network: e.target.value })}>{Object.entries(NET).map(([k, n]) => <option key={k} value={k}>{n.label}</option>)}</Select></Field>
         </div>
+        {!!f.editorial?.blocks?.length&&<section className="grid gap-2" data-edit-editorial-blocks>
+          <p className="text-sm font-medium">{t("Contenu des visuels", "Visual content")}</p>
+          <p className="text-xs text-muted">{t("Modifier ce contenu exige une nouvelle version du visuel ; les images actuelles restent conservées.","Changing this content requires a new visual version; current images are preserved.")}</p>
+          {f.editorial.blocks.map((block,i)=><Field key={i} label={t(`Bloc ${i+1}`,`Block ${i+1}`)} htmlFor={`editorial-block-${i}`}><Textarea id={`editorial-block-${i}`} value={block.text} disabled={locked||!!f.editorial?.testimonial} onChange={e=>setF({...f,editorial:{...f.editorial,blocks:f.editorial!.blocks!.map((b,n)=>n===i?{...b,text:e.target.value}:b)}})} /></Field>)}
+        </section>}
         <Field label={t("Légende", "Caption")} htmlFor="pe-cap" hint={<span className={cx("text-xs", f.caption.length > v.platform.captionMax ? "text-warn" : "text-muted")}>{f.caption.length}/{v.platform.captionMax}</span>}>
           <Textarea id="pe-cap" rows={6} disabled={locked} value={f.caption} onChange={(e) => setF({ ...f, caption: e.target.value })} />
         </Field>

@@ -16,12 +16,13 @@ import { fold } from "../seo-v2/lang";
 import { platformSpec } from "./platforms";
 import { hookSimilarity } from "./memory";
 import { brainIssues } from "./brain-check";
+import { creativeContract, type Editorial } from "./creative-contract";
 
 export type PostCheck = { blocking: string[]; issues: string[]; codes: string[]; score: number };
 const PLACEHOLDER = /\[(À|A) compléter[^\]]*\]|\[To complete[^\]]*\]/i;
 const firstLine = (s: string) => fold((s.split("\n").find((l) => l.trim()) ?? "").trim());
 
-type Row = { id: string; project_id: string; network: string; format: string; title: string; caption: string; hashtags: string; media: string; scheduled_at: number | null; plan_id: string | null; status: string; group_id: string | null };
+type Row = { id: string; project_id: string; network: string; format: string; title: string; caption: string; hashtags: string; media: string; scheduled_at: number | null; plan_id: string | null; status: string; group_id: string | null;brief:string;pillar:string|null;objective:string|null };
 
 export function checkPost(p: Project, postId: string): PostCheck {
   const r = one<Row>("SELECT * FROM posts WHERE id = ?", postId);
@@ -34,7 +35,17 @@ export function checkPost(p: Project, postId: string): PostCheck {
     (block ? blocking : issues).push(text);
   };
   const text = `${r.title}\n${r.caption}`;
-  for (const c of lintClaims(text, p)) add("invented_claim", `affirmation non confirmée : « ${c.term} » (${c.label})`, true);
+  const savedBrief=json<{editorial?:Editorial;headline?:string}>(r.brief??"{}",{});
+  const testimonial=savedBrief.editorial?.testimonial;
+  const hasAuthorizedReview=testimonial?.verified===true && testimonial.authorized===true && typeof testimonial.source==="string" && !!testimonial.source.trim() && typeof testimonial.quote==="string" && !!testimonial.quote.trim();
+  // A supplied review is evidence for that quotation, never for an aggregate rating or a new claim outside it.
+  const outsideQuote=hasAuthorizedReview?text.split(testimonial!.quote).join(""):text;
+  const inventedReviewOutside=/\b\d+\s+(?:avis|reviews?|clients?)\b|[★☆]|\bétoiles?\b|\bstars?\b|clients?\s+satisfaits?|satisfied customers?|happy customers?/i.test(outsideQuote);
+  for (const c of lintClaims(text, p)) {
+    const reviewTerm=/^(?:avis|reviews?|★|étoiles?|stars?|clients? satisfaits?|satisfied customers?|happy customers?)$/i.test(c.term);
+    if(hasAuthorizedReview && reviewTerm && !inventedReviewOutside)continue;
+    add("invented_claim", `affirmation non confirmée : « ${c.term} » (${c.label})`, true);
+  }
   for (const a of p.product.claimsToAvoid ?? []) {
     const k = fold(a.replace(/\(.*?\)/g, "").trim());
     if (k.length > 2 && fold(text).includes(k)) add("forbidden_claim", `affirmation à éviter : « ${a} »`, true);
@@ -49,6 +60,14 @@ export function checkPost(p: Project, postId: string): PostCheck {
   const spec = platformSpec(r.network);
   const media = json<string[]>(r.media, []);
   const assets = media.map((m) => getAsset(m));
+  if(savedBrief.editorial)try {
+    const current=creativeContract({...r,headline:savedBrief.headline??r.title,editorial:savedBrief.editorial},"organic");
+    const wanted=current.slides.length?current.slides.flatMap(s=>s.blocks):current.blocks;
+    for(const a of assets){if(!a)continue;const prior=json<any>(a.meta,{}).finalImage?.creative;
+      if(prior){const printed=prior.series?prior.series.pages.flatMap((p:any)=>p.blocks):prior.blocks;
+        if(JSON.stringify(wanted)!==JSON.stringify(printed)){add("editorial_visual_stale","contenu des blocs modifié : créer une nouvelle version des visuels avant validation",true);break;}}
+    }
+  } catch(e){add("editorial_evidence_missing",(e as Error).message,true);}
   for (const [i, a] of assets.entries()) {
     if (!a || a.project_id !== r.project_id || a.deleted_at) add("media_missing", `média ${i + 1} introuvable ou supprimé`, true);
     else if (a.status === "rejected" || !isAutoUsable(a)) add("media_rejected", `média ${i + 1} refusé ou non validé (« ${a.name} »)`, true);
@@ -62,6 +81,7 @@ export function checkPost(p: Project, postId: string): PostCheck {
   if (["video", "reel", "short"].includes(r.format) && assets.length && assets[0]?.kind !== "video") add("wrong_media", `${spec.label} : ce format attend une vidéo`, true);
   if (videoFormat && assets[0]?.duration && spec.videoSeconds && (assets[0].duration > spec.videoSeconds.max || assets[0].duration < spec.videoSeconds.min)) add("video_duration", `vidéo de ${Math.round(assets[0].duration)} s (${spec.label} : ${spec.videoSeconds.min} à ${spec.videoSeconds.max} s)`, true);
   if (r.format === "carousel" && media.length > spec.carouselMax) add("too_many_media", `${media.length} médias (au plus ${spec.carouselMax})`, true);
+  if (r.format === "carousel" && (media.length<2 || new Set(media).size!==media.length || assets.some(a=>a?.kind!=="image"))) add("incomplete_carousel", "un carrousel exige plusieurs images distinctes et ordonnées", true);
   if (r.caption.length > spec.captionMax) add("caption_too_long", `légende de ${r.caption.length} caractères (au plus ${spec.captionMax})`, true);
   const tags = r.hashtags.split(/\s+/).filter(Boolean);
   if (tags.length > spec.hashtags[1]) add("too_many_hashtags", `${tags.length} hashtags (au plus ${spec.hashtags[1]})`, false);

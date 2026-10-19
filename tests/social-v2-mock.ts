@@ -1,3 +1,5 @@
+import { creativeContract } from "@/lib/social-v2/creative-contract";
+import { stableHash } from "@/lib/brain/hash";
 /**
  * Outils Social V2 simulés : AUCUN appel d'IA, AUCUNE publication réelle, aucune dépense. Le publieur simulé
  * enregistre chaque envoi (pour vérifier l'absence de doublon) et peut simuler un délai dépassé, un refus, une
@@ -34,7 +36,9 @@ export function mockSocialDeps(o: { aiActive?: boolean; cost?: number; rewrite?:
     aiPost: async (p, post, m) => {
       log.aiPost++;
       if (m.allowPaid) log.paid++;
-      const a = await fakeImage(p, `ai-${post.id.slice(0, 6)}.jpg`, "image", { aiPost: { simulated: true }, post: post.id, socialV2: true });
+      let fingerprint:string|undefined;
+      try {fingerprint=stableHash("editorial",creativeContract(post,"organic"));}catch{/* Workflow fixture only: no invented evidence for an invalid review. */}
+      const a = await fakeImage(p, `ai-${post.id.slice(0, 6)}.jpg`, "image", { aiPost: { simulated: true }, finalImage:{purpose:"post",editorialFingerprint:fingerprint}, post: post.id, socialV2: true });
       return { assetId: a.id, costMicro: m.allowPaid ? cost : 0, by: "image_v2" };
     },
     rewrite: async (_p, post) => (log.rewrite++, { title: post.title, caption: o.rewrite ? o.rewrite(post.caption) : `${post.caption}\n\nVersion plus premium.`, hashtags: [], costMicro: 20_000 }),

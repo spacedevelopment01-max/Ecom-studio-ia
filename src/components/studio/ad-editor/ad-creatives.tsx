@@ -526,8 +526,8 @@ export function AdCreatives() {
             <Field
               label={t("Format", "Format")}
               hint={t(
-                "Vous pourrez ensuite décliner chaque publicité dans les autres formats, gratuitement (même photo).",
-                "You can then adapt each ad to the other formats for free (same photo).",
+                "Un aperçu avec marges est gratuit ; une recomposition IA dans un autre format fait l’objet d’un devis.",
+                "A letterboxed preview is free; AI recomposition in another format is quoted separately.",
               )}
             >
               <div className="flex flex-wrap gap-2" role="radiogroup">

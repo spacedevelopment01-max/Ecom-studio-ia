@@ -21,6 +21,7 @@ vi.mock("@/lib/ai/llm", () => ({
             fix: "",
           }
         : {
+            blocks:[{kind:"paragraph",text:"Explication SIMULÉE fondée sur la matière fournie."}],
             headline: "Message exact",
             subline: "",
             cta: "",
@@ -133,4 +134,19 @@ it("concepteur et contrôleur réels : brief complet, identité, références pr
       call.images.find((i: any) => i.label.includes("360px")).data,
     ).metadata(),
   ).toMatchObject({ width: 360 });
+});
+
+it("le concepteur et le contrôleur reçoivent les deux finalités et le contenu éditorial intégral — LLM simulé",async()=>{
+ const {creativeContract}=await import('@/lib/social-v2/creative-contract');
+ const u=await createUser(`purpose-llm-${crypto.randomUUID()}@test.invalid`,'motdepasse-test','Test');const p=loadProject(seedImageFixture(u.id,'artisan'));
+ const d=realAiPostDeps({userId:u.id,projectId:p.id,jobId:null});
+ for(const purpose of ['ad','organic'] as const){
+  const post={id:`purpose-${purpose}`,network:'instagram',format:'image',title:'Message exact',headline:'Message exact',caption:'Un conseil complet et précis.',pillar:'conseils',objective:'educate',scheduled_at:null,editorial:{structure:'checklist' as const,blocks:[{kind:'check' as const,text:'Dernière vérification indispensable.'}],sources:[{label:'Document fourni',text:'Fait connu',verified:true}]},advertising:{direction:{layout:'diagonale'},proofs:['Fait confirmé']}};
+  const creative=creativeContract(post,purpose),context={creative,aspect:'4:5' as const,mode:'one-step' as const,identity:publicationIdentity(p),strategy:p.strategy,facts:p.product.facts,request:null,recent:[]};
+  const start=requests.length;await d.copy!(p,post,{headline:'Message exact',subline:'',cta:'',brand:p.brand!.name},`${purpose}:copy`,false,context);
+  expect(requests[start].system).toContain(purpose==='ad'?'advertising creative director':'editorial art director');
+  expect(requests[start].prompt).toContain(purpose==='ad'?'PUBLICITÉ COMMERCIALE':'PUBLICATION ORGANIQUE');expect(requests[start].prompt).toContain('Dernière vérification indispensable.');expect(requests[start].prompt).toContain('Document fourni');
+  const img=await sharp({create:{width:1080,height:1350,channels:3,background:'#235766'}}).png().toBuffer();await d.review(img,null,['Message exact'],`${purpose}:review`,false,null,context);
+  expect(requests.at(-1).prompt).toContain('never penalize absence of a commercial CTA');expect(requests.at(-1).prompt).toContain('Invented review, attribution, proof or diagram data is fatal');
+ }
 });

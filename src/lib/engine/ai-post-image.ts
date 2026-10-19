@@ -19,8 +19,10 @@ import {
 import { aiPostEstimate, type PostBrief } from "../social-v2/deps";
 import { serviceItems } from "./service-media";
 import { resolveSubject, type CreativeSubject } from "../creative-subject";
+import type { Editorial } from "../social-v2/creative-contract";
 
 export type AiPostImageRequest = {
+  entryPoint?:PostBrief["entryPoint"];
   sourceAssetId?: string;
   mode?: "one-step" | "two-step";
   kind?: string;
@@ -36,6 +38,11 @@ export type AiPostImageRequest = {
   request?: string;
   /** Publicité (onglet Publicités) plutôt que publication. */
   as?: "post" | "ad";
+  caption?: string;
+  editorial?: Editorial;
+  advertising?:PostBrief["advertising"];
+  editorialData?:PostBrief["editorialData"];
+  series?:PostBrief["series"];
 };
 
 /** Format de l'onglet Images → proportions acceptées par la publication IA. */
@@ -79,11 +86,15 @@ export function aiPostBrief(
     ? title
     : (subject?.name ?? title).slice(0, 120);
   return {
-    id,
+    id,entryPoint:req.entryPoint,
     network: req.as === "ad" ? "meta" : "instagram",
-    format: "image",
+    format: req.kind==="carousel" || req.editorial?.slides ? "carousel" : "image",
     title: t,
-    caption: "",
+    caption: req.caption ?? "",
+    editorial:req.editorial,
+    advertising:req.advertising,
+    editorialData:req.editorialData,
+    series:req.series,
     pillar: req.kind ?? null,
     objective: req.as === "ad" || SELL.has(req.kind ?? "") ? "convert" : null,
     headline: req.headline?.trim() || t,
@@ -151,7 +162,7 @@ export async function generateAiPostImage(
       ? await referenceFor({ ...p, business: "services" }, req.photoId)
       : subject.referenceAssetId
     : await referenceFor(p, req.photoId);
-  if (p.business !== "services" && subject?.kind !== "service" && !reference)
+  if ((req.as==="ad" || SELL.has(req.kind??"") || ["scene","packshot","product"].includes(req.kind??"")) && p.business !== "services" && subject?.kind !== "service" && !reference)
     throw new UserFacingError(
       L(
         "Importez d'abord une photo du produit : l'IA part de votre vrai produit, elle ne l'invente pas.",
@@ -191,7 +202,7 @@ export async function generateAiPostImage(
         reference,
         subject,
         mode: req.mode,
-        as: req.as ?? (req.cta?.trim() ? "ad" : undefined),
+        as: req.as ?? (SELL.has(req.kind??"")?"ad":"post"),
       },
       withClientTexts(base, req),
     ),
@@ -206,6 +217,7 @@ export async function generateAiPostImage(
   const notice = retryNotice(p.userId, p.id, r.attempts ?? 1, r.costMicro);
   return {
     assetId: r.assetId,
+    assetIds:r.assetIds,
     costMicro: r.costMicro,
     ...(notice ? { notice } : {}),
   };
