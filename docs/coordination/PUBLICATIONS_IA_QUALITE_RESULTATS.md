@@ -1,5 +1,7 @@
 # Publications IA — corrections qualitatives et réception technique
 
+> Réception initiale conservée. La clarification Publicité / Publications et sa réception distincte figurent dans [PR_140_PUBLICITE_PUBLICATIONS.md](PR_140_PUBLICITE_PUBLICATIONS.md).
+
 Mission : [PR138, commentaire 6255978201](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/138#issuecomment-6255978201). Branche dédiée : `codex/publications-ia-qualite`, issue de **301e948407adc11712c0165dfadfa6f8fb949b66**. La livraison amont est conservée. Date des vérifications : 18 octobre 2026 UTC ; le commentaire de mission porte le libellé « 19 octobre ».
 
 **Code testé : 5ee845f10d3a9a846468421b9630385cc42e32aa.** Les preuves et ce rapport sont ajoutés ensuite, sans changement applicatif. Aucun merge, déploiement, thème, export, envoi social ni appel IA payant. **Coût fournisseur réellement engagé par cette passe : 0 €.**
