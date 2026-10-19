@@ -27,11 +27,19 @@ const ALT: Record<ConversionKind, Record<string, string>> = {
 const p = (s: string) => `<p>${s}</p>`;
 const DEMO_NOTE = "Exemple de politique — à remplacer par vos conditions réelles";
 
+/** Fichier du kit : disposition du ZIP de Thomas (`FRAISE_GUMMIES/images/01-hero.webp`, `…/logos/logo-proposition.png`) ou dossier
+ * plat des démonstrations du studio (`public/demo/fraise/01-hero.webp`, `public/demo/fraise/logo-proposition.png`) : les mêmes fichiers. */
+function packFile(dir: string | undefined, kind: ConversionKind, group: "images" | "logos", name: string) {
+  if (!dir) return "";
+  const zip = path.join(dir, kind === "fraise" ? "FRAISE_GUMMIES" : "ONDE_AUDIO", group, name);
+  return fs.existsSync(zip) ? zip : path.join(dir, kind, name);
+}
+
 /** Images du kit : WebP numérotés (un fichier vide ou absent reste signalé, jamais remplacé par une autre image). */
 async function loadImages(pid: string, userId: string, kind: ConversionKind, dir: string | undefined, spec: ThemeSpec) {
   const media: { role: string; file: string; asset: string }[] = [], missing: string[] = [];
   for (const role of IMAGE_ROLES[kind]) {
-    const source = dir ? path.join(dir, kind === "fraise" ? "FRAISE_GUMMIES" : "ONDE_AUDIO", "images", `${role}.webp`) : "";
+    const source = packFile(dir, kind, "images", `${role}.webp`);
     if (!source || !fs.existsSync(source) || fs.statSync(source).size === 0) { missing.push(role); continue; }
     const bytes = fs.readFileSync(source), meta = await sharp(bytes).metadata();
     if (!meta.width || !meta.height || meta.width < 400) { missing.push(role); continue; }
@@ -44,7 +52,7 @@ async function loadImages(pid: string, userId: string, kind: ConversionKind, dir
 
 /** Logos : SVG vectoriels (couleur pour l'en-tête, inverse pour le pied de page sombre, favicon) à partir du PNG du kit. */
 async function loadLogo(pid: string, userId: string, kind: ConversionKind, dir: string | undefined, spec: ThemeSpec) {
-  const source = dir ? path.join(dir, kind === "fraise" ? "FRAISE_GUMMIES" : "ONDE_AUDIO", "logos", "logo-proposition.png") : "";
+  const source = packFile(dir, kind, "logos", "logo-proposition.png");
   if (!source || !fs.existsSync(source)) return null;
   const palette = kind === "fraise" ? [{ name: "corail", hex: "#E4473F" }, { name: "grenat", hex: "#9E1420" }] : [{ name: "graphite", hex: "#1C1C1C" }, { name: "vert", hex: "#5EC417" }];
   const box: [number, number, number, number] = kind === "fraise" ? [0.555, 0.13, 0.665, 0.42] : [0, 0, 0.235, 1];
@@ -66,7 +74,9 @@ export async function conversionProject(userId: string, kind: ConversionKind, pa
   const palette = fraise ? { primary: "#E4473F", secondary: "#850212", accent: "#E4473F", light: "#FBF7F2", dark: "#141414" } : { primary: "#4ECD01", secondary: "#1F1F1F", accent: "#4ECD01", light: "#FFFFFF", dark: "#1F1F1F" };
   saveBrand(pid, { ...local.brand, name: brandName, generatedBy: "local" as const, tagline: fraise ? "Le goût fraise qui fait sourire." : "Écoutez. Posez. Repartez.", story: fraise ? "Une marque de démonstration autour d'un flacon de gummies à la fraise." : "Une marque de démonstration autour d'un casque graphite et vert.", palette });
   saveStrategy(pid, local.strategy);
-  const built = await composeShop(pid, "vitrine", null, false), spec = built.spec;
+  // Thème de référence du catalogue actif (fraise / onde) : le thème composé porte bien son identifiant ; la composition
+  // complète ci-dessous (modèles, pages, menus, en-tête, pied de page) remplace ensuite celle du catalogue.
+  const built = await composeShop(pid, kind, null, false), spec = built.spec;
   spec.name = `${brandName} — thème référence ${fraise ? "Lumora" : "Pawish"}`;
   spec.meta = { ...spec.meta, reference: undefined, demo: { isDemo: true, provenance: DEMO_PROVENANCE, contactTest: false } };
   spec.store.shopName = fraise ? "Fraise" : "ONDE"; spec.store.business = "products"; spec.store.paymentTypes = []; spec.store.policies = []; spec.store.pages = []; spec.store.products = [];

@@ -43,7 +43,8 @@ describe("Les quatre démonstrations dans leur thème de référence", async () 
       const { spec, project } = f;
       expect(spec.direction).toBe(id);
       expect(validateSpec(spec)).toEqual([]);
-      expect(spec.store.shopName).toBe(f.demo.brand);
+      // FRAISE / ONDE : composition du lot 2C, nom court en en-tête (« Fraise », « ONDE ») ; le nom complet est dans le pied de page.
+      expect(id === "fraise" || id === "onde" ? (id === "fraise" ? "Fraise" : "ONDE") : f.demo.brand).toBe(spec.store.shopName);
       for (const [k, v] of Object.entries(EXPECT[id].profile)) expect(spec.settings[k], k).toBe(v);
       // Palette : les schémas dérivent des rôles de couleur de la démonstration (accent de marque dans un schéma plein).
       const schemes = spec.settings.color_schemes as Record<string, { settings: Record<string, string> }>;
@@ -72,8 +73,11 @@ describe("Les quatre démonstrations dans leur thème de référence", async () 
         // Rien d'inventé : les seules mentions « [À compléter : …] » visibles sont des informations que seul le client
         // peut fournir (fiche technique, entretien, livraison, retours, légendes de réalisations, horaires, zone, téléphone).
         // Les pages d'information (FAQ, livraison, mentions, à propos, prestations) listent explicitement chaque élément attendu.
+        // FRAISE / ONDE : composition de référence du lot 2C (contenu vérifié par tests/lot2c-conversion.test.ts et
+        // tests/demos-fraise-onde-composition.test.ts) ; ses cellules « [À compléter] » (colonne « Autres » du comparatif,
+        // caractéristiques) sont voulues : rien n'est affirmé sur d'autres marques ni sur des valeurs non confirmées.
         const showcase = route === "/" || route.startsWith("/products/");
-        for (const m of visible.matchAll(/\[À compléter(?: : ([^\]]*))?\]/g)) expect(showcase ? ALLOWED_TODO.some((re) => re.test(m[1] ?? "")) : !!m[1], `${id} ${route} : ${m[0]}`).toBe(true);
+        if (id !== "fraise" && id !== "onde") for (const m of visible.matchAll(/\[À compléter(?: : ([^\]]*))?\]/g)) expect(showcase ? ALLOWED_TODO.some((re) => re.test(m[1] ?? "")) : !!m[1], `${id} ${route} : ${m[0]}`).toBe(true);
         expect(r.html).toContain(f.demo.brand);
       }
       // Entête : nom de la marque ; profil graphique appliqué sur le body.
