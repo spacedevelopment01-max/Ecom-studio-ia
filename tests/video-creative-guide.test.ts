@@ -162,7 +162,7 @@ describe("Guide créatif vidéo", async () => {
     expect(rendered).toBeNull();
   });
 
-  it("sans contrôle visuel des plans : aucun titre d'étape n'affirme ce que le plan montre (seule l'accroche reste)", async () => {
+  it("sans contrôle visuel : contenus conservés et vérification explicitement requise", async () => {
     const a = await painter();
     let rendered: any = null;
     const r = await runThreeScenes(null, a.id, { as: "ad", scenes: 3, totalS: 15, aspect: "9:16" }, {
@@ -173,9 +173,9 @@ describe("Guide créatif vidéo", async () => {
       spentMicro: () => 0,
       render: async (_p: unknown, _k: string, doc: unknown) => ((rendered = doc), "v"),
     });
-    expect(rendered.clips[1].overlays).toHaveLength(0);
-    expect(rendered.clips[2].overlays).toHaveLength(0);
-    expect(r.notes.join(" ")).toContain("titres d'étapes retirés");
+    expect(rendered.clips[1].overlays.length).toBeGreaterThan(0);
+    expect(rendered.clips[2].overlays.length).toBeGreaterThan(0);
+    expect(r.notes.join(" ")).toContain("contrôle visuel indisponible");
   });
 
   it("voix et sous-titres : 55–75 mots pour 30 s au prorata ; sous-titres découpés par groupes de sens, deux lignes au plus", () => {

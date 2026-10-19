@@ -22,7 +22,7 @@ import { platformSpec } from "./platforms";
 import { aiPostProbableMicro, estimateTaskMicro, capMicro, estimateMicro } from "../ai/estimate";
 import { aiPostMaxMicro, textLayoutMaxMicro } from "../ai/media-providers";
 import type { CreativeSubject } from "../creative-subject";
-import type { Editorial } from "./creative-contract";
+import { creativeContract, type Editorial } from "./creative-contract";
 
 export type MediaBy = "library" | "local" | "image_v2" | "ads_v2" | "video_v2" | "ai_post";
 /** `attempts` : essais payés pour obtenir ce visuel (plus d'un : la reprise est annoncée au client). */
@@ -253,7 +253,7 @@ export function realSocialDeps(ctx: JobContext | null, p: Project, aiActive: boo
     },
     async video(pp, post, o) {
       const { runVideoEngineV2 } = await import("../video-v2/engine");
-      const r = await runVideoEngineV2(ctx, pp.id, { ask: { text: `${post.pillar ?? ""} : ${post.title}`, platform: PLATFORM_VIDEO[post.network] ?? "reels", aspect: aspectOf(post.network, post.format) === "4:5" ? "4:5" : "9:16", durationS: 15, allowGeneration: o.allowPaid }, approveGeneration: o.allowPaid, maxCostEur: o.maxCostEur });
+      const r = await runVideoEngineV2(ctx, pp.id, { ask: { text: post.request ?? post.caption ?? post.title, kind: "social_content", editorial: creativeContract(post,"organic"), subject:post.subject, platform: PLATFORM_VIDEO[post.network] ?? "reels", aspect: aspectOf(post.network, post.format)==="2:3" ? "9:16" : aspectOf(post.network, post.format) as "9:16"|"4:5"|"1:1"|"16:9", durationS: 15, allowGeneration: o.allowPaid }, approveGeneration: o.allowPaid, maxCostEur: o.maxCostEur });
       return { assetId: r.videoAssetId, costMicro: r.costMicro, by: "video_v2", note: r.videoAssetId ? undefined : r.reason };
     },
     async ad(pp, post, o) {

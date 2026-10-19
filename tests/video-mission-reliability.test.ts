@@ -18,7 +18,9 @@ async function fixture(service = false) {
   const png = await sharp({ create: { width: 90, height: 160, channels: 3, background: "#345678" } }).png().toBuffer();
   const deps: ThreeScenesDeps = {
     writePlan: vi.fn(async (_p, _s, req) => localScenePlan(p, null, req)),
-    keyframe: vi.fn(async () => png),
+    frames: async()=>[Buffer.from("image de contrôle simulée")],
+        reviewMedia: async()=>({score:9,sameProduct:true,productAltered:false,characterConsistent:null,offTopic:false,artifacts:false,personVisible:false,issues:[]}),
+        keyframe: vi.fn(async () => png),
     clip: vi.fn(async () => Buffer.from("faux clip : orchestration uniquement")),
     stock: vi.fn(async (_p, k) => ({ assetId: (await saveAsset({ projectId: p.id, userId: p.userId, data: Buffer.from(`stock ${k}`), name: `stock-${k}.mp4`, mime: "video/mp4", role: "clip", origin: "import" })).id, durationS: 8 })),
     spentMicro: () => 0,
@@ -54,6 +56,15 @@ describe("Mission vidéo : refus explicites et acquis conservés (fournisseurs s
     await expect(runThreeScenes(null, p.id, { as: "ad" }, deps)).rejects.toThrow("résultat fournisseur incertain");
     expect(deps.clip).not.toHaveBeenCalled();
     expect(deps.render).not.toHaveBeenCalled();
+  });
+
+  it("sans contrôle, l'image reste à vérifier et aucun clip n'est payé",async()=>{
+    const {p,deps}=await fixture();delete deps.reviewMedia;
+    await expect(runThreeScenes(null,p.id,{as:"ad"},deps)).rejects.toThrow(/vérifier/);
+    expect(deps.clip).not.toHaveBeenCalled();
+    const images=all<any>("SELECT * FROM assets WHERE project_id = ? AND role = 'scene'",p.id);
+    expect(images.length).toBe(1);
+    expect((await import("@/lib/quality/usable")).isAutoUsable(images[0])).toBe(false);
   });
 
   it("une reprise après échec du mouvement conserve le scénario et l'image déjà obtenus", async () => {

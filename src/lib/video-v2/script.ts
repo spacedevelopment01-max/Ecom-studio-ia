@@ -6,6 +6,7 @@
  * sont refusés (la version locale reprend la main). Une section « preuve » n'existe que s'il y a une preuve.
  */
 import { z } from "zod";
+import { videoEditorialInstruction, organicVideo } from "./editorial";
 import type { AdInsight } from "../ads-v2/types";
 import { spokenUsage } from "./strategy";
 import type { CreativeStrategy, NarrativeStyle, ScriptPart, ScriptSection, VideoIntent, VideoScript } from "./types";
@@ -45,7 +46,7 @@ const NEEDS_PROOF = [
 const fold = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 /** Défauts d'un script : formules creuses, affirmations non confirmées, durée de voix impossible, CTA absent. */
-export function scriptIssues(sections: ScriptSection[], material: { proofs: string[]; facts: { label: string; value: string }[]; claimsToAvoid?: string[] }): string[] {
+export function scriptIssues(sections: ScriptSection[], material: { proofs: string[]; facts: { label: string; value: string }[]; claimsToAvoid?: string[]; ctaRequired?:boolean }): string[] {
   const issues: string[] = [];
   const known = fold([...material.proofs, ...material.facts.map((f) => `${f.label} ${f.value}`)].join(" "));
   for (const s of sections) {
@@ -63,7 +64,7 @@ export function scriptIssues(sections: ScriptSection[], material: { proofs: stri
     if (words > Math.ceil(s.durationS * WORDS_PER_SECOND) + 1) issues.push(`${s.part} : voix trop longue pour ${s.durationS} s (${words} mots)`);
   }
   if (!sections.some((s) => s.part === "hook")) issues.push("pas d'accroche d'ouverture");
-  if (!sections.some((s) => s.part === "cta" && (s.onScreen.trim() || s.voice.trim()))) issues.push("pas d'appel à l'action");
+  if (material.ctaRequired !== false && !sections.some((s) => s.part === "cta" && (s.onScreen.trim() || s.voice.trim()))) issues.push("pas d'appel à l'action");
   return [...new Set(issues)];
 }
 
@@ -122,6 +123,14 @@ function voiceLines(i: AdInsight, st: CreativeStrategy, intent: VideoIntent): Re
 
 /** Script local (gratuit) : la base de toute vidéo, et le repli quand l'IA échoue au contrôle. */
 export function localScript(i: AdInsight, st: CreativeStrategy, intent: VideoIntent): VideoScript {
+  if (intent.editorial) {
+    const e = intent.editorial;
+    const content = e.blocks.length ? e.blocks.map(b=>b.text) : [e.caption];
+    const lines = [e.title, ...content.filter(Boolean)];
+    const seconds = st.durationS / lines.length;
+    const sections:ScriptSection[] = lines.map((text,k)=>({part:k===0?"hook":"development",durationS:seconds,voice:text,onScreen:k===0?e.title:""}));
+    return {style:st.style.narrative,sections,by:"local",issues:scriptIssues(sections,{proofs:st.proofs,facts:i.facts,ctaRequired:!organicVideo(e)})};
+  }
   const parts: ScriptPart[] = ["hook", "development", "demonstration", ...(st.proofs.length ? (["proof"] as const) : []), "conclusion", "cta"];
   // Vidéo très courte : on garde l'essentiel (accroche, démonstration, CTA).
   const kept = st.durationS < 10 ? parts.filter((p) => p === "hook" || p === "demonstration" || p === "cta") : parts;
@@ -152,6 +161,7 @@ export function scriptSystem(lang: "fr" | "en"): string {
 
 export function scriptPrompt(i: AdInsight, st: CreativeStrategy, intent: VideoIntent, durations: { part: ScriptPart; durationS: number }[], feedback?: string): string {
   return [
+    videoEditorialInstruction(intent.editorial),
     `Intention : ${intent.kind} — but : ${intent.goal}. Plateforme : ${intent.platform}. Durée totale : ${st.durationS} s.`,
     `Marque : ${i.brand}. Offre : ${i.offerName} (${i.category.label}). Audience : ${st.audience}.`,
     `Angle : ${st.angle}. Message : ${st.message}. Émotion : ${st.emotion}. Style narratif : ${st.style.narrative}.`,

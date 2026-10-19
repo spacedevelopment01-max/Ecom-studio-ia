@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { VideoEditorialSchema } from "@/lib/video-v2/editorial";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
 import { enqueue } from "@/lib/jobs";
@@ -18,6 +19,7 @@ const AskSchema = z.object({
   aspect: z.enum(VIDEO_FORMATS).optional(),
   durationS: z.number().min(6).max(600).optional(),
   audience: z.string().max(300).optional(),
+  editorial:VideoEditorialSchema.optional(),
   allowGeneration: z.boolean().optional(),
 });
 

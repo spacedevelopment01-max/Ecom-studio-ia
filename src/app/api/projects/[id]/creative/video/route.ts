@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { VideoEditorialSchema } from "@/lib/video-v2/editorial";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
 import { all, json, one } from "@/lib/db";
@@ -20,7 +21,8 @@ const Subject = z.discriminatedUnion("kind", [z.object({ kind: z.literal("produc
 const Req = z.object({
   as: z.enum(["post", "ad"]),
   subject: Subject.optional(),
-  request: z.string().max(600).optional(),
+  editorial:VideoEditorialSchema.optional(),
+  request: z.string().max(12000).optional(),
   aspect: z.enum(["9:16", "16:9", "1:1", "4:5"]).default("9:16"),
   scenes: z.number().int().min(SCENE_LIMITS.scenes[0]).max(SCENE_LIMITS.scenes[1]).default(3),
   totalS: z.number().int().min(SCENE_LIMITS.totalS[0]).max(SCENE_LIMITS.totalS[1]).default(15),

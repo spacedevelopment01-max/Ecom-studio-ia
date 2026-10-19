@@ -10,6 +10,9 @@
  * budget ne suffit pas), plans FINAL mémorisés et réutilisés (une reprise ne repaie jamais un plan accepté), aucune
  * génération sans contrôle de vision disponible, aucune génération sans accord du client (`approveGeneration`).
  */
+import { organicVideo, videoContext, editorialVideoIssues } from "./editorial";
+import { projectForSubject } from "../social-v2/ai-post";
+import { resolveSubject } from "../creative-subject";
 import { projectRights } from "../plan-gates";
 import crypto from "node:crypto";
 import fs from "node:fs";
@@ -82,12 +85,14 @@ const hash = (x: unknown) => crypto.createHash("sha256").update(JSON.stringify(x
 export async function runVideoEngineV2(ctx: JobContext | null, projectId: string, req: VideoRequestV2, injected?: VideoV2Deps): Promise<VideoRunResult> {
   const p = loadProject(projectId);
   const jobId = ctx?.job.id ?? null;
+  const selected = resolveSubject(p, req.ask.subject ?? null);
+  const focused = projectForSubject(p, selected);
   const deps = injected ?? realVideoDeps(ctx, p, aiActiveFor(p.userId, p.id));
   const before = jobId ? (all<{ c: number }>("SELECT COALESCE(SUM(cost), 0) c FROM ai_calls WHERE job_id = ?", jobId)[0]?.c ?? 0) : 0;
   const capMicro = Math.round((req.maxCostEur ?? DEFAULT_VIDEO_CAP_EUR) * EUR);
   const cur = currentTrace();
   const own = before + capMicro;
-  return withTrace({ ...(jobId ? { jobId } : {}), projectId, ...(cur.intent ? {} : { intent: "CREATE_VIDEO" }), costCapMicro: cur.costCapMicro != null ? Math.min(cur.costCapMicro, own) : own }, () => engine(ctx, p, req, deps, { capMicro, spentMicro: 0 }));
+  return withTrace({ ...(jobId ? { jobId } : {}), projectId, ...(cur.intent ? {} : { intent: "CREATE_VIDEO" }), costCapMicro: cur.costCapMicro != null ? Math.min(cur.costCapMicro, own) : own }, () => engine(ctx, focused, req, deps, { capMicro, spentMicro: 0 }));
 }
 
 async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, deps: VideoV2Deps, budget: Budget): Promise<VideoRunResult> {
@@ -111,6 +116,7 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
   // 3. Script : local d'abord, IA ensuite (contrôlée, une reprise ciblée au plus).
   // Plan seul (estimation affichée avant accord) : script local, aucun appel d'IA.
   const script = await writeScript(p, deps, insight, strategy, intent, jobId, notes, !req.planOnly);
+  if (intent.editorial && script.issues.length) throw new Error(`Contenu vidéo à adapter avant les médias : ${script.issues.join(" ; ")}`);
   const ugc = intent.kind === "ugc";
   const persona: PersonaSheet | null = ugc ? personaSheet(p.id, insight) : null;
 
@@ -285,7 +291,7 @@ async function writeScript(p: Project, deps: VideoV2Deps, i: AdInsight, st: Crea
     const sections = s.sections.map((x) => (ugcScriptIssues([x]).length ? { ...x, voice: honestLine(i), onScreen: x.onScreen && ugcScriptIssues([{ ...x, voice: "" }]).length ? "" : x.onScreen } : x));
     return { ...s, sections, issues: [...s.issues.filter((x) => !bad.includes(x))] };
   };
-  if (!allowAi || !deps.canWrite || intent.complexity === "simple") return ugcFix(local);
+  if (intent.editorial || !allowAi || !deps.canWrite || intent.complexity === "simple") return ugcFix(local);
   const material = { proofs: st.proofs, facts: i.facts, claimsToAvoid: i.claimsToAvoid };
   let feedback: string | undefined;
   for (let round = 0; round < 2; round++) {
@@ -338,7 +344,7 @@ function localMedia(s: ShotPlan): Media {
   return { kind: "doc", assetId: null };
 }
 
-async function clipFrames(buf: Buffer): Promise<Buffer[]> {
+export async function clipFrames(buf: Buffer): Promise<Buffer[]> {
   const dir = tmpDir("video2-frames");
   try {
     const f = path.join(dir, "in.mp4");
@@ -388,7 +394,7 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
   const { p, deps, s, stats } = o;
   const base: ShotOutcome = { shotId: s.id, method: s.method, verdict: "FINAL", assetId: null, attempts: 0, reused: false, costMicro: 0, reason: s.why, codes: [] };
   // Image Engine V2 pour un plan sans visuel (recherche d'abord, génération selon ses propres règles et plafond).
-  if (s.source.kind === "image_v2") {
+  if (s.source.kind === "image_v2" && p.business !== "services") {
     const img = await o.deps.image({ kind: o.p.business === "services" ? "trade_photo" : "ambiance", support: "video", aspect: o.intent.aspect === "16:9" ? "16:9" : o.intent.aspect === "1:1" ? "1:1" : "9:16", topic: s.subject, allowGenerate: o.intent.complexity !== "simple", name: `video-${s.part}`, maxControls: 2 });
     stats.localShots++;
     if (img) return { media: { kind: "image", assetId: img.assetId }, outcome: { ...base, assetId: img.assetId, reason: "image de l'Image Engine V2" } };
@@ -406,10 +412,13 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
         return null;
       });
     if (clip) {
+      if(clip.durationS < s.durationS || o.stockTaken?.has(clip.assetId)) throw new Error(`Scène ${s.id} trop courte ou répétée : montage incomplet`);
+      o.stockTaken?.add(clip.assetId);
       stats.localShots++;
       return { media: { kind: "video", assetId: clip.assetId, durationS: clip.durationS }, outcome: { ...base, method: "existing_video", assetId: clip.assetId, reason: "plan vidéo libre de droits (Pixabay ou Pexels) choisi pour ce moment" } };
     }
   }
+  if(p.business === "services" && s.method !== "existing_video") throw new Error(`Scène ${s.id} : aucun plan pertinent trouvé pour cette prestation. Vidéo incomplète ; acquis conservés.`);
   if (s.source.kind !== "generate") {
     stats.localShots++;
     const m = localMedia(s);
@@ -429,11 +438,8 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
       startAsset = img.assetId;
     }
   }
-  if (!start) {
-    stats.localShots++;
-    o.notes.push(`${s.id} : aucune image de départ fiable — plan monté localement`);
-    return { media: { kind: "doc", assetId: null }, outcome: { ...base, method: "kinetic_type", reason: "aucune image de départ : composition locale" } };
-  }
+  if (!start) throw new Error(`Scène ${s.id} : référence nécessaire pour un vrai clip, aucun substitut local.`);
+
   const productRef = s.showsProduct && o.inv.cutout ? deps.data(o.inv.cutout.id) : null;
   const key = shotKey({ v: 1, p: p.id, provider, model, subject: s.subject, action: s.action, camera: s.camera, framing: s.framing, d: s.durationS, start: startAsset, persona: o.persona?.id ?? null, fb: o.feedback ?? null });
   const memo = shotMemo(p.id, key);
@@ -481,11 +487,7 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
   }
   rememberShot(p.id, key, { assetId: last.verdict === "FINAL" ? last.assetId : null, method: s.method, verdict: last.verdict, provider, model, costMicro: spent, attempts: maxAttempts, reason: last.reason });
   if (last.verdict === "FINAL" && last.assetId) return { media: { kind: "video", assetId: last.assetId, generated: true }, outcome: { ...base, verdict: "FINAL", assetId: last.assetId, attempts: maxAttempts, costMicro: spent, reason: "plan généré accepté au contrôle", codes: [] }, characterRef: s.character && startAsset ? { assetId: startAsset, data: start } : null };
-  // Plan refusé (produit transformé, personnage incohérent…) : jamais monté ; plan local à la place.
-  stats.localShots++;
-  if (last.assetId) o.notes.push(`${s.id} : plan généré refusé (${last.reason || last.codes.join(", ")}) — remplacé par un plan local`);
-  const fallback = s.showsProduct && o.inv.cutout ? "packshot" : s.reference.assetId && o.inv.photos.some((x) => x.id === s.reference.assetId) ? "animated_image" : "kinetic_type";
-  return { media: fallback === "animated_image" ? { kind: "image", assetId: s.reference.assetId } : { kind: "doc", assetId: null }, outcome: { ...base, method: fallback, verdict: last.assetId ? last.verdict : "PROVISIONAL", assetId: null, attempts: maxAttempts, costMicro: spent, reason: `plan local après ${last.assetId ? "refus" : "arrêt"} du plan généré`, codes: last.codes } };
+  throw new Error(`Scène ${s.id} non obtenue ou refusée : ${last.reason || last.codes.join(", ")}. Versions conservées, aucun plan simplifié substitué.`);
 }
 
 // ------------------------------------------------------------------------------------------- assemblage
@@ -643,7 +645,7 @@ function assemble(a: AssembleInput): VideoDocument {
     const target = [...clips].reverse().find((c) => c.source.kind !== "video");
     if (target) target.durationS = Math.round((target.durationS + lost) * 100) / 100;
   }
-  const promo = a.intent.kind !== "ugc" && clips.some((c) => c.source.kind === "video");
+  const promo = !organicVideo(a.intent.editorial) && a.intent.kind !== "ugc" && clips.some((c) => c.source.kind === "video");
   if (promo && a.strategy.style.music !== "none") clips = snapToBeat(clips, songGrid(songStyleFor(a.p), clips.reduce((t, c) => t + c.durationS, 0)).beatS);
   // Direction artistique de la marque : la même ligne que les publications (typographie, élément graphique, rythme, lumière).
   const look = artDirection(adArt(a.p, a.typo)).video;
@@ -662,7 +664,7 @@ function assemble(a: AssembleInput): VideoDocument {
     brand: { palette: { ...a.pal }, fonts: { heading: a.typo.heading, body: a.typo.body }, name: a.insight.brand },
     disclosure: null,
     grade: look.grade,
-    meta: { intent: a.intent.kind, source: "engine", createdFrom: null, runId: a.runId, ...(promo ? { promo: true } : {}) },
+    meta: { editorial:videoContext(a.p, a.intent.editorial?.purpose === "organic" ? "post" : "ad", a.intent.goal, null, a.intent.editorial), intent: a.intent.kind, source: "engine", createdFrom: null, runId: a.runId, ...(promo ? { promo: true } : {}) },
   };
   for (const [k, s] of a.shots.entries()) {
     const c = clips[k];

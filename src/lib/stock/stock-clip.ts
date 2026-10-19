@@ -204,7 +204,7 @@ export async function findStockClip(ictx: Ictx, p: Project, r: StockClipRequest,
         const dir = tmpDir("stockclip");
         try {
           fs.writeFileSync(path.join(dir, "in.mp4"), buf);
-          await execTool("ffmpeg", ["-y", "-v", "error", "-ss", String(Math.max(0.5, Math.min(3, (v.duration || 4) / 2))), "-i", path.join(dir, "in.mp4"), "-frames:v", "1", "-q:v", "3", path.join(dir, "f.jpg")]);
+          await execTool("ffmpeg", ["-y", "-v", "error", "-ss", String(Math.max(0.1, Math.min(r.durationS, v.duration || r.durationS) / 2)), "-i", path.join(dir, "in.mp4"), "-frames:v", "1", "-q:v", "3", path.join(dir, "f.jpg")]);
           const frame = fs.readFileSync(path.join(dir, "f.jpg"));
           d = (await checkAmbiance({ ...ictx, usageKey: `${r.key}:stockclipqc:${v.source}:${v.id}` }, frame, subject, services)).decision;
           if (d.deliverable !== "stock_video") d = decide("stock_video", d.checked ? { checker: "ai", score: d.score, codes: [...d.fatalCodes, ...d.blockingCodes], issues: d.feedback ? [d.feedback] : [] } : { checker: "ai", score: null, error: d.reason });
@@ -219,7 +219,7 @@ export async function findStockClip(ictx: Ictx, p: Project, r: StockClipRequest,
         diag.rejected++;
         continue;
       }
-      const keep = gateSave(ictx, d);
+      const keep = gateSave(ictx, ai ? d : decide("stock_video", { checker:"ai",score:null,error:"Contrôle visuel indisponible : sélection par métadonnées uniquement" }));
       const a = await saveAsset({ projectId: p.id, userId: p.userId, data: buf, name: `${C("plan-libre", "stock-shot")}-${r.part}-${v.source}-${v.id}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", meta: { provider: v.source, recipe: `${stockVideoCredit(v)}${v.silhouette ? C(" — silhouette (personne de dos ou dans l'ombre, visage non visible)", " — silhouette (seen from behind or in shadow, face not visible)") : ""}`, stock: { source: v.source, id: v.id, page: v.page, author: v.author, license: v.license, ...(v.aiGenerated ? { aiGenerated: true } : {}), ...(v.silhouette ? { silhouette: true } : {}) }, subject: r.topic, part: r.part, durationS: v.duration, ...keep.meta }, status: "review" });
       exclude.add(`${v.source}:${v.id}`);
       return { assetId: a.id, durationS: v.duration };

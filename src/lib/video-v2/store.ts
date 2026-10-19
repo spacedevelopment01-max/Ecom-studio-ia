@@ -60,7 +60,7 @@ export const VideoDocumentSchema = z.object({
   brand: z.object({ palette: z.record(z.string(), z.string().max(64)), fonts: z.object({ heading: z.string().max(60), body: z.string().max(60) }), name: z.string().max(120) }),
   disclosure: z.string().max(80).nullable(),
   grade: z.enum(["punch", "warm", "cinematic", "soft"]).optional(),
-  meta: z.object({ intent: z.string().max(40), source: z.enum(["engine", "user", "ai_local", "ai"]), createdFrom: z.string().max(60).nullable(), runId: z.string().max(60).nullable(), promo: z.boolean().optional() }),
+  meta: z.object({ editorial:z.record(z.string(),z.unknown()).optional(), intent: z.string().max(40), source: z.enum(["engine", "user", "ai_local", "ai"]), createdFrom: z.string().max(60).nullable(), runId: z.string().max(60).nullable(), promo: z.boolean().optional() }),
 });
 
 /** Médias référencés par le document (images, vidéos, voix, musique, calques) — tous de la bibliothèque. */
