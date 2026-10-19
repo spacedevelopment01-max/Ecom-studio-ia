@@ -1,0 +1,80 @@
+{%- comment -%}
+  Image et texte alternés : une rangée par bloc (visuel, surtitre, titre, texte, bouton). Dispositions : alternance,
+  visuel toujours à gauche ou à droite ; format des visuels réglable ; sur téléphone, visuel puis texte.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign speed = s.animation_speed | default: 'normal'
+-%}
+<section class="es-section cv-alt cv-alt--{{ s.layout }} cv-alt--{{ s.ratio }} cv-anim cv-anim--{{ speed }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;">
+  <div class="es-container cv-alt__inner">
+    {%- if s.heading != blank -%}
+      <header class="cv-head"{% render 'cv-reveal', animation: s.animation %}>
+        {%- if s.eyebrow != blank -%}<p class="cv-eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
+        <h2 class="es-heading cv-title cv-title--h2">{{ s.heading | escape }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</h2>
+        {%- if s.text != blank -%}<div class="es-rte cv-head__text">{{ s.text }}</div>{%- endif -%}
+      </header>
+    {%- endif -%}
+    {%- for block in section.blocks -%}
+      {%- liquid
+        assign side = 'left'
+        if s.layout == 'alternate'
+          assign rem = forloop.index0 | modulo: 2
+          if rem == 1
+            assign side = 'right'
+          endif
+        elsif s.layout == 'image-right'
+          assign side = 'right'
+        endif
+      -%}
+      <div class="cv-alt__row cv-alt__row--{{ side }}" {{ block.shopify_attributes }}>
+        <div class="cv-alt__media cv-zoomable"{% render 'cv-reveal', animation: s.animation, index: forloop.index0 %}>{% render 'ed-media', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.image_alt, role_label: block.settings.media_role, focus_x: block.settings.focus_x, focus_y: block.settings.focus_y %}</div>
+        <div class="cv-alt__copy"{% render 'cv-reveal', animation: s.animation, index: forloop.index0 %}>
+          {%- if block.settings.eyebrow != blank -%}<p class="cv-eyebrow">{{ block.settings.eyebrow | escape }}</p>{%- endif -%}
+          <h3 class="es-heading cv-alt__title">{{ block.settings.heading | escape }}{% if block.settings.heading_accent != blank %} <em class="cv-accent">{{ block.settings.heading_accent | escape }}</em>{% endif %}</h3>
+          {%- if block.settings.text != blank -%}<div class="es-rte cv-alt__text">{{ block.settings.text }}</div>{%- endif -%}
+          {%- if block.settings.button_label != blank -%}<a class="es-button cv-button cv-alt__button" href="{{ block.settings.button_link | default: routes.all_products_collection_url }}">{{ block.settings.button_label | escape }}</a>{%- endif -%}
+        </div>
+      </div>
+    {%- endfor -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Image et texte alternés",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "heading", "label": "Titre" },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre en accent" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "alternate", "options": [ { "value": "alternate", "label": "Alternance gauche / droite" }, { "value": "image-left", "label": "Visuel toujours à gauche" }, { "value": "image-right", "label": "Visuel toujours à droite" } ] },
+    { "type": "select", "id": "ratio", "label": "Format des visuels", "default": "square", "options": [ { "value": "square", "label": "Carré" }, { "value": "landscape", "label": "Paysage 4:3" }, { "value": "portrait", "label": "Portrait 4:5" }, { "value": "natural", "label": "Naturel" } ] },
+    { "type": "select", "id": "animation", "label": "Animation", "default": "rise", "options": [ { "value": "none", "label": "Aucune" }, { "value": "fade", "label": "Fondu" }, { "value": "rise", "label": "Montée en fondu" }, { "value": "zoom", "label": "Léger zoom" } ] },
+    { "type": "select", "id": "animation_speed", "label": "Vitesse", "default": "normal", "options": [ { "value": "slow", "label": "Lente" }, { "value": "normal", "label": "Normale" }, { "value": "fast", "label": "Rapide" } ] },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 },
+    { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 }
+  ],
+  "blocks": [
+    { "type": "row", "name": "Rangée", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Visuel" },
+      { "type": "text", "id": "image_asset", "label": "Fichier image fourni avec le thème" },
+      { "type": "text", "id": "image_alt", "label": "Description du visuel" },
+      { "type": "text", "id": "media_role", "label": "Rôle du visuel attendu" },
+      { "type": "range", "id": "focus_x", "label": "Point focal horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+      { "type": "range", "id": "focus_y", "label": "Point focal vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+      { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+      { "type": "text", "id": "heading", "label": "Titre", "default": "Un argument" },
+      { "type": "text", "id": "heading_accent", "label": "Fin du titre en accent" },
+      { "type": "richtext", "id": "text", "label": "Texte" },
+      { "type": "text", "id": "button_label", "label": "Bouton" },
+      { "type": "url", "id": "button_link", "label": "Lien du bouton" }
+    ] }
+  ],
+  "max_blocks": 6,
+  "presets": [ { "name": "Image et texte alternés", "blocks": [ { "type": "row" }, { "type": "row" }, { "type": "row" } ] } ]
+}
+{% endschema %}

@@ -75,7 +75,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   };
   if (!aiActiveFor(p.userId, p.id)) {
     const r = await runContentEngineV2(null, p.id, request);
-    return ok({ docKey: r.docKey, verdict: r.verdict, by: r.by, skipped: r.skipped, notes: r.notes, issues: r.issues });
+    return ok({ docKey: r.docKey, verdict: r.verdict, by: r.by, skipped: r.skipped, notes: r.notes, issues: r.issues, delivery: r.delivery });
   }
   if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'content.v2' AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Une rédaction est déjà en cours.", "Writing is already in progress."));
   const job = enqueue({ userId: user.id, projectId: p.id, type: "content.v2", label: L("Rédaction SEO", "SEO writing"), payload: { projectId: p.id, request } });

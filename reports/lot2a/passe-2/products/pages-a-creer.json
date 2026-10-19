@@ -1,0 +1,26 @@
+[
+  {
+    "handle": "notre-histoire",
+    "title": "Notre histoire",
+    "template_suffix": "about",
+    "body_html": ""
+  },
+  {
+    "handle": "faq",
+    "title": "Questions fréquentes",
+    "template_suffix": "faq",
+    "body_html": ""
+  },
+  {
+    "handle": "contact",
+    "title": "Contact",
+    "template_suffix": "contact",
+    "body_html": ""
+  },
+  {
+    "handle": "livraison-et-retours",
+    "title": "Livraison et retours",
+    "template_suffix": "shipping",
+    "body_html": "<p>Les conditions détaillées figurent ci-dessous.</p>"
+  }
+]

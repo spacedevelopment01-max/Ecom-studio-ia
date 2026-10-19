@@ -14,6 +14,9 @@ import { importedArchive } from "./imported";
 import { L } from "../i18n-server";
 import type { Lang } from "../i18n";
 import { localizeSectionLiquid, localizeSettingsSchema } from "./schema-i18n";
+import { guardPurchaseExport, purchaseExportManifest, purchaseTargetHandles, sharedPurchaseSection } from "./purchase-offers";
+import { storeProducts } from "./store-products";
+import { productTemplateAssignments, productTemplateManifest } from "./product-templates";
 
 export type ThemeFiles = Map<string, string>; // chemin → contenu texte (assets binaires exclus)
 
@@ -90,8 +93,13 @@ export function compileTheme(spec: ThemeSpec): ThemeFiles {
   const files = imp ? new Map([...importedArchive(imp).arc.text].filter(([p]) => !/^templates\/.+\.json$/.test(p))) : new Map(localizedBaseFiles(lang));
   for (const [type, s] of Object.entries(spec.customSections ?? {})) files.set(`sections/${type}.liquid`, s.liquid);
   for (const [key, t] of Object.entries(spec.templates)) {
-    files.set(`templates/${key}.json`, HEADER + JSON.stringify(cleanTemplate(t), null, 2));
+    const template = structuredClone(t);
+    for(const [id,s] of Object.entries(template.sections))template.sections[id]=sharedPurchaseSection(spec,s);
+    for (const section of Object.values(template.sections)) if (["purchase-offers","ed-finishes","featured-purchase"].includes(section.type) && section.settings.product_target) section.settings.product = purchaseTargetHandles(spec)[String(section.settings.product_target)] ?? "";
+    for (const section of Object.values(template.sections)) for (const block of Object.values(section.blocks ?? {})) if (block.type === "threshold_gift") block.settings.gift_handle = storeProducts(spec).find((p) => p.contentTarget === block.settings.gift_target)?.handle ?? "";
+    files.set(`templates/${key}.json`, HEADER + JSON.stringify(cleanTemplate(template), null, 2));
   }
+  if (productTemplateAssignments(spec).length) files.set("assets/es-product-templates.json", JSON.stringify(productTemplateManifest(spec), null, 2));
   for (const [g, json] of Object.entries(spec.groups)) {
     if (imp && !imp.groups.includes(g as "header" | "footer")) continue;
     files.set(`sections/${g}-group.json`, HEADER + JSON.stringify({ type: json.type, name: json.name, sections: json.sections, order: json.order.filter((id) => json.sections[id]) }, null, 2));
@@ -157,9 +165,13 @@ export async function themeAssetBinary(spec: ThemeSpec, filename: string, load: 
 // ---------------------------------------------------------------- export ZIP
 
 export async function exportThemeZip(spec: ThemeSpec, load: AssetLoader): Promise<{ zip: Buffer; files: string[]; skipped: string[] }> {
+  const purchaseRules = purchaseExportManifest(spec);
+  const guarded = guardPurchaseExport(spec);
+  spec = guarded.spec;
   const text = compileTheme(spec);
   const entries: Record<string, Uint8Array> = {};
   for (const [p, content] of text) entries[p] = strToU8(content);
+  if (purchaseRules) entries["assets/es-purchase-offers.json"] = strToU8(JSON.stringify({ ...purchaseRules, platform: "shopify", activeDiscountsAndGifts:false }, null, 2));
   if (spec.imported) for (const [p, data] of importedArchive(spec.imported).arc.binary) entries[p] = data;
   const skipped: string[] = [];
   // Thème importé : les médias de démonstration du studio ne sont exportés que s'ils sont utilisés par une section.

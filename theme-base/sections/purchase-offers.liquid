@@ -1,0 +1,271 @@
+{% assign offer_product = section.settings.product %}{% if section.settings.product_target == blank and offer_product == blank %}{% assign offer_product = product %}{% endif %}
+<div class="es-section color-{{ section.settings.color_scheme }}" style="--pt:{{ section.settings.padding_top }}px;--pb:{{ section.settings.padding_bottom }}px"><div class="es-container">
+{% if section.settings.purchase_enabled and offer_product != blank %}{% render 'purchase-offers', product: offer_product, blocks: section.blocks, offer_settings: section.settings, section_id: section.id %}{% elsif request.design_mode %}<p>{{ 'purchase.configure' | t }}</p>{% endif %}
+</div></div>
+{% schema %}
+{
+  "name": "Offres et cadeaux",
+  "tag": "section",
+  "class": "es-section-wrapper",
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Produit"
+    },
+    {
+      "type": "checkbox",
+      "id": "purchase_enabled",
+      "label": "Activer les offres par quantité",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "purchase_style",
+      "label": "Style des offres",
+      "default": "outlined",
+      "options": [
+        {
+          "value": "outlined",
+          "label": "Cartes soulignées"
+        },
+        {
+          "value": "compact",
+          "label": "Lignes compactes"
+        },
+        {
+          "value": "soft",
+          "label": "Cartes douces"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "product_target",
+      "label": "Identité du produit",
+      "info": "Identité stable du catalogue, jamais son nom. Vide : produit de la page."
+    },
+    {
+      "type": "text",
+      "id": "purchase_heading",
+      "label": "Titre des offres",
+      "default": "Choisissez votre offre"
+    },
+    {
+      "type": "text",
+      "id": "purchase_unit_label",
+      "label": "Libellé du prix unitaire",
+      "info": "Affiché après le prix principal et dans les offres. Ex. « par lampe ». Vide : « par article »."
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "label": "Marge haute",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "label": "Marge basse",
+      "default": 32
+    },
+    {
+      "type": "checkbox",
+      "id": "show_finishes",
+      "label": "Afficher les finitions",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "finish_label",
+      "label": "Titre des finitions",
+      "default": "Finition"
+    },
+    {
+      "type": "textarea",
+      "id": "finish_colors",
+      "label": "Couleurs des finitions",
+      "info": "Une ligne par variante : Nom=#RRGGBB. Le nom reste toujours visible."
+    },
+    {
+      "type": "text",
+      "id": "purchase_source",
+      "label": "Source des offres partagées",
+      "info": "Adresse du bloc d’achat de référence : gabarit:section. Modifiez ses offres sur la fiche produit."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "quantity_offer",
+      "name": "Offre par quantité",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Libellé de l’offre",
+          "default": "Votre offre"
+        },
+        {
+          "type": "range",
+          "id": "quantity",
+          "label": "Nombre d’articles",
+          "min": 1,
+          "max": 20,
+          "step": 1,
+          "default": 1
+        },
+        {
+          "type": "text",
+          "id": "image_asset",
+          "label": "Visuel de l’offre (fichier du thème)",
+          "info": "Facultatif : ex. un, deux ou trois flacons."
+        },
+        {
+          "type": "range",
+          "id": "discount",
+          "label": "Remise configurée (%)",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "default": 0
+        },
+        {
+          "type": "checkbox",
+          "id": "recommended",
+          "label": "Offre recommandée",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "badge",
+          "label": "Badge éditorial",
+          "info": "Sans classement ni popularité non vérifiée."
+        },
+        {
+          "type": "select",
+          "id": "price_mode",
+          "label": "Règle de prix",
+          "default": "discount",
+          "options": [
+            {
+              "value": "discount",
+              "label": "Remise sur les prix unitaires"
+            },
+            {
+              "value": "fixed_total",
+              "label": "Prix total fixe du lot"
+            }
+          ]
+        },
+        {
+          "type": "number",
+          "id": "total_price",
+          "label": "Prix total du lot en centimes",
+          "default": -1,
+          "info": "À renseigner pour un prix fixe. Même total pour toutes les variantes du lot."
+        }
+      ]
+    },
+    {
+      "type": "threshold_gift",
+      "name": "Cadeau par palier",
+      "settings": [
+        {
+          "type": "product",
+          "id": "gift_product",
+          "label": "Article cadeau du catalogue"
+        },
+        {
+          "type": "text",
+          "id": "gift_target",
+          "label": "Identité du cadeau au catalogue"
+        },
+        {
+          "type": "text",
+          "id": "sku",
+          "label": "SKU de la variante cadeau",
+          "info": "Vide : première variante disponible."
+        },
+        {
+          "type": "range",
+          "id": "threshold",
+          "label": "Palier en articles",
+          "min": 1,
+          "max": 20,
+          "step": 1,
+          "default": 3
+        },
+        {
+          "type": "range",
+          "id": "quantity",
+          "label": "Quantité de cadeaux",
+          "min": 1,
+          "max": 20,
+          "step": 1,
+          "default": 1
+        },
+        {
+          "type": "text",
+          "id": "gift_handle",
+          "label": "Référence cadeau à l’export",
+          "info": "Résolue depuis l’identité stable du catalogue par le studio."
+        }
+      ]
+    },
+    {
+      "type": "purchase_benefit",
+      "name": "Avantage vérifié",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Avantage confirmé"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Pictogramme",
+          "default": "check",
+          "options": [
+            {
+              "value": "check",
+              "label": "Coche"
+            },
+            {
+              "value": "leaf",
+              "label": "Feuille"
+            },
+            {
+              "value": "sparkle",
+              "label": "Étincelle"
+            },
+            {
+              "value": "heart",
+              "label": "Cœur"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Offres et cadeaux"
+    }
+  ]
+}
+{% endschema %}

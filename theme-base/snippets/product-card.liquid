@@ -4,8 +4,14 @@
 -%}
 <article class="es-card es-card--{{ card_ratio }}" data-reveal="up">
   <a href="{{ product_card.url | default: '#' }}" class="es-card__media" aria-label="{{ product_card.title | escape }}">
-    {%- if product_card.featured_media -%}
-      {{ product_card.featured_media | image_url: width: 900 | image_tag: loading: 'lazy', sizes: '(min-width: 990px) 30vw, 50vw', widths: '360, 540, 720, 900', class: 'es-card__img', alt: product_card.featured_media.alt }}
+    {%- liquid
+      assign card_media = product_card.featured_media
+      if product_card.has_only_default_variant and product_card.selected_or_first_available_variant.featured_media != blank
+        assign card_media = product_card.selected_or_first_available_variant.featured_media
+      endif
+    -%}
+    {%- if card_media -%}
+      {{ card_media | image_url: width: 900 | image_tag: loading: 'lazy', sizes: '(min-width: 990px) 30vw, 50vw', widths: '360, 540, 720, 900', class: 'es-card__img', alt: product_card.featured_media.alt }}
       {%- if show_secondary and product_card.media[1] != blank -%}
         {{ product_card.media[1] | image_url: width: 900 | image_tag: loading: 'lazy', sizes: '(min-width: 990px) 30vw, 50vw', class: 'es-card__img es-card__img--hover', alt: '' }}
       {%- endif -%}

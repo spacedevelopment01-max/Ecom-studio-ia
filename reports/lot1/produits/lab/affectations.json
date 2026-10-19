@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "installationVerified": false,
+  "csvAssignsTemplates": false,
+  "instructions": {
+    "fr": "Après import du thème et du CSV, ouvrez chaque produit dans Shopify et choisissez le modèle de thème indiqué ci-dessous, puis enregistrez. Le CSV seul n'affecte pas ces modèles. L'installation directe du studio transmet templateSuffix à l'API, sans validation d'installation réelle dans cet export.",
+    "en": "After importing the theme and CSV, open each product in Shopify, select the theme template listed below, and save. The CSV alone does not assign these templates. The studio direct installer sends templateSuffix to the API; a real installation has not been validated by this export."
+  },
+  "products": [
+    {
+      "target": "product:main",
+      "handle": "diagnostic",
+      "title": "Diagnostic",
+      "templateSuffix": "ecp-24b76c1d174e416c",
+      "templateFile": "templates/product.ecp-24b76c1d174e416c.json"
+    },
+    {
+      "target": "product:catalog:steel",
+      "handle": "diagnostic-2",
+      "title": "Diagnostic",
+      "templateSuffix": "ecp-0a60e9cd87458b58",
+      "templateFile": "templates/product.ecp-0a60e9cd87458b58.json"
+    },
+    {
+      "target": "product:catalog:blank",
+      "handle": "diagnostic-3",
+      "title": "Diagnostic",
+      "templateSuffix": "ecp-7cae64d869f2b4a9",
+      "templateFile": "templates/product.ecp-7cae64d869f2b4a9.json"
+    }
+  ]
+}

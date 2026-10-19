@@ -1,0 +1,113 @@
+{%- assign s = section.settings -%}
+<section class="ref-section ref-notes ref-notes--{{ s.layout }} color-{{ s.color_scheme }}" data-reference="notes" data-ref-motion="{{ s.motion }}" style="--ref-pt: {{ s.padding_top }}px; --ref-pb: {{ s.padding_bottom }}px;"><div class="ref-shell"><h2 class="ref-heading"{% if s.motion == 'reveal' %} data-reveal="up"{% endif %}>{{ s.heading | escape }}</h2><div class="ref-notes__grid">{% for block in section.blocks %}<article class="ref-note" {{ block.shopify_attributes }}><h3>{{ block.settings.title | escape }}</h3><div class="ref-prose">{{ block.settings.text }}</div></article>{% endfor %}</div></div></section>
+{% schema %}
+{
+  "name": "Notes factuelles",
+  "tag": "div",
+  "class": "reference-section",
+  "settings": [
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Composition",
+      "default": "columns",
+      "options": [
+        {
+          "value": "columns",
+          "label": "Colonnes ouvertes"
+        },
+        {
+          "value": "rows",
+          "label": "Registre de notes"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Titre",
+      "default": "Votre titre"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texte"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Jeu de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "select",
+      "id": "motion",
+      "label": "Animation",
+      "default": "reveal",
+      "options": [
+        {
+          "value": "none",
+          "label": "Sans animation"
+        },
+        {
+          "value": "reveal",
+          "label": "Apparition courte"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Marge haute",
+      "min": 0,
+      "max": 160,
+      "step": 8,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Marge basse",
+      "min": 0,
+      "max": 160,
+      "step": 8,
+      "unit": "px",
+      "default": 80
+    }
+  ],
+  "presets": [
+    {
+      "name": "Notes factuelles",
+      "blocks": [
+        {
+          "type": "note"
+        },
+        {
+          "type": "note"
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "type": "note",
+      "name": "Information factuelle",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Titre",
+          "default": "Votre information"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Texte"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 50
+}
+{% endschema %}

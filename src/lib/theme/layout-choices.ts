@@ -16,6 +16,27 @@ export type LayoutChoice = {
 
 /** Réglages proposés, dans l'ordre d'affichage. Seuls ceux présents dans le schéma de la section sont gardés. */
 const KEYS: Record<string, string[]> = {
+  "purchase-offers": ["purchase_style", "purchase_enabled"],
+  "featured-purchase": ["purchase_style", "image_fit", "purchase_enabled"],
+  "cv-hero": ["layout", "image_ratio", "heading_tag"],
+  "cv-cards": ["layout"],
+  "cv-feature": ["layout"],
+  "cv-stories": ["ratio", "size"],
+  "cv-article": ["style", "width"],
+  "cv-hotspots": ["layout", "ratio"],
+  "cv-alternating": ["layout", "ratio"],
+  "cv-steps": ["layout"],
+  "cv-gallery": ["layout", "ratio"],
+  "cv-specs": ["layout"],
+  "cv-banner": ["layout"],
+  "cv-ingredients": ["layout", "columns", "ratio"],
+  "cv-quote": ["layout", "ratio"],
+  "features-grid": ["layout", "columns_mobile"],
+  "ref-narrative": ["motion"],
+  "ref-hero": ["layout", "heading_tag", "motion"],
+  "ref-editorial": ["layout", "motion"],
+  "ref-offers": ["layout"],
+  "ref-notes": ["layout"],
   header: ["layout", "mega_menu", "mobile_menu", "mobile_submenu", "mobile_promo", "shape", "icons", "desktop_icons", "sticky"],
   footer: ["style", "show_wordmark"],
   // Sections du Theme Engine V2 : chaque composition se change sans IA.
@@ -55,3 +76,6 @@ export function layoutChoices(spec: ThemeSpec, section: SectionInstance, lang: L
   }
   return out.length ? out : undefined;
 }
+
+/** Carte type → réglages à proposer comme choix de disposition (exportée pour les contrôles de couverture). */
+export const LAYOUT_CHOICES: Record<string, string[]> = KEYS;

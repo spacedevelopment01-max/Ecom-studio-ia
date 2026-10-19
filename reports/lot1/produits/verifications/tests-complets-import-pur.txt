@@ -1,0 +1,12 @@
+
+ RUN  v5.0.3 /workspace/Ecom-studio-ia
+
+
+ Test Files  260 passed (260)
+      Tests  1942 passed | 3 skipped (1945)
+   Start at  23:25:59
+   Duration  615.37s (tests 80%, import 20%, transform 1%)
+
+    Isolate  260 workers spawned · ~119ms startup each (spawn + environment, per file)
+             at least ~10.20s faster with isolate: false — reuses workers across files instead of one per file
+

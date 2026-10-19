@@ -9,7 +9,7 @@ import { mergeProductProfile } from "../brain/facts";
 import { userPlan } from "../quotas";
 import { friendlyToolError } from "../tool-errors";
 import { all, id, json, now, one, run } from "../db";
-import { enqueue, JobCancelled, JobContext, JobPaused, type Job } from "../jobs";
+import { enqueue, JobCancelled, JobContext, JobPaused, UserFacingError, type Job } from "../jobs";
 import { assetData, saveAsset, type Asset } from "../library";
 import { loadProject, saveProduct, saveServices, setStatus, remember, notify } from "../projects";
 import { importLink, fetchImage } from "./import-link";
@@ -392,6 +392,7 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
         }
       }
       const r = await buildShop(ctx, projectId);
+      if ("delivery" in r && r.delivery && !r.delivery.active) throw new UserFacingError(L("Le thème reste à corriger : tentative conservée, aucune version refusée n'est activée. Consultez les versions de la boutique.", "The theme still needs correction: the attempt is saved and no rejected version was activated. Check the store versions."));
       return note(services ? "shop.site" : "shop.theme", { n: r.number });
     }
     case "calendar": {

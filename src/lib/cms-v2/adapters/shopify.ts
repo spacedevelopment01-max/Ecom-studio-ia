@@ -8,6 +8,7 @@ import { exportThemeZip, type AssetLoader } from "../../theme/compile";
 import type { ThemeSpec } from "../../theme/spec";
 import { sectionSchemaOf } from "../liquid";
 import type { ExportIssue, PlatformExport } from "../types";
+import { productTemplateAssignments } from "../../theme/product-templates";
 
 /** Gabarits sans lesquels Shopify refuse ou dégrade le thème. */
 export const SHOPIFY_REQUIRED = ["layout/theme.liquid", "templates/index.json", "templates/product.json", "templates/collection.json", "templates/cart.json", "templates/page.json", "templates/404.json", "templates/search.json", "config/settings_schema.json", "config/settings_data.json"];
@@ -19,6 +20,7 @@ export async function exportShopify(spec: ThemeSpec, load: AssetLoader): Promise
   const entries = unzipSync(new Uint8Array(r.zip));
   const text = (p: string) => (entries[p] ? strFromU8(entries[p]) : "");
   const issues: ExportIssue[] = [];
+  if (productTemplateAssignments(spec).length) issues.push({ code: "product_template_assignment_required", severity: "warning", detail: "Shopify : le ZIP et le CSV seuls n'affectent pas les gabarits aux produits. Suivre assets/es-product-templates.json : choisir puis enregistrer le modèle de chaque produit dans Shopify. Installation réelle non vérifiée." });
   for (const p of SHOPIFY_REQUIRED) if (!entries[p]) issues.push({ code: "missing_template", severity: "blocking", detail: `${p} absent` });
   const sections = new Set<string>();
   for (const p of Object.keys(entries).filter((k) => /^templates\/.+\.json$/.test(k) || /^sections\/.+-group\.json$/.test(k))) {

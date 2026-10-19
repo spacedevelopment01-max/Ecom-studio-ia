@@ -1,0 +1,55 @@
+{
+  "sourceCommit": "f40ef52dca145344d9972cf14727eeba6c992588",
+  "sourceDirty": false,
+  "typesExitCode": 0,
+  "tests": {
+    "filesPassed": 262,
+    "passed": 1971,
+    "skipped": 3,
+    "failed": 0,
+    "seconds": 897.01
+  },
+  "themeCheck": {
+    "casesPassed": 137,
+    "errors": 0
+  },
+  "buildExitCode": 0,
+  "pngOriginals": 31,
+  "videos": 8,
+  "cmsInstalled": false,
+  "realPaidAiCalls": 0,
+  "metrics": {
+    "products": {
+      "lcpMs": [
+        536,
+        944
+      ],
+      "cls": [
+        0,
+        0.14874227932950396
+      ],
+      "widths": [
+        390,
+        768,
+        1024,
+        1440
+      ]
+    },
+    "services": {
+      "lcpMs": [
+        496,
+        1300
+      ],
+      "cls": [
+        0,
+        0.0008115413122706944
+      ],
+      "widths": [
+        390,
+        768,
+        1024,
+        1440
+      ]
+    }
+  }
+}

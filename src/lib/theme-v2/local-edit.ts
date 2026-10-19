@@ -30,6 +30,10 @@ export const TYPE_PAIRINGS: { heading: string; body: string; label: string }[] =
 export const isV2 = (spec: ThemeSpec) => spec.meta?.engine === "v2" || (typeof spec.settings.ds_language === "string" && spec.settings.ds_language !== "none");
 
 const LAYOUTS: Record<string, string[]> = {
+  "ref-hero": ["object", "landscape", "poster"],
+  "ref-editorial": ["offset", "wide", "inset"],
+  "ref-offers": ["shop", "studio"],
+  "ref-notes": ["columns", "rows"],
   "v2-index": ["rows", "cards", "bento"],
   "v2-steps": ["line", "stack", "cards"],
   "v2-facts": ["ledger", "grid", "strip"],
@@ -63,6 +67,19 @@ export function v2ThemeCommand(spec: ThemeSpec, message: string, selection: Sel)
   const m = message.toLowerCase();
   const ops: ThemeOp[] = [];
 
+  if (/(change|modifie|autre|different|switch)/.test(m) && /(style|composition|disposition|layout)/.test(m) && /(premier écran|premier ecran|ouverture|hero|first screen)/.test(m)) {
+    const hit = findSection(spec, selection, ["ref-hero"]);
+    if (hit) {
+      const layouts = LAYOUTS[hit.s.type];
+      const value = layouts[(layouts.indexOf(String(hit.s.settings.layout)) + 1) % layouts.length];
+      return { ops: [{ op: "set_setting", template: hit.template, section: hit.id, key: "layout", value }], reply: L("Composition du premier écran modifiée ; les textes et images sont conservés.", "Opening layout changed; copy and images are preserved.") };
+    }
+  }
+  if (/(change|modifie|autre|switch|different)/.test(m) && /(en-tête|entête|header)/.test(m)) {
+    const group = spec.groups.header, id = group.order.find((id) => group.sections[id]?.type === "header");
+    if (id && spec.meta?.reference) return { ops: [{ op: "set_setting", template: "group:header", section: id, key: "layout", value: group.sections[id].settings.layout === "reference-shop" ? "reference-studio" : "reference-shop" }], reply: L("Variante d'en-tête changée ; liens et logo conservés.", "Header variant changed; links and logo preserved.") };
+  }
+
   // Animations.
   if (/(anim|mouvement|motion)/.test(m)) {
     if (/(supprime|enlève|retire|sans|désactive|coupe|remove|disable|turn off|no )/.test(m)) {
@@ -94,7 +111,7 @@ export function v2ThemeCommand(spec: ThemeSpec, message: string, selection: Sel)
   if (/(transforme|convertis|change[rz]? (ce|cette|le|la) (bloc|section) en|turn (this|it) into|convert)/.test(m)) return null;
   if (/(disposition|mise en page|composition|recompose|présentation|layout|arrangement)/.test(m)) {
     const wantHero = /(ouverture|hero|héros|bannière|haut de page|banner)/.test(m);
-    const types = wantHero ? ["v2-hero"] : /(appel final|appel à l'action|\bcta\b|call to action|final)/.test(m) ? ["v2-cta"] : /(galerie|images|photos|gallery)/.test(m) ? ["v2-media"] : /(en détail|détail|image et texte|detail)/.test(m) ? ["v2-split"] : /(bénéfice|atout|prestation|service|liste|carte|menu|offre|fonctionnalit|benefit|feature|list)/.test(m) ? ["v2-index"] : /(étape|méthode|step|process)/.test(m) ? ["v2-steps"] : /(question|faq)/.test(m) ? ["v2-faq"] : Object.keys(LAYOUTS).concat("v2-hero");
+    const types = wantHero ? ["ref-hero", "v2-hero"] : /(appel final|appel à l'action|\bcta\b|call to action|final)/.test(m) ? ["v2-cta"] : /(galerie|images|photos|gallery)/.test(m) ? ["v2-media"] : /(en détail|détail|image et texte|detail)/.test(m) ? ["v2-split"] : /(bénéfice|atout|prestation|service|liste|carte|menu|offre|fonctionnalit|benefit|feature|list)/.test(m) ? ["v2-index"] : /(étape|méthode|step|process)/.test(m) ? ["v2-steps"] : /(question|faq)/.test(m) ? ["v2-faq"] : Object.keys(LAYOUTS).concat("v2-hero");
     const hit = findSection(spec, selection, types);
     if (!hit) return null;
     if (hit.s.type === "v2-hero") {

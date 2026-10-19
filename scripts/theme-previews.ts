@@ -14,47 +14,60 @@ import { compileTheme } from "../src/lib/theme/compile";
 import { renderPage, fontFilePath } from "../src/lib/theme/render";
 import { CATALOG_IDS } from "../src/lib/theme/theme-catalog";
 import type { DirectionId } from "../src/lib/theme/directions";
+import { ACTIVE_THEMES } from "../src/lib/theme/theme-fit";
 import { localCopy } from "../src/lib/engine/local-copy";
 import { emptyProduct } from "../src/lib/project-types";
 import { runWithLang } from "../src/lib/i18n-server";
 import { build } from "../tests/fixtures";
 
-const ids = (process.argv.slice(2).length ? process.argv.slice(2) : [...CATALOG_IDS]) as DirectionId[];
+// Par défaut, les vignettes du catalogue actif (les quatre thèmes de référence) ; un identifiant explicite reste accepté pour lire un projet existant.
+const ids = (process.argv.slice(2).length ? process.argv.slice(2) : [...ACTIVE_THEMES]) as DirectionId[];
 const OUT = path.join("public", "demo", "directions");
-const DEMO = path.join("public", "demo", "drone");
-type Demo = { id: string; brand: string; product: string; palette: string[] };
-const demoOf = (file: string) => (JSON.parse(fs.readFileSync(path.join("public", "demo", file), "utf8")).demos as Demo[]).find((d) => d.id === "drone")!;
-
-// Médias de la démonstration : nom du fichier dans le thème → fichier sur le disque.
-const media: Record<string, string> = {
-  "es-en-situation-1.jpg": "photo.jpg",
-  "es-hero.jpg": "scene-2.jpg",
-  "es-produit-detoure.webp": "cutout-1.webp",
-  "es-packshot.jpg": "packshot-1.jpg",
-  "es-detail-1.jpg": "detail-1.jpg",
-  "es-scene-1.jpg": "scene-1.jpg",
-  "es-scene-2.jpg": "scene-2.jpg",
-  "es-video-1.mp4": "video.mp4",
-  "es-affiche-1.jpg": "video-poster.jpg",
-  "es-logo.svg": "logo.svg",
-};
+const DEMO_ID = process.env.DEMO ?? "onde";
+const DEMO = path.join("public", "demo", DEMO_ID);
+type Demo = { id: string; brand: string; product: string; sector: string; palette: string[]; photo: string; logo: string; images: { src: string; label: string }[]; business?: "products" | "services" };
+const demoOf = (file: string): Demo => (JSON.parse(fs.readFileSync(path.join("public", "demo", file), "utf8")).demos as Demo[]).find((d) => d.id === DEMO_ID) ?? (JSON.parse(fs.readFileSync(path.join("public", "demo", "manifest.json"), "utf8")).demos as Demo[]).find((d) => d.id === DEMO_ID)!;
+/** Composition « site de services » quand la démonstration est une entreprise de services (SERVICES=1 pour forcer). */
+const SERVICES = process.env.SERVICES === "1" || demoOf("manifest.json").business === "services";
+// Médias de la démonstration : nom du fichier dans le thème → fichier sur le disque (public/demo/<id>/, kit privé).
+const fileBase = (src: string) => path.basename(src);
+const d0 = demoOf("manifest.json");
+const byLabel = (re: RegExp, n = 0) => d0.images.filter((x) => re.test(x.label))[n]?.src;
+const ext = (src: string | undefined) => (src ? path.extname(src) : ".jpg");
+const media: Record<string, string> = {};
+const slot = (name: string, src: string | undefined) => { if (src) media[name + ext(src)] = fileBase(src); return src ? name + ext(src) : undefined; };
+const images = {
+  lifestyle: slot("es-en-situation-1", d0.photo), hero: slot("es-hero", byLabel(/bannière|banner/i) ?? d0.photo), banner: slot("es-banniere", byLabel(/bannière|banner/i)),
+  packshot: slot("es-packshot", byLabel(/packshot|fond blanc/i)), cutout: undefined, detail1: slot("es-detail-1", byLabel(/détail|detail/i, 0)), detail2: slot("es-detail-2", byLabel(/détail|detail/i, 1)),
+  scene1: slot("es-scene-1", byLabel(/scène|scene/i, 0)), scene2: slot("es-scene-2", byLabel(/scène|scene/i, 1)), logo: slot("es-logo", d0.logo || undefined),
+} as Record<string, string | undefined>;
 const TYPES: Record<string, string> = { ".jpg": "image/jpeg", ".webp": "image/webp", ".mp4": "video/mp4", ".svg": "image/svg+xml", ".css": "text/css", ".js": "application/javascript" };
 
 function specFor(direction: DirectionId, lang: "fr" | "en") {
   const demo = demoOf(lang === "en" && fs.existsSync(path.join("public", "demo", "manifest.en.json")) ? "manifest.en.json" : "manifest.json");
   const [primary, secondary, accent, light, dark] = demo.palette;
-  const product = { ...emptyProduct(), name: demo.product, sector: "hightech" as const, summary: demo.product, facts: [] };
-  const tagline = lang === "en" ? "Technology, no detours." : "La technologie, sans détour.";
-  const copy = runWithLang({ content: lang }, () => localCopy(product, { name: demo.brand, tagline, story: "", values: [] }));
+  const product = { ...emptyProduct(), name: demo.product, sector: (SERVICES ? "services" : "maison") as never, summary: demo.product, facts: [] };
+  const copy = runWithLang({ content: lang }, () => localCopy(product, { name: demo.brand, tagline: "", story: "", values: [] }));
+  const services = SERVICES
+    ? {
+        services: [
+          { key: "conseil", name: lang === "en" ? "Advice and direction" : "Conseil & direction", description: lang === "en" ? "Clarify the mood and the choices that give your interior a direction." : "Préciser l'ambiance et les choix qui donneront une direction à votre intérieur." },
+          { key: "piece", name: lang === "en" ? "One room" : "Aménagement d'une pièce", description: lang === "en" ? "Organise uses, circulation and materials at the scale of a room." : "Organiser les usages, la circulation et les matières à l'échelle d'une pièce." },
+          { key: "ensemble", name: lang === "en" ? "Whole project" : "Projet d'ensemble", description: lang === "en" ? "Connect several spaces around one intention." : "Relier plusieurs espaces autour d'une intention." },
+        ],
+        area: "", address: "", phone: "", email: "", hours: "", bookingUrl: "", contactMode: "form" as const,
+      }
+    : undefined;
   const spec = build({
     direction,
     shopName: demo.brand,
     palette: { primary, secondary, accent, light, dark },
     copy,
-    images: { lifestyle: "es-en-situation-1.jpg", hero: "es-hero.jpg", banner: "es-hero.jpg", cutout: "es-produit-detoure.webp", packshot: "es-packshot.jpg", detail1: "es-detail-1.jpg", scene1: "es-scene-1.jpg", scene2: "es-scene-2.jpg", video: "es-video-1.mp4", videoPoster: "es-affiche-1.jpg", logo: "es-logo.svg" },
+    images: Object.fromEntries(Object.entries(images).filter(([, v]) => v)) as Parameters<typeof build>[0]["images"],
     files: Object.fromEntries(Object.keys(media).map((f) => [f, f])),
-    product: { title: demo.product, handle: "drone", vendor: demo.brand, description_html: "", price: 34900, compare_at_price: null, currency: "EUR", options: [], variants: [], images: ["es-packshot.jpg"], tags: [] },
+    product: { title: demo.product, handle: "produit", vendor: demo.brand, description_html: "", price: 2490, compare_at_price: null, currency: "EUR", options: [], variants: [], images: [images.packshot ?? images.lifestyle ?? ""].filter(Boolean), tags: [] },
     language: lang,
+    ...(services ? { business: "services" as const, services } : {}),
   });
   return spec;
 }
@@ -105,6 +118,25 @@ for (const id of ids) {
     }
     const png = await page.screenshot({ clip: { x: 0, y: 0, width: 1280, height: 1600 }, fullPage: true });
     await page.close();
+    // CAPTURES=1 : captures de la démonstration elle-même (accueil ordinateur et téléphone, fiche produit) dans
+    // public/demo/<id>/ (kit privé, hors dépôt), pour l'accueil, la découverte et la page Thèmes.
+    if (process.env.CAPTURES === "1" && id === DEMO_ID) {
+      const shots: [string, { width: number; height: number }, string][] = SERVICES
+        ? [["site-bureau", { width: 1440, height: 900 }, "/"], ["site-mobile", { width: 390, height: 844 }, "/"]]
+        : [["boutique-bureau", { width: 1440, height: 900 }, "/"], ["boutique-mobile", { width: 390, height: 844 }, "/"], ["fiche-produit", { width: 1440, height: 900 }, "/products/produit"]];
+      for (const [name, viewport, route] of shots) {
+        const pg = await browser.newPage({ viewport, reducedMotion: "reduce" });
+        await pg.goto(base + route, { waitUntil: "networkidle" });
+        await pg.addStyleTag({ content: still });
+        await pg.waitForTimeout(600);
+        const shot = await pg.screenshot({ clip: { x: 0, y: 0, width: viewport.width, height: viewport.width < 600 ? 1400 : 1400 }, fullPage: true });
+        await pg.close();
+        const file = `${name}${lang === "en" ? ".en" : ""}`;
+        await sharp(shot).resize({ width: Math.min(1400, viewport.width) }).jpeg({ quality: 84, mozjpeg: true }).toFile(path.join(DEMO, `${file}.jpg`));
+        await sharp(shot).resize({ width: Math.min(1400, viewport.width) }).webp({ quality: 80 }).toFile(path.join(DEMO, `${file}.webp`));
+        console.log(`  ${DEMO_ID}/${file} ✓`);
+      }
+    }
     const name = `${id}${lang === "en" ? ".en" : ""}`;
     const img = sharp(png).resize({ width: 1200 });
     await img.clone().jpeg({ quality: 82, mozjpeg: true }).toFile(path.join(OUT, `${name}.jpg`));

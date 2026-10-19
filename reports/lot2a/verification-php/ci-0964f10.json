@@ -1,0 +1,26 @@
+{
+  "commit": "0964f10f8b48ac82317e242535b63ce080bc62ae",
+  "run": 39092536956,
+  "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/39092536956",
+  "observed": "2026-10-18 03:31:27 UTC",
+  "jobs": [
+    {
+      "id": 117572119409,
+      "name": "Image Docker (construction et démarrage)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 117572119781,
+      "name": "Typecheck, tests, Theme Check, build",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "testsSummary": [
+    "2026-10-18T03:23:01.6227653Z  Test Files  262 passed (262)",
+    "2026-10-18T03:23:01.6243810Z       Tests  1974 passed (1974)",
+    "2026-10-18T03:23:01.6252848Z    Duration  783.22s (tests 82%, import 18%, transform 1%)",
+    "2026-10-18T03:29:00.3923169Z Thème : tout est valide."
+  ]
+}

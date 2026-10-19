@@ -1,368 +1,119 @@
 {
-  "generatedAt": "2026-10-16T08:43:53.007Z",
-  "note": "Marques créées par E-COM STUDIO IA (moteur intégré) à partir de photos de produits réels de fournisseurs, retouchées (inscriptions d'origine retirées).",
+  "note": "Seules démonstrations du studio (priorité de Thomas du 19 octobre 2026, issue #137) : FRAISE, ONDE, ORBE, Atelier Rive. Marques fictives créées avec le studio ; visuels IA sans personne, logos = propositions non validées, prix et avis fictifs. Les fichiers de public/demo/<id>/ viennent du kit privé (hors dépôt, livrés dans le ZIP) : un fichier absent est simplement omis (jamais d'image cassée).",
   "demos": [
     {
-      "id": "montre",
-      "brand": "ARVEN",
-      "product": "Montre acier et cuir",
-      "sector": "Horlogerie",
-      "direction": "joaillerie",
-      "palette": [
-        "#1E2225",
-        "#E8DACF",
-        "#A86932",
-        "#FAF7F5",
-        "#1E2225"
-      ],
-      "photo": "/demo/montre/photo.jpg",
-      "logo": "/demo/montre/logo.png",
-      "shopDesktop": "/demo/montre/boutique-bureau.jpg",
-      "shopMobile": "/demo/montre/boutique-mobile.jpg",
-      "productPage": "/demo/montre/fiche-produit.jpg",
+      "id": "fraise",
+      "brand": "Fraise Gummies",
+      "product": "Gummies à la fraise",
+      "sector": "Confiserie",
+      "category": "specialty",
+      "direction": "fraise",
+      "palette": ["#E4473F", "#850212", "#E4473F", "#FBF7F2", "#141414"],
+      "photo": "/demo/fraise/01-hero.webp",
+      "logo": "/demo/fraise/logo-proposition.png",
+      "shopDesktop": "/demo/fraise/boutique-bureau.jpg",
+      "shopMobile": "/demo/fraise/boutique-mobile.jpg",
+      "productPage": "/demo/fraise/fiche-produit.jpg",
       "business": "products",
-      "images": [
-        {
-          "src": "/demo/montre/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/montre/lifestyle-1.jpg",
-          "label": "En situation"
-        },
-        {
-          "src": "/demo/montre/lifestyle-2.jpg",
-          "label": "En situation"
-        },
-        {
-          "src": "/demo/montre/lifestyle-3.jpg",
-          "label": "En situation"
-        }
-      ],
-      "video": "/demo/montre/video.mp4",
-      "videoPoster": "/demo/montre/video-poster.jpg",
       "storeType": "mono",
       "products": 1,
-      "source": {
-        "supplier": "Pixabay",
-        "url": "https://pixabay.com/images/id-3090387/",
-        "note": "Photo d'une montre sans marque (Pixabay), bracelet complété par l'IA (la partie basse était dans l'ombre) : la marque ARVEN, ses visuels et sa boutique sont créés par le studio. Prix et caractéristiques techniques non annoncés : à compléter par le marchand."
-      },
-      "posts": [
-        "/demo/montre/post-1.jpg",
-        "/demo/montre/post-2.jpg",
-        "/demo/montre/post-3.jpg",
-        "/demo/montre/post-4.jpg",
-        "/demo/montre/post-5.jpg",
-        "/demo/montre/post-6.jpg",
-        "/demo/montre/post-7.jpg",
-        "/demo/montre/post-8.jpg"
+      "images": [
+        { "src": "/demo/fraise/02-fond-clair.webp", "label": "Packshot" },
+        { "src": "/demo/fraise/04-detail-gummies.webp", "label": "Détail" },
+        { "src": "/demo/fraise/07-scene-cuisine.webp", "label": "Scène" },
+        { "src": "/demo/fraise/08-scene-jardin.webp", "label": "Scène" },
+        { "src": "/demo/fraise/06-banniere.webp", "label": "Bannière" }
       ],
-      "board": "/demo/montre/planche.jpg"
+      "video": "",
+      "videoPoster": "",
+      "posts": [],
+      "board": "",
+      "source": { "supplier": "Images IA créées pour cette démonstration", "url": "", "note": "Marque fictive de démonstration (boutique spécialisée, thème de référence Lumora) : visuels IA sans personne, logo proposé non validé, prix, offres et avis fictifs identifiés comme tels." }
     },
     {
-      "id": "tribunes",
-      "brand": "Les Tribunes",
-      "product": "T-shirt supporter Lavande",
-      "sector": "Mode",
-      "direction": "flux",
-      "palette": [
-        "#0D0D0D",
-        "#C4C4C4",
-        "#E10600",
-        "#FAFAFA",
-        "#050505"
-      ],
-      "photo": "/demo/tribunes/photo.jpg",
-      "logo": "/demo/tribunes/logo.png",
-      "shopDesktop": "/demo/tribunes/boutique-bureau.jpg",
-      "shopMobile": "/demo/tribunes/boutique-mobile.jpg",
-      "productPage": "/demo/tribunes/fiche-produit.jpg",
+      "id": "onde",
+      "brand": "ONDE Audio",
+      "product": "Casque audio ONDE",
+      "sector": "Audio",
+      "category": "specialty",
+      "direction": "onde",
+      "palette": ["#4ECD01", "#1F1F1F", "#4ECD01", "#FFFFFF", "#1F1F1F"],
+      "photo": "/demo/onde/01-hero.webp",
+      "logo": "/demo/onde/logo-proposition.png",
+      "shopDesktop": "/demo/onde/boutique-bureau.jpg",
+      "shopMobile": "/demo/onde/boutique-mobile.jpg",
+      "productPage": "/demo/onde/fiche-produit.jpg",
       "business": "products",
-      "images": [
-        {
-          "src": "/demo/tribunes/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/tribunes/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/tribunes/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/tribunes/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/tribunes/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/tribunes/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/tribunes/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/tribunes/video.mp4",
-      "videoPoster": "/demo/tribunes/video-poster.jpg",
-      "storeType": "multi",
-      "products": 4,
-      "source": {
-        "supplier": "Fournisseur + IA",
-        "url": "",
-        "note": "Deux t-shirts de supporter d'un fournisseur (visuels du fournisseur) et deux accessoires dont la photo a été créée par l'IA : la marque et la boutique sont créées par le studio. Aucun écusson officiel."
-      },
-      "posts": [
-        "/demo/tribunes/post-1.jpg",
-        "/demo/tribunes/post-2.jpg",
-        "/demo/tribunes/post-3.jpg",
-        "/demo/tribunes/post-4.jpg",
-        "/demo/tribunes/post-5.jpg",
-        "/demo/tribunes/post-6.jpg",
-        "/demo/tribunes/post-7.jpg",
-        "/demo/tribunes/post-8.jpg"
-      ],
-      "board": "/demo/tribunes/planche.jpg"
-    },
-    {
-      "id": "gourde",
-      "brand": "Cime",
-      "product": "Gourde isotherme 750 ml",
-      "sector": "Sport et plein air",
-      "direction": "elan",
-      "palette": [
-        "#1E2326",
-        "#9AA5AA",
-        "#FF4D00",
-        "#F4F6F6",
-        "#0E1214"
-      ],
-      "photo": "/demo/gourde/photo.jpg",
-      "logo": "/demo/gourde/logo.png",
-      "shopDesktop": "/demo/gourde/boutique-bureau.jpg",
-      "shopMobile": "/demo/gourde/boutique-mobile.jpg",
-      "productPage": "/demo/gourde/fiche-produit.jpg",
-      "business": "products",
-      "images": [
-        {
-          "src": "/demo/gourde/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/gourde/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/gourde/scene-2.jpg",
-          "label": "Scène"
-        }
-      ],
-      "video": "/demo/gourde/video.mp4",
-      "videoPoster": "/demo/gourde/video-poster.jpg",
       "storeType": "mono",
       "products": 1,
-      "source": {
-        "supplier": "Photo créée par l'IA",
-        "url": "",
-        "note": "Produit et photo d'origine créés par l'IA (OpenAI) pour la démonstration : la marque, les visuels et la boutique sont créés par le studio. Aucune caractéristique technique n'est annoncée sans être fournie."
-      },
-      "posts": [
-        "/demo/gourde/post-1.jpg",
-        "/demo/gourde/post-2.jpg",
-        "/demo/gourde/post-3.jpg",
-        "/demo/gourde/post-4.jpg",
-        "/demo/gourde/post-5.jpg"
-      ],
-      "board": "/demo/gourde/planche.jpg"
-    },
-    {
-      "id": "casque",
-      "brand": "Sonore",
-      "product": "Casque audio",
-      "sector": "High-tech",
-      "direction": "signal",
-      "palette": [
-        "#0B0F1A",
-        "#8A9BC2",
-        "#00E0A4",
-        "#E8EEF6",
-        "#05070D"
-      ],
-      "photo": "/demo/casque/photo.jpg",
-      "logo": "/demo/casque/logo.png",
-      "shopDesktop": "/demo/casque/boutique-bureau.jpg",
-      "shopMobile": "/demo/casque/boutique-mobile.jpg",
-      "productPage": "/demo/casque/fiche-produit.jpg",
-      "business": "products",
       "images": [
-        {
-          "src": "/demo/casque/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/casque/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/casque/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/casque/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/casque/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/casque/banner-1.jpg",
-          "label": "Bannière"
-        }
+        { "src": "/demo/onde/02-fond-clair.webp", "label": "Packshot" },
+        { "src": "/demo/onde/04-detail-coussinet.webp", "label": "Détail" },
+        { "src": "/demo/onde/07-scene-salon.webp", "label": "Scène" },
+        { "src": "/demo/onde/08-scene-train.webp", "label": "Scène" },
+        { "src": "/demo/onde/06-banniere.webp", "label": "Bannière" }
       ],
-      "video": "/demo/casque/video.mp4",
-      "videoPoster": "/demo/casque/video-poster.jpg",
-      "storeType": "mono",
-      "products": 1,
-      "source": {
-        "supplier": "Pixabay",
-        "url": "https://pixabay.com/photos/woman-pose-model-girl-youth-4628615/",
-        "note": "Vraies photos d'un casque sans marque visible, en situation (Pixabay, série d'Engin_Akyurt) : la marque, les visuels et la boutique sont créés par le studio."
-      },
-      "posts": [
-        "/demo/casque/post-1.jpg",
-        "/demo/casque/post-2.jpg",
-        "/demo/casque/post-3.jpg",
-        "/demo/casque/post-4.jpg",
-        "/demo/casque/post-5.jpg",
-        "/demo/casque/post-6.jpg",
-        "/demo/casque/post-7.jpg"
-      ],
-      "board": "/demo/casque/planche.jpg"
+      "video": "",
+      "videoPoster": "",
+      "posts": [],
+      "board": "",
+      "source": { "supplier": "Images IA créées pour cette démonstration", "url": "", "note": "Marque fictive de démonstration (boutique spécialisée, thème de référence Pawish) : visuels IA sans personne, logo proposé non validé, prix et avis fictifs identifiés comme tels ; caractéristiques techniques à compléter, jamais annoncées." }
     },
     {
-      "id": "paysagiste",
-      "brand": "Racines & Pierres",
-      "product": "Création et entretien de jardins",
-      "sector": "Paysagiste",
-      "direction": "jardin",
-      "palette": [
-        "#3F6B4A",
-        "#DCE6D2",
-        "#E89BA7",
-        "#F7F8F1",
-        "#1D2E22"
+      "id": "orbe",
+      "brand": "ORBE",
+      "product": "Lampe nomade ORBE",
+      "sector": "Luminaires",
+      "category": "catalog",
+      "direction": "orbe",
+      "palette": ["#9B4F36", "#D8CCB9", "#9B4F36", "#F4F0E8", "#29251F"],
+      "photo": "/demo/orbe/orbe-02-chambre.webp",
+      "logo": "",
+      "shopDesktop": "/demo/orbe/boutique-bureau.jpg",
+      "shopMobile": "/demo/orbe/boutique-mobile.jpg",
+      "productPage": "/demo/orbe/fiche-produit.jpg",
+      "business": "products",
+      "storeType": "niche",
+      "products": 2,
+      "images": [
+        { "src": "/demo/orbe/orbe-01-dune.webp", "label": "Packshot" },
+        { "src": "/demo/orbe/orbe-07-trio.webp", "label": "Détail" },
+        { "src": "/demo/orbe/orbe-03-diner.webp", "label": "Scène" },
+        { "src": "/demo/orbe/orbe-04-lecture.webp", "label": "Scène" },
+        { "src": "/demo/orbe/orbe-06-duo.webp", "label": "Bannière" }
       ],
-      "photo": "/demo/paysagiste/photo.jpg",
-      "logo": "/demo/paysagiste/logo.png",
-      "shopDesktop": "/demo/paysagiste/boutique-bureau.jpg",
-      "shopMobile": "/demo/paysagiste/boutique-mobile.jpg",
+      "video": "",
+      "videoPoster": "",
+      "posts": [],
+      "board": "",
+      "source": { "supplier": "Images IA créées pour cette démonstration", "url": "", "note": "Marque fictive de démonstration (e-commerce, composition éditorielle) : lampe nomade en trois finitions et accessoires ; visuels IA sans personne, aucun logo validé, prix et offres fictifs identifiés comme tels." }
+    },
+    {
+      "id": "rive",
+      "brand": "Atelier Rive",
+      "product": "Aménagement et décoration intérieure",
+      "sector": "Architecture d'intérieur",
+      "category": "services",
+      "direction": "rive",
+      "palette": ["#243B32", "#B7C2AE", "#243B32", "#EEEAE2", "#1B2B25"],
+      "photo": "/demo/rive/rive-01-salon.webp",
+      "logo": "",
+      "shopDesktop": "/demo/rive/site-bureau.jpg",
+      "shopMobile": "/demo/rive/site-mobile.jpg",
       "productPage": "",
       "business": "services",
       "images": [
-        {
-          "src": "/demo/paysagiste/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/paysagiste/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/paysagiste/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/paysagiste/banner-1.jpg",
-          "label": "Bannière"
-        }
+        { "src": "/demo/rive/rive-02-cuisine.webp", "label": "Scène" },
+        { "src": "/demo/rive/rive-06-bibliotheque.webp", "label": "Scène" },
+        { "src": "/demo/rive/rive-08-plans.webp", "label": "Détail" },
+        { "src": "/demo/rive/rive-07-matieres.webp", "label": "Détail" },
+        { "src": "/demo/rive/rive-11-repas.webp", "label": "Bannière" }
       ],
-      "video": "/demo/paysagiste/video.mp4",
-      "videoPoster": "/demo/paysagiste/video-poster.jpg",
-      "shopVideo": "/demo/paysagiste/video-boutique.mp4",
-      "storeType": "mono",
-      "products": 1,
-      "source": {
-        "supplier": "Photos créées par l'IA",
-        "url": "",
-        "note": "Entreprise fictive : les photos de jardins ont été créées par l'IA (OpenAI) pour la démonstration ; le site et la marque sont créés par le studio."
-      },
-      "posts": [
-        "/demo/paysagiste/post-1.jpg",
-        "/demo/paysagiste/post-2.jpg",
-        "/demo/paysagiste/post-3.jpg",
-        "/demo/paysagiste/post-4.jpg",
-        "/demo/paysagiste/post-5.jpg",
-        "/demo/paysagiste/post-6.jpg",
-        "/demo/paysagiste/post-7.jpg",
-        "/demo/paysagiste/post-8.jpg"
-      ],
-      "board": "/demo/paysagiste/planche.jpg"
-    },
-    {
-      "id": "fleuriste",
-      "brand": "Atelier Pivoine",
-      "product": "Atelier floral",
-      "sector": "Fleuriste",
-      "direction": "magazine",
-      "palette": [
-        "#A3122B",
-        "#F0E7DB",
-        "#E0A100",
-        "#FBF8F3",
-        "#1B1717"
-      ],
-      "photo": "/demo/fleuriste/photo.jpg",
-      "logo": "/demo/fleuriste/logo.png",
-      "shopDesktop": "/demo/fleuriste/boutique-bureau.jpg",
-      "shopMobile": "/demo/fleuriste/boutique-mobile.jpg",
-      "productPage": "",
-      "business": "services",
-      "images": [
-        {
-          "src": "/demo/fleuriste/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/fleuriste/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/fleuriste/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/fleuriste/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/fleuriste/video.mp4",
-      "videoPoster": "/demo/fleuriste/video-poster.jpg",
-      "shopVideo": "/demo/fleuriste/video-boutique.mp4",
-      "storeType": "mono",
-      "products": 1,
-      "source": {
-        "supplier": "Pixabay",
-        "url": "https://pixabay.com/photos/flower-bouquet-petal-bloom-garden-2588972/",
-        "note": "Vraies photos de boutique et d'atelier de fleuriste (Pixabay) : l'entreprise est fictive, son site et sa marque sont créés par le studio."
-      },
-      "posts": [
-        "/demo/fleuriste/post-1.jpg",
-        "/demo/fleuriste/post-2.jpg",
-        "/demo/fleuriste/post-3.jpg",
-        "/demo/fleuriste/post-4.jpg",
-        "/demo/fleuriste/post-5.jpg",
-        "/demo/fleuriste/post-6.jpg",
-        "/demo/fleuriste/post-7.jpg",
-        "/demo/fleuriste/post-8.jpg"
-      ],
-      "board": "/demo/fleuriste/planche.jpg"
+      "video": "",
+      "videoPoster": "",
+      "posts": [],
+      "board": "",
+      "source": { "supplier": "Images IA créées pour cette démonstration", "url": "", "note": "Entreprise fictive de démonstration (prestations de services, composition « journal ») : projets d'intention en images IA, jamais des réalisations réelles ; aucune adresse ni client réel ; demandes de contact de test seulement." }
     }
   ]
 }

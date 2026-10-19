@@ -1,0 +1,19 @@
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "Association synthétique 2",
+    "areaServed": "Lyon",
+    "email": "contact@example.invalid"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "Diagnostic à Lyon",
+    "provider": {
+      "@type": "LocalBusiness",
+      "name": "Association synthétique 2"
+    },
+    "areaServed": "Lyon"
+  }
+]

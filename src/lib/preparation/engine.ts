@@ -133,6 +133,12 @@ export function usableAsset(
     );
   return a;
 }
+/** Les identifiants techniques et alias ajoutés par le moteur de thème ne sont pas une modification de l’offre. */
+const semanticOffer=(value:unknown):unknown=>{
+  if(!value||typeof value!=="object")return value;
+  const {contentAliases,key,...record}=value as Record<string,unknown>;
+  return {...record,...Array.isArray(record.services)?{services:record.services.map(s=>{const {key,contentAliases,...service}=s;return service;})}:{}};
+};
 /** Refuse une génération avec des données modifiées dans un autre onglet sans nouvelle validation. */
 export function assertFresh(projectId: string, s: State, step: Step) {
   const p = loadProject(projectId);
@@ -140,8 +146,8 @@ export function assertFresh(projectId: string, s: State, step: Step) {
   if (i > 0) {
     const b = stageOf(s, "brief").data;
     if (
-      stableHash(p.product) !== stableHash(b.profile) ||
-      stableHash(p.services) !== stableHash(b.services) ||
+      stableHash(semanticOffer(p.product)) !== stableHash(semanticOffer(b.profile)) ||
+      stableHash(semanticOffer(p.services)) !== stableHash(semanticOffer(b.services)) ||
       p.business !== b.input.business
     )
       throw new HttpError(
@@ -321,6 +327,7 @@ export function approve(
       if (!analyzed(b)) throw new HttpError(409, "L’analyse IA de la description et des photos est nécessaire avant validation. Vos données sont conservées.");
       saveProduct(projectId, b.profile);
       saveServices(projectId, b.services);
+      const canonical=loadProject(projectId);b.profile=canonical.product;b.services=canonical.services;
       run(
         "UPDATE projects SET business_type=? WHERE id=?",
         b.input.business,

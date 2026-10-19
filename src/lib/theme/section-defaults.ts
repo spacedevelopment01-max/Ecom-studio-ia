@@ -15,7 +15,7 @@ import type { ContentContext } from "./section-content";
 type Blocks = { type: string; settings?: Record<string, unknown> }[];
 
 /** Sections dont les blocs portent des images (galeries, cartes) : on les illustre aussi. */
-const BLOCK_IMAGES = new Set(["gallery-mosaic", "horizontal-gallery", "stack-cards", "story-circles", "routine-steps", "situations", "portfolio"]);
+const BLOCK_IMAGES = new Set(["cv-cards", "cv-alternating", "cv-steps", "cv-gallery", "cv-ingredients", "gallery-mosaic", "horizontal-gallery", "stack-cards", "story-circles", "routine-steps", "situations", "portfolio", "ref-narrative", "cv-cards", "cv-alternating", "cv-steps", "cv-gallery", "cv-stories"]);
 /** Sections « Services » sans photo de produit imposée (portraits d'équipe, cartes de contact, tarifs). */
 const NO_SECTION_IMAGE = new Set(["team", "booking", "booking-calendar", "practical-info", "pricing", "services-list"]);
 
@@ -28,8 +28,8 @@ export function mediaPools(spec: ThemeSpec) {
   const details = pick(/detail|packshot/);
   return {
     cutout,
-    photos: [...life, ...scenes, ...details].filter((f, i, a) => a.indexOf(f) === i),
-    life: life.length ? life : scenes,
+    photos: [...life, ...scenes, ...details, ...pick(/^es-photo-\d/)].filter((f, i, a) => a.indexOf(f) === i),
+    life: life.length ? life : scenes.length ? scenes : pick(/^es-photo-\d/),
     videos: pick(/^es-video-[^a]|^es-reel-[^a]/).filter((f) => f.endsWith(".mp4")),
     posters: pick(/affiche/),
   };
@@ -40,23 +40,37 @@ export function mediaPools(spec: ThemeSpec) {
  * avec des textes rédigés à partir du projet (section-copy.ts).
  */
 export function withProjectMedia(spec: ThemeSpec, type: string, settings: Record<string, unknown> = {}, blocks?: Blocks, ctx?: ContentContext): { settings: Record<string, unknown>; blocks?: Blocks; samples?: boolean } {
-  const media = projectMediaOnly(spec, type, settings, blocks);
+  const scope = ctx?.mediaFiles;
+  const scopedSpec = scope ? { ...spec, files:Object.fromEntries(scope.filter((f)=>spec.files[f]).map((f)=>[f,spec.files[f]])) } : spec;
+  const media = projectMediaOnly(scopedSpec, type, settings, blocks, scope);
   const schema = sectionSchema(spec, type);
   if (!ctx || !schema) return media;
   // Les blocs du préréglage servent de base à la rédaction quand la section n'en a pas reçu.
   const preset = ((schema.presets?.[0] as { blocks?: Blocks } | undefined)?.blocks ?? []).filter((b) => !b.type.startsWith("@")).map((b) => ({ type: b.type, settings: { ...(b.settings ?? {}) } }));
-  return applySectionCopy(type, schema, ctx, { settings: media.settings, blocks: media.blocks ?? (preset.length ? preset : undefined) });
+  const filled = applySectionCopy(type, schema, ctx, { settings: media.settings, blocks: media.blocks ?? (preset.length ? preset : undefined) });
+  return type === "ref-narrative" ? { ...projectMediaOnly(scopedSpec, type, filled.settings, filled.blocks, scope), samples: filled.samples } : filled;
 }
 
-function projectMediaOnly(spec: ThemeSpec, type: string, settings: Record<string, unknown> = {}, blocks?: Blocks): { settings: Record<string, unknown>; blocks?: Blocks } {
+function projectMediaOnly(spec: ThemeSpec, type: string, settings: Record<string, unknown> = {}, blocks?: Blocks, ownPhotos?: string[]): { settings: Record<string, unknown>; blocks?: Blocks } {
   const schema = sectionSchema(spec, type);
   if (!schema) return { settings, blocks };
   const p = mediaPools(spec);
+  if (ownPhotos) { p.photos = ownPhotos.filter((f)=>!!spec.files[f]); p.life = p.photos; }
   if (PREMIUM_MEDIA_TYPES.has(type)) return premiumProjectMedia(type, schema, p, settings, blocks);
   if (SHOWCASE_MEDIA_TYPES.has(type)) return showcaseProjectMedia(type, schema, p, settings, blocks, spec.store.collections ?? []);
   if (BRAND_MEDIA_TYPES.has(type)) return brandProjectMedia(type, schema, p, settings, blocks);
   if (UTILITY_MEDIA_TYPES.has(type)) return utilityProjectMedia(type, schema, p, settings, blocks);
   if (NARRATIVE_MEDIA_TYPES.has(type)) return narrativeProjectMedia(spec, type, schema, p, settings, blocks);
+  if (type.startsWith("ed-")) {
+    // Un rôle explicitement attendu ne reçoit jamais une photo choisie au hasard.
+    const out = { ...settings };
+    const photos = [...new Set(p.photos)];
+    let index = 0;
+    if (["ed-opening", "ed-scene"].includes(type) && !out.media_role && !out.image && !out.image_asset) out.image_asset = photos[index++] ?? "";
+    if(type==="ed-study") { if(!out.media_role&&!out.image&&!out.image_asset)out.image_asset=photos[index++]??""; if(!out.second_role&&!out.second_image&&!out.second_asset)out.second_asset=photos[index++]??""; }
+    const enriched = blocks?.map((b) => ({ ...b, settings: { ...b.settings, ...(!b.settings?.media_role && !b.settings?.image && !b.settings?.image_asset ? { image_asset: photos[index++] ?? "" } : {}) } }));
+    return { settings: out, blocks: enriched };
+  }
   let n = 0;
   const nextPhoto = () => p.photos.length ? p.photos[n++ % p.photos.length] : undefined;
   const out = { ...settings };

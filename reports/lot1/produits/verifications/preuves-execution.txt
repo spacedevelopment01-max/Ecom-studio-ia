@@ -1,0 +1,1 @@
+{"cases":2,"products":6,"screenshots":12,"themeCheckErrors":0,"aiCalls":0,"cmsInstalled":false}

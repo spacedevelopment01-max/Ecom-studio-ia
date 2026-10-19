@@ -1,0 +1,181 @@
+{%- comment -%}
+  Article éditorial (listicle ou publi-rédactionnel) : bandeau d'étiquette, fil d'Ariane, titre en deux temps, chapeau,
+  signature avec initiales (jamais de portrait), date, mention de démonstration lisible et séparée du texte. Blocs
+  réordonnables : intertitre, paragraphe, visuel, point numéroté (titre, texte, visuel), liste cochée, citation,
+  encadré, bouton, notes fictives (barres). Aucune donnée n'est inventée par la section : tout vient des réglages.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign initials = s.author | split: ' '
+  assign n = 0
+-%}
+<section class="es-section cv-anim cv-anim--{{ section.settings.animation_speed | default: 'normal' }} cv-article cv-article--{{ s.style }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;">
+  {%- if s.label_bar != blank -%}<p class="cv-article__bar">{{ s.label_bar | escape }}</p>{%- endif -%}
+  <div class="es-container cv-article__inner cv-article__inner--{{ s.width }}">
+    {%- if s.crumb_label != blank -%}
+      <nav class="cv-article__crumbs" aria-label="{{ 'conversion.breadcrumb' | t }}">
+        <a href="{{ routes.root_url }}">{{ 'conversion.home' | t }}</a>
+        {%- if s.crumb_link != blank and s.crumb_link_label != blank -%} <span aria-hidden="true">›</span> <a href="{{ s.crumb_link }}">{{ s.crumb_link_label | escape }}</a>{%- endif -%}
+        <span aria-hidden="true">›</span> <span aria-current="page">{{ s.crumb_label | escape }}</span>
+      </nav>
+    {%- endif -%}
+    {%- if s.eyebrow != blank -%}<p class="cv-article__eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
+    <h1 class="es-heading cv-article__title">{{ s.heading | escape }}{% if s.heading_accent != blank %} <span class="cv-article__accent">{{ s.heading_accent | escape }}</span>{% endif %}</h1>
+    {%- if s.intro != blank -%}<div class="es-rte cv-article__intro">{{ s.intro }}</div>{%- endif -%}
+    {%- if s.author != blank -%}
+      <div class="cv-article__byline">
+        <span class="cv-article__avatar" aria-hidden="true">{% for part in initials limit: 2 %}{{ part | slice: 0 | upcase }}{% endfor %}</span>
+        <div>
+          <p class="cv-article__author">{{ s.author | escape }}</p>
+          {%- if s.date_text != blank -%}<p class="cv-article__date">{{ s.date_text | escape }}</p>{%- endif -%}
+          {%- if s.rating_text != blank -%}<p class="cv-article__rating-line"><span class="cv-stars" aria-hidden="true">★★★★★</span> {{ s.rating_text | escape }} <span class="cv-fictional">{{ 'conversion.fictional_rating' | t }}</span></p>{%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+    <p class="cv-article__demo"><span class="cv-fictional">{{ 'conversion.demo_article' | t }}</span>{% if s.demo_note != blank %} <span class="cv-article__demo-text">{{ s.demo_note | escape }}</span>{% endif %}</p>
+
+    {%- for block in section.blocks -%}
+      {%- case block.type -%}
+        {%- when 'heading' -%}
+          <h2 class="cv-article__h2" {{ block.shopify_attributes }}>{{ block.settings.text | escape }}</h2>
+        {%- when 'paragraph' -%}
+          <div class="es-rte cv-article__text" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
+        {%- when 'image' -%}
+          <figure class="cv-article__media" {{ block.shopify_attributes }}>
+            {% render 'ed-media', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.image_alt, role_label: block.settings.media_role, focus_x: block.settings.focus_x, focus_y: block.settings.focus_y %}
+            {%- if block.settings.caption != blank -%}<figcaption>{{ block.settings.caption | escape }}</figcaption>{%- endif -%}
+          </figure>
+        {%- when 'point' -%}
+          {%- assign n = n | plus: 1 -%}
+          <div class="cv-article__point" {{ block.shopify_attributes }}>
+            {%- if block.settings.image != blank or block.settings.image_asset != blank or block.settings.media_role != blank -%}
+              <div class="cv-article__media">{% render 'ed-media', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.image_alt, role_label: block.settings.media_role, focus_x: block.settings.focus_x, focus_y: block.settings.focus_y %}</div>
+            {%- endif -%}
+            <h2 class="cv-article__h2 cv-article__point-title"><span class="cv-article__num">{{ n }}.</span> {{ block.settings.title | escape }}</h2>
+            {%- if block.settings.text != blank -%}<div class="es-rte cv-article__text">{{ block.settings.text }}</div>{%- endif -%}
+          </div>
+        {%- when 'checklist' -%}
+          <div class="cv-article__checklist" {{ block.shopify_attributes }}>
+            {%- if block.settings.title != blank -%}<h2 class="cv-article__h2">{{ block.settings.title | escape }}</h2>{%- endif -%}
+            <ul class="cv-article__checks" role="list">
+              {%- assign items = block.settings.items | newline_to_br | split: '<br />' -%}
+              {%- for item in items -%}{%- assign line = item | strip -%}{%- if line != blank -%}
+                {%- assign parts = line | split: ' — ' -%}
+                <li><span class="cv-check" aria-hidden="true">{% render 'icon', name: 'check' %}</span><span>{% if parts.size > 1 %}<strong>{{ parts[0] | escape }}</strong> — {{ parts[1] | escape }}{% else %}{{ line | escape }}{% endif %}</span></li>
+              {%- endif -%}{%- endfor -%}
+            </ul>
+          </div>
+        {%- when 'quote' -%}
+          <blockquote class="cv-article__quote" {{ block.shopify_attributes }}><p>{{ block.settings.text | escape }}</p>{% if block.settings.author != blank %}<cite>{{ block.settings.author | escape }}</cite>{% endif %}</blockquote>
+        {%- when 'box' -%}
+          <aside class="cv-article__box cv-article__box--{{ block.settings.style }}" {{ block.shopify_attributes }}>
+            {%- if block.settings.title != blank -%}<strong>{{ block.settings.title | escape }}</strong>{%- endif -%}
+            {%- if block.settings.text != blank -%}<div class="es-rte">{{ block.settings.text }}</div>{%- endif -%}
+          </aside>
+        {%- when 'cta' -%}
+          <div class="cv-article__cta" {{ block.shopify_attributes }}>
+            <a class="es-button es-button--full cv-button cv-article__button" href="{{ block.settings.link | default: routes.all_products_collection_url }}">{{ block.settings.label | escape }}</a>
+            {%- if block.settings.note != blank -%}<p class="cv-article__cta-note">{{ block.settings.note | escape }}</p>{%- endif -%}
+          </div>
+        {%- when 'rating' -%}
+          <div class="cv-article__scores" {{ block.shopify_attributes }}>
+            {%- if block.settings.heading != blank -%}<h2 class="cv-article__h2 cv-article__h2--center">{{ block.settings.heading | escape }}</h2>{%- endif -%}
+            <p class="cv-article__score"><span class="cv-stars" aria-hidden="true">★★★★★</span> <strong>{{ block.settings.score | escape }}</strong> <span class="cv-fictional">{{ 'conversion.fictional_rating' | t }}</span></p>
+            <ul class="cv-article__bars" role="list" aria-label="{{ 'conversion.fictional_rating' | t }}">
+              {%- for level in (1..5) reversed -%}
+                {%- assign key = 'p' | append: level -%}
+                {%- assign value = block.settings[key] | default: 0 -%}
+                <li><span>{{ level }} ★</span><span class="cv-article__gauge" aria-hidden="true"><span style="width:{{ value }}%"></span></span><span>{{ value }} %</span></li>
+              {%- endfor -%}
+            </ul>
+            {%- if block.settings.criteria != blank -%}
+              <ul class="cv-article__criteria" role="list">
+                {%- assign lines = block.settings.criteria | newline_to_br | split: '<br />' -%}
+                {%- for item in lines -%}{%- assign line = item | strip -%}{%- if line != blank -%}{%- assign parts = line | split: ' : ' -%}<li><span>{{ parts[0] | escape }}</span><span><span class="cv-stars" aria-hidden="true">★★★★★</span> {{ parts[1] | escape }}</span></li>{%- endif -%}{%- endfor -%}
+              </ul>
+            {%- endif -%}
+            <p class="cv-article__demo-text">{{ 'conversion.demo_reviews' | t }}</p>
+          </div>
+      {%- endcase -%}
+    {%- endfor -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Article éditorial",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "select", "id": "style", "label": "Type d'article", "default": "listicle", "options": [ { "value": "listicle", "label": "Liste de raisons" }, { "value": "advertorial", "label": "Récit (publi-rédactionnel)" } ] },
+    { "type": "select", "id": "width", "label": "Largeur du texte", "default": "narrow", "options": [ { "value": "narrow", "label": "Étroite (lecture)" }, { "value": "regular", "label": "Normale" } ] },
+    { "type": "text", "id": "label_bar", "label": "Bandeau d'étiquette", "info": "Ex. « Publi-rédactionnel de démonstration ». Vide : aucun bandeau." },
+    { "type": "text", "id": "crumb_label", "label": "Fil d'Ariane : page actuelle", "info": "Vide : aucun fil d'Ariane." },
+    { "type": "url", "id": "crumb_link", "label": "Fil d'Ariane : lien intermédiaire" },
+    { "type": "text", "id": "crumb_link_label", "label": "Fil d'Ariane : libellé intermédiaire" },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Quatre raisons de l'adopter" },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre en accent" },
+    { "type": "richtext", "id": "intro", "label": "Chapeau" },
+    { "type": "text", "id": "author", "label": "Signature", "info": "Initiales affichées dans un rond, jamais de portrait." },
+    { "type": "text", "id": "date_text", "label": "Date ou mise à jour" },
+    { "type": "text", "id": "rating_text", "label": "Ligne de note sous la signature", "info": "Toujours marquée « Note fictive » sans application d'avis réelle." },
+    { "type": "text", "id": "demo_note", "label": "Mention de démonstration", "default": "Auteur, récit et notes fictifs, rédigés pour la démonstration." },
+    { "type": "select", "id": "animation", "label": "Animation", "default": "rise", "options": [ { "value": "none", "label": "Aucune" }, { "value": "fade", "label": "Fondu" }, { "value": "rise", "label": "Montée en fondu" }, { "value": "zoom", "label": "Léger zoom" } ] },
+    { "type": "select", "id": "animation_speed", "label": "Vitesse", "default": "normal", "options": [ { "value": "slow", "label": "Lente" }, { "value": "normal", "label": "Normale" }, { "value": "fast", "label": "Rapide" } ] },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 32 },
+    { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 }
+  ],
+  "blocks": [
+    { "type": "heading", "name": "Intertitre", "settings": [ { "type": "text", "id": "text", "label": "Texte", "default": "Un intertitre" } ] },
+    { "type": "paragraph", "name": "Paragraphe", "settings": [ { "type": "richtext", "id": "text", "label": "Texte" } ] },
+    { "type": "image", "name": "Visuel", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Visuel" },
+      { "type": "text", "id": "image_asset", "label": "Fichier image fourni avec le thème" },
+      { "type": "text", "id": "image_alt", "label": "Description du visuel" },
+      { "type": "text", "id": "media_role", "label": "Rôle du visuel attendu" },
+      { "type": "range", "id": "focus_x", "label": "Point focal horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+      { "type": "range", "id": "focus_y", "label": "Point focal vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+      { "type": "text", "id": "caption", "label": "Légende" }
+    ] },
+    { "type": "point", "name": "Point numéroté", "settings": [
+      { "type": "text", "id": "title", "label": "Titre", "default": "Une bonne raison" },
+      { "type": "richtext", "id": "text", "label": "Texte" },
+      { "type": "image_picker", "id": "image", "label": "Visuel" },
+      { "type": "text", "id": "image_asset", "label": "Fichier image fourni avec le thème" },
+      { "type": "text", "id": "image_alt", "label": "Description du visuel" },
+      { "type": "text", "id": "media_role", "label": "Rôle du visuel attendu" },
+      { "type": "range", "id": "focus_x", "label": "Point focal horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+      { "type": "range", "id": "focus_y", "label": "Point focal vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 }
+    ] },
+    { "type": "checklist", "name": "Liste cochée", "settings": [
+      { "type": "text", "id": "title", "label": "Titre" },
+      { "type": "textarea", "id": "items", "label": "Éléments", "info": "Un par ligne ; « Titre — détail » met le titre en gras." }
+    ] },
+    { "type": "quote", "name": "Citation", "settings": [ { "type": "text", "id": "text", "label": "Texte", "default": "Une phrase à retenir." }, { "type": "text", "id": "author", "label": "Signature" } ] },
+    { "type": "box", "name": "Encadré", "settings": [
+      { "type": "text", "id": "title", "label": "Titre" },
+      { "type": "richtext", "id": "text", "label": "Texte" },
+      { "type": "select", "id": "style", "label": "Style", "default": "plain", "options": [ { "value": "plain", "label": "Sobre" }, { "value": "accent", "label": "Accentué" } ] }
+    ] },
+    { "type": "cta", "name": "Bouton", "settings": [
+      { "type": "text", "id": "label", "label": "Libellé", "default": "Découvrir" },
+      { "type": "url", "id": "link", "label": "Lien" },
+      { "type": "text", "id": "note", "label": "Note sous le bouton" }
+    ] },
+    { "type": "rating", "name": "Notes fictives", "settings": [
+      { "type": "text", "id": "heading", "label": "Titre", "default": "Répartition des notes" },
+      { "type": "text", "id": "score", "label": "Note globale", "default": "4,8/5" },
+      { "type": "range", "id": "p5", "label": "Part des 5 étoiles", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 70 },
+      { "type": "range", "id": "p4", "label": "Part des 4 étoiles", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 25 },
+      { "type": "range", "id": "p3", "label": "Part des 3 étoiles", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 5 },
+      { "type": "range", "id": "p2", "label": "Part des 2 étoiles", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 0 },
+      { "type": "range", "id": "p1", "label": "Part des 1 étoile", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 0 },
+      { "type": "textarea", "id": "criteria", "label": "Notes par critère", "info": "Un par ligne, « Critère : note »." }
+    ] }
+  ],
+  "max_blocks": 40,
+  "presets": [ { "name": "Article éditorial", "blocks": [ { "type": "point" }, { "type": "point" }, { "type": "point" }, { "type": "cta" } ] } ]
+}
+{% endschema %}

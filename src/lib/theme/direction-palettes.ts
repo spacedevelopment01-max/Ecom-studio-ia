@@ -44,6 +44,11 @@ export const DIRECTION_PALETTES: Record<DirectionId, DirectionPalette> = {
   etabli: { primary: "#5A3E2B", secondary: "#D7C3A3", accent: "#2F6F73", light: "#F5EFE6", dark: "#231912" }, // noyer, chêne, acier patiné
   velours: { primary: "#3B0F2A", secondary: "#C9A3B6", accent: "#D4AF7A", light: "#F4ECE6", dark: "#1A0712" }, // prune, champagne
   lancement: { primary: "#0A0A0F", secondary: "#B3ABD9", accent: "#7B5CFF", light: "#F1F0F7", dark: "#050508" }, // nuit, violet électrique
+  // Thèmes de référence (issue #137) : couleurs de repli ; un projet garde ses propres rôles de couleur.
+  fraise: { primary: "#C4312A", secondary: "#F9E1DB", accent: "#E4473F", light: "#FBF7F2", dark: "#141414" }, // rouge fraise (principal assombri : 5,1:1 sur le crème), rose pâle en fond doux, crème
+  onde: { primary: "#257A10", secondary: "#E6F6DF", accent: "#4ECD01", light: "#FFFFFF", dark: "#1F1F1F" }, // vert vif en accent, vert profond lisible en principal (5,4:1 sur blanc), vert pâle en fond doux, anthracite
+  orbe: { primary: "#9B4F36", secondary: "#D8CCB9", accent: "#9B4F36", light: "#F4F0E8", dark: "#29251F" }, // terre cuite, crème
+  rive: { primary: "#243B32", secondary: "#B7C2AE", accent: "#243B32", light: "#EEEAE2", dark: "#1B2B25" }, // vert profond, papier
 };
 
 export const directionPalette = (id: DirectionId | string): DirectionPalette => ({ ...(DIRECTION_PALETTES[id as DirectionId] ?? DIRECTION_PALETTES.atelier) });

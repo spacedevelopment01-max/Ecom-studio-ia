@@ -146,7 +146,7 @@ const BlockSchema = z.discriminatedUnion("kind", [
   z.object({ id: z.string().min(1).max(40), kind: z.literal("faq"), q: z.string().max(300), a: z.string().max(2000) }),
   z.object({ id: z.string().min(1).max(40), kind: z.literal("cta"), text: z.string().max(120), url: z.string().max(500).nullable() }),
 ]);
-const PageRefSchema = z.object({ key: z.string().max(120), title: z.string().max(200), url: z.string().max(500).nullable(), kind: z.enum(["product", "collection", "page", "service", "home", "brand", "local", "article"]), status: z.enum(["existing", "planned"]) });
+const PageRefSchema = z.object({ key: z.string().max(120), contentTarget: z.string().max(120).optional(), aliases: z.array(z.string().max(120)).max(100).optional(), title: z.string().max(200), url: z.string().max(500).nullable(), kind: z.enum(["product", "collection", "page", "service", "home", "brand", "local", "article"]), status: z.enum(["existing", "planned"]) });
 export const ContentDocSchema = z.object({
   version: z.number(),
   type: z.enum(["product_page", "category_page", "service_page", "home_page", "brand_page", "local_page", "blog_article", "faq", "metadata", "ad_copy"]),
@@ -157,7 +157,7 @@ export const ContentDocSchema = z.object({
   blocks: z.array(BlockSchema).max(200),
   schema: z.array(z.record(z.string(), z.unknown())).max(10),
   links: z.array(PageRefSchema).max(40),
-  meta2: z.object({ source: z.enum(["engine", "user", "ai_local", "ai"]), by: z.enum(["ai", "local"]), runId: z.string().max(60).nullable(), createdFrom: z.string().max(80).nullable() }),
+  meta2: z.object({ source: z.enum(["engine", "user", "ai_local", "ai"]), by: z.enum(["ai", "local"]), runId: z.string().max(60).nullable(), createdFrom: z.string().max(80).nullable(), contract: z.object({ request: z.string().max(600), contextHash: z.string(), contextVersion: z.string(), target: z.string(), checks: z.object({ checked: z.array(z.string()), issues: z.array(z.string()), unchecked: z.array(z.string()) }) }).optional() }),
 });
 
 /** Ids uniques (une copie ou un collage de bloc garde un identifiant distinct). */

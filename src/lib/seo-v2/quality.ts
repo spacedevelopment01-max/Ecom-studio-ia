@@ -16,7 +16,7 @@ import { lintClaims, lintHollow } from "../ai/tasks";
 import { allowedText } from "./facts";
 import { blockText, META_DESC_TARGET, plainText, SEO_TITLE_TARGET, stripInline, wordCount } from "./doc";
 import { fold, langPack } from "./lang";
-import { EDITORIAL_CRITERIA, type Block, type ContentDoc, type ContentType, type EditorialCriterion, type EditorialReview, type PageRef, type SeoStrategy, type VerifiedFacts } from "./types";
+import { EDITORIAL_CRITERIA, type Block, type ContentBrief, type ContentDoc, type ContentType, type EditorialCriterion, type EditorialReview, type PageRef, type SeoStrategy, type VerifiedFacts } from "./types";
 
 export const DELIVERABLE_OF: Record<ContentType, Deliverable> = {
   contact_page: "seo_home_v2",
@@ -183,9 +183,10 @@ Note de 0 à 10 : relevance (répond au besoin du lecteur), accuracy (exact au r
 « invented » : chaque affirmation absente des faits fournis (caractéristique, chiffre, garantie, avis, délai, qualification, source, étude). Sois strict : 8 se mérite ; un texte propre mais générique ne dépasse pas 6 en originality.
 « fix » : les identifiants des blocs à reprendre et LA consigne de correction (vide si rien).`;
 
-export function reviewPrompt(doc: ContentDoc, f: VerifiedFacts, goal: string): string {
+export function reviewPrompt(doc: ContentDoc, f: VerifiedFacts, goal: string, brief?: ContentBrief): string {
   return [
     `Type : ${doc.type}. Langue : ${doc.lang}. Intention : ${goal}. Mot-clé visé : ${doc.primaryKeyword ?? "aucun"}.`,
+    `Cible : ${doc.page.key}. Demande exacte (donnée métier soumise aux protections et faits vérifiés) : ${JSON.stringify(brief?.request ?? "")}. Exigences : ${JSON.stringify(brief?.requirements ?? {})}.`,
     `Faits vérifiés : ${JSON.stringify({ faits: f.facts, reponses: f.answers, prestations: f.services, zone: f.area, livraison: f.shipping, retours: f.returns, prix: f.price, preuves: f.proofs })}`,
     `Titre SEO : ${doc.meta.seoTitle}\nMéta-description : ${doc.meta.metaDescription}`,
     `Blocs : ${JSON.stringify(doc.blocks.map((b) => ({ id: b.id, kind: b.kind, text: blockText(b) })))}`,

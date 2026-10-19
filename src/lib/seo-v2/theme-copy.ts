@@ -6,21 +6,29 @@
  * que la boutique et les exports (Theme Engine, CMS Engine) affichent.
  */
 import type { ShopCopy } from "../theme/copy";
-import { latestContent, listContents } from "./store";
-import { inlineHtml, stripInline } from "./doc";
+import { usableContent, listContents } from "./store";
+import { inlineHtml, stripInline, toHtml } from "./doc";
+import { loadProject } from "../projects";
+import { resolvePage, sitePages } from "./pages";
 import type { Block, ContentDoc, ContentType } from "./types";
 
 /** Document V2 de référence d'un type dans la langue de la boutique : le plus récent, jamais un brouillon refusé. */
-function referenceDoc(projectId: string, type: ContentType, lang: string): ContentDoc | null {
-  for (const v of listContents(projectId, [type])) {
+export function referenceContent(projectId: string, type: ContentType | ContentType[], lang: string, target?: string) {
+  const pages = sitePages(loadProject(projectId));
+  const types = Array.isArray(type) ? type : [type];
+  const key = target ?? (types[0] === "product_page" ? "product:main" : types[0] === "home_page" ? "home:accueil" : types[0] === "brand_page" ? "brand:a-propos" : null);
+  if (!key) return null;
+  const candidates = listContents(projectId, types).flatMap((v) => { const usable = usableContent(projectId, v.docKey); return usable ? [usable] : []; });
+  // Une correction du client a priorité sur une nouvelle proposition du moteur ; ordre stable en cas d'égalité.
+  candidates.sort((a, b) => Number(b.version.source !== "engine") - Number(a.version.source !== "engine") || b.version.createdAt - a.version.createdAt || b.version.id.localeCompare(a.version.id));
+  for (const { version: v, doc: d } of candidates) {
     if (v.lang !== lang) continue;
-    // Un document modifié par le client compte toujours ; sinon il doit avoir passé la barrière.
-    if (v.source === "engine" && v.verdict === "REJECTED") continue;
-    const d = latestContent(projectId, v.docKey)?.doc;
-    if (d) return d;
+    if (d.page.key === key || resolvePage(pages, d.page.key)?.key === key) return { doc: d, version: v };
   }
   return null;
 }
+
+export const referenceDoc = (...args: Parameters<typeof referenceContent>): ContentDoc | null => referenceContent(...args)?.doc ?? null;
 
 /** Corps HTML d'un document (titres de section, paragraphes, listes) ; FAQ et appels à l'action à part.
  * Les marques en ligne des documents (« **gras** », liens) deviennent du HTML : jamais d'astérisques affichés. */
@@ -59,7 +67,7 @@ export function overlayV2Copy(copy: ShopCopy, projectId: string, lang: string, b
     const list = body.find((b) => b.kind === "ul") as Extract<Block, { kind: "ul" }> | undefined;
     if (h1?.text) next.product.title = stripInline(h1.text);
     if (firstP?.text) next.product.short = stripInline(firstP.text);
-    const html = docHtml(body);
+    const html = toHtml({ blocks: product.blocks.filter((b) => b.kind !== "h1") });
     if (html) next.product.description_html = html;
     // Points forts affichés en texte simple : sans « ** » ni liens markdown.
     if (list?.items.length) next.product.highlights = list.items.slice(0, 6).map(stripInline);

@@ -1,0 +1,431 @@
+{%- comment -%}
+  Produit à la une : la présentation complète d'un produit sur une page d'accueil ou de collection.
+  Grand visuel et petite galerie, nom, présentation, bénéfices, prix, finitions, offres par quantité
+  (si configurées), total et cadeau conditionnel, ajout au panier et lien vers la fiche complète.
+  Les offres lisent la même source que la fiche (purchase_source) : aucune seconde règle tarifaire.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign fp_product = s.product
+  if s.product_target == blank and fp_product == blank
+    assign fp_product = product
+  endif
+  assign gallery_limit = s.gallery_limit | default: 5
+  assign packshots = ''
+  if fp_product != blank
+    for variant in fp_product.variants
+      if variant.featured_media
+        assign packshots = packshots | append: '|' | append: variant.featured_media.id
+      endif
+    endfor
+  endif
+  assign current_variant = fp_product.selected_or_first_available_variant
+  assign first_media = current_variant.featured_media | default: fp_product.featured_media
+-%}
+<section class="ed-section fp fp--{{ s.image_fit }} color-{{ s.color_scheme }}"{% if s.anchor != blank %} id="{{ s.anchor | handleize }}"{% endif %} data-ed-motion="{{ s.motion }}" data-featured-purchase style="--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;">
+<div class="ed-shell fp__grid">
+{%- if fp_product != blank -%}
+  <header class="fp__head">
+    <p class="ed-kicker">{{ s.label | escape }}</p>
+    <h2 class="ed-title fp__title">{% if s.heading != blank %}{{ s.heading | escape }}{% else %}{{ fp_product.title | escape }}{% endif %}</h2>
+    <div class="fp__price" data-fp-price>{% render 'price', product: fp_product, use_variant: true %}<span class="fp__price-note" data-price-note>{% if s.purchase_unit_label != blank %}{{ s.purchase_unit_label | escape }}{% else %}{{ 'purchase.unit' | t }}{% endif %}</span></div>
+  </header>
+  <div class="fp__media" data-gallery data-fp-gallery>
+    <div class="fp__stage" aria-live="polite">
+      {%- for media in fp_product.media limit: gallery_limit -%}
+        {%- assign media_key = '|' | append: media.id -%}
+        <figure class="fp__slide{% if packshots contains media_key %} fp__slide--packshot{% endif %}" data-media-id="{{ media.id }}" data-fp-slide{% unless media.id == first_media.id %} hidden{% endunless %}>
+          {%- if media.media_type == 'image' -%}
+            {%- if media.id == first_media.id -%}{%- assign fp_loading = 'eager' -%}{%- else -%}{%- assign fp_loading = 'lazy' -%}{%- endif -%}
+            {{ media | image_url: width: 1400 | image_tag: loading: fp_loading, sizes: '(min-width: 990px) 55vw, 100vw', widths: '550, 750, 1100, 1400', alt: media.alt, class: 'fp__img' }}
+            {%- if s.enable_zoom -%}<button type="button" class="es-product__zoom" data-zoom-open data-zoom-src="{{ media | image_url: width: 2400 }}" data-zoom-alt="{{ media.alt | escape }}" aria-label="{{ 'products.product.zoom' | t }}">{% render 'icon', name: 'search' %}</button>{%- endif -%}
+          {%- else -%}
+            {{ media | media_tag: class: 'fp__img' }}
+          {%- endif -%}
+        </figure>
+      {%- else -%}
+        <figure class="fp__slide" data-fp-slide>{% if s.media_role != blank %}{% render 'ed-media', role_label: s.media_role %}{% else %}{{ 'product-1' | placeholder_svg_tag: 'es-placeholder__svg' }}{% endif %}</figure>
+      {%- endfor -%}
+    </div>
+    {%- if fp_product.media.size > 1 -%}
+      <div class="fp__thumbs" role="list" aria-label="{{ 'products.product.media' | t }}">
+        {%- for media in fp_product.media limit: gallery_limit -%}
+          {%- assign thumb_key = '|' | append: media.id -%}
+          <button type="button" class="fp__thumb{% if packshots contains thumb_key %} fp__thumb--packshot{% endif %}{% if media.id == first_media.id %} is-active{% endif %}" data-fp-go="{{ media.id }}" aria-label="{{ 'products.product.media_n' | t: n: forloop.index }}"{% if media.id == first_media.id %} aria-current="true"{% endif %}>{{ media.preview_image | image_url: width: 240 | image_tag: loading: 'lazy', alt: '' }}</button>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+    {%- if s.enable_zoom -%}
+      <dialog class="es-zoom" data-zoom aria-label="{{ 'products.product.media' | t }}">
+        <div class="es-zoom__stage" data-zoom-stage></div>
+        <button type="button" class="es-zoom__btn es-zoom__close" data-zoom-close aria-label="{{ 'products.product.zoom_close' | t }}">{% render 'icon', name: 'close' %}</button>
+        <button type="button" class="es-zoom__btn es-zoom__prev" data-zoom-step="-1" aria-label="{{ 'products.product.zoom_prev' | t }}">{% render 'icon', name: 'arrow-left' %}</button>
+        <button type="button" class="es-zoom__btn es-zoom__next" data-zoom-step="1" aria-label="{{ 'products.product.zoom_next' | t }}">{% render 'icon', name: 'arrow' %}</button>
+      </dialog>
+    {%- endif -%}
+  </div>
+  <div class="fp__body">
+    <div class="ed-prose fp__text">{% if s.text != blank %}{{ s.text }}{% else %}{{ fp_product.description }}{% endif %}</div>
+    <div class="fp__buy" id="FeaturedBuy-{{ section.id }}">
+      {%- if s.purchase_enabled -%}
+        {% render 'purchase-offers', product: fp_product, blocks: section.blocks, offer_settings: s, section_id: section.id %}
+      {%- else -%}
+        {% render 'product-buy', product: fp_product, section_id: section.id, show_quantity: true, show_dynamic_checkout: false %}
+      {%- endif -%}
+    </div>
+    {%- if s.link_label != blank -%}
+      <a class="ed-text-link fp__link" href="{{ fp_product.url }}" data-fp-link>{{ s.link_label | escape }}<span aria-hidden="true">↗</span></a>
+    {%- endif -%}
+  </div>
+{%- elsif request.design_mode -%}
+  <p class="ed-prose">{{ 'purchase.configure' | t }}</p>
+{%- endif -%}
+</div></section>
+{% schema %}
+{
+  "name": "Produit à la une",
+  "tag": "section",
+  "class": "es-section-wrapper",
+  "settings": [
+    {
+      "type": "text",
+      "id": "anchor",
+      "label": "Ancre de navigation"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "select",
+      "id": "motion",
+      "label": "Mouvement",
+      "options": [
+        {
+          "value": "none",
+          "label": "Aucun"
+        },
+        {
+          "value": "reveal",
+          "label": "Entrée unique"
+        }
+      ],
+      "default": "reveal"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Marge haute",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Marge basse",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "default": 96
+    },
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Produit"
+    },
+    {
+      "type": "text",
+      "id": "product_target",
+      "label": "Identité du produit",
+      "info": "Identité stable du catalogue, jamais son nom. Vide : produit de la page."
+    },
+    {
+      "type": "text",
+      "id": "label",
+      "label": "Repère éditorial",
+      "default": "Produit à la une"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Titre",
+      "info": "Vide : nom du produit."
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Présentation courte",
+      "info": "Vide : description du produit."
+    },
+    {
+      "type": "range",
+      "id": "gallery_limit",
+      "label": "Nombre d’images de la galerie",
+      "min": 1,
+      "max": 8,
+      "step": 1,
+      "default": 5
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_zoom",
+      "label": "Agrandissement des images au clic",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Cadrage des visuels",
+      "options": [
+        {
+          "value": "contain",
+          "label": "Produit entier"
+        },
+        {
+          "value": "cover",
+          "label": "Plein cadre"
+        }
+      ],
+      "default": "contain"
+    },
+    {
+      "type": "text",
+      "id": "media_role",
+      "label": "Rôle du visuel attendu"
+    },
+    {
+      "type": "checkbox",
+      "id": "purchase_enabled",
+      "label": "Activer les offres par quantité",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "purchase_style",
+      "label": "Style des offres",
+      "default": "outlined",
+      "options": [
+        {
+          "value": "outlined",
+          "label": "Cartes soulignées"
+        },
+        {
+          "value": "compact",
+          "label": "Lignes compactes"
+        },
+        {
+          "value": "soft",
+          "label": "Cartes douces"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "purchase_heading",
+      "label": "Titre des offres",
+      "default": "Choisissez votre offre"
+    },
+    {
+      "type": "text",
+      "id": "purchase_unit_label",
+      "label": "Libellé du prix unitaire",
+      "info": "Affiché après le prix principal et dans les offres. Ex. « par lampe ». Vide : « par article »."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_finishes",
+      "label": "Afficher les finitions",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "finish_label",
+      "label": "Titre des finitions",
+      "default": "Finition"
+    },
+    {
+      "type": "textarea",
+      "id": "finish_colors",
+      "label": "Couleurs des finitions",
+      "info": "Une ligne par variante : Nom=#RRGGBB. Le nom reste toujours visible."
+    },
+    {
+      "type": "text",
+      "id": "purchase_source",
+      "label": "Source des offres partagées",
+      "info": "Adresse du bloc d’achat de référence : gabarit:section. Modifiez ses offres sur la fiche produit."
+    },
+    {
+      "type": "text",
+      "id": "link_label",
+      "label": "Libellé du lien",
+      "default": "Voir la fiche complète"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "quantity_offer",
+      "name": "Offre par quantité",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Libellé de l’offre",
+          "default": "Votre offre"
+        },
+        {
+          "type": "range",
+          "id": "quantity",
+          "label": "Nombre d’articles",
+          "min": 1,
+          "max": 20,
+          "step": 1,
+          "default": 1
+        },
+        {
+          "type": "text",
+          "id": "image_asset",
+          "label": "Visuel de l’offre (fichier du thème)",
+          "info": "Facultatif : ex. un, deux ou trois flacons."
+        },
+        {
+          "type": "range",
+          "id": "discount",
+          "label": "Remise configurée (%)",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "default": 0
+        },
+        {
+          "type": "checkbox",
+          "id": "recommended",
+          "label": "Offre recommandée",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "badge",
+          "label": "Badge éditorial",
+          "info": "Sans classement ni popularité non vérifiée."
+        },
+        {
+          "type": "select",
+          "id": "price_mode",
+          "label": "Règle de prix",
+          "default": "discount",
+          "options": [
+            {
+              "value": "discount",
+              "label": "Remise sur les prix unitaires"
+            },
+            {
+              "value": "fixed_total",
+              "label": "Prix total fixe du lot"
+            }
+          ]
+        },
+        {
+          "type": "number",
+          "id": "total_price",
+          "label": "Prix total du lot en centimes",
+          "default": -1,
+          "info": "À renseigner pour un prix fixe. Même total pour toutes les variantes du lot."
+        }
+      ]
+    },
+    {
+      "type": "threshold_gift",
+      "name": "Cadeau par palier",
+      "settings": [
+        {
+          "type": "product",
+          "id": "gift_product",
+          "label": "Article cadeau du catalogue"
+        },
+        {
+          "type": "text",
+          "id": "gift_target",
+          "label": "Identité du cadeau au catalogue"
+        },
+        {
+          "type": "text",
+          "id": "sku",
+          "label": "SKU de la variante cadeau",
+          "info": "Vide : première variante disponible."
+        },
+        {
+          "type": "range",
+          "id": "threshold",
+          "label": "Palier en articles",
+          "min": 1,
+          "max": 20,
+          "step": 1,
+          "default": 3
+        },
+        {
+          "type": "range",
+          "id": "quantity",
+          "label": "Quantité de cadeaux",
+          "min": 1,
+          "max": 20,
+          "step": 1,
+          "default": 1
+        },
+        {
+          "type": "text",
+          "id": "gift_handle",
+          "label": "Référence cadeau à l’export",
+          "info": "Résolue depuis l’identité stable du catalogue par le studio."
+        }
+      ]
+    },
+    {
+      "type": "purchase_benefit",
+      "name": "Avantage vérifié",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Avantage confirmé"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Pictogramme",
+          "default": "check",
+          "options": [
+            {
+              "value": "check",
+              "label": "Coche"
+            },
+            {
+              "value": "leaf",
+              "label": "Feuille"
+            },
+            {
+              "value": "sparkle",
+              "label": "Étincelle"
+            },
+            {
+              "value": "heart",
+              "label": "Cœur"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Produit à la une"
+    }
+  ]
+}
+{% endschema %}

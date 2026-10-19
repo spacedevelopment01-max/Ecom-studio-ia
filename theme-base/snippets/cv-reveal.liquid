@@ -1,0 +1,20 @@
+{%- comment -%}
+  Attributs d'apparition au défilement d'un élément, selon le réglage « Animation » de sa section.
+  Paramètres : animation (none | fade | rise | zoom ; vide = rise), index (décalage des cartes, 0 à 11).
+  Sans JavaScript ou avec « réduire les animations », le thème laisse tout visible ; au-delà de 3 s, tout ce qui n'est
+  pas apparu est révélé (theme.js) : aucun texte ne reste masqué.
+{%- endcomment -%}
+{%- liquid
+  assign kind = animation | default: 'rise'
+  case kind
+    when 'none'
+      assign reveal = ''
+    when 'fade'
+      assign reveal = 'fade'
+    when 'zoom'
+      assign reveal = 'zoom'
+    else
+      assign reveal = 'up'
+  endcase
+-%}
+{%- if reveal != '' -%} data-reveal="{{ reveal }}"{% if index != blank %} data-d="{{ index | at_most: 11 }}"{% endif %}{%- endif -%}

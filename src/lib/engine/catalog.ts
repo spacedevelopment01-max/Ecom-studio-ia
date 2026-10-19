@@ -93,6 +93,7 @@ export function catalogStore(p: Project, main: StoreProduct, fileName: (a: Asset
     });
     const features = item.features.filter(Boolean);
     products.push({
+      contentTarget: `product:catalog:${item.key}`,
       title: item.name,
       handle,
       vendor: p.brand?.name ?? p.name,

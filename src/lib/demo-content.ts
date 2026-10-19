@@ -10,26 +10,42 @@ import type { Demo } from "@/components/landing-client";
 /** Démonstrations : manifest.json (français) ou manifest.en.json (projets créés en anglais, fichiers « .en » à côté des français). */
 export function demos(file: "manifest.json" | "manifest.en.json" = "manifest.json"): Demo[] {
   try {
-    return JSON.parse(fs.readFileSync(path.join(process.cwd(), "public", "demo", file), "utf8")).demos;
+    return (JSON.parse(fs.readFileSync(path.join(process.cwd(), "public", "demo", file), "utf8")).demos as Demo[]).filter((d) => (DEMO_IDS as readonly string[]).includes(d.id)).map(onlyPresentFiles);
   } catch {
     return [];
   }
 }
 
+/** Les seules démonstrations du studio (priorité du 19 octobre 2026) ; toute autre entrée du manifeste est ignorée. */
+export const DEMO_IDS = ["fraise", "onde", "orbe", "rive"] as const;
+
+const present = (src: string | undefined) => !!src && fs.existsSync(path.join(process.cwd(), "public", src.replace(/^\//, "")));
+/**
+ * Visuels des démonstrations : ils viennent du kit privé (jamais dans le dépôt, voir .gitignore) ; un fichier absent
+ * est omis (chaîne vide ou retiré de la liste) pour qu'aucune page n'affiche d'image cassée ni de gabarit à la place.
+ */
+export function onlyPresentFiles(d: Demo): Demo {
+  const ok = (src: string | undefined) => (present(src) ? (src as string) : "");
+  const x = d as Demo & { productPage?: string };
+  return {
+    ...d,
+    photo: ok(d.photo), logo: ok(d.logo), shopDesktop: ok(d.shopDesktop), shopMobile: ok(d.shopMobile), video: ok(d.video), videoPoster: ok(d.videoPoster),
+    shopVideo: d.shopVideo ? ok(d.shopVideo) || undefined : undefined,
+    ...(x.productPage !== undefined ? { productPage: ok(x.productPage) } : {}),
+    images: d.images.filter((im) => present(im.src)),
+    posts: d.posts?.filter(present),
+    board: d.board ? ok(d.board) || undefined : undefined,
+  };
+}
+
 /** Repli si public/demo/manifest.en.json n'est pas généré : textes des démonstrations françaises traduits pour l'interface anglaise. */
 const DEMO_EN: Record<string, { product?: string; note?: string }> = {
-  casque: { product: "Headphones", note: "Real in-context photos of unbranded headphones (Pixabay, Engin_Akyurt series): the brand, the visuals and the store are created by the studio." },
-  tillandsia: { product: "Potted air plant", note: "Real photos of a potted plant (Pixabay, HeungSoon series): the brand, the visuals and the store are created by the studio." },
-  savon: { product: "Perilla soap", note: "Real photos of a handmade perilla soap (Pixabay, phuonghoangthuy series): the brand, the visuals and the store are created by the studio." },
-  cafe: { product: "Coffee beans", note: "Real photos of coffee beans (Pixabay, Bru-nO series): the brand, the visuals and the store are created by the studio." },
-  fleuriste: { product: "Floral studio", note: "Real photos of a florist's shop and workshop (Pixabay): the business is fictional, its website and brand are created by the studio." },
-  tribunes: { product: "Lavender supporter T-shirt", note: "Two supporter T-shirts from a supplier (supplier visuals) and two accessories whose photo was created by AI: the brand and the store are created by the studio. No official crest." },
-  gourde: { product: "Insulated bottle 750 ml", note: "Product and original photo created by AI (OpenAI) for the demo: the brand, the visuals and the store are created by the studio. No technical specification is claimed unless provided." },
-  paysagiste: { product: "Garden design and maintenance", note: "Fictional business: the garden photos were created by AI (OpenAI) for the demo; the website and brand are created by the studio." },
-  montre: { product: "Steel and leather watch", note: "Photo of an unbranded watch (Pixabay), strap completed by AI (the lower part was in shadow): the ARVEN brand, its visuals and its store are created by the studio. Price and technical specifications not stated: to be completed by the merchant." },
-  barbier: { product: "Barber shop", note: "Real photos of a barber shop (Pixabay): the business is fictional, its website and brand are created by the studio." },
+  fraise: { product: "Strawberry gummies", note: "Fictional demo brand (specialty store, Lumora reference theme): AI visuals without people, proposed logo not validated, fictional prices, offers and reviews labelled as such." },
+  onde: { product: "ONDE headphones", note: "Fictional demo brand (specialty store, Pawish reference theme): AI visuals without people, proposed logo not validated, fictional prices and reviews labelled as such; technical specifications left to complete, never claimed." },
+  orbe: { product: "ORBE portable lamp", note: "Fictional demo brand (e-commerce, editorial composition): a portable lamp in three finishes with accessories; AI visuals without people, no validated logo, fictional prices and offers labelled as such." },
+  rive: { product: "Interior design and decoration", note: "Fictional demo business (services, “journal” composition): design intentions as AI images, never real projects; no real address or client; test contact requests only." },
 };
-const SECTOR_EN: Record<string, string> = { "Épicerie fine": "Fine food", Accessoires: "Accessories", Plantes: "Plants", Fleuriste: "Florist", Barbier: "Barber", Boissons: "Beverages", Maison: "Home", "High-tech": "Tech", Animaux: "Pets", Mode: "Fashion", "Sport et plein air": "Sports & outdoors", Paysagiste: "Landscaper", Beauté: "Beauty", Sport: "Sports", Alimentation: "Food", Bijoux: "Jewelry", Enfants: "Kids", Horlogerie: "Watches" };
+const SECTOR_EN: Record<string, string> = { Confiserie: "Confectionery", Audio: "Audio", Luminaires: "Lighting", "Architecture d'intérieur": "Interior design", "Épicerie fine": "Fine food", Accessoires: "Accessories", Plantes: "Plants", Fleuriste: "Florist", Barbier: "Barber", Boissons: "Beverages", Maison: "Home", "High-tech": "Tech", Animaux: "Pets", Mode: "Fashion", "Sport et plein air": "Sports & outdoors", Paysagiste: "Landscaper", Beauté: "Beauty", Sport: "Sports", Alimentation: "Food", Bijoux: "Jewelry", Enfants: "Kids", Horlogerie: "Watches" };
 const IMAGE_LABEL_EN: Record<string, string> = { Bannière: "Banner", Détail: "Detail", Détourage: "Cutout", Packshot: "Packshot", Publicité: "Ad", Scène: "Scene", "Visuel social": "Social visual", "En situation": "Lifestyle" };
 
 export function localizeDemo(d: Demo, lang: Lang): Demo {

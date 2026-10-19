@@ -1,0 +1,13 @@
+
+ RUN  v5.0.3 /workspace/Ecom-studio-ia
+
+
+ Test Files  3 passed (3)
+      Tests  37 passed (37)
+   Start at  09:26:08
+   Duration  7.84s (tests 37%, import 34%, transform 30%)
+
+  Transform  transforming modules took 5.51s · 30% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

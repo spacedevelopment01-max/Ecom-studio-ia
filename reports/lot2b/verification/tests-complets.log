@@ -1,0 +1,86 @@
+
+ RUN  v5.0.3 /workspace/Ecom-studio-ia
+
+ ❯ tests/migration-v2.test.ts (6 tests | 1 failed) 145342ms
+   ❯ migration V1 → V2 : moteurs réellement appelés (6)
+     × calendrier de la création : Social V2, une seule fois par projet — une reprise ne crée aucun doublon 120021ms
+ ❯ tests/workflow-v2.test.ts (11 tests | 2 failed) 545453ms
+   ❯ Studio Workflow V2 (11)
+     × parcours complet sur un projet existant : publicités V2, calendrier Social V2 (30 j Instagram), export Shopify contrôlé, à valider, 0 € 240010ms
+     × site de plâtrier-peintre (services) : calendrier Facebook de 2 semaines, aucune trace de vente 240007ms
+ ❯ tests/themes-catalogue.test.ts (11 tests | 1 failed) 209ms
+   ❯ Catalogue de thèmes : trente choix réellement différents (11)
+     × toutes les sections de la bibliothèque servent dans au moins un thème (sauf les deux conteneurs techniques) 118ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/migration-v2.test.ts > migration V1 → V2 : moteurs réellement appelés > calendrier de la création : Social V2, une seule fois par projet — une reprise ne crée aucun doublon
+Error: Test timed out in 120000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/migration-v2.test.ts:99:3
+     97|   });
+     98|
+     99|   it("calendrier de la création : Social V2, une seule fois par projet…
+       |   ^
+    100|     const pid = await seedPaid("cosmetic");
+    101|     run("DELETE FROM content_plans WHERE project_id = ?", pid);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/themes-catalogue.test.ts > Catalogue de thèmes : trente choix réellement différents > toutes les sections de la bibliothèque servent dans au moins un thème (sauf les deux conteneurs techniques)
+AssertionError: expected [ 'ed-finishes', 'ed-opening', …(5) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "ed-finishes",
++   "ed-opening",
++   "ed-statement",
++   "ed-diptych",
++   "ed-scene",
++   "ed-study",
++   "ed-contact",
++ ]
+
+ ❯ tests/themes-catalogue.test.ts:124:21
+    122|     const outside = new Set(["custom-liquid", "apps"]);
+    123|     const missing = SECTION_LIBRARY.map((e) => e.type).filter((t) => !…
+    124|     expect(missing).toEqual([]);
+       |                     ^
+    125|   });
+    126|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/workflow-v2.test.ts > Studio Workflow V2 > parcours complet sur un projet existant : publicités V2, calendrier Social V2 (30 j Instagram), export Shopify contrôlé, à valider, 0 €
+Error: Test timed out in 240000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/workflow-v2.test.ts:80:3
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/workflow-v2.test.ts > Studio Workflow V2 > site de plâtrier-peintre (services) : calendrier Facebook de 2 semaines, aucune trace de vente
+Error: Test timed out in 240000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/workflow-v2.test.ts:115:3
+    113|   }, 240_000);
+    114|
+    115|   it("site de plâtrier-peintre (services) : calendrier Facebook de 2 s…
+       |   ^
+    116|     const w = await fr(() => wf.prepareWorkflow(artisan, vendre.id, "P…
+    117|     expect(w.params.cmsPlatforms).toEqual(["woocommerce"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  3 failed | 261 passed (264)
+      Tests  4 failed | 1987 passed (1991)
+   Start at  09:07:43
+   Duration  1080.33s (tests 84%, import 15%, transform 1%)
+
+    Isolate  264 workers spawned · ~157ms startup each (spawn + environment, per file)
+             at least ~13.65s faster with isolate: false — reuses workers across files instead of one per file
+

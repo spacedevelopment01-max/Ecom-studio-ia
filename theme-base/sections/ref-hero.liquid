@@ -1,0 +1,160 @@
+{%- assign s = section.settings -%}
+<section class="ref-section ref-hero ref-hero--{{ s.layout }} color-{{ s.color_scheme }}{% if s.image == blank and s.image_asset == blank %} ref-hero--text-only{% endif %}" data-reference="hero" data-ref-motion="{{ s.motion }}" style="--ref-pt: {{ s.padding_top }}px; --ref-pb: {{ s.padding_bottom }}px;" aria-labelledby="RefTitle-{{ section.id }}">
+  <div class="ref-shell ref-hero__grid">
+    <div class="ref-hero__copy">
+      {% if s.label != blank %}<p class="ref-label">{{ s.label | escape }}</p>{% endif %}
+      {% if s.heading_tag == 'h2' %}<h2 id="RefTitle-{{ section.id }}" class="ref-hero__title">{{ s.heading | escape }}</h2>{% else %}<h1 id="RefTitle-{{ section.id }}" class="ref-hero__title">{{ s.heading | escape }}</h1>{% endif %}
+      {% if s.text != blank %}<div class="ref-prose ref-hero__text">{{ s.text }}</div>{% endif %}
+      <div class="ref-actions">{%- if s.button_label != blank and s.button_link != blank -%}<a class="ref-button" href="{{ s.button_link }}">{{ s.button_label | escape }}<span aria-hidden="true">↗</span></a>{%- endif -%}{% if s.secondary_link != blank and s.secondary_label != blank %}<a class="ref-link" href="{{ s.secondary_link }}">{{ s.secondary_label | escape }}</a>{% endif %}</div>
+    </div>
+    {% if s.image != blank or s.image_asset != blank %}<figure class="ref-hero__media">{% render 'es-image', image: s.image, asset: s.image_asset, alt: s.image_alt, class: 'ref-image', loading: 'eager', fetchpriority: 'high', sizes: '(min-width: 990px) 60vw, 100vw' %}{% if s.caption != blank %}<figcaption>{{ s.caption | escape }}</figcaption>{% endif %}</figure>{% endif %}
+  </div>
+</section>
+{% schema %}
+{
+  "name": "Ouverture référence",
+  "tag": "div",
+  "class": "reference-section",
+  "settings": [
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Composition",
+      "default": "object",
+      "options": [
+        {
+          "value": "object",
+          "label": "Objet en vitrine"
+        },
+        {
+          "value": "landscape",
+          "label": "Paysage et projet"
+        },
+        {
+          "value": "poster",
+          "label": "Affiche photographique"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Niveau du titre",
+      "default": "h1",
+      "options": [
+        {
+          "value": "h1",
+          "label": "Titre principal"
+        },
+        {
+          "value": "h2",
+          "label": "Titre de section"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "label",
+      "label": "Signature"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Titre",
+      "default": "Votre titre"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texte"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Jeu de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "select",
+      "id": "motion",
+      "label": "Animation",
+      "default": "reveal",
+      "options": [
+        {
+          "value": "none",
+          "label": "Sans animation"
+        },
+        {
+          "value": "reveal",
+          "label": "Apparition courte"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Marge haute",
+      "min": 0,
+      "max": 160,
+      "step": 8,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Marge basse",
+      "min": 0,
+      "max": 160,
+      "step": 8,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "image_asset",
+      "label": "Image du projet (fichier)"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Description de l’image"
+    },
+    {
+      "type": "text",
+      "id": "caption",
+      "label": "Légende"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Texte du bouton"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Lien du bouton"
+    },
+    {
+      "type": "text",
+      "id": "secondary_label",
+      "label": "Texte du lien secondaire"
+    },
+    {
+      "type": "url",
+      "id": "secondary_link",
+      "label": "Lien secondaire"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Ouverture référence"
+    }
+  ]
+}
+{% endschema %}

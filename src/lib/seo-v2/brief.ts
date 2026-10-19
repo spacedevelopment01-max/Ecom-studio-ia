@@ -3,6 +3,8 @@
  * interdits, liens internes possibles (existants ou prévus) et appel à l'action. Gratuit, déterministe.
  */
 import type { Project } from "../projects";
+import { brainView } from "../ai/context";
+import { requirementsOf } from "./requirements";
 import { verifiedFacts } from "./facts";
 import { contentIntent, INTENT_GOAL } from "./intent";
 import { fold, langPack } from "./lang";
@@ -59,7 +61,7 @@ export function ctaFor(type: ContentType, f: VerifiedFacts, lang: ContentLang): 
   return type === "product_page" ? C.buy : C.discover;
 }
 
-export function buildBrief(p: Project, o: { type: ContentType; page: PageRef; lang: ContentLang; strategy: SeoStrategy; request?: string | null; keyword?: Keyword | null; facts?: VerifiedFacts }): ContentBrief {
+export function buildBrief(p: Project, o: { type: ContentType; page: PageRef; lang: ContentLang; strategy: SeoStrategy; request?: string | null; keyword?: Keyword | null; facts?: VerifiedFacts; context?: ContentBrief["context"] }): ContentBrief {
   const f = o.facts ?? verifiedFacts(p);
   const cluster = o.strategy.clusters.find((c) => c.page?.key === o.page.key) ?? (o.keyword ? o.strategy.clusters.find((c) => fold(c.primary.term) === fold(o.keyword!.term)) : undefined);
   const primary = o.keyword ?? cluster?.primary ?? null;
@@ -75,6 +77,9 @@ export function buildBrief(p: Project, o: { type: ContentType; page: PageRef; la
     ...(f.price ? [`prix : ${f.price}`] : []),
   ];
   return {
+    request: o.request ?? "",
+    context: o.context ?? (() => { const v = brainView(p, "seo"); return { scope: v.label, hash: v.hash, version: v.brainVersion, stable: v.stable }; })(),
+    requirements: requirementsOf(o.request ?? ""),
     type: o.type,
     ...(o.request ? {instructions:o.request} : {}),
     intent,

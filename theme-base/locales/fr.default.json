@@ -200,7 +200,8 @@
   "newsletter": {
     "label": "Votre adresse e-mail",
     "button": "S'inscrire",
-    "success": "Merci, votre inscription est enregistrée."
+    "success": "Merci, votre inscription est enregistrée.",
+    "preview_demo": "Aperçu du studio : l'inscription n'est pas enregistrée dans cette démonstration."
   },
   "products": {
     "product": {
@@ -273,7 +274,32 @@
     "remove": "Retirer",
     "note": "Note pour la commande",
     "increase": "Augmenter la quantité",
-    "decrease": "Diminuer la quantité"
+    "decrease": "Diminuer la quantité",
+    "secure_checkout": "Paiement sécurisé",
+    "discount_label": "Code de réduction",
+    "discount_apply": "Appliquer",
+    "discount_demo": "Aperçu du studio : les codes s'appliquent au paiement, aucun code n'est actif dans la démonstration.",
+    "discount_redirect": "Le code sera vérifié au paiement.",
+    "savings": "Économies",
+    "total": "Total",
+    "total_items": {
+      "one": "Total : {{ count }} article",
+      "other": "Total : {{ count }} articles"
+    },
+    "items_badge": {
+      "one": "{{ count }} article",
+      "other": "{{ count }} articles"
+    },
+    "reserved": "Votre commande est réservée pendant {{ time }}",
+    "demo_fictional": "Démonstration fictive",
+    "protection_demo": "Service non actif : aucun montant n'est ajouté à la commande.",
+    "have_account": "Vous avez déjà un compte ?",
+    "login": "Connectez-vous",
+    "login_faster": "pour commander plus rapidement.",
+    "compare_price": "Prix avant remise",
+    "payment_methods": "Moyens de paiement",
+    "close": "Fermer le panier",
+    "preview_note": "Aperçu de démonstration · paiement désactivé"
   },
   "contact": {
     "name": "Nom",
@@ -281,7 +307,9 @@
     "phone": "Téléphone",
     "message": "Message",
     "send": "Envoyer",
-    "success": "Merci, nous revenons vers vous rapidement."
+    "success": "Merci, nous revenons vers vous rapidement.",
+    "error": "Vérifiez votre demande avant de réessayer.",
+    "preview_demo": "Aperçu du studio : l'envoi n'est pas actif dans cette démonstration ; la validation du formulaire, elle, est réelle."
   },
   "customer": {
     "account": "Mon compte",
@@ -343,5 +371,53 @@
   "gift_card": {
     "title": "Carte cadeau",
     "expired": "Cette carte cadeau a expiré."
+  },
+  "purchase": {
+    "configure": "Configurez les offres de ce produit.",
+    "recommended": "Offre recommandée",
+    "unit": "par article",
+    "save": "Économie",
+    "choose": "Choisir les variantes",
+    "gift": "Cadeau",
+    "locked": "Dès",
+    "items": "articles",
+    "unavailable": "Indisponible",
+    "included": "Inclus",
+    "add": "Ajouter au panier",
+    "summary": "Votre sélection",
+    "demo": "Aperçu : règles testées localement, aucun paiement réel.",
+    "item": "article",
+    "view_product": "Voir la fiche complète",
+    "unit_price": "prix à l’unité",
+    "bar_total": "Total de la sélection",
+    "bar_action": "Voir ma sélection",
+    "total": "Total",
+    "choose_options": "Choisir mes options"
+  },
+  "editorial": {
+    "pending_media": "Visuel à importer"
+  },
+  "conversion": {
+    "fictional_review": "Avis fictif",
+    "fictional_rating": "Note fictive",
+    "demo_reviews": "Avis rédigés pour la démonstration : aucun client réel.",
+    "ai_demo": "Image IA — démonstration",
+    "no_video": "Vidéo à venir",
+    "no_video_hint": "Emplacement prêt pour une vraie vidéo",
+    "open_story": "Ouvrir la story",
+    "stories_region": "Stories",
+    "rating_based": "d'après",
+    "save_percent": "−{{ percent }} %",
+    "example_promo": "Exemple de promotion",
+    "guarantee": "Garantie",
+    "verified_none": "Sans badge d'achat vérifié : avis de démonstration",
+    "demo_article": "Article de démonstration",
+    "breadcrumb": "Fil d’Ariane",
+    "home": "Accueil",
+    "hotspot_open": "Détail :",
+    "hotspot_list": "Détails du produit",
+    "step": "Étape",
+    "gallery": "Galerie",
+    "gallery_open": "Agrandir :"
   }
 }

@@ -34,7 +34,7 @@
       {%- if settings.logo != blank -%}
         {{ settings.logo | image_url: width: 600 | image_tag: class: 'es-header__logo-img', widths: '150, 300, 600', sizes: '200px', alt: shop.name, loading: 'eager' }}
       {%- elsif settings.logo_asset != blank -%}
-        <img src="{{ settings.logo_asset | asset_url }}" alt="{{ shop.name | escape }}" class="es-header__logo-img" width="{{ settings.logo_width }}" height="{{ settings.logo_width | divided_by: 3 }}" loading="eager">
+        <img src="{{ settings.logo_asset | asset_url }}" alt="{{ shop.name | escape }}" class="es-header__logo-img" width="{{ settings.logo_width }}" height="{{ settings.logo_width | divided_by: 3 | round }}" loading="eager">
       {%- else -%}
         <span class="es-header__wordmark">{{ shop.name }}</span>
       {%- endif -%}
@@ -190,7 +190,9 @@
 .es-mobile-menu__phone .es-icon { width: 20px; height: 20px; color: var(--c-accent); }
 @media (min-width: 1200px) { .es-header__phone--compact .es-header__phone-number { display: inline; } }
 @media (max-width: 989px) {
-  .es-header__cta { padding: 0; width: 44px; min-width: 44px; margin-left: 4px; border-radius: 50%; justify-content: center; }
+  /* Bouton d'appel rond de 44 px sur téléphone, quelle que soit la largeur minimale des boutons du thème (un bouton de
+     200 px rognait le nom de la marque à 60 px sur Atelier Rive). */
+  .es-header__icons .es-header__cta { padding: 0; width: 44px !important; min-width: 44px !important; max-width: 44px; margin-left: 4px; border-radius: 50%; justify-content: center; }
   .es-header__cta span { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .es-header__phone .es-header__phone-number { display: none; }
   .es-header__phone { padding-inline: 0; width: 44px; justify-content: center; }
@@ -212,7 +214,9 @@
         { "value": "minimal", "label": "Minimal (menu dans le tiroir)" },
         { "value": "menu-right", "label": "Logo à gauche, menu à droite" },
         { "value": "nav-left", "label": "Logo et menu à gauche" },
-        { "value": "two-rows", "label": "Deux lignes (menu sur une barre dessous)" }
+        { "value": "two-rows", "label": "Deux lignes (menu sur une barre dessous)" },
+        { "value": "reference-shop", "label": "Navigation vitrine" },
+        { "value": "reference-studio", "label": "Navigation atelier" }
       ]
     },
     {

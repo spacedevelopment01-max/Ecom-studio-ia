@@ -22,6 +22,7 @@
       <label>{{ 'contact.phone' | t }}<input type="tel" name="contact[phone]" autocomplete="tel" value="{{ form.phone }}"></label>
       <label>{{ 'contact.message' | t }}<textarea name="contact[body]" rows="6" class="es-textarea">{{ form.body }}</textarea></label>
       <button type="submit" class="es-button">{{ 'contact.send' | t }}</button>
+      {%- if request.host == 'apercu' and section.settings.preview_note -%}<p class="es-small es-muted es-form-note">{{ 'contact.preview_demo' | t }}</p>{%- endif -%}
     {%- endform -%}
   </div>
 </section>
@@ -51,6 +52,7 @@
     { "type": "header", "content": "Coordonnées" },
     { "type": "text", "id": "email", "label": "Adresse e-mail affichée", "info": "Facultatif. Laissez vide pour ne rien afficher." },
     { "type": "text", "id": "hours", "label": "Horaires", "info": "Facultatif. Ex. : du lundi au vendredi, 9 h – 18 h." },
+    { "type": "checkbox", "id": "preview_note", "label": "Dans l'aperçu du studio, indiquer que l'envoi n'est pas actif", "default": false },
     { "type": "text", "id": "response", "label": "Délai de réponse", "info": "Facultatif. Indiquez uniquement un délai que vous tenez réellement." },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 48 },

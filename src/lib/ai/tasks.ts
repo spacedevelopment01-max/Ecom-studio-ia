@@ -5,6 +5,9 @@
  * clairement signalé comme tel dans le studio.
  */
 import { STRATEGY_JARGON } from "../copy-voice";
+import { projectKind } from "../theme/project-kind";
+import { compatibleSectionTypes } from "../theme/section-compat";
+import type { StoreKind } from "../theme/store-kind";
 import { skillReference, type SkillIntent } from "./skills";
 import { decide } from "../quality/gate";
 import { saveCheck } from "../quality/store";
@@ -13,7 +16,7 @@ import { z } from "zod";
 import { SECTOR_IDS, type Brand, type ProductProfile, type Strategy } from "../project-types";
 import { FactSchema, QuestionSchema } from "../project-schemas";
 import { ShopCopySchema, type ShopCopy } from "../theme/copy";
-import { DIRECTIONS, type DirectionId } from "../theme/directions";
+import { ACTIVE_DIRECTIONS, DIRECTIONS, type DirectionId } from "../theme/directions";
 import { OpSchema, outline, type ThemeOp } from "../theme/ops";
 import type { ThemeSpec } from "../theme/spec";
 import { FONT_HANDLES } from "../theme/render";
@@ -176,7 +179,8 @@ const BrandSchema = z.object({
   // Palette absente : celle des couleurs mesurées du produit est appliquée par l'appelant.
   palette: z.object({ primary: hex("#3A3F4B"), secondary: hex("#E6E2DC"), accent: hex("#B5714A"), light: hex("#F7F5F2"), dark: hex("#16181D") }).optional().catch(undefined),
   fonts: z.object({ heading: str, body: str }).catch({ heading: "", body: "" }),
-  direction: z.enum(DIRECTIONS.map((d) => d.id) as [DirectionId, ...DirectionId[]]).catch("atelier"),
+  // Catalogue actif seulement (consigne 6264783184) ; une réponse hors catalogue retombe sur ORBE, puis l'appelant corrige par catégorie.
+  direction: z.enum(ACTIVE_DIRECTIONS.map((d) => d.id) as [DirectionId, ...DirectionId[]]).catch("orbe"),
   directionReason: str,
   logo: z
     .object({
@@ -698,7 +702,7 @@ export async function aiDesignHome(b: Base, p: Project, spec: ThemeSpec) {
       system: S().themeDesign,
       context: brainContext(p, "theme"),
       // Référence stable du thème, puis compétences de design (frontend-design, ui-ux-pro-max, brand-guidelines).
-      reference: `${themeReference(spec)}\n\n${skillReference("site_design")}`,
+      reference: `${themeReference(spec, false, projectKind(p))}\n\n${skillReference("site_design")}`,
       prompt: `Direction choisie : ${spec.direction}. Structure actuelle proposée par la direction :\n${outline(spec, ["index"])}
 Fichiers d'images disponibles (à utiliser dans les réglages *_asset) : ${Object.keys(spec.files).join(", ")}
 Les fichiers « en-situation » sont de vraies photos du produit utilisé au quotidien : quand il y en a, l'ouverture (héros) les montre en grand.
@@ -762,11 +766,13 @@ export async function aiThemeChat(
       usageKey: b.usageKey,
       system: S().themeEdit,
       context: brainContext(p, "theme"),
-      reference: themeReference(spec, true),
+      reference: themeReference(spec, true, projectKind(p)),
       images: input.attachments.filter((a) => a.image).map((a) => ({ data: a.image!, label: `pièce jointe ${a.name} (identifiant ${a.assetId})` })),
       prompt: `Page affichée dans l'aperçu : ${input.page}
 Structure de la boutique (gabarits concernés) :\n${outline(spec, templates)}
 Autres gabarits : ${Object.keys(spec.templates).join(", ")}
+Achat avancé (main-product ou purchase-offers) : source unique = réglages et blocs quantity_offer, threshold_gift, purchase_benefit. Ne crée aucune remise, prix barré, livraison offerte, cadeau, avis ou popularité sans information commerciale explicite du client. Si une règle manque, pose seulement la question nécessaire sans appliquer un lot partiel. Cadeaux : choisis gift_product dans le catalogue identifié ; gift_target conserve son identité stable. La remise/cadeau de l’aperçu ne constitue pas un support vérifié au paiement des exports. Acheter maintenant uniquement si le système commercial le prend réellement en charge. Les services utilisent comparaison/devis/réservation sans panier physique.
+Catalogue disponible pour ces réglages : ${JSON.stringify([spec.store.product, ...(spec.store.products ?? [])].map((p) => ({ target: p.contentTarget, handle: p.handle, title: p.title, price: p.price, currency: p.currency, variants: p.variants.map((v) => ({ title: v.title, sku: v.sku, available: v.available })) })))}
 Couleurs (set_scheme_color) : ${JSON.stringify(spec.settings.color_schemes)}
 Fichiers d'images du thème : ${Object.keys(spec.files).join(", ")}
 Pièces jointes du message (use_media avec assetId) : ${input.attachments.map((a) => `${a.name}=${a.assetId}`).join(", ") || "aucune"}
@@ -784,10 +790,10 @@ Opérations : set_setting{template,section,block?,key,value}, set_global{key,val
 Le gabarit d'une section du groupe d'en-tête est « group:header », du pied de page « group:footer ».`;
 
 /** Référence stable du thème (mise en cache entre les appels) : sections, réglages, couleurs, opérations. */
-export function themeReference(spec: ThemeSpec, withOps = false): string {
+export function themeReference(spec: ThemeSpec, withOps = false, kind: StoreKind | null = null): string {
   return [
     "<reference_theme>",
-    `Catalogue des sections :\n${sectionCatalog(spec)}`,
+    `Catalogue des sections (seules celles compatibles avec ce thème et cette catégorie de projet ; toute autre section est refusée) :\n${sectionCatalog(spec, [...compatibleSectionTypes(spec, kind), ...Object.keys(spec?.customSections ?? {})])}`,
     `Réglages généraux disponibles (set_global) : ${globalSettingsCatalog(spec)}`,
     spec.imported
       ? `Thème importé par le client (« ${spec.imported.name} ») : n'utilise que ses propres sections et réglages listés ci-dessus ; conserve son style, améliore sans le dénaturer.`
@@ -815,7 +821,7 @@ export async function aiRepairOps(b: Base, p: Project, spec: ThemeSpec, input: {
       usageKey: b.usageKey,
       system: S().themeEdit,
       context: brainContext(p, "theme"),
-      reference: themeReference(spec, true),
+      reference: themeReference(spec, true, projectKind(p)),
       prompt: `Structure actuelle (après application des opérations acceptées) :\n${outline(spec, ["group:header", input.page, "group:footer"].filter((v, i, a) => a.indexOf(v) === i))}
 Demande du client : <demande>${input.request}</demande>
 Ces opérations ont été REFUSÉES par la validation :
@@ -853,7 +859,7 @@ export async function aiReviewHome(b: Base, p: Project, spec: ThemeSpec, shots: 
       usageKey: b.usageKey,
       system: S().themeReview,
       context: brainContext(p, "theme"),
-      reference: themeReference(spec, true),
+      reference: themeReference(spec, true, projectKind(p)),
       images: [
         ...shots.desktop.map((data, i) => ({ data, label: `ordinateur (1440 px) — planche ${i + 1}/${shots.desktop.length}, la page se lit colonne par colonne de gauche à droite` })),
         ...shots.mobile.map((data, i) => ({ data, label: `téléphone (390 px) — planche ${i + 1}/${shots.mobile.length}, colonnes de gauche à droite` })),

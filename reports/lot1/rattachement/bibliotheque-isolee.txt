@@ -1,0 +1,9 @@
+
+ RUN  v5.0.3 /workspace/Ecom-studio-ia
+
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  21:52:37
+   Duration  181.31s (tests 94%, transform 3%, import 3%)
+

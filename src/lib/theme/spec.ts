@@ -25,6 +25,7 @@ export type TemplateJson = { sections: Record<string, SectionInstance>; order: s
 export type GroupJson = TemplateJson & { type: "header" | "footer"; name: string };
 
 export type StoreProduct = {
+  contentTarget?: string;
   title: string;
   handle: string;
   vendor: string;
@@ -34,7 +35,7 @@ export type StoreProduct = {
   currency: string;
   options: string[];
   /** image : fichier de la galerie montré quand la variante est choisie (ex. le coloris). */
-  variants: { title: string; options: string[]; price: number | null; available: boolean; sku?: string; image?: string }[];
+  variants: { title: string; options: string[]; price: number | null; available: boolean; inventory_quantity?: number; sku?: string; image?: string }[];
   images: string[]; // noms de fichiers d'assets (aperçu) — ordre de la galerie
   tags: string[];
   /** Titre et méta-description du produit pour les moteurs de recherche (envoyés à la plateforme). */
@@ -46,12 +47,10 @@ export type StoreProduct = {
 /** Collection de la boutique : liste ordonnée de produits (par identifiant « handle »). */
 export type StoreCollection = { handle: string; title: string; description: string; image?: string; products: string[] };
 
-/** Tous les produits de la boutique : le produit principal puis ceux du catalogue. */
-export function storeProducts(spec: { store: { product: StoreProduct; products?: StoreProduct[] } }): StoreProduct[] {
-  return [spec.store.product, ...(spec.store.products ?? []).filter((p) => p.handle !== spec.store.product.handle)];
-}
+export { storeProducts } from "./store-products";
 
 export type StorePage = {
+  contentTarget?: string;
   handle: string;
   title: string;
   template_suffix: string;
@@ -64,6 +63,12 @@ export type StorePage = {
   status?: "draft" | "published";
   /** Prestation présentée par la page (nom dans le profil de services) ; destination du bouton « Prendre rendez-vous ». */
   links?: { service?: string; booking?: string };
+};
+
+/** Origine des parties de fiche : une retouche du client ne devient pas un nouveau contenu généré. */
+export type ProductContentBinding = {
+  target: string; suffix: string; templateHash: string; bodyHash: string; seoHash: string;
+  templateSource: "generated" | "user"; bodySource: "generated" | "user"; seoSource: "generated" | "user";
 };
 
 /**
@@ -119,10 +124,12 @@ export type ThemeSpec = {
    * Moteur qui a composé ce thème et sa traçabilité (Theme Engine V2 : intention, direction artistique, plan des
    * pages, contenus à compléter). Ignoré par la compilation et l'export ; absent sur les thèmes plus anciens.
    */
-  meta?: { engine?: "v1" | "v2"; v2?: Record<string, any> };
+  meta?: { demo?: { isDemo: true; provenance: string; contactTest?: boolean }; engine?: "v1" | "v2"; v2?: Record<string, any>; productContent?: ProductContentBinding[]; reference?: { version: 1; kind: "products" | "services"; links: { template: string; section: string; block: string; target: string }[] }; /** Retouches et ajouts du client préservés lors d'une recomposition (theme/carry-over.ts). */ carryOver?: Record<string, unknown>; /** Médias et textes placés depuis le contrat du parcours amont (theme/handoff.ts). */ handoff?: Record<string, unknown> };
   /** Données de la boutique (produit, pages, menus). Séparées du thème ; utilisées par l'aperçu et l'import. */
   store: {
     shopName: string;
+    /** Moyens de paiement confirmés ; aucun logo présumé dans l’aperçu. */
+    paymentTypes?: string[];
     /** Produit principal (mono-produit) ou produit phare du catalogue. */
     product: StoreProduct;
     /** Autres produits du catalogue (boutiques multi-produit et niche). */

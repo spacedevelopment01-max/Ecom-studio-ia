@@ -1,85 +1,63 @@
 /**
- * Studio Découverte : seuls les visuels sans défaut de la montre ARVEN sont montrés (liste fixée par le
- * propriétaire) ; les autres démonstrations restent entières ; aucune rubrique n'affiche d'image vide ou cassée.
+ * Démonstrations du studio (priorité du 19 octobre 2026, issue #137) : seules FRAISE, ONDE, ORBE et Atelier Rive ;
+ * leurs visuels viennent du kit privé (hors dépôt) et un fichier absent est omis : aucune page n'affiche d'image vide
+ * ou cassée, ni un gabarit à la place. Les anciennes démonstrations ont disparu du manifeste.
  */
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { demoList } from "@/lib/demo-content";
-import { discoveryAllows, discoveryDemo, fullDemo } from "@/lib/discovery-demos";
+import { DEMO_IDS, demoList, demos } from "@/lib/demo-content";
+import { discoveryDemo, startingPhotoIsClients } from "@/lib/discovery-demos";
 
-const RETIRES = ["post-1", "post-8", "ad-1", "banner-1", "social-1", "detail-1", "video", "video-poster", "boutique-bureau", "boutique-mobile", "fiche-produit", "planche", "lifestyle-2"];
 const exists = (src: string) => fs.existsSync(path.join(process.cwd(), "public", src));
+const OLD = ["montre", "tribunes", "gourde", "casque", "paysagiste", "fleuriste", "drone", "savon", "cafe", "tillandsia", "barbier"];
+/** Kit privé installé (public/demo/<id>/) : vérifications supplémentaires sur les fichiers eux-mêmes. */
+const installed = DEMO_IDS.every((id) => fs.existsSync(path.join(process.cwd(), "public", "demo", id)));
 
-describe("studio Découverte : visuels de la montre ARVEN", () => {
-  it("fichiers retirés jamais montrés (JPEG, WebP ou version anglaise) ; fichiers gardés montrés", () => {
-    for (const f of RETIRES) for (const ext of [".jpg", ".webp", ".en.jpg", ".mp4"]) expect(discoveryAllows("montre", `/demo/montre/${f}${ext}`), f + ext).toBe(false);
-    for (const f of ["logo.png", "cutout-1.webp", "packshot-1.jpg", "packshot-1.webp", "lifestyle-1.jpg", "publicite-ia-1.jpg", "photo.webp"]) expect(discoveryAllows("montre", `/demo/montre/${f}`), f).toBe(true);
-    expect(discoveryAllows("montre", "")).toBe(false);
+describe("démonstrations : les quatre seules, anciennes retirées", () => {
+  it("le manifeste (FR et EN) ne contient que fraise, onde, orbe et rive, avec leur catégorie et leur thème de référence", () => {
+    for (const file of ["manifest.json", "manifest.en.json"] as const) {
+      const list = demos(file);
+      expect(list.map((d) => d.id)).toEqual([...DEMO_IDS]);
+      for (const d of list) {
+        expect(d.direction, d.id).toBe(d.id);
+        expect(d.business).toBe(d.id === "rive" ? "services" : "products");
+        expect((d as { category?: string }).category).toBe(d.id === "rive" ? "services" : d.id === "orbe" ? "catalog" : "specialty");
+        expect(d.palette).toHaveLength(5);
+        expect(d.source?.note ?? "").toMatch(/fictiv|fictional/i);
+        expect(startingPhotoIsClients(d), `${d.id} : photo IA, jamais « fournie par le client »`).toBe(false);
+      }
+    }
+    for (const old of OLD) expect(fs.existsSync(path.join(process.cwd(), "public", "demo", old)), old).toBe(false);
+    expect(fs.existsSync(path.join(process.cwd(), "scripts", "build-demos.ts"))).toBe(false);
   });
 
   for (const lang of ["fr", "en"] as const) {
-    it(`${lang} : la montre ne garde que des visuels autorisés et existants ; les autres démonstrations sont inchangées`, () => {
-      const raw = demoList(lang);
-      const list = raw.map(discoveryDemo);
-      const m = list.find((d) => d.id === "montre");
-      expect(m).toBeTruthy();
-      const shown = [m!.photo, m!.logo, m!.shopDesktop, m!.shopMobile, m!.video, m!.videoPoster, m!.board ?? "", ...m!.images.map((i) => i.src), ...(m!.posts ?? [])].filter(Boolean);
-      expect(shown.length).toBeGreaterThan(0);
-      for (const s of shown) {
-        expect(discoveryAllows("montre", s), s).toBe(true);
-        expect(exists(s), s).toBe(true);
+    it(`${lang} : chaque visuel annoncé existe sur le disque, un visuel absent est omis (jamais d'image cassée)`, () => {
+      const list = demoList(lang).map(discoveryDemo);
+      expect(list.map((d) => d.id)).toEqual([...DEMO_IDS]);
+      for (const d of list) {
+        const shown = [d.photo, d.logo, d.shopDesktop, d.shopMobile, d.video, d.videoPoster, d.board ?? "", ...d.images.map((i) => i.src), ...(d.posts ?? [])].filter(Boolean);
+        for (const s of shown) expect(exists(s), `${d.id} : ${s}`).toBe(true);
+        if (installed) {
+          expect(d.photo, `${d.id} : photo du kit`).not.toBe("");
+          expect(d.images.length, `${d.id} : visuels du kit`).toBeGreaterThanOrEqual(3);
+        }
       }
-      expect(m!.shopDesktop).toBe("");
-      expect(m!.video).toBe("");
-      expect(m!.posts ?? []).toHaveLength(0);
-      expect(m!.board).toBeUndefined();
-      // Onglet « Images et vidéos » : une démonstration incomplète n'y est pas (aucune image vide affichée).
-      expect(fullDemo(m!)).toBe(false);
-      // Les autres démonstrations restent toutes là, entières.
-      for (const d of raw.filter((x) => x.id !== "montre")) expect(list.find((x) => x.id === d.id)).toEqual(d);
-      expect(list.filter(fullDemo).length).toBeGreaterThanOrEqual(3);
     });
   }
 });
 
-describe("studio Découverte : aperçus des 30 thèmes", () => {
-  it("en anglais, chaque aperçu pointe vers un fichier qui existe (pas d'image cassée)", async () => {
+describe("aperçus des thèmes (vignettes privées, rendues avec les quatre démonstrations)", () => {
+  it("en anglais, chaque aperçu pointe vers un fichier existant quand les vignettes sont installées ; jamais une ancienne démonstration", async () => {
     const { directionCards } = await import("@/lib/theme/directions");
     const { localMedia, webpOf } = await import("@/lib/demo-content");
     expect(fs.readFileSync(path.join(process.cwd(), "src/app/studio/decouverte/page.tsx"), "utf8")).toContain('c.preview.replace(/\\.en(\\.\\w+)$/, "$1")');
+    const dir = path.join(process.cwd(), "public", "demo", "directions");
+    if (!fs.existsSync(dir)) { console.info("Vignettes des thèmes non installées (kit privé) : contrôle d'existence sauté."); return; }
     for (const c of directionCards("en")) {
       const src = webpOf(localMedia(c.preview.replace(/\.en(\.\w+)$/, "$1"), "en"));
       expect(exists(src), src).toBe(true);
     }
-  });
-});
-
-describe("studio Découverte : étiquette de la photo de départ", () => {
-  it("« Photo fournie par le client » sur la montre et les vraies photos, jamais sur une photo créée par l'IA (FR et EN)", async () => {
-    const { startingPhotoIsClients } = await import("@/lib/discovery-demos");
-    for (const lang of ["fr", "en"] as const) {
-      const ids = demoList(lang).filter(startingPhotoIsClients).map((d) => d.id).sort();
-      expect(ids, lang).toEqual(["casque", "fleuriste", "montre", "tribunes"]);
-    }
-    const page = fs.readFileSync(path.join(process.cwd(), "src/app/studio/decouverte/page.tsx"), "utf8");
-    expect(page).toContain('T("Photo fournie par le client", "Photo provided by the client")');
-    const brand = fs.readFileSync(path.join(process.cwd(), "src/components/home/home-demos.tsx"), "utf8");
-    expect(brand).toContain("{b.photoBadge && <span");
-  });
-
-  it("l'étiquette n'existe que dans le studio Découverte (ni accueil, ni studio des clients)", () => {
-    const hits: string[] = [];
-    const walk = (dir: string) => {
-      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-        const f = path.join(dir, e.name);
-        if (e.isDirectory()) walk(f);
-        else if (/\.(tsx?|json)$/.test(e.name) && /photoBadge|Photo fournie par le client|Photo provided by the client/.test(fs.readFileSync(f, "utf8"))) hits.push(path.relative(process.cwd(), f));
-      }
-    };
-    walk(path.join(process.cwd(), "src"));
-    // home-demos.tsx : seulement l'option facultative (vide par défaut) ; seul le studio Découverte la remplit.
-    expect(hits.sort()).toEqual(["src/app/studio/decouverte/page.tsx", "src/components/home/home-demos.tsx", "src/lib/discovery-demos.ts"]);
-    expect(fs.readFileSync(path.join(process.cwd(), "src/components/home/home-demos.tsx"), "utf8")).not.toMatch(/Photo fournie par le client|Photo provided by the client/);
   });
 });

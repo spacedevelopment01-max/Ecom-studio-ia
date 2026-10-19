@@ -22,7 +22,7 @@ export async function verifyBeginnerVideoUi({page,context,pid,base,out,slug,mobi
  await capture('initial-resultat');
  const media=(await api(`/api/projects/${pid}/preparation`)).state.stages.media.data.slots;assert.equal(media.find((s:any)=>s.key===slot.key).assetId,mood.id);assert.equal(media.filter((s:any)=>s.kind==='video').length,prep.state.stages.media.data.slots.filter((s:any)=>s.kind==='video').length);
  await page.goto(`${base}/studio/${pid}/publicites#video`);
- section=page.locator('[data-guided-video=ad]');await section.waitFor();
+ section=page.locator('[data-guided-video=ad]');await section.waitFor();await section.locator('[data-video-voice]').selectOption('ff_siwis');await page.waitForTimeout(600);
  await section.locator('[data-subject-request]').fill('Fais-moi une vidéo pour mon activité, avec les informations déjà renseignées.');
  await section.locator('[data-video-duration="10"]').click();await section.locator('[data-video-scenes="2"]').click();
  await until(()=>section.locator('[data-guided-video-submit]').isEnabled(),v=>v,'Devis disponible');

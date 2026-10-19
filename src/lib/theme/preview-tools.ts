@@ -5,7 +5,7 @@
  */
 import { pick, type Lang } from "../i18n";
 
-export const previewTools = (lang: Lang, business: "products" | "services" = "products") => {
+export const previewTools = (lang: Lang, business: "products" | "services" = "products", contactTest = false) => {
   const t = (fr: string, en: string) => pick(lang, fr, en);
   return `
 <style id="es-preview-style">
@@ -16,7 +16,7 @@ export const previewTools = (lang: Lang, business: "products" | "services" = "pr
   .es-pv-focus-out{outline-color:transparent!important}
   .es-pv-label{position:fixed;z-index:2147483001;background:#2F5BEA;color:#fff;font:600 11px system-ui,sans-serif;padding:3px 8px;border-radius:6px;pointer-events:none}
 </style>
-<div class="es-pv-bar" aria-hidden="true">${business === "services" ? t("Aperçu du site · formulaires et réservations désactivés", "Website preview · forms and booking disabled") : t("Aperçu · données de démonstration de la boutique · paiement désactivé", "Preview · store demo data · checkout disabled")}</div>
+<div class="es-pv-bar" aria-hidden="true">${business === "services" ? contactTest ? t("Aperçu · demandes de test enregistrées, aucun e-mail envoyé", "Preview · test requests recorded, no email sent") : t("Aperçu du site · formulaires et réservations désactivés", "Website preview · forms and booking disabled") : t("Aperçu · données de démonstration de la boutique · paiement désactivé", "Preview · store demo data · checkout disabled")}</div>
 <script>
 (function(){
   var picking=false, hovered=null, label=null;
@@ -54,7 +54,7 @@ export const previewTools = (lang: Lang, business: "products" | "services" = "pr
   document.addEventListener('submit', function(e){
     var f=e.target; var sub=e.submitter;
     if(sub && sub.name==='checkout'){ e.preventDefault(); alert(${JSON.stringify(t("Aperçu : le paiement est géré par Shopify sur la boutique réelle.", "Preview: checkout is handled by Shopify on the live store."))}); }
-    if(f && /contact|account/.test(f.getAttribute('action')||'')){ e.preventDefault(); alert(${JSON.stringify(t("Aperçu : les formulaires sont traités par Shopify sur la boutique réelle.", "Preview: forms are processed by Shopify on the live store."))}); }
+    if(f && f.dataset.demoContact!=='true' && /contact|account/.test(f.getAttribute('action')||'')){ e.preventDefault(); alert(${JSON.stringify(t("Aperçu : les formulaires sont traités par Shopify sur la boutique réelle.", "Preview: forms are processed by Shopify on the live store."))}); }
   }, true);
   document.addEventListener('keydown', function(e){ if(picking && e.key==='Escape'){ picking=false; clearHover(); post({type:'pick-cancel'}); } });
   window.addEventListener('message', function(e){
@@ -97,7 +97,7 @@ export const previewTools = (lang: Lang, business: "products" | "services" = "pr
   ['wheel','touchstart','keydown'].forEach(function(ev){ window.addEventListener(ev, function(){ cancelAnimationFrame(replaying); }, {passive:true}); });
   var last=0; window.addEventListener('scroll', function(){ var n=Date.now(); if(n-last>250){ last=n; post({type:'scroll', y: window.scrollY}); } }, {passive:true});
   post({type:'ready'});
-  window.addEventListener('load', function(){ post({type:'loaded', path: location.pathname, title: document.title}); });
+  window.addEventListener('load', function(){ post({type:'loaded', path: location.pathname, title: document.title, hash: location.hash}); });
 })();
 </script>`;
 };

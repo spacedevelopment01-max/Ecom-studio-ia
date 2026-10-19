@@ -3,7 +3,7 @@
  * véracité et de traitement des sources externes.
  */
 import { availableSectionTypes, sectionSchema, settingsSchema, type ThemeSpec } from "../theme/spec";
-import { DIRECTIONS } from "../theme/directions";
+import { ACTIVE_DIRECTIONS } from "../theme/directions";
 import { FONT_HANDLES } from "../theme/render";
 
 import { pick, type Lang } from "../i18n";
@@ -426,5 +426,5 @@ export function globalSettingsCatalog(spec?: ThemeSpec | null): string {
     .join(", ");
 }
 
-export const DIRECTION_LIST = DIRECTIONS.map((d) => `${d.id} (${d.name} — ${d.tagline} ; idéal pour ${d.bestFor.join(", ")})`).join("\n");
+export const DIRECTION_LIST = ACTIVE_DIRECTIONS.map((d) => `${d.id} (${d.name} — ${d.tagline} ; idéal pour ${d.bestFor.join(", ")})`).join("\n");
 export const FONT_LIST = FONT_HANDLES.join(", ");

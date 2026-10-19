@@ -1,0 +1,408 @@
+{
+  "sourceCommit": "f40ef52dca145344d9972cf14727eeba6c992588",
+  "sourceDirty": false,
+  "originals": [
+    {
+      "theme": "Vitrine",
+      "file": "products/accueil-mobile.png",
+      "width": 390,
+      "height": 7066,
+      "bytes": 1149557,
+      "sha256": "d2315e09b356d98f1e1f9bbc68a570b16ff61a88360c946e2c9b0aa9a94138e5"
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/accueil-ordinateur.png",
+      "width": 1440,
+      "height": 6467,
+      "bytes": 2962944,
+      "sha256": "7ed8b44c2bb3840f8e362ac303d13514e5b00088f5c86465e99bdb35fcdadda0"
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/achat-1-mobile.png",
+      "width": 354,
+      "height": 850,
+      "bytes": 65705,
+      "sha256": "cca0bc05a0d854f5de34da078fcba68e1cf3d87f8f6595570d69e4f78cb10a79"
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/achat-1-ordinateur.png",
+      "width": 541,
+      "height": 886,
+      "bytes": 71244,
+      "sha256": "092e241f1aa9b707e89b0539926f4d4451c1e3526db5f7a36be482767309e047"
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/achat-2-mobile.png",
+      "width": 354,
+      "height": 906,
+      "bytes": 67933,
+      "sha256": "692719fcba0b3fe95be157f2610c9bdfacd1e0f426a2551f543eb1a14be6480b"
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/achat-2-ordinateur.png",
+      "width": 541,
+      "height": 886,
+      "bytes": 72552,
+      "sha256": "bc03bd1f34304dd4582ce042da35560a58a002baf34f91b81b8b63c069615bcc"
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/achat-3-mobile.png",
+      "width": 354,
+      "height": 962,
+      "bytes": 67560,
+      "sha256": "8e5002e92dd08838284b3002776bccff1873a92c538a6f35f11c8654c55c2445"
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/achat-3-ordinateur.png",
+      "width": 541,
+      "height": 942,
+      "bytes": 72294,
+      "sha256": "5ffb2ab1d8f43ec9ccf4dd81ab1041efbfdb625b4f174f8f3c74790ece4d6909"
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/achat-cadeau-indisponible-mobile.png",
+      "width": 354,
+      "height": 962,
+      "bytes": 69564,
+      "sha256": "5a8985fc91ed42baee2bc959eee994b67f4f7702d14361c5994a38684ffc147a"
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/entete-mobile.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 140067,
+      "sha256": "1acf8246dae8cc56f767e082066489a3ef4111a4a7b64fccd8cf34c5aa829e80"
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/entete-ordinateur.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 565710,
+      "sha256": "7319f32537234ff196a90abe1adeb868bbcd8983ef1ed55b4f391971fe8fab04"
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/panier-duo-mobile.png",
+      "width": 390,
+      "height": 1908,
+      "bytes": 115354,
+      "sha256": "045177ef1ad16ef471e32a9e69ea915dfac536eafa172e0fbd651f1ce63401a1"
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/panier-duo-ordinateur.png",
+      "width": 1440,
+      "height": 1394,
+      "bytes": 158452,
+      "sha256": "dd45be926c4b3a3c4caaaaeff767a15a868e3a13f3fa930feacb91779bb6e163"
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/panier-trio-mobile.png",
+      "width": 390,
+      "height": 2092,
+      "bytes": 119380,
+      "sha256": "b10eecff6bab1355b254c9656a798609942216aed5ff937577c40cc0b5ffd01e"
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/panier-trio-ordinateur.png",
+      "width": 1440,
+      "height": 1408,
+      "bytes": 164466,
+      "sha256": "1c3529a59f6501da16dab4aafaf730256031ea6bbc1d6adfb20bff0bcb3295d4"
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/pied-mobile.png",
+      "width": 390,
+      "height": 1150,
+      "bytes": 53136,
+      "sha256": "b7912f1d823b27eca96bab14b1e3b9ca8078787950fce97d6e07ea667db02f0c"
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/pied-ordinateur.png",
+      "width": 1440,
+      "height": 739,
+      "bytes": 64674,
+      "sha256": "2c6e6db104d7b3659efeb09ca55fb6af573bff0583fcdb3e5daa0bc8955b5366"
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/produit-mobile.png",
+      "width": 390,
+      "height": 5627,
+      "bytes": 567870,
+      "sha256": "dee221be49e295f88f88d701e2dc90539aaadea39741aa32bc7f68ada7904237"
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/produit-ordinateur.png",
+      "width": 1440,
+      "height": 4527,
+      "bytes": 1125214,
+      "sha256": "31925230f9c3dd9ebe27596689a7c74af54a37715b2ce163a8296317ec4f3301"
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/section-mobile.png",
+      "width": 390,
+      "height": 646,
+      "bytes": 187272,
+      "sha256": "cc159f05a3b79cdf7a1cce61b296053c72af518120d132a35b6bab7376fa08cd"
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/section-ordinateur.png",
+      "width": 1440,
+      "height": 807,
+      "bytes": 652823,
+      "sha256": "21a68c4ab633eac6c060b9d54000aa40d4bfb486c26c63bf50c2ee62e258451b"
+    },
+    {
+      "theme": "Jardin",
+      "file": "services/accueil-mobile.png",
+      "width": 390,
+      "height": 8767,
+      "bytes": 1889824,
+      "sha256": "048ec0348dd2b74f40b3e7130edc9f8e13dd68089d07be0fec6bfb75fa1c2c21"
+    },
+    {
+      "theme": "Jardin",
+      "file": "services/accueil-ordinateur.png",
+      "width": 1440,
+      "height": 8299,
+      "bytes": 5435503,
+      "sha256": "4931a551d33f7373b577ef9895fb487fa006558dfd06103172bb096c5e574dca"
+    },
+    {
+      "theme": "Jardin",
+      "file": "services/entete-mobile.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 205348,
+      "sha256": "832fddc5e12958de3cf6c56543068331bc8ab573706268416549329439cb0625"
+    },
+    {
+      "theme": "Jardin",
+      "file": "services/entete-ordinateur.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 706046,
+      "sha256": "9e2895a1f2d1e9975007b42c85903487a5f755dca0da3c7df3425e6b946ae2c1"
+    },
+    {
+      "theme": "Jardin",
+      "file": "services/pied-mobile.png",
+      "width": 390,
+      "height": 1145,
+      "bytes": 77461,
+      "sha256": "fa96d86e8bbfb7d6fcb1e1dea6603786c60ee4230a404617ffbf6c547afa30a3"
+    },
+    {
+      "theme": "Jardin",
+      "file": "services/pied-ordinateur.png",
+      "width": 1440,
+      "height": 872,
+      "bytes": 91802,
+      "sha256": "6ef918c5aa99dbd4a434190aaf9c4460ffa306d46e5ad7d89d655c5b714fb6ec"
+    },
+    {
+      "theme": "Jardin",
+      "file": "services/prestation-mobile.png",
+      "width": 390,
+      "height": 4402,
+      "bytes": 571352,
+      "sha256": "5b9cf7c482efc7265d3ab357cde035ef41b4c062f192026ffd43561aaa23f951"
+    },
+    {
+      "theme": "Jardin",
+      "file": "services/prestation-ordinateur.png",
+      "width": 1440,
+      "height": 3915,
+      "bytes": 1593964,
+      "sha256": "3a871d815b3487d3e3e02ad06b0835f6ca0b9ddda011c28f4d7bad9a1e80238c"
+    },
+    {
+      "theme": "Jardin",
+      "file": "services/section-mobile.png",
+      "width": 390,
+      "height": 662,
+      "bytes": 170752,
+      "sha256": "114a0264f93b0542ebb5339c9598cacdecb9eaa33ae7f8cbd0da5b2d9756ad28"
+    },
+    {
+      "theme": "Jardin",
+      "file": "services/section-ordinateur.png",
+      "width": 1440,
+      "height": 593,
+      "bytes": 358337,
+      "sha256": "bcc4d3da4007d1ef81ec4b142908c3873966cab32926c53091c026f5828a5246"
+    }
+  ],
+  "videos": [
+    {
+      "theme": "Vitrine",
+      "file": "products/parcours.mp4",
+      "bytes": 868934,
+      "sha256": "5d651a4c5cbb7a99d1bb9b8560a3f27ef23c480d5e2084eed25a15862df1d583",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1280,
+          "height": 800,
+          "r_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "19.840000"
+      }
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/parcours.webm",
+      "bytes": 1801793,
+      "sha256": "b87e1b9e92b49e9337ead33623da331e8b7359a243dd3ec46a61c797988e8ec3",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1280,
+          "height": 800,
+          "r_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "19.840000"
+      }
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/interactions.mp4",
+      "bytes": 2375135,
+      "sha256": "c130cf51508d878079c5a9018915770c43aa220042461a277c4eeacf1e84fe60",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1280,
+          "height": 800,
+          "r_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "25.520000"
+      }
+    },
+    {
+      "theme": "Vitrine",
+      "file": "products/interactions.webm",
+      "bytes": 2541953,
+      "sha256": "55c14b0ba7b237bc3612ca52f6f1f6300b7242c95e5a2ee7dda02ba51c96792f",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1280,
+          "height": 800,
+          "r_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "25.520000"
+      }
+    },
+    {
+      "theme": "Jardin",
+      "file": "services/parcours.mp4",
+      "bytes": 1263203,
+      "sha256": "ca2c6f9a8bc9cc9be974e2563e5c4be9aced69857b7bc15b157fa61babeef187",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1280,
+          "height": 800,
+          "r_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "17.000000"
+      }
+    },
+    {
+      "theme": "Jardin",
+      "file": "services/parcours.webm",
+      "bytes": 1774047,
+      "sha256": "ec1ab15ecac639dd8da79f3bfade104f8d7f8e6fea6294cb376f38678fc34fa4",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1280,
+          "height": 800,
+          "r_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "17.000000"
+      }
+    },
+    {
+      "theme": "Jardin",
+      "file": "services/interactions.mp4",
+      "bytes": 2594604,
+      "sha256": "e468654c829d4abadd7e2958ec401c3406ef55f4f186776aa857f08c2df943f7",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1280,
+          "height": 800,
+          "r_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "16.880000"
+      }
+    },
+    {
+      "theme": "Jardin",
+      "file": "services/interactions.webm",
+      "bytes": 2013848,
+      "sha256": "a77edf3b2346d6f49e9cb28065a7c8fbcae7fdc07ec85eeda687fc31d7dec0cf",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1280,
+          "height": 800,
+          "r_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "16.880000"
+      }
+    }
+  ]
+}
