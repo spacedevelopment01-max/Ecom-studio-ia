@@ -12,17 +12,19 @@
   function stateKey() { try { return localStorage.getItem(KEY) || 'vide'; } catch (e) { return 'vide'; } }
   function setState(k) { try { localStorage.setItem(KEY, k); } catch (e) { /* mémoire indisponible : état non conservé */ } }
   function state(k) { var g = graph(); if (!g || !g.files[k]) { setState('vide'); k = 'vide'; } return load(g.files[k]); }
-  function note(text) { var n = document.getElementById('es-static-note'); if (!n) return; var m = document.createElement('p'); m.className = 'es-static-note__msg'; m.setAttribute('role', 'status'); m.textContent = text; n.appendChild(m); setTimeout(function () { m.remove(); }, 6000); }
+  function note(text) { var n = document.getElementById('es-static-toasts'); if (!n) return; var m = document.createElement('p'); m.className = 'es-static-note__msg'; m.setAttribute('role', 'status'); m.textContent = text; n.appendChild(m); setTimeout(function () { m.remove(); }, 6000); }
 
-  /* Mention d'aperçu : puce discrète, repliable d'un geste, qui se décale au-dessus d'une barre d'achat fixe et ne couvre jamais un bouton. */
+  /* Mention d'aperçu : bandeau DANS LE FLUX, tout en haut du document (il défile avec la page et ne recouvre jamais un
+     bouton, une vignette ni une commande, même à 360 × 560) ; les messages passagers (panier de démonstration) restent
+     en bas à droite, au-dessus d'une barre d'achat fixe, et disparaissent seuls. */
   function banner() {
     if (document.getElementById('es-static-note')) return;
-    var s = document.createElement('style'); s.textContent = 'body:has(.es-drawer.is-open) #es-static-note,body:has(dialog[open]) #es-static-note{display:none}#es-static-note{position:fixed;right:10px;bottom:calc(10px + var(--es-static-offset,0px));z-index:9999;max-width:min(92vw,420px);font:600 12px/1.35 system-ui,sans-serif;transition:bottom .25s}#es-static-note .es-static-note__tag{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:rgba(17,17,17,.88);color:#fff;border:0;cursor:pointer;font:inherit;box-shadow:0 8px 24px -12px rgba(0,0,0,.6)}#es-static-note .es-static-note__tag:focus-visible{outline:3px solid #fff;outline-offset:2px}#es-static-note.is-compact .es-static-note__text{display:none}#es-static-note .es-static-note__msg{margin:8px 0 0;padding:10px 12px;border-radius:12px;background:#fff;color:#111;border:1px solid #ddd;box-shadow:0 10px 30px -14px rgba(0,0,0,.5)}@media(prefers-reduced-motion:reduce){#es-static-note{transition:none}}';
+    var s = document.createElement('style'); s.textContent = '#es-static-note{position:relative;z-index:1;margin:0;padding:6px 12px;background:#111;color:#fff;font:600 11px/1.4 system-ui,sans-serif;text-align:center;letter-spacing:.02em}#es-static-note span{opacity:.85;font-weight:500}#es-static-toasts{position:fixed;right:10px;bottom:calc(10px + var(--es-static-offset,0px));z-index:9999;max-width:min(92vw,420px);font:600 12px/1.35 system-ui,sans-serif;transition:bottom .25s;pointer-events:none}body:has(.es-drawer.is-open) #es-static-toasts,body:has(dialog[open]) #es-static-toasts{display:none}#es-static-toasts .es-static-note__msg{margin:8px 0 0;padding:10px 12px;border-radius:12px;background:#fff;color:#111;border:1px solid #ddd;box-shadow:0 10px 30px -14px rgba(0,0,0,.5)}';
     document.head.appendChild(s);
-    var n = document.createElement('div'); n.id = 'es-static-note'; n.className = 'is-compact';
-    n.innerHTML = '<button type="button" class="es-static-note__tag" aria-expanded="false" aria-label="Aperçu de démonstration : détails"><span aria-hidden="true">ⓘ</span><span class="es-static-note__short">Démo</span><span class="es-static-note__text"> · aperçu statique · paiement désactivé · données fictives</span></button>';
-    document.body.appendChild(n);
-    var tag = n.querySelector('.es-static-note__tag'); tag.addEventListener('click', function () { var open = n.classList.toggle('is-compact'); tag.setAttribute('aria-expanded', open ? 'false' : 'true'); });
+    var n = document.createElement('div'); n.id = 'es-static-note'; n.setAttribute('role', 'note');
+    n.innerHTML = '<strong>Aperçu de démonstration</strong> <span>· aperçu statique · paiement désactivé · données fictives</span>';
+    document.body.insertBefore(n, document.body.firstChild);
+    var toasts = document.createElement('div'); toasts.id = 'es-static-toasts'; document.body.appendChild(toasts);
     /* Décalage au-dessus d'une barre d'achat fixe visible (fiche produit sur téléphone). */
     function offset() { var bars = document.querySelectorAll('.es-sticky-buy.is-visible, [data-purchase-bar]:not([hidden])'); var h = 0; Array.prototype.forEach.call(bars, function (b) { var r = b.getBoundingClientRect(); if (r.height > 0 && r.bottom > innerHeight - 4 && getComputedStyle(b).visibility !== 'hidden') h = Math.max(h, r.height); }); document.documentElement.style.setProperty('--es-static-offset', h + 'px'); }
     /* Enveloppe (visualiseur qui affiche l'aperçu dans un cadre haut : c'est la page parente qui défile) : une NOUVELLE page
