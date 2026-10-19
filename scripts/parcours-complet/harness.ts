@@ -64,6 +64,23 @@ if (command === "seed") {
   if (!p) throw Error("Créer d’abord le projet dans l’interface.");
   creditTopup(accountKeyFor(c.uid, p.id), 500, `synthetic-parcours-proof:${c.slug}`);
   console.log("Recharge entièrement fictive dans la base isolée, budget natif limité à 50 % HT ; aucun achat.");
+} else if (command === "check-copy") {
+  const { injectedContents } = await import("./content");
+  const { analyzeLocally } = await import("../../src/lib/preparation/brief");
+  const { localBrand } = await import("../../src/lib/engine/local");
+  const { loadProject } = await import("../../src/lib/projects");
+  const template = one<{ id: string }>("SELECT id FROM projects LIMIT 1");
+  if (!template) throw Error("Lecture d’un projet fictif existant requise ; aucun projet ne sera créé pour ce contrôle.");
+  const results = PROOF_CASES.map(c => {
+    const p = structuredClone(loadProject(template.id)), brief = analyzeLocally(c.input);
+    p.id = `in-memory:${c.slug}`; p.name = c.input.offerName; p.product = brief.profile;
+    p.business = c.input.business; p.services = brief.services;
+    const identity = localBrand(p.product, c.input.brandName, p);
+    p.brand = { ...identity.brand, audience: c.input.target }; p.strategy = identity.strategy;
+    const contents = injectedContents(p);
+    return { case: c.slug, pages: contents.documents.map(d => ({ key: d.doc.page.key, blocks: d.doc.blocks.length, characters: d.doc.blocks.map(b => "text" in b ? b.text : "").join(" ").length })), nativeChecksPassed: true };
+  });
+  console.log(JSON.stringify({ simulation: true, projectsCreated: 0, persistedVersions: 0, results }, null, 2));
 } else if (command === "worker") {
   const { claimNext, JobContext, completeJob, failJob } = await import("../../src/lib/jobs");
   const { runPreparation, stateOf } = await import("../../src/lib/preparation/engine");
@@ -81,6 +98,7 @@ if (command === "seed") {
   const { bindEditorial, recommendationCatalogue } = await import("../../src/lib/preparation/editorial");
   const { REFERENCE_THEME_IDS } = await import("../../src/lib/project-handoff/categories");
   const { saveContentVersion } = await import("../../src/lib/seo-v2/store");
+  const { injectedContents } = await import("./content");
   const { placementHash } = await import("../../src/lib/preparation/media-context");
   const { runForUser } = await import("../../src/lib/ai/access");
   const { runWithLang } = await import("../../src/lib/i18n-server");
@@ -118,11 +136,9 @@ if (command === "seed") {
       return { ...brief, provenance: "simulation", observations };
     },
     logos: async (_p, ctx) => (await logo(ctx)).ids,
-    contents: async (p, ctx, paid, options) => {
-      const c = await simulatedDependencies.contents(p, ctx, paid, options);
+    contents: async (p, ctx) => {
+      const c = injectedContents(p);
       for (const document of c.documents) {
-        const page = c.pages.find(pg => pg.key === document.doc.page.key)!;
-        document.doc.blocks = page.sections.map((section, i) => ({ id: `${page.key}-${section.key}`, kind: i === 0 ? "h1" : "p", text: `${section.purpose}. ${p.brand!.name} présente ${p.product.name || "les prestations déclarées"}. Les informations de cette page reprennent le besoin communiqué, les possibilités de contact et les caractéristiques confirmées. Texte injecté pour vérifier la conservation et les affectations, sans résultat commercial ni avis inventé.` }));
         saveContentVersion(p.id, document.docKey, document.doc, { verdict: "FINAL", note: "Réponse et verdict de test injectés, aucun fournisseur réel" });
       }
       const catalogue = recommendationCatalogue(p), eligible = catalogue.filter(x => x.status === "in_progress");
@@ -130,7 +146,7 @@ if (command === "seed") {
       const bound = bindEditorial(c, { copy: c.copy, missing: [],
         recommendation: { recommendedReferenceId: referenceIds[0] ?? null, alternativesReferenceIds: referenceIds.slice(1), reasons: ["Recommandation de test injectée parmi les quatre références actives. Raccordement au moteur encore en attente, aucun ancien thème de remplacement."] },
         slots: c.slots.map((s, i) => ({ key: s.key, pageKey: s.pageKey, sectionKey: s.sectionKey, scene: `Scène distincte de test ${i + 1} : ${s.purpose}`, queries: ["activité fictive", "usage test"], caption: "Média synthétique à contrôler", alt: `Illustration de test : ${s.purpose}`, rationale: "Liaison de test avec le texte de cette section" })),
-        blocks: c.pages.flatMap(pg => pg.sections.map(section => ({ pageKey: pg.key, sectionKey: section.key, objective: section.purpose, message: "Information du brief fictif", docKey: c.documents.find(d => d.doc.page.key === pg.key)!.docKey, blockIds: [`${pg.key}-${section.key}`], mediaSlotKeys: c.slots.filter(s => s.pageKey === pg.key && s.sectionKey === section.key).map(s => s.key), rationale: "Affectation explicite : aucun texte coupé ni bloc perdu" }))),
+        blocks: c.pages.flatMap(pg => pg.sections.map((section, i) => ({ pageKey: pg.key, sectionKey: section.key, objective: section.purpose, message: "Information du brief fictif", docKey: c.documents.find(d => d.doc.page.key === pg.key)!.docKey, blockIds: [...(i === 0 ? [`${pg.key}-title`] : []), `${pg.key}-${section.key}`], mediaSlotKeys: c.slots.filter(s => s.pageKey === pg.key && s.sectionKey === section.key).map(s => s.key), rationale: "Affectation explicite : aucun texte coupé ni bloc perdu" }))),
       }, catalogue);
       const simulatedCopy = JSON.parse(JSON.stringify(bound.copy).replace(/\[(?:[ÀA] compl[eé]ter|To complete|Por completar)[^\]]*\]/gi, "Information non déclarée dans ce test fictif"));
       return { ...bound, copy: simulatedCopy, execution: { provider: "simulation", model: "injected", usageKey: `proof:${ctx.job.id}`, at: now(), vision: false }, provenance: "simulation" as const };
@@ -219,4 +235,4 @@ if (command === "seed") {
   const evidence = { simulation: true, originalProjectCount: 0, projectsCreatedThroughUi: projects.length, actualProviderCalls: one<{ n: number }>("SELECT COUNT(*) n FROM ai_calls")!.n, actualProviderCostMicro: 0, themes: one<{ n: number }>("SELECT COUNT(*) n FROM theme_versions")!.n, socialConnections: one<{ n: number }>("SELECT COUNT(*) n FROM connections")?.n ?? 0, projects };
   fs.writeFileSync(path.join(dir, "persistence-evidence.json"), JSON.stringify(evidence, null, 2));
   console.log("Preuve expurgée sauvegardée : quatre parcours créés via UI, aucun fournisseur ni thème.");
-} else throw Error("seed | fund <cas> | worker | evidence");
+} else throw Error("seed | fund <cas> | check-copy | worker | evidence");
