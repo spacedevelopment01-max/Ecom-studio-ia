@@ -88,6 +88,11 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   `theme-base/i18n/schema.en.json` et toute clé `| t` existe dans `locales/fr.default.json` **et** `en.default.json`.
 - Les coordonnées saisies à la création d'un projet ne doivent jamais être redemandées ni effacées.
 
+## Démonstrations de référence (règle du 19 octobre, retour de Thomas 15 h 07)
+
+- Les démonstrations FRAISE GUMMIES et ONDE AUDIO sont la composition complète des références Lumora et Pawish (`tests/lot2c-fixtures.ts`, `conversionProject`) : accueil et fiche riches, offres, avis fictifs étiquetés, comparatif, garantie en exemple, stories, FAQ, pages. Ne jamais les recomposer par le parcours « thème du catalogue » (il masque toute section sans contenu) ni les simplifier sans consigne écrite de Thomas. Garde-fou : `tests/demos-fraise-onde-composition.test.ts` (liste ordonnée des sections, aucune masquée).
+- Toute livraison d'aperçu indique le commit exporté (`resume.json`) et la version d'artefact ; vérifier l'inventaire des sections de l'export avant de publier, et comparer à la version précédente (une section de moins = à expliquer dans la PR, jamais silencieux).
+
 ## Avant chaque envoi (commit + push)
 
 ```bash
