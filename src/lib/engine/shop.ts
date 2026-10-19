@@ -47,7 +47,7 @@ const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,
 
 /** Nom de fichier stable dans le dossier assets du thème pour un média. */
 export function themeFileName(a: Asset, hint?: string): string {
-  const ext = a.kind === "video" ? "mp4" : a.mime === "image/png" || a.role === "cutout" || a.role === "logo" ? "png" : "jpg";
+  const ext = a.kind === "video" ? (/webm/.test(a.mime) ? "webm" : "mp4") : a.mime === "image/png" || a.role === "cutout" || a.role === "logo" ? "png" : "jpg";
   return `es-${slug(hint ?? a.role ?? "media")}-${a.id.slice(0, 6)}.${ext}`;
 }
 

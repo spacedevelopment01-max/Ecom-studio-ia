@@ -6,7 +6,7 @@ Objet : ce que chaque section expose pour être modifiée **manuellement** (pann
 
 - Une section est une entrée `{ type, settings, blocks, block_order, disabled }` d'un gabarit JSON (`spec.templates[...]`) ou d'un groupe (`spec.groups.header / footer`). Son **schéma** (`{% schema %}` du fichier `theme-base/sections/<type>.liquid`) déclare chaque réglage avec un identifiant stable, un type, un libellé (traduit en anglais par `theme-base/i18n/schema.en.json`), ses options et sa valeur par défaut.
 - Toute modification — panneau manuel, discussion, IA, bibliothèque, glisser-déposer — passe par les **opérations** de `src/lib/theme/ops.ts` (`set_setting`, `use_media`, `add_block`, `remove_block`, `move_block`, `add_section`, `duplicate_section`, `move_section`, `toggle_section`, `remove_section`, `replace_section`, `section_colors`, `set_scheme_color`, `set_global`, `lock`) validées par `validateSpec`, puis par `saveThemeVersion` : **chaque changement crée une version restaurable** (bouton Historique / `theme/restore`). Il n'existe pas de second chemin d'écriture.
-- Le panneau manuel (`src/components/studio/section-settings.tsx`) lit `GET /api/projects/:id/theme/section?template=&section=` (schéma traduit, réglages, blocs, schémas de couleurs, fichiers image du thème) et écrit par `POST /api/projects/:id/theme/ops` — exactement la route de la discussion.
+- Le panneau manuel (`src/components/studio/section-settings.tsx`) lit `GET /api/projects/:id/theme/section?template=&section=` (schéma traduit, réglages, blocs, schémas de couleurs, fichiers image **et vidéo** du thème) et écrit par `POST /api/projects/:id/theme/ops` — exactement la route de la discussion. Il reste monté d'une version à l'autre (blocs dépliés, défilement et champ en cours conservés) et relit ses données quand la version change ailleurs (discussion, historique).
 
 ## 2. Réglages structurés attendus par section (ce que le panneau et l'IA savent modifier)
 
@@ -14,7 +14,7 @@ Objet : ce que chaque section expose pour être modifiée **manuellement** (pann
 |---|---|---|---|---|
 | Textes (surtitre, titre, fin de titre en accent, texte, légende, mention) | `text`, `textarea`, `richtext` | champ ou zone de texte, Entrée / perte du focus = appliqué | `set_setting` | champ natif du même type |
 | Visuels | `image` (`image_picker`) **et** `image_asset` (fichier fourni avec le thème) + `image_alt`, `media_role`, `focus_x/y` | sélecteur des fichiers du thème + « Mes images » (opération `use_media`) ; `image_picker` indiqué comme réglé dans la plateforme | `use_media`, `set_setting` | `image_picker` natif ; **`image_asset` reste un champ texte** (nom de fichier dans `assets/`) — manque n° 1 ci-dessous |
-| Vidéos et affiches | `video_url` / `text` (adresse), `image_asset` (affiche) | champ | `set_setting` | champ `video_url` / texte |
+| Vidéos et affiches | `video` (bibliothèque de la plateforme) **et** `video_asset` (fichier fourni avec le thème) ; `video_url` (adresse) ; `poster` / `poster_asset` (affiche) | sélecteur des fichiers vidéo du thème + « Mes vidéos » (opération `use_media` sur `video_asset`) ; poster : sélecteur des fichiers image + « Mes images » ; `video` indiqué comme réglé dans la plateforme | `use_media`, `set_setting` | `video` natif ; **`video_asset` et `poster_asset` restent des champs texte** (fichiers de `assets/`), même manque que `image_asset` |
 | Icônes | `select` (liste fermée d'icônes du thème) | liste | `set_setting` | liste native |
 | Liens et boutons | `text` (libellé) + `url` | champs | `set_setting` | `url` natif |
 | Couleurs | `color_scheme` (schémas du thème) ; `color` ponctuel | liste des schémas ; sélecteur de couleur | `section_colors`, `set_scheme_color` | natifs |
@@ -46,5 +46,5 @@ Référence : registre des capacités réelles `src/lib/cms-v2/capabilities.ts` 
 
 ## 5. Ce qui est vérifié et ce qui ne l'est pas
 
-- Vérifié : rendu de chaque section (tests), bibliothèque complète (`tests/section-library-coverage.test.ts`), panneau manuel et discussion sur la même donnée dans le studio réel (`scripts/lot2c-studio-check.ts`), Theme Check sur le thème exporté.
+- Vérifié : rendu de chaque section (tests), bibliothèque complète (`tests/section-library-coverage.test.ts`), panneau manuel et discussion sur la même donnée dans le studio réel (`scripts/lot2c-studio-check.ts`), scénario complet de persistance et de restauration depuis l'interface (`scripts/lot2c-persistence-check.ts` : ajout, textes, image du thème et de « Mes images », disposition, déplacement, duplication indépendante, masquage, suppression, restauration, pied de page, en-tête, story avec fichier vidéo et poster, rechargement), Theme Check sur le thème exporté.
 - Non vérifié : installation et édition sur une vraie boutique Shopify, un vrai WordPress distant ou PrestaShop (niveaux de preuve dans le registre) ; c'est le chantier de Codex pour les exports.

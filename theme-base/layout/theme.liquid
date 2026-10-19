@@ -48,6 +48,35 @@
           --c-accent-rgb: {{ scheme.settings.accent.red }}, {{ scheme.settings.accent.green }}, {{ scheme.settings.accent.blue }};
           --c-accent-text: {{ scheme.settings.accent_text }};
           --c-border: {{ scheme.settings.border }};
+          {%- liquid
+            comment
+              Accents lisibles (AA 4,5:1), dérivés de l'accent du schéma sans le remplacer : « ink » pour l'accent employé en texte
+              sur le fond du schéma (surtitres, mots en accent, prix, 404), rapproché du texte par petits pas tant que le
+              contraste est insuffisant ; « fill » pour un fond d'accent sous le texte d'accent (boutons, pastilles),
+              rapproché du noir ou du blanc selon ce texte. Un accent déjà lisible reste strictement identique.
+            endcomment
+            assign accent_ink = scheme.settings.accent
+            for i in (1..8)
+              assign ink_ratio = accent_ink | color_contrast: scheme.settings.background
+              if ink_ratio < 4.5
+                assign accent_ink = accent_ink | color_mix: scheme.settings.text, 82
+              endif
+            endfor
+            assign accent_fill = scheme.settings.accent
+            assign fill_target = '#000000'
+            assign at_bright = scheme.settings.accent_text | color_brightness
+            if at_bright < 128
+              assign fill_target = '#ffffff'
+            endif
+            for i in (1..8)
+              assign fill_ratio = accent_fill | color_contrast: scheme.settings.accent_text
+              if fill_ratio < 4.5
+                assign accent_fill = accent_fill | color_mix: fill_target, 90
+              endif
+            endfor
+          -%}
+          --c-accent-ink: {{ accent_ink }};
+          --c-accent-fill: {{ accent_fill }};
         }
       {% endfor %}
 

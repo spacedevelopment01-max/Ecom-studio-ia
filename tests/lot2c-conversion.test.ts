@@ -72,6 +72,25 @@ describe("Lot 2C — FRAISE GUMMIES (référence Lumora) et ONDE AUDIO (référe
       if (kind === "fraise") expect(product).toContain("es-ctabs"); expect(product).toContain("note fictive");
     }));
   }
+  it("accents lisibles : chaque schéma expose un accent « ink » (texte sur le fond) et « fill » (fond sous le texte d'accent) à 4,5:1 au moins, inchangés quand l'accent l'est déjà", async () => fr(async () => {
+    const lum = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((x) => (x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4)).reduce((acc, x, i) => acc + x * [0.2126, 0.7152, 0.0722][i], 0);
+    const contrast = (a: string, b: string) => { const l1 = lum(a), l2 = lum(b); return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05); };
+    for (const kind of ["fraise", "onde"] as const) {
+      const { spec } = await conversionProject(user.id, kind, pack); const home = (await render(spec, "/")).html;
+      for (const [id, scheme] of Object.entries(spec.settings.color_schemes as Record<string, { settings: Record<string, string> }>)) {
+        const block = home.match(new RegExp(`\\.color-${id},[^}]*}`))?.[0] ?? ""; expect(block, `${kind} ${id}`).toContain("--c-accent-ink:");
+        const ink = block.match(/--c-accent-ink: (#[0-9a-f]{6})/i)![1], fill = block.match(/--c-accent-fill: (#[0-9a-f]{6})/i)![1];
+        expect(contrast(ink, scheme.settings.background), `${kind} ${id} ink ${ink}`).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(fill, scheme.settings.accent_text), `${kind} ${id} fill ${fill}`).toBeGreaterThanOrEqual(4.5);
+        if (contrast(scheme.settings.accent, scheme.settings.background) >= 4.5) expect(ink.toLowerCase()).toBe(scheme.settings.accent.toLowerCase());
+        if (contrast(scheme.settings.accent, scheme.settings.accent_text) >= 4.5) expect(fill.toLowerCase()).toBe(scheme.settings.accent.toLowerCase());
+      }
+    }
+    // Vert vif ONDE sur blanc (2,1:1) et rouge FRAISE sur crème (3,7:1) : seuls les accents de texte sont assombris ; ONDE garde ses boutons tels quels (texte sombre sur vert : déjà 9:1).
+    const onde = (await conversionProject(user.id, "onde", pack)).spec; const h = (await render(onde, "/")).html; const s1 = h.match(/\.color-scheme-1,[^}]*}/)![0];
+    expect(s1).toMatch(/--c-accent: #4ECD01/i); expect(s1).not.toMatch(/--c-accent-ink: #4ECD01/i); expect(s1).toMatch(/--c-accent-fill: #4ECD01/i);
+  }));
+
   it("les nouvelles sections sont dans la bibliothèque FR/EN avec un schéma traduit", () => {
     for (const type of ["cv-hero", "cv-cards", "cv-reviews", "cv-feature", "cv-guarantee", "cv-stories", "cv-article", "cv-hotspots", "cv-alternating", "cv-steps", "cv-gallery", "cv-specs", "cv-banner", "cv-ingredients", "cv-quote"]) {
       expect(libraryEntry(type, "fr")?.name, type).toBeTruthy(); expect(libraryEntry(type, "en")?.name, type).toBeTruthy();

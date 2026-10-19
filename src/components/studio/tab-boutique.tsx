@@ -190,6 +190,8 @@ export default function TabBoutique() {
   });
   const desktopScale = device === "desktop" && boxW > 0 && boxW < DESKTOP_W ? boxW / DESKTOP_W : 1;
   const scrollY = useRef(0);
+  // Dernier chemin chargé dans l'aperçu (pour ne restaurer le défilement que sur la même page).
+  const loadedPath = useRef<string | null>(null);
   const chatEnd = useRef<HTMLDivElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -213,9 +215,14 @@ export default function TabBoutique() {
       if (d.type === "ready" && pickingRef.current) iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "pick", on: true }, "*");
       if (d.type === "scroll") scrollY.current = d.y;
       if (d.type === "loaded") {
-        iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "scroll", y: scrollY.current }, "*");
-        if (pickingRef.current) iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "pick", on: true }, "*");
         const path = String(d.path).replace(/^\/preview\/[^/]+\/v\/[^/]+/, "") || "/";
+        // Position de défilement conservée SEULEMENT quand la même page est rendue à nouveau (réglage, version, panier) ;
+        // une autre page (lien du pied de page, menu) s'ouvre en haut, et une ancre va à sa cible.
+        const samePage = path === loadedPath.current, hash = Boolean(d.hash);
+        loadedPath.current = path;
+        if (samePage && !hash) iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "scroll", y: scrollY.current }, "*");
+        else scrollY.current = 0;
+        if (pickingRef.current) iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "pick", on: true }, "*");
         if (path !== page) setPage(path);
       }
     };
@@ -510,7 +517,7 @@ export default function TabBoutique() {
   );
 
   const Structure = settingsFor ? (
-    <SectionSettingsPanel key={`${settingsFor.template}:${settingsFor.section}:${theme.current?.versionId ?? ""}`} projectId={id} target={settingsFor} onClose={() => setSettingsFor(null)} onChanged={() => { reload(); reloadProject(); }} />
+    <SectionSettingsPanel key={`${settingsFor.template}:${settingsFor.section}`} version={theme.current?.versionId ?? ""} projectId={id} target={settingsFor} onClose={() => setSettingsFor(null)} onChanged={() => { reload(); reloadProject(); }} />
   ) : layoutOpen && layoutSections.length > 0 ? (
     <div className="h-full overflow-y-auto p-4">
       <div className="mb-4 flex items-center justify-between gap-2">

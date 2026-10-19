@@ -97,7 +97,7 @@ export const previewTools = (lang: Lang, business: "products" | "services" = "pr
   ['wheel','touchstart','keydown'].forEach(function(ev){ window.addEventListener(ev, function(){ cancelAnimationFrame(replaying); }, {passive:true}); });
   var last=0; window.addEventListener('scroll', function(){ var n=Date.now(); if(n-last>250){ last=n; post({type:'scroll', y: window.scrollY}); } }, {passive:true});
   post({type:'ready'});
-  window.addEventListener('load', function(){ post({type:'loaded', path: location.pathname, title: document.title}); });
+  window.addEventListener('load', function(){ post({type:'loaded', path: location.pathname, title: document.title, hash: location.hash}); });
 })();
 </script>`;
 };

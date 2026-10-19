@@ -611,6 +611,9 @@ export function createEngine(files: ThemeFiles, base: string, lang: Lang = "fr")
   f("color_mix", (a: unknown, b: unknown, w: unknown) => { const x = hexOf(a), y = hexOf(b), k = Number(w ?? 50) / 100; return toHex(x.red * k + y.red * (1 - k), x.green * k + y.green * (1 - k), x.blue * k + y.blue * (1 - k)); });
   f("color_lighten", (c: unknown, n: unknown) => { const d = hexOf(c), k = Number(n ?? 0) / 100; return toHex(d.red + (255 - d.red) * k, d.green + (255 - d.green) * k, d.blue + (255 - d.blue) * k); });
   f("color_darken", (c: unknown, n: unknown) => { const d = hexOf(c), k = 1 - Number(n ?? 0) / 100; return toHex(d.red * k, d.green * k, d.blue * k); });
+  // Rapport de contraste WCAG entre deux couleurs (filtre Shopify `color_contrast`) : sert au thème pour dériver des accents lisibles.
+  const lum = (d: { red: number; green: number; blue: number }) => [d.red, d.green, d.blue].map((v) => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }).reduce((acc, x, i) => acc + x * [0.2126, 0.7152, 0.0722][i], 0);
+  f("color_contrast", (a: unknown, b: unknown) => { const l1 = lum(hexOf(a)), l2 = lum(hexOf(b)); return Math.round(((Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05)) * 100) / 100; });
   for (const n of ["color_saturate", "color_desaturate", "color_to_hex"]) f(n, (c: unknown) => hexOf(c).hex);
   f("color_to_hsl", (c: unknown) => { const d = hexOf(c); const r = d.red / 255, g = d.green / 255, b = d.blue / 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b); const l = (mx + mn) / 2; let h = 0, s2 = 0; if (mx !== mn) { const dd = mx - mn; s2 = l > 0.5 ? dd / (2 - mx - mn) : dd / (mx + mn); h = mx === r ? (g - b) / dd + (g < b ? 6 : 0) : mx === g ? (b - r) / dd + 2 : (r - g) / dd + 4; h *= 60; } return `hsl(${Math.round(h)}, ${Math.round(s2 * 100)}%, ${Math.round(l * 100)}%)`; });
   f("inline_asset_content", (name: string) => files.get(`assets/${name}`) ?? "");

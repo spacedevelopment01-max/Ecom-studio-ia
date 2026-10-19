@@ -32,9 +32,11 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
     : ["scheme-1", "scheme-2", "scheme-3", "scheme-4", "scheme-5"].map((k, i) => ({ id: k, label: L(`Schéma ${i + 1}`, `Scheme ${i + 1}`) }));
   // Fichiers image du thème (réglages « image_asset ») : noms de fichiers connus, pour un choix sans erreur de saisie.
   const files = Object.keys(cur.spec.files ?? {}).filter((f) => /\.(webp|jpe?g|png|avif|gif|svg)$/i.test(f)).sort();
+  // Fichiers vidéo du thème (réglages « video_asset », « *_video_asset ») : même principe.
+  const videos = Object.keys(cur.spec.files ?? {}).filter((f) => /\.(mp4|webm|mov|m4v)$/i.test(f)).sort();
   return ok({
     template, id, type: s.type, name: entry?.name ?? schema.name, disabled: !!s.disabled, locked: cur.spec.locks.includes(`${template}:${id}`), structural: structural(s.type),
-    settings: s.settings ?? {}, blocks, schema: { settings: schema.settings, blocks: schema.blocks, max_blocks: schema.max_blocks }, schemes, files,
+    settings: s.settings ?? {}, blocks, schema: { settings: schema.settings, blocks: schema.blocks, max_blocks: schema.max_blocks }, schemes, files, videos,
     versionId: cur.version.id,
   });
 });

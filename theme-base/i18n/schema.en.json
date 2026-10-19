@@ -1485,7 +1485,7 @@
   "Empilé et centré": "Stacked and centered",
   "Colonnes dans une carte arrondie": "Columns in a rounded card",
   "Phrase sous le logo": "Line under the logo",
-  "Styles « Marque à gauche » et « Deux panneaux ». Facultatif.": "\"Brand on the left\" and \"Two panels\" styles. Optional.",
+  "Sous le logo (styles « Marque à gauche » et « Deux panneaux ») ou en tête des colonnes. Facultatif.": "Under the logo (\"Brand on the left\" and \"Two panels\" styles) or above the columns. Optional.",
   "Version du logo lisible sur le fond du pied de page. Styles Centré, Marque à gauche et Deux panneaux : remplace le logo du thème ; styles Colonnes, Carte et Signature : affiché au-dessus des colonnes. Vide : logo du thème (ou son nom).": "A logo version readable on the footer background. Centered, Brand on the left and Two panels styles: replaces the theme logo; Columns, Card and Signature styles: shown above the columns. Empty: theme logo (or its name).",
   "Styles Centré, Marque à gauche et Deux panneaux : version du logo lisible sur le fond du pied de page. Vide : logo du thème.": "Centered, Brand on the left and Two panels styles: a logo version that reads well on the footer background. Empty: theme logo.",
   "Nouveauté": "New in",

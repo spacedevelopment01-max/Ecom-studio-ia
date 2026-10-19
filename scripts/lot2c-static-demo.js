@@ -25,6 +25,16 @@
     var tag = n.querySelector('.es-static-note__tag'); tag.addEventListener('click', function () { var open = n.classList.toggle('is-compact'); tag.setAttribute('aria-expanded', open ? 'false' : 'true'); });
     /* Décalage au-dessus d'une barre d'achat fixe visible (fiche produit sur téléphone). */
     function offset() { var bars = document.querySelectorAll('.es-sticky-buy.is-visible, [data-purchase-bar]:not([hidden])'); var h = 0; Array.prototype.forEach.call(bars, function (b) { var r = b.getBoundingClientRect(); if (r.height > 0 && r.bottom > innerHeight - 4 && getComputedStyle(b).visibility !== 'hidden') h = Math.max(h, r.height); }); document.documentElement.style.setProperty('--es-static-offset', h + 'px'); }
+    /* Enveloppe (visualiseur qui affiche l'aperçu dans un cadre haut : c'est la page parente qui défile) : une NOUVELLE page
+       doit s'ouvrir en haut. Uniquement à l'arrivée sur une page, sans ancre, hors précédent/suivant (le navigateur restaure
+       alors la position) ; jamais au re-rendu d'une section ni au panier : rien d'autre n'appelle ce code. */
+    (function () {
+      if (window.self === window.top || location.hash) return;
+      var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+      if (nav && nav.type === 'back_forward') return;
+      var top = function () { try { document.documentElement.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'instant' }); } catch (e) { document.documentElement.scrollIntoView(true); } };
+      top(); window.addEventListener('load', function () { top(); setTimeout(top, 120); }, { once: true });
+    })();
     offset(); setInterval(offset, 600); window.addEventListener('scroll', offset, { passive: true }); window.addEventListener('resize', offset);
   }
 

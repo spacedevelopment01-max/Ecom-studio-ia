@@ -66,6 +66,7 @@
       {%- if has_brand_col == false and section.settings.logo_asset != blank -%}
         <a href="{{ routes.root_url }}" class="es-footer__brand es-footer__brand--row"><img src="{{ section.settings.logo_asset | asset_url }}" alt="{{ shop.name | escape }}" width="{{ settings.logo_width }}" height="{{ settings.logo_width | divided_by: 3 | round }}" loading="lazy"></a>
       {%- endif -%}
+      {%- if has_brand_col == false and section.settings.tagline != blank -%}<p class="es-footer__tagline es-footer__tagline--row">{{ section.settings.tagline }}</p>{%- endif -%}
       {%- if has_brand_col -%}<div class="es-footer__layout">{%- endif -%}
       {%- if has_brand_col -%}
         {%- liquid
@@ -194,6 +195,7 @@
 .es-footer__brandcol { display: grid; gap: 18px; align-content: start; justify-items: start; }
 .es-footer__brandcol .es-footer__brand { font-size: clamp(1.6rem, 3vw, 2.2rem); }
 .es-footer__tagline { margin: 0; max-width: 34ch; opacity: .8; font-size: 1rem; line-height: 1.5; }
+.es-footer__tagline--row { margin: -10px 0 28px; }
 .es-footer__brand-news { width: 100%; max-width: 420px; }
 @media (min-width: 990px) {
   .es-footer--brand-left .es-footer__layout { grid-template-columns: minmax(240px, .8fr) 2fr; }
@@ -232,7 +234,7 @@
         { "value": "reference-studio", "label": "Pied de page atelier" }
       ]
     },
-    { "type": "text", "id": "tagline", "label": "Phrase sous le logo", "info": "Styles « Marque à gauche » et « Deux panneaux ». Facultatif." },
+    { "type": "text", "id": "tagline", "label": "Phrase sous le logo", "info": "Sous le logo (styles « Marque à gauche » et « Deux panneaux ») ou en tête des colonnes. Facultatif." },
     { "type": "text", "id": "logo_asset", "label": "Logo du pied de page (fichier assets)", "info": "Version du logo lisible sur le fond du pied de page. Styles Centré, Marque à gauche et Deux panneaux : remplace le logo du thème ; styles Colonnes, Carte et Signature : affiché au-dessus des colonnes. Vide : logo du thème (ou son nom)." },
     { "type": "checkbox", "id": "show_wordmark", "label": "Grand nom de marque", "default": true },
     { "type": "checkbox", "id": "show_policies", "label": "Liens vers les politiques", "default": true },
