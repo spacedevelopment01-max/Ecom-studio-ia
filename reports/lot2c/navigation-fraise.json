@@ -1,7 +1,7 @@
 {
   "kind": "fraise",
   "dir": "<copie retéléchargée de l'aperçu livré>/fraise",
-  "date": "2026-10-19T02:56:27.412Z",
+  "date": "2026-10-19T08:27:26.755Z",
   "report": [
     {
       "device": "mobile",
@@ -83,7 +83,7 @@
       ],
       "anchor": {
         "hash": "#MainContent",
-        "parentScrollY": 4268
+        "parentScrollY": 4279
       },
       "cart": {
         "before": 0,

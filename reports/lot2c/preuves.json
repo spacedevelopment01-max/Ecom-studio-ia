@@ -1,7 +1,7 @@
 {
-  "testedCommit": "e2a33888d8ff6c078ee5ad4ba9f4ffd65bf650d8",
+  "testedCommit": "b6a878a27498c3c26532e706000548386937e614",
   "workingTree": "clean",
-  "date": "2026-10-19T02:38:58.874Z",
+  "date": "2026-10-19T08:16:30.735Z",
   "renderMode": "es_raw=1 — thème issu des vraies routes, sans le bandeau flottant du studio",
   "widths": [
     1440,
@@ -13,10 +13,8 @@
     {
       "kind": "fraise",
       "provenance": "Issue #137 (18 octobre 2026) — données synthétiques de démonstration, images IA sans personne du kit, aucun paiement",
-      "mediaCount": 8,
-      "missing": [
-        "04-detail-gummies"
-      ],
+      "mediaCount": 9,
+      "missing": [],
       "editing": {
         "operations": [
           "set_setting",
@@ -177,7 +175,7 @@
             "scrollWidth": 1440,
             "height": 11496,
             "h1": 1,
-            "images": 26,
+            "images": 28,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
@@ -195,7 +193,7 @@
             "scrollWidth": 768,
             "height": 11701,
             "h1": 1,
-            "images": 26,
+            "images": 28,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
@@ -213,7 +211,7 @@
             "scrollWidth": 390,
             "height": 12413,
             "h1": 1,
-            "images": 26,
+            "images": 28,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
@@ -231,7 +229,7 @@
             "scrollWidth": 360,
             "height": 12586,
             "h1": 1,
-            "images": 26,
+            "images": 28,
             "brokenImages": [],
             "missingMedia": 0,
             "fonts": "loaded",
