@@ -21,31 +21,32 @@ describe("droits des forfaits, vérifiés côté serveur", async () => {
     return { u, pid };
   };
 
-  it("bibliothèque : 30 thèmes réels, 10 / 20 / 30 sélectionnables selon le forfait, prévisualisation seule sans forfait", async () => {
+  it("catalogue actif (consigne 6264783184) : les quatre thèmes de référence pour tout forfait payant ; les 30 anciens restent lisibles mais jamais sélectionnables ; rien sans forfait", async () => {
     expect(themeOrderComplete()).toBe(true);
-    expect(THEME_ORDER).toHaveLength(30);
-    expect([PLANS.creer.themes, PLANS.vendre.themes, PLANS.dominer.themes]).toEqual([10, 20, 30]);
-    expect(themeAllowed(null, THEME_ORDER[0])).toBe(false);
-    expect(themeAllowed("creer", THEME_ORDER[9])).toBe(true);
-    expect(themeAllowed("creer", THEME_ORDER[10])).toBe(false);
-    expect(themeAllowed("vendre", THEME_ORDER[19])).toBe(true);
-    expect(themeAllowed("vendre", THEME_ORDER[20])).toBe(false);
-    expect(THEME_ORDER.every((t) => themeAllowed("dominer", t))).toBe(true);
-    expect(planForTheme(THEME_ORDER[25])).toBe("dominer");
+    expect(THEME_ORDER).toHaveLength(34);
+    expect(THEME_ORDER.slice(30)).toEqual(["fraise", "onde", "orbe", "rive"]);
+    expect([PLANS.creer.themes, PLANS.vendre.themes, PLANS.dominer.themes]).toEqual([4, 4, 4]);
+    for (const id of ["fraise", "onde", "orbe", "rive"]) {
+      expect(themeAllowed(null, id)).toBe(false);
+      for (const plan of ["creer", "vendre", "dominer"] as const) expect(themeAllowed(plan, id)).toBe(true);
+      expect(planForTheme(id)).toBe("creer");
+    }
+    // Ancien catalogue : retiré pour toute nouvelle sélection, même avec le forfait le plus large.
+    for (const id of THEME_ORDER.slice(0, 30)) { expect(themeAllowed("dominer", id)).toBe(false); expect(planForTheme(id)).toBeNull(); }
     const creer = await projectWith("creer");
-    expect(() => gates.assertThemeAllowed(creer.pid, THEME_ORDER[3])).not.toThrow();
-    expect(() => gates.assertThemeAllowed(creer.pid, THEME_ORDER[15])).toThrow(/Développer/);
-    // Après un changement de forfait à la baisse : le thème déjà utilisé reste, un nouveau thème premium est refusé.
+    expect(() => gates.assertThemeAllowed(creer.pid, "orbe")).not.toThrow();
+    expect(() => gates.assertThemeAllowed(creer.pid, THEME_ORDER[15])).toThrow(/retiré du catalogue/);
+    // Un projet qui utilise déjà un ancien thème le garde (recomposition autorisée), mais n'en choisit pas un autre.
     expect(() => gates.assertThemeAllowed(creer.pid, THEME_ORDER[25], THEME_ORDER[25])).not.toThrow();
     expect(() => gates.assertThemeAllowed(creer.pid, THEME_ORDER[26], THEME_ORDER[25])).toThrow(HttpError);
     const free = await projectWith(null);
-    expect(() => gates.assertThemeAllowed(free.pid, THEME_ORDER[0])).toThrow(/forfait/);
+    expect(() => gates.assertThemeAllowed(free.pid, "fraise")).toThrow(/forfait/);
   });
 
-  it("le changement de thème hors forfait est aussi refusé dans le worker (chat, écran)", async () => {
+  it("le changement vers un thème retiré est aussi refusé dans le worker (chat, écran)", async () => {
     const { switchDirection } = await import("@/lib/engine/shop");
     const creer = await projectWith("creer");
-    await expect(switchDirection(null, creer.pid, THEME_ORDER[29])).rejects.toThrow(/Dominer/);
+    await expect(switchDirection(null, creer.pid, THEME_ORDER[29])).rejects.toThrow(/retiré du catalogue/);
   });
 
   it("vidéos : Créer = aucune vidéo IA (montage sans IA possible) ; Développer = courtes ; Dominer = avancées + UGC", async () => {

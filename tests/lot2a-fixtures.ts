@@ -28,19 +28,21 @@ export async function referenceProject(userId: string, kind: "products" | "servi
   const add = async (demo: string, file: string, role: string, meta: Record<string, unknown> = {}) => {
     if (opts.media === false) return null;
     const source = `public/demo/${demo}/${file}`;
+    if (!fs.existsSync(path.resolve(source))) return null;
     const a = await saveAsset({ projectId: pid, userId, data: fs.readFileSync(path.resolve(source)), mime: file.endsWith(".png") ? "image/png" : file.endsWith(".webp") ? "image/webp" : "image/jpeg", name: file, role, origin: "upload", status: "approved", meta: { ...meta, lot2a: { demo: true, source } } });
     media.push({ file, id: a.id, role, source }); return a.id;
   };
+  // Visuels : ceux des quatre démonstrations conservées (kit privé, public/demo/<id>/, hors dépôt) ; un fichier absent est
+  // simplement omis (la fixture reste synthétique : ARVEN et Racines & Pierres ne sont pas des démonstrations du studio).
   if (services) {
-    for (const file of ["banner-1.jpg", "scene-2.jpg", "scene-1.jpg", "photo.jpg"]) await add("paysagiste", file, "lifestyle");
-    for (const [i, file] of ["scene-1.jpg", "scene-2.jpg", "banner-1.jpg"].entries()) await add("paysagiste", file, "original", { service: profile.services[i].name });
-    await add("paysagiste", "logo.png", "logo");
+    for (const file of ["rive-04-entree.webp", "rive-02-cuisine.webp", "rive-01-salon.webp", "rive-11-repas.webp"]) await add("rive", file, "lifestyle");
+    for (const [i, file] of ["rive-01-salon.webp", "rive-02-cuisine.webp", "rive-04-entree.webp"].entries()) await add("rive", file, "original", { service: profile.services[i].name });
   } else {
-    await add("montre", "lifestyle-3.jpg", "scene"); await add("montre", "lifestyle-2.jpg", "detail");
-    await add("montre", "lifestyle-1.jpg", "lifestyle"); await add("montre", "packshot-1.jpg", "packshot");
-    await add("montre", "cutout-1.webp", "cutout"); await add("montre", "logo.png", "logo");
+    await add("orbe", "orbe-03-diner.webp", "scene"); await add("orbe", "orbe-08-lumiere.webp", "detail");
+    await add("orbe", "orbe-01-dune.webp", "lifestyle"); await add("orbe", "orbe-10-argile.webp", "packshot");
+    await add("fraise", "logo-proposition.png", "logo");
     if (opts.multi) {
-      const cime = await add("gourde", "photo.jpg", "catalog-original"), sonore = await add("casque", "photo.jpg", "catalog-original");
+      const cime = await add("fraise", "01-hero.webp", "catalog-original"), sonore = await add("onde", "01-hero.webp", "catalog-original");
       saveCatalog(pid, [{ key: "bottle", name: "Gourde Cime", category: "Gourdes", description: "Gourde en inox, bouchon bambou. Produit de démonstration distinct de la montre.", features: ["Contenance : 750 ml", "Inox et bambou"], price: 3490, compareAt: null, originalAssetId: cime }, { key: "audio", name: "Casque Sonore", category: "Audio", description: "Casque circum-auriculaire de démonstration.", features: ["Coques gris clair", "Coussinets rembourrés"], price: 8900, compareAt: null, originalAssetId: sonore }], "multi");
     }
   }

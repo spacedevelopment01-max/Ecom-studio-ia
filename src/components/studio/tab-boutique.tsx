@@ -1,5 +1,7 @@
 "use client";
 import { TimeInfo } from "../wait-time";
+import type { ThemeRecommendationContract } from "@/lib/theme/theme-recommendation";
+import type { StoreKindVerdict } from "@/lib/theme/store-kind";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, Copy, SlidersHorizontal, FileStack, Crosshair, Replace, Maximize2, Minimize2, PanelTop, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2, MoreHorizontal } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner, useApi, useToast } from "../ui";
@@ -55,6 +57,11 @@ type ThemeData = {
   messages: { id: string; role: string; content: string; attachments: string[]; selection: any; theme_version_id: string | null; job_id: string | null; created_at: number }[];
   directions: DirectionCard[];
   library: LibraryItem[];
+  /** Catégorie du projet et contrat de recommandation (catégorie / thèmes éligibles / justification). */
+  storeKind?: StoreKindVerdict;
+  recommendation?: ThemeRecommendationContract;
+  /** Sections du thème devenues incompatibles avec le thème installé ou la catégorie : signalées, jamais supprimées. */
+  incompatible?: { template: string; id: string; type: string; name: string; reason: string }[];
   /** Theme Engine V2 : langage visuel, plan des pages et informations à compléter (absent pour l'ancien moteur). */
   /** Photos libres de droits placées sur le site : signalées au client, remplaçables (aiBlocked : réglage « Pixabay seulement »). */
   stock?: { photos: { file: string; assetId: string; source: string; author: string | null; page: string | null; where: string; thumbUrl: string }[]; aiBlocked: boolean };
@@ -373,7 +380,7 @@ export default function TabBoutique() {
         </Empty>
         <h2 className="mb-1 mt-10 font-display text-2xl font-semibold">{t("Les thèmes disponibles", "Available themes")}</h2>
         <p className="mb-5 text-sm text-muted">{t("Le studio choisit une direction selon votre produit ; vous pourrez en changer à tout moment avec le bouton « Thèmes » de l'éditeur.", "The studio picks a direction based on your product; you can change it at any time with the editor's “Themes” button.")}</p>
-        <ThemeGrid services={isServices} directions={theme.directions} />
+        <ThemeGrid services={isServices} directions={theme.directions} recommendation={theme.recommendation} />
       </div>
     );
 
@@ -721,7 +728,7 @@ export default function TabBoutique() {
       </Modal>
       <ThemeImportModal open={!!importOpen} onClose={() => setImportOpen(null)} projectId={id} onImported={() => { reload(); reloadProject(); }} report={importOpen === "report" ? cur.imported?.report : null} />
       <SectionLibrary open={!!libTarget} onClose={() => setLibTarget(null)} items={theme.library} onPick={addSection} where={libTarget?.label ?? ""} busy={adding} projectId={id} versionId={theme.current.versionId} template={libTarget?.template} aiAvailable={!!data?.ai.llm} onGenerate={generateSection} generateLocked={!!custom.data && !custom.data.sectionsAllowed} sameOrigin={!!theme.sandbox?.includes("allow-same-origin")} onOpenExisting={(type) => { const hit = cur.structure.flatMap((tp) => tp.sections.map((x) => ({ template: tp.template, section: x }))).find((x) => x.section.type === type); setLibTarget(null); if (!hit) return toast("info", t("Ce composant n'est pas présent dans ce thème.", "This component is not present in this theme.")); const target = pages.find((pg) => pageTemplate(pg.path, theme) === hit.template); if (target && !hit.template.startsWith("group:")) setPage(target.path); setLayoutOpen(false); setSettingsFor({ template: hit.template, section: hit.section.id }); setView("structure"); }} />
-      <ThemeGallery services={isServices} sandbox={theme.sandbox} open={galleryOpen} onClose={() => setGalleryOpen(false)} projectId={id} directions={theme.directions} current={cur.direction} canApply onApplied={() => (reload(), reloadProject())} />
+      <ThemeGallery recommendation={theme.recommendation} onKindChanged={() => reload()} services={isServices} sandbox={theme.sandbox} open={galleryOpen} onClose={() => setGalleryOpen(false)} projectId={id} directions={theme.directions} current={cur.direction} canApply onApplied={() => (reload(), reloadProject())} />
       {pagesOpen && <PagesManager open onClose={() => setPagesOpen(false)} projectId={id} sandbox={theme.sandbox} onOpenPage={(path) => (setPage(path), setView("preview"))} onChanged={() => reload()} />}
       <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} projectId={id} versionId={versionId} fingerprint={cur.fingerprint} platform={data && isPlatform(data.project.platform) ? data.project.platform : "shopify"} business={data?.business ?? "products"} hasProductTemplates={!!cur.products?.some((p) => p.template_suffix)} />
     </div>

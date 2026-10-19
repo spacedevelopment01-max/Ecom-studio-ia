@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { projectKind } from "@/lib/theme/project-kind";
 import { body, handle, ok } from "@/lib/http";
 import { HttpError } from "@/lib/auth";
 import { L } from "@/lib/i18n-server";
@@ -20,6 +21,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const targeted = new Set(b.ops.filter((o: any) => o.template && o.section).map((o: any) => `${o.template}:${o.section}`));
   const res = applyOps(cur.spec, b.ops, {
     targeted,
+    storeKind: projectKind(p),
     mediaFile: (assetId) => {
       const a = getAsset(assetId);
       return a && a.project_id === p.id ? { filename: themeFileName(a, a.role ?? "media") } : null;

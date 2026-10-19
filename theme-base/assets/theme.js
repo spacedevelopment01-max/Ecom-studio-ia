@@ -617,7 +617,7 @@
       es.forEach(function (e) { if (e.isIntersecting) seen.add(e.target); else seen.delete(e.target); });
       apply();
     }, { rootMargin: '0px 0px -40px 0px' });
-    $$('[data-add-button], .es-sticky-buy .es-button, main form button[type=submit]').forEach(function (el) { io.observe(el); });
+    $$('[data-add-button], .es-sticky-buy .es-button, main form button[type=submit], .es-footer__inline').forEach(function (el) { io.observe(el); });
     if (mq.addEventListener) mq.addEventListener('change', apply);
   }
 

@@ -1,4 +1,7 @@
 import { storeProducts } from "@/lib/theme/spec";
+import { themeRecommendation } from "@/lib/theme/theme-recommendation";
+import { incompatibleSections } from "@/lib/theme/section-fit";
+import { sectionIncompatibility } from "@/lib/theme/section-compat";
 import fs from "node:fs";
 import { LANGUAGES } from "@/lib/theme-v2/art-direction";
 import { LANGUAGE_LABEL_EN } from "@/lib/theme-v2/engine";
@@ -26,7 +29,9 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const ui = uiLang();
   const cur = currentTheme(p.id);
   const messages = all<any>("SELECT id, role, content, attachments, selection, theme_version_id, job_id, created_at FROM chat_messages WHERE project_id = ? AND thread = 'shop' ORDER BY created_at ASC LIMIT 200", p.id).map((m) => ({ ...m, attachments: JSON.parse(m.attachments || "[]"), selection: m.selection ? JSON.parse(m.selection) : null }));
-  if (!cur) return ok({ current: null, versions: listThemeVersions(p.id), messages, directions: directionCards(ui), sandbox: previewSandbox() });
+  const recommendation = themeRecommendation(p, ui);
+  const kind = recommendation.category.kind;
+  if (!cur) return ok({ current: null, versions: listThemeVersions(p.id), messages, directions: directionCards(ui, p.brand?.direction ? [p.brand.direction] : []), sandbox: previewSandbox(), storeKind: recommendation.category, recommendation });
   const structure = ["group:header", ...Object.keys(cur.spec.templates), "group:footer"].map((t) => {
     const c = containerOf(cur.spec, t)!;
     return {
@@ -49,7 +54,13 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     sandbox: previewSandbox(),
     messages,
     // Vignettes composées avec le contenu du projet (photos, nom, textes) plutôt que les captures d'exemple.
-    directions: directionCards(ui).map((d) => (p.brand ? { ...d, preview: `/api/projects/${p.id}/theme/direction-thumb?d=${d.id}` } : d)),
+    // Le thème installé reste listé même s'il est retiré du catalogue (conservé, signalé, jamais proposé ailleurs).
+    directions: directionCards(ui, [cur.spec.direction]).map((d) => (p.brand ? { ...d, preview: `/api/projects/${p.id}/theme/direction-thumb?d=${d.id}` } : d)),
+    // Catégorie du projet (contrat « catégorie / thèmes éligibles / justification ») et sections devenues incompatibles
+    // avec le thème installé (jamais supprimées : signalées).
+    storeKind: recommendation.category,
+    recommendation,
+    incompatible: cur.spec.imported ? [] : incompatibleSections(cur.spec, kind, ui).map((x) => ({ ...x, name: libraryEntry(x.type, ui)?.name ?? x.type })),
     // Thème importé : ses propres sections ajoutables (celles qui ont un préréglage, comme dans l'éditeur Shopify).
     library: cur.spec.imported
       ? availableSectionTypes(cur.spec)
@@ -61,7 +72,9 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
           })(), keywords: t.replace(/-/g, " "), preview: null }))
       // Toutes les sections du thème de base : les ajoutables, et les composants structurels (catégorie « Structure »,
       // retrouvables et réglables depuis la bibliothèque, mais ni ajoutés ni dupliqués).
-      : baseSectionTypes().map((t) => {
+      // Galerie contextuelle : seules les sections compatibles avec le thème installé ET la catégorie du projet
+      // (métadonnées déclarées, section-fit.ts) ; les composants structurels restent listés pour leurs réglages.
+      : baseSectionTypes().filter((t) => !addable(t) || !sectionIncompatibility(cur.spec, t, kind, ui)).map((t) => {
       const e = libraryEntry(t, ui);
       return { type: t, name: e?.name ?? sectionSchema(null, t, ui)?.name ?? t, category: e?.category ?? "Avancé", description: e?.description ?? "", keywords: e?.keywords ?? "", preview: fs.existsSync(path.join(process.cwd(), "public", "sections", `${t}.jpg`)) ? `/sections/${t}.jpg` : null, addable: addable(t) };
     }),

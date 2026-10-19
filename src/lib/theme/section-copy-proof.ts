@@ -90,7 +90,7 @@ const KITS: Record<Sector, Kit> = {
   sport: {
     reviews: [["Je l'emporte à chaque sortie, il ne m'a jamais déçu.", "I take it on every outing and it has never let me down."], ["Léger dans le sac, solide sur le terrain.", "Light in the bag, sturdy out there."], ["Bien pensé par des gens qui pratiquent, ça se sent.", "Clearly designed by people who actually train."]],
     pros: [["Coach sportif", "Personal trainer"], ["Préparatrice physique", "Strength coach"], ["Guide de montagne", "Mountain guide"]],
-    partners: ["Club Nord", "Atelier Cime", "Revue Plein Air", "Studio Élan", "Le Refuge"],
+    partners: ["Club Nord", "Atelier Granit", "Revue Plein Air", "Studio Élan", "Le Refuge"],
   },
   alimentation: {
     reviews: [["Un vrai goût, ni trop sucré ni fade : on en recommande.", "Real flavour, not too sweet, not bland: we keep reordering."], ["Parfait bien frais l'après-midi.", "Perfect ice-cold in the afternoon."], ["Toute la famille l'a adopté.", "The whole family loves it."]],

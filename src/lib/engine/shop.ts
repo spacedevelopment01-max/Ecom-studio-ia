@@ -5,12 +5,15 @@
  * direction artistique fournit une composition éprouvée.
  */
 import { decide } from "../quality/gate";
+import { applyHandoff, handoffCopy } from "../theme/handoff";
+import { projectKind } from "../theme/project-kind";
+import { describeReport, preservation, preserve } from "../theme/carry-over";
 import { gateMeta, saveCheck } from "../quality/store";
 import { isAutoUsable } from "../quality/usable";
 import { sectionSchema } from "../theme/spec";
 import { all, json, one } from "../db";
 import { getAsset, type Asset } from "../library";
-import { loadProject, saveThemeVersion, currentTheme, type Project } from "../projects";
+import { currentTheme, listThemeVersions, loadProject, saveThemeVersion, themeVersion, type Project } from "../projects";
 import { tradeText } from "../brain/trade";
 import { cleanVariants, MAX_PRODUCT_OPTIONS, variantCombinations } from "../project-types";
 import { buildSpec, directionById, type DirectionId, type ImageSlots } from "../theme/directions";
@@ -238,9 +241,16 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
   const p = loadProject(projectId);
   const brand = p.brand;
   if (!brand) throw new Error(L("La marque doit être définie avant la boutique.", "The brand must be defined before the store."));
-  const copy = savedCopy(projectId) ?? localCopy(p.product, brand, p);
+  // Rédaction : celle du contrat amont quand il la dit prête, sinon celle enregistrée pour le projet, sinon locale.
+  const copy = handoffCopy(projectId) ?? savedCopy(projectId) ?? localCopy(p.product, brand, p);
   if (prepare) await ensureVariantMedia(ctx ?? null, projectId);
   const { slots, files, gallery } = collectImages(projectId);
+  // Médias du contrat amont (10 images + vidéo d'ouverture, ou 10 photos + 2 vidéos) : affectés explicitement aux
+  // emplacements du thème ; un média sans emplacement est listé « non placé », un emplacement sans média reste vide.
+  const handoff = applyHandoff(projectId, slots, files, (assetId, hint) => {
+    const a = getAsset(assetId);
+    return a && a.project_id === projectId && !a.deleted_at ? { filename: themeFileName(a, hint) } : null;
+  });
   const services = p.business === "services";
   // Entreprise de services : les photos du marchand (rôle « lifestyle ») illustrent ouverture, prestations, méthode et réalisations.
   if (services) serviceSlots(projectId, slots, files);
@@ -277,6 +287,7 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
     ...(services ? { business: "services" as const, services: p.services, servicesTermsHtml: serviceTermsHtml(p.services), activity: tradeText(p) } : {}),
     ...(catalog ? { storeType: p.storeType, products: catalog.products, collections: catalog.collections } : {}),
   });
+  if (handoff) spec.meta = { ...spec.meta, handoff: handoff as unknown as Record<string, unknown> };
   const delivered = deliverContent(spec, p, spec.language ?? contentLang());
   bindReferenceOffers(spec, p, new Set(delivered.map((d) => d.target)));
   if (!services) bindProductContent(spec, p);
@@ -367,6 +378,25 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
       console.warn("[shop] relecture visuelle indisponible :", (e as Error).message);
     }
   }
+  // Changement de thème ou nouveau remplissage : les sections ajoutées par le client et ses réglages sont reportés sur
+  // la nouvelle composition (une section incompatible avec le thème ou la catégorie reste masquée, jamais supprimée ;
+  // en cas de conflit avec une nouvelle valeur automatique, la valeur du client gagne et le conflit est signalé).
+  if (opts.direction) {
+    const prev = currentTheme(projectId);
+    if (prev && !prev.spec.imported) {
+      const kind = projectKind(p);
+      const lang = (spec.language ?? "fr") as "fr" | "en";
+      const baseline = compositionBaseline(projectId, prev.version.number);
+      const kept = preserve(spec, preservation(baseline, prev.spec), baseline, kind, lang);
+      const problemsAfter = validateSpec(kept.spec);
+      if (!problemsAfter.length) {
+        spec = kept.spec;
+        spec.meta = { ...spec.meta, carryOver: kept.report as unknown as Record<string, unknown> };
+        const text = describeReport(kept.report, lang);
+        if (text) append(inBothLangs(() => L(` · ${describeReport(kept.report, "fr")}`, ` · ${describeReport(kept.report, "en")}`)));
+      } else console.warn("[shop] report des retouches du client impossible :", problemsAfter.join(" ; "));
+    }
+  }
   const problems = validateSpec(spec);
   if (problems.length) throw new Error(L(`Thème invalide : ${problems.join(" ; ")}`, `Invalid theme: ${problems.join("; ")}`));
   // Niveau de qualité dit honnêtement (Phase 1 : comportement technique inchangé). 8/10 et plus : FINAL ; de 5 à
@@ -384,7 +414,20 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
   return { versionId: v.id, number: v.number, delivery: { state: active ? quality.verdict === "FINAL" ? "ready" : "to_verify" : "blocked", active, message: active ? L("Thème enregistré ; consultez son contrôle avant utilisation.", "Theme saved; review its check before use.") : L("Tentative conservée en brouillon ; version courante protégée.", "Attempt saved as a draft; current version protected."), reasons: [quality.reason] } };
 }
 
-/** Change de direction en conservant les retouches de contenu ? Non : nouvelle version complète, l'ancienne reste restaurable. */
+/**
+ * Dernière composition automatique (version enregistrée avec son contrôle de qualité « gate ») au plus tard à la
+ * version donnée : c'est la base de comparaison pour reconnaître les ajouts et réglages du client.
+ */
+function compositionBaseline(projectId: string, upToNumber: number): ThemeSpec | null {
+  const versions = listThemeVersions(projectId).filter((v) => v.number <= upToNumber);
+  for (const v of versions) {
+    const qc = json<{ gate?: unknown }>((v as { qc?: string }).qc ?? "{}", {});
+    if (qc && typeof qc === "object" && "gate" in qc) return themeVersion(projectId, v.id)?.spec ?? null;
+  }
+  return null;
+}
+
+/** Change de direction : nouvelle version complète (l'ancienne reste restaurable), ajouts et réglages du client reportés. */
 export async function switchDirection(ctx: JobContext | null, projectId: string, direction: DirectionId) {
   // Thèmes du forfait du projet (10, 20 ou 30) — revérifié ici, dans le worker, quel que soit le chemin (écran, chat).
   const { assertThemeAllowed } = await import("../plan-gates");

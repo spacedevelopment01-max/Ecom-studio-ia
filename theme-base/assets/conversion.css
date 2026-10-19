@@ -6,6 +6,10 @@
 :root{--cv-radius:12px;--cv-card-radius:16px;--cv-border:1px solid rgba(var(--c-text-rgb),.14);--cv-shadow:0 14px 34px -22px rgba(0,0,0,.35);--cv-title-case:none;--cv-accent-case:none;--cv-accent-font:var(--font-accent, Georgia, serif);--cv-button-bg:var(--c-accent-fill,var(--c-accent));--cv-button-border:0 solid transparent;--cv-button-shadow:none;--cv-button-radius:var(--cv-radius)}
 body[data-conversion="pop"]{--cv-radius:8px;--cv-card-radius:14px;--cv-border:1.5px solid var(--c-text);--cv-shadow:4px 4px 0 var(--c-text);--cv-title-case:uppercase;--cv-accent-case:uppercase;--cv-button-border:1.5px solid var(--c-text);--cv-button-shadow:4px 4px 0 var(--c-text);--cv-button-radius:8px}
 body[data-conversion="contrast"]{--cv-radius:14px;--cv-card-radius:18px;--cv-border:1px solid rgba(var(--c-text-rgb),.16);--cv-shadow:0 18px 40px -26px rgba(0,0,0,.5);--cv-button-bg:linear-gradient(180deg,color-mix(in srgb,var(--c-accent) 86%,#fff),var(--c-accent));--cv-button-radius:14px}
+/* Les variables qui dépendent des couleurs du schéma sont redéclarées dans chaque section à schéma : une variable
+   calculée une fois sur :root garderait l'accent de la page entière (bouton anthracite invisible sur une section sombre). */
+[class*="color-scheme-"]{--cv-border:1px solid rgba(var(--c-text-rgb),.14);--cv-button-bg:var(--c-accent-fill,var(--c-accent))}
+body[data-conversion="contrast"] [class*="color-scheme-"]{--cv-border:1px solid rgba(var(--c-text-rgb),.16);--cv-button-bg:linear-gradient(180deg,color-mix(in srgb,var(--c-accent) 86%,#fff),var(--c-accent))}
 :is(body[data-conversion="pop"],body[data-conversion="contrast"]) .es-section{padding-top:var(--pt,64px);padding-bottom:var(--pb,64px)}
 
 /* Titres en deux temps */

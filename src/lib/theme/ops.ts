@@ -6,6 +6,8 @@
  * explicitement visés.
  */
 import { z } from "zod";
+import { sectionIncompatibility } from "./section-compat";
+import type { StoreKind } from "./store-kind";
 import { storeProducts } from "./store-products";
 import { Liquid } from "liquidjs";
 import {
@@ -60,6 +62,12 @@ export type ApplyContext = {
   mediaFile?: (assetId: string) => { filename: string } | null;
   /** Le client a demandé une refonte globale : les verrous sont levés. */
   overrideLocks?: boolean;
+  /**
+   * Catégorie du projet (prestations de services, e-commerce, boutique spécialisée) : une section incompatible avec
+   * le thème installé ou cette catégorie est refusée à l'ajout, par tous les chemins (écran, discussion, IA, serveur).
+   * Absente : seules les règles liées au thème installé s'appliquent.
+   */
+  storeKind?: StoreKind | null;
 };
 
 export type ApplyResult = { spec: ThemeSpec; applied: string[]; rejected: { op: ThemeOp; reason: string }[] };
@@ -350,6 +358,13 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
             reject(L(`type de section inconnu « ${op.type} »`, `unknown section type "${op.type}"`));
             break;
           }
+          {
+            const why = sectionIncompatibility(spec, op.type, ctx.storeKind ?? null, uiLang());
+            if (why) {
+              reject(L(`section « ${op.type} » incompatible : ${why}`, `section "${op.type}" incompatible: ${why}`));
+              break;
+            }
+          }
           const group = op.template.startsWith("group:") ? op.template.slice(6) : null;
           if (group && !schema.enabled_on?.groups?.includes(group) && !op.type.startsWith("es-custom-")) {
             reject(L(`la section ${op.type} n'est pas prévue pour le groupe ${group}`, `section ${op.type} isn't meant for the ${group} group`));
@@ -471,6 +486,13 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
           if (!schema) {
             reject(L(`type de section inconnu « ${op.type} »`, `unknown section type "${op.type}"`));
             break;
+          }
+          {
+            const why = sectionIncompatibility(spec, op.type, ctx.storeKind ?? null, uiLang());
+            if (why) {
+              reject(L(`section « ${op.type} » incompatible : ${why}`, `section "${op.type}" incompatible: ${why}`));
+              break;
+            }
           }
           // Conserve les réglages compatibles (titres, textes, images) pour ne rien perdre.
           const carry: Record<string, unknown> = {};

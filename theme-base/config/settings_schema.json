@@ -406,6 +406,22 @@
           {
             "value": "lancement",
             "label": "Lancement — sortie de produit"
+          },
+          {
+            "value": "fraise",
+            "label": "Fraise — page de vente pop (référence)"
+          },
+          {
+            "value": "onde",
+            "label": "Onde — contraste sombre, accent vif (référence)"
+          },
+          {
+            "value": "orbe",
+            "label": "Orbe — objet et ambiances (référence)"
+          },
+          {
+            "value": "rive",
+            "label": "Atelier Rive — journal et espaces (référence)"
           }
         ]
       },

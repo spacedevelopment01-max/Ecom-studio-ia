@@ -25,10 +25,10 @@ export async function generateMetadata() {
 export default async function DiscoveryPage() {
   const lang = await serverLang();
   const T = (fr: string, en: string) => pick(lang, fr, en);
-  // Visuels sans défaut seulement (ex. montre ARVEN : liste fixée par le propriétaire, voir discovery-demos.ts).
+  // Visuels des quatre démonstrations seulement ; un fichier absent est omis (voir demo-content.ts, discovery-demos.ts).
   const list = demoList(lang).map(discoveryDemo);
   const productDemos = list.filter((d) => d.business !== "services");
-  const hero = list.find((d) => d.id === "casque") ?? productDemos[0] ?? list[0];
+  const hero = list.find((d) => d.id === "onde") ?? productDemos[0] ?? list[0];
   const img = (label: RegExp, n = 0) => hero?.images.filter((x) => label.test(x.label))[n]?.src ?? hero?.photo ?? "";
   const brands: BrandDemo[] = list.filter((d) => d.logo && d.photo).map((d) => ({ id: d.id, brand: d.brand, sector: d.sector, direction: directionById(d.direction).name, palette: d.palette, logo: d.logo, photo: d.photo, fonts: directionById(d.direction).previewFonts, photoBadge: startingPhotoIsClients(d) ? T("Photo fournie par le client", "Photo provided by the client") : undefined }));
   const stores: StoreDemo[] = [
@@ -55,7 +55,7 @@ export default async function DiscoveryPage() {
   const tabs = [
     ["marque", T("Marque", "Brand")],
     ["boutique", T("Boutique", "Store")],
-    ["themes", T("30 thèmes", "30 themes")],
+    ["themes", T("Thèmes", "Themes")],
     ["modeles", T("Modèles de pages", "Page templates")],
     ["images", T("Images", "Images")],
     ["publicites", T("Publicités", "Ads")],
@@ -93,7 +93,7 @@ export default async function DiscoveryPage() {
         </div>
         <section id="marque" className={section}>{h(T("Marque", "Brand"), T("Logos, palettes et typographies de marques d'exemple.", "Logos, palettes and typefaces of sample brands."))}<BrandLab brands={brands} /></section>
         <section id="boutique" className={section}>{h(T("Boutique", "Store"), T("Boutiques et site d'exemple, sur ordinateur et sur téléphone.", "Sample stores and website, on desktop and on mobile."))}<StoreDevices stores={stores} /></section>
-        <section id="themes" className={section}>{h(T("Les 30 thèmes", "The 30 themes"), T("Tous les thèmes en aperçu. Créer : 10 · Développer : 20 · Dominer : 30.", "Every theme in preview. Create: 10 · Grow: 20 · Dominate: 30."))}<ThemeGrid directions={themes} /></section>
+        <section id="themes" className={section}>{h(T("Les thèmes", "The themes"), T("Quatre thèmes de référence, inclus dans tout forfait payant, chacun conçu pour une catégorie de projet : prestations de services, e-commerce, boutique spécialisée.", "Four reference themes, included in every paid plan, each designed for one project category: services, e-commerce, specialty store."))}<ThemeGrid directions={themes} /></section>
         <section id="modeles" className={section}>
           {h(T("Modèles de pages", "Page templates"), T("Avec Développer et Dominer : ajoutez des pages à votre site depuis ces modèles, et donnez à chaque produit ou prestation sa propre mise en page.", "With Grow and Dominate: add pages to your site from these templates, and give each product or service its own layout."))}
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

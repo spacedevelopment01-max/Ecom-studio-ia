@@ -19,7 +19,7 @@ import { L, uiLang } from "@/lib/i18n-server";
 import { previewCsp, previewCors, previewSegment, splitPreviewSegment, verifyPreview } from "@/lib/theme/preview-access";
 import type { ThemeSpec } from "@/lib/theme/spec";
 import { one } from "@/lib/db";
-import { DIRECTIONS, type DirectionId } from "@/lib/theme/directions";
+import { DIRECTIONS, isRetiredDirection, type DirectionId } from "@/lib/theme/directions";
 import { composedDirectionSpec } from "@/lib/theme/direction-thumb";
 import { modelById, previewModelSpec } from "@/lib/theme/page-templates";
 import { loadProject } from "@/lib/projects";
@@ -47,6 +47,8 @@ async function load(req: Request, ctx: P) {
   if (vid.startsWith("dir-")) {
     const d = vid.slice(4);
     if (!DIRECTIONS.some((x) => x.id === d) || !one("SELECT 1 FROM projects WHERE id = ? AND brand_json IS NOT NULL AND brand_json != 'null'", id)) throw new HttpError(404, L("Direction introuvable.", "Direction not found."));
+    // Thème retiré du catalogue : prévisualisé seulement s'il est déjà celui du projet (jamais proposé à un nouveau choix).
+    if (isRetiredDirection(d) && currentTheme(id)?.spec.direction !== d) throw new HttpError(404, L("Thème retiré du catalogue.", "Theme withdrawn from the catalogue."));
     const spec = await composedDirectionSpec(id, d as DirectionId, currentTheme(id)?.spec.language ?? uiLang());
     return { id, vid, spec, segs: path ?? [], base: `/preview/${id}/v/${seg}`, redirect };
   }

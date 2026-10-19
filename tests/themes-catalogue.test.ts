@@ -33,11 +33,14 @@ const products = Object.fromEntries(DIRECTIONS.map((d) => [d.id, sampleSpec(d.id
 const services = Object.fromEntries(DIRECTIONS.map((d) => [d.id, serviceSpec(d.id, "fr", undefined, { rich: true })])) as Record<DirectionId, Spec>;
 
 describe("Catalogue de thèmes : trente choix réellement différents", () => {
-  it("compte 30 thèmes (11 d'origine + 19 du catalogue), présentés en français et en anglais", () => {
-    expect(DIRECTIONS).toHaveLength(30);
-    expect(new Set(DIRECTIONS.map((d) => d.id)).size).toBe(30);
-    expect(new Set(DIRECTIONS.map((d) => d.name)).size).toBe(30);
-    for (const lang of ["fr", "en"] as const) for (const c of directionCards(lang)) {
+  it("définit 34 thèmes (30 anciens, lisibles seulement, + 4 de référence) et n'en propose que 4 (catalogue actif, consigne 6264783184), présentés en français et en anglais", () => {
+    expect(DIRECTIONS).toHaveLength(34);
+    expect(new Set(DIRECTIONS.map((d) => d.id)).size).toBe(34);
+    expect(new Set(DIRECTIONS.map((d) => d.name)).size).toBe(34);
+    expect(directionCards("fr").map((c) => c.id)).toEqual(["fraise", "onde", "orbe", "rive"]);
+    // Le thème installé d'un projet existant, s'il est retiré, reste listé pour ce projet seulement, signalé « retiré ».
+    expect(directionCards("fr", ["vitrine"]).map((c) => [c.id, c.retired])).toEqual([["vitrine", true], ["fraise", false], ["onde", false], ["orbe", false], ["rive", false]]);
+    for (const lang of ["fr", "en"] as const) for (const c of directionCards(lang, DIRECTIONS.map((d) => d.id))) {
       expect(c.tagline, c.id).toBeTruthy();
       expect(c.description.length, c.id).toBeGreaterThan(80);
       expect(c.chrome.every(Boolean), c.id).toBe(true);
@@ -87,9 +90,9 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
       if (n < 4) alike.push(`${a} ~ ${d.id} (${n} différences)`);
     }
     expect(alike).toEqual([]);
-    // Typographies : aucune paire titre / texte identique entre deux des 30 thèmes.
+    // Typographies : aucune paire titre / texte identique entre deux des 34 thèmes.
     const pairs = DIRECTIONS.map((d) => `${d.fonts.heading}/${d.fonts.body}`);
-    expect(new Set(pairs).size).toBe(30);
+    expect(new Set(pairs).size).toBe(DIRECTIONS.length);
   });
 
   it("les couleurs de chaque thème du catalogue restent lisibles (texte et boutons contrastés)", async () => {
@@ -163,14 +166,17 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
 
   it("le chat change de thème quand on le demande, jamais pour un mot courant (« jardin », « signal »…)", () => {
     const spec = sampleSpec("atelier");
-    expect(localThemeCommand(spec, "applique la direction Jardin", null).direction).toBe("jardin");
-    expect(localThemeCommand(spec, "passe en style brut", null).direction).toBe("brut");
-    expect(localThemeCommand(spec, "je veux le thème Récré", null).direction).toBe("recre");
-    expect(localThemeCommand(spec, "switch to the Velours theme", null).direction).toBe("velours");
-    expect(localThemeCommand(spec, "apply the Velours style", null).direction).toBe("velours");
-    expect(localThemeCommand(spec, "style velours", null).direction).toBe("velours");
+    expect(localThemeCommand(spec, "applique la direction Onde", null).direction).toBe("onde");
+    expect(localThemeCommand(spec, "passe en style fraise", null).direction).toBe("fraise");
+    expect(localThemeCommand(spec, "je veux le thème Orbe", null).direction).toBe("orbe");
+    expect(localThemeCommand(spec, "switch to the Rive theme", null).direction).toBe("rive");
+    expect(localThemeCommand(spec, "apply the Rive style", null).direction).toBe("rive");
+    expect(localThemeCommand(spec, "style rive", null).direction).toBe("rive");
     expect(localThemeCommand(spec, "mets une photo du jardin dans le style de la marque", null).direction).toBeUndefined();
     expect(localThemeCommand(spec, "ajoute un signal de confiance", null).direction).toBeUndefined();
+    // Ancien catalogue (retiré) : plus jamais appliqué, même nommé explicitement.
+    expect(localThemeCommand(spec, "applique la direction Jardin", null).direction).toBeUndefined();
+    expect(localThemeCommand(spec, "switch to the Velours theme", null).direction).toBeUndefined();
   });
 
   it("un thème qui utilise des sections V2 charge leur feuille de style (langage visuel déclaré)", () => {

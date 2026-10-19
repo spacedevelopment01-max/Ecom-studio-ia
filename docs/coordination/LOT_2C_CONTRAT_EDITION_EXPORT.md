@@ -38,6 +38,23 @@ Référence : registre des capacités réelles `src/lib/cms-v2/capabilities.ts` 
 | **PrestaShop** | Produits, prix, stocks, commandes dans l'administration ; `native_editing = PARTIAL` : textes et mise en page des sections **dans les fichiers du thème** ou par une nouvelle exportation (pas d'éditeur visuel). | L'édition section par section après installation n'est pas « native » : à dire clairement ; l'édition se fait dans le studio puis réexport. |
 | **Wix, Squarespace** | Kit de reconstruction (`delivery = kit`) : le site se refait dans l'éditeur de la plateforme. | Pas de thème installable ni de réglages transférés : les sections et réglages servent de guide, pas d'export natif. |
 
+## 3 bis. Thèmes de référence FRAISE / ONDE / ORBE / Atelier Rive (mission E, 19 octobre) — réglages à signaler dans les exports
+
+Les quatre thèmes de référence sont des thèmes du studio comme les 30 autres (même source de données, mêmes schémas). Leurs réglages particuliers sont exportés nativement dans le thème Shopify (schémas de sections, `settings_schema.json` : `style_preset` fraise / onde / orbe / rive). Pour les autres plateformes, l'adaptateur Codex doit **écrire tel quel à l'utilisateur** ce qu'il ne rend pas, jamais l'ignorer en silence :
+
+| Réglage | Où | Effet | À signaler si non rendu |
+|---|---|---|---|
+| `conversion_profile` (`pop`, `contrast`) | thème (FRAISE, ONDE) | profil graphique des sections `cv-*`, panier, boutons | oui — le site perd son style de référence |
+| `editorial_profile` (`object`, `journal`) | thème (ORBE, Rive) | profil des sections `ed-*` | oui |
+| `look_*` (en-tête flottant / barre, tiroir, bouton plein, halo) | thème | en-tête, menus, boutons | oui |
+| `heading_tag` | `cv-hero`, `cv-banner`, `ed-opening` | niveau du titre d'ouverture (h1 une fois par page) | oui (référencement) |
+| `columns_mobile` | `features-grid` | deux colonnes sur téléphone quand il y a quatre bénéfices | non bloquant, à dire |
+| `gallery_ratio`, `gallery_layout`, `sticky_bar` | `main-product` | cadres carrés, carrousel, barre d'achat fixe | oui pour la barre d'achat |
+| `animation`, `animation_speed` | sections `cv-*` | mouvement réglable et désactivable | non bloquant, à dire |
+| Blocs `cv-*` / `ed-*` | sections de référence | sections propres aux profils | oui : sans adaptateur, la section n'existe pas sur la plateforme |
+
+**Catalogue actif = exactement ces quatre thèmes** (commentaire 6264783184) : tout identifiant d'ancien thème dans un contrat de recommandation est ignoré avec avertissement ; les anciens thèmes ne sont lus que pour les projets qui les utilisent déjà. Catégorie du projet (`storeKind` : `services` / `catalog` / `specialty`) et thèmes éligibles : contrat dans [`LOT_2E_QUATRE_THEMES_RESULTATS.md`](LOT_2E_QUATRE_THEMES_RESULTATS.md), §2. Rien de ceci ne modifie `src/lib/cms-v2/**` ni `catalog-export.ts` : c'est une liste de besoins pour Codex.
+
 ## 4. Identifiants et stabilité
 
 - Identifiants de réglages en `snake_case`, stables depuis leur création ; les ajouts du 18 octobre (`layout`, `columns_mobile` sur `features-grid` ; `gallery_ratio` sur `main-product` ; `price`, `link_label`, `link` sur les colonnes de `comparison-table` ; `animation`, `animation_speed` sur les sections `cv-*`) ont des valeurs par défaut : un thème existant se rend sans changement.

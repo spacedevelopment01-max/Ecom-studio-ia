@@ -139,11 +139,13 @@ a { color: inherit; }
 @media (max-width: 989px) {
   .es-header__nav { display: none; }
   .es-header__burger { display: inline-grid; }
-  .es-header__inner, .es-header--logo-center .es-header__inner, .es-header--split .es-header__inner { grid-template-columns: 1fr minmax(0, auto) 1fr; grid-template-areas: "burger logo icons"; gap: 8px; }
+  /* Colonnes latérales à leur contenu (pas deux « 1fr » égales : avec trois icônes à droite, le nom de la marque était
+     rogné à 60 px sur un téléphone de 360 px) ; le logo prend l'espace restant et s'y centre. */
+  .es-header__inner, .es-header--logo-center .es-header__inner, .es-header--split .es-header__inner { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "burger logo icons"; gap: 8px; }
   .es-header__burger { grid-area: burger; justify-self: start; }
   .es-header__logo { grid-area: logo; justify-self: center; min-width: 0; max-width: 100%; }
   .es-header__logo-img { max-width: min(var(--logo-width), 46vw); max-height: 48px; }
-  .es-header__wordmark { font-size: 1.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .es-header__wordmark { font-size: clamp(0.95rem, 4.2vw, 1.15rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .es-header__icons { grid-area: icons; }
   .es-hide-mobile { display: none; }
 }
@@ -318,7 +320,7 @@ a { color: inherit; }
 .es-card:hover .es-card__img--hover { opacity: 1; }
 .es-card__info { padding-top: 14px; display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
 .es-card__title { font-size: 1rem; margin: 0; font-weight: var(--font-body-weight-bold); }
-.es-card__title a { text-decoration: none; }
+.es-card__title a { text-decoration: none; display: inline-block; padding: 3px 0; }
 .es-badge { position: absolute; top: 12px; left: 12px; background: var(--c-bg); color: var(--c-text); font-size: .72rem; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: .08em; }
 .es-price { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
 .es-price__compare { color: var(--c-muted); font-size: .9em; }
@@ -1343,4 +1345,13 @@ body:has(.es-newsletter) .es-footer__card, body:has(.es-newsletter) .es-footer__
 .dir-lancement .es-heading { letter-spacing: -.035em; line-height: .9; }
 .dir-lancement .es-marquee { transform: rotate(-1.5deg) scale(1.02); }
 .dir-lancement .es-card, .dir-lancement .es-media-frame { box-shadow: 0 0 0 1px rgba(var(--c-accent-rgb), .6); }
+/* Thèmes de référence (issue #137) : le caractère est porté par les profils « conversion » / éditorial ; ici, les signatures légères. */
+.dir-fraise .es-heading { letter-spacing: -.02em; }
+.dir-fraise .es-button { border-width: 2px; box-shadow: 3px 3px 0 var(--c-text); }
+.dir-onde .es-heading { letter-spacing: -.03em; }
+.dir-onde .es-button { border-radius: 999px; }
+.dir-orbe .es-heading { letter-spacing: -.01em; line-height: 1.05; }
+.dir-orbe .es-media-frame { border-radius: 0; }
+.dir-rive .es-heading { letter-spacing: -.02em; line-height: .98; }
+.dir-rive .es-button { border-radius: 0; }
 .dir-lancement .es-eyebrow { color: var(--c-accent); letter-spacing: .3em; }

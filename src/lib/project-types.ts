@@ -229,6 +229,11 @@ export type ProjectSettings = {
    * Absente : déduite du projet (voir activityOf dans theme/page-templates.ts), jamais imposée.
    */
   activity?: ActivityCategory;
+  /**
+   * Catégorie du projet confirmée ou corrigée par le client (prestations de services, e-commerce, boutique spécialisée).
+   * Absente : déduite du projet (voir theme/project-kind.ts), jamais imposée ; une ambiguïté pose une question.
+   */
+  storeKind?: "services" | "catalog" | "specialty";
 };
 
 /** Vente en ligne, prestations sur rendez-vous, artisan sur devis, commerce de proximité, ou activité mixte. */

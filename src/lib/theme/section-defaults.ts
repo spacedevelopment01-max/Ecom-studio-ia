@@ -15,7 +15,7 @@ import type { ContentContext } from "./section-content";
 type Blocks = { type: string; settings?: Record<string, unknown> }[];
 
 /** Sections dont les blocs portent des images (galeries, cartes) : on les illustre aussi. */
-const BLOCK_IMAGES = new Set(["gallery-mosaic", "horizontal-gallery", "stack-cards", "story-circles", "routine-steps", "situations", "portfolio", "ref-narrative", "cv-cards", "cv-alternating", "cv-steps", "cv-gallery", "cv-stories"]);
+const BLOCK_IMAGES = new Set(["cv-cards", "cv-alternating", "cv-steps", "cv-gallery", "cv-ingredients", "gallery-mosaic", "horizontal-gallery", "stack-cards", "story-circles", "routine-steps", "situations", "portfolio", "ref-narrative", "cv-cards", "cv-alternating", "cv-steps", "cv-gallery", "cv-stories"]);
 /** Sections « Services » sans photo de produit imposée (portraits d'équipe, cartes de contact, tarifs). */
 const NO_SECTION_IMAGE = new Set(["team", "booking", "booking-calendar", "practical-info", "pricing", "services-list"]);
 

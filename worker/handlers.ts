@@ -1,5 +1,6 @@
 /** Gestionnaires des tâches d'arrière-plan. */
 import { isAutoUsable } from "../src/lib/quality/usable";
+import { projectKind } from "@/lib/theme/project-kind";
 import { all, json, now, one, run } from "../src/lib/db";
 import { sectionGenerationAllowed } from "../src/lib/theme/custom-access";
 import { JobCancelled, JobContext, JobPaused, PermanentError, UserFacingError } from "../src/lib/jobs";
@@ -219,7 +220,7 @@ export const handlers: Record<string, Handler> = {
       return a && a.project_id === projectId ? { filename: themeFileName(a, a.role ?? "media") } : null;
     };
     // Le moteur local d'abord : une retouche simple qu'il sait faire à coup sûr ne consomme aucun crédit IA.
-    const quick = llmConfigured() ? localFirst(cur.spec, message, selection, atts.map((a) => ({ assetId: a.id, name: a.name, kind: a.kind })), p.business, mediaFileOf) : null;
+    const quick = llmConfigured() ? localFirst(cur.spec, message, selection, atts.map((a) => ({ assetId: a.id, name: a.name, kind: a.kind })), p.business, mediaFileOf, projectKind(p)) : null;
     if (quick) {
       reply = `${quick.reply}\n\n${L("⚡ Fait par le moteur du studio, sans IA : aucun crédit utilisé.", "⚡ Done by the studio engine, without AI: no credits used.")}`;
       ops = quick.ops;
@@ -260,7 +261,7 @@ export const handlers: Record<string, Handler> = {
         reply = media.reply;
         ops = media.ops;
       } else {
-        const r = localThemeCommand(cur.spec, message, selection, p.business);
+        const r = localThemeCommand(cur.spec, message, selection, p.business, projectKind(p));
         reply = r.reply;
         ops = r.ops;
         revert = r.revert;
@@ -287,7 +288,7 @@ export const handlers: Record<string, Handler> = {
     } else if (ops.length) {
       const targeted = new Set<string>();
       if (selection) targeted.add(`${selection.template}:${selection.section}`);
-      const res = applyOps(cur.spec, ops, { targeted, mediaFile: mediaFileOf });
+      const res = applyOps(cur.spec, ops, { targeted, mediaFile: mediaFileOf, storeKind: projectKind(p) });
       let next = res.spec;
       applied = res.applied;
       let refused = res.rejected;
@@ -297,7 +298,7 @@ export const handlers: Record<string, Handler> = {
           ctx.progress(0.8, L("Correction des opérations refusées", "Fixing the rejected operations"));
           const fix = await ctx.step("repair", () => aiRepairOps({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:repair` }, p, next, { request: message, page: page || "index", rejected: refused }));
           if (fix.ops.length) {
-            const again = applyOps(next, fix.ops, { targeted, mediaFile: mediaFileOf });
+            const again = applyOps(next, fix.ops, { targeted, mediaFile: mediaFileOf, storeKind: projectKind(p) });
             if (again.applied.length && !validateSpec(again.spec).length) {
               next = again.spec;
               applied = [...applied, ...again.applied];

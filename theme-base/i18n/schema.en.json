@@ -1877,6 +1877,7 @@
   "Format du visuel": "Visual format",
   "Grandes": "Large",
   "H1 (accueil)": "H1 (home page)",
+  "H1 (ouverture de page)": "H1 (page opening)",
   "H2": "H2",
   "Haut": "Tall",
   "Image d'attente (poster)": "Waiting image (poster)",
@@ -2080,5 +2081,9 @@
   "Avis fictif": "Fictional review",
   "Gardée tant qu'aucune application d'avis n'est connectée.": "Kept until a reviews app is connected.",
   "Visuel et citation côte à côte": "Visual and quote side by side",
-  "Bande pleine largeur": "Full-width band"
+  "Bande pleine largeur": "Full-width band",
+  "Fraise — page de vente pop (référence)": "Fraise — pop sales page (reference)",
+  "Onde — contraste sombre, accent vif (référence)": "Onde — dark contrast, bright accent (reference)",
+  "Orbe — objet et ambiances (référence)": "Orbe — object and atmospheres (reference)",
+  "Atelier Rive — journal et espaces (référence)": "Atelier Rive — journal and spaces (reference)"
 }

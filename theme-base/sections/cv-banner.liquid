@@ -12,7 +12,7 @@
       <div class="cv-banner__media cv-zoomable">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, focus_x: s.focus_x, focus_y: s.focus_y %}</div>
       <div class="cv-banner__copy">
         {%- if s.eyebrow != blank -%}<p class="cv-eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
-        <h2 class="es-heading cv-title cv-banner__title">{{ s.heading | escape }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</h2>
+        <{{ s.heading_tag | default: "h2" }} class="es-heading cv-title cv-banner__title">{{ s.heading | escape }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</{{ s.heading_tag | default: "h2" }}>
         {%- if s.text != blank -%}<div class="es-rte cv-banner__text">{{ s.text }}</div>{%- endif -%}
         {%- if s.price_text != blank -%}<p class="cv-banner__price">{{ s.price_text | escape }}{% if s.price_note != blank %} <span class="cv-fictional">{{ s.price_note | escape }}</span>{% endif %}</p>{%- endif -%}
         {%- if s.button_label != blank -%}<a class="es-button cv-button cv-banner__button" href="{{ s.button_link | default: routes.all_products_collection_url }}">{{ s.button_label | escape }}</a>{%- endif -%}
@@ -37,6 +37,7 @@
     { "type": "select", "id": "layout", "label": "Disposition", "default": "image-left", "options": [ { "value": "image-left", "label": "Visuel à gauche" }, { "value": "image-right", "label": "Visuel à droite" }, { "value": "background", "label": "Visuel en fond, texte par-dessus" } ] },
     { "type": "text", "id": "eyebrow", "label": "Surtitre" },
     { "type": "text", "id": "heading", "label": "Titre", "default": "Prêt à essayer ?" },
+    { "type": "select", "id": "heading_tag", "label": "Niveau du titre", "default": "h2", "options": [ { "value": "h1", "label": "H1 (ouverture de page)" }, { "value": "h2", "label": "H2" } ] },
     { "type": "text", "id": "heading_accent", "label": "Fin du titre en accent" },
     { "type": "richtext", "id": "text", "label": "Argument" },
     { "type": "text", "id": "price_text", "label": "Prix affiché", "info": "Texte libre, ex. « 24,90 € le flacon ». Vide : aucun prix." },

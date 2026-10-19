@@ -87,7 +87,7 @@ export function AuthForm({ mode, plan, next: nextPath }: { mode: "login" | "regi
         </div>
       </div>
       <div className="relative hidden overflow-hidden bg-ink lg:block">
-        <img src="/demo/casque/scene-1.jpg" alt="" className="absolute inset-0 size-full object-cover" />
+        <img src="/demo/onde/07-scene-salon.webp" alt="" className="absolute inset-0 size-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" aria-hidden />
         <div className="absolute inset-x-10 bottom-10 text-white">
           <p className="font-display text-4xl leading-tight">{t("« Une photo. Une marque. ", "“One photo. One brand. ")}<span className="serif-i">{t("Une boutique.", "One store.")}</span>{t(" »", "”")}</p>

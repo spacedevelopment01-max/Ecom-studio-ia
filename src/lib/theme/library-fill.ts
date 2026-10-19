@@ -15,7 +15,7 @@ type Blocks = { type: string; settings: Record<string, unknown> }[];
 
 const PLACEHOLDER = /\[(?:À compléter|A compléter|To complete)/i;
 /** Sections qui n'existent qu'avec une vidéo. */
-const NEEDS_VIDEO = new Set(["immersive-video", "video-carousel", "video-stories", "video-reels", "video-showcase"]);
+const NEEDS_VIDEO = new Set(["immersive-video", "video-carousel", "video-stories", "video-reels", "video-showcase", "cv-stories"]);
 /** Sections qui n'existent qu'avec des photos. */
 const NEEDS_IMAGE = new Set(["slideshow", "hero", "hero-flex", "double-banner", "editorial-visual", "editorial-gallery", "media-gallery", "customer-wall", "floating-scene", "before-after", "day-night", "visual-menu", "alternating-content", "situations", "gallery-mosaic", "v2-banner", "v2-media", "product-360", "exploded-view"]);
 /** Sections dont les blocs forment un tout (tableau, routine dans l'ordre) : jamais amputées d'un bloc. */
