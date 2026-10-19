@@ -54,6 +54,12 @@ for (const f of cases) {
     if (!expectFailure && value.state.error) throw Error(value.state.error.message);
     await page.waitForTimeout(500); return value;
   }
+  async function completeSeriesUi(seriesId: string) {
+    const rendered = page.locator(`[data-direction-series='${seriesId}']`);
+    await rendered.waitFor();
+    await until(async () => ({ text: await rendered.innerText(), cards: await rendered.locator("[data-direction]").count() }), value => /3\/3/.test(value.text) && value.cards === 3, "série affichée complète : libellé 3/3 et trois cartes réelles");
+    for (const card of await rendered.locator("[data-direction]").all()) await card.waitFor({ state: "visible" });
+  }
   async function shot(suffix: string) {
     const dismiss = page.locator("[data-tuto-nudge]").getByRole("button", { name: "Masquer", exact: true }); if (await dismiss.count()) await dismiss.click();
     await page.evaluate(async () => { await document.fonts.ready; for (const image of document.images) { image.loading = "eager"; await image.decode().catch(() => {}); } });
@@ -149,7 +155,7 @@ for (const f of cases) {
   const directions = await until(logo, value => value.series.some(s => s.status === "complete" && s.directions.length === 3), "trois directions entières");
   const series = directions.series.at(-1)!;
   assert.equal(new Set(series.directions.map(d => d.logoId)).size, 3); assert.equal(new Set(series.directions.map(d => d.identity.signature)).size, 3);
-  assert.equal(series.name, f.input.brandName); await page.locator(`[data-direction-series='${series.id}']`).waitFor(); await shot("05-trois-directions");
+  assert.equal(series.name, f.input.brandName); await completeSeriesUi(series.id); await shot("05-trois-directions");
   const selected = series.directions[f.mobile ? 2 : 1];
   await sendClick(page.locator(`[data-direction-series='${series.id}'] [data-direction='${selected.id}']`).getByRole("button", { name: "Choisir cette direction complète", exact: true }), "select", "/brand/logo-v2");
   assert.notEqual((await logo()).applied, selected.logoId, "Choisir ne remplace pas encore l’identité active"); await shot("06-proposition-non-active");
@@ -245,6 +251,7 @@ for (const f of cases) {
     const oldDocuments = JSON.stringify(before.stages.content!.data.documents), oldMedia = before.stages.media!.data.slots.map(s => s.assetId);
     await startLogo(page.getByRole("button", { name: "Nouvelles directions", exact: true }));
     const renewed = await until(logo, v => v.series.length === 2 && v.series[1].status === "complete", "renouvellement explicite de trois directions");
+    await completeSeriesUi(renewed.series[1].id);
     assert.equal((await state()).state.stages.brand!.data.proposal.logo.assetId, oldBrand.logo.assetId);
     assert((await api<{ ready: boolean }>(`/api/projects/${pid}/preparation/handoff`)).ready, "Renouveler des propositions doit conserver l’identité active et le contrat courant");
     await shot("15-renouvellement-identite-active-conservee");

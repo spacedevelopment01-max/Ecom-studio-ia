@@ -81,6 +81,25 @@ if (command === "seed") {
     return { case: c.slug, pages: contents.documents.map(d => ({ key: d.doc.page.key, blocks: d.doc.blocks.length, characters: d.doc.blocks.map(b => "text" in b ? b.text : "").join(" ").length })), nativeChecksPassed: true };
   });
   console.log(JSON.stringify({ simulation: true, projectsCreated: 0, persistedVersions: 0, results }, null, 2));
+} else if (command === "check-artwork") {
+  const { injectedArtwork } = await import("./artwork");
+  const { cleanArtwork } = await import("../../src/lib/logo-v2/artwork");
+  const { visualHash, hashDistance, SAME_LOGO_BITS, isPlaceholderShape } = await import("../../src/lib/logo-v2/identity");
+  const results = [];
+  for (const c of PROOF_CASES) {
+    const hashes: string[] = []; const distances: number[] = [];
+    for (const series of [1, 2]) for (const direction of [1, 2, 3]) {
+      const png = await injectedArtwork(c.input.brandName, `t${direction}`, series);
+      if (!png.equals(await injectedArtwork(c.input.brandName, `t${direction}`, series))) throw Error("Une même clé de fixture produit des octets différents.");
+      const cleaned = await cleanArtwork(png);
+      if (await isPlaceholderShape(cleaned)) throw Error("Dessin injecté réduit à un remplissage simple.");
+      const hash = await visualHash(cleaned);
+      for (const prior of hashes) { const distance = hashDistance(prior, hash); distances.push(distance); if (distance <= SAME_LOGO_BITS) throw Error(`Dessin injecté quasi identique (${distance} bits) : ${c.slug}, série ${series}, direction ${direction}`); }
+      hashes.push(hash);
+    }
+    results.push({ case: c.slug, drawings: hashes.length, sameKeySameBytes: true, nativeCleanApplied: true, nativeDuplicateThreshold: SAME_LOGO_BITS, minimumDistance: Math.min(...distances), allPairsDistinct: true });
+  }
+  console.log(JSON.stringify({ simulation: true, realProviderCalls: 0, persistedAssets: 0, results }, null, 2));
 } else if (command === "worker") {
   const { claimNext, JobContext, completeJob, failJob } = await import("../../src/lib/jobs");
   const { runPreparation, stateOf } = await import("../../src/lib/preparation/engine");
@@ -99,6 +118,7 @@ if (command === "seed") {
   const { REFERENCE_THEME_IDS } = await import("../../src/lib/project-handoff/categories");
   const { saveContentVersion } = await import("../../src/lib/seo-v2/store");
   const { injectedContents } = await import("./content");
+  const { injectedArtwork } = await import("./artwork");
   const { placementHash } = await import("../../src/lib/preparation/media-context");
   const { runForUser } = await import("../../src/lib/ai/access");
   const { runWithLang } = await import("../../src/lib/i18n-server");
@@ -114,11 +134,7 @@ if (command === "seed") {
     const ai = { ...realLogoV2Ai(ctx, { userId: p.userId, projectId: p.id }),
       territories: async (brief: Parameters<ReturnType<typeof realLogoV2Ai>["territories"]>[0]) => localTerritories(brief).slice(0, 3).map((t, i) => ({ ...t, source: "ai" as const, identity: directionIdentity(i) })),
       artworkRoute: () => { const r = mediaRouteFor("logo"); return r ? { provider: r.provider, model: r.model } : { unavailable: "Route simulée absente" }; },
-      drawArtwork: async (territory: { id: string }) => {
-        const n = Number(territory.id.replace(/\D/g, "")) || 1;
-        const cells = Array.from({ length: 30 }, (_, i) => `<rect x="${80 + (i * (113 + n * 71)) % 800}" y="${80 + (i * (79 + n * 37)) % 650}" width="${20 + i * 23 % 120}" height="${20 + i * 31 % 100}" fill="${i % n === 0 ? "#244c45" : "#a26531"}"/>`).join("");
-        return sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024"><rect width="1024" height="1024" fill="white"/>${cells}<text x="120" y="920" font-size="38">SIMULATION — ${xml(p.brand!.name)} — ${n}</text></svg>`)).png().toBuffer();
-      },
+      drawArtwork: async (territory: { id: string }) => injectedArtwork(p.brand!.name, territory.id, currentSeries(p.id)!.ordinal),
       reviewArtwork: async (_b: Buffer, _t: unknown, _brief: unknown, expected: { name: string; descriptor: string | null; tagline: string | null }): Promise<import("../../src/lib/logo-v2/types").ArtworkReview> => ({ criteria: Object.fromEntries(ART_CRITERIA.map(k => [k, 9])) as import("../../src/lib/logo-v2/types").ArtworkReview["criteria"], textRead: [expected.name, expected.descriptor, expected.tagline].filter(Boolean).join(" "), nameExact: true, extraText: false, nameBox: null, clumsyCliche: false, resemblesKnownBrand: false, amateur: false, artifacts: false, person: false, issues: [], needsSimplifiedMark: false, genericConcept: false, fix: { target: "none" as const, instruction: "" } }),
     };
     const result = await runLogoEngineV2(ctx, p.id, { ai, completeSeries: true, capMicro: ctx.payload.costCapMicro ?? ctx.payload.capMicro, renew: ctx.payload.renew, expectedSeriesId: ctx.payload.expectedSeriesId, correction: ctx.payload.feedback ?? ctx.payload.correction });
@@ -235,4 +251,4 @@ if (command === "seed") {
   const evidence = { simulation: true, originalProjectCount: 0, projectsCreatedThroughUi: projects.length, actualProviderCalls: one<{ n: number }>("SELECT COUNT(*) n FROM ai_calls")!.n, actualProviderCostMicro: 0, themes: one<{ n: number }>("SELECT COUNT(*) n FROM theme_versions")!.n, socialConnections: one<{ n: number }>("SELECT COUNT(*) n FROM connections")?.n ?? 0, projects };
   fs.writeFileSync(path.join(dir, "persistence-evidence.json"), JSON.stringify(evidence, null, 2));
   console.log("Preuve expurgée sauvegardée : quatre parcours créés via UI, aucun fournisseur ni thème.");
-} else throw Error("seed | fund <cas> | check-copy | worker | evidence");
+} else throw Error("seed | fund <cas> | check-copy | check-artwork | worker | evidence");
