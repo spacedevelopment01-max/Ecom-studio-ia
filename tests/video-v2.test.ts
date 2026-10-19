@@ -157,9 +157,12 @@ describe("Video Engine V2 — modules", async () => {
   // ------------------------------------------------------------------ Router V2 et fournisseurs
 
   it("Router V2 : seules les capacités VÉRIFIÉES comptent ; repli sur un fournisseur compatible ; tarif inconnu refusé", () => {
-    // Texte vers vidéo : annoncé par Veo mais jamais appelé par le studio → non utilisé.
-    for (const c of VIDEO_CAPABILITIES) expect(verified(c, "textToVideo")).toBe(false);
-    expect(chooseProvider({ imageToVideo: false, people: false, nativeAudio: false, aspect: "9:16", durationS: 5 }, allProviders)).toBeNull();
+    // Le nouvel adaptateur direct Alibaba est raccordé ; Veo reste seulement documenté pour cette entrée.
+    const direct = VIDEO_CAPABILITIES.filter(c => verified(c, "textToVideo"));
+    expect(direct.length).toBeGreaterThan(0);
+    expect(direct.every(c => c.provider === "alibaba")).toBe(true);
+    expect(VIDEO_CAPABILITIES.filter(c => c.provider === "google").every(c => !verified(c, "textToVideo"))).toBe(true);
+    expect(chooseProvider({ imageToVideo: false, people: false, nativeAudio: false, aspect: "9:16", durationS: 5 }, { ...allProviders, available: p => p !== "alibaba" })).toBeNull();
     // Son natif : seulement Veo (vérifié par le code UGC) ; Kling n'en a pas.
     const kling = VIDEO_CAPABILITIES.find((c) => c.provider === "fal")!;
     expect(compatible(kling, { imageToVideo: true, people: true, nativeAudio: true, aspect: "9:16", durationS: 8 })).toMatch(/son natif/);
