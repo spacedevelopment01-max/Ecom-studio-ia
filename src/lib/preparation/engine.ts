@@ -879,15 +879,22 @@ export async function runPreparation(
   };
   let savedRevision: number | undefined;
   try {
-    const s = stateOf(projectId);
+    let s = stateOf(projectId);
+    const resumingFailure = !!s && !s.pending && s.error?.jobId === ctx.job.id && s.error.revision === s.revision;
     if (
       !s ||
-      (s.revision !== revision && !(action === "collect" && s.pending?.jobId === ctx.job.id && s.revision >= revision)) ||
+      (s.revision !== revision && !resumingFailure && !(action === "collect" && s.pending?.jobId === ctx.job.id && s.revision >= revision)) ||
       requestHash(s, step, action, key) !== hash
     )
       throw new UserFacingError(
         "Les données ont changé : aucun nouvel appel fournisseur n’a été lancé.",
       );
+    // Reprise explicite du même travail : les checkpoints et le plafond initial restent attachés
+    // au job. Une retouche ou une nouvelle demande invalide ce droit de reprise par sa révision.
+    if (resumingFailure) s = commitState(projectId, s.revision, n => {
+      n.pending = { step, jobId: ctx.job.id, inputHash: hash };
+      delete n.error;
+    });
     const p = loadProject(projectId);
     requirePlan(null, projectId);
     requireUpstream(s, step);
@@ -1036,6 +1043,8 @@ export async function runPreparation(
         if (n.pending?.jobId === ctx.job.id) delete n.pending;
         n.error = {
           step,
+          jobId: ctx.job.id,
+          revision: current.revision + 1,
           message: redact((e as Error).message).slice(0, 500),
           at: now(),
         };

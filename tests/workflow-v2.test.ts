@@ -72,8 +72,8 @@ describe("Studio Workflow V2", async () => {
     expect(started.status).toBe("queued");
     expect(started.capMicro).toBe(50_000_000);
     // Relancer ne crée aucune tâche en double.
-    wf.startWorkflow(w.id, { approveMicro: w.estimate.totalMicro, capEur: 50 });
-    expect(one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE idempotency_key = ?", `wf:${w.id}:run`)!.n).toBe(1);
+    expect(wf.startWorkflow(w.id, { approveMicro: w.estimate.totalMicro, capEur: 50 }).jobId).toBe(started.jobId);
+    expect(one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE type='workflow.run' AND json_extract(payload,'$.workflowId')=?", w.id)!.n).toBe(1);
     run("UPDATE jobs SET status = 'cancelled' WHERE id = ?", started.jobId);
   });
 

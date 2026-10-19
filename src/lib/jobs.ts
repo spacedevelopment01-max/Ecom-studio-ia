@@ -9,6 +9,7 @@
  *  - Dépendances : une tâche attend que ses prérequis soient terminés.
  */
 import os from "node:os";
+import { createHash } from "node:crypto";
 import { all, id, json, now, one, run, tx } from "./db";
 import { jobLiveness } from "./job-liveness";
 import { jobEstimate } from "./job-estimate";
@@ -63,8 +64,10 @@ export function enqueue(input: EnqueueInput): Job {
   if (input.projectId && hasLangContext() && !(input.payload && typeof input.payload === "object" && "lang" in (input.payload as object))) {
     input = { ...input, payload: { ...((input.payload as object) ?? {}), lang: contentLang() } };
   }
-  if (input.idempotencyKey) {
-    const existing = one<Job>("SELECT * FROM jobs WHERE idempotency_key = ?", input.idempotencyKey);
+  const operationKey = input.idempotencyKey ? `job:v2:${createHash("sha256").update(JSON.stringify([input.userId, input.projectId ?? null, input.type, input.idempotencyKey])).digest("hex")}` : null;
+  if (operationKey) {
+    // Compatibilité des anciennes demandes, toujours dans le même compte, projet et type.
+    const existing = one<Job>("SELECT * FROM jobs WHERE idempotency_key IN (?,?) AND user_id=? AND project_id IS ? AND type=?", operationKey, input.idempotencyKey!, input.userId, input.projectId ?? null, input.type);
     if (existing) return existing;
   }
   const jid = id();
@@ -82,13 +85,13 @@ export function enqueue(input: EnqueueInput): Job {
     "queued",
     input.runAt ?? t,
     input.maxAttempts ?? 3,
-    input.idempotencyKey ?? null,
+    operationKey,
     input.parentId ?? null,
     JSON.stringify(input.dependsOn ?? []),
     t,
     t,
   );
-  if (!ins.changes && input.idempotencyKey) return one<Job>("SELECT * FROM jobs WHERE idempotency_key = ?", input.idempotencyKey)!;
+  if (!ins.changes && operationKey) return one<Job>("SELECT * FROM jobs WHERE idempotency_key = ?", operationKey)!;
   return getJob(jid)!;
 }
 
@@ -140,13 +143,17 @@ export function claimNext(types?: string[]): (Job & { recovered?: boolean }) | n
     for (const j of candidates) {
       const deps = json<string[]>(j.depends_on, []);
       if (deps.length) {
-        const states = all<{ status: string }>(`SELECT status FROM jobs WHERE id IN (${deps.map(() => "?").join(",")})`, ...deps);
+        const states = all<{ status: string; user_id: string; project_id: string | null }>(`SELECT status, user_id, project_id FROM jobs WHERE id IN (${deps.map(() => "?").join(",")})`, ...deps);
+        if (states.length !== new Set(deps).size || states.some((s) => s.user_id !== j.user_id || s.project_id !== j.project_id)) {
+          run("UPDATE jobs SET status='blocked', message=?, updated_at=? WHERE id=?", pick(userLang(j.user_id), "Une étape préalable est indisponible. Les résultats déjà acquis sont conservés.", "A required step is unavailable. Completed results are kept."), t, j.id);
+          continue;
+        }
         // Prérequis en échec, annulé ou lui-même bloqué : la tâche est bloquée (visible), jamais en attente sans fin.
         if (states.some((s) => s.status === "failed" || s.status === "cancelled" || s.status === "blocked")) {
           run("UPDATE jobs SET status='blocked', message=?, updated_at=? WHERE id=?", pick(userLang(j.user_id), "Une étape préalable a échoué.", "A previous step failed."), t, j.id);
           continue;
         }
-        if (states.length < deps.length || states.some((s) => s.status !== "done")) continue;
+        if (states.some((s) => s.status !== "done")) continue;
       }
       const recovered = j.status === "running";
       // Reprise après interruption (worker arrêté ou tué) : bornée par le nombre d'essais. Une tâche qui tue le
@@ -211,6 +218,7 @@ export class JobContext {
   /** Met à jour l'avancement et prolonge le bail. Lève JobCancelled si annulée. */
   progress(p: number, message?: string) {
     const row = one<{ status: string; locked_by: string | null }>("SELECT status, locked_by FROM jobs WHERE id = ?", this.job.id);
+    if (!row || row.status === "done" || row.status === "failed" || row.status === "blocked") throw new LeaseLost(L("Cette tâche n'est plus en cours.", "This task is no longer running."));
     if (row?.locked_by && row.locked_by !== WORKER_ID) throw new LeaseLost(L("Tâche reprise par un autre processus.", "Task taken over by another process."));
     if (row?.status === "cancelled") throw new JobCancelled(L("Tâche annulée.", "Task canceled."));
     if (row?.status === "paused") throw new JobPaused(L("Tâche mise en pause.", "Task paused."));
@@ -230,7 +238,9 @@ export class JobContext {
   /** Enregistre un point de reprise : utilisé pour ne pas refaire une étape coûteuse. */
   save(key: string, value: unknown) {
     const cp = { ...this.checkpoint, [key]: value };
-    const r = run("UPDATE jobs SET checkpoint=?, locked_until=?, updated_at=? WHERE id=? AND (locked_by IS NULL OR locked_by=?)", JSON.stringify(cp), now() + LEASE_MS, now(), this.job.id, WORKER_ID);
+    // Une réponse arrivée pendant pause/annulation peut encore être conservée tant que ce worker
+    // détient son bail. Une tâche terminée ou un autre exécuteur ne sont jamais écrasés.
+    const r = run("UPDATE jobs SET checkpoint=?, locked_until=?, updated_at=? WHERE id=? AND ((locked_by=? AND status IN ('running','queued','paused','cancelled')) OR (locked_by IS NULL AND status IN ('queued','running','paused') AND ? IS NULL))", JSON.stringify(cp), now() + LEASE_MS, now(), this.job.id, WORKER_ID, this.job.locked_by);
     if (!r.changes && one("SELECT 1 FROM jobs WHERE id = ?", this.job.id)) throw new LeaseLost(L("Tâche reprise par un autre processus.", "Task taken over by another process."));
     this.job.checkpoint = JSON.stringify(cp);
   }
@@ -251,7 +261,7 @@ export function releaseJob(jid: string) {
 
 export function completeJob(jid: string, result: unknown) {
   const delivery = (result as { delivery?: { message?: string; state?: string } } | null)?.delivery;
-  run(
+  const completed = run(
     "UPDATE jobs SET status='done', progress=1, result=?, error=NULL, locked_by=NULL, locked_until=NULL, message=?, finished_at=?, updated_at=? WHERE id=? AND ((status IN ('running','paused') AND (locked_by IS NULL OR locked_by=?)) OR (status='queued' AND locked_by=?))",
     JSON.stringify(result ?? null),
     // Message au client porté par le résultat (ex. reprise débitée, annoncée en % du budget IA).
@@ -264,7 +274,7 @@ export function completeJob(jid: string, result: unknown) {
   );
   // Reprise débitée : aussi dans les notifications du client (jamais en silence).
   const notice = (result as { notice?: unknown } | null)?.notice;
-  const j = typeof notice === "string" ? one<{ user_id: string; project_id: string | null }>("SELECT user_id, project_id FROM jobs WHERE id = ?", jid) : null;
+  const j = completed.changes && typeof notice === "string" ? one<{ user_id: string; project_id: string | null }>("SELECT user_id, project_id FROM jobs WHERE id = ?", jid) : null;
   if (j && typeof notice === "string") run("INSERT INTO notifications (id, user_id, project_id, level, title, body, created_at) VALUES (?,?,?,?,?,?,?)", id(), j.user_id, j.project_id, "info", L("Reprise d'une création par l'IA", "AI creation redone"), notice, now());
 }
 
@@ -346,7 +356,7 @@ export function resumeJob(jid: string) {
 /** Relance manuelle : repart du dernier point de reprise. */
 export function retryJob(jid: string) {
   run(
-    "UPDATE jobs SET status='queued', run_at=?, attempts=0, error=NULL, message=?, updated_at=? WHERE id=? AND status IN ('failed','cancelled','blocked')",
+    "UPDATE jobs SET status='queued', run_at=?, attempts=0, error=NULL, finished_at=NULL, message=?, updated_at=? WHERE id=? AND status IN ('failed','cancelled','blocked')",
     now(),
     L("Relance demandée", "Retry requested"),
     now(),

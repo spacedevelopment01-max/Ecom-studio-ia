@@ -940,6 +940,13 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ["wallets", "reserved_topup", "INTEGER NOT NULL DEFAULT 0"],
   ["ai_reservations", "res_monthly", "INTEGER NOT NULL DEFAULT 0"],
   ["ai_reservations", "res_topup", "INTEGER NOT NULL DEFAULT 0"],
+  ["ai_reservations", "usage_event_id", "TEXT"],
+  ["ai_reservations", "settled_period_start", "INTEGER"],
+  ["ai_reservations", "operation_key", "TEXT"],
+  ["ai_reservations", "request_hash", "TEXT"],
+  ["ai_reservations", "result", "TEXT"],
+  ["ai_reservations", "provider_receipt", "TEXT"],
+  ["ai_reservations", "recovery_until", "INTEGER NOT NULL DEFAULT 0"],
   // Décompte d'un quota : période et répartition (mois / packs), pour pouvoir le rendre (image refusée au contrôle).
   ["quota_events", "period_start", "INTEGER"],
   ["quota_events", "from_month", "INTEGER"],
@@ -1008,7 +1015,8 @@ function migrate(db: Database.Database) {
   db.exec(`CREATE INDEX IF NOT EXISTS notifications_user ON notifications(user_id, created_at);
     CREATE INDEX IF NOT EXISTS assets_project_role ON assets(project_id, role, created_at);
     CREATE INDEX IF NOT EXISTS assets_source ON assets(source_asset_id);
-    CREATE INDEX IF NOT EXISTS ai_reservations_job ON ai_reservations(job_id, status);`);
+    CREATE INDEX IF NOT EXISTS ai_reservations_job ON ai_reservations(job_id, status);
+    CREATE UNIQUE INDEX IF NOT EXISTS ai_reservations_operation ON ai_reservations(operation_key) WHERE operation_key IS NOT NULL AND status != 'released';`);
   migrateBillingV2(db);
 }
 

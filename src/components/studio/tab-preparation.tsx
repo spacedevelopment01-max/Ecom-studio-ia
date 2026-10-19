@@ -25,7 +25,8 @@ import {
   Textarea,
   useApi,
 } from "../ui";
-import { useProject } from "./project-context";
+import { useProject, type JobView } from "./project-context";
+import { JobProgress } from "./common";
 import { useT } from "../i18n";
 import { ContentPanel } from "./content-panel";
 import {
@@ -81,6 +82,7 @@ type AssetView = {
 };
 type View = {
   state: State;
+  job: JobView | null;
   ready: ReadyContract | null;
   blockers: string[];
   history: { revision: number; at: number }[];
@@ -277,7 +279,8 @@ export default function TabPreparation() {
     );
   const approved = (s: Step) => state.stages[s]?.status === "approved";
   const enabled = STEPS.slice(0, STEPS.indexOf(active)).every(approved);
-  const working = !!state.pending;
+  const working = !!state.pending && !!data.job && ["queued", "running", "paused"].includes(data.job.status);
+  const pendingProblem = state.pending && !working ? data.job?.error || t("Le traitement s’est arrêté avant la livraison. Vos données et les résultats acquis sont conservés. Vérifiez le point signalé avant une nouvelle demande.", "Processing stopped before delivery. Your data and acquired results are kept. Check the reported issue before a new request.") : "";
   const briefDirty = JSON.stringify(form) !== JSON.stringify(raw);
   const referencesDirty =
     JSON.stringify(
@@ -361,9 +364,9 @@ export default function TabPreparation() {
           ))}
         </ol>
       </Card>
-      {(error || loadError || state.error) && (
+      {(error || loadError || state.error || pendingProblem) && (
         <Card className="border-bad p-4" role="alert">
-          <p>{error || loadError || state.error?.message}</p>
+          <p>{error || loadError || state.error?.message || pendingProblem}</p>
           <p className="mt-2 text-sm text-muted">
             {t(
               "Vos résultats précédents sont conservés. Corrigez le point signalé avant de demander un nouvel essai.",
@@ -374,12 +377,13 @@ export default function TabPreparation() {
       )}
       {working && (
         <Card className="p-4" role="status">
-          {t(
+          {data.job?.status === "paused" ? t("La préparation est en pause. Les étapes terminées sont conservées.", "Preparation is paused. Completed steps are kept.") : t(
             "Le studio prépare votre proposition. Vous pouvez quitter puis revenir : l’avancement est enregistré.",
             "The studio is preparing your proposal. You can leave and return: progress is saved.",
           )}
         </Card>
       )}
+      {state.pending && data.job && <JobProgress job={data.job} />}
       {state.stages[active]?.status === "stale" && (
         <Card className="bg-warn-soft p-4">
           {t(

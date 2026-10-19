@@ -4,6 +4,7 @@ import { requirePlan } from "@/lib/plan-gates";
 import { HttpError } from "@/lib/auth";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { all, json } from "@/lib/db";
+import { getJob, publicJob } from "@/lib/jobs";
 import {
   restoreForReview,
   answerBriefQuestion,
@@ -82,8 +83,11 @@ const input = z.object({
 });
 function view(projectId: string) {
   const ready = readyContract(projectId);
+  const state = stateOf(projectId);
+  const pending = state?.pending ? getJob(state.pending.jobId) : null;
   return {
-    state: stateOf(projectId),
+    state,
+    job: pending?.project_id === projectId ? publicJob(pending) : null,
     blockers: [...blockers(projectId), ...(ready?.handoff?.issues ?? [])],
     ready,
     history: historyOf(projectId).map((s) => ({

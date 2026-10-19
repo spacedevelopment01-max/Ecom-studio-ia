@@ -162,7 +162,7 @@ export type State = {
   createdAt: number;
   updatedAt: number;
   stages: Partial<{ [K in Step]: Stage<K> }>;
-  error?: { step: Step; message: string; at: number };
+  error?: { step: Step; message: string; at: number; jobId?: string; revision?: number };
   pending?: { step: Step; jobId: string; inputHash: string };
   simulation?: boolean;
 };

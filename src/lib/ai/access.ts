@@ -81,6 +81,8 @@ export type AiUsage = {
   credits: { used: number } | null;
   /** Forfait et crédits épuisés : l'IA est en pause jusqu'au renouvellement ou à un nouvel achat. */
   paused: boolean;
+  /** Disponible temporairement engagé par une génération, pas dépensé à 100 %. */
+  pending?: boolean;
   /** Base des % de coût montrés au client (même réserve que la jauge) — sert au calcul, jamais affichée. */
   baseMicro?: number;
 };
@@ -93,13 +95,15 @@ export type AiUsage = {
 export function aiUsage(user: string, projectId?: string | null): AiUsage | null {
   const userId = accountKeyFor(user, projectId);
   if (!planOf(getSubscription(userId))) return null;
-  const paused = balance(userId).available < AI_MIN_AVAILABLE;
+  const b = balance(userId);
+  const pending = b.available < AI_MIN_AVAILABLE && b.reserved > 0 && b.available + b.reserved >= AI_MIN_AVAILABLE;
+  const paused = b.available < AI_MIN_AVAILABLE && !pending;
   const r = aiReserves(userId);
   // Arrondi qui n'affiche jamais 100 % pour une réserve encore utilisable, ni 0 % pour une réserve entamée.
   const pct = (u: number) => (u >= 1 ? 100 : u <= 0 ? 0 : Math.min(99, Math.max(1, Math.round(u * 100))));
   const planUsed = r.plan ? pct(r.plan.used) : 100;
   const credits = r.credits ? { used: pct(r.credits.used) } : null;
-  return { plan: { used: paused ? 100 : planUsed }, credits: credits && paused ? { used: 100 } : credits, paused, baseMicro: aiPctBaseMicro(userId) };
+  return { plan: { used: paused ? 100 : planUsed }, credits: credits && paused ? { used: 100 } : credits, paused, pending, baseMicro: aiPctBaseMicro(userId) };
 }
 
 export function assertAiAllowed(user: string | null | undefined, projectId?: string | null): void {
@@ -115,5 +119,9 @@ export function assertAiAllowed(user: string | null | undefined, projectId?: str
     throw new UserFacingError(L("Appel à l'IA refusé : compte introuvable.", "AI call refused: account not found."));
   }
   if (!planOf(sub)) throw new UserFacingError(L("L'IA n'est pas incluse dans la découverte gratuite : le moteur local du studio est utilisé.", "AI isn't included in the free discovery: the studio's local engine is used."));
-  if (!hasAiCredits(userId)) throw new UserFacingError(L("L'IA de votre forfait est utilisée à 100 % : elle reprend au renouvellement du forfait, ou tout de suite avec une recharge de l'IA du projet (Mon compte). En attendant, le moteur local du studio prend le relais.", "Your plan's AI is 100% used: it resumes when your plan renews, or right away with a project AI top-up (My account). Meanwhile, the studio's local engine takes over."));
+  if (!hasAiCredits(userId)) {
+    const b = balance(userId);
+    if (b.reserved > 0 && b.available + b.reserved >= AI_MIN_AVAILABLE) throw new UserFacingError(L("Une génération utilise temporairement le budget disponible. Attendez son résultat avant de lancer une autre action ; votre travail est conservé.", "A generation is temporarily using the available budget. Wait for its result before starting another action; your work is kept."));
+    throw new UserFacingError(L("L'IA de votre forfait est utilisée à 100 % : elle reprend au renouvellement du forfait, ou tout de suite avec une recharge de l'IA du projet (Mon compte). En attendant, le moteur local du studio prend le relais.", "Your plan's AI is 100% used: it resumes when your plan renews, or right away with a project AI top-up (My account). Meanwhile, the studio's local engine takes over."));
+  }
 }

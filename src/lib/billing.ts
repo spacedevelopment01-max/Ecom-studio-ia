@@ -30,6 +30,9 @@ import { pick } from "./i18n";
 import { L, userLang } from "./i18n-server";
 import { PLANS, type Billing, type PlanId } from "./plans";
 import { accountKeyFor, isNoPlanKey } from "./project-billing";
+import { assertUnderCostCap, currentTrace } from "./ai/trace";
+import { currentRunScope } from "./billing-scope";
+import { createHash } from "node:crypto";
 
 /** Texte enregistré pour un compte (relevé, notification) : dans la langue mémorisée de ce compte. */
 const forUser = (userId: string, fr: string, en: string) => pick(userLang(userId), fr, en);
@@ -206,6 +209,9 @@ export function renewIfDue(w: Wallet): Wallet {
   }
   const allowance = monthlyAllowanceMicro(sub);
   tx(() => {
+    // Les engagements de l'ancien mois sont retenus AVANT sa clôture. Un résultat tardif
+    // les rapproche ensuite sans prélever ni recréditer le nouveau mois.
+    if (one<Wallet>("SELECT * FROM wallets WHERE user_id=?", w.user_id)?.period_end === w.period_end) closePeriodReservations(w.user_id);
     // Web et worker peuvent renouveler en même temps : seul celui qui voit encore l'ancienne échéance renouvelle.
     const done = run(
       "UPDATE wallets SET period_start=?, period_end=?, prev_period_start=?, monthly_allowance=?, monthly_used=0, topup_period_added=0, topup_period_used=0, alert80_sent_at=NULL, updated_at=? WHERE user_id=? AND period_end=?",
@@ -240,6 +246,7 @@ export function alignPeriod(userId: string, startMs?: number | null, endMs?: num
   if (w.period_start === start && w.period_end === end) return;
   const allowance = monthlyAllowanceMicro(getSubscription(userId));
   tx(() => {
+    closePeriodReservations(userId);
     run(
       "UPDATE wallets SET prev_period_start=period_start, period_start=?, period_end=?, monthly_allowance=?, monthly_used=0, topup_period_added=0, topup_period_used=0, alert80_sent_at=NULL, updated_at=? WHERE user_id=?",
       start,
@@ -341,6 +348,7 @@ export function aiPctBaseMicro(key: string): number {
 /** Message de budget épuisé (limite d'usage équitable, sans montant affiché). */
 function budgetError(userId: string) {
   const w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId);
+  if (w && w.reserved + w.reserved_topup > 0) return new UserFacingError(L("Le budget disponible est engagé dans une génération en cours. Attendez son résultat ; les étapes déjà terminées sont conservées.", "The available budget is committed to a generation in progress. Wait for its result; completed steps are kept."));
   const end = new Date(w?.period_end ?? now()).toLocaleDateString(L("fr-FR", "en-GB"), { day: "numeric", month: "long" });
   return new UserFacingError(L(`L'IA de votre forfait est utilisée à 100 % pour ce mois-ci. Elle reprend le ${end}, ou tout de suite avec une recharge de l'IA du projet (Mon compte).`, `Your plan's AI is 100% used for this month. It resumes on ${end}, or right away with a project AI top-up (My account).`));
 }
@@ -354,8 +362,55 @@ export function assertCanSpend(userId: string, estimateMicro: number, projectId?
 
 // ------------------------------------------------------------------ réservations
 
-export type ReservationMeta = { task: string; provider: string; model: string; jobId?: string | null; projectId?: string | null };
-type ReservationRow = { id: string; user_id: string; amount: number; res_monthly: number; res_topup: number; status: "held" | "settled" | "released" | "uncertain" | "reconciled"; debit_monthly: number; debit_topup: number; actual: number | null; created_at: number };
+export type ReservationMeta = { task: string; provider: string; model: string; jobId?: string | null; projectId?: string | null; usageKey?: string; requestHash?: string };
+type ReservationRow = { id: string; user_id: string; amount: number; res_monthly: number; res_topup: number; status: "held" | "settled" | "released" | "uncertain" | "reconciled"; debit_monthly: number; debit_topup: number; actual: number | null; created_at: number; settled_at: number | null; settled_period_start: number | null };
+
+type Operation = ReservationRow & { request_hash: string | null; result: string | null; provider_receipt: string | null; recovery_until: number; provider: string; model: string };
+const operationProject = (projectId?: string | null) => projectId ?? currentTrace().projectId ?? currentRunScope()?.projectId ?? null;
+const operationKey = (user: string, meta: Pick<ReservationMeta, "task" | "projectId" | "usageKey">) => meta.usageKey ? createHash("sha256").update(JSON.stringify([user, operationProject(meta.projectId), meta.task, meta.usageKey])).digest("hex") : null;
+export function requestHash(value: unknown): string {
+  const normalize = (v: any): any => Buffer.isBuffer(v) ? { bytes: v.length, sha256: createHash("sha256").update(v).digest("hex") } : Array.isArray(v) ? v.map(normalize) : v && typeof v === "object" ? Object.fromEntries(Object.keys(v).sort().map(k => [k, normalize(v[k])])) : typeof v === "function" ? undefined : v;
+  return createHash("sha256").update(JSON.stringify(normalize(value))).digest("hex");
+}
+
+/** La réservation native est aussi le reçu de l'opération : aucune seconde requête payante sous la même clé. */
+export function existingOperation(user: string, meta: Pick<ReservationMeta, "task" | "projectId" | "usageKey" | "requestHash">): Operation | undefined {
+  // Résout et vérifie le propriétaire, même pour la lecture d'un résultat déjà acquis.
+  const account = accountKeyFor(user, meta.projectId);
+  const key = operationKey(user, meta);
+  if (!key) return undefined;
+  const r = one<Operation>("SELECT * FROM ai_reservations WHERE operation_key=? AND user_id=? AND status!='released'", key, account);
+  if (r && r.request_hash !== (meta.requestHash ?? null)) throw new UserFacingError(L("Cette demande a changé. Enregistrez-la comme une nouvelle action ; le travail précédent est conservé.", "This request has changed. Save it as a new action; the previous work is kept."));
+  if (!r && !one("SELECT 1 FROM ai_reservations WHERE operation_key=?", key)) {
+    // Avant cette migration, une clé n'empêchait pas le second envoi. Une ancienne facture/trace
+    // ou un suivi fournisseur sans reçu associé ne doivent pas devenir un nouvel appel gratuit.
+    const project = operationProject(meta.projectId);
+    const billedKey = `usage:v2:${createHash("sha256").update(JSON.stringify([user,project,meta.task,meta.usageKey])).digest("hex")}`;
+    const historical = one("SELECT 1 FROM usage_events WHERE user_id=? AND project_id IS ? AND task=? AND idempotency_key IN (?,?)",user,project,meta.task,meta.usageKey!,billedKey)
+      || one("SELECT 1 FROM ai_calls WHERE user_id=? AND project_id IS ? AND task=? AND usage_key=?",user,project,meta.task,meta.usageKey!)
+      || getJsonSetting(`alibaba.task.${meta.usageKey}`,null) || getJsonSetting(`fal.done.${meta.usageKey}`,null);
+    if (historical) operationPending();
+  }
+  return r;
+}
+
+export function operationPending(): never {
+  throw new UserFacingError(L("Cette action a déjà été envoyée. Les résultats acquis sont conservés ; aucune nouvelle génération n'a été lancée. Reprenez son suivi ou faites vérifier le résultat incertain avant de recommencer.", "This action has already been sent. Acquired results are kept; no new generation was started. Resume tracking it or have its uncertain outcome checked before starting again."));
+}
+
+export function saveOperationResult(reservationId: string, result: unknown) {
+  run("UPDATE ai_reservations SET result=?,recovery_until=0 WHERE id=? AND status IN ('settled','reconciled')", JSON.stringify(result), reservationId);
+}
+export function saveProviderReceipt(reservationId: string, receipt: unknown) {
+  run("UPDATE ai_reservations SET provider_receipt=? WHERE id=?", JSON.stringify(receipt), reservationId);
+}
+/** Récupération en lecture seule chez le fournisseur ; jamais une nouvelle réservation ni un second dépôt. */
+export function claimOperationRecovery(reservationId: string): boolean {
+  return run("UPDATE ai_reservations SET recovery_until=? WHERE id=? AND recovery_until<=? AND provider_receipt IS NOT NULL AND status!='released'", now() + 30 * 60_000, reservationId, now()).changes === 1;
+}
+export function finishOperationRecovery(reservationId: string) {
+  run("UPDATE ai_reservations SET recovery_until=0 WHERE id=?", reservationId);
+}
 
 /**
  * Réserve le coût MAXIMAL d'un appel avant son envoi. Une seule instruction SQL conditionnelle : le reste
@@ -364,6 +419,7 @@ type ReservationRow = { id: string; user_id: string; amount: number; res_monthly
  * le même reste.
  */
 export function reserve(user: string, maxMicro: number, meta: ReservationMeta): string {
+  meta = { ...meta, projectId: operationProject(meta.projectId), jobId: meta.jobId ?? currentTrace().jobId };
   // Budget de l'abonnement qui finance le projet de l'appel (jamais celui d'un autre projet du compte).
   const userId = accountKeyFor(user, meta.projectId);
   if (isNoPlanKey(userId)) throw budgetError(userId);
@@ -375,6 +431,9 @@ export function reserve(user: string, maxMicro: number, meta: ReservationMeta): 
   // Transaction IMMEDIATE : le verrou d'écriture est pris AVANT la lecture, donc deux processus (site, worker) ne
   // peuvent jamais réserver le même reste. Le coût est réparti : budget de l'abonnement d'abord, puis packs.
   const ok = tx(() => {
+    if (existingOperation(user, meta)) operationPending();
+    // Même verrou que le portefeuille : deux appels parallèles ne peuvent pas engager le même plafond de tâche.
+    assertUnderCostCap(amount);
     const w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId)!;
     const fm = freeMonthly(w);
     const ft = freeTopup(w);
@@ -382,7 +441,7 @@ export function reserve(user: string, maxMicro: number, meta: ReservationMeta): 
     const onMonthly = Math.min(amount, fm);
     const onTopup = amount - onMonthly;
     run("UPDATE wallets SET reserved = reserved + ?, reserved_topup = reserved_topup + ?, updated_at = ? WHERE user_id = ?", onMonthly, onTopup, now(), userId);
-    run("INSERT INTO ai_reservations (id, user_id, amount, res_monthly, res_topup, status, task, provider, model, job_id, project_id, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", rid, userId, amount, onMonthly, onTopup, "held", meta.task, meta.provider, meta.model, meta.jobId ?? null, meta.projectId ?? null, now());
+    run("INSERT INTO ai_reservations (id, user_id, amount, res_monthly, res_topup, status, task, provider, model, job_id, project_id, created_at, operation_key, request_hash, recovery_until) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", rid, userId, amount, onMonthly, onTopup, "held", meta.task, meta.provider, meta.model, meta.jobId ?? null, meta.projectId ?? null, now(), operationKey(user, meta), meta.requestHash ?? null, now() + 30 * 60_000);
     return true;
   });
   if (!ok) throw budgetError(userId);
@@ -430,11 +489,13 @@ function recordOverrun(userId: string, overrun: number, ref: string | null, note
 export function settle(reservationId: string, billedMicro: number, ref: string | null, note: string) {
   tx(() => {
     const r = one<ReservationRow>("SELECT * FROM ai_reservations WHERE id = ?", reservationId);
-    if (!r || r.status !== "held") return;
+    if (!r) return;
+    if (r.status === "uncertain") return reconcileReservation(r.id, billedMicro);
+    if (r.status !== "held") return;
     unreserve(r);
     const amount = Math.max(0, Math.round(billedMicro));
     const d = debit(r.user_id, amount, { monthly: r.res_monthly, topup: r.res_topup });
-    run("UPDATE ai_reservations SET status = 'settled', actual = ?, debit_monthly = ?, debit_topup = ?, settled_at = ? WHERE id = ?", amount, d.fromMonthly, d.fromTopup, now(), r.id);
+    run("UPDATE ai_reservations SET status = 'settled', actual = ?, debit_monthly = ?, debit_topup = ?, settled_at = ?, settled_period_start = (SELECT period_start FROM wallets WHERE user_id=?) WHERE id = ?", amount, d.fromMonthly, d.fromTopup, now(), r.user_id, r.id);
     if (amount > 0) run("INSERT INTO ledger (id, user_id, type, bucket, amount, ref, note, created_at) VALUES (?,?,?,?,?,?,?,?)", id(), r.user_id, "usage", d.fromTopup > 0 ? "topup" : "monthly", -(d.fromMonthly + d.fromTopup), ref, note, now());
     recordOverrun(r.user_id, d.overrun, ref ?? r.id, note);
   });
@@ -460,7 +521,7 @@ export function settleUncertain(reservationId: string, reason: string) {
     if (!r || r.status !== "held") return;
     unreserve(r);
     const d = debit(r.user_id, r.amount, { monthly: r.res_monthly, topup: r.res_topup });
-    run("UPDATE ai_reservations SET status = 'uncertain', actual = ?, debit_monthly = ?, debit_topup = ?, note = ?, settled_at = ? WHERE id = ?", r.amount, d.fromMonthly, d.fromTopup, reason.slice(0, 200), now(), r.id);
+    run("UPDATE ai_reservations SET status = 'uncertain', actual = ?, debit_monthly = ?, debit_topup = ?, note = ?, settled_at = ?, settled_period_start = (SELECT period_start FROM wallets WHERE user_id=?) WHERE id = ?", r.amount, d.fromMonthly, d.fromTopup, reason.slice(0, 200), now(), r.user_id, r.id);
     run("INSERT INTO ledger (id, user_id, type, bucket, amount, ref, note, created_at) VALUES (?,?,?,?,?,?,?,?)", id(), r.user_id, "usage", d.fromTopup > 0 ? "topup" : "monthly", -(d.fromMonthly + d.fromTopup), `uncertain:${r.id}`, `Résultat incertain, coût maximal retenu — ${reason.slice(0, 120)}`, now());
     recordOverrun(r.user_id, d.overrun, `uncertain:${r.id}`, reason);
   });
@@ -478,7 +539,10 @@ export function reconcileReservation(reservationId: string, actualMicro: number)
     const refund = Math.max(0, r.debit_monthly + r.debit_topup - actual);
     const toTopup = Math.min(refund, r.debit_topup);
     const toMonthly = refund - toTopup;
-    run("UPDATE wallets SET monthly_used = MAX(0, monthly_used - ?), topup_balance = topup_balance + ?, topup_period_used = MAX(0, topup_period_used - ?), updated_at = ? WHERE user_id = ?", toMonthly, toTopup, toTopup, now(), r.user_id);
+    const w = ensureWallet(r.user_id);
+    const samePeriod = r.settled_period_start != null ? r.settled_period_start === w.period_start : (r.settled_at ?? r.created_at) >= w.period_start;
+    // Le mensuel expiré ne devient pas du budget neuf. Une recharge reste remboursable, sans effacer l'usage actuel.
+    run("UPDATE wallets SET monthly_used = MAX(0, monthly_used - ?), topup_balance = topup_balance + ?, topup_period_used = MAX(0, topup_period_used - ?), updated_at = ? WHERE user_id = ?", samePeriod ? toMonthly : 0, toTopup, samePeriod ? toTopup : 0, now(), r.user_id);
     run("UPDATE ai_reservations SET status = 'reconciled', actual = ?, settled_at = ? WHERE id = ?", actual, now(), r.id);
     if (refund > 0) run("INSERT INTO ledger (id, user_id, type, bucket, amount, ref, note, created_at) VALUES (?,?,?,?,?,?,?,?)", id(), r.user_id, "reconciliation", toTopup > 0 ? "topup" : "monthly", refund, `reconcile:${r.id}`, "Appel incertain réconcilié avec la facture du fournisseur", now());
   });
@@ -490,6 +554,12 @@ export function sweepStaleReservations(userId?: string) {
     ? all<{ id: string }>("SELECT id FROM ai_reservations WHERE user_id = ? AND status = 'held' AND created_at < ?", userId, now() - RESERVATION_TTL_MS)
     : all<{ id: string }>("SELECT id FROM ai_reservations WHERE status = 'held' AND created_at < ?", now() - RESERVATION_TTL_MS);
   for (const r of stale) settleUncertain(r.id, "réservation sans règlement (processus interrompu pendant l'appel)");
+}
+
+function closePeriodReservations(userId: string) {
+  for (const r of all<{ id: string }>("SELECT id FROM ai_reservations WHERE user_id=? AND status='held'", userId)) {
+    settleUncertain(r.id, "appel en cours lors de la clôture de période, à rapprocher du résultat fournisseur");
+  }
 }
 
 /** Débite une consommation sans réservation préalable (ancien chemin) : jamais au-delà du disponible. */
@@ -574,10 +644,28 @@ export type UsageInput = {
  * Avec `reservationId` : la réservation est réglée au coût réel (ou libérée si l'usage était déjà compté).
  */
 export function recordUsage(u: UsageInput, o: { reservationId?: string | null } = {}): { eventId: string | null; dedup: boolean } {
-  const markup = getJsonSetting<number>("billing.markup", 1);
-  const billed = Math.round(u.costMicro * Math.max(1, markup));
-  const uid = id();
-  try {
+  return tx(() => {
+    u = { ...u, projectId: operationProject(u.projectId), jobId: u.jobId ?? currentTrace().jobId };
+    if (!Number.isFinite(u.costMicro) || u.costMicro < 0) throw new UserFacingError(L("Coût du résultat inconnu : rapprochement nécessaire, aucune relance automatique.", "Result cost unknown: reconciliation required, no automatic retry."));
+    if (o.reservationId) {
+      const r = one<{ user_id: string; project_id: string | null; task: string; status: string }>("SELECT user_id,project_id,task,status FROM ai_reservations WHERE id=?", o.reservationId);
+      if (!r || r.user_id !== accountKeyFor(u.userId, u.projectId) || r.project_id !== (u.projectId ?? null) || r.task !== u.task || r.status === "released") throw new UserFacingError(L("Le règlement ne correspond pas à cette action. Aucun autre projet n'a été débité.", "This settlement does not match the action. No other project was charged."));
+    }
+    const markup = getJsonSetting<number>("billing.markup", 1);
+    const billed = Math.round(u.costMicro * Math.max(1, markup));
+    const uid = id();
+    // Les anciens événements restent lisibles ; une clé fournie par un autre compte ne déduplique jamais cet usage.
+    const scopedKey = u.idempotencyKey ? `usage:v2:${createHash("sha256").update(JSON.stringify([u.userId,u.projectId??null,u.task,u.idempotencyKey])).digest("hex")}` : null;
+    const previous = u.idempotencyKey ? one<{ id: string; billed: number }>("SELECT id,billed FROM usage_events WHERE idempotency_key IN (?,?) AND user_id=? AND project_id IS ? AND task=?", scopedKey, u.idempotencyKey, u.userId, u.projectId??null, u.task) : null;
+    if(previous){
+      if(o.reservationId){
+        const same = one<{ usage_event_id: string | null }>("SELECT usage_event_id FROM ai_reservations WHERE id=?",o.reservationId);
+        if(same?.usage_event_id===previous.id)settle(o.reservationId,previous.billed,`usage:${previous.id}`,"réponse déjà comptabilisée");
+        else release(o.reservationId,"usage déjà compté (reprise)");
+      }
+      return {eventId:previous.id,dedup:true};
+    }
+
     run(
       `INSERT INTO usage_events (id, user_id, project_id, job_id, task, provider, model, unit, input_units, output_units, quantity, cost, billed, estimated, idempotency_key, created_at)
        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
@@ -595,18 +683,16 @@ export function recordUsage(u: UsageInput, o: { reservationId?: string | null } 
       u.costMicro,
       billed,
       u.estimated ? 1 : 0,
-      u.idempotencyKey ?? null,
+      scopedKey,
       now(),
     );
-  } catch (e: any) {
-    if (String(e?.message).includes("UNIQUE")) {
-      if (o.reservationId) release(o.reservationId, "usage déjà compté (reprise)");
-      return { eventId: null, dedup: true }; // déjà comptabilisé (reprise)
+    const note = `${u.task} · ${u.provider}/${u.model}`;
+    if (o.reservationId) {
+      run("UPDATE ai_reservations SET usage_event_id=? WHERE id=?",uid,o.reservationId);
+      settle(o.reservationId, billed, `usage:${uid}`, note);
     }
-    throw e;
-  }
-  const note = `${u.task} · ${u.provider}/${u.model}`;
-  if (o.reservationId) settle(o.reservationId, billed, `usage:${uid}`, note);
-  else charge(accountKeyFor(u.userId, u.projectId), billed, `usage:${uid}`, note);
-  return { eventId: uid, dedup: false };
+    else charge(accountKeyFor(u.userId, u.projectId), billed, `usage:${uid}`, note);
+    return { eventId: uid, dedup: false };
+
+  });
 }
