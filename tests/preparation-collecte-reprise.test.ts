@@ -39,7 +39,8 @@ it.each(["products", "services"] as const)("collecte %s : avancement sauvé avan
   expect(stateOf(f.pid)!.pending).toBeUndefined();
   await execute("media", "collect", deps, "Reprendre les seuls emplacements non terminés après rétablissement du fournisseur.");
   const slots = stateOf(f.pid)!.stages.media!.data.slots;
-  expect(slots.every(s => s.assetId && s.alignment?.status === "accepted")).toBe(true);
+  expect(slots.filter(s=>s.kind!=="video").every(s => s.assetId && s.alignment?.status === "accepted")).toBe(true);
+  expect(slots.filter(s=>s.kind==="video").every(s=>s.source==="ai"&&!s.assetId)).toBe(true); // clips séparés : aucun appel caché dans la collecte d’images
   expect(slots[0].assetId).toBe(first);
   expect(calls.filter(x => x === "final:image:1")).toHaveLength(1);
   expect(calls.filter(x => x === "final:image:2")).toHaveLength(1);

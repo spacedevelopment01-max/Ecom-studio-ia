@@ -271,7 +271,7 @@ export function readyContract(projectId: string): ReadyContract | null {
     research: stageOf(s, "research").data,
     editorial: c.editorial ?? [],
     recommendation: c.recommendation,
-    mediaPolicy: { images: 10, videos: p.business === "products" ? 1 : 2, source: p.business === "products" ? "10 créations IA du produit + 1 vidéo Pixabay" : "10 images + 2 vidéos Pixabay", heroVideoRequired: true },
+    mediaPolicy: { images: 10, videos: p.business === "products" ? 1 : 2, source: p.business === "products" ? "10 créations IA du produit + 1 vidéo d’ambiance approuvée" : "10 images + 2 vidéos d’ambiance approuvées", heroVideoRequired: true },
     pages: c.pages,
     documents: c.documents,
     media: stageOf(s, "media").data.slots,
@@ -757,7 +757,7 @@ export function requestHash(
 }
 export function mediaReusable(projectId: string, s = stateOf(projectId)): boolean {
   const p = loadProject(projectId), c = s?.stages.content?.data, m = s?.stages.media?.data;
-  return !!c && !!m?.slots.length && m.slots.every(slot => !!slot.assetId && slot.alignment?.status === "accepted" && (s?.simulation || (!slotIssues(p, slot, getAsset(slot.assetId)).length && slot.alignment.contextHash === placementHash(p, c, slot))));
+  return !!c && !!m?.slots.length && m.slots.filter(slot=>!(slot.kind==="video"&&slot.source==="ai"&&!slot.assetId)).every(slot => !!slot.assetId && slot.alignment?.status === "accepted" && (s?.simulation || (!slotIssues(p, slot, getAsset(slot.assetId)).length && slot.alignment.contextHash === placementHash(p, c, slot))));
 }
 export function queuePreparation(
   projectId: string,
@@ -891,7 +891,7 @@ export async function runPreparation(
       withTrace({ jobId: ctx.job.id, projectId, costCapMicro: capMicro }, () =>
         ctx.step(`prepare:${action}:${hash}`, async () => {
           if (action === "collect") {
-            const keys = stageOf(s, "media").data.slots.map(slot => slot.key);
+            const keys = stageOf(s, "media").data.slots.filter(slot=>!(slot.kind==="video"&&slot.source==="ai"&&!slot.assetId)).map(slot => slot.key);
             for (const [i, slotKey] of keys.entries()) {
               const current = stateOf(projectId)!;
               if (current.revision !== expectedRevision || current.pending?.jobId !== ctx.job.id) throw new UserFacingError("Le projet a changé : collecte arrêtée, médias déjà enregistrés conservés.");

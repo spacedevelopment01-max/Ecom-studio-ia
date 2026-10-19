@@ -1,3 +1,4 @@
+import {projectRights} from "../plan-gates";
 import type { Project } from "../projects";
 import type { PlannedPage, VisualSlot } from "./types";
 export function sitePlan(p: Project): {
@@ -111,7 +112,8 @@ export function sitePlan(p: Project): {
     key: `final:image:${i + 1}`, pageKey, sectionKey, kind: "image", aspect: i < 4 ? "1:1" : i < 8 ? "16:9" : "9:16",
     source: p.business === "products" ? "ai" : "pixabay", purpose: `Composition ${i + 1} de ${p.product.name} : ${pageKey}/${sectionKey}`, required: true,
   }));
-  for (let i = 0; i < (p.business === "products" ? 1 : 2); i++) slots.push({ key: `final:video:${i + 1}`, pageKey: i === 0 ? "home" : main.key, sectionKey: i === 0 ? "hero" : "method", kind: "video", aspect: "16:9", source: "pixabay", purpose: i === 0 ? "Ambiance hero pertinente, zone de texte lisible ; jamais une preuve sur le produit exact ou les locaux réels" : "Présentation du métier, illustration déclarée", required: true, playback: { muted: true, playsInline: true, loop: true, pauseControl: true, reducedMotion: "poster", mobileFallback: "poster" } });
+  const canGenerateVideo=!!projectRights(p.id)?.videos&&projectRights(p.id)?.videos!=="none";
+  for (let i = 0; i < (p.business === "products" ? 1 : 2); i++) slots.push({ key: `final:video:${i + 1}`, pageKey: i === 0 ? "home" : main.key, sectionKey: i === 0 ? "hero" : "method", kind: "video", aspect: "16:9", source: canGenerateVideo?"ai":"pixabay", purpose: i === 0 ? "Ambiance hero pertinente, zone de texte lisible ; jamais une preuve sur le produit exact ou les locaux réels" : "Présentation du métier, illustration déclarée", required: true, playback: { muted: true, playsInline: true, loop: true, pauseControl: true, reducedMotion: "poster", mobileFallback: "poster" } });
   pages[0].sections[0].mediaSlot = "final:video:1";
   return { pages, slots };
 }

@@ -48,7 +48,7 @@ export function VideoV2Panel({ scope }: { scope?: "ad" | "organic" } = {}) {
   const [busy, setBusy] = useState<string | null>(null);
   const [open, setOpen] = useState<string | null>(null);
   const aiVideo = !!data?.ai.video;
-  const ask = () => ({ purpose:scope==="organic"?"organic":scope==="ad"?"ad":undefined, kind: form.kind, platform: form.platform, text: form.text.trim() || undefined, allowGeneration: form.allowGeneration && aiVideo });
+  const ask = () => ({generation:form.allowGeneration&&aiVideo?"direct":undefined, purpose:scope==="organic"?"organic":scope==="ad"?"ad":undefined, kind: form.kind, platform: form.platform, text: form.text.trim() || undefined, allowGeneration: form.allowGeneration && aiVideo });
   async function preparePlan() {
     setBusy("plan");
     try {

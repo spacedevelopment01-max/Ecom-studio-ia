@@ -212,6 +212,14 @@ export const realDependencies: Dependencies = {
         return prior.id;
       }
     }
+    if(slot.kind==="video"&&slot.source==="ai"){
+      const video=slot.assetId?getAsset(slot.assetId):null;
+      if(!video||video.project_id!==p.id||video.kind!=="video"||video.deleted_at)throw new Error("Validez d’abord la proposition vidéo et son enveloppe ; aucun clip créé par la collecte d’images.");
+      const reviewed=await reviewPlacement(p,ctx,content,slot,video);saveReceipt(reviewed);
+      if(reviewed.alignment?.status!=="accepted")throw new Error(`Vidéo conservée, affectation à vérifier : ${reviewed.alignment?.reason}`);
+      run("UPDATE assets SET status='approved',meta=json_set(meta,'$.gate',json(?)) WHERE id=? AND project_id=?",JSON.stringify({verdict:"FINAL",checked:true,fatal:false,reason:reviewed.alignment.reason,manualReviewRequired:true}),video.id,p.id);
+      return video.id;
+    }
     if (slot.source === "pixabay") {
       const reviewed = await collectPixabaySlot(p, ctx, { ...content, slots: stateOf(p.id)!.stages.media?.data.slots ?? content.slots }, slot);
       saveReceipt(reviewed);

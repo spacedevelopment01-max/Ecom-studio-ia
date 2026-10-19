@@ -1,4 +1,5 @@
 "use client";
+import {GuidedVideo} from "./guided-video";
 import { LogoV2Panel } from "./logo-v2-panel";
 import { InitialCreatives } from "./initial-creatives";
 import { InitialAuthorization } from "./initial-authorization";
@@ -1176,12 +1177,13 @@ export default function TabPreparation() {
           </h2>
           <p className="text-sm text-muted">
             {t(
-              "Produits : 10 créations IA (4 carrées, 4 paysages, 2 stories) et 1 vidéo Pixabay d’ambiance. Services : 10 photos et 2 vidéos Pixabay. Chaque média est contrôlé et affecté à une section. Par défaut, aucune personne ajoutée.",
-              "Products: 10 AI creations (4 square, 4 landscape, 2 stories) and 1 Pixabay mood video. Services: 10 photos and 2 videos from Pixabay. Each media is checked and placed in a section. No people added by default.",
+              "Produits : 10 créations IA (4 carrées, 4 paysages, 2 stories) et 1 vidéo d’ambiance. Services : 10 photos et 2 vidéos d’ambiance. Les vidéos ont leur scénario et devis séparés, à valider avant les clips. Chaque média est contrôlé et affecté à une section. Par défaut, aucune personne ajoutée.",
+              "Products: 10 AI creations (4 square, 4 landscape, 2 stories) and 1 mood video. Services: 10 photos and 2 mood videos. Video scenarios and quotes are reviewed separately before clips. Each media is checked and placed in a section. No people added by default.",
             )}
           </p>
           <Button onClick={() => prepare("media", "collect")} disabled={busy || working || !enabled}>{t("Préparer les médias manquants (avec devis)", "Prepare missing media (with quote)")}</Button>
           <p role="status">{state.stages.media?.data.slots.filter(s => s.reviewed && s.assetId).length ?? 0}/{state.stages.media?.data.slots.length ?? 0} {t("médias vérifiés par vous. Les résultats incomplets restent enregistrés.", "media reviewed by you. Partial results stay saved.")}</p>
+          {state.stages.media?.data.slots.filter(slot=>slot.kind==="video"&&slot.source==="ai").map(slot=><GuidedVideo key={`proposal:${slot.key}`} as="post" initialSlot={slot.key}/>)}
           {state.stages.media?.data.slots.map((slot) => (
             <Slot
               key={slot.key}
@@ -1421,9 +1423,9 @@ function Slot({
       <Button
         variant="secondary"
         onClick={generate}
-        disabled={busy || consentDirty}
+        disabled={busy || consentDirty || (slot.kind==="video"&&slot.source==="ai"&&!slot.assetId)}
       >
-        {slot.source === "pixabay" ? t("Chercher et contrôler sur Pixabay", "Search and review on Pixabay") : t("Créer ce visuel par l’IA", "Create this visual with AI")}
+        {slot.kind==="video"&&slot.source==="ai"?t("Contrôler et affecter la vidéo obtenue","Review and place the obtained video"):slot.source === "pixabay" ? t("Chercher et contrôler sur Pixabay", "Search and review on Pixabay") : t("Créer ce visuel par l’IA", "Create this visual with AI")}
       </Button>
       <Field
         label={t(

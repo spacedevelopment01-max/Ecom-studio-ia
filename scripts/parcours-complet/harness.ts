@@ -39,7 +39,7 @@ if (command === "seed") {
     run("INSERT INTO sessions(id,user_id,expires_at,created_at) VALUES(?,?,?,?)", crypto.createHash("sha256").update(token).digest("hex"), u.id, now() + 86_400_000, now());
     cases.push({ ...item, uid: u.id, token });
   }
-  for (const provider of ["openai", "anthropic"]) setSetting(`provider.${provider}.apiKey`, "synthetic-never-contact-provider", true);
+  for (const provider of ["openai", "anthropic", ...(process.env.VIDEO_BEGINNER_PROOF==="1"?["alibaba"]:[])]) setSetting(`provider.${provider}.apiKey`, "synthetic-never-contact-provider", true);
   const media = MEDIA_MODELS.find(m => m.provider === "openai" && m.kind === "image" && m.caps.textInImage && (m.caps.references ?? 0) >= 3);
   if (!media) throw Error("Catalogue de route simulée absent.");
   const route = `${media.provider}:${media.model}`;
@@ -49,6 +49,13 @@ if (command === "seed") {
   // this synthetic price is TEST DATA, never a verified supplier price or production configuration.
   setJsonSetting("ai.media.models", { [route]: { enabled: true, confirmedAt: now() }, [logoRoute]: { enabled: true, confirmedAt: now() } });
   setJsonSetting("ai.prices", { [route]: { unit: "image", perImage: .08 }, [logoRoute]: { unit: "image", perImage: .08 } }); setSetting("ai.prices.checkedAt", String(now()));
+  if(process.env.VIDEO_BEGINNER_PROOF==="1"){
+    const clip="alibaba:wan2.6-t2v",reference="alibaba:wan2.6-i2v";
+    const {getJsonSetting}=await import("../../src/lib/settings");
+    setJsonSetting("ai.media.usage",{...getJsonSetting("ai.media.usage",{}),text_video:{primary:clip},product_video:{primary:reference}});
+    setJsonSetting("ai.media.models",{...getJsonSetting("ai.media.models",{}),[clip]:{enabled:true,confirmedAt:now()},[reference]:{enabled:true,confirmedAt:now()}});
+    setJsonSetting("ai.prices",{...getJsonSetting("ai.prices",{}),[clip]:{unit:"video_second",perSecond:.1},[reference]:{unit:"video_second",perSecond:.1}});
+  }
   await sharp(await syntheticPng(1200, 900, "PHOTO FOURNIE À LA CRÉATION — FICTIVE")).toFile(path.join(dir, "photo-test.png"));
   const { execTool } = await import("../../src/lib/exec-tool");
   for (let n = 0; n < 2; n++) await execTool("ffmpeg", ["-y", "-v", "error", "-f", "lavfi", "-i", `testsrc2=size=1280x720:rate=${5 + n}`, "-t", "3", "-c:v", "libx264", "-pix_fmt", "yuv420p", path.join(dir, `video-test-${n}.mp4`)]);
@@ -186,11 +193,15 @@ if (command === "seed") {
     },
   };
   for (;;) {
-    const j = claimNext(["project.prepare", "brand.logo.v2", "brand.logo.v2.choose", "social.initial"]);
+    const j = claimNext(["project.prepare", "brand.logo.v2", "brand.logo.v2.choose", "social.initial", ...(process.env.VIDEO_BEGINNER_PROOF==="1"?["video.scenario","video.scenes","video.v2.render"]:[])]);
     if (!j) { await new Promise(resolve => setTimeout(resolve, 200)); continue; }
     const ctx = new JobContext(j);
     try {
       const output = await runWithLang({ ui: "fr", content: "fr" }, () => runForUser(j.user_id, async () => {
+        if(j.type.startsWith("video.")){
+          const {runBeginnerVideoJob}=await import("../video-beginners/worker");
+          return runBeginnerVideoJob(ctx,dir!);
+        }
         if (j.type === "project.prepare") {
           if (ctx.payload.correction?.includes("[TEST_ECHEC_FOURNISSEUR]")) throw Error("ÉCHEC FOURNISSEUR SIMULÉ : données et versions conservées.");
           return runPreparation(ctx, preparation);

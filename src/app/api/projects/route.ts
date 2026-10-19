@@ -106,7 +106,7 @@ export const POST = handle(async (req: Request) => {
   ensureFolders(pid);
   prepareInitialCreatives(pid);
   await saveStartFiles(pid, user.id, site ? [] : files, logo, site ? "products" : input.businessType);
-  if (input.flow === "preparation") {
+  if (input.flow === "preparation" || input.videos === "ai") {
     startPreparation(pid,input);
     return ok({id:pid,jobId:null,started:true,preparation:true});
   }

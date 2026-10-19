@@ -51,7 +51,7 @@ export function PromptIdeas({ subjectKey, surface, onPick }: { subjectKey: strin
   );
 }
 
-export function SubjectPicker({ subjects, value, onChange, request, onRequest, idPrefix, video, surface }: { subjects: SubjectView[]; value: string; onChange: (key: string) => void; request: string; onRequest: (v: string) => void; idPrefix: string; video?: boolean; /** Usage des idées proposées (publication ou publicité, image ou vidéo). */ surface?: IdeaSurface }) {
+export function SubjectPicker({ subjects, value, onChange, request, onRequest, idPrefix, video, surface,photoOptional }: { subjects: SubjectView[]; value: string; onChange: (key: string) => void; request: string; onRequest: (v: string) => void; idPrefix: string; video?: boolean;photoOptional?:boolean; /** Usage des idées proposées (publication ou publicité, image ou vidéo). */ surface?: IdeaSurface }) {
   const t = useT();
   const kind = subjects[0]?.kind ?? "product";
   return (
@@ -65,7 +65,7 @@ export function SubjectPicker({ subjects, value, onChange, request, onRequest, i
                 {s.photoId ? <img src={`/api/files/${s.photoId}?thumb=1`} alt="" className="size-10 shrink-0 rounded-lg bg-paper-2 object-contain" /> : <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-paper-2 text-xs text-muted" aria-hidden>{s.name.slice(0, 2).toUpperCase()}</span>}
                 <span className="min-w-0">
                   <span className="block truncate font-medium">{s.name}</span>
-                  {s.kind === "product" && !s.hasPhoto && <span className="block text-[11px] text-warn">{t("Sans photo : ajoutez-en une pour l'IA", "No photo: add one for the AI")}</span>}
+                  {s.kind === "product" && !s.hasPhoto&&!photoOptional && <span className="block text-[11px] text-warn">{t("Sans photo : ajoutez-en une pour l'IA", "No photo: add one for the AI")}</span>}
                 </span>
               </button>
             ))}

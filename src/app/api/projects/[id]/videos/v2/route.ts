@@ -26,6 +26,7 @@ const AskSchema = z.object({
   durationS: z.number().min(6).max(600).optional(),
   audience: z.string().max(300).optional(),
   editorial:VideoEditorialSchema.optional(),
+  generation:z.enum(["direct","reference"]).optional(),
   allowGeneration: z.boolean().optional(),
 });
 

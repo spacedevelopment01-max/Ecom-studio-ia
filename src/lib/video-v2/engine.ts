@@ -428,7 +428,7 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
   // Plan libre de droits (Pixabay d'abord) : chaque moment de la vidéo qui ne montre pas le produit et n'a pas de
   // vidéo du client reçoit SON plan vidéo réel, cherché pour lui (métier, prestation, univers du produit) — gratuit.
   // Les plans du produit (photos réelles, packshot), la preuve, la conclusion et l'appel à l'action restent composés.
-  if (deps.stockClip && (p.business === "services" || s.source.kind !== "generate") && s.method !== "existing_video" && stockFor(o.p, s)) {
+  if (deps.stockClip && ((p.business === "services"&&!o.intent.generation) || s.source.kind !== "generate") && s.method !== "existing_video" && stockFor(o.p, s)) {
     const clip = await deps
       .stockClip({ topic: s.subject, part: s.part, aspect: o.intent.aspect === "16:9" ? "16:9" : o.intent.aspect === "1:1" ? "1:1" : o.intent.aspect === "4:5" ? "4:5" : "9:16", durationS: s.durationS, index: o.stockIndex ? o.stockIndex.n++ : 0, key: `${o.ctx?.job.id ?? "video"}:${s.id}` }, o.stockTaken ?? new Set())
       .catch((e) => {
@@ -442,7 +442,7 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
       return { media: { kind: "video", assetId: clip.assetId, durationS: clip.durationS }, outcome: { ...base, method: "existing_video", assetId: clip.assetId, reason: "plan vidéo libre de droits (Pixabay ou Pexels) choisi pour ce moment" } };
     }
   }
-  if(p.business === "services" && s.method !== "existing_video") throw new Error(`Scène ${s.id} : aucun plan pertinent trouvé pour cette prestation. Vidéo incomplète ; acquis conservés.`);
+  if(p.business === "services" && !o.intent.generation && s.method !== "existing_video") throw new Error(`Scène ${s.id} : aucun plan pertinent trouvé pour cette prestation. Vidéo incomplète ; acquis conservés.`);
   if (s.source.kind !== "generate") {
     stats.localShots++;
     const m = localMedia(s);
@@ -453,24 +453,24 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
   // Plan généré : image de départ réelle (référence) ; personnage : même image de départ pour toute la vidéo.
   const provider = s.source.provider!;
   const model = s.source.model!;
-  const startId = s.character && o.characterRef ? o.characterRef.assetId : s.source.assetId ?? s.reference.assetId;
+  const startId = o.intent.generation==="direct"?null:s.character && o.characterRef ? o.characterRef.assetId : s.source.assetId ?? s.reference.assetId;
   let start = startId ? deps.data(startId) : null;
   let startAsset = startId;
-  if (!start) {
+  if (!start && !o.intent.generation) {
     const img = await deps.image({ kind: s.character ? "lifestyle" : o.p.business === "services" ? "trade_photo" : "usage_scene", support: "video", aspect: o.intent.aspect === "16:9" ? "16:9" : "9:16", topic: s.subject, allowGenerate: true, name: `video-depart-${s.id}`, maxControls: 2 });
     if (img) {
       start = img.data;
       startAsset = img.assetId;
     }
   }
-  if (!start) throw new Error(`Scène ${s.id} : référence nécessaire pour un vrai clip, aucun substitut local.`);
+  if (!start && o.intent.generation!=="direct") throw new Error(`Scène ${s.id} : référence nécessaire pour un vrai clip, aucun substitut local.`);
 
   const productRef = s.showsProduct && o.inv.cutout ? deps.data(o.inv.cutout.id) : null;
   const key = shotKey({ v: 1, p: p.id, provider, model, subject: s.subject, action: s.action, camera: s.camera, framing: s.framing, d: s.durationS, start: startAsset, persona: o.persona?.id ?? null, fb: o.feedback ?? null });
   const memo = shotMemo(p.id, key);
   if (memo?.verdict === "FINAL" && memo.assetId) {
     stats.reused++;
-    return { media: { kind: "video", assetId: memo.assetId, generated: true,durationS:Number(JSON.parse(getAsset(memo.assetId)?.meta??"{}").durationS)||undefined }, outcome: { ...base, verdict: "FINAL", assetId: memo.assetId, reused: true, reason: "plan déjà accepté : réutilisé (aucun coût)" }, characterRef: s.character && startAsset ? { assetId: startAsset, data: start } : null };
+    return { media: { kind: "video", assetId: memo.assetId, generated: true,durationS:Number(JSON.parse(getAsset(memo.assetId)?.meta??"{}").durationS)||undefined }, outcome: { ...base, verdict: "FINAL", assetId: memo.assetId, reused: true, reason: "plan déjà accepté : réutilisé (aucun coût)" }, characterRef: s.character && startAsset && start ? { assetId: startAsset, data: start } : null };
   }
   const capability = VIDEO_CAPABILITIES.find((c) => c.provider === provider && c.model === model);
   const seconds = capability ? shootDuration(capability, s.durationS) : Math.ceil(s.durationS);
@@ -512,7 +512,7 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
     feedback = d.feedback || review?.issues.join("; ");
   }
   rememberShot(p.id, key, { assetId: last.verdict === "FINAL" ? last.assetId : null, method: s.method, verdict: last.verdict, provider, model, costMicro: spent, attempts: maxAttempts, reason: last.reason });
-  if (last.verdict === "FINAL" && last.assetId) return { media: { kind: "video", assetId: last.assetId, generated: true,durationS:Number(JSON.parse(getAsset(last.assetId)?.meta??"{}").durationS)||undefined }, outcome: { ...base, verdict: "FINAL", assetId: last.assetId, attempts: maxAttempts, costMicro: spent, reason: "plan généré accepté au contrôle", codes: [] }, characterRef: s.character && startAsset ? { assetId: startAsset, data: start } : null };
+  if (last.verdict === "FINAL" && last.assetId) return { media: { kind: "video", assetId: last.assetId, generated: true,durationS:Number(JSON.parse(getAsset(last.assetId)?.meta??"{}").durationS)||undefined }, outcome: { ...base, verdict: "FINAL", assetId: last.assetId, attempts: maxAttempts, costMicro: spent, reason: "plan généré accepté au contrôle", codes: [] }, characterRef: s.character && startAsset && start ? { assetId: startAsset, data: start } : null };
   throw new Error(`Scène ${s.id} non obtenue ou refusée : ${last.reason || last.codes.join(", ")}. Versions conservées, aucun plan simplifié substitué.`);
 }
 

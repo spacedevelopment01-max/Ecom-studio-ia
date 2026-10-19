@@ -41,6 +41,15 @@ export function planShots(storyboard: Shot[], ctx: PlanContext): ShotPlanning {
   const videos = [...ctx.inv.videos];
   const photoIds = new Set(ctx.inv.photos.map((p) => p.id));
   const shots = storyboard.map((s): ShotPlan => {
+    if(ctx.intent.generation&&ctx.allowGeneration){
+      const need:ShotNeed={imageToVideo:ctx.intent.generation==="reference",people:false,nativeAudio:false,aspect:ctx.intent.aspect,durationS:s.durationS};
+      const choice=ctx.provider(need);
+      if(!choice)throw new Error("Aucune route compatible pour de vrais clips IA : aucune composition locale ou vidéo stock substituée.");
+      if(estimate+choice.estimateMicro>ctx.budgetMicro)throw new Error("Budget insuffisant pour le scénario complet ; aucun substitut local.");
+      if(need.imageToVideo&&!s.reference.assetId)throw new Error("Photo de référence requise par la route choisie : ajoutez-la ou choisissez le texte-vers-vidéo.");
+      estimate+=choice.estimateMicro;
+      return {...s,character:false,method:"ai_video",source:{kind:"generate",assetId:need.imageToVideo?s.reference.assetId:null,provider:choice.provider,model:choice.model,estimateMicro:choice.estimateMicro},why:"Clip IA distinct ; logo et texte au montage, sans image intermédiaire générée."};
+    }
     // Carte de fin, preuve, signature : compositions locales (calques de l'éditeur, modifiables).
     if (s.part === "cta") return { ...s, method: "local_composition", source: { kind: "compose" }, why: "carte de fin composée (logo, CTA) : modifiable, gratuite" };
     if (s.part === "proof") return { ...s, method: "kinetic_type", source: { kind: "compose" }, why: "fait confirmé en typographie animée" };

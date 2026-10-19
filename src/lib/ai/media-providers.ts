@@ -1238,5 +1238,5 @@ export const ugcFrame = withMediaBackup("image", traced("image_generation", ugcF
 export const falClip = traced("video_generation", falClipImpl);
 export const wanClip = traced("video_generation", wanClipImpl);
 /** Texte vers vidéo Wan (vidéo publicitaire, motion design) : prêt pour les moteurs, aucune image de départ. */
-export const wanTextClip = traced("video_generation", (ctx: Ctx, input: { prompt: string; seconds?: number; model?: string; usage?: MediaUsage }, onWait?: (msg: string) => void) => wanClipImpl(ctx, { ...input, image: null, usage: input.usage ?? "text_video" }, onWait));
+export const wanTextClip = traced("video_generation", (ctx: Ctx, input: { prompt: string; aspect?:"16:9"|"9:16";seconds?: number; model?: string; usage?: MediaUsage }, onWait?: (msg: string) => void) => wanClipImpl(ctx, { ...input, image: null, usage: input.usage ?? "text_video" }, onWait));
 const generateImage = withMediaBackup("image", traced("image_generation", generateImageImpl), { usage: (_c, i) => i.usage });
