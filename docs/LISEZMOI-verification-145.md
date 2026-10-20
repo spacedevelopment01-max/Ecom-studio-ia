@@ -30,7 +30,7 @@ Mot à mot : **exécuté** = lancé ici pour de vrai ; **simulé** = l'IA est re
 | 7 | 30 anciens thèmes et anciennes sections retirés des interfaces, projets enregistrés toujours lisibles | réussi ; deux restes corrigés (D, E) | exécuté |
 | 8 | Section entièrement écrite par l'IA réservée à Dominer (129 €), serveur compris | **défauts corrigés** (A, B) | IA simulée |
 | 9 | Exports WooCommerce et PrestaShop : carrousels, repères, avant / après | **défauts corrigés** (L, M, N) | exécuté (thème exporté, sans installation réelle) |
-| — | Quatre thèmes validés FRAISE, ONDE, ORBE, Atelier Rive inchangés | voir « Quatre thèmes validés » | exécuté |
+| — | Quatre thèmes validés FRAISE, ONDE, ORBE, Atelier Rive inchangés | réussi : 232 / 236 captures identiques, 4 écarts de prise de vue | exécuté |
 
 ## Défauts constatés, cause, correction, test
 
@@ -52,6 +52,15 @@ Mot à mot : **exécuté** = lancé ici pour de vrai ; **simulé** = l'IA est re
 | N | WooCommerce : « Sélection de produits » sans aucun produit | le moteur PHP n'a pas les fiches produits de Shopify | grille de produits native de WooCommerce, mêmes produits | idem |
 
 Chaque test a été lancé sans la correction (il échoue) puis avec (il passe), sauf K (texte).
+
+## Quatre thèmes validés (FRAISE, ONDE, ORBE, Atelier Rive)
+
+Mêmes pages, mêmes largeurs (360, 390, 430 et 1 440 px : accueil, fiche, toutes les pages, panier, tiroir, menu,
+recherche, 404), capturées sur `main` fusionné d97e0b95 puis sur cette branche, comparées pixel par pixel :
+**232 captures identiques sur 236**. Les 4 écarts, vérifiés sur capture, viennent du moment de la prise de vue et non
+du rendu : vignette produit d'ONDE saisie pendant son changement d'état (téléphone 360 px), tiroir panier d'ONDE saisi
+en pleine ouverture (téléphone et ordinateur), bord de la photo suivante de la galerie produit d'ORBE chargé ou non
+(9 pixels de large, téléphone 430 px). Atelier Rive : identique à 100 %. Aucun texte, média ni ordre modifié.
 
 ## Preuves (privées, hors dépôt)
 
