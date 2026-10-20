@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { chromium, type Page } from 'playwright';
+import type { Page } from 'playwright';
 const root = process.env.DATA_DIR!;
 if (!root || !path.basename(root).startsWith('ecs-test-154-'))
     throw Error('Isolated reception only');
@@ -19,20 +19,40 @@ fs.mkdirSync(path.join(process.env.PLAYWRIGHT_BROWSERS_PATH, 'ffmpeg-1011'), { r
 const bin = path.join(process.env.PLAYWRIGHT_BROWSERS_PATH, 'ffmpeg-1011', 'ffmpeg-linux');
 if (!fs.existsSync(bin))
     fs.symlinkSync('/usr/bin/ffmpeg', bin);
+const { chromium } = await import('playwright');
 const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox'] });
-async function ready(p: Page, walk = false) { await p.evaluate(async () => { document.images && [...document.images].forEach(i => i.loading = 'eager'); await document.fonts.ready; await Promise.all([...document.images].filter(i => i.getAttribute('src')).map(i => i.decode().catch(() => { }))); }); if (walk) {
-    for (let y = 0; y < await p.evaluate(() => document.documentElement.scrollHeight); y += 650) {
-        await p.evaluate(y => scrollTo(0, y), y);
-        await p.waitForTimeout(65);
+async function ready(p: Page, walk = false) {
+    await p.evaluate(async () => { document.images && [...document.images].forEach(i => i.loading = 'eager'); await document.fonts.ready; await Promise.all([...document.images].filter(i => i.getAttribute('src')).map(i => i.decode().catch(() => { }))); });
+    if (walk) {
+        for (let y = 0; y < await p.evaluate(() => document.documentElement.scrollHeight); y += 650) {
+            await p.evaluate(y => scrollTo(0, y), y);
+            await p.waitForTimeout(65);
+        }
+        await p.evaluate(() => scrollTo(0, 0));
     }
-    await p.evaluate(() => scrollTo(0, 0));
-} await p.waitForTimeout(350); }
-async function capture(p: Page, slug: string, full = true) { await ready(p, true); await p.screenshot({ path: path.join(out, slug + '.jpg'), type: 'jpeg', quality: 86, fullPage: full }); const data = await p.evaluate(() => ({ viewport: innerWidth, width: document.documentElement.scrollWidth, h1: [...document.querySelectorAll('h1')].map(x => x.textContent?.trim()), title: document.title, robots: document.querySelector('meta[name="robots"]')?.getAttribute('content'), images: [...document.images].filter(i => i.getAttribute('src') && i.offsetWidth > 0).map(i => ({ ok: i.complete && i.naturalWidth > 0, alt: i.alt })), links: [...document.querySelectorAll<HTMLAnchorElement>('main a[href]')].map(a => ({ label: a.textContent?.trim(), path: new URL(a.href).pathname.replace(/\/preview\/[^/]+\/v\/[^/]+/, '[preview]') })) })); results.push({ slug, ...data }); assert(data.width <= data.viewport + 2, slug + ' horizontal overflow'); assert(data.images.every(i => i.ok), slug + ' undecodable visible image'); }
-async function context(a: any, width: number, video = false) { const c = await browser.newContext({ viewport: { width, height: 900 }, locale: 'fr-FR', reducedMotion: video ? 'no-preference' : 'reduce', ...(video ? { recordVideo: { dir: path.join(out, 'raw-video'), size: { width: width === 1440 ? 960 : width, height: width === 1440 ? 600 : 900 } } } : {}) }); await c.addCookies([{ name: 'ecs_session', value: a.token, url: base }, { name: 'ecs-lang', value: 'fr', url: base }]); await c.addInitScript(() => { (globalThis as any).__name = (f: any) => f; try {
-    sessionStorage.setItem('ecsSeen', '1');
+    await p.waitForTimeout(350);
 }
-catch { /* Native preview sandbox intentionally denies storage. */ } }); await c.route('**/*', r => { const u = new URL(r.request().url()); if (['127.0.0.1', 'localhost'].includes(u.hostname) || ['data:', 'blob:'].includes(u.protocol))
-    return r.continue(); external.add(u.hostname); return r.abort(); }); c.on('page', p => p.on('pageerror', e => errors.push({ message: e.message }))); return c; }
+async function capture(p: Page, slug: string, full = true) { await ready(p, true); await p.screenshot({ path: path.join(out, slug + '.jpg'), type: 'jpeg', quality: 86, fullPage: full }); const data = await p.evaluate(() => ({ viewport: innerWidth, width: document.documentElement.scrollWidth, h1: [...document.querySelectorAll('h1')].map(x => x.textContent?.trim()), title: document.title, robots: document.querySelector('meta[name="robots"]')?.getAttribute('content'), images: [...document.images].filter(i => i.getAttribute('src') && i.offsetWidth > 0).map(i => ({ ok: i.complete && i.naturalWidth > 0, alt: i.alt })), links: [...document.querySelectorAll<HTMLAnchorElement>('main a[href]')].map(a => ({ label: a.textContent?.trim(), path: new URL(a.href).pathname.replace(/\/preview\/[^/]+\/v\/[^/]+/, '[preview]') })) })); results.push({ slug, ...data }); assert(data.width <= data.viewport + 2, slug + ' horizontal overflow'); assert(data.images.every(i => i.ok), slug + ' undecodable visible image'); }
+async function context(a: any, width: number, video = false) {
+    const c = await browser.newContext({ viewport: { width, height: 900 }, locale: 'fr-FR', reducedMotion: video ? 'no-preference' : 'reduce', ...(video ? { recordVideo: { dir: path.join(out, 'raw-video'), size: { width: width === 1440 ? 960 : width, height: width === 1440 ? 600 : 900 } } } : {}) });
+    await c.addCookies([{ name: 'ecs_session', value: a.token, url: base }, { name: 'ecs-lang', value: 'fr', url: base }]);
+    await c.addInitScript(() => {
+        (globalThis as any).__name = (f: any) => f;
+        try {
+            sessionStorage.setItem('ecsSeen', '1');
+        }
+        catch { /* Native preview sandbox intentionally denies storage. */ }
+    });
+    await c.route('**/*', r => {
+        const u = new URL(r.request().url());
+        if (['127.0.0.1', 'localhost'].includes(u.hostname) || ['data:', 'blob:'].includes(u.protocol))
+            return r.continue();
+        external.add(u.hostname);
+        return r.abort();
+    });
+    c.on('page', p => p.on('pageerror', e => errors.push({ message: e.message })));
+    return c;
+}
 try {
     for (const a of manifest.accounts) {
         for (const width of [1440, 390]) {

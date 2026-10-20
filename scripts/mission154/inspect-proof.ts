@@ -13,10 +13,13 @@ try {
         const x = a.find((a: any) => a.theme === theme), c = await b.newContext({ viewport: { width, height: 900 }, reducedMotion: 'reduce' }), p = await c.newPage();
         await p.route('**/*', r => new URL(r.request().url()).hostname !== '127.0.0.1' ? r.abort() : r.continue());
         await p.goto('http://127.0.0.1:18254' + x.preview + (product ? '/products/' + x.product : '/') + '?es_raw=1', { waitUntil: 'networkidle' });
-        await p.evaluate(async () => { await document.fonts.ready; for (const i of document.images) {
-            i.loading = 'eager';
-            await i.decode().catch(() => { });
-        } });
+        await p.evaluate(async () => {
+            await document.fonts.ready;
+            for (const i of document.images) {
+                i.loading = 'eager';
+                await i.decode().catch(() => { });
+            }
+        });
         for (const [label, y] of [['haut', 0], ['milieu', product ? 2500 : 1050], ['bas', 90000]] as const) {
             await p.evaluate(y => scrollTo(0, y), y);
             await p.waitForTimeout(500);

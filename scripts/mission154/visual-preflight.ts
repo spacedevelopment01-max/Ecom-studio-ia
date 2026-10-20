@@ -22,9 +22,12 @@ try {
         const routes = [['home', '/'], ...(!a.services ? [['product', `/products/${a.product}`]] : [])];
         for (const [name, route] of routes) {
             await page.goto(base + a.preview + route + '?es_raw=1', { waitUntil: 'networkidle' });
-            await page.evaluate(async () => { for (const i of Array.from(document.images)) {
-                i.loading = 'eager';
-            } await document.fonts.ready; });
+            await page.evaluate(async () => {
+                for (const i of Array.from(document.images)) {
+                    i.loading = 'eager';
+                }
+                await document.fonts.ready;
+            });
             await page.waitForTimeout(450);
             await page.screenshot({ path: path.join(out, `${theme}-${name}.jpg`), type: 'jpeg', quality: 87, fullPage: true });
             results.push({ theme, name, layout: await page.evaluate(() => ({ width: innerWidth, content: document.documentElement.scrollWidth, images: Array.from(document.images).map(x => ({ ok: x.complete && x.naturalWidth > 0, alt: x.alt })), h1: document.querySelectorAll('h1').length })), errors: [...errors] });

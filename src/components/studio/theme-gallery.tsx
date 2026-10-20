@@ -140,7 +140,7 @@ export function ThemeGallery({ open, onClose, projectId, directions, current, ca
     : undefined;
   // Ce qui empêche le choix depuis la démo complète (catégorie, forfait) : affiché à la place du bouton.
   const blockedFor = (d: DirectionCard): string | null => {
-    if (!canApply) return t("Disponible une fois la boutique créée", "Available once the store has been created");
+    if (!canApply) return t("Disponible après la préparation de votre projet", "Available after preparing your project");
     if (d.id !== current && excluded.get(d.id)) return excluded.get(d.id)!;
     if (plan !== undefined && d.id !== current && (!plan || !d.plan || RANK[d.plan] > RANK[plan])) return d.plan ? t(`Avec le forfait ${PLANS[d.plan].name.fr}`, `With the ${PLANS[d.plan].name.en} plan`) : t("Forfait requis", "Plan required");
     return null;

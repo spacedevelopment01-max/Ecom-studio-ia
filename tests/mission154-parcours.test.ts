@@ -1,5 +1,18 @@
-const isolatedDatabase = vi.hoisted(() => { const fs=process.getBuiltinModule('fs');const root=process.env.DATA_DIR;if(!root)throw Error('Isolated tests required');const globals=globalThis as {__ecomDb?:{close():void}},previous=globals.__ecomDb;delete globals.__ecomDb;vi.stubEnv('DATA_DIR',fs.mkdtempSync(root+'/mission154-'));return{previous}; });
-afterAll(()=>{const globals=globalThis as {__ecomDb?:{close():void}};if(globals.__ecomDb!==isolatedDatabase.previous)globals.__ecomDb?.close();if(isolatedDatabase.previous)globals.__ecomDb=isolatedDatabase.previous;else delete globals.__ecomDb;vi.unstubAllEnvs();});
+const isolatedDatabase = vi.hoisted(() => { const fs = process.getBuiltinModule('fs'); const root = process.env.DATA_DIR; if (!root)
+    throw Error('Isolated tests required'); const globals = globalThis as {
+    __ecomDb?: {
+        close(): void;
+    };
+}, previous = globals.__ecomDb; delete globals.__ecomDb; vi.stubEnv('DATA_DIR', fs.mkdtempSync(root + '/mission154-')); return { previous }; });
+afterAll(() => { const globals = globalThis as {
+    __ecomDb?: {
+        close(): void;
+    };
+}; if (globals.__ecomDb !== isolatedDatabase.previous)
+    globals.__ecomDb?.close(); if (isolatedDatabase.previous)
+    globals.__ecomDb = isolatedDatabase.previous;
+else
+    delete globals.__ecomDb; vi.unstubAllEnvs(); });
 /** Native routes, accounts, jobs, versions and media engine; all supplier transports are simulated. */
 import { it, expect, vi, beforeEach, afterEach, afterAll } from 'vitest';
 const session = vi.hoisted(() => ({ user: null as any }));
@@ -108,3 +121,4 @@ it.each(['creer', 'vendre'] as const)('%s : baisse après mise en file et public
     expect(() => assertJobEntitlements('image.v2', f.pid, { request: { kind: 'ad_image' } })).toThrow(/Dominer/);
     expect(all('SELECT id FROM ai_calls WHERE project_id=?', f.pid)).toHaveLength(0);
 });
+it('média acquis pendant la préparation : réutilisé dans le thème sans nouvelle génération', async () => { const f = await clientFixture({ incomplete: true }); const mock = mockDeps({ reference: assetData(getAsset(f.assets[0].id)!), generate: () => clientPhoto('opening', 47) }); const result = await fr(() => runImageEngineV2(null, f.pid, { kind: 'usage_scene', aspect: '16:9', allowGenerate: true, noStock: true, references: [f.assets[0].id], peopleAllowed: false, instructions: 'Montrer la théière fournie sur une table, sans texte ni personne.', slot: 'preparation:home:hero' }, mock.deps)); const assetId = result.outcomes[0].assetId; expect(assetId, JSON.stringify(result)).toBeTruthy(); await fr(() => buildShop(null, f.pid, { direction: 'traverse', useAi: false })); const s = currentTheme(f.pid)!.spec; expect(s.meta!.adaptation!.slots.some(x => x.assetId === assetId)).toBe(true); expect(mock.log.generations).toHaveLength(1); expect(all('SELECT id FROM ai_calls WHERE project_id=?', f.pid)).toHaveLength(0); });

@@ -28,7 +28,18 @@ try {
             for (const file of Object.keys(spec.files)) {
                 const key = Object.keys(z).find(k => k.endsWith('/' + file));
                 assert(key, filename + ': missing client file');
-                await sharp(z[key!]).resize(24, 24).raw().toBuffer();
+                if (/\.(mp4|webm)$/i.test(file)) {
+                    const tmp = path.join(out, 'zip-video-' + a.theme + '.mp4');
+                    fs.writeFileSync(tmp, z[key!]);
+                    try {
+                        execFileSync('ffmpeg', ['-v', 'error', '-protocol_whitelist', 'file,pipe', '-i', tmp, '-frames:v', '1', '-an', '-f', 'null', '-'], { timeout: 15000 });
+                    }
+                    finally {
+                        fs.unlinkSync(tmp);
+                    }
+                }
+                else
+                    await sharp(z[key!]).resize(24, 24).raw().toBuffer();
                 media++;
             }
             const row: any = { theme: a.theme, platform, kind: exp.kind, files: Object.keys(z).length, decodedClientMedia: media, bytes: exp.zip.length, issues: exp.issues.map(i => ({ code: i.code, severity: i.severity })), nativeInstallation: false };
@@ -56,15 +67,28 @@ try {
                 const doc = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${css.map(c => `<link rel="stylesheet" href="/${c}">`).join('')}<script>window.themeSettings={motion:true}</script></head><body class="${design.body.classes.join(' ')}" data-ds="${design.body.ds}" data-density="${design.body.density}"><main>${html}</main><script src="/${script}" defer></script></body></html>`;
                 const context = await browser.newContext({ viewport: { width: 390, height: 900 }, reducedMotion: 'reduce' }), p = await context.newPage(), errors: string[] = [];
                 p.on('pageerror', e => errors.push(e.message));
-                await p.route('**/*', r => { const u = new URL(r.request().url()); if (u.hostname !== 'export.local')
-                    return r.abort(); const name = decodeURIComponent(u.pathname).replace(/^\//, ''); if (!name || name === 'index.html')
-                    return r.fulfill({ contentType: 'text/html', body: doc }); const asset = name.replace(/^assets\//, ''); const hit = [prefix + name, prefix + 'assets/es/' + asset, prefix + 'assets/fonts/' + path.basename(asset)].find(k => z[k]); if (!hit)
-                    return r.fulfill({ status: 404, body: '' }); const type = ({ css: 'text/css', js: 'application/javascript', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', ttf: 'font/ttf', svg: 'image/svg+xml' } as Record<string, string>)[path.extname(hit).slice(1)] ?? 'application/octet-stream'; return r.fulfill({ contentType: type, body: Buffer.from(z[hit]) }); });
+                await p.route('**/*', r => {
+                    const u = new URL(r.request().url());
+                    if (u.hostname !== 'export.local')
+                        return r.abort();
+                    const name = decodeURIComponent(u.pathname).replace(/^\//, '');
+                    if (!name || name === 'index.html')
+                        return r.fulfill({ contentType: 'text/html', body: doc });
+                    const asset = name.replace(/^assets\//, '');
+                    const hit = [prefix + name, prefix + 'assets/es/' + asset, prefix + 'assets/fonts/' + path.basename(asset)].find(k => z[k]);
+                    if (!hit)
+                        return r.fulfill({ status: 404, body: '' });
+                    const type = ({ css: 'text/css', js: 'application/javascript', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', ttf: 'font/ttf', svg: 'image/svg+xml' } as Record<string, string>)[path.extname(hit).slice(1)] ?? 'application/octet-stream';
+                    return r.fulfill({ contentType: type, body: Buffer.from(z[hit]) });
+                });
                 await p.goto('http://export.local/index.html', { waitUntil: 'networkidle' });
-                await p.evaluate(async () => { await document.fonts.ready; for (const i of document.images) {
-                    i.loading = 'eager';
-                    await i.decode().catch(() => { });
-                } });
+                await p.evaluate(async () => {
+                    await document.fonts.ready;
+                    for (const i of document.images) {
+                        i.loading = 'eager';
+                        await i.decode().catch(() => { });
+                    }
+                });
                 row.browser = await p.evaluate(() => ({ width: innerWidth, content: document.documentElement.scrollWidth, images: [...document.images].filter(i => i.getAttribute('src') && i.offsetWidth).map(i => ({ ok: i.complete && i.naturalWidth > 0, alt: i.alt })) }));
                 row.browser.errors = errors;
                 const gallery = p.locator('[data-cv-gallery-open]').first();
