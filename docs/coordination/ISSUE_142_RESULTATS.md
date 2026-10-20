@@ -1,5 +1,7 @@
 # Mission #142 — budgets, suivi et reprise des générations
 
+**Complément actuel : [audit transversal, correction gratuite et reprise native produit/service](ISSUE_142_TRANSVERSAL.md)** — code construit d6777986, preuves et limites détaillées. Le document ci-dessous reste conservé comme livraison historique.
+
 **Dernier état : [rapport du refus identifié et preuves finales](ISSUE_142_PRODUCTEURS.md)** — code construit **33d9e40126dc524a0236c4d76a0a7d7c4e5f1feb**, non fusionné/non servi. La tâche existante est arrêtée par le contrôle des textes **COPY_FACTS_REJECTED**, pas par un garde budgétaire identifié. La classification du diagnostic est corrigée ; contrôle des faits, coûts acquis et plafonds conservés. 18 captures supplémentaires, suite générale 2 469 tests réussis puis 37 contrôles ciblés finaux, types/build et recettes produit/service réussis (fournisseurs simulés). Les paragraphes suivants conservent les livraisons précédentes et leur chronologie.
 
 Livraison de corrections sur `codex/142-budgets-suivi-reprise`, sans fusion, déploiement ni mise à jour du Codespace. Mission : [issue #142](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/142), confirmée par le [commentaire de coordination de #140](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/140#issuecomment-6274653623).

@@ -1,5 +1,7 @@
 # Complément #142 — origine du refus, livraisons directes et résultats partiels
 
+**Complément actuel : [audit transversal, correction gratuite et reprise native produit/service](ISSUE_142_TRANSVERSAL.md)** — code construit d6777986, preuves et limites détaillées. Le document ci-dessous reste conservé comme livraison historique.
+
 Le blocage existant vient du contrôle de rédaction **COPY_FACTS_REJECTED**, identifié par le diagnostic privé et recoupé avec les sources exactes de la version servie. La catégorie « budget » était une erreur de classification par mots-clés. Le contrôle des faits et les plafonds restent conservés.
 
 Code final testé/construit : **33d9e40126dc524a0236c4d76a0a7d7c4e5f1feb** ; branche `codex/142-budgets-suivi-reprise`, [PR #146](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/146), non fusionnée. Version du studio indiquée par les diagnostics : **d97e0b9577128eeb39b403dae281da6bd835fc65**, sans intégration de cette PR. Aucun fournisseur réel, fusion, déploiement ou mise à jour du Codespace. Quatre thèmes et chantier Claude #145 préservés. Les passes cfceadb6 / fe9bf1b7 / 37f73b33 restent conservées.

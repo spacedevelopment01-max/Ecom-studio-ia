@@ -1,0 +1,489 @@
+{
+  "schema": "studio142-transversal-verification-1",
+  "codeCommit": "d6777986cee8997ad5f1614c52f604bc32da395f",
+  "codeTree": "99a456411e7e133e4d408cb927779936577a146e",
+  "coreCommit": "a01c5dd640ae9cbc8e35cbf498e2c620ea7da6fc",
+  "baseCommit": "cddbcbddbe492d54ce6ec859c758d6d3bb977376",
+  "diagnosticCommit": "1b93022b123c1555e9d91f48a6e58f8ca1098ff7",
+  "customerLastReportedServedCommit": "d97e0b9577128eeb39b403dae281da6bd835fc65",
+  "customerStudioUpdated": false,
+  "merge": false,
+  "deploy": false,
+  "realProviderCalls": 0,
+  "realProviderCostEur": 0,
+  "simulation": true,
+  "commands": {
+    "groups": "npx vitest run  <80 paths from groupes-tests.json; four distinct groups>",
+    "focused": "npx vitest run tests/mission142-jobs.test.ts tests/mission142-blocages-transversaux.test.ts tests/mission142-billing.test.ts tests/video-receipts-approval.test.ts tests/images-faire-un-visuel.test.ts",
+    "diagnostic": "npx vitest run tests/mission142-diagnostic-livraison.test.ts",
+    "types": "npx tsc --noEmit",
+    "build": "NODE_OPTIONS='--require=/workspace/work/mission142-build-without-cache.cjs --import=/workspace/work/publications-qualite/scripts/verify-video-network-guard.mjs' npm run build",
+    "browser": "node --import tsx scripts/mission142/copy-recovery-browser.ts",
+    "seed": "node --import tsx scripts/mission142/delivery-harness.ts seed",
+    "server": "node node_modules/next/dist/bin/next start -H 127.0.0.1 -p 18242",
+    "comparison": "node --import tsx scripts/mission142/guard-comparison.ts",
+    "video": "ffmpeg -y -i <source.webm> -c:v libx264 -preset fast -crf 25 -pix_fmt yuv420p -movflags +faststart <target.mp4>"
+  },
+  "testGroups": [
+    {
+      "group": 1,
+      "files": 80,
+      "passed": 611,
+      "skipped": 3,
+      "log": "logs/suite-groupe-1.txt"
+    },
+    {
+      "group": 2,
+      "files": 80,
+      "passed": 596,
+      "skipped": 10,
+      "log": "logs/suite-groupe-2.txt"
+    },
+    {
+      "group": 3,
+      "files": 80,
+      "passed": 617,
+      "skipped": 0,
+      "log": "logs/suite-groupe-3.txt"
+    },
+    {
+      "group": 4,
+      "files": 80,
+      "passed": 679,
+      "skipped": 0,
+      "log": "logs/suite-groupe-4.txt"
+    }
+  ],
+  "aggregate": {
+    "files": 320,
+    "passed": 2503,
+    "skipped": 13,
+    "notOneFinalShaRun": true
+  },
+  "focused": {
+    "passed": 69,
+    "files": 5,
+    "commit": "a01c5dd640ae9cbc8e35cbf498e2c620ea7da6fc",
+    "subsetNotAdditionalUniqueTests": true
+  },
+  "diagnostic": {
+    "passed": 28,
+    "commit": "1b93022b123c1555e9d91f48a6e58f8ca1098ff7"
+  },
+  "finalBuild": {
+    "commit": "d6777986cee8997ad5f1614c52f604bc32da395f",
+    "cacheDisabledOnly": true,
+    "success": true
+  },
+  "types": {
+    "exitCode": 0,
+    "afterEnhancedBrowserDriver": true
+  },
+  "browser": {
+    "version": {
+      "commit": "d6777986cee8997ad5f1614c52f604bc32da395f",
+      "source": "compiled-build"
+    },
+    "simulation": true,
+    "realProviderCalls": 0,
+    "realProviderCost": 0,
+    "results": [
+      {
+        "business": "products",
+        "initialFailureCode": "COPY_FACTS_REJECTED",
+        "initialProgress": 0.15,
+        "freeCorrectionWhileWorkerStopped": true,
+        "persistedAfterNewSession": true,
+        "explicitQuoteBeforeResume": true,
+        "originalCopyBoughtOnce": true,
+        "customHeadlinePersistedAndPassedToImage": true,
+        "decodedDownload": {
+          "width": 1080,
+          "height": 1350,
+          "format": "png"
+        },
+        "galleryAfterReload": true,
+        "crossProjectAccess": 404,
+        "syntheticUsageRows": 2,
+        "syntheticBilledMicro": 68000,
+        "openReservations": 0,
+        "realProviderCalls": 0
+      },
+      {
+        "business": "services",
+        "initialFailureCode": "COPY_FACTS_REJECTED",
+        "initialProgress": 0.15,
+        "freeCorrectionWhileWorkerStopped": true,
+        "persistedAfterNewSession": true,
+        "explicitQuoteBeforeResume": true,
+        "originalCopyBoughtOnce": true,
+        "customHeadlinePersistedAndPassedToImage": true,
+        "decodedDownload": {
+          "width": 1080,
+          "height": 1350,
+          "format": "png"
+        },
+        "galleryAfterReload": true,
+        "crossProjectAccess": 404,
+        "syntheticUsageRows": 2,
+        "syntheticBilledMicro": 68000,
+        "openReservations": 0,
+        "realProviderCalls": 0
+      }
+    ],
+    "layouts": [
+      {
+        "name": "produit-semis-01-refus-ordinateur",
+        "viewport": 1440,
+        "content": 1440
+      },
+      {
+        "name": "produit-semis-02-refus-mobile",
+        "viewport": 390,
+        "content": 390
+      },
+      {
+        "name": "produit-semis-03-correction-reconnexion-mobile",
+        "viewport": 390,
+        "content": 390
+      },
+      {
+        "name": "produit-semis-04-resultat-mobile",
+        "viewport": 390,
+        "content": 390
+      },
+      {
+        "name": "produit-semis-05-resultat-reconnexion-ordinateur",
+        "viewport": 1440,
+        "content": 1440
+      },
+      {
+        "name": "service-reliure-01-refus-ordinateur",
+        "viewport": 1440,
+        "content": 1440
+      },
+      {
+        "name": "service-reliure-02-refus-mobile",
+        "viewport": 390,
+        "content": 390
+      },
+      {
+        "name": "service-reliure-03-correction-reconnexion-mobile",
+        "viewport": 390,
+        "content": 390
+      },
+      {
+        "name": "service-reliure-04-resultat-mobile",
+        "viewport": 390,
+        "content": 390
+      },
+      {
+        "name": "service-reliure-05-resultat-reconnexion-ordinateur",
+        "viewport": 1440,
+        "content": 1440
+      }
+    ],
+    "errors": [],
+    "blockedExternalHosts": []
+  },
+  "videos": [
+    {
+      "file": "videos/produit-semis-mobile.mp4",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 390,
+          "height": 844
+        }
+      ],
+      "format": {
+        "duration": "10.600000"
+      }
+    },
+    {
+      "file": "videos/produit-semis-ordinateur.mp4",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 666
+        }
+      ],
+      "format": {
+        "duration": "9.600000"
+      }
+    },
+    {
+      "file": "videos/service-reliure-mobile.mp4",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 390,
+          "height": 844
+        }
+      ],
+      "format": {
+        "duration": "10.360000"
+      }
+    },
+    {
+      "file": "videos/service-reliure-ordinateur.mp4",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 666
+        }
+      ],
+      "format": {
+        "duration": "8.360000"
+      }
+    }
+  ],
+  "latestPassOverlapWithPR147": [],
+  "fullPROverlapWithPR147": [
+    "assets/cms/wordpress/es-woo.php",
+    "docs/LISEZMOI-bibliotheques-familles.md",
+    "scripts/family-gallery-export.ts",
+    "scripts/family-studio-check.ts",
+    "src/app/api/projects/[id]/theme/route.ts",
+    "src/app/api/projects/[id]/theme/section-preview/route.ts",
+    "src/lib/ai/tasks.ts",
+    "src/lib/cms-v2/adapters/prestashop.ts",
+    "src/lib/cms-v2/adapters/wordpress.ts",
+    "src/lib/engine/local.ts",
+    "tests/demos-quatre-themes.test.ts",
+    "theme-base/assets/conversion.css",
+    "theme-base/assets/family.css",
+    "worker/handlers.ts"
+  ],
+  "failedAttempts": [
+    "Initial test run interrupted after synthetic settings pollution: unnecessary test key setup removed; related cases rerun.",
+    "Monolithic run failed ENOSPC/SQLITE_FULL; not counted as validation. All320files subsequently passed in bounded groups.",
+    "Two historical fake JobContext failures: test double aligned with native payload; final group2 and affected69passed.",
+    "Initial mobile overflow390/467 corrected in d677; final browser390/390.",
+    "Normal build failed ENOSPC in new cache packs; own four incomplete files removed, build passed with caching disabled only.",
+    "Playwright FFmpeg cache initially missing; reused installed system FFmpeg via own isolated symlink; no download."
+  ],
+  "ciPriorCommit": {
+    "commit": "cddbcbddbe492d54ce6ec859c758d6d3bb977376",
+    "run": 39419254655,
+    "status": "completed",
+    "conclusion": "cancelled"
+  },
+  "privacy": {
+    "customerTextAmountsIds": false,
+    "customerDatabaseConfigOrMedia": false,
+    "secretsOrSessionCookies": false
+  },
+  "limitations": [
+    "No real provider authentication, price or creative quality validation.",
+    "Only image.ai_post correction UI fully exercised in new native browser cases; matrix distinguishes other tests and code review.",
+    "Current project sources are not a historical wallet or full customer fact snapshot.",
+    "No real CMS installation, social publishing or customer job repair.",
+    "Claude integration and served version verification remain pending.",
+    "Browser customHeadlinePersistedAndPassedToImage asserts persisted image metadata; exact prompt forwarding is covered separately by the targeted prompt-capture test. No pixel text or real provider fidelity verified."
+  ],
+  "files": [
+    {
+      "path": "reports/issue142/transversal/build-without-cache.cjs",
+      "bytes": 730,
+      "sha256": "6f638846f3465132d78fc6834840f9d76f77dd3a5105bf90363c2f766ea83227"
+    },
+    {
+      "path": "reports/issue142/transversal/captures/produit-semis-01-refus-ordinateur.png",
+      "bytes": 286355,
+      "sha256": "e86e4320004b2a89618b633a96219e94dfcd15d1592c2944f0835162ef581262"
+    },
+    {
+      "path": "reports/issue142/transversal/captures/produit-semis-02-refus-mobile.png",
+      "bytes": 209527,
+      "sha256": "e2f59bf651f87bdf1d8fecd0e6000be9d0833a4daad1ec30a79d10f362dfa3f0"
+    },
+    {
+      "path": "reports/issue142/transversal/captures/produit-semis-03-correction-reconnexion-mobile.png",
+      "bytes": 211093,
+      "sha256": "aa663663a977414f5f8705cd383af6e26f20bea747e409a1979799b87d3a1bf2"
+    },
+    {
+      "path": "reports/issue142/transversal/captures/produit-semis-03-detail-correction-mobile.png",
+      "bytes": 66724,
+      "sha256": "019e34d05a20eb08a6da01d2f826e88b05a139c7d056a298859d93280e51b7fb"
+    },
+    {
+      "path": "reports/issue142/transversal/captures/produit-semis-04-resultat-mobile.png",
+      "bytes": 139828,
+      "sha256": "8d34f4bb44a3d1bb64eabdb66afc91688bad6ad8915f8a433ae40feb8e1832f9"
+    },
+    {
+      "path": "reports/issue142/transversal/captures/produit-semis-05-resultat-reconnexion-ordinateur.png",
+      "bytes": 222616,
+      "sha256": "230edfffcae1deb672695ebae7f513e85a16c42012276a843f7c0fb27a9b24ea"
+    },
+    {
+      "path": "reports/issue142/transversal/captures/service-reliure-01-refus-ordinateur.png",
+      "bytes": 285340,
+      "sha256": "2b4974e9a0845438c01e2a2e6edf8098b8c9c775bc86e3b4c1d1363a70cf0fdb"
+    },
+    {
+      "path": "reports/issue142/transversal/captures/service-reliure-02-refus-mobile.png",
+      "bytes": 210775,
+      "sha256": "d1451371e8a5f0b5844ce07929633fd7d3f25e717dfd72c07f73a4b13519e8c6"
+    },
+    {
+      "path": "reports/issue142/transversal/captures/service-reliure-03-correction-reconnexion-mobile.png",
+      "bytes": 210809,
+      "sha256": "faed03fbba741e00fefee0f37510c2e4c180e16274b7843da8a0e14efefffa82"
+    },
+    {
+      "path": "reports/issue142/transversal/captures/service-reliure-03-detail-correction-mobile.png",
+      "bytes": 67029,
+      "sha256": "e6372b1e2e622df6bacc7256760bf34aed1f94d7d8fca63786216dda24b45c19"
+    },
+    {
+      "path": "reports/issue142/transversal/captures/service-reliure-04-resultat-mobile.png",
+      "bytes": 139699,
+      "sha256": "d0c9ef0a7a066a62d2e741f2fd4adb908f78a00ba2658ffeb87b14a78806621a"
+    },
+    {
+      "path": "reports/issue142/transversal/captures/service-reliure-05-resultat-reconnexion-ordinateur.png",
+      "bytes": 222035,
+      "sha256": "24ad9e31b1fb55aa7f10aaa3eea8066d7982e5b3778a36651187cc6cda91aef1"
+    },
+    {
+      "path": "reports/issue142/transversal/comparaison-historique.json",
+      "bytes": 821,
+      "sha256": "d466245f0333ea708de1e8c5855e9aa64e868951d29896392d8699059f71ea84"
+    },
+    {
+      "path": "reports/issue142/transversal/groupes-tests.json",
+      "bytes": 12770,
+      "sha256": "763b7171b80fb30c36355c5a98f808d75dbe989c62b7e581107398b101801584"
+    },
+    {
+      "path": "reports/issue142/transversal/logs/build-production.txt",
+      "bytes": 13746,
+      "sha256": "41295da0e56470b3733e2a10789b69ab38f30446d51d0740bc6e6379ed0c9116"
+    },
+    {
+      "path": "reports/issue142/transversal/logs/comparaison-historique.txt",
+      "bytes": 169,
+      "sha256": "2314cdcaec9c20e2ec61a066af40eae6c757e4921dc5f40dace79e924e9e8a19"
+    },
+    {
+      "path": "reports/issue142/transversal/logs/controles-cibles-69.txt",
+      "bytes": 187,
+      "sha256": "23af33ba32e97d6b34f71831e8aee650eabcf7b52df3387d78c05b5ffee611b6"
+    },
+    {
+      "path": "reports/issue142/transversal/logs/diagnostic-v5-28.txt",
+      "bytes": 185,
+      "sha256": "94b11b606407e14fa016570ae9c846593a56dbac8ba163129d2a12bfeb8812d5"
+    },
+    {
+      "path": "reports/issue142/transversal/logs/navigateur.txt",
+      "bytes": 204,
+      "sha256": "6fdca20689fdeeaca2e53e1d9abd682959753737e8c44606e8e71e3f2e5c41c5"
+    },
+    {
+      "path": "reports/issue142/transversal/logs/suite-groupe-1.txt",
+      "bytes": 204,
+      "sha256": "d1b086698c51cbdcd6a984987f910ea65964aa3723e7dec352dea33fc7fc077b"
+    },
+    {
+      "path": "reports/issue142/transversal/logs/suite-groupe-2.txt",
+      "bytes": 205,
+      "sha256": "13247f1ee917db49dcf35f3c3d669855255d7774a09f4b0ea21b837045ff8419"
+    },
+    {
+      "path": "reports/issue142/transversal/logs/suite-groupe-3.txt",
+      "bytes": 491,
+      "sha256": "e24b91d0026ba870f5be3cfa8135d04a8a0c3fc89ecb8843b799fe1ab35065b2"
+    },
+    {
+      "path": "reports/issue142/transversal/logs/suite-groupe-4.txt",
+      "bytes": 192,
+      "sha256": "1b76428c74ac79b293d2b5c4a81d0a23dde4615beb494c807ef56306440a0af5"
+    },
+    {
+      "path": "reports/issue142/transversal/logs/types.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reports/issue142/transversal/parcours-navigateur.json",
+      "bytes": 2706,
+      "sha256": "dfaa16a2acf92296260dfadad4732ee07588ef2aa90e6348e8c259b76ef0bf6f"
+    },
+    {
+      "path": "reports/issue142/transversal/videos/produit-semis-mobile.mp4",
+      "bytes": 277397,
+      "sha256": "c3f3436e6fd03d86091f0a21932869b7e16b1a285b3ab7fd640404da618cd498"
+    },
+    {
+      "path": "reports/issue142/transversal/videos/produit-semis-ordinateur.mp4",
+      "bytes": 276738,
+      "sha256": "f849a80a0fa6c68cbf115ebb577cd02e5c631148307a211e7bf041c345be823b"
+    },
+    {
+      "path": "reports/issue142/transversal/videos/service-reliure-mobile.mp4",
+      "bytes": 244216,
+      "sha256": "8b82af71a270b01ceb66fda33bf2be058057877356cd7bdc0e4bae023f9e727e"
+    },
+    {
+      "path": "reports/issue142/transversal/videos/service-reliure-ordinateur.mp4",
+      "bytes": 285420,
+      "sha256": "a93580156c3a3cdc8e0d18dc53554d5647841ea6ae746171a21c003998ad476b"
+    },
+    {
+      "path": "reports/issue142/transversal/videos.json",
+      "bytes": 1080,
+      "sha256": "9ce7b161468db45e0031b7f81722a05634af4478632c5f473cb53d3858753664"
+    }
+  ],
+  "logFormatting": [
+    {
+      "path": "reports/issue142/transversal/logs/suite-groupe-4.txt",
+      "originalSha256": "452cca7fadf5b194ff7fe2c3383f4bae7d7d1922a9944aff07fc1015da128ee4",
+      "transformation": "Only trailing whitespace, CR progress terminators and final blank lines normalized; content unchanged."
+    },
+    {
+      "path": "reports/issue142/transversal/logs/suite-groupe-2.txt",
+      "originalSha256": "1b666b36766dbdabc21ec0c7631732649149dec2ebef09ddd7014ed187de8b94",
+      "transformation": "Only trailing whitespace, CR progress terminators and final blank lines normalized; content unchanged."
+    },
+    {
+      "path": "reports/issue142/transversal/logs/suite-groupe-3.txt",
+      "originalSha256": "53c8c3111e2b32c7c32317681d44672bddcd908439ac20a75d320906ef359ed3",
+      "transformation": "Only trailing whitespace, CR progress terminators and final blank lines normalized; content unchanged."
+    },
+    {
+      "path": "reports/issue142/transversal/logs/build-production.txt",
+      "originalSha256": "2428385fc473a27f34f251b733fa8eaa5784c77ff7586a1eff2af47f6fb7271d",
+      "transformation": "Only trailing whitespace, CR progress terminators and final blank lines normalized; content unchanged."
+    },
+    {
+      "path": "reports/issue142/transversal/logs/suite-groupe-1.txt",
+      "originalSha256": "b026c1dc1466144ef7cab2f7ddd8764181d7183d21e479bb89e7fae4c351cd8c",
+      "transformation": "Only trailing whitespace, CR progress terminators and final blank lines normalized; content unchanged."
+    },
+    {
+      "path": "reports/issue142/transversal/logs/diagnostic-v5-28.txt",
+      "originalSha256": "407c5bcc358e366f8ca69f9576508fb1e85562c535e06c01d8a32376bbcedaf0",
+      "transformation": "Only trailing whitespace, CR progress terminators and final blank lines normalized; content unchanged."
+    },
+    {
+      "path": "reports/issue142/transversal/logs/controles-cibles-69.txt",
+      "originalSha256": "ab9e7252548bd57981cbdf1b066a76db078297b1e92ca18427ed23e5adb6b548",
+      "transformation": "Only trailing whitespace, CR progress terminators and final blank lines normalized; content unchanged."
+    }
+  ]
+}

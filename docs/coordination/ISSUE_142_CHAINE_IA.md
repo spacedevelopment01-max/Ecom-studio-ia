@@ -1,5 +1,7 @@
 # Issue 142 — vérification de toute la chaîne IA
 
+**Complément actuel : [audit transversal, correction gratuite et reprise native produit/service](ISSUE_142_TRANSVERSAL.md)** — code construit d6777986, preuves et limites détaillées. Le document ci-dessous reste conservé comme livraison historique.
+
 **Dernier complément vérifié : [origine du refus, appels directs, tests et 18 captures](ISSUE_142_PRODUCTEURS.md)**. Code final construit **33d9e40126dc524a0236c4d76a0a7d7c4e5f1feb**. L’incident existant est attribué au garde **COPY_FACTS_REJECTED** (empreintes de la version servie d97e0b95 recoupées) ; sa catégorie « budget » était erronée. Refus visible à 15 % puis après reconnexion sur deux projets fictifs, contrôle des faits et budgets conservés. Suite générale 2 469 réussis / 13 ignorés / 319 fichiers, puis 37 contrôles ciblés finaux, types/build et recettes réussis ; les limites exactes figurent dans le complément. Le rapport ci-dessous conserve la passe cfceadb6 et ses preuves.
 
 Livraison intermédiaire vérifiée du 20 octobre 2026 : code `cfceadb67356a242ab9eafb514e32a19cf0ed863`, construit et contrôlé dans le navigateur. Complément au [rapport budgets, suivi et reprise](ISSUE_142_RESULTATS.md). Ce document est provisoire tant que les vérifications restantes ci-dessous ne sont pas closes. PR de travail : #146, branche `codex/142-budgets-suivi-reprise`. Aucun merge, déploiement, changement du Codespace ni essai fournisseur réel dans cette passe.

@@ -1,0 +1,107 @@
+{
+  "version": {
+    "commit": "d6777986cee8997ad5f1614c52f604bc32da395f",
+    "source": "compiled-build"
+  },
+  "simulation": true,
+  "realProviderCalls": 0,
+  "realProviderCost": 0,
+  "results": [
+    {
+      "business": "products",
+      "initialFailureCode": "COPY_FACTS_REJECTED",
+      "initialProgress": 0.15,
+      "freeCorrectionWhileWorkerStopped": true,
+      "persistedAfterNewSession": true,
+      "explicitQuoteBeforeResume": true,
+      "originalCopyBoughtOnce": true,
+      "customHeadlinePersistedAndPassedToImage": true,
+      "decodedDownload": {
+        "width": 1080,
+        "height": 1350,
+        "format": "png"
+      },
+      "galleryAfterReload": true,
+      "crossProjectAccess": 404,
+      "syntheticUsageRows": 2,
+      "syntheticBilledMicro": 68000,
+      "openReservations": 0,
+      "realProviderCalls": 0
+    },
+    {
+      "business": "services",
+      "initialFailureCode": "COPY_FACTS_REJECTED",
+      "initialProgress": 0.15,
+      "freeCorrectionWhileWorkerStopped": true,
+      "persistedAfterNewSession": true,
+      "explicitQuoteBeforeResume": true,
+      "originalCopyBoughtOnce": true,
+      "customHeadlinePersistedAndPassedToImage": true,
+      "decodedDownload": {
+        "width": 1080,
+        "height": 1350,
+        "format": "png"
+      },
+      "galleryAfterReload": true,
+      "crossProjectAccess": 404,
+      "syntheticUsageRows": 2,
+      "syntheticBilledMicro": 68000,
+      "openReservations": 0,
+      "realProviderCalls": 0
+    }
+  ],
+  "layouts": [
+    {
+      "name": "produit-semis-01-refus-ordinateur",
+      "viewport": 1440,
+      "content": 1440
+    },
+    {
+      "name": "produit-semis-02-refus-mobile",
+      "viewport": 390,
+      "content": 390
+    },
+    {
+      "name": "produit-semis-03-correction-reconnexion-mobile",
+      "viewport": 390,
+      "content": 390
+    },
+    {
+      "name": "produit-semis-04-resultat-mobile",
+      "viewport": 390,
+      "content": 390
+    },
+    {
+      "name": "produit-semis-05-resultat-reconnexion-ordinateur",
+      "viewport": 1440,
+      "content": 1440
+    },
+    {
+      "name": "service-reliure-01-refus-ordinateur",
+      "viewport": 1440,
+      "content": 1440
+    },
+    {
+      "name": "service-reliure-02-refus-mobile",
+      "viewport": 390,
+      "content": 390
+    },
+    {
+      "name": "service-reliure-03-correction-reconnexion-mobile",
+      "viewport": 390,
+      "content": 390
+    },
+    {
+      "name": "service-reliure-04-resultat-mobile",
+      "viewport": 390,
+      "content": 390
+    },
+    {
+      "name": "service-reliure-05-resultat-reconnexion-ordinateur",
+      "viewport": 1440,
+      "content": 1440
+    }
+  ],
+  "errors": [],
+  "blockedExternalHosts": []
+}
