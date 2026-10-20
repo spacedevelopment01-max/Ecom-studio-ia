@@ -43,74 +43,81 @@ export async function mixAudio(doc: VideoDocument, files: AudioFiles, out: strin
   const effects: string[] = [];
   let inputCount=0;
   const cleanup:string[]=[];
-  const add = (file: string,loop=false) => {
-    // L'entrée doit elle-même finir : un atrim en aval n'arrête pas toujours le démultiplexeur
-    // bouclé lorsque plusieurs voix et le compresseur latéral attendent sa fin.
-    if(loop) inputs.push("-stream_loop","-1","-t",String(total));
+  const add = (file: string) => {
     inputs.push("-i", file);
     return inputCount++;
   };
-  const trim = "silenceremove=start_periods=1:start_threshold=-50dB,areverse,silenceremove=start_periods=1:start_threshold=-50dB,areverse";
-  for (const v of doc.audio.voice) {
-    const f = v.assetId ? files.voice.get(v.id) : undefined;
-    const start = at.get(v.clipId);
-    if (!f || start == null) continue;
-    const i = add(f);
-    const ms = Math.round((start + v.offsetS) * 1000);
-    chains.push(`[${i}:a]aformat=sample_rates=44100:channel_layouts=stereo,atrim=0:${Math.max(0.1, v.durationS + 0.4)},volume=${v.gainDb}dB,adelay=${ms}|${ms}[v${voices.length}]`);
-    voices.push(`[v${voices.length}]`);
-  }
-  for (const s of doc.audio.sfx) {
-    const f = s.assetId ? files.sfx.get(s.id) : undefined;
-    const start = at.get(s.clipId);
-    if (!f || start == null) continue;
-    const i = add(f);
-    const ms = Math.round((start + s.offsetS) * 1000);
-    chains.push(`[${i}:a]aformat=sample_rates=44100:channel_layouts=stereo,volume=${s.gainDb}dB,adelay=${ms}|${ms}[e${effects.length}]`);
-    effects.push(`[e${effects.length}]`);
-  }
-  let music: string | null = null;
-  if (files.music && doc.audio.music) {
-    let musicFile=files.music;
-    const start=doc.audio.music.source==="library"?doc.audio.music.startS??0:0;
-    if(start>0) {
-      const segment=`${out}.music-segment.wav`;fs.mkdirSync(path.dirname(out),{recursive:true});
-      try {await exec("ffmpeg",["-y","-v","error","-ss",String(start),"-i",files.music,"-t",String(total),"-ar","44100","-ac","2",segment]);}
-      catch(error){fs.rmSync(segment,{force:true});throw error;}
-      musicFile=segment;cleanup.push(segment);
-    }
-    // Loop the finite selected file at the demuxer, not an enormous aloop filter buffer.
-    const i = add(musicFile,true);
-    // Piste de la banque : entrée et sortie en fondu (jamais une coupure sèche à la fin de la vidéo).
-    const fades = doc.audio.music.source === "library" ? `,afade=t=in:st=0:d=0.5,afade=t=out:st=${Math.max(0, total - 1.6).toFixed(2)}:d=1.6` : "";
-    // Piste de la banque : lue à partir du moment où elle est lancée (introduction calme sautée).
-    chains.push(`[${i}:a]aformat=sample_rates=44100:channel_layouts=stereo,atrim=0:${total},asetpts=PTS-STARTPTS${fades},volume=${doc.audio.music.gainDb}dB[mus]`);
-    music = "[mus]";
-  }
-  let mixInputs: string[] = [...effects];
-  if (voices.length) {
-    chains.push(`${voices.join("")}amix=inputs=${voices.length}:normalize=0,asplit=2[vox][vkey]`);
-    mixInputs.push("[vox]");
-    if (music) {
-      // Atténuation de la musique sous la voix (environ `duckingDb`) : ratio dérivé de l'atténuation voulue.
-      const ratio = Math.max(2, Math.min(20, Math.abs(doc.audio.duckingDb) / 1.5));
-      chains.push(`${music}[vkey]sidechaincompress=threshold=0.02:ratio=${ratio}:attack=30:release=350[duck]`);
-      mixInputs.push("[duck]");
-    } else chains.push(`[vkey]anullsink`);
-  } else if (music) mixInputs.push(music);
-  if (!mixInputs.length) {
-    await exec("ffmpeg", ["-y", "-v", "error", "-f", "lavfi", "-i", `anullsrc=r=44100:cl=stereo`, "-t", String(total), out]);
-    return out;
-  }
-  mixInputs = mixInputs.filter(Boolean);
-  // Fin du mixage : aigus extrêmes coupés (15 kHz) et limiteur ferme — mesuré : sans cela, l'encodage AAC fait
-  // remonter les crêtes de 4 dB au-dessus du maximum sur une musique dense (saturation audible).
-  chains.push(`${mixInputs.join("")}amix=inputs=${mixInputs.length}:normalize=0,apad,atrim=0:${total},loudnorm=I=${doc.audio.loudnessLufs}:TP=-2:LRA=11,aresample=44100,lowpass=f=15000,alimiter=limit=0.55:level=false:attack=3:release=60[out]`);
   fs.mkdirSync(path.dirname(out), { recursive: true });
-  // Bound the complex mix graph: multiple short voices and looping music otherwise compete for filter workers.
-  try {await exec("ffmpeg", ["-y", "-v", "error", "-filter_complex_threads", "1", ...inputs, "-filter_complex", chains.join(";"), "-map", "[out]", "-t", String(total), out], { maxBuffer: 16 * 1024 * 1024 });}
-  finally {for(const file of cleanup)fs.rmSync(file,{force:true});}
-  return out;
+  try {
+    for (const v of doc.audio.voice) {
+      const f = v.assetId ? files.voice.get(v.id) : undefined;
+      const start = at.get(v.clipId);
+      if (!f || start == null) continue;
+      const i = add(f);
+      const ms = Math.round((start + v.offsetS) * 1000);
+      chains.push(`[${i}:a]aformat=sample_rates=44100:channel_layouts=stereo,atrim=0:${Math.max(0.1, v.durationS + 0.4)},volume=${v.gainDb}dB,adelay=${ms}|${ms}[v${voices.length}]`);
+      voices.push(`[v${voices.length}]`);
+    }
+    // Matérialiser les voix avant le ducking : le graphe asplit → sidechain → amix peut se
+    // bloquer à la fin de voix courtes, même avec des entrées bornées et un seul thread filtre.
+    // Les trois étapes gardent le même signal et la même normalisation, sans branche partagée.
+    let voiceFile: string | null = null;
+    if (voices.length) {
+      voiceFile = `${out}.voices.wav`; cleanup.push(voiceFile);
+      chains.push(`${voices.join("")}amix=inputs=${voices.length}:normalize=0,apad=whole_dur=${total},atrim=0:${total}[voices]`);
+      await exec("ffmpeg", ["-y", "-v", "error", "-filter_complex_threads", "1", ...inputs, "-filter_complex", chains.join(";"), "-map", "[voices]", "-t", String(total), "-c:a", "pcm_f32le", voiceFile]);
+      inputs.length = 0; chains.length = 0; inputCount = 0;
+    }
+    for (const s of doc.audio.sfx) {
+      const f = s.assetId ? files.sfx.get(s.id) : undefined;
+      const start = at.get(s.clipId);
+      if (!f || start == null) continue;
+      const i = add(f);
+      const ms = Math.round((start + s.offsetS) * 1000);
+      chains.push(`[${i}:a]aformat=sample_rates=44100:channel_layouts=stereo,volume=${s.gainDb}dB,adelay=${ms}|${ms}[e${effects.length}]`);
+      effects.push(`[e${effects.length}]`);
+    }
+    let music: string | null = null;
+    if (files.music && doc.audio.music) {
+      let musicFile=files.music;
+      const start=doc.audio.music.source==="library"?doc.audio.music.startS??0:0;
+      if(start>0) {
+        const segment=`${out}.music-segment.wav`;cleanup.push(segment);
+        await exec("ffmpeg",["-y","-v","error","-ss",String(start),"-i",files.music,"-t",String(total),"-ar","44100","-ac","2",segment]);
+        musicFile=segment;
+      }
+      // Piste de la banque : entrée et sortie en fondu (jamais une coupure sèche à la fin de la vidéo).
+      const fades = doc.audio.music.source === "library" ? `,afade=t=in:st=0:d=0.5,afade=t=out:st=${Math.max(0, total - 1.6).toFixed(2)}:d=1.6` : "";
+      // Piste de la banque : lue à partir du moment où elle est lancée (introduction calme sautée).
+      const finiteMusic = `${out}.music.wav`; cleanup.push(finiteMusic);
+      // La boucle ne participe jamais au graphe de mixage/ducking : son fichier de sortie est fini.
+      await exec("ffmpeg", ["-y", "-v", "error", "-stream_loop", "-1", "-i", musicFile, "-t", String(total), "-af", `aformat=sample_rates=44100:channel_layouts=stereo,asetpts=PTS-STARTPTS${fades},volume=${doc.audio.music.gainDb}dB`, "-c:a", "pcm_f32le", finiteMusic]);
+      music = finiteMusic;
+    }
+    let mixInputs: string[] = [...effects];
+    if (voiceFile) {
+      mixInputs.push(`[${add(voiceFile)}:a]`);
+      if (music) {
+        // Atténuation de la musique sous la voix (environ `duckingDb`) : ratio dérivé de l'atténuation voulue.
+        const ratio = Math.max(2, Math.min(20, Math.abs(doc.audio.duckingDb) / 1.5));
+        const ducked = `${out}.duck.wav`; cleanup.push(ducked);
+        await exec("ffmpeg", ["-y", "-v", "error", "-filter_complex_threads", "1", "-i", music, "-i", voiceFile, "-filter_complex", `[0:a][1:a]sidechaincompress=threshold=0.02:ratio=${ratio}:attack=30:release=350[duck]`, "-map", "[duck]", "-t", String(total), "-c:a", "pcm_f32le", ducked]);
+        music = ducked;
+      }
+    }
+    if (music) mixInputs.push(`[${add(music)}:a]`);
+    if (!mixInputs.length) {
+      await exec("ffmpeg", ["-y", "-v", "error", "-f", "lavfi", "-i", `anullsrc=r=44100:cl=stereo`, "-t", String(total), out]);
+      return out;
+    }
+    mixInputs = mixInputs.filter(Boolean);
+    // Fin du mixage : aigus extrêmes coupés (15 kHz) et limiteur ferme — mesuré : sans cela, l'encodage AAC fait
+    // remonter les crêtes de 4 dB au-dessus du maximum sur une musique dense (saturation audible).
+    chains.push(`${mixInputs.join("")}amix=inputs=${mixInputs.length}:normalize=0,apad=whole_dur=${total},atrim=0:${total},loudnorm=I=${doc.audio.loudnessLufs}:TP=-2:LRA=11,aresample=44100,lowpass=f=15000,alimiter=limit=0.55:level=false:attack=3:release=60[out]`);
+    fs.mkdirSync(path.dirname(out), { recursive: true });
+    await exec("ffmpeg", ["-y", "-v", "error", "-filter_complex_threads", "1", ...inputs, "-filter_complex", chains.join(";"), "-map", "[out]", "-t", String(total), out], { maxBuffer: 16 * 1024 * 1024 });
+    return out;
+  } finally { for (const file of cleanup) fs.rmSync(file, { force: true }); }
 }
 
 /** Intensité intégrée (LUFS), crête vraie et durée d'un fichier (contrôle audio de la barrière). */
