@@ -48,6 +48,8 @@
 .fs-note { margin: clamp(22px, 3vw, 34px) auto 0; max-width: 72ch; font-size: .86rem; line-height: 1.55; color: var(--c-muted, inherit); text-align: center; }
 .fs-caption { font-size: .88rem; margin-top: 12px; color: var(--c-muted, inherit); }
 .fs-source { display: block; font-size: .78rem; opacity: .8; margin-top: 4px; }
+/* Icônes au trait (snippet fs-icon) : un seul style, couleur du texte ; taille donnée par leur conteneur. */
+.fs-icon { width: 1.25em; height: 1.25em; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
 .fs-commit__icon { flex: none; display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: color-mix(in srgb, var(--c-accent) 14%, transparent); color: var(--c-accent-ink, var(--c-text)); }
 .fs--ed .fs-commit__icon { background: none; border: 1px solid var(--c-border); }
 .fs-commit__icon svg { width: 22px; height: 22px; }

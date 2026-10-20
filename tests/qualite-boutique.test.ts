@@ -190,7 +190,28 @@ const designWithFlaws = {
   ],
 };
 
+const designInLibrary = {
+  reasoning: "Une page tendre et lumineuse.",
+  index: [
+    { type: "rich-text", settings: { align: "center" }, blocks: [{ type: "heading", settings: { text: "Pour les petits" } }] },
+    { type: "features-grid", settings: { heading: "Ce qu'il faut savoir" }, blocks: [1, 2, 3].map((i) => ({ type: "feature", settings: { title: `Point ${i}`, text: "Texte" } })) },
+    { type: "timeline", settings: { heading: "Notre histoire" }, blocks: [1, 2, 3].map((i) => ({ type: "step", settings: { title: `Étape ${i}`, text: "Texte" } })) },
+    { type: "faq", settings: { heading: "Questions" }, blocks: [{ type: "question", settings: { question: "Q", answer: "R" } }] },
+    { type: "cta-banner", settings: { heading: "Envie d'essayer ?", button_label: "Découvrir", button_link: "/products/sova" } },
+  ],
+};
+
 describe("composition et relecture visuelle par l'IA (simulées)", () => {
+  it("composition avec une section retirée du catalogue (hero-split) : refusée seule, jamais ajoutée à l'accueil", async () => {
+    sim.design = { ...designWithFlaws, index: [hero, ...designInLibrary.index] };
+    sim.review = { score: 8.5, strengths: [], issues: [], ops: [] };
+    const cur = await runBuild();
+    expect(cur.version.author).toBe("ai");
+    const types = sections(cur.spec).map((s) => s.type);
+    expect(types).not.toContain("hero-split");
+    expect(types).toContain("rich-text");
+  });
+
   it("composition avec défauts : finitions appliquées ; la relecture reçoit l'accueil ET la fiche produit ; relecture hors format tolérée", async () => {
     sim.design = designWithFlaws;
     // Relecture « bavarde » : 7 forces (5 permises), une gravité inconnue, une opération mal formée.
@@ -212,7 +233,9 @@ describe("composition et relecture visuelle par l'IA (simulées)", () => {
   });
 
   it("relecture sévère (3/10) d'une composition de l'IA : elle n'est pas montrée, la composition éprouvée de la direction est gardée", async () => {
-    sim.design = designWithFlaws;
+    // Composition faite de sections de la bibliothèque du projet (issue #145 : une section retirée, comme
+    // « hero-split », est refusée une à une ; la composition ne serait alors même pas retenue).
+    sim.design = designInLibrary;
     sim.review = { score: 3, strengths: [], issues: [{ where: "accueil", problem: "rendu générique, sections vides", severity: "bloquant" }], ops: [] };
     const cur = await runBuild();
     expect(cur.version.author).toBe("system");

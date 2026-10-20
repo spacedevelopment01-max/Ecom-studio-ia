@@ -179,6 +179,8 @@ body[data-conversion="pop"] .es-faq .es-faq__item[open]{background:var(--c-bg);c
 body[data-conversion="pop"] .es-faq .es-faq__item[open] summary,body[data-conversion="pop"] .es-faq .es-faq__item[open] .es-faq__q,body[data-conversion="pop"] .es-faq .es-faq__item[open] .es-accordion__body,body[data-conversion="pop"] .es-faq .es-faq__item[open] .es-rte,body[data-conversion="pop"] .es-faq .es-faq__item[open] .es-rte p{color:var(--c-text)}
 body[data-conversion="pop"] .es-faq .es-faq__item[open] .es-rte a{color:var(--c-accent);text-decoration:underline;text-underline-offset:3px}
 body[data-conversion="pop"] .es-faq .es-faq__item[open] .es-faq__icon{background:var(--c-accent);border-color:var(--c-accent);color:var(--c-accent-text)}
+/* FAQ « numérotées » (bibliothèque) : numéro lisible sur une question fermée (fond de la couleur d'accent). */
+body[data-conversion="pop"] .es-faq .es-faq__item:not([open]) .es-faq__num{color:var(--c-accent-text)}
 body[data-conversion="pop"] .es-faq .es-faq__item summary:focus-visible{outline:3px solid var(--c-accent-text);outline-offset:-3px}
 body[data-conversion="pop"] .es-faq .es-faq__item[open] summary:focus-visible{outline-color:var(--c-accent)}
 @media(hover:hover){body[data-conversion="pop"] .es-faq .es-faq__item:not([open]) summary:hover .es-faq__icon{background:var(--c-accent-text);color:var(--c-accent)}}
@@ -542,7 +544,7 @@ body[data-conversion="contrast"] .cv-ingr__role{color:var(--c-text);opacity:.8}
 .cv-quote__media .ed-media{aspect-ratio:1}.cv-quote__media--portrait .ed-media{aspect-ratio:4/5}.cv-quote__media--landscape .ed-media{aspect-ratio:4/3}
 .cv-quote__media img{width:100%;height:100%;object-fit:cover}
 .cv-quote--band .cv-quote__card{max-width:none;background:var(--c-accent-fill,var(--c-accent));color:var(--c-accent-text);border:0}
-.cv-quote--band .cv-quote__stars,.cv-quote--band .cv-quote__mark{color:var(--c-accent-text)}
+.cv-quote--band .cv-quote__stars,.cv-quote--band .cv-quote__mark,.cv-quote--band .cv-eyebrow{color:var(--c-accent-text)}
 .cv-quote--band .cv-quote__avatar{background:var(--c-accent-text);color:var(--c-accent)}
 .cv-quote--band .cv-quote__button{background:var(--c-text);color:var(--c-bg);border-color:var(--c-text)}
 body[data-conversion="contrast"] .cv-quote--band .cv-quote__button{background:#111;color:#fff;border-color:#111}

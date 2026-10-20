@@ -7,7 +7,10 @@
  * projet (palette, polices, boutons, textes, médias) et les contenus d'exemple de la galerie, marqués « Exemple ».
  * Aucun appel réseau, aucune IA, aucun paiement. Les visuels viennent de public/demo/<id>/ (kit privé, hors dépôt).
  *
- *   npx tsx scripts/family-gallery-export.ts <dossier-de-sortie> [--only=specialty,catalog,services]
+ * Avec --neufs (issue #145) : deux marques de CONTRÔLE par famille, projets neufs sans aucun lien avec les
+ * démonstrations (tests/control-brands-fixtures.ts), contenus de production (aucun « Exemple », manques signalés).
+ *
+ *   npx tsx scripts/family-gallery-export.ts <dossier-de-sortie> [--only=specialty,catalog,services] [--neufs]
  */
 import fs from "node:fs";
 import os from "node:os";
@@ -20,8 +23,10 @@ const args = process.argv.slice(2);
 const only = args.find((a) => a.startsWith("--only="))?.slice(7).split(",").filter(Boolean) ?? null;
 const out = path.resolve(args.find((a) => !a.startsWith("--")) ?? "reports/galerie-familles"); fs.mkdirSync(out, { recursive: true });
 const { demoProject } = await import("../tests/demo-fixtures");
+const { CONTROL_BRANDS, controlProject } = await import("../tests/control-brands-fixtures");
+const fresh = args.includes("--neufs");
 const { createUser } = await import("../src/lib/auth");
-const { saveThemeVersion, loadProject, saveBrand, saveProduct } = await import("../src/lib/projects");
+const { saveThemeVersion, loadProject, saveBrand, saveProduct, currentTheme } = await import("../src/lib/projects");
 const { composeShop } = await import("../src/lib/engine/shop");
 const { previewSegment } = await import("../src/lib/theme/preview-access");
 const { GET } = await import("../src/app/preview/[id]/v/[vid]/[[...path]]/route");
@@ -46,11 +51,13 @@ const BRAND_B: Record<"orbe" | "rive", { name: string; product: string; tagline:
   orbe: { name: "Marque test B", product: "Suspension Halo (test)", tagline: "Marque fictive de contrôle : autre nom, autre palette.", palette: ["#1F3B4D", "#E8E2D6", "#C8553D", "#F7F4EE", "#14212B"] },
   rive: { name: "Marque test B", product: "Rénovation (test)", tagline: "Marque fictive de contrôle : autre nom, autre palette.", palette: ["#2E4A3A", "#EFE9DF", "#B9853B", "#FAF7F2", "#1B2A22"] },
 };
-const FAMS: { family: FamilyId; slug: string; brands: { demo: "fraise" | "onde" | "orbe" | "rive"; b?: boolean; slug: string; label: string }[] }[] = [
+type GalleryBrand = { demo: "fraise" | "onde" | "orbe" | "rive"; b?: boolean; control?: number; slug: string; label: string };
+const DEMO_FAMS: { family: FamilyId; slug: string; brands: GalleryBrand[] }[] = [
   { family: "specialty", slug: "boutique-specialisee", brands: [{ demo: "fraise", slug: "fraise", label: "FRAISE" }, { demo: "onde", slug: "onde", label: "ONDE" }] },
   { family: "catalog", slug: "e-commerce", brands: [{ demo: "orbe", slug: "orbe", label: "ORBE" }, { demo: "orbe", b: true, slug: "orbe-marque-b", label: "Marque test B (thème ORBE)" }] },
   { family: "services", slug: "services", brands: [{ demo: "rive", slug: "rive", label: "Atelier Rive" }, { demo: "rive", b: true, slug: "rive-marque-b", label: "Marque test B (thème Atelier Rive)" }] },
 ];
+const FAMS = fresh ? DEMO_FAMS.map((f) => ({ ...f, brands: CONTROL_BRANDS[f.family].brands.map((b, i) => ({ demo: f.brands[0].demo, control: i, slug: `controle-${i === 0 ? "a" : "b"}`, label: `${b.name} (marque de contrôle, projet neuf)` })) as GalleryBrand[] })) : DEMO_FAMS;
 const LABEL_CSS = `<style>.fam-ctl{position:relative;z-index:5;font:600 12px/1.4 system-ui,sans-serif;background:#111;color:#fff;padding:10px 16px;letter-spacing:.02em}.fam-ctl b{color:#ffd28a}.fam-ctl a{color:#9cd2ff}.fam-top{position:sticky;top:0;z-index:2147483646;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between;background:#111;color:#fff;font:600 12px/1.3 system-ui,sans-serif;padding:8px 14px}.fam-top a{color:#9cd2ff}</style>`;
 const index: { family: FamilyId; slug: string; brands: { slug: string; label: string }[]; entries: { n: number; name: string; description: string; dispositions: { label: string; type: string; thumb: string }[] }[]; header: { label: string; description: string; thumb: string }[]; footer: { label: string; description: string; thumb: string }[] }[] = [];
 const report: Record<string, unknown>[] = [];
@@ -59,7 +66,11 @@ try {
   for (const fam of FAMS.filter((x) => !only || only.includes(x.family))) {
     const entries = FAMILY_LIBRARY[fam.family];
     for (const brand of fam.brands) await runWithLang({ content: "fr", ui: "fr" }, async () => {
-      const f = await demoProject(user.id, brand.demo);
+      const f = brand.control !== undefined
+        ? await (async () => { const pid = await controlProject(user.id, fam.family, CONTROL_BRANDS[fam.family].brands[brand.control!]); return { pid, spec: currentTheme(pid)!.spec }; })()
+        : await demoProject(user.id, brand.demo);
+      // Projet neuf : contenus de production (ce que la route d'ajout pose réellement), jamais d'exemple.
+      const sample = brand.control === undefined;
       let spec: ThemeSpec = f.spec;
       if (brand.b) {
         const b = BRAND_B[brand.demo as "orbe" | "rive"], p = loadProject(f.pid);
@@ -78,9 +89,9 @@ try {
         spec.store.pages = [...spec.store.pages.filter((x) => x.handle !== key), { handle: key, title: e.name.fr, template_suffix: key, body_html: "" }];
         const labels: Record<string, string> = {};
         e.dispositions.forEach((d, i) => {
-          const cctx = sectionContentContext(project, spec, true, tpl);
+          const cctx = sectionContentContext(project, spec, sample, tpl);
           const filled = withProjectMedia(spec, d.type, { ...(d.settings ?? {}) }, undefined, cctx);
-          const r = applyOps(spec, [{ op: "add_section", template: tpl, type: d.type, settings: { ...filled.settings, ...(d.settings ?? {}) } as never, blocks: filled.blocks as never } as never], { targeted: new Set(), overrideLocks: true });
+          const r = applyOps(spec, [{ op: "add_section", template: tpl, type: d.type, settings: { ...filled.settings, ...(d.settings ?? {}) } as never, blocks: filled.blocks as never } as never], { targeted: new Set(), overrideLocks: true, storeKind: fam.family });
           if (!r.applied.length) { console.warn(`refus ${brand.slug} ${e.key}~${d.id} : ${r.rejected.map((x) => x.reason).join(" ; ")}`); return; }
           spec = r.spec;
           const sid = spec.templates[tpl].order.at(-1)!;
@@ -91,10 +102,10 @@ try {
       // Page courte pour les en-têtes et pieds de page : l'ouverture de la famille.
       spec.templates["page.fam-chrome"] = { sections: {}, order: [] };
       spec.store.pages.push({ handle: "fam-chrome", title: "En-tête et pied de page", template_suffix: "fam-chrome", body_html: "" });
-      { const d = entries[0].dispositions[0]; const filled = withProjectMedia(spec, d.type, { ...(d.settings ?? {}) }, undefined, sectionContentContext(project, spec, true, "page.fam-chrome")); spec = applyOps(spec, [{ op: "add_section", template: "page.fam-chrome", type: d.type, settings: { ...filled.settings, ...(d.settings ?? {}) } as never, blocks: filled.blocks as never } as never], { targeted: new Set(), overrideLocks: true }).spec; }
+      { const d = entries[0].dispositions[0]; const filled = withProjectMedia(spec, d.type, { ...(d.settings ?? {}) }, undefined, sectionContentContext(project, spec, sample, "page.fam-chrome")); spec = applyOps(spec, [{ op: "add_section", template: "page.fam-chrome", type: d.type, settings: { ...filled.settings, ...(d.settings ?? {}) } as never, blocks: filled.blocks as never } as never], { targeted: new Set(), overrideLocks: true, storeKind: fam.family }).spec; }
       const dir = path.join(out, fam.slug, brand.slug); fs.rmSync(dir, { recursive: true, force: true }); fs.mkdirSync(path.join(dir, "assets"), { recursive: true }); fs.mkdirSync(path.join(dir, "fonts"));
       const assets = new Set<string>(), fonts = new Set<string>();
-      const nav = (title: string) => `<div class="fam-top"><span>Galerie de contrôle · ${FAMILY_LABEL[fam.family].fr} · ${brand.label} · ${title}</span><span><a href="../../index.html">Sommaire</a> · version ${commit.slice(0, 7)} · contenus d'exemple marqués « Exemple »</span></div>`;
+      const nav = (title: string) => `<div class="fam-top"><span>Galerie de contrôle · ${FAMILY_LABEL[fam.family].fr} · ${brand.label} · ${title}</span><span><a href="../../index.html">Sommaire</a> · version ${commit.slice(0, 7)} · ${sample ? "contenus d'exemple marqués « Exemple »" : "projet neuf, contenus de production"}</span></div>`;
       const exportVersion = async (s: ThemeSpec, files: { file: string; route: string; title: string; labels?: Record<string, string> }[]) => {
         const version = saveThemeVersion(f.pid, s, "Galerie de contrôle", "user");
         const base = `/preview/${f.pid}/v/${previewSegment(version.id, user.id, f.pid)}`;
@@ -148,7 +159,7 @@ try {
 :root[data-theme="dark"]{--bg:#151412;--ink:#f2eee8;--muted:#a59d91;--line:#34302b;--card:#1e1c19;--accent:#e08a66}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,sans-serif}main{max-width:1180px;margin:0 auto;padding:24px 16px 80px}h1{font-size:clamp(26px,4vw,40px);margin:0 0 6px}h2{margin:44px 0 6px;font-size:24px}h3{margin:26px 0 10px;font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
 .meta{color:var(--muted);font-size:13px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}.card h4{margin:0 0 4px;font-size:15px}.card p{margin:0 0 8px;color:var(--muted);font-size:13px}.thumbs{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.thumbs figure{margin:0;width:76px}.thumbs img{width:76px;border-radius:6px;border:1px solid var(--line);display:block}.thumbs figcaption{font-size:10px;line-height:1.2;color:var(--muted);margin-top:3px}.links a{display:inline-block;margin:4px 8px 0 0;color:var(--accent);font-weight:600;font-size:13px}nav.toc a{margin-right:14px;color:var(--accent);font-weight:600}
-</style></head><body><main><h1>Bibliothèques de sections par famille</h1><p class="meta">Galerie de contrôle (issue #141) · version ${commit.slice(0, 7)} · ${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC · rendue par le moteur d'aperçu du studio ; contenus d'exemple marqués « Exemple », jamais enregistrés. À valider par Thomas.</p><nav class="toc">${index.map((f) => `<a href="#${f.slug}">${FAMILY_LABEL[f.family].fr}</a>`).join("")}</nav>
+</style></head><body><main><h1>Bibliothèques de sections par famille</h1><p class="meta">Galerie de contrôle (issue #141) · version ${commit.slice(0, 7)} · ${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC · rendue par le moteur d'aperçu du studio ; ${fresh ? "projets NEUFS de deux marques de contrôle fictives par famille (issue #145) : contenus de production, manques signalés « À compléter », aucun exemple" : "contenus d'exemple marqués « Exemple », jamais enregistrés"}. À valider par Thomas.</p><nav class="toc">${index.map((f) => `<a href="#${f.slug}">${FAMILY_LABEL[f.family].fr}</a>`).join("")}</nav>
 ${index.map((f) => `<section id="${f.slug}"><h2>${FAMILY_LABEL[f.family].fr} — ${f.entries.length} sections</h2><p class="meta">Deux marques de la même famille, sans retouche manuelle : ${f.brands.map((b) => esc(b.label)).join(" et ")}.</p>
 <div class="grid">${f.entries.map((e) => `<article class="card"><h4>${e.n}. ${esc(e.name)}</h4><p>${esc(e.description)}</p><div class="thumbs">${e.dispositions.map((d) => `<figure><img src="${d.thumb}" alt=""><figcaption>${esc(d.label)}</figcaption></figure>`).join("")}</div><div class="links">${f.brands.map((b) => `<a href="${f.slug}/${b.slug}/fam-${String(e.n).padStart(2, "0")}.html">${esc(b.label)}</a>`).join("")}</div></article>`).join("")}</div>
 <h3>En-têtes (5)</h3><div class="grid">${f.header.map((x, i) => `<article class="card"><h4>${i + 1}. ${esc(x.label)}</h4><p>${esc(x.description)}</p><div class="thumbs"><figure><img src="${x.thumb}" alt=""></figure></div><div class="links">${f.brands.map((b) => `<a href="${f.slug}/${b.slug}/en-tete-${i + 1}.html">${esc(b.label)}</a>`).join("")}</div></article>`).join("")}</div>
