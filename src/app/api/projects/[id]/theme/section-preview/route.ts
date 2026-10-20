@@ -5,7 +5,9 @@
  */
 import { HttpError } from "@/lib/auth";
 import { handle } from "@/lib/http";
-import { L } from "@/lib/i18n-server";
+import { L, uiLang } from "@/lib/i18n-server";
+import { sectionIncompatibility } from "@/lib/theme/section-compat";
+import { projectKind } from "@/lib/theme/project-kind";
 import { currentTheme } from "@/lib/projects";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { applyOps } from "@/lib/theme/ops";
@@ -33,6 +35,9 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   const lib = /^fam:[a-z]+\.[a-z0-9-]+(~[a-z0-9-]+)?$/.test(asked) ? resolveLibraryType(asked) : { type: asked, settings: {} as Record<string, unknown> };
   const type = lib.type;
   if (!/^[\w-]{1,80}$/.test(type) || !sectionSchema(cur.spec, type)) throw new HttpError(404, L("Section inconnue.", "Unknown section."));
+  // Même bibliothèque que la galerie : une section d'une autre famille (ou retirée) n'a pas d'aperçu.
+  const outside = sectionIncompatibility(cur.spec, type, projectKind(p), uiLang());
+  if (outside) throw new HttpError(404, outside);
   const targetTemplate = new URL(req.url).searchParams.get("template") ?? "index";
   const key = `${cur.version.id}:${targetTemplate}:${asked}`;
   // En développement, les fichiers du thème de base changent : pas de mémoire des rendus.

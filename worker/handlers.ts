@@ -226,6 +226,8 @@ export const handlers: Record<string, Handler> = {
     let revert = false;
     let switchTo: string | undefined;
     let mode: "ai" | "local" = "local";
+    const owner = one<{ id: string; role: "client" | "admin" }>("SELECT id, role FROM users WHERE id = ?", p.userId);
+    const customSectionsAllowed = !!owner && sectionGenerationAllowed(owner, p.id);
     // Image désignée + image jointe : l'emplacement exact (réglage *_asset) est retrouvé sans IA.
     const firstMedia = atts.find((a) => a.kind === "image" || a.kind === "video" || a.kind === "logo");
     const mediaTarget = firstMedia && isMediaSelection(selection) ? mediaTargetOf(cur.spec, selection, firstMedia.kind === "video" ? "video" : "image") : null;
@@ -258,13 +260,12 @@ export const handlers: Record<string, Handler> = {
       if (mediaTarget && firstMedia && !revert && REPLACE_INTENT.test(message) && !ops.some((o) => o.op === "use_media")) {
         ops.push({ op: "use_media", template: mediaTarget.template, section: mediaTarget.section, ...(mediaTarget.block ? { block: mediaTarget.block } : {}), key: mediaTarget.key, assetId: firstMedia.id });
       }
-      // Sections sur mesure écrites par l'IA : forfaits Développer et Dominer seulement (Créer : sections de la bibliothèque).
-      const owner = one<{ id: string; role: "client" | "admin" }>("SELECT id, role FROM users WHERE id = ?", p.userId);
-      if (owner && ops.some((o) => o.op === "custom_section") && !sectionGenerationAllowed(owner, p.id)) {
+      // Sections sur mesure écrites par l'IA : forfait Dominer seulement (sinon : sections de la bibliothèque).
+      if (ops.some((o) => o.op === "custom_section") && !customSectionsAllowed) {
         ops = ops.filter((o) => o.op !== "custom_section");
         reply += L(
-          "\n\nUne partie de la demande demandait une section sur mesure écrite par l'IA : elle est incluse dans les forfaits Développer et Dominer. J'ai fait le reste avec les sections de la bibliothèque.",
-          "\n\nPart of the request needed a custom section written by AI: it's included in the Grow and Dominate plans. I did the rest with the library sections.",
+          "\n\nUne partie de la demande demandait une section sur mesure écrite par l'IA : elle est incluse dans le forfait Dominer. J'ai fait le reste avec les sections de la bibliothèque.",
+          "\n\nPart of the request needed a custom section written by AI: it's included in the Dominate plan. I did the rest with the library sections.",
         );
       }
       // Préférences DÉDUITES par l'IA de la demande du client : provenance honnête (déduction, priorité inférieure).
@@ -311,6 +312,8 @@ export const handlers: Record<string, Handler> = {
         try {
           ctx.progress(0.8, L("Correction des opérations refusées", "Fixing the rejected operations"));
           const fix = await ctx.step("repair", () => aiRepairOps({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:repair` }, p, next, { request: message, page: page || "index", rejected: refused }));
+          // Même règle de forfait pour la passe de correction que pour la première réponse.
+          if (!customSectionsAllowed) fix.ops = fix.ops.filter((o) => o.op !== "custom_section");
           if (fix.ops.length) {
             const again = applyOps(next, fix.ops, { targeted, mediaFile: mediaFileOf, storeKind: projectKind(p) });
             if (again.applied.length && !validateSpec(again.spec).length) {

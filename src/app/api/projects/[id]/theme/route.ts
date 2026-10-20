@@ -17,6 +17,8 @@ import { containerOf, sectionSchema, baseSectionTypes, availableSectionTypes } f
 import { directionCards } from "@/lib/theme/directions";
 import { themeFingerprint } from "@/lib/theme/compile";
 import { layoutChoices } from "@/lib/theme/layout-choices";
+import { familyPanel } from "@/lib/theme/family-ops";
+import { projectKind } from "@/lib/theme/project-kind";
 import { previewSandbox } from "@/lib/theme/preview-access";
 import { stockPhotosInTheme } from "@/lib/theme/stock-notice";
 import { getAsset } from "@/lib/library";
@@ -33,11 +35,14 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const recommendation = themeRecommendation(p, ui);
   const kind = recommendation.category.kind;
   if (!cur) return ok({ current: null, versions: listThemeVersions(p.id), messages, directions: directionCards(ui, p.brand?.direction ? [p.brand.direction] : []), sandbox: previewSandbox(), storeKind: recommendation.category, recommendation });
+  // Section de la bibliothèque, en-tête, pied de page : leurs dispositions sont celles de la famille (panneau
+  // « Réglages ») ; l'ancien menu « Choisir la disposition » n'est gardé que pour les autres sections.
+  const layoutOf = (s: (typeof cur.spec.templates)[string]["sections"][string]) => (!cur.spec.imported && familyPanel(cur.spec, projectKind(p), s, ui) ? undefined : layoutChoices(cur.spec, s, ui));
   const structure = ["group:header", ...Object.keys(cur.spec.templates), "group:footer"].map((t) => {
     const c = containerOf(cur.spec, t)!;
     return {
       template: t,
-      sections: c.order.filter((id) => c.sections[id]).map((id) => ({ id, type: c.sections[id].type, name: sectionSchema(cur.spec, c.sections[id].type, ui)?.name ?? c.sections[id].type, disabled: !!c.sections[id].disabled, locked: cur.spec.locks.includes(`${t}:${id}`), heading: String(c.sections[id].settings?.heading ?? c.sections[id].settings?.heading_line1 ?? "").slice(0, 80), layout: layoutChoices(cur.spec, c.sections[id], ui) })),
+      sections: c.order.filter((id) => c.sections[id]).map((id) => ({ id, type: c.sections[id].type, name: sectionSchema(cur.spec, c.sections[id].type, ui)?.name ?? c.sections[id].type, disabled: !!c.sections[id].disabled, locked: cur.spec.locks.includes(`${t}:${id}`), heading: String(c.sections[id].settings?.heading ?? c.sections[id].settings?.heading_line1 ?? "").slice(0, 80), layout: layoutOf(c.sections[id]) })),
     };
   });
   return ok({

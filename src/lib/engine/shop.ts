@@ -7,6 +7,8 @@
 import { decide } from "../quality/gate";
 import { applyHandoff, handoffCopy } from "../theme/handoff";
 import { projectKind } from "../theme/project-kind";
+import { sectionIncompatibility } from "../theme/section-compat";
+import { sectionGenerationAllowed } from "../theme/custom-access";
 import { describeReport, preservation, preserve } from "../theme/carry-over";
 import { gateMeta, saveCheck } from "../quality/store";
 import { isAutoUsable } from "../quality/usable";
@@ -324,6 +326,16 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
     opts={...opts,direction:selected.id,engine:"v1"};
   }
 
+  // Projet déjà dans l'un des quatre thèmes de référence : recomposé dans ce thème (bibliothèque de sa famille), jamais
+  // remplacé par des sections V2 hors bibliothèque (catalogue, « recomposer », nouveau site).
+  {
+    const installed = ACTIVE_DIRECTIONS.find((d) => d.id === (opts.direction ?? currentTheme(projectId)?.spec.direction));
+    if (installed) {
+      if (opts.engine === "v2") throw new UserFacingError(L(`Ce projet utilise le thème ${installed.name} : il se recompose dans ce thème, pas dans un langage visuel V2.`, `This project uses the ${installed.name} theme: it is rebuilt in that theme, not in a V2 visual language.`));
+      opts = { ...opts, direction: installed.id, engine: "v1" };
+    }
+  }
+
   const parent = currentTheme(projectId)?.version.id ?? null;
   // Theme Engine V2 (phase 10A) par défaut pour toute nouvelle composition ; une direction V1 explicitement choisie
   // (galerie des thèmes, « change de direction ») ou un projet réglé sur l'ancien moteur garde le moteur V1.
@@ -350,19 +362,26 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
     try {
       const design = await ctx.step(`design:${direction}`, () => aiDesignHome({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:design:${direction}` }, p, spec));
       const ops: ThemeOp[] = [];
-      if (design.custom && /^es-custom-[a-z0-9-]{2,40}$/.test(design.custom.type)) ops.push({ op: "custom_section", type: design.custom.type, name: design.custom.name.slice(0, 25), liquid: design.custom.liquid });
+      // Section entièrement écrite par l'IA : forfait Dominer seulement (même règle que le chat et les opérations).
+      const owner = one<{ id: string; role: "client" | "admin" }>("SELECT id, role FROM users WHERE id = ?", p.userId);
+      const customAllowed = !!owner && sectionGenerationAllowed(owner, projectId);
+      if (customAllowed && design.custom && /^es-custom-[a-z0-9-]{2,40}$/.test(design.custom.type)) ops.push({ op: "custom_section", type: design.custom.type, name: design.custom.name.slice(0, 25), liquid: design.custom.liquid });
       const fresh: ThemeSpec = { ...spec, settings: { ...spec.settings, ...Object.fromEntries(Object.entries(design.globals ?? {}).filter(([, v]) => v !== undefined)) }, templates: { ...spec.templates, index: { sections: {}, order: [] } } };
       // Site de services : aucune section de vente, même si l'IA en propose.
       const SALES = /^(featured-product|featured-collection|collection-list|product-|shipping-journey|featured-offer|countdown|main-)/;
       // Section d'un type inconnu proposée par l'IA : retirée seule (le reste de la composition payée est gardé).
       for (const s of design.index) if (!(services && SALES.test(s.type)) && sectionSchema(fresh, s.type)) ops.push({ op: "add_section", template: "index", type: s.type, settings: s.settings, blocks: s.blocks });
-      // Catalogue : la grille de produits figure toujours juste après l'ouverture.
-      if (catalog && !design.index.some((s) => s.type === "featured-collection")) {
+      // Catalogue : la grille de produits figure toujours juste après l'ouverture (celle de la bibliothèque du projet).
+      const kind = projectKind(p);
+      const grid = sectionIncompatibility(fresh, "featured-collection", kind) ? "fs-products" : "featured-collection";
+      if (catalog && !design.index.some((s) => s.type === "featured-collection" || s.type === "fs-products")) {
         const first = ops.findIndex((o) => o.op === "add_section");
-        ops.splice(first + 1, 0, { op: "add_section", template: "index", type: "featured-collection", settings: { heading: p.storeType === "multi" ? C("Les incontournables", "Best sellers") : C("La sélection", "The selection"), collection: "all", limit: 8, columns: 4 } });
+        const heading = p.storeType === "multi" ? C("Les incontournables", "Best sellers") : C("La sélection", "The selection");
+        ops.splice(first + 1, 0, { op: "add_section", template: "index", type: grid, settings: grid === "fs-products" ? { heading, layout: "grid", source: "collection", collection: "all", limit: 8 } : { heading, collection: "all", limit: 8, columns: 4 } });
       }
       // Finitions d'agence (doublons, sections d'espaces réservés, images inexistantes…) avant tout contrôle.
-      const r = applyOps(fresh, ops);
+      // Bibliothèque de la famille du projet : une section d'une autre famille proposée par l'IA est refusée seule.
+      const r = applyOps(fresh, ops, { storeKind: kind });
       r.spec = tidyComposition(r.spec, { strictAssets: true });
       if (r.spec.templates.index.order.length >= 4 && !validateSpec(r.spec).length) {
         spec = r.spec;
@@ -391,7 +410,7 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
         summary = directionSummary;
         append(inBothLangs(() => L(` · composition de l'IA écartée à la relecture visuelle (${review.score}/10)`, ` · AI layout discarded at visual review (${review.score}/10)`)));
       } else if (review?.ops.length) {
-        const r = applyOps(spec, services ? review.ops.filter((o) => !("type" in o && typeof o.type === "string" && /^(featured-product|featured-collection|collection-list|product-|shipping-journey|featured-offer|countdown)/.test(o.type))) : review.ops);
+        const r = applyOps(spec, services ? review.ops.filter((o) => !("type" in o && typeof o.type === "string" && /^(featured-product|featured-collection|collection-list|product-|shipping-journey|featured-offer|countdown)/.test(o.type))) : review.ops, { storeKind: projectKind(p) });
         r.spec = tidyComposition(r.spec, { strictAssets: true });
         // Une relecture qui viderait l'accueil (moins de 4 sections) ou en retirerait l'ouverture n'est pas appliquée.
         const opening = (t: ThemeSpec) => t.templates.index.sections[t.templates.index.order[0]]?.type ?? "";
