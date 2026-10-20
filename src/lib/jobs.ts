@@ -281,6 +281,7 @@ export function completeJob(jid: string, result: unknown) {
 /** Échec : nouvelle tentative avec attente exponentielle, sauf erreur définitive. */
 export function failJob(job: Job, err: unknown, opts: { permanent?: boolean } = {}) {
   const message = friendlyToolError(err instanceof Error ? err.message : String(err));
+  const code=err instanceof UserFacingError && typeof err.code==="string" && /^[A-Z_]{3,80}$/.test(err.code)?err.code:null;
   const permanent = opts.permanent || (err as any)?.permanent === true || job.attempts >= job.max_attempts;
   // Seule une tâche encore tenue (ni annulée, ni mise en pause entre-temps) change d'état : une tâche annulée
   // pendant un appel puis interrompue par une erreur ne revient jamais en file.
@@ -288,11 +289,13 @@ export function failJob(job: Job, err: unknown, opts: { permanent?: boolean } = 
   const held = "((status='running' AND (locked_by IS NULL OR locked_by=?)) OR (status='queued' AND locked_by=?))";
   if (permanent) {
     const r = run(
-      `UPDATE jobs SET status='failed', error=?, message=?, locked_by=NULL, locked_until=NULL, finished_at=?, updated_at=? WHERE id=? AND ${held}`,
+      `UPDATE jobs SET status='failed', error=?, message=?, locked_by=NULL, locked_until=NULL, finished_at=?, updated_at=?, checkpoint=CASE WHEN ? IS NULL THEN json_remove(checkpoint,'$.failureCode') ELSE json_set(checkpoint,'$.failureCode',?) END WHERE id=? AND ${held}`,
       message.slice(0, 4000),
       message.slice(0, 300),
       now(),
       now(),
+      code,
+      code,
       job.id,
       WORKER_ID,
       WORKER_ID,
@@ -383,10 +386,13 @@ export class PermanentError extends Error {
 }
 
 /** Erreur utilisateur à afficher telle quelle, sans nouvelle tentative. */
-export class UserFacingError extends PermanentError {}
+export class UserFacingError extends PermanentError {
+  constructor(message:string,public readonly code?:string){super(message);}
+}
 
 export function publicJob(j: Job) {
-  const failedStage=j.status==="failed"?json<Record<string,any>>(j.checkpoint,{})["ai-post"]:null;
+  const failure=j.status==="failed"?json<Record<string,any>>(j.checkpoint,{}):null;
+  const failureCode=failure?.failureCode??failure?.["ai-post"]?.code;
   return {
     id: j.id,
     type: j.type,
@@ -395,7 +401,7 @@ export function publicJob(j: Job) {
     progress: j.progress,
     message: j.message,
     error: j.status === "failed" ? j.error : null,
-    ...(typeof failedStage?.code==="string" && /^[A-Z_]{3,80}$/.test(failedStage.code)?{failureCode:failedStage.code}:{}),
+    ...(typeof failureCode==="string" && /^[A-Z_]{3,80}$/.test(failureCode)?{failureCode}:{}),
     attempts: j.attempts,
     parentId: j.parent_id,
     result: json(j.result, null),

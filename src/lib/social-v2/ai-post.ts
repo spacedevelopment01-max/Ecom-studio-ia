@@ -36,7 +36,7 @@ import { all, run } from "../db";
 import { assetData, getAsset, assetMeta, saveAsset } from "../library";
 import { loadProject as loadProjectForReview, type Project } from "../projects";
 import { effectivePalette } from "../route-palette";
-import { C } from "../i18n-server";
+import { C,L } from "../i18n-server";
 import { peopleAllowedFor } from "../people-policy";
 import {
   prepareImageReference,
@@ -530,7 +530,7 @@ async function designSinglePostWithAi(
   const fits = (n: number) => spent() + n <= capMicro;
   const qcMax = deps.reviewMaxMicro?.() ?? 0;
   try {
-    if(deps.expectedCopyKey && deps.expectedCopyKey!==`${prefix}:copy`)return {...blocked("Le contexte a changé depuis cette rédaction : vérifiez le projet avant de reprendre. Aucun nouvel appel de rédaction envoyé."),code:"COPY_CONTEXT_CHANGED"};
+    if(deps.expectedCopyKey && deps.expectedCopyKey!==`${prefix}:copy`)return {...blocked(L("Le contexte a changé depuis cette rédaction : vérifiez le projet avant de reprendre. Aucun nouvel appel de rédaction envoyé.","Context changed since this copy: review the project before resuming. No new copywriting call sent.")),code:"COPY_CONTEXT_CHANGED"};
     // An acquired final result does not need a currently available generation model.
     for(let i=0;i<Math.min(AI_POST_ATTEMPTS,Math.max(1,o.maxAttempts??AI_POST_ATTEMPTS));i++) {
       const cached=publicationStageValue<{assetId?:string}>(p.id,`${prefix}:${i}:outcome`);
@@ -547,10 +547,10 @@ async function designSinglePostWithAi(
       const input={headline:deps.clientTexts?.headline??"",subline:deps.clientTexts?.subline??"",cta:deps.clientTexts?.cta??""};
       const explicit=Object.values(input).filter(Boolean);
       const issues=publicationCopyIssues(p,input,post.request??"",explicit,deps.confirmedCommercialTexts);
-      if(issues.length)return {...blocked(`Texte saisi à vérifier (${[...new Set(issues.map(x=>x.field))].join(", ")}) : confirmez les faits de l’offre dans le projet ou retirez cette assertion. Aucun appel de rédaction envoyé.`),code:"CLIENT_COPY_FACTS_REQUIRED"};
+      if(issues.length){const labels={headline:L("titre","headline"),subline:L("sous-ligne","subline"),cta:L("appel à l’action","call to action")};const fields=[...new Set(issues.map(x=>labels[x.field]))].join(", ");return {...blocked(L(`Texte saisi à vérifier (${fields}) : confirmez les faits de l’offre dans le projet ou retirez cette assertion. Aucun appel de rédaction envoyé.`,`Review supplied text (${fields}): confirm the offer facts in the project or remove this assertion. No copywriting call sent.`)),code:"CLIENT_COPY_FACTS_REQUIRED"};}
       if(!deps.copy)return {...blocked("Conception IA indisponible : génération suspendue, aucun secours silencieux."),code:"COPY_ENGINE_UNAVAILABLE"};
       const minimum=(deps.conceptMaxMicro?.()??0)+max+(photoOnly?deps.layoutMaxMicro!()!:0)+(photoOnly?2:1)*qcMax;
-      if(!fits(minimum))return {...blocked("Budget insuffisant pour concevoir le visuel et son premier contrôle : étapes acquises conservées, aucun appel envoyé."),code:"CREATIVE_CAP_BEFORE_COPY"};
+      if(!fits(minimum))return {...blocked(L("Budget insuffisant pour concevoir le visuel et son premier contrôle : étapes acquises conservées, aucun appel envoyé.","Insufficient budget for designing the visual and its first check: acquired steps kept, no call sent.")),code:"CREATIVE_CAP_BEFORE_COPY"};
     }
     const recent = all<{ id: string; meta: string }>(
       "SELECT id,meta FROM assets WHERE project_id = ? AND deleted_at IS NULL AND status IN ('ready','approved') AND json_extract(meta,'$.finalImage') IS NOT NULL ORDER BY created_at DESC,rowid DESC LIMIT 8",
@@ -643,7 +643,7 @@ async function designSinglePostWithAi(
       deps.confirmedCommercialTexts,
     );
     const issues=publicationCopyIssues(p,written,post.request??"",authorized,deps.confirmedCommercialTexts);
-    if(issues.length)return {...blocked("Rédaction IA non conforme aux faits confirmés : vérifiez les passages indiqués et corrigez gratuitement le texte acquis avant de reprendre l'image."),code:"COPY_FACTS_REJECTED",copyReview:makeCopyReview(`${prefix}:copy`,acquired,issues,p)};
+    if(issues.length)return {...blocked(L("Rédaction IA non conforme aux faits confirmés : vérifiez les passages indiqués et corrigez gratuitement le texte acquis avant de reprendre l'image.","AI copy inconsistent with confirmed facts: review the indicated passages and correct acquired copy for free before resuming the image.")),code:"COPY_FACTS_REJECTED",copyReview:makeCopyReview(`${prefix}:copy`,acquired,issues,p)};
     const t0 = cleanAiCopy(written, base, people, allowed);
     const t = {
       ...t0,

@@ -347,7 +347,7 @@ export function aiPctBaseMicro(key: string): number {
 
 /** Message de budget épuisé (limite d'usage équitable, sans montant affiché). */
 export class UnsentBudgetError extends UserFacingError {
-  readonly code="BUDGET_BEFORE_DISPATCH";
+  constructor(message:string){super(message,"BUDGET_BEFORE_DISPATCH");}
 }
 function budgetError(userId: string) {
   const w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId);

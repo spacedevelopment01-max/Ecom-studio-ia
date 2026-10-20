@@ -70,3 +70,9 @@ describe("Mission 142 : suivi et isolation des tâches", () => {
     expect(JSON.parse(getJob(job.id)!.checkpoint).accepted).toBe("kept");
   });
 });
+it("un code métier persiste après échec sans exposer les checkpoints acquis ni leur contenu privé",async()=>{
+ const {failJob,UserFacingError,publicJob}=await import("@/lib/jobs");const u=await user(),j=enqueue({userId:u.id,type:"test142.business-code"});run("UPDATE jobs SET status='running',checkpoint=? WHERE id=?",JSON.stringify({acquired:"PRIVATE_ACQUIRED_RESULT"}),j.id);
+ failJob(getJob(j.id)!,new UserFacingError("Reçu conservé : vérifiez le stockage.","VIDEO_RECEIPT_UNREADABLE"));
+ const stored=getJob(j.id)!;expect(JSON.parse(stored.checkpoint).acquired).toBe("PRIVATE_ACQUIRED_RESULT");expect(publicJob(stored).failureCode).toBe("VIDEO_RECEIPT_UNREADABLE");expect(JSON.stringify(publicJob(stored))).not.toContain("PRIVATE_ACQUIRED_RESULT");
+ run("UPDATE jobs SET status='running' WHERE id=?",j.id);failJob(getJob(j.id)!,new UserFacingError("Autre échec sans code"));expect(publicJob(getJob(j.id)!).failureCode).toBeUndefined();expect(JSON.parse(getJob(j.id)!.checkpoint).acquired).toBe("PRIVATE_ACQUIRED_RESULT");
+});

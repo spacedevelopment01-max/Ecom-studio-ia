@@ -38,7 +38,7 @@ describe("Faire un visuel (onglet Images)", async () => {
   const { generateServiceSingleImage } = await import("@/lib/engine/service-media");
   const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
   const png = () => sharp({ create: { width: 1080, height: 1350, channels: 3, background: "#335544" } }).png().toBuffer();
-  const ctxOf = (id: string) => ({ job: { id, project_id: null }, progress: () => {}, step: async (_k: string, fn: () => Promise<unknown>) => fn() }) as any;
+  const ctxOf = (id: string) => ({ job: { id, project_id: null }, payload: {}, progress: () => {}, step: async (_k: string, fn: () => Promise<unknown>) => fn() }) as any;
   const post = (pid: string, body: Record<string, unknown>) => fr(() => images.POST(new Request(`http://localhost:3000/api/projects/${pid}/images`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }), { params: Promise.resolve({ id: pid }) } as any));
   const user = async () => {
     const u = await createUser(`fv-${Date.now()}-${Math.random()}@test.fr`, "motdepasse-test", "P");

@@ -49,7 +49,7 @@ export function resolveSubject(p: Project, s: CreativeSubject | null | undefined
   if (!s) return opts[0]??null;
   const key = s.kind === "service" && typeof s.name==="string" ? s.name.trim() : s.kind==="product"&&typeof s.key==="string"?s.key:null;
   const chosen=opts.find(o=>o.kind===s.kind&&o.key===key);
-  if(!chosen)throw new UserFacingError(L("Produit ou service introuvable dans ce projet : choisissez de nouveau le sujet. Aucun autre produit ou service ne sera utilisé à sa place.","Product or service not found in this project: select the subject again. No other product or service will be used instead."));
+  if(!chosen)throw new UserFacingError(L("Produit ou service introuvable dans ce projet : choisissez de nouveau le sujet. Aucun autre produit ou service ne sera utilisé à sa place.","Product or service not found in this project: select the subject again. No other product or service will be used instead."),"SUBJECT_NOT_FOUND");
   return chosen;
 }
 

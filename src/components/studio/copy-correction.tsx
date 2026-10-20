@@ -11,7 +11,7 @@ export function CopyFailureHistory() {
   const {data,reload}=useApi<{jobs:JobView[]}>(`/api/projects/${id}/jobs?type=image.ai_post`,{poll:5000});
   const [estimate,setEstimate]=useState<number|null>(null);
   useEffect(()=>{let active=true;api<{estimateMicro:number}>(`/api/projects/${id}/campaigns/v2`,{body:{action:"ai_quote"}}).then(r=>{if(active)setEstimate(r.estimateMicro);}).catch(()=>{});return()=>{active=false;};},[id]);
-  const failures=(data?.jobs??[]).filter(j=>j.status==="failed"&&/Rédaction IA non conforme aux faits confirmés/i.test(j.error??"")).slice(0,3);
+  const failures=(data?.jobs??[]).filter(j=>j.status==="failed"&&(j.failureCode==="COPY_FACTS_REJECTED"||/Rédaction IA non conforme aux faits confirmés|AI copy inconsistent with confirmed facts/i.test(j.error??""))).slice(0,3);
   return <div data-copy-failure-history>{failures.map(j=><CopyCorrection key={j.id} projectId={id} jobId={j.id} quote={estimate} onResumed={()=>{void reload();void reloadProject();}}/>)}</div>;
 }
 
@@ -20,7 +20,8 @@ export function CopyCorrection({projectId,jobId,quote,onResumed}:{projectId:stri
   const t=useT(),toast=useToast(),budget=useBudgetPct(),sending=useRef(false);
   const {data,reload}=useApi<{available:boolean;review:(CopyReview&{edits:CopyTexts;correctionVersion:string|null})|null}>(`/api/projects/${projectId}/images/copy-review?jobId=${encodeURIComponent(jobId)}`);
   const [edits,setEdits]=useState<CopyTexts|null>(null),[busy,setBusy]=useState(false),[saved,setSaved]=useState(false);
-  useEffect(()=>{setEdits(data?.review?.edits??null);setSaved(false);},[data]);
+  useEffect(()=>{setEdits(data?.review?.edits??null);},[data]);
+  useEffect(()=>{setSaved(false);},[jobId,data?.review?.version]);
   const labels={headline:t("Titre","Headline"),subline:t("Sous-ligne","Subline"),cta:t("Appel à l’action","Call to action")};
   const reasons={COMMERCIAL_NUMBER_UNCONFIRMED:t("Nombre commercial non confirmé pour ce sujet.","Commercial number not confirmed for this subject."),COMMERCIAL_NUMBER_NOT_REQUESTED:t("Nombre commercial confirmé, mais absent de cette demande.","Commercial number confirmed, but absent from this request."),CLAIM_EVIDENCE_REQUIRED:t("Promesse ou preuve à documenter avant utilisation.","Claim or evidence to document before use.")};
   const act=async(action:"save"|"resume")=>{
