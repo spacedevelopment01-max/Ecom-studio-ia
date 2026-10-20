@@ -108,3 +108,23 @@ it("le diagnostic budgétaire sélectionne le bon abonnement sans migration ni s
   expect(r.assets).toEqual([]);expect(JSON.stringify(r)).not.toContain(f.secret);expect(JSON.stringify(r)).not.toContain("private-subscription-key");
   expect(crypto.createHash("sha256").update(fs.readFileSync(f.database)).digest("hex")).toBe(before);
 });
+it("v5 situe le champ du garde historique depuis le reçu exact sans texte, nombre commercial ou écriture",async()=>{
+ const f=await fixture();
+ f.db.exec("ALTER TABLE projects ADD COLUMN product_json TEXT; ALTER TABLE projects ADD COLUMN brand_json TEXT; ALTER TABLE projects ADD COLUMN updated_at INTEGER; ALTER TABLE ai_calls ADD COLUMN usage_key TEXT; CREATE TABLE memory(project_id TEXT,key TEXT,value TEXT,updated_at INTEGER)");
+ f.db.prepare("UPDATE projects SET product_json=?,brand_json=?,updated_at=?").run(JSON.stringify({name:f.secret,facts:[],price:{status:"unknown"}}),JSON.stringify({name:f.secret}),1);
+ f.db.prepare("UPDATE jobs SET status='failed',error=?,finished_at=?").run("Rédaction IA non conforme aux faits confirmés.",10);
+ const key=`ai-post:${f.pid}:private-copy-key:copy`;
+ f.db.prepare("UPDATE ai_calls SET usage_key=?").run(key);
+ f.db.prepare("INSERT INTO memory VALUES(?,?,?,?)").run(f.pid,`publication.stage.${key}`,JSON.stringify({state:"done",value:{headline:"À votre avis ? "+f.secret,subline:"Une offre à 87654 €",cta:"Découvrir"}}),5);
+ // Un autre reçu (autre projet/même clé) ne doit jamais être lu.
+ f.db.prepare("INSERT INTO memory VALUES(?,?,?,?)").run("foreign",`publication.stage.${key}`,JSON.stringify({state:"done",value:{headline:"foreign PRIVATE",subline:"",cta:""}}),6);
+ f.db.close();const hash=()=>crypto.createHash("sha256").update(fs.readFileSync(f.database)).digest("hex"),before=hash();
+ const r=await diagnostic({...f.opts,budgetOnly:true});
+ expect(r.schema).toBe("studio-ai-delivery-diagnostic-5");
+ expect(r.jobs[0].copyFactsEvidence).toMatchObject({available:true,subjectResolved:true,contextBasis:"CURRENT_PROJECT_NOT_HISTORICAL_SNAPSHOT",projectChangedAfterFailure:false,receiptSavedBeforeFailure:true,fields:[{field:"headline",legacyWouldReject:true,neutralOpinionRequest:true},{field:"subline",legacyWouldReject:true,numbersConfirmed:false},{field:"cta",legacyWouldReject:false}]});
+ const out=JSON.stringify(r);for(const value of [f.secret,"87654","foreign PRIVATE",key,"À votre avis"])expect(out).not.toContain(value);expect(hash()).toBe(before);
+});
+it("v5 ancien schéma ou reçu manquant : limite précise, sans inventer le champ rejeté",async()=>{
+ const f=await fixture();f.db.prepare("UPDATE jobs SET error=?").run("Rédaction IA non conforme aux faits confirmés.");f.db.close();
+ const r=await diagnostic({...f.opts,budgetOnly:true});expect(r.jobs[0].copyFactsEvidence).toEqual({available:false,reason:"ACQUIRED_COPY_UNAVAILABLE"});
+});
