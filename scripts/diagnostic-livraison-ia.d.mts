@@ -2,6 +2,8 @@ export type DiagnosticOptions = {
   projectId?: string;
   projectName?: string;
   jobId?: string;
+  jobType?: string;
+  budgetOnly?: boolean;
   limit?: number;
   database?: string;
   dataDir?: string;
@@ -22,3 +24,4 @@ export type DiagnosticReport = {
   [key: string]: unknown;
 };
 export function diagnostic(options?: DiagnosticOptions): Promise<DiagnosticReport>;
+export function budgetFailureCode(message: unknown): string;

@@ -1,6 +1,6 @@
 # Diagnostic local de livraison IA — lecture seule
 
-L’accès distant de Codex au Codespace a reçu un refus du proxy `CONNECT 403`. Aucune trace de l’incident réel n’a été consultée. Ce diagnostic examine les exécutions existantes ; il ne lance ni fournisseur, génération, retry, paiement, migration, mise à jour du studio ou partage de port.
+L’accès distant de Codex au Codespace a reçu un refus du proxy `CONNECT 403`. Un premier diagnostic anonymisé a ensuite été transmis en privé et examiné ; le message budgétaire exact reste masqué dans ce premier format. Ce diagnostic examine les exécutions existantes ; il ne lance ni fournisseur, génération, retry, paiement, migration, mise à jour du studio ou partage de port.
 
 Le diagnostic analytique existant `scripts/diagnostic-ia.ts` reste conservé. Ce nouvel outil est limité à l’incident : il ouvre directement SQLite **en lecture seule**, sans importer la couche applicative qui initialise/migre la base. Il contrôle aussi les fichiers, leur décodage et leur association à la galerie publicitaire.
 
@@ -24,3 +24,12 @@ Les flags décrivent des observations à examiner, pas une cause automatique. Un
 Ne publier sur GitHub ni la base, `.env.local`, images client ou journaux bruts. Le JSON anonymisé peut être transmis dans la conversation de travail pour poursuivre l’analyse. Les données d’origine ne sont ni modifiées ni supprimées.
 
 Vérifications : trois cas isolés réellement exécutés (base inchangée, confidentialité de la sortie, média valide, sortie vide, média corrompu/étranger, refus de réseau externe). Aucun essai fournisseur réel.
+## Complément budgétaire (version 2)
+
+Le premier format masque volontairement le message libre : `errorCategory: budget` ne permet pas de distinguer un seuil de fonctionnement, une réservation refusée ou le plafond d'une tâche. Le format 2 ajoute un `budgetFailureCode` fermé, le plafond numérique enregistré dans la tâche et un état du portefeuille **au moment du diagnostic**, jamais présenté comme le solde historique de l'échec.
+
+Pour cibler la dernière tâche d'un type, ajouter `--job-type image.ai_post --limit 1 --budget-only`. Ce mode ne décode pas les médias, ne relance rien et n'exporte ni nom, identifiant brut, message libre, modèle, clé ou configuration. Le rapprochement du portefeuille suit le rattachement existant de l'abonnement ; il ne crée ni ne rattache un abonnement et ne recalcule aucun budget. Une absence de portefeuille ou d'ancien champ reste explicitement inconnue.
+
+Codes : `AI_MINIMUM_AVAILABLE_GATE` (seuil minimum, conservé), `WALLET_RESERVATION_OR_PRECHECK_REFUSED` (réservation ou précontrôle du maximum), `WALLET_COMMITTED` (budget engagé), `TASK_COST_CAP` et `CREATIVE_CAP_BEFORE_IMAGE` (plafond de tâche), `UNKNOWN_MAXIMUM_COST`, `BUDGET_UNCLASSIFIED`. Le code reconnaît la branche des anciens messages « 100 % » ; il ne certifie pas que l'enveloppe était réellement épuisée. Aucun changement du studio n'est nécessaire pour utiliser ce complément.
+
+Vérification du complément : onze cas isolés (messages FR/EN et codes, ancien schéma, portefeuille correctement rattaché, état actuel distinct de l'historique, lecture seule et confidentialité, aucune requête fournisseur). Le mode court évite de refaire l'inspection des médias.

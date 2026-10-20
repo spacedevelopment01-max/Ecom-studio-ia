@@ -5,7 +5,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import Database from "better-sqlite3";
 import sharp from "sharp";
-import { diagnostic } from "../scripts/diagnostic-livraison-ia.mjs";
+import { budgetFailureCode, diagnostic } from "../scripts/diagnostic-livraison-ia.mjs";
 
 const dirs:string[]=[];
 afterEach(()=>{for(const d of dirs.splice(0))fs.rmSync(d,{recursive:true,force:true});vi.unstubAllGlobals();});
@@ -54,4 +54,26 @@ it("distingue 100 % sans référence, fichier illisible et référence absente/�
 it("refuse une sonde de version externe avant tout appel réseau",async()=>{
   const f=await fixture();f.db.close();const network=vi.fn();vi.stubGlobal("fetch",network);
   await expect(diagnostic({...f.opts,offline:false,versionUrl:"https://provider.invalid/api/version"})).rejects.toThrow("LOCAL_VERSION_URL_ONLY");expect(network).not.toHaveBeenCalled();
+});
+it.each([
+  ["Plafond atteint avant génération et contrôles : étapes utilisables conservées, aucun FINAL.","CREATIVE_CAP_BEFORE_IMAGE"],
+  ["plafond de dépense atteint : l'appel suivant n'a pas été envoyé","TASK_COST_CAP"],
+  ["L'IA de votre forfait est utilisée à 100 % pour ce mois-ci. Elle reprend le 20 novembre.","WALLET_RESERVATION_OR_PRECHECK_REFUSED"],
+  ["L'IA de votre forfait est utilisée à 100 % : elle reprend au renouvellement du forfait","AI_MINIMUM_AVAILABLE_GATE"],
+  ["Le budget restant est inférieur au minimum permettant une génération IA.","AI_MINIMUM_AVAILABLE_GATE"],
+  ["Your plan's AI is 100% used: it resumes when your plan renews.","AI_MINIMUM_AVAILABLE_GATE"],
+  ["SECRET_MARKER budget message inconnu","BUDGET_UNCLASSIFIED"],
+])("le blocage %s reçoit un code précis sans exporter le texte",(message,code)=>expect(budgetFailureCode(message)).toBe(code));
+it("le diagnostic budgétaire sélectionne le bon abonnement sans migration ni solde inventé à la date de l'échec",async()=>{
+  const f=await fixture();
+  f.db.exec("CREATE TABLE subscriptions(user_id TEXT,owner_user_id TEXT,project_id TEXT,status TEXT); CREATE TABLE wallets(user_id TEXT,monthly_allowance INTEGER,monthly_used INTEGER,reserved INTEGER,reserved_topup INTEGER,topup_balance INTEGER,topup_period_used INTEGER,period_start INTEGER,period_end INTEGER)");
+  f.db.prepare("INSERT INTO subscriptions VALUES(?,?,?,?)").run("private-subscription-key",f.uid,f.pid,"active");
+  f.db.prepare("INSERT INTO wallets VALUES(?,?,?,?,?,?,?,?,?)").run("private-subscription-key",1000000,700000,10000,1000,50000,0,1,2);
+  f.db.prepare("UPDATE jobs SET status='failed',progress=.15,result=NULL,error=?,payload=?").run("Plafond atteint avant génération et contrôles : étapes utilisables conservées, aucun FINAL.",JSON.stringify({projectId:f.pid,costCapMicro:200000,request:{request:f.secret}}));f.db.close();
+  const before=crypto.createHash("sha256").update(fs.readFileSync(f.database)).digest("hex");
+  const r=await diagnostic({...f.opts,budgetOnly:true,jobType:"image.ai_post",limit:1});
+  expect(r.budgetSnapshot).toMatchObject({at:"diagnostic_capture_not_failure",billingLink:"project_subscription",subscriptionOwnerMatches:true,availableMicro:339000});
+  expect(r.jobs[0]).toMatchObject({status:"failed",progress:.15,budgetFailureCode:"CREATIVE_CAP_BEFORE_IMAGE",taskCostCapMicro:200000});
+  expect(r.assets).toEqual([]);expect(JSON.stringify(r)).not.toContain(f.secret);expect(JSON.stringify(r)).not.toContain("private-subscription-key");
+  expect(crypto.createHash("sha256").update(fs.readFileSync(f.database)).digest("hex")).toBe(before);
 });
