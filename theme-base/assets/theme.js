@@ -367,7 +367,12 @@
     // Visible dès que le bouton d'ajout n'est plus à l'écran (passé sous l'en-tête ou hors champ), masquée au pied de page.
     var headerH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h'), 10) || 0;
     var inView = r.top < window.innerHeight && r.bottom > headerH;
-    stickyBuy.classList.toggle('is-visible', !inView && window.scrollY > 120 && fr > window.innerHeight);
+    var show = !inView && window.scrollY > 120 && fr > window.innerHeight;
+    stickyBuy.classList.toggle('is-visible', show);
+    // Hauteur réelle de la barre et état « affichée » : les boutons flottants et l'avis « ajouté » se placent au-dessus
+    // d'elle seulement quand elle est là (issue #155).
+    if (show) document.documentElement.style.setProperty('--sticky-buy-h', stickyBuy.offsetHeight + 'px');
+    document.body.classList.toggle('sticky-buy-visible', show);
   }
 
   /* ---------- Présentation au défilement ---------- */
