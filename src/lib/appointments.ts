@@ -74,7 +74,7 @@ export function quoteCall(userId: string, projectId: string): CallQuote {
   if (!sub || !(PAID_STATUSES as readonly string[]).includes(sub.status)) throw new HttpError(402, L("L'accompagnement téléphonique est réservé aux projets avec un abonnement actif.", "Phone coaching is for projects with an active subscription."), "plan_required");
   const plan = ((sub.plan ?? "creer") in PLANS ? sub.plan : "creer") as PlanId;
   const p = PLANS[plan];
-  const prior = one<CallBooking>("SELECT * FROM call_bookings WHERE user_id=? AND status!='canceled' ORDER BY created_at LIMIT 1",userId);
+  const prior = one<CallBooking>("SELECT * FROM call_bookings WHERE user_id=? AND status!='canceled' ORDER BY CASE WHEN status='done' THEN 0 ELSE 1 END, created_at LIMIT 1",userId);
   if(prior)return {plan,free:false,priceCents:null,state:prior.status==='done'?'used':'reserved',reason:prior.status==='done'?L("Votre appel de départ a déjà été utilisé. Il ne se renouvelle pas avec l’abonnement.","Your introductory call has already been used. It does not renew with the subscription."):L("Votre appel de départ est déjà réservé. Retrouvez-le ci-dessous pour suivre sa confirmation ou le reporter.","Your introductory call is already booked. Find it below to follow confirmation or reschedule it.")};
   if (p.freeFirstCall && !freeCallUsed(userId)) return { plan, free: true, priceCents: 0, state:"available" };
   const price = p.callPrice != null ? Math.round(p.callPrice * 100) : dominerCallPriceCents();

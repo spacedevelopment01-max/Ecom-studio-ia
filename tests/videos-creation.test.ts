@@ -1,3 +1,4 @@
+import { grantProjectPlan } from "@/lib/project-subscriptions";
 /**
  * Vidéos de la création du projet : 2 vidéos de 15 s en 3 scènes. Produit + Développer/Dominer + IA active : scènes
  * par l'IA (Wan 2.6) ; service : plans du métier ; sinon (Créer, « montage seulement », IA coupée) montage local.
@@ -53,7 +54,7 @@ describe("Vidéos de la création", async () => {
 
   it("produit : 2 vidéos de 15 s en 3 scènes IA (9:16 et 16:9), carte de fin et musique", async () => {
     const u = await createUser(`vc2-${Date.now()}-${Math.random()}@test.fr`, "motdepasse-test", "P");
-    const pid = seedImageFixture(u.id, "hightech");
+    const pid = seedImageFixture(u.id, "hightech");grantProjectPlan(pid,"dominer");
     await seedCutout(u.id, pid);
     const p = loadProject(pid);
     const f = deps(p);
@@ -71,7 +72,7 @@ describe("Vidéos de la création", async () => {
 
   it("prix refusé ou échec du fournisseur : incomplet explicite, aucun remplacement", async () => {
     const u = await createUser(`vc3-${Date.now()}-${Math.random()}@test.fr`, "motdepasse-test", "P");
-    const pid = seedImageFixture(u.id, "hightech");
+    const pid = seedImageFixture(u.id, "hightech");grantProjectPlan(pid,"dominer");
     await seedCutout(u.id, pid);
     const p = loadProject(pid);
     const refused = deps(p, { allowed: false });
@@ -85,11 +86,21 @@ describe("Vidéos de la création", async () => {
 
   it("service : plans libres de droits du métier, aucune génération", async () => {
     const u = await createUser(`vc4-${Date.now()}-${Math.random()}@test.fr`, "motdepasse-test", "P");
-    const p = loadProject(seedImageFixture(u.id, "restaurant"));
+    const p = loadProject(seedImageFixture(u.id, "restaurant"));grantProjectPlan(p.id,"dominer");
     const f = deps(p);
     const out = await creationSceneVideos(null, p.id, "stock", f.deps);
     expect(out).toHaveLength(2);
     expect(f.calls.stock).toBe(6);
     expect(f.calls.clip).toBe(0);
   });
+  it.each(["creer","vendre"] as const)("%s : lancement sans publicité, seule la vidéo organique est produite avec ses points de reprise inchangés",async plan=>{
+    const u=await createUser(`creation-rights150-${crypto.randomUUID()}@example.test`,"isolated-password","Fictif");const pid=seedImageFixture(u.id,"hightech");grantProjectPlan(pid,plan);await seedCutout(u.id,pid);
+    const p=loadProject(pid),f=deps(p);const out=await creationSceneVideos(null,pid,plan==="creer"?"local":"ai",f.deps);expect(out).toHaveLength(1);
+    if(plan==="creer"){expect(f.calls.local).toEqual([1]);expect(f.calls.clip).toBe(0);}else{expect(f.calls.clip).toBe(3);expect(f.calls.docs).toHaveLength(1);expect(f.calls.docs[0].aspect).toBe("16:9");expect(f.calls.docs[0].meta.intent).toBe("social_content");}
+  });
+  it("service Créer : présentation avec plans libres conservée, aucune vidéo publicitaire ni génération",async()=>{
+    const u=await createUser(`service-rights150-${crypto.randomUUID()}@example.test`,"isolated-password","Fictif");const pid=seedImageFixture(u.id,"restaurant");grantProjectPlan(pid,"creer");const f=deps(loadProject(pid));
+    expect(await creationSceneVideos(null,pid,"stock",f.deps)).toHaveLength(1);expect(f.calls.stock).toBe(3);expect(f.calls.clip).toBe(0);expect(f.calls.docs[0].meta.intent).toBe("social_content");
+  });
+
 });

@@ -254,7 +254,7 @@ export function queueInitialCreatives(pid: string, quoteId: string, deps = realI
             throw new HttpError(409, 'Devis expiré. Actualisez le devis.');
         if (v.jobId && ['queued', 'running'].includes(getJob(v.jobId)?.status ?? ''))
             return { jobId: v.jobId, duplicate: true };
-        if((q.required??20)!==initialCreativeCount(pid))throw new HttpError(409,"Forfait modifié : actualisez le devis, acquis conservés.");
+        if((q.required??20)!==initialCreativeCount(pid))throw new HttpError(409,L("Forfait modifié : actualisez le devis, acquis conservés.","Plan changed: refresh the quote; acquired results are kept."));
         const remaining = activeSlots(pid,v).filter(s => !usable(pid, s, hash)).map(s => s.index);
         if (JSON.stringify(remaining) !== JSON.stringify(q.missing))
             throw new HttpError(409, 'Lot modifié : actualisez le devis.');
@@ -269,7 +269,7 @@ export function queueInitialCreatives(pid: string, quoteId: string, deps = realI
 }
 function validatePlan(p: Project, plan: InitialPlan) {
     InitialPlanSchema.parse(plan);
-    if(plan.posts.length!==initialCreativeCount(p.id))throw new UserFacingError("Le forfait ou le nombre de créations a changé : demandez un nouveau devis. Aucun appel image lancé.");
+    if(plan.posts.length!==initialCreativeCount(p.id))throw new UserFacingError(L("Le forfait ou le nombre de créations a changé : demandez un nouveau devis. Aucun appel image lancé.","The plan or creation count changed: request a new quote. No image call was launched."));
     const s = stateOf(p.id), corpus = JSON.stringify({ brief: s?.stages.brief?.data ?? legacyContext(p), sources: s?.stages.research?.data.sources.filter(x => x.status === 'consulted') });
     for (const [i, item] of plan.posts.entries()) {
         if (item.purpose !== (i < 10 ? 'organic' : 'ad'))
@@ -303,7 +303,7 @@ async function acceptedPlan(p: Project, hash: string, ctx: JobContext, deps: Ini
             const review = PlanReviewSchema.parse(await publicationStage(p.id, `initial20:${hash}:plan-review${scope}:${attempt}`, () => { check(); return deps.reviewPlan(p, plan, `initial20:${hash}:plan-review${scope}:${attempt}`, ctx); })), local = exactConceptConflicts(plan);
             check();
             const indices = [...new Set([...local.map(x => x.index), ...review.duplicates.map(x => x.index), ...review.issues.map(x => x.index)])];
-            if(organic&&indices.some(i=>i<10))throw new UserFacingError("Les publications déjà acquises ne peuvent pas être réécrites pour compléter les publicités. Plan conservé, reprise ciblée requise.");
+            if(organic&&indices.some(i=>i<10))throw new UserFacingError(L("Les publications déjà acquises ne peuvent pas être réécrites pour compléter les publicités. Plan conservé, reprise ciblée requise.","Acquired posts cannot be rewritten to complete the ads. Plan kept; a targeted correction is required."));
             if (review.accepted && !indices.length)
                 return plan;
             if (attempt === 2 || !indices.length)
@@ -358,7 +358,7 @@ export async function runInitialCreatives(ctx: JobContext, deps = realInitialDep
     try {
         return await withTrace({ jobId: ctx.job.id, projectId: pid, costCapMicro: q.capMicro }, async () => {
             const assertContext = () => {
-                if((q.required??20)!==initialCreativeCount(pid))throw new UserFacingError('Forfait modifié pendant le lot : nouveau devis requis, acquis conservés.');
+                if((q.required??20)!==initialCreativeCount(pid))throw new UserFacingError(L('Forfait modifié pendant le lot : nouveau devis requis, acquis conservés.','Plan changed during the set: a new quote is required; acquired results are kept.'));
                 if (validated(pid).hash !== hash) throw new UserFacingError('Contexte modifié pendant le lot : acquis conservés, nouveau devis requis.');
                 if (q.routeSignature && q.routeSignature !== initialRoutingSignature(deps)) throw new UserFacingError('Routes ou tarifs modifiés pendant le lot : arrêt, nouvel accord requis.');
             };

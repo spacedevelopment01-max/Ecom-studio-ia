@@ -38,7 +38,7 @@ export const STEPS = [
   { id: "brand", label: "Direction de marque", detail: "Nom, positionnement, palette, typographies, logo", en: { label: "Brand direction", detail: "Name, positioning, palette, typography, logo" } },
   { id: "copy", label: "Rédaction", detail: "Textes de la boutique, contrôle qualité", en: { label: "Copywriting", detail: "Store copy, quality check" } },
   { id: "images", label: "Images", detail: "Packshots, détails, scènes, bannières, visuels sociaux", en: { label: "Images", detail: "Packshots, close-ups, scenes, banners, social visuals" } },
-  { id: "video", label: "Vidéos", detail: "Publicité 9:16 et vidéo de boutique 16:9", en: { label: "Videos", detail: "9:16 ad and 16:9 store video" } },
+  { id: "video", label: "Vidéos", detail: "Vidéo de présentation ; publicité selon le forfait", en: { label: "Videos", detail: "Presentation video; advertising according to the plan" } },
   { id: "shop", label: "Boutique", detail: "Thème Shopify complet, aperçu, versions", en: { label: "Store", detail: "Complete Shopify theme, preview, versions" } },
   { id: "calendar", label: "Calendrier", detail: "7 jours de publications préparées à valider", en: { label: "Calendar", detail: "7 days of posts ready for your approval" } },
   { id: "organize", label: "Rangement", detail: "Dossiers, noms et liens des fichiers", en: { label: "Organizing", detail: "Folders, file names and links" } },
