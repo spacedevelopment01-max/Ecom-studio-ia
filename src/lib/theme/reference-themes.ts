@@ -261,10 +261,12 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       k.lib("rich-text", 1, { style: "statement", align: "center", padding_top: 88, padding_bottom: 72 }),
       k.lib("cv-feature", 1, { image_asset: k.im.detail1 ?? k.im.scene1, layout: "image-left" }),
       k.lib("cv-hotspots", 4, { image_asset: k.im.packshot ?? k.im.cutout, layout: "side", ratio: "square" }),
-      k.lib("cv-gallery", 1, { layout: "mosaic", ratio: "square" }, { blocks: [k.im.scene1, k.im.scene2, k.im.scene3, k.im.lifestyle2, k.im.portrait].filter((f): f is string => !!f).map((f) => ({ type: "image", settings: { image_asset: f } })) }),
+      // Mosaïque des lieux d'usage : seulement avec au moins deux vraies photos (jamais une galerie vide).
+      ((places) => k.lib("cv-gallery", 1, { layout: "mosaic", ratio: "square" }, { hide: places.length < 2, blocks: places.map((f) => ({ type: "image", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3, k.im.lifestyle2, k.im.portrait].filter((f): f is string => !!f)),
       k.lib("featured-purchase", 2, { purchase_style: "compact", image_fit: "contain" }),
       ((r) => [r[0], { ...r[1], layout: "side" }, r[2], r[3]] as typeof r)(k.faqSec(1, 5, "lines")),
-      k.lib("newsletter-media", 4, { layout: "right", image_asset: k.im.banner ?? k.im.detail2 ?? "", legal: k.privacy }),
+      // Inscription avec une dernière scène ; sans photo disponible, l'inscription simple (pas de cadre d'image vide).
+      ...k.either(k.lib("newsletter-media", 4, { layout: "right", image_asset: k.im.banner ?? k.im.detail2 ?? "", legal: k.privacy }, { hide: !(k.im.banner ?? k.im.detail2) }), k.newsletter(4)),
     ],
     // Fiche : galerie et achat, puis repères sur une autre vue, caractéristiques à côté du titre, mode d'emploi en ligne,
     // deux situations, engagements en liste et questions. Rien d'affirmé sans donnée du marchand.
@@ -282,7 +284,7 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       k.lib("cv-banner", 2, { image_asset: k.im.lifestyle ?? k.im.hero, layout: "image-left", heading_tag: "h1" }),
       k.lib("rich-text", 1, { style: "statement", align: "center" }),
       k.R.servicesList(1, "list"),
-      k.lib("cv-gallery", 4, { layout: "mosaic", ratio: "square" }, { blocks: [k.im.scene1, k.im.scene2, k.im.scene3, k.im.detail1, k.im.lifestyle2].filter((f): f is string => !!f).map((f) => ({ type: "image", settings: { image_asset: f } })) }),
+      ((places) => k.lib("cv-gallery", 4, { layout: "mosaic", ratio: "square" }, { hide: places.length < 2, blocks: places.map((f) => ({ type: "image", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3, k.im.detail1, k.im.lifestyle2].filter((f): f is string => !!f)),
       k.R.method(1, "timeline"),
       k.R.testimonials(1),
       ((r) => [r[0], { ...r[1], layout: "side" }, r[2], r[3]] as typeof r)(k.faqSec(1, 5, "lines")),

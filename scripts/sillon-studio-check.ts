@@ -22,9 +22,11 @@ const { saveThemeVersion, loadProject, saveBrand, saveSettings } = await import(
 const { composeShop } = await import("../src/lib/engine/shop"); const { seedHoldout } = await import("../tests/lot1-holdout-fixtures");
 const password = "sillon-" + Math.random().toString(36).slice(2), email = "sillon-studio@example.invalid";
 const user = await createUser(email, password, "Vérification SILLON");
-run("UPDATE subscriptions SET status='active', plan='creer', billing='monthly', owner_user_id=? WHERE user_id=?", user.id, user.id);
+// Forfait Créer actif, rattaché au projet (comme un abonnement payé) : les cinq thèmes de référence y sont inclus.
+const subscribe = (projectId: string) => run("INSERT INTO subscriptions (user_id,status,plan,owner_user_id,project_id,source,created_at,updated_at) VALUES (?,'active','creer',?,?,'admin',?,?)", `sillon-check-${projectId}`, user.id, projectId, Date.now(), Date.now());
 // Projet distinct : son nom, ses couleurs, son produit ; installé d'abord dans FRAISE (même famille).
 const pid = seedHoldout(user.id, 0, "Atelier Verre");
+subscribe(pid);
 const p0 = loadProject(pid);
 saveBrand(pid, { ...p0.brand!, name: "Atelier Verre", tagline: "Des verres soufflés pour tous les jours.", palette: { primary: "#1F4E5F", secondary: "#CFE3E8", accent: "#2A7F62", light: "#F6F8F7", dark: "#10242B" }, direction: "fraise" });
 saveSettings(pid, { ...loadProject(pid).settings, storeKind: "specialty" });
@@ -51,15 +53,28 @@ try {
   const nudge = page.locator("[data-tuto-nudge]").getByRole("button", { name: /^(Masquer|Dismiss)$/ }); if (await nudge.count()) { await nudge.click(); await page.waitForTimeout(300); }
   await shot(page, "01-avant-fraise"); steps.push({ step: "projet distinct « Atelier Verre » ouvert dans FRAISE", ok: true });
   // 1. Galerie « Thèmes » : SILLON proposé avec les autres thèmes de la catégorie, puis appliqué.
-  await page.getByRole("button", { name: /^Thèmes$/ }).first().click();
-  const card = page.locator("li").filter({ hasText: /^Sillon/ }).or(page.locator("li").filter({ has: page.getByText("Sillon", { exact: true }) })).first();
-  await card.waitFor({ timeout: 60000 }); await card.scrollIntoViewIfNeeded(); await page.waitForTimeout(800);
-  await shot(page, "02-galerie-themes");
-  const before = (await theme()).current.id;
-  await card.getByRole("button", { name: /Appliquer ce thème/ }).click();
-  for (const t0 = Date.now(); ; ) { const c = (await theme()).current; if (c.id !== before) break; if (Date.now() - t0 > 300000) throw new Error("SILLON non appliqué :\n" + log.slice(-3000)); await page.waitForTimeout(2000); }
-  await page.reload({ waitUntil: "networkidle", timeout: 240000 });
-  await frame().locator("body[data-conversion='nomade']").waitFor({ timeout: 180000 }); await page.waitForTimeout(1500);
+  // Le serveur de développement peut recharger la page pendant sa première compilation : la galerie est rouverte tant
+  // que la demande d'application n'est pas partie (la galerie se ferme d'elle-même quand le studio a accepté la demande).
+  let shotDone = false;
+  for (let attempt = 1; ; attempt++) {
+    await page.getByRole("button", { name: /^Thèmes$/ }).first().click();
+    const card = page.getByRole("dialog").locator("li").filter({ hasText: "Objet nomade, lumière chaude" }).first();
+    await card.waitFor({ timeout: 60000 }); await card.scrollIntoViewIfNeeded(); await page.waitForTimeout(800);
+    if (!shotDone) { await shot(page, "02-galerie-themes"); shotDone = true; }
+    const sent = page.waitForResponse((r) => r.url().includes("/theme/build") && r.request().method() === "POST", { timeout: 30000 }).then((r) => r.ok(), () => false);
+    await card.getByRole("button", { name: /Appliquer ce thème/ }).click();
+    if (await sent) break;
+    if (attempt >= 3) throw new Error("Demande d'application jamais envoyée");
+    await page.reload({ waitUntil: "networkidle", timeout: 240000 }); await page.waitForTimeout(1500);
+  }
+  // La tâche du worker compose SILLON puis enregistre une nouvelle version : l'aperçu passe au profil « nomade ».
+  for (const t0 = Date.now(); ; ) {
+    await page.waitForTimeout(4000);
+    await page.reload({ waitUntil: "networkidle", timeout: 240000 });
+    if (await frame().locator("body[data-conversion='nomade']").waitFor({ timeout: 60000 }).then(() => true, () => false)) break;
+    if (Date.now() - t0 > 300000) throw new Error("SILLON non appliqué :\n" + log.slice(-3000));
+  }
+  await page.waitForTimeout(1500);
   const text = await frame().locator("body").innerText();
   assert.ok(text.includes("Atelier Verre"), "nom du projet dans l'aperçu");
   assert.ok(!/SILLON|espresso|où tout coule|avant de partir/i.test(text), "aucun texte de la démonstration SILLON dans le projet");
@@ -97,4 +112,4 @@ try {
   assert.deepEqual(errors.filter((e) => !/ResizeObserver/.test(e)), [], "erreurs de page du studio");
   fs.writeFileSync(path.join(out, "sillon-studio.json"), JSON.stringify({ project: "Atelier Verre (distinct de la démo SILLON)", origin: "studio Next.js de développement + worker, base temporaire, aucune IA", steps, date: new Date().toISOString() }, null, 2) + "\n");
   console.log(JSON.stringify({ ok: true, steps }));
-} catch (e) { try { const pages = browser.contexts().flatMap((c) => c.pages()); if (pages[0]) await pages[0].screenshot({ path: path.join(out, "sillon-studio-99-echec.png") }); } catch { /* */ } console.error(log.slice(-3000)); throw e; } finally { await browser.close(); stop(); }
+} catch (e) { try { const pages = browser.contexts().flatMap((c) => c.pages()); if (pages[0]) await pages[0].screenshot({ path: path.join(out, "sillon-studio-99-echec.png") }); } catch { /* */ } console.error(log.slice(-3000)); throw e; } finally { fs.writeFileSync(path.join(out, "serveur-et-worker.log"), log); await browser.close(); stop(); }

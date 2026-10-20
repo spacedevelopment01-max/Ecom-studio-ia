@@ -608,3 +608,6 @@ body[data-conversion="nomade"] :is(.cv-gallery__item,.cv-feature__media,.cv-alt_
 body[data-conversion="nomade"] .es-product--grid .es-product__thumbs{display:none}
 @media(min-width:990px){body[data-conversion="nomade"] .cv-hotspots--stacked .cv-hotspots__stage{max-width:720px;width:100%;margin-inline:auto}}
 @media(max-width:749px){body[data-conversion="nomade"] .es-announcement{letter-spacing:.04em}}
+/* Ouverture sans visuel (projet qui n'a pas encore de photo) : pas de colonne vide, le texte occupe la largeur de lecture. */
+body[data-conversion="nomade"] .cv-hero__media:not(:has(.ed-media)){display:none}
+@media(min-width:990px){body[data-conversion="nomade"] .cv-hero__inner:not(:has(.cv-hero__media .ed-media)){grid-template-columns:minmax(0,1fr);max-width:880px}}
