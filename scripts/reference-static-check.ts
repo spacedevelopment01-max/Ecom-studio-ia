@@ -65,10 +65,13 @@ try {
     }
     // Recherche : terme sans résultat puis un mot du nom.
     const name = (await page.evaluate(() => document.title)).split(/[—|·-]/)[0].trim().split(" ")[0];
+    // Souris hors de l'en-tête : un sous-menu ouvert au survol (TRAVERSE, ORBE) couvrirait le formulaire, comme pour un visiteur.
+    await page.mouse.move(0, 0);
     await page.goto(`${origin}/recherche.html`, { waitUntil: "networkidle" }); await settle(); await page.fill("input[name=q]", "xqzv"); await page.locator("form[role=search] button, .es-search__form button").first().click(); await page.waitForTimeout(400); assert.match(await page.locator("main").innerText(), /xqzv/);
     if (!services) { await page.fill("input[name=q]", name); await page.locator("form[role=search] button, .es-search__form button").first().click(); await page.waitForTimeout(400); assert.ok((await page.locator("main .es-card, main [data-product-card], main .es-product-grid a").count()) >= 1, `résultat de recherche pour ${name}`); await shot("recherche"); }
-    // Contact : validation réelle, aucun envoi.
-    await page.goto(`${origin}/page-contact.html`, { waitUntil: "networkidle" }); await settle(); const form = page.locator("main form:not([role=search])").first(); await form.locator("button[type=submit]").first().click(); assert.ok((await form.locator("input:invalid, textarea:invalid").count()) >= 1, "validation du formulaire"); assert.match(page.url(), /page-contact\.html/);
+    // Contact : validation réelle, aucun envoi (NOCTIL et TRAVERSE : formulaire sur la page « Aide »).
+    const contact = fs.existsSync(path.join(dir, "page-contact.html")) ? "page-contact.html" : "page-aide.html";
+    await page.goto(`${origin}/${contact}`, { waitUntil: "networkidle" }); await settle(); const form = page.locator("main form:not([role=search])").first(); await form.locator("button[type=submit]").first().click(); assert.ok((await form.locator("input:invalid, textarea:invalid").count()) >= 1, "validation du formulaire"); assert.ok(page.url().endsWith(contact), "le formulaire invalide reste sur la page");
     const filtered = missing.filter((m) => !/favicon\.ico/.test(m));
     assert.deepEqual(filtered, [], "ressources manquantes"); assert.deepEqual(errors, [], "erreurs console");
     results[dev] = { pages: htmls.length, ok: true }; await page.close();
