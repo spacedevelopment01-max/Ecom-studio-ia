@@ -24,7 +24,7 @@ afterEach(()=>vi.unstubAllGlobals());
 async function execute(mode:string){
   producer.mode=mode;producer.assetId=null;
   const u=await createUser(`delivery-${crypto.randomUUID()}@example.invalid`,"isolated-password","Fictitious");
-  const pid=seedImageFixture(u.id,"hightech");
+  const pid=seedImageFixture(u.id,"hightech");const {grantProjectPlan}=await import("@/lib/project-subscriptions");grantProjectPlan(pid,"dominer");
   if(mode!=="unavailable"){
     if(mode==="missing")producer.assetId="missing-isolated-asset";
     else {
