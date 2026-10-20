@@ -63,12 +63,13 @@ for(const [index,a] of accounts.entries()){
   control("budget",pid,"quote-only",quote.quote.id);control("mode",pid,"hold");
   const financial=()=>JSON.parse(control("snapshot",pid));
   const beforeReservation=financial();
-  assert.equal(beforeReservation.balance.available,quote.quote.capMicro);
+  // Le devis public expose un pourcentage, pas le plafond fournisseur interne.
+  assert(beforeReservation.balance.available>0);
   const generated=p.waitForResponse(r=>r.url().endsWith("/preparation")&&r.request().postDataJSON()?.action==="generate");
   await p.getByRole("dialog",{name:"Confirmer cet essai",exact:true}).getByRole("button",{name:"Confirmer cet essai",exact:true}).click();
   assert((await generated).ok());
   const running=await until(state,s=>s.job?.status==="running"&&s.job.progress===.25,"réservation en cours"), jid=running.job.id;
-  const duringReservation=financial();assert.equal(duringReservation.balance.available,0);assert.equal(duringReservation.balance.reserved,quote.quote.capMicro);
+  const duringReservation=financial();assert.equal(duringReservation.balance.available,0);assert.equal(duringReservation.balance.reserved,beforeReservation.balance.available);
   for(const mobile of [false,true]){await p.setViewportSize({width:mobile?390:1440,height:mobile?844:1000});await p.reload();await p.getByText("Analyse simulée en cours ; les informations saisies sont enregistrées",{exact:true}).waitFor();await shot(p,`${slug}-03-en-cours-${mobile?"mobile":"ordinateur"}`);}
   await p.goto(BASE+"/studio/compte");await p.getByRole("button",{name:"Gérer",exact:true}).click();await p.getByText(/Une génération utilise temporairement le budget disponible/).waitFor();await shot(p,slug+"-04-budget-engage");
   control("mode",pid,product?"fail-after-save":"interrupt-after-save");

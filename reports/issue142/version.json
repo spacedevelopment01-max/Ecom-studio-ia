@@ -1,0 +1,15 @@
+{
+  "base": "482d5d3d2f3fa49073d836c23b2453f15ab5046d",
+  "codeTested": "e10847a17d4e14d7e9dd809518449f5e420731c1",
+  "codeTree": "22df5ee7a5794b19269cdb50b5eb07a7b71a9c8b",
+  "mainObserved": "d97e0b9577128eeb39b403dae281da6bd835fc65",
+  "pr": 146,
+  "providers": "simulated",
+  "realSupplierCostEur": 0,
+  "untouchedPaths": [
+    "theme-base/",
+    "src/lib/theme/",
+    "public/demo/"
+  ],
+  "untouchedCheckExit": 0
+}

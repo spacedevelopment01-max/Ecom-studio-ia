@@ -1,0 +1,146 @@
+
+ RUN  v5.0.3 /workspace/work/publications-qualite
+
+ ❯ tests/mission142-jobs.test.ts (6 tests | 6 failed) 1474ms
+   ❯ Mission 142 : suivi et isolation des tâches (6)
+     × deux comptes utilisant la même clé ne récupèrent jamais le travail de l'autre 422ms
+     × un prérequis disparu est bloqué avec un message visible plutôt qu'attendu pour toujours 170ms
+     × un prérequis appartenant à un autre client ne déclenche pas son travail 346ms
+     × deux notifications de fin d'une même reprise ne sont pas envoyées 173ms
+     × un ancien exécuteur ne modifie plus un travail terminé après libération de son bail 179ms
+     × relancer un échec retire sa date de fin précédente et conserve les étapes acquises 179ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/mission142-jobs.test.ts > Mission 142 : suivi et isolation des tâches > deux comptes utilisant la même clé ne récupèrent jamais le travail de l'autre
+AssertionError: expected 'ow6f34fd9aagr36t' to be '1ycohcfh4x75z0eu' // Object.is equality
+
+Expected: "1ycohcfh4x75z0eu"
+Received: "ow6f34fd9aagr36t"
+
+ ❯ tests/mission142-jobs.test.ts:25:28
+     23|     const first = enqueue({ userId: a.id, type: "test142.idempotence",…
+     24|     const second = enqueue({ userId: b.id, type: "test142.idempotence"…
+     25|     expect(second.user_id).toBe(b.id);
+       |                            ^
+     26|     expect(second.id).not.toBe(first.id);
+     27|     expect(enqueue({ userId: b.id, type: second.type, idempotencyKey: …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  tests/mission142-jobs.test.ts > Mission 142 : suivi et isolation des tâches > un prérequis disparu est bloqué avec un message visible plutôt qu'attendu pour toujours
+AssertionError: expected 'queued' to be 'blocked' // Object.is equality
+
+Expected: "blocked"
+Received: "queued"
+
+ ❯ tests/mission142-jobs.test.ts:32:36
+     30|     const u = await user(), job = enqueue({ userId: u.id, type: "test1…
+     31|     expect(claimNext([job.type])).toBeNull();
+     32|     expect(getJob(job.id)?.status).toBe("blocked");
+       |                                    ^
+     33|     expect(getJob(job.id)?.message).toBeTruthy();
+     34|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  tests/mission142-jobs.test.ts > Mission 142 : suivi et isolation des tâches > un prérequis appartenant à un autre client ne déclenche pas son travail
+AssertionError: expected { id: '9hv1alths8kp8mg8', …(23) } to be null
+
+- Expected:
+null
+
++ Received:
+{
+  "attempts": 1,
+  "checkpoint": "{}",
+  "created_at": 1792436043383,
+  "depends_on": "[\"o62cjvafcshim2ov\"]",
+  "error": null,
+  "finished_at": null,
+  "id": "9hv1alths8kp8mg8",
+  "idempotency_key": null,
+  "label": "",
+  "locked_by": "4ffb4d58582a:2014208:4afbio",
+  "locked_until": 1792436133383,
+  "max_attempts": 3,
+  "message": "Démarrage…",
+  "parent_id": null,
+  "payload": "{}",
+  "progress": 0,
+  "project_id": null,
+  "recovered": false,
+  "result": null,
+  "run_at": 1792436043383,
+  "status": "running",
+  "type": "test142.dep",
+  "updated_at": 1792436043383,
+  "user_id": "drygzuvjkt64nzsq",
+}
+
+ ❯ tests/mission142-jobs.test.ts:40:35
+     38|     run("UPDATE jobs SET status='done' WHERE id=?", foreign.id);
+     39|     const job = enqueue({ userId: b.id, type: "test142.dep", dependsOn…
+     40|     expect(claimNext([job.type])).toBeNull();
+       |                                   ^
+     41|     expect(getJob(job.id)?.status).toBe("blocked");
+     42|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  tests/mission142-jobs.test.ts > Mission 142 : suivi et isolation des tâches > deux notifications de fin d'une même reprise ne sont pas envoyées
+AssertionError: expected [ { id: 'hhpeg3srvb6m2mnb' }, …(1) ] to have a length of 1 but got 2
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ tests/mission142-jobs.test.ts:48:71
+     46|     completeJob(job.id, { notice: "Résultat conservé" });
+     47|     completeJob(job.id, { notice: "Résultat conservé" });
+     48|     expect(all("SELECT id FROM notifications WHERE user_id=?", u.id)).…
+       |                                                                       ^
+     49|   });
+     50|   it("un ancien exécuteur ne modifie plus un travail terminé après lib…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  tests/mission142-jobs.test.ts > Mission 142 : suivi et isolation des tâches > un ancien exécuteur ne modifie plus un travail terminé après libération de son bail
+AssertionError: expected function to throw an error, but it didn't
+ ❯ tests/mission142-jobs.test.ts:55:62
+     53|     ctx.save("accepted", { assetId: "kept" });
+     54|     completeJob(job.id, { assetId: "kept" });
+     55|     expect(() => ctx.save("accepted", { assetId: "stale" })).toThrow(L…
+       |                                                              ^
+     56|     expect(JSON.parse(getJob(job.id)!.checkpoint).accepted.assetId).to…
+     57|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  tests/mission142-jobs.test.ts > Mission 142 : suivi et isolation des tâches > relancer un échec retire sa date de fin précédente et conserve les étapes acquises
+AssertionError: expected 1792436043918 to be null
+
+- Expected:
+null
+
++ Received:
+1792436043918
+
+ ❯ tests/mission142-jobs.test.ts:62:41
+     60|     run("UPDATE jobs SET status='failed',finished_at=?,checkpoint=? WH…
+     61|     retryJob(job.id);
+     62|     expect(getJob(job.id)?.finished_at).toBeNull();
+       |                                         ^
+     63|     expect(JSON.parse(getJob(job.id)!.checkpoint).accepted).toBe("kept…
+     64|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed (6)
+   Start at  18:54:02
+   Duration  1.88s (tests 87%, transform 9%, import 4%)
+

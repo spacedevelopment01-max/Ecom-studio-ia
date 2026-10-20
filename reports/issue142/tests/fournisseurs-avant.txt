@@ -1,0 +1,52 @@
+
+ RUN  v5.0.3 /workspace/work/publications-qualite
+
+ ❯ tests/budget-ia.test.ts (28 tests | 2 failed | 26 skipped) 5452ms
+   ❯ budget IA : règle des 40 % / 50 % et réservations (17)
+     × reprise de worker : réservation orpheline traitée comme incertaine ; la tâche relancée réserve à nouveau 256ms
+   ❯ plafond fournisseur : coût maximal réellement borné (11)
+     × relances : uniquement sur une réponse d'erreur HTTP, dans la même réservation ; coupure en cours de réponse : incertain, jamais relancée 5195ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/budget-ia.test.ts > budget IA : règle des 40 % / 50 % et réservations > reprise de worker : réservation orpheline traitée comme incertaine ; la tâche relancée réserve à nouveau
+AssertionError: expected 3 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 3
+
+ ❯ tests/budget-ia.test.ts:262:23
+    260|     await text(u.id, "cle-reprise");
+    261|     expect(balance(u.id).available).toBe(after);
+    262|     expect(llm.calls).toBe(requests);
+       |                       ^
+    263|     expect(reservations(u.id)).toHaveLength(count);
+    264|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/budget-ia.test.ts > plafond fournisseur : coût maximal réellement borné > relances : uniquement sur une réponse d'erreur HTTP, dans la même réservation ; coupure en cours de réponse : incertain, jamais relancée
+AssertionError: expected 'released' to be 'uncertain' // Object.is equality
+
+Expected: "uncertain"
+Received: "released"
+
+ ❯ tests/budget-ia.test.ts:471:49
+    469|       expect((e5 as { permanent?: boolean }).permanent).toBe(true);
+    470|       expect(llm.calls).toBe(1);
+    471|       expect(reservations(u.id).at(-1)!.status).toBe("uncertain");
+       |                                                 ^
+    472|     }
+    473|   }, 30_000);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 26 skipped (28)
+   Start at  18:58:57
+   Duration  8.08s (tests 69%, import 19%, transform 12%)
+

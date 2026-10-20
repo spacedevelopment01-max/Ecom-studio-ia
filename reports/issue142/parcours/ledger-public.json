@@ -1,0 +1,118 @@
+{
+  "simulation": true,
+  "realSupplierCalls": 0,
+  "realCostEur": 0,
+  "projects": [
+    {
+      "id": "4984q1g9yheyq36t",
+      "business_type": "products",
+      "name": "Balise Jardin Test"
+    },
+    {
+      "id": "t3m7zzbp2nch27mf",
+      "business_type": "services",
+      "name": "Nouveau projet"
+    }
+  ],
+  "jobs": [
+    {
+      "id": "669j4nub8jn0im10",
+      "project_id": "4984q1g9yheyq36t",
+      "status": "done",
+      "attempts": 1,
+      "progress": 1,
+      "error": null,
+      "checkpoint": "{\"142:paid-result\":\"4zpnw75ma1u2royf\",\"prepare:analyze:3535361656980019\":{\"input\":{\"offerUrl\":\"\",\"description\":\"Thermomètre pour jardinières.\",\"offerName\":\"Balise Jardin Test\",\"brandName\":\"\",\"target\":\"\",\"constraints\":\"\",\"business\":\"products\",\"photoIds\":[\"imf2vx4xheag63gc\"],\"referenceUrls\":[],\"price\":\"\",\"services\":{\"services\":[],\"area\":\"\",\"address\":\"\",\"phone\":\"\",\"email\":\"\",\"hours\":\"\",\"bookingUrl\":\"\",\"contactMode\":\"form\",\"contactModes\":[\"form\"]}},\"profile\":{\"name\":\"Balise Jardin Test\",\"nameStatus\":\"provided\",\"category\":\"\",\"sector\":null,\"summary\":\"Thermomètre pour jardinières.\",\"facts\":[{\"key\":\"shipping\",\"label\":\"Délais et frais de livraison\",\"value\":\"\",\"status\":\"unknown\",\"source\":\"ai\"},{\"key\":\"returns\",\"label\":\"Conditions de retour\",\"value\":\"\",\"status\":\"unknown\",\"source\":\"ai\"}],\"visual\":{\"colors\":[],\"description\":\"\"},\"price\":{\"amount\":null,\"currency\":\"EUR\",\"status\":\"unknown\"},\"variants\":[],\"questions\":[{\"id\":\"price\",\"question\":\"Quel est le prix de vente (TTC) ?\",\"why\":\"Indispensable pour vendre ; il n'est pas déductible d'une photo.\",\"required\":true,\"factKey\":\"price\"},{\"id\":\"shipping\",\"question\":\"Quels sont vos délais et frais de livraison ?\",\"why\":\"Affichés dans la FAQ et la page Livraison ; rien ne sera inventé.\",\"required\":false,\"factKey\":\"shipping\"},{\"id\":\"returns\",\"question\":\"Quelles sont vos conditions de retour ?\",\"why\":\"Obligatoire pour la page Livraison et retours.\",\"required\":false,\"factKey\":\"returns\"}],\"claimsToAvoid\":[],\"sources\":[],\"analyzedBy\":\"local\"},\"services\":{\"services\":[],\"area\":\"\",\"address\":\"\",\"phone\":\"\",\"email\":\"\",\"hours\":\"\",\"bookingUrl\":\"\",\"contactMode\":\"form\",\"contactModes\":[\"form\"]},\"missing\":[\"À qui cette offre s’adresse-t-elle ?\"],\"provenance\":\"simulation\",\"observations\":[\"Analyse de test, résultat 4zpnw75ma1u2royf conservé. Aucun fournisseur réel.\"]}}"
+    },
+    {
+      "id": "2r1lydk49apo3t08",
+      "project_id": "t3m7zzbp2nch27mf",
+      "status": "done",
+      "attempts": 1,
+      "progress": 1,
+      "error": null,
+      "checkpoint": "{\"142:paid-result\":\"aypdnu6qw6xg18vp\",\"prepare:analyze:2559bdff71ddba0b\":{\"input\":{\"offerUrl\":\"\",\"description\":\"Affûtage d’outils de jardin.\",\"offerName\":\"Fil Net Test\",\"brandName\":\"\",\"target\":\"\",\"constraints\":\"\",\"business\":\"services\",\"photoIds\":[\"se44fxq8539oklcj\"],\"referenceUrls\":[],\"price\":\"\",\"services\":{\"services\":[{\"name\":\"Affûtage\",\"description\":\"\"}],\"area\":\"\",\"address\":\"\",\"phone\":\"\",\"email\":\"\",\"hours\":\"\",\"bookingUrl\":\"\",\"contactMode\":\"form\",\"contactModes\":[\"form\"]}},\"profile\":{\"name\":\"Fil Net Test\",\"nameStatus\":\"provided\",\"category\":\"Paysagiste\",\"sector\":\"batiment\",\"summary\":\"Affûtage d’outils de jardin.\",\"facts\":[],\"visual\":{\"colors\":[]},\"price\":{\"amount\":null,\"currency\":\"EUR\",\"status\":\"unknown\"},\"variants\":[],\"questions\":[],\"claimsToAvoid\":[],\"sources\":[],\"analyzedBy\":\"local\"},\"services\":{\"services\":[{\"name\":\"Affûtage\",\"description\":\"\"}],\"area\":\"\",\"address\":\"\",\"phone\":\"\",\"email\":\"\",\"hours\":\"\",\"bookingUrl\":\"\",\"contactMode\":\"form\",\"contactModes\":[\"form\"]},\"missing\":[\"À qui cette offre s’adresse-t-elle ?\",\"Indiquez un moyen de contact pour les demandes.\"],\"provenance\":\"simulation\",\"observations\":[\"Analyse de test, résultat aypdnu6qw6xg18vp conservé. Aucun fournisseur réel.\"]}}"
+    }
+  ],
+  "wallets": [
+    {
+      "user_id": "js1yw81tltr35sbi",
+      "monthly_allowance": 43000000,
+      "monthly_used": 43000000,
+      "reserved": 0,
+      "reserved_topup": 0,
+      "topup_balance": 0
+    },
+    {
+      "user_id": "5mxx13tn4ju0u1pk",
+      "monthly_allowance": 43000000,
+      "monthly_used": 43000000,
+      "reserved": 0,
+      "reserved_topup": 0,
+      "topup_balance": 0
+    }
+  ],
+  "reservations": [
+    {
+      "id": "u2myiid5kglptxpd",
+      "user_id": "js1yw81tltr35sbi",
+      "project_id": "4984q1g9yheyq36t",
+      "job_id": "669j4nub8jn0im10",
+      "amount": 2800000,
+      "actual": 40000,
+      "status": "settled"
+    },
+    {
+      "id": "qa7emnr92vdv3pl2",
+      "user_id": "5mxx13tn4ju0u1pk",
+      "project_id": "t3m7zzbp2nch27mf",
+      "job_id": "2r1lydk49apo3t08",
+      "amount": 3400000,
+      "actual": 40000,
+      "status": "settled"
+    }
+  ],
+  "usages": [
+    {
+      "project_id": "4984q1g9yheyq36t",
+      "job_id": "669j4nub8jn0im10",
+      "task": "copywriting",
+      "cost": 40000,
+      "billed": 40000
+    },
+    {
+      "project_id": "t3m7zzbp2nch27mf",
+      "job_id": "2r1lydk49apo3t08",
+      "task": "copywriting",
+      "cost": 40000,
+      "billed": 40000
+    }
+  ],
+  "assets": [
+    {
+      "id": "imf2vx4xheag63gc",
+      "project_id": "4984q1g9yheyq36t",
+      "role": "original",
+      "origin": "upload"
+    },
+    {
+      "id": "4zpnw75ma1u2royf",
+      "project_id": "4984q1g9yheyq36t",
+      "role": "test142-acquired",
+      "origin": "generated"
+    },
+    {
+      "id": "se44fxq8539oklcj",
+      "project_id": "t3m7zzbp2nch27mf",
+      "role": "lifestyle",
+      "origin": "upload"
+    },
+    {
+      "id": "aypdnu6qw6xg18vp",
+      "project_id": "t3m7zzbp2nch27mf",
+      "role": "test142-acquired",
+      "origin": "generated"
+    }
+  ],
+  "themesCreated": 0
+}

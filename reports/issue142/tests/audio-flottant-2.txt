@@ -1,0 +1,9 @@
+
+ RUN  v5.0.3 /workspace/work/publications-qualite
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  08:27:57
+   Duration  23.07s (tests 100%)
+

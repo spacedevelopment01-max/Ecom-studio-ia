@@ -1,0 +1,158 @@
+
+ RUN  v5.0.3 /workspace/work/publications-qualite
+
+ ❯ tests/mission142-billing.test.ts (7 tests | 7 failed) 1417ms
+   ❯ Mission 142 : frontières de comptabilisation (7)
+     × incident d'écriture du débit : l'événement et le règlement sont atomiques, puis la reprise facture une seule fois 246ms
+     × une clé commune à deux comptes ne masque pas le coût du second 336ms
+     × un callback tardif réconcilie le coût déjà retenu au lieu de perdre son règlement 164ms
+     × la réconciliation d'une ancienne période ne rembourse pas les nouvelles dépenses mensuelles 166ms
+     × la réconciliation d'une ancienne recharge rend son reste sans effacer l'usage des recharges de la nouvelle période 166ms
+     × le plafond d'une tâche compte les engagements simultanés avant leur envoi 166ms
+     × le coût incertain d'un premier essai reste dans le plafond de sa tâche 169ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/mission142-billing.test.ts > Mission 142 : frontières de comptabilisation > incident d'écriture du débit : l'événement et le règlement sont atomiques, puis la reprise facture une seule fois
+AssertionError: expected [ { id: 'fpjej4j42mzw1l67' } ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/mission142-billing.test.ts:37:69
+     35|     try { expect(() => recordUsage(usage(uid, "atomic"), { reservation…
+     36|     finally { db().exec("DROP TRIGGER test142_debit_failure"); }
+     37|     expect(all("SELECT id FROM usage_events WHERE user_id=?", uid)).to…
+       |                                                                     ^
+     38|     recordUsage(usage(uid, "atomic"), { reservationId: reservation });
+     39|     expect(wallet(uid).monthly_used).toBe(80_000);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  tests/mission142-billing.test.ts > Mission 142 : frontières de comptabilisation > une clé commune à deux comptes ne masque pas le coût du second
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/mission142-billing.test.ts:46:65
+     44|     const first = await client(), second = await client();
+     45|     recordUsage(usage(first, "same-client-key"));
+     46|     expect(recordUsage(usage(second, "same-client-key")).dedup).toBe(f…
+       |                                                                 ^
+     47|     expect(wallet(first).monthly_used).toBe(80_000);
+     48|     expect(wallet(second).monthly_used).toBe(80_000);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  tests/mission142-billing.test.ts > Mission 142 : frontières de comptabilisation > un callback tardif réconcilie le coût déjà retenu au lieu de perdre son règlement
+AssertionError: expected 100000 to be 40000 // Object.is equality
+
+- Expected
++ Received
+
+- 40000
++ 100000
+
+ ❯ tests/mission142-billing.test.ts:55:38
+     53|     settleUncertain(reservation, "synthetic timeout");
+     54|     recordUsage(usage(uid, "late-result", 40_000), { reservationId: re…
+     55|     expect(wallet(uid).monthly_used).toBe(40_000);
+       |                                      ^
+     56|     expect(one<{ status: string }>("SELECT status FROM ai_reservations…
+     57|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  tests/mission142-billing.test.ts > Mission 142 : frontières de comptabilisation > la réconciliation d'une ancienne période ne rembourse pas les nouvelles dépenses mensuelles
+AssertionError: expected 40000 to be 120000 // Object.is equality
+
+- Expected
++ Received
+
+- 120000
++ 40000
+
+ ❯ tests/mission142-billing.test.ts:67:38
+     65|     settle(current, 120_000, "current-period", "new period expense");
+     66|     reconcileReservation(reservation, 20_000);
+     67|     expect(wallet(uid).monthly_used).toBe(120_000);
+       |                                      ^
+     68|   });
+     69|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  tests/mission142-billing.test.ts > Mission 142 : frontières de comptabilisation > la réconciliation d'une ancienne recharge rend son reste sans effacer l'usage des recharges de la nouvelle période
+AssertionError: expected 40000 to be 120000 // Object.is equality
+
+- Expected
++ Received
+
+- 120000
++ 40000
+
+ ❯ tests/mission142-billing.test.ts:82:43
+     80|     const before = wallet(uid).topup_balance;
+     81|     reconcileReservation(reservation, 20_000);
+     82|     expect(wallet(uid).topup_period_used).toBe(120_000);
+       |                                           ^
+     83|     expect(wallet(uid).topup_balance).toBe(before + 80_000);
+     84|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  tests/mission142-billing.test.ts > Mission 142 : frontières de comptabilisation > le plafond d'une tâche compte les engagements simultanés avant leur envoi
+AssertionError: expected [Function] to throw an error
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ tests/mission142-billing.test.ts:90:81
+     88|     await withTrace({ jobId: "cap-concurrent", costCapMicro: 150_000 }…
+     89|       reserve(uid, 100_000, { ...meta, jobId: "cap-concurrent" });
+     90|       expect(() => reserve(uid, 100_000, { ...meta, jobId: "cap-concur…
+       |                                                                                 ^
+     91|     });
+     92|   });
+ ❯ Module.withTrace src/lib/ai/trace.ts:40:16
+ ❯ tests/mission142-billing.test.ts:88:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  tests/mission142-billing.test.ts > Mission 142 : frontières de comptabilisation > le coût incertain d'un premier essai reste dans le plafond de sa tâche
+AssertionError: expected [Function] to throw an error
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ tests/mission142-billing.test.ts:98:80
+     96|     await withTrace({ jobId: "cap-uncertain", costCapMicro: 150_000 },…
+     97|       settleUncertain(reserve(uid, 100_000, { ...meta, jobId: "cap-unc…
+     98|       expect(() => reserve(uid, 100_000, { ...meta, jobId: "cap-uncert…
+       |                                                                                ^
+     99|     });
+    100|   });
+ ❯ Module.withTrace src/lib/ai/trace.ts:40:16
+ ❯ tests/mission142-billing.test.ts:96:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed (7)
+   Start at  18:50:11
+   Duration  3.03s (tests 50%, import 43%, transform 7%)
+
