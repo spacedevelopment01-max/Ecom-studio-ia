@@ -44,6 +44,8 @@ export type AiPostImageRequest = {
   advertising?:PostBrief["advertising"];
   editorialData?:PostBrief["editorialData"];
   series?:PostBrief["series"];
+  /** Set only by the explicit correction/recovery route; never a request for new copy. */
+  expectedCopyKey?:string;
 };
 
 /** Format de l'onglet Images → proportions acceptées par la publication IA. */
@@ -189,6 +191,7 @@ export async function generateAiPostImage(
         jobId: ctx.job.id,
         sourceAssetId: req.sourceAssetId,
       });
+  base.expectedCopyKey=req.expectedCopyKey;
   const r = await ctx.step("ai-post", () =>
     designPostWithAi(
       p,
@@ -199,7 +202,7 @@ export async function generateAiPostImage(
           (req.format && req.format in FORMATS
             ? (req.format as AspectId)
             : "4:5"),
-        maxCostEur: aiPostCapMicro() / 1e6,
+        maxCostEur: (typeof ctx.payload.costCapMicro==="number" && Number.isFinite(ctx.payload.costCapMicro) && ctx.payload.costCapMicro>=0 ? ctx.payload.costCapMicro : aiPostCapMicro()) / 1e6,
         reference,
         subject,
         mode: req.mode,

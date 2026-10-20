@@ -12,6 +12,7 @@ import { useProject, type JobView } from "../project-context";
 import { JobProgress, SectionTitle, useActive } from "../common";
 import { useBudgetPct } from "../../billing-client";
 import { AiImageActions } from "../ai-image-actions";
+import { CopyCorrection } from "../copy-correction";
 import {
   SubjectPicker,
   subjectChoice,
@@ -144,6 +145,7 @@ function ProjectAdCreator({ onDone }: { onDone?: () => void }) {
             {Number.isFinite(tracked.progress) && tracked.progress>=0 && tracked.progress<1 && <p>{t(`Arrêt à ${Math.round(tracked.progress*100)} % de progression enregistrée.`,`Stopped at ${Math.round(tracked.progress*100)}% recorded progress.`)}</p>}
             <p>{tracked.error || tracked.message || t("La création a été interrompue.","Creation was interrupted.")}</p>
             <p>{t("Les étapes acquises sont conservées. Aucun nouvel essai payant n’est lancé automatiquement.","Acquired steps are kept. No new paid attempt is started automatically.")}</p>
+            {tracked.status==="failed"&&<CopyCorrection key={tracked.id} projectId={id} jobId={tracked.id} quote={quote} onResumed={()=>{setSubmittedJob(tracked.id);finished.current=null;void reload();}}/>}
           </div>
         )}
         {tracked?.status==="done" && (

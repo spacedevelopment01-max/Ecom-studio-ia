@@ -318,7 +318,7 @@ async function writeScript(p: Project, deps: VideoV2Deps, i: AdInsight, st: Crea
     return { ...s, sections, issues: [...s.issues.filter((x) => !bad.includes(x))] };
   };
   if (intent.editorial || !allowAi || !deps.canWrite || intent.complexity === "simple") return ugcFix(local);
-  const material = { proofs: st.proofs, facts: i.facts, claimsToAvoid: i.claimsToAvoid,ctaRequired:intent.purpose!=="organic" };
+  const material = { proofs: st.proofs, facts: i.facts, claimsToAvoid: i.claimsToAvoid,ctaRequired:intent.purpose!=="organic",names:[i.brand,i.offerName] };
   let feedback: string | undefined;
   for (let round = 0; round < 2; round++) {
     try {

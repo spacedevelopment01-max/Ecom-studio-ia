@@ -26,7 +26,7 @@ import { creativeContract, type Editorial } from "./creative-contract";
 
 export type MediaBy = "library" | "local" | "image_v2" | "ads_v2" | "video_v2" | "ai_post";
 /** `attempts` : essais payés pour obtenir ce visuel (plus d'un : la reprise est annoncée au client). */
-export type MediaResult = { assetId: string | null; assetIds?: string[]; partialAssetIds?: string[]; costMicro: number; by: MediaBy; note?: string; attempts?: number };
+export type MediaResult = { assetId: string | null; assetIds?: string[]; partialAssetIds?: string[]; costMicro: number; by: MediaBy; note?: string; attempts?: number; code?:string; copyReview?:import("./publication-copy-recovery").CopyReview };
 export type PostBrief = {
   entryPoint?:"ads-guided"|"ads-campaign"|"publications"|"images";
   id: string;

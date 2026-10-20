@@ -386,6 +386,7 @@ export class PermanentError extends Error {
 export class UserFacingError extends PermanentError {}
 
 export function publicJob(j: Job) {
+  const failedStage=j.status==="failed"?json<Record<string,any>>(j.checkpoint,{})["ai-post"]:null;
   return {
     id: j.id,
     type: j.type,
@@ -394,6 +395,7 @@ export function publicJob(j: Job) {
     progress: j.progress,
     message: j.message,
     error: j.status === "failed" ? j.error : null,
+    ...(typeof failedStage?.code==="string" && /^[A-Z_]{3,80}$/.test(failedStage.code)?{failureCode:failedStage.code}:{}),
     attempts: j.attempts,
     parentId: j.parent_id,
     result: json(j.result, null),

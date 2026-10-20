@@ -1,5 +1,6 @@
 "use client";
 import { InitialCreatives } from "./initial-creatives";
+import { CopyFailureHistory } from "./copy-correction";
 /**
  * Studio social V2 : Piloter (vue d'ensemble, communication automatique, stratégie) → Créer (image, vidéo, plusieurs) → Gérer (calendrier, validation, statistiques).
  * Le client voit ce qui est prêt, à valider, programmé, publié, en échec ou à vérifier ; il modifie, déplace
@@ -172,6 +173,7 @@ export function SocialStudio({ initial = "calendrier" }: { initial?: Section }) 
         </Card>
       </aside>
       <div className="grid min-w-0 grid-cols-1 content-start gap-5">
+        <CopyFailureHistory/>
         <InitialCreatives onChange={reload}/>
         {section === "vue" && <SocialOverview counts={data.stats.counts} posts={data.posts} statsNote={data.stats.note} hasMetrics={data.stats.byPlatform.some((b) => Object.values(b.metrics).some((m) => m.value != null))} onGo={(s: string) => go((s === "creer" ? "planifier" : s) as Section)} />}
         {section === "pilote" && <AutopilotPanel onChanged={reload} />}

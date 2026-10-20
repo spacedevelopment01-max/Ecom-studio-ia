@@ -17,6 +17,7 @@ import { useCostConfirm } from "./cost-confirm";
 import { useT } from "../i18n";
 import { PlanRequired, useBudgetPct, useCreationLocked } from "../billing-client";
 import { BANK_IMAGE_ROLES } from "@/lib/media/bank";
+import { CopyFailureHistory } from "./copy-correction";
 
 /** Tri des images par statut, et encart « Supprimées » pour retrouver (et restaurer) une image supprimée. */
 const STATUS_FILTERS = [
@@ -263,6 +264,7 @@ export default function TabImages() {
   const shown = status === "trash" ? all : all.filter((a) => !source || sourceOf(a) === source);
   return (
     <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6" data-image-bank>
+      <CopyFailureHistory/>
       {!locked && q && !q.ai && <ImageAiNotice reason={q.reason} />}
       <Card className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">

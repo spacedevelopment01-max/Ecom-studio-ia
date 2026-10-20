@@ -346,12 +346,15 @@ export function aiPctBaseMicro(key: string): number {
 }
 
 /** Message de budget épuisé (limite d'usage équitable, sans montant affiché). */
+export class UnsentBudgetError extends UserFacingError {
+  readonly code="BUDGET_BEFORE_DISPATCH";
+}
 function budgetError(userId: string) {
   const w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId);
-  if (w && w.reserved + w.reserved_topup > 0) return new UserFacingError(L("Le budget disponible est engagé dans une génération en cours. Attendez son résultat ; les étapes déjà terminées sont conservées.", "The available budget is committed to a generation in progress. Wait for its result; completed steps are kept."));
-  if (w && freeMonthly(w)+freeTopup(w)>0) return new UserFacingError(L("Le budget disponible est insuffisant pour réserver le coût maximal de cet appel. Le budget restant et les étapes acquises sont conservés ; aucun nouvel appel n’a été envoyé. Réduisez la demande, attendez le renouvellement ou consultez les recharges dans Mon compte.", "The available budget is insufficient to reserve this call's maximum cost. Remaining budget and acquired steps are kept; no new call was sent. Reduce the request, wait for renewal or view top-ups in My account."));
+  if (w && w.reserved + w.reserved_topup > 0) return new UnsentBudgetError(L("Le budget disponible est engagé dans une génération en cours. Attendez son résultat ; les étapes déjà terminées sont conservées.", "The available budget is committed to a generation in progress. Wait for its result; completed steps are kept."));
+  if (w && freeMonthly(w)+freeTopup(w)>0) return new UnsentBudgetError(L("Le budget disponible est insuffisant pour réserver le coût maximal de cet appel. Le budget restant et les étapes acquises sont conservés ; aucun nouvel appel n’a été envoyé. Réduisez la demande, attendez le renouvellement ou consultez les recharges dans Mon compte.", "The available budget is insufficient to reserve this call's maximum cost. Remaining budget and acquired steps are kept; no new call was sent. Reduce the request, wait for renewal or view top-ups in My account."));
   const end = new Date(w?.period_end ?? now()).toLocaleDateString(L("fr-FR", "en-GB"), { day: "numeric", month: "long" });
-  return new UserFacingError(L(`L'IA de votre forfait est utilisée à 100 % pour ce mois-ci. Elle reprend le ${end}, ou tout de suite avec une recharge de l'IA du projet (Mon compte).`, `Your plan's AI is 100% used for this month. It resumes on ${end}, or right away with a project AI top-up (My account).`));
+  return new UnsentBudgetError(L(`L'IA de votre forfait est utilisée à 100 % pour ce mois-ci. Elle reprend le ${end}, ou tout de suite avec une recharge de l'IA du projet (Mon compte).`, `Your plan's AI is 100% used for this month. It resumes on ${end}, or right away with a project AI top-up (My account).`));
 }
 
 /** Pré-contrôle avant de proposer une génération payante (le vrai garde-fou est la réservation, `reserve`). */

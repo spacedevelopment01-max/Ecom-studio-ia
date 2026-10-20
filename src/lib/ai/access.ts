@@ -5,7 +5,7 @@
  * Le worker exécute chaque tâche « pour » son utilisateur (AsyncLocalStorage), avec la portée de décompte des quotas.
  */
 import { AsyncLocalStorage } from "node:async_hooks";
-import { aiPctBaseMicro, aiReserves, balance, EUR, getSubscription, planOf } from "../billing";
+import { aiPctBaseMicro, aiReserves, balance, EUR, getSubscription, planOf, UnsentBudgetError } from "../billing";
 import { runScope, type QuotaScope } from "../billing-scope";
 import { accountKeyFor } from "../project-billing";
 import { UserFacingError } from "../jobs";
@@ -120,8 +120,8 @@ export function assertAiAllowed(user: string | null | undefined, projectId?: str
   if (!planOf(sub)) throw new UserFacingError(L("L'IA n'est pas incluse dans la découverte gratuite : le moteur local du studio est utilisé.", "AI isn't included in the free discovery: the studio's local engine is used."));
   if (!hasAiCredits(userId)) {
     const b = balance(userId);
-    if (b.reserved > 0 && b.available + b.reserved >= AI_MIN_AVAILABLE) throw new UserFacingError(L("Une génération utilise temporairement le budget disponible. Attendez son résultat avant de lancer une autre action ; votre travail est conservé.", "A generation is temporarily using the available budget. Wait for its result before starting another action; your work is kept."));
-    if (b.available>0 || b.reserved>0) throw new UserFacingError(L("Le budget restant est inférieur au minimum permettant une génération IA. Le reste non dépensé et les étapes acquises sont conservés ; aucun nouvel appel n’a été envoyé. L’IA reprend au renouvellement ou avec une recharge du projet (Mon compte).", "The remaining budget is below the minimum required for an AI generation. Unspent budget and acquired steps are kept; no new call was sent. AI resumes at renewal or with a project top-up (My account)."));
-    throw new UserFacingError(L("L'IA de votre forfait est utilisée à 100 % : elle reprend au renouvellement du forfait, ou tout de suite avec une recharge de l'IA du projet (Mon compte). En attendant, le moteur local du studio prend le relais.", "Your plan's AI is 100% used: it resumes when your plan renews, or right away with a project AI top-up (My account). Meanwhile, the studio's local engine takes over."));
+    if (b.reserved > 0 && b.available + b.reserved >= AI_MIN_AVAILABLE) throw new UnsentBudgetError(L("Une génération utilise temporairement le budget disponible. Attendez son résultat avant de lancer une autre action ; votre travail est conservé.", "A generation is temporarily using the available budget. Wait for its result before starting another action; your work is kept."));
+    if (b.available>0 || b.reserved>0) throw new UnsentBudgetError(L("Le budget restant est inférieur au minimum permettant une génération IA. Le reste non dépensé et les étapes acquises sont conservés ; aucun nouvel appel n’a été envoyé. L’IA reprend au renouvellement ou avec une recharge du projet (Mon compte).", "The remaining budget is below the minimum required for an AI generation. Unspent budget and acquired steps are kept; no new call was sent. AI resumes at renewal or with a project top-up (My account)."));
+    throw new UnsentBudgetError(L("L'IA de votre forfait est utilisée à 100 % : elle reprend au renouvellement du forfait, ou tout de suite avec une recharge de l'IA du projet (Mon compte). En attendant, le moteur local du studio prend le relais.", "Your plan's AI is 100% used: it resumes when your plan renews, or right away with a project AI top-up (My account). Meanwhile, the studio's local engine takes over."));
   }
 }
