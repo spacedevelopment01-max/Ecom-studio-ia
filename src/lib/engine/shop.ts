@@ -438,6 +438,7 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
   // Changement de thème ou nouveau remplissage : les sections ajoutées par le client et ses réglages sont reportés sur
   // la nouvelle composition (une section incompatible avec le thème ou la catégorie reste masquée, jamais supprimée ;
   // en cas de conflit avec une nouvelle valeur automatique, la valeur du client gagne et le conflit est signalé).
+  const clientCompositionBaseline = spec.meta?.adaptation ? structuredClone(spec) : null;
   if (opts.direction) {
     const prev = currentTheme(projectId);
     if (prev && !prev.spec.imported) {
@@ -472,7 +473,7 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
   if (reviewed && !reviewedKept) saveCheck(decide("theme_home", { checker: "ai", score: reviewed.score }), { userId: p.userId, projectId, jobId: ctx?.job.id ?? null, candidateId: `theme-ai-layout:${projectId}:${direction}` });
   if (quality.verdict === "PROVISIONAL") append(inBothLangs(() => L(" · niveau provisoire, à vérifier et améliorer", " · provisional level, review and improve")));
   const conflict = (currentTheme(projectId)?.version.id ?? null) !== parent;
-  const v = saveThemeVersion(projectId, spec, JSON.stringify(summary), author, { checks: L(["structure", "schémas des sections", "contraste des couleurs"], ["structure", "section schemas", "color contrast"]), problems, gate: gateMeta(quality, qcId) }, parent, { activate: !conflict });
+  const v = saveThemeVersion(projectId, spec, JSON.stringify(summary), author, { checks: L(["structure", "schémas des sections", "contraste des couleurs"], ["structure", "section schemas", "color contrast"]), problems, gate: gateMeta(quality, qcId), ...(clientCompositionBaseline ? { clientCompositionBaseline } : {}) }, parent, { activate: !conflict });
   ctx?.progress(0.95, L("Boutique enregistrée", "Store saved"));
   const active = currentTheme(projectId)?.version.id === v.id;
   return { versionId: v.id, number: v.number, delivery: { state: active ? spec.meta?.adaptation?.status === "partial" ? "partial" : quality.verdict === "FINAL" ? "ready" : "to_verify" : "blocked", active, message: active ? spec.meta?.adaptation?.status === "partial" ? L("Adaptation partielle enregistrée : des médias ou informations restent à compléter.", "Partial adaptation saved: some media or information still need completion.") : L("Thème enregistré ; consultez son contrôle avant utilisation.", "Theme saved; review its check before use.") : L("Tentative conservée en brouillon ; version courante protégée.", "Attempt saved as a draft; current version protected."), reasons: [...(spec.meta?.adaptation?.issues.map(i=>`${i.page} / ${i.section}: ${i.code}`)??[]),quality.reason] } };
@@ -485,8 +486,8 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
 function compositionBaseline(projectId: string, upToNumber: number): ThemeSpec | null {
   const versions = listThemeVersions(projectId).filter((v) => v.number <= upToNumber);
   for (const v of versions) {
-    const qc = json<{ gate?: unknown }>((v as { qc?: string }).qc ?? "{}", {});
-    if (qc && typeof qc === "object" && "gate" in qc) return themeVersion(projectId, v.id)?.spec ?? null;
+    const qc = json<{ gate?: unknown; clientCompositionBaseline?: ThemeSpec }>((v as { qc?: string }).qc ?? "{}", {});
+    if (qc && typeof qc === "object" && "gate" in qc) return qc.clientCompositionBaseline ?? themeVersion(projectId, v.id)?.spec ?? null;
   }
   return null;
 }

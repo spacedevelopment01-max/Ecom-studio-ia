@@ -122,3 +122,29 @@ it.each(['creer', 'vendre'] as const)('%s : baisse après mise en file et public
     expect(all('SELECT id FROM ai_calls WHERE project_id=?', f.pid)).toHaveLength(0);
 });
 it('média acquis pendant la préparation : réutilisé dans le thème sans nouvelle génération', async () => { const f = await clientFixture({ incomplete: true }); const mock = mockDeps({ reference: assetData(getAsset(f.assets[0].id)!), generate: () => clientPhoto('opening', 47) }); const result = await fr(() => runImageEngineV2(null, f.pid, { kind: 'usage_scene', aspect: '16:9', allowGenerate: true, noStock: true, references: [f.assets[0].id], peopleAllowed: false, instructions: 'Montrer la théière fournie sur une table, sans texte ni personne.', slot: 'preparation:home:hero' }, mock.deps)); const assetId = result.outcomes[0].assetId; expect(assetId, JSON.stringify(result)).toBeTruthy(); await fr(() => buildShop(null, f.pid, { direction: 'traverse', useAi: false })); const s = currentTheme(f.pid)!.spec; expect(s.meta!.adaptation!.slots.some(x => x.assetId === assetId)).toBe(true); expect(mock.log.generations).toHaveLength(1); expect(all('SELECT id FROM ai_calls WHERE project_id=?', f.pid)).toHaveLength(0); });
+
+it('deux reprises successives : pages de référence actualisées et retouches client conservées à travers les compositions automatiques', async () => {
+    const f = await clientFixture();
+    await fr(() => buildShop(null, f.pid, { direction: 'fraise', useAi: false }));
+    const initial = currentTheme(f.pid)!;
+    const section = initial.spec.templates.index.order[0];
+    const edited = applyOps(initial.spec, [{ op: 'set_setting', template: 'index', section, key: 'heading', value: 'Mon titre exact, à conserver sur chaque reprise' }], { storeKind: 'specialty' });
+    const privacy = edited.spec.store.pages.find(p => p.template_suffix === 'confidentialite')!;
+    privacy.title = 'Ma politique de confidentialité vérifiée';
+    privacy.seo = { title: 'Ma politique complète', description: 'Ma description à préserver' };
+    saveThemeVersion(f.pid, edited.spec, 'Retouche client', 'user');
+    for (const summary of ['Un premier contexte actualisé.', 'Un second contexte différent.']) {
+        saveProduct(f.pid, { ...loadProject(f.pid).product, summary });
+        await fr(() => buildShop(null, f.pid, { direction: 'fraise', useAi: false }));
+        const current = currentTheme(f.pid)!.spec;
+        expect(current.templates.index.sections[section].settings.heading).toBe('Mon titre exact, à conserver sur chaque reprise');
+        const page = current.store.pages.find(p => p.handle === privacy.handle)!;
+        expect(page.title).toBe(privacy.title);
+        expect(page.seo).toEqual(privacy.seo);
+        expect(page.template_suffix).toBe('confidentialite');
+        expect(current.templates['page.confidentialite'].sections.main.disabled).toBe(false);
+        expect(current.store.pages.some(p => p.template_suffix?.startsWith('kept-'))).toBe(false);
+    }
+    expect(listThemeVersions(f.pid)).toHaveLength(4);
+    expect(all('SELECT id FROM ai_calls WHERE project_id=?', f.pid)).toHaveLength(0);
+}, 90000);
