@@ -60,7 +60,12 @@ export function reconcileOfferCart(spec: ThemeSpec, input: OfferLine[]): OfferLi
   const lines: OfferLine[] = input.filter((l) => !l.gift && integer(l.quantity, 1, 99) && table.has(l.variantId)).map((l) => ({ ...l, finalLinePrice: undefined }));
   const totals = new Map<number, number>();
   for (const l of lines) totals.set(l.variantId, (totals.get(l.variantId) ?? 0) + l.quantity);
-  for (const [id, quantity] of totals) if (!available(table.get(id)!, quantity)) throw new Error("Variante indisponible ou stock insuffisant.");
+  for (const [id, quantity] of totals) {
+    const hit = table.get(id)!;
+    // Produit sans prix (« Prix à définir ») : rien n'est vendu, et le message le dit plutôt qu'un faux manque de stock.
+    if (inStock(hit, quantity) && hit.price === null) throw new Error("Prix à définir : ce produit ne peut pas encore être ajouté au panier.");
+    if (!available(hit, quantity)) throw new Error("Variante indisponible ou stock insuffisant.");
+  }
   for (const group of new Set(lines.map((l) => l.offerGroup).filter(Boolean))) {
     const groupLines = lines.filter((l) => l.offerGroup === group), p = table.get(groupLines[0].variantId)!.product;
     if (!p.contentTarget || groupLines.some((l) => table.get(l.variantId)!.product.contentTarget !== p.contentTarget || l.offerTarget !== p.contentTarget)) throw new Error("Association du lot invalide.");
@@ -126,6 +131,7 @@ export function purchaseErrorMessage(error: unknown, lang: string) {
  const messages: Record<string,string> = {
   "Identité de variante ambiguë ou retirée.":"Variant identity is ambiguous or was removed.",
   "Variante indisponible ou stock insuffisant.":"Variant unavailable or insufficient stock.",
+  "Prix à définir : ce produit ne peut pas encore être ajouté au panier.":"Price to be set: this product cannot be added to the cart yet.",
   "Association du lot invalide.":"Invalid bundle association.",
   "Offre non disponible.":"Offer unavailable.",
   "Offre ou quantité invalide.":"Invalid offer or quantity.",

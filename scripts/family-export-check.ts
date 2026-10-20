@@ -1,6 +1,6 @@
 /** Interactions des sections de bibliothèque dans les thèmes EXPORTÉS WordPress / WooCommerce et PrestaShop (issue #145).
  *
- * Pour chaque famille (FRAISE : boutique spécialisée, ORBE : e-commerce, Atelier Rive : services), ajoute les
+ * Pour chaque famille (FRAISE et SILLON : boutique spécialisée, ORBE : e-commerce, Atelier Rive : services), ajoute les
  * sections interactives de la bibliothèque (carrousels, repères produits, avant / après, stories), exporte le projet
  * par le vrai moteur d'export, puis assemble une page avec :
  *  - le HTML rendu par le moteur PHP livré dans le thème exporté (même moteur que WordPress et PrestaShop) ;
@@ -40,7 +40,7 @@ const { renderPage } = await import("../src/lib/theme/render");
 type ThemeSpec = import("../src/lib/theme/spec").ThemeSpec;
 type Check = { id: string; label: string; run: string };
 /** Élément de chaque contrôle (défilé jusqu'à lui, puis capturé). */
-const TARGET: Record<string, string> = { "fs-compare": "[data-fs-compare]", "fs-hotspot": "[data-fs-hotspots]", "cv-reviews": "[data-cv-reviews]", ctabs: "[data-ctabs]", ctable: "[data-ctable]", "fs-carousel": "[data-fs-carousel]" };
+const TARGET: Record<string, string> = { "cv-hotspot": "[data-cv-hotspots]", "cv-gallery": "[data-cv-gallery]", "nomade": ".cv-hero", "fs-compare": "[data-fs-compare]", "fs-hotspot": "[data-fs-hotspots]", "cv-reviews": "[data-cv-reviews]", ctabs: "[data-ctabs]", ctable: "[data-ctable]", "fs-carousel": "[data-fs-carousel]" };
 
 const OLD_SCRIPTS = ["theme.js", "reference-interactions.js", "purchase-offers.js", "editorial.js"];
 const commit = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
@@ -59,7 +59,12 @@ const CTABLE = `(() => { const f = document.querySelector('[data-ctable]'); if (
 const STORY = `(async () => { const s = document.querySelector('[data-cv-stories]'); if (!s) return 'absent'; const open = s.querySelector('[data-cv-story-open], [data-story-open], button'); if (!open) return 'pas de bouton';
   open.click(); await new Promise(x => setTimeout(x, 300)); const d = document.querySelector('dialog[open], [data-cv-story-modal]:not([hidden]), .cv-story-modal.is-open'); return d ? true : 'lecteur non ouvert'; })()`;
 
-type Plan = { demo: "fraise" | "orbe" | "rive"; family: "specialty" | "catalog" | "services"; label: string; add: { key: string; disp: string }[]; checks: Check[] };
+/** Visionneuse de la galerie (conversion.js) : un clic sur une image ouvre la visionneuse plein écran. */
+const LIGHTBOX = `(async () => { const g = document.querySelector('[data-cv-gallery]'); if (!g) return 'absent'; const o = g.querySelector('[data-cv-gallery-open]'); if (!o) return 'pas de vignette'; o.click(); await new Promise(x => setTimeout(x, 300));
+  const d = document.querySelector('[data-cv-lightbox]'); return d && (d.open || !d.hidden) ? true : 'visionneuse non ouverte'; })()`;
+/** Profil graphique « nomade » appliqué (classes du <body> dans WordPress / PrestaShop) : halo cuivré de l'ouverture. */
+const NOMADE = `(() => { const h = document.querySelector('.cv-hero'); if (!h) return 'absent'; return getComputedStyle(h).backgroundImage.includes('radial-gradient') ? true : 'profil « nomade » non appliqué'; })()`;
+type Plan = { demo: "fraise" | "orbe" | "rive" | "sillon"; family: "specialty" | "catalog" | "services"; label: string; add: { key: string; disp: string }[]; checks: Check[] };
 const PLANS: Plan[] = [
   { demo: "fraise", family: "specialty", label: "FRAISE (boutique spécialisée)",
     add: [{ key: "results", disp: "before-after" }, { key: "specs", disp: "tabs" }, { key: "comparison", disp: "table" }],
@@ -74,6 +79,12 @@ const PLANS: Plan[] = [
     checks: [
       { id: "fs-hotspot", label: "Repères produits du lookbook (bibliothèque)", run: HOTSPOT("data-fs-hotspot") },
       { id: "fs-carousel", label: "Carrousel de collections (bibliothèque)", run: CAROUSEL("[data-fs-carousel]") },
+    ] },
+  { demo: "sillon", family: "specialty", label: "SILLON (boutique spécialisée, issue #148)", add: [],
+    checks: [
+      { id: "nomade", label: "Profil graphique « nomade » appliqué", run: NOMADE },
+      { id: "cv-hotspot", label: "Repères sur le produit (thème SILLON)", run: HOTSPOT("data-cv-hotspot") },
+      { id: "cv-gallery", label: "Visionneuse de la mosaïque (thème SILLON)", run: LIGHTBOX },
     ] },
   { demo: "rive", family: "services", label: "Atelier Rive (services)",
     add: [{ key: "testimonials", disp: "carousel" }],

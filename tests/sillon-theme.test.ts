@@ -13,6 +13,7 @@ import { runWithLang } from "@/lib/i18n-server";
 import { renderPage } from "@/lib/theme/render";
 import { compileTheme } from "@/lib/theme/compile";
 import { validateSpec } from "@/lib/theme/ops";
+import { reconcileOfferCart } from "@/lib/theme/purchase-offers";
 import { catalogTheme } from "@/lib/theme/theme-catalog";
 import { ACTIVE_THEMES, themeKinds, themePreviewPath } from "@/lib/theme/theme-fit";
 import { THEME_FAMILY, FAMILY_LIBRARY } from "@/lib/theme/section-families";
@@ -128,6 +129,8 @@ describe("SILLON : démonstration", async () => {
       expect(text, route).not.toMatch(/\d+\s?bars?\b|\d+\s?(mAh|W|ml|cl|g|kg|cm|mm)\b|garantie \d|livraison (offerte|gratuite|en \d)|\d+\s?€|\d+([,.]\d)?\s?\/\s?5|★|avis clients?|plus que \d|stock limité|dernières? pièces?/i);
     }
     expect(visibleText(product)).toContain("Prix à définir");
+    // Sans prix, rien n'est vendu : l'ajout au panier est refusé avec un message exact (pas un faux manque de stock).
+    expect(() => reconcileOfferCart(spec, [{ variantId: 1000, quantity: 1 }])).toThrow(/^Prix à définir/);
     expect(visibleText(product)).toMatch(/Pression\s*:?\s*\[À compléter\]/);
     expect(visibleText(pages.get("/")!)).toContain("Démonstration : prix et caractéristiques à confirmer.");
     const footer = visibleText(pages.get("/")!);

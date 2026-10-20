@@ -604,8 +604,8 @@ body[data-conversion="nomade"] :is(.cv-gallery__item,.cv-feature__media,.cv-alt_
 /* Mosaïque sans case vide, quel que soit le nombre de visuels : la dernière image complète sa rangée. */
 @media(max-width:749px){body[data-conversion="nomade"] .cv-gallery--mosaic .cv-gallery__item:last-child:nth-child(2n):not(:first-child){grid-column:1/-1}}
 @media(min-width:750px){body[data-conversion="nomade"] .cv-gallery--mosaic .cv-gallery__item:last-child:nth-child(3n+2){grid-column:span 2}body[data-conversion="nomade"] .cv-gallery--mosaic .cv-gallery__item:last-child:nth-child(3n+1):not(:first-child){grid-column:1/-1}}
-/* Fiche en grille : toutes les vues sont visibles, la rangée de miniatures ferait doublon. Repères empilés : visuel contenu. */
-body[data-conversion="nomade"] .es-product--grid .es-product__thumbs{display:none}
+/* Fiche en grille sur ordinateur : toutes les vues sont visibles, la rangée de miniatures ferait doublon (gardée sur téléphone, où la galerie défile). Repères empilés : visuel contenu. */
+@media(min-width:990px){body[data-conversion="nomade"] .es-product--grid .es-product__thumbs{display:none}}
 @media(min-width:990px){body[data-conversion="nomade"] .cv-hotspots--stacked .cv-hotspots__stage{max-width:720px;width:100%;margin-inline:auto}}
 @media(max-width:749px){body[data-conversion="nomade"] .es-announcement{letter-spacing:.04em}}
 /* Ouverture sans visuel (projet qui n'a pas encore de photo) : pas de colonne vide, le texte occupe la largeur de lecture. */
