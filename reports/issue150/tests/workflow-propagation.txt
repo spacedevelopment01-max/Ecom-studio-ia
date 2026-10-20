@@ -1,0 +1,9 @@
+
+ RUN  v5.0.3 /workspace/work/forfaits-150
+
+
+ Test Files  2 passed (2)
+      Tests  14 passed (14)
+   Start at  15:18:02
+   Duration  120.52s (tests 93%, import 4%, transform 2%)
+

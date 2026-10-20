@@ -1,0 +1,13 @@
+
+ RUN  v5.0.3 /workspace/work/forfaits-150
+
+
+ Test Files  60 passed (60)
+      Tests  561 passed (561)
+   Start at  15:44:02
+   Duration  314.84s (tests 69%, import 28%, transform 2%)
+
+     Import  555 modules were evaluated 1807 times · 86.51s total, 28% of tracked time
+             ~59.94s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+
