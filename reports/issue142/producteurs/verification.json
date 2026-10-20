@@ -1,0 +1,227 @@
+{
+  "codeCommit": "33d9e40126dc524a0236c4d76a0a7d7c4e5f1feb",
+  "codeTree": "ddbedb24bb8cace7fea126e3e3b94478eeb594e9",
+  "previousVerifiedCode": "37f73b33cfd8397cbe1143ebabd7e4ae23168418",
+  "readOnlyDiagnosticV4Commit": "4d110b0413f93a8098c58164a0b93c710b9f1f11",
+  "observedServedCommit": "d97e0b9577128eeb39b403dae281da6bd835fc65",
+  "incidentGuard": "COPY_FACTS_REJECTED",
+  "incidentClassCorrection": "quality",
+  "sourceFingerprintsVerified": true,
+  "privateIncidentValuesPublished": false,
+  "fullSuite": {
+    "passed": 2469,
+    "skipped": 13,
+    "files": 319,
+    "beforeFinalReadOnlyClassificationAdjustment": true
+  },
+  "finalFocused": {
+    "passed": 37,
+    "diagnosticCases": 26,
+    "confirmationCases": 3,
+    "publicationCases": 8
+  },
+  "typecheck": "passed",
+  "productionBuild": "passed",
+  "nativeBrowserRecipes": {
+    "bankProjects": 2,
+    "copyFailureProjects": 2,
+    "jsErrors": 0,
+    "externalDomains": 0,
+    "providerDependencies": "injected",
+    "creativeQualityVerified": false
+  },
+  "screenshots": 18,
+  "realNewProviderCalls": 0,
+  "realNewProviderCostEur": 0,
+  "merged": false,
+  "deployed": false,
+  "clientCodespaceUpdated": false,
+  "confidentialityScan": "passed, public static source hashes allowed",
+  "files": [
+    {
+      "path": "docs/coordination/ISSUE_142_PRODUCTEURS.md",
+      "bytes": 17707,
+      "sha256": "5463e89afc2aa839349f8377560032bb25079b032d0d75c3610ea629c5075d48"
+    },
+    {
+      "path": "docs/coordination/ISSUE_142_RESULTATS.md",
+      "bytes": 26230,
+      "sha256": "e85d46c616d29af209de2c77eddfd253a3963a33ec3204233d8c06d5a7d6c91e"
+    },
+    {
+      "path": "docs/coordination/ISSUE_142_CHAINE_IA.md",
+      "bytes": 24470,
+      "sha256": "1d264a4c3b084a4790a9ec8081e36da186979baf454eecaac5319af5cb5104f8"
+    },
+    {
+      "path": "reports/issue142/producteurs/apres-correction-bouton/produit-doseur-01-partiel-banque.png",
+      "bytes": 165789,
+      "sha256": "02e2927a0bdc6b07c3a8a4ba4dd6570351cef98983127679501862d43e3707fe"
+    },
+    {
+      "path": "reports/issue142/producteurs/apres-correction-bouton/produit-doseur-02-echec-fichier-conserve-mobile.png",
+      "bytes": 90652,
+      "sha256": "a56a21a77640f0936e546a94ee0a9818b5183fc94b60faa13b4c30c4514d78b8"
+    },
+    {
+      "path": "reports/issue142/producteurs/apres-correction-bouton/produit-doseur-03-solde-insuffisant-mobile.png",
+      "bytes": 98885,
+      "sha256": "1b96c60c5d76fe509e536a004a7e5285b5c1436c934f741b3d93277c651d6721"
+    },
+    {
+      "path": "reports/issue142/producteurs/apres-correction-bouton/results.json",
+      "bytes": 941,
+      "sha256": "1eeec32edf586f1c77df2d4ff2275f353fc9b37ec90489ed308155a2211e3f13"
+    },
+    {
+      "path": "reports/issue142/producteurs/apres-correction-bouton/service-piano-01-partiel-banque.png",
+      "bytes": 158194,
+      "sha256": "85405fec3d8ba87efb745edf4e4f101eae16b13ebea94df5b426fb24aa66211e"
+    },
+    {
+      "path": "reports/issue142/producteurs/apres-correction-bouton/service-piano-02-echec-fichier-conserve-mobile.png",
+      "bytes": 86372,
+      "sha256": "1d5b6191b2315c6e0456c20b12117b9f2efcc6fc0d9423a47465d32eff957845"
+    },
+    {
+      "path": "reports/issue142/producteurs/apres-correction-bouton/service-piano-03-solde-insuffisant-mobile.png",
+      "bytes": 90719,
+      "sha256": "ea8ddb71ed6be5c374b94159077e6edd71f2fdfb508b1acf9541c342f074713a"
+    },
+    {
+      "path": "reports/issue142/producteurs/avant-correction-bouton/produit-doseur-01-partiel-banque.png",
+      "bytes": 165784,
+      "sha256": "de1d2f1094ac0da28585351d34f01ac23bcc10e300558d4b40a97f65020345c8"
+    },
+    {
+      "path": "reports/issue142/producteurs/avant-correction-bouton/produit-doseur-02-echec-fichier-conserve-mobile.png",
+      "bytes": 90652,
+      "sha256": "a56a21a77640f0936e546a94ee0a9818b5183fc94b60faa13b4c30c4514d78b8"
+    },
+    {
+      "path": "reports/issue142/producteurs/avant-correction-bouton/produit-doseur-03-solde-insuffisant-mobile.png",
+      "bytes": 99828,
+      "sha256": "2fb01689e1daa985bd3ca27da290185db669933468b28f2a05d22c22bba0833b"
+    },
+    {
+      "path": "reports/issue142/producteurs/avant-correction-bouton/results.json",
+      "bytes": 941,
+      "sha256": "978e64281f26f417c86e01cf2cc5b35b8e6a87b2bb14706036304b9d6a68c5d6"
+    },
+    {
+      "path": "reports/issue142/producteurs/avant-correction-bouton/service-piano-01-partiel-banque.png",
+      "bytes": 158200,
+      "sha256": "edafbaec422a941e95d273faf1c9ad682299d4c62c6aa2548ed6c192dcbd9ec5"
+    },
+    {
+      "path": "reports/issue142/producteurs/avant-correction-bouton/service-piano-02-echec-fichier-conserve-mobile.png",
+      "bytes": 86372,
+      "sha256": "1d5b6191b2315c6e0456c20b12117b9f2efcc6fc0d9423a47465d32eff957845"
+    },
+    {
+      "path": "reports/issue142/producteurs/avant-correction-bouton/service-piano-03-solde-insuffisant-mobile.png",
+      "bytes": 91639,
+      "sha256": "921b0e2f4b7f76761eb006a56a740eaac0afc56c9b8e3c69ddb485cf4c6e01cf"
+    },
+    {
+      "path": "reports/issue142/producteurs/build-37f73b33.txt",
+      "bytes": 13371,
+      "sha256": "0a4e52ddccd6cfb60a976d94dc03677a51dae90edf593a7b031f1ccb37b10b55"
+    },
+    {
+      "path": "reports/issue142/producteurs/build-final.txt",
+      "bytes": 13371,
+      "sha256": "a8bf9bf7f1ac2c89381ba1aa4ebfc2c8ef0bb7924f21ef6ada66043bdf1a31c7"
+    },
+    {
+      "path": "reports/issue142/producteurs/diagnostic-confirmation-publication-37.txt",
+      "bytes": 188,
+      "sha256": "01db9079e63688abec3f15c5ad439096907316d4ffda2901955dbce837c41d3e"
+    },
+    {
+      "path": "reports/issue142/producteurs/diagnostic-v3-tests.txt",
+      "bytes": 199,
+      "sha256": "14eece3a8ebf832e8d4dc85da9f1576bba85f0a02aeb17873b5962acc3725b37"
+    },
+    {
+      "path": "reports/issue142/producteurs/directs-apres.txt",
+      "bytes": 189,
+      "sha256": "1c5469e15c7a7eb58f5a8c1e7349592cf7765ed2318ab61f1bd30f9193587789"
+    },
+    {
+      "path": "reports/issue142/producteurs/directs-avant.txt",
+      "bytes": 3321,
+      "sha256": "3f5a00c4ebe241902959cd352863e002319dd01a2b2a97c795850a04916f9674"
+    },
+    {
+      "path": "reports/issue142/producteurs/navigateur-37f73b33.txt",
+      "bytes": 117,
+      "sha256": "88fc378c9b1b843ad9bccfb1aaea8b527341615cabb119c3f0af756ae20fc99b"
+    },
+    {
+      "path": "reports/issue142/producteurs/navigateur-banque-final.txt",
+      "bytes": 117,
+      "sha256": "88fc378c9b1b843ad9bccfb1aaea8b527341615cabb119c3f0af756ae20fc99b"
+    },
+    {
+      "path": "reports/issue142/producteurs/navigateur-refus-redaction.txt",
+      "bytes": 121,
+      "sha256": "dcafe9674079eaae72e6116f6cdca1f28d037fa2b5ddbb78ed2b25c59d2e051b"
+    },
+    {
+      "path": "reports/issue142/producteurs/refus-redaction/produit-doseur-01-refus-redaction-ordinateur.png",
+      "bytes": 234303,
+      "sha256": "8026a02f9be37ad6e6336f72a17d98f4cfbbfb9129066ac20af3c625d81869ae"
+    },
+    {
+      "path": "reports/issue142/producteurs/refus-redaction/produit-doseur-02-refus-redaction-mobile.png",
+      "bytes": 165245,
+      "sha256": "6184cfd385aa205eda51acbed0f977ec3815e55b3eb89a0139bbec4393c64314"
+    },
+    {
+      "path": "reports/issue142/producteurs/refus-redaction/produit-doseur-03-refus-reconnexion-mobile.png",
+      "bytes": 161490,
+      "sha256": "ecca5b01d5baf057e72d357b8cc96bf141850bff321d9d3814bc9625a418dfa6"
+    },
+    {
+      "path": "reports/issue142/producteurs/refus-redaction/results.json",
+      "bytes": 1021,
+      "sha256": "89dd918218e2cfff6d4a8baa6a61ab1467494faf3891457a7a6588cbe0cfa822"
+    },
+    {
+      "path": "reports/issue142/producteurs/refus-redaction/service-piano-01-refus-redaction-ordinateur.png",
+      "bytes": 234792,
+      "sha256": "5cfda435085dd9a6082c447a9ad7fff0f0de5a40488628ddd2a66959863c9a5e"
+    },
+    {
+      "path": "reports/issue142/producteurs/refus-redaction/service-piano-02-refus-redaction-mobile.png",
+      "bytes": 165583,
+      "sha256": "96c0f3face3a693fddf40036b5ed41deaa16c548f0fd253942bcbf3ca46c01db"
+    },
+    {
+      "path": "reports/issue142/producteurs/refus-redaction/service-piano-03-refus-reconnexion-mobile.png",
+      "bytes": 161635,
+      "sha256": "34ab4f1dbd3652e853f53aa24a44afcbe3a7b6d206d0872451951f09ca8c6e6e"
+    },
+    {
+      "path": "reports/issue142/producteurs/suite-37f73b33.txt",
+      "bytes": 412,
+      "sha256": "1ab8274d8a6d33322da5f4bc5c665aa0d86540de76f5627acb4b9d56d14b53de"
+    },
+    {
+      "path": "reports/issue142/producteurs/suite-generale-2469.txt",
+      "bytes": 412,
+      "sha256": "22fb5e1992481f73cb31b6becad5a4f46b361b5d19b01c3bafb99334b9a544e7"
+    },
+    {
+      "path": "reports/issue142/producteurs/typescript-final.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reports/issue142/producteurs/video-direct-avant.txt",
+      "bytes": 2190,
+      "sha256": "b63010795732167a4296dcb797578ed673c93c1de82393170bc629bc4458620e"
+    }
+  ]
+}
