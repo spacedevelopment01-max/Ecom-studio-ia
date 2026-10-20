@@ -83,8 +83,14 @@ for(const [index,a] of accounts.entries()){
   }
   for(const mobile of [false,true]){await p.setViewportSize({width:mobile?390:1440,height:mobile?844:1000});await p.reload();await p.locator("[data-preparation] [role=alert]").first().waitFor();await shot(p,`${slug}-05-arret-conserve-${mobile?"mobile":"ordinateur"}`);}
   const afterFailure=financial();assert.equal(afterFailure.reservations[0].actual,40_000);assert.equal(afterFailure.balance.reserved,0);
-  // Contrôle de la reprise par l'API propriétaire native ; aucun clic UI de reprise spécifique n'est prétendu.
-  control("mode",pid,"continue");const retry=await c.request.post(`${BASE}/api/jobs/${jid}`,{data:{action:"retry"}});assert(retry.ok());
+  // Reprise par un vrai clic client : aucune nouvelle génération payante n'est autorisée.
+  control("mode",pid,"continue");
+  await p.locator("[data-brief-name]").fill("Modification non enregistrée de test");
+  assert(await p.locator("[data-recover-preparation]").isDisabled());
+  await p.locator("[data-brief-name]").fill(before.offerName);
+  const stale=await c.request.post(`${BASE}/api/projects/${pid}/preparation`,{data:{action:"recover",revision:(await state()).state.revision-1}});assert.equal(stale.status(),409);
+  const retry=p.waitForResponse(r=>r.url().endsWith("/preparation")&&r.request().postDataJSON()?.action==="recover");
+  await p.locator("[data-recover-preparation]").click();assert((await retry).ok());
   await until(state,s=>!s.state.pending&&!s.state.error&&s.state.stages.brief.data.provenance==="simulation","reprise du résultat acquis");
   for(const mobile of [false,true]){await p.setViewportSize({width:mobile?390:1440,height:mobile?844:1000});await p.reload();await p.locator("[data-brief-name]").waitFor();await shot(p,`${slug}-06-resultat-repris-${mobile?"mobile":"ordinateur"}`);}
   const result=await state();assert.deepEqual(result.state.stages.brief.data.input,before);
@@ -95,14 +101,15 @@ for(const [index,a] of accounts.entries()){
   const denied=p.waitForResponse(r=>r.url().endsWith("/preparation")&&r.request().postDataJSON()?.action==="quote");
   await p.getByRole("button",{name:"Analyser mes informations et mes photos par l’IA",exact:true}).click();
   const denial=await denied;assert([402,422].includes(denial.status()));await p.locator("[data-preparation] [role=alert]").first().waitFor();await shot(p,slug+"-07-budget-insuffisant");
-  results.push({business:a.business,projectId:pid,jobId:jid,photoId:before.photoIds[0],inputKept:true,photoAccessible:true,reconnected:true,workerInterrupted:!product,explicitRetryViaOwnerApi:true,insufficientBudgetHttp:denial.status(),provenance:"simulation",finances:{beforeReservation,duringReservation,afterFailure,afterRetry}});
+  results.push({business:a.business,projectId:pid,jobId:jid,photoId:before.photoIds[0],inputKept:true,photoAccessible:true,reconnected:true,workerInterrupted:!product,recoveryViaClientClick:true,recoveryOnly:true,insufficientBudgetHttp:denial.status(),provenance:"simulation",finances:{beforeReservation,duringReservation,afterFailure,afterRetry}});
   await c.close();
 }
 // Isolation des routes par compte : résultats, suivi, médias et modification de tâche.
 for(const [i,a] of accounts.entries()){
  const {c,p}=await boot(a);const foreign=results[1-i];
  for(const url of [`/api/projects/${foreign.projectId}/preparation`,`/api/projects/${foreign.projectId}/jobs`,`/api/projects/${foreign.projectId}/subscription`,`/api/jobs/${foreign.jobId}`,`/api/files/${foreign.photoId}`]){const r=await c.request.get(BASE+url);assert.equal(r.status(),404);}
- const denied=await c.request.post(`${BASE}/api/jobs/${foreign.jobId}`,{data:{action:"retry"}});assert.equal(denied.status(),404);await c.close();
+ const denied=await c.request.post(`${BASE}/api/jobs/${foreign.jobId}`,{data:{action:"retry"}});assert.equal(denied.status(),404);
+ const deniedRecovery=await c.request.post(`${BASE}/api/projects/${foreign.projectId}/preparation`,{data:{action:"recover",revision:0}});assert.equal(deniedRecovery.status(),404);await c.close();
 }
 assert.equal(errors.length,0,errors.join("\n"));control("report");
 const ledger=JSON.parse(fs.readFileSync(path.join(dir,"ledger-public.json"),"utf8"));

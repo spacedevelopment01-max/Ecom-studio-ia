@@ -354,7 +354,15 @@ export function resumeJob(jid: string) {
 }
 
 /** Relance manuelle : repart du dernier point de reprise. */
-export function retryJob(jid: string) {
+export function retryJob(jid: string, opts: { recoveryOnly?: boolean } = {}) {
+  if (opts.recoveryOnly) {
+    const job = getJob(jid);
+    if (!job || job.status !== "failed") return;
+    run("UPDATE jobs SET payload=? WHERE id=?", JSON.stringify({ ...json<Record<string, unknown>>(job.payload, {}), recoveryOnly: true }), jid);
+    for (const child of all<{id:string;depends_on:string}>("SELECT id,depends_on FROM jobs WHERE status='queued' AND depends_on LIKE ?",`%${jid}%`)) {
+      if (json<string[]>(child.depends_on,[]).includes(jid)) run("UPDATE jobs SET status='blocked',message=?,updated_at=? WHERE id=? AND status='queued'",L("Étape conservée en attente d'une confirmation après récupération.","Step kept pending confirmation after recovery."),now(),child.id);
+    }
+  }
   run(
     "UPDATE jobs SET status='queued', run_at=?, attempts=0, error=NULL, finished_at=NULL, message=?, updated_at=? WHERE id=? AND status IN ('failed','cancelled','blocked')",
     now(),
@@ -362,6 +370,8 @@ export function retryJob(jid: string) {
     now(),
     jid,
   );
+  // Une récupération sans nouvel achat ne réactive pas d'autres tâches potentiellement payantes.
+  if (opts.recoveryOnly) return;
   // Les tâches bloquées parce que celle-ci avait échoué attendent de nouveau (elles partiront quand elle aura réussi).
   for (const b of all<{ id: string; depends_on: string }>("SELECT id, depends_on FROM jobs WHERE status='blocked' AND depends_on LIKE ?", `%${jid}%`)) {
     if (json<string[]>(b.depends_on, []).includes(jid)) run("UPDATE jobs SET status='queued', message=?, updated_at=? WHERE id=? AND status='blocked'", L("En attente de l'étape relancée", "Waiting for the retried step"), now(), b.id);

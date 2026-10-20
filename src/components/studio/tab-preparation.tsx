@@ -83,6 +83,8 @@ type AssetView = {
 type View = {
   state: State;
   job: JobView | null;
+  recoverable?: boolean;
+  recovering?: boolean;
   ready: ReadyContract | null;
   blockers: string[];
   history: { revision: number; at: number }[];
@@ -279,7 +281,7 @@ export default function TabPreparation() {
     );
   const approved = (s: Step) => state.stages[s]?.status === "approved";
   const enabled = STEPS.slice(0, STEPS.indexOf(active)).every(approved);
-  const working = !!state.pending && !!data.job && ["queued", "running", "paused"].includes(data.job.status);
+  const working = !!data.job && ["queued", "running", "paused"].includes(data.job.status);
   const pendingProblem = state.pending && !working ? data.job?.error || t("Le traitement s’est arrêté avant la livraison. Vos données et les résultats acquis sont conservés. Vérifiez le point signalé avant une nouvelle demande.", "Processing stopped before delivery. Your data and acquired results are kept. Check the reported issue before a new request.") : "";
   const briefDirty = JSON.stringify(form) !== JSON.stringify(raw);
   const referencesDirty =
@@ -364,7 +366,7 @@ export default function TabPreparation() {
           ))}
         </ol>
       </Card>
-      {(error || loadError || state.error || pendingProblem) && (
+      {(error || loadError || !working && (state.error || pendingProblem)) && (
         <Card className="border-bad p-4" role="alert">
           <p>{error || loadError || state.error?.message || pendingProblem}</p>
           <p className="mt-2 text-sm text-muted">
@@ -373,17 +375,22 @@ export default function TabPreparation() {
               "Your previous results are kept. Fix the reported issue before requesting another attempt.",
             )}
           </p>
+          {data.recoverable && <div className="mt-3 grid gap-2">
+            <p className="text-sm">{t("Récupérez les étapes déjà acquises sans nouvelle génération payante. Si un nouvel essai est nécessaire, son devis reste obligatoire.", "Recover acquired steps without a new paid generation. If a new attempt is needed, its quote is still required.")}</p>
+            <Button disabled={busy || briefDirty || referencesDirty || identityDirty} onClick={() => send({ action: "recover" })} data-recover-preparation>{t("Récupérer les étapes acquises", "Recover acquired steps")}</Button>
+            {(briefDirty || referencesDirty || identityDirty) && <p className="text-sm">{t("Enregistrez vos modifications avant de récupérer les étapes.", "Save your edits before recovering steps.")}</p>}
+          </div>}
         </Card>
       )}
       {working && (
         <Card className="p-4" role="status">
-          {data.job?.status === "paused" ? t("La préparation est en pause. Les étapes terminées sont conservées.", "Preparation is paused. Completed steps are kept.") : t(
+          {data.job?.status === "paused" ? t("La préparation est en pause. Les étapes terminées sont conservées.", "Preparation is paused. Completed steps are kept.") : data.recovering ? t("Le studio retrouve les étapes déjà acquises, sans nouvelle génération payante.", "The studio is recovering acquired steps without a new paid generation.") : t(
             "Le studio prépare votre proposition. Vous pouvez quitter puis revenir : l’avancement est enregistré.",
             "The studio is preparing your proposal. You can leave and return: progress is saved.",
           )}
         </Card>
       )}
-      {state.pending && data.job && <JobProgress job={data.job} />}
+      {data.job && <JobProgress job={data.job} />}
       {state.stages[active]?.status === "stale" && (
         <Card className="bg-warn-soft p-4">
           {t(

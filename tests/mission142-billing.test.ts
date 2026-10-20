@@ -31,6 +31,11 @@ const usage = (userId: string, key: string, costMicro = 80_000) => ({ userId, ..
 const wallet = (uid: string) => one<{ monthly_used: number; topup_period_used: number; topup_balance: number }>("SELECT * FROM wallets WHERE user_id=?", uid)!;
 
 describe("Mission 142 : frontières de comptabilisation", () => {
+  it("récupération : aucun nouvel engagement, même si une sous-étape tente de désactiver la protection",async()=>{
+    const uid=await client(),before=balance(uid);
+    await withTrace({recoveryOnly:true},()=>withTrace({recoveryOnly:false},async()=>{expect(()=>reserve(uid,100_000,meta)).toThrow(/nécessite son devis/);}));
+    expect(balance(uid)).toEqual(before);expect(all("SELECT id FROM ai_reservations WHERE user_id=?",uid)).toHaveLength(0);
+  });
   it("incident d'écriture du débit : l'événement et le règlement sont atomiques, puis la reprise facture une seule fois", async () => {
     const uid = await client(), reservation = reserve(uid, 100_000, meta), before = balance(uid).available;
     db().exec("CREATE TRIGGER test142_debit_failure BEFORE UPDATE OF monthly_used ON wallets WHEN NEW.monthly_used > OLD.monthly_used BEGIN SELECT RAISE(ABORT,'synthetic storage incident'); END");

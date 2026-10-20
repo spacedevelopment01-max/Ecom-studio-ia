@@ -258,7 +258,9 @@ describe("budget IA : règle des 40 % / 50 % et réservations", async () => {
     await text(u.id, "cle-reprise");
     const after = balance(u.id).available;
     const requests = llm.calls, count = reservations(u.id).length;
-    await text(u.id, "cle-reprise");
+    const {withTrace}=await import("@/lib/ai/trace");
+    await withTrace({recoveryOnly:true},()=>text(u.id, "cle-reprise"));
+    await expect(withTrace({recoveryOnly:true},()=>text(u.id,"nouvelle-action-interdite-pendant-reprise"))).rejects.toThrow(/nécessite son devis/);
     expect(balance(u.id).available).toBe(after);
     expect(llm.calls).toBe(requests);
     expect(reservations(u.id)).toHaveLength(count);

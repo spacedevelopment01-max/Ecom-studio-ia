@@ -12,6 +12,8 @@ import crypto from "node:crypto";
 import { id, now, one, run } from "../db";
 
 export type TraceScope = {
+  /** Récupération des acquis uniquement : aucune nouvelle réservation fournisseur. */
+  recoveryOnly?: boolean;
   jobId?: string | null;
   projectId?: string | null;
   step?: string;
@@ -37,7 +39,7 @@ export function currentTrace(): TraceScope {
 export function withTrace<T>(scope: TraceScope, fn: () => Promise<T>): Promise<T> {
   const cur = currentTrace();
   const step = scope.step ? (cur.step ? `${cur.step}/${scope.step}` : scope.step) : cur.step;
-  return store.run({ ...cur, ...scope, step }, fn);
+  return store.run({ ...cur, ...scope, recoveryOnly: cur.recoveryOnly || scope.recoveryOnly, step }, fn);
 }
 
 /** Candidat évalué (piste de logo, image…) et sa tentative : les appels faits dans `fn` lui sont rattachés. */

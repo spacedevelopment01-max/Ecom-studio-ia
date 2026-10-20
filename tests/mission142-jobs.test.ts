@@ -18,6 +18,13 @@ let count = 0;
 const user = () => createUser(`jobs-142-${++count}@example.invalid`, "isolated-test-password", "Jobs test");
 
 describe("Mission 142 : suivi et isolation des tâches", () => {
+  it.each(["queued","blocked"])("la récupération des acquis n'active aucun travail dépendant %s potentiellement payant",async status=>{
+    const u=await user(),j=enqueue({userId:u.id,type:"test142.recover"}),child=enqueue({userId:u.id,type:"test142.child",dependsOn:[j.id]});
+    run("UPDATE jobs SET status='failed',checkpoint=? WHERE id=?",JSON.stringify({acquired:"asset-kept"}),j.id);
+    run("UPDATE jobs SET status=? WHERE id=?",status,child.id);retryJob(j.id,{recoveryOnly:true});
+    expect(getJob(j.id)!.status).toBe("queued");expect(JSON.parse(getJob(j.id)!.payload).recoveryOnly).toBe(true);
+    expect(JSON.parse(getJob(j.id)!.checkpoint).acquired).toBe("asset-kept");expect(getJob(child.id)!.status).toBe("blocked");
+  });
   it("deux comptes utilisant la même clé ne récupèrent jamais le travail de l'autre", async () => {
     const a = await user(), b = await user();
     const first = enqueue({ userId: a.id, type: "test142.idempotence", idempotencyKey: "double-click" });

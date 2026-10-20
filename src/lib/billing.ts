@@ -419,6 +419,7 @@ export function finishOperationRecovery(reservationId: string) {
  * le même reste.
  */
 export function reserve(user: string, maxMicro: number, meta: ReservationMeta): string {
+  if (currentTrace().recoveryOnly) throw new UserFacingError(L("Les résultats acquis sont conservés. Cette récupération ne lance pas de nouvelle génération payante ; un nouvel essai nécessite son devis.", "Acquired results are kept. This recovery does not start a new paid generation; a new attempt requires its quote."));
   meta = { ...meta, projectId: operationProject(meta.projectId), jobId: meta.jobId ?? currentTrace().jobId };
   // Budget de l'abonnement qui finance le projet de l'appel (jamais celui d'un autre projet du compte).
   const userId = accountKeyFor(user, meta.projectId);

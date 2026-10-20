@@ -10,7 +10,7 @@ import { validateResearch, isLegacyResearch } from "./research-ai";
 /** Orchestration amont : points de reprise existants, validation client et contrat, jamais de thème. */
 import { all, id, json, now, one, run, tx } from "../db";
 import { HttpError } from "../auth";
-import { enqueue, JobPaused, UserFacingError, type JobContext } from "../jobs";
+import { enqueue, getJob, retryJob, JobPaused, UserFacingError, type JobContext } from "../jobs";
 import {
   loadProject,
   remember,
@@ -862,6 +862,26 @@ export function queuePreparation(
     return { state: next, job, reused: false };
   });
 }
+/** Même demande, même tâche et mêmes checkpoints ; jamais un nouvel essai payant implicite. */
+export function recoverablePreparation(projectId: string, s = stateOf(projectId)) {
+  if (!s) return null;
+  const jid = s.pending?.jobId ?? s.error?.jobId;
+  const j = jid ? getJob(jid) : null;
+  if (!j || j.project_id !== projectId || j.user_id !== one<{user_id:string}>("SELECT user_id FROM projects WHERE id=?",projectId)?.user_id || j.type !== "project.prepare" || j.status !== "failed") return null;
+  const payload = json<{ projectId: string; step: Step; action: RunAction; slot?: string; revision: number; inputHash: string }>(j.payload, {} as any);
+  if (payload.projectId !== projectId || !STEPS.includes(payload.step) || !payload.inputHash) return null;
+  const revisionMatches = s.error?.jobId === j.id && s.error.revision === s.revision || s.pending?.jobId === j.id && (s.revision === payload.revision || payload.action === "collect" && s.revision >= payload.revision);
+  return revisionMatches && requestHash(s, payload.step, payload.action, payload.slot) === payload.inputHash ? j : null;
+}
+export function recoverPreparation(projectId: string, revision: number) {
+  return tx(() => {
+    const s = stateOf(projectId);
+    const j = s?.revision === revision ? recoverablePreparation(projectId, s) : null;
+    if (!j) throw new HttpError(409, L("La demande a changé ou ne peut pas être récupérée. Vos modifications sont conservées ; préparez un nouvel essai avec son devis.", "The request changed or cannot be recovered. Your edits are kept; prepare a new attempt with its quote."));
+    retryJob(j.id, { recoveryOnly: true });
+    return getJob(j.id)!;
+  });
+}
 export async function runPreparation(
   ctx: JobContext,
   deps: Dependencies = realDependencies,
@@ -910,7 +930,7 @@ export async function runPreparation(
     let expectedRevision = s.revision;
     ctx.progress(0.05, "Préparation à partir des choix validés");
     const execute = () =>
-      withTrace({ jobId: ctx.job.id, projectId, costCapMicro: capMicro }, () =>
+      withTrace({ jobId: ctx.job.id, projectId, costCapMicro: capMicro, recoveryOnly: ctx.payload.recoveryOnly === true }, () =>
         ctx.step(`prepare:${action}:${hash}`, async () => {
           if (action === "collect") {
             const keys = stageOf(s, "media").data.slots.filter(slot=>!(slot.kind==="video"&&slot.source==="ai"&&!slot.assetId)).map(slot => slot.key);
