@@ -72,5 +72,8 @@ describe("rendu des sections de bibliothèque (issue #145)", async () => {
     expect(s.settings.first_label).toBe("Avant");
     expect(s.settings.second_label).toBe("Après");
     expect(html).toMatch(/À compléter : la transformation montrée/);
+    // Curseur : les deux légendes côte à côte sous l'image (elles se superposaient au même endroit).
+    expect(html).toMatch(/class="ed-study__labels"[^>]*><span>Avant<\/span><span>Après<\/span>/);
+    expect(css("editorial.css")).toMatch(/\.ed-study__views\[data-ed-comparison\] figcaption\{position:absolute;width:1px/);
   }, 120_000);
 });

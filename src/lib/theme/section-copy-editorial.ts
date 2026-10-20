@@ -82,6 +82,7 @@ const copy = (type: string): CopyFn => (ctx, base) => {
     case "ed-study":
       // Site de services (« Avant / après ») : une vraie transformation seulement. Deux photos quelconques du projet ne
       // forment pas un avant / après : cadres à remplir par le client, légendés « Avant » et « Après » (issue #145).
+      if (ctx.business === "services" && ctx.sample) { set("label", label("Avant / après", "Before / after")); set("first_label", label("Avant", "Before")); set("second_label", label("Après", "After")); }
       if (ctx.business === "services" && !ctx.sample) {
         set("label", label("Avant / après", "Before / after")); set("heading", todo(ctx, "la transformation montrée", "the transformation shown")); set("text", "");
         set("first_label", label("Avant", "Before")); set("second_label", label("Après", "After"));
