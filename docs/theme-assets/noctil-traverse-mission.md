@@ -1,0 +1,39 @@
+## Mission Claude — NOCTIL et TRAVERSE, famille produit spécialisé
+Créer deux nouveaux thèmes complets : NOCTIL (projecteur de galaxies) et TRAVERSE (sac de voyage modulable). Ils complètent FRAISE, ONDE et SILLON pour obtenir cinq thèmes dans cette famille. Ne créer aucun autre thème.
+
+### Base et protection du travail existant
+Lire les consignes du dépôt et les livraisons #147/#149. La dernière livraison SILLON examinée est f0084332c78accc1ea26f814f82181bb3dec1cc6 (PR #149) ; vérifier son état actuel, ses dépendances et la base réelle avant de travailler. Une branche issue seulement de main pourrait manquer ces améliorations. Créer une branche dédiée contenant les dépendances utiles sans écraser d'autres travaux ; expliquer les dépendances dans la PR. Préserver strictement les quatre thèmes validés et SILLON. Coordonner sans modifier les forfaits traités par Codex dans #150. Pas de fusion ni de déploiement dans cette mission.
+
+### Kit médias livré
+Branche assets/noctil-traverse-20261020, commit indiqué dans le commentaire de livraison.
+32 fichiers WebP décodés et vérifiés : pour chaque marque 1 logo, 5 vues produit et 10 images d'ambiance. Manifest avec noms originaux, dimensions, tailles et empreintes : docs/theme-assets/noctil-traverse-manifest.json.
+Chemins : public/theme-assets/noctil/ et public/theme-assets/traverse/ ; logo.webp, produit-01.webp à produit-05.webp, ambiance-01.webp à ambiance-10.webp.
+IMPORTANT : TRAVERSE ambiance-04 (ancien « Sac à dos devant une rue calme ») et ambiance-05 (« Sac à dos olive au café ») sont deux versions très proches du même cadre. Utiliser ambiance-05 pour le café ; garder ambiance-04 hors du rendu et identifier cette exclusion dans la matrice. Ne pas compter ces deux images comme deux scènes distinctes. Les 31 autres fichiers doivent avoir un usage documenté dans le thème (pages, galerie, logo), sans obliger leur présence sur la même page.
+Vérifier les fichiers réellement chargés, non vides, avec empreintes conformes. Ne pas oublier logo, galerie produit, détails, visuels secondaires, responsive et exports. Conserver les originaux ; optimiser les tailles livrées si nécessaire sans dénaturer. Pas de photos externes, de nouvelles marques ou de génération payante. Ne pas inventer des détails techniques à partir des images.
+
+### Direction artistique et composition
+Deux compositions vraiment différentes entre elles ET de FRAISE, ONDE, SILLON : structure, ordre et disposition des sections, header/footer, rythme, typographie, proportions et parcours.
+NOCTIL : univers nocturne immersif indigo/violet, lumière et espace, lisibilité forte ; produit identifiable immédiatement, même sur téléphone. Préférer une narration d'ambiances et de pièces, avec transitions lumineuses sobres.
+TRAVERSE : univers voyage éditorial, olive/pierre/crème, composition claire et asymétrique, parcours quotidien/départ/destination ; détails du sac et organisation visuelle. Ne pas reproduire un simple empilement du thème NOCTIL avec d'autres couleurs.
+Ces directions ne remplacent pas la bibliothèque : réutiliser les vraies sections de la famille produit spécialisé et leurs variantes de mise en page. Chaque fonction reste une section unique ; ne pas créer de doublons comptés comme nouvelles sections. Documenter la couverture des 20 fonctions sur les cinq thèmes et choisir les fonctions encore peu montrées lorsqu'elles ont du sens. Pas de sections de services ou de la famille ORBE dans cette galerie.
+Sélectionner des dispositions distinctes parmi les 5 headers et 5 footers de cette famille ; vérifier les variantes existantes et signaler tout manque réel.
+Animations de scroll, dégradés et micro-interactions cohérents ; respecter reduced-motion, clavier, contraste et performance. Aucun défilement horizontal involontaire, texte superposé ou produit coupé sur mobile.
+
+### Pages, textes, copywriting, copyright et SEO
+Livrer un thème complet navigable, pas seulement une image d'accueil. Accueil, fiche produit complète avec galerie, univers/usages, FAQ/contact et pages utiles déjà prises en charge par le studio. Éviter les pages de remplissage et liens morts.
+Rédiger tous les textes en français : accroches, introductions, descriptions, bénéfices crédibles, objections, FAQ et CTA précis, adaptés à chaque produit et à chaque page. Aucun Lorem ipsum, « À compléter » public, répétition mécanique ou texte générique.
+Ne pas inventer prix, remises, avis, chiffres de vente, caractéristiques, certifications, garantie, étanchéité, capacité cabine, compatibilités ou effets sur sommeil/santé. Une information inconnue reste configurable et son absence doit avoir un rendu public propre. Aucun témoignage présenté comme réel sans source. Les contenus démonstratifs doivent rester clairement des démonstrations.
+Copyright du footer cohérent avec la marque et l'année ; ne pas fabriquer de données légales.
+SEO par page : title et description uniques, H1 unique et hiérarchie H2/H3, liens internes et libellés utiles, alt descriptifs spécifiques, URL propres, canonical cohérent avec le site publié. Préviews/démos non indexables. Données structurées seulement avec informations disponibles et vérifiables, jamais fausses notes/prix/offres. Contrôler la taille et le chargement des images : hero prioritaire, images hors écran différées.
+
+### Studio : démonstration avant choix, adaptation après choix
+Intégrer les deux thèmes à la bonne famille dans la galerie. Avant sélection explicite : aperçu du thème entier et de ses pages, desktop/mobile, exclusivement avec les marques, images et textes de démonstration NOCTIL/TRAVERSE. Aucune donnée client injectée, aucune écriture projet ni génération IA lors de la simple consultation.
+Après sélection explicite seulement : appliquer automatiquement l'identité de marque, les informations, textes et médias disponibles du projet. Adapter couleurs, polices, logo, copywriting, copyright et SEO sans casser la composition. Guider sur les informations manquantes sans les inventer. Ne pas perdre de contenu client ni créer plusieurs tâches/versions lors d'un double clic. Conserver restauration et sauvegarde.
+Les sections restent éditables, adaptables à la marque et accessibles uniquement à leur famille. Respecter les droits centralisés des forfaits ; ne pas les réimplémenter.
+
+### Exports et vérification obligatoire
+Les thèmes et tous leurs médias doivent fonctionner dans le studio et les exports pris en charge (Shopify, WooCommerce/WordPress, PrestaShop, autres parcours existants). Vérifier les assets familiaux/scripts requis, liens et navigation, chemins relatifs et absence de références au poste de développement. Ne pas prétendre avoir installé chez un fournisseur réel si seuls les exports ont été inspectés.
+Preuves : captures pleine page desktop et 390 px des deux accueils et fiches produit ; captures des autres pages et aperçu complet du sélecteur ; contrôle des liens/actions, galerie, edition/sauvegarde/rechargement ; absence de modification projet avant choix et adaptation après choix.
+Fournir une matrice fichier média -> page/section (et exclusion explicite de TRAVERSE ambiance-04), sections -> fonctions/variantes, couverture des 20 fonctions sur les cinq thèmes, comparaison visuelle des compositions.
+Tester les régressions des cinq thèmes existants, les limites de famille, les états sans données et la distribution des médias exportés. Vérifier compilation/TypeScript et tests pertinents, sans appels IA payants, nouvelles clés ou modifications de données clients.
+PR dédiée avec description à jour, commit exact testé, résultats et limites réelles, preuves consultables. Distinguer « testé en copie isolée », « fusionné » et « réellement servi dans le Codespace » ; ne jamais les confondre. Ne pas déclarer le travail terminé avec des médias manquants ou un aperçu incomplet.
