@@ -34,6 +34,7 @@ import { assertAiAllowed } from "../ai/access";
 import { assertCanSpend } from "../billing";
 import { withTrace } from "../ai/trace";
 import { redact } from "../redact";
+import { L } from "../i18n-server";
 import { analyzeLocally } from "./brief";
 import { realDependencies, type Dependencies } from "./deps";
 import {
@@ -194,7 +195,14 @@ export function blockers(projectId: string, s = stateOf(projectId)): string[] {
   const out = needed(s).map(
     (k) => `Étape à valider ou à reprendre : ${names[k]}.`,
   );
-  if (s.pending) out.push("Une préparation est encore en cours.");
+  if (s.pending) {
+    const job = one<{status:string}>("SELECT status FROM jobs WHERE id=? AND project_id=?",s.pending.jobId,projectId);
+    out.push(job?.status === "queued" || job?.status === "running"
+      ? L("Une préparation est encore en cours.", "Preparation is still in progress.")
+      : job?.status === "paused"
+        ? L("La préparation est en pause ; les résultats acquis sont conservés.", "Preparation is paused; acquired results are kept.")
+        : L("La préparation s'est arrêtée et doit être reprise ; les résultats acquis sont conservés.", "Preparation stopped and needs to be resumed; acquired results are kept."));
+  }
   if (out.length) return out;
   const p = loadProject(projectId);
   const b = stageOf(s, "brief").data;

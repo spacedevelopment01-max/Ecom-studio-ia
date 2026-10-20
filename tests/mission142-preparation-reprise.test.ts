@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import { fixture, simulatedDependencies, syntheticAsset } from "./preparation-fixtures";
-import { initialize, queuePreparation, runPreparation, stateOf, editBrief } from "@/lib/preparation/engine";
+import { blockers, initialize, queuePreparation, runPreparation, stateOf, editBrief } from "@/lib/preparation/engine";
 import { completeJob, failJob, getJob, JobContext, retryJob, WORKER_ID } from "@/lib/jobs";
 import { run } from "@/lib/db";
 import { runForUser } from "@/lib/ai/access";
@@ -34,4 +34,13 @@ it.each([false, true])("reprise explicite du même travail : résultat acquis ga
     expect(stateOf(f.pid)!.pending).toBeUndefined();
   }
   expect(acquisitions).toBe(1);
+});
+
+it.each(["failed","cancelled","paused","missing"])("un pointeur de préparation %s ne promet pas un travail encore en cours", async status => {
+  const f = await fixture(); initialize(f.pid,f.input);
+  const q = queuePreparation(f.pid,stateOf(f.pid)!.revision,"brief","analyze",{paid:false,capMicro:0});
+  if(status==="missing")run("DELETE FROM jobs WHERE id=?",q.job!.id);
+  else run("UPDATE jobs SET status=? WHERE id=?",status,q.job!.id);
+  expect(blockers(f.pid).join(" ")).not.toMatch(/encore en cours/);
+  expect(blockers(f.pid).join(" ")).toMatch(status==="paused"?/pause/:/repris/);
 });

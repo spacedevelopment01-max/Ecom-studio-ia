@@ -34,6 +34,10 @@ if (command === "seed") {
   console.log("2 comptes fictifs avec forfait synthétique, zéro projet, zéro appel fournisseur");
 } else if (command === "mode") {
   setSetting(`test142.mode.${pid}`,process.argv[4]);
+} else if (command === "snapshot") {
+  const p = one<{user_id:string}>("SELECT user_id FROM projects WHERE id=?",pid)!;
+  const key = accountKeyFor(p.user_id,pid);
+  console.log(JSON.stringify({simulation:true,balance:billing.balance(key),wallet:one("SELECT monthly_allowance,monthly_used,reserved,reserved_topup,topup_balance FROM wallets WHERE user_id=?",key),reservations:all("SELECT amount,actual,status FROM ai_reservations WHERE project_id=?",pid),usages:all("SELECT cost,billed FROM usage_events WHERE project_id=?",pid)}));
 } else if (command === "budget") {
   const p = one<{user_id:string}>("SELECT user_id FROM projects WHERE id=?",pid)!;
   const key = accountKeyFor(p.user_id,pid), b = billing.balance(key);

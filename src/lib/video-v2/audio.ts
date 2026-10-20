@@ -44,7 +44,9 @@ export async function mixAudio(doc: VideoDocument, files: AudioFiles, out: strin
   let inputCount=0;
   const cleanup:string[]=[];
   const add = (file: string,loop=false) => {
-    if(loop) inputs.push("-stream_loop","-1");
+    // L'entrée doit elle-même finir : un atrim en aval n'arrête pas toujours le démultiplexeur
+    // bouclé lorsque plusieurs voix et le compresseur latéral attendent sa fin.
+    if(loop) inputs.push("-stream_loop","-1","-t",String(total));
     inputs.push("-i", file);
     return inputCount++;
   };

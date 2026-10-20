@@ -1,7 +1,7 @@
 /**
  * Trace des appels (phase 1A) : chaque appel réellement envoyé à un fournisseur laisse une ligne `ai_calls`
  * (étape, jetons séparés, cache lu/écrit, latence, modèle demandé et servi, statut, coût) ; une reprise avec la même
- * clé est tracée sans être refacturée ; les échecs sont tracés ; jamais de prompt, d'image ni de clé enregistrés.
+ * clé ne réémet pas l'appel ; les échecs sont tracés ; jamais de prompt, d'image ni de clé enregistrés.
  * Les étapes de tâche (ctx.step) étiquettent les appels et ne sont jamais rejouées.
  */
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
@@ -76,14 +76,18 @@ describe("trace des appels", async () => {
     expect(JSON.stringify(r)).not.toMatch(/secret-123|rédacteur|sk-ant/);
   });
 
-  it("reprise avec la même clé : appel tracé (coût réel visible) mais pas refacturé", async () => {
+  it("reprise historique sans reçu : coût tracé conservé, aucun deuxième envoi masqué par une déduplication", async () => {
     const key = stableKey("job-replay", "texte");
+    const before = sent.length;
     await llmText({ task: "copywriting", userId: "u-replay", system: "s", prompt: "p", usageKey: key });
-    await llmText({ task: "copywriting", userId: "u-replay", system: "s", prompt: "p", usageKey: key });
+    // Cette fixture sans vraie réservation représente une trace d'avant migration.
+    // La réutilisation du résultat avec reçu natif est vérifiée dans budget-ia.test.ts.
+    await expect(llmText({ task: "copywriting", userId: "u-replay", system: "s", prompt: "p", usageKey: key })).rejects.toThrow(/déjà été envoyée/);
     const r = rows("user_id = ?", "u-replay");
-    expect(r).toHaveLength(2);
-    expect(r.map((x) => x.billing_dedup)).toEqual([0, 1]);
-    expect(r[1].usage_event_id).toBeNull();
+    expect(sent.length - before).toBe(1);
+    expect(r).toHaveLength(1);
+    expect(r[0].billing_dedup).toBe(0);
+    expect(r[0].cost).toBeGreaterThan(0);
   });
 
   it("panne du fournisseur : l'appel est tracé en erreur, sans secret dans le message", async () => {

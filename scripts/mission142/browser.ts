@@ -16,6 +16,10 @@ const workerLog=fs.openSync(path.join(dir,"worker.txt"),"a");
 const startWorker=()=>worker=spawn(process.execPath,["--import","tsx","scripts/mission142/harness.ts","worker"],{env:process.env,stdio:["ignore",workerLog,workerLog]});
 const stopWorker=async()=>{ if(worker&&worker.exitCode===null){const stopped=new Promise(resolve=>worker!.once("exit",resolve));worker.kill("SIGTERM");await stopped;} };
 const results:any[]=[], external:string[]=[], errors:string[]=[];
+const versionResponse=await fetch(BASE+"/api/version");
+assert(versionResponse.ok);
+const compiledVersion=await versionResponse.json();
+assert.match(compiledVersion.commit,/^[a-f0-9]{40}$/);
 const boot=async(a:typeof accounts[number],mobile=false)=>{
   const c=await browser.newContext({viewport:{width:mobile?390:1440,height:mobile?844:1000},isMobile:mobile,hasTouch:mobile,locale:"fr-FR",reducedMotion:"reduce"});
   await c.addCookies([{name:"ecs_session",value:a.token,url:BASE},{name:"ecs-lang",value:"fr",url:BASE}]);
@@ -57,10 +61,14 @@ for(const [index,a] of accounts.entries()){
   await p.getByRole("button",{name:"Analyser mes informations et mes photos par l’IA",exact:true}).click();
   const q=await quoted, quote=await q.json();assert(q.ok(),JSON.stringify(quote));assert(quote.quote.paid);
   control("budget",pid,"quote-only",quote.quote.id);control("mode",pid,"hold");
+  const financial=()=>JSON.parse(control("snapshot",pid));
+  const beforeReservation=financial();
+  assert.equal(beforeReservation.balance.available,quote.quote.capMicro);
   const generated=p.waitForResponse(r=>r.url().endsWith("/preparation")&&r.request().postDataJSON()?.action==="generate");
   await p.getByRole("dialog",{name:"Confirmer cet essai",exact:true}).getByRole("button",{name:"Confirmer cet essai",exact:true}).click();
   assert((await generated).ok());
   const running=await until(state,s=>s.job?.status==="running"&&s.job.progress===.25,"réservation en cours"), jid=running.job.id;
+  const duringReservation=financial();assert.equal(duringReservation.balance.available,0);assert.equal(duringReservation.balance.reserved,quote.quote.capMicro);
   for(const mobile of [false,true]){await p.setViewportSize({width:mobile?390:1440,height:mobile?844:1000});await p.reload();await p.getByText("Analyse simulée en cours ; les informations saisies sont enregistrées",{exact:true}).waitFor();await shot(p,`${slug}-03-en-cours-${mobile?"mobile":"ordinateur"}`);}
   await p.goto(BASE+"/studio/compte");await p.getByRole("button",{name:"Gérer",exact:true}).click();await p.getByText(/Une génération utilise temporairement le budget disponible/).waitFor();await shot(p,slug+"-04-budget-engage");
   control("mode",pid,product?"fail-after-save":"interrupt-after-save");
@@ -73,18 +81,20 @@ for(const [index,a] of accounts.entries()){
     await until(state,s=>s.job?.status==="failed","interruption détectée et bornée");
   }
   for(const mobile of [false,true]){await p.setViewportSize({width:mobile?390:1440,height:mobile?844:1000});await p.reload();await p.locator("[data-preparation] [role=alert]").first().waitFor();await shot(p,`${slug}-05-arret-conserve-${mobile?"mobile":"ordinateur"}`);}
+  const afterFailure=financial();assert.equal(afterFailure.reservations[0].actual,40_000);assert.equal(afterFailure.balance.reserved,0);
   // Contrôle de la reprise par l'API propriétaire native ; aucun clic UI de reprise spécifique n'est prétendu.
   control("mode",pid,"continue");const retry=await c.request.post(`${BASE}/api/jobs/${jid}`,{data:{action:"retry"}});assert(retry.ok());
   await until(state,s=>!s.state.pending&&!s.state.error&&s.state.stages.brief.data.provenance==="simulation","reprise du résultat acquis");
   for(const mobile of [false,true]){await p.setViewportSize({width:mobile?390:1440,height:mobile?844:1000});await p.reload();await p.locator("[data-brief-name]").waitFor();await shot(p,`${slug}-06-resultat-repris-${mobile?"mobile":"ordinateur"}`);}
   const result=await state();assert.deepEqual(result.state.stages.brief.data.input,before);
+  const afterRetry=financial();assert.deepEqual(afterRetry,afterFailure);
   const media=await c.request.get(`${BASE}/api/files/${before.photoIds[0]}`);assert(media.ok());
   // Insuffisance réelle pour le serveur mais purement synthétique pour les comptes de test.
   control("budget",pid,"empty");await p.reload();
   const denied=p.waitForResponse(r=>r.url().endsWith("/preparation")&&r.request().postDataJSON()?.action==="quote");
   await p.getByRole("button",{name:"Analyser mes informations et mes photos par l’IA",exact:true}).click();
   const denial=await denied;assert([402,422].includes(denial.status()));await p.locator("[data-preparation] [role=alert]").first().waitFor();await shot(p,slug+"-07-budget-insuffisant");
-  results.push({business:a.business,projectId:pid,jobId:jid,photoId:before.photoIds[0],inputKept:true,photoAccessible:true,reconnected:true,workerInterrupted:!product,explicitRetryViaOwnerApi:true,insufficientBudgetHttp:denial.status(),provenance:"simulation"});
+  results.push({business:a.business,projectId:pid,jobId:jid,photoId:before.photoIds[0],inputKept:true,photoAccessible:true,reconnected:true,workerInterrupted:!product,explicitRetryViaOwnerApi:true,insufficientBudgetHttp:denial.status(),provenance:"simulation",finances:{beforeReservation,duringReservation,afterFailure,afterRetry}});
   await c.close();
 }
 // Isolation des routes par compte : résultats, suivi, médias et modification de tâche.
@@ -96,6 +106,6 @@ for(const [i,a] of accounts.entries()){
 assert.equal(errors.length,0,errors.join("\n"));control("report");
 const ledger=JSON.parse(fs.readFileSync(path.join(dir,"ledger-public.json"),"utf8"));
 assert.equal(ledger.reservations.length,2);assert(ledger.reservations.every((r:any)=>r.actual===40_000));assert.equal(ledger.usages.length,2);assert.equal(ledger.themesCreated,0);
-fs.writeFileSync(path.join(out,"results.json"),JSON.stringify({simulation:true,realCalls:0,realCostEur:0,results,crossAccountReadWriteDenied:true,errors,blockedExternalHosts:[...new Set(external)]},null,2));
+fs.writeFileSync(path.join(out,"results.json"),JSON.stringify({simulation:true,compiledVersion,realCalls:0,realCostEur:0,results,crossAccountReadWriteDenied:true,errors,blockedExternalHosts:[...new Set(external)]},null,2));
 console.log("RECETTE RÉUSSIE : 2 projets créés dans l’UI, reprise sans second débit, zéro thème ni appel réel");
 }finally{await stopWorker();await browser.close();fs.closeSync(workerLog);}
