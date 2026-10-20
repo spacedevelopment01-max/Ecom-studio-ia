@@ -10,6 +10,7 @@ import { requireCreationPlan } from "@/lib/plan-gates";
 import { visualIntent } from "@/lib/image-v2/intent";
 import { ART_DIRECTIONS, VISUAL_KINDS } from "@/lib/image-v2/types";
 import { DIRECTIONS } from "@/lib/image-v2/direction";
+import { stableHash } from "@/lib/brain/hash";
 
 export const runtime = "nodejs";
 
@@ -67,7 +68,7 @@ const ImageRequestSchema = z.object({
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  const b = await body(req, z.object({ action: z.enum(["generate", "edit", "reject", "reject_direction"]), assetId: z.string().max(40).optional(), instruction: z.string().max(400).optional(), direction: z.enum(ART_DIRECTIONS).optional(), request: ImageRequestSchema.optional() }));
+  const b = await body(req, z.object({ operationId:z.string().min(8).max(100).optional(), action: z.enum(["generate", "edit", "reject", "reject_direction"]), assetId: z.string().max(40).optional(), instruction: z.string().max(400).optional(), direction: z.enum(ART_DIRECTIONS).optional(), request: ImageRequestSchema.optional() }));
   if (b.action === "reject") {
     // Image refusée par le client : jamais réutilisée automatiquement (statut refusé, choix humain mémorisé).
     const a = one<{ meta: string }>("SELECT meta FROM assets WHERE id = ? AND project_id = ? AND json_extract(meta, '$.imageV2') IS NOT NULL", b.assetId ?? "", p.id);
@@ -89,7 +90,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     if (!a) throw new HttpError(404, L("Photo introuvable.", "Photo not found."));
     const instruction = (b.instruction ?? "").trim();
     if (instruction.length < 3) throw new HttpError(400, L("Décrivez la modification souhaitée.", "Describe the change you want."));
-    const job = enqueue({ userId: user.id, projectId: p.id, type: "image.edit", label: L("Retouche de la photo par l'IA", "AI photo edit"), payload: { projectId: p.id, assetId: a.id, instruction } });
+    const job = enqueue({ userId: user.id, projectId: p.id, type: "image.edit", idempotencyKey:b.operationId?`image-edit:${b.operationId}:${stableHash("edit-intent",{assetId:a.id,instruction})}`:undefined, label: L("Retouche de la photo par l'IA", "AI photo edit"), payload: { projectId: p.id, assetId: a.id, instruction } });
     return ok({ jobId: job.id });
   }
   const r = b.request ?? {};
@@ -101,6 +102,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     userId: user.id,
     projectId: p.id,
     type: "image.v2",
+    idempotencyKey:b.operationId?`image-create:${b.operationId}:${stableHash("image-intent",r)}`:undefined,
     label: L("Images : direction artistique et sélection", "Images: art direction and selection"),
     payload: { projectId: p.id, request: { kind: intent.kind, support: r.support ?? intent.support, aspect: r.aspect, count: r.count ?? 1, topic: r.topic ?? (r.kind ? null : r.text ?? null), allowGenerate: r.allowGenerate !== false, ...(r.allowGenerate !== false ? { noStock: true } : { bankSearch: { typed: r.topic?.trim() || null, broad: !!r.broad, silhouettes: !!r.silhouettes } }) } },
   });

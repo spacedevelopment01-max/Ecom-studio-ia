@@ -179,7 +179,7 @@ describe("budget IA : règle des 40 % / 50 % et réservations", async () => {
   it("budget épuisé : l'appel est bloqué avant l'envoi (coût maximal non couvert)", async () => {
     const u = await client("creer");
     setAvailable(u.id, 1000); // 0,001 €
-    await expect(text(u.id)).rejects.toThrow(/utilisée à 100 %/);
+    await expect(text(u.id)).rejects.toThrow(/budget restant.*minimum/);
     expect(llm.calls).toBe(0);
     expect(llm.calls).toBe(0);
     expect(reservations(u.id)).toHaveLength(0);

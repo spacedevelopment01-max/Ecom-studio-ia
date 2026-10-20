@@ -1,4 +1,5 @@
 import type { AspectId } from "../image-v2/types";
+import { imageDelivery } from "../media/delivery-check";
 import { FORMATS } from "../image-v2/formats";
 /**
  * Onglet Images, choix « Tout par l'IA, de A à Z » : la publication entière (scène, mise en page, titre, bouton) est
@@ -215,10 +216,12 @@ export async function generateAiPostImage(
   }
   // Reprise payée : annoncée au client (message de la tâche), en % du budget IA.
   const notice = retryNotice(p.userId, p.id, r.attempts ?? 1, r.costMicro);
+  const delivery=await imageDelivery(p.id,r.assetIds?.length?r.assetIds:[r.assetId],{adGallery:(req.as??(SELL.has(req.kind??"")?"ad":"post"))==="ad"});
   return {
     assetId: r.assetId,
     assetIds:r.assetIds,
     costMicro: r.costMicro,
+    delivery,
     ...(notice ? { notice } : {}),
   };
 }

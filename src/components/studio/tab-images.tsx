@@ -391,15 +391,21 @@ function CreateImage({ services, q, onStarted }: { services: boolean; q: ImagesQ
   const budget = useBudgetPct();
   const unit = q ? q.quote.ai_image : null;
   const price = unit == null ? null : budget.label(Math.round(unit * 1e6 * f.count));
+  const operation=useRef<string|null>(null);
+  const sending=useRef(false);
+  useEffect(()=>{operation.current=null;},[f,id]);
   const go = async () => {
+    if(sending.current)return;
+    sending.current=true;
     setBusy(true);
     try {
       if (!(await cost.confirm("image"))) return;
-      const r = await api<{ jobId?: string }>(`/api/projects/${id}/images/v2`, { body: { action: "generate", request: { kind: f.kind, aspect: f.aspect, topic: f.topic.trim() || undefined, count: f.count, allowGenerate: true, noStock: true } } });
+      const r = await api<{ jobId?: string }>(`/api/projects/${id}/images/v2`, { body: { action: "generate", operationId:operation.current??(operation.current=crypto.randomUUID()), request: { kind: f.kind, aspect: f.aspect, topic: f.topic.trim() || undefined, count: f.count, allowGenerate: true, noStock: true } } });
       onStarted(r.jobId);
     } catch (e) {
       toast("bad", (e as Error).message);
     } finally {
+      sending.current=false;
       setBusy(false);
     }
   };

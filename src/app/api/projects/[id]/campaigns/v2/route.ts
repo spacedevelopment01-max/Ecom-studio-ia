@@ -4,7 +4,7 @@ import { publicationReadiness } from "@/lib/social-v2/ai-post";
 import { z } from "zod";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
-import { enqueue } from "@/lib/jobs";
+import { enqueue, publicJob, type Job } from "@/lib/jobs";
 import { all, json, one, run } from "@/lib/db";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { L } from "@/lib/i18n-server";
@@ -57,7 +57,10 @@ function aiAds(projectId: string) {
 
 export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
-  return ok({ ...view(p.id), aiAds: aiAds(p.id), ai: aiActiveFor(p.userId, p.id) && (await publicationReadiness(p)).ready, subjects: subjectOptions(p).map((x) => ({ kind: x.kind, key: x.key, name: x.name, hasPhoto: !!x.referenceAssetId, photoId: x.referenceAssetId })) });
+  // L'état terminal reste visible après une tâche très rapide, une déconnexion ou un rechargement.
+  // Les publications organiques et les tâches des autres projets n'appartiennent pas à cette galerie.
+  const aiJobs=all<Job>("SELECT * FROM jobs WHERE project_id=? AND type='image.ai_post' AND (json_extract(payload,'$.request.as')='ad' OR json_extract(payload,'$.request.entryPoint')='ads-guided') ORDER BY created_at DESC, rowid DESC LIMIT 20",p.id).map(publicJob);
+  return ok({ ...view(p.id), aiAds: aiAds(p.id), aiJobs, ai: aiActiveFor(p.userId, p.id) && (await publicationReadiness(p)).ready, subjects: subjectOptions(p).map((x) => ({ kind: x.kind, key: x.key, name: x.name, hasPhoto: !!x.referenceAssetId, photoId: x.referenceAssetId })) });
 });
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {

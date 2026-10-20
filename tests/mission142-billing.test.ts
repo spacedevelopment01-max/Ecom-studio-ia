@@ -13,9 +13,10 @@ afterAll(() => {
 });
 import { createUser } from "@/lib/auth";
 import { all, db, one, run } from "@/lib/db";
-import { alignPeriod, balance, creditPackBudget, getSubscription, reconcileReservation, recordUsage, reserve, settle, settleUncertain } from "@/lib/billing";
+import { alignPeriod, assertCanSpend, balance, creditPackBudget, getSubscription, reconcileReservation, recordUsage, reserve, settle, settleUncertain } from "@/lib/billing";
 import { withTrace } from "@/lib/ai/trace";
 import { aiUsage, assertAiAllowed } from "@/lib/ai/access";
+import { aiLeftPct } from "@/lib/ai-left";
 import { spawn } from "node:child_process";
 
 let number = 0;
@@ -140,6 +141,26 @@ describe("Mission 142 : frontières de comptabilisation", () => {
     settle(reservation, 40_000, "finished", "finished");
     expect(aiUsage(uid)!.pending).toBe(false);
     expect(wallet(uid).monthly_used).toBe(40_000);
+  });
+  it("un reste sous le seuil de fonctionnement met l'IA en pause sans inventer une consommation à 100 %",async()=>{
+    const uid=await client();
+    run("UPDATE wallets SET monthly_used=monthly_allowance-300000,topup_balance=0 WHERE user_id=?",uid);
+    const before=balance(uid), view=aiUsage(uid)!;
+    expect(view.paused).toBe(true);expect(view.plan.used).toBeLessThan(100);expect(view.credits).toBeNull();
+    expect(aiLeftPct(view)).toBeGreaterThan(0);
+    expect(()=>assertAiAllowed(uid)).toThrow(/restant|remaining/);
+    try{assertAiAllowed(uid);}catch(e){expect((e as Error).message).not.toMatch(/100\s*%/);}
+    expect(balance(uid)).toEqual(before);
+  });
+  it("une réservation trop grande est refusée sans annoncer le solde entièrement dépensé",async()=>{
+    const uid=await client();
+    run("UPDATE wallets SET monthly_used=monthly_allowance-700000,topup_balance=0 WHERE user_id=?",uid);
+    const before=balance(uid);
+    for(const operation of [()=>assertCanSpend(uid,800_000),()=>reserve(uid,800_000,meta)]){
+      expect(operation).toThrow(/insuffisant|insufficient/);
+      try{operation();}catch(e){expect((e as Error).message).not.toMatch(/100\s*%/);}
+    }
+    expect(balance(uid)).toEqual(before);expect(all("SELECT id FROM ai_reservations WHERE user_id=?",uid)).toHaveLength(0);
   });
   it("la portée native d'une étape est conservée même sans jobId répété par l'adaptateur", async () => {
     const uid = await client();

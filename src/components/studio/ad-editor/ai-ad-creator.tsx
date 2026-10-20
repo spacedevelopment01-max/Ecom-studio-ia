@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { Download, Wand2 } from "lucide-react";
 import { api, Button, Card, cx, useApi, useToast } from "../../ui";
 import { useLang, useT } from "../../i18n";
-import { useProject } from "../project-context";
+import { useProject, type JobView } from "../project-context";
 import { JobProgress, SectionTitle, useActive } from "../common";
 import { useBudgetPct } from "../../billing-client";
 import { AiImageActions } from "../ai-image-actions";
@@ -26,7 +26,7 @@ type AiAd = {
   request: string | null;
   at: number;
 };
-type Campaigns = { aiAds: AiAd[]; ai: boolean; subjects: SubjectView[] };
+type Campaigns = { aiAds: AiAd[]; aiJobs: JobView[]; ai: boolean; subjects: SubjectView[] };
 const ASPECTS = [
   { aspect: "4:5", fr: "Portrait 4:5", en: "Portrait 4:5" },
   { aspect: "1:1", fr: "Carré 1:1", en: "Square 1:1" },
@@ -36,13 +36,18 @@ const ASPECTS = [
 ] as const;
 
 export function AiAdCreator({ onDone }: { onDone?: () => void }) {
+  const {id}=useProject();
+  return <ProjectAdCreator key={id} onDone={onDone} />;
+}
+
+function ProjectAdCreator({ onDone }: { onDone?: () => void }) {
   const { id } = useProject();
   const t = useT();
   const { lang } = useLang();
   const budget = useBudgetPct();
   const toast = useToast();
   const { data, reload } = useApi<Campaigns>(
-    `/api/projects/${id}/campaigns/v2`,
+    `/api/projects/${id}/campaigns/v2`, { poll: 3000 },
   );
   const jobs = useActive(["image.ai_post", "ads.v2"]);
   const [subjectKey, setSubjectKey] = useState("");
@@ -51,7 +56,9 @@ export function AiAdCreator({ onDone }: { onDone?: () => void }) {
     useState<(typeof ASPECTS)[number]["aspect"]>("4:5");
   const [quote, setQuote] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
+  const [submittedJob, setSubmittedJob] = useState<string | null>(null);
   const operation = useRef<string | null>(null);
+  const sending = useRef(false);
   useEffect(() => {
     operation.current = null;
   }, [request, subjectKey, aspect]);
@@ -74,20 +81,24 @@ export function AiAdCreator({ onDone }: { onDone?: () => void }) {
       .catch(() => setQuote(null));
   }, [id]);
   // Fin de la création : la liste se recharge d'elle-même.
-  const running = jobs.length > 0;
-  const was = useRef(running);
+  const latest = data?.aiJobs?.[0];
+  const tracked = submittedJob ? data?.aiJobs?.find(j=>j.id===submittedJob) : latest;
+  const running = jobs.length > 0 || !!submittedJob || !!tracked && ["queued","running","paused","blocked"].includes(tracked.status);
+  const finished = useRef<string | null>(null);
   useEffect(() => {
-    if (was.current && !running) {
-      reload();
+    if (tracked && ["done","failed","cancelled"].includes(tracked.status) && finished.current!==tracked.id) {
+      finished.current=tracked.id;
+      setSubmittedJob(null);
+      operation.current=null;
       onDone?.();
     }
-    was.current = running;
-  }, [running, reload, onDone]);
+  }, [tracked, onDone]);
   const create = async () => {
-    if (quote == null) return;
+    if (quote == null || sending.current || running) return;
+    sending.current=true;
     setBusy(true);
     try {
-      await api(`/api/projects/${id}/campaigns/v2`, {
+      const created=await api<{jobId:string}>(`/api/projects/${id}/campaigns/v2`, {
         body: {
           action: "ai_create",
           operationId:
@@ -100,18 +111,19 @@ export function AiAdCreator({ onDone }: { onDone?: () => void }) {
           approvedEstimateMicro: quote,
         },
       });
-      operation.current = null;
+      setSubmittedJob(created.jobId);
       await reload();
       toast(
-        "ok",
+        "info",
         t(
-          "Publicité en création par l'IA : elle apparaît ici dès qu'elle est prête.",
-          "Ad being created by AI: it appears here as soon as it's ready.",
+          "Demande enregistrée. Le suivi ci-dessous indiquera le résultat ou le blocage.",
+          "Request saved. The status below will show the result or the block.",
         ),
       );
     } catch (e) {
       toast("bad", (e as Error).message);
     } finally {
+      sending.current=false;
       setBusy(false);
     }
   };
@@ -125,7 +137,22 @@ export function AiAdCreator({ onDone }: { onDone?: () => void }) {
         )}
       </SectionTitle>
       <Card className="grid gap-4 p-5">
-        {jobs[0] && <JobProgress job={jobs[0]} />}
+        {(jobs[0] || tracked && ["queued","running","paused"].includes(tracked.status)) && <JobProgress job={jobs[0] ?? tracked} />}
+        {tracked && ["failed","cancelled","blocked"].includes(tracked.status) && (
+          <div role="alert" className="rounded-xl border border-bad/30 bg-bad/5 p-3 text-sm" data-ai-ad-error>
+            <p className="font-medium">{t("La publicité n’a pas été livrée.","The ad was not delivered.")}</p>
+            {Number.isFinite(tracked.progress) && tracked.progress>=0 && tracked.progress<1 && <p>{t(`Arrêt à ${Math.round(tracked.progress*100)} % de progression enregistrée.`,`Stopped at ${Math.round(tracked.progress*100)}% recorded progress.`)}</p>}
+            <p>{tracked.error || tracked.message || t("La création a été interrompue.","Creation was interrupted.")}</p>
+            <p>{t("Les étapes acquises sont conservées. Aucun nouvel essai payant n’est lancé automatiquement.","Acquired steps are kept. No new paid attempt is started automatically.")}</p>
+          </div>
+        )}
+        {tracked?.status==="done" && (
+          <p role="status" className="text-sm" data-ai-ad-result>
+            {(tracked.result?.assetIds ?? [tracked.result?.assetId]).filter(Boolean).some((assetId:string)=>data?.aiAds.some(a=>a.id===assetId))
+              ? tracked.result?.delivery?.message || t("Publicité enregistrée dans la galerie ci-dessous.","Ad saved in the gallery below.")
+              : t("La tâche est terminée, mais son image n’est pas disponible dans cette galerie. Vérifiez la bibliothèque avant de lancer un nouvel essai.","The task ended, but its image is unavailable in this gallery. Check the library before starting another attempt.")}
+          </p>
+        )}
         {data && !data.ai ? (
           <p className="text-sm text-muted">
             {t(
