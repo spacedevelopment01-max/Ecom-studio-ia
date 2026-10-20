@@ -22,7 +22,7 @@ const refsOf = v => {
   };
   walk(v);return [...ids];
 };
-const categoryOf = s => /timeout|timed out|délai/i.test(s??"")?"timeout":/budget|plafond/i.test(s??"")?"budget":/ENOSPC|disk|storage|stockage|sqlite/i.test(s??"")?"storage":/5\d\d|overload/i.test(s??"")?"provider_server":/401|403|auth|clé/i.test(s??"")?"authorization":s?"other":"none";
+const categoryOf = s => /rédaction IA non conforme aux faits confirmés/i.test(s??"")?"quality":/timeout|timed out|délai/i.test(s??"")?"timeout":/budget|plafond/i.test(s??"")?"budget":/ENOSPC|disk|storage|stockage|sqlite/i.test(s??"")?"storage":/5\d\d|overload/i.test(s??"")?"provider_server":/401|403|auth|clé/i.test(s??"")?"authorization":s?"other":"none";
 // Codes fermés uniquement : ne jamais exporter le message libre, même s'il contient « budget ».
 export function budgetFailureCode(message) {
   const s=String(message??"");

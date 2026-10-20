@@ -80,7 +80,12 @@ it.each([
  ["Importez d'abord une photo du produit : l'IA part de votre vrai produit.","PRODUCT_REFERENCE_REQUIRED"],
 ])("le suffixe de coût ne transforme pas %s en cause financière",(message,code)=>{
  const wrapped=message+" — 1 % de votre budget IA utilisé ; les étapes acquises sont conservées.";
- expect(budgetFailureCode(wrapped)).toBe("BUDGET_UNCLASSIFIED");expect(failureOriginCode(wrapped)).toBe(code);expect(failureOriginCode(wrapped)).not.toContain("PRIVATE_MARKER");
+ expect(budgetFailureCode(wrapped)).toBe(code==="COPY_FACTS_REJECTED"?"NOT_A_BUDGET_ERROR":"BUDGET_UNCLASSIFIED");expect(failureOriginCode(wrapped)).toBe(code);expect(failureOriginCode(wrapped)).not.toContain("PRIVATE_MARKER");
+});
+it("le refus des faits est classé qualité malgré le coût ajouté au message, sans écriture ni texte privé",async()=>{
+ const f=await fixture();f.db.prepare("UPDATE jobs SET status='failed',progress=.15,result=NULL,error=?").run("Rédaction IA non conforme aux faits confirmés : aucun texte de calendrier substitué. Corrigez le concept avant une nouvelle version. — 1 % de votre budget IA utilisé ; les essais refusés restent dans Fichiers. "+f.secret);f.db.close();
+ const hash=()=>crypto.createHash("sha256").update(fs.readFileSync(f.database)).digest("hex"),before=hash();
+ const r=await diagnostic({...f.opts,budgetOnly:true});expect(r.jobs[0]).toMatchObject({status:"failed",progress:.15,errorCategory:"quality",budgetFailureCode:"NOT_A_BUDGET_ERROR",failureOriginCode:"COPY_FACTS_REJECTED"});expect(hash()).toBe(before);expect(JSON.stringify(r)).not.toContain(f.secret);
 });
 it("une erreur non classée peut être située dans le code sans exporter sa phrase ni les données privées",()=>{
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),"ecs-test-142-source-"));dirs.push(dir);const root=path.join(dir,"src/lib/social-v2");fs.mkdirSync(root,{recursive:true});

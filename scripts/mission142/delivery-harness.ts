@@ -74,7 +74,7 @@ if(command==="seed"){
     continue;
    }
    const result=await runWithLang({ui:"fr",content:"fr"},()=>runForUser(j.user_id,()=>withTrace({jobId:j.id,projectId:j.project_id,costCapMicro:ctx.payload.costCapMicro},()=>generateAiPostImage(ctx,j.project_id!,ctx.payload.request,{
-    async copy(p,post,fallback){charge("copywriting",103349,52339,`${j.id}:synthetic-copy`);return campaignCopy(p,post,fallback);},
+    async copy(p,post,fallback){charge("copywriting",103349,mode==="copy-facts"?28000:52339,`${j.id}:synthetic-copy`);const copy=await campaignCopy(p,post,fallback);return mode==="copy-facts"?{...copy,headline:"-50 % sur ce projet fictif"}:copy;},
     async generate(){if(mode==="budget"){const left=billing.balance(j.user_id,j.project_id!).available;billing.assertCanSpend(j.user_id,left+1,j.project_id);}
       charge("image_generation",40000,40000,`${j.id}:synthetic-image`);return png;},
     async review(_image,_ref,texts){return {...campaignVerdict(),productFaithful:true,textsExact:true,legible:true,score:9.2,issues:[],fix:"",person:false,anatomyOk:true,transcribed:texts};},

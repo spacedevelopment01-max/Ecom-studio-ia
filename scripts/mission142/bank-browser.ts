@@ -42,7 +42,7 @@ try{
   await p.locator("[data-bank-create]").click();await p.locator("#bc-topic").fill("Ne pas lancer, seuil financier fictif");control("low-budget",a.pid);
   const before=JSON.parse(control("state",a.pid));let sent=0;const listener=(r:any)=>{if(r.url().endsWith("/images/v2")&&r.method()==="POST")sent++;};p.on("request",listener);
   await p.locator("[data-bank-create-go]").click();await p.locator('[data-ai-budget-confirm="empty"]').waitFor();
-  const modal=p.locator('[data-ai-budget-confirm="empty"]');assert.match(await modal.innerText(),/Il reste 1 %/);assert(!/utilisé à 100\s*%/.test(await modal.innerText()));
+  const modal=p.locator('[data-ai-budget-confirm="empty"]');assert.match(await modal.innerText(),/Il reste 1 %/);assert(!/utilisé à 100\s*%/.test(await modal.innerText()));assert.equal(await modal.getByRole("button",{name:"Continuer sans IA"}).count(),0);
   await shot(p,`${slug}-03-solde-insuffisant-mobile`);assert.equal(sent,0);
   const after=JSON.parse(control("state",a.pid));assert.equal(after.jobs.length,before.jobs.length);assert.equal(after.usages.length,0);assert.equal(after.reservations.length,0);
   results.push({business:a.business,partialDeliveryShown:true,partialSuccessNotPromoted:true,fileVisibleAfterFailure:true,filesPreservedAfterReload:true,failureProgress:.5,remainingBudgetPercent:1,noCreationBelowMinimum:true,usages:0,reservations:0});await c.close();

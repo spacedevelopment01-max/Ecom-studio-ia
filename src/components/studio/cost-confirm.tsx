@@ -14,31 +14,8 @@ import { useOptionalProject } from "./project-context";
 import { TOPUP_PRICE_EUR } from "@/lib/plans";
 import type { ProjectSub } from "./project-subscription";
 
-export type CostAction = "pipeline" | "theme" | "images" | "image" | "video-clip" | "ugc" | "blog" | "edit";
-
-/**
- * L'action consomme-t-elle le budget IA, et faut-il le confirmer ? (`ask` faux : on ne prévient que si le budget est
- * épuisé). La composition de la boutique (« theme ») passe toujours : sans budget, le moteur local la fait.
- */
-export function costUsage(action: CostAction, videos?: "ai" | "edited" | "none"): { many?: boolean; ask: boolean; local: boolean } | null {
-  switch (action) {
-    case "pipeline":
-      return videos === "ai" ? { ask: true, local: true } : null;
-    case "images":
-      return { many: true, ask: true, local: true };
-    case "image":
-      return { ask: false, local: true };
-    case "blog":
-    case "edit":
-      return { ask: true, local: true };
-    // Vidéos filmées par l'IA et UGC : pas d'équivalent sans IA.
-    case "video-clip":
-    case "ugc":
-      return { ask: true, local: false };
-    default:
-      return null;
-  }
-}
+import { costUsage, type CostAction } from "@/lib/ai/cost-confirm";
+export { costUsage, type CostAction } from "@/lib/ai/cost-confirm";
 
 type State = { kind: "confirm" | "empty"; many?: boolean; local: boolean; sub: ProjectSub; resolve: (go: boolean) => void };
 
