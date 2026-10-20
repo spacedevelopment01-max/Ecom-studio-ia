@@ -1149,7 +1149,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     name: t("Groupe en-tête", "Header group"),
     ...tpl(ids, [
       ...(annItems.length ? [["announcement-bar", { style: CHROME[d.id].ann, color_scheme: "scheme-3" }, annItems.map((t) => ({ type: "announcement", settings: { text: t, link: "" } }))] as Row] : []),
-      ["header", { menu: "main-menu", layout: headerLayout, shape: CHROME[d.id].shape, icons: CHROME[d.id].icons, mobile_menu: CHROME[d.id].menu, sticky: true, transparent_on_home: index[0]?.[0] === "hero-fullbleed", show_search: !svc && !cat?.headerCta, color_scheme: "scheme-1", ...(!svc && cat?.headerCta ? { cta_label: t(cat.headerCta.fr, cat.headerCta.en), cta_link: productUrl, cta_icon: cat.headerCta.icon } : {}), ...(svc ? { show_cart: false, cta_label: svc.headerCta.label, cta_link: svc.headerCta.link, cta_icon: svc.headerCta.icon, phone: svc.phone } : {}) }],
+      ["header", { menu: "main-menu", layout: headerLayout, shape: CHROME[d.id].shape, icons: CHROME[d.id].icons, mobile_menu: CHROME[d.id].menu, sticky: true, transparent_on_home: index[0]?.[0] === "hero-fullbleed", show_search: !svc && !cat?.headerCta, color_scheme: "scheme-1", ...(!svc && cat?.headerCta ? { cta_label: t(cat.headerCta.fr, cat.headerCta.en), cta_link: productUrl, cta_icon: cat.headerCta.icon } : {}), ...(!svc ? cat?.headerSettings ?? {} : {}), ...(svc ? { show_cart: false, cta_label: svc.headerCta.label, cta_link: svc.headerCta.link, cta_icon: svc.headerCta.icon, phone: svc.phone } : {}) }],
     ]),
   };
   const footer: GroupJson = {

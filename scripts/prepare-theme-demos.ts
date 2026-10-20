@@ -16,7 +16,7 @@ import { execFileSync } from "node:child_process";
 import { createRequire } from "node:module";
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
-const ALL = ["fraise", "onde", "orbe", "rive", "sillon"];
+const ALL = ["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse"];
 const dir = process.env.THEME_DEMOS_DIR || path.join(process.env.DATA_DIR || path.join(ROOT, "data"), "theme-demos");
 const ids = process.argv.slice(2).filter((x) => ALL.includes(x));
 const todo = ids.length ? ids : ALL;

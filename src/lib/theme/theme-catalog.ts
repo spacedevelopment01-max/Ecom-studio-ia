@@ -147,6 +147,8 @@ export type CatalogTheme = {
   mainProduct?: Record<string, unknown>;
   /** Bouton permanent de l'en-tête d'une boutique, vers la fiche du produit principal (libellé générique, jamais propre à une démo). */
   headerCta?: { fr: string; en: string; icon: "arrow" | "clock" | "phone" | "mail" | "chat" };
+  /** Réglages de mise en forme propres à l'en-tête du thème (disposition de la famille : sous-menu, encarts, schéma). */
+  headerSettings?: Record<string, unknown>;
   /** Sections de la fiche produit après le corps (sinon : avis, récit, caractéristiques, FAQ de la direction). */
   product?: (k: Kit) => (Row | Row[])[];
 };
@@ -169,7 +171,7 @@ const look = (l: Partial<ThemeLook> & Pick<ThemeLook, "headerLayout" | "shape" |
 });
 
 /** Identifiants des thèmes du catalogue (dans l'ordre de présentation). */
-export const CATALOG_IDS = ["vitrine", "manifeste", "laboratoire", "magazine", "cinema", "rituel", "horizon", "lookbook", "marche", "signal", "jardin", "reception", "cabinet", "recre", "epure", "tribu", "etabli", "velours", "lancement", "fraise", "onde", "orbe", "rive", "sillon"] as const;
+export const CATALOG_IDS = ["vitrine", "manifeste", "laboratoire", "magazine", "cinema", "rituel", "horizon", "lookbook", "marche", "signal", "jardin", "reception", "cabinet", "recre", "epure", "tribu", "etabli", "velours", "lancement", "fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse"] as const;
 export type CatalogThemeId = (typeof CATALOG_IDS)[number];
 
 export const CATALOG_THEMES: (CatalogTheme & { id: CatalogThemeId })[] = [

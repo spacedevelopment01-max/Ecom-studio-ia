@@ -18,7 +18,7 @@ import { chromium, type Page } from "playwright";
 if (process.env.DATA_DIR || process.env.DATABASE_FILE) throw new Error("Base existante refusée");
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "ecs-familles-studio-")); process.env.DATA_DIR = temp; process.env.STOCK_OFFLINE = "1";
 const out = path.resolve(process.argv[2] ?? "reports/familles-studio"); fs.mkdirSync(out, { recursive: true });
-const demoId = (process.argv[3] ?? "fraise") as "fraise" | "orbe" | "rive" | "sillon";
+const demoId = (process.argv[3] ?? "fraise") as "fraise" | "orbe" | "rive" | "sillon" | "noctil" | "traverse";
 /** Scénario par famille : fonction ajoutée, disposition d'aperçu, disposition choisie ensuite, fonction d'une autre famille. */
 const PLAN = {
   fraise: { family: "specialty", entry: "Fabrication et savoir-faire", type: "fs-making", preview: "sticky", then: "timeline", foreign: "Étude de cas", header: "two-rows", footer: "centered" },
@@ -26,6 +26,9 @@ const PLAN = {
   rive: { family: "services", entry: "Étude de cas", type: "fs-case", preview: "columns", then: "stacked", foreign: "Ambiance et lookbook", header: "booking", footer: "brand-left" },
   // SILLON (issue #148) : en-tête « Bouton d'achat visible » et pied « Grand nom de marque » à l'origine (pas les n° 1).
   sillon: { family: "specialty", entry: "Fabrication et savoir-faire", type: "fs-making", preview: "grid", then: "steps", foreign: "Étude de cas", header: "floating", footer: "card", currentHeader: "buy-button", currentFooter: "wordmark" },
+  // NOCTIL et TRAVERSE (issue #152) : leurs propres dispositions d'origine (barre flottante / centré ; deux rangées / carte).
+  noctil: { family: "specialty", entry: "Fabrication et savoir-faire", type: "fs-making", preview: "sticky", then: "timeline", foreign: "Ambiance et lookbook", header: "product-menu", footer: "minimal", currentHeader: "floating", currentFooter: "centered" },
+  traverse: { family: "specialty", entry: "Fabrication et savoir-faire", type: "fs-making", preview: "timeline", then: "grid", foreign: "Étude de cas", header: "buy-button", footer: "wordmark", currentHeader: "two-rows", currentFooter: "card" },
 }[demoId] as { family: string; entry: string; type: string; preview: string; then: string; foreign: string; header: string; footer: string; currentHeader?: string; currentFooter?: string };
 const PORT = 3600 + Math.floor(Math.random() * 300), origin = `http://127.0.0.1:${PORT}`;
 const { demoProject } = await import("../tests/demo-fixtures");

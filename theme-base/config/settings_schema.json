@@ -426,6 +426,14 @@
           {
             "value": "sillon",
             "label": "Sillon — objet nomade, lumière chaude (référence)"
+          },
+          {
+            "value": "noctil",
+            "label": "Noctil — nuit immersive, lumière d'espace (référence)"
+          },
+          {
+            "value": "traverse",
+            "label": "Traverse — carnet de voyage, pierre et olive (référence)"
           }
         ]
       },
@@ -878,6 +886,14 @@
           {
             "value": "nomade",
             "label": "Nomade : ivoire, serif fine, accent cuivré, filets et boutons ronds"
+          },
+          {
+            "value": "astral",
+            "label": "Astral : nuit indigo, halos violets, cartes lumineuses et titres géométriques"
+          },
+          {
+            "value": "itineraire",
+            "label": "Itinéraire : crème et olive, serif de magazine, colonnes asymétriques et filets"
           }
         ]
       }

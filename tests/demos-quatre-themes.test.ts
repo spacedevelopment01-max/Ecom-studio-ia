@@ -31,6 +31,8 @@ const EXPECT: Record<DemoId, { kind: "services" | "catalog" | "specialty"; profi
   orbe: { kind: "catalog", profile: { editorial_profile: "object" }, family: /^ed-/ },
   rive: { kind: "services", profile: { editorial_profile: "journal" }, family: /^ed-/ },
   sillon: { kind: "specialty", profile: { conversion_profile: "nomade" }, family: /^cv-/ },
+  noctil: { kind: "specialty", profile: { conversion_profile: "astral" }, family: /^cv-/ },
+  traverse: { kind: "specialty", profile: { conversion_profile: "itineraire" }, family: /^cv-/ },
 };
 
 /** Informations que seul le client peut fournir : la mention « à compléter » est voulue (rien d'inventé), jamais un titre ni une accroche. */

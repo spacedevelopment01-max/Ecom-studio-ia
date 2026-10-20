@@ -10,7 +10,7 @@
  *     démo) avec le guide des informations à compléter ;
  *  4. galerie et démo sur un téléphone (390 × 844).
  *
- *   THEME_DEMOS_DIR=<démos préparées> npx tsx scripts/theme-demo-choice-check.ts <dossier-captures>
+ *   THEME_DEMOS_DIR=<démos préparées> npx tsx scripts/theme-demo-choice-check.ts <dossier-captures> [sillon|noctil|traverse]
  */
 import fs from "node:fs";
 import os from "node:os";
@@ -20,7 +20,14 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { chromium, type Page } from "playwright";
 if (process.env.DATA_DIR || process.env.DATABASE_FILE) throw new Error("Base existante refusée");
-const demosDir = process.env.THEME_DEMOS_DIR; if (!demosDir || !fs.existsSync(path.join(demosDir, "sillon", "accueil.html"))) throw new Error("THEME_DEMOS_DIR : démos préparées requises (scripts/prepare-theme-demos.ts)");
+/** Thème parcouru puis choisi (issue #152 : NOCTIL et TRAVERSE par le même parcours que SILLON). */
+const T = (process.argv[3] ?? "sillon") as "sillon" | "noctil" | "traverse";
+const THEME = {
+  sillon: { brand: /SILLON/, profile: "nomade", menuPage: "page-usages.html", leak: /SILLON|espresso|où tout coule|avant de partir|Boutique de démonstration/i },
+  noctil: { brand: /NOCTIL/, profile: "astral", menuPage: "page-univers.html", leak: /NOCTIL|galaxie|la nuit entre|une autre nuit|Boutique de démonstration/i },
+  traverse: { brand: /TRAVERSE/, profile: "itineraire", menuPage: "page-carnet-de-route.html", leak: /TRAVERSE|quai de départ|Carnet de route|trois temps|Boutique de démonstration/i },
+}[T];
+const demosDir = process.env.THEME_DEMOS_DIR; if (!demosDir || !fs.existsSync(path.join(demosDir, T, "accueil.html"))) throw new Error("THEME_DEMOS_DIR : démos préparées requises (scripts/prepare-theme-demos.ts)");
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "ecs-demo-choice-")); process.env.DATA_DIR = temp; process.env.STOCK_OFFLINE = "1";
 const out = path.resolve(process.argv[2] ?? "reports/theme-demo-choice"); fs.mkdirSync(out, { recursive: true });
 const PORT = 4300 + Math.floor(Math.random() * 300), origin = `http://127.0.0.1:${PORT}`;
@@ -57,7 +64,7 @@ const started = Date.now();
 for (;;) { if (Date.now() - started > 240000) throw new Error("Studio non démarré :\n" + log.slice(-2000)); try { const r = await fetch(`${origin}/connexion`); if (r.ok) break; } catch { /* pas prêt */ } await new Promise((r) => setTimeout(r, 1500)); }
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium", args: ["--no-sandbox"] });
 const steps: Record<string, unknown>[] = [];
-const shot = async (page: Page, name: string) => { await page.screenshot({ path: path.join(out, `choix-${name}.png`) }); };
+const shot = async (page: Page, name: string) => { await page.screenshot({ path: path.join(out, `choix-${T}-${name}.png`) }); };
 try {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "fr-FR" }); const page = await context.newPage();
   const errors: string[] = []; page.on("pageerror", (e) => errors.push(e.message));
@@ -76,7 +83,7 @@ try {
   const openGallery = async () => {
     for (let attempt = 1; ; attempt++) {
       await page.getByRole("button", { name: /^Thèmes$/ }).first().click();
-      const ok = await page.locator("[data-open-demo='sillon']:not([disabled])").waitFor({ timeout: 60000 }).then(() => true, () => false);
+      const ok = await page.locator(`[data-open-demo='${T}']:not([disabled])`).waitFor({ timeout: 60000 }).then(() => true, () => false);
       if (ok) return;
       if (attempt >= 3) throw new Error("Galerie sans démo complète disponible");
       await page.reload({ waitUntil: "networkidle", timeout: 240000 }); await page.waitForTimeout(1500);
@@ -85,47 +92,47 @@ try {
   await openGallery();
   const thumbs = await page.locator("[data-demo-thumb]").evaluateAll((els) => els.map((e) => (e as HTMLImageElement).getAttribute("src")));
   assert.ok(thumbs.length >= 5 && thumbs.every((s) => s && !s.startsWith("/api/projects/")), "cartes : visuels de démonstration, jamais le projet");
-  await page.locator("[data-open-demo='sillon']").scrollIntoViewIfNeeded(); await page.waitForTimeout(600);
+  await page.locator(`[data-open-demo='${T}']`).scrollIntoViewIfNeeded(); await page.waitForTimeout(600);
   await shot(page, "02-galerie-demos");
   steps.push({ step: "galerie : chaque carte montre la démonstration du thème et propose « Voir la démo complète »", vignettes: thumbs, ok: true });
 
-  const viewer = page.locator("[data-theme-demo='sillon']");
+  const viewer = page.locator(`[data-theme-demo='${T}']`);
   const demoFrame = () => page.frameLocator("[data-theme-demo] iframe").first();
   for (let attempt = 1; ; attempt++) {
-    await page.locator("[data-open-demo='sillon']").click();
+    await page.locator(`[data-open-demo='${T}']`).click();
     if (await viewer.waitFor({ timeout: 20000 }).then(() => true, () => false)) break;
     if (attempt >= 3) throw new Error("Démo complète jamais ouverte");
     await page.reload({ waitUntil: "networkidle", timeout: 240000 }); await openGallery();
   }
-  await demoFrame().locator("body[data-conversion='nomade']").waitFor({ timeout: 60000 }); await page.waitForTimeout(1200);
+  await demoFrame().locator(`body[data-conversion='${THEME.profile}']`).waitFor({ timeout: 60000 }); await page.waitForTimeout(1200);
   const home = await demoFrame().locator("body").innerText();
-  assert.ok(/SILLON/.test(home) && !/Atelier Verre/.test(home), "démo : contenus SILLON, jamais ceux du projet");
-  await shot(page, "03-demo-sillon-ordinateur-accueil");
+  assert.ok(THEME.brand.test(home) && !/Atelier Verre/.test(home), `démo : contenus ${T.toUpperCase()}, jamais ceux du projet`);
+  await shot(page, "03-demo-ordinateur-accueil");
   const pages = await page.locator("[data-demo-pages] option").evaluateAll((els) => els.map((e) => (e as HTMLOptionElement).textContent));
-  steps.push({ step: "démo complète SILLON ouverte (ordinateur) : contenus de démonstration", pages, ok: true });
+  steps.push({ step: `démo complète ${T.toUpperCase()} ouverte (ordinateur) : contenus de démonstration`, pages, ok: true });
   // Défilement de toute la page d'accueil de la démo (toutes ses sections).
   const sections = await demoFrame().locator("main section, main > div[id^='shopify-section'], .shopify-section").count();
   await demoFrame().locator("footer").last().scrollIntoViewIfNeeded(); await page.waitForTimeout(800);
-  await shot(page, "04-demo-sillon-bas-de-page");
+  await shot(page, "04-demo-bas-de-page");
   steps.push({ step: "accueil de la démo défilé jusqu'au pied de page", sections, ok: true });
   // Fiche produit par le sélecteur de pages.
   await page.locator("[data-demo-pages]").selectOption("produit.html");
   await demoFrame().locator(".es-product__title").first().waitFor({ timeout: 30000 }); await page.waitForTimeout(1000);
-  await shot(page, "05-demo-sillon-fiche");
+  await shot(page, "05-demo-fiche");
   // Navigation par un menu de la démo elle-même : le sélecteur suit la page affichée.
-  await demoFrame().locator("header a[href='page-usages.html']").first().click();
-  await page.waitForFunction(() => (document.querySelector("[data-demo-pages]") as HTMLSelectElement | null)?.value === "page-usages.html", null, { timeout: 30000 });
+  await demoFrame().locator(`header a[href='${THEME.menuPage}']`).first().click();
+  await page.waitForFunction((want) => (document.querySelector("[data-demo-pages]") as HTMLSelectElement | null)?.value === want, THEME.menuPage, { timeout: 30000 });
   await page.waitForTimeout(1000);
-  await shot(page, "06-demo-sillon-menu-usages");
+  await shot(page, "06-demo-menu-usages");
   steps.push({ step: "navigation : fiche produit par le sélecteur, page « Usages » par le menu de la démo", ok: true });
   // Téléphone.
   await page.locator("[data-device='mobile']").click();
-  await demoFrame().locator("body[data-conversion='nomade']").waitFor({ timeout: 30000 }); await page.waitForTimeout(1200);
+  await demoFrame().locator(`body[data-conversion='${THEME.profile}']`).waitFor({ timeout: 30000 }); await page.waitForTimeout(1200);
   const width = await demoFrame().locator("html").evaluate(() => window.innerWidth);
   assert.equal(width, 390, "démo en téléphone : 390 px");
-  await shot(page, "07-demo-sillon-telephone");
+  await shot(page, "07-demo-telephone");
   await demoFrame().locator("[data-menu-open], .es-header__menu-toggle, button[aria-controls*='menu']").first().click().catch(() => undefined); await page.waitForTimeout(900);
-  await shot(page, "08-demo-sillon-telephone-menu");
+  await shot(page, "08-demo-telephone-menu");
   steps.push({ step: "bascule téléphone : la démo s'affiche à 390 px, page conservée, menu mobile", ok: true });
   // Échap : la démo se ferme, la galerie reste ouverte.
   // (Dans la démo elle-même, Échap reste à la démo : il ferme ses menus et tiroirs.)
@@ -148,13 +155,13 @@ try {
   steps.push({ step: "aucune modification du projet pendant la visite (empreinte identique, aucune écriture)", avant: before, apres: after, ecritures: [...writes], ok: true });
 
   // 3. Choix explicite depuis la démo, en double-clic + une seconde demande simultanée.
-  await page.locator("[data-open-demo='sillon']").click(); await viewer.waitFor({ timeout: 20000 });
-  await demoFrame().locator("body[data-conversion='nomade']").waitFor({ timeout: 60000 }); await page.waitForTimeout(800);
-  await shot(page, "10-demo-sillon-avant-choix");
+  await page.locator(`[data-open-demo='${T}']`).click(); await viewer.waitFor({ timeout: 20000 });
+  await demoFrame().locator(`body[data-conversion='${THEME.profile}']`).waitFor({ timeout: 60000 }); await page.waitForTimeout(800);
+  await shot(page, "10-demo-avant-choix");
   const posts: string[] = []; page.on("request", (r) => { if (r.method() === "POST" && r.url().endsWith("/theme/build")) posts.push(r.url()); });
   const [extra] = await Promise.all([
-    context.request.post(`${origin}/api/projects/${pid}/theme/build`, { data: { direction: "sillon" } }),
-    viewer.locator("[data-choose-theme='sillon']").dblclick(),
+    context.request.post(`${origin}/api/projects/${pid}/theme/build`, { data: { direction: T } }),
+    viewer.locator(`[data-choose-theme='${T}']`).dblclick(),
   ]);
   assert.ok(extra.ok(), `seconde demande : ${extra.status()}`);
   await viewer.waitFor({ state: "detached", timeout: 30000 });
@@ -170,10 +177,10 @@ try {
   const versions = fingerprint().versionsDeTheme;
   assert.equal(versions.length, before.versionsDeTheme.length + 1, "une seule nouvelle version de thème");
   await page.reload({ waitUntil: "networkidle", timeout: 240000 });
-  await preview().locator("body[data-conversion='nomade']").waitFor({ timeout: 180000 }); await page.waitForTimeout(1500);
+  await preview().locator(`body[data-conversion='${THEME.profile}']`).waitFor({ timeout: 180000 }); await page.waitForTimeout(1500);
   const text = await preview().locator("body").innerText();
   assert.ok(text.includes("Atelier Verre"), "identité du projet après le choix");
-  assert.ok(!/SILLON|espresso|où tout coule|avant de partir|Boutique de démonstration/i.test(text), "aucun contenu de la démo SILLON repris");
+  assert.ok(!THEME.leak.test(text), `aucun contenu de la démo ${T.toUpperCase()} repris`);
   await shot(page, "11-editeur-apres-choix");
   steps.push({ step: "« Choisir ce thème » (double-clic + demande simultanée) : une seule tâche, une seule version, éditeur sur le projet, aucun contenu de démo", requetesInterface: posts.length, taches: jobs.length, versions, ok: true });
   // Guide après le choix (vue directe : le guide s'affiche quand l'application est terminée dans la même session).

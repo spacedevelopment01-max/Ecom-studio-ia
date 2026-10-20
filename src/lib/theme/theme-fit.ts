@@ -14,7 +14,7 @@
 import type { StoreKind } from "./store-kind";
 
 /** Thèmes de référence (issue #137) : compatibilités déclarées, jamais déduites du nom. */
-export const REFERENCE_THEMES = ["fraise", "onde", "orbe", "rive", "sillon"] as const;
+export const REFERENCE_THEMES = ["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse"] as const;
 export type ReferenceThemeId = (typeof REFERENCE_THEMES)[number];
 
 const REFERENCE_FIT: Record<ReferenceThemeId, StoreKind[]> = {
@@ -24,6 +24,9 @@ const REFERENCE_FIT: Record<ReferenceThemeId, StoreKind[]> = {
   rive: ["services"],
   // Issue #148 : troisième thème « boutique spécialisée » (machine à espresso nomade).
   sillon: ["specialty"],
+  // Issue #152 : quatrième et cinquième thèmes « boutique spécialisée » (projecteur de galaxies, sac de voyage modulable).
+  noctil: ["specialty"],
+  traverse: ["specialty"],
 };
 
 export const isReferenceThemeId = (id: string): id is ReferenceThemeId => (REFERENCE_THEMES as readonly string[]).includes(id);
@@ -67,8 +70,9 @@ export function themeFitReason(id: string, kind: StoreKind, lang: "fr" | "en" = 
 }
 
 /**
- * Capture d'exemple d'un thème. Celles des thèmes dont les médias sont suivis dans le dépôt (SILLON, issue #148) y sont
+ * Capture d'exemple d'un thème. Celles des thèmes dont les médias sont suivis dans le dépôt (SILLON, issue #148 ; NOCTIL et
+ * TRAVERSE, issue #152) y sont
  * aussi ; les autres viennent du kit privé (public/demo/directions/, hors dépôt).
  */
-const TRACKED_PREVIEWS: Record<string, string> = { sillon: "/theme-assets/sillon/apercu-theme.jpg" };
+const TRACKED_PREVIEWS: Record<string, string> = { sillon: "/theme-assets/sillon/apercu-theme.jpg", noctil: "/theme-assets/noctil/apercu-theme.jpg", traverse: "/theme-assets/traverse/apercu-theme.jpg" };
 export const themePreviewPath = (id: string) => TRACKED_PREVIEWS[id] ?? `/demo/directions/${id}.jpg`;

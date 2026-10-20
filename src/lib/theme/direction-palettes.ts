@@ -49,6 +49,8 @@ export const DIRECTION_PALETTES: Record<DirectionId, DirectionPalette> = {
   onde: { primary: "#257A10", secondary: "#E6F6DF", accent: "#4ECD01", light: "#FFFFFF", dark: "#1F1F1F" }, // vert vif en accent, vert profond lisible en principal (5,4:1 sur blanc), vert pâle en fond doux, anthracite
   orbe: { primary: "#9B4F36", secondary: "#D8CCB9", accent: "#9B4F36", light: "#F4F0E8", dark: "#29251F" }, // terre cuite, crème
   sillon: { primary: "#9C5A2C", secondary: "#E7D8C6", accent: "#3B1C0C", light: "#F4EDE3", dark: "#24140C" }, // cuivre (lisible sur ivoire), brun du logo, ivoire chaud
+  noctil: { primary: "#4B3BB8", secondary: "#ECE8FA", accent: "#8E6CF0", light: "#ECE8FA", dark: "#0D0B26" }, // indigo lisible sur lavande, violet du halo, nuit profonde
+  traverse: { primary: "#4F5631", secondary: "#D9D2C2", accent: "#A8572E", light: "#F5F1E8", dark: "#20251A" }, // olive du sac (6,9:1 sur le crème), pierre, crème, terre cuite en accent
   rive: { primary: "#243B32", secondary: "#B7C2AE", accent: "#243B32", light: "#EEEAE2", dark: "#1B2B25" }, // vert profond, papier
 };
 
