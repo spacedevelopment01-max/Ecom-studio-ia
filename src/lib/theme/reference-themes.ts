@@ -341,14 +341,14 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       k.lib("fs-commitments", 4, { layout: "grid" }),
       k.faqSec(1, 5, "lines"),
     ],
-    // Site de services (repli) : ouverture empilée, prestations en cartes, carrousel d'images, méthode en frise,
-    // témoignages, questions et prise de contact — sans l'enchaînement de SILLON ni de FRAISE.
+    // Site de services (repli) : ouverture empilée, prestations en cartes, gros plans en colonnes, méthode, bandeau
+    // d'appel, questions et prise de contact — sans l'enchaînement de SILLON, de FRAISE ni de TRAVERSE.
     services: (k) => [
       k.lib("cv-hero", 1, { image_asset: k.im.hero ?? k.im.lifestyle, image_ratio: "wide", layout: "stacked", heading_tag: "h1" }),
       k.R.servicesList(4, "cards"),
-      ((rooms) => k.lib("cv-gallery", 1, { layout: "carousel", ratio: "portrait" }, { hide: rooms.length < 2, blocks: rooms.map((f) => ({ type: "image", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3, k.im.detail1].filter((f): f is string => !!f)),
-      k.R.method(4, "timeline"),
-      k.R.testimonials(1),
+      ((shots) => k.lib("cv-cards", 2, { layout: "columns" }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
+      k.R.method(1, "howto-h"),
+      k.lib("cta-banner", 4, { style: "center", image_asset: k.im.banner ?? k.im.lifestyle2 ?? "", overlay: 55, parallax: false }),
       k.faqSec(2, 5, "cards"),
       k.R.booking(1),
     ],
@@ -401,14 +401,15 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       k.lib("fs-commitments", 4, { layout: "list" }),
       k.faqSec(1, 5, "lines"),
     ],
-    // Site de services (repli) : bannière visuel à gauche, prestations en liste, alternance de réalisations, méthode en
-    // cartes, témoignages, questions et prise de contact.
+    // Site de services (repli) : bannière visuel à droite, trois temps en liste, prestations, alternance de réalisations,
+    // méthode, image et texte, questions et prise de contact.
     services: (k) => [
-      k.lib("cv-banner", 1, { image_asset: k.im.hero ?? k.im.lifestyle, layout: "image-left", heading_tag: "h1" }),
-      k.R.servicesList(4, "list"),
+      k.lib("cv-banner", 1, { image_asset: k.im.hero ?? k.im.lifestyle, layout: "image-right", heading_tag: "h1" }),
+      k.lib("features-grid", 4, { layout: "grid", columns: 1, columns_mobile: "1", style: "lines", heading_align: "left" }),
+      k.R.servicesList(1, "list"),
       ((moments) => k.lib("cv-alternating", 1, { layout: "alternate", ratio: "portrait" }, { hide: moments.length < 2, blocks: moments.map((f) => ({ type: "row", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
-      k.R.method(2, "howto-h"),
-      k.R.testimonials(1),
+      k.R.method(2, "howto-v"),
+      k.lib("image-with-text", 1, { layout: "image-left", ratio: "landscape", image_asset: k.im.lifestyle2 ?? k.im.detail2 ?? "", reveal: "curtain" }, { hide: !(k.im.lifestyle2 ?? k.im.detail2) }),
       k.faqSec(1, 5, "lines"),
       k.R.booking(2),
     ],

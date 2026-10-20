@@ -38,15 +38,15 @@ async function completeContract(business: "products" | "services") {
 }
 
 describe("catégorie selon l’offre et le modèle de vente", () => {
-  it("les cinq références ont les catégories imposées sans nom de produit dans la règle", () => {
-    expect(REFERENCE_THEMES.map(t => [t.referenceId, ...t.categories])).toEqual([["fraise", "specialized"], ["onde", "specialized"], ["orbe", "ecommerce"], ["atelier-rive", "services"], ["sillon", "specialized"]]);
+  it("les sept références ont les catégories imposées sans nom de produit dans la règle", () => {
+    expect(REFERENCE_THEMES.map(t => [t.referenceId, ...t.categories])).toEqual([["fraise", "specialized"], ["onde", "specialized"], ["orbe", "ecommerce"], ["atelier-rive", "services"], ["sillon", "specialized"], ["noctil", "specialized"], ["traverse", "specialized"]]);
   });
   it.each(["lampe", "instrument de mesure", "savon solide", "pièce de vélo"])("%s : l’offre ciblée et le catalogue ont des recommandations distinctes", async name => {
     const f = await fixture(), p = loadProject(f.pid);
     const focused = recommendProjectCategory(p, { description: `${name} : une boutique spécialisée autour d’une offre ciblée.`, constraints: "Achat direct" });
     const catalogue = recommendProjectCategory({ ...p, storeType: "multi" });
     expect(focused).toMatchObject({ category: "specialized", salesModel: "focused_offer", goal: "purchase" });
-    expect(focused.eligibleThemes.map(t => t.referenceId)).toEqual(["fraise", "onde", "sillon"]);
+    expect(focused.eligibleThemes.map(t => t.referenceId)).toEqual(["fraise", "onde", "sillon", "noctil", "traverse"]);
     expect(catalogue).toMatchObject({ category: "ecommerce", salesModel: "catalogue" });
     expect(catalogue.eligibleThemes.map(t => t.referenceId)).toEqual(["orbe"]);
     expect(focused.eligibleThemes.every(t => t.engineThemeId === null && t.status === "awaiting_integration")).toBe(true);
