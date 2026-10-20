@@ -91,6 +91,8 @@ Galeries et captures dans la page privée et le ZIP privé (voir le commentaire 
   passent pas par la règle de famille — fichier possiblement touché par le chantier Codex #142, non modifié.
 - Premier passage du contrôle du studio pour Atelier Rive : délai dépassé à la dernière étape (vue téléphone, aperçu
   en cours de compilation) ; relancé, il a réussi entièrement.
+- Espace normale avant « ? » dans certaines questions de FAQ générées (le « ? » peut passer seul à la ligne sur
+  téléphone) : textes communs à tous les thèmes, validés compris ; non modifiés ici pour ne pas changer leur rendu.
 - Téléphone réel de Thomas : non vérifié.
 
 ## Tableau des bibliothèques (tiré du code)
@@ -186,4 +188,12 @@ Pieds de page (5, hors des 20) : 1. Marque et coordonnées · 2. Coordonnées en
 
 ## Version testée
 
-VERSION
+- Base : `main` fusionné **d97e0b95** (fusion #144).
+- Code des corrections contrôlé par les captures, les galeries, l'audit et les exports : **65c2fdc8** (le dernier
+  commit ne touche que ce rapport et deux tests existants alignés sur la bibliothèque « services »).
+- Suite complète : 2 429 tests réussis, 2 ignorés (tests alignés relancés à part : réussis) ; `tsc` sans erreur ;
+  Theme Check valide (FRAISE, ORBE, Atelier Rive) — la CI de la PR refait tout.
+- Deux tests existants adaptés : `qualite-boutique` (l'IA composait avec une section retirée du catalogue) et
+  `categories-sections` / `demos-quatre-themes` (le bandeau d'appel fait désormais partie de la bibliothèque
+  « services », correction F).
+- Preuves privées : https://claude.ai/artifact/6ArtgNjM3RvpiRSiqB1GJm et ZIP privé « verification-145.zip ».

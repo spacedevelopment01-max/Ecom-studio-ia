@@ -59,7 +59,7 @@ describe("Les quatre démonstrations dans leur thème de référence", async () 
       const lib = compatibleSectionTypes(spec, EXPECT[id].kind);
       expect(lib.some((t) => EXPECT[id].family.test(t))).toBe(true);
       expect(lib.some((t) => (EXPECT[id].family.source === "^cv-" ? /^ed-/ : /^cv-/).test(t))).toBe(false);
-      if (EXPECT[id].kind === "services") for (const t of ["featured-purchase", "cta-banner", "featured-collection"]) expect(lib).not.toContain(t);
+      if (EXPECT[id].kind === "services") for (const t of ["featured-purchase", "featured-collection"]) expect(lib).not.toContain(t);
       else expect(lib).toContain("faq");
       // Visuels du kit : placés si installés (sinon sections masquées, jamais un cadre vide visible).
       if (installed) expect(Object.keys(spec.files).length).toBeGreaterThanOrEqual(5);

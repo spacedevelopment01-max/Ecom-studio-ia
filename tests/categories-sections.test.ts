@@ -76,7 +76,9 @@ describe("Galerie « Sections » strictement contextuelle", () => {
     const services = compatibleSectionTypes(vitrine, "services");
     expect(services).toContain("services-list");
     expect(services).toContain("faq");
-    for (const t of ["featured-purchase", "purchase-offers", "featured-product", "cta-banner", "featured-collection", "comparison-table"]) expect(services, t).not.toContain(t);
+    for (const t of ["featured-purchase", "purchase-offers", "featured-product", "featured-collection", "comparison-table"]) expect(services, t).not.toContain(t);
+    // Bandeau d'appel : « Contact et prise de rendez-vous » de la bibliothèque des services (issue #145).
+    expect(services).toContain("cta-banner");
     // Les composants structurels ne sont jamais filtrés par la catégorie (ils se règlent, ne s'ajoutent pas).
     for (const t of availableSectionTypes(vitrine).filter((x) => !addable(x))) expect(sectionIncompatibility(vitrine, t, "services")).toBe("");
   });
