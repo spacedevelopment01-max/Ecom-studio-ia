@@ -7,6 +7,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
+import { execFileSync } from "node:child_process";
 
 const safeEnums = new Set(["queued","running","paused","done","failed","cancelled","blocked","held","settled","released","uncertain","reconciled","ready","review","approved","rejected","FINAL","PROVISIONAL","RETRY","REJECTED","image","video","audio","logo","document","text","archive","original","ad","social","generated","upload","import","export","stock","tokens","request","character","second"]);
 const valueOf = v => safeEnums.has(v) ? v : v == null ? null : "other";
@@ -43,9 +44,32 @@ export function failureOriginCode(message) {
   if(/tarif inconnu pour|unknown price for/i.test(s))return "MODEL_PRICE_UNCONFIGURED";
   if(/conception IA indisponible|AI concept.*unavailable/i.test(s))return "COPY_ENGINE_UNAVAILABLE";
   if(/concept IA absent/i.test(s))return "COPY_CONCEPT_MISSING";
+  if(/rédaction IA non conforme aux faits confirmés/i.test(s))return "COPY_FACTS_REJECTED";
+  if(/contenu éditorial utile manquant/i.test(s))return "EDITORIAL_CONTENT_MISSING";
+  if(/CTA commercial imposé à un contenu organique/i.test(s))return "ORGANIC_COMMERCIAL_CTA_REJECTED";
+  if(/étape de mise en page demandée indisponible/i.test(s))return "LAYOUT_STAGE_UNAVAILABLE";
+  if(/logo validé indisponible/i.test(s))return "LOGO_REFERENCE_UNAVAILABLE";
   if(/référence indisponible dans ce projet|création d'origine inaccessible dans ce projet/i.test(s))return "SOURCE_REFERENCE_UNAVAILABLE";
   if(/importez d'abord une photo du produit|upload a product photo first/i.test(s))return "PRODUCT_REFERENCE_REQUIRED";
   return s?"UNCLASSIFIED":"NONE";
+}
+const sourceFiles=["src/lib/social-v2/ai-post.ts","src/lib/social-v2/creative-contract.ts","src/lib/social-v2/publication-copy-policy.ts","src/lib/image-v2/brief.ts","src/lib/image-v2/art-direction.ts","src/lib/engine/ai-post-image.ts","src/lib/ai/access.ts","src/lib/ai/trace.ts","src/lib/ai/config.ts","src/lib/ai/llm.ts","src/lib/ai/media-providers.ts","src/lib/ai/media-routing.ts","src/lib/billing.ts"];
+/** Repère des messages constants dans le code local sans exporter leur texte ni les données de l'erreur. */
+export function sourceErrorEvidence(message, sourceRoot=process.cwd()) {
+  let ts;try{ts=createRequire(path.join(process.cwd(),"package.json"))("typescript");}catch{return {available:false,sourceCommit:null,matches:[]};}
+  let sourceCommit=null;try{const s=execFileSync("git",["rev-parse","HEAD"],{cwd:sourceRoot,encoding:"utf8",stdio:["ignore","pipe","ignore"]}).trim();if(/^[0-9a-f]{40}$/.test(s))sourceCommit=s;}catch{}
+  const error=String(message??""),matches=[];
+  for(const relative of sourceFiles){
+    const file=path.join(sourceRoot,relative);if(!fs.existsSync(file))continue;
+    const text=fs.readFileSync(file,"utf8"),ast=ts.createSourceFile(relative,text,ts.ScriptTarget.Latest,false);
+    const visit=node=>{
+      const candidates=ts.isStringLiteral(node)||ts.isNoSubstitutionTemplateLiteral(node)?[node.text]:ts.isTemplateExpression(node)?[node.head.text,...node.templateSpans.map(x=>x.literal.text)]:[];
+      const lengths=candidates.filter(s=>s.length>=30&&error.includes(s)).map(s=>s.length);
+      if(lengths.length)matches.push({file:relative,line:ast.getLineAndCharacterOfPosition(node.getStart(ast)).line+1,fileSha256:crypto.createHash("sha256").update(text).digest("hex"),matchedStaticCharacters:Math.max(...lengths)});
+      ts.forEachChild(node,visit);
+    };visit(ast);
+  }
+  return {available:true,sourceCommit,matches:matches.sort((a,b)=>b.matchedStaticCharacters-a.matchedStaticCharacters).slice(0,8)};
 }
 const finite=n=>typeof n==="number"&&Number.isFinite(n)?n:null;
 
@@ -112,9 +136,9 @@ export async function diagnostic(options={}) {
       if(url.protocol!=="http:"||!["127.0.0.1","localhost","[::1]"].includes(url.hostname)||url.pathname!=="/api/version"||url.username||url.password||url.search)throw Error("LOCAL_VERSION_URL_ONLY");
       try {const r=await fetch(url,{signal:AbortSignal.timeout(3000),redirect:"error"});const v=await r.json();served={accessible:r.ok,commit:/^[0-9a-f]{40}$/.test(v.commit)?v.commit:null,source:v.source==="compiled-build"?v.source:null};}catch{served={accessible:false,commit:null};}
     }
-    const report={schema:"studio-ai-delivery-diagnostic-3",readOnly:true,realProviderCalls:0,noGenerationOrRetry:true,anonymized:true,capturedAt:new Date().toISOString(),served,budgetSnapshot:snapshot.budgetSnapshot,
+    const report={schema:"studio-ai-delivery-diagnostic-4",readOnly:true,realProviderCalls:0,noGenerationOrRetry:true,anonymized:true,capturedAt:new Date().toISOString(),served,budgetSnapshot:snapshot.budgetSnapshot,
       storageSelection:{databaseExplicit:!!options.database||!!process.env.DATABASE_FILE||!!process.env.DATA_DIR,storageExplicit:!!options.storageDir||!!process.env.STORAGE_DIR||!!process.env.DATA_DIR,storageRootExists:fs.existsSync(storage),warning:"Confirm these selectors match the running studio; no path or environment value is exported."},projectRef:tag(project.id),configuredCredentialEntries:snapshot.configuredProviders.length,providerUsability:"not-tested",assets,
-      jobs:snapshot.jobs.map(j=>{const payload=parse(j.payload),result=parse(j.result),refs=refsOf(result),found=refs.map(id=>assets.find(a=>a.ref===tag(id))).filter(Boolean);const imageExpected=/^(image\.(v2|single|ai_post|edit)|images.generate|ads.v2)$/.test(j.type)&&!(j.type==="ads.v2"&&payload?.request?.copyOnly);return {ref:tag(j.id),type:/^(project|image|images|ads|video|brand|content|blog|shop|theme|stock|ugc|social|workflow|publish|post|cutout)[a-z0-9_.-]*$/.test(j.type)?j.type:"other",status:valueOf(j.status),progress:j.progress,createdAt:new Date(j.created_at).toISOString(),finishedAt:j.finished_at?new Date(j.finished_at).toISOString():null,ownerMatches:j.user_id===project.user_id,payloadPresent:!!payload,payloadDigest:tag(j.payload),context:{projectMatches:payload?.projectId==null?null:payload.projectId===project.id,hasRequest:!!payload?.request,hasSubject:!!payload?.request?.subject,hasInstruction:!!(payload?.instruction||payload?.request?.instruction||payload?.request?.request)},resultPresent:!!j.result,resultValidJson:result!==null,outputRefs:refs.map(tag),checkpointPresent:!!j.checkpoint&&j.checkpoint!=="{}",errorCategory:categoryOf(j.error),budgetFailureCode:budgetFailureCode(j.error),failureOriginCode:failureOriginCode(j.error),classification:"closed_message_match_not_historical_balance",taskCostCapMicro:finite(payload?.costCapMicro),requestMaxCostEur:finite(payload?.request?.maxCostEur),errorDigest:j.error?tag(j.error):null,flags:[...(j.status==="done"&&imageExpected&&!refs.length?["DONE_WITHOUT_IMAGE_REFERENCE"]:[]),...(refs.length!==found.length?["REFERENCED_ASSET_MISSING_OR_FOREIGN"]:[]),...(found.some(a=>!a.fileExists||a.decoded?.valid===false)?["MISSING_OR_INVALID_FILE"]:[]),...(found.some(a=>a.status==="rejected"||a.deleted||a.gate.fatal)?["OUTPUT_NOT_USABLE"]:[])]};}),
+      jobs:snapshot.jobs.map(j=>{const payload=parse(j.payload),result=parse(j.result),refs=refsOf(result),found=refs.map(id=>assets.find(a=>a.ref===tag(id))).filter(Boolean);const imageExpected=/^(image\.(v2|single|ai_post|edit)|images.generate|ads.v2)$/.test(j.type)&&!(j.type==="ads.v2"&&payload?.request?.copyOnly);return {ref:tag(j.id),type:/^(project|image|images|ads|video|brand|content|blog|shop|theme|stock|ugc|social|workflow|publish|post|cutout)[a-z0-9_.-]*$/.test(j.type)?j.type:"other",status:valueOf(j.status),progress:j.progress,createdAt:new Date(j.created_at).toISOString(),finishedAt:j.finished_at?new Date(j.finished_at).toISOString():null,ownerMatches:j.user_id===project.user_id,payloadPresent:!!payload,payloadDigest:tag(j.payload),context:{projectMatches:payload?.projectId==null?null:payload.projectId===project.id,hasRequest:!!payload?.request,hasSubject:!!payload?.request?.subject,hasInstruction:!!(payload?.instruction||payload?.request?.instruction||payload?.request?.request)},resultPresent:!!j.result,resultValidJson:result!==null,outputRefs:refs.map(tag),checkpointPresent:!!j.checkpoint&&j.checkpoint!=="{}",errorCategory:categoryOf(j.error),budgetFailureCode:budgetFailureCode(j.error),failureOriginCode:failureOriginCode(j.error),classification:"closed_message_match_not_historical_balance",sourceEvidence:j.error?sourceErrorEvidence(j.error):null,taskCostCapMicro:finite(payload?.costCapMicro),requestMaxCostEur:finite(payload?.request?.maxCostEur),errorDigest:j.error?tag(j.error):null,flags:[...(j.status==="done"&&imageExpected&&!refs.length?["DONE_WITHOUT_IMAGE_REFERENCE"]:[]),...(refs.length!==found.length?["REFERENCED_ASSET_MISSING_OR_FOREIGN"]:[]),...(found.some(a=>!a.fileExists||a.decoded?.valid===false)?["MISSING_OR_INVALID_FILE"]:[]),...(found.some(a=>a.status==="rejected"||a.deleted||a.gate.fatal)?["OUTPUT_NOT_USABLE"]:[])]};}),
       calls:snapshot.calls.map(c=>({ref:tag(c.id),jobRef:tag(c.job_id),provider:["anthropic","openai","google","alibaba","fal","pexels","pixabay","openverse","synthetic","mock","local"].includes(c.provider)?c.provider:"other",requestedModelRef:tag(c.requested_model),servedModelRef:tag(c.served_model),sameRequestedAndServed:c.served_model?c.requested_model===c.served_model:null,status:c.status==="ok"?"ok":valueOf(c.status),unit:valueOf(c.unit),httpAttempts:c.http_attempts,costMicro:c.cost,estimated:!!c.estimated,usageRef:tag(c.usage_event_id),errorCategory:categoryOf(c.error_kind),brainScopeRef:tag(c.brain_scope),brainVersionRef:tag(c.brain_version)})),
       reservations:snapshot.reservations.map(r=>({ref:tag(r.id),jobRef:tag(r.job_id),status:valueOf(r.status),maximumMicro:r.amount,actualMicro:r.actual,resultSaved:!!r.result,providerReceiptSaved:!!r.provider_receipt,usageRef:tag(r.usage_event_id)})),
       usages:snapshot.usages.map(u=>({ref:tag(u.id),jobRef:tag(u.job_id),costMicro:u.cost,billedMicro:u.billed,estimated:!!u.estimated})),

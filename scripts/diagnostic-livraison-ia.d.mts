@@ -27,3 +27,4 @@ export function diagnostic(options?: DiagnosticOptions): Promise<DiagnosticRepor
 export function budgetFailureCode(message: unknown): string;
 
 export function failureOriginCode(message: unknown): string;
+export function sourceErrorEvidence(message: unknown, sourceRoot?: string): {available:boolean;sourceCommit:string|null;matches:{file:string;line:number;fileSha256:string;matchedStaticCharacters:number}[]};
