@@ -9,6 +9,7 @@ import { useProject } from "./project-context";
 import { AssetThumb, EngineNotice, JobProgress, SectionTitle, useActive, type AssetView } from "./common";
 import type { Brand } from "@/lib/project-types";
 import { ACTIVE_DIRECTIONS, DIRECTIONS, DIRECTIONS_EN } from "@/lib/theme/directions";
+import { themePreviewPath } from "@/lib/theme/theme-fit";
 import { directionPalette } from "@/lib/theme/direction-palettes";
 import { useLang, useT } from "../i18n";
 import { ContentLangPicker, useContentLang } from "./content-lang";
@@ -279,7 +280,7 @@ export default function TabMarque() {
             <div className="mt-3 grid grid-cols-2 gap-2 lg:max-h-[min(72dvh,760px)] lg:overflow-y-auto lg:overscroll-contain lg:pr-1" data-testid="direction-list">
               {[...ACTIVE_DIRECTIONS, ...DIRECTIONS.filter((d) => d.id === b.direction && !ACTIVE_DIRECTIONS.includes(d))].map((d) => (
                 <button key={d.id} onClick={() => set({ direction: d.id })} title={ACTIVE_DIRECTIONS.includes(d) ? undefined : t("Thème retiré du catalogue : conservé pour ce projet seulement.", "Theme withdrawn from the catalogue: kept for this project only.")} className={cx("overflow-hidden rounded-2xl border text-left transition", b.direction === d.id ? "border-signal ring-2 ring-signal" : "border-line hover:border-ink")} aria-pressed={b.direction === d.id}>
-                  <DirectionThumb className="aspect-[4/3]" projectId={id} direction={d.id} version={`${data?.brand?.logo.assetId ?? ""}-${data?.project.updatedAt ?? ""}`} sandbox={data?.previewSandbox} fallback={`/demo/directions/${d.id}${lang === "en" ? ".en" : ""}.jpg`} />
+                  <DirectionThumb className="aspect-[4/3]" projectId={id} direction={d.id} version={`${data?.brand?.logo.assetId ?? ""}-${data?.project.updatedAt ?? ""}`} sandbox={data?.previewSandbox} fallback={themePreviewPath(d.id).startsWith("/demo/") ? `/demo/directions/${d.id}${lang === "en" ? ".en" : ""}.jpg` : themePreviewPath(d.id)} />
                   <span className="flex h-1.5" aria-hidden>{Object.values(directionPalette(d.id)).map((c, i) => <span key={i} className="flex-1" style={{ background: c }} />)}</span>
                   <span className="block px-2.5 py-1.5 text-xs font-medium">{d.name} <span className="text-muted">· {t(d.tagline, DIRECTIONS_EN[d.id].tagline)}</span></span>
                 </button>

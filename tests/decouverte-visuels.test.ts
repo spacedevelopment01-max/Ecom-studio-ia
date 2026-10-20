@@ -12,10 +12,11 @@ import { discoveryDemo, startingPhotoIsClients } from "@/lib/discovery-demos";
 const exists = (src: string) => fs.existsSync(path.join(process.cwd(), "public", src));
 const OLD = ["montre", "tribunes", "gourde", "casque", "paysagiste", "fleuriste", "drone", "savon", "cafe", "tillandsia", "barbier"];
 /** Kit privé installé (public/demo/<id>/) : vérifications supplémentaires sur les fichiers eux-mêmes. */
-const installed = DEMO_IDS.every((id) => fs.existsSync(path.join(process.cwd(), "public", "demo", id)));
+// Kit privé (public/demo/<id>/, hors dépôt) ; SILLON a ses médias dans le dépôt (public/theme-assets/sillon/, issue #148).
+const installed = DEMO_IDS.every((id) => fs.existsSync(path.join(process.cwd(), "public", id === "sillon" ? "theme-assets" : "demo", id)));
 
 describe("démonstrations : les quatre seules, anciennes retirées", () => {
-  it("le manifeste (FR et EN) ne contient que fraise, onde, orbe et rive, avec leur catégorie et leur thème de référence", () => {
+  it("le manifeste (FR et EN) ne contient que fraise, onde, orbe, rive et sillon, avec leur catégorie et leur thème de référence", () => {
     for (const file of ["manifest.json", "manifest.en.json"] as const) {
       const list = demos(file);
       expect(list.map((d) => d.id)).toEqual([...DEMO_IDS]);

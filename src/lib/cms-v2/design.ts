@@ -38,7 +38,21 @@ export async function designLayer(spec: ThemeSpec, files: ThemeFiles = compileTh
   const classes = attr(bodyTag, "class")
     .split(/\s+/)
     .filter((c) => c && !c.startsWith("template-"));
+  // Profils graphiques (« conversion » : FRAISE, ONDE, SILLON ; « éditorial » : ORBE, Atelier Rive) : attributs du <body>
+  // dans Shopify, classes du <body> dans WordPress et PrestaShop (aucun des deux ne permet d'y poser un attribut).
+  for (const name of ["conversion", "editorial"]) classes.push(`es-${name}-${attr(bodyTag, `data-${name}`) || "none"}`);
   const stylesheets = [...head.matchAll(/<link href="\/assets\/([^"]+\.css)"/g)].map((m) => m[1]);
   const scripts = [...new Set([...r.html.matchAll(/<script src="\/assets\/([^"]+\.js)"/g)].map((m) => m[1]))];
   return { css, body: { ds: attr(bodyTag, "data-ds") || "none", density: attr(bodyTag, "data-density") || "balanced", classes }, fonts: [...fonts], stylesheets, scripts };
+}
+
+/**
+ * Feuille de style exportée vers WordPress ou PrestaShop : les sélecteurs des profils graphiques visent les classes du
+ * <body> posées par `designLayer` (même spécificité que les attributs de Shopify, rendu identique).
+ */
+export function exportStylesheet(css: string): string {
+  return css
+    .replace(/body\[data-(conversion|editorial)="([a-z0-9-]+)"\]/g, "body.es-$1-$2")
+    .replace(/body\[data-(conversion|editorial)\]/g, "body[class]")
+    .replace(/\[data-(conversion|editorial)="([a-z0-9-]+)"\]/g, ".es-$1-$2");
 }

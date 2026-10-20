@@ -29,7 +29,7 @@ async function providerContent(pid: string): Promise<Contents> {
   return c;
 }
 it.each([
-  [0, 'specialized', null, ['fraise', 'onde']],
+  [0, 'specialized', null, ['fraise', 'onde', 'sillon']],
   [2, 'ecommerce', 'orbe', []],
   [1, 'services', 'atelier-rive', []],
   [3, 'services', 'atelier-rive', []],

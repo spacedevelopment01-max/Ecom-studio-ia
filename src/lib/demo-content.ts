@@ -17,7 +17,7 @@ export function demos(file: "manifest.json" | "manifest.en.json" = "manifest.jso
 }
 
 /** Les seules démonstrations du studio (priorité du 19 octobre 2026) ; toute autre entrée du manifeste est ignorée. */
-export const DEMO_IDS = ["fraise", "onde", "orbe", "rive"] as const;
+export const DEMO_IDS = ["fraise", "onde", "orbe", "rive", "sillon"] as const;
 
 const present = (src: string | undefined) => !!src && fs.existsSync(path.join(process.cwd(), "public", src.replace(/^\//, "")));
 /**
@@ -43,6 +43,7 @@ const DEMO_EN: Record<string, { product?: string; note?: string }> = {
   fraise: { product: "Strawberry gummies", note: "Fictional demo brand (specialty store, Lumora reference theme): AI visuals without people, proposed logo not validated, fictional prices, offers and reviews labelled as such." },
   onde: { product: "ONDE headphones", note: "Fictional demo brand (specialty store, Pawish reference theme): AI visuals without people, proposed logo not validated, fictional prices and reviews labelled as such; technical specifications left to complete, never claimed." },
   orbe: { product: "ORBE portable lamp", note: "Fictional demo brand (e-commerce, editorial composition): a portable lamp in three finishes with accessories; AI visuals without people, no validated logo, fictional prices and offers labelled as such." },
+  sillon: { product: "SILLON portable espresso machine", note: "Fictional demo brand (specialty store, issue #148): already generated AI visuals supplied by the studio owner, without people; price, technical specifications, warranty and delivery left to complete, never claimed." },
   rive: { product: "Interior design and decoration", note: "Fictional demo business (services, “journal” composition): design intentions as AI images, never real projects; no real address or client; test contact requests only." },
 };
 const SECTOR_EN: Record<string, string> = { Confiserie: "Confectionery", Audio: "Audio", Luminaires: "Lighting", "Architecture d'intérieur": "Interior design", "Épicerie fine": "Fine food", Accessoires: "Accessories", Plantes: "Plants", Fleuriste: "Florist", Barbier: "Barber", Boissons: "Beverages", Maison: "Home", "High-tech": "Tech", Animaux: "Pets", Mode: "Fashion", "Sport et plein air": "Sports & outdoors", Paysagiste: "Landscaper", Beauté: "Beauty", Sport: "Sports", Alimentation: "Food", Bijoux: "Jewelry", Enfants: "Kids", Horlogerie: "Watches" };

@@ -1359,4 +1359,7 @@ body:has(.es-newsletter) .es-footer__card, body:has(.es-newsletter) .es-footer__
 .dir-orbe .es-media-frame { border-radius: 0; }
 .dir-rive .es-heading { letter-spacing: -.02em; line-height: .98; }
 .dir-rive .es-button { border-radius: 0; }
+/* SILLON (issue #148) : serif fine et boutons ronds ; le reste du caractère est porté par le profil « nomade ». */
+.dir-sillon .es-heading { letter-spacing: -.015em; line-height: 1.08; }
+.dir-sillon .es-button { border-radius: 999px; }
 .dir-lancement .es-eyebrow { color: var(--c-accent); letter-spacing: .3em; }

@@ -7,7 +7,7 @@
  * avec « réduire les animations » (préférence système) montre tout le contenu sans attendre d'animation (issue #145).
  * Captures ordinateur et téléphone à chaque étape.
  *
- *   npx tsx scripts/family-studio-check.ts <dossier-captures> [fraise|orbe|rive]
+ *   npx tsx scripts/family-studio-check.ts <dossier-captures> [fraise|orbe|rive|sillon]
  */
 import fs from "node:fs";
 import os from "node:os";
@@ -18,13 +18,15 @@ import { chromium, type Page } from "playwright";
 if (process.env.DATA_DIR || process.env.DATABASE_FILE) throw new Error("Base existante refusée");
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "ecs-familles-studio-")); process.env.DATA_DIR = temp; process.env.STOCK_OFFLINE = "1";
 const out = path.resolve(process.argv[2] ?? "reports/familles-studio"); fs.mkdirSync(out, { recursive: true });
-const demoId = (process.argv[3] ?? "fraise") as "fraise" | "orbe" | "rive";
+const demoId = (process.argv[3] ?? "fraise") as "fraise" | "orbe" | "rive" | "sillon";
 /** Scénario par famille : fonction ajoutée, disposition d'aperçu, disposition choisie ensuite, fonction d'une autre famille. */
 const PLAN = {
   fraise: { family: "specialty", entry: "Fabrication et savoir-faire", type: "fs-making", preview: "sticky", then: "timeline", foreign: "Étude de cas", header: "two-rows", footer: "centered" },
   orbe: { family: "catalog", entry: "Ambiance et lookbook", type: "fs-lookbook", preview: "side", then: "markers", foreign: "Composition et matériaux", header: "mega-columns", footer: "columns" },
   rive: { family: "services", entry: "Étude de cas", type: "fs-case", preview: "columns", then: "stacked", foreign: "Ambiance et lookbook", header: "booking", footer: "brand-left" },
-}[demoId];
+  // SILLON (issue #148) : en-tête « Bouton d'achat visible » et pied « Grand nom de marque » à l'origine (pas les n° 1).
+  sillon: { family: "specialty", entry: "Fabrication et savoir-faire", type: "fs-making", preview: "grid", then: "steps", foreign: "Étude de cas", header: "floating", footer: "card", currentHeader: "buy-button", currentFooter: "wordmark" },
+}[demoId] as { family: string; entry: string; type: string; preview: string; then: string; foreign: string; header: string; footer: string; currentHeader?: string; currentFooter?: string };
 const PORT = 3600 + Math.floor(Math.random() * 300), origin = `http://127.0.0.1:${PORT}`;
 const { demoProject } = await import("../tests/demo-fixtures");
 const { createUser } = await import("../src/lib/auth"); const { saveThemeVersion } = await import("../src/lib/projects"); const { runWithLang } = await import("../src/lib/i18n-server");
@@ -118,7 +120,9 @@ try {
     await page.getByRole("button", { name: new RegExp(`Actions pour « ${s.name} »`) }).first().click(); await page.getByRole("menuitem", { name: /Modifier les réglages/ }).click();
     const p = page.locator(`[data-section-settings='${part}']`); await p.waitFor({ timeout: 180000 }); await page.waitForTimeout(500);
     assert.equal(await p.locator("[data-dispositions] [data-disposition]").count(), 5, `${part} : cinq dispositions`);
-    assert.equal(await p.locator("[data-dispositions] [data-disposition]").first().getAttribute("aria-pressed"), "true", `${part} : la disposition actuelle est la n° 1`);
+    const current = part === "header" ? PLAN.currentHeader : PLAN.currentFooter;
+    if (current) assert.equal(await p.locator(`[data-dispositions] [data-disposition='${current}']`).getAttribute("aria-pressed"), "true", `${part} : la disposition actuelle est « ${current} »`);
+    else assert.equal(await p.locator("[data-dispositions] [data-disposition]").first().getAttribute("aria-pressed"), "true", `${part} : la disposition actuelle est la n° 1`);
     await shot(page, `08-${part}-dispositions`);
     await p.locator(`[data-disposition='${preset}']`).click(); await page.waitForTimeout(3000);
     await p.locator(`[data-disposition='${preset}'][aria-pressed='true']`).waitFor({ timeout: 60000 });

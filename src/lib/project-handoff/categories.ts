@@ -15,6 +15,7 @@ export const REFERENCE_THEMES = [
   { referenceId: "onde", name: "ONDE", categories: ["specialized"] },
   { referenceId: "orbe", name: "ORBE", categories: ["ecommerce"] },
   { referenceId: "atelier-rive", name: "Atelier Rive", categories: ["services"] },
+  { referenceId: "sillon", name: "SILLON", categories: ["specialized"] },
 ] as const;
 export type ReferenceThemeId = (typeof REFERENCE_THEMES)[number]["referenceId"];
 export const REFERENCE_THEME_IDS = REFERENCE_THEMES.map(t => t.referenceId) as [ReferenceThemeId, ...ReferenceThemeId[]];

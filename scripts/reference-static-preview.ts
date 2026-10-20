@@ -1,6 +1,6 @@
 /** Aperçu statique consultable des quatre démonstrations composées dans leur thème de référence (issue #137, mission E) :
  * FRAISE (gummies, boutique spécialisée), ONDE (casque, boutique spécialisée), ORBE (lampe, e-commerce), Atelier Rive
- * (décoration d'intérieur, prestations de services). Toutes les pages sont rendues par les vraies routes d'aperçu du
+ * (décoration d'intérieur, prestations de services) et SILLON (machine à espresso nomade, boutique spécialisée, issue #148). Toutes les pages sont rendues par les vraies routes d'aperçu du
  * studio et exportées en fichiers HTML relatifs (images, logos, polices, scripts) ; pour les boutiques, le panier de
  * démonstration est pré-calculé : chaque état atteignable depuis l'interface est rendu par le serveur réel et rejoué
  * côté client par un petit script. Aucun paiement, aucun envoi de formulaire, aucune donnée réelle.
@@ -24,7 +24,7 @@ const out = path.resolve(args.find((a) => !a.startsWith("--")) ?? "reports/refer
 const { demoProject } = await import("../tests/demo-fixtures");
 // Stories FRAISE / ONDE : un clip de test (mire générée, jamais une vraie vidéo produit) prouve le lecteur, comme au lot 2C.
 const testVideo = path.join(out, "clip-test.webm"); try { execFileSync("ffmpeg", ["-y", "-f", "lavfi", "-i", "testsrc=size=540x960:rate=24", "-t", "8", "-c:v", "libvpx-vp9", "-b:v", "400k", "-an", testVideo], { stdio: "ignore" }); } catch { console.warn("ffmpeg absent : stories sans clip de test"); }
-type DemoId = "fraise" | "onde" | "orbe" | "rive";
+type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon";
 const { createUser } = await import("../src/lib/auth");
 const { saveThemeVersion } = await import("../src/lib/projects"); const { previewSegment } = await import("../src/lib/theme/preview-access");
 const { GET, POST } = await import("../src/app/preview/[id]/v/[vid]/[[...path]]/route");
@@ -39,7 +39,7 @@ async function post(pathname: string, body: string, contentType: string) { const
 
 const SHIM = fs.readFileSync(path.join(path.dirname(new URL(import.meta.url).pathname), "lot2c-static-demo.js"), "utf8");
 const runs: { id: DemoId; direction: DemoId; name: string }[] = [
-  { id: "fraise", direction: "fraise", name: "fraise" }, { id: "onde", direction: "onde", name: "onde" }, { id: "orbe", direction: "orbe", name: "orbe" }, { id: "rive", direction: "rive", name: "rive" },
+  { id: "fraise", direction: "fraise", name: "fraise" }, { id: "onde", direction: "onde", name: "onde" }, { id: "orbe", direction: "orbe", name: "orbe" }, { id: "rive", direction: "rive", name: "rive" }, { id: "sillon", direction: "sillon", name: "sillon" },
   ...(cross ? [{ id: "fraise" as DemoId, direction: "onde" as DemoId, name: "fraise-en-onde" }, { id: "onde" as DemoId, direction: "fraise" as DemoId, name: "onde-en-fraise" }] : []),
 ];
 const summary: Record<string, unknown>[] = [];

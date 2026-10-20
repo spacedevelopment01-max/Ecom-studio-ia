@@ -18,9 +18,10 @@ import { loadProject, saveBrand, saveProduct, saveServices, saveStrategy, saveSe
 import { saveAsset } from "../src/lib/library";
 import { seedHoldout } from "./lot1-holdout-fixtures";
 import { conversionProject } from "./lot2c-fixtures";
+import { sillonProject, SILLON_DIR, SILLON_MEDIA } from "./sillon-fixtures";
 import type { DirectionId } from "../src/lib/theme/directions";
 
-export type DemoId = "fraise" | "onde" | "orbe" | "rive";
+export type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon";
 export const DEMO_PROVENANCE = "Issue #137 (19 octobre 2026) — démonstration du studio, identité du manifeste, visuels IA du kit privé sans personne, aucun paiement";
 
 type ManifestDemo = { id: DemoId; brand: string; product: string; sector: string; category: string; direction: DirectionId; palette: string[]; photo: string; logo: string; images: { src: string; label: string }[]; business?: "products" | "services"; storeType?: "mono" | "multi" | "niche" };
@@ -49,6 +50,11 @@ const IDENTITY: Record<DemoId, { tagline: string; summary: string; story: string
       // Non importés : 06-duo (chambre vue de loin : les lampes y sont à peine visibles — le défaut signalé), 11-boite et
       // 12-pochette (emballage : rien à affirmer sur la livraison).
     },
+  },
+  sillon: {
+    tagline: "L'espresso qui vous suit.", summary: "Machine à espresso nomade : corps cylindrique brun mat, bague et bouton de teinte cuivrée, l'espresso coule directement dans le verre placé dessous.", story: "SILLON part d'une idée simple : emporter le geste du café comme on emporte un livre.", positioning: "Une machine à espresso nomade pour le bureau, le voyage et les tables du dehors.", price: null,
+    facts: [{ label: "Finition", value: "corps brun mat, bague et bouton de teinte cuivrée" }, { label: "Service", value: "l'espresso coule directement dans le verre placé dessous" }],
+    media: Object.fromEntries(SILLON_MEDIA.filter((m) => m.role !== "logo").map((m) => [m.file, { role: m.role }])),
   },
   rive: {
     tagline: "Des espaces qui vous ressemblent.", summary: "Aménagement et décoration intérieure : intentions, usages, lumière et matières.", story: "Une étude d'intention à partir de vos usages, de la lumière et des matières.", positioning: "Des intérieurs pensés pièce par pièce à partir de vos usages, de la lumière et des matières, pour la maison comme pour un petit espace professionnel.", price: null,
@@ -92,6 +98,12 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
   // avec le kit du dossier public/demo/<id>/. Le parcours « thème du catalogue » (ci-dessous) masque toute section sans
   // contenu : composées ainsi, ces deux démonstrations se réduisaient à quelques blocs (retour de Thomas, 19 octobre, 15 h 07).
   // Il ne sert plus, pour elles, qu'à la preuve d'adaptation d'une identité dans l'autre thème (`direction`).
+  // SILLON (issue #148) : projet client composé par le moteur dans le thème « sillon », puis rédigé pour la démonstration
+  // (mêmes sections, même ordre) avec les médias fournis par Thomas (public/theme-assets/sillon/, suivis dans le dépôt).
+  if (id === "sillon" && !options.direction) {
+    const c = await sillonProject(userId);
+    return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
+  }
   if ((id === "fraise" || id === "onde") && !options.direction) {
     const c = await conversionProject(userId, id, path.join(process.cwd(), "public", "demo"), { testVideo: options.testVideo });
     run("UPDATE projects SET store_type = ?, business_type = ?, updated_at = ? WHERE id = ?", d.storeType ?? "mono", "products", now(), c.pid);
@@ -111,7 +123,7 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
   run("UPDATE projects SET store_type = ?, business_type = ?, updated_at = ? WHERE id = ?", d.storeType ?? "mono", services ? "services" : "products", now(), pid);
   saveSettings(pid, { ...loadProject(pid).settings, storeKind: d.category as "services" | "catalog" | "specialty" });
   // Visuels : ceux du manifeste d'abord (rôle d'après l'étiquette), puis les autres images du dossier (scènes).
-  const dir = path.join(process.cwd(), "public", "demo", id);
+  const dir = id === "sillon" ? SILLON_DIR : path.join(process.cwd(), "public", "demo", id);
   const missing: string[] = [];
   const imported = new Set<string>();
   const put = async (file: string, role: string, extra: Record<string, unknown> = {}) => {

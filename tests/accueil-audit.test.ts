@@ -90,7 +90,7 @@ describe("Accueil : les quatre démonstrations seulement, de vrais visuels ou ri
   it("chaque visuel annoncé existe ; une création absente laisse la case vide, jamais un gabarit ni une photo d'une autre démo", () => {
     for (const d of all) {
       const shown = [d.photo, d.logo, d.shopDesktop, d.shopMobile, d.video, d.videoPoster, d.board ?? "", ...d.images.map((x) => x.src), ...(d.posts ?? [])].filter(Boolean);
-      for (const s of shown) { expect(exists(s), `${d.id} : ${s}`).toBe(true); expect(s, `${d.id} : ${s}`).toContain(`/demo/${d.id}/`); }
+      for (const s of shown) { expect(exists(s), `${d.id} : ${s}`).toBe(true); expect(s, `${d.id} : ${s}`).toMatch(new RegExp(`/(demo|theme-assets)/${d.id}/`)); } // SILLON : médias suivis dans le dépôt (issue #148)
       const m = storyMedia(d);
       expect(m.tiles.map((x) => x.src)).not.toContain(d.photo);
       expect(new Set(m.tiles.map((x) => x.src)).size).toBe(m.tiles.length);

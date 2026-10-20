@@ -3,6 +3,16 @@
     <h1 class="es-heading es-h1" data-reveal="lines">{{ page.title }}</h1>
     <div class="es-rte es-page__content" data-reveal="up">{{ page.content }}</div>
   </div>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": {{ shop.name | json }}, "item": {{ request.origin | append: routes.root_url | json }} },
+        { "@type": "ListItem", "position": 2, "name": {{ page.title | json }}, "item": {{ request.origin | append: page.url | json }} }
+      ]
+    }
+  </script>
 </section>
 
 {% schema %}

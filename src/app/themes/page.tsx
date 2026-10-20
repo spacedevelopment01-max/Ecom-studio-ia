@@ -14,12 +14,12 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await serverLang();
-  const title = pick(lang, "Les quatre thèmes de référence · E-COM STUDIO IA", "The four reference themes · E-COM STUDIO IA");
+  const title = pick(lang, "Les thèmes de référence · E-COM STUDIO IA", "The reference themes · E-COM STUDIO IA");
   const description = pick(lang, "Les modèles de boutique du studio, montrés avec les démonstrations FRAISE, ONDE, ORBE et Atelier Rive. L'IA part de l'un d'eux ou en crée un nouveau à vos couleurs.", "The studio's store designs, shown with the FRAISE, ONDE, ORBE and Atelier Rive demos. The AI starts from one of them or creates a new one in your colors.");
   return { title: { absolute: title }, description, alternates: { canonical: "/themes" } };
 }
 
-/** Galerie publique des quatre thèmes de référence (page du site, pas du studio) : le retour ramène à l'accueil. */
+/** Galerie publique des thèmes de référence (page du site, pas du studio) : le retour ramène à l'accueil. */
 export default async function ThemesGallery() {
   const lang = await serverLang();
   const T = (fr: string, en: string) => pick(lang, fr, en);

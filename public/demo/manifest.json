@@ -114,6 +114,35 @@
       "posts": [],
       "board": "",
       "source": { "supplier": "Images IA créées pour cette démonstration", "url": "", "note": "Entreprise fictive de démonstration (prestations de services, composition « journal ») : projets d'intention en images IA, jamais des réalisations réelles ; aucune adresse ni client réel ; demandes de contact de test seulement." }
+    },
+    {
+      "id": "sillon",
+      "brand": "SILLON",
+      "product": "Machine à espresso nomade SILLON",
+      "sector": "Café",
+      "category": "specialty",
+      "direction": "sillon",
+      "palette": ["#3B1C0C", "#E7D8C6", "#B8743F", "#F4EDE3", "#24140C"],
+      "photo": "/theme-assets/sillon/sillon-04.webp",
+      "logo": "/theme-assets/sillon/sillon-09.webp",
+      "shopDesktop": "/theme-assets/sillon/boutique-bureau.jpg",
+      "shopMobile": "/theme-assets/sillon/boutique-mobile.jpg",
+      "productPage": "/theme-assets/sillon/fiche-produit.jpg",
+      "business": "products",
+      "storeType": "mono",
+      "products": 1,
+      "images": [
+        { "src": "/theme-assets/sillon/sillon-02.webp", "label": "Packshot" },
+        { "src": "/theme-assets/sillon/sillon-19.webp", "label": "Détail" },
+        { "src": "/theme-assets/sillon/sillon-05.webp", "label": "Scène" },
+        { "src": "/theme-assets/sillon/sillon-14.webp", "label": "Scène" },
+        { "src": "/theme-assets/sillon/sillon-10.webp", "label": "Bannière" }
+      ],
+      "video": "",
+      "videoPoster": "",
+      "posts": [],
+      "board": "",
+      "source": { "supplier": "Médias fournis par Thomas (issue #148)", "url": "", "note": "Marque fictive de démonstration (boutique spécialisée, thème Sillon) : visuels IA déjà générés, fournis par Thomas, sans personne ; prix, caractéristiques techniques, garantie et livraison à compléter, jamais annoncés." }
     }
   ]
 }

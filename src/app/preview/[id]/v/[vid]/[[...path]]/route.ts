@@ -114,6 +114,8 @@ function withCors(req: Request, res: Response) {
   previewCors(req, res.headers);
   if (!res.headers.has("Content-Security-Policy")) res.headers.set("Content-Security-Policy", previewCsp());
   res.headers.set("X-Content-Type-Options", "nosniff");
+  // Aperçu privé : jamais indexé, même si un lien circule (robots.txt l'interdit déjà à l'exploration).
+  res.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
   return res;
 }
 

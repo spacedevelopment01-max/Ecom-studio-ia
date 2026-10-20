@@ -1,7 +1,7 @@
 "use client";
 import { Check, Lock, Moon } from "lucide-react";
 import type { ThemeRecommendationContract } from "@/lib/theme/theme-recommendation";
-import { REFERENCE_THEMES } from "@/lib/theme/theme-fit";
+import { REFERENCE_THEMES, themePreviewPath } from "@/lib/theme/theme-fit";
 import { STORE_KINDS, storeKindLabel, type StoreKind } from "@/lib/theme/store-kind";
 import { useState } from "react";
 import { api, Badge, Button, cx, Modal, useApi, useToast } from "../ui";
@@ -13,7 +13,7 @@ import { PLANS, type PlanId } from "@/lib/plans";
 const RANK: Record<PlanId, number> = { creer: 1, vendre: 2, dominer: 3 };
 
 /**
- * Grille des quatre thèmes de référence (catalogue actif depuis le 19 octobre) : aperçu réel, ambiance, combinaison
+ * Grille des thèmes de référence (catalogue actif depuis le 19 octobre) : aperçu réel, ambiance, combinaison
  * d'en-tête / pied de page, catégorie servie. Sans forfait payant, les thèmes sont verrouillés (le serveur refuse aussi
  * leur sélection) ; le thème actuel reste toujours utilisable, même s'il vient de l'ancien catalogue (il est alors
  * signalé « retiré » et n'est proposé à aucun autre projet).
@@ -39,7 +39,7 @@ export function ThemeGrid({ directions, current, onPick, busy, projectId, sandbo
           <li key={d.id} className={cx("group flex flex-col overflow-hidden rounded-3xl border bg-card transition", on ? "border-signal ring-2 ring-signal/30" : "border-line hover:-translate-y-0.5 hover:shadow-soft")}>
             <div className="relative aspect-[16/11] overflow-hidden bg-paper-2">
               {projectId && d.preview.startsWith("/api/") ? (
-                <DirectionThumb className="size-full" projectId={projectId} direction={d.id} sandbox={sandbox} fallback={`/demo/directions/${d.id}.jpg`} />
+                <DirectionThumb className="size-full" projectId={projectId} direction={d.id} sandbox={sandbox} fallback={themePreviewPath(d.id)} />
               ) : (
                 <img src={preview} alt={t(`Aperçu de la direction ${d.name}`, `Preview of the ${d.name} direction`)} loading="lazy" className="size-full object-cover object-top transition duration-700 group-hover:scale-[1.03]" />
               )}
@@ -101,12 +101,12 @@ export function ThemeGallery({ open, onClose, projectId, directions, current, ca
       <p className="mb-5 text-sm text-muted">
         {services
           ? t(
-              "Quatre thèmes de référence, inclus dans tout forfait payant, chacun conçu pour une catégorie de projet (prestations de services, e-commerce, boutique spécialisée), avec sa composition, ses typographies, son en-tête, son pied de page et ses animations. Appliquer un thème crée une nouvelle version du site : textes, prestations et images sont conservés, et l'ancienne version reste restaurable.",
-              "Four reference themes, included in every paid plan, each designed for one project category (services, e-commerce, specialty store), with its own layout, typography, header, footer and animations. Applying a theme creates a new version of the website: copy, services and images are kept, and the previous version can still be restored.",
+              "Cinq thèmes de référence, inclus dans tout forfait payant, chacun conçu pour une catégorie de projet (prestations de services, e-commerce, boutique spécialisée), avec sa composition, ses typographies, son en-tête, son pied de page et ses animations. Appliquer un thème crée une nouvelle version du site : textes, prestations et images sont conservés, et l'ancienne version reste restaurable.",
+              "Five reference themes, included in every paid plan, each designed for one project category (services, e-commerce, specialty store), with its own layout, typography, header, footer and animations. Applying a theme creates a new version of the website: copy, services and images are kept, and the previous version can still be restored.",
             )
           : t(
-              "Quatre thèmes de référence, inclus dans tout forfait payant, chacun conçu pour une catégorie de projet (prestations de services, e-commerce, boutique spécialisée), avec sa composition, ses typographies, son en-tête, son pied de page et ses animations. Appliquer un thème crée une nouvelle version de la boutique : textes, images et produit sont conservés, et l'ancienne version reste restaurable. Tout reste modifiable ensuite dans l'éditeur Shopify.",
-              "Four reference themes, included in every paid plan, each designed for one project category (services, e-commerce, specialty store), with its own layout, typography, header, footer and animations. Applying a theme creates a new version of the store: copy, images and product are kept, and the previous version can still be restored. Everything stays editable afterwards in the Shopify editor.",
+              "Cinq thèmes de référence, inclus dans tout forfait payant, chacun conçu pour une catégorie de projet (prestations de services, e-commerce, boutique spécialisée), avec sa composition, ses typographies, son en-tête, son pied de page et ses animations. Appliquer un thème crée une nouvelle version de la boutique : textes, images et produit sont conservés, et l'ancienne version reste restaurable. Tout reste modifiable ensuite dans l'éditeur Shopify.",
+              "Five reference themes, included in every paid plan, each designed for one project category (services, e-commerce, specialty store), with its own layout, typography, header, footer and animations. Applying a theme creates a new version of the store: copy, images and product are kept, and the previous version can still be restored. Everything stays editable afterwards in the Shopify editor.",
             )}
         {!canApply && t(" Les thèmes s'appliquent une fois la boutique créée (après l'analyse du produit).", " Themes can be applied once the store has been created (after the product analysis).")}
       </p>

@@ -561,7 +561,7 @@ export function createEngine(files: ThemeFiles, base: string, lang: Lang = "fr")
     const widths = String(o.widths ?? "").split(",").map((w) => Number(w.trim())).filter(Boolean);
     const srcset = widths.length ? ` srcset="${widths.map((w) => `${withWidth(clean, w)} ${w}w`).join(", ")}"` : "";
     const attr = (k: string, v: unknown) => (v === undefined || v === null || v === "" ? "" : ` ${k}="${String(v).replace(/"/g, "&quot;")}"`);
-    return `<img src="${url}"${srcset}${attr("sizes", o.sizes)}${attr("alt", o.alt ?? "")}${attr("class", o.class)}${attr("loading", o.loading ?? "lazy")}${attr("fetchpriority", o.fetchpriority)} decoding="async">`;
+    return `<img src="${url}"${srcset}${attr("sizes", o.sizes)} alt="${String(o.alt ?? "").replace(/"/g, "&quot;")}"${attr("class", o.class)}${attr("loading", o.loading ?? "lazy")}${attr("fetchpriority", o.fetchpriority)} decoding="async">`;
   });
   f("placeholder_svg_tag", (name: string, cls = "") => placeholderSvg(name, cls));
   f("money", (c: unknown) => money(c, lang));
@@ -851,6 +851,8 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
   const layoutName = typeof template.layout === "string" ? template.layout : "theme";
   const layoutSrc = files.get(`layout/${layoutName}.liquid`) ?? files.get("layout/theme.liquid")!;
   let html = await ctxRender(layoutSrc, `layout/${layoutName}.liquid`, { content_for_layout: content });
+  // Aperçu du studio : page privée, jamais indexée (le thème exporté vers la plateforme n'a pas cette balise).
+  html = html.replace("</head>", '<meta name="robots" content="noindex, nofollow"></head>');
   // Remplacement par fonction : le code des sections peut contenir « $$ » ou « $' », motifs spéciaux de String.replace.
   if (collected.css.length) html = html.replace("</head>", () => `<style data-section-styles>${collected.css.join("\n")}</style></head>`);
   if (collected.js.length) html = html.replace("</body>", () => `<script>${collected.js.join("\n")}</script></body>`);

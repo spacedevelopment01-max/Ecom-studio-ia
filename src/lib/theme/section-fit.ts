@@ -26,7 +26,7 @@ export type SectionFit = {
 };
 
 const SHOP: StoreKind[] = ["catalog", "specialty"];
-const CONVERSION_THEMES = ["fraise", "onde"];
+const CONVERSION_THEMES = ["fraise", "onde", "sillon"];
 const EDITORIAL_THEMES = ["orbe", "rive"];
 // Vitrine et Jardin sont retirés du catalogue (19 octobre) mais rendent encore ces sections : un projet existant qui les
 // utilise les garde compatibles ; aucun thème actif autre qu'ORBE / Rive ne se les voit proposer.
@@ -167,4 +167,4 @@ export function incompatibleSections(spec: { direction: string; settings: Record
 }
 
 /** Les thèmes de référence déclarent leur profil : utile pour savoir qu'un thème rend une famille de sections. */
-export const themeProfiles = (theme: string): ("conversion" | "editorial")[] => (isReferenceThemeId(theme) ? (theme === "fraise" || theme === "onde" ? ["conversion"] : ["editorial"]) : []);
+export const themeProfiles = (theme: string): ("conversion" | "editorial")[] => (isReferenceThemeId(theme) ? (CONVERSION_THEMES.includes(theme) ? ["conversion"] : ["editorial"]) : []);
