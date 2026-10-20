@@ -7,13 +7,29 @@
  *  - conversion de la syntaxe propre à Shopify vers celle du moteur PHP (schéma retiré, {% liquid %} déplié,
  *    {% render %} → {% include %}).
  */
-import type { SectionInstance } from "../theme/spec";
+import type { SectionInstance, ThemeSpec } from "../theme/spec";
 import type { ThemeFiles } from "../theme/compile";
 
 export type SchemaSetting = { type: string; id?: string; label?: string; default?: unknown; options?: { value: string; label: string }[]; info?: string; min?: number; max?: number; step?: number; unit?: string };
 export type SectionSchema = { name: string; settings: SchemaSetting[]; blocks: { type: string; name: string; settings?: SchemaSetting[]; limit?: number }[]; max_blocks?: number; presets?: unknown[] };
 
 const SCHEMA_RE = /\{%-?\s*schema\s*-?%\}([\s\S]*?)\{%-?\s*endschema\s*-?%\}/;
+const JAVASCRIPT_RE = /\{%-?\s*javascript\s*-?%\}([\s\S]*?)\{%-?\s*endjavascript\s*-?%\}/g;
+
+/** Types de section utilisés par le projet (tous les gabarits et groupes, sections masquées comprises). */
+export function specSectionTypes(spec: ThemeSpec): string[] {
+  const types = new Set<string>();
+  for (const c of [...Object.values(spec.templates), ...Object.values(spec.groups)]) for (const s of Object.values(c?.sections ?? {})) types.add(s.type);
+  return [...types].sort();
+}
+
+/** Scripts {% javascript %} des sections utilisées : Shopify les réunit dans un script du thème, les exports aussi
+ *  (onglets, tableau comparatif, compte à rebours… restent interactifs hors de Shopify). */
+export function sectionJavascript(files: ThemeFiles, types: Iterable<string>): string {
+  const parts: string[] = [];
+  for (const t of types) for (const m of (files.get(`sections/${t}.liquid`) ?? "").matchAll(JAVASCRIPT_RE)) if (m[1].trim()) parts.push(`/* section ${t} */\n${m[1].trim()}`);
+  return parts.join("\n;\n");
+}
 
 export function sectionSchemaOf(liquid: string): SectionSchema | null {
   const m = liquid.match(SCHEMA_RE);
@@ -49,7 +65,8 @@ export function normalizedSection(id: string, s: SectionInstance, schema: Sectio
 
 /** Gabarit Shopify → gabarit accepté par le moteur PHP (même rendu ; vérifié par les tests de parité). */
 export function phpLiquidSource(liquid: string): string {
-  let src = liquid.replace(new RegExp(SCHEMA_RE.source, "g"), "");
+  // Schéma et scripts de section retirés (le moteur PHP ne connaît pas {% javascript %} ; le script est dans le thème).
+  let src = liquid.replace(new RegExp(SCHEMA_RE.source, "g"), "").replace(JAVASCRIPT_RE, "");
   // {% liquid … %} : une instruction par ligne → une balise par instruction.
   src = src.replace(/\{%(-?)\s*liquid\b([\s\S]*?)(-?)%\}/g, (_m, _a, body: string) => {
     let inComment = 0;
