@@ -97,8 +97,9 @@ it.each(['fraise', 'onde', 'sillon', 'noctil', 'traverse', 'orbe', 'rive'] as co
     expect(html).not.toContain('theme-assets/traverse');
     expect((html.match(/<h1(?:\s|>)/g) ?? []).length).toBe(1);
     for (const page of s.store.pages) {
-        if (page.status === 'draft')
-            continue;
+        const role = reference.pages.find((p: any) => p.suffix === page.template_suffix)?.role;
+        if (role === 'privacy') expect(page.title).toBe('Confidentialité');
+        if (role === 'terms') expect(page.title).toBe('Conditions générales');
         const rendered = (await fr(() => renderPage({ spec: s, base: '', files: compileTheme(s), cart: [] }, '/pages/' + page.handle, new URLSearchParams()))).html;
         expect((rendered.match(/<h1(?:\s|>)/g) ?? []).length, page.handle).toBe(1);
     }

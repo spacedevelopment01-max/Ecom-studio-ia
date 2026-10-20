@@ -10,6 +10,10 @@ const { clientFixture } = await import('../../tests/mission154-fixtures'), { all
 const file = path.join(root, 'accounts-private.json'), manifest = JSON.parse(fs.readFileSync(file, 'utf8'));
 const action = process.argv[2];
 if (action === 'prepare') {
+    if (process.argv.includes('--fresh') && manifest.flow) {
+        manifest.flowHistory = [...(manifest.flowHistory ?? []), manifest.flow];
+        delete manifest.flow;
+    }
     if (!manifest.flow) {
         const f = await clientFixture({ brand: 'Atelier Safran', catalog: true });
         const token = crypto.randomBytes(32).toString('hex');

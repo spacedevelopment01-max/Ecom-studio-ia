@@ -12,7 +12,11 @@ fs.mkdirSync(out, { recursive: true });
 const manifest = JSON.parse(fs.readFileSync(path.join(root, 'accounts-private.json'), 'utf8'));
 const version = await (await fetch(base + '/api/version')).json();
 assert.match(version.commit, /^[a-f0-9]{40}$/);
-const results: any[] = [], errors: any[] = [], external = new Set<string>();
+const acquired = process.env.PROOF_REUSE_CAPTURES === '1'
+    ? JSON.parse(fs.readFileSync(path.join(out, 'mesures.json'), 'utf8')) : null;
+if (acquired)
+    assert.equal(acquired.version.commit, version.commit, 'Captured pages must come from the same compiled version');
+const results: any[] = acquired ? [...new Map<string, any>(acquired.results.filter((r: any) => !r.slug.includes('native-')).map((r: any) => [r.slug, r])).values()] : [], errors: any[] = [], external = new Set<string>(acquired?.external ?? []);
 // Use the already installed system encoder, not a download or supplier.
 process.env.PLAYWRIGHT_BROWSERS_PATH = path.join(root, 'pwcache');
 fs.mkdirSync(path.join(process.env.PLAYWRIGHT_BROWSERS_PATH, 'ffmpeg-1011'), { recursive: true });
@@ -54,7 +58,7 @@ async function context(a: any, width: number, video = false) {
     return c;
 }
 try {
-    for (const a of manifest.accounts) {
+    for (const a of acquired ? [] : manifest.accounts) {
         for (const width of [1440, 390]) {
             const c = await context(a, width), p = await c.newPage();
             for (const [name, route] of [['accueil', '/'], ...(a.services ? [] : [['produit', '/products/' + a.product]])]) {
@@ -68,6 +72,7 @@ try {
                         results.push({ slug: `${a.theme}-page-${i}`, page: page.title, ...info });
                         assert(info.content <= info.width + 2);
                         assert(info.images);
+                        assert.equal(info.h1, 1, `${a.theme} / ${page.handle}: one page title required, including draft legal pages`);
                         if (a.services && /contact|prestation/i.test(page.title))
                             await capture(p, `${a.theme}-client-page-${i}-${width}`);
                     }
@@ -95,8 +100,9 @@ try {
     await capture(p, 'studio-adaptation-partielle-1440', false);
     const state = await (await c.request.get(`${base}/api/projects/${a.pid}/theme`)).json();
     const first = state.current.structure.find((x: any) => x.template === 'index').sections[0];
-    const edit = await c.request.post(`${base}/api/projects/${a.pid}/theme/ops`, { data: { ops: [{ op: 'set_setting', template: 'index', section: first.id, key: 'heading', value: 'Mon titre client conservé après reconnexion' }], summary: 'Retouche fictive de réception #154' } });
-    assert.equal(edit.status(), 200);
+    const editedTitle = `Mon titre client conservé après reconnexion (${state.current.number + 1})`;
+    const edit = await c.request.post(`${base}/api/projects/${a.pid}/theme/ops`, { data: { ops: [{ op: 'set_setting', template: 'index', section: first.id, key: 'heading', value: editedTitle }], summary: 'Retouche fictive de réception #154' } });
+    assert.equal(edit.status(), 200, await edit.text());
     await p.reload({ waitUntil: 'networkidle' });
     await p.waitForTimeout(800);
     const video = p.video();
@@ -106,10 +112,11 @@ try {
     c = await context(a, 390);
     p = await c.newPage();
     await p.goto(`${base}/studio/${a.pid}/boutique`, { waitUntil: 'networkidle' });
+    await p.getByRole('tab', { name: 'Structure', exact: true }).click();
     await p.locator('[data-theme-adaptation="partial"]').waitFor();
     const returned = await (await c.request.get(`${base}/api/projects/${a.pid}/theme`)).json();
     assert(returned.current.number > state.current.number);
-    assert(returned.current.structure.find((x: any) => x.template === 'index').sections.some((x: any) => x.heading === 'Mon titre client conservé après reconnexion'));
+    assert(returned.current.structure.find((x: any) => x.template === 'index').sections.some((x: any) => x.heading === editedTitle));
     await capture(p, 'studio-nouvelle-session-390', false);
     results.push({ slug: 'native-editor-new-session', editStatus: edit.status(), previousVersion: state.current.number, currentVersion: returned.current.number, partialVisible: true });
     await c.close();
@@ -128,20 +135,40 @@ try {
             const zoom = p.locator('[data-zoom-open]').first();
             if (await zoom.count()) {
                 await zoom.click();
+                await p.locator('[data-zoom][open]').waitFor();
                 await p.waitForTimeout(500);
                 await p.keyboard.press('Escape');
             }
             const add = p.locator('[data-add-button]').first();
-            if (await add.count()) {
-                await add.click();
-                await p.waitForTimeout(1000);
-            }
+            assert(await add.count(), theme + ': actual purchase control required');
+            await add.click();
+            const drawer = p.locator('[data-cart-drawer].is-open');
+            await drawer.waitFor();
+            assert((await drawer.innerText()).includes('Théière Anse'));
+            assert(Number(await p.locator('[data-cart-count]').first().innerText()) > 0);
+            await p.waitForTimeout(1000);
+            await p.keyboard.press('Escape');
+            await p.locator('[data-cart-drawer]:not(.is-open)').waitFor({ state: 'attached' });
+            await p.waitForTimeout(500);
+            results.push({ slug: theme + '-native-cart', zoomAvailable: await zoom.count() > 0, cartContainsOwnProduct: true, paymentAttempted: false });
         }
         const faq = p.locator('main details summary').first();
         if (await faq.count()) {
+            const wasOpen = await faq.evaluate(e => e.parentElement?.hasAttribute('open'));
             await faq.scrollIntoViewIfNeeded();
             await faq.click();
             await p.waitForTimeout(500);
+            assert.notEqual(await faq.evaluate(e => e.parentElement?.hasAttribute('open')), wasOpen);
+            results.push({ slug: theme + '-native-faq', toggled: true });
+        }
+        if (a.services) {
+            const contact = p.getByRole('link', { name: 'Prendre rendez-vous', exact: true }).first();
+            assert(await contact.count(), 'Service conversion link required');
+            await contact.click();
+            await p.waitForLoadState('networkidle');
+            assert.match(new URL(p.url()).pathname, /\/pages\/(contact|prestations)/);
+            await ready(p, true);
+            results.push({ slug: theme + '-native-service-contact', internalContactPage: true, noRealAppointment: true });
         }
         const v = p.video();
         await c.close();
@@ -153,4 +180,5 @@ finally {
     await browser.close();
     fs.writeFileSync(path.join(out, 'mesures.json'), JSON.stringify({ version, nature: 'Compiled local Next studio; simulated client media; native preview cart; no real CMS installation or provider', results, errors, external: [...external] }, null, 2));
 }
+assert.equal(errors.length, 0, 'No browser page errors');
 console.log('Compiled browser proof complete:', results.length, 'checks,', errors.length, 'page errors');
