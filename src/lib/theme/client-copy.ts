@@ -62,7 +62,7 @@ export function bindClientCopy(spec: ThemeSpec, p: Project, copy: ShopCopy, type
     const services = p.business === 'services';
     const name = services ? p.brand?.name ?? p.name : p.product.name;
     const destination = services ? (p.services.contactMode === 'booking' && p.services.bookingUrl ? p.services.bookingUrl : '/pages/contact') : `/products/${spec.store.product.handle}`;
-    const cta = services ? t(p.services.contactMode === 'booking' ? 'Prendre rendez-vous' : p.services.contactMode === 'quote' ? 'Demander un devis' : 'Nous contacter', p.services.contactMode === 'booking' ? 'Book an appointment' : p.services.contactMode === 'quote' ? 'Request a quote' : 'Contact us') : t('Découvrir le produit', 'Explore the product');
+    const cta = services ? t(p.services.contactMode === 'booking' ? 'Prendre rendez-vous' : p.services.contactMode === 'quote' ? 'Demander un devis' : 'Nous contacter', p.services.contactMode === 'booking' ? 'Book an appointment' : p.services.contactMode === 'quote' ? 'Request a quote' : 'Contact us') : genuine(copy.hero.cta)&&sectionPurpose(type)==='opening'?copy.hero.cta:genuine(copy.cta.button)&&sectionPurpose(type)==='purchase'?copy.cta.button:t(`Découvrir ${p.product.name}`, `Explore ${p.product.name}`);
     const purpose = sectionPurpose(type), facts = p.product.facts.filter(f => f.status === 'confirmed' && genuine(f.value));
     const values = (p.brand?.values ?? []).filter(v => genuine(v.title) && genuine(v.text));
     const sections = applySectionCopy(type, schema, ctx, { settings: { ...design } });

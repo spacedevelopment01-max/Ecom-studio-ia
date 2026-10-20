@@ -25,7 +25,7 @@ it.each(['fraise', 'onde', 'sillon', 'noctil', 'traverse', 'orbe', 'rive'] as co
     expect(current).toBeTruthy();
     const s = current.spec;
     expect(validateSpec(s)).toEqual([]);
-    expect(s.meta?.adaptation).toBeTruthy();
+    expect(s.meta?.adaptation).toBeTruthy();const hero=s.templates.index.sections[s.templates.index.order[0]];expect(hero.settings.button_label??hero.settings.cta_label).toBe(f.copy.hero.cta);
     expect(s.store.shopName).toBe(f.brand);
     const reference = (shapes.themes as any)[direction];
     for (const [key, value] of Object.entries<any>(reference.templates)) {
