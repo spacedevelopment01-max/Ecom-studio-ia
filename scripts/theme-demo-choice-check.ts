@@ -10,7 +10,7 @@
  *     démo) avec le guide des informations à compléter ;
  *  4. galerie et démo sur un téléphone (390 × 844).
  *
- *   THEME_DEMOS_DIR=<démos préparées> npx tsx scripts/theme-demo-choice-check.ts <dossier-captures> [sillon|noctil|traverse]
+ *   THEME_DEMOS_DIR=<démos préparées> npx tsx scripts/theme-demo-choice-check.ts <dossier-captures> [sillon|noctil|traverse|heuren|alcove]
  */
 import fs from "node:fs";
 import os from "node:os";
@@ -21,12 +21,17 @@ import { spawn } from "node:child_process";
 import { chromium, type Page } from "playwright";
 if (process.env.DATA_DIR || process.env.DATABASE_FILE) throw new Error("Base existante refusée");
 /** Thème parcouru puis choisi (issue #152 : NOCTIL et TRAVERSE par le même parcours que SILLON). */
-const T = (process.argv[3] ?? "sillon") as "sillon" | "noctil" | "traverse";
+const T = (process.argv[3] ?? "sillon") as "sillon" | "noctil" | "traverse" | "heuren" | "alcove";
 const THEME = {
   sillon: { brand: /SILLON/, profile: "nomade", menuPage: "page-usages.html", menuLabel: "Usages", leak: /SILLON|espresso|où tout coule|avant de partir|Boutique de démonstration/i },
   noctil: { brand: /NOCTIL/, profile: "astral", menuPage: "page-univers.html", menuLabel: "Une galaxie par pièce", leak: /NOCTIL|galaxie|la nuit entre|une autre nuit|Boutique de démonstration/i },
   traverse: { brand: /TRAVERSE/, profile: "itineraire", menuPage: "page-carnet-de-route.html", menuLabel: "Carnet de route", leak: /TRAVERSE|quai de départ|Carnet de route|trois temps|Boutique de démonstration/i },
+  // HEUREN et ALCÔVE (issue #155) : famille E-commerce, profil porté par « editorial_profile ».
+  heuren: { brand: /HEUREN/, profile: "cadran", menuPage: "page-au-fil-du-jour.html", menuLabel: "Au fil du jour", leak: /HEUREN|heure bleue|bleu nuit soleillé|Au fil du jour|Boutique de démonstration/i },
+  alcove: { brand: /ALCÔVE/, profile: "arrondi", menuPage: "page-piece-par-piece.html", menuLabel: "Pièce par pièce", leak: /ALCÔVE|alcôve à soi|terracotta|Pièce par pièce|Boutique de démonstration/i },
 }[T];
+/** Attribut du <body> qui porte le profil graphique : « conversion » (boutique spécialisée), « editorial » (E-commerce). */
+const PROFILE_ATTR = T === "heuren" || T === "alcove" ? "editorial" : "conversion";
 const demosDir = process.env.THEME_DEMOS_DIR; if (!demosDir || !fs.existsSync(path.join(demosDir, T, "accueil.html"))) throw new Error("THEME_DEMOS_DIR : démos préparées requises (scripts/prepare-theme-demos.ts)");
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "ecs-demo-choice-")); process.env.DATA_DIR = temp; process.env.STOCK_OFFLINE = "1";
 const out = path.resolve(process.argv[2] ?? "reports/theme-demo-choice"); fs.mkdirSync(out, { recursive: true });
@@ -104,7 +109,7 @@ try {
     if (attempt >= 3) throw new Error("Démo complète jamais ouverte");
     await page.reload({ waitUntil: "networkidle", timeout: 240000 }); await openGallery();
   }
-  await demoFrame().locator(`body[data-conversion='${THEME.profile}']`).waitFor({ timeout: 60000 }); await page.waitForTimeout(1200);
+  await demoFrame().locator(`body[data-${PROFILE_ATTR}='${THEME.profile}']`).waitFor({ timeout: 60000 }); await page.waitForTimeout(1200);
   const home = await demoFrame().locator("body").innerText();
   assert.ok(THEME.brand.test(home) && !/Atelier Verre/.test(home), `démo : contenus ${T.toUpperCase()}, jamais ceux du projet`);
   await shot(page, "03-demo-ordinateur-accueil");
@@ -128,7 +133,7 @@ try {
   steps.push({ step: `navigation : fiche produit par le sélecteur, page « ${THEME.menuLabel} » par le menu de la démo`, ok: true });
   // Téléphone.
   await page.locator("[data-device='mobile']").click();
-  await demoFrame().locator(`body[data-conversion='${THEME.profile}']`).waitFor({ timeout: 30000 }); await page.waitForTimeout(1200);
+  await demoFrame().locator(`body[data-${PROFILE_ATTR}='${THEME.profile}']`).waitFor({ timeout: 30000 }); await page.waitForTimeout(1200);
   const width = await demoFrame().locator("html").evaluate(() => window.innerWidth);
   assert.equal(width, 390, "démo en téléphone : 390 px");
   await shot(page, "07-demo-telephone");
@@ -157,7 +162,7 @@ try {
 
   // 3. Choix explicite depuis la démo, en double-clic + une seconde demande simultanée.
   await page.locator(`[data-open-demo='${T}']`).click(); await viewer.waitFor({ timeout: 20000 });
-  await demoFrame().locator(`body[data-conversion='${THEME.profile}']`).waitFor({ timeout: 60000 }); await page.waitForTimeout(800);
+  await demoFrame().locator(`body[data-${PROFILE_ATTR}='${THEME.profile}']`).waitFor({ timeout: 60000 }); await page.waitForTimeout(800);
   await shot(page, "10-demo-avant-choix");
   const posts: string[] = []; page.on("request", (r) => { if (r.method() === "POST" && r.url().endsWith("/theme/build")) posts.push(r.url()); });
   const [extra] = await Promise.all([
@@ -178,7 +183,7 @@ try {
   const versions = fingerprint().versionsDeTheme;
   assert.equal(versions.length, before.versionsDeTheme.length + 1, "une seule nouvelle version de thème");
   await page.reload({ waitUntil: "networkidle", timeout: 240000 });
-  await preview().locator(`body[data-conversion='${THEME.profile}']`).waitFor({ timeout: 180000 }); await page.waitForTimeout(1500);
+  await preview().locator(`body[data-${PROFILE_ATTR}='${THEME.profile}']`).waitFor({ timeout: 180000 }); await page.waitForTimeout(1500);
   const text = await preview().locator("body").innerText();
   assert.ok(text.includes("Atelier Verre"), "identité du projet après le choix");
   assert.ok(!THEME.leak.test(text), `aucun contenu de la démo ${T.toUpperCase()} repris`);

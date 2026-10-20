@@ -18,7 +18,7 @@ import { chromium, type Page } from "playwright";
 if (process.env.DATA_DIR || process.env.DATABASE_FILE) throw new Error("Base existante refusée");
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "ecs-familles-studio-")); process.env.DATA_DIR = temp; process.env.STOCK_OFFLINE = "1";
 const out = path.resolve(process.argv[2] ?? "reports/familles-studio"); fs.mkdirSync(out, { recursive: true });
-const demoId = (process.argv[3] ?? "fraise") as "fraise" | "orbe" | "rive" | "sillon" | "noctil" | "traverse";
+const demoId = (process.argv[3] ?? "fraise") as "fraise" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove";
 /** Scénario par famille : fonction ajoutée, disposition d'aperçu, disposition choisie ensuite, fonction d'une autre famille. */
 const PLAN = {
   fraise: { family: "specialty", entry: "Fabrication et savoir-faire", type: "fs-making", preview: "sticky", then: "timeline", foreign: "Étude de cas", header: "two-rows", footer: "centered" },
@@ -29,6 +29,10 @@ const PLAN = {
   // NOCTIL et TRAVERSE (issue #152) : leurs propres dispositions d'origine (barre flottante / centré ; deux rangées / carte).
   noctil: { family: "specialty", entry: "Fabrication et savoir-faire", type: "fs-making", preview: "sticky", then: "timeline", foreign: "Ambiance et lookbook", header: "product-menu", footer: "minimal", currentHeader: "floating", currentFooter: "centered" },
   traverse: { family: "specialty", entry: "Fabrication et savoir-faire", type: "fs-making", preview: "timeline", then: "grid", foreign: "Étude de cas", header: "buy-button", footer: "wordmark", currentHeader: "two-rows", currentFooter: "card" },
+  // HEUREN et ALCÔVE (issue #155) : famille E-commerce ; leurs dispositions d'origine (logo centré, menu à gauche / encadré ;
+  // boutique éditoriale / empilé), puis une autre disposition de la famille.
+  heuren: { family: "catalog", entry: "Entretien et durabilité", type: "fs-care", preview: "list", then: "cards", foreign: "Composition et matériaux", header: "mega-cards", footer: "columns", currentHeader: "centered-nav", currentFooter: "boxed" },
+  alcove: { family: "catalog", entry: "Usages et installation", type: "ed-diptych", preview: "side", then: "index", foreign: "Étude de cas", header: "classic", footer: "minimal", currentHeader: "store", currentFooter: "stacked" },
 }[demoId] as { family: string; entry: string; type: string; preview: string; then: string; foreign: string; header: string; footer: string; currentHeader?: string; currentFooter?: string };
 const PORT = 3600 + Math.floor(Math.random() * 300), origin = `http://127.0.0.1:${PORT}`;
 const { demoProject } = await import("../tests/demo-fixtures");
