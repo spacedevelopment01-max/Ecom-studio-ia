@@ -1,15 +1,15 @@
 {
-  "codeCommit": "e10847a17d4e14d7e9dd809518449f5e420731c1",
-  "runId": 39394144394,
-  "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/39394144394",
-  "observedAtUtc": "2026-10-20T08:47:07Z",
+  "codeCommit": "8b8f8b0b9b97581061e683f57c990deb077ffbbb",
+  "runId": 39398393912,
+  "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/39398393912",
+  "observedAtUtc": "2026-10-20T09:30:25Z",
   "jobs": [
     {
-      "id": 118532575303,
+      "id": 118546819491,
       "name": "Typecheck, tests, Theme Check, build",
       "status": "in_progress",
       "conclusion": null,
-      "run_id": 39394144394,
+      "run_id": 39398393912,
       "logs_url": null,
       "steps": [
         {
@@ -81,11 +81,11 @@
       ]
     },
     {
-      "id": 118532575718,
+      "id": 118546819785,
       "name": "Image Docker (construction et démarrage)",
       "status": "completed",
       "conclusion": "success",
-      "run_id": 39394144394,
+      "run_id": 39398393912,
       "logs_url": null,
       "steps": [
         {

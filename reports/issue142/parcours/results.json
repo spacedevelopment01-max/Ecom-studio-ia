@@ -1,7 +1,7 @@
 {
   "simulation": true,
   "compiledVersion": {
-    "commit": "e10847a17d4e14d7e9dd809518449f5e420731c1",
+    "commit": "8b8f8b0b9b97581061e683f57c990deb077ffbbb",
     "source": "compiled-build"
   },
   "realCalls": 0,
@@ -9,14 +9,15 @@
   "results": [
     {
       "business": "products",
-      "projectId": "4984q1g9yheyq36t",
-      "jobId": "669j4nub8jn0im10",
-      "photoId": "imf2vx4xheag63gc",
+      "projectId": "36uiw4hdmo5u1jkr",
+      "jobId": "rd4oxbndhr2ows2i",
+      "photoId": "zsd1295oeo7kgvub",
       "inputKept": true,
       "photoAccessible": true,
       "reconnected": true,
       "workerInterrupted": false,
-      "explicitRetryViaOwnerApi": true,
+      "recoveryViaClientClick": true,
+      "recoveryOnly": true,
       "insufficientBudgetHttp": 422,
       "provenance": "simulation",
       "finances": {
@@ -30,7 +31,7 @@
             "monthlyRemaining": 2800000,
             "topupBalance": 0,
             "reserved": 0,
-            "periodEnd": 1795163880808,
+            "periodEnd": 1795165717986,
             "alert": true,
             "paused": false
           },
@@ -54,7 +55,7 @@
             "monthlyRemaining": 2800000,
             "topupBalance": 0,
             "reserved": 2800000,
-            "periodEnd": 1795163880808,
+            "periodEnd": 1795165717986,
             "alert": true,
             "paused": true
           },
@@ -84,7 +85,7 @@
             "monthlyRemaining": 2760000,
             "topupBalance": 0,
             "reserved": 0,
-            "periodEnd": 1795163880808,
+            "periodEnd": 1795165717986,
             "alert": true,
             "paused": false
           },
@@ -119,7 +120,7 @@
             "monthlyRemaining": 2760000,
             "topupBalance": 0,
             "reserved": 0,
-            "periodEnd": 1795163880808,
+            "periodEnd": 1795165717986,
             "alert": true,
             "paused": false
           },
@@ -148,14 +149,15 @@
     },
     {
       "business": "services",
-      "projectId": "t3m7zzbp2nch27mf",
-      "jobId": "2r1lydk49apo3t08",
-      "photoId": "se44fxq8539oklcj",
+      "projectId": "ymxfowftyeditlii",
+      "jobId": "5fyveg1kjpzq7jcz",
+      "photoId": "4y9rjjked4klq5xh",
       "inputKept": true,
       "photoAccessible": true,
       "reconnected": true,
       "workerInterrupted": true,
-      "explicitRetryViaOwnerApi": true,
+      "recoveryViaClientClick": true,
+      "recoveryOnly": true,
       "insufficientBudgetHttp": 422,
       "provenance": "simulation",
       "finances": {
@@ -169,7 +171,7 @@
             "monthlyRemaining": 3400000,
             "topupBalance": 0,
             "reserved": 0,
-            "periodEnd": 1795163880991,
+            "periodEnd": 1795165718263,
             "alert": true,
             "paused": false
           },
@@ -193,7 +195,7 @@
             "monthlyRemaining": 3400000,
             "topupBalance": 0,
             "reserved": 3400000,
-            "periodEnd": 1795163880991,
+            "periodEnd": 1795165718263,
             "alert": true,
             "paused": true
           },
@@ -223,7 +225,7 @@
             "monthlyRemaining": 3360000,
             "topupBalance": 0,
             "reserved": 0,
-            "periodEnd": 1795163880991,
+            "periodEnd": 1795165718263,
             "alert": true,
             "paused": false
           },
@@ -258,7 +260,7 @@
             "monthlyRemaining": 3360000,
             "topupBalance": 0,
             "reserved": 0,
-            "periodEnd": 1795163880991,
+            "periodEnd": 1795165718263,
             "alert": true,
             "paused": false
           },
