@@ -137,3 +137,42 @@ body[data-editorial="object"] [data-main-product] .purchase__offers{grid-templat
 @media(max-width:749px){.ed-finishes__views{gap:8px}.ed-finishes__views figure{padding:4px}.ed-finishes__views figcaption{font-size:13px;padding-top:8px}.ed-finishes__selection fieldset{gap:8px;margin:8px 0 18px}.ed-finishes__selection label{padding:9px 12px;font-size:14px}.ed-finishes .ed-button{width:100%;justify-content:center;gap:12px}}
 .ed-diptych--side .ed-diptych__grid{grid-template-columns:1fr 1fr;gap:32px;align-items:start}.ed-diptych--side .ed-diptych__frame:nth-child(even){padding-top:0}.ed-diptych--side .ed-diptych__frame>.ed-media{aspect-ratio:4/5}
 @media(max-width:749px){.ed-diptych--side .ed-diptych__grid{grid-template-columns:1fr 1fr;gap:12px}.ed-diptych--side .ed-diptych__frame:nth-child(even){padding-left:0}.ed-diptych--side .ed-diptych__frame>.ed-media{aspect-ratio:4/5}.ed-diptych--side h3{font-size:18px}.ed-diptych--side figcaption{padding-top:8px}}
+/* ─── Ouverture « Arche et promesse » (issue #155, ALCÔVE) : promesse à gauche, produit dans un cadre en arche à droite ; au téléphone, l'arche au-dessus du titre, produit entier. */
+.ed-opening--arch .ed-shell{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:clamp(40px,6vw,104px);align-items:center}
+.ed-opening--arch .ed-opening__title{font-size:clamp(56px,5.8vw,96px);max-width:12ch}
+.ed-opening--arch .ed-opening__media{justify-self:end;width:min(100%,520px)}
+.ed-opening--arch .ed-opening__media .ed-media{aspect-ratio:2/3;height:auto;border-radius:999px 999px 18px 18px}
+.ed-opening--arch .ed-caption{grid-column:1/-1}
+@media(max-width:749px){.ed-opening--arch .ed-shell{grid-template-columns:1fr;gap:28px}.ed-opening--arch .ed-opening__media{order:-1;justify-self:center;width:min(84%,360px)}.ed-opening--arch .ed-opening__copy{text-align:left}}
+/* ─── Profil « cadran » (HEUREN, issue #155) : ivoire et bleu nuit, serif fine, filets argentés, angles droits, cadres
+   doublés d'un fin liseré comme une lunette. */
+body[data-editorial="cadran"]{--radius-button:0px;--cd-line:color-mix(in srgb,var(--c-text) 16%,transparent)}
+body[data-editorial="cadran"] .ed-kicker,body[data-editorial="cadran"] .fs .fs-eyebrow,body[data-editorial="cadran"] .es-eyebrow{text-transform:uppercase;letter-spacing:.32em;font-size:11px;font-weight:500;color:color-mix(in srgb,var(--c-text) 64%,transparent)}
+body[data-editorial="cadran"] .ed-title,body[data-editorial="cadran"] .fs h2{font-weight:400;letter-spacing:-.01em}
+body[data-editorial="cadran"] .ed-opening--journal .ed-opening__title{font-size:clamp(64px,7.4vw,124px);max-width:11ch;line-height:.98}
+body[data-editorial="cadran"] .ed-opening--journal .ed-opening__copy{border-bottom:1px solid var(--cd-line);margin-bottom:28px}
+body[data-editorial="cadran"] .ed-button,body[data-editorial="cadran"] .es-button{border-radius:0;text-transform:uppercase;letter-spacing:.18em;font-size:12px}
+body[data-editorial="cadran"] .ed-opening__media .ed-media,body[data-editorial="cadran"] .ed-statement__aside>.ed-media,body[data-editorial="cadran"] .ed-diptych__frame>.ed-media{outline:1px solid var(--cd-line);outline-offset:10px}
+body[data-editorial="cadran"] .ed-points>*{border-top:1px solid var(--cd-line);padding-top:18px}
+body[data-editorial="cadran"] .ed-diptych figcaption h3{font-weight:400}
+body[data-editorial="cadran"] .es-header{border-bottom:1px solid var(--cd-line)}
+body[data-editorial="cadran"] .es-header__wordmark{letter-spacing:.3em;text-transform:uppercase;font-size:24px}
+body[data-editorial="cadran"] .fs-look__dot,body[data-editorial="cadran"] .fs-look__marker{border-radius:50%}
+body[data-editorial="cadran"] .es-product__title{font-weight:400;letter-spacing:-.01em}
+@media(max-width:749px){body[data-editorial="cadran"] .ed-opening--journal .ed-opening__title{font-size:54px}body[data-editorial="cadran"] .ed-opening__media .ed-media,body[data-editorial="cadran"] .ed-statement__aside>.ed-media,body[data-editorial="cadran"] .ed-diptych__frame>.ed-media{outline-offset:6px}}
+/* ─── Profil « arrondi » (ALCÔVE, issue #155) : sable et terre cuite, serif douce, arches, coins arrondis, boutons en
+   pastille ; les sur-titres en italique de la serif. */
+body[data-editorial="arrondi"]{--radius-button:999px;--radius-card:24px}
+body[data-editorial="arrondi"] .ed-kicker,body[data-editorial="arrondi"] .fs .fs-eyebrow,body[data-editorial="arrondi"] .es-eyebrow{font-family:var(--font-heading-family,var(--font-heading));font-style:italic;text-transform:none;letter-spacing:0;font-size:19px;color:var(--c-accent)}
+body[data-editorial="arrondi"] .ed-title,body[data-editorial="arrondi"] .fs h2{font-weight:400;letter-spacing:-.015em}
+body[data-editorial="arrondi"] .ed-button,body[data-editorial="arrondi"] .es-button{border-radius:999px}
+body[data-editorial="arrondi"] .ed-media{border-radius:24px}
+body[data-editorial="arrondi"] .ed-diptych__frame>.ed-media{border-radius:999px 999px 24px 24px}
+body[data-editorial="arrondi"] .fs-look__media,body[data-editorial="arrondi"] .fs-camp__media,body[data-editorial="arrondi"] .fs-card,body[data-editorial="arrondi"] .es-image-text__media,body[data-editorial="arrondi"] .es-product__media{border-radius:24px;overflow:hidden}
+body[data-editorial="arrondi"] .es-product__thumb,body[data-editorial="arrondi"] .es-product__thumbs img{border-radius:14px}
+body[data-editorial="arrondi"] .es-header{min-height:76px}
+/* Repères sur le produit (issue #155) : la photo garde son format d'origine (vue carrée chez HEUREN, scène 16:9 chez
+   ALCÔVE) pour que chaque repère tombe exactement sur le détail qu'il nomme, à toutes les largeurs. */
+body[data-editorial="cadran"] .fs-lookbook--markers .fs-look__scene{max-width:760px;margin-inline:auto}
+body[data-editorial="cadran"] .fs-lookbook--markers .fs-look__media .ed-media{aspect-ratio:1}
+body[data-editorial="arrondi"] .fs-lookbook--side .fs-look__media .ed-media{aspect-ratio:16/9}

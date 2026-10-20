@@ -434,6 +434,14 @@
           {
             "value": "traverse",
             "label": "Traverse — carnet de voyage, pierre et olive (référence)"
+          },
+          {
+            "value": "heuren",
+            "label": "Heuren — bleu nuit et précision (référence)"
+          },
+          {
+            "value": "alcove",
+            "label": "Alcôve — courbes et terre cuite (référence)"
           }
         ]
       },
@@ -861,6 +869,14 @@
           {
             "value": "journal",
             "label": "Journal et espaces"
+          },
+          {
+            "value": "cadran",
+            "label": "Cadran : ivoire et bleu nuit, serif fine, filets argentés, angles droits"
+          },
+          {
+            "value": "arrondi",
+            "label": "Arrondi : sable et terre cuite, serif douce, arches et coins arrondis"
           }
         ]
       },

@@ -21,9 +21,9 @@ export const THEME_ORDER: DirectionId[] = [
   "joaillerie", "vitrine", "magazine", "lookbook", "marche", "jardin", "reception", "cabinet", "recre", "epure",
   // 21 à 30 — Dominer
   "manifeste", "laboratoire", "cinema", "rituel", "horizon", "signal", "tribu", "etabli", "velours", "lancement",
-  // 31 à 37 — Thèmes de référence (issue #137, SILLON : issue #148, NOCTIL et TRAVERSE : issue #152), inclus dans tout
-  // forfait payant, chacun pour sa catégorie de projet.
-  "fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse",
+  // 31 à 39 — Thèmes de référence (issue #137, SILLON : issue #148, NOCTIL et TRAVERSE : issue #152, HEUREN et ALCÔVE :
+  // issue #155), inclus dans tout forfait payant, chacun pour sa catégorie de projet.
+  "fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove",
 ];
 
 /** Rang du thème (1 à 30), ou null s'il n'existe pas. */

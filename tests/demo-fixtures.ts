@@ -20,9 +20,10 @@ import { seedHoldout } from "./lot1-holdout-fixtures";
 import { conversionProject } from "./lot2c-fixtures";
 import { sillonProject, SILLON_DIR, SILLON_MEDIA } from "./sillon-fixtures";
 import { kitProject, kitDir, KIT_MEDIA } from "./noctil-traverse-fixtures";
+import { shopKitProject, SHOP_KIT_MEDIA } from "./heuren-alcove-fixtures";
 import type { DirectionId } from "../src/lib/theme/directions";
 
-export type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse";
+export type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove";
 export const DEMO_PROVENANCE = "Issue #137 (19 octobre 2026) — démonstration du studio, identité du manifeste, visuels IA du kit privé sans personne, aucun paiement";
 
 type ManifestDemo = { id: DemoId; brand: string; product: string; sector: string; category: string; direction: DirectionId; palette: string[]; photo: string; logo: string; images: { src: string; label: string }[]; business?: "products" | "services"; storeType?: "mono" | "multi" | "niche" };
@@ -65,6 +66,15 @@ const IDENTITY: Record<DemoId, { tagline: string; summary: string; story: string
   traverse: {
     tagline: "Un sac, trois temps du voyage.", summary: "Sac à dos de voyage vert olive : grande poche frontale zippée, sangles latérales à boucle noire, poignée sur le dessus, bretelles noires.", story: "TRAVERSE suit la même personne du café du matin au quai de départ, puis jusqu'à la destination.", positioning: "Un sac de voyage pour le quotidien, le départ et la destination.", price: null,
     media: Object.fromEntries(KIT_MEDIA.traverse.filter((m) => m.role !== "logo").map((m) => [m.file, { role: m.role }])),
+  },
+  // HEUREN et ALCÔVE (issue #155, e-commerce mono-produit) : identité utilisée seulement pour la preuve d'adaptation.
+  heuren: {
+    tagline: "L'heure bleue, au poignet.", summary: "Montre à cadran bleu nuit soleillé, index et aiguilles argentés, boîtier argenté, bracelet en cuir bleu nuit cousu de bleu et doublé de beige.", story: "HEUREN est née d'un bleu : celui du ciel juste après le coucher du soleil.", positioning: "Une montre au cadran bleu nuit pour le bureau, le soir et le voyage.", price: null,
+    media: Object.fromEntries(SHOP_KIT_MEDIA.heuren.filter((m) => m.role !== "logo").map((m) => [m.file, { role: m.role }])),
+  },
+  alcove: {
+    tagline: "Une alcôve à soi.", summary: "Fauteuil enveloppant au tissu terracotta texturé : dossier et accoudoirs arrondis, coussin d'assise épais, quatre pieds courts en bois brun.", story: "ALCÔVE est né d'une envie simple : un fauteuil sans angle, dans la couleur chaude de la terre cuite.", positioning: "Un fauteuil enveloppant pour le salon, le coin lecture et la chambre.", price: null,
+    media: Object.fromEntries(SHOP_KIT_MEDIA.alcove.filter((m) => m.role !== "logo").map((m) => [m.file, { role: m.role }])),
   },
   rive: {
     tagline: "Des espaces qui vous ressemblent.", summary: "Aménagement et décoration intérieure : intentions, usages, lumière et matières.", story: "Une étude d'intention à partir de vos usages, de la lumière et des matières.", positioning: "Des intérieurs pensés pièce par pièce à partir de vos usages, de la lumière et des matières, pour la maison comme pour un petit espace professionnel.", price: null,
@@ -119,6 +129,11 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
     const c = await kitProject(userId, id);
     return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
   }
+  // HEUREN et ALCÔVE (issue #155) : même parcours, famille E-commerce, kits suivis dans public/theme-assets/<id>/.
+  if ((id === "heuren" || id === "alcove") && !options.direction) {
+    const c = await shopKitProject(userId, id);
+    return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
+  }
   if ((id === "fraise" || id === "onde") && !options.direction) {
     const c = await conversionProject(userId, id, path.join(process.cwd(), "public", "demo"), { testVideo: options.testVideo });
     run("UPDATE projects SET store_type = ?, business_type = ?, updated_at = ? WHERE id = ?", d.storeType ?? "mono", "products", now(), c.pid);
@@ -138,7 +153,7 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
   run("UPDATE projects SET store_type = ?, business_type = ?, updated_at = ? WHERE id = ?", d.storeType ?? "mono", services ? "services" : "products", now(), pid);
   saveSettings(pid, { ...loadProject(pid).settings, storeKind: d.category as "services" | "catalog" | "specialty" });
   // Visuels : ceux du manifeste d'abord (rôle d'après l'étiquette), puis les autres images du dossier (scènes).
-  const dir = id === "sillon" ? SILLON_DIR : id === "noctil" || id === "traverse" ? kitDir(id) : path.join(process.cwd(), "public", "demo", id);
+  const dir = id === "sillon" ? SILLON_DIR : id === "noctil" || id === "traverse" || id === "heuren" || id === "alcove" ? kitDir(id) : path.join(process.cwd(), "public", "demo", id);
   const missing: string[] = [];
   const imported = new Set<string>();
   const put = async (file: string, role: string, extra: Record<string, unknown> = {}) => {

@@ -4,7 +4,9 @@
  * composition éditoriale « objet et ambiances »), Atelier Rive (prestations de services, composition « journal ») et
  * SILLON (boutique spécialisée, profil « nomade » : objet que l’on emporte, serif fine, cuivre), NOCTIL (boutique
  * spécialisée, profil « astral » : nuit immersive, indigo et lavande) et TRAVERSE (boutique spécialisée, profil
- * « itinéraire » : carnet de voyage éditorial, crème, pierre et olive), issue #152.
+ * « itinéraire » : carnet de voyage éditorial, crème, pierre et olive), issue #152 ; HEUREN (e-commerce mono-produit,
+ * profil éditorial « cadran » : bleu nuit, argent, serif fine) et ALCÔVE (e-commerce mono-produit, profil « arrondi » :
+ * courbes, terre cuite, sable), issue #155.
  *
  * Chaque thème est composé avec l'identité validée du projet : palette dérivée des rôles de la marque (clair, sombre,
  * accent), polices du thème, textes et médias du projet par les sections de la bibliothèque (section-copy-*.ts). Les
@@ -411,6 +413,113 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       k.R.method(2, "howto-v"),
       k.lib("image-with-text", 1, { layout: "image-left", ratio: "landscape", image_asset: k.im.lifestyle2 ?? k.im.detail2 ?? "", reveal: "curtain" }, { hide: !(k.im.lifestyle2 ?? k.im.detail2) }),
       k.faqSec(1, 5, "lines"),
+      k.R.booking(2),
+    ],
+  },
+  {
+    id: "heuren",
+    name: "Heuren",
+    tagline: "Bleu nuit et précision",
+    description: "Boutique mono-produit de la famille E-commerce pour un objet de précision : titre puis grand paysage, déclaration en bleu nuit autour d'un gros plan, repères interactifs sur le produit, bannière en plein cadre, deux usages côte à côte, achat encadré, questions et inscription illustrée. Ivoire, bleu nuit et argent, serif fine, logo centré avec menu à gauche et pied de page encadré.",
+    bestFor: ["e-commerce", "horlogerie", "accessoire", "produit unique", "objet de précision"],
+    en: { tagline: "Midnight blue and precision", description: "Single-product store from the E-commerce family for a precision object: title then a wide landscape, a midnight-blue statement around a close-up, interactive markers on the product, a full-frame banner, two uses side by side, framed purchase, questions and an illustrated sign-up. Ivory, midnight blue and silver, fine serif, centred logo with the menu on the left and a boxed footer.", bestFor: ["e-commerce", "watches", "accessory", "single product", "precision object"] },
+    fonts: { heading: "instrument_serif_n4", body: "inter_n4" },
+    previewFonts: { heading: "Instrument Serif", body: "Inter" },
+    motion: "subtle",
+    photoMood: "galerie",
+    kinds: ["catalog"],
+    // En-tête « Logo centré, menu à gauche » (fond blanc : le logo HEUREN est livré sur fond blanc) et pied « Encadré » :
+    // dispositions de la famille E-commerce qu'ORBE n'utilise pas.
+    look: look({ headerLayout: "nav-left", shape: "bar", menu: "fullscreen", footer: "boxed", ann: "static", card: "minimal", button: "solid", radius: { button: 0, card: 0 }, headingScale: 112, tracking: -1, pageWidth: 1360, gallery: "grid", ds: "maison", density: "airy", buttonUppercase: true }),
+    settings: { editorial_profile: "cadran", conversion_profile: "none", motion_intensity: "subtle" },
+    headerSettings: { mega_menu: "columns", mobile_submenu: "accordion", show_cart: true, color_scheme: "scheme-3" },
+    // Galerie en grille, cadre carré (les vues sont carrées : montre entière, bracelet compris), zoom, barre d'achat.
+    mainProduct: { gallery_layout: "grid", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
+    palette: (k) => {
+      const ivory = k.light("#F7F5F0");
+      const navy = k.night(0.13, 0.42);
+      return [k.scheme(ivory, navy, k.onLight(ivory)), k.scheme(navy, ivory, k.onDark(navy), 0.07), k.scheme("#FDFEFD", navy, k.onLight("#FDFEFD")), k.scheme(k.mix(ivory, "#AEB6C2", 0.35), navy, k.onLight(k.mix(ivory, "#AEB6C2", 0.35)))];
+    },
+    // Accueil : la montre au crépuscule sous un grand titre, le cadran raconté en bleu nuit, les repères sur la montre, une
+    // bannière en plein cadre, une scène portée, l'achat encadré, les questions et l'inscription illustrée.
+    home: (k) => [
+      k.lib("ed-opening", 1, { layout: "journal", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.packshot, mobile_image_asset: k.im.portrait ?? "", padding_top: 24, padding_bottom: 72 }),
+      k.lib("ed-statement", 2, { image_asset: k.im.detail1 ?? "", padding_top: 96, padding_bottom: 96 }),
+      k.lib("fs-lookbook", 1, { layout: "markers", image_asset: k.im.packshot ?? k.im.cutout, align: "left" }),
+      k.lib("fs-campaign", 2, { layout: "background", image_asset: k.im.banner ?? k.im.scene1 ?? "", offer_title: "", offer_text: "", period_text: "", conditions: "" }, { hide: !(k.im.banner ?? k.im.scene1) }),
+      k.lib("ed-scene", 1, { layout: "split", image_asset: k.im.scene2 ?? k.im.scene1 ?? "", padding_top: 72, padding_bottom: 72 }, { hide: !(k.im.scene2 ?? k.im.scene1) }),
+      k.lib("featured-purchase", 4, { purchase_style: "compact", image_fit: "contain" }),
+      k.v2.faq("center", 1),
+      ...k.either(k.lib("newsletter-media", 2, { layout: "right", image_asset: k.im.lifestyle2 ?? "", legal: k.privacy }, { hide: !k.im.lifestyle2 }), k.newsletter(2)),
+    ],
+    // Fiche : galerie en grille et achat, deux scènes côte à côte, questions à côté du titre.
+    product: (k) => [
+      k.lib("ed-diptych", 1, { layout: "pair", padding_top: 72, padding_bottom: 72 }, { blocks: [k.im.scene1, k.im.lifestyle2 ?? k.im.scene2].filter((f): f is string => !!f).map((f) => ({ type: "frame", settings: { image_asset: f, ratio: "landscape", title: "" } })) }),
+      k.v2.faq("side", 3),
+    ],
+    // Site de services (repli) : promesse dans la scène, déclaration, prestations en liste, usages en index, méthode en frise,
+    // questions et prise de contact.
+    services: (k) => [
+      k.lib("ed-opening", 1, { layout: "immersive", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle }),
+      k.lib("ed-statement", 2, {}),
+      k.R.servicesList(1, "list"),
+      k.lib("ed-diptych", 1, { layout: "index" }),
+      k.R.method(2, "timeline"),
+      k.v2.faq("side", 1),
+      k.R.booking(1),
+    ],
+  },
+  {
+    id: "alcove",
+    name: "Alcôve",
+    tagline: "Courbes et terre cuite",
+    description: "Boutique mono-produit de la famille E-commerce pour un meuble : ouverture en arche, repères sur le produit dans la pièce, déclaration, deux pièces côte à côte, campagne en carte, achat encadré, questions en cartes et inscription. Sable, terre cuite et bois, serif douce et coins arrondis, en-tête de boutique avec le produit dans le sous-menu et pied empilé.",
+    bestFor: ["e-commerce", "mobilier", "maison", "produit unique", "décoration"],
+    en: { tagline: "Curves and terracotta", description: "Single-product store from the E-commerce family for a piece of furniture: arched opening, markers on the product in the room, statement, two rooms side by side, campaign card, framed purchase, card questions and sign-up. Sand, terracotta and wood, soft serif and rounded corners, a store header with the product in the submenu and a stacked footer.", bestFor: ["e-commerce", "furniture", "home", "single product", "decoration"] },
+    fonts: { heading: "lora_n4", body: "work_sans_n4" },
+    previewFonts: { heading: "Lora", body: "Work Sans" },
+    motion: "subtle",
+    photoMood: "terroir",
+    kinds: ["catalog"],
+    // En-tête « Boutique éditoriale » (le produit mis en avant dans le sous-menu, tiroir à droite) et pied « Empilé ».
+    look: look({ headerLayout: "logo-left", shape: "bar", menu: "drawer-right", footer: "stacked", ann: "static", card: "boxed", button: "solid", radius: { button: 999, card: 24 }, headingScale: 104, tracking: 0, pageWidth: 1320, gallery: "carousel", ds: "maison", density: "airy" }),
+    settings: { editorial_profile: "arrondi", conversion_profile: "none", motion_intensity: "subtle" },
+    headerSettings: { layout: "reference-shop", mega_menu: "featured", mobile_menu: "drawer-right", show_cart: true },
+    // Galerie en carrousel, cadre carré (le fauteuil entier, pieds compris), zoom, barre d'achat.
+    mainProduct: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
+    palette: (k) => {
+      const sand = k.light("#F6F0E8");
+      const blush = k.mix(sand, "#C98A6B", 0.24);
+      const umber = k.night(0.16, 0.3);
+      return [k.scheme(sand, umber, k.onLight(sand)), k.scheme(blush, umber, k.onLight(blush)), k.scheme(umber, sand, k.onDark(umber), 0.06), k.filled(k.p.primary)];
+    },
+    // Accueil : le fauteuil sous une arche, ses courbes repérées dans le salon, une déclaration, deux pièces, une campagne
+    // en carte au soir, l'achat encadré, les questions en cartes et l'inscription.
+    home: (k) => [
+      k.lib("ed-opening", 1, { layout: "arch", heading_tag: "h1", image_asset: k.im.portrait ?? k.im.hero ?? k.im.lifestyle ?? k.im.packshot, padding_top: 48, padding_bottom: 72 }),
+      k.lib("fs-lookbook", 2, { layout: "side", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.packshot, align: "left" }),
+      k.lib("rich-text", 1, { style: "statement", align: "center" }),
+      k.lib("ed-diptych", 1, { layout: "pair", padding_top: 64, padding_bottom: 64 }, { blocks: [k.im.scene1, k.im.scene2].filter((f): f is string => !!f).map((f) => ({ type: "frame", settings: { image_asset: f, ratio: "landscape", title: "" } })) }),
+      k.lib("fs-campaign", 2, { layout: "card", image_asset: k.im.banner ?? k.im.scene3 ?? "", offer_title: "", offer_text: "", period_text: "", conditions: "" }, { hide: !(k.im.banner ?? k.im.scene3) }),
+      k.lib("featured-purchase", 1, { purchase_style: "outlined", image_fit: "contain" }),
+      k.faqSec(1, 5, "cards"),
+      k.newsletter(2),
+    ],
+    // Fiche : galerie en carrousel et achat, l'assise vue d'en haut, deux pièces côte à côte, questions en lignes.
+    product: (k) => [
+      k.lib("image-with-text", 2, { layout: "image-left", ratio: "square", image_asset: k.im.detail2 ?? k.im.lifestyle2 ?? "", reveal: "up" }, { hide: !(k.im.detail2 ?? k.im.lifestyle2) }),
+      k.lib("ed-diptych", 1, { layout: "side", padding_top: 64, padding_bottom: 64 }, { blocks: [k.im.scene3, k.im.lifestyle2].filter((f): f is string => !!f).map((f) => ({ type: "frame", settings: { image_asset: f, ratio: "portrait", title: "" } })) }),
+      k.faqSec(1, 5, "lines"),
+    ],
+    // Site de services (repli) : ouverture en arche, repères, prestations en cartes illustrées, deux réalisations côte à
+    // côte, méthode, questions en cartes et prise de contact.
+    services: (k) => [
+      k.lib("ed-opening", 1, { layout: "arch", heading_tag: "h1", image_asset: k.im.portrait ?? k.im.hero ?? k.im.lifestyle }),
+      k.v2.facts("strip", 2),
+      k.R.servicesList(1, "cards", { withImages: true }),
+      k.lib("ed-diptych", 1, { layout: "pair" }),
+      k.R.method(2, "howto-v"),
+      k.faqSec(2, 5, "cards"),
       k.R.booking(2),
     ],
   },

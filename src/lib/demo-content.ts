@@ -17,7 +17,7 @@ export function demos(file: "manifest.json" | "manifest.en.json" = "manifest.jso
 }
 
 /** Les seules démonstrations du studio (priorité du 19 octobre 2026) ; toute autre entrée du manifeste est ignorée. */
-export const DEMO_IDS = ["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse"] as const;
+export const DEMO_IDS = ["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove"] as const;
 
 const present = (src: string | undefined) => !!src && fs.existsSync(path.join(process.cwd(), "public", src.replace(/^\//, "")));
 /**
@@ -46,9 +46,11 @@ const DEMO_EN: Record<string, { product?: string; note?: string }> = {
   sillon: { product: "SILLON portable espresso machine", note: "Fictional demo brand (specialty store, issue #148): already generated AI visuals supplied by the studio owner, without people; price, technical specifications, warranty and delivery are never claimed; a store with no real sales." },
   noctil: { product: "NOCTIL galaxy projector", note: "Fictional demo brand (specialty store, issue #152): already generated AI visuals supplied by the studio owner, without people; price, technical specifications, compatibility, warranty and any effect on sleep are never claimed; a store with no real sales." },
   traverse: { product: "TRAVERSE modular travel backpack", note: "Fictional demo brand (specialty store, issue #152): already generated AI visuals supplied by the studio owner, without people; price, capacity, cabin size, waterproofing, materials and warranty are never claimed; a store with no real sales." },
+  heuren: { product: "HEUREN watch", note: "Fictional demo brand (E-commerce, single product, issue #155): already generated AI visuals supplied by the studio owner, without people; price, movement, water resistance, materials, size, warranty and delivery are never claimed; a store with no real sales." },
+  alcove: { product: "ALCÔVE armchair", note: "Fictional demo brand (E-commerce, single product, issue #155): already generated AI visuals supplied by the studio owner, without people; price, dimensions, fabric composition, comfort, warranty and delivery are never claimed; a store with no real sales." },
   rive: { product: "Interior design and decoration", note: "Fictional demo business (services, “journal” composition): design intentions as AI images, never real projects; no real address or client; test contact requests only." },
 };
-const SECTOR_EN: Record<string, string> = { Confiserie: "Confectionery", Audio: "Audio", Luminaires: "Lighting", "Architecture d'intérieur": "Interior design", "Épicerie fine": "Fine food", Accessoires: "Accessories", Plantes: "Plants", Fleuriste: "Florist", Barbier: "Barber", Boissons: "Beverages", Maison: "Home", "High-tech": "Tech", Animaux: "Pets", Mode: "Fashion", "Sport et plein air": "Sports & outdoors", Paysagiste: "Landscaper", Beauté: "Beauty", Sport: "Sports", Alimentation: "Food", Bijoux: "Jewelry", Enfants: "Kids", Horlogerie: "Watches", Bagagerie: "Luggage" };
+const SECTOR_EN: Record<string, string> = { Confiserie: "Confectionery", Audio: "Audio", Luminaires: "Lighting", "Architecture d'intérieur": "Interior design", "Épicerie fine": "Fine food", Accessoires: "Accessories", Plantes: "Plants", Fleuriste: "Florist", Barbier: "Barber", Boissons: "Beverages", Maison: "Home", "High-tech": "Tech", Animaux: "Pets", Mode: "Fashion", "Sport et plein air": "Sports & outdoors", Paysagiste: "Landscaper", Beauté: "Beauty", Sport: "Sports", Alimentation: "Food", Bijoux: "Jewelry", Enfants: "Kids", Horlogerie: "Watches", Bagagerie: "Luggage", Mobilier: "Furniture" };
 const IMAGE_LABEL_EN: Record<string, string> = { Bannière: "Banner", Détail: "Detail", Détourage: "Cutout", Packshot: "Packshot", Publicité: "Ad", Scène: "Scene", "Visuel social": "Social visual", "En situation": "Lifestyle" };
 
 export function localizeDemo(d: Demo, lang: Lang): Demo {

@@ -18,6 +18,9 @@ export const REFERENCE_THEMES = [
   { referenceId: "sillon", name: "SILLON", categories: ["specialized"] },
   { referenceId: "noctil", name: "NOCTIL", categories: ["specialized"] },
   { referenceId: "traverse", name: "TRAVERSE", categories: ["specialized"] },
+  // Issue #155 : mono-produit, mais famille E-commerce (consigne expresse de Thomas).
+  { referenceId: "heuren", name: "HEUREN", categories: ["ecommerce"] },
+  { referenceId: "alcove", name: "ALCÔVE", categories: ["ecommerce"] },
 ] as const;
 export type ReferenceThemeId = (typeof REFERENCE_THEMES)[number]["referenceId"];
 export const REFERENCE_THEME_IDS = REFERENCE_THEMES.map(t => t.referenceId) as [ReferenceThemeId, ...ReferenceThemeId[]];

@@ -23,12 +23,13 @@ import { composeShop } from "../src/lib/engine/shop";
 import { loadProject, saveBrand, saveProduct, saveStrategy, saveSettings } from "../src/lib/projects";
 import { saveAsset } from "../src/lib/library";
 import { seedHoldout } from "./lot1-holdout-fixtures";
+import type { DirectionId } from "../src/lib/theme/directions";
 import { sectionSchema, withDefaults, type ThemeSpec, type SectionInstance, type TemplateJson, type StoreProduct } from "../src/lib/theme/spec";
 
 export type KitId = "noctil" | "traverse";
 export const KIT_PROVENANCE = "Issue #152 (20 octobre 2026) — démonstration du studio, images IA déjà générées fournies par Thomas (commit d5d27e26), sans personne, aucun paiement";
-export const kitDir = (id: KitId) => path.join(process.cwd(), "public", "theme-assets", id);
-type Media = { file: string; role: string; alt: string };
+export const kitDir = (id: string) => path.join(process.cwd(), "public", "theme-assets", id);
+export type Media = { file: string; role: string; alt: string };
 
 /** Ordre d'import = rôles du thème (le dernier importé d'un rôle prend le premier emplacement). Textes alternatifs descriptifs. */
 export const NOCTIL_MEDIA: Media[] = [
@@ -74,10 +75,10 @@ export const KIT_EXCLUDED: Record<KitId, { file: string; reason: string }[]> = {
 export const KIT_MEDIA: Record<KitId, Media[]> = { noctil: NOCTIL_MEDIA, traverse: TRAVERSE_MEDIA };
 export const KIT_HANDLE: Record<KitId, string> = { noctil: "projecteur-galaxies-noctil", traverse: "sac-voyage-modulable-traverse" };
 
-const p = (s: string) => `<p>${s}</p>`;
-const TODO = (what: string) => `[À compléter : ${what}]`;
+export const p = (s: string) => `<p>${s}</p>`;
+export const TODO = (what: string) => `[À compléter : ${what}]`;
 const DEMO_BANNER = "Boutique de démonstration : aucune vente réelle.";
-const ORDER_FAQ = (brand: string): [string, string] => ["Peut-on commander aujourd'hui ?", `Pas encore : la boutique ${brand} présentée ici est une démonstration. Aucune commande n'y est enregistrée et aucun paiement n'est demandé.`];
+export const ORDER_FAQ = (brand: string): [string, string] => ["Peut-on commander aujourd'hui ?", `Pas encore : la boutique ${brand} présentée ici est une démonstration. Aucune commande n'y est enregistrée et aucun paiement n'est demandé.`];
 
 export const NOCTIL_FAQ: [string, string][] = [
   ["Dans quelles pièces utiliser NOCTIL ?", "Là où vous aimez éteindre la grande lumière : le salon, la chambre, un coin lecture, le bureau. Nos photos le montrent dans chacune de ces pièces."],
@@ -110,7 +111,7 @@ export const TRAVERSE_FAQ_PENDING: [string, string][] = [
   ["Quelle est la garantie ?", TODO("durée et conditions de garantie")],
 ];
 
-type Brand = { name: string; product: string; category: string; summary: string; facts: [string, string][]; tagline: string; story: string; positioning: string; palette: { primary: string; secondary: string; accent: string; light: string; dark: string } };
+export type Brand = { name: string; product: string; category: string; summary: string; facts: [string, string][]; tagline: string; story: string; positioning: string; palette: { primary: string; secondary: string; accent: string; light: string; dark: string } };
 const BRANDS: Record<KitId, Brand> = {
   noctil: {
     name: "NOCTIL", product: "Projecteur de galaxies NOCTIL", category: "Projecteur de galaxies",
@@ -130,11 +131,17 @@ const BRANDS: Record<KitId, Brand> = {
   },
 };
 
+/** Démonstration d'un kit suivi dans le dépôt (public/theme-assets/<id>/) : projet client composé par le vrai moteur dans
+ * son thème du catalogue, puis rédigé par `curate` sur les mêmes sections (NOCTIL, TRAVERSE ; HEUREN, ALCÔVE : issue #155). */
+export type KitConfig = { id: DirectionId; media: Media[]; handle: string; brand: Brand; themeName: string; provenance: string; storeKind: "specialty" | "catalog"; sector: string };
 export async function kitProject(userId: string, id: KitId) {
-  const b = BRANDS[id];
+  return buildKitProject(userId, { id, media: KIT_MEDIA[id], handle: KIT_HANDLE[id], brand: BRANDS[id], themeName: id === "noctil" ? "Noctil" : "Traverse", provenance: KIT_PROVENANCE, storeKind: "specialty", sector: "maison" }, id === "noctil" ? curateNoctil : curateTraverse);
+}
+export async function buildKitProject(userId: string, cfg: KitConfig, curate: (k: Kit) => void) {
+  const { id, brand: b } = cfg;
   const pid = seedHoldout(userId, 0, `Démo ${b.name}`);
   const product = {
-    ...emptyProduct(), name: b.product, nameStatus: "provided" as const, category: b.category, sector: "maison" as const, summary: b.summary,
+    ...emptyProduct(), name: b.product, nameStatus: "provided" as const, category: b.category, sector: cfg.sector as ReturnType<typeof emptyProduct>["sector"], summary: b.summary,
     facts: b.facts.map(([label, value]) => ({ key: label.toLowerCase(), label, value, status: "confirmed" as const, source: "user" as const })),
     variants: [],
   };
@@ -143,20 +150,20 @@ export async function kitProject(userId: string, id: KitId) {
   saveBrand(pid, { ...local.brand, name: b.name, generatedBy: "local" as const, tagline: b.tagline, story: b.story, positioning: b.positioning, palette: b.palette, direction: id });
   saveStrategy(pid, local.strategy);
   run("UPDATE projects SET store_type = ?, business_type = ?, updated_at = ? WHERE id = ?", "mono", "products", now(), pid);
-  saveSettings(pid, { ...loadProject(pid).settings, storeKind: "specialty" });
+  saveSettings(pid, { ...loadProject(pid).settings, storeKind: cfg.storeKind });
 
   // Médias : importés comme ceux d'un client (rôles explicites), étiquetés démonstration. Jamais le fichier exclu.
   const missing: string[] = [];
   const ids: Record<string, string> = {};
-  for (const m of KIT_MEDIA[id]) {
+  for (const m of cfg.media) {
     const source = path.join(kitDir(id), m.file);
     if (!fs.existsSync(source) || fs.statSync(source).size === 0) { missing.push(m.file); continue; }
     const bytes = fs.readFileSync(source), meta = await sharp(bytes).metadata();
-    const a = await saveAsset({ projectId: pid, userId, data: bytes, mime: "image/webp", name: `${id}-${m.file}`, origin: "upload", role: m.role, status: "approved", meta: { demo: { isDemo: true, provenance: KIT_PROVENANCE }, width: meta.width, height: meta.height, alt: m.alt } });
+    const a = await saveAsset({ projectId: pid, userId, data: bytes, mime: "image/webp", name: `${id}-${m.file}`, origin: "upload", role: m.role, status: "approved", meta: { demo: { isDemo: true, provenance: cfg.provenance }, width: meta.width, height: meta.height, alt: m.alt } });
     ids[m.file] = a.id;
     if (m.role === "logo") {
       const png = await sharp(bytes).resize(180, 180, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer();
-      const fav = await saveAsset({ projectId: pid, userId, data: png, mime: "image/png", name: `${id}-favicon-180.png`, origin: "upload", role: "favicon", status: "approved", meta: { demo: { isDemo: true, provenance: KIT_PROVENANCE }, width: 180, height: 180 } });
+      const fav = await saveAsset({ projectId: pid, userId, data: png, mime: "image/png", name: `${id}-favicon-180.png`, origin: "upload", role: "favicon", status: "approved", meta: { demo: { isDemo: true, provenance: cfg.provenance }, width: 180, height: 180 } });
       ids["favicon.png"] = fav.id;
     }
   }
@@ -165,13 +172,13 @@ export async function kitProject(userId: string, id: KitId) {
   const spec: ThemeSpec = built.spec;
   const productKey = spec.store.product.template_suffix ? `product.${spec.store.product.template_suffix}` : "product";
   const catalogOrder = { index: spec.templates.index.order.map((k) => spec.templates.index.sections[k].type), product: spec.templates[productKey].order.map((k) => spec.templates[productKey].sections[k].type) };
-  (id === "noctil" ? curateNoctil : curateTraverse)(kit(spec, ids, id));
+  curate(kit(spec, ids, cfg));
   return { pid, spec, missing, catalogOrder, project: loadProject(pid) };
 }
 
 /** Outils de rédaction posés sur la composition du catalogue (mêmes sections, même ordre) — comme pour SILLON. */
-function kit(spec: ThemeSpec, ids: Record<string, string>, id: KitId) {
-  const media = KIT_MEDIA[id];
+function kit(spec: ThemeSpec, ids: Record<string, string>, cfg: KitConfig) {
+  const { id, media } = cfg;
   // Fichiers servis sous un nom propre à la marque (le dossier assets du thème est commun à toute la boutique).
   const name = (file: string) => `${id}-${file}`;
   for (const [file, aid] of Object.entries(ids)) spec.files[name(file)] = aid;
@@ -210,7 +217,7 @@ function kit(spec: ThemeSpec, ids: Record<string, string>, id: KitId) {
     const schema = sectionSchema(spec, "faq")!; const blockType = schema.blocks[0]?.type ?? "question";
     return section("faq", { heading, text: text ? p(text) : "", style, layout, structured_data: false, open_first: false, ...extra }, items.map(([question, answer]) => ({ type: blockType, settings: { question, answer: p(answer) }, hidden: answer.includes("[À compléter") })));
   };
-  const productHref = `/products/${KIT_HANDLE[id]}`;
+  const productHref = `/products/${cfg.handle}`;
   const productKey = () => (spec.store.product.template_suffix && spec.templates[`product.${spec.store.product.template_suffix}`] ? `product.${spec.store.product.template_suffix}` : "product");
   /** Corps de la fiche : mêmes blocs que SILLON ; les accordéons aux faits inconnus sont masqués, prêts dans l'éditeur. */
   const mainProduct = (opts: { eyebrow: string; text: string; highlights: string; description: string; specs: string; box: string; shipping: string; settings: Record<string, unknown> }) => {
@@ -242,13 +249,13 @@ function kit(spec: ThemeSpec, ids: Record<string, string>, id: KitId) {
   /** Produit principal sans prix (inconnu) : la démonstration ne vend rien. */
   const product = (fields: { title: string; description_html: string; images: string[]; tags: string[]; seo: { title: string; description: string } }) => {
     const main: StoreProduct = {
-      ...spec.store.product, contentTarget: "product:main", handle: KIT_HANDLE[id], vendor: BRANDS[id].name,
+      ...spec.store.product, contentTarget: "product:main", handle: cfg.handle, vendor: cfg.brand.name,
       price: null, compare_at_price: null, currency: "EUR", options: [], variants: [{ title: "Default Title", options: [], price: null, available: true }],
       ...fields, images: fields.images.filter((f) => ids[f]).map(name),
     };
     spec.store.product = main;
     spec.store.products = [];
-    spec.store.collections = [{ handle: "all", title: fields.title, description: BRANDS[id].summary, products: [main.handle] }];
+    spec.store.collections = [{ handle: "all", title: fields.title, description: cfg.brand.summary, products: [main.handle] }];
     return main;
   };
   /** Fin commune : modèles de page orphelins retirés, FAQ sans données structurées, logo et icône du site. */
@@ -259,9 +266,9 @@ function kit(spec: ThemeSpec, ids: Record<string, string>, id: KitId) {
     spec.settings = { ...spec.settings, logo_asset: ids["logo.webp"] ? name("logo.webp") : "", favicon_asset: ids["favicon.png"] ? name("favicon.png") : "", fab_contact_link: "/pages/aide" };
   };
   const demoMeta = () => {
-    spec.name = `${BRANDS[id].name} — thème ${id === "noctil" ? "Noctil" : "Traverse"} (démonstration)`;
-    spec.meta = { ...spec.meta, demo: { isDemo: true, provenance: KIT_PROVENANCE, contactTest: false } };
-    spec.store.shopName = BRANDS[id].name;
+    spec.name = `${cfg.brand.name} — thème ${cfg.themeName} (démonstration)`;
+    spec.meta = { ...spec.meta, demo: { isDemo: true, provenance: cfg.provenance, contactTest: false } };
+    spec.store.shopName = cfg.brand.name;
     spec.store.business = "products";
     spec.store.paymentTypes = [];
     spec.store.policies = [];
@@ -269,7 +276,7 @@ function kit(spec: ThemeSpec, ids: Record<string, string>, id: KitId) {
   };
   return { spec, ids, img, section, hide, overlay, faq, productHref, productKey, mainProduct, page, product, finish, demoMeta, announce: () => section("announcement-bar", { style: "static", color_scheme: "scheme-3" }, [{ type: "announcement", settings: { text: DEMO_BANNER, link: "" } }]) };
 }
-type Kit = ReturnType<typeof kit>;
+export type Kit = ReturnType<typeof kit>;
 
 // ─── NOCTIL ───────────────────────────────────────────────────────────────────────────────────────────────────────
 function curateNoctil(k: Kit) {

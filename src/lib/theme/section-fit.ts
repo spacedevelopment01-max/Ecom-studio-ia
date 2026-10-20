@@ -27,7 +27,7 @@ export type SectionFit = {
 
 const SHOP: StoreKind[] = ["catalog", "specialty"];
 const CONVERSION_THEMES = ["fraise", "onde", "sillon", "noctil", "traverse"];
-const EDITORIAL_THEMES = ["orbe", "rive"];
+const EDITORIAL_THEMES = ["orbe", "rive", "heuren", "alcove"];
 // Vitrine et Jardin sont retirés du catalogue (19 octobre) mais rendent encore ces sections : un projet existant qui les
 // utilise les garde compatibles ; aucun thème actif autre qu'ORBE / Rive ne se les voit proposer.
 const REFERENCE_THEMES = ["vitrine", "jardin", "orbe", "rive"];

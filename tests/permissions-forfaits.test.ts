@@ -23,10 +23,10 @@ describe("droits des forfaits, vérifiés côté serveur", async () => {
 
   it("catalogue actif (consigne 6264783184) : les quatre thèmes de référence pour tout forfait payant ; les 30 anciens restent lisibles mais jamais sélectionnables ; rien sans forfait", async () => {
     expect(themeOrderComplete()).toBe(true);
-    expect(THEME_ORDER).toHaveLength(37);
-    expect(THEME_ORDER.slice(30)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse"]);
+    expect(THEME_ORDER).toHaveLength(39);
+    expect(THEME_ORDER.slice(30)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove"]);
     expect([PLANS.creer.themes, PLANS.vendre.themes, PLANS.dominer.themes]).toEqual([4, 4, 4]);
-    for (const id of ["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse"]) {
+    for (const id of ["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove"]) {
       expect(themeAllowed(null, id)).toBe(false);
       for (const plan of ["creer", "vendre", "dominer"] as const) expect(themeAllowed(plan, id)).toBe(true);
       expect(planForTheme(id)).toBe("creer");

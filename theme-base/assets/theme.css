@@ -1373,3 +1373,8 @@ body:has(.es-newsletter) .es-footer__card, body:has(.es-newsletter) .es-footer__
 .dir-noctil .es-button { border-radius: 14px; }
 .dir-traverse .es-heading { letter-spacing: -.02em; line-height: 1.02; }
 .dir-traverse .es-button { border-radius: 2px; letter-spacing: .14em; }
+/* HEUREN et ALCÔVE (issue #155) : le caractère est porté par les profils éditoriaux « cadran » et « arrondi ». */
+.dir-heuren .es-heading { letter-spacing: -.01em; line-height: 1.05; }
+.dir-heuren .es-button { border-radius: 0; letter-spacing: .16em; }
+.dir-alcove .es-heading { letter-spacing: -.015em; line-height: 1.1; }
+.dir-alcove .es-button { border-radius: 999px; }

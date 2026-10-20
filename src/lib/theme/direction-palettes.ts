@@ -51,6 +51,8 @@ export const DIRECTION_PALETTES: Record<DirectionId, DirectionPalette> = {
   sillon: { primary: "#9C5A2C", secondary: "#E7D8C6", accent: "#3B1C0C", light: "#F4EDE3", dark: "#24140C" }, // cuivre (lisible sur ivoire), brun du logo, ivoire chaud
   noctil: { primary: "#4B3BB8", secondary: "#ECE8FA", accent: "#8E6CF0", light: "#ECE8FA", dark: "#0D0B26" }, // indigo lisible sur lavande, violet du halo, nuit profonde
   traverse: { primary: "#4F5631", secondary: "#D9D2C2", accent: "#A8572E", light: "#F5F1E8", dark: "#20251A" }, // olive du sac (6,9:1 sur le crème), pierre, crème, terre cuite en accent
+  heuren: { primary: "#15233E", secondary: "#D9DDE3", accent: "#B8946A", light: "#F7F5F0", dark: "#0D1526" }, // bleu nuit du cadran, argent brumeux, beige de la doublure, ivoire
+  alcove: { primary: "#A14225", secondary: "#EEE8E1", accent: "#5A3A24", light: "#F6F0E8", dark: "#2B1A12" }, // terre cuite du logo et du tissu, sable, bois des pieds
   rive: { primary: "#243B32", secondary: "#B7C2AE", accent: "#243B32", light: "#EEEAE2", dark: "#1B2B25" }, // vert profond, papier
 };
 
