@@ -61,7 +61,8 @@
               {% if section.settings.display_heading != blank or section.settings.display_intro != blank %}<div data-ed-product-heading {{ block.shopify_attributes }}><h1 class="es-heading es-h2 es-product__title">{{ section.settings.display_heading | default: product.title | escape }}</h1>{% if section.settings.display_intro != blank %}<p class="ed-product-intro">{{ section.settings.display_intro | escape }}</p>{% endif %}</div>{% else %}<h1 class="es-heading es-h2 es-product__title" {{ block.shopify_attributes }}>{{ product.title }}</h1>{% endif %}
             {%- when 'price' -%}
               <div class="es-product__price" {{ block.shopify_attributes }} data-price-wrap><div class="es-product__price-line">{% render 'price', product: product, use_variant: true %}{% if section.settings.purchase_enabled and section.settings.purchase_unit_label != blank %}<span class="es-product__price-note" data-price-note>{{ section.settings.purchase_unit_label | escape }}</span>{% endif %}</div>
-                <p class="es-small es-muted">{{ 'products.product.taxes_included' | t }}</p>
+                {%- comment -%} Produit sans prix (aperçu du studio) : aucune mention de taxes ni de livraison autour d'un prix absent. {%- endcomment -%}
+                {% if product.price != nil %}<p class="es-small es-muted">{{ 'products.product.taxes_included' | t }}</p>{% endif %}
               </div>
             {%- when 'text' -%}
               <div class="es-rte es-product__text" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>

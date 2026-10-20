@@ -80,6 +80,8 @@ try {
     // Pages.
     const routes: [string, string][] = [["accueil.html", "/"], ...(services ? [] : [["produit.html", `/products/${productHandle}`], ["boutique.html", "/collections/all"]] as [string, string][]), ...pageHandles.map((h) => [`page-${h}.html`, `/pages/${h}`] as [string, string])];
     for (const [file, route] of routes) fs.writeFileSync(path.join(dir, file), inject(rewrite(await pageHtml(route))));
+    // Plan des pages (visualiseur « démo complète » du studio) : fichier et titre de chaque page navigable.
+    fs.writeFileSync(path.join(dir, "pages.json"), JSON.stringify({ title, services, pages: [["accueil.html", "Accueil"], ...(services ? [] : [["produit.html", productTitle], ["boutique.html", "Boutique"]]), ...spec.store.pages.map((pg) => [`page-${pg.handle}.html`, pg.title]), ...(services ? [] : [["panier.html", "Panier"]])].map(([file, label]) => ({ file, label })) }, null, 2) + "\n");
     fs.writeFileSync(path.join(dir, "404.html"), inject(rewrite(await pageHtml("/page-inconnue", 404))));
     const q = encodeURIComponent(productTitle.split(" ")[0]);
     fs.writeFileSync(path.join(dir, "recherche.html"), inject(rewrite(await pageHtml("/search"))));
@@ -131,5 +133,5 @@ try {
     summary.push({ demo: run.id, theme: run.direction, name: run.name, title, category: f.demo.category, services, pages: routes.length + 4, cartStates, assets: fetched.size, fonts: fonts.size, files, bytes: size, imagesInTheme: Object.keys(spec.files).length, missing: f.missing, handoff: handoff ? { placed: handoff.placed?.length ?? 0, empty: handoff.empty ?? [] } : null });
     console.log(JSON.stringify(summary.at(-1)));
   });
-  fs.writeFileSync(path.join(out, "resume.json"), JSON.stringify({ commit: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(), date: new Date().toISOString(), runs: summary }, null, 2) + "\n");
+  fs.writeFileSync(path.join(out, "resume.json"), JSON.stringify({ commit: (() => { try { return execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim(); } catch { return process.env.THEME_DEMOS_VERSION ?? "inconnu"; } })(), date: new Date().toISOString(), runs: summary }, null, 2) + "\n");
 } finally { fs.rmSync(temp, { recursive: true, force: true }); }

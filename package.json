@@ -12,7 +12,8 @@
     "worker": "tsx worker/index.ts",
     "setup": "tsx scripts/setup.ts",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "demos:themes": "tsx scripts/prepare-theme-demos.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",

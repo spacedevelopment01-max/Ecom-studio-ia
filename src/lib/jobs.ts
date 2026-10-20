@@ -188,6 +188,12 @@ export function jobQuotaScope(job: Pick<Job, "id" | "type" | "payload" | "projec
 }
 
 /** Une création du pilote est-elle déjà en file, en cours ou en pause pour ce projet ? */
+/** Tâche encore en attente ou en cours, du même type et pour le même projet, dont la charge contient ces valeurs. */
+export function pendingJob(projectId: string, type: string, match: Record<string, unknown> = {}): Job | null {
+  const rows = all<Job>("SELECT * FROM jobs WHERE project_id = ? AND type = ? AND status IN ('queued','running','paused','blocked') ORDER BY created_at DESC", projectId, type);
+  return rows.find((j) => { try { const p = JSON.parse(j.payload || "{}"); return Object.entries(match).every(([k, v]) => p[k] === v); } catch { return false; } }) ?? null;
+}
+
 export const pipelineActive = (projectId: string) => !!one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'pipeline.run' AND status IN ('queued','running','paused')", projectId);
 
 export class JobCancelled extends Error {}

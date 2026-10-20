@@ -54,6 +54,10 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   démonstration `tests/sillon-fixtures.ts`).
   Les anciennes démos (ARVEN, Cime, Les Tribunes, Sonore, Racines & Pierres, Atelier Pivoine, Ostral) sont abandonnées :
   ne pas les adapter ni les maintenir. Leurs visuels viennent du kit privé de Thomas (`public/demo/<id>/`, hors dépôt).
+  **Démos intégrales avant le choix** (revue PR #149) : la galerie « Thèmes » ouvre la boutique de démonstration
+  complète de chaque thème (`src/lib/theme/theme-demos.ts`, exports statiques préparés hors dépôt par
+  `npm run demos:themes`, ou automatiquement en arrière-plan) ; aucune donnée du projet n'y est substituée et le projet
+  ne change qu'à « Choisir ce thème » (une seule tâche même en double-clic).
   **Page d'accueil** : chaque section montre de vrais visuels (sinon rien, jamais un gabarit) et les sections tournent
   entre ces quatre démos, en alternant produits et services.
 

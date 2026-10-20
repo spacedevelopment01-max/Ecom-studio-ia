@@ -570,6 +570,7 @@ body[data-conversion="nomade"] .es-eyebrow,body[data-conversion="nomade"] .cv-ey
 body[data-conversion="nomade"][data-ds] :is(.cv-button,.es-button:not(.es-button--secondary):not(.es-link-button)){position:relative;overflow:hidden;font-weight:500;letter-spacing:.04em;text-transform:none;border:0;box-shadow:0 14px 30px -18px color-mix(in srgb,var(--c-accent) 80%,#000)}
 body[data-conversion="nomade"][data-ds] :is(.cv-button,.es-button:not(.es-button--secondary):not(.es-link-button))::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.38) 50%,transparent 70%);transform:translateX(-120%);transition:transform .7s ease;pointer-events:none}
 body[data-conversion="nomade"][data-ds] :is(.cv-button,.es-button:not(.es-button--secondary):not(.es-link-button)):hover::after{transform:translateX(120%)}
+body[data-conversion="nomade"][data-ds] .es-button--secondary{text-transform:none;font-weight:500;letter-spacing:.04em;border-color:color-mix(in srgb,var(--c-accent) 65%,transparent)}
 body[data-conversion="nomade"] .cv-button:hover{transform:translateY(-1px)}
 body[data-conversion="nomade"] .es-button--secondary{border-radius:999px;font-weight:500;border:1px solid rgba(var(--c-text-rgb),.4);background:transparent}
 body[data-conversion="nomade"] .es-header__cta{border-radius:999px}

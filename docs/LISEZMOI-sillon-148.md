@@ -2,6 +2,64 @@
 
 État de la branche `claude/theme-sillon-148`. **À valider par Thomas : rien n'est fusionné ni déployé.**
 
+## Finitions du 20 octobre (revue de coordination, commentaire 6293259742 sur la PR #149)
+
+1. **Médias 07 et 16 réparés** (commit `5a9267c0` de `assets/sillon-theme-20261020`, contrôlés : 07 = 412 024 octets,
+   1 254 × 1 254 ; 16 = 180 844 octets, 1 536 × 1 024 ; empreintes `15c116e7…` et `24d7460c…` identiques) :
+   - **16** (machine sur un socle de pierre claire, lumière ivoire) remplace 13 dans l'inscription aux nouvelles de
+     l'accueil : 13 (balcon alpin) n'est plus répété entre l'accueil, la fiche et « Usages » ;
+   - **07** (gros plan de la bague et du bouton cuivrés, fini brossé) ouvre une section « Le cuivre, sous la main » sur
+     la page « Utilisation » (bibliothèque : histoire de la marque, image et texte). Le texte décrit seulement ce qui se
+     voit ; le rôle du bouton n'est jamais supposé ;
+   - les 18 visuels sont désormais utilisés, aucun n'est vide.
+2. **Textes aboutis, sans « À compléter » visible** :
+   - ouverture commerciale (« La machine à espresso nomade, pour emporter votre rituel ») et trois arguments tirés du
+     concept et des photos : bureau, voyage et dehors ; silhouette sobre aux détails cuivrés ; service dans le verre ;
+   - « Quatre gestes, à préciser » devient « Un espresso, en quatre temps » : choisir sa table, placer le verre, laisser
+     couler, savourer. Aucun geste technique supposé (remplissage, rôle du bouton, entretien) ;
+   - FAQ publique de cinq réponses vraies (où l'utiliser, comment l'espresso est servi, où voir la machine de près,
+     comment être prévenu, « Peut-on commander aujourd'hui ? » → non, démonstration) ;
+   - **les informations inconnues ne sont plus affichées mais restent dans l'éditeur** : accordéons « Caractéristiques
+     techniques », « Dans la boîte » et « Livraison, retours et garantie » de la fiche, groupes de caractéristiques
+     inconnues, six questions en attente et la section « Livraison, retours et garantie » sont **masqués**, avec leurs
+     champs « [À compléter : …] » prêts à remplir. Rien n'a été retiré de la bibliothèque ;
+   - un seul bandeau de démonstration, clair : « Boutique de démonstration : aucune vente réelle. » Aucun prix inventé ;
+     le paiement reste désactivé (le panier refuse l'ajout avec « Prix à définir ») ;
+   - modèles de page orphelins de la composition (FAQ, livraison), qui ne contenaient que des manques : retirés de la démo.
+3. **SEO revu** : titles et descriptions d'intention (rituel, usages, utilisation), plus seulement couleur et forme,
+   sans surpromesse (tableau plus bas).
+4. **Démos intégrales avant le choix d'un thème** (demande de Thomas) — voir la section dédiée plus bas.
+5. **Trois défauts de bibliothèque corrigés en passant** (utiles à tous les projets) :
+   - `cv-specs` : le réglage « Ouvert par défaut » ne marchait jamais (espace manquant avant l'animation, HTML
+     `opendata-reveal`) ;
+   - produit sans prix (aperçu du studio) : plus de « Taxes incluses, frais de livraison… » ni « par article » à côté
+     d'un prix absent (fiche et « Produit à la une ») ;
+   - profil « nomade » : boutons secondaires sans capitales, assortis aux boutons principaux.
+
+## Démos intégrales avant « Choisir ce thème »
+
+- Dans la galerie « Thèmes », chaque carte montre **la démonstration du thème** (plus jamais le projet du client) et un
+  bouton **« Voir la démo complète »**. Il ouvre en plein écran la boutique de démonstration entière : FRAISE, ONDE, ORBE,
+  Atelier Rive ou SILLON, avec nos produits, visuels, logos et textes.
+- Le client **défile toutes les sections**, **change de page** (sélecteur de pages, ou menus et liens de la démo
+  elle-même ; le sélecteur suit), **bascule ordinateur / téléphone** (390 px). Panier simulé, paiement désactivé.
+- **Rien n'est envoyé au projet pendant la visite** : pas de substitution, pas d'IA, pas de dépense, pas d'écriture.
+  Le seul geste qui modifie le projet est **« Choisir ce thème »** (dans la démo ou sur la carte), qui passe par le
+  parcours habituel : nouvelle version composée avec l'identité et les contenus du projet, l'ancienne reste restaurable.
+- **Double application impossible** : garde immédiate dans la galerie (un double-clic n'envoie qu'une demande) et, côté
+  serveur, une demande identique encore en cours renvoie la même tâche au lieu d'en créer une seconde.
+- **Après le choix**, l'éditeur affiche un encadré « Thème appliqué avec vos contenus » qui liste les sections masquées
+  faute d'informations du client, avec la marche à suivre ; rien n'est emprunté à la démo.
+- Droits : le choix reste soumis à la catégorie du projet et au forfait (règles d'accès existantes, consommées telles
+  quelles ; la grille de prix de Codex #150 n'est pas touchée). La démo complète, elle, se consulte librement ; quand
+  le choix n'est pas possible, son motif s'affiche à la place du bouton.
+- **Fonctionnement** : les démos sont les exports statiques complets déjà utilisés pour les aperçus validés
+  (`scripts/reference-static-preview.ts`). Elles sont préparées hors du dépôt (`<dossier data>/theme-demos`, leurs
+  visuels venant en partie du kit privé), par `npm run demos:themes` ou automatiquement en arrière-plan à la première
+  ouverture de la galerie, puis à chaque nouvelle version du code (environ 2 minutes pour les cinq). La préparation
+  tourne dans un processus séparé avec sa propre base temporaire : la base des projets n'est jamais ouverte. Pendant une
+  mise à jour, l'ancienne démo reste servie.
+
 ## Base de travail et dépendances
 
 - Partie de la tête de la PR spacedevelopment01-max/Ecom-studio-ia#147 (issue #145, **non fusionnée**) : SILLON réutilise
@@ -39,30 +97,28 @@
 | | 5 | Situations d'utilisation | `cv-gallery` · mosaïque (6 lieux) | 10, 18, 08, 12, 17, 14 |
 | | 6 | Achat et offres | `featured-purchase` · achat compact (4 vues) | 02, 11, 15, 03 |
 | | 7 | Questions fréquentes | `faq` · titre à côté (4 questions) | — |
-| | 8 | Newsletter | `newsletter-media` · inscription avec visuel | 13 balcon alpin |
+| | 8 | Newsletter | `newsletter-media` · inscription avec visuel | 16 socle de pierre, lumière ivoire |
 | Fiche produit | — | (corps de fiche) | `main-product` · galerie en grille, cadre carré, barre d'achat | 02, 11, 15, 03, 06 |
 | | 1 | Détails du produit | `cv-hotspots` · repères, liste dessous | 01 vue de dessus |
-| | 2 | Caractéristiques | `cv-specs` · titre à côté, accordéons | — |
-| | 3 | Mode d'emploi | `cv-steps` · étapes sur une ligne | — |
+| | 2 | Caractéristiques | `cv-specs` · titre à côté (« La machine, détail par détail ») ; groupes inconnus masqués | — |
+| | 3 | Mode d'emploi | `cv-steps` · étapes sur une ligne (« Un espresso, en quatre temps ») | — |
 | | 4 | Situations d'utilisation | `cv-alternating` · images à gauche | 05 bureau, 13 balcon |
-| | 5 | Garanties et livraison | `fs-commitments` · liste détaillée | — |
-| | 6 | Questions fréquentes | `faq` · accordéons en lignes (7 questions) | — |
+| | 5 | Garanties et livraison | `fs-commitments` · liste détaillée — **masquée** (inconnus), prête dans l'éditeur | — |
+| | 6 | Questions fréquentes | `faq` · accordéons en lignes (5 visibles, 6 en attente masquées) | — |
 | Usages | 1 | Situations d'utilisation | `cv-alternating` · alternance (6 lieux) | 05, 12, 08, 14, 13, 10 |
 | | 2 | Situations d'utilisation | `cv-gallery` · grille 2 colonnes | 17, 18 |
 | | 3 | Achat et offres | `cta-banner` · bandeau d'appel | — |
 | Utilisation et caractéristiques | 1 | Mode d'emploi | `cv-steps` · étapes en cartes | 11 |
-| | 2 | Caractéristiques | `cv-specs` · accordéons empilés | — |
-| | 3 | Questions fréquentes | `faq` · numérotées | — |
+| | 2 | Histoire de la marque | `image-with-text` · image à droite (« Le cuivre, sous la main ») | 07 gros plan cuivré |
+| | 3 | Caractéristiques | `cv-specs` · empilés ; groupes inconnus masqués | — |
+| | 4 | Questions fréquentes | `faq` · numérotées (5 visibles, 6 masquées) | — |
 | Contact | 1 | Contact | `contact-form` · formulaire et coordonnées | — |
 
 - **Accueil sur téléphone** : le visuel d'ouverture passe au-dessus du titre, entier, sans texte superposé.
 - **Projet neuf dans SILLON** : même composition. Toute section sans contenu réel reste masquée (repères, FAQ,
   mode d'emploi…) jusqu'à ce que le client la remplisse.
 - **Médias** :
-  - les 16 visuels réels sont tous utilisés, chacun une seule fois par page ;
-  - **07 (bouton cuivré) et 16 (lumière ivoire) font 0 octet dans le commit `8bbbc3bd` lui-même** : ils ne sont ni
-    importés ni remplacés. Leur emplacement prévu (gros plan du bouton dans « Détails », ouverture claire) reste à
-    reprendre dès que les fichiers seront renvoyés ;
+  - les 18 visuels sont tous utilisés, chacun une seule fois par page (07 et 16 réparés au commit `5a9267c0`) ;
   - 09 (logo) est utilisé en en-tête et pour l'icône du site. Il est brun sur transparent, donc invisible sur fond
     sombre : le pied sombre affiche le nom en grandes lettres plutôt que le logo.
 
@@ -74,19 +130,19 @@
   - marquage SILLON ;
   - l'espresso coule directement dans le verre placé dessous ;
   - les lieux représentés.
-- **Champs « [À compléter] » visibles et modifiables** : pression, chauffe, alimentation, autonomie, recharge,
-  compatibilité, contenance, dimensions, poids, matériaux, certifications, contenu du coffret, rôle exact du bouton et
-  du dessus, entretien, livraison, retours, garantie, assistance.
-- **Aucun** prix (« Prix à définir »), avis, note, compteur, urgence, réduction ni stock.
-- **Démonstration signalée** par le bandeau « Démonstration : prix et caractéristiques à confirmer. ».
+- **Jamais affirmés, jamais affichés** dans la démo publique ; champs « [À compléter : …] » masqués, prêts dans
+  l'éditeur : pression, chauffe, alimentation, autonomie, recharge, compatibilité, contenance, dimensions, poids,
+  matériaux, certifications, contenu du coffret, entretien, livraison, retours, garantie, assistance.
+- **Aucun** prix inventé, avis, note, compteur, urgence, réduction ni stock. Le prix affiché reste « Prix à définir ».
+- **Démonstration signalée** par un seul bandeau : « Boutique de démonstration : aucune vente réelle. ».
 - **Copyright** : « © année SILLON ». Aucun document juridique inventé.
 
 | Page | Title | Meta description | H1 |
 |---|---|---|---|
-| Accueil | Machine à espresso nomade SILLON \| Bureau, voyage, plein air | SILLON, machine à espresso nomade au corps brun mat et aux détails cuivrés : l'espresso coule directement dans le verre, du bureau au voyage. | La machine à espresso nomade |
-| Fiche | SILLON, machine à espresso portable brun et cuivre | SILLON, machine à espresso portable : cylindre brun mat, bague et bouton cuivrés, espresso servi directement dans le verre. Vues, détails et caractéristiques. | Machine à espresso nomade SILLON |
+| Accueil | SILLON \| Machine à espresso nomade, du bureau au voyage | SILLON emporte le rituel de l'espresso du bureau à la chambre d'hôtel, du train au pique-nique, servi directement dans le verre. | La machine à espresso nomade, pour emporter votre rituel |
+| Fiche | Machine à espresso portable SILLON : vues, détails, rituel | Découvrez SILLON, machine à espresso portable : toutes ses vues, ses finitions cuivrées de près et le rituel du café, de la table au verre. | Machine à espresso nomade SILLON |
 | Usages | Machine à café portable : bureau, voyage, plein air \| SILLON | Bureau, cuisine, hôtel, train, balcon, pique-nique : six lieux où poser SILLON, machine à café portable, en photos. | Une machine à café portable, du bureau au plein air |
-| Utilisation | Utilisation et caractéristiques de la machine espresso SILLON | Mode d'emploi en quatre gestes et caractéristiques de SILLON, machine à espresso nomade : ce qui est confirmé, ce qui reste à préciser. | Utilisation et caractéristiques de la machine à espresso nomade |
+| Utilisation | Utiliser SILLON : le rituel espresso et la machine en détail | Le rituel du café avec SILLON, machine à espresso nomade, en quatre temps, ses finitions cuivrées de près et les réponses aux questions fréquentes. | Utilisation et caractéristiques de la machine à espresso nomade |
 | Contact | Contact \| SILLON, machine à espresso nomade | Une question sur SILLON, la machine à espresso nomade ? Écrivez-nous par le formulaire de contact. | Contact |
 
 - **Une intention par page**, sans bourrage de mots-clés ; titles et descriptions uniques et modifiables (SEO de la
@@ -98,7 +154,7 @@
   - `Product` sans `Offer` tant qu'aucun prix n'est fixé ;
   - jamais d'`AggregateRating` ;
   - `BreadcrumbList` ajouté sur la fiche et les pages ;
-  - FAQ sans données structurées tant que des réponses restent à compléter (aucun résultat enrichi n'est promis).
+  - FAQ sans données structurées dans la démo (aucun résultat enrichi n'est promis sur une boutique sans vente).
 - **Aperçus privés jamais indexés** : en-tête `X-Robots-Tag: noindex, nofollow, noarchive` sur la route d'aperçu,
   balise `robots noindex` dans l'aperçu (le thème exporté n'en a pas). `robots.txt` et le plan du site excluaient déjà
   `/preview/`.
@@ -128,7 +184,12 @@
   boutique**.
 - La page des tarifs dit encore « Les quatre thèmes de référence » : la tarification est hors de cette mission, je
   ne l'ai pas modifiée (à corriger sur ta décision).
-- Médias 07 et 16 vides à la source (voir plus haut).
+- Démos intégrales : en français seulement (contenus des démonstrations) ; dans la démo, la touche Échap ferme d'abord
+  les menus de la boutique, puis la démo quand le curseur est sur la barre du haut. FRAISE, ONDE, ORBE et Atelier Rive
+  ont besoin du kit privé de Thomas pour être préparées (comme leurs aperçus) ; sans lui, leur bouton indique
+  « Démo complète indisponible ».
+- Le choix d'une direction dans l'onglet « Marque » (vignettes avec le contenu du projet) n'a pas changé : le parcours
+  de choix avec démo complète est celui de la galerie « Thèmes » de la boutique.
 - Claude-Mem et VibeSec : non installés. Aucune référence vérifiée sous ces noms dans le catalogue de plugins
   disponible ; seuls des voisins existent (« Cowork Memory », inspiré de claude-mem ; « claude-security », Anthropic).
   Je n'ai rien installé et n'ai utilisé aucun dépôt homonyme non vérifié.

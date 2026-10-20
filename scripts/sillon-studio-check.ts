@@ -62,7 +62,7 @@ try {
     await card.waitFor({ timeout: 60000 }); await card.scrollIntoViewIfNeeded(); await page.waitForTimeout(800);
     if (!shotDone) { await shot(page, "02-galerie-themes"); shotDone = true; }
     const sent = page.waitForResponse((r) => r.url().includes("/theme/build") && r.request().method() === "POST", { timeout: 30000 }).then((r) => r.ok(), () => false);
-    await card.getByRole("button", { name: /Appliquer ce thème/ }).click();
+    await card.getByRole("button", { name: /^Choisir ce thème$/ }).click();
     if (await sent) break;
     if (attempt >= 3) throw new Error("Demande d'application jamais envoyée");
     await page.reload({ waitUntil: "networkidle", timeout: 240000 }); await page.waitForTimeout(1500);
