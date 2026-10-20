@@ -72,9 +72,9 @@ describe("rendez-vous téléphoniques", () => {
     expect(q.free).toBe(false);
     // Tarif DOMINER au-delà de l'heure offerte : réglé par l'administration (sinon pas de réservation).
     expect(q.priceCents).toBe(null);
-    expect(() => calls.bookSlot(d.u.id, second.pid, slot())).toThrow(/tarif/i);
+    expect(() => calls.bookSlot(d.u.id, second.pid, slot())).toThrow(/déjà/i);
     calls.setDominerCallPrice(45);
-    expect(calls.quoteCall(d.u.id, second.pid)).toMatchObject({ free: false, priceCents: 4500 });
+    expect(calls.quoteCall(d.u.id, second.pid)).toMatchObject({ free: false, priceCents: null, state:"reserved" });
     calls.setDominerCallPrice(null);
     // Annulée dans les délais : l'heure offerte est rendue.
     calls.cancelBooking(d.u.id, b.id);
@@ -109,7 +109,8 @@ describe("rendez-vous téléphoniques", () => {
     expect(one<{ status: string }>("SELECT status FROM call_bookings WHERE id = ?", b.id)!.status).toBe("confirmed");
     expect(one<{ n: number }>("SELECT COUNT(*) n FROM payments WHERE user_id = ? AND kind = 'call'", c.u.id)!.n).toBe(1);
 
-    const other = calls.bookSlot(c.u.id, c.pid, slot());
+    const otherClient=await project("creer");
+    const other = calls.bookSlot(otherClient.u.id, otherClient.pid, slot());
     await handleStripeEvent({ id: `evt_${uniq()}`, type: "checkout.session.expired", created: 2, data: { object: { id: "cs_x", metadata: { kind: "call_v2", booking_id: other.id } } } });
     expect(one<{ status: string }>("SELECT status FROM call_bookings WHERE id = ?", other.id)!.status).toBe("canceled");
   });
@@ -118,11 +119,12 @@ describe("rendez-vous téléphoniques", () => {
     const c = await project("vendre");
     const soon = calls.bookSlot(c.u.id, c.pid, slot(0.9)); // dans moins de 24 h
     expect(() => calls.cancelBooking(c.u.id, soon.id)).toThrow(/24 h/);
-    const b = calls.bookSlot(c.u.id, c.pid, slot(5));
+    const separate = await project("vendre");
+    const b = calls.bookSlot(separate.u.id, separate.pid, slot(5));
     run("UPDATE call_bookings SET status = 'confirmed', payment_intent = 'pi_test' WHERE id = ?", b.id);
-    const moved = calls.rescheduleBooking(c.u.id, b.id, slot(6));
+    const moved = calls.rescheduleBooking(separate.u.id, b.id, slot(6));
     expect(moved.slot_id).not.toBe(b.slot_id);
-    expect(calls.cancelBooking(c.u.id, b.id).refund).toEqual({ paymentIntent: "pi_test", cents: 3000 });
+    expect(calls.cancelBooking(separate.u.id, b.id).refund).toEqual({ paymentIntent: "pi_test", cents: 3000 });
     // Un autre client ne peut pas toucher à ce rendez-vous.
     const intruder = await project("creer");
     expect(() => calls.cancelBooking(intruder.u.id, soon.id)).toThrow(/introuvable/);

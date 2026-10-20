@@ -1,3 +1,5 @@
+import { planOfProject } from "../plan-gates";
+import { PLANS } from "../plans";
 /**
  * Social Media & Automatisation Engine V2 (phase 9A) — façade.
  *
@@ -40,6 +42,8 @@ export function projectAccounts(p: Project): { id: string; provider: string; nam
 /** Demande en clair → calendrier de niveau 1 (aucune dépense). La programmation viendra après approbation. */
 export function planFromAsk(p: Project, text: string, o: { at?: number; lang?: "fr" | "en"; platforms?: Platform[]; maxDays?: number; maxPerDay?: number; planId?: string } = {}) {
   const ask = parseSocialAsk(text);
+  const active=planOfProject(p.id);
+  if(active)o={...o,maxDays:Math.min(o.maxDays??Infinity,PLANS[active].calendarDays),maxPerDay:Math.min(o.maxPerDay??Infinity,PLANS[active].postsPerDay)};
   // Nombre par jour limité par le forfait (annoncé, jamais caché).
   if (o.maxPerDay && ask.perDay > o.maxPerDay) {
     ask.notes.push(`${ask.perDay} publications par jour demandées : limité à ${o.maxPerDay} par votre forfait`);

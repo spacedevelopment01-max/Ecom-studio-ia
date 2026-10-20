@@ -1,3 +1,4 @@
+import { grantProjectPlan } from "@/lib/project-subscriptions";
 /**
  * Changement de marque : toutes les créations suivent. Publicités (couleurs, logo, nom ET polices), vidéos (titres,
  * carte de fin, sous-titres, puis nouveau rendu), visuels faits par l'IA (nouvelle version payante seulement avec le
@@ -22,6 +23,7 @@ describe("Changement de marque : images et vidéos mises à jour", async () => {
   async function setup() {
     const u = await createUser(`mm-${Date.now()}-${Math.random()}@test.fr`, "motdepasse-test", "P");
     const pid = seedImageFixture(u.id, "hightech");
+    grantProjectPlan(pid,"dominer");
     await seedCutout(u.id, pid);
     const p = loadProject(pid);
     const plan = localScenePlan(p, null, { as: "ad" });

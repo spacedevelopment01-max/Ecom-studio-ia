@@ -1,3 +1,4 @@
+import { assertAdvertising } from "../job-entitlements";
 /**
  * Retouche de la mise en page demandée à l'IA quand le moteur local ne la comprend pas (demande composée, ambiguë,
  * créative : « remonte tout le bloc et aère le texte »). L'IA ne reçoit que la liste des calques (position, taille,
@@ -68,7 +69,8 @@ export function aiChangesToOps(doc: AdDocument, a: AiEditAnswer): DocOp[] {
   return ops;
 }
 
-export async function aiAdEdit(ctx: { userId: string; projectId: string }, doc: AdDocument, instruction: string): Promise<{ ops: DocOp[]; summary: string }> {
+export async function aiAdEdit(ctx: { userId: string; projectId: string; purpose?:"ad"|"organic" }, doc: AdDocument, instruction: string): Promise<{ ops: DocOp[]; summary: string }> {
+  if(ctx.purpose!=="organic")assertAdvertising(ctx.projectId);
   const a = (await llmJson(
     {
       task: "ad_creative",

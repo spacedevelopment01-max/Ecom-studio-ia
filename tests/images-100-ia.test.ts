@@ -33,7 +33,7 @@ describe("Images finales 100 % IA", async () => {
   const u = await createUser(`img100-${Date.now()}@test.fr`, "motdepasse-test", "I");
   const seed = (k: "cosmetic" | "artisan") => {
     const pid = seedImageFixture(u.id, k);
-    grantProjectPlan(pid, "vendre");
+    grantProjectPlan(pid, "dominer");
     return pid;
   };
   const job = (projectId: string) => {

@@ -1,3 +1,5 @@
+import { planAllowsAds } from "../plan-entitlements";
+import { projectPlan } from "../project-billing";
 /**
  * Pilote : de la photo (ou du lien) à la boutique, aux images, aux vidéos et
  * au calendrier. Chaque étape est un point de reprise : après une
@@ -442,6 +444,7 @@ const CREATION_AD_ASPECTS = ["4:5", "1:1", "9:16", "4:5", "16:9"] as const;
  * publicité : rien de repayé.
  */
 async function pipelineAds(ctx: JobContext, projectId: string): Promise<number> {
+  if(!planAllowsAds(projectPlan(projectId)))return 0;
   const fresh = loadProject(projectId);
   const { aiActiveFor } = await import("../ai/access");
   if (!aiActiveFor(fresh.userId, projectId)) return 0;

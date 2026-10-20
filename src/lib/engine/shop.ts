@@ -317,6 +317,10 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
 }
 
 export async function buildShop(ctx: JobContext | null, projectId: string, opts: { direction?: DirectionId; useAi?: boolean; summary?: Bi; engine?: "v1" | "v2"; language?: LanguageId } = {}) {
+  const {assertThemeAllowed}=await import("../plan-gates");
+  const chosen=opts.direction??loadProject(projectId).brand?.direction;
+  if(chosen)assertThemeAllowed(projectId,chosen,currentTheme(projectId)?.spec.direction??null);
+
   if((await import("../preparation/store")).stateOf(projectId)){
     const target=opts.direction??currentTheme(projectId)?.spec.direction;
     const selected=ACTIVE_DIRECTIONS.find(d=>d.id===target);
@@ -458,10 +462,10 @@ function compositionBaseline(projectId: string, upToNumber: number): ThemeSpec |
 
 /** Change de direction : nouvelle version complète (l'ancienne reste restaurable), ajouts et réglages du client reportés. */
 export async function switchDirection(ctx: JobContext | null, projectId: string, direction: DirectionId) {
-  // Thèmes du forfait du projet (10, 20 ou 30) — revérifié ici, dans le worker, quel que soit le chemin (écran, chat).
+  // Thèmes du forfait du projet (1 / 3 / tous par famille) — revérifié ici, dans le worker, quel que soit le chemin (écran, chat).
   const { assertThemeAllowed } = await import("../plan-gates");
   try {
-    assertThemeAllowed(projectId, direction, currentTheme(projectId)?.spec.direction ?? loadProject(projectId).brand?.direction ?? null);
+    assertThemeAllowed(projectId, direction, currentTheme(projectId)?.spec.direction ?? null);
   } catch (e) {
     throw new UserFacingError((e as Error).message);
   }

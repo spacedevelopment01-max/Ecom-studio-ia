@@ -35,7 +35,7 @@ describe("Images : versions, tri, supprimées, nouveaux types", async () => {
   const setup = async () => {
     const u = await createUser(`tri${Date.now()}${Math.random().toString(36).slice(2, 6)}@test.fr`, "motdepasse-test", "T");
     const pid = await seedThemeScenario(u.id, "artisan");
-    grantProjectPlan(pid, "vendre");
+    grantProjectPlan(pid, "dominer");
     const ph = await saveAsset({ projectId: pid, userId: u.id, data: await photo(), name: "salle.jpg", mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "upload", meta: {} });
     sessionUser = { ...u, role: "client" };
     const job = enqueue({ userId: u.id, projectId: pid, type: "image.single", payload: { projectId: pid, request: {} } });

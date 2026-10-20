@@ -18,6 +18,7 @@ type TFn = <T>(fr: T, en: T) => T;
 const n = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
 
 const LEVEL = {
+  none: { fr: "non incluses", en: "not included" },
   essential: { fr: "essentielles", en: "essential" },
   advanced: { fr: "avancées", en: "advanced" },
   full: { fr: "complètes", en: "complete" },
@@ -27,16 +28,18 @@ const LEVEL = {
 /** Les avantages affichés sur la carte d'un forfait (le détail est dans le tableau). Uniquement ce qui est configuré. */
 function planLines(p: Plan, t: TFn): Line[] {
   const lines: Line[] = [
-    { text: t("Les quatre thèmes de référence (un par catégorie de projet)", "The four reference themes (one per project category)") },
+    { text: p.id === "dominer" ? t("Tous les thèmes disponibles par famille", "All available themes per family") : t(`${p.themes} thème${p.themes>1?"s":""} par famille`, `${p.themes} theme${p.themes>1?"s":""} per family`) },
+    { text: t(`${p.librarySections} fonctions de sections dans la bibliothèque de votre famille`, `${p.librarySections} section functions in your family library`) },
+    { text: p.themeEditing === "basic" ? t("Personnalisation IA basique : textes, images, couleurs", "Basic AI editing: text, images, colours") : p.themeEditing === "advanced" ? t("Personnalisation IA avancée", "Advanced AI editing") : t("Personnalisation sur mesure", "Custom personalisation") },
     { text: t("Boutique, logo et images créés par l'IA", "Store, logo and images created by AI") },
-    { text: t(`Publicités IA ${LEVEL[p.ads].fr}`, `${LEVEL[p.ads].en[0].toUpperCase()}${LEVEL[p.ads].en.slice(1)} AI ads`) },
+    { text: p.ads === "none" ? t("Publicité et aide aux campagnes non incluses", "Advertising and campaign assistance not included") : t("Publicité et aide aux campagnes incluses", "Advertising and campaign assistance included") },
   ];
   if (p.videos !== "none") lines.push({ text: p.videos === "short" ? t("Vidéos IA courtes", "Short AI videos") : t("Vidéos IA avancées et vidéos UGC", "Advanced AI videos and UGC videos") });
   if (p.aiSections) lines.push({ text: t("Sections de boutique créées par l'IA", "Store sections created by AI") });
   if (p.pageModels) lines.push({ text: t("Modèles de pages et mise en page par produit ou prestation", "Page templates and a layout per product or service") });
   if (p.quotas.blog) lines.push({ text: t(`${p.quotas.blog} articles de blog IA par mois`, `${p.quotas.blog} AI blog posts per month`) });
   lines.push({ text: t(`Calendrier ${p.calendarDays} jours · ${n(p.postsPerDay, "publication", "publications")} par jour`, `${p.calendarDays}-day calendar · ${n(p.postsPerDay, "post", "posts")} per day`) });
-  lines.push({ text: p.freeFirstCall ? t("1 heure d'accompagnement offerte (une seule fois)", "1 hour of coaching included (once)") : t(`Accompagnement téléphonique : ${p.callPrice} € l'heure`, `Phone coaching: €${p.callPrice} per hour`) });
+  lines.push({ text: p.freeFirstCall ? t("1 heure d'accompagnement offerte (une seule fois)", "1 hour of coaching included (once)") : t(`Un appel de départ de 1 h : ${p.callPrice} €`, `One introductory 1-hour call: €${p.callPrice}`) });
   return lines;
 }
 
@@ -174,6 +177,7 @@ export function PricingCards({ loggedIn, current: currentIn, initialBilling, sel
           );
         })}
       </div>
+      <p className="mt-4 text-center text-sm text-muted">{t("Les droits s’appliquent aux thèmes disponibles de votre famille. Le catalogue cible comprend cinq thèmes par famille ; aucun thème à venir n’est annoncé comme déjà disponible. Les générations IA restent soumises au budget du projet.","Rights apply to available themes in your family. The target catalogue has five themes per family; future themes are not presented as already available. AI generation remains subject to the project budget.")}</p>
       {disabledReason && <p className="mt-4 text-center text-sm text-muted">{disabledReason}</p>}
     </div>
   );
@@ -191,9 +195,11 @@ export function CompareTable({ className }: { className?: string }) {
   const rows: [string, ReactNode, (p: Plan) => ReactNode][] = [
     [t("Projet réel par abonnement", "Real project per subscription"), "0", () => "1"],
     [t("Boutique active par projet", "Active store per project"), "0", () => "1"],
-    [t("Thèmes accessibles", "Available themes"), t("Démo", "Demo"), (p) => p.themes],
+    [t("Thèmes accessibles par famille", "Available themes per family"), t("Démo", "Demo"), (p) => p.id === "dominer" ? t("Tous les disponibles", "All available") : p.themes],
+    [t("Fonctions de sections de la bibliothèque par famille", "Library section functions per family"), t("Démo", "Demo"), (p) => p.librarySections],
+    [t("Personnalisation du thème par IA", "AI theme personalisation"), no, (p) => p.themeEditing === "basic" ? t("Basique", "Basic") : p.themeEditing === "advanced" ? t("Avancée", "Advanced") : t("Sur mesure", "Custom")],
     [t("Génération boutique, logo et images IA", "AI store, logo and image creation"), no, () => yes],
-    [t("Publicités IA", "AI ads"), t("Démo", "Demo"), (p) => lvl(p.ads)],
+    [t("Publicités IA", "AI ads"), t("Démo", "Demo"), (p) => p.ads === "none" ? no : yes],
     [t("Vidéos IA", "AI videos"), no, (p) => (p.videos === "none" ? no : p.videos === "short" ? t("Courtes", "Short") : t("Avancées + UGC", "Advanced + UGC"))],
     [t("Création de sections IA", "AI section creation"), no, (p) => (p.aiSections ? yes : no)],
     [t("Modèles de pages, ajout de pages, mise en page par produit", "Page templates, adding pages, layout per product"), t("Démo", "Demo"), (p) => (p.pageModels ? yes : no)],
@@ -203,7 +209,7 @@ export function CompareTable({ className }: { className?: string }) {
     [t("Publications par jour", "Posts per day"), t("Aucune réelle", "None real"), (p) => p.postsPerDay],
     [t("Connexions sociales", "Social connections"), no, () => yes],
     [t("Recharges IA (10 €)", "AI top-ups (€10)"), no, () => yes],
-    [t("Accompagnement téléphonique (1 h)", "Phone coaching (1 h)"), no, (p) => (p.freeFirstCall ? t("1re heure offerte", "1st hour free") : `${p.callPrice} €`)],
+    [t("Un appel de départ (1 h, une seule fois)", "One introductory call (1 h, once)"), no, (p) => (p.freeFirstCall ? t("1re heure offerte", "1st hour free") : `${p.callPrice} €`)],
   ];
   return (
     <details className={cx("group rounded-[1.75rem] border border-line bg-card", className)}>

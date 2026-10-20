@@ -26,7 +26,7 @@ type AiAd = {
   request: string | null;
   at: number;
 };
-type Campaigns = { aiAds: AiAd[]; ai: boolean; subjects: SubjectView[] };
+type Campaigns = { access?:boolean; aiAds: AiAd[]; ai: boolean; subjects: SubjectView[] };
 const ASPECTS = [
   { aspect: "4:5", fr: "Portrait 4:5", en: "Portrait 4:5" },
   { aspect: "1:1", fr: "Carré 1:1", en: "Square 1:1" },
@@ -116,6 +116,7 @@ export function AiAdCreator({ onDone }: { onDone?: () => void }) {
     }
   };
   const ads = data?.aiAds ?? [];
+  if(data?.access===false)return <Card className="mb-6 p-5" data-ad-plan-lock>{t("La publicité et l’aide aux campagnes sont incluses avec Dominer (129 € par mois). Vos créations existantes restent conservées et accessibles.","Advertising and campaign assistance are included with Dominate (€129 per month). Existing creations remain kept and accessible.")}</Card>;
   return (
     <section className="mb-8" data-ai-ad-creator>
       <SectionTitle title={t("Publicité conçue par l'IA", "Ad designed by AI")}>

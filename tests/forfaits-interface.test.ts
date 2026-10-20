@@ -46,7 +46,7 @@ describe("grille tarifaire et textes commerciaux", () => {
     expect(pricing).toContain("Notre recommandation");
     expect(PLANS.creer.pitch.fr).toBe("Lancez votre e-commerce avec l'intelligence artificielle.");
     expect(PLANS.creer.cta.fr).toBe("Créer mon e-commerce");
-    expect(PLANS.vendre.pitch.fr).toBe("Créez vos publicités, vidéos et contenus pour développer vos ventes.");
+    expect(PLANS.vendre.pitch.fr).toBe("Créez vos vidéos et contenus pour développer vos ventes.");
     expect(PLANS.vendre.cta.fr).toBe("Développer mon activité");
     expect(PLANS.dominer.pitch.fr).toBe("Automatisez votre marketing et exploitez toute la puissance du studio IA.");
     expect(PLANS.dominer.cta.fr).toBe("Accéder au studio complet");

@@ -64,7 +64,7 @@ export function releaseExpiredHolds(at = now()) {
   run("UPDATE call_bookings SET status = 'canceled', canceled_at = ?, updated_at = ? WHERE status = 'pending_payment' AND created_at < ?", at, at, at - PAYMENT_HOLD_MS);
 }
 
-export type CallQuote = { plan: PlanId; free: boolean; priceCents: number | null; reason?: string };
+export type CallQuote = { plan: PlanId; free: boolean; priceCents: number | null; state: "available" | "reserved" | "used"; reason?: string };
 
 /** Prix d'un rendez-vous pour ce projet (forfait actif du projet, heure offerte du compte). */
 export function quoteCall(userId: string, projectId: string): CallQuote {
@@ -74,10 +74,12 @@ export function quoteCall(userId: string, projectId: string): CallQuote {
   if (!sub || !(PAID_STATUSES as readonly string[]).includes(sub.status)) throw new HttpError(402, L("L'accompagnement téléphonique est réservé aux projets avec un abonnement actif.", "Phone coaching is for projects with an active subscription."), "plan_required");
   const plan = ((sub.plan ?? "creer") in PLANS ? sub.plan : "creer") as PlanId;
   const p = PLANS[plan];
-  if (p.freeFirstCall && !freeCallUsed(userId)) return { plan, free: true, priceCents: 0 };
+  const prior = one<CallBooking>("SELECT * FROM call_bookings WHERE user_id=? AND status!='canceled' ORDER BY created_at LIMIT 1",userId);
+  if(prior)return {plan,free:false,priceCents:null,state:prior.status==='done'?'used':'reserved',reason:prior.status==='done'?L("Votre appel de départ a déjà été utilisé. Il ne se renouvelle pas avec l’abonnement.","Your introductory call has already been used. It does not renew with the subscription."):L("Votre appel de départ est déjà réservé. Retrouvez-le ci-dessous pour suivre sa confirmation ou le reporter.","Your introductory call is already booked. Find it below to follow confirmation or reschedule it.")};
+  if (p.freeFirstCall && !freeCallUsed(userId)) return { plan, free: true, priceCents: 0, state:"available" };
   const price = p.callPrice != null ? Math.round(p.callPrice * 100) : dominerCallPriceCents();
-  if (price == null) return { plan, free: false, priceCents: null, reason: L("Votre heure offerte a été utilisée. Le tarif des rendez-vous suivants n'est pas encore fixé : contactez l'équipe.", "Your free hour has been used. The price of further appointments isn't set yet: contact the team.") };
-  return { plan, free: false, priceCents: price };
+  if (price == null) return { plan, free: false, priceCents: null, state:"used", reason: L("Votre heure offerte a été utilisée. Le tarif des rendez-vous suivants n'est pas encore fixé : contactez l'équipe.", "Your free hour has been used. The price of further appointments isn't set yet: contact the team.") };
+  return { plan, free: false, priceCents: price, state:"available" };
 }
 
 /** Créneaux libres à venir (réservables). */
@@ -106,6 +108,8 @@ export function bookSlot(userId: string, projectId: string, slotId: string, info
   const bid = id();
   try {
     tx(() => {
+      const current=quoteCall(userId,projectId);
+      if(current.state!=="available"||current.free!==quote.free||current.priceCents!==quote.priceCents)throw new HttpError(409,current.reason??L("Le tarif a changé : rechargez le rendez-vous.","Price changed: reload the appointment."));
       run(
         "INSERT INTO call_bookings (id, slot_id, user_id, project_id, plan, price_cents, free, status, topic, phone, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
         bid,
@@ -145,6 +149,10 @@ export function confirmPaidCall(bookingId: string, paymentIntent: string | null)
   if (b.status === "pending_payment") {
     run("UPDATE call_bookings SET status = 'confirmed', payment_intent = ?, updated_at = ? WHERE id = ? AND status = 'pending_payment'", paymentIntent, now(), bookingId);
     return "confirmed";
+  }
+  // A late payment must never consume a second introductory call already booked meanwhile.
+  if(one("SELECT 1 FROM call_bookings WHERE user_id=? AND id!=? AND status!='canceled'",b.user_id,b.id)) {
+    run("UPDATE call_bookings SET payment_intent=?,updated_at=? WHERE id=?",paymentIntent,now(),b.id);return "lost";
   }
   // Payé après l'expiration du blocage : on reprend le créneau s'il est encore libre, sinon il faut rembourser.
   try {

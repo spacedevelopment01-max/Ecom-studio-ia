@@ -1,3 +1,6 @@
+import { planAllowsSection } from "@/lib/plan-entitlements";
+import { planOfProject } from "@/lib/plan-gates";
+import { PLANS } from "@/lib/plans";
 import { storeProducts } from "@/lib/theme/spec";
 import { themeRecommendation } from "@/lib/theme/theme-recommendation";
 import { incompatibleSections } from "@/lib/theme/section-fit";
@@ -32,6 +35,8 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const messages = all<any>("SELECT id, role, content, attachments, selection, theme_version_id, job_id, created_at FROM chat_messages WHERE project_id = ? AND thread = 'shop' ORDER BY created_at ASC LIMIT 200", p.id).map((m) => ({ ...m, attachments: JSON.parse(m.attachments || "[]"), selection: m.selection ? JSON.parse(m.selection) : null }));
   const recommendation = themeRecommendation(p, ui);
   const kind = recommendation.category.kind;
+  const plan=planOfProject(p.id);
+  const entitlements=plan?{librarySections:PLANS[plan].librarySections,themeEditing:PLANS[plan].themeEditing}:null;
   if (!cur) return ok({ current: null, versions: listThemeVersions(p.id), messages, directions: directionCards(ui, p.brand?.direction ? [p.brand.direction] : []), sandbox: previewSandbox(), storeKind: recommendation.category, recommendation });
   const structure = ["group:header", ...Object.keys(cur.spec.templates), "group:footer"].map((t) => {
     const c = containerOf(cur.spec, t)!;
@@ -41,6 +46,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     };
   });
   return ok({
+    entitlements,
     quality: json<{ gate?: unknown }>(cur.version.qc, {})?.gate ?? null,
     current: { versionId: cur.version.id, number: cur.version.number, direction: cur.spec.direction, name: cur.spec.name, language: cur.spec.language ?? "fr", summary: cur.version.summary, fingerprint: themeFingerprint(cur.spec), structure, pages: cur.spec.store.pages, products: storeProducts(cur.spec).map((x) => ({ handle: x.handle, title: x.title, template_suffix: x.template_suffix && cur.spec.templates[`product.${x.template_suffix}`] ? x.template_suffix : null })), product: { handle: cur.spec.store.product.handle, title: cur.spec.store.product.title, price: cur.spec.store.product.price }, motion: cur.spec.imported ? undefined : { enabled: cur.spec.settings.motion_enabled !== false, intensity: String(cur.spec.settings.motion_intensity ?? "normal"), parallax: cur.spec.settings.motion_parallax !== false }, imported: cur.spec.imported ? { name: cur.spec.imported.name, report: cur.spec.imported.report } : undefined },
     versions: listThemeVersions(p.id),
@@ -78,7 +84,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
       // Bibliothèque de la famille du projet (issue #141) : ses 20 fonctions et leurs dispositions, rien d'autre ; une
       // disposition dont la section ne convient pas au thème installé n'est pas proposée.
       : [
-          ...familyGallery(kind, ui, (t) => !sectionIncompatibility(cur.spec, t, kind, ui)),
+          ...familyGallery(kind, ui, (t) => !sectionIncompatibility(cur.spec, t, kind, ui)).filter(e=>planAllowsSection(plan,kind,e.type.replace(/^fam:/,"").split("~")[0])),
           ...baseSectionTypes().filter((t) => !addable(t)).map((t) => {
             const e = libraryEntry(t, ui);
             return { type: t, name: e?.name ?? sectionSchema(null, t, ui)?.name ?? t, category: e?.category ?? "Structure", description: e?.description ?? "", keywords: e?.keywords ?? "", preview: fs.existsSync(path.join(process.cwd(), "public", "sections", `${t}.jpg`)) ? `/sections/${t}.jpg` : null, addable: false };

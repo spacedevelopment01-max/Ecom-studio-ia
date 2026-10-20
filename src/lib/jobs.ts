@@ -9,6 +9,7 @@
  *  - Dépendances : une tâche attend que ses prérequis soient terminés.
  */
 import os from "node:os";
+import { assertJobEntitlements } from "./job-entitlements";
 import { all, id, json, now, one, run, tx } from "./db";
 import { jobLiveness } from "./job-liveness";
 import { jobEstimate } from "./job-estimate";
@@ -65,8 +66,9 @@ export function enqueue(input: EnqueueInput): Job {
   }
   if (input.idempotencyKey) {
     const existing = one<Job>("SELECT * FROM jobs WHERE idempotency_key = ?", input.idempotencyKey);
-    if (existing) return existing;
+    if (existing) return scopedDuplicate(existing,input);
   }
+  assertJobEntitlements(input.type,input.projectId,input.payload);
   const jid = id();
   const t = now();
   // ON CONFLICT : deux demandes simultanées avec la même clé renvoient la même tâche (au lieu d'une erreur 500).
@@ -88,8 +90,14 @@ export function enqueue(input: EnqueueInput): Job {
     t,
     t,
   );
-  if (!ins.changes && input.idempotencyKey) return one<Job>("SELECT * FROM jobs WHERE idempotency_key = ?", input.idempotencyKey)!;
+  if (!ins.changes && input.idempotencyKey) return scopedDuplicate(one<Job>("SELECT * FROM jobs WHERE idempotency_key = ?", input.idempotencyKey)!,input);
   return getJob(jid)!;
+}
+
+/** Idempotency never returns a task belonging to another account, project or operation. */
+function scopedDuplicate(job:Job,input:EnqueueInput):Job {
+ if(job.user_id!==(input.userId??null)||job.project_id!==(input.projectId??null)||job.type!==input.type)throw new UserFacingError(L('Cette clé de demande est déjà utilisée pour une autre opération.','This request key is already used for another operation.'));
+ return job;
 }
 
 export const getJob = (jid: string) => one<Job>("SELECT * FROM jobs WHERE id = ?", jid);

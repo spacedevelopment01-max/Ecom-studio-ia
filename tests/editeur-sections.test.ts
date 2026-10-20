@@ -1,3 +1,4 @@
+import { grantProjectPlan } from "@/lib/project-subscriptions";
 /**
  * Éditeur de sections du studio : remplacer une section par une autre depuis la bibliothèque (titres, textes et
  * images repris), dupliquer une section — sur le vrai projet enregistré (nouvelle version, restaurable).
@@ -26,6 +27,7 @@ describe("éditeur de sections", async () => {
   const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
   const u = await createUser(`editeur-${Date.now()}@test.fr`, "motdepasse-test", "E");
   const pid = await seedThemeScenario(u.id, "hightech");
+  grantProjectPlan(pid,"dominer");
   const spec = (await fr(() => composeThemeV2(pid))).spec;
   fr(() => saveThemeVersion(pid, spec, "Création", "system"));
   const route = await import("@/app/api/projects/[id]/theme/sections/route");

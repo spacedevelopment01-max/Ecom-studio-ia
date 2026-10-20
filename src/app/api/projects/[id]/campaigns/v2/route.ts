@@ -1,3 +1,6 @@
+import { planAllowsAds } from "@/lib/plan-entitlements";
+import { planOfProject } from "@/lib/plan-gates";
+import { assertAdvertising } from "@/lib/job-entitlements";
 import {stableHash} from "@/lib/brain/hash";
 import {campaignEstimate} from "@/lib/ads-v2/estimate";
 import { publicationReadiness } from "@/lib/social-v2/ai-post";
@@ -57,7 +60,7 @@ function aiAds(projectId: string) {
 
 export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
-  return ok({ ...view(p.id), aiAds: aiAds(p.id), ai: aiActiveFor(p.userId, p.id) && (await publicationReadiness(p)).ready, subjects: subjectOptions(p).map((x) => ({ kind: x.kind, key: x.key, name: x.name, hasPhoto: !!x.referenceAssetId, photoId: x.referenceAssetId })) });
+  return ok({ access:planAllowsAds(planOfProject(p.id)), ...view(p.id), aiAds: aiAds(p.id), ai: aiActiveFor(p.userId, p.id) && (await publicationReadiness(p)).ready, subjects: subjectOptions(p).map((x) => ({ kind: x.kind, key: x.key, name: x.name, hasPhoto: !!x.referenceAssetId, photoId: x.referenceAssetId })) });
 });
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
@@ -89,6 +92,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     run("UPDATE assets SET status = 'rejected', meta = json_set(meta, '$.userRejected', 1) WHERE id = ?", b.assetId!);
     return ok(view(p.id));
   }
+  assertAdvertising(p.id);
   // Devis au coût probable (un essai), dit en % du budget IA ; le plafond de la tâche permet les reprises.
   if (b.action === "ai_quote") return ok({ ...(await publicationReadiness(p)), ai: aiActiveFor(p.userId, p.id) && (await publicationReadiness(p)).ready, estimateMicro: aiPostProbableMicro(), pct: budgetPctOf(p.userId, aiPostProbableMicro(), p.id) });
   if(b.action==="campaign_quote") {const readiness=await publicationReadiness(p);return ok({...campaignEstimate(p,b),...readiness,ai:aiActiveFor(p.userId,p.id)&&readiness.ready});}

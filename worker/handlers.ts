@@ -1,3 +1,5 @@
+import { assertThemeOperations } from "../src/lib/theme/plan-access";
+import { assertJobEntitlements } from "../src/lib/job-entitlements";
 /** Gestionnaires des tâches d'arrière-plan. */
 import { isAutoUsable } from "../src/lib/quality/usable";
 import { projectKind } from "@/lib/theme/project-kind";
@@ -263,8 +265,8 @@ export const handlers: Record<string, Handler> = {
       if (owner && ops.some((o) => o.op === "custom_section") && !sectionGenerationAllowed(owner, p.id)) {
         ops = ops.filter((o) => o.op !== "custom_section");
         reply += L(
-          "\n\nUne partie de la demande demandait une section sur mesure écrite par l'IA : elle est incluse dans les forfaits Développer et Dominer. J'ai fait le reste avec les sections de la bibliothèque.",
-          "\n\nPart of the request needed a custom section written by AI: it's included in the Grow and Dominate plans. I did the rest with the library sections.",
+          "\n\nUne partie de la demande demandait une section sur mesure écrite par l'IA : elle est incluse dans les forfait Dominer. J'ai fait le reste avec les sections de la bibliothèque.",
+          "\n\nPart of the request needed a custom section written by AI: it's included in the Dominate plan. I did the rest with the library sections.",
         );
       }
       // Préférences DÉDUITES par l'IA de la demande du client : provenance honnête (déduction, priorité inférieure).
@@ -302,6 +304,7 @@ export const handlers: Record<string, Handler> = {
     } else if (ops.length) {
       const targeted = new Set<string>();
       if (selection) targeted.add(`${selection.template}:${selection.section}`);
+      assertThemeOperations(projectId,cur.spec,ops,true);
       const res = applyOps(cur.spec, ops, { targeted, mediaFile: mediaFileOf, storeKind: projectKind(p) });
       let next = res.spec;
       applied = res.applied;
@@ -312,6 +315,7 @@ export const handlers: Record<string, Handler> = {
           ctx.progress(0.8, L("Correction des opérations refusées", "Fixing the rejected operations"));
           const fix = await ctx.step("repair", () => aiRepairOps({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:repair` }, p, next, { request: message, page: page || "index", rejected: refused }));
           if (fix.ops.length) {
+            assertThemeOperations(projectId,next,fix.ops,true);
             const again = applyOps(next, fix.ops, { targeted, mediaFile: mediaFileOf, storeKind: projectKind(p) });
             if (again.applied.length && !validateSpec(again.spec).length) {
               next = again.spec;
@@ -481,3 +485,6 @@ export const HANDLER_TYPES = Object.keys(handlers);
 // Orchestration (phase 3B) : chaque action du studio devient un petit plan (ses seules étapes), routé, tracé et
 // repris sans rien repayer ; le moteur existant reste l'exécuteur (aucune logique dupliquée).
 for (const action of Object.keys(ACTION_STEPS)) if (handlers[action]) handlers[action] = orchestrated(action, handlers[action]);
+
+// Recheck current rights even for jobs queued before a downgrade.
+for (const action of Object.keys(handlers)) { const execute=handlers[action];handlers[action]=async ctx=>{assertJobEntitlements(action,ctx.job.project_id,ctx.payload);return execute(ctx);}; }

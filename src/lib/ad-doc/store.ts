@@ -128,3 +128,17 @@ export async function saveAndRender(projectId: string, userId: string, docKey: s
   const a = await saveAsset({ projectId, userId, data, versionOf: prev ? (prev.version_of ?? prev.id) : null, name: `${post ? "publication" : "pub"}-modifiee-${doc.format.aspect.replace(":", "x")}.jpg`, mime: "image/jpeg", role: post ? "social" : "ad", folderKey: post ? "images.social" : "images.ads", origin: "generated", status: "review", meta: { adDoc: { docKey, source: doc.meta.source }, format: doc.format.aspect, ...(post ? { poster: { docKey, layout: doc.meta.recipe?.layout ?? null } } : {}) } });
   return saveVersion(projectId, docKey, doc, { note, renderedAssetId: a.id });
 }
+
+/** Trusted first-version lineage, never the editable document sent by the browser.
+ * The shared layer editor also serves organic posts, which must not require the advertising plan. */
+export function organicDocument(projectId:string,docKey:string):boolean {
+  const seen=new Set<string>();let key:string|null=docKey;
+  while(key&&!seen.has(key)&&seen.size<30){
+    seen.add(key);
+    const row:{doc_json:string}|undefined=one<{doc_json:string}>('SELECT doc_json FROM ad_documents WHERE project_id=? AND doc_key=? ORDER BY version ASC LIMIT 1',projectId,key);
+    if(!row)return false;
+    if(key.startsWith('post:'))return true;
+    const data:AdDocument|null=json<AdDocument|null>(row.doc_json,null);key=data?.meta.createdFrom??null;
+  }
+  return false;
+}

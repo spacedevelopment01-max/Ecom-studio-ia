@@ -111,7 +111,7 @@ describe("Faire un visuel (onglet Images)", async () => {
   it("API (images 100 % IA) : plus de visuel gratuit du studio ; sans IA, refus ; sinon publication entière par l'IA ; devis lisible avant", async () => {
     const u = await user();
     const pid = await seedThemeScenario(u.id, "artisan");
-    grantProjectPlan(pid, "vendre");
+    grantProjectPlan(pid, "dominer");
     // IA inactive (budget épuisé, fournisseur coupé…) : tout est refusé, rien n'est composé à la place.
     aiOn = false;
     expect((await post(pid, { mode: "single", visual: "ai_post", kind: "service" })).status).toBe(402);

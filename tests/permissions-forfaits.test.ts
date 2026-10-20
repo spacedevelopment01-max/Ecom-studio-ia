@@ -25,11 +25,11 @@ describe("droits des forfaits, vérifiés côté serveur", async () => {
     expect(themeOrderComplete()).toBe(true);
     expect(THEME_ORDER).toHaveLength(34);
     expect(THEME_ORDER.slice(30)).toEqual(["fraise", "onde", "orbe", "rive"]);
-    expect([PLANS.creer.themes, PLANS.vendre.themes, PLANS.dominer.themes]).toEqual([4, 4, 4]);
+    expect([PLANS.creer.themes, PLANS.vendre.themes, PLANS.dominer.themes]).toEqual([1, 3, 5]);
     for (const id of ["fraise", "onde", "orbe", "rive"]) {
       expect(themeAllowed(null, id)).toBe(false);
-      for (const plan of ["creer", "vendre", "dominer"] as const) expect(themeAllowed(plan, id)).toBe(true);
-      expect(planForTheme(id)).toBe("creer");
+      for (const plan of ["creer", "vendre", "dominer"] as const) expect(themeAllowed(plan, id)).toBe(!(plan==="creer"&&id==="onde"));
+      expect(planForTheme(id)).toBe(id==="onde"?"vendre":"creer");
     }
     // Ancien catalogue : retiré pour toute nouvelle sélection, même avec le forfait le plus large.
     for (const id of THEME_ORDER.slice(0, 30)) { expect(themeAllowed("dominer", id)).toBe(false); expect(planForTheme(id)).toBeNull(); }

@@ -1,3 +1,4 @@
+import { grantProjectPlan } from "@/lib/project-subscriptions";
 /**
  * Bibliothèques par famille dans le studio (issue #141), par les vraies routes : galerie de la famille seule, ajout
  * depuis la galerie, refus d'une section d'une autre famille (galerie, opérations), changement de disposition qui garde
@@ -32,7 +33,7 @@ async function login(userId: string) {
 }
 const json = async (r: Response) => (await r.json()) as any;
 /** Démonstration enregistrée comme version courante du thème (comme après la composition dans le studio). */
-const demo = async (userId: string, id: "fraise" | "onde" | "orbe" | "rive") => { const d = await fr(() => demoProject(userId, id)); if (!currentTheme(d.pid)) saveThemeVersion(d.pid, d.spec, "Démonstration", "user"); return d; };
+const demo = async (userId: string, id: "fraise" | "onde" | "orbe" | "rive") => { const d = await fr(() => demoProject(userId, id)); grantProjectPlan(d.pid,"dominer"); if (!currentTheme(d.pid)) saveThemeVersion(d.pid, d.spec, "Démonstration", "user"); return d; };
 
 describe("bibliothèques par famille dans le studio", () => {
   it("galerie : 20 fonctions de la famille du projet (+ structure), ajout, refus des autres familles, disposition, en-tête et pied de page", async () => {

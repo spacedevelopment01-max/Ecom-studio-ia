@@ -1,3 +1,4 @@
+import { assertAdvertising, assertJobEntitlements } from "../job-entitlements";
 /**
  * Vidéo en scènes — publication ou publicité. À la création du projet : 3 scènes, 15 s, vertical. Ensuite, le client
  * choisit le format, la durée totale et le nombre de scènes. Création guidée et création du projet :
@@ -368,6 +369,7 @@ async function sceneClipDuration(data:Buffer){
 }
 
 export async function runThreeScenes(ctx: JobContext | null, projectId: string, req: ThreeScenesRequest, deps: ThreeScenesDeps): Promise<ThreeScenesResult> {
+  assertJobEntitlements("video.scenes",projectId,{request:req});
   const p0 = loadProject(projectId);
   if (!p0.brand) throw new UserFacingError(L("La marque n'est pas encore créée.", "The brand has not been created yet."));
   const s = resolveSubject(p0, req.subject ?? null);
@@ -763,6 +765,7 @@ Reply { "scenes": [{ "still": "", "motion": "", "title": "" }, ...${req.scenes ?
 
 /** Existing scene director, run alone so the client reviews its script before any image/clip. */
 export async function runSceneScenario(ctx:JobContext|null,projectId:string,req:ThreeScenesRequest,injected?:ThreeScenesDeps["writePlan"]) {
+ if(req.as==="ad")assertAdvertising(projectId);
  const root=loadProject(projectId),subject=resolveSubject(root,req.subject??null),p=projectForSubject(root,subject);
  const scope=videoScope(root,sceneApprovalRequest(req));
  const size=SIZES[req.aspect??"9:16"],guide=loadVideoGuide();

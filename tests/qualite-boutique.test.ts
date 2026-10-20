@@ -1,3 +1,4 @@
+import { grantProjectPlan } from "@/lib/project-subscriptions";
 /**
  * Qualité de la boutique produite : finitions d'agence (doublons, sections d'espaces réservés, liens répétés,
  * images inexistantes, bandeau qui répète le nom), rendu (recommandations vides, lettres rognées, galerie alignée),
@@ -169,8 +170,10 @@ async function setupProject() {
 async function runBuild() {
   const { enqueue, claimNext, JobContext } = await import("@/lib/jobs");
   const { buildShop } = await import("@/lib/engine/shop");
-  const { currentTheme } = await import("@/lib/projects");
+  const { currentTheme,saveThemeVersion } = await import("@/lib/projects");
   const { pid, userId } = await setupProject();
+  grantProjectPlan(pid,"dominer");
+  saveThemeVersion(pid,sovaSpec("pop"),"Thème historique déjà installé, conservé après #150","user");
   enqueue({ userId, projectId: pid, type: "shop.build", payload: { projectId: pid } });
   const job = claimNext(["shop.build"])!;
   // Composition de l'accueil par l'IA et relecture visuelle : parcours du moteur V1 (le Theme Engine V2 compose localement).

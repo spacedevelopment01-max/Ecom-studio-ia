@@ -45,7 +45,7 @@ async function project() {
   );
   state.user = { ...u, role: "client" };
   const p = loadProject(seedImageFixture(u.id, "hightech"));
-  grantProjectPlan(p.id, "vendre");
+  grantProjectPlan(p.id, "dominer");
   await seedCutout(u.id, p.id);
   return p;
 }

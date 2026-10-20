@@ -217,15 +217,15 @@ describe("I3 : période des quotas alignée sur la facturation", () => {
     vi.setSystemTime(paidAt);
     remote.set("sub_i3", { status: "active", start: paidAt, end: paidAt + 30 * DAY });
     await handleStripeEvent(checkout(u.id, { session: "cs_i3", sub: "sub_i3", plan: "vendre", created: Math.floor(paidAt / 1000) - 60 }));
-    expect(quotaView(u.id, "blog")).toMatchObject({ included: 4, rollover: 0, left: 4 });
+    expect(quotaView(u.id, "blog")).toMatchObject({ included: 5, rollover: 0, left: 5 });
     // 5/11 : l'ancienne période (inscription) aurait renouvelé les quotas avec un report de 80 (160 visuels).
     vi.setSystemTime(T0 + 31 * DAY);
-    expect(quotaView(u.id, "blog")).toMatchObject({ included: 4, rollover: 0, left: 4 });
+    expect(quotaView(u.id, "blog")).toMatchObject({ included: 5, rollover: 0, left: 5 });
     const p = currentPeriod(u.id);
     expect(p.start).toBe(Math.floor(paidAt / 1000) * 1000);
     expect(p.end).toBe(Math.floor((paidAt + 30 * DAY) / 1000) * 1000);
     // La date du message de quota est celle de la période (la même que « Mon compte »).
-    consumeQuota(u.id, "blog", 4, "i3-all");
+    consumeQuota(u.id, "blog", 5, "i3-all");
     const date = new Date(p.end).toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
     expect(quotaMessage(u.id, "blog")).toContain(date);
   });
@@ -497,12 +497,13 @@ describe("mineurs", () => {
     sessionUser = u;
     const route = await import("@/app/api/projects/[id]/campaigns/route");
     const post = async (b: Record<string, unknown>) => route.POST(new Request("http://localhost/x", { method: "POST", body: JSON.stringify({ name: "C", objective: "ventes", networks: [], ...b }), headers: { "Content-Type": "application/json" } }), { params: Promise.resolve({ id: pid }) });
-    const a = (await (await post({})).json()) as any;
-    expect((await post({ id: a.id, status: "archived" })).status).toBe(200);
-    const b = (await (await post({})).json()) as any; // 1 campagne active (Créer)
-    expect(b.id).toBeTruthy();
-    expect((await post({ id: a.id, status: "draft" })).status).toBe(402);
-    expect(one<{ n: number }>("SELECT COUNT(*) n FROM campaigns WHERE project_id = ? AND status != 'archived'", pid)!.n).toBe(1);
+    expect((await post({})).status).toBe(402); // Créer ne crée plus de publicité (#150).
+    const { grantProjectPlan }=await import("@/lib/project-subscriptions");grantProjectPlan(pid,"dominer");
+    const a=(await(await post({})).json()) as any;
+    expect(a.id).toBeTruthy();expect((await post({id:a.id,status:"archived"})).status).toBe(200);
+    grantProjectPlan(pid,"creer");
+    expect((await post({id:a.id,status:"draft"})).status).toBe(402);
+    expect(one<{status:string}>("SELECT status FROM campaigns WHERE id=?",a.id)?.status).toBe("archived");
   });
 
   it("3 : un libellé de fait avec des caractères spéciaux ne provoque plus d'erreur", async () => {

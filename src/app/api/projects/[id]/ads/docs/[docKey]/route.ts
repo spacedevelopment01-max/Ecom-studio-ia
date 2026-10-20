@@ -1,9 +1,10 @@
+import { assertAdvertising } from "@/lib/job-entitlements";
 import { z } from "zod";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
 import { L } from "@/lib/i18n-server";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
-import { AdDocumentSchema, docImages, duplicateDoc, exportDoc, foreignAssets, latestDoc, listVersions, restoreVersion, saveAndRender, versionDoc } from "@/lib/ad-doc/store";
+import { organicDocument, AdDocumentSchema, docImages, duplicateDoc, exportDoc, foreignAssets, latestDoc, listVersions, restoreVersion, saveAndRender, versionDoc } from "@/lib/ad-doc/store";
 import { docMetrics } from "@/lib/ad-doc/server";
 import { reflow } from "@/lib/ad-doc/reflow";
 import { localAdEdit } from "@/lib/ad-doc/local-edit";
@@ -74,6 +75,7 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
       instruction: z.string().max(400).optional(),
     }),
   );
+  if(!organicDocument(p.id,docKey)&&["ai_edit","animate","duplicate","reflow","restyle","gallery"].includes(b.action))assertAdvertising(p.id);
   if (!latestDoc(p.id, docKey)) throw new HttpError(404, L("Création introuvable.", "Creative not found."));
   if (b.action === "save") {
     if (!b.doc) throw new HttpError(400, L("Document manquant.", "Missing document."));
@@ -126,7 +128,7 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
     assertAiAllowed(user.id, p.id);
     const src = b.doc ?? latestDoc(p.id, docKey)!.doc;
     const { aiAdEdit } = await import("@/lib/ad-doc/ai-edit");
-    const r = await aiAdEdit({ userId: user.id, projectId: p.id }, src, instruction);
+    const r = await aiAdEdit({ userId: user.id, projectId: p.id, purpose:organicDocument(p.id,docKey)?"organic":"ad" }, src, instruction);
     if (!r.ops.length) throw new HttpError(422, L("L'IA n'a trouvé aucune modification à faire pour cette demande : précisez-la.", "The AI found nothing to change for this request: make it more precise."));
     return ok({ ops: r.ops, summary: r.summary });
   }

@@ -7,7 +7,7 @@ import { HttpError } from '../auth';
 import { budgetPctOf } from '../ai/budget-pct';
 import { redact } from '../ai/trace';
 import { L } from '../i18n-server';
-import { initialCreativesView, initialEnvelope, initialRoutingSignature, quoteInitialCreatives, queueInitialCreatives, realInitialDeps, type InitialDeps } from './initial';
+import { initialCreativeCount, initialCreativesView, initialEnvelope, initialRoutingSignature, quoteInitialCreatives, queueInitialCreatives, realInitialDeps, type InitialDeps } from './initial';
 
 const KEY = 'initial.automatic.authorization';
 type Consent = {
@@ -22,7 +22,7 @@ function sourceHash(pid: string) {
   const s = stateOf(pid), p = loadProject(pid);
   if (!s || s.stages.brief?.status !== 'approved' || s.stages.research?.status !== 'approved')
     throw new HttpError(409, L('Validez d’abord votre offre et votre stratégie.', 'Approve your offer and strategy first.'));
-  return stableHash('initial-automatic-scope-1', { brief: s.stages.brief.data, research: s.stages.research.data, strategy: p.strategy, business: p.business });
+  return stableHash('initial-automatic-scope-1', { brief: s.stages.brief.data, research: s.stages.research.data, strategy: p.strategy, business: p.business, required:initialCreativeCount(pid) });
 }
 const routeHash = (deps: InitialDeps) => initialRoutingSignature(deps);
 
@@ -47,11 +47,11 @@ export function initialAuthorizationView(pid: string, deps = realInitialDeps()) 
 export function quoteInitialAuthorization(pid: string, deps = realInitialDeps()) {
   const p = loadProject(pid), hash = sourceHash(pid), existing = read(pid);
   if (existing?.status === 'consumed' && !invalidReason(pid, existing, deps)) throw new HttpError(409, 'Le lot initial a déjà été lancé. Reprenez seulement ses résultats manquants.');
-  const e = initialEnvelope(20, false, deps);
+  const e = initialEnvelope(initialCreativeCount(pid), false, deps);
   deps.guard(p, e.capMicro);
   const c: Consent = { id: id(), sourceHash: hash, routeHash: routeHash(deps), capMicro: e.capMicro, probableMicro: e.probableMicro, createdAt: now(), status: 'offered' };
   save(pid, c);
-  return { id: c.id, probableBudgetPct: budgetPctOf(p.userId, c.probableMicro, pid), maxBudgetPct: budgetPctOf(p.userId, c.capMicro, pid), note: L('20 créations indépendantes : 10 publications et 10 publicités, contrôles et corrections bornées inclus. Après cet accord, démarrage automatique à la première validation définitive de votre marque. Accord valable 24 h pour cette offre et cette stratégie ; aucun envoi sur les réseaux. Une nouvelle identité après ce lancement exige un nouvel accord.', '20 independent creations: 10 posts and 10 ads, including controls and bounded corrections. After consent, automatic start when you first approve the final identity. Valid for 24 hours for this offer and strategy; no social sending. A new identity after this launch requires fresh consent.') };
+  return { id: c.id, probableBudgetPct: budgetPctOf(p.userId, c.probableMicro, pid), maxBudgetPct: budgetPctOf(p.userId, c.capMicro, pid), note: L(`${initialCreativeCount(pid)} créations indépendantes : 10 publications${initialCreativeCount(pid)===20?' et 10 publicités':''}, contrôles et corrections bornées inclus. Après cet accord, démarrage automatique à la première validation définitive de votre marque. Accord valable 24 h pour cette offre et cette stratégie ; aucun envoi sur les réseaux. Une nouvelle identité après ce lancement exige un nouvel accord.`, `${initialCreativeCount(pid)} independent creations: 10 posts${initialCreativeCount(pid)===20?' and 10 ads':''}, including controls and bounded corrections. After consent, automatic start when you first approve the final identity. Valid for 24 hours for this offer and strategy; no social sending. A new identity after this launch requires fresh consent.`) };
 }
 export function acceptInitialAuthorization(pid: string, quoteId: string, deps = realInitialDeps()) {
   tx(() => {

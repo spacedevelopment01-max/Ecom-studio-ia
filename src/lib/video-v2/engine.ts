@@ -1,3 +1,4 @@
+import { assertJobEntitlements } from "../job-entitlements";
 /**
  * Video & UGC Engine V2 (phase 7A) — moteur central.
  *
@@ -87,6 +88,7 @@ type Budget = { capMicro: number; spentMicro: number };
 const hash = (x: unknown) => crypto.createHash("sha256").update(JSON.stringify(x)).digest("hex").slice(0, 16);
 
 export async function runVideoEngineV2(ctx: JobContext | null, projectId: string, req: VideoRequestV2, injected?: VideoV2Deps): Promise<VideoRunResult> {
+  assertJobEntitlements("video.v2",projectId,{request:req});
   if(req.ask.generation&&!req.planOnly&&(!req.approval||!req.approveGeneration))throw new Error("Accord explicite sur le scénario et les clips IA requis ; aucun montage simplifié substitué.");
   const p = loadProject(projectId);
   const jobId = ctx?.job.id ?? null;

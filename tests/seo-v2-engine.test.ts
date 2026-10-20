@@ -30,7 +30,8 @@ describe("SEO V2 — moteur", async () => {
   getSubscription(pro.id);
   run("UPDATE subscriptions SET status = 'active', plan = 'dominer' WHERE user_id = ?", pro.id);
   syncAllowance(pro.id);
-  const seed = (k: Parameters<typeof seedImageFixture>[1], who = u.id) => seedImageFixture(who, k);
+  const {grantProjectPlan}=await import("@/lib/project-subscriptions");
+  const seed = (k: Parameters<typeof seedImageFixture>[1], who = u.id) => {const pid=seedImageFixture(who,k);if(who===pro.id)grantProjectPlan(pid,"dominer");return pid;};
 
   it("sans IA (Découverte) : rédaction locale immédiate, 0 €, PROVISOIRE, version enregistrée", async () => {
     const pid = seed("cosmetic");
@@ -206,22 +207,18 @@ describe("SEO V2 — moteur", async () => {
     expect(latestContent(pid, key)!.doc.blocks.find((b) => b.id === p.id)).toMatchObject({ text: "Sérum Éclat : un geste précis, 30 ml de soin." });
   });
 
-  it("Blog V2 : brouillon rangé dans le blog existant ; IA seulement si le forfait inclut le blog (sinon local, 0 €) ; quota décompté une fois", async () => {
+  it("Blog V2 : brouillon rangé dans le blog existant ; blog refusé hors forfait, sans rédaction ni brouillon ; quota décompté une fois", async () => {
     const pid = seed("cosmetic");
     const free = mockSeoDeps();
-    const r = await fr(() => runContentEngineV2(null, pid, { type: "blog_article" }, free.deps));
+    await expect(fr(() => runContentEngineV2(null,pid,{type:"blog_article"},free.deps))).rejects.toThrow(/forfait/);
     expect(free.log.writes).toHaveLength(0);
-    expect(r.by).toBe("local");
-    expect(r.notes[0]).toMatch(/non inclus dans votre forfait/);
-    const a = one<{ status: string; title: string; body_html: string }>("SELECT status, title, body_html FROM blog_articles WHERE id = ?", blogIdFor(r.docKey!))!;
-    expect(a.status).toBe("draft");
-    expect(a.body_html).not.toContain("<h1>");
+    expect(listContents(pid,["blog_article"])).toHaveLength(0);
     const pid2 = seed("cosmetic", pro.id);
     const paid = mockSeoDeps();
     const r2 = await fr(() => runContentEngineV2(null, pid2, { type: "blog_article" }, paid.deps));
     expect(paid.log.kinds).toEqual(["write_article"]);
     expect(r2.by).toBe("ai");
-    expect(one<{ c: number }>("SELECT COUNT(*) c FROM quota_events WHERE user_id = ? AND ref LIKE 'blog2:%'", pro.id)?.c).toBe(1);
+    expect(one<{ c: number }>("SELECT COUNT(*) c FROM quota_events WHERE ref LIKE ?", `blog-draft:%:${blogIdFor(r2.docKey!)}`)?.c).toBe(1);
     expect(one("SELECT 1 FROM blog_articles WHERE id = ?", blogIdFor(r2.docKey!))).toBeTruthy();
     expect(listContents(pid2, ["blog_article"])).toHaveLength(1);
   });

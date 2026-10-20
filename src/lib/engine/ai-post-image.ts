@@ -1,3 +1,4 @@
+import { assertAdvertising } from "../job-entitlements";
 import type { AspectId } from "../image-v2/types";
 import { FORMATS } from "../image-v2/formats";
 /**
@@ -154,6 +155,7 @@ export async function generateAiPostImage(
   req: AiPostImageRequest,
   deps?: AiPostDeps,
 ) {
+  if(req.as==="ad"||req.kind==="ad"||String(req.entryPoint??"").startsWith("ads-"))assertAdvertising(projectId);
   const p = loadProject(projectId);
   const subject = req.subject ? resolveSubject(p, req.subject) : null;
   // Sujet choisi : sa photo (produit) ; service : aucune référence produit (la scène montre le métier, sans personne).

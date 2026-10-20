@@ -14,11 +14,11 @@
  * La publication passe par un `Publisher` injecté : les tests utilisent un publieur simulé (aucun vrai compte).
  */
 import crypto from "node:crypto";
-import { all, id, now, one, run } from "../db";
+import { all, id, now, one, run, tx } from "../db";
 import { enqueue, PermanentError } from "../jobs";
 import { loadProject, notify } from "../projects";
 import { brainIssues } from "./brain-check";
-import { planOfProject, planOfUserId, scheduledPostsOn } from "../plan-gates";
+import { dispatchedPostsOn, planOfProject, planOfUserId, scheduledPostsOn } from "../plan-gates";
 import { PLANS } from "../plans";
 import { L } from "../i18n-server";
 import { connectionFor, markConnection, type PostRow } from "../social/publish";
@@ -32,7 +32,7 @@ const RETRY_DELAY_MS = 15 * 60_000;
 
 export type PublishOutcome = { outcome: "published" | "failed" | "retry" | "uncertain" | "skipped"; detail: string; remoteId?: string | null; deduplicated?: boolean };
 
-type Full = PostRow & PostRowV2 & { user_id: string; lock_token: string | null; locked_at: number | null };
+type Full = PostRow & PostRowV2 & { timezone?:string; user_id: string; lock_token: string | null; locked_at: number | null };
 
 function logAttempt(postId: string, attempt: number, token: string, outcome: string, detail = "", remoteId: string | null = null): string {
   const aid = id();
@@ -85,7 +85,14 @@ export async function publishOne(postId: string, publisher: Publisher, o: { time
   }
   // Prise en charge atomique : une seule tâche peut passer « scheduled → publishing ».
   const token = crypto.randomUUID();
-  const claimed = run("UPDATE posts SET status = 'publishing', lock_token = ?, locked_at = ?, attempts = attempts + 1, updated_at = ? WHERE id = ? AND status = 'scheduled'", token, now(), now(), postId);
+  const claimed = tx(()=>{
+    const plan=planOfUserId(owner.user_id,owner.project_id);
+    if(!plan||dispatchedPostsOn(owner.project_id,now(),postId,pre.timezone??'Europe/Paris')>=PLANS[plan].postsPerDay){
+      const msg=L('Limite quotidienne du forfait atteinte : publication conservée, choisissez un autre jour.','Daily plan limit reached: post kept, choose another day.');
+      run("UPDATE posts SET status='review',error=?,updated_at=? WHERE id=? AND status='scheduled'",msg,now(),postId);return {changes:0};
+    }
+    return run("UPDATE posts SET status = 'publishing', lock_token = ?, locked_at = ?, attempts = attempts + 1, updated_at = ? WHERE id = ? AND status = 'scheduled'",token,now(),now(),postId);
+  });
   if (!claimed.changes) return { outcome: "skipped", detail: "état modifié (annulée, déplacée, déjà prise en charge ou publiée)" };
   const post = one<Full>("SELECT p.*, pr.user_id FROM posts p JOIN projects pr ON pr.id = p.project_id WHERE p.id = ?", postId)!;
   const aid = logAttempt(postId, post.attempts, token, "sending");
@@ -222,6 +229,7 @@ export type ScheduleResult = { scheduled: string[]; refused: { id: string; reaso
  * le studio, date future, aucun défaut bloquant.
  */
 export function schedulePosts(ids: string[], gate: (postId: string) => { blocking: string[] }): ScheduleResult {
+  return tx(()=>{
   const out: ScheduleResult = { scheduled: [], refused: [] };
   for (const pid of ids) {
     const r = one<Full>("SELECT p.*, pr.user_id FROM posts p JOIN projects pr ON pr.id = p.project_id WHERE p.id = ?", pid);
@@ -275,6 +283,7 @@ export function schedulePosts(ids: string[], gate: (postId: string) => { blockin
     out.scheduled.push(pid);
   }
   return out;
+  });
 }
 
 /** Déprogrammer (retour « approuvée », rien n'est envoyé). */

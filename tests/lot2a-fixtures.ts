@@ -1,3 +1,4 @@
+import { grantProjectPlan } from "@/lib/project-subscriptions";
 /** Données isolées des deux références. Médias autorisés déjà présents, aucune génération. */
 import fs from "node:fs";
 import sharp from "sharp";
@@ -14,6 +15,7 @@ import { localOnlyDeps } from "@/lib/seo-v2/deps";
 
 export async function referenceProject(userId: string, kind: "products" | "services", opts: { media?: boolean; multi?: boolean; writeServices?: boolean } = {}) {
   const services = kind === "services", pid = seedHoldout(userId, services ? 2 : 0, "Référence isolée");
+  grantProjectPlan(pid,"dominer");
   const product = { ...emptyProduct(), name: services ? "Création et entretien de jardins" : "Montre acier et cuir", nameStatus: "provided" as const, category: services ? "Aménagement extérieur" : "Montres", summary: services ? "Conception et création de jardins, terrasses en bois, murets en pierre sèche, plantations et entretien à l’année." : "Montre à boîtier en acier poli, cadran noir à trois compteurs argentés et bracelet en cuir brun surpiqué, doublé de tissu bleu.", price: { amount: services ? null : 12900, currency: "EUR", status: services ? "unknown" as const : "confirmed" as const }, facts: services ? [] : [{ key: "case", label: "Boîtier", value: "Acier poli", status: "confirmed" as const, source: "user" as const }, { key: "strap", label: "Bracelet", value: "Cuir brun surpiqué", status: "confirmed" as const, source: "user" as const }, { key: "dial", label: "Cadran", value: "Noir, compteurs argentés", status: "confirmed" as const, source: "user" as const }] };
   saveProduct(pid, product);
   const profile = { ...emptyServiceProfile(), area: "Aix-en-Provence et alentours", hours: "Du lundi au vendredi, de 8 h à 18 h", contactMode: "quote" as const, contactModes: ["quote" as const, "form" as const], services: [

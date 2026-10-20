@@ -33,7 +33,8 @@ describe("Phase 6A — Advertising Engine V2", async () => {
   const fr = <T,>(fn: () => Promise<T> | T) => runWithLang({ ui: "fr", content: "fr" }, async () => fn());
 
   const u = await createUser(`ads2-${Date.now()}@test.fr`, "motdepasse-test", "A");
-  const fresh = (k: (typeof IMAGE_FIXTURES)[number]) => loadProject(seedImageFixture(u.id, k));
+  const {grantProjectPlan}=await import("@/lib/project-subscriptions");
+  const fresh = (k: (typeof IMAGE_FIXTURES)[number]) => {const pid=seedImageFixture(u.id,k);grantProjectPlan(pid,"dominer");return loadProject(pid);};
   const limits = strictestText(["meta_feed", "meta_story"]);
   const job = (projectId: string) => {
     const jid = id();
