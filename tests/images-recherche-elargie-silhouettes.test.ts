@@ -181,7 +181,7 @@ describe("Images : recherche élargie et silhouettes (photos libres)", async () 
     // Le « Type » proposé est fixé au premier affichage (services → photo du métier, produits → univers) : sans clé
     // liée à l'activité, une fenêtre ouverte avant le chargement gardait le type d'une boutique pour un service.
     expect(src).toMatch(/<SearchPhotos key=\{services \? "services" : "products"\}/);
-    expect(src).toMatch(/<CreateImage key=\{services \? "services" : "products"\}/);
+    expect(src).toMatch(/<CreateImage key=\{themePreparation\?\.themePlacement.slotKey\?\?\(services \? "services" : "products"\)\}/);
     expect(src).toMatch(/useState\(\{ kind: services \? "trade_photo" : "ambiance"/);
   });
 });
