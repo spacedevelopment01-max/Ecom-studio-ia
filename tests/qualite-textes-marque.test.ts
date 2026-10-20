@@ -252,7 +252,9 @@ describe("calendrier : aucune allégation ne part sans relecture", () => {
 
 describe("publicités : réponses médiocres de l'IA rattrapées", () => {
   it("reprise demandée, puis nettoyage si l'IA garde ses allégations", async () => {
-    const base = sova();
+    const {createUser}=await import("@/lib/auth");const {id,now,run}=await import("@/lib/db");const {grantProjectPlan}=await import("@/lib/project-subscriptions");
+    const u=await createUser(`quality150-${id()}@example.test`,"isolated-password","Test");const pid=id();run("INSERT INTO projects(id,user_id,name,created_at,updated_at) VALUES(?,?,?,?,?)",pid,u.id,"Qualité publicitaire",now(),now());grantProjectPlan(pid,"dominer");
+    const base = {...sova(),id:pid,userId:u.id};
     const p = { ...base, brand: { ...runWithLang({ content: "fr" }, () => localBrand(base.product, "SOVA", base)).brand } } as unknown as Project;
     const bad = { ads: [{ angle: "Sommeil", primary: "SOVA aide votre bébé à s'endormir. Un boîtier rose aux oreilles de lapin.", headline: "Le compagnon révolutionnaire", cta: "Acheter" }] };
     expect(adProblems(bad.ads, p).length).toBeGreaterThan(0);

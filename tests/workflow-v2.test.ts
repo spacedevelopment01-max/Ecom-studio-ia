@@ -33,6 +33,7 @@ describe("Studio Workflow V2", async () => {
   const vendre = await mkUser("vendre");
   const decouverte = await mkUser(null);
   const cosmetic = await seedThemeScenario(vendre.id, "cosmetic");
+  (await import("@/lib/project-subscriptions")).grantProjectPlan(cosmetic,"dominer");
   await fr(() => buildShopV2(null, cosmetic));
   const artisan = await seedThemeScenario(vendre.id, "artisan");
   // Un abonnement = un projet : le second projet du compte a son propre abonnement Développer.

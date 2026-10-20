@@ -342,7 +342,10 @@ export async function applyBrandUpdate(projectId: string, keys: string[], o: { i
       const a = getAsset(key.slice(9));
       if (!a) continue;
       const meta = assetMeta<Record<string, any>>(a);
-      enqueue({ userId: o.userId ?? p.userId, projectId: p.id, type: "image.ai_post", label: L("Visuel IA : nouvelle identité", "AI visual: new identity"), payload: { projectId: p.id, costCapMicro: aiPostEstimate(), request: redoRequest(meta, { aspect: (meta.aspect ?? "4:5") as "4:5" }) } });
+      const request=redoRequest(meta,{aspect:(meta.aspect??"4:5") as "4:5"});
+      const {assertJobEntitlements}=await import("../job-entitlements");
+      try{assertJobEntitlements("image.ai_post",p.id,{request});}catch(e){res.skipped.push({key,reason:(e as Error).message});continue;}
+      enqueue({ userId: o.userId ?? p.userId, projectId: p.id, type: "image.ai_post", label: L("Visuel IA : nouvelle identité", "AI visual: new identity"), payload: { projectId: p.id, costCapMicro: aiPostEstimate(), request } });
       res.updated.push({ key, kind: "ai_image", detail: L("nouvelle version en préparation (l'ancienne est gardée)", "new version being prepared (the old one is kept)") });
     } else if (it.kind === "post") {
       postIds.push(key.slice(5));

@@ -222,6 +222,7 @@ export function planGate(kind: StepKind | "pipeline", userId: string, projectId:
   const plan = planOfUserId(userId, projectId);
   if (plan) {
     const P = PLANS[plan];
+    if(kind==="ad"&&P.ads==="none")return{fr:"publicité et aide aux campagnes réservées au forfait Dominer",en:"advertising and campaign assistance require the Dominate plan"};
     if (kind === "video" && P.videos === "none") return { fr: `vidéos IA non incluses dans le forfait ${P.name.fr}`, en: `AI videos aren't included in the ${P.name.en} plan` };
     return null;
   }
@@ -231,7 +232,7 @@ export function planGate(kind: StepKind | "pipeline", userId: string, projectId:
   return null;
 }
 
-/** Jours de calendrier préparés d'un coup par le forfait (7 avec Créer, 30 avec Vendre et Dominer). */
+/** Jours de calendrier préparés d'un coup par le forfait (7 avec Créer, 30 avec Développer, 90 avec Dominer). */
 export const planCalendarDays = (userId: string, projectId: string) => {
   const plan = planOfUserId(userId, projectId);
   return plan ? PLANS[plan].calendarDays : 0;

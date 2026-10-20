@@ -1,3 +1,4 @@
+import { grantProjectPlan } from "@/lib/project-subscriptions";
 /**
  * Les cinq scénarios du benchmark Vidéo V2, avec fournisseurs SIMULÉS (aucun appel, aucune dépense) : chaque scénario
  * produit une vidéo cohérente avec son intention, son langage visuel et sa durée ; les vidéos diffèrent d'un projet
@@ -28,7 +29,7 @@ describe("Benchmark Vidéo V2 — 5 scénarios simulés", async () => {
 
   for (const sc of VIDEO_SCENARIOS) {
     it(`scénario ${sc} (${SCENARIO_FIXTURE[sc]}) : intention, langage visuel, durée, vidéo rendue, barrière`, async () => {
-      const p = loadProject(seedImageFixture(u.id, SCENARIO_FIXTURE[sc]));
+      const p = loadProject(seedImageFixture(u.id, SCENARIO_FIXTURE[sc]));grantProjectPlan(p.id,"dominer");
       if (p.business === "products" && SCENARIO_FIXTURE[sc] !== "saas") await seedCutout(u.id, p.id);
       const { deps, log } = mockVideoDeps({ userId: u.id, projectId: p.id, voice: true,canWrite:true,script:shortVideoScript });
       const r = await runWithLang({ ui: "fr", content: "fr" }, () => runVideoEngineV2(null, p.id, { ask: SCENARIO_ASK[sc], approveGeneration: true, renderScale: 0.15, fps: 6 }, deps));

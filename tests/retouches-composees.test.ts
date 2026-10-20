@@ -1,3 +1,4 @@
+import { grantProjectPlan } from "@/lib/project-subscriptions";
 /**
  * Retouches demandées en phrase libre dans l'éditeur :
  *  - demande composée comprise par le moteur local, gratuit (« augmente la taille du texte et du titre et centre-le
@@ -38,7 +39,7 @@ describe("retouches composées, IA de secours et aperçu des formats", async () 
   const u = await createUser(`compose-${Date.now()}@test.fr`, "motdepasse-test", "C");
 
   async function generated() {
-    const p = loadProject(seedImageFixture(u.id, "cosmetic"));
+    const p = loadProject(seedImageFixture(u.id, "cosmetic"));grantProjectPlan(p.id,"dominer");
     const cutId = await seedCutout(u.id, p.id);
     const cut = assetData(getAsset(cutId)!);
     const logoPng = await sharp({ create: { width: 400, height: 120, channels: 4, background: { r: 20, g: 20, b: 20, alpha: 1 } } }).png().toBuffer();

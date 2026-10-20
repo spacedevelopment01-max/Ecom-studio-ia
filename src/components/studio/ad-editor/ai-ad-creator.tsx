@@ -116,7 +116,7 @@ export function AiAdCreator({ onDone }: { onDone?: () => void }) {
     }
   };
   const ads = data?.aiAds ?? [];
-  if(data?.access===false)return <Card className="mb-6 p-5" data-ad-plan-lock>{t("La publicité et l’aide aux campagnes sont incluses avec Dominer (129 € par mois). Vos créations existantes restent conservées et accessibles.","Advertising and campaign assistance are included with Dominate (€129 per month). Existing creations remain kept and accessible.")}</Card>;
+  if(data?.access===false)return <Card className="mb-6 p-5" data-ad-plan-lock>{t("La publicité et l’aide aux campagnes sont incluses avec Dominer. Vos créations existantes restent conservées et accessibles.","Advertising and campaign assistance are included with Dominate. Existing creations remain kept and accessible.")}</Card>;
   return (
     <section className="mb-8" data-ai-ad-creator>
       <SectionTitle title={t("Publicité conçue par l'IA", "Ad designed by AI")}>

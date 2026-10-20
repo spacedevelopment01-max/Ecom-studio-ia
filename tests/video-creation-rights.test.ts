@@ -32,7 +32,7 @@ describe("Création vidéo guidée : droits natifs, sans fournisseur", async () 
   it("expose le document conservé après échec du premier encodage, puis retire la carte d'erreur après rendu",async()=>{
     const {loadProject}=await import("@/lib/projects");const {buildSceneDoc,localScenePlan}=await import("@/lib/video-v2/three-scenes");const {saveVideoVersion}=await import("@/lib/video-v2/store");
     const u=await createUser(`resume-encode-${crypto.randomUUID()}@test.invalid`,"motdepasse-test","Fixture");sessionUser=u;const pid=seedImageFixture(u.id,"restaurant"),p=loadProject(pid);
-    const request={as:"post" as const,key:"fixture-first-encode"};const docKey=`vid:${(await import("node:crypto")).default.createHash("sha256").update(request.key).digest("hex").slice(0,20)}`;
+    const request={as:"post" as const,mode:"stock" as const,key:"fixture-first-encode"};const docKey=`vid:${(await import("node:crypto")).default.createHash("sha256").update(request.key).digest("hex").slice(0,20)}`;
     const {enqueue}=await import("@/lib/jobs");const job=enqueue({userId:u.id,projectId:pid,type:"video.scenes",label:"Échec simulé",payload:{request}});run("UPDATE jobs SET status='failed',error='Encodeur interrompu' WHERE id=?",job.id);
     const plan=localScenePlan(p,null,request),doc=buildSceneDoc(p,[0,1,2].map(k=>({assetId:`source${k}`,durationS:5,generated:false})),plan,"9:16","post");saveVideoVersion(pid,docKey,doc);
     const ctx={params:Promise.resolve({id:pid})},get=()=>route.GET(new Request("http://localhost"),ctx);
@@ -46,7 +46,7 @@ describe("Création vidéo guidée : droits natifs, sans fournisseur", async () 
     const pid = seedImageFixture(u.id, "restaurant");
     const ctx = { params: Promise.resolve({ id: pid }) };
     let approvedEstimateMicro: number | undefined;let approvalToken:string|undefined;
-    const req = (action: string) => new Request(`http://localhost/api/projects/${pid}/creative/video`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action,mode:"stock", as: "ad", scenes: 3, totalS: 15, approvedEstimateMicro,approvalToken }) });
+    const req = (action: string) => new Request(`http://localhost/api/projects/${pid}/creative/video`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action,mode:"stock", as: "post", scenes: 3, totalS: 15, approvedEstimateMicro,approvalToken }) });
     expect((await route.POST(req("quote"), ctx)).status).toBe(200);
     expect((await route.POST(req("create"), ctx)).status).toBe(402);
     expect(all("SELECT id FROM jobs WHERE project_id = ?", pid)).toHaveLength(0);

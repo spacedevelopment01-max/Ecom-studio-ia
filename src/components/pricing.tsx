@@ -28,7 +28,7 @@ const LEVEL = {
 /** Les avantages affichés sur la carte d'un forfait (le détail est dans le tableau). Uniquement ce qui est configuré. */
 function planLines(p: Plan, t: TFn): Line[] {
   const lines: Line[] = [
-    { text: p.id === "dominer" ? t("Tous les thèmes disponibles par famille", "All available themes per family") : t(`${p.themes} thème${p.themes>1?"s":""} par famille`, `${p.themes} theme${p.themes>1?"s":""} per family`) },
+    { text: p.id === "dominer" ? t("Tous les thèmes disponibles par famille", "All available themes per family") : t(`${p.themes>1?"Jusqu’à ":""}${p.themes} thème${p.themes>1?"s":""} par famille`, `${p.themes>1?"Up to ":""}${p.themes} theme${p.themes>1?"s":""} per family`) },
     { text: t(`${p.librarySections} fonctions de sections dans la bibliothèque de votre famille`, `${p.librarySections} section functions in your family library`) },
     { text: p.themeEditing === "basic" ? t("Personnalisation IA basique : textes, images, couleurs", "Basic AI editing: text, images, colours") : p.themeEditing === "advanced" ? t("Personnalisation IA avancée", "Advanced AI editing") : t("Personnalisation sur mesure", "Custom personalisation") },
     { text: t("Boutique, logo et images créés par l'IA", "Store, logo and images created by AI") },

@@ -44,3 +44,12 @@ it.each(['creer','vendre','dominer'] as const)('%s : niveaux IA et création de 
  if(plan==='dominer')expect(custom).not.toThrow();else expect(custom).toThrow();
  const pageRoute=await import('@/app/api/projects/[id]/theme/pages/route');const pageInfo=await(await fr(()=>pageRoute.GET(new Request('http://localhost/test'),ctx(d.pid)))).json();expect(pageInfo.canUseModels).toBe(plan!=='creer');
 });
+it.each(['creer','vendre'] as const)('%s : demande de campagne ignorée avec raison dès le devis puis au worker, aucune création ni dépense',async plan=>{
+ user=await createUser(`workflow150-${id()}@example.test`,'test-password-150','Workflow isolé');const d=await fr(()=>demoProject(user.id,'fraise'));grantProjectPlan(d.pid,plan);if(!currentTheme(d.pid))saveThemeVersion(d.pid,d.spec,'Fixture native','user');
+ const wf=await import('@/lib/workflow');const {JobContext,getJob}=await import('@/lib/jobs');
+ const prepared=await fr(()=>wf.prepareWorkflow(d.pid,user.id,'Prépare une campagne publicitaire',{aiActive:false}));
+ expect(prepared.estimate.lines.find(l=>l.kind==='ad')).toMatchObject({mode:'skip',paid:false,estimateMicro:0});
+ const started=wf.startWorkflow(prepared.id,{});const result=await fr(()=>wf.runWorkflow(new JobContext(getJob(started.jobId!)!)));
+ expect(result.steps.find(s=>s.kind==='ad')).toMatchObject({status:'skipped'});expect(result.steps.find(s=>s.kind==='ad')?.reason).toMatch(/Dominer/);
+ expect(one<{n:number}>('SELECT COUNT(*) n FROM ad_documents WHERE project_id=?',d.pid)?.n).toBe(0);expect(one<{n:number}>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=?',d.pid)?.n).toBe(0);
+});

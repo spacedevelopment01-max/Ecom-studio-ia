@@ -1,3 +1,4 @@
+import { grantProjectPlan } from "@/lib/project-subscriptions";
 /**
  * Guide créatif vidéo branché sur le moteur réellement utilisé (vidéo en scènes) : règles chargées et modifiables,
  * fiche créative adaptée à l'offre, storyboard par étapes (services) ou par cadrages du vrai produit, règle absolue des
@@ -28,12 +29,12 @@ describe("Guide créatif vidéo", async () => {
 
   const user = async () => (await createUser(`gc-${Date.now()}-${Math.random()}@test.fr`, "motdepasse-test", "G")).id;
   async function painter() {
-    const p = loadProject(seedImageFixture(await user(), "restaurant"));
+    const p = loadProject(seedImageFixture(await user(), "restaurant"));grantProjectPlan(p.id,"dominer");
     run("UPDATE projects SET product_json = json_set(product_json, '$.category', 'Plâtrier peintre'), business_json = ? WHERE id = ?", JSON.stringify({ services: [{ name: "Peinture intérieure" }], area: "Lyon", contactMode: "quote" }), p.id);
     return loadProject(p.id);
   }
   async function watch() {
-    const p = loadProject(seedImageFixture(await user(), "hightech"));
+    const p = loadProject(seedImageFixture(await user(), "hightech"));grantProjectPlan(p.id,"dominer");
     run("UPDATE projects SET product_json = json_set(json_set(json_set(product_json, '$.name', 'Chronographe acier et cuir'), '$.category', 'Montres'), '$.summary', 'Montre : boîtier en acier poli, lunette graduée, guichet de date'), brand_json = json_set(brand_json, '$.name', 'ARVEN', '$.tagline', 'Le temps, bien porté.') WHERE id = ?", p.id);
     return loadProject(p.id);
   }
