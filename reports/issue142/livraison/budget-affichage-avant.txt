@@ -1,0 +1,47 @@
+
+ RUN  v5.0.3 /workspace/work/publications-qualite
+
+ ❯ tests/mission142-billing.test.ts (17 tests | 2 failed) 4910ms
+   ❯ Mission 142 : frontières de comptabilisation (17)
+     × un reste sous le seuil de fonctionnement met l'IA en pause sans inventer une consommation à 100 % 166ms
+     × une réservation trop grande est refusée sans annoncer le solde entièrement dépensé 191ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/mission142-billing.test.ts > Mission 142 : frontières de comptabilisation > un reste sous le seuil de fonctionnement met l'IA en pause sans inventer une consommation à 100 %
+AssertionError: expected 100 to be less than 100
+ ❯ tests/mission142-billing.test.ts:148:59
+    146|     run("UPDATE wallets SET monthly_used=monthly_allowance-300000,topu…
+    147|     const before=balance(uid), view=aiUsage(uid)!;
+    148|     expect(view.paused).toBe(true);expect(view.plan.used).toBeLessThan…
+       |                                                           ^
+    149|     expect(()=>assertAiAllowed(uid)).toThrow(/restant|remaining/);
+    150|     try{assertAiAllowed(uid);}catch(e){expect((e as Error).message).no…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/mission142-billing.test.ts > Mission 142 : frontières de comptabilisation > une réservation trop grande est refusée sans annoncer le solde entièrement dépensé
+AssertionError: expected [Function] to throw error matching /insuffisant|insufficient/ but got 'L\'IA de votre forfait est utilisée à…'
+
+- Expected:
+/insuffisant|insufficient/
+
++ Received:
+"L'IA de votre forfait est utilisée à 100 % pour ce mois-ci. Elle reprend le 20 novembre, ou tout de suite avec une recharge de l'IA du projet (Mon compte)."
+
+ ❯ tests/mission142-billing.test.ts:158:25
+    156|     const before=balance(uid);
+    157|     for(const operation of [()=>assertCanSpend(uid,800_000),()=>reserv…
+    158|       expect(operation).toThrow(/insuffisant|insufficient/);
+       |                         ^
+    159|       try{operation();}catch(e){expect((e as Error).message).not.toMat…
+    160|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 15 passed (17)
+   Start at  10:13:10
+   Duration  6.50s (tests 78%, import 19%, transform 3%)
+
