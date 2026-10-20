@@ -14,6 +14,7 @@ export type ClientMedium = {
     file: string;
     kind: string;
     role: MediaRole;
+    sourceRole: string;
     name: string;
     description: string;
     width: number;
@@ -36,12 +37,14 @@ export type MediaInventory = {
         reason: string;
     }[];
 };
-const roleOf = (a: Asset, m: any): MediaRole => a.role === 'logo' || a.role === 'logo-horizontal' ? 'logo' : a.kind === 'video' ? 'video' : m.themeContent?.role ?? (String(m.slot ?? '').startsWith('theme:') ? String(m.slot).split(':')[1] as MediaRole : /packshot|cutout/.test(a.role ?? '') || m.triage?.kind === 'packshot' ? 'packshot' : a.role === 'detail' ? 'detail' : /making|method/.test(a.role ?? '') ? 'method' : m.authenticWork === true ? 'realization' : a.role === 'banner' ? 'opening' : 'use');
+const roleOf = (a: Asset, m: any): MediaRole => /^(logo(?:-|$)|favicon(?:-|$))/.test(a.role ?? '') ? 'logo' : a.kind === 'video' ? 'video' : m.themeContent?.role ?? (String(m.slot ?? '').startsWith('theme:') ? String(m.slot).split(':')[1] as MediaRole : /packshot|cutout/.test(a.role ?? '') || m.triage?.kind === 'packshot' ? 'packshot' : a.role === 'detail' ? 'detail' : /making|method/.test(a.role ?? '') ? 'method' : m.authenticWork === true ? 'realization' : a.role === 'banner' ? 'opening' : 'use');
 export async function inventoryClientMedia(p: Project): Promise<MediaInventory> {
     const usable: ClientMedium[] = [], excluded: MediaInventory['excluded'] = [], hashes = new Set<string>();
     for (const a of all<Asset>("SELECT * FROM assets WHERE project_id=? AND deleted_at IS NULL AND kind IN ('image','video') ORDER BY (status='approved') DESC, created_at ASC, id ASC", p.id)) {
         const m = json<any>(a.meta, {}), lineage = inspectSiteMediaLineage(a, p.id, getAsset);
         let reason = !isAutoUsable(a) ? 'media_rejected' : lineage.issue ? 'source_not_site_media' : m.demo?.isDemo || m.lot2a?.demo ? 'demo_media' : p.business === 'products' && m.stock ? 'product_stock_forbidden' : m.people === true && a.origin === 'generated' && !m.peopleConsent ? 'people_not_authorized' : '';
+        if (/^(brand-board|palette-board|identity-board)/.test(a.role ?? ''))
+            reason = 'identity_board_not_site_media';
         const target = String(m.themeContent?.subject ?? m.subject?.key ?? m.imageV2?.brief?.subject?.key ?? '');
         if (target && target !== 'product:main' && !p.catalog.some(x => target === `product:catalog:${x.key}`) && !p.services.services.some(x => target === `service:${x.key}`))
             reason = 'subject_not_current';
@@ -86,7 +89,7 @@ export async function inventoryClientMedia(p: Project): Promise<MediaInventory> 
                 continue;
             }
             const ext = a.mime === 'image/svg+xml' ? 'svg' : a.mime === 'image/webp' ? 'webp' : a.mime === 'image/png' ? 'png' : a.mime === 'image/avif' ? 'avif' : a.kind === 'video' ? /webm/.test(a.mime) ? 'webm' : 'mp4' : 'jpg';
-            usable.push({ id: a.id, file: `es-client-${a.id}.${ext}`, kind: a.kind, role, name: a.name, description: String(m.themeContent?.description ?? m.alt ?? m.description ?? m.triage?.caption ?? ''), width, height, origin: a.origin, subject: target, serviceKey: String(m.serviceKey ?? ''), reviewed: m.themeContent?.reviewed === true || m.preparation?.reviewedSlot?.alignment?.status === 'accepted', focal: { desktop: String(m.themeContent?.focus ?? m.media?.desktop ?? '50% 50%'), mobile: String(m.themeContent?.mobileFocus ?? m.media?.mobile ?? '50% 50%') }, placement: String(m.slot ?? ''), authentic: a.origin !== 'generated' && m.authenticWork === true });
+            usable.push({ id: a.id, file: `es-client-${a.id}.${ext}`, kind: a.kind, role, sourceRole: a.role ?? '', name: a.name, description: String(m.themeContent?.description ?? m.alt ?? m.description ?? m.triage?.caption ?? ''), width, height, origin: a.origin, subject: target, serviceKey: String(m.serviceKey ?? ''), reviewed: m.themeContent?.reviewed === true || m.preparation?.reviewedSlot?.alignment?.status === 'accepted', focal: { desktop: String(m.themeContent?.focus ?? m.media?.desktop ?? '50% 50%'), mobile: String(m.themeContent?.mobileFocus ?? m.media?.mobile ?? '50% 50%') }, placement: String(m.slot ?? ''), authentic: a.origin !== 'generated' && m.authenticWork === true });
         }
         catch {
             excluded.push({ id: a.id, reason: 'file_missing_or_undecodable' });

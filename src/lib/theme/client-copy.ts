@@ -93,16 +93,28 @@ export function bindClientCopy(spec: ThemeSpec, p: Project, copy: ShopCopy, type
         const text = pageRole === 'guide' ? copy.features.items.map(x => `${x.title} : ${x.text}`).join(' ') : pageRole === 'editorial' ? copy.story.steps.map(x => `${x.title} : ${x.text}`).join(' ') : copy.detail.text;
         blocks = [{ type: 'heading', settings: { text: heading } }, { type: 'text', settings: { text: paragraph(text) } }];
     }
+    if (type === 'about') {
+        set('heading', copy.about.heading);
+        set('lead', paragraph(copy.about.intro));
+        set('why_title', copy.statement.heading);
+        set('why_text', paragraph(p.brand?.positioning ?? copy.statement.text));
+        set('commit_text', values.map(v => paragraph(`${v.title} : ${v.text}`)).join(''));
+        set('signature', p.brand?.name ?? p.name);
+        blocks = values.map(v => ({ type: 'value', settings: { icon: 'check', title: v.title, text: paragraph(v.text) } }));
+    }
     if (/newsletter/.test(type)) {
         set('heading', copy.newsletter.heading);
         set('text', paragraph(copy.newsletter.text));
+        set('button_label', t('S’inscrire', 'Sign up'));
+        for (const key of ['perk_1', 'perk_2', 'perk_3'])
+            set(key, '');
     }
     if (/features-grid/.test(type))
         blocks = copy.features.items.filter(v => genuine(v.title) && genuine(v.text)).map(v => ({ type: 'feature', settings: { title: v.title, text: paragraph(v.text), icon: v.icon } }));
     if (/faq/.test(type))
         blocks = copy.faq.items.filter(v => genuine(v.q) && genuine(v.a)).map(v => ({ type: 'question', settings: { question: v.q, answer: paragraph(v.a) } }));
     if (/cv-steps|timeline|how-to|ref-narrative/.test(type))
-        blocks = copy.story.steps.filter(v => genuine(v.title) && genuine(v.text)).map((v, i) => ({ type: type === 'ref-narrative' ? 'chapter' : type === 'timeline' ? 'event' : 'step', settings: { title: v.title, heading: v.title, text: paragraph(v.text), number: String(i + 1) } }));
+        blocks = copy.story.steps.filter(v => genuine(v.title) && genuine(v.text)).map((v, i) => ({ type: type === 'ref-narrative' ? 'chapter' : 'step', settings: { title: v.title, heading: v.title, text: paragraph(v.text), number: String(i + 1) } }));
     if (/cv-ingredients/.test(type)) {
         const composition = facts.filter(f => /compos|mati[eè]r|ingr[eé]d|material|fabric|finition/i.test(f.label));
         blocks = composition.map(f => ({ type: 'ingredient', settings: { name: f.label, role: f.value, note: '' } }));
@@ -128,8 +140,10 @@ export function bindClientCopy(spec: ThemeSpec, p: Project, copy: ShopCopy, type
         set('heading', values[occurrence % Math.max(1, values.length)]?.title ?? copy.about.heading);
         set('text', paragraph(values[occurrence % Math.max(1, values.length)]?.text ?? copy.about.intro));
     }
-    if (type === 'marquee')
-        blocks = copy.marquee.filter(genuine).map(text => ({ type: 'text', settings: { text } }));
+    if (type === 'marquee') {
+        set('items', copy.marquee.filter(genuine).join('\n'));
+        blocks = [];
+    }
     if (/cv-hotspots/.test(type)) {
         blocks = [];
         missing.push('confirmed_hotspot_positions');

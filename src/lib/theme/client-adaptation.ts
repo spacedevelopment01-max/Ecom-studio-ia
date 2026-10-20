@@ -1,5 +1,6 @@
 /** Client adaptation of the validated reference compositions. No demo text/image is used at runtime. */
 import shapes from './reference-shapes.json';
+import { isDark } from '../color';
 import type { Project } from '../projects';
 import type { JobContext } from '../jobs';
 import type { ShopCopy } from './copy';
@@ -104,7 +105,7 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
     const en = spec.language === 'en', t = (fr: string, enText: string) => en ? enText : fr;
     ctx?.progress(.3, t('Préparation des pages et des emplacements du thème', 'Preparing theme pages and placements'));
     const inventory = await inventoryClientMedia(p), pool = inventory.usable;
-    const plan: ClientContentPlan = { version: 1, sourceCommit: shapes.sourceCommit, contextHash: clientThemeContext(p), inputHash: stableHash('client-theme-content', { engine: '154.2', shapes: shape, direction: spec.direction, brand: p.brand, product: p.product, services: p.services, copy, media: pool }), status: 'to_verify', pages: [], slots: [], issues: [], excluded: inventory.excluded, generationRequests: [] };
+    const plan: ClientContentPlan = { version: 1, sourceCommit: shapes.sourceCommit, contextHash: clientThemeContext(p), inputHash: stableHash('client-theme-content', { engine: '154.3', shapes: shape, direction: spec.direction, brand: p.brand, product: p.product, services: p.services, copy, media: pool }), status: 'to_verify', pages: [], slots: [], issues: [], excluded: inventory.excluded, generationRequests: [] };
     const labels: Record<string, string> = { home: p.brand?.name ?? p.name, story: t('Notre histoire', 'Our story'), uses: t('En situation', 'In use'), details: t('Utilisation et détails', 'Use and details'), contact: t('Questions et contact', 'Questions and contact'), faq: t('Questions fréquentes', 'Frequently asked questions'), shipping: t('Livraison et retours', 'Shipping and returns'), legal: t('Informations légales', 'Legal information'), services: t('Nos prestations', 'Our services'), portfolio: t('Réalisations documentées', 'Documented projects') };
     Object.assign(labels, { privacy: t('Confidentialité', 'Privacy'), terms: t('Conditions générales', 'Terms and conditions'), guide: t('Bien choisir', 'Choosing well'), editorial: t('Comprendre le produit', 'Understanding the product'), showcase: t('En détail', 'In detail') });
     const templateRole = (key: string) => key === 'index' ? 'home' : key.startsWith('product') ? 'product' : shape.pages.find(x => `page.${x.suffix}` === key)?.role ?? 'details';
@@ -175,8 +176,11 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
                 };
                 const alt = asset.description || `${p.business === 'services' ? p.brand?.name : p.product.name} — ${roleNames[wanted][en ? 1 : 0]}`;
                 set(field === 'second_asset' ? 'second_alt' : 'image_alt', alt);
-                const position = (key: string, value: string) => { const def = defs?.find(d => d.id === key); if (def && (['text', 'textarea'].includes(def.type) || def.options?.some(o => o.value === value)))
-                    settings[key] = value; };
+                const position = (key: string, value: string) => {
+                    const def = defs?.find(d => d.id === key);
+                    if (def && (['text', 'textarea'].includes(def.type) || def.options?.some(o => o.value === value)))
+                        settings[key] = value;
+                };
                 position('image_position', asset.focal.desktop);
                 position('image_mobile_position', asset.focal.mobile);
                 const xy = asset.focal.desktop.split(/\s+/).map(parseFloat);
@@ -197,7 +201,7 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
                     for (const k of ['text', 'description'])
                         set(k, paragraph(asset.description));
                 }
-                if (!block && asset.description && ['detail', 'use', 'method', 'realization'].includes(wanted) && !['main-product', 'main-page', 'page-title'].includes(sh.type)) {
+                if (!block && asset.description && ['detail', 'use', 'method', 'realization'].includes(wanted) && (sectionPurpose(sh.type) === 'uses' || /^cv-(feature|detail|scene)$/.test(sh.type))) {
                     for (const k of ['heading', 'title'])
                         set(k, roleNames[wanted][en ? 1 : 0]);
                     set('text', paragraph(asset.description));
@@ -250,7 +254,7 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
                 const page = spec.store.pages.find(x => `page.${x.template_suffix}` === template);
                 const body = role === 'shipping' ? copy.shipping.body_html : page?.body_html ?? '';
                 const provided = genuine(plain(body)) && !/à compléter|to complete|placeholder/i.test(plain(body));
-                section.settings = { ...section.settings, heading: page?.title ?? labels[role] ?? labels.legal, intro: '', source: 'blocks' };
+                section.settings = { ...section.settings, heading: page?.title ?? labels[role] ?? labels.legal, intro: '', updated: '', source: 'blocks' };
                 section.blocks = { client_part: { type: 'part', settings: { title: provided ? (page?.title ?? labels[role]) : t('Informations à fournir', 'Information to provide'), text: provided ? body : paragraph(t('Ces informations doivent être fournies et vérifiées par le professionnel avant publication.', 'The business must provide and verify this information before publication.')) } } };
                 section.block_order = ['client_part'];
                 if (!provided)
@@ -277,16 +281,29 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
         spec.templates[template] = { sections, order: [...layout.order] };
     }
     // The selected logo is project-scoped. No default or demonstration logo may leak through a group setting.
-    const logo = pool.find(a => a.role === 'logo' && a.id === p.brand?.logo?.assetId) ?? pool.find(a => a.role === 'logo');
+    const logo = pool.find(a => a.role === 'logo' && a.id === p.brand?.logo?.assetId) ?? pool.find(a => a.role === 'logo' && /^(logo|logo-horizontal|logo-webp|logo-v2)$/.test(a.sourceRole));
+    const logoLight = pool.find(a => /^logo-light(?:-|$)/.test(a.sourceRole));
+    const favicon = pool.find(a => /^favicon(?:-|$)/.test(a.sourceRole)) ?? logo;
     spec.settings.logo_asset = logo?.file ?? '';
-    spec.settings.favicon_asset = logo?.file ?? '';
+    spec.settings.favicon_asset = favicon?.file ?? '';
+    if (favicon)
+        onlyFiles[favicon.file] = favicon.id;
     if (logo)
         onlyFiles[logo.file] = logo.id;
     for (const [groupName, group] of Object.entries(spec.groups))
         for (const section of Object.values(group.sections)) {
+            const scheme = spec.settings.color_schemes as Record<string, {
+                settings: {
+                    background: string;
+                };
+            }> | undefined;
+            const background = scheme?.[String(section.settings.color_scheme)]?.settings.background;
+            const groupLogo = background && isDark(background) && logoLight ? logoLight : logo;
+            if (groupLogo)
+                onlyFiles[groupLogo.file] = groupLogo.id;
             for (const k of Object.keys(section.settings))
                 if (mediaKey(k) || k === 'logo_asset')
-                    section.settings[k] = k === 'logo_asset' ? logo?.file ?? '' : '';
+                    section.settings[k] = k === 'logo_asset' ? groupLogo?.file ?? '' : '';
             for (const b of Object.values(section.blocks ?? {}))
                 for (const k of Object.keys(b.settings))
                     if (mediaKey(k))

@@ -1,18 +1,31 @@
-const isolatedDatabase = vi.hoisted(() => { const fs = process.getBuiltinModule('fs'); const root = process.env.DATA_DIR; if (!root)
-    throw Error('Isolated tests required'); const globals = globalThis as {
-    __ecomDb?: {
-        close(): void;
+const isolatedDatabase = vi.hoisted(() => {
+    const fs = process.getBuiltinModule('fs');
+    const root = process.env.DATA_DIR;
+    if (!root)
+        throw Error('Isolated tests required');
+    const globals = globalThis as {
+        __ecomDb?: {
+            close(): void;
+        };
+    }, previous = globals.__ecomDb;
+    delete globals.__ecomDb;
+    vi.stubEnv('DATA_DIR', fs.mkdtempSync(root + '/mission154-'));
+    return { previous };
+});
+afterAll(() => {
+    const globals = globalThis as {
+        __ecomDb?: {
+            close(): void;
+        };
     };
-}, previous = globals.__ecomDb; delete globals.__ecomDb; vi.stubEnv('DATA_DIR', fs.mkdtempSync(root + '/mission154-')); return { previous }; });
-afterAll(() => { const globals = globalThis as {
-    __ecomDb?: {
-        close(): void;
-    };
-}; if (globals.__ecomDb !== isolatedDatabase.previous)
-    globals.__ecomDb?.close(); if (isolatedDatabase.previous)
-    globals.__ecomDb = isolatedDatabase.previous;
-else
-    delete globals.__ecomDb; vi.unstubAllEnvs(); });
+    if (globals.__ecomDb !== isolatedDatabase.previous)
+        globals.__ecomDb?.close();
+    if (isolatedDatabase.previous)
+        globals.__ecomDb = isolatedDatabase.previous;
+    else
+        delete globals.__ecomDb;
+    vi.unstubAllEnvs();
+});
 /** Integrated delivery: native exports and persisted versions, isolated decodable inputs, no supplier. */
 import fs from 'node:fs';
 import { it, expect, beforeEach, afterEach, afterAll, vi } from 'vitest';
@@ -125,19 +138,26 @@ it.each([{ brand: 'Pli', name: 'Tablier Lin', summary: 'Un tablier en lin nature
     expect(result.settings.type_heading_font).toBe('cormorant_n5');
     expect(result.meta!.adaptation!.status).toBe('partial');
 });
-it.each([{ zone: 'Europe/Paris', days: 6 }, { zone: 'Pacific/Kiritimati', days: 7 }])('horizon réel en $zone : préparation utile, garde de $days jours inchangée', async ({ zone, days }) => { const f = await clientFixture({ incomplete: true, plan: 'creer' }); const { saveSettings } = await import('@/lib/projects'); saveSettings(f.pid, { ...loadProject(f.pid).settings, timezone: zone }); const at = Date.parse('2026-10-20T23:30:00Z'), clock = vi.spyOn(Date, 'now').mockReturnValue(at); try {
-    const { planFromAsk } = await import('@/lib/social-v2/engine');
-    const r = fr(() => planFromAsk(loadProject(f.pid), 'Prépare 30 jours avec une publication par jour'));
-    expect(r.request.days).toBe(days);
-    const rows = all<{
-        scheduled_at: number;
-    }>('SELECT scheduled_at FROM posts WHERE project_id=?', f.pid);
-    expect(rows.length).toBeGreaterThan(0);
-    expect(rows.every(x => x.scheduled_at <= at + 7 * 86400000 + 3600000)).toBe(true);
-    if (days < 7)
-        expect(r.notes.join(' ')).toContain('jours complets préparés');
-}
-finally {
-    clock.mockRestore();
-} });
+it.each([{ zone: 'Europe/Paris', days: 6 }, { zone: 'Pacific/Kiritimati', days: 7 }])('horizon réel en $zone : préparation utile, garde de $days jours inchangée', async ({ zone, days }) => {
+    const f = await clientFixture({ incomplete: true, plan: 'creer' });
+    const { saveSettings } = await import('@/lib/projects');
+    saveSettings(f.pid, { ...loadProject(f.pid).settings, timezone: zone });
+    const at = Date.parse('2026-10-20T23:30:00Z'), clock = vi.spyOn(Date, 'now').mockReturnValue(at);
+    try {
+        const { planFromAsk } = await import('@/lib/social-v2/engine');
+        const r = fr(() => planFromAsk(loadProject(f.pid), 'Prépare 30 jours avec une publication par jour'));
+        expect(r.request.days).toBe(days);
+        const rows = all<{
+            scheduled_at: number;
+        }>('SELECT scheduled_at FROM posts WHERE project_id=?', f.pid);
+        expect(rows.length).toBeGreaterThan(0);
+        expect(rows.every(x => x.scheduled_at <= at + 7 * 86400000 + 3600000)).toBe(true);
+        if (days < 7)
+            expect(r.notes.join(' ')).toContain('jours complets préparés');
+    }
+    finally {
+        clock.mockRestore();
+    }
+});
 it('référence corrompue : préparation et génération refusées avant coût ; fausse vidéo décodable exclue malgré ses dimensions déclarées', async () => { const f = await clientFixture({ incomplete: true }); await fr(() => buildShop(null, f.pid, { direction: 'traverse', useAi: false })); const v = currentTheme(f.pid)!, plan = v.spec.meta!.adaptation!, request = plan.generationRequests[0], a = getAsset(request.referenceAssetIds[0])!, bytes = assetData(a); fs.writeFileSync(storagePath(a.storage_key), 'invalid image'); const { checkedPlacementRequest } = await import('@/lib/theme/placement-request'); await expect(checkedPlacementRequest(f.pid, { versionId: v.version.id, slotKey: request.key, contextHash: plan.contextHash })).rejects.toMatchObject({ status: 409 }); fs.writeFileSync(storagePath(a.storage_key), bytes); const fake = await saveAsset({ projectId: f.pid, userId: f.user.id, data: Buffer.from('not a video'), mime: 'video/mp4', kind: 'video', name: 'invalid-fixture.mp4', role: 'clip', origin: 'upload', status: 'approved' }); run('UPDATE assets SET width=640,height=480,duration=1 WHERE id=?', fake.id); const { inventoryClientMedia } = await import('@/lib/theme/client-media'); expect((await inventoryClientMedia(loadProject(f.pid))).excluded.some(x => x.id === fake.id && x.reason === 'file_missing_or_undecodable')).toBe(true); expect(all('SELECT id FROM ai_calls WHERE project_id=?', f.pid)).toHaveLength(0); });
+it('déclinaisons de logo et planches d’identité : jamais utilisées comme photos du produit', async () => { const f = await clientFixture({ incomplete: true }), light = await saveAsset({ projectId: f.pid, userId: f.user.id, data: await sharp({ create: { width: 900, height: 260, channels: 3, background: '#eee' } }).png().toBuffer(), name: 'logo-light.png', mime: 'image/png', role: 'logo-light', origin: 'upload', status: 'approved' }), board = await saveAsset({ projectId: f.pid, userId: f.user.id, data: await sharp({ create: { width: 1200, height: 800, channels: 3, background: '#aabbaa' } }).png().toBuffer(), name: 'identity-board.png', mime: 'image/png', role: 'brand-board', origin: 'upload', status: 'approved' }); await fr(() => buildShop(null, f.pid, { direction: 'traverse', useAi: false })); const s = currentTheme(f.pid)!.spec; expect(s.meta!.adaptation!.slots.some(x => [light.id, board.id].includes(x.assetId ?? ''))).toBe(false); expect(s.store.product.images.some(file => [light.id, board.id].includes(s.files[file]))).toBe(false); expect(s.meta!.adaptation!.excluded.some(x => x.id === board.id && x.reason === 'identity_board_not_site_media')).toBe(true); });

@@ -1,18 +1,31 @@
-const isolatedDatabase = vi.hoisted(() => { const fs = process.getBuiltinModule('fs'); const root = process.env.DATA_DIR; if (!root)
-    throw Error('Isolated tests required'); const globals = globalThis as {
-    __ecomDb?: {
-        close(): void;
+const isolatedDatabase = vi.hoisted(() => {
+    const fs = process.getBuiltinModule('fs');
+    const root = process.env.DATA_DIR;
+    if (!root)
+        throw Error('Isolated tests required');
+    const globals = globalThis as {
+        __ecomDb?: {
+            close(): void;
+        };
+    }, previous = globals.__ecomDb;
+    delete globals.__ecomDb;
+    vi.stubEnv('DATA_DIR', fs.mkdtempSync(root + '/mission154-'));
+    return { previous };
+});
+afterAll(() => {
+    const globals = globalThis as {
+        __ecomDb?: {
+            close(): void;
+        };
     };
-}, previous = globals.__ecomDb; delete globals.__ecomDb; vi.stubEnv('DATA_DIR', fs.mkdtempSync(root + '/mission154-')); return { previous }; });
-afterAll(() => { const globals = globalThis as {
-    __ecomDb?: {
-        close(): void;
-    };
-}; if (globals.__ecomDb !== isolatedDatabase.previous)
-    globals.__ecomDb?.close(); if (isolatedDatabase.previous)
-    globals.__ecomDb = isolatedDatabase.previous;
-else
-    delete globals.__ecomDb; vi.unstubAllEnvs(); });
+    if (globals.__ecomDb !== isolatedDatabase.previous)
+        globals.__ecomDb?.close();
+    if (isolatedDatabase.previous)
+        globals.__ecomDb = isolatedDatabase.previous;
+    else
+        delete globals.__ecomDb;
+    vi.unstubAllEnvs();
+});
 import { it, expect, beforeEach, afterEach, afterAll, vi } from 'vitest';
 import fs from 'node:fs';
 import sharp from 'sharp';
@@ -55,6 +68,17 @@ it.each(['fraise', 'onde', 'sillon', 'noctil', 'traverse', 'orbe', 'rive'] as co
                     expect(s.templates[target].sections[s.templates[target].order[i]].settings[key], `${direction} ${key} reference composition`).toEqual(setting);
     }
     expect(s.meta!.adaptation!.slots.some(x => x.assetId)).toBe(true);
+    for (const tpl of Object.values(s.templates))
+        for (const section of Object.values(tpl.sections)) {
+            if (section.type === 'timeline' && f.copy.story.steps.length) {
+                expect(section.disabled).toBe(false);
+                expect(Object.values(section.blocks ?? {}).map(b => b.type)).toEqual(f.copy.story.steps.map(() => 'step'));
+            }
+            if (section.type === 'marquee' && f.copy.marquee.length) {
+                expect(section.disabled).toBe(false);
+                expect(section.settings.items).toContain(f.copy.marquee[0]);
+            }
+        }
     expect(Object.values(s.files).every(id => getAsset(id)?.project_id === f.pid)).toBe(true);
     for (const assetId of new Set(Object.values(s.files))) {
         const a = getAsset(assetId)!;
