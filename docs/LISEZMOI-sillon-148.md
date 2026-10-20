@@ -166,14 +166,17 @@
 | Vérification | Résultat | Nature |
 |---|---|---|
 | Tests ajoutés : `sillon-theme` (catalogue, profil, composition dans l'ordre du thème, médias, SEO, honnêteté, identité d'un autre projet), `sillon-exports` (Shopify, WooCommerce, PrestaShop) ; tests du catalogue passés de 4 à 5 thèmes | réussis | exécuté |
-| Suite complète et typage | 320 fichiers, 2 444 tests réussis (2 ignorés), `tsc` sans erreur | exécuté |
-| Theme Check de Shopify : SILLON, FRAISE, ONDE | aucune erreur ; les 4 mêmes avertissements que sur `main` (variables inutilisées dans deux sections) | exécuté |
+| Finitions : tests `sillon-theme` (aucun « à compléter / à confirmer / à préciser » visible, champs inconnus conservés masqués, 18 visuels, 07 et 16 placés), `theme-demos` (fichiers servis seulement depuis la démo, état prête / périmée, aucune préparation en test, une seule tâche par choix) | réussis | exécuté |
+| Suite complète et typage (finitions) | 321 fichiers, 2 451 tests réussis (2 ignorés), `tsc` sans erreur | exécuté |
+| Studio réel, démo complète puis choix, projet existant « Atelier Verre » : démos SILLON et FRAISE parcourues (pages, menu de la démo, téléphone), empreinte du projet identique et aucune écriture pendant la visite, double-clic + demande simultanée → 1 tâche et 1 version, guide après le choix, studio sur téléphone | réussi (11 étapes) | exécuté (`scripts/theme-demo-choice-check.ts`) |
+| Préparation des cinq démos complètes | FRAISE 24 s, ONDE 22 s, ORBE 19 s, Atelier Rive 18 s, SILLON 21 s | exécuté (`npm run demos:themes`) |
+| Theme Check de Shopify : SILLON, FRAISE, ONDE, ORBE, Atelier Rive (après finitions) | aucune erreur ; les 4 mêmes avertissements que sur `main` (variables inutilisées dans deux sections) | exécuté |
 | Captures SILLON : accueil, fiche, Usages, Utilisation, Contact, panier à 360, 390, 768 et 1 440 px | aucun débordement ; ouverture : la machine entière, au-dessus du texte sur téléphone | exécuté |
 | Contrôle statique SILLON (9 pages × 360 / 390 / 430 / 1 440 px) : un H1, aucun débordement, mention d'aperçu, menu, fiche, panier | réussi ; sans prix, le panier refuse l'ajout avec le message « Prix à définir » | exécuté |
 | Studio réel, projet distinct « Atelier Verre » : galerie « Thèmes » → SILLON appliqué (tâche du worker) → disposition et titre modifiés depuis le panneau → rechargement → aperçu téléphone / ordinateur | réussi ; identité du projet, aucun texte ni visuel de la démo, `X-Robots-Tag: noindex` | exécuté (`scripts/sillon-studio-check.ts`) |
 | Studio réel, démo SILLON : galerie des 20 fonctions, autre famille introuvable, ajout, changement de disposition, effets, déplacement, en-tête et pied (5 dispositions chacun, la disposition SILLON reconnue), rechargement, « réduire les animations » | réussi | exécuté (`scripts/family-studio-check.ts sillon`) |
 | Exports WooCommerce / PrestaShop dans Chromium : profil « nomade », repères, visionneuse de la mosaïque | réussi, aucun débordement ni erreur ; FRAISE, ORBE et Atelier Rive toujours réussis | exécuté (sans installation réelle) |
-| Quatre thèmes validés, avant (captures de #145) / après | 233 captures identiques au pixel sur 236 ; les 3 écarts sont ceux déjà constatés en #145 (mêmes fichiers, mêmes pixels : tiroir en ouverture, bord de galerie) | exécuté |
+| Quatre thèmes validés, avant (captures de #145) / après finitions | 233 captures identiques au pixel sur 236 ; les 3 écarts sont ceux déjà constatés en #145 (tiroir en ouverture, bord de galerie). Un 4ᵉ écart passager (miniatures de la fiche FRAISE chargées en différé, HTML identique) a disparu à la nouvelle capture | exécuté |
 | Génération IA | aucune | — |
 
 ## Limites connues
