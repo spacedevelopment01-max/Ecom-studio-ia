@@ -5,7 +5,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import Database from "better-sqlite3";
 import sharp from "sharp";
-import { budgetFailureCode, diagnostic } from "../scripts/diagnostic-livraison-ia.mjs";
+import { budgetFailureCode, failureOriginCode, diagnostic } from "../scripts/diagnostic-livraison-ia.mjs";
 
 const dirs:string[]=[];
 afterEach(()=>{for(const d of dirs.splice(0))fs.rmSync(d,{recursive:true,force:true});vi.unstubAllGlobals();});
@@ -62,8 +62,21 @@ it.each([
   ["L'IA de votre forfait est utilisée à 100 % : elle reprend au renouvellement du forfait","AI_MINIMUM_AVAILABLE_GATE"],
   ["Le budget restant est inférieur au minimum permettant une génération IA.","AI_MINIMUM_AVAILABLE_GATE"],
   ["Your plan's AI is 100% used: it resumes when your plan renews.","AI_MINIMUM_AVAILABLE_GATE"],
+  ["Budget insuffisant pour concevoir le visuel : aucun titre de calendrier certifié premium.","CREATIVE_CAP_BEFORE_COPY"],
+  ["Une génération utilise temporairement le budget disponible. Attendez son résultat.","WALLET_COMMITTED"],
   ["SECRET_MARKER budget message inconnu","BUDGET_UNCLASSIFIED"],
 ])("le blocage %s reçoit un code précis sans exporter le texte",(message,code)=>expect(budgetFailureCode(message)).toBe(code));
+it.each([
+ ["Aucun modèle compatible avec toutes les références essentielles.","ESSENTIAL_REFERENCES_NO_COMPATIBLE_MODEL"],
+ ["Tarif inconnu pour PRIVATE_MARKER_SECRET : renseignez-le.","MODEL_PRICE_UNCONFIGURED"],
+ ["Conception IA indisponible : génération suspendue, aucun secours silencieux.","COPY_ENGINE_UNAVAILABLE"],
+ ["Concept IA absent : aucune rédaction de secours certifiée premium.","COPY_CONCEPT_MISSING"],
+ ["Référence indisponible dans ce projet.","SOURCE_REFERENCE_UNAVAILABLE"],
+ ["Importez d'abord une photo du produit : l'IA part de votre vrai produit.","PRODUCT_REFERENCE_REQUIRED"],
+])("le suffixe de coût ne transforme pas %s en cause financière",(message,code)=>{
+ const wrapped=message+" — 1 % de votre budget IA utilisé ; les étapes acquises sont conservées.";
+ expect(budgetFailureCode(wrapped)).toBe("BUDGET_UNCLASSIFIED");expect(failureOriginCode(wrapped)).toBe(code);expect(failureOriginCode(wrapped)).not.toContain("PRIVATE_MARKER");
+});
 it("le diagnostic budgétaire sélectionne le bon abonnement sans migration ni solde inventé à la date de l'échec",async()=>{
   const f=await fixture();
   f.db.exec("CREATE TABLE subscriptions(user_id TEXT,owner_user_id TEXT,project_id TEXT,status TEXT); CREATE TABLE wallets(user_id TEXT,monthly_allowance INTEGER,monthly_used INTEGER,reserved INTEGER,reserved_topup INTEGER,topup_balance INTEGER,topup_period_used INTEGER,period_start INTEGER,period_end INTEGER)");

@@ -11,6 +11,7 @@ import { loadProject, type Project } from "../projects";
 import { JobCancelled, JobPaused, type JobContext } from "../jobs";
 import { currentTrace, withTrace } from "../ai/trace";
 import { subjectOptions } from "../creative-subject";
+import { videoDelivery } from "../media/delivery-check";
 import { DEFAULT_TOTAL_S, SCENES, runThreeScenes, type SceneAspect, type SceneQuote, type ThreeScenesDeps, type ThreeScenesRequest } from "./three-scenes";
 
 export const CREATION_VIDEOS: { as: "ad" | "post"; aspect: SceneAspect }[] = [
@@ -62,7 +63,8 @@ export async function creationSceneVideos(ctx: JobContext | null, projectId: str
       }
     };
     const id = ctx ? await ctx.step(`creation-video:${k}`, one) : await one();
-    if (id) out.push(id);
+    await videoDelivery(projectId,id);
+    out.push(id!);
   }
   return out;
 }

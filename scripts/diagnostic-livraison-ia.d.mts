@@ -25,3 +25,5 @@ export type DiagnosticReport = {
 };
 export function diagnostic(options?: DiagnosticOptions): Promise<DiagnosticReport>;
 export function budgetFailureCode(message: unknown): string;
+
+export function failureOriginCode(message: unknown): string;

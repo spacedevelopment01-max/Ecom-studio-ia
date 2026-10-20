@@ -110,17 +110,20 @@ function useFollowJob(onDone: () => unknown) {
       const started = Date.now();
       const tick = async () => {
         try {
-          const { job } = await api<{ job: { status: string; error: string | null; message?: string | null; result?: { outcomes?: { assetId: string | null }[] } | null } }>(`/api/jobs/${jobId}`);
+          const { job } = await api<{ job: { status: string; error: string | null; message?: string | null; result?: { outcomes?: { assetId: string | null }[]; delivery?: {state:string;message:string} } | null } }>(`/api/jobs/${jobId}`);
           if (job.status === "done") {
             await done.current();
             reloadProject().catch(() => {});
             // Tâche terminée sans aucune image retenue : dit clairement (jamais « image prête » pour rien).
             const outcomes = job.result?.outcomes;
             if (Array.isArray(outcomes) && !outcomes.some((o) => o.assetId)) toast("bad", noneMessage);
+            else if(job.result?.delivery)toast(["delivered","ready"].includes(job.result.delivery.state)?"ok":"info",job.result.delivery.message);
             else toast("ok", okMessage);
             return;
           }
           if (job.status === "failed" || job.status === "cancelled" || job.status === "blocked") {
+            // Un échec peut suivre l'enregistrement d'une première image : la rendre accessible sans relance.
+            await done.current();
             reloadProject().catch(() => {});
             if (job.status === "failed") toast("bad", job.error || t("La création a échoué.", "Creation failed."));
             if (job.status === "blocked") toast("bad", job.message || t("La création est bloquée : rien n'a été créé à la place.", "Creation is blocked: nothing was created instead."));

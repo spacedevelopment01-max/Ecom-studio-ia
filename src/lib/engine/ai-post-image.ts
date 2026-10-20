@@ -211,7 +211,7 @@ export async function generateAiPostImage(
   if (!r.assetId) {
     const spent = budgetPctText(p.userId, r.costMicro, p.id);
     throw new UserFacingError(
-      `${r.note ?? C("publication IA non produite", "AI post not produced")} — ${L(`${spent} utilisé ; les essais refusés restent dans Fichiers. Le blocage doit être résolu avant une nouvelle version.`, `${spent} used; rejected attempts stay in Files. Resolve the block before requesting a new version.`)}`,
+      `${r.note ?? C("publication IA non produite", "AI post not produced")} — ${L(`${spent} utilisé ; les étapes déjà acquises sont conservées. Le blocage doit être résolu avant une nouvelle version.`, `${spent} used; acquired steps are kept. Resolve the block before requesting a new version.`)}`,
     );
   }
   // Reprise payée : annoncée au client (message de la tâche), en % du budget IA.

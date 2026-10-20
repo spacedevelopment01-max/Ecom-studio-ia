@@ -15,7 +15,7 @@ const {grantProjectPlan}=await import("../../src/lib/project-subscriptions");
 const billing=await import("../../src/lib/billing");
 const {setSetting,setJsonSetting,getSetting}=await import("../../src/lib/settings");
 const {accountKeyFor}=await import("../../src/lib/project-billing");
-const phase=process.env.DELIVERY_PHASE??"before";if(!["before","after"].includes(phase))throw Error("Phase de recette inconnue");
+const phase=process.env.DELIVERY_PHASE??"before";if(!["before","after","bank"].includes(phase))throw Error("Phase de recette inconnue");
 const command=process.argv[2],pid=process.argv[3],privatePath=path.join(dir,`delivery-${phase}-private.json`);
 if(command==="seed"){
  if(fs.existsSync(privatePath))throw Error("Comptes de recette déjà présents, aucun écrasement");
@@ -59,11 +59,20 @@ if(command==="seed"){
  const png=await sharp(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350"><rect width="1080" height="1350" fill="#244d43"/><circle cx="540" cy="620" r="240" fill="#e6dfc7"/><text x="540" y="220" font-size="48" text-anchor="middle" fill="white">FOURNISSEUR SIMULÉ</text><text x="540" y="1090" font-size="36" text-anchor="middle" fill="white">Test de livraison — pas de création IA</text></svg>')).png().toBuffer();
  let stopped=false;process.on("SIGTERM",()=>stopped=true);process.on("SIGINT",()=>stopped=true);console.log("DELIVERY_WORKER_READY");
  while(!stopped){
-  const j=jobs.claimNext(["image.ai_post"]);if(!j){await new Promise(r=>setTimeout(r,40));continue;}
+  const j=jobs.claimNext(["image.ai_post","image.v2"]);if(!j){await new Promise(r=>setTimeout(r,40));continue;}
   const ctx=new jobs.JobContext(j);let spent=0;
   const mode=getSetting(`test142.delivery.${j.project_id}`)??"success";
   const charge=(task:string,maximum:number,cost:number,key:string)=>{const meta={task,provider:"synthetic",model:"simulation",projectId:j.project_id,jobId:j.id,usageKey:key};const rid=billing.reserve(j.user_id,maximum,meta);billing.recordUsage({userId:j.user_id,...meta,unit:task==="copywriting"?"tokens":"image",costMicro:cost,estimated:false,idempotencyKey:key},{reservationId:rid});spent+=cost;};
   try{
+   if(j.type==="image.v2"){
+    // Injection d'une sortie de moteur pour vérifier uniquement le suivi UI des résultats partiels.
+    const a=await ctx.step("test142:bank-image",()=>saveAsset({projectId:j.project_id!,userId:j.user_id,data:png,name:"banque-simulation.png",mime:"image/png",role:"lifestyle",origin:"generated",status:"review",meta:{imageV2:{origin:"ai",simulation:true},gate:{verdict:"PROVISIONAL"}}}));
+    ctx.progress(.5,"1/2 images enregistrées — simulation de résultat partiel");
+    if(mode==="bank-failed")throw new jobs.UserFacingError("Jeu d’images incomplet : 1/2 images conservées dans la bibliothèque. Aucun nouvel essai payant automatique.");
+    const{imageDelivery}=await import("../../src/lib/media/delivery-check");
+    jobs.completeJob(j.id,{outcomes:[{assetId:a.id,verdict:"PROVISIONAL"}],delivery:await imageDelivery(j.project_id!,[a.id],{expected:2})});
+    continue;
+   }
    const result=await runWithLang({ui:"fr",content:"fr"},()=>runForUser(j.user_id,()=>withTrace({jobId:j.id,projectId:j.project_id,costCapMicro:ctx.payload.costCapMicro},()=>generateAiPostImage(ctx,j.project_id!,ctx.payload.request,{
     async copy(p,post,fallback){charge("copywriting",103349,52339,`${j.id}:synthetic-copy`);return campaignCopy(p,post,fallback);},
     async generate(){if(mode==="budget"){const left=billing.balance(j.user_id,j.project_id!).available;billing.assertCanSpend(j.user_id,left+1,j.project_id);}

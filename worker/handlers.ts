@@ -65,10 +65,8 @@ export const handlers: Record<string, Handler> = {
 
   /** Jeu d'images : Image Engine V2 (composants locaux, photos libres, génération contrôlée). */
   "images.generate": async (ctx) => {
-    const { runImageSetV2, imageSetPlan } = await import("../src/lib/image-v2/set");
-    const p=loadProject(ctx.payload.projectId);
-    const r=await runImageSetV2(ctx,p.id);
-    return {...r,delivery:await imageDelivery(p.id,r.created,{expected:imageSetPlan(p.business==="services").length,reasons:r.notes})};
+    const { runImageSetV2 } = await import("../src/lib/image-v2/set");
+    return runImageSetV2(ctx,ctx.payload.projectId);
   },
   /** Ancienne image « studio » : désormais créée par l'IA (Image Engine V2, génération seule) ; sans IA, refus expliqué. */
   "image.single": async (ctx) => {

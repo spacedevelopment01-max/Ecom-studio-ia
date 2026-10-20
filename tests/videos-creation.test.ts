@@ -4,6 +4,17 @@
  */
 import { describe, expect, it } from "vitest";
 import sharp from "sharp";
+import fs from "node:fs";
+import path from "node:path";
+import {execTool} from "@/lib/exec-tool";
+import {tmpDir} from "@/lib/storage";
+
+// Vrais conteneurs décodables de test ; aucun fournisseur ni rendu créatif réel.
+const videos=new Map<string,Promise<Buffer>>();
+const videoBytes=(aspect="9:16")=>{
+ if(!videos.has(aspect))videos.set(aspect,(async()=>{const dir=tmpDir("creation-video-fixture"),file=path.join(dir,"test.mp4");try{await execTool("ffmpeg",["-y","-f","lavfi","-i",`color=c=0x224466:s=${aspect==="16:9"?"160x90":"90x160"}:r=2:d=15`,"-an","-c:v","libx264","-pix_fmt","yuv420p",file]);return fs.readFileSync(file);}finally{fs.rmSync(dir,{recursive:true,force:true});}})());
+ return videos.get(aspect)!;
+};
 
 describe("Vidéos de la création", async () => {
   const { createUser } = await import("@/lib/auth");
@@ -26,14 +37,14 @@ describe("Vidéos de la création", async () => {
           clip: async () => {
             if (o.failClip) throw new Error("fournisseur indisponible");
             calls.clip++;
-            return Buffer.from("mp4");
+            return videoBytes();
           },
-          stock: async (_p: unknown, k: number) => (calls.stock++, { assetId: (await saveAsset({ projectId: p.id, userId: p.userId, data: Buffer.from(`c${k}${Math.random()}`), name: `c${k}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", status: "ready", meta: {} })).id, durationS: 8 }),
+          stock: async (_p: unknown, k: number) => (calls.stock++, { assetId: (await saveAsset({ projectId: p.id, userId: p.userId, data: await videoBytes(), name: `c${k}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", status: "ready", meta: {} })).id, durationS: 8 }),
           spentMicro: () => 0,
-          render: async (_p: unknown, _k: string, doc: unknown) => (calls.docs.push(doc), `video-${calls.docs.length}`),
+          render: async (_p: unknown, _k: string, doc: unknown) => {calls.docs.push(doc);return (await saveAsset({projectId:p.id,userId:p.userId,data:await videoBytes((doc as {aspect:string}).aspect),name:`rendu-${calls.docs.length}.mp4`,mime:"video/mp4",role:"video",origin:"generated",status:"review"})).id;},
         },
         quote: () => ({ mode: "ai" as const, allowed: o.allowed ?? true, reason: null, estimateMicro: 900_000, scenes: 3, totalS: 15, clipS: 5 }),
-        local: async (k: number) => (calls.local.push(k), `local-${k}`),
+        local: async (k: number) => {calls.local.push(k);return(await saveAsset({projectId:p.id,userId:p.userId,data:await videoBytes(k===0?"9:16":"16:9"),name:`local-${k}.mp4`,mime:"video/mp4",role:"video",origin:"generated",status:"review"})).id;},
         spentByJob: () => 0,
       },
     };

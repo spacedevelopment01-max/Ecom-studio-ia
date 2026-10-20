@@ -3,7 +3,7 @@ import {afterEach,beforeEach,expect,it,vi} from "vitest";
 import sharp from "sharp";
 import fs from "node:fs";
 import path from "node:path";
-import {tmpDir} from "@/lib/storage";
+import {tmpDir,storagePath} from "@/lib/storage";
 import {execTool} from "@/lib/exec-tool";
 const output=vi.hoisted(()=>({video:null as string|null,logo:null as string|null,docKey:null as string|null}));
 vi.mock("@/lib/video-v2/engine",async orig=>({...await orig<any>(),runVideoEngineV2:async()=>({docKey:output.docKey,videoAssetId:output.video,verdict:"PROVISIONAL",codes:[],notes:[],stats:{},stoppedByCostCap:false}),renderLatest:async()=>({videoAssetId:output.video,verdict:"PROVISIONAL",issues:[]})}));
@@ -26,12 +26,46 @@ it.each(["missing","foreign","corrupt"])("vidéo %s : fichier absent, illisible 
  const{u,pid}=await fixture();output.video=mode==="missing"?"missing-video-contract":(await saveAsset({projectId:mode==="foreign"?seedImageFixture(u.id,"hightech"):pid,userId:u.id,data:Buffer.from("not a video"),name:"invalid-test.mp4",mime:"video/mp4",role:"video",origin:"generated",status:"review"})).id;
  expect((await execute("video.v2",pid,u.id,{request:{render:true}})).status).toBe("failed");
 });
+it("workflow direct : aucun fichier vidéo ne devient une étape terminée",async()=>{
+ const{u,pid}=await fixture();const{STEP_EXECUTORS}=await import("@/lib/orchestrator/execute");const{loadProject}=await import("@/lib/projects");const type=`test142.workflow-video:${crypto.randomUUID()}`;const j=enqueue({userId:u.id,projectId:pid,type,payload:{projectId:pid}});const ctx=new JobContext(claimNext([type])!);
+ try{await expect(STEP_EXECUTORS.video!(ctx,loadProject(pid),{id:"video-test",input:{text:"Test isolé",allowPaid:false}} as any,{} as any)).rejects.toThrow(/vidéo|video/);}finally{markFinished(j.id);}
+});
+it("création initiale : deux retours locaux vides ne sont pas deux vidéos livrées",async()=>{
+ const{pid}=await fixture();const{creationSceneVideos}=await import("@/lib/video-v2/creation-videos");const local=vi.fn(async()=>null);
+ await expect(creationSceneVideos(null,pid,"local",{local,scenes:{} as any,quote:()=>({allowed:true}) as any,spentByJob:()=>0})).rejects.toThrow(/vidéo|video/);expect(local).toHaveBeenCalledTimes(1);
+});
+it("workflow direct et création initiale : vidéos lisibles, reprise partielle sans refaire la première",async()=>{
+ const{u,pid}=await fixture(),dir=tmpDir("test142-video-directe"),file=path.join(dir,"test.mp4");
+ try{
+  await execTool("ffmpeg",["-y","-f","lavfi","-i","color=c=0x244d43:s=64x64:d=0.4","-an","-c:v","libx264","-pix_fmt","yuv420p",file]);
+  const a=await saveAsset({projectId:pid,userId:u.id,data:fs.readFileSync(file),name:"video-directe-test.mp4",mime:"video/mp4",role:"video",origin:"generated",status:"review"});output.video=a.id;
+  const{STEP_EXECUTORS}=await import("@/lib/orchestrator/execute");const{loadProject}=await import("@/lib/projects");const{creationSceneVideos}=await import("@/lib/video-v2/creation-videos");
+  const type=`test142.video-directe:${crypto.randomUUID()}`;const j=enqueue({userId:u.id,projectId:pid,type,payload:{projectId:pid}}),ctx=new JobContext(claimNext([type])!);
+  try{
+   const result=await STEP_EXECUTORS.video!(ctx,loadProject(pid),{id:"video-test",input:{text:"Test isolé",allowPaid:false}} as any,{} as any);expect(result.note).toMatch(/vérifier|review/);
+   const local=vi.fn(async(k:number)=>k===0?a.id:null),deps={local,scenes:{} as any,quote:()=>({allowed:true}) as any,spentByJob:()=>0};
+   await expect(creationSceneVideos(ctx,pid,"local",deps)).rejects.toThrow(/vidéo|video/);expect(local).toHaveBeenCalledTimes(2);
+   await expect(creationSceneVideos(ctx,pid,"local",deps)).rejects.toThrow(/vidéo|video/);expect(local).toHaveBeenCalledTimes(2);expect(getAsset(a.id)!.status).toBe("review");expect(fs.existsSync(storagePath(getAsset(a.id)!.storage_key))).toBe(true);
+  }finally{markFinished(j.id);}
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
 it("logo redessiné absent : échec explicite et original conservé",async()=>{
  const{u,pid}=await fixture();const original=await saveAsset({projectId:pid,userId:u.id,data:await sharp({create:{width:32,height:32,channels:3,background:"#243f32"}}).png().toBuffer(),name:"original-test.png",mime:"image/png",role:"logo-v2",origin:"generated",status:"approved"});
  const j=await execute("brand.logo.v2.redraw",pid,u.id,{assetId:original.id});expect(j.status).toBe("failed");expect(getAsset(original.id)!.status).toBe("approved");
 });
 it("aucun logo ni série : ne pas afficher une création terminée",async()=>{
  const{u,pid}=await fixture();expect((await execute("brand.logo.v2",pid,u.id)).status).toBe("failed");
+});
+it("ancienne tâche brand.logo : aucune nouvelle proposition ne devient un succès vide",async()=>{
+ const{u,pid}=await fixture();expect((await execute("brand.logo",pid,u.id,{regenerate:true})).status).toBe("failed");
+});
+it("ancienne tâche brand.logo : proposition accessible, logo fourni préservé et choix encore requis",async()=>{
+ const{u,pid}=await fixture();const{loadProject,saveBrand}=await import("@/lib/projects");
+ const data=await sharp({create:{width:32,height:32,channels:3,background:"#243f32"}}).png().toBuffer();
+ const old=await saveAsset({projectId:pid,userId:u.id,data,name:"logo-fourni-test.png",mime:"image/png",role:"logo",origin:"upload",status:"approved"});
+ const brand=loadProject(pid).brand!;saveBrand(pid,{...brand,validated:[...brand.validated??[],"logo"],logo:{...brand.logo,assetId:old.id,status:"provided",proposalId:old.id}});
+ const proposal=await saveAsset({projectId:pid,userId:u.id,data,name:"nouvelle-proposition-test.png",mime:"image/png",role:"logo-v2",origin:"generated",status:"review",meta:{gate:{verdict:"FINAL"}}});output.logo=proposal.id;
+ const j=await execute("brand.logo",pid,u.id,{regenerate:true});expect(j.status).toBe("done");expect(JSON.parse(j.result!).delivery.assetIds).toContain(proposal.id);expect(loadProject(pid).brand!.logo.assetId).toBe(old.id);expect(getAsset(proposal.id)!.status).toBe("review");
 });
 it("une vidéo réellement encodée reste livrée à vérifier, sans promotion du verdict",async()=>{
  const{u,pid}=await fixture(),dir=tmpDir("test142-video-livrable"),file=path.join(dir,"test.mp4");
