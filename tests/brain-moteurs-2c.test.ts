@@ -1,3 +1,4 @@
+import { grantProjectPlan } from "@/lib/project-subscriptions";
 /**
  * Project Brain 2C — chaque moteur reçoit SON scope (jamais « all », jamais une vue legacy) :
  *  - appels réels des moteurs avec une IA simulée qui enregistre l'appel (aucun crédit dépensé) ;
@@ -41,6 +42,7 @@ describe("Project Brain 2C — branchement des moteurs", async () => {
 
   const u = await createUser(`moteurs2c${Date.now()}@test.fr`, "motdepasse-test", "M");
   const sb = loadProject(seedSebastienBlanc(u.id));
+  grantProjectPlan(sb.id,"dominer");
   const serum = loadProject(seedSerumEclat(u.id));
   const b = { userId: u.id, projectId: sb.id, jobId: null, usageKey: "t" };
 

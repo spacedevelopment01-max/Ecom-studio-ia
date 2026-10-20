@@ -1359,4 +1359,12 @@ body:has(.es-newsletter) .es-footer__card, body:has(.es-newsletter) .es-footer__
 .dir-orbe .es-media-frame { border-radius: 0; }
 .dir-rive .es-heading { letter-spacing: -.02em; line-height: .98; }
 .dir-rive .es-button { border-radius: 0; }
+/* SILLON (issue #148) : serif fine et boutons ronds ; le reste du caractère est porté par le profil « nomade ». */
+.dir-sillon .es-heading { letter-spacing: -.015em; line-height: 1.08; }
+.dir-sillon .es-button { border-radius: 999px; }
 .dir-lancement .es-eyebrow { color: var(--c-accent); letter-spacing: .3em; }
+/* NOCTIL et TRAVERSE (issue #152) : le caractère est porté par les profils « astral » et « itinéraire ». */
+.dir-noctil .es-heading { letter-spacing: -.025em; line-height: 1.04; }
+.dir-noctil .es-button { border-radius: 14px; }
+.dir-traverse .es-heading { letter-spacing: -.02em; line-height: 1.02; }
+.dir-traverse .es-button { border-radius: 2px; letter-spacing: .14em; }

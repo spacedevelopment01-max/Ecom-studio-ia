@@ -13,7 +13,7 @@ import { servicesPlan } from "./services-site";
 import { bookingCalendar, bookingNeed } from "./booking-need";
 import { tidyComposition } from "./tidy";
 import { planForTheme, themeRank } from "./theme-access";
-import { isActiveThemeId } from "./theme-fit";
+import { isActiveThemeId, themePreviewPath } from "./theme-fit";
 import { CATALOG_THEMES, catalogTheme, type CatalogThemeId, type Kit, type PaletteKit, type Row } from "./theme-catalog";
 import { isReferenceTheme, referenceHomeRows } from "./reference-composition";
 
@@ -520,7 +520,7 @@ const CHROME_LABEL = {
 
 /** Capture d'exemple d'une direction (la même en français et en anglais). */
 export function directionPreview(id: string): string {
-  return `/demo/directions/${id}.jpg`;
+  return themePreviewPath(id);
 }
 
 /** Directions présentées dans la galerie : description, aperçu et combinaison d'en-tête / pied de page (langue de l'interface). */
@@ -1149,7 +1149,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     name: t("Groupe en-tête", "Header group"),
     ...tpl(ids, [
       ...(annItems.length ? [["announcement-bar", { style: CHROME[d.id].ann, color_scheme: "scheme-3" }, annItems.map((t) => ({ type: "announcement", settings: { text: t, link: "" } }))] as Row] : []),
-      ["header", { menu: "main-menu", layout: headerLayout, shape: CHROME[d.id].shape, icons: CHROME[d.id].icons, mobile_menu: CHROME[d.id].menu, sticky: true, transparent_on_home: index[0]?.[0] === "hero-fullbleed", show_search: !svc, color_scheme: "scheme-1", ...(svc ? { show_cart: false, cta_label: svc.headerCta.label, cta_link: svc.headerCta.link, cta_icon: svc.headerCta.icon, phone: svc.phone } : {}) }],
+      ["header", { menu: "main-menu", layout: headerLayout, shape: CHROME[d.id].shape, icons: CHROME[d.id].icons, mobile_menu: CHROME[d.id].menu, sticky: true, transparent_on_home: index[0]?.[0] === "hero-fullbleed", show_search: !svc && !cat?.headerCta, color_scheme: "scheme-1", ...(!svc && cat?.headerCta ? { cta_label: t(cat.headerCta.fr, cat.headerCta.en), cta_link: productUrl, cta_icon: cat.headerCta.icon } : {}), ...(!svc ? cat?.headerSettings ?? {} : {}), ...(svc ? { show_cart: false, cta_label: svc.headerCta.label, cta_link: svc.headerCta.link, cta_icon: svc.headerCta.icon, phone: svc.phone } : {}) }],
     ]),
   };
   const footer: GroupJson = {

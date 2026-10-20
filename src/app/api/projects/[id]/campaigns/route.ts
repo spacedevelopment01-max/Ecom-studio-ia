@@ -1,3 +1,4 @@
+import { assertAdvertising } from "@/lib/job-entitlements";
 import { z } from "zod";
 import { all, id, now, one, run } from "@/lib/db";
 import { HttpError } from "@/lib/auth";
@@ -18,6 +19,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
   const b = await body(req, z.object({ id: z.string().optional(), name: z.string().min(1).max(120), objective: z.string().max(80), networks: z.array(z.string()).max(6), brief: z.object({ language: z.enum(["fr", "en"]).optional() }).catchall(z.any()).default({}), plan: z.record(z.string(), z.any()).default({}), status: z.enum(["draft", "ready", "archived"]).default("draft") }));
+  if(b.status!=="archived")assertAdvertising(p.id);
   if (b.id) {
     const cur = one<{ status: string }>("SELECT status FROM campaigns WHERE id = ? AND project_id = ?", b.id, p.id);
     if (!cur) throw new HttpError(404, L("Campagne introuvable.", "Campaign not found."));

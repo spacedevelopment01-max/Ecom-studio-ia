@@ -26,7 +26,7 @@ export type SectionFit = {
 };
 
 const SHOP: StoreKind[] = ["catalog", "specialty"];
-const CONVERSION_THEMES = ["fraise", "onde"];
+const CONVERSION_THEMES = ["fraise", "onde", "sillon", "noctil", "traverse"];
 const EDITORIAL_THEMES = ["orbe", "rive"];
 // Vitrine et Jardin sont retirés du catalogue (19 octobre) mais rendent encore ces sections : un projet existant qui les
 // utilise les garde compatibles ; aucun thème actif autre qu'ORBE / Rive ne se les voit proposer.
@@ -77,7 +77,8 @@ export const SECTION_FIT: Record<string, SectionFit> = {
   "featured-offer": { kinds: SHOP },
   "countdown": { kinds: SHOP },
   "shipping-journey": { kinds: SHOP },
-  "cta-banner": { kinds: SHOP },
+  // Aussi pour les services : bandeau « Contact et prise de rendez-vous » de leur bibliothèque (issue #145).
+  "cta-banner": { kinds: [...SHOP, "services"] },
   "hero-split": { kinds: SHOP },
   "hero-editorial": { kinds: SHOP },
   "comparison-table": { kinds: SHOP },
@@ -85,7 +86,8 @@ export const SECTION_FIT: Record<string, SectionFit> = {
   "exploded-view": { kinds: SHOP },
   "routine-steps": { kinds: SHOP },
   "scroll-story": { kinds: SHOP },
-  "how-to": { kinds: SHOP },
+  // Aussi pour les services : « Méthode de travail » en étapes de leur bibliothèque (issue #145).
+  "how-to": { kinds: [...SHOP, "services"] },
   "precautions": { kinds: SHOP },
   "content-tabs": { kinds: SHOP },
   "animated-benefits": { kinds: SHOP },
@@ -165,4 +167,4 @@ export function incompatibleSections(spec: { direction: string; settings: Record
 }
 
 /** Les thèmes de référence déclarent leur profil : utile pour savoir qu'un thème rend une famille de sections. */
-export const themeProfiles = (theme: string): ("conversion" | "editorial")[] => (isReferenceThemeId(theme) ? (theme === "fraise" || theme === "onde" ? ["conversion"] : ["editorial"]) : []);
+export const themeProfiles = (theme: string): ("conversion" | "editorial")[] => (isReferenceThemeId(theme) ? (CONVERSION_THEMES.includes(theme) ? ["conversion"] : ["editorial"]) : []);

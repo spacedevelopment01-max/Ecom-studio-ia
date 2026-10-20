@@ -1,3 +1,4 @@
+import { grantProjectPlan } from "@/lib/project-subscriptions";
 /** Actual engine/SQLite/files; deterministic providers. No creative quality or live social delivery claimed. */
 import { describe,it,expect } from 'vitest';
 import sharp from 'sharp';
@@ -115,6 +116,7 @@ describe('Publicité et organique : mêmes identité/sujet, intentions et struct
  });
  it('moteur publicitaire existant : insight, angle, direction, copie et plateforme atteignent finalAd',async()=>{
   const {p,ref}=await setup();const seen:any[]=[];
+  grantProjectPlan(p.id,"dominer");
   await runAdEngineV2(null,p.id,{count:1,platforms:['meta_feed'],aspects:['4:5'],maxCostEur:1}, {
    canWrite:false,canReview:false,canGenerate:false,writeCopy:async()=>{throw Error('no LLM');},review:async()=>{throw Error('no LLM');},image:async()=>null,cutout:()=>null,logo:()=>null,
    finalAd:async input=>{seen.push(JSON.parse(input.campaignContext!));return {assetId:ref.id,costMicro:0};}

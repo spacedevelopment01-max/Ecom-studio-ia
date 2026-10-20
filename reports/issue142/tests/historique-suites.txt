@@ -1,0 +1,63 @@
+Historique des vérifications, conservé pour distinguer échecs et succès.
+
+Suite initiale : un ancien test de trace échoue ; corrigé puis 36 tests ciblés réussis.
+
+ RUN  v5.0.3 /workspace/work/publications-qualite
+
+ ❯ tests/trace-appels.test.ts (6 tests | 1 failed) 48ms
+   ❯ trace des appels (6)
+     × reprise avec la même clé : appel tracé (coût réel visible) mais pas refacturé 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/trace-appels.test.ts > trace des appels > reprise avec la même clé : appel tracé (coût réel visible) mais pas refacturé
+Error: Cette action a déjà été envoyée. Les résultats acquis sont conservés ; aucune nouvelle génération n'a été lancée. Reprenez son suivi ou faites vérifier le résultat incertain avant de recommencer.
+ ❯ operationPending src/lib/billing.ts:383:8
+
+ ❯ existingOperation src/lib/billing.ts:378:19
+ ❯ rawCall src/lib/ai/llm.ts:268:20
+ ❯ llmText src/lib/ai/llm.ts:562:19
+ ❯ tests/trace-appels.test.ts:82:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 312 passed (313)
+      Tests  1 failed | 2404 passed | 13 skipped (2418)
+   Start at  07:58:05
+   Duration  978.69s (tests 75%, import 25%, transform 1%)
+
+    Isolate  313 workers spawned · ~114ms startup each (spawn + environment, per file)
+             at least ~17.70s faster with isolate: false — reuses workers across files instead of one per file
+
+
+
+Suite intermédiaire : blocage audio intermittent encore présent dans le module chargé, puis disque temporaire plein pendant le build concurrent. Ce lancement ne valide rien globalement.
+[vidéos libres] pixabay indisponible : ENOSPC: no space left on device, write
+  29|   const state=JSON.parse(fs.readFileSync(p.json,"utf8"));
+       |                    ^
+     30|   if(state.state!=="confirmed_failed") throw new UserFacingError("Étap…
+     31|   // A confirmed, free refusal remains a manual decision, never a work…
+ ❯ tests/video-receipts-approval.test.ts:41:17
+ ❯ ../../Ecom-studio-ia/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:1628:35
+ ❯ ../../Ecom-studio-ia/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:2783:26
+ ❯ ../../Ecom-studio-ia/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:3321:20
+ ❯ runWithCancel ../../Ecom-studio-ia/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:3316:10
+ ❯ ../../Ecom-studio-ia/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:3301:20
+
+This error originated in "tests/video-receipts-approval.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The last test to run before this error was "un accord couvre la demande et la voix exactes du projet". This means either:
+- the error was thrown while Vitest was running this test, or
+- the error was thrown after the test completed, and this was the most recent test at that point.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  143 failed | 170 passed (313)
+      Tests  333 failed | 1735 passed | 11 skipped (2079)
+     Errors  1 error
+   Start at  08:16:33
+   Duration  1003.18s (tests 80%, import 20%, transform 1%)
+
+    Isolate  313 workers spawned · ~116ms startup each (spawn + environment, per file)
+             at least ~18.04s faster with isolate: false — reuses workers across files instead of one per file
+

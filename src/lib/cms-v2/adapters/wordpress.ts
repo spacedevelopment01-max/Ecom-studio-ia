@@ -16,8 +16,8 @@ import { compileTheme, themeAssetBinary, type AssetLoader } from "../../theme/co
 import { themeLang, type SectionInstance, type ThemeSpec } from "../../theme/spec";
 import { pick } from "../../i18n";
 import { wooProductsCsv } from "../../theme/catalog-export";
-import { designLayer } from "../design";
-import { flatStrings, normalizedSection, phpTemplates, sectionSchemaOf, themeSettings, type SectionSchema } from "../liquid";
+import { designLayer, exportStylesheet } from "../design";
+import { flatStrings, normalizedSection, phpTemplates, sectionJavascript, sectionSchemaOf, specSectionTypes, themeSettings, type SectionSchema } from "../liquid";
 import type { ExportIssue, PlatformExport } from "../types";
 import { exportProductHandle } from "../catalog";
 
@@ -91,6 +91,16 @@ export async function exportWordPress(spec: ThemeSpec, load: AssetLoader): Promi
           }
           adapted.add("featured-product");
           return `<!-- wp:group {"className":"es-wc es-wc-featured","layout":{"type":"default"}} -->\n<div class="wp-block-group es-wc es-wc-featured"><!-- wp:shortcode -->\n[es_product handle="${handle.replace(/[^a-z0-9-]/gi, "")}"]\n<!-- /wp:shortcode --></div>\n<!-- /wp:group -->`;
+        }
+        // Sélection de produits de la bibliothèque : la grille de produits native de WooCommerce (vrais prix, stock,
+        // panier), avec les mêmes produits — le moteur PHP n'a pas les fiches produits de Shopify (cartes vides sinon).
+        if (s.type === "fs-products") {
+          if (services) return "";
+          adapted.add(s.type);
+          const source = String(s.settings.source ?? "manual");
+          const handles = source === "manual" ? (s.block_order ?? Object.keys(s.blocks ?? {})).map((b) => s.blocks?.[b]).filter((b) => b && !b.disabled).map((b) => String(b!.settings?.product ?? "")).filter(Boolean) : null;
+          const settings = { ...s.settings, ...(handles ? { handles } : {}), ...(source === "collection" ? {} : { collection: "all" }) };
+          return `<!-- wp:es/catalog ${blockAttrs({ sectionId: id, originalType: s.type, settings, onlyFor })} /-->`;
         }
         if (s.type === "featured-collection" || (s.type === "ref-offers" && s.settings.layout === "shop")) {
           if (services) return "";
@@ -167,12 +177,13 @@ export async function exportWordPress(spec: ThemeSpec, load: AssetLoader): Promi
   // ------------------------------------------------------------ design (mêmes feuilles que Shopify)
   for (const css of design.stylesheets) {
     const src = files.get(`assets/${css}`);
-    if (src) put(`assets/css/${css}`, src);
+    if (src) put(`assets/css/${css}`, exportStylesheet(src));
     else issues.push({ code: "missing_stylesheet", severity: "blocking", detail: `feuille ${css} absente` });
   }
-  put("assets/css/es-design.css", `/* ${commentSafe(spec.store.shopName)} — design extrait du studio (E-COM STUDIO IA) */\n${design.css}\n`);
+  put("assets/css/es-design.css", `/* ${commentSafe(spec.store.shopName)} — design extrait du studio (E-COM STUDIO IA) */\n${exportStylesheet(design.css)}\n`);
   put("assets/css/es-wp.css", fs.readFileSync(path.join(ROOT, "assets/cms/wordpress/es-wp.css")));
-  const js = ["theme.js", "reference-interactions.js", "purchase-offers.js", "editorial.js"].map((name) => files.get(`assets/${name}`)).filter(Boolean).join("\n;\n");
+  // Mêmes scripts que la mise en page Shopify (dont family.js et conversion.js), dans le même ordre, puis ceux des sections.
+  const js = [...design.scripts.map((name) => files.get(`assets/${name}`)), sectionJavascript(files, specSectionTypes(spec))].filter(Boolean).join("\n;\n");
   if (js) put("assets/js/theme.js", js);
   put("assets/js/es-editor.js", fs.readFileSync(path.join(ROOT, "assets/cms/wordpress/es-editor.js")));
   for (const f of design.fonts) {

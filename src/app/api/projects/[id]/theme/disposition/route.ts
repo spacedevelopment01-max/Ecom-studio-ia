@@ -1,3 +1,4 @@
+import { assertThemeOperations, assertLibrarySelection } from "@/lib/theme/plan-access";
 import { z } from "zod";
 import { projectKind } from "@/lib/theme/project-kind";
 import { body, handle, ok } from "@/lib/http";
@@ -54,6 +55,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     summary = L(`${pickT(r.entry.name, "fr")} : disposition « ${label.fr} »`, `${pickT(r.entry.name, "en")}: “${label.en}” layout`);
     targeted = new Set([`${b.template}:${b.section}`]);
   }
+  assertThemeOperations(p.id,cur.spec,ops);
   if (!ops.length) return ok({ unchanged: true, applied: [] });
   const res = applyOps(cur.spec, ops, { targeted, storeKind: kind });
   if (!res.applied.length) throw new HttpError(400, res.rejected.map((x) => x.reason).join(" ; ") || L("Changement impossible.", "The layout couldn't be changed."));

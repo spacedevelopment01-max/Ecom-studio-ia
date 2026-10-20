@@ -1,0 +1,122 @@
+[
+  {
+    "path": "reports/issue142/parcours/produit-thermometre-01-demande-peu-detaillee.png",
+    "size": 250623,
+    "gitBlob": "474acdef4fb53d8a86243617125c42cb62c4b5f8",
+    "sha256": "22f16d383053b5d9bb274e08d9586f4bf49035ebfc721745600cd8c21e96a5cf"
+  },
+  {
+    "path": "reports/issue142/parcours/produit-thermometre-02-reconnexion.png",
+    "size": 294547,
+    "gitBlob": "30a3ac75c77f909e6f96c6adc985f54ea25e1715",
+    "sha256": "9e3203e95f35bc5d93a856ec12f99582961f38df2fd62a20815e33644b34fbc5"
+  },
+  {
+    "path": "reports/issue142/parcours/produit-thermometre-03-en-cours-mobile.png",
+    "size": 256315,
+    "gitBlob": "242fe476696e7d8b69613f14b5a01fd7f05e54be",
+    "sha256": "442699ff403067e4961f4a60880103254761351a4078d7f41e6e45faaf6ffb3b"
+  },
+  {
+    "path": "reports/issue142/parcours/produit-thermometre-03-en-cours-ordinateur.png",
+    "size": 319355,
+    "gitBlob": "86de7ad0a3c15565137ee75f65d4d9a5e29c0c37",
+    "sha256": "f851a80e5b20fa7ed87afaeac44122459d69b130450fd24eb58a2e8e2c86801b"
+  },
+  {
+    "path": "reports/issue142/parcours/produit-thermometre-04-budget-engage.png",
+    "size": 101976,
+    "gitBlob": "7bc0f7a7820e236d2069d9dec9feacb5b32b5e24",
+    "sha256": "b75290e500ba9d8dcf4c690683e44a1ec51dbbf85fefc1c7a4e0683472e5857f"
+  },
+  {
+    "path": "reports/issue142/parcours/produit-thermometre-05-arret-conserve-mobile.png",
+    "size": 272242,
+    "gitBlob": "b590efbd3d0fb4cff0af9ae46b1d2497039f240a",
+    "sha256": "b6ee7892095c64bef09370e8e83864495fd85322fcc6c38c7eae61e26932fae0"
+  },
+  {
+    "path": "reports/issue142/parcours/produit-thermometre-05-arret-conserve-ordinateur.png",
+    "size": 330423,
+    "gitBlob": "9ab8d1e72b4dfa4a88397e2921cfcb9132cf98db",
+    "sha256": "927579a12a0053b04b1a5662005c43ab7bda635fd48687094895baad30a751bc"
+  },
+  {
+    "path": "reports/issue142/parcours/produit-thermometre-06-resultat-repris-mobile.png",
+    "size": 258859,
+    "gitBlob": "593a1c2d2137f709e3eceaefaaae7740085f7795",
+    "sha256": "0208b8e012cfd58fb8465f8e3596cd9486624c8454955d557f67e9fb9124a721"
+  },
+  {
+    "path": "reports/issue142/parcours/produit-thermometre-06-resultat-repris-ordinateur.png",
+    "size": 316728,
+    "gitBlob": "c3d19b517813ea97983c086a60effd53652508c1",
+    "sha256": "1de9ad8a2ee325b631be0e1ad112e2323c5c20eea3f354bfbe46fe80d42608af"
+  },
+  {
+    "path": "reports/issue142/parcours/produit-thermometre-07-budget-insuffisant.png",
+    "size": 276879,
+    "gitBlob": "1e00c3266282de92ac3dc502361a1133c0b4b04f",
+    "sha256": "422d860ee47171a6d705a050b6f87b89600705e566f79daabc70b6d85017d4a1"
+  },
+  {
+    "path": "reports/issue142/parcours/service-affutage-01-demande-peu-detaillee.png",
+    "size": 252341,
+    "gitBlob": "81b44e4d95e2a8514f501097f398cae98962728c",
+    "sha256": "4e695fdcff770e39959e4b644d63f59f9cffc1dc8bb3f7eb6c35a09570fd696c"
+  },
+  {
+    "path": "reports/issue142/parcours/service-affutage-02-reconnexion.png",
+    "size": 238825,
+    "gitBlob": "7a4a2a4729ec2c0e625a92ab0568f00c6e633779",
+    "sha256": "c36e15a3d5c50f3f545cfa873e17d76c8778dd6c377baa50fc5e8e957ea28746"
+  },
+  {
+    "path": "reports/issue142/parcours/service-affutage-03-en-cours-mobile.png",
+    "size": 260057,
+    "gitBlob": "fe3146c16a43d6fae5dd63eb1a9d2f99be75b7f8",
+    "sha256": "83c33171ce21127e43e4ccc41417445d362327d921a4dffdbefde6a8631ca174"
+  },
+  {
+    "path": "reports/issue142/parcours/service-affutage-03-en-cours-ordinateur.png",
+    "size": 325851,
+    "gitBlob": "01f87f1e4a4a58d0171e99a7244892711fab6986",
+    "sha256": "aa436964ade6749871e396e8f59718ada5f8c876f22dc57c15ffeb648509ad43"
+  },
+  {
+    "path": "reports/issue142/parcours/service-affutage-04-budget-engage.png",
+    "size": 102102,
+    "gitBlob": "77f95f9162befb3f2698bd226365cbe90cf8e5a4",
+    "sha256": "dfff8f3d8f0992fce985fdebc711ad23d8273e8424baf4fbef8b76b3c9872aa8"
+  },
+  {
+    "path": "reports/issue142/parcours/service-affutage-05-arret-conserve-mobile.png",
+    "size": 284857,
+    "gitBlob": "95e52501f9cc1a444a16dc18771ca4d98aa19041",
+    "sha256": "86918cb79ba46f6d9a82eb50ddb2253a0234c5dbca564dac2d4fbe6d86a28c6f"
+  },
+  {
+    "path": "reports/issue142/parcours/service-affutage-05-arret-conserve-ordinateur.png",
+    "size": 315437,
+    "gitBlob": "1dee31f6a9fadad22e1e9218b588f879ee799a6b",
+    "sha256": "01c1c6e503172284e642f5abf30e9c6c70c67091ba3f88b3cc43cf02cb0a6852"
+  },
+  {
+    "path": "reports/issue142/parcours/service-affutage-06-resultat-repris-mobile.png",
+    "size": 262062,
+    "gitBlob": "cf24d8497c325e19757def00006e6a22717a01c0",
+    "sha256": "d9fe8b8dcc3f2b31c86e29fd6793a38c5960e6409b50bc4cdb29342d3f6ebf71"
+  },
+  {
+    "path": "reports/issue142/parcours/service-affutage-06-resultat-repris-ordinateur.png",
+    "size": 322423,
+    "gitBlob": "e6bc7682ae2697f1d651ba986360af7d85310773",
+    "sha256": "b4ce8fac99cc106dd2b4c14bfdedb4a6d56261d494a11e638069b3fb62e4f85b"
+  },
+  {
+    "path": "reports/issue142/parcours/service-affutage-07-budget-insuffisant.png",
+    "size": 280963,
+    "gitBlob": "22fcdd6cd106608faad93ad0c8b5bb6be45f80a2",
+    "sha256": "b911978d575c883a40c3fc942332a2b7e216d86303364806664d619a539f073d"
+  }
+]

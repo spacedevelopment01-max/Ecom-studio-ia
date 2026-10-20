@@ -1,3 +1,5 @@
+import { planAllowsAds } from "../plan-entitlements";
+import { projectPlan } from "../project-billing";
 /**
  * Pilote : de la photo (ou du lien) à la boutique, aux images, aux vidéos et
  * au calendrier. Chaque étape est un point de reprise : après une
@@ -36,7 +38,7 @@ export const STEPS = [
   { id: "brand", label: "Direction de marque", detail: "Nom, positionnement, palette, typographies, logo", en: { label: "Brand direction", detail: "Name, positioning, palette, typography, logo" } },
   { id: "copy", label: "Rédaction", detail: "Textes de la boutique, contrôle qualité", en: { label: "Copywriting", detail: "Store copy, quality check" } },
   { id: "images", label: "Images", detail: "Packshots, détails, scènes, bannières, visuels sociaux", en: { label: "Images", detail: "Packshots, close-ups, scenes, banners, social visuals" } },
-  { id: "video", label: "Vidéos", detail: "Publicité 9:16 et vidéo de boutique 16:9", en: { label: "Videos", detail: "9:16 ad and 16:9 store video" } },
+  { id: "video", label: "Vidéos", detail: "Vidéo de présentation ; publicité selon le forfait", en: { label: "Videos", detail: "Presentation video; advertising according to the plan" } },
   { id: "shop", label: "Boutique", detail: "Thème Shopify complet, aperçu, versions", en: { label: "Store", detail: "Complete Shopify theme, preview, versions" } },
   { id: "calendar", label: "Calendrier", detail: "7 jours de publications préparées à valider", en: { label: "Calendar", detail: "7 days of posts ready for your approval" } },
   { id: "organize", label: "Rangement", detail: "Dossiers, noms et liens des fichiers", en: { label: "Organizing", detail: "Folders, file names and links" } },
@@ -392,6 +394,7 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
         }
       }
       const r = await buildShop(ctx, projectId);
+      if ("delivery" in r && r.delivery && r.delivery.state === "partial") throw new UserFacingError(L("Adaptation partielle conservée : complétez les médias et informations indiqués dans la boutique, puis reprenez cette étape. Aucun résultat final n’est annoncé.","Partial adaptation retained: complete the media and information listed in the store, then resume this step. No final result is reported."),"THEME_CONTENT_INCOMPLETE");
       if ("delivery" in r && r.delivery && !r.delivery.active) throw new UserFacingError(L("Le thème reste à corriger : tentative conservée, aucune version refusée n'est activée. Consultez les versions de la boutique.", "The theme still needs correction: the attempt is saved and no rejected version was activated. Check the store versions."));
       return note(services ? "shop.site" : "shop.theme", { n: r.number });
     }
@@ -442,6 +445,7 @@ const CREATION_AD_ASPECTS = ["4:5", "1:1", "9:16", "4:5", "16:9"] as const;
  * publicité : rien de repayé.
  */
 async function pipelineAds(ctx: JobContext, projectId: string): Promise<number> {
+  if(!planAllowsAds(projectPlan(projectId)))return 0;
   const fresh = loadProject(projectId);
   const { aiActiveFor } = await import("../ai/access");
   if (!aiActiveFor(fresh.userId, projectId)) return 0;

@@ -1,0 +1,12 @@
+
+ RUN  v5.0.3 /workspace/work/publications-qualite
+
+
+ Test Files  80 passed (80)
+      Tests  617 passed (617)
+   Start at  13:11:52
+   Duration  148.58s (tests 68%, import 30%, transform 2%)
+
+     Import  568 modules were evaluated 1782 times · 130.17s total, 30% of tracked time
+             ~15.95s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation

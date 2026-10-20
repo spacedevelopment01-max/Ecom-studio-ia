@@ -11,6 +11,7 @@ import { L } from "@/lib/i18n-server";
 /** Accompagnement téléphonique : créneaux libres, prix par projet (selon son forfait), rendez-vous du client. */
 export const GET = handle(async () => {
   const user = await requireUser();
+  const slots = availableSlots(); // Expire abandoned payment holds before quoting the introductory right.
   const projects = all<{ id: string; name: string }>("SELECT id, name FROM projects WHERE user_id = ? AND archived = 0 AND hidden = 0 ORDER BY updated_at DESC", user.id)
     .filter((p) => {
       const s = subscriptionOfProject(p.id);
@@ -18,9 +19,9 @@ export const GET = handle(async () => {
     })
     .map((p) => {
       const q = quoteCall(user.id, p.id);
-      return { id: p.id, name: p.name, plan: q.plan, free: q.free, priceEur: q.priceCents == null ? null : q.priceCents / 100, reason: q.reason ?? null };
+      return { id: p.id, name: p.name, plan: q.plan, free: q.free, priceEur: q.priceCents == null ? null : q.priceCents / 100, state:q.state, reason: q.reason ?? null };
     });
-  return ok({ projects, slots: availableSlots().map((s) => ({ id: s.id, startsAt: s.starts_at, endsAt: s.ends_at })), bookings: bookingsOf(user.id), freeHourUsed: freeCallUsed(user.id) });
+  return ok({ projects, slots: slots.map((s) => ({ id: s.id, startsAt: s.starts_at, endsAt: s.ends_at })), bookings: bookingsOf(user.id), freeHourUsed: freeCallUsed(user.id) });
 });
 
 const Body = z.object({ projectId: z.string().min(1), slotId: z.string().min(1), topic: z.string().max(1000).optional(), phone: z.string().max(40).optional() });

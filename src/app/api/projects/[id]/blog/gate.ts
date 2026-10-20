@@ -6,8 +6,9 @@ import { aiReady } from "@/lib/ai/llm";
 import { assertBlogWrite, BlogAccessError, blogPlanReason, getArticle, type BlogRow } from "@/lib/engine/blog";
 
 /** Avant une action qui consomme 1 article (écrire, réécrire avec l'IA). */
-export function gateBlogWrite(userId: string, projectId: string) {
+export function gateBlogWrite(userId: string, projectId: string, articleId?:string) {
   try {
+    if(articleId&&getArticle(projectId,articleId)){const reason=blogPlanReason(userId,projectId);if(reason)throw new BlogAccessError(reason);}else
     assertBlogWrite(userId, projectId);
   } catch (e) {
     if (e instanceof BlogAccessError) throw new HttpError(402, e.message, e.code);

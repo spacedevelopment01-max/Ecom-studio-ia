@@ -17,9 +17,10 @@ import { compileTheme, themeAssetBinary, type AssetLoader } from "../../theme/co
 import { renderPage } from "../../theme/render";
 import { cloneSpec, themeLang, type ThemeSpec } from "../../theme/spec";
 import { pick } from "../../i18n";
-import { designLayer } from "../design";
+import { designLayer, exportStylesheet } from "../design";
 import type { ExportIssue, PlatformExport } from "../types";
 import { exportProductHandle } from "../catalog";
+import { sectionJavascript, specSectionTypes } from "../liquid";
 
 const ROOT = process.cwd();
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "") || "site";
@@ -197,13 +198,14 @@ export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Pro
       continue;
     }
     // Préfixe « es- » : un fichier de même chemin qu'un fichier de Classic le remplacerait (Classic perdrait ses styles).
-    put(`assets/css/es-${sheet}`, src);
+    put(`assets/css/es-${sheet}`, exportStylesheet(src));
     css.push({ id: `es-${sheet.replace(/\.css$/, "")}`, path: `assets/css/es-${sheet}` });
   }
-  put("assets/css/es-design.css", `/* ${spec.store.shopName.replace(/\*\//g, "")} — design extrait du studio (E-COM STUDIO IA) */\n${design.css}\n`);
+  put("assets/css/es-design.css", `/* ${spec.store.shopName.replace(/\*\//g, "")} — design extrait du studio (E-COM STUDIO IA) */\n${exportStylesheet(design.css)}\n`);
   put("assets/css/es-ps.css", fs.readFileSync(path.join(ROOT, "assets/cms/prestashop/theme/assets/es-ps.css")));
   css.push({ id: "es-design", path: "assets/css/es-design.css" }, { id: "es-ps", path: "assets/css/es-ps.css" });
-  const js = ["theme.js", "reference-interactions.js", "purchase-offers.js", "editorial.js"].map((name) => files.get(`assets/${name}`)).filter(Boolean).join("\n;\n");
+  // Mêmes scripts que la mise en page Shopify (dont family.js et conversion.js), dans le même ordre, puis ceux des sections.
+  const js = [...design.scripts.map((name) => files.get(`assets/${name}`)), sectionJavascript(files, specSectionTypes(spec))].filter(Boolean).join("\n;\n");
   if (js) put("assets/js/es-theme.js", js);
   put("assets/js/es-ps.js", fs.readFileSync(path.join(ROOT, "assets/cms/prestashop/theme/assets/es-ps.js")));
   for (const f of design.fonts) {

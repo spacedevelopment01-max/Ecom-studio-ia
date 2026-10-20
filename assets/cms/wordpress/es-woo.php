@@ -60,12 +60,15 @@ add_action('init', function () {
 		$handles = es_site()['catalogHandles'] ?? []; $title = ''; $found = !$handle || $handle === 'all';
 		foreach (es_site()['catalogCollections'] ?? [] as $c) if ($c['handle'] === $handle) { $handles = $c['products']; $title = $c['title']; $found = true; break; }
 		if (!$found) $handles = [];
+		// Sélection manuelle (section « Sélection de produits ») : ces produits, dans cet ordre.
+		$manual = isset($s['handles']) && is_array($s['handles']);
+		if ($manual) { $handles = array_map('strval', $s['handles']); $found = true; }
 		$ids = array_values(array_filter(array_map('es_woo_product_id', $handles), function ($id) { return get_post_status($id) === 'publish'; }));
 		$limit = max(1, min(12, (int) ($s['limit'] ?? 12))); $columns = max(1, min(4, (int) ($s['columns'] ?? 3))); $ids = array_slice($ids, 0, $limit);
 		$html = '<div id="shopify-section-' . esc_attr($attrs['sectionId'] ?? 'catalog') . '" data-es-type="' . esc_attr($attrs['originalType'] ?? 'featured-collection') . '" class="es-wc es-section color-' . esc_attr($s['color_scheme'] ?? 'scheme-1') . '" style="--pt:' . max(0, min(200, (int) ($s['padding_top'] ?? 96))) . 'px;--pb:' . max(0, min(200, (int) ($s['padding_bottom'] ?? 96))) . 'px"><div class="es-container">' . (!empty($s['eyebrow']) ? '<p>' . esc_html($s['eyebrow']) . '</p>' : '') . '<h2>' . esc_html($s['heading'] ?? $title) . '</h2>' . wp_kses_post($s['text'] ?? '');
 		$html .= $ids ? do_shortcode('[products ids="' . implode(',', $ids) . '" columns="' . $columns . '" orderby="post__in"]') : '<p>' . esc_html__('Aucun produit publié dans cette sélection.', 'es-theme') . '</p>';
 		if (!empty($s['button_label']) && !empty($s['button_link'])) $html .= '<a href="' . esc_url(es_url($s['button_link'])) . '">' . esc_html($s['button_label']) . '</a>';
-		elseif ($found) $html .= '<a href="' . esc_url(es_url('/collections/' . ($handle ?: 'all'))) . '">' . esc_html__('Voir la collection', 'es-theme') . '</a>';
+		elseif ($found && !$manual) $html .= '<a href="' . esc_url(es_url('/collections/' . ($handle ?: 'all'))) . '">' . esc_html__('Voir la collection', 'es-theme') . '</a>';
 		return $html . '</div></div>';
 	}]);
 });

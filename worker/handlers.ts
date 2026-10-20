@@ -1,3 +1,5 @@
+import { assertRepairableConversation } from "../src/lib/theme/plan-access";
+import { assertJobEntitlements } from "../src/lib/job-entitlements";
 /** Gestionnaires des tâches d'arrière-plan. */
 import { isAutoUsable } from "../src/lib/quality/usable";
 import { projectKind } from "@/lib/theme/project-kind";
@@ -33,6 +35,7 @@ import { brandTypo, palette, ensureCutouts, latestAsset } from "../src/lib/engin
 import { cutoutSummary, redoCutout } from "../src/lib/engine/cutouts";
 import { loadImage } from "@napi-rs/canvas";
 import { L, contentLang } from "../src/lib/i18n-server";
+import { imageDelivery, videoDelivery } from "../src/lib/media/delivery-check";
 import { planOfUserId } from "../src/lib/plan-gates";
 import { ACTION_STEPS, findStockPhotos, orchestrated, runRequestPlan } from "../src/lib/orchestrator/execute";
 
@@ -65,7 +68,7 @@ export const handlers: Record<string, Handler> = {
   /** Jeu d'images : Image Engine V2 (composants locaux, photos libres, génération contrôlée). */
   "images.generate": async (ctx) => {
     const { runImageSetV2 } = await import("../src/lib/image-v2/set");
-    return runImageSetV2(ctx, ctx.payload.projectId);
+    return runImageSetV2(ctx,ctx.payload.projectId);
   },
   /** Ancienne image « studio » : désormais créée par l'IA (Image Engine V2, génération seule) ; sans IA, refus expliqué. */
   "image.single": async (ctx) => {
@@ -76,11 +79,15 @@ export const handlers: Record<string, Handler> = {
     if (TEXT_IMAGE_KINDS.has(ctx.payload.request?.kind)) return (await import("../src/lib/engine/ai-post-image")).generateAiPostImage(ctx,p.id,ctx.payload.request);
     const { runImageEngineV2 } = await import("../src/lib/image-v2/engine");
     const r = await runImageEngineV2(ctx, p.id, { kind: imageV2Kind(p.business === "services", ctx.payload.request?.kind ?? "scene"), count: 1, allowGenerate: true, noStock: true, maxCostEur: 1 });
-    return { outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, origin: o.origin })), stoppedByCostCap: r.stoppedByCostCap };
+    const delivery=await imageDelivery(p.id,r.outcomes.map(o=>o.assetId),{expected:1,reasons:r.outcomes.map(o=>o.reason)});
+    return { outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, origin: o.origin })), stoppedByCostCap: r.stoppedByCostCap,delivery };
   },
   /** Banque de vidéos : plans libres de droits (gratuit) ou plan filmé par l'IA (payant, prix accepté). */
   "video.bank.stock": async (ctx) => (await import("../src/lib/media/bank-video")).findBankClips(ctx, ctx.payload.projectId, ctx.payload.request),
-  "video.bank.ai": async (ctx) => (await import("../src/lib/media/bank-video")).createBankClip(ctx, ctx.payload.projectId, ctx.payload.request),
+  "video.bank.ai": async (ctx) => {
+    const r=await(await import("../src/lib/media/bank-video")).createBankClip(ctx,ctx.payload.projectId,ctx.payload.request);
+    return {...r,delivery:await videoDelivery(ctx.payload.projectId,r.assetId)};
+  },
   /** Onglet Images, « Tout par l'IA, de A à Z » : publication entière conçue par l'IA (moteur des Publications). */
   "image.ai_post": async (ctx) => (await import("../src/lib/engine/ai-post-image")).generateAiPostImage(ctx, ctx.payload.projectId, ctx.payload.request ?? {}),
   /** Publicités V2 : angles, textes contrôlés, créations composées (Image V2), barrière publicitaire. */
@@ -88,7 +95,8 @@ export const handlers: Record<string, Handler> = {
     const { runAdEngineV2 } = await import("../src/lib/ads-v2/engine");
     const r = await runAdEngineV2(ctx, ctx.payload.projectId, ctx.payload.request ?? {});
     if(!ctx.payload.request?.copyOnly && !r.outcomes.some(o=>o.assetId))throw new UserFacingError(L("Aucune publicité n’a passé le contrôle : ","No ad passed the check: ")+r.outcomes.map(o=>o.reason).filter(Boolean).join(" ; ")+L(" Les essais et coûts restent conservés, aucun gabarit de secours."," Attempts and costs are preserved, without a template fallback."));
-    return { costMicro:r.costMicro, partial:r.outcomes.some(o=>!o.assetId), concepts: r.concepts.length, outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, platform: o.platform, aspect: o.aspect, reason:o.reason })), stoppedByCostCap: r.stoppedByCostCap, stats: r.stats };
+    const delivery=ctx.payload.request?.copyOnly?undefined:await imageDelivery(ctx.payload.projectId,r.outcomes.map(o=>o.assetId),{expected:r.outcomes.length,reasons:r.outcomes.map(o=>o.reason)});
+    return { costMicro:r.costMicro, partial:r.outcomes.some(o=>!o.assetId), concepts: r.concepts.length, outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, platform: o.platform, aspect: o.aspect, reason:o.reason })), stoppedByCostCap: r.stoppedByCostCap, stats: r.stats,delivery };
   },
   /** Image V2 : brief local, recherche multisource ou génération routée, barrière V2, bibliothèque, réutilisation. */
   "image.v2": async (ctx) => {
@@ -97,15 +105,17 @@ export const handlers: Record<string, Handler> = {
     // Reprise payée (1re image refusée par le contrôle) : annoncée au client, en % du budget IA.
     const { retryNotice } = await import("../src/lib/ai/budget-pct");
     const p = loadProject(ctx.payload.projectId);
+    const delivery=await imageDelivery(p.id,r.outcomes.map(o=>o.assetId),{expected:ctx.payload.request?.count??1,reasons:r.outcomes.map(o=>o.reason)});
     const tries = Math.max(1, ...r.outcomes.filter((o) => o.assetId).map((o) => o.attempts ?? 1));
     const notice = retryNotice(p.userId, p.id, tries, r.costMicro);
-    return { outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, origin: o.origin, score: o.score })), stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, ...(notice ? { notice } : {}) };
+    return { outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, origin: o.origin, score: o.score })), stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, delivery, ...(notice ? { notice } : {}) };
   },
 
   /** Retouche par l'IA d'une photo livrée (publicité, publication) : seule la demande du client change, original gardé. */
   "image.edit": async (ctx) => {
     const { editProjectPhoto } = await import("../src/lib/image-v2/edit-photo");
-    return editProjectPhoto(ctx, ctx.payload.projectId, ctx.payload.assetId, ctx.payload.instruction);
+    const r=await editProjectPhoto(ctx, ctx.payload.projectId, ctx.payload.assetId, ctx.payload.instruction);
+    return {...r,delivery:await imageDelivery(ctx.payload.projectId,[r.assetId])};
   },
 
   /** SEO & Copywriting V2 : stratégie, brief, rédaction (locale puis IA contrôlée), barrière SEO, document versionné. */
@@ -118,7 +128,13 @@ export const handlers: Record<string, Handler> = {
   "video.v2": async (ctx) => {
     const { runVideoEngineV2 } = await import("../src/lib/video-v2/engine");
     const r = await runVideoEngineV2(ctx, ctx.payload.projectId, ctx.payload.request);
-    return { docKey: r.docKey, videoAssetId: r.videoAssetId, verdict: r.verdict, codes: r.codes, estimateMicro: r.estimateMicro, stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, notes: r.notes.slice(0, 20) };
+    let delivery;
+    if(ctx.payload.request?.render===false){
+      const {latestVideo}=await import("../src/lib/video-v2/store");
+      if(!r.docKey||!latestVideo(ctx.payload.projectId,r.docKey))throw new UserFacingError(L("Aucun document vidéo enregistré. Les étapes acquises sont conservées.","No saved video document. Acquired steps are kept."));
+      delivery={state:"document",message:L("Document vidéo enregistré ; aucun rendu vidéo n’a été demandé.","Video document saved; no rendered video was requested.")};
+    }else delivery=await videoDelivery(ctx.payload.projectId,r.videoAssetId);
+    return { docKey: r.docKey, videoAssetId: r.videoAssetId, verdict: r.verdict, codes: r.codes, estimateMicro: r.estimateMicro, stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, notes: r.notes.slice(0, 20),delivery };
   },
   /** Vidéo en scènes (création guidée) : images Qwen + plans Wan 2.6 (produit) ou plans libres (service), montage du studio. */
   "video.scenario": async(ctx)=>{
@@ -132,12 +148,13 @@ export const handlers: Record<string, Handler> = {
     const { aiActiveFor } = await import("../src/lib/ai/access");
     // Plan des scènes écrit par l'IA seulement si l'IA est active pour ce projet (compte sans abonnement ou budget IA épuisé : aucun appel).
     const r = await runThreeScenes(ctx, p.id, ctx.payload.request, realThreeScenesDeps(ctx, { userId: p.userId, projectId: p.id }, { aiText: aiActiveFor(p.userId, p.id) && llmConfigured() }));
-    return { docKey: r.docKey, videoAssetId: r.videoAssetId, costMicro: r.costMicro, mode: r.mode, notes: r.notes };
+    return { docKey: r.docKey, videoAssetId: r.videoAssetId, costMicro: r.costMicro, mode: r.mode, notes: r.notes,delivery:await videoDelivery(p.id,r.videoAssetId) };
   },
   /** Vidéo V2 : nouveau rendu du document enregistré (local, gratuit), rangé dans la bibliothèque. */
   "video.v2.render": async (ctx) => {
     const { renderLatest } = await import("../src/lib/video-v2/engine");
-    return renderLatest(ctx, ctx.payload.projectId, ctx.payload.docKey);
+    const r=await renderLatest(ctx, ctx.payload.projectId, ctx.payload.docKey);
+    return {...r,delivery:await videoDelivery(ctx.payload.projectId,r.videoAssetId)};
   },
   /** Vidéo V2 : un seul plan remplacé (génération acceptée par le client), les autres plans intacts. */
   "video.v2.clip": async (ctx) => {
@@ -149,8 +166,9 @@ export const handlers: Record<string, Handler> = {
   "video.render": async (ctx) => {
     const projectId = ctx.job.project_id!;
     const r = await produceVideo(ctx, projectId, { format: ctx.payload.format, goal: ctx.payload.goal, useAiClip: !!ctx.payload.useAiClip, music: ctx.payload.music, url: ctx.payload.url, target: ctx.payload.target });
+    const delivery=await videoDelivery(projectId,r.assetId);
     if (ctx.payload.attachPlan) attachVideoToPlan(ctx.payload.attachPlan, r.assetId);
-    return r;
+    return {...r,delivery};
   },
 
   /** Script UGC à relire et modifier avant la génération. */
@@ -158,7 +176,7 @@ export const handlers: Record<string, Handler> = {
   // La vidéo UGC compte pour une vidéo UGC du forfait, une fois terminée (ses images et plans ne sont pas décomptés à part).
   "video.ugc": async (ctx) => {
     const r = await withQuotaScope("ugc", () => produceUgc(ctx, ctx.job.project_id!, { options: ctx.payload.options, script: ctx.payload.script }));
-    return r;
+    return {...r,delivery:await videoDelivery(ctx.job.project_id!,r.assetId)};
   },
 
   /** Article de blog écrit (ou réécrit) par l'IA : 1 article du forfait, décompté une fois l'article enregistré. */
@@ -177,12 +195,16 @@ export const handlers: Record<string, Handler> = {
     const { currentSeries } = await import("../src/lib/logo-v2/direction-series");
     const series = currentSeries(ctx.payload.projectId);
     if (series && series.status !== "complete") throw new UserFacingError(`Série incomplète : ${series.directions.length}/3 directions complètes. Les résultats acceptés sont conservés ; reprise ciblée nécessaire.`);
-    return { shown: series?.directions.length ?? r.shown.length, generated: r.shown.length, discarded: r.discarded.length, territories: r.territories.length, stoppedByCostCap: r.stoppedByCostCap };
+    const delivery=await imageDelivery(ctx.payload.projectId,series?series.directions.map(d=>d.logoId):r.shown.map(d=>d.assetId),{expected:series?3:Math.max(1,r.shown.length),reasons:r.notes});
+    delivery.message=L(`${delivery.delivered} logo(s) enregistré(s), à examiner avant votre choix.`,`${delivery.delivered} logo(s) saved, for review before your choice.`);
+    return { shown: series?.directions.length ?? r.shown.length, generated: r.shown.length, discarded: r.discarded.length, territories: r.territories.length, stoppedByCostCap: r.stoppedByCostCap,delivery };
   },
   /** Logo V2 : nouvelle version d'un logo complet, demandée par le client (une image, coût accepté). */
   "brand.logo.v2.redraw": async (ctx) => {
     const { redrawArtwork } = await import("../src/lib/logo-v2/engine");
-    return redrawArtwork(ctx, ctx.payload.projectId, ctx.payload.assetId, { feedback: ctx.payload.feedback });
+    const r=await redrawArtwork(ctx, ctx.payload.projectId, ctx.payload.assetId, { feedback: ctx.payload.feedback });
+    if(!r.assetId)throw new UserFacingError(L("Le nouveau logo n’a pas été livré. La version précédente est conservée ; aucun nouvel essai payant automatique.","The new logo was not delivered. The previous version is kept; no automatic paid retry."));
+    return {...r,delivery:await imageDelivery(ctx.payload.projectId,[r.assetId])};
   },
   /** Logo V2 choisi : décision du client, déclinaisons, système de marque. */
   "brand.logo.v2.choose": async (ctx) => {
@@ -226,6 +248,8 @@ export const handlers: Record<string, Handler> = {
     let revert = false;
     let switchTo: string | undefined;
     let mode: "ai" | "local" = "local";
+    const owner = one<{ id: string; role: "client" | "admin" }>("SELECT id, role FROM users WHERE id = ?", p.userId);
+    const customSectionsAllowed = !!owner && sectionGenerationAllowed(owner, p.id);
     // Image désignée + image jointe : l'emplacement exact (réglage *_asset) est retrouvé sans IA.
     const firstMedia = atts.find((a) => a.kind === "image" || a.kind === "video" || a.kind === "logo");
     const mediaTarget = firstMedia && isMediaSelection(selection) ? mediaTargetOf(cur.spec, selection, firstMedia.kind === "video" ? "video" : "image") : null;
@@ -258,13 +282,12 @@ export const handlers: Record<string, Handler> = {
       if (mediaTarget && firstMedia && !revert && REPLACE_INTENT.test(message) && !ops.some((o) => o.op === "use_media")) {
         ops.push({ op: "use_media", template: mediaTarget.template, section: mediaTarget.section, ...(mediaTarget.block ? { block: mediaTarget.block } : {}), key: mediaTarget.key, assetId: firstMedia.id });
       }
-      // Sections sur mesure écrites par l'IA : forfaits Développer et Dominer seulement (Créer : sections de la bibliothèque).
-      const owner = one<{ id: string; role: "client" | "admin" }>("SELECT id, role FROM users WHERE id = ?", p.userId);
-      if (owner && ops.some((o) => o.op === "custom_section") && !sectionGenerationAllowed(owner, p.id)) {
+      // Sections sur mesure écrites par l'IA : forfait Dominer seulement (sinon : sections de la bibliothèque).
+      if (ops.some((o) => o.op === "custom_section") && !customSectionsAllowed) {
         ops = ops.filter((o) => o.op !== "custom_section");
         reply += L(
-          "\n\nUne partie de la demande demandait une section sur mesure écrite par l'IA : elle est incluse dans les forfaits Développer et Dominer. J'ai fait le reste avec les sections de la bibliothèque.",
-          "\n\nPart of the request needed a custom section written by AI: it's included in the Grow and Dominate plans. I did the rest with the library sections.",
+          "\n\nUne partie de la demande demandait une section sur mesure écrite par l'IA : elle est incluse dans le forfait Dominer. J'ai fait le reste avec les sections de la bibliothèque.",
+          "\n\nPart of the request needed a custom section written by AI: it's included in the Dominate plan. I did the rest with the library sections.",
         );
       }
       // Préférences DÉDUITES par l'IA de la demande du client : provenance honnête (déduction, priorité inférieure).
@@ -302,6 +325,7 @@ export const handlers: Record<string, Handler> = {
     } else if (ops.length) {
       const targeted = new Set<string>();
       if (selection) targeted.add(`${selection.template}:${selection.section}`);
+      assertRepairableConversation(projectId,cur.spec,ops);
       const res = applyOps(cur.spec, ops, { targeted, mediaFile: mediaFileOf, storeKind: projectKind(p) });
       let next = res.spec;
       applied = res.applied;
@@ -311,7 +335,10 @@ export const handlers: Record<string, Handler> = {
         try {
           ctx.progress(0.8, L("Correction des opérations refusées", "Fixing the rejected operations"));
           const fix = await ctx.step("repair", () => aiRepairOps({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:repair` }, p, next, { request: message, page: page || "index", rejected: refused }));
+          // Même règle de forfait pour la passe de correction que pour la première réponse.
+          if (!customSectionsAllowed) fix.ops = fix.ops.filter((o) => o.op !== "custom_section");
           if (fix.ops.length) {
+            assertRepairableConversation(projectId,next,fix.ops);
             const again = applyOps(next, fix.ops, { targeted, mediaFile: mediaFileOf, storeKind: projectKind(p) });
             if (again.applied.length && !validateSpec(again.spec).length) {
               next = again.spec;
@@ -481,3 +508,6 @@ export const HANDLER_TYPES = Object.keys(handlers);
 // Orchestration (phase 3B) : chaque action du studio devient un petit plan (ses seules étapes), routé, tracé et
 // repris sans rien repayer ; le moteur existant reste l'exécuteur (aucune logique dupliquée).
 for (const action of Object.keys(ACTION_STEPS)) if (handlers[action]) handlers[action] = orchestrated(action, handlers[action]);
+
+// Recheck current rights even for jobs queued before a downgrade.
+for (const action of Object.keys(handlers)) { const execute=handlers[action];handlers[action]=async ctx=>{assertJobEntitlements(action,ctx.job.project_id,ctx.payload);return execute(ctx);}; }

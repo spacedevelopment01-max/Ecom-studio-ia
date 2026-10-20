@@ -1,5 +1,5 @@
 import { purchaseCommand } from "../theme/purchase-command";
-import { compatibleSectionTypes } from "../theme/section-compat";
+import { compatibleSectionTypes, sectionIncompatibility } from "../theme/section-compat";
 import type { StoreKind } from "../theme/store-kind";
 /**
  * Moteur local : outils déterministes utilisés lorsque aucun fournisseur
@@ -897,6 +897,9 @@ function buttonColorTargets(spec: ThemeSpec): { key: string; schemes: string[] }
  * Les demandes sont comprises en français comme en anglais, quelle que soit la langue :
  * la réponse suit la langue de l'interface (L), les textes ajoutés au thème celle des contenus (C).
  */
+/** Ajout ou remplacement d'une section hors de la bibliothèque de la famille du projet (refusé par le serveur). */
+const outsideLibrary = (spec: ThemeSpec, ops: ThemeOp[], kind: StoreKind | null) => ops.some((o) => (o.op === "add_section" || o.op === "replace_section") && !!sectionIncompatibility(spec, o.type, kind));
+
 export function localThemeCommand(spec: ThemeSpec, message: string, selection: { template: string; section: string; block?: string; kind?: string; path?: string; role?: string; text?: string } | null, business: BusinessType = "products", kind: StoreKind | null = null): { ops: ThemeOp[]; reply: string; revert: boolean; direction?: DirectionId } {
   const commercial = purchaseCommand(spec, message, selection);
   if (commercial) return commercial;
@@ -904,8 +907,9 @@ export function localThemeCommand(spec: ThemeSpec, message: string, selection: {
   const m = message.toLowerCase();
   if (/(reviens|revenir|annule|version précédente|\bundo\b|go back|revert|previous version|roll ?back)/.test(m)) return { ops: [], reply: L("Je reviens à la version précédente.", "Going back to the previous version."), revert: true };
   // Site du Theme Engine V2 : retouches propres à ses sections et à son design system (animations, typographie, dispositions).
+  // Une section V2 hors de la bibliothèque du projet n'est pas proposée : la demande suit le chemin commun (famille).
   const v2 = v2ThemeCommand(spec, message, selection);
-  if (v2) return { ops: v2.ops, reply: v2.reply, revert: false };
+  if (v2 && !outsideLibrary(spec, v2.ops, kind)) return { ops: v2.ops, reply: v2.reply, revert: false };
   const quoted = message.match(/[«"“]\s*([^»"”]+?)\s*[»"”]/)?.[1];
   const hex = message.match(/#[0-9a-fA-F]{6}\b/)?.[0];
   // Couleurs nommées : l'anglais d'abord (« or » est aussi une conjonction anglaise), puis le français.
@@ -996,7 +1000,8 @@ export function localThemeCommand(spec: ThemeSpec, message: string, selection: {
     }
   }
   // Fiche produit qui convertit : blocs ajoutés au produit, uniquement avec les informations données (boutiques de produits).
-  const pdp = services ? null : productPageCommand(spec, message, m);
+  const pdp0 = services ? null : productPageCommand(spec, message, m);
+  const pdp = pdp0 && !outsideLibrary(spec, pdp0.ops, kind) ? pdp0 : null;
   if (pdp) return pdp;
   // Types candidats : ceux du thème du studio, puis leurs équivalents dans les thèmes importés (Dawn et dérivés).
   const adds: [RegExp, string[]][] = [

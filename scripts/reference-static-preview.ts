@@ -1,6 +1,6 @@
 /** Aperçu statique consultable des quatre démonstrations composées dans leur thème de référence (issue #137, mission E) :
  * FRAISE (gummies, boutique spécialisée), ONDE (casque, boutique spécialisée), ORBE (lampe, e-commerce), Atelier Rive
- * (décoration d'intérieur, prestations de services). Toutes les pages sont rendues par les vraies routes d'aperçu du
+ * (décoration d'intérieur, prestations de services) et SILLON (machine à espresso nomade, boutique spécialisée, issue #148). Toutes les pages sont rendues par les vraies routes d'aperçu du
  * studio et exportées en fichiers HTML relatifs (images, logos, polices, scripts) ; pour les boutiques, le panier de
  * démonstration est pré-calculé : chaque état atteignable depuis l'interface est rendu par le serveur réel et rejoué
  * côté client par un petit script. Aucun paiement, aucun envoi de formulaire, aucune donnée réelle.
@@ -24,7 +24,7 @@ const out = path.resolve(args.find((a) => !a.startsWith("--")) ?? "reports/refer
 const { demoProject } = await import("../tests/demo-fixtures");
 // Stories FRAISE / ONDE : un clip de test (mire générée, jamais une vraie vidéo produit) prouve le lecteur, comme au lot 2C.
 const testVideo = path.join(out, "clip-test.webm"); try { execFileSync("ffmpeg", ["-y", "-f", "lavfi", "-i", "testsrc=size=540x960:rate=24", "-t", "8", "-c:v", "libvpx-vp9", "-b:v", "400k", "-an", testVideo], { stdio: "ignore" }); } catch { console.warn("ffmpeg absent : stories sans clip de test"); }
-type DemoId = "fraise" | "onde" | "orbe" | "rive";
+type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse";
 const { createUser } = await import("../src/lib/auth");
 const { saveThemeVersion } = await import("../src/lib/projects"); const { previewSegment } = await import("../src/lib/theme/preview-access");
 const { GET, POST } = await import("../src/app/preview/[id]/v/[vid]/[[...path]]/route");
@@ -39,7 +39,7 @@ async function post(pathname: string, body: string, contentType: string) { const
 
 const SHIM = fs.readFileSync(path.join(path.dirname(new URL(import.meta.url).pathname), "lot2c-static-demo.js"), "utf8");
 const runs: { id: DemoId; direction: DemoId; name: string }[] = [
-  { id: "fraise", direction: "fraise", name: "fraise" }, { id: "onde", direction: "onde", name: "onde" }, { id: "orbe", direction: "orbe", name: "orbe" }, { id: "rive", direction: "rive", name: "rive" },
+  { id: "fraise", direction: "fraise", name: "fraise" }, { id: "onde", direction: "onde", name: "onde" }, { id: "orbe", direction: "orbe", name: "orbe" }, { id: "rive", direction: "rive", name: "rive" }, { id: "sillon", direction: "sillon", name: "sillon" }, { id: "noctil", direction: "noctil", name: "noctil" }, { id: "traverse", direction: "traverse", name: "traverse" },
   ...(cross ? [{ id: "fraise" as DemoId, direction: "onde" as DemoId, name: "fraise-en-onde" }, { id: "onde" as DemoId, direction: "fraise" as DemoId, name: "onde-en-fraise" }] : []),
 ];
 const summary: Record<string, unknown>[] = [];
@@ -80,6 +80,8 @@ try {
     // Pages.
     const routes: [string, string][] = [["accueil.html", "/"], ...(services ? [] : [["produit.html", `/products/${productHandle}`], ["boutique.html", "/collections/all"]] as [string, string][]), ...pageHandles.map((h) => [`page-${h}.html`, `/pages/${h}`] as [string, string])];
     for (const [file, route] of routes) fs.writeFileSync(path.join(dir, file), inject(rewrite(await pageHtml(route))));
+    // Plan des pages (visualiseur « démo complète » du studio) : fichier et titre de chaque page navigable.
+    fs.writeFileSync(path.join(dir, "pages.json"), JSON.stringify({ title, services, pages: [["accueil.html", "Accueil"], ...(services ? [] : [["produit.html", productTitle], ["boutique.html", "Boutique"]]), ...spec.store.pages.map((pg) => [`page-${pg.handle}.html`, pg.title]), ...(services ? [] : [["panier.html", "Panier"]])].map(([file, label]) => ({ file, label })) }, null, 2) + "\n");
     fs.writeFileSync(path.join(dir, "404.html"), inject(rewrite(await pageHtml("/page-inconnue", 404))));
     const q = encodeURIComponent(productTitle.split(" ")[0]);
     fs.writeFileSync(path.join(dir, "recherche.html"), inject(rewrite(await pageHtml("/search"))));
@@ -131,5 +133,5 @@ try {
     summary.push({ demo: run.id, theme: run.direction, name: run.name, title, category: f.demo.category, services, pages: routes.length + 4, cartStates, assets: fetched.size, fonts: fonts.size, files, bytes: size, imagesInTheme: Object.keys(spec.files).length, missing: f.missing, handoff: handoff ? { placed: handoff.placed?.length ?? 0, empty: handoff.empty ?? [] } : null });
     console.log(JSON.stringify(summary.at(-1)));
   });
-  fs.writeFileSync(path.join(out, "resume.json"), JSON.stringify({ commit: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(), date: new Date().toISOString(), runs: summary }, null, 2) + "\n");
+  fs.writeFileSync(path.join(out, "resume.json"), JSON.stringify({ commit: (() => { try { return execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim(); } catch { return process.env.THEME_DEMOS_VERSION ?? "inconnu"; } })(), date: new Date().toISOString(), runs: summary }, null, 2) + "\n");
 } finally { fs.rmSync(temp, { recursive: true, force: true }); }

@@ -6,7 +6,7 @@
  * vide, et la section se masque si elle en a besoin. Aucun nom de démonstration.
  */
 import type { CopyFn } from "./section-content";
-import { tr } from "./section-content";
+import { todo, tr } from "./section-content";
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const p = (s: string) => (s ? `<p>${esc(s)}</p>` : "");
 /** Rôle d'un visuel du projet d'après le nom de fichier du thème (es-galerie-packshot…, es-scene-2…, es-en-situation-1…). */
@@ -80,6 +80,17 @@ const copy = (type: string): CopyFn => (ctx, base) => {
       break;
     }
     case "ed-study":
+      // Site de services (« Avant / après ») : une vraie transformation seulement. Deux photos quelconques du projet ne
+      // forment pas un avant / après : cadres à remplir par le client, légendés « Avant » et « Après » (issue #145).
+      if (ctx.business === "services" && ctx.sample) { set("label", label("Avant / après", "Before / after")); set("first_label", label("Avant", "Before")); set("second_label", label("Après", "After")); }
+      if (ctx.business === "services" && !ctx.sample) {
+        set("label", label("Avant / après", "Before / after")); set("heading", todo(ctx, "la transformation montrée", "the transformation shown")); set("text", "");
+        set("first_label", label("Avant", "Before")); set("second_label", label("Après", "After"));
+        set("media_role", label("Photo avant les travaux", "Photo before the work")); set("second_role", label("Photo après les travaux", "Photo after the work"));
+        // Photos posées d'office à l'insertion (pas un vrai couple avant / après) : retirées, cadres à remplir.
+        settings.image_asset = ""; settings.second_asset = "";
+        break;
+      }
       // Étude : deux vues à comparer, légendées par leur rôle.
       set("label", label("Deux regards", "Two views")); set("heading", label("D'une pièce à l'autre", "From one room to the next")); set("text", "");
       if (media[0]) { set("image_asset", media[0]); set("first_label", roleLabel(media[0])); }

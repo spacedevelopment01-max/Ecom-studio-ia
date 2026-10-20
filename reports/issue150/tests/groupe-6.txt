@@ -1,0 +1,43 @@
+
+ RUN  v5.0.3 /workspace/work/forfaits-150
+
+ ❯ tests/video-v2-bench.test.ts (6 tests | 1 failed) 291968ms
+   ❯ Benchmark Vidéo V2 — 5 scénarios simulés (6)
+     × scénario E (saas) : intention, langage visuel, durée, vidéo rendue, barrière 240078ms
+ ❯ tests/workflow-garde-fous.test.ts (7 tests | 1 failed) 10391ms
+   ❯ demande unique : accord, plafond, statuts, Réessayer (7)
+     × refus de consentement : devis payant non accepté → rien n'est lancé, aucun appel 18ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/video-v2-bench.test.ts > Benchmark Vidéo V2 — 5 scénarios simulés > scénario E (saas) : intention, langage visuel, durée, vidéo rendue, barrière
+Error: Test timed out in 240000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/video-v2-bench.test.ts:31:5
+     29|
+     30|   for (const sc of VIDEO_SCENARIOS) {
+     31|     it(`scénario ${sc} (${SCENARIO_FIXTURE[sc]}) : intention, langage …
+       |     ^
+     32|       const p = loadProject(seedImageFixture(u.id, SCENARIO_FIXTURE[sc…
+     33|       if (p.business === "products" && SCENARIO_FIXTURE[sc] !== "saas"…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/workflow-garde-fous.test.ts > demande unique : accord, plafond, statuts, Réessayer > refus de consentement : devis payant non accepté → rien n'est lancé, aucun appel
+AssertionError: expected 0 to be greater than 0
+ ❯ tests/workflow-garde-fous.test.ts:87:35
+     85|   it("refus de consentement : devis payant non accepté → rien n'est la…
+     86|     const w = await fr(() => wf.prepareWorkflow(shop, creer.id, "Crée …
+     87|     expect(w.estimate.totalMicro).toBeGreaterThan(0);
+       |                                   ^
+     88|     const before = spend(creer.id);
+     89|     expect(() => wf.startWorkflow(w.id, {})).toThrow(/acceptez le devi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 14 passed (16)
+      Tests  2 failed | 89 passed (91)
+   Start at  15:28:35
+   Duration  642.34s (tests 94%, import 5%, transform 1%)
+

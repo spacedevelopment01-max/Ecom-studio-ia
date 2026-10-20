@@ -12,6 +12,8 @@ import crypto from "node:crypto";
 import { id, now, one, run } from "../db";
 
 export type TraceScope = {
+  /** Récupération des acquis uniquement : aucune nouvelle réservation fournisseur. */
+  recoveryOnly?: boolean;
   jobId?: string | null;
   projectId?: string | null;
   step?: string;
@@ -37,7 +39,7 @@ export function currentTrace(): TraceScope {
 export function withTrace<T>(scope: TraceScope, fn: () => Promise<T>): Promise<T> {
   const cur = currentTrace();
   const step = scope.step ? (cur.step ? `${cur.step}/${scope.step}` : scope.step) : cur.step;
-  return store.run({ ...cur, ...scope, step }, fn);
+  return store.run({ ...cur, ...scope, recoveryOnly: cur.recoveryOnly || scope.recoveryOnly, step }, fn);
 }
 
 /** Candidat évalué (piste de logo, image…) et sa tentative : les appels faits dans `fn` lui sont rattachés. */
@@ -47,6 +49,7 @@ export function withCandidate<T>(candidateId: string, attempt: number, fn: () =>
 
 /** Plafond de dépense atteint : l'appel n'est pas envoyé (rien n'est payé). */
 export class CostCapReached extends Error {
+  readonly permanent = true;
   constructor(public spentMicro: number, public estimateMicro: number, public capMicro: number) {
     // Message vu par le client (tâche) : jamais de montant en euros ; les chiffres restent dans les champs (journal, admin).
     super("plafond de dépense atteint : l'appel suivant n'a pas été envoyé (rien de plus n'est décompté)");
@@ -61,7 +64,14 @@ export class CostCapReached extends Error {
 export function assertUnderCostCap(estimateMicro: number) {
   const t = currentTrace();
   if (t.costCapMicro == null) return;
-  const spent = t.jobId ? (one<{ c: number }>("SELECT COALESCE(SUM(cost), 0) c FROM ai_calls WHERE job_id = ?", t.jobId)?.c ?? 0) : 0;
+  // Les coûts incertains et les appels encore réservés sont des engagements, même sans trace finale ai_calls.
+  // Les règlements liés à usage_events ne sont comptés qu'une fois. Les anciennes réservations sans lien restent
+  // conservativement retenues : on ne suppose pas gratuitement leur rapprochement avec une ancienne trace.
+  const spent = t.jobId ? (one<{ c: number }>(`SELECT
+    COALESCE((SELECT SUM(CASE WHEN status='held' THEN amount ELSE COALESCE(actual,amount) END)
+      FROM ai_reservations WHERE job_id=? AND status IN ('held','settled','uncertain','reconciled') AND usage_event_id IS NULL),0)
+    + COALESCE((SELECT SUM(billed) FROM usage_events WHERE job_id=?),0)
+    + COALESCE((SELECT SUM(cost) FROM ai_calls WHERE job_id=? AND usage_event_id IS NULL AND billing_dedup=0 AND status='ok'),0) AS c`, t.jobId,t.jobId,t.jobId)?.c ?? 0) : 0;
   if (spent + estimateMicro > t.costCapMicro) throw new CostCapReached(spent, estimateMicro, t.costCapMicro);
 }
 

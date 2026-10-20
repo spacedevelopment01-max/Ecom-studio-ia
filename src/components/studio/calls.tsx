@@ -13,7 +13,7 @@ import { formatEur } from "../billing-client";
 import { PLANS, type PlanId } from "@/lib/plans";
 
 type Data = {
-  projects: { id: string; name: string; plan: PlanId; free: boolean; priceEur: number | null; reason: string | null }[];
+  projects: { id: string; name: string; plan: PlanId; free: boolean; priceEur: number | null; state:"available"|"reserved"|"used"; reason: string | null }[];
   slots: { id: string; startsAt: number; endsAt: number }[];
   bookings: { id: string; projectName: string; startsAt: number; status: string; free: boolean; priceEur: number; changeable: boolean }[];
   freeHourUsed: boolean;
@@ -36,7 +36,7 @@ export function CallsPage() {
   useEffect(() => {
     const p = new URL(window.location.href).searchParams.get("paiement");
     if (!p) return;
-    toast(p === "ok" ? "ok" : "bad", p === "ok" ? t("Paiement reçu : votre rendez-vous est confirmé dès la confirmation du paiement (quelques secondes).", "Payment received: your appointment is confirmed as soon as the payment is confirmed (a few seconds).") : t("Paiement annulé : le créneau est libéré.", "Payment canceled: the slot is released."));
+    toast(p === "ok" ? "ok" : "bad", p === "ok" ? t("Paiement reçu : votre rendez-vous est confirmé dès la confirmation du paiement (quelques secondes).", "Payment received: your appointment is confirmed as soon as the payment is confirmed (a few seconds).") : t("Paiement annulé : vérifiez ci-dessous l’état de votre réservation.", "Payment canceled: check your booking status below."));
     window.history.replaceState(null, "", "/studio/rendez-vous");
     const timer = setTimeout(() => reload(), 4000);
     return () => clearTimeout(timer);
@@ -87,7 +87,7 @@ export function CallsPage() {
       reload();
     });
   const pickSlot = (id: string) => (moving ? move(moving, id) : setSlotId(id));
-  const upcoming = (data?.bookings ?? []).filter((b) => b.status !== "done");
+  const upcoming = data?.bookings ?? [];
   return (
     <div className="min-h-dvh">
       <header className="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur-xl">
@@ -99,7 +99,7 @@ export function CallsPage() {
       <main className="mx-auto grid max-w-5xl gap-8 px-4 py-10 sm:px-6">
         <div>
           <h1 className="font-display text-4xl font-semibold">{t("Accompagnement téléphonique", "Phone coaching")}</h1>
-          <p className="mt-2 max-w-2xl text-ink-2">{t(`Une heure avec l'équipe pour avancer sur votre projet. ${PLANS.creer.name.fr} : ${PLANS.creer.callPrice} € · ${PLANS.vendre.name.fr} : ${PLANS.vendre.callPrice} € · ${PLANS.dominer.name.fr} : la première heure est offerte, une seule fois par compte.`, `One hour with the team to move your project forward. ${PLANS.creer.name.en}: €${PLANS.creer.callPrice} · ${PLANS.vendre.name.en}: €${PLANS.vendre.callPrice} · ${PLANS.dominer.name.en}: the first hour is free, once per account.`)}</p>
+          <p className="mt-2 max-w-2xl text-ink-2">{t(`Une heure avec l'équipe pour avancer sur votre projet. ${PLANS.creer.name.fr} : ${PLANS.creer.callPrice} € · ${PLANS.vendre.name.fr} : ${PLANS.vendre.callPrice} € · ${PLANS.dominer.name.fr} : un appel de départ inclus. Un seul appel d’une heure par compte, à réserver quand vous le souhaitez ; il ne revient pas chaque mois.`, `One hour with the team to move your project forward. ${PLANS.creer.name.en}: €${PLANS.creer.callPrice} · ${PLANS.vendre.name.en}: €${PLANS.vendre.callPrice} · ${PLANS.dominer.name.en}: one introductory call included. One one-hour call per account, whenever you wish; it does not renew monthly.`)}</p>
         </div>
         {!data ? (
           <div className="skeleton h-64 rounded-3xl" />
@@ -116,7 +116,7 @@ export function CallsPage() {
                         <p className="text-sm text-ink-2">{b.projectName} · {b.free ? t("heure offerte", "free hour") : formatEur(b.priceEur, lang)}</p>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <Badge tone={b.status === "confirmed" ? "ok" : "warn"} dot>{b.status === "confirmed" ? t("Confirmé", "Confirmed") : t("En attente de paiement", "Awaiting payment")}</Badge>
+                        <Badge tone={b.status === "confirmed" ? "ok" : "warn"} dot>{b.status === "done" ? t("Utilisé", "Used") : b.status === "confirmed" ? t("Confirmé", "Confirmed") : t("En attente de paiement", "Awaiting payment")}</Badge>
                         {b.status === "pending_payment" && <Button size="sm" variant="signal" loading={busy === `pay-${b.id}`} onClick={() => run(`pay-${b.id}`, async () => { window.location.href = (await api<{ url: string }>(`/api/calls/${b.id}`, { body: { action: "pay" } })).url; })}>{t("Payer", "Pay")}</Button>}
                         {b.changeable && b.status === "confirmed" && <Button size="sm" variant="secondary" onClick={() => setMoving(moving === b.id ? null : b.id)}>{moving === b.id ? t("Choisissez un créneau ci-dessous", "Pick a slot below") : t("Reporter", "Move")}</Button>}
                         {b.changeable && <Button size="sm" variant="ghost" loading={busy === `cancel-${b.id}`} onClick={() => cancel(b.id)}>{t("Annuler", "Cancel")}</Button>}

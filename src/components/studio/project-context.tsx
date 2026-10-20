@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { useApi } from "../ui";
 import type { Brand, BusinessType, ProductProfile, ProjectSettings, ServiceProfile, Strategy } from "@/lib/project-types";
 
-export type JobView = { id: string; type: string; label: string; status: string; progress: number; message: string; error: string | null; result: any; createdAt: number; updatedAt: number; finishedAt: number | null; alive?: boolean; idleMs?: number; estimate?: { ms: number; source: "history" | "default" } | null; startedAt?: number };
+export type JobView = { id: string; type: string; label: string; status: string; progress: number; message: string; error: string | null; failureCode?:string; result: any; createdAt: number; updatedAt: number; finishedAt: number | null; alive?: boolean; idleMs?: number; estimate?: { ms: number; source: "history" | "default" } | null; startedAt?: number };
 export type Overview = {
   preparation?: {revision:number}|null;
   /** Forfait du projet (null : découverte, sans abonnement). */
@@ -31,7 +31,7 @@ export type Overview = {
   aiBudget?: { usage: AiBudgetUsage; renewsAt: number } | null;
 };
 
-export type AiBudgetUsage = { plan: { used: number }; credits: { used: number } | null; paused: boolean; /** Base des % de coût (jamais affichée). */ baseMicro?: number };
+export type AiBudgetUsage = { plan: { used: number }; credits: { used: number } | null; paused: boolean; pending?: boolean; /** Base des % de coût (jamais affichée). */ baseMicro?: number };
 
 const Ctx = createContext<{ id: string; data: Overview | null; reload: () => Promise<void>; error: string | null } | null>(null);
 

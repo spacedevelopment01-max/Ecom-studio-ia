@@ -86,7 +86,7 @@ export function AccountPage() {
   );
 }
 
-type SubRow = { id: string; name: string; brand: string | null; subscription: { plan: PlanId; status: string; billing: Billing | null; periodEnd: number | null; cancelAtPeriodEnd: boolean } | null; ai: { plan: { used: number }; credits: { used: number } | null; paused: boolean } | null };
+type SubRow = { id: string; name: string; brand: string | null; subscription: { plan: PlanId; status: string; billing: Billing | null; periodEnd: number | null; cancelAtPeriodEnd: boolean } | null; ai: { plan: { used: number }; credits: { used: number } | null; paused: boolean; pending?: boolean } | null };
 
 /** Les abonnements du compte : un par projet, plus ceux payés en attente de création de projet. */
 function Subscriptions({ paymentsOpen }: { paymentsOpen: boolean }) {
@@ -127,6 +127,7 @@ function Subscriptions({ paymentsOpen }: { paymentsOpen: boolean }) {
                     {PLANS[s.plan].name[lang]} · {s.billing === "year" ? t("annuel", "yearly") : t("mensuel", "monthly")}
                     {s.periodEnd ? ` · ${s.cancelAtPeriodEnd || s.status === "canceled" ? t("fin le", "ends") : t("échéance le", "renews")} ${formatDate(s.periodEnd, { day: "numeric", month: "short" })}` : ""}
                     {p.ai ? ` · ${t(`IA : reste ${100 - p.ai.plan.used} %`, `AI: ${100 - p.ai.plan.used}% left`)}` : ""}
+                    {p.ai?.pending ? t(" · génération en cours", " · generation in progress") : ""}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">

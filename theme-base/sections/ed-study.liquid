@@ -3,7 +3,7 @@
 <div class="ed-shell"><header class="ed-section-head"><p class="ed-kicker">{{ s.label | escape }}</p><h2 class="ed-title">{{ s.heading | escape }}</h2><div class="ed-prose">{{ s.text }}</div></header><div class="ed-study__views"{% if s.aligned %} data-ed-comparison{% endif %}>
  <figure>{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, focus_x: 50, focus_y: 50 %}<figcaption>{{ s.first_label | escape }}</figcaption></figure>
  <figure>{% render 'ed-media', image: s.second_image, asset: s.second_asset, alt: s.second_alt, role_label: s.second_role, focus_x: 50, focus_y: 50 %}<figcaption>{{ s.second_label | escape }}</figcaption></figure>
- {% if s.aligned %}<label class="ed-study__control">{{ s.control_label | escape }}<input type="range" min="0" max="100" value="50" aria-label="{{ s.control_label | escape }}" data-ed-range></label>{% endif %}
+ {% if s.aligned %}<p class="ed-study__labels" aria-hidden="true"><span>{{ s.first_label | escape }}</span><span>{{ s.second_label | escape }}</span></p><label class="ed-study__control">{{ s.control_label | escape }}<input type="range" min="0" max="100" value="50" aria-label="{{ s.control_label | escape }}" data-ed-range></label>{% endif %}
 </div></div></section>
 {% schema %}
 {

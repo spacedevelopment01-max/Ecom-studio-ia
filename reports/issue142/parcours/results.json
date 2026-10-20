@@ -1,0 +1,294 @@
+{
+  "simulation": true,
+  "compiledVersion": {
+    "commit": "8b8f8b0b9b97581061e683f57c990deb077ffbbb",
+    "source": "compiled-build"
+  },
+  "realCalls": 0,
+  "realCostEur": 0,
+  "results": [
+    {
+      "business": "products",
+      "projectId": "36uiw4hdmo5u1jkr",
+      "jobId": "rd4oxbndhr2ows2i",
+      "photoId": "zsd1295oeo7kgvub",
+      "inputKept": true,
+      "photoAccessible": true,
+      "reconnected": true,
+      "workerInterrupted": false,
+      "recoveryViaClientClick": true,
+      "recoveryOnly": true,
+      "insufficientBudgetHttp": 422,
+      "provenance": "simulation",
+      "finances": {
+        "beforeReservation": {
+          "simulation": true,
+          "balance": {
+            "available": 2800000,
+            "used": 40200000,
+            "capacity": 43000000,
+            "usedPct": 0.9348837209302325,
+            "monthlyRemaining": 2800000,
+            "topupBalance": 0,
+            "reserved": 0,
+            "periodEnd": 1795165717986,
+            "alert": true,
+            "paused": false
+          },
+          "wallet": {
+            "monthly_allowance": 43000000,
+            "monthly_used": 40200000,
+            "reserved": 0,
+            "reserved_topup": 0,
+            "topup_balance": 0
+          },
+          "reservations": [],
+          "usages": []
+        },
+        "duringReservation": {
+          "simulation": true,
+          "balance": {
+            "available": 0,
+            "used": 40200000,
+            "capacity": 43000000,
+            "usedPct": 0.9348837209302325,
+            "monthlyRemaining": 2800000,
+            "topupBalance": 0,
+            "reserved": 2800000,
+            "periodEnd": 1795165717986,
+            "alert": true,
+            "paused": true
+          },
+          "wallet": {
+            "monthly_allowance": 43000000,
+            "monthly_used": 40200000,
+            "reserved": 2800000,
+            "reserved_topup": 0,
+            "topup_balance": 0
+          },
+          "reservations": [
+            {
+              "amount": 2800000,
+              "actual": null,
+              "status": "held"
+            }
+          ],
+          "usages": []
+        },
+        "afterFailure": {
+          "simulation": true,
+          "balance": {
+            "available": 2760000,
+            "used": 40240000,
+            "capacity": 43000000,
+            "usedPct": 0.935813953488372,
+            "monthlyRemaining": 2760000,
+            "topupBalance": 0,
+            "reserved": 0,
+            "periodEnd": 1795165717986,
+            "alert": true,
+            "paused": false
+          },
+          "wallet": {
+            "monthly_allowance": 43000000,
+            "monthly_used": 40240000,
+            "reserved": 0,
+            "reserved_topup": 0,
+            "topup_balance": 0
+          },
+          "reservations": [
+            {
+              "amount": 2800000,
+              "actual": 40000,
+              "status": "settled"
+            }
+          ],
+          "usages": [
+            {
+              "cost": 40000,
+              "billed": 40000
+            }
+          ]
+        },
+        "afterRetry": {
+          "simulation": true,
+          "balance": {
+            "available": 2760000,
+            "used": 40240000,
+            "capacity": 43000000,
+            "usedPct": 0.935813953488372,
+            "monthlyRemaining": 2760000,
+            "topupBalance": 0,
+            "reserved": 0,
+            "periodEnd": 1795165717986,
+            "alert": true,
+            "paused": false
+          },
+          "wallet": {
+            "monthly_allowance": 43000000,
+            "monthly_used": 40240000,
+            "reserved": 0,
+            "reserved_topup": 0,
+            "topup_balance": 0
+          },
+          "reservations": [
+            {
+              "amount": 2800000,
+              "actual": 40000,
+              "status": "settled"
+            }
+          ],
+          "usages": [
+            {
+              "cost": 40000,
+              "billed": 40000
+            }
+          ]
+        }
+      }
+    },
+    {
+      "business": "services",
+      "projectId": "ymxfowftyeditlii",
+      "jobId": "5fyveg1kjpzq7jcz",
+      "photoId": "4y9rjjked4klq5xh",
+      "inputKept": true,
+      "photoAccessible": true,
+      "reconnected": true,
+      "workerInterrupted": true,
+      "recoveryViaClientClick": true,
+      "recoveryOnly": true,
+      "insufficientBudgetHttp": 422,
+      "provenance": "simulation",
+      "finances": {
+        "beforeReservation": {
+          "simulation": true,
+          "balance": {
+            "available": 3400000,
+            "used": 39600000,
+            "capacity": 43000000,
+            "usedPct": 0.9209302325581395,
+            "monthlyRemaining": 3400000,
+            "topupBalance": 0,
+            "reserved": 0,
+            "periodEnd": 1795165718263,
+            "alert": true,
+            "paused": false
+          },
+          "wallet": {
+            "monthly_allowance": 43000000,
+            "monthly_used": 39600000,
+            "reserved": 0,
+            "reserved_topup": 0,
+            "topup_balance": 0
+          },
+          "reservations": [],
+          "usages": []
+        },
+        "duringReservation": {
+          "simulation": true,
+          "balance": {
+            "available": 0,
+            "used": 39600000,
+            "capacity": 43000000,
+            "usedPct": 0.9209302325581395,
+            "monthlyRemaining": 3400000,
+            "topupBalance": 0,
+            "reserved": 3400000,
+            "periodEnd": 1795165718263,
+            "alert": true,
+            "paused": true
+          },
+          "wallet": {
+            "monthly_allowance": 43000000,
+            "monthly_used": 39600000,
+            "reserved": 3400000,
+            "reserved_topup": 0,
+            "topup_balance": 0
+          },
+          "reservations": [
+            {
+              "amount": 3400000,
+              "actual": null,
+              "status": "held"
+            }
+          ],
+          "usages": []
+        },
+        "afterFailure": {
+          "simulation": true,
+          "balance": {
+            "available": 3360000,
+            "used": 39640000,
+            "capacity": 43000000,
+            "usedPct": 0.9218604651162791,
+            "monthlyRemaining": 3360000,
+            "topupBalance": 0,
+            "reserved": 0,
+            "periodEnd": 1795165718263,
+            "alert": true,
+            "paused": false
+          },
+          "wallet": {
+            "monthly_allowance": 43000000,
+            "monthly_used": 39640000,
+            "reserved": 0,
+            "reserved_topup": 0,
+            "topup_balance": 0
+          },
+          "reservations": [
+            {
+              "amount": 3400000,
+              "actual": 40000,
+              "status": "settled"
+            }
+          ],
+          "usages": [
+            {
+              "cost": 40000,
+              "billed": 40000
+            }
+          ]
+        },
+        "afterRetry": {
+          "simulation": true,
+          "balance": {
+            "available": 3360000,
+            "used": 39640000,
+            "capacity": 43000000,
+            "usedPct": 0.9218604651162791,
+            "monthlyRemaining": 3360000,
+            "topupBalance": 0,
+            "reserved": 0,
+            "periodEnd": 1795165718263,
+            "alert": true,
+            "paused": false
+          },
+          "wallet": {
+            "monthly_allowance": 43000000,
+            "monthly_used": 39640000,
+            "reserved": 0,
+            "reserved_topup": 0,
+            "topup_balance": 0
+          },
+          "reservations": [
+            {
+              "amount": 3400000,
+              "actual": 40000,
+              "status": "settled"
+            }
+          ],
+          "usages": [
+            {
+              "cost": 40000,
+              "billed": 40000
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "crossAccountReadWriteDenied": true,
+  "errors": [],
+  "blockedExternalHosts": []
+}

@@ -1,3 +1,4 @@
+import { assertAdvertising } from "../job-entitlements";
 /**
  * Advertising Engine V2 (phase 6A) — moteur central.
  *
@@ -100,6 +101,7 @@ const hash = (x: unknown) => crypto.createHash("sha256").update(JSON.stringify(x
 const orientation = (a: AspectId): AspectId => (a === "1:1" ? "1:1" : a === "16:9" || a === "1.91:1" || a === "3:2" || a === "3:1" || a === "4:1" ? "16:9" : "4:5");
 
 export async function runAdEngineV2(ctx: JobContext | null, projectId: string, req: AdRequestV2 = {}, injected?: AdsV2Deps): Promise<AdRunResult> {
+  assertAdvertising(projectId);
   const p = loadProject(projectId);
   const jobId = ctx?.job.id ?? null;
   const deps = injected ?? realAdDeps(ctx, p, aiActiveFor(p.userId, p.id));

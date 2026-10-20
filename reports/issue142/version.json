@@ -1,0 +1,16 @@
+{
+  "base": "482d5d3d2f3fa49073d836c23b2453f15ab5046d",
+  "codeTested": "8b8f8b0b9b97581061e683f57c990deb077ffbbb",
+  "codeTree": "d4453d00924857d2d8ee70ee40318b4b909e0700",
+  "mainObserved": "d97e0b9577128eeb39b403dae281da6bd835fc65",
+  "pr": 146,
+  "providers": "simulated",
+  "realSupplierCostEur": 0,
+  "untouchedPaths": [
+    "theme-base/",
+    "src/lib/theme/",
+    "public/demo/"
+  ],
+  "untouchedCheckExit": 0,
+  "initialReception": "1ac72548786fabd44c0c7e4c99e3759c01afdcfc"
+}

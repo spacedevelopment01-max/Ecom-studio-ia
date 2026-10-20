@@ -83,7 +83,7 @@ describe("demande unique : accord, plafond, statuts, Réessayer", async () => {
   await fr(() => buildShopV2(null, shop));
 
   it("refus de consentement : devis payant non accepté → rien n'est lancé, aucun appel", async () => {
-    const w = await fr(() => wf.prepareWorkflow(shop, creer.id, "Crée une campagne publicitaire", { aiActive: true }));
+    const w = await fr(() => wf.prepareWorkflow(shop, creer.id, "Rédige une nouvelle fiche produit détaillée", { aiActive: true }));
     expect(w.estimate.totalMicro).toBeGreaterThan(0);
     const before = spend(creer.id);
     expect(() => wf.startWorkflow(w.id, {})).toThrow(/acceptez le devis/);

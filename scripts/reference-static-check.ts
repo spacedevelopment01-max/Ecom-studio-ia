@@ -33,14 +33,19 @@ try {
     }
     // Menu : vers la boutique (produits) ou les prestations (services).
     await page.goto(`${origin}/accueil.html`, { waitUntil: "networkidle" }); await settle();
-    const target = services ? "page-prestations.html" : "boutique.html";
-    if (width < 750) { await page.locator("[data-menu-open]").click(); await page.waitForTimeout(400); await shot("menu"); const link = page.locator(`#MobileMenu a[href="${target}"]`).first(); if (!(await link.isVisible())) { await page.locator("#MobileMenu details.es-mm__group summary").first().click(); await page.waitForTimeout(300); } await page.locator(`#MobileMenu a[href="${target}"]:visible`).first().click(); }
+    // Boutique : la collection si le menu y mène, sinon la fiche (boutique d'un seul produit, ex. SILLON).
+    const target = services ? "page-prestations.html" : (await page.locator('#MobileMenu a[href="boutique.html"], .es-header__nav a[href="boutique.html"]').count()) ? "boutique.html" : "produit.html";
+    if (width < 750) { await page.locator("[data-menu-open]").click(); await page.waitForTimeout(400); await shot("menu"); const link = page.locator(`#MobileMenu a[href="${target}"]`).first(); if (!(await link.isVisible())) { const group = page.locator("#MobileMenu details.es-mm__group summary"); if (await group.count()) { await group.first().click(); await page.waitForTimeout(300); } else await link.waitFor({ state: "visible", timeout: 5000 }); } await page.locator(`#MobileMenu a[href="${target}"]:visible`).first().click(); }
     else await page.locator(`.es-header__nav a[href="${target}"]`).first().click();
     await settle(); assert.ok(page.url().endsWith(`/${target}`), `lien du menu vers ${target} (${page.url()})`); assert.equal(await page.locator("h1").count(), 1);
     if (!services) {
       // Boutique → fiche → galerie → panier (ajout, tiroir, page, retrait).
-      await page.locator("main a[href='produit.html']").first().click(); await settle(); assert.match(page.url(), /produit\.html$/, "carte produit → fiche");
+      if (target !== "produit.html") { await page.locator("main a[href='produit.html']").first().click(); await settle(); }
+      assert.match(page.url(), /produit\.html$/, "carte produit → fiche");
       const thumbs = page.locator("[data-gallery-thumb], .es-gallery__thumb, .es-thumbs button, .es-thumbs a"); if (await thumbs.count() > 1) { await thumbs.nth(1).click(); await page.waitForTimeout(400); }
+      // Produit sans prix (« Prix à définir », ex. SILLON) : rien ne peut être vendu, le panier reste vide (règle du serveur).
+      const unpriced = /Prix à définir/.test(await page.locator("[data-main-product]").first().innerText());
+      if (!unpriced) {
       await page.evaluate(() => { try { localStorage.removeItem("es-static-cart"); } catch { /* vide */ } });
       const main = page.locator("[data-main-product]"); const add = main.locator("[data-purchase-add], [data-product-buy] button[type=submit], form[action*='panier'] button[name='add']").first();
       await add.scrollIntoViewIfNeeded(); await add.click(); await page.waitForTimeout(1200); await settle();
@@ -52,6 +57,7 @@ try {
       if (!/Votre panier est vide/.test(await page.locator("main").innerText())) { await page.goto(`${origin}/panier.html`, { waitUntil: "networkidle" }); await settle(); }
       assert.match(await page.locator("main").innerText(), /Votre panier est vide/); await shot("panier-vide");
       assert.equal(await page.locator("[data-cart-count]").first().innerText().catch(() => "0"), "0");
+      } else { await page.goto(`${origin}/panier.html`, { waitUntil: "networkidle" }); await settle(); assert.match(await page.locator("main").innerText(), /Votre panier est vide/); await shot("panier-vide"); }
     } else {
       // Prestations : chaque prestation a un titre ; appel à l'action vers le contact.
       assert.ok((await page.locator("main h2, main h3").count()) >= 2, "titres des prestations");
@@ -59,10 +65,13 @@ try {
     }
     // Recherche : terme sans résultat puis un mot du nom.
     const name = (await page.evaluate(() => document.title)).split(/[—|·-]/)[0].trim().split(" ")[0];
+    // Souris hors de l'en-tête : un sous-menu ouvert au survol (TRAVERSE, ORBE) couvrirait le formulaire, comme pour un visiteur.
+    await page.mouse.move(0, 0);
     await page.goto(`${origin}/recherche.html`, { waitUntil: "networkidle" }); await settle(); await page.fill("input[name=q]", "xqzv"); await page.locator("form[role=search] button, .es-search__form button").first().click(); await page.waitForTimeout(400); assert.match(await page.locator("main").innerText(), /xqzv/);
     if (!services) { await page.fill("input[name=q]", name); await page.locator("form[role=search] button, .es-search__form button").first().click(); await page.waitForTimeout(400); assert.ok((await page.locator("main .es-card, main [data-product-card], main .es-product-grid a").count()) >= 1, `résultat de recherche pour ${name}`); await shot("recherche"); }
-    // Contact : validation réelle, aucun envoi.
-    await page.goto(`${origin}/page-contact.html`, { waitUntil: "networkidle" }); await settle(); const form = page.locator("main form:not([role=search])").first(); await form.locator("button[type=submit]").first().click(); assert.ok((await form.locator("input:invalid, textarea:invalid").count()) >= 1, "validation du formulaire"); assert.match(page.url(), /page-contact\.html/);
+    // Contact : validation réelle, aucun envoi (NOCTIL et TRAVERSE : formulaire sur la page « Aide »).
+    const contact = fs.existsSync(path.join(dir, "page-contact.html")) ? "page-contact.html" : "page-aide.html";
+    await page.goto(`${origin}/${contact}`, { waitUntil: "networkidle" }); await settle(); const form = page.locator("main form:not([role=search])").first(); await form.locator("button[type=submit]").first().click(); assert.ok((await form.locator("input:invalid, textarea:invalid").count()) >= 1, "validation du formulaire"); assert.ok(page.url().endsWith(contact), "le formulaire invalide reste sur la page");
     const filtered = missing.filter((m) => !/favicon\.ico/.test(m));
     assert.deepEqual(filtered, [], "ressources manquantes"); assert.deepEqual(errors, [], "erreurs console");
     results[dev] = { pages: htmls.length, ok: true }; await page.close();

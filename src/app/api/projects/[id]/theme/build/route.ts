@@ -1,7 +1,7 @@
 import {stateOf,blockers} from '@/lib/preparation/engine';
 import { z } from "zod";
 import { body, handle, ok } from "@/lib/http";
-import { enqueue } from "@/lib/jobs";
+import { enqueue, pendingJob } from "@/lib/jobs";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { DIRECTIONS } from "@/lib/theme/directions";
 import { LANGUAGES, type LanguageId } from "@/lib/theme-v2/art-direction";
@@ -17,7 +17,10 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const b = await body(req, z.object({ direction: z.enum(DIRECTIONS.map((d) => d.id) as [string, ...string[]]).optional(), useAi: z.boolean().optional(), engine: z.enum(["v1", "v2"]).optional(), language: z.enum(LANGUAGES.map((l) => l.id) as [LanguageId, ...LanguageId[]]).optional() }));
   if(stateOf(p.id)&&!currentTheme(p.id)&&!b.direction)throw new HttpError(409,L("Choisissez d’abord un thème compatible dans la galerie.","First choose a compatible theme in the gallery."));
   // Thème de la bibliothèque : seuls ceux du forfait du projet (le thème déjà utilisé reste utilisable).
-  if (b.direction) assertThemeAllowed(p.id, b.direction, currentTheme(p.id)?.spec.direction ?? p.brand?.direction ?? null);
+  if (b.direction) assertThemeAllowed(p.id, b.direction, currentTheme(p.id)?.spec.direction ?? null);
+  // Choix d'un thème déjà demandé et pas encore terminé (double-clic, deux onglets) : la même tâche, jamais une seconde.
+  const already = b.direction ? pendingJob(p.id, "shop.direction", { direction: b.direction }) : null;
+  if (already) return ok({ jobId: already.id, already: true });
   const job = b.direction
     ? enqueue({ userId: user.id, projectId: p.id, type: "shop.direction", label: (() => { const name = DIRECTIONS.find((d) => d.id === b.direction)?.name ?? b.direction; return L(`Direction ${name}`, `${name} direction`); })(), payload: { projectId: p.id, direction: b.direction } })
     : enqueue({ userId: user.id, projectId: p.id, type: "shop.build", label: b.language ? L(`Site recomposé (${LANGUAGES.find((l) => l.id === b.language)!.label})`, `Website recomposed (${b.language})`) : L("Nouvelle composition de la boutique", "New store layout"), payload: { projectId: p.id, useAi: b.useAi, engine: b.engine, language: b.language } });

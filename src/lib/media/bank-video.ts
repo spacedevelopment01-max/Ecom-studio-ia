@@ -11,6 +11,8 @@ import { NO_PEOPLE_EN, peopleAllowedFor } from "../people-policy";
 import { UserFacingError, type JobContext } from "../jobs";
 import { C, L } from "../i18n-server";
 import { emptyClipDiag, findStockClip, type StockClipDiag } from "../stock/stock-clip";
+import { placementRequest,type ThemePlacement } from "../theme/placement-request";
+import { inventoryClientMedia } from "../theme/client-media";
 
 export type BankAspect = "9:16" | "16:9";
 
@@ -55,18 +57,20 @@ export async function findBankClips(ctx: JobContext, projectId: string, r: { top
 }
 
 /** Plan filmé par l'IA à partir d'une image de la banque. */
-export async function createBankClip(ctx: JobContext, projectId: string, r: { imageId: string; prompt?: string; aspect: BankAspect }) {
+export async function createBankClip(ctx: JobContext, projectId: string, r: { imageId: string; prompt?: string; aspect: BankAspect;themePlacement?:ThemePlacement }) {
   const p = loadProject(projectId);
+  const placement=r.themePlacement?placementRequest(projectId,r.themePlacement):null;
+  if(placement&&(placement.request.kind!=="video"||!placement.request.referenceAssetIds.includes(r.imageId)||!(await inventoryClientMedia(p)).usable.some(a=>a.id===r.imageId)))throw new UserFacingError(L("La référence vidéo n’est plus utilisable. Actualisez sa préparation.","The video reference is no longer usable. Refresh preparation."));
   const img = getAsset(r.imageId);
   if (!img || img.project_id !== projectId || img.kind !== "image" || img.deleted_at) throw new UserFacingError(L("Image introuvable dans votre banque.", "Image not found in your bank."));
   const provider = videoProviderAvailable("product_video");
   if (!provider) throw new UserFacingError(L("La création de plans vidéo par l'IA n'est pas disponible pour le moment.", "AI video shot creation isn't available right now."));
-  const people = peopleAllowedFor(p);
-  const prompt = `${r.prompt?.trim() ? `${r.prompt.trim()}. ` : ""}Slow cinematic camera move on this exact image, natural light, subtle depth of field. Keep every object and place exactly as they are; no text, no logo, no new objects.${people ? "" : ` ${NO_PEOPLE_EN}`}`;
+  const people = placement?false:peopleAllowedFor(p);
+  const prompt = `${placement?placement.request.request+'. ':''}${r.prompt?.trim() ? `${r.prompt.trim()}. ` : ""}Slow cinematic camera move on this exact image, natural light, subtle depth of field. Keep every object and place exactly as they are; no text, no logo, no new objects.${people ? "" : ` ${NO_PEOPLE_EN}`}`;
   const id = await ctx.step("ai-clip", async () => {
     ctx.progress(0.15, L("Le plan est filmé par l'IA", "The AI is filming the shot"));
     const buf = await aiClip(provider, { userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:bank-clip` }, { image: assetData(img), prompt, aspect: r.aspect, usage: "product_video" }, (m) => ctx.progress(0.3, m));
-    const a = await saveAsset({ projectId, userId: p.userId, data: buf, name: `${C("plan-ia", "ai-shot")}-${Date.now().toString(36)}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "generated", sourceAssetId: img.id, meta: { provider, recipe: L("Plan filmé par l'IA à partir d'une image de la banque (sans texte)", "Shot filmed by AI from a bank image (no text)"), aiGenerated: true }, status: "review" });
+    const a = await saveAsset({ projectId, userId: p.userId, data: buf, name: `${C("plan-ia", "ai-shot")}-${Date.now().toString(36)}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "generated", sourceAssetId: img.id, meta: { provider, recipe: L("Plan filmé par l'IA à partir d'une image de la banque (sans texte)", "Shot filmed by AI from a bank image (no text)"), aiGenerated: true,...(placement?{slot:`theme:video:${placement.plan.contextHash}:${placement.request.key}`,themeContent:{role:'video',description:placement.request.request,reviewed:false}}:{}) }, status: "review" });
     return a.id;
   });
   return { assetId: id };

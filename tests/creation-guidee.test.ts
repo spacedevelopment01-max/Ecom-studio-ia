@@ -37,8 +37,8 @@ describe("Création guidée par produit ou service", async () => {
     expect(opts[0].referenceAssetId).toBe(cut);
     expect(opts[1].referenceAssetId).toBe(orig);
     expect(resolveSubject(p, { kind: "product", key: "etui" })?.name).toBe("Étui de voyage");
-    // Sujet inconnu : jamais un produit d'ailleurs, retour au produit principal.
-    expect(resolveSubject(p, { kind: "product", key: "inconnu" })?.key).toBe(MAIN_PRODUCT);
+    // Un choix explicite disparu doit être corrigé, jamais remplacé silencieusement par le produit principal.
+    expect(()=>resolveSubject(p, { kind: "product", key: "inconnu" })).toThrow(/choisissez/);
   });
 
   it("projet de services : la liste montre les services, sans photo produit", async () => {

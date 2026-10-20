@@ -11,6 +11,7 @@ import { gateMeta, saveCheck } from "../quality/store";
 import { checkCmsExport, cmsExport } from "./export";
 import { verdictMessage } from "./quality";
 import type { CmsPlatform } from "./types";
+import { HttpError } from "../auth";
 
 export type RecordedExport = {
   platform: CmsPlatform;
@@ -35,6 +36,7 @@ export async function exportAndRecord(
   const exp = await cmsExport(platform, v.spec, libraryLoader, { projectId: p.id });
   const check = await checkCmsExport(platform, exp, v.spec, { projectId: p.id });
   const checkId = saveCheck(check.gate.decision, { userId: p.userId, projectId: p.id, jobId: o.jobId ?? undefined, candidateId: `${platform}:v${v.number}` });
+  if(exp.issues.some(i=>i.code==='client_media_unavailable'))throw new HttpError(422,lang==='fr'?'Export interrompu : un fichier client a disparu ou ne se décode plus. Reprenez l’adaptation ; vos médias et versions précédentes sont conservés.':'Export stopped: a client file is missing or cannot be decoded. Resume adaptation; acquired media and previous versions are retained.');
   const message = verdictMessage(platform, check.gate, lang);
   const fingerprint = themeFingerprint(v.spec);
   const name = exp.name.replace(/\.zip$/, `-v${v.number}.zip`);

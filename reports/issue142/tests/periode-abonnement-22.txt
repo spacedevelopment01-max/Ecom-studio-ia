@@ -1,0 +1,13 @@
+
+ RUN  v5.0.3 /workspace/work/publications-qualite
+
+
+ Test Files  2 passed (2)
+      Tests  22 passed (22)
+   Start at  19:29:29
+   Duration  15.00s (tests 38%, transform 33%, import 28%)
+
+  Transform  transforming modules took 8.26s · 33% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

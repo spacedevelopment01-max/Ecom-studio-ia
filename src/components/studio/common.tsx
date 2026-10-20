@@ -157,13 +157,13 @@ export function JobProgress({ job, className }: { job: JobView | null | undefine
   return (
     <div className={cx("rounded-2xl border border-line bg-card p-4", className)} role="status">
       <div className="flex items-center justify-between gap-3 text-sm">
-        <span className="flex items-center gap-2 font-medium">{job.status === "paused" ? <span className="size-2 rounded-full bg-warn" aria-hidden /> : <Spinner className="text-signal" />} {job.label || job.type}</span>
-        <span className="text-xs text-muted">{t(`${Math.round(job.progress * 100)} %`, `${Math.round(job.progress * 100)}%`)}</span>
+        <span className="flex items-center gap-2 font-medium">{job.status === "running" || job.status === "queued" ? <Spinner className="text-signal" /> : <span className={cx("size-2 rounded-full", job.status === "done" ? "bg-ok" : "bg-warn")} aria-hidden />} {job.label || job.type}</span>
+        <span className="text-xs text-muted">{job.status === "done" && job.result?.delivery?.state === "partial" ? t("Partiel", "Partial") : t(`${Math.round(job.progress * 100)} %`, `${Math.round(job.progress * 100)}%`)}</span>
       </div>
       <p className="mt-1 text-xs text-muted">{job.message}</p>
       <Progress value={job.progress} className="mt-3" />
       {/* Temps écoulé et temps restant estimé (durée habituelle de cette préparation, corrigée par l'avancement). */}
-      {job.status !== "done" && job.status !== "failed" && <TimeInfo startedAt={job.startedAt ?? job.createdAt} progress={job.progress} estimate={job.estimate} paused={job.status === "paused"} className="mt-2" />}
+      {(job.status === "running" || job.status === "queued" || job.status === "paused") && <TimeInfo startedAt={job.startedAt ?? job.createdAt} progress={job.progress} estimate={job.estimate} paused={job.status === "paused"} className="mt-2" />}
     </div>
   );
 }

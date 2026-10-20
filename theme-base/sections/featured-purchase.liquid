@@ -28,7 +28,7 @@
   <header class="fp__head">
     <p class="ed-kicker">{{ s.label | escape }}</p>
     <h2 class="ed-title fp__title">{% if s.heading != blank %}{{ s.heading | escape }}{% else %}{{ fp_product.title | escape }}{% endif %}</h2>
-    <div class="fp__price" data-fp-price>{% render 'price', product: fp_product, use_variant: true %}<span class="fp__price-note" data-price-note>{% if s.purchase_unit_label != blank %}{{ s.purchase_unit_label | escape }}{% else %}{{ 'purchase.unit' | t }}{% endif %}</span></div>
+    <div class="fp__price" data-fp-price>{% render 'price', product: fp_product, use_variant: true %}{% if fp_product.price != nil %}<span class="fp__price-note" data-price-note>{% if s.purchase_unit_label != blank %}{{ s.purchase_unit_label | escape }}{% else %}{{ 'purchase.unit' | t }}{% endif %}</span>{% endif %}</div>
   </header>
   <div class="fp__media" data-gallery data-fp-gallery>
     <div class="fp__stage" aria-live="polite">

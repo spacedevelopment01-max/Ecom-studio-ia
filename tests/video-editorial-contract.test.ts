@@ -1,3 +1,4 @@
+import { grantProjectPlan } from "@/lib/project-subscriptions";
 import { describe,it,expect } from "vitest";
 import { creativeContract } from "@/lib/social-v2/creative-contract";
 import type { PostBrief } from "@/lib/social-v2/deps";
@@ -14,7 +15,7 @@ const post:PostBrief={id:"isolated",network:"instagram",format:"reel",title:"Pr�
 describe("Contrat éditorial vidéo commun, aucun appel fournisseur",()=>{
  it.each(["restaurant","hightech"] as const)("préserve textes, sources et identité %s dans les deux parcours",async kind=>{
   const u=await createUser(`video-contract-${crypto.randomUUID()}@test.invalid`,"motdepasse-test","Fixture");
-  const p=loadProject(seedImageFixture(u.id,kind));
+  const p=loadProject(seedImageFixture(u.id,kind));grantProjectPlan(p.id,"dominer");
   const editorial=creativeContract(post,"organic");
   const intent=videoIntent(p,{kind:"social_content",text:post.request,editorial,durationS:30});
   const strategy=videoStrategy(p,intent);
@@ -29,7 +30,7 @@ describe("Contrat éditorial vidéo commun, aucun appel fournisseur",()=>{
   expect(videoContext(p,"post",post.request,post.subject,editorial).editorial).toEqual(editorial);
  });
  it("accepte le scénario IA organique sans exiger un CTA ni repayer sa rédaction",async()=>{
-  const u=await createUser(`organic-script-${crypto.randomUUID()}@test.invalid`,"motdepasse-test","Fixture");const p=loadProject(seedImageFixture(u.id,"hightech"));
+  const u=await createUser(`organic-script-${crypto.randomUUID()}@test.invalid`,"motdepasse-test","Fixture");const p=loadProject(seedImageFixture(u.id,"hightech"));grantProjectPlan(p.id,"dominer");
   const {mockVideoDeps,shortVideoScript}=await import("./video-v2-mock");const {runVideoEngineV2}=await import("@/lib/video-v2/engine");
   const {deps,log}=mockVideoDeps({userId:p.userId,projectId:p.id,canWrite:true,generationAllowed:false,script:shortVideoScript});
   const r=await runVideoEngineV2(null,p.id,{ask:{purpose:"organic",text:"Expliquer un point à vérifier.",durationS:15},renderScale:.1,fps:2},deps);
@@ -37,7 +38,7 @@ describe("Contrat éditorial vidéo commun, aucun appel fournisseur",()=>{
  },30000);
  it("ne raccourcit pas les blocs longs pour faire croire qu'ils tiennent",async()=>{
   const u=await createUser(`video-long-${crypto.randomUUID()}@test.invalid`,"motdepasse-test","Fixture");
-  const p=loadProject(seedImageFixture(u.id,"hightech"));
+  const p=loadProject(seedImageFixture(u.id,"hightech"));grantProjectPlan(p.id,"dominer");
   const editorial=creativeContract({...post,editorial:{blocks:[{kind:"paragraph",text:"Phrase complète à conserver. ".repeat(30)}]}},"organic");
   const intent=videoIntent(p,{editorial,durationS:6});const st=videoStrategy(p,intent);
   const script=localScript((await import("@/lib/ads-v2/insight")).adInsight(p),st,intent);

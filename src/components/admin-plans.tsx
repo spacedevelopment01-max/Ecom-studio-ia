@@ -162,7 +162,8 @@ export function CallsAdmin() {
         <Button className="justify-self-start" onClick={async () => { const r = await post({ action: "open", from: form.from, to: form.to, weekdays: form.weekdays, hours: form.hours.split(/[,\s]+/).filter(Boolean) }); if (r) toast("ok", t(`${r.opened ?? 0} créneau(x) ouvert(s).`, `${r.opened ?? 0} slot(s) opened.`)); }}>{t("Ouvrir les créneaux", "Open slots")}</Button>
       </Card>
       <Card className="grid gap-3 p-5">
-        <h2 className="font-display text-xl font-semibold">{t("Tarif DOMINER après l'heure offerte", "DOMINATE price after the free hour")}</h2>
+        <h2 className="font-display text-xl font-semibold">{t("Ancien tarif DOMINER conservé (non proposé)", "Legacy DOMINATE price kept (not offered)")}</h2>
+        <p className="text-sm text-muted">{t("La grille actuelle prévoit un seul appel de départ par compte. Ce réglage historique ne crée aucun droit supplémentaire.","The current grid includes one introductory call per account. This legacy setting creates no additional entitlement.")}</p>
         <p className="text-sm text-muted">{t(`Actuel : ${data.dominerPriceEur != null ? formatEur(data.dominerPriceEur, lang) : "non fixé (réservation payante DOMINER impossible)"} · heures offertes utilisées : ${data.freeHoursUsed}`, `Current: ${data.dominerPriceEur != null ? formatEur(data.dominerPriceEur, lang) : "not set (paid DOMINATE booking unavailable)"} · free hours used: ${data.freeHoursUsed}`)}</p>
         <div className="flex flex-wrap gap-2">
           <div className="w-40"><Input aria-label={t("Prix TTC en euros", "Price incl. VAT in euros")} type="number" min={0} step={1} value={price} onChange={(e) => setPrice(e.target.value)} /></div>

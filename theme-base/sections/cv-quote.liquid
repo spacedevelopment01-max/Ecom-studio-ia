@@ -31,7 +31,7 @@
       {%- endif -%}
       <blockquote class="cv-quote__text"><span class="cv-quote__mark" aria-hidden="true">“</span>{{ s.quote | newline_to_br }}</blockquote>
       <figcaption class="cv-quote__author">
-        <span class="cv-quote__avatar" aria-hidden="true">{{ initials }}</span>
+        {%- if initials != blank -%}<span class="cv-quote__avatar" aria-hidden="true">{{ initials }}</span>{%- endif -%}
         <span class="cv-quote__who"><strong>{{ s.author | escape }}</strong>{% if s.detail != blank %}<span>{{ s.detail | escape }}</span>{% endif %}</span>
         {%- if s.label != blank -%}<span class="cv-fictional">{{ s.label | escape }}</span>{%- endif -%}
       </figcaption>

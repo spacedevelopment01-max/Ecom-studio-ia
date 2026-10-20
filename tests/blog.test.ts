@@ -97,7 +97,7 @@ describe("articles de blog écrits par l'IA", () => {
   it("écrit un article valide, contrôlé, enregistré, et décompte 1 article une seule fois", async () => {
     const { writeBlogArticle, getArticle, countWords } = await import("@/lib/engine/blog");
     const { userId, projectId } = await account("vendre");
-    expect(quotaView(userId, "blog").left).toBe(4);
+    expect(quotaView(userId, "blog").left).toBe(5);
     const job = enqueue({ userId, projectId, type: "blog.write", payload: { topic: "Appliquer le sérum" } });
     const ctx = new JobContext(job);
     const r = await fr(() => writeBlogArticle(ctx, projectId, { topic: "Appliquer le sérum" }));
@@ -116,12 +116,12 @@ describe("articles de blog écrits par l'IA", () => {
     expect(a.body_html).not.toContain("Titre en double");
     expect(a.body_html.startsWith("<p>")).toBe(true);
     expect(a.body_html).toContain("Découvrez le produit et ailleurs.");
-    expect(quotaView(userId, "blog").left).toBe(3);
+    expect(quotaView(userId, "blog").left).toBe(4);
     // Reprise de la même tâche : rien n'est refait ni décompté deux fois.
     const again = await fr(() => writeBlogArticle(new JobContext(one<any>("SELECT * FROM jobs WHERE id = ?", job.id)), projectId, { topic: "Appliquer le sérum" }));
     expect(again).toMatchObject({ articleId: (r as any).articleId, resumed: true });
     expect(calls).toHaveLength(2);
-    expect(quotaView(userId, "blog").left).toBe(3);
+    expect(quotaView(userId, "blog").left).toBe(4);
   });
 
   it("corrige un article trop court ou qui invente des avis (contrôle automatique, nouvelle passe)", async () => {
@@ -139,7 +139,7 @@ describe("articles de blog écrits par l'IA", () => {
     const job = enqueue({ userId, projectId, type: "blog.write", payload: {} });
     await fr(() => writeBlogArticle(new JobContext(job), projectId, {}));
     expect(calls.filter((c) => c === "blog_writing")).toHaveLength(2);
-    expect(quotaView(userId, "blog").left).toBe(11);
+    expect(quotaView(userId, "blog").left).toBe(9);
     Object.defineProperty(ai, "article", { configurable: true, writable: true, value: validArticle() });
   });
 
@@ -147,7 +147,7 @@ describe("articles de blog écrits par l'IA", () => {
     const { assertBlogWrite, blogAccess, BlogAccessError } = await import("@/lib/engine/blog");
     const free = await account(null);
     const creer = await account("creer");
-    expect(() => fr(() => assertBlogWrite(free.userId))).toThrow(/forfaits Développer \(4 par mois\) et Dominer \(12 par mois\)/);
+    expect(() => fr(() => assertBlogWrite(free.userId))).toThrow(/forfaits Développer \(5 par mois\) et Dominer \(10 par mois\)/);
     expect(() => fr(() => assertBlogWrite(creer.userId))).toThrow(/forfait Créer n'inclut pas/);
     expect(blogAccess(creer.userId).allowed).toBe(false);
     const admin = await account(null, "admin");
@@ -156,12 +156,12 @@ describe("articles de blog écrits par l'IA", () => {
     expect(() => fr(() => assertBlogWrite(admin2.userId))).not.toThrow();
     // Écriture refusée dans la tâche aussi (aucun appel IA, rien de décompté).
     const { writeBlogArticle } = await import("@/lib/engine/blog");
-    await expect(fr(() => writeBlogArticle(new JobContext(enqueue({ userId: free.userId, projectId: free.projectId, type: "blog.write" })), free.projectId, {}))).rejects.toBeInstanceOf(BlogAccessError);
+    expect(() => enqueue({ userId: free.userId, projectId: free.projectId, type: "blog.write" })).toThrow(/forfait/);
     expect(calls).toHaveLength(0);
-    // Développer : 4 articles par mois, puis message clair avec le code « quota épuisé ».
+    // Développer : 5 articles par mois, puis message clair avec le code « quota épuisé ».
     const v = await account("vendre");
     const { consumeQuota } = await import("@/lib/quotas");
-    consumeQuota(v.userId, "blog", 4, "test:2");
+    consumeQuota(v.userId, "blog", 5, "test:2");
     try {
       fr(() => assertBlogWrite(v.userId));
       expect.unreachable();

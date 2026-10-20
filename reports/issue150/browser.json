@@ -1,0 +1,79 @@
+{
+  "version": {
+    "commit": "8748828bf8b2fb5b657fed5a43709843305989a4",
+    "source": "compiled-build"
+  },
+  "simulation": true,
+  "realProviderCalls": 0,
+  "realProviderCostEur": 0,
+  "realPayments": 0,
+  "realBookings": 0,
+  "checks": [
+    {
+      "name": "forfaits-trois-ordinateur",
+      "viewport": 1440,
+      "content": 1440
+    },
+    {
+      "name": "forfaits-trois-mobile",
+      "viewport": 390,
+      "content": 390
+    },
+    {
+      "name": "rdv-creer-ordinateur",
+      "viewport": 1440,
+      "content": 1440
+    },
+    {
+      "name": "rdv-creer-mobile",
+      "viewport": 390,
+      "content": 390
+    },
+    {
+      "plan": "creer",
+      "adQuoteStatus": 402
+    },
+    {
+      "name": "publicites-verrou-creer-mobile",
+      "viewport": 390,
+      "content": 390
+    },
+    {
+      "name": "rdv-vendre-ordinateur",
+      "viewport": 1440,
+      "content": 1440
+    },
+    {
+      "name": "rdv-vendre-mobile",
+      "viewport": 390,
+      "content": 390
+    },
+    {
+      "plan": "vendre",
+      "adQuoteStatus": 402
+    },
+    {
+      "name": "publicites-verrou-vendre-mobile",
+      "viewport": 390,
+      "content": 390
+    },
+    {
+      "name": "rdv-dominer-ordinateur",
+      "viewport": 1440,
+      "content": 1440
+    },
+    {
+      "name": "rdv-dominer-mobile",
+      "viewport": 390,
+      "content": 390
+    },
+    {
+      "name": "rdv-dominer-utilise-mobile",
+      "viewport": 390,
+      "content": 390
+    }
+  ],
+  "errors": [],
+  "external": [],
+  "forbiddenWrites": []
+}

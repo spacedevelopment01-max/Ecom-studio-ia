@@ -67,3 +67,19 @@ describe("Reçus et accords vidéo, aucun fournisseur réel",()=>{
   expect(()=>readVideoApproval(loadProject(p.id),request,signed.token)).toThrow(/Scénario/);
  });
 });
+
+it("stockage plein avant tout envoi : seul le reçu créé par ce processus est retiré, puis reprise possible",async()=>{
+ const fs=await import("node:fs"),{DATA_DIR}=await import("@/lib/db"),path=await import("node:path"),crypto=await import("node:crypto");
+ const project=`fixture-${crypto.randomUUID()}`,key="disk-before-send",provider=vi.fn(async()=>Buffer.from("simulation reçue"));
+ const writing=vi.spyOn(fs.default,"writeFileSync").mockImplementationOnce((...args:any[])=>{expect(typeof args[0]).toBe("number");throw Object.assign(new Error("isolated ENOSPC"),{code:"ENOSPC"});});
+ try {await expect(videoReceipt(project,key,provider)).rejects.toThrow(/aucun plan envoyé/);}finally{writing.mockRestore();}
+ expect(provider).not.toHaveBeenCalled();
+ const dir=path.join(DATA_DIR,"video-receipts",crypto.createHash("sha256").update(project).digest("hex"));expect(fs.readdirSync(dir)).toEqual([]);
+ expect((await videoReceipt(project,key,provider)).toString()).toBe("simulation reçue");expect(provider).toHaveBeenCalledTimes(1);
+});
+it("un ancien reçu tronqué n’est ni supprimé ni rejoué comme s’il n’avait jamais été envoyé",async()=>{
+ const fs=await import("node:fs"),path=await import("node:path"),crypto=await import("node:crypto"),{DATA_DIR}=await import("@/lib/db");
+ const project=`fixture-${crypto.randomUUID()}`,key="truncated-receipt",hash=crypto.createHash("sha256").update(`${project}:${key}`).digest("hex"),dir=path.join(DATA_DIR,"video-receipts",crypto.createHash("sha256").update(project).digest("hex"));
+ fs.mkdirSync(dir,{recursive:true});const file=path.join(dir,`${hash}.json`);fs.writeFileSync(file,'{"state":');const provider=vi.fn(async()=>Buffer.from("must not send"));
+ await expect(videoReceipt(project,key,provider)).rejects.toThrow(/Reçu vidéo illisible/);expect(provider).not.toHaveBeenCalled();expect(fs.readFileSync(file,"utf8")).toBe('{"state":');
+});

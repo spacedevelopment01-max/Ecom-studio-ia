@@ -1,3 +1,5 @@
+import { reserveBlogDraft,releaseUnsavedBlogDraft } from "../quotas";
+import { assertJobEntitlements,assertAdvertising } from "../job-entitlements";
 /**
  * SEO, Copywriting & Blog Engine V2 (phase 8A) — moteur central.
  *
@@ -35,7 +37,7 @@ import { ContentConflict, contentKey, contentRun, contentUserOwned, contentVersi
 import { applyContentOps } from "./ops";
 import { planEdit } from "./local-edit";
 import { localOnlyDeps, realSeoDeps, writeKind, type CallKind, type RewriteOut, type SeoV2Deps } from "./deps";
-import { blogAiAllowed, saveBlogDraftV2 } from "./blog";
+import { blogIdFor, blogAiAllowed, saveBlogDraftV2 } from "./blog";
 import { LANGS, type ContentDoc, type ContentLang, type ContentRunResult, type ContentType, type EditorialReview, type Keyword, type PageRef, type SeoStrategy } from "./types";
 import type { GateDecision } from "../quality/gate";
 import { budgetPctText } from "../ai/budget-pct";
@@ -92,6 +94,8 @@ export function targetPage(pages: PageRef[], type: ContentType, pageKey: string 
 type RunResult = ContentRunResult & { strategy: SeoStrategy; stoppedByCostCap: boolean };
 const pending = new Map<string, Promise<RunResult>>();
 export async function runContentEngineV2(ctx: JobContext | null, projectId: string, req: ContentRequestV2, injected?: SeoV2Deps): Promise<RunResult> {
+  if(!req.planOnly)assertJobEntitlements("content.v2",projectId,{request:req});
+  if(req.type==="ad_copy")assertAdvertising(projectId);
   let p = loadProject(projectId);
   if(req.target?.serviceIndex!=null){const service=p.services.services[req.target.serviceIndex];if(p.business!=="services"||!service)throw new UserFacingError("Prestation cible absente.");p={...p,services:{...p.services,services:[service]}};}
   let deps = injected ?? realSeoDeps(ctx, p, aiActiveFor(p.userId, p.id));
@@ -124,7 +128,9 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   const runId = crypto.randomUUID();
   const notes: string[] = [];
   const stats = { writes: 0, reviews: 0, retries: 0, rewrites: 0 };
-  const jobKey = ctx?.job.id ?? "seo2";
+  // Sans job persistant, une réécriture explicitement demandée est une nouvelle opération.
+  // La constante historique réutilisait la même clé payante pour deux demandes indépendantes.
+  const jobKey = ctx?.job.id ?? runId;
 
   // 1-4. Pages, mots-clés (hypothèses), stratégie, brief : gratuits et déterministes.
   const pages = sitePages(p);
@@ -173,6 +179,9 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
       return { ...base, docKey: key, doc: saved, verdict: memo.verdict as ContentRunResult["verdict"], reason: "version précise déjà rédigée avec le même brief, les mêmes faits et la même identité : rien de repayé", by: saved.meta2.by, costMicro: 0, skipped: true, delivery: delivery(memo.verdict,saved.meta2.contract?.checks.issues??[]) };
     }
   }
+  const quotaArticleId=req.type==="blog_article"?blogIdFor(docKey):null;
+  const quotaRef=quotaArticleId?reserveBlogDraft(p.userId,p.id,quotaArticleId):null;
+  try {
   let expectedVersion = latestContent(p.id, docKey)?.version.version ?? 0;
   const retain = (candidate: ContentDoc, verdict: string, note: string) => {
     const contract = { request: brief.request ?? "", contextHash: brief.context?.hash ?? "", contextVersion: brief.context?.version ?? "", target: page.key, checks: checkRequirements(candidate, brief.requirements) };
@@ -321,9 +330,10 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   ctx?.progress(0.9, L("Conservation du texte et de son contrôle", "Saving content and its check"));
   const saved = retain(doc, verdict, `moteur ${by === "ai" ? "IA" : "local"} — ${verdict}`);
   // Blog V2 : le brouillon rejoint le blog existant (relecture, couverture, publication dans l'onglet Blog).
-  if (req.type === "blog_article") saveBlogDraftV2(p, docKey, doc, { notes: [...base.issues, ...notes], ai: by === "ai", jobKey: runId });
+  if (req.type === "blog_article") saveBlogDraftV2(p, docKey, doc, { notes: [...base.issues, ...notes], ai: by === "ai", jobKey: runId, quotaReserved:true });
   rememberContentRun(p.id, memoKey, { docKey, version: saved.version, verdict, costMicro: budget.spentMicro });
   return { ...base, docKey, doc, verdict, reason: d.reason, by, costMicro: budget.spentMicro, stoppedByCostCap: budget.stopped, delivery: delivery(verdict, [d.reason, ...base.issues, ...notes], budget.stopped) };
+  } finally { if(quotaArticleId)releaseUnsavedBlogDraft(p.userId,p.id,quotaRef,[quotaArticleId,blogIdFor(docKey)]); }
 }
 
 // ---------------------------------------------------------------- édition (manuelle et conversationnelle)

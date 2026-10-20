@@ -13,6 +13,8 @@ import { AssetViewer } from "./asset-viewer";
 import { useLang, useT } from "../i18n";
 import { PlanRequired, useBudgetPct, useCreationLocked } from "../billing-client";
 import { BANK_IMAGE_ROLES, BANK_VIDEO_ROLES } from "@/lib/media/bank";
+import type {ThemePlacement} from '@/lib/theme/placement-request';
+type ThemeVideoPreparation={request:{kind:'image'|'video';request:string;referenceAssetIds:string[];aspect:string};themePlacement:ThemePlacement};
 
 type Source = "mine" | "stock" | "ai";
 const sourceOf = (a: AssetView): Source => (a.origin === "generated" ? "ai" : a.origin === "import" || a.meta?.stock ? "stock" : "mine");
@@ -34,6 +36,8 @@ export default function TabVideos() {
   const [source, setSource] = useState<Source | "">("");
   const [viewer, setViewer] = useState<AssetView | null>(null);
   const [dialog, setDialog] = useState<"search" | "ai" | null>(null);
+  const [themePreparation,setThemePreparation]=useState<ThemeVideoPreparation|null>(null);
+  useEffect(()=>{const q=new URLSearchParams(window.location.search),slot=q.get('themeSlot'),version=q.get('themeVersion');if(!slot||!version)return;let active=true;api<ThemeVideoPreparation>(`/api/projects/${id}/theme/adaptation?slot=${encodeURIComponent(slot)}&version=${encodeURIComponent(version)}`).then(p=>{if(active&&p.request.kind==='video'){setThemePreparation(p);setDialog('ai');}}).catch(e=>{if(active)toast('bad',(e as Error).message);});return()=>{active=false;};},[id]);
   useEffect(() => {
     if (!active.length) reload();
   }, [active.length, reload]);
@@ -116,7 +120,7 @@ export default function TabVideos() {
         <SearchClips services={data?.business === "services"} peopleAllowed={(data?.settings as { peopleAllowed?: boolean } | undefined)?.peopleAllowed === true} onStarted={started} />
       </Modal>
       <Modal open={dialog === "ai"} onClose={() => setDialog(null)} title={t("Créer un plan avec l'IA", "Create a clip with AI")} wide>
-        <AiClip onStarted={started} />
+        <AiClip key={themePreparation?.themePlacement.slotKey??'bank'} preparation={themePreparation} onStarted={started} />
       </Modal>
       <AssetViewer asset={viewer} onClose={() => setViewer(null)} onChanged={reload} />
     </div>
@@ -169,17 +173,17 @@ function SearchClips({ services, peopleAllowed, onStarted }: { services: boolean
 }
 
 /** Un plan filmé par l'IA à partir d'une image de la banque : prix affiché avant, aucune personne ajoutée sans accord. */
-function AiClip({ onStarted }: { onStarted: (jobId?: string) => void }) {
+function AiClip({ onStarted,preparation }: { onStarted: (jobId?: string) => void;preparation?:ThemeVideoPreparation|null }) {
   const { id } = useProject();
   const t = useT();
   const { lang } = useLang();
   const toast = useToast();
   const { data: q } = useApi<{ ai: boolean; clipEstimateMicro: number }>(`/api/projects/${id}/videos/bank`);
   const { data: bank } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=${BANK_IMAGE_ROLES.join(",")}`);
-  const images = (bank?.assets ?? []).filter((a) => a.kind === "image" && a.status !== "rejected").slice(0, 40);
-  const [imageId, setImageId] = useState("");
+  const images = (bank?.assets ?? []).filter((a) => a.kind === "image" && a.status !== "rejected"&&(!preparation||preparation.request.referenceAssetIds.includes(a.id))).slice(0, 40);
+  const [imageId, setImageId] = useState(preparation?.request.referenceAssetIds[0]??"");
   const [prompt, setPrompt] = useState("");
-  const [aspect, setAspect] = useState("9:16");
+  const [aspect, setAspect] = useState(preparation?.request.aspect==='16:9'?'16:9':"9:16");
   const [busy, setBusy] = useState(false);
   // Prix en % du budget IA du mois (jamais en euros).
   const budget = useBudgetPct();
@@ -188,7 +192,7 @@ function AiClip({ onStarted }: { onStarted: (jobId?: string) => void }) {
     if (!q) return;
     setBusy(true);
     try {
-      const r = await api<{ jobId?: string }>(`/api/projects/${id}/videos/bank`, { body: { action: "ai", imageId, prompt: prompt.trim() || undefined, aspect, approvedEstimateMicro: q.clipEstimateMicro } });
+      const r = await api<{ jobId?: string }>(`/api/projects/${id}/videos/bank`, { body: { action: "ai", imageId, prompt: prompt.trim() || undefined, aspect, approvedEstimateMicro: q.clipEstimateMicro,themePlacement:preparation?.themePlacement } });
       onStarted(r.jobId);
     } catch (e) {
       toast("bad", (e as Error).message);
@@ -199,6 +203,7 @@ function AiClip({ onStarted }: { onStarted: (jobId?: string) => void }) {
   if (q && !q.ai) return <p className="text-sm text-muted" data-bank-ai-off>{t("La création de plans par l'IA n'est pas disponible pour ce projet (forfait Découverte, budget IA épuisé ou fournisseur désactivé). Cherchez plutôt des plans libres de droits (gratuit) ou importez vos vidéos.", "AI clip creation isn't available for this project (Discovery plan, AI budget used up or provider disabled). Search royalty-free clips instead (free) or upload your videos.")}</p>;
   return (
     <div className="grid gap-4" data-bank-ai-dialog>
+      {preparation&&<p className="rounded-xl border border-line p-3 text-sm" data-theme-video-preparation>{preparation.request.request}</p>}
       <p className="text-sm text-muted">{t("Choisissez une image de votre banque : l'IA la fait vivre en un court plan (mouvement de caméra, lumière), sans texte et sans personne ajoutée. Le plan arrive « à vérifier » dans votre banque.", "Pick an image from your bank: the AI brings it to life as a short clip (camera move, light), no text and no added people. The clip lands \"to check\" in your bank.")}</p>
       {images.length ? (
         <div className="grid max-h-56 grid-cols-4 gap-1.5 overflow-y-auto pr-1 sm:grid-cols-8" role="radiogroup" aria-label={t("Image de départ", "Starting image")}>

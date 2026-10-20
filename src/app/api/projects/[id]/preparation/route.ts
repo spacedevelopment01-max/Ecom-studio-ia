@@ -4,6 +4,7 @@ import { requirePlan } from "@/lib/plan-gates";
 import { HttpError } from "@/lib/auth";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { all, json } from "@/lib/db";
+import { getJob, publicJob } from "@/lib/jobs";
 import {
   restoreForReview,
   answerBriefQuestion,
@@ -19,6 +20,8 @@ import {
   queuePreparation,
   readyContract,
   references,
+  recoverablePreparation,
+  recoverPreparation,
   stateOf,
 } from "@/lib/preparation/engine";
 import { createQuote, quoteOf } from "@/lib/preparation/quote";
@@ -82,8 +85,14 @@ const input = z.object({
 });
 function view(projectId: string) {
   const ready = readyContract(projectId);
+  const state = stateOf(projectId);
+  const trackedId = state?.pending?.jobId ?? state?.error?.jobId;
+  const pending = trackedId ? getJob(trackedId) : null;
   return {
-    state: stateOf(projectId),
+    state,
+    job: pending?.project_id === projectId ? publicJob(pending) : null,
+    recoverable: !!recoverablePreparation(projectId, state),
+    recovering: pending?.project_id === projectId && json<{recoveryOnly?:boolean}>(pending.payload,{}).recoveryOnly === true && ["queued","running","paused"].includes(pending.status),
     blockers: [...blockers(projectId), ...(ready?.handoff?.issues ?? [])],
     ready,
     history: historyOf(projectId).map((s) => ({
@@ -126,6 +135,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
         "references",
         "quote",
         "generate",
+        "recover",
         "approve",
         "identity",
         "consent",
@@ -174,6 +184,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const s = stateOf(p.id);
   if (!s || s.revision !== b.revision)
     throw new HttpError(409, "Le projet a changé. Rechargez cette page.");
+  if (b.action === "recover") recoverPreparation(p.id, b.revision);
   if (b.action === "edit-brief") {
     if (!b.input) throw new HttpError(400, "Brief manquant.");
     for (const id of b.input.photoIds)

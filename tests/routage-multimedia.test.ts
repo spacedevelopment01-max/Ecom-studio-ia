@@ -43,7 +43,7 @@ vi.mock("openai", () => {
 });
 
 // Réseau simulé : Gemini (images), Veo (vidéo), fal (file d'attente) — chaque requête est enregistrée.
-const net = { calls: [] as { url: string; body: any }[], veo503: false, falFileDown: false };
+const net = { calls: [] as { url: string; body: any }[], veo503: false, veoRefused: false, falFileDown: false };
 const mp4 = Buffer.from("00000018667479706d703432", "hex");
 async function fakeFetch(url: string, init?: RequestInit): Promise<Response> {
   const body = init?.body ? JSON.parse(String(init.body)) : null;
@@ -51,7 +51,7 @@ async function fakeFetch(url: string, init?: RequestInit): Promise<Response> {
   const json = (j: unknown, status = 200) => new Response(JSON.stringify(j), { status });
   if (url.includes("multimodal-generation/generation")) return json({output:{choices:[{message:{content:[{image:"https://img.test/alibaba.png"}]}}]}});
   if (url.includes(":generateContent")) return json({ modelVersion:"reported-version-simulation",candidates: [{ content: { parts: [{ inlineData: { data: PNG } }] } }] });
-  if (url.includes(":predictLongRunning")) return net.veo503 ? json({ error: { message: "indisponible" } }, 503) : json({ name: "operations/op1" });
+  if (url.includes(":predictLongRunning")) return net.veoRefused ? json({ error: { message: "request rejected" } }, 400) : net.veo503 ? json({ error: { message: "indisponible" } }, 503) : json({ name: "operations/op1" });
   if (url.includes("/operations/op1")) return json({ done: true, response: { generateVideoResponse: { generatedSamples: [{ video: { uri: "https://video.test/clip.mp4" } }] } } });
   if (url.startsWith("https://queue.fal.run/") && init?.method === "POST") return json({ status_url: "https://queue.fal.run/x/requests/1/status", response_url: "https://queue.fal.run/x/requests/1" });
   if (url.endsWith("/status")) return json({ status: "COMPLETED" });
@@ -98,6 +98,7 @@ describe("routage multimédia V2", async () => {
     oa.mode = "ok";
     net.calls = [];
     net.veo503 = false;
+    net.veoRefused = false;
     net.falFileDown = false;
     vi.stubGlobal("fetch", fakeFetch);
     setSetting("ai.prices.checkedAt", String(Date.now()));
@@ -215,15 +216,24 @@ describe("routage multimédia V2", async () => {
     expect(getJsonSetting("fal.done.reprise-fal-1", null)).toBeNull();
   });
 
-  it("panne du principal sans coût → secours compatible avec SA propre réservation (vidéo produit)", async () => {
+  it("refus explicite du principal sans coût → secours compatible avec SA propre réservation (vidéo produit)", async () => {
     const c = await client();
     setJsonSetting("ai.media.backup", { video: "fal:fal-ai/kling-video/v2.1/pro/image-to-video" });
-    net.veo503 = true;
+    net.veoRefused = true;
     await fr(() => mp.aiClip("google", ctx(c), { image: png, prompt: "plan produit", aspect: "16:9" }));
     expect(reservations(c.userId)).toEqual([
       { status: "released", provider: "google", model: "veo-3.0-generate-001" },
       { status: "settled", provider: "fal", model: "fal-ai/kling-video/v2.1/pro/image-to-video" },
     ]);
+  });
+
+  it("dépôt vidéo en erreur 5xx : résultat incertain conservé et aucun second fournisseur", async () => {
+    const c = await client();
+    setJsonSetting("ai.media.backup", { video: "fal:fal-ai/kling-video/v2.1/pro/image-to-video" });
+    net.veo503 = true;
+    await expect(fr(() => mp.aiClip("google", ctx(c), { image: png, prompt: "plan", aspect: "16:9" }))).rejects.toThrow();
+    expect(reservations(c.userId)).toEqual([{ status: "uncertain", provider: "google", model: "veo-3.0-generate-001" }]);
+    expect(net.calls.some(x => x.url.includes("queue.fal.run"))).toBe(false);
   });
 
   it("UGC : pas de relais vers un modèle sans son quand Veo (voix) tombe", async () => {

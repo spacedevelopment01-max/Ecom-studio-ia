@@ -1,0 +1,32 @@
+{
+  "mission": 150,
+  "pr": 151,
+  "applicationCommit": "8748828bf8b2fb5b657fed5a43709843305989a4",
+  "baseCommit": "d97e0b9577128eeb39b403dae281da6bd835fc65",
+  "capturedVersion": {
+    "commit": "8748828bf8b2fb5b657fed5a43709843305989a4",
+    "source": "compiled-build"
+  },
+  "realProviderCalls": 0,
+  "realProviderCostEur": 0,
+  "realPayments": 0,
+  "realBookings": 0,
+  "realSocialPublications": 0,
+  "merge": false,
+  "deployment": false,
+  "customerStudioUpdated": false,
+  "screenshots": 14,
+  "ciSnapshot": {
+    "run": 39451176567,
+    "conclusion": "failure",
+    "testFilesPassed": 315,
+    "testFilesFailed": 1,
+    "testsPassed": 2450,
+    "testsFailed": 1,
+    "testsSkipped": 2,
+    "soleFailure": "historical consent fixture requested advertising on Creer; fixture corrected, native file 7/7 passing locally",
+    "videoBenchmark": "6/6 passing on CI and full isolated native file (57.83s); previous grouped local E timeout retained in logs"
+  },
+  "proofCommitScope": "docs, screenshots, logs, capture harness and consent test fixture; application code unchanged",
+  "privacy": "isolated fictitious accounts; no sessions, environment, database or customer media included"
+}

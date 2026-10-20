@@ -1,0 +1,57 @@
+
+ RUN  v5.0.3 /workspace/work/publications-qualite
+
+ ❯ tests/mission142-livraison-logo-video.test.ts (15 tests | 2 failed | 13 skipped) 827ms
+   × workflow direct : aucun fichier vidéo ne devient une étape terminée 582ms
+   × création initiale : deux retours locaux vides ne sont pas deux vidéos livrées 243ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/mission142-livraison-logo-video.test.ts > workflow direct : aucun fichier vidéo ne devient une étape terminée
+AssertionError: promise resolved "{ note: 'done (no quality verdict re…' }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "note": "done (no quality verdict recorded for this step)",
+  }
+
+ ❯ tests/mission142-livraison-logo-video.test.ts:31:140
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/mission142-livraison-logo-video.test.ts > création initiale : deux retours locaux vides ne sont pas deux vidéos livrées
+AssertionError: promise resolved "[]" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+[]
+
+ ❯ tests/mission142-livraison-logo-video.test.ts:35:129
+     33| it("création initiale : deux retours locaux vides ne sont pas deux vid…
+     34|  const{pid}=await fixture();const{creationSceneVideos}=await import("@…
+     35|  await expect(creationSceneVideos(null,pid,"local",{local,scenes:{} as…
+       |                                                                                                                                 ^
+     36| });
+     37| it("logo redessiné absent : échec explicite et original conservé",asyn…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 13 skipped (15)
+   Start at  11:12:39
+   Duration  5.63s (transform 44%, import 40%, tests 15%)
+
+  Transform  transforming modules took 2.41s · 44% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

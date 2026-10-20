@@ -1,0 +1,52 @@
+
+ RUN  v5.0.3 /workspace/work/forfaits-150
+
+ ❯ tests/video-v2-bench.test.ts (6 tests | 1 failed) 277987ms
+   ❯ Benchmark Vidéo V2 — 5 scénarios simulés (6)
+     ✓ scénario A (artisan) : intention, langage visuel, durée, vidéo rendue, barrière 12445ms
+     ✓ scénario B (cosmetic) : intention, langage visuel, durée, vidéo rendue, barrière 6871ms
+     ✓ scénario C (hightech) : intention, langage visuel, durée, vidéo rendue, barrière 9851ms
+     ✓ scénario D (restaurant) : intention, langage visuel, durée, vidéo rendue, barrière 8776ms
+     × scénario E (saas) : intention, langage visuel, durée, vidéo rendue, barrière 240040ms
+     ✓ diversité : accroches et langages différents d'un projet à l'autre 1ms
+ ✓ tests/workflow-garde-fous.test.ts (7 tests) 10260ms
+   ✓ demande unique : accord, plafond, statuts, Réessayer (7)
+     ✓ blog inaccessible (forfait Créer) : étape non faite avec sa raison, la demande continue et aboutit 5815ms
+     ✓ « Réessayer » : relance les étapes en échec avec la même tâche ; les étapes faites ne sont pas refaites 4106ms
+ ✓ tests/openai-streaming.test.ts (14 tests) 27690ms
+   ✓ OpenAI en flux dans le moteur multimédia (14)
+     ✓ flux : 2 aperçus puis l'image finale (le vrai logo), progression transmise, coût tracé, original conservé tel quel 442ms
+     ✓ flux coupé après un aperçu, ou terminé sans image : incertain, aucune relance 426ms
+     ✓ proxy HTTPS de l'environnement : utilisé même sans NODE_USE_ENV_PROXY (Claude Cloud), ignoré sans proxy (serveur, Codespace) 313ms
+     ✓ parcours Logo V2 avec le vrai logo : flux, sauvegarde, reprise SANS nouvel appel, choix → identité tirée du logo 8918ms
+     ✓ série de 3 : 3 prompts réellement distincts, 3 demandes en flux, 3 originaux distincts, provenance et coût réel sur chaque proposition 3272ms
+     ✓ 3 copies du même logo : une seule proposition, les 2 autres écartées comme copies (jamais choisissables) 4166ms
+     ✓ forme de remplissage (disque plein au-dessus du nom) : jamais une bonne note, aucune relecture payée, image gardée parmi les écartés 2916ms
+     ✓ le client choisit la 2e proposition (pas la première) : palette, symbole, déclinaisons et planche tirés de CE logo 6386ms
+ ✓ tests/logo-identity.test.ts (3 tests) 1669ms
+   ✓ identité tirée du logo (3)
+     ✓ vrai logo : palette anthracite et sable mesurée, lisible ; symbole SB découpé sans le nom 786ms
+     ✓ symbole au-dessus du nom, à gauche du nom ; nom seul → aucun symbole inventé 751ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/video-v2-bench.test.ts > Benchmark Vidéo V2 — 5 scénarios simulés > scénario E (saas) : intention, langage visuel, durée, vidéo rendue, barrière
+Error: Test timed out in 240000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/video-v2-bench.test.ts:31:5
+     29|
+     30|   for (const sc of VIDEO_SCENARIOS) {
+     31|     it(`scénario ${sc} (${SCENARIO_FIXTURE[sc]}) : intention, langage …
+       |     ^
+     32|       const p = loadProject(seedImageFixture(u.id, SCENARIO_FIXTURE[sc…
+     33|       if (p.business === "products" && SCENARIO_FIXTURE[sc] !== "saas"…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 29 passed (30)
+   Start at  15:51:36
+   Duration  329.94s (tests 96%, import 3%, transform 1%)
+
+JSON report written to /workspace/work/mission150-reprises-finales.json

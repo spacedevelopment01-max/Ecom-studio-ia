@@ -1,3 +1,4 @@
+import { grantProjectPlan } from "@/lib/project-subscriptions";
 /**
  * Changement de marque : toutes les créations suivent. Publicités (couleurs, logo, nom ET polices), vidéos (titres,
  * carte de fin, sous-titres, puis nouveau rendu), visuels faits par l'IA (nouvelle version payante seulement avec le
@@ -22,6 +23,7 @@ describe("Changement de marque : images et vidéos mises à jour", async () => {
   async function setup() {
     const u = await createUser(`mm-${Date.now()}-${Math.random()}@test.fr`, "motdepasse-test", "P");
     const pid = seedImageFixture(u.id, "hightech");
+    grantProjectPlan(pid,"dominer");
     await seedCutout(u.id, pid);
     const p = loadProject(pid);
     const plan = localScenePlan(p, null, { as: "ad" });
@@ -69,4 +71,11 @@ describe("Changement de marque : images et vidéos mises à jour", async () => {
     expect(payload).toMatchObject({ request: { as: "ad", format: "4:5", subject: { kind: "product", key: "main" } } });
     expect(payload.costCapMicro).toBeGreaterThan(ai.paidMicro!);
   });
+  it("baisse de forfait : met à jour la vidéo locale, conserve la publicité IA sans lancer de tâche ni interrompre les autres éléments",async()=>{
+    const {pid,userId,img}=await setup();grantProjectPlan(pid,"vendre");const impact=prop.brandImpact(loadProject(pid));const video=impact.items.find(i=>i.kind==="video")!,ai=impact.items.find(i=>i.key===`ai_image:${img.id}`)!;
+    const result=await fr(()=>prop.applyBrandUpdate(pid,[video.key,ai.key],{userId,approvedPaidMicro:ai.paidMicro}));
+    expect(result.updated.map(i=>i.key)).toContain(video.key);expect(result.skipped.find(i=>i.key===ai.key)?.reason).toMatch(/Dominer/);
+    expect(one("SELECT id FROM jobs WHERE project_id=? AND type='image.ai_post'",pid)).toBeFalsy();expect(one("SELECT id FROM jobs WHERE project_id=? AND type='video.v2.render'",pid)).toBeTruthy();expect(one("SELECT id FROM assets WHERE id=? AND deleted_at IS NULL",img.id)).toBeTruthy();
+  });
+
 });

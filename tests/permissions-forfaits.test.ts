@@ -21,15 +21,15 @@ describe("droits des forfaits, vérifiés côté serveur", async () => {
     return { u, pid };
   };
 
-  it("catalogue actif (consigne 6264783184) : les quatre thèmes de référence pour tout forfait payant ; les 30 anciens restent lisibles mais jamais sélectionnables ; rien sans forfait", async () => {
+  it("catalogue actif (consigne 6264783184) : les sept thèmes de référence selon le forfait et leur famille ; les 30 anciens restent lisibles mais jamais sélectionnables ; rien sans forfait", async () => {
     expect(themeOrderComplete()).toBe(true);
-    expect(THEME_ORDER).toHaveLength(34);
-    expect(THEME_ORDER.slice(30)).toEqual(["fraise", "onde", "orbe", "rive"]);
-    expect([PLANS.creer.themes, PLANS.vendre.themes, PLANS.dominer.themes]).toEqual([4, 4, 4]);
-    for (const id of ["fraise", "onde", "orbe", "rive"]) {
+    expect(THEME_ORDER).toHaveLength(37);
+    expect(THEME_ORDER.slice(30)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse"]);
+    expect([PLANS.creer.themes, PLANS.vendre.themes, PLANS.dominer.themes]).toEqual([1, 3, 5]);
+    for (const id of ["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse"]) {
       expect(themeAllowed(null, id)).toBe(false);
-      for (const plan of ["creer", "vendre", "dominer"] as const) expect(themeAllowed(plan, id)).toBe(true);
-      expect(planForTheme(id)).toBe("creer");
+      for (const plan of ["creer", "vendre", "dominer"] as const) expect(themeAllowed(plan, id)).toBe(!(["onde","sillon"].includes(id)&&plan==="creer")&&!(["noctil","traverse"].includes(id)&&plan!=="dominer"));
+      expect(planForTheme(id)).toBe(["onde","sillon"].includes(id)?"vendre":["noctil","traverse"].includes(id)?"dominer":"creer");
     }
     // Ancien catalogue : retiré pour toute nouvelle sélection, même avec le forfait le plus large.
     for (const id of THEME_ORDER.slice(0, 30)) { expect(themeAllowed("dominer", id)).toBe(false); expect(planForTheme(id)).toBeNull(); }

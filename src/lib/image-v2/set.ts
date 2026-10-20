@@ -10,14 +10,15 @@
  * Plus de packshots composés par le studio, de recadrages ni de photos de banque comme images finales. Sans IA active :
  * rien n'est créé et la raison est dite (aucun gabarit à la place). Chaque image est un point de reprise.
  */
-import type { JobContext } from "../jobs";
+import { UserFacingError, type JobContext } from "../jobs";
 import { loadProject } from "../projects";
 import { aiActiveFor } from "../ai/access";
 import { L } from "../i18n-server";
 import { runImageEngineV2, type ImageRequestV2 } from "./engine";
 import { NO_AI_IMAGES } from "./ai-only";
+import { imageDelivery, type ImageDelivery } from "../media/delivery-check";
 
-export type ImageSetV2Result = { created: string[]; local: number; stock: number; generated: number; notes: string[] };
+export type ImageSetV2Result = { created: string[]; local: number; stock: number; generated: number; notes: string[]; delivery?: ImageDelivery };
 
 /** Plan du jeu d'images : un rôle par image, tous créés par l'IA. */
 export function imageSetPlan(services: boolean): (ImageRequestV2 & { step: string; label: [string, string] })[] {
@@ -40,8 +41,7 @@ export async function runImageSetV2(ctx: JobContext, projectId: string, run: typ
   const p = loadProject(projectId);
   const out: ImageSetV2Result = { created: [], local: 0, stock: 0, generated: 0, notes: [] };
   if (!aiActiveFor(p.userId, projectId)) {
-    out.notes.push(L(NO_AI_IMAGES.fr, NO_AI_IMAGES.en));
-    return out;
+    throw new UserFacingError(L(NO_AI_IMAGES.fr, NO_AI_IMAGES.en));
   }
   // Référence du produit préparée (détourage) avant toute génération : jamais un produit ressemblant.
   if (p.business !== "services") {
@@ -63,5 +63,7 @@ export async function runImageSetV2(ctx: JobContext, projectId: string, run: typ
       break;
     }
   }
+  out.delivery=await imageDelivery(projectId,out.created,{expected:plan.length,reasons:out.notes});
+  if(out.delivery.state==="partial")throw new UserFacingError(L(`Jeu d’images incomplet : ${out.delivery.delivered}/${out.delivery.expected} images conservées dans la bibliothèque. Les étapes et coûts acquis sont gardés ; aucun nouvel essai payant automatique.`,`Incomplete image set: ${out.delivery.delivered}/${out.delivery.expected} images kept in the library. Acquired steps and costs are preserved; no automatic paid retry.`));
   return out;
 }

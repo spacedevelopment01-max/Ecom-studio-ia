@@ -15,7 +15,7 @@ export const POST = handle(async (req: Request, ctx: Ctx<{ id: string; aid: stri
   const a = articleOf(p.id, aid);
   if (a.deleted_at) throw new HttpError(409, L("Cet article est dans la corbeille.", "This post is in the trash."));
   const b = await body(req, z.object({ instruction: z.string().trim().max(1000).optional() }));
-  gateBlogWrite(user.id, p.id);
+  gateBlogWrite(user.id, p.id,a.id);
   // Article du moteur V2 : nouvelle rédaction de SON document (même lignée, versions conservées ; un texte modifié par
   // le client n'est jamais écrasé). Ancien article : plus de réécriture par l'ancien moteur (modification à la main,
   // ou nouvel article avec le moteur V2) — jamais deux versions concurrentes du même article.

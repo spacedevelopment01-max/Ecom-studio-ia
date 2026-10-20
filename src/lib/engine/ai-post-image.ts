@@ -1,4 +1,6 @@
+import { assertAdvertising } from "../job-entitlements";
 import type { AspectId } from "../image-v2/types";
+import { imageDelivery } from "../media/delivery-check";
 import { FORMATS } from "../image-v2/formats";
 /**
  * Onglet Images, choix « Tout par l'IA, de A à Z » : la publication entière (scène, mise en page, titre, bouton) est
@@ -43,6 +45,8 @@ export type AiPostImageRequest = {
   advertising?:PostBrief["advertising"];
   editorialData?:PostBrief["editorialData"];
   series?:PostBrief["series"];
+  /** Set only by the explicit correction/recovery route; never a request for new copy. */
+  expectedCopyKey?:string;
 };
 
 /** Format de l'onglet Images → proportions acceptées par la publication IA. */
@@ -154,6 +158,7 @@ export async function generateAiPostImage(
   req: AiPostImageRequest,
   deps?: AiPostDeps,
 ) {
+  if(req.as==="ad"||req.kind==="ad"||String(req.entryPoint??"").startsWith("ads-"))assertAdvertising(projectId);
   const p = loadProject(projectId);
   const subject = req.subject ? resolveSubject(p, req.subject) : null;
   // Sujet choisi : sa photo (produit) ; service : aucune référence produit (la scène montre le métier, sans personne).
@@ -188,6 +193,7 @@ export async function generateAiPostImage(
         jobId: ctx.job.id,
         sourceAssetId: req.sourceAssetId,
       });
+  base.expectedCopyKey=req.expectedCopyKey;
   const r = await ctx.step("ai-post", () =>
     designPostWithAi(
       p,
@@ -198,7 +204,7 @@ export async function generateAiPostImage(
           (req.format && req.format in FORMATS
             ? (req.format as AspectId)
             : "4:5"),
-        maxCostEur: aiPostCapMicro() / 1e6,
+        maxCostEur: (typeof ctx.payload.costCapMicro==="number" && Number.isFinite(ctx.payload.costCapMicro) && ctx.payload.costCapMicro>=0 ? ctx.payload.costCapMicro : aiPostCapMicro()) / 1e6,
         reference,
         subject,
         mode: req.mode,
@@ -210,15 +216,17 @@ export async function generateAiPostImage(
   if (!r.assetId) {
     const spent = budgetPctText(p.userId, r.costMicro, p.id);
     throw new UserFacingError(
-      `${r.note ?? C("publication IA non produite", "AI post not produced")} — ${L(`${spent} utilisé ; les essais refusés restent dans Fichiers. Le blocage doit être résolu avant une nouvelle version.`, `${spent} used; rejected attempts stay in Files. Resolve the block before requesting a new version.`)}`,
+      `${r.note ?? C("publication IA non produite", "AI post not produced")} — ${L(`${spent} utilisé ; les étapes déjà acquises sont conservées. Le blocage doit être résolu avant une nouvelle version.`, `${spent} used; acquired steps are kept. Resolve the block before requesting a new version.`)}`,
     );
   }
   // Reprise payée : annoncée au client (message de la tâche), en % du budget IA.
   const notice = retryNotice(p.userId, p.id, r.attempts ?? 1, r.costMicro);
+  const delivery=await imageDelivery(p.id,r.assetIds?.length?r.assetIds:[r.assetId],{adGallery:(req.as??(SELL.has(req.kind??"")?"ad":"post"))==="ad"});
   return {
     assetId: r.assetId,
     assetIds:r.assetIds,
     costMicro: r.costMicro,
+    delivery,
     ...(notice ? { notice } : {}),
   };
 }

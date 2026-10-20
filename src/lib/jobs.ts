@@ -9,6 +9,8 @@
  *  - Dépendances : une tâche attend que ses prérequis soient terminés.
  */
 import os from "node:os";
+import { createHash } from "node:crypto";
+import { assertJobEntitlements } from "./job-entitlements";
 import { all, id, json, now, one, run, tx } from "./db";
 import { jobLiveness } from "./job-liveness";
 import { jobEstimate } from "./job-estimate";
@@ -63,10 +65,13 @@ export function enqueue(input: EnqueueInput): Job {
   if (input.projectId && hasLangContext() && !(input.payload && typeof input.payload === "object" && "lang" in (input.payload as object))) {
     input = { ...input, payload: { ...((input.payload as object) ?? {}), lang: contentLang() } };
   }
-  if (input.idempotencyKey) {
-    const existing = one<Job>("SELECT * FROM jobs WHERE idempotency_key = ?", input.idempotencyKey);
-    if (existing) return existing;
+  const operationKey = input.idempotencyKey ? `job:v2:${createHash("sha256").update(JSON.stringify([input.userId, input.projectId ?? null, input.type, input.idempotencyKey])).digest("hex")}` : null;
+  if (operationKey) {
+    // Compatibilité des anciennes demandes, toujours dans le même compte, projet et type.
+    const existing = one<Job>("SELECT * FROM jobs WHERE idempotency_key IN (?,?) AND user_id=? AND project_id IS ? AND type=?", operationKey, input.idempotencyKey!, input.userId, input.projectId ?? null, input.type);
+    if (existing) return scopedDuplicate(existing,input);
   }
+  assertJobEntitlements(input.type,input.projectId,input.payload);
   const jid = id();
   const t = now();
   // ON CONFLICT : deux demandes simultanées avec la même clé renvoient la même tâche (au lieu d'une erreur 500).
@@ -82,14 +87,20 @@ export function enqueue(input: EnqueueInput): Job {
     "queued",
     input.runAt ?? t,
     input.maxAttempts ?? 3,
-    input.idempotencyKey ?? null,
+    operationKey,
     input.parentId ?? null,
     JSON.stringify(input.dependsOn ?? []),
     t,
     t,
   );
-  if (!ins.changes && input.idempotencyKey) return one<Job>("SELECT * FROM jobs WHERE idempotency_key = ?", input.idempotencyKey)!;
+  if (!ins.changes && operationKey) return scopedDuplicate(one<Job>("SELECT * FROM jobs WHERE idempotency_key = ?", operationKey)!,input);
   return getJob(jid)!;
+}
+
+/** Idempotency never returns a task belonging to another account, project or operation. */
+function scopedDuplicate(job:Job,input:EnqueueInput):Job {
+ if(job.user_id!==(input.userId??null)||job.project_id!==(input.projectId??null)||job.type!==input.type)throw new UserFacingError(L('Cette clé de demande est déjà utilisée pour une autre opération.','This request key is already used for another operation.'));
+ return job;
 }
 
 export const getJob = (jid: string) => one<Job>("SELECT * FROM jobs WHERE id = ?", jid);
@@ -140,13 +151,17 @@ export function claimNext(types?: string[]): (Job & { recovered?: boolean }) | n
     for (const j of candidates) {
       const deps = json<string[]>(j.depends_on, []);
       if (deps.length) {
-        const states = all<{ status: string }>(`SELECT status FROM jobs WHERE id IN (${deps.map(() => "?").join(",")})`, ...deps);
+        const states = all<{ status: string; user_id: string; project_id: string | null }>(`SELECT status, user_id, project_id FROM jobs WHERE id IN (${deps.map(() => "?").join(",")})`, ...deps);
+        if (states.length !== new Set(deps).size || states.some((s) => s.user_id !== j.user_id || s.project_id !== j.project_id)) {
+          run("UPDATE jobs SET status='blocked', message=?, updated_at=? WHERE id=?", pick(userLang(j.user_id), "Une étape préalable est indisponible. Les résultats déjà acquis sont conservés.", "A required step is unavailable. Completed results are kept."), t, j.id);
+          continue;
+        }
         // Prérequis en échec, annulé ou lui-même bloqué : la tâche est bloquée (visible), jamais en attente sans fin.
         if (states.some((s) => s.status === "failed" || s.status === "cancelled" || s.status === "blocked")) {
           run("UPDATE jobs SET status='blocked', message=?, updated_at=? WHERE id=?", pick(userLang(j.user_id), "Une étape préalable a échoué.", "A previous step failed."), t, j.id);
           continue;
         }
-        if (states.length < deps.length || states.some((s) => s.status !== "done")) continue;
+        if (states.some((s) => s.status !== "done")) continue;
       }
       const recovered = j.status === "running";
       // Reprise après interruption (worker arrêté ou tué) : bornée par le nombre d'essais. Une tâche qui tue le
@@ -188,6 +203,12 @@ export function jobQuotaScope(job: Pick<Job, "id" | "type" | "payload" | "projec
 }
 
 /** Une création du pilote est-elle déjà en file, en cours ou en pause pour ce projet ? */
+/** Tâche encore en attente ou en cours, du même type et pour le même projet, dont la charge contient ces valeurs. */
+export function pendingJob(projectId: string, type: string, match: Record<string, unknown> = {}): Job | null {
+  const rows = all<Job>("SELECT * FROM jobs WHERE project_id = ? AND type = ? AND status IN ('queued','running','paused','blocked') ORDER BY created_at DESC", projectId, type);
+  return rows.find((j) => { try { const p = JSON.parse(j.payload || "{}"); return Object.entries(match).every(([k, v]) => p[k] === v); } catch { return false; } }) ?? null;
+}
+
 export const pipelineActive = (projectId: string) => !!one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'pipeline.run' AND status IN ('queued','running','paused')", projectId);
 
 export class JobCancelled extends Error {}
@@ -211,6 +232,7 @@ export class JobContext {
   /** Met à jour l'avancement et prolonge le bail. Lève JobCancelled si annulée. */
   progress(p: number, message?: string) {
     const row = one<{ status: string; locked_by: string | null }>("SELECT status, locked_by FROM jobs WHERE id = ?", this.job.id);
+    if (!row || row.status === "done" || row.status === "failed" || row.status === "blocked") throw new LeaseLost(L("Cette tâche n'est plus en cours.", "This task is no longer running."));
     if (row?.locked_by && row.locked_by !== WORKER_ID) throw new LeaseLost(L("Tâche reprise par un autre processus.", "Task taken over by another process."));
     if (row?.status === "cancelled") throw new JobCancelled(L("Tâche annulée.", "Task canceled."));
     if (row?.status === "paused") throw new JobPaused(L("Tâche mise en pause.", "Task paused."));
@@ -230,7 +252,9 @@ export class JobContext {
   /** Enregistre un point de reprise : utilisé pour ne pas refaire une étape coûteuse. */
   save(key: string, value: unknown) {
     const cp = { ...this.checkpoint, [key]: value };
-    const r = run("UPDATE jobs SET checkpoint=?, locked_until=?, updated_at=? WHERE id=? AND (locked_by IS NULL OR locked_by=?)", JSON.stringify(cp), now() + LEASE_MS, now(), this.job.id, WORKER_ID);
+    // Une réponse arrivée pendant pause/annulation peut encore être conservée tant que ce worker
+    // détient son bail. Une tâche terminée ou un autre exécuteur ne sont jamais écrasés.
+    const r = run("UPDATE jobs SET checkpoint=?, locked_until=?, updated_at=? WHERE id=? AND ((locked_by=? AND status IN ('running','queued','paused','cancelled')) OR (locked_by IS NULL AND status IN ('queued','running','paused') AND ? IS NULL))", JSON.stringify(cp), now() + LEASE_MS, now(), this.job.id, WORKER_ID, this.job.locked_by);
     if (!r.changes && one("SELECT 1 FROM jobs WHERE id = ?", this.job.id)) throw new LeaseLost(L("Tâche reprise par un autre processus.", "Task taken over by another process."));
     this.job.checkpoint = JSON.stringify(cp);
   }
@@ -250,9 +274,12 @@ export function releaseJob(jid: string) {
 }
 
 export function completeJob(jid: string, result: unknown) {
-  const delivery = (result as { delivery?: { message?: string; state?: string } } | null)?.delivery;
-  run(
-    "UPDATE jobs SET status='done', progress=1, result=?, error=NULL, locked_by=NULL, locked_until=NULL, message=?, finished_at=?, updated_at=? WHERE id=? AND ((status IN ('running','paused') AND (locked_by IS NULL OR locked_by=?)) OR (status='queued' AND locked_by=?))",
+  const delivery = (result as { delivery?: { message?: string; state?: string; progress?:number; expected?:number;delivered?:number } } | null)?.delivery;
+  const partial=delivery?.state==="partial";
+  const progress=partial?Math.min(.95,Math.max(0,delivery.progress??(delivery.expected?((delivery.delivered??0)/delivery.expected):getJob(jid)?.progress??0))):1;
+  const completed = run(
+    "UPDATE jobs SET status='done', progress=?, result=?, error=NULL, locked_by=NULL, locked_until=NULL, message=?, finished_at=?, updated_at=? WHERE id=? AND ((status IN ('running','paused') AND (locked_by IS NULL OR locked_by=?)) OR (status='queued' AND locked_by=?))",
+    progress,
     JSON.stringify(result ?? null),
     // Message au client porté par le résultat (ex. reprise débitée, annoncée en % du budget IA).
     delivery?.message ?? (typeof (result as { notice?: unknown } | null)?.notice === "string" ? `${L("Terminé", "Done")} · ${(result as { notice: string }).notice}` : L("Terminé", "Done")),
@@ -264,13 +291,14 @@ export function completeJob(jid: string, result: unknown) {
   );
   // Reprise débitée : aussi dans les notifications du client (jamais en silence).
   const notice = (result as { notice?: unknown } | null)?.notice;
-  const j = typeof notice === "string" ? one<{ user_id: string; project_id: string | null }>("SELECT user_id, project_id FROM jobs WHERE id = ?", jid) : null;
+  const j = completed.changes && typeof notice === "string" ? one<{ user_id: string; project_id: string | null }>("SELECT user_id, project_id FROM jobs WHERE id = ?", jid) : null;
   if (j && typeof notice === "string") run("INSERT INTO notifications (id, user_id, project_id, level, title, body, created_at) VALUES (?,?,?,?,?,?,?)", id(), j.user_id, j.project_id, "info", L("Reprise d'une création par l'IA", "AI creation redone"), notice, now());
 }
 
 /** Échec : nouvelle tentative avec attente exponentielle, sauf erreur définitive. */
 export function failJob(job: Job, err: unknown, opts: { permanent?: boolean } = {}) {
   const message = friendlyToolError(err instanceof Error ? err.message : String(err));
+  const code=err instanceof UserFacingError && typeof err.code==="string" && /^[A-Z_]{3,80}$/.test(err.code)?err.code:null;
   const permanent = opts.permanent || (err as any)?.permanent === true || job.attempts >= job.max_attempts;
   // Seule une tâche encore tenue (ni annulée, ni mise en pause entre-temps) change d'état : une tâche annulée
   // pendant un appel puis interrompue par une erreur ne revient jamais en file.
@@ -278,11 +306,13 @@ export function failJob(job: Job, err: unknown, opts: { permanent?: boolean } = 
   const held = "((status='running' AND (locked_by IS NULL OR locked_by=?)) OR (status='queued' AND locked_by=?))";
   if (permanent) {
     const r = run(
-      `UPDATE jobs SET status='failed', error=?, message=?, locked_by=NULL, locked_until=NULL, finished_at=?, updated_at=? WHERE id=? AND ${held}`,
+      `UPDATE jobs SET status='failed', error=?, message=?, locked_by=NULL, locked_until=NULL, finished_at=?, updated_at=?, checkpoint=CASE WHEN ? IS NULL THEN json_remove(checkpoint,'$.failureCode') ELSE json_set(checkpoint,'$.failureCode',?) END WHERE id=? AND ${held}`,
       message.slice(0, 4000),
       message.slice(0, 300),
       now(),
       now(),
+      code,
+      code,
       job.id,
       WORKER_ID,
       WORKER_ID,
@@ -344,14 +374,24 @@ export function resumeJob(jid: string) {
 }
 
 /** Relance manuelle : repart du dernier point de reprise. */
-export function retryJob(jid: string) {
+export function retryJob(jid: string, opts: { recoveryOnly?: boolean } = {}) {
+  if (opts.recoveryOnly) {
+    const job = getJob(jid);
+    if (!job || job.status !== "failed") return;
+    run("UPDATE jobs SET payload=? WHERE id=?", JSON.stringify({ ...json<Record<string, unknown>>(job.payload, {}), recoveryOnly: true }), jid);
+    for (const child of all<{id:string;depends_on:string}>("SELECT id,depends_on FROM jobs WHERE status='queued' AND depends_on LIKE ?",`%${jid}%`)) {
+      if (json<string[]>(child.depends_on,[]).includes(jid)) run("UPDATE jobs SET status='blocked',message=?,updated_at=? WHERE id=? AND status='queued'",L("Étape conservée en attente d'une confirmation après récupération.","Step kept pending confirmation after recovery."),now(),child.id);
+    }
+  }
   run(
-    "UPDATE jobs SET status='queued', run_at=?, attempts=0, error=NULL, message=?, updated_at=? WHERE id=? AND status IN ('failed','cancelled','blocked')",
+    "UPDATE jobs SET status='queued', run_at=?, attempts=0, error=NULL, finished_at=NULL, message=?, updated_at=? WHERE id=? AND status IN ('failed','cancelled','blocked')",
     now(),
     L("Relance demandée", "Retry requested"),
     now(),
     jid,
   );
+  // Une récupération sans nouvel achat ne réactive pas d'autres tâches potentiellement payantes.
+  if (opts.recoveryOnly) return;
   // Les tâches bloquées parce que celle-ci avait échoué attendent de nouveau (elles partiront quand elle aura réussi).
   for (const b of all<{ id: string; depends_on: string }>("SELECT id, depends_on FROM jobs WHERE status='blocked' AND depends_on LIKE ?", `%${jid}%`)) {
     if (json<string[]>(b.depends_on, []).includes(jid)) run("UPDATE jobs SET status='queued', message=?, updated_at=? WHERE id=? AND status='blocked'", L("En attente de l'étape relancée", "Waiting for the retried step"), now(), b.id);
@@ -363,9 +403,13 @@ export class PermanentError extends Error {
 }
 
 /** Erreur utilisateur à afficher telle quelle, sans nouvelle tentative. */
-export class UserFacingError extends PermanentError {}
+export class UserFacingError extends PermanentError {
+  constructor(message:string,public readonly code?:string){super(message);}
+}
 
 export function publicJob(j: Job) {
+  const failure=j.status==="failed"?json<Record<string,any>>(j.checkpoint,{}):null;
+  const failureCode=failure?.failureCode??failure?.["ai-post"]?.code;
   return {
     id: j.id,
     type: j.type,
@@ -374,6 +418,7 @@ export function publicJob(j: Job) {
     progress: j.progress,
     message: j.message,
     error: j.status === "failed" ? j.error : null,
+    ...(typeof failureCode==="string" && /^[A-Z_]{3,80}$/.test(failureCode)?{failureCode}:{}),
     attempts: j.attempts,
     parentId: j.parent_id,
     result: json(j.result, null),

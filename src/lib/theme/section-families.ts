@@ -381,7 +381,7 @@ export function familyTypes(family: FamilyId): Set<string> {
 }
 
 /** Famille d'un thème de référence (repli quand la catégorie du projet n'est pas connue). */
-export const THEME_FAMILY: Record<string, FamilyId> = { fraise: "specialty", onde: "specialty", orbe: "catalog", rive: "services" };
+export const THEME_FAMILY: Record<string, FamilyId> = { fraise: "specialty", onde: "specialty", orbe: "catalog", rive: "services", sillon: "specialty", noctil: "specialty", traverse: "specialty" };
 export const familyOf = (kind: StoreKind | null | undefined, theme?: string): FamilyId | null => kind ?? (theme ? THEME_FAMILY[theme] ?? null : null);
 
 export const entryByKey = (key: string): FamilyEntry | undefined => ALL_ENTRIES.find((x) => x.key === key);

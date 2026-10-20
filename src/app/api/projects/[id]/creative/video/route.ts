@@ -1,3 +1,6 @@
+import { assertAdvertising } from "@/lib/job-entitlements";
+import { planAllowsAds } from "@/lib/plan-entitlements";
+import { projectPlan } from "@/lib/project-billing";
 import {assertCanSpend} from "@/lib/billing";
 import {applyWordingDeep,loadWordingRules} from "@/lib/client-wording";
 import crypto from "node:crypto";
@@ -48,7 +51,7 @@ const Req = z.object({
  * Devis au COÛT PROBABLE (une image et un plan par scène, un essai), montré en % du budget IA du mois ; `capMicro` :
  * plafond de la tâche (coûts maximaux, reprises comprises), jamais montré comme prix.
  */
-const quote = (p:Project,r:ThreeScenesRequest) => {const q=sceneChainQuote(p,r);return {...q,pct:budgetPctOf(p.userId,q.estimateMicro,p.id)};};
+const quote = (p:Project,r:ThreeScenesRequest) => {const q=sceneChainQuote(p,r);if(r.as==='ad'&&!planAllowsAds(projectPlan(p.id)))return{...q,allowed:false,reason:L('La vidéo publicitaire nécessite Dominer (129 € par mois). Les vidéos existantes sont conservées.','Advertising video requires Dominate (€129 per month). Existing videos are kept.'),estimateMicro:0,capMicro:0,pct:0};return {...q,pct:budgetPctOf(p.userId,q.estimateMicro,p.id)};};
 
 /** Vidéos en scènes déjà faites (création guidée et création du projet), avec leur sujet et leur demande. */
 function list(projectId: string) {
@@ -81,11 +84,13 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
   const b = await body(req, z.discriminatedUnion("action", [z.object({action:z.literal("refine"),draftPlan:ScenePlanSchema,instruction:z.string().min(1).max(1000),...Req.shape}),z.object({action:z.literal("repair"),jobId:z.string().max(80),index:z.number().int().min(0).max(5),kind:z.enum(["image","clip"]),instruction:z.string().max(1000).optional()}),z.object({action:z.literal("plan"),scenarioJobId:z.string().max(80).optional(),approvedScriptMicro:z.number().int().min(0).optional(),draftPlan:ScenePlanSchema.optional(),...Req.shape}),z.object({ action: z.literal("quote"), ...Req.shape }), z.object({ action: z.literal("create"), ...Req.shape, approvalToken:z.string().max(100000).optional(), approvedEstimateMicro: z.number().int().min(0).nullable().optional() })]));
+  if(b.action!=="repair"&&b.as==="ad")assertAdvertising(p.id);
   if(b.action === "repair") {
     requirePlan(user,p.id);
     const source=one<{id:string;payload:string;status:string}>("SELECT id,payload,status FROM jobs WHERE id=? AND project_id=? AND type='video.scenes'",b.jobId,p.id);
     if(!source || source.status!=="failed") throw new HttpError(409,"Choisissez une vidéo incomplète à reprendre.");
     const original=json<{request:ThreeScenesRequest}>(source.payload,{} as never).request;
+    if(original?.as==="ad")assertAdvertising(p.id);
     if(!original?.approval || original.repair || original.approval.scope!==videoScope(p,sceneApprovalRequest(original))) throw new HttpError(409,"Le contexte a changé ou la reprise a déjà été utilisée : nouveau scénario requis.");
     if(b.index>=(original.scenes??3)) throw new HttpError(400,"Scène inconnue.");
     if(one("SELECT 1 FROM jobs WHERE project_id=? AND json_extract(payload,'$.request.repair.rootJobId')=?",p.id,source.id)) throw new HttpError(409,"Une seule reprise ciblée autorisée dans ce devis.");

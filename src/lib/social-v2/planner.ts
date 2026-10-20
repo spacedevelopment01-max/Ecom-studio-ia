@@ -143,10 +143,15 @@ export function createPlanV2(p: Project, req: PlanRequest, o: { planId?: string 
   const forfait = planOfProject(p.id);
   const capped = forfait && req.perDay > PLANS[forfait].postsPerDay ? PLANS[forfait].postsPerDay : null;
   if (capped) req = { ...req, perDay: capped };
+  if(forfait){
+    const span=publishingDates(req).length;
+    if(span>PLANS[forfait].calendarDays)throw new Error(`Votre forfait permet ${PLANS[forfait].calendarDays} jours de programmation IA. Réduisez la période.`);
+  }
   const facts = verifiedFacts(p);
   const days = publishingDates(req).length;
   const strategy = socialStrategy(p, { lang, platforms: req.platforms.map((x) => x.platform), startDate: req.startDate, days, perDay: req.perDay, facts });
   const { slots, warnings } = planSlots(req, strategy);
+  if(forfait&&slots.some(s=>s.at>now()+PLANS[forfait].calendarDays*86400000+3600000))throw new Error(`Votre forfait programme jusqu’à ${PLANS[forfait].calendarDays} jours à l’avance.`);
   if (capped) warnings.unshift(lang === "en" ? `limited to ${capped} post(s) per day by your plan` : `limité à ${capped} publication(s) par jour par votre forfait`);
   if (slots.length > 1000) throw new Error("plus de 1000 publications : raccourcissez la période");
   // Questions des clients (recherche SEO V2, hypothèses) : matière des piliers « questions » et « pédagogie ».

@@ -79,7 +79,7 @@ describe("migration V1 → V2 : moteurs réellement appelés", async () => {
   it("images : jeu créé par l'IA (Image Engine V2 en génération seule) — plus de composants locaux ni de photos de banque", async () => {
     const pid = await seedPaid("cosmetic");
     const { runImageSetV2, imageSetPlan } = await import("@/lib/image-v2/set");
-    await fr(() => runImageSetV2(ctxFor(pid, "images.generate"), pid));
+    await expect(fr(() => runImageSetV2(ctxFor(pid, "images.generate"), pid))).rejects.toThrow(/image/);
     expect(calls.set).toEqual([]);
     expect(calls.v2.map((r) => r.kind)).toEqual(imageSetPlan(false).map((x) => x.kind));
     expect(calls.v2.every((r: any) => r.noStock === true && r.allowGenerate === true)).toBe(true);

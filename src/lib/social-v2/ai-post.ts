@@ -1,4 +1,5 @@
-import { authorizedPublicationTexts } from "./publication-copy-policy";
+import { authorizedPublicationTexts, copyNeedsEvidence, publicationCopyIssues } from "./publication-copy-policy";
+import { acquiredCorrection, makeCopyReview } from "./publication-copy-recovery";
 import { creativeContract, creativeInstruction, editorialPages, commercialCta, EditorialBlockSchema, type CreativeContract, type EditorialBlock } from "./creative-contract";
 import { platformSpec } from "./platforms";
 import { publicationIdentity } from "../image-v2/publication-identity";
@@ -10,6 +11,7 @@ import {
   publicationStage,
   publicationImageStage,
   publicationStageDone,
+  publicationStageValue,
 } from "./publication-recipe";
 import {
   PUBLICATION_POLICY,
@@ -34,7 +36,7 @@ import { all, run } from "../db";
 import { assetData, getAsset, assetMeta, saveAsset } from "../library";
 import { loadProject as loadProjectForReview, type Project } from "../projects";
 import { effectivePalette } from "../route-palette";
-import { C } from "../i18n-server";
+import { C,L } from "../i18n-server";
 import { peopleAllowedFor } from "../people-policy";
 import {
   prepareImageReference,
@@ -155,9 +157,7 @@ export function cleanAiCopy(
   people = false,
   authorized: string[] = [],
 ): AiPostTexts {
-  const bad =
-    /\d+\s?%|€|\$|\b(n°\s?1|meilleur(?:e|s|es)?|best|garanti(?:e|s|es)?|guaranteed|avis|reviews?|étoiles|stars)\b/i;
-  const ok = (x: string) => !bad.test(x) || authorized.includes(x.trim());
+  const ok = (x: string) => !copyNeedsEvidence(x) || authorized.includes(x.trim());
   return {
     headline: ok(c.headline) ? c.headline.trim() : fallback.headline,
     subline: ok(c.subline) ? c.subline.trim() : fallback.subline,
@@ -320,6 +320,8 @@ export type AiPostDeps = {
   operationId?: string;
   sourceAssetId?: string;
   confirmedCommercialTexts?: string[];
+  /** An explicit free correction must reuse this acquired copy, never silently pay for another one. */
+  expectedCopyKey?: string;
   /**
    * Étape 2 (choix du propriétaire) : sur la photo créée SANS texte (étape 1, Qwen-Image), l'IA « Texte et logo »
    * (seulement si l'administration règle cet usage) pose les textes exacts, le bouton et le vrai logo. Absent (par défaut) : une seule étape, Qwen-Image 3.0 Pro.
@@ -528,6 +530,28 @@ async function designSinglePostWithAi(
   const fits = (n: number) => spent() + n <= capMicro;
   const qcMax = deps.reviewMaxMicro?.() ?? 0;
   try {
+    if(deps.expectedCopyKey && deps.expectedCopyKey!==`${prefix}:copy`)return {...blocked(L("Le contexte a changé depuis cette rédaction : vérifiez le projet avant de reprendre. Aucun nouvel appel de rédaction envoyé.","Context changed since this copy: review the project before resuming. No new copywriting call sent.")),code:"COPY_CONTEXT_CHANGED"};
+    // An acquired final result does not need a currently available generation model.
+    for(let i=0;i<Math.min(AI_POST_ATTEMPTS,Math.max(1,o.maxAttempts??AI_POST_ATTEMPTS));i++) {
+      const cached=publicationStageValue<{assetId?:string}>(p.id,`${prefix}:${i}:outcome`);
+      if(cached?.assetId){const a=getAsset(cached.assetId);if(!a||a.project_id!==p.id||a.deleted_at||!["ready","approved"].includes(a.status))return blocked("Version conservée indisponible : pas de nouvelle dépense automatique.");return {assetId:a.id,costMicro:spent(),by:"image_v2",attempts:i+1};}
+    }
+    // Deterministic prerequisites BEFORE buying copy or claiming a pending receipt.
+    if(mode==="two-step"&&!deps.layout)return {...blocked("Étape de mise en page demandée indisponible, aucun remplacement automatique."),code:"LAYOUT_STAGE_UNAVAILABLE"};
+    const photoOnly=mode==="two-step";
+    const imageReady=publicationStageDone(p.id,photoOnly?`${prefix}:scene:0`:`${prefix}:0:image`);
+    const layoutReady=!photoOnly||publicationStageDone(p.id,`${prefix}:0:layout`);
+    const max=imageReady?0:deps.maxMicro((refBuf?1:0)+(photoOnly?0:logoBuf?1:0),photoOnly);
+    if(max==null || (!layoutReady&&deps.layoutMaxMicro?.()==null))return {...blocked("Aucun modèle compatible avec toutes les références essentielles."),code:"ESSENTIAL_REFERENCES_NO_COMPATIBLE_MODEL"};
+    if(!publicationStageDone(p.id,`${prefix}:copy`)) {
+      const input={headline:deps.clientTexts?.headline??"",subline:deps.clientTexts?.subline??"",cta:deps.clientTexts?.cta??""};
+      const explicit=Object.values(input).filter(Boolean);
+      const issues=publicationCopyIssues(p,input,post.request??"",explicit,deps.confirmedCommercialTexts);
+      if(issues.length){const labels={headline:L("titre","headline"),subline:L("sous-ligne","subline"),cta:L("appel à l’action","call to action")};const fields=[...new Set(issues.map(x=>labels[x.field]))].join(", ");return {...blocked(L(`Texte saisi à vérifier (${fields}) : confirmez les faits de l’offre dans le projet ou retirez cette assertion. Aucun appel de rédaction envoyé.`,`Review supplied text (${fields}): confirm the offer facts in the project or remove this assertion. No copywriting call sent.`)),code:"CLIENT_COPY_FACTS_REQUIRED"};}
+      if(!deps.copy)return {...blocked("Conception IA indisponible : génération suspendue, aucun secours silencieux."),code:"COPY_ENGINE_UNAVAILABLE"};
+      const minimum=(deps.conceptMaxMicro?.()??0)+max+(photoOnly?deps.layoutMaxMicro!()!:0)+(photoOnly?2:1)*qcMax;
+      if(!fits(minimum))return {...blocked(L("Budget insuffisant pour concevoir le visuel et son premier contrôle : étapes acquises conservées, aucun appel envoyé.","Insufficient budget for designing the visual and its first check: acquired steps kept, no call sent.")),code:"CREATIVE_CAP_BEFORE_COPY"};
+    }
     const recent = all<{ id: string; meta: string }>(
       "SELECT id,meta FROM assets WHERE project_id = ? AND deleted_at IS NULL AND status IN ('ready','approved') AND json_extract(meta,'$.finalImage') IS NOT NULL ORDER BY created_at DESC,rowid DESC LIMIT 8",
       p.id,
@@ -580,7 +604,7 @@ async function designSinglePostWithAi(
     };
     const base = aiPostTexts(p, post);
     if(!creative.allowCommercial)base.cta="";
-    const written = await publicationStage(p.id, `${prefix}:copy`, async () => {
+    const acquired = await publicationStage(p.id, `${prefix}:copy`, async () => {
       if (!fits(deps.conceptMaxMicro?.() ?? 0))
         throw new Error(
           "Budget insuffisant pour concevoir le visuel : aucun titre de calendrier certifié premium.",
@@ -603,14 +627,12 @@ async function designSinglePostWithAi(
         );
       return result;
     });
-    const W = (x: string) =>
-      p.brand?.name
-        ? x
-            .split(p.brand.name)
-            .map((part) => applyWording(part, rules))
-            .join(p.brand.name)
-        : applyWording(x, rules);
-    const authorized = Object.values(deps.clientTexts ?? {}).filter(
+    const correction=acquiredCorrection(p.id,`${prefix}:copy`,acquired);
+    const written=correction?{...acquired,...correction}:acquired;
+    const protectedTexts=[p.brand?.name,...Object.values({...deps.clientTexts,...correction})].filter((x):x is string=>typeof x==="string"&&!!x).sort((a,b)=>b.length-a.length);
+    const protectedPattern=protectedTexts.length?new RegExp(`(${protectedTexts.map(x=>x.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")})`,"g"):null;
+    const W = (x:string) => protectedPattern?x.split(protectedPattern).map(part=>protectedTexts.includes(part)?part:applyWording(part,rules)).join(""):applyWording(x,rules);
+    const authorized = [...Object.values(deps.clientTexts ?? {}),...Object.values(correction??{})].filter(
       (x): x is string => typeof x === "string",
     );
     const allowed = authorizedPublicationTexts(
@@ -620,15 +642,9 @@ async function designSinglePostWithAi(
       authorized,
       deps.confirmedCommercialTexts,
     );
+    const issues=publicationCopyIssues(p,written,post.request??"",authorized,deps.confirmedCommercialTexts);
+    if(issues.length)return {...blocked(L("Rédaction IA non conforme aux faits confirmés : vérifiez les passages indiqués et corrigez gratuitement le texte acquis avant de reprendre l'image.","AI copy inconsistent with confirmed facts: review the indicated passages and correct acquired copy for free before resuming the image.")),code:"COPY_FACTS_REJECTED",copyReview:makeCopyReview(`${prefix}:copy`,acquired,issues,p)};
     const t0 = cleanAiCopy(written, base, people, allowed);
-    if (
-      ["headline", "subline", "cta"].some(
-        (k) => t0[k as "headline"] !== written[k as "headline"].trim(),
-      )
-    )
-      return blocked(
-        "Rédaction IA non conforme aux faits confirmés : aucun texte de calendrier substitué. Corrigez le concept avant une nouvelle version.",
-      );
     const t = {
       ...t0,
       headline: W(t0.headline),

@@ -109,6 +109,6 @@ describe("Tâches de fond : robustesse", () => {
     const a = enqueue({ userId: u.id, type: T("idem"), payload: {}, idempotencyKey: key });
     const b = enqueue({ userId: u.id, type: T("idem"), payload: {}, idempotencyKey: key });
     expect(b.id).toBe(a.id);
-    expect(all("SELECT id FROM jobs WHERE idempotency_key = ?", key)).toHaveLength(1);
+    expect(all("SELECT id FROM jobs WHERE idempotency_key = ?", a.idempotency_key)).toHaveLength(1);
   });
 });

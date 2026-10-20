@@ -33,6 +33,7 @@ describe("Studio Workflow V2", async () => {
   const vendre = await mkUser("vendre");
   const decouverte = await mkUser(null);
   const cosmetic = await seedThemeScenario(vendre.id, "cosmetic");
+  (await import("@/lib/project-subscriptions")).grantProjectPlan(cosmetic,"dominer");
   await fr(() => buildShopV2(null, cosmetic));
   const artisan = await seedThemeScenario(vendre.id, "artisan");
   // Un abonnement = un projet : le second projet du compte a son propre abonnement Développer.
@@ -72,8 +73,8 @@ describe("Studio Workflow V2", async () => {
     expect(started.status).toBe("queued");
     expect(started.capMicro).toBe(50_000_000);
     // Relancer ne crée aucune tâche en double.
-    wf.startWorkflow(w.id, { approveMicro: w.estimate.totalMicro, capEur: 50 });
-    expect(one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE idempotency_key = ?", `wf:${w.id}:run`)!.n).toBe(1);
+    expect(wf.startWorkflow(w.id, { approveMicro: w.estimate.totalMicro, capEur: 50 }).jobId).toBe(started.jobId);
+    expect(one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE type='workflow.run' AND json_extract(payload,'$.workflowId')=?", w.id)!.n).toBe(1);
     run("UPDATE jobs SET status = 'cancelled' WHERE id = ?", started.jobId);
   });
 

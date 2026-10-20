@@ -60,6 +60,7 @@ export type ImageRequestV2 = BriefRequest & {
   maxCostEur?: number;
   /** Emplacement du site (meta.slot) et nom de fichier. */
   slot?: string | null;
+  themePlacement?:import("../theme/placement-request").ThemePlacement;
   name?: string;
   /** Contrôles payants au plus par image voulue (photos de banque). */
   maxControls?: number;
@@ -110,6 +111,8 @@ export function targetedCorrection(d: GateDecision, r: ImageReview | null, brief
 const hash = (s: string) => crypto.createHash("sha256").update(s).digest("hex").slice(0, 16);
 
 export async function runImageEngineV2(ctx: JobContext | null, projectId: string, req: ImageRequestV2, injected?: ImageV2Deps): Promise<ImageRunResult> {
+  if(req.themePlacement)(await import("../theme/placement-request")).placementRequest(projectId,req.themePlacement);
+  if(req.kind==="ad_image"||req.support==="ad")(await import("../job-entitlements")).assertAdvertising(projectId);
   req = imagePolicy(req);
   const p = loadProject(projectId);
   brainView(p, "image"); // Précontrôle avant tout appel, même si un adaptateur lit ensuite un brief local.

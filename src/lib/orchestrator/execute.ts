@@ -13,6 +13,7 @@ import type { RequestScope } from "./request";
  * plan enregistré reste cohérent avec la tâche (même clé : « job:<id> »).
  */
 import type { JobContext } from "../jobs";
+import { videoDelivery } from "../media/delivery-check";
 import { activeProviderKey } from "../ai/config";
 import { aiActiveFor } from "../ai/access";
 import { budgetPctText } from "../ai/budget-pct";
@@ -402,8 +403,9 @@ export const STEP_EXECUTORS: Partial<Record<StepKind, StepExecutorFn>> = {
   video: async (ctx, p, s) => {
     const since = Date.now();
     const { runVideoEngineV2 } = await import("../video-v2/engine");
-    await ctx.step(`plan:${s.id}`, async () => (await runVideoEngineV2(ctx, p.id, { ask: { text: String(s.input.text ?? ""), platform: "reels" }, approveGeneration: !!s.input.allowPaid })).videoAssetId);
-    return outcome(ctx.job.id, "video", since);
+    const assetId=await ctx.step(`plan:${s.id}`, async () => (await runVideoEngineV2(ctx, p.id, { ask: { text: String(s.input.text ?? ""), platform: "reels" }, approveGeneration: !!s.input.allowPaid })).videoAssetId);
+    const delivery=await videoDelivery(p.id,assetId);
+    return {...outcome(ctx.job.id, "video", since),note:delivery.message};
   },
 };
 

@@ -17,6 +17,8 @@ import { useCostConfirm } from "./cost-confirm";
 import { useT } from "../i18n";
 import { PlanRequired, useBudgetPct, useCreationLocked } from "../billing-client";
 import { BANK_IMAGE_ROLES } from "@/lib/media/bank";
+type ThemeImagePreparation={request:{request:string};themePlacement:{versionId:string;slotKey:string;contextHash:string};kind:string;topic:string;aspect:string};
+import { CopyFailureHistory } from "./copy-correction";
 
 /** Tri des images par statut, et encart « Supprimées » pour retrouver (et restaurer) une image supprimée. */
 const STATUS_FILTERS = [
@@ -110,17 +112,20 @@ function useFollowJob(onDone: () => unknown) {
       const started = Date.now();
       const tick = async () => {
         try {
-          const { job } = await api<{ job: { status: string; error: string | null; message?: string | null; result?: { outcomes?: { assetId: string | null }[] } | null } }>(`/api/jobs/${jobId}`);
+          const { job } = await api<{ job: { status: string; error: string | null; message?: string | null; result?: { outcomes?: { assetId: string | null }[]; delivery?: {state:string;message:string} } | null } }>(`/api/jobs/${jobId}`);
           if (job.status === "done") {
             await done.current();
             reloadProject().catch(() => {});
             // Tâche terminée sans aucune image retenue : dit clairement (jamais « image prête » pour rien).
             const outcomes = job.result?.outcomes;
             if (Array.isArray(outcomes) && !outcomes.some((o) => o.assetId)) toast("bad", noneMessage);
+            else if(job.result?.delivery)toast(["delivered","ready"].includes(job.result.delivery.state)?"ok":"info",job.result.delivery.message);
             else toast("ok", okMessage);
             return;
           }
           if (job.status === "failed" || job.status === "cancelled" || job.status === "blocked") {
+            // Un échec peut suivre l'enregistrement d'une première image : la rendre accessible sans relance.
+            await done.current();
             reloadProject().catch(() => {});
             if (job.status === "failed") toast("bad", job.error || t("La création a échoué.", "Creation failed."));
             if (job.status === "blocked") toast("bad", job.message || t("La création est bloquée : rien n'a été créé à la place.", "Creation is blocked: nothing was created instead."));
@@ -227,6 +232,8 @@ export default function TabImages() {
   const [source, setSource] = useState<Source | "">("");
   const [viewer, setViewer] = useState<AssetView | null>(null);
   const [dialog, setDialog] = useState<"search" | "create" | null>(null);
+  const [themePreparation,setThemePreparation]=useState<ThemeImagePreparation|null>(null);
+  useEffect(()=>{const q=new URLSearchParams(window.location.search),slot=q.get("themeSlot"),version=q.get("themeVersion");if(!slot||!version)return;let active=true;api<ThemeImagePreparation>(`/api/projects/${id}/theme/adaptation?slot=${encodeURIComponent(slot)}&version=${encodeURIComponent(version)}`).then(p=>{if(active){setThemePreparation(p);setDialog("create");}}).catch(e=>{if(active)toast("bad",(e as Error).message);});return()=>{active=false;};},[id]);
   const locked = useCreationLocked();
   const active = useActive(["image.v2", "image.single", "images.generate"]);
   const { list, reload, status, setStatus } = useImageList(id, BANK_IMAGE_ROLES.join(","));
@@ -260,6 +267,7 @@ export default function TabImages() {
   const shown = status === "trash" ? all : all.filter((a) => !source || sourceOf(a) === source);
   return (
     <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6" data-image-bank>
+      <CopyFailureHistory/>
       {!locked && q && !q.ai && <ImageAiNotice reason={q.reason} />}
       <Card className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
@@ -315,7 +323,7 @@ export default function TabImages() {
         <SearchPhotos key={services ? "services" : "products"} services={services} peopleAllowed={(data?.settings as { peopleAllowed?: boolean } | undefined)?.peopleAllowed === true} onStarted={(jobId) => (setDialog(null), follow(jobId, t("Photos trouvées : elles sont dans votre banque.", "Photos found: they're in your bank."), t("Aucune photo libre ne convient à ce sujet : rien n'a été ajouté. Essayez un autre sujet ou importez vos photos.", "No royalty-free photo fits this subject: nothing was added. Try another subject or upload your photos.")))} />
       </Modal>
       <Modal open={dialog === "create"} onClose={() => setDialog(null)} title={t("Créer une image", "Create an image")} wide>
-        <CreateImage key={services ? "services" : "products"} services={services} q={q} onStarted={(jobId) => (setDialog(null), follow(jobId, t("Image prête : elle est dans votre banque.", "Image ready: it's in your bank."), t("Aucune image n'a été retenue (contrôle de qualité ou IA indisponible) : rien n'a été mis à la place. Le détail est dans les tâches du projet.", "No image was kept (quality check or AI unavailable): nothing was put in its place. Details are in the project's tasks.")))} />
+        <CreateImage key={themePreparation?.themePlacement.slotKey??(services ? "services" : "products")} preparation={themePreparation} services={services} q={q} onStarted={(jobId) => (setDialog(null), follow(jobId, t("Image prête : elle est dans votre banque.", "Image ready: it's in your bank."), t("Aucune image n'a été retenue (contrôle de qualité ou IA indisponible) : rien n'a été mis à la place. Le détail est dans les tâches du projet.", "No image was kept (quality check or AI unavailable): nothing was put in its place. Details are in the project's tasks.")))} />
       </Modal>
       <AssetViewer asset={viewer} onClose={() => setViewer(null)} onChanged={reload} />
     </div>
@@ -378,28 +386,34 @@ function SearchPhotos({ services, peopleAllowed, onStarted }: { services: boolea
  * Créer une image pour la banque : toujours créée par l'IA (règle « images finales 100 % IA » : plus de mise en scène
  * composée par le studio), vrai produit en référence, prix affiché avant ; aucune personne sans accord.
  */
-function CreateImage({ services, q, onStarted }: { services: boolean; q: ImagesQuote | null | undefined; onStarted: (jobId?: string) => void }) {
+function CreateImage({ services, q, onStarted,preparation }: { preparation?:ThemeImagePreparation|null;services: boolean; q: ImagesQuote | null | undefined; onStarted: (jobId?: string) => void }) {
   const { id } = useProject();
   const t = useT();
   const toast = useToast();
   const cost = useCostConfirm();
   const ai = !!q?.ai;
-  const [f, setF] = useState({ kind: services ? "trade_photo" : "usage_scene", topic: "", aspect: "4:5", count: 1 });
+  const [f, setF] = useState({ kind: preparation?.kind??(services ? "trade_photo" : "usage_scene"), topic: preparation?.topic??"", aspect: preparation?.aspect??"4:5", count: 1 });
   const [busy, setBusy] = useState(false);
   // Prix d'une image par l'IA : coût probable (un essai), en % du budget IA du mois (jamais en euros). Une reprise
   // n'est décomptée que si elle a lieu, et elle est annoncée.
   const budget = useBudgetPct();
   const unit = q ? q.quote.ai_image : null;
   const price = unit == null ? null : budget.label(Math.round(unit * 1e6 * f.count));
+  const operation=useRef<string|null>(null);
+  const sending=useRef(false);
+  useEffect(()=>{operation.current=null;},[f,id]);
   const go = async () => {
+    if(sending.current)return;
+    sending.current=true;
     setBusy(true);
     try {
       if (!(await cost.confirm("image"))) return;
-      const r = await api<{ jobId?: string }>(`/api/projects/${id}/images/v2`, { body: { action: "generate", request: { kind: f.kind, aspect: f.aspect, topic: f.topic.trim() || undefined, count: f.count, allowGenerate: true, noStock: true } } });
+      const r = await api<{ jobId?: string }>(`/api/projects/${id}/images/v2`, { body: { action: "generate", operationId:operation.current??(operation.current=crypto.randomUUID()), request: { ...(preparation?{themePlacement:preparation.themePlacement}:{}),kind: f.kind, aspect: f.aspect, topic: f.topic.trim() || undefined, count: f.count, allowGenerate: true, noStock: true } } });
       onStarted(r.jobId);
     } catch (e) {
       toast("bad", (e as Error).message);
     } finally {
+      sending.current=false;
       setBusy(false);
     }
   };

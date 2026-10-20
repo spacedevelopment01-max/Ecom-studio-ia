@@ -3,10 +3,12 @@ import { one, run, id, now } from "../db";
 import { stableHash } from "../brain/hash";
 import { assetData, getAsset, saveAsset } from "../library";
 import type { Project } from "../projects";
+import { UnsentBudgetError } from "../billing";
+import { CostCapReached,currentTrace } from "../ai/trace";
 export function publicationKey(projectId: string, data: unknown) {
   return `ai-post:${projectId}:${stableHash("campaign-2", data)}`;
 }
-type Receipt<T> = { state: "pending" | "done"; value?: T };
+type Receipt<T> = { state: "pending" | "done" | "not_sent"; value?: T };
 const memoryKey = (key: string) => `publication.stage.${key}`;
 export async function publicationStage<T>(
   projectId: string,
@@ -14,6 +16,21 @@ export async function publicationStage<T>(
   fn: () => Promise<T>,
   replaySafe = false,
 ): Promise<T> {
+  const execute=async(rid:string)=>{
+    const jobId=currentTrace().jobId;
+    // No absence-of-log inference: only a typed pre-dispatch refusal AND unchanged native billing/trace rows.
+    const evidence=()=>jobId?one<{n:number}>(`SELECT (SELECT COUNT(*) FROM ai_calls WHERE project_id=? AND job_id=?) + (SELECT COUNT(*) FROM ai_reservations WHERE project_id=? AND job_id=?) + (SELECT COUNT(*) FROM usage_events WHERE project_id=? AND job_id=?) n`,projectId,jobId,projectId,jobId,projectId,jobId)?.n:null;
+    const before=evidence();
+    try {
+      const value=await fn();
+      run("UPDATE memory SET value=?,updated_at=? WHERE id=?",JSON.stringify({state:"done",value}),now(),rid);
+      return value;
+    } catch(error) {
+      if((error instanceof UnsentBudgetError||error instanceof CostCapReached)&&before!=null&&evidence()===before)
+        run("UPDATE memory SET value=?,updated_at=? WHERE id=?",JSON.stringify({state:"not_sent",code:"BUDGET_BEFORE_DISPATCH"}),now(),rid);
+      throw error;
+    }
+  };
   const row = one<{ id: string; value: string }>(
     "SELECT id,value FROM memory WHERE project_id = ? AND key = ? ORDER BY rowid DESC LIMIT 1",
     projectId,
@@ -22,6 +39,11 @@ export async function publicationStage<T>(
   if (row) {
     const v = JSON.parse(row.value) as Receipt<T>;
     if (v.state === "done") return v.value as T;
+    if(v.state==="not_sent") {
+      const claim=run("UPDATE memory SET value=?,updated_at=? WHERE id=? AND value=?",JSON.stringify({state:"pending"}),now(),row.id,row.value);
+      if(!claim.changes)return publicationStage(projectId,key,fn,replaySafe);
+      return execute(row.id);
+    }
     if (replaySafe) {
       const value = await fn();
       run(
@@ -54,14 +76,7 @@ export async function publicationStage<T>(
     memoryKey(key),
   );
   if (!claim.changes) return publicationStage(projectId, key, fn, replaySafe);
-  const value = await fn();
-  run(
-    "UPDATE memory SET value = ?, updated_at = ? WHERE id = ?",
-    JSON.stringify({ state: "done", value }),
-    now(),
-    rid,
-  );
-  return value;
+  return execute(rid);
 }
 export async function publicationImageStage(
   p: Project,
@@ -106,4 +121,11 @@ export function publicationStageDone(projectId: string, key: string) {
     memoryKey(key),
   );
   return !!r && JSON.parse(r.value).state === "done";
+}
+
+export function publicationStageValue<T>(projectId:string,key:string):T|null {
+  const r=one<{value:string}>("SELECT value FROM memory WHERE project_id=? AND key=? ORDER BY rowid DESC LIMIT 1",projectId,memoryKey(key));
+  if(!r)return null;
+  const receipt=JSON.parse(r.value) as Receipt<T>;
+  return receipt.state==="done"?receipt.value??null:null;
 }

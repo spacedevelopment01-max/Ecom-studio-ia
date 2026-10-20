@@ -33,7 +33,7 @@ try{
  const existing=await get(ep+'/theme');
  const direction=c.input.business==='services'?'rive':'orbe';
  if(!existing.current){await page.locator('[data-initial-theme-grid]').waitFor();const name=direction==='rive'?'Atelier Rive':'ORBE';const card=page.locator('[data-initial-theme-grid] > ul > li').filter({has:page.getByText(name,{exact:false})}).first();
- const built=page.waitForResponse((r:any)=>r.url().endsWith(ep+'/theme/build')&&r.request().method()==='POST');await card.getByRole('button',{name:'Appliquer ce thème',exact:true}).click();const br=await built;assert(br.ok(),await br.text());assert.equal(br.request().postDataJSON().direction,direction);
+ const built=page.waitForResponse((r:any)=>r.url().endsWith(ep+'/theme/build')&&r.request().method()==='POST');await card.getByRole('button',{name:'Choisir ce thème',exact:true}).click();const br=await built;assert(br.ok(),await br.text());assert.equal(br.request().postDataJSON().direction,direction);
  }
  const originalVideos=(await state()).state.stages.media.data.slots.filter((s:any)=>s.kind==='video'&&s.assetId).map((s:any)=>s.assetId);
  assert((await get(ep+'/preparation/handoff')).ready,'Contrat invalidé par le choix de thème');

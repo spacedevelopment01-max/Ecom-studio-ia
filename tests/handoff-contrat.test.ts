@@ -57,7 +57,7 @@ describe("Contrat amont → thème", async () => {
     expect(r.category.source).toBe("preparation");
     expect(r.recommended).toBe("fraise");
     expect(r.alternatives.map((a) => a.id)).toEqual(["onde"]); // « rive » (prestations) exclu de la catégorie
-    expect(r.eligible).toEqual(["fraise", "onde"]); // catalogue actif seulement : jamais l'ancien catalogue en repli
+    expect(r.eligible).toEqual(["fraise", "onde", "sillon", "noctil", "traverse"]); // catalogue actif seulement : jamais l'ancien catalogue en repli
     expect(r.eligible).not.toContain("rive");
     expect(r.excluded.find((x) => x.id === "orbe")?.reason).toMatch(/e-commerce/);
     expect(projectStoreKind(p)).toMatchObject({ kind: "specialty", source: "preparation" });
