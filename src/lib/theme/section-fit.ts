@@ -77,7 +77,8 @@ export const SECTION_FIT: Record<string, SectionFit> = {
   "featured-offer": { kinds: SHOP },
   "countdown": { kinds: SHOP },
   "shipping-journey": { kinds: SHOP },
-  "cta-banner": { kinds: SHOP },
+  // Aussi pour les services : bandeau « Contact et prise de rendez-vous » de leur bibliothèque (issue #145).
+  "cta-banner": { kinds: [...SHOP, "services"] },
   "hero-split": { kinds: SHOP },
   "hero-editorial": { kinds: SHOP },
   "comparison-table": { kinds: SHOP },
@@ -85,7 +86,8 @@ export const SECTION_FIT: Record<string, SectionFit> = {
   "exploded-view": { kinds: SHOP },
   "routine-steps": { kinds: SHOP },
   "scroll-story": { kinds: SHOP },
-  "how-to": { kinds: SHOP },
+  // Aussi pour les services : « Méthode de travail » en étapes de leur bibliothèque (issue #145).
+  "how-to": { kinds: [...SHOP, "services"] },
   "precautions": { kinds: SHOP },
   "content-tabs": { kinds: SHOP },
   "animated-benefits": { kinds: SHOP },
