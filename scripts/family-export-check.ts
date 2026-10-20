@@ -1,6 +1,6 @@
 /** Interactions des sections de bibliothèque dans les thèmes EXPORTÉS WordPress / WooCommerce et PrestaShop (issue #145).
  *
- * Pour chaque famille (FRAISE et SILLON : boutique spécialisée, ORBE : e-commerce, Atelier Rive : services), ajoute les
+ * Pour chaque famille (FRAISE, SILLON, NOCTIL et TRAVERSE : boutique spécialisée, ORBE : e-commerce, Atelier Rive : services), ajoute les
  * sections interactives de la bibliothèque (carrousels, repères produits, avant / après, stories), exporte le projet
  * par le vrai moteur d'export, puis assemble une page avec :
  *  - le HTML rendu par le moteur PHP livré dans le thème exporté (même moteur que WordPress et PrestaShop) ;
@@ -40,7 +40,7 @@ const { renderPage } = await import("../src/lib/theme/render");
 type ThemeSpec = import("../src/lib/theme/spec").ThemeSpec;
 type Check = { id: string; label: string; run: string };
 /** Élément de chaque contrôle (défilé jusqu'à lui, puis capturé). */
-const TARGET: Record<string, string> = { "cv-hotspot": "[data-cv-hotspots]", "cv-gallery": "[data-cv-gallery]", "nomade": ".cv-hero", "fs-compare": "[data-fs-compare]", "fs-hotspot": "[data-fs-hotspots]", "cv-reviews": "[data-cv-reviews]", ctabs: "[data-ctabs]", ctable: "[data-ctable]", "fs-carousel": "[data-fs-carousel]" };
+const TARGET: Record<string, string> = { "cv-hotspot": "[data-cv-hotspots]", "cv-gallery": "[data-cv-gallery]", "nomade": ".cv-hero", "fs-compare": "[data-fs-compare]", "fs-hotspot": "[data-fs-hotspots]", "cv-reviews": "[data-cv-reviews]", ctabs: "[data-ctabs]", ctable: "[data-ctable]", "fs-carousel": "[data-fs-carousel]", astral: ".cv-hero", itineraire: ".cv-banner", "cv-gallery-carousel": "[data-cv-gallery]" };
 
 const OLD_SCRIPTS = ["theme.js", "reference-interactions.js", "purchase-offers.js", "editorial.js"];
 const commit = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
@@ -64,7 +64,10 @@ const LIGHTBOX = `(async () => { const g = document.querySelector('[data-cv-gall
   const d = document.querySelector('[data-cv-lightbox]'); return d && (d.open || !d.hidden) ? true : 'visionneuse non ouverte'; })()`;
 /** Profil graphique « nomade » appliqué (classes du <body> dans WordPress / PrestaShop) : halo cuivré de l'ouverture. */
 const NOMADE = `(() => { const h = document.querySelector('.cv-hero'); if (!h) return 'absent'; return getComputedStyle(h).backgroundImage.includes('radial-gradient') ? true : 'profil « nomade » non appliqué'; })()`;
-type Plan = { demo: "fraise" | "orbe" | "rive" | "sillon"; family: "specialty" | "catalog" | "services"; label: string; add: { key: string; disp: string }[]; checks: Check[] };
+/** Profil graphique appliqué dans WordPress / PrestaShop (classe du <body> et règles du profil réellement actives) : NOCTIL, TRAVERSE. */
+const PROFILE = (id: string, radius: string) => `(() => { if (!document.body.classList.contains('es-conversion-${id}')) return 'classe es-conversion-${id} absente (' + document.body.className + ')';
+  const r = getComputedStyle(document.body).getPropertyValue('--cv-radius').trim(); return r === '${radius}' ? true : 'règles du profil non appliquées (--cv-radius = ' + r + ')'; })()`;
+type Plan = { demo: "fraise" | "orbe" | "rive" | "sillon" | "noctil" | "traverse"; family: "specialty" | "catalog" | "services"; label: string; add: { key: string; disp: string }[]; checks: Check[] };
 const PLANS: Plan[] = [
   { demo: "fraise", family: "specialty", label: "FRAISE (boutique spécialisée)",
     add: [{ key: "results", disp: "before-after" }, { key: "specs", disp: "tabs" }, { key: "comparison", disp: "table" }],
@@ -85,6 +88,17 @@ const PLANS: Plan[] = [
       { id: "nomade", label: "Profil graphique « nomade » appliqué", run: NOMADE },
       { id: "cv-hotspot", label: "Repères sur le produit (thème SILLON)", run: HOTSPOT("data-cv-hotspot") },
       { id: "cv-gallery", label: "Visionneuse de la mosaïque (thème SILLON)", run: LIGHTBOX },
+    ] },
+  { demo: "noctil", family: "specialty", label: "NOCTIL (boutique spécialisée, issue #152)", add: [],
+    checks: [
+      { id: "astral", label: "Profil graphique « astral » appliqué", run: PROFILE("astral", "18px") },
+      { id: "cv-gallery-carousel", label: "Carrousel des pièces (thème NOCTIL)", run: CAROUSEL("[data-cv-gallery]") },
+      { id: "cv-gallery", label: "Visionneuse du carrousel (thème NOCTIL)", run: LIGHTBOX },
+    ] },
+  { demo: "traverse", family: "specialty", label: "TRAVERSE (boutique spécialisée, issue #152)", add: [],
+    checks: [
+      { id: "itineraire", label: "Profil graphique « itinéraire » appliqué", run: PROFILE("itineraire", "2px") },
+      { id: "cv-hotspot", label: "Repères sur le sac (thème TRAVERSE)", run: HOTSPOT("data-cv-hotspot") },
     ] },
   { demo: "rive", family: "services", label: "Atelier Rive (services)",
     add: [{ key: "testimonials", disp: "carousel" }],

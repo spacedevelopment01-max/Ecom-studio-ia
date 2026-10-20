@@ -51,7 +51,8 @@ export function ThemeGrid({ directions, current, onPick, busy, projectId, sandbo
               ) : (
                 <img src={preview} alt={t(`Aperçu de la direction ${d.name}`, `Preview of the ${d.name} direction`)} loading="lazy" className="size-full object-cover object-top transition duration-700 group-hover:scale-[1.03]" />
               )}
-              <div className="absolute left-3 top-3 flex gap-1.5">
+              {/* Pastilles à la ligne plutôt que comprimées ou coupées (ex. NOCTIL : référence, alternative, forfait et « Sombre »). */}
+              <div className="absolute inset-x-3 top-3 flex flex-wrap gap-1.5 [&>*]:whitespace-nowrap">
                 {on && <Badge tone="signal">{t("Thème actuel", "Current theme")}</Badge>}
                 {retired && <Badge tone="neutral">{t("Retiré du catalogue", "Withdrawn from catalogue")}</Badge>}
                 {reference && !on && <Badge tone="signal">{t("Thème de référence", "Reference theme")}</Badge>}

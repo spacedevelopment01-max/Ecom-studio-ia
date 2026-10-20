@@ -158,7 +158,34 @@ Descriptions uniques (60 à 160 caractères), canonical, fil d'Ariane, `Product`
 
 ## Vérifications
 
-VERIFS
+Toutes les vérifications ont été faites **en copie isolée** (bases temporaires, aucune IA, aucun réseau, aucune donnée
+de Thomas). Commit testé : indiqué dans la PR (le même que celui poussé).
+
+| Contrôle | Résultat |
+|---|---|
+| TypeScript (`npx tsc --noEmit`) | aucune erreur |
+| Tests (`npx vitest run`, suite complète) | voir la PR (résultat exact du commit testé) ; 26 tests dédiés dans `tests/noctil-traverse.test.ts` |
+| Theme Check (Shopify) | 16 cas sur 16 sans erreur : 7 thèmes en FR et EN + repli « services » de NOCTIL et TRAVERSE (4 avertissements connus, communs à tous) |
+| Distinction des compositions | aucune paire de thèmes du catalogue (37 directions) à 50 % ou plus de sections communes, accueil et services ; ouvertures toutes différentes |
+| Médias | 32 fichiers conformes au manifeste (octets, dimensions, SHA-256) ; 31 utilisés, TRAVERSE `ambiance-04` absent du rendu et des exports (test) |
+| Export statique complet (`reference-static-preview.ts`) | 9 pages par thème, aucun fichier manquant |
+| Parcours des pages exportées (`reference-static-check.ts`, 360 / 390 / 430 / 1440) | NOCTIL et TRAVERSE : 8 pages × 4 largeurs, un seul H1 par page, aucun débordement horizontal, menu, fiche, panier (ajout, vide), recherche, formulaire de contact (validation sans envoi) |
+| Non-régression des 5 thèmes existants (base `f0084332` contre la branche) | HTML exporté identique (seuls changent des noms d'images tirés au hasard) ; CSS uniquement complété par les règles NOCTIL / TRAVERSE ; captures : 275 identiques, 4 à écarts de quelques pixels (anticrénelage, pastille du panier), examinées une à une : aucune différence visible |
+| Démos complètes avant le choix (`theme-demo-choice-check.ts`, vrai studio Next.js + worker) | NOCTIL et TRAVERSE : galerie, démo entière ordinateur puis 390 px, fiche par le sélecteur, page par le menu de la démo ; **empreinte du projet identique avant / après la visite, aucune écriture** ; « Choisir ce thème » en double-clic + demande simultanée : **une seule tâche, une seule version** ; éditeur sur le projet « Atelier Verre » sans aucun texte de démo, guide des informations à compléter |
+| Édition dans le studio (`family-studio-check.ts`) | NOCTIL et TRAVERSE : galerie des 20 fonctions de la famille, fonction d'une autre famille introuvable, ajout, changement de disposition (titre conservé), titre, effets, déplacement, en-tête et pied (disposition + texte), **rechargement : tout conservé** ; animations réduites : tout le contenu visible |
+| Exports WordPress / PrestaShop (`family-export-check.ts`) | NOCTIL : profil « astral » actif, carrousel des pièces, visionneuse ; TRAVERSE : profil « itinéraire » actif, repères sur le sac ; aucun débordement, aucune erreur de script |
+| Export Shopify / WooCommerce / PrestaShop (tests) | ZIP produits pour les deux démos, médias présents, aucun chemin du poste de développement |
+| Galerie « Thèmes » | correction : les pastilles (référence, alternative, forfait, « Sombre ») passent à la ligne au lieu d'être coupées |
+
+Corrections faites pendant la vérification : repli « services » de NOCTIL recomposé (trop proche de TRAVERSE), script
+de contrôle adapté à la page « Aide » (le formulaire de contact de NOCTIL / TRAVERSE y est) et au sous-menu de TRAVERSE
+ouvert au survol (la souris du robot restait dessus ; comportement normal, identique à ORBE), lien de menu visible
+choisi dans le parcours studio.
+
+**Site de services (repli, si un projet de services choisissait ces thèmes)** : NOCTIL — ouverture empilée,
+prestations en cartes, gros plans en colonnes, méthode, bandeau d'appel, FAQ en cartes, prise de contact ; TRAVERSE —
+bannière visuel à droite, trois temps en liste, prestations en liste, alternance, méthode verticale, image et texte,
+FAQ en lignes, prise de contact. Ces thèmes restent proposés aux boutiques spécialisées seulement.
 
 ## Limites connues
 

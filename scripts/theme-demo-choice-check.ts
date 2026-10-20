@@ -23,9 +23,9 @@ if (process.env.DATA_DIR || process.env.DATABASE_FILE) throw new Error("Base exi
 /** Thème parcouru puis choisi (issue #152 : NOCTIL et TRAVERSE par le même parcours que SILLON). */
 const T = (process.argv[3] ?? "sillon") as "sillon" | "noctil" | "traverse";
 const THEME = {
-  sillon: { brand: /SILLON/, profile: "nomade", menuPage: "page-usages.html", leak: /SILLON|espresso|où tout coule|avant de partir|Boutique de démonstration/i },
-  noctil: { brand: /NOCTIL/, profile: "astral", menuPage: "page-univers.html", leak: /NOCTIL|galaxie|la nuit entre|une autre nuit|Boutique de démonstration/i },
-  traverse: { brand: /TRAVERSE/, profile: "itineraire", menuPage: "page-carnet-de-route.html", leak: /TRAVERSE|quai de départ|Carnet de route|trois temps|Boutique de démonstration/i },
+  sillon: { brand: /SILLON/, profile: "nomade", menuPage: "page-usages.html", menuLabel: "Usages", leak: /SILLON|espresso|où tout coule|avant de partir|Boutique de démonstration/i },
+  noctil: { brand: /NOCTIL/, profile: "astral", menuPage: "page-univers.html", menuLabel: "Une galaxie par pièce", leak: /NOCTIL|galaxie|la nuit entre|une autre nuit|Boutique de démonstration/i },
+  traverse: { brand: /TRAVERSE/, profile: "itineraire", menuPage: "page-carnet-de-route.html", menuLabel: "Carnet de route", leak: /TRAVERSE|quai de départ|Carnet de route|trois temps|Boutique de démonstration/i },
 }[T];
 const demosDir = process.env.THEME_DEMOS_DIR; if (!demosDir || !fs.existsSync(path.join(demosDir, T, "accueil.html"))) throw new Error("THEME_DEMOS_DIR : démos préparées requises (scripts/prepare-theme-demos.ts)");
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "ecs-demo-choice-")); process.env.DATA_DIR = temp; process.env.STOCK_OFFLINE = "1";
@@ -120,11 +120,12 @@ try {
   await demoFrame().locator(".es-product__title").first().waitFor({ timeout: 30000 }); await page.waitForTimeout(1000);
   await shot(page, "05-demo-fiche");
   // Navigation par un menu de la démo elle-même : le sélecteur suit la page affichée.
-  await demoFrame().locator(`header a[href='${THEME.menuPage}']`).first().click();
+  // Lien visible du menu (TRAVERSE : le même lien existe aussi dans les encarts du sous-menu, fermé).
+  await demoFrame().locator(`header a[href='${THEME.menuPage}'] >> visible=true`).first().click();
   await page.waitForFunction((want) => (document.querySelector("[data-demo-pages]") as HTMLSelectElement | null)?.value === want, THEME.menuPage, { timeout: 30000 });
   await page.waitForTimeout(1000);
   await shot(page, "06-demo-menu-usages");
-  steps.push({ step: "navigation : fiche produit par le sélecteur, page « Usages » par le menu de la démo", ok: true });
+  steps.push({ step: `navigation : fiche produit par le sélecteur, page « ${THEME.menuLabel} » par le menu de la démo`, ok: true });
   // Téléphone.
   await page.locator("[data-device='mobile']").click();
   await demoFrame().locator(`body[data-conversion='${THEME.profile}']`).waitFor({ timeout: 30000 }); await page.waitForTimeout(1200);
