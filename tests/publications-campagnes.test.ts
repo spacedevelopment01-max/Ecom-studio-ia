@@ -166,7 +166,7 @@ describe("Campagnes : devis, reprise HTTP et statut réel de la tâche", () => {
     run("UPDATE jobs SET status='running' WHERE id=?",own.id);
     failJob(getJob(own.id)!,new Error("Fichier simulé non enregistré"),{permanent:true});
     enqueue({userId:p.userId,projectId:p.id,type:"image.ai_post",payload:{request:{as:"post"}}});
-    const foreign=seedImageFixture(p.userId,"restaurant");
+    const foreign=seedImageFixture(p.userId,"restaurant");grantProjectPlan(foreign,"dominer");
     enqueue({userId:p.userId,projectId:foreign,type:"image.ai_post",payload:{request:{as:"ad"}}});
     for(let i=0;i<2;i++){
       const r=await route.GET(new Request("http://localhost"),{params:Promise.resolve({id:p.id})});

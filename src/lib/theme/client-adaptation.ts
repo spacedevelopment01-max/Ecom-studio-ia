@@ -23,6 +23,7 @@ export type ContentSlot = {
     block?: string;
     field: string;
     role: MediaRole;
+    aspect?: string;
     assetId?: string;
     file?: string;
     description?: string;
@@ -103,8 +104,9 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
     const en = spec.language === 'en', t = (fr: string, enText: string) => en ? enText : fr;
     ctx?.progress(.3, t('Préparation des pages et des emplacements du thème', 'Preparing theme pages and placements'));
     const inventory = await inventoryClientMedia(p), pool = inventory.usable;
-    const plan: ClientContentPlan = { version: 1, sourceCommit: shapes.sourceCommit, contextHash: clientThemeContext(p), inputHash: stableHash('client-theme-content', { engine: '154.1', shapes: shape, direction: spec.direction, brand: p.brand, product: p.product, services: p.services, copy, media: pool }), status: 'to_verify', pages: [], slots: [], issues: [], excluded: inventory.excluded, generationRequests: [] };
+    const plan: ClientContentPlan = { version: 1, sourceCommit: shapes.sourceCommit, contextHash: clientThemeContext(p), inputHash: stableHash('client-theme-content', { engine: '154.2', shapes: shape, direction: spec.direction, brand: p.brand, product: p.product, services: p.services, copy, media: pool }), status: 'to_verify', pages: [], slots: [], issues: [], excluded: inventory.excluded, generationRequests: [] };
     const labels: Record<string, string> = { home: p.brand?.name ?? p.name, story: t('Notre histoire', 'Our story'), uses: t('En situation', 'In use'), details: t('Utilisation et détails', 'Use and details'), contact: t('Questions et contact', 'Questions and contact'), faq: t('Questions fréquentes', 'Frequently asked questions'), shipping: t('Livraison et retours', 'Shipping and returns'), legal: t('Informations légales', 'Legal information'), services: t('Nos prestations', 'Our services'), portfolio: t('Réalisations documentées', 'Documented projects') };
+    Object.assign(labels, { privacy: t('Confidentialité', 'Privacy'), terms: t('Conditions générales', 'Terms and conditions'), guide: t('Bien choisir', 'Choosing well'), editorial: t('Comprendre le produit', 'Understanding the product'), showcase: t('En détail', 'In detail') });
     const templateRole = (key: string) => key === 'index' ? 'home' : key.startsWith('product') ? 'product' : shape.pages.find(x => `page.${x.suffix}` === key)?.role ?? 'details';
     const existingPages = new Map(spec.store.pages.map(x => [x.template_suffix, x]));
     // Keep the native store's stable page identities where possible; new page roles have neutral project-independent names.
@@ -127,8 +129,10 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
         const role = templateRole(template), used = new Set<string>(), sections: Record<string, SectionInstance> = {};
         const page = { template, role, sections: [] as ClientContentPlan['pages'][number]['sections'] };
         plan.pages.push(page);
-        const pageIssues = (sid: string, code: string, field?: string, block?: string) => { if (!plan.issues.some(i => i.page === template && i.section === sid && i.code === code && i.field === field && i.block === block))
-            plan.issues.push({ page: template, section: sid, code, ...(field ? { field } : {}), ...(block ? { block } : {}) }); };
+        const pageIssues = (sid: string, code: string, field?: string, block?: string) => {
+            if (!plan.issues.some(i => i.page === template && i.section === sid && i.code === code && i.field === field && i.block === block))
+                plan.issues.push({ page: template, section: sid, code, ...(field ? { field } : {}), ...(block ? { block } : {}) });
+        };
         for (const sid of layout.order) {
             const sh = layout.sections[sid], n = occurrences.get(`${template}:${sh.type}`) ?? 0;
             occurrences.set(`${template}:${sh.type}`, n + 1);
@@ -148,9 +152,12 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
             const bindMedia = (settings: Record<string, unknown>, field: string, wanted: MediaRole, aspect: number | null, block?: string) => {
                 // Slot identity is stable across retries; another offer's media are never borrowed.
                 const desiredKey = [template, sid, block ?? '', field].join(':');
+                const ratioName = String(settings.ratio ?? settings.image_ratio ?? section.settings.ratio ?? section.settings.image_ratio ?? '');
+                const frame = /portrait|tall/.test(ratioName) ? .8 : /square/.test(ratioName) ? 1 : /wide|landscape/.test(ratioName) ? 16 / 9 : aspect;
+                const targetAspect = wanted === 'video' ? (frame && frame < 1 ? '9:16' : '16:9') : frame && frame < .7 ? '9:16' : frame && frame < .95 ? '4:5' : frame && frame > 1.2 ? '16:9' : '1:1';
                 const explicit = pool.find(a => a.placement === `theme:${wanted}:${plan.contextHash}:${desiredKey}` && !used.has(a.id));
-                const asset = explicit ?? chooseClientMedium(pool.filter(a => !a.placement && (!a.subject || a.subject === 'product:main' || p.business === 'services')), wanted, used, aspect);
-                const slot: ContentSlot = { key: desiredKey, page: template, section: sid, ...(block ? { block } : {}), field, role: wanted, alignment: asset?.reviewed ? 'declared' : asset ? 'to_review' : 'missing' };
+                const asset = explicit ?? chooseClientMedium(pool.filter(a => !a.placement && (!a.subject || a.subject === 'product:main' || p.business === 'services')), wanted, used, frame);
+                const slot: ContentSlot = { key: desiredKey, page: template, section: sid, ...(block ? { block } : {}), field, role: wanted, aspect: targetAspect, alignment: asset?.reviewed ? 'declared' : asset ? 'to_review' : 'missing' };
                 plan.slots.push(slot);
                 if (!asset) {
                     settings[field] = '';
@@ -162,12 +169,21 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
                 onlyFiles[asset.file] = asset.id;
                 Object.assign(slot, { assetId: asset.id, file: asset.file, description: asset.description });
                 const defs = block ? schema?.blocks.find(x => x.type === section.blocks?.[block]?.type)?.settings : schema?.settings;
-                const set = (key: string, value: unknown) => { if (defs?.some(d => d.id === key))
-                    settings[key] = value; };
+                const set = (key: string, value: unknown) => {
+                    if (defs?.some(d => d.id === key))
+                        settings[key] = value;
+                };
                 const alt = asset.description || `${p.business === 'services' ? p.brand?.name : p.product.name} — ${roleNames[wanted][en ? 1 : 0]}`;
                 set(field === 'second_asset' ? 'second_alt' : 'image_alt', alt);
-                set('image_position', asset.focal.desktop);
-                set('image_mobile_position', asset.focal.mobile);
+                const position = (key: string, value: string) => { const def = defs?.find(d => d.id === key); if (def && (['text', 'textarea'].includes(def.type) || def.options?.some(o => o.value === value)))
+                    settings[key] = value; };
+                position('image_position', asset.focal.desktop);
+                position('image_mobile_position', asset.focal.mobile);
+                const xy = asset.focal.desktop.split(/\s+/).map(parseFloat);
+                if (xy.length === 2 && xy.every(Number.isFinite)) {
+                    set('focus_x', Math.min(100, Math.max(0, xy[0])));
+                    set('focus_y', Math.min(100, Math.max(0, xy[1])));
+                }
                 if (!asset.description)
                     pageIssues(sid, 'image_description_to_review', field, block);
                 if (!asset.reviewed)
@@ -230,6 +246,18 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
                     for (const k of Object.keys(b.settings))
                         if (mediaKey(k))
                             b.settings[k] = '';
+            if (sh.type === 'legal-page') {
+                const page = spec.store.pages.find(x => `page.${x.template_suffix}` === template);
+                const body = role === 'shipping' ? copy.shipping.body_html : page?.body_html ?? '';
+                const provided = genuine(plain(body)) && !/à compléter|to complete|placeholder/i.test(plain(body));
+                section.settings = { ...section.settings, heading: page?.title ?? labels[role] ?? labels.legal, intro: '', source: 'blocks' };
+                section.blocks = { client_part: { type: 'part', settings: { title: provided ? (page?.title ?? labels[role]) : t('Informations à fournir', 'Information to provide'), text: provided ? body : paragraph(t('Ces informations doivent être fournies et vérifiées par le professionnel avant publication.', 'The business must provide and verify this information before publication.')) } } };
+                section.block_order = ['client_part'];
+                if (!provided)
+                    pageIssues(sid, 'legal_information_required');
+            }
+            if (sectionPurpose(sh.type) === 'opening' && plan.issues.some(i => i.page === template && i.section === sid && i.code === 'media_missing'))
+                section.settings.media_role = t('Vue d’ouverture du projet à préparer', 'Project opening image to prepare');
             if (sh.type === 'page-title') {
                 section.settings = { ...section.settings, heading: spec.store.pages.find(x => `page.${x.template_suffix}` === template)?.title ?? labels[role] ?? p.name };
             }
@@ -242,9 +270,9 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
             if (sh.type === 'main-product' && p.business === 'services')
                 pageIssues(sid, 'product_page_not_for_services');
             const blocked = plan.issues.some(i => i.page === template && i.section === sid && !/to_review$/.test(i.code));
-            section.disabled = blocked;
+            section.disabled = blocked && sectionPurpose(sh.type) !== 'opening' && sh.type !== 'legal-page';
             sections[sid] = section;
-            page.sections.push({ id: sid, type: sh.type, visible: !blocked, purpose: sectionPurpose(sh.type) });
+            page.sections.push({ id: sid, type: sh.type, visible: !section.disabled, purpose: sectionPurpose(sh.type) });
         }
         spec.templates[template] = { sections, order: [...layout.order] };
     }
@@ -281,7 +309,7 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
         const reference = pool.filter(a => a.kind === 'image' && (slot.role === 'video' ? ['packshot', 'opening', 'use'].includes(a.role) : a.role === 'packshot')).slice(0, 3).map(a => a.id);
         if (slot.role === 'realization')
             continue; // An authentic portfolio cannot be synthesized.
-        plan.generationRequests.push({ key, role: slot.role, kind: slot.role === 'video' ? 'video' : 'image', aspect: slot.role === 'packshot' || slot.role === 'detail' ? '1:1' : '16:9', request: t(`Créer une ${roleNames[slot.role][0].toLowerCase()} de ${p.product.name}. ${p.product.summary}. Respecter le produit des références et l'identité ${p.brand?.name ?? p.name}. Aucun fait ajouté, aucune personne. Emplacement : ${slot.page} / ${slot.section}.`, `Create a ${roleNames[slot.role][1].toLowerCase()} of ${p.product.name}. ${p.product.summary}. Preserve the reference product and ${p.brand?.name ?? p.name} identity. No invented facts or people. Placement: ${slot.page} / ${slot.section}.`), referenceAssetIds: reference, people: false, requiresQuote: true, requiresConsent: true });
+        plan.generationRequests.push({ key, role: slot.role, kind: slot.role === 'video' ? 'video' : 'image', aspect: slot.aspect ?? (slot.role === 'packshot' || slot.role === 'detail' ? '1:1' : '16:9'), request: t(`Créer une ${roleNames[slot.role][0].toLowerCase()} de ${p.product.name}. ${p.product.summary}. Respecter le produit des références et l'identité ${p.brand?.name ?? p.name}. Aucun fait ajouté, aucune personne. Emplacement : ${slot.page} / ${slot.section}.`, `Create a ${roleNames[slot.role][1].toLowerCase()} of ${p.product.name}. ${p.product.summary}. Preserve the reference product and ${p.brand?.name ?? p.name} identity. No invented facts or people. Placement: ${slot.page} / ${slot.section}.`), referenceAssetIds: reference, people: false, requiresQuote: true, requiresConsent: true });
     }
     if (!logo)
         plan.issues.push({ page: 'group:header', section: 'logo', code: 'project_logo_missing' });
@@ -300,11 +328,13 @@ export async function verifyAdaptationFiles(spec: ThemeSpec, p: Project) {
     const invalid = new Set(Object.entries(spec.files).filter(([, id]) => !allowed.has(id)).map(([file]) => file));
     for (const file of invalid)
         delete spec.files[file];
-    const inspect = (settings: Record<string, unknown>, page: string, section: string, block?: string) => { for (const [field, value] of Object.entries(settings))
-        if (typeof value === 'string' && invalid.has(value)) {
-            settings[field] = '';
-            plan.issues.push({ page, section, field, ...(block ? { block } : {}), code: 'file_missing_or_undecodable' });
-        } };
+    const inspect = (settings: Record<string, unknown>, page: string, section: string, block?: string) => {
+        for (const [field, value] of Object.entries(settings))
+            if (typeof value === 'string' && invalid.has(value)) {
+                settings[field] = '';
+                plan.issues.push({ page, section, field, ...(block ? { block } : {}), code: 'file_missing_or_undecodable' });
+            }
+    };
     for (const [page, tpl] of Object.entries(spec.templates))
         for (const [sid, s] of Object.entries(tpl.sections)) {
             inspect(s.settings, page, sid);
@@ -348,22 +378,33 @@ export async function verifyAdaptationFiles(spec: ThemeSpec, p: Project) {
             slot.alignment = media.reviewed ? 'declared' : 'to_review';
         }
     }
-    const hasData = (page: string, section: string) => { const s = spec.templates[page]?.sections[section]; if (!s || s.disabled || textMissing(s))
-        return false; const blocks = Object.values(s.blocks ?? {}); if (/review|testimonial|quote/.test(s.type))
-        return blocks.some(b => genuine(b.settings.quote ?? b.settings.text) && genuine(b.settings.author ?? b.settings.name)) || genuine(s.settings.quote) && genuine(s.settings.author); if (s.type === 'cv-hotspots')
-        return blocks.some(b => genuine(b.settings.title) && typeof b.settings.x === 'number' && typeof b.settings.y === 'number'); return false; };
-    plan.issues = plan.issues.filter(issue => { if (['media_missing', 'image_description_to_review', 'image_alignment_to_review', 'file_missing_or_undecodable'].includes(issue.code)) {
-        const slot = plan.slots.find(s => s.page === issue.page && s.section === issue.section && s.block === issue.block && s.field === issue.field);
-        if (slot?.assetId) {
-            if (issue.code === 'media_missing' || issue.code === 'file_missing_or_undecodable')
-                return false;
-            if (issue.code === 'image_alignment_to_review' && slot.alignment === 'declared')
-                return false;
-            const media = inventory.usable.find(a => a.id === slot.assetId);
-            if (issue.code === 'image_description_to_review' && media?.description)
-                return false;
+    const hasData = (page: string, section: string) => {
+        const s = spec.templates[page]?.sections[section];
+        if (!s || s.disabled || textMissing(s))
+            return false;
+        const blocks = Object.values(s.blocks ?? {});
+        if (/review|testimonial|quote/.test(s.type))
+            return blocks.some(b => genuine(b.settings.quote ?? b.settings.text) && genuine(b.settings.author ?? b.settings.name)) || genuine(s.settings.quote) && genuine(s.settings.author);
+        if (s.type === 'cv-hotspots')
+            return blocks.some(b => genuine(b.settings.title) && typeof b.settings.x === 'number' && typeof b.settings.y === 'number');
+        return false;
+    };
+    plan.issues = plan.issues.filter(issue => {
+        if (['media_missing', 'image_description_to_review', 'image_alignment_to_review', 'file_missing_or_undecodable'].includes(issue.code)) {
+            const slot = plan.slots.find(s => s.page === issue.page && s.section === issue.section && s.block === issue.block && s.field === issue.field);
+            if (slot?.assetId) {
+                if (issue.code === 'media_missing' || issue.code === 'file_missing_or_undecodable')
+                    return false;
+                if (issue.code === 'image_alignment_to_review' && slot.alignment === 'declared')
+                    return false;
+                const media = inventory.usable.find(a => a.id === slot.assetId);
+                if (issue.code === 'image_description_to_review' && media?.description)
+                    return false;
+            }
         }
-    } if (['authentic_reviews', 'confirmed_hotspot_positions', 'information_required'].includes(issue.code) && hasData(issue.page, issue.section))
-        return false; return true; });
+        if (['authentic_reviews', 'confirmed_hotspot_positions', 'information_required'].includes(issue.code) && hasData(issue.page, issue.section))
+            return false;
+        return true;
+    });
     plan.status = plan.issues.length ? 'partial' : 'to_verify';
 }

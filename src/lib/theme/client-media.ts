@@ -1,11 +1,13 @@
 /** Native, scoped inventory. Descriptive metadata are evidence, never an automatic visual certification. */
 import sharp from 'sharp';
+import { videoDelivery } from '../media/delivery-check';
 import { createHash } from 'node:crypto';
 import { all, json } from '../db';
 import { assetData, getAsset, type Asset } from '../library';
 import { inspectSiteMediaLineage } from '../project-handoff/media-pool';
 import { isAutoUsable } from '../quality/usable';
 import type { Project } from '../projects';
+const decodedVideos = new Set<string>();
 export type MediaRole = 'opening' | 'packshot' | 'detail' | 'use' | 'method' | 'realization' | 'video' | 'logo';
 export type ClientMedium = {
     id: string;
@@ -67,8 +69,17 @@ export async function inventoryClientMedia(p: Project): Promise<MediaInventory> 
                 if (!width || !height)
                     throw Error('dimensions');
             }
-            else if (!width || !height || !a.duration)
-                throw Error('video metadata');
+            else {
+                if (!width || !height || !a.duration)
+                    throw Error('video metadata');
+                const key = a.id + ':' + digest;
+                if (!decodedVideos.has(key)) {
+                    await videoDelivery(p.id, a.id);
+                    decodedVideos.add(key);
+                    if (decodedVideos.size > 512)
+                        decodedVideos.delete(decodedVideos.values().next().value!);
+                }
+            }
             const role = roleOf(a, m);
             if (!['opening', 'packshot', 'detail', 'use', 'method', 'realization', 'video', 'logo'].includes(role)) {
                 excluded.push({ id: a.id, reason: 'unknown_media_role' });

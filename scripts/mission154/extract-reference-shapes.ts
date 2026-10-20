@@ -35,7 +35,7 @@ try {
             }
             templates[key] = { sections, order: t.order };
         }
-        result.themes[id] = { templates, pages: spec.store.pages.map(p => ({ suffix: p.template_suffix, role: /contact|aide|help/.test(p.handle) ? 'contact' : /faq|questions/.test(p.handle) ? 'faq' : /livraison|shipping/.test(p.handle) ? 'shipping' : /utilisation|caracteristiques|how|detail/.test(p.handle) ? 'details' : /usage|carnet|piece|inspiration/.test(p.handle) ? 'uses' : /legal|mention/.test(p.handle) ? 'legal' : /prestation|service/.test(p.handle) ? 'services' : /projet|realisation|portfolio/.test(p.handle) ? 'portfolio' : 'story' })) };
+        result.themes[id] = { templates, pages: spec.store.pages.map(p => ({ suffix: p.template_suffix, role: /confidential|privacy/.test(p.handle) ? 'privacy' : /condition|terms/.test(p.handle) ? 'terms' : p.handle === 'listicle' ? 'guide' : p.handle === 'advertorial' ? 'editorial' : p.handle === 'sections' ? 'showcase' : /contact|aide|help/.test(p.handle) ? 'contact' : /faq|questions/.test(p.handle) ? 'faq' : /livraison|shipping/.test(p.handle) ? 'shipping' : /utilisation|caracteristiques|how|detail/.test(p.handle) ? 'details' : /usage|carnet|piece|inspiration/.test(p.handle) ? 'uses' : /legal|mention/.test(p.handle) ? 'legal' : /prestation|service/.test(p.handle) ? 'services' : /projet|realisation|portfolio/.test(p.handle) ? 'portfolio' : 'story' })) };
         console.log(id, Object.keys(templates).length, 'templates', Object.values(templates).reduce((n: number, t: any) => n + t.order.length, 0), 'sections');
     }
     fs.writeFileSync('src/lib/theme/reference-shapes.json', JSON.stringify(result, null, 2) + '\n');

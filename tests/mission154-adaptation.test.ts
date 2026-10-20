@@ -1,5 +1,18 @@
-const isolatedDatabase = vi.hoisted(() => { const fs=process.getBuiltinModule('fs');const root=process.env.DATA_DIR;if(!root)throw Error('Isolated tests required');const globals=globalThis as {__ecomDb?:{close():void}},previous=globals.__ecomDb;delete globals.__ecomDb;vi.stubEnv('DATA_DIR',fs.mkdtempSync(root+'/mission154-'));return{previous}; });
-afterAll(()=>{const globals=globalThis as {__ecomDb?:{close():void}};if(globals.__ecomDb!==isolatedDatabase.previous)globals.__ecomDb?.close();if(isolatedDatabase.previous)globals.__ecomDb=isolatedDatabase.previous;else delete globals.__ecomDb;vi.unstubAllEnvs();});
+const isolatedDatabase = vi.hoisted(() => { const fs = process.getBuiltinModule('fs'); const root = process.env.DATA_DIR; if (!root)
+    throw Error('Isolated tests required'); const globals = globalThis as {
+    __ecomDb?: {
+        close(): void;
+    };
+}, previous = globals.__ecomDb; delete globals.__ecomDb; vi.stubEnv('DATA_DIR', fs.mkdtempSync(root + '/mission154-')); return { previous }; });
+afterAll(() => { const globals = globalThis as {
+    __ecomDb?: {
+        close(): void;
+    };
+}; if (globals.__ecomDb !== isolatedDatabase.previous)
+    globals.__ecomDb?.close(); if (isolatedDatabase.previous)
+    globals.__ecomDb = isolatedDatabase.previous;
+else
+    delete globals.__ecomDb; vi.unstubAllEnvs(); });
 import { it, expect, beforeEach, afterEach, afterAll, vi } from 'vitest';
 import fs from 'node:fs';
 import sharp from 'sharp';
@@ -25,7 +38,9 @@ it.each(['fraise', 'onde', 'sillon', 'noctil', 'traverse', 'orbe', 'rive'] as co
     expect(current).toBeTruthy();
     const s = current.spec;
     expect(validateSpec(s)).toEqual([]);
-    expect(s.meta?.adaptation).toBeTruthy();const hero=s.templates.index.sections[s.templates.index.order[0]];expect(hero.settings.button_label??hero.settings.cta_label).toBe(f.copy.hero.cta);
+    expect(s.meta?.adaptation).toBeTruthy();
+    const hero = s.templates.index.sections[s.templates.index.order[0]];
+    expect(hero.settings.button_label ?? hero.settings.cta_label).toBe(f.copy.hero.cta);
     expect(s.store.shopName).toBe(f.brand);
     const reference = (shapes.themes as any)[direction];
     for (const [key, value] of Object.entries<any>(reference.templates)) {
@@ -34,6 +49,10 @@ it.each(['fraise', 'onde', 'sillon', 'noctil', 'traverse', 'orbe', 'rive'] as co
         const target = key === 'product' && s.store.product.template_suffix ? `product.${s.store.product.template_suffix}` : key;
         expect(s.templates[target].order.map(id => id.replace(/^p_[a-f0-9]{8}_/, '')), key).toEqual(value.order.map((id: string) => id.replace(/^p_[a-f0-9]{8}_/, '')));
         expect(s.templates[target].order.map(id => s.templates[target].sections[id].type)).toEqual(value.order.map((id: string) => value.sections[id].type));
+        for (const [i, id] of value.order.entries())
+            for (const [key, setting] of Object.entries(value.sections[id].settings))
+                if (!['heading_tag', 'focus_x', 'focus_y'].includes(key))
+                    expect(s.templates[target].sections[s.templates[target].order[i]].settings[key], `${direction} ${key} reference composition`).toEqual(setting);
     }
     expect(s.meta!.adaptation!.slots.some(x => x.assetId)).toBe(true);
     expect(Object.values(s.files).every(id => getAsset(id)?.project_id === f.pid)).toBe(true);
@@ -53,6 +72,12 @@ it.each(['fraise', 'onde', 'sillon', 'noctil', 'traverse', 'orbe', 'rive'] as co
     expect(html).not.toContain('theme-assets/noctil');
     expect(html).not.toContain('theme-assets/traverse');
     expect((html.match(/<h1(?:\s|>)/g) ?? []).length).toBe(1);
+    for (const page of s.store.pages) {
+        if (page.status === 'draft')
+            continue;
+        const rendered = (await fr(() => renderPage({ spec: s, base: '', files: compileTheme(s), cart: [] }, '/pages/' + page.handle, new URLSearchParams()))).html;
+        expect((rendered.match(/<h1(?:\s|>)/g) ?? []).length, page.handle).toBe(1);
+    }
     expect(one<{
         n: number;
     }>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=?', f.pid)?.n).toBe(0);
@@ -63,6 +88,7 @@ it('média incomplet et fichier disparu : état partiel, acquis conservés et pr
     let s = currentTheme(f.pid)!.spec;
     const acquired = [...Object.values(s.files)];
     expect(s.meta!.adaptation!.status).toBe('partial');
+    expect(s.templates.index.sections[s.templates.index.order[0]].disabled).toBe(false);
     expect(s.meta!.adaptation!.generationRequests.length).toBeGreaterThan(0);
     for (const r of s.meta!.adaptation!.generationRequests) {
         expect(r.requiresQuote).toBe(true);

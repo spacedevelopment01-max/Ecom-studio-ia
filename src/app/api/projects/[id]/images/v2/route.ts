@@ -1,4 +1,4 @@
-import { placementRequest } from "@/lib/theme/placement-request";
+import { checkedPlacementRequest } from "@/lib/theme/placement-request";
 import { z } from "zod";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
@@ -96,7 +96,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     return ok({ jobId: job.id });
   }
   const r = b.request ?? {};
-  const placement=r.themePlacement?placementRequest(p.id,r.themePlacement):null;
+  const placement=r.themePlacement?await checkedPlacementRequest(p.id,r.themePlacement):null;
   if(placement&&placement.request.kind!=="image")throw new HttpError(400,L("Utilisez le parcours vidéo pour cet emplacement.","Use the video workflow for this placement."));
   // Images finales 100 % IA : une image demandée à l'IA n'est jamais remplacée par une photo libre de droits (aucune
   // bascule silencieuse). La recherche de photos libres reste possible seulement quand elle est demandée seule

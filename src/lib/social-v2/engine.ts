@@ -17,7 +17,7 @@ import { lintClaims } from "../ai/tasks";
 import { EUR } from "../billing";
 import { budgetPctText } from "../ai/budget-pct";
 import { parseSocialAsk } from "./intent";
-import { createPlanV2, type PlanRequest } from "./planner";
+import { createPlanV2, publishingDates, DEFAULT_SLOTS, atZoned, type PlanRequest } from "./planner";
 import { adaptForPlatform, nativeFormatFor, PLATFORMS, type Platform, type PostFormat } from "./platforms";
 import { afterEdit, approvePosts } from "./approval";
 import { EditorialSchema, type Editorial } from "./creative-contract";
@@ -68,6 +68,16 @@ export function planFromAsk(p: Project, text: string, o: { at?: number; lang?: "
     formatMix: ask.formatMix ?? undefined,
     lang: o.lang,
   };
+  // The request usually starts tomorrow. A span of seven dates can then end beyond the existing
+  // rolling horizon, especially around midnight in the project's timezone. Prepare only complete
+  // days inside that same limit and explain the reduction; the planner/worker guards stay unchanged.
+  if(active){
+    const cutoff=now()+PLANS[active].calendarDays*86400000+3600000;
+    const times=DEFAULT_SLOTS.slice(0,req.perDay);
+    const available=publishingDates(req).filter(day=>times.every(time=>atZoned(day,time,tz)<=cutoff)).length;
+    if(!available)throw new Error("La date de début dépasse l’horizon de programmation de votre forfait. Choisissez une date plus proche.");
+    if(available<ask.days){ask.notes.push(`${ask.days} jours demandés depuis la date de début : ${available} jours complets préparés dans l’horizon de ${PLANS[active].calendarDays} jours à l’avance de votre forfait`);ask.days=available;req.days=available;}
+  }
   const r = createPlanV2(p, req, { planId: o.planId });
   const notes = [...ask.notes];
   if (ask.schedule) notes.push("programmation demandée : elle se fera après votre approbation des contenus (rien ne part sans accord)");

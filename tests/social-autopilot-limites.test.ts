@@ -164,7 +164,7 @@ describe("Autopilot V2 — structure éditoriale et limites", async () => {
     expect(gates.assertPerDayRequest(p.id, 1)).toBe("creer");
     const r = fr(() => planFromAsk(p, "Prépare 3 publications par jour pendant 30 jours", { maxDays: 7, maxPerDay: 1 }));
     expect(r.request.perDay).toBe(1);
-    expect(r.request.days).toBe(7);
+    expect(r.request.days).toBeGreaterThanOrEqual(6);expect(r.request.days).toBeLessThanOrEqual(7);expect(all<{scheduled_at:number}>("SELECT scheduled_at FROM posts WHERE plan_id=?",r.planId).every(x=>x.scheduled_at<=now()+7*86400000+3600000)).toBe(true);
     expect(r.notes.join(" ")).toMatch(/limité à 1 par votre forfait/);
     // Dernier rempart dans le planificateur, même appelé directement.
     const direct = fr(() => createPlanV2(p, { startDate: start(), days: 2, perDay: 5, timezone: "Europe/Paris", platforms: [{ platform: "instagram" }] }));

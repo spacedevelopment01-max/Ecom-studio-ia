@@ -111,7 +111,7 @@ export function targetedCorrection(d: GateDecision, r: ImageReview | null, brief
 const hash = (s: string) => crypto.createHash("sha256").update(s).digest("hex").slice(0, 16);
 
 export async function runImageEngineV2(ctx: JobContext | null, projectId: string, req: ImageRequestV2, injected?: ImageV2Deps): Promise<ImageRunResult> {
-  if(req.themePlacement)(await import("../theme/placement-request")).placementRequest(projectId,req.themePlacement);
+  if(req.themePlacement)await (await import("../theme/placement-request")).checkedPlacementRequest(projectId,req.themePlacement);
   if(req.kind==="ad_image"||req.support==="ad")(await import("../job-entitlements")).assertAdvertising(projectId);
   req = imagePolicy(req);
   const p = loadProject(projectId);

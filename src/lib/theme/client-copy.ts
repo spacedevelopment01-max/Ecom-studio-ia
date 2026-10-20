@@ -62,16 +62,18 @@ export function bindClientCopy(spec: ThemeSpec, p: Project, copy: ShopCopy, type
     const services = p.business === 'services';
     const name = services ? p.brand?.name ?? p.name : p.product.name;
     const destination = services ? (p.services.contactMode === 'booking' && p.services.bookingUrl ? p.services.bookingUrl : '/pages/contact') : `/products/${spec.store.product.handle}`;
-    const cta = services ? t(p.services.contactMode === 'booking' ? 'Prendre rendez-vous' : p.services.contactMode === 'quote' ? 'Demander un devis' : 'Nous contacter', p.services.contactMode === 'booking' ? 'Book an appointment' : p.services.contactMode === 'quote' ? 'Request a quote' : 'Contact us') : genuine(copy.hero.cta)&&sectionPurpose(type)==='opening'?copy.hero.cta:genuine(copy.cta.button)&&sectionPurpose(type)==='purchase'?copy.cta.button:t(`Découvrir ${p.product.name}`, `Explore ${p.product.name}`);
+    const cta = services ? t(p.services.contactMode === 'booking' ? 'Prendre rendez-vous' : p.services.contactMode === 'quote' ? 'Demander un devis' : 'Nous contacter', p.services.contactMode === 'booking' ? 'Book an appointment' : p.services.contactMode === 'quote' ? 'Request a quote' : 'Contact us') : genuine(copy.hero.cta) && sectionPurpose(type) === 'opening' ? copy.hero.cta : genuine(copy.cta.button) && sectionPurpose(type) === 'purchase' ? copy.cta.button : t(`Découvrir ${p.product.name}`, `Explore ${p.product.name}`);
     const purpose = sectionPurpose(type), facts = p.product.facts.filter(f => f.status === 'confirmed' && genuine(f.value));
     const values = (p.brand?.values ?? []).filter(v => genuine(v.title) && genuine(v.text));
     const sections = applySectionCopy(type, schema, ctx, { settings: { ...design } });
-    let out = { ...sections.settings };
+    let out = { ...sections.settings, ...design }; // Reference layout wins over library defaults; content is bound below.
     let blocks = sections.blocks ?? [];
     const headline = purpose === 'opening' ? (pageRole === 'home' ? copy.hero.heading : name) : purpose === 'story' ? (pageRole === 'story' ? copy.about.heading : copy.statement.heading) : purpose === 'method' ? copy.story.heading : purpose === 'faq' ? copy.faq.heading : purpose === 'contact' ? copy.contact.heading : purpose === 'purchase' ? copy.cta.heading : purpose === 'composition' ? t('Composition et matières', 'Composition and materials') : purpose === 'uses' ? copy.gallery.heading : copy.detail.heading;
     const body = purpose === 'opening' ? copy.hero.text : purpose === 'story' ? (occurrence ? copy.statement.text : copy.about.intro) : purpose === 'method' ? '' : purpose === 'faq' ? '' : purpose === 'contact' ? copy.contact.text : purpose === 'purchase' ? copy.cta.text : purpose === 'uses' ? '' : copy.detail.text;
-    const set = (k: string, v: unknown) => { if (schema.settings.some(x => x.id === k))
-        out[k] = v; };
+    const set = (k: string, v: unknown) => {
+        if (schema.settings.some(x => x.id === k))
+            out[k] = v;
+    };
     if (!/main-product|main-page|page-title|main-collection|main-search/.test(type)) {
         for (const k of ['heading', 'title'])
             set(k, genuine(headline) ? headline : name);
@@ -85,6 +87,11 @@ export function bindClientCopy(spec: ThemeSpec, p: Project, copy: ShopCopy, type
             set(k, cta);
         for (const k of ['button_link', 'cta_link'])
             set(k, destination);
+    }
+    if (['guide', 'editorial', 'showcase'].includes(pageRole) && type === 'rich-text') {
+        const heading = pageRole === 'guide' ? copy.features.heading : pageRole === 'editorial' ? copy.story.heading : copy.gallery.heading;
+        const text = pageRole === 'guide' ? copy.features.items.map(x => `${x.title} : ${x.text}`).join(' ') : pageRole === 'editorial' ? copy.story.steps.map(x => `${x.title} : ${x.text}`).join(' ') : copy.detail.text;
+        blocks = [{ type: 'heading', settings: { text: heading } }, { type: 'text', settings: { text: paragraph(text) } }];
     }
     if (/newsletter/.test(type)) {
         set('heading', copy.newsletter.heading);
@@ -115,7 +122,7 @@ export function bindClientCopy(spec: ThemeSpec, p: Project, copy: ShopCopy, type
             set('text', paragraph(f.value));
         }
     }
-    if (type === 'rich-text')
+    if (type === 'rich-text' && !['guide', 'editorial', 'showcase'].includes(pageRole))
         blocks = [{ type: 'heading', settings: { text: genuine(headline) ? headline : name } }, { type: 'text', settings: { text: genuine(body) ? paragraph(body) : '' } }];
     if (type === 'image-with-text') {
         set('heading', values[occurrence % Math.max(1, values.length)]?.title ?? copy.about.heading);
@@ -135,9 +142,14 @@ export function bindClientCopy(spec: ThemeSpec, p: Project, copy: ShopCopy, type
         if (def.id && !['select', 'color', 'color_background', 'font_picker', 'range', 'checkbox', 'number', 'color_scheme'].includes(def.type) && out[def.id] === undefined)
             out[def.id] = '';
     out = Object.fromEntries(Object.entries(out).filter(([k]) => schema.settings.some(x => x.id === k)));
-    const safe = blocks.filter(b => schema.blocks.some(d => d.type === b.type)).map(b => { const defs = schema.blocks.find(d => d.type === b.type)!.settings ?? []; const values = { ...b.settings }; for (const d of defs)
-        if (d.id && ['text', 'textarea', 'richtext', 'inline_richtext', 'url', 'html'].includes(d.type) && values[d.id] === undefined)
-            values[d.id] = ''; return { ...b, settings: Object.fromEntries(Object.entries(values).filter(([k]) => defs.some(d => d.id === k))) }; });
+    const safe = blocks.filter(b => schema.blocks.some(d => d.type === b.type)).map(b => {
+        const defs = schema.blocks.find(d => d.type === b.type)!.settings ?? [];
+        const values = { ...b.settings };
+        for (const d of defs)
+            if (d.id && ['text', 'textarea', 'richtext', 'inline_richtext', 'url', 'html'].includes(d.type) && values[d.id] === undefined)
+                values[d.id] = '';
+        return { ...b, settings: Object.fromEntries(Object.entries(values).filter(([k]) => defs.some(d => d.id === k))) };
+    });
     if (blocks.length && !safe.length)
         missing.push('section_content_mapping');
     if (/faq|steps|timeline|how-to|cards|ingredients|tabs|features-grid/.test(type) && !safe.length)

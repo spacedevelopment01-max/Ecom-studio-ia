@@ -8,7 +8,7 @@ import { estimateMicro } from "@/lib/ai/estimate";
 import { videoProviderAvailable } from "@/lib/ai/media-providers";
 import { requireCreationPlan } from "@/lib/plan-gates";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
-import { placementRequest } from "@/lib/theme/placement-request";
+import { checkedPlacementRequest } from "@/lib/theme/placement-request";
 
 export const runtime = "nodejs";
 
@@ -33,7 +33,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     return ok({ jobId: job.id });
   }
   if (b.themePlacement) {
-    const {request}=placementRequest(p.id,b.themePlacement);
+    const {request}=await checkedPlacementRequest(p.id,b.themePlacement);
     if(request.kind!=="video"||!request.referenceAssetIds.includes(b.imageId))throw new HttpError(409,L("Choisissez l’une des références de cet emplacement vidéo.","Choose a reference for this video placement."));
   }
   if (!aiActiveFor(p.userId, p.id)) throw new HttpError(402, L("L'IA n'est pas active pour ce projet : cherchez plutôt des plans libres de droits (gratuit).", "AI isn't active for this project: search royalty-free clips instead (free)."));

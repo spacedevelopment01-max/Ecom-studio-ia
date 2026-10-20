@@ -3121,15 +3121,15 @@
         },
         {
           "suffix": "listicle",
-          "role": "story"
+          "role": "guide"
         },
         {
           "suffix": "advertorial",
-          "role": "story"
+          "role": "editorial"
         },
         {
           "suffix": "sections",
-          "role": "story"
+          "role": "showcase"
         },
         {
           "suffix": "contact",
@@ -3149,11 +3149,11 @@
         },
         {
           "suffix": "confidentialite",
-          "role": "story"
+          "role": "privacy"
         },
         {
           "suffix": "conditions-generales",
-          "role": "story"
+          "role": "terms"
         }
       ]
     },
@@ -5507,7 +5507,7 @@
         },
         {
           "suffix": "sections",
-          "role": "story"
+          "role": "showcase"
         },
         {
           "suffix": "contact",
@@ -5527,11 +5527,11 @@
         },
         {
           "suffix": "confidentialite",
-          "role": "story"
+          "role": "privacy"
         },
         {
           "suffix": "conditions-generales",
-          "role": "story"
+          "role": "terms"
         }
       ]
     },

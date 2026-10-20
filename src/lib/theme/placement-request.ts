@@ -28,3 +28,10 @@ export function placementRequest(projectId: string, ref: ThemePlacement) {
         throw new HttpError(409, L("Ajoutez une photo fidèle de votre produit avant de préparer cette génération.", "Add an accurate product photo before preparing this generation."));
     return { request, plan, project: p };
 }
+/** File validation before a quote or paid engine stage; structural validation above remains synchronous. */
+export async function checkedPlacementRequest(projectId: string, ref: ThemePlacement) {
+    const result = placementRequest(projectId, ref), inventory = await (await import('./client-media')).inventoryClientMedia(result.project);
+    if (result.request.referenceAssetIds.some(id => !inventory.usable.some(a => a.id === id)))
+        throw new HttpError(409, L('Une référence du thème est absente, illisible ou refusée. Vérifiez-la avant tout nouveau devis.', 'A theme reference is missing, unreadable or rejected. Review it before a new quote.'));
+    return result;
+}

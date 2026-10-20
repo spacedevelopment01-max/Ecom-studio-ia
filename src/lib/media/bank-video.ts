@@ -11,7 +11,7 @@ import { NO_PEOPLE_EN, peopleAllowedFor } from "../people-policy";
 import { UserFacingError, type JobContext } from "../jobs";
 import { C, L } from "../i18n-server";
 import { emptyClipDiag, findStockClip, type StockClipDiag } from "../stock/stock-clip";
-import { placementRequest,type ThemePlacement } from "../theme/placement-request";
+import { checkedPlacementRequest,type ThemePlacement } from "../theme/placement-request";
 import { inventoryClientMedia } from "../theme/client-media";
 
 export type BankAspect = "9:16" | "16:9";
@@ -59,7 +59,7 @@ export async function findBankClips(ctx: JobContext, projectId: string, r: { top
 /** Plan filmé par l'IA à partir d'une image de la banque. */
 export async function createBankClip(ctx: JobContext, projectId: string, r: { imageId: string; prompt?: string; aspect: BankAspect;themePlacement?:ThemePlacement }) {
   const p = loadProject(projectId);
-  const placement=r.themePlacement?placementRequest(projectId,r.themePlacement):null;
+  const placement=r.themePlacement?await checkedPlacementRequest(projectId,r.themePlacement):null;
   if(placement&&(placement.request.kind!=="video"||!placement.request.referenceAssetIds.includes(r.imageId)||!(await inventoryClientMedia(p)).usable.some(a=>a.id===r.imageId)))throw new UserFacingError(L("La référence vidéo n’est plus utilisable. Actualisez sa préparation.","The video reference is no longer usable. Refresh preparation."));
   const img = getAsset(r.imageId);
   if (!img || img.project_id !== projectId || img.kind !== "image" || img.deleted_at) throw new UserFacingError(L("Image introuvable dans votre banque.", "Image not found in your bank."));

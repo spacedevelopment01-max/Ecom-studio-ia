@@ -7,6 +7,7 @@ import { localBrand } from "../src/lib/engine/local";
 import { composeShop } from "../src/lib/engine/shop";
 import { loadProject, saveBrand, saveProduct, saveServices, saveSettings, saveStrategy, saveThemeVersion } from "../src/lib/projects";
 import { saveAsset } from "../src/lib/library";
+import {grantProjectPlan} from "../src/lib/project-subscriptions";
 import type { FamilyId } from "../src/lib/theme/section-families";
 import type { DirectionId } from "../src/lib/theme/directions";
 
@@ -49,6 +50,7 @@ export async function controlProject(userId: string, family: FamilyId, b: Brand)
   }
   const built = await composeShop(pid, f.theme, null, false);
   saveThemeVersion(pid, built.spec, "Composition", "user");
+  grantProjectPlan(pid,"dominer"); // Full-library identity fixture; no permission bypass in the routes.
   return pid;
 }
 
