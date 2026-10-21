@@ -1,4 +1,4 @@
-import { grantProjectPlan } from "@/lib/project-subscriptions";
+import { grantProjectPlan } from "./communication-choice-fixture";
 /**
  * Vidéos de la création du projet : 2 vidéos de 15 s en 3 scènes. Produit + Développer/Dominer + IA active : scènes
  * par l'IA (Wan 2.6) ; service : plans du métier ; sinon (Créer, « montage seulement », IA coupée) montage local.

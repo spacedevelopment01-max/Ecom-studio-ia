@@ -13,10 +13,15 @@ import {seedImageFixture} from "./image-v2-fixtures";
 import {claimNext,completeJob,enqueue,failJob,getJob,JobContext,markFinished} from "@/lib/jobs";
 import {saveAsset,getAsset} from "@/lib/library";
 import {handlers} from "../worker/handlers";
+import {grantProjectPlan} from './communication-choice-fixture';
+import {jobStrategy} from '@/lib/strategy-consumption';
 beforeEach(()=>{output.video=null;output.logo=null;output.docKey=null;vi.stubGlobal("fetch",async()=>{throw Error("Réseau fournisseur interdit");});});afterEach(()=>vi.unstubAllGlobals());
-async function fixture(){const u=await createUser(`contract-${crypto.randomUUID()}@example.invalid`,"motdepasse-test","Fictif");return{u,pid:seedImageFixture(u.id,"restaurant")};}
+async function fixture(){const u=await createUser(`contract-${crypto.randomUUID()}@example.invalid`,"motdepasse-test","Fictif");const pid=seedImageFixture(u.id,"restaurant");grantProjectPlan(pid,'dominer');return{u,pid};}
 async function execute(type:string,pid:string,uid:string,payload:Record<string,unknown>={}){
- const isolated=`test142.contract:${crypto.randomUUID()}`;const j=enqueue({userId:uid,projectId:pid,type:isolated,payload:{projectId:pid,...payload}});const claimed=claimNext([isolated])!,ctx=new JobContext(claimed);
+ const isolated=`test142.contract:${crypto.randomUUID()}`;const j=enqueue({userId:uid,projectId:pid,type:isolated,payload:{projectId:pid,...payload}});const claimed=claimNext([isolated])!;
+ // Isolated queue type, native action's execution snapshot; exercise delivery rather than a false stale-choice rejection.
+ const selected=jobStrategy(pid,type,{projectId:pid,...payload});
+ const ctx=new JobContext({...claimed,payload:JSON.stringify({...JSON.parse(claimed.payload),strategyVersion:selected?.id??null})});
  try{completeJob(j.id,await handlers[type](ctx));}catch(e){failJob(getJob(j.id)!,e,{permanent:true});}finally{markFinished(j.id);}return getJob(j.id)!;
 }
 it.each(["video.v2","video.v2.render"])("%s : une référence vidéo vide ne devient pas une livraison réussie",async type=>{

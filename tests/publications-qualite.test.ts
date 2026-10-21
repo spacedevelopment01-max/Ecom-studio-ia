@@ -1,4 +1,5 @@
 import {grantProjectPlan} from './communication-choice-fixture';
+import {chooseGeneralistForTest} from './strategy-choice-fixture';
 import { describe, it, expect } from "vitest";
 import sharp from "sharp";
 import { campaignCopy, campaignVerdict } from "./publication-fixtures";
@@ -171,6 +172,7 @@ describe("Campagnes — preuves de contrat simulées, pas de qualité fournisseu
     const { p, ref } = await setup("artisan");
     const b = { ...p.brand!, logo: { assetId: ref.id } } as any;
     saveBrand(p.id, b);
+    chooseGeneralistForTest(p.id); // Reconcile the newly supplied logo before new communication.
     const service = loadProject(p.id);
     const { d } = deps();
     let logo = false;

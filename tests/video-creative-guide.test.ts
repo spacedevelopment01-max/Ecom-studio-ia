@@ -29,8 +29,10 @@ describe("Guide créatif vidéo", async () => {
 
   const user = async () => (await createUser(`gc-${Date.now()}-${Math.random()}@test.fr`, "motdepasse-test", "G")).id;
   async function painter() {
-    const p = loadProject(seedImageFixture(await user(), "restaurant"));grantProjectPlan(p.id,"dominer");
+    const p = loadProject(seedImageFixture(await user(), "restaurant"));
     run("UPDATE projects SET product_json = json_set(product_json, '$.category', 'Plâtrier peintre'), business_json = ? WHERE id = ?", JSON.stringify({ services: [{ name: "Peinture intérieure" }], area: "Lyon", contactMode: "quote" }), p.id);
+    // Final factual context first, then the fictitious client's explicit communication choice.
+    grantProjectPlan(p.id,"dominer");
     return loadProject(p.id);
   }
   async function watch() {

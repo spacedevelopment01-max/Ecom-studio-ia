@@ -13,6 +13,7 @@ import { runWithLang } from "@/lib/i18n-server";
 import { localBrand } from "@/lib/engine/local";
 import { createContentPlan } from "@/lib/engine/calendar";
 import { serviceProduct, serviceProfile } from "./fixtures";
+import {grantProjectPlan} from './communication-choice-fixture';
 
 describe("publications d'une entreprise de services", () => {
   it("ancien calendrier : aucune carte du studio ni photo de banque ; la publication image attend son visuel IA", async () => {
@@ -25,6 +26,7 @@ describe("publications d'une entreprise de services", () => {
       "INSERT INTO projects (id, user_id, name, status, platform, product_json, brand_json, strategy_json, settings_json, sources_json, business_type, business_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
       pid, u.id, "AutoDim", "ready", "shopify", JSON.stringify(product), JSON.stringify(brand), JSON.stringify(strategy), JSON.stringify({ language: "fr" }), "[]", "services", JSON.stringify(services), now(), now(),
     );
+    grantProjectPlan(pid,'dominer'); // Explicit fictitious choice; this is communication, not a website.
     const params = { startDate: "2026-10-08", days: 4, perDay: 1, slots: ["11:30"], timezone: "Europe/Paris", networks: [{ network: "facebook" }, { network: "instagram" }], goals: "", tone: "", mix: { photo: 1, video: 0, text: 0 }, approval: "manual" as const };
     const job = enqueue({ userId: u.id, projectId: pid, type: "calendar.generate", payload: params });
     await runWithLang({ ui: "fr", content: "fr" }, () => createContentPlan(new JobContext(job), pid, params));

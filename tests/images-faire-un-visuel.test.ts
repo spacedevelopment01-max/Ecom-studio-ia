@@ -29,7 +29,7 @@ describe("Faire un visuel (onglet Images)", async () => {
   const { runWithLang } = await import("@/lib/i18n-server");
   const { loadProject } = await import("@/lib/projects");
   const { saveAsset } = await import("@/lib/library");
-  const { grantProjectPlan } = await import("@/lib/project-subscriptions");
+  const { grantProjectPlan } = await import("./communication-choice-fixture");
   const { getJob, UserFacingError } = await import("@/lib/jobs");
   const { seedThemeScenario } = await import("./theme-v2-fixtures");
   const { seedImageFixture } = await import("./image-v2-fixtures");
@@ -62,6 +62,7 @@ describe("Faire un visuel (onglet Images)", async () => {
   it("tout par l'IA (services) : textes du client écrits mot pour mot, scène de l'IA gardée, format respecté, visuel rangé", async () => {
     const u = await user();
     const pid = await seedThemeScenario(u.id, "artisan");
+    grantProjectPlan(pid,'dominer');
     const f = fakeDeps();
     const r = await fr(() => generateAiPostImage(ctxOf("job-fv-1"), pid, { kind: "service", format: "story", headline: "Votre salle de bain refaite", cta: "Demander un devis" }, f.deps as any));
     expect(r.assetId).toBeTruthy();
@@ -78,6 +79,7 @@ describe("Faire un visuel (onglet Images)", async () => {
   it("tout par l'IA : « une de mes images » choisie sert de référence ; produit sans photo refusé (rien d'inventé)", async () => {
     const u = await user();
     const pid = await seedThemeScenario(u.id, "artisan");
+    grantProjectPlan(pid,'dominer');
     const mine = await saveAsset({ projectId: pid, userId: u.id, data: await png(), name: "chantier.png", mime: "image/png", role: "lifestyle", folderKey: "images.scenes", origin: "upload", status: "approved", meta: {} });
     const f = fakeDeps();
     await fr(() => generateAiPostImage(ctxOf("job-fv-2"), pid, { kind: "info", format: "square", photoId: mine.id }, f.deps as any));

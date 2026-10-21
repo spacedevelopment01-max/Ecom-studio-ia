@@ -18,6 +18,7 @@ import { runAdEngineV2 } from '@/lib/ads-v2/engine';
 import { duplicatePostInFormat } from '@/lib/social-v2/post-format';
 import { editPostV2 } from '@/lib/social-v2/engine';
 import { redoRequest } from '@/lib/media/ai-image-variants';
+import {assertContentAlignment,reviewServiceCommunication} from '@/lib/marketing-strategy';
 const base:PostBrief={id:'purpose-test',network:'instagram',format:'image',title:'Entretenir le matériel',headline:'Entretenir le matériel',caption:'Débrancher avant le nettoyage.\n\nUtiliser un chiffon sec.',pillar:'conseils',objective:'educate',scheduled_at:null};
 async function setup(kind:'hightech'|'artisan'='hightech') {
  const u=await createUser(`editorial-${crypto.randomUUID()}@test.invalid`,'motdepasse-test','Test');const p=loadProject(seedImageFixture(u.id,kind));if(p.business==='services')grantProjectPlan(p.id,"dominer");
@@ -78,10 +79,13 @@ describe('Publicité et organique : mêmes identité/sujet, intentions et struct
   const {p,deps,contexts}=await setup('artisan');
   const editorial:Editorial={structure:'checklist',role:'Vérifications utiles',blocks:[{kind:'check',text:'Vérifier le support.'},{kind:'check',text:'Protéger les surfaces.'},{kind:'check',text:'Préparer les outils.'}],sources:[{label:'Procédure client',text:'Trois vérifications fournies',verified:true}]};
   const onePost=createOnePost(p,{kind:'carousel',date:'2026-11-04',time:'11:30',timezone:'UTC',platforms:[{platform:'instagram'}],headline:'Avant de commencer',caption:'Vérifier, protéger, préparer.',request:'Conserver la fin de la demande. '.repeat(30),editorial});
+  expect(()=>assertContentAlignment(p.id,'post',onePost.ids[0])).not.toThrow();
   run("UPDATE posts SET brief=json_set(brief,'$.roleIdea',?) WHERE id=?",'Expliquer les vérifications sans vendre',onePost.ids[0]);
+  expect(()=>assertContentAlignment(p.id,'post',onePost.ids[0])).toThrow();
+  reviewServiceCommunication(p.id,'post',onePost.ids[0]); // Explicit review after the test's raw mutation.
   const social:SocialDeps={aiActive:true,estimate:()=>350,probable:()=>115,aiPost:(pp,post,o)=>designPostWithAi(pp,post,{aspect:'4:5',reference:null,maxCostEur:o.maxCostEur},deps),image:async()=>{throw Error('no fallback');},video:async()=>{throw Error('no video');},ad:async()=>{throw Error('no ad');},local:async()=>{throw Error('no local');},rewrite:async()=>{throw Error('no rewrite');}};
   const est=estimateProduction(p,onePost.ids,social,{allowPaid:true});expect(est.estimateMicro).toBe(345);expect(est.capMicro).toBe(1050);expect(quoteOne('carousel','ai_post',2,()=>115,3)).toBe(690);
-  const out=await produceBatch(p,onePost.ids,social,{allowPaid:true,maxCostEur:1,approvedEstimateMicro:345});expect(out.produced).toBe(1);
+  const out=await produceBatch(p,onePost.ids,social,{allowPaid:true,maxCostEur:1,approvedEstimateMicro:345});expect(out.produced,JSON.stringify(out)).toBe(1);
   const row=one<any>('SELECT * FROM posts WHERE id=?',onePost.ids[0])!;const media=JSON.parse(row.media);expect(media).toHaveLength(3);expect(contexts[0].creative.editorialData.roleIdea).toBeDefined();expect(contexts[0].creative.request.length).toBeGreaterThan(600);expect(contexts[0].request.length).toBeGreaterThan(600);expect(contexts[0].creative.sources[0].label).toBe('Procédure client');
   run('UPDATE posts SET media=? WHERE id=?',JSON.stringify([media[0]]),row.id);expect(checkPost(p,row.id).codes).toContain('incomplete_carousel');
   run('UPDATE posts SET media=? WHERE id=?',JSON.stringify(media),row.id);expect(checkPost(p,row.id).codes).not.toContain('incomplete_carousel');
@@ -90,6 +94,7 @@ describe('Publicité et organique : mêmes identité/sujet, intentions et struct
   const changed={...editorial,blocks:editorial.blocks!.map((b,i)=>i?b:{...b,text:'Vérification modifiée par le client.'})};editPostV2(p,row.id,{editorial:changed,title:'Nouveau titre exact'});
   expect(checkPost(p,row.id).codes).toContain('editorial_visual_stale');expect(JSON.parse(one<any>('SELECT brief FROM posts WHERE id=?',row.id)!.brief).headline).toBe('Nouveau titre exact');expect(getAsset(media[0])?.status).toBe('ready');
   const other=createOnePost(p,{kind:'image',date:'2026-11-05',time:'11:30',timezone:'UTC',platforms:[{platform:'instagram'}],headline:'Une FAQ différente',caption:'Un tout autre contenu',editorial:{structure:'faq'}});
+  expect(()=>assertContentAlignment(p.id,'post',other.ids[0])).not.toThrow();
   const free=await produceBatch(p,other.ids,social,{allowPaid:false,maxCostEur:0});expect(free.produced).toBe(0);expect(JSON.parse(one<any>('SELECT media FROM posts WHERE id=?',other.ids[0])!.media)).toEqual([]);
  });
  it('barrière calendrier : avis fourni utilisable, mais note ou quantité inventée toujours bloquée',async()=>{

@@ -50,6 +50,11 @@ for(const account of accounts){
   if(account.services){
    if(cur.version.id!==serviceSiteId||cur.spec.meta?.strategy)throw Error('Campaign changed service website');
    const response=await page.request.post(`${base}/api/projects/${account.projectId}/social/v2`,{data:{action:'plan',angleId:angle,request:{angleId:angle,startDate:new Date(Date.now()+86400000).toISOString().slice(0,10),days:2,perDay:1,timezone:'Europe/Paris',platforms:[{platform:'instagram'}],lang:'fr'}}});if(!response.ok())throw Error(await response.text());
+   const title=`Texte exact du client — atelier ${angle}`;
+   const single=await page.request.post(`${base}/api/projects/${account.projectId}/social/v2`,{data:{action:'create_one',angleId:angle,kind:'image',mode:'free',date:new Date(Date.now()+86400000).toISOString().slice(0,10),time:'14:00',timezone:'Europe/Paris',platforms:[{platform:'instagram'}],headline:title,caption:'Découvrir le tournage et les émaux, sur rendez-vous.'}});
+   const created=await single.json();if(!single.ok()||!created.ids?.length)throw Error(JSON.stringify(created));
+   const {all}=await import('../src/lib/db');const {assertContentAlignment}=await import('../src/lib/marketing-strategy');
+   for(const id of created.ids){assertContentAlignment(account.projectId,'post',id);const rows=all<any>("SELECT p.title,p.approved_at,c.angle_id,c.protected FROM posts p JOIN marketing_strategy_contents c ON c.project_id=p.project_id AND c.module='post' AND c.content_id=p.id WHERE p.id=?",id);if(rows.length!==1||rows[0].title!==title||rows[0].angle_id!==angle||!rows[0].protected||rows[0].approved_at)throw Error('Exact single copy lost its protected provenance or was auto-approved');}
   }else if(cur.spec.meta?.strategy?.angleId!==angle)throw Error('Persisted angle mismatch');
   const theme=await context.newPage();await theme.goto(`${base}/preview/${account.projectId}/v/${cur.version.id}/?es_raw=1`,{waitUntil:'domcontentloaded',timeout:60000});
   await reveal(theme);

@@ -18,6 +18,7 @@ import { it, expect, vi, beforeEach, afterEach, afterAll } from 'vitest';
 const session = vi.hoisted(() => ({ user: null as any }));
 vi.mock('@/lib/auth', async (original) => ({ ...await original<typeof import('@/lib/auth')>(), requireUser: async () => session.user, currentUser: async () => session.user }));
 import { clientFixture, clientPhoto } from './mission154-fixtures';
+import { chooseGeneralistForTest } from './strategy-choice-fixture';
 import { buildShop } from '@/lib/engine/shop';
 import { currentTheme, listThemeVersions, loadProject, saveProduct, saveThemeVersion } from '@/lib/projects';
 import { runWithLang } from '@/lib/i18n-server';
@@ -135,6 +136,8 @@ it('deux reprises successives : pages de référence actualisées et retouches c
     saveThemeVersion(f.pid, edited.spec, 'Retouche client', 'user');
     for (const summary of ['Un premier contexte actualisé.', 'Un second contexte différent.']) {
         saveProduct(f.pid, { ...loadProject(f.pid).product, summary });
+        // A changed factual context must be reconciled explicitly under #160 before rebuilding.
+        chooseGeneralistForTest(f.pid);
         await fr(() => buildShop(null, f.pid, { direction: 'fraise', useAi: false }));
         const current = currentTheme(f.pid)!.spec;
         expect(current.templates.index.sections[section].settings.heading).toBe('Mon titre exact, à conserver sur chaque reprise');

@@ -21,7 +21,7 @@ const photo = () => sharp({ create: { width: 1600, height: 1200, channels: 3, ba
 describe("Images : versions, tri, supprimées, nouveaux types", async () => {
   const { createUser } = await import("@/lib/auth");
   const { runWithLang } = await import("@/lib/i18n-server");
-  const { grantProjectPlan } = await import("@/lib/project-subscriptions");
+  const { grantProjectPlan } = await import("./communication-choice-fixture");
   const { saveAsset, getAsset, assetMeta } = await import("@/lib/library");
   const { latestDoc, saveAndRender } = await import("@/lib/ad-doc/store");
   const { JobContext, enqueue } = await import("@/lib/jobs");
