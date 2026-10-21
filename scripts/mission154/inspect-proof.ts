@@ -7,7 +7,7 @@ if (!root || !path.basename(root).startsWith('ecs-test-154-'))
 const out = path.join(root, 'inspection');
 fs.mkdirSync(out, { recursive: true });
 const a = JSON.parse(fs.readFileSync(path.join(root, 'accounts-private.json'), 'utf8')).accounts;
-const b = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox'] });
+const b = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox', '--no-proxy-server'] });
 try {
     for (const [theme, width, product] of [['orbe', 1440, false], ['rive', 1440, false], ['noctil', 390, true], ['traverse', 390, true]] as const) {
         const x = a.find((a: any) => a.theme === theme), c = await b.newContext({ viewport: { width, height: 900 }, reducedMotion: 'reduce' }), p = await c.newPage();

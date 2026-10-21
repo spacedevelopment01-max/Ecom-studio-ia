@@ -7,7 +7,7 @@ if (!data || !path.basename(data).startsWith('ecs-test-154-'))
 const accounts = JSON.parse(fs.readFileSync(path.join(data, 'accounts-private.json'), 'utf8')).accounts;
 const out = path.join(data, 'sticky');
 fs.mkdirSync(out, { recursive: true });
-const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox'] });
+const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox', '--no-proxy-server'] });
 const records: any[] = [];
 try {
     for (const theme of ['noctil', 'traverse'])

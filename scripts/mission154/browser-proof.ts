@@ -24,7 +24,7 @@ const bin = path.join(process.env.PLAYWRIGHT_BROWSERS_PATH, 'ffmpeg-1011', 'ffmp
 if (!fs.existsSync(bin))
     fs.symlinkSync('/usr/bin/ffmpeg', bin);
 const { chromium } = await import('playwright');
-const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox'] });
+const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox', '--no-proxy-server'] });
 async function ready(p: Page, walk = false) {
     await p.evaluate(async () => { document.images && [...document.images].forEach(i => i.loading = 'eager'); await document.fonts.ready; await Promise.all([...document.images].filter(i => i.getAttribute('src')).map(i => i.decode().catch(() => { }))); });
     if (walk) {

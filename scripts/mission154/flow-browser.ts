@@ -18,7 +18,7 @@ const bin = path.join(process.env.PLAYWRIGHT_BROWSERS_PATH, 'ffmpeg-1011', 'ffmp
 if (!fs.existsSync(bin))
     fs.symlinkSync('/usr/bin/ffmpeg', bin);
 const { chromium } = await import('playwright');
-const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox'] });
+const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox', '--no-proxy-server'] });
 const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, locale: 'fr-FR', reducedMotion: 'reduce', recordVideo: { dir: out, size: { width: 1152, height: 800 } } });
 await context.addCookies([{ name: 'ecs_session', value: flow.token, url: base }, { name: 'ecs-lang', value: 'fr', url: base }]);
 await context.addInitScript(() => { (globalThis as any).__name = (f: any) => f; try {

@@ -7,7 +7,7 @@ const root = process.env.DATA_DIR!;
 if (!root || !path.basename(root).startsWith('ecs-test-154-')) throw Error('Isolated reception required');
 const manifest = JSON.parse(fs.readFileSync(path.join(root, 'accounts-private.json'), 'utf8'));
 const out = path.join(root, 'browser');
-const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox'] });
+const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox', '--no-proxy-server'] });
 const results: any[] = [];
 try {
     for (const width of [1440, 390]) for (const kind of ['client', 'reference']) {

@@ -86,6 +86,8 @@ type ShapeSection = {
     initiallyHidden?: boolean;
 };
 type Shape = {
+    settings?: Record<string, unknown>;
+    groups?: Record<string, { order: string[]; sections: Record<string, { type: string; settings: Record<string, unknown>; blocks: Record<string, { type: string; settings: Record<string, unknown> }>; block_order: string[] }> }>;
     templates: Record<string, {
         sections: Record<string, ShapeSection>;
         order: string[];
@@ -105,7 +107,8 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
     const en = spec.language === 'en', t = (fr: string, enText: string) => en ? enText : fr;
     ctx?.progress(.3, t('Préparation des pages et des emplacements du thème', 'Preparing theme pages and placements'));
     const inventory = await inventoryClientMedia(p), pool = inventory.usable;
-    const plan: ClientContentPlan = { version: 1, sourceCommit: shapes.sourceCommit, contextHash: clientThemeContext(p), inputHash: stableHash('client-theme-content', { engine: '154.5', shapes: shape, direction: spec.direction, brand: p.brand, product: p.product, services: p.services, copy, media: pool }), status: 'to_verify', pages: [], slots: [], issues: [], excluded: inventory.excluded, generationRequests: [] };
+    const plan: ClientContentPlan = { version: 1, sourceCommit: shapes.sourceCommit, contextHash: clientThemeContext(p), inputHash: stableHash('client-theme-content', { engine: '154.6', shapes: shape, direction: spec.direction, brand: p.brand, product: p.product, services: p.services, copy, media: pool }), status: 'to_verify', pages: [], slots: [], issues: [], excluded: inventory.excluded, generationRequests: [] };
+    Object.assign(spec.settings, shape.settings ?? {});
     const labels: Record<string, string> = { home: p.brand?.name ?? p.name, story: t('Notre histoire', 'Our story'), uses: t('En situation', 'In use'), details: t('Utilisation et détails', 'Use and details'), contact: t('Questions et contact', 'Questions and contact'), faq: t('Questions fréquentes', 'Frequently asked questions'), shipping: t('Livraison et retours', 'Shipping and returns'), legal: t('Informations légales', 'Legal information'), services: t('Nos prestations', 'Our services'), portfolio: t('Réalisations documentées', 'Documented projects') };
     Object.assign(labels, { privacy: t('Confidentialité', 'Privacy'), terms: t('Conditions générales', 'Terms and conditions'), guide: copy.features.heading, editorial: copy.story.heading, showcase: copy.detail.heading });
     Object.assign(labels, { privacy: t('Confidentialité', 'Privacy'), terms: t('Conditions générales', 'Terms and conditions'), guide: t('Bien choisir', 'Choosing well'), editorial: t('Comprendre le produit', 'Understanding the product'), showcase: t('En détail', 'In detail') });
@@ -286,6 +289,24 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
             page.sections.push({ id: sid, type: sh.type, visible: !section.disabled, purpose: sectionPurpose(sh.type) });
         }
         spec.templates[template] = { sections, order: [...layout.order] };
+    }
+    // Chrome is part of the chosen composition, not the rotating initial-store variant.
+    // Carry only design values; all text and identity still come from this project.
+    for (const [name, reference] of Object.entries(shape.groups ?? {})) {
+        if (name !== 'header' && name !== 'footer') continue;
+        const native = spec.groups[name], sections: Record<string, SectionInstance> = {};
+        for (const sid of reference.order) {
+            const shape = reference.sections[sid];
+            const base = native.sections[sid] ?? Object.values(native.sections).find(s => s.type === shape.type);
+            const blocks = Object.fromEntries(shape.block_order.map((bid, i) => {
+                const block = shape.blocks[bid], source = base?.blocks?.[bid] ?? Object.values(base?.blocks ?? {}).filter(b => b.type === block.type)[shape.block_order.slice(0, i).filter(id => shape.blocks[id].type === block.type).length];
+                return [bid, { type: block.type, settings: { ...source?.settings, ...block.settings } }];
+            }));
+            const settings = { ...base?.settings, ...shape.settings };
+            if (settings.color_scheme && !(spec.settings.color_schemes as any)?.[String(settings.color_scheme)]) settings.color_scheme = base?.settings.color_scheme ?? 'scheme-1';
+            sections[sid] = { type: shape.type, settings, blocks, block_order: [...shape.block_order] };
+        }
+        spec.groups[name] = { ...native, sections, order: [...reference.order] };
     }
     // The selected logo is project-scoped. No default or demonstration logo may leak through a group setting.
     const logo = pool.find(a => a.role === 'logo' && a.id === p.brand?.logo?.assetId) ?? pool.find(a => a.role === 'logo' && /^(logo|logo-horizontal|logo-webp|logo-v2)$/.test(a.sourceRole));

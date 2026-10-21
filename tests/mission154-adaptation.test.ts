@@ -56,6 +56,17 @@ it.each(['fraise', 'onde', 'sillon', 'noctil', 'traverse', 'orbe', 'rive'] as co
     expect(hero.settings.button_label ?? hero.settings.cta_label).toBe(f.copy.hero.cta);
     expect(s.store.shopName).toBe(f.brand);
     const reference = (shapes.themes as any)[direction];
+    expect(Object.keys(reference.settings).filter(key => key.startsWith('cart_'))).toEqual(['cart_type']);
+    for (const [key, value] of Object.entries(reference.settings)) expect(s.settings[key], `${direction} global ${key}`).toEqual(value);
+    for (const group of ['header', 'footer'] as const) {
+        expect(s.groups[group].order).toEqual(reference.groups[group].order);
+        for (const sid of reference.groups[group].order) {
+            expect(s.groups[group].sections[sid].type).toBe(reference.groups[group].sections[sid].type);
+            expect(s.groups[group].sections[sid].block_order).toEqual(reference.groups[group].sections[sid].block_order);
+            for (const [key, value] of Object.entries(reference.groups[group].sections[sid].settings))
+                if (key !== 'color_scheme') expect(s.groups[group].sections[sid].settings[key], `${direction} ${group} ${key}`).toEqual(value);
+        }
+    }
     for (const [key, value] of Object.entries<any>(reference.templates)) {
         if (direction === 'rive' && key.startsWith('product'))
             continue;

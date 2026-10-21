@@ -16,7 +16,7 @@ globalThis.fetch = async () => { throw Error('No provider or CMS network'); };
 const { currentTheme } = await import('../../src/lib/projects'), { cmsExport, CMS_PLATFORMS } = await import('../../src/lib/cms-v2/export'), { libraryLoader } = await import('../../src/lib/theme/loader'), { compileTheme } = await import('../../src/lib/theme/compile'), { designLayer } = await import('../../src/lib/cms-v2/design'), { renderPage } = await import('../../src/lib/theme/render'), { pageZones } = await import('../../src/lib/cms-v2/adapters/prestashop'), { phpSections, sectionsOf } = await import('../lib/cms-parity');
 const accounts = JSON.parse(fs.readFileSync(path.join(root, 'accounts-private.json'), 'utf8')).accounts;
 const results: any[] = [];
-const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox'] });
+const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox', '--no-proxy-server'] });
 try {
     for (const a of accounts.filter((x: any) => !x.theme.includes('incomplet') && (!process.env.THEME_FILTER || x.theme === process.env.THEME_FILTER))) {
         const spec = currentTheme(a.pid)!.spec, files = compileTheme(spec), design = await designLayer(spec, files);
