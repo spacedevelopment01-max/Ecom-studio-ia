@@ -401,6 +401,7 @@ describe("Social V2 — parcours", async () => {
     for (const s of SOCIAL_SCENARIOS) {
       const u = await account();
       const p = loadProject(seedImageFixture(u.id, SOCIAL_FIXTURE[s]));
+      if(p.business==='services'){const {grantProjectPlan}=await import('@/lib/project-subscriptions');grantProjectPlan(p.id,'dominer');const {prepareStrategyChange,activateStrategy}=await import('@/lib/marketing-strategy');const choice=prepareStrategyChange(p.id,'generalist');activateStrategy(p.id,{angleId:'generalist',preparationId:choice.id,idempotencyKey:`benchmark-${p.id}`,confirmed:true});}
       const c = SOCIAL_PLAN[s];
       const r = fr(() => createPlanV2(p, { startDate: start(), days: c.days, perDay: c.perDay, timezone: "Europe/Paris", platforms: c.platforms.map((platform) => ({ platform })), formatMix: c.mix }));
       expect(r.created, s).toBe(c.days * c.perDay);

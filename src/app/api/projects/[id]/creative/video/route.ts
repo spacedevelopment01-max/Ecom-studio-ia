@@ -1,3 +1,5 @@
+import {strategyStamp} from "@/lib/strategy-consumption";
+import { withCommunicationRequest } from "@/lib/marketing-strategy/communication-route";
 import { strategyVisibilitySql } from "@/lib/marketing-strategy/visibility";
 import { assertAdvertising } from "@/lib/job-entitlements";
 import { planAllowsAds } from "@/lib/plan-entitlements";
@@ -84,6 +86,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
+  return withCommunicationRequest(p.id,req,async()=>{
   const b = await body(req, z.discriminatedUnion("action", [z.object({action:z.literal("refine"),draftPlan:ScenePlanSchema,instruction:z.string().min(1).max(1000),...Req.shape}),z.object({action:z.literal("repair"),jobId:z.string().max(80),index:z.number().int().min(0).max(5),kind:z.enum(["image","clip"]),instruction:z.string().max(1000).optional()}),z.object({action:z.literal("plan"),scenarioJobId:z.string().max(80).optional(),approvedScriptMicro:z.number().int().min(0).optional(),draftPlan:ScenePlanSchema.optional(),...Req.shape}),z.object({ action: z.literal("quote"), ...Req.shape }), z.object({ action: z.literal("create"), ...Req.shape, approvalToken:z.string().max(100000).optional(), approvedEstimateMicro: z.number().int().min(0).nullable().optional() })]));
   if(b.action!=="repair"&&b.as==="ad")assertAdvertising(p.id);
   if(b.action === "repair") {
@@ -113,7 +116,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
 
   if(b.generation==="direct"&&b.sceneImages?.some(Boolean))throw new HttpError(400,"Choisissez le mode référence pour transmettre une photo, ou retirez cette sélection du mode direct.");
   for(const image of b.sceneImages??[]) {if(!image)continue;const a=getAsset(image.assetId);if(!a||a.project_id!==p.id||a.deleted_at||a.kind!=="image"||assetMeta<any>(a).gate?.fatal)throw new HttpError(400,"Référence image indisponible dans ce projet.");}
-  const r: ThreeScenesRequest = {mode:b.mode,generation:b.generation,purpose:b.purpose,initialSlot:b.initialSlot, sceneImages:b.sceneImages,editorial:b.editorial, as: b.as, subject: b.subject ?? null, request: b.request?.trim() || null, aspect: b.aspect, scenes: b.scenes, totalS: b.totalS, music: b.music };
+  const r: ThreeScenesRequest = { angleId:strategyStamp(p.id)?.angleId,mode:b.mode,generation:b.generation,purpose:b.purpose,initialSlot:b.initialSlot, sceneImages:b.sceneImages,editorial:b.editorial, as: b.as, subject: b.subject ?? null, request: b.request?.trim() || null, aspect: b.aspect, scenes: b.scenes, totalS: b.totalS, music: b.music };
   if(r.purpose==="site"){
     const {stateOf}=await import("@/lib/preparation/store");const state=stateOf(p.id);
     if(state?.stages.brand?.status!=="approved")throw new HttpError(409,"Validez l’identité du projet avant sa proposition vidéo.");
@@ -148,4 +151,5 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   assertCanSpend(user.id,approval.capMicro,p.id);
   const job = enqueue({ userId: user.id, projectId: p.id, type: "video.scenes", label: b.as === "ad" ? L("Publicité vidéo", "Video ad") : L("Publication vidéo", "Video post"), payload: { projectId: p.id, costCapMicro: approval.capMicro, request: { ...r, mode: q.mode,approval } } });
   return ok({ jobId: job.id, ...q });
+  },["plan", "create", "refine", "repair"]);
 });

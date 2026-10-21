@@ -5,7 +5,7 @@ import { HttpError } from '../auth';
 import { loadProject } from '../projects';
 import { withAiDisabled } from '../ai/access';
 import { withStrategyScope } from '../strategy-consumption';
-import { getStrategyState, preparationStrategy, stageStrategyModule, assertStrategyPreparationCurrent } from './index';
+import { serviceStrategyProject, getStrategyState, preparationStrategy, stageStrategyModule, assertStrategyPreparationCurrent } from './index';
 import { runContentEngineV2 } from '../seo-v2/engine';
 import { latestContent } from '../seo-v2/store';
 import { blockText } from '../seo-v2/doc';
@@ -17,6 +17,7 @@ function schema(){db().exec('CREATE TABLE IF NOT EXISTS marketing_module_staging
 export function preparedModules(projectId:string,preparationId:string):ModulePreparation[]{schema();return all<{payload:string}>('SELECT payload FROM marketing_module_staging WHERE project_id=? AND preparation_id=?',projectId,preparationId).map(r=>json<ModulePreparation>(r.payload,null as never));}
 function save(pid:string,prep:string,out:ModulePreparation){run('INSERT OR REPLACE INTO marketing_module_staging VALUES(?,?,?,?,?)',prep,pid,out.module,out.oldId,JSON.stringify(out));return out;}
 export async function prepareLocalStrategyModules(projectId:string,preparationId:string){
+ if(serviceStrategyProject(projectId))return [];
  schema();assertStrategyPreparationCurrent(projectId,preparationId);const state=getStrategyState(projectId),prep=state.pending;
  if(!prep||prep.id!==preparationId||prep.status!=='prepared')throw new HttpError(409,'Actualisez la préparation avant de réviser les contenus.','strategy_preparation_closed');
  const selection=preparationStrategy(projectId,preparationId),project=loadProject(projectId);
@@ -49,6 +50,7 @@ export async function prepareLocalStrategyModules(projectId:string,preparationId
     results.push(save(projectId,preparationId,{module:'calendar',oldId:content.contentId,newIds:[result.planId,...next],state:'prepared',note:'Calendrier et textes locaux préparés. Médias et approbation restent à contrôler avant toute programmation.',preview:all<{caption:string}>("SELECT caption FROM posts WHERE project_id=? AND plan_id=? ORDER BY scheduled_at",projectId,result.planId).map(p=>p.caption)}));
    }catch{results.push(save(projectId,preparationId,{module:'calendar',oldId:content.contentId,newIds:[],state:'blocked',note:'Le calendrier ne peut pas être repris dans les droits ou dates actuels. Original conservé ; vérifiez sa période.'}));}
   }
+  await (await import("../theme/strategy-transition")).prepareStrategyTheme(projectId,preparationId,{refresh:true});
   return preparedModules(projectId,preparationId);
  }),selection);
 }

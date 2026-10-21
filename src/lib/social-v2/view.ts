@@ -1,3 +1,4 @@
+import {recordedContentStrategy} from '../strategy-consumption';
 /**
  * Vue d'une publication pour l'interface (ancienne ou V2) : statut, réseau, format, médias, pilier, approbation de la
  * version actuelle, défauts bloquants, niveau de prise en charge du réseau.
@@ -14,6 +15,7 @@ export function postViewV2(p: Project, r: any, o: { gate?: boolean } = {}) {
   const g = o.gate ? checkPost(p, r.id) : null;
   return {
     ...base,
+    marketingStrategy:recordedContentStrategy(p.id,"post",r.id),
     editorial:json<{editorial?:unknown}>(r.brief??"{}",{}).editorial??null,
     engine: r.engine ?? "v1",
     // Semaine éditoriale : le nom du rôle (« Question fréquente »), jamais son code interne (« 5:faq »).

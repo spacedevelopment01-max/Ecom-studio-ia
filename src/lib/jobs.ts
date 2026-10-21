@@ -1,5 +1,5 @@
 import { currentStrategyInputDigest } from "./marketing-strategy";
-import { strategyStamp } from "./strategy-consumption";
+import { jobStrategy, strategyStamp } from "./strategy-consumption";
 /**
  * File de tâches persistante (SQLite).
  *  - Exécution par le worker, indépendante du navigateur.
@@ -67,7 +67,7 @@ export function enqueue(input: EnqueueInput): Job {
   if (input.projectId && hasLangContext() && !(input.payload && typeof input.payload === "object" && "lang" in (input.payload as object))) {
     input = { ...input, payload: { ...((input.payload as object) ?? {}), lang: contentLang() } };
   }
-  if(input.projectId){const strategy=strategyStamp(input.projectId);input={...input,payload:{...((input.payload as object)??{}),strategyVersion:strategy?.id??null,strategyInputDigest:strategy?currentStrategyInputDigest(input.projectId):null}};}
+  if(input.projectId){const strategy=jobStrategy(input.projectId,input.type,input.payload);input={...input,payload:{...((input.payload as object)??{}),strategyVersion:strategy?.id??null,strategyInputDigest:strategy?currentStrategyInputDigest(input.projectId):null}};}
   const operationKey = input.idempotencyKey ? `job:v2:${createHash("sha256").update(JSON.stringify([input.userId, input.projectId ?? null, input.type, input.idempotencyKey])).digest("hex")}` : null;
   if (operationKey) {
     // Compatibilité des anciennes demandes, toujours dans le même compte, projet et type.

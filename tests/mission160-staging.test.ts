@@ -48,6 +48,7 @@ for(const services of [false,true])it(`préparation native groupée SEO + calend
  const date=new Date(Date.now()+86400000).toISOString().slice(0,10);
  const plan=createPlanV2(loadProject(f.pid),{startDate:date,days:2,perDay:1,timezone:'Europe/Paris',platforms:[{platform:'instagram'}],lang:'fr'});
  const prep=prepareStrategyChange(f.pid,'expression'),results=await prepareLocalStrategyModules(f.pid,prep.id);
+ if(services){expect(results).toEqual([]);expect(prep.contents).toEqual([]);activateStrategy(f.pid,{angleId:'expression',preparationId:prep.id,idempotencyKey:'service-site-kept',confirmed:true});expect(latestContent(f.pid,a.docKey!)?.version.id).toBe(before.version.id);expect(one<any>('SELECT status FROM content_plans WHERE id=?',plan.planId)?.status).toBe('ready');return;}
  expect(results.filter(r=>r.state==='prepared').map(r=>r.module).sort()).toEqual(['calendar','seo']);
  expect(latestContent(f.pid,a.docKey!)?.version.id).toBe(before.version.id);expect(listContents(f.pid).map(d=>d.id)).toContain(before.version.id);
  const counts=()=>({docs:one<any>('SELECT COUNT(*) n FROM content_documents WHERE project_id=?',f.pid)!.n,posts:one<any>('SELECT COUNT(*) n FROM posts WHERE project_id=?',f.pid)!.n});const acquired=counts();

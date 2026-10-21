@@ -1,4 +1,5 @@
 "use client";
+import {CommunicationAngleSelector,useCommunicationAngle} from "./communication-angle";
 import { InitialCreatives } from "./initial-creatives";
 import { CopyFailureHistory } from "./copy-correction";
 /**
@@ -28,6 +29,7 @@ import { GuidedVideo } from "./guided-video";
 import type { Editorial } from "@/lib/social-v2/creative-contract";
 
 export type PostV = {
+  marketingStrategy?:import("@/lib/strategy-consumption").StrategyStamp|null;
   editorial?:Editorial|null;
   id: string; network: string; format: string; status: string; scheduledAt: number | null; timezone: string; title: string; caption: string; hashtags: string; link: string | null;
   media: AssetView[]; connectionId: string | null; connectionName: string | null; planId: string | null; error: string | null; remoteUrl: string | null; publishedAt: number | null;
@@ -334,6 +336,7 @@ function StrategyPanel({ data }: { data: Data }) {
 
 function CreatePanel({ data, onDone, onGo, reload }: { data: Data; onDone: () => void; onGo: (s: Section) => void; reload: () => void }) {
   const { id } = useProject();
+  const [angleId,setAngleId]=useCommunicationAngle();
   const t = useT();
   const toast = useToast();
   const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd");
@@ -361,13 +364,13 @@ function CreatePanel({ data, onDone, onGo, reload }: { data: Data; onDone: () =>
   const plan = () => run(async () => {
     const platforms = Object.entries(nets).filter(([, v]) => v.on).map(([platform, v]) => ({ platform, connectionId: v.account || null }));
     if (!platforms.length) throw new Error(t("Choisissez au moins un réseau.", "Choose at least one network."));
-    const r = await api<{ created: number; warnings: string[] }>(`/api/projects/${id}/social/v2`, { body: { action: "plan", request: { startDate: f.startDate, endDate: f.endDate, perDay: f.perDay, weekdays: f.weekdays, slots: f.slots.slice(0, f.perDay), timezone: f.timezone, platforms, distribution: f.distribution, priority: f.priority, formatMix: f.mix, structure: "weekly", exclude: f.exclude.split(/[\s,;]+/).filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x)) } } });
+    const r = await api<{ created: number; warnings: string[] }>(`/api/projects/${id}/social/v2`, { body: { action: "plan", angleId, request: { angleId, startDate: f.startDate, endDate: f.endDate, perDay: f.perDay, weekdays: f.weekdays, slots: f.slots.slice(0, f.perDay), timezone: f.timezone, platforms, distribution: f.distribution, priority: f.priority, formatMix: f.mix, structure: "weekly", exclude: f.exclude.split(/[\s,;]+/).filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x)) } } });
     setResult(r);
     toast("ok", t(`${r.created} publications planifiées (textes proposés, aucun média payant).`, `${r.created} posts planned (proposed copy, no paid media).`));
     reload();
   }, { key: "social-plan", label: t("Préparation du calendrier de publications…", "Preparing the posting calendar…"), ms: 20000 });
   const fromAsk = () => run(async () => {
-    const r = await api<{ created: number; warnings: string[]; notes: string[] }>(`/api/projects/${id}/social/v2`, { body: { action: "ask", text: ask } });
+    const r = await api<{ created: number; warnings: string[]; notes: string[] }>(`/api/projects/${id}/social/v2`, { body: { action: "ask", angleId, text: ask } });
     setResult(r);
     toast("ok", t(`${r.created} publications planifiées.`, `${r.created} posts planned.`));
     reload();
@@ -375,6 +378,7 @@ function CreatePanel({ data, onDone, onGo, reload }: { data: Data; onDone: () =>
   const toggleDay = (d: number) => setF((x) => ({ ...x, weekdays: x.weekdays.includes(d) ? x.weekdays.filter((y) => y !== d) : [...x.weekdays, d].sort() }));
   return (
     <div className="grid min-w-0 grid-cols-1 gap-5" data-social-create>
+      <CommunicationAngleSelector value={angleId} onChange={setAngleId}/>
       {jobs.map((j) => <JobProgress key={j.id} job={j} />)}
       <AiWait busy={busy && !!what} label={what?.label ?? ""} waitKey={what?.key ?? "social"} expectedMs={what?.ms ?? 20000} />
       <Card className="grid gap-2 p-5 sm:p-7" data-create-guide>
@@ -496,6 +500,7 @@ function CalCard({ p, tz, onOpen, onAction, row = false }: { p: PostV; tz: strin
   return (
     <div draggable={!locked && !row} onDragStart={(e) => e.dataTransfer.setData("text/post", p.id)} {...(row ? { "data-agenda-post": p.id } : { "data-post": p.id })} className={cx("group relative min-w-0 overflow-hidden rounded-xl border bg-card shadow-sm transition hover:shadow-md", p.blocking.length > 0 ? "border-warn" : "border-line", row && "flex gap-3 p-2")}>
       <span className={cx("absolute inset-y-0 left-0 w-1", STATUS_COLOR[p.status] ?? "bg-line")} aria-hidden />
+      {p.marketingStrategy&&<span className="block px-2 py-1 text-[11px]" data-post-angle={p.marketingStrategy.angleId}>{t("Angle", "Angle")} : {({usage:t("Usage concret","Concrete use"),reassurance:t("Choix éclairé","Informed choice"),expression:t("Expression personnelle","Personal expression"),discovery:t("Découverte","Discovery"),generalist:t("Généraliste","Generalist")})[p.marketingStrategy.angleId]}</span>}
       {row && thumb}
       <div className={cx("min-w-0", row ? "flex-1" : "grid gap-1.5 p-2 pl-2.5")}>
         <div className="flex items-center gap-1.5">

@@ -1,4 +1,4 @@
-import { withStrategyScope, strategyStamp, strategyReuseInput } from "../strategy-consumption";
+import { withSiteStrategy, withCommunicationStrategy, withStrategyScope, strategyStamp, strategyReuseInput } from "../strategy-consumption";
 import { reserveBlogDraft,releaseUnsavedBlogDraft } from "../quotas";
 import { assertJobEntitlements,assertAdvertising } from "../job-entitlements";
 /**
@@ -95,7 +95,7 @@ export function targetPage(pages: PageRef[], type: ContentType, pageKey: string 
 type RunResult = ContentRunResult & { strategy: SeoStrategy; stoppedByCostCap: boolean };
 const pending = new Map<string, Promise<RunResult>>();
 export async function runContentEngineV2(ctx: JobContext | null, projectId: string, req: ContentRequestV2, injected?: SeoV2Deps): Promise<RunResult> {
-  return withStrategyScope(projectId, () => runContentEngineV2InScope(ctx, projectId, req, injected));
+  return (req.type==="ad_copy"?withCommunicationStrategy:withSiteStrategy)(projectId, () => runContentEngineV2InScope(ctx, projectId, req, injected));
 }
 
 async function runContentEngineV2InScope(ctx: JobContext | null, projectId: string, req: ContentRequestV2, injected?: SeoV2Deps): Promise<RunResult> {

@@ -1,4 +1,6 @@
 "use client";
+import {CommunicationAngleSelector,useCommunicationAngle} from "../communication-angle";
+"use client";
 /**
  * Publicités › Publicité image : création guidée entièrement par l'IA d'images (Qwen). Le client choisit le produit ou
  * le service, décrit librement le visuel voulu et le format ; le prix s'affiche avant, rien ne part sans son clic.
@@ -51,6 +53,7 @@ function ProjectAdCreator({ onDone }: { onDone?: () => void }) {
     `/api/projects/${id}/campaigns/v2`, { poll: 3000 },
   );
   const jobs = useActive(["image.ai_post", "ads.v2"]);
+  const [angleId,setAngleId]=useCommunicationAngle();
   const [subjectKey, setSubjectKey] = useState("");
   const [request, setRequest] = useState("");
   const [aspect, setAspect] =
@@ -101,7 +104,7 @@ function ProjectAdCreator({ onDone }: { onDone?: () => void }) {
     try {
       const created=await api<{jobId:string}>(`/api/projects/${id}/campaigns/v2`, {
         body: {
-          action: "ai_create",
+          action: "ai_create", angleId,
           operationId:
             operation.current ?? (operation.current = crypto.randomUUID()),
           subject: subjectChoice(
@@ -132,6 +135,7 @@ function ProjectAdCreator({ onDone }: { onDone?: () => void }) {
   if(data?.access===false)return <Card className="mb-6 p-5" data-ad-plan-lock>{t("La publicité et l’aide aux campagnes sont incluses avec Dominer. Vos créations existantes restent conservées et accessibles.","Advertising and campaign assistance are included with Dominate. Existing creations remain kept and accessible.")}</Card>;
   return (
     <section className="mb-8" data-ai-ad-creator>
+      <CommunicationAngleSelector value={angleId} onChange={setAngleId}/>
       <SectionTitle title={t("Publicité conçue par l'IA", "Ad designed by AI")}>
         {t(
           "Choisissez le produit ou le service, décrivez votre idée : l'IA crée la publicité complète (scène, mise en page, textes) avec votre vrai produit et votre marque.",

@@ -1,3 +1,4 @@
+import { withCommunicationRequest } from "@/lib/marketing-strategy/communication-route";
 import { planAllowsAds } from "@/lib/plan-entitlements";
 import { planOfProject } from "@/lib/plan-gates";
 import { assertAdvertising } from "@/lib/job-entitlements";
@@ -68,6 +69,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
+  return withCommunicationRequest(p.id,req,async()=>{
   const b = await body(
     req,
     z.object({
@@ -120,4 +122,5 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'ads.v2' AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Des publicités sont déjà en préparation.", "Ads are already being prepared."));
   const job = enqueue({ userId: user.id, projectId: p.id, type: "ads.v2", idempotencyKey:b.operationId?`campaign-create:${p.id}:${b.operationId}:${stableHash("campaign-intent",{count:b.count,platforms:b.platforms,aspects:b.aspects,offer:b.offer,audience:b.audience,objective:b.objective})}`:undefined, label: L("Publicités : angles, textes et créations", "Ads: angles, copy and creatives"), payload: { projectId: p.id, costCapMicro:campaignPrice.capMicro, request: { count: b.count, platforms: b.platforms, objective: b.objective, audience: b.audience, offer: b.offer, aspects: b.aspects } } });
   return ok({ jobId: job.id, ...view(p.id) });
+  },["ai_create", "generate"]);
 });

@@ -1,3 +1,4 @@
+import { withCommunicationRequest } from "@/lib/marketing-strategy/communication-route";
 import { strategyVisibilitySql } from "@/lib/marketing-strategy/visibility";
 import { EditorialSchema, editorialPages, creativeContract, type Editorial } from "@/lib/social-v2/creative-contract";
 import { z } from "zod";
@@ -69,6 +70,7 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
 
 const ids = z.array(z.string().max(40)).max(1000).optional();
 const Plan = z.object({
+  angleId:z.enum(["usage","reassurance","expression","discovery","generalist"]).optional(),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
   days: z.number().int().min(1).max(366).optional(),
@@ -96,6 +98,7 @@ const Plan = z.object({
  */
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
+  return withCommunicationRequest(p.id,req,async()=>{
   const b = await body(
     req,
     z.discriminatedUnion("action", [
@@ -241,4 +244,5 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       setAutomationStatus(p.id, b.automationId, b.status);
       return ok({ ok: true });
   }
+  },["plan", "ask", "create_one", "automation", "edit"]);
 });

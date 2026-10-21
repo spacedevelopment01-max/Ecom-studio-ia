@@ -1,6 +1,6 @@
 import { canonicalJSON } from "../brain/hash";
-import { strategySelection, strategyContent } from "../strategy-consumption";
-import { assertStrategyChosen, activeStrategy, recordStrategyContent, getStrategyState } from "../marketing-strategy";
+import { withSiteStrategy, strategySelection, strategyContent } from "../strategy-consumption";
+import { assertStrategyChosen, activeStrategy, recordStrategyContent, strategySourceCompatible, getStrategyState } from "../marketing-strategy";
 /**
  * Construction de la boutique : rassemble les créations validées (logo,
  * images, vidéo, textes) et produit une version du thème. La composition de
@@ -320,6 +320,10 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
   if (clientAdaptation && strategy) spec.meta={...spec.meta, strategy: { id:strategy.id, version:strategy.version, angleId:strategy.angleId }};
   if(clientAdaptation && strategy && getStrategyState(projectId).alignment.some(c=>c.module==="copy"&&!c.aligned))spec.meta={...spec.meta,strategy:{...spec.meta!.strategy!,retainedPaths:["upstream:shop_copy"],alignment:"mixed"}};
   const delivered = deliverContent(spec, p, spec.language ?? contentLang());
+  if(clientAdaptation&&strategy){
+    const retained=delivered.filter(trace=>{const row=one<{id:string}>('SELECT id FROM content_documents WHERE project_id=? AND doc_key=? AND version=?',projectId,trace.docKey,trace.version);return !row||!strategySourceCompatible(projectId,'seo',row.id,strategy);}).map(trace=>`upstream:seo:${trace.docKey}:${trace.version}`);
+    if(retained.length)spec.meta={...spec.meta,strategy:{...spec.meta!.strategy!,retainedPaths:[...(spec.meta?.strategy?.retainedPaths??[]),...retained],alignment:'mixed'}};
+  }
   bindReferenceOffers(spec, p, new Set(delivered.map((d) => d.target)));
   if (!services) bindProductContent(spec, p);
   if(clientAdaptation)(await import("../theme/adaptation-preservation")).bindAdaptationProductTargets(spec);
@@ -327,6 +331,9 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
 }
 
 export async function buildShop(ctx: JobContext | null, projectId: string, opts: { direction?: DirectionId; useAi?: boolean; summary?: Bi; engine?: "v1" | "v2"; language?: LanguageId; prepareOnly?: boolean } = {}) {
+  return withSiteStrategy(projectId,()=>buildShopInScope(ctx,projectId,opts));
+}
+async function buildShopInScope(ctx:JobContext|null,projectId:string,opts:Parameters<typeof buildShop>[2]={}) {
   if(!strategySelection(projectId))assertStrategyChosen(projectId);
   const {assertThemeAllowed}=await import("../plan-gates");
   const chosen=opts.direction??loadProject(projectId).brand?.direction;

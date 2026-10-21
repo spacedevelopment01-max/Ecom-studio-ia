@@ -30,7 +30,7 @@ for(const services of [false,true])it(`parcours ${services?'service RDV':'produi
  saveThemeVersion(f.pid,edited.spec,'Retouche fictive protégée','user');
  await choose(f.pid,'expression');const b=currentTheme(f.pid)!;
  expect(activeStrategy(f.pid)?.angleId).toBe('expression');expect(b.spec.templates.index.sections[hero].settings.heading).toBe('Mon titre conservé mot pour mot');
- expect(JSON.stringify(b.spec)).toContain('expression');expect(JSON.stringify(b.spec.templates)).not.toBe(JSON.stringify(first.spec.templates));
+ if(services){expect(b.version.id).toBe(currentTheme(f.pid)!.version.id);expect(b.spec.meta?.strategy).toBeUndefined();}else expect(JSON.stringify(b.spec)).toContain('expression');if(!services)expect(JSON.stringify(b.spec.templates)).not.toBe(JSON.stringify(first.spec.templates));
  expect(loadProject(f.pid).brand).toEqual(identity);expect(b.spec.store.product.title).toBe(f.project.product.name);
  const files=compileTheme(b.spec);expect([...files.keys()].some(k=>k.startsWith('templates/'))).toBe(true);
  expect(JSON.stringify([...files])).toContain('Mon titre conservé mot pour mot');

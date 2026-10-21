@@ -1,3 +1,4 @@
+import {contentStrategy,withCommunicationStrategy} from '../strategy-consumption';
 import { authorizedPublicationTexts, copyNeedsEvidence, publicationCopyIssues } from "./publication-copy-policy";
 import { acquiredCorrection, makeCopyReview } from "./publication-copy-recovery";
 import { creativeContract, creativeInstruction, editorialPages, commercialCta, EditorialBlockSchema, type CreativeContract, type EditorialBlock } from "./creative-contract";
@@ -409,6 +410,10 @@ export function projectForSubject(
 }
 
 export async function designPostWithAi(p:Project,post:PostBrief,o:Parameters<typeof designSinglePostWithAi>[2],deps:AiPostDeps):Promise<MediaResult> {
+ const own=p.business==='services'?contentStrategy(p.id,'post',post.id):null;
+ return withCommunicationStrategy(p.id,()=>designPostInScope(p,post,o,deps),own?{strategyId:own.id}:{});
+}
+async function designPostInScope(p:Project,post:PostBrief,o:Parameters<typeof designSinglePostWithAi>[2],deps:AiPostDeps):Promise<MediaResult>{
   if(post.format!=="carousel" || o.as==="ad") return designSinglePostWithAi(p,post,o,deps);
   let pages:ReturnType<typeof editorialPages>;
   try {pages=editorialPages(post); if(pages.length>platformSpec(post.network).carouselMax)throw new Error("Ce réseau ne permet pas ce nombre de pages de carrousel ; choisissez un réseau compatible.");}

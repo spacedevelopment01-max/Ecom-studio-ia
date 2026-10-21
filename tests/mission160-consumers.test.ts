@@ -7,7 +7,7 @@ import { emptyProduct } from '@/lib/project-types';
 import { loadProject, saveProduct } from '@/lib/projects';
 import { grantProjectPlan } from '@/lib/project-subscriptions';
 import { activeStrategy, activateStrategy, prepareStrategyChange, stageStrategyModule, getStrategyState, assertContentAlignment, preparationStrategy } from '@/lib/marketing-strategy';
-import { withStrategyScope, strategySelection, strategyStamp, selectedStrategyContext, assertStrategyInputsCurrent, strategyReuseInput, strategyReuseKey } from '@/lib/strategy-consumption';
+import { withCommunicationStrategy, withStrategyScope, strategySelection, strategyStamp, selectedStrategyContext, assertStrategyInputsCurrent, strategyReuseInput, strategyReuseKey } from '@/lib/strategy-consumption';
 import { brainView } from '@/lib/brain/facade';
 import { SCOPES } from '@/lib/brain/views';
 import { adInsight } from '@/lib/ads-v2/insight';
@@ -38,6 +38,7 @@ const ad=()=>({version:1,width:1080,height:1080,background:'#ffffff',safe:{top:2
 
 it.each([false,true])('le même angle versionné alimente tous les scopes Brain, produit/service=%s',async service=>{
  const f=await fixture(service);const active=activate(f.pid,'usage');
+ return withCommunicationStrategy(f.pid,()=>{
  for(const scope of SCOPES.filter(s=>s!=='all')) {
   const view=brainView(f.project(),scope);
   expect(view.kept).toContain('strategy.active');expect(view.criticalDropped).toEqual([]);
@@ -46,18 +47,20 @@ it.each([false,true])('le même angle versionné alimente tous les scopes Brain,
  }
  const call=withSelectedStrategy({userId:f.user.id,projectId:f.pid,task:'copywriting',system:'Texte',prompt:'Demande'});
  expect(call.context).toContain(active.id);expect(withSelectedStrategy(call).context).toBe(call.context);
+ });
 });
 
 it.each([false,true])('la bascule change cible, promesse, ton, scène, publicité et social sans changer les faits, service=%s',async service=>{
- const f=await fixture(service); const values=[];
+ const f=await fixture(service); const values:Record<string,string|null>[]=[];
  for(const angle of ['usage','reassurance']) {
-  const active=activate(f.pid,angle);const p=f.project();const insight=adInsight(p,{audience:'cible concurrente ignorée'});
+  const active=activate(f.pid,angle);withCommunicationStrategy(f.pid,()=>{const p=f.project();const insight=adInsight(p,{audience:'cible concurrente ignorée'});
   const facts=verifiedFacts(p);const social=socialStrategy(p);
   const video=videoStrategy(p,{kind:'brand_film',goal:'présenter',audience:null,durationS:15,aspect:'16:9'} as any);
   const copy=localCopy(insight,{id:'a',type:'detail',material:'Contenance : 12 litres',lever:'détail',why:'fait'} as any,'fr',{hookWords:20,headline:120,description:200,primaryFirstLine:200});
   expect(insight.audience.declared).toBe(active.angle.audience);expect(social.tone).toEqual([active.angle.tone]);expect(facts.facts).toEqual(p.product.facts.map(x=>({label:x.label,value:x.value})));
   expect(video.style.camera).toContain(active.angle.visualDirection);expect(copy.primary).toContain(active.angle.examples.advertisement);
   values.push({audience:insight.audience.declared,promise:insight.difference,tone:social.tone.join(),scene:video.style.camera,copy:copy.primary,messages:social.messages.join()});
+ });
  }
  for(const key of Object.keys(values[0]) as (keyof typeof values[0])[])expect(values[0][key],key).not.toEqual(values[1][key]);
  expect(one<{n:number}>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=?',f.pid)?.n).toBe(0);

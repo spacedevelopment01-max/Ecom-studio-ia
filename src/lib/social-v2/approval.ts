@@ -1,3 +1,4 @@
+import {reviewServiceCommunication} from '../marketing-strategy';
 /**
  * Approbation par VERSION : l'empreinte (`content_hash`) couvre réseau, format, titre, légende, hashtags, lien et
  * médias (dans l'ordre). Approuver enregistre l'empreinte approuvée (`approved_hash`) ; toute modification du texte
@@ -53,6 +54,7 @@ export function approvePosts(ids: string[], userId: string, gate: (postId: strin
         out.refused.push({ id: pid, reason: g.blocking.join(" ; ") });
         continue;
       }
+      try{reviewServiceCommunication(r.project_id,"post",pid);}catch(error){out.refused.push({id:pid,reason:(error as Error).message});continue;}
       const h = contentHash(r);
       run("UPDATE posts SET approved_hash = ?, content_hash = ?, approved_at = ?, approved_by = ?, status = CASE WHEN status IN ('planned','draft','review','failed') THEN 'approved' ELSE status END, updated_at = ? WHERE id = ?", h, h, now(), userId, now(), pid);
       out.approved.push(pid);

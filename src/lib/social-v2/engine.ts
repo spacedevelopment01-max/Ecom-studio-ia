@@ -1,4 +1,5 @@
-import { strategyContent } from "../strategy-consumption";
+import {serviceStrategyProject} from '../marketing-strategy';
+import { recordedContentStrategy, strategyContent } from "../strategy-consumption";
 import { planOfProject } from "../plan-gates";
 import { PLANS } from "../plans";
 /**
@@ -129,7 +130,7 @@ export function editPostV2(p: Project, postId: string, patch: ManualPatch): { re
   }
   // Seul le déplacement (date) ne change pas la version ; tout le reste est une modification du client protégée.
   const contentChanged = sets.some(([c]) => c !== "scheduled_at" && c !== "connection_id");
-  if (contentChanged) strategyContent(p.id, "post", postId, { stamp: null, protected: true });
+  if (contentChanged) strategyContent(p.id, "post", postId, { stamp: serviceStrategyProject(p.id)?recordedContentStrategy(p.id,"post",postId):null, protected: true });
   return { reapproval: contentChanged ? afterEdit(postId) : false };
 }
 
@@ -142,6 +143,7 @@ export function duplicatePostV2(p: Project, postId: string): string {
      SELECT ?, project_id, plan_id, campaign_id, connection_id, network, format, 'review', scheduled_at, timezone, title, caption, hashtags, link, angle, media, brief, ?, ?, ?, 'v2', pillar, objective, content_hash, NULL, 1 FROM posts WHERE id = ?`,
     nid, `dup:${nid}`, now(), now(), postId,
   );
+  strategyContent(p.id,"post",nid,{stamp:recordedContentStrategy(p.id,"post",postId),protected:true});
   return nid;
 }
 

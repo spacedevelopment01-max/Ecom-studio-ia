@@ -37,7 +37,7 @@ export function readVideoApproval<T>(p:Project,request:unknown,token:string|unde
 }
 
 export function sceneApprovalRequest(req:import("./three-scenes").ThreeScenesRequest) {
- return {...(req.generation?{generation:req.generation,...req.mode==="stock"?{requestedSource:"stock"}:{}}:{}),...(req.purpose?{purpose:req.purpose,initialSlot:req.initialSlot??null,initialExistingAssetId:req.initialExistingAssetId??null}:{}),sceneImages:req.sceneImages??null,as:req.as,subject:req.subject??null,request:req.request??null,aspect:req.aspect??"9:16",scenes:req.scenes??3,totalS:req.totalS??15,music:req.music!==false,editorial:req.editorial??null};
+ return {...(req.angleId?{angleId:req.angleId}:{}),...(req.generation?{generation:req.generation,...req.mode==="stock"?{requestedSource:"stock"}:{}}:{}),...(req.purpose?{purpose:req.purpose,initialSlot:req.initialSlot??null,initialExistingAssetId:req.initialExistingAssetId??null}:{}),sceneImages:req.sceneImages??null,as:req.as,subject:req.subject??null,request:req.request??null,aspect:req.aspect??"9:16",scenes:req.scenes??3,totalS:req.totalS??15,music:req.music!==false,editorial:req.editorial??null};
 }
 
 export const guidedRunKey=(p:Project,req:import("./three-scenes").ThreeScenesRequest)=>req.key??`scenes:${p.id}:${videoScope(p,sceneApprovalRequest(req)).slice(0,20)}${req.generation&&req.approval?`:${crypto.createHash("sha256").update(JSON.stringify(req.approval.scenario)).digest("hex").slice(0,16)}`:""}`;

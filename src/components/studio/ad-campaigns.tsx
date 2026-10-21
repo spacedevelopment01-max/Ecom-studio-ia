@@ -1,4 +1,5 @@
 "use client";
+import {CommunicationAngleSelector,useCommunicationAngle} from "./communication-angle";
 import { AiWait } from "../wait-time";
 import { useState } from "react";
 import { useEffect } from "react";
@@ -63,6 +64,7 @@ const ctaIn = (cta: string, lang: Lang) => {
 
 /** Campagnes publicitaires : annonces, audiences, plan de test, créations choisies, export pour le gestionnaire. */
 export function CampaignsPanel({ autoNew = false }: { autoNew?: boolean } = {}) {
+  const [angleId,setAngleId]=useCommunicationAngle();
   const { id, data } = useProject();
   const toast = useToast();
   const t = useT();
@@ -100,7 +102,7 @@ export function CampaignsPanel({ autoNew = false }: { autoNew?: boolean } = {}) 
   });
   const save = async (c: Campaign) => {
     try {
-      const r = await api<{ id: string }>(`/api/projects/${id}/campaigns`, { body: { id: c.id || undefined, name: c.name, objective: c.objective, networks: c.networks, brief: { ...c.brief, language: langOf(c) }, plan: { ...c.plan, ads: (c.plan.ads ?? []).map((a) => ({ ...a, media: a.media.map((m) => ({ id: m.id, name: m.name, url: m.url, thumbUrl: m.thumbUrl, kind: m.kind, meta: { format: m.meta?.format } })) })) }, status: c.status } });
+      const r = await api<{ id: string }>(`/api/projects/${id}/campaigns`, { body: { angleId, id: c.id || undefined, name: c.name, objective: c.objective, networks: c.networks, brief: { ...c.brief, language: langOf(c) }, plan: { ...c.plan, ads: (c.plan.ads ?? []).map((a) => ({ ...a, media: a.media.map((m) => ({ id: m.id, name: m.name, url: m.url, thumbUrl: m.thumbUrl, kind: m.kind, meta: { format: m.meta?.format } })) })) }, status: c.status } });
       toast("ok", t("Campagne enregistrée.", "Campaign saved."));
       reload();
       return r.id;
@@ -127,7 +129,7 @@ export function CampaignsPanel({ autoNew = false }: { autoNew?: boolean } = {}) 
     const current = c.plan.ads ?? [];
     setDrafting(true);
     try {
-      const r = await api<{ ads: Omit<Ad, "media">[]; by: "ai" | "local"; strategy?: AdStrategy }>(`/api/projects/${id}/campaigns/draft`, { body: { count: Math.max(1, Math.min(6, current.length || 3)), objective: objectiveIn(c.objective, lang), audience: c.brief.audience || undefined, networks: c.networks }, lang });
+      const r = await api<{ ads: Omit<Ad, "media">[]; by: "ai" | "local"; strategy?: AdStrategy }>(`/api/projects/${id}/campaigns/draft`, { body: { angleId, campaignId:c.id||undefined, count: Math.max(1, Math.min(6, current.length || 3)), objective: objectiveIn(c.objective, lang), audience: c.brief.audience || undefined, networks: c.networks }, lang });
       // Les créations déjà choisies restent attachées aux annonces (même position).
       setEdit((e) => e && { ...e, plan: { ...e.plan, strategy: r.strategy ?? e.plan.strategy, ads: r.ads.map((a, i) => ({ ...a, media: current[i]?.media ?? [] })) } });
       toast("ok", r.by === "ai" ? t("Annonces proposées : relisez-les avant d'enregistrer.", "Ads drafted: review them before saving.") : (svc ? t("Annonces proposées à partir de vos prestations (version simplifiée) : complétez les passages entre crochets.", "Ads drafted from your services (simplified version): fill in the bracketed parts.") : t("Annonces proposées à partir des faits du produit (version simplifiée) : complétez les passages entre crochets.", "Ads drafted from the product facts (simplified version): fill in the bracketed parts.")));
@@ -180,6 +182,7 @@ export function CampaignsPanel({ autoNew = false }: { autoNew?: boolean } = {}) 
       )}
       {edit && (
         <Modal open onClose={() => setEdit(null)} title={edit.id ? t("Campagne", "Campaign") : t("Nouvelle campagne", "New campaign")} wide>
+          {!edit.id&&<CommunicationAngleSelector value={angleId} onChange={setAngleId}/>}
           <div className="grid gap-4">
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label={t("Nom", "Name")} htmlFor="cname"><Input id="cname" value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} /></Field>

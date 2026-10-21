@@ -69,6 +69,19 @@ export function activeStrategy(projectId: string): ActiveStrategy | null {
     ),
   );
 }
+/** Service websites have a common factual foundation, independent of communication angles. */
+export function serviceStrategyProject(projectId:string):boolean {return one<{business_type:string}>('SELECT business_type FROM projects WHERE id=?',projectId)?.business_type==='services';}
+export function defaultStrategy(projectId:string):ActiveStrategy|null {
+ schema();return version(one("SELECT v.* FROM projects p JOIN marketing_strategy_active a ON a.project_id=p.id JOIN marketing_strategy_versions v ON v.id=a.strategy_id WHERE p.id=? AND p.business_type!='services'",projectId));
+}
+/** Resolve an already explicitly authorized communication identity; never consumes another slot. */
+export function communicationStrategy(projectId:string,options:{angleId?:string;strategyId?:string}={}):ActiveStrategy {
+ schema();const s=options.strategyId?version(one('SELECT * FROM marketing_strategy_versions WHERE project_id=? AND id=?',projectId,options.strategyId)):options.angleId?version(one('SELECT * FROM marketing_strategy_versions WHERE project_id=? AND angle_id=? ORDER BY version DESC LIMIT 1',projectId,canonicalAngle(options.angleId))):activeStrategy(projectId);
+ if(!s||!one('SELECT 1 FROM marketing_strategy_used WHERE project_id=? AND angle_id=?',projectId,s.angleId))throw new HttpError(409,'Choisissez explicitement un angle autorisé dans Stratégie avant de créer cette communication.','strategy_communication_choice_required');
+ quota(projectId,s.angleId);
+ if(s.inputDigest!==currentStrategyInputDigest(projectId))throw new HttpError(409,'Les informations ont changé. Réconciliez cet angle avant de créer une nouvelle communication ; les versions acquises sont conservées.','strategy_inputs_stale');
+ return s;
+}
 export const currentStrategyInputDigest = (projectId: string): string =>
   inputDigest(loadProject(projectId));
 export function strategyContext(projectId: string): string {
@@ -76,11 +89,11 @@ export function strategyContext(projectId: string): string {
 }
 export function strategyContextFor(s: ActiveStrategy | null): string {
   return s
-    ? `\n<strategie_marketing_active version="${s.version}" id="${s.id}" angle="${s.angleId}">\n${JSON.stringify(s.angle)}\nCette stratégie est le fil conducteur de tous les contenus de ce projet. Les cibles et motivations sont des hypothèses créatives, jamais des personnes ou résultats validés. Préserver les faits, le nom, le logo, les retouches et l’identité. Varier les textes par rôle sans répéter le slogan. Aucun fait nouveau, marque externe ou humain sans autorisation.\n</strategie_marketing_active>`
+    ? `\n<strategie_marketing_active version="${s.version}" id="${s.id}" angle="${s.angleId}">\n${JSON.stringify(s.angle)}\nCette stratégie est le fil conducteur de cette création et de ses déclinaisons. La portée du moteur reste conservée : un angle de communication de services ne réécrit pas le site général. Les cibles et motivations sont des hypothèses créatives, jamais des personnes ou résultats validés. Préserver les faits, le nom, le logo, les retouches et l’identité. Varier les textes par rôle sans répéter le slogan. Aucun fait nouveau, marque externe ou humain sans autorisation.\n</strategie_marketing_active>`
     : "";
 }
 export function assertStrategyChosen(projectId: string) {
-  if (!activeStrategy(projectId))
+  if (!serviceStrategyProject(projectId) && !activeStrategy(projectId))
     throw new HttpError(
       409,
       "Choisissez explicitement un angle marketing avant de construire votre thème. Les cinq propositions et les démonstrations restent consultables sans activation.",
@@ -447,6 +460,7 @@ export function getStrategyState(projectId: string): StrategyState {
   );
   return {
     projectId,
+    scope:serviceStrategyProject(projectId)?'service_communication':'project',
     plan,
     limit: plan ? PLANS[plan].marketingAngles : 0,
     angles,
@@ -470,7 +484,7 @@ export function getStrategyState(projectId: string): StrategyState {
       ...json<any>(set.analysis_json, {}),
       currentInputDigest: digest,
     },
-    alignment: inventory(projectId, active),
+    alignment: serviceStrategyProject(projectId)?[]:inventory(projectId, active),
     pending: pending ? JSON.parse(pending.payload) : null,
   };
 }
@@ -553,7 +567,7 @@ export function prepareStrategyChange(
       inputDigest: digest,
       activatedAt: 0,
     };
-    const contents = inventory(projectId, target),
+    const contents = serviceStrategyProject(projectId)?[]:inventory(projectId, target),
       inventoryDigest = hash(contents);
     const existing = all<any>(
       "SELECT payload FROM marketing_strategy_preparations WHERE project_id=? AND angle_id=? AND status='prepared'",
@@ -569,6 +583,7 @@ export function prepareStrategyChange(
       );
     if (existing) return existing;
     const p: StrategyPreparation = {
+      scope:serviceStrategyProject(projectId)?"service_communication":"project",
       id: id(),
       projectId,
       angleId,
@@ -641,6 +656,7 @@ export function stageStrategyModule(
     replacements?: { oldId: string; newId: string }[];
   },
 ) {
+  if(serviceStrategyProject(projectId))throw new HttpError(409,'Les contenus de services conservent leur angle propre ; aucun remplacement global du site ou des campagnes.','strategy_service_no_global_revision');
   schema();
   const prep = readPreparation(projectId, preparationId);
   if (prep.status !== "prepared")
@@ -785,7 +801,7 @@ export function activateStrategy(
     }
     quota(projectId, angleId);
     if (
-      one(
+      !serviceStrategyProject(projectId) && one(
         "SELECT id FROM posts WHERE project_id=? AND status='publishing' LIMIT 1",
         projectId,
       )
@@ -825,6 +841,7 @@ export function activateStrategy(
         "strategy_preparation_closed",
       );
     const current = activeStrategy(projectId);
+    if((prep.scope??'project')!==(serviceStrategyProject(projectId)?'service_communication':'project'))throw new HttpError(409,'La portée de préparation a changé. Préparez un nouveau choix sans remplacer les contenus existants.','strategy_preparation_stale');
     if (
       prep.inputDigest !== inputDigest(loadProject(projectId)) ||
       prep.baseStrategyId !== (current?.id ?? null)
@@ -860,7 +877,7 @@ export function activateStrategy(
         "strategy_staged_content_missing",
       );
     const target = preparationStrategy(projectId, prep.id);
-    const freshInventory = inventory(projectId, target);
+    const freshInventory = serviceStrategyProject(projectId)?[]:inventory(projectId, target);
     if(freshInventory.some(c=>{const before=prep.contents.find(old=>old.module===c.module&&old.contentId===c.contentId);return before&&before.contentFingerprint!==c.contentFingerprint;}))throw new HttpError(409,'Un contenu a été retouché pendant la préparation. Les versions sont conservées ; actualisez puis vérifiez la nouvelle version avant activation.','strategy_content_changed');
     const concurrent = freshInventory.filter(
       (c) =>
@@ -1006,7 +1023,7 @@ export function recordStrategyContent(
   schema();
   const s = Object.hasOwn(options, "strategy")
     ? options.strategy
-    : activeStrategy(projectId);
+    : defaultStrategy(projectId);
   run(
     "INSERT OR REPLACE INTO marketing_strategy_contents (project_id,module,content_id,strategy_id,version,angle_id,input_digest,protected,published,scheduled,content_fingerprint) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
     projectId,
@@ -1029,7 +1046,12 @@ export function assertContentAlignment(
   contentId: string,
 ) {
   schema();
-  const active = activeStrategy(projectId);
+  let active = activeStrategy(projectId);
+  if(serviceStrategyProject(projectId)){
+   const row=one<{strategy_id:string|null}>('SELECT strategy_id FROM marketing_strategy_contents WHERE project_id=? AND module=? AND content_id=?',projectId,module,contentId);
+   if(!row?.strategy_id)throw new HttpError(409,'Cette communication doit être relue et rattachée explicitement à un angle autorisé avant production ou envoi.','strategy_content_unaligned');
+   active=communicationStrategy(projectId,{strategyId:row.strategy_id});
+  }
   if (!active) return;
   const content = inventory(projectId, active).find(
     (c) => c.module === module && c.contentId === contentId,
@@ -1045,7 +1067,36 @@ export function assertContentAlignment(
 /** Recheck angle rights and facts before a preparation can spend or acquire more work. */
 export function assertStrategyPreparationCurrent(projectId:string,preparationId:string){
  schema();const prep=readPreparation(projectId,preparationId);quota(projectId,prep.angleId);
+ if((prep.scope??'project')!==(serviceStrategyProject(projectId)?'service_communication':'project'))throw new HttpError(409,'La portée de préparation a changé. Préparez un nouveau choix.','strategy_preparation_stale');
  if(prep.status!=='prepared')throw new HttpError(409,'Cette préparation est clôturée.','strategy_preparation_closed');
  if(prep.inputDigest!==currentStrategyInputDigest(projectId)||prep.baseStrategyId!==(activeStrategy(projectId)?.id??null))throw new HttpError(409,'Le projet ou son angle actif a changé ; actualisez la préparation. Aucun nouvel appel n’a été lancé.','strategy_preparation_stale');
  return prep;
+}
+
+export function reviewServiceCommunication(projectId:string,module:string,contentId:string,angleId?:string){
+ if(!serviceStrategyProject(projectId))return;
+ schema();const row=one<{strategy_id:string|null}>('SELECT strategy_id FROM marketing_strategy_contents WHERE project_id=? AND module=? AND content_id=?',projectId,module,contentId);
+ const s=communicationStrategy(projectId,row?.strategy_id?{strategyId:row.strategy_id}:{angleId});
+ if(module==='post'){
+  const media=one<{media:string}>('SELECT media FROM posts WHERE project_id=? AND id=?',projectId,contentId);
+  for(const aid of json<string[]>(media?.media??'[]',[])){const asset=one<{angle_id:string|null;input_digest:string}>("SELECT angle_id,input_digest FROM marketing_strategy_contents WHERE project_id=? AND module='asset' AND content_id=?",projectId,aid);if(asset?.angle_id&&(asset.angle_id!==s.angleId||asset.input_digest!==s.inputDigest))throw new HttpError(409,'Un média dépend d’un autre angle ou d’anciennes informations. Reprenez le média de cet angle avant d’approuver.','strategy_media_unaligned');}
+ }
+
+ if(!contentExists(projectId,module,contentId))throw new HttpError(404,'Contenu introuvable.');
+ if(!row?.strategy_id)recordStrategyContent(projectId,module,contentId,{strategy:s,protected:true});
+ run('INSERT OR REPLACE INTO marketing_strategy_reviews VALUES(?,?,?,?,?,?)',projectId,module,contentId,s.id,s.inputDigest,contentFingerprint(projectId,module,contentId));
+}
+
+/** Compatibility of the actual source delivered into a prepared theme, including explicit draft review. */
+export function strategySourceCompatible(projectId:string,module:string,contentId:string,target:ActiveStrategy):boolean {
+ schema();const c=one<any>('SELECT * FROM marketing_strategy_contents WHERE project_id=? AND module=? AND content_id=?',projectId,module,contentId);
+ const fingerprint=contentFingerprint(projectId,module,contentId);
+ if(c&&!c.protected&&c.content_fingerprint===fingerprint&&c.angle_id===target.angleId&&c.input_digest===target.inputDigest)return true;
+ if(one('SELECT 1 FROM marketing_strategy_reviews r LEFT JOIN marketing_strategy_versions v ON v.id=r.strategy_id WHERE r.project_id=? AND r.module=? AND r.content_id=? AND r.input_digest=? AND r.content_fingerprint=? AND (r.strategy_id=? OR (v.angle_id=? AND v.input_digest=?))',projectId,module,contentId,target.inputDigest,fingerprint,target.id,target.angleId,target.inputDigest))return true;
+ if(target.id.startsWith('draft-')){
+  const prep=assertStrategyPreparationCurrent(projectId,target.id.slice(6));
+  const before=prep.contents.find(c=>c.module===module&&c.contentId===contentId);
+  if(before?.contentFingerprint===fingerprint&&one('SELECT 1 FROM marketing_strategy_staging s,json_each(s.content_ids) ids WHERE s.preparation_id=? AND s.module=? AND ids.value=?',prep.id,module,contentId))return true;
+ }
+ return false;
 }

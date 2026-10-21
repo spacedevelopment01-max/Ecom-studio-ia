@@ -22,6 +22,9 @@ for(const account of accounts){
  const context=await browser.newContext({locale:'fr-FR',viewport:{width:1440,height:1000},recordVideo:{dir:`/tmp/ecs160-recordings/${label}`,size:{width:1440,height:1000}}});
  await context.addCookies([{name:'ecs_session',value:account.token,url:base},{name:'ecs-lang',value:'fr',url:base}]);
  const page=await context.newPage();const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+ let serviceSiteId:string|undefined;let result:any={};
+ async function nativeBuild(){const queued=await page.request.post(`${base}/api/projects/${account.projectId}/theme/build`,{data:{direction:account.direction}});if(!queued.ok())throw Error(await queued.text());const task=await queued.json();const {getJob,claimNext,JobContext,completeJob}=await import('../src/lib/jobs');const {handlers}=await import('../worker/handlers');const stored=getJob(task.jobId);if(stored?.status==='done')return stored.result?JSON.parse(stored.result):{};const job=claimNext(['shop.direction']);if(!job||job.project_id!==account.projectId||job.user_id!==account.userId)throw Error('Wrong isolated job');const r=await handlers[job.type](new JobContext(job));completeJob(job.id,r);return r;}
+ if(account.services){result=await nativeBuild();const {currentTheme}=await import('../src/lib/projects');serviceSiteId=currentTheme(account.projectId)!.version.id;const state=await page.request.get(`${base}/api/projects/${account.projectId}/marketing-strategy`);if((await state.json()).usedAngleIds.length)throw Error('Service website consumed an angle');}
  await page.goto(`${base}/studio/${account.projectId}/strategie`,{waitUntil:'domcontentloaded',timeout:120000});
  const panel=page.locator('[data-marketing-strategy]').first();await panel.waitFor({timeout:60000});await panel.locator('[data-angle-card]').first().waitFor({timeout:120000});
  await panel.locator('[data-analyze-strategy]').click();await panel.locator('[data-angle-card]').first().waitFor();
@@ -31,21 +34,21 @@ for(const account of accounts){
   console.log(`Browser ${label}: ${angle}`);
   await panel.locator(`[data-view-angle="${angle}"]`).click();await panel.locator(`[data-angle-details="${angle}"]`).screenshot({path:`${out}/${label}-${angle}-carte.jpg`,type:'jpeg',quality:85});
   await panel.locator(`[data-prepare-angle="${angle}"]`).click();const confirm=panel.locator('[data-strategy-confirm]');await confirm.waitFor();
-  await confirm.locator("[data-prepare-modules]").click();await confirm.getByText("Calendrier · Version préparée",{exact:false}).first().waitFor({timeout:60000});
+  if(!account.services){await confirm.locator("[data-prepare-modules]").click();await confirm.getByText("Calendrier · Version préparée",{exact:false}).first().waitFor({timeout:60000});}
   const toQuote=confirm.locator('[data-strategy-review-item] input[type=checkbox]');if(await toQuote.count()){await toQuote.first().check();await confirm.locator('[data-quote-revisions]').click();await confirm.locator('[data-revision-bundle]').getByText('Devis à confirmer',{exact:true}).waitFor();await confirm.locator('[data-revision-bundle]').screenshot({path:`${out}/${label}-${angle}-devis-sans-depense.jpg`,type:'jpeg',quality:85});}
   for(const item of await confirm.locator('[data-strategy-review-item]').all())await item.getByRole('button',{name:'Vérifié : compatible, réutiliser',exact:true}).click();
   await confirm.screenshot({path:`${out}/${label}-${angle}-impact.jpg`,type:'jpeg',quality:85});
   await confirm.locator('[data-confirm-strategy]').click();await panel.locator(`[data-active-angle="${angle}"]`).waitFor({timeout:30000});
   await page.reload({waitUntil:'domcontentloaded'});await panel.locator(`[data-active-angle="${angle}"]`).waitFor();
-  // Build through the real HTTP route, then dispatch only this test account's task in the native worker handler.
-  const queued=await page.request.post(`${base}/api/projects/${account.projectId}/theme/build`,{data:{direction:account.direction}});if(!queued.ok())throw Error(await queued.text());const task=await queued.json();
-  const {getJob,claimNext,JobContext,completeJob}=await import('../src/lib/jobs');const {handlers}=await import('../worker/handlers');
-  const job=claimNext([account.direction?"shop.direction":"shop.build"]);if(!job||job.project_id!==account.projectId||job.user_id!==account.userId)throw Error('Wrong isolated job');
-  const result=await handlers[job.type](new JobContext(job));
-  completeJob(job.id,result);
-  // Real persistent queue claim, native dispatch and completion; supplier transport remains forbidden.
-  const {currentTheme}=await import('../src/lib/projects');const cur=currentTheme(account.projectId)!;
-  if(cur.spec.meta?.strategy?.angleId!==angle)throw Error('Persisted angle mismatch');
+  const {currentTheme}=await import('../src/lib/projects');
+  // Product B must already contain its prepared SEO before any extra build could conceal ordering faults.
+  const prepared=currentTheme(account.projectId);if(!account.services&&prepared){const state=await page.request.get(`${base}/api/projects/${account.projectId}/marketing-strategy`);const selected=(await state.json()).active;if(!JSON.stringify(prepared.spec.templates.index).includes(selected.angle.examples.hero))throw Error('Prepared theme did not receive current SEO');}
+  if(!account.services)result=await nativeBuild();
+  const cur=currentTheme(account.projectId)!;
+  if(account.services){
+   if(cur.version.id!==serviceSiteId||cur.spec.meta?.strategy)throw Error('Campaign changed service website');
+   const response=await page.request.post(`${base}/api/projects/${account.projectId}/social/v2`,{data:{action:'plan',angleId:angle,request:{angleId:angle,startDate:new Date(Date.now()+86400000).toISOString().slice(0,10),days:2,perDay:1,timezone:'Europe/Paris',platforms:[{platform:'instagram'}],lang:'fr'}}});if(!response.ok())throw Error(await response.text());
+  }else if(cur.spec.meta?.strategy?.angleId!==angle)throw Error('Persisted angle mismatch');
   const theme=await context.newPage();await theme.goto(`${base}/preview/${account.projectId}/v/${cur.version.id}/?es_raw=1`,{waitUntil:'domcontentloaded',timeout:60000});
   await reveal(theme);
   console.log(`Native theme visible: ${label}/${angle}`);
@@ -70,8 +73,9 @@ for(const account of accounts){
 
   const {getStrategyState}=await import('../src/lib/marketing-strategy');const {listContents,latestContent}=await import('../src/lib/seo-v2/store');const {all}=await import('../src/lib/db');examples.push({case:label,angle,strategy:getStrategyState(account.projectId).active?.angle,seo:listContents(account.projectId).map(d=>latestContent(account.projectId,d.docKey)?.doc),posts:all('SELECT caption,status FROM posts WHERE project_id=? AND status!=?',account.projectId,'cancelled'),template:cur.spec.templates.index});
   if(all('SELECT id FROM ai_calls WHERE project_id=?',account.projectId).length)throw Error('Unexpected provider trace');
-  proofs.push({case:label,angle,persisted:true,themeVersion:cur.version.number,realProviderCalls:0,overflow:false,delivery:(result as any).delivery?.state});
+  proofs.push({case:label,angle,persisted:true,themeVersion:cur.version.number,realProviderCalls:0,overflow:false,websiteStrategy:account.services?'general_foundation':angle,websiteUnchanged:account.services?cur.version.id===serviceSiteId:undefined,delivery:(result as any).delivery?.state});
  }
+ if(account.services){await page.goto(`${base}/studio/${account.projectId}/publications#planifier`,{waitUntil:'domcontentloaded'});const selector=page.locator('[data-communication-angle] select').first();await selector.waitFor({timeout:60000});await selector.selectOption('usage');await page.screenshot({fullPage:true,path:`${out}/service-selecteur-calendrier-A.jpg`,type:'jpeg',quality:85});await selector.selectOption('expression');await page.screenshot({fullPage:true,path:`${out}/service-selecteur-calendrier-B.jpg`,type:'jpeg',quality:85});await page.goto(`${base}/studio/${account.projectId}/strategie`,{waitUntil:'domcontentloaded'});await page.locator('[data-angle-card]').first().waitFor();}
  await page.setViewportSize({width:390,height:844});await page.screenshot({fullPage:true,path:`${out}/${label}-5-angles-mobile.jpg`,type:'jpeg',quality:85});
  if(errors.length)throw Error(errors.join('\n'));const video=page.video();await page.close();await context.close();if(video)fs.copyFileSync(await video.path(),`${out}/${label}-parcours.webm`);
 }

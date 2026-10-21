@@ -92,6 +92,7 @@ export type StrategyImpact = {
   needsReview: number;
 };
 export type StrategyPreparation = {
+  scope?:"project"|"service_communication";
   id: string;
   projectId: string;
   angleId: AngleId;
@@ -106,6 +107,7 @@ export type StrategyPreparation = {
   cost: { localPercent: 0; paidWork: "none_authorized"; explanation: string };
 };
 export type StrategyState = {
+  scope: "project" | "service_communication";
   projectId: string;
   plan: PlanId | null;
   limit: number;

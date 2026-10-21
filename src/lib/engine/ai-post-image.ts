@@ -1,3 +1,4 @@
+import { withCommunicationStrategy } from '../strategy-consumption';
 import { assertAdvertising } from "../job-entitlements";
 import type { AspectId } from "../image-v2/types";
 import { imageDelivery } from "../media/delivery-check";
@@ -24,6 +25,7 @@ import { resolveSubject, type CreativeSubject } from "../creative-subject";
 import type { Editorial } from "../social-v2/creative-contract";
 
 export type AiPostImageRequest = {
+  angleId?:import("../marketing-strategy").AngleId;
   entryPoint?:PostBrief["entryPoint"];
   sourceAssetId?: string;
   mode?: "one-step" | "two-step";
@@ -158,6 +160,9 @@ export async function generateAiPostImage(
   req: AiPostImageRequest,
   deps?: AiPostDeps,
 ) {
+  return withCommunicationStrategy(projectId,()=>generateAiPostImageInScope(ctx,projectId,req,deps),{angleId:req.angleId});
+}
+async function generateAiPostImageInScope(ctx:JobContext,projectId:string,req:AiPostImageRequest,deps?:AiPostDeps) {
   if(req.as==="ad"||req.kind==="ad"||String(req.entryPoint??"").startsWith("ads-"))assertAdvertising(projectId);
   const p = loadProject(projectId);
   const subject = req.subject ? resolveSubject(p, req.subject) : null;

@@ -19,6 +19,7 @@ async function fixture(services=false){
 afterEach(()=>vi.unstubAllGlobals());
 it.each([false,true])('un devis, une tâche, deux versions acquises avant activation, produit/service=%s',async services=>{
  vi.stubGlobal('fetch',async()=>{throw Error('Fournisseur réel interdit');});const f=await fixture(services),a=activeStrategy(f.pid)!;
+ if(services){expect(f.prep.contents).toEqual([]);expect(()=>quoteStrategyBundle(f.pid,f.prep.id,f.old.map(x=>({module:'asset',contentId:x.id})))).toThrow();expect(all('SELECT id FROM jobs WHERE project_id=?',f.pid)).toHaveLength(0);return;}
  const quote=quoteStrategyBundle(f.pid,f.prep.id,f.old.map(x=>({module:'asset',contentId:x.id})));expect(quote.estimateMicro).toBeGreaterThan(0);expect(quote.status).toBe('quoted');expect(all('SELECT id FROM jobs WHERE project_id=?',f.pid)).toHaveLength(0);
  const [b1,b2]=await Promise.all([Promise.resolve(confirmStrategyBundle(f.pid,quote.id,true)),Promise.resolve(confirmStrategyBundle(f.pid,quote.id,true))]);expect(b1.jobId).toBe(b2.jobId);expect(all('SELECT id FROM jobs WHERE project_id=?',f.pid)).toHaveLength(1);
  expect(()=>activateStrategy(f.pid,{angleId:'expression',preparationId:f.prep.id,idempotencyKey:id(),confirmed:true})).toThrow();

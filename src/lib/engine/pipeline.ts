@@ -128,7 +128,7 @@ export async function runPipeline(ctx: JobContext) {
         markStep(ctx, step.id, "skipped", planSkip === "brand" ? note("skip.brandKept", { name: kept.brand?.name ?? "" }) : note("skip.copyFinal"));
         continue;
       }
-      if(step.id === "copy" && !activeStrategy(projectId)){
+      if(step.id === "copy" && loadProject(projectId).business!=="services" && !activeStrategy(projectId)){
         proposeStrategies(projectId);
         run("UPDATE jobs SET payload=? WHERE id=?",JSON.stringify({...ctx.payload,strategyAwaitingChoice:true}),ctx.job.id);
         pauseJob(ctx.job.id);

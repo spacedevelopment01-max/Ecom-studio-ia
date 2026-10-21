@@ -1,4 +1,4 @@
-import { strategyContent } from "../strategy-consumption";
+import { withCommunicationStrategy, strategyContent } from "../strategy-consumption";
 /**
  * Une publication à la fois (Publications › Créer une publication image / vidéo) : même moteur que le calendrier
  * (textes à partir des informations vérifiées, adaptation à chaque réseau, contrôles), pour un seul créneau.
@@ -19,6 +19,7 @@ export type OneKind = "image" | "carousel" | "video";
 export type OneMode = "free" | "ai_image" | "ai_post" | "ai_video";
 
 export type OneRequest = {
+  angleId?:import("../marketing-strategy").AngleId;
   kind: OneKind;
   date: string;
   time: string;
@@ -57,6 +58,9 @@ export function produceParams(kind: OneKind, mode: OneMode): { allowPaid: boolea
 
 /** Crée la publication (une par réseau choisi, même idée adaptée à chacun) ; renvoie ses identifiants. */
 export function createOnePost(p: Project, r: OneRequest): { planId: string; ids: string[]; warnings: string[] } {
+  return withCommunicationStrategy(p.id,()=>createOneInScope(p,r),{angleId:r.angleId});
+}
+function createOneInScope(p:Project,r:OneRequest):ReturnType<typeof createOnePost>{
   if(r.kind==="carousel" && r.platforms.some(x=>!platformSpec(x.platform).formats.includes("carousel")))throw new Error("Choisissez un réseau compatible avec les carrousels.");
   if(r.editorial)EditorialSchema.parse(r.editorial);
   const res = createPlanV2(p, {
