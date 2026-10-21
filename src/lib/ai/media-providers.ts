@@ -1,3 +1,4 @@
+import { assertStrategyInputsCurrent } from "../strategy-consumption";
 import { createHash } from "node:crypto";
 import type { AspectId } from "../image-v2/types";
 import { REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVIDER } from "./logo-policy";
@@ -242,6 +243,7 @@ function gate(ctx: Ctx, micro: number, media: "image" | "video", provider: strin
     Object.assign(t, { reservation: t.previous.id, provider, model, unit: media === "video" ? "video_second" : "image", started: Date.now(), sent: true });
     return;
   }
+  assertStrategyInputsCurrent(ctx.projectId);
   // Droits du compte vérifiés à chaque génération (forfait, budget), dans une tâche de fond ou non.
   assertAiAllowed(ctx.userId, ctx.projectId);
   const q = quotaFor(media);

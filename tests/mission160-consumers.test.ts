@@ -4,10 +4,10 @@ import sharp from 'sharp';
 import { createUser } from '@/lib/auth';
 import { id, now, run, one } from '@/lib/db';
 import { emptyProduct } from '@/lib/project-types';
-import { loadProject } from '@/lib/projects';
+import { loadProject, saveProduct } from '@/lib/projects';
 import { grantProjectPlan } from '@/lib/project-subscriptions';
 import { activeStrategy, activateStrategy, prepareStrategyChange, stageStrategyModule, getStrategyState, assertContentAlignment, preparationStrategy } from '@/lib/marketing-strategy';
-import { withStrategyScope, strategySelection, strategyStamp, selectedStrategyContext } from '@/lib/strategy-consumption';
+import { withStrategyScope, strategySelection, strategyStamp, selectedStrategyContext, assertStrategyInputsCurrent } from '@/lib/strategy-consumption';
 import { brainView } from '@/lib/brain/facade';
 import { SCOPES } from '@/lib/brain/views';
 import { adInsight } from '@/lib/ads-v2/insight';
@@ -104,5 +104,14 @@ it('le calendrier et ses publications portent l’angle ; une ancienne programma
 it('un ancien contexte de rédaction ne mélange pas les angles et ne part pas au fournisseur',async()=>{
  const f=await fixture();activate(f.pid,'usage');const old=selectedStrategyContext(f.pid);activate(f.pid,'expression');
  expect(()=>withSelectedStrategy({userId:f.user.id,projectId:f.pid,task:'copywriting',system:'Texte',context:old,prompt:'Demande'})).toThrow(/ancienne stratégie/);
+ expect(one<{n:number}>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=?',f.pid)?.n).toBe(0);
+});
+
+it('un fait changé exige une réconciliation explicite du même angle, sans nouvel angle ni coût',async()=>{
+ const f=await fixture();activate(f.pid,'usage');
+ saveProduct(f.pid,{...f.project().product,summary:'Un sac de transport destiné aux trajets de week-end, avec rangement.'});
+ expect(()=>assertStrategyInputsCurrent(f.pid)).toThrow(/Préparez à nouveau cet angle/);
+ expect(()=>withStrategyScope(f.pid,()=>null)).toThrow();
+ activate(f.pid,'usage');expect(()=>assertStrategyInputsCurrent(f.pid)).not.toThrow();expect(getStrategyState(f.pid).usedAngleIds).toEqual(['usage']);
  expect(one<{n:number}>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=?',f.pid)?.n).toBe(0);
 });

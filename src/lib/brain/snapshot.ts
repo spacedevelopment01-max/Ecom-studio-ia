@@ -6,7 +6,7 @@
  *  - memory (hors « artifact »)                        → décisions, corrections, préférences, objectifs, refus du client ;
  *  - quality_checks (90 derniers jours)                → source de vérité des notes ; seuls des constats en sont tirés ;
  *  - assets (non supprimés, les plus récents)          → logo actuel (pointeur de la marque) et créations récentes.
- * Quatre requêtes SQL au plus, aucune IA, aucune écriture. Jamais de réglage, de clé ni de connexion lus ici.
+ * Cinq requêtes SQL au plus (dont la stratégie active versionnée), aucune IA, aucune écriture. Jamais de réglage, de clé ni de connexion lus ici.
  */
 import { all, json } from "../db";
 import { selectedStrategyContext } from "../strategy-consumption";

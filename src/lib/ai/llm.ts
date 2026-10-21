@@ -1,4 +1,4 @@
-import { selectedStrategyContext } from "../strategy-consumption";
+import { assertStrategyInputsCurrent, selectedStrategyContext } from "../strategy-consumption";
 /**
  * Appels Claude (Anthropic SDK) avec :
  *  - routage par tâche (modèle et effort réglables dans l'administration),
@@ -271,6 +271,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     if (previous.result) return JSON.parse(previous.result) as RawResult;
     operationPending();
   }
+  if (call.projectId) assertStrategyInputsCurrent(call.projectId);
   const decision = routeLlm(call);
   const route = { provider: decision.provider, model: decision.model, effort: decision.effort };
   // OpenAI et Gemini : même autorisation, même réservation, même trace, même facturation (aucun contournement).
@@ -295,6 +296,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   // Aucun repli serveur (`fallbacks`) : un modèle de repli serait facturé à son propre tarif, non couvert.
   const maxMicro = await maxCostMicro(route.model, params, format);
   assertUnderCostCap(maxMicro);
+  if (call.projectId) assertStrategyInputsCurrent(call.projectId);
   const reservation = reserve(call.userId, maxMicro, { ...operation, provider: "anthropic", model: route.model, jobId: call.jobId });
   if (!isHaiku) {
     params.thinking = { type: "adaptive" };
@@ -464,6 +466,7 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
   const { brain } = brainOf(call);
   const maxMicro = await otherMaxCostMicro(provider, req, (r) => adapter.count(r, key));
   assertUnderCostCap(maxMicro);
+  if (call.projectId) assertStrategyInputsCurrent(call.projectId);
   const reservation = reserve(call.userId, maxMicro, { ...operation, provider, model, jobId: call.jobId });
   const started = Date.now();
   let attempts = 0;
