@@ -551,16 +551,26 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
     },
     // Accueil : la collection en scène (un repère par produit, la liste des pièces), tous les produits, la balade en
     // bannière, le produit porté, l'achat d'une pièce, un bandeau d'appel, les questions et l'inscription illustrée.
-    home: (k) => [
-      k.lib("cv-hotspots", 1, { layout: "side", ratio: "wide", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.scene1 ?? k.im.packshot, animation: "fade", padding_top: 24, padding_bottom: 64 }),
-      k.lib("fs-products", 1, { layout: "grid", source: "collection", collection: "all", ratio: "square", columns: 4, limit: 4, align: "left", padding_top: 64, padding_bottom: 72 }),
-      k.lib("cv-banner", 1, { layout: "background", image_asset: k.im.banner ?? k.im.scene1 ?? "", price_text: "", price_note: "" }, { hide: !(k.im.banner ?? k.im.scene1) }),
-      k.lib("image-with-text", 1, { layout: "image-left", ratio: "square", image_asset: k.im.scene2 ?? k.im.lifestyle2 ?? "", reveal: "up" }, { hide: !(k.im.scene2 ?? k.im.lifestyle2) }),
-      k.lib("featured-purchase", 3, { purchase_style: "soft", image_fit: "contain" }),
-      k.lib("cta-banner", 2, { image_asset: k.im.scene3 ?? "", style: "left" }, { hide: !k.im.scene3 }),
-      k.faqSec(1, 5, "lines"),
-      ...k.either(k.lib("newsletter-media", 4, { layout: "left", image_asset: k.im.portrait ?? k.im.lifestyle2 ?? "", legal: k.privacy }, { hide: !(k.im.portrait ?? k.im.lifestyle2) }), k.newsletter(4)),
-    ],
+    home: (k) => {
+      // Sans repères renseignés (projet d'un client qui n'a pas encore situé ses produits sur une scène), l'ouverture
+      // devient une bannière avec le titre de la page : jamais une page d'accueil sans ouverture ni titre. La bannière de
+      // balade est alors retirée, pour ne pas répéter la même bannière deux fois.
+      const opening = k.either(
+        k.lib("cv-hotspots", 1, { layout: "side", ratio: "wide", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.scene1 ?? k.im.packshot, animation: "fade", padding_top: 24, padding_bottom: 64 }),
+        k.lib("cv-banner", 1, { layout: "image-right", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.packshot, animation: "fade", price_text: "", price_note: "", padding_top: 24, padding_bottom: 64 }),
+      );
+      const fallback = opening[0]?.[0] === "cv-banner";
+      return [
+        ...opening,
+        k.lib("fs-products", 1, { layout: "grid", source: "collection", collection: "all", ratio: "square", columns: 4, limit: 4, align: "left", padding_top: 64, padding_bottom: 72 }),
+        k.lib("cv-banner", 1, { layout: "background", image_asset: k.im.banner ?? k.im.scene1 ?? "", price_text: "", price_note: "" }, { hide: fallback || !(k.im.banner ?? k.im.scene1) }),
+        k.lib("image-with-text", 1, { layout: "image-left", ratio: "square", image_asset: k.im.scene2 ?? k.im.lifestyle2 ?? "", reveal: "up" }, { hide: !(k.im.scene2 ?? k.im.lifestyle2) }),
+        k.lib("featured-purchase", 3, { purchase_style: "soft", image_fit: "contain" }),
+        k.lib("cta-banner", 2, { image_asset: k.im.scene3 ?? "", style: "left" }, { hide: !k.im.scene3 }),
+        k.faqSec(1, 5, "lines"),
+        ...k.either(k.lib("newsletter-media", 4, { layout: "left", image_asset: k.im.portrait ?? k.im.lifestyle2 ?? "", legal: k.privacy }, { hide: !(k.im.portrait ?? k.im.lifestyle2) }), k.newsletter(4)),
+      ];
+    },
     // Fiche : galerie empilée et achat, le produit en situation à côté de son texte, questions en cartes.
     product: (k) => [
       ((scene) => k.lib("cv-alternating", 3, { layout: "image-left", ratio: "landscape", padding_top: 72, padding_bottom: 72 }, { hide: !scene, blocks: scene ? [{ type: "row", settings: { image_asset: scene } }] : [] }))(k.im.scene1 ?? k.im.lifestyle2),

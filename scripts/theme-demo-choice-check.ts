@@ -61,6 +61,8 @@ const pid = startDemo ? startDemo.pid : seedHoldout(user.id, 0, "Atelier Verre")
 const NAME = startDemo ? loadProject(pid).brand!.name : "Atelier Verre";
 const startProfile = (() => { const s = catalogTheme(START.id)!.settings ?? {}; return s.conversion_profile && s.conversion_profile !== "none" ? `body[data-conversion='${s.conversion_profile}']` : `body[data-editorial='${s.editorial_profile}']`; })();
 run("INSERT INTO subscriptions (user_id,status,plan,owner_user_id,project_id,source,created_at,updated_at) VALUES (?,'active','creer',?,?,'admin',?,?)", `demo-check-${pid}`, user.id, pid, Date.now(), Date.now());
+// Projet complet : sa boutique actuelle (celle de sa démonstration) est enregistrée comme version du thème, comme pour un client.
+if (startDemo) saveThemeVersion(pid, startDemo.spec, `Boutique ${NAME} (${START.name})`, "user");
 if (!startDemo) {
   const p0 = loadProject(pid);
   saveBrand(pid, { ...p0.brand!, name: "Atelier Verre", tagline: "Des verres soufflés pour tous les jours.", palette: { primary: "#1F4E5F", secondary: "#CFE3E8", accent: "#2A7F62", light: "#F6F8F7", dark: "#10242B" }, direction: START.id });
@@ -223,10 +225,16 @@ try {
       const pg = await ctx.newPage();
       for (const [name, route] of routes) {
         await pg.goto(`${origin}${root}${route}${base.search}`, { waitUntil: "networkidle", timeout: 240000 });
-        await pg.evaluate(async () => { for (let y = 0; y < document.documentElement.scrollHeight; y += 500) { scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); } scrollTo(0, 0); }); await pg.waitForTimeout(800);
+        // Toutes les images chargées avant la mesure et la capture (le chargement différé ne doit rien laisser de vide).
+        await pg.evaluate(async () => {
+          for (const i of document.images) i.loading = "eager";
+          for (let y = 0; y < document.documentElement.scrollHeight; y += 400) { scrollTo(0, y); await new Promise((r) => setTimeout(r, 80)); }
+          await Promise.all([...document.images].map((i) => (i.complete ? null : new Promise((r) => { i.onload = i.onerror = r; setTimeout(r, 15000); }))));
+          scrollTo(0, 0);
+        }); await pg.waitForTimeout(800);
         const a = await pg.evaluate((theme) => ({
           vides: document.querySelectorAll(".es-placeholder, .ed-media--pending").length,
-          cassees: [...document.images].filter((i) => i.complete && i.naturalWidth === 0 && i.getBoundingClientRect().width > 0).map((i) => i.src).slice(0, 5),
+          cassees: [...document.images].filter((i) => (!i.complete || i.naturalWidth === 0) && i.getBoundingClientRect().width > 0).map((i) => i.src).slice(0, 5),
           visuelsDuTheme: [...document.images].filter((i) => i.src.includes(theme)).length,
           images: [...document.images].filter((i) => i.getBoundingClientRect().width > 0).length,
           sections: document.querySelectorAll("main .shopify-section, main > section").length,
@@ -248,7 +256,7 @@ try {
     await preview().locator(`body[data-${PROFILE_ATTR}='${THEME.profile}']`).waitFor({ timeout: 180000 });
     assert.equal(JSON.stringify(currentTheme(pid)!.spec), saved, "version identique après rechargement");
     assert.ok((await preview().locator("body").innerText()).includes(NAME), "projet après rechargement");
-    steps.push({ step: `adaptation d'un projet complet (« ${NAME} », ${product.brand?.direction ?? START.id} → ${T}) : pages en pleine page, aucun emplacement vide, aucun visuel ni texte de la démo, rechargement identique`, audit, ok: true });
+    steps.push({ step: `adaptation d'un projet complet (« ${NAME} », ${START.id} → ${T}) : pages en pleine page, aucun emplacement vide, aucun visuel ni texte de la démo, rechargement identique`, audit, ok: true });
   }
   steps.push({ step: "« Choisir ce thème » (double-clic + demande simultanée) : une seule tâche, une seule version, éditeur sur le projet, aucun contenu de démo", requetesInterface: posts.length, taches: jobs.length, versions, ok: true });
   // Guide après le choix (vue directe : le guide s'affiche quand l'application est terminée dans la même session).

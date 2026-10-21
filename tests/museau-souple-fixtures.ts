@@ -195,6 +195,11 @@ function curateMuseau(k: Kit) {
 
   // ─── Accueil : la collection en scène, les quatre pièces, la balade, le collier porté, la pochette à la une, la porte
   // d'entrée, les questions et l'inscription.
+  // La démonstration situe ses quatre produits sur la scène : l'ouverture redevient les points interactifs (la bannière de
+  // repli, composée faute de repères dans le projet, est retirée avant la rédaction).
+  const home = spec.templates.index;
+  const firstGrid = home.order.findIndex((sid) => home.sections[sid].type === "fs-products");
+  for (const sid of home.order.filter((s, i) => i < firstGrid && home.sections[s].type === "cv-banner")) { delete home.sections[sid]; home.order.splice(home.order.indexOf(sid), 1); }
   overlay("index", [
     section("cv-hotspots", { ...img("ambiance-01.webp"), layout: "side", ratio: "wide", heading_tag: "h1", eyebrow: "Collection de balade", heading: "Tout pour la balade,", heading_accent: "assorti en bleu cobalt", text: p("Harnais, laisse, collier et pochette à sacs : prenez la pièce qu'il vous faut ou composez l'ensemble. Touchez un repère pour ouvrir sa fiche."), button_label: "Voir la collection", button_link: "/collections/all", link_label: "Voir la fiche", show_list: true, demo_note: "", focus_x: 50, focus_y: 50, animation: "fade", animation_speed: "normal", color_scheme: "scheme-1", padding_top: 24, padding_bottom: 64 }, [
       spot(78, 22, "Le harnais", "Il s'enfile avant de sortir ; la laisse assortie s'accroche à son anneau.", href("harnais")),

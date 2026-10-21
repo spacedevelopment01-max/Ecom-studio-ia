@@ -292,7 +292,12 @@ describe("MUSEAU CLUB appliqué à un autre projet : identité du projet, jamais
       expect(visibleText(html), route).not.toMatch(PLAN.leak);
       expect(html, route).not.toMatch(/theme-assets\/museau-club|museau-club-(harnais|laisse|collier|pochette|ambiance|logo)/);
       expect(html).toContain("Atelier Verre");
+      // Une ouverture visible avec le titre de la page, même sans repères renseignés (bannière de repli).
+      expect(html.match(/<h1[\s>]/g)?.length, route).toBe(1);
     }
+    const first = spec.templates.index.sections[spec.templates.index.order[0]];
+    expect(first.disabled ?? false).toBe(false);
+    expect(["cv-hotspots", "cv-banner"]).toContain(first.type);
     expect(JSON.stringify(spec.settings.color_schemes).toUpperCase()).not.toMatch(/#1636C9|#F2C14E/);
   });
 });
