@@ -18,10 +18,10 @@ import { runWithLang } from "../src/lib/i18n-server";
 const fr = <T,>(f: () => T) => runWithLang({ ui: "fr", content: "fr" }, f);
 
 describe("Catalogue actif : quatre thèmes proposés, trente lisibles", () => {
-  it("neuf thèmes actifs (SILLON : issue #148 ; NOCTIL et TRAVERSE : issue #152 ; HEUREN et ALCÔVE : issue #155), chacun pour sa catégorie ; les trente autres sont « retirés », jamais inconnus", () => {
-    expect([...ACTIVE_THEMES]).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove"]);
-    expect(ACTIVE_DIRECTIONS.map((d) => d.id)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove"]);
-    expect(DIRECTIONS.length).toBe(39);
+  it("dix thèmes actifs (SILLON : issue #148 ; NOCTIL et TRAVERSE : issue #152 ; HEUREN et ALCÔVE : issue #155 ; MUSEAU CLUB : issue #158), chacun pour sa catégorie ; les trente autres sont « retirés », jamais inconnus", () => {
+    expect([...ACTIVE_THEMES]).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club"]);
+    expect(ACTIVE_DIRECTIONS.map((d) => d.id)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club"]);
+    expect(DIRECTIONS.length).toBe(40);
     for (const d of DIRECTIONS) {
       const active = (ACTIVE_THEMES as readonly string[]).includes(d.id);
       expect(themeStatus(d.id)).toBe(active ? "active" : "retired");
@@ -33,14 +33,14 @@ describe("Catalogue actif : quatre thèmes proposés, trente lisibles", () => {
   });
 
   it("galerie : seuls les actifs, plus le thème installé d'un projet existant s'il est retiré (signalé), jamais un autre ancien thème", () => {
-    expect(directionCards("fr").map((c) => c.id)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove"]);
-    expect(directionCards("en", ["jardin", "signal"]).map((c) => c.id)).toEqual(["jardin", "signal", "fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove"]);
+    expect(directionCards("fr").map((c) => c.id)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club"]);
+    expect(directionCards("en", ["jardin", "signal"]).map((c) => c.id)).toEqual(["jardin", "signal", "fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club"]);
     expect(directionCards("fr", ["jardin"]).find((c) => c.id === "jardin")?.retired).toBe(true);
-    expect(directionCards("fr", ["fraise"]).map((c) => c.id)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove"]);
+    expect(directionCards("fr", ["fraise"]).map((c) => c.id)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club"]);
   });
 
   it("IA et commandes locales : seuls les thèmes actifs sont connus ; « passe en thème Vitrine » ne change rien", () => {
-    expect(DIRECTION_LIST.split("\n").map((l) => l.split(" ")[0])).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove"]);
+    expect(DIRECTION_LIST.split("\n").map((l) => l.split(" ")[0])).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club"]);
     const spec = sampleSpec("fraise");
     const r = fr(() => localThemeCommand(spec, "passe en thème Vitrine", null));
     expect(JSON.stringify(r).includes("Vitrine")).toBe(false);

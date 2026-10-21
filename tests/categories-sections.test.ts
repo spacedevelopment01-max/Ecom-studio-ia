@@ -59,7 +59,7 @@ describe("Galerie « Sections » strictement contextuelle", () => {
 
   it("déclare la compatibilité par métadonnées explicites, pas par le nom", () => {
     expect(SECTION_FIT["cv-hero"]).toMatchObject({ kinds: ["catalog", "specialty"], themes: ["fraise", "onde", "sillon", "noctil", "traverse"], profiles: ["conversion"] });
-    expect(SECTION_FIT["ed-opening"]).toMatchObject({ themes: ["orbe", "rive", "heuren", "alcove"] });
+    expect(SECTION_FIT["ed-opening"]).toMatchObject({ themes: ["orbe", "rive", "heuren", "alcove", "museau-club"] });
     expect(SECTION_FIT["services-list"]).toEqual({ kinds: ["services"] });
     expect(SECTION_FIT["faq"]).toBeUndefined(); // transversale : rendue dans le style du thème actif
     expect(SECTION_FIT["image-with-text"]).toBeUndefined();
