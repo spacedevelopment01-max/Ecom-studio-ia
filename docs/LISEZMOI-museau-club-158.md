@@ -92,7 +92,10 @@ après ; accueil et fiche sur ordinateur ; menu).
   sections sans contenu restent masquées, aucun contenu ni visuel de MUSEAU CLUB n'est repris.
 - **Preuve sur un projet complet** : `START_DEMO=traverse` dans `scripts/theme-demo-choice-check.ts` part d'un projet
   rempli et cohérent (marque, produit, textes et visuels propres) au lieu d'« Atelier Verre » (presque vide, d'où les
-  emplacements d'image vides de la capture précédente). Résultats dans la section « Vérifications ».
+  emplacements d'image vides de la capture précédente). Captures : `docs/preuves/museau-club-159/adaptation-client/`.
+- **Correction trouvée par cette preuve** : sur un projet qui n'a pas situé ses produits sur une scène, les points
+  interactifs restaient masqués et l'accueil n'avait plus d'ouverture ni de H1. L'ouverture devient alors une bannière
+  avec le titre de la page (et la bannière de balade n'est pas répétée).
 - **Non validé ici** : la création des textes et des visuels d'un nouveau client par l'IA (parcours amont, génération
   d'images). Ce chemin dépend du travail de Codex (#154) ; la sélection d'un thème ne le prouve pas.
 - **À transmettre à Codex (#151 / #154)** : `museau-club` est maintenant de la famille `specialty` (catégorie
@@ -113,7 +116,27 @@ quantités, suppression et total exact vérifiés par test (179 €, 164 €, 12
 
 ## Vérifications
 
-Voir le commentaire de la PR #159 pour le commit testé et les résultats de chaque contrôle.
+Commit testé : **`9f1360b5`** (le commit suivant n'ajoute que ce rapport et les captures). Tout est exécuté en copie
+isolée.
+
+| Contrôle | Résultat |
+|---|---|
+| Compilation TypeScript (`tsc --noEmit`) | sans erreur |
+| Tests (`vitest run`, suite complète) | **325 fichiers, 2536 tests réussis**, 2 ignorés (déjà ignorés avant), 0 échec |
+| Tests dédiés (`tests/museau-club.test.ts`) | 18 réussis : famille spécialisée partout, profil « club » de la famille, réglages facultatifs des points interactifs, composition distincte des autres thèmes de la famille, quatre produits et leurs fiches, repères reliés à la bonne fiche, en-tête et pied reconnus, 31 médias, SEO, rien d'inventé, achat sans prix et avec prix de test, liens internes, autre projet (ouverture visible, un seul H1, aucune trace de la démo), exports |
+| Theme Check officiel Shopify | **7 contrôles sur 7 sans erreur** (MUSEAU CLUB : français et anglais en quatre produits, français en un produit, prestations ; TRAVERSE, FRAISE et SILLON, qui partagent la section « Points interactifs » ou le profil de la famille) ; seuls les 4 avertissements `UnusedAssign` déjà présents sur tous les thèmes |
+| Contrôle statique de l'aperçu (`reference-static-check`) | 11 pages × 4 largeurs (360, 390, 430, ordinateur) réussies |
+| Premiers écrans (mesures dans `docs/preuves/museau-club-159/mesures-premier-ecran.json`) | voir le tableau « Premier écran du téléphone » : à 360 × 640, accueil complet et bouton d'achat des quatre fiches sous 640 px ; aucun débordement à 360, 390 et 430 |
+| Studio réel (`family-studio-check museau-club`) | galerie limitée aux 20 fonctions de la boutique spécialisée, fonction d'une autre famille introuvable, ajout, disposition, texte, effets, déplacement, en-tête « floating » puis pied « centered » appliqués et modifiés, **sauvegarde puis rechargement conservés** |
+| Choix depuis le studio réel, projet complet (`START_DEMO=traverse theme-demo-choice-check … museau-club`) | démo complète consultée sans modifier le projet, « Choisir ce thème » = une seule tâche et une seule version ; projet TRAVERSE adapté : accueil, fiche et deux pages en pleine page, ordinateur et téléphone, **0 emplacement d'image vide, 0 image non chargée, 0 visuel ni texte de MUSEAU CLUB, 0 débordement**, version identique après rechargement |
+| Exports WordPress et PrestaShop (`family-export-check`) | profil `club` actif (`es-conversion-club`), repères interactifs fonctionnels, 0 débordement, 0 erreur de script ; autres thèmes inchangés |
+
+Ce qui n'est **pas** vérifié : la génération IA des textes et des visuels d'un nouveau client (Codex #154) ;
+l'installation réelle des exports chez un hébergeur ; le Codespace de Thomas.
+
+Ce que montre la preuve d'adaptation, honnêtement : sur le projet TRAVERSE, la section « Questions » reste masquée
+(aucune question enregistrée dans ce projet) et la grille des produits garde son sur-titre générique « À associer » ;
+le pied de page conserve le grand nom de marque choisi auparavant par le projet (réglage du client conservé).
 
 ## Limites connues
 
