@@ -245,26 +245,27 @@ le premier trajet »), fiche (« Casque audio · pour le trajet de tous les jour
 studio), aide, pied, SEO. L'ancienne accroche « Écoutez. Posez. Repartez. » est retirée ; le test du H1 est mis à jour.
 Composition E-commerce figée inchangée. Code : `tests/onde-fixtures.ts`. Preuves : kit privé, archive hors dépôt.
 
-### ORBE — E-commerce, mono-produit — **réécrit**
+### ORBE — E-commerce, mono-produit — **réécrit (consigne 21 h 45)** : se sentir chez soi en location
 
-1. **Cible** : un locataire ou un petit logement qui veut changer d'ambiance sans travaux.
-2. **Tension** : « Le plafonnier écrase la pièce, et je ne peux rien y changer. »
-3. **Désir et angle** : une atmosphère différente selon le moment → la lumière change de place, l'atmosphère aussi.
-4. **Promesse et faits** : une lampe à poser (table du dîner, bureau, table de nuit), trois finitions Dune, Argile, Charbon,
-   abat-jour arrondi sur pied fin ; faits = visuels et variantes. Autonomie, intensité, alimentation et dimensions jamais
-   affirmées.
-5. **Objections** : où la poser, quelle finition choisir, faut-il des travaux (non : elle se pose), information démo dédiée.
-6. **Parcours** : ouverture « Le plafonnier écrase la pièce ? » → l'idée « une lampe qui suit la soirée » → trois finitions →
-   « Du dîner à la lecture, la lumière vous suit » → deux soirées (fauteuil, chevet) → FAQ → « Ce soir, déplacez la
-   lumière ».
+| | |
+|---|---|
+| Utilisateur et acheteur | un locataire qui aménage son appartement sans pouvoir faire de travaux (brief) |
+| Situation d'achat | il vient d'emménager, sous le plafonnier laissé par le propriétaire |
+| Tension (ses mots) | « C'est mon appartement, mais la lumière est celle du propriétaire. » |
+| Désir | se sentir chez soi |
+| Angle unique | se sentir chez soi en créant son ambiance lumineuse personnelle |
+| Promesse tenable | une lampe à poser, sans perçage ni fil au plafond, qui passe d'une table à l'autre et part au prochain déménagement ; trois finitions |
+| Objections traitées | faut-il des travaux ou l'accord du propriétaire (non), où la poser, quelle finition, la démo |
+| **Faits** | visuels et identité du kit (silhouette arrondie, Dune, Argile, Charbon ; table, bureau, chevet, fauteuil) ; prix de démonstration déjà validé |
+| **Non renseigné** | dimensions, matière, alimentation, entretien, livraison, retours |
+| Exclusions | aucune intensité, autonomie, dimension ni matière inventées |
 
-Ce qui manquait : la page FAQ et la page livraison affichaient des « [À compléter] » publics ; la FAQ répond désormais aux
-vraies hésitations, la page livraison dit ce qui est vrai (boutique de démonstration : rien n'est expédié ni remboursé).
-Pied de page : les trois politiques non rédigées menaient à une page introuvable dans l'aperçu ; liens masqués dans la
-démo (réglage « Liens vers les politiques » intact dans l'éditeur). Le prix affiché (79 €) est celui de la démo déjà
-validée, non modifié. Pages réécrites : accueil, fiche, notre histoire, FAQ, contact, livraison, SEO. Code :
-`tests/engine-demo-copy.ts` (`curateOrbe`), appliqué après la composition par le moteur dans `demoProject`. Preuves :
-**kit privé**, captures hors dépôt (archive privée).
+Pages : accueil (« Un appartement loué. Une lumière à vous. » → « On ne choisit pas toujours son plafonnier. On choisit sa
+lumière. » → « Trois finitions, pour votre intérieur » → « Du dîner à la lecture, votre lumière vous suit » → « Deux coins
+à vous » → FAQ → « Ce soir, faites entrer votre lumière »), notre histoire (« Une lumière à vous, même en location »),
+fiche (« Sans travaux »), FAQ, contact, livraison, pied (politiques non rédigées masquées), SEO. Identité de la démo mise à
+jour (tagline). Visuels cohérents (intérieurs sobres, aucune personne). Code : `tests/engine-demo-copy.ts` (`curateOrbe`).
+Preuves : kit privé, archive hors dépôt.
 
 ### Atelier Rive — Services — **réécrit** (parcours de contact, pas de fiche produit)
 

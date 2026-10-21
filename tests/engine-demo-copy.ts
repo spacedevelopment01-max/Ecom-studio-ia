@@ -37,19 +37,21 @@ export function hidePendingBlocks(spec: ThemeSpec) {
   for (const t of Object.values(spec.templates)) for (const s of Object.values(t.sections)) for (const b of Object.values(s.blocks ?? {})) if (PENDING.test(JSON.stringify(b.settings))) b.disabled = true;
 }
 
-// ─── ORBE — fiche de stratégie (hypothèse éditoriale, pas une étude) ──────────────────────────────────────────────────
-//  1. cible : un locataire ou un petit logement qui ne peut pas refaire son éclairage et vit sous un plafonnier ;
-//  2. tension : « Le plafonnier écrase la pièce, et je ne peux pas faire de travaux. » ;
-//  3. désir : une atmosphère différente là où l'on vit le soir — angle unique : déplacez la lumière, l'ambiance suit ;
-//  4. promesse tenable : une lampe à poser, qui passe de la table du dîner au bureau ou à la table de nuit ; trois
-//     finitions ; faits = visuels et identité du kit. Dimensions, matières, alimentation et livraison jamais affirmées ;
-//  5. objections : où la poser, quelle finition, faut-il des travaux, ce que permet la démonstration ;
-//  6. parcours : ouverture (se reconnaître) → l'idée → les finitions → la lampe qui change de place → deux usages →
-//     FAQ → appel final.
+// ─── ORBE — fiche de stratégie (consigne de Thomas du 21 octobre, 21 h 45 ; brief, hypothèse éditoriale) ─────────────
+//  utilisateur et acheteur : un locataire qui aménage son appartement sans pouvoir faire de travaux ;
+//  situation d'achat : il vient d'emménager, sous le plafonnier laissé par le propriétaire ;
+//  tension (ses mots) : « C'est mon appartement, mais la lumière est celle du propriétaire. » ;
+//  désir : se sentir chez soi ;
+//  angle unique : se sentir chez soi en créant son ambiance lumineuse personnelle ;
+//  promesse tenable : une lampe à poser, sans fil au plafond ni perçage, qui passe de la table du dîner au bureau ou à
+//  la table de nuit, et qui part avec vous au prochain déménagement ; trois finitions ; faits = visuels et identité du
+//  kit. Dimensions, matières, alimentation et livraison jamais affirmées ;
+//  objections : faut-il des travaux, où la poser, quelle finition, ce que permet la démonstration ;
+//  exclusions : aucune intensité, autonomie, dimension ni matière inventées.
 export const ORBE_FAQ: Faq[] = [
   ["Où la poser ?", "Sur la table du dîner, un bureau, une table de nuit ou à côté d'un fauteuil : nos photos la montrent à chacun de ces endroits."],
   ["Quelle finition choisir ?", "Dune, la plus claire, pour les bois blonds et les murs clairs ; Argile, terre cuite, pour les intérieurs chauds ; Charbon, presque noire, pour les tons sombres. La silhouette est la même."],
-  ["Faut-il des travaux ?", "Non : ORBE est une lampe à poser, pas un luminaire à fixer. Elle change de table quand vous changez de pièce."],
+  ["Faut-il des travaux ou l'accord du propriétaire ?", "Non : ORBE est une lampe à poser, pas un luminaire à fixer. Rien à percer ni à brancher au plafond, et elle part avec vous au prochain déménagement."],
   ["Que puis-je faire dans cette boutique de démonstration ?", "Choisir une finition et parcourir la fiche. Le paiement est désactivé : aucune commande n'est enregistrée. Dimensions, matières, alimentation et livraison ne sont pas encore renseignées."],
 ];
 const ORBE_PENDING: Faq[] = [
@@ -63,20 +65,20 @@ const ORBE_PENDING: Faq[] = [
 
 export function curateOrbe(spec: ThemeSpec) {
   const product = `/products/${spec.store.product.handle}`;
-  set(spec, "index", "ed-opening", { text: p("Le plafonnier écrase la pièce ? Posez ORBE sur la table du dîner, puis sur le bureau ou la table de nuit : là où vous la posez, l'ambiance change."), button_label: "Voir la lampe", button_link: product });
-  set(spec, "index", "ed-statement", { label: "L'idée", heading: "Une lampe qui suit la soirée, au lieu d'un plafonnier qui la fige." });
-  set(spec, "index", "ed-finishes", { label: "Finitions", heading: "Trois finitions, pour trois intérieurs", text: p("Dune pour les bois clairs, Argile pour les tons chauds, Charbon pour les intérieurs sombres : la même silhouette, trois façons de s'accorder à la pièce."), button_label: "Choisir sa finition" });
-  set(spec, "index", "ed-scene", { label: "Elle change de place", heading: "Du dîner à la lecture, la lumière vous suit", text: p("Sur la table du dîner, puis sur le bureau ou la table de nuit : la lampe passe d'une pièce à l'autre, et l'atmosphère avec elle.") });
-  set(spec, "index", "ed-diptych", { label: "Deux soirées", heading: "Près d'un fauteuil, sur une table de chevet" });
+  set(spec, "index", "ed-opening", { heading: "Un appartement loué. Une lumière à vous.", text: p("Le plafonnier est celui du propriétaire ; l'ambiance, elle, peut être la vôtre. Posez ORBE sur la table du dîner, le bureau ou la table de nuit : sans travaux, la pièce commence à vous ressembler."), button_label: "Voir la lampe", button_link: product });
+  set(spec, "index", "ed-statement", { label: "L'idée", heading: "On ne choisit pas toujours son plafonnier. On choisit sa lumière." });
+  set(spec, "index", "ed-finishes", { label: "Finitions", heading: "Trois finitions, pour votre intérieur", text: p("Dune pour les bois clairs, Argile pour les tons chauds, Charbon pour les intérieurs sombres : choisissez celle qui va avec vos meubles, pas avec les murs du propriétaire."), button_label: "Choisir sa finition" });
+  set(spec, "index", "ed-scene", { label: "Chez vous, pièce par pièce", heading: "Du dîner à la lecture, votre lumière vous suit", text: p("Sur la table du dîner, puis sur le bureau ou la table de nuit : la lampe passe d'une pièce à l'autre, et chaque pièce devient un peu plus la vôtre.") });
+  set(spec, "index", "ed-diptych", { label: "Deux coins à vous", heading: "Près d'un fauteuil, sur une table de chevet" });
   faq(sections(spec, "index", "v2-faq")[0], ORBE_FAQ, ORBE_PENDING);
-  for (const key of ["index", "page.about"]) set(spec, key, "cta-banner", { heading: "Ce soir, déplacez la lumière", text: p("Dune, Argile ou Charbon : choisissez la finition qui ira avec votre table."), button_label: "Choisir sa finition", button_link: product });
+  for (const key of ["index", "page.about"]) set(spec, key, "cta-banner", { heading: "Ce soir, faites entrer votre lumière", text: p("Dune, Argile ou Charbon : choisissez la finition qui ira avec vos meubles, et qui déménagera avec vous."), button_label: "Choisir sa finition", button_link: product });
   // Notre histoire : pourquoi une lampe à poser.
   const about = sections(spec, "page.about", "rich-text")[0];
   for (const b of blocks(about)) {
-    if (b.type === "heading") b.settings = { ...b.settings, text: "Une lumière qui se déplace avec vous" };
-    if (b.type === "text") b.settings = { ...b.settings, text: p("ORBE est née d'un constat simple : un plafonnier éclaire toute la pièce de la même façon. Une lampe posée crée un îlot de lumière là où l'on vit le soir, et peut changer de place le lendemain.") };
+    if (b.type === "heading") b.settings = { ...b.settings, text: "Une lumière à vous, même en location" };
+    if (b.type === "text") b.settings = { ...b.settings, text: p("ORBE est née d'un constat simple : quand on loue, on ne choisit ni le plafonnier ni l'éclairage. Une lampe posée crée un îlot de lumière là où l'on vit le soir, change de place le lendemain, et part avec vous au prochain déménagement.") };
   }
-  set(spec, "page.about", "image-with-text", { heading: "Pourquoi une lampe à poser", text: p("Parce qu'elle ne demande ni travaux ni fil au plafond : elle se pose sur une table, un bureau ou une table de nuit. Trois finitions, Dune, Argile et Charbon, pour la même silhouette arrondie.") });
+  set(spec, "page.about", "image-with-text", { heading: "Pourquoi une lampe à poser", text: p("Parce qu'elle ne demande ni travaux ni fil au plafond, ni l'accord de personne : elle se pose sur une table, un bureau ou une table de nuit. Trois finitions, Dune, Argile et Charbon, pour la même silhouette arrondie.") });
   // FAQ, fiche et page de livraison.
   faq(sections(spec, "page.faq", "faq")[0], ORBE_FAQ, ORBE_PENDING);
   set(spec, "page.faq", "contact-form", { heading: "Une question avant de choisir ?", text: p("Écrivez-nous : le formulaire vérifie les champs avant l'envoi. Dans cette démonstration, aucun message n'est réellement transmis.") });
@@ -85,14 +87,14 @@ export function curateOrbe(spec: ThemeSpec) {
   for (const b of blocks(shipping)) if (b.type === "text") { b.settings = { ...b.settings, text: p("Boutique de démonstration : aucune commande n'est expédiée ni remboursée. Les délais, frais et conditions de retour de la marque ne sont pas encore renseignés.") }; b.disabled = false; }
   for (const key of Object.keys(spec.templates).filter((k) => k === "product" || k.startsWith("product."))) {
     const mp = sections(spec, key, "main-product")[0];
-    for (const b of blocks(mp)) if (b.type === "text") b.settings = { ...b.settings, text: p("Le plafonnier fige la pièce ; ORBE se pose là où vous vivez ce soir, la table du dîner, le bureau ou la table de nuit, et l'ambiance suit. Trois finitions : Dune, Argile et Charbon.") };
-    set(spec, key, "ed-scene", { label: "Elle change de place", heading: "Du dîner à la table de nuit", text: p("Une lampe à poser, pas à fixer : elle quitte la table du dîner pour le bureau ou la table de nuit, et l'atmosphère la suit.") });
+    for (const b of blocks(mp)) if (b.type === "text") b.settings = { ...b.settings, text: p("Pour se sentir chez soi, même en location : ORBE se pose sur la table du dîner, le bureau ou la table de nuit, sans travaux. Trois finitions : Dune, Argile et Charbon.") };
+    set(spec, key, "ed-scene", { label: "Sans travaux", heading: "Du dîner à la table de nuit", text: p("Une lampe à poser, pas à fixer : elle quitte la table du dîner pour le bureau ou la table de nuit, et partira avec vous au prochain déménagement.") });
     faq(sections(spec, key, "faq")[0], ORBE_FAQ, ORBE_PENDING);
   }
   // Politiques (CGV, confidentialité, remboursement) non rédigées : liens masqués dans la démonstration, où ils
   // menaient à une page introuvable ; le réglage reste disponible dans l'éditeur.
   for (const sec of Object.values(spec.groups.footer?.sections ?? {})) if (sec.type === "footer") sec.settings = { ...sec.settings, show_policies: false };
-  spec.store.seo = { title: "ORBE | Lampe à poser : déplacez la lumière, l'ambiance suit", description: "Le plafonnier écrase la pièce ? La lampe ORBE se pose sur la table du dîner, le bureau ou la table de nuit. Trois finitions : Dune, Argile et Charbon." };
+  spec.store.seo = { title: "ORBE | Lampe à poser : une lumière à vous, même en location", description: "Le plafonnier est celui du propriétaire ? La lampe ORBE se pose sans travaux sur la table, le bureau ou la table de nuit. Trois finitions : Dune, Argile, Charbon." };
   hidePendingBlocks(spec);
 }
 

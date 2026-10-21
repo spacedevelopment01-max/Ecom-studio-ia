@@ -38,7 +38,7 @@ const IDENTITY: Record<DemoId, { tagline: string; summary: string; story: string
   fraise: { tagline: "Le goût fraise qui fait sourire.", summary: "Gummies tendres au goût fraise dans un flacon refermable.", story: "Une marque de démonstration autour d'un flacon de gummies à la fraise.", positioning: "Un flacon de gummies à la fraise, à poser sur la table de la cuisine ou à glisser dans un sac.", price: 2490 },
   onde: { tagline: "Écoutez. Posez. Repartez.", summary: "Casque graphite et noir mat, touches vertes pour repérer les commandes.", story: "Une marque de démonstration autour d'un casque graphite et vert.", positioning: "Un casque pour écouter chez soi, dans le train ou au studio, avec des commandes repérables d'un coup d'œil.", price: 14900 },
   orbe: {
-    tagline: "La lumière change de place. L'atmosphère aussi.", summary: "Lampe nomade à silhouette arrondie. Trois finitions : Dune, Argile et Charbon.", story: "Une silhouette arrondie, trois finitions et des ambiances à composer dans la maison.", positioning: "Une lampe à poser sur la table du dîner, le bureau ou la table de nuit : elle déplace l'ambiance avec elle.", price: 7900,
+    tagline: "Une lumière à vous, même en location.", summary: "Lampe nomade à silhouette arrondie. Trois finitions : Dune, Argile et Charbon.", story: "Une lampe à poser, sans travaux, pour se sentir chez soi dans un appartement loué.", positioning: "Une lampe à poser sur la table du dîner, le bureau ou la table de nuit : elle déplace l'ambiance avec elle.", price: 7900,
     // Ce que le kit montre réellement : trois finitions (une image par finition), une silhouette. Aucune donnée technique inventée.
     variants: [{ name: "Finition", values: ["Dune", "Argile", "Charbon"] }],
     facts: [{ label: "Finitions", value: "Dune, Argile et Charbon" }, { label: "Silhouette", value: "Abat-jour arrondi sur pied fin, socle rond" }],
@@ -162,6 +162,10 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
     const c = await conversionProject(userId, id, path.join(process.cwd(), "public", "demo"), { testVideo: options.testVideo });
     // Rédaction (consigne du 21 octobre, 19 h 50) : mêmes sections, textes vrais (ni avis, ni remise, ni garantie inventés).
     curateFraise(c.spec);
+    // Le projet lui-même suit la même décision (vitamines fictives) : nom, catégorie et marque cohérents avec la vitrine,
+    // pour que les sections ajoutées ensuite par le studio reprennent le bon produit.
+    { const pr = loadProject(c.pid); if (pr.product) saveProduct(c.pid, { ...pr.product, name: "Gummies vitaminés goût fraise", category: "Vitamines en gummies (produit fictif)", summary: "Vitamines C, D3, B6 et B12 en gummies goût fraise, deux par jour. Produit et composition fictifs de démonstration." });
+      if (pr.brand) saveBrand(c.pid, { ...pr.brand, tagline: "Vos vitamines ont le goût de fraise.", story: "Une marque fictive de démonstration : des vitamines en gummies goût fraise, pour une routine qu'on a envie de garder." }); }
     run("UPDATE projects SET store_type = ?, business_type = ?, updated_at = ? WHERE id = ?", d.storeType ?? "mono", "products", now(), c.pid);
     saveSettings(c.pid, { ...loadProject(c.pid).settings, storeKind: d.category as "services" | "catalog" | "specialty" });
     return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
