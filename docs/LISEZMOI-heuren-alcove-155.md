@@ -171,6 +171,26 @@ Descriptions uniques (60 à 160 caractères), canonical, fil d'Ariane, `Product`
   boutons flottants et avis « ajouté » placés au-dessus de la barre **seulement quand elle est affichée**, à sa hauteur
   mesurée. Vérifié à 360, 390 et 430 px sur ONDE, SILLON, NOCTIL, TRAVERSE, puis HEUREN et ALCÔVE.
 
+## Finitions demandées par Thomas (PR #157)
+
+Commit `1edf96cc`, séparé du reste. Les deux compositions et leur classement **mono-produit, famille E-commerce** ne
+changent pas.
+
+| Demande | Correction | Contrôle |
+|---|---|---|
+| 1. Deux avertissements de démonstration | Le bandeau d'annonce « Boutique de démonstration : aucune vente réelle » est retiré des démos HEUREN et ALCÔVE. La mention d'aperçu, qui porte les protections (paiement désactivé, formulaires interceptés), reste seule et tient sur une ligne : « Aperçu de démonstration · paiement désactivé ». | 1 seule mention, 25 px au lieu d'environ 90 px (mesuré à 360, 390, 430 et 1440 px) ; test : aucun bandeau « Boutique de démonstration » |
+| 2. Ouverture ALCÔVE trop haute au téléphone | Sur téléphone, l'arche se place à gauche du titre ; le texte et le bouton suivent. L'arche garde son rapport 2/3 et le fauteuil reste entier. Ordinateur inchangé. | 360 × 640 : produit, titre et bouton visibles dans le premier écran (avant : titre à 675 px, bouton à 981 px ; après : titre à 189 px, bouton à 519–570 px) ; idem 390 × 844 et 430 × 932 |
+| 3. Recadrages serrés | « Le coin lecture » (accueil ALCÔVE) passe en cadre paysage aux coins arrondis : le fauteuil, la table et le bouquet cités dans la légende sont visibles. « Sur l'ardoise » (fiche HEUREN) : point de cadrage sur la montre, et sur téléphone, les cadres paysage de ces deux profils ne sont plus forcés en portrait. Aucune image régénérée ; les autres thèmes ne sont pas touchés. | Captures avant / après à 360, 390, 430 et 1440 px : montre et fauteuil entiers |
+| 4. Bouton actif alors que l'ajout est refusé | Sans prix, le bouton devient « Achat indisponible », désactivé, avec la note « Prix à définir : ce produit ne peut pas encore être commandé. ». La barre mobile fait de même (« Prix à définir », bouton « Achat indisponible » désactivé). Avec un prix, rien ne change. | Test : fiche, produit à la une et barre désactivés sans prix ; avec un prix de test (copie isolée, jamais publié) : bouton actif, panier accepté |
+
+À savoir :
+- La mention d'aperçu raccourcie s'affiche sur **toutes** les démos.
+- L'état « Achat indisponible » vaut pour tout produit sans prix. Il apparaît donc aussi dans les démos SILLON, NOCTIL et
+  TRAVERSE, qui n'ont pas de prix non plus.
+- Le bandeau d'annonce « Boutique de démonstration » reste dans ces trois démos (autres PR) : je peux le retirer de la
+  même façon si Thomas le souhaite.
+- Le module d'offres par quantité (FRAISE / ONDE) n'est pas modifié : ses démos ont des prix.
+
 ## Vérifications
 
 Commit testé : **`e7e6c169`** (les commits suivants ne touchent que ce rapport). Tout est exécuté en copie isolée.
