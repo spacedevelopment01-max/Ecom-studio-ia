@@ -342,7 +342,7 @@ privée remise hors dépôt. Colonne « Visuels » : ce que les images du kit mo
 
 | Thème | Angle (brief) | Pages réécrites | Commit | Preuves | Visuels | Non renseigné |
 |---|---|---|---|---|---|---|
-| FRAISE | vitamines goût fraise, un petit rendez-vous | accueil, fiche (composition fictive, utilisation, précautions), à propos, article, publi-rédactionnel, FAQ, contact, livraison, légales, bibliothèque, panier, bandeaux, pied, SEO | f4ce21ff | archive privée | scène de fête retirée (gros plan des gummies) ; aucune prise quotidienne montrée | composition réelle, allergènes, délais, retours ; avis à venir |
+| FRAISE | vitamines goût fraise, un petit rendez-vous | accueil, fiche (composition fictive, utilisation, précautions), à propos, article, publi-rédactionnel, FAQ, contact, livraison, légales, bibliothèque, panier, bandeaux, pied, SEO | f4ce21ff, 8ce08456 | archive privée | scène de fête retirée (gros plan des gummies) ; aucune prise quotidienne montrée | composition réelle, allergènes, délais, retours ; avis à venir |
 | NOCTIL | sa propre galaxie dans sa chambre | accueil, fiche, « Où le poser », aide, menu, SEO | 29f6b302 | dépôt (14) | **aucune chambre d'enfant** dans le kit (salon, bureau, coin lecture) | âge conseillé, alimentation, réglages |
 | MUSEAU CLUB | premier chien, chaque pièce a son rôle | accueil, collection, 4 fiches (rôle, quand, ce qu'on voit, avec quoi), « Premières balades », aide, menu, SEO | 12407cae | dépôt (26) | cohérents (chiens portant les pièces, entrée) | tailles, matières, entretien |
 | SOUPLE | reprendre en douceur, à son rythme | accueil, collection, 4 fiches, « Reprendre chez soi », aide, menu, SEO | 6281d4cd | dépôt (26) | cohérents (objets seuls, intérieur calme) | prix, matières, dimensions |
