@@ -30,7 +30,7 @@ async function providerContent(pid: string): Promise<Contents> {
 }
 it.each([
   [0, 'specialized', null, ['fraise', 'sillon', 'noctil', 'traverse', 'museau-club']],
-  [2, 'ecommerce', null, ['onde', 'orbe', 'heuren', 'alcove']],
+  [2, 'ecommerce', null, ['onde', 'orbe', 'heuren', 'alcove', 'souple']],
   [1, 'services', 'atelier-rive', []],
   [3, 'services', 'atelier-rive', []],
 ] as const)('cas %i : validation des textes et préparation médias sans fausse installation de référence', async (index, choice, primary, alternatives) => {
@@ -62,7 +62,7 @@ it('une ancienne éligibilité stockée ne permet pas une référence appartenan
   const c = await providerContent(f.pid);
   // Quatre références E-commerce (ONDE refait en E-commerce et MUSEAU CLUB passé en boutique spécialisée, issue #158 ;
   // ORBE ; HEUREN et ALCÔVE, issue #155) : un choix à faire, aucune imposée.
-  expect(c.recommendation?.alternativesReferenceIds).toEqual(['onde', 'orbe', 'heuren', 'alcove']);
+  expect(c.recommendation?.alternativesReferenceIds).toEqual(['onde', 'orbe', 'heuren', 'alcove', 'souple']);
   category(f.pid, 'specialized');
   expect(() => approve(f.pid, stateOf(f.pid)!.revision, 'content')).toThrow(/catégorie/);
   expect(stateOf(f.pid)?.stages.content?.status).toBe('draft');

@@ -61,7 +61,7 @@ it("changement de catégorie après rédaction : références actives requalifi�
   const after = stateOf(f.pid)!.stages.content!.data;
   expect(after.documents).toEqual(before.documents); expect(after.editorial).toEqual(before.editorial); expect(after.slots).toEqual(before.slots); expect(after.copy).toEqual(before.copy);
   // Quatre références E-commerce (ORBE ; HEUREN et ALCÔVE, issue #155 ; MUSEAU CLUB, issue #158) : aucune imposée, toutes proposées.
-  expect(after.recommendation).toMatchObject({ recommendedReferenceId: null, alternativesReferenceIds: ["onde", "orbe", "heuren", "alcove"], engineThemeId: null, recommendedId: "", status: "reference_pending", selectedId: "theme-historique" });
+  expect(after.recommendation).toMatchObject({ recommendedReferenceId: null, alternativesReferenceIds: ["onde", "orbe", "heuren", "alcove", "souple"], engineThemeId: null, recommendedId: "", status: "reference_pending", selectedId: "theme-historique" });
   expect(recommendationDataReady(after.recommendation)).toBe(true);
   expect(all("SELECT id FROM ai_calls WHERE project_id=?", f.pid)).toEqual([]); expect(all("SELECT id FROM theme_versions WHERE project_id=?", f.pid)).toEqual([]);
 });

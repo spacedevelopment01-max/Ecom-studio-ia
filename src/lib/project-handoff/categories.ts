@@ -21,8 +21,10 @@ export const REFERENCE_THEMES = [
   // Issue #155 : mono-produit, mais famille E-commerce (consigne expresse de Thomas).
   { referenceId: "heuren", name: "HEUREN", categories: ["ecommerce"] },
   { referenceId: "alcove", name: "ALCÔVE", categories: ["ecommerce"] },
-  // Issue #158 : quatre produits pour chiens, famille E-commerce (pas « boutique spécialisée » malgré la niche).
+  // Issue #158 : quatre produits pour chiens, boutique spécialisée (décision de Thomas du 21 octobre).
   { referenceId: "museau-club", name: "MUSEAU CLUB", categories: ["specialized"] },
+  // Issue #158 : quatre accessoires de yoga et de Pilates en collection, famille E-commerce.
+  { referenceId: "souple", name: "SOUPLE", categories: ["ecommerce"] },
 ] as const;
 export type ReferenceThemeId = (typeof REFERENCE_THEMES)[number]["referenceId"];
 export const REFERENCE_THEME_IDS = REFERENCE_THEMES.map(t => t.referenceId) as [ReferenceThemeId, ...ReferenceThemeId[]];

@@ -146,7 +146,7 @@ it("changer une recommandation ne remplace pas le choix validé et ne construit 
 it("seules les dix références actives sont exposées, sans fausse installation disponible", async () => {
   const f = await fixture(); validatedBrand(f.pid, f.input); run("UPDATE subscriptions SET plan='creer' WHERE owner_user_id=?", f.uid);
   const catalogue = recommendationCatalogue(loadProject(f.pid));
-  expect(catalogue.map(x => x.id)).toEqual(["fraise", "onde", "orbe", "atelier-rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club"]);
+  expect(catalogue.map(x => x.id)).toEqual(["fraise", "onde", "orbe", "atelier-rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple"]);
   expect(catalogue.filter(x => x.status === "available")).toHaveLength(0);
   expect(catalogue.every(x => x.engineThemeId === null)).toBe(true);
   expect(catalogue.some(x => x.status === "incompatible")).toBe(true);

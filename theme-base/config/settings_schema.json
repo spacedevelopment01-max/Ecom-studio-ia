@@ -446,6 +446,10 @@
           {
             "value": "museau-club",
             "label": "Museau Club — cobalt et balades (référence)"
+          },
+          {
+            "value": "souple",
+            "label": "Souple — rose poudré, prune et liège (référence)"
           }
         ]
       },
@@ -885,6 +889,10 @@
           {
             "value": "studio",
             "label": "Studio : graphite profond, vert signal, titres Chivo et cadres nets"
+          },
+          {
+            "value": "poudre",
+            "label": "Poudre : rose poudré, prune et liège, serif fine, mosaïque et cadres doux"
           }
         ]
       },

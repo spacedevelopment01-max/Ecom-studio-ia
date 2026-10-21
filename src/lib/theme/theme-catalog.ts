@@ -44,6 +44,10 @@ export type Kit = {
   /** Mention d'inscription avec le lien vers la politique de confidentialité de la boutique. */
   privacy: string;
   im: ImageSlots;
+  /** Produits de la boutique (le principal d'abord) avec leur première photo : vitrine d'une boutique de quelques produits. */
+  shelf: { handle: string; title: string; image: string }[];
+  /** Accroche principale de la boutique (sur-titre, titre, texte, bouton), pour une ouverture rédigée par le thème. */
+  hero: { eyebrow: string; heading: string; text: string; cta: string };
   services: boolean;
   // Sections des directions d'origine (même rédaction, autres réglages).
   heroSplit: (sch: 1 | 2, pos: "right" | "left", asset?: string) => Row;
@@ -100,7 +104,7 @@ export type ThemeLook = {
   shape: "floating" | "pill" | "bar" | "boxed";
   icons: "circles" | "plain";
   menu: "fullscreen" | "drawer" | "drawer-right" | "sheet" | "cards";
-  footer: "columns" | "wordmark" | "card" | "centered" | "minimal" | "brand-left" | "split" | "stacked" | "boxed";
+  footer: "columns" | "wordmark" | "card" | "centered" | "minimal" | "brand-left" | "split" | "stacked" | "boxed" | "reference-shop";
   ann: "rotate" | "marquee" | "static";
   card: "minimal" | "boxed" | "overlay";
   button: "solid" | "outline" | "underline" | "frame";
@@ -171,7 +175,7 @@ const look = (l: Partial<ThemeLook> & Pick<ThemeLook, "headerLayout" | "shape" |
 });
 
 /** Identifiants des thèmes du catalogue (dans l'ordre de présentation). */
-export const CATALOG_IDS = ["vitrine", "manifeste", "laboratoire", "magazine", "cinema", "rituel", "horizon", "lookbook", "marche", "signal", "jardin", "reception", "cabinet", "recre", "epure", "tribu", "etabli", "velours", "lancement", "fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club"] as const;
+export const CATALOG_IDS = ["vitrine", "manifeste", "laboratoire", "magazine", "cinema", "rituel", "horizon", "lookbook", "marche", "signal", "jardin", "reception", "cabinet", "recre", "epure", "tribu", "etabli", "velours", "lancement", "fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple"] as const;
 export type CatalogThemeId = (typeof CATALOG_IDS)[number];
 
 export const CATALOG_THEMES: (CatalogTheme & { id: CatalogThemeId })[] = [

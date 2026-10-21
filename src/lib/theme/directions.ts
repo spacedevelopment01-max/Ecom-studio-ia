@@ -506,13 +506,13 @@ const CHROME: Record<DirectionId, { shape: string; icons: string; menu: string; 
 const CHROME_LABEL = {
   fr: {
     shape: { floating: "En-tête flottant", pill: "En-tête pilule", bar: "En-tête barre", boxed: "En-tête encadré" } as Record<string, string>,
-    footer: { columns: "Pied en colonnes", wordmark: "Pied à nom géant", card: "Pied avec carte d'inscription", centered: "Pied centré", minimal: "Pied minimal", "brand-left": "Pied avec marque à gauche", split: "Pied en deux parties", stacked: "Pied empilé", boxed: "Pied encadré" } as Record<string, string>,
+    footer: { columns: "Pied en colonnes", wordmark: "Pied à nom géant", card: "Pied avec carte d'inscription", centered: "Pied centré", minimal: "Pied minimal", "brand-left": "Pied avec marque à gauche", split: "Pied en deux parties", stacked: "Pied empilé", boxed: "Pied encadré", "reference-shop": "Pied de vitrine signé" } as Record<string, string>,
     ann: { rotate: "Bandeau rotatif", marquee: "Bandeau défilant", static: "Bandeau fixe" } as Record<string, string>,
     card: { minimal: "Cartes épurées", boxed: "Cartes encadrées", overlay: "Cartes à texte sur image" } as Record<string, string>,
   },
   en: {
     shape: { floating: "Floating header", pill: "Pill header", bar: "Bar header", boxed: "Boxed header" } as Record<string, string>,
-    footer: { columns: "Column footer", wordmark: "Giant-name footer", card: "Footer with sign-up card", centered: "Centered footer", minimal: "Minimal footer", "brand-left": "Brand-left footer", split: "Two-part footer", stacked: "Stacked footer", boxed: "Boxed footer" } as Record<string, string>,
+    footer: { columns: "Column footer", wordmark: "Giant-name footer", card: "Footer with sign-up card", centered: "Centered footer", minimal: "Minimal footer", "brand-left": "Brand-left footer", split: "Two-part footer", stacked: "Stacked footer", boxed: "Boxed footer", "reference-shop": "Signed storefront footer" } as Record<string, string>,
     ann: { rotate: "Rotating banner", marquee: "Scrolling banner", static: "Static banner" } as Record<string, string>,
     card: { minimal: "Minimal cards", boxed: "Boxed cards", overlay: "Text-over-image cards" } as Record<string, string>,
   },
@@ -924,8 +924,11 @@ export function buildSpec(input: BuildInput): ThemeSpec {
       return true;
     };
   }
+  const shelf = svc ? [] : [input.product, ...(input.products ?? [])]
+    .filter((x, i, a) => x?.handle && x.title && a.findIndex((y) => y?.handle === x.handle) === i)
+    .map((x) => ({ handle: x.handle, title: x.title, image: x.images?.[0] ?? "" }));
   const kit: Kit = {
-    t, im, services: !!svc,
+    t, im, shelf, hero: { eyebrow: c.hero.eyebrow, heading: c.hero.heading, text: c.hero.text, cta: c.hero.cta }, services: !!svc,
     privacy: t('<p>Désinscription possible à tout moment grâce au lien présent dans chaque e-mail. <a href="/policies/privacy-policy">Politique de confidentialité</a></p>', '<p>Unsubscribe at any time using the link in every email. <a href="/policies/privacy-policy">Privacy policy</a></p>'),
     heroSplit: (sch, pos, asset) => heroSplit(sch, pos, asset),
     heroFull, feat, iwt, statementRow, stats, specList, faqSec, marq, cta, newsletter, hgallery, mosaicSec, featured,

@@ -14,7 +14,7 @@
 import type { StoreKind } from "./store-kind";
 
 /** Thèmes de référence (issue #137) : compatibilités déclarées, jamais déduites du nom. */
-export const REFERENCE_THEMES = ["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club"] as const;
+export const REFERENCE_THEMES = ["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple"] as const;
 export type ReferenceThemeId = (typeof REFERENCE_THEMES)[number];
 
 const REFERENCE_FIT: Record<ReferenceThemeId, StoreKind[]> = {
@@ -30,8 +30,10 @@ const REFERENCE_FIT: Record<ReferenceThemeId, StoreKind[]> = {
   // Issue #155 : deux thèmes mono-produit de la famille E-commerce (montre, fauteuil), jamais « boutique spécialisée ».
   heuren: ["catalog"],
   alcove: ["catalog"],
-  // Issue #158 : boutique de quatre produits (harnais, laisse, collier, pochette), famille E-commerce.
+  // Issue #158 : collection de quatre produits pour chiens, boutique spécialisée (décision du 21 octobre).
   "museau-club": ["specialty"],
+  // Issue #158 : collection de quatre produits (tapis, brique, sangle, anneau), famille E-commerce.
+  souple: ["catalog"],
 };
 
 export const isReferenceThemeId = (id: string): id is ReferenceThemeId => (REFERENCE_THEMES as readonly string[]).includes(id);
@@ -76,8 +78,8 @@ export function themeFitReason(id: string, kind: StoreKind, lang: "fr" | "en" = 
 
 /**
  * Capture d'exemple d'un thème. Celles des thèmes dont les médias sont suivis dans le dépôt (SILLON, issue #148 ; NOCTIL et
- * TRAVERSE, issue #152 ; HEUREN et ALCÔVE, issue #155 ; MUSEAU CLUB, issue #158) y sont
+ * TRAVERSE, issue #152 ; HEUREN et ALCÔVE, issue #155 ; MUSEAU CLUB et SOUPLE, issue #158) y sont
  * aussi ; les autres viennent du kit privé (public/demo/directions/, hors dépôt).
  */
-const TRACKED_PREVIEWS: Record<string, string> = { sillon: "/theme-assets/sillon/apercu-theme.jpg", noctil: "/theme-assets/noctil/apercu-theme.jpg", traverse: "/theme-assets/traverse/apercu-theme.jpg", heuren: "/theme-assets/heuren/apercu-theme.jpg", alcove: "/theme-assets/alcove/apercu-theme.jpg", "museau-club": "/theme-assets/museau-club/apercu-theme.jpg" };
+const TRACKED_PREVIEWS: Record<string, string> = { sillon: "/theme-assets/sillon/apercu-theme.jpg", noctil: "/theme-assets/noctil/apercu-theme.jpg", traverse: "/theme-assets/traverse/apercu-theme.jpg", heuren: "/theme-assets/heuren/apercu-theme.jpg", alcove: "/theme-assets/alcove/apercu-theme.jpg", "museau-club": "/theme-assets/museau-club/apercu-theme.jpg", souple: "/theme-assets/souple/apercu-theme.jpg" };
 export const themePreviewPath = (id: string) => TRACKED_PREVIEWS[id] ?? `/demo/directions/${id}.jpg`;
