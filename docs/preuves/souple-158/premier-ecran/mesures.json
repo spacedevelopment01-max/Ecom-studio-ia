@@ -1,0 +1,251 @@
+{
+ "accueil 360x640": {
+  "h1": [
+   135,
+   266
+  ],
+  "cta": [
+   363,
+   415
+  ],
+  "ctaText": "Créer mon coin à moi↗",
+  "images": [
+   [
+    90,
+    640
+   ]
+  ],
+  "firstBottom": 640,
+  "sw": 360
+ },
+ "produit-anneau-pilates-souple-prune 360x640": {
+  "h1": [
+   466,
+   516
+  ],
+  "action": [
+   561,
+   627
+  ],
+  "image": null,
+  "price": [
+   518,
+   553
+  ],
+  "sw": 360
+ },
+ "produit-brique-yoga-souple-liege 360x640": {
+  "h1": [
+   466,
+   491
+  ],
+  "action": [
+   536,
+   602
+  ],
+  "image": null,
+  "price": [
+   493,
+   528
+  ],
+  "sw": 360
+ },
+ "produit-sangle-yoga-souple-prune 360x640": {
+  "h1": [
+   466,
+   491
+  ],
+  "action": [
+   536,
+   602
+  ],
+  "image": null,
+  "price": [
+   493,
+   528
+  ],
+  "sw": 360
+ },
+ "produit 360x640": {
+  "h1": [
+   466,
+   516
+  ],
+  "action": [
+   561,
+   627
+  ],
+  "image": null,
+  "price": [
+   518,
+   553
+  ],
+  "sw": 360
+ },
+ "accueil 390x844": {
+  "h1": [
+   145,
+   303
+  ],
+  "cta": [
+   413,
+   464
+  ],
+  "ctaText": "Créer mon coin à moi↗",
+  "images": [
+   [
+    90,
+    844
+   ]
+  ],
+  "firstBottom": 844,
+  "sw": 390
+ },
+ "produit-anneau-pilates-souple-prune 390x844": {
+  "h1": [
+   492,
+   546
+  ],
+  "action": [
+   591,
+   647
+  ],
+  "image": null,
+  "price": [
+   548,
+   583
+  ],
+  "sw": 390
+ },
+ "produit-brique-yoga-souple-liege 390x844": {
+  "h1": [
+   492,
+   519
+  ],
+  "action": [
+   564,
+   620
+  ],
+  "image": null,
+  "price": [
+   521,
+   556
+  ],
+  "sw": 390
+ },
+ "produit-sangle-yoga-souple-prune 390x844": {
+  "h1": [
+   492,
+   519
+  ],
+  "action": [
+   564,
+   620
+  ],
+  "image": null,
+  "price": [
+   521,
+   556
+  ],
+  "sw": 390
+ },
+ "produit 390x844": {
+  "h1": [
+   492,
+   546
+  ],
+  "action": [
+   591,
+   647
+  ],
+  "image": null,
+  "price": [
+   548,
+   583
+  ],
+  "sw": 390
+ },
+ "accueil 430x932": {
+  "h1": [
+   145,
+   320
+  ],
+  "cta": [
+   429,
+   481
+  ],
+  "ctaText": "Créer mon coin à moi↗",
+  "images": [
+   [
+    90,
+    932
+   ]
+  ],
+  "firstBottom": 932,
+  "sw": 430
+ },
+ "produit-anneau-pilates-souple-prune 430x932": {
+  "h1": [
+   527,
+   586
+  ],
+  "action": [
+   631,
+   687
+  ],
+  "image": null,
+  "price": [
+   588,
+   623
+  ],
+  "sw": 430
+ },
+ "produit-brique-yoga-souple-liege 430x932": {
+  "h1": [
+   527,
+   556
+  ],
+  "action": [
+   601,
+   657
+  ],
+  "image": null,
+  "price": [
+   558,
+   593
+  ],
+  "sw": 430
+ },
+ "produit-sangle-yoga-souple-prune 430x932": {
+  "h1": [
+   527,
+   556
+  ],
+  "action": [
+   601,
+   657
+  ],
+  "image": null,
+  "price": [
+   558,
+   593
+  ],
+  "sw": 430
+ },
+ "produit 430x932": {
+  "h1": [
+   527,
+   586
+  ],
+  "action": [
+   631,
+   687
+  ],
+  "image": null,
+  "price": [
+   588,
+   623
+  ],
+  "sw": 430
+ }
+}
