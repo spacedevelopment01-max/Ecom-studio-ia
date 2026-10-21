@@ -127,19 +127,27 @@ préparer votre cadeau »), fiche (« Montre à aiguilles · à offrir »), « A
 Visuels cohérents (écrin, tenues sobres, voyage, chevet) ; la scène sur pierre noire passe à l'inscription. Code :
 `tests/heuren-alcove-fixtures.ts`. Preuves : `docs/preuves/copywriting/heuren/`.
 
-### ALCÔVE — E-commerce, mono-produit — **réécrit**
+### ALCÔVE — E-commerce, mono-produit — **réécrit (consigne 21 h 45)** : le coin lecture à soi
 
-1. **Cible** : une personne qui n'a pas de siège à elle dans un intérieur partagé et s'assoit toujours « en attendant ».
-2. **Tension** : « Je ne suis jamais vraiment installé : toujours sur un coin de canapé. »
-3. **Désir et angle** : s'installer enfin, entouré de chaque côté → s'asseoir pour de bon.
-4. **Promesse et faits** : dossier et accoudoirs d'un seul arrondi autour d'un coussin épais ; faits = visuels. Confort,
-   dimensions, tissu, rembourrage, entretien et montage jamais affirmés.
-5. **Objections** : la pièce, le terracotta avec son intérieur, l'aspect de près, prix, dimensions et commande (information dédiée).
-6. **Parcours** : « Une alcôve à soi. » (fini le coin de canapé) → « Ce qui vous entoure, de chaque côté » → « Un siège où
-   l'on s'installe, pas un siège où l'on attend » → sa place (lecture, chambre) → « Sous la lampe, on y reste » → achat → FAQ → inscription.
+| | |
+|---|---|
+| Utilisateur et acheteur | un lecteur qui vit dans un logement partagé (colocation, famille) (brief) |
+| Situation d'achat | il lit sur un coin de canapé que tout le monde utilise, ou sur son lit, faute de mieux |
+| Tension (ses mots) | « Chez nous, le canapé est à tout le monde : je n'ai pas d'endroit pour lire tranquille. » |
+| Désir | un espace à soi, que l'on a envie de retrouver |
+| Angle unique | créer son coin lecture à soi |
+| Promesse tenable | un fauteuil dont le dossier et les accoudoirs forment un seul arrondi autour d'un coussin épais, qui trouve sa place dans une chambre ou un coin de salon |
+| Objections traitées | où l'installer dans un logement partagé, quelle place il prend (« dimensions non renseignées : mesurez votre coin »), le terracotta, l'aspect de près, la démo |
+| **Faits** | visuels : silhouette, tissu terracotta texturé, pieds en bois brun, coin lecture avec table d'appoint, vue de dessus avec livre, lampe du soir |
+| **Non renseigné** | dimensions, tissu, rembourrage, entretien, livraison et montage, garantie, prix |
+| Exclusions | aucun confort, maintien, dimension ni matière inventés |
 
-Pages réécrites : accueil, fiche (« Un arc autour de l'assise »), « Pièce par pièce », aide, pied, SEO. Preuves :
-`docs/preuves/copywriting/alcove/`.
+Pages : accueil (« Une alcôve à soi. » avec « Votre coin lecture » et « le canapé est à tout le monde » → « Ce qui vous
+entoure, *quand vous lisez* » → « Le canapé est à tout le monde. Ce fauteuil est à vous. » → « Là où vous lisez » →
+« Sous la lampe, *un chapitre de plus* » → achat → « Avant de créer votre coin »), fiche (« Fauteuil · votre coin
+lecture », vue de dessus « un livre à côté »), « Pièce par pièce » (la lumière pour lire), aide, pied, SEO. Visuels
+cohérents (coin lecture, livre, lampe) ; aucun ne montre un logement visiblement partagé (sans personne, règle du studio).
+Code : `tests/heuren-alcove-fixtures.ts`. Preuves : `docs/preuves/copywriting/alcove/`.
 
 ### NOCTIL — Spécialisée — **réécrit (consigne 21 h 45)** : l'enfant utilise, le parent achète
 

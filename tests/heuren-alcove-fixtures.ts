@@ -87,21 +87,22 @@ export const HEUREN_FAQ_PENDING: [string, string][] = [
   ["Le bracelet se change-t-il ?", TODO("système d'attache et largeur du bracelet")],
   ["Quelle est la garantie ?", TODO("durée et conditions de garantie")],
 ];
-// ALCÔVE — fiche de stratégie (même consigne) :
-//  1. cible : une personne qui n'a pas de siège à elle dans un intérieur partagé et s'assoit toujours « en attendant » :
-//     un coin de canapé, une chaise de table ;
-//  2. tension : « Je ne suis jamais vraiment installé : toujours sur un coin de canapé. » ;
-//  3. désir : s'installer enfin, entouré de chaque côté — angle unique : s'asseoir pour de bon ;
-//  4. promesse tenable : un fauteuil dont le dossier et les accoudoirs forment un seul arrondi autour d'un coussin épais ;
-//     faits = visuels (silhouette, tissu terracotta texturé, pieds en bois brun, pièces photographiées) ; dimensions,
-//     tissu, rembourrage, entretien et montage inconnus ;
-//  5. objections : la pièce où le mettre, le terracotta avec son intérieur, l'aspect de près, prix, dimensions et commande
-//     (information dédiée) ;
-//  6. parcours : ouverture (fini le coin de canapé) → repères (ce qui vous entoure) → l'idée → sa place (lecture, chambre)
-//     → le soir → achat → FAQ « Avant de lui faire une place » → inscription.
+// ALCÔVE — fiche de stratégie (consigne de Thomas du 21 octobre, 21 h 45 ; brief, hypothèse éditoriale) :
+//  utilisateur et acheteur : un lecteur qui vit dans un logement partagé (colocation, famille) ;
+//  situation d'achat : il lit sur un coin de canapé que tout le monde utilise, ou sur son lit, faute de mieux ;
+//  tension (ses mots) : « Chez nous, le canapé est à tout le monde : je n'ai pas d'endroit pour lire tranquille. » ;
+//  désir : un espace à soi, que l'on a envie de retrouver ;
+//  angle unique : créer son coin lecture à soi ;
+//  promesse tenable : un fauteuil dont le dossier et les accoudoirs forment un seul arrondi autour d'un coussin épais,
+//  qui trouve sa place dans une chambre ou un coin de salon ; faits = visuels (silhouette, tissu terracotta texturé,
+//  pieds en bois brun, coin lecture, livre, lampe, pièces photographiées) ;
+//  objections : où l'installer, la place qu'il prend (dimensions non renseignées : le dire), le terracotta, l'aspect de
+//  près, prix et commande (information dédiée) ;
+//  exclusions : aucun confort, maintien, dimension, tissu, rembourrage ni montage inventés.
 export const ALCOVE_FAQ: [string, string][] = [
-  ["Dans quelle pièce le mettre ?", "Là où vous voulez vous poser : salon, coin lecture, chambre, près d'une fenêtre ou dans un jardin d'hiver. Nos photos le montrent dans chacune de ces pièces."],
-  ["Le terracotta ira-t-il avec mon intérieur ?", "Sur nos photos, il côtoie des bois chauds, du lin, des tapis tressés et des plantes ; contre un mur clair, il réchauffe la pièce sans la charger."],
+  ["Où l'installer dans un logement partagé ?", "Dans votre chambre, au pied du lit, ou dans un coin du salon près d'une fenêtre : là où la lumière vous permet de lire. Nos photos le montrent dans un coin lecture, une chambre et sous une fenêtre."],
+  ["Quelle place prend-il ?", "Ses dimensions ne sont pas encore renseignées dans cette démonstration : mesurez votre coin avant de le choisir."],
+  ["Le terracotta ira-t-il avec le reste de la pièce ?", "Sur nos photos, il côtoie des bois chauds, du lin, des tapis tressés et des plantes ; contre un mur clair, il réchauffe la pièce sans la charger."],
   ["À quoi ressemble-t-il de près ?", "Un tissu terracotta à la texture visible, un coussin d'assise épais et des pieds courts en bois brun : tous les gros plans sont sur la fiche."],
   ["Que puis-je faire dans cette boutique de démonstration ?", "Faire le tour du fauteuil en cinq vues et le voir dans plusieurs pièces. Le prix, les dimensions et la composition du tissu ne sont pas encore renseignés, et la commande est désactivée."],
 ];
@@ -126,7 +127,7 @@ const BRANDS: Record<ShopKitId, Brand> = {
     name: "ALCÔVE", product: "Fauteuil ALCÔVE terracotta", category: "Fauteuil",
     summary: "Fauteuil enveloppant au tissu terracotta texturé : dossier et accoudoirs arrondis d'un seul tenant, coussin d'assise épais, quatre pieds courts en bois brun.",
     facts: [["Silhouette", "dossier et accoudoirs arrondis, coussin d'assise épais"], ["Pieds", "quatre pieds courts en bois brun"]],
-    tagline: "Une alcôve à soi.", story: "ALCÔVE est né d'une envie simple : un fauteuil sans angle, dans la couleur chaude de la terre cuite.", positioning: "Un fauteuil enveloppant pour le salon, le coin lecture et la chambre.",
+    tagline: "Une alcôve à soi.", story: "ALCÔVE est né pour les lecteurs qui partagent leur logement : un fauteuil qui devient leur coin à eux.", positioning: "Un fauteuil enveloppant pour créer son coin lecture, même dans un logement partagé.",
     // Terre cuite du logo et du tissu, sable des fonds, bois des pieds.
     palette: { primary: "#A14225", secondary: "#EEE8E1", accent: "#5A3A24", light: "#F6F0E8", dark: "#2B1A12" },
   },
@@ -242,43 +243,43 @@ function curateHeuren(k: Kit) {
 function curateAlcove(k: Kit) {
   const { spec, img, section, overlay, faq, productHref } = k;
   k.demoMeta();
-  spec.store.seo = { title: "ALCÔVE | Fauteuil enveloppant terracotta, pour s'asseoir pour de bon", description: "Fini le coin de canapé : le fauteuil ALCÔVE, dossier et accoudoirs d'un seul arrondi, coussin épais, tissu terracotta et pieds en bois brun." };
+  spec.store.seo = { title: "ALCÔVE | Le fauteuil terracotta pour créer votre coin lecture", description: "Dans un logement partagé, le canapé est à tout le monde : le fauteuil ALCÔVE devient votre coin lecture, un arrondi autour d'un coussin épais." };
   k.product({
     title: "Fauteuil ALCÔVE terracotta",
-    description_html: p("Son rôle : vous donner un siège à vous, où l'on s'installe au lieu d'attendre sur un coin de canapé.") + p("Ce qu'on voit : un dossier et des accoudoirs d'un seul arrondi autour d'un coussin d'assise épais, un tissu terracotta à la texture visible, quatre pieds courts en bois brun.") + p("Où le mettre : au salon, dans un coin lecture, au pied du lit ou près d'une fenêtre ; nos photos le montrent dans chacune de ces pièces."),
+    description_html: p("Son rôle : devenir votre coin lecture, dans un logement où le canapé est à tout le monde.") + p("Ce qu'on voit : un dossier et des accoudoirs d'un seul arrondi autour d'un coussin d'assise épais, un tissu terracotta à la texture visible, quatre pieds courts en bois brun.") + p("Où le mettre : dans votre chambre, au pied du lit, ou dans un coin de salon près d'une fenêtre ; nos photos le montrent dans chacune de ces places. Ses dimensions ne sont pas encore renseignées."),
     images: ["produit-01.webp", "produit-02.webp", "produit-03.webp", "produit-04.webp", "produit-05.webp"],
-    tags: ["fauteuil", "terracotta", "salon"],
+    tags: ["fauteuil", "terracotta", "coin lecture"],
     seo: { title: "Fauteuil ALCÔVE terracotta : vues, courbes et tissu en détail", description: "Faites le tour du fauteuil ALCÔVE : trois quarts, face, profil, dos et tissu terracotta en gros plan, puis le fauteuil vu d'en haut et en situation." },
   });
 
   // ─── Accueil : une alcôve, des courbes, des pièces, puis le soir. ─────────────────────────────────────────────────
   overlay("index", [
-    section("ed-opening", { ...img("ambiance-07.webp"), layout: "arch", heading_tag: "h1", label: "Fauteuil enveloppant", heading: "Une alcôve\nà soi.", text: p("Fini le coin de canapé : un dossier et des accoudoirs d'un seul arrondi autour d'un coussin épais, dans la couleur chaude de la terre cuite."), button_label: "Voir le fauteuil", button_link: productHref, focus_x: 50, focus_y: 62, mobile_focus_x: 50, mobile_focus_y: 62, copy_surface: true, caption: "", motion: "reveal", padding_top: 48, padding_bottom: 72 }),
-    section("fs-lookbook", { ...img("ambiance-01.webp"), layout: "side", eyebrow: "Ses courbes", heading: "Ce qui vous entoure,", heading_accent: "de chaque côté", text: p("Touchez un repère : le dossier, les accoudoirs, le coussin et les pieds, un par un."), align: "left", button_label: "", button_link: "", link_label: "Voir le fauteuil", focus_x: 62, focus_y: 55, effect: "fade", stagger: true, hover: false, background: "scheme", color_scheme: "scheme-2" }, [
+    section("ed-opening", { ...img("ambiance-07.webp"), layout: "arch", heading_tag: "h1", label: "Votre coin lecture", heading: "Une alcôve\nà soi.", text: p("Dans un logement partagé, le canapé est à tout le monde. Ce fauteuil devient votre coin lecture : un arrondi qui vous entoure, une lampe, votre livre."), button_label: "Voir le fauteuil", button_link: productHref, focus_x: 50, focus_y: 62, mobile_focus_x: 50, mobile_focus_y: 62, copy_surface: true, caption: "", motion: "reveal", padding_top: 48, padding_bottom: 72 }),
+    section("fs-lookbook", { ...img("ambiance-01.webp"), layout: "side", eyebrow: "Ses courbes", heading: "Ce qui vous entoure,", heading_accent: "quand vous lisez", text: p("Touchez un repère : le dossier qui vous tient, les accoudoirs pour poser les bras, le coussin et les pieds."), align: "left", button_label: "", button_link: "", link_label: "Voir le fauteuil", focus_x: 62, focus_y: 55, effect: "fade", stagger: true, hover: false, background: "scheme", color_scheme: "scheme-2" }, [
       marker(k, 60, 33, "Le dossier, d'un seul tenant avec les accoudoirs"),
       marker(k, 80, 50, "Les accoudoirs arrondis, pour poser les bras"),
       marker(k, 56, 60, "Le coussin d'assise épais"),
       marker(k, 50, 81, "Les pieds courts en bois brun"),
     ]),
     section("rich-text", { style: "statement", align: "center", padding_top: 96, padding_bottom: 96 }, [
-      { type: "eyebrow", settings: { text: "Pour de bon" } },
-      { type: "heading", settings: { text: "Un siège où l'on s'installe, pas un siège où l'on attend.", size: "h2" } },
-      { type: "text", settings: { text: p("Pas un angle : le dossier et les accoudoirs ne forment qu'un seul arrondi autour d'un coussin épais, posé sur quatre pieds de bois brun.") } },
+      { type: "eyebrow", settings: { text: "À vous" } },
+      { type: "heading", settings: { text: "Le canapé est à tout le monde. Ce fauteuil est à vous.", size: "h2" } },
+      { type: "text", settings: { text: p("Le dossier et les accoudoirs ne forment qu'un seul arrondi autour d'un coussin épais : une place où l'on s'installe avec son livre, et que l'on retrouve chaque soir.") } },
     ]),
-    section("ed-diptych", { layout: "pair", label: "Sa place", heading: "Là où vous lisez, là où vous vous posez", text: "", button_label: "", button_link: "", motion: "reveal", padding_top: 64, padding_bottom: 64 }, [
+    section("ed-diptych", { layout: "pair", label: "Sa place", heading: "Là où vous lisez", text: "", button_label: "", button_link: "", motion: "reveal", padding_top: 64, padding_bottom: 64 }, [
       frame(k, "ambiance-02.webp", "Le coin lecture", "Une table d'appoint pour le livre et la tasse, la lumière qui entre de biais.", "landscape", { focus_x: 60, mobile_focus_x: 60 }),
-      frame(k, "ambiance-05.webp", "La chambre", "Au pied du lit : pour lire avant d'éteindre, ou poser ses affaires.", "portrait", { focus_x: 58, mobile_focus_x: 58 }),
+      frame(k, "ambiance-05.webp", "La chambre", "Au pied du lit, quand la chambre est la seule pièce rien qu'à vous.", "portrait", { focus_x: 58, mobile_focus_x: 58 }),
     ]),
-    section("fs-campaign", { ...img("ambiance-06.webp"), layout: "card", eyebrow: "Le soir", heading: "Sous la lampe,", heading_accent: "on y reste", text: p("Une lampe en papier, un tapis épais : quand la lumière baisse, le terracotta se fait plus profond."), align: "left", label: "", offer_title: "", offer_text: "", period_text: "", conditions: "", cta_label: "Voir le fauteuil", cta_link: productHref, cta2_label: "Pièce par pièce", cta2_link: "/pages/piece-par-piece", focus_x: 62, focus_y: 55, effect: "fade", stagger: false, hover: false, background: "scheme", color_scheme: "scheme-3" }),
+    section("fs-campaign", { ...img("ambiance-06.webp"), layout: "card", eyebrow: "Le soir", heading: "Sous la lampe,", heading_accent: "un chapitre de plus", text: p("Une lampe en papier, un tapis épais : quand la maison se calme, on reprend le livre là où on l'avait laissé."), align: "left", label: "", offer_title: "", offer_text: "", period_text: "", conditions: "", cta_label: "Voir le fauteuil", cta_link: productHref, cta2_label: "Pièce par pièce", cta2_link: "/pages/piece-par-piece", focus_x: 62, focus_y: 55, effect: "fade", stagger: false, hover: false, background: "scheme", color_scheme: "scheme-3" }),
     section("featured-purchase", { label: "Le fauteuil", heading: "Fauteuil ALCÔVE terracotta", text: p("Avant de lui faire une place, faites-en le tour : trois quarts, face, profil, dos, puis le tissu en gros plan."), product: SHOP_KIT_HANDLE.alcove, product_target: "product:main", purchase_style: "outlined", purchase_enabled: false, image_fit: "contain", gallery_limit: 5, enable_zoom: true, link_label: "Voir la fiche complète" }),
-    faq("Avant de lui faire une place", ALCOVE_FAQ.slice(0, 4), "cards", "stacked", "La pièce, les couleurs, l'aspect de près, ce que permet la démonstration.", { color_scheme: "scheme-2" }),
+    faq("Avant de créer votre coin", ALCOVE_FAQ.slice(0, 5), "cards", "stacked", "Où l'installer, la place qu'il prend, les couleurs, l'aspect de près, la démonstration.", { color_scheme: "scheme-2" }),
     section("newsletter", { eyebrow: "Nouvelles d'ALCÔVE", heading: "Être prévenu quand ALCÔVE ouvre", text: p("Un e-mail à l'ouverture de la boutique. Rien d'autre."), button_label: "Me prévenir", preview_note: true, legal: p("Désinscription possible à tout moment depuis chaque e-mail.") }),
   ]);
 
   // ─── Fiche produit ──────────────────────────────────────────────────────────────────────────────────────────────
   k.mainProduct({
-    eyebrow: "Fauteuil · pour s'installer",
-    text: "Pour s'asseoir pour de bon : un dossier et des accoudoirs d'un seul arrondi autour d'un coussin d'assise épais, en tissu terracotta texturé.",
+    eyebrow: "Fauteuil · votre coin lecture",
+    text: "Votre coin lecture à vous : un dossier et des accoudoirs d'un seul arrondi autour d'un coussin d'assise épais, en tissu terracotta texturé.",
     highlights: "Dossier et accoudoirs arrondis\nCoussin d'assise épais\nQuatre pieds courts en bois brun\nTissu terracotta à la texture visible",
     description: spec.store.product.description_html,
     specs: "dimensions, hauteur d'assise, poids, composition du tissu et du rembourrage, essence du bois des pieds, entretien",
@@ -287,7 +288,7 @@ function curateAlcove(k: Kit) {
     settings: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
   });
   overlay(k.productKey(), [
-    section("image-with-text", { image_asset: img("ambiance-09.webp").image_asset, layout: "image-left", ratio: "square", reveal: "up", parallax: false, eyebrow: "Vu d'en haut", heading: "Un arc autour de l'assise", text: p("Vu du dessus, le dossier et les accoudoirs se rejoignent autour du coussin : de chaque côté, quelque chose vous tient."), button_label: "", button_link: "", color_scheme: "scheme-2" }),
+    section("image-with-text", { image_asset: img("ambiance-09.webp").image_asset, layout: "image-left", ratio: "square", reveal: "up", parallax: false, eyebrow: "Vu d'en haut", heading: "Un arc autour de l'assise, un livre à côté", text: p("Vu du dessus, le dossier et les accoudoirs se rejoignent autour du coussin ; sur la table d'appoint, le livre attend."), button_label: "", button_link: "", color_scheme: "scheme-2" }),
     section("ed-diptych", { layout: "side", label: "Deux intérieurs", heading: "Avec du bois ancien ou face à une verrière", text: "", button_label: "", button_link: "", motion: "reveal", padding_top: 64, padding_bottom: 64 }, [
       frame(k, "ambiance-04.webp", "Intérieur rétro", "Près d'un buffet en bois et d'une table basse ronde.", "portrait", { focus_x: 62 }),
       frame(k, "ambiance-08.webp", "Loft", "Face à une grande verrière, sur un tapis épais.", "portrait", { focus_x: 52 }),
@@ -296,14 +297,14 @@ function curateAlcove(k: Kit) {
   ]);
 
   // ─── Pages ──────────────────────────────────────────────────────────────────────────────────────────────────────
-  k.page("piece-par-piece", "Pièce par pièce", { title: "Pièce par pièce : le fauteuil ALCÔVE chez vous | ALCÔVE", description: "Jardin d'hiver, fenêtre cintrée : le fauteuil ALCÔVE terracotta photographié dans plusieurs pièces, pour imaginer sa place chez vous." }, [
-    ["intro", section("rich-text", { style: "plain", align: "center", color_scheme: "scheme-1", padding_top: 24, padding_bottom: 24 }, [{ type: "text", settings: { text: p("Un fauteuil se choisit pour une pièce, et pour une lumière. Voici ALCÔVE au jardin d'hiver puis sous une fenêtre cintrée.") } }])],
-    ["jardin", section("ed-scene", { ...img("ambiance-10.webp"), layout: "panorama", label: "Jardin d'hiver", heading: "Entre les plantes, en pleine lumière", text: p("Sol en terre cuite, grandes feuilles, verrière : le terracotta du fauteuil répond à celui du sol."), button_label: "", button_link: "", caption: "", focus_x: 55, focus_y: 58, mobile_focus_x: 60, mobile_focus_y: 58, motion: "reveal", padding_top: 48, padding_bottom: 72 })],
-    ["fenetre", section("ed-scene", { ...img("ambiance-03.webp"), layout: "closing", label: "Près d'une fenêtre", heading: "Une arche, un rideau, un fauteuil", text: p("Sous une fenêtre cintrée, le fauteuil prend la lumière du matin."), button_label: "Voir le fauteuil", button_link: productHref, caption: "", motion: "reveal", color_scheme: "scheme-2", padding_top: 88, padding_bottom: 88 })],
+  k.page("piece-par-piece", "Pièce par pièce", { title: "Pièce par pièce : où installer son coin lecture | ALCÔVE", description: "Jardin d'hiver, fenêtre cintrée : le fauteuil ALCÔVE là où la lumière permet de lire, pour imaginer votre coin lecture chez vous." }, [
+    ["intro", section("rich-text", { style: "plain", align: "center", color_scheme: "scheme-1", padding_top: 24, padding_bottom: 24 }, [{ type: "text", settings: { text: p("Un coin lecture se choisit pour sa lumière. Voici ALCÔVE au jardin d'hiver puis sous une fenêtre cintrée, deux endroits où l'on ouvre un livre.") } }])],
+    ["jardin", section("ed-scene", { ...img("ambiance-10.webp"), layout: "panorama", label: "Jardin d'hiver", heading: "Entre les plantes, en pleine lumière", text: p("Sol en terre cuite, grandes feuilles, verrière : de la lumière pour lire en plein jour, et le terracotta du fauteuil qui répond au sol."), button_label: "", button_link: "", caption: "", focus_x: 55, focus_y: 58, mobile_focus_x: 60, mobile_focus_y: 58, motion: "reveal", padding_top: 48, padding_bottom: 72 })],
+    ["fenetre", section("ed-scene", { ...img("ambiance-03.webp"), layout: "closing", label: "Près d'une fenêtre", heading: "Une arche, un rideau, un fauteuil", text: p("Sous une fenêtre cintrée, le fauteuil prend la lumière du matin : celle des premières pages."), button_label: "Voir le fauteuil", button_link: productHref, caption: "", motion: "reveal", color_scheme: "scheme-2", padding_top: 88, padding_bottom: 88 })],
   ]);
-  k.page("aide", "Questions et contact", { title: "Questions et contact | ALCÔVE, fauteuil terracotta", description: "La pièce où le mettre, le terracotta avec votre intérieur, l'aspect de près, ce que permet la démonstration : nos réponses, et un formulaire." }, [
+  k.page("aide", "Questions et contact", { title: "Questions et contact | ALCÔVE, votre coin lecture", description: "Où l'installer dans un logement partagé, la place qu'il prend, le terracotta, l'aspect de près : nos réponses, et un formulaire." }, [
     ["faq", faq("Questions fréquentes", [...ALCOVE_FAQ, ...ALCOVE_FAQ_PENDING], "numbered", "side", "", { color_scheme: "scheme-1" })],
-    ["form", section("contact-form", { eyebrow: "Contact", heading: "Une question avant de lui faire une place ?", text: p("Écrivez-nous : le formulaire vérifie les champs avant l'envoi. Dans cette démonstration, aucun message n'est réellement transmis."), email: "", hours: "", response: "", preview_note: true, color_scheme: "scheme-2", padding_top: 64, padding_bottom: 96 })],
+    ["form", section("contact-form", { eyebrow: "Contact", heading: "Une question avant de créer votre coin ?", text: p("Écrivez-nous : le formulaire vérifie les champs avant l'envoi. Dans cette démonstration, aucun message n'est réellement transmis."), email: "", hours: "", response: "", preview_note: true, color_scheme: "scheme-2", padding_top: 64, padding_bottom: 96 })],
   ]);
 
   // ─── Menus, en-tête « boutique éditoriale » (le fauteuil dans le sous-menu), pied « empilé » ──────────────────────
@@ -324,7 +325,7 @@ function curateAlcove(k: Kit) {
   const footer = Object.values(spec.groups.footer.sections).find((s) => s.type === "footer")!;
   footer.settings = { ...footer.settings, style: "stacked", show_wordmark: false, show_policies: false, show_payment: false, color_scheme: "scheme-2", logo_asset: "" };
   footer.blocks = {
-    about: { type: "text", settings: { heading: "ALCÔVE", text: p("Le fauteuil enveloppant où l'on s'installe pour de bon : salon, coin lecture, chambre. Marque de démonstration du studio.") } },
+    about: { type: "text", settings: { heading: "ALCÔVE", text: p("Le fauteuil qui devient votre coin lecture, même dans un logement partagé. Marque de démonstration du studio.") } },
     links: { type: "links", settings: { heading: "Aide", menu: "footer" } },
   };
   footer.block_order = ["about", "links"];
