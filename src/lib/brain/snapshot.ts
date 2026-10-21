@@ -9,6 +9,7 @@
  * Quatre requêtes SQL au plus, aucune IA, aucune écriture. Jamais de réglage, de clé ni de connexion lus ici.
  */
 import { all, json } from "../db";
+import { selectedStrategyContext } from "../strategy-consumption";
 import { loadProject, type Project } from "../projects";
 import { resolveTrade, tradeText, type TradeProfile } from "./trade";
 import { resolveProductCategory, type ProductCategoryProfile } from "../image-v2/categories";
@@ -34,6 +35,8 @@ export type AiPattern = { code: string; deliverable: string; count: number; fata
 
 export type BrainSnapshot = {
   projectId: string;
+  /** Explicit client choice, versioned; absent for legacy projects. */
+  marketingStrategy?: string;
   project: Project;
   trade: TradeProfile;
   /** Boutique de produits : famille du produit comprise (Image V2) ; null pour une entreprise de services. */
@@ -89,6 +92,7 @@ export function brainSnapshot(projectOrId: string | Project): BrainSnapshot {
 
   return {
     projectId: pid,
+    marketingStrategy: selectedStrategyContext(pid),
     project,
     trade: resolveTrade(tradeText(project), project.product.sector ?? null),
     category: project.business === "services" ? null : resolveProductCategory(project.product),

@@ -1,3 +1,4 @@
+import { strategyContent, strategyStamp } from "../strategy-consumption";
 /**
  * Versions des documents publicitaires : chaque enregistrement crée une version (historique), restaurer recopie une
  * version ancienne en nouvelle version (rien n'est perdu), dupliquer crée une nouvelle lignée. Les choix du client
@@ -56,10 +57,15 @@ export function foreignAssets(projectId: string, doc: AdDocument): string[] {
 
 // ---------------------------------------------------------------- versions
 
-export function saveVersion(projectId: string, docKey: string, doc: AdDocument, o: { note?: string; renderedAssetId?: string | null } = {}): DocVersion {
+export function saveVersion(projectId: string, docKey: string, doc: AdDocument, o: { strategyStamp?: import("../strategy-consumption").StrategyStamp | null; note?: string; renderedAssetId?: string | null } = {}): DocVersion {
+  const previous = doc.meta.source === "user" ? one<{doc_json:string}>("SELECT doc_json FROM ad_documents WHERE project_id=? AND doc_key=? ORDER BY version DESC LIMIT 1", projectId, docKey) : null;
+  const preserved = previous ? json<{meta:{marketingStrategy?: import("../strategy-consumption").StrategyStamp | null}}>(previous.doc_json, { meta: {} }).meta.marketingStrategy ?? null : null;
+  const strategy = o.strategyStamp !== undefined ? o.strategyStamp : doc.meta.source === "user" ? preserved : strategyStamp(projectId);
+  doc = { ...doc, meta: { ...doc.meta, marketingStrategy: strategy } };
   const version = (one<{ v: number }>("SELECT MAX(version) v FROM ad_documents WHERE doc_key = ?", docKey)?.v ?? 0) + 1;
   const vid = id();
   run("INSERT INTO ad_documents (id, project_id, doc_key, version, source, note, doc_json, rendered_asset_id, created_at) VALUES (?,?,?,?,?,?,?,?,?)", vid, projectId, docKey, version, doc.meta.source, (o.note ?? "").slice(0, 200), JSON.stringify(doc), o.renderedAssetId ?? null, now());
+  strategyContent(projectId, "ad", vid, { stamp: strategy, protected: doc.meta.source === "user" });
   return { id: vid, docKey, version, source: doc.meta.source, note: o.note ?? "", renderedAssetId: o.renderedAssetId ?? null, createdAt: now() };
 }
 
@@ -88,7 +94,7 @@ export function userOwned(projectId: string, docKey: string): boolean {
 export function restoreVersion(projectId: string, docKey: string, version: number): DocVersion {
   const doc = versionDoc(projectId, docKey, version);
   if (!doc) throw new Error("version introuvable");
-  return saveVersion(projectId, docKey, { ...doc, meta: { ...doc.meta, source: "user" } }, { note: `restauration de la version ${version}` });
+  return saveVersion(projectId, docKey, { ...doc, meta: { ...doc.meta, source: "user" } }, { note: `restauration de la version ${version}`, strategyStamp: doc.meta.marketingStrategy ?? null });
 }
 
 /** Duplique une création : nouvelle lignée, même contenu. */

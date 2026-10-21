@@ -1,3 +1,4 @@
+import { strategyContent } from "../strategy-consumption";
 import { planOfProject } from "../plan-gates";
 import { PLANS } from "../plans";
 /**
@@ -128,6 +129,7 @@ export function editPostV2(p: Project, postId: string, patch: ManualPatch): { re
   }
   // Seul le déplacement (date) ne change pas la version ; tout le reste est une modification du client protégée.
   const contentChanged = sets.some(([c]) => c !== "scheduled_at" && c !== "connection_id");
+  if (contentChanged) strategyContent(p.id, "post", postId, { stamp: null, protected: true });
   return { reapproval: contentChanged ? afterEdit(postId) : false };
 }
 
@@ -235,6 +237,7 @@ export async function applySocialEdit(p: Project, text: string, deps: SocialDeps
     }
     const a = adaptForPlatform(r.network as Platform, { caption: out.caption, title: out.title, hashtags: out.hashtags, link: r.link, format: r.format as never, mediaCount: 1 });
     run("UPDATE posts SET title = ?, caption = ?, hashtags = ?, updated_at = ? WHERE id = ?", a.title, a.caption, a.hashtags.join(" "), now(), pid);
+    strategyContent(p.id, "post", pid);
     afterEdit(pid);
     done++;
   }

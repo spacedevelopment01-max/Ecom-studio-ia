@@ -1,3 +1,4 @@
+import { strategyContent, strategyStamp } from "../strategy-consumption";
 /**
  * Documents texte V2 : versions (chaque enregistrement est une version ; restaurer recopie une ancienne version,
  * rien n'est perdu), lignée stable par page, protection des modifications du client (une régénération du moteur
@@ -34,7 +35,11 @@ export function releaseContentTarget(projectId: string, target: string, owner: s
 export function renewContentTarget(projectId: string, target: string, owner: string) {
   run("UPDATE content_target_locks SET expires_at=? WHERE project_id=? AND target=? AND owner=?", now() + 15 * 60_000, projectId, target, owner);
 }
-export function saveContentVersion(projectId: string, docKey: string, doc: ContentDoc, o: { note?: string; verdict?: string | null; expectedVersion?: number } = {}): ContentVersion {
+export function saveContentVersion(projectId: string, docKey: string, doc: ContentDoc, o: { strategyStamp?: import("../strategy-consumption").StrategyStamp | null; note?: string; verdict?: string | null; expectedVersion?: number } = {}): ContentVersion {
+  const previous = doc.meta2.source === "user" ? one<{doc_json:string}>("SELECT doc_json FROM content_documents WHERE project_id=? AND doc_key=? ORDER BY version DESC LIMIT 1", projectId, docKey) : null;
+  const preserved = previous ? json<{meta2:{marketingStrategy?: import("../strategy-consumption").StrategyStamp | null}}>(previous.doc_json, { meta2: {} }).meta2.marketingStrategy ?? null : null;
+  const strategy = o.strategyStamp !== undefined ? o.strategyStamp : doc.meta2.source === "user" ? preserved : strategyStamp(projectId);
+  doc = { ...doc, meta2: { ...doc.meta2, marketingStrategy: strategy } };
   if (doc.meta2.contract) doc = { ...doc, meta2: { ...doc.meta2, contract: { ...doc.meta2.contract, checks: checkRequirements(doc, requirementsOf(doc.meta2.contract.request)) } } };
   return tx(() => {
   const version = (one<{ v: number }>("SELECT MAX(version) v FROM content_documents WHERE doc_key = ?", docKey)?.v ?? 0) + 1;
@@ -45,6 +50,7 @@ export function saveContentVersion(projectId: string, docKey: string, doc: Conte
     "INSERT INTO content_documents (id, project_id, doc_key, version, type, lang, title, source, verdict, note, doc_json, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
     vid, projectId, docKey, version, doc.type, doc.lang, doc.page.title.slice(0, 200), doc.meta2.source, o.verdict ?? null, (o.note ?? "").slice(0, 200), JSON.stringify(doc), at,
   );
+  strategyContent(projectId, "seo", vid, { stamp: strategy, protected: doc.meta2.source === "user" });
   return { id: vid, docKey, version, type: doc.type, lang: doc.lang, title: doc.page.title, source: doc.meta2.source, verdict: o.verdict ?? null, note: o.note ?? "", createdAt: at };
   });
 }
@@ -88,7 +94,7 @@ export function contentUserOwned(projectId: string, docKey: string): boolean {
 export function restoreContentVersion(projectId: string, docKey: string, version: number): ContentVersion {
   const doc = contentVersionDoc(projectId, docKey, version);
   if (!doc) throw new Error("version introuvable");
-  return saveContentVersion(projectId, docKey, { ...doc, meta2: { ...doc.meta2, source: "user" } }, { note: `restauration de la version ${version}` });
+  return saveContentVersion(projectId, docKey, { ...doc, meta2: { ...doc.meta2, source: "user" } }, { note: `restauration de la version ${version}`, strategyStamp: doc.meta2.marketingStrategy ?? null });
 }
 
 // ---------------------------------------------------------------- mémoire des rédactions (idempotence)

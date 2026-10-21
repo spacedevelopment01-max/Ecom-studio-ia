@@ -33,6 +33,7 @@ export function verifiedFacts(p: Project, item?: CatalogItem | null): VerifiedFa
   if (services && !clean(s.phone) && !clean(s.email) && !clean(s.bookingUrl)) unknowns.push("coordonnées de contact");
   if (!i.proofs.length) unknowns.push("preuves (garanties, labels, certifications) — aucune ne sera affirmée");
   return {
+    ...(i.marketingStrategy ? { marketingStrategy: i.marketingStrategy } : {}),
     brand: i.brand,
     offerName: item ? item.name.trim() : i.offerName,
     category: item ? item.category.trim() : p.product.category?.trim() || i.category.label,

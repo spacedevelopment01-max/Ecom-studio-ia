@@ -1,3 +1,4 @@
+import { assertContentAlignment } from "../marketing-strategy";
 /**
  * NIVEAU 3 — PROGRAMMATION ET PUBLICATION (persistantes, côté serveur, navigateur fermé).
  *
@@ -78,6 +79,14 @@ export async function publishOne(postId: string, publisher: Publisher, o: { time
     if (moved.changes) notify(owner.user_id, owner.project_id, L("Une publication a été retenue", "A post was held back"), msg, "warning");
     return { outcome: "skipped", detail: "catalogue modifié" };
   }
+  if (pre.status === "scheduled") {
+    try { assertContentAlignment(owner.project_id, "post", postId); }
+    catch (error) {
+      const message = String((error as Error).message);
+      run("UPDATE posts SET status='review', approved_hash=NULL, error=?, updated_at=? WHERE id=? AND status='scheduled'", message, now(), postId);
+      return { outcome: "skipped", detail: message };
+    }
+  }
   // Version différente de celle approuvée : jamais publiée.
   if (pre.status === "scheduled" && !approvalValid(pre)) {
     run("UPDATE posts SET status = 'review', error = ?, updated_at = ? WHERE id = ? AND status = 'scheduled'", L("Contenu modifié après approbation : nouvelle approbation nécessaire.", "Content changed after approval: a new approval is required."), now(), postId);
@@ -86,6 +95,10 @@ export async function publishOne(postId: string, publisher: Publisher, o: { time
   // Prise en charge atomique : une seule tâche peut passer « scheduled → publishing ».
   const token = crypto.randomUUID();
   const claimed = tx(()=>{
+    try { assertContentAlignment(owner.project_id, "post", postId); } catch (error) {
+      run("UPDATE posts SET status='review', approved_hash=NULL, error=?, updated_at=? WHERE id=? AND status='scheduled'", String((error as Error).message), now(), postId);
+      return {changes:0};
+    }
     const plan=planOfUserId(owner.user_id,owner.project_id);
     if(!plan||dispatchedPostsOn(owner.project_id,now(),postId,pre.timezone??'Europe/Paris')>=PLANS[plan].postsPerDay){
       const msg=L('Limite quotidienne du forfait atteinte : publication conservée, choisissez un autre jour.','Daily plan limit reached: post kept, choose another day.');

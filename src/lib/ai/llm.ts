@@ -1,3 +1,4 @@
+import { selectedStrategyContext } from "../strategy-consumption";
 /**
  * Appels Claude (Anthropic SDK) avec :
  *  - routage par tâche (modèle et effort réglables dans l'administration),
@@ -556,8 +557,20 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
 /** Plafond de sortie (réflexion comprise) quand une réponse JSON a été coupée faute de place. */
 const MAX_OUTPUT_TOKENS = 64000;
 
+/** Also covers specialized calls which do not yet request a Brain view. */
+export function withSelectedStrategy(call: LlmCall): LlmCall {
+  if (!call.projectId) return call;
+  const selected = selectedStrategyContext(call.projectId);
+  if (!selected || call.context?.includes(selected)) return call;
+  if (/<strategie_marketing_active\b/.test(call.context ?? "")) {
+    throw new UserFacingError("Le contexte de cette rédaction appartient à une ancienne stratégie. Préparez de nouveau la demande avant toute dépense ; les contenus acquis sont conservés.");
+  }
+  return { ...call, context: [call.context, selected].filter(Boolean).join("\n\n") };
+}
+
 /** Texte libre (rédaction). */
 export async function llmText(call: LlmCall): Promise<string> {
+  call = withSelectedStrategy(call);
   const content = await buildContent(call);
   const r = await rawCall(call, [{ role: "user", content: content as any }]);
   return r.text.trim();
@@ -568,6 +581,7 @@ export async function llmText(call: LlmCall): Promise<string> {
  * validé par Zod avec une tentative de correction guidée par l'erreur.
  */
 export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opts: { strict?: boolean } = {}): Promise<z.infer<S>> {
+  call = withSelectedStrategy(call);
   const content = await buildContent(call);
   const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: content as any }];
   if (opts.strict) {

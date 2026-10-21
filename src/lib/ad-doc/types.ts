@@ -125,7 +125,7 @@ export type AdDocument = {
   layers: Layer[];
   /** Identité de marque disponible dans l'éditeur (palette, polices). */
   brand: { palette: Record<string, string>; fonts: { heading: string; body: string }; name: string };
-  meta: { conceptId: string | null; source: "engine" | "user" | "ai_local" | "ai"; createdFrom: string | null; recipe?: AdRecipe };
+  meta: { marketingStrategy?: import("../strategy-consumption").StrategyStamp | null; conceptId: string | null; source: "engine" | "user" | "ai_local" | "ai"; createdFrom: string | null; recipe?: AdRecipe };
 };
 
 /** Recette de composition (moteur publicitaire) : permet de RECOMPOSER la création dans un autre format. */

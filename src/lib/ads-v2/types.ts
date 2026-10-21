@@ -29,6 +29,8 @@ export type AngleType = (typeof ANGLE_TYPES)[number];
 
 /** Ce que le studio sait pour vendre : uniquement ce qui est confirmé ou saisi par le client. */
 export type AdInsight = {
+  /** One explicit project angle; ad concepts remain subordinate executions. */
+  marketingStrategy?: import("../marketing-strategy/types").ActiveStrategy;
   business: "products" | "services";
   brand: string;
   offerName: string;

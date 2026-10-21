@@ -1,3 +1,5 @@
+import { assertContentAlignment } from "../marketing-strategy";
+import { strategyContent } from "../strategy-consumption";
 /**
  * NIVEAU 2 — PRODUCTION (progressive, par lots) : médias des publications choisies.
  *  - IMAGES (règle du propriétaire, guide du moteur d'images) : toute image de publication est CRÉÉE par l'IA
@@ -129,6 +131,7 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
     const m = pick(r, { allowPaid: allowPaid && (!o.aiImages || aiIds.has(r.id)), ai: aiIds.has(r.id), bg: o.aiBackground }, pools);
     let out: MediaResult | null = null;
     try {
+      assertContentAlignment(p.id, "post", r.id);
       if (m.method === "none") {
         out = { assetId: null, costMicro: 0, by: "local", note: r.editorialData?.initialCreative ? "Publication initiale : utilisez le suivi des vingt créations pour reprendre les seules créations manquantes, sans doublon." : `publication ${r.id.slice(0, 6)} : ${WAITING_AI}` };
       } else if (m.method === "library") {
@@ -173,6 +176,7 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
     // L'empreinte change (nouveau média) : une approbation antérieure ne couvre plus cette version.
     afterEdit(r.id);
     run("UPDATE posts SET user_edited = ? WHERE id = ?", r.user_edited, r.id);
+    strategyContent(p.id, "post", r.id);
     res.produced++;
     res.byMethod[out.by] = (res.byMethod[out.by] ?? 0) + 1;
     // Reprise payée (1er essai refusé par le contrôle) : annoncée au client, jamais en silence.

@@ -1,3 +1,4 @@
+import { withStrategyScope, strategyStamp } from "../strategy-consumption";
 import { reserveBlogDraft,releaseUnsavedBlogDraft } from "../quotas";
 import { assertJobEntitlements,assertAdvertising } from "../job-entitlements";
 /**
@@ -94,6 +95,10 @@ export function targetPage(pages: PageRef[], type: ContentType, pageKey: string 
 type RunResult = ContentRunResult & { strategy: SeoStrategy; stoppedByCostCap: boolean };
 const pending = new Map<string, Promise<RunResult>>();
 export async function runContentEngineV2(ctx: JobContext | null, projectId: string, req: ContentRequestV2, injected?: SeoV2Deps): Promise<RunResult> {
+  return withStrategyScope(projectId, () => runContentEngineV2InScope(ctx, projectId, req, injected));
+}
+
+async function runContentEngineV2InScope(ctx: JobContext | null, projectId: string, req: ContentRequestV2, injected?: SeoV2Deps): Promise<RunResult> {
   if(!req.planOnly)assertJobEntitlements("content.v2",projectId,{request:req});
   if(req.type==="ad_copy")assertAdvertising(projectId);
   let p = loadProject(projectId);
@@ -104,7 +109,7 @@ export async function runContentEngineV2(ctx: JobContext | null, projectId: stri
   if (blogBlocked) deps = localOnlyDeps();
   const capMicro = Math.round((req.maxCostEur ?? DEFAULT_SEO_CAP_EUR) * EUR);
   const cur = currentTrace();
-  const flight = runKey({ projectId, req, product: p.product, services: p.services, catalog: p.catalog, brand: p.brand, context: deps.context });
+  const flight = runKey({ marketingStrategy: strategyStamp(projectId), projectId, req, product: p.product, services: p.services, catalog: p.catalog, brand: p.brand, context: deps.context });
   const running = pending.get(flight);
   if (running && !req.planOnly) { const result = await running; ctx?.progress(1, L("Rédaction identique retrouvée", "Identical content reused")); return { ...result, costMicro: 0, skipped: true }; }
   const pageList = sitePages(p);

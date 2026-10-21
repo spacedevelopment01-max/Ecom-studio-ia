@@ -1,3 +1,4 @@
+import { strategyContent, strategyStamp } from "./strategy-consumption";
 /**
  * Bibliothèque de fichiers : dossiers, sous-dossiers, médias, versions et
  * usages. Les originaux ne sont jamais écrasés : une retouche crée une
@@ -174,6 +175,7 @@ async function probeVideo(file: string): Promise<{ width?: number; height?: numb
 const SAFE_EXT = new Set(["png", "jpg", "jpeg", "webp", "gif", "avif", "heic", "heif", "svg", "mp4", "mov", "webm", "m4v", "mp3", "wav", "m4a", "ogg", "pdf", "zip", "csv", "txt", "json", "md", "docx", "xlsx", "pptx", "ttf", "otf", "woff", "woff2", "psd", "ai", "eps"]);
 
 export async function saveAsset(input: SaveAssetInput): Promise<Asset> {
+  const strategy = input.origin === "generated" ? strategyStamp(input.projectId) : null;
   const aid = id();
   // Extension du fichier stocké : celle du type, sinon celle du nom SEULEMENT si elle est connue et inoffensive
   // (jamais « .m3u8 », « .ffconcat »… qu'un outil comme ffmpeg interpréterait comme une liste de lecture).
@@ -239,13 +241,14 @@ export async function saveAsset(input: SaveAssetInput): Promise<Asset> {
     key,
     thumbKey,
     input.origin,
-    JSON.stringify(input.meta ?? {}),
+    JSON.stringify({ ...input.meta, marketingStrategy: strategy }),
     input.sourceAssetId ?? null,
     input.versionOf ?? null,
     version,
     input.status ?? "ready",
     now(),
   );
+  if (input.origin === "generated") strategyContent(input.projectId, "asset", aid, { stamp: strategy });
   return getAsset(aid)!;
 }
 

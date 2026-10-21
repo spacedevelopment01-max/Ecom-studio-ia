@@ -1,3 +1,5 @@
+import { strategyContent } from "../strategy-consumption";
+import { assertContentAlignment } from "../marketing-strategy";
 /**
  * Articles de blog écrits par l'IA (forfaits Vendre : 2 par mois, Dominer : 8 par mois).
  *  - Sujets proposés à partir des faits du projet (questions des acheteurs, usages, guides, comparatifs honnêtes).
@@ -476,6 +478,7 @@ export async function writeBlogArticle(ctx: JobContext, projectId: string, req: 
        body_html = excluded.body_html, tags = excluded.tags, cover_asset_id = excluded.cover_asset_id, language = excluded.language, status = CASE WHEN blog_articles.published_url IS NOT NULL THEN 'ready' ELSE 'draft' END, qc_notes = excluded.qc_notes, keyword = excluded.keyword, search_intent = excluded.search_intent, updated_at = excluded.updated_at`,
     articleId, projectId, p.userId, a.title, slug, a.metaTitle, a.metaDescription, a.excerpt, a.bodyHtml, JSON.stringify(a.tags), cover, contentLang(), JSON.stringify(notes), a.keyword?.trim() || request.keyword || null, request.intent ?? null, t, t,
   );
+  strategyContent(projectId, "blog", articleId);
   saveCheck(gate, { userId: p.userId, projectId, jobId: ctx.job.id, candidateId: `blog:${articleId}` });
   // Un nouveau brouillon = un article du cycle ; les réécritures de cette lignée ne comptent pas à nouveau.
   // The article count was atomically reserved before writing; rewrites do not consume another article.
@@ -489,6 +492,8 @@ export async function writeBlogArticle(ctx: JobContext, projectId: string, req: 
  * qualité est FINAL ; un brouillon technique ne l'est jamais.
  */
 export function blogAutoPublishable(articleId: string): boolean {
+  const owner = one<{ project_id: string }>("SELECT project_id FROM blog_articles WHERE id=?", articleId);
+  if (owner) try { assertContentAlignment(owner.project_id, "blog", articleId); } catch { return false; }
   return one<{ verdict: string }>("SELECT verdict FROM quality_checks WHERE candidate_id = ? ORDER BY created_at DESC LIMIT 1", `blog:${articleId}`)?.verdict === "FINAL";
 }
 

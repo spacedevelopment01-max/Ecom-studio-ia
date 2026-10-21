@@ -1,3 +1,4 @@
+import { strategyContent } from "../strategy-consumption";
 /**
  * NIVEAU 1 — PLANIFICATION (gratuite, aucune génération payante) : dates de publication (début, fin, jours de la
  * semaine, jours exclus, fuseau), 1 à 5 créneaux par jour, réseaux, répartition des piliers (thèmes prioritaires
@@ -159,6 +160,7 @@ export function createPlanV2(p: Project, req: PlanRequest, o: { planId?: string 
   const planId = o.planId ?? id();
   if (!one("SELECT 1 FROM content_plans WHERE id = ?", planId))
     run("INSERT INTO content_plans (id, project_id, params, strategy, status, created_at, engine, updated_at) VALUES (?,?,?,?,?,?,?,?)", planId, p.id, JSON.stringify(req), JSON.stringify(strategy), "ready", now(), "v2", now());
+  strategyContent(p.id, "calendar", planId);
   // Accroches déjà publiées ou refusées (normalisées sans accents : « Découvrez » = « decouvrez ») : jamais reprises.
   const used = usedHooks(p.id);
   const nth = new Map<string, number>();
@@ -238,6 +240,7 @@ export function createPlanV2(p: Project, req: PlanRequest, o: { planId?: string 
          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
         pid, p.id, planId, s.connectionId, s.platform, a.format, "planned", s.at, req.timezone, a.title, a.caption, row.hashtags, a.link, s.pillar.title, "[]", JSON.stringify(brief), key, now() + i, now() + i, "v2", s.pillar.id, s.pillar.objective, contentHash(row), s.groupId,
       );
+      strategyContent(p.id, "post", pid);
       created++;
     }
   });

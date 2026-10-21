@@ -124,7 +124,7 @@ describe("Project Brain 2C — contextes ciblés et traces", async () => {
     const { llmText } = await import("@/lib/ai/llm");
     await fr(() => llmText({ task: "blog_writing", userId: u.id, projectId: p.id, system: "SYS", context: `${ctx}\nConsignes propres à l'article`, prompt: "P" }));
     expect(one<any>("SELECT brain_scope, brain_hash, brain_version FROM ai_calls WHERE project_id = ? ORDER BY created_at DESC LIMIT 1", p.id)).toEqual({ brain_scope: "blog", brain_hash: v.hash, brain_version: BRAIN_VERSION });
-    expect(BRAIN_VERSION).toBe("2.3.0");
+    expect(BRAIN_VERSION).toBe("2.4.0");
   });
 
   it("trace d'une génération d'image écrite depuis le Brain (réussite et échec) ; sans consigne du Brain : aucune trace Brain", async () => {
