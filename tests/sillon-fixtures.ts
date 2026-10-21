@@ -56,13 +56,21 @@ export const SILLON_EMPTY: string[] = [];
 const p = (s: string) => `<p>${s}</p>`;
 const TODO = (what: string) => `[À compléter : ${what}]`;
 
+// SILLON — fiche de stratégie (consigne du 21 octobre, 19 h 50 ; hypothèse éditoriale, pas une étude) :
+//  1. cible : un amateur d'espresso qui passe ses journées loin de sa machine (bureau sans machine, hôtel, train, plein air) ;
+//  2. tension : « Au bureau, à l'hôtel, en week-end : partout, le café de la pause est une déception. » ;
+//  3. désir : garder son espresso partout — angle unique : votre espresso ne reste plus à la maison ;
+//  4. promesse tenable : une machine que l'on pose sur la table, l'espresso coulant directement dans le verre placé
+//     dessous ; faits = visuels. Pression, café compatible, alimentation, autonomie et dimensions jamais affirmés ;
+//  5. objections : où l'utiliser, comment le café est servi, la place qu'elle prend, prix et caractéristiques
+//     (information dédiée) ;
+//  6. parcours : ouverture → l'idée → le moment où tout coule → détails → lieux → achat → FAQ « Avant de l'emporter » → inscription.
 /** FAQ publique : uniquement des réponses que l'on peut donner sans rien supposer. */
 export const SILLON_FAQ: [string, string][] = [
   ["Où peut-on utiliser SILLON ?", "Là où vous faites une pause : sur un bureau, le comptoir de la cuisine, le buffet d'une chambre d'hôtel, la tablette d'un train ou une table de pique-nique. Ce sont les lieux où nous l'avons photographiée."],
   ["Comment l'espresso est-il servi ?", "Directement dans le verre. On le place sous la machine et l'espresso y coule : pas de tasse à déplacer, pas de bec à viser."],
-  ["Où voir la machine de plus près ?", "Sur sa fiche : de profil, de face, de dessus et en gros plan sur les finitions cuivrées. La page « Utilisation » montre le rituel du café pas à pas."],
-  ["Comment être prévenu des nouveautés ?", "Laissez votre adresse dans « Nouvelles de SILLON », en bas de page. Nous écrivons seulement quand il y a du neuf."],
-  ["Peut-on commander aujourd'hui ?", "Pas encore : cette boutique est une démonstration. Aucune commande n'y est enregistrée et aucun paiement n'est demandé."],
+  ["Prend-elle de la place sur une table ?", "C'est un cylindre droit, posé debout : sur nos photos, elle occupe un coin de bureau, de comptoir ou de tablette de train, à côté du verre."],
+  ["Que puis-je faire dans cette boutique de démonstration ?", "Faire le tour de la machine et la voir dans les lieux de vos journées. Le prix, le café compatible, l'alimentation et les dimensions ne sont pas encore renseignés, et la commande est désactivée."],
 ];
 /** Questions dont la réponse dépend de faits inconnus : prêtes dans l'éditeur, masquées tant qu'elles ne sont pas remplies. */
 export const SILLON_FAQ_PENDING: [string, string][] = [
@@ -169,14 +177,14 @@ function curate(spec: ThemeSpec, ids: Record<string, string>) {
   spec.store.business = "products";
   spec.store.paymentTypes = [];
   spec.store.policies = [];
-  spec.store.seo = { title: "SILLON | Machine à espresso nomade, du bureau au voyage", description: "SILLON emporte le rituel de l'espresso du bureau à la chambre d'hôtel, du train au pique-nique, servi directement dans le verre." };
+  spec.store.seo = { title: "SILLON | Machine à espresso nomade : votre espresso vous suit", description: "Au bureau, à l'hôtel, dans le train : posez SILLON sur la table, glissez un verre dessous, l'espresso y coule. Cylindre brun mat, détails cuivrés." };
 
   // Galerie de la fiche : les cinq vues produit (grille : une grande, puis deux par deux). Vue de dessus (01) : repères ; macro (19) : accueil.
   const gallery = ["sillon-02.webp", "sillon-11.webp", "sillon-15.webp", "sillon-03.webp", "sillon-06.webp"].filter((f) => ids[f]);
   const main: StoreProduct = {
     ...spec.store.product,
     contentTarget: "product:main", handle: SILLON_HANDLE, title: "Machine à espresso nomade SILLON", vendor: "SILLON",
-    description_html: p("SILLON emporte le rituel de l'espresso là où vous allez. Un cylindre brun mat aux détails cuivrés, un bouton en façade, et l'espresso qui coule directement dans le verre placé dessous.") + p("Posez-la sur un bureau, le comptoir de la cuisine, le buffet d'une chambre d'hôtel ou la tablette d'un train : sa silhouette droite trouve sa place sans encombrer la table."),
+    description_html: p("Son rôle : que votre espresso vous suive hors de la maison. On la pose sur la table, on glisse un verre dessous, l'espresso y coule.") + p("Ce qu'on voit : un cylindre brun mat, une bague et un bouton de teinte cuivrée en façade, le nom SILLON discrètement inscrit sur le corps.") + p("Où la poser : sur un bureau, le comptoir de la cuisine, le buffet d'une chambre d'hôtel ou la tablette d'un train ; sa silhouette droite tient dans un coin de table."),
     price: null, compare_at_price: null, currency: "EUR", options: [],
     variants: [{ title: "Default Title", options: [], price: null, available: true }],
     images: gallery, tags: ["machine à espresso", "nomade"],
@@ -201,7 +209,7 @@ function curate(spec: ThemeSpec, ids: Record<string, string>) {
 
   // ─── Accueil ────────────────────────────────────────────────────────────────────────────────────────────────────
   overlay("index", [
-    section("cv-hero", { ...img("sillon-04.webp"), image_ratio: "wide", focus_x: 30, focus_y: 50, layout: "image-left", heading: "La machine à espresso nomade,", heading_accent: "pour emporter votre rituel", heading_tag: "h1", text: p("Votre espresso, servi dans le verre, sur la table où vous êtes : un bureau le matin, la chambre d'un hôtel, la tablette d'un train ou un pique-nique au bord de l'eau. SILLON garde le geste du café et vous laisse choisir le décor."), button_label: "Découvrir SILLON", button_link: productHref, rating_text: "", rating_note: "", guarantee_text: "", animation: "fade" }, [
+    section("cv-hero", { ...img("sillon-04.webp"), image_ratio: "wide", focus_x: 30, focus_y: 50, layout: "image-left", heading: "Votre espresso", heading_accent: "ne reste plus à la maison", heading_tag: "h1", text: p("Au bureau sans machine, à l'hôtel, dans le train ou au bord de l'eau : posez la machine SILLON sur la table, glissez un verre dessous, l'espresso y coule. Le café de la pause redevient le vôtre."), button_label: "Voir la machine", button_link: productHref, rating_text: "", rating_note: "", guarantee_text: "", animation: "fade" }, [
       { type: "check", settings: { text: "Pensée pour le bureau, le voyage et le dehors" } },
       { type: "check", settings: { text: "Silhouette sobre, détails cuivrés" } },
       { type: "check", settings: { text: "Servi directement dans le verre" } },
@@ -231,8 +239,8 @@ function curate(spec: ThemeSpec, ids: Record<string, string>) {
       { type: "image", settings: { ...img("sillon-14.webp"), caption: "Salon ferroviaire" } },
     ]),
     section("featured-purchase", { label: "La machine", heading: "SILLON, machine à espresso nomade", text: p("De profil, de face, de dessus, de près : faites le tour de la machine avant de la choisir."), product: SILLON_HANDLE, product_target: "product:main", purchase_style: "compact", purchase_enabled: false, image_fit: "contain", gallery_limit: 4, link_label: "Voir la fiche complète" }),
-    fixFaq(faq("Questions", "avant de partir", SILLON_FAQ.slice(0, 4), "lines", "side", "Les réponses courtes aux questions que l'on se pose en découvrant SILLON.")),
-    section("newsletter-media", { layout: "right", ...img("sillon-16.webp"), eyebrow: "Nouvelles de SILLON", heading: "Un e-mail quand il y a vraiment du neuf", text: p("Disponibilité, nouveaux lieux photographiés, conseils pour le rituel : nous écrivons seulement quand quelque chose change."), perk_1: "", perk_2: "", perk_3: "", button_label: "S'inscrire", legal: p("Désinscription possible à tout moment depuis chaque e-mail.") }),
+    fixFaq(faq("Avant de", "l'emporter", SILLON_FAQ.slice(0, 4), "lines", "side", "Où l'utiliser, comment le café est servi, la place qu'elle prend, ce que permet la démonstration.")),
+    section("newsletter-media", { layout: "right", ...img("sillon-16.webp"), eyebrow: "Nouvelles de SILLON", heading: "Être prévenu quand SILLON ouvre", text: p("Un e-mail à l'ouverture de la boutique. Rien d'autre."), perk_1: "", perk_2: "", perk_3: "", button_label: "Me prévenir", legal: p("Désinscription possible à tout moment depuis chaque e-mail.") }),
   ]);
 
   // ─── Fiche produit ──────────────────────────────────────────────────────────────────────────────────────────────
@@ -246,7 +254,7 @@ function curate(spec: ThemeSpec, ids: Record<string, string>) {
     ["eyebrow", block("eyebrow", { text: "Machine à espresso nomade" })],
     ["title", block("title", {})],
     ["price", block("price", {})],
-    ["text", block("text", { text: p("Un cylindre brun mat, une bague et un bouton de teinte cuivrée : SILLON se pose là où vous êtes, et l'espresso coule directement dans le verre placé dessous.") })],
+    ["text", block("text", { text: p("Pour que votre espresso vous suive : posez-la sur la table, glissez un verre dessous, l'espresso y coule. Cylindre brun mat, bague et bouton cuivrés.") })],
     ["highlights", block("highlights", { items: "Pensée pour le bureau, le voyage et le dehors\nServi directement dans le verre\nCorps brun mat, bague et bouton cuivrés\nUn seul bouton en façade", icon: "check", columns: 1 })],
     ["buy", block("buy_buttons", { picker: "buttons", show_quantity: true, show_dynamic_checkout: false, price_in_button: false })],
     ["details", block("collapsible", { heading: "Description", content: main.description_html, open: false })],
@@ -281,7 +289,7 @@ function curate(spec: ThemeSpec, ids: Record<string, string>) {
       { type: "item", settings: { icon: "shield", title: "Garantie", text: p(TODO("durée et couverture")), proof_label: "", proof_link: "" } },
       { type: "item", settings: { icon: "chat", title: "Assistance", text: p(TODO("canal de contact et horaires")), proof_label: "", proof_link: "" } },
     ])),
-    fixFaq(faq("Questions", "fréquentes", [...SILLON_FAQ, ...SILLON_FAQ_PENDING], "lines", "stacked")),
+    fixFaq(faq("Questions", "sur SILLON", [...SILLON_FAQ, ...SILLON_FAQ_PENDING], "lines", "stacked")),
   ]);
 
   // ─── Pages ──────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -319,7 +327,7 @@ function curate(spec: ThemeSpec, ids: Record<string, string>) {
     ["faq", fixFaq(faq("Questions", "fréquentes", [...SILLON_FAQ, ...SILLON_FAQ_PENDING], "numbered", "stacked"))],
   ]);
   page("contact", "Contact", { title: "Contact | SILLON, machine à espresso nomade", description: "Une question sur SILLON, la machine à espresso nomade ? Écrivez-nous par le formulaire de contact." }, [
-    ["form", section("contact-form", { eyebrow: "Contact", heading: "Une question sur SILLON ?", text: p("Écrivez-nous : le formulaire vérifie les champs avant l'envoi. Dans cette démonstration, aucun message n'est réellement transmis."), email: "", hours: "", response: "", preview_note: true, color_scheme: "scheme-1", padding_top: 32, padding_bottom: 96 })],
+    ["form", section("contact-form", { eyebrow: "Contact", heading: "Une question avant de l'emporter ?", text: p("Écrivez-nous : le formulaire vérifie les champs avant l'envoi. Dans cette démonstration, aucun message n'est réellement transmis."), email: "", hours: "", response: "", preview_note: true, color_scheme: "scheme-1", padding_top: 32, padding_bottom: 96 })],
   ]);
 
   // Modèles de page laissés par la composition sans page qui les utilise (FAQ, livraison…) : retirés de la démonstration,
@@ -334,19 +342,20 @@ function curate(spec: ThemeSpec, ids: Record<string, string>) {
   spec.store.menus["main-menu"] = { title: "Navigation", links: [{ title: "La machine", url: productHref }, { title: "Usages", url: "/pages/usages" }, { title: "Utilisation", url: "/pages/utilisation-caracteristiques" }, { title: "Contact", url: "/pages/contact" }] };
   spec.store.menus.footer = { title: "Aide", links: [{ title: "Utilisation et caractéristiques", url: "/pages/utilisation-caracteristiques" }, { title: "Contact", url: "/pages/contact" }, { title: "Recherche", url: "/search" }] };
   const header = Object.values(spec.groups.header.sections).find((s) => s.type === "header")!;
-  header.settings = { ...header.settings, menu: "main-menu", layout: "menu-right", shape: "bar", mobile_menu: "sheet", sticky: true, transparent_on_home: false, show_search: false, show_cart: true, cta_label: "Commander", cta_link: productHref, cta_icon: "arrow", phone: "", color_scheme: "scheme-1" };
+  header.settings = { ...header.settings, menu: "main-menu", layout: "menu-right", shape: "bar", mobile_menu: "sheet", sticky: true, transparent_on_home: false, show_search: false, show_cart: true, cta_label: "Voir la machine", cta_link: productHref, cta_icon: "arrow", phone: "", color_scheme: "scheme-1" };
   const announce = section("announcement-bar", { style: "static", color_scheme: "scheme-2" }, [{ type: "announcement", settings: { text: "Boutique de démonstration : aucune vente réelle.", link: "" } }]);
   spec.groups.header.sections = { announce, header };
   spec.groups.header.order = ["announce", "header"];
   const footer = Object.values(spec.groups.footer.sections).find((s) => s.type === "footer")!;
   footer.settings = { ...footer.settings, style: "wordmark", show_wordmark: true, show_policies: false, show_payment: false, color_scheme: "scheme-2", logo_asset: "" };
   footer.blocks = {
-    about: { type: "text", settings: { heading: "SILLON", text: p("La machine à espresso nomade, pour le bureau, le voyage et le dehors. Marque de démonstration du studio.") } },
+    about: { type: "text", settings: { heading: "SILLON", text: p("La machine à espresso nomade : votre espresso au bureau, en voyage et dehors. Marque de démonstration du studio.") } },
     shop: { type: "links", settings: { heading: "SILLON", menu: "main-menu" } },
     help: { type: "links", settings: { heading: "Aide", menu: "footer" } },
     news: { type: "newsletter", settings: { heading: "Nouvelles de SILLON", text: "Aperçu : inscription non enregistrée dans la démonstration." } },
   };
-  footer.block_order = ["about", "shop", "help", "news"];
+  // Une seule inscription : celle de l'accueil (revue du 21 octobre), pas de second formulaire dans le pied.
+  footer.block_order = ["about", "shop", "help"];
   for (const s of Object.values(spec.groups.footer.sections)) if (s.type !== "footer") s.disabled = true;
   spec.settings = { ...spec.settings, logo_asset: ids["sillon-09.webp"] ? "sillon-09.webp" : "", logo_width: 132, favicon_asset: ids["sillon-favicon-180.png"] ? "sillon-favicon-180.png" : "" };
 }

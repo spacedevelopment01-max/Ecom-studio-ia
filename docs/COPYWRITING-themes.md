@@ -162,6 +162,21 @@ aide, pied, SEO. Preuves : `docs/preuves/copywriting/noctil/`.
 
 Pages réécrites : accueil, fiche, aide, pied, SEO (le carnet de route garde ses étapes). Preuves : `docs/preuves/copywriting/traverse/`.
 
+### SILLON — Produit spécifique — **réécrit**
+
+1. **Cible** : un amateur d'espresso qui passe ses journées loin de sa machine (bureau sans machine, hôtel, train, plein air).
+2. **Tension** : « Au bureau, à l'hôtel, en week-end : partout, le café de la pause est une déception. »
+3. **Désir et angle** : garder son espresso partout → votre espresso ne reste plus à la maison.
+4. **Promesse et faits** : on pose la machine, on glisse un verre dessous, l'espresso y coule ; faits = visuels. Pression,
+   café compatible, alimentation, autonomie et dimensions jamais affirmés.
+5. **Objections** : où l'utiliser, comment le café est servi, la place qu'elle prend, prix et caractéristiques (information dédiée).
+6. **Parcours** : « Votre espresso *ne reste plus à la maison* » → l'idée → le moment où tout coule → détails → lieux →
+   achat → FAQ « Avant de l'emporter » → inscription.
+
+Corrections : le bouton d'en-tête « Commander » (commande désactivée) devient « Voir la machine » ; une seule
+inscription (celle de l'accueil, plus de second formulaire dans le pied). Pages réécrites : accueil, fiche, contact,
+pied, SEO. Preuves : `docs/preuves/copywriting/sillon/`.
+
 ## Boutiques des clients
 
 - **Charte du client prioritaire** : quand le client a validé ses couleurs (charte), le thème choisi change la
