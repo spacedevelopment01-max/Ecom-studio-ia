@@ -46,7 +46,7 @@ describe("SILLON : exports", async () => {
     expect(json).toMatch(/"conversion_profile":\s*"nomade"/);
     for (const t of ["cv-hero", "cv-hotspots", "cv-gallery", "featured-purchase", "cv-specs", "cv-steps", "cv-alternating", "fs-commitments"]) expect(names + json, t).toContain(t);
     const all = names + json + text(z, /\.(csv|liquid)$/);
-    expect(all).toContain("Machine à café portable : bureau, voyage, plein air | SILLON");
+    expect(all).toContain("Machine à café portable pour les haltes du voyage | SILLON");
     expect(all).toContain("Machine à espresso portable SILLON : vues, détails, rituel");
     expect(text(z, /conversion\.css$/)).toContain('body[data-conversion="nomade"]');
   });

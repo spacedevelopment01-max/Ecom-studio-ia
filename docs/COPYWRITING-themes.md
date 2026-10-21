@@ -200,20 +200,29 @@ bureau »), carnet de route, aide, pied, SEO. **Visuels** : le kit ne contient p
 et le hall de gare portent le passage du travail au départ. Code : `tests/noctil-traverse-fixtures.ts`. Preuves :
 `docs/preuves/copywriting/traverse/`.
 
-### SILLON — Produit spécifique — **réécrit**
+### SILLON — Spécialisée — **réécrit (consigne 21 h 45)** : en van ou en camping-car
 
-1. **Cible** : un amateur d'espresso qui passe ses journées loin de sa machine (bureau sans machine, hôtel, train, plein air).
-2. **Tension** : « Au bureau, à l'hôtel, en week-end : partout, le café de la pause est une déception. »
-3. **Désir et angle** : garder son espresso partout → votre espresso ne reste plus à la maison.
-4. **Promesse et faits** : on pose la machine, on glisse un verre dessous, l'espresso y coule ; faits = visuels. Pression,
-   café compatible, alimentation, autonomie et dimensions jamais affirmés.
-5. **Objections** : où l'utiliser, comment le café est servi, la place qu'elle prend, prix et caractéristiques (information dédiée).
-6. **Parcours** : « Votre espresso *ne reste plus à la maison* » → l'idée → le moment où tout coule → détails → lieux →
-   achat → FAQ « Avant de l'emporter » → inscription.
+| | |
+|---|---|
+| Utilisateur et acheteur | un amateur d'espresso qui voyage en van ou en camping-car (brief) |
+| Situation d'achat | il prépare un départ et ne veut pas renoncer à son espresso du matin sur la route |
+| Tension (ses mots) | « En voyage, le café du matin, c'est une cafetière de fortune ou un gobelet d'aire d'autoroute. » |
+| Désir | changer de paysage chaque jour sans changer de rituel |
+| Angle unique | changer de paysage en gardant son rituel espresso |
+| Promesse tenable | une machine que l'on pose sur la table, l'espresso coulant directement dans le verre placé dessous |
+| Objections traitées | peut-on l'utiliser en van (« alimentation et autonomie non renseignées : vérifiez-les avant la route »), comment le café est servi, la place qu'elle prend, la démo |
+| **Faits** | visuels : cylindre brun mat, bague et bouton cuivrés, service dans le verre ; lac, montagne, mer, train, hôtel |
+| **Non renseigné** | autonomie, chauffe, alimentation, pression, café compatible, dimensions, garantie, prix |
+| Exclusions | aucune autonomie, chauffe intégrée ni compatibilité café supposées |
 
-Corrections : le bouton d'en-tête « Commander » (commande désactivée) devient « Voir la machine » ; une seule
-inscription (celle de l'accueil, plus de second formulaire dans le pied). Pages réécrites : accueil, fiche, contact,
-pied, SEO. Preuves : `docs/preuves/copywriting/sillon/`.
+Pages : accueil (« Le paysage change, *votre espresso reste* » → « Un bon espresso ne devrait pas dépendre *de l'endroit
+où vous vous arrêtez* » → le moment où tout coule → détails → « Là où *vous vous arrêtez* » (haltes en tête) → achat →
+« Avant de l'emporter »), fiche (« Une machine *pour vos haltes* », rituel « là où vous vous arrêtez »), « Usages » (six
+haltes, du lac au dernier café au bureau), utilisation, contact, pied, SEO (titres attendus par les tests conservés :
+« machine à espresso nomade », « machine à café portable »). **Visuels** : le kit ne contient **ni van ni camping-car** ;
+les haltes en plein air (lac, balcon en montagne, terrasse) portent l'angle, les scènes intérieures sont présentées comme
+étapes du voyage. Test d'export mis à jour (nouveau titre de la page « Usages »). Code : `tests/sillon-fixtures.ts`.
+Preuves : `docs/preuves/copywriting/sillon/`.
 
 ### ONDE — E-commerce, mono-produit — **réécrit**
 

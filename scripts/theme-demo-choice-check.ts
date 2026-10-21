@@ -30,7 +30,7 @@ if (process.env.DATA_DIR || process.env.DATABASE_FILE) throw new Error("Base exi
 /** Thème parcouru puis choisi (issue #152 : NOCTIL et TRAVERSE par le même parcours que SILLON). */
 const T = (process.argv[3] ?? "sillon") as "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "onde" | "souple";
 const THEME = {
-  sillon: { brand: /SILLON/, profile: "nomade", menuPage: "page-usages.html", menuLabel: "Usages", leak: /SILLON|espresso|où tout coule|avant de partir|Boutique de démonstration/i },
+  sillon: { brand: /SILLON/, profile: "nomade", menuPage: "page-usages.html", menuLabel: "Usages", leak: /SILLON|espresso|où tout coule|le paysage change|Boutique de démonstration/i },
   noctil: { brand: /NOCTIL/, profile: "astral", menuPage: "page-univers.html", menuLabel: "Où le poser", leak: /NOCTIL|galaxie|sa propre galaxie|une autre nuit|Boutique de démonstration/i },
   traverse: { brand: /TRAVERSE/, profile: "itineraire", menuPage: "page-carnet-de-route.html", menuLabel: "Carnet de route", leak: /TRAVERSE|quai de départ|Carnet de route|trois temps|Boutique de démonstration/i },
   // HEUREN et ALCÔVE (issue #155) : famille E-commerce, profil porté par « editorial_profile ».
