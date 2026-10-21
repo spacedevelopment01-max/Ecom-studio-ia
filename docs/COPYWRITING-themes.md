@@ -105,6 +105,35 @@ qu'on voit / Avec qui » ; scènes « Le duo des longues promenades », « Pour 
 Pages réécrites : accueil, collection, 4 fiches, « La balade », aide, pied, SEO. Preuves : `docs/preuves/copywriting/museau-club/`.
 Limites : tailles, matières, sacs fournis, prix inconnus (blocs masqués).
 
+### HEUREN — E-commerce, mono-produit — **réécrit**
+
+1. **Cible** : une personne dont le poignet vibre toute la journée (téléphone, montre connectée) et qui voudrait y porter un bel objet.
+2. **Tension** : « Mon poignet me réclame quelque chose toutes les cinq minutes. »
+3. **Désir et angle** : porter quelque chose de beau qui ne demande rien → un bleu à regarder, pas un écran à surveiller.
+4. **Promesse et faits** : une montre à aiguilles au cadran bleu nuit soleillé qui change avec la lumière ; faits = visuels.
+   Mouvement, taille, étanchéité et matières inconnus (jamais affirmés).
+5. **Objections** : connectée ou non ; le bleu au quotidien ; l'offrir (écrin des photos, contenu non renseigné) ; prix,
+   taille et commande (information dédiée).
+6. **Parcours** : ouverture « L'heure bleue, au poignet. » (pas d'écran, pas de notification) → cadran (l'angle) → repères
+   → « Un bleu qui ne crie pas » → « Du bureau au dîner, sans changer de montre » → achat → FAQ → inscription.
+
+Pages réécrites : accueil, fiche (rôle, ce qu'on voit, quand la porter ; « Le même bleu, deux humeurs »), « Au fil du
+jour », aide, pied, SEO. Preuves : `docs/preuves/copywriting/heuren/`.
+
+### ALCÔVE — E-commerce, mono-produit — **réécrit**
+
+1. **Cible** : une personne qui n'a pas de siège à elle dans un intérieur partagé et s'assoit toujours « en attendant ».
+2. **Tension** : « Je ne suis jamais vraiment installé : toujours sur un coin de canapé. »
+3. **Désir et angle** : s'installer enfin, entouré de chaque côté → s'asseoir pour de bon.
+4. **Promesse et faits** : dossier et accoudoirs d'un seul arrondi autour d'un coussin épais ; faits = visuels. Confort,
+   dimensions, tissu, rembourrage, entretien et montage jamais affirmés.
+5. **Objections** : la pièce, le terracotta avec son intérieur, l'aspect de près, prix, dimensions et commande (information dédiée).
+6. **Parcours** : « Une alcôve à soi. » (fini le coin de canapé) → « Ce qui vous entoure, de chaque côté » → « Un siège où
+   l'on s'installe, pas un siège où l'on attend » → sa place (lecture, chambre) → « Sous la lampe, on y reste » → achat → FAQ → inscription.
+
+Pages réécrites : accueil, fiche (« Un arc autour de l'assise »), « Pièce par pièce », aide, pied, SEO. Preuves :
+`docs/preuves/copywriting/alcove/`.
+
 ## Boutiques des clients
 
 - **Charte du client prioritaire** : quand le client a validé ses couleurs (charte), le thème choisi change la

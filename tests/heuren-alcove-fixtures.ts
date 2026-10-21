@@ -60,12 +60,23 @@ export const ALCOVE_MEDIA: Media[] = [
 export const SHOP_KIT_MEDIA: Record<ShopKitId, Media[]> = { heuren: HEUREN_MEDIA, alcove: ALCOVE_MEDIA };
 export const SHOP_KIT_HANDLE: Record<ShopKitId, string> = { heuren: "montre-heuren-bleu-nuit", alcove: "fauteuil-alcove-terracotta" };
 
+// HEUREN — fiche de stratégie (consigne du 21 octobre, 19 h 50 ; hypothèse éditoriale, pas une étude) :
+//  1. cible : une personne dont le poignet vibre toute la journée (téléphone, montre connectée) et qui voudrait y porter
+//     un bel objet, au bureau comme le soir ;
+//  2. tension : « Mon poignet me réclame quelque chose toutes les cinq minutes. » ;
+//  3. désir : porter quelque chose de beau qui ne demande rien — angle unique : un bleu à regarder, pas un écran à
+//     surveiller ;
+//  4. promesse tenable : une montre à aiguilles au cadran bleu nuit soleillé qui change avec la lumière ; faits = visuels
+//     (cadran, index, aiguilles, boîtier, bracelet, écrin, décors) ; mouvement, taille, étanchéité et matières inconnus ;
+//  5. objections : est-ce connecté (non : un cadran et des aiguilles), le bleu au quotidien (tenues des photos), l'offrir
+//     (l'écrin des photos, contenu à confirmer), prix, taille et commande (information dédiée) ;
+//  6. parcours : ouverture (se reconnaître) → cadran (l'angle) → repères (les détails) → sobriété → du bureau au dîner →
+//     achat → FAQ « Avant de choisir » → inscription.
 export const HEUREN_FAQ: [string, string][] = [
-  ["Comment reconnaître une montre HEUREN ?", "À son cadran bleu nuit soleillé, à ses index et aiguilles argentés, et au nom HEUREN inscrit en lettres argentées sur le cadran."],
-  ["Avec quoi la porter ?", "Nos photos la montrent au bureau, avec un veston et en voyage : son bleu nuit accompagne les tenues sobres comme les tissus clairs."],
-  ["Où voir tous ses détails ?", "Sur la fiche : trois quarts, face, profil, cadran et bracelet en gros plan."],
-  ["Comment être prévenu des nouveautés ?", "Laissez votre adresse dans « Nouvelles d'HEUREN ». Nous écrivons seulement quand il y a du nouveau."],
-  ORDER_FAQ("HEUREN"),
+  ["Est-ce une montre connectée ?", "Non : un cadran, des index et des aiguilles. Elle ne vibre pas et n'affiche aucune notification ; elle donne l'heure, c'est tout."],
+  ["Le bleu nuit se porte-t-il tous les jours ?", "Sur nos photos, il accompagne un veston, une chemise blanche, un bureau en noyer et une trousse de voyage : un bleu sombre, sobre, que les index argentés éclairent."],
+  ["Peut-on l'offrir ?", "Nos photos la montrent dans un écrin bleu nuit, un ruban crème à côté. Le contenu exact de l'écrin n'est pas encore renseigné."],
+  ["Que puis-je faire dans cette boutique de démonstration ?", "Faire le tour de la montre en cinq vues et la voir au fil du jour. Le prix, la taille du boîtier et le mouvement ne sont pas encore renseignés, et la commande est désactivée."],
 ];
 export const HEUREN_FAQ_PENDING: [string, string][] = [
   ["Quel mouvement anime la montre ?", TODO("type de mouvement et réserve de marche")],
@@ -75,12 +86,23 @@ export const HEUREN_FAQ_PENDING: [string, string][] = [
   ["Le bracelet se change-t-il ?", TODO("système d'attache et largeur du bracelet")],
   ["Quelle est la garantie ?", TODO("durée et conditions de garantie")],
 ];
+// ALCÔVE — fiche de stratégie (même consigne) :
+//  1. cible : une personne qui n'a pas de siège à elle dans un intérieur partagé et s'assoit toujours « en attendant » :
+//     un coin de canapé, une chaise de table ;
+//  2. tension : « Je ne suis jamais vraiment installé : toujours sur un coin de canapé. » ;
+//  3. désir : s'installer enfin, entouré de chaque côté — angle unique : s'asseoir pour de bon ;
+//  4. promesse tenable : un fauteuil dont le dossier et les accoudoirs forment un seul arrondi autour d'un coussin épais ;
+//     faits = visuels (silhouette, tissu terracotta texturé, pieds en bois brun, pièces photographiées) ; dimensions,
+//     tissu, rembourrage, entretien et montage inconnus ;
+//  5. objections : la pièce où le mettre, le terracotta avec son intérieur, l'aspect de près, prix, dimensions et commande
+//     (information dédiée) ;
+//  6. parcours : ouverture (fini le coin de canapé) → repères (ce qui vous entoure) → l'idée → sa place (lecture, chambre)
+//     → le soir → achat → FAQ « Avant de lui faire une place » → inscription.
 export const ALCOVE_FAQ: [string, string][] = [
-  ["Dans quelles pièces l'installer ?", "Au salon, dans un coin lecture, près d'une fenêtre, dans une chambre ou un jardin d'hiver : nos photos le montrent dans chacune de ces pièces."],
-  ["Avec quelle décoration l'associer ?", "Sur nos photos, il côtoie des bois chauds, des tapis tressés, du lin et des plantes ; sa teinte terracotta réchauffe les murs clairs."],
+  ["Dans quelle pièce le mettre ?", "Là où vous voulez vous poser : salon, coin lecture, chambre, près d'une fenêtre ou dans un jardin d'hiver. Nos photos le montrent dans chacune de ces pièces."],
+  ["Le terracotta ira-t-il avec mon intérieur ?", "Sur nos photos, il côtoie des bois chauds, du lin, des tapis tressés et des plantes ; contre un mur clair, il réchauffe la pièce sans la charger."],
   ["À quoi ressemble-t-il de près ?", "Un tissu terracotta à la texture visible, un coussin d'assise épais et des pieds courts en bois brun : tous les gros plans sont sur la fiche."],
-  ["Comment être prévenu des nouveautés ?", "Laissez votre adresse dans « Nouvelles d'ALCÔVE ». Nous écrivons seulement quand il y a du nouveau."],
-  ORDER_FAQ("ALCÔVE"),
+  ["Que puis-je faire dans cette boutique de démonstration ?", "Faire le tour du fauteuil en cinq vues et le voir dans plusieurs pièces. Le prix, les dimensions et la composition du tissu ne sont pas encore renseignés, et la commande est désactivée."],
 ];
 export const ALCOVE_FAQ_PENDING: [string, string][] = [
   ["Quelles sont ses dimensions ?", TODO("hauteur, largeur, profondeur, hauteur d'assise")],
@@ -125,10 +147,10 @@ const marker = (_k: Kit, x: number, y: number, title: string) => ({ type: "marke
 function curateHeuren(k: Kit) {
   const { spec, img, section, overlay, faq, productHref } = k;
   k.demoMeta();
-  spec.store.seo = { title: "HEUREN | Montre au cadran bleu nuit soleillé", description: "HEUREN, montre au cadran bleu nuit soleillé : index et aiguilles argentés, boîtier argenté, bracelet en cuir bleu nuit cousu de bleu. Vues et usages." };
+  spec.store.seo = { title: "HEUREN | Montre à aiguilles au cadran bleu nuit soleillé, sans écran", description: "Un bleu à regarder, pas un écran à surveiller : la montre HEUREN, cadran bleu nuit soleillé, aiguilles argentées, bracelet en cuir cousu de bleu." };
   k.product({
     title: "Montre HEUREN bleu nuit",
-    description_html: p("HEUREN réunit un cadran bleu nuit soleillé, des index et des aiguilles argentés et un boîtier argenté, sur un bracelet en cuir bleu nuit cousu de bleu et doublé de beige. Le nom HEUREN est inscrit sur le cadran.") + p("Au bureau, avec un veston, en voyage ou posée sur son support le soir : nos photos la montrent au fil de la journée, toujours avec la même sobriété."),
+    description_html: p("Son rôle : donner l'heure, et rien d'autre. Pas d'écran, pas de notification : un cadran que l'on regarde parce qu'il est beau.") + p("Ce qu'on voit : un cadran bleu nuit soleillé dont les reflets changent avec la lumière, des index et des aiguilles argentés, un boîtier argenté, un bracelet en cuir bleu nuit cousu de bleu et doublé de beige. Le nom HEUREN est inscrit sur le cadran.") + p("Quand la porter : au bureau, avec un veston, en voyage, et posée sur son support le soir ; nos photos la montrent à chacun de ces moments."),
     images: ["produit-01.webp", "produit-02.webp", "produit-03.webp", "produit-04.webp", "produit-05.webp"],
     tags: ["montre", "bleu nuit", "cuir"],
     seo: { title: "Montre HEUREN bleu nuit : cadran, boîtier et bracelet en détail", description: "Faites le tour de la montre HEUREN : trois quarts, face, profil, cadran bleu nuit soleillé et bracelet en cuir cousu de bleu, en gros plan." },
@@ -136,30 +158,30 @@ function curateHeuren(k: Kit) {
 
   // ─── Accueil : l'heure bleue, le cadran, les repères, puis la montre portée. ──────────────────────────────────────
   overlay("index", [
-    section("ed-opening", { ...img("ambiance-07.webp"), layout: "journal", heading_tag: "h1", label: "Montre HEUREN", heading: "L'heure bleue,\nau poignet.", text: p("Un cadran bleu nuit soleillé, des index argentés, un bracelet de cuir cousu de bleu : HEUREN garde la lumière du soir à portée de regard."), button_label: "Découvrir la montre", button_link: productHref, focus_x: 46, focus_y: 50, mobile_focus_x: 40, mobile_focus_y: 50, copy_surface: true, caption: "", motion: "reveal", padding_top: 24, padding_bottom: 72 }),
-    section("ed-statement", { ...img("produit-04.webp"), label: "Le cadran", heading: "Un bleu qui change avec la lumière", text: p("Au soleil couchant comme sous une lampe de bureau, le cadran soleillé fait rayonner ses reflets du centre vers le bord. Le nom HEUREN y est inscrit en lettres argentées, au-dessus de l'axe des aiguilles."), button_label: "", button_link: "", motion: "reveal", color_scheme: "scheme-2", padding_top: 96, padding_bottom: 96 }, [
+    section("ed-opening", { ...img("ambiance-07.webp"), layout: "journal", heading_tag: "h1", label: "Montre à aiguilles", heading: "L'heure bleue,\nau poignet.", text: p("Pas d'écran, pas de notification : un cadran bleu nuit soleillé, des aiguilles argentées, un bracelet de cuir cousu de bleu. Une montre que l'on regarde pour le plaisir."), button_label: "Voir la montre", button_link: productHref, focus_x: 46, focus_y: 50, mobile_focus_x: 40, mobile_focus_y: 50, copy_surface: true, caption: "", motion: "reveal", padding_top: 24, padding_bottom: 72 }),
+    section("ed-statement", { ...img("produit-04.webp"), label: "Le cadran", heading: "Un bleu à regarder, pas un écran à surveiller", text: p("Le cadran soleillé renvoie la lumière du centre vers le bord : il n'est pas le même sous la lampe du bureau et au coucher du soleil. Le nom HEUREN y est inscrit en argent, au-dessus de l'axe des aiguilles."), button_label: "", button_link: "", motion: "reveal", color_scheme: "scheme-2", padding_top: 96, padding_bottom: 96 }, [
       { type: "point", settings: { title: "Cadran soleillé", text: "Bleu nuit, reflets rayonnants du centre vers le bord." } },
       { type: "point", settings: { title: "Index et aiguilles", text: "Argentés et fins, nets sur le bleu." } },
       { type: "point", settings: { title: "Boîtier", text: "Argenté, couronne sur le côté droit." } },
       { type: "point", settings: { title: "Bracelet", text: "Cuir bleu nuit, couture bleue, doublure beige." } },
     ]),
-    section("fs-lookbook", { ...img("produit-02.webp"), layout: "markers", eyebrow: "Repères", heading: "La montre,", heading_accent: "point par point", text: p("Touchez un repère : chaque détail de HEUREN a sa place sur la photo."), align: "left", button_label: "Voir la fiche", button_link: productHref, link_label: "Voir la montre", effect: "fade", stagger: true, hover: false, background: "scheme" }, [
+    section("fs-lookbook", { ...img("produit-02.webp"), layout: "markers", eyebrow: "Repères", heading: "La montre,", heading_accent: "point par point", text: p("Touchez un repère : le nom, le cadran, la couronne et le bracelet, un détail à la fois."), align: "left", button_label: "Voir la fiche", button_link: productHref, link_label: "Voir la montre", effect: "fade", stagger: true, hover: false, background: "scheme" }, [
       marker(k, 48, 33, "Le nom HEUREN, en argent sur le cadran"),
       marker(k, 37, 55, "Le cadran bleu nuit soleillé"),
       marker(k, 75, 44, "La couronne, sur le côté du boîtier"),
       marker(k, 58, 84, "Le bracelet en cuir, cousu de bleu"),
     ]),
-    section("fs-campaign", { ...img("ambiance-09.webp"), layout: "background", eyebrow: "Lignes nettes", heading: "Bleu sur bleu,", heading_accent: "sous des ombres franches", text: p("Posée sur le béton, entre lumière et ombres géométriques : HEUREN aime les décors simples."), align: "left", label: "", offer_title: "", offer_text: "", period_text: "", conditions: "", cta_label: "Voir la montre", cta_link: productHref, cta2_label: "Au fil du jour", cta2_link: "/pages/au-fil-du-jour", focus_x: 55, focus_y: 50, effect: "fade", stagger: false, hover: false, background: "scheme", color_scheme: "scheme-2" }),
-    section("ed-scene", { ...img("ambiance-05.webp"), layout: "split", label: "À porter", heading: "Avec un veston, une chemise blanche", text: p("Posée sur la laine pliée d'un veston, à côté d'une chemise blanche : le bleu nuit du cadran accompagne les tenues sobres."), button_label: "Au fil du jour", button_link: "/pages/au-fil-du-jour", caption: "", focus_x: 40, focus_y: 50, mobile_focus_x: 40, mobile_focus_y: 50, motion: "reveal", padding_top: 72, padding_bottom: 72 }),
-    section("featured-purchase", { label: "La montre", heading: "Montre HEUREN bleu nuit", text: p("Trois quarts, face, profil, cadran, bracelet : faites le tour de la montre avant de la choisir."), product: SHOP_KIT_HANDLE.heuren, product_target: "product:main", purchase_style: "compact", purchase_enabled: false, image_fit: "contain", gallery_limit: 4, enable_zoom: true, link_label: "Voir la fiche complète", color_scheme: "scheme-4" }),
-    v2faq(k, "center", "Questions", "Avant de la porter", "Les réponses courtes aux questions que l'on se pose en découvrant HEUREN.", HEUREN_FAQ.slice(0, 4)),
-    section("newsletter-media", { ...img("ambiance-10.webp"), layout: "right", eyebrow: "Nouvelles d'HEUREN", heading: "Être prévenu de l'ouverture", text: p("Nouvelles photos, nouvelles vues, ouverture de la boutique : nous écrivons seulement quand il y a du nouveau."), perk_1: "", perk_2: "", perk_3: "", button_label: "S'inscrire", legal: p("Désinscription possible à tout moment depuis chaque e-mail.") }),
+    section("fs-campaign", { ...img("ambiance-09.webp"), layout: "background", eyebrow: "Sobre", heading: "Un bleu qui ne crie pas,", heading_accent: "même au grand soleil", text: p("Sur le béton, entre lumière et ombres géométriques : le cadran reste profond, les index argentés restent nets."), align: "left", label: "", offer_title: "", offer_text: "", period_text: "", conditions: "", cta_label: "Voir la montre", cta_link: productHref, cta2_label: "Au fil du jour", cta2_link: "/pages/au-fil-du-jour", focus_x: 55, focus_y: 50, effect: "fade", stagger: false, hover: false, background: "scheme", color_scheme: "scheme-2" }),
+    section("ed-scene", { ...img("ambiance-05.webp"), layout: "split", label: "À porter", heading: "Du bureau au dîner, sans changer de montre", text: p("Posée sur un veston plié, près d'une chemise blanche : le bleu nuit accompagne les tenues sobres, le cuir cousu de bleu reste discret."), button_label: "Au fil du jour", button_link: "/pages/au-fil-du-jour", caption: "", focus_x: 40, focus_y: 50, mobile_focus_x: 40, mobile_focus_y: 50, motion: "reveal", padding_top: 72, padding_bottom: 72 }),
+    section("featured-purchase", { label: "La montre", heading: "Montre HEUREN bleu nuit", text: p("Avant de la choisir, faites-en le tour : trois quarts, face, profil, puis le cadran et le bracelet en gros plan."), product: SHOP_KIT_HANDLE.heuren, product_target: "product:main", purchase_style: "compact", purchase_enabled: false, image_fit: "contain", gallery_limit: 4, enable_zoom: true, link_label: "Voir la fiche complète", color_scheme: "scheme-4" }),
+    v2faq(k, "center", "Questions", "Avant de choisir", "Connectée ou non, le bleu au quotidien, l'écrin, ce que permet la démonstration.", HEUREN_FAQ.slice(0, 4)),
+    section("newsletter-media", { ...img("ambiance-10.webp"), layout: "right", eyebrow: "Nouvelles d'HEUREN", heading: "Être prévenu quand HEUREN ouvre", text: p("Un e-mail à l'ouverture de la boutique. Rien d'autre."), perk_1: "", perk_2: "", perk_3: "", button_label: "Me prévenir", legal: p("Désinscription possible à tout moment depuis chaque e-mail.") }),
   ]);
 
   // ─── Fiche produit ──────────────────────────────────────────────────────────────────────────────────────────────
   k.mainProduct({
-    eyebrow: "Montre",
-    text: "Un cadran bleu nuit soleillé, des index et des aiguilles argentés, un boîtier argenté et un bracelet en cuir bleu nuit cousu de bleu.",
+    eyebrow: "Montre à aiguilles · sans écran",
+    text: "Un cadran bleu nuit soleillé qui change avec la lumière, des aiguilles argentées, un bracelet en cuir cousu de bleu : un objet à regarder, pas un écran à consulter.",
     highlights: "Cadran bleu nuit soleillé\nIndex et aiguilles argentés\nBoîtier argenté, couronne sur le côté\nBracelet cuir bleu nuit, couture bleue, doublure beige",
     description: spec.store.product.description_html,
     specs: "mouvement, réserve de marche, étanchéité, diamètre et épaisseur du boîtier, matières du boîtier et du verre, largeur du bracelet",
@@ -168,11 +190,11 @@ function curateHeuren(k: Kit) {
     settings: { gallery_layout: "grid", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
   });
   overlay(k.productKey(), [
-    section("ed-diptych", { layout: "pair", label: "Deux décors", heading: "Sur l'ardoise, sur le lin", text: p("Le même bleu, deux lumières : la montre HEUREN face à un mur bleu nuit, puis sur un lin ivoire."), button_label: "", button_link: "", motion: "reveal", padding_top: 72, padding_bottom: 72 }, [
+    section("ed-diptych", { layout: "pair", label: "Deux lumières", heading: "Le même bleu, deux humeurs", text: p("Face à un mur bleu nuit, le cadran se fond dans le décor ; sur un lin ivoire, il ressort."), button_label: "", button_link: "", motion: "reveal", padding_top: 72, padding_bottom: 72 }, [
       frame(k, "ambiance-01.webp", "Sur l'ardoise", "Le cadran bleu face à un mur bleu nuit.", "landscape", { focus_x: 70, mobile_focus_x: 70 }),
       frame(k, "ambiance-06.webp", "Sur le lin", "Posée sur un lin ivoire froissé, en lumière douce.", "landscape"),
     ]),
-    v2faq(k, "side", "Questions", "Questions fréquentes", "", [...HEUREN_FAQ, ...HEUREN_FAQ_PENDING]),
+    v2faq(k, "side", "Questions", "Questions sur la montre", "", [...HEUREN_FAQ, ...HEUREN_FAQ_PENDING]),
   ]);
 
   // ─── Pages ──────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -185,9 +207,9 @@ function curateHeuren(k: Kit) {
     ])],
     ["fin", section("ed-scene", { ...img("ambiance-03.webp"), layout: "closing", label: "Posée", heading: "Une montre à regarder, aussi", text: p("Sur un socle de travertin, dans la lumière rasante : HEUREN se regarde même quand on ne la porte pas."), button_label: "Voir la montre", button_link: productHref, caption: "", motion: "reveal", color_scheme: "scheme-4", padding_top: 88, padding_bottom: 88 })],
   ]);
-  k.page("aide", "Questions et contact", { title: "Questions et contact | HEUREN, montre bleu nuit", description: "Les réponses sur la montre HEUREN : la reconnaître, la porter, voir ses détails, commander. Et un formulaire pour toute autre question." }, [
+  k.page("aide", "Questions et contact", { title: "Questions et contact | HEUREN, montre bleu nuit", description: "Montre connectée ou non, le bleu au quotidien, l'écrin, ce que permet la démonstration : nos réponses, et un formulaire pour le reste." }, [
     ["faq", faq("Questions fréquentes", [...HEUREN_FAQ, ...HEUREN_FAQ_PENDING], "numbered", "stacked", "", { color_scheme: "scheme-1" })],
-    ["form", section("contact-form", { eyebrow: "Contact", heading: "Une autre question sur HEUREN ?", text: p("Écrivez-nous : le formulaire vérifie les champs avant l'envoi. Dans cette démonstration, aucun message n'est réellement transmis."), email: "", hours: "", response: "", preview_note: true, color_scheme: "scheme-4", padding_top: 64, padding_bottom: 96 })],
+    ["form", section("contact-form", { eyebrow: "Contact", heading: "Une question avant de choisir ?", text: p("Écrivez-nous : le formulaire vérifie les champs avant l'envoi. Dans cette démonstration, aucun message n'est réellement transmis."), email: "", hours: "", response: "", preview_note: true, color_scheme: "scheme-4", padding_top: 64, padding_bottom: 96 })],
   ]);
 
   // ─── Menus, en-tête « logo centré, menu à gauche » sur blanc (fond du logo), pied « encadré » ────────────────────
@@ -206,7 +228,7 @@ function curateHeuren(k: Kit) {
   const footer = Object.values(spec.groups.footer.sections).find((s) => s.type === "footer")!;
   footer.settings = { ...footer.settings, style: "boxed", show_wordmark: false, show_policies: false, show_payment: false, color_scheme: "scheme-1", logo_asset: "" };
   footer.blocks = {
-    about: { type: "text", settings: { heading: "HEUREN", text: p("La montre au cadran bleu nuit, pour le bureau, le soir et le voyage. Marque de démonstration du studio.") } },
+    about: { type: "text", settings: { heading: "HEUREN", text: p("Une montre à aiguilles au cadran bleu nuit, sans écran, pour le bureau, le soir et le voyage. Marque de démonstration du studio.") } },
     links: { type: "links", settings: { heading: "Aide", menu: "footer" } },
   };
   footer.block_order = ["about", "links"];
@@ -219,10 +241,10 @@ function curateHeuren(k: Kit) {
 function curateAlcove(k: Kit) {
   const { spec, img, section, overlay, faq, productHref } = k;
   k.demoMeta();
-  spec.store.seo = { title: "ALCÔVE | Fauteuil enveloppant terracotta aux lignes arrondies", description: "ALCÔVE, fauteuil enveloppant terracotta : dossier et accoudoirs arrondis, coussin d'assise épais, quatre pieds courts en bois brun. Vues et pièces." };
+  spec.store.seo = { title: "ALCÔVE | Fauteuil enveloppant terracotta, pour s'asseoir pour de bon", description: "Fini le coin de canapé : le fauteuil ALCÔVE, dossier et accoudoirs d'un seul arrondi, coussin épais, tissu terracotta et pieds en bois brun." };
   k.product({
     title: "Fauteuil ALCÔVE terracotta",
-    description_html: p("ALCÔVE est un fauteuil enveloppant au tissu terracotta texturé : un dossier et des accoudoirs d'un seul arrondi, un coussin d'assise épais et quatre pieds courts en bois brun.") + p("Au salon, dans un coin lecture, près d'une fenêtre ou dans une chambre, il apporte une couleur chaude et une silhouette douce, sans un angle."),
+    description_html: p("Son rôle : vous donner un siège à vous, où l'on s'installe au lieu d'attendre sur un coin de canapé.") + p("Ce qu'on voit : un dossier et des accoudoirs d'un seul arrondi autour d'un coussin d'assise épais, un tissu terracotta à la texture visible, quatre pieds courts en bois brun.") + p("Où le mettre : au salon, dans un coin lecture, au pied du lit ou près d'une fenêtre ; nos photos le montrent dans chacune de ces pièces."),
     images: ["produit-01.webp", "produit-02.webp", "produit-03.webp", "produit-04.webp", "produit-05.webp"],
     tags: ["fauteuil", "terracotta", "salon"],
     seo: { title: "Fauteuil ALCÔVE terracotta : vues, courbes et tissu en détail", description: "Faites le tour du fauteuil ALCÔVE : trois quarts, face, profil, dos et tissu terracotta en gros plan, puis le fauteuil vu d'en haut et en situation." },
@@ -230,32 +252,32 @@ function curateAlcove(k: Kit) {
 
   // ─── Accueil : une alcôve, des courbes, des pièces, puis le soir. ─────────────────────────────────────────────────
   overlay("index", [
-    section("ed-opening", { ...img("ambiance-07.webp"), layout: "arch", heading_tag: "h1", label: "Fauteuil ALCÔVE", heading: "Une alcôve\nà soi.", text: p("Un dossier qui enveloppe, des accoudoirs arrondis, un coussin d'assise épais : ALCÔVE dessine un coin rien qu'à vous, dans la couleur chaude de la terre cuite."), button_label: "Découvrir le fauteuil", button_link: productHref, focus_x: 50, focus_y: 62, mobile_focus_x: 50, mobile_focus_y: 62, copy_surface: true, caption: "", motion: "reveal", padding_top: 48, padding_bottom: 72 }),
-    section("fs-lookbook", { ...img("ambiance-01.webp"), layout: "side", eyebrow: "Ses courbes", heading: "Un fauteuil,", heading_accent: "quatre repères", text: p("ALCÔVE dans un salon lumineux : touchez un repère pour le détailler."), align: "left", button_label: "", button_link: "", link_label: "Voir le fauteuil", focus_x: 62, focus_y: 55, effect: "fade", stagger: true, hover: false, background: "scheme", color_scheme: "scheme-2" }, [
-      marker(k, 60, 33, "Le dossier enveloppant"),
-      marker(k, 80, 50, "Les accoudoirs arrondis"),
+    section("ed-opening", { ...img("ambiance-07.webp"), layout: "arch", heading_tag: "h1", label: "Fauteuil enveloppant", heading: "Une alcôve\nà soi.", text: p("Fini le coin de canapé : un dossier et des accoudoirs d'un seul arrondi autour d'un coussin épais, dans la couleur chaude de la terre cuite."), button_label: "Voir le fauteuil", button_link: productHref, focus_x: 50, focus_y: 62, mobile_focus_x: 50, mobile_focus_y: 62, copy_surface: true, caption: "", motion: "reveal", padding_top: 48, padding_bottom: 72 }),
+    section("fs-lookbook", { ...img("ambiance-01.webp"), layout: "side", eyebrow: "Ses courbes", heading: "Ce qui vous entoure,", heading_accent: "de chaque côté", text: p("Touchez un repère : le dossier, les accoudoirs, le coussin et les pieds, un par un."), align: "left", button_label: "", button_link: "", link_label: "Voir le fauteuil", focus_x: 62, focus_y: 55, effect: "fade", stagger: true, hover: false, background: "scheme", color_scheme: "scheme-2" }, [
+      marker(k, 60, 33, "Le dossier, d'un seul tenant avec les accoudoirs"),
+      marker(k, 80, 50, "Les accoudoirs arrondis, pour poser les bras"),
       marker(k, 56, 60, "Le coussin d'assise épais"),
       marker(k, 50, 81, "Les pieds courts en bois brun"),
     ]),
     section("rich-text", { style: "statement", align: "center", padding_top: 96, padding_bottom: 96 }, [
-      { type: "eyebrow", settings: { text: "L'idée" } },
-      { type: "heading", settings: { text: "Des courbes pour s'asseoir, une couleur pour réchauffer la pièce.", size: "h2" } },
+      { type: "eyebrow", settings: { text: "Pour de bon" } },
+      { type: "heading", settings: { text: "Un siège où l'on s'installe, pas un siège où l'on attend.", size: "h2" } },
       { type: "text", settings: { text: p("Pas un angle : le dossier et les accoudoirs ne forment qu'un seul arrondi autour d'un coussin épais, posé sur quatre pieds de bois brun.") } },
     ]),
-    section("ed-diptych", { layout: "pair", label: "Deux pièces", heading: "Au coin lecture, dans la chambre", text: "", button_label: "", button_link: "", motion: "reveal", padding_top: 64, padding_bottom: 64 }, [
-      frame(k, "ambiance-02.webp", "Le coin lecture", "Une table d'appoint, un bouquet, la lumière qui entre de biais.", "landscape", { focus_x: 60, mobile_focus_x: 60 }),
-      frame(k, "ambiance-05.webp", "La chambre", "Au pied du lit, pour poser ses affaires ou lire un moment.", "portrait", { focus_x: 58, mobile_focus_x: 58 }),
+    section("ed-diptych", { layout: "pair", label: "Sa place", heading: "Là où vous lisez, là où vous vous posez", text: "", button_label: "", button_link: "", motion: "reveal", padding_top: 64, padding_bottom: 64 }, [
+      frame(k, "ambiance-02.webp", "Le coin lecture", "Une table d'appoint pour le livre et la tasse, la lumière qui entre de biais.", "landscape", { focus_x: 60, mobile_focus_x: 60 }),
+      frame(k, "ambiance-05.webp", "La chambre", "Au pied du lit : pour lire avant d'éteindre, ou poser ses affaires.", "portrait", { focus_x: 58, mobile_focus_x: 58 }),
     ]),
-    section("fs-campaign", { ...img("ambiance-06.webp"), layout: "card", eyebrow: "Le soir", heading: "Sous une lumière", heading_accent: "ambrée", text: p("Une lampe en papier, un tapis épais : le terracotta se fait plus profond quand la lumière baisse."), align: "left", label: "", offer_title: "", offer_text: "", period_text: "", conditions: "", cta_label: "Voir le fauteuil", cta_link: productHref, cta2_label: "Pièce par pièce", cta2_link: "/pages/piece-par-piece", focus_x: 62, focus_y: 55, effect: "fade", stagger: false, hover: false, background: "scheme", color_scheme: "scheme-3" }),
-    section("featured-purchase", { label: "Le fauteuil", heading: "Fauteuil ALCÔVE terracotta", text: p("Trois quarts, face, profil, dos et tissu en gros plan : faites le tour du fauteuil avant de le choisir."), product: SHOP_KIT_HANDLE.alcove, product_target: "product:main", purchase_style: "outlined", purchase_enabled: false, image_fit: "contain", gallery_limit: 5, enable_zoom: true, link_label: "Voir la fiche complète" }),
-    faq("Questions avant de l'adopter", ALCOVE_FAQ.slice(0, 4), "cards", "stacked", "Les réponses courtes aux questions que l'on se pose en découvrant ALCÔVE.", { color_scheme: "scheme-2" }),
-    section("newsletter", { eyebrow: "Nouvelles d'ALCÔVE", heading: "Un e-mail quand il y a du nouveau", text: p("Nouvelles pièces photographiées, nouvelles vues, ouverture de la boutique : nous écrivons seulement quand quelque chose change."), button_label: "S'inscrire", preview_note: true, legal: p("Désinscription possible à tout moment depuis chaque e-mail.") }),
+    section("fs-campaign", { ...img("ambiance-06.webp"), layout: "card", eyebrow: "Le soir", heading: "Sous la lampe,", heading_accent: "on y reste", text: p("Une lampe en papier, un tapis épais : quand la lumière baisse, le terracotta se fait plus profond."), align: "left", label: "", offer_title: "", offer_text: "", period_text: "", conditions: "", cta_label: "Voir le fauteuil", cta_link: productHref, cta2_label: "Pièce par pièce", cta2_link: "/pages/piece-par-piece", focus_x: 62, focus_y: 55, effect: "fade", stagger: false, hover: false, background: "scheme", color_scheme: "scheme-3" }),
+    section("featured-purchase", { label: "Le fauteuil", heading: "Fauteuil ALCÔVE terracotta", text: p("Avant de lui faire une place, faites-en le tour : trois quarts, face, profil, dos, puis le tissu en gros plan."), product: SHOP_KIT_HANDLE.alcove, product_target: "product:main", purchase_style: "outlined", purchase_enabled: false, image_fit: "contain", gallery_limit: 5, enable_zoom: true, link_label: "Voir la fiche complète" }),
+    faq("Avant de lui faire une place", ALCOVE_FAQ.slice(0, 4), "cards", "stacked", "La pièce, les couleurs, l'aspect de près, ce que permet la démonstration.", { color_scheme: "scheme-2" }),
+    section("newsletter", { eyebrow: "Nouvelles d'ALCÔVE", heading: "Être prévenu quand ALCÔVE ouvre", text: p("Un e-mail à l'ouverture de la boutique. Rien d'autre."), button_label: "Me prévenir", preview_note: true, legal: p("Désinscription possible à tout moment depuis chaque e-mail.") }),
   ]);
 
   // ─── Fiche produit ──────────────────────────────────────────────────────────────────────────────────────────────
   k.mainProduct({
-    eyebrow: "Fauteuil",
-    text: "Un fauteuil enveloppant au tissu terracotta texturé : dossier et accoudoirs arrondis, coussin d'assise épais, quatre pieds courts en bois brun.",
+    eyebrow: "Fauteuil · pour s'installer",
+    text: "Pour s'asseoir pour de bon : un dossier et des accoudoirs d'un seul arrondi autour d'un coussin d'assise épais, en tissu terracotta texturé.",
     highlights: "Dossier et accoudoirs arrondis\nCoussin d'assise épais\nQuatre pieds courts en bois brun\nTissu terracotta à la texture visible",
     description: spec.store.product.description_html,
     specs: "dimensions, hauteur d'assise, poids, composition du tissu et du rembourrage, essence du bois des pieds, entretien",
@@ -264,23 +286,23 @@ function curateAlcove(k: Kit) {
     settings: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
   });
   overlay(k.productKey(), [
-    section("image-with-text", { image_asset: img("ambiance-09.webp").image_asset, layout: "image-left", ratio: "square", reveal: "up", parallax: false, eyebrow: "Vu d'en haut", heading: "Une assise profonde, un dossier qui l'entoure", text: p("Vu du dessus, ALCÔVE dessine un arc : le dossier et les accoudoirs se rejoignent autour du coussin d'assise."), button_label: "", button_link: "", color_scheme: "scheme-2" }),
-    section("ed-diptych", { layout: "side", label: "En situation", heading: "Rétro ou loft", text: "", button_label: "", button_link: "", motion: "reveal", padding_top: 64, padding_bottom: 64 }, [
+    section("image-with-text", { image_asset: img("ambiance-09.webp").image_asset, layout: "image-left", ratio: "square", reveal: "up", parallax: false, eyebrow: "Vu d'en haut", heading: "Un arc autour de l'assise", text: p("Vu du dessus, le dossier et les accoudoirs se rejoignent autour du coussin : de chaque côté, quelque chose vous tient."), button_label: "", button_link: "", color_scheme: "scheme-2" }),
+    section("ed-diptych", { layout: "side", label: "Deux intérieurs", heading: "Avec du bois ancien ou face à une verrière", text: "", button_label: "", button_link: "", motion: "reveal", padding_top: 64, padding_bottom: 64 }, [
       frame(k, "ambiance-04.webp", "Intérieur rétro", "Près d'un buffet en bois et d'une table basse ronde.", "portrait", { focus_x: 62 }),
       frame(k, "ambiance-08.webp", "Loft", "Face à une grande verrière, sur un tapis épais.", "portrait", { focus_x: 52 }),
     ]),
-    faq("Questions fréquentes", [...ALCOVE_FAQ, ...ALCOVE_FAQ_PENDING], "lines", "stacked"),
+    faq("Questions sur le fauteuil", [...ALCOVE_FAQ, ...ALCOVE_FAQ_PENDING], "lines", "stacked"),
   ]);
 
   // ─── Pages ──────────────────────────────────────────────────────────────────────────────────────────────────────
   k.page("piece-par-piece", "Pièce par pièce", { title: "Pièce par pièce : le fauteuil ALCÔVE chez vous | ALCÔVE", description: "Jardin d'hiver, fenêtre cintrée : le fauteuil ALCÔVE terracotta photographié dans plusieurs pièces, pour imaginer sa place chez vous." }, [
-    ["intro", section("rich-text", { style: "plain", align: "center", color_scheme: "scheme-1", padding_top: 24, padding_bottom: 24 }, [{ type: "text", settings: { text: p("Un fauteuil se choisit pour une pièce. Voici ALCÔVE dans deux lumières différentes, du jardin d'hiver à la fenêtre cintrée.") } }])],
+    ["intro", section("rich-text", { style: "plain", align: "center", color_scheme: "scheme-1", padding_top: 24, padding_bottom: 24 }, [{ type: "text", settings: { text: p("Un fauteuil se choisit pour une pièce, et pour une lumière. Voici ALCÔVE au jardin d'hiver puis sous une fenêtre cintrée.") } }])],
     ["jardin", section("ed-scene", { ...img("ambiance-10.webp"), layout: "panorama", label: "Jardin d'hiver", heading: "Entre les plantes, en pleine lumière", text: p("Sol en terre cuite, grandes feuilles, verrière : le terracotta du fauteuil répond à celui du sol."), button_label: "", button_link: "", caption: "", focus_x: 55, focus_y: 58, mobile_focus_x: 60, mobile_focus_y: 58, motion: "reveal", padding_top: 48, padding_bottom: 72 })],
     ["fenetre", section("ed-scene", { ...img("ambiance-03.webp"), layout: "closing", label: "Près d'une fenêtre", heading: "Une arche, un rideau, un fauteuil", text: p("Sous une fenêtre cintrée, le fauteuil prend la lumière du matin."), button_label: "Voir le fauteuil", button_link: productHref, caption: "", motion: "reveal", color_scheme: "scheme-2", padding_top: 88, padding_bottom: 88 })],
   ]);
-  k.page("aide", "Questions et contact", { title: "Questions et contact | ALCÔVE, fauteuil terracotta", description: "Les réponses sur le fauteuil ALCÔVE : pièces, décoration, détails, commande. Et un formulaire pour toute autre question." }, [
+  k.page("aide", "Questions et contact", { title: "Questions et contact | ALCÔVE, fauteuil terracotta", description: "La pièce où le mettre, le terracotta avec votre intérieur, l'aspect de près, ce que permet la démonstration : nos réponses, et un formulaire." }, [
     ["faq", faq("Questions fréquentes", [...ALCOVE_FAQ, ...ALCOVE_FAQ_PENDING], "numbered", "side", "", { color_scheme: "scheme-1" })],
-    ["form", section("contact-form", { eyebrow: "Contact", heading: "Une autre question sur ALCÔVE ?", text: p("Écrivez-nous : le formulaire vérifie les champs avant l'envoi. Dans cette démonstration, aucun message n'est réellement transmis."), email: "", hours: "", response: "", preview_note: true, color_scheme: "scheme-2", padding_top: 64, padding_bottom: 96 })],
+    ["form", section("contact-form", { eyebrow: "Contact", heading: "Une question avant de lui faire une place ?", text: p("Écrivez-nous : le formulaire vérifie les champs avant l'envoi. Dans cette démonstration, aucun message n'est réellement transmis."), email: "", hours: "", response: "", preview_note: true, color_scheme: "scheme-2", padding_top: 64, padding_bottom: 96 })],
   ]);
 
   // ─── Menus, en-tête « boutique éditoriale » (le fauteuil dans le sous-menu), pied « empilé » ──────────────────────
@@ -301,7 +323,7 @@ function curateAlcove(k: Kit) {
   const footer = Object.values(spec.groups.footer.sections).find((s) => s.type === "footer")!;
   footer.settings = { ...footer.settings, style: "stacked", show_wordmark: false, show_policies: false, show_payment: false, color_scheme: "scheme-2", logo_asset: "" };
   footer.blocks = {
-    about: { type: "text", settings: { heading: "ALCÔVE", text: p("Le fauteuil enveloppant aux courbes douces, pour le salon, le coin lecture et la chambre. Marque de démonstration du studio.") } },
+    about: { type: "text", settings: { heading: "ALCÔVE", text: p("Le fauteuil enveloppant où l'on s'installe pour de bon : salon, coin lecture, chambre. Marque de démonstration du studio.") } },
     links: { type: "links", settings: { heading: "Aide", menu: "footer" } },
   };
   footer.block_order = ["about", "links"];
