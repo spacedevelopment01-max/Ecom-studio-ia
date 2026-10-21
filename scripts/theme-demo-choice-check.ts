@@ -10,7 +10,7 @@
  *     démo) avec le guide des informations à compléter ;
  *  4. galerie et démo sur un téléphone (390 × 844).
  *
- *   THEME_DEMOS_DIR=<démos préparées> npx tsx scripts/theme-demo-choice-check.ts <dossier-captures> [sillon|noctil|traverse|heuren|alcove]
+ *   THEME_DEMOS_DIR=<démos préparées> npx tsx scripts/theme-demo-choice-check.ts <dossier-captures> [sillon|noctil|traverse|heuren|alcove|museau-club]
  */
 import fs from "node:fs";
 import os from "node:os";
@@ -21,7 +21,7 @@ import { spawn } from "node:child_process";
 import { chromium, type Page } from "playwright";
 if (process.env.DATA_DIR || process.env.DATABASE_FILE) throw new Error("Base existante refusée");
 /** Thème parcouru puis choisi (issue #152 : NOCTIL et TRAVERSE par le même parcours que SILLON). */
-const T = (process.argv[3] ?? "sillon") as "sillon" | "noctil" | "traverse" | "heuren" | "alcove";
+const T = (process.argv[3] ?? "sillon") as "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club";
 const THEME = {
   sillon: { brand: /SILLON/, profile: "nomade", menuPage: "page-usages.html", menuLabel: "Usages", leak: /SILLON|espresso|où tout coule|avant de partir|Boutique de démonstration/i },
   noctil: { brand: /NOCTIL/, profile: "astral", menuPage: "page-univers.html", menuLabel: "Une galaxie par pièce", leak: /NOCTIL|galaxie|la nuit entre|une autre nuit|Boutique de démonstration/i },
@@ -29,12 +29,14 @@ const THEME = {
   // HEUREN et ALCÔVE (issue #155) : famille E-commerce, profil porté par « editorial_profile ».
   heuren: { brand: /HEUREN/, profile: "cadran", menuPage: "page-au-fil-du-jour.html", menuLabel: "Au fil du jour", leak: /HEUREN|heure bleue|bleu nuit soleillé|Au fil du jour|Boutique de démonstration/i },
   alcove: { brand: /ALCÔVE/, profile: "arrondi", menuPage: "page-piece-par-piece.html", menuLabel: "Pièce par pièce", leak: /ALCÔVE|alcôve à soi|terracotta|Pièce par pièce|Boutique de démonstration/i },
+  "museau-club": { brand: /MUSEAU CLUB/, profile: "club", menuPage: "page-la-balade.html", menuLabel: "La balade", leak: /MUSEAU|harnais|pochette|bleu cobalt|La balade|Boutique de démonstration/i },
 }[T];
 /** Attribut du <body> qui porte le profil graphique : « conversion » (boutique spécialisée), « editorial » (E-commerce). */
-const PROFILE_ATTR = T === "heuren" || T === "alcove" ? "editorial" : "conversion";
+const CATALOG = T === "heuren" || T === "alcove" || T === "museau-club";
+const PROFILE_ATTR = CATALOG ? "editorial" : "conversion";
 /** Projet de départ de la même famille que le thème choisi : boutique spécialisée dans FRAISE, ou E-commerce dans ORBE
  * (HEUREN et ALCÔVE, issue #155 : un thème E-commerce ne se propose pas à une boutique spécialisée). */
-const START = (T === "heuren" || T === "alcove" ? { id: "orbe", name: "ORBE", kind: "catalog" } : { id: "fraise", name: "FRAISE", kind: "specialty" }) as { id: "orbe" | "fraise"; name: string; kind: "catalog" | "specialty" };
+const START = (CATALOG ? { id: "orbe", name: "ORBE", kind: "catalog" } : { id: "fraise", name: "FRAISE", kind: "specialty" }) as { id: "orbe" | "fraise"; name: string; kind: "catalog" | "specialty" };
 const demosDir = process.env.THEME_DEMOS_DIR; if (!demosDir || !fs.existsSync(path.join(demosDir, T, "accueil.html"))) throw new Error("THEME_DEMOS_DIR : démos préparées requises (scripts/prepare-theme-demos.ts)");
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "ecs-demo-choice-")); process.env.DATA_DIR = temp; process.env.STOCK_OFFLINE = "1";
 const out = path.resolve(process.argv[2] ?? "reports/theme-demo-choice"); fs.mkdirSync(out, { recursive: true });

@@ -182,3 +182,24 @@ body[data-editorial="arrondi"] .es-header{min-height:76px}
 body[data-editorial="cadran"] .fs-lookbook--markers .fs-look__scene{max-width:760px;margin-inline:auto}
 body[data-editorial="cadran"] .fs-lookbook--markers .fs-look__media .ed-media{aspect-ratio:1}
 body[data-editorial="arrondi"] .fs-lookbook--side .fs-look__media .ed-media{aspect-ratio:16/9}
+/* ─── Profil « club » (MUSEAU CLUB, issue #158) : crème et bleu cobalt, titres épais et serrés, sur-titres en pastille,
+   photos et cartes aux coins arrondis, boutons en pastille : un rythme vif pour une collection de balade. */
+body[data-editorial="club"]{--radius-button:999px;--radius-card:22px}
+body[data-editorial="club"] .ed-kicker,body[data-editorial="club"] .fs .fs-eyebrow,body[data-editorial="club"] .es-eyebrow{display:inline-block;width:auto;padding:6px 13px;border-radius:999px;background:var(--c-accent);color:var(--c-accent-text);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;line-height:1.2;width:fit-content;max-width:100%;justify-self:start;align-self:start}
+body[data-editorial="club"] .ed-title,body[data-editorial="club"] .fs h2,body[data-editorial="club"] .es-heading{font-weight:800;letter-spacing:-.025em;line-height:1.04}
+body[data-editorial="club"] .fs-lookbook h1.ed-title{font-size:clamp(40px,5.4vw,80px);max-width:17ch;line-height:1}
+body[data-editorial="club"] .ed-button,body[data-editorial="club"] .es-button{border-radius:999px;font-weight:700}
+body[data-editorial="club"] .ed-media,body[data-editorial="club"] .fs-look__media,body[data-editorial="club"] .fs-card,body[data-editorial="club"] .es-image-text__media,body[data-editorial="club"] .es-product__media,body[data-editorial="club"] .fs-camp__media{border-radius:22px;overflow:hidden}
+body[data-editorial="club"] .es-product__thumb,body[data-editorial="club"] .es-product__thumbs img,body[data-editorial="club"] .es-sibling img{border-radius:14px}
+/* « La collection assortie » : les quatre pièces visibles d'un coup (grille 2 × 2), la pièce affichée encadrée. */
+body[data-editorial="club"] .es-siblings__row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;overflow:visible}
+body[data-editorial="club"] .es-sibling{min-width:0;padding:6px 10px 6px 6px;gap:8px;font-size:13px;line-height:1.25}
+body[data-editorial="club"] .es-sibling img{width:44px;height:44px}
+/* Cartes produit : nom au-dessus du prix (les noms de la collection sont longs ; côte à côte, ils se chevauchaient). */
+body[data-editorial="club"] .es-card__info{flex-direction:column;align-items:flex-start;gap:4px}
+body[data-editorial="club"] .fs-look__n{display:inline-grid;place-items:center;flex:0 0 28px;width:28px;height:28px;border-radius:50%;background:var(--c-text);color:var(--c-bg);font-weight:700;font-size:13px}
+/* Repères : chaque photo garde son format d'origine à toutes les largeurs (scène de la collection en 16:9 à côté de la
+   liste, scène carrée pour les repères seuls), pour que chaque repère reste sur son produit. */
+body[data-editorial="club"] .fs-lookbook--side .fs-look__media .ed-media{aspect-ratio:16/9}
+body[data-editorial="club"] .fs-lookbook--markers .fs-look__scene{max-width:720px;margin-inline:auto}
+body[data-editorial="club"] .fs-lookbook--markers .fs-look__media .ed-media{aspect-ratio:1}

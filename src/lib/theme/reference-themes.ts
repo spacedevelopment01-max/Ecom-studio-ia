@@ -6,7 +6,8 @@
  * spécialisée, profil « astral » : nuit immersive, indigo et lavande) et TRAVERSE (boutique spécialisée, profil
  * « itinéraire » : carnet de voyage éditorial, crème, pierre et olive), issue #152 ; HEUREN (e-commerce mono-produit,
  * profil éditorial « cadran » : bleu nuit, argent, serif fine) et ALCÔVE (e-commerce mono-produit, profil « arrondi » :
- * courbes, terre cuite, sable), issue #155.
+ * courbes, terre cuite, sable), issue #155 ; MUSEAU CLUB (e-commerce de quatre produits, profil « club » : crème et bleu
+ * cobalt, titres épais, coins arrondis), issue #158.
  *
  * Chaque thème est composé avec l'identité validée du projet : palette dérivée des rôles de la marque (clair, sombre,
  * accent), polices du thème, textes et médias du projet par les sections de la bibliothèque (section-copy-*.ts). Les
@@ -521,6 +522,59 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       k.R.method(2, "howto-v"),
       k.faqSec(2, 5, "cards"),
       k.R.booking(2),
+    ],
+  },
+  {
+    id: "museau-club",
+    name: "Museau Club",
+    tagline: "Cobalt et balades",
+    description: "Boutique de plusieurs produits de la famille E-commerce pour une collection coordonnée : scène de la collection avec repères et liste des produits en ouverture, grille des produits, panorama de balade, produit porté, achat en douceur, bandeau d'appel, questions en lignes et inscription illustrée. Crème et bleu cobalt, titres épais, sur-titres en pastille, coins arrondis, menu en cartes et pied de page en colonnes.",
+    bestFor: ["e-commerce", "animalerie", "accessoires", "collection coordonnée", "plusieurs produits"],
+    en: { tagline: "Cobalt and walks", description: "Multi-product store from the E-commerce family for a coordinated collection: an opening scene of the collection with markers and the product list, a product grid, a walk panorama, the product worn, a soft purchase block, a call-to-action band, line questions and an illustrated sign-up. Cream and cobalt blue, bold headings, pill eyebrows, rounded corners, card menu and a column footer.", bestFor: ["e-commerce", "pet supplies", "accessories", "coordinated collection", "several products"] },
+    fonts: { heading: "archivo_n8", body: "karla_n4" },
+    previewFonts: { heading: "Archivo", body: "Karla" },
+    motion: "expressive",
+    photoMood: "elan",
+    kinds: ["catalog"],
+    // En-tête « Collections en cartes » (les produits en cartes dans le menu, sur deux rangs) et pied « Plan du catalogue
+    // en colonnes » : dispositions de la famille E-commerce qu'ORBE, HEUREN et ALCÔVE n'utilisent pas.
+    look: look({ headerLayout: "two-rows", shape: "bar", menu: "cards", footer: "columns", ann: "static", card: "boxed", button: "solid", radius: { button: 999, card: 22 }, headingScale: 106, tracking: -2, pageWidth: 1320, gallery: "stack", ds: "product", density: "balanced" }),
+    settings: { editorial_profile: "club", conversion_profile: "none", motion_intensity: "expressive" },
+    headerSettings: { layout: "two-rows", mega_menu: "cards", mobile_menu: "cards", mobile_submenu: "open", show_cart: true },
+    // Galerie empilée, cadre carré (chaque vue montre le produit entier), zoom, barre d'achat.
+    mainProduct: { gallery_layout: "stack", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
+    palette: (k) => {
+      const cream = k.light("#FBF7EE");
+      const powder = k.mix(cream, "#BFDDF7", 0.55);
+      const navy = k.night(0.2, 0.75);
+      return [k.scheme(cream, navy, k.onLight(cream)), k.filled(k.p.primary), k.scheme(powder, navy, k.onLight(powder)), k.scheme(navy, cream, k.onDark(navy), 0.08)];
+    },
+    // Accueil : la collection en scène (repères et liste), tous les produits, la balade en panorama, le produit porté,
+    // l'achat d'une pièce, un bandeau d'appel, les questions et l'inscription illustrée.
+    home: (k) => [
+      k.lib("fs-lookbook", 1, { layout: "side", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.scene1 ?? k.im.packshot, align: "left", padding_top: 32, padding_bottom: 72 }),
+      k.lib("fs-products", 1, { layout: "grid", source: "collection", collection: "all", ratio: "square", columns: 4, limit: 4, align: "left", padding_top: 64, padding_bottom: 72 }),
+      k.lib("ed-scene", 3, { layout: "panorama", image_asset: k.im.banner ?? k.im.scene1 ?? "" }, { hide: !(k.im.banner ?? k.im.scene1) }),
+      k.lib("image-with-text", 1, { layout: "image-left", ratio: "square", image_asset: k.im.scene2 ?? k.im.lifestyle2 ?? "", reveal: "up" }, { hide: !(k.im.scene2 ?? k.im.lifestyle2) }),
+      k.lib("featured-purchase", 3, { purchase_style: "soft", image_fit: "contain" }),
+      k.lib("cta-banner", 2, { image_asset: k.im.scene3 ?? "", style: "left" }, { hide: !k.im.scene3 }),
+      k.faqSec(1, 5, "lines"),
+      ...k.either(k.lib("newsletter-media", 4, { layout: "left", image_asset: k.im.portrait ?? k.im.lifestyle2 ?? "", legal: k.privacy }, { hide: !(k.im.portrait ?? k.im.lifestyle2) }), k.newsletter(4)),
+    ],
+    // Fiche : galerie empilée et achat, une scène de balade à côté du texte, questions en cartes.
+    product: (k) => [
+      k.lib("ed-scene", 3, { layout: "split", image_asset: k.im.scene1 ?? k.im.lifestyle2 ?? "", padding_top: 72, padding_bottom: 72 }, { hide: !(k.im.scene1 ?? k.im.lifestyle2) }),
+      k.faqSec(1, 5, "cards"),
+    ],
+    // Site de services (repli) : scène et liste en ouverture, prestations en cartes illustrées, une photo et son texte,
+    // méthode en étapes, questions en lignes et prise de contact.
+    services: (k) => [
+      k.lib("fs-lookbook", 1, { layout: "side", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle, align: "left" }),
+      k.R.servicesList(3, "cards", { withImages: true }),
+      k.lib("image-with-text", 1, { layout: "image-right", ratio: "square", image_asset: k.im.scene1 ?? "", reveal: "up" }, { hide: !k.im.scene1 }),
+      k.R.method(2, "timeline"),
+      k.faqSec(1, 5, "lines"),
+      k.R.booking(3),
     ],
   },
 ];

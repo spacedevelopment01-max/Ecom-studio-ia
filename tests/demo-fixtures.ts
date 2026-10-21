@@ -21,9 +21,10 @@ import { conversionProject } from "./lot2c-fixtures";
 import { sillonProject, SILLON_DIR, SILLON_MEDIA } from "./sillon-fixtures";
 import { kitProject, kitDir, KIT_MEDIA } from "./noctil-traverse-fixtures";
 import { shopKitProject, SHOP_KIT_MEDIA } from "./heuren-alcove-fixtures";
+import { multiKitProject, MULTI_KIT_MEDIA } from "./museau-souple-fixtures";
 import type { DirectionId } from "../src/lib/theme/directions";
 
-export type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove";
+export type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club";
 export const DEMO_PROVENANCE = "Issue #137 (19 octobre 2026) — démonstration du studio, identité du manifeste, visuels IA du kit privé sans personne, aucun paiement";
 
 type ManifestDemo = { id: DemoId; brand: string; product: string; sector: string; category: string; direction: DirectionId; palette: string[]; photo: string; logo: string; images: { src: string; label: string }[]; business?: "products" | "services"; storeType?: "mono" | "multi" | "niche" };
@@ -75,6 +76,11 @@ const IDENTITY: Record<DemoId, { tagline: string; summary: string; story: string
   alcove: {
     tagline: "Une alcôve à soi.", summary: "Fauteuil enveloppant au tissu terracotta texturé : dossier et accoudoirs arrondis, coussin d'assise épais, quatre pieds courts en bois brun.", story: "ALCÔVE est né d'une envie simple : un fauteuil sans angle, dans la couleur chaude de la terre cuite.", positioning: "Un fauteuil enveloppant pour le salon, le coin lecture et la chambre.", price: null,
     media: Object.fromEntries(SHOP_KIT_MEDIA.alcove.filter((m) => m.role !== "logo").map((m) => [m.file, { role: m.role }])),
+  },
+  // MUSEAU CLUB (issue #158, e-commerce de quatre produits) : identité utilisée seulement pour la preuve d'adaptation.
+  "museau-club": {
+    tagline: "Tout le matériel de balade, en bleu cobalt.", summary: "Collection de balade pour chiens en bleu cobalt : un harnais, une laisse, un collier et une pochette à sacs assortis, avec maille crème, boucles noires, anneaux et mousquetons argentés.", story: "MUSEAU CLUB est né d'une idée simple : une seule couleur pour toute la balade, du harnais à la pochette.", positioning: "Une collection coordonnée pour promener son chien : harnais, laisse, collier et pochette à sacs.", price: null,
+    media: Object.fromEntries(MULTI_KIT_MEDIA["museau-club"].filter((m) => m.role !== "logo").map((m) => [m.file, { role: m.role }])),
   },
   rive: {
     tagline: "Des espaces qui vous ressemblent.", summary: "Aménagement et décoration intérieure : intentions, usages, lumière et matières.", story: "Une étude d'intention à partir de vos usages, de la lumière et des matières.", positioning: "Des intérieurs pensés pièce par pièce à partir de vos usages, de la lumière et des matières, pour la maison comme pour un petit espace professionnel.", price: null,
@@ -134,6 +140,11 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
     const c = await shopKitProject(userId, id);
     return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
   }
+  // MUSEAU CLUB (issue #158) : même parcours, famille E-commerce, quatre produits, kit suivi dans public/theme-assets/<id>/.
+  if (id === "museau-club" && !options.direction) {
+    const c = await multiKitProject(userId, id);
+    return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
+  }
   if ((id === "fraise" || id === "onde") && !options.direction) {
     const c = await conversionProject(userId, id, path.join(process.cwd(), "public", "demo"), { testVideo: options.testVideo });
     run("UPDATE projects SET store_type = ?, business_type = ?, updated_at = ? WHERE id = ?", d.storeType ?? "mono", "products", now(), c.pid);
@@ -153,7 +164,7 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
   run("UPDATE projects SET store_type = ?, business_type = ?, updated_at = ? WHERE id = ?", d.storeType ?? "mono", services ? "services" : "products", now(), pid);
   saveSettings(pid, { ...loadProject(pid).settings, storeKind: d.category as "services" | "catalog" | "specialty" });
   // Visuels : ceux du manifeste d'abord (rôle d'après l'étiquette), puis les autres images du dossier (scènes).
-  const dir = id === "sillon" ? SILLON_DIR : id === "noctil" || id === "traverse" || id === "heuren" || id === "alcove" ? kitDir(id) : path.join(process.cwd(), "public", "demo", id);
+  const dir = id === "sillon" ? SILLON_DIR : id === "noctil" || id === "traverse" || id === "heuren" || id === "alcove" || id === "museau-club" ? kitDir(id) : path.join(process.cwd(), "public", "demo", id);
   const missing: string[] = [];
   const imported = new Set<string>();
   const put = async (file: string, role: string, extra: Record<string, unknown> = {}) => {

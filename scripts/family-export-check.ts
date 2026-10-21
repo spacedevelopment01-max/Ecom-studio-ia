@@ -70,7 +70,7 @@ const PROFILE = (id: string, radius: string) => `(() => { if (!document.body.cla
 /** Profil éditorial appliqué dans WordPress / PrestaShop (classe du <body> et règle propre au profil réellement active) : HEUREN, ALCÔVE. */
 const EDITORIAL = (id: string, sel: string, ratio: string) => `(() => { if (!document.body.classList.contains('es-editorial-${id}')) return 'classe es-editorial-${id} absente (' + document.body.className + ')';
   const el = document.querySelector(${JSON.stringify(sel)}); if (!el) return 'élément du profil absent'; const r = getComputedStyle(el).aspectRatio; return r === '${ratio}' ? true : 'règle du profil non appliquée (aspect-ratio = ' + r + ')'; })()`;
-type Plan = { demo: "fraise" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove"; family: "specialty" | "catalog" | "services"; label: string; add: { key: string; disp: string }[]; checks: Check[] };
+type Plan = { demo: "fraise" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club"; family: "specialty" | "catalog" | "services"; label: string; add: { key: string; disp: string }[]; checks: Check[] };
 const PLANS: Plan[] = [
   { demo: "fraise", family: "specialty", label: "FRAISE (boutique spécialisée)",
     add: [{ key: "results", disp: "before-after" }, { key: "specs", disp: "tabs" }, { key: "comparison", disp: "table" }],
@@ -112,6 +112,11 @@ const PLANS: Plan[] = [
     checks: [
       { id: "arrondi", label: "Profil graphique « arrondi » appliqué", run: EDITORIAL("arrondi", ".fs-lookbook--side .fs-look__media .ed-media", "16 / 9") },
       { id: "fs-hotspot", label: "Repères sur le fauteuil (bibliothèque)", run: HOTSPOT("data-fs-hotspot") },
+    ] },
+  { demo: "museau-club", family: "catalog", label: "MUSEAU CLUB (E-commerce, quatre produits, issue #158)", add: [],
+    checks: [
+      { id: "club", label: "Profil graphique « club » appliqué", run: EDITORIAL("club", ".fs-lookbook--side .fs-look__media .ed-media", "16 / 9") },
+      { id: "fs-hotspot", label: "Repères sur la collection (bibliothèque)", run: HOTSPOT("data-fs-hotspot") },
     ] },
   { demo: "rive", family: "services", label: "Atelier Rive (services)",
     add: [{ key: "testimonials", disp: "carousel" }],

@@ -133,7 +133,7 @@ const BRANDS: Record<KitId, Brand> = {
 
 /** Démonstration d'un kit suivi dans le dépôt (public/theme-assets/<id>/) : projet client composé par le vrai moteur dans
  * son thème du catalogue, puis rédigé par `curate` sur les mêmes sections (NOCTIL, TRAVERSE ; HEUREN, ALCÔVE : issue #155). */
-export type KitConfig = { id: DirectionId; media: Media[]; handle: string; brand: Brand; themeName: string; provenance: string; storeKind: "specialty" | "catalog"; sector: string };
+export type KitConfig = { id: DirectionId; media: Media[]; handle: string; brand: Brand; themeName: string; provenance: string; storeKind: "specialty" | "catalog"; sector: string; storeType?: "mono" | "multi" };
 export async function kitProject(userId: string, id: KitId) {
   return buildKitProject(userId, { id, media: KIT_MEDIA[id], handle: KIT_HANDLE[id], brand: BRANDS[id], themeName: id === "noctil" ? "Noctil" : "Traverse", provenance: KIT_PROVENANCE, storeKind: "specialty", sector: "maison" }, id === "noctil" ? curateNoctil : curateTraverse);
 }
@@ -149,7 +149,7 @@ export async function buildKitProject(userId: string, cfg: KitConfig, curate: (k
   const local = localBrand(product, b.name, { business: "products" });
   saveBrand(pid, { ...local.brand, name: b.name, generatedBy: "local" as const, tagline: b.tagline, story: b.story, positioning: b.positioning, palette: b.palette, direction: id });
   saveStrategy(pid, local.strategy);
-  run("UPDATE projects SET store_type = ?, business_type = ?, updated_at = ? WHERE id = ?", "mono", "products", now(), pid);
+  run("UPDATE projects SET store_type = ?, business_type = ?, updated_at = ? WHERE id = ?", cfg.storeType ?? "mono", "products", now(), pid);
   saveSettings(pid, { ...loadProject(pid).settings, storeKind: cfg.storeKind });
 
   // Médias : importés comme ceux d'un client (rôles explicites), étiquetés démonstration. Jamais le fichier exclu.
@@ -274,7 +274,7 @@ function kit(spec: ThemeSpec, ids: Record<string, string>, cfg: KitConfig) {
     spec.store.policies = [];
     spec.store.pages = [];
   };
-  return { spec, ids, img, section, hide, overlay, faq, productHref, productKey, mainProduct, page, product, finish, demoMeta, announce: () => section("announcement-bar", { style: "static", color_scheme: "scheme-3" }, [{ type: "announcement", settings: { text: DEMO_BANNER, link: "" } }]) };
+  return { spec, ids, name, img, section, hide, overlay, faq, productHref, productKey, mainProduct, page, product, finish, demoMeta, announce: () => section("announcement-bar", { style: "static", color_scheme: "scheme-3" }, [{ type: "announcement", settings: { text: DEMO_BANNER, link: "" } }]) };
 }
 export type Kit = ReturnType<typeof kit>;
 

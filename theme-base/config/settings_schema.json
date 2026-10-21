@@ -442,6 +442,10 @@
           {
             "value": "alcove",
             "label": "Alcôve — courbes et terre cuite (référence)"
+          },
+          {
+            "value": "museau-club",
+            "label": "Museau Club — cobalt et balades (référence)"
           }
         ]
       },
@@ -877,6 +881,10 @@
           {
             "value": "arrondi",
             "label": "Arrondi : sable et terre cuite, serif douce, arches et coins arrondis"
+          },
+          {
+            "value": "club",
+            "label": "Club : crème et bleu cobalt, titres épais, pastilles et cartes arrondies"
           }
         ]
       },

@@ -35,6 +35,7 @@ const EXPECT: Record<DemoId, { kind: "services" | "catalog" | "specialty"; profi
   traverse: { kind: "specialty", profile: { conversion_profile: "itineraire" }, family: /^cv-/ },
   heuren: { kind: "catalog", profile: { editorial_profile: "cadran" }, family: /^(ed-|fs-)/ },
   alcove: { kind: "catalog", profile: { editorial_profile: "arrondi" }, family: /^(ed-|fs-)/ },
+  "museau-club": { kind: "catalog", profile: { editorial_profile: "club" }, family: /^(ed-|fs-)/ },
 };
 
 /** Informations que seul le client peut fournir : la mention « à compléter » est voulue (rien d'inventé), jamais un titre ni une accroche. */

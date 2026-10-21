@@ -171,7 +171,7 @@ const look = (l: Partial<ThemeLook> & Pick<ThemeLook, "headerLayout" | "shape" |
 });
 
 /** Identifiants des thèmes du catalogue (dans l'ordre de présentation). */
-export const CATALOG_IDS = ["vitrine", "manifeste", "laboratoire", "magazine", "cinema", "rituel", "horizon", "lookbook", "marche", "signal", "jardin", "reception", "cabinet", "recre", "epure", "tribu", "etabli", "velours", "lancement", "fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove"] as const;
+export const CATALOG_IDS = ["vitrine", "manifeste", "laboratoire", "magazine", "cinema", "rituel", "horizon", "lookbook", "marche", "signal", "jardin", "reception", "cabinet", "recre", "epure", "tribu", "etabli", "velours", "lancement", "fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club"] as const;
 export type CatalogThemeId = (typeof CATALOG_IDS)[number];
 
 export const CATALOG_THEMES: (CatalogTheme & { id: CatalogThemeId })[] = [

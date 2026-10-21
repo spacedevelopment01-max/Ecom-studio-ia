@@ -1378,3 +1378,6 @@ body:has(.es-newsletter) .es-footer__card, body:has(.es-newsletter) .es-footer__
 .dir-heuren .es-button { border-radius: 0; letter-spacing: .16em; }
 .dir-alcove .es-heading { letter-spacing: -.015em; line-height: 1.1; }
 .dir-alcove .es-button { border-radius: 999px; }
+/* MUSEAU CLUB (issue #158) : le caractère est porté par le profil éditorial « club ». */
+.dir-museau-club .es-heading { letter-spacing: -.025em; line-height: 1.04; }
+.dir-museau-club .es-button { border-radius: 999px; font-weight: 700; }
