@@ -12,17 +12,17 @@ livré sur sa branche ; les branches s'empilent (aucune n'est fusionnée dans `m
 
 | Thème | Famille | Produit de la démonstration | Présent dans | État de la rédaction |
 |---|---|---|---|---|
-| SOUPLE | E-commerce | collection yoga et Pilates (4 produits) | `claude/themes-museau-souple-158` | **réécrit** (ce lot) : accueil, collection, 4 fiches, « Votre coin à vous », aide, FAQ, inscription, SEO |
-| MUSEAU CLUB | Produit spécifique (boutique spécialisée) | collection de balade pour chiens (4 produits) | `claude/themes-museau-souple-158` | à faire (angle proposé ci-dessous) |
-| HEUREN | E-commerce | montre bleu nuit | `claude/themes-heuren-alcove-155` et suivantes | à faire |
-| ALCÔVE | E-commerce | fauteuil terracotta | `claude/themes-heuren-alcove-155` et suivantes | à faire |
-| NOCTIL | Produit spécifique | projecteur de galaxies | `claude/themes-noctil-traverse-152` et suivantes | à faire |
-| TRAVERSE | Produit spécifique | sac à dos de voyage | `claude/themes-noctil-traverse-152` et suivantes | à faire |
-| SILLON | Produit spécifique | machine à espresso nomade | `claude/theme-sillon-148` et suivantes | à faire |
-| ONDE | E-commerce | casque | `main` (refonte E-commerce sur la branche #158) | à faire |
-| ORBE | E-commerce | lampe nomade | `main` | à faire |
-| FRAISE | Produit spécifique | gummies à la fraise | `main` | à faire |
-| Atelier Rive | Services | aménagement et décoration intérieure | `main` | à faire (rédaction de **services**, pas de boutique) |
+| SOUPLE | E-commerce | collection yoga et Pilates (4 produits) | `claude/themes-museau-souple-158` | **réécrit** (voir le bilan final) |
+| MUSEAU CLUB | Produit spécifique (boutique spécialisée) | collection de balade pour chiens (4 produits) | `claude/themes-museau-souple-158` | **réécrit** (voir le bilan final) |
+| HEUREN | E-commerce | montre bleu nuit | `claude/themes-heuren-alcove-155` et suivantes | **réécrit** (voir le bilan final) |
+| ALCÔVE | E-commerce | fauteuil terracotta | `claude/themes-heuren-alcove-155` et suivantes | **réécrit** (voir le bilan final) |
+| NOCTIL | Produit spécifique | projecteur de galaxies | `claude/themes-noctil-traverse-152` et suivantes | **réécrit** (voir le bilan final) |
+| TRAVERSE | Produit spécifique | sac à dos de voyage | `claude/themes-noctil-traverse-152` et suivantes | **réécrit** (voir le bilan final) |
+| SILLON | Produit spécifique | machine à espresso nomade | `claude/theme-sillon-148` et suivantes | **réécrit** (voir le bilan final) |
+| ONDE | E-commerce | casque | `main` (refonte E-commerce sur la branche #158) | **réécrit** (voir le bilan final) |
+| ORBE | E-commerce | lampe nomade | `main` | **réécrit** (voir le bilan final) |
+| FRAISE | Produit spécifique | gummies à la fraise | `main` | **réécrit** (voir le bilan final) |
+| Atelier Rive | Services | aménagement et décoration intérieure | `main` | **réécrit** (voir le bilan final) |
 
 Branches de Codex en cours qui touchent les thèmes : `codex/154-integration-adaptation-client` (7 thèmes, adaptation
 d'un client et génération IA) — à réunir avant toute fusion ; leur grille de forfaits (#151 / #154) n'est pas modifiée ici.
@@ -267,6 +267,30 @@ livraison et retours, trois pages légales (intro vraie, rubriques vides masqué
 panier, pied, SEO. Code : `tests/fraise-demo-copy.ts` (`curateFraise`), appliqué après `conversionProject` dans
 `demoProject` ; la référence lot 2C elle-même (tests `lot2c-*`) n'est pas modifiée. Preuves : **kit privé**, captures
 hors dépôt (archive privée).
+
+## Bilan final des 11 thèmes (consigne du 21 octobre, 19 h 50)
+
+Les angles sont des hypothèses éditoriales, à valider par Thomas. Aucune fusion, aucune mise en ligne. Les preuves
+« dépôt » sont dans `docs/preuves/copywriting/<thème>/` ; celles des kits privés (ONDE, ORBE, FRAISE, Atelier Rive)
+sont dans une archive privée remise hors dépôt.
+
+| Thème | Famille | Angle (un seul) | Pages réécrites | Commit | Preuves | Limites restantes |
+|---|---|---|---|---|---|---|
+| SOUPLE | E-commerce | un rendez-vous avec soi, pas une obligation | accueil, collection, 4 fiches, « Pratiquer chez soi », aide, menus, pied, SEO | d48c80d9 | dépôt (26 captures) | prix et ouverture inconnus : « Prix à définir », achat désactivé |
+| MUSEAU CLUB | Spécialisée | la balade commence à la porte | accueil, collection, 4 fiches, « La balade », aide, inscription, SEO | 4fa83755 | dépôt (26) | tailles et matières inconnues (blocs masqués) |
+| HEUREN | E-commerce | un bleu à regarder, pas un écran à surveiller | accueil, fiche, aide, « Au fil du jour » relue, inscription, SEO | cdf39c9f | dépôt (14) | mouvement, étanchéité, écrin non renseignés |
+| ALCÔVE | E-commerce | s'asseoir pour de bon | accueil, fiche, aide, « Pièce par pièce » relue, inscription, SEO | cdf39c9f | dépôt (14) | dimensions, tissu, entretien non renseignés |
+| NOCTIL | Spécialisée | ce soir, on ne sort pas : on change de ciel (une cible adulte) | accueil, fiche, univers, aide, SEO | 2e4b954a | dépôt (14) | aucun bienfait sur le sommeil, aucune spec |
+| TRAVERSE | Spécialisée | le même sac du lundi au vendredi | accueil, fiche, aide, « Carnet de route » relue, SEO | 2e4b954a | dépôt (14) | volume, poids, format cabine non renseignés |
+| SILLON | Spécialisée | votre espresso ne reste plus à la maison | accueil, fiche, contact, usages relue, pied, SEO | aef8a18d | dépôt (16) | pression, café, autonomie non renseignés |
+| ONDE | E-commerce | d'un geste, vous êtes dans votre musique | accueil, fiche, aide, usages relue, inscription, SEO | 15fab0e4 | archive privée | autonomie, connexion, réduction de bruit non affirmées |
+| ORBE | E-commerce | la lumière change de place, l'atmosphère aussi | accueil, fiche, histoire, FAQ, contact, livraison, pied, SEO | c71d8475 | archive privée | dimensions, alimentation, livraison ; prix démo 79 € conservé |
+| FRAISE | Spécialisée | le flacon qui fait le tour de la table | accueil, fiche, à propos, article, publi-rédactionnel, FAQ, contact, livraison, légales, bibliothèque, panier, pied, SEO | d0cfeaaf | archive privée | ingrédients, allergènes, délais, retours non renseignés ; avis à venir |
+| Atelier Rive | Services | être compris avant d'être conseillé | accueil, prestations, à propos, FAQ, contact, légales, pied, SEO | c71d8475 | archive privée | tarifs, délais, zone, adresse, équipe inconnus (masqués) |
+
+Adaptation client : les rôles de contenu par section sont dans `src/lib/theme/content-roles.ts` et
+`docs/coordination/ROLES-CONTENU-THEMES.md`. Ils sont destinés au moteur central ; la branche de Codex n'est pas
+modifiée. Contrôles exécutés à la livraison : voir le commentaire final de la PR #159.
 
 ## Boutiques des clients
 

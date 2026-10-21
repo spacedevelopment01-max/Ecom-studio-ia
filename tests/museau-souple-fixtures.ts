@@ -477,7 +477,7 @@ function curateSouple(k: Kit) {
       ...items.map((it) => tile({ tapis: "tapis-05.webp", brique: "brique-01.webp", sangle: "sangle-05.webp", anneau: "anneau-02.webp" }[it.key]!, short(it.key), href(it.key))),
     ]),
     section("rich-text", { style: "reveal", align: "left", color_scheme: "scheme-2", padding_top: 80, padding_bottom: 80 }, [
-      { type: "eyebrow", settings: { text: "Chez vous" } },
+      { type: "eyebrow", settings: { text: "Sans pièce dédiée" } },
       { type: "heading", settings: { text: "Vous n'avez pas besoin d'une pièce en plus. Juste d'un moment qui vous appartient.", size: "h2" } },
     ]),
     section("fs-products", { layout: "list", source: "manual", collection: "all", eyebrow: "Une pièce, un rôle", heading: "Votre rituel se construit", heading_accent: "à votre rythme", text: p("Chaque pièce a sa raison d'être : choisissez celle dont votre séance a besoin aujourd'hui."), align: "left", button_label: "Comparer les fiches", button_link: "/collections/all", mode_label: "", limit: 4, columns: 4, ratio: "square", show_secondary: true, effect: "fade", stagger: true, hover: true, background: "scheme", color_scheme: "scheme-1", padding_top: 80, padding_bottom: 80 }, [

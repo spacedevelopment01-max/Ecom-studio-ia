@@ -156,7 +156,7 @@ export function curateFraise(spec: ThemeSpec) {
   // ── Pages ──
   const about = put(sec(spec, "page.a-propos", "about"), { heading: "Un flacon", heading_accent: "à poser au milieu", lead: p("Fraise est une marque de démonstration : un seul produit, des gummies à la fraise, dans un flacon pensé pour circuler autour de la table."), why_title: "Pourquoi un flacon", why_text: p("Parce qu'un sachet se déchire et finit entamé au fond du placard. Un flacon se pose au milieu, se fait passer et se referme."), commit_title: "Ce que nous ne disons pas", commit_text: p("Ni avis inventés, ni promotion fictive, ni promesse de santé. Ce qui n'est pas connu, comme les ingrédients ou les délais, est dit comme tel."), values_title: "Nos repères", signature: "Fraise", button_label: "Choisir mon offre", button_link: PRODUCT });
   setBlocks(about, [["leaf", "Un seul goût", "La fraise, et rien d'autre."], ["sparkle", "Un flacon qui se voit", "Transparent : on sait ce qu'il reste."], ["check", "Des offres simples", "1, 3 ou 5 flacons, prix affichés."]].map(([icon, title, text]) => ({ type: "value", settings: { icon, title, text: p(text) } })));
-  for (const key of ["page.a-propos", "page.faq", "page.advertorial"]) beforeOrder(sec(spec, key, "guarantee"));
+  for (const key of ["page.a-propos", "page.faq", "page.advertorial", "collection"]) beforeOrder(sec(spec, key, "guarantee"));
   faqSection(sec(spec, "page.faq", "faq"), "Questions fréquentes", FRAISE_FAQ);
   for (const key of ["page.listicle", "page.advertorial"]) { const r = sec(spec, key, "reviews"); if (r) r.disabled = true; newsletter(sec(spec, key, "newsletter")); }
   put(sec(spec, "page.listicle", "trust"), { items: MARQUEE });
@@ -214,6 +214,7 @@ export function curateFraise(spec: ThemeSpec) {
     const quote = lib.find((s) => s.type === "cv-quote");
     if (quote) quote.disabled = true;
     compare(lib.find((s) => s.type === "comparison-table"));
+    for (const g of lib.filter((s) => s.type === "cv-gallery" && s.settings.heading === "En situation")) put(g, { heading: "Trois moments", heading_accent: "où il circule" });
   }
 
   // ── En-tête, panier, pied ──
