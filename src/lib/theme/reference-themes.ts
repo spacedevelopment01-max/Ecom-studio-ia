@@ -85,54 +85,60 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
   {
     id: "onde",
     name: "Onde",
-    tagline: "Contraste sombre, accent vif",
-    description: "Référence Pawish : ouverture anthracite sur une bannière produit, bandeau de confiance, détails en cartes, avis, chiffres, visuel et argument, comparatif, garantie et stories ; boutons arrondis dégradés, accent vert ou couleur de marque lisible sur le sombre.",
-    bestFor: ["boutique spécialisée", "high-tech", "audio", "accessoires", "un seul coloris"],
-    en: { tagline: "Dark contrast, bright accent", description: "Pawish reference: charcoal opening on a product banner, trust band, detail cards, reviews, figures, visual and argument, comparison, guarantee and stories; rounded gradient buttons, a green or brand accent readable on dark.", bestFor: ["specialty store", "tech", "audio", "accessories", "single color"] },
-    fonts: { heading: "inter_n7", body: "dm_sans_n4" },
-    previewFonts: { heading: "Inter", body: "DM Sans" },
-    motion: "normal",
+    tagline: "Studio graphite, signal vert",
+    description: "Boutique mono-produit de la famille E-commerce pour un objet technique : campagne en ouverture sur une bannière sombre, achat du produit tout de suite après, un détail en gros plan, trois usages en index, un bandeau d'appel, questions en cartes et inscription. Graphite profond, vert signal, titres Chivo, menu en colonnes avec encart et pied de page en colonnes.",
+    bestFor: ["e-commerce", "high-tech", "audio", "produit unique", "objet technique"],
+    en: { tagline: "Graphite studio, green signal", description: "Single-product store from the E-commerce family for a technical object: a campaign opening on a dark banner, the product purchase right after, one close-up detail, three uses as an index, a call-to-action band, card questions and a sign-up. Deep graphite, signal green, Chivo headings, a column menu with a promo and a column footer.", bestFor: ["e-commerce", "high-tech", "audio", "single product", "technical object"] },
+    fonts: { heading: "chivo_n7", body: "inter_n4" },
+    previewFonts: { heading: "Chivo", body: "Inter" },
+    motion: "subtle",
     photoMood: "nocturne",
-    kinds: ["specialty"],
-    look: look({ headerLayout: "logo-center", shape: "floating", menu: "sheet", footer: "brand-left", ann: "static", card: "boxed", button: "solid", radius: { button: 40, card: 20 }, headingCase: "none", tracking: -3, headingScale: 102, density: "compact", buttonUppercase: true, glow: 30 }),
-    settings: { conversion_profile: "contrast", editorial_profile: "none" },
-    mainProduct: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-2" },
+    kinds: ["catalog"],
+    // Refonte E-commerce (décision de Thomas du 21 octobre, issue #158) : en-tête « Méga menu en colonnes » (le produit,
+    // ses détails et ses usages, avec un encart) et pied « Plan du catalogue en colonnes », dispositions de la famille
+    // qu'ORBE, HEUREN et ALCÔVE n'utilisent pas.
+    look: look({ headerLayout: "logo-left", shape: "bar", menu: "drawer", footer: "columns", ann: "static", card: "minimal", button: "solid", radius: { button: 6, card: 14 }, headingCase: "none", tracking: -2, headingScale: 104, pageWidth: 1360, gallery: "carousel", density: "balanced", buttonUppercase: true, dark: true }),
+    settings: { editorial_profile: "studio", conversion_profile: "none", motion_intensity: "subtle" },
+    headerSettings: { layout: "logo-left", mega_menu: "columns-promo", desktop_icons: true, mobile_menu: "drawer", mobile_submenu: "accordion", show_cart: true },
+    // Galerie en carrousel, cadre carré : le casque entier dans chaque vue, une vue à la fois sur téléphone.
+    mainProduct: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
     palette: (k) => {
-      const ink = k.night(0.12, 0.05);
-      return [k.scheme("#FFFFFF", ink, k.onLight("#FFFFFF")), k.scheme(ink, "#FFFFFF", k.onDark(ink), 0.06), k.filled(k.p.accent), k.scheme(k.tint(k.p.accent, 0.96, 0.4), ink, k.onLight(k.tint(k.p.accent, 0.96, 0.4)))];
+      const ink = k.night(0.09, 0.04);
+      const panel = k.night(0.15, 0.05);
+      const paper = k.light("#F2F3EF");
+      return [k.scheme(ink, paper, k.onDark(ink), 0.06), k.scheme(paper, ink, k.onLight(paper)), k.filled(k.p.accent), k.scheme(panel, paper, k.onDark(panel), 0.08)];
     },
+    // Accueil : la campagne du casque en ouverture, l'achat juste après, un détail en gros plan, trois usages (salon,
+    // train, studio), un bandeau d'appel, les questions et l'inscription. Chaque visuel n'apparaît qu'une fois.
     home: (k) => [
-      k.lib("cv-banner", 2, { image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.packshot, layout: "background", heading_tag: "h1" }),
-      k.marq(3, "small"),
-      k.lib("cv-cards", 1, { layout: "rows" }),
-      k.lib("cv-reviews", 4),
-      ...k.stats(2),
-      k.lib("cv-feature", 1, { image_asset: k.im.packshot ?? k.im.detail1, layout: "stacked" }),
-      k.lib("comparison-table", 4),
-      k.lib("cv-guarantee", 2),
-      k.lib("cv-stories", 1, { ratio: "portrait", size: "medium" }),
-      k.marq(3, "small", true),
+      // La campagne attend une campagne datée du client ; sans elle, l'ouverture devient une scène et sa liste avec le
+      // titre de la page (jamais d'accueil sans ouverture ni titre).
+      ...k.either(
+        k.lib("fs-campaign", 1, { layout: "background", heading_tag: "h1", image_asset: k.im.banner ?? k.im.lifestyle ?? k.im.hero ?? k.im.packshot, align: "left", offer_title: "", offer_text: "", period_text: "", conditions: "", padding_top: 0, padding_bottom: 0 }),
+        k.lib("fs-lookbook", 1, { layout: "side", heading_tag: "h1", image_asset: k.im.banner ?? k.im.lifestyle ?? k.im.hero ?? k.im.packshot, align: "left", padding_top: 24, padding_bottom: 72 }),
+      ),
+      k.lib("featured-purchase", 2, { purchase_style: "outlined", image_fit: "contain" }),
+      k.lib("ed-finishes", 4, { image_asset: k.im.detail1 ?? "" }, { hide: !k.im.detail1 }),
+      ((uses) => k.lib("ed-diptych", 1, { layout: "index" }, { hide: uses.length < 2, blocks: uses.map((f) => ({ type: "frame", settings: { image_asset: f, ratio: "portrait", title: "" } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
+      k.lib("cta-banner", 1, { image_asset: k.im.lifestyle ?? k.im.hero ?? "", style: "center", overlay: 45, parallax: false }, { hide: !(k.im.lifestyle ?? k.im.hero) }),
+      k.faqSec(1, 5, "cards"),
+      ...k.either(k.lib("newsletter-media", 4, { layout: "left", image_asset: k.im.portrait ?? k.im.lifestyle2 ?? "", legal: k.privacy }, { hide: !(k.im.portrait ?? k.im.lifestyle2) }), k.newsletter(4)),
     ],
+    // Fiche : galerie en carrousel et achat, l'arceau en gros plan, une scène à côté de son texte, questions en cartes.
     product: (k) => [
-      k.marq(3, "small"),
-      k.lib("cv-cards", 1, { layout: "rows" }),
-      k.lib("cv-feature", 4, { image_asset: k.im.detail1 ?? k.im.packshot, layout: "stacked" }),
-      k.lib("comparison-table", 1),
-      ...k.stats(2),
-      k.lib("cv-reviews", 4),
-      k.lib("cv-stories", 1, { ratio: "portrait", size: "medium" }),
-      k.faqSec(1, 5, "lines"),
+      k.lib("ed-finishes", 4, { image_asset: k.im.detail2 ?? k.im.detail1 ?? "" }, { hide: !(k.im.detail2 ?? k.im.detail1) }),
+      k.lib("ed-scene", 1, { layout: "split", image_asset: k.im.scene3 ?? k.im.scene1 ?? "", padding_top: 72, padding_bottom: 72 }, { hide: !(k.im.scene3 ?? k.im.scene1) }),
+      k.faqSec(1, 5, "cards"),
     ],
+    // Site de services (repli) : repères sur la photo d'ouverture, prestations en liste, deux réalisations côte à côte,
+    // infos pratiques, questions à côté du titre et prise de contact.
     services: (k) => [
-      k.lib("cv-banner", 2, { image_asset: k.im.lifestyle ?? k.im.hero, layout: "background", heading_tag: "h1" }),
-      ...k.stats(2),
-      k.R.servicesList(1, "list"),
-      k.lib("cv-cards", 4, { layout: "rows" }),
-      k.R.method(1, "timeline"),
-      k.lib("cv-feature", 2, { image_asset: k.im.scene1 ?? k.im.detail1, layout: "stacked" }),
-      k.R.testimonials(1),
-      k.R.booking(4),
+      k.lib("fs-lookbook", 1, { layout: "markers", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle, align: "left" }),
+      k.R.servicesList(4, "list"),
+      k.lib("ed-diptych", 1, { layout: "side" }),
       k.R.practical(2),
+      k.v2.faq("side", 1),
+      k.R.booking(4),
     ],
   },
   {

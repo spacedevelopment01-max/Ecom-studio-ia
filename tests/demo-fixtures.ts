@@ -21,6 +21,7 @@ import { conversionProject } from "./lot2c-fixtures";
 import { sillonProject, SILLON_DIR, SILLON_MEDIA } from "./sillon-fixtures";
 import { kitProject, kitDir, KIT_MEDIA } from "./noctil-traverse-fixtures";
 import { shopKitProject, SHOP_KIT_MEDIA } from "./heuren-alcove-fixtures";
+import { ondeProject } from "./onde-fixtures";
 import { multiKitProject, MULTI_KIT_MEDIA } from "./museau-souple-fixtures";
 import type { DirectionId } from "../src/lib/theme/directions";
 
@@ -145,7 +146,12 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
     const c = await multiKitProject(userId, id);
     return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
   }
-  if ((id === "fraise" || id === "onde") && !options.direction) {
+  // ONDE (refonte E-commerce, issue #158) : même parcours que HEUREN et ALCÔVE, visuels lus dans le kit privé.
+  if (id === "onde" && !options.direction) {
+    const c = await ondeProject(userId);
+    return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
+  }
+  if (id === "fraise" && !options.direction) {
     const c = await conversionProject(userId, id, path.join(process.cwd(), "public", "demo"), { testVideo: options.testVideo });
     run("UPDATE projects SET store_type = ?, business_type = ?, updated_at = ? WHERE id = ?", d.storeType ?? "mono", "products", now(), c.pid);
     saveSettings(c.pid, { ...loadProject(c.pid).settings, storeKind: d.category as "services" | "catalog" | "specialty" });

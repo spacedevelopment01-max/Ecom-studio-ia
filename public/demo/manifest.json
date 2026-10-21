@@ -35,7 +35,7 @@
       "brand": "ONDE Audio",
       "product": "Casque audio ONDE",
       "sector": "Audio",
-      "category": "specialty",
+      "category": "catalog",
       "direction": "onde",
       "palette": ["#4ECD01", "#1F1F1F", "#4ECD01", "#FFFFFF", "#1F1F1F"],
       "photo": "/demo/onde/01-hero.webp",
@@ -57,7 +57,7 @@
       "videoPoster": "",
       "posts": [],
       "board": "",
-      "source": { "supplier": "Images IA créées pour cette démonstration", "url": "", "note": "Marque fictive de démonstration (boutique spécialisée, thème de référence Pawish) : visuels IA sans personne, logo proposé non validé, prix et avis fictifs identifiés comme tels ; caractéristiques techniques à compléter, jamais annoncées." }
+      "source": { "supplier": "Images IA créées pour cette démonstration", "url": "", "note": "Marque fictive de démonstration (e-commerce mono-produit, thème Onde refait pour l'issue #158) : visuels IA sans personne, logo proposé non validé ; prix, autonomie, connectivité, garantie et livraison ne sont jamais annoncés ; boutique sans vente réelle." }
     },
     {
       "id": "orbe",

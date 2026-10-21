@@ -2329,5 +2329,7 @@
   "Libellé du lien d'un point": "Point link label",
   "Affiché dans la bulle d'un point qui a un lien. Vide : le titre du point.": "Shown in the bubble of a point that has a link. Empty: the point's title.",
   "Lien du point": "Point link",
-  "Ex. la fiche du produit montré. Vide : aucun lien.": "E.g. the page of the product shown. Empty: no link."
+  "Ex. la fiche du produit montré. Vide : aucun lien.": "E.g. the page of the product shown. Empty: no link.",
+  "Onde — studio graphite, signal vert (référence)": "Onde — graphite studio, signal green (reference)",
+  "Studio : graphite profond, vert signal, titres Chivo et cadres nets": "Studio: deep graphite, signal green, Chivo headings and crisp frames"
 }

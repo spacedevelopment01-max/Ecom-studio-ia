@@ -1,9 +1,14 @@
 /**
- * Garde-fou (retour de Thomas du 19 octobre, 15 h 07, commentaire 6270476740) : les démonstrations FRAISE GUMMIES et
- * ONDE AUDIO du studio sont TOUJOURS la composition complète des références Lumora et Pawish (lot 2C), jamais une
- * version réduite par le parcours « thème du catalogue » (qui masque toute section sans contenu). Ce test fige la liste
- * ordonnée des sections de l'accueil et de la fiche, vérifie qu'aucune n'est masquée, que le bon thème est chargé, que
- * les pages de référence existent et que le rendu par la vraie route d'aperçu contient bien ces sections.
+ * Garde-fou (retour de Thomas du 19 octobre, 15 h 07, commentaire 6270476740) : la démonstration FRAISE GUMMIES du studio
+ * est TOUJOURS la composition complète de la référence Lumora (lot 2C), jamais une version réduite par le parcours
+ * « thème du catalogue » (qui masque toute section sans contenu).
+ *
+ * ONDE AUDIO n'est plus la référence Pawish : Thomas a demandé sa refonte en thème E-commerce (issue #158, décision du
+ * 21 octobre, 12 h 58). Sa nouvelle composition est figée ici de la même façon (liste ordonnée, aucune section masquée,
+ * aucun retour des sections de l'ancienne composition).
+ *
+ * Le test fige la liste ordonnée des sections de l'accueil et de la fiche, vérifie qu'aucune n'est masquée, que le bon
+ * thème est chargé, que les pages existent et que le rendu par la vraie route d'aperçu contient bien ces sections.
  */
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 const session = vi.hoisted(() => {
@@ -32,35 +37,38 @@ const EXPECTED = {
     headings: ["Ils en parlent", "Pourquoi Fraise", "En quelques", "Questions fréquentes"],
     offers: 3,
   },
+  // Refonte E-commerce (issue #158) : campagne, achat, détail, usages, bandeau d'appel, questions, inscription.
   onde: {
-    profile: "contrast",
-    index: ["cv-hero", "marquee", "cv-cards", "cv-reviews", "stats", "cv-feature", "comparison-table", "cv-guarantee", "cv-stories", "marquee"],
-    product: ["main-product", "marquee", "cv-cards", "cv-feature", "comparison-table", "stats", "cv-reviews", "cv-stories", "faq", "marquee"],
-    pages: ["a-propos", "sections", "contact", "faq", "livraison-retours", "mentions-legales", "confidentialite", "conditions-generales"],
-    headings: ["en toute transparence", "Pourquoi ONDE", "Le casque"],
+    profile: "studio",
+    index: ["fs-campaign", "featured-purchase", "ed-finishes", "ed-diptych", "cta-banner", "faq", "newsletter"],
+    product: ["main-product", "ed-finishes", "ed-scene", "faq"],
+    pages: ["usages", "aide"],
+    headings: ["Casque ONDE Audio", "Questions"],
     offers: 0,
   },
 } as const;
 
-describe("FRAISE et ONDE : composition de référence (Lumora / Pawish), jamais réduite", async () => {
+describe("FRAISE (Lumora) et ONDE (refonte E-commerce) : composition figée, jamais réduite", async () => {
   const user = await createUser("compo-fo@example.invalid", "isolated-test-only", "Composition");
   for (const id of ["fraise", "onde"] as const) {
     it(`${id} : sections attendues, ordonnées, aucune masquée ; bon thème ; pages de référence ; rendu par la route d'aperçu`, async () => {
       const f = await fr(() => demoProject(user.id, id));
       const { spec } = f, exp = EXPECTED[id];
       expect(spec.direction).toBe(id);
-      expect(spec.settings.conversion_profile).toBe(exp.profile);
+      const attr = id === "onde" ? "editorial" : "conversion";
+      expect(spec.settings[`${attr}_profile`]).toBe(exp.profile);
       const types = (t: string) => spec.templates[t].order.map((k) => spec.templates[t].sections[k].type);
       const hidden = (t: string) => spec.templates[t].order.filter((k) => spec.templates[t].sections[k].disabled);
       expect(types("index"), `${id} accueil`).toEqual(exp.index);
-      expect(types("product"), `${id} fiche`).toEqual(exp.product);
+      const productKey = spec.store.product.template_suffix && spec.templates[`product.${spec.store.product.template_suffix}`] ? `product.${spec.store.product.template_suffix}` : "product";
+      expect(types(productKey), `${id} fiche`).toEqual(exp.product);
       expect(hidden("index"), `${id} accueil : sections masquées`).toEqual([]);
-      expect(hidden("product"), `${id} fiche : sections masquées`).toEqual([]);
+      expect(hidden(productKey), `${id} fiche : sections masquées`).toEqual([]);
       for (const h of exp.pages) expect(spec.store.pages.map((p) => p.handle), `${id} page ${h}`).toContain(h);
       // En-tête : bandeau(x) d'annonce identifiés comme exemples + en-tête ; pied de page en colonnes.
-      expect(Object.values(spec.groups.header.sections).filter((s) => !s.disabled).map((s) => s.type)).toEqual(id === "fraise" ? ["announcement-bar", "announcement-bar", "header"] : ["announcement-bar", "header"]);
+      expect(Object.values(spec.groups.header.sections).filter((s) => !s.disabled).map((s) => s.type)).toEqual(id === "fraise" ? ["announcement-bar", "announcement-bar", "header"] : ["header"]);
       // Offres FRAISE (1 / 2+1 / 3+2) : dans le bloc d'achat de la fiche.
-      const main = spec.templates.product.sections.main;
+      const main = Object.values(spec.templates[productKey].sections).find((s) => s.type === "main-product")!;
       expect(Object.values(main.blocks ?? {}).filter((b) => b.type === "quantity_offer")).toHaveLength(exp.offers);
       // Même version dans le studio et dans l'aperçu : la version enregistrée se relit à l'identique (ordre des sections).
       const version = saveThemeVersion(f.pid, spec, "Test composition", "user");
@@ -72,7 +80,7 @@ describe("FRAISE et ONDE : composition de référence (Lumora / Pawish), jamais 
         const r = await renderPage({ spec, base: "", files, cart: [] }, route, new URLSearchParams());
         expect(r.status, `${id} ${route}`).toBe(200);
         for (const h of exp.headings) expect(r.html, `${id} ${route} : « ${h} »`).toContain(h);
-        expect(r.html).toContain(`data-conversion="${exp.profile}"`);
+        expect(r.html).toContain(`data-${attr}="${exp.profile}"`);
       }
     });
   }

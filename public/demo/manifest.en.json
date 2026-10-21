@@ -35,7 +35,7 @@
       "brand": "ONDE Audio",
       "product": "ONDE headphones",
       "sector": "Audio",
-      "category": "specialty",
+      "category": "catalog",
       "direction": "onde",
       "palette": ["#4ECD01", "#1F1F1F", "#4ECD01", "#FFFFFF", "#1F1F1F"],
       "photo": "/demo/onde/01-hero.webp",
@@ -57,7 +57,7 @@
       "videoPoster": "",
       "posts": [],
       "board": "",
-      "source": { "supplier": "AI images created for this demo", "url": "", "note": "Fictional demo brand (specialty store, Pawish reference theme): AI visuals without people, proposed logo not validated, fictional prices and reviews labelled as such; technical specifications left to complete, never claimed." }
+      "source": { "supplier": "AI images created for this demo", "url": "", "note": "Fictional demo brand (single-product e-commerce, Onde theme redesigned in issue #158): AI visuals without people, proposed logo not validated; price, battery life, connectivity, warranty and delivery are never claimed; a store with no real sales." }
     },
     {
       "id": "orbe",

@@ -12,7 +12,7 @@ export const CATEGORY_LABELS: Record<ProjectCategory, { fr: string; en: string }
 /** Références demandées, pas des identifiants installables inventés. Le raccordement appartient à Claude. */
 export const REFERENCE_THEMES = [
   { referenceId: "fraise", name: "FRAISE", categories: ["specialized"] },
-  { referenceId: "onde", name: "ONDE", categories: ["specialized"] },
+  { referenceId: "onde", name: "ONDE", categories: ["ecommerce"] },
   { referenceId: "orbe", name: "ORBE", categories: ["ecommerce"] },
   { referenceId: "atelier-rive", name: "Atelier Rive", categories: ["services"] },
   { referenceId: "sillon", name: "SILLON", categories: ["specialized"] },

@@ -18,7 +18,7 @@ import { chromium, type Page } from "playwright";
 if (process.env.DATA_DIR || process.env.DATABASE_FILE) throw new Error("Base existante refusée");
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "ecs-familles-studio-")); process.env.DATA_DIR = temp; process.env.STOCK_OFFLINE = "1";
 const out = path.resolve(process.argv[2] ?? "reports/familles-studio"); fs.mkdirSync(out, { recursive: true });
-const demoId = (process.argv[3] ?? "fraise") as "fraise" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club";
+const demoId = (process.argv[3] ?? "fraise") as "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club";
 /** Scénario par famille : fonction ajoutée, disposition d'aperçu, disposition choisie ensuite, fonction d'une autre famille. */
 const PLAN = {
   fraise: { family: "specialty", entry: "Fabrication et savoir-faire", type: "fs-making", preview: "sticky", then: "timeline", foreign: "Étude de cas", header: "two-rows", footer: "centered" },
@@ -33,6 +33,9 @@ const PLAN = {
   // boutique éditoriale / empilé), puis une autre disposition de la famille.
   heuren: { family: "catalog", entry: "Entretien et durabilité", type: "fs-care", preview: "list", then: "cards", foreign: "Composition et matériaux", header: "mega-cards", footer: "columns", currentHeader: "centered-nav", currentFooter: "boxed" },
   alcove: { family: "catalog", entry: "Fabrication et ateliers", type: "fs-making", preview: "steps", then: "timeline", foreign: "Étude de cas", header: "classic", footer: "minimal", currentHeader: "store", currentFooter: "stacked" },
+  // ONDE (refonte E-commerce de l'issue #158) : dispositions d'origine « Méga menu en colonnes » / « Plan du catalogue en
+  // colonnes », puis une autre disposition de la famille.
+  onde: { family: "catalog", entry: "Ambiance et lookbook", type: "fs-lookbook", preview: "side", then: "markers", foreign: "Composition et matériaux", header: "classic", footer: "minimal", currentHeader: "mega-columns", currentFooter: "columns" },
   // MUSEAU CLUB (issue #158, boutique spécialisée depuis la décision du 21 octobre) : dispositions d'origine « Deux
   // rangées avec offre » / « Colonnes d'aide et d'informations », puis une autre disposition de la famille.
   "museau-club": { family: "specialty", entry: "Fabrication et savoir-faire", type: "fs-making", preview: "steps", then: "grid", foreign: "Ambiance et lookbook", header: "floating", footer: "centered", currentHeader: "two-rows", currentFooter: "columns" },

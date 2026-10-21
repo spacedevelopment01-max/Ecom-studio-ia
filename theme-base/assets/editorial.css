@@ -182,3 +182,38 @@ body[data-editorial="arrondi"] .es-header{min-height:76px}
 body[data-editorial="cadran"] .fs-lookbook--markers .fs-look__scene{max-width:760px;margin-inline:auto}
 body[data-editorial="cadran"] .fs-lookbook--markers .fs-look__media .ed-media{aspect-ratio:1}
 body[data-editorial="arrondi"] .fs-lookbook--side .fs-look__media .ed-media{aspect-ratio:16/9}
+/* ─── Profil « studio » (ONDE, refonte E-commerce de l'issue #158) : graphite profond, vert signal, titres Chivo serrés,
+   cadres nets à petits rayons, filets verts ; une boutique technique sombre, le produit éclairé comme en studio. */
+body[data-editorial="studio"]{--radius-button:6px;--radius-card:14px;--st-line:color-mix(in srgb,var(--c-text) 14%,transparent);--st-signal:var(--c-accent)}
+body[data-editorial="studio"] .ed-kicker,body[data-editorial="studio"] .fs .fs-eyebrow,body[data-editorial="studio"] .es-eyebrow{display:inline-flex;align-items:center;gap:10px;text-transform:uppercase;letter-spacing:.22em;font-size:11px;font-weight:600;color:var(--st-signal);width:fit-content}
+body[data-editorial="studio"] .ed-kicker::before,body[data-editorial="studio"] .fs .fs-eyebrow::before{content:"";width:18px;height:2px;background:var(--st-signal);flex:none}
+body[data-editorial="studio"] .ed-title,body[data-editorial="studio"] .fs h2,body[data-editorial="studio"] .fs h1,body[data-editorial="studio"] .es-heading{font-weight:700;letter-spacing:-.03em;line-height:1.02}
+body[data-editorial="studio"] .fs-accent,body[data-editorial="studio"] .ed-title em,body[data-editorial="studio"] .es-heading em{font-style:normal;color:var(--st-signal)}
+body[data-editorial="studio"] .ed-button,body[data-editorial="studio"] .es-button{border-radius:6px;text-transform:uppercase;letter-spacing:.12em;font-size:12px;font-weight:700}
+body[data-editorial="studio"] .ed-media,body[data-editorial="studio"] .fs-card,body[data-editorial="studio"] .es-product__media,body[data-editorial="studio"] .fs-camp__media{border-radius:14px;overflow:hidden}
+body[data-editorial="studio"] .es-header{border-bottom:1px solid var(--st-line)}
+body[data-editorial="studio"] .es-product__title{font-weight:700;letter-spacing:-.03em}
+body[data-editorial="studio"] .ed-diptych figcaption h3{font-weight:700;letter-spacing:-.02em}
+body[data-editorial="studio"] .ed-diptych__frame>.ed-media{outline:1px solid var(--st-line);outline-offset:-1px}
+/* Ouverture : la campagne en pleine largeur, titre de page sur la bannière sombre, le casque visible à droite. */
+body[data-editorial="studio"] .fs-campaign h1{font-size:clamp(44px,6.4vw,104px);max-width:12ch}
+body[data-editorial="studio"] .fs-camp--background .fs-camp__media .ed-media{aspect-ratio:16/8;min-height:420px}
+@media(max-width:749px){
+  /* Téléphone : le casque entier dans la bannière (format 16:10), les boutons sous l'image, jamais par-dessus le produit. */
+  body[data-editorial="studio"] .fs-campaign .fs__inner{gap:18px}
+  body[data-editorial="studio"] .fs-campaign h1{font-size:clamp(38px,11vw,52px)}
+  body[data-editorial="studio"] .fs-camp--background .fs-camp__media .ed-media{aspect-ratio:16/10;min-height:0}
+  body[data-editorial="studio"] .fs-camp--background .fs-camp__media::after{display:none}
+  body[data-editorial="studio"] .fs-camp--background .fs-camp__copy{grid-area:2/1;margin:14px 0 0;color:inherit;text-shadow:none;max-width:none}
+  body[data-editorial="studio"] .fs-camp__actions{margin:0;gap:10px}
+  body[data-editorial="studio"] .fs-camp__actions .fs-button{flex:1 1 0;letter-spacing:.04em;font-size:11px;padding-inline:12px;white-space:nowrap}
+}
+/* Fiche sur téléphone : le casque entier, son nom, le prix et le bouton d'achat dans le premier écran (360 × 640 compris). */
+@media(max-width:749px){
+  body[data-editorial="studio"] .es-product__grid{row-gap:12px}
+  body[data-editorial="studio"] .es-product__thumbs{margin-top:6px;gap:6px}
+  body[data-editorial="studio"] .es-product__thumb{width:44px;height:44px;flex:0 0 44px}
+  body[data-editorial="studio"] .es-product__info .es-eyebrow{margin-bottom:4px}
+  body[data-editorial="studio"] .es-product__title{font-size:clamp(1.5rem,7vw,1.9rem);margin-bottom:4px}
+  body[data-editorial="studio"] .es-product__price{margin-bottom:10px}
+}

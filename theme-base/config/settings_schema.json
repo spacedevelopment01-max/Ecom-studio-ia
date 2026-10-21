@@ -413,7 +413,7 @@
           },
           {
             "value": "onde",
-            "label": "Onde — contraste sombre, accent vif (référence)"
+            "label": "Onde — studio graphite, signal vert (référence)"
           },
           {
             "value": "orbe",
@@ -881,6 +881,10 @@
           {
             "value": "arrondi",
             "label": "Arrondi : sable et terre cuite, serif douce, arches et coins arrondis"
+          },
+          {
+            "value": "studio",
+            "label": "Studio : graphite profond, vert signal, titres Chivo et cadres nets"
           }
         ]
       },

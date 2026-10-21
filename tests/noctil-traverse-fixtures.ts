@@ -133,7 +133,7 @@ const BRANDS: Record<KitId, Brand> = {
 
 /** Démonstration d'un kit suivi dans le dépôt (public/theme-assets/<id>/) : projet client composé par le vrai moteur dans
  * son thème du catalogue, puis rédigé par `curate` sur les mêmes sections (NOCTIL, TRAVERSE ; HEUREN, ALCÔVE : issue #155). */
-export type KitConfig = { id: DirectionId; media: Media[]; handle: string; brand: Brand; themeName: string; provenance: string; storeKind: "specialty" | "catalog"; sector: string; storeType?: "mono" | "multi" };
+export type KitConfig = { id: DirectionId; media: Media[]; handle: string; brand: Brand; themeName: string; provenance: string; storeKind: "specialty" | "catalog"; sector: string; storeType?: "mono" | "multi"; /** Dossier des médias s'ils ne sont pas suivis dans public/theme-assets/<id>/ (ex. kit privé préparé hors dépôt). */ mediaDir?: string };
 export async function kitProject(userId: string, id: KitId) {
   return buildKitProject(userId, { id, media: KIT_MEDIA[id], handle: KIT_HANDLE[id], brand: BRANDS[id], themeName: id === "noctil" ? "Noctil" : "Traverse", provenance: KIT_PROVENANCE, storeKind: "specialty", sector: "maison" }, id === "noctil" ? curateNoctil : curateTraverse);
 }
@@ -156,7 +156,7 @@ export async function buildKitProject(userId: string, cfg: KitConfig, curate: (k
   const missing: string[] = [];
   const ids: Record<string, string> = {};
   for (const m of cfg.media) {
-    const source = path.join(kitDir(id), m.file);
+    const source = path.join(cfg.mediaDir ?? kitDir(id), m.file);
     if (!fs.existsSync(source) || fs.statSync(source).size === 0) { missing.push(m.file); continue; }
     const bytes = fs.readFileSync(source), meta = await sharp(bytes).metadata();
     const a = await saveAsset({ projectId: pid, userId, data: bytes, mime: "image/webp", name: `${id}-${m.file}`, origin: "upload", role: m.role, status: "approved", meta: { demo: { isDemo: true, provenance: cfg.provenance }, width: meta.width, height: meta.height, alt: m.alt } });

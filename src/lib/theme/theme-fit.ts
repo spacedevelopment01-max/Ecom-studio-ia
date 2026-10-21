@@ -19,7 +19,7 @@ export type ReferenceThemeId = (typeof REFERENCE_THEMES)[number];
 
 const REFERENCE_FIT: Record<ReferenceThemeId, StoreKind[]> = {
   fraise: ["specialty"],
-  onde: ["specialty"],
+  onde: ["catalog"],
   orbe: ["catalog"],
   rive: ["services"],
   // Issue #148 : troisième thème « boutique spécialisée » (machine à espresso nomade).

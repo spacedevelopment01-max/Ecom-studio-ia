@@ -49,7 +49,9 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   sélectionnables ni recommandés ; un projet qui en utilise un le garde (compatibilité de lecture), jamais de migration
   silencieuse, jamais de repli vers l'ancien catalogue. Ne pas les moderniser ni créer leurs remplaçants sans consigne.
 - **Démonstrations** (priorité du 19 octobre 2026, issue #137) : les seules sont **FRAISE** (gummies, boutique spécialisée),
-  **ONDE** (casque audio, boutique spécialisée), **ORBE** (lampe, e-commerce), **Atelier Rive** (prestations de services),
+  **ONDE** (casque audio : thème **mono-produit de la famille E-commerce** depuis la refonte demandée par Thomas le
+  21 octobre, issue #158 ; profil « studio », démonstration `tests/onde-fixtures.ts`, visuels lus dans le kit privé
+  `public/demo/onde/`, jamais copiés dans le dépôt), **ORBE** (lampe, e-commerce), **Atelier Rive** (prestations de services),
   **SILLON** (machine à espresso nomade, boutique spécialisée, issue #148 ; médias suivis dans `public/theme-assets/sillon/`,
   démonstration `tests/sillon-fixtures.ts`), **NOCTIL** (projecteur de galaxies) et **TRAVERSE** (sac de voyage modulable),
   boutiques spécialisées de l'issue #152 (médias dans `public/theme-assets/noctil/` et `traverse/`, TRAVERSE ambiance-04
@@ -59,8 +61,7 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   `tests/heuren-alcove-fixtures.ts` ; **MUSEAU CLUB** (harnais, laisse, collier et pochette à sacs pour chiens) : thème de la
   **famille Produit spécifique / Boutique spécialisée, à quatre produits** (décision de Thomas du 21 octobre, 12 h 58, issue
   #158, qui remplace le premier classement E-commerce ; profil « club » de la famille), chaque produit avec sa propre fiche,
-  médias dans `public/theme-assets/museau-club/`, démonstration `tests/museau-souple-fixtures.ts`. ONDE passera en
-  E-commerce (refonte demandée dans la même décision) et SOUPLE sera E-commerce.
+  médias dans `public/theme-assets/museau-club/`, démonstration `tests/museau-souple-fixtures.ts`. SOUPLE sera E-commerce.
   Les anciennes démos (ARVEN, Cime, Les Tribunes, Sonore, Racines & Pierres, Atelier Pivoine, Ostral) sont abandonnées :
   ne pas les adapter ni les maintenir. Leurs visuels viennent du kit privé de Thomas (`public/demo/<id>/`, hors dépôt).
   **Démos intégrales avant le choix** (revue PR #149) : la galerie « Thèmes » ouvre la boutique de démonstration
@@ -105,7 +106,8 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
 
 ## Démonstrations de référence (règle du 19 octobre, retour de Thomas 15 h 07)
 
-- Les démonstrations FRAISE GUMMIES et ONDE AUDIO sont la composition complète des références Lumora et Pawish (`tests/lot2c-fixtures.ts`, `conversionProject`) : accueil et fiche riches, offres, avis fictifs étiquetés, comparatif, garantie en exemple, stories, FAQ, pages. Ne jamais les recomposer par le parcours « thème du catalogue » (il masque toute section sans contenu) ni les simplifier sans consigne écrite de Thomas. Garde-fou : `tests/demos-fraise-onde-composition.test.ts` (liste ordonnée des sections, aucune masquée).
+- La démonstration FRAISE GUMMIES est la composition complète de la référence Lumora (`tests/lot2c-fixtures.ts`, `conversionProject`) : accueil et fiche riches, offres, avis fictifs étiquetés, comparatif, garantie en exemple, stories, FAQ, pages. Ne jamais la recomposer par le parcours « thème du catalogue » (il masque toute section sans contenu) ni la simplifier sans consigne écrite de Thomas.
+- ONDE AUDIO n'est plus la référence Pawish : Thomas a demandé sa refonte en E-commerce (issue #158, 21 octobre, 12 h 58) ; sa nouvelle composition (`tests/onde-fixtures.ts`) est figée de la même façon. Garde-fou commun : `tests/demos-fraise-onde-composition.test.ts` (liste ordonnée des sections, aucune masquée). L'ancienne composition Pawish reste constructible par `conversionProject(…, "onde")` pour les anciens contrôles du lot 2C.
 - Toute livraison d'aperçu indique le commit exporté (`resume.json`) et la version d'artefact ; vérifier l'inventaire des sections de l'export avant de publier, et comparer à la version précédente (une section de moins = à expliquer dans la PR, jamais silencieux).
 
 ## Avant chaque envoi (commit + push)

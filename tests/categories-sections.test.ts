@@ -41,9 +41,9 @@ describe("Catégories du projet (prestations de services / e-commerce / boutique
 });
 
 describe("Éligibilité des thèmes par catégorie", () => {
-  it("FRAISE et ONDE → boutique spécialisée ; ORBE → e-commerce ; Atelier Rive → prestations ; les 30 anciens thèmes retirés ne servent plus aucune catégorie", () => {
+  it("FRAISE → boutique spécialisée ; ORBE et ONDE (refonte de l'issue #158) → e-commerce ; Atelier Rive → prestations ; les 30 anciens thèmes retirés ne servent plus aucune catégorie", () => {
     expect(themeKinds("fraise")).toEqual(["specialty"]);
-    expect(themeKinds("onde")).toEqual(["specialty"]);
+    expect(themeKinds("onde")).toEqual(["catalog"]);
     expect(themeKinds("orbe")).toEqual(["catalog"]);
     expect(themeKinds("rive")).toEqual(["services"]);
     for (const d of DIRECTIONS) if (!(REFERENCE_THEMES as readonly string[]).includes(d.id)) expect(themeKinds(d.id)).toEqual([]);
@@ -58,8 +58,8 @@ describe("Galerie « Sections » strictement contextuelle", () => {
   beforeAll(() => { vitrine = sampleSpec("vitrine"); });
 
   it("déclare la compatibilité par métadonnées explicites, pas par le nom", () => {
-    expect(SECTION_FIT["cv-hero"]).toMatchObject({ kinds: ["catalog", "specialty"], themes: ["fraise", "onde", "sillon", "noctil", "traverse", "museau-club"], profiles: ["conversion"] });
-    expect(SECTION_FIT["ed-opening"]).toMatchObject({ themes: ["orbe", "rive", "heuren", "alcove"] });
+    expect(SECTION_FIT["cv-hero"]).toMatchObject({ kinds: ["catalog", "specialty"], themes: ["fraise", "sillon", "noctil", "traverse", "museau-club"], profiles: ["conversion"] });
+    expect(SECTION_FIT["ed-opening"]).toMatchObject({ themes: ["orbe", "rive", "heuren", "alcove", "onde"] });
     expect(SECTION_FIT["services-list"]).toEqual({ kinds: ["services"] });
     expect(SECTION_FIT["faq"]).toBeUndefined(); // transversale : rendue dans le style du thème actif
     expect(SECTION_FIT["image-with-text"]).toBeUndefined();
