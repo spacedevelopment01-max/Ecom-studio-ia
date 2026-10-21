@@ -55,7 +55,7 @@ logo est transparent (80 % des pixels). `ambiance-03` est bien la scène corrig�
 | Page | Sections, dans l'ordre |
 |---|---|
 | Accueil | lookbook « scène et liste » en ouverture (titre H1, quatre repères, un par produit) · grille des quatre produits · panorama de balade · image et texte · produit à la une (pochette) · bandeau d'appel · questions en lignes · inscription illustrée |
-| Fiche (×4, chacune son modèle) | fiche produit · scène propre au produit · questions en cartes · les trois autres pièces (recommandations) |
+| Fiche (×4, chacune son modèle) | fiche produit (titre, prix, bouton, texte, points, rangée « La collection assortie ») · scène propre au produit · questions en cartes · les trois autres pièces (recommandations) |
 | La balade | intro · lookbook « repères » (harnais et pochette) · index de trois moments · image et texte (pochette) · scène de fermeture (la collection) |
 | Questions et contact | questions numérotées · formulaire de contact |
 | Boutique, recherche, panier | modèles du thème : la collection « all » contient les quatre produits, sans filtre ni catégorie artificielle |
@@ -108,13 +108,32 @@ n'est pas indexable.
 
 ## Vérifications
 
-VERIFS
+Commit testé : **`df194281`** (le commit suivant ne touche que ce rapport). Tout est exécuté en copie isolée.
+
+| Contrôle | Résultat |
+|---|---|
+| Compilation TypeScript (`tsc --noEmit`) | sans erreur |
+| Tests (`vitest run`, suite complète) | **325 fichiers, 2536 tests réussis**, 2 ignorés (déjà ignorés avant), 0 échec |
+| Tests dédiés (`tests/museau-club.test.ts`) | 18 réussis : famille E-commerce partout, quatre produits distincts, une fiche par produit (vues, texte, points propres), repères vers le bon produit, en-tête et pied reconnus, 31 médias utilisés sans répétition successive, SEO, rien d'inventé, achat sans prix et avec prix de test, liens internes, autre projet sans trace de la démo, exports |
+| Theme Check officiel Shopify | **7 contrôles sur 7 sans erreur** (MUSEAU CLUB en français, en anglais et en prestations ; HEUREN et ORBE en français et en anglais) ; seuls les 4 avertissements `UnusedAssign` déjà présents sur tous les thèmes |
+| Captures pleine page | 11 pages (accueil, boutique, 4 fiches, La balade, aide, panier, recherche, 404) à 1440, 430, 390 et 360 px : **aucun débordement horizontal**, images chargées |
+| Contrôle statique de l'aperçu livré | 11 pages × 4 largeurs réussies |
+| Premiers écrans | 390 × 844 : accueil (marque, titre, bouton, scène) et fiches (produit entier, titre, bouton) visibles ; 360 × 640 : produit entier et titre visibles, bouton d'achat 36 px sous le pli (la barre d'achat prend le relais au défilement) |
+| Interactions (aperçu livré) | menu téléphone ; menu en cartes avec photos ; 4 repères → 4 bonnes fiches ; galerie et zoom ; rangée « La collection assortie » (pièce affichée encadrée, lien vers une autre fiche) ; recommandations = les 3 autres pièces ; recherche ; boutique : 4 cartes, aucun filtre ; FAQ ; formulaire de contact en mode démonstration ; barre d'achat 63 px « Achat indisponible » désactivée ; **0 erreur JavaScript** |
+| Choix depuis le studio réel (`theme-demo-choice-check`) | démo complète consultée avant le choix (ordinateur et téléphone, menu, fiche, page « La balade »), projet inchangé pendant la visite, « Choisir ce thème » = une seule tâche, adaptation sans contenu de démo, guide des informations à compléter |
+| Studio réel (`family-studio-check`) | 13 étapes réussies : galerie limitée aux 20 fonctions E-commerce, fonction d'une autre famille introuvable, ajout, disposition, texte, effets, mouvement réduit, déplacement, en-tête et pied de page, **sauvegarde puis rechargement conservés** |
+| Exports WordPress et PrestaShop (`family-export-check`) | profil `club` présent, repères actifs, 0 débordement, 0 erreur de script (et les autres thèmes inchangés) |
+| Export de démonstration final | 12 pages, aucune image manquante (`resume.json` : commit `df194281`) |
+
+Ce qui n'est **pas** vérifié : l'installation réelle des exports chez un hébergeur WordPress ou une boutique PrestaShop
+(seuls le contenu des fichiers et leur rendu dans un navigateur le sont) ; le Codespace de Thomas.
 
 ## Limites connues
 
 - Codespace de Thomas : non vérifié (hôte inaccessible depuis cet environnement) ; tout est testé en copie isolée.
 - Exports : contenu des ZIP et rendu vérifiés, **pas d'installation chez un vrai fournisseur**.
 - La page « boutique » du thème n'a pas de fil d'Ariane structuré (vrai pour tous les thèmes).
+- Sur un très petit écran (360 × 640), le bouton d'achat d'une fiche est juste sous le pli ; il apparaît au premier défilement.
 - Grille des forfaits de Codex (#151) : MUSEAU CLUB reste à y inscrire au moment de la réunion des branches.
 - SOUPLE : seconde étape, pas encore commencée.
 - **La composition n'est pas déclarée validée** : elle attend l'avis de Thomas.
