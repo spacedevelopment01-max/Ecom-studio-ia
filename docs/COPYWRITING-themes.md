@@ -134,20 +134,33 @@ jour », aide, pied, SEO. Preuves : `docs/preuves/copywriting/heuren/`.
 Pages réécrites : accueil, fiche (« Un arc autour de l'assise »), « Pièce par pièce », aide, pied, SEO. Preuves :
 `docs/preuves/copywriting/alcove/`.
 
-### NOCTIL — Produit spécifique — **réécrit** (une seule cible)
+### NOCTIL — Spécialisée — **réécrit (consigne 21 h 45)** : l'enfant utilise, le parent achète
 
-1. **Cible retenue** : un adulte qui rentre le soir et voudrait que sa soirée à la maison ressemble à autre chose qu'au
-   plafonnier et à l'écran (salon, bureau, coin lecture). La piste « parent et coucher de l'enfant » est écartée pour cette démo.
-2. **Tension** : « Le soir, c'est toujours le même salon sous le même plafonnier. »
-3. **Désir et angle** : changer d'atmosphère sans sortir → ce soir, on ne sort pas, on change de ciel.
-4. **Promesse et faits** : une galaxie au plafond ou sur un mur, un bel objet une fois éteint ; faits = visuels. Aucun
-   bienfait sur le sommeil ou le bien-être ; alimentation, réglages et dimensions non affirmés.
-5. **Objections** : où s'affiche la galaxie, faut-il le noir complet, l'objet le jour, prix et réglages (information dédiée).
-6. **Parcours** : « Ce soir, on ne sort pas. *On change de ciel.* » → « La même pièce, une autre soirée » → « Où le poser
-   ce soir » → l'idée → « Éteint, un objet de décor » → appel → FAQ « Avant de l'allumer » → inscription.
+| | |
+|---|---|
+| Utilisateur | un enfant passionné d'espace (planètes, fusées, étoiles) — **décision de Thomas** |
+| Acheteur | son parent, qui cherche une surprise |
+| Situation d'achat | anniversaire, Noël, ou envie de lui faire plaisir |
+| Tension (mots du parent) | « Il connaît toutes les planètes ; je voudrais lui offrir autre chose qu'un livre de plus. » |
+| Désir | le voir émerveillé, le laisser imaginer |
+| Angle unique | offrir à son enfant sa propre galaxie dans sa chambre |
+| Promesse tenable | une galaxie violette au plafond ou sur un mur ; un bouton éclairé facile à repérer ; une « petite planète » sur l'étagère le jour |
+| Objections traitées | où s'affiche la galaxie, peut-il l'allumer seul, l'aide-t-il le soir (« nous ne promettons rien de tel »), et le jour, ce que permet la démo |
+| **Faits** | visuels du kit (sphère indigo, arceau, objectif, socle, bouton violet ; projection au plafond ou au mur) |
+| **Non renseigné** | âge conseillé, alimentation, réglages, dimensions, garantie (questions masquées, prêtes dans l'éditeur) |
+| Exclusions | aucun effet sur le coucher, le sommeil ou la peur du noir ; aucun âge ni réglage inventé |
 
-Pages réécrites : accueil, fiche (rôle, ce qu'on voit, où le poser ; « Préparer sa soirée »), « Une galaxie par pièce »,
-aide, pied, SEO. Preuves : `docs/preuves/copywriting/noctil/`.
+Pages : accueil (« Offrez-lui sa propre galaxie, *au plafond de sa chambre* » → « Sa chambre, *son univers* » → « Sa
+chambre d'abord, *et ailleurs ensuite* » → « Quand le jour tombe, son univers s'allume » → « Le jour, *une planète sur
+l'étagère* » → « Le cadeau qui fait lever les yeux » → « Avant de l'offrir »), fiche (« Projecteur de galaxies · à
+offrir », « Préparer *la surprise* »), « Où poser sa galaxie » (ex-« Une galaxie par pièce »), aide, menus, pied, SEO.
+
+**Visuels — incohérence signalée** : le kit ne contient **aucune chambre d'enfant**. Les scènes montrent un salon
+cinéma, un bureau, un loft, une chambre et un coin lecture d'adultes. Choix faits avec les médias disponibles (tous
+restent utilisés, c'est testé) : ouverture sur l'objet seul (halo), chambre représentée par la vue « au-dessus du lit »
+et l'alcôve à coussins ; les autres scènes sont présentées comme « ailleurs dans la maison » (soirée film en famille,
+coin lecture pour une histoire). Pour une cohérence complète, il faudrait de nouveaux visuels de chambre d'enfant (sans
+personne). Code : `tests/noctil-traverse-fixtures.ts`. Preuves : `docs/preuves/copywriting/noctil/`.
 
 ### TRAVERSE — Produit spécifique — **réécrit**
 

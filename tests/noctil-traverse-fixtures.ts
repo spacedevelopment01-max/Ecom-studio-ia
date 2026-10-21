@@ -80,23 +80,30 @@ export const TODO = (what: string) => `[À compléter : ${what}]`;
 const DEMO_BANNER = "Boutique de démonstration : aucune vente réelle.";
 export const ORDER_FAQ = (brand: string): [string, string] => ["Peut-on commander aujourd'hui ?", `Pas encore : la boutique ${brand} présentée ici est une démonstration. Aucune commande n'y est enregistrée et aucun paiement n'est demandé.`];
 
-// NOCTIL — fiche de stratégie (consigne du 21 octobre, 19 h 50 ; hypothèse éditoriale, pas une étude). Une seule cible :
-//  1. cible : un adulte qui rentre chez lui le soir et voudrait que sa soirée à la maison ressemble à autre chose qu'au
-//     plafonnier et à l'écran (salon, bureau, coin lecture : les pièces des photos) ;
-//  2. tension : « Le soir, c'est toujours le même salon sous le même plafonnier. » ;
-//  3. désir : changer d'atmosphère sans sortir — angle unique : ce soir, on ne sort pas, on change de ciel ;
-//  4. promesse tenable : une galaxie projetée au plafond ou sur un mur, et un bel objet une fois éteint ; faits = visuels.
-//     Aucun bienfait sur le sommeil ou le bien-être ; alimentation, réglages, dimensions inconnus ;
-//  5. objections : où s'affiche la galaxie, faut-il le noir complet, à quoi il ressemble le jour, prix et réglages
-//     (information dédiée) ;
-//  6. parcours : ouverture (se reconnaître) → ce qui change → où le poser → l'idée → l'objet de près → appel → FAQ → inscription.
+// NOCTIL — fiche de stratégie (consigne de Thomas du 21 octobre, 21 h 45 ; brief, hypothèse éditoriale). Décision
+// explicite : les ENFANTS sont les utilisateurs, le PARENT est l'acheteur.
+//  utilisateur : un enfant passionné d'espace (planètes, fusées, étoiles) ; acheteur : son parent, qui cherche une surprise ;
+//  situation d'achat : un anniversaire, Noël, ou l'envie de lui faire plaisir ;
+//  tension (mots du parent) : « Il connaît toutes les planètes ; je voudrais lui offrir autre chose qu'un livre de plus. » ;
+//  désir : voir son enfant émerveillé, et lui laisser imaginer ;
+//  angle unique : offrir à son enfant sa propre galaxie dans sa chambre ;
+//  promesse tenable : une galaxie violette projetée au plafond ou sur un mur ; un bouton éclairé facile à repérer ; un bel
+//  objet le jour ; faits = visuels du kit ;
+//  objections : où s'affiche la galaxie, peut-il l'allumer seul, l'aide-t-il le soir (aucune promesse), et le jour, âge
+//  conseillé et alimentation (non renseignés : à vérifier avant d'offrir) ;
+//  exclusions : aucun effet sur le coucher, le sommeil ou la peur du noir ; aucun âge, réglage, autonomie ou dimension
+//  inventés ; aucune personne ajoutée. Visuels : le kit ne contient AUCUNE chambre d'enfant (salon cinéma, bureau, loft,
+//  chambre et coin lecture d'adultes) : la chambre est montrée par la vue « au-dessus du lit », l'alcôve à coussins et
+//  l'objet seul ; les autres scènes sont présentées comme « ailleurs dans la maison ».
 export const NOCTIL_FAQ: [string, string][] = [
-  ["Où la galaxie s'affiche-t-elle ?", "Au plafond ou sur un mur, selon l'endroit où vous posez NOCTIL et la direction de son objectif. Nos images montrent les deux."],
-  ["Faut-il le noir complet ?", "Plus la pièce est sombre, plus la galaxie ressort. Sur nos photos, la grande lumière est éteinte ; dans le coin lecture, une lampe reste allumée à côté."],
-  ["Et le jour, à quoi ressemble-t-il ?", "À une sphère indigo mate sur son arceau, posée sur un socle rond : sur une étagère, c'est un objet de décor. Toutes les vues sont sur la fiche."],
-  ["Que puis-je faire dans cette boutique de démonstration ?", "Faire le tour du projecteur et le voir dans plusieurs pièces. Le prix, l'alimentation, les réglages et les dimensions ne sont pas encore renseignés, et la commande est désactivée."],
+  ["Où la galaxie s'affiche-t-elle ?", "Au plafond ou sur un mur, selon l'endroit où vous posez NOCTIL et la direction de son objectif. Sur une table de chevet, objectif vers le haut, elle couvre le plafond au-dessus du lit."],
+  ["Mon enfant peut-il l'allumer seul ?", "Le bouton est sur le socle, éclairé de violet : il se repère même dans la pénombre. L'âge conseillé et l'alimentation ne sont pas encore renseignés ; vérifiez-les avant de le lui confier."],
+  ["L'aide-t-il le soir, au coucher ou s'il a peur du noir ?", "Nous ne promettons rien de tel. NOCTIL est un décor à regarder et à raconter : une galaxie au plafond, pour rêver d'espace."],
+  ["Et le jour, à quoi ressemble-t-il ?", "À une sphère indigo mate sur son arceau, comme une petite planète posée sur un socle rond : sur une étagère, c'est un objet de décor."],
+  ["Que puis-je faire dans cette boutique de démonstration ?", "Faire le tour du projecteur et le voir dans plusieurs pièces. Le prix, l'âge conseillé, l'alimentation, les réglages et les dimensions ne sont pas encore renseignés, et la commande est désactivée."],
 ];
 export const NOCTIL_FAQ_PENDING: [string, string][] = [
+  ["À partir de quel âge ?", TODO("âge conseillé et consignes de sécurité")],
   ["Comment NOCTIL est-il alimenté ?", TODO("alimentation, câble ou batterie, autonomie")],
   ["Quels réglages propose-t-il ?", TODO("luminosité, couleurs, modes, minuterie, télécommande ou application")],
   ["Quelles sont ses dimensions et son poids ?", TODO("hauteur, diamètre, poids")],
@@ -135,7 +142,7 @@ const BRANDS: Record<KitId, Brand> = {
     name: "NOCTIL", product: "Projecteur de galaxies NOCTIL", category: "Projecteur de galaxies",
     summary: "Projecteur de galaxies : sphère indigo mate tenue par un arceau, objectif rond à l'avant, socle rond avec un bouton éclairé de violet ; la galaxie s'affiche au plafond ou sur un mur.",
     facts: [["Silhouette", "sphère indigo mate sur un arceau, socle rond"], ["Commande visible", "un bouton éclairé de violet sur le socle"]],
-    tagline: "La nuit, à portée de plafond.", story: "NOCTIL est né d'une envie simple : garder un morceau de ciel nocturne à la maison.", positioning: "Un projecteur de galaxies pour le salon, la chambre et les coins où l'on aime éteindre la grande lumière.",
+    tagline: "Sa galaxie, au plafond de sa chambre.", story: "NOCTIL est né pour les enfants qui collectionnent les planètes : leur offrir un morceau de ciel à eux, au-dessus de leur lit.", positioning: "Un projecteur de galaxies à offrir aux enfants passionnés d'espace, pour leur chambre.",
     // Indigo et violet relevés sur le logo et les visuels ; lavande des vues produit ; nuit profonde.
     palette: { primary: "#4B3BB8", secondary: "#ECE8FA", accent: "#8E6CF0", light: "#ECE8FA", dark: "#0D0B26" },
   },
@@ -300,79 +307,79 @@ export type Kit = ReturnType<typeof kit>;
 function curateNoctil(k: Kit) {
   const { spec, img, section, hide, overlay, faq, productHref } = k;
   k.demoMeta();
-  spec.store.seo = { title: "NOCTIL | Projecteur de galaxies : ce soir, changez de ciel sans sortir", description: "Éteignez le plafonnier : NOCTIL projette une galaxie au plafond ou sur un mur du salon, du bureau ou du coin lecture. Beau aussi éteint, sur une étagère." };
+  spec.store.seo = { title: "NOCTIL | Offrez à votre enfant sa propre galaxie, dans sa chambre", description: "Pour l'enfant passionné d'espace : NOCTIL projette une galaxie violette au plafond de sa chambre. Un cadeau à regarder et à raconter, beau aussi éteint." };
   k.product({
     title: "Projecteur de galaxies NOCTIL",
-    description_html: p("Son rôle : changer l'atmosphère d'une pièce le soir, sans sortir. Posé sur un meuble, il projette une galaxie au plafond ou sur un mur.") + p("Ce qu'on voit : une sphère indigo mate tenue par un arceau, un objectif rond ouvert sur une galaxie, un socle rond au bouton éclairé de violet.") + p("Où le poser : au salon, au bureau, dans le coin lecture ou sur une table de chevet ; nos photos le montrent dans chacune de ces pièces. Éteint, il reste un objet de décor."),
+    description_html: p("Pour qui : l'enfant qui connaît les planètes par cœur, et le parent qui veut lui faire une surprise. Posé sur sa table de chevet, NOCTIL projette une galaxie violette au plafond de sa chambre.") + p("Ce qu'on voit : une sphère indigo mate, comme une petite planète, tenue par un arceau ; un objectif rond ouvert sur une galaxie ; un socle rond au bouton éclairé de violet.") + p("Avant d'offrir : l'âge conseillé, l'alimentation et les réglages ne sont pas encore renseignés dans cette démonstration."),
     images: ["produit-01.webp", "produit-02.webp", "produit-03.webp", "produit-04.webp", "produit-05.webp"],
-    tags: ["projecteur", "galaxie", "décoration de nuit"],
-    seo: { title: "Projecteur de galaxies NOCTIL : vues, détails, mise en place", description: "Découvrez NOCTIL, projecteur de galaxies : sphère indigo sur arceau, objectif et socle lumineux en gros plan, et comment le placer dans une pièce." },
+    tags: ["projecteur", "galaxie", "cadeau", "chambre d'enfant"],
+    seo: { title: "NOCTIL : le projecteur de galaxies des enfants passionnés d'espace", description: "Une galaxie violette au plafond de sa chambre : NOCTIL en détail, sphère indigo, objectif, socle et bouton éclairé, et comment le placer." },
   });
 
-  // ─── Accueil : une narration de nuit, pièce par pièce. ──────────────────────────────────────────────────────────
+  // ─── Accueil : le cadeau, la chambre, l'imagination. ────────────────────────────────────────────────────────────
   overlay("index", [
-    section("cv-hero", { ...img("ambiance-10.webp"), image_ratio: "wide", focus_x: 50, focus_y: 50, layout: "stacked", heading: "Ce soir, on ne sort pas.", heading_accent: "On change de ciel.", heading_tag: "h1", text: p("Éteignez le plafonnier, posez le projecteur NOCTIL sur un meuble bas : une galaxie violette prend le plafond ou un mur, et le salon n'est plus tout à fait le même."), button_label: "Voir le projecteur", button_link: productHref, rating_text: "", rating_note: "", guarantee_text: "", animation: "fade" }, [
+    section("cv-hero", { ...img("ambiance-10.webp"), image_ratio: "wide", focus_x: 50, focus_y: 50, layout: "stacked", heading: "Offrez-lui sa propre galaxie,", heading_accent: "au plafond de sa chambre", heading_tag: "h1", text: p("Il connaît toutes les planètes et dessine des fusées partout ? Posé sur sa table de chevet, NOCTIL projette une galaxie violette au-dessus de son lit."), button_label: "Découvrir le projecteur", button_link: productHref, rating_text: "", rating_note: "", guarantee_text: "", animation: "fade" }, [
       { type: "check", settings: { text: "Une galaxie au plafond ou sur un mur" } },
-      { type: "check", settings: { text: "Beau aussi éteint, sur une étagère" } },
-      { type: "check", settings: { text: "Un bouton éclairé sur le socle" } },
+      { type: "check", settings: { text: "Un bouton éclairé, facile à trouver" } },
+      { type: "check", settings: { text: "Une petite planète, le jour" } },
     ]),
-    section("features-grid", { eyebrow: "Ce qui change", heading: "La même pièce, <em>une autre soirée</em>", layout: "grid", columns: 4, columns_mobile: "2", style: "glow", heading_align: "center", link_label: "", link: "" }, [
-      { type: "feature", settings: { icon: "star", title: "Le plafond devient un ciel", text: p("La galaxie se déploie au-dessus de vous : le plafond devient le décor de la soirée."), link_label: "", link: "" } },
-      { type: "feature", settings: { icon: "waves", title: "Des murs en profondeur", text: p("Projetée sur un mur, la lumière violette et bleue donne du relief aux pièces les plus simples."), link_label: "", link: "" } },
-      { type: "feature", settings: { icon: "sparkle", title: "Beau même éteint", text: p("Sphère indigo mate, socle rond, nom discret : NOCTIL a sa place sur une étagère en plein jour."), link_label: "", link: "" } },
-      { type: "feature", settings: { icon: "hand", title: "Un bouton, en vue", text: p("Sur le socle, un bouton éclairé de violet : on le trouve même dans la pénombre."), link_label: "", link: "" } },
+    section("features-grid", { eyebrow: "Ce qu'il découvre", heading: "Sa chambre, <em>son univers</em>", layout: "grid", columns: 4, columns_mobile: "2", style: "glow", heading_align: "center", link_label: "", link: "" }, [
+      { type: "feature", settings: { icon: "star", title: "Un ciel rien qu'à lui", text: p("Allongé sur son lit, il lève les yeux : la galaxie couvre le plafond."), link_label: "", link: "" } },
+      { type: "feature", settings: { icon: "waves", title: "Des voyages à inventer", text: p("Une spirale violette et des milliers de points lumineux : de quoi imaginer des expéditions entre les étoiles."), link_label: "", link: "" } },
+      { type: "feature", settings: { icon: "sparkle", title: "Une petite planète", text: p("Le jour, la sphère indigo reste posée sur son étagère, comme un astre de collection."), link_label: "", link: "" } },
+      { type: "feature", settings: { icon: "hand", title: "Un bouton qu'il trouve", text: p("Sur le socle, un bouton éclairé de violet, visible dans la pénombre."), link_label: "", link: "" } },
     ]),
-    section("cv-gallery", { layout: "carousel", ratio: "portrait", eyebrow: "Pièce par pièce", heading: "Où le poser", heading_accent: "ce soir", text: p("Le coin lecture, la table de chevet, une alcôve, la table basse : la même galaxie, quatre soirées différentes."), ai_label: "" }, [
-      { type: "image", settings: { ...img("ambiance-07.webp"), caption: "Le coin lecture" } },
+    section("cv-gallery", { layout: "carousel", ratio: "portrait", eyebrow: "Dans la maison", heading: "Sa chambre d'abord,", heading_accent: "et ailleurs ensuite", text: p("Au-dessus du lit, dans un coin à coussins, au salon pour une histoire du soir : la galaxie se déplace avec lui."), ai_label: "" }, [
       { type: "image", settings: { ...img("ambiance-09.webp"), caption: "Au-dessus du lit" } },
-      { type: "image", settings: { ...img("ambiance-04.webp"), caption: "L'alcôve lavande" } },
-      { type: "image", settings: { ...img("ambiance-05.webp"), caption: "Un ciel violet au plafond" } },
+      { type: "image", settings: { ...img("ambiance-04.webp"), caption: "Une alcôve à coussins, sous les étoiles" } },
+      { type: "image", settings: { ...img("ambiance-07.webp"), caption: "Une histoire au coin lecture" } },
+      { type: "image", settings: { ...img("ambiance-05.webp"), caption: "Tout le plafond en violet" } },
     ]),
-    section("image-with-text", { ...img("ambiance-01.webp"), layout: "overlap", ratio: "portrait", reveal: "up", parallax: false, eyebrow: "L'idée", heading: "Quand le jour se retire, la pièce change de taille", text: p("Au crépuscule, la ville s'allume derrière le voilage. On éteint la grande lumière, NOCTIL prend le relais : le plafond recule, la soirée commence autrement."), button_label: "Voir les pièces", button_link: "/pages/univers" }),
-    section("cv-cards", { layout: "columns", heading: "Éteint,", heading_accent: "un objet de décor", text: p("En plein jour, voici ce qu'on voit sur l'étagère.") }, [
+    section("image-with-text", { ...img("ambiance-01.webp"), layout: "overlap", ratio: "portrait", reveal: "up", parallax: false, eyebrow: "Le moment", heading: "Quand le jour tombe, son univers s'allume", text: p("Les rideaux se ferment, la grande lumière s'éteint, la galaxie apparaît. Un rendez-vous qu'un petit passionné d'espace peut attendre toute la journée."), button_label: "Voir où le poser", button_link: "/pages/univers" }),
+    section("cv-cards", { layout: "columns", heading: "Le jour,", heading_accent: "une planète sur l'étagère", text: p("Éteint, NOCTIL reste un objet qu'on a plaisir à regarder.") }, [
       { type: "card", settings: { ...img("produit-04.webp"), title: "L'objectif", text: p("Un objectif rond et cerclé, où l'on voit déjà la galaxie.") } },
-      { type: "card", settings: { ...img("produit-05.webp"), title: "Le socle et son bouton", text: p("Un socle rond, le nom NOCTIL et un bouton éclairé de violet.") } },
+      { type: "card", settings: { ...img("produit-05.webp"), title: "Le socle et son bouton", text: p("Le nom NOCTIL et un bouton éclairé de violet, à portée de petite main.") } },
       { type: "card", settings: { ...img("produit-02.webp"), title: "La sphère sur son arceau", text: p("De profil : la sphère tenue entre les deux branches de son arceau.") } },
     ]),
-    section("cta-banner", { ...img("ambiance-08.webp"), heading: "Faites entrer la nuit dans votre salon", text: p("Toutes les vues de NOCTIL et où le poser, sur sa fiche."), button_label: "Voir le projecteur", button_link: productHref, style: "center", parallax: false, overlay: 55 }),
-    faq("Avant de l'allumer", NOCTIL_FAQ.slice(0, 4), "cards", "stacked", "Où s'affiche la galaxie, le noir complet, l'objet le jour, ce que permet la démonstration."),
-    section("newsletter", { eyebrow: "Nouvelles de NOCTIL", heading: "Être prévenu quand NOCTIL ouvre", text: p("Un e-mail à l'ouverture de la boutique. Rien d'autre."), button_label: "Me prévenir", preview_note: true, legal: p("Désinscription possible à tout moment depuis chaque e-mail.") }),
+    section("cta-banner", { ...img("ambiance-08.webp"), heading: "Le cadeau qui fait lever les yeux", text: p("Anniversaire, Noël ou simple surprise : toutes les vues de NOCTIL sont sur sa fiche."), button_label: "Découvrir le projecteur", button_link: productHref, style: "center", parallax: false, overlay: 55 }),
+    faq("Avant de l'offrir", NOCTIL_FAQ.slice(0, 5), "cards", "stacked", "Où s'affiche la galaxie, l'allumer seul, le soir, l'objet le jour, ce que permet la démonstration."),
+    section("newsletter", { eyebrow: "Nouvelles de NOCTIL", heading: "Être prévenu quand NOCTIL ouvre", text: p("Un e-mail à l'ouverture de la boutique, pour préparer la surprise. Rien d'autre."), button_label: "Me prévenir", preview_note: true, legal: p("Désinscription possible à tout moment depuis chaque e-mail.") }),
   ]);
 
   // ─── Fiche produit ──────────────────────────────────────────────────────────────────────────────────────────────
   k.mainProduct({
-    eyebrow: "Projecteur de galaxies · pour le soir",
-    text: "Éteignez le plafonnier, tournez l'objectif vers le plafond ou un mur : une galaxie violette change l'atmosphère de la pièce.",
-    highlights: "Une galaxie au plafond ou sur un mur\nSphère indigo mate sur un arceau\nUn bouton éclairé sur le socle\nPour le salon, la chambre et le bureau",
+    eyebrow: "Projecteur de galaxies · à offrir",
+    text: "Pour l'enfant qui collectionne les planètes : posé sur sa table de chevet, NOCTIL projette une galaxie violette au plafond de sa chambre.",
+    highlights: "Une galaxie au plafond ou sur un mur\nUn bouton éclairé, facile à trouver\nUne sphère indigo, comme une petite planète\nUn cadeau pour les passionnés d'espace",
     description: spec.store.product.description_html,
-    specs: "alimentation et autonomie, luminosité, couleurs et modes, minuterie, télécommande ou application, dimensions, poids, matériaux, certifications",
+    specs: "âge conseillé, alimentation et autonomie, luminosité, couleurs et modes, minuterie, télécommande ou application, dimensions, poids, matériaux, certifications",
     box: "contenu exact du coffret",
     shipping: "zones, délais et frais de livraison ; délai et conditions de retour ; durée de garantie",
     settings: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
   });
   overlay(k.productKey(), [
-    section("cv-ingredients", { layout: "cards", columns: 3, eyebrow: "Composition visible", heading: "Ce qui compose", heading_accent: "NOCTIL", text: p("Les éléments que l'on voit sur l'objet, du haut vers le bas."), note: "", image_asset: "" }, [
+    section("cv-ingredients", { layout: "cards", columns: 3, eyebrow: "Ce qu'on voit", heading: "Une petite planète,", heading_accent: "pièce par pièce", text: p("Les éléments que l'on voit sur l'objet, du haut vers le bas."), note: "", image_asset: "" }, [
       { type: "ingredient", settings: { icon: "globe", name: "La sphère", role: "Corps rond, indigo mat, qui porte l'objectif.", note: "", badge: "", image_asset: "" } },
-      { type: "ingredient", settings: { icon: "sparkle", name: "L'objectif", role: "Lentille ronde et cerclée, côté face.", note: "", badge: "", image_asset: "" } },
+      { type: "ingredient", settings: { icon: "sparkle", name: "L'objectif", role: "Lentille ronde et cerclée, d'où sort la galaxie.", note: "", badge: "", image_asset: "" } },
       { type: "ingredient", settings: { icon: "hand", name: "L'arceau", role: "Deux branches qui tiennent la sphère de chaque côté.", note: "", badge: "", image_asset: "" } },
       { type: "ingredient", settings: { icon: "shield", name: "Le socle", role: "Base ronde où figure le nom NOCTIL.", note: "", badge: "", image_asset: "" } },
-      { type: "ingredient", settings: { icon: "bolt", name: "Le bouton", role: "Un bouton éclairé de violet sur le socle.", note: "", badge: "", image_asset: "" } },
+      { type: "ingredient", settings: { icon: "bolt", name: "Le bouton", role: "Éclairé de violet, visible dans la pénombre.", note: "", badge: "", image_asset: "" } },
       { type: "ingredient", settings: { icon: "check", name: "Matériaux", role: TODO("matériaux de la sphère, de l'arceau et du socle"), note: "", badge: "", image_asset: "" }, hidden: true },
     ]),
-    section("content-tabs", { eyebrow: "En un coup d'œil", heading: "NOCTIL, en trois regards", tab_style: "pills", image_position: "right" }, [
-      { type: "tab", settings: { title: "Silhouette", icon: "sparkle", heading: "Une sphère, un arceau, un socle", content: "<ul><li>Sphère indigo mate</li><li>Objectif rond et cerclé, à l'avant</li><li>Arceau à deux branches</li><li>Socle rond avec le nom NOCTIL</li><li>Bouton éclairé de violet</li></ul>", ...img("produit-03.webp"), button_label: "", button_link: "" } },
-      { type: "tab", settings: { title: "Dans la pièce", icon: "heart", heading: "Au plafond ou sur un mur", content: p("Posé sur un meuble bas, une table de chevet ou une étagère, NOCTIL habille le mur ou le plafond qu'il regarde. Nos photos le montrent dans un salon, une chambre, un bureau et un coin lecture."), ...img("ambiance-06.webp"), button_label: "Voir les pièces", button_link: "/pages/univers" } },
-      { type: "tab", settings: { title: "Fiche technique", icon: "clock", heading: "Fiche technique", content: p(TODO("alimentation, autonomie, luminosité, modes, dimensions, poids")), image_asset: "", button_label: "", button_link: "" }, hidden: true },
+    section("content-tabs", { eyebrow: "Avant de l'offrir", heading: "NOCTIL, en trois regards", tab_style: "pills", image_position: "right" }, [
+      { type: "tab", settings: { title: "Silhouette", icon: "sparkle", heading: "Une sphère, un arceau, un socle", content: "<ul><li>Sphère indigo mate, comme une petite planète</li><li>Objectif rond et cerclé, à l'avant</li><li>Arceau à deux branches</li><li>Socle rond avec le nom NOCTIL</li><li>Bouton éclairé de violet</li></ul>", ...img("produit-03.webp"), button_label: "", button_link: "" } },
+      { type: "tab", settings: { title: "Où le poser", icon: "heart", heading: "Au plafond de sa chambre, ou sur un mur", content: p("Sur la table de chevet ou une étagère de sa chambre, NOCTIL habille le plafond ou le mur qu'il regarde. Il se déplace aussi : nos photos le montrent au salon, sur un bureau et dans un coin lecture."), ...img("ambiance-06.webp"), button_label: "Voir où le poser", button_link: "/pages/univers" } },
+      { type: "tab", settings: { title: "Fiche technique", icon: "clock", heading: "Fiche technique", content: p(TODO("âge conseillé, alimentation, autonomie, luminosité, modes, dimensions, poids")), image_asset: "", button_label: "", button_link: "" }, hidden: true },
     ]),
-    section("timeline", { eyebrow: "Mise en place", heading: "Préparer", heading_accent: "sa soirée", image_asset: "" }, [
-      { type: "step", settings: { title: "Choisir la pièce", text: p("Salon, chambre, coin lecture : là où vous voulez passer la soirée.") } },
-      { type: "step", settings: { title: "Poser NOCTIL", text: p("Sur un meuble bas, une table de chevet ou une étagère, objectif tourné vers le mur ou le plafond à habiller.") } },
+    section("timeline", { eyebrow: "Le soir venu", heading: "Préparer", heading_accent: "la surprise", image_asset: "" }, [
+      { type: "step", settings: { title: "Choisir sa place", text: p("La table de chevet ou une étagère de sa chambre.") } },
+      { type: "step", settings: { title: "Tourner l'objectif", text: p("Vers le plafond au-dessus du lit, ou vers le mur qu'il préfère.") } },
       { type: "step", settings: { title: "Éteindre la grande lumière", text: p("Moins il y a de lumière autour, plus la galaxie ressort, comme sur nos photos.") } },
-      { type: "step", settings: { title: "Profiter", text: p("Un film, un livre, une conversation : la pièce a changé d'atmosphère.") } },
+      { type: "step", settings: { title: "Lever les yeux ensemble", text: p("Montrez-lui la spirale, et laissez-le raconter la suite du voyage.") } },
     ]),
-    section("cv-feature", { ...img("ambiance-03.webp"), layout: "stacked", heading: "Une lueur indigo,", heading_accent: "même posée seule", text: p("Sur un plan sombre, NOCTIL se suffit : la sphère, son halo, et la nuit qui commence."), button_label: "", button_link: "", guarantee_text: "" }, [
-      { type: "point", settings: { icon: "sparkle", title: "Une silhouette ronde", text: p("Une sphère que l'on reconnaît au premier regard.") } },
-      { type: "point", settings: { icon: "heart", title: "Un objet de décor", text: p("Indigo mat le jour, galaxie le soir.") } },
+    section("cv-feature", { ...img("ambiance-03.webp"), layout: "stacked", heading: "Une lueur indigo,", heading_accent: "même posée seule", text: p("Sur un plan sombre, NOCTIL se suffit : la sphère, son halo, et l'univers qui commence."), button_label: "", button_link: "", guarantee_text: "" }, [
+      { type: "point", settings: { icon: "sparkle", title: "Une silhouette ronde", text: p("Une planète que l'on reconnaît au premier regard.") } },
+      { type: "point", settings: { icon: "heart", title: "Un objet de chambre", text: p("Indigo mat le jour, galaxie le soir.") } },
       { type: "point", settings: { icon: "hand", title: "Un seul bouton en vue", text: p("Sur le socle, éclairé de violet.") } },
     ]),
     hide(section("fs-commitments", { layout: "grid", eyebrow: "Avant la mise en vente", heading: "Livraison, retours", heading_accent: "et garantie", text: "", align: "center", button_label: "", button_link: "", note: "" }, [
@@ -385,23 +392,23 @@ function curateNoctil(k: Kit) {
   ]);
 
   // ─── Pages ──────────────────────────────────────────────────────────────────────────────────────────────────────
-  k.page("univers", "Une galaxie par pièce", { title: "Une galaxie par pièce : salon, bureau, coin lecture | NOCTIL", description: "Salon cinéma, bureau, coin lecture : trois pièces où NOCTIL projette sa galaxie, en photos, pour imaginer la vôtre." }, [
-    ["intro", section("rich-text", { style: "plain", align: "center", color_scheme: "scheme-1", padding_top: 24, padding_bottom: 32 }, [{ type: "text", settings: { text: p("NOCTIL ne cherche pas une pièce en particulier : il s'adapte à celle où vous éteignez la grande lumière. Voici trois pièces où nous l'avons posé.") } }])],
-    ["pieces", section("cv-alternating", { layout: "alternate", ratio: "landscape", eyebrow: "Trois pièces", heading: "Là où", heading_accent: "NOCTIL se pose", text: "", color_scheme: "scheme-4" }, [
-      { type: "row", settings: { ...img("ambiance-02.webp"), eyebrow: "Salon cinéma", heading: "La galaxie", heading_accent: "au-dessus de l'écran", text: p("Canapé, écran, lumières éteintes : la galaxie prend le plafond et la séance commence avant le film."), button_label: "", button_link: "" } },
-      { type: "row", settings: { ...img("ambiance-06.webp"), eyebrow: "Bureau", heading: "Un mur", heading_accent: "pour finir la journée", text: p("Ordinateur fermé, NOCTIL allumé : le mur derrière le bureau change de rôle."), button_label: "", button_link: "" } },
-      { type: "row", settings: { ...img("ambiance-07.webp"), eyebrow: "Coin lecture", heading: "Un fauteuil,", heading_accent: "une lampe, une galaxie", text: p("La lampe pour lire, NOCTIL pour le décor : deux lumières qui se partagent la pièce."), button_label: "", button_link: "" } },
+  k.page("univers", "Où poser sa galaxie", { title: "Où poser sa galaxie : sa chambre et ailleurs | NOCTIL", description: "Au-dessus de son lit d'abord ; au salon pour une soirée en famille, dans un coin lecture ou sur un bureau ensuite : où placer NOCTIL, en photos." }, [
+    ["intro", section("rich-text", { style: "plain", align: "center", color_scheme: "scheme-1", padding_top: 24, padding_bottom: 32 }, [{ type: "text", settings: { text: p("Sa chambre d'abord. Mais NOCTIL se déplace : voici trois pièces où nous l'avons posé, pour une soirée en famille ou une histoire avant d'éteindre.") } }])],
+    ["pieces", section("cv-alternating", { layout: "alternate", ratio: "landscape", eyebrow: "Ailleurs dans la maison", heading: "Là où", heading_accent: "la galaxie le suit", text: "", color_scheme: "scheme-4" }, [
+      { type: "row", settings: { ...img("ambiance-02.webp"), eyebrow: "Soirée film", heading: "La galaxie", heading_accent: "au-dessus de l'écran", text: p("Canapé, plaid, lumières éteintes : toute la famille sous le même ciel avant le film."), button_label: "", button_link: "" } },
+      { type: "row", settings: { ...img("ambiance-06.webp"), eyebrow: "Sur un bureau", heading: "Un mur", heading_accent: "plein d'étoiles", text: p("Posé sur un bureau, objectif vers le mur : la galaxie prend toute la place derrière l'écran."), button_label: "", button_link: "" } },
+      { type: "row", settings: { ...img("ambiance-07.webp"), eyebrow: "Coin lecture", heading: "Un fauteuil,", heading_accent: "une histoire, une galaxie", text: p("La lampe pour lire l'histoire, NOCTIL pour le décor : deux lumières qui se partagent la pièce."), button_label: "", button_link: "" } },
     ])],
-    ["cta", section("cta-banner", { heading: "Trouvez sa place chez vous", text: p("Toutes les vues de NOCTIL et la façon de le placer, sur sa fiche."), button_label: "Voir NOCTIL", button_link: productHref, image_asset: "", style: "center", parallax: false, color_scheme: "scheme-2", padding_top: 88, padding_bottom: 88 })],
+    ["cta", section("cta-banner", { heading: "Choisir sa place dans sa chambre", text: p("Toutes les vues de NOCTIL, et comment le placer au-dessus de son lit, sur sa fiche."), button_label: "Découvrir le projecteur", button_link: productHref, image_asset: "", style: "center", parallax: false, color_scheme: "scheme-2", padding_top: 88, padding_bottom: 88 })],
   ]);
-  k.page("aide", "Questions et contact", { title: "Questions et contact | NOCTIL, projecteur de galaxies", description: "Où s'affiche la galaxie, faut-il le noir complet, l'objet le jour, ce que permet la démonstration : nos réponses sur NOCTIL, et un formulaire." }, [
+  k.page("aide", "Questions et contact", { title: "Questions et contact | NOCTIL, projecteur de galaxies à offrir", description: "Où s'affiche la galaxie, peut-il l'allumer seul, le soir, l'objet le jour : nos réponses sur NOCTIL, et un formulaire." }, [
     ["faq", faq("Questions fréquentes", [...NOCTIL_FAQ, ...NOCTIL_FAQ_PENDING], "numbered", "stacked", "", { color_scheme: "scheme-1" })],
-    ["form", section("contact-form", { eyebrow: "Contact", heading: "Une question avant de l'allumer ?", text: p("Écrivez-nous : le formulaire vérifie les champs avant l'envoi. Dans cette démonstration, aucun message n'est réellement transmis."), email: "", hours: "", response: "", preview_note: true, color_scheme: "scheme-4", padding_top: 64, padding_bottom: 96 })],
+    ["form", section("contact-form", { eyebrow: "Contact", heading: "Une question avant de l'offrir ?", text: p("Écrivez-nous : le formulaire vérifie les champs avant l'envoi. Dans cette démonstration, aucun message n'est réellement transmis."), email: "", hours: "", response: "", preview_note: true, color_scheme: "scheme-4", padding_top: 64, padding_bottom: 96 })],
   ]);
 
   // ─── Menus, en-tête « barre flottante » sur lavande, pied « centré » ────────────────────────────────────────────
-  spec.store.menus["main-menu"] = { title: "Navigation", links: [{ title: "Le projecteur", url: productHref }, { title: "Les pièces", url: "/pages/univers" }, { title: "Questions et contact", url: "/pages/aide" }] };
-  spec.store.menus.footer = { title: "Aide", links: [{ title: "Le projecteur", url: productHref }, { title: "Les pièces", url: "/pages/univers" }, { title: "Questions et contact", url: "/pages/aide" }, { title: "Recherche", url: "/search" }] };
+  spec.store.menus["main-menu"] = { title: "Navigation", links: [{ title: "Le projecteur", url: productHref }, { title: "Où le poser", url: "/pages/univers" }, { title: "Questions et contact", url: "/pages/aide" }] };
+  spec.store.menus.footer = { title: "Aide", links: [{ title: "Le projecteur", url: productHref }, { title: "Où le poser", url: "/pages/univers" }, { title: "Questions et contact", url: "/pages/aide" }, { title: "Recherche", url: "/search" }] };
   const header = Object.values(spec.groups.header.sections).find((s) => s.type === "header")!;
   header.settings = { ...header.settings, menu: "main-menu", layout: "logo-left", shape: "pill", icons: "circles", mega_menu: "none", mobile_menu: "sheet", sticky: true, transparent_on_home: false, show_search: true, show_cart: true, cta_label: "", phone: "", color_scheme: "scheme-2" };
   header.blocks = {}; header.block_order = [];
@@ -410,7 +417,7 @@ function curateNoctil(k: Kit) {
   const footer = Object.values(spec.groups.footer.sections).find((s) => s.type === "footer")!;
   footer.settings = { ...footer.settings, style: "centered", show_wordmark: false, show_policies: false, show_payment: false, color_scheme: "scheme-2", logo_asset: "" };
   footer.blocks = {
-    about: { type: "text", settings: { heading: "NOCTIL", text: p("Le projecteur de galaxies des soirées à la maison : salon, bureau, coin lecture. Marque de démonstration du studio.") } },
+    about: { type: "text", settings: { heading: "NOCTIL", text: p("Le projecteur de galaxies à offrir aux enfants passionnés d'espace, pour leur chambre. Marque de démonstration du studio.") } },
     links: { type: "links", settings: { heading: "Aide", menu: "footer" } },
     news: { type: "newsletter", settings: { heading: "Nouvelles de NOCTIL", text: "Aperçu : inscription non enregistrée dans la démonstration." } },
   };
