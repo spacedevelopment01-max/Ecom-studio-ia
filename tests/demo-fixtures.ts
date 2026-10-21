@@ -7,6 +7,7 @@
  *
  * Sert aux preuves de la mission E (aperçus statiques, captures, tests) ; jamais exposé au client comme une démo.
  */
+import { curateOrbe, curateRive } from "./engine-demo-copy";
 import fs from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
@@ -202,5 +203,9 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
   }
   if (fs.existsSync(dir) && !ident.media) for (const f of fs.readdirSync(dir).filter((x) => /\.(webp|jpg|png)$/i.test(x) && !imported.has(x) && !/^(boutique|site|fiche)-|logo/.test(x)).sort()) await put(f, "scene");
   const built = await composeShop(pid, options.direction ?? d.direction, null, false);
+  // Rédaction propre aux démonstrations ORBE et Atelier Rive (revue du 21 octobre) : textes écrits pour leur cible,
+  // champs inconnus masqués ; la composition du moteur ne change pas.
+  if (!options.direction && id === "orbe") curateOrbe(built.spec);
+  if (!options.direction && id === "rive") curateRive(built.spec);
   return { pid, spec: built.spec, demo: d, missing, project: loadProject(pid), services };
 }
