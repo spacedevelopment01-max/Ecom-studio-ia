@@ -124,7 +124,7 @@ describe.skipIf(!KIT)("ONDE : démonstration E-commerce", async () => {
 
   it("accueil : titre de page dans la campagne, achat juste après, trois usages", () => {
     const home = pages.get("/")!;
-    expect(home.match(/<h1[^>]*>[\s\S]*?<\/h1>/)![0]).toMatch(/Écoutez/);
+    expect(home.match(/<h1[^>]*>[\s\S]*?<\/h1>/)![0]).toMatch(/Le même trajet chaque jour/);
     expect(types("index")[0].settings).toMatchObject({ layout: "background", heading_tag: "h1" });
     expect(Object.values(types("index")[3].blocks ?? {})).toHaveLength(3);
   });

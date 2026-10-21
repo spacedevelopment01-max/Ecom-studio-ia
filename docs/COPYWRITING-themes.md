@@ -224,19 +224,26 @@ les haltes en plein air (lac, balcon en montagne, terrasse) portent l'angle, les
 étapes du voyage. Test d'export mis à jour (nouveau titre de la page « Usages »). Code : `tests/sillon-fixtures.ts`.
 Preuves : `docs/preuves/copywriting/sillon/`.
 
-### ONDE — E-commerce, mono-produit — **réécrit**
+### ONDE — E-commerce, mono-produit — **réécrit (consigne 21 h 45)** : le trajet devient un rendez-vous
 
-1. **Cible** : une personne qui écoute sa musique d'un lieu à l'autre (salon, train, studio) et la reprend vingt fois par jour.
-2. **Tension** : « Le casque sur les oreilles, je cherche toujours le bon bouton. »
-3. **Désir et angle** : être dans sa musique sans y penser → d'un geste, vous êtes dans votre musique.
-4. **Promesse et faits** : une touche verte repérable d'un coup d'œil, un seul coloris, un graphite discret ; faits = visuels.
-   Autonomie, connexion, réduction de bruit et poids jamais affirmés.
-5. **Objections** : où sont les commandes, les coloris, où le porter, prix et caractéristiques (information dédiée).
-6. **Parcours** : « Écoutez. Posez. *Repartez.* » (le casque qui se trouve sans chercher) → achat → le détail mat → trois
-   usages → un seul coloris → FAQ « Avant de choisir » → inscription.
+| | |
+|---|---|
+| Utilisateur et acheteur | une personne qui fait chaque jour le même trajet en transports (brief) |
+| Situation d'achat | ce temps de trajet passe à faire défiler son téléphone, ou à attendre |
+| Tension (ses mots) | « Tous les jours le même trajet, et j'ai l'impression de perdre ce temps-là. » |
+| Désir | que ce moment devienne le sien |
+| Angle unique | transformer ce trajet en rendez-vous avec sa musique |
+| Promesse tenable | un casque que l'on met en partant et retire en arrivant ; graphite discret ; commandes vertes repérables (un détail, plus le besoin central) |
+| Objections traitées | peut-on le porter dans les transports (poids, autonomie, isolation non renseignés), où sont les commandes, les coloris, la démo |
+| **Faits** | visuels : arceau graphite, coussinets noirs, liserés et touche verts ; train, salon, studio |
+| **Non renseigné** | autonomie, connexion, isolation des bruits, qualité acoustique, poids, contenu de la boîte, garantie, prix |
+| Exclusions | aucune réduction de bruit ni qualité acoustique mesurée affirmées |
 
-Correction visuelle : l'inscription passe sur le fond clair (le champ e-mail vert sur vert n'était pas lisible). Pages
-réécrites : accueil, fiche, aide, SEO. Preuves : **kit privé**, captures hors dépôt (archive privée remise à Thomas).
+Pages : accueil (« Le même trajet chaque jour, *votre rendez-vous musique* » → achat → « Noir mat, discret dans la
+rame » → « Dans le train, puis chez soi » (le train en premier) → « Un seul coloris, pour tous les trajets » → « Avant
+le premier trajet »), fiche (« Casque audio · pour le trajet de tous les jours »), usages (train, retour au salon,
+studio), aide, pied, SEO. L'ancienne accroche « Écoutez. Posez. Repartez. » est retirée ; le test du H1 est mis à jour.
+Composition E-commerce figée inchangée. Code : `tests/onde-fixtures.ts`. Preuves : kit privé, archive hors dépôt.
 
 ### ORBE — E-commerce, mono-produit — **réécrit**
 
