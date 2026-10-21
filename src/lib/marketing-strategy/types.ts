@@ -73,11 +73,13 @@ export type StrategyContent = {
   published: boolean;
   scheduled: boolean;
   aligned: boolean;
+  retainedPaths?: string[];
   reason:
     | "aligned"
     | "legacy_unreviewed"
     | "previous_angle"
-    | "project_changed";
+    | "project_changed"
+    | "protected_unreviewed";
 };
 export type StrategyImpact = {
   module: string;

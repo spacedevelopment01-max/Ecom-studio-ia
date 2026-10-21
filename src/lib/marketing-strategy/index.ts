@@ -11,6 +11,7 @@ import {
   proposalAnalysis,
   inputDigest,
   GENERALIST_EXPLANATION,
+  GENERALIST_EXPLANATION_EN,
 } from "./proposals";
 import {
   ANGLE_IDS,
@@ -65,6 +66,8 @@ export function activeStrategy(projectId: string): ActiveStrategy | null {
     ),
   );
 }
+export const currentStrategyInputDigest = (projectId: string): string =>
+  inputDigest(loadProject(projectId));
 export function strategyContext(projectId: string): string {
   return strategyContextFor(activeStrategy(projectId));
 }
@@ -204,14 +207,14 @@ function producedRows(projectId: string) {
   );
 }
 /** Existing native contents are inventoried read-only: absence of a stamp is never proof of alignment. */
-function nativeInventory(
-  projectId: string,
-): {
+function nativeInventory(projectId: string): {
   module: string;
   contentId: string;
   protected: boolean;
   published: boolean;
   scheduled: boolean;
+  unreviewed?: boolean;
+  retainedPaths?: string[];
 }[] {
   const items: {
     module: string;
@@ -219,6 +222,8 @@ function nativeInventory(
     protected: boolean;
     published: boolean;
     scheduled: boolean;
+    unreviewed?: boolean;
+    retainedPaths?: string[];
   }[] = [];
   const add = (
     module: string,
@@ -234,12 +239,20 @@ function nativeInventory(
         protected: manual(r),
         published: pub(r),
         scheduled: sched(r),
+        ...(module === "theme"
+          ? {
+              unreviewed: !!json<any>(r.spec, {}).meta?.strategy?.retainedPaths
+                ?.length,
+              retainedPaths:
+                json<any>(r.spec, {}).meta?.strategy?.retainedPaths ?? [],
+            }
+          : {}),
       }),
     );
   add(
     "theme",
     all(
-      "SELECT v.id,v.author FROM projects p JOIN theme_versions v ON v.id=p.current_theme_version_id WHERE p.id=?",
+      "SELECT v.id,v.author,v.spec FROM projects p JOIN theme_versions v ON v.id=p.current_theme_version_id WHERE p.id=?",
       projectId,
     ),
     (r) => r.author === "user",
@@ -247,7 +260,7 @@ function nativeInventory(
   add(
     "asset",
     all(
-      "SELECT id,origin,role FROM assets WHERE project_id=? AND deleted_at IS NULL AND COALESCE(role,'') NOT IN ('export','original','logo','brand-board','identity-board')",
+      "SELECT id,origin,role FROM assets WHERE project_id=? AND deleted_at IS NULL AND status!='rejected' AND COALESCE(role,'') NOT IN ('export','original','logo','brand-board','identity-board')",
       projectId,
     ),
     (r) => r.origin === "upload",
@@ -367,13 +380,15 @@ function inventory(
         target.angleId,
         digest,
       );
+    const unreviewed = "unreviewed" in c && !!c.unreviewed;
     const aligned =
+      !unreviewed &&
       !!target &&
       ((!!r && r.angle_id === target.angleId && r.input_digest === digest) ||
         !!review);
     return {
       ...c,
-      protected: c.protected || !!r?.protected,
+      protected: c.protected || !!r?.protected || unreviewed,
       published: c.published || !!r?.published,
       scheduled: c.scheduled || !!r?.scheduled,
       strategyId: r?.strategy_id ?? null,
@@ -381,13 +396,15 @@ function inventory(
       angleId: r?.angle_id ?? null,
       inputDigest: r?.input_digest ?? "",
       aligned,
-      reason: aligned
-        ? "aligned"
-        : !r
-          ? "legacy_unreviewed"
-          : r.angle_id !== target?.angleId
-            ? "previous_angle"
-            : "project_changed",
+      reason: unreviewed
+        ? "protected_unreviewed"
+        : aligned
+          ? "aligned"
+          : !r
+            ? "legacy_unreviewed"
+            : r.angle_id !== target?.angleId
+              ? "previous_angle"
+              : "project_changed",
     };
   });
 }
@@ -420,9 +437,14 @@ export function getStrategyState(projectId: string): StrategyState {
       : {
           angleId: "usage",
           reason:
-            "Le contexte décrit une offre et son usage. Commencer par ce moment concret permet d’en expliquer la place sans inventer de performance. Cette recommandation reste une hypothèse, votre choix vous appartient.",
+            loadProject(projectId).settings.language === "en"
+              ? "The project describes an offer and its use. Starting from that concrete moment helps explain its place without inventing performance. This recommendation is a hypothesis; the choice remains yours."
+              : "Le contexte décrit une offre et son usage. Commencer par ce moment concret permet d’en expliquer la place sans inventer de performance. Cette recommandation reste une hypothèse, votre choix vous appartient.",
         },
-    generalistExplanation: GENERALIST_EXPLANATION,
+    generalistExplanation:
+      loadProject(projectId).settings.language === "en"
+        ? GENERALIST_EXPLANATION_EN
+        : GENERALIST_EXPLANATION,
     analysis: {
       ...json<any>(set.analysis_json, {}),
       currentInputDigest: digest,
@@ -555,6 +577,37 @@ export function prepareStrategyChange(
     return p;
   });
 }
+/** Resolve native versions by ownership, including inactive staged versions; deleted assets cannot be blessed. */
+function contentExists(
+  projectId: string,
+  module: string,
+  contentId: string,
+): boolean {
+  const tables: Record<string, string> = {
+    theme: "theme_versions",
+    asset: "assets",
+    seo: "content_documents",
+    video: "video_documents",
+    ad: "ad_documents",
+    post: "posts",
+    blog: "blog_articles",
+    campaign: "campaigns",
+    calendar: "content_plans",
+  };
+  const table = tables[module];
+  return table
+    ? !!one(
+        `SELECT id FROM ${table} WHERE project_id=? AND id=?${module === "asset" || module === "blog" ? " AND deleted_at IS NULL" : ""}`,
+        projectId,
+        contentId,
+      )
+    : !!one(
+        "SELECT 1 FROM marketing_strategy_contents WHERE project_id=? AND module=? AND content_id=?",
+        projectId,
+        module,
+        contentId,
+      );
+}
 /** Stage complete, checked module output IDs. Retaining engine output is an explicit choice, never a claim of alignment. */
 export function stageStrategyModule(
   projectId: string,
@@ -575,15 +628,7 @@ export function stageStrategyModule(
       "strategy_preparation_closed",
     );
   const target = preparationStrategy(projectId, preparationId);
-  const available = new Set([
-    ...nativeInventory(projectId)
-      .filter((c) => c.module === module)
-      .map((c) => c.contentId),
-    ...producedRows(projectId)
-      .filter((c) => c.module === module)
-      .map((c) => c.content_id),
-  ]);
-  if (options.contentIds.some((cid) => !available.has(cid)))
+  if (options.contentIds.some((cid) => !contentExists(projectId, module, cid)))
     throw new HttpError(
       404,
       "Une version préparée n’appartient pas à ce projet ou module.",
@@ -778,6 +823,18 @@ export function activateStrategy(
         [],
       ),
     }));
+    if (
+      stages.some((stage) =>
+        stage.contentIds.some(
+          (cid) => !contentExists(projectId, stage.module, cid),
+        ),
+      )
+    )
+      throw new HttpError(
+        409,
+        "Une version préparée manque ou a été supprimée ; la stratégie précédente est conservée.",
+        "strategy_staged_content_missing",
+      );
     const target = preparationStrategy(projectId, prep.id);
     const freshInventory = inventory(projectId, target);
     const concurrent = freshInventory.filter(

@@ -619,3 +619,128 @@ it.each([
     ).toBe(true);
   },
 );
+it("seule la direction de composition change : données stratégiques et compatibilité restent identiques", async () => {
+  const f = await fixture();
+  const { localBrand } = await import("@/lib/engine/local");
+  const { saveBrand } = await import("@/lib/projects");
+  const brand = localBrand(f.p, f.p.name).brand;
+  saveBrand(f.pid, brand);
+  activate(f.pid, "usage");
+  recordStrategyContent(f.pid, "custom", "kept");
+  saveBrand(f.pid, {
+    ...brand,
+    direction: "noctil",
+    paletteMode: "client",
+    generatedBy: "ai",
+  });
+  expect(() => assertContentAlignment(f.pid, "custom", "kept")).not.toThrow();
+  saveBrand(f.pid, { ...brand, name: "Une autre identité" });
+  expect(() => assertContentAlignment(f.pid, "custom", "kept")).toThrow();
+});
+it("un média supprimé après préparation ne peut pas être déclaré vérifié", async () => {
+  const f = await fixture();
+  activate(f.pid, "usage");
+  const asset = id();
+  run(
+    "INSERT INTO assets(id,project_id,user_id,name,kind,mime,size,storage_key,origin,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)",
+    asset,
+    f.pid,
+    f.user.id,
+    "test.jpg",
+    "image",
+    "image/jpeg",
+    1,
+    "test.jpg",
+    "generated",
+    now(),
+  );
+  recordStrategyContent(f.pid, "asset", asset);
+  const prep = prepareStrategyChange(f.pid, "expression");
+  stageStrategyModule(f.pid, prep.id, "asset", { contentIds: [asset] });
+  run("UPDATE assets SET deleted_at=? WHERE id=?", now(), asset);
+  expect(() =>
+    activateStrategy(f.pid, {
+      angleId: "expression",
+      preparationId: prep.id,
+      idempotencyKey: id(),
+      confirmed: true,
+    }),
+  ).toThrow(/supprimée/);
+  expect(activeStrategy(f.pid)?.angleId).toBe("usage");
+});
+it("thème préparé conserve les retouches sous avertissement non aligné, malgré son nouveau stamp", async () => {
+  const f = await fixture();
+  const active = activate(f.pid, "usage");
+  const tid = id();
+  run(
+    "INSERT INTO theme_versions(id,project_id,number,spec,author,created_at) VALUES(?,?,?,?,?,?)",
+    tid,
+    f.pid,
+    1,
+    JSON.stringify({
+      meta: {
+        strategy: {
+          retainedPaths: ["templates.index.sections.hero.settings.heading"],
+          alignment: "mixed",
+        },
+      },
+    }),
+    "system",
+    now(),
+  );
+  run("UPDATE projects SET current_theme_version_id=? WHERE id=?", tid, f.pid);
+  recordStrategyContent(f.pid, "theme", tid, { strategy: active });
+  expect(getStrategyState(f.pid).alignment[0]).toMatchObject({
+    protected: true,
+    aligned: false,
+    reason: "protected_unreviewed",
+  });
+});
+it("cartes en anglais, mêmes cinq identités, faits client inchangés et exemples distincts", async () => {
+  const f = await fixture();
+  const { saveSettings } = await import("@/lib/projects");
+  saveSettings(f.pid, { ...loadProject(f.pid).settings, language: "en" });
+  const s = proposeStrategies(f.pid);
+  expect(s.angles.map((a) => a.id)).toEqual([
+    "usage",
+    "reassurance",
+    "expression",
+    "discovery",
+    "generalist",
+  ]);
+  expect(s.angles[4].title).toBe("Generalist");
+  expect(s.generalistExplanation).toContain(
+    "general approach remains possible",
+  );
+  expect(s.angles[0].examples.hero).toBe(`Make room for ${f.p.name}.`);
+  expect(s.angles[1].proofs).toContain("Contenance: 12 litres");
+  expect(new Set(s.angles.slice(0, 4).map((a) => a.motivation)).size).toBe(4);
+  expect(s.angles[2].examples.advertisement).toContain("your own world");
+});
+it("un média rejeté conservé en historique ne bloque pas le changement du contenu courant", async () => {
+  const f = await fixture();
+  activate(f.pid, "usage");
+  const aid = id();
+  run(
+    "INSERT INTO assets(id,project_id,user_id,name,kind,mime,size,storage_key,origin,status,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+    aid,
+    f.pid,
+    f.user.id,
+    "rejected.jpg",
+    "image",
+    "image/jpeg",
+    1,
+    "rejected.jpg",
+    "generated",
+    "rejected",
+    now(),
+  );
+  recordStrategyContent(f.pid, "asset", aid);
+  expect(
+    prepareStrategyChange(f.pid, "expression").contents.some(
+      (c) => c.contentId === aid,
+    ),
+  ).toBe(false);
+  expect(activate(f.pid, "expression").angleId).toBe("expression");
+  expect(one("SELECT id FROM assets WHERE id=?", aid)).toBeTruthy();
+});

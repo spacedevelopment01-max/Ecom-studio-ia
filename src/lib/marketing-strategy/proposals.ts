@@ -4,17 +4,32 @@ import { applyWordingDeep, loadWordingRules } from "../client-wording";
 import { createHash } from "node:crypto";
 import { canonicalJSON } from "../brain/hash";
 import type { MarketingAngle, StrategySource } from "./types";
+import { englishAngles, GENERALIST_EXPLANATION_EN } from "./proposals-en";
+export { GENERALIST_EXPLANATION_EN } from "./proposals-en";
 export const GENERALIST_EXPLANATION =
   "En cherchant à parler à tout le monde, votre message peut devenir moins précis et moins marquant. Un angle ciblé aide une personne à se reconnaître dans votre offre. L'approche généraliste reste possible si elle correspond à votre objectif.";
 export function inputDigest(p: Project) {
+  const brand = p.brand
+    ? (({
+        direction,
+        paletteMode,
+        generatedBy,
+        checks,
+        validated,
+        alternatives,
+        taglineAlternatives,
+        ...identity
+      }) => identity)(p.brand)
+    : null;
   return createHash("sha256")
     .update(
       canonicalJSON({
         business: p.business,
+        language: p.settings.language ?? "fr",
         product: p.product,
         services: p.services,
         catalog: p.catalog,
-        brand: p.brand,
+        brand,
         strategy: p.strategy,
         sources: p.sources,
         constraints: memory(p.id)
@@ -116,6 +131,36 @@ export function proposalAnalysis(p: Project) {
     "Aucune étude de marché ou concurrence vérifiée par ce calcul local. Les cibles et motivations proposées sont des hypothèses créatives à confronter au terrain.",
     "Aucune promesse de ventes, résultat chiffré ou caractéristique nouvelle. Les informations produit et l’identité validée restent inchangées.",
   ];
+  if (p.settings.language === "en") {
+    const labels: Record<string, string> = {
+      "Offre renseignée": "Supplied offer",
+      "Description du projet (non vérifiée extérieurement)":
+        "Project description (not externally verified)",
+      "Prestation renseignée": "Supplied service",
+      "Cible de travail héritée, à valider":
+        "Inherited working audience, to validate",
+      "Lien fourni, contenu et date non vérifiés par cette préparation locale":
+        "Supplied link; contents and date not verified by this local preparation",
+    };
+    for (const source of sources) {
+      source.label = labels[source.label] ?? source.label;
+      if (source.ref && source.kind === "client")
+        source.value =
+          "Reference to review before any market or competitor claim.";
+    }
+
+    for (const q of missingQuestions)
+      q.question =
+        q.key === "offer"
+          ? "Which product or service do you offer, precisely?"
+          : "In which situation is your offer used, and which concrete need does it help address?";
+    limits.splice(
+      0,
+      limits.length,
+      "No market or competitor research has been verified by this local preparation. Audiences and motivations are creative hypotheses to validate in practice.",
+      "No sales promise, numerical result or new product characteristic. Known facts and the validated identity are preserved.",
+    );
+  }
   return { sources, missingQuestions, limits, facts, audience };
 }
 export function buildAngles(p: Project): MarketingAngle[] {
@@ -393,5 +438,8 @@ export function buildAngles(p: Project): MarketingAngle[] {
       },
     }),
   ];
-  return applyWordingDeep(angles, loadWordingRules(p.id));
+  return applyWordingDeep(
+    p.settings.language === "en" ? englishAngles(p, a.sources) : angles,
+    loadWordingRules(p.id),
+  );
 }
