@@ -1,0 +1,767 @@
+{
+  "applicationCommit": "393dc83555193855d8803d08ca28dcfa825296dc",
+  "isolatedDataOnly": true,
+  "realAiCalls": 0,
+  "realAiCostEur": 0,
+  "noMainMergeOrDeployment": true,
+  "screenshots": 115,
+  "videos": 5,
+  "downloadableZipExamples": 6,
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 10725,
+      "sha256": "47b9f16821e95b672a43f63f8752a55c6b7ce103e41f737b7814783692626a78"
+    },
+    {
+      "path": "captures/01-demo-originale-avant-choix.jpg",
+      "bytes": 162155,
+      "sha256": "f88f45493d2013f064181d6b3179bf26a11021b375128d3cf83fcb0e9a1fa6e5"
+    },
+    {
+      "path": "captures/02-projet-client-apres-choix.jpg",
+      "bytes": 211489,
+      "sha256": "90278aa74008f4b68037b3307dc9eecefe4ee41cee3ec98915aadd47d8f50161"
+    },
+    {
+      "path": "captures/03-editeur-et-exports.jpg",
+      "bytes": 211489,
+      "sha256": "90278aa74008f4b68037b3307dc9eecefe4ee41cee3ec98915aadd47d8f50161"
+    },
+    {
+      "path": "captures/barre-noctil-360-after-buy.jpg",
+      "bytes": 45546,
+      "sha256": "4ab2003ca15bec9b901e7b657cffea82827bc2da5f9b4583eec650390dcf09a5"
+    },
+    {
+      "path": "captures/barre-noctil-360-details.jpg",
+      "bytes": 35801,
+      "sha256": "b5d138b0bddcdcdf123c14aa7086fac101e10efb37f377066aa603d897a72046"
+    },
+    {
+      "path": "captures/barre-noctil-360-focused-resized-viewport.jpg",
+      "bytes": 30392,
+      "sha256": "c71cf1f007d1a0641fefd1bb17b0b96bcdd66ff9c3a94d37dc6d38521ef87281"
+    },
+    {
+      "path": "captures/barre-noctil-360-footer.jpg",
+      "bytes": 30832,
+      "sha256": "c9116279815f1d834e83a1c2ece42716639ec4603ed3b39fd1f27033978e7bc8"
+    },
+    {
+      "path": "captures/barre-noctil-360-menu.jpg",
+      "bytes": 32145,
+      "sha256": "021d0ceffc15e71bae5ead666673ac87b47a955773619cbf2e03141ce7f97380"
+    },
+    {
+      "path": "captures/barre-noctil-360-top.jpg",
+      "bytes": 44526,
+      "sha256": "6e17e431087fde6d797ba66a2e7f95f544954cd39dea26850b91deb4c561a187"
+    },
+    {
+      "path": "captures/barre-noctil-390-after-buy.jpg",
+      "bytes": 47859,
+      "sha256": "a56e7f858072007e7f19f7e6f8029ffe3b11747a7f7b2b8f5c3bb5e0c7ecf551"
+    },
+    {
+      "path": "captures/barre-noctil-390-details.jpg",
+      "bytes": 34891,
+      "sha256": "e932b541f264dc3c048a7ebc26f9fb8ce7b06ab409b782b80b9a03af6ccb6593"
+    },
+    {
+      "path": "captures/barre-noctil-390-focused-resized-viewport.jpg",
+      "bytes": 33926,
+      "sha256": "0bf181e3900ad5d77f09ee0803ad900e401f17ca306e9ac4100a974e68858738"
+    },
+    {
+      "path": "captures/barre-noctil-390-footer.jpg",
+      "bytes": 33242,
+      "sha256": "4876627cfb97b45527cf20c02d799a18c315675d82ac74522120915d0bf38e5b"
+    },
+    {
+      "path": "captures/barre-noctil-390-menu.jpg",
+      "bytes": 31888,
+      "sha256": "b71dc006798b23447eb4a103432265cb4d999a75eeac2b78740cf2125c2a7ea1"
+    },
+    {
+      "path": "captures/barre-noctil-390-top.jpg",
+      "bytes": 44467,
+      "sha256": "70c71fcdc027a3a830ef5c56b6344bcf3fb98a9be237eb2f2fed366c2addd1a5"
+    },
+    {
+      "path": "captures/barre-noctil-430-after-buy.jpg",
+      "bytes": 50727,
+      "sha256": "b3ab47bec38eb0fead88b16c7f796bed219e16f6e4816fbedff12ed43e59f991"
+    },
+    {
+      "path": "captures/barre-noctil-430-details.jpg",
+      "bytes": 34468,
+      "sha256": "02810684dec98c332716476561983ad153ad7bf24487572f9485e74b44bae449"
+    },
+    {
+      "path": "captures/barre-noctil-430-focused-resized-viewport.jpg",
+      "bytes": 37235,
+      "sha256": "71bbd25991abb6dd230e075e063d374e77ce87f4a425a80ce533413995b0341a"
+    },
+    {
+      "path": "captures/barre-noctil-430-footer.jpg",
+      "bytes": 33649,
+      "sha256": "2d778a717ef60c37d21162275bded69927751c68e70b2bf5bb7a558640240d3a"
+    },
+    {
+      "path": "captures/barre-noctil-430-menu.jpg",
+      "bytes": 31967,
+      "sha256": "531b24d007a417073bc3f335c2f230406f9a768d9f4007e346279671b842a733"
+    },
+    {
+      "path": "captures/barre-noctil-430-top.jpg",
+      "bytes": 46375,
+      "sha256": "8fff57aca6989a88930a5852fdd2c87e71e9627f8c04dcaf6779bc8293478e5a"
+    },
+    {
+      "path": "captures/barre-traverse-360-after-buy.jpg",
+      "bytes": 44231,
+      "sha256": "0a5dc022a387143554b95a93a6c98056fcb17682e37898810c4d2aa195b0ce34"
+    },
+    {
+      "path": "captures/barre-traverse-360-details.jpg",
+      "bytes": 41924,
+      "sha256": "82ab347c8ab6cdd7c143cd96ba99d3d00ccd463e58369e4c25b26ea2339436dc"
+    },
+    {
+      "path": "captures/barre-traverse-360-focused-resized-viewport.jpg",
+      "bytes": 31249,
+      "sha256": "870f509f24aa74d1f3ec7f7dfeab50e47dd1dba7af63b41b1532fecaa2ee96d3"
+    },
+    {
+      "path": "captures/barre-traverse-360-footer.jpg",
+      "bytes": 33089,
+      "sha256": "7b59ac40c6d18b781cf68102a81217e826c943790dadff58fc9f042254b2838a"
+    },
+    {
+      "path": "captures/barre-traverse-360-menu.jpg",
+      "bytes": 20279,
+      "sha256": "ef49b777fc282a25b5019cd1331c7cb4ba63821fc570977891ec9ec578563310"
+    },
+    {
+      "path": "captures/barre-traverse-360-top.jpg",
+      "bytes": 39889,
+      "sha256": "268635a8837bd6b9abdca70f049d14dca3be79df35aa9219fbcf6ec9dc32ae26"
+    },
+    {
+      "path": "captures/barre-traverse-390-after-buy.jpg",
+      "bytes": 45401,
+      "sha256": "f57c8032c04e0661e7147adaffcc645cb1e7d4b8d8ff11de519040e541eb46e3"
+    },
+    {
+      "path": "captures/barre-traverse-390-details.jpg",
+      "bytes": 43208,
+      "sha256": "aa41232885276e3807af2aa67de7a338dd999c5b028f22aedc4aacf94c8db87c"
+    },
+    {
+      "path": "captures/barre-traverse-390-focused-resized-viewport.jpg",
+      "bytes": 33002,
+      "sha256": "f483d818dc48d300d811803a06e2e79be2841e9728b80d4f4edb11e0d9ae71c8"
+    },
+    {
+      "path": "captures/barre-traverse-390-footer.jpg",
+      "bytes": 32555,
+      "sha256": "c03cd3b8b25239b3b253dca71a4fb0a81290a8cb477d3fa39b3a0809b7d8f48d"
+    },
+    {
+      "path": "captures/barre-traverse-390-menu.jpg",
+      "bytes": 21064,
+      "sha256": "962e68dd0ba19269ab8a7999c4aa69c3d28d7a36134d671c1ab00af961dc89a0"
+    },
+    {
+      "path": "captures/barre-traverse-390-top.jpg",
+      "bytes": 41318,
+      "sha256": "f6e27c1549bf009a5215adf5b4d52227a50bcb6f63fab939b7b26d58edbf74d5"
+    },
+    {
+      "path": "captures/barre-traverse-430-after-buy.jpg",
+      "bytes": 48383,
+      "sha256": "b26b753fa49c666b30152584e0b961f6c9c25822dd9d5b756f669d97668d6e94"
+    },
+    {
+      "path": "captures/barre-traverse-430-details.jpg",
+      "bytes": 46946,
+      "sha256": "9ee1252b3dc0c2fdfc94761b2b36d8a149fcb62b19983711a57d25ae30383eee"
+    },
+    {
+      "path": "captures/barre-traverse-430-focused-resized-viewport.jpg",
+      "bytes": 35648,
+      "sha256": "1709ffd4e005d72ca903fb4fa039f6fa745af8e0adeffa39316c34c0ef3091f0"
+    },
+    {
+      "path": "captures/barre-traverse-430-footer.jpg",
+      "bytes": 33583,
+      "sha256": "bcd7c15174dfaa65132d252e729dee6b1e4138e1a290dab89dc3f234e5c107bf"
+    },
+    {
+      "path": "captures/barre-traverse-430-menu.jpg",
+      "bytes": 21535,
+      "sha256": "facba453efb5c21e7d15f604d1a56013ba73af5017a82ffe8c298394387e3496"
+    },
+    {
+      "path": "captures/barre-traverse-430-top.jpg",
+      "bytes": 43216,
+      "sha256": "69078705ef7f3e5343a030534e0395a580dd19c61afe5377a0d36c83cdcaa282"
+    },
+    {
+      "path": "captures/fraise-client-accueil-1440.jpg",
+      "bytes": 602004,
+      "sha256": "14ea3469533b47a38237122718aba6ed68eb04de5901b4522bee5d6ac04066d8"
+    },
+    {
+      "path": "captures/fraise-client-accueil-390.jpg",
+      "bytes": 394448,
+      "sha256": "ca96687e811eb55467807c7767dfd2af24c21b5303d708155d33d978c6337c2d"
+    },
+    {
+      "path": "captures/fraise-client-produit-1440.jpg",
+      "bytes": 651392,
+      "sha256": "79761b0ec5a5e69ddf153b95e76060c3ed5374100d97444680ff961c35638e4b"
+    },
+    {
+      "path": "captures/fraise-client-produit-390.jpg",
+      "bytes": 449514,
+      "sha256": "e2799ee43c573e3def16cf2da239185dcfbb6ebd5413b353ee615ed147aa9404"
+    },
+    {
+      "path": "captures/fraise-conditions-generales-client-1440.jpg",
+      "bytes": 166751,
+      "sha256": "68c616e29f05303916576bc4f469175b24335239b6bc990f98de0b9d36cc9315"
+    },
+    {
+      "path": "captures/fraise-confidentialite-client-390.jpg",
+      "bytes": 127051,
+      "sha256": "8f274d43252eb7b09f833f7591c892695271715dc2c04d9bc30ee25304ac34be"
+    },
+    {
+      "path": "captures/fraise-livraison-retours-client-1440.jpg",
+      "bytes": 163084,
+      "sha256": "01661dadde2d893de85ad03d770d2b632892567690dcaab94a66278ee335b307"
+    },
+    {
+      "path": "captures/noctil-390-bas.jpg",
+      "bytes": 37522,
+      "sha256": "971f4163c27fabeabaca841972a4303fc16db15f5358b5344d54d64f814fe119"
+    },
+    {
+      "path": "captures/noctil-390-haut.jpg",
+      "bytes": 51808,
+      "sha256": "160210f3d3f4f96e5da860b0972ad9fb31c0510ac34bf92d1a388709022b45bf"
+    },
+    {
+      "path": "captures/noctil-390-milieu.jpg",
+      "bytes": 46601,
+      "sha256": "a7719c6d0529d9c572cf411b31495a59bfea40a87d988458e4bc82292ac310d2"
+    },
+    {
+      "path": "captures/noctil-client-accueil-1440.jpg",
+      "bytes": 502739,
+      "sha256": "c7319f308de4595d718cafa3898fb72c0a9e54e1037ea5bf8ba0cd818cd6e7cf"
+    },
+    {
+      "path": "captures/noctil-client-accueil-390.jpg",
+      "bytes": 302678,
+      "sha256": "be0466f9917b8d12c31b73621c47565e4e8c2fb39b05516252f4b2538f20af9f"
+    },
+    {
+      "path": "captures/noctil-client-produit-1440.jpg",
+      "bytes": 470093,
+      "sha256": "cb75d325e686e3b76503d5a2d5615f284c0bf006333ae2b9bdf24edbbaa0fcf2"
+    },
+    {
+      "path": "captures/noctil-client-produit-390.jpg",
+      "bytes": 286225,
+      "sha256": "38c72101c80c31a7bea2f35d801e95635538f75e215e46cf90643eba46a1014a"
+    },
+    {
+      "path": "captures/noctil-reference-accueil-1440.jpg",
+      "bytes": 827402,
+      "sha256": "bd5c9340cfbd46cca93178ecbd7738919eb372e03dc8e6954eae7248f709c46a"
+    },
+    {
+      "path": "captures/noctil-reference-accueil-390.jpg",
+      "bytes": 406079,
+      "sha256": "d5bd71337aef703da01f9f85f26b897ff5cd0a9c2ca4e94f2ae7498f395c9a47"
+    },
+    {
+      "path": "captures/noctil-reference-produit-1440.jpg",
+      "bytes": 515993,
+      "sha256": "ed21fbb3c5edb1855534e557e67286508d886e8cd271715d110147228e8fd334"
+    },
+    {
+      "path": "captures/noctil-reference-produit-390.jpg",
+      "bytes": 286971,
+      "sha256": "57270b8ccba573a3e8d3ee366cec1bd9bd29f68fd7c01da1444498131f75c78a"
+    },
+    {
+      "path": "captures/onde-client-accueil-1440.jpg",
+      "bytes": 389431,
+      "sha256": "16694946c99e856fabab696e3ea776838692ac144bdbc3f2018361ecc58f2a35"
+    },
+    {
+      "path": "captures/onde-client-accueil-390.jpg",
+      "bytes": 269256,
+      "sha256": "f6aaf9baa65d83c9bb12c74a0e547ee4804bd7b15d5c00e2c7c0fa5d176f794c"
+    },
+    {
+      "path": "captures/onde-client-produit-1440.jpg",
+      "bytes": 456435,
+      "sha256": "af3c32cc91a89947bc17967e9b3413d864016d0fdbf86574c3e121550f7fc218"
+    },
+    {
+      "path": "captures/onde-client-produit-390.jpg",
+      "bytes": 316460,
+      "sha256": "c6c5ef00c18f4ac86aa53a17daea27969f7d9abdf96fca7aab59e2bddbfea877"
+    },
+    {
+      "path": "captures/orbe-1440-bas.jpg",
+      "bytes": 73245,
+      "sha256": "8a70b1511429e05330c7e4cf1cd1f4ee442253fee29ebf3be9b9971e79ffa4ff"
+    },
+    {
+      "path": "captures/orbe-1440-haut.jpg",
+      "bytes": 91666,
+      "sha256": "596212ea7390bdc827847f77a6a5b8a430aba864a0597a3e4ec847ff97c8eb74"
+    },
+    {
+      "path": "captures/orbe-1440-milieu.jpg",
+      "bytes": 81567,
+      "sha256": "040bf1d3351e6020e506d9ecbd674129feeb635951f4190bcda0bd9156edbe5d"
+    },
+    {
+      "path": "captures/orbe-client-accueil-1440.jpg",
+      "bytes": 366063,
+      "sha256": "c09fa256cc8b7ce470cf8cd9c3eea97c62f11d4b76c35a5e6dd04f0d0e7fdfa1"
+    },
+    {
+      "path": "captures/orbe-client-accueil-390.jpg",
+      "bytes": 191349,
+      "sha256": "d53c044457c1b2b394c6d51f2160a417769ae408d223bf16c86793f1ba418cfd"
+    },
+    {
+      "path": "captures/orbe-client-produit-1440.jpg",
+      "bytes": 214568,
+      "sha256": "d1d7fc2a5093b2d641cb4b6fc181ba812977c57d8d7901f8d33b1b7dd023c630"
+    },
+    {
+      "path": "captures/orbe-client-produit-390.jpg",
+      "bytes": 144094,
+      "sha256": "1fb7e00c1e70459fceaaf68e698c944894acf942e285624a6e310476e84dd06d"
+    },
+    {
+      "path": "captures/orbe-reference-accueil-1440.jpg",
+      "bytes": 538974,
+      "sha256": "baf35942f6563ccbf6f2586d3ae987fbf4b112b0883dfba2e85a6072e425332d"
+    },
+    {
+      "path": "captures/orbe-reference-accueil-390.jpg",
+      "bytes": 175192,
+      "sha256": "437a8daa4bd3aaebc3afefa8490c3ebfc80d9c4ad109de19e3c6840909f9a49a"
+    },
+    {
+      "path": "captures/orbe-reference-produit-1440.jpg",
+      "bytes": 213330,
+      "sha256": "a124f21ab17461d1c4fd0a19b41ae597562d1a926aecf846fd87e2ae1b326b0b"
+    },
+    {
+      "path": "captures/orbe-reference-produit-390.jpg",
+      "bytes": 119789,
+      "sha256": "06eda155d40871bfbb05db00278de2403bef18c2ff429e67a3aca0ce39b01d78"
+    },
+    {
+      "path": "captures/rive-1440-bas.jpg",
+      "bytes": 69476,
+      "sha256": "82bc46a2178c666529a6e08702a96d98571cdfba20eead40322a8343d6e81407"
+    },
+    {
+      "path": "captures/rive-1440-haut.jpg",
+      "bytes": 88543,
+      "sha256": "3c1c033d51b10c09ef550df7d2c1b1387d194f3138bb1006fb1845db78dcc3a6"
+    },
+    {
+      "path": "captures/rive-1440-milieu.jpg",
+      "bytes": 72357,
+      "sha256": "9a1339cbc5f5cdcb98f8d0a054a84aa9b10d55c4bc0637e4b47f20339e9cc0f2"
+    },
+    {
+      "path": "captures/rive-client-accueil-1440.jpg",
+      "bytes": 570911,
+      "sha256": "21d5efa611d636f0781ae622520ba972c2511734bba1c1ef8d03bbf233657de3"
+    },
+    {
+      "path": "captures/rive-client-accueil-390.jpg",
+      "bytes": 355144,
+      "sha256": "2d8f551e936d491724b047178c8b8bd2dd6c273ce654e553c1b3eb8fd9185637"
+    },
+    {
+      "path": "captures/rive-client-contact-1440.jpg",
+      "bytes": 173850,
+      "sha256": "7f986547ecf124a550dbff492f3c9ea5e8f3cd5812542653a759fb1e6f84cc0d"
+    },
+    {
+      "path": "captures/rive-client-contact-390.jpg",
+      "bytes": 122990,
+      "sha256": "e2e125e2e9ff2204be58dcb38fa5e27e3d21665efe3db9119bdaf7b01b91cdf7"
+    },
+    {
+      "path": "captures/rive-client-page-0-390.jpg",
+      "bytes": 154140,
+      "sha256": "bfa685a3db2996e72e00f73b7e0bff97d8c37baa36863948193a99018302aa49"
+    },
+    {
+      "path": "captures/rive-client-page-2-390.jpg",
+      "bytes": 122990,
+      "sha256": "e2e125e2e9ff2204be58dcb38fa5e27e3d21665efe3db9119bdaf7b01b91cdf7"
+    },
+    {
+      "path": "captures/rive-client-prestations-1440.jpg",
+      "bytes": 246592,
+      "sha256": "a767026b56df06e435949d485cbf148a900f833fd5603f399f9ebe7de54bb753"
+    },
+    {
+      "path": "captures/rive-client-prestations-390.jpg",
+      "bytes": 154140,
+      "sha256": "bfa685a3db2996e72e00f73b7e0bff97d8c37baa36863948193a99018302aa49"
+    },
+    {
+      "path": "captures/rive-mentions-legales-client-390.jpg",
+      "bytes": 66707,
+      "sha256": "65b34b6a18021fedcb9af78aa8c2654e4984e1b47c89bb4558c2dfcb210b1f00"
+    },
+    {
+      "path": "captures/rive-reference-accueil-1440.jpg",
+      "bytes": 1171087,
+      "sha256": "66abd27d9428f11606aaa57eddc8dd6910888be2650716f5440ede2ccb2b00f0"
+    },
+    {
+      "path": "captures/rive-reference-accueil-390.jpg",
+      "bytes": 458988,
+      "sha256": "766150a8253f6d4f846c02ce3d81628e47b4fcbfebf74576c699a7b446ca7272"
+    },
+    {
+      "path": "captures/rive-reference-contact-1440.jpg",
+      "bytes": 150749,
+      "sha256": "142142a2a0eaee19c90d815ff5c2b024aa71b9b45333a0371e1e0b2de6cd9d55"
+    },
+    {
+      "path": "captures/rive-reference-contact-390.jpg",
+      "bytes": 98724,
+      "sha256": "a482f7042e05be64b4b64fe1982b8df0df601b48acfa1a94ce10f3fc923a0e0e"
+    },
+    {
+      "path": "captures/rive-reference-prestations-1440.jpg",
+      "bytes": 301104,
+      "sha256": "d9d5ed4efbfba38970d3cac20eb212f4f09f1bb33c56cb77d770c7151c7c9417"
+    },
+    {
+      "path": "captures/rive-reference-prestations-390.jpg",
+      "bytes": 146758,
+      "sha256": "323f40e07d36ff90ed7e822b727e858af9fa8e9a792ca5d2c8e8ef9353464c03"
+    },
+    {
+      "path": "captures/sillon-client-accueil-1440.jpg",
+      "bytes": 439127,
+      "sha256": "96522330743187b1ba7798b3fbe25520735367169cc93d456a2d860deeb4ac76"
+    },
+    {
+      "path": "captures/sillon-client-accueil-390.jpg",
+      "bytes": 259913,
+      "sha256": "44710f22e5f87bf31c3db6e12356ec2d0d40dcc9176c14836c92c365e12baba1"
+    },
+    {
+      "path": "captures/sillon-client-produit-1440.jpg",
+      "bytes": 693829,
+      "sha256": "c6fb0a4bd0c63bf9966ce38585ecd188bd5ce22c1538707a46adeaa8c0ec58ff"
+    },
+    {
+      "path": "captures/sillon-client-produit-390.jpg",
+      "bytes": 301826,
+      "sha256": "7f1151a6980293e8249dee0734417969955e8ef30431e14a6d6d36972d7b3795"
+    },
+    {
+      "path": "captures/sillon-reference-accueil-1440.jpg",
+      "bytes": 1006674,
+      "sha256": "47fc9017053e19650487f859685e25f8c0e8888fa0601b88ac0edf7cfa7a9012"
+    },
+    {
+      "path": "captures/sillon-reference-accueil-390.jpg",
+      "bytes": 506285,
+      "sha256": "4844e6dd6f020d0e04869b7d4637386705d37e3b018841764ad5cedbc1598461"
+    },
+    {
+      "path": "captures/sillon-reference-produit-1440.jpg",
+      "bytes": 645259,
+      "sha256": "1591638b7e647db3d87d4a06195144174973114d6d19623ec33e4e78d40bea2e"
+    },
+    {
+      "path": "captures/sillon-reference-produit-390.jpg",
+      "bytes": 347961,
+      "sha256": "b4e68b4a6b1272724fcf3bd7192b9368d1df97cd92a33dc30317e33282002fbe"
+    },
+    {
+      "path": "captures/studio-adaptation-partielle-1440.jpg",
+      "bytes": 185063,
+      "sha256": "84f3540932445d0233a1a2cab4ccf4cce8812f191973663709a932d4135a9c2a"
+    },
+    {
+      "path": "captures/studio-nouvelle-session-390.jpg",
+      "bytes": 67393,
+      "sha256": "7641c4fab7e80ef3281835c5fd75eb09eec0024482210870b04a16788129bf17"
+    },
+    {
+      "path": "captures/traverse-390-bas.jpg",
+      "bytes": 36727,
+      "sha256": "7d0da1570f6b18a860fe35990f7ad0234b983ca7752ef42d5b6ce478d0e69e7a"
+    },
+    {
+      "path": "captures/traverse-390-haut.jpg",
+      "bytes": 47447,
+      "sha256": "f175d76a106fcb0eca7655f7758dd14b7a612852c425766257c6f437f692f68b"
+    },
+    {
+      "path": "captures/traverse-390-milieu.jpg",
+      "bytes": 47125,
+      "sha256": "e4d60a40125f8fea3e1f4887fe98af748819631b59541fc2ab40853c3e430d0a"
+    },
+    {
+      "path": "captures/traverse-client-accueil-1440.jpg",
+      "bytes": 499596,
+      "sha256": "12aeab944c81cb33084172924b35ca86ff7436bb15de7ac80865a66f72818532"
+    },
+    {
+      "path": "captures/traverse-client-accueil-390.jpg",
+      "bytes": 281599,
+      "sha256": "0cd007d1734c417222f515bae11abb16f7b505d6cefcf70621235b3e079be776"
+    },
+    {
+      "path": "captures/traverse-client-produit-1440.jpg",
+      "bytes": 1111978,
+      "sha256": "cac12445a39657489aa5ea9950023c5f3545c834f105c30932e2c8f2712ac5b4"
+    },
+    {
+      "path": "captures/traverse-client-produit-390.jpg",
+      "bytes": 311356,
+      "sha256": "8e7a26a41808529cf47d68505bafa755c49a3092e0e516a0504e1f850e550aad"
+    },
+    {
+      "path": "captures/traverse-incomplet-client-accueil-1440.jpg",
+      "bytes": 229749,
+      "sha256": "abe28db43c5ea16acfc6385d16b1433e0bede3972ca390022f07766bd163b274"
+    },
+    {
+      "path": "captures/traverse-incomplet-client-accueil-390.jpg",
+      "bytes": 144552,
+      "sha256": "46567b50482ce35ae60a376fb6ba6be4a994a6e880d3228c3cc159336cba15b1"
+    },
+    {
+      "path": "captures/traverse-incomplet-client-produit-1440.jpg",
+      "bytes": 282091,
+      "sha256": "3fba3596fda535cf9548167b2af19167ec9ccd6e9537207bd5e9d1efe6b59410"
+    },
+    {
+      "path": "captures/traverse-incomplet-client-produit-390.jpg",
+      "bytes": 192313,
+      "sha256": "5621ef4b751f02ad1c1f8f6e3eee070c10b4350d082347b03fd9e915ae74b30c"
+    },
+    {
+      "path": "captures/traverse-reference-accueil-1440.jpg",
+      "bytes": 1449933,
+      "sha256": "7665686d75aa7c303dc41477dd43b96afad42e0b2768b27fcb1dc5b74e85b7a6"
+    },
+    {
+      "path": "captures/traverse-reference-accueil-390.jpg",
+      "bytes": 645656,
+      "sha256": "84462265d4209b1a7365a1ef551089f0be712b0e9a03950377525b9f833bad2d"
+    },
+    {
+      "path": "captures/traverse-reference-produit-1440.jpg",
+      "bytes": 1138597,
+      "sha256": "f365706e1c865c7eb629efa7cd7b8a6e12588b17cd821477c01b9d6e14b5b9b0"
+    },
+    {
+      "path": "captures/traverse-reference-produit-390.jpg",
+      "bytes": 303607,
+      "sha256": "2e8e3ac6489d000a774ae763bc4ddf6f9ad60b05006d3058a5c0e209bec76060"
+    },
+    {
+      "path": "exports/client-orbe-prestashop.zip",
+      "bytes": 794479,
+      "sha256": "3516f787942fe8ddb8c8eca1fc8c5dd2b14af8757e553babbbaf185e4806597d"
+    },
+    {
+      "path": "exports/client-orbe-shopify.zip",
+      "bytes": 988728,
+      "sha256": "aea0ae3d37006854c7230ae2163fa55b61c6c96e7d3cb43d5ca288b81804a13f"
+    },
+    {
+      "path": "exports/client-orbe-woocommerce.zip",
+      "bytes": 879954,
+      "sha256": "a249280ff491f9eb03cea88dc6c26ba17f337a293403e6973cf4d2605303f3be"
+    },
+    {
+      "path": "exports/rive-prestashop.zip",
+      "bytes": 705121,
+      "sha256": "031a95aef13590e0714234682602ed260c5ee1f89ce079d845506f45fd9aa132"
+    },
+    {
+      "path": "exports/rive-shopify.zip",
+      "bytes": 811574,
+      "sha256": "60f1c2ff1c0bfb7472e8093ccd05c1fc0dc2024ca1cab954bb1755038b9fc982"
+    },
+    {
+      "path": "exports/rive-woocommerce.zip",
+      "bytes": 841067,
+      "sha256": "5f894042d4fabe2480bc99b6392b24038678b42eb000b58c982968bf77dd9a98"
+    },
+    {
+      "path": "logs/mission154-browser-final.txt",
+      "bytes": 58,
+      "sha256": "67b8ca81912f5f3ed559f645565c973c05b6874f1676d0795a47c0530a02b947"
+    },
+    {
+      "path": "logs/mission154-build-final.txt",
+      "bytes": 14055,
+      "sha256": "9cfc84decb4bda5b618bd99e38f3b5529096608e32768f5c706d240d9cf537cc"
+    },
+    {
+      "path": "logs/mission154-exports-final.txt",
+      "bytes": 59,
+      "sha256": "3421a1857590f211813bf52136cf46dbc06af788a70c7255b89482c05c1fd87d"
+    },
+    {
+      "path": "logs/mission154-flow-final.txt",
+      "bytes": 96,
+      "sha256": "b278b447099259b83b7fe2438abce482f5f5d5f5868aac4fd8ccbcd02a5f4154"
+    },
+    {
+      "path": "logs/mission154-inspect-final.txt",
+      "bytes": 23,
+      "sha256": "a99f8fa7d16f065dac9225127ec6bd1f8a207ba93fc7dcb10303cc4131ccfc41"
+    },
+    {
+      "path": "logs/mission154-legal-pages-final.txt",
+      "bytes": 46,
+      "sha256": "c12ac0881695d82066bc7987ebdaa2627d6965633bfa6a4004eaffbf3e7821f6"
+    },
+    {
+      "path": "logs/mission154-service-pages-final.txt",
+      "bytes": 55,
+      "sha256": "224f26d0f69d0ee97c93aa7a2e9105ca51a6353d590740080eb0ea0290a1574d"
+    },
+    {
+      "path": "logs/mission154-sticky-final.txt",
+      "bytes": 31,
+      "sha256": "e3793801e275252aa09ce01aa7fde52c6e7b5ed7808d6745e56a8dd9fd5c5ea3"
+    },
+    {
+      "path": "logs/mission154-targets-final.txt",
+      "bytes": 181,
+      "sha256": "6460ab429096f4bba8e590002b57758da01e773a3170071c700da69dc25c35c9"
+    },
+    {
+      "path": "logs/mission154-themecheck-final.txt",
+      "bytes": 1460,
+      "sha256": "d2aa17eb801ae7d7be152d1ad3845996e369e7cb6bb3b271dba345a4d8673922"
+    },
+    {
+      "path": "logs/mission154-types-final.txt",
+      "bytes": 50,
+      "sha256": "b6403ca485a85ef2a37b272546a2d1bdcfecfeaae1603490b12a59851c0d4580"
+    },
+    {
+      "path": "preuves/barre-mobile.json",
+      "bytes": 346099,
+      "sha256": "6323ec6685f740d638c745a454f8c4155237bd7944ee1b3d501e8f12574f016e"
+    },
+    {
+      "path": "preuves/content-matrix.json",
+      "bytes": 3769,
+      "sha256": "7d1f95ffc47560b6cda17c720f7e4e72f8fc08ca30d1ef993192a675e4b490a2"
+    },
+    {
+      "path": "preuves/exports.json",
+      "bytes": 32667,
+      "sha256": "9da997f3fcedd9a55f35adacdc22cbb83b8c0589db070cf123b01852d6c62184"
+    },
+    {
+      "path": "preuves/identity-input-pack.json",
+      "bytes": 818,
+      "sha256": "d41b0f2cce28f9f5890f9c8b50a5d1919b4d36f7363ef3556d645815facb7666"
+    },
+    {
+      "path": "preuves/integration.json",
+      "bytes": 764,
+      "sha256": "015a52bd682b33f48faae444df869c1895d770b2bbd4a302a84f3ec9d5c9f0f5"
+    },
+    {
+      "path": "preuves/kits-manquants.json",
+      "bytes": 547,
+      "sha256": "222e8128bd962d5974a598ec1bc6a2eb193798fe4bbd81e9c7417e0d26754b5e"
+    },
+    {
+      "path": "preuves/navigateur.json",
+      "bytes": 142684,
+      "sha256": "8de9f3de9b4fef5cd87d1f4f88d8423d8eca5eabde3af0ccd743321a013f1c70"
+    },
+    {
+      "path": "preuves/pages-legales.json",
+      "bytes": 633,
+      "sha256": "c529e99d5bd9a20aad3ffbcc22c5021bd8b2101011a9787d87fd8eb4096a232d"
+    },
+    {
+      "path": "preuves/parcours-initial.json",
+      "bytes": 1069,
+      "sha256": "011e6b162717aca9a7b08db8a0d0abd896e1d61843f812dba5093055fcb4a338"
+    },
+    {
+      "path": "preuves/reprise-engine.json",
+      "bytes": 1537,
+      "sha256": "bc703e8be1df8625d41b2a6b4da4dc4b4ca7337986d48c87e747377d80307439"
+    },
+    {
+      "path": "preuves/reprise-pages-avant.json",
+      "bytes": 921,
+      "sha256": "07497f3334105ab84901fa3b138235b0d07ec9255164b303bca4f5c87ce86b24"
+    },
+    {
+      "path": "preuves/services-pages.json",
+      "bytes": 2102,
+      "sha256": "9f1e7a879053f4f6145cebfa04061b69d1b6272773c018a022b9b870d43c6d56"
+    },
+    {
+      "path": "preuves/synthetic-input-pack.json",
+      "bytes": 796,
+      "sha256": "2004ae4657a19446f9f12c7e1df511e70ed1f6975019e204fc34bfc9ce68e53f"
+    },
+    {
+      "path": "videos/choix-demo-adaptation-exports.mp4",
+      "bytes": 1945558,
+      "sha256": "91f44789d4ce04d0034610e99ddcc138c4a3e18cf905dbd32795d37afc22e5dc"
+    },
+    {
+      "path": "videos/noctil-interactions.mp4",
+      "bytes": 882080,
+      "sha256": "6bce70e237d4d93026948ac9de3b7d0862169ee50a3181c5813909804da3da94"
+    },
+    {
+      "path": "videos/rive-interactions.mp4",
+      "bytes": 1134034,
+      "sha256": "b84eb4da4d6182cb7cd8849e722899046d450e4c95fd5ed9e22211baf5bee268"
+    },
+    {
+      "path": "videos/studio-retouche-reprise.mp4",
+      "bytes": 141949,
+      "sha256": "21a8519c67a84279a3b210266f236c1b3f1a4039093335fedff99c1c41c881a5"
+    },
+    {
+      "path": "videos/traverse-interactions.mp4",
+      "bytes": 870379,
+      "sha256": "09fd6ec81e7547340528c54f20f68c76e0f4ccc0a890d236c9d22a9c7be6d7f3"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "version": {
+    "commit": "393dc83555193855d8803d08ca28dcfa825296dc",
+    "source": "compiled-build"
+  },
+  "results": [
+    {
+      "file": "fraise-confidentialite-client-390.jpg",
+      "status": 200,
+      "h1": "Confidentialité"
+    },
+    {
+      "file": "fraise-conditions-generales-client-1440.jpg",
+      "status": 200,
+      "h1": "Conditions générales"
+    },
+    {
+      "file": "rive-mentions-legales-client-390.jpg",
+      "status": 200,
+      "h1": "Informations légales"
+    },
+    {
+      "file": "fraise-livraison-retours-client-1440.jpg",
+      "status": 200,
+      "h1": "Livraison et retours"
+    }
+  ]
+}

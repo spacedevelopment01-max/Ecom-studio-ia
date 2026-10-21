@@ -1,0 +1,1262 @@
+{
+  "sourceCommit": "393dc83555193855d8803d08ca28dcfa825296dc",
+  "nativeCmsInstallation": false,
+  "results": [
+    {
+      "theme": "fraise",
+      "platform": "shopify",
+      "kind": "theme",
+      "files": 267,
+      "decodedClientMedia": 30,
+      "bytes": 1430091,
+      "issues": [
+        {
+          "code": "product_template_assignment_required",
+          "severity": "warning"
+        },
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false,
+      "themeCheck": {
+        "errors": [],
+        "warnings": 4
+      }
+    },
+    {
+      "theme": "fraise",
+      "platform": "woocommerce",
+      "kind": "theme",
+      "files": 173,
+      "decodedClientMedia": 30,
+      "bytes": 1336564,
+      "issues": [
+        {
+          "code": "product_layouts_shared",
+          "severity": "warning"
+        },
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false,
+      "browser": {
+        "width": 390,
+        "content": 390,
+        "images": [
+          {
+            "ok": true,
+            "alt": "La th\u00e9i\u00e8re Anse au centre de la table"
+          },
+          {
+            "ok": true,
+            "alt": "La th\u00e9i\u00e8re Anse sur la table, \u00e0 c\u00f4t\u00e9 d\u2019une tasse"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 11 fournie pour la recette fictive"
+          }
+        ],
+        "errors": [],
+        "faqOpen": true
+      }
+    },
+    {
+      "theme": "fraise",
+      "platform": "prestashop",
+      "kind": "theme",
+      "files": 98,
+      "decodedClientMedia": 30,
+      "bytes": 1262987,
+      "issues": [
+        {
+          "code": "product_layouts_shared",
+          "severity": "warning"
+        },
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false,
+      "browser": {
+        "width": 390,
+        "content": 390,
+        "images": [
+          {
+            "ok": true,
+            "alt": "La th\u00e9i\u00e8re Anse au centre de la table"
+          },
+          {
+            "ok": true,
+            "alt": "La th\u00e9i\u00e8re Anse sur la table, \u00e0 c\u00f4t\u00e9 d\u2019une tasse"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 11 fournie pour la recette fictive"
+          }
+        ],
+        "errors": [],
+        "faqOpen": true
+      }
+    },
+    {
+      "theme": "fraise",
+      "platform": "wix",
+      "kind": "kit",
+      "files": 42,
+      "decodedClientMedia": 30,
+      "bytes": 1170358,
+      "issues": [
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false
+    },
+    {
+      "theme": "fraise",
+      "platform": "squarespace",
+      "kind": "kit",
+      "files": 42,
+      "decodedClientMedia": 30,
+      "bytes": 1170322,
+      "issues": [
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false
+    },
+    {
+      "theme": "noctil",
+      "platform": "shopify",
+      "kind": "theme",
+      "files": 260,
+      "decodedClientMedia": 29,
+      "bytes": 1377148,
+      "issues": [
+        {
+          "code": "product_template_assignment_required",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false,
+      "themeCheck": {
+        "errors": [],
+        "warnings": 4
+      }
+    },
+    {
+      "theme": "noctil",
+      "platform": "woocommerce",
+      "kind": "theme",
+      "files": 157,
+      "decodedClientMedia": 29,
+      "bytes": 1459218,
+      "issues": [
+        {
+          "code": "product_layouts_shared",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false,
+      "browser": {
+        "width": 390,
+        "content": 390,
+        "images": [
+          {
+            "ok": true,
+            "alt": "La th\u00e9i\u00e8re Anse au centre de la table"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 2 fournie pour la recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 9 fournie pour la recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 4 fournie pour la recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "La th\u00e9i\u00e8re Anse au centre de la table"
+          },
+          {
+            "ok": true,
+            "alt": "Une silhouette accueillante"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 10 fournie pour la recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 11 fournie pour la recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse enti\u00e8re, \u00e9mail bleu ardoise et couvercle amovible"
+          },
+          {
+            "ok": true,
+            "alt": ""
+          }
+        ],
+        "errors": [],
+        "lightbox": true,
+        "faqOpen": true
+      }
+    },
+    {
+      "theme": "noctil",
+      "platform": "prestashop",
+      "kind": "theme",
+      "files": 82,
+      "decodedClientMedia": 29,
+      "bytes": 1282954,
+      "issues": [
+        {
+          "code": "product_layouts_shared",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false,
+      "browser": {
+        "width": 390,
+        "content": 390,
+        "images": [
+          {
+            "ok": true,
+            "alt": "La th\u00e9i\u00e8re Anse au centre de la table"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 2 fournie pour la recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 9 fournie pour la recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 4 fournie pour la recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "La th\u00e9i\u00e8re Anse au centre de la table"
+          },
+          {
+            "ok": true,
+            "alt": "Une silhouette accueillante"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 10 fournie pour la recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 11 fournie pour la recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse enti\u00e8re, \u00e9mail bleu ardoise et couvercle amovible"
+          },
+          {
+            "ok": true,
+            "alt": ""
+          }
+        ],
+        "errors": [],
+        "lightbox": true,
+        "faqOpen": true
+      }
+    },
+    {
+      "theme": "noctil",
+      "platform": "wix",
+      "kind": "kit",
+      "files": 41,
+      "decodedClientMedia": 29,
+      "bytes": 1126687,
+      "issues": [],
+      "nativeInstallation": false
+    },
+    {
+      "theme": "noctil",
+      "platform": "squarespace",
+      "kind": "kit",
+      "files": 41,
+      "decodedClientMedia": 29,
+      "bytes": 1126650,
+      "issues": [],
+      "nativeInstallation": false
+    },
+    {
+      "theme": "onde",
+      "platform": "shopify",
+      "kind": "theme",
+      "files": 265,
+      "decodedClientMedia": 30,
+      "bytes": 1424309,
+      "issues": [
+        {
+          "code": "product_template_assignment_required",
+          "severity": "warning"
+        },
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false,
+      "themeCheck": {
+        "errors": [],
+        "warnings": 4
+      }
+    },
+    {
+      "theme": "onde",
+      "platform": "woocommerce",
+      "kind": "theme",
+      "files": 170,
+      "decodedClientMedia": 30,
+      "bytes": 1326307,
+      "issues": [
+        {
+          "code": "product_layouts_shared",
+          "severity": "warning"
+        },
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false,
+      "browser": {
+        "width": 390,
+        "content": 390,
+        "images": [
+          {
+            "ok": true,
+            "alt": "La th\u00e9i\u00e8re Anse au centre de la table"
+          },
+          {
+            "ok": true,
+            "alt": "Le couvercle amovible et sa prise arrondie"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 11 fournie pour la recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "L\u2019anse arrondie en gr\u00e8s \u00e9maill\u00e9"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 2 fournie pour la recette fictive"
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "theme": "onde",
+      "platform": "prestashop",
+      "kind": "theme",
+      "files": 94,
+      "decodedClientMedia": 30,
+      "bytes": 1245500,
+      "issues": [
+        {
+          "code": "product_layouts_shared",
+          "severity": "warning"
+        },
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false,
+      "browser": {
+        "width": 390,
+        "content": 390,
+        "images": [
+          {
+            "ok": true,
+            "alt": "La th\u00e9i\u00e8re Anse au centre de la table"
+          },
+          {
+            "ok": true,
+            "alt": "Le couvercle amovible et sa prise arrondie"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 11 fournie pour la recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "L\u2019anse arrondie en gr\u00e8s \u00e9maill\u00e9"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 2 fournie pour la recette fictive"
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "theme": "onde",
+      "platform": "wix",
+      "kind": "kit",
+      "files": 42,
+      "decodedClientMedia": 30,
+      "bytes": 1168386,
+      "issues": [
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false
+    },
+    {
+      "theme": "onde",
+      "platform": "squarespace",
+      "kind": "kit",
+      "files": 42,
+      "decodedClientMedia": 30,
+      "bytes": 1168351,
+      "issues": [
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false
+    },
+    {
+      "theme": "orbe",
+      "platform": "shopify",
+      "kind": "theme",
+      "files": 255,
+      "decodedClientMedia": 26,
+      "bytes": 1314751,
+      "issues": [
+        {
+          "code": "product_template_assignment_required",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false,
+      "themeCheck": {
+        "errors": [],
+        "warnings": 4
+      }
+    },
+    {
+      "theme": "orbe",
+      "platform": "woocommerce",
+      "kind": "theme",
+      "files": 155,
+      "decodedClientMedia": 26,
+      "bytes": 1204247,
+      "issues": [
+        {
+          "code": "product_layouts_shared",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false,
+      "browser": {
+        "width": 390,
+        "content": 390,
+        "images": [
+          {
+            "ok": true,
+            "alt": "La th\u00e9i\u00e8re Anse au centre de la table"
+          },
+          {
+            "ok": true,
+            "alt": "Anse dans la lumi\u00e8re du matin"
+          },
+          {
+            "ok": true,
+            "alt": "Anse dans la lumi\u00e8re du matin"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 3 fournie pour la recette fictive"
+          }
+        ],
+        "errors": [],
+        "faqOpen": true
+      }
+    },
+    {
+      "theme": "orbe",
+      "platform": "prestashop",
+      "kind": "theme",
+      "files": 82,
+      "decodedClientMedia": 26,
+      "bytes": 1121782,
+      "issues": [
+        {
+          "code": "product_layouts_shared",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false,
+      "browser": {
+        "width": 390,
+        "content": 390,
+        "images": [
+          {
+            "ok": true,
+            "alt": "La th\u00e9i\u00e8re Anse au centre de la table"
+          },
+          {
+            "ok": true,
+            "alt": "Anse dans la lumi\u00e8re du matin"
+          },
+          {
+            "ok": true,
+            "alt": "Anse dans la lumi\u00e8re du matin"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 3 fournie pour la recette fictive"
+          }
+        ],
+        "errors": [],
+        "faqOpen": true
+      }
+    },
+    {
+      "theme": "orbe",
+      "platform": "wix",
+      "kind": "kit",
+      "files": 38,
+      "decodedClientMedia": 26,
+      "bytes": 1067222,
+      "issues": [],
+      "nativeInstallation": false
+    },
+    {
+      "theme": "orbe",
+      "platform": "squarespace",
+      "kind": "kit",
+      "files": 38,
+      "decodedClientMedia": 26,
+      "bytes": 1067187,
+      "issues": [],
+      "nativeInstallation": false
+    },
+    {
+      "theme": "rive",
+      "platform": "shopify",
+      "kind": "theme",
+      "files": 241,
+      "decodedClientMedia": 13,
+      "bytes": 811574,
+      "issues": [
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false,
+      "themeCheck": {
+        "errors": [],
+        "warnings": 4
+      }
+    },
+    {
+      "theme": "rive",
+      "platform": "woocommerce",
+      "kind": "theme",
+      "files": 141,
+      "decodedClientMedia": 13,
+      "bytes": 841067,
+      "issues": [
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false,
+      "browser": {
+        "width": 390,
+        "content": 390,
+        "images": [
+          {
+            "ok": true,
+            "alt": "Le tour avant la s\u00e9ance individuelle"
+          },
+          {
+            "ok": true,
+            "alt": "Le d\u00e9roul\u00e9 de votre atelier"
+          },
+          {
+            "ok": true,
+            "alt": "Le tour avant la s\u00e9ance individuelle"
+          },
+          {
+            "ok": true,
+            "alt": "Le tour et la terre dans l\u2019atelier"
+          },
+          {
+            "ok": true,
+            "alt": "Vue fournie de l\u2019atelier et de son mat\u00e9riel, sc\u00e8ne 12 \u2014 recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "Vue fournie de l\u2019atelier et de son mat\u00e9riel, sc\u00e8ne 13 \u2014 recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "Vue fournie de l\u2019atelier et de son mat\u00e9riel, sc\u00e8ne 2 \u2014 recette fictive"
+          }
+        ],
+        "errors": [],
+        "faqOpen": false
+      }
+    },
+    {
+      "theme": "rive",
+      "platform": "prestashop",
+      "kind": "theme",
+      "files": 70,
+      "decodedClientMedia": 13,
+      "bytes": 705121,
+      "issues": [
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false,
+      "browser": {
+        "width": 390,
+        "content": 390,
+        "images": [
+          {
+            "ok": true,
+            "alt": "Le tour avant la s\u00e9ance individuelle"
+          },
+          {
+            "ok": true,
+            "alt": "Le d\u00e9roul\u00e9 de votre atelier"
+          },
+          {
+            "ok": true,
+            "alt": "Le tour avant la s\u00e9ance individuelle"
+          },
+          {
+            "ok": true,
+            "alt": "Le tour et la terre dans l\u2019atelier"
+          },
+          {
+            "ok": true,
+            "alt": "Vue fournie de l\u2019atelier et de son mat\u00e9riel, sc\u00e8ne 12 \u2014 recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "Vue fournie de l\u2019atelier et de son mat\u00e9riel, sc\u00e8ne 13 \u2014 recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "Vue fournie de l\u2019atelier et de son mat\u00e9riel, sc\u00e8ne 2 \u2014 recette fictive"
+          }
+        ],
+        "errors": [],
+        "faqOpen": false
+      }
+    },
+    {
+      "theme": "rive",
+      "platform": "wix",
+      "kind": "kit",
+      "files": 24,
+      "decodedClientMedia": 13,
+      "bytes": 563511,
+      "issues": [
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false
+    },
+    {
+      "theme": "rive",
+      "platform": "squarespace",
+      "kind": "kit",
+      "files": 24,
+      "decodedClientMedia": 13,
+      "bytes": 563522,
+      "issues": [
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false
+    },
+    {
+      "theme": "sillon",
+      "platform": "shopify",
+      "kind": "theme",
+      "files": 260,
+      "decodedClientMedia": 29,
+      "bytes": 1379575,
+      "issues": [
+        {
+          "code": "product_template_assignment_required",
+          "severity": "warning"
+        },
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false,
+      "themeCheck": {
+        "errors": [],
+        "warnings": 4
+      }
+    },
+    {
+      "theme": "sillon",
+      "platform": "woocommerce",
+      "kind": "theme",
+      "files": 162,
+      "decodedClientMedia": 29,
+      "bytes": 1468273,
+      "issues": [
+        {
+          "code": "product_layouts_shared",
+          "severity": "warning"
+        },
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false,
+      "browser": {
+        "width": 390,
+        "content": 390,
+        "images": [
+          {
+            "ok": true,
+            "alt": "La th\u00e9i\u00e8re Anse au centre de la table"
+          },
+          {
+            "ok": true,
+            "alt": "L\u2019anse arrondie en gr\u00e8s \u00e9maill\u00e9"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 1 fournie pour la recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "Anse dans la lumi\u00e8re du matin"
+          },
+          {
+            "ok": true,
+            "alt": "La th\u00e9i\u00e8re Anse sur la table, \u00e0 c\u00f4t\u00e9 d\u2019une tasse"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 6 fournie pour la recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "Anse dans la lumi\u00e8re du matin"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 7 fournie pour la recette fictive"
+          }
+        ],
+        "errors": [],
+        "lightbox": true,
+        "faqOpen": true
+      }
+    },
+    {
+      "theme": "sillon",
+      "platform": "prestashop",
+      "kind": "theme",
+      "files": 84,
+      "decodedClientMedia": 29,
+      "bytes": 1291903,
+      "issues": [
+        {
+          "code": "product_layouts_shared",
+          "severity": "warning"
+        },
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false,
+      "browser": {
+        "width": 390,
+        "content": 390,
+        "images": [
+          {
+            "ok": true,
+            "alt": "La th\u00e9i\u00e8re Anse au centre de la table"
+          },
+          {
+            "ok": true,
+            "alt": "L\u2019anse arrondie en gr\u00e8s \u00e9maill\u00e9"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 1 fournie pour la recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "Anse dans la lumi\u00e8re du matin"
+          },
+          {
+            "ok": true,
+            "alt": "La th\u00e9i\u00e8re Anse sur la table, \u00e0 c\u00f4t\u00e9 d\u2019une tasse"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 6 fournie pour la recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "Anse dans la lumi\u00e8re du matin"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 7 fournie pour la recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse enti\u00e8re, \u00e9mail bleu ardoise et couvercle amovible"
+          },
+          {
+            "ok": true,
+            "alt": ""
+          },
+          {
+            "ok": true,
+            "alt": ""
+          },
+          {
+            "ok": true,
+            "alt": ""
+          },
+          {
+            "ok": true,
+            "alt": ""
+          }
+        ],
+        "errors": [],
+        "lightbox": true,
+        "faqOpen": true
+      }
+    },
+    {
+      "theme": "sillon",
+      "platform": "wix",
+      "kind": "kit",
+      "files": 41,
+      "decodedClientMedia": 29,
+      "bytes": 1127606,
+      "issues": [
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false
+    },
+    {
+      "theme": "sillon",
+      "platform": "squarespace",
+      "kind": "kit",
+      "files": 41,
+      "decodedClientMedia": 29,
+      "bytes": 1127570,
+      "issues": [
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false
+    },
+    {
+      "theme": "traverse",
+      "platform": "shopify",
+      "kind": "theme",
+      "files": 260,
+      "decodedClientMedia": 29,
+      "bytes": 1378101,
+      "issues": [
+        {
+          "code": "product_template_assignment_required",
+          "severity": "warning"
+        },
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false,
+      "themeCheck": {
+        "errors": [],
+        "warnings": 4
+      }
+    },
+    {
+      "theme": "traverse",
+      "platform": "woocommerce",
+      "kind": "theme",
+      "files": 159,
+      "decodedClientMedia": 29,
+      "bytes": 1464149,
+      "issues": [
+        {
+          "code": "product_layouts_shared",
+          "severity": "warning"
+        },
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false,
+      "browser": {
+        "width": 390,
+        "content": 390,
+        "images": [
+          {
+            "ok": true,
+            "alt": "La th\u00e9i\u00e8re Anse au centre de la table"
+          },
+          {
+            "ok": true,
+            "alt": "Anse dans la lumi\u00e8re du matin"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 1 fournie pour la recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 6 fournie pour la recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "L\u2019\u00e9mail bleu ardoise, vu de pr\u00e8s"
+          },
+          {
+            "ok": true,
+            "alt": "Une silhouette accueillante"
+          }
+        ],
+        "errors": [],
+        "faqOpen": true
+      }
+    },
+    {
+      "theme": "traverse",
+      "platform": "prestashop",
+      "kind": "theme",
+      "files": 82,
+      "decodedClientMedia": 29,
+      "bytes": 1284475,
+      "issues": [
+        {
+          "code": "product_layouts_shared",
+          "severity": "warning"
+        },
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false,
+      "browser": {
+        "width": 390,
+        "content": 390,
+        "images": [
+          {
+            "ok": true,
+            "alt": "La th\u00e9i\u00e8re Anse au centre de la table"
+          },
+          {
+            "ok": true,
+            "alt": "Anse dans la lumi\u00e8re du matin"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 1 fournie pour la recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse en gr\u00e8s bleu ardoise, vue 6 fournie pour la recette fictive"
+          },
+          {
+            "ok": true,
+            "alt": "L\u2019\u00e9mail bleu ardoise, vu de pr\u00e8s"
+          },
+          {
+            "ok": true,
+            "alt": "Une silhouette accueillante"
+          },
+          {
+            "ok": true,
+            "alt": "Th\u00e9i\u00e8re Anse enti\u00e8re, \u00e9mail bleu ardoise et couvercle amovible"
+          },
+          {
+            "ok": true,
+            "alt": ""
+          },
+          {
+            "ok": true,
+            "alt": ""
+          },
+          {
+            "ok": true,
+            "alt": ""
+          },
+          {
+            "ok": true,
+            "alt": ""
+          }
+        ],
+        "errors": [],
+        "faqOpen": true
+      }
+    },
+    {
+      "theme": "traverse",
+      "platform": "wix",
+      "kind": "kit",
+      "files": 41,
+      "decodedClientMedia": 29,
+      "bytes": 1127030,
+      "issues": [
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false
+    },
+    {
+      "theme": "traverse",
+      "platform": "squarespace",
+      "kind": "kit",
+      "files": 41,
+      "decodedClientMedia": 29,
+      "bytes": 1126994,
+      "issues": [
+        {
+          "code": "client_content_partial",
+          "severity": "warning"
+        }
+      ],
+      "nativeInstallation": false
+    }
+  ],
+  "zipFiles": [
+    {
+      "file": "fraise-prestashop.zip",
+      "bytes": 1262987,
+      "sha256": "81736cd55433ef10be45525f086741720aa168b760811331aaae9539f182ee25"
+    },
+    {
+      "file": "fraise-shopify.zip",
+      "bytes": 1430091,
+      "sha256": "8f46dd189b3725910009c877b1d3788181ca196214fd0bc769dbd9f7f89b5c94"
+    },
+    {
+      "file": "fraise-squarespace.zip",
+      "bytes": 1170322,
+      "sha256": "b4423a3f00a32125b7a23ad1115cff4fb566b87100e7a143baaa84e590dedc9f"
+    },
+    {
+      "file": "fraise-wix.zip",
+      "bytes": 1170358,
+      "sha256": "6a8003781846b20e16022d1c098d5a16ad8543582e0b29b82e649abe6b0e15ae"
+    },
+    {
+      "file": "fraise-woocommerce.zip",
+      "bytes": 1336564,
+      "sha256": "70033d64d304bc2af00b9b753f52bb7447148a5f911573c180c388672c01a01b"
+    },
+    {
+      "file": "noctil-prestashop.zip",
+      "bytes": 1282954,
+      "sha256": "28f2b042b8ebab06e66b31c9f417be64363675a7e213510131c80869dc74d29c"
+    },
+    {
+      "file": "noctil-shopify.zip",
+      "bytes": 1377148,
+      "sha256": "b61723d5fc73675810a652ae1d134091b3805a121ea6319ff4bf1e1e866436a7"
+    },
+    {
+      "file": "noctil-squarespace.zip",
+      "bytes": 1126650,
+      "sha256": "1698a53cb267052b2ffa31019d54294b3f58c8e6a448518254f6d3d2ed667dea"
+    },
+    {
+      "file": "noctil-wix.zip",
+      "bytes": 1126687,
+      "sha256": "2ddcd32b9edbc56a560ac250204397b341636d62aa5aab5034d9808d5b5e5324"
+    },
+    {
+      "file": "noctil-woocommerce.zip",
+      "bytes": 1459218,
+      "sha256": "65f92c3b68e9fa1e6594389907f55de75b62793fe9a5f3e8714408facf4b8061"
+    },
+    {
+      "file": "onde-prestashop.zip",
+      "bytes": 1245500,
+      "sha256": "22a7da6ebbbfd15772677d2b5497dfa13a8fd1ce11a17b0b8348439e630cc578"
+    },
+    {
+      "file": "onde-shopify.zip",
+      "bytes": 1424309,
+      "sha256": "d00e55cbe2a5058a3c9627f1383a945f01de36b90cd1e6205bf8b6a800b429df"
+    },
+    {
+      "file": "onde-squarespace.zip",
+      "bytes": 1168351,
+      "sha256": "575f4e74e836082742cfb254ae6200deacda612e85d21d289b611a00b018cabb"
+    },
+    {
+      "file": "onde-wix.zip",
+      "bytes": 1168386,
+      "sha256": "a8e3fe9773442b9432c758db42eba2a20713016ce65e556ce8a24b9d608ba914"
+    },
+    {
+      "file": "onde-woocommerce.zip",
+      "bytes": 1326307,
+      "sha256": "53cdaf3eeb389c452e51df9e40e0d1118484ec01432ebf5e71c8e375eb98cf81"
+    },
+    {
+      "file": "orbe-prestashop.zip",
+      "bytes": 1121782,
+      "sha256": "4a04e26d2f9cf344b1a56954b1eaba5039f4c1931c3a1b9263589b8d9ca46888"
+    },
+    {
+      "file": "orbe-shopify.zip",
+      "bytes": 1314751,
+      "sha256": "2964e48eee489910f433c1d7ac41f224209c7740ba5fc5495c202242780308ae"
+    },
+    {
+      "file": "orbe-squarespace.zip",
+      "bytes": 1067187,
+      "sha256": "9d1b9b63d9d3a2332cedb4da9187e5520f4bbcb6d6460b0b7174e5c4d2207c80"
+    },
+    {
+      "file": "orbe-wix.zip",
+      "bytes": 1067222,
+      "sha256": "3da798ddc6c1e1f5b5b9fa0531a5a084658611eb6846ff334bca29c1fe20ee35"
+    },
+    {
+      "file": "orbe-woocommerce.zip",
+      "bytes": 1204247,
+      "sha256": "b8724d289e0fd666c92c34f10b7f29e4c25c9066e09d0d4bd579f2d1e5fbf5d0"
+    },
+    {
+      "file": "rive-prestashop.zip",
+      "bytes": 705121,
+      "sha256": "031a95aef13590e0714234682602ed260c5ee1f89ce079d845506f45fd9aa132"
+    },
+    {
+      "file": "rive-shopify.zip",
+      "bytes": 811574,
+      "sha256": "60f1c2ff1c0bfb7472e8093ccd05c1fc0dc2024ca1cab954bb1755038b9fc982"
+    },
+    {
+      "file": "rive-squarespace.zip",
+      "bytes": 563522,
+      "sha256": "f2d9dd83c5c329978ceea827e7bc10fbe1088e68a86c036bb95d08bdefd9ba15"
+    },
+    {
+      "file": "rive-wix.zip",
+      "bytes": 563511,
+      "sha256": "bb9326dc6018191758d02397ee695a3bc18b134f1279e55f38c8b936ba85de5b"
+    },
+    {
+      "file": "rive-woocommerce.zip",
+      "bytes": 841067,
+      "sha256": "5f894042d4fabe2480bc99b6392b24038678b42eb000b58c982968bf77dd9a98"
+    },
+    {
+      "file": "sillon-prestashop.zip",
+      "bytes": 1291903,
+      "sha256": "78b4a8184cb042c5c2f7e6fe1aa1a7e7935e92b9fcaa5553344e8ef7fa70d936"
+    },
+    {
+      "file": "sillon-shopify.zip",
+      "bytes": 1379575,
+      "sha256": "d3c14e30d79349d04eead942d9e175cd1e7116b9638b81f1c3234a737e96eac5"
+    },
+    {
+      "file": "sillon-squarespace.zip",
+      "bytes": 1127570,
+      "sha256": "7cc4eb1ff4681d4f4439e776236926233ae01c92fef0ce55673af7b13f3cb900"
+    },
+    {
+      "file": "sillon-wix.zip",
+      "bytes": 1127606,
+      "sha256": "fd2c853c5afcb54b2fdfb83ad5c4644f6760b253762afd07d38dca1754d4640b"
+    },
+    {
+      "file": "sillon-woocommerce.zip",
+      "bytes": 1468273,
+      "sha256": "902c24fb551ed08877992e1b68f09754a4f796588055026e9c584700803847ec"
+    },
+    {
+      "file": "traverse-prestashop.zip",
+      "bytes": 1284475,
+      "sha256": "145e9b9c4e4c35e976aa7e56b030b6b1c5b87927d6f52bc3223f4c7ead727443"
+    },
+    {
+      "file": "traverse-shopify.zip",
+      "bytes": 1378101,
+      "sha256": "8793305f9680f460f4081fad678c10ddfb440b10e19fa16b14ba60f6fddaf7d9"
+    },
+    {
+      "file": "traverse-squarespace.zip",
+      "bytes": 1126994,
+      "sha256": "f91371ab507294be257bb2dbb849ffd3cd35984f62a3b5f88d5ac768aeeaf2f8"
+    },
+    {
+      "file": "traverse-wix.zip",
+      "bytes": 1127030,
+      "sha256": "51d649f0257250f8c561dd38c3eda6b6a7f618b203568170486bb722e800037a"
+    },
+    {
+      "file": "traverse-woocommerce.zip",
+      "bytes": 1464149,
+      "sha256": "ed2d95e3ae4c563cce3e0a9363a117886b90ae8e56fadc2354bd5161ac5df6ee"
+    }
+  ]
+}

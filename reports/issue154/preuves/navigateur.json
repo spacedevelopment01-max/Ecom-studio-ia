@@ -1,0 +1,5922 @@
+{
+  "version": {
+    "commit": "393dc83555193855d8803d08ca28dcfa825296dc",
+    "source": "compiled-build"
+  },
+  "nature": "Compiled local Next studio; simulated client media; native preview cart; no real CMS installation or provider",
+  "results": [
+    {
+      "slug": "fraise-client-accueil-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "Le thé prend son temps."
+      ],
+      "title": "Céramor | Le thé prend son temps.",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Céramor"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/collections/all"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "",
+          "path": "[preview]"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "fraise-client-produit-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "Théière Anse"
+      ],
+      "title": "Théière Anse, art de la table | Céramor",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "L’anse arrondie en grès émaillé"
+        },
+        {
+          "ok": true,
+          "alt": "Le couvercle amovible et sa prise arrondie"
+        },
+        {
+          "ok": true,
+          "alt": "L’émail bleu ardoise, vu de près"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 10 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 4 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 9 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 2 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 8 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 1 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 6 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 3 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 7 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 5 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Céramor"
+        }
+      ],
+      "links": [
+        {
+          "label": "",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/collections/all"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "fraise-client-accueil-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Le thé prend son temps."
+      ],
+      "title": "Céramor | Le thé prend son temps.",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Céramor"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/collections/all"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "",
+          "path": "[preview]"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "fraise-client-produit-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Théière Anse"
+      ],
+      "title": "Théière Anse, art de la table | Céramor",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "L’anse arrondie en grès émaillé"
+        },
+        {
+          "ok": true,
+          "alt": "Le couvercle amovible et sa prise arrondie"
+        },
+        {
+          "ok": true,
+          "alt": "L’émail bleu ardoise, vu de près"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 10 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 4 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 9 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 2 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 8 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 1 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 6 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 3 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 7 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 5 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Céramor"
+        }
+      ],
+      "links": [
+        {
+          "label": "",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/collections/all"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "fraise-page-0",
+      "page": "Notre histoire",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "fraise-page-1",
+      "page": "Bien choisir",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "fraise-page-2",
+      "page": "Comprendre le produit",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "fraise-page-3",
+      "page": "En détail",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "fraise-page-4",
+      "page": "Questions et contact",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "fraise-page-5",
+      "page": "Questions fréquentes",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "fraise-page-6",
+      "page": "Livraison et retours",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "fraise-page-7",
+      "page": "Informations légales",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "fraise-page-8",
+      "page": "Confidentialité",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "fraise-page-9",
+      "page": "Conditions générales",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "onde-client-accueil-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "Le thé prend son temps."
+      ],
+      "title": "Céramor | Le thé prend son temps.",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Le couvercle amovible et sa prise arrondie"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "L’anse arrondie en grès émaillé"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 2 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Céramor"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "",
+          "path": "[preview]"
+        }
+      ]
+    },
+    {
+      "slug": "onde-client-produit-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "Théière Anse"
+      ],
+      "title": "Théière Anse, art de la table | Céramor",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Le couvercle amovible et sa prise arrondie"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "L’anse arrondie en grès émaillé"
+        },
+        {
+          "ok": true,
+          "alt": "L’émail bleu ardoise, vu de près"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 10 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 2 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 4 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 5 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 1 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 9 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 6 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 7 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 3 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 8 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "Le couvercle amovible et sa prise arrondie"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "L’anse arrondie en grès émaillé"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 2 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Céramor"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "onde-client-accueil-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Le thé prend son temps."
+      ],
+      "title": "Céramor | Le thé prend son temps.",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Le couvercle amovible et sa prise arrondie"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "L’anse arrondie en grès émaillé"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 2 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Céramor"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "",
+          "path": "[preview]"
+        }
+      ]
+    },
+    {
+      "slug": "onde-client-produit-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Théière Anse"
+      ],
+      "title": "Théière Anse, art de la table | Céramor",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Le couvercle amovible et sa prise arrondie"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "L’anse arrondie en grès émaillé"
+        },
+        {
+          "ok": true,
+          "alt": "L’émail bleu ardoise, vu de près"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 10 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 2 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 4 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 5 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 1 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 9 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 6 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 7 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 3 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 8 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "Le couvercle amovible et sa prise arrondie"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "L’anse arrondie en grès émaillé"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 2 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Céramor"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "onde-page-0",
+      "page": "Notre histoire",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "onde-page-1",
+      "page": "En détail",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "onde-page-2",
+      "page": "Questions et contact",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "onde-page-3",
+      "page": "Questions fréquentes",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "onde-page-4",
+      "page": "Livraison et retours",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "onde-page-5",
+      "page": "Informations légales",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "onde-page-6",
+      "page": "Confidentialité",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "onde-page-7",
+      "page": "Conditions générales",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "orbe-client-accueil-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "Le thé prend son temps."
+      ],
+      "title": "Céramor | Le thé prend son temps.",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 3 fournie pour la recette fictive"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Anse↗",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse↗",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse↗",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "orbe-client-produit-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "Théière Anse"
+      ],
+      "title": "Théière Anse, art de la table | Céramor",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Le couvercle amovible et sa prise arrondie"
+        },
+        {
+          "ok": true,
+          "alt": "L’anse arrondie en grès émaillé"
+        },
+        {
+          "ok": true,
+          "alt": "L’émail bleu ardoise, vu de près"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 10 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 3 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 8 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 6 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 2 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 9 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 4 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 5 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 7 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 1 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Théière Anse↗",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "orbe-client-accueil-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Le thé prend son temps."
+      ],
+      "title": "Céramor | Le thé prend son temps.",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 3 fournie pour la recette fictive"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Anse↗",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse↗",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse↗",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "orbe-client-produit-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Théière Anse"
+      ],
+      "title": "Théière Anse, art de la table | Céramor",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Le couvercle amovible et sa prise arrondie"
+        },
+        {
+          "ok": true,
+          "alt": "L’anse arrondie en grès émaillé"
+        },
+        {
+          "ok": true,
+          "alt": "L’émail bleu ardoise, vu de près"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 10 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 3 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 8 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 6 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 2 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 9 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 4 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 5 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 7 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 1 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Théière Anse↗",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "orbe-page-0",
+      "page": "Notre histoire",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "orbe-page-1",
+      "page": "Questions fréquentes",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "orbe-page-2",
+      "page": "Questions et contact",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "orbe-page-3",
+      "page": "Livraison et retours",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "orbe-reference-accueil-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "La lumière change de place. L'atmosphère aussi."
+      ],
+      "title": "ORBE",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Lampe nomade ORBE"
+        },
+        {
+          "ok": true,
+          "alt": "Dune"
+        },
+        {
+          "ok": true,
+          "alt": "Argile"
+        },
+        {
+          "ok": true,
+          "alt": "Charbon"
+        },
+        {
+          "ok": true,
+          "alt": "Lampe nomade ORBE"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir la collection↗",
+          "path": "[preview]/collections/all"
+        },
+        {
+          "label": "Voir la fiche produit ↗",
+          "path": "[preview]/products/lampe-nomade-orbe"
+        },
+        {
+          "label": "Commander",
+          "path": "[preview]/products/lampe-nomade-orbe"
+        }
+      ]
+    },
+    {
+      "slug": "orbe-reference-produit-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "Lampe nomade ORBE"
+      ],
+      "title": "Lampe nomade ORBE, luminaires | ORBE",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Lampe nomade ORBE"
+        },
+        {
+          "ok": true,
+          "alt": "Lampe nomade ORBE"
+        },
+        {
+          "ok": true,
+          "alt": "Lampe nomade ORBE"
+        },
+        {
+          "ok": true,
+          "alt": "Lampe nomade ORBE"
+        },
+        {
+          "ok": true,
+          "alt": "Lampe nomade ORBE"
+        },
+        {
+          "ok": true,
+          "alt": "Lampe nomade ORBE"
+        },
+        {
+          "ok": true,
+          "alt": "Lampe nomade ORBE"
+        },
+        {
+          "ok": true,
+          "alt": "Lampe nomade ORBE"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "Lampe nomade ORBE"
+        }
+      ],
+      "links": []
+    },
+    {
+      "slug": "orbe-reference-accueil-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "La lumière change de place. L'atmosphère aussi."
+      ],
+      "title": "ORBE",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Lampe nomade ORBE"
+        },
+        {
+          "ok": true,
+          "alt": "Dune"
+        },
+        {
+          "ok": true,
+          "alt": "Argile"
+        },
+        {
+          "ok": true,
+          "alt": "Charbon"
+        },
+        {
+          "ok": true,
+          "alt": "Lampe nomade ORBE"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir la collection↗",
+          "path": "[preview]/collections/all"
+        },
+        {
+          "label": "Voir la fiche produit ↗",
+          "path": "[preview]/products/lampe-nomade-orbe"
+        },
+        {
+          "label": "Commander",
+          "path": "[preview]/products/lampe-nomade-orbe"
+        }
+      ]
+    },
+    {
+      "slug": "orbe-reference-produit-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Lampe nomade ORBE"
+      ],
+      "title": "Lampe nomade ORBE, luminaires | ORBE",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Lampe nomade ORBE"
+        },
+        {
+          "ok": true,
+          "alt": "Lampe nomade ORBE"
+        },
+        {
+          "ok": true,
+          "alt": "Lampe nomade ORBE"
+        },
+        {
+          "ok": true,
+          "alt": "Lampe nomade ORBE"
+        },
+        {
+          "ok": true,
+          "alt": "Lampe nomade ORBE"
+        },
+        {
+          "ok": true,
+          "alt": "Lampe nomade ORBE"
+        },
+        {
+          "ok": true,
+          "alt": "Lampe nomade ORBE"
+        },
+        {
+          "ok": true,
+          "alt": "Lampe nomade ORBE"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "Lampe nomade ORBE"
+        }
+      ],
+      "links": []
+    },
+    {
+      "slug": "rive-client-accueil-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "De la terre au geste juste."
+      ],
+      "title": "Terre & Geste | Atelier de tournage individuel",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Terre & Geste"
+        },
+        {
+          "ok": true,
+          "alt": "Le tour avant la séance individuelle"
+        },
+        {
+          "ok": true,
+          "alt": "Le déroulé de votre atelier"
+        },
+        {
+          "ok": true,
+          "alt": "Le tour avant la séance individuelle"
+        },
+        {
+          "ok": true,
+          "alt": "Le tour et la terre dans l’atelier"
+        },
+        {
+          "ok": true,
+          "alt": "Vue fournie de l’atelier et de son matériel, scène 12 — recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Vue fournie de l’atelier et de son matériel, scène 13 — recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Vue fournie de l’atelier et de son matériel, scène 2 — recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Terre & Geste"
+        }
+      ],
+      "links": [
+        {
+          "label": "Prendre rendez-vous↗",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "Prendre rendez-vous↗",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "Prendre rendez-vous — Atelier de tournage individuel",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "Prendre rendez-vous — Découverte des émaux",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "Prendre rendez-vous",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "Prendre rendez-vous↗",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "atelier@example.test",
+          "path": "atelier@example.test"
+        },
+        {
+          "label": "Prendre rendez-vous",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "Prendre rendez-vous",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "atelier@example.test",
+          "path": "atelier@example.test"
+        }
+      ]
+    },
+    {
+      "slug": "rive-client-accueil-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "De la terre au geste juste."
+      ],
+      "title": "Terre & Geste | Atelier de tournage individuel",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Terre & Geste"
+        },
+        {
+          "ok": true,
+          "alt": "Le tour avant la séance individuelle"
+        },
+        {
+          "ok": true,
+          "alt": "Le déroulé de votre atelier"
+        },
+        {
+          "ok": true,
+          "alt": "Le tour avant la séance individuelle"
+        },
+        {
+          "ok": true,
+          "alt": "Le tour et la terre dans l’atelier"
+        },
+        {
+          "ok": true,
+          "alt": "Vue fournie de l’atelier et de son matériel, scène 12 — recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Vue fournie de l’atelier et de son matériel, scène 13 — recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Vue fournie de l’atelier et de son matériel, scène 2 — recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Terre & Geste"
+        }
+      ],
+      "links": [
+        {
+          "label": "Prendre rendez-vous↗",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "Prendre rendez-vous↗",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "Prendre rendez-vous — Atelier de tournage individuel",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "Prendre rendez-vous — Découverte des émaux",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "Prendre rendez-vous",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "Prendre rendez-vous↗",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "atelier@example.test",
+          "path": "atelier@example.test"
+        },
+        {
+          "label": "Prendre rendez-vous",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "Prendre rendez-vous",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "atelier@example.test",
+          "path": "atelier@example.test"
+        }
+      ]
+    },
+    {
+      "slug": "rive-page-0",
+      "page": "Nos prestations",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "rive-client-page-0-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Nos prestations"
+      ],
+      "title": "Nos prestations | Terre & Geste",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Terre & Geste"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "Terre & Geste"
+        }
+      ],
+      "links": [
+        {
+          "label": "Prendre rendez-vous — Atelier de tournage individuel",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "Prendre rendez-vous — Découverte des émaux",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "Prendre rendez-vous",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "Prendre rendez-vous",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "Prendre rendez-vous",
+          "path": "[preview]/pages/contact"
+        }
+      ]
+    },
+    {
+      "slug": "rive-page-1",
+      "page": "Notre histoire",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "rive-page-2",
+      "page": "Questions et contact",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "rive-client-page-2-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Questions et contact"
+      ],
+      "title": "Questions et contact | Terre & Geste",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Terre & Geste"
+        },
+        {
+          "ok": true,
+          "alt": "Terre & Geste"
+        }
+      ],
+      "links": [
+        {
+          "label": "atelier@example.test",
+          "path": "atelier@example.test"
+        },
+        {
+          "label": "atelier@example.test",
+          "path": "atelier@example.test"
+        },
+        {
+          "label": "Prendre rendez-vous",
+          "path": "[preview]/pages/contact"
+        }
+      ]
+    },
+    {
+      "slug": "rive-page-3",
+      "page": "Questions fréquentes",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "rive-page-4",
+      "page": "Informations légales",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "rive-reference-accueil-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "Des espaces qui vous ressemblent."
+      ],
+      "title": "Atelier Rive",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Aménagement et décoration intérieure"
+        },
+        {
+          "ok": true,
+          "alt": "Comment ça se passe"
+        },
+        {
+          "ok": true,
+          "alt": "[À compléter : nom du projet]"
+        },
+        {
+          "ok": true,
+          "alt": "[À compléter : nom du projet]"
+        },
+        {
+          "ok": true,
+          "alt": "[À compléter : nom du projet]"
+        },
+        {
+          "ok": true,
+          "alt": "[À compléter : nom du projet]"
+        },
+        {
+          "ok": true,
+          "alt": "Aménagement et décoration intérieure"
+        }
+      ],
+      "links": [
+        {
+          "label": "Nous contacter — Conseil & direction",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "Nous contacter — Aménagement d'une pièce",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "Nous contacter — Projet d'ensemble",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "[À compléter : téléphone]",
+          "path": "[%C3%80compl%C3%A9ter:t%C3%A9l%C3%A9phone]"
+        },
+        {
+          "label": "Nous contacter",
+          "path": "[preview]/pages/contact"
+        }
+      ]
+    },
+    {
+      "slug": "rive-reference-accueil-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Des espaces qui vous ressemblent."
+      ],
+      "title": "Atelier Rive",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Aménagement et décoration intérieure"
+        },
+        {
+          "ok": true,
+          "alt": "Comment ça se passe"
+        },
+        {
+          "ok": true,
+          "alt": "[À compléter : nom du projet]"
+        },
+        {
+          "ok": true,
+          "alt": "[À compléter : nom du projet]"
+        },
+        {
+          "ok": true,
+          "alt": "[À compléter : nom du projet]"
+        },
+        {
+          "ok": true,
+          "alt": "[À compléter : nom du projet]"
+        },
+        {
+          "ok": true,
+          "alt": "Aménagement et décoration intérieure"
+        }
+      ],
+      "links": [
+        {
+          "label": "Nous contacter — Conseil & direction",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "Nous contacter — Aménagement d'une pièce",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "Nous contacter — Projet d'ensemble",
+          "path": "[preview]/pages/contact"
+        },
+        {
+          "label": "[À compléter : téléphone]",
+          "path": "[%C3%80compl%C3%A9ter:t%C3%A9l%C3%A9phone]"
+        },
+        {
+          "label": "Nous contacter",
+          "path": "[preview]/pages/contact"
+        }
+      ]
+    },
+    {
+      "slug": "sillon-client-accueil-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "Le thé prend son temps."
+      ],
+      "title": "Céramor | Le thé prend son temps.",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "L’anse arrondie en grès émaillé"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 1 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 6 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 7 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "Céramor"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Anse↗",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "sillon-client-produit-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "Théière Anse"
+      ],
+      "title": "Théière Anse, art de la table | Céramor",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "L’anse arrondie en grès émaillé"
+        },
+        {
+          "ok": true,
+          "alt": "Le couvercle amovible et sa prise arrondie"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 10 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "L’émail bleu ardoise, vu de près"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 1 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 6 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 7 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 3 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 9 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 5 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 8 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 2 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 4 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 1 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Céramor"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "sillon-client-accueil-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Le thé prend son temps."
+      ],
+      "title": "Céramor | Le thé prend son temps.",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "L’anse arrondie en grès émaillé"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 1 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 6 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 7 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "Céramor"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Anse↗",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "sillon-client-produit-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Théière Anse"
+      ],
+      "title": "Théière Anse, art de la table | Céramor",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "L’anse arrondie en grès émaillé"
+        },
+        {
+          "ok": true,
+          "alt": "Le couvercle amovible et sa prise arrondie"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 10 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "L’émail bleu ardoise, vu de près"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 1 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 6 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 7 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 3 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 9 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 5 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 8 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 2 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 4 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 1 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Céramor"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "sillon-page-0",
+      "page": "En situation",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "sillon-page-1",
+      "page": "Utilisation et détails",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "sillon-page-2",
+      "page": "Questions et contact",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "sillon-reference-accueil-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "La machine à espresso nomade, pour emporter votre rituel"
+      ],
+      "title": "SILLON | Machine à espresso nomade, du bureau au voyage",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "SILLON"
+        },
+        {
+          "ok": true,
+          "alt": "Machine à espresso nomade SILLON sur un socle sombre, dans une lumière cuivrée."
+        },
+        {
+          "ok": true,
+          "alt": "Gros plan : l'espresso coule de la machine SILLON dans le verre."
+        },
+        {
+          "ok": true,
+          "alt": "Machine SILLON de trois quarts : bague, bouton et marquage cuivrés."
+        },
+        {
+          "ok": true,
+          "alt": "Machine SILLON sur une table de pique-nique en automne, au bord d'un lac."
+        },
+        {
+          "ok": true,
+          "alt": "Machine SILLON sur une table de terrasse face à la mer."
+        },
+        {
+          "ok": true,
+          "alt": "Machine SILLON sur le plan d'un buffet de chambre d'hôtel."
+        },
+        {
+          "ok": true,
+          "alt": "Machine SILLON sur un comptoir en calcaire, croissants à côté."
+        },
+        {
+          "ok": true,
+          "alt": "Machine SILLON sur une commode avant un départ, sac de voyage et carte à côté."
+        },
+        {
+          "ok": true,
+          "alt": "Machine SILLON sur la tablette d'un salon ferroviaire, à côté d'un livre."
+        },
+        {
+          "ok": true,
+          "alt": "Machine à espresso nomade SILLON"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir SILLON",
+          "path": "[preview]/products/machine-espresso-nomade-sillon"
+        },
+        {
+          "label": "Voir la machine",
+          "path": "[preview]/products/machine-espresso-nomade-sillon"
+        },
+        {
+          "label": "Voir la fiche complète↗",
+          "path": "[preview]/products/machine-espresso-nomade-sillon"
+        }
+      ]
+    },
+    {
+      "slug": "sillon-reference-produit-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "Machine à espresso nomade SILLON"
+      ],
+      "title": "Machine à espresso portable SILLON : vues, détails, rituel",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "SILLON"
+        },
+        {
+          "ok": true,
+          "alt": "Machine à espresso nomade SILLON"
+        },
+        {
+          "ok": true,
+          "alt": "Machine à espresso nomade SILLON"
+        },
+        {
+          "ok": true,
+          "alt": "Machine à espresso nomade SILLON"
+        },
+        {
+          "ok": true,
+          "alt": "Machine à espresso nomade SILLON"
+        },
+        {
+          "ok": true,
+          "alt": "Machine à espresso nomade SILLON"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "Machine SILLON vue de dessus : couvercle rond, bague cuivrée et verre d'espresso."
+        },
+        {
+          "ok": true,
+          "alt": "Machine SILLON sur un bureau en chêne clair, près d'un ordinateur portable."
+        },
+        {
+          "ok": true,
+          "alt": "Machine SILLON sur une table de balcon face aux montagnes."
+        }
+      ],
+      "links": [
+        {
+          "label": "Voir tous les usages",
+          "path": "[preview]/pages/usages"
+        }
+      ]
+    },
+    {
+      "slug": "sillon-reference-accueil-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "La machine à espresso nomade, pour emporter votre rituel"
+      ],
+      "title": "SILLON | Machine à espresso nomade, du bureau au voyage",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "SILLON"
+        },
+        {
+          "ok": true,
+          "alt": "Machine à espresso nomade SILLON sur un socle sombre, dans une lumière cuivrée."
+        },
+        {
+          "ok": true,
+          "alt": "Gros plan : l'espresso coule de la machine SILLON dans le verre."
+        },
+        {
+          "ok": true,
+          "alt": "Machine SILLON de trois quarts : bague, bouton et marquage cuivrés."
+        },
+        {
+          "ok": true,
+          "alt": "Machine SILLON sur une table de pique-nique en automne, au bord d'un lac."
+        },
+        {
+          "ok": true,
+          "alt": "Machine SILLON sur une table de terrasse face à la mer."
+        },
+        {
+          "ok": true,
+          "alt": "Machine SILLON sur le plan d'un buffet de chambre d'hôtel."
+        },
+        {
+          "ok": true,
+          "alt": "Machine SILLON sur un comptoir en calcaire, croissants à côté."
+        },
+        {
+          "ok": true,
+          "alt": "Machine SILLON sur une commode avant un départ, sac de voyage et carte à côté."
+        },
+        {
+          "ok": true,
+          "alt": "Machine SILLON sur la tablette d'un salon ferroviaire, à côté d'un livre."
+        },
+        {
+          "ok": true,
+          "alt": "Machine à espresso nomade SILLON"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir SILLON",
+          "path": "[preview]/products/machine-espresso-nomade-sillon"
+        },
+        {
+          "label": "Voir la machine",
+          "path": "[preview]/products/machine-espresso-nomade-sillon"
+        },
+        {
+          "label": "Voir la fiche complète↗",
+          "path": "[preview]/products/machine-espresso-nomade-sillon"
+        }
+      ]
+    },
+    {
+      "slug": "sillon-reference-produit-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Machine à espresso nomade SILLON"
+      ],
+      "title": "Machine à espresso portable SILLON : vues, détails, rituel",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "SILLON"
+        },
+        {
+          "ok": true,
+          "alt": "Machine à espresso nomade SILLON"
+        },
+        {
+          "ok": true,
+          "alt": "Machine à espresso nomade SILLON"
+        },
+        {
+          "ok": true,
+          "alt": "Machine à espresso nomade SILLON"
+        },
+        {
+          "ok": true,
+          "alt": "Machine à espresso nomade SILLON"
+        },
+        {
+          "ok": true,
+          "alt": "Machine à espresso nomade SILLON"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "Machine SILLON vue de dessus : couvercle rond, bague cuivrée et verre d'espresso."
+        },
+        {
+          "ok": true,
+          "alt": "Machine SILLON sur un bureau en chêne clair, près d'un ordinateur portable."
+        },
+        {
+          "ok": true,
+          "alt": "Machine SILLON sur une table de balcon face aux montagnes."
+        }
+      ],
+      "links": [
+        {
+          "label": "Voir tous les usages",
+          "path": "[preview]/pages/usages"
+        }
+      ]
+    },
+    {
+      "slug": "noctil-client-accueil-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "Le thé prend son temps."
+      ],
+      "title": "Céramor | Le thé prend son temps.",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 2 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 9 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 4 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Une silhouette accueillante"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 10 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "Céramor"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/collections/all"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "noctil-client-produit-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "Théière Anse"
+      ],
+      "title": "Théière Anse, art de la table | Céramor",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 10 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Le couvercle amovible et sa prise arrondie"
+        },
+        {
+          "ok": true,
+          "alt": "L’émail bleu ardoise, vu de près"
+        },
+        {
+          "ok": true,
+          "alt": "L’anse arrondie en grès émaillé"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 2 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 9 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 4 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 6 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 1 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 3 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 8 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 7 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 5 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 9 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Céramor"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "noctil-client-accueil-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Le thé prend son temps."
+      ],
+      "title": "Céramor | Le thé prend son temps.",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 2 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 9 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 4 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Une silhouette accueillante"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 10 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "Céramor"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/collections/all"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "noctil-client-produit-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Théière Anse"
+      ],
+      "title": "Théière Anse, art de la table | Céramor",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 10 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Le couvercle amovible et sa prise arrondie"
+        },
+        {
+          "ok": true,
+          "alt": "L’émail bleu ardoise, vu de près"
+        },
+        {
+          "ok": true,
+          "alt": "L’anse arrondie en grès émaillé"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 2 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 9 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 4 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 6 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 1 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 3 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 8 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 7 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 5 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 9 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Céramor"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "noctil-page-0",
+      "page": "Notre histoire",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "noctil-page-1",
+      "page": "Questions et contact",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "noctil-reference-accueil-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "Projecteur de galaxies NOCTIL : la nuit entre dans la pièce"
+      ],
+      "title": "NOCTIL | Projecteur de galaxies pour le salon et la chambre",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "NOCTIL"
+        },
+        {
+          "ok": true,
+          "alt": "Projecteur de galaxies NOCTIL entier, posé sur un halo indigo et violet."
+        },
+        {
+          "ok": true,
+          "alt": "NOCTIL dans un coin lecture, à côté d'un fauteuil et d'une lampe, galaxie au mur."
+        },
+        {
+          "ok": true,
+          "alt": "NOCTIL sur une table de chevet, galaxie violette projetée au-dessus du lit."
+        },
+        {
+          "ok": true,
+          "alt": "NOCTIL dans une alcôve lavande, coussins au sol, galaxie projetée sur la voûte."
+        },
+        {
+          "ok": true,
+          "alt": "NOCTIL sur une table basse, ciel violet projeté au plafond d'une chambre."
+        },
+        {
+          "ok": true,
+          "alt": "Quand le jour se retire, la pièce change de taille"
+        },
+        {
+          "ok": true,
+          "alt": "L'objectif"
+        },
+        {
+          "ok": true,
+          "alt": "Le socle et son bouton"
+        },
+        {
+          "ok": true,
+          "alt": "La sphère sur son arceau"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "NOCTIL"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir NOCTIL",
+          "path": "[preview]/products/projecteur-galaxies-noctil"
+        },
+        {
+          "label": "Voir les pièces",
+          "path": "[preview]/pages/univers"
+        },
+        {
+          "label": "Voir NOCTIL",
+          "path": "[preview]/products/projecteur-galaxies-noctil"
+        }
+      ]
+    },
+    {
+      "slug": "noctil-reference-produit-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "Projecteur de galaxies NOCTIL"
+      ],
+      "title": "Projecteur de galaxies NOCTIL : vues, détails, mise en place",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "NOCTIL"
+        },
+        {
+          "ok": true,
+          "alt": "Projecteur de galaxies NOCTIL"
+        },
+        {
+          "ok": true,
+          "alt": "Projecteur de galaxies NOCTIL"
+        },
+        {
+          "ok": true,
+          "alt": "Projecteur de galaxies NOCTIL"
+        },
+        {
+          "ok": true,
+          "alt": "Projecteur de galaxies NOCTIL"
+        },
+        {
+          "ok": true,
+          "alt": "Projecteur de galaxies NOCTIL"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "Silhouette"
+        },
+        {
+          "ok": true,
+          "alt": "Projecteur NOCTIL sur une surface sombre, halo indigo et violet derrière lui."
+        },
+        {
+          "ok": true,
+          "alt": "NOCTIL"
+        }
+      ],
+      "links": [
+        {
+          "label": "Voir les pièces",
+          "path": "[preview]/pages/univers"
+        }
+      ]
+    },
+    {
+      "slug": "noctil-reference-accueil-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Projecteur de galaxies NOCTIL : la nuit entre dans la pièce"
+      ],
+      "title": "NOCTIL | Projecteur de galaxies pour le salon et la chambre",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "NOCTIL"
+        },
+        {
+          "ok": true,
+          "alt": "Projecteur de galaxies NOCTIL entier, posé sur un halo indigo et violet."
+        },
+        {
+          "ok": true,
+          "alt": "NOCTIL dans un coin lecture, à côté d'un fauteuil et d'une lampe, galaxie au mur."
+        },
+        {
+          "ok": true,
+          "alt": "NOCTIL sur une table de chevet, galaxie violette projetée au-dessus du lit."
+        },
+        {
+          "ok": true,
+          "alt": "NOCTIL dans une alcôve lavande, coussins au sol, galaxie projetée sur la voûte."
+        },
+        {
+          "ok": true,
+          "alt": "NOCTIL sur une table basse, ciel violet projeté au plafond d'une chambre."
+        },
+        {
+          "ok": true,
+          "alt": "Quand le jour se retire, la pièce change de taille"
+        },
+        {
+          "ok": true,
+          "alt": "L'objectif"
+        },
+        {
+          "ok": true,
+          "alt": "Le socle et son bouton"
+        },
+        {
+          "ok": true,
+          "alt": "La sphère sur son arceau"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "NOCTIL"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir NOCTIL",
+          "path": "[preview]/products/projecteur-galaxies-noctil"
+        },
+        {
+          "label": "Voir les pièces",
+          "path": "[preview]/pages/univers"
+        },
+        {
+          "label": "Voir NOCTIL",
+          "path": "[preview]/products/projecteur-galaxies-noctil"
+        }
+      ]
+    },
+    {
+      "slug": "noctil-reference-produit-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Projecteur de galaxies NOCTIL"
+      ],
+      "title": "Projecteur de galaxies NOCTIL : vues, détails, mise en place",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "NOCTIL"
+        },
+        {
+          "ok": true,
+          "alt": "Projecteur de galaxies NOCTIL"
+        },
+        {
+          "ok": true,
+          "alt": "Projecteur de galaxies NOCTIL"
+        },
+        {
+          "ok": true,
+          "alt": "Projecteur de galaxies NOCTIL"
+        },
+        {
+          "ok": true,
+          "alt": "Projecteur de galaxies NOCTIL"
+        },
+        {
+          "ok": true,
+          "alt": "Projecteur de galaxies NOCTIL"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "Silhouette"
+        },
+        {
+          "ok": true,
+          "alt": "Projecteur NOCTIL sur une surface sombre, halo indigo et violet derrière lui."
+        },
+        {
+          "ok": true,
+          "alt": "NOCTIL"
+        }
+      ],
+      "links": [
+        {
+          "label": "Voir les pièces",
+          "path": "[preview]/pages/univers"
+        }
+      ]
+    },
+    {
+      "slug": "traverse-client-accueil-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "Le thé prend son temps."
+      ],
+      "title": "Céramor | Le thé prend son temps.",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 1 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 6 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "L’émail bleu ardoise, vu de près"
+        },
+        {
+          "ok": true,
+          "alt": "Une silhouette accueillante"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "Céramor"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/collections/all"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Anse↗",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "traverse-client-produit-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "Théière Anse"
+      ],
+      "title": "Théière Anse, art de la table | Céramor",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "L’émail bleu ardoise, vu de près"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "L’anse arrondie en grès émaillé"
+        },
+        {
+          "ok": true,
+          "alt": "Le couvercle amovible et sa prise arrondie"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 10 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 1 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 6 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 4 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 7 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 2 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 9 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 5 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 3 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 8 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "L’émail bleu ardoise, vu de près"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 6 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 4 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Céramor"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "traverse-client-accueil-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Le thé prend son temps."
+      ],
+      "title": "Céramor | Le thé prend son temps.",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 1 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 6 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "L’émail bleu ardoise, vu de près"
+        },
+        {
+          "ok": true,
+          "alt": "Une silhouette accueillante"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "Céramor"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/collections/all"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Anse↗",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "traverse-client-produit-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Théière Anse"
+      ],
+      "title": "Théière Anse, art de la table | Céramor",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Céramor"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "L’émail bleu ardoise, vu de près"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "L’anse arrondie en grès émaillé"
+        },
+        {
+          "ok": true,
+          "alt": "Le couvercle amovible et sa prise arrondie"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 10 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 1 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 6 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 4 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 7 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 2 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 9 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 5 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse au centre de la table"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 3 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 8 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "L’émail bleu ardoise, vu de près"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 11 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Anse dans la lumière du matin"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 6 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse en grès bleu ardoise, vue 4 fournie pour la recette fictive"
+        },
+        {
+          "ok": true,
+          "alt": "La théière Anse sur la table, à côté d’une tasse"
+        },
+        {
+          "ok": true,
+          "alt": "Céramor"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "traverse-page-0",
+      "page": "En situation",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "traverse-page-1",
+      "page": "Questions et contact",
+      "width": 390,
+      "content": 390,
+      "h1": 1,
+      "images": true
+    },
+    {
+      "slug": "traverse-reference-accueil-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "TRAVERSE, du café du matin au quai de départ"
+      ],
+      "title": "TRAVERSE | Sac de voyage modulable, du quotidien au départ",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "TRAVERSE"
+        },
+        {
+          "ok": true,
+          "alt": "Sac de voyage modulable TRAVERSE"
+        },
+        {
+          "ok": true,
+          "alt": "Du quai au bord du lac"
+        },
+        {
+          "ok": true,
+          "alt": "Sac de voyage modulable TRAVERSE posé sur un bloc de pierre claire, sous une arche ensoleillée."
+        },
+        {
+          "ok": true,
+          "alt": "Sac TRAVERSE sur une banquette de café, tasse posée sur la table."
+        },
+        {
+          "ok": true,
+          "alt": "Sac TRAVERSE sur un banc en bois dans le hall d'une gare."
+        },
+        {
+          "ok": true,
+          "alt": "Sac TRAVERSE sur un ponton en bois au bord d'un lac brumeux."
+        },
+        {
+          "ok": true,
+          "alt": "Sac à dos de voyage TRAVERSE vert olive, de trois quarts : poche frontale zippée et bretelles noires."
+        },
+        {
+          "ok": true,
+          "alt": "Gros plan de la poche frontale zippée et de l'étiquette TRAVERSE sur le tissu olive."
+        },
+        {
+          "ok": true,
+          "alt": "Une chemise, un carnet, des lunettes de soleil"
+        },
+        {
+          "ok": true,
+          "alt": "Sac de voyage modulable TRAVERSE"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir TRAVERSE",
+          "path": "[preview]/products/sac-voyage-modulable-traverse"
+        },
+        {
+          "label": "Lire le carnet de route",
+          "path": "[preview]/pages/carnet-de-route"
+        },
+        {
+          "label": "Voir le sac",
+          "path": "[preview]/products/sac-voyage-modulable-traverse"
+        },
+        {
+          "label": "Voir la fiche complète↗",
+          "path": "[preview]/products/sac-voyage-modulable-traverse"
+        }
+      ]
+    },
+    {
+      "slug": "traverse-reference-produit-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "Sac de voyage modulable TRAVERSE"
+      ],
+      "title": "Sac de voyage modulable TRAVERSE : vues, poches et détails",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "TRAVERSE"
+        },
+        {
+          "ok": true,
+          "alt": "Sac de voyage modulable TRAVERSE"
+        },
+        {
+          "ok": true,
+          "alt": "Du quai au bord du lac"
+        },
+        {
+          "ok": true,
+          "alt": "Sac de voyage modulable TRAVERSE"
+        },
+        {
+          "ok": true,
+          "alt": "Sac de voyage modulable TRAVERSE"
+        },
+        {
+          "ok": true,
+          "alt": "Sac de voyage modulable TRAVERSE"
+        },
+        {
+          "ok": true,
+          "alt": "Sac de voyage modulable TRAVERSE"
+        },
+        {
+          "ok": true,
+          "alt": "Sac de voyage modulable TRAVERSE"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "La poche frontale"
+        },
+        {
+          "ok": true,
+          "alt": "Les boucles"
+        },
+        {
+          "ok": true,
+          "alt": "Le profil"
+        },
+        {
+          "ok": true,
+          "alt": "Organisation"
+        },
+        {
+          "ok": true,
+          "alt": "Sac TRAVERSE posé sur un banc au pied d'un lit d'hôtel."
+        },
+        {
+          "ok": true,
+          "alt": "Sac TRAVERSE sur un ponton en bois au bord d'un lac brumeux."
+        },
+        {
+          "ok": true,
+          "alt": "Sac TRAVERSE sur un banc en bois dans le hall d'une gare."
+        }
+      ],
+      "links": [
+        {
+          "label": "Lire le carnet de route",
+          "path": "[preview]/pages/carnet-de-route"
+        }
+      ]
+    },
+    {
+      "slug": "traverse-reference-accueil-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "TRAVERSE, du café du matin au quai de départ"
+      ],
+      "title": "TRAVERSE | Sac de voyage modulable, du quotidien au départ",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "TRAVERSE"
+        },
+        {
+          "ok": true,
+          "alt": "Sac de voyage modulable TRAVERSE posé sur un bloc de pierre claire, sous une arche ensoleillée."
+        },
+        {
+          "ok": true,
+          "alt": "Sac TRAVERSE sur une banquette de café, tasse posée sur la table."
+        },
+        {
+          "ok": true,
+          "alt": "Sac TRAVERSE sur un banc en bois dans le hall d'une gare."
+        },
+        {
+          "ok": true,
+          "alt": "Sac TRAVERSE sur un ponton en bois au bord d'un lac brumeux."
+        },
+        {
+          "ok": true,
+          "alt": "Sac à dos de voyage TRAVERSE vert olive, de trois quarts : poche frontale zippée et bretelles noires."
+        },
+        {
+          "ok": true,
+          "alt": "Gros plan de la poche frontale zippée et de l'étiquette TRAVERSE sur le tissu olive."
+        },
+        {
+          "ok": true,
+          "alt": "Une chemise, un carnet, des lunettes de soleil"
+        },
+        {
+          "ok": true,
+          "alt": "Sac de voyage modulable TRAVERSE"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir TRAVERSE",
+          "path": "[preview]/products/sac-voyage-modulable-traverse"
+        },
+        {
+          "label": "Lire le carnet de route",
+          "path": "[preview]/pages/carnet-de-route"
+        },
+        {
+          "label": "Voir le sac",
+          "path": "[preview]/products/sac-voyage-modulable-traverse"
+        },
+        {
+          "label": "Voir la fiche complète↗",
+          "path": "[preview]/products/sac-voyage-modulable-traverse"
+        }
+      ]
+    },
+    {
+      "slug": "traverse-reference-produit-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Sac de voyage modulable TRAVERSE"
+      ],
+      "title": "Sac de voyage modulable TRAVERSE : vues, poches et détails",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "TRAVERSE"
+        },
+        {
+          "ok": true,
+          "alt": "Sac de voyage modulable TRAVERSE"
+        },
+        {
+          "ok": true,
+          "alt": "Sac de voyage modulable TRAVERSE"
+        },
+        {
+          "ok": true,
+          "alt": "Sac de voyage modulable TRAVERSE"
+        },
+        {
+          "ok": true,
+          "alt": "Sac de voyage modulable TRAVERSE"
+        },
+        {
+          "ok": true,
+          "alt": "Sac de voyage modulable TRAVERSE"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "La poche frontale"
+        },
+        {
+          "ok": true,
+          "alt": "Les boucles"
+        },
+        {
+          "ok": true,
+          "alt": "Le profil"
+        },
+        {
+          "ok": true,
+          "alt": "Organisation"
+        },
+        {
+          "ok": true,
+          "alt": "Sac TRAVERSE posé sur un banc au pied d'un lit d'hôtel."
+        },
+        {
+          "ok": true,
+          "alt": "Sac TRAVERSE sur un ponton en bois au bord d'un lac brumeux."
+        },
+        {
+          "ok": true,
+          "alt": "Sac TRAVERSE sur un banc en bois dans le hall d'une gare."
+        }
+      ],
+      "links": [
+        {
+          "label": "Lire le carnet de route",
+          "path": "[preview]/pages/carnet-de-route"
+        }
+      ]
+    },
+    {
+      "slug": "traverse-incomplet-client-accueil-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "Mon titre client conservé après reconnexion (9)"
+      ],
+      "title": "Matière Minute | Le thé prend son temps.",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Matière Minute"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Matière Minute"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/collections/all"
+        },
+        {
+          "label": "Découvrir Anse↗",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "traverse-incomplet-client-produit-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "Théière Anse"
+      ],
+      "title": "Théière Anse, art de la table | Matière Minute",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Matière Minute"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "ok": true,
+          "alt": "Matière Minute"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "traverse-incomplet-client-accueil-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Mon titre client conservé après reconnexion (9)"
+      ],
+      "title": "Matière Minute | Le thé prend son temps.",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Matière Minute"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Matière Minute"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/collections/all"
+        },
+        {
+          "label": "Découvrir Anse↗",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "traverse-incomplet-client-produit-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Théière Anse"
+      ],
+      "title": "Théière Anse, art de la table | Matière Minute",
+      "robots": "noindex, nofollow",
+      "images": [
+        {
+          "ok": true,
+          "alt": "Matière Minute"
+        },
+        {
+          "ok": true,
+          "alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible"
+        },
+        {
+          "ok": true,
+          "alt": "Matière Minute"
+        }
+      ],
+      "links": [
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        },
+        {
+          "label": "Découvrir Théière Anse",
+          "path": "[preview]/products/theiere-anse"
+        }
+      ]
+    },
+    {
+      "slug": "studio-adaptation-partielle-1440",
+      "viewport": 1440,
+      "width": 1440,
+      "h1": [
+        "Boutique"
+      ],
+      "title": "Studio · E-COM STUDIO IA",
+      "images": [
+        {
+          "ok": true,
+          "alt": ""
+        }
+      ],
+      "links": [
+        {
+          "label": "Prochaine étape : Créer des visuels",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "",
+          "path": "[preview]"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        }
+      ]
+    },
+    {
+      "slug": "studio-nouvelle-session-390",
+      "viewport": 390,
+      "width": 390,
+      "h1": [
+        "Boutique"
+      ],
+      "title": "Studio · E-COM STUDIO IA",
+      "images": [],
+      "links": [
+        {
+          "label": "Prochaine étape : Créer des visuels",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "",
+          "path": "[preview]"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        },
+        {
+          "label": "Préparer ce visuel",
+          "path": "/studio/odm92rdsdzpo0sov/images"
+        }
+      ]
+    },
+    {
+      "slug": "native-editor-new-session",
+      "editStatus": 200,
+      "previousVersion": 10,
+      "currentVersion": 11,
+      "partialVisible": true
+    },
+    {
+      "slug": "noctil-native-cart",
+      "zoomAvailable": true,
+      "cartContainsOwnProduct": true,
+      "paymentAttempted": false
+    },
+    {
+      "slug": "noctil-native-faq",
+      "toggled": true
+    },
+    {
+      "slug": "traverse-native-cart",
+      "zoomAvailable": true,
+      "cartContainsOwnProduct": true,
+      "paymentAttempted": false
+    },
+    {
+      "slug": "traverse-native-faq",
+      "toggled": true
+    },
+    {
+      "slug": "rive-native-faq",
+      "toggled": true
+    },
+    {
+      "slug": "rive-native-service-contact",
+      "internalContactPage": true,
+      "noRealAppointment": true
+    }
+  ],
+  "errors": [],
+  "external": []
+}

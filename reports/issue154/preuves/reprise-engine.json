@@ -1,0 +1,78 @@
+{
+  "supplierCalls": 0,
+  "mediaUnchanged": true,
+  "results": [
+    {
+      "theme": "fraise",
+      "versionsBefore": 6,
+      "versionsAfter": 7,
+      "mediaPreserved": 33,
+      "status": "partial",
+      "pages": 10,
+      "slots": 39
+    },
+    {
+      "theme": "onde",
+      "versionsBefore": 6,
+      "versionsAfter": 7,
+      "mediaPreserved": 33,
+      "status": "partial",
+      "pages": 8,
+      "slots": 35
+    },
+    {
+      "theme": "orbe",
+      "versionsBefore": 6,
+      "versionsAfter": 7,
+      "mediaPreserved": 30,
+      "status": "to_verify",
+      "pages": 4,
+      "slots": 7
+    },
+    {
+      "theme": "rive",
+      "versionsBefore": 6,
+      "versionsAfter": 7,
+      "mediaPreserved": 34,
+      "status": "partial",
+      "pages": 5,
+      "slots": 11
+    },
+    {
+      "theme": "sillon",
+      "versionsBefore": 6,
+      "versionsAfter": 7,
+      "mediaPreserved": 30,
+      "status": "partial",
+      "pages": 3,
+      "slots": 23
+    },
+    {
+      "theme": "noctil",
+      "versionsBefore": 6,
+      "versionsAfter": 7,
+      "mediaPreserved": 30,
+      "status": "to_verify",
+      "pages": 2,
+      "slots": 16
+    },
+    {
+      "theme": "traverse",
+      "versionsBefore": 6,
+      "versionsAfter": 7,
+      "mediaPreserved": 30,
+      "status": "partial",
+      "pages": 2,
+      "slots": 19
+    },
+    {
+      "theme": "traverse-incomplet",
+      "versionsBefore": 9,
+      "versionsAfter": 10,
+      "mediaPreserved": 2,
+      "status": "partial",
+      "pages": 2,
+      "slots": 19
+    }
+  ]
+}

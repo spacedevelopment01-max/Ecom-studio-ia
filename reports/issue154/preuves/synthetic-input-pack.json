@@ -1,0 +1,41 @@
+{
+  "supplierCalls": 0,
+  "nature": "Simulated client-owned input files only, not provider quality evidence",
+  "result": [
+    {
+      "theme": "fraise",
+      "additionalImages": 11,
+      "additionalVideos": 3
+    },
+    {
+      "theme": "onde",
+      "additionalImages": 11,
+      "additionalVideos": 3
+    },
+    {
+      "theme": "orbe",
+      "additionalImages": 11,
+      "additionalVideos": 0
+    },
+    {
+      "theme": "rive",
+      "additionalImages": 13,
+      "additionalVideos": 0
+    },
+    {
+      "theme": "sillon",
+      "additionalImages": 11,
+      "additionalVideos": 0
+    },
+    {
+      "theme": "noctil",
+      "additionalImages": 11,
+      "additionalVideos": 0
+    },
+    {
+      "theme": "traverse",
+      "additionalImages": 11,
+      "additionalVideos": 0
+    }
+  ]
+}

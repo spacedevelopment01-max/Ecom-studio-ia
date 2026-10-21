@@ -1,0 +1,31 @@
+{
+  "sourceCommit": "393dc83555193855d8803d08ca28dcfa825296dc",
+  "dependencies": [
+    {
+      "sha": "656e9a4f05f9d402d84faf270dd2bf07c0fce72b",
+      "ancestor": true
+    },
+    {
+      "sha": "e9b20a99add6711905bec8a78f05e4a40c628fa6",
+      "ancestor": true
+    },
+    {
+      "sha": "f0084332c78accc1ea26f814f82181bb3dec1cc6",
+      "ancestor": true
+    },
+    {
+      "sha": "d8114155436d16fb0950e8dcc920fc4b298c9783",
+      "ancestor": true
+    },
+    {
+      "sha": "5eb672f9d3c70a3b025a4abd0f5353955ba5d62e",
+      "ancestor": true
+    }
+  ],
+  "themeBase": {
+    "reference153": "4ee7a3244bacf0b36974aac646fa50ff164b9db9",
+    "integration": "4ee7a3244bacf0b36974aac646fa50ff164b9db9"
+  },
+  "noProviderCalls": true,
+  "noMainMergeOrDeployment": true
+}

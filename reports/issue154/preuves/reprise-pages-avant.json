@@ -1,0 +1,47 @@
+{
+  "compiledVersion": {
+    "commit": "0bf6cbc2fdc8465de418be331f60129b8d5e9b55",
+    "source": "compiled-build"
+  },
+  "isolatedData": true,
+  "observedEmptyPageTitles": [
+    {
+      "page": "fraise-page-6",
+      "h1": 0
+    },
+    {
+      "page": "fraise-page-7",
+      "h1": 0
+    },
+    {
+      "page": "fraise-page-8",
+      "h1": 0
+    },
+    {
+      "page": "fraise-page-9",
+      "h1": 0
+    },
+    {
+      "page": "onde-page-4",
+      "h1": 0
+    },
+    {
+      "page": "onde-page-5",
+      "h1": 0
+    },
+    {
+      "page": "onde-page-6",
+      "h1": 0
+    },
+    {
+      "page": "onde-page-7",
+      "h1": 0
+    },
+    {
+      "page": "rive-page-4",
+      "h1": 0
+    }
+  ],
+  "cause": "Historical SEO delivery selected archived generated templates instead of fresh reference page templates. Subsequent fix uses reference page reconciliation and pristine composition baselines.",
+  "customerData": false
+}

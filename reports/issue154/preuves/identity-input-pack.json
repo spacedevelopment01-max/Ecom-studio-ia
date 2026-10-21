@@ -1,0 +1,41 @@
+{
+  "supplierCalls": 0,
+  "simulatedSuppliedIdentity": true,
+  "results": [
+    {
+      "theme": "fraise",
+      "suppliedLightVariant": true,
+      "originalUntouched": true
+    },
+    {
+      "theme": "onde",
+      "suppliedLightVariant": true,
+      "originalUntouched": true
+    },
+    {
+      "theme": "orbe",
+      "suppliedLightVariant": true,
+      "originalUntouched": true
+    },
+    {
+      "theme": "rive",
+      "suppliedLightVariant": true,
+      "originalUntouched": true
+    },
+    {
+      "theme": "sillon",
+      "suppliedLightVariant": true,
+      "originalUntouched": true
+    },
+    {
+      "theme": "noctil",
+      "suppliedLightVariant": true,
+      "originalUntouched": true
+    },
+    {
+      "theme": "traverse",
+      "suppliedLightVariant": true,
+      "originalUntouched": true
+    }
+  ]
+}
