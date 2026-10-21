@@ -179,10 +179,11 @@ function curateMuseau(k: Kit) {
       ["eyebrow", block("eyebrow", { text: f.eyebrow })],
       ["title", block("title", {})],
       ["price", block("price", {})],
+      // L'action juste sous le prix : sur téléphone, produit, titre et bouton tiennent dans le premier écran.
+      ["buy", block("buy_buttons", { picker: "buttons", show_quantity: true, show_dynamic_checkout: false, price_in_button: false })],
       ["text", block("text", { text: p(f.text) })],
       ["highlights", block("highlights", { items: f.highlights, icon: "check", columns: 1 })],
       ["siblings", block("siblings", { collection: "all", heading: "La collection assortie" })],
-      ["buy", block("buy_buttons", { picker: "buttons", show_quantity: true, show_dynamic_checkout: false, price_in_button: false })],
       ["details", block("collapsible", { heading: "Description", content: f.description, open: false })],
       ["sizes", { ...block("collapsible", { heading: "Tailles et mesures", content: p(TODO(it.key === "pochette" ? "dimensions de la pochette, format des rouleaux de sacs" : "tailles proposées et mesures à prendre")), open: false }), disabled: true }],
       ["materials", { ...block("collapsible", { heading: "Matières et entretien", content: p(TODO("composition et conseils d'entretien")), open: false }), disabled: true }],
@@ -251,7 +252,10 @@ function curateMuseau(k: Kit) {
   spec.store.menus["footer-aide"] = { title: "Aide", links: [{ title: "La balade", url: "/pages/la-balade" }, { title: "Questions et contact", url: "/pages/aide" }, { title: "Recherche", url: "/search" }] };
   const header = Object.values(spec.groups.header.sections).find((s) => s.type === "header")!;
   header.settings = { ...header.settings, menu: "main-menu", layout: "two-rows", shape: "bar", icons: "plain", mega_menu: "cards", mobile_menu: "cards", mobile_submenu: "open", sticky: true, transparent_on_home: false, show_search: true, show_cart: true, cta_label: "", phone: "", color_scheme: "scheme-1" };
-  header.blocks = {}; header.block_order = [];
+  // Menu en cartes : chaque pièce avec sa photo principale (bloc « image du lien » de l'en-tête, relié par le titre).
+  const extraSchema = sectionSchema(spec, "header")!.blocks.find((b) => b.type === "link_extra")?.settings;
+  header.blocks = Object.fromEntries(items.map((it) => [`img_${it.key}`, { type: "link_extra", settings: withDefaults(extraSchema, { link_title: it.title.replace(" MUSEAU CLUB cobalt", ""), icon: "none", image: "", image_asset: k.name(it.views[0]) }) }]));
+  header.block_order = items.map((it) => `img_${it.key}`);
   // Une seule mention de démonstration : celle de l'aperçu (studio et aperçu statique), pas de bandeau d'annonce en plus.
   spec.groups.header.sections = { header };
   spec.groups.header.order = ["header"];
