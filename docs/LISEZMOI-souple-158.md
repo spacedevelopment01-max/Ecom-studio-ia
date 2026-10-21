@@ -91,13 +91,39 @@ pour la santé, entretien, garantie, livraison, avis, stock. Leurs blocs (« Dim
 dans l'éditeur, masqués, prêts à compléter. Sans prix : « Prix à définir » et « Achat indisponible » (bouton et barre
 mobile), jamais achetable.
 
-## Vérifications
+## Vérifications (copie isolée)
 
-_En cours : résultats ajoutés au rapport dès que les contrôles (tests complets, studio, choix, exports, captures) sont passés sur le commit livré._
+| Contrôle | Résultat |
+|---|---|
+| Médias | 31/31 conformes au manifeste (SHA-256, taille, dimensions) ; 31/31 utilisés par la démonstration (test) |
+| `tsc --noEmit` | sans erreur |
+| `vitest run` complet | 327 fichiers, 2568 tests réussis, 2 ignorés, 0 échec |
+| `tests/souple.test.ts` (17 tests) | famille E-commerce partout, profil « poudre », composition figée sans section `cv-*`, exactement quatre produits (chacun ses cinq vues, son texte, ses points, sa scène, « Dans la collection »), chaque tuile et chaque lien vers la bonne fiche, jamais la même image dans deux sections qui se suivent, SEO (un H1, titres et descriptions uniques, fil d'Ariane, alt), rien d'inventé, liens internes, exports ; projet d'un produit (ouverture de repli, aucune trace de la démo) et projet de plusieurs produits (mosaïque des produits du projet) |
+| Achats de test (copie isolée, prix de test 59 / 24 / 15 / 32 €) | sans prix : « Achat indisponible » (bouton et barre mobile) sur les quatre fiches ; avec prix : ajout des quatre produits, quantités, suppression d'une ligne et totaux exacts (219 €, 187 €, 128 €) |
+| Distinction (`themes-catalogue`) | ouverture propre (`fs-collections:asym`, repli `ed-scene:panorama`), moins de 50 % de sections communes avec tout autre thème, couple de polices unique, signature graphique différente |
+| Theme Check Shopify | SOUPLE en français, en anglais, mono-produit et prestations : 0 erreur (4 avertissements `UnusedAssign` déjà présents partout) |
+| Aperçu statique | 11 pages × 4 largeurs (360, 390, 430, 1440) : 0 débordement horizontal ; menus, recherche, panier, 404 |
+| Premiers écrans | 360 × 640 : accueil titre 163–312 px, bouton 492–544 ; fiches : produit entier, nom, prix, bouton d'achat terminé entre 602 et 627 px (les quatre). 390 × 844 et 430 × 932 : idem, plus haut (`premier-ecran/mesures.json`) |
+| Studio réel (`family-studio-check souple`) | 13/13 : galerie limitée aux 20 fonctions E-commerce (fonction d'une autre famille introuvable), ajout, mouvement réduit, changement de disposition (titre conservé), titre, effets, déplacement, en-tête et pied (dispositions et textes), rechargement : tout conservé |
+| Choix depuis le studio (`START_DEMO=heuren theme-demo-choice-check … souple`) | démo complète SOUPLE consultée (ordinateur, téléphone, fiche, page « Les usages ») sans aucune écriture dans le projet ; projet HEUREN complet adapté : 0 emplacement vide, 0 image non chargée, 0 visuel ou texte de SOUPLE, rechargement identique ; « Choisir ce thème » en double-clic : une seule tâche, une seule version |
+| Exports WooCommerce / PrestaShop (`family-export-check`) | profil « poudre » actif (`es-editorial-poudre`), 0 débordement, 0 erreur de script ; Shopify : les 31 médias, les quatre produits, le profil (test) |
+
+**Exports** : ce sont des fichiers (thème Shopify, paquets WooCommerce et PrestaShop) dont le contenu et le rendu sont
+vérifiés ; **aucune installation réelle dans un CMS** n'a été faite.
+
+**Adaptation à un client** : vérifiée sur un projet existant et complet (HEUREN) ; ce n'est pas la génération IA d'un
+nouveau client (Codex #154), qui n'est pas vérifiée ici.
+
+Preuves dans `docs/preuves/souple-158/` : `pages/` (accueil, catalogue, quatre fiches à 360, 390, 430 et 1440 px ; « Les
+usages », « Questions et contact », panier à 390 et 1440 px), `premier-ecran/` (360 × 640, 390 × 844, 430 × 932 et
+mesures) et `adaptation-client/` (projet HEUREN dans SOUPLE). Seuls des visuels SOUPLE et HEUREN (déjà publics dans le
+dépôt) y figurent : aucune capture d'un kit privé (FRAISE, ONDE, ORBE, Rive) ni de la galerie des thèmes.
 
 ## Limites connues
 
 - Rendus à valider par Thomas avant toute validation du thème.
+- Sur un projet client, la section « image et texte » peut reprendre l'accroche de la marque déjà utilisée en ouverture
+  (rédaction automatique de la bibliothèque, commune à tous les thèmes) ; à retoucher dans le studio.
 - Codespace de Thomas : non vérifié. Exports : contenu et rendu vérifiés, pas d'installation réelle dans un CMS.
 - Génération IA complète d'un nouveau client : non vérifiée (Codex #154) ; seule l'adaptation d'un projet existant l'est.
 - Forfaits (Codex #151 / #154) : ajout de `souple` à leur grille au moment de réunir les branches.
