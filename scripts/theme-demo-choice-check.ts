@@ -10,6 +10,13 @@
  *     démo) avec le guide des informations à compléter ;
  *  4. galerie et démo sur un téléphone (390 × 844).
  *
+ * START_DEMO=<démonstration> (revue de la PR #159) : le projet de départ n'est plus « Atelier Verre » (presque vide : un
+ * produit sans visuels) mais un projet complet et cohérent — celui d'une autre démonstration de la même famille, avec sa
+ * marque, son produit, ses textes et ses propres visuels. Le choix passe par le vrai chemin (tâche « shop.direction » du
+ * worker, moteur local, sans IA) ; on vérifie ensuite qu'aucun emplacement d'image n'est vide, qu'aucun visuel du thème
+ * choisi n'est repris, puis la sauvegarde et le rechargement. La génération IA des textes et des visuels n'est PAS
+ * exercée ici (dépendance Codex #154).
+ *
  *   THEME_DEMOS_DIR=<démos préparées> npx tsx scripts/theme-demo-choice-check.ts <dossier-captures> [sillon|noctil|traverse|heuren|alcove|museau-club]
  */
 import fs from "node:fs";
@@ -32,11 +39,12 @@ const THEME = {
   "museau-club": { brand: /MUSEAU CLUB/, profile: "club", menuPage: "page-la-balade.html", menuLabel: "La balade", leak: /MUSEAU|harnais|pochette|bleu cobalt|La balade|Boutique de démonstration/i },
 }[T];
 /** Attribut du <body> qui porte le profil graphique : « conversion » (boutique spécialisée), « editorial » (E-commerce). */
-const CATALOG = T === "heuren" || T === "alcove" || T === "museau-club";
+const CATALOG = T === "heuren" || T === "alcove";
 const PROFILE_ATTR = CATALOG ? "editorial" : "conversion";
 /** Projet de départ de la même famille que le thème choisi : boutique spécialisée dans FRAISE, ou E-commerce dans ORBE
  * (HEUREN et ALCÔVE, issue #155 : un thème E-commerce ne se propose pas à une boutique spécialisée). */
-const START = (CATALOG ? { id: "orbe", name: "ORBE", kind: "catalog" } : { id: "fraise", name: "FRAISE", kind: "specialty" }) as { id: "orbe" | "fraise"; name: string; kind: "catalog" | "specialty" };
+const START_DEMO = process.env.START_DEMO as undefined | "fraise" | "onde" | "orbe" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove";
+const START = (START_DEMO ? { id: START_DEMO, name: START_DEMO.toUpperCase(), kind: CATALOG ? "catalog" : "specialty" } : CATALOG ? { id: "orbe", name: "ORBE", kind: "catalog" } : { id: "fraise", name: "FRAISE", kind: "specialty" }) as { id: "orbe" | "fraise" | "onde" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove"; name: string; kind: "catalog" | "specialty" };
 const demosDir = process.env.THEME_DEMOS_DIR; if (!demosDir || !fs.existsSync(path.join(demosDir, T, "accueil.html"))) throw new Error("THEME_DEMOS_DIR : démos préparées requises (scripts/prepare-theme-demos.ts)");
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "ecs-demo-choice-")); process.env.DATA_DIR = temp; process.env.STOCK_OFFLINE = "1";
 const out = path.resolve(process.argv[2] ?? "reports/theme-demo-choice"); fs.mkdirSync(out, { recursive: true });
@@ -46,13 +54,20 @@ const { saveThemeVersion, loadProject, saveBrand, saveSettings } = await import(
 const { composeShop } = await import("../src/lib/engine/shop"); const { seedHoldout } = await import("../tests/lot1-holdout-fixtures");
 const password = "demo-" + Math.random().toString(36).slice(2), email = "demo-choice@example.invalid";
 const user = await createUser(email, password, "Vérification démo complète");
-const pid = seedHoldout(user.id, 0, "Atelier Verre");
+const { catalogTheme } = await import("../src/lib/theme/theme-catalog");
+const startDemo = START_DEMO ? await runWithLang({ content: "fr", ui: "fr" }, async () => (await import("../tests/demo-fixtures")).demoProject(user.id, START_DEMO)) : null;
+const pid = startDemo ? startDemo.pid : seedHoldout(user.id, 0, "Atelier Verre");
+/** Nom du projet de départ (sa marque) : il doit rester celui du projet après le choix. */
+const NAME = startDemo ? loadProject(pid).brand!.name : "Atelier Verre";
+const startProfile = (() => { const s = catalogTheme(START.id)!.settings ?? {}; return s.conversion_profile && s.conversion_profile !== "none" ? `body[data-conversion='${s.conversion_profile}']` : `body[data-editorial='${s.editorial_profile}']`; })();
 run("INSERT INTO subscriptions (user_id,status,plan,owner_user_id,project_id,source,created_at,updated_at) VALUES (?,'active','creer',?,?,'admin',?,?)", `demo-check-${pid}`, user.id, pid, Date.now(), Date.now());
-const p0 = loadProject(pid);
-saveBrand(pid, { ...p0.brand!, name: "Atelier Verre", tagline: "Des verres soufflés pour tous les jours.", palette: { primary: "#1F4E5F", secondary: "#CFE3E8", accent: "#2A7F62", light: "#F6F8F7", dark: "#10242B" }, direction: START.id });
-saveSettings(pid, { ...loadProject(pid).settings, storeKind: START.kind });
-const built = await runWithLang({ content: "fr", ui: "fr" }, () => composeShop(pid, START.id, null, false));
-saveThemeVersion(pid, built.spec, `Boutique Atelier Verre (${START.name})`, "user");
+if (!startDemo) {
+  const p0 = loadProject(pid);
+  saveBrand(pid, { ...p0.brand!, name: "Atelier Verre", tagline: "Des verres soufflés pour tous les jours.", palette: { primary: "#1F4E5F", secondary: "#CFE3E8", accent: "#2A7F62", light: "#F6F8F7", dark: "#10242B" }, direction: START.id });
+  saveSettings(pid, { ...loadProject(pid).settings, storeKind: START.kind });
+  const built = await runWithLang({ content: "fr", ui: "fr" }, () => composeShop(pid, START.id, null, false));
+  saveThemeVersion(pid, built.spec, `Boutique Atelier Verre (${START.name})`, "user");
+}
 
 /** Empreinte de tout ce que la visite pourrait toucher : elle doit être identique avant et après. */
 const hash = (x: unknown) => crypto.createHash("sha256").update(JSON.stringify(x)).digest("hex").slice(0, 16);
@@ -81,11 +96,11 @@ try {
   const login = await context.request.post(`${origin}/api/auth/login`, { data: { email, password } }); assert.ok(login.ok(), `connexion : ${login.status()}`);
   await page.goto(`${origin}/studio/${pid}/boutique`, { waitUntil: "networkidle", timeout: 240000 }); await page.waitForTimeout(1500);
   const preview = () => page.frameLocator("iframe[src*='/preview/']").first();
-  await preview().locator(START.id === "orbe" ? "body[data-editorial='object']" : "body[data-conversion='pop']").waitFor({ timeout: 180000 });
+  await preview().locator(startProfile).waitFor({ timeout: 180000 });
   const nudge = page.locator("[data-tuto-nudge]").getByRole("button", { name: /^(Masquer|Dismiss)$/ }); if (await nudge.count()) { await nudge.click(); await page.waitForTimeout(300); }
   await shot(page, `01-projet-existant-${START.id}`);
   const before = fingerprint();
-  steps.push({ step: `projet existant « Atelier Verre » (${START.kind === "catalog" ? "E-commerce" : "boutique spécialisée"}) ouvert dans ${START.name}`, empreinte: before, ok: true });
+  steps.push({ step: `projet existant « ${NAME} » (${START.kind === "catalog" ? "E-commerce" : "boutique spécialisée"}) ouvert dans ${START.name}`, empreinte: before, ok: true });
 
   // 1. Visite : aucune requête d'écriture vers le projet ne doit partir.
   const writes: string[] = [];
@@ -116,7 +131,7 @@ try {
   }
   await demoFrame().locator(`body[data-${PROFILE_ATTR}='${THEME.profile}']`).waitFor({ timeout: 60000 }); await page.waitForTimeout(1200);
   const home = await demoFrame().locator("body").innerText();
-  assert.ok(THEME.brand.test(home) && !/Atelier Verre/.test(home), `démo : contenus ${T.toUpperCase()}, jamais ceux du projet`);
+  assert.ok(THEME.brand.test(home) && !home.includes(NAME), `démo : contenus ${T.toUpperCase()}, jamais ceux du projet`);
   await shot(page, "03-demo-ordinateur-accueil");
   const pages = await page.locator("[data-demo-pages] option").evaluateAll((els) => els.map((e) => (e as HTMLOptionElement).textContent));
   steps.push({ step: `démo complète ${T.toUpperCase()} ouverte (ordinateur) : contenus de démonstration`, pages, ok: true });
@@ -154,7 +169,7 @@ try {
   await page.locator("[data-theme-demo='fraise']").waitFor({ timeout: 20000 });
   await demoFrame().locator("body[data-conversion='pop']").waitFor({ timeout: 60000 }); await page.waitForTimeout(1200);
   const fraise = await demoFrame().locator("body").innerText();
-  assert.ok(/FRAISE/i.test(fraise) && !/Atelier Verre/.test(fraise), "démo FRAISE : ses propres contenus");
+  assert.ok(/FRAISE/i.test(fraise) && (START.id === "fraise" || !fraise.includes(NAME)), "démo FRAISE : ses propres contenus");
   await shot(page, "09-demo-fraise-ordinateur");
   await page.getByRole("button", { name: "Fermer la démo" }).click(); await page.waitForTimeout(500);
   steps.push({ step: "démo complète FRAISE ouverte puis fermée ; Échap ne ferme que la démo", ok: true });
@@ -190,9 +205,51 @@ try {
   await page.reload({ waitUntil: "networkidle", timeout: 240000 });
   await preview().locator(`body[data-${PROFILE_ATTR}='${THEME.profile}']`).waitFor({ timeout: 180000 }); await page.waitForTimeout(1500);
   const text = await preview().locator("body").innerText();
-  assert.ok(text.includes("Atelier Verre"), "identité du projet après le choix");
+  assert.ok(text.includes(NAME), "identité du projet après le choix");
   assert.ok(!THEME.leak.test(text), `aucun contenu de la démo ${T.toUpperCase()} repris`);
   await shot(page, "11-editeur-apres-choix");
+  if (startDemo) {
+    // Projet complet : chaque page de la boutique adaptée, en pleine page (ordinateur et téléphone), directement depuis
+    // l'aperçu du studio ; aucun emplacement d'image vide, aucune image cassée, aucun visuel du thème choisi.
+    const src = await page.locator("iframe[src*='/preview/']").first().getAttribute("src");
+    const base = new URL(src!, origin); const root = base.pathname.replace(/\/$/, "");
+    const product = loadProject(pid);
+    const { currentTheme } = await import("../src/lib/projects");
+    const cur = currentTheme(pid)!;
+    const routes: [string, string][] = [["accueil", "/"], ["fiche", `/products/${cur.spec.store.product.handle}`], ...cur.spec.store.pages.slice(0, 2).map((pg) => [`page-${pg.handle}`, `/pages/${pg.handle}`] as [string, string])];
+    const audit: Record<string, unknown>[] = [];
+    for (const [w, h] of [[1440, 900], [390, 844]] as const) {
+      const ctx = await browser.newContext({ viewport: { width: w, height: h }, locale: "fr-FR", reducedMotion: "reduce" }); await ctx.addCookies(await context.cookies());
+      const pg = await ctx.newPage();
+      for (const [name, route] of routes) {
+        await pg.goto(`${origin}${root}${route}${base.search}`, { waitUntil: "networkidle", timeout: 240000 });
+        await pg.evaluate(async () => { for (let y = 0; y < document.documentElement.scrollHeight; y += 500) { scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); } scrollTo(0, 0); }); await pg.waitForTimeout(800);
+        const a = await pg.evaluate((theme) => ({
+          vides: document.querySelectorAll(".es-placeholder, .ed-media--pending").length,
+          cassees: [...document.images].filter((i) => i.complete && i.naturalWidth === 0 && i.getBoundingClientRect().width > 0).map((i) => i.src).slice(0, 5),
+          visuelsDuTheme: [...document.images].filter((i) => i.src.includes(theme)).length,
+          images: [...document.images].filter((i) => i.getBoundingClientRect().width > 0).length,
+          sections: document.querySelectorAll("main .shopify-section, main > section").length,
+          debordement: document.documentElement.scrollWidth - innerWidth,
+        }), T);
+        audit.push({ page: name, largeur: w, ...a });
+        assert.equal(a.vides, 0, `${name} ${w} : emplacement d'image vide`);
+        assert.deepEqual(a.cassees, [], `${name} ${w} : image cassée`);
+        assert.equal(a.visuelsDuTheme, 0, `${name} ${w} : visuel de la démo ${T} repris`);
+        assert.ok(a.debordement <= 0, `${name} ${w} : débordement ${a.debordement}`);
+        assert.ok(!THEME.leak.test(await pg.locator("body").innerText()), `${name} ${w} : texte de la démo repris`);
+        await pg.screenshot({ path: path.join(out, `choix-${T}-adaptation-${name}-${w}.png`), fullPage: true });
+      }
+      await ctx.close();
+    }
+    // Sauvegarde puis rechargement : la version appliquée est relue telle quelle depuis la base.
+    const saved = JSON.stringify(cur.spec);
+    await page.reload({ waitUntil: "networkidle", timeout: 240000 });
+    await preview().locator(`body[data-${PROFILE_ATTR}='${THEME.profile}']`).waitFor({ timeout: 180000 });
+    assert.equal(JSON.stringify(currentTheme(pid)!.spec), saved, "version identique après rechargement");
+    assert.ok((await preview().locator("body").innerText()).includes(NAME), "projet après rechargement");
+    steps.push({ step: `adaptation d'un projet complet (« ${NAME} », ${product.brand?.direction ?? START.id} → ${T}) : pages en pleine page, aucun emplacement vide, aucun visuel ni texte de la démo, rechargement identique`, audit, ok: true });
+  }
   steps.push({ step: "« Choisir ce thème » (double-clic + demande simultanée) : une seule tâche, une seule version, éditeur sur le projet, aucun contenu de démo", requetesInterface: posts.length, taches: jobs.length, versions, ok: true });
   // Guide après le choix (vue directe : le guide s'affiche quand l'application est terminée dans la même session).
   const guided = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "fr-FR" }); await guided.addCookies(await context.cookies());
@@ -225,6 +282,6 @@ try {
   await phone.close();
 
   assert.deepEqual(errors.filter((e) => !/ResizeObserver/.test(e)), [], "erreurs de page du studio");
-  fs.writeFileSync(path.join(out, "choix-theme.json"), JSON.stringify({ project: "Atelier Verre (projet existant, distinct des démonstrations)", origin: "studio Next.js de développement + worker, base temporaire, aucune IA", steps, date: new Date().toISOString() }, null, 2) + "\n");
+  fs.writeFileSync(path.join(out, "choix-theme.json"), JSON.stringify({ project: `${NAME} (projet existant, distinct de la démonstration choisie)`, origin: "studio Next.js de développement + worker, base temporaire, aucune IA", steps, date: new Date().toISOString() }, null, 2) + "\n");
   console.log(JSON.stringify({ ok: true, steps: steps.map((s) => s.step) }));
 } catch (e) { try { const pages = browser.contexts().flatMap((c) => c.pages()); if (pages[0]) await pages[0].screenshot({ path: path.join(out, "choix-99-echec.png") }); } catch { /* */ } console.error(log.slice(-3000)); throw e; } finally { fs.writeFileSync(path.join(out, "serveur-et-worker.log"), log); await browser.close(); stop(); }

@@ -29,8 +29,8 @@ async function providerContent(pid: string): Promise<Contents> {
   return c;
 }
 it.each([
-  [0, 'specialized', null, ['fraise', 'onde', 'sillon', 'noctil', 'traverse']],
-  [2, 'ecommerce', null, ['orbe', 'heuren', 'alcove', 'museau-club']],
+  [0, 'specialized', null, ['fraise', 'onde', 'sillon', 'noctil', 'traverse', 'museau-club']],
+  [2, 'ecommerce', null, ['orbe', 'heuren', 'alcove']],
   [1, 'services', 'atelier-rive', []],
   [3, 'services', 'atelier-rive', []],
 ] as const)('cas %i : validation des textes et préparation médias sans fausse installation de référence', async (index, choice, primary, alternatives) => {
@@ -60,8 +60,9 @@ it('une catégorie ambiguë reste bloquée puis se résout localement sans réé
 it('une ancienne éligibilité stockée ne permet pas une référence appartenant à une autre catégorie actuelle', async () => {
   const f = await readyInitial(); category(f.pid, 'ecommerce');
   const c = await providerContent(f.pid);
-  // Quatre références E-commerce (ORBE ; HEUREN et ALCÔVE, issue #155 ; MUSEAU CLUB, issue #158) : un choix à faire, aucune imposée.
-  expect(c.recommendation?.alternativesReferenceIds).toEqual(['orbe', 'heuren', 'alcove', 'museau-club']);
+  // Trois références E-commerce (ORBE ; HEUREN et ALCÔVE, issue #155 ; MUSEAU CLUB est passé en boutique spécialisée,
+  // issue #158) : un choix à faire, aucune imposée.
+  expect(c.recommendation?.alternativesReferenceIds).toEqual(['orbe', 'heuren', 'alcove']);
   category(f.pid, 'specialized');
   expect(() => approve(f.pid, stateOf(f.pid)!.revision, 'content')).toThrow(/catégorie/);
   expect(stateOf(f.pid)?.stages.content?.status).toBe('draft');

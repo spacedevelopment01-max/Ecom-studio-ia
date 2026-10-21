@@ -96,15 +96,14 @@ const BRANDS: Record<MultiKitId, Brand> = {
 
 export async function multiKitProject(userId: string, id: MultiKitId) {
   const main = MULTI_KIT_PRODUCTS[id][0];
-  return buildKitProject(userId, { id, media: MULTI_KIT_MEDIA[id], handle: main.handle, brand: BRANDS[id], themeName: "Museau Club", provenance: MULTI_KIT_PROVENANCE, storeKind: "catalog", sector: "animaux", storeType: "multi" }, curateMuseau);
+  return buildKitProject(userId, { id, media: MULTI_KIT_MEDIA[id], handle: main.handle, brand: BRANDS[id], themeName: "Museau Club", provenance: MULTI_KIT_PROVENANCE, storeKind: "specialty", sector: "animaux", storeType: "multi" }, curateMuseau);
 }
 
 /** Questions de la section « faq » (les réponses inconnues restent masquées, prêtes dans l'éditeur). */
 const faqRows = (items: [string, string][]) => items.map(([question, answer]) => ({ type: "question", settings: { question, answer: p(answer) }, hidden: answer.includes("[À compléter") }));
 /** Cadre d'un diptyque (photo, titre, phrase, lien). */
-const frame = (k: Kit, file: string, title: string, text: string, ratio: "landscape" | "portrait" | "square", extra: Record<string, unknown> = {}) => ({ type: "frame", settings: { ...k.img(file), title, text: p(text), link: "", link_label: "", ratio, ...extra } });
 /** Repère d'un lookbook sur un vrai produit : le lien d'achat mène à SA fiche, jamais à une autre. */
-const marker = (handle: string, x: number, y: number) => ({ type: "marker", settings: { product: handle, title: "", price_text: "", link: "", x, y } });
+const spot = (x: number, y: number, title: string, text: string, link: string) => ({ type: "hotspot", settings: { x, y, title, text: p(text), link } });
 
 /** Fiche de chaque produit : description, points et vues propres ; la rangée « La collection assortie » relie les quatre. */
 type Fiche = { eyebrow: string; text: string; highlights: string; description: string; seo: { title: string; description: string }; tags: string[] };
@@ -113,33 +112,33 @@ type Fiche = { eyebrow: string; text: string; highlights: string; description: s
 const MUSEAU_FICHES: Record<string, Fiche> = {
   harnais: {
     eyebrow: "Harnais",
-    text: "Un harnais bleu cobalt doublé d'une maille crème, avec deux boucles noires sur les côtés, des passants noirs sur les bretelles et un anneau argenté sur le dessus.",
+    text: "Pour la promenade : il s'enfile avant de sortir et reçoit sur son anneau argenté la laisse du même bleu cobalt.",
     highlights: "Sangle bleu cobalt, doublure en maille crème\nDeux boucles noires à clip sur les côtés\nAnneau argenté sur le dessus\nÉtiquette MUSEAU CLUB sur le poitrail",
-    description: p("Le harnais MUSEAU CLUB marie une sangle bleu cobalt à une doublure en maille crème, bordée d'un liseré bleu. Deux boucles noires le ferment sur les côtés, des passants noirs tiennent les bretelles et un anneau argenté se trouve sur le dessus.") + p("Sur nos photos, un golden retriever le porte dans l'herbe et devant la porte d'entrée ; à plat, il se pose aussi à côté de la laisse et de la pochette assorties."),
+    description: p("Le harnais MUSEAU CLUB marie une sangle bleu cobalt à une doublure en maille crème, bordée d'un liseré bleu. Deux boucles noires le ferment sur les côtés, des passants noirs tiennent les bretelles et un anneau argenté se trouve sur le dessus.") + p("Il se porte avec la laisse assortie, qui s'accroche à son anneau ; le collier et la pochette à sacs complètent la collection, dans le même bleu."),
     seo: { title: "Harnais MUSEAU CLUB cobalt et maille crème | MUSEAU CLUB", description: "Harnais bleu cobalt doublé de maille crème : boucles noires, anneau argenté, étiquette MUSEAU CLUB. Cinq vues, de trois quarts, de profil et en gros plan." },
     tags: ["harnais", "bleu cobalt", "maille crème"],
   },
   laisse: {
     eyebrow: "Laisse",
-    text: "Une laisse en sangle bleu cobalt, avec une poignée doublée de maille crème, l'étiquette MUSEAU CLUB près de la main et un mousqueton argenté au bout.",
+    text: "Elle s'accroche à l'anneau du harnais ou du collier assortis et se tient par sa poignée doublée de maille crème.",
     highlights: "Sangle bleu cobalt\nPoignée doublée de maille crème\nMousqueton argenté\nÉtiquette MUSEAU CLUB près de la poignée",
-    description: p("La laisse MUSEAU CLUB est une sangle bleu cobalt terminée par une poignée en boucle doublée de maille crème. L'étiquette MUSEAU CLUB est cousue près de la main, le mousqueton argenté à l'autre bout.") + p("Dépliée, enroulée ou posée sur un banc du parc à côté du collier : nos photos la montrent sous tous ses angles."),
+    description: p("La laisse MUSEAU CLUB est une sangle bleu cobalt terminée par une poignée en boucle doublée de maille crème. L'étiquette MUSEAU CLUB est cousue près de la main, le mousqueton argenté à l'autre bout.") + p("Elle s'accroche au harnais comme au collier MUSEAU CLUB, et la pochette à sacs assortie s'y attache par son mousqueton."),
     seo: { title: "Laisse MUSEAU CLUB cobalt, poignée en maille crème | MUSEAU CLUB", description: "Laisse en sangle bleu cobalt, poignée doublée de maille crème et mousqueton argenté. Cinq vues : dépliée, enroulée et en gros plan." },
     tags: ["laisse", "bleu cobalt", "maille crème"],
   },
   collier: {
     eyebrow: "Collier",
-    text: "Un collier bleu cobalt doublé de maille crème à l'intérieur, fermé par une boucle noire, avec un anneau argenté et l'étiquette MUSEAU CLUB.",
+    text: "Pour tous les jours : il se ferme par sa boucle noire et reçoit la laisse assortie sur son anneau argenté.",
     highlights: "Sangle bleu cobalt, intérieur en maille crème\nBoucle noire à clip et passant noir\nAnneau argenté\nÉtiquette MUSEAU CLUB",
-    description: p("Le collier MUSEAU CLUB est une sangle bleu cobalt doublée de maille crème côté cou. Une boucle noire le ferme, un passant noir tient la sangle, et l'anneau argenté voisine avec l'étiquette MUSEAU CLUB.") + p("Fermé, ouvert, à plat ou porté par un beagle : faites le tour du collier avant de le choisir."),
+    description: p("Le collier MUSEAU CLUB est une sangle bleu cobalt doublée de maille crème côté cou. Une boucle noire le ferme, un passant noir tient la sangle, et l'anneau argenté voisine avec l'étiquette MUSEAU CLUB.") + p("Il reçoit la laisse assortie sur son anneau argenté ; le harnais et la pochette à sacs complètent la collection, dans le même bleu."),
     seo: { title: "Collier MUSEAU CLUB cobalt doublé de maille crème | MUSEAU CLUB", description: "Collier bleu cobalt à l'intérieur en maille crème : boucle noire, anneau argenté, étiquette MUSEAU CLUB. Cinq vues, fermé, ouvert et en gros plan." },
     tags: ["collier", "bleu cobalt", "maille crème"],
   },
   pochette: {
     eyebrow: "Pochette à sacs",
-    text: "Une pochette bleu cobalt fermée par un zip bordé de crème, avec un mousqueton argenté sur le côté et une ouverture ronde en façade pour tirer un sac.",
+    text: "Elle s'accroche à la laisse par son mousqueton : le rouleau reste à l'intérieur, un sac se tire par l'ouverture ronde.",
     highlights: "Tissu bleu cobalt, zip bordé de crème\nMousqueton argenté sur le côté\nOuverture ronde en façade pour tirer un sac\nUn rouleau de sacs se range à l'intérieur",
-    description: p("La pochette à sacs MUSEAU CLUB est un petit étui bleu cobalt fermé par un zip bordé de crème. Un mousqueton argenté est fixé sur son côté ; en façade, une ouverture ronde laisse sortir un sac.") + p("Ouverte, elle montre le rouleau de sacs rangé à l'intérieur ; fermée, elle se pose avec la laisse et le harnais assortis."),
+    description: p("La pochette à sacs MUSEAU CLUB est un petit étui bleu cobalt fermé par un zip bordé de crème. Un mousqueton argenté est fixé sur son côté ; en façade, une ouverture ronde laisse sortir un sac.") + p("Son mousqueton l'attache à la laisse assortie : les sacs restent à portée de main pendant toute la balade."),
     seo: { title: "Pochette à sacs MUSEAU CLUB cobalt | MUSEAU CLUB", description: "Pochette à sacs bleu cobalt : zip bordé de crème, mousqueton argenté, ouverture ronde en façade. Cinq vues, fermée, ouverte et en gros plan." },
     tags: ["pochette", "bleu cobalt"],
   },
@@ -197,52 +196,57 @@ function curateMuseau(k: Kit) {
   // ─── Accueil : la collection en scène, les quatre pièces, la balade, le collier porté, la pochette à la une, la porte
   // d'entrée, les questions et l'inscription.
   overlay("index", [
-    section("fs-lookbook", { ...img("ambiance-01.webp"), layout: "side", heading_tag: "h1", eyebrow: "Collection de balade", heading: "Tout le matériel de balade,", heading_accent: "en bleu cobalt", text: p("Harnais, laisse, collier et pochette à sacs : quatre pièces assorties, du même bleu cobalt. Touchez un repère ou choisissez dans la liste."), align: "left", button_label: "Voir la collection", button_link: "/collections/all", link_label: "Voir la fiche", effect: "rise", stagger: true, hover: true, background: "scheme", color_scheme: "scheme-1", padding_top: 32, padding_bottom: 72 }, [
-      marker(items[0].handle, 78, 22),
-      marker(items[2].handle, 52, 50),
-      marker(items[3].handle, 81, 64),
-      marker(items[1].handle, 60, 76),
+    section("cv-hotspots", { ...img("ambiance-01.webp"), layout: "side", ratio: "wide", heading_tag: "h1", eyebrow: "Collection de balade", heading: "Tout pour la balade,", heading_accent: "assorti en bleu cobalt", text: p("Harnais, laisse, collier et pochette à sacs : prenez la pièce qu'il vous faut ou composez l'ensemble. Touchez un repère pour ouvrir sa fiche."), button_label: "Voir la collection", button_link: "/collections/all", link_label: "Voir la fiche", show_list: true, demo_note: "", focus_x: 50, focus_y: 50, animation: "fade", animation_speed: "normal", color_scheme: "scheme-1", padding_top: 24, padding_bottom: 64 }, [
+      spot(78, 22, "Le harnais", "Il s'enfile avant de sortir ; la laisse assortie s'accroche à son anneau.", href("harnais")),
+      spot(60, 76, "La laisse", "Elle s'accroche au harnais comme au collier, et se tient par sa poignée en boucle.", href("laisse")),
+      spot(52, 50, "Le collier", "Pour tous les jours, avec son étiquette MUSEAU CLUB sur le côté.", href("collier")),
+      spot(81, 64, "La pochette à sacs", "Son mousqueton l'attache à la laisse ; un sac se tire par l'ouverture ronde.", href("pochette")),
     ]),
-    section("fs-products", { layout: "grid", source: "collection", collection: "all", eyebrow: "La collection", heading: "Quatre pièces", heading_accent: "qui vont ensemble", text: p("Chaque pièce a sa fiche, ses cinq vues et son texte."), align: "left", button_label: "Toute la collection", button_link: "/collections/all", mode_label: "", limit: 4, columns: 4, ratio: "square", show_secondary: true, effect: "rise", stagger: true, hover: true, background: "scheme", color_scheme: "scheme-3", padding_top: 72, padding_bottom: 72 }),
-    section("ed-scene", { ...img("ambiance-02.webp"), layout: "panorama", label: "En balade", heading: "Le harnais, dans l'herbe au soleil", text: p("Un golden retriever en harnais cobalt et crème, sur une pelouse ensoleillée : c'est pour ces moments-là que MUSEAU CLUB existe."), button_label: "Voir le harnais", button_link: href("harnais"), caption: "", focus_x: 56, focus_y: 46, mobile_focus_x: 60, mobile_focus_y: 46, motion: "reveal", color_scheme: "scheme-1", padding_top: 72, padding_bottom: 72 }),
-    section("image-with-text", { ...img("ambiance-04.webp"), layout: "image-left", ratio: "square", reveal: "up", parallax: false, eyebrow: "Au cou", heading: "Le collier, porté", text: p("Sur ce beagle, le collier cobalt se ferme par sa boucle noire ; l'étiquette MUSEAU CLUB reste visible sur le côté."), button_label: "Voir le collier", button_link: href("collier"), color_scheme: "scheme-1", padding_top: 48, padding_bottom: 72 }),
-    section("featured-purchase", { label: "La pochette", heading: "Pochette à sacs MUSEAU CLUB", text: p("Fermée, ouverte sur son rouleau, un sac prêt à tirer : faites le tour de la pochette avant de la choisir."), product: items[3].handle, product_target: "product:pochette", purchase_style: "soft", purchase_enabled: false, image_fit: "contain", gallery_limit: 4, enable_zoom: true, link_label: "Voir la fiche complète", color_scheme: "scheme-3" }),
-    section("cta-banner", { ...img("ambiance-03.webp"), heading: "Prêts avant même de sortir", text: p("La laisse et la pochette posées près de la porte : la balade commence ici."), button_label: "Voir la laisse", button_link: href("laisse"), overlay: 35, style: "left", parallax: false, color_scheme: "scheme-2", padding_top: 96, padding_bottom: 96 }),
+    section("fs-products", { layout: "grid", source: "collection", collection: "all", eyebrow: "La collection", heading: "Quatre pièces", heading_accent: "qui vont ensemble", text: p("Le même bleu cobalt d'une pièce à l'autre : choisissez-en une ou réunissez les quatre."), align: "left", button_label: "Toute la collection", button_link: "/collections/all", mode_label: "", limit: 4, columns: 4, ratio: "square", show_secondary: true, effect: "rise", stagger: true, hover: true, background: "scheme", color_scheme: "scheme-3", padding_top: 72, padding_bottom: 72 }),
+    section("cv-banner", { ...img("ambiance-02.webp"), layout: "background", eyebrow: "En balade", heading: "Le harnais, pour chaque promenade", heading_tag: "h2", heading_accent: "", text: p("Enfilé avant de sortir, il reçoit la laisse du même bleu sur son anneau : il ne reste plus qu'à partir."), price_text: "", price_note: "", button_label: "Voir le harnais", button_link: href("harnais"), note: "", focus_x: 56, focus_y: 46, animation: "fade", animation_speed: "normal", color_scheme: "scheme-1", padding_top: 24, padding_bottom: 24 }),
+    section("image-with-text", { ...img("ambiance-04.webp"), layout: "image-left", ratio: "square", reveal: "up", parallax: false, eyebrow: "Au quotidien", heading: "Le collier, pour tous les jours", text: p("Il se ferme par sa boucle noire et garde l'étiquette MUSEAU CLUB sur le côté. Son anneau argenté reçoit la laisse assortie."), button_label: "Voir le collier", button_link: href("collier"), color_scheme: "scheme-1", padding_top: 48, padding_bottom: 72 }),
+    section("featured-purchase", { label: "La pochette", heading: "Pochette à sacs MUSEAU CLUB", text: p("Elle s'accroche à la laisse par son mousqueton ; le rouleau reste rangé à l'intérieur et un sac se tire par l'ouverture ronde."), product: items[3].handle, product_target: "product:pochette", purchase_style: "soft", purchase_enabled: false, image_fit: "contain", gallery_limit: 4, enable_zoom: true, link_label: "Voir la fiche complète", color_scheme: "scheme-3" }),
+    section("cta-banner", { ...img("ambiance-03.webp"), heading: "Prêts avant même de sortir", text: p("Laisse et pochette rangées près de la porte : on les prend ensemble au moment de sortir."), button_label: "Voir la laisse", button_link: href("laisse"), overlay: 50, style: "left", parallax: false, color_scheme: "scheme-2", padding_top: 96, padding_bottom: 96 }),
     section("faq", { eyebrow: "Questions", heading: "Avant la première balade", text: "", style: "lines", layout: "side", columns: "1", open_first: false, search: false, contact_text: "", button_label: "Toutes les questions", button_link: "/pages/aide", structured_data: false, color_scheme: "scheme-1" }, faqRows(MUSEAU_FAQ)),
     section("newsletter-media", { ...img("ambiance-09.webp"), layout: "left", eyebrow: "Nouvelles du club", heading: "Être prévenu de l'ouverture", text: p("Nouvelles pièces, nouvelles photos de balade, ouverture de la boutique : nous écrivons seulement quand il y a du nouveau."), perk_1: "", perk_2: "", perk_3: "", button_label: "S'inscrire", legal: p("Désinscription possible à tout moment depuis chaque e-mail."), color_scheme: "scheme-4" }),
   ]);
 
   // ─── Fiches : une scène propre à chaque produit, les questions, puis les trois autres pièces (recommandations). ──────
   const scene = (file: string, label: string, heading: string, text: string, button: string, link: string, fx = 50) =>
-    section("ed-scene", { ...img(file), layout: "split", label, heading, text: p(text), button_label: button, button_link: link, caption: "", focus_x: fx, focus_y: 50, mobile_focus_x: fx, mobile_focus_y: 50, motion: "reveal", color_scheme: "scheme-3", padding_top: 72, padding_bottom: 72 });
+    section("cv-alternating", { eyebrow: "", heading: "", heading_accent: "", text: "", layout: "image-left", ratio: "landscape", animation: "fade", animation_speed: "normal", color_scheme: "scheme-3", padding_top: 72, padding_bottom: 72 }, [
+      { type: "row", settings: { ...img(file), focus_x: fx, focus_y: 50, eyebrow: label, heading, heading_accent: "", text: p(text), button_label: button, button_link: link } },
+    ]);
   const ficheFaq = () => faq("Questions fréquentes", [...MUSEAU_FAQ, ...MUSEAU_FAQ_PENDING], "cards", "side", "", { color_scheme: "scheme-1" });
   const recos = () => section("product-recommendations", { eyebrow: "La collection", heading: "Les autres pièces assorties", intent: "complementary", fallback_collection: "all", limit: 3, card_ratio: "square", show_secondary: true, color_scheme: "scheme-1", padding_top: 64, padding_bottom: 96 });
   const pageRows: Record<string, ReturnType<typeof section>[]> = {
-    harnais: [scene("ambiance-05.webp", "Au soleil", "Avec la laisse assortie", "Posés sur un plaid au soleil, le harnais et la laisse partagent le même bleu cobalt et la même maille crème.", "Voir la laisse", href("laisse"), 40)],
-    laisse: [scene("ambiance-07.webp", "Au parc", "Avec le collier assorti", "Sur un banc en bois du parc, la laisse et le collier cobalt attendent le départ, côte à côte.", "Voir le collier", href("collier"), 55)],
-    collier: [scene("ambiance-10.webp", "La collection", "Avec les trois autres pièces", "Le collier, le harnais, la pochette et la laisse réunis : le même bleu cobalt d'une pièce à l'autre.", "Toute la collection", "/collections/all", 50)],
-    pochette: [scene("ambiance-08.webp", "Assortie", "Avec le harnais assorti", "Sur un damier bleu et crème, la pochette rejoint le harnais : même bleu, même étiquette MUSEAU CLUB.", "Voir le harnais", href("harnais"), 50)],
+    harnais: [scene("ambiance-05.webp", "L'ensemble", "Avec la laisse assortie", "La laisse s'accroche à l'anneau du harnais : même bleu cobalt, même maille crème, de la porte jusqu'au parc.", "Voir la laisse", href("laisse"), 40)],
+    laisse: [scene("ambiance-07.webp", "L'ensemble", "Avec le collier assorti", "Pour les sorties de tous les jours, la laisse s'accroche à l'anneau du collier : les deux pièces gardent le même bleu cobalt.", "Voir le collier", href("collier"), 55)],
+    collier: [scene("ambiance-10.webp", "La collection", "Avec les trois autres pièces", "Commencez par le collier, ajoutez le harnais, la laisse et la pochette : les quatre pièces partagent le même bleu cobalt.", "Toute la collection", "/collections/all", 50)],
+    pochette: [scene("ambiance-08.webp", "L'ensemble", "Avec le harnais assorti", "Accrochée à la laisse, la pochette accompagne le harnais pendant la balade : même bleu, même étiquette MUSEAU CLUB.", "Voir le harnais", href("harnais"), 50)],
   };
   products.forEach((pr, i) => overlay(keyOf(pr), [...pageRows[items[i].key], ficheFaq(), recos()]));
 
   // ─── Pages ──────────────────────────────────────────────────────────────────────────────────────────────────────
   k.page("la-balade", "La balade", { title: "La balade avec MUSEAU CLUB : harnais, laisse, collier et pochette | MUSEAU CLUB", description: "Au soleil, au parc, devant la porte : la collection MUSEAU CLUB en balade, pièce par pièce, pour choisir ce qui va ensemble." }, [
     ["intro", section("rich-text", { style: "plain", align: "left", color_scheme: "scheme-1", padding_top: 24, padding_bottom: 16 }, [{ type: "text", settings: { text: p("Une balade commence à la porte et finit au parc. Voici la collection MUSEAU CLUB à chacune de ces étapes, avec les pièces qui vont ensemble.") } }])],
-    ["assortis", section("fs-lookbook", { ...img("ambiance-08.webp"), layout: "markers", eyebrow: "Assortis", heading: "Le harnais et sa pochette", heading_accent: "", text: p("Touchez un repère pour ouvrir la fiche de la pièce."), align: "left", button_label: "", button_link: "", link_label: "Voir la fiche", effect: "fade", stagger: true, hover: false, background: "scheme", color_scheme: "scheme-3", padding_top: 64, padding_bottom: 64 }, [marker(items[0].handle, 35, 40), marker(items[3].handle, 68, 80)])],
-    ["moments", section("ed-diptych", { layout: "index", label: "Trois moments", heading: "Au soleil, au parc, avant de sortir", text: "", button_label: "", button_link: "", motion: "reveal", color_scheme: "scheme-1", padding_top: 64, padding_bottom: 72 }, [
-      frame(k, "ambiance-05.webp", "Au soleil", "Le harnais et la laisse posés sur un plaid, dans l'herbe.", "landscape", { focus_x: 52, link: href("harnais"), link_label: "Voir le harnais" }),
-      frame(k, "ambiance-07.webp", "Au parc", "Le collier et la laisse sur un banc en bois.", "portrait", { focus_x: 58, link: href("collier"), link_label: "Voir le collier" }),
-      frame(k, "ambiance-09.webp", "Avant de sortir", "Un golden retriever en harnais, assis devant la porte.", "portrait", { focus_x: 45, link: href("harnais"), link_label: "Voir le harnais" }),
+    ["assortis", section("cv-hotspots", { ...img("ambiance-08.webp"), layout: "stacked", ratio: "square", heading_tag: "h2", eyebrow: "Assortis", heading: "Le harnais et sa pochette", heading_accent: "", text: p("Touchez un repère pour ouvrir la fiche de la pièce."), button_label: "", button_link: "", link_label: "Voir la fiche", show_list: true, demo_note: "", focus_x: 50, focus_y: 50, animation: "fade", animation_speed: "normal", color_scheme: "scheme-3", padding_top: 64, padding_bottom: 64 }, [
+      spot(35, 40, "Le harnais", "Il s'enfile avant de sortir et reçoit la laisse assortie.", href("harnais")),
+      spot(68, 80, "La pochette à sacs", "Elle s'accroche à la laisse : même bleu, même étiquette que le harnais.", href("pochette")),
+    ])],
+    ["moments", section("cv-alternating", { eyebrow: "Trois moments", heading: "Au soleil, au parc, avant de sortir", heading_accent: "", text: "", layout: "alternate", ratio: "landscape", animation: "fade", animation_speed: "normal", color_scheme: "scheme-1", padding_top: 64, padding_bottom: 72 }, [
+      { type: "row", settings: { ...img("ambiance-05.webp"), focus_x: 52, focus_y: 50, eyebrow: "Au soleil", heading: "Le harnais et sa laisse", heading_accent: "", text: p("Pour une longue promenade, le harnais et la laisse partent ensemble."), button_label: "Voir le harnais", button_link: href("harnais") } },
+      { type: "row", settings: { ...img("ambiance-07.webp"), focus_x: 58, focus_y: 50, eyebrow: "Au parc", heading: "Le collier et sa laisse", heading_accent: "", text: p("Pour un tour au parc, le collier et la laisse assortie font la paire."), button_label: "Voir le collier", button_link: href("collier") } },
+      { type: "row", settings: { ...img("ambiance-09.webp"), focus_x: 45, focus_y: 40, eyebrow: "Avant de sortir", heading: "Le harnais déjà enfilé", heading_accent: "", text: p("Le harnais se met avant de passer la porte ; la laisse s'y accroche au moment de partir."), button_label: "Voir le harnais", button_link: href("harnais") } },
     ])],
     ["pochette", section("image-with-text", { ...img("ambiance-06.webp"), layout: "image-right", ratio: "portrait", reveal: "up", parallax: false, eyebrow: "La pochette", heading: "Toujours à portée de main", text: p("Son mousqueton argenté sur le côté, son zip bordé de crème, un sac prêt à sortir par l'ouverture ronde : la pochette suit la balade."), button_label: "Voir la pochette", button_link: href("pochette"), color_scheme: "scheme-2", padding_top: 72, padding_bottom: 72 })],
-    ["collection", section("ed-scene", { ...img("ambiance-01.webp"), layout: "closing", label: "La collection", heading: "Quatre pièces, un seul bleu", text: p("Harnais, laisse, collier et pochette à sacs : choisissez une pièce ou toute la collection."), button_label: "Voir la collection", button_link: "/collections/all", caption: "", focus_x: 62, focus_y: 50, mobile_focus_x: 66, mobile_focus_y: 50, motion: "reveal", color_scheme: "scheme-1", padding_top: 88, padding_bottom: 88 })],
+    ["collection", section("cv-banner", { ...img("ambiance-01.webp"), layout: "background", eyebrow: "La collection", heading: "Quatre pièces, un seul bleu", heading_tag: "h2", heading_accent: "", text: p("Harnais, laisse, collier et pochette à sacs : choisissez une pièce ou toute la collection."), price_text: "", price_note: "", button_label: "Voir la collection", button_link: "/collections/all", note: "", focus_x: 62, focus_y: 50, animation: "fade", animation_speed: "normal", color_scheme: "scheme-1", padding_top: 24, padding_bottom: 24 })],
   ]);
   k.page("aide", "Questions et contact", { title: "Questions et contact | MUSEAU CLUB, collection de balade", description: "Les réponses sur la collection MUSEAU CLUB : les pièces assorties, la pochette, les vues de chaque fiche, la commande. Et un formulaire pour le reste." }, [
     ["faq", faq("Questions fréquentes", [...MUSEAU_FAQ, ...MUSEAU_FAQ_PENDING], "numbered", "stacked", "", { color_scheme: "scheme-1" })],
     ["form", section("contact-form", { eyebrow: "Contact", heading: "Une autre question sur MUSEAU CLUB ?", text: p("Écrivez-nous : le formulaire vérifie les champs avant l'envoi. Dans cette démonstration, aucun message n'est réellement transmis."), email: "", hours: "", response: "", preview_note: true, color_scheme: "scheme-3", padding_top: 64, padding_bottom: 96 })],
   ]);
 
-  // ─── Menus, en-tête « Collections en cartes » (les quatre pièces en cartes), pied « Plan du catalogue en colonnes » ─
+  // ─── Menus, en-tête « Deux rangées avec offre », pied « Colonnes d'aide et d'informations » ────────────────────────
   spec.store.menus["main-menu"] = { title: "Navigation", links: [
     { title: "La collection", url: "/collections/all", links: items.map((it) => ({ title: it.title.replace(" MUSEAU CLUB cobalt", ""), url: `/products/${it.handle}` })) },
     { title: "La balade", url: "/pages/la-balade" },
@@ -251,11 +255,12 @@ function curateMuseau(k: Kit) {
   spec.store.menus.footer = { title: "La collection", links: [...items.map((it) => ({ title: it.title.replace(" MUSEAU CLUB cobalt", ""), url: `/products/${it.handle}` })), { title: "Toute la collection", url: "/collections/all" }] };
   spec.store.menus["footer-aide"] = { title: "Aide", links: [{ title: "La balade", url: "/pages/la-balade" }, { title: "Questions et contact", url: "/pages/aide" }, { title: "Recherche", url: "/search" }] };
   const header = Object.values(spec.groups.header.sections).find((s) => s.type === "header")!;
-  header.settings = { ...header.settings, menu: "main-menu", layout: "two-rows", shape: "bar", icons: "plain", mega_menu: "cards", mobile_menu: "cards", mobile_submenu: "open", sticky: true, transparent_on_home: false, show_search: true, show_cart: true, cta_label: "", phone: "", color_scheme: "scheme-1" };
-  // Menu en cartes : chaque pièce avec sa photo principale (bloc « image du lien » de l'en-tête, relié par le titre).
-  const extraSchema = sectionSchema(spec, "header")!.blocks.find((b) => b.type === "link_extra")?.settings;
-  header.blocks = Object.fromEntries(items.map((it) => [`img_${it.key}`, { type: "link_extra", settings: withDefaults(extraSchema, { link_title: it.title.replace(" MUSEAU CLUB cobalt", ""), icon: "none", image: "", image_asset: k.name(it.views[0]) }) }]));
-  header.block_order = items.map((it) => `img_${it.key}`);
+  header.settings = { ...header.settings, menu: "main-menu", layout: "two-rows", shape: "bar", icons: "plain", mega_menu: "columns-promo", mobile_menu: "cards", mobile_promo: "top", mobile_submenu: "open", sticky: true, transparent_on_home: false, show_search: true, show_cart: true, cta_label: "", phone: "", color_scheme: "scheme-1" };
+  // Sous-menu « La collection » : les quatre pièces en colonnes et l'encart des quatre pièces réunies (aussi en tête du
+  // menu du téléphone).
+  const promoSchema = sectionSchema(spec, "header")!.blocks.find((b) => b.type === "promo")?.settings;
+  header.blocks = { collection: { type: "promo", settings: withDefaults(promoSchema, { image: "", image_asset: k.name("ambiance-10.webp"), eyebrow: "La collection", heading: "Les quatre pièces assorties", button_label: "Tout voir", link: "/collections/all", placement: "both", menu_title: "La collection" }) } };
+  header.block_order = ["collection"];
   // Une seule mention de démonstration : celle de l'aperçu (studio et aperçu statique), pas de bandeau d'annonce en plus.
   spec.groups.header.sections = { header };
   spec.groups.header.order = ["header"];

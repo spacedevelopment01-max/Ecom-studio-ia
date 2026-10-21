@@ -113,10 +113,10 @@ const PLANS: Plan[] = [
       { id: "arrondi", label: "Profil graphique « arrondi » appliqué", run: EDITORIAL("arrondi", ".fs-lookbook--side .fs-look__media .ed-media", "16 / 9") },
       { id: "fs-hotspot", label: "Repères sur le fauteuil (bibliothèque)", run: HOTSPOT("data-fs-hotspot") },
     ] },
-  { demo: "museau-club", family: "catalog", label: "MUSEAU CLUB (E-commerce, quatre produits, issue #158)", add: [],
+  { demo: "museau-club", family: "specialty", label: "MUSEAU CLUB (boutique spécialisée, quatre produits, issue #158)", add: [],
     checks: [
-      { id: "club", label: "Profil graphique « club » appliqué", run: EDITORIAL("club", ".fs-lookbook--side .fs-look__media .ed-media", "16 / 9") },
-      { id: "fs-hotspot", label: "Repères sur la collection (bibliothèque)", run: HOTSPOT("data-fs-hotspot") },
+      { id: "club", label: "Profil graphique « club » appliqué", run: PROFILE("club", "16px") },
+      { id: "cv-hotspot", label: "Repères sur la collection (thème MUSEAU CLUB)", run: HOTSPOT("data-cv-hotspot") },
     ] },
   { demo: "rive", family: "services", label: "Atelier Rive (services)",
     add: [{ key: "testimonials", disp: "carousel" }],

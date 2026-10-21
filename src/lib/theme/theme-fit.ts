@@ -31,7 +31,7 @@ const REFERENCE_FIT: Record<ReferenceThemeId, StoreKind[]> = {
   heuren: ["catalog"],
   alcove: ["catalog"],
   // Issue #158 : boutique de quatre produits (harnais, laisse, collier, pochette), famille E-commerce.
-  "museau-club": ["catalog"],
+  "museau-club": ["specialty"],
 };
 
 export const isReferenceThemeId = (id: string): id is ReferenceThemeId => (REFERENCE_THEMES as readonly string[]).includes(id);

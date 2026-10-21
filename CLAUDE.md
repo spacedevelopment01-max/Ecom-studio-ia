@@ -57,8 +57,10 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   **ALCÔVE** (fauteuil terracotta) : thèmes **mono-produit de la famille E-commerce** (consigne expresse de Thomas, issue
   #155 ; jamais « boutique spécialisée »), médias dans `public/theme-assets/heuren/` et `alcove/`, démonstrations
   `tests/heuren-alcove-fixtures.ts` ; **MUSEAU CLUB** (harnais, laisse, collier et pochette à sacs pour chiens) : thème de la
-  **famille E-commerce à quatre produits** (issue #158 ; jamais « boutique spécialisée »), chaque produit avec sa propre fiche,
-  médias dans `public/theme-assets/museau-club/`, démonstration `tests/museau-souple-fixtures.ts`.
+  **famille Produit spécifique / Boutique spécialisée, à quatre produits** (décision de Thomas du 21 octobre, 12 h 58, issue
+  #158, qui remplace le premier classement E-commerce ; profil « club » de la famille), chaque produit avec sa propre fiche,
+  médias dans `public/theme-assets/museau-club/`, démonstration `tests/museau-souple-fixtures.ts`. ONDE passera en
+  E-commerce (refonte demandée dans la même décision) et SOUPLE sera E-commerce.
   Les anciennes démos (ARVEN, Cime, Les Tribunes, Sonore, Racines & Pierres, Atelier Pivoine, Ostral) sont abandonnées :
   ne pas les adapter ni les maintenir. Leurs visuels viennent du kit privé de Thomas (`public/demo/<id>/`, hors dépôt).
   **Démos intégrales avant le choix** (revue PR #149) : la galerie « Thèmes » ouvre la boutique de démonstration

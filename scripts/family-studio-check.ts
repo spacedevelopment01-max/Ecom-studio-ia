@@ -33,9 +33,9 @@ const PLAN = {
   // boutique éditoriale / empilé), puis une autre disposition de la famille.
   heuren: { family: "catalog", entry: "Entretien et durabilité", type: "fs-care", preview: "list", then: "cards", foreign: "Composition et matériaux", header: "mega-cards", footer: "columns", currentHeader: "centered-nav", currentFooter: "boxed" },
   alcove: { family: "catalog", entry: "Fabrication et ateliers", type: "fs-making", preview: "steps", then: "timeline", foreign: "Étude de cas", header: "classic", footer: "minimal", currentHeader: "store", currentFooter: "stacked" },
-  // MUSEAU CLUB (issue #158) : famille E-commerce ; dispositions d'origine « Collections en cartes » / « Plan du catalogue
-  // en colonnes », puis une autre disposition de la famille.
-  "museau-club": { family: "catalog", entry: "Engagements de la marque", type: "fs-commitments", preview: "grid", then: "list", foreign: "Étude de cas", header: "classic", footer: "minimal", currentHeader: "mega-cards", currentFooter: "columns" },
+  // MUSEAU CLUB (issue #158, boutique spécialisée depuis la décision du 21 octobre) : dispositions d'origine « Deux
+  // rangées avec offre » / « Colonnes d'aide et d'informations », puis une autre disposition de la famille.
+  "museau-club": { family: "specialty", entry: "Fabrication et savoir-faire", type: "fs-making", preview: "steps", then: "grid", foreign: "Ambiance et lookbook", header: "floating", footer: "centered", currentHeader: "two-rows", currentFooter: "columns" },
 }[demoId] as { family: string; entry: string; type: string; preview: string; then: string; foreign: string; header: string; footer: string; currentHeader?: string; currentFooter?: string };
 const PORT = 3600 + Math.floor(Math.random() * 300), origin = `http://127.0.0.1:${PORT}`;
 const { demoProject } = await import("../tests/demo-fixtures");

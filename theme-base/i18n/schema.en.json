@@ -2321,5 +2321,13 @@
   "Cadran : ivoire et bleu nuit, serif fine, filets argentés, angles droits": "Dial: ivory and midnight blue, fine serif, silver hairlines, square corners",
   "Arrondi : sable et terre cuite, serif douce, arches et coins arrondis": "Rounded: sand and terracotta, soft serif, arches and rounded corners",
   "Museau Club — cobalt et balades (référence)": "Museau Club — cobalt and walks (reference)",
-  "Club : crème et bleu cobalt, titres épais, pastilles et cartes arrondies": "Club: cream and cobalt blue, bold headings, pills and rounded cards"
+  "Club : crème et bleu cobalt, titres épais, pastilles et cartes arrondies": "Club: cream and cobalt blue, bold headings, pills and rounded cards",
+  "Titre de la page (h1)": "Page title (h1)",
+  "Titre de section (h2)": "Section title (h2)",
+  "Un seul titre de page par page : à choisir pour la section d'ouverture.": "Only one page title per page: choose it for the opening section.",
+  "Vide : aucun bouton.": "Empty: no button.",
+  "Libellé du lien d'un point": "Point link label",
+  "Affiché dans la bulle d'un point qui a un lien. Vide : le titre du point.": "Shown in the bubble of a point that has a link. Empty: the point's title.",
+  "Lien du point": "Point link",
+  "Ex. la fiche du produit montré. Vide : aucun lien.": "E.g. the page of the product shown. Empty: no link."
 }

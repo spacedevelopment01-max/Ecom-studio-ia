@@ -14,7 +14,7 @@ it.each(["specialized", "ecommerce", "services"] as const)("%s : dix référence
   expect(catalogue.map(c => c.referenceId)).toEqual(["fraise", "onde", "orbe", "atelier-rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club"]);
   expect(catalogue.some(c => c.status === "available")).toBe(false);
   expect(catalogue.every(c => c.engineThemeId === null)).toBe(true);
-  expect(catalogue.filter(c => c.status === "in_progress").map(c => c.referenceId)).toEqual(category === "specialized" ? ["fraise", "onde", "sillon", "noctil", "traverse"] : category === "ecommerce" ? ["orbe", "heuren", "alcove", "museau-club"] : ["atelier-rive"]);
+  expect(catalogue.filter(c => c.status === "in_progress").map(c => c.referenceId)).toEqual(category === "specialized" ? ["fraise", "onde", "sillon", "noctil", "traverse", "museau-club"] : category === "ecommerce" ? ["orbe", "heuren", "alcove"] : ["atelier-rive"]);
   const projection = rebindRecommendationCategory(p, { recommendedId: "atelier", alternatives: [], reasons: ["Ancienne suggestion"], selectedId: "atelier", status: "selected", catalogue: [] });
   expect(projection.selectedId).toBe("atelier"); expect(projection.recommendedId).toBe("");
   expect(projection.status).toBe("reference_pending"); expect(recommendationDataReady(projection)).toBe(true);

@@ -881,10 +881,6 @@
           {
             "value": "arrondi",
             "label": "Arrondi : sable et terre cuite, serif douce, arches et coins arrondis"
-          },
-          {
-            "value": "club",
-            "label": "Club : crème et bleu cobalt, titres épais, pastilles et cartes arrondies"
           }
         ]
       },
@@ -918,6 +914,10 @@
           {
             "value": "itineraire",
             "label": "Itinéraire : crème et olive, serif de magazine, colonnes asymétriques et filets"
+          },
+          {
+            "value": "club",
+            "label": "Club : crème et bleu cobalt, titres épais, pastilles et cartes arrondies"
           }
         ]
       }
