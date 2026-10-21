@@ -402,6 +402,31 @@ function ensurePageTitles(ids: Ids, templates: Record<string, TemplateJson>) {
   }
 }
 
+/**
+ * Une page ne répète pas la même phrase d'une section à l'autre (revue du 21 octobre : sur un projet client, la signature
+ * de la marque reprise par l'ouverture puis par « image et texte »). Un titre ou un texte déjà affiché plus haut par une
+ * section visible devient le repère neutre du rôle de la section quand il en a un, sinon il est retiré ; la première
+ * occurrence (le titre de la page) reste. Rien n'est inventé.
+ */
+const ROLE_HEADING: Record<string, [string, string]> = { "image-with-text": ["En situation", "In its setting"], "ed-scene": ["Chez vous", "At home"] };
+export function distinctCopy(rows: Row[], lang: Lang): Row[] {
+  const norm = (v: unknown) => (typeof v === "string" ? v.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().toLowerCase() : "");
+  const seen = new Set<string>();
+  return rows.map((r) => {
+    if (r[3]?.disabled) return r;
+    const settings = { ...r[1] };
+    for (const key of ["heading", "text", "subheading"]) {
+      if (norm(settings[key]) && seen.has(norm(settings[key]))) {
+        const role = key === "heading" ? ROLE_HEADING[r[0]] : undefined;
+        const alt = role ? pick(lang, role[0], role[1]) : "";
+        settings[key] = alt && !seen.has(norm(alt)) ? alt : "";
+      }
+      if (norm(settings[key])) seen.add(norm(settings[key]));
+    }
+    return [r[0], settings, r[2], r[3]];
+  });
+}
+
 function tpl(ids: Ids, sections: Row[]): TemplateJson {
   const out: TemplateJson = { sections: {}, order: [] };
   for (const [type, settings, blocks, opts] of sections) {
@@ -1076,14 +1101,14 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   const mainProductRow: Row = ["main-product", { gallery_layout: gallery, sticky_bar: true, color_scheme: "scheme-1", padding_top: 32, padding_bottom: 96, ...(cat?.mainProduct ?? {}) }, productBlocks];
   const recommendationsRow: Row = ["product-recommendations", { heading: t("Vous aimerez aussi", "You may also like"), limit: 4, color_scheme: "scheme-1", padding_top: 64, padding_bottom: 96 }];
   // Thème de référence : sa propre suite de sections sous le corps de la fiche (avis, arguments, caractéristiques, FAQ).
-  const productTpl = tpl(ids, cat?.product ? [mainProductRow, ...flat(cat.product(kit)), recommendationsRow] : [
+  const productTpl = tpl(ids, distinctCopy(cat?.product ? [mainProductRow, ...flat(cat.product(kit)), recommendationsRow] : [
     mainProductRow,
     ["product-reviews", { heading: t("Avis des clients", "Customer reviews"), anchor: reviewsAnchor, color_scheme: "scheme-1", padding_top: 32, padding_bottom: 32 }],
     story(2),
     ...(specs.length ? [specList(1)] : []),
     faqSec(2, 4),
     recommendationsRow,
-  ]);
+  ], lang));
 
   const aboutTpl = tpl(ids, [
     ["rich-text", { align: "center", style: "statement", color_scheme: "scheme-1", ...pad(120, 64) }, [
@@ -1097,7 +1122,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   ]);
 
   const templates: Record<string, TemplateJson> = {
-    index: tpl(ids, index),
+    index: tpl(ids, distinctCopy(index, lang)),
     product: productTpl,
     collection: tpl(ids, [["main-collection", { per_page: 16, columns: 3, enable_filters: true, enable_sorting: true, color_scheme: "scheme-1" }]]),
     "list-collections": tpl(ids, [["main-list-collections", { heading: t("Catalogue", "Catalog"), color_scheme: "scheme-1" }]]),
