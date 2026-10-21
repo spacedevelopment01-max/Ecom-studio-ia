@@ -56,13 +56,13 @@ for(const account of accounts){
   console.log(`Native theme visible: ${label}/${angle}`);
   await theme.screenshot({path:`${out}/${label}-${angle}-premier-ecran.jpg`,type:'jpeg',quality:85});
   await theme.screenshot({path:`${out}/${label}-${angle}-theme-desktop.jpg`,type:'jpeg',quality:85,fullPage:true});
-  await theme.setViewportSize({width:390,height:844});await reveal(theme);await theme.screenshot({path:`${out}/${label}-${angle}-theme-mobile.jpg`,type:'jpeg',quality:85,fullPage:true});
+  await theme.setViewportSize({width:390,height:844});await reveal(theme);await theme.screenshot({path:`${out}/${label}-${angle}-premier-ecran-mobile.jpg`,type:'jpeg',quality:85});await theme.screenshot({path:`${out}/${label}-${angle}-theme-mobile.jpg`,type:'jpeg',quality:85,fullPage:true});
   const overflow=await theme.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);if(overflow)throw Error('Client theme overflows');
   if(angle==='expression'){
    const route=account.services?'/pages/prestations':`/products/${cur.spec.store.product.handle}`;
    await theme.goto(`${base}/preview/${account.projectId}/v/${cur.version.id}${route}?es_raw=1`,{waitUntil:'domcontentloaded',timeout:60000});
-   await theme.setViewportSize({width:1440,height:1000});await reveal(theme);await theme.screenshot({path:`${out}/${label}-detail-desktop.jpg`,type:'jpeg',quality:85,fullPage:true});
-   await theme.setViewportSize({width:390,height:844});await reveal(theme);await theme.screenshot({path:`${out}/${label}-detail-mobile.jpg`,type:'jpeg',quality:85,fullPage:true});
+   await theme.setViewportSize({width:1440,height:1000});await reveal(theme);await theme.screenshot({path:`${out}/${label}-detail-premier-ecran-desktop.jpg`,type:'jpeg',quality:85});await theme.screenshot({path:`${out}/${label}-detail-desktop.jpg`,type:'jpeg',quality:85,fullPage:true});
+   await theme.setViewportSize({width:390,height:844});await reveal(theme);await theme.screenshot({path:`${out}/${label}-detail-premier-ecran-mobile.jpg`,type:'jpeg',quality:85});await theme.screenshot({path:`${out}/${label}-detail-mobile.jpg`,type:'jpeg',quality:85,fullPage:true});
    if(!account.services){
     const zoom=theme.locator('[data-zoom-open]').first();if(await zoom.count()){await zoom.click();await theme.locator('[data-zoom][open]').waitFor();await theme.screenshot({path:`${out}/produit-zoom.jpg`,type:'jpeg',quality:85});await theme.keyboard.press('Escape');}
     const add=theme.locator('[data-add-button]').first();if(!await add.count())throw Error('Purchase control missing');await add.click();const drawer=theme.locator('[data-cart-drawer].is-open');await drawer.waitFor();if(!(await drawer.innerText()).includes(cur.spec.store.product.title))throw Error('Wrong project product in cart');await theme.screenshot({path:`${out}/produit-panier.jpg`,type:'jpeg',quality:85});await theme.keyboard.press('Escape');

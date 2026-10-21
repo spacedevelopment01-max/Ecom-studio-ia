@@ -12,6 +12,7 @@ for(const services of [false,true])it(`séquence éditoriale conservée, descrip
  let altSeen=false;const visible:string[]=[];const headings:string[]=[];
  for(const page of Object.values(spec.templates))for(const section of Object.values(page.sections)){
   const visit=(settings:Record<string,unknown>)=>{for(const [key,value] of Object.entries(settings)){if(typeof value!=='string')continue;if(/alt$/.test(key)&&value.startsWith('DESCRIPTION_ACCESSIBILITE_'))altSeen=true;if(/^(title|heading|text|lead|intro|description|caption)$/.test(key))visible.push(value);}};
+  if(page===spec.templates.index&&/alternating/.test(section.type)){const first=Object.values(section.blocks??{})[0];if(first)expect(section.settings.heading).not.toBe(first.settings.heading??first.settings.title);}
   visit(section.settings);for(const block of Object.values(section.blocks??{})){visit(block.settings);if(page===spec.templates.index&&/alternating/.test(section.type)){const heading=block.settings.heading??block.settings.title;if(typeof heading==='string')headings.push(heading);}}
  }
  expect(altSeen).toBe(true);expect(visible.join(' ')).not.toContain('DESCRIPTION_ACCESSIBILITE_');
