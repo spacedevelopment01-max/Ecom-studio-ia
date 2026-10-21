@@ -190,7 +190,8 @@ export function curateFraise(spec: ThemeSpec) {
     if (b.type === "paragraph" && String(b.settings.text).includes("advertorial")) b.settings = { ...b.settings, text: p('Pourquoi des gummies plutôt que des comprimés ? <a href="/pages/advertorial">Lire notre histoire</a>.') };
   }
   // Publi-rédactionnel : récit de la marque (« vous », « nous »), plus de témoignage ni de notes inventés.
-  const adv = put(sec(spec, "page.advertorial", "article"), { label_bar: "Publi-rédactionnel de la marque (fictive)", crumb_label: "Notre histoire", heading: "La boîte de comprimés", heading_accent: "est restée au fond du placard", intro: p("Pourquoi nous avons mis nos vitamines en gummies goût fraise."), author: "La rédaction Fraise Gummies", date_text: "Octobre 2026", rating_text: "", demo_note: `Aucun témoignage client, aucun effet santé promis. ${FICTIVE}` });
+  for (const pg of spec.store.pages) if (pg.handle === "advertorial") pg.title = "La boîte de comprimés est restée au fond du placard";
+  const adv = put(sec(spec, "page.advertorial", "article"), { label_bar: "Publi-rédactionnel de la marque (fictive)", crumb_label: "Notre histoire", crumb_link_label: "Gummies vitaminés goût fraise", heading: "La boîte de comprimés", heading_accent: "est restée au fond du placard", intro: p("Pourquoi nous avons mis nos vitamines en gummies goût fraise."), author: "La rédaction Fraise Gummies", date_text: "Octobre 2026", rating_text: "", demo_note: `Aucun témoignage client, aucun effet santé promis. ${FICTIVE}` });
   const advText: Record<string, string> = {
     "Je n'oublierai": "<strong>Vous connaissez cette boîte.</strong> Achetée avec de bonnes intentions, ouverte trois fois, puis poussée au fond du placard, derrière les épices.",
     "Les sachets ne se": "Les comprimés, il faut y penser, puis les avaler. <strong>Le jour où l'on oublie, on oublie souvent le lendemain aussi.</strong>",
@@ -223,6 +224,12 @@ export function curateFraise(spec: ThemeSpec) {
       ["Dévissez le bouchon large.", "Retirez le couvercle."], ["Fermeture : bouchon à vis", "Fermeture : couvercle"],
       ["exemple de promotion", "prix de démonstration"], ["Exemple : remboursement sous 30 jours — politique à définir", "Paiement désactivé dans la démonstration"],
       ["Trois formats, un seul goût assumé.", "Un flacon, un mois de vitamines goût fraise."],
+      // Restes de l'ancien angle « douceur à partager » (consigne du 21 octobre, 21 h 45 : des vitamines).
+      ["Posé sur le plan de travail, le flacon se referme après chaque douceur.", "Posé près du bol du petit-déjeuner, il rappelle le rendez-vous du jour."],
+      ["Dans le sac du pique-nique, il reste propre et fermé.", "Le week-end aussi, il part dans le sac, refermé."],
+      ["Pique-nique au jardin", "Le week-end, au jardin"], ["Au centre de la table, il passe de main en main.", "Deux par jour, à mâcher, goût fraise."],
+      ["\"À table\"", "\"De près\""], ["\"entre amis\"", "\"les gummies\""],
+      ["Une douceur à la fois, le flacon refermé juste après.", "Deux gummies, le flacon refermé juste après."], ["Nom, goût et nombre de douceurs.", "Nom, goût et contenu du flacon."],
     ];
     let lib = JSON.stringify(library);
     for (const [from, to] of fixes) lib = typeof from === "string" ? lib.split(from).join(to) : lib.replace(from, to);
