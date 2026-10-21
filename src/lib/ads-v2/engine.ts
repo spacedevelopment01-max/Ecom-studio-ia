@@ -1,4 +1,4 @@
-import { withStrategyScope, strategyStamp } from "../strategy-consumption";
+import { withStrategyScope, strategyReuseKey } from "../strategy-consumption";
 import { assertAdvertising } from "../job-entitlements";
 /**
  * Advertising Engine V2 (phase 6A) — moteur central.
@@ -301,7 +301,7 @@ type OneInput = {
 async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdReview | null }> {
   const { p, deps, concept, f, stats } = o;
   const jobId = o.ctx?.job.id ?? null;
-  const h = hash({ marketingStrategy: strategyStamp(p.id), policy:"campaign-2", identity:p.brand, strategy:p.strategy, v: ADS_V2_VERSION, c: concept.id, copy: concept.copy, f: `${f.platform}:${f.aspect}`, pal: o.pal, typo: o.typo, layout: concept.visual.layout, dir: concept.direction ? `${concept.direction.id}:${concept.direction.layout}` : null, art: o.art.style, gen: !!deps.canGenerate });
+  const h = hash({ marketingStrategy: strategyReuseKey(p.id), policy:"campaign-2", identity:p.brand, strategy:p.strategy, v: ADS_V2_VERSION, c: concept.id, copy: concept.copy, f: `${f.platform}:${f.aspect}`, pal: o.pal, typo: o.typo, layout: concept.visual.layout, dir: concept.direction ? `${concept.direction.id}:${concept.direction.layout}` : null, art: o.art.style, gen: !!deps.canGenerate });
   // Création modifiée par le client (éditeur visuel) : jamais écrasée en silence par une régénération.
   const docKey = engineDocKey(p.id, concept.id, f.platform, f.aspect);
   if (userOwned(p.id, docKey)) {

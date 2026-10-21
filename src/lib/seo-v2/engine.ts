@@ -1,4 +1,4 @@
-import { withStrategyScope, strategyStamp } from "../strategy-consumption";
+import { withStrategyScope, strategyStamp, strategyReuseInput } from "../strategy-consumption";
 import { reserveBlogDraft,releaseUnsavedBlogDraft } from "../quotas";
 import { assertJobEntitlements,assertAdvertising } from "../job-entitlements";
 /**
@@ -167,7 +167,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   }
 
   // 6. Idempotence : même brief, mêmes faits, même moteur → le document déjà produit, sans rien refaire ni payer.
-  const memoKey = runKey({ v: SEO_V2_VERSION, brief, identity: p.brand?.artIdentity ?? null, brandTone: p.brand?.tone, docKey, type: req.type, lang, page: page.key, instructions:brief.instructions??null, kw: brief.primaryKeyword?.term ?? null, intent: brief.intent, facts, links: brief.links.map((l) => [l.key, l.status, l.url]), ai: deps.canWrite, review: deps.canReview });
+  const memoKey = runKey(strategyReuseInput({ v: SEO_V2_VERSION, brief, identity: p.brand?.artIdentity ?? null, brandTone: p.brand?.tone, docKey, type: req.type, lang, page: page.key, instructions:brief.instructions??null, kw: brief.primaryKeyword?.term ?? null, intent: brief.intent, facts, links: brief.links.map((l) => [l.key, l.status, l.url]), ai: deps.canWrite, review: deps.canReview }));
   const memo = req.force ? null : contentRun(p.id, memoKey);
   if (memo) {
     const saved = contentVersionDoc(p.id, memo.docKey, memo.version);

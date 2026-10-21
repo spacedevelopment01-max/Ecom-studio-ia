@@ -1,4 +1,4 @@
-import { withStrategyScope, strategyStamp } from "../strategy-consumption";
+import { withStrategyScope, strategyReuseKey } from "../strategy-consumption";
 import { assertJobEntitlements } from "../job-entitlements";
 /**
  * Video & UGC Engine V2 (phase 7A) — moteur central.
@@ -476,7 +476,7 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
   if (!start && o.intent.generation!=="direct") throw new Error(`Scène ${s.id} : référence nécessaire pour un vrai clip, aucun substitut local.`);
 
   const productRef = s.showsProduct && o.inv.cutout ? deps.data(o.inv.cutout.id) : null;
-  const key = shotKey({ marketingStrategy: strategyStamp(p.id), v: 1, p: p.id, provider, model, subject: s.subject, action: s.action, camera: s.camera, framing: s.framing, d: s.durationS, start: startAsset, persona: o.persona?.id ?? null, fb: o.feedback ?? null });
+  const key = shotKey({ marketingStrategy: strategyReuseKey(p.id), v: 1, p: p.id, provider, model, subject: s.subject, action: s.action, camera: s.camera, framing: s.framing, d: s.durationS, start: startAsset, persona: o.persona?.id ?? null, fb: o.feedback ?? null });
   const memo = shotMemo(p.id, key);
   if (memo?.verdict === "FINAL" && memo.assetId) {
     stats.reused++;

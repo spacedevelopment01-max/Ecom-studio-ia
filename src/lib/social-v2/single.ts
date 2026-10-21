@@ -1,3 +1,4 @@
+import { strategyContent } from "../strategy-consumption";
 /**
  * Une publication à la fois (Publications › Créer une publication image / vidéo) : même moteur que le calendrier
  * (textes à partir des informations vérifiées, adaptation à chaque réseau, contrôles), pour un seul créneau.
@@ -79,5 +80,6 @@ export function createOnePost(p: Project, r: OneRequest): { planId: string; ids:
   if (r.caption!=null) run("UPDATE posts SET caption=? WHERE plan_id=?",r.caption,res.planId);
   if (r.editorial) run("UPDATE posts SET brief=json_set(COALESCE(brief,'{}'),'$.editorial',json(?)) WHERE plan_id=?",JSON.stringify(r.editorial),res.planId);
   if(r.pillar)run("UPDATE posts SET pillar=? WHERE plan_id=?",r.pillar,res.planId);
+  if (head || r.caption != null) for (const postId of ids) strategyContent(p.id, "post", postId, { stamp: null, protected: true });
   return { planId: res.planId, ids, warnings: res.warnings };
 }

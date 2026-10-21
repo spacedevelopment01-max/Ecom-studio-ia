@@ -36,6 +36,7 @@ export function strategyContent(projectId: string, module: string, contentId: st
 
 /** No new paid creation on stale facts/identity or a strategy superseded during execution. */
 function assertSelectionCurrent(projectId: string, selected: Selection, prepared = false) {
+  if (selected.projectId !== projectId) throw new HttpError(404, "Cette stratégie ne fait pas partie de ce projet.", "strategy_project_mismatch");
   const active = activeStrategy(projectId);
   if (selected.inputDigest !== currentStrategyInputDigest(projectId) || (!prepared && !selected.id.startsWith('draft-') && active?.angleId !== selected.angleId)) {
     throw new HttpError(409, "Les informations du projet ou son angle ont changé. Préparez à nouveau cet angle pour réconcilier les faits et l’identité avant toute nouvelle création. Vos contenus acquis et vos choix sont conservés.", "strategy_inputs_stale");
@@ -44,4 +45,25 @@ function assertSelectionCurrent(projectId: string, selected: Selection, prepared
 export function assertStrategyInputsCurrent(projectId: string) {
   const selected = strategySelection(projectId);
   if (selected) assertSelectionCurrent(projectId, selected);
+}
+
+/** Stable semantic key for reusing an acquired A version after A→B→A, without hiding provenance. */
+export function strategyReuseKey(projectId: string) {
+  const selected = strategySelection(projectId);
+  return selected ? { angleId: selected.angleId, inputDigest: selected.inputDigest } : null;
+}
+/** Only cache inputs are normalized; persisted documents and Brain traces keep their exact version. */
+export function strategyReuseInput(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(strategyReuseInput);
+  if (!value || typeof value !== 'object') return value;
+  const object = value as Record<string, unknown>;
+  if (typeof object.angleId === 'string' && typeof object.inputDigest === 'string' && 'activatedAt' in object) {
+    return { angleId: object.angleId, inputDigest: object.inputDigest };
+  }
+  const result = Object.fromEntries(Object.entries(object).map(([key, part]) => [key, strategyReuseInput(part)]));
+  if (typeof object.stable === 'string' && typeof object.hash === 'string' && typeof object.scope === 'string') {
+    result.stable = object.stable.replace(/<strategie_marketing_active\b[^>]*angle="([^"]+)"[^>]*>/g, '<strategie_marketing_active angle="$1">');
+    delete result.hash;
+  }
+  return result;
 }

@@ -7,7 +7,7 @@ import { emptyProduct } from '@/lib/project-types';
 import { loadProject, saveProduct } from '@/lib/projects';
 import { grantProjectPlan } from '@/lib/project-subscriptions';
 import { activeStrategy, activateStrategy, prepareStrategyChange, stageStrategyModule, getStrategyState, assertContentAlignment, preparationStrategy } from '@/lib/marketing-strategy';
-import { withStrategyScope, strategySelection, strategyStamp, selectedStrategyContext, assertStrategyInputsCurrent } from '@/lib/strategy-consumption';
+import { withStrategyScope, strategySelection, strategyStamp, selectedStrategyContext, assertStrategyInputsCurrent, strategyReuseInput, strategyReuseKey } from '@/lib/strategy-consumption';
 import { brainView } from '@/lib/brain/facade';
 import { SCOPES } from '@/lib/brain/views';
 import { adInsight } from '@/lib/ads-v2/insight';
@@ -19,6 +19,8 @@ import { createPlanV2 } from '@/lib/social-v2/planner';
 import { saveAsset, assetMeta } from '@/lib/library';
 import { saveVersion, latestDoc, restoreVersion } from '@/lib/ad-doc/store';
 import { withSelectedStrategy } from '@/lib/ai/llm';
+import { runContentEngineV2 } from '@/lib/seo-v2/engine';
+import { localOnlyDeps } from '@/lib/seo-v2/deps';
 import { publishOne } from '@/lib/social-v2/scheduler';
 
 async function fixture(service=false) {
@@ -114,4 +116,27 @@ it('un fait changé exige une réconciliation explicite du même angle, sans nou
  expect(()=>withStrategyScope(f.pid,()=>null)).toThrow();
  activate(f.pid,'usage');expect(()=>assertStrategyInputsCurrent(f.pid)).not.toThrow();expect(getStrategyState(f.pid).usedAngleIds).toEqual(['usage']);
  expect(one<{n:number}>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=?',f.pid)?.n).toBe(0);
+});
+
+it('A→B→A conserve une identité de réutilisation sémantique et la trace de version reste exacte',async()=>{
+ const f=await fixture();const a=activate(f.pid,'usage');const keyA=strategyReuseKey(f.pid);const viewA=brainView(f.project(),'seo');const memoA=strategyReuseInput({facts:verifiedFacts(f.project()),context:{scope:viewA.label,hash:viewA.hash,version:viewA.brainVersion,stable:viewA.stable}});
+ activate(f.pid,'expression');expect(strategyReuseKey(f.pid)).not.toEqual(keyA);
+ const back=activate(f.pid,'usage');const viewBack=brainView(f.project(),'seo');
+ expect(back.id).not.toBe(a.id);expect(viewBack.hash).not.toBe(viewA.hash);expect(strategyReuseKey(f.pid)).toEqual(keyA);
+ expect(strategyReuseInput({facts:verifiedFacts(f.project()),context:{scope:viewBack.label,hash:viewBack.hash,version:viewBack.brainVersion,stable:viewBack.stable}})).toEqual(memoA);
+});
+
+it('le moteur SEO réutilise effectivement sa rédaction précise après A→B→A sans nouvel appel',async()=>{
+ const f=await fixture();activate(f.pid,'usage');
+ const request={type:'faq' as const,lang:'fr' as const,request:'Présenter les usages avec les seuls faits disponibles.'};
+ const first=await runContentEngineV2(null,f.pid,request,localOnlyDeps());expect(first.doc).not.toBeNull();
+ activate(f.pid,'expression');const second=await runContentEngineV2(null,f.pid,request,localOnlyDeps());expect(second.skipped).toBe(false);
+ activate(f.pid,'usage');const reused=await runContentEngineV2(null,f.pid,request,localOnlyDeps());
+ expect(reused.skipped).toBe(true);expect(reused.costMicro).toBe(0);expect(reused.doc?.blocks).toEqual(first.doc?.blocks);
+ expect(one<{n:number}>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=?',f.pid)?.n).toBe(0);
+});
+
+it('un contexte préparé ne peut pas transporter la stratégie d’un autre compte',async()=>{
+ const a=await fixture(),b=await fixture();const selected=activate(a.pid,'usage');
+ expect(()=>withStrategyScope(b.pid,()=>null,selected)).toThrow(/pas partie de ce projet/);expect(activeStrategy(b.pid)).toBeNull();
 });
