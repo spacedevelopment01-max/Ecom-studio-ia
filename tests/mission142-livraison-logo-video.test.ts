@@ -35,7 +35,7 @@ it("création initiale : deux retours locaux vides ne sont pas deux vidéos livr
  await expect(creationSceneVideos(null,pid,"local",{local,scenes:{} as any,quote:()=>({allowed:true}) as any,spentByJob:()=>0})).rejects.toThrow(/vidéo|video/);expect(local).toHaveBeenCalledTimes(1);
 });
 it("workflow direct et création initiale : vidéos lisibles, reprise partielle sans refaire la première",async()=>{
- const{u,pid}=await fixture();const {grantProjectPlan}=await import("@/lib/project-subscriptions");grantProjectPlan(pid,"dominer");const dir=tmpDir("test142-video-directe"),file=path.join(dir,"test.mp4");
+ const{u,pid}=await fixture();const {grantProjectPlan}=await import("./communication-choice-fixture");grantProjectPlan(pid,"dominer");const dir=tmpDir("test142-video-directe"),file=path.join(dir,"test.mp4");
  try{
   await execTool("ffmpeg",["-y","-f","lavfi","-i","color=c=0x244d43:s=64x64:d=0.4","-an","-c:v","libx264","-pix_fmt","yuv420p",file]);
   const a=await saveAsset({projectId:pid,userId:u.id,data:fs.readFileSync(file),name:"video-directe-test.mp4",mime:"video/mp4",role:"video",origin:"generated",status:"review"});output.video=a.id;

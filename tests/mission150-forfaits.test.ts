@@ -1,7 +1,7 @@
 import { describe,it,expect } from 'vitest';
 import { createUser } from '@/lib/auth';
 import { id,now,one,run } from '@/lib/db';
-import { grantProjectPlan,createSubscription } from '@/lib/project-subscriptions';
+import { grantProjectPlan,createSubscription } from './communication-choice-fixture';
 import { PLANS, type PlanId } from '@/lib/plans';
 import { FAMILY_LIBRARY } from '@/lib/theme/section-families';
 import { planAllowsTheme,planAllowsSection,PLAN_THEME_ORDER } from '@/lib/plan-entitlements';

@@ -1,4 +1,4 @@
-import { grantProjectPlan } from "@/lib/project-subscriptions";
+import { grantProjectPlan } from "./communication-choice-fixture";
 /**
  * Publicités au niveau agence (outils simulés : aucun appel réel, aucune dépense) : direction artistique propre au
  * projet, compositions différentes d'une création à l'autre, chacune RECOMPOSÉE par format (1:1, 4:5, 9:16, 1,91:1),

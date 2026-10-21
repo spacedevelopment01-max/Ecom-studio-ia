@@ -1,4 +1,4 @@
-import { grantProjectPlan } from "@/lib/project-subscriptions";
+import { grantProjectPlan } from "./communication-choice-fixture";
 /**
  * Démo montre ARVEN : la vidéo disait « Voici Chronographe… » alors que le client a demandé « montre », jamais
  * « chronographe ». Cause : le moteur vidéo ne lisait pas le vocabulaire du client. Il l'applique maintenant aux

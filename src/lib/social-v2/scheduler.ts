@@ -80,7 +80,7 @@ export async function publishOne(postId: string, publisher: Publisher, o: { time
     return { outcome: "skipped", detail: "catalogue modifié" };
   }
   if (pre.status === "scheduled") {
-    try { assertContentAlignment(owner.project_id, "post", postId); }
+    try { assertContentAlignment(owner.project_id, "post", postId,{operation:"publish"}); }
     catch (error) {
       const message = String((error as Error).message);
       run("UPDATE posts SET status='review', approved_hash=NULL, error=?, updated_at=? WHERE id=? AND status='scheduled'", message, now(), postId);
@@ -95,7 +95,7 @@ export async function publishOne(postId: string, publisher: Publisher, o: { time
   // Prise en charge atomique : une seule tâche peut passer « scheduled → publishing ».
   const token = crypto.randomUUID();
   const claimed = tx(()=>{
-    try { assertContentAlignment(owner.project_id, "post", postId); } catch (error) {
+    try { assertContentAlignment(owner.project_id, "post", postId,{operation:"publish"}); } catch (error) {
       run("UPDATE posts SET status='review', approved_hash=NULL, error=?, updated_at=? WHERE id=? AND status='scheduled'", String((error as Error).message), now(), postId);
       return {changes:0};
     }

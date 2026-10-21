@@ -1,3 +1,5 @@
+import {videoIntent} from './video-v2/intent';
+import {loadProject} from './projects';
 import { one } from './db';
 import { HttpError } from "./auth";
 /** Strategy provenance for one execution. A concurrent activation never relabels acquired content. */
@@ -77,7 +79,7 @@ export function strategyReuseInput(value: unknown): unknown {
 export function withSiteStrategy<T>(projectId:string,fn:()=>T):T {const foundation=defaultStrategy(projectId);return serviceStrategyProject(projectId)?scope.run({projectId,selection:null,context:'',purpose:'site'},fn):withStrategyScope(projectId,fn);}
 export function serviceSiteScope(projectId:string){const s=scope.getStore();return s?.projectId===projectId&&s.purpose==='site';}
 export function withCommunicationStrategy<T>(projectId:string,fn:()=>T,options:{angleId?:string;strategyId?:string}={}):T {
- if(!serviceStrategyProject(projectId))return withStrategyScope(projectId,fn);
+ if(!serviceStrategyProject(projectId)){if(options.angleId&&strategySelection(projectId)?.angleId!==options.angleId)throw new HttpError(409,"Cet angle diffère de la stratégie du produit. Préparez sa transition avant génération.","strategy_changed");return withStrategyScope(projectId,fn);}
  const inherited=scope.getStore();
  const selected=options.angleId||options.strategyId?communicationStrategy(projectId,options):inherited?.projectId===projectId&&inherited.selection?inherited.selection:communicationStrategy(projectId);
  return withStrategyScope(projectId,fn,selected);
@@ -90,18 +92,19 @@ export function contentStrategy(projectId:string,module:string,contentId:string)
 
 /** Communication jobs pin their content's strategy, not the latest default. Website jobs stay general. */
 export function communicationJob(type:string,payload:any):boolean {
- if(type.startsWith('video.')&&(payload?.request?.purpose==='site'||payload?.request?.initialSlot||payload?.request?.siteAmbience||['website','shop_page'].includes(payload?.request?.ask?.platform)))return false;
+ if(type.startsWith('video.')&&(payload?.request?.purpose==='site'||payload?.request?.siteAmbience||!payload?.request?.ask?.purpose&&['website','shop_page'].includes(payload?.request?.ask?.platform)))return false;
  return type==='image.ai_post'||/^(social\.|post\.|calendar\.|ads\.|campaign\.|ugc\.|video\.)/.test(type)||(type==='content.v2'&&payload?.request?.type==='ad_copy');
 }
 export function jobStrategy(projectId:string,type:string,payload:any,executing=false):Selection|null {
  if(!serviceStrategyProject(projectId))return strategySelection(projectId);
- if(!communicationJob(type,payload))return null;
+ if(!communicationJob(type,payload)||type==='video.v2'&&siteVideoRequest(projectId,payload?.request))return null;
  // Rendering or repairing an acquired document inherits its immutable provenance.
  const contentId=payload?.postId;const docKey=payload?.docKey;
  if(contentId&&!one("SELECT 1 FROM posts WHERE project_id=? AND id=?",projectId,contentId))throw new HttpError(404,"Publication introuvable.");
  if(docKey){const doc=one<{doc_json:string}>('SELECT doc_json FROM video_documents WHERE project_id=? AND doc_key=? ORDER BY version DESC LIMIT 1',projectId,docKey);if(doc){const parsed=JSON.parse(doc.doc_json);if(parsed.meta?.siteAmbience||['website','shop_page'].includes(parsed.platform))return null;}}
  const own=contentId?contentStrategy(projectId,'post',contentId):docKey?(()=>{const r=one<{id:string}>('SELECT id FROM video_documents WHERE project_id=? AND doc_key=? ORDER BY version DESC LIMIT 1',projectId,docKey);return r?contentStrategy(projectId,'video',r.id):null;})():null;
  if(own)return own;
+ if(type==='post.publish'&&contentId)return null; // Legacy approved publication: native send gates still apply.
  const requested=payload?.angleId??payload?.request?.angleId;
  const inherited=strategySelection(projectId);
  if(!requested&&!executing&&inherited)return inherited;
@@ -112,4 +115,9 @@ export function jobStrategy(projectId:string,type:string,payload:any,executing=f
 export function recordedContentStrategy(projectId:string,module:string,contentId:string):StrategyStamp|null {
  defaultStrategy(projectId);const r=one<any>('SELECT strategy_id,version,angle_id,input_digest FROM marketing_strategy_contents WHERE project_id=? AND module=? AND content_id=?',projectId,module,contentId);
  return r?.strategy_id?{id:r.strategy_id,version:r.version,angleId:r.angle_id,inputDigest:r.input_digest}:null;
+}
+
+/** Reuse the native intent resolver; a website described in plain language is still website work. */
+export function siteVideoRequest(projectId:string,request:any):boolean {
+ return request?.purpose==='site'||!!request?.siteAmbience||!!request?.ask&&!request.ask.purpose&&['website','shop_page'].includes(videoIntent(loadProject(projectId),request.ask).platform);
 }

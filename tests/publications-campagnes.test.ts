@@ -31,7 +31,7 @@ vi.mock("@/lib/ads-v2/engine", async (orig) => ({
 import { createUser } from "@/lib/auth";
 import { loadProject } from "@/lib/projects";
 import { seedImageFixture, seedCutout } from "./image-v2-fixtures";
-import { grantProjectPlan } from "@/lib/project-subscriptions";
+import { grantProjectPlan } from "./communication-choice-fixture";
 import { one, run } from "@/lib/db";
 import { saveAsset } from "@/lib/library";
 import * as route from "@/app/api/projects/[id]/campaigns/v2/route";

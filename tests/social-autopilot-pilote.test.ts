@@ -11,7 +11,7 @@ import { describe, expect, it } from "vitest";
 describe("Autopilot V2 — pilote", async () => {
   const { createUser } = await import("@/lib/auth");
   const { all, id, now, one, run } = await import("@/lib/db");
-  const { grantProjectPlan } = await import("@/lib/project-subscriptions");
+  const { grantProjectPlan } = await import("./communication-choice-fixture");
   const { loadProject, saveCatalog } = await import("@/lib/projects");
   const { runWithLang } = await import("@/lib/i18n-server");
   const ap = await import("@/lib/social-v2/autopilot");

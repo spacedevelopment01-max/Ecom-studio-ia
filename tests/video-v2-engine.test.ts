@@ -1,4 +1,4 @@
-import { grantProjectPlan } from "@/lib/project-subscriptions";
+import { grantProjectPlan } from "./communication-choice-fixture";
 /**
  * Video & UGC Engine V2 (phase 7A) — moteur complet avec rendu réel (ffmpeg), outils simulés : AUCUN appel d'IA,
  * aucune dépense. Vérifie : vidéo produite et rangée, accord avant génération, plafond avant envoi, fidélité produit,

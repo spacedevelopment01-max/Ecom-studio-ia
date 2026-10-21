@@ -1,4 +1,4 @@
-import { grantProjectPlan } from "@/lib/project-subscriptions";
+import { grantProjectPlan } from "./communication-choice-fixture";
 /**
  * Guide créatif vidéo branché sur le moteur réellement utilisé (vidéo en scènes) : règles chargées et modifiables,
  * fiche créative adaptée à l'offre, storyboard par étapes (services) ou par cadrages du vrai produit, règle absolue des

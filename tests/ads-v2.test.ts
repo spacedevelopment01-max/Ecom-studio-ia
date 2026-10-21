@@ -33,7 +33,7 @@ describe("Phase 6A — Advertising Engine V2", async () => {
   const fr = <T,>(fn: () => Promise<T> | T) => runWithLang({ ui: "fr", content: "fr" }, async () => fn());
 
   const u = await createUser(`ads2-${Date.now()}@test.fr`, "motdepasse-test", "A");
-  const {grantProjectPlan}=await import("@/lib/project-subscriptions");
+  const {grantProjectPlan}=await import("./communication-choice-fixture");
   const fresh = (k: (typeof IMAGE_FIXTURES)[number]) => {const pid=seedImageFixture(u.id,k);grantProjectPlan(pid,"dominer");return loadProject(pid);};
   const limits = strictestText(["meta_feed", "meta_story"]);
   const job = (projectId: string) => {
@@ -239,7 +239,7 @@ describe("Phase 6A — Advertising Engine V2", async () => {
     const { deps, log } = mockAdDeps({ userId: u.id, projectId: p.id, canWrite: false, canReview: false });
     const r = await fr(() => runAdEngineV2(null, p.id, { count: 2, platforms: ["meta_feed"] }, deps));
     expect(log.copyCalls).toHaveLength(0);
-    expect(r.outcomes.every((o) => o.verdict === "PROVISIONAL")).toBe(true);
+    expect(r.outcomes.every((o) => o.verdict === "PROVISIONAL"),JSON.stringify(r.outcomes)).toBe(true);
     expect(r.concepts.every((c) => c.copyBy === "local")).toBe(true);
   });
 

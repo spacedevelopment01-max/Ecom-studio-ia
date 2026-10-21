@@ -1,4 +1,4 @@
-import { grantProjectPlan } from "@/lib/project-subscriptions";
+import { grantProjectPlan } from "./communication-choice-fixture";
 /**
  * Retouches demandées en phrase libre dans l'éditeur :
  *  - demande composée comprise par le moteur local, gratuit (« augmente la taille du texte et du titre et centre-le

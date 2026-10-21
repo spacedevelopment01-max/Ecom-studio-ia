@@ -1,4 +1,4 @@
-import { grantProjectPlan } from "@/lib/project-subscriptions";
+import { grantProjectPlan } from "./communication-choice-fixture";
 /**
  * Les cinq scénarios du benchmark Vidéo V2, avec fournisseurs SIMULÉS (aucun appel, aucune dépense) : chaque scénario
  * produit une vidéo cohérente avec son intention, son langage visuel et sa durée ; les vidéos diffèrent d'un projet

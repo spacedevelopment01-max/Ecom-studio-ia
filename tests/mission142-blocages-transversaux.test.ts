@@ -9,7 +9,7 @@ import {createUser} from "@/lib/auth";
 import {seedImageFixture,seedCutout} from "./image-v2-fixtures";
 import {campaignConcept,campaignVerdict} from "./publication-fixtures";
 import {loadProject,saveProduct} from "@/lib/projects";
-import {grantProjectPlan} from "@/lib/project-subscriptions";
+import {grantProjectPlan} from "./communication-choice-fixture";
 import {run,one,all,json} from "@/lib/db";
 import {enqueue,getJob,claimNext,WORKER_ID,JobContext,completeJob,failJob,markFinished} from "@/lib/jobs";
 import {designPostWithAi,projectForSubject,type AiPostDeps} from "@/lib/social-v2/ai-post";

@@ -1,4 +1,4 @@
-import { withSiteStrategy, withCommunicationStrategy, withStrategyScope, strategyReuseKey } from "../strategy-consumption";
+import { siteVideoRequest, withSiteStrategy, withCommunicationStrategy, withStrategyScope, strategyReuseKey } from "../strategy-consumption";
 import { assertJobEntitlements } from "../job-entitlements";
 /**
  * Video & UGC Engine V2 (phase 7A) — moteur central.
@@ -89,7 +89,7 @@ type Budget = { capMicro: number; spentMicro: number };
 const hash = (x: unknown) => crypto.createHash("sha256").update(JSON.stringify(x)).digest("hex").slice(0, 16);
 
 export async function runVideoEngineV2(ctx: JobContext | null, projectId: string, req: VideoRequestV2, injected?: VideoV2Deps): Promise<VideoRunResult> {
-  return (['website','shop_page'].includes(req.ask.platform??'')?withSiteStrategy:withCommunicationStrategy)(projectId, () => runVideoEngineV2InScope(ctx, projectId, req, injected));
+  return (siteVideoRequest(projectId,req)?withSiteStrategy:withCommunicationStrategy)(projectId, () => runVideoEngineV2InScope(ctx, projectId, req, injected));
 }
 
 async function runVideoEngineV2InScope(ctx: JobContext | null, projectId: string, req: VideoRequestV2, injected?: VideoV2Deps): Promise<VideoRunResult> {

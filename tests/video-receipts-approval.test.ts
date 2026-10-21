@@ -55,6 +55,7 @@ describe("Reçus et accords vidéo, aucun fournisseur réel",()=>{
  });
  it("l'accord du projet reste valable quand le moteur cible une autre prestation",async()=>{
   const u=await createUser(`scope-subject-${crypto.randomUUID()}@test.invalid`,"motdepasse-test","Fixture"),p=loadProject(seedImageFixture(u.id,"restaurant"));
+  (await import("./communication-choice-fixture")).grantProjectPlan(p.id,"dominer");
   const {runVideoEngineV2}=await import("@/lib/video-v2/engine");const {mockVideoDeps}=await import("./video-v2-mock");const {deps}=mockVideoDeps({userId:p.userId,projectId:p.id});
   const ask={subject:{kind:"service" as const,name:p.services!.services[1].name},text:"Présenter cette prestation.",purpose:"organic" as const};const plan=await runVideoEngineV2(null,p.id,{ask,planOnly:true},deps);const signed=approveVideoScenario(p,{ask,offer:null},plan.script,1000000);
   const approved=await runVideoEngineV2(null,p.id,{ask,approval:signed.approval,planOnly:true},deps);expect(approved.script).toEqual(plan.script);expect(approved.strategy.message).toBe(plan.strategy.message);

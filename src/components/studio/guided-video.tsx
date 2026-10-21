@@ -1,6 +1,5 @@
 "use client";
 import {CommunicationAngleSelector,useCommunicationAngle} from "./communication-angle";
-"use client";
 /**
  * Vidéo guidée (Publications › Publication vidéo, Publicités › Publicité vidéo) : le client choisit le produit ou le
  * service, décrit son idée (avec les idées de prompts), puis le format, la durée totale et le nombre de scènes.

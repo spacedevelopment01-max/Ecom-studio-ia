@@ -1,3 +1,4 @@
+import {grantProjectPlan} from './communication-choice-fixture';
 import { describe, it, expect } from "vitest";
 import sharp from "sharp";
 import { campaignCopy, campaignVerdict } from "./publication-fixtures";
@@ -44,7 +45,7 @@ async function setup(kind: "artisan" | "hightech" = "hightech") {
     "motdepasse-test",
     "Test isolé",
   );
-  const p = loadProject(seedImageFixture(u.id, kind));
+  const p = loadProject(seedImageFixture(u.id, kind));if(p.business==='services')grantProjectPlan(p.id,"dominer");
   const ref = await saveAsset({
     projectId: p.id,
     userId: u.id,

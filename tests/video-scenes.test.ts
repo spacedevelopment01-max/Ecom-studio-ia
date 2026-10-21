@@ -1,4 +1,4 @@
-import { grantProjectPlan } from "@/lib/project-subscriptions";
+import { grantProjectPlan } from "./communication-choice-fixture";
 /**
  * Vidéo en scènes (création guidée et création du projet) : produit = une image Qwen + un plan Wan 2.6 par scène,
  * service = plans libres de droits ; durée totale, nombre de scènes et format choisis par le client ; carte de fin avec

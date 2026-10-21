@@ -1,4 +1,4 @@
-import { strategyContent } from "../strategy-consumption";
+import { withCommunicationStrategy, strategyContent } from "../strategy-consumption";
 import { planAllowsAds } from "../plan-entitlements";
 import { projectPlan } from "../project-billing";
 /** Initial twenty: independent organic/ad slots, full-set diversity gates and progressive receipts. */
@@ -351,6 +351,9 @@ function postBrief(pid: string, slot: Slot, content: InitialPlan['posts'][number
     return { id: slot.postId ?? slot.creativeId, entryPoint: slot.group === 'ad' ? 'ads-campaign' : 'publications', network, format: slot.aspect === '9:16' ? 'story' : 'image', title: content.title, headline: content.title, caption: content.caption, pillar: content.pillar, objective: content.objective, scheduled_at: null, request: `${content.request}\nConcept indépendant : ${JSON.stringify(content.concept)}`, editorial: slot.group === 'organic' ? content.editorial : undefined, editorialData: { initialCreative: { hash, index: slot.index, group: slot.group }, concept: content.concept }, advertising: slot.group === 'ad' ? { ...advertisingMaterial(loadProject(pid)), ...content.advertising, concept: content.concept, copy: { primary: content.caption, hook: content.title, cta: content.advertising?.cta }, platform: { network, aspect: slot.aspect } } : undefined };
 }
 export async function runInitialCreatives(ctx: JobContext, deps = realInitialDeps()) {
+    return withCommunicationStrategy(ctx.payload.projectId,()=>runInitialCreativesInScope(ctx,deps));
+}
+async function runInitialCreativesInScope(ctx:JobContext,deps:InitialDeps) {
     const { projectId: pid, hash, quoteId } = ctx.payload as {
         projectId: string;
         hash: string;

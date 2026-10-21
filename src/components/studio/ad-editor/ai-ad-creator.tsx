@@ -1,6 +1,5 @@
 "use client";
 import {CommunicationAngleSelector,useCommunicationAngle} from "../communication-angle";
-"use client";
 /**
  * Publicités › Publicité image : création guidée entièrement par l'IA d'images (Qwen). Le client choisit le produit ou
  * le service, décrit librement le visuel voulu et le format ; le prix s'affiche avant, rien ne part sans son clic.

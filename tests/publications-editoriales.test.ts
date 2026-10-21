@@ -1,4 +1,4 @@
-import { grantProjectPlan } from "@/lib/project-subscriptions";
+import { grantProjectPlan } from "./communication-choice-fixture";
 /** Actual engine/SQLite/files; deterministic providers. No creative quality or live social delivery claimed. */
 import { describe,it,expect } from 'vitest';
 import sharp from 'sharp';
@@ -20,7 +20,7 @@ import { editPostV2 } from '@/lib/social-v2/engine';
 import { redoRequest } from '@/lib/media/ai-image-variants';
 const base:PostBrief={id:'purpose-test',network:'instagram',format:'image',title:'Entretenir le matériel',headline:'Entretenir le matériel',caption:'Débrancher avant le nettoyage.\n\nUtiliser un chiffon sec.',pillar:'conseils',objective:'educate',scheduled_at:null};
 async function setup(kind:'hightech'|'artisan'='hightech') {
- const u=await createUser(`editorial-${crypto.randomUUID()}@test.invalid`,'motdepasse-test','Test');const p=loadProject(seedImageFixture(u.id,kind));
+ const u=await createUser(`editorial-${crypto.randomUUID()}@test.invalid`,'motdepasse-test','Test');const p=loadProject(seedImageFixture(u.id,kind));if(p.business==='services')grantProjectPlan(p.id,"dominer");
  const bytes=await sharp({create:{width:1080,height:1350,channels:3,background:'#245466'}}).png().toBuffer();
  const ref=await saveAsset({userId:u.id,projectId:p.id,data:bytes,name:'SIMULATION.png',mime:'image/png',role:'original',origin:'upload',status:'approved',meta:{simulation:true}});
  const prompts:string[]=[],contexts:any[]=[],paid:{key:string;cost:number}[]=[];

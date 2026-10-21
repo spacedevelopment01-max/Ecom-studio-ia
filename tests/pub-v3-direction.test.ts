@@ -1,4 +1,4 @@
-import { grantProjectPlan } from "@/lib/project-subscriptions";
+import { grantProjectPlan } from "./communication-choice-fixture";
 /**
  * Moteur publicitaire V3 (outils simulés : aucun appel réel, aucune dépense) : une direction artistique par
  * publicité — concepts différents, prise de vue transmise à l'image, mise en page de la bibliothèque qui garde la

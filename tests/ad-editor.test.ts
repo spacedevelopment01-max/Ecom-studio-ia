@@ -1,4 +1,4 @@
-import { grantProjectPlan } from "@/lib/project-subscriptions";
+import { grantProjectPlan } from "./communication-choice-fixture";
 /**
  * Éditeur visuel des publicités — fondation (documents en calques, opérations, versions, formats, export).
  * Critère de réussite vérifié SANS aucun appel d'IA : ouvrir une publicité générée, sélectionner son titre, changer

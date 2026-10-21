@@ -1,6 +1,5 @@
 "use client";
 import {CommunicationAngleSelector,useCommunicationAngle} from "./communication-angle";
-"use client";
 /**
  * Publications › Créer : une publication IMAGE ou une publication VIDÉO, avec ou sans IA, et les visuels des
  * publications déjà planifiées. Le prix s'affiche avant tout lancement payant ; rien ne part sans validation.

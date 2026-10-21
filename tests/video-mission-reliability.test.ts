@@ -1,4 +1,4 @@
-import { grantProjectPlan } from "@/lib/project-subscriptions";
+import { grantProjectPlan } from "./communication-choice-fixture";
 import { describe, expect, it, vi } from "vitest";
 import sharp from "sharp";
 import type { JobContext } from "@/lib/jobs";

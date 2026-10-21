@@ -1,4 +1,4 @@
-import { grantProjectPlan } from "@/lib/project-subscriptions";
+import { grantProjectPlan } from "./communication-choice-fixture";
 import { describe,it,expect } from "vitest";
 import { creativeContract } from "@/lib/social-v2/creative-contract";
 import type { PostBrief } from "@/lib/social-v2/deps";

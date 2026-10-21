@@ -1044,11 +1044,19 @@ export function assertContentAlignment(
   projectId: string,
   module: string,
   contentId: string,
+  options:{operation?:"generation"|"publish"}={},
 ) {
   schema();
   let active = activeStrategy(projectId);
   if(serviceStrategyProject(projectId)){
    const row=one<{strategy_id:string|null}>('SELECT strategy_id FROM marketing_strategy_contents WHERE project_id=? AND module=? AND content_id=?',projectId,module,contentId);
+   if(!row?.strategy_id&&module==='post'&&options.operation==='publish'){
+    const legacy=one<{created_at:number;engine:string;approved_at:number|null;approved_hash:string|null;content_hash:string|null}>('SELECT created_at,engine,approved_at,approved_hash,content_hash FROM posts WHERE project_id=? AND id=?',projectId,contentId);
+    const first=one<{at:number|null}>('SELECT MIN(first_activated_at) at FROM marketing_strategy_used WHERE project_id=?',projectId)?.at;
+    // Existing approvals are not retroactively invalidated by introducing campaign angles.
+    // The native scheduler still verifies the real content hash, rights, claims and media before sending.
+    if(legacy?.approved_at&&(legacy.engine!=='v2'||legacy.approved_hash&&legacy.approved_hash===legacy.content_hash)&&(!first||legacy.created_at<first))return;
+   }
    if(!row?.strategy_id)throw new HttpError(409,'Cette communication doit être relue et rattachée explicitement à un angle autorisé avant production ou envoi.','strategy_content_unaligned');
    active=communicationStrategy(projectId,{strategyId:row.strategy_id});
   }

@@ -1,4 +1,4 @@
-import { grantProjectPlan } from "@/lib/project-subscriptions";
+import { grantProjectPlan } from "./communication-choice-fixture";
 import {describe,it,expect,vi,afterAll} from 'vitest';
 // Ces tests d’accords lisent la configuration native : une base dédiée évite qu’un
 // autre fichier ne change volontairement les routes au milieu d’un scénario.

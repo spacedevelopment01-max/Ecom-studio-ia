@@ -6,7 +6,7 @@ import { communicationStrategy, serviceStrategyProject } from './index';
 export async function withCommunicationRequest<T>(projectId:string,request:Request,fn:()=>T,actions:string[]):Promise<Awaited<T>> {
  const raw=await request.clone().json().catch(()=>({}));
  if(!serviceStrategyProject(projectId)||!actions.includes(raw.action??'')||raw.status==='archived')return await fn();
- if(raw.purpose==='site'||raw.initialSlot)return await withSiteStrategy(projectId,fn);
+ if(raw.purpose==='site')return await withSiteStrategy(projectId,fn);
  let strategyId:string|undefined;
  const campaignId=raw.campaignId??(request.url.includes('/campaigns')?raw.id:undefined);
  if(typeof campaignId==='string'){
