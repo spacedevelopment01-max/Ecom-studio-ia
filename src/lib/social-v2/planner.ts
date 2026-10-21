@@ -1,4 +1,7 @@
-import { strategyContent } from "../strategy-consumption";
+import { canonicalJSON } from "../brain/hash";
+import { assertContentAlignment } from "../marketing-strategy";
+import { HttpError } from "../auth";
+import { strategyContent, strategySelection } from "../strategy-consumption";
 /**
  * NIVEAU 1 — PLANIFICATION (gratuite, aucune génération payante) : dates de publication (début, fin, jours de la
  * semaine, jours exclus, fuseau), 1 à 5 créneaux par jour, réseaux, répartition des piliers (thèmes prioritaires
@@ -158,9 +161,19 @@ export function createPlanV2(p: Project, req: PlanRequest, o: { planId?: string 
   // Questions des clients (recherche SEO V2, hypothèses) : matière des piliers « questions » et « pédagogie ».
   const questions = researchKeywords(p, lang, sitePages(p)).clusters.flatMap((c) => c.questions);
   const planId = o.planId ?? id();
-  if (!one("SELECT 1 FROM content_plans WHERE id = ?", planId))
+  const existingPlan=one<{project_id:string;params:string}>("SELECT project_id,params FROM content_plans WHERE id=?",planId);
+  if(existingPlan){
+    if(existingPlan.project_id!==p.id)throw new HttpError(404,'Calendrier introuvable.');
+    if(canonicalJSON(JSON.parse(existingPlan.params))!==canonicalJSON(req))throw new HttpError(409,'Ce calendrier a été préparé avec d’autres paramètres. Préparez une nouvelle version sans écraser les publications existantes.','strategy_calendar_parameters_changed');
+    const selection=strategySelection(p.id);const original=one<{angle_id:string;input_digest:string}>("SELECT angle_id,input_digest FROM marketing_strategy_contents WHERE project_id=? AND module='calendar' AND content_id=?",p.id,planId);
+    if(selection&&(original?.angle_id!==selection.angleId||original.input_digest!==selection.inputDigest)){
+      if(selection.id.startsWith('draft-'))throw new HttpError(409,'Ce calendrier dépend de l’ancien angle. Préparez sa nouvelle version avant la bascule.','strategy_calendar_old_angle');
+      assertContentAlignment(p.id,'calendar',planId);
+    }
+  }
+  if (!existingPlan)
     run("INSERT INTO content_plans (id, project_id, params, strategy, status, created_at, engine, updated_at) VALUES (?,?,?,?,?,?,?,?)", planId, p.id, JSON.stringify(req), JSON.stringify(strategy), "ready", now(), "v2", now());
-  strategyContent(p.id, "calendar", planId);
+  if(!existingPlan)strategyContent(p.id, "calendar", planId);
   // Accroches déjà publiées ou refusées (normalisées sans accents : « Découvrez » = « decouvrez ») : jamais reprises.
   const used = usedHooks(p.id);
   const nth = new Map<string, number>();

@@ -52,7 +52,20 @@ for(const account of accounts){
   await theme.screenshot({path:`${out}/${label}-${angle}-premier-ecran.jpg`,type:'jpeg',quality:85});
   await theme.screenshot({path:`${out}/${label}-${angle}-theme-desktop.jpg`,type:'jpeg',quality:85,fullPage:true});
   await theme.setViewportSize({width:390,height:844});await reveal(theme);await theme.screenshot({path:`${out}/${label}-${angle}-theme-mobile.jpg`,type:'jpeg',quality:85,fullPage:true});
-  const overflow=await theme.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);if(overflow)throw Error('Client theme overflows');await theme.close();
+  const overflow=await theme.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);if(overflow)throw Error('Client theme overflows');
+  if(angle==='expression'){
+   const route=account.services?'/pages/prestations':`/products/${cur.spec.store.product.handle}`;
+   await theme.goto(`${base}/preview/${account.projectId}/v/${cur.version.id}${route}?es_raw=1`,{waitUntil:'domcontentloaded',timeout:60000});
+   await theme.setViewportSize({width:1440,height:1000});await reveal(theme);await theme.screenshot({path:`${out}/${label}-detail-desktop.jpg`,type:'jpeg',quality:85,fullPage:true});
+   await theme.setViewportSize({width:390,height:844});await reveal(theme);await theme.screenshot({path:`${out}/${label}-detail-mobile.jpg`,type:'jpeg',quality:85,fullPage:true});
+   if(!account.services){
+    const zoom=theme.locator('[data-zoom-open]').first();if(await zoom.count()){await zoom.click();await theme.locator('[data-zoom][open]').waitFor();await theme.screenshot({path:`${out}/produit-zoom.jpg`,type:'jpeg',quality:85});await theme.keyboard.press('Escape');}
+    const add=theme.locator('[data-add-button]').first();if(!await add.count())throw Error('Purchase control missing');await add.click();const drawer=theme.locator('[data-cart-drawer].is-open');await drawer.waitFor();if(!(await drawer.innerText()).includes(cur.spec.store.product.title))throw Error('Wrong project product in cart');await theme.screenshot({path:`${out}/produit-panier.jpg`,type:'jpeg',quality:85});await theme.keyboard.press('Escape');
+   }
+   const faq=theme.locator('main details summary').first();if(await faq.count()){const before=await faq.evaluate((e:any)=>e.parentElement.hasAttribute('open'));await faq.click();if(await faq.evaluate((e:any)=>e.parentElement.hasAttribute('open'))===before)throw Error('FAQ did not toggle');}
+   if(account.services){const contact=theme.getByRole('link',{name:/rendez-vous|projet/i}).first();if(!await contact.count())throw Error('Service CTA missing');await contact.click();await theme.waitForLoadState('domcontentloaded');if(!/\/pages\/(contact|prestations)/.test(new URL(theme.url()).pathname))throw Error('Service CTA destination');await reveal(theme);await theme.screenshot({path:`${out}/service-contact-mobile.jpg`,type:'jpeg',quality:85,fullPage:true});}
+  }
+  const themeVideo=theme.video();await theme.close();if(themeVideo)fs.copyFileSync(await themeVideo.path(),`${out}/${label}-${angle}-theme.webm`);
   if(angle==='expression')for(const platform of ['shopify','woocommerce','prestashop']){const response=await page.request.get(`${base}/api/projects/${account.projectId}/theme/export?platform=${platform}&version=${cur.version.id}`,{timeout:120000});if(!response.ok())throw Error(`Export ${platform}: ${await response.text()}`);fs.writeFileSync(`${out}/${label}-${platform}.zip`,await response.body());}
 
   const {getStrategyState}=await import('../src/lib/marketing-strategy');const {listContents,latestContent}=await import('../src/lib/seo-v2/store');const {all}=await import('../src/lib/db');examples.push({case:label,angle,strategy:getStrategyState(account.projectId).active?.angle,seo:listContents(account.projectId).map(d=>latestContent(account.projectId,d.docKey)?.doc),posts:all('SELECT caption,status FROM posts WHERE project_id=? AND status!=?',account.projectId,'cancelled'),template:cur.spec.templates.index});

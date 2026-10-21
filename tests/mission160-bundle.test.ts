@@ -45,7 +45,7 @@ it('plafond global atteint : aucun exécuteur appelé, aucune bascule ni contour
 });
 it('baisse de forfait entre devis et worker : angle et module revérifiés avant toute création',async()=>{
  const f=await fixture();const q=quoteStrategyBundle(f.pid,f.prep.id,[{module:'asset',contentId:f.old[0].id}]);confirmStrategyBundle(f.pid,q.id,true);const job=claimNext(['strategy.prepare'])!;grantProjectPlan(f.pid,'creer');const execute=vi.fn();
- await expect(runStrategyBundle(new JobContext(job),execute)).rejects.toMatchObject({code:'strategy_angle_limit'});expect(execute).not.toHaveBeenCalled();failJob(job,Error('simulation droits'),{permanent:true});
+ await expect(runStrategyBundle(new JobContext(job),execute)).rejects.toMatchObject({code:'strategy_angle_limit'});expect(execute).not.toHaveBeenCalled();failJob(job,Error('simulation droits'),{permanent:true});expect(strategyBundle(f.pid,q.id).status).toBe('failed');
 });
 it('archives, retouches et autre compte : aucune inclusion abusive dans un devis',async()=>{
  const f=await fixture();const g=await fixture();const uploaded=one<any>("SELECT id FROM assets WHERE project_id=? AND origin='upload' AND role!='original'",f.pid);

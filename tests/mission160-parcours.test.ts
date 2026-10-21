@@ -59,3 +59,9 @@ it('une rédaction explicitement fournie par le client reste intégrale et signa
  await fr(()=>buildShop(null,f.pid,{direction:'traverse',useAi:false}));const spec=currentTheme(f.pid)!.spec;
  expect(JSON.stringify(spec.templates.index)).toContain(original);expect(spec.meta?.strategy?.retainedPaths).toContain('upstream:shop_copy');expect(getStrategyState(f.pid).alignment.some(c=>c.module==='theme'&&!c.aligned)).toBe(true);
 });
+
+it('les documents automatiques ne passent pas devant une rédaction exacte fournie par le client',async()=>{
+ const f=await clientFixture({copySource:'user'});const {runContentEngineV2}=await import('@/lib/seo-v2/engine');const {localOnlyDeps}=await import('@/lib/seo-v2/deps');
+ await runContentEngineV2(null,f.pid,{type:'home_page',lang:'fr'},localOnlyDeps());await fr(()=>buildShop(null,f.pid,{direction:'traverse',useAi:false}));
+ expect(JSON.stringify(currentTheme(f.pid)!.spec.templates.index)).toContain(f.copy.hero.heading);expect(all('SELECT id FROM ai_calls WHERE project_id=?',f.pid)).toHaveLength(0);
+});

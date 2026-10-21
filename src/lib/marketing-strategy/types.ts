@@ -73,6 +73,7 @@ export type StrategyContent = {
   published: boolean;
   scheduled: boolean;
   aligned: boolean;
+  contentFingerprint?:string;
   retainedPaths?: string[];
   reason:
     | "aligned"

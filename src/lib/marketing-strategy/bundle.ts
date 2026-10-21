@@ -10,7 +10,7 @@ import {aiActiveFor} from '../ai/access';
 import {estimateMicro,estimateTaskMicro,capMicro} from '../ai/estimate';
 import {budgetPctOf} from '../ai/budget-pct';
 import {assertUnderCostCap,withTrace} from '../ai/trace';
-import {EUR} from '../billing';
+import {EUR,assertCanSpend} from '../billing';
 import {assertStrategyPreparationCurrent,preparationStrategy,stageStrategyModule} from './index';
 import {imageV2Kind} from '../image-v2/ai-only';
 import type {ContentDoc} from '../seo-v2/types';
@@ -21,8 +21,8 @@ export type RevisionItem={module:string;oldId:string;type:'content.v2'|'image.v2
 export type RevisionBundle={id:string;projectId:string;preparationId:string;items:RevisionItem[];estimateMicro:number;capMicro:number;percent:number|null;status:'quoted'|'queued'|'running'|'prepared'|'failed';retryCount?:number;jobId:string|null;createdAt:number};
 function schema(){db().exec('CREATE TABLE IF NOT EXISTS marketing_strategy_bundles(id TEXT PRIMARY KEY,project_id TEXT NOT NULL,preparation_id TEXT NOT NULL,payload TEXT NOT NULL,job_id TEXT,created_at INTEGER NOT NULL)');}
 function save(b:RevisionBundle){run('INSERT OR REPLACE INTO marketing_strategy_bundles VALUES(?,?,?,?,?,?)',b.id,b.projectId,b.preparationId,JSON.stringify(b),b.jobId,b.createdAt);return b;}
-export function strategyBundle(projectId:string,bundleId:string){schema();const row=one<{payload:string}>('SELECT payload FROM marketing_strategy_bundles WHERE id=? AND project_id=?',bundleId,projectId);if(!row)throw new HttpError(404,'Devis introuvable.','strategy_quote_missing');return json<RevisionBundle>(row.payload,null as never);}
-export function latestStrategyBundle(projectId:string,preparationId:string){schema();const row=one<{payload:string}>('SELECT payload FROM marketing_strategy_bundles WHERE preparation_id=? AND project_id=? ORDER BY created_at DESC LIMIT 1',preparationId,projectId);return row?json<RevisionBundle>(row.payload,null as never):null;}
+export function strategyBundle(projectId:string,bundleId:string){schema();const row=one<{payload:string}>('SELECT payload FROM marketing_strategy_bundles WHERE id=? AND project_id=?',bundleId,projectId);if(!row)throw new HttpError(404,'Devis introuvable.','strategy_quote_missing');const bundle=json<RevisionBundle>(row.payload,null as never);const job=bundle.jobId?getJob(bundle.jobId):null;return job&&["failed","cancelled","blocked"].includes(job.status)?{...bundle,status:"failed" as const}:bundle;}
+export function latestStrategyBundle(projectId:string,preparationId:string){schema();const row=one<{payload:string}>('SELECT payload FROM marketing_strategy_bundles WHERE preparation_id=? AND project_id=? ORDER BY created_at DESC LIMIT 1',preparationId,projectId);return row?strategyBundle(projectId,json<RevisionBundle>(row.payload,null as never).id):null;}
 export function quoteStrategyBundle(projectId:string,preparationId:string,selected:{module:string;contentId:string}[]){
  schema();const prep=assertStrategyPreparationCurrent(projectId,preparationId),p=loadProject(projectId);const items:RevisionItem[]=[];
  if(!selected.length||selected.length>30)throw new HttpError(400,'Sélectionnez entre 1 et 30 éléments à réviser.','strategy_quote_selection');
@@ -64,6 +64,7 @@ export function confirmStrategyBundle(projectId:string,bundleId:string,confirmed
   for(const item of b.items)assertJobEntitlements(item.type,projectId,{request:item.request});
   if(b.jobId)return b;
   if(!aiActiveFor(p.userId,projectId))throw new HttpError(402,'Budget IA ou forfait indisponible ; les contenus précédents et la préparation sont conservés.','strategy_budget_unavailable');
+  assertCanSpend(p.userId,b.estimateMicro,projectId);
   const job=enqueue({userId:p.userId,projectId,type:'strategy.prepare',maxAttempts:1,label:'Préparation groupée du nouvel angle',payload:{projectId,bundleId:b.id,costCapMicro:b.capMicro},idempotencyKey:b.id});return save({...b,status:'queued',jobId:job.id});
  });
 }
@@ -94,7 +95,7 @@ export async function runStrategyBundle(ctx:JobContext,execute:RevisionExecutor=
  try{return await withStrategyScope(pid,()=>withTrace({jobId:ctx.job.id,projectId:pid,costCapMicro:b.capMicro},async()=>{
   for(let i=0;i<b.items.length;i++){
    const item=b.items[i];if(item.state==='prepared')continue;
-   assertStrategyPreparationCurrent(pid,b.preparationId);assertJobEntitlements(item.type,pid,{request:item.request});ctx.progress(.1+.75*i/b.items.length,'Préparation des versions ; ensemble précédent conservé');assertUnderCostCap(item.estimateMicro);
+   assertStrategyPreparationCurrent(pid,b.preparationId);assertCanSpend(ctx.job.user_id,b.items.filter(i=>i.state!=='prepared').reduce((n,i)=>n+i.estimateMicro,0),pid);assertJobEntitlements(item.type,pid,{request:item.request});ctx.progress(.1+.75*i/b.items.length,'Préparation des versions ; ensemble précédent conservé');assertUnderCostCap(item.estimateMicro);
    const result=await execute(ctx,item);
    tx(()=>{
    stageStrategyModule(pid,b.preparationId,item.module,{contentIds:result.outputIds,replacements:result.outputIds.map(newId=>({oldId:item.oldId,newId}))});

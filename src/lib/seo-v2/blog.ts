@@ -1,3 +1,4 @@
+import { strategyContent } from "../strategy-consumption";
 /**
  * Blog V2 : sujets → intention → mot-clé → plan → rédaction → relecture → vérification des faits → contrôle SEO →
  * liens internes → brouillon éditable. Les sujets viennent des groupes de la stratégie (aucune cannibalisation
@@ -64,6 +65,7 @@ export function saveBlogDraftV2(p: Project, docKey: string, doc: ContentDoc, o: 
     articleId, p.id, p.userId, title, slug, doc.meta.seoTitle, doc.meta.metaDescription, excerpt, body, "[]", prev?.cover_asset_id ?? pickCover(p.id), doc.lang, JSON.stringify(o.notes.slice(0, 30)), doc.primaryKeyword, "informational", t, t,
   );
   run("UPDATE blog_articles SET v2_hash = ? WHERE id = ?", articleHash(title, body), articleId);
+  strategyContent(p.id,"blog",articleId);
   // Un article écrit par l'IA = 1 article du forfait, décompté une seule fois par rédaction.
   if (o.ai&&!o.quotaReserved) consumeQuota(p.userId, "blog", 1, `blog-draft:${p.id}:${articleId}`, p.id);
   return articleId;

@@ -1,3 +1,4 @@
+import { one } from "../db";
 /**
  * Textes de la boutique : les documents SEO & Copywriting V2 sont la RÉFÉRENCE pour les textes qu'ils couvrent
  * (fiche produit, page d'accueil : titre, description, points clés, FAQ, titre et description SEO). Le kit de textes
@@ -19,7 +20,8 @@ export function referenceContent(projectId: string, type: ContentType | ContentT
   const types = Array.isArray(type) ? type : [type];
   const key = target ?? (types[0] === "product_page" ? "product:main" : types[0] === "home_page" ? "home:accueil" : types[0] === "brand_page" ? "brand:a-propos" : null);
   if (!key) return null;
-  const candidates = listContents(projectId, types).flatMap((v) => { const usable = usableContent(projectId, v.docKey); return usable ? [usable] : []; });
+  const hasClientCopy=!!one("SELECT 1 FROM memory WHERE project_id=? AND kind='artifact' AND key='shop_copy' AND source='user'",projectId);
+  const candidates = listContents(projectId, types).filter(v=>!hasClientCopy||v.source!=="engine").flatMap((v) => { const usable = usableContent(projectId, v.docKey); return usable ? [usable] : []; });
   // Une correction du client a priorité sur une nouvelle proposition du moteur ; ordre stable en cas d'égalité.
   candidates.sort((a, b) => Number(b.version.source !== "engine") - Number(a.version.source !== "engine") || b.version.createdAt - a.version.createdAt || b.version.id.localeCompare(a.version.id));
   for (const { version: v, doc: d } of candidates) {

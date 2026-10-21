@@ -54,7 +54,7 @@ for(const services of [false,true])it(`préparation native groupée SEO + calend
  await prepareLocalStrategyModules(f.pid,prep.id);expect(counts()).toEqual(acquired);
  for(const c of prep.contents.filter(c=>!c.aligned&&!c.published&&c.module!=='seo'&&c.module!=='calendar'&&c.module!=='post'))stageStrategyModule(f.pid,prep.id,c.module,{retainedContentIds:[c.contentId],contentIds:[]});
  activateStrategy(f.pid,{angleId:'expression',preparationId:prep.id,idempotencyKey:`batch-${services}`,confirmed:true,commitPrepared:()=>commitPreparedStrategyModules(f.pid,prep.id)});
- const after=latestContent(f.pid,a.docKey!)!;expect(after.version.id).not.toBe(before.version.id);expect(JSON.stringify(after.doc.blocks)).not.toBe(JSON.stringify(before.doc.blocks));
+ const after=latestContent(f.pid,a.docKey!)!;expect(after.version.id).not.toBe(before.version.id);expect(JSON.stringify(after.doc.blocks)).not.toBe(JSON.stringify(before.doc.blocks));expect(after.doc.blocks.find(b=>b.kind==='h1')).toMatchObject({text:activeStrategy(f.pid)!.angle.examples.hero});
  expect(one<any>('SELECT status FROM content_plans WHERE id=?',plan.planId)?.status).toBe('archived');
  const next=results.find(r=>r.module==='calendar')!;expect(all<any>('SELECT status FROM posts WHERE plan_id=?',next.newIds[0]).every(p=>p.status==='planned')).toBe(true);
  expect(all('SELECT id FROM ai_calls WHERE project_id=?',f.pid)).toHaveLength(0);

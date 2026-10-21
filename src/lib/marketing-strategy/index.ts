@@ -39,11 +39,12 @@ function schema() {
  CREATE TABLE IF NOT EXISTS marketing_strategy_used(project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,angle_id TEXT NOT NULL,first_activated_at INTEGER NOT NULL,PRIMARY KEY(project_id,angle_id));
  CREATE TABLE IF NOT EXISTS marketing_strategy_preparations(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,angle_id TEXT NOT NULL,payload TEXT NOT NULL,status TEXT NOT NULL,created_at INTEGER NOT NULL);
  CREATE TABLE IF NOT EXISTS marketing_strategy_requests(project_id TEXT NOT NULL,idempotency_key TEXT NOT NULL,angle_id TEXT NOT NULL,strategy_id TEXT NOT NULL,PRIMARY KEY(project_id,idempotency_key));
- CREATE TABLE IF NOT EXISTS marketing_strategy_contents(project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,module TEXT NOT NULL,content_id TEXT NOT NULL,strategy_id TEXT,version INTEGER,angle_id TEXT,input_digest TEXT NOT NULL,protected INTEGER NOT NULL DEFAULT 0,published INTEGER NOT NULL DEFAULT 0,scheduled INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(project_id,module,content_id));
+ CREATE TABLE IF NOT EXISTS marketing_strategy_contents(project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,module TEXT NOT NULL,content_id TEXT NOT NULL,strategy_id TEXT,version INTEGER,angle_id TEXT,input_digest TEXT NOT NULL,protected INTEGER NOT NULL DEFAULT 0,published INTEGER NOT NULL DEFAULT 0,scheduled INTEGER NOT NULL DEFAULT 0,content_fingerprint TEXT NOT NULL DEFAULT '',PRIMARY KEY(project_id,module,content_id));
  CREATE TABLE IF NOT EXISTS marketing_strategy_archives(project_id TEXT NOT NULL,module TEXT NOT NULL,content_id TEXT NOT NULL,replaced_by TEXT NOT NULL,PRIMARY KEY(project_id,module,content_id));
  CREATE TABLE IF NOT EXISTS marketing_strategy_staging(preparation_id TEXT NOT NULL,module TEXT NOT NULL,content_ids TEXT NOT NULL,retained_ids TEXT NOT NULL,replacements_json TEXT NOT NULL DEFAULT '[]',PRIMARY KEY(preparation_id,module));
- CREATE TABLE IF NOT EXISTS marketing_strategy_reviews(project_id TEXT NOT NULL,module TEXT NOT NULL,content_id TEXT NOT NULL,strategy_id TEXT NOT NULL,input_digest TEXT NOT NULL,PRIMARY KEY(project_id,module,content_id,strategy_id));
+ CREATE TABLE IF NOT EXISTS marketing_strategy_reviews(project_id TEXT NOT NULL,module TEXT NOT NULL,content_id TEXT NOT NULL,strategy_id TEXT NOT NULL,input_digest TEXT NOT NULL,content_fingerprint TEXT NOT NULL DEFAULT '',PRIMARY KEY(project_id,module,content_id,strategy_id));
  `);
+  for(const table of ['marketing_strategy_contents','marketing_strategy_reviews'])if(!(d.prepare(`PRAGMA table_info(${table})`).all() as {name:string}[]).some(c=>c.name==='content_fingerprint'))d.exec(`ALTER TABLE ${table} ADD COLUMN content_fingerprint TEXT NOT NULL DEFAULT ''`);
   installed.add(d);
 }
 function version(row: any): ActiveStrategy | null {
@@ -204,6 +205,16 @@ export function proposeStrategies(projectId: string): StrategyState {
   }
   return getStrategyState(projectId);
 }
+/** Mutable native records need a content identity as well as a stable database ID. */
+function contentFingerprint(projectId:string,module:string,contentId:string):string {
+ const tables:Record<string,{table:string;keys:string[]}>= {
+  post:{table:'posts',keys:['title','caption','hashtags','link','media','brief']},
+  blog:{table:'blog_articles',keys:['title','body_html','excerpt','meta_title','meta_description']},
+  campaign:{table:'campaigns',keys:['name','objective','networks','brief','plan']},
+  calendar:{table:'content_plans',keys:['params','strategy']},
+ };
+ const def=tables[module];if(!def)return '';const row=one<Record<string,unknown>>(`SELECT * FROM ${def.table} WHERE project_id=? AND id=?`,projectId,contentId);return row?hash(Object.fromEntries(def.keys.map(k=>[k,row[k]??null]))):'';
+}
 function producedRows(projectId: string) {
   return all<any>(
     "SELECT * FROM marketing_strategy_contents WHERE project_id=?",
@@ -312,7 +323,7 @@ function nativeInventory(projectId: string): {
       "SELECT id,status FROM blog_articles WHERE project_id=? AND deleted_at IS NULL",
       projectId,
     ),
-    () => true,
+    (r) => !one("SELECT 1 FROM marketing_strategy_contents WHERE project_id=? AND module='blog' AND content_id=? AND content_fingerprint!=''",projectId,r.id),
     (r) => r.status === "published",
   );
   add(
@@ -376,20 +387,23 @@ function inventory(
     const r = stamped.find(
       (s) => s.module === c.module && s.content_id === c.contentId,
     );
+    const fingerprint=contentFingerprint(projectId,c.module,c.contentId);
+    const contentChanged=!!fingerprint&&!!r&&r.content_fingerprint!==fingerprint;
     const review =
       target &&
       one(
-        "SELECT 1 FROM marketing_strategy_reviews r LEFT JOIN marketing_strategy_versions v ON v.id=r.strategy_id WHERE r.project_id=? AND r.module=? AND r.content_id=? AND r.input_digest=? AND (r.strategy_id=? OR (v.angle_id=? AND v.input_digest=?))",
+        "SELECT 1 FROM marketing_strategy_reviews r LEFT JOIN marketing_strategy_versions v ON v.id=r.strategy_id WHERE r.project_id=? AND r.module=? AND r.content_id=? AND r.input_digest=? AND r.content_fingerprint=? AND (r.strategy_id=? OR (v.angle_id=? AND v.input_digest=?))",
         projectId,
         c.module,
         c.contentId,
         digest,
+        fingerprint,
         target.id,
         target.angleId,
         digest,
       );
     const unreviewed = "unreviewed" in c && !!c.unreviewed;
-    const protectedUnreviewed=c.protected||!!r?.protected;
+    const protectedUnreviewed=c.protected||!!r?.protected||contentChanged;
     const aligned =
       !unreviewed &&
       !!target &&
@@ -397,13 +411,14 @@ function inventory(
         !!review);
     return {
       ...c,
-      protected: c.protected || !!r?.protected || unreviewed,
+      protected: c.protected || !!r?.protected || unreviewed || contentChanged,
       published: c.published || !!r?.published,
       scheduled: c.scheduled || !!r?.scheduled,
       strategyId: r?.strategy_id ?? null,
       version: r?.version ?? null,
       angleId: r?.angle_id ?? null,
       inputDigest: r?.input_digest ?? "",
+      contentFingerprint:fingerprint,
       aligned,
       reason: unreviewed
         ? "protected_unreviewed"
@@ -641,6 +656,7 @@ export function stageStrategyModule(
       "Une version préparée n’appartient pas à ce projet ou module.",
       "strategy_content_missing",
     );
+  for(const cid of options.contentIds){const before=prep.contents.find(c=>c.module===module&&c.contentId===cid);if(before?.contentFingerprint&&before.contentFingerprint!==contentFingerprint(projectId,module,cid))throw new HttpError(409,'Le contenu a changé depuis l’inventaire. Relisez sa nouvelle version avant de confirmer sa compatibilité.','strategy_content_changed');}
   const retained = options.retainedContentIds ?? [];
   if (
     retained.some(
@@ -845,6 +861,7 @@ export function activateStrategy(
       );
     const target = preparationStrategy(projectId, prep.id);
     const freshInventory = inventory(projectId, target);
+    if(freshInventory.some(c=>{const before=prep.contents.find(old=>old.module===c.module&&old.contentId===c.contentId);return before&&before.contentFingerprint!==c.contentFingerprint;}))throw new HttpError(409,'Un contenu a été retouché pendant la préparation. Les versions sont conservées ; actualisez puis vérifiez la nouvelle version avant activation.','strategy_content_changed');
     const concurrent = freshInventory.filter(
       (c) =>
         !prep.contents.some(
@@ -948,12 +965,13 @@ export function activateStrategy(
     for (const stage of stages)
       for (const cid of stage.contentIds) {
         run(
-          "INSERT OR REPLACE INTO marketing_strategy_reviews VALUES(?,?,?,?,?)",
+          "INSERT OR REPLACE INTO marketing_strategy_reviews (project_id,module,content_id,strategy_id,input_digest,content_fingerprint) VALUES(?,?,?,?,?,?)",
           projectId,
           stage.module,
           cid,
           active.id,
           active.inputDigest,
+          contentFingerprint(projectId,stage.module,cid),
         );
       }
     run(
@@ -990,7 +1008,7 @@ export function recordStrategyContent(
     ? options.strategy
     : activeStrategy(projectId);
   run(
-    "INSERT OR REPLACE INTO marketing_strategy_contents VALUES(?,?,?,?,?,?,?,?,?,?)",
+    "INSERT OR REPLACE INTO marketing_strategy_contents (project_id,module,content_id,strategy_id,version,angle_id,input_digest,protected,published,scheduled,content_fingerprint) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
     projectId,
     module,
     contentId,
@@ -1001,6 +1019,7 @@ export function recordStrategyContent(
     options.protected ? 1 : 0,
     options.published ? 1 : 0,
     options.scheduled ? 1 : 0,
+    contentFingerprint(projectId,module,contentId),
   );
   return s ?? null;
 }
