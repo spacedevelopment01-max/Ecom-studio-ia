@@ -1,0 +1,54 @@
+{
+  "simulation": true,
+  "actualBrowser": true,
+  "served": {
+    "commit": "6b7fe5e2671e5567f8482fe2ef2c0f7f26527832",
+    "source": "compiled-build"
+  },
+  "expectedCode": "6b7fe5e2671e5567f8482fe2ef2c0f7f26527832",
+  "realProviderCalls": 0,
+  "proofs": [
+    {
+      "case": "produit",
+      "angle": "usage",
+      "persisted": true,
+      "themeVersion": 1,
+      "realProviderCalls": 0,
+      "overflow": false,
+      "websiteStrategy": "usage",
+      "delivery": "partial"
+    },
+    {
+      "case": "produit",
+      "angle": "expression",
+      "persisted": true,
+      "themeVersion": 3,
+      "realProviderCalls": 0,
+      "overflow": false,
+      "websiteStrategy": "expression",
+      "delivery": "partial"
+    },
+    {
+      "case": "service",
+      "angle": "usage",
+      "persisted": true,
+      "themeVersion": 1,
+      "realProviderCalls": 0,
+      "overflow": false,
+      "websiteStrategy": "general_foundation",
+      "websiteUnchanged": true,
+      "delivery": "partial"
+    },
+    {
+      "case": "service",
+      "angle": "expression",
+      "persisted": true,
+      "themeVersion": 1,
+      "realProviderCalls": 0,
+      "overflow": false,
+      "websiteStrategy": "general_foundation",
+      "websiteUnchanged": true,
+      "delivery": "partial"
+    }
+  ]
+}

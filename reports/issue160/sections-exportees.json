@@ -1,0 +1,890 @@
+[
+  {
+    "archive": "produit-shopify.zip",
+    "template": "templates/404.json",
+    "order": [
+      "main_404_1"
+    ],
+    "sections": [
+      {
+        "id": "main_404_1",
+        "type": "main-404",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "produit-shopify.zip",
+    "template": "templates/index.json",
+    "order": [
+      "cv_banner_1",
+      "features_grid_2",
+      "cv_alternating_1",
+      "cv_hotspots_1",
+      "cv_ingredients_1",
+      "image_with_text_2",
+      "featured_purchase_1",
+      "faq_2",
+      "newsletter_media_1",
+      "seo_home_body"
+    ],
+    "sections": [
+      {
+        "id": "cv_banner_1",
+        "type": "cv-banner",
+        "disabled": false,
+        "blockCount": 0
+      },
+      {
+        "id": "features_grid_2",
+        "type": "features-grid",
+        "disabled": false,
+        "blockCount": 6
+      },
+      {
+        "id": "cv_alternating_1",
+        "type": "cv-alternating",
+        "disabled": false,
+        "blockCount": 3
+      },
+      {
+        "id": "cv_hotspots_1",
+        "type": "cv-hotspots",
+        "disabled": true,
+        "blockCount": 0
+      },
+      {
+        "id": "cv_ingredients_1",
+        "type": "cv-ingredients",
+        "disabled": false,
+        "blockCount": 2
+      },
+      {
+        "id": "image_with_text_2",
+        "type": "image-with-text",
+        "disabled": false,
+        "blockCount": 0
+      },
+      {
+        "id": "featured_purchase_1",
+        "type": "featured-purchase",
+        "disabled": false,
+        "blockCount": 0
+      },
+      {
+        "id": "faq_2",
+        "type": "faq",
+        "disabled": false,
+        "blockCount": 5
+      },
+      {
+        "id": "newsletter_media_1",
+        "type": "newsletter-media",
+        "disabled": true,
+        "blockCount": 0
+      },
+      {
+        "id": "seo_home_body",
+        "type": "rich-text",
+        "disabled": false,
+        "blockCount": 1
+      }
+    ]
+  },
+  {
+    "archive": "produit-shopify.zip",
+    "template": "templates/product.json",
+    "order": [
+      "p_24b76c1d_main_product_1",
+      "p_24b76c1d_product_recommendations_1"
+    ],
+    "sections": [
+      {
+        "id": "p_24b76c1d_main_product_1",
+        "type": "main-product",
+        "disabled": false,
+        "blockCount": 4
+      },
+      {
+        "id": "p_24b76c1d_product_recommendations_1",
+        "type": "product-recommendations",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "produit-shopify.zip",
+    "template": "templates/collection.json",
+    "order": [
+      "main_collection_1"
+    ],
+    "sections": [
+      {
+        "id": "main_collection_1",
+        "type": "main-collection",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "produit-shopify.zip",
+    "template": "templates/list-collections.json",
+    "order": [
+      "main_list_collections_1"
+    ],
+    "sections": [
+      {
+        "id": "main_list_collections_1",
+        "type": "main-list-collections",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "produit-shopify.zip",
+    "template": "templates/search.json",
+    "order": [
+      "main_search_1"
+    ],
+    "sections": [
+      {
+        "id": "main_search_1",
+        "type": "main-search",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "produit-shopify.zip",
+    "template": "templates/cart.json",
+    "order": [
+      "main_cart_1"
+    ],
+    "sections": [
+      {
+        "id": "main_cart_1",
+        "type": "main-cart",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "produit-shopify.zip",
+    "template": "templates/page.json",
+    "order": [
+      "main_page_1"
+    ],
+    "sections": [
+      {
+        "id": "main_page_1",
+        "type": "main-page",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "produit-shopify.zip",
+    "template": "templates/page.about.json",
+    "order": [
+      "main_page_3",
+      "rich_text_1",
+      "image_with_text_1",
+      "image_with_text_2",
+      "features_grid_1",
+      "cta_banner_1"
+    ],
+    "sections": [
+      {
+        "id": "rich_text_1",
+        "type": "rich-text",
+        "disabled": false,
+        "blockCount": 3
+      },
+      {
+        "id": "image_with_text_1",
+        "type": "image-with-text",
+        "disabled": false,
+        "blockCount": 0
+      },
+      {
+        "id": "image_with_text_2",
+        "type": "image-with-text",
+        "disabled": false,
+        "blockCount": 0
+      },
+      {
+        "id": "features_grid_1",
+        "type": "features-grid",
+        "disabled": false,
+        "blockCount": 2
+      },
+      {
+        "id": "cta_banner_1",
+        "type": "cta-banner",
+        "disabled": false,
+        "blockCount": 0
+      },
+      {
+        "id": "main_page_3",
+        "type": "main-page",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "produit-shopify.zip",
+    "template": "templates/page.faq.json",
+    "order": [
+      "main_page_4",
+      "faq_3",
+      "contact_form_1"
+    ],
+    "sections": [
+      {
+        "id": "faq_3",
+        "type": "faq",
+        "disabled": false,
+        "blockCount": 5
+      },
+      {
+        "id": "contact_form_1",
+        "type": "contact-form",
+        "disabled": false,
+        "blockCount": 0
+      },
+      {
+        "id": "main_page_4",
+        "type": "main-page",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "produit-shopify.zip",
+    "template": "templates/page.contact.json",
+    "order": [
+      "main_page_5",
+      "contact_form_2"
+    ],
+    "sections": [
+      {
+        "id": "contact_form_2",
+        "type": "contact-form",
+        "disabled": false,
+        "blockCount": 0
+      },
+      {
+        "id": "main_page_5",
+        "type": "main-page",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "produit-shopify.zip",
+    "template": "templates/page.shipping.json",
+    "order": [
+      "main_page_2",
+      "rich_text_2"
+    ],
+    "sections": [
+      {
+        "id": "main_page_2",
+        "type": "main-page",
+        "disabled": false,
+        "blockCount": 0
+      },
+      {
+        "id": "rich_text_2",
+        "type": "rich-text",
+        "disabled": false,
+        "blockCount": 2
+      }
+    ]
+  },
+  {
+    "archive": "produit-shopify.zip",
+    "template": "templates/blog.json",
+    "order": [
+      "main_blog_1"
+    ],
+    "sections": [
+      {
+        "id": "main_blog_1",
+        "type": "main-blog",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "produit-shopify.zip",
+    "template": "templates/article.json",
+    "order": [
+      "main_article_1"
+    ],
+    "sections": [
+      {
+        "id": "main_article_1",
+        "type": "main-article",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "produit-shopify.zip",
+    "template": "templates/password.json",
+    "order": [
+      "main_password_1"
+    ],
+    "sections": [
+      {
+        "id": "main_password_1",
+        "type": "main-password",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "produit-shopify.zip",
+    "template": "templates/page.carnet-de-route.json",
+    "order": [
+      "title",
+      "intro",
+      "etapes",
+      "cta"
+    ],
+    "sections": [
+      {
+        "id": "title",
+        "type": "main-page",
+        "disabled": false,
+        "blockCount": 0
+      },
+      {
+        "id": "intro",
+        "type": "rich-text",
+        "disabled": false,
+        "blockCount": 2
+      },
+      {
+        "id": "etapes",
+        "type": "cv-alternating",
+        "disabled": false,
+        "blockCount": 3
+      },
+      {
+        "id": "cta",
+        "type": "cta-banner",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "produit-shopify.zip",
+    "template": "templates/page.aide.json",
+    "order": [
+      "title",
+      "faq",
+      "form"
+    ],
+    "sections": [
+      {
+        "id": "title",
+        "type": "main-page",
+        "disabled": false,
+        "blockCount": 0
+      },
+      {
+        "id": "faq",
+        "type": "faq",
+        "disabled": false,
+        "blockCount": 5
+      },
+      {
+        "id": "form",
+        "type": "contact-form",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "produit-shopify.zip",
+    "template": "templates/product.ecp-24b76c1d174e416c.json",
+    "order": [
+      "p_24b76c1d_main_product_1",
+      "p_24b76c1d_cv_cards_1",
+      "p_24b76c1d_content_tabs_1",
+      "p_24b76c1d_cv_steps_1",
+      "p_24b76c1d_cv_gallery_1",
+      "p_24b76c1d_fs_commitments_1",
+      "p_24b76c1d_faq_1",
+      "p_24b76c1d_product_recommendations_1"
+    ],
+    "sections": [
+      {
+        "id": "p_24b76c1d_main_product_1",
+        "type": "main-product",
+        "disabled": false,
+        "blockCount": 10
+      },
+      {
+        "id": "p_24b76c1d_cv_cards_1",
+        "type": "cv-cards",
+        "disabled": false,
+        "blockCount": 3
+      },
+      {
+        "id": "p_24b76c1d_content_tabs_1",
+        "type": "content-tabs",
+        "disabled": false,
+        "blockCount": 3
+      },
+      {
+        "id": "p_24b76c1d_cv_steps_1",
+        "type": "cv-steps",
+        "disabled": false,
+        "blockCount": 3
+      },
+      {
+        "id": "p_24b76c1d_cv_gallery_1",
+        "type": "cv-gallery",
+        "disabled": false,
+        "blockCount": 3
+      },
+      {
+        "id": "p_24b76c1d_fs_commitments_1",
+        "type": "fs-commitments",
+        "disabled": false,
+        "blockCount": 2
+      },
+      {
+        "id": "p_24b76c1d_faq_1",
+        "type": "faq",
+        "disabled": false,
+        "blockCount": 5
+      },
+      {
+        "id": "p_24b76c1d_product_recommendations_1",
+        "type": "product-recommendations",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "service-shopify.zip",
+    "template": "templates/404.json",
+    "order": [
+      "main_404_2"
+    ],
+    "sections": [
+      {
+        "id": "main_404_2",
+        "type": "main-404",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "service-shopify.zip",
+    "template": "templates/index.json",
+    "order": [
+      "ed_opening_1",
+      "ed_statement_1",
+      "ref_narrative_1",
+      "services_list_1",
+      "timeline_1",
+      "portfolio_1",
+      "testimonials_1",
+      "ed_scene_2",
+      "practical_info_1",
+      "faq_2",
+      "contact_form_1",
+      "seo_home_body"
+    ],
+    "sections": [
+      {
+        "id": "ed_opening_1",
+        "type": "ed-opening",
+        "disabled": false,
+        "blockCount": 0
+      },
+      {
+        "id": "ed_statement_1",
+        "type": "ed-statement",
+        "disabled": false,
+        "blockCount": 2
+      },
+      {
+        "id": "ref_narrative_1",
+        "type": "ref-narrative",
+        "disabled": false,
+        "blockCount": 3
+      },
+      {
+        "id": "services_list_1",
+        "type": "services-list",
+        "disabled": false,
+        "blockCount": 2
+      },
+      {
+        "id": "timeline_1",
+        "type": "timeline",
+        "disabled": false,
+        "blockCount": 3
+      },
+      {
+        "id": "portfolio_1",
+        "type": "portfolio",
+        "disabled": true,
+        "blockCount": 4
+      },
+      {
+        "id": "testimonials_1",
+        "type": "testimonials",
+        "disabled": true,
+        "blockCount": 3
+      },
+      {
+        "id": "ed_scene_2",
+        "type": "ed-scene",
+        "disabled": false,
+        "blockCount": 0
+      },
+      {
+        "id": "practical_info_1",
+        "type": "practical-info",
+        "disabled": false,
+        "blockCount": 0
+      },
+      {
+        "id": "faq_2",
+        "type": "faq",
+        "disabled": false,
+        "blockCount": 3
+      },
+      {
+        "id": "contact_form_1",
+        "type": "contact-form",
+        "disabled": false,
+        "blockCount": 0
+      },
+      {
+        "id": "seo_home_body",
+        "type": "rich-text",
+        "disabled": false,
+        "blockCount": 1
+      }
+    ]
+  },
+  {
+    "archive": "service-shopify.zip",
+    "template": "templates/product.json",
+    "order": [
+      "main_product_2"
+    ],
+    "sections": [
+      {
+        "id": "main_product_2",
+        "type": "main-product",
+        "disabled": false,
+        "blockCount": 4
+      }
+    ]
+  },
+  {
+    "archive": "service-shopify.zip",
+    "template": "templates/collection.json",
+    "order": [
+      "main_collection_1"
+    ],
+    "sections": [
+      {
+        "id": "main_collection_1",
+        "type": "main-collection",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "service-shopify.zip",
+    "template": "templates/list-collections.json",
+    "order": [
+      "main_list_collections_1"
+    ],
+    "sections": [
+      {
+        "id": "main_list_collections_1",
+        "type": "main-list-collections",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "service-shopify.zip",
+    "template": "templates/search.json",
+    "order": [
+      "main_search_1"
+    ],
+    "sections": [
+      {
+        "id": "main_search_1",
+        "type": "main-search",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "service-shopify.zip",
+    "template": "templates/cart.json",
+    "order": [
+      "main_cart_1"
+    ],
+    "sections": [
+      {
+        "id": "main_cart_1",
+        "type": "main-cart",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "service-shopify.zip",
+    "template": "templates/page.json",
+    "order": [
+      "main_page_1"
+    ],
+    "sections": [
+      {
+        "id": "main_page_1",
+        "type": "main-page",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "service-shopify.zip",
+    "template": "templates/page.about.json",
+    "order": [
+      "main_page_3",
+      "about_1",
+      "team_1",
+      "timeline_2",
+      "cta_banner_3"
+    ],
+    "sections": [
+      {
+        "id": "main_page_3",
+        "type": "main-page",
+        "disabled": false,
+        "blockCount": 0
+      },
+      {
+        "id": "about_1",
+        "type": "about",
+        "disabled": false,
+        "blockCount": 2
+      },
+      {
+        "id": "team_1",
+        "type": "team",
+        "disabled": false,
+        "blockCount": 0
+      },
+      {
+        "id": "timeline_2",
+        "type": "timeline",
+        "disabled": false,
+        "blockCount": 3
+      },
+      {
+        "id": "cta_banner_3",
+        "type": "cta-banner",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "service-shopify.zip",
+    "template": "templates/page.faq.json",
+    "order": [
+      "main_page_4",
+      "faq_5",
+      "contact_form_4"
+    ],
+    "sections": [
+      {
+        "id": "main_page_4",
+        "type": "main-page",
+        "disabled": false,
+        "blockCount": 0
+      },
+      {
+        "id": "faq_5",
+        "type": "faq",
+        "disabled": false,
+        "blockCount": 3
+      },
+      {
+        "id": "contact_form_4",
+        "type": "contact-form",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "service-shopify.zip",
+    "template": "templates/page.contact.json",
+    "order": [
+      "main_page_5",
+      "booking_1",
+      "practical_info_2"
+    ],
+    "sections": [
+      {
+        "id": "main_page_5",
+        "type": "main-page",
+        "disabled": false,
+        "blockCount": 0
+      },
+      {
+        "id": "booking_1",
+        "type": "booking",
+        "disabled": false,
+        "blockCount": 3
+      },
+      {
+        "id": "practical_info_2",
+        "type": "practical-info",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "service-shopify.zip",
+    "template": "templates/blog.json",
+    "order": [
+      "main_blog_1"
+    ],
+    "sections": [
+      {
+        "id": "main_blog_1",
+        "type": "main-blog",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "service-shopify.zip",
+    "template": "templates/article.json",
+    "order": [
+      "main_article_1"
+    ],
+    "sections": [
+      {
+        "id": "main_article_1",
+        "type": "main-article",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "service-shopify.zip",
+    "template": "templates/password.json",
+    "order": [
+      "main_password_1"
+    ],
+    "sections": [
+      {
+        "id": "main_password_1",
+        "type": "main-password",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "service-shopify.zip",
+    "template": "templates/page.services.json",
+    "order": [
+      "main_page_6",
+      "services_list_2",
+      "how_to_1",
+      "faq_4",
+      "cta_banner_2"
+    ],
+    "sections": [
+      {
+        "id": "main_page_6",
+        "type": "main-page",
+        "disabled": false,
+        "blockCount": 0
+      },
+      {
+        "id": "services_list_2",
+        "type": "services-list",
+        "disabled": false,
+        "blockCount": 2
+      },
+      {
+        "id": "how_to_1",
+        "type": "how-to",
+        "disabled": false,
+        "blockCount": 3
+      },
+      {
+        "id": "faq_4",
+        "type": "faq",
+        "disabled": false,
+        "blockCount": 3
+      },
+      {
+        "id": "cta_banner_2",
+        "type": "cta-banner",
+        "disabled": false,
+        "blockCount": 0
+      }
+    ]
+  },
+  {
+    "archive": "service-shopify.zip",
+    "template": "templates/page.legal.json",
+    "order": [
+      "legal_page_1"
+    ],
+    "sections": [
+      {
+        "id": "legal_page_1",
+        "type": "legal-page",
+        "disabled": false,
+        "blockCount": 1
+      }
+    ]
+  }
+]

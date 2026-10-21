@@ -1,0 +1,16 @@
+[
+  {
+    "title": "Texte exact du client — atelier usage",
+    "status": "planned",
+    "approved_at": null,
+    "angle_id": "usage",
+    "protected": 1
+  },
+  {
+    "title": "Texte exact du client — atelier expression",
+    "status": "planned",
+    "approved_at": null,
+    "angle_id": "expression",
+    "protected": 1
+  }
+]

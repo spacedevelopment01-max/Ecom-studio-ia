@@ -1,0 +1,98 @@
+{
+  "testDataOnly": true,
+  "checks": [
+    {
+      "file": "resume.json",
+      "secretPatternMatches": 0
+    },
+    {
+      "file": "ci-verifiee.json",
+      "secretPatternMatches": 0
+    },
+    {
+      "file": "videos-verifiees.json",
+      "secretPatternMatches": 0
+    },
+    {
+      "file": "communications-unitaires.json",
+      "secretPatternMatches": 0
+    },
+    {
+      "file": "revue-visuelle.json",
+      "secretPatternMatches": 0
+    },
+    {
+      "file": "composition-verifiee.json",
+      "secretPatternMatches": 0
+    },
+    {
+      "file": "sections-exportees.json",
+      "secretPatternMatches": 0
+    },
+    {
+      "file": "exports-verifies.json",
+      "secretPatternMatches": 0
+    },
+    {
+      "file": "exemples-avant-apres.json",
+      "secretPatternMatches": 0
+    },
+    {
+      "file": "navigateur.json",
+      "secretPatternMatches": 0
+    },
+    {
+      "file": "service-prestashop.zip",
+      "secretPatternMatches": 0
+    },
+    {
+      "file": "service-woocommerce.zip",
+      "secretPatternMatches": 0
+    },
+    {
+      "file": "service-shopify.zip",
+      "secretPatternMatches": 0
+    },
+    {
+      "file": "produit-prestashop.zip",
+      "secretPatternMatches": 0
+    },
+    {
+      "file": "produit-woocommerce.zip",
+      "secretPatternMatches": 0
+    },
+    {
+      "file": "produit-shopify.zip",
+      "secretPatternMatches": 0
+    },
+    {
+      "file": "types-verifies.json",
+      "secretPatternMatches": 0
+    },
+    {
+      "file": "README.md",
+      "secretPatternMatches": 0
+    },
+    {
+      "file": "logs/navigateur.log",
+      "secretPatternMatches": 0
+    },
+    {
+      "file": "logs/tests-complets.log",
+      "secretPatternMatches": 0
+    },
+    {
+      "file": "logs/theme-check-local.log",
+      "secretPatternMatches": 0
+    },
+    {
+      "file": "logs/tests-cibles.log",
+      "secretPatternMatches": 0
+    },
+    {
+      "file": "logs/build.log",
+      "secretPatternMatches": 0
+    }
+  ],
+  "limitation": "Motifs usuels et revue des données fictives ; pas un scanner exhaustif."
+}

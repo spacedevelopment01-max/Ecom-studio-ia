@@ -1,0 +1,103 @@
+{
+  "codeCommit": "6b7fe5e2671e5567f8482fe2ef2c0f7f26527832",
+  "readOnly": true,
+  "realProviderCalls": 0,
+  "checks": [
+    {
+      "case": "produit",
+      "pageRole": "accueil",
+      "mobile": false,
+      "overflow": false,
+      "brokenImages": 0,
+      "headings": [
+        "Théière Anse, dans votre univers."
+      ],
+      "footerPresent": true,
+      "reducedMotion": true
+    },
+    {
+      "case": "produit",
+      "pageRole": "accueil",
+      "mobile": true,
+      "overflow": false,
+      "brokenImages": 0,
+      "headings": [
+        "Théière Anse, dans votre univers."
+      ],
+      "footerPresent": true,
+      "reducedMotion": true
+    },
+    {
+      "case": "produit",
+      "pageRole": "detail",
+      "mobile": false,
+      "overflow": false,
+      "brokenImages": 0,
+      "headings": [
+        "Théière Anse"
+      ],
+      "footerPresent": true,
+      "reducedMotion": true
+    },
+    {
+      "case": "produit",
+      "pageRole": "detail",
+      "mobile": true,
+      "overflow": false,
+      "brokenImages": 0,
+      "headings": [
+        "Théière Anse"
+      ],
+      "footerPresent": true,
+      "reducedMotion": true
+    },
+    {
+      "case": "service",
+      "pageRole": "accueil",
+      "mobile": false,
+      "overflow": false,
+      "brokenImages": 0,
+      "headings": [
+        "Cours de céramique à Quartier des Ateliers — L’Atelier des Gestes"
+      ],
+      "footerPresent": true,
+      "reducedMotion": true
+    },
+    {
+      "case": "service",
+      "pageRole": "accueil",
+      "mobile": true,
+      "overflow": false,
+      "brokenImages": 0,
+      "headings": [
+        "Cours de céramique à Quartier des Ateliers — L’Atelier des Gestes"
+      ],
+      "footerPresent": true,
+      "reducedMotion": true
+    },
+    {
+      "case": "service",
+      "pageRole": "detail",
+      "mobile": false,
+      "overflow": false,
+      "brokenImages": 0,
+      "headings": [
+        "Nos prestations"
+      ],
+      "footerPresent": true,
+      "reducedMotion": true
+    },
+    {
+      "case": "service",
+      "pageRole": "detail",
+      "mobile": true,
+      "overflow": false,
+      "brokenImages": 0,
+      "headings": [
+        "Nos prestations"
+      ],
+      "footerPresent": true,
+      "reducedMotion": true
+    }
+  ]
+}

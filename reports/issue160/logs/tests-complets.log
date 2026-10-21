@@ -1,0 +1,12 @@
+
+ RUN  v5.0.3 /tmp/ecs-strategy-160
+
+
+ Test Files  348 passed (348)
+      Tests  2765 passed | 13 skipped (2778)
+   Start at  22:05:59
+   Duration  905.12s (tests 78%, import 21%, transform 1%)
+
+    Isolate  348 workers spawned · ~120ms startup each (spawn + environment, per file)
+             at least ~13.85s faster with isolate: false — reuses workers across files instead of one per file
+

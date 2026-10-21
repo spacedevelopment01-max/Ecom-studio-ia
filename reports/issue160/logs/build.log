@@ -1,0 +1,197 @@
+   ▲ Next.js 15.5.27
+   - Experiments (use with caution):
+     · serverActions
+     ⨯ preloadEntriesOnStart
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 59s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/51) ...
+   Generating static pages (12/51) 
+   Generating static pages (25/51) 
+   Generating static pages (38/51) 
+ ✓ Generating static pages (51/51)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                          Size  First Load JS
+┌ ƒ /                                             18.6 kB         154 kB
+├ ƒ /_not-found                                     481 B         104 kB
+├ ƒ /admin                                        22.8 kB         142 kB
+├ ƒ /api/admin/accounting                           481 B         104 kB
+├ ƒ /api/admin/accounting/expenses                  481 B         104 kB
+├ ƒ /api/admin/accounting/expenses/[eid]            481 B         104 kB
+├ ƒ /api/admin/accounting/expenses/[eid]/receipt    481 B         104 kB
+├ ƒ /api/admin/accounting/export                    481 B         104 kB
+├ ƒ /api/admin/accounting/recurring                 481 B         104 kB
+├ ƒ /api/admin/accounting/recurring/[rid]           481 B         104 kB
+├ ƒ /api/admin/ai-calls                             481 B         104 kB
+├ ƒ /api/admin/billing/overview                     481 B         104 kB
+├ ƒ /api/admin/billing/reprice-legacy               481 B         104 kB
+├ ƒ /api/admin/brain                                481 B         104 kB
+├ ƒ /api/admin/calls                                481 B         104 kB
+├ ƒ /api/admin/clients.csv                          481 B         104 kB
+├ ƒ /api/admin/dashboard                            481 B         104 kB
+├ ƒ /api/admin/image-guide                          481 B         104 kB
+├ ƒ /api/admin/mail-test                            481 B         104 kB
+├ ƒ /api/admin/music                                481 B         104 kB
+├ ƒ /api/admin/music/[tid]                          481 B         104 kB
+├ ƒ /api/admin/overview                             481 B         104 kB
+├ ƒ /api/admin/settings                             481 B         104 kB
+├ ƒ /api/admin/test                                 481 B         104 kB
+├ ƒ /api/admin/users/[uid]                          481 B         104 kB
+├ ƒ /api/admin/users/[uid]/reset-link               481 B         104 kB
+├ ƒ /api/admin/video-guide                          481 B         104 kB
+├ ƒ /api/auth/admin-claim                           481 B         104 kB
+├ ƒ /api/auth/forgot                                481 B         104 kB
+├ ƒ /api/auth/login                                 481 B         104 kB
+├ ƒ /api/auth/logout                                481 B         104 kB
+├ ƒ /api/auth/register                              481 B         104 kB
+├ ƒ /api/auth/reset                                 481 B         104 kB
+├ ƒ /api/billing                                    481 B         104 kB
+├ ƒ /api/billing/checkout                           481 B         104 kB
+├ ƒ /api/calls                                      481 B         104 kB
+├ ƒ /api/calls/[id]                                 481 B         104 kB
+├ ƒ /api/connections                                481 B         104 kB
+├ ƒ /api/connections/[cid]                          481 B         104 kB
+├ ƒ /api/describe                                   481 B         104 kB
+├ ƒ /api/estimate                                   481 B         104 kB
+├ ƒ /api/files/[fid]                                481 B         104 kB
+├ ƒ /api/files/[fid]/canva                          481 B         104 kB
+├ ƒ /api/files/[fid]/capcut                         481 B         104 kB
+├ ƒ /api/folders/[fid]                              481 B         104 kB
+├ ƒ /api/fonts                                      481 B         104 kB
+├ ƒ /api/fonts/[file]                               481 B         104 kB
+├ ƒ /api/health                                     481 B         104 kB
+├ ƒ /api/jobs/[jid]                                 481 B         104 kB
+├ ƒ /api/me                                         481 B         104 kB
+├ ƒ /api/me/lang                                    481 B         104 kB
+├ ƒ /api/me/password                                481 B         104 kB
+├ ƒ /api/notifications                              481 B         104 kB
+├ ƒ /api/oauth/[provider]/callback                  481 B         104 kB
+├ ƒ /api/oauth/[provider]/start                     481 B         104 kB
+├ ƒ /api/posts/[pid]                                481 B         104 kB
+├ ƒ /api/projects                                   481 B         104 kB
+├ ƒ /api/projects/[id]                              481 B         104 kB
+├ ƒ /api/projects/[id]/ads/docs                     481 B         104 kB
+├ ƒ /api/projects/[id]/ads/docs/[docKey]            481 B         104 kB
+├ ƒ /api/projects/[id]/blog                         481 B         104 kB
+├ ƒ /api/projects/[id]/blog/[aid]                   481 B         104 kB
+├ ƒ /api/projects/[id]/blog/[aid]/export            481 B         104 kB
+├ ƒ /api/projects/[id]/blog/[aid]/publish           481 B         104 kB
+├ ƒ /api/projects/[id]/blog/[aid]/rewrite           481 B         104 kB
+├ ƒ /api/projects/[id]/blog/topics                  481 B         104 kB
+├ ƒ /api/projects/[id]/brand                        481 B         104 kB
+├ ƒ /api/projects/[id]/brand/board                  481 B         104 kB
+├ ƒ /api/projects/[id]/brand/book                   481 B         104 kB
+├ ƒ /api/projects/[id]/brand/full-logo              481 B         104 kB
+├ ƒ /api/projects/[id]/brand/impact                 481 B         104 kB
+├ ƒ /api/projects/[id]/brand/logo                   481 B         104 kB
+├ ƒ /api/projects/[id]/brand/logo-v2                481 B         104 kB
+├ ƒ /api/projects/[id]/brand/social                 481 B         104 kB
+├ ƒ /api/projects/[id]/campaigns                    481 B         104 kB
+├ ƒ /api/projects/[id]/campaigns/draft              481 B         104 kB
+├ ƒ /api/projects/[id]/campaigns/v2                 481 B         104 kB
+├ ƒ /api/projects/[id]/catalog                      481 B         104 kB
+├ ƒ /api/projects/[id]/classify                     481 B         104 kB
+├ ƒ /api/projects/[id]/content/v2                   481 B         104 kB
+├ ƒ /api/projects/[id]/content/v2/[docKey]          481 B         104 kB
+├ ƒ /api/projects/[id]/copy                         481 B         104 kB
+├ ƒ /api/projects/[id]/creative/image/[assetId]     481 B         104 kB
+├ ƒ /api/projects/[id]/creative/video               481 B         104 kB
+├ ƒ /api/projects/[id]/cutouts                      481 B         104 kB
+├ ƒ /api/projects/[id]/files                        481 B         104 kB
+├ ƒ /api/projects/[id]/folders                      481 B         104 kB
+├ ƒ /api/projects/[id]/images                       481 B         104 kB
+├ ƒ /api/projects/[id]/images/art-direction         481 B         104 kB
+├ ƒ /api/projects/[id]/images/copy-review           481 B         104 kB
+├ ƒ /api/projects/[id]/images/v2                    481 B         104 kB
+├ ƒ /api/projects/[id]/jobs                         481 B         104 kB
+├ ƒ /api/projects/[id]/marketing-strategy           481 B         104 kB
+├ ƒ /api/projects/[id]/memory                       481 B         104 kB
+├ ƒ /api/projects/[id]/pause                        481 B         104 kB
+├ ƒ /api/projects/[id]/plans                        481 B         104 kB
+├ ƒ /api/projects/[id]/posts                        481 B         104 kB
+├ ƒ /api/projects/[id]/preparation                  481 B         104 kB
+├ ƒ /api/projects/[id]/preparation/handoff          481 B         104 kB
+├ ƒ /api/projects/[id]/product                      481 B         104 kB
+├ ƒ /api/projects/[id]/product/variant-photo        481 B         104 kB
+├ ƒ /api/projects/[id]/prompt-fill                  481 B         104 kB
+├ ƒ /api/projects/[id]/prompt-ideas                 481 B         104 kB
+├ ƒ /api/projects/[id]/prompt-run                   481 B         104 kB
+├ ƒ /api/projects/[id]/resume                       481 B         104 kB
+├ ƒ /api/projects/[id]/shopify                      481 B         104 kB
+├ ƒ /api/projects/[id]/social/initial               481 B         104 kB
+├ ƒ /api/projects/[id]/social/v2                    481 B         104 kB
+├ ƒ /api/projects/[id]/social/v2/autopilot          481 B         104 kB
+├ ƒ /api/projects/[id]/social/v2/posts/[postId]     481 B         104 kB
+├ ƒ /api/projects/[id]/start                        481 B         104 kB
+├ ƒ /api/projects/[id]/subscription                 481 B         104 kB
+├ ƒ /api/projects/[id]/theme                        481 B         104 kB
+├ ƒ /api/projects/[id]/theme/adaptation             481 B         104 kB
+├ ƒ /api/projects/[id]/theme/build                  481 B         104 kB
+├ ƒ /api/projects/[id]/theme/chat                   481 B         104 kB
+├ ƒ /api/projects/[id]/theme/custom                 481 B         104 kB
+├ ƒ /api/projects/[id]/theme/direction-thumb        481 B         104 kB
+├ ƒ /api/projects/[id]/theme/disposition            481 B         104 kB
+├ ƒ /api/projects/[id]/theme/export                 481 B         104 kB
+├ ƒ /api/projects/[id]/theme/export/status          481 B         104 kB
+├ ƒ /api/projects/[id]/theme/import                 481 B         104 kB
+├ ƒ /api/projects/[id]/theme/ops                    481 B         104 kB
+├ ƒ /api/projects/[id]/theme/pages                  481 B         104 kB
+├ ƒ /api/projects/[id]/theme/replace-photo          481 B         104 kB
+├ ƒ /api/projects/[id]/theme/restore                481 B         104 kB
+├ ƒ /api/projects/[id]/theme/section                481 B         104 kB
+├ ƒ /api/projects/[id]/theme/section-preview        481 B         104 kB
+├ ƒ /api/projects/[id]/theme/sections               481 B         104 kB
+├ ƒ /api/projects/[id]/theme/store-kind             481 B         104 kB
+├ ƒ /api/projects/[id]/ugc                          481 B         104 kB
+├ ƒ /api/projects/[id]/ugc/script                   481 B         104 kB
+├ ƒ /api/projects/[id]/videos                       481 B         104 kB
+├ ƒ /api/projects/[id]/videos/bank                  481 B         104 kB
+├ ƒ /api/projects/[id]/videos/creative-memory       481 B         104 kB
+├ ƒ /api/projects/[id]/videos/v2                    481 B         104 kB
+├ ƒ /api/projects/[id]/videos/v2/[docKey]           481 B         104 kB
+├ ƒ /api/projects/[id]/wording                      481 B         104 kB
+├ ƒ /api/projects/[id]/workflow                     481 B         104 kB
+├ ƒ /api/projects/[id]/workflow/[wid]               481 B         104 kB
+├ ƒ /api/projects/hidden/[id]                       481 B         104 kB
+├ ƒ /api/prompts                                    481 B         104 kB
+├ ƒ /api/prompts/[pid]                              481 B         104 kB
+├ ƒ /api/public/media/[token]/[name]                481 B         104 kB
+├ ƒ /api/public/theme/[token]/[name]                481 B         104 kB
+├ ƒ /api/stripe/webhook                             481 B         104 kB
+├ ƒ /api/theme-demos                                481 B         104 kB
+├ ƒ /api/theme-demos/[id]/[[...path]]               481 B         104 kB
+├ ƒ /api/version                                    481 B         104 kB
+├ ƒ /conditions                                     207 B         114 kB
+├ ƒ /confidentialite                                207 B         114 kB
+├ ƒ /connexion                                    3.12 kB         123 kB
+├ ƒ /contact                                        207 B         114 kB
+├ ƒ /cookies                                        207 B         114 kB
+├ ƒ /inscription                                  3.12 kB         123 kB
+├ ƒ /mentions-legales                               207 B         114 kB
+├ ƒ /mot-de-passe                                   509 B         118 kB
+├ ƒ /mot-de-passe-oublie                            518 B         118 kB
+├ ƒ /preview/[id]/v/[vid]/[[...path]]               481 B         104 kB
+├ ƒ /robots.txt                                     481 B         104 kB
+├ ƒ /sitemap.xml                                    481 B         104 kB
+├ ƒ /studio                                       19.4 kB         154 kB
+├ ƒ /studio/[projectId]                             481 B         104 kB
+├ ƒ /studio/[projectId]/[tab]                     3.14 kB         117 kB
+├ ƒ /studio/compte                                3.88 kB         130 kB
+├ ƒ /studio/decouverte                            2.99 kB         142 kB
+├ ƒ /studio/rendez-vous                           4.52 kB         124 kB
+├ ƒ /studio/themes                                2.44 kB         131 kB
+└ ƒ /themes                                       3.06 kB         117 kB
++ First Load JS shared by all                      103 kB
+  ├ chunks/68f1f019-a2cb273cd0e657e8.js           54.2 kB
+  ├ chunks/853-86d3530d7d4337f5.js                46.4 kB
+  └ other shared chunks (total)                   2.77 kB
+
+
+ƒ Middleware                                      34.1 kB
+
+ƒ  (Dynamic)  server-rendered on demand
+

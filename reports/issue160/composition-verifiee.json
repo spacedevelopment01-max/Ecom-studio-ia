@@ -1,0 +1,30 @@
+[
+  {
+    "case": "produit",
+    "angle": "usage",
+    "sectionOrderUnchanged": true,
+    "sectionTypesUnchanged": true,
+    "sectionCount": 10
+  },
+  {
+    "case": "produit",
+    "angle": "expression",
+    "sectionOrderUnchanged": true,
+    "sectionTypesUnchanged": true,
+    "sectionCount": 10
+  },
+  {
+    "case": "service",
+    "angle": "usage",
+    "sectionOrderUnchanged": true,
+    "sectionTypesUnchanged": true,
+    "sectionCount": 12
+  },
+  {
+    "case": "service",
+    "angle": "expression",
+    "sectionOrderUnchanged": true,
+    "sectionTypesUnchanged": true,
+    "sectionCount": 12
+  }
+]

@@ -1,0 +1,2775 @@
+[
+  {
+    "case": "produit",
+    "angle": "usage",
+    "strategy": {
+      "source": "creative_hypothesis",
+      "sources": [
+        {
+          "kind": "client",
+          "label": "Offre renseignée",
+          "value": "Théière Anse"
+        },
+        {
+          "kind": "client",
+          "label": "Description du projet (non vérifiée extérieurement)",
+          "value": "Une théière en grès émaillé bleu ardoise, avec une anse arrondie et un couvercle amovible, pour partager le thé autour de la table."
+        },
+        {
+          "kind": "confirmed_fact",
+          "label": "Matière",
+          "value": "Grès émaillé",
+          "ref": "user"
+        },
+        {
+          "kind": "confirmed_fact",
+          "label": "Contenance",
+          "value": "700 ml",
+          "ref": "user"
+        },
+        {
+          "kind": "confirmed_fact",
+          "label": "Finition",
+          "value": "Bleu ardoise satiné",
+          "ref": "user"
+        },
+        {
+          "kind": "confirmed_fact",
+          "label": "Anse",
+          "value": "Anse arrondie",
+          "ref": "user"
+        },
+        {
+          "kind": "confirmed_fact",
+          "label": "Couvercle",
+          "value": "Amovible",
+          "ref": "user"
+        },
+        {
+          "kind": "confirmed_fact",
+          "label": "Entretien",
+          "value": "Laver à la main avec une éponge douce",
+          "ref": "user"
+        },
+        {
+          "kind": "confirmed_fact",
+          "label": "Garantie",
+          "value": "12 mois selon les conditions fournies pour cet exemple fictif",
+          "ref": "user"
+        },
+        {
+          "kind": "confirmed_fact",
+          "label": "Livraison",
+          "value": "Livraison en France métropolitaine selon les conditions du projet fictif",
+          "ref": "user"
+        }
+      ],
+      "proofs": [
+        "Matière : Grès émaillé",
+        "Contenance : 700 ml",
+        "Finition : Bleu ardoise satiné",
+        "Anse : Anse arrondie",
+        "Couvercle : Amovible",
+        "Entretien : Laver à la main avec une éponge douce",
+        "Garantie : 12 mois selon les conditions fournies pour cet exemple fictif",
+        "Livraison : Livraison en France métropolitaine selon les conditions du projet fictif"
+      ],
+      "exclusions": [
+        "Ne pas inventer de performances, garanties, avis, prix ou certification.",
+        "Aucune personne sans autorisation appropriée ; aucune marque externe."
+      ],
+      "limits": [
+        "Cible et motivation à valider avec le client ; pas un persona prouvé."
+      ],
+      "id": "usage",
+      "title": "Le bon objet, au bon moment",
+      "audience": "les personnes intéressées par Art de la table, lorsque leur priorité est l’usage : partager le thé autour de la table.",
+      "situation": "Quand le besoin se présente : partager le thé autour de la table. Théière Anse est montré dans ce contexte précis.",
+      "notPriority": "Les personnes recherchant avant tout un signe de distinction ou une découverte sans usage défini.",
+      "tension": "Vouloir profiter de l’usage sans ajouter de complications au quotidien.",
+      "motivation": "Retrouver un moment plus simple autour de cet usage : partager le thé autour de la table.",
+      "benefit": "Matière : Grès émaillé",
+      "promise": "Trouver la place de Théière Anse dans votre quotidien.",
+      "rationale": "Le récit part de l’usage décrit dans le projet : Une théière en grès émaillé bleu ardoise, avec une anse arrondie et un couvercle amovible, pour partager le thé autour de la table.",
+      "objections": [
+        {
+          "objection": "Est-ce adapté à mon usage ?",
+          "answer": "Montrer le déroulé et les caractéristiques renseignées, puis demander les détails absents."
+        }
+      ],
+      "tone": "Direct, concret, chaleureux ; phrases courtes centrées sur le geste.",
+      "messages": [
+        "Théière Anse, pour ce moment précis.",
+        "partager le thé autour de la table",
+        "Matière : Grès émaillé"
+      ],
+      "visualDirection": "Placer Théière Anse entier dans son contexte d’utilisation ; alterner vue d’ensemble et détail utile, en préservant formes, logo et proportions.",
+      "examples": {
+        "hero": "Faites une place à Théière Anse.",
+        "subtext": "Une théière en grès émaillé bleu ardoise, avec une anse arrondie et un couvercle amovible, pour partager le thé autour de la table.",
+        "cta": "Découvrir Théière Anse",
+        "advertisement": "Un besoin concret, un objet à comprendre : découvrez comment Théière Anse s’utilise, puis choisissez en connaissance de cause."
+      }
+    },
+    "seo": [
+      {
+        "version": 1,
+        "type": "home_page",
+        "lang": "fr",
+        "page": {
+          "key": "home:accueil",
+          "title": "Maison Basalte",
+          "url": null,
+          "kind": "home",
+          "status": "planned"
+        },
+        "primaryKeyword": null,
+        "meta": {
+          "seoTitle": "Maison Basalte",
+          "metaDescription": "Maison Basalte. Matière Grès émaillé, contenance 700 ml. Trouver la place de Théière Anse dans votre quotidien. Voir le produit.",
+          "slug": "maison-basalte",
+          "canonical": null,
+          "robots": "index,follow"
+        },
+        "blocks": [
+          {
+            "id": "b53294502",
+            "kind": "h1",
+            "text": "Faites une place à Théière Anse."
+          },
+          {
+            "id": "bedb01072",
+            "kind": "p",
+            "text": "Trouver la place de Théière Anse dans votre quotidien."
+          },
+          {
+            "id": "b4d25e38d",
+            "kind": "h2",
+            "text": "Ce que ça change pour vous"
+          },
+          {
+            "id": "b02a7184d",
+            "kind": "ul",
+            "items": [
+              "**Matière** : Grès émaillé",
+              "**Contenance** : 700 ml",
+              "**Finition** : Bleu ardoise satiné",
+              "**Anse** : Anse arrondie"
+            ]
+          },
+          {
+            "id": "b3d5cf9d6",
+            "kind": "cta",
+            "text": "Voir le produit",
+            "url": null
+          }
+        ],
+        "schema": [],
+        "links": [
+          {
+            "key": "product:main",
+            "title": "Théière Anse",
+            "url": null,
+            "kind": "product",
+            "status": "planned"
+          }
+        ],
+        "meta2": {
+          "source": "engine",
+          "by": "local",
+          "runId": "fb4632f1-182a-41a6-8e28-5e9d061b6353",
+          "createdFrom": null,
+          "contract": {
+            "request": "",
+            "contextHash": "e0f50bf96c955ffd",
+            "contextVersion": "2.4.0",
+            "target": "home:accueil",
+            "checks": {
+              "checked": [],
+              "issues": [],
+              "unchecked": []
+            }
+          },
+          "marketingStrategy": {
+            "id": "draft-qxbrpmygm3khugg8",
+            "version": 1,
+            "angleId": "usage",
+            "inputDigest": "746ac5c9104c9b64292b735e47b93a9c444e6ed475d17a387d608c669be76e9b"
+          }
+        }
+      }
+    ],
+    "posts": [
+      {
+        "caption": "Contenance : 700 ml. Et ça se voit.\n\npartager le thé autour de la table\n\nVoir le produit",
+        "status": "planned",
+        "angle_id": "usage",
+        "version": 1
+      },
+      {
+        "caption": "Art de la table : avantages et limites : ce que ça demande vraiment.\n\nThéière Anse, pour ce moment précis.\n[À compléter : les étapes que vous suivez]\n\nVoir le produit",
+        "status": "planned",
+        "angle_id": "usage",
+        "version": 1
+      }
+    ],
+    "template": {
+      "sections": {
+        "cv_banner_1": {
+          "type": "cv-banner",
+          "settings": {
+            "focus_x": 50,
+            "focus_y": 50,
+            "layout": "image-left",
+            "heading_tag": "h1",
+            "animation": "fade",
+            "animation_speed": "normal",
+            "color_scheme": "scheme-1",
+            "padding_top": 64,
+            "padding_bottom": 64,
+            "eyebrow": "Maison Basalte",
+            "heading": "Faites une place à Théière Anse.",
+            "heading_accent": "",
+            "text": "<p>Une théière en grès émaillé bleu ardoise, avec une anse arrondie et un couvercle amovible, pour partager le thé autour de la table.</p>",
+            "price_text": "68,00 €",
+            "price_note": "",
+            "button_label": "Découvrir Théière Anse",
+            "button_link": "/products/theiere-anse",
+            "note": "",
+            "image_alt": "La théière Anse au centre de la table",
+            "image": "",
+            "image_asset": "es-client-g6puda17ju0xau27.jpg",
+            "media_role": ""
+          },
+          "blocks": {},
+          "block_order": [],
+          "disabled": false
+        },
+        "features_grid_2": {
+          "type": "features-grid",
+          "settings": {
+            "heading_align": "left",
+            "columns": 1,
+            "layout": "grid",
+            "columns_mobile": "1",
+            "style": "lines",
+            "animation": "rise",
+            "animation_speed": "normal",
+            "color_scheme": "scheme-4",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "eyebrow": "Maison Basalte",
+            "heading": "Ce qui compte pour votre choix",
+            "heading_accent": "en un coup d'œil.",
+            "link_label": "Découvrir Théière Anse",
+            "link": ""
+          },
+          "blocks": {
+            "client_0": {
+              "type": "feature",
+              "settings": {
+                "title": "Matière",
+                "text": "<p>Matière : Grès émaillé</p>",
+                "icon": "check",
+                "image_asset": "",
+                "link_label": "",
+                "link": ""
+              }
+            },
+            "client_1": {
+              "type": "feature",
+              "settings": {
+                "title": "Contenance",
+                "text": "<p>Contenance : 700 ml</p>",
+                "icon": "check",
+                "image_asset": "",
+                "link_label": "",
+                "link": ""
+              }
+            },
+            "client_2": {
+              "type": "feature",
+              "settings": {
+                "title": "Finition",
+                "text": "<p>Finition : Bleu ardoise satiné</p>",
+                "icon": "check",
+                "image_asset": "",
+                "link_label": "",
+                "link": ""
+              }
+            },
+            "client_3": {
+              "type": "feature",
+              "settings": {
+                "title": "Anse",
+                "text": "<p>Anse : Anse arrondie</p>",
+                "icon": "check",
+                "image_asset": "",
+                "link_label": "",
+                "link": ""
+              }
+            },
+            "client_4": {
+              "type": "feature",
+              "settings": {
+                "title": "Couvercle",
+                "text": "<p>Couvercle : Amovible</p>",
+                "icon": "check",
+                "image_asset": "",
+                "link_label": "",
+                "link": ""
+              }
+            },
+            "client_5": {
+              "type": "feature",
+              "settings": {
+                "title": "Entretien",
+                "text": "<p>Entretien : Laver à la main avec une éponge douce</p>",
+                "icon": "check",
+                "image_asset": "",
+                "link_label": "",
+                "link": ""
+              }
+            }
+          },
+          "block_order": [
+            "client_0",
+            "client_1",
+            "client_2",
+            "client_3",
+            "client_4",
+            "client_5"
+          ],
+          "disabled": false
+        },
+        "cv_alternating_1": {
+          "type": "cv-alternating",
+          "settings": {
+            "layout": "alternate",
+            "ratio": "portrait",
+            "animation": "rise",
+            "animation_speed": "normal",
+            "color_scheme": "scheme-1",
+            "padding_top": 64,
+            "padding_bottom": 64,
+            "eyebrow": "",
+            "heading": "Matière : Grès émaillé",
+            "heading_accent": "",
+            "text": ""
+          },
+          "blocks": {
+            "b0": {
+              "type": "row",
+              "settings": {
+                "eyebrow": "",
+                "heading": "Préparer la théière",
+                "heading_accent": "",
+                "text": "<p>Quand le besoin se présente : partager le thé autour de la table. Théière Anse est montré dans ce contexte précis. Retirer le couvercle amovible pour préparer le thé.</p>",
+                "button_label": "",
+                "button_link": "",
+                "image_alt": "La théière Anse au centre de la table",
+                "image_asset": "es-client-3hd5hbnth65aobrc.jpg",
+                "media_role": "",
+                "focus_x": 50,
+                "focus_y": 50
+              }
+            },
+            "b1": {
+              "type": "row",
+              "settings": {
+                "eyebrow": "",
+                "heading": "Partager le moment",
+                "heading_accent": "",
+                "text": "<p>Poser Anse sur la table pour servir le thé.</p>",
+                "button_label": "",
+                "button_link": "",
+                "image_alt": "Anse dans la lumière du matin",
+                "image_asset": "es-client-8rno3l05fnr23h3k.jpg",
+                "media_role": "",
+                "focus_x": 50,
+                "focus_y": 50
+              }
+            },
+            "b2": {
+              "type": "row",
+              "settings": {
+                "eyebrow": "",
+                "heading": "Nettoyer après usage",
+                "heading_accent": "",
+                "text": "<p>Laver à la main avec une éponge douce.</p>",
+                "button_label": "",
+                "button_link": "",
+                "image_alt": "Anse dans la lumière du matin",
+                "image_asset": "es-client-hs7qqbk0a8m6umvk.jpg",
+                "media_role": "",
+                "focus_x": 50,
+                "focus_y": 50
+              }
+            }
+          },
+          "block_order": [
+            "b0",
+            "b1",
+            "b2"
+          ],
+          "disabled": false
+        },
+        "cv_hotspots_1": {
+          "type": "cv-hotspots",
+          "settings": {
+            "focus_x": 50,
+            "focus_y": 50,
+            "ratio": "square",
+            "layout": "side",
+            "show_list": true,
+            "animation": "rise",
+            "animation_speed": "normal",
+            "color_scheme": "scheme-1",
+            "padding_top": 64,
+            "padding_bottom": 64,
+            "eyebrow": "En détail",
+            "heading": "Ce qui compte pour votre choix",
+            "heading_accent": "",
+            "text": "<p>Une théière en grès émaillé bleu ardoise, avec une anse arrondie et un couvercle amovible, pour partager le thé autour de la table. Matière : Grès émaillé Contenance : 700 ml Finition : Bleu ardoise satiné Anse : Anse arrondie Couvercle : Amovible Entretien : Laver à la main avec une éponge douce Garantie : 12 mois selon les conditions fournies pour cet exemple fictif Livraison : Livraison en France métropolitaine selon les conditions du projet fictif</p>",
+            "demo_note": "",
+            "image_alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible",
+            "image": "",
+            "image_asset": "es-client-5fke4hzcvday9jq9.jpg",
+            "media_role": ""
+          },
+          "blocks": {},
+          "block_order": [],
+          "disabled": true
+        },
+        "cv_ingredients_1": {
+          "type": "cv-ingredients",
+          "settings": {
+            "layout": "split",
+            "columns": 3,
+            "focus_x": 50,
+            "focus_y": 50,
+            "ratio": "square",
+            "animation": "rise",
+            "animation_speed": "normal",
+            "color_scheme": "scheme-4",
+            "padding_top": 64,
+            "padding_bottom": 64,
+            "eyebrow": "Composition",
+            "heading": "Composition et matières",
+            "heading_accent": "",
+            "text": "<p>Une théière en grès émaillé bleu ardoise, avec une anse arrondie et un couvercle amovible, pour partager le thé autour de la table. Matière : Grès émaillé Contenance : 700 ml Finition : Bleu ardoise satiné Anse : Anse arrondie Couvercle : Amovible Entretien : Laver à la main avec une éponge douce Garantie : 12 mois selon les conditions fournies pour cet exemple fictif Livraison : Livraison en France métropolitaine selon les conditions du projet fictif</p>",
+            "note": "",
+            "image": "",
+            "image_asset": "es-client-dgzwgev8q4tff4wy.jpg",
+            "image_alt": "Le couvercle amovible et sa prise arrondie",
+            "media_role": ""
+          },
+          "blocks": {
+            "client_0": {
+              "type": "ingredient",
+              "settings": {
+                "name": "Matière",
+                "role": "Grès émaillé",
+                "note": "",
+                "image_asset": "",
+                "image_alt": "",
+                "media_role": "",
+                "badge": ""
+              }
+            },
+            "client_1": {
+              "type": "ingredient",
+              "settings": {
+                "name": "Finition",
+                "role": "Bleu ardoise satiné",
+                "note": "",
+                "image_asset": "",
+                "image_alt": "",
+                "media_role": "",
+                "badge": ""
+              }
+            }
+          },
+          "block_order": [
+            "client_0",
+            "client_1"
+          ],
+          "disabled": false
+        },
+        "image_with_text_2": {
+          "type": "image-with-text",
+          "settings": {
+            "layout": "image-left",
+            "ratio": "landscape",
+            "reveal": "curtain",
+            "parallax": false,
+            "color_scheme": "scheme-1",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "eyebrow": "Maison Basalte",
+            "heading": "Une silhouette accueillante",
+            "text": "<p>L’anse arrondie et le couvercle composent un volume simple à retrouver sur la table.</p>",
+            "button_label": "Découvrir Théière Anse",
+            "button_link": "/products/theiere-anse",
+            "image": "",
+            "image_asset": "es-client-uv0e7i6xxoqpjekp.jpg"
+          },
+          "blocks": {},
+          "block_order": [],
+          "disabled": false
+        },
+        "featured_purchase_1": {
+          "type": "featured-purchase",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "gallery_limit": 4,
+            "enable_zoom": true,
+            "image_fit": "contain",
+            "purchase_style": "outlined",
+            "show_finishes": false,
+            "label": "Maison Basalte",
+            "heading": "Faire une place à Théière Anse",
+            "text": "<p>Trouver la place de Théière Anse dans votre quotidien.</p>",
+            "product_target": "product:main",
+            "product": "theiere-anse",
+            "link_label": "Découvrir Théière Anse",
+            "anchor": "",
+            "media_role": "",
+            "purchase_heading": "",
+            "purchase_unit_label": "",
+            "finish_label": "",
+            "finish_colors": "",
+            "purchase_source": ""
+          },
+          "blocks": {},
+          "block_order": [],
+          "disabled": false
+        },
+        "faq_2": {
+          "type": "faq",
+          "settings": {
+            "style": "lines",
+            "layout": "side",
+            "columns": "1",
+            "open_first": false,
+            "search": false,
+            "color_scheme": "scheme-1",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "eyebrow": "Besoin d'aide ?",
+            "heading": "Vos questions",
+            "text": "",
+            "contact_text": "Une autre question ?",
+            "button_label": "Découvrir Théière Anse",
+            "search_placeholder": "Rechercher une question…",
+            "button_link": "/products/theiere-anse"
+          },
+          "blocks": {
+            "client_0": {
+              "type": "question",
+              "settings": {
+                "question": "Est-ce adapté à mon usage ?",
+                "answer": "<p>Une théière en grès émaillé bleu ardoise, avec une anse arrondie et un couvercle amovible, pour partager le thé autour de la table. Matière : Grès émaillé Contactez-nous pour préciser les points qui ne figurent pas dans ces informations.</p>"
+              }
+            },
+            "client_1": {
+              "type": "question",
+              "settings": {
+                "question": "Quelle est la contenance ?",
+                "answer": "<p>La contenance confirmée est de 700 ml.</p>"
+              }
+            },
+            "client_2": {
+              "type": "question",
+              "settings": {
+                "question": "Comment nettoyer Anse ?",
+                "answer": "<p>Laver à la main avec une éponge douce.</p>"
+              }
+            },
+            "client_3": {
+              "type": "question",
+              "settings": {
+                "question": "Le couvercle est-il amovible ?",
+                "answer": "<p>Oui, le couvercle est amovible.</p>"
+              }
+            },
+            "client_4": {
+              "type": "question",
+              "settings": {
+                "question": "Quelle finition est présentée ?",
+                "answer": "<p>La finition présentée est bleu ardoise satiné.</p>"
+              }
+            }
+          },
+          "block_order": [
+            "client_0",
+            "client_1",
+            "client_2",
+            "client_3",
+            "client_4"
+          ],
+          "disabled": false
+        },
+        "newsletter_media_1": {
+          "type": "newsletter-media",
+          "settings": {
+            "layout": "left",
+            "overlay": 45,
+            "consent_checkbox": true,
+            "color_scheme": "scheme-2",
+            "padding_top": 80,
+            "padding_bottom": 80,
+            "eyebrow": "Newsletter",
+            "heading": "Au fil de nos nouvelles",
+            "text": "<p>Recevoir les actualités de Maison Basalte, à votre rythme.</p>",
+            "perk_1": "",
+            "perk_2": "",
+            "button_label": "S’inscrire",
+            "consent_label": "J'accepte de recevoir la newsletter par e-mail.",
+            "legal": "<p>Désinscription possible à tout moment. [À compléter : lien politique de confidentialité]</p>",
+            "perk_3": "",
+            "image": "",
+            "image_asset": "es-client-wgbd5evzk9lmj8lw.jpg",
+            "video": "",
+            "video_asset": "",
+            "media_badge": ""
+          },
+          "blocks": {},
+          "block_order": [],
+          "disabled": true
+        },
+        "seo_home_body": {
+          "type": "rich-text",
+          "settings": {
+            "align": "left",
+            "style": "plain",
+            "color_scheme": "scheme-1",
+            "padding_top": 48,
+            "padding_bottom": 48
+          },
+          "blocks": {
+            "body": {
+              "type": "text",
+              "settings": {
+                "text": "<p>Trouver la place de Théière Anse dans votre quotidien.</p>\n<h2>Ce que ça change pour vous</h2>\n<ul><li><strong>Matière</strong> : Grès émaillé</li><li><strong>Contenance</strong> : 700 ml</li><li><strong>Finition</strong> : Bleu ardoise satiné</li><li><strong>Anse</strong> : Anse arrondie</li></ul>\n<p class=\"cta\">Voir le produit</p>"
+              }
+            }
+          },
+          "block_order": [
+            "body"
+          ]
+        }
+      },
+      "order": [
+        "cv_banner_1",
+        "features_grid_2",
+        "cv_alternating_1",
+        "cv_hotspots_1",
+        "cv_ingredients_1",
+        "image_with_text_2",
+        "featured_purchase_1",
+        "faq_2",
+        "newsletter_media_1",
+        "seo_home_body"
+      ]
+    }
+  },
+  {
+    "case": "produit",
+    "angle": "expression",
+    "strategy": {
+      "source": "creative_hypothesis",
+      "sources": [
+        {
+          "kind": "client",
+          "label": "Offre renseignée",
+          "value": "Théière Anse"
+        },
+        {
+          "kind": "client",
+          "label": "Description du projet (non vérifiée extérieurement)",
+          "value": "Une théière en grès émaillé bleu ardoise, avec une anse arrondie et un couvercle amovible, pour partager le thé autour de la table."
+        },
+        {
+          "kind": "confirmed_fact",
+          "label": "Matière",
+          "value": "Grès émaillé",
+          "ref": "user"
+        },
+        {
+          "kind": "confirmed_fact",
+          "label": "Contenance",
+          "value": "700 ml",
+          "ref": "user"
+        },
+        {
+          "kind": "confirmed_fact",
+          "label": "Finition",
+          "value": "Bleu ardoise satiné",
+          "ref": "user"
+        },
+        {
+          "kind": "confirmed_fact",
+          "label": "Anse",
+          "value": "Anse arrondie",
+          "ref": "user"
+        },
+        {
+          "kind": "confirmed_fact",
+          "label": "Couvercle",
+          "value": "Amovible",
+          "ref": "user"
+        },
+        {
+          "kind": "confirmed_fact",
+          "label": "Entretien",
+          "value": "Laver à la main avec une éponge douce",
+          "ref": "user"
+        },
+        {
+          "kind": "confirmed_fact",
+          "label": "Garantie",
+          "value": "12 mois selon les conditions fournies pour cet exemple fictif",
+          "ref": "user"
+        },
+        {
+          "kind": "confirmed_fact",
+          "label": "Livraison",
+          "value": "Livraison en France métropolitaine selon les conditions du projet fictif",
+          "ref": "user"
+        }
+      ],
+      "proofs": [
+        "Matière : Grès émaillé",
+        "Contenance : 700 ml",
+        "Finition : Bleu ardoise satiné",
+        "Anse : Anse arrondie",
+        "Couvercle : Amovible",
+        "Entretien : Laver à la main avec une éponge douce",
+        "Garantie : 12 mois selon les conditions fournies pour cet exemple fictif",
+        "Livraison : Livraison en France métropolitaine selon les conditions du projet fictif"
+      ],
+      "exclusions": [
+        "Ne pas inventer de performances, garanties, avis, prix ou certification.",
+        "Aucune personne sans autorisation appropriée ; aucune marque externe."
+      ],
+      "limits": [
+        "Cible et motivation à valider avec le client ; pas un persona prouvé."
+      ],
+      "id": "expression",
+      "title": "Une place dans votre univers",
+      "audience": "les personnes intéressées par Art de la table, quand l’accord avec leurs goûts ou leur projet personnel compte davantage que la comparaison technique de Art de la table.",
+      "situation": "Composer son propre univers avec Théière Anse ; porter son attention sur matière : Grès émaillé plutôt que sur une course aux performances.",
+      "notPriority": "Les personnes qui cherchent exclusivement un prix bas ou une performance chiffrée.",
+      "tension": "Ne pas vouloir d’un choix impersonnel qui ne correspond pas à sa façon de vivre.",
+      "motivation": "Se reconnaître dans sa manière de choisir Théière Anse, sans se conformer à un modèle imposé.",
+      "benefit": "Matière : Grès émaillé",
+      "promise": "Découvrir comment Théière Anse dialogue avec votre univers.",
+      "rationale": "La proposition explore la relation à Théière Anse, sans modifier son apparence ni affirmer un effet émotionnel prouvé.",
+      "objections": [
+        {
+          "objection": "Est-ce que cette offre correspond à mes préférences ?",
+          "answer": "Présenter les finitions, possibilités et limites réellement fournies ; ne pas inventer de personnalisation."
+        }
+      ],
+      "tone": "Éditorial, sensible et sobre ; parler de choix personnel sans injonction.",
+      "messages": [
+        "Votre façon d’aborder Théière Anse.",
+        "Théière Anse, dans votre univers.",
+        "Matière : Grès émaillé"
+      ],
+      "visualDirection": "Grande image de Théière Anse dans un environnement cohérent avec ses matières et couleurs connues ; détails de finition, respiration et lumière, pas de modification du produit.",
+      "examples": {
+        "hero": "Théière Anse, dans votre univers.",
+        "subtext": "Une théière en grès émaillé bleu ardoise, avec une anse arrondie et un couvercle amovible, pour partager le thé autour de la table. Découvrez les détails qui vous parlent, sans vous laisser imposer un style.",
+        "cta": "Explorer les finitions",
+        "advertisement": "Il n’y a pas une seule façon d’aimer Théière Anse. Regardez ses détails, imaginez sa place dans votre univers et choisissez ce qui vous correspond."
+      }
+    },
+    "seo": [
+      {
+        "version": 1,
+        "type": "home_page",
+        "lang": "fr",
+        "page": {
+          "key": "home:accueil",
+          "title": "Maison Basalte",
+          "url": "/",
+          "kind": "home",
+          "status": "existing",
+          "contentTarget": "home:accueil"
+        },
+        "primaryKeyword": null,
+        "meta": {
+          "seoTitle": "Maison Basalte",
+          "metaDescription": "Maison Basalte. Matière Grès émaillé, contenance 700 ml. Découvrir comment Théière Anse dialogue avec votre univers. Voir le produit.",
+          "slug": "maison-basalte",
+          "canonical": "/",
+          "robots": "index,follow"
+        },
+        "blocks": [
+          {
+            "id": "b40c3a7ba",
+            "kind": "h1",
+            "text": "Théière Anse, dans votre univers."
+          },
+          {
+            "id": "b58fbe613",
+            "kind": "p",
+            "text": "Découvrir comment Théière Anse dialogue avec votre univers."
+          },
+          {
+            "id": "b2d269ff1",
+            "kind": "h2",
+            "text": "Ce que ça change pour vous"
+          },
+          {
+            "id": "be944608c",
+            "kind": "ul",
+            "items": [
+              "**Matière** : Grès émaillé",
+              "**Contenance** : 700 ml",
+              "**Finition** : Bleu ardoise satiné",
+              "**Anse** : Anse arrondie"
+            ]
+          },
+          {
+            "id": "b5cd217db",
+            "kind": "cta",
+            "text": "Voir le produit",
+            "url": "/products/theiere-anse"
+          }
+        ],
+        "schema": [],
+        "links": [
+          {
+            "key": "product:main",
+            "title": "Théière Anse",
+            "url": "/products/theiere-anse",
+            "kind": "product",
+            "status": "existing"
+          }
+        ],
+        "meta2": {
+          "source": "engine",
+          "by": "local",
+          "runId": "e1b1fe69-5242-4295-8c70-55d95eb2e259",
+          "createdFrom": null,
+          "contract": {
+            "request": "",
+            "contextHash": "3d77f4a8634f4913",
+            "contextVersion": "2.4.0",
+            "target": "home:accueil",
+            "checks": {
+              "checked": [],
+              "issues": [],
+              "unchecked": []
+            }
+          },
+          "marketingStrategy": {
+            "id": "draft-5xdp44b1l90o8hv8",
+            "version": 2,
+            "angleId": "expression",
+            "inputDigest": "746ac5c9104c9b64292b735e47b93a9c444e6ed475d17a387d608c669be76e9b"
+          }
+        }
+      }
+    ],
+    "posts": [
+      {
+        "caption": "Finition : Bleu ardoise satiné. Et ça se voit.\n\nThéière Anse, dans votre univers.\n\nVoir le produit",
+        "status": "planned",
+        "angle_id": "expression",
+        "version": 2
+      },
+      {
+        "caption": "Art de la table : comment l'utiliser ? On vous répond.\n\nVotre façon d’aborder Théière Anse.\n[À compléter : votre réponse en deux phrases]\n\nVoir le produit",
+        "status": "planned",
+        "angle_id": "expression",
+        "version": 2
+      }
+    ],
+    "template": {
+      "sections": {
+        "cv_banner_1": {
+          "type": "cv-banner",
+          "settings": {
+            "focus_x": 50,
+            "focus_y": 50,
+            "layout": "image-left",
+            "heading_tag": "h1",
+            "animation": "fade",
+            "animation_speed": "normal",
+            "color_scheme": "scheme-1",
+            "padding_top": 64,
+            "padding_bottom": 64,
+            "eyebrow": "Maison Basalte",
+            "heading": "Théière Anse, dans votre univers.",
+            "heading_accent": "",
+            "text": "<p>Une théière en grès émaillé bleu ardoise, avec une anse arrondie et un couvercle amovible, pour partager le thé autour de la table. Découvrez les détails qui vous parlent, sans vous laisser imposer un style.</p>",
+            "price_text": "68,00 €",
+            "price_note": "",
+            "button_label": "Explorer les finitions",
+            "button_link": "/products/theiere-anse",
+            "note": "",
+            "image_alt": "La théière Anse au centre de la table",
+            "image": "",
+            "image_asset": "es-client-g6puda17ju0xau27.jpg",
+            "media_role": ""
+          },
+          "blocks": {},
+          "block_order": [],
+          "disabled": false
+        },
+        "features_grid_2": {
+          "type": "features-grid",
+          "settings": {
+            "heading_align": "left",
+            "columns": 1,
+            "layout": "grid",
+            "columns_mobile": "1",
+            "style": "lines",
+            "animation": "rise",
+            "animation_speed": "normal",
+            "color_scheme": "scheme-4",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "eyebrow": "Maison Basalte",
+            "heading": "Ce qui compte pour votre choix",
+            "heading_accent": "en un coup d'œil.",
+            "link_label": "Découvrir Théière Anse",
+            "link": ""
+          },
+          "blocks": {
+            "client_0": {
+              "type": "feature",
+              "settings": {
+                "title": "Matière",
+                "text": "<p>Matière : Grès émaillé</p>",
+                "icon": "check",
+                "image_asset": "",
+                "link_label": "",
+                "link": ""
+              }
+            },
+            "client_1": {
+              "type": "feature",
+              "settings": {
+                "title": "Contenance",
+                "text": "<p>Contenance : 700 ml</p>",
+                "icon": "check",
+                "image_asset": "",
+                "link_label": "",
+                "link": ""
+              }
+            },
+            "client_2": {
+              "type": "feature",
+              "settings": {
+                "title": "Finition",
+                "text": "<p>Finition : Bleu ardoise satiné</p>",
+                "icon": "check",
+                "image_asset": "",
+                "link_label": "",
+                "link": ""
+              }
+            },
+            "client_3": {
+              "type": "feature",
+              "settings": {
+                "title": "Anse",
+                "text": "<p>Anse : Anse arrondie</p>",
+                "icon": "check",
+                "image_asset": "",
+                "link_label": "",
+                "link": ""
+              }
+            },
+            "client_4": {
+              "type": "feature",
+              "settings": {
+                "title": "Couvercle",
+                "text": "<p>Couvercle : Amovible</p>",
+                "icon": "check",
+                "image_asset": "",
+                "link_label": "",
+                "link": ""
+              }
+            },
+            "client_5": {
+              "type": "feature",
+              "settings": {
+                "title": "Entretien",
+                "text": "<p>Entretien : Laver à la main avec une éponge douce</p>",
+                "icon": "check",
+                "image_asset": "",
+                "link_label": "",
+                "link": ""
+              }
+            }
+          },
+          "block_order": [
+            "client_0",
+            "client_1",
+            "client_2",
+            "client_3",
+            "client_4",
+            "client_5"
+          ],
+          "disabled": false
+        },
+        "cv_alternating_1": {
+          "type": "cv-alternating",
+          "settings": {
+            "layout": "alternate",
+            "ratio": "portrait",
+            "animation": "rise",
+            "animation_speed": "normal",
+            "color_scheme": "scheme-1",
+            "padding_top": 64,
+            "padding_bottom": 64,
+            "eyebrow": "",
+            "heading": "Matière : Grès émaillé",
+            "heading_accent": "",
+            "text": ""
+          },
+          "blocks": {
+            "b0": {
+              "type": "row",
+              "settings": {
+                "eyebrow": "",
+                "heading": "Préparer la théière",
+                "heading_accent": "",
+                "text": "<p>Composer son propre univers avec Théière Anse ; porter son attention sur matière : Grès émaillé plutôt que sur une course aux performances. Retirer le couvercle amovible pour préparer le thé.</p>",
+                "button_label": "",
+                "button_link": "",
+                "image_alt": "La théière Anse au centre de la table",
+                "image_asset": "es-client-3hd5hbnth65aobrc.jpg",
+                "media_role": "",
+                "focus_x": 50,
+                "focus_y": 50
+              }
+            },
+            "b1": {
+              "type": "row",
+              "settings": {
+                "eyebrow": "",
+                "heading": "Partager le moment",
+                "heading_accent": "",
+                "text": "<p>Poser Anse sur la table pour servir le thé.</p>",
+                "button_label": "",
+                "button_link": "",
+                "image_alt": "Anse dans la lumière du matin",
+                "image_asset": "es-client-8rno3l05fnr23h3k.jpg",
+                "media_role": "",
+                "focus_x": 50,
+                "focus_y": 50
+              }
+            },
+            "b2": {
+              "type": "row",
+              "settings": {
+                "eyebrow": "",
+                "heading": "Nettoyer après usage",
+                "heading_accent": "",
+                "text": "<p>Laver à la main avec une éponge douce.</p>",
+                "button_label": "",
+                "button_link": "",
+                "image_alt": "Anse dans la lumière du matin",
+                "image_asset": "es-client-hs7qqbk0a8m6umvk.jpg",
+                "media_role": "",
+                "focus_x": 50,
+                "focus_y": 50
+              }
+            }
+          },
+          "block_order": [
+            "b0",
+            "b1",
+            "b2"
+          ],
+          "disabled": false
+        },
+        "cv_hotspots_1": {
+          "type": "cv-hotspots",
+          "settings": {
+            "focus_x": 50,
+            "focus_y": 50,
+            "ratio": "square",
+            "layout": "side",
+            "show_list": true,
+            "animation": "rise",
+            "animation_speed": "normal",
+            "color_scheme": "scheme-1",
+            "padding_top": 64,
+            "padding_bottom": 64,
+            "eyebrow": "En détail",
+            "heading": "Ce qui compte pour votre choix",
+            "heading_accent": "",
+            "text": "<p>Une théière en grès émaillé bleu ardoise, avec une anse arrondie et un couvercle amovible, pour partager le thé autour de la table. Matière : Grès émaillé Contenance : 700 ml Finition : Bleu ardoise satiné Anse : Anse arrondie Couvercle : Amovible Entretien : Laver à la main avec une éponge douce Garantie : 12 mois selon les conditions fournies pour cet exemple fictif Livraison : Livraison en France métropolitaine selon les conditions du projet fictif</p>",
+            "demo_note": "",
+            "image_alt": "Théière Anse entière, émail bleu ardoise et couvercle amovible",
+            "image": "",
+            "image_asset": "es-client-5fke4hzcvday9jq9.jpg",
+            "media_role": ""
+          },
+          "blocks": {},
+          "block_order": [],
+          "disabled": true
+        },
+        "cv_ingredients_1": {
+          "type": "cv-ingredients",
+          "settings": {
+            "layout": "split",
+            "columns": 3,
+            "focus_x": 50,
+            "focus_y": 50,
+            "ratio": "square",
+            "animation": "rise",
+            "animation_speed": "normal",
+            "color_scheme": "scheme-4",
+            "padding_top": 64,
+            "padding_bottom": 64,
+            "eyebrow": "Composition",
+            "heading": "Composition et matières",
+            "heading_accent": "",
+            "text": "<p>Une théière en grès émaillé bleu ardoise, avec une anse arrondie et un couvercle amovible, pour partager le thé autour de la table. Matière : Grès émaillé Contenance : 700 ml Finition : Bleu ardoise satiné Anse : Anse arrondie Couvercle : Amovible Entretien : Laver à la main avec une éponge douce Garantie : 12 mois selon les conditions fournies pour cet exemple fictif Livraison : Livraison en France métropolitaine selon les conditions du projet fictif</p>",
+            "note": "",
+            "image": "",
+            "image_asset": "es-client-dgzwgev8q4tff4wy.jpg",
+            "image_alt": "Le couvercle amovible et sa prise arrondie",
+            "media_role": ""
+          },
+          "blocks": {
+            "client_0": {
+              "type": "ingredient",
+              "settings": {
+                "name": "Matière",
+                "role": "Grès émaillé",
+                "note": "",
+                "image_asset": "",
+                "image_alt": "",
+                "media_role": "",
+                "badge": ""
+              }
+            },
+            "client_1": {
+              "type": "ingredient",
+              "settings": {
+                "name": "Finition",
+                "role": "Bleu ardoise satiné",
+                "note": "",
+                "image_asset": "",
+                "image_alt": "",
+                "media_role": "",
+                "badge": ""
+              }
+            }
+          },
+          "block_order": [
+            "client_0",
+            "client_1"
+          ],
+          "disabled": false
+        },
+        "image_with_text_2": {
+          "type": "image-with-text",
+          "settings": {
+            "layout": "image-left",
+            "ratio": "landscape",
+            "reveal": "curtain",
+            "parallax": false,
+            "color_scheme": "scheme-1",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "eyebrow": "Maison Basalte",
+            "heading": "Une silhouette accueillante",
+            "text": "<p>L’anse arrondie et le couvercle composent un volume simple à retrouver sur la table.</p>",
+            "button_label": "Découvrir Théière Anse",
+            "button_link": "/products/theiere-anse",
+            "image": "",
+            "image_asset": "es-client-uv0e7i6xxoqpjekp.jpg"
+          },
+          "blocks": {},
+          "block_order": [],
+          "disabled": false
+        },
+        "featured_purchase_1": {
+          "type": "featured-purchase",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "motion": "reveal",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "gallery_limit": 4,
+            "enable_zoom": true,
+            "image_fit": "contain",
+            "purchase_style": "outlined",
+            "show_finishes": false,
+            "label": "Maison Basalte",
+            "heading": "Faire une place à Théière Anse",
+            "text": "<p>Découvrir comment Théière Anse dialogue avec votre univers.</p>",
+            "product_target": "product:main",
+            "product": "theiere-anse",
+            "link_label": "Explorer les finitions",
+            "anchor": "",
+            "media_role": "",
+            "purchase_heading": "",
+            "purchase_unit_label": "",
+            "finish_label": "",
+            "finish_colors": "",
+            "purchase_source": ""
+          },
+          "blocks": {},
+          "block_order": [],
+          "disabled": false
+        },
+        "faq_2": {
+          "type": "faq",
+          "settings": {
+            "style": "lines",
+            "layout": "side",
+            "columns": "1",
+            "open_first": false,
+            "search": false,
+            "color_scheme": "scheme-1",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "eyebrow": "Besoin d'aide ?",
+            "heading": "Vos questions",
+            "text": "",
+            "contact_text": "Une autre question ?",
+            "button_label": "Découvrir Théière Anse",
+            "search_placeholder": "Rechercher une question…",
+            "button_link": "/products/theiere-anse"
+          },
+          "blocks": {
+            "client_0": {
+              "type": "question",
+              "settings": {
+                "question": "Est-ce que cette offre correspond à mes préférences ?",
+                "answer": "<p>Une théière en grès émaillé bleu ardoise, avec une anse arrondie et un couvercle amovible, pour partager le thé autour de la table. Matière : Grès émaillé Contactez-nous pour préciser les points qui ne figurent pas dans ces informations.</p>"
+              }
+            },
+            "client_1": {
+              "type": "question",
+              "settings": {
+                "question": "Quelle est la contenance ?",
+                "answer": "<p>La contenance confirmée est de 700 ml.</p>"
+              }
+            },
+            "client_2": {
+              "type": "question",
+              "settings": {
+                "question": "Comment nettoyer Anse ?",
+                "answer": "<p>Laver à la main avec une éponge douce.</p>"
+              }
+            },
+            "client_3": {
+              "type": "question",
+              "settings": {
+                "question": "Le couvercle est-il amovible ?",
+                "answer": "<p>Oui, le couvercle est amovible.</p>"
+              }
+            },
+            "client_4": {
+              "type": "question",
+              "settings": {
+                "question": "Quelle finition est présentée ?",
+                "answer": "<p>La finition présentée est bleu ardoise satiné.</p>"
+              }
+            }
+          },
+          "block_order": [
+            "client_0",
+            "client_1",
+            "client_2",
+            "client_3",
+            "client_4"
+          ],
+          "disabled": false
+        },
+        "newsletter_media_1": {
+          "type": "newsletter-media",
+          "settings": {
+            "layout": "left",
+            "overlay": 45,
+            "consent_checkbox": true,
+            "color_scheme": "scheme-2",
+            "padding_top": 80,
+            "padding_bottom": 80,
+            "eyebrow": "Newsletter",
+            "heading": "Au fil de nos nouvelles",
+            "text": "<p>Recevoir les actualités de Maison Basalte, à votre rythme.</p>",
+            "perk_1": "",
+            "perk_2": "",
+            "button_label": "S’inscrire",
+            "consent_label": "J'accepte de recevoir la newsletter par e-mail.",
+            "legal": "<p>Désinscription possible à tout moment. [À compléter : lien politique de confidentialité]</p>",
+            "perk_3": "",
+            "image": "",
+            "image_asset": "es-client-wgbd5evzk9lmj8lw.jpg",
+            "video": "",
+            "video_asset": "",
+            "media_badge": ""
+          },
+          "blocks": {},
+          "block_order": [],
+          "disabled": true
+        },
+        "seo_home_body": {
+          "type": "rich-text",
+          "settings": {
+            "align": "left",
+            "style": "plain",
+            "color_scheme": "scheme-1",
+            "padding_top": 48,
+            "padding_bottom": 48
+          },
+          "blocks": {
+            "body": {
+              "type": "text",
+              "settings": {
+                "text": "<p>Découvrir comment Théière Anse dialogue avec votre univers.</p>\n<h2>Ce que ça change pour vous</h2>\n<ul><li><strong>Matière</strong> : Grès émaillé</li><li><strong>Contenance</strong> : 700 ml</li><li><strong>Finition</strong> : Bleu ardoise satiné</li><li><strong>Anse</strong> : Anse arrondie</li></ul>\n<p class=\"cta\"><a href=\"/products/theiere-anse\">Voir le produit</a></p>"
+              }
+            }
+          },
+          "block_order": [
+            "body"
+          ]
+        }
+      },
+      "order": [
+        "cv_banner_1",
+        "features_grid_2",
+        "cv_alternating_1",
+        "cv_hotspots_1",
+        "cv_ingredients_1",
+        "image_with_text_2",
+        "featured_purchase_1",
+        "faq_2",
+        "newsletter_media_1",
+        "seo_home_body"
+      ]
+    }
+  },
+  {
+    "case": "service",
+    "angle": "usage",
+    "strategy": {
+      "source": "creative_hypothesis",
+      "sources": [
+        {
+          "kind": "client",
+          "label": "Offre renseignée",
+          "value": "Atelier de tournage individuel"
+        },
+        {
+          "kind": "client",
+          "label": "Description du projet (non vérifiée extérieurement)",
+          "value": "Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas."
+        },
+        {
+          "kind": "client",
+          "label": "Prestation renseignée",
+          "value": "Atelier de tournage individuel — Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas. — 1 h 30 — 75 €"
+        },
+        {
+          "kind": "client",
+          "label": "Prestation renseignée",
+          "value": "Découverte des émaux — Choisir une palette et découvrir l’application des émaux sur une pièce préparée. — 1 h — 45 €"
+        }
+      ],
+      "proofs": [
+        "Atelier de tournage individuel — Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas. — 1 h 30 — 75 €",
+        "Découverte des émaux — Choisir une palette et découvrir l’application des émaux sur une pièce préparée. — 1 h — 45 €"
+      ],
+      "exclusions": [
+        "Ne pas inventer de performances, garanties, avis, prix ou certification.",
+        "Aucune personne sans autorisation appropriée ; aucune marque externe."
+      ],
+      "limits": [
+        "Cible et motivation à valider avec le client ; pas un persona prouvé."
+      ],
+      "id": "usage",
+      "title": "Faire place au projet dans sa vie",
+      "audience": "les personnes intéressées par Cours de céramique, lorsque leur priorité est l’usage : découvrir le tournage et travailler une pièce avec un accompagnement pas à pas.",
+      "situation": "Avant de réserver Atelier de tournage individuel : découvrir le tournage et travailler une pièce avec un accompagnement pas à pas. Le premier pas et le déroulement sont les points de décision.",
+      "notPriority": "Les personnes recherchant avant tout un signe de distinction ou une découverte sans usage défini.",
+      "tension": "Avoir envie de commencer, sans savoir comment faire le premier pas.",
+      "motivation": "Oser commencer Cours de céramique, dans le contexte décrit : découvrir le tournage et travailler une pièce avec un accompagnement pas à pas.",
+      "benefit": "Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas.",
+      "promise": "Comprendre comment se déroule Atelier de tournage individuel avant de s’engager.",
+      "rationale": "Le récit part de l’usage décrit dans le projet : Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas.",
+      "objections": [
+        {
+          "objection": "Comment se passe le premier rendez-vous ?",
+          "answer": "Montrer le déroulé et les caractéristiques renseignées, puis demander les détails absents."
+        }
+      ],
+      "tone": "Direct, concret, chaleureux ; phrases courtes centrées sur le geste.",
+      "messages": [
+        "Atelier de tournage individuel, un premier pas à votre rythme.",
+        "découvrir le tournage et travailler une pièce avec un accompagnement pas à pas",
+        "Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas."
+      ],
+      "visualDirection": "Montrer les lieux et le matériel réellement fournis pour Atelier de tournage individuel, puis les étapes ; ne pas faire passer une scène générée pour une réalisation.",
+      "examples": {
+        "hero": "Atelier de tournage individuel : et si vous faisiez le premier pas ?",
+        "subtext": "Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas.",
+        "cta": "Préparer mon rendez-vous",
+        "advertisement": "Le projet vous tente ? Découvrez le déroulé de Atelier de tournage individuel et préparez votre première demande."
+      }
+    },
+    "seo": [
+      {
+        "version": 1,
+        "type": "home_page",
+        "lang": "fr",
+        "page": {
+          "key": "home:accueil",
+          "title": "L’Atelier des Gestes",
+          "url": null,
+          "kind": "home",
+          "status": "planned"
+        },
+        "primaryKeyword": "couvreur quartier des ateliers",
+        "meta": {
+          "seoTitle": "Couvreur Quartier des Ateliers | L’Atelier des Gestes",
+          "metaDescription": "Atelier de tournage individuel — Quartier des Ateliers, Lyon — exemple fictif. Un atelier individuel sur rendez-vous pour découvrir le tournage et",
+          "slug": "l-atelier-des-gestes",
+          "canonical": null,
+          "robots": "index,follow"
+        },
+        "blocks": [
+          {
+            "id": "b4ba4cfb8",
+            "kind": "h1",
+            "text": "Cours de céramique à Quartier des Ateliers — L’Atelier des Gestes"
+          },
+          {
+            "id": "b63a5cba6",
+            "kind": "p",
+            "text": "L’Atelier des Gestes : atelier de tournage individuel, découverte des émaux."
+          },
+          {
+            "id": "b89d43a63",
+            "kind": "h2",
+            "text": "Nos prestations"
+          },
+          {
+            "id": "bc7928bb5",
+            "kind": "ul",
+            "items": [
+              "Atelier de tournage individuel — Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas.",
+              "Découverte des émaux — Choisir une palette et découvrir l’application des émaux sur une pièce préparée."
+            ]
+          },
+          {
+            "id": "b9bafc1bc",
+            "kind": "h2",
+            "text": "Zone d'intervention"
+          },
+          {
+            "id": "b2d94452a",
+            "kind": "p",
+            "text": "Quartier des Ateliers, Lyon — exemple fictif."
+          },
+          {
+            "id": "b6152c26c",
+            "kind": "h2",
+            "text": "Nous contacter"
+          },
+          {
+            "id": "b6d4ff427",
+            "kind": "ul",
+            "items": [
+              "E-mail : atelier@example.test",
+              "Horaires : Sur rendez-vous"
+            ]
+          },
+          {
+            "id": "b897b5979",
+            "kind": "cta",
+            "text": "Prendre rendez-vous",
+            "url": "/pages/contact"
+          }
+        ],
+        "schema": [
+          {
+            "@context": "https://schema.org",
+            "@type": "LocalBusiness",
+            "name": "L’Atelier des Gestes",
+            "areaServed": "Quartier des Ateliers, Lyon — exemple fictif",
+            "email": "atelier@example.test",
+            "openingHours": "Sur rendez-vous"
+          }
+        ],
+        "links": [
+          {
+            "key": "service:cours-individuel",
+            "title": "Atelier de tournage individuel",
+            "url": null,
+            "kind": "service",
+            "status": "planned"
+          },
+          {
+            "key": "service:email",
+            "title": "Découverte des émaux",
+            "url": null,
+            "kind": "service",
+            "status": "planned"
+          }
+        ],
+        "meta2": {
+          "source": "engine",
+          "by": "local",
+          "runId": "0a562acb-0f40-44cf-ba6a-1c563d3cfc2e",
+          "createdFrom": null,
+          "contract": {
+            "request": "",
+            "contextHash": "dfe9eff23f4bfb83",
+            "contextVersion": "2.4.0",
+            "target": "home:accueil",
+            "checks": {
+              "checked": [],
+              "issues": [],
+              "unchecked": []
+            }
+          }
+        }
+      }
+    ],
+    "posts": [
+      {
+        "caption": "« Couvreur : comment bien choisir ? » On nous la pose souvent.\n\ndécouvrir le tournage et travailler une pièce avec un accompagnement pas à pas\n[À compléter : votre réponse]\n\nPrendre rendez-vous",
+        "status": "planned",
+        "angle_id": "usage",
+        "version": 1
+      },
+      {
+        "caption": "Découvrir le tournage et les émaux, sur rendez-vous.",
+        "status": "planned",
+        "angle_id": "usage",
+        "version": 1
+      },
+      {
+        "caption": "« Couvreur : quel prix prévoir ? » On nous la pose souvent.\n\ndécouvrir le tournage et travailler une pièce avec un accompagnement pas à pas\n[À compléter : votre réponse]\n\nPrendre rendez-vous",
+        "status": "planned",
+        "angle_id": "usage",
+        "version": 1
+      }
+    ],
+    "template": {
+      "sections": {
+        "ed_opening_1": {
+          "type": "ed-opening",
+          "settings": {
+            "layout": "journal",
+            "heading_tag": "h1",
+            "color_scheme": "scheme-1",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "image_alt": "Le tour avant la séance individuelle",
+            "label": "L’Atelier des Gestes",
+            "heading": "Cours de céramique à Quartier des Ateliers — L’Atelier des Gestes",
+            "text": "<p>L’Atelier des Gestes : atelier de tournage individuel, découverte des émaux.</p>",
+            "button_label": "Prendre rendez-vous",
+            "button_link": "/pages/contact",
+            "anchor": "",
+            "image": "",
+            "image_asset": "es-client-sj8523n2jfkdtwsy.jpg",
+            "mobile_image": "",
+            "mobile_image_asset": "",
+            "media_role": "",
+            "caption": "",
+            "focus_x": 50,
+            "focus_y": 50
+          },
+          "blocks": {},
+          "block_order": [],
+          "disabled": false
+        },
+        "ed_statement_1": {
+          "type": "ed-statement",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "image_alt": "Atelier de tournage individuel",
+            "label": "L'objet",
+            "heading": "Un atelier, un geste à la fois.",
+            "text": "<p>L’atelier accompagne chaque étape du tournage, de la préparation de la terre à la forme qui prend place sur le tour.</p>",
+            "button_label": "Prendre rendez-vous",
+            "button_link": "/pages/contact",
+            "anchor": "",
+            "image": "",
+            "image_asset": "",
+            "media_role": ""
+          },
+          "blocks": {
+            "client_0": {
+              "type": "point",
+              "settings": {
+                "title": "Un accompagnement individuel",
+                "text": "<p>Chaque atelier reçoit une seule personne, sur rendez-vous.</p>"
+              }
+            },
+            "client_1": {
+              "type": "point",
+              "settings": {
+                "title": "Le sens du détail",
+                "text": "<p>La préparation, le centrage et le geste se travaillent dans cet ordre.</p>"
+              }
+            }
+          },
+          "block_order": [
+            "client_0",
+            "client_1"
+          ],
+          "disabled": false
+        },
+        "ref_narrative_1": {
+          "type": "ref-narrative",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "heading": "Le déroulé de votre atelier"
+          },
+          "blocks": {
+            "client_0": {
+              "type": "chapter",
+              "settings": {
+                "title": "Préparer la terre",
+                "text": "<p>La séance commence par la préparation de la terre.</p>",
+                "image_asset": "",
+                "image_alt": "",
+                "caption": "",
+                "media_role": "",
+                "link_label": "",
+                "link": ""
+              }
+            },
+            "client_1": {
+              "type": "chapter",
+              "settings": {
+                "title": "Centrer sur le tour",
+                "text": "<p>Le centrage se travaille avec l’accompagnement de l’atelier.</p>",
+                "image_asset": "",
+                "image_alt": "",
+                "caption": "",
+                "media_role": "",
+                "link_label": "",
+                "link": ""
+              }
+            },
+            "client_2": {
+              "type": "chapter",
+              "settings": {
+                "title": "Travailler la forme",
+                "text": "<p>La forme est travaillée progressivement sur le tour.</p>",
+                "image_asset": "",
+                "image_alt": "",
+                "caption": "",
+                "media_role": "",
+                "link_label": "",
+                "link": ""
+              }
+            }
+          },
+          "block_order": [
+            "client_0",
+            "client_1",
+            "client_2"
+          ],
+          "disabled": false
+        },
+        "services_list_1": {
+          "type": "services-list",
+          "settings": {
+            "layout": "list",
+            "columns": 3,
+            "color_scheme": "scheme-3",
+            "padding_top": 104,
+            "padding_bottom": 104,
+            "button_label": "Prendre rendez-vous",
+            "button_link": "/pages/contact",
+            "highlight_label": "",
+            "heading": "Approcher la terre et le tour",
+            "text": "<p>Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas.</p>",
+            "eyebrow": "",
+            "note": "",
+            "footer_label": "",
+            "footer_link": ""
+          },
+          "blocks": {
+            "client_0": {
+              "type": "service",
+              "settings": {
+                "title": "Atelier de tournage individuel",
+                "text": "<p>Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas.</p>",
+                "price": "75 €",
+                "duration": "1 h 30",
+                "icon": "sparkle",
+                "highlight": false,
+                "image_asset": "",
+                "highlight_label": "",
+                "button_label": "",
+                "button_link": ""
+              }
+            },
+            "client_1": {
+              "type": "service",
+              "settings": {
+                "title": "Découverte des émaux",
+                "text": "<p>Choisir une palette et découvrir l’application des émaux sur une pièce préparée.</p>",
+                "price": "45 €",
+                "duration": "1 h",
+                "icon": "hand",
+                "highlight": false,
+                "image_asset": "",
+                "highlight_label": "",
+                "button_label": "",
+                "button_link": ""
+              }
+            }
+          },
+          "block_order": [
+            "client_0",
+            "client_1"
+          ],
+          "disabled": false
+        },
+        "timeline_1": {
+          "type": "timeline",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "padding_top": 104,
+            "padding_bottom": 104,
+            "eyebrow": "Notre méthode",
+            "heading": "Le déroulé de votre atelier",
+            "heading_accent": "",
+            "image": "",
+            "image_asset": "es-client-1lhl49pm2yihgr6x.jpg"
+          },
+          "blocks": {
+            "client_0": {
+              "type": "step",
+              "settings": {
+                "title": "Préparer la terre",
+                "text": "<p>La séance commence par la préparation de la terre.</p>"
+              }
+            },
+            "client_1": {
+              "type": "step",
+              "settings": {
+                "title": "Centrer sur le tour",
+                "text": "<p>Le centrage se travaille avec l’accompagnement de l’atelier.</p>"
+              }
+            },
+            "client_2": {
+              "type": "step",
+              "settings": {
+                "title": "Travailler la forme",
+                "text": "<p>La forme est travaillée progressivement sur le tour.</p>"
+              }
+            }
+          },
+          "block_order": [
+            "client_0",
+            "client_1",
+            "client_2"
+          ],
+          "disabled": false
+        },
+        "portfolio_1": {
+          "type": "portfolio",
+          "settings": {
+            "layout": "editorial",
+            "color_scheme": "scheme-1",
+            "padding_top": 104,
+            "padding_bottom": 104,
+            "heading": "Approcher la terre et le tour",
+            "text": "<p>Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas.</p>",
+            "button_label": "Prendre rendez-vous",
+            "button_link": "/pages/contact",
+            "eyebrow": "",
+            "label_before": "",
+            "label_after": ""
+          },
+          "blocks": {
+            "project_1": {
+              "type": "project",
+              "settings": {
+                "image_asset": "es-client-d6ev97t8v8zds8nq.jpg",
+                "image_before_asset": "",
+                "title": "",
+                "caption": "",
+                "tag": "",
+                "link": ""
+              }
+            },
+            "project_2": {
+              "type": "project",
+              "settings": {
+                "image_asset": "es-client-l7n9qoc09ghr18y9.jpg",
+                "image_before_asset": "",
+                "title": "",
+                "caption": "",
+                "tag": "",
+                "link": ""
+              }
+            },
+            "project_3": {
+              "type": "project",
+              "settings": {
+                "image_asset": "",
+                "image_before_asset": "",
+                "title": "",
+                "caption": "",
+                "tag": "",
+                "link": ""
+              }
+            },
+            "project_4": {
+              "type": "project",
+              "settings": {
+                "image_asset": "",
+                "image_before_asset": "",
+                "title": "",
+                "caption": "",
+                "tag": "",
+                "link": ""
+              }
+            }
+          },
+          "block_order": [
+            "project_1",
+            "project_2",
+            "project_3",
+            "project_4"
+          ],
+          "disabled": true
+        },
+        "testimonials_1": {
+          "type": "testimonials",
+          "settings": {
+            "color_scheme": "scheme-2",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "heading": "Approcher la terre et le tour",
+            "eyebrow": ""
+          },
+          "blocks": {
+            "client_0": {
+              "type": "review",
+              "settings": {
+                "quote": "[À compléter : avis réel d'un client, avec son accord]",
+                "author": "[À compléter : prénom]",
+                "detail": "[À compléter : prestation]",
+                "rating": "0",
+                "image_asset": ""
+              }
+            },
+            "client_1": {
+              "type": "review",
+              "settings": {
+                "quote": "[À compléter : avis réel d'un client, avec son accord]",
+                "author": "[À compléter : prénom]",
+                "detail": "[À compléter : prestation]",
+                "rating": "0",
+                "image_asset": ""
+              }
+            },
+            "client_2": {
+              "type": "review",
+              "settings": {
+                "quote": "[À compléter : avis réel d'un client, avec son accord]",
+                "author": "[À compléter : prénom]",
+                "detail": "[À compléter : prestation]",
+                "rating": "0",
+                "image_asset": ""
+              }
+            }
+          },
+          "block_order": [
+            "client_0",
+            "client_1",
+            "client_2"
+          ],
+          "disabled": true
+        },
+        "ed_scene_2": {
+          "type": "ed-scene",
+          "settings": {
+            "layout": "split",
+            "color_scheme": "scheme-1",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "image_alt": "La table de préparation de l’atelier",
+            "label": "En situation",
+            "heading": "Atelier de tournage individuel",
+            "text": "<p>Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas.</p>",
+            "button_label": "Prendre rendez-vous",
+            "button_link": "/pages/contact",
+            "anchor": "",
+            "image": "",
+            "image_asset": "es-client-633529xli78brckx.jpg",
+            "media_role": "",
+            "caption": "",
+            "focus_x": 50,
+            "focus_y": 50
+          },
+          "blocks": {},
+          "block_order": [],
+          "disabled": false
+        },
+        "practical_info_1": {
+          "type": "practical-info",
+          "settings": {
+            "map": "none",
+            "map_consent": true,
+            "color_scheme": "scheme-3",
+            "padding_top": 104,
+            "padding_bottom": 104,
+            "hours": "Sur rendez-vous",
+            "area": "Quartier des Ateliers, Lyon — exemple fictif",
+            "phone": "",
+            "email": "atelier@example.test",
+            "button_label": "Prendre rendez-vous",
+            "button_link": "/pages/contact",
+            "heading": "Parlons de votre projet",
+            "text": "<p>Écrivez à l’atelier pour préparer votre rendez-vous.</p>",
+            "eyebrow": "",
+            "hours_note": "",
+            "address": "",
+            "map_query": "",
+            "latitude": "",
+            "longitude": ""
+          },
+          "blocks": {},
+          "block_order": [],
+          "disabled": false
+        },
+        "faq_2": {
+          "type": "faq",
+          "settings": {
+            "style": "lines",
+            "color_scheme": "scheme-1",
+            "padding_top": 104,
+            "padding_bottom": 104,
+            "heading": "Vos questions",
+            "button_label": "Prendre rendez-vous",
+            "button_link": "/pages/contact",
+            "text": "",
+            "eyebrow": "",
+            "search_placeholder": "",
+            "contact_text": ""
+          },
+          "blocks": {
+            "client_0": {
+              "type": "question",
+              "settings": {
+                "question": "Comment réserver ?",
+                "answer": "<p>Choisissez un créneau par la prise de rendez-vous.</p>"
+              }
+            },
+            "client_1": {
+              "type": "question",
+              "settings": {
+                "question": "Quelle est la durée ?",
+                "answer": "<p>L’atelier de tournage individuel dure 1 h 30.</p>"
+              }
+            },
+            "client_2": {
+              "type": "question",
+              "settings": {
+                "question": "Quel est le tarif ?",
+                "answer": "<p>L’atelier individuel est proposé à 75 € dans ce projet fictif.</p>"
+              }
+            }
+          },
+          "block_order": [
+            "client_0",
+            "client_1",
+            "client_2"
+          ],
+          "disabled": false
+        },
+        "contact_form_1": {
+          "type": "contact-form",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "heading": "Parlons de votre projet",
+            "text": "<p>Écrivez à l’atelier pour préparer votre rendez-vous.</p>",
+            "email": "atelier@example.test",
+            "hours": "Sur rendez-vous",
+            "eyebrow": "",
+            "response": ""
+          },
+          "blocks": {},
+          "block_order": [],
+          "disabled": false
+        },
+        "seo_home_body": {
+          "type": "rich-text",
+          "settings": {
+            "align": "left",
+            "style": "plain",
+            "color_scheme": "scheme-1",
+            "padding_top": 48,
+            "padding_bottom": 48
+          },
+          "blocks": {
+            "body": {
+              "type": "text",
+              "settings": {
+                "text": "<p>L’Atelier des Gestes : atelier de tournage individuel, découverte des émaux.</p>\n<h2>Nos prestations</h2>\n<ul><li>Atelier de tournage individuel — Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas.</li><li>Découverte des émaux — Choisir une palette et découvrir l’application des émaux sur une pièce préparée.</li></ul>\n<h2>Zone d'intervention</h2>\n<p>Quartier des Ateliers, Lyon — exemple fictif.</p>\n<h2>Nous contacter</h2>\n<ul><li>E-mail : atelier@example.test</li><li>Horaires : Sur rendez-vous</li></ul>\n<p class=\"cta\"><a href=\"/pages/contact\">Prendre rendez-vous</a></p>"
+              }
+            }
+          },
+          "block_order": [
+            "body"
+          ]
+        }
+      },
+      "order": [
+        "ed_opening_1",
+        "ed_statement_1",
+        "ref_narrative_1",
+        "services_list_1",
+        "timeline_1",
+        "portfolio_1",
+        "testimonials_1",
+        "ed_scene_2",
+        "practical_info_1",
+        "faq_2",
+        "contact_form_1",
+        "seo_home_body"
+      ]
+    }
+  },
+  {
+    "case": "service",
+    "angle": "expression",
+    "strategy": {
+      "source": "creative_hypothesis",
+      "sources": [
+        {
+          "kind": "client",
+          "label": "Offre renseignée",
+          "value": "Atelier de tournage individuel"
+        },
+        {
+          "kind": "client",
+          "label": "Description du projet (non vérifiée extérieurement)",
+          "value": "Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas."
+        },
+        {
+          "kind": "client",
+          "label": "Prestation renseignée",
+          "value": "Atelier de tournage individuel — Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas. — 1 h 30 — 75 €"
+        },
+        {
+          "kind": "client",
+          "label": "Prestation renseignée",
+          "value": "Découverte des émaux — Choisir une palette et découvrir l’application des émaux sur une pièce préparée. — 1 h — 45 €"
+        }
+      ],
+      "proofs": [
+        "Atelier de tournage individuel — Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas. — 1 h 30 — 75 €",
+        "Découverte des émaux — Choisir une palette et découvrir l’application des émaux sur une pièce préparée. — 1 h — 45 €"
+      ],
+      "exclusions": [
+        "Ne pas inventer de performances, garanties, avis, prix ou certification.",
+        "Aucune personne sans autorisation appropriée ; aucune marque externe."
+      ],
+      "limits": [
+        "Cible et motivation à valider avec le client ; pas un persona prouvé."
+      ],
+      "id": "expression",
+      "title": "Un projet qui vous ressemble",
+      "audience": "les personnes intéressées par Cours de céramique, quand l’accord avec leurs goûts ou leur projet personnel compte davantage que la comparaison technique de Cours de céramique.",
+      "situation": "Préparer une demande personnelle autour de Atelier de tournage individuel : expliquer son intention, ses contraintes et ses préférences avant l’échange.",
+      "notPriority": "Les personnes qui cherchent exclusivement un prix bas ou une performance chiffrée.",
+      "tension": "Ne pas vouloir d’un choix impersonnel qui ne correspond pas à sa façon de vivre.",
+      "motivation": "Se reconnaître dans sa manière de choisir Atelier de tournage individuel, sans se conformer à un modèle imposé.",
+      "benefit": "Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas.",
+      "promise": "Donner une intention personnelle à votre demande autour de Atelier de tournage individuel.",
+      "rationale": "La proposition explore la relation à Atelier de tournage individuel, sans modifier son apparence ni affirmer un effet émotionnel prouvé.",
+      "objections": [
+        {
+          "objection": "Est-ce que cette offre correspond à mes préférences ?",
+          "answer": "Présenter les finitions, possibilités et limites réellement fournies ; ne pas inventer de personnalisation."
+        }
+      ],
+      "tone": "Éditorial, sensible et sobre ; parler de choix personnel sans injonction.",
+      "messages": [
+        "Votre façon d’aborder Atelier de tournage individuel.",
+        "Atelier de tournage individuel, dans votre univers.",
+        "Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas."
+      ],
+      "visualDirection": "Composition éditoriale des lieux et outils fournis ; détails de matières et intentions autour de Atelier de tournage individuel, sans faux portrait ni faux chantier.",
+      "examples": {
+        "hero": "Votre projet. Votre façon de l’aborder.",
+        "subtext": "Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas. Découvrez les détails qui vous parlent, sans vous laisser imposer un style.",
+        "cta": "Présenter mon projet",
+        "advertisement": "Il n’y a pas une seule façon d’aimer Atelier de tournage individuel. Regardez ses détails, imaginez sa place dans votre univers et choisissez ce qui vous correspond."
+      }
+    },
+    "seo": [
+      {
+        "version": 1,
+        "type": "home_page",
+        "lang": "fr",
+        "page": {
+          "key": "home:accueil",
+          "title": "L’Atelier des Gestes",
+          "url": null,
+          "kind": "home",
+          "status": "planned"
+        },
+        "primaryKeyword": "couvreur quartier des ateliers",
+        "meta": {
+          "seoTitle": "Couvreur Quartier des Ateliers | L’Atelier des Gestes",
+          "metaDescription": "Atelier de tournage individuel — Quartier des Ateliers, Lyon — exemple fictif. Un atelier individuel sur rendez-vous pour découvrir le tournage et",
+          "slug": "l-atelier-des-gestes",
+          "canonical": null,
+          "robots": "index,follow"
+        },
+        "blocks": [
+          {
+            "id": "b4ba4cfb8",
+            "kind": "h1",
+            "text": "Cours de céramique à Quartier des Ateliers — L’Atelier des Gestes"
+          },
+          {
+            "id": "b63a5cba6",
+            "kind": "p",
+            "text": "L’Atelier des Gestes : atelier de tournage individuel, découverte des émaux."
+          },
+          {
+            "id": "b89d43a63",
+            "kind": "h2",
+            "text": "Nos prestations"
+          },
+          {
+            "id": "bc7928bb5",
+            "kind": "ul",
+            "items": [
+              "Atelier de tournage individuel — Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas.",
+              "Découverte des émaux — Choisir une palette et découvrir l’application des émaux sur une pièce préparée."
+            ]
+          },
+          {
+            "id": "b9bafc1bc",
+            "kind": "h2",
+            "text": "Zone d'intervention"
+          },
+          {
+            "id": "b2d94452a",
+            "kind": "p",
+            "text": "Quartier des Ateliers, Lyon — exemple fictif."
+          },
+          {
+            "id": "b6152c26c",
+            "kind": "h2",
+            "text": "Nous contacter"
+          },
+          {
+            "id": "b6d4ff427",
+            "kind": "ul",
+            "items": [
+              "E-mail : atelier@example.test",
+              "Horaires : Sur rendez-vous"
+            ]
+          },
+          {
+            "id": "b897b5979",
+            "kind": "cta",
+            "text": "Prendre rendez-vous",
+            "url": "/pages/contact"
+          }
+        ],
+        "schema": [
+          {
+            "@context": "https://schema.org",
+            "@type": "LocalBusiness",
+            "name": "L’Atelier des Gestes",
+            "areaServed": "Quartier des Ateliers, Lyon — exemple fictif",
+            "email": "atelier@example.test",
+            "openingHours": "Sur rendez-vous"
+          }
+        ],
+        "links": [
+          {
+            "key": "service:cours-individuel",
+            "title": "Atelier de tournage individuel",
+            "url": null,
+            "kind": "service",
+            "status": "planned"
+          },
+          {
+            "key": "service:email",
+            "title": "Découverte des émaux",
+            "url": null,
+            "kind": "service",
+            "status": "planned"
+          }
+        ],
+        "meta2": {
+          "source": "engine",
+          "by": "local",
+          "runId": "0a562acb-0f40-44cf-ba6a-1c563d3cfc2e",
+          "createdFrom": null,
+          "contract": {
+            "request": "",
+            "contextHash": "dfe9eff23f4bfb83",
+            "contextVersion": "2.4.0",
+            "target": "home:accueil",
+            "checks": {
+              "checked": [],
+              "issues": [],
+              "unchecked": []
+            }
+          }
+        }
+      }
+    ],
+    "posts": [
+      {
+        "caption": "« Couvreur : comment bien choisir ? » On nous la pose souvent.\n\ndécouvrir le tournage et travailler une pièce avec un accompagnement pas à pas\n[À compléter : votre réponse]\n\nPrendre rendez-vous",
+        "status": "planned",
+        "angle_id": "usage",
+        "version": 1
+      },
+      {
+        "caption": "« Atelier de tournage individuel : quelle durée prévoir ? » On nous la pose souvent.\n\nAtelier de tournage individuel, dans votre univers.\n[À compléter : votre réponse]\n\nPrendre rendez-vous",
+        "status": "planned",
+        "angle_id": "expression",
+        "version": 2
+      },
+      {
+        "caption": "Découvrir le tournage et les émaux, sur rendez-vous.",
+        "status": "planned",
+        "angle_id": "usage",
+        "version": 1
+      },
+      {
+        "caption": "Découvrir le tournage et les émaux, sur rendez-vous.",
+        "status": "planned",
+        "angle_id": "expression",
+        "version": 2
+      },
+      {
+        "caption": "« Couvreur : quel prix prévoir ? » On nous la pose souvent.\n\ndécouvrir le tournage et travailler une pièce avec un accompagnement pas à pas\n[À compléter : votre réponse]\n\nPrendre rendez-vous",
+        "status": "planned",
+        "angle_id": "usage",
+        "version": 1
+      },
+      {
+        "caption": "« Découverte des émaux : quelle durée prévoir ? » On nous la pose souvent.\n\nAtelier de tournage individuel, dans votre univers.\n[À compléter : votre réponse]\n\nPrendre rendez-vous",
+        "status": "planned",
+        "angle_id": "expression",
+        "version": 2
+      }
+    ],
+    "template": {
+      "sections": {
+        "ed_opening_1": {
+          "type": "ed-opening",
+          "settings": {
+            "layout": "journal",
+            "heading_tag": "h1",
+            "color_scheme": "scheme-1",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "image_alt": "Le tour avant la séance individuelle",
+            "label": "L’Atelier des Gestes",
+            "heading": "Cours de céramique à Quartier des Ateliers — L’Atelier des Gestes",
+            "text": "<p>L’Atelier des Gestes : atelier de tournage individuel, découverte des émaux.</p>",
+            "button_label": "Prendre rendez-vous",
+            "button_link": "/pages/contact",
+            "anchor": "",
+            "image": "",
+            "image_asset": "es-client-sj8523n2jfkdtwsy.jpg",
+            "mobile_image": "",
+            "mobile_image_asset": "",
+            "media_role": "",
+            "caption": "",
+            "focus_x": 50,
+            "focus_y": 50
+          },
+          "blocks": {},
+          "block_order": [],
+          "disabled": false
+        },
+        "ed_statement_1": {
+          "type": "ed-statement",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "image_alt": "Atelier de tournage individuel",
+            "label": "L'objet",
+            "heading": "Un atelier, un geste à la fois.",
+            "text": "<p>L’atelier accompagne chaque étape du tournage, de la préparation de la terre à la forme qui prend place sur le tour.</p>",
+            "button_label": "Prendre rendez-vous",
+            "button_link": "/pages/contact",
+            "anchor": "",
+            "image": "",
+            "image_asset": "",
+            "media_role": ""
+          },
+          "blocks": {
+            "client_0": {
+              "type": "point",
+              "settings": {
+                "title": "Un accompagnement individuel",
+                "text": "<p>Chaque atelier reçoit une seule personne, sur rendez-vous.</p>"
+              }
+            },
+            "client_1": {
+              "type": "point",
+              "settings": {
+                "title": "Le sens du détail",
+                "text": "<p>La préparation, le centrage et le geste se travaillent dans cet ordre.</p>"
+              }
+            }
+          },
+          "block_order": [
+            "client_0",
+            "client_1"
+          ],
+          "disabled": false
+        },
+        "ref_narrative_1": {
+          "type": "ref-narrative",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "heading": "Le déroulé de votre atelier"
+          },
+          "blocks": {
+            "client_0": {
+              "type": "chapter",
+              "settings": {
+                "title": "Préparer la terre",
+                "text": "<p>La séance commence par la préparation de la terre.</p>",
+                "image_asset": "",
+                "image_alt": "",
+                "caption": "",
+                "media_role": "",
+                "link_label": "",
+                "link": ""
+              }
+            },
+            "client_1": {
+              "type": "chapter",
+              "settings": {
+                "title": "Centrer sur le tour",
+                "text": "<p>Le centrage se travaille avec l’accompagnement de l’atelier.</p>",
+                "image_asset": "",
+                "image_alt": "",
+                "caption": "",
+                "media_role": "",
+                "link_label": "",
+                "link": ""
+              }
+            },
+            "client_2": {
+              "type": "chapter",
+              "settings": {
+                "title": "Travailler la forme",
+                "text": "<p>La forme est travaillée progressivement sur le tour.</p>",
+                "image_asset": "",
+                "image_alt": "",
+                "caption": "",
+                "media_role": "",
+                "link_label": "",
+                "link": ""
+              }
+            }
+          },
+          "block_order": [
+            "client_0",
+            "client_1",
+            "client_2"
+          ],
+          "disabled": false
+        },
+        "services_list_1": {
+          "type": "services-list",
+          "settings": {
+            "layout": "list",
+            "columns": 3,
+            "color_scheme": "scheme-3",
+            "padding_top": 104,
+            "padding_bottom": 104,
+            "button_label": "Prendre rendez-vous",
+            "button_link": "/pages/contact",
+            "highlight_label": "",
+            "heading": "Approcher la terre et le tour",
+            "text": "<p>Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas.</p>",
+            "eyebrow": "",
+            "note": "",
+            "footer_label": "",
+            "footer_link": ""
+          },
+          "blocks": {
+            "client_0": {
+              "type": "service",
+              "settings": {
+                "title": "Atelier de tournage individuel",
+                "text": "<p>Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas.</p>",
+                "price": "75 €",
+                "duration": "1 h 30",
+                "icon": "sparkle",
+                "highlight": false,
+                "image_asset": "",
+                "highlight_label": "",
+                "button_label": "",
+                "button_link": ""
+              }
+            },
+            "client_1": {
+              "type": "service",
+              "settings": {
+                "title": "Découverte des émaux",
+                "text": "<p>Choisir une palette et découvrir l’application des émaux sur une pièce préparée.</p>",
+                "price": "45 €",
+                "duration": "1 h",
+                "icon": "hand",
+                "highlight": false,
+                "image_asset": "",
+                "highlight_label": "",
+                "button_label": "",
+                "button_link": ""
+              }
+            }
+          },
+          "block_order": [
+            "client_0",
+            "client_1"
+          ],
+          "disabled": false
+        },
+        "timeline_1": {
+          "type": "timeline",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "padding_top": 104,
+            "padding_bottom": 104,
+            "eyebrow": "Notre méthode",
+            "heading": "Le déroulé de votre atelier",
+            "heading_accent": "",
+            "image": "",
+            "image_asset": "es-client-1lhl49pm2yihgr6x.jpg"
+          },
+          "blocks": {
+            "client_0": {
+              "type": "step",
+              "settings": {
+                "title": "Préparer la terre",
+                "text": "<p>La séance commence par la préparation de la terre.</p>"
+              }
+            },
+            "client_1": {
+              "type": "step",
+              "settings": {
+                "title": "Centrer sur le tour",
+                "text": "<p>Le centrage se travaille avec l’accompagnement de l’atelier.</p>"
+              }
+            },
+            "client_2": {
+              "type": "step",
+              "settings": {
+                "title": "Travailler la forme",
+                "text": "<p>La forme est travaillée progressivement sur le tour.</p>"
+              }
+            }
+          },
+          "block_order": [
+            "client_0",
+            "client_1",
+            "client_2"
+          ],
+          "disabled": false
+        },
+        "portfolio_1": {
+          "type": "portfolio",
+          "settings": {
+            "layout": "editorial",
+            "color_scheme": "scheme-1",
+            "padding_top": 104,
+            "padding_bottom": 104,
+            "heading": "Approcher la terre et le tour",
+            "text": "<p>Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas.</p>",
+            "button_label": "Prendre rendez-vous",
+            "button_link": "/pages/contact",
+            "eyebrow": "",
+            "label_before": "",
+            "label_after": ""
+          },
+          "blocks": {
+            "project_1": {
+              "type": "project",
+              "settings": {
+                "image_asset": "es-client-d6ev97t8v8zds8nq.jpg",
+                "image_before_asset": "",
+                "title": "",
+                "caption": "",
+                "tag": "",
+                "link": ""
+              }
+            },
+            "project_2": {
+              "type": "project",
+              "settings": {
+                "image_asset": "es-client-l7n9qoc09ghr18y9.jpg",
+                "image_before_asset": "",
+                "title": "",
+                "caption": "",
+                "tag": "",
+                "link": ""
+              }
+            },
+            "project_3": {
+              "type": "project",
+              "settings": {
+                "image_asset": "",
+                "image_before_asset": "",
+                "title": "",
+                "caption": "",
+                "tag": "",
+                "link": ""
+              }
+            },
+            "project_4": {
+              "type": "project",
+              "settings": {
+                "image_asset": "",
+                "image_before_asset": "",
+                "title": "",
+                "caption": "",
+                "tag": "",
+                "link": ""
+              }
+            }
+          },
+          "block_order": [
+            "project_1",
+            "project_2",
+            "project_3",
+            "project_4"
+          ],
+          "disabled": true
+        },
+        "testimonials_1": {
+          "type": "testimonials",
+          "settings": {
+            "color_scheme": "scheme-2",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "heading": "Approcher la terre et le tour",
+            "eyebrow": ""
+          },
+          "blocks": {
+            "client_0": {
+              "type": "review",
+              "settings": {
+                "quote": "[À compléter : avis réel d'un client, avec son accord]",
+                "author": "[À compléter : prénom]",
+                "detail": "[À compléter : prestation]",
+                "rating": "0",
+                "image_asset": ""
+              }
+            },
+            "client_1": {
+              "type": "review",
+              "settings": {
+                "quote": "[À compléter : avis réel d'un client, avec son accord]",
+                "author": "[À compléter : prénom]",
+                "detail": "[À compléter : prestation]",
+                "rating": "0",
+                "image_asset": ""
+              }
+            },
+            "client_2": {
+              "type": "review",
+              "settings": {
+                "quote": "[À compléter : avis réel d'un client, avec son accord]",
+                "author": "[À compléter : prénom]",
+                "detail": "[À compléter : prestation]",
+                "rating": "0",
+                "image_asset": ""
+              }
+            }
+          },
+          "block_order": [
+            "client_0",
+            "client_1",
+            "client_2"
+          ],
+          "disabled": true
+        },
+        "ed_scene_2": {
+          "type": "ed-scene",
+          "settings": {
+            "layout": "split",
+            "color_scheme": "scheme-1",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "image_alt": "La table de préparation de l’atelier",
+            "label": "En situation",
+            "heading": "Atelier de tournage individuel",
+            "text": "<p>Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas.</p>",
+            "button_label": "Prendre rendez-vous",
+            "button_link": "/pages/contact",
+            "anchor": "",
+            "image": "",
+            "image_asset": "es-client-633529xli78brckx.jpg",
+            "media_role": "",
+            "caption": "",
+            "focus_x": 50,
+            "focus_y": 50
+          },
+          "blocks": {},
+          "block_order": [],
+          "disabled": false
+        },
+        "practical_info_1": {
+          "type": "practical-info",
+          "settings": {
+            "map": "none",
+            "map_consent": true,
+            "color_scheme": "scheme-3",
+            "padding_top": 104,
+            "padding_bottom": 104,
+            "hours": "Sur rendez-vous",
+            "area": "Quartier des Ateliers, Lyon — exemple fictif",
+            "phone": "",
+            "email": "atelier@example.test",
+            "button_label": "Prendre rendez-vous",
+            "button_link": "/pages/contact",
+            "heading": "Parlons de votre projet",
+            "text": "<p>Écrivez à l’atelier pour préparer votre rendez-vous.</p>",
+            "eyebrow": "",
+            "hours_note": "",
+            "address": "",
+            "map_query": "",
+            "latitude": "",
+            "longitude": ""
+          },
+          "blocks": {},
+          "block_order": [],
+          "disabled": false
+        },
+        "faq_2": {
+          "type": "faq",
+          "settings": {
+            "style": "lines",
+            "color_scheme": "scheme-1",
+            "padding_top": 104,
+            "padding_bottom": 104,
+            "heading": "Vos questions",
+            "button_label": "Prendre rendez-vous",
+            "button_link": "/pages/contact",
+            "text": "",
+            "eyebrow": "",
+            "search_placeholder": "",
+            "contact_text": ""
+          },
+          "blocks": {
+            "client_0": {
+              "type": "question",
+              "settings": {
+                "question": "Comment réserver ?",
+                "answer": "<p>Choisissez un créneau par la prise de rendez-vous.</p>"
+              }
+            },
+            "client_1": {
+              "type": "question",
+              "settings": {
+                "question": "Quelle est la durée ?",
+                "answer": "<p>L’atelier de tournage individuel dure 1 h 30.</p>"
+              }
+            },
+            "client_2": {
+              "type": "question",
+              "settings": {
+                "question": "Quel est le tarif ?",
+                "answer": "<p>L’atelier individuel est proposé à 75 € dans ce projet fictif.</p>"
+              }
+            }
+          },
+          "block_order": [
+            "client_0",
+            "client_1",
+            "client_2"
+          ],
+          "disabled": false
+        },
+        "contact_form_1": {
+          "type": "contact-form",
+          "settings": {
+            "color_scheme": "scheme-1",
+            "padding_top": 96,
+            "padding_bottom": 96,
+            "heading": "Parlons de votre projet",
+            "text": "<p>Écrivez à l’atelier pour préparer votre rendez-vous.</p>",
+            "email": "atelier@example.test",
+            "hours": "Sur rendez-vous",
+            "eyebrow": "",
+            "response": ""
+          },
+          "blocks": {},
+          "block_order": [],
+          "disabled": false
+        },
+        "seo_home_body": {
+          "type": "rich-text",
+          "settings": {
+            "align": "left",
+            "style": "plain",
+            "color_scheme": "scheme-1",
+            "padding_top": 48,
+            "padding_bottom": 48
+          },
+          "blocks": {
+            "body": {
+              "type": "text",
+              "settings": {
+                "text": "<p>L’Atelier des Gestes : atelier de tournage individuel, découverte des émaux.</p>\n<h2>Nos prestations</h2>\n<ul><li>Atelier de tournage individuel — Un atelier individuel sur rendez-vous pour découvrir le tournage et travailler une pièce avec un accompagnement pas à pas.</li><li>Découverte des émaux — Choisir une palette et découvrir l’application des émaux sur une pièce préparée.</li></ul>\n<h2>Zone d'intervention</h2>\n<p>Quartier des Ateliers, Lyon — exemple fictif.</p>\n<h2>Nous contacter</h2>\n<ul><li>E-mail : atelier@example.test</li><li>Horaires : Sur rendez-vous</li></ul>\n<p class=\"cta\"><a href=\"/pages/contact\">Prendre rendez-vous</a></p>"
+              }
+            }
+          },
+          "block_order": [
+            "body"
+          ]
+        }
+      },
+      "order": [
+        "ed_opening_1",
+        "ed_statement_1",
+        "ref_narrative_1",
+        "services_list_1",
+        "timeline_1",
+        "portfolio_1",
+        "testimonials_1",
+        "ed_scene_2",
+        "practical_info_1",
+        "faq_2",
+        "contact_form_1",
+        "seo_home_body"
+      ]
+    }
+  }
+]
