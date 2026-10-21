@@ -110,20 +110,23 @@ export const NOCTIL_FAQ_PENDING: [string, string][] = [
   ["Que contient la boîte ?", TODO("contenu exact du coffret")],
   ["Quelle est la garantie ?", TODO("durée et conditions de garantie")],
 ];
-// TRAVERSE — fiche de stratégie (même consigne) :
-//  1. cible : une personne qui travaille en ville et part souvent deux ou trois jours, directement en sortant du bureau ;
-//  2. tension : « Le vendredi, je pars avec deux sacs, ou un sac de randonnée qui jure avec ma veste. » ;
-//  3. désir : partir sans repasser par chez soi — angle unique : le même sac du lundi matin au départ du vendredi ;
-//  4. promesse tenable : un sac à dos sobre (olive, noir) aux poches visibles, porté au dos ou à la main ; faits = visuels.
-//     Contenance, format cabine, imperméabilité, compartiment ordinateur et modularité jamais affirmés ;
-//  5. objections : fait-il sérieux au bureau, comment le porter, ce qu'on garde sous la main, contenance et cabine
-//     (information dédiée) ;
-//  6. parcours : ouverture → trois temps → carnet de route → organisation (repères) → finitions → ce qu'on emporte →
-//     achat → FAQ → inscription.
+// TRAVERSE — fiche de stratégie (consigne de Thomas du 21 octobre, 21 h 45 ; brief, hypothèse éditoriale) :
+//  utilisateur et acheteur : un actif qui part en court séjour directement après le travail ;
+//  situation d'achat : le vendredi, il part au bureau avec deux sacs, ou repasse par chez lui et rate le train ;
+//  tension (ses mots) : « Le vendredi, je pars avec deux sacs, ou je repasse chez moi et je cours après le train. » ;
+//  désir : sortir du bureau et être déjà en week-end ;
+//  angle unique : passer du bureau au départ du week-end, sans repasser par chez soi ;
+//  promesse tenable : un sac à dos sobre (olive, noir) qui a sa place au bureau ; une organisation démontrée par ce qui
+//  se voit : poche frontale zippée pour le trajet, compartiment principal à deux curseurs, poche latérale, sangles à
+//  boucle, poignée et bretelles ; faits = visuels ;
+//  objections : fait-il sérieux au bureau, comment l'organiser pour partir directement, comment le porter, combien
+//  d'affaires (volume non renseigné), prix et commande (information dédiée) ;
+//  exclusions : aucune contenance, compatibilité avion, imperméabilité, compartiment ordinateur ni modularité inventés.
 export const TRAVERSE_FAQ: [string, string][] = [
   ["Fait-il sérieux au bureau ?", "Olive profond, fermetures et sangles noires, aucune couleur criarde : sur nos photos, il passe du café du matin au salon d'aéroport sans changer de style."],
-  ["Comment le porter ?", "Sur le dos avec ses bretelles noires, ou à la main par la poignée du dessus, entre deux quais."],
-  ["Que garde-t-on sous la main ?", "Ce qu'on cherche en route va dans la grande poche frontale zippée ; le compartiment principal s'ouvre par deux curseurs."],
+  ["Comment l'organiser pour partir directement ?", "La veille : les affaires du week-end dans le compartiment principal, qui s'ouvre par deux curseurs ; ce qui sert pendant le trajet dans la grande poche frontale zippée."],
+  ["Comment le porter ?", "Sur le dos avec ses bretelles noires, ou à la main par la poignée du dessus, entre l'ascenseur et le quai."],
+  ["Combien d'affaires peut-il contenir ?", "Son volume et ses dimensions ne sont pas encore renseignés : cette démonstration ne promet aucune contenance."],
   ["Que puis-je faire dans cette boutique de démonstration ?", "Faire le tour du sac et le suivre en voyage. Le prix, la contenance, les dimensions et les matières ne sont pas encore renseignés, et la commande est désactivée."],
 ];
 export const TRAVERSE_FAQ_PENDING: [string, string][] = [
@@ -150,7 +153,7 @@ const BRANDS: Record<KitId, Brand> = {
     name: "TRAVERSE", product: "Sac de voyage modulable TRAVERSE", category: "Sac de voyage",
     summary: "Sac à dos de voyage vert olive : grande poche frontale zippée, sangles latérales à boucle noire, poignée sur le dessus, bretelles noires et étiquette tissée TRAVERSE.",
     facts: [["Couleur", "vert olive, fermetures, boucles et bretelles noires"], ["Organisation visible", "poche frontale zippée, poche latérale, sangles à boucle"]],
-    tagline: "Un sac, trois temps du voyage.", story: "TRAVERSE suit la même personne du café du matin au quai de départ, puis jusqu'à la destination.", positioning: "Un sac de voyage pour le quotidien, le départ et la destination.",
+    tagline: "Du bureau au week-end.", story: "TRAVERSE est né pour ceux qui partent le vendredi directement après le travail, sans repasser par chez eux.", positioning: "Un sac à dos sobre au bureau et prêt pour le départ du week-end.",
     // Olive du sac et du logo, pierre, crème des fonds, terre cuite des scènes en accent.
     palette: { primary: "#4F5631", secondary: "#D9D2C2", accent: "#A8572E", light: "#F5F1E8", dark: "#20251A" },
   },
@@ -431,10 +434,10 @@ function curateNoctil(k: Kit) {
 function curateTraverse(k: Kit) {
   const { spec, img, section, hide, overlay, faq, productHref } = k;
   k.demoMeta();
-  spec.store.seo = { title: "TRAVERSE | Le même sac du lundi matin au départ du vendredi", description: "Sac à dos de voyage olive : poche frontale zippée, sangles à boucle, poignée et bretelles noires. Assez sobre pour le bureau, prêt pour la gare." };
+  spec.store.seo = { title: "TRAVERSE | Du bureau au week-end, sans repasser par chez soi", description: "Le vendredi, partez dès la sortie du travail : sac à dos olive sobre au bureau, poche frontale zippée pour le trajet, poignée pour le quai." };
   k.product({
     title: "Sac de voyage modulable TRAVERSE",
-    description_html: p("Son rôle : un seul sac pour la semaine et le départ. Assez sobre pour le café et le bureau, il part en week-end sans repasser par chez vous.") + p("Ce qu'on voit : un sac à dos vert olive aux lignes nettes, une grande poche frontale zippée, une poche latérale, des sangles à boucle noire de chaque côté, une poignée sur le dessus et des bretelles noires.") + p("Où il va : au café, en gare, à l'aéroport, à l'hôtel et jusqu'au bord du lac ; nos photos le suivent à chaque étape."),
+    description_html: p("Son rôle : vous faire passer du bureau au départ du week-end. Assez sobre pour la journée de travail, il part avec vous dès la sortie, sans repasser par chez vous.") + p("Ce qu'on voit : un sac à dos vert olive aux lignes nettes, une grande poche frontale zippée, une poche latérale, des sangles à boucle noire de chaque côté, une poignée sur le dessus et des bretelles noires.") + p("Comment l'organiser : les affaires du week-end dans le compartiment principal à deux curseurs, ce qui sert pendant le trajet dans la poche frontale zippée. Volume et dimensions ne sont pas encore renseignés."),
     images: ["produit-01.webp", "produit-02.webp", "produit-03.webp", "produit-04.webp", "produit-05.webp"],
     tags: ["sac à dos", "voyage", "olive"],
     seo: { title: "Sac de voyage modulable TRAVERSE : vues, poches et détails", description: "Faites le tour du sac TRAVERSE : face, profil, poche frontale zippée et boucles en gros plan, organisation visible et préparation du départ." },
@@ -442,22 +445,22 @@ function curateTraverse(k: Kit) {
 
   // ─── Accueil : carnet de voyage, asymétrique. ───────────────────────────────────────────────────────────────────
   overlay("index", [
-    section("cv-banner", { ...img("produit-05.webp"), layout: "image-left", focus_x: 50, focus_y: 50, eyebrow: "Sac à dos de voyage TRAVERSE", heading: "Le même sac du lundi matin", heading_accent: "au départ du vendredi", heading_tag: "h1", text: p("Sobre au café et au bureau, prêt pour la gare : un sac à dos olive aux poches visibles, pour partir en week-end sans repasser par chez soi."), price_text: "", price_note: "", button_label: "Voir le sac", button_link: productHref, note: "", animation: "fade" }),
-    section("features-grid", { eyebrow: "Un sac, trois temps", heading: "Pensé pour la façon <em>dont on part vraiment</em>", layout: "grid", columns: 1, columns_mobile: "1", style: "lines", heading_align: "left", link_label: "", link: "" }, [
-      { type: "feature", settings: { icon: "none", title: "Le quotidien", text: p("Au café, au bureau, dans les transports : une silhouette sobre qui ne crie pas « grand départ »."), link_label: "", link: "" } },
-      { type: "feature", settings: { icon: "none", title: "Le départ", text: p("Gare, aéroport, quai : la poignée du dessus et les bretelles noires pour le porter comme il vient."), link_label: "", link: "" } },
-      { type: "feature", settings: { icon: "none", title: "La destination", text: p("Lac, montagne, chambre d'hôtel : on pose le sac, on ouvre la poche avant, on retrouve ses affaires."), link_label: "", link: "" } },
+    section("cv-banner", { ...img("produit-05.webp"), layout: "image-left", focus_x: 50, focus_y: 50, eyebrow: "Sac à dos TRAVERSE", heading: "Du bureau au week-end,", heading_accent: "sans repasser par chez soi", heading_tag: "h1", text: p("Le vendredi, il part avec vous dès la sortie du travail : sobre à côté de l'écran, prêt pour la gare. Ce qui sert pendant le trajet reste dans la poche frontale zippée."), price_text: "", price_note: "", button_label: "Voir le sac", button_link: productHref, note: "", animation: "fade" }),
+    section("features-grid", { eyebrow: "Un vendredi", heading: "Une journée de travail, <em>puis le départ</em>", layout: "grid", columns: 1, columns_mobile: "1", style: "lines", heading_align: "left", link_label: "", link: "" }, [
+      { type: "feature", settings: { icon: "none", title: "Au bureau", text: p("Une silhouette olive et noire qui ne crie pas « grand départ » à côté de l'écran."), link_label: "", link: "" } },
+      { type: "feature", settings: { icon: "none", title: "À la sortie", text: p("Poignée sur le dessus, bretelles noires : à la main dans l'ascenseur, sur le dos jusqu'au quai."), link_label: "", link: "" } },
+      { type: "feature", settings: { icon: "none", title: "À destination", text: p("Chambre d'hôtel, bord de lac : on pose le sac, on ouvre la poche avant, on retrouve ses affaires."), link_label: "", link: "" } },
     ]),
-    section("cv-alternating", { layout: "alternate", ratio: "portrait", eyebrow: "Carnet de route", heading: "Trois moments,", heading_accent: "un même sac", text: "" }, [
-      { type: "row", settings: { ...img("ambiance-05.webp"), eyebrow: "Quotidien", heading: "Le café", heading_accent: "avant le bureau", text: p("Posé sur la banquette, à côté de la tasse : TRAVERSE est un sac de ville avant d'être un sac de voyage."), button_label: "", button_link: "" } },
-      { type: "row", settings: { ...img("ambiance-10.webp"), eyebrow: "Départ", heading: "Le hall", heading_accent: "de la gare", text: p("Un banc, une verrière, un train dans vingt minutes : le sac attend à côté de vous, prêt à reprendre la route."), button_label: "", button_link: "" } },
-      { type: "row", settings: { ...img("ambiance-02.webp"), eyebrow: "Destination", heading: "Le ponton", heading_accent: "au petit matin", text: p("Au bord d'un lac brumeux, le sac posé sur les planches : le voyage a vraiment commencé."), button_label: "Lire le carnet de route", button_link: "/pages/carnet-de-route" } },
+    section("cv-alternating", { layout: "alternate", ratio: "portrait", eyebrow: "Carnet de route", heading: "Du café du matin", heading_accent: "au départ du soir", text: "" }, [
+      { type: "row", settings: { ...img("ambiance-05.webp"), eyebrow: "Le matin", heading: "Le café", heading_accent: "avant le bureau", text: p("Posé sur la banquette, à côté de la tasse : les affaires du week-end sont déjà dedans, rien ne le montre."), button_label: "", button_link: "" } },
+      { type: "row", settings: { ...img("ambiance-10.webp"), eyebrow: "À la sortie du travail", heading: "Le hall", heading_accent: "de la gare", text: p("Un banc, une verrière, le train du week-end : vous êtes parti sans repasser par chez vous."), button_label: "", button_link: "" } },
+      { type: "row", settings: { ...img("ambiance-02.webp"), eyebrow: "Le lendemain", heading: "Le ponton", heading_accent: "au petit matin", text: p("Au bord d'un lac brumeux, le sac posé sur les planches : le bureau est loin."), button_label: "Lire le carnet de route", button_link: "/pages/carnet-de-route" } },
     ]),
-    section("cv-hotspots", { ...img("produit-01.webp"), layout: "side", ratio: "square", eyebrow: "Organisation visible", heading: "Chaque poche,", heading_accent: "à sa place", text: p("Touchez un repère : TRAVERSE montre ce qu'il a avant même qu'on l'ouvre."), demo_note: "", show_list: true }, [
-      { type: "hotspot", settings: { x: 48, y: 6, title: "La poignée", text: p("Sur le dessus, pour le porter à la main entre deux quais.") } },
-      { type: "hotspot", settings: { x: 39, y: 14, title: "Les deux curseurs", text: p("Le compartiment principal s'ouvre par deux curseurs noirs.") } },
+    section("cv-hotspots", { ...img("produit-01.webp"), layout: "side", ratio: "square", eyebrow: "Organisation visible", heading: "Organisé pour le trajet,", heading_accent: "poche par poche", text: p("Touchez un repère : ce que l'on voit du sac, et ce qu'on y range pour partir directement."), demo_note: "", show_list: true }, [
+      { type: "hotspot", settings: { x: 48, y: 6, title: "La poignée", text: p("Sur le dessus, pour le porter à la main dans l'ascenseur ou entre deux quais.") } },
+      { type: "hotspot", settings: { x: 39, y: 14, title: "Les deux curseurs", text: p("Le compartiment principal s'ouvre par deux curseurs noirs : les affaires du week-end.") } },
       { type: "hotspot", settings: { x: 38, y: 24, title: "L'étiquette", text: p("Le nom TRAVERSE, tissé en noir sur fond crème.") } },
-      { type: "hotspot", settings: { x: 30, y: 44, title: "La poche frontale", text: p("Une grande poche zippée sur la face avant, pour ce qu'on veut sous la main.") } },
+      { type: "hotspot", settings: { x: 30, y: 44, title: "La poche frontale", text: p("Une grande poche zippée sur la face avant : billet, écouteurs, clés, ce qui sert pendant le trajet.") } },
       { type: "hotspot", settings: { x: 71, y: 31, title: "Les sangles latérales", text: p("Des sangles noires à boucle, de chaque côté du sac.") } },
     ]),
     section("cv-ingredients", { ...img("produit-03.webp"), layout: "split", ratio: "square", eyebrow: "Finitions", heading: "Ce qui se voit", heading_accent: "de près", text: p("Couleurs, fermetures, boucles : les détails que l'on remarque en prenant le sac en main."), note: "" }, [
@@ -467,17 +470,17 @@ function curateTraverse(k: Kit) {
       { type: "ingredient", settings: { icon: "star", name: "Étiquette tissée", role: "Le nom TRAVERSE en noir sur fond crème.", note: "", badge: "", image_asset: "" } },
       { type: "ingredient", settings: { icon: "drop", name: "Composition", role: TODO("matières exactes du tissu, des fermetures et des boucles"), note: "", badge: "", image_asset: "" }, hidden: true },
     ]),
-    section("image-with-text", { ...img("ambiance-07.webp"), layout: "image-left", ratio: "landscape", reveal: "curtain", parallax: false, eyebrow: "Ce que l'on emporte", heading: "Une chemise, un carnet, des lunettes de soleil", text: p("Ce que l'on aime avoir avec soi, posé à côté du sac avant de partir. On ouvre, on range, on referme : la poche avant garde ce qui sert en route."), button_label: "Voir le sac", button_link: productHref }),
+    section("image-with-text", { ...img("ambiance-07.webp"), layout: "image-left", ratio: "landscape", reveal: "curtain", parallax: false, eyebrow: "La veille au soir", heading: "Une chemise, un carnet, des lunettes de soleil", text: p("On prépare la veille : la chemise du samedi dans le compartiment, le carnet et les lunettes dans la poche avant. Le lendemain, le sac part au bureau avec vous."), button_label: "Voir le sac", button_link: productHref }),
     section("featured-purchase", { label: "Le sac", heading: "Sac de voyage modulable TRAVERSE", text: p("Avant de partir avec, faites-en le tour : face, profil, poche zippée et boucles en gros plan."), product: KIT_HANDLE.traverse, product_target: "product:main", purchase_style: "outlined", purchase_enabled: false, image_fit: "contain", gallery_limit: 4, link_label: "Voir la fiche complète" }),
-    faq("Avant de partir avec", TRAVERSE_FAQ.slice(0, 4), "lines", "side", "Le bureau, le port, ce qu'on garde sous la main, ce que permet la démonstration."),
+    faq("Avant le premier départ", TRAVERSE_FAQ.slice(0, 5), "lines", "side", "Le bureau, l'organisation, le port, la contenance, ce que permet la démonstration."),
     section("newsletter-media", { layout: "left", ...img("ambiance-09.webp"), eyebrow: "Nouvelles de TRAVERSE", heading: "Être prévenu quand TRAVERSE ouvre", text: p("Un e-mail à l'ouverture de la boutique. Rien d'autre."), perk_1: "", perk_2: "", perk_3: "", button_label: "Me prévenir", legal: p("Désinscription possible à tout moment depuis chaque e-mail.") }),
   ]);
 
   // ─── Fiche produit ──────────────────────────────────────────────────────────────────────────────────────────────
   k.mainProduct({
-    eyebrow: "Sac à dos de voyage · du bureau au départ",
-    text: "Assez sobre pour le bureau, prêt pour la gare : grande poche frontale zippée, sangles à boucle, poignée sur le dessus et bretelles noires.",
-    highlights: "Poche frontale zippée\nSangles latérales à boucle noire\nPoignée sur le dessus, bretelles noires\nDu quotidien au départ",
+    eyebrow: "Sac à dos · du bureau au week-end",
+    text: "Assez sobre pour le bureau, prêt pour la gare : la poche frontale zippée pour le trajet, le compartiment à deux curseurs pour le week-end.",
+    highlights: "Poche frontale zippée pour le trajet\nCompartiment principal à deux curseurs\nPoignée sur le dessus, bretelles noires\nOlive et noir, sobre au bureau",
     description: spec.store.product.description_html,
     specs: "volume, dimensions, poids, format cabine, imperméabilité, compartiment ordinateur, éléments modulables, matières, certifications",
     box: "contenu exact (housse, accessoires)",
@@ -495,11 +498,11 @@ function curateTraverse(k: Kit) {
       { type: "tab", settings: { title: "En voyage", icon: "globe", heading: "Du café au salon d'aéroport", content: p("Nos photos le montrent au café, dans le hall d'une gare, dans un salon d'aéroport, au pied d'un lit d'hôtel et au bord d'un lac."), ...img("ambiance-06.webp"), button_label: "Lire le carnet de route", button_link: "/pages/carnet-de-route" } },
       { type: "tab", settings: { title: "Fiche technique", icon: "clock", heading: "Fiche technique", content: p(TODO("volume, dimensions, poids, format cabine, imperméabilité, matières")), image_asset: "", button_label: "", button_link: "" }, hidden: true },
     ]),
-    section("cv-steps", { layout: "cards", eyebrow: "Avant de partir", heading: "Préparer", heading_accent: "son départ", text: p("Quatre gestes simples, de la table au quai."), button_label: "", button_link: "" }, [
+    section("cv-steps", { layout: "cards", eyebrow: "La veille", heading: "Préparer", heading_accent: "le départ du bureau", text: p("Quatre gestes, de la table du salon au quai de la gare."), button_label: "", button_link: "" }, [
       { type: "step", settings: { title: "Choisir ce qui part", text: p("Une chemise, un carnet, des lunettes : on pose tout à côté du sac.") } },
-      { type: "step", settings: { title: "Ranger devant l'essentiel", text: p("La poche frontale zippée garde à portée ce que l'on cherche en route.") } },
+      { type: "step", settings: { title: "Ranger devant l'essentiel du trajet", text: p("La poche frontale zippée garde à portée ce que l'on cherche en route.") } },
       { type: "step", settings: { title: "Fermer les sangles", text: p("Les sangles latérales se referment sur leur boucle noire.") } },
-      { type: "step", settings: { title: "Partir", text: p("Sur le dos ou à la main par la poignée : direction la gare.") } },
+      { type: "step", settings: { title: "Partir du bureau", text: p("Le lendemain, sur le dos ou à la main par la poignée : du bureau à la gare.") } },
     ]),
     section("cv-gallery", { layout: "grid", columns: 3, ratio: "portrait", eyebrow: "En chemin", heading: "Là où", heading_accent: "on le pose", text: "", ai_label: "" }, [
       { type: "image", settings: { ...img("ambiance-08.webp"), caption: "Au pied du lit, à l'hôtel" } },
@@ -517,7 +520,7 @@ function curateTraverse(k: Kit) {
 
   // ─── Pages ──────────────────────────────────────────────────────────────────────────────────────────────────────
   k.page("carnet-de-route", "Carnet de route : du quotidien à la destination", { title: "Carnet de route TRAVERSE : aéroport, hôtel, bivouac", description: "Salon d'aéroport, chambre d'hôtel, bivouac au bord d'un lac : le sac de voyage TRAVERSE en chemin, étape par étape, en photos." }, [
-    ["intro", section("rich-text", { style: "plain", align: "left", color_scheme: "scheme-1", padding_top: 24, padding_bottom: 32 }, [{ type: "text", settings: { text: p("Un voyage se raconte en étapes. Voici celles où nous avons posé TRAVERSE, du premier départ jusqu'à la dernière lumière du jour.") } }])],
+    ["intro", section("rich-text", { style: "plain", align: "left", color_scheme: "scheme-1", padding_top: 24, padding_bottom: 32 }, [{ type: "text", settings: { text: p("Le départ commence au bureau. Voici où le week-end nous a menés avec TRAVERSE, du salon d'aéroport au van ouvert sur le lac.") } }])],
     ["etapes", section("cv-alternating", { layout: "image-left", ratio: "landscape", eyebrow: "Étape par étape", heading: "En chemin", heading_accent: "avec TRAVERSE", text: "", color_scheme: "scheme-1" }, [
       { type: "row", settings: { ...img("ambiance-06.webp"), eyebrow: "Départ", heading: "Le salon", heading_accent: "d'aéroport", text: p("Fauteuil de cuir, avion derrière la vitre : le sac attend l'embarquement à côté de vous."), button_label: "", button_link: "" } },
       { type: "row", settings: { ...img("ambiance-01.webp"), eyebrow: "En route", heading: "La carte", heading_accent: "sur la pierre", text: p("Une halte, une carte dépliée, le sac posé sur la pierre : on choisit la suite du chemin."), button_label: "", button_link: "" } },
@@ -525,7 +528,7 @@ function curateTraverse(k: Kit) {
     ])],
     ["cta", section("cta-banner", { heading: "Prêt pour la prochaine étape", text: p("Toutes les vues du sac, ses poches et ses boucles, sur sa fiche."), button_label: "Découvrir TRAVERSE", button_link: productHref, image_asset: "", style: "left", parallax: false, color_scheme: "scheme-2", padding_top: 88, padding_bottom: 88 })],
   ]);
-  k.page("aide", "Aide et contact", { title: "Aide et contact | TRAVERSE, sac de voyage modulable", description: "Au bureau, au dos ou à la main, ce qu'on garde sous la main, ce que permet la démonstration : nos réponses sur TRAVERSE, et un formulaire." }, [
+  k.page("aide", "Aide et contact", { title: "Aide et contact | TRAVERSE, du bureau au week-end", description: "Au bureau, organiser son départ, le porter, la contenance : nos réponses sur TRAVERSE, et un formulaire pour le reste." }, [
     ["faq", faq("Questions fréquentes", [...TRAVERSE_FAQ, ...TRAVERSE_FAQ_PENDING], "numbered", "side", "", { color_scheme: "scheme-1" })],
     ["form", section("contact-form", { eyebrow: "Contact", heading: "Une autre question avant de partir ?", text: p("Écrivez-nous : le formulaire vérifie les champs avant l'envoi. Dans cette démonstration, aucun message n'est réellement transmis."), email: "", hours: "", response: "", preview_note: true, color_scheme: "scheme-4", padding_top: 64, padding_bottom: 96 })],
   ]);
@@ -550,7 +553,7 @@ function curateTraverse(k: Kit) {
   const footer = Object.values(spec.groups.footer.sections).find((s) => s.type === "footer")!;
   footer.settings = { ...footer.settings, style: "card", show_wordmark: false, show_policies: false, show_payment: false, color_scheme: "scheme-4", logo_asset: "" };
   footer.blocks = {
-    about: { type: "text", settings: { heading: "TRAVERSE", text: p("Le sac à dos du lundi matin et du départ du vendredi. Marque de démonstration du studio.") } },
+    about: { type: "text", settings: { heading: "TRAVERSE", text: p("Le sac à dos qui passe du bureau au départ du week-end. Marque de démonstration du studio.") } },
     links: { type: "links", settings: { heading: "Aide", menu: "footer" } },
   };
   // Pas de seconde inscription dans le pied : celle de l'accueil (avec visuel) suffit.

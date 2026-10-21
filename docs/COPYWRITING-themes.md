@@ -177,18 +177,28 @@ et l'alcôve à coussins ; les autres scènes sont présentées comme « ailleur
 coin lecture pour une histoire). Pour une cohérence complète, il faudrait de nouveaux visuels de chambre d'enfant (sans
 personne). Code : `tests/noctil-traverse-fixtures.ts`. Preuves : `docs/preuves/copywriting/noctil/`.
 
-### TRAVERSE — Produit spécifique — **réécrit**
+### TRAVERSE — Spécialisée — **réécrit (consigne 21 h 45)** : du bureau au week-end
 
-1. **Cible** : une personne qui travaille en ville et part souvent deux ou trois jours en sortant du bureau.
-2. **Tension** : « Le vendredi, je pars avec deux sacs, ou un sac de randonnée qui jure avec ma veste. »
-3. **Désir et angle** : partir sans repasser par chez soi → le même sac du lundi matin au départ du vendredi.
-4. **Promesse et faits** : un sac à dos sobre (olive, noir) aux poches visibles, au dos ou à la main ; faits = visuels.
-   Contenance, format cabine, imperméabilité, compartiment ordinateur et modularité jamais affirmés.
-5. **Objections** : fait-il sérieux au bureau, comment le porter, ce qu'on garde sous la main, prix et contenance (information dédiée).
-6. **Parcours** : « Le même sac du lundi matin *au départ du vendredi* » → trois temps → carnet de route → repères →
-   finitions → ce qu'on emporte → achat → FAQ « Avant de partir avec » → inscription.
+| | |
+|---|---|
+| Utilisateur et acheteur | un actif qui part en court séjour directement après le travail (brief) |
+| Situation d'achat | le vendredi, deux sacs au bureau, ou un détour par chez soi et un train qui file |
+| Tension (ses mots) | « Le vendredi, je pars avec deux sacs, ou je repasse chez moi et je cours après le train. » |
+| Désir | sortir du bureau et être déjà en week-end |
+| Angle unique | passer du bureau au départ du week-end, sans repasser par chez soi |
+| Promesse tenable | un sac à dos sobre (olive, noir) à sa place au bureau ; une organisation montrée par ce qui se voit |
+| Objections traitées | fait-il sérieux au bureau, comment l'organiser pour partir directement, comment le porter, combien d'affaires (« volume non renseigné »), la démo |
+| **Faits** | visuels : poche frontale zippée, compartiment principal à deux curseurs, poche latérale, sangles à boucle, poignée, bretelles, étiquette ; café, gare, aéroport, hôtel, lac |
+| **Non renseigné** | volume, dimensions, poids, compatibilité avion, imperméabilité, ordinateur, modularité, matières, garantie, prix |
+| Exclusions | aucune contenance, compatibilité ni équipement inventés |
 
-Pages réécrites : accueil, fiche, aide, pied, SEO (le carnet de route garde ses étapes). Preuves : `docs/preuves/copywriting/traverse/`.
+Pages : accueil (« Du bureau au week-end, *sans repasser par chez soi* » → « Une journée de travail, *puis le départ* »
+(au bureau, à la sortie, à destination) → « Du café du matin *au départ du soir* » → « Organisé pour le trajet, *poche par
+poche* » (repères : la poche frontale pour le trajet, le compartiment pour le week-end) → finitions → « La veille au
+soir » → achat → « Avant le premier départ »), fiche (« Sac à dos · du bureau au week-end », « Préparer le départ du
+bureau »), carnet de route, aide, pied, SEO. **Visuels** : le kit ne contient pas de scène de bureau ; le café du matin
+et le hall de gare portent le passage du travail au départ. Code : `tests/noctil-traverse-fixtures.ts`. Preuves :
+`docs/preuves/copywriting/traverse/`.
 
 ### SILLON — Produit spécifique — **réécrit**
 
