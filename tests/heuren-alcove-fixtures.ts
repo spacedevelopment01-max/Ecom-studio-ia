@@ -60,25 +60,26 @@ export const ALCOVE_MEDIA: Media[] = [
 export const SHOP_KIT_MEDIA: Record<ShopKitId, Media[]> = { heuren: HEUREN_MEDIA, alcove: ALCOVE_MEDIA };
 export const SHOP_KIT_HANDLE: Record<ShopKitId, string> = { heuren: "montre-heuren-bleu-nuit", alcove: "fauteuil-alcove-terracotta" };
 
-// HEUREN — fiche de stratégie (consigne du 21 octobre, 19 h 50 ; hypothèse éditoriale, pas une étude) :
-//  1. cible : une personne dont le poignet vibre toute la journée (téléphone, montre connectée) et qui voudrait y porter
-//     un bel objet, au bureau comme le soir ;
-//  2. tension : « Mon poignet me réclame quelque chose toutes les cinq minutes. » ;
-//  3. désir : porter quelque chose de beau qui ne demande rien — angle unique : un bleu à regarder, pas un écran à
-//     surveiller ;
-//  4. promesse tenable : une montre à aiguilles au cadran bleu nuit soleillé qui change avec la lumière ; faits = visuels
-//     (cadran, index, aiguilles, boîtier, bracelet, écrin, décors) ; mouvement, taille, étanchéité et matières inconnus ;
-//  5. objections : est-ce connecté (non : un cadran et des aiguilles), le bleu au quotidien (tenues des photos), l'offrir
-//     (l'écrin des photos, contenu à confirmer), prix, taille et commande (information dédiée) ;
-//  6. parcours : ouverture (se reconnaître) → cadran (l'angle) → repères (les détails) → sobriété → du bureau au dîner →
-//     achat → FAQ « Avant de choisir » → inscription.
+// HEUREN — fiche de stratégie (consigne de Thomas du 21 octobre, 21 h 45 ; brief, hypothèse éditoriale) :
+//  acheteur : une personne qui offre une montre à son compagnon ; utilisateur : lui, qui la portera ;
+//  situation d'achat : une étape de sa vie à marquer (nouveau poste, anniversaire, projet qui aboutit) ;
+//  tension (ses mots) : « Je veux un cadeau à la hauteur du moment, pas un objet qui finira dans un tiroir. » ;
+//  désir : que le cadeau garde la trace de ce moment, et qu'il le porte ensuite ;
+//  angle unique : un cadeau qui matérialise ce moment et se porte ensuite au quotidien ;
+//  promesse tenable : une montre à aiguilles au cadran bleu nuit soleillé, présentée en écrin sur les photos, assez
+//  sobre pour le bureau comme pour le soir ; faits = visuels (cadran, index, aiguilles, boîtier, bracelet, écrin, décors) ;
+//  objections : pour quelle occasion, comment elle est présentée (écrin, contenu non renseigné), le bleu au quotidien,
+//  connectée ou non (une montre à aiguilles), gravure, prix, taille et mouvement (non renseignés) ;
+//  exclusions : aucune guerre contre les notifications, aucun mouvement, taille, matière, étanchéité ni gravure inventés.
 export const HEUREN_FAQ: [string, string][] = [
-  ["Est-ce une montre connectée ?", "Non : un cadran, des index et des aiguilles. Elle ne vibre pas et n'affiche aucune notification ; elle donne l'heure, c'est tout."],
+  ["Pour quelles occasions l'offrir ?", "Un nouveau poste, un anniversaire, des fiançailles, un diplôme, un projet qui aboutit : une étape que vous voulez marquer avec un objet qu'il portera ensuite tous les jours."],
+  ["Comment est-elle présentée ?", "Nos photos la montrent dans un écrin bleu nuit, un ruban crème à côté. Le contenu exact de l'écrin n'est pas encore renseigné."],
   ["Le bleu nuit se porte-t-il tous les jours ?", "Sur nos photos, il accompagne un veston, une chemise blanche, un bureau en noyer et une trousse de voyage : un bleu sombre, sobre, que les index argentés éclairent."],
-  ["Peut-on l'offrir ?", "Nos photos la montrent dans un écrin bleu nuit, un ruban crème à côté. Le contenu exact de l'écrin n'est pas encore renseigné."],
-  ["Que puis-je faire dans cette boutique de démonstration ?", "Faire le tour de la montre en cinq vues et la voir au fil du jour. Le prix, la taille du boîtier et le mouvement ne sont pas encore renseignés, et la commande est désactivée."],
+  ["Est-ce une montre connectée ?", "Non : un cadran, des index et des aiguilles. Elle donne l'heure, avec un beau bleu autour."],
+  ["Que puis-je faire dans cette boutique de démonstration ?", "Faire le tour de la montre en cinq vues et la voir au fil du jour. Le prix, la taille du boîtier, le mouvement et la gravure ne sont pas encore renseignés, et la commande est désactivée."],
 ];
 export const HEUREN_FAQ_PENDING: [string, string][] = [
+  ["Peut-on la faire graver ?", TODO("gravure possible ou non, emplacement et nombre de caractères")],
   ["Quel mouvement anime la montre ?", TODO("type de mouvement et réserve de marche")],
   ["Est-elle étanche ?", TODO("étanchéité, en mètres ou en ATM")],
   ["Quelle est la taille du boîtier ?", TODO("diamètre, épaisseur, largeur entre les cornes")],
@@ -117,7 +118,7 @@ const BRANDS: Record<ShopKitId, Brand> = {
     name: "HEUREN", product: "Montre HEUREN bleu nuit", category: "Montre",
     summary: "Montre à cadran bleu nuit soleillé, index et aiguilles argentés, boîtier argenté, bracelet en cuir bleu nuit cousu de bleu et doublé de beige ; le nom HEUREN est inscrit sur le cadran.",
     facts: [["Cadran", "bleu nuit soleillé, index et aiguilles argentés"], ["Bracelet", "cuir bleu nuit, couture bleue, doublure beige"]],
-    tagline: "L'heure bleue, au poignet.", story: "HEUREN est née d'un bleu : celui du ciel juste après le coucher du soleil.", positioning: "Une montre au cadran bleu nuit pour le bureau, le soir et le voyage.",
+    tagline: "Pour marquer une étape, à porter chaque jour.", story: "HEUREN est née d'une idée : qu'un cadeau marquant ne finisse pas dans un tiroir, mais au poignet, chaque jour.", positioning: "Une montre au cadran bleu nuit à offrir pour une étape de vie, et à porter au quotidien.",
     // Bleu nuit du cadran, argent brumeux des fonds produit, beige de la doublure, ivoire.
     palette: { primary: "#15233E", secondary: "#D9DDE3", accent: "#B8946A", light: "#F7F5F0", dark: "#0D1526" },
   },
@@ -147,44 +148,44 @@ const marker = (_k: Kit, x: number, y: number, title: string) => ({ type: "marke
 function curateHeuren(k: Kit) {
   const { spec, img, section, overlay, faq, productHref } = k;
   k.demoMeta();
-  spec.store.seo = { title: "HEUREN | Montre à aiguilles au cadran bleu nuit soleillé, sans écran", description: "Un bleu à regarder, pas un écran à surveiller : la montre HEUREN, cadran bleu nuit soleillé, aiguilles argentées, bracelet en cuir cousu de bleu." };
+  spec.store.seo = { title: "HEUREN | Une montre à offrir pour marquer une étape de sa vie", description: "Nouveau poste, anniversaire, projet abouti : offrez-lui la montre HEUREN au cadran bleu nuit soleillé, pour garder ce moment au poignet, chaque jour." };
   k.product({
     title: "Montre HEUREN bleu nuit",
-    description_html: p("Son rôle : donner l'heure, et rien d'autre. Pas d'écran, pas de notification : un cadran que l'on regarde parce qu'il est beau.") + p("Ce qu'on voit : un cadran bleu nuit soleillé dont les reflets changent avec la lumière, des index et des aiguilles argentés, un boîtier argenté, un bracelet en cuir bleu nuit cousu de bleu et doublé de beige. Le nom HEUREN est inscrit sur le cadran.") + p("Quand la porter : au bureau, avec un veston, en voyage, et posée sur son support le soir ; nos photos la montrent à chacun de ces moments."),
+    description_html: p("Pourquoi l'offrir : pour marquer une étape de sa vie (un nouveau poste, un anniversaire, un projet qui aboutit) avec un objet qu'il portera ensuite tous les jours.") + p("Ce qu'on voit : un cadran bleu nuit soleillé dont les reflets changent avec la lumière, des index et des aiguilles argentés, un boîtier argenté, un bracelet en cuir bleu nuit cousu de bleu et doublé de beige. Le nom HEUREN est inscrit sur le cadran.") + p("Après le jour J : au bureau, avec un veston, en voyage, et posée sur son support le soir ; nos photos la montrent à chacun de ces moments. Le contenu exact de l'écrin n'est pas encore renseigné."),
     images: ["produit-01.webp", "produit-02.webp", "produit-03.webp", "produit-04.webp", "produit-05.webp"],
     tags: ["montre", "bleu nuit", "cuir"],
-    seo: { title: "Montre HEUREN bleu nuit : cadran, boîtier et bracelet en détail", description: "Faites le tour de la montre HEUREN : trois quarts, face, profil, cadran bleu nuit soleillé et bracelet en cuir cousu de bleu, en gros plan." },
+    seo: { title: "Montre HEUREN bleu nuit, à offrir : cadran et bracelet en détail", description: "Avant de l'offrir, faites le tour de la montre HEUREN : trois quarts, face, profil, cadran bleu nuit soleillé et bracelet en cuir cousu de bleu." },
   });
 
   // ─── Accueil : l'heure bleue, le cadran, les repères, puis la montre portée. ──────────────────────────────────────
   overlay("index", [
-    section("ed-opening", { ...img("ambiance-07.webp"), layout: "journal", heading_tag: "h1", label: "Montre à aiguilles", heading: "L'heure bleue,\nau poignet.", text: p("Pas d'écran, pas de notification : un cadran bleu nuit soleillé, des aiguilles argentées, un bracelet de cuir cousu de bleu. Une montre que l'on regarde pour le plaisir."), button_label: "Voir la montre", button_link: productHref, focus_x: 46, focus_y: 50, mobile_focus_x: 40, mobile_focus_y: 50, copy_surface: true, caption: "", motion: "reveal", padding_top: 24, padding_bottom: 72 }),
-    section("ed-statement", { ...img("produit-04.webp"), label: "Le cadran", heading: "Un bleu à regarder, pas un écran à surveiller", text: p("Le cadran soleillé renvoie la lumière du centre vers le bord : il n'est pas le même sous la lampe du bureau et au coucher du soleil. Le nom HEUREN y est inscrit en argent, au-dessus de l'axe des aiguilles."), button_label: "", button_link: "", motion: "reveal", color_scheme: "scheme-2", padding_top: 96, padding_bottom: 96 }, [
+    section("ed-opening", { ...img("ambiance-10.webp"), layout: "journal", heading_tag: "h1", label: "Une montre à offrir", heading: "Il y a des étapes\nqui méritent une montre.", text: p("Un nouveau poste, un anniversaire, un projet qui aboutit : offrez-lui HEUREN. Ce soir-là, il ouvre l'écrin ; ensuite, il la porte chaque jour."), button_label: "Découvrir la montre", button_link: productHref, focus_x: 50, focus_y: 50, mobile_focus_x: 50, mobile_focus_y: 50, copy_surface: true, caption: "", motion: "reveal", padding_top: 24, padding_bottom: 72 }),
+    section("ed-statement", { ...img("produit-04.webp"), label: "Le cadran", heading: "Un bleu qu'il regardera longtemps", text: p("Le cadran soleillé renvoie la lumière du centre vers le bord : il change sous la lampe du bureau et au coucher du soleil. Chaque fois qu'il lira l'heure, il retrouvera ce bleu, et le jour où il l'a reçue."), button_label: "", button_link: "", motion: "reveal", color_scheme: "scheme-2", padding_top: 96, padding_bottom: 96 }, [
       { type: "point", settings: { title: "Cadran soleillé", text: "Bleu nuit, reflets rayonnants du centre vers le bord." } },
       { type: "point", settings: { title: "Index et aiguilles", text: "Argentés et fins, nets sur le bleu." } },
       { type: "point", settings: { title: "Boîtier", text: "Argenté, couronne sur le côté droit." } },
       { type: "point", settings: { title: "Bracelet", text: "Cuir bleu nuit, couture bleue, doublure beige." } },
     ]),
-    section("fs-lookbook", { ...img("produit-02.webp"), layout: "markers", eyebrow: "Repères", heading: "La montre,", heading_accent: "point par point", text: p("Touchez un repère : le nom, le cadran, la couronne et le bracelet, un détail à la fois."), align: "left", button_label: "Voir la fiche", button_link: productHref, link_label: "Voir la montre", effect: "fade", stagger: true, hover: false, background: "scheme" }, [
+    section("fs-lookbook", { ...img("produit-02.webp"), layout: "markers", eyebrow: "Repères", heading: "Ce qu'il découvrira,", heading_accent: "point par point", text: p("Touchez un repère : le nom, le cadran, la couronne et le bracelet, un détail à la fois."), align: "left", button_label: "Voir la fiche", button_link: productHref, link_label: "Voir la montre", effect: "fade", stagger: true, hover: false, background: "scheme" }, [
       marker(k, 48, 33, "Le nom HEUREN, en argent sur le cadran"),
       marker(k, 37, 55, "Le cadran bleu nuit soleillé"),
       marker(k, 75, 44, "La couronne, sur le côté du boîtier"),
       marker(k, 58, 84, "Le bracelet en cuir, cousu de bleu"),
     ]),
-    section("fs-campaign", { ...img("ambiance-09.webp"), layout: "background", eyebrow: "Sobre", heading: "Un bleu qui ne crie pas,", heading_accent: "même au grand soleil", text: p("Sur le béton, entre lumière et ombres géométriques : le cadran reste profond, les index argentés restent nets."), align: "left", label: "", offer_title: "", offer_text: "", period_text: "", conditions: "", cta_label: "Voir la montre", cta_link: productHref, cta2_label: "Au fil du jour", cta2_link: "/pages/au-fil-du-jour", focus_x: 55, focus_y: 50, effect: "fade", stagger: false, hover: false, background: "scheme", color_scheme: "scheme-2" }),
-    section("ed-scene", { ...img("ambiance-05.webp"), layout: "split", label: "À porter", heading: "Du bureau au dîner, sans changer de montre", text: p("Posée sur un veston plié, près d'une chemise blanche : le bleu nuit accompagne les tenues sobres, le cuir cousu de bleu reste discret."), button_label: "Au fil du jour", button_link: "/pages/au-fil-du-jour", caption: "", focus_x: 40, focus_y: 50, mobile_focus_x: 40, mobile_focus_y: 50, motion: "reveal", padding_top: 72, padding_bottom: 72 }),
-    section("featured-purchase", { label: "La montre", heading: "Montre HEUREN bleu nuit", text: p("Avant de la choisir, faites-en le tour : trois quarts, face, profil, puis le cadran et le bracelet en gros plan."), product: SHOP_KIT_HANDLE.heuren, product_target: "product:main", purchase_style: "compact", purchase_enabled: false, image_fit: "contain", gallery_limit: 4, enable_zoom: true, link_label: "Voir la fiche complète", color_scheme: "scheme-4" }),
-    v2faq(k, "center", "Questions", "Avant de choisir", "Connectée ou non, le bleu au quotidien, l'écrin, ce que permet la démonstration.", HEUREN_FAQ.slice(0, 4)),
-    section("newsletter-media", { ...img("ambiance-10.webp"), layout: "right", eyebrow: "Nouvelles d'HEUREN", heading: "Être prévenu quand HEUREN ouvre", text: p("Un e-mail à l'ouverture de la boutique. Rien d'autre."), perk_1: "", perk_2: "", perk_3: "", button_label: "Me prévenir", legal: p("Désinscription possible à tout moment depuis chaque e-mail.") }),
+    section("fs-campaign", { ...img("ambiance-09.webp"), layout: "background", eyebrow: "Après le jour J", heading: "Un cadeau qui se porte,", heading_accent: "bien après la fête", text: p("Au soleil comme à l'ombre, le cadran reste profond et les index argentés restent nets : une montre faite pour être portée, pas rangée dans un tiroir."), align: "left", label: "", offer_title: "", offer_text: "", period_text: "", conditions: "", cta_label: "Voir la montre", cta_link: productHref, cta2_label: "Au fil du jour", cta2_link: "/pages/au-fil-du-jour", focus_x: 55, focus_y: 50, effect: "fade", stagger: false, hover: false, background: "scheme", color_scheme: "scheme-2" }),
+    section("ed-scene", { ...img("ambiance-05.webp"), layout: "split", label: "Au quotidien", heading: "Du bureau au dîner, il la garde", text: p("Posée sur un veston plié, près d'une chemise blanche : le bleu nuit accompagne les tenues sobres. Le cadeau d'un soir devient sa montre de tous les jours."), button_label: "Au fil du jour", button_link: "/pages/au-fil-du-jour", caption: "", focus_x: 40, focus_y: 50, mobile_focus_x: 40, mobile_focus_y: 50, motion: "reveal", padding_top: 72, padding_bottom: 72 }),
+    section("featured-purchase", { label: "La montre", heading: "Montre HEUREN bleu nuit", text: p("Avant de l'offrir, faites-en le tour : trois quarts, face, profil, puis le cadran et le bracelet en gros plan."), product: SHOP_KIT_HANDLE.heuren, product_target: "product:main", purchase_style: "compact", purchase_enabled: false, image_fit: "contain", gallery_limit: 4, enable_zoom: true, link_label: "Voir la fiche complète", color_scheme: "scheme-4" }),
+    v2faq(k, "center", "Questions", "Avant de l'offrir", "Les occasions, l'écrin, le bleu au quotidien, ce que permet la démonstration.", HEUREN_FAQ.slice(0, 5)),
+    section("newsletter-media", { ...img("ambiance-07.webp"), layout: "right", eyebrow: "Nouvelles d'HEUREN", heading: "Être prévenu quand HEUREN ouvre", text: p("Un e-mail à l'ouverture de la boutique, pour préparer votre cadeau. Rien d'autre."), perk_1: "", perk_2: "", perk_3: "", button_label: "Me prévenir", legal: p("Désinscription possible à tout moment depuis chaque e-mail.") }),
   ]);
 
   // ─── Fiche produit ──────────────────────────────────────────────────────────────────────────────────────────────
   k.mainProduct({
-    eyebrow: "Montre à aiguilles · sans écran",
-    text: "Un cadran bleu nuit soleillé qui change avec la lumière, des aiguilles argentées, un bracelet en cuir cousu de bleu : un objet à regarder, pas un écran à consulter.",
-    highlights: "Cadran bleu nuit soleillé\nIndex et aiguilles argentés\nBoîtier argenté, couronne sur le côté\nBracelet cuir bleu nuit, couture bleue, doublure beige",
+    eyebrow: "Montre à aiguilles · à offrir",
+    text: "Pour marquer une étape de sa vie : un cadran bleu nuit soleillé, des aiguilles argentées, un bracelet en cuir cousu de bleu, qu'il portera ensuite chaque jour.",
+    highlights: "Cadran bleu nuit soleillé\nIndex et aiguilles argentés\nBracelet cuir bleu nuit, couture bleue, doublure beige\nPrésentée en écrin sur nos photos",
     description: spec.store.product.description_html,
-    specs: "mouvement, réserve de marche, étanchéité, diamètre et épaisseur du boîtier, matières du boîtier et du verre, largeur du bracelet",
+    specs: "gravure, mouvement, réserve de marche, étanchéité, diamètre et épaisseur du boîtier, matières du boîtier et du verre, largeur du bracelet",
     box: "contenu exact de l'écrin",
     shipping: "zones, délais et frais de livraison ; délai et conditions de retour ; durée de garantie",
     settings: { gallery_layout: "grid", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
@@ -198,8 +199,8 @@ function curateHeuren(k: Kit) {
   ]);
 
   // ─── Pages ──────────────────────────────────────────────────────────────────────────────────────────────────────
-  k.page("au-fil-du-jour", "Au fil du jour", { title: "Au fil du jour : la montre HEUREN du bureau au soir | HEUREN", description: "Au bureau, sur son support le soir, posée sur le travertin : la montre HEUREN au fil de la journée, en photos, pour l'imaginer à votre poignet." }, [
-    ["intro", section("rich-text", { style: "plain", align: "left", color_scheme: "scheme-1", padding_top: 24, padding_bottom: 24 }, [{ type: "text", settings: { text: p("Une montre se regarde au poignet, mais aussi posée. Voici HEUREN au fil d'une journée, du bureau du matin au support du soir.") } }])],
+  k.page("au-fil-du-jour", "Au fil du jour", { title: "Après le jour J : la montre HEUREN au fil de ses journées | HEUREN", description: "Au bureau, en voyage, sur son support le soir : la montre HEUREN au fil de ses journées, en photos, pour imaginer le cadeau à son poignet." }, [
+    ["intro", section("rich-text", { style: "plain", align: "left", color_scheme: "scheme-1", padding_top: 24, padding_bottom: 24 }, [{ type: "text", settings: { text: p("Le soir où on l'offre compte. Les jours suivants aussi : voici HEUREN au fil d'une journée, du bureau du matin au support du soir.") } }])],
     ["moments", section("ed-diptych", { layout: "index", label: "Trois moments", heading: "Au bureau, en voyage, le soir", text: "", button_label: "", button_link: "", motion: "reveal", padding_top: 48, padding_bottom: 72 }, [
       frame(k, "ambiance-02.webp", "Le matin, au bureau", "Sur le noyer, à côté d'un carnet ouvert et d'un stylo.", "landscape"),
       frame(k, "ambiance-04.webp", "En voyage", "Sur sa trousse de cuir bleu, près d'une carte dépliée.", "landscape", { focus_x: 52 }),
@@ -207,9 +208,9 @@ function curateHeuren(k: Kit) {
     ])],
     ["fin", section("ed-scene", { ...img("ambiance-03.webp"), layout: "closing", label: "Posée", heading: "Une montre à regarder, aussi", text: p("Sur un socle de travertin, dans la lumière rasante : HEUREN se regarde même quand on ne la porte pas."), button_label: "Voir la montre", button_link: productHref, caption: "", motion: "reveal", color_scheme: "scheme-4", padding_top: 88, padding_bottom: 88 })],
   ]);
-  k.page("aide", "Questions et contact", { title: "Questions et contact | HEUREN, montre bleu nuit", description: "Montre connectée ou non, le bleu au quotidien, l'écrin, ce que permet la démonstration : nos réponses, et un formulaire pour le reste." }, [
+  k.page("aide", "Questions et contact", { title: "Questions et contact | HEUREN, montre à offrir", description: "Les occasions, l'écrin, le bleu au quotidien, montre connectée ou non : nos réponses avant d'offrir HEUREN, et un formulaire pour le reste." }, [
     ["faq", faq("Questions fréquentes", [...HEUREN_FAQ, ...HEUREN_FAQ_PENDING], "numbered", "stacked", "", { color_scheme: "scheme-1" })],
-    ["form", section("contact-form", { eyebrow: "Contact", heading: "Une question avant de choisir ?", text: p("Écrivez-nous : le formulaire vérifie les champs avant l'envoi. Dans cette démonstration, aucun message n'est réellement transmis."), email: "", hours: "", response: "", preview_note: true, color_scheme: "scheme-4", padding_top: 64, padding_bottom: 96 })],
+    ["form", section("contact-form", { eyebrow: "Contact", heading: "Une question avant de l'offrir ?", text: p("Écrivez-nous : le formulaire vérifie les champs avant l'envoi. Dans cette démonstration, aucun message n'est réellement transmis."), email: "", hours: "", response: "", preview_note: true, color_scheme: "scheme-4", padding_top: 64, padding_bottom: 96 })],
   ]);
 
   // ─── Menus, en-tête « logo centré, menu à gauche » sur blanc (fond du logo), pied « encadré » ────────────────────
@@ -228,7 +229,7 @@ function curateHeuren(k: Kit) {
   const footer = Object.values(spec.groups.footer.sections).find((s) => s.type === "footer")!;
   footer.settings = { ...footer.settings, style: "boxed", show_wordmark: false, show_policies: false, show_payment: false, color_scheme: "scheme-1", logo_asset: "" };
   footer.blocks = {
-    about: { type: "text", settings: { heading: "HEUREN", text: p("Une montre à aiguilles au cadran bleu nuit, sans écran, pour le bureau, le soir et le voyage. Marque de démonstration du studio.") } },
+    about: { type: "text", settings: { heading: "HEUREN", text: p("La montre au cadran bleu nuit à offrir pour marquer une étape, et à porter chaque jour ensuite. Marque de démonstration du studio.") } },
     links: { type: "links", settings: { heading: "Aide", menu: "footer" } },
   };
   footer.block_order = ["about", "links"];

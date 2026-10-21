@@ -104,20 +104,28 @@ structurées « Son rôle / Quand l'utiliser / Ce qu'on voit / Avec quelle pièc
 Test mis à jour : le H1 attendu devient « Premier chien, premières balades ». Code : `tests/museau-souple-fixtures.ts`.
 Preuves : `docs/preuves/copywriting/museau-club/` (26 captures).
 
-### HEUREN — E-commerce, mono-produit — **réécrit**
+### HEUREN — E-commerce, mono-produit — **réécrit (consigne 21 h 45)** : le cadeau d'une étape de vie
 
-1. **Cible** : une personne dont le poignet vibre toute la journée (téléphone, montre connectée) et qui voudrait y porter un bel objet.
-2. **Tension** : « Mon poignet me réclame quelque chose toutes les cinq minutes. »
-3. **Désir et angle** : porter quelque chose de beau qui ne demande rien → un bleu à regarder, pas un écran à surveiller.
-4. **Promesse et faits** : une montre à aiguilles au cadran bleu nuit soleillé qui change avec la lumière ; faits = visuels.
-   Mouvement, taille, étanchéité et matières inconnus (jamais affirmés).
-5. **Objections** : connectée ou non ; le bleu au quotidien ; l'offrir (écrin des photos, contenu non renseigné) ; prix,
-   taille et commande (information dédiée).
-6. **Parcours** : ouverture « L'heure bleue, au poignet. » (pas d'écran, pas de notification) → cadran (l'angle) → repères
-   → « Un bleu qui ne crie pas » → « Du bureau au dîner, sans changer de montre » → achat → FAQ → inscription.
+| | |
+|---|---|
+| Acheteur | une personne qui offre une montre à son compagnon (brief) |
+| Utilisateur | lui, qui la portera |
+| Situation d'achat | une étape de sa vie à marquer : nouveau poste, anniversaire, projet qui aboutit |
+| Tension (ses mots) | « Je veux un cadeau à la hauteur du moment, pas un objet qui finira dans un tiroir. » |
+| Désir | que le cadeau garde la trace du moment, et qu'il le porte ensuite |
+| Angle unique | un cadeau qui matérialise ce moment et se porte ensuite au quotidien |
+| Promesse tenable | une montre à aiguilles au cadran bleu nuit soleillé, présentée en écrin sur les photos, sobre au bureau comme le soir |
+| Objections traitées | pour quelles occasions, comment elle est présentée (contenu de l'écrin non renseigné), le bleu au quotidien, connectée ou non, ce que permet la démo |
+| **Faits** | visuels : cadran, index, aiguilles, boîtier, bracelet, écrin et ruban, décors (bureau, veston, voyage, chevet) |
+| **Non renseigné** | gravure (nouvelle question masquée), mouvement, étanchéité, taille, matières, bracelet, garantie, prix |
+| Exclusions | plus de « guerre contre les notifications » ; rien d'inventé sur la gravure, le mouvement ou les matières |
 
-Pages réécrites : accueil, fiche (rôle, ce qu'on voit, quand la porter ; « Le même bleu, deux humeurs »), « Au fil du
-jour », aide, pied, SEO. Preuves : `docs/preuves/copywriting/heuren/`.
+Pages : accueil (ouverture sur **l'écrin et son ruban** au lieu de la pierre noire : « Il y a des étapes qui méritent une
+montre. » → « Un bleu qu'il regardera longtemps » → « Ce qu'il découvrira, *point par point* » → « Un cadeau qui se
+porte, *bien après la fête* » → « Du bureau au dîner, il la garde » → achat → « Avant de l'offrir » → inscription « pour
+préparer votre cadeau »), fiche (« Montre à aiguilles · à offrir »), « Au fil du jour » (après le jour J), aide, pied, SEO.
+Visuels cohérents (écrin, tenues sobres, voyage, chevet) ; la scène sur pierre noire passe à l'inscription. Code :
+`tests/heuren-alcove-fixtures.ts`. Preuves : `docs/preuves/copywriting/heuren/`.
 
 ### ALCÔVE — E-commerce, mono-produit — **réécrit**
 
