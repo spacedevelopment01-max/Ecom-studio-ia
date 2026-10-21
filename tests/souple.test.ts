@@ -324,7 +324,8 @@ describe("SOUPLE appliqué à un autre projet : identité du projet, jamais cell
     const first = spec.templates.index.sections[spec.templates.index.order[0]];
     expect(first.disabled ?? false).toBe(false);
     expect(first.type).toBe("ed-scene");
-    expect(first.settings).toMatchObject({ layout: "panorama", heading_tag: "h1" });
+    expect(first.settings).toMatchObject({ layout: "panorama", heading_tag: "h1", button_link: `/products/${spec.store.product.handle}` });
+    expect(String(first.settings.button_label)).not.toMatch(/collection/i);
     expect(JSON.stringify(spec.settings.color_schemes).toUpperCase()).not.toMatch(/#5A1B36|#B4637A/);
   });
 

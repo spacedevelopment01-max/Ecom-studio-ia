@@ -632,7 +632,7 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       return [
         ...k.either(
           k.lib("fs-collections", 1, { layout: "asym", heading_tag: "h1", eyebrow: k.hero.eyebrow, heading: k.hero.heading, text: k.hero.text ? `<p>${k.hero.text}</p>` : "", align: "left", button_label: k.t("Voir toute la collection", "See the whole collection"), button_link: "/collections/all", effect: "rise", stagger: true, hover: true, padding_top: 32, padding_bottom: 72 }, { hide: !tiles.length, blocks: tiles }),
-          k.lib("ed-scene", 1, { layout: "panorama", heading_tag: "h1", label: k.hero.eyebrow, heading: k.hero.heading, text: k.hero.text ? `<p>${k.hero.text}</p>` : "", button_label: k.t("Voir toute la collection", "See the whole collection"), button_link: "/collections/all", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.packshot ?? "", padding_top: 0, padding_bottom: 64 }),
+          k.lib("ed-scene", 1, { layout: "panorama", heading_tag: "h1", label: k.hero.eyebrow, heading: k.hero.heading, text: k.hero.text ? `<p>${k.hero.text}</p>` : "", button_label: k.hero.cta || k.t("Découvrir", "Discover"), button_link: k.shelf[0] ? `/products/${k.shelf[0].handle}` : "/collections/all", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.packshot ?? "", padding_top: 0, padding_bottom: 64 }),
         ),
         k.lib("rich-text", 2, { style: "reveal", align: "left", padding_top: 80, padding_bottom: 80 }),
         k.lib("fs-products", 1, { layout: "list", source: "collection", collection: "all", limit: 4, ratio: "square", align: "left", effect: "fade", padding_top: 80, padding_bottom: 80 }, { hide: shelf.length < 2 }),
