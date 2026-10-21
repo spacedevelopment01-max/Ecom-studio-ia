@@ -86,24 +86,28 @@ fiches, pages) ; avant / après : `docs/preuves/souple-158/AVANT-APRES.md`. Prem
 sous le titre, tapis, brique et sangle visibles sous le bouton. Limites : prix, matières et dimensions inconnus (blocs
 masqués) ; validation de Thomas attendue.
 
-### MUSEAU CLUB — Produit spécifique, 4 produits — **réécrit**
+### MUSEAU CLUB — Spécialisée, 4 produits — **réécrit (consigne 21 h 45)** : premier chien
 
-1. **Cible** : un propriétaire de chien en ville, qui sort son chien plusieurs fois par jour, souvent pressé le matin.
-2. **Tension** : « Je cherche la laisse, il me manque toujours un sac, et rien n'est assorti. »
-3. **Désir et angle** : sortir en un geste, fier de son duo → la balade commence à la porte : tout est prêt, tout va ensemble.
-4. **Promesse et faits** : quatre pièces qui s'accrochent entre elles (mousquetons, anneaux) dans le même bleu ; faits =
-   visuels (anneaux, mousquetons, boucles, maille crème, ouverture de la pochette, rangement près de la porte).
-5. **Objections** : harnais ou collier (rôles, même laisse) ; comment tout s'accroche ; l'assortiment ; tailles et prix
-   non renseignés (une information dédiée) ; sacs fournis ou non (non affirmé, question en attente).
-6. **Parcours** : scène à repères (un rôle par pièce) → grille « qui s'accrochent entre elles » → harnais porté → collier
-   porté → pochette (l'achat) → la porte → FAQ « Avant de choisir » → inscription « Être prévenu quand le club ouvre ».
+| | |
+|---|---|
+| Utilisateur et acheteur | une personne qui accueille son premier chien (brief) |
+| Situation d'achat | les jours autour de l'arrivée du chien, devant un rayon où tout se ressemble |
+| Tension (ses mots) | « Harnais, collier, laisse… je ne sais pas ce qui sert à quoi, ni par quoi commencer. » |
+| Désir | des premières balades simples, sans hésiter au moment de sortir |
+| Angle unique | préparer ses premières balades avec un ensemble cohérent, un rôle clair par pièce |
+| Promesse tenable | porter (harnais pour la promenade, collier au quotidien), relier (la laisse, à chaque sortie), accompagner (la pochette à sacs) ; tout s'accroche |
+| Objections traitées | par quoi commencer, harnais ou collier, comment tout s'accroche, faut-il tout acheter, ce que permet la démo |
+| **Faits** | visuels : anneaux, mousquetons, boucles, maille crème, ouverture de la pochette, rangement près de la porte |
+| **Non renseigné** | tailles, matières, entretien, sacs fournis, livraison, garantie (questions masquées, prêtes dans l'éditeur) |
+| Exclusions | aucun conseil de dressage ou de santé ; aucune matière, taille, résistance ni sécurité affirmées |
 
-Textes clés : H1 « Tout pour la balade, *prêt à la porte* » ; rôles « Harnais · pour la promenade », « Laisse · le lien
-de l'ensemble », « Collier · pour tous les jours », « Pochette à sacs · toujours accrochée » ; fiches « Son rôle / Ce
-qu'on voit / Avec qui » ; scènes « Le duo des longues promenades », « Pour le tour du parc, deux pièces suffisent »,
-« À réunir, ou à offrir ensemble », « Prête avant la sortie » ; page « La balade » : « Quelle pièce pour quelle sortie ».
-Pages réécrites : accueil, collection, 4 fiches, « La balade », aide, pied, SEO. Preuves : `docs/preuves/copywriting/museau-club/`.
-Limites : tailles, matières, sacs fournis, prix inconnus (blocs masqués).
+Pages : accueil (« Premier chien, premières balades : *chaque pièce a son rôle* » → « Ce qui sert à quoi, *en un coup
+d'œil* » → harnais « à porter, pour la promenade » → collier « au quotidien, et pour le petit tour du soir » → pochette →
+« Prêts près de la porte, avant même son arrivée » → « Avant les premières sorties » → inscription) ; quatre fiches
+structurées « Son rôle / Quand l'utiliser / Ce qu'on voit / Avec quelle pièce » ; collection ; « Les premières balades »
+(ex-« La balade ») ; aide ; menus ; pied ; SEO. Visuels cohérents (chiens portant les pièces, entrée, boîte d'accueil).
+Test mis à jour : le H1 attendu devient « Premier chien, premières balades ». Code : `tests/museau-souple-fixtures.ts`.
+Preuves : `docs/preuves/copywriting/museau-club/` (26 captures).
 
 ### HEUREN — E-commerce, mono-produit — **réécrit**
 

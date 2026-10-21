@@ -159,7 +159,7 @@ describe("MUSEAU CLUB : démonstration de quatre produits", async () => {
 
   it("accueil : la marque, sa catégorie et les quatre références dès l'ouverture ; repères vers le bon produit", () => {
     const home = pages.get("/")!;
-    expect(home.match(/<h1[^>]*>[\s\S]*?<\/h1>/)![0]).toMatch(/Tout pour la balade/);
+    expect(home.match(/<h1[^>]*>[\s\S]*?<\/h1>/)![0]).toMatch(/Premier chien, premières balades/);
     const opening = types("index")[0];
     expect(opening.settings).toMatchObject({ layout: "side", heading_tag: "h1", button_link: "/collections/all" });
     // Un repère par produit, chacun relié à SA fiche.
