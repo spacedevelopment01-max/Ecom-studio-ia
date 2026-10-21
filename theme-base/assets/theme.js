@@ -183,10 +183,12 @@
         values.forEach(function (val, i) { var lab = $('[data-option-value="' + i + '"]', wrap); if (lab) lab.textContent = val; });
         if (!v) { addBtn.disabled = true; addLabel.textContent = strings.unavailable; return; }
         idInput.value = v.id;
-        addBtn.disabled = !v.available;
+        var unpriced = v.price == null;
+        addBtn.disabled = !v.available || unpriced;
+        var pending = $('[data-price-pending]', wrap); if (pending) pending.hidden = !unpriced;
         var withPrice = !!$('[data-button-price]', wrap) || wrap.hasAttribute('data-price-in-button');
         if (withPrice) wrap.setAttribute('data-price-in-button', '');
-        addLabel.textContent = v.available ? strings.addToCart + (withPrice && v.price != null ? ' – ' + formatMoney(v.price) : '') : strings.soldOut;
+        addLabel.textContent = unpriced ? strings.notForSale : v.available ? strings.addToCart + (withPrice && v.price != null ? ' – ' + formatMoney(v.price) : '') : strings.soldOut;
         var section = wrap.closest('[data-main-product], [data-featured-product]');
         var priceWrap = section && $('[data-price]', section);
         if (priceWrap && v.price != null) { var cur = priceWrap.querySelector('.es-price__current'); if (cur) cur.textContent = formatMoney(v.price); }
@@ -358,7 +360,8 @@
     if (v.title && v.title !== 'Default Title') parts.push(v.title);
     var meta = $('[data-sticky-meta]', stickyBuy); if (meta) meta.textContent = parts.join(' · ') + (parts.length ? ' ·' : '');
     var total = $('[data-sticky-total]', stickyBuy); if (total && v.price != null) total.textContent = formatMoney(Math.round(v.price * q * (100 - discount) / 100));
-    var btn = $('[data-sticky-add]', stickyBuy); if (btn) btn.disabled = !v.available;
+    var btn = $('[data-sticky-add]', stickyBuy);
+    if (btn) { btn.disabled = !v.available || v.price == null; btn.textContent = v.price == null ? strings.notForSale : strings.addToCart; }
   }
   function stickyBuyOnScroll() {
     if (!stickyBuy || !mainBuy) return;

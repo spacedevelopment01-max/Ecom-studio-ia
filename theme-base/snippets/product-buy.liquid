@@ -5,6 +5,14 @@
 {%- liquid
   assign current_variant = product.selected_or_first_available_variant
   assign form_id = 'product-form-' | append: section_id
+  comment
+    Variante sans prix (« Prix à définir ») : rien ne peut être commandé, le bouton le dit au lieu de sembler actif puis
+    de refuser l'ajout. Une boutique Shopify a toujours un prix : la condition ne joue que dans le studio et ses exports.
+  endcomment
+  assign unpriced = false
+  if current_variant.price == nil
+    assign unpriced = true
+  endif
 -%}
 <div class="es-buy" data-product-buy data-section="{{ section_id }}" data-product-url="{{ product.url }}">
   {%- unless product.has_only_default_variant -%}
@@ -40,11 +48,12 @@
           <button type="button" data-qty-step="1" aria-label="{{ 'cart.increase' | t }}">{% render 'icon', name: 'plus' %}</button>
         </div>
       {%- endif -%}
-      <button type="submit" name="add" class="es-button es-button--grow" data-add-button{% unless current_variant.available %} disabled{% endunless %}>
-        <span data-add-label>{%- if current_variant.available -%}{{ 'products.product.add_to_cart' | t }}{%- if price_in_button -%}<span data-button-price> – {{ current_variant.price | money }}</span>{%- endif -%}{%- else -%}{{ 'products.product.sold_out' | t }}{%- endif -%}</span>
+      <button type="submit" name="add" class="es-button es-button--grow" data-add-button{% if current_variant.available == false or unpriced %} disabled{% endif %}>
+        <span data-add-label>{%- if unpriced -%}{{ 'products.product.not_for_sale' | t }}{%- elsif current_variant.available -%}{{ 'products.product.add_to_cart' | t }}{%- if price_in_button -%}<span data-button-price> – {{ current_variant.price | money }}</span>{%- endif -%}{%- else -%}{{ 'products.product.sold_out' | t }}{%- endif -%}</span>
       </button>
     </div>
     {%- if show_dynamic_checkout -%}{{ form | payment_button }}{%- endif -%}
+    <p class="es-small es-muted es-buy__note" data-price-pending{% unless unpriced %} hidden{% endunless %}>{{ 'products.product.price_pending_note' | t }}</p>
     <p class="es-form-error" role="alert" data-form-error hidden></p>
   {%- endform -%}
   <script type="application/json" data-variants>{{ product.variants | json }}</script>

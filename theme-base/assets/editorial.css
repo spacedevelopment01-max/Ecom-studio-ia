@@ -143,7 +143,9 @@ body[data-editorial="object"] [data-main-product] .purchase__offers{grid-templat
 .ed-opening--arch .ed-opening__media{justify-self:end;width:min(100%,520px)}
 .ed-opening--arch .ed-opening__media .ed-media{aspect-ratio:2/3;height:auto;border-radius:999px 999px 18px 18px}
 .ed-opening--arch .ed-caption{grid-column:1/-1}
-@media(max-width:749px){.ed-opening--arch .ed-shell{grid-template-columns:1fr;gap:28px}.ed-opening--arch .ed-opening__media{order:-1;justify-self:center;width:min(84%,360px)}.ed-opening--arch .ed-opening__copy{text-align:left}}
+/* Téléphone (#157) : l'arche se range à gauche du titre au lieu de le repousser sous le premier écran ; le texte et le
+   bouton suivent sur toute la largeur. L'arche garde son rapport 2/3, le produit reste entier. */
+@media(max-width:749px){.ed-opening--arch .ed-shell{grid-template-columns:minmax(0,46fr) minmax(0,54fr);grid-template-rows:1fr auto auto 1fr auto auto;grid-template-areas:"media ." "media kicker" "media title" "media ." "prose prose" "button button";column-gap:18px;row-gap:0;align-items:start}.ed-opening--arch .ed-opening__copy{display:contents;text-align:left}.ed-opening--arch .ed-opening__media{grid-area:media;justify-self:stretch;width:100%}.ed-opening--arch .ed-kicker{grid-area:kicker;margin-bottom:6px}.ed-opening--arch .ed-opening__title{grid-area:title;font-size:clamp(32px,9.6vw,44px);line-height:1.04;margin:0;max-width:none}.ed-opening--arch .ed-prose{grid-area:prose;margin-top:22px}.ed-opening--arch .ed-button{grid-area:button;justify-self:start;margin-top:14px}.ed-opening--arch .ed-caption{grid-column:1/-1}}
 /* ─── Profil « cadran » (HEUREN, issue #155) : ivoire et bleu nuit, serif fine, filets argentés, angles droits, cadres
    doublés d'un fin liseré comme une lunette. */
 body[data-editorial="cadran"]{--radius-button:0px;--cd-line:color-mix(in srgb,var(--c-text) 16%,transparent)}
@@ -168,6 +170,10 @@ body[data-editorial="arrondi"] .ed-title,body[data-editorial="arrondi"] .fs h2{f
 body[data-editorial="arrondi"] .ed-button,body[data-editorial="arrondi"] .es-button{border-radius:999px}
 body[data-editorial="arrondi"] .ed-media{border-radius:24px}
 body[data-editorial="arrondi"] .ed-diptych__frame>.ed-media{border-radius:999px 999px 24px 24px}
+/* Recadrages (#157) : une scène large garde son cadre paysage (coins arrondis, pas d'arche qui rogne le décor), et sur
+   téléphone les cadres paysage de ces deux profils ne sont plus forcés en portrait 4/5 : le produit reste entier. */
+body[data-editorial="arrondi"] .ed-diptych__frame.ed-ratio--landscape>.ed-media{border-radius:24px}
+@media(max-width:749px){body[data-editorial="arrondi"] .ed-diptych--pair .ed-diptych__frame.ed-ratio--landscape>.ed-media,body[data-editorial="cadran"] .ed-diptych--pair .ed-diptych__frame.ed-ratio--landscape>.ed-media{aspect-ratio:4/3}}
 body[data-editorial="arrondi"] .fs-look__media,body[data-editorial="arrondi"] .fs-camp__media,body[data-editorial="arrondi"] .fs-card,body[data-editorial="arrondi"] .es-image-text__media,body[data-editorial="arrondi"] .es-product__media{border-radius:24px;overflow:hidden}
 body[data-editorial="arrondi"] .es-product__thumb,body[data-editorial="arrondi"] .es-product__thumbs img{border-radius:14px}
 body[data-editorial="arrondi"] .es-header{min-height:76px}

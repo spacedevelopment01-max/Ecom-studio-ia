@@ -169,7 +169,7 @@ function curateHeuren(k: Kit) {
   });
   overlay(k.productKey(), [
     section("ed-diptych", { layout: "pair", label: "Deux décors", heading: "Sur l'ardoise, sur le lin", text: p("Le même bleu, deux lumières : la montre HEUREN face à un mur bleu nuit, puis sur un lin ivoire."), button_label: "", button_link: "", motion: "reveal", padding_top: 72, padding_bottom: 72 }, [
-      frame(k, "ambiance-01.webp", "Sur l'ardoise", "Le cadran bleu face à un mur bleu nuit.", "landscape", { focus_x: 62 }),
+      frame(k, "ambiance-01.webp", "Sur l'ardoise", "Le cadran bleu face à un mur bleu nuit.", "landscape", { focus_x: 70, mobile_focus_x: 70 }),
       frame(k, "ambiance-06.webp", "Sur le lin", "Posée sur un lin ivoire froissé, en lumière douce.", "landscape"),
     ]),
     v2faq(k, "side", "Questions", "Questions fréquentes", "", [...HEUREN_FAQ, ...HEUREN_FAQ_PENDING]),
@@ -200,9 +200,9 @@ function curateHeuren(k: Kit) {
   const header = Object.values(spec.groups.header.sections).find((s) => s.type === "header")!;
   header.settings = { ...header.settings, menu: "main-menu", layout: "nav-left", shape: "bar", icons: "plain", mega_menu: "columns", mobile_menu: "fullscreen", mobile_submenu: "accordion", sticky: true, transparent_on_home: false, show_search: true, show_cart: true, cta_label: "", phone: "", color_scheme: "scheme-3" };
   header.blocks = {}; header.block_order = [];
-  const announce = k.announce(); announce.settings.color_scheme = "scheme-2";
-  spec.groups.header.sections = { announce, header };
-  spec.groups.header.order = ["announce", "header"];
+  // Pas de bandeau « Boutique de démonstration » : la mention d'aperçu (studio et aperçu statique) le dit déjà (#157).
+  spec.groups.header.sections = { header };
+  spec.groups.header.order = ["header"];
   const footer = Object.values(spec.groups.footer.sections).find((s) => s.type === "footer")!;
   footer.settings = { ...footer.settings, style: "boxed", show_wordmark: false, show_policies: false, show_payment: false, color_scheme: "scheme-1", logo_asset: "" };
   footer.blocks = {
@@ -243,7 +243,7 @@ function curateAlcove(k: Kit) {
       { type: "text", settings: { text: p("Pas un angle : le dossier et les accoudoirs ne forment qu'un seul arrondi autour d'un coussin épais, posé sur quatre pieds de bois brun.") } },
     ]),
     section("ed-diptych", { layout: "pair", label: "Deux pièces", heading: "Au coin lecture, dans la chambre", text: "", button_label: "", button_link: "", motion: "reveal", padding_top: 64, padding_bottom: 64 }, [
-      frame(k, "ambiance-02.webp", "Le coin lecture", "Une table d'appoint, un bouquet, la lumière qui entre de biais.", "portrait", { focus_x: 72, mobile_focus_x: 72 }),
+      frame(k, "ambiance-02.webp", "Le coin lecture", "Une table d'appoint, un bouquet, la lumière qui entre de biais.", "landscape", { focus_x: 60, mobile_focus_x: 60 }),
       frame(k, "ambiance-05.webp", "La chambre", "Au pied du lit, pour poser ses affaires ou lire un moment.", "portrait", { focus_x: 58, mobile_focus_x: 58 }),
     ]),
     section("fs-campaign", { ...img("ambiance-06.webp"), layout: "card", eyebrow: "Le soir", heading: "Sous une lumière", heading_accent: "ambrée", text: p("Une lampe en papier, un tapis épais : le terracotta se fait plus profond quand la lumière baisse."), align: "left", label: "", offer_title: "", offer_text: "", period_text: "", conditions: "", cta_label: "Voir le fauteuil", cta_link: productHref, cta2_label: "Pièce par pièce", cta2_link: "/pages/piece-par-piece", focus_x: 62, focus_y: 55, effect: "fade", stagger: false, hover: false, background: "scheme", color_scheme: "scheme-3" }),
@@ -295,9 +295,9 @@ function curateAlcove(k: Kit) {
   const promo = withDefaults(sectionSchema(spec, "header")!.blocks.find((b) => b.type === "promo")?.settings, { ...img("produit-01.webp"), eyebrow: "Le fauteuil", heading: "Fauteuil ALCÔVE terracotta", button_label: "Voir le fauteuil", link: productHref, placement: "both", menu_title: "" });
   header.blocks = { promo: { type: "promo", settings: promo } };
   header.block_order = ["promo"];
-  const announce = k.announce(); announce.settings.color_scheme = "scheme-4";
-  spec.groups.header.sections = { announce, header };
-  spec.groups.header.order = ["announce", "header"];
+  // Pas de bandeau « Boutique de démonstration » : la mention d'aperçu (studio et aperçu statique) le dit déjà (#157).
+  spec.groups.header.sections = { header };
+  spec.groups.header.order = ["header"];
   const footer = Object.values(spec.groups.footer.sections).find((s) => s.type === "footer")!;
   footer.settings = { ...footer.settings, style: "stacked", show_wordmark: false, show_policies: false, show_payment: false, color_scheme: "scheme-2", logo_asset: "" };
   footer.blocks = {

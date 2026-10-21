@@ -208,6 +208,8 @@
       "add_to_cart": "Add to cart",
       "sold_out": "Sold out",
       "unavailable": "Unavailable",
+      "not_for_sale": "Not available to buy",
+      "price_pending_note": "Price to be set: this product cannot be ordered yet.",
       "added": "Added to cart",
       "quantity": "Quantity",
       "media": "Product gallery",

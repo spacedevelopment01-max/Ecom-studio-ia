@@ -171,8 +171,33 @@ for (const id of ["heuren", "alcove"] as const) describe(`${id.toUpperCase()} : 
     const hidden = Object.values(spec.templates).flatMap((t) => Object.values(t.sections)).flatMap((s) => [...(s.disabled ? [s] : []), ...Object.values(s.blocks ?? {}).filter((b) => b.disabled)]);
     expect(JSON.stringify(spec.templates).match(/À compléter/g)!.length).toBe(JSON.stringify(hidden).match(/À compléter/g)!.length);
     for (const field of ["Caractéristiques techniques", "Livraison, retours et garantie", "Quelle est la garantie ?"]) expect(JSON.stringify(hidden), field).toContain(field);
-    expect(visibleText(pages.get("/")!)).toContain("Boutique de démonstration : aucune vente réelle.");
+    // Une seule mention de démonstration (#157) : celle de l'aperçu, pas un bandeau d'annonce en plus.
+    expect(visibleText(pages.get("/")!)).not.toContain("Boutique de démonstration");
+    expect(Object.values(spec.groups.header.sections).map((sec) => sec.type)).toEqual(["header"]);
     expect(visibleText(pages.get("/")!)).toMatch(new RegExp(`(©|&copy;)\\s*\\d{4}\\s*${id === "heuren" ? "HEUREN" : "ALCÔVE"}`));
+  });
+
+  it("sans prix : achat affiché indisponible (fiche, produit à la une, barre mobile) ; avec un prix de test, l'achat reste normal (#157)", async () => {
+    const productRoute = `/products/${spec.store.product.handle}`;
+    const addButtons = (html: string) => [...html.matchAll(/<button[^>]*data-add-button[^>]*>[\s\S]*?<\/button>/g)].map((m) => m[0]);
+    const stickyButton = (html: string) => html.match(/<button[^>]*data-sticky-add[^>]*>[^<]*<\/button>/)?.[0] ?? "";
+    for (const route of ["/", productRoute]) {
+      const html = pages.get(route)!;
+      expect(addButtons(html).length, route).toBeGreaterThan(0);
+      for (const b of addButtons(html)) { expect(b, route).toMatch(/\sdisabled[\s>]/); expect(visibleText(b).replace(/\s+/g, " ").trim(), route).toBe("Achat indisponible"); }
+      expect(html, route).toMatch(/<p class="es-small es-muted es-buy__note" data-price-pending>Prix à définir : ce produit ne peut pas encore être commandé\.<\/p>/);
+    }
+    expect(stickyButton(pages.get(productRoute)!)).toMatch(/disabled>Achat indisponible<\/button>$/);
+    // Prix de test dans une copie isolée (jamais publié comme prix de la marque) : bouton actif, note cachée, panier accepté.
+    const priced = structuredClone(spec);
+    priced.store.product.price = 12900;
+    for (const v of priced.store.product.variants) v.price = 12900;
+    const html = (await fr(() => renderPage({ spec: priced, base: "", files: compileTheme(priced), cart: [] }, productRoute, new URLSearchParams()))).html;
+    for (const b of addButtons(html)) { expect(b).not.toMatch(/\sdisabled[\s>]/); expect(visibleText(b).replace(/\s+/g, " ").trim()).toBe("Ajouter au panier"); }
+    expect(html).toMatch(/data-price-pending hidden>/);
+    expect(stickyButton(html)).toMatch(/>Ajouter au panier<\/button>$/);
+    expect(stickyButton(html)).not.toMatch(/disabled/);
+    expect(reconcileOfferCart(priced, [{ variantId: 1000, quantity: 2 }]).map((l) => [l.variantId, l.quantity])).toEqual([[1000, 2]]);
   });
 
   it("liens internes : chaque lien de page mène à une page existante de la démonstration", () => {
