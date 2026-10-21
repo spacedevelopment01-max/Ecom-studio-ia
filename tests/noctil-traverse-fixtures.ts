@@ -80,12 +80,21 @@ export const TODO = (what: string) => `[À compléter : ${what}]`;
 const DEMO_BANNER = "Boutique de démonstration : aucune vente réelle.";
 export const ORDER_FAQ = (brand: string): [string, string] => ["Peut-on commander aujourd'hui ?", `Pas encore : la boutique ${brand} présentée ici est une démonstration. Aucune commande n'y est enregistrée et aucun paiement n'est demandé.`];
 
+// NOCTIL — fiche de stratégie (consigne du 21 octobre, 19 h 50 ; hypothèse éditoriale, pas une étude). Une seule cible :
+//  1. cible : un adulte qui rentre chez lui le soir et voudrait que sa soirée à la maison ressemble à autre chose qu'au
+//     plafonnier et à l'écran (salon, bureau, coin lecture : les pièces des photos) ;
+//  2. tension : « Le soir, c'est toujours le même salon sous le même plafonnier. » ;
+//  3. désir : changer d'atmosphère sans sortir — angle unique : ce soir, on ne sort pas, on change de ciel ;
+//  4. promesse tenable : une galaxie projetée au plafond ou sur un mur, et un bel objet une fois éteint ; faits = visuels.
+//     Aucun bienfait sur le sommeil ou le bien-être ; alimentation, réglages, dimensions inconnus ;
+//  5. objections : où s'affiche la galaxie, faut-il le noir complet, à quoi il ressemble le jour, prix et réglages
+//     (information dédiée) ;
+//  6. parcours : ouverture (se reconnaître) → ce qui change → où le poser → l'idée → l'objet de près → appel → FAQ → inscription.
 export const NOCTIL_FAQ: [string, string][] = [
-  ["Dans quelles pièces utiliser NOCTIL ?", "Là où vous aimez éteindre la grande lumière : le salon, la chambre, un coin lecture, le bureau. Nos photos le montrent dans chacune de ces pièces."],
   ["Où la galaxie s'affiche-t-elle ?", "Au plafond ou sur un mur, selon l'endroit où vous posez NOCTIL et la direction de son objectif. Nos images montrent les deux."],
-  ["À quoi ressemble NOCTIL de près ?", "Une sphère indigo mate tenue par un arceau, un objectif rond à l'avant et un socle rond avec un bouton éclairé de violet. Toutes les vues sont sur la fiche."],
-  ["Comment être prévenu des nouveautés ?", "Laissez votre adresse dans « Nouvelles de NOCTIL ». Nous écrivons seulement quand il y a du nouveau."],
-  ORDER_FAQ("NOCTIL"),
+  ["Faut-il le noir complet ?", "Plus la pièce est sombre, plus la galaxie ressort. Sur nos photos, la grande lumière est éteinte ; dans le coin lecture, une lampe reste allumée à côté."],
+  ["Et le jour, à quoi ressemble-t-il ?", "À une sphère indigo mate sur son arceau, posée sur un socle rond : sur une étagère, c'est un objet de décor. Toutes les vues sont sur la fiche."],
+  ["Que puis-je faire dans cette boutique de démonstration ?", "Faire le tour du projecteur et le voir dans plusieurs pièces. Le prix, l'alimentation, les réglages et les dimensions ne sont pas encore renseignés, et la commande est désactivée."],
 ];
 export const NOCTIL_FAQ_PENDING: [string, string][] = [
   ["Comment NOCTIL est-il alimenté ?", TODO("alimentation, câble ou batterie, autonomie")],
@@ -94,12 +103,21 @@ export const NOCTIL_FAQ_PENDING: [string, string][] = [
   ["Que contient la boîte ?", TODO("contenu exact du coffret")],
   ["Quelle est la garantie ?", TODO("durée et conditions de garantie")],
 ];
+// TRAVERSE — fiche de stratégie (même consigne) :
+//  1. cible : une personne qui travaille en ville et part souvent deux ou trois jours, directement en sortant du bureau ;
+//  2. tension : « Le vendredi, je pars avec deux sacs, ou un sac de randonnée qui jure avec ma veste. » ;
+//  3. désir : partir sans repasser par chez soi — angle unique : le même sac du lundi matin au départ du vendredi ;
+//  4. promesse tenable : un sac à dos sobre (olive, noir) aux poches visibles, porté au dos ou à la main ; faits = visuels.
+//     Contenance, format cabine, imperméabilité, compartiment ordinateur et modularité jamais affirmés ;
+//  5. objections : fait-il sérieux au bureau, comment le porter, ce qu'on garde sous la main, contenance et cabine
+//     (information dédiée) ;
+//  6. parcours : ouverture → trois temps → carnet de route → organisation (repères) → finitions → ce qu'on emporte →
+//     achat → FAQ → inscription.
 export const TRAVERSE_FAQ: [string, string][] = [
-  ["Pour quels trajets TRAVERSE est-il pensé ?", "Pour les journées en ville comme pour les départs. Nos photos le montrent au café, en gare, à l'aéroport, à l'hôtel et au bord d'un lac."],
-  ["Comment le porter ?", "Sur le dos avec ses bretelles noires, ou à la main par la poignée du dessus."],
-  ["Où voir les détails du sac ?", "Sur la fiche : face, profil, poche frontale zippée et boucles en gros plan."],
-  ["Comment être prévenu des nouveautés ?", "Laissez votre adresse dans « Nouvelles de TRAVERSE ». Nous écrivons seulement quand il y a du nouveau."],
-  ORDER_FAQ("TRAVERSE"),
+  ["Fait-il sérieux au bureau ?", "Olive profond, fermetures et sangles noires, aucune couleur criarde : sur nos photos, il passe du café du matin au salon d'aéroport sans changer de style."],
+  ["Comment le porter ?", "Sur le dos avec ses bretelles noires, ou à la main par la poignée du dessus, entre deux quais."],
+  ["Que garde-t-on sous la main ?", "Ce qu'on cherche en route va dans la grande poche frontale zippée ; le compartiment principal s'ouvre par deux curseurs."],
+  ["Que puis-je faire dans cette boutique de démonstration ?", "Faire le tour du sac et le suivre en voyage. Le prix, la contenance, les dimensions et les matières ne sont pas encore renseignés, et la commande est désactivée."],
 ];
 export const TRAVERSE_FAQ_PENDING: [string, string][] = [
   ["Quelle est sa contenance ?", TODO("volume en litres et dimensions")],
@@ -282,10 +300,10 @@ export type Kit = ReturnType<typeof kit>;
 function curateNoctil(k: Kit) {
   const { spec, img, section, hide, overlay, faq, productHref } = k;
   k.demoMeta();
-  spec.store.seo = { title: "NOCTIL | Projecteur de galaxies pour le salon et la chambre", description: "NOCTIL projette une galaxie au plafond et sur les murs : une sphère indigo qui change l'atmosphère du salon, de la chambre ou du coin lecture." };
+  spec.store.seo = { title: "NOCTIL | Projecteur de galaxies : ce soir, changez de ciel sans sortir", description: "Éteignez le plafonnier : NOCTIL projette une galaxie au plafond ou sur un mur du salon, du bureau ou du coin lecture. Beau aussi éteint, sur une étagère." };
   k.product({
     title: "Projecteur de galaxies NOCTIL",
-    description_html: p("NOCTIL réunit une sphère indigo mate, un objectif rond ouvert sur une galaxie et un socle au bouton éclairé de violet. Posé sur un meuble, il habille le plafond ou un mur d'un ciel de nuit.") + p("Salon cinéma, chambre, coin lecture, bureau : il change l'atmosphère d'une pièce le temps d'une soirée, et reste un bel objet une fois éteint."),
+    description_html: p("Son rôle : changer l'atmosphère d'une pièce le soir, sans sortir. Posé sur un meuble, il projette une galaxie au plafond ou sur un mur.") + p("Ce qu'on voit : une sphère indigo mate tenue par un arceau, un objectif rond ouvert sur une galaxie, un socle rond au bouton éclairé de violet.") + p("Où le poser : au salon, au bureau, dans le coin lecture ou sur une table de chevet ; nos photos le montrent dans chacune de ces pièces. Éteint, il reste un objet de décor."),
     images: ["produit-01.webp", "produit-02.webp", "produit-03.webp", "produit-04.webp", "produit-05.webp"],
     tags: ["projecteur", "galaxie", "décoration de nuit"],
     seo: { title: "Projecteur de galaxies NOCTIL : vues, détails, mise en place", description: "Découvrez NOCTIL, projecteur de galaxies : sphère indigo sur arceau, objectif et socle lumineux en gros plan, et comment le placer dans une pièce." },
@@ -293,38 +311,38 @@ function curateNoctil(k: Kit) {
 
   // ─── Accueil : une narration de nuit, pièce par pièce. ──────────────────────────────────────────────────────────
   overlay("index", [
-    section("cv-hero", { ...img("ambiance-10.webp"), image_ratio: "wide", focus_x: 50, focus_y: 50, layout: "stacked", heading: "Projecteur de galaxies NOCTIL :", heading_accent: "la nuit entre dans la pièce", heading_tag: "h1", text: p("Une sphère indigo posée sur son socle, un objectif ouvert sur une galaxie, et vos murs qui changent d'échelle. NOCTIL transforme un salon, une chambre ou un coin lecture en ciel de nuit, le temps d'une soirée."), button_label: "Découvrir NOCTIL", button_link: productHref, rating_text: "", rating_note: "", guarantee_text: "", animation: "fade" }, [
+    section("cv-hero", { ...img("ambiance-10.webp"), image_ratio: "wide", focus_x: 50, focus_y: 50, layout: "stacked", heading: "Ce soir, on ne sort pas.", heading_accent: "On change de ciel.", heading_tag: "h1", text: p("Éteignez le plafonnier, posez le projecteur NOCTIL sur un meuble bas : une galaxie violette prend le plafond ou un mur, et le salon n'est plus tout à fait le même."), button_label: "Voir le projecteur", button_link: productHref, rating_text: "", rating_note: "", guarantee_text: "", animation: "fade" }, [
       { type: "check", settings: { text: "Une galaxie au plafond ou sur un mur" } },
-      { type: "check", settings: { text: "Sphère indigo mate sur un arceau" } },
+      { type: "check", settings: { text: "Beau aussi éteint, sur une étagère" } },
       { type: "check", settings: { text: "Un bouton éclairé sur le socle" } },
     ]),
-    section("features-grid", { eyebrow: "Ce qui change", heading: "Une pièce, <em>une autre nuit</em>", layout: "grid", columns: 4, columns_mobile: "2", style: "glow", heading_align: "center", link_label: "", link: "" }, [
+    section("features-grid", { eyebrow: "Ce qui change", heading: "La même pièce, <em>une autre soirée</em>", layout: "grid", columns: 4, columns_mobile: "2", style: "glow", heading_align: "center", link_label: "", link: "" }, [
       { type: "feature", settings: { icon: "star", title: "Le plafond devient un ciel", text: p("La galaxie se déploie au-dessus de vous : le plafond devient le décor de la soirée."), link_label: "", link: "" } },
       { type: "feature", settings: { icon: "waves", title: "Des murs en profondeur", text: p("Projetée sur un mur, la lumière violette et bleue donne du relief aux pièces les plus simples."), link_label: "", link: "" } },
       { type: "feature", settings: { icon: "sparkle", title: "Beau même éteint", text: p("Sphère indigo mate, socle rond, nom discret : NOCTIL a sa place sur une étagère en plein jour."), link_label: "", link: "" } },
       { type: "feature", settings: { icon: "hand", title: "Un bouton, en vue", text: p("Sur le socle, un bouton éclairé de violet : on le trouve même dans la pénombre."), link_label: "", link: "" } },
     ]),
-    section("cv-gallery", { layout: "carousel", ratio: "portrait", eyebrow: "Pièce par pièce", heading: "Une pièce,", heading_accent: "une nuit", text: p("Un coin lecture, une chambre, une alcôve, un plafond de chambre : la même galaxie, quatre atmosphères."), ai_label: "" }, [
+    section("cv-gallery", { layout: "carousel", ratio: "portrait", eyebrow: "Pièce par pièce", heading: "Où le poser", heading_accent: "ce soir", text: p("Le coin lecture, la table de chevet, une alcôve, la table basse : la même galaxie, quatre soirées différentes."), ai_label: "" }, [
       { type: "image", settings: { ...img("ambiance-07.webp"), caption: "Le coin lecture" } },
       { type: "image", settings: { ...img("ambiance-09.webp"), caption: "Au-dessus du lit" } },
       { type: "image", settings: { ...img("ambiance-04.webp"), caption: "L'alcôve lavande" } },
       { type: "image", settings: { ...img("ambiance-05.webp"), caption: "Un ciel violet au plafond" } },
     ]),
-    section("image-with-text", { ...img("ambiance-01.webp"), layout: "overlap", ratio: "portrait", reveal: "up", parallax: false, eyebrow: "L'idée", heading: "Quand le jour se retire, la pièce change de taille", text: p("NOCTIL est né d'une envie simple : garder un morceau de ciel nocturne à la maison. Une sphère posée près de la fenêtre au crépuscule, la ville qui s'allume, et la soirée commence autrement."), button_label: "Voir les pièces", button_link: "/pages/univers" }),
-    section("cv-cards", { layout: "columns", heading: "De près,", heading_accent: "l'objet", text: p("Trois gros plans pour regarder NOCTIL comme on le verra sur un meuble.") }, [
+    section("image-with-text", { ...img("ambiance-01.webp"), layout: "overlap", ratio: "portrait", reveal: "up", parallax: false, eyebrow: "L'idée", heading: "Quand le jour se retire, la pièce change de taille", text: p("Au crépuscule, la ville s'allume derrière le voilage. On éteint la grande lumière, NOCTIL prend le relais : le plafond recule, la soirée commence autrement."), button_label: "Voir les pièces", button_link: "/pages/univers" }),
+    section("cv-cards", { layout: "columns", heading: "Éteint,", heading_accent: "un objet de décor", text: p("En plein jour, voici ce qu'on voit sur l'étagère.") }, [
       { type: "card", settings: { ...img("produit-04.webp"), title: "L'objectif", text: p("Un objectif rond et cerclé, où l'on voit déjà la galaxie.") } },
       { type: "card", settings: { ...img("produit-05.webp"), title: "Le socle et son bouton", text: p("Un socle rond, le nom NOCTIL et un bouton éclairé de violet.") } },
       { type: "card", settings: { ...img("produit-02.webp"), title: "La sphère sur son arceau", text: p("De profil : la sphère tenue entre les deux branches de son arceau.") } },
     ]),
-    section("cta-banner", { ...img("ambiance-08.webp"), heading: "Faites entrer la nuit dans votre salon", text: p("Toutes les vues de NOCTIL, ses détails et la façon de le placer, sur sa fiche."), button_label: "Voir NOCTIL", button_link: productHref, style: "center", parallax: false, overlay: 55 }),
-    faq("Questions avant la nuit", NOCTIL_FAQ.slice(0, 4), "cards", "stacked", "Les réponses courtes aux questions que l'on se pose en découvrant NOCTIL."),
-    section("newsletter", { eyebrow: "Nouvelles de NOCTIL", heading: "Un e-mail quand il y a du nouveau", text: p("Nouvelles pièces photographiées, nouvelles vues, ouverture de la boutique : nous écrivons seulement quand quelque chose change."), button_label: "S'inscrire", preview_note: true, legal: p("Désinscription possible à tout moment depuis chaque e-mail.") }),
+    section("cta-banner", { ...img("ambiance-08.webp"), heading: "Faites entrer la nuit dans votre salon", text: p("Toutes les vues de NOCTIL et où le poser, sur sa fiche."), button_label: "Voir le projecteur", button_link: productHref, style: "center", parallax: false, overlay: 55 }),
+    faq("Avant de l'allumer", NOCTIL_FAQ.slice(0, 4), "cards", "stacked", "Où s'affiche la galaxie, le noir complet, l'objet le jour, ce que permet la démonstration."),
+    section("newsletter", { eyebrow: "Nouvelles de NOCTIL", heading: "Être prévenu quand NOCTIL ouvre", text: p("Un e-mail à l'ouverture de la boutique. Rien d'autre."), button_label: "Me prévenir", preview_note: true, legal: p("Désinscription possible à tout moment depuis chaque e-mail.") }),
   ]);
 
   // ─── Fiche produit ──────────────────────────────────────────────────────────────────────────────────────────────
   k.mainProduct({
-    eyebrow: "Projecteur de galaxies",
-    text: "Une sphère indigo sur son arceau, un objectif ouvert sur une galaxie, un socle rond au bouton éclairé : NOCTIL apporte un ciel de nuit dans la pièce de votre choix.",
+    eyebrow: "Projecteur de galaxies · pour le soir",
+    text: "Éteignez le plafonnier, tournez l'objectif vers le plafond ou un mur : une galaxie violette change l'atmosphère de la pièce.",
     highlights: "Une galaxie au plafond ou sur un mur\nSphère indigo mate sur un arceau\nUn bouton éclairé sur le socle\nPour le salon, la chambre et le bureau",
     description: spec.store.product.description_html,
     specs: "alimentation et autonomie, luminosité, couleurs et modes, minuterie, télécommande ou application, dimensions, poids, matériaux, certifications",
@@ -346,7 +364,7 @@ function curateNoctil(k: Kit) {
       { type: "tab", settings: { title: "Dans la pièce", icon: "heart", heading: "Au plafond ou sur un mur", content: p("Posé sur un meuble bas, une table de chevet ou une étagère, NOCTIL habille le mur ou le plafond qu'il regarde. Nos photos le montrent dans un salon, une chambre, un bureau et un coin lecture."), ...img("ambiance-06.webp"), button_label: "Voir les pièces", button_link: "/pages/univers" } },
       { type: "tab", settings: { title: "Fiche technique", icon: "clock", heading: "Fiche technique", content: p(TODO("alimentation, autonomie, luminosité, modes, dimensions, poids")), image_asset: "", button_label: "", button_link: "" }, hidden: true },
     ]),
-    section("timeline", { eyebrow: "Mise en place", heading: "Préparer", heading_accent: "sa nuit", image_asset: "" }, [
+    section("timeline", { eyebrow: "Mise en place", heading: "Préparer", heading_accent: "sa soirée", image_asset: "" }, [
       { type: "step", settings: { title: "Choisir la pièce", text: p("Salon, chambre, coin lecture : là où vous voulez passer la soirée.") } },
       { type: "step", settings: { title: "Poser NOCTIL", text: p("Sur un meuble bas, une table de chevet ou une étagère, objectif tourné vers le mur ou le plafond à habiller.") } },
       { type: "step", settings: { title: "Éteindre la grande lumière", text: p("Moins il y a de lumière autour, plus la galaxie ressort, comme sur nos photos.") } },
@@ -363,7 +381,7 @@ function curateNoctil(k: Kit) {
       { type: "item", settings: { icon: "shield", title: "Garantie", text: p(TODO("durée et couverture")), proof_label: "", proof_link: "" } },
       { type: "item", settings: { icon: "chat", title: "Assistance", text: p(TODO("canal de contact et horaires")), proof_label: "", proof_link: "" } },
     ])),
-    faq("Questions fréquentes", [...NOCTIL_FAQ, ...NOCTIL_FAQ_PENDING], "lines", "stacked"),
+    faq("Questions sur NOCTIL", [...NOCTIL_FAQ, ...NOCTIL_FAQ_PENDING], "lines", "stacked"),
   ]);
 
   // ─── Pages ──────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -376,9 +394,9 @@ function curateNoctil(k: Kit) {
     ])],
     ["cta", section("cta-banner", { heading: "Trouvez sa place chez vous", text: p("Toutes les vues de NOCTIL et la façon de le placer, sur sa fiche."), button_label: "Voir NOCTIL", button_link: productHref, image_asset: "", style: "center", parallax: false, color_scheme: "scheme-2", padding_top: 88, padding_bottom: 88 })],
   ]);
-  k.page("aide", "Questions et contact", { title: "Questions et contact | NOCTIL, projecteur de galaxies", description: "Les réponses sur NOCTIL, projecteur de galaxies : où le poser, où s'affiche la galaxie, commande. Et un formulaire pour toute autre question." }, [
+  k.page("aide", "Questions et contact", { title: "Questions et contact | NOCTIL, projecteur de galaxies", description: "Où s'affiche la galaxie, faut-il le noir complet, l'objet le jour, ce que permet la démonstration : nos réponses sur NOCTIL, et un formulaire." }, [
     ["faq", faq("Questions fréquentes", [...NOCTIL_FAQ, ...NOCTIL_FAQ_PENDING], "numbered", "stacked", "", { color_scheme: "scheme-1" })],
-    ["form", section("contact-form", { eyebrow: "Contact", heading: "Une autre question sur NOCTIL ?", text: p("Écrivez-nous : le formulaire vérifie les champs avant l'envoi. Dans cette démonstration, aucun message n'est réellement transmis."), email: "", hours: "", response: "", preview_note: true, color_scheme: "scheme-4", padding_top: 64, padding_bottom: 96 })],
+    ["form", section("contact-form", { eyebrow: "Contact", heading: "Une question avant de l'allumer ?", text: p("Écrivez-nous : le formulaire vérifie les champs avant l'envoi. Dans cette démonstration, aucun message n'est réellement transmis."), email: "", hours: "", response: "", preview_note: true, color_scheme: "scheme-4", padding_top: 64, padding_bottom: 96 })],
   ]);
 
   // ─── Menus, en-tête « barre flottante » sur lavande, pied « centré » ────────────────────────────────────────────
@@ -392,7 +410,7 @@ function curateNoctil(k: Kit) {
   const footer = Object.values(spec.groups.footer.sections).find((s) => s.type === "footer")!;
   footer.settings = { ...footer.settings, style: "centered", show_wordmark: false, show_policies: false, show_payment: false, color_scheme: "scheme-2", logo_asset: "" };
   footer.blocks = {
-    about: { type: "text", settings: { heading: "NOCTIL", text: p("Le projecteur de galaxies pour le salon, la chambre et les coins où l'on aime éteindre la grande lumière. Marque de démonstration du studio.") } },
+    about: { type: "text", settings: { heading: "NOCTIL", text: p("Le projecteur de galaxies des soirées à la maison : salon, bureau, coin lecture. Marque de démonstration du studio.") } },
     links: { type: "links", settings: { heading: "Aide", menu: "footer" } },
     news: { type: "newsletter", settings: { heading: "Nouvelles de NOCTIL", text: "Aperçu : inscription non enregistrée dans la démonstration." } },
   };
@@ -406,10 +424,10 @@ function curateNoctil(k: Kit) {
 function curateTraverse(k: Kit) {
   const { spec, img, section, hide, overlay, faq, productHref } = k;
   k.demoMeta();
-  spec.store.seo = { title: "TRAVERSE | Sac de voyage modulable, du quotidien au départ", description: "TRAVERSE, sac à dos de voyage vert olive : poches visibles, sangles à boucle et poignée, du café du matin au quai de départ et jusqu'à la destination." };
+  spec.store.seo = { title: "TRAVERSE | Le même sac du lundi matin au départ du vendredi", description: "Sac à dos de voyage olive : poche frontale zippée, sangles à boucle, poignée et bretelles noires. Assez sobre pour le bureau, prêt pour la gare." };
   k.product({
     title: "Sac de voyage modulable TRAVERSE",
-    description_html: p("TRAVERSE est un sac à dos de voyage vert olive aux lignes nettes : une grande poche frontale zippée, une poche latérale, des sangles à boucle noire de chaque côté, une poignée sur le dessus et des bretelles noires.") + p("Il accompagne la journée de travail comme le week-end qui commence en sortant du bureau : au café, en gare, à l'aéroport, à l'hôtel et jusqu'au bord du lac."),
+    description_html: p("Son rôle : un seul sac pour la semaine et le départ. Assez sobre pour le café et le bureau, il part en week-end sans repasser par chez vous.") + p("Ce qu'on voit : un sac à dos vert olive aux lignes nettes, une grande poche frontale zippée, une poche latérale, des sangles à boucle noire de chaque côté, une poignée sur le dessus et des bretelles noires.") + p("Où il va : au café, en gare, à l'aéroport, à l'hôtel et jusqu'au bord du lac ; nos photos le suivent à chaque étape."),
     images: ["produit-01.webp", "produit-02.webp", "produit-03.webp", "produit-04.webp", "produit-05.webp"],
     tags: ["sac à dos", "voyage", "olive"],
     seo: { title: "Sac de voyage modulable TRAVERSE : vues, poches et détails", description: "Faites le tour du sac TRAVERSE : face, profil, poche frontale zippée et boucles en gros plan, organisation visible et préparation du départ." },
@@ -417,7 +435,7 @@ function curateTraverse(k: Kit) {
 
   // ─── Accueil : carnet de voyage, asymétrique. ───────────────────────────────────────────────────────────────────
   overlay("index", [
-    section("cv-banner", { ...img("produit-05.webp"), layout: "image-left", focus_x: 50, focus_y: 50, eyebrow: "Sac de voyage modulable", heading: "TRAVERSE, du café du matin", heading_accent: "au quai de départ", heading_tag: "h1", text: p("Un sac à dos olive aux lignes nettes, des poches que l'on voit et que l'on retrouve, des sangles noires bien tenues : TRAVERSE accompagne la journée de travail comme le week-end qui commence en sortant du bureau."), price_text: "", price_note: "", button_label: "Découvrir TRAVERSE", button_link: productHref, note: "", animation: "fade" }),
+    section("cv-banner", { ...img("produit-05.webp"), layout: "image-left", focus_x: 50, focus_y: 50, eyebrow: "Sac à dos de voyage TRAVERSE", heading: "Le même sac du lundi matin", heading_accent: "au départ du vendredi", heading_tag: "h1", text: p("Sobre au café et au bureau, prêt pour la gare : un sac à dos olive aux poches visibles, pour partir en week-end sans repasser par chez soi."), price_text: "", price_note: "", button_label: "Voir le sac", button_link: productHref, note: "", animation: "fade" }),
     section("features-grid", { eyebrow: "Un sac, trois temps", heading: "Pensé pour la façon <em>dont on part vraiment</em>", layout: "grid", columns: 1, columns_mobile: "1", style: "lines", heading_align: "left", link_label: "", link: "" }, [
       { type: "feature", settings: { icon: "none", title: "Le quotidien", text: p("Au café, au bureau, dans les transports : une silhouette sobre qui ne crie pas « grand départ »."), link_label: "", link: "" } },
       { type: "feature", settings: { icon: "none", title: "Le départ", text: p("Gare, aéroport, quai : la poignée du dessus et les bretelles noires pour le porter comme il vient."), link_label: "", link: "" } },
@@ -443,15 +461,15 @@ function curateTraverse(k: Kit) {
       { type: "ingredient", settings: { icon: "drop", name: "Composition", role: TODO("matières exactes du tissu, des fermetures et des boucles"), note: "", badge: "", image_asset: "" }, hidden: true },
     ]),
     section("image-with-text", { ...img("ambiance-07.webp"), layout: "image-left", ratio: "landscape", reveal: "curtain", parallax: false, eyebrow: "Ce que l'on emporte", heading: "Une chemise, un carnet, des lunettes de soleil", text: p("Ce que l'on aime avoir avec soi, posé à côté du sac avant de partir. On ouvre, on range, on referme : la poche avant garde ce qui sert en route."), button_label: "Voir le sac", button_link: productHref }),
-    section("featured-purchase", { label: "Le sac", heading: "Sac de voyage modulable TRAVERSE", text: p("Face, profil, poche zippée, boucles : faites le tour du sac avant de le choisir."), product: KIT_HANDLE.traverse, product_target: "product:main", purchase_style: "outlined", purchase_enabled: false, image_fit: "contain", gallery_limit: 4, link_label: "Voir la fiche complète" }),
-    faq("Questions de voyage", TRAVERSE_FAQ.slice(0, 4), "lines", "side", "Les réponses courtes aux questions que l'on se pose avant de partir avec TRAVERSE."),
-    section("newsletter-media", { layout: "left", ...img("ambiance-09.webp"), eyebrow: "Nouvelles de TRAVERSE", heading: "Le carnet de route, par e-mail", text: p("Nouvelles destinations photographiées, ouverture de la boutique : nous écrivons seulement quand il y a du nouveau."), perk_1: "", perk_2: "", perk_3: "", button_label: "S'inscrire", legal: p("Désinscription possible à tout moment depuis chaque e-mail.") }),
+    section("featured-purchase", { label: "Le sac", heading: "Sac de voyage modulable TRAVERSE", text: p("Avant de partir avec, faites-en le tour : face, profil, poche zippée et boucles en gros plan."), product: KIT_HANDLE.traverse, product_target: "product:main", purchase_style: "outlined", purchase_enabled: false, image_fit: "contain", gallery_limit: 4, link_label: "Voir la fiche complète" }),
+    faq("Avant de partir avec", TRAVERSE_FAQ.slice(0, 4), "lines", "side", "Le bureau, le port, ce qu'on garde sous la main, ce que permet la démonstration."),
+    section("newsletter-media", { layout: "left", ...img("ambiance-09.webp"), eyebrow: "Nouvelles de TRAVERSE", heading: "Être prévenu quand TRAVERSE ouvre", text: p("Un e-mail à l'ouverture de la boutique. Rien d'autre."), perk_1: "", perk_2: "", perk_3: "", button_label: "Me prévenir", legal: p("Désinscription possible à tout moment depuis chaque e-mail.") }),
   ]);
 
   // ─── Fiche produit ──────────────────────────────────────────────────────────────────────────────────────────────
   k.mainProduct({
-    eyebrow: "Sac de voyage modulable",
-    text: "Un sac à dos olive aux lignes nettes : grande poche frontale zippée, sangles latérales à boucle, poignée sur le dessus et bretelles noires.",
+    eyebrow: "Sac à dos de voyage · du bureau au départ",
+    text: "Assez sobre pour le bureau, prêt pour la gare : grande poche frontale zippée, sangles à boucle, poignée sur le dessus et bretelles noires.",
     highlights: "Poche frontale zippée\nSangles latérales à boucle noire\nPoignée sur le dessus, bretelles noires\nDu quotidien au départ",
     description: spec.store.product.description_html,
     specs: "volume, dimensions, poids, format cabine, imperméabilité, compartiment ordinateur, éléments modulables, matières, certifications",
@@ -487,7 +505,7 @@ function curateTraverse(k: Kit) {
       { type: "item", settings: { icon: "shield", title: "Garantie", text: p(TODO("durée et couverture")), proof_label: "", proof_link: "" } },
       { type: "item", settings: { icon: "chat", title: "Assistance", text: p(TODO("canal de contact et horaires")), proof_label: "", proof_link: "" } },
     ])),
-    faq("Questions fréquentes", [...TRAVERSE_FAQ, ...TRAVERSE_FAQ_PENDING], "lines", "stacked"),
+    faq("Questions sur le sac", [...TRAVERSE_FAQ, ...TRAVERSE_FAQ_PENDING], "lines", "stacked"),
   ]);
 
   // ─── Pages ──────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -500,7 +518,7 @@ function curateTraverse(k: Kit) {
     ])],
     ["cta", section("cta-banner", { heading: "Prêt pour la prochaine étape", text: p("Toutes les vues du sac, ses poches et ses boucles, sur sa fiche."), button_label: "Découvrir TRAVERSE", button_link: productHref, image_asset: "", style: "left", parallax: false, color_scheme: "scheme-2", padding_top: 88, padding_bottom: 88 })],
   ]);
-  k.page("aide", "Aide et contact", { title: "Aide et contact | TRAVERSE, sac de voyage modulable", description: "Les réponses sur TRAVERSE, sac de voyage modulable : trajets, port, détails et commande. Et un formulaire pour toute autre question." }, [
+  k.page("aide", "Aide et contact", { title: "Aide et contact | TRAVERSE, sac de voyage modulable", description: "Au bureau, au dos ou à la main, ce qu'on garde sous la main, ce que permet la démonstration : nos réponses sur TRAVERSE, et un formulaire." }, [
     ["faq", faq("Questions fréquentes", [...TRAVERSE_FAQ, ...TRAVERSE_FAQ_PENDING], "numbered", "side", "", { color_scheme: "scheme-1" })],
     ["form", section("contact-form", { eyebrow: "Contact", heading: "Une autre question avant de partir ?", text: p("Écrivez-nous : le formulaire vérifie les champs avant l'envoi. Dans cette démonstration, aucun message n'est réellement transmis."), email: "", hours: "", response: "", preview_note: true, color_scheme: "scheme-4", padding_top: 64, padding_bottom: 96 })],
   ]);
@@ -525,7 +543,7 @@ function curateTraverse(k: Kit) {
   const footer = Object.values(spec.groups.footer.sections).find((s) => s.type === "footer")!;
   footer.settings = { ...footer.settings, style: "card", show_wordmark: false, show_policies: false, show_payment: false, color_scheme: "scheme-4", logo_asset: "" };
   footer.blocks = {
-    about: { type: "text", settings: { heading: "TRAVERSE", text: p("Le sac de voyage du quotidien, du départ et de la destination. Marque de démonstration du studio.") } },
+    about: { type: "text", settings: { heading: "TRAVERSE", text: p("Le sac à dos du lundi matin et du départ du vendredi. Marque de démonstration du studio.") } },
     links: { type: "links", settings: { heading: "Aide", menu: "footer" } },
   };
   // Pas de seconde inscription dans le pied : celle de l'accueil (avec visuel) suffit.

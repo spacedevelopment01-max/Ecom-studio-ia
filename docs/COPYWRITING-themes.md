@@ -134,6 +134,34 @@ jour », aide, pied, SEO. Preuves : `docs/preuves/copywriting/heuren/`.
 Pages réécrites : accueil, fiche (« Un arc autour de l'assise »), « Pièce par pièce », aide, pied, SEO. Preuves :
 `docs/preuves/copywriting/alcove/`.
 
+### NOCTIL — Produit spécifique — **réécrit** (une seule cible)
+
+1. **Cible retenue** : un adulte qui rentre le soir et voudrait que sa soirée à la maison ressemble à autre chose qu'au
+   plafonnier et à l'écran (salon, bureau, coin lecture). La piste « parent et coucher de l'enfant » est écartée pour cette démo.
+2. **Tension** : « Le soir, c'est toujours le même salon sous le même plafonnier. »
+3. **Désir et angle** : changer d'atmosphère sans sortir → ce soir, on ne sort pas, on change de ciel.
+4. **Promesse et faits** : une galaxie au plafond ou sur un mur, un bel objet une fois éteint ; faits = visuels. Aucun
+   bienfait sur le sommeil ou le bien-être ; alimentation, réglages et dimensions non affirmés.
+5. **Objections** : où s'affiche la galaxie, faut-il le noir complet, l'objet le jour, prix et réglages (information dédiée).
+6. **Parcours** : « Ce soir, on ne sort pas. *On change de ciel.* » → « La même pièce, une autre soirée » → « Où le poser
+   ce soir » → l'idée → « Éteint, un objet de décor » → appel → FAQ « Avant de l'allumer » → inscription.
+
+Pages réécrites : accueil, fiche (rôle, ce qu'on voit, où le poser ; « Préparer sa soirée »), « Une galaxie par pièce »,
+aide, pied, SEO. Preuves : `docs/preuves/copywriting/noctil/`.
+
+### TRAVERSE — Produit spécifique — **réécrit**
+
+1. **Cible** : une personne qui travaille en ville et part souvent deux ou trois jours en sortant du bureau.
+2. **Tension** : « Le vendredi, je pars avec deux sacs, ou un sac de randonnée qui jure avec ma veste. »
+3. **Désir et angle** : partir sans repasser par chez soi → le même sac du lundi matin au départ du vendredi.
+4. **Promesse et faits** : un sac à dos sobre (olive, noir) aux poches visibles, au dos ou à la main ; faits = visuels.
+   Contenance, format cabine, imperméabilité, compartiment ordinateur et modularité jamais affirmés.
+5. **Objections** : fait-il sérieux au bureau, comment le porter, ce qu'on garde sous la main, prix et contenance (information dédiée).
+6. **Parcours** : « Le même sac du lundi matin *au départ du vendredi* » → trois temps → carnet de route → repères →
+   finitions → ce qu'on emporte → achat → FAQ « Avant de partir avec » → inscription.
+
+Pages réécrites : accueil, fiche, aide, pied, SEO (le carnet de route garde ses étapes). Preuves : `docs/preuves/copywriting/traverse/`.
+
 ## Boutiques des clients
 
 - **Charte du client prioritaire** : quand le client a validé ses couleurs (charte), le thème choisi change la
