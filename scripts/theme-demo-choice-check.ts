@@ -32,6 +32,9 @@ const THEME = {
 }[T];
 /** Attribut du <body> qui porte le profil graphique : « conversion » (boutique spécialisée), « editorial » (E-commerce). */
 const PROFILE_ATTR = T === "heuren" || T === "alcove" ? "editorial" : "conversion";
+/** Projet de départ de la même famille que le thème choisi : boutique spécialisée dans FRAISE, ou E-commerce dans ORBE
+ * (HEUREN et ALCÔVE, issue #155 : un thème E-commerce ne se propose pas à une boutique spécialisée). */
+const START = (T === "heuren" || T === "alcove" ? { id: "orbe", name: "ORBE", kind: "catalog" } : { id: "fraise", name: "FRAISE", kind: "specialty" }) as { id: "orbe" | "fraise"; name: string; kind: "catalog" | "specialty" };
 const demosDir = process.env.THEME_DEMOS_DIR; if (!demosDir || !fs.existsSync(path.join(demosDir, T, "accueil.html"))) throw new Error("THEME_DEMOS_DIR : démos préparées requises (scripts/prepare-theme-demos.ts)");
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "ecs-demo-choice-")); process.env.DATA_DIR = temp; process.env.STOCK_OFFLINE = "1";
 const out = path.resolve(process.argv[2] ?? "reports/theme-demo-choice"); fs.mkdirSync(out, { recursive: true });
@@ -44,10 +47,10 @@ const user = await createUser(email, password, "Vérification démo complète");
 const pid = seedHoldout(user.id, 0, "Atelier Verre");
 run("INSERT INTO subscriptions (user_id,status,plan,owner_user_id,project_id,source,created_at,updated_at) VALUES (?,'active','creer',?,?,'admin',?,?)", `demo-check-${pid}`, user.id, pid, Date.now(), Date.now());
 const p0 = loadProject(pid);
-saveBrand(pid, { ...p0.brand!, name: "Atelier Verre", tagline: "Des verres soufflés pour tous les jours.", palette: { primary: "#1F4E5F", secondary: "#CFE3E8", accent: "#2A7F62", light: "#F6F8F7", dark: "#10242B" }, direction: "fraise" });
-saveSettings(pid, { ...loadProject(pid).settings, storeKind: "specialty" });
-const built = await runWithLang({ content: "fr", ui: "fr" }, () => composeShop(pid, "fraise", null, false));
-saveThemeVersion(pid, built.spec, "Boutique Atelier Verre (FRAISE)", "user");
+saveBrand(pid, { ...p0.brand!, name: "Atelier Verre", tagline: "Des verres soufflés pour tous les jours.", palette: { primary: "#1F4E5F", secondary: "#CFE3E8", accent: "#2A7F62", light: "#F6F8F7", dark: "#10242B" }, direction: START.id });
+saveSettings(pid, { ...loadProject(pid).settings, storeKind: START.kind });
+const built = await runWithLang({ content: "fr", ui: "fr" }, () => composeShop(pid, START.id, null, false));
+saveThemeVersion(pid, built.spec, `Boutique Atelier Verre (${START.name})`, "user");
 
 /** Empreinte de tout ce que la visite pourrait toucher : elle doit être identique avant et après. */
 const hash = (x: unknown) => crypto.createHash("sha256").update(JSON.stringify(x)).digest("hex").slice(0, 16);
@@ -76,11 +79,11 @@ try {
   const login = await context.request.post(`${origin}/api/auth/login`, { data: { email, password } }); assert.ok(login.ok(), `connexion : ${login.status()}`);
   await page.goto(`${origin}/studio/${pid}/boutique`, { waitUntil: "networkidle", timeout: 240000 }); await page.waitForTimeout(1500);
   const preview = () => page.frameLocator("iframe[src*='/preview/']").first();
-  await preview().locator("body[data-conversion='pop']").waitFor({ timeout: 180000 });
+  await preview().locator(START.id === "orbe" ? "body[data-editorial='object']" : "body[data-conversion='pop']").waitFor({ timeout: 180000 });
   const nudge = page.locator("[data-tuto-nudge]").getByRole("button", { name: /^(Masquer|Dismiss)$/ }); if (await nudge.count()) { await nudge.click(); await page.waitForTimeout(300); }
-  await shot(page, "01-projet-existant-fraise");
+  await shot(page, `01-projet-existant-${START.id}`);
   const before = fingerprint();
-  steps.push({ step: "projet existant « Atelier Verre » ouvert dans FRAISE", empreinte: before, ok: true });
+  steps.push({ step: `projet existant « Atelier Verre » (${START.kind === "catalog" ? "E-commerce" : "boutique spécialisée"}) ouvert dans ${START.name}`, empreinte: before, ok: true });
 
   // 1. Visite : aucune requête d'écriture vers le projet ne doit partir.
   const writes: string[] = [];
@@ -192,11 +195,13 @@ try {
   // Guide après le choix (vue directe : le guide s'affiche quand l'application est terminée dans la même session).
   const guided = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "fr-FR" }); await guided.addCookies(await context.cookies());
   const g = await guided.newPage(); await g.goto(`${origin}/studio/${pid}/boutique`, { waitUntil: "networkidle", timeout: 240000 }); await g.waitForTimeout(1500);
-  await g.getByRole("button", { name: /^Thèmes$/ }).first().click(); await g.locator("[data-open-demo='onde']").waitFor({ timeout: 60000 });
-  // ONDE (même catégorie) choisi depuis sa carte : le guide liste ce qui attend les informations du projet.
-  await g.locator("[data-choose-theme='onde']").click();
+  // Un second thème de la même catégorie, choisi depuis sa carte (ONDE ; en E-commerce, l'autre thème de l'issue #155) :
+  // le guide liste ce qui attend les informations du projet.
+  const second = START.kind === "catalog" ? { id: T === "heuren" ? "alcove" : "heuren", body: `body[data-editorial='${T === "heuren" ? "arrondi" : "cadran"}']` } : { id: "onde", body: "body[data-conversion='contrast']" };
+  await g.getByRole("button", { name: /^Thèmes$/ }).first().click(); await g.locator(`[data-open-demo='${second.id}']`).waitFor({ timeout: 60000 });
+  await g.locator(`[data-choose-theme='${second.id}']`).click();
   await g.locator("[data-theme-guide]").waitFor({ timeout: 300000 });
-  await g.frameLocator("iframe[src*='/preview/']").first().locator("body[data-conversion='contrast']").waitFor({ timeout: 180000 }); await g.waitForTimeout(1500);
+  await g.frameLocator("iframe[src*='/preview/']").first().locator(second.body).waitFor({ timeout: 180000 }); await g.waitForTimeout(1500);
   await g.screenshot({ path: path.join(out, "choix-12-guide-informations-a-completer.png") });
   const guide = await g.locator("[data-theme-guide]").innerText();
   steps.push({ step: "après un choix : guide des informations à compléter (sans rien emprunter à la démo)", guide, ok: true });

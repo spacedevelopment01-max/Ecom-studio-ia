@@ -32,7 +32,7 @@ const PLAN = {
   // HEUREN et ALCÔVE (issue #155) : famille E-commerce ; leurs dispositions d'origine (logo centré, menu à gauche / encadré ;
   // boutique éditoriale / empilé), puis une autre disposition de la famille.
   heuren: { family: "catalog", entry: "Entretien et durabilité", type: "fs-care", preview: "list", then: "cards", foreign: "Composition et matériaux", header: "mega-cards", footer: "columns", currentHeader: "centered-nav", currentFooter: "boxed" },
-  alcove: { family: "catalog", entry: "Usages et installation", type: "ed-diptych", preview: "side", then: "index", foreign: "Étude de cas", header: "classic", footer: "minimal", currentHeader: "store", currentFooter: "stacked" },
+  alcove: { family: "catalog", entry: "Fabrication et ateliers", type: "fs-making", preview: "steps", then: "timeline", foreign: "Étude de cas", header: "classic", footer: "minimal", currentHeader: "store", currentFooter: "stacked" },
 }[demoId] as { family: string; entry: string; type: string; preview: string; then: string; foreign: string; header: string; footer: string; currentHeader?: string; currentFooter?: string };
 const PORT = 3600 + Math.floor(Math.random() * 300), origin = `http://127.0.0.1:${PORT}`;
 const { demoProject } = await import("../tests/demo-fixtures");
