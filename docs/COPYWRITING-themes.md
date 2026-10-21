@@ -236,37 +236,37 @@ rédigées, ne renvoient plus aux mentions légales. Mentions légales : marque 
 réécrites : accueil, prestations, à propos, FAQ, contact, mentions légales, pied, SEO. Code : `curateRive` dans
 `tests/engine-demo-copy.ts`. Preuves : **kit privé**, captures hors dépôt (archive privée).
 
-### FRAISE — Produit spécifique (référence Lumora) — **réécrit**, composition inchangée
+### FRAISE — Spécialisée (référence Lumora) — **réécrit (consigne 21 h 45)**, composition inchangée
 
-1. **Cible** : une famille ou une bande d'amis qui grignote à plusieurs (goûter, pique-nique, table de fête).
-2. **Tension** : « Les sachets se déchirent et traînent entamés au fond du placard ou du sac. »
-3. **Désir et angle** : une douceur posée au milieu et partagée → le flacon qui fait le tour de la table.
-4. **Promesse et faits** : flacon transparent, couvercle large, gummies à la fraise ; « 60 douceurs » est écrit sur
-   l'étiquette des visuels ; trois offres et leurs prix de démonstration. Texture, ingrédients, allergènes, conservation,
-   délais et retours jamais affirmés ; aucune allégation de santé.
-5. **Objections** : quelle offre choisir, le flacon se referme-t-il, combien de gummies, ingrédients et allergènes (dit :
-   non renseignés), modifier son panier, information démo dédiée.
-6. **Parcours** (sections Lumora inchangées, même ordre, aucune masquée) : « Le flacon de fraise *qui fait le tour de la
-   table* » → avis (état honnête) → ce que l'on voit → quatre détails → « Ouvert, servi, *refermé* » → « Avant de goûter »
-   → « Un flacon, *trois ou cinq ?* » (comparatif des trois offres) → repères → « Bon à savoir avant de commander » →
-   trois moments → questions → être prévenu.
+Décision de Thomas : des **vitamines** en gummies goût fraise ; produit et composition **fictifs** autorisés pour la
+démonstration et signalés comme tels. Ni bonbons à partager, ni produit capillaire.
 
-**Retiré, car inventé** (même étiqueté « fictif » ou « exemple ») : six avis et la note 4,8/5 (accueil, fiche, article,
-publi-rédactionnel), la répartition des notes, le témoignage de « Claire D. » et la citation de « Camille R. », la
-remise −29 % sur un prix de référence de 34,90 € (prix barré supprimé), la garantie « 30 jours », la livraison offerte dès
-2 flacons, la protection des expéditions du panier, le « Paiement sécurisé » d'un paiement désactivé, le comparatif contre
-une « autre confiserie » imaginaire, « texture tendre » et « bouchon à vis » (non visibles), les chiffres d'exemple et tous
-les « [À compléter] » publics. Les sections gardent leur place : la section d'avis dit qu'aucun avis n'existe encore et
-ce qui la remplira ; le comparatif compare les trois offres ; la garantie devient « Bon à savoir avant de commander ».
-Les avis de l'article et du publi-rédactionnel sont masqués (pages hors composition figée), pour ne pas répéter la même
-section vide. Pied de page : une seule inscription. Le test de composition garde la même liste de sections ; seuls deux
-titres attendus changent (« Les avis de vos clients », « Un flacon, »).
+| | |
+|---|---|
+| Utilisateur et acheteur | un adulte qui veut une routine de vitamines simple mais n'aime pas avaler des comprimés (brief, à valider) |
+| Situation d'achat | une boîte de comprimés déjà achetée, oubliée au fond du placard |
+| Tension (ses mots) | « Les comprimés, je les oublie, ou je les avale à contrecœur. » |
+| Désir | une routine qu'on a envie de tenir |
+| Angle unique | faire de sa routine de vitamines un petit rendez-vous goût fraise |
+| Promesse tenable | deux gummies par jour, goût fraise, rien à avaler d'un coup ; un flacon = un mois |
+| Objections traitées | qu'y a-t-il dedans, combien par jour, est-ce un bonbon, enfants, sucre, « est-ce que ça marche ? », quelle offre |
+| **Faits** | visuels (flacon transparent, couvercle rouge, « 60 douceurs » sur l'étiquette) ; trois offres et prix de démonstration ; paiement désactivé |
+| **Fictif annoncé** | composition pour 2 gummies : vitamine C 40 mg (50 % des VNR), D3 5 µg (100 %), B6 0,7 mg (50 %), B12 1,25 µg (50 %) ; ingrédients ; dose de 2 par jour |
+| Exclusions | aucun effet santé, anti-fatigue, immunité, beauté ou cheveux ; aucun avis, note, remise sur prix de référence, garantie ni délai inventés |
 
-Pages réécrites : accueil, fiche, à propos, article « 4 raisons », publi-rédactionnel (récit de la marque), FAQ, contact,
-livraison et retours, trois pages légales (intro vraie, rubriques vides masquées), bibliothèque de sections, bandeaux,
-panier, pied, SEO. Code : `tests/fraise-demo-copy.ts` (`curateFraise`), appliqué après `conversionProject` dans
-`demoProject` ; la référence lot 2C elle-même (tests `lot2c-*`) n'est pas modifiée. Preuves : **kit privé**, captures
-hors dépôt (archive privée).
+Parcours (sections Lumora inchangées) : « Vos vitamines *ont le goût de fraise* » → avis (« à venir ») → « Dans deux
+gummies, *quatre vitamines* » (composition fictive) → « Pourquoi *en gummies* » → « Deux gummies, *c'est la dose du
+jour* » → « Avant de commencer » → « Un mois, *trois ou cinq ?* » (offres en durée de routine) → repères → « Bon à savoir
+avant de commencer » (aucun effet promis) → « Un rendez-vous *qui tient dans la journée* » → questions → inscription.
+Fiche : titre « Gummies vitaminés goût fraise », onglets Composition (fictive), Utilisation, Précautions (mentions d'usage
+d'un complément alimentaire). Pages : à propos, article « 4 raisons de prendre vos vitamines en gummies », publi-rédactionnel
+« La boîte de comprimés est restée au fond du placard », FAQ, contact, livraison, légales, bibliothèque, bandeaux, panier,
+pied, SEO.
+
+**Visuels** : la scène « table de fête » (coupes, gâteau) contredit un produit vitaminé ; elle est remplacée partout par le
+gros plan des gummies. Les gummies enrobées de sucre et les fraises fraîches restent cohérentes avec le goût annoncé ;
+aucune image ne montre la prise quotidienne (pas de personne, règle du studio). Code : `tests/fraise-demo-copy.ts`.
+Preuves : kit privé, archive hors dépôt.
 
 ## Bilan final des 11 thèmes (consigne du 21 octobre, 19 h 50)
 

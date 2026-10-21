@@ -1,47 +1,57 @@
 /**
- * Rédaction de la démonstration FRAISE (consigne de Thomas du 21 octobre, 19 h 50). La composition validée de la
- * référence Lumora (lot 2C, `conversionProject`) ne change pas : mêmes sections, même ordre, aucune masquée sur l'accueil
- * et la fiche (garde-fou : tests/demos-fraise-onde-composition.test.ts). Seuls les textes changent.
+ * Rédaction de la démonstration FRAISE (consigne de Thomas du 21 octobre, 21 h 45, PR #159, commentaire 6327242856).
+ * La composition validée de la référence Lumora (lot 2C, `conversionProject`) ne change pas : mêmes sections, même ordre,
+ * aucune masquée sur l'accueil et la fiche (garde-fou : tests/demos-fraise-onde-composition.test.ts). Seuls les textes
+ * changent, et la scène « table de fête » est remplacée par le gros plan des gummies (elle contredit un produit vitaminé).
  *
- * Ce qui disparaît : les avis et notes fictifs (même étiquetés), la remise « −29 % » sur un prix de référence inventé,
- * la garantie « 30 jours » et la livraison offerte « en exemple », le comparatif contre une confiserie imaginaire, la
- * « protection des expéditions », les « [À compléter] » publics. Ce qui reste vrai : le produit (gummies à la fraise),
- * ce que montrent les visuels (flacon transparent, couvercle rouge, « 60 douceurs » écrit sur l'étiquette), les trois
- * offres et leurs prix de démonstration, le paiement désactivé.
+ * Décision explicite de Thomas : FRAISE vend des VITAMINES en gummies goût fraise (ni bonbons à partager, ni produit
+ * capillaire). Il autorise un produit et une composition FICTIFS pour la démonstration, signalés comme tels ; cela ne
+ * permet aucune efficacité présentée comme prouvée et ces données ne sont jamais reprises pour un client.
  *
- * ─── FRAISE — fiche de stratégie (hypothèse éditoriale, pas une étude) ─────────────────────────────────────────────────
- *  1. cible : une famille ou une bande d'amis qui grignote à plusieurs (goûter, pique-nique, table de fête) ;
- *  2. tension, dans leurs mots : « Les sachets se déchirent et traînent entamés au fond du placard ou du sac. » ;
- *  3. désir : une douceur qu'on pose au milieu et qu'on partage — angle unique : le flacon qui fait le tour de la table ;
- *  4. promesse tenable : un flacon transparent qu'on ouvre, qu'on fait passer et qu'on referme ; faits = visuels,
- *     étiquette, offres. Texture, ingrédients, allergènes, conservation, délais et retours jamais affirmés ; aucune
- *     allégation de santé ;
- *  5. objections : quelle offre choisir, le flacon se referme-t-il, ingrédients et allergènes (non renseignés), ce que
- *     permet la démonstration ;
- *  6. parcours : se reconnaître (le flacon qui circule) → ce que l'on voit → le geste ouvrir / servir / refermer →
- *     choisir son offre → les moments où il sort → questions → être prévenu.
+ * ─── FRAISE — fiche de stratégie (brief de Thomas, hypothèse éditoriale) ─────────────────────────────────────────────
+ *  utilisateur et acheteur : un adulte qui veut une routine de vitamines simple mais n'aime pas avaler des comprimés ;
+ *  situation d'achat : il a déjà acheté une boîte de comprimés, oubliée au fond du placard ;
+ *  tension (ses mots) : « Les comprimés, je les oublie, ou je les avale à contrecœur. » ;
+ *  désir : une routine qu'on a envie de tenir ;
+ *  angle unique : faire de sa routine de vitamines un petit rendez-vous goût fraise ;
+ *  promesse tenable : deux gummies par jour, goût fraise, rien à avaler d'un coup, un flacon = un mois ;
+ *  faits disponibles : visuels (flacon transparent, couvercle rouge, « 60 douceurs » sur l'étiquette), offres et prix de
+ *  démonstration ; composition FICTIVE (vitamines C, D3, B6, B12 et doses), annoncée comme telle partout où elle paraît ;
+ *  objections : qu'y a-t-il dedans, combien par jour, est-ce un bonbon, est-ce pour les enfants, y a-t-il du sucre,
+ *  « est-ce que ça marche ? », quelle offre ;
+ *  exclusions : aucun effet santé, anti-fatigue, immunité, beauté ou cheveux ; aucun avis, note, remise sur prix de
+ *  référence, garantie ou délai inventés ; aucune personne ajoutée aux visuels.
  */
 import type { ThemeSpec, SectionInstance } from "../src/lib/theme/spec";
 import { p, faq, hidePendingBlocks, PENDING, type Faq } from "./engine-demo-copy";
 
 const PRODUCT = "/products/gummies-fraise";
-const DEMO_INFO: Faq = ["Que puis-je faire dans cette boutique de démonstration ?", "Choisir une offre, remplir le panier et parcourir les pages. Le paiement est désactivé : aucune commande n'est encaissée ni expédiée. Délais de livraison, conditions de retour et ingrédients ne sont pas encore renseignés."];
+const FICTIVE = "Produit et composition fictifs, inventés pour la démonstration.";
+/** Composition fictive (pour 2 gummies) : doses cohérentes avec les valeurs nutritionnelles de référence (VNR) de l'UE. */
+export const FRAISE_VITAMINS: [string, string, string][] = [["Vitamine C", "40 mg", "50 %"], ["Vitamine D3", "5 µg", "100 %"], ["Vitamine B6", "0,7 mg", "50 %"], ["Vitamine B12", "1,25 µg", "50 %"]];
+const INGREDIENTS = "sirop de glucose, sucre, eau, gélifiant : pectine de fruits, acidifiant : acide citrique, arôme naturel de fraise, concentré de carotte noire (couleur), vitamines (C, D3, B6, B12), enrobage : sucre";
+const CAUTIONS = "Ne pas dépasser la dose journalière indiquée (2 gummies). Tenir hors de portée des jeunes enfants. Un complément alimentaire ne remplace pas une alimentation variée et équilibrée ni un mode de vie sain.";
+const composition = () => `${FRAISE_VITAMINS.map(([v, dose, vnr]) => `${v} : ${dose} (${vnr} des VNR)`).join(" ; ")}. Pour 2 gummies. Composition fictive de démonstration.`;
+
+const DEMO_INFO: Faq = ["Que puis-je faire dans cette boutique de démonstration ?", `Choisir une offre, remplir le panier et parcourir les pages. Le paiement est désactivé : rien n'est encaissé ni expédié. ${FICTIVE} Délais de livraison et conditions de retour ne sont pas renseignés.`];
 export const FRAISE_FAQ: Faq[] = [
-  ["Quelle offre choisir ?", "Un flacon pour goûter ; 2 + 1 offert (trois flacons, 49,80 €) pour en garder un à la maison et un dans le sac ; 3 + 2 offerts (cinq flacons, 74,70 €) pour les goûters de la semaine et une table de fête. Prix de démonstration."],
-  ["Le flacon se referme-t-il ?", "Oui : un couvercle large, qu'on retire pour servir et qu'on remet aussitôt. Le flacon reste sur la table ou repart dans le sac."],
-  ["Combien de gummies dans un flacon ?", "L'étiquette indique 60 douceurs."],
-  ["Quels sont les ingrédients et les allergènes ?", "Ils ne sont pas renseignés dans cette démonstration. Une vraie boutique doit les afficher sur la fiche avant toute vente."],
-  ["Puis-je modifier mon panier ?", "Oui : changez les quantités ou retirez une ligne, le total se met à jour aussitôt."],
+  ["Qu'y a-t-il dans deux gummies ?", `${composition()} Ingrédients : ${INGREDIENTS}.`],
+  ["Combien par jour ?", "Deux gummies, au moment que vous choisissez. Le plus simple : toujours le même, par exemple au petit-déjeuner, le flacon à côté du bol."],
+  ["Est-ce un bonbon ?", "Non. Ce sont des vitamines au goût de fraise : deux par jour, pas plus, même si l'envie d'en reprendre est là."],
+  ["Les enfants peuvent-ils en prendre ?", "Non : la formule fictive est pensée pour les adultes. Rangez le flacon hors de portée des enfants."],
+  ["Y a-t-il du sucre ?", "Oui : la composition fictive contient du sirop de glucose et du sucre. Les valeurs nutritionnelles ne sont pas inventées ici."],
+  ["Est-ce que ça marche ?", "Cette boutique ne promet aucun effet sur la santé, la fatigue ou la forme. Un complément alimentaire ne remplace pas une alimentation variée et équilibrée ; en cas de doute, demandez conseil à un professionnel de santé."],
+  ["Quelle offre choisir ?", "1 flacon = 1 mois à deux gummies par jour. 2 + 1 offert : trois mois pour 49,80 €. 3 + 2 offerts : cinq mois pour 74,70 €. Prix de démonstration."],
   DEMO_INFO,
 ];
-const FRAISE_FAQ_SHORT: Faq[] = [FRAISE_FAQ[0], FRAISE_FAQ[1], FRAISE_FAQ[3], DEMO_INFO];
+const FRAISE_FAQ_SHORT: Faq[] = [FRAISE_FAQ[0], FRAISE_FAQ[1], FRAISE_FAQ[2], DEMO_INFO];
 const FRAISE_PENDING: Faq[] = [
   ["Quels moyens de paiement acceptez-vous ?", "[À compléter : moyens de paiement réellement activés.]"],
   ["Combien de temps prend la livraison ?", "[À compléter : délais réels.]"],
   ["Quelle est votre politique de retour ?", "[À compléter : conditions de retour réelles.]"],
   ["Comment vous contacter ?", "[À compléter : adresse e-mail du service client.]"],
 ];
-const MARQUEE = "Goût fraise\nFlacon transparent\nCouvercle qui se referme\n60 douceurs sur l'étiquette";
+const MARQUEE = "Vitamines en gummies\nGoût fraise\n2 par jour\n1 flacon = 1 mois";
 
 const sec = (spec: ThemeSpec, key: string, id: string) => spec.templates[key]?.sections[id];
 function put(s: SectionInstance | undefined, settings: Record<string, unknown>) { if (s) s.settings = { ...s.settings, ...settings }; return s; }
@@ -56,39 +66,41 @@ function reviews(s: SectionInstance | undefined) {
   put(s, { heading: "Les avis de vos clients", heading_accent: "à venir", rating_text: "", rating_percent: 0, text: p("Cette boutique de démonstration n'a pas encore de clients, donc pas d'avis. Avec une application d'avis, ceux de vos acheteurs prendront cette place, sans rien inventer.") });
   setBlocks(s, []);
 }
-/** Ancienne garantie « 30 jours en exemple » : remplacée par ce qui est vrai avant de commander. */
+/** Ancienne garantie « 30 jours en exemple » : ce qui est vrai avant de commander. */
 function beforeOrder(s: SectionInstance | undefined) {
-  put(s, { heading: "avant de commander", heading_accent: "Bon à savoir", text: p("Les prix et les offres sont ceux de la démonstration. Livraison et retours seront précisés par la marque ; ils ne sont pas inventés ici."), demo_note: "", button_label: "Choisir mon offre", button_link: PRODUCT });
-  setBlocks(s, ["Paiement désactivé : rien n'est encaissé", "Aucune commande n'est expédiée", "Conditions de retour à définir par la marque"].map((text) => ({ type: "check", settings: { text } })));
+  put(s, { heading: "avant de commencer", heading_accent: "Bon à savoir", text: p(`${FICTIVE} Livraison et retours seront précisés par la marque ; ils ne sont pas inventés ici.`), demo_note: "", button_label: "Choisir ma durée", button_link: PRODUCT });
+  setBlocks(s, ["Aucun effet santé promis", "Paiement désactivé : rien n'est encaissé", "Aucune commande n'est expédiée"].map((text) => ({ type: "check", settings: { text } })));
 }
 function stories(s: SectionInstance | undefined) {
-  put(s, { heading: "Trois moments", heading_accent: "où il circule", text: p("Trois moments où le flacon passe de main en main.") });
-  const t = [["Le goûter dans la cuisine", "Posé sur le plan de travail, ouvert pour tout le monde"], ["Pique-nique au jardin", "Sur la nappe, entre les fraises"], ["La table de fête", "Au milieu des coupes, avant le dessert"]];
-  (s?.block_order ?? []).forEach((id, i) => { const b = s!.blocks![id]; if (t[i]) b.settings = { ...b.settings, title: String(b.settings.title).includes("clip de test") ? `${t[i][0]} (clip de test)` : t[i][0], subtitle: t[i][1], link_label: "Choisir mon offre" }; });
+  put(s, { heading: "Un rendez-vous", heading_accent: "qui tient dans la journée", text: p("Le flacon trouve sa place là où la journée commence, et vous suit quand elle change.") });
+  const t = [["Au petit-déjeuner", "Le flacon à côté du bol : deux gummies et c'est fait"], ["Le week-end aussi", "Il part dans le sac du pique-nique"], ["Deux gummies", "La dose du jour, pas plus"]];
+  (s?.block_order ?? []).forEach((id, i) => { const b = s!.blocks![id]; if (t[i]) b.settings = { ...b.settings, title: String(b.settings.title).includes("clip de test") ? `${t[i][0]} (clip de test)` : t[i][0], subtitle: t[i][1], link_label: "Choisir ma durée" }; });
 }
-function craving(s: SectionInstance | undefined) {
-  put(s, { heading: "Ce que l'on voit", heading_accent: "dans le flacon", text: p("Vu de dessus, le flacon ouvert : des gummies rouges à la fraise, bien visibles à travers le verre. On sait d'un coup d'œil ce qu'il reste."), button_label: "Choisir mon offre", guarantee_text: "" });
+/** « Ce que l'on voit » : la composition fictive, vitamine par vitamine, à côté du flacon ouvert. */
+function inside(s: SectionInstance | undefined) {
+  put(s, { heading: "Dans deux gummies,", heading_accent: "quatre vitamines", text: p("Composition fictive, inventée pour la démonstration : elle ne décrit aucun produit réel et n'est associée à aucun effet promis."), button_label: "Choisir ma durée", guarantee_text: "" });
+  setBlocks(s, FRAISE_VITAMINS.map(([v, dose, vnr]) => ({ type: "point", settings: { icon: "check", title: `${v} : ${dose}`, text: p(`${vnr} des valeurs nutritionnelles de référence.`) } })));
 }
 function icons(s: SectionInstance | undefined) {
-  put(s, { heading: "Quatre détails", heading_accent: "qui se voient" });
-  setBlocks(s, [["leaf", "Goût fraise", "Des gummies rouges au goût de fraise, comme leur nom l'indique."], ["sparkle", "Flacon transparent", "On voit ce qu'il reste sans l'ouvrir."], ["drop", "Couvercle large", "Il se retire d'une main pour servir et se remet aussitôt."], ["heart", "60 douceurs", "C'est ce qu'indique l'étiquette du flacon."]].map(([icon, title, text]) => ({ type: "feature", settings: { icon, title, text: p(text) } })));
+  put(s, { heading: "Pourquoi", heading_accent: "en gummies" });
+  setBlocks(s, [["leaf", "Rien à avaler d'un coup", "Un gummy se mâche : fini le comprimé qui accroche."], ["heart", "Le goût fraise", "Un goût qu'on retrouve avec plaisir chaque matin."], ["sparkle", "Un flacon qui se voit", "Transparent, posé sur le plan de travail : on y pense, et on voit ce qu'il reste."], ["drop", "Un flacon, un mois", "60 gummies à deux par jour."]].map(([icon, title, text]) => ({ type: "feature", settings: { icon, title, text: p(text) } })));
 }
-function cause(s: SectionInstance | undefined) {
-  put(s, { heading: "Ouvert, servi,", heading_accent: "refermé", text: p("On retire le couvercle, on fait passer le flacon autour de la table, on le referme. Il ne reste pas de sachet déchiré au fond du placard ni de miettes dans le sac."), button_label: "Choisir mon offre", guarantee_text: "" });
-  setBlocks(s, ["Couvercle large", "Flacon transparent", "Se partage"].map((text) => ({ type: "pill", settings: { text } })));
+function dose(s: SectionInstance | undefined) {
+  put(s, { heading: "Deux gummies,", heading_accent: "c'est la dose du jour", text: p("Ce sont des vitamines : deux par jour suffisent, même quand l'envie d'en reprendre est là. Le flacon se referme et se range hors de portée des enfants."), button_label: "Choisir ma durée", guarantee_text: "" });
+  setBlocks(s, ["2 par jour", "Flacon refermable", "Pour les adultes"].map((text) => ({ type: "pill", settings: { text } })));
 }
 function compare(s: SectionInstance | undefined) {
-  put(s, { eyebrow: "Les offres", heading: "Un flacon,", heading_accent: "trois ou cinq ?", text: p("Les trois offres côte à côte, pour choisir selon le nombre de personnes autour de la table."), criteria_label: "", badge: "Pour partager", note: "Prix de démonstration.", button_label: "Choisir mon offre", button_link: PRODUCT });
+  put(s, { eyebrow: "Les offres", heading: "Un mois,", heading_accent: "trois ou cinq ?", text: p("À deux gummies par jour, un flacon dure un mois. Choisissez le temps de prendre l'habitude."), criteria_label: "", badge: "Pour s'installer", note: "Prix de démonstration.", button_label: "Choisir ma durée", button_link: PRODUCT });
   setBlocks(s, [
     { type: "column", settings: { label: "1 flacon", highlight: false } },
     { type: "column", settings: { label: "2 + 1 offert", highlight: true } },
     { type: "column", settings: { label: "3 + 2 offerts", highlight: false } },
-    ...[["Flacons reçus", "1", "3", "5"], ["Prix total", "24,90 €", "49,80 €", "74,70 €"], ["Prix par flacon", "24,90 €", "16,60 €", "14,94 €"], ["Pour", "goûter", "partager", "la semaine"]].map(([label, v1, v2, v3]) => ({ type: "row", settings: { label, v1, v2, v3 } })),
+    ...[["Durée", "1 mois", "3 mois", "5 mois"], ["Prix total", "24,90 €", "49,80 €", "74,70 €"], ["Prix par mois", "24,90 €", "16,60 €", "14,94 €"], ["Pour", "essayer", "s'installer", "tenir la saison"]].map(([label, v1, v2, v3]) => ({ type: "row", settings: { label, v1, v2, v3 } })),
   ]);
 }
 function stats(s: SectionInstance | undefined) {
-  put(s, { heading: "En quelques", heading_accent: "repères", text: "", source: "D'après l'étiquette du flacon et les offres de la démonstration." });
-  setBlocks(s, [["60", "douceurs par flacon, selon l'étiquette"], ["1", "goût : la fraise"], ["3", "offres : 1, 3 ou 5 flacons"], ["2", "flacons offerts dans le lot de cinq"]].map(([value, label]) => ({ type: "stat", settings: { value, label } })));
+  put(s, { heading: "En quelques", heading_accent: "repères", text: "", source: "Dose et composition fictives ; « 60 douceurs » est écrit sur l'étiquette du flacon." });
+  setBlocks(s, [["2", "gummies par jour"], ["4", "vitamines : C, D3, B6, B12"], ["30", "jours par flacon de 60"], ["0", "comprimé à avaler"]].map(([value, label]) => ({ type: "stat", settings: { value, label } })));
 }
 function newsletter(s: SectionInstance | undefined) {
   put(s, { heading: "Être prévenu à l'ouverture", text: p("Un e-mail quand la boutique ouvre. Rien d'autre."), button_label: "Me prévenir", legal: "Désinscription en un clic." });
@@ -99,15 +111,19 @@ function faqSection(s: SectionInstance | undefined, heading: string, items: Faq[
 }
 
 export function curateFraise(spec: ThemeSpec) {
+  // La table de fête (coupes, gâteau) contredit des vitamines : remplacée partout par le gros plan des gummies.
+  let json = JSON.stringify(spec.templates).split("fraise-09-scene-fete").join("fraise-04-detail-gummies").split("Flacon sur une table de fête.").join("Gros plan sur les gummies à la fraise.").split("Table de fête").join("Deux gummies");
+  spec.templates = JSON.parse(json);
+
   // ── Accueil ──
-  put(sec(spec, "index", "hero"), { heading: "Le flacon de fraise", heading_accent: "qui fait le tour de la table", text: p("Des gummies à la fraise dans un flacon transparent : on l'ouvre au goûter, on le fait passer, on remet le couvercle."), rating_text: "", guarantee_text: "", button_label: "Choisir mon offre" });
-  setBlocks(sec(spec, "index", "hero"), ["Goût fraise", "Flacon transparent", "Couvercle qui se referme"].map((text) => ({ type: "check", settings: { text } })));
+  put(sec(spec, "index", "hero"), { heading: "Vos vitamines", heading_accent: "ont le goût de fraise", text: p("Deux gummies le matin, et la routine est faite. Pas de comprimé à avaler : un petit rendez-vous goût fraise qu'on a envie de retrouver."), rating_text: "", guarantee_text: "", button_label: "Choisir ma durée" });
+  setBlocks(sec(spec, "index", "hero"), ["2 gummies par jour", "Vitamines C, D3, B6, B12", "Produit fictif de démonstration"].map((text) => ({ type: "check", settings: { text } })));
   for (const id of ["trust", "trust2"]) put(sec(spec, "index", id), { items: MARQUEE });
   reviews(sec(spec, "index", "reviews"));
-  craving(sec(spec, "index", "craving"));
+  inside(sec(spec, "index", "craving"));
   icons(sec(spec, "index", "icons"));
-  cause(sec(spec, "index", "cause"));
-  faqSection(sec(spec, "index", "formula"), "Avant de goûter", FRAISE_FAQ_SHORT);
+  dose(sec(spec, "index", "cause"));
+  faqSection(sec(spec, "index", "formula"), "Avant de commencer", FRAISE_FAQ_SHORT);
   compare(sec(spec, "index", "compare"));
   stats(sec(spec, "index", "proof"));
   beforeOrder(sec(spec, "index", "guarantee"));
@@ -116,37 +132,36 @@ export function curateFraise(spec: ThemeSpec) {
   newsletter(sec(spec, "index", "newsletter"));
 
   // ── Fiche ──
-  spec.store.product = { ...spec.store.product, description_html: p("Des gummies au goût de fraise dans un flacon transparent à couvercle large. L'étiquette indique 60 douceurs. On le pose au milieu de la table, on le fait passer, on le referme."), compare_at_price: null, seo: { title: "Gummies à la fraise : le flacon à partager | Fraise", description: "Des gummies à la fraise dans un flacon transparent qui se referme : 1, 3 ou 5 flacons. Boutique de démonstration, paiement désactivé." } };
+  const description = p(`Des vitamines C, D3, B6 et B12 en gummies goût fraise. Deux par jour, à mâcher : pas de comprimé à avaler. Un flacon de 60 dure un mois. ${FICTIVE}`);
+  spec.store.product = { ...spec.store.product, title: "Gummies vitaminés goût fraise", description_html: description, compare_at_price: null, seo: { title: "Gummies vitaminés goût fraise : C, D3, B6, B12 | Fraise Gummies", description: "Deux gummies goût fraise par jour, sans comprimé à avaler ; un flacon = un mois. Produit et composition fictifs de démonstration, aucun effet santé promis." } };
   const main = sec(spec, "product", "main");
   for (const b of Object.values(main?.blocks ?? {})) {
-    if (b.type === "eyebrow") b.settings = { ...b.settings, text: "Gummies à la fraise · flacon à partager" };
-    if (b.type === "text") b.settings = { ...b.settings, text: p("Un flacon transparent qu'on ouvre au goûter, qu'on fait passer et qu'on referme. Choisissez une offre : prix de démonstration, paiement désactivé.") };
-    if (b.type === "quantity_offer" && b.settings.badge === "Meilleure offre") b.settings = { ...b.settings, badge: "Prix par flacon le plus bas" };
-    if (b.type === "quantity_offer" && b.settings.badge === "Notre sélection") b.settings = { ...b.settings, badge: "Pour partager" };
+    if (b.type === "eyebrow") b.settings = { ...b.settings, text: "Vitamines en gummies · composition fictive" };
+    if (b.type === "text") b.settings = { ...b.settings, text: p("Deux gummies goût fraise par jour, sans comprimé à avaler. Un flacon = un mois. Prix de démonstration, paiement désactivé.") };
+    if (b.type === "quantity_offer" && b.settings.badge === "Meilleure offre") b.settings = { ...b.settings, badge: "5 mois · prix par mois le plus bas" };
+    if (b.type === "quantity_offer" && b.settings.badge === "Notre sélection") b.settings = { ...b.settings, badge: "3 mois pour s'installer" };
     if (b.type === "purchase_benefit") {
-      const map: Record<string, string> = { "Texture tendre": "Couvercle qui se referme", "Flacon refermable": "60 douceurs par flacon", "Prix de démonstration": "Prix de démonstration" };
+      const map: Record<string, string> = { "Goût fraise": "Goût fraise", "Texture tendre": "2 gummies par jour", "Flacon refermable": "1 flacon = 1 mois", "Prix de démonstration": "Prix de démonstration" };
       if (map[String(b.settings.title)]) b.settings = { ...b.settings, title: map[String(b.settings.title)] };
     }
-    if (b.type === "reassurance") b.settings = { ...b.settings, item1: "Paiement désactivé : aucune commande encaissée", item2: "Livraison et retours : à définir par la marque", item3: "Visuels de démonstration" };
-    if (b.type === "collapsible" && b.settings.heading === "Description") b.settings = { ...b.settings, content: spec.store.product.description_html };
-    if (b.type === "collapsible" && b.settings.heading === "Comment les déguster") b.settings = { ...b.settings, heading: "Comment le servir", content: p("Retirez le couvercle, servez-vous ou faites passer le flacon, remettez le couvercle. La portion conseillée n'est pas renseignée dans cette démonstration.") };
+    if (b.type === "reassurance") b.settings = { ...b.settings, item1: "Paiement désactivé : aucune commande encaissée", item2: "Livraison et retours : à définir par la marque", item3: "Produit, composition et visuels fictifs" };
+    if (b.type === "collapsible" && b.settings.heading === "Description") b.settings = { ...b.settings, content: description };
+    if (b.type === "collapsible" && b.settings.heading === "Comment les déguster") b.settings = { ...b.settings, heading: "Conseils d'utilisation", content: p(`Deux gummies par jour, à mâcher, de préférence au même moment. ${CAUTIONS}`) };
     if (b.type === "collapsible" && b.settings.heading === "Livraison et retours") b.settings = { ...b.settings, content: p("Boutique de démonstration : rien n'est expédié. Délais, frais et conditions de retour seront ceux de la marque.") };
     if (b.type === "callout") b.disabled = true;
   }
-  const tabs = sec(spec, "product", "tabs");
-  setBlocks(tabs, [
-    { type: "tab", settings: { title: "Le flacon", icon: "none", heading: "Le flacon", content: p("Flacon transparent, couvercle rouge large, étiquette illustrée d'une fraise. L'étiquette indique 60 douceurs.") } },
-    { type: "tab", settings: { title: "Les offres", icon: "none", heading: "Les offres", content: p("1 flacon à 24,90 € ; 2 + 1 offert à 49,80 € ; 3 + 2 offerts à 74,70 €. Prix de démonstration.") } },
-    { type: "tab", settings: { title: "Ce qui manque", icon: "none", heading: "Pas encore renseigné", content: p("Ingrédients, allergènes, poids, conservation, délais de livraison et conditions de retour : ces informations ne sont pas inventées dans la démonstration.") } },
+  setBlocks(sec(spec, "product", "tabs"), [
+    { type: "tab", settings: { title: "Composition", icon: "none", heading: "Composition (fictive)", content: p(`${composition()}<br>Ingrédients : ${INGREDIENTS}.`) } },
+    { type: "tab", settings: { title: "Utilisation", icon: "none", heading: "Conseils d'utilisation", content: p("Deux gummies par jour, à mâcher. Associez-les à un moment fixe, comme le petit-déjeuner : le flacon posé à côté du bol, on y pense.") } },
+    { type: "tab", settings: { title: "Précautions", icon: "none", heading: "Précautions", content: p(`${CAUTIONS} Aucun effet sur la santé n'est promis par cette boutique.`) } },
   ]);
   stories(sec(spec, "product", "stories"));
-  craving(sec(spec, "product", "craving"));
+  inside(sec(spec, "product", "craving"));
   icons(sec(spec, "product", "icons"));
   reviews(sec(spec, "product", "reviews"));
-  cause(sec(spec, "product", "cause"));
+  dose(sec(spec, "product", "cause"));
   stats(sec(spec, "product", "proof"));
-  const journey = put(sec(spec, "product", "journey"), { heading: "Au goûter,", heading_accent: "en trois gestes" });
-  setBlocks(journey, [["Ouvrir", "Retirez le couvercle large."], ["Faire passer", "Le flacon fait le tour de la table."], ["Refermer", "Le couvercle se remet ; le flacon reste propre jusqu'à la prochaine fois."]].map(([title, text]) => ({ type: "step", settings: { title, text: p(text) } })));
+  setBlocks(put(sec(spec, "product", "journey"), { heading: "Chaque matin,", heading_accent: "en trois gestes" }), [["Ouvrir", "Retirez le couvercle du flacon."], ["Deux gummies", "Prenez-en deux, à mâcher. Pas plus."], ["Ranger", "Refermez et rangez le flacon hors de portée des enfants."]].map(([title, text]) => ({ type: "step", settings: { title, text: p(text) } })));
   compare(sec(spec, "product", "compare"));
   beforeOrder(sec(spec, "product", "guarantee"));
   faqSection(sec(spec, "product", "faq"), "Questions fréquentes", FRAISE_FAQ);
@@ -154,81 +169,84 @@ export function curateFraise(spec: ThemeSpec) {
   put(sec(spec, "product", "trust"), { items: MARQUEE });
 
   // ── Pages ──
-  const about = put(sec(spec, "page.a-propos", "about"), { heading: "Un flacon", heading_accent: "à poser au milieu", lead: p("Fraise est une marque de démonstration : un seul produit, des gummies à la fraise, dans un flacon pensé pour circuler autour de la table."), why_title: "Pourquoi un flacon", why_text: p("Parce qu'un sachet se déchire et finit entamé au fond du placard. Un flacon se pose au milieu, se fait passer et se referme."), commit_title: "Ce que nous ne disons pas", commit_text: p("Ni avis inventés, ni promotion fictive, ni promesse de santé. Ce qui n'est pas connu, comme les ingrédients ou les délais, est dit comme tel."), values_title: "Nos repères", signature: "Fraise", button_label: "Choisir mon offre", button_link: PRODUCT });
-  setBlocks(about, [["leaf", "Un seul goût", "La fraise, et rien d'autre."], ["sparkle", "Un flacon qui se voit", "Transparent : on sait ce qu'il reste."], ["check", "Des offres simples", "1, 3 ou 5 flacons, prix affichés."]].map(([icon, title, text]) => ({ type: "value", settings: { icon, title, text: p(text) } })));
+  const about = put(sec(spec, "page.a-propos", "about"), { heading: "Des vitamines", heading_accent: "qu'on a envie de prendre", lead: p(`Fraise Gummies est une marque fictive, créée pour la démonstration : un seul produit, des vitamines en gummies goût fraise. ${FICTIVE}`), why_title: "Pourquoi des gummies", why_text: p("Parce que la boîte de comprimés finit souvent au fond du placard. Un flacon goût fraise posé à côté du bol, c'est un rendez-vous qu'on retrouve chaque matin."), commit_title: "Ce que nous ne promettons pas", commit_text: p("Aucun effet sur la santé, la fatigue, la beauté ou les cheveux. Ni avis inventés, ni remise sur un prix de référence fictif."), values_title: "Nos repères", signature: "Fraise Gummies", button_label: "Choisir ma durée", button_link: PRODUCT });
+  setBlocks(about, [["leaf", "Une routine simple", "Deux gummies, un moment fixe."], ["sparkle", "Un goût qu'on aime", "La fraise, chaque matin."], ["check", "Une composition affichée", "Fictive ici, mais lisible : chaque vitamine et sa dose."]].map(([icon, title, text]) => ({ type: "value", settings: { icon, title, text: p(text) } })));
   for (const key of ["page.a-propos", "page.faq", "page.advertorial", "collection"]) beforeOrder(sec(spec, key, "guarantee"));
   faqSection(sec(spec, "page.faq", "faq"), "Questions fréquentes", FRAISE_FAQ);
   for (const key of ["page.listicle", "page.advertorial"]) { const r = sec(spec, key, "reviews"); if (r) r.disabled = true; newsletter(sec(spec, key, "newsletter")); }
   put(sec(spec, "page.listicle", "trust"), { items: MARQUEE });
 
   // Article « 4 raisons » : signé par la marque, sans autrice inventée ni offre de livraison fictive.
-  const listicle = put(sec(spec, "page.listicle", "article"), { heading: "4 raisons de garder un flacon de fraise", heading_accent: "à portée de main", intro: p("Un flacon transparent, un couvercle large, 60 douceurs selon l'étiquette. Voici pourquoi il ne reste jamais longtemps dans le placard."), author: "La rédaction Fraise", date_text: "Octobre 2026", demo_note: "Article de la marque de démonstration ; prix et offres de démonstration." });
+  const listicle = put(sec(spec, "page.listicle", "article"), { heading: "4 raisons de prendre vos vitamines", heading_accent: "en gummies goût fraise", intro: p("Vous oubliez vos comprimés, ou vous les avalez à contrecœur ? Le format gummy change le rendez-vous."), author: "La rédaction Fraise Gummies", date_text: "Octobre 2026", demo_note: `Article de la marque fictive. ${FICTIVE}` });
   for (const b of Object.values(listicle?.blocks ?? {})) {
     const t = String(b.settings.title ?? "");
-    if (b.type === "point" && t.startsWith("Le goût")) b.settings = { ...b.settings, title: "Le goût de fraise, sans détour", text: p("Ouvrez le flacon : des gummies rouges à la fraise. <strong>Un seul goût</strong>, celui qui donne son nom à la marque.") };
-    if (b.type === "point" && t.startsWith("Il se glisse")) b.settings = { ...b.settings, title: "Il part au pique-nique", text: p("Dans le sac, puis sur la nappe au soleil : <strong>le couvercle se remet d'un geste</strong> et rien ne se renverse dans le sac.") };
-    if (b.type === "point" && t.startsWith("Une pause")) b.settings = { ...b.settings, text: p("Entre deux tâches, une douceur prise sur le plan de travail, le flacon refermé juste après. <strong>Il reste à portée de main sans encombrer.</strong>") };
-    if (b.type === "point" && t.startsWith("Il fait")) b.settings = { ...b.settings, text: p("Au centre de la table de fête, le flacon transparent attire l'œil et <strong>passe de main en main</strong>.") };
-    if (b.type === "box" && t === "Bonus") b.settings = { ...b.settings, text: p("L'offre 2 + 1 : trois flacons pour 49,80 € au lieu de 74,70 € à l'unité. Prix de démonstration.") };
+    if (b.type === "point" && t.startsWith("Le goût")) b.settings = { ...b.settings, title: "Rien à avaler d'un coup", text: p("Un gummy se mâche. <strong>Plus de comprimé qui accroche</strong> : deux gummies goût fraise, et la routine est faite.") };
+    if (b.type === "point" && t.startsWith("Il se glisse")) b.settings = { ...b.settings, title: "Elle vous suit le week-end", text: p("Le flacon se referme et part dans le sac : <strong>la routine ne s'arrête pas</strong> quand on quitte la maison.") };
+    if (b.type === "point" && t.startsWith("Une pause")) b.settings = { ...b.settings, title: "Un rendez-vous au petit-déjeuner", text: p("Posé à côté du bol, le flacon transparent se voit : <strong>on y pense sans alarme ni application</strong>.") };
+    if (b.type === "point" && t.startsWith("Il fait")) b.settings = { ...b.settings, title: "Deux, pas plus", text: p("Elles ont le goût d'une friandise, mais ce sont des vitamines : <strong>deux gummies par jour</strong>, le flacon rangé hors de portée des enfants.") };
+    if (b.type === "box" && t === "Bonus") b.settings = { ...b.settings, text: p("L'offre 2 + 1 : trois mois de routine pour 49,80 € au lieu de 74,70 € à l'unité. Prix de démonstration.") };
     if (b.type === "box" && t === "") b.disabled = true;
-    if (b.type === "cta") b.settings = { ...b.settings, label: "Choisir mon offre", note: "Prix de démonstration, paiement désactivé" };
-    if (b.type === "paragraph" && String(b.settings.text).includes("advertorial")) b.settings = { ...b.settings, text: p('Envie de lire l\'histoire du flacon ? <a href="/pages/advertorial">Du placard au milieu de la table</a>.') };
+    if (b.type === "cta") b.settings = { ...b.settings, label: "Choisir ma durée", note: "Prix de démonstration, paiement désactivé" };
+    if (b.type === "paragraph" && String(b.settings.text).includes("advertorial")) b.settings = { ...b.settings, text: p('Pourquoi des gummies plutôt que des comprimés ? <a href="/pages/advertorial">Lire notre histoire</a>.') };
   }
-  // Publi-rédactionnel : récit de la marque (« nous »), plus de témoignage ni de notes inventés.
-  const adv = put(sec(spec, "page.advertorial", "article"), { label_bar: "Publi-rédactionnel de la marque", crumb_label: "Notre histoire", heading: "Du placard à bonbons", heading_accent: "au milieu de la table", intro: p("Pourquoi nous avons choisi un flacon plutôt qu'un sachet."), author: "La rédaction Fraise", date_text: "Octobre 2026", rating_text: "", demo_note: "Marque de démonstration : aucun témoignage client, aucune allégation nutritionnelle." });
+  // Publi-rédactionnel : récit de la marque (« vous », « nous »), plus de témoignage ni de notes inventés.
+  const adv = put(sec(spec, "page.advertorial", "article"), { label_bar: "Publi-rédactionnel de la marque (fictive)", crumb_label: "Notre histoire", heading: "La boîte de comprimés", heading_accent: "est restée au fond du placard", intro: p("Pourquoi nous avons mis nos vitamines en gummies goût fraise."), author: "La rédaction Fraise Gummies", date_text: "Octobre 2026", rating_text: "", demo_note: `Aucun témoignage client, aucun effet santé promis. ${FICTIVE}` });
   const advText: Record<string, string> = {
-    "Je n'oublierai": "<strong>Vous connaissez ce placard.</strong> Trois sachets entamés, un paquet écrasé, des miettes au fond. Chacun ouvert pour une envie, puis oublié.",
-    "Les sachets ne se": "Les sachets se déchirent, se plient, finissent au fond d'un tiroir ou d'un sac. <strong>C'est de là qu'est venue l'idée du flacon.</strong>",
-    "Un flacon transparent": "Un flacon transparent, un couvercle large. Il reste sur le plan de travail, visible : <strong>on se sert, on fait passer, on referme</strong>, et rien ne traîne.",
-    "Un flacon pour commencer": "Un flacon pour goûter, trois si vous aimez partager. Prix de démonstration ; le paiement est désactivé dans cette boutique.",
+    "Je n'oublierai": "<strong>Vous connaissez cette boîte.</strong> Achetée avec de bonnes intentions, ouverte trois fois, puis poussée au fond du placard, derrière les épices.",
+    "Les sachets ne se": "Les comprimés, il faut y penser, puis les avaler. <strong>Le jour où l'on oublie, on oublie souvent le lendemain aussi.</strong>",
+    "Un flacon transparent": "Un flacon transparent, posé à côté du bol du petit-déjeuner. Deux gummies goût fraise : <strong>le geste est rapide, et on a envie de le refaire</strong>.",
+    "Un flacon pour commencer": "Un flacon pour un mois, trois pour prendre l'habitude. Produit fictif et prix de démonstration ; le paiement est désactivé.",
   };
   for (const b of Object.values(adv?.blocks ?? {})) {
     const text = String(b.settings.text ?? "");
     if (b.type === "paragraph") for (const [start, next] of Object.entries(advText)) if (text.includes(start)) b.settings = { ...b.settings, text: p(next) };
+    if (b.type === "heading" && b.settings.text === "Le placard à bonbons, avant") b.settings = { ...b.settings, text: "La boîte oubliée" };
     if (b.type === "heading" && b.settings.text === "Le flacon qui a changé la routine") b.settings = { ...b.settings, text: "Un flacon qui reste en vue" };
     if (b.type === "heading" && b.settings.text === "Ce que j'ai gardé") b.settings = { ...b.settings, text: "Ce qui change" };
-    if (b.type === "checklist" && String(b.settings.title).startsWith("Pourquoi")) b.settings = { ...b.settings, title: "Ce que l'on voit", items: "Goût fraise — des gummies rouges\nFlacon transparent — on voit ce qu'il reste\nCouvercle large — il se remet d'un geste\n60 douceurs — selon l'étiquette" };
-    if (b.type === "checklist" && !b.settings.title) b.settings = { ...b.settings, items: "Un flacon à la fois — plus de sachets entamés\nLe flacon sur la table — il se partage\nL'offre 2 + 1 — trois flacons pour 49,80 € (prix de démonstration)" };
+    if (b.type === "checklist" && String(b.settings.title).startsWith("Pourquoi")) b.settings = { ...b.settings, title: "Dans deux gummies (composition fictive)", items: FRAISE_VITAMINS.map(([v, d]) => `${v} — ${d}`).join("\n") };
+    if (b.type === "checklist" && !b.settings.title) b.settings = { ...b.settings, items: "Le flacon à côté du bol — on y pense\nDeux gummies — la dose du jour, pas plus\nL'offre 2 + 1 — trois mois pour 49,80 € (prix de démonstration)" };
     if (b.type === "quote" || b.type === "rating") b.disabled = true;
-    if (b.type === "cta") b.settings = { ...b.settings, label: "Choisir mon offre", note: "Prix de démonstration — 24,90 € le flacon" };
+    if (b.type === "cta") b.settings = { ...b.settings, label: "Choisir ma durée", note: "Prix de démonstration — 24,90 € le flacon d'un mois" };
   }
 
   // Livraison et retours, pages légales : ce qui est vrai pour une marque de démonstration, rien d'inventé.
   put(sec(spec, "page.livraison-retours", "main"), { updated: "21 octobre 2026", intro: p("Boutique de démonstration : aucune commande n'est expédiée ni remboursée. Délais, frais de port et conditions de retour seront ceux de la marque ; ils ne sont pas inventés ici.") });
-  for (const [key, intro] of [["page.mentions-legales", "Fraise est une marque de démonstration du studio : aucune entreprise n'est exploitée sous ce nom. Les visuels sont des images de démonstration."], ["page.confidentialite", "Boutique de démonstration : aucune donnée n'est collectée par les formulaires, rien n'est enregistré."], ["page.conditions-generales", "Boutique de démonstration : rien n'est vendu, le paiement est désactivé. Les conditions de vente seront celles de la marque."]]) put(sec(spec, key, "main"), { updated: "21 octobre 2026", intro: p(intro) });
-  put(sec(spec, "page.contact", "form"), { text: p("Une question sur les gummies ou sur les offres ? Écrivez-nous. Dans cette démonstration, aucun message n'est réellement transmis.") });
-  // Bibliothèque de sections : vitrine des composants ; les données inconnues y sont dites, sans crochets.
+  for (const [key, intro] of [["page.mentions-legales", "Fraise Gummies est une marque fictive du studio : aucune entreprise n'est exploitée sous ce nom. Produit, composition et visuels sont inventés pour la démonstration."], ["page.confidentialite", "Boutique de démonstration : aucune donnée n'est collectée par les formulaires, rien n'est enregistré."], ["page.conditions-generales", "Boutique de démonstration : rien n'est vendu, le paiement est désactivé. Les conditions de vente seront celles de la marque."]]) put(sec(spec, key, "main"), { updated: "21 octobre 2026", intro: p(intro) });
+  put(sec(spec, "page.contact", "form"), { text: p("Une question sur la routine, la composition (fictive) ou les offres ? Écrivez-nous. Dans cette démonstration, aucun message n'est réellement transmis.") });
+  // Bibliothèque de sections : vitrine des composants ; composition fictive annoncée, données inconnues dites sans crochets.
   const library = spec.templates["page.sections"];
   if (library) {
     const fixes: [string | RegExp, string][] = [
-      ["\\nUne notice de conservation [À compléter]", ""], [/\[À compléter(?: : [^\]]*)?\.?\]/g, "non renseigné"], ["Contenu : 60 douceurs", "Contenu : 60 douceurs (étiquette)"],
-      ["La texture tendre", "Le flacon transparent"], ["Texture tendre", "Flacon transparent"], ["Des gummies qui fondent sans coller.", "On voit ce qu'il reste sans l'ouvrir."],
-      ["Un bouchon large qui se visse.", "Un couvercle large qui se remet d'un geste."], ["Il se visse d'un geste et referme le flacon.", "Il se remet d'un geste et referme le flacon."],
-      ["Dévissez le bouchon large.", "Retirez le couvercle large."], ["Fermeture : bouchon à vis", "Fermeture : couvercle large"],
+      ["\\nUne notice de conservation [À compléter]", ""], [/\[À compléter(?: : [^\]]*)?\.?\]/g, "non renseigné"], ["Contenu : 60 douceurs", "Contenu : 60 gummies (un mois)"],
+      ["La texture tendre", "Deux par jour"], ["Texture tendre", "Deux par jour"], ["Des gummies qui fondent sans coller.", "La dose du jour, à mâcher."],
+      ["Un bouchon large qui se visse.", "Un couvercle qui se referme."], ["Il se visse d'un geste et referme le flacon.", "Il referme le flacon, rangé hors de portée des enfants."],
+      ["Dévissez le bouchon large.", "Retirez le couvercle."], ["Fermeture : bouchon à vis", "Fermeture : couvercle"],
       ["exemple de promotion", "prix de démonstration"], ["Exemple : remboursement sous 30 jours — politique à définir", "Paiement désactivé dans la démonstration"],
+      ["Trois formats, un seul goût assumé.", "Un flacon, un mois de vitamines goût fraise."],
     ];
-    let json = JSON.stringify(library);
-    for (const [from, to] of fixes) json = typeof from === "string" ? json.split(from).join(to) : json.replace(from, to);
-    spec.templates["page.sections"] = JSON.parse(json);
-    const lib = Object.values(spec.templates["page.sections"].sections);
-    const quote = lib.find((s) => s.type === "cv-quote");
+    let lib = JSON.stringify(library);
+    for (const [from, to] of fixes) lib = typeof from === "string" ? lib.split(from).join(to) : lib.replace(from, to);
+    spec.templates["page.sections"] = JSON.parse(lib);
+    const sections = Object.values(spec.templates["page.sections"].sections);
+    const quote = sections.find((s) => s.type === "cv-quote");
     if (quote) quote.disabled = true;
-    compare(lib.find((s) => s.type === "comparison-table"));
-    for (const g of lib.filter((s) => s.type === "cv-gallery" && s.settings.heading === "En situation")) put(g, { heading: "Trois moments", heading_accent: "où il circule" });
+    compare(sections.find((s) => s.type === "comparison-table"));
+    for (const g of sections.filter((s) => s.type === "cv-gallery" && s.settings.heading === "En situation")) put(g, { heading: "Un rendez-vous", heading_accent: "dans la journée" });
   }
 
   // ── En-tête, panier, pied ──
   const bars = Object.values(spec.groups.header.sections).filter((s) => s.type === "announcement-bar");
-  ["Le flacon qui se partage", "1, 3 ou 5 flacons au choix"].forEach((text, i) => { const b = bars[i]; if (b) for (const blk of Object.values(b.blocks ?? {})) blk.settings = { ...blk.settings, text, link: PRODUCT }; });
+  ["Vos vitamines, goût fraise", "1 flacon = 1 mois de routine"].forEach((text, i) => { const b = bars[i]; if (b) for (const blk of Object.values(b.blocks ?? {})) blk.settings = { ...blk.settings, text, link: PRODUCT }; });
   spec.settings = { ...spec.settings, cart_promo_text: "", cart_protection: false, cart_reassurance: "Boutique de démonstration : rien n'est encaissé ni expédié.", cart_checkout_label: "Paiement désactivé (démonstration)", cart_checkout_lock: false };
   const footer = Object.values(spec.groups.footer.sections).find((s) => s.type === "footer");
   if (footer?.blocks) {
-    if (footer.blocks.about) footer.blocks.about.settings = { ...footer.blocks.about.settings, heading: "Fraise Gummies", text: p("Des gummies à la fraise dans un flacon qui se partage. Marque de démonstration : paiement désactivé.") };
+    if (footer.blocks.about) footer.blocks.about.settings = { ...footer.blocks.about.settings, heading: "Fraise Gummies", text: p("Des vitamines en gummies goût fraise. Marque, produit et composition fictifs ; paiement désactivé.") };
     // Une seule inscription sur la page (celle du contenu), comme pour les autres thèmes.
     footer.block_order = (footer.block_order ?? []).filter((id) => id !== "news");
   }
-  spec.store.menus["footer-lire"] = { title: "À lire", links: [{ title: "4 raisons de garder un flacon", url: "/pages/listicle" }, { title: "Du placard au milieu de la table", url: "/pages/advertorial" }, { title: "Bibliothèque de sections (démonstration)", url: "/pages/sections" }] };
-  spec.store.seo = { title: "Fraise | Gummies à la fraise : le flacon qui fait le tour de la table", description: "Des gummies à la fraise dans un flacon transparent qu'on ouvre, qu'on fait passer et qu'on referme. 1, 3 ou 5 flacons. Boutique de démonstration." };
+  spec.store.menus["main-menu"] = { ...spec.store.menus["main-menu"], links: (spec.store.menus["main-menu"]?.links ?? []).map((l) => (l.title === "Les gummies" ? { ...l, title: "Les vitamines" } : l.title === "Pourquoi les gummies" ? { ...l, title: "Pourquoi en gummies" } : l)) };
+  spec.store.menus["footer-lire"] = { title: "À lire", links: [{ title: "4 raisons de passer aux gummies", url: "/pages/listicle" }, { title: "La boîte restée au fond du placard", url: "/pages/advertorial" }, { title: "Bibliothèque de sections (démonstration)", url: "/pages/sections" }] };
+  spec.store.seo = { title: "Fraise Gummies | Vitamines en gummies goût fraise, deux par jour", description: "Faites de votre routine de vitamines un petit rendez-vous goût fraise : deux gummies par jour, sans comprimé à avaler. Marque et composition fictives de démonstration." };
   hidePendingBlocks(spec);
   // Aucun texte public ne doit plus attendre une donnée inconnue.
   for (const [key, t] of Object.entries(spec.templates)) for (const s of Object.values(t.sections)) if (!s.disabled && PENDING.test(JSON.stringify(s.settings))) throw new Error(`FRAISE : « À compléter » visible dans ${key}/${s.type}`);
