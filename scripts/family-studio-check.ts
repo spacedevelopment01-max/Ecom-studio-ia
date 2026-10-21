@@ -41,7 +41,7 @@ const PLAN = {
   "museau-club": { family: "specialty", entry: "Fabrication et savoir-faire", type: "fs-making", preview: "steps", then: "grid", foreign: "Ambiance et lookbook", header: "floating", footer: "centered", currentHeader: "two-rows", currentFooter: "columns" },
   // SOUPLE (issue #158, E-commerce de quatre produits) : dispositions d'origine « Collections en cartes » / « Boutique
   // éditoriale », puis une autre disposition de la famille.
-  souple: { family: "catalog", entry: "Collections et catégories", type: "fs-collections", preview: "asym", then: "index", foreign: "Composition et matériaux", header: "classic", footer: "boxed", currentHeader: "mega-cards", currentFooter: "store" },
+  souple: { family: "catalog", entry: "Entretien et durabilité", type: "fs-care", preview: "accordion", then: "columns", foreign: "Composition et matériaux", header: "classic", footer: "boxed", currentHeader: "mega-cards", currentFooter: "store" },
 }[demoId] as { family: string; entry: string; type: string; preview: string; then: string; foreign: string; header: string; footer: string; currentHeader?: string; currentFooter?: string };
 const PORT = 3600 + Math.floor(Math.random() * 300), origin = `http://127.0.0.1:${PORT}`;
 const { demoProject } = await import("../tests/demo-fixtures");
