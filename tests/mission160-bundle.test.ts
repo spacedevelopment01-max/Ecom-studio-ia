@@ -2,11 +2,11 @@
 import {it,expect,vi,afterEach} from 'vitest';
 import sharp from 'sharp';
 import {clientFixture} from './mission154-fixtures';
-import {quoteStrategyBundle,confirmStrategyBundle,runStrategyBundle,retryStrategyBundle,strategyBundle} from '@/lib/marketing-strategy/bundle';
+import {quoteStrategyBundle,confirmStrategyBundle,runStrategyBundle,retryStrategyBundle,strategyBundle,creativeRevisionContext} from '@/lib/marketing-strategy/bundle';
 import {prepareStrategyChange,stageStrategyModule,activateStrategy,activeStrategy,getStrategyState} from '@/lib/marketing-strategy';
 import {saveAsset} from '@/lib/library';
 import {all,one,run,id,now} from '@/lib/db';
-import {claimNext,JobContext,completeJob,failJob,getJob} from '@/lib/jobs';
+import {enqueue,claimNext,JobContext,completeJob,failJob,getJob} from '@/lib/jobs';
 import {grantProjectPlan} from '@/lib/project-subscriptions';
 import {CostCapReached} from '@/lib/ai/trace';
 async function fixture(services=false){
@@ -51,4 +51,12 @@ it('archives, retouches et autre compte : aucune inclusion abusive dans un devis
  const f=await fixture();const g=await fixture();const uploaded=one<any>("SELECT id FROM assets WHERE project_id=? AND origin='upload' AND role!='original'",f.pid);
  if(uploaded)expect(()=>quoteStrategyBundle(f.pid,f.prep.id,[{module:'asset',contentId:uploaded.id}])).toThrow();
  const q=quoteStrategyBundle(f.pid,f.prep.id,[{module:'asset',contentId:f.old[0].id}]);expect(()=>confirmStrategyBundle(g.pid,q.id,true)).toThrow('introuvable');expect(all('SELECT id FROM jobs WHERE project_id=?',g.pid)).toHaveLength(0);
+});
+
+it('création rédactionnelle : moteur IA complet, textes exacts conservés et points de reprise séparés',async()=>{
+ const f=await fixture();const original=enqueue({userId:f.user.id,projectId:f.pid,type:'image.ai_post',payload:{projectId:f.pid,request:{as:'ad',format:'portrait',headline:'Mon texte exact',subject:{kind:'product',key:'main'},sourceAssetId:'ancien',expectedCopyKey:'ancien-contexte'}}});
+ run("UPDATE jobs SET status='done',result=? WHERE id=?",JSON.stringify({assetId:f.old[0].id}),original.id);run('UPDATE assets SET role=?,meta=? WHERE id=?','ad',JSON.stringify({aiAd:true,aiPost:{},finalImage:{},aspect:'4:5'}),f.old[0].id);
+ const q=quoteStrategyBundle(f.pid,f.prep.id,[{module:'asset',contentId:f.old[0].id}]);expect(q.items[0].type).toBe('image.ai_post');expect(q.items[0].request.headline).toBe('Mon texte exact');expect(q.items[0].request).not.toHaveProperty('sourceAssetId');expect(q.items[0].request).not.toHaveProperty('expectedCopyKey');
+ const b=confirmStrategyBundle(f.pid,q.id,true);const ctx=new JobContext(getJob(b.jobId!)!);const first=creativeRevisionContext(ctx,b.items[0],1000),second=creativeRevisionContext(ctx,{...b.items[0],oldId:f.old[1].id},1000);
+ first.save('ai-post',{assetId:'acquis-1'});expect(second.checkpoint['ai-post']).toBeUndefined();second.save('ai-post',{assetId:'acquis-2'});expect(first.checkpoint['ai-post']).toEqual({assetId:'acquis-1'});expect(first.payload.costCapMicro).toBeLessThanOrEqual(1000);expect(all('SELECT id FROM ai_calls WHERE project_id=?',f.pid)).toHaveLength(0);
 });

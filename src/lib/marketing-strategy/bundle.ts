@@ -7,7 +7,7 @@ import {assertJobEntitlements} from '../job-entitlements';
 import {loadProject} from '../projects';
 import {withStrategyScope} from '../strategy-consumption';
 import {aiActiveFor} from '../ai/access';
-import {estimateMicro,estimateTaskMicro,capMicro} from '../ai/estimate';
+import {estimateMicro,estimateTaskMicro,capMicro,aiPostProbableMicro} from '../ai/estimate';
 import {budgetPctOf} from '../ai/budget-pct';
 import {assertUnderCostCap,withTrace} from '../ai/trace';
 import {EUR,assertCanSpend} from '../billing';
@@ -15,9 +15,7 @@ import {assertStrategyPreparationCurrent,preparationStrategy,stageStrategyModule
 import {imageV2Kind} from '../image-v2/ai-only';
 import type {ContentDoc} from '../seo-v2/types';
 import type {VideoDocument,VideoIntentKind} from '../video-v2/types';
-import { PLATFORMS } from '../ads-v2/types';
-import type {AdDocument} from '../ad-doc/types';
-export type RevisionItem={module:string;oldId:string;type:'content.v2'|'image.v2'|'ads.v2'|'video.v2';request:Record<string,unknown>;estimateMicro:number;state:'quoted'|'prepared';outputIds?:string[];links?:string[];note?:string;preview?:string[]};
+export type RevisionItem={module:string;oldId:string;type:'content.v2'|'image.v2'|'image.ai_post'|'ads.v2'|'video.v2';request:Record<string,unknown>;estimateMicro:number;state:'quoted'|'prepared';outputIds?:string[];links?:string[];note?:string;preview?:string[]};
 export type RevisionBundle={id:string;projectId:string;preparationId:string;items:RevisionItem[];estimateMicro:number;capMicro:number;percent:number|null;status:'quoted'|'queued'|'running'|'prepared'|'failed';retryCount?:number;jobId:string|null;createdAt:number};
 function schema(){db().exec('CREATE TABLE IF NOT EXISTS marketing_strategy_bundles(id TEXT PRIMARY KEY,project_id TEXT NOT NULL,preparation_id TEXT NOT NULL,payload TEXT NOT NULL,job_id TEXT,created_at INTEGER NOT NULL)');}
 function save(b:RevisionBundle){run('INSERT OR REPLACE INTO marketing_strategy_bundles VALUES(?,?,?,?,?,?)',b.id,b.projectId,b.preparationId,JSON.stringify(b),b.jobId,b.createdAt);return b;}
@@ -37,13 +35,23 @@ export function quoteStrategyBundle(projectId:string,preparationId:string,select
    item={module:'seo',oldId:content.contentId,type:'content.v2',request:{type:d.type,pageKey:d.page.key,lang:d.lang,request:d.meta2.contract?.request??null},estimateMicro:estimateTaskMicro('copywriting',{input:16000,output:5000})+estimateTaskMicro('quality_control',{input:7000,output:900}),state:'quoted'};
   }else if(content.module==='asset'){
    const a=one<{role:string;kind:string;meta:string;width:number;height:number}>('SELECT role,kind,meta,width,height FROM assets WHERE project_id=? AND id=? AND deleted_at IS NULL',projectId,content.contentId);if(!a)throw new HttpError(409,'Image manquante.');
-   const mediaMeta=json<any>(a.meta,{});if(mediaMeta.poster||mediaMeta.adDoc||/social|post|ad|banner.*text/i.test(a.role??''))throw new HttpError(409,'Ce visuel rédactionnel doit être révisé depuis son document pour conserver ses textes, son format et sa marque. Aucun remplacement par une simple photo.','strategy_creative_document_review');
+   const mediaMeta=json<any>(a.meta,{});
+   if(mediaMeta.aiPost&&mediaMeta.finalImage){
+    const original=one<{payload:string}>(`SELECT payload FROM jobs WHERE project_id=? AND type='image.ai_post' AND (json_extract(CASE WHEN json_valid(result) THEN result ELSE '{}' END,'$.assetId')=? OR EXISTS (SELECT 1 FROM json_each(json_extract(CASE WHEN json_valid(result) THEN result ELSE '{}' END,'$.assetIds')) ids WHERE ids.value=?)) ORDER BY created_at DESC LIMIT 1`,projectId,content.contentId,content.contentId);
+    if(!original)throw new HttpError(409,'Le brief et les textes exacts de cette création doivent être confirmés dans son éditeur avant la révision. Aucun gabarit ne sera substitué.','strategy_creative_brief_required');
+    const oldRequest=json<{request?:Record<string,unknown>}>(original.payload,{}).request??{};
+    const keys=['kind','format','headline','subline','cta','subject','request','caption','editorial','advertising','editorialData','series'];
+    const request=Object.fromEntries(keys.filter(k=>oldRequest[k]!==undefined).map(k=>[k,oldRequest[k]]));
+    request.as=mediaMeta.aiAd?'ad':'post';request.format=oldRequest.format??mediaMeta.aspect??'4:5';
+    if(!request.subject){if(p.business==='services'){if(p.services.services.length!==1)throw new HttpError(409,'Choisissez la prestation de cette création dans son éditeur avant le devis.','strategy_creative_subject_required');request.subject={kind:'service',name:p.services.services[0].key};}else{if(p.catalog.length)throw new HttpError(409,'Choisissez le produit de cette création dans son éditeur avant le devis.','strategy_creative_subject_required');request.subject={kind:'product',key:'main'};}}
+    item={module:'asset',oldId:content.contentId,type:'image.ai_post',request,estimateMicro:aiPostProbableMicro(),state:'quoted',note:'Création complète par le moteur IA natif ; textes explicitement fournis conservés, rendu à vérifier avant activation.'};
+   }else{
+   if(mediaMeta.poster||mediaMeta.adDoc||/social|post|ad|banner.*text/i.test(a.role??''))throw new HttpError(409,'Ce visuel rédactionnel doit être révisé depuis son document pour conserver ses textes, son format et sa marque. Aucun remplacement par une simple photo.','strategy_creative_document_review');
    if(a.kind!=='image'||/video|voice|audio|music/i.test(a.role??''))throw new HttpError(409,'Révisez ce média depuis son document vidéo, afin de conserver son scénario.','strategy_video_scenario_review');
    item={module:'asset',oldId:content.contentId,type:'image.v2',request:{kind:imageV2Kind(p.business==='services',a.role??'lifestyle'),support:'site',aspect:a.width&&a.height?(a.width/a.height>2.5?'3:1':a.width/a.height>1.3?'16:9':a.width/a.height<.65?'9:16':a.width/a.height<.95?'4:5':'1:1'):'4:5',count:1,allowGenerate:true,noStock:true,peopleAllowed:false},estimateMicro:estimateMicro('image'),state:'quoted'};
+   }
   }else if(content.module==='ad'){
-   const row=one<{doc_json:string}>('SELECT doc_json FROM ad_documents WHERE project_id=? AND id=?',projectId,content.contentId);if(!row)throw new HttpError(409,'Document publicitaire manquant.');const d=json<AdDocument>(row.doc_json,null as never);
-   if(d.format.platform&&!(PLATFORMS as readonly string[]).includes(d.format.platform))throw new HttpError(409,'Vérifiez le support publicitaire dans son éditeur avant le devis groupé.','strategy_ad_platform_review');
-   item={module:'ad',oldId:content.contentId,type:'ads.v2',request:{count:1,platforms:d.format.platform?[d.format.platform]:undefined,aspects:d.format.aspect?[d.format.aspect]:undefined},estimateMicro:estimateTaskMicro('ad_creative',{input:14000,output:5000})+estimateMicro('image'),state:'quoted'};
+   throw new HttpError(409,'Ce document publicitaire ancien nécessite un brief de création IA confirmé dans son éditeur. Aucun modèle local simplifié ne sera généré en remplacement.','strategy_creative_brief_required');
   }else if(content.module==='video'){
    const row=one<{doc_json:string}>('SELECT doc_json FROM video_documents WHERE project_id=? AND id=?',projectId,content.contentId);if(!row)throw new HttpError(409,'Document vidéo manquant.');const d=json<VideoDocument>(row.doc_json,null as never);
    if(d.clips.some(c=>c.generated)||d.meta.editorial)throw new HttpError(409,'Cette vidéo nécessite la validation du scénario adapté et de son devis clips. Aucun montage simplifié ne sera substitué ; son original reste utilisable.','strategy_video_scenario_review');
@@ -70,8 +78,21 @@ export function confirmStrategyBundle(projectId:string,bundleId:string,confirmed
 }
 /** Native engines are injected only by isolated tests. Runtime uses the existing engine entry points. */
 export type RevisionExecutor=(ctx:JobContext,item:RevisionItem)=>Promise<{outputIds:string[];links:string[];note:string;preview?:string[]}>;
+/** Independent checkpoints for several creatives, same real job and aggregate billing cap. */
+class CreativeContext extends JobContext {
+ constructor(private root:JobContext,private namespace:string,request:Record<string,unknown>,maximumMicro:number){super({...root.job,payload:JSON.stringify({...root.payload,request,costCapMicro:maximumMicro})});}
+ get checkpoint(){return (this.root.checkpoint[this.namespace]??{}) as Record<string,any>;}
+ save(key:string,value:unknown){this.root.save(this.namespace,{...this.checkpoint,[key]:value});}
+}
+export function creativeRevisionContext(ctx:JobContext,item:RevisionItem,maximumMicro=ctx.payload.costCapMicro){return new CreativeContext(ctx,`creative:${item.oldId}`,item.request,Math.min(ctx.payload.costCapMicro,maximumMicro));}
 async function executeNative(ctx:JobContext,item:RevisionItem){
  const pid=ctx.job.project_id!,request={...item.request,maxCostEur:item.estimateMicro*2/EUR};
+ if(item.type==='image.ai_post'){
+  const{generateAiPostImage,aiPostCapMicro}=await import('../engine/ai-post-image');const{realAiPostDeps}=await import('../social-v2/ai-post');
+  const deps={...realAiPostDeps({userId:ctx.job.user_id,projectId:pid,jobId:ctx.job.id}),operationId:`${ctx.job.id}:${item.oldId}`};
+  const result=await generateAiPostImage(creativeRevisionContext(ctx,item,aiPostCapMicro()),pid,item.request as never,deps);const ids=result.assetIds?.length?result.assetIds:[result.assetId];
+  if(!ids.length||result.delivery.state==='partial')throw new HttpError(409,'Création IA non livrable ; original conservé.','strategy_quality_blocked');return{outputIds:ids,links:ids.map(id=>`/api/files/${id}`),note:'Création IA native préparée. Vérifiez scène, textes exacts, marque et angle avant activation.'};
+ }
  if(item.type==='content.v2'){
   const {runContentEngineV2}=await import('../seo-v2/engine');const {latestContent}=await import('../seo-v2/store');const r=await runContentEngineV2(ctx,pid,request as never);const d=r.docKey?latestContent(pid,r.docKey):null;
   if(!d||r.by!=='ai'||['REJECTED','RETRY'].includes(r.verdict)||r.stoppedByCostCap)throw new HttpError(409,'Le texte préparé nécessite une correction. Ses acquis sont conservés.','strategy_quality_blocked');
@@ -81,10 +102,7 @@ async function executeNative(ctx:JobContext,item:RevisionItem){
   const{runImageEngineV2}=await import('../image-v2/engine');const r=await runImageEngineV2(ctx,pid,request as never);const ids=r.outcomes.filter(o=>o.assetId&&!['REJECTED','RETRY'].includes(o.verdict)).map(o=>o.assetId!);
   if(ids.length!==1||r.stoppedByCostCap)throw new HttpError(409,'Image non livrable ; aucun remplacement de l’original.','strategy_quality_blocked');return{outputIds:ids,links:ids.map(id=>`/api/files/${id}`),note:'Image préparée, fidélité et texte à vérifier avant activation.'};
  }
- if(item.type==='ads.v2'){
-  const{runAdEngineV2}=await import('../ads-v2/engine');const{latestDoc}=await import('../ad-doc/store');const r=await runAdEngineV2(ctx,pid,request as never);const outcomes=r.outcomes.filter(o=>o.assetId&&!['REJECTED','RETRY'].includes(o.verdict));const rows=all<{id:string;doc_key:string;rendered_asset_id:string}>('SELECT d.id,d.doc_key,d.rendered_asset_id FROM ad_documents d JOIN marketing_strategy_contents s ON s.content_id=d.id AND s.module=\'ad\' WHERE d.project_id=? AND s.project_id=? AND s.strategy_id=?',pid,pid,`draft-${strategyBundle(pid,ctx.payload.bundleId).preparationId}`);
-  if(!outcomes.length||!rows.length||r.stoppedByCostCap)throw new HttpError(409,'Publicité non livrable ; acquis conservés.','strategy_quality_blocked');return{outputIds:rows.filter(d=>latestDoc(pid,d.doc_key)?.version.id===d.id&&outcomes.some(o=>o.assetId===d.rendered_asset_id)).map(d=>d.id),links:outcomes.map(o=>`/api/files/${o.assetId}`),note:'Publicité préparée ; relecture requise avant activation.'};
- }
+ if(item.type==='ads.v2')throw new HttpError(409,'Actualisez ce devis ancien depuis la création publicitaire IA ; aucun gabarit ne sera substitué.','strategy_creative_brief_required');
  const{runVideoEngineV2}=await import('../video-v2/engine');const{latestVideo}=await import('../video-v2/store');const r=await runVideoEngineV2(ctx,pid,request as never);const d=r.docKey?latestVideo(pid,r.docKey):null;
  if(!d||!r.videoAssetId||['REJECTED','RETRY'].includes(r.verdict)||r.stoppedByCostCap)throw new HttpError(409,'Vidéo non livrable ; original et étapes acquises conservés.','strategy_quality_blocked');return{outputIds:[d.version.id],links:[`/api/files/${r.videoAssetId}`],note:'Montage préparé, scénario, voix et image à vérifier avant activation.'};
 }
