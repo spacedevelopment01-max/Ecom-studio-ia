@@ -49,7 +49,7 @@ const PLAN = {
   profile: "poudre", fonts: { heading: "playfair_display_n4", body: "jost_n4" },
   home: ["ed-opening", "fs-collections", "rich-text", "fs-products", "ed-scene", "image-with-text", "featured-purchase", "faq", "newsletter-media"],
   product: ["main-product", "ed-scene", "product-recommendations", "faq"],
-  pages: ["votre-coin", "aide"], header: "mega-cards", footer: "store",
+  pages: ["chez-soi", "aide"], header: "mega-cards", footer: "store",
   leak: /SOUPLE|rose poudré|tapis|brique|sangle|anneau de Pilates|Votre coin|Ce moment est à vous/i,
 };
 
@@ -143,7 +143,7 @@ describe("SOUPLE : démonstration de quatre produits", async () => {
       for (const other of SOUPLE_PRODUCTS.filter((o) => o.key !== it.key)) expect(JSON.stringify(pr.images), `${it.key} ← ${other.key}`).not.toContain(`${ID}-${other.key}-`);
       const mp = types(keyOf(it.handle)).find((s) => s.type === "main-product")!;
       texts.add(JSON.stringify(mp.blocks!.text.settings)); points.add(String(mp.blocks!.highlights.settings.items));
-      expect(mp.blocks!.siblings.settings).toMatchObject({ collection: "all", heading: "Dans votre coin" });
+      expect(mp.blocks!.siblings.settings).toMatchObject({ collection: "all", heading: "Les quatre pièces" });
       expect(mp.settings).toMatchObject({ product_target: `product:${it.key}`, gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true });
       const html = pages.get(`/products/${it.handle}`)!;
       expect(html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)![1]).toContain(it.title);
@@ -152,7 +152,7 @@ describe("SOUPLE : démonstration de quatre produits", async () => {
       const alt = SOUPLE_MEDIA.find((m) => `${ID}-${m.file}` === scene.settings.image_asset)!.alt;
       expect(alt.toLowerCase(), it.key).toContain(it.key === "anneau" ? "anneau" : it.key);
       // Les trois autres pièces sont proposées, jamais la fiche elle-même.
-      const recos = html.slice(html.indexOf("De quoi compléter votre coin"));
+      const recos = html.slice(html.indexOf("Pour compléter la séance"));
       for (const o of SOUPLE_PRODUCTS.filter((o) => o.key !== it.key)) expect(recos, `${it.key} → ${o.key}`).toContain(`/products/${o.handle}`);
       expect(html.match(/Vous aimerez aussi/g), it.key).toBeNull();
     }

@@ -53,26 +53,38 @@ Rôles des pages, pour chaque thème : l'accueil crée l'envie, les scènes et p
 fiches expliquent le choix, les informations pratiques rassurent. L'angle se décline ; le slogan n'est pas répété
 partout.
 
-## SOUPLE : textes intégrés (démonstration)
+## Fiches par thème (état de la livraison)
 
-| Endroit | Texte |
+### SOUPLE — E-commerce, 4 produits — **réécrit**
+
+1. **Cible** : une femme qui passe ses journées à répondre aux besoins des autres et voudrait, le soir chez elle,
+   quelques minutes de yoga ou de Pilates qui ne soient une obligation pour personne.
+2. **Tension** (ses mots) : « Toute la journée, on compte sur moi. Le sport à la maison, c'est encore une chose à réussir. »
+3. **Désir et angle** : « Pendant quelques minutes, je ne suis disponible que pour moi » → un rendez-vous avec soi, pas une obligation.
+4. **Promesse et faits** : une place à soi, installée et rangée en un geste, complétée pièce par pièce ; faits = visuels
+   (couleurs, formes, logo, rangement roulé ou debout) et noms des pièces.
+5. **Objections** : « encore un achat » (le tapis suffit), la place (tout se roule ou se pose debout), « laquelle pour
+   quoi ? » (un rôle par pièce), « ça va jurer » (mêmes couleurs), prix et commande (une seule information dédiée).
+6. **Parcours** : ouverture (se reconnaître) → mosaïque (ce qui est vendu) → phrase (l'angle) → liste (un rôle par pièce)
+   → panorama du tapis (la place) → anneau (le Pilates) → sangle (l'achat) → FAQ (le choix) → inscription.
+
+| Endroit | Texte retenu |
 |---|---|
-| Ouverture plein écran (H1) | « Toute la journée, on compte sur vous. Ce moment est à vous. » |
-| Sous-titre | « Les messages peuvent attendre. Déroulez votre tapis, rapprochez vos accessoires et retrouvez votre coin. Pour une fois, vous n'avez personne à satisfaire. » |
-| Bouton | « Créer mon coin à moi » → la collection |
-| Mosaïque de la collection | « Pas une nouvelle obligation. *Un rendez-vous avec vous.* » ; « Une pièce suffit pour commencer. » |
-| Phrase au défilement | « Vous n'avez pas besoin d'une pièce en plus. Juste d'un moment qui vous appartient. » |
-| Les quatre pièces | « Votre rituel se construit *à votre rythme* » ; une ligne par pièce (« Votre place, où que vous soyez dans la maison », « Un appui à portée de main », « Pour prolonger un geste, sans vous presser », « Pour les jours où vous avez envie de varier ») |
-| Panorama du tapis | « Votre journée vous emmène partout. Retrouvez votre place ici. » |
-| Anneau | « Envie de changer de séance ? » |
-| Questions | « Avant votre premier moment à vous » : « Faut-il prendre les quatre pièces ? », « J'ai peu de place chez moi : est-ce un problème ? », « Où voir chaque pièce de près ? », « Comment savoir quand la boutique ouvre ? », « Peut-on commander aujourd'hui ? » |
+| Ouverture (H1) | « Toute la journée, on compte sur vous. Ce moment est à vous. » — « Les messages peuvent attendre. Déroulez le tapis : pour une fois, vous n'avez personne à satisfaire. » — « Créer mon coin à moi » |
+| Mosaïque | « Pas une nouvelle obligation. *Un rendez-vous avec vous.* » — ce qui est vendu, le tapis suffit pour commencer |
+| Liste | « Votre rituel se construit *à votre rythme* » : un rôle par pièce (commencer, un appui, prolonger les bras, le Pilates) |
+| Tapis (panorama) | « Votre journée vous emmène partout. Retrouvez votre place ici. » — il ne demande que sa place au sol |
+| Anneau | « Ce soir, plutôt Pilates ? » (remplace « Envie de changer de séance ? ») |
+| FAQ « Avant de choisir » | par quelle pièce commencer ; yoga ou Pilates, quelle pièce pour quoi ; où tout ranger ; vont-elles ensemble une à une ; **une** information sur la démonstration (prix non fixés, commande désactivée) |
+| Fiches | sur-titre avec le rôle ; texte court ; description « Son rôle / Ce qu'on voit / Pourquoi lui ou avec qui » ; scène propre (« Là où tombe la lumière ce soir », « La paire des étirements », « Un creux d'étagère suffit », « Debout contre la brique ») ; « Pour compléter la séance » |
+| Page « Pratiquer chez soi » | « Chaque pièce à sa place » (un rôle par repère) · « Tout se range en un geste » · « Une à une, sans dépareiller » |
 | Inscription | « Et si, ce soir, vous gardiez un moment pour vous ? » — « Me prévenir » |
-| Collection | « Votre coin, pièce par pièce » — « Commencez par une pièce ; les autres viendront quand vous voudrez. » |
-| Fiches | scènes « Un rayon de soleil suffit » (tapis), « Prêtes pour votre prochain moment » (brique), « Votre coin reste prêt » (sangle), « Rien ne presse » (anneau) ; « Dans votre coin » (les quatre pièces) ; « De quoi compléter votre coin » (recommandations) ; « Vos questions » |
-| Page « Votre coin à vous » | « Tout ce qu'il faut, rien de plus » · « Votre coin se range en un geste » · « Quatre pièces, un seul coin » |
 
-Faits utilisés : couleurs, formes, logo, usages montrés par les visuels. Jamais : prix, matières, dimensions, adhérence,
-bienfaits pour la santé ou contre la fatigue, avis, stock, délais.
+Pages réécrites : accueil, collection, 4 fiches, « Pratiquer chez soi », aide (FAQ, contact), menus, pied, SEO.
+Preuves : `docs/preuves/copywriting/souple/` (accueil 1440 et 390, premiers écrans 360 × 640 et 390 × 844, les quatre
+fiches, pages) ; avant / après : `docs/preuves/souple-158/AVANT-APRES.md`. Premier écran 360 × 640 : texte de deux lignes
+sous le titre, tapis, brique et sangle visibles sous le bouton. Limites : prix, matières et dimensions inconnus (blocs
+masqués) ; validation de Thomas attendue.
 
 ## Boutiques des clients
 

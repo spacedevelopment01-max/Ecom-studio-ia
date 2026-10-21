@@ -62,7 +62,7 @@ qu'ORBE, ONDE, HEUREN et ALCÔVE n'utilisaient pas.
 | Accueil | **scène plein écran** (titre de page, bouton « Créer mon coin à moi » vers la collection) · **mosaïque de la collection** (la collection en grand, chaque pièce dans son cadre et reliée à sa fiche) · **phrase qui s'allume au défilement** · **les quatre pièces en liste** (vignette, nom, état du prix, une ligne d'usage) · **panorama** du tapis au soleil · **l'anneau et son texte** en chevauchement · **achat de la sangle** (galerie, « Achat indisponible ») · **questions en lignes** · **inscription sur photo** |
 | Catalogue | les quatre produits sur une rangée (deux par deux sur téléphone) |
 | Fiche (×4) | fiche produit (galerie en carrousel, cadre carré, zoom, barre d'achat ; « Dans la collection » : les quatre pièces) · **la scène du produit** en fermeture · **le reste de la collection** · questions en lignes |
-| Votre coin à vous | introduction · **scène et liste des produits** (studio, un repère sur chaque pièce, lien vers sa fiche) · **diptyque** (niche, banc) · **scène et texte** (la collection vue du dessus) |
+| Pratiquer chez soi | introduction · **scène et liste des produits** (studio, un repère sur chaque pièce, lien vers sa fiche) · **diptyque** (niche, banc) · **scène et texte** (la collection vue du dessus) |
 | Questions et contact | questions numérotées · formulaire de contact (mode démonstration) |
 
 Aucune section de la famille Produit spécifique (`cv-*`) n'est utilisée : un test le vérifie. Animations : montée
@@ -83,16 +83,16 @@ limitent pas le nombre de produits d'un client.
 | tapis-01…05, brique-01…05, sangle-01…05, anneau-01…05 | galerie de **sa** fiche (cinq vues chacun) |
 | tapis-05, brique-01, sangle-05, anneau-02 | accueil · mosaïque (une tuile par pièce, vers sa fiche) |
 | tapis-01, brique-01, sangle-01, anneau-01 | menu « La collection » (cartes) |
-| ambiance-05 (collection à plat) | accueil · mosaïque (vue d'ensemble) ; Votre coin à vous · la collection vue du dessus |
+| ambiance-05 (collection à plat) | accueil · mosaïque (vue d'ensemble) ; Pratiquer chez soi · la collection vue du dessus |
 | ambiance-07 (tapis et brique au soleil) | accueil · panorama → tapis |
 | ambiance-04 (anneau sur socle) | accueil · l'anneau → anneau |
 | ambiance-10 (collection au studio) | accueil · inscription ; encart du menu |
 | ambiance-02 (tapis dans la lumière) | fiche du tapis |
-| ambiance-03 (brique et sangle sur un banc) | fiche de la brique ; Votre coin à vous · diptyque |
+| ambiance-03 (brique et sangle sur un banc) | fiche de la brique ; Pratiquer chez soi · diptyque |
 | ambiance-06 (tapis roulé et sangle) | fiche de la sangle |
 | ambiance-09 (anneau contre la brique) | fiche de l'anneau |
-| ambiance-01 (studio de Pilates, quatre pièces) | accueil · scène plein écran (ordinateur) ; Votre coin à vous · scène et liste des produits |
-| ambiance-08 (niche en arche) | accueil · scène plein écran (téléphone) ; Votre coin à vous · diptyque |
+| ambiance-01 (studio de Pilates, quatre pièces) | accueil · scène plein écran (ordinateur) ; Pratiquer chez soi · scène et liste des produits |
+| ambiance-08 (niche en arche) | accueil · scène plein écran (téléphone) ; Pratiquer chez soi · diptyque |
 
 Jamais la même image dans deux sections qui se suivent (test).
 
@@ -121,7 +121,7 @@ mobile), jamais achetable.
 | Aperçu statique | 11 pages × 4 largeurs (360, 390, 430, 1440) : 0 débordement horizontal ; menus, recherche, panier, 404 |
 | Premiers écrans | 360 × 640 : scène plein écran de 90 à 640 px (exactement l'écran), titre 135–266 px, bouton 363–415 px, tapis, brique et sangle visibles dessous ; fiches : produit entier, nom, prix, bouton d'achat terminé entre 602 et 627 px (les quatre). 390 × 844 et 430 × 932 : idem, plus haut (`premier-ecran/mesures.json`) |
 | Studio réel (`family-studio-check souple`) | 13/13 : galerie limitée aux 20 fonctions E-commerce (fonction d'une autre famille introuvable), ajout, mouvement réduit, changement de disposition (titre conservé), titre, effets, déplacement, en-tête et pied (dispositions et textes), rechargement : tout conservé |
-| Choix depuis le studio (`CHARTE=1 START_DEMO=heuren theme-demo-choice-check … souple`) | démo complète SOUPLE consultée (ordinateur, téléphone, fiche, page « Votre coin à vous ») sans aucune écriture dans le projet ; projet HEUREN complet adapté : 0 emplacement vide, 0 image non chargée, 0 visuel ou texte de SOUPLE, **charte validée du projet gardée** (bleu nuit d'HEUREN dans la composition SOUPLE), signature « L'heure bleue, au poignet » dite une seule fois par page ; rechargement identique ; « Choisir ce thème » en double-clic : une seule tâche, une seule version |
+| Choix depuis le studio (`CHARTE=1 START_DEMO=heuren theme-demo-choice-check … souple`) | démo complète SOUPLE consultée (ordinateur, téléphone, fiche, page « Pratiquer chez soi ») sans aucune écriture dans le projet ; projet HEUREN complet adapté : 0 emplacement vide, 0 image non chargée, 0 visuel ou texte de SOUPLE, **charte validée du projet gardée** (bleu nuit d'HEUREN dans la composition SOUPLE), signature « L'heure bleue, au poignet » dite une seule fois par page ; rechargement identique ; « Choisir ce thème » en double-clic : une seule tâche, une seule version |
 | Exports WooCommerce / PrestaShop (`family-export-check`) | profil « poudre » actif (`es-editorial-poudre`), 0 débordement, 0 erreur de script ; Shopify : les 31 médias, les quatre produits, le profil (test) |
 
 **Exports** : ce sont des fichiers (thème Shopify, paquets WooCommerce et PrestaShop) dont le contenu et le rendu sont

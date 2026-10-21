@@ -38,7 +38,7 @@ const THEME = {
   alcove: { brand: /ALCÔVE/, profile: "arrondi", menuPage: "page-piece-par-piece.html", menuLabel: "Pièce par pièce", leak: /ALCÔVE|alcôve à soi|terracotta|Pièce par pièce|Boutique de démonstration/i },
   // ONDE (refonte E-commerce de l'issue #158) : profil « studio » porté par « editorial_profile ».
   onde: { brand: /ONDE/, profile: "studio", menuPage: "page-usages.html", menuLabel: "Les usages", leak: /\bONDE\b|Repartez|graphite et vert|Boutique de démonstration/i },
-  souple: { brand: /SOUPLE/, profile: "poudre", menuPage: "page-votre-coin.html", menuLabel: "Votre coin", leak: /SOUPLE|rose poudré|tapis de yoga|anneau de Pilates|Ce moment est à vous|Créer mon coin à moi|Boutique de démonstration/i },
+  souple: { brand: /SOUPLE/, profile: "poudre", menuPage: "page-chez-soi.html", menuLabel: "Pratiquer chez soi", leak: /SOUPLE|rose poudré|tapis de yoga|anneau de Pilates|Ce moment est à vous|Créer mon coin à moi|Boutique de démonstration/i },
   "museau-club": { brand: /MUSEAU CLUB/, profile: "club", menuPage: "page-la-balade.html", menuLabel: "La balade", leak: /MUSEAU|harnais|pochette|bleu cobalt|La balade|Boutique de démonstration/i },
 }[T];
 /** Attribut du <body> qui porte le profil graphique : « conversion » (boutique spécialisée), « editorial » (E-commerce). */
