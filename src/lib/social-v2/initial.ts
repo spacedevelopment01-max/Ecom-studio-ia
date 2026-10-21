@@ -330,6 +330,7 @@ function postBrief(pid: string, slot: Slot, content: InitialPlan['posts'][number
             const made = createOnePost(loadProject(pid), { kind: 'image', date: new Date().toISOString().slice(0, 10), time: '12:00', timezone: 'UTC', platforms: [{ platform: 'instagram' }], headline: content.title, caption: content.caption, pillar: content.pillar, request: content.request, editorial: content.editorial });
             slot.postId = made.ids[0];
             run("UPDATE posts SET format=?,scheduled_at=NULL,status='draft',objective=?,brief=json_set(brief,'$.initialCreative',json(?),'$.aspect',?) WHERE id=?", slot.aspect === '9:16' ? 'story' : 'image', content.objective, JSON.stringify({ hash, index: slot.index, group: slot.group }), slot.aspect, slot.postId);
+            if (slot.postId) strategyContent(pid, "post", slot.postId);
             mutate(pid, hash, v => v.slots[slot.index].postId = slot.postId);
         });
     const row = slot.group === 'organic' ? one<{
@@ -342,9 +343,10 @@ function postBrief(pid: string, slot: Slot, content: InitialPlan['posts'][number
     if (slot.group === 'organic' && (!row || row.user_edited))
         throw new UserFacingError('Publication supprimée ou modifiée par le client : aucun écrasement.');
     // Plan repair is allowed only on an unedited unfinished slot; all accepted entries remain untouched.
-    if (row && (row.title !== content.title || row.caption !== content.caption))
+    if (row && slot.postId && (row.title !== content.title || row.caption !== content.caption)) {
         const changed = run("UPDATE posts SET title=?,caption=?,brief=json_set(brief,'$.headline',?,'$.request',?,'$.editorial',json(?)) WHERE id=? AND user_edited=0", content.title, content.caption, content.title, content.request, JSON.stringify(content.editorial), slot.postId);
-        if (changed.changes) strategyContent(p.id, "post", slot.postId);
+        if (changed.changes) strategyContent(pid, "post", slot.postId);
+    }
     const network = slot.group === 'ad' && slot.aspect === '1:1' ? 'facebook' : 'instagram';
     return { id: slot.postId ?? slot.creativeId, entryPoint: slot.group === 'ad' ? 'ads-campaign' : 'publications', network, format: slot.aspect === '9:16' ? 'story' : 'image', title: content.title, headline: content.title, caption: content.caption, pillar: content.pillar, objective: content.objective, scheduled_at: null, request: `${content.request}\nConcept indépendant : ${JSON.stringify(content.concept)}`, editorial: slot.group === 'organic' ? content.editorial : undefined, editorialData: { initialCreative: { hash, index: slot.index, group: slot.group }, concept: content.concept }, advertising: slot.group === 'ad' ? { ...advertisingMaterial(loadProject(pid)), ...content.advertising, concept: content.concept, copy: { primary: content.caption, hook: content.title, cta: content.advertising?.cta }, platform: { network, aspect: slot.aspect } } : undefined };
 }
