@@ -98,40 +98,43 @@ export function curateOrbe(spec: ThemeSpec) {
   hidePendingBlocks(spec);
 }
 
-// ─── Atelier Rive — fiche de stratégie (site de services : un parcours de prise de contact, pas une fiche d'achat) ─────
-//  1. cible : un couple ou une famille dont l'intérieur ne suit plus la vie (télétravail, enfant, emménagement) et qui ne
-//     sait pas par où commencer ;
-//  2. tension : « On a tout essayé seuls, on ne sait plus par où commencer, et on a peur de dépenser pour un résultat
-//     qui ne nous ressemble pas. » ;
-//  3. désir : un intérieur qui leur ressemble — angle unique : être compris avant d'être conseillé ;
-//  4. promesse tenable : partir de leur façon de vivre chaque pièce, de la lumière et des matières (le positionnement
-//     déclaré) ; trois prestations décrites ; tarifs, zone, horaires, équipe et réalisations réelles inconnus ;
-//  5. objections : par où commencer, faut-il savoir ce que l'on veut, une seule pièce est-elle possible, ce que permet la
-//     démonstration ;
-//  6. parcours : ouverture (se reconnaître) → l'approche → les prestations (pour qui) → la méthode → des inspirations →
-//     la lumière d'abord → FAQ → premier message.
+// ─── Atelier Rive — fiche de stratégie (consigne de Thomas, 21 octobre 2026, 21 h 45) ────────────────────────────────
+// Site de services complet : toute l'activité et les trois prestations, avec une identité rédactionnelle forte. Les
+// campagnes ciblées (une situation, une cible) vivent dans les publications et les publicités, pas sur le site.
+//  1. utilisateur et acheteur : l'ensemble des clients des prestations, la même personne qui vit les lieux et qui fait
+//     appel à l'atelier (logement ou petit espace professionnel, d'après le positionnement du projet) ;
+//  2. situation : un emménagement, une pièce qui ne suit plus les usages, plusieurs espaces à relier ;
+//  3. tension : « Je sais ce qui ne va plus, pas ce qu'il faudrait faire, ni quelle prestation demander. » ;
+//  4. désir et angle unique : un intérieur adapté à sa façon de vivre ;
+//  5. promesse tenable : partir des usages, de la lumière et des matières (positionnement déclaré) ; trois prestations
+//     décrites d'après le projet ; un parcours de contact en trois étapes. Tarifs, délais, zone, horaires, équipe et
+//     réalisations réelles non renseignés : jamais inventés ;
+//  6. objections : quelle prestation choisir, par où commencer, faut-il savoir ce que l'on veut, un espace
+//     professionnel est-il possible, que mettre dans le premier message, ce que permet la démonstration.
 export const RIVE_FAQ: Faq[] = [
-  ["Par où commence-t-on ?", "Par un message : décrivez la pièce, ce qui vous gêne et ce que vous aimeriez y faire. Le formulaire de contact suffit pour démarrer."],
+  ["Quelle prestation choisir ?", "Conseil & direction si vous cherchez une direction avant d'acheter. Aménagement d'une pièce pour une pièce qui ne suit plus vos usages. Projet d'ensemble pour plusieurs espaces à relier. En cas de doute, décrivez votre projet : la prestation se choisit ensemble."],
+  ["Par où commence-t-on ?", "Par un message : les lieux concernés, ce qui vous gêne et ce que vous aimeriez y faire. Le formulaire de contact suffit pour démarrer."],
   ["Faut-il savoir ce que l'on veut ?", "Non. Dire ce qui ne va plus suffit : la direction se construit à partir de vos usages, de la lumière et des matières."],
-  ["Intervenez-vous pour une seule pièce ?", "Oui : l'aménagement d'une pièce est une prestation à part entière, comme le conseil ou le projet d'ensemble."],
-  ["Ce site est-il actif ?", "C'est une démonstration : aucun message n'est réellement transmis. Les tarifs, la zone d'intervention et les horaires ne sont pas encore renseignés."],
+  ["Intervenez-vous pour un espace professionnel ?", "Oui, pour un petit espace professionnel comme pour la maison. La démarche est la même : partir de la façon dont on vit et travaille dans les lieux."],
+  ["Ce site est-il actif ?", "C'est une démonstration : aucun message n'est réellement transmis. Les tarifs, les délais, la zone d'intervention et les horaires ne sont pas encore renseignés."],
 ];
 const RIVE_PENDING: Faq[] = [
   ["Où intervenez-vous ?", "[À compléter : votre zone d'intervention ou votre adresse]"],
   ["Quels sont vos horaires ?", "[À compléter : vos horaires]"],
   ["Quels sont vos tarifs ?", "[À compléter : vos tarifs, ou la façon dont ils sont établis]"],
+  ["Quels sont les délais ?", "[À compléter : le délai d'un premier rendez-vous et la durée d'une prestation]"],
   ["Comment se déroule une première prestation ?", "[À compléter : le déroulement d'une première prestation]"],
   ["Quels moyens de paiement acceptez-vous ?", "[À compléter : les moyens de paiement acceptés]"],
 ];
 const RIVE_SERVICES: Record<string, string> = {
-  "Conseil & direction": "Pour vous qui savez ce qui ne va plus sans savoir quelle direction prendre : une ambiance et des choix clairs, avant tout achat.",
-  "Aménagement d'une pièce": "Pour la pièce qui ne fonctionne plus, un salon devenu bureau, une chambre partagée : usages, circulation et matières, à l'échelle d'une pièce.",
-  "Projet d'ensemble": "Pour relier plusieurs espaces autour d'une même intention, après un emménagement ou un changement de vie.",
+  "Conseil & direction": "Pour vous qui savez ce qui ne va plus sans savoir quelle direction prendre. Nous précisons ensemble l'ambiance et les choix qui donneront une direction à votre intérieur, avant tout achat.",
+  "Aménagement d'une pièce": "Pour une pièce qui ne suit plus vos usages : un salon où l'on travaille aussi, une chambre partagée, une entrée qui déborde. Usages, circulation et matières sont organisés à l'échelle de cette pièce.",
+  "Projet d'ensemble": "Pour plusieurs espaces à relier, après un emménagement ou un changement de vie, chez vous ou dans un petit lieu professionnel : une même intention d'une pièce à l'autre.",
 };
 const RIVE_STEPS = [
-  ["Vous nous racontez", "Comment vous vivez la pièce, ce qui vous gêne, ce que vous aimez : un message suffit."],
-  ["Nous convenons ensemble", "La prestation, le moment et les conditions, en toute clarté."],
-  ["Nous proposons une direction", "Une intention construite à partir de vos usages, de la lumière et des matières."],
+  ["Vous décrivez votre projet", "Par le formulaire de contact : les lieux concernés, ce qui vous gêne, ce que vous aimeriez y faire, et la prestation qui vous semble la bonne si vous le savez déjà."],
+  ["Nous convenons ensemble", "La prestation qui répond à votre projet, le moment et les conditions, clairement, avant de commencer."],
+  ["Nous proposons une direction", "Construite à partir de vos usages, de la lumière et des matières de vos pièces."],
 ];
 // [titre, texte, photo du kit (préfixe es-photo-N), texte alternatif décrit d'après l'image]
 const RIVE_CHAPTERS = [
@@ -148,8 +151,11 @@ const RIVE_INSPIRATIONS = [
 
 export function curateRive(spec: ThemeSpec) {
   const contact = "/pages/contact";
-  set(spec, "index", "ed-opening", { label: "Aménagement et décoration intérieure", text: p("Votre intérieur ne suit plus votre vie ? Nous partons de la façon dont vous vivez chaque pièce, de sa lumière et de ses matières, avant de proposer quoi que ce soit."), button_label: "Parler de votre projet", button_link: contact });
-  set(spec, "index", "ed-statement", { label: "Notre approche", heading: "Être compris avant d'être conseillé." });
+  const cta = "Décrire mon projet";
+  set(spec, "index", "ed-opening", { label: "Aménagement et décoration intérieure", heading: "Un intérieur à votre façon de vivre.", text: p("Conseil, aménagement d'une pièce ou projet d'ensemble : nous partons de la façon dont vous vivez les lieux, de leur lumière et de leurs matières, avant de proposer quoi que ce soit."), button_label: cta, button_link: contact });
+  set(spec, "index", "ed-statement", { label: "Notre approche", heading: "Votre quotidien d'abord. La décoration ensuite." });
+  // En-tête : le bouton dit ce que l'on fait en cliquant.
+  for (const sec of Object.values(spec.groups.header?.sections ?? {})) if (sec.type === "header" && sec.settings?.cta_label) sec.settings = { ...sec.settings, cta_label: cta, cta_link: contact };
   // « Notre approche » : trois chapitres (vos usages, la lumière, les matières), illustrés par des photos du kit encore
   // inutilisées sur le site ; la section était vide faute de récit dans le projet.
   const narrative = set(spec, "index", "ref-narrative", { heading: "Ce que nous regardons d'abord" });
@@ -161,28 +167,38 @@ export function curateRive(spec: ThemeSpec) {
     narrative.block_order = chapters.map((_, i) => `c${i}`);
   }
   for (const key of ["index", "page.services"]) {
-    const s = set(spec, key, "services-list", { eyebrow: "Prestations", heading: key === "index" ? "Trois façons de commencer" : "Nos prestations", button_label: "Parler de votre projet", button_link: contact });
-    for (const b of blocks(s)) { const text = RIVE_SERVICES[String(b.settings.title)]; if (text) b.settings = { ...b.settings, text: p(text) }; }
+    const s = set(spec, key, "services-list", { eyebrow: "Prestations", heading: key === "index" ? "Trois prestations, selon l'ampleur de votre projet" : "Trois prestations, une même question : comment vivez-vous ces lieux ?", text: p("Vous hésitez entre deux ? Décrivez votre projet : la prestation se choisit ensemble."), button_label: cta, button_link: contact });
+    for (const b of blocks(s)) { const text = RIVE_SERVICES[String(b.settings.title)]; if (text) b.settings = { ...b.settings, text: p(text), ...(b.settings.button_label ? { button_label: cta } : {}) }; }
   }
   for (const [key, type] of [["index", "timeline"], ["page.about", "timeline"], ["page.services", "how-to"], ["page.contact", "booking"]] as const) {
     const s = sections(spec, key, type)[0];
     blocks(s).forEach((b, i) => { if (RIVE_STEPS[i]) b.settings = { ...b.settings, title: RIVE_STEPS[i][0], text: type === "booking" ? RIVE_STEPS[i][1] : p(RIVE_STEPS[i][1]) }; });
+    if (s && type !== "booking") s.settings = { ...s.settings, heading: "Du premier message à la direction proposée", ...(s.settings?.button_label ? { button_label: cta, button_link: contact } : {}) };
   }
-  const portfolio = set(spec, "index", "portfolio", { eyebrow: "Inspirations", heading: "Des pièces pensées à partir de la lumière" });
+  // Contact : ce qu'il faut écrire et ce qui se passe ensuite, sans promesse de délai de réponse.
+  set(spec, "page.contact", "booking", { heading: "Décrivez votre projet", text: p("Trois informations suffisent pour commencer : les lieux concernés, ce qui vous gêne, ce que vous aimeriez y faire. Dans cette démonstration, aucun message n'est réellement transmis.") });
+  const portfolio = set(spec, "index", "portfolio", { eyebrow: "Inspirations", heading: "Des pièces pensées pour ceux qui les vivent" });
   blocks(portfolio).forEach((b, i) => { const it = RIVE_INSPIRATIONS[i]; if (it) b.settings = { ...b.settings, title: it[0], caption: it[1], image_alt: it[0] }; });
-  set(spec, "index", "ed-scene", { label: "Pièce par pièce", heading: "La lumière d'abord, les meubles ensuite" });
+  set(spec, "index", "ed-scene", { label: "Pour qui", heading: "Chez vous, ou dans un petit espace professionnel", text: p("Un logement à réorganiser, une pièce à repenser, un lieu de travail à rendre plus juste : la démarche reste la même, partir de la façon dont on y vit.") });
   // Coordonnées, horaires et équipe inconnus : sections masquées dans la démonstration (prêtes dans l'éditeur).
   for (const key of ["index", "page.contact"]) for (const s of sections(spec, key, "practical-info")) s.disabled = true;
   for (const s of sections(spec, "page.about", "team")) s.disabled = true;
-  set(spec, "page.about", "about", { commit_title: "Notre point de départ", commit_text: p("Votre façon de vivre chaque pièce : ce qui vous gêne, ce que vous aimez, la lumière que vous avez.") });
-  for (const key of ["index", "page.faq", "page.services"]) faq(sections(spec, key, "faq")[0], key === "page.services" ? RIVE_FAQ.slice(1) : RIVE_FAQ, RIVE_PENDING);
+  set(spec, "page.about", "about", { heading: "Un intérieur se pense à partir de ceux qui y vivent", lead: p("Atelier Rive accompagne l'aménagement et la décoration intérieure, pour la maison comme pour un petit espace professionnel. Chaque prestation part de la même question : comment vivez-vous ces lieux ?"), commit_title: "Notre point de départ", commit_text: p("Votre façon de vivre chaque pièce : ce qui vous gêne, ce que vous aimez, la lumière que vous avez."), button_label: "Voir les trois prestations" });
+  for (const key of ["index", "page.faq", "page.services"]) faq(sections(spec, key, "faq")[0], key === "page.faq" ? RIVE_FAQ : RIVE_FAQ.filter(([q]) => q !== "Par où commence-t-on ?"), RIVE_PENDING);
   set(spec, "page.services", "faq", { heading: "Bon à savoir" });
-  set(spec, "index", "contact-form", { text: p("Décrivez la pièce, ce qui vous gêne et ce que vous aimeriez y faire : c'est tout ce qu'il faut pour commencer. Dans cette démonstration, aucun message n'est réellement transmis.") });
+  set(spec, "index", "contact-form", { heading: "Et si l'on commençait par votre projet ?", text: p("Les lieux concernés, ce qui vous gêne, ce que vous aimeriez y faire : c'est tout ce qu'il faut pour commencer. Dans cette démonstration, aucun message n'est réellement transmis.") });
   set(spec, "page.faq", "contact-form", { text: p("Une question, un projet ? Écrivez-nous. Dans cette démonstration, aucun message n'est réellement transmis.") });
-  for (const key of ["page.about", "page.services"]) set(spec, key, "cta-banner", { heading: "Parlons de votre intérieur", text: p("Un premier message suffit : la pièce, ce qui vous gêne, ce que vous aimeriez y faire."), button_label: "Parler de votre projet", button_link: contact });
+  for (const key of ["page.about", "page.services"]) set(spec, key, "cta-banner", { heading: "Un projet, même encore flou ?", text: p("Décrivez les lieux, ce qui vous gêne et ce que vous aimeriez y faire : la prestation se choisit ensemble."), button_label: cta, button_link: contact });
   // Mentions légales d'une marque de démonstration : ce qui est vrai, sans champ inconnu affiché.
   set(spec, "page.legal", "legal-page", { updated: "21 octobre 2026", intro: p("Atelier Rive est une marque de démonstration du studio : aucune entreprise n'est exploitée sous ce nom et aucun message envoyé depuis ce site n'est transmis.") });
-  spec.store.seo = { title: "Atelier Rive | Aménagement intérieur : être compris avant d'être conseillé", description: "Votre intérieur ne suit plus votre vie ? Atelier Rive part de vos usages, de la lumière et des matières : conseil, aménagement d'une pièce, projet d'ensemble." };
+  spec.store.seo = { title: "Atelier Rive | Aménagement intérieur adapté à votre façon de vivre", description: "Conseil, aménagement d'une pièce ou projet d'ensemble : Atelier Rive part de vos usages, de la lumière et des matières. Décrivez votre projet." };
+  const pageSeo: Record<string, { title: string; description: string }> = {
+    prestations: { title: "Prestations d'aménagement et de décoration | Atelier Rive", description: "Conseil & direction, aménagement d'une pièce, projet d'ensemble : trois prestations qui partent de votre façon de vivre les lieux." },
+    "a-propos": { title: "À propos | Atelier Rive, aménagement intérieur", description: "Atelier Rive accompagne l'aménagement et la décoration intérieure, pour la maison comme pour un petit espace professionnel." },
+    contact: { title: "Décrire votre projet | Atelier Rive", description: "Les lieux concernés, ce qui vous gêne, ce que vous aimeriez y faire : trois informations pour commencer avec Atelier Rive." },
+    faq: { title: "Questions fréquentes | Atelier Rive", description: "Quelle prestation choisir, par où commencer, espaces professionnels : les réponses avant votre premier message." },
+  };
+  for (const pg of spec.store.pages ?? []) if (pageSeo[pg.handle]) pg.seo = pageSeo[pg.handle];
   // Pied de page : un intitulé « Nous trouver » sans coordonnées connues ne s'affiche pas.
   for (const sec of Object.values(spec.groups.footer?.sections ?? {})) for (const b of Object.values(sec.blocks ?? {})) {
     const strings = Object.entries(b.settings ?? {}).filter(([k, v]) => k !== "heading" && typeof v === "string" && v.trim());

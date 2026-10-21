@@ -267,29 +267,34 @@ fiche (« Sans travaux »), FAQ, contact, livraison, pied (politiques non rédig
 jour (tagline). Visuels cohérents (intérieurs sobres, aucune personne). Code : `tests/engine-demo-copy.ts` (`curateOrbe`).
 Preuves : kit privé, archive hors dépôt.
 
-### Atelier Rive — Services — **réécrit** (parcours de contact, pas de fiche produit)
+### Atelier Rive — Services — **réécrit (consigne 21 h 45)** : un site complet, un intérieur adapté à votre façon de vivre
 
-1. **Cible** : un couple ou une famille dont l'intérieur ne suit plus sa vie (salon devenu bureau, chambre partagée,
-   emménagement), sans savoir par où commencer.
-2. **Tension** : « J'ai peur de dépenser pour un résultat qui ne nous ressemble pas. »
-3. **Désir et angle** : être compris avant d'être conseillé → partir de votre façon de vivre chaque pièce.
-4. **Promesse et faits** : la méthode décrite (vous racontez → nous convenons ensemble → nous proposons une direction) et
-   les trois prestations du kit ; faits = photos du kit (décrites telles qu'elles sont). Tarifs, délais, zone, adresse,
-   horaires et équipe **inconnus** : sections masquées dans la démo, prêtes dans l'éditeur.
-5. **Objections** : par où commence-t-on, faut-il savoir ce que l'on veut, une seule pièce est-elle possible, ce site
-   est-il actif (information démo).
-6. **Parcours** : « Votre intérieur ne suit plus votre vie ? » → « Parler de votre projet » (vers le contact) → « Être
-   compris avant d'être conseillé » → « Ce que nous regardons d'abord » (vos usages, la lumière, les matières, illustrés
-   par trois photos du kit jusque-là inutilisées) → trois façons de commencer → comment ça se passe → inspirations →
-   FAQ → formulaire « Et si l'on commençait par votre projet ? ».
+Décision de Thomas : le site présente **toute l'activité et les trois prestations**, avec une identité rédactionnelle
+forte. Il n'est pas réduit à une campagne : les angles ciblés (une situation, une cible) vont dans les publications et
+les publicités (moteur et forfaits : Codex, #160/#161).
 
-Ce qui manquait : « [À compléter] » publics dans les réalisations, l'équipe, le contact, la FAQ, les mentions légales et
-l'adresse de l'à-propos ; un intitulé « Nous trouver » vide dans le pied. Les réalisations deviennent des
-« Inspirations » (aucun client ni chantier inventé : légendes tirées des photos). Pied de page : le nom n'est plus
-répété, le second menu ne reprend plus les pages déjà listées et « Conditions générales » / « Confidentialité », non
-rédigées, ne renvoient plus aux mentions légales. Mentions légales : marque de démonstration dite comme telle. Pages
-réécrites : accueil, prestations, à propos, FAQ, contact, mentions légales, pied, SEO. Code : `curateRive` dans
-`tests/engine-demo-copy.ts`. Preuves : **kit privé**, captures hors dépôt (archive privée).
+| | |
+|---|---|
+| Utilisateur et acheteur | l'ensemble des clients des prestations : la personne qui vit les lieux est celle qui fait appel à l'atelier (logement ou petit espace professionnel, d'après le positionnement du projet) |
+| Situations d'achat | un emménagement, une pièce qui ne suit plus les usages, plusieurs espaces à relier |
+| Tension (ses mots) | « Je sais ce qui ne va plus, pas ce qu'il faudrait faire, ni quelle prestation demander. » |
+| Désir | un intérieur adapté à sa façon de vivre |
+| Angle unique (identité du site) | un intérieur à votre façon de vivre : partir des usages, de la lumière et des matières |
+| Promesse tenable | trois prestations décrites (pour qui, ce qu'elles couvrent) ; un parcours de contact en trois étapes : vous décrivez votre projet → nous convenons ensemble → nous proposons une direction |
+| Objections traitées | quelle prestation choisir, par où commencer, faut-il savoir ce que l'on veut, un espace professionnel est-il possible, la démo |
+| **Faits** | les trois prestations et leurs descriptions (projet) ; contact par formulaire ; positionnement « pour la maison comme pour un petit espace professionnel » ; photos du kit, décrites telles qu'elles sont |
+| **Non renseigné** | tarifs, délais, zone d'intervention, adresse, horaires, équipe, réalisations réelles, livrables précis de chaque prestation : sections masquées dans la démo, questions prêtes dans l'éditeur |
+| Exclusions | aucun chantier, client, avis, délai de réponse ni tarif inventés ; les « Inspirations » restent des images de démonstration, jamais des réalisations |
+
+Pages : accueil (« Un intérieur à votre façon de vivre. » → « Décrire mon projet » → « Votre quotidien d'abord. La
+décoration ensuite. » → « Ce que nous regardons d'abord » (vos usages, la lumière, les matières) → « Trois prestations,
+selon l'ampleur de votre projet » → « Du premier message à la direction proposée » → inspirations → « Chez vous, ou dans
+un petit espace professionnel » → FAQ → « Et si l'on commençait par votre projet ? »), prestations, à propos (« Un
+intérieur se pense à partir de ceux qui y vivent »), contact (« Décrivez votre projet » : les trois informations à
+donner), FAQ, bouton d'en-tête « Décrire mon projet », SEO de chaque page. Identité de la démo mise à jour (tagline).
+Visuels : intérieurs sans personne, cohérents avec l'angle ; aucune photo ne montre un espace professionnel (dit par le
+texte seulement, d'après le positionnement). Code : `curateRive` dans `tests/engine-demo-copy.ts`. Preuves : **kit
+privé**, captures hors dépôt (archive privée).
 
 ### FRAISE — Spécialisée (référence Lumora) — **réécrit (consigne 21 h 45)**, composition inchangée
 

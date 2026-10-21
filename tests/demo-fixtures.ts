@@ -91,7 +91,7 @@ const IDENTITY: Record<DemoId, { tagline: string; summary: string; story: string
     media: Object.fromEntries(MULTI_KIT_MEDIA.souple.filter((m) => m.role !== "logo").map((m) => [m.file, { role: m.role }])),
   },
   rive: {
-    tagline: "Des espaces qui vous ressemblent.", summary: "Aménagement et décoration intérieure : intentions, usages, lumière et matières.", story: "Une étude d'intention à partir de vos usages, de la lumière et des matières.", positioning: "Des intérieurs pensés pièce par pièce à partir de vos usages, de la lumière et des matières, pour la maison comme pour un petit espace professionnel.", price: null,
+    tagline: "Un intérieur à votre façon de vivre.", summary: "Aménagement et décoration intérieure : intentions, usages, lumière et matières.", story: "Une étude d'intention à partir de vos usages, de la lumière et des matières.", positioning: "Des intérieurs pensés pièce par pièce à partir de vos usages, de la lumière et des matières, pour la maison comme pour un petit espace professionnel.", price: null,
     services: {
       ...emptyServiceProfile(),
       services: [
