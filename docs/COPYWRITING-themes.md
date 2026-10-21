@@ -46,7 +46,7 @@ Pierres, Pivoine, Ostral) sont retirées de l'expérience livrée depuis le 20 o
 | SILLON | un amateur d'espresso qui part (van, randonnée, bureau sans machine) | le café de station, le gobelet tiède | garder son rituel où qu'il soit | **votre espresso ne reste plus à la maison** | pression, capsules ou mouture, autonomie (non connues) |
 | ONDE | une personne qui travaille ou se déplace dans le bruit | les sollicitations, les commandes qu'on cherche à tâtons | se retrouver d'un geste | **d'un geste, vous êtes ailleurs** (touches vertes repérables) | réduction de bruit, autonomie (non affirmées) |
 | ORBE | un locataire ou un petit logement qui veut changer d'ambiance sans travaux | le plafonnier qui fige la pièce | une atmosphère différente dans chaque pièce, chaque soir | **déplacez la lumière, l'ambiance suit** | autonomie, intensité (non connues) |
-| FRAISE | un adulte pour qui un geste quotidien ressemble à une corvée | les gestes qu'on oublie ou qu'on repousse | un petit rendez-vous gourmand qu'on n'a pas envie de manquer | **le geste du jour devient un plaisir** | **aucune** allégation de santé ; composition non affirmée |
+| FRAISE | une famille ou une bande d'amis qui grignote à plusieurs (goûter, pique-nique, table de fête) | les sachets déchirés, entamés, oubliés au fond du placard ou du sac | une douceur posée au milieu, qu'on partage | **le flacon qui fait le tour de la table** | **aucune** allégation de santé ; ingrédients, allergènes, texture, délais et retours non affirmés |
 | Atelier Rive | un couple ou une famille dont l'intérieur ne lui ressemble plus, sans savoir par où commencer | peur de se tromper, de dépenser pour un résultat qui n'est pas « nous » | être compris avant d'être conseillé | **un intérieur qui vous ressemble, à partir de votre façon de vivre** | tarifs, délais, zone (fournis par le client, sinon « à compléter ») |
 
 Rôles des pages, pour chaque thème : l'accueil crée l'envie, les scènes et pages d'usage permettent de se projeter, les
@@ -235,6 +235,38 @@ répété, le second menu ne reprend plus les pages déjà listées et « Condit
 rédigées, ne renvoient plus aux mentions légales. Mentions légales : marque de démonstration dite comme telle. Pages
 réécrites : accueil, prestations, à propos, FAQ, contact, mentions légales, pied, SEO. Code : `curateRive` dans
 `tests/engine-demo-copy.ts`. Preuves : **kit privé**, captures hors dépôt (archive privée).
+
+### FRAISE — Produit spécifique (référence Lumora) — **réécrit**, composition inchangée
+
+1. **Cible** : une famille ou une bande d'amis qui grignote à plusieurs (goûter, pique-nique, table de fête).
+2. **Tension** : « Les sachets se déchirent et traînent entamés au fond du placard ou du sac. »
+3. **Désir et angle** : une douceur posée au milieu et partagée → le flacon qui fait le tour de la table.
+4. **Promesse et faits** : flacon transparent, couvercle large, gummies à la fraise ; « 60 douceurs » est écrit sur
+   l'étiquette des visuels ; trois offres et leurs prix de démonstration. Texture, ingrédients, allergènes, conservation,
+   délais et retours jamais affirmés ; aucune allégation de santé.
+5. **Objections** : quelle offre choisir, le flacon se referme-t-il, combien de gummies, ingrédients et allergènes (dit :
+   non renseignés), modifier son panier, information démo dédiée.
+6. **Parcours** (sections Lumora inchangées, même ordre, aucune masquée) : « Le flacon de fraise *qui fait le tour de la
+   table* » → avis (état honnête) → ce que l'on voit → quatre détails → « Ouvert, servi, *refermé* » → « Avant de goûter »
+   → « Un flacon, *trois ou cinq ?* » (comparatif des trois offres) → repères → « Bon à savoir avant de commander » →
+   trois moments → questions → être prévenu.
+
+**Retiré, car inventé** (même étiqueté « fictif » ou « exemple ») : six avis et la note 4,8/5 (accueil, fiche, article,
+publi-rédactionnel), la répartition des notes, le témoignage de « Claire D. » et la citation de « Camille R. », la
+remise −29 % sur un prix de référence de 34,90 € (prix barré supprimé), la garantie « 30 jours », la livraison offerte dès
+2 flacons, la protection des expéditions du panier, le « Paiement sécurisé » d'un paiement désactivé, le comparatif contre
+une « autre confiserie » imaginaire, « texture tendre » et « bouchon à vis » (non visibles), les chiffres d'exemple et tous
+les « [À compléter] » publics. Les sections gardent leur place : la section d'avis dit qu'aucun avis n'existe encore et
+ce qui la remplira ; le comparatif compare les trois offres ; la garantie devient « Bon à savoir avant de commander ».
+Les avis de l'article et du publi-rédactionnel sont masqués (pages hors composition figée), pour ne pas répéter la même
+section vide. Pied de page : une seule inscription. Le test de composition garde la même liste de sections ; seuls deux
+titres attendus changent (« Les avis de vos clients », « Un flacon, »).
+
+Pages réécrites : accueil, fiche, à propos, article « 4 raisons », publi-rédactionnel (récit de la marque), FAQ, contact,
+livraison et retours, trois pages légales (intro vraie, rubriques vides masquées), bibliothèque de sections, bandeaux,
+panier, pied, SEO. Code : `tests/fraise-demo-copy.ts` (`curateFraise`), appliqué après `conversionProject` dans
+`demoProject` ; la référence lot 2C elle-même (tests `lot2c-*`) n'est pas modifiée. Preuves : **kit privé**, captures
+hors dépôt (archive privée).
 
 ## Boutiques des clients
 

@@ -7,24 +7,24 @@
  */
 import type { ThemeSpec, SectionInstance } from "../src/lib/theme/spec";
 
-const p = (s: string) => `<p>${s}</p>`;
-const PENDING = /\[(?:À compléter|To complete)/;
-type Faq = [string, string];
+export const p = (s: string) => `<p>${s}</p>`;
+export const PENDING = /\[(?:À compléter|To complete)/;
+export type Faq = [string, string];
 
-function sections(spec: ThemeSpec, key: string, type: string): SectionInstance[] {
+export function sections(spec: ThemeSpec, key: string, type: string): SectionInstance[] {
   const t = spec.templates[key];
   return t ? t.order.map((sid) => t.sections[sid]).filter((s) => s.type === type) : [];
 }
 /** Réglages d'une section (la n-ième de ce type dans le modèle), sans toucher aux autres. */
-function set(spec: ThemeSpec, key: string, type: string, settings: Record<string, unknown>, n = 0) {
+export function set(spec: ThemeSpec, key: string, type: string, settings: Record<string, unknown>, n = 0) {
   const s = sections(spec, key, type)[n];
   if (s) s.settings = { ...s.settings, ...settings };
   return s;
 }
 /** Blocs d'une section, dans l'ordre (réglages modifiables). */
-const blocks = (s: SectionInstance | undefined) => (s?.block_order ?? []).map((b) => s!.blocks![b]);
+export const blocks = (s: SectionInstance | undefined) => (s?.block_order ?? []).map((b) => s!.blocks![b]);
 /** Questions d'une FAQ : celles de la démonstration d'abord, puis celles en attente (masquées), sans doublon. */
-function faq(s: SectionInstance | undefined, items: Faq[], pending: Faq[]) {
+export function faq(s: SectionInstance | undefined, items: Faq[], pending: Faq[]) {
   if (!s) return;
   const type = blocks(s)[0]?.type ?? "question";
   const all: Faq[] = [...items, ...pending.filter(([q]) => !items.some(([x]) => x === q))];
@@ -33,7 +33,7 @@ function faq(s: SectionInstance | undefined, items: Faq[], pending: Faq[]) {
   s.disabled = false;
 }
 /** Tout bloc qui n'attend qu'une donnée inconnue est masqué (démonstration seulement). */
-function hidePendingBlocks(spec: ThemeSpec) {
+export function hidePendingBlocks(spec: ThemeSpec) {
   for (const t of Object.values(spec.templates)) for (const s of Object.values(t.sections)) for (const b of Object.values(s.blocks ?? {})) if (PENDING.test(JSON.stringify(b.settings))) b.disabled = true;
 }
 

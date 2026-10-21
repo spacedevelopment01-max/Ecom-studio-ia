@@ -34,7 +34,7 @@ const EXPECTED = {
     index: ["cv-hero", "marquee", "cv-reviews", "cv-feature", "features-grid", "cv-feature", "faq", "comparison-table", "stats", "cv-guarantee", "cv-stories", "faq", "newsletter", "marquee"],
     product: ["main-product", "content-tabs", "cv-stories", "cv-feature", "features-grid", "cv-reviews", "cv-feature", "stats", "timeline", "comparison-table", "cv-guarantee", "faq", "newsletter", "marquee"],
     pages: ["a-propos", "listicle", "advertorial", "sections", "contact", "faq", "livraison-retours", "mentions-legales", "confidentialite", "conditions-generales"],
-    headings: ["Ils en parlent", "Pourquoi Fraise", "En quelques", "Questions fréquentes"],
+    headings: ["Les avis de vos clients", "Un flacon,", "En quelques", "Questions fréquentes"],
     offers: 3,
   },
   // Refonte E-commerce (issue #158) : campagne, achat, détail, usages, bandeau d'appel, questions, inscription.

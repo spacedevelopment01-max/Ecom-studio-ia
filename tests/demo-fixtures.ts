@@ -8,6 +8,7 @@
  * Sert aux preuves de la mission E (aperçus statiques, captures, tests) ; jamais exposé au client comme une démo.
  */
 import { curateOrbe, curateRive } from "./engine-demo-copy";
+import { curateFraise } from "./fraise-demo-copy";
 import fs from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
@@ -159,6 +160,8 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
   }
   if (id === "fraise" && !options.direction) {
     const c = await conversionProject(userId, id, path.join(process.cwd(), "public", "demo"), { testVideo: options.testVideo });
+    // Rédaction (consigne du 21 octobre, 19 h 50) : mêmes sections, textes vrais (ni avis, ni remise, ni garantie inventés).
+    curateFraise(c.spec);
     run("UPDATE projects SET store_type = ?, business_type = ?, updated_at = ? WHERE id = ?", d.storeType ?? "mono", "products", now(), c.pid);
     saveSettings(c.pid, { ...loadProject(c.pid).settings, storeKind: d.category as "services" | "catalog" | "specialty" });
     return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
