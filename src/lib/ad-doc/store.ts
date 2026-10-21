@@ -61,7 +61,8 @@ export function saveVersion(projectId: string, docKey: string, doc: AdDocument, 
   const previous = doc.meta.source === "user" ? one<{doc_json:string}>("SELECT doc_json FROM ad_documents WHERE project_id=? AND doc_key=? ORDER BY version DESC LIMIT 1", projectId, docKey) : null;
   const preserved = previous ? json<{meta:{marketingStrategy?: import("../strategy-consumption").StrategyStamp | null}}>(previous.doc_json, { meta: {} }).meta.marketingStrategy ?? null : null;
   const strategy = o.strategyStamp !== undefined ? o.strategyStamp : doc.meta.source === "user" ? preserved : strategyStamp(projectId);
-  doc = { ...doc, meta: { ...doc.meta, marketingStrategy: strategy } };
+  const { marketingStrategy: _untrustedStamp, ...meta } = doc.meta;
+  doc = { ...doc, meta: { ...meta, ...(strategy ? { marketingStrategy: strategy } : {}) } };
   const version = (one<{ v: number }>("SELECT MAX(version) v FROM ad_documents WHERE doc_key = ?", docKey)?.v ?? 0) + 1;
   const vid = id();
   run("INSERT INTO ad_documents (id, project_id, doc_key, version, source, note, doc_json, rendered_asset_id, created_at) VALUES (?,?,?,?,?,?,?,?,?)", vid, projectId, docKey, version, doc.meta.source, (o.note ?? "").slice(0, 200), JSON.stringify(doc), o.renderedAssetId ?? null, now());

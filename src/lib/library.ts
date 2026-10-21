@@ -176,6 +176,7 @@ const SAFE_EXT = new Set(["png", "jpg", "jpeg", "webp", "gif", "avif", "heic", "
 
 export async function saveAsset(input: SaveAssetInput): Promise<Asset> {
   const strategy = input.origin === "generated" ? strategyStamp(input.projectId) : null;
+  const { marketingStrategy: _untrustedStamp, ...meta } = input.meta ?? {};
   const aid = id();
   // Extension du fichier stocké : celle du type, sinon celle du nom SEULEMENT si elle est connue et inoffensive
   // (jamais « .m3u8 », « .ffconcat »… qu'un outil comme ffmpeg interpréterait comme une liste de lecture).
@@ -241,7 +242,7 @@ export async function saveAsset(input: SaveAssetInput): Promise<Asset> {
     key,
     thumbKey,
     input.origin,
-    JSON.stringify({ ...input.meta, marketingStrategy: strategy }),
+    JSON.stringify({ ...meta, ...(strategy ? { marketingStrategy: strategy } : {}) }),
     input.sourceAssetId ?? null,
     input.versionOf ?? null,
     version,

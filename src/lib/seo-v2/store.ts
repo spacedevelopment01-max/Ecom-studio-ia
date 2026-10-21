@@ -39,7 +39,8 @@ export function saveContentVersion(projectId: string, docKey: string, doc: Conte
   const previous = doc.meta2.source === "user" ? one<{doc_json:string}>("SELECT doc_json FROM content_documents WHERE project_id=? AND doc_key=? ORDER BY version DESC LIMIT 1", projectId, docKey) : null;
   const preserved = previous ? json<{meta2:{marketingStrategy?: import("../strategy-consumption").StrategyStamp | null}}>(previous.doc_json, { meta2: {} }).meta2.marketingStrategy ?? null : null;
   const strategy = o.strategyStamp !== undefined ? o.strategyStamp : doc.meta2.source === "user" ? preserved : strategyStamp(projectId);
-  doc = { ...doc, meta2: { ...doc.meta2, marketingStrategy: strategy } };
+  const { marketingStrategy: _untrustedStamp, ...meta } = doc.meta2;
+  doc = { ...doc, meta2: { ...meta, ...(strategy ? { marketingStrategy: strategy } : {}) } };
   if (doc.meta2.contract) doc = { ...doc, meta2: { ...doc.meta2, contract: { ...doc.meta2.contract, checks: checkRequirements(doc, requirementsOf(doc.meta2.contract.request)) } } };
   return tx(() => {
   const version = (one<{ v: number }>("SELECT MAX(version) v FROM content_documents WHERE doc_key = ?", docKey)?.v ?? 0) + 1;
