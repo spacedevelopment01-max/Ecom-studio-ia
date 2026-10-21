@@ -86,6 +86,25 @@ fiches, pages) ; avant / après : `docs/preuves/souple-158/AVANT-APRES.md`. Prem
 sous le titre, tapis, brique et sangle visibles sous le bouton. Limites : prix, matières et dimensions inconnus (blocs
 masqués) ; validation de Thomas attendue.
 
+### MUSEAU CLUB — Produit spécifique, 4 produits — **réécrit**
+
+1. **Cible** : un propriétaire de chien en ville, qui sort son chien plusieurs fois par jour, souvent pressé le matin.
+2. **Tension** : « Je cherche la laisse, il me manque toujours un sac, et rien n'est assorti. »
+3. **Désir et angle** : sortir en un geste, fier de son duo → la balade commence à la porte : tout est prêt, tout va ensemble.
+4. **Promesse et faits** : quatre pièces qui s'accrochent entre elles (mousquetons, anneaux) dans le même bleu ; faits =
+   visuels (anneaux, mousquetons, boucles, maille crème, ouverture de la pochette, rangement près de la porte).
+5. **Objections** : harnais ou collier (rôles, même laisse) ; comment tout s'accroche ; l'assortiment ; tailles et prix
+   non renseignés (une information dédiée) ; sacs fournis ou non (non affirmé, question en attente).
+6. **Parcours** : scène à repères (un rôle par pièce) → grille « qui s'accrochent entre elles » → harnais porté → collier
+   porté → pochette (l'achat) → la porte → FAQ « Avant de choisir » → inscription « Être prévenu quand le club ouvre ».
+
+Textes clés : H1 « Tout pour la balade, *prêt à la porte* » ; rôles « Harnais · pour la promenade », « Laisse · le lien
+de l'ensemble », « Collier · pour tous les jours », « Pochette à sacs · toujours accrochée » ; fiches « Son rôle / Ce
+qu'on voit / Avec qui » ; scènes « Le duo des longues promenades », « Pour le tour du parc, deux pièces suffisent »,
+« À réunir, ou à offrir ensemble », « Prête avant la sortie » ; page « La balade » : « Quelle pièce pour quelle sortie ».
+Pages réécrites : accueil, collection, 4 fiches, « La balade », aide, pied, SEO. Preuves : `docs/preuves/copywriting/museau-club/`.
+Limites : tailles, matières, sacs fournis, prix inconnus (blocs masqués).
+
 ## Boutiques des clients
 
 - **Charte du client prioritaire** : quand le client a validé ses couleurs (charte), le thème choisi change la
