@@ -85,7 +85,7 @@ const IDENTITY: Record<DemoId, { tagline: string; summary: string; story: string
   },
   // SOUPLE (issue #158, e-commerce de quatre produits) : identité utilisée seulement pour la preuve d'adaptation.
   souple: {
-    tagline: "Quatre pièces pour pratiquer, en rose poudré, prune et liège.", summary: "Collection de yoga et de Pilates en rose poudré, prune et liège : un tapis rose poudré au dessous prune, une brique couleur liège, une sangle prune à deux anneaux argentés et un anneau de Pilates prune à poignées rose mauve.", story: "SOUPLE réunit les quatre pièces que l'on sort à chaque séance, dans les mêmes couleurs, pour qu'elles se rangent ensemble.", positioning: "Une collection assortie pour le yoga et le Pilates à la maison : tapis, brique, sangle et anneau.", price: null,
+    tagline: "Toute la journée, on compte sur vous. Ce moment est à vous.", summary: "Collection de yoga et de Pilates en rose poudré, prune et liège : un tapis rose poudré au dessous prune, une brique couleur liège, une sangle prune à deux anneaux argentés et un anneau de Pilates prune à poignées rose mauve.", story: "SOUPLE est né pour celles qui passent leurs journées à répondre aux autres : quatre pièces assorties pour installer chez soi un moment qui leur appartient.", positioning: "Un coin yoga et Pilates à soi, à la maison : tapis, brique, sangle et anneau, à réunir à son rythme.", price: null,
     media: Object.fromEntries(MULTI_KIT_MEDIA.souple.filter((m) => m.role !== "logo").map((m) => [m.file, { role: m.role }])),
   },
   rive: {

@@ -137,7 +137,7 @@ const BRANDS: Record<MultiKitId, Brand> = {
     name: "SOUPLE", product: "Collection de yoga et de Pilates SOUPLE", category: "Accessoires de yoga et de Pilates",
     summary: "Collection de yoga et de Pilates en rose poudré, prune et liège : un tapis rose poudré au dessous prune, une brique couleur liège, une sangle prune à deux anneaux argentés et un anneau de Pilates prune à poignées rose mauve, tous marqués SOUPLE.",
     facts: [["Collection", "tapis de yoga, brique, sangle et anneau de Pilates assortis"], ["Couleurs", "rose poudré, prune, couleur liège, anneaux argentés"]],
-    tagline: "Quatre pièces pour pratiquer, en rose poudré, prune et liège.", story: "SOUPLE réunit les quatre pièces que l'on sort à chaque séance, dans les mêmes couleurs, pour qu'elles se rangent ensemble.", positioning: "Une collection assortie pour le yoga et le Pilates à la maison : tapis, brique, sangle et anneau.",
+    tagline: "Toute la journée, on compte sur vous. Ce moment est à vous.", story: "SOUPLE est né pour celles qui passent leurs journées à répondre aux autres : quatre pièces assorties pour installer chez soi un moment qui leur appartient.", positioning: "Un coin yoga et Pilates à soi, à la maison : tapis, brique, sangle et anneau, à réunir à son rythme.",
     // Prune de la sangle et de l'anneau, rose poudré du tapis, rose mauve des poignées, ivoire rosé des fonds, prune profond.
     palette: { primary: "#5A1B36", secondary: "#E8CFCB", accent: "#B4637A", light: "#FBF3F0", dark: "#2B0E1C" },
   },
@@ -334,16 +334,23 @@ function curateMuseau(k: Kit) {
 }
 
 // ─── SOUPLE ───────────────────────────────────────────────────────────────────────────────────────────────────────
-// Rien n'est inventé : les textes décrivent ce que montrent les visuels du lot (commit 9cc0b97e, objets seuls) — tapis
-// rose poudré au dessous prune, brique couleur liège aux arêtes arrondies, sangle prune tissée à deux anneaux argentés,
-// anneau de Pilates prune strié à poignées rose mauve, logo SOUPLE. Prix, matières, dimensions, épaisseur, adhérence,
-// poids, résistance, certifications, bienfaits pour la santé, entretien, garantie et livraison ne sont jamais affirmés :
-// leurs blocs restent masqués, prêts dans l'éditeur. Aucun avis, note, compteur ni urgence ; aucune vente.
+// Stratégie (consigne de Thomas du 21 octobre, 18 h 31 — hypothèse créative, pas une étude) :
+//  - cible : une femme qui passe ses journées à répondre aux besoins des autres et veut retrouver, chez elle, un moment
+//    qui lui appartient, sans nouvelle obligation de performance ;
+//  - tension : tout le monde compte sur elle, son temps passe après ; le sport à la maison ressemble vite à une corvée ;
+//  - désir : « Pendant quelques minutes, je ne suis disponible que pour moi » ;
+//  - angle : son coin à elle — les quatre pièces installent chez elle un rendez-vous yoga / Pilates, à son rythme ;
+//  - objections : la place (tout se roule et se range dans un coin), le temps (quelques minutes), « encore un achat »
+//    (une pièce suffit pour commencer), le prix (à définir, dit honnêtement) ; ton : chaleureux, sans injonction.
+// Rien n'est inventé : les détails décrivent ce que montrent les visuels du lot (commit 9cc0b97e, objets seuls). Prix,
+// matières, dimensions, épaisseur, adhérence, poids, résistance, certifications, bienfaits pour la santé, entretien,
+// garantie et livraison ne sont jamais affirmés : leurs blocs restent masqués, prêts dans l'éditeur. Les produits
+// n'ont aucun effet promis sur la fatigue ou la santé. Aucun avis, note, compteur ni urgence ; aucune vente.
 export const SOUPLE_FAQ: [string, string][] = [
-  ["Les quatre pièces vont-elles ensemble ?", "Oui : le tapis rose poudré, la brique couleur liège, la sangle et l'anneau prune portent le même logo SOUPLE. Elles se rangent ensemble et se sortent en même temps."],
-  ["Par quelle pièce commencer ?", "Par le tapis, qui accueille toute la séance. La brique et la sangle se posent à côté ; l'anneau de Pilates complète la collection."],
+  ["Faut-il prendre les quatre pièces ?", "Non. Le tapis suffit pour commencer ; la brique, la sangle et l'anneau viennent quand vous en avez envie. Elles sont assorties, pour que votre coin reste harmonieux au fil du temps."],
+  ["J'ai peu de place chez moi : est-ce un problème ?", "Le tapis se roule, la sangle aussi : avec la brique et l'anneau, tout se range dans un coin. Nos photos les montrent sur une étagère et dans une niche."],
   ["Où voir chaque pièce de près ?", "Chaque fiche montre la pièce sous cinq angles : entière, de profil ou roulée, puis ses détails en gros plan (logo, anneaux, poignées, coins)."],
-  ["Comment être prévenu de l'ouverture ?", "Laissez votre adresse dans « Nouvelles de SOUPLE ». Nous écrivons seulement quand il y a du nouveau."],
+  ["Comment savoir quand la boutique ouvre ?", "Laissez votre adresse en bas de la page d'accueil. Nous vous écrirons à l'ouverture et quand une pièce rejoint la collection, rien de plus."],
   ORDER_FAQ("SOUPLE"),
 ];
 export const SOUPLE_FAQ_PENDING: [string, string][] = [
@@ -358,34 +365,34 @@ export const SOUPLE_FAQ_PENDING: [string, string][] = [
 const SOUPLE_FICHES: Record<string, Fiche> = {
   tapis: {
     eyebrow: "Tapis de yoga",
-    text: "Il se déroule pour la séance et se roule ensuite, le dessous prune à l'extérieur, prêt à ranger avec la brique et la sangle.",
+    text: "Où que la journée vous ait menée, votre place vous attend : il se déroule là où vous voulez, et se roule quand votre moment est fini.",
     highlights: "Dessus rose poudré, dessous prune\nLogo SOUPLE imprimé en prune\nCoins arrondis\nSe roule pour le rangement",
-    description: p("Le tapis de yoga SOUPLE est rose poudré sur le dessus et prune sur le dessous. Son logo est imprimé en prune près d'un bout, ses coins sont arrondis, et il se roule sur lui-même après la séance.") + p("Il accueille la brique, la sangle et l'anneau de Pilates de la même collection, dans les mêmes couleurs."),
-    seo: { title: "Tapis de yoga SOUPLE rose poudré, dessous prune | SOUPLE", description: "Tapis de yoga rose poudré au dessous prune, logo SOUPLE, coins arrondis. Cinq vues : déroulé, à plat, roulé, coin relevé et logo en gros plan." },
+    description: p("Le point de départ de votre coin : un tapis rose poudré sur le dessus, prune sur le dessous, avec le logo SOUPLE imprimé près d'un bout et des coins arrondis.") + p("Déroulé, il dessine votre place pour quelques minutes ; roulé, il se range debout dans un coin, avec la brique et la sangle de la même collection."),
+    seo: { title: "Tapis de yoga SOUPLE rose poudré : votre place, chez vous | SOUPLE", description: "Le tapis de yoga SOUPLE, rose poudré dessus, prune dessous, coins arrondis : il se déroule où vous voulez et se roule quand votre moment est fini." },
     tags: ["tapis de yoga", "rose poudré", "prune"],
   },
   brique: {
     eyebrow: "Brique de yoga",
-    text: "Elle se pose à plat, sur la tranche ou debout, à côté du tapis ou dessus, selon la posture.",
+    text: "Un appui à portée de main, quand vous en avez envie : à plat, sur la tranche ou debout, elle se pose à côté de votre tapis.",
     highlights: "Teinte liège, grain visible\nLogo SOUPLE en prune sur la grande face\nArêtes arrondies\nSe pose à plat, sur la tranche ou debout",
-    description: p("La brique de yoga SOUPLE a la teinte et le grain du liège, des arêtes arrondies et le logo SOUPLE en prune sur sa grande face. Elle se pose à plat, sur la tranche ou debout.") + p("Elle accompagne le tapis rose poudré et la sangle prune de la collection, avec laquelle elle se range."),
-    seo: { title: "Brique de yoga SOUPLE couleur liège | SOUPLE", description: "Brique de yoga couleur liège aux arêtes arrondies, logo SOUPLE en prune. Cinq vues : de trois quarts, de profil, de dos, du dessus et logo en gros plan." },
+    description: p("La brique SOUPLE a la teinte et le grain du liège, des arêtes arrondies et le logo SOUPLE en prune sur sa grande face. Elle se pose à plat, sur la tranche ou debout.") + p("Elle rejoint votre coin quand vous le décidez, et se range avec le tapis et la sangle de la collection."),
+    seo: { title: "Brique de yoga SOUPLE couleur liège : un appui à votre rythme | SOUPLE", description: "La brique de yoga SOUPLE, couleur liège, arêtes arrondies, logo prune : à plat, sur la tranche ou debout, à côté de votre tapis, quand vous en avez envie." },
     tags: ["brique de yoga", "liège"],
   },
   sangle: {
     eyebrow: "Sangle de yoga",
-    text: "Elle se boucle par ses deux anneaux argentés ou se tient à deux mains, puis se range roulée à côté de la brique.",
+    text: "Pour prolonger un geste à votre rythme : elle se boucle par ses deux anneaux argentés ou se tient à deux mains, puis se range roulée.",
     highlights: "Sangle tissée prune\nDeux anneaux argentés à une extrémité\nÉtiquette SOUPLE cousue\nExtrémité cousue de l'autre côté",
-    description: p("La sangle de yoga SOUPLE est une bande tissée prune. Deux anneaux argentés la ferment à une extrémité, à côté de l'étiquette SOUPLE cousue ; l'autre extrémité est simplement cousue.") + p("Elle se range roulée avec la brique et le tapis, dans les couleurs de la collection."),
-    seo: { title: "Sangle de yoga SOUPLE prune à deux anneaux | SOUPLE", description: "Sangle de yoga tissée prune, deux anneaux argentés et étiquette SOUPLE cousue. Cinq vues : en boucles, étendue, roulée, anneaux et extrémité en gros plan." },
+    description: p("La sangle de yoga SOUPLE est une bande tissée prune. Deux anneaux argentés la ferment à une extrémité, à côté de l'étiquette SOUPLE cousue ; l'autre extrémité est simplement cousue.") + p("Roulée, elle tient sur une étagère à côté du tapis : votre coin reste prêt pour la prochaine fois."),
+    seo: { title: "Sangle de yoga SOUPLE prune : prolonger un geste à votre rythme | SOUPLE", description: "La sangle de yoga SOUPLE, tissée prune, deux anneaux argentés, étiquette cousue : elle se boucle ou se tient à deux mains, puis se range roulée." },
     tags: ["sangle de yoga", "prune"],
   },
   anneau: {
     eyebrow: "Anneau de Pilates",
-    text: "Il se tient par ses deux poignées rose mauve pendant la séance et se pose debout quand elle est finie.",
+    text: "Pour les jours où vous avez envie de varier : il se tient par ses deux poignées rose mauve et se pose debout quand la séance est finie.",
     highlights: "Cercle prune strié\nDeux poignées rose mauve marquées SOUPLE\nSe pose debout ou à plat",
-    description: p("L'anneau de Pilates SOUPLE est un cercle prune strié, avec deux poignées rose mauve placées face à face. Chaque poignée porte le logo SOUPLE en prune.") + p("Il complète le tapis, la brique et la sangle de la collection, dans les mêmes couleurs."),
-    seo: { title: "Anneau de Pilates SOUPLE prune, poignées rose mauve | SOUPLE", description: "Anneau de Pilates prune strié, deux poignées rose mauve marquées SOUPLE. Cinq vues : de trois quarts, de face, contre un cube, de profil et en gros plan." },
+    description: p("L'anneau de Pilates SOUPLE est un cercle prune strié, avec deux poignées rose mauve placées face à face. Chaque poignée porte le logo SOUPLE en prune.") + p("Il rejoint votre coin quand vous voulez changer de séance, dans les couleurs du tapis, de la brique et de la sangle."),
+    seo: { title: "Anneau de Pilates SOUPLE prune : pour varier vos séances | SOUPLE", description: "L'anneau de Pilates SOUPLE, cercle prune strié, deux poignées rose mauve : il se tient à deux mains et se pose debout quand la séance est finie." },
     tags: ["anneau de Pilates", "prune", "rose mauve"],
   },
 };
@@ -396,7 +403,7 @@ function curateSouple(k: Kit) {
   const href = (key: string) => `/products/${items.find((x) => x.key === key)!.handle}`;
   const short = (key: string) => ({ tapis: "Le tapis", brique: "La brique", sangle: "La sangle", anneau: "L'anneau de Pilates" })[key]!;
   k.demoMeta();
-  spec.store.seo = { title: "SOUPLE | Tapis, brique, sangle et anneau de Pilates en rose poudré, prune et liège", description: "SOUPLE, collection de yoga et de Pilates : un tapis rose poudré, une brique couleur liège, une sangle et un anneau prune, assortis pour pratiquer chez soi." };
+  spec.store.seo = { title: "SOUPLE | Votre coin yoga et Pilates à la maison : tapis, brique, sangle, anneau", description: "Toute la journée, on compte sur vous. Avec SOUPLE, installez chez vous un coin rien qu'à vous : tapis rose poudré, brique liège, sangle et anneau prune." };
 
   // ─── Quatre produits, quatre fiches (modèle cloné du modèle composé : texte, points et vues propres).
   const baseKey = k.productKey();
@@ -413,7 +420,7 @@ function curateSouple(k: Kit) {
   });
   spec.store.product = products[0];
   spec.store.products = products.slice(1);
-  spec.store.collections = [{ handle: "all", title: "La collection SOUPLE", description: "Tapis de yoga rose poudré, brique couleur liège, sangle et anneau de Pilates prune : les quatre pièces SOUPLE, assorties.", products: products.map((x) => x.handle) }];
+  spec.store.collections = [{ handle: "all", title: "Votre coin, pièce par pièce", description: "Le tapis rose poudré, la brique couleur liège, la sangle et l'anneau de Pilates prune. Commencez par une pièce ; les autres viendront quand vous voudrez.", products: products.map((x) => x.handle) }];
   const keyOf = (pr: StoreProduct) => (pr.template_suffix ? `product.${pr.template_suffix}` : "product");
   const mpSchema = sectionSchema(spec, "main-product")!;
   const block = (type: string, settings: Record<string, unknown>) => ({ type, settings: withDefaults(mpSchema.blocks.find((b) => b.type === type)?.settings, settings) });
@@ -429,7 +436,7 @@ function curateSouple(k: Kit) {
       ["buy", block("buy_buttons", { picker: "buttons", show_quantity: true, show_dynamic_checkout: false, price_in_button: false })],
       ["text", block("text", { text: p(f.text) })],
       ["highlights", block("highlights", { items: f.highlights, icon: "check", columns: 1 })],
-      ["siblings", block("siblings", { collection: "all", heading: "Dans la collection" })],
+      ["siblings", block("siblings", { collection: "all", heading: "Dans votre coin" })],
       ["details", block("collapsible", { heading: "Description", content: f.description, open: false })],
       ["sizes", { ...block("collapsible", { heading: "Dimensions", content: p(TODO(it.key === "tapis" ? "longueur, largeur et épaisseur du tapis" : it.key === "brique" ? "dimensions de la brique" : it.key === "sangle" ? "longueur et largeur de la sangle" : "diamètre de l'anneau")), open: false }), disabled: true }],
       ["materials", { ...block("collapsible", { heading: "Matières et entretien", content: p(TODO("composition et conseils d'entretien")), open: false }), disabled: true }],
@@ -440,46 +447,49 @@ function curateSouple(k: Kit) {
     mp.block_order = blocks.map(([b]) => b);
   });
 
-  // ─── Accueil : la collection en mosaïque, une phrase, les quatre pièces en liste, le tapis au soleil, l'anneau sur son
-  // socle, la sangle à l'achat, les questions et l'inscription sur la collection au studio.
-  // La composition, faite avant que les trois autres produits n'existent, a posé l'ouverture de repli (panorama avec le
-  // titre de la page) : la démonstration remet la mosaïque de la collection, l'ouverture prévue pour plusieurs produits.
-  const home = spec.templates.index;
-  const fallback = home.order.find((sid) => home.sections[sid].type === "ed-scene" && home.sections[sid].settings.heading_tag === "h1");
-  if (fallback) { delete home.sections[fallback]; home.order.splice(home.order.indexOf(fallback), 1); }
+  // ─── Accueil : le désir (l'ouverture plein écran), l'exploration (la mosaïque), la projection (la phrase, le tapis
+  // au soleil, l'anneau), le choix (la liste, la sangle), la réassurance (les questions), la conclusion (l'inscription).
+  // La composition, faite avant que les trois autres produits n'existent, a déjà posé l'ouverture plein écran ; la
+  // mosaïque, masquée faute de produits, est réécrite avec les quatre pièces.
   const tile = (file: string, title: string, link: string, text = "") => ({ type: "collection", settings: { ...img(file), title, text, link } });
   overlay("index", [
-    section("fs-collections", { layout: "asym", heading_tag: "h1", eyebrow: "Yoga et Pilates", heading: "Quatre pièces assorties,", heading_accent: "rose poudré, prune et liège", text: p("Un tapis, une brique, une sangle et un anneau de Pilates qui se rangent ensemble et se sortent en même temps. Ouvrez la pièce qu'il vous faut, ou voyez toute la collection."), align: "left", button_label: "Voir toute la collection", button_link: "/collections/all", show_count: false, effect: "rise", stagger: true, hover: true, background: "scheme", color_scheme: "scheme-1", padding_top: 32, padding_bottom: 72 }, [
+    section("ed-opening", { ...img("ambiance-01.webp"), mobile_image: "", mobile_image_asset: k.name("ambiance-08.webp"), layout: "fullscreen", heading_tag: "h1", label: "Yoga et Pilates chez soi", heading: "Toute la journée, on compte sur vous. Ce moment est à vous.", text: p("Les messages peuvent attendre. Déroulez votre tapis, rapprochez vos accessoires et retrouvez votre coin. Pour une fois, vous n'avez personne à satisfaire."), button_label: "Créer mon coin à moi", button_link: "/collections/all", focus_x: 62, focus_y: 60, mobile_focus_x: 50, mobile_focus_y: 70, copy_surface: true, caption: "", motion: "reveal", color_scheme: "scheme-1", padding_top: 0, padding_bottom: 0 }),
+    section("fs-collections", { layout: "asym", heading_tag: "h2", eyebrow: "La collection", heading: "Pas une nouvelle obligation.", heading_accent: "Un rendez-vous avec vous.", text: p("Un tapis pour vous poser, une brique et une sangle pour aller à votre rythme, un anneau pour les jours où vous avez envie de varier. Une pièce suffit pour commencer."), align: "left", button_label: "Voir toute la collection", button_link: "/collections/all", show_count: false, effect: "rise", stagger: true, hover: true, background: "scheme", color_scheme: "scheme-1", padding_top: 72, padding_bottom: 72 }, [
       tile("ambiance-05.webp", "Toute la collection", "/collections/all", "Quatre pièces"),
       ...items.map((it) => tile({ tapis: "tapis-05.webp", brique: "brique-01.webp", sangle: "sangle-05.webp", anneau: "anneau-02.webp" }[it.key]!, short(it.key), href(it.key))),
     ]),
     section("rich-text", { style: "reveal", align: "left", color_scheme: "scheme-2", padding_top: 80, padding_bottom: 80 }, [
-      { type: "eyebrow", settings: { text: "La collection" } },
-      { type: "heading", settings: { text: "Le tapis se déroule, la brique et la sangle se posent à côté, l'anneau attend sur le bord : tout tient dans un coin de la pièce.", size: "h2" } },
+      { type: "eyebrow", settings: { text: "Votre coin" } },
+      { type: "heading", settings: { text: "Vous n'avez pas besoin d'une pièce en plus. Juste d'un moment qui vous appartient.", size: "h2" } },
     ]),
-    section("fs-products", { layout: "list", source: "manual", collection: "all", eyebrow: "Les quatre pièces", heading: "Choisir sa pièce", heading_accent: "", text: p("Chaque fiche montre la pièce sous cinq angles. Prenez-en une, ou réunissez les quatre."), align: "left", button_label: "Toute la collection", button_link: "/collections/all", mode_label: "", limit: 4, columns: 4, ratio: "square", show_secondary: true, effect: "fade", stagger: true, hover: true, background: "scheme", color_scheme: "scheme-1", padding_top: 80, padding_bottom: 80 }, items.map((it) => ({ type: "product", settings: { product: it.handle, note: SOUPLE_FICHES[it.key].highlights.split("\n")[0] } }))),
-    section("ed-scene", { ...img("ambiance-07.webp"), layout: "panorama", label: "Au sol", heading: "Le tapis déroulé au soleil", text: p("Rose poudré dessus, prune dessous : il se déroule pour la séance, et la brique trouve sa place au bout du tapis."), button_label: "Voir le tapis", button_link: href("tapis"), focus_x: 50, focus_y: 55, mobile_focus_x: 50, mobile_focus_y: 60, caption: "", motion: "drift", color_scheme: "scheme-3", padding_top: 0, padding_bottom: 64 }),
-    section("image-with-text", { ...img("ambiance-04.webp"), layout: "overlap", ratio: "portrait", reveal: "up", parallax: false, eyebrow: "Pilates", heading: "L'anneau, posé sur son socle", text: p("Un cercle prune strié, deux poignées rose mauve marquées SOUPLE : il se tient à deux mains pendant la séance et se pose debout quand elle est finie."), button_label: "Voir l'anneau", button_link: href("anneau"), color_scheme: "scheme-4", padding_top: 80, padding_bottom: 80 }),
-    section("featured-purchase", { label: "La sangle", heading: "Sangle de yoga SOUPLE prune", text: p("Elle se boucle par ses deux anneaux argentés ou se tient à deux mains, puis se range roulée à côté de la brique."), product: items[2].handle, product_target: "product:sangle", purchase_style: "compact", purchase_enabled: false, image_fit: "contain", gallery_limit: 5, enable_zoom: true, link_label: "Voir la fiche complète", color_scheme: "scheme-1", motion: "reveal" }),
-    section("faq", { eyebrow: "Questions", heading: "Avant la première séance", text: "", style: "lines", layout: "side", columns: "1", open_first: false, search: false, contact_text: "", button_label: "Toutes les questions", button_link: "/pages/aide", structured_data: false, color_scheme: "scheme-1" }, faqRows(SOUPLE_FAQ)),
-    section("newsletter-media", { ...img("ambiance-10.webp"), layout: "background", overlay: 45, eyebrow: "Nouvelles de SOUPLE", heading: "Être prévenu de l'ouverture", text: p("Nouvelles pièces, nouvelles photos, ouverture de la boutique : nous écrivons seulement quand il y a du nouveau."), perk_1: "", perk_2: "", perk_3: "", button_label: "S'inscrire", legal: p("Désinscription possible à tout moment depuis chaque e-mail."), color_scheme: "scheme-3" }),
+    section("fs-products", { layout: "list", source: "manual", collection: "all", eyebrow: "À votre rythme", heading: "Votre rituel se construit", heading_accent: "à votre rythme", text: p("Commencez par la pièce qui vous parle, ajoutez les autres quand vous en aurez envie. Chaque fiche la montre sous cinq angles."), align: "left", button_label: "Voir toute la collection", button_link: "/collections/all", mode_label: "", limit: 4, columns: 4, ratio: "square", show_secondary: true, effect: "fade", stagger: true, hover: true, background: "scheme", color_scheme: "scheme-1", padding_top: 80, padding_bottom: 80 }, [
+      { type: "product", settings: { product: items[0].handle, note: "Votre place, où que vous soyez dans la maison." } },
+      { type: "product", settings: { product: items[1].handle, note: "Un appui à portée de main." } },
+      { type: "product", settings: { product: items[2].handle, note: "Pour prolonger un geste, sans vous presser." } },
+      { type: "product", settings: { product: items[3].handle, note: "Pour les jours où vous avez envie de varier." } },
+    ]),
+    section("ed-scene", { ...img("ambiance-07.webp"), layout: "panorama", label: "Le tapis", heading: "Votre journée vous emmène partout. Retrouvez votre place ici.", text: p("Il se déroule dans un rayon de soleil ou au pied du canapé, puis se roule et retrouve son coin. Rose poudré dessus, prune dessous."), button_label: "Découvrir le tapis", button_link: href("tapis"), focus_x: 50, focus_y: 55, mobile_focus_x: 50, mobile_focus_y: 60, caption: "", motion: "drift", color_scheme: "scheme-3", padding_top: 0, padding_bottom: 64 }),
+    section("image-with-text", { ...img("ambiance-04.webp"), layout: "overlap", ratio: "portrait", reveal: "up", parallax: false, eyebrow: "Pilates", heading: "Envie de changer de séance ?", text: p("L'anneau de Pilates se tient à deux mains par ses poignées rose mauve. Quand vous avez fini, il se pose debout et attend la prochaine fois, sans vous presser."), button_label: "Découvrir l'anneau", button_link: href("anneau"), color_scheme: "scheme-4", padding_top: 80, padding_bottom: 80 }),
+    section("featured-purchase", { label: "La sangle", heading: "Sangle de yoga SOUPLE prune", text: p("Une petite pièce pour prolonger un geste à votre rythme : elle se boucle par ses deux anneaux argentés ou se tient à deux mains, puis se range roulée à côté de la brique."), product: items[2].handle, product_target: "product:sangle", purchase_style: "compact", purchase_enabled: false, image_fit: "contain", gallery_limit: 5, enable_zoom: true, link_label: "Voir la fiche complète", color_scheme: "scheme-1", motion: "reveal" }),
+    section("faq", { eyebrow: "Questions", heading: "Avant votre premier moment à vous", text: "", style: "lines", layout: "side", columns: "1", open_first: false, search: false, contact_text: "", button_label: "Toutes les questions", button_link: "/pages/aide", structured_data: false, color_scheme: "scheme-1" }, faqRows(SOUPLE_FAQ)),
+    section("newsletter-media", { ...img("ambiance-10.webp"), layout: "background", overlay: 60, eyebrow: "Nouvelles de SOUPLE", heading: "Et si, ce soir, vous gardiez un moment pour vous ?", text: p("Laissez votre adresse : nous vous écrirons à l'ouverture de la boutique et quand une pièce rejoint la collection. Rien de plus."), perk_1: "", perk_2: "", perk_3: "", button_label: "Me prévenir", legal: p("Désinscription possible à tout moment depuis chaque e-mail."), color_scheme: "scheme-3" }),
   ]);
 
-  // ─── Fiches : la scène de chaque produit en fermeture, le reste de la collection, les questions. ─────────────────────
+  // ─── Fiches : la scène de chaque produit en fermeture (la projection), la suite du rituel, les questions. ─────────────
   const closing = (file: string, label: string, heading: string, text: string, button: string, link: string, fy = 50) =>
     section("ed-scene", { ...img(file), layout: "closing", label, heading, text: p(text), button_label: button, button_link: link, focus_x: 50, focus_y: fy, mobile_focus_x: 50, mobile_focus_y: fy, caption: "", motion: "reveal", color_scheme: "scheme-2", padding_top: 72, padding_bottom: 72 });
-  const recos = () => section("product-recommendations", { eyebrow: "La collection", heading: "Le reste de la collection", intent: "complementary", fallback_collection: "all", limit: 3, card_ratio: "square", show_secondary: true, color_scheme: "scheme-1", padding_top: 64, padding_bottom: 72 });
-  const ficheFaq = () => faq("Questions fréquentes", [...SOUPLE_FAQ, ...SOUPLE_FAQ_PENDING], "lines", "side", "", { color_scheme: "scheme-1" });
+  const recos = () => section("product-recommendations", { eyebrow: "Si vous le souhaitez", heading: "De quoi compléter votre coin", intent: "complementary", fallback_collection: "all", limit: 3, card_ratio: "square", show_secondary: true, color_scheme: "scheme-1", padding_top: 64, padding_bottom: 72 });
+  const ficheFaq = () => faq("Vos questions", [...SOUPLE_FAQ, ...SOUPLE_FAQ_PENDING], "lines", "side", "", { color_scheme: "scheme-1" });
   const scenes: Record<string, ReturnType<typeof section>> = {
-    tapis: closing("ambiance-02.webp", "Près de la fenêtre", "Déroulé dans la lumière", "Le tapis rose poudré se déroule là où il y a de la place, et se roule ensuite pour retrouver son coin.", "Voir la brique", href("brique"), 60),
-    brique: closing("ambiance-03.webp", "Avec la sangle", "La brique et sa sangle", "La brique couleur liège et la sangle prune se posent ensemble, prêtes pour la séance suivante.", "Voir la sangle", href("sangle")),
-    sangle: closing("ambiance-06.webp", "Rangée", "Avec le tapis roulé", "Roulée sur une étagère, la sangle prune attend à côté du tapis : les deux pièces gardent les couleurs de la collection.", "Voir le tapis", href("tapis")),
-    anneau: closing("ambiance-09.webp", "Avec la brique", "L'anneau et la brique", "Appuyé contre la brique couleur liège, l'anneau prune montre ses deux poignées rose mauve.", "Voir la brique", href("brique")),
+    tapis: closing("ambiance-02.webp", "Votre place", "Un rayon de soleil suffit", "Pas besoin d'une pièce dédiée : le tapis se déroule là où la lumière vous attend, puis se roule et retrouve son coin.", "Découvrir la brique", href("brique"), 60),
+    brique: closing("ambiance-03.webp", "Avec la sangle", "Prêtes pour votre prochain moment", "Posées ensemble sur un banc, la brique et la sangle attendent que vous repreniez votre moment, quand vous voudrez.", "Découvrir la sangle", href("sangle")),
+    sangle: closing("ambiance-06.webp", "Rangée", "Votre coin reste prêt", "Roulée sur une étagère, à côté du tapis : quand votre moment est fini, tout reste à portée de main pour la prochaine fois.", "Découvrir le tapis", href("tapis")),
+    anneau: closing("ambiance-09.webp", "Avec la brique", "Rien ne presse", "Appuyé contre la brique, l'anneau attend le jour où vous aurez envie d'autre chose. Il rejoint votre coin à votre rythme.", "Découvrir la brique", href("brique")),
   };
   products.forEach((pr, i) => {
     const key = keyOf(pr);
     overlay(key, [scenes[items[i].key], recos(), ficheFaq()]);
-    // Une seule rangée de recommandations : « Le reste de la collection » (celle du modèle de base, en double, est retirée).
+    // Une seule rangée de recommandations (celle du modèle de base, en double, est retirée).
     const t = spec.templates[key];
     for (const sid of t.order.filter((x) => t.sections[x].type === "product-recommendations").slice(1)) { delete t.sections[sid]; t.order.splice(t.order.indexOf(sid), 1); }
   });
@@ -487,34 +497,34 @@ function curateSouple(k: Kit) {
   for (const sec of Object.values(spec.templates.collection?.sections ?? {})) if (sec.type === "main-collection") sec.settings = { ...sec.settings, columns: 4 };
 
   // ─── Pages ──────────────────────────────────────────────────────────────────────────────────────────────────────
-  k.page("usages", "Les usages", { title: "Les usages de la collection SOUPLE : tapis, brique, sangle et anneau | SOUPLE", description: "Au studio, près de la fenêtre, rangées dans un coin : les quatre pièces SOUPLE en situation, et ce que chacune apporte à la séance." }, [
-    ["intro", section("rich-text", { style: "plain", align: "left", color_scheme: "scheme-1", padding_top: 24, padding_bottom: 16 }, [{ type: "text", settings: { text: p("Une séance commence en déroulant le tapis et se termine en rangeant les pièces. Voici la collection SOUPLE à chacun de ces moments, avec le lien vers chaque fiche.") } }])],
-    ["studio", section("fs-lookbook", { ...img("ambiance-01.webp"), layout: "side", eyebrow: "Au studio", heading: "Les quatre pièces sur le parquet", heading_tag: "h2", text: p("Le tapis déroulé, la brique et la sangle à côté, l'anneau prêt : ouvrez la fiche de chaque pièce."), align: "left", link_label: "Voir la fiche", color_scheme: "scheme-2", padding_top: 64, padding_bottom: 64 }, [
+  k.page("votre-coin", "Votre coin à vous", { title: "Votre coin à vous : la collection SOUPLE à la maison | SOUPLE", description: "Un coin à vous ne demande ni une pièce de plus ni une heure libre : la collection SOUPLE dépliée, rangée, et prête pour votre prochain moment." }, [
+    ["intro", section("rich-text", { style: "plain", align: "left", color_scheme: "scheme-1", padding_top: 24, padding_bottom: 16 }, [{ type: "text", settings: { text: p("Un coin à vous ne demande ni une pièce de plus ni une heure de libre. Il suffit d'un tapis déroulé, de quelques accessoires à portée de main, et de quelques minutes où personne n'a besoin de vous.") } }])],
+    ["studio", section("fs-lookbook", { ...img("ambiance-01.webp"), layout: "side", eyebrow: "Tout est prêt", heading: "Tout ce qu'il faut, rien de plus", heading_tag: "h2", text: p("Le tapis déroulé, la brique et la sangle à côté, l'anneau à portée de main. Touchez une pièce pour ouvrir sa fiche."), align: "left", link_label: "Voir la fiche", color_scheme: "scheme-2", padding_top: 64, padding_bottom: 64 }, [
       { type: "marker", settings: { product: items[0].handle, title: "Le tapis rose poudré", price_text: "", link: href("tapis"), x: 66, y: 84 } },
       { type: "marker", settings: { product: items[1].handle, title: "La brique couleur liège", price_text: "", link: href("brique"), x: 69, y: 50 } },
       { type: "marker", settings: { product: items[2].handle, title: "La sangle prune", price_text: "", link: href("sangle"), x: 49, y: 66 } },
       { type: "marker", settings: { product: items[3].handle, title: "L'anneau de Pilates", price_text: "", link: href("anneau"), x: 83, y: 30 } },
     ])],
-    ["coins", section("ed-diptych", { layout: "pair", label: "Ranger", heading: "Un coin pour la collection", text: p("Après la séance, le tapis se roule et les accessoires se posent à côté."), button_label: "", button_link: "", motion: "reveal", color_scheme: "scheme-1", padding_top: 72, padding_bottom: 72 }, [
+    ["coins", section("ed-diptych", { layout: "pair", label: "Après votre moment", heading: "Votre coin se range en un geste", text: p("Le tapis se roule, les accessoires se posent à côté : votre moment est fini, votre coin reste prêt."), button_label: "", button_link: "", motion: "reveal", color_scheme: "scheme-1", padding_top: 72, padding_bottom: 72 }, [
       { type: "frame", settings: { ...img("ambiance-08.webp"), ratio: "portrait", title: "Dans une niche", text: p("Le tapis roulé debout, la brique et la sangle à ses pieds."), link: href("tapis"), link_label: "Voir le tapis", focus_x: 50, focus_y: 50, mobile_focus_x: 50, mobile_focus_y: 50 } },
-      { type: "frame", settings: { ...img("ambiance-03.webp"), ratio: "landscape", title: "Sur un banc", text: p("La brique couleur liège et la sangle prune, prêtes pour demain."), link: href("brique"), link_label: "Voir la brique", focus_x: 50, focus_y: 50, mobile_focus_x: 50, mobile_focus_y: 50 } },
+      { type: "frame", settings: { ...img("ambiance-03.webp"), ratio: "landscape", title: "Sur un banc", text: p("La brique et la sangle, prêtes pour la prochaine fois."), link: href("brique"), link_label: "Voir la brique", focus_x: 50, focus_y: 50, mobile_focus_x: 50, mobile_focus_y: 50 } },
     ])],
-    ["collection", section("ed-scene", { ...img("ambiance-05.webp"), layout: "split", label: "La collection", heading: "Les quatre pièces, vues du dessus", text: p("Le tapis, la brique, la sangle et l'anneau de Pilates partagent le même logo et les mêmes couleurs."), button_label: "Voir toute la collection", button_link: "/collections/all", focus_x: 50, focus_y: 50, mobile_focus_x: 50, mobile_focus_y: 50, caption: "", motion: "reveal", color_scheme: "scheme-4", padding_top: 72, padding_bottom: 72 })],
+    ["collection", section("ed-scene", { ...img("ambiance-05.webp"), layout: "split", label: "La collection", heading: "Quatre pièces, un seul coin", text: p("Le tapis, la brique, la sangle et l'anneau partagent les mêmes couleurs : ajoutez-les à votre rythme, votre coin reste harmonieux."), button_label: "Voir toute la collection", button_link: "/collections/all", focus_x: 50, focus_y: 50, mobile_focus_x: 50, mobile_focus_y: 50, caption: "", motion: "reveal", color_scheme: "scheme-4", padding_top: 72, padding_bottom: 72 })],
   ]);
-  k.page("aide", "Questions et contact", { title: "Questions et contact | SOUPLE, collection de yoga et de Pilates", description: "Les réponses sur la collection SOUPLE : les pièces assorties, par où commencer, les vues de chaque fiche, la commande. Et un formulaire pour le reste." }, [
-    ["faq", faq("Questions fréquentes", [...SOUPLE_FAQ, ...SOUPLE_FAQ_PENDING], "numbered", "stacked", "", { color_scheme: "scheme-1" })],
-    ["form", section("contact-form", { eyebrow: "Contact", heading: "Une autre question sur SOUPLE ?", text: p("Écrivez-nous : le formulaire vérifie les champs avant l'envoi. Dans cette démonstration, aucun message n'est réellement transmis."), email: "", hours: "", response: "", preview_note: true, color_scheme: "scheme-2", padding_top: 64, padding_bottom: 96 })],
+  k.page("aide", "Questions et contact", { title: "Questions et contact | SOUPLE, votre coin yoga et Pilates", description: "Par quelle pièce commencer, le rangement, les vues de chaque fiche, l'ouverture de la boutique : nos réponses, et un formulaire pour le reste." }, [
+    ["faq", faq("Vos questions", [...SOUPLE_FAQ, ...SOUPLE_FAQ_PENDING], "numbered", "stacked", "", { color_scheme: "scheme-1" })],
+    ["form", section("contact-form", { eyebrow: "Contact", heading: "Une question avant de créer votre coin ?", text: p("Écrivez-nous : le formulaire vérifie les champs avant l'envoi. Dans cette démonstration, aucun message n'est réellement transmis."), email: "", hours: "", response: "", preview_note: true, color_scheme: "scheme-2", padding_top: 64, padding_bottom: 96 })],
   ]);
 
   // ─── Menus, en-tête « Collections en cartes » (logo en tête, menu dessous), pied « Boutique éditoriale » ──────────────
   const productLinks = items.map((it) => ({ title: short(it.key), url: href(it.key) }));
   spec.store.menus["main-menu"] = { title: "Navigation", links: [
     { title: "La collection", url: "/collections/all", links: productLinks },
-    { title: "Les usages", url: "/pages/usages" },
+    { title: "Votre coin", url: "/pages/votre-coin" },
     { title: "Aide", url: "/pages/aide" },
   ] };
   spec.store.menus.footer = { title: "La collection", links: [...productLinks, { title: "Toute la collection", url: "/collections/all" }] };
-  spec.store.menus["footer-aide"] = { title: "Aide", links: [{ title: "Les usages", url: "/pages/usages" }, { title: "Questions et contact", url: "/pages/aide" }, { title: "Recherche", url: "/search" }] };
+  spec.store.menus["footer-aide"] = { title: "Aide", links: [{ title: "Votre coin à vous", url: "/pages/votre-coin" }, { title: "Questions et contact", url: "/pages/aide" }, { title: "Recherche", url: "/search" }] };
   const header = Object.values(spec.groups.header.sections).find((s) => s.type === "header")!;
   header.settings = { ...header.settings, menu: "main-menu", layout: "two-rows", shape: "bar", icons: "plain", mega_menu: "cards", mobile_menu: "cards", mobile_promo: "top", mobile_submenu: "open", sticky: true, transparent_on_home: false, show_search: true, show_cart: true, cta_label: "", phone: "", color_scheme: "scheme-1" };
   // Sous-menu « La collection » : chaque pièce en carte illustrée (sa vue principale) et l'encart de la collection.
@@ -524,7 +534,7 @@ function curateSouple(k: Kit) {
   const cardImage: Record<string, string> = { tapis: "tapis-01.webp", brique: "brique-01.webp", sangle: "sangle-01.webp", anneau: "anneau-01.webp" };
   header.blocks = {
     ...Object.fromEntries(items.map((it) => [`card_${it.key}`, { type: "link_extra", settings: withDefaults(extraSchema, { link_title: short(it.key), icon: "none", image: "", image_asset: k.name(cardImage[it.key]) }) }])),
-    collection: { type: "promo", settings: withDefaults(promoSchema, { image: "", image_asset: k.name("ambiance-10.webp"), eyebrow: "La collection", heading: "Les quatre pièces SOUPLE", button_label: "Tout voir", link: "/collections/all", placement: "both", menu_title: "La collection" }) },
+    collection: { type: "promo", settings: withDefaults(promoSchema, { image: "", image_asset: k.name("ambiance-10.webp"), eyebrow: "La collection", heading: "Votre coin, pièce par pièce", button_label: "Tout voir", link: "/collections/all", placement: "both", menu_title: "La collection" }) },
   };
   header.block_order = [...items.map((it) => `card_${it.key}`), "collection"];
   spec.groups.header.sections = { header };
@@ -532,7 +542,7 @@ function curateSouple(k: Kit) {
   const footer = Object.values(spec.groups.footer.sections).find((s) => s.type === "footer")!;
   footer.settings = { ...footer.settings, style: "reference-shop", show_wordmark: true, show_policies: false, show_payment: false, color_scheme: "scheme-3", logo_asset: "" };
   footer.blocks = {
-    about: { type: "text", settings: { heading: "SOUPLE", text: p("Tapis, brique, sangle et anneau de Pilates assortis, en rose poudré, prune et liège. Marque de démonstration du studio.") } },
+    about: { type: "text", settings: { heading: "SOUPLE", text: p("Un coin à vous pour le yoga et le Pilates, en rose poudré, prune et liège. Marque de démonstration du studio.") } },
     links: { type: "links", settings: { heading: "La collection", menu: "footer" } },
     help: { type: "links", settings: { heading: "Aide", menu: "footer-aide" } },
   };

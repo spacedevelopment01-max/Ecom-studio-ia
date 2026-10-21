@@ -598,9 +598,9 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
     id: "souple",
     name: "Souple",
     tagline: "Rose poudré, prune et liège",
-    description: "Boutique de collection de la famille E-commerce pour quelques produits qui vont ensemble : ouverture en mosaïque (la collection en grand, chaque produit à côté avec le lien vers sa fiche), une phrase qui se dévoile, la liste des produits, un panorama, une scène et son texte, l'achat d'un produit, questions en lignes et inscription sur photo. Rose poudré, prune et liège, serif fine et texte géométrique, logo en tête et menu dessous avec les produits en cartes illustrées, tuiles sur téléphone et pied de vitrine signé.",
+    description: "Boutique de collection de la famille E-commerce pour quelques produits qui vont ensemble : une scène plein écran en ouverture (titre et bouton posés sur l'image), la collection en mosaïque (chaque produit relié à sa fiche), une phrase qui se dévoile, la liste des produits, un panorama, une scène et son texte, l'achat d'un produit, questions en lignes et inscription sur photo. Rose poudré, prune et liège, serif fine et texte géométrique, logo en tête et menu dessous avec les produits en cartes illustrées, tuiles sur téléphone et pied de vitrine signé.",
     bestFor: ["e-commerce", "collection", "bien-être", "quelques produits assortis", "maison"],
-    en: { tagline: "Powder pink, plum and cork", description: "Collection store from the E-commerce family for a few products that belong together: a mosaic opening (the collection large, each product beside it linking to its page), a sentence that reveals itself, the product list, a panorama, a scene with its text, one product to buy, line questions and a sign-up over a photo. Powder pink, plum and cork, a fine serif with geometric text, the logo on top and the menu below with products as illustrated cards, tiles on phone and a signed storefront footer.", bestFor: ["e-commerce", "collection", "wellness", "a few matching products", "home"] },
+    en: { tagline: "Powder pink, plum and cork", description: "Collection store from the E-commerce family for a few products that belong together: a full-screen scene as the opening (heading and button over the image), the collection as a mosaic (each product linking to its page), a sentence that reveals itself, the product list, a panorama, a scene with its text, one product to buy, line questions and a sign-up over a photo. Powder pink, plum and cork, a fine serif with geometric text, the logo on top and the menu below with products as illustrated cards, tiles on phone and a signed storefront footer.", bestFor: ["e-commerce", "collection", "wellness", "a few matching products", "home"] },
     fonts: { heading: "playfair_display_n4", body: "jost_n4" },
     previewFonts: { heading: "Playfair Display", body: "Jost" },
     motion: "subtle",
@@ -621,26 +621,38 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       const plum = k.night(0.18, 0.45);
       return [k.scheme(ivory, plum, k.onLight(ivory)), k.scheme(powder, plum, k.onLight(powder)), k.scheme(plum, ivory, k.onDark(plum), 0.06), k.scheme(cork, plum, k.onLight(cork))];
     },
-    // Accueil : la collection en mosaïque (une vue d'ensemble et chaque produit, relié à sa fiche), une phrase, la liste
-    // des produits, un panorama, une scène et son texte, l'achat d'un produit, les questions et l'inscription sur photo.
+    // Accueil (consigne du 21 octobre, 18 h 31) : une vraie ouverture plein écran (la scène bord à bord, titre et bouton
+    // posés sur l'image), puis la collection en mosaïque (une vue d'ensemble et chaque produit, relié à sa fiche), une
+    // phrase, la liste des produits, un panorama, une scène et son texte, l'achat d'un produit, les questions et
+    // l'inscription sur photo.
     home: (k) => {
-      // Mosaïque : la vue d'ensemble puis chaque produit de la boutique avec sa première photo. Il faut au moins deux
-      // produits photographiés ; sinon l'ouverture devient un panorama avec le titre de la page.
+      // Mosaïque : la vue d'ensemble puis chaque produit de la boutique avec sa première photo (au moins deux produits
+      // photographiés). Sans photo d'ambiance, elle devient l'ouverture, avec le titre de la page.
       const shelf = k.shelf.filter((x) => x.image).slice(0, 4);
       const overview = k.im.lifestyle ?? k.im.hero ?? k.im.scene1;
       const tiles = overview && shelf.length >= 2 ? [{ type: "collection", settings: { title: k.t("Toute la collection", "The whole collection"), text: "", link: "/collections/all", image_asset: overview } }, ...shelf.map((x) => ({ type: "collection", settings: { title: x.title, text: "", link: `/products/${x.handle}`, image_asset: x.image } }))] : [];
+      const mosaic = (tag: "h1" | "h2", extra: Record<string, unknown> = {}) => k.lib("fs-collections", 1, { layout: "asym", heading_tag: tag, align: "left", button_label: k.t("Voir toute la collection", "See the whole collection"), button_link: "/collections/all", effect: "rise", stagger: true, hover: true, padding_top: 72, padding_bottom: 72, ...extra }, { hide: !tiles.length, blocks: tiles });
+      const opening = k.either(
+        k.lib("ed-opening", 1, { layout: "fullscreen", heading_tag: "h1", label: k.hero.eyebrow, heading: k.hero.heading, text: k.hero.text ? `<p>${k.hero.text}</p>` : "", button_label: k.hero.cta || k.t("Découvrir", "Discover"), button_link: shelf.length >= 2 || !k.shelf[0] ? "/collections/all" : `/products/${k.shelf[0].handle}`, image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.banner ?? "", mobile_image_asset: k.im.portrait ?? "", copy_surface: true, padding_top: 0, padding_bottom: 0 }, { hide: !(k.im.lifestyle ?? k.im.hero ?? k.im.banner) }),
+        mosaic("h1", { eyebrow: k.hero.eyebrow, heading: k.hero.heading, text: k.hero.text ? `<p>${k.hero.text}</p>` : "", padding_top: 32 }),
+        // Aucune photo : le titre de la page reste en tête (panorama sans image).
+        k.lib("ed-scene", 1, { layout: "panorama", heading_tag: "h1", label: k.hero.eyebrow, heading: k.hero.heading, text: k.hero.text ? `<p>${k.hero.text}</p>` : "", button_label: k.hero.cta || k.t("Découvrir", "Discover"), button_link: k.shelf[0] ? `/products/${k.shelf[0].handle}` : "/collections/all", image_asset: "", padding_top: 32, padding_bottom: 64 }),
+      );
+      // Mosaïque déjà en ouverture (repli) : la seconde, identique, reste masquée.
+      const fallback = opening[0]?.[0] === "fs-collections";
+      const second = mosaic("h2");
       return [
-        ...k.either(
-          k.lib("fs-collections", 1, { layout: "asym", heading_tag: "h1", eyebrow: k.hero.eyebrow, heading: k.hero.heading, text: k.hero.text ? `<p>${k.hero.text}</p>` : "", align: "left", button_label: k.t("Voir toute la collection", "See the whole collection"), button_link: "/collections/all", effect: "rise", stagger: true, hover: true, padding_top: 32, padding_bottom: 72 }, { hide: !tiles.length, blocks: tiles }),
-          k.lib("ed-scene", 1, { layout: "panorama", heading_tag: "h1", label: k.hero.eyebrow, heading: k.hero.heading, text: k.hero.text ? `<p>${k.hero.text}</p>` : "", button_label: k.hero.cta || k.t("Découvrir", "Discover"), button_link: k.shelf[0] ? `/products/${k.shelf[0].handle}` : "/collections/all", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.packshot ?? "", padding_top: 0, padding_bottom: 64 }),
-        ),
+        ...opening,
+        fallback ? ([second[0], second[1], second[2], { ...(second[3] ?? {}), disabled: true }] as typeof second) : second,
         k.lib("rich-text", 2, { style: "reveal", align: "left", padding_top: 80, padding_bottom: 80 }),
         k.lib("fs-products", 1, { layout: "list", source: "collection", collection: "all", limit: 4, ratio: "square", align: "left", effect: "fade", padding_top: 80, padding_bottom: 80 }, { hide: shelf.length < 2 }),
-        k.lib("ed-scene", 1, { layout: "panorama", image_asset: k.im.scene1 ?? k.im.banner ?? "", padding_top: 0, padding_bottom: 64 }, { hide: !(k.im.scene1 ?? k.im.banner) }),
+        // Le panorama accompagne la collection (deux produits ou plus) ; une boutique d'un seul produit passe directement à
+        // l'image et au texte, puis à l'achat.
+        k.lib("ed-scene", 1, { layout: "panorama", image_asset: k.im.scene1 ?? k.im.banner ?? "", padding_top: 0, padding_bottom: 64 }, { hide: shelf.length < 2 || !(k.im.scene1 ?? k.im.banner) }),
         k.lib("image-with-text", 4, { layout: "overlap", ratio: "portrait", image_asset: k.im.scene2 ?? k.im.lifestyle2 ?? "", reveal: "up" }, { hide: !(k.im.scene2 ?? k.im.lifestyle2) }),
         k.lib("featured-purchase", 1, { purchase_style: "compact", image_fit: "contain" }),
         k.faqSec(1, 5, "lines"),
-        ...k.either(k.lib("newsletter-media", 3, { layout: "background", overlay: 40, image_asset: k.im.scene3 ?? k.im.portrait ?? "", legal: k.privacy }, { hide: !(k.im.scene3 ?? k.im.portrait) }), k.newsletter(2)),
+        ...k.either(k.lib("newsletter-media", 3, { layout: "background", overlay: 55, image_asset: k.im.scene3 ?? k.im.portrait ?? "", legal: k.privacy }, { hide: !(k.im.scene3 ?? k.im.portrait) }), k.newsletter(2)),
       ];
     },
     // Fiche : galerie en carrousel et achat, la scène du produit en fermeture, le reste de la collection, questions.

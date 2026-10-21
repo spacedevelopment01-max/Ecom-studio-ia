@@ -47,10 +47,10 @@ const zipText = (z: Record<string, Uint8Array>, re: RegExp) => Object.entries(z)
 const ID = "souple";
 const PLAN = {
   profile: "poudre", fonts: { heading: "playfair_display_n4", body: "jost_n4" },
-  home: ["fs-collections", "rich-text", "fs-products", "ed-scene", "image-with-text", "featured-purchase", "faq", "newsletter-media"],
+  home: ["ed-opening", "fs-collections", "rich-text", "fs-products", "ed-scene", "image-with-text", "featured-purchase", "faq", "newsletter-media"],
   product: ["main-product", "ed-scene", "product-recommendations", "faq"],
-  pages: ["usages", "aide"], header: "mega-cards", footer: "store",
-  leak: /SOUPLE|rose poudré|tapis|brique|sangle|anneau de Pilates|Les usages/i,
+  pages: ["votre-coin", "aide"], header: "mega-cards", footer: "store",
+  leak: /SOUPLE|rose poudré|tapis|brique|sangle|anneau de Pilates|Votre coin|Ce moment est à vous/i,
 };
 
 describe("SOUPLE : thème actif de la famille E-commerce (quatre produits)", () => {
@@ -143,7 +143,7 @@ describe("SOUPLE : démonstration de quatre produits", async () => {
       for (const other of SOUPLE_PRODUCTS.filter((o) => o.key !== it.key)) expect(JSON.stringify(pr.images), `${it.key} ← ${other.key}`).not.toContain(`${ID}-${other.key}-`);
       const mp = types(keyOf(it.handle)).find((s) => s.type === "main-product")!;
       texts.add(JSON.stringify(mp.blocks!.text.settings)); points.add(String(mp.blocks!.highlights.settings.items));
-      expect(mp.blocks!.siblings.settings).toMatchObject({ collection: "all", heading: "Dans la collection" });
+      expect(mp.blocks!.siblings.settings).toMatchObject({ collection: "all", heading: "Dans votre coin" });
       expect(mp.settings).toMatchObject({ product_target: `product:${it.key}`, gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true });
       const html = pages.get(`/products/${it.handle}`)!;
       expect(html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)![1]).toContain(it.title);
@@ -152,7 +152,7 @@ describe("SOUPLE : démonstration de quatre produits", async () => {
       const alt = SOUPLE_MEDIA.find((m) => `${ID}-${m.file}` === scene.settings.image_asset)!.alt;
       expect(alt.toLowerCase(), it.key).toContain(it.key === "anneau" ? "anneau" : it.key);
       // Les trois autres pièces sont proposées, jamais la fiche elle-même.
-      const recos = html.slice(html.indexOf("Le reste de la collection"));
+      const recos = html.slice(html.indexOf("De quoi compléter votre coin"));
       for (const o of SOUPLE_PRODUCTS.filter((o) => o.key !== it.key)) expect(recos, `${it.key} → ${o.key}`).toContain(`/products/${o.handle}`);
       expect(html.match(/Vous aimerez aussi/g), it.key).toBeNull();
     }
@@ -160,16 +160,19 @@ describe("SOUPLE : démonstration de quatre produits", async () => {
     expect(points.size).toBe(4);
   });
 
-  it("accueil : la collection dès l'ouverture (titre de page, une vue d'ensemble, chaque pièce reliée à SA fiche)", () => {
+  it("accueil : scène plein écran (H1, bouton vers la collection, image téléphone dédiée), puis la mosaïque où chaque pièce mène à SA fiche", () => {
     const home = pages.get("/")!;
-    expect(home.match(/<h1[^>]*>[\s\S]*?<\/h1>/)![0]).toMatch(/Quatre pièces assorties/);
+    expect(home.match(/<h1[^>]*>[\s\S]*?<\/h1>/)![0]).toMatch(/Toute la journée, on compte sur vous\. Ce moment est à vous\./);
     const opening = types("index")[0];
-    expect(opening.settings).toMatchObject({ layout: "asym", heading_tag: "h1", button_link: "/collections/all" });
-    const tiles = (opening.block_order ?? []).map((b) => opening.blocks![b].settings);
+    expect(opening.settings).toMatchObject({ layout: "fullscreen", heading_tag: "h1", button_label: "Créer mon coin à moi", button_link: "/collections/all", image_asset: `${ID}-ambiance-01.webp`, mobile_image_asset: `${ID}-ambiance-08.webp` });
+    expect(home).toContain("ed-opening--fullscreen");
+    const mosaic = types("index")[1];
+    expect(mosaic.settings).toMatchObject({ layout: "asym", heading_tag: "h2", button_link: "/collections/all" });
+    const tiles = (mosaic.block_order ?? []).map((b) => mosaic.blocks![b].settings);
     expect(tiles.map((t) => t.link)).toEqual(["/collections/all", ...SOUPLE_PRODUCTS.map((it) => `/products/${it.handle}`)]);
     // Chaque tuile de produit montre une vue de CE produit.
     tiles.slice(1).forEach((t, i) => expect(String(t.image_asset), SOUPLE_PRODUCTS[i].key).toMatch(new RegExp(`^${ID}-${SOUPLE_PRODUCTS[i].key}-0\\d\\.webp$`)));
-    const list = types("index")[2];
+    const list = types("index")[3];
     expect(Object.values(list.blocks ?? {}).map((b) => b.settings.product)).toEqual(SOUPLE_PRODUCTS.map((it) => it.handle));
     for (const it of SOUPLE_PRODUCTS) expect(home, it.key).toContain(`/products/${it.handle}`);
   });
@@ -301,7 +304,7 @@ describe("SOUPLE : démonstration de quatre produits", async () => {
 
 describe("SOUPLE appliqué à un autre projet : identité du projet, jamais celle de la démonstration", async () => {
   const user = await createUser("souple-autre@example.invalid", "isolated-test-only", "Autre");
-  it("un seul produit : aucune trace de la démo, ouverture de repli (panorama) avec le titre de la page, dispositions du thème", async () => {
+  it("un seul produit : aucune trace de la démo, sans photo, ouverture de repli (panorama) avec le titre de la page vers SA fiche, dispositions du thème", async () => {
     const pid = seedHoldout(user.id, 0, "Atelier Verre");
     const p = loadProject(pid);
     saveBrand(pid, { ...p.brand!, name: "Atelier Verre", tagline: "Des verres soufflés pour tous les jours.", palette: { primary: "#1F4E5F", secondary: "#CFE3E8", accent: "#2A7F62", light: "#F6F8F7", dark: "#10242B" }, direction: ID });
@@ -320,6 +323,9 @@ describe("SOUPLE appliqué à un autre projet : identité du projet, jamais cell
       expect(html, route).not.toMatch(/theme-assets\/souple|souple-(tapis|brique|sangle|anneau|ambiance|logo)/);
       expect(html).toContain("Atelier Verre");
       expect(html.match(/<h1[\s>]/g)?.length, route).toBe(1);
+      // La signature du client n'est dite qu'une fois dans la page (jamais reprise par une autre section ; le pied du site la garde).
+      const main = html.slice(html.indexOf("<main"), html.indexOf("</main>"));
+      expect(visibleText(main).split("Des verres soufflés pour tous les jours.").length - 1, route).toBeLessThanOrEqual(1);
     }
     const first = spec.templates.index.sections[spec.templates.index.order[0]];
     expect(first.disabled ?? false).toBe(false);
@@ -329,12 +335,35 @@ describe("SOUPLE appliqué à un autre projet : identité du projet, jamais cell
     expect(JSON.stringify(spec.settings.color_schemes).toUpperCase()).not.toMatch(/#5A1B36|#B4637A/);
   });
 
-  it("plusieurs produits photographiés : la mosaïque de la collection s'ouvre sur les produits du projet, chacun relié à sa fiche", () => {
+  it("projets photographiés (un ou plusieurs produits) : aucun titre ni texte répété d'une section à l'autre de l'accueil", () => {
+    for (const type of ["mono", "multi"] as const) {
+      const spec = fr(() => sampleSpec(ID, type, { rich: true }));
+      const shown = spec.templates.index.order.map((k) => spec.templates.index.sections[k]).filter((x) => !x.disabled);
+      const said = shown.flatMap((x) => ["heading", "text"].map((key) => String(x.settings[key] ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().toLowerCase()).filter(Boolean));
+      expect(said.filter((v, i) => said.indexOf(v) !== i), type).toEqual([]);
+    }
+  });
+
+  it("un seul produit photographié : scène plein écran du projet, bouton vers SA fiche, sans mosaïque ni liste", () => {
+    const spec = fr(() => sampleSpec(ID, "mono", { rich: true }));
+    const home = spec.templates.index.order.map((k) => spec.templates.index.sections[k]);
+    expect(home[0].type).toBe("ed-opening");
+    expect(home[0].disabled ?? false).toBe(false);
+    expect(home[0].settings).toMatchObject({ layout: "fullscreen", heading_tag: "h1", button_link: `/products/${spec.store.product.handle}` });
+    for (const type of ["fs-collections", "fs-products"]) expect(home.filter((x) => x.type === type && !x.disabled), type).toEqual([]);
+    expect(JSON.stringify(spec.templates.index)).not.toMatch(/souple-(tapis|brique|sangle|anneau|ambiance)/);
+  });
+
+  it("plusieurs produits photographiés : scène plein écran du projet, puis la mosaïque de ses produits, chacun relié à sa fiche", () => {
     const spec = fr(() => sampleSpec(ID, "multi", { rich: true }));
-    const first = spec.templates.index.sections[spec.templates.index.order[0]];
+    const home = spec.templates.index.order.map((k) => spec.templates.index.sections[k]);
+    const opening = home[0];
+    const first = home.find((x) => x.type === "fs-collections")!;
+    expect(opening.type).toBe("ed-opening");
+    expect(opening.settings).toMatchObject({ layout: "fullscreen", heading_tag: "h1", button_link: "/collections/all" });
     expect(first.type).toBe("fs-collections");
     expect(first.disabled ?? false).toBe(false);
-    expect(first.settings).toMatchObject({ layout: "asym", heading_tag: "h1" });
+    expect(first.settings).toMatchObject({ layout: "asym", heading_tag: "h2" });
     const tiles = (first.block_order ?? []).map((b) => first.blocks![b].settings);
     const handles = storeProducts(spec).filter((x) => x.images?.length).map((x) => `/products/${x.handle}`);
     expect(tiles[0].link).toBe("/collections/all");

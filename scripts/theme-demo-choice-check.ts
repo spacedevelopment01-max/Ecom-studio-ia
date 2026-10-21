@@ -38,7 +38,7 @@ const THEME = {
   alcove: { brand: /ALCÔVE/, profile: "arrondi", menuPage: "page-piece-par-piece.html", menuLabel: "Pièce par pièce", leak: /ALCÔVE|alcôve à soi|terracotta|Pièce par pièce|Boutique de démonstration/i },
   // ONDE (refonte E-commerce de l'issue #158) : profil « studio » porté par « editorial_profile ».
   onde: { brand: /ONDE/, profile: "studio", menuPage: "page-usages.html", menuLabel: "Les usages", leak: /\bONDE\b|Repartez|graphite et vert|Boutique de démonstration/i },
-  souple: { brand: /SOUPLE/, profile: "poudre", menuPage: "page-usages.html", menuLabel: "Les usages", leak: /SOUPLE|rose poudré|tapis de yoga|anneau de Pilates|Quatre pièces assorties|Boutique de démonstration/i },
+  souple: { brand: /SOUPLE/, profile: "poudre", menuPage: "page-votre-coin.html", menuLabel: "Votre coin", leak: /SOUPLE|rose poudré|tapis de yoga|anneau de Pilates|Ce moment est à vous|Créer mon coin à moi|Boutique de démonstration/i },
   "museau-club": { brand: /MUSEAU CLUB/, profile: "club", menuPage: "page-la-balade.html", menuLabel: "La balade", leak: /MUSEAU|harnais|pochette|bleu cobalt|La balade|Boutique de démonstration/i },
 }[T];
 /** Attribut du <body> qui porte le profil graphique : « conversion » (boutique spécialisée), « editorial » (E-commerce). */
@@ -60,6 +60,12 @@ const user = await createUser(email, password, "Vérification démo complète");
 const { catalogTheme } = await import("../src/lib/theme/theme-catalog");
 const startDemo = START_DEMO ? await runWithLang({ content: "fr", ui: "fr" }, async () => (await import("../tests/demo-fixtures")).demoProject(user.id, START_DEMO)) : null;
 const pid = startDemo ? startDemo.pid : seedHoldout(user.id, 0, "Atelier Verre");
+// CHARTE=1 (revue du 21 octobre) : le projet de départ a une charte validée (ses couleurs) ; le thème choisi change la
+// composition, jamais ces couleurs. Sans charte validée, repli documenté : la palette du thème choisi.
+const CHARTE = !!startDemo && process.env.CHARTE === "1";
+if (CHARTE) { const b = loadProject(pid).brand!; saveBrand(pid, { ...b, validated: [...new Set([...(b.validated ?? []), "palette" as const])] }); }
+const START_PALETTE = loadProject(pid).brand!.palette;
+const TAGLINE = loadProject(pid).brand!.tagline ?? "";
 /** Nom du projet de départ (sa marque) : il doit rester celui du projet après le choix. */
 const NAME = startDemo ? loadProject(pid).brand!.name : "Atelier Verre";
 const startProfile = (() => { const s = catalogTheme(START.id)!.settings ?? {}; return s.conversion_profile && s.conversion_profile !== "none" ? `body[data-conversion='${s.conversion_profile}']` : `body[data-editorial='${s.editorial_profile}']`; })();
@@ -221,6 +227,11 @@ try {
     const product = loadProject(pid);
     const { currentTheme } = await import("../src/lib/projects");
     const cur = currentTheme(pid)!;
+    if (CHARTE) {
+      const schemes = JSON.stringify(cur.spec.settings.color_schemes).toUpperCase();
+      assert.ok(schemes.includes(START_PALETTE.primary.toUpperCase()), "charte du projet : sa couleur principale appliquée");
+      steps.push({ step: `charte validée du projet gardée dans ${T.toUpperCase()} (couleurs du projet, composition du thème)`, palette: START_PALETTE, ok: true });
+    }
     const routes: [string, string][] = [["accueil", "/"], ["fiche", `/products/${cur.spec.store.product.handle}`], ...cur.spec.store.pages.slice(0, 2).map((pg) => [`page-${pg.handle}`, `/pages/${pg.handle}`] as [string, string])];
     const audit: Record<string, unknown>[] = [];
     for (const [w, h] of [[1440, 900], [390, 844]] as const) {
@@ -235,19 +246,21 @@ try {
           await Promise.all([...document.images].map((i) => (i.complete ? null : new Promise((r) => { i.onload = i.onerror = r; setTimeout(r, 15000); }))));
           scrollTo(0, 0);
         }); await pg.waitForTimeout(800);
-        const a = await pg.evaluate((theme) => ({
+        const a = await pg.evaluate(([theme, tagline]) => ({
           vides: document.querySelectorAll(".es-placeholder, .ed-media--pending").length,
           cassees: [...document.images].filter((i) => (!i.complete || i.naturalWidth === 0) && i.getBoundingClientRect().width > 0).map((i) => i.src).slice(0, 5),
           visuelsDuTheme: [...document.images].filter((i) => i.src.includes(theme)).length,
           images: [...document.images].filter((i) => i.getBoundingClientRect().width > 0).length,
           sections: document.querySelectorAll("main .shopify-section, main > section").length,
           debordement: document.documentElement.scrollWidth - innerWidth,
-        }), T);
+          signatureDansLaPage: tagline ? ((document.querySelector("main")?.innerText ?? "").split(tagline).length - 1) : 0,
+        }), [T, TAGLINE] as const);
         audit.push({ page: name, largeur: w, ...a });
         assert.equal(a.vides, 0, `${name} ${w} : emplacement d'image vide`);
         assert.deepEqual(a.cassees, [], `${name} ${w} : image cassée`);
         assert.equal(a.visuelsDuTheme, 0, `${name} ${w} : visuel de la démo ${T} repris`);
         assert.ok(a.debordement <= 0, `${name} ${w} : débordement ${a.debordement}`);
+        assert.ok(a.signatureDansLaPage <= 1, `${name} ${w} : signature « ${TAGLINE} » répétée ${a.signatureDansLaPage} fois`);
         assert.ok(!THEME.leak.test(await pg.locator("body").innerText()), `${name} ${w} : texte de la démo repris`);
         await pg.screenshot({ path: path.join(out, `choix-${T}-adaptation-${name}-${w}.png`), fullPage: true });
       }
