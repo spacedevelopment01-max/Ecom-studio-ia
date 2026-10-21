@@ -177,6 +177,20 @@ Corrections : le bouton d'en-tête « Commander » (commande désactivée) devie
 inscription (celle de l'accueil, plus de second formulaire dans le pied). Pages réécrites : accueil, fiche, contact,
 pied, SEO. Preuves : `docs/preuves/copywriting/sillon/`.
 
+### ONDE — E-commerce, mono-produit — **réécrit**
+
+1. **Cible** : une personne qui écoute sa musique d'un lieu à l'autre (salon, train, studio) et la reprend vingt fois par jour.
+2. **Tension** : « Le casque sur les oreilles, je cherche toujours le bon bouton. »
+3. **Désir et angle** : être dans sa musique sans y penser → d'un geste, vous êtes dans votre musique.
+4. **Promesse et faits** : une touche verte repérable d'un coup d'œil, un seul coloris, un graphite discret ; faits = visuels.
+   Autonomie, connexion, réduction de bruit et poids jamais affirmés.
+5. **Objections** : où sont les commandes, les coloris, où le porter, prix et caractéristiques (information dédiée).
+6. **Parcours** : « Écoutez. Posez. *Repartez.* » (le casque qui se trouve sans chercher) → achat → le détail mat → trois
+   usages → un seul coloris → FAQ « Avant de choisir » → inscription.
+
+Correction visuelle : l'inscription passe sur le fond clair (le champ e-mail vert sur vert n'était pas lisible). Pages
+réécrites : accueil, fiche, aide, SEO. Preuves : **kit privé**, captures hors dépôt (archive privée remise à Thomas).
+
 ## Boutiques des clients
 
 - **Charte du client prioritaire** : quand le client a validé ses couleurs (charte), le thème choisi change la
