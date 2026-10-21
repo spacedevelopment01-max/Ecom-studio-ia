@@ -138,6 +138,17 @@ Ce que montre la preuve d'adaptation, honnêtement : sur le projet TRAVERSE, la 
 (aucune question enregistrée dans ce projet) et la grille des produits garde son sur-titre générique « À associer » ;
 le pied de page conserve le grand nom de marque choisi auparavant par le projet (réglage du client conservé).
 
+## Capture FRAISE publiée par erreur
+
+- Fichier : `docs/preuves/museau-club-159/adaptation-client/choix-museau-club-09-demo-fraise-ordinateur.jpg` (capture du
+  parcours de choix montrant la démonstration FRAISE, dont les visuels viennent du kit privé de Thomas).
+- Publié dans le commit `98ede49a` ; retiré de la branche par le commit `4bf4827f` (le contrôle n'est pas changé).
+- Il reste lisible dans l'historique de la branche et sur GitHub par ce commit. Aucune réécriture d'historique n'est faite
+  (consigne du 21 octobre) ; une éventuelle purge est une décision séparée, et même une réécriture ne garantirait pas
+  la disparition de toutes les copies déjà faites.
+- Depuis : seules les captures MUSEAU CLUB et SOUPLE (médias publiables) vont dans le dépôt ; celles d'ONDE et de FRAISE
+  sont remises à Thomas à part.
+
 ## Limites connues
 
 - Codespace de Thomas : non vérifié (hôte inaccessible depuis cet environnement).
