@@ -166,6 +166,8 @@ const CATALOG: FamilyEntry[] = [
     d("journal", "Titre puis paysage", "Title then landscape", "ed-opening", "stacked", { layout: "journal" }),
     // Issue #155 (ALCÔVE) : le produit dans un cadre en arche à côté de la promesse.
     d("arch", "Arche et promesse", "Arch and promise", "ed-opening", "split-right", { layout: "arch" }),
+    // Issue #158 (SOUPLE) : la scène bord à bord occupe tout le premier écran, titre et bouton posés sur l'image.
+    d("fullscreen", "Plein écran", "Full screen", "ed-opening", "background", { layout: "fullscreen" }),
   ]),
   e("catalog", 2, "collections", { fr: "Collections et catégories", en: "Collections and categories" }, { fr: "Accès visuels aux familles de produits.", en: "Visual access to product families." }, "collections catégories familles", [
     d("grid", "Grille", "Grid", "fs-collections", "grid-3", { layout: "grid" }),

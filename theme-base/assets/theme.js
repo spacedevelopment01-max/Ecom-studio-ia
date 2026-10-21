@@ -756,7 +756,17 @@
     });
   }
 
+  /* Bas réel de l'en-tête (bandeau compris) : une ouverture « plein écran » occupe exactement le reste du premier écran. */
+  function measureHeaderBottom() {
+    // Haut du contenu principal (en-tête, barre d'annonce et bandeau compris), pour une ouverture « plein écran ».
+    var m = document.querySelector('main'), h = $('[data-header]');
+    var b = m ? m.getBoundingClientRect().top + window.scrollY : h ? h.offsetTop + h.offsetHeight : 0;
+    if (b > 0) document.documentElement.style.setProperty('--es-header-bottom', Math.round(b) + 'px');
+  }
   function init() {
+    measureHeaderBottom();
+    window.addEventListener('resize', measureHeaderBottom);
+    window.addEventListener('load', measureHeaderBottom);
     initBookingCal(document);
     initWords(document);
     initReveal(document);

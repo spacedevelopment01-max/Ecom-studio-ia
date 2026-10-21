@@ -217,6 +217,37 @@ body[data-editorial="studio"] .fs-camp--background .fs-camp__media .ed-media{asp
   body[data-editorial="studio"] .es-product__title{font-size:clamp(1.5rem,7vw,1.9rem);margin-bottom:4px}
   body[data-editorial="studio"] .es-product__price{margin-bottom:10px}
 }
+/* Ouverture « Plein écran » (bibliothèque E-commerce, issue #158) : la scène bord à bord occupe tout le premier écran
+   sous l'en-tête (hauteur réelle mesurée, repli 120 px ; svh suit la barre du navigateur mobile), titre court et bouton
+   posés sur l'image avec un voile pour le contraste. Image dédiée et cadrage propres au téléphone (texte en haut). */
+.ed-opening--fullscreen{padding:0!important}
+.ed-opening--fullscreen .ed-shell{width:100%;max-width:none;position:relative;display:flex;align-items:flex-end;min-height:max(520px,calc(100vh - var(--es-header-bottom,120px)));min-height:max(520px,calc(100svh - var(--es-header-bottom,120px)))}
+.ed-opening--fullscreen .ed-opening__media{position:absolute;inset:0;z-index:0;height:auto}
+.ed-opening--fullscreen .ed-opening__media .ed-media,.ed-opening--fullscreen .ed-opening__media picture{height:100%;aspect-ratio:auto;border-radius:0}
+.ed-opening--fullscreen .ed-opening__media picture .ed-image{height:100%}
+.ed-opening--fullscreen .ed-opening__media::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(18,8,14,.62) 0%,rgba(18,8,14,.34) 38%,rgba(18,8,14,0) 64%),linear-gradient(0deg,rgba(18,8,14,.38) 0%,rgba(18,8,14,0) 46%)}
+.ed-opening--fullscreen .ed-opening__copy{position:relative;z-index:1;width:min(1320px,calc(100% - 2*clamp(20px,4vw,64px)));margin:0 auto;padding:clamp(32px,6vh,80px) 0;color:#fff;display:block;max-width:none}
+.ed-opening--fullscreen .ed-opening__copy :is(.ed-kicker,.ed-title,.ed-prose,.ed-prose p){color:#fff;text-shadow:0 1px 18px rgba(0,0,0,.25)}
+.ed-opening--fullscreen .ed-opening__title{font-size:clamp(44px,5.4vw,84px);max-width:14ch;margin:0 0 18px}
+.ed-opening--fullscreen .ed-prose{max-width:46ch;margin-bottom:26px}
+.ed-opening--fullscreen .ed-button{background:#fff;color:#1d1218;border-color:#fff}
+.ed-opening--fullscreen .ed-caption{position:absolute;right:16px;bottom:12px;z-index:1;color:#fff}
+@media(max-width:749px){
+  .ed-opening--fullscreen .ed-shell{align-items:flex-start;min-height:max(480px,calc(100vh - var(--es-header-bottom,104px)));min-height:max(480px,calc(100svh - var(--es-header-bottom,104px)))}
+  .ed-opening--fullscreen .ed-opening__media::after{background:linear-gradient(180deg,rgba(18,8,14,.66) 0%,rgba(18,8,14,.4) 34%,rgba(18,8,14,0) 58%)}
+  .ed-opening--fullscreen .ed-opening__copy{width:calc(100% - 40px);padding:22px 0 0}
+  .ed-opening--fullscreen .ed-opening__title{font-size:clamp(32px,9.4vw,42px);margin-bottom:10px}
+  .ed-opening--fullscreen .ed-prose{font-size:15px;line-height:1.5;margin-bottom:16px}
+  .ed-opening--fullscreen .ed-kicker{margin-bottom:10px}
+}
+/* Écrans bas (360 × 640…) : texte resserré pour laisser les produits visibles sous le bouton. */
+@media(max-width:749px) and (max-height:720px){
+  .ed-opening--fullscreen .ed-opening__copy{padding-top:16px}
+  .ed-opening--fullscreen .ed-kicker{margin-bottom:6px}
+  .ed-opening--fullscreen .ed-opening__title{font-size:clamp(28px,8.4vw,34px);margin-bottom:8px}
+  .ed-opening--fullscreen .ed-prose{font-size:14px;line-height:1.42;margin-bottom:12px}
+  .ed-opening--fullscreen .ed-button{padding-top:11px;padding-bottom:11px}
+}
 /* ─── Profil « poudre » (SOUPLE, issue #158) : rose poudré, prune et liège ; serif fine (Playfair) sur texte géométrique
    (Jost), sur-titres espacés précédés d'un point, cadres doux à 18 px, boutons à 10 px ; une boutique calme où la
    collection s'ouvre en mosaïque et chaque produit garde son cadre. */
@@ -269,6 +300,12 @@ body[data-editorial="poudre"] .es-mega--cards .es-mega__links{grid-template-colu
 body[data-editorial="poudre"] .es-mega__card-title{font-family:var(--font-heading-family,var(--font-heading));font-weight:400}
 /* Scène et liste des produits : la photo garde son format panoramique, chaque repère tombe sur le produit qu'il nomme. */
 body[data-editorial="poudre"] .fs-lookbook--side .fs-look__media .ed-media{aspect-ratio:16/9}
+/* Catalogue, recommandations, recherche : cadre carré, chaque produit entier (les vues du lot sont carrées). */
+body[data-editorial="poudre"] .es-card__media{aspect-ratio:1}
+/* Ouverture plein écran : bouton clair sur le voile, puis prune au survol. */
+body[data-editorial="poudre"] .ed-opening--fullscreen .ed-button{border-radius:10px;padding:15px 22px;font-weight:500}
+body[data-editorial="poudre"] .ed-opening--fullscreen .ed-opening__title{font-weight:400;letter-spacing:-.015em}
+body[data-editorial="poudre"] .ed-opening--fullscreen .ed-kicker::before{background:#fff}
 /* Phrase qui s'allume au défilement : grande mais posée, jamais un mur de texte. */
 body[data-editorial="poudre"] .es-heading[data-scroll-words]{font-size:clamp(28px,3.3vw,46px);line-height:1.18;max-width:26ch}
 /* Produit à la une : la vue carrée entière, sans bandes au-dessus ni au-dessous. */
