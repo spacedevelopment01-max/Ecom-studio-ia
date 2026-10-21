@@ -18,7 +18,7 @@ import { chromium, type Page } from "playwright";
 if (process.env.DATA_DIR || process.env.DATABASE_FILE) throw new Error("Base existante refusée");
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "ecs-familles-studio-")); process.env.DATA_DIR = temp; process.env.STOCK_OFFLINE = "1";
 const out = path.resolve(process.argv[2] ?? "reports/familles-studio"); fs.mkdirSync(out, { recursive: true });
-const demoId = (process.argv[3] ?? "fraise") as "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club";
+const demoId = (process.argv[3] ?? "fraise") as "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "souple";
 /** Scénario par famille : fonction ajoutée, disposition d'aperçu, disposition choisie ensuite, fonction d'une autre famille. */
 const PLAN = {
   fraise: { family: "specialty", entry: "Fabrication et savoir-faire", type: "fs-making", preview: "sticky", then: "timeline", foreign: "Étude de cas", header: "two-rows", footer: "centered" },
@@ -39,6 +39,9 @@ const PLAN = {
   // MUSEAU CLUB (issue #158, boutique spécialisée depuis la décision du 21 octobre) : dispositions d'origine « Deux
   // rangées avec offre » / « Colonnes d'aide et d'informations », puis une autre disposition de la famille.
   "museau-club": { family: "specialty", entry: "Fabrication et savoir-faire", type: "fs-making", preview: "steps", then: "grid", foreign: "Ambiance et lookbook", header: "floating", footer: "centered", currentHeader: "two-rows", currentFooter: "columns" },
+  // SOUPLE (issue #158, E-commerce de quatre produits) : dispositions d'origine « Collections en cartes » / « Boutique
+  // éditoriale », puis une autre disposition de la famille.
+  souple: { family: "catalog", entry: "Collections et catégories", type: "fs-collections", preview: "asym", then: "index", foreign: "Composition et matériaux", header: "classic", footer: "boxed", currentHeader: "mega-cards", currentFooter: "store" },
 }[demoId] as { family: string; entry: string; type: string; preview: string; then: string; foreign: string; header: string; footer: string; currentHeader?: string; currentFooter?: string };
 const PORT = 3600 + Math.floor(Math.random() * 300), origin = `http://127.0.0.1:${PORT}`;
 const { demoProject } = await import("../tests/demo-fixtures");

@@ -70,7 +70,7 @@ const PROFILE = (id: string, radius: string) => `(() => { if (!document.body.cla
 /** Profil éditorial appliqué dans WordPress / PrestaShop (classe du <body> et règle propre au profil réellement active) : HEUREN, ALCÔVE. */
 const EDITORIAL = (id: string, sel: string, ratio: string) => `(() => { if (!document.body.classList.contains('es-editorial-${id}')) return 'classe es-editorial-${id} absente (' + document.body.className + ')';
   const el = document.querySelector(${JSON.stringify(sel)}); if (!el) return 'élément du profil absent'; const r = getComputedStyle(el).aspectRatio; return r === '${ratio}' ? true : 'règle du profil non appliquée (aspect-ratio = ' + r + ')'; })()`;
-type Plan = { demo: "fraise" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "onde"; family: "specialty" | "catalog" | "services"; label: string; add: { key: string; disp: string }[]; checks: Check[] };
+type Plan = { demo: "fraise" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "onde" | "souple"; family: "specialty" | "catalog" | "services"; label: string; add: { key: string; disp: string }[]; checks: Check[] };
 const PLANS: Plan[] = [
   { demo: "fraise", family: "specialty", label: "FRAISE (boutique spécialisée)",
     add: [{ key: "results", disp: "before-after" }, { key: "specs", disp: "tabs" }, { key: "comparison", disp: "table" }],
@@ -116,6 +116,10 @@ const PLANS: Plan[] = [
   { demo: "onde", family: "catalog", label: "ONDE (E-commerce mono-produit, refonte de l'issue #158)", add: [],
     checks: [
       { id: "studio", label: "Profil graphique « studio » appliqué", run: EDITORIAL("studio", ".fs-camp--background .fs-camp__media .ed-media", "16 / 10") },
+    ] },
+  { demo: "souple", family: "catalog", label: "SOUPLE (E-commerce de quatre produits, issue #158)", add: [],
+    checks: [
+      { id: "poudre", label: "Profil graphique « poudre » appliqué", run: EDITORIAL("poudre", ".fs-coll__list--asym .fs-coll__tile:first-child .fs-coll__media .ed-media", "4 / 3") },
     ] },
   { demo: "museau-club", family: "specialty", label: "MUSEAU CLUB (boutique spécialisée, quatre produits, issue #158)", add: [],
     checks: [

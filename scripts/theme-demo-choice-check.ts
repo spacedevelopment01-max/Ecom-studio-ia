@@ -28,7 +28,7 @@ import { spawn } from "node:child_process";
 import { chromium, type Page } from "playwright";
 if (process.env.DATA_DIR || process.env.DATABASE_FILE) throw new Error("Base existante refusée");
 /** Thème parcouru puis choisi (issue #152 : NOCTIL et TRAVERSE par le même parcours que SILLON). */
-const T = (process.argv[3] ?? "sillon") as "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "onde";
+const T = (process.argv[3] ?? "sillon") as "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "onde" | "souple";
 const THEME = {
   sillon: { brand: /SILLON/, profile: "nomade", menuPage: "page-usages.html", menuLabel: "Usages", leak: /SILLON|espresso|où tout coule|avant de partir|Boutique de démonstration/i },
   noctil: { brand: /NOCTIL/, profile: "astral", menuPage: "page-univers.html", menuLabel: "Une galaxie par pièce", leak: /NOCTIL|galaxie|la nuit entre|une autre nuit|Boutique de démonstration/i },
@@ -38,10 +38,11 @@ const THEME = {
   alcove: { brand: /ALCÔVE/, profile: "arrondi", menuPage: "page-piece-par-piece.html", menuLabel: "Pièce par pièce", leak: /ALCÔVE|alcôve à soi|terracotta|Pièce par pièce|Boutique de démonstration/i },
   // ONDE (refonte E-commerce de l'issue #158) : profil « studio » porté par « editorial_profile ».
   onde: { brand: /ONDE/, profile: "studio", menuPage: "page-usages.html", menuLabel: "Les usages", leak: /\bONDE\b|Repartez|graphite et vert|Boutique de démonstration/i },
+  souple: { brand: /SOUPLE/, profile: "poudre", menuPage: "page-usages.html", menuLabel: "Les usages", leak: /SOUPLE|rose poudré|tapis de yoga|anneau de Pilates|Quatre pièces assorties|Boutique de démonstration/i },
   "museau-club": { brand: /MUSEAU CLUB/, profile: "club", menuPage: "page-la-balade.html", menuLabel: "La balade", leak: /MUSEAU|harnais|pochette|bleu cobalt|La balade|Boutique de démonstration/i },
 }[T];
 /** Attribut du <body> qui porte le profil graphique : « conversion » (boutique spécialisée), « editorial » (E-commerce). */
-const CATALOG = T === "heuren" || T === "alcove" || T === "onde";
+const CATALOG = T === "heuren" || T === "alcove" || T === "onde" || T === "souple";
 const PROFILE_ATTR = CATALOG ? "editorial" : "conversion";
 /** Projet de départ de la même famille que le thème choisi : boutique spécialisée dans FRAISE, ou E-commerce dans ORBE
  * (HEUREN et ALCÔVE, issue #155 : un thème E-commerce ne se propose pas à une boutique spécialisée). */
