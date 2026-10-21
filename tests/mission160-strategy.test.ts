@@ -744,3 +744,10 @@ it("un média rejeté conservé en historique ne bloque pas le changement du con
   expect(activate(f.pid, "expression").angleId).toBe("expression");
   expect(one("SELECT id FROM assets WHERE id=?", aid)).toBeTruthy();
 });
+
+it('une réanalyse ne transforme pas un angle activé en une autre cible sans consommer un nouveau droit', async () => {
+ const {clientFixture}=await import('./mission154-fixtures');const f=await clientFixture({strategy:null,incomplete:true});
+ const before=getStrategyState(f.pid);const p=prepareStrategyChange(f.pid,'usage');activateStrategy(f.pid,{angleId:'usage',preparationId:p.id,idempotencyKey:'fixed-target-160',confirmed:true,retainUnaligned:true});
+ const {loadProject,saveBrand}=await import('@/lib/projects');const project=loadProject(f.pid);saveBrand(f.pid,{...project.brand!,audience:'Une nouvelle cible arbitraire obtenue par réanalyse'});
+ const after=proposeStrategies(f.pid);expect(after.angles.map(a=>a.audience)).toEqual(before.angles.map(a=>a.audience));expect(after.usedAngleIds).toEqual(['usage']);
+});

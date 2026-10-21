@@ -7,9 +7,10 @@ import { describe, expect, it } from "vitest";
 import { advancedOpen, SPACE_GROUPS, SPACES, spacePurpose } from "@/lib/studio-nav";
 
 describe("Plan du studio", () => {
-  it("les 13 espaces existent une seule fois, chacun dans un groupe connu, avec sa phrase FR et EN", () => {
+  it("les 14 espaces, dont Stratégie, existent une seule fois, chacun dans un groupe connu, avec sa phrase FR et EN", () => {
     const ids = SPACES.map((s) => s.id);
-    expect(new Set(ids).size).toBe(13);
+    expect(new Set(ids).size).toBe(14);
+    expect(ids).toContain("strategie");
     for (const s of SPACES) {
       expect(SPACE_GROUPS.map((g) => g.id)).toContain(s.group);
       expect(spacePurpose(s.id, "fr")!.length).toBeGreaterThan(10);

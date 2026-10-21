@@ -1,3 +1,4 @@
+import { chooseGeneralistForTest } from "./strategy-choice-fixture";
 /** Lot 2A : stockage, composition, routes manuelles/chat, worker, rendu et ZIP réels.
  * Seule la session Next est adaptée au harnais ; disponibilité IA forcée à faux. Aucune réponse IA simulée.
  */
@@ -104,7 +105,7 @@ describe("Lot 2A — références intégrées", async () => {
   }));
   it("sélection réelle dans la galerie : route → job de direction → moteur local → nouvelle version", async () => fr(async () => {
     const { pid, spec } = await referenceProject(user.id, "products", { media: false });
-    const before = saveThemeVersion(pid, spec, "Version utilisable conservée", "user"); await startSession(user.id);
+    const before = saveThemeVersion(pid, spec, "Version utilisable conservée", "user"); chooseGeneralistForTest(pid); await startSession(user.id);
     const response = await buildRoute(new Request(`http://studio.test/api/projects/${pid}/theme/build`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ direction: "vitrine" }) }), { params: Promise.resolve({ id: pid }) });
     const body = await response.json(); expect(response.status, JSON.stringify(body)).toBe(200);
     const job = claimNext(["shop.direction"])!; expect(job.id).toBe(body.jobId);

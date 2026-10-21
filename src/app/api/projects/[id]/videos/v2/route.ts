@@ -1,3 +1,4 @@
+import { strategyVisibilitySql } from "@/lib/marketing-strategy/visibility";
 import { z } from "zod";
 import { approveVideoScenario,readVideoApproval } from "@/lib/video-v2/approval";
 import { v2ChainQuote } from "@/lib/video-v2/chain-quote";
@@ -36,7 +37,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const rows = all<{ doc_key: string; version: number; source: string; rendered_asset_id: string | null; created_at: number; doc_json: string; edited: number }>(
     `SELECT d.doc_key, d.version, d.source, d.rendered_asset_id, d.created_at, d.doc_json,
             (SELECT COUNT(*) FROM video_documents u WHERE u.project_id = d.project_id AND u.doc_key = d.doc_key AND u.source <> 'engine') edited
-       FROM video_documents d JOIN (SELECT doc_key, MAX(version) v FROM video_documents WHERE project_id = ? GROUP BY doc_key) m ON m.doc_key = d.doc_key AND m.v = d.version
+       FROM video_documents d JOIN (SELECT doc_key, MAX(version) v FROM video_documents WHERE project_id = ? AND ${strategyVisibilitySql(p.id,"video","video_documents.id")} GROUP BY doc_key) m ON m.doc_key = d.doc_key AND m.v = d.version
       WHERE d.project_id = ? ORDER BY d.created_at DESC LIMIT 60`,
     p.id,
     p.id,
@@ -45,7 +46,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     videos: rows.map((r) => {
       const d = json<Partial<VideoDocument>>(r.doc_json, {});
       // Dernier rendu (une version modifiée après lui est signalée « à rendre ») ; statut d'approbation du fichier.
-      const last = one<{ version: number; rendered_asset_id: string }>("SELECT version, rendered_asset_id FROM video_documents WHERE project_id = ? AND doc_key = ? AND rendered_asset_id IS NOT NULL ORDER BY version DESC LIMIT 1", p.id, r.doc_key);
+      const last = one<{ version: number; rendered_asset_id: string }>(`SELECT version, rendered_asset_id FROM video_documents WHERE project_id = ? AND doc_key = ? AND rendered_asset_id IS NOT NULL AND ${strategyVisibilitySql(p.id,"video","video_documents.id")} ORDER BY version DESC LIMIT 1`, p.id, r.doc_key);
       const asset = last ? one<{ status: string; meta: string; deleted_at: number | null }>("SELECT status, meta, deleted_at FROM assets WHERE id = ?", last.rendered_asset_id) : null;
       const gate = asset ? json<any>(asset.meta, {}).gate : null;
       return {

@@ -116,6 +116,7 @@ export type StrategyState = {
   generalistExplanation: string;
   analysis: {
     method: "local_project_evidence";
+    currentInputDigest?: string;
     inputDigest: string;
     sources: StrategySource[];
     marketSourcesVerified: false;

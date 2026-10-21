@@ -1,3 +1,4 @@
+import { strategyVisibilitySql } from "../marketing-strategy/visibility";
 /**
  * Project Brain — instantané en lecture seule de ce que le studio sait d'un projet (phase 2.0).
  *
@@ -6,10 +7,11 @@
  *  - memory (hors « artifact »)                        → décisions, corrections, préférences, objectifs, refus du client ;
  *  - quality_checks (90 derniers jours)                → source de vérité des notes ; seuls des constats en sont tirés ;
  *  - assets (non supprimés, les plus récents)          → logo actuel (pointeur de la marque) et créations récentes.
- * Cinq requêtes SQL au plus (dont la stratégie active versionnée), aucune IA, aucune écriture. Jamais de réglage, de clé ni de connexion lus ici.
+ * Lectures SQL bornées, dont la stratégie active versionnée ; aucun appel IA ni contenu métier modifié. Jamais de réglage, de clé ni de connexion lus ici.
  */
 import { all, json } from "../db";
-import { selectedStrategyContext } from "../strategy-consumption";
+import { strategySelection } from "../strategy-consumption";
+import { strategyContextFor } from "../marketing-strategy";
 import { loadProject, type Project } from "../projects";
 import { resolveTrade, tradeText, type TradeProfile } from "./trade";
 import { resolveProductCategory, type ProductCategoryProfile } from "../image-v2/categories";
@@ -55,6 +57,7 @@ const LIMIT_ASSETS = 80;
 export function brainSnapshot(projectOrId: string | Project): BrainSnapshot {
   const project = typeof projectOrId === "string" ? loadProject(projectOrId) : projectOrId;
   const pid = project.id;
+  const selectedStrategy=strategySelection(pid);
   const memory = all<MemoryRow>("SELECT kind, key, value, status, source, scope, origin, evidence_json FROM memory WHERE project_id = ? AND kind != 'artifact' AND state = 'active' ORDER BY created_at, id", pid);
   const checks = all<QualityRow>(
     "SELECT deliverable, verdict, fatal, checked, checker, blocking_json, fatal_json FROM quality_checks WHERE project_id = ? AND created_at >= ? ORDER BY created_at DESC LIMIT 500",
@@ -64,7 +67,7 @@ export function brainSnapshot(projectOrId: string | Project): BrainSnapshot {
   const assets = all<AssetRow & { created_at: number }>(
     `SELECT id, name, role, kind, status, origin, created_at,
             json_extract(meta, '$.gate.verdict') AS gate_verdict, json_extract(meta, '$.key') AS route_key, json_extract(meta, '$.label') AS route_label
-       FROM assets WHERE project_id = ? AND deleted_at IS NULL ORDER BY created_at DESC, id LIMIT ?`,
+       FROM assets WHERE project_id = ? AND deleted_at IS NULL AND ${strategyVisibilitySql(pid,"asset","assets.id",false,{selection:selectedStrategy,schemaInstalled:true})} ORDER BY created_at DESC, id LIMIT ?`,
     pid,
     LIMIT_ASSETS,
   );
@@ -92,7 +95,7 @@ export function brainSnapshot(projectOrId: string | Project): BrainSnapshot {
 
   return {
     projectId: pid,
-    marketingStrategy: selectedStrategyContext(pid),
+    marketingStrategy: strategyContextFor(selectedStrategy),
     project,
     trade: resolveTrade(tradeText(project), project.product.sector ?? null),
     category: project.business === "services" ? null : resolveProductCategory(project.product),

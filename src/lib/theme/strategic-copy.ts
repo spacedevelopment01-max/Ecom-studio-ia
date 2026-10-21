@@ -1,4 +1,5 @@
 /** Local, reversible copy preparation. Facts and identity are never rewritten by an angle. */
+import { one } from '../db';
 import type { ShopCopy } from './copy';
 import { loadProject } from '../projects';
 import { strategySelection } from '../strategy-consumption';
@@ -6,6 +7,7 @@ const esc=(s:string)=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,
 const p=(s:string)=>`<p>${esc(s)}</p>`;
 export function strategicCopy(projectId:string,base:ShopCopy):ShopCopy{
  const current=strategySelection(projectId);
+ if(one("SELECT id FROM memory WHERE project_id=? AND kind='artifact' AND key='shop_copy' AND source='user'",projectId))return structuredClone(base);
  if(!current||current.angleId==='generalist')return structuredClone(base);
  const a=current.angle,project=loadProject(projectId),copy=structuredClone(base),service=project.business==='services';
  const t=(fr:string,en:string)=>project.settings.language==='en'?en:fr;

@@ -1,3 +1,4 @@
+import { strategyVisibilitySql } from "@/lib/marketing-strategy/visibility";
 import { all } from "@/lib/db";
 import { handle, ok } from "@/lib/http";
 import { HttpError } from "@/lib/auth";
@@ -6,7 +7,7 @@ import { L } from "@/lib/i18n-server";
 
 export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
-  return ok({ plans: all<any>("SELECT id, params, strategy, status, job_id, created_at FROM content_plans WHERE project_id = ? ORDER BY created_at DESC LIMIT 20", p.id).map((r) => ({ ...r, params: JSON.parse(r.params) })) });
+  return ok({ plans: all<any>(`SELECT id, params, strategy, status, job_id, created_at FROM content_plans WHERE status NOT IN ('archived','cancelled') AND project_id = ? AND ${strategyVisibilitySql(p.id,"calendar","content_plans.id")} ORDER BY created_at DESC LIMIT 20`, p.id).map((r) => ({ ...r, params: JSON.parse(r.params) })) });
 });
 
 /**

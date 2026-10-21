@@ -140,3 +140,10 @@ it('un contexte préparé ne peut pas transporter la stratégie d’un autre com
  const a=await fixture(),b=await fixture();const selected=activate(a.pid,'usage');
  expect(()=>withStrategyScope(b.pid,()=>null,selected)).toThrow(/pas partie de ce projet/);expect(activeStrategy(b.pid)).toBeNull();
 });
+
+it("les aperçus sans projet persistant n’héritent pas d’une stratégie ni ne plantent",()=>{expect(strategySelection(undefined as never)).toBeNull();expect(selectedStrategyContext(undefined as never)).toBe("");});
+
+it('une retouche dans le même angle conserve sa provenance, sans être automatiquement certifiée',async()=>{
+ const f=await fixture();const active=activate(f.pid,'usage');saveVersion(f.pid,'ad:retouche',ad());const changed=saveVersion(f.pid,'ad:retouche',{...ad(),meta:{...ad().meta,source:'user'}});
+ expect(latestDoc(f.pid,'ad:retouche')?.doc.meta.marketingStrategy?.id).toBe(active.id);expect(getStrategyState(f.pid).alignment.find(c=>c.contentId===changed.id)).toMatchObject({protected:true,aligned:false,reason:'protected_unreviewed'});
+});

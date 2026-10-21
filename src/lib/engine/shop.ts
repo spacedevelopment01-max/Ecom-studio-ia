@@ -1,5 +1,6 @@
+import { canonicalJSON } from "../brain/hash";
 import { strategySelection, strategyContent } from "../strategy-consumption";
-import { assertStrategyChosen, activeStrategy, recordStrategyContent } from "../marketing-strategy";
+import { assertStrategyChosen, activeStrategy, recordStrategyContent, getStrategyState } from "../marketing-strategy";
 /**
  * Construction de la boutique : rassemble les créations validées (logo,
  * images, vidéo, textes) et produit une version du thème. La composition de
@@ -317,6 +318,7 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
   if(clientAdaptation) await (await import("../theme/client-adaptation")).adaptClientReference(spec,p,copy,ctx);
   const strategy=strategySelection(projectId);
   if (clientAdaptation && strategy) spec.meta={...spec.meta, strategy: { id:strategy.id, version:strategy.version, angleId:strategy.angleId }};
+  if(clientAdaptation && strategy && getStrategyState(projectId).alignment.some(c=>c.module==="copy"&&!c.aligned))spec.meta={...spec.meta,strategy:{...spec.meta!.strategy!,retainedPaths:["upstream:shop_copy"],alignment:"mixed"}};
   const delivered = deliverContent(spec, p, spec.language ?? contentLang());
   bindReferenceOffers(spec, p, new Set(delivered.map((d) => d.target)));
   if (!services) bindProductContent(spec, p);
@@ -456,7 +458,7 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
         spec = kept.spec;
         (await import("../theme/adaptation-preservation")).preserveClientRecords(spec,prev.spec,baseline);
         spec.meta = { ...spec.meta, carryOver: kept.report as unknown as Record<string, unknown> };
-        if(spec.meta.strategy && prev.spec.meta?.strategy?.angleId !== spec.meta.strategy.angleId){const retained=kept.report.reapplied.filter(x=>/text|heading|title|label|button|@blocks/.test(x.key)).map(x=>`${x.template}:${x.id}:${x.key}`);spec.meta.strategy={...spec.meta.strategy,retainedPaths:retained,alignment:retained.length?"mixed":"prepared"};}
+        if(spec.meta.strategy && prev.spec.meta?.strategy?.angleId !== spec.meta.strategy.angleId){const retained=[...(spec.meta.strategy.retainedPaths??[]),...kept.report.reapplied.filter(x=>/text|heading|title|label|button|image|video|@blocks/.test(x.key)).map(x=>`${x.template}:${x.id}:${x.key}`)];spec.meta.strategy={...spec.meta.strategy,retainedPaths:retained,alignment:retained.length?"mixed":"prepared"};}
         const text = describeReport(kept.report, lang);
         if (text) append(inBothLangs(() => L(` · ${describeReport(kept.report, "fr")}`, ` · ${describeReport(kept.report, "en")}`)));
       } else console.warn("[shop] report des retouches du client impossible :", problemsAfter.join(" ; "));
@@ -474,6 +476,11 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
   const acquired=currentTheme(projectId);
   if(spec.meta?.adaptation&&acquired?.spec.direction===spec.direction&&acquired.spec.meta?.adaptation?.inputHash===spec.meta.adaptation.inputHash){
     return{versionId:acquired.version.id,number:acquired.version.number,delivery:{state:acquired.spec.meta.adaptation.status==="partial"?"partial":"to_verify",active:true,message:L("Version existante réutilisée, sans nouvelle génération ni double version.","Existing version reused, without new generation or duplicate version."),reasons:acquired.spec.meta.adaptation.issues.map(i=>i.code)}};
+  }
+  if(opts.prepareOnly && spec.meta?.adaptation){
+    const comparable=(s:ThemeSpec)=>canonicalJSON({direction:s.direction,settings:s.settings,groups:s.groups,templates:s.templates,store:s.store,files:s.files,customSections:s.customSections,locks:s.locks,language:s.language});
+    const compatible=listThemeVersions(projectId).filter(v=>v.author!=="user").map(v=>themeVersion(projectId,v.id)).find(v=>v && v.spec.meta?.adaptation?.inputHash===spec.meta?.adaptation?.inputHash && comparable(v.spec)===comparable(spec));
+    if(compatible)return{versionId:compatible.version.id,number:compatible.version.number,delivery:{state:"to_verify",active:false,message:L("Version compatible déjà acquise réutilisée pour la bascule, sans génération ni nouvelle version.","An acquired compatible version is reused for the switch, without generation or a new version."),reasons:[]}};
   }
   const qcId = saveCheck(quality, { userId: p.userId, projectId, jobId: ctx?.job.id ?? null, candidateId: `theme:${projectId}:${direction}` });
   if (reviewed && !reviewedKept) saveCheck(decide("theme_home", { checker: "ai", score: reviewed.score }), { userId: p.userId, projectId, jobId: ctx?.job.id ?? null, candidateId: `theme-ai-layout:${projectId}:${direction}` });

@@ -15,14 +15,14 @@ const fr=<T,>(fn:()=>T)=>runWithLang({ui:'fr',content:'fr'},fn);
 async function choose(pid:string,angleId:string){const prep=prepareStrategyChange(pid,angleId);await prepareStrategyTheme(pid,prep.id);for(const c of prep.contents.filter(c=>c.module!=='theme'&&!c.aligned&&!c.published))stageStrategyModule(pid,prep.id,c.module,{contentIds:[c.contentId]});return activateStrategy(pid,{angleId,preparationId:prep.id,idempotencyKey:`test-${prep.id}`,confirmed:true,commitPrepared:s=>commitPreparedStrategyTheme(pid,prep.id,s)});}
 beforeEach(()=>vi.stubGlobal('fetch',async()=>{throw Error('Supplier forbidden in mission160');}));afterEach(()=>vi.unstubAllGlobals());
 it('aucune construction avant choix, cartes consultées sans consommation ni tâche',async()=>{
- const f=await clientFixture({strategy:null,incomplete:true});expect(getStrategyState(f.pid).angles).toHaveLength(5);
+ const f=await clientFixture({copySource:"ai",strategy:null,incomplete:true});expect(getStrategyState(f.pid).angles).toHaveLength(5);
  expect(activeStrategy(f.pid)).toBeNull();expect(getStrategyState(f.pid).usedAngleIds).toEqual([]);
  await expect(fr(()=>buildShop(null,f.pid,{direction:'traverse',useAi:false}))).rejects.toMatchObject({code:'strategy_choice_required'});
  expect(currentTheme(f.pid)).toBeNull();expect(all('SELECT id FROM ai_calls WHERE project_id=?',f.pid)).toHaveLength(0);
  await choose(f.pid,'usage');await fr(()=>buildShop(null,f.pid,{direction:'traverse',useAi:false}));expect(currentTheme(f.pid)?.spec.meta?.strategy?.angleId).toBe('usage');
 });
 for(const services of [false,true])it(`parcours ${services?'service RDV':'produit'} : angle A→B→A, copie/faits/retouches/pages/export persistants sans appel`,async()=>{
- const f=await clientFixture({services,strategy:null}),direction=services?'rive':'traverse';
+ const f=await clientFixture({services,copySource:"ai",strategy:null}),direction=services?'rive':'traverse';
  const identity=loadProject(f.pid).brand;
  await choose(f.pid,'usage');await fr(()=>buildShop(null,f.pid,{direction,useAi:false}));
  const first=currentTheme(f.pid)!;const hero=first.spec.templates.index.order[0];
@@ -40,9 +40,22 @@ for(const services of [false,true])it(`parcours ${services?'service RDV':'produi
  expect(one<{n:number}>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=?',f.pid)?.n).toBe(0);
 });
 it('tâche préparée avant bascule refusée avant fournisseur ; changement de droits reste revérifié',async()=>{
- const f=await clientFixture({strategy:null});await choose(f.pid,'usage');
+ const f=await clientFixture({copySource:"ai",strategy:null});await choose(f.pid,'usage');
  const job=enqueue({userId:f.user.id,projectId:f.pid,type:'shop.direction',payload:{projectId:f.pid,direction:'traverse'}});
  await choose(f.pid,'expression');
  await expect(handlers[job.type](new JobContext(job))).rejects.toMatchObject({code:'strategy_changed'});
  expect(currentTheme(f.pid)).toBeNull();expect(all('SELECT id FROM ai_calls WHERE project_id=?',f.pid)).toHaveLength(0);
+});
+
+it('retour vers un angle : version de thème compatible réutilisée sans mutation de sa provenance ni nouvelle version',async()=>{
+ const f=await clientFixture({copySource:"ai",strategy:null});await choose(f.pid,'usage');await fr(()=>buildShop(null,f.pid,{direction:'traverse',useAi:false}));const a=currentTheme(f.pid)!;
+ await choose(f.pid,'expression');const n=listThemeVersions(f.pid).length;await choose(f.pid,'usage');
+ expect(currentTheme(f.pid)?.version.id).toBe(a.version.id);expect(listThemeVersions(f.pid)).toHaveLength(n);expect(currentTheme(f.pid)?.spec.meta?.strategy?.id).toBe(a.spec.meta?.strategy?.id);
+});
+
+it('une rédaction explicitement fournie par le client reste intégrale et signalée comme protégée',async()=>{
+ const f=await clientFixture({strategy:null,copySource:'user'});const original=f.copy.hero.heading;const prep=prepareStrategyChange(f.pid,'expression');
+ activateStrategy(f.pid,{angleId:'expression',preparationId:prep.id,idempotencyKey:`manual-${prep.id}`,confirmed:true,retainUnaligned:true});
+ await fr(()=>buildShop(null,f.pid,{direction:'traverse',useAi:false}));const spec=currentTheme(f.pid)!.spec;
+ expect(JSON.stringify(spec.templates.index)).toContain(original);expect(spec.meta?.strategy?.retainedPaths).toContain('upstream:shop_copy');expect(getStrategyState(f.pid).alignment.some(c=>c.module==='theme'&&!c.aligned)).toBe(true);
 });

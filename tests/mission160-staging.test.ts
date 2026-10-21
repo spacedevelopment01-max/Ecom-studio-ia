@@ -1,0 +1,67 @@
+import { brainSnapshot } from "@/lib/brain/snapshot";
+import {it,expect,vi,afterEach} from 'vitest';
+import sharp from 'sharp';
+import {clientFixture} from './mission154-fixtures';
+import {activeStrategy,prepareStrategyChange,preparationStrategy,stageStrategyModule,activateStrategy,getStrategyState} from '@/lib/marketing-strategy';
+import {withStrategyScope} from '@/lib/strategy-consumption';
+import {strategyContentVisible} from '@/lib/marketing-strategy/visibility';
+import {prepareLocalStrategyModules,commitPreparedStrategyModules} from '@/lib/marketing-strategy/module-preparation';
+import {runContentEngineV2} from '@/lib/seo-v2/engine';
+import {localOnlyDeps} from '@/lib/seo-v2/deps';
+import {latestContent,listContents} from '@/lib/seo-v2/store';
+import {saveVersion,latestDoc,versionDoc} from '@/lib/ad-doc/store';
+import {saveVideoVersion,latestVideo} from '@/lib/video-v2/store';
+import {saveAsset,getAsset} from '@/lib/library';
+import {isAutoUsable} from '@/lib/quality/usable';
+import {createPlanV2} from '@/lib/social-v2/planner';
+import {loadProject} from '@/lib/projects';
+import {all,one,run} from '@/lib/db';
+function cover(pid:string,prep:any){for(const c of prep.contents.filter((c:any)=>!c.aligned&&!c.published))stageStrategyModule(pid,prep.id,c.module,{contentIds:[],retainedContentIds:[c.contentId]});}
+afterEach(()=>vi.unstubAllGlobals());
+it('un document et une image préparés sont inspectables mais invisibles au courant ; activation atomique, exception conserve A',async()=>{
+ const f=await clientFixture({copySource:'ai',incomplete:true});const a=activeStrategy(f.pid)!;
+ const ad:any={version:1,width:1080,height:1080,background:'#fff',safe:{top:0,bottom:0,side:0},format:{platform:'facebook',aspect:'1:1'},layers:[],brand:{name:'Fictif',palette:{},fonts:{heading:'Arial',body:'Arial'}},meta:{conceptId:null,source:'engine',createdFrom:null}};
+ const first=saveVersion(f.pid,'ad:staging',ad);
+ const video:any={meta:{source:'engine'},clips:[]};const va=saveVideoVersion(f.pid,'vid:staging',video);
+ const prep=prepareStrategyChange(f.pid,'expression'),snapshot=preparationStrategy(f.pid,prep.id);cover(f.pid,prep);
+ const staged=await withStrategyScope(f.pid,async()=>{
+  const next=saveVersion(f.pid,'ad:staging',{...ad,background:'#123456'});const vb=saveVideoVersion(f.pid,'vid:staging',video);
+  const image=await saveAsset({projectId:f.pid,userId:f.user.id,name:'preparation.jpg',mime:'image/jpeg',data:await sharp({create:{width:80,height:80,channels:3,background:'#946544'}}).jpeg().toBuffer(),origin:'generated',role:'lifestyle'});
+  expect(latestDoc(f.pid,'ad:staging')?.version.id).toBe(next.id);expect(latestVideo(f.pid,'vid:staging')?.version.id).toBe(vb.id);expect(isAutoUsable(image)).toBe(true);
+  const orphan=await saveAsset({projectId:f.pid,userId:f.user.id,name:"incomplet.jpg",mime:"image/jpeg",data:Buffer.from("fictif"),origin:"generated",role:"lifestyle"});
+  return {next,vb,image,orphan};
+ },snapshot);
+ stageStrategyModule(f.pid,prep.id,'ad',{contentIds:[staged.next.id],replacements:[{oldId:first.id,newId:staged.next.id}]});
+ stageStrategyModule(f.pid,prep.id,'video',{contentIds:[staged.vb.id],replacements:[{oldId:va.id,newId:staged.vb.id}]});
+ stageStrategyModule(f.pid,prep.id,'asset',{contentIds:[staged.image.id]});
+ expect(latestDoc(f.pid,'ad:staging')?.version.id).toBe(first.id);expect(latestVideo(f.pid,'vid:staging')?.version.id).toBe(va.id);
+ expect(versionDoc(f.pid,'ad:staging',staged.next.version)?.background).toBe('#123456');expect(getAsset(staged.image.id)).toBeTruthy();expect(isAutoUsable(staged.image)).toBe(false);
+ expect(getStrategyState(f.pid).alignment.some(c=>c.contentId===staged.image.id)).toBe(false);expect(brainSnapshot(f.pid).recentAssets.some(a=>a.id===staged.image.id)).toBe(false);
+ expect(()=>activateStrategy(f.pid,{angleId:'expression',preparationId:prep.id,idempotencyKey:'rollback-staging',confirmed:true,commitPrepared(){throw Error('transaction interrompue');}})).toThrow('transaction interrompue');
+ expect(activeStrategy(f.pid)?.id).toBe(a.id);expect(isAutoUsable(staged.image)).toBe(false);
+ activateStrategy(f.pid,{angleId:'expression',preparationId:prep.id,idempotencyKey:'success-staging',confirmed:true});
+ expect(latestDoc(f.pid,'ad:staging')?.version.id).toBe(staged.next.id);expect(latestVideo(f.pid,'vid:staging')?.version.id).toBe(staged.vb.id);expect(isAutoUsable(staged.image)).toBe(true);expect(strategyContentVisible(f.pid,'asset',staged.orphan.id)).toBe(false);
+});
+for(const services of [false,true])it(`préparation native groupée SEO + calendrier ; reprise sans doublons, service=${services}`,async()=>{
+ vi.stubGlobal('fetch',async()=>{throw Error('Aucun fournisseur autorisé');});const f=await clientFixture({services,copySource:'ai',incomplete:true});
+ const a=await runContentEngineV2(null,f.pid,{type:'home_page',lang:'fr'},localOnlyDeps());expect(a.docKey).toBeTruthy();const before=latestContent(f.pid,a.docKey!)!;
+ const date=new Date(Date.now()+86400000).toISOString().slice(0,10);
+ const plan=createPlanV2(loadProject(f.pid),{startDate:date,days:2,perDay:1,timezone:'Europe/Paris',platforms:[{platform:'instagram'}],lang:'fr'});
+ const prep=prepareStrategyChange(f.pid,'expression'),results=await prepareLocalStrategyModules(f.pid,prep.id);
+ expect(results.filter(r=>r.state==='prepared').map(r=>r.module).sort()).toEqual(['calendar','seo']);
+ expect(latestContent(f.pid,a.docKey!)?.version.id).toBe(before.version.id);expect(listContents(f.pid).map(d=>d.id)).toContain(before.version.id);
+ const counts=()=>({docs:one<any>('SELECT COUNT(*) n FROM content_documents WHERE project_id=?',f.pid)!.n,posts:one<any>('SELECT COUNT(*) n FROM posts WHERE project_id=?',f.pid)!.n});const acquired=counts();
+ await prepareLocalStrategyModules(f.pid,prep.id);expect(counts()).toEqual(acquired);
+ for(const c of prep.contents.filter(c=>!c.aligned&&!c.published&&c.module!=='seo'&&c.module!=='calendar'&&c.module!=='post'))stageStrategyModule(f.pid,prep.id,c.module,{retainedContentIds:[c.contentId],contentIds:[]});
+ activateStrategy(f.pid,{angleId:'expression',preparationId:prep.id,idempotencyKey:`batch-${services}`,confirmed:true,commitPrepared:()=>commitPreparedStrategyModules(f.pid,prep.id)});
+ const after=latestContent(f.pid,a.docKey!)!;expect(after.version.id).not.toBe(before.version.id);expect(JSON.stringify(after.doc.blocks)).not.toBe(JSON.stringify(before.doc.blocks));
+ expect(one<any>('SELECT status FROM content_plans WHERE id=?',plan.planId)?.status).toBe('archived');
+ const next=results.find(r=>r.module==='calendar')!;expect(all<any>('SELECT status FROM posts WHERE plan_id=?',next.newIds[0]).every(p=>p.status==='planned')).toBe(true);
+ expect(all('SELECT id FROM ai_calls WHERE project_id=?',f.pid)).toHaveLength(0);
+});
+it('une préparation étrangère ne devient ni visible ni consommable dans un autre contexte préparé',async()=>{
+ const f=await clientFixture({incomplete:true,copySource:'ai'});const p1=prepareStrategyChange(f.pid,'usage'),p2=prepareStrategyChange(f.pid,'expression');
+ const staged=await withStrategyScope(f.pid,()=>saveAsset({projectId:f.pid,userId:f.user.id,name:'s.jpg',mime:'image/jpeg',data:Buffer.from('fictif'),origin:'generated',role:'lifestyle'}),preparationStrategy(f.pid,p1.id));
+ expect(strategyContentVisible(f.pid,'asset',staged.id)).toBe(false);
+ withStrategyScope(f.pid,()=>expect(strategyContentVisible(f.pid,'asset',staged.id)).toBe(false),preparationStrategy(f.pid,p2.id));
+});

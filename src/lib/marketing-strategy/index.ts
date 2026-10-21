@@ -1,3 +1,4 @@
+import { strategyVisibilitySql, strategyContentVisible } from "./visibility";
 /** Persistent project-wide angle identities and atomic activation. No supplier, payment or publishing here. */
 import { createHash } from "node:crypto";
 import { db, all, one, run, id, now, json, tx } from "../db";
@@ -39,6 +40,7 @@ function schema() {
  CREATE TABLE IF NOT EXISTS marketing_strategy_preparations(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,angle_id TEXT NOT NULL,payload TEXT NOT NULL,status TEXT NOT NULL,created_at INTEGER NOT NULL);
  CREATE TABLE IF NOT EXISTS marketing_strategy_requests(project_id TEXT NOT NULL,idempotency_key TEXT NOT NULL,angle_id TEXT NOT NULL,strategy_id TEXT NOT NULL,PRIMARY KEY(project_id,idempotency_key));
  CREATE TABLE IF NOT EXISTS marketing_strategy_contents(project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,module TEXT NOT NULL,content_id TEXT NOT NULL,strategy_id TEXT,version INTEGER,angle_id TEXT,input_digest TEXT NOT NULL,protected INTEGER NOT NULL DEFAULT 0,published INTEGER NOT NULL DEFAULT 0,scheduled INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(project_id,module,content_id));
+ CREATE TABLE IF NOT EXISTS marketing_strategy_archives(project_id TEXT NOT NULL,module TEXT NOT NULL,content_id TEXT NOT NULL,replaced_by TEXT NOT NULL,PRIMARY KEY(project_id,module,content_id));
  CREATE TABLE IF NOT EXISTS marketing_strategy_staging(preparation_id TEXT NOT NULL,module TEXT NOT NULL,content_ids TEXT NOT NULL,retained_ids TEXT NOT NULL,replacements_json TEXT NOT NULL DEFAULT '[]',PRIMARY KEY(preparation_id,module));
  CREATE TABLE IF NOT EXISTS marketing_strategy_reviews(project_id TEXT NOT NULL,module TEXT NOT NULL,content_id TEXT NOT NULL,strategy_id TEXT NOT NULL,input_digest TEXT NOT NULL,PRIMARY KEY(project_id,module,content_id,strategy_id));
  `);
@@ -153,6 +155,10 @@ function proposalSet(projectId: string) {
       projectId,
     );
   } else if (set.input_digest !== digest) {
+    const original=json<MarketingAngle[]>(set.angles_json,[]);
+    const activated=!!one('SELECT 1 FROM marketing_strategy_used WHERE project_id=? LIMIT 1',projectId);
+    // Updating facts is allowed; recalculation must not turn an activated identity into a new target/motivation.
+    const reconciled=buildAngles(p).map(fresh=>{const old=original.find(a=>a.id===fresh.id);return !activated||!old?fresh:{...fresh,title:old.title,audience:old.audience,situation:old.situation,notPriority:old.notPriority,tension:old.tension,motivation:old.motivation,tone:old.tone};});
     const analysis = {
       method: "local_project_evidence",
       inputDigest: digest,
@@ -162,7 +168,7 @@ function proposalSet(projectId: string) {
     };
     run(
       "UPDATE marketing_strategy_sets SET angles_json=?,analysis_json=?,input_digest=? WHERE project_id=?",
-      JSON.stringify(buildAngles(p)),
+      JSON.stringify(reconciled),
       JSON.stringify(analysis),
       digest,
       projectId,
@@ -247,6 +253,9 @@ function nativeInventory(projectId: string): {
           : {}),
       }),
     );
+  // User-authored upstream copy is protected independently of a theme. Its identity changes on edit.
+  const manualCopy=one<{id:string;value:string}>("SELECT id,value FROM memory WHERE project_id=? AND kind='artifact' AND key='shop_copy' AND source='user'",projectId);
+  if(manualCopy)items.push({module:'copy',contentId:`${manualCopy.id}:${createHash('sha256').update(manualCopy.value).digest('hex').slice(0,16)}`,protected:true,published:false,scheduled:false});
   add(
     "theme",
     all(
@@ -258,7 +267,7 @@ function nativeInventory(projectId: string): {
   add(
     "asset",
     all(
-      "SELECT id,origin,role FROM assets WHERE project_id=? AND deleted_at IS NULL AND status!='rejected' AND COALESCE(role,'') NOT IN ('export','original','logo','brand-board','identity-board')",
+      "SELECT id,origin,role FROM assets WHERE project_id=? AND kind IN ('image','video') AND deleted_at IS NULL AND status!='rejected' AND COALESCE(role,'') NOT IN ('export','original','logo','brand-board','identity-board')",
       projectId,
     ),
     (r) => r.origin === "upload",
@@ -266,7 +275,7 @@ function nativeInventory(projectId: string): {
   add(
     "seo",
     all(
-      "SELECT c.id,c.source FROM content_documents c WHERE c.project_id=? AND c.version=(SELECT MAX(n.version) FROM content_documents n WHERE n.project_id=c.project_id AND n.doc_key=c.doc_key)",
+      `SELECT c.id,c.source FROM content_documents c WHERE c.project_id=? AND c.version=(SELECT MAX(n.version) FROM content_documents n WHERE n.project_id=c.project_id AND n.doc_key=c.doc_key AND ${strategyVisibilitySql(projectId,"seo","n.id",true)})`,
       projectId,
     ),
     (r) => r.source !== "engine",
@@ -274,7 +283,7 @@ function nativeInventory(projectId: string): {
   add(
     "video",
     all(
-      "SELECT c.id,c.source FROM video_documents c WHERE c.project_id=? AND c.version=(SELECT MAX(n.version) FROM video_documents n WHERE n.project_id=c.project_id AND n.doc_key=c.doc_key)",
+      `SELECT c.id,c.source FROM video_documents c WHERE c.project_id=? AND c.version=(SELECT MAX(n.version) FROM video_documents n WHERE n.project_id=c.project_id AND n.doc_key=c.doc_key AND ${strategyVisibilitySql(projectId,"video","n.id",true)})`,
       projectId,
     ),
     (r) => r.source === "user",
@@ -282,7 +291,7 @@ function nativeInventory(projectId: string): {
   add(
     "ad",
     all(
-      "SELECT c.id,c.source FROM ad_documents c WHERE c.project_id=? AND c.version=(SELECT MAX(n.version) FROM ad_documents n WHERE n.project_id=c.project_id AND n.doc_key=c.doc_key)",
+      `SELECT c.id,c.source FROM ad_documents c WHERE c.project_id=? AND c.version=(SELECT MAX(n.version) FROM ad_documents n WHERE n.project_id=c.project_id AND n.doc_key=c.doc_key AND ${strategyVisibilitySql(projectId,"ad","n.id",true)})`,
       projectId,
     ),
     (r) => r.source === "user",
@@ -318,12 +327,12 @@ function nativeInventory(projectId: string): {
   add(
     "calendar",
     all(
-      "SELECT id FROM content_plans WHERE project_id=? AND status!='cancelled'",
+      "SELECT id FROM content_plans WHERE project_id=? AND status NOT IN ('cancelled','archived')",
       projectId,
     ),
     () => false,
   );
-  return items;
+  return items.filter(c=>strategyContentVisible(projectId,c.module,c.contentId,true));
 }
 function inventory(
   projectId: string,
@@ -337,6 +346,7 @@ function inventory(
   // Only latest native versions, plus module records unknown to the old schema. Historical native versions remain in the ledger, not in the current impact.
   const nativeModules = new Set([
     "theme",
+    "copy",
     "asset",
     "seo",
     "video",
@@ -379,10 +389,11 @@ function inventory(
         digest,
       );
     const unreviewed = "unreviewed" in c && !!c.unreviewed;
+    const protectedUnreviewed=c.protected||!!r?.protected;
     const aligned =
       !unreviewed &&
       !!target &&
-      ((!!r && r.angle_id === target.angleId && r.input_digest === digest) ||
+      ((!protectedUnreviewed && !!r && r.angle_id === target.angleId && r.input_digest === digest) ||
         !!review);
     return {
       ...c,
@@ -402,7 +413,7 @@ function inventory(
             ? "legacy_unreviewed"
             : r.angle_id !== target?.angleId
               ? "previous_angle"
-              : "project_changed",
+              : protectedUnreviewed&&!review?"protected_unreviewed":"project_changed",
     };
   });
 }
@@ -578,6 +589,7 @@ function contentExists(
   module: string,
   contentId: string,
 ): boolean {
+  if(module === "copy")return nativeInventory(projectId).some(c=>c.module===module&&c.contentId===contentId);
   const tables: Record<string, string> = {
     theme: "theme_versions",
     asset: "assets",
@@ -806,6 +818,7 @@ export function activateStrategy(
         "Le projet ou l’angle actif a changé depuis la préparation. Actualisez l’impact avant confirmation.",
         "strategy_preparation_stale",
       );
+    if(one("SELECT 1 FROM sqlite_master WHERE name='marketing_strategy_bundles'")&&one("SELECT 1 FROM marketing_strategy_bundles b JOIN jobs j ON j.id=b.job_id WHERE b.project_id=? AND b.preparation_id=? AND j.status IN ('queued','running','paused','blocked')",projectId,options.preparationId))throw new HttpError(409,'La préparation des révisions est encore en cours. Les versions précédentes restent actives.','strategy_revision_in_flight');
     const stages = all<any>(
       "SELECT * FROM marketing_strategy_staging WHERE preparation_id=?",
       prep.id,
@@ -902,12 +915,20 @@ export function activateStrategy(
       active.id,
     );
     run(
-      "UPDATE marketing_strategy_contents SET strategy_id=?,version=? WHERE project_id=? AND strategy_id=?",
+      "UPDATE marketing_strategy_contents SET strategy_id=?,version=? WHERE project_id=? AND strategy_id=? AND EXISTS (SELECT 1 FROM marketing_strategy_staging staged, json_each(staged.content_ids) ids WHERE staged.preparation_id=? AND staged.module=marketing_strategy_contents.module AND ids.value=marketing_strategy_contents.content_id)",
       active.id,
       active.version,
       projectId,
       `draft-${prep.id}`,
+      prep.id,
     );
+    // Replacement archives are preserved and explicitly readable, but no longer offered as current output.
+    for(const stage of stages){
+      for(const replacement of stage.replacements)if(replacement.oldId!==replacement.newId)run('INSERT OR REPLACE INTO marketing_strategy_archives VALUES(?,?,?,?)',projectId,stage.module,replacement.oldId,replacement.newId);
+      for(const cid of stage.contentIds)run('DELETE FROM marketing_strategy_archives WHERE project_id=? AND module=? AND content_id=?',projectId,stage.module,cid);
+    }
+    // A→B→A makes previously acquired, semantically compatible A versions available again, without relabelling them.
+    run('DELETE FROM marketing_strategy_archives WHERE project_id=? AND EXISTS (SELECT 1 FROM marketing_strategy_contents c WHERE c.project_id=marketing_strategy_archives.project_id AND c.module=marketing_strategy_archives.module AND c.content_id=marketing_strategy_archives.content_id AND c.angle_id=? AND c.input_digest=?)',projectId,active.angleId,active.inputDigest);
     for (const scheduled of prep.contents.filter(
       (c) => c.module === "post" && c.scheduled && !c.aligned,
     )) {
@@ -1000,4 +1021,12 @@ export function assertContentAlignment(
       "Ce contenu relève d’un ancien angle ou n’a pas été vérifié. Adaptez-le ou confirmez sa compatibilité avec la stratégie active avant l’envoi.",
       "strategy_content_unaligned",
     );
+}
+
+/** Recheck angle rights and facts before a preparation can spend or acquire more work. */
+export function assertStrategyPreparationCurrent(projectId:string,preparationId:string){
+ schema();const prep=readPreparation(projectId,preparationId);quota(projectId,prep.angleId);
+ if(prep.status!=='prepared')throw new HttpError(409,'Cette préparation est clôturée.','strategy_preparation_closed');
+ if(prep.inputDigest!==currentStrategyInputDigest(projectId)||prep.baseStrategyId!==(activeStrategy(projectId)?.id??null))throw new HttpError(409,'Le projet ou son angle actif a changé ; actualisez la préparation. Aucun nouvel appel n’a été lancé.','strategy_preparation_stale');
+ return prep;
 }

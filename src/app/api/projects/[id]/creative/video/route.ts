@@ -1,3 +1,4 @@
+import { strategyVisibilitySql } from "@/lib/marketing-strategy/visibility";
 import { assertAdvertising } from "@/lib/job-entitlements";
 import { planAllowsAds } from "@/lib/plan-entitlements";
 import { projectPlan } from "@/lib/project-billing";
@@ -56,7 +57,7 @@ const quote = (p:Project,r:ThreeScenesRequest) => {const q=sceneChainQuote(p,r);
 /** Vidéos en scènes déjà faites (création guidée et création du projet), avec leur sujet et leur demande. */
 function list(projectId: string) {
   const seen = new Set<string>();
-  return all<{ id: string; meta: string; created_at: number }>("SELECT id, meta, created_at FROM assets WHERE project_id = ? AND role = 'video' AND deleted_at IS NULL AND json_extract(meta, '$.scenes') IS NOT NULL ORDER BY created_at DESC LIMIT 40", projectId).map((r) => {
+  return all<{ id: string; meta: string; created_at: number }>(`SELECT id, meta, created_at FROM assets WHERE project_id = ? AND ${strategyVisibilitySql(projectId,"asset","assets.id")} AND role = 'video' AND deleted_at IS NULL AND json_extract(meta, '$.scenes') IS NOT NULL ORDER BY created_at DESC LIMIT 40`, projectId).map((r) => {
     const m = json<any>(r.meta, {});
     // Un MP4 rendu n'est pas une création validée : conserver les limites du worker jusque dans la carte client.
     const notes = Array.isArray(m.creative?.notes) ? m.creative.notes.filter((s: unknown) => typeof s === "string") : [];

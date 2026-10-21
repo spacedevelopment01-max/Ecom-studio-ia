@@ -226,6 +226,7 @@ export function planGate(kind: StepKind | "pipeline", userId: string, projectId:
     if (kind === "video" && P.videos === "none") return { fr: `vidéos IA non incluses dans le forfait ${P.name.fr}`, en: `AI videos aren't included in the ${P.name.en} plan` };
     return null;
   }
+  if(kind === "theme" || kind === "theme_edit" || kind === "pipeline")return {fr:"construction et modification de thème incluses dans les forfaits ; les démonstrations restent consultables",en:"theme construction and editing require a plan; demos remain available"};
   if (kind === "cms_export" || kind === "publish") return { fr: "export et publication réservés aux forfaits (la découverte gratuite reste un aperçu)", en: "export and publishing are included in the plans (the free discovery is a preview)" };
   if (kind === "image_generate" || kind === "video" || kind === "ad") return { fr: "visuels, vidéos et publicités inclus dans les forfaits", en: "visuals, videos and ads are included in the plans" };
   if (kind === "social") return { fr: "calendrier de publications inclus dans les forfaits", en: "post calendar included in the plans" };

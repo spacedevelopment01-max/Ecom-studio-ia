@@ -44,6 +44,7 @@ import { ACTION_STEPS, findStockPhotos, orchestrated, runRequestPlan } from "../
 type Handler = (ctx: JobContext) => Promise<unknown>;
 
 export const handlers: Record<string, Handler> = {
+  "strategy.prepare":async ctx=>(await import("../src/lib/marketing-strategy/bundle")).runStrategyBundle(ctx),
   "social.initial": async(ctx)=>{
     const {runInitialCreatives}=await import("../src/lib/social-v2/initial");
     return runInitialCreatives(ctx);

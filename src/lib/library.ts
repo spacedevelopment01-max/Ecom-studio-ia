@@ -224,6 +224,7 @@ export async function saveAsset(input: SaveAssetInput): Promise<Asset> {
   if (input.versionOf) {
     version = (one<{ v: number }>("SELECT MAX(version) v FROM assets WHERE version_of = ? OR id = ?", input.versionOf, input.versionOf)?.v ?? 1) + 1;
   }
+  return tx(() => {
   run(
     `INSERT INTO assets (id, project_id, user_id, folder_id, name, kind, role, mime, size, width, height, duration, storage_key, thumb_key, origin, meta, source_asset_id, version_of, version, status, created_at)
      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
@@ -251,6 +252,7 @@ export async function saveAsset(input: SaveAssetInput): Promise<Asset> {
   );
   if (input.origin === "generated") strategyContent(input.projectId, "asset", aid, { stamp: strategy });
   return getAsset(aid)!;
+  });
 }
 
 export function getAsset(assetId: string): Asset | undefined {

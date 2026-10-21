@@ -1,3 +1,4 @@
+import { strategyVisibilitySql } from "@/lib/marketing-strategy/visibility";
 import { EditorialSchema, editorialPages, creativeContract, type Editorial } from "@/lib/social-v2/creative-contract";
 import { z } from "zod";
 import { HttpError } from "@/lib/auth";
@@ -36,8 +37,8 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   const u = new URL(req.url).searchParams;
   const from = Number(u.get("from") ?? now() - 7 * 86_400_000);
   const to = Number(u.get("to") ?? now() + 62 * 86_400_000);
-  const rows = all<any>("SELECT p.*, c.name AS connection_name FROM posts p LEFT JOIN connections c ON c.id = p.connection_id WHERE p.project_id = ? AND p.status != 'cancelled' AND ((p.scheduled_at >= ? AND p.scheduled_at < ?) OR p.scheduled_at IS NULL) ORDER BY COALESCE(p.scheduled_at, p.created_at) LIMIT 800", p.id, from, to);
-  const plans = all<{ id: string; params: string; status: string; engine: string; paused: number; created_at: number }>("SELECT id, params, status, engine, paused, created_at FROM content_plans WHERE project_id = ? ORDER BY created_at DESC LIMIT 20", p.id);
+  const rows = all<any>(`SELECT p.*, c.name AS connection_name FROM posts p LEFT JOIN connections c ON c.id = p.connection_id WHERE p.project_id = ? AND ${strategyVisibilitySql(p.id,"post","p.id")} AND p.status != 'cancelled' AND ((p.scheduled_at >= ? AND p.scheduled_at < ?) OR p.scheduled_at IS NULL) ORDER BY COALESCE(p.scheduled_at, p.created_at) LIMIT 800`, p.id, from, to);
+  const plans = all<{ id: string; params: string; status: string; engine: string; paused: number; created_at: number }>(`SELECT id, params, status, engine, paused, created_at FROM content_plans WHERE status NOT IN ('archived','cancelled') AND project_id = ? AND ${strategyVisibilitySql(p.id,"calendar","content_plans.id")} ORDER BY created_at DESC LIMIT 20`, p.id);
   const latest = plans.find((x) => x.engine === "v2");
   const lang = p.settings.language === "en" ? "en" : "fr";
   const facts = verifiedFacts(p);

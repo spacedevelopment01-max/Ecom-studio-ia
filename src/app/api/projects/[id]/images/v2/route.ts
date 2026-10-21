@@ -1,3 +1,4 @@
+import { strategyVisibilitySql } from "@/lib/marketing-strategy/visibility";
 import { checkedPlacementRequest } from "@/lib/theme/placement-request";
 import { z } from "zod";
 import { HttpError } from "@/lib/auth";
@@ -18,7 +19,7 @@ export const runtime = "nodejs";
 /** Images V2 du projet : verdict, note, origine, licence, brief résumé (aucune consigne de génération). */
 function view(projectId: string) {
   const rows = all<{ id: string; role: string; status: string; meta: string; created_at: number }>(
-    "SELECT id, role, status, meta, created_at FROM assets WHERE project_id = ? AND deleted_at IS NULL AND json_extract(meta, '$.imageV2') IS NOT NULL ORDER BY created_at DESC LIMIT 60",
+    `SELECT id, role, status, meta, created_at FROM assets WHERE project_id = ? AND ${strategyVisibilitySql(projectId,"asset","assets.id")} AND deleted_at IS NULL AND json_extract(meta, '$.imageV2') IS NOT NULL ORDER BY created_at DESC LIMIT 60`,
     projectId,
   );
   return {

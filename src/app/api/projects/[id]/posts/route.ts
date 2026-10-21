@@ -1,3 +1,4 @@
+import { strategyVisibilitySql } from "@/lib/marketing-strategy/visibility";
 import { z } from "zod";
 import { all, id, now, run, one } from "@/lib/db";
 import { body, handle, ok } from "@/lib/http";
@@ -14,7 +15,7 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   const u = new URL(req.url).searchParams;
   const from = Number(u.get("from") ?? 0);
   const to = Number(u.get("to") ?? 8.64e15);
-  const rows = all<any>("SELECT p.*, c.name AS connection_name FROM posts p LEFT JOIN connections c ON c.id = p.connection_id WHERE p.project_id = ? AND (p.scheduled_at IS NULL OR (p.scheduled_at >= ? AND p.scheduled_at < ?)) ORDER BY COALESCE(p.scheduled_at, p.created_at) ASC LIMIT 600", p.id, from, to);
+  const rows = all<any>(`SELECT p.*, c.name AS connection_name FROM posts p LEFT JOIN connections c ON c.id = p.connection_id WHERE p.project_id = ? AND ${strategyVisibilitySql(p.id,"post","p.id")} AND (p.scheduled_at IS NULL OR (p.scheduled_at >= ? AND p.scheduled_at < ?)) ORDER BY COALESCE(p.scheduled_at, p.created_at) ASC LIMIT 600`, p.id, from, to);
   return ok({ posts: rows.map(postView) });
 });
 

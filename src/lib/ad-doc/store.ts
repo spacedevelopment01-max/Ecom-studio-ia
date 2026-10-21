@@ -1,3 +1,4 @@
+import { strategyVisibilitySql } from "../marketing-strategy/visibility";
 import { strategyContent, strategyStamp } from "../strategy-consumption";
 /**
  * Versions des documents publicitaires : chaque enregistrement crée une version (historique), restaurer recopie une
@@ -6,7 +7,7 @@ import { strategyContent, strategyStamp } from "../strategy-consumption";
  */
 import crypto from "node:crypto";
 import { z } from "zod";
-import { all, id, json, now, one, run } from "../db";
+import { all, id, json, now, one, run, tx } from "../db";
 import { assetData, getAsset, saveAsset } from "../library";
 import { loadDocImages, renderDocToBuffer } from "./server";
 import { IMAGE_FILTER_RE, type AdDocument } from "./types";
@@ -58,20 +59,22 @@ export function foreignAssets(projectId: string, doc: AdDocument): string[] {
 // ---------------------------------------------------------------- versions
 
 export function saveVersion(projectId: string, docKey: string, doc: AdDocument, o: { strategyStamp?: import("../strategy-consumption").StrategyStamp | null; note?: string; renderedAssetId?: string | null } = {}): DocVersion {
-  const previous = doc.meta.source === "user" ? one<{doc_json:string}>("SELECT doc_json FROM ad_documents WHERE project_id=? AND doc_key=? ORDER BY version DESC LIMIT 1", projectId, docKey) : null;
+  const previous = doc.meta.source === "user" ? one<{doc_json:string}>(`SELECT doc_json FROM ad_documents WHERE project_id=? AND doc_key=? AND ${strategyVisibilitySql(projectId,"ad","ad_documents.id")} ORDER BY version DESC LIMIT 1`, projectId, docKey) : null;
   const preserved = previous ? json<{meta:{marketingStrategy?: import("../strategy-consumption").StrategyStamp | null}}>(previous.doc_json, { meta: {} }).meta.marketingStrategy ?? null : null;
   const strategy = o.strategyStamp !== undefined ? o.strategyStamp : doc.meta.source === "user" ? preserved : strategyStamp(projectId);
   const { marketingStrategy: _untrustedStamp, ...meta } = doc.meta;
   doc = { ...doc, meta: { ...meta, ...(strategy ? { marketingStrategy: strategy } : {}) } };
+  return tx(() => {
   const version = (one<{ v: number }>("SELECT MAX(version) v FROM ad_documents WHERE doc_key = ?", docKey)?.v ?? 0) + 1;
   const vid = id();
   run("INSERT INTO ad_documents (id, project_id, doc_key, version, source, note, doc_json, rendered_asset_id, created_at) VALUES (?,?,?,?,?,?,?,?,?)", vid, projectId, docKey, version, doc.meta.source, (o.note ?? "").slice(0, 200), JSON.stringify(doc), o.renderedAssetId ?? null, now());
   strategyContent(projectId, "ad", vid, { stamp: strategy, protected: doc.meta.source === "user" });
   return { id: vid, docKey, version, source: doc.meta.source, note: o.note ?? "", renderedAssetId: o.renderedAssetId ?? null, createdAt: now() };
+  });
 }
 
 export function latestDoc(projectId: string, docKey: string): { doc: AdDocument; version: DocVersion } | null {
-  const r = one<any>("SELECT * FROM ad_documents WHERE project_id = ? AND doc_key = ? ORDER BY version DESC LIMIT 1", projectId, docKey);
+  const r = one<any>(`SELECT * FROM ad_documents WHERE project_id = ? AND doc_key = ? AND ${strategyVisibilitySql(projectId,"ad","ad_documents.id")} ORDER BY version DESC LIMIT 1`, projectId, docKey);
   return r ? { doc: json<AdDocument>(r.doc_json, null as never), version: rowVersion(r) } : null;
 }
 

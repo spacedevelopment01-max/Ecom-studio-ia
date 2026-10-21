@@ -23,6 +23,7 @@ export async function clientPhoto(role: MediaRole, index: number, service = fals
 }
 export async function clientFixture(options: {
     plan?: PlanId;
+    copySource?: "user" | "ai";
     strategy?: import("@/lib/marketing-strategy/types").AngleId | null;
     services?: boolean;
     incomplete?: boolean;
@@ -61,7 +62,7 @@ export async function clientFixture(options: {
     copy.newsletter = { heading: 'Au fil de nos nouvelles', text: 'Recevoir les nouvelles de la marque par e-mail.' };
     copy.shipping = { heading: 'Livraison et retours', body_html: '<p>Les conditions de livraison de ce projet fictif sont à vérifier avant une utilisation réelle.</p>' };
     copy.marquee = brand.values.map(v => v.title);
-    remember(pid, { kind: 'artifact', key: 'shop_copy', value: JSON.stringify(copy), source: 'user' });
+    remember(pid, { kind: 'artifact', key: 'shop_copy', value: JSON.stringify(copy), source: options.copySource??'user' });
     const assets = [];
     const roles: MediaRole[] = options.incomplete ? ['packshot'] : ['packshot', 'packshot', 'detail', 'detail', 'detail', 'opening', 'use', 'use', 'use', 'use', 'use', 'use', 'use', 'use', 'method', 'method', 'method', ...(services ? ['realization' as const, 'realization' as const] : [])];
     for (const [i, role] of roles.entries()) {

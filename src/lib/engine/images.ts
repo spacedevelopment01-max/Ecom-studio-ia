@@ -1,3 +1,4 @@
+import { strategyVisibilitySql } from "../marketing-strategy/visibility";
 /**
  * Création du jeu d'images d'un projet : détourage, packshots, détails réels,
  * mises en scène (décor IA si disponible, sinon studio local), bannières,
@@ -46,7 +47,7 @@ export function creativeLook(l: PhotoLine): CreativeLook {
 }
 
 export function latestAsset(projectId: string, role: string): Asset | undefined {
-  return one<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", projectId, role);
+  return one<Asset>(`SELECT * FROM assets WHERE project_id = ? AND role = ? AND deleted_at IS NULL AND ${strategyVisibilitySql(projectId,"asset","assets.id")} ORDER BY created_at DESC LIMIT 1`, projectId, role);
 }
 export function assetsByRole(projectId: string, role: string, limit = 20): Asset[] {
   return all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT ?", projectId, role, limit);
