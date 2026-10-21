@@ -55,36 +55,31 @@ partout.
 
 ## Fiches par thème (état de la livraison)
 
-### SOUPLE — E-commerce, 4 produits — **réécrit**
+### SOUPLE — E-commerce, 4 produits — **réécrit (consigne 21 h 45)** : reprendre après une longue pause
 
-1. **Cible** : une femme qui passe ses journées à répondre aux besoins des autres et voudrait, le soir chez elle,
-   quelques minutes de yoga ou de Pilates qui ne soient une obligation pour personne.
-2. **Tension** (ses mots) : « Toute la journée, on compte sur moi. Le sport à la maison, c'est encore une chose à réussir. »
-3. **Désir et angle** : « Pendant quelques minutes, je ne suis disponible que pour moi » → un rendez-vous avec soi, pas une obligation.
-4. **Promesse et faits** : une place à soi, installée et rangée en un geste, complétée pièce par pièce ; faits = visuels
-   (couleurs, formes, logo, rangement roulé ou debout) et noms des pièces.
-5. **Objections** : « encore un achat » (le tapis suffit), la place (tout se roule ou se pose debout), « laquelle pour
-   quoi ? » (un rôle par pièce), « ça va jurer » (mêmes couleurs), prix et commande (une seule information dédiée).
-6. **Parcours** : ouverture (se reconnaître) → mosaïque (ce qui est vendu) → phrase (l'angle) → liste (un rôle par pièce)
-   → panorama du tapis (la place) → anneau (le Pilates) → sangle (l'achat) → FAQ (le choix) → inscription.
-
-| Endroit | Texte retenu |
+| | |
 |---|---|
-| Ouverture (H1) | « Toute la journée, on compte sur vous. Ce moment est à vous. » — « Les messages peuvent attendre. Déroulez le tapis : pour une fois, vous n'avez personne à satisfaire. » — « Créer mon coin à moi » |
-| Mosaïque | « Pas une nouvelle obligation. *Un rendez-vous avec vous.* » — ce qui est vendu, le tapis suffit pour commencer |
-| Liste | « Votre rituel se construit *à votre rythme* » : un rôle par pièce (commencer, un appui, prolonger les bras, le Pilates) |
-| Tapis (panorama) | « Votre journée vous emmène partout. Retrouvez votre place ici. » — il ne demande que sa place au sol |
-| Anneau | « Ce soir, plutôt Pilates ? » (remplace « Envie de changer de séance ? ») |
-| FAQ « Avant de choisir » | par quelle pièce commencer ; yoga ou Pilates, quelle pièce pour quoi ; où tout ranger ; vont-elles ensemble une à une ; **une** information sur la démonstration (prix non fixés, commande désactivée) |
-| Fiches | sur-titre avec le rôle ; texte court ; description « Son rôle / Ce qu'on voit / Pourquoi lui ou avec qui » ; scène propre (« Là où tombe la lumière ce soir », « La paire des étirements », « Un creux d'étagère suffit », « Debout contre la brique ») ; « Pour compléter la séance » |
-| Page « Pratiquer chez soi » | « Chaque pièce à sa place » (un rôle par repère) · « Tout se range en un geste » · « Une à une, sans dépareiller » |
-| Inscription | « Et si, ce soir, vous gardiez un moment pour vous ? » — « Me prévenir » |
+| Utilisateur et acheteur | une personne qui veut reprendre une pratique douce (yoga, Pilates) à la maison après une longue interruption (brief) |
+| Situation d'achat | elle a arrêté (travail, enfants, déménagement…) et se dit que c'est le moment de recommencer |
+| Tension (ses mots) | « Ça fait si longtemps que j'ai peur de ne plus y arriver. » |
+| Désir | recommencer sans se comparer à son niveau d'avant |
+| Angle unique | recommencer à son rythme, sans pression de performance |
+| Promesse tenable | une pièce suffit pour la première séance (le tapis) ; la brique et la sangle rapprochent ce qui paraît loin ; l'anneau ouvre au Pilates plus tard ; tout se range |
+| Objections traitées | par quoi recommencer, quelle pièce pour quoi, « ces accessoires remplacent-ils un cours ? » (non), la place, ce que permet la démo |
+| **Faits** | visuels du lot (couleurs, formes, logo, rangement roulé ou debout) et noms des pièces |
+| **Non renseigné** | prix, matières, dimensions, adhérence, entretien, livraison, garantie (masqués, prêts dans l'éditeur) |
+| Exclusions | le matériel ne remplace pas un accompagnement ; aucun bienfait, résultat, programme ni niveau promis |
 
-Pages réécrites : accueil, collection, 4 fiches, « Pratiquer chez soi », aide (FAQ, contact), menus, pied, SEO.
-Preuves : `docs/preuves/copywriting/souple/` (accueil 1440 et 390, premiers écrans 360 × 640 et 390 × 844, les quatre
-fiches, pages) ; avant / après : `docs/preuves/souple-158/AVANT-APRES.md`. Premier écran 360 × 640 : texte de deux lignes
-sous le titre, tapis, brique et sangle visibles sous le bouton. Limites : prix, matières et dimensions inconnus (blocs
-masqués) ; validation de Thomas attendue.
+Pages : accueil plein écran conservé (« Reprendre en douceur, à votre rythme, chez vous. » ; bouton « Choisir ma première
+pièce ») → « Pas de niveau à retrouver. *Un rythme à reprendre.* » → « Personne ne vous chronomètre… » → « Recommencez
+avec une pièce, *ajoutez les autres plus tard* » → « Le tapis déroulé, la reprise commence. » → « Et un soir, l'envie du
+Pilates » → sangle → « Avant de reprendre » → « Et si vous repreniez ce soir ? ». Fiches (tapis « pour la première
+séance », brique « quand le sol paraît loin », sangle, anneau « pour varier ensuite »), collection « Reprendre chez soi :
+les quatre pièces », page « Reprendre chez soi », aide, menus, pied, SEO. L'ancienne accroche (« Toute la journée, on
+compte sur vous… ») est remplacée : elle visait une autre cible. Tests mis à jour (H1, bouton, titre des recommandations).
+Visuels cohérents (objets seuls, intérieur calme). Capture mobile : la dernière tuile de la mosaïque apparaît vide à
+cause de l'animation d'apparition au moment de la capture ; elle s'affiche sur ordinateur. Code :
+`tests/museau-souple-fixtures.ts`. Preuves : `docs/preuves/copywriting/souple/` (26 captures).
 
 ### MUSEAU CLUB — Spécialisée, 4 produits — **réécrit (consigne 21 h 45)** : premier chien
 

@@ -31,15 +31,15 @@ if (process.env.DATA_DIR || process.env.DATABASE_FILE) throw new Error("Base exi
 const T = (process.argv[3] ?? "sillon") as "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "onde" | "souple";
 const THEME = {
   sillon: { brand: /SILLON/, profile: "nomade", menuPage: "page-usages.html", menuLabel: "Usages", leak: /SILLON|espresso|où tout coule|avant de partir|Boutique de démonstration/i },
-  noctil: { brand: /NOCTIL/, profile: "astral", menuPage: "page-univers.html", menuLabel: "Une galaxie par pièce", leak: /NOCTIL|galaxie|la nuit entre|une autre nuit|Boutique de démonstration/i },
+  noctil: { brand: /NOCTIL/, profile: "astral", menuPage: "page-univers.html", menuLabel: "Où le poser", leak: /NOCTIL|galaxie|sa propre galaxie|une autre nuit|Boutique de démonstration/i },
   traverse: { brand: /TRAVERSE/, profile: "itineraire", menuPage: "page-carnet-de-route.html", menuLabel: "Carnet de route", leak: /TRAVERSE|quai de départ|Carnet de route|trois temps|Boutique de démonstration/i },
   // HEUREN et ALCÔVE (issue #155) : famille E-commerce, profil porté par « editorial_profile ».
   heuren: { brand: /HEUREN/, profile: "cadran", menuPage: "page-au-fil-du-jour.html", menuLabel: "Au fil du jour", leak: /HEUREN|heure bleue|bleu nuit soleillé|Au fil du jour|Boutique de démonstration/i },
   alcove: { brand: /ALCÔVE/, profile: "arrondi", menuPage: "page-piece-par-piece.html", menuLabel: "Pièce par pièce", leak: /ALCÔVE|alcôve à soi|terracotta|Pièce par pièce|Boutique de démonstration/i },
   // ONDE (refonte E-commerce de l'issue #158) : profil « studio » porté par « editorial_profile ».
   onde: { brand: /ONDE/, profile: "studio", menuPage: "page-usages.html", menuLabel: "Les usages", leak: /\bONDE\b|Repartez|graphite et vert|Boutique de démonstration/i },
-  souple: { brand: /SOUPLE/, profile: "poudre", menuPage: "page-chez-soi.html", menuLabel: "Pratiquer chez soi", leak: /SOUPLE|rose poudré|tapis de yoga|anneau de Pilates|Ce moment est à vous|Créer mon coin à moi|Boutique de démonstration/i },
-  "museau-club": { brand: /MUSEAU CLUB/, profile: "club", menuPage: "page-la-balade.html", menuLabel: "La balade", leak: /MUSEAU|harnais|pochette|bleu cobalt|La balade|Boutique de démonstration/i },
+  souple: { brand: /SOUPLE/, profile: "poudre", menuPage: "page-chez-soi.html", menuLabel: "Reprendre chez soi", leak: /SOUPLE|rose poudré|tapis de yoga|anneau de Pilates|Reprendre en douceur|Choisir ma première pièce|Boutique de démonstration/i },
+  "museau-club": { brand: /MUSEAU CLUB/, profile: "club", menuPage: "page-la-balade.html", menuLabel: "Premières balades", leak: /MUSEAU|harnais|pochette|bleu cobalt|Premières balades|Boutique de démonstration/i },
 }[T];
 /** Attribut du <body> qui porte le profil graphique : « conversion » (boutique spécialisée), « editorial » (E-commerce). */
 const CATALOG = T === "heuren" || T === "alcove" || T === "onde" || T === "souple";

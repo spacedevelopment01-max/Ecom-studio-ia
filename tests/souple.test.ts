@@ -50,7 +50,7 @@ const PLAN = {
   home: ["ed-opening", "fs-collections", "rich-text", "fs-products", "ed-scene", "image-with-text", "featured-purchase", "faq", "newsletter-media"],
   product: ["main-product", "ed-scene", "product-recommendations", "faq"],
   pages: ["chez-soi", "aide"], header: "mega-cards", footer: "store",
-  leak: /SOUPLE|rose poudré|tapis|brique|sangle|anneau de Pilates|Votre coin|Ce moment est à vous/i,
+  leak: /SOUPLE|rose poudré|tapis|brique|sangle|anneau de Pilates|Reprendre en douceur|Pas de niveau à retrouver/i,
 };
 
 describe("SOUPLE : thème actif de la famille E-commerce (quatre produits)", () => {
@@ -152,7 +152,7 @@ describe("SOUPLE : démonstration de quatre produits", async () => {
       const alt = SOUPLE_MEDIA.find((m) => `${ID}-${m.file}` === scene.settings.image_asset)!.alt;
       expect(alt.toLowerCase(), it.key).toContain(it.key === "anneau" ? "anneau" : it.key);
       // Les trois autres pièces sont proposées, jamais la fiche elle-même.
-      const recos = html.slice(html.indexOf("Pour compléter la séance"));
+      const recos = html.slice(html.indexOf("Pour accompagner la reprise"));
       for (const o of SOUPLE_PRODUCTS.filter((o) => o.key !== it.key)) expect(recos, `${it.key} → ${o.key}`).toContain(`/products/${o.handle}`);
       expect(html.match(/Vous aimerez aussi/g), it.key).toBeNull();
     }
@@ -162,9 +162,9 @@ describe("SOUPLE : démonstration de quatre produits", async () => {
 
   it("accueil : scène plein écran (H1, bouton vers la collection, image téléphone dédiée), puis la mosaïque où chaque pièce mène à SA fiche", () => {
     const home = pages.get("/")!;
-    expect(home.match(/<h1[^>]*>[\s\S]*?<\/h1>/)![0]).toMatch(/Toute la journée, on compte sur vous\. Ce moment est à vous\./);
+    expect(home.match(/<h1[^>]*>[\s\S]*?<\/h1>/)![0]).toMatch(/Reprendre en douceur, à votre rythme, chez vous\./);
     const opening = types("index")[0];
-    expect(opening.settings).toMatchObject({ layout: "fullscreen", heading_tag: "h1", button_label: "Créer mon coin à moi", button_link: "/collections/all", image_asset: `${ID}-ambiance-01.webp`, mobile_image_asset: `${ID}-ambiance-08.webp` });
+    expect(opening.settings).toMatchObject({ layout: "fullscreen", heading_tag: "h1", button_label: "Choisir ma première pièce", button_link: "/collections/all", image_asset: `${ID}-ambiance-01.webp`, mobile_image_asset: `${ID}-ambiance-08.webp` });
     expect(home).toContain("ed-opening--fullscreen");
     const mosaic = types("index")[1];
     expect(mosaic.settings).toMatchObject({ layout: "asym", heading_tag: "h2", button_link: "/collections/all" });
