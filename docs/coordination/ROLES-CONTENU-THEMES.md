@@ -1,6 +1,7 @@
 # Rôles de contenu des sections : pour l'adaptation client (à l'attention de Codex)
 
-Consigne de Thomas du 21 octobre 2026, 19 h 50, § 4. Les démonstrations des 11 thèmes sont réécrites. Pour qu'une
+Consigne de Thomas du 21 octobre 2026, 19 h 50, § 4, mise à jour après sa consigne de 21 h 45 : les démonstrations des
+11 thèmes sont réécrites avec un angle marketing précis par thème. Pour qu'une
 boutique **client** reçoive des titres et des textes du même niveau, le moteur central doit savoir **à quoi sert**
 chaque section, et pas seulement de quel type elle est. Ce document et le registre `src/lib/theme/content-roles.ts`
 donnent cette carte. Ils ne rédigent rien. Ils ne créent pas de second moteur. Ils ne touchent ni la branche
@@ -35,21 +36,28 @@ donnent cette carte. Ils ne rédigent rien. Ils ne créent pas de second moteur.
 Règle commune : quand le champ nécessaire manque (pas de preuve, pas de délai), la section dit honnêtement
 « non renseigné », ou elle reste masquée pour le visiteur et visible dans l'éditeur. Elle ne comble jamais le vide.
 
-## Avant / après (démonstrations réécrites)
+## Avant / après (démonstrations réécrites, consigne de 21 h 45)
 
 | Thème · section (rôle) | Avant | Après |
 |---|---|---|
-| SOUPLE · `image-with-text` (usage) | « Envie de changer de séance ? » | « Ce soir, plutôt Pilates ? » |
-| SOUPLE · FAQ (objections) | questions de commande génériques | « Par quelle pièce commencer ? », « Yoga ou Pilates ? », « Peu de place ? » + une question démonstration |
+| NOCTIL · H1 (hook) | « Ce soir, on ne sort pas. *On change de ciel.* » (cible adulte) | « Offrez-lui sa propre galaxie, *au plafond de sa chambre* » (l'enfant utilise, le parent achète ; aucune promesse sur le sommeil) |
+| FRAISE · H1 (hook) | « le flacon qui fait le tour de la table » (douceur à partager) | « Vos vitamines *ont le goût de fraise* » ; composition **fictive annoncée** dans l'onglet de la fiche |
+| SOUPLE · H1 (hook) | « un rendez-vous avec soi » | « Reprendre en douceur, à votre rythme, chez vous. » |
+| SOUPLE · FAQ (objections) | questions de commande génériques | « Ces accessoires remplacent-ils un cours ? » (non), « Yoga ou Pilates : quelle pièce pour quoi ? » + une question démonstration |
+| MUSEAU CLUB · fiches (facts) | description d'ambiance | « Son rôle / Quand l'utiliser / Ce qu'on voit / Avec quelle pièce » |
+| HEUREN · H1 (hook) | « un bleu à regarder, pas un écran à surveiller » | « Il y a des étapes *qui méritent une montre.* » (ouverture sur l'écrin) |
 | HEUREN · adaptation client (usage) | « En situation » + texte générique (état actuel du moteur) | **à faire par le moteur** : titre tiré de `situation`, au niveau de la démo « Du bureau au dîner, sans changer de montre » |
-| ALCÔVE · ouverture (hook) | phrase de positionnement | « Fini le coin de canapé… » (tension de la cible) |
-| NOCTIL · H1 (hook) | deux cibles mêlées | « Ce soir, on ne sort pas. *On change de ciel.* » (une cible, aucun bienfait sur le sommeil) |
+| ALCÔVE · statement (idea) | « s'asseoir pour de bon » | « Le canapé est à tout le monde. Ce fauteuil est à vous. » |
 | SILLON · en-tête (call) | « Commander » (achat désactivé) | « Voir la machine » |
-| ORBE · statement (idea) | générique | « Une lampe qui suit la soirée, au lieu d'un plafonnier qui la fige. » |
+| ORBE · statement (idea) | « Une lampe qui suit la soirée… » | « On ne choisit pas toujours son plafonnier. On choisit sa lumière. » (locataire, sans travaux) |
+| Atelier Rive · ouverture (hook) | « Des espaces qui vous ressemblent. » (une cible : couple ou famille) | « Un intérieur à votre façon de vivre. » : tout le site et les trois prestations, pour l'ensemble des clients |
 | Atelier Rive · portfolio (usage) | « Réalisations » + « [À compléter] » | « Inspirations » : légendes tirées des photos, aucun chantier inventé |
 | FRAISE · `cv-reviews` (proof) | six avis « fictifs » + note 4,8/5 | « Les avis de vos clients *à venir* » : aucun avis inventé |
-| FRAISE · `comparison-table` (choice) | contre une « autre confiserie » imaginaire | « Un flacon, *trois ou cinq ?* » : les trois offres côte à côte |
-| FRAISE · `cv-guarantee` (proof) | « 30 jours » en exemple | « Bon à savoir avant de commander » : paiement désactivé, rien d'expédié |
+
+**Site de services et campagnes** (décision de Thomas, 21 h 45) : le site d'un client de services garde son identité
+d'ensemble (toutes les prestations, le parcours de contact). L'angle **actif** d'une campagne nourrit les publications
+et les publicités, pas l'ouverture du site. Pour un site de services, `hook` lit donc le positionnement de la marque.
+Il ne lit pas l'angle d'une campagne en cours. Pour une boutique, `hook` lit l'angle actif, comme indiqué plus haut.
 
 ## Problèmes restants dans le moteur central (non modifiés ici)
 

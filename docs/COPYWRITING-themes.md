@@ -1,9 +1,13 @@
-# Rédaction commerciale des thèmes — inventaire et stratégie (revue du 21 octobre, PR #159)
+# Rédaction commerciale des thèmes — inventaire et stratégie (PR #159)
 
-Consigne de Thomas (21 octobre, 18 h 31) : une rédaction émotionnelle et commerciale pour **chaque** thème, un thème
-après l'autre, SOUPLE d'abord. Avant d'écrire : une cible et sa situation, une tension, un désir central, **un seul**
-angle, une promesse tenable, les faits disponibles et les objections. Ce sont des **hypothèses de travail**, pas des
-résultats d'étude. Rien d'inventé : ni caractéristique, ni bienfait, ni avis, ni chiffre, ni prix, ni stock, ni urgence.
+Consigne en vigueur : Thomas, 21 octobre, **21 h 45** (PR #159). Les 11 thèmes sont refaits en rédaction commerciale,
+chacun avec **un angle marketing précis** donné par Thomas : utilisateur, acheteur, situation d'achat, tension, désir,
+angle unique, promesse tenable, objections, faits disponibles et exclusions. Elle remplace les cibles des consignes de
+18 h 31 et 19 h 50, qui ne sont plus utilisées. Les cibles et les angles viennent du brief de Thomas. Les mots prêtés au
+client (tension) et les situations précises sont des **hypothèses de rédaction** à valider. Les faits sont ceux du kit et
+du projet. Rien n'est inventé : aucune caractéristique, aucun bienfait, aucun avis, aucun chiffre, aucun prix, aucun
+stock, aucune urgence. La seule exception est la composition de FRAISE, **fictive et annoncée comme telle**, autorisée
+par Thomas.
 
 ## Inventaire exhaustif (catalogue réel)
 
@@ -12,17 +16,17 @@ livré sur sa branche ; les branches s'empilent (aucune n'est fusionnée dans `m
 
 | Thème | Famille | Produit de la démonstration | Présent dans | État de la rédaction |
 |---|---|---|---|---|
-| SOUPLE | E-commerce | collection yoga et Pilates (4 produits) | `claude/themes-museau-souple-158` | **réécrit** (voir le bilan final) |
-| MUSEAU CLUB | Produit spécifique (boutique spécialisée) | collection de balade pour chiens (4 produits) | `claude/themes-museau-souple-158` | **réécrit** (voir le bilan final) |
-| HEUREN | E-commerce | montre bleu nuit | `claude/themes-heuren-alcove-155` et suivantes | **réécrit** (voir le bilan final) |
-| ALCÔVE | E-commerce | fauteuil terracotta | `claude/themes-heuren-alcove-155` et suivantes | **réécrit** (voir le bilan final) |
-| NOCTIL | Produit spécifique | projecteur de galaxies | `claude/themes-noctil-traverse-152` et suivantes | **réécrit** (voir le bilan final) |
-| TRAVERSE | Produit spécifique | sac à dos de voyage | `claude/themes-noctil-traverse-152` et suivantes | **réécrit** (voir le bilan final) |
-| SILLON | Produit spécifique | machine à espresso nomade | `claude/theme-sillon-148` et suivantes | **réécrit** (voir le bilan final) |
-| ONDE | E-commerce | casque | `main` (refonte E-commerce sur la branche #158) | **réécrit** (voir le bilan final) |
-| ORBE | E-commerce | lampe nomade | `main` | **réécrit** (voir le bilan final) |
-| FRAISE | Produit spécifique | gummies à la fraise | `main` | **réécrit** (voir le bilan final) |
-| Atelier Rive | Services | aménagement et décoration intérieure | `main` | **réécrit** (voir le bilan final) |
+| SOUPLE | E-commerce | collection yoga et Pilates (4 produits) | `claude/themes-museau-souple-158` | **réécrit (21 h 45)** (voir le bilan final) |
+| MUSEAU CLUB | Produit spécifique (boutique spécialisée) | collection de balade pour chiens (4 produits) | `claude/themes-museau-souple-158` | **réécrit (21 h 45)** (voir le bilan final) |
+| HEUREN | E-commerce | montre bleu nuit | `claude/themes-heuren-alcove-155` et suivantes | **réécrit (21 h 45)** (voir le bilan final) |
+| ALCÔVE | E-commerce | fauteuil terracotta | `claude/themes-heuren-alcove-155` et suivantes | **réécrit (21 h 45)** (voir le bilan final) |
+| NOCTIL | Produit spécifique | projecteur de galaxies | `claude/themes-noctil-traverse-152` et suivantes | **réécrit (21 h 45)** (voir le bilan final) |
+| TRAVERSE | Produit spécifique | sac à dos de voyage | `claude/themes-noctil-traverse-152` et suivantes | **réécrit (21 h 45)** (voir le bilan final) |
+| SILLON | Produit spécifique | machine à espresso nomade | `claude/theme-sillon-148` et suivantes | **réécrit (21 h 45)** (voir le bilan final) |
+| ONDE | E-commerce | casque | `main` (refonte E-commerce sur la branche #158) | **réécrit (21 h 45)** (voir le bilan final) |
+| ORBE | E-commerce | lampe nomade | `main` | **réécrit (21 h 45)** (voir le bilan final) |
+| FRAISE | Produit spécifique | vitamines en gummies goût fraise (produit et composition fictifs, annoncés) | `main` | **réécrit (21 h 45)** (voir le bilan final) |
+| Atelier Rive | Services | aménagement et décoration intérieure | `main` | **réécrit (21 h 45)** (voir le bilan final) |
 
 Branches de Codex en cours qui touchent les thèmes : `codex/154-integration-adaptation-client` (7 thèmes, adaptation
 d'un client et génération IA) — à réunir avant toute fusion ; leur grille de forfaits (#151 / #154) n'est pas modifiée ici.
@@ -33,25 +37,27 @@ Marché, Signal, Jardin, Réception, Cabinet, Récré, Épure, Tribu, Établi, V
 anciens projets mais ne sont plus proposées ; les anciennes démonstrations (ARVEN, Cime, Tribunes, Sonore, Racines &
 Pierres, Pivoine, Ostral) sont retirées de l'expérience livrée depuis le 20 octobre. Aucune n'est retravaillée.
 
-## Matrice thème → cible → angle (hypothèses à valider par Thomas)
+## Matrice thème → cible → angle (brief de Thomas, 21 h 45)
 
-| Thème | Cible et situation | Tension | Désir central | Angle (un seul) | Objections à traiter sans promesse |
-|---|---|---|---|---|---|
-| **SOUPLE** | une femme qui passe ses journées à répondre aux besoins des autres et voudrait un moment à elle, à la maison | tout le monde compte sur elle ; le sport à la maison devient vite une obligation de plus | « Pendant quelques minutes, je ne suis disponible que pour moi. » | **un rendez-vous avec soi, pas une obligation** | faut-il tout acheter ? (non, à son rythme) ; peu de place (le tapis se roule) ; prix et ouverture (non connus : « Prix à définir ») |
-| MUSEAU CLUB | un propriétaire de chien en ville qui sort plusieurs fois par jour | la laisse introuvable, les sacs oubliés, un matériel dépareillé | sortir en un geste, fier de son duo | **la balade commence à la porte : tout est prêt, tout va ensemble** | tailles et matières (non connues : blocs masqués) |
-| HEUREN | quelqu'un qui veut une belle montre discrète, pour soi ou à offrir | les montres qui réclament (notifications) ou qui crient | porter un bel objet qui ne demande rien | **un bleu à regarder, pas un écran à surveiller** | mouvement, étanchéité (non connus) ; signature répétée corrigée (voir plus bas) |
-| ALCÔVE | une personne qui n'a pas de vrai fauteuil et s'assoit toujours « en attendant » | le canapé partagé, les chaises où l'on se tient droit | s'enfoncer enfin, tenu de partout | **s'asseoir pour de bon** | dimensions, tissu, entretien (non connus) |
-| NOCTIL | un parent dont l'enfant retarde le coucher, ou un adulte qui veut changer sa chambre le soir | le moment d'éteindre vécu comme une contrainte | que la nuit devienne un spectacle attendu | **éteindre devient le meilleur moment** | aucun bienfait sur le sommeil ne sera affirmé |
-| TRAVERSE | quelqu'un qui part souvent pour deux ou trois jours | refaire son sac, choisir entre sac du quotidien et sac de voyage | partir sans y penser | **le même sac du lundi matin au départ du vendredi** | volume, poids, cabine (non connus) |
-| SILLON | un amateur d'espresso qui part (van, randonnée, bureau sans machine) | le café de station, le gobelet tiède | garder son rituel où qu'il soit | **votre espresso ne reste plus à la maison** | pression, capsules ou mouture, autonomie (non connues) |
-| ONDE | une personne qui travaille ou se déplace dans le bruit | les sollicitations, les commandes qu'on cherche à tâtons | se retrouver d'un geste | **d'un geste, vous êtes ailleurs** (touches vertes repérables) | réduction de bruit, autonomie (non affirmées) |
-| ORBE | un locataire ou un petit logement qui veut changer d'ambiance sans travaux | le plafonnier qui fige la pièce | une atmosphère différente dans chaque pièce, chaque soir | **déplacez la lumière, l'ambiance suit** | autonomie, intensité (non connues) |
-| FRAISE | une famille ou une bande d'amis qui grignote à plusieurs (goûter, pique-nique, table de fête) | les sachets déchirés, entamés, oubliés au fond du placard ou du sac | une douceur posée au milieu, qu'on partage | **le flacon qui fait le tour de la table** | **aucune** allégation de santé ; ingrédients, allergènes, texture, délais et retours non affirmés |
-| Atelier Rive | un couple ou une famille dont l'intérieur ne lui ressemble plus, sans savoir par où commencer | peur de se tromper, de dépenser pour un résultat qui n'est pas « nous » | être compris avant d'être conseillé | **un intérieur qui vous ressemble, à partir de votre façon de vivre** | tarifs, délais, zone (fournis par le client, sinon « à compléter ») |
+Les anciennes cibles sont retirées, par exemple : NOCTIL pour adulte, FRAISE « à partager », SOUPLE « un moment à elle »,
+HEUREN « contre les notifications ». Les détails, les faits et ce qui n'est pas renseigné figurent dans chaque fiche.
 
-Rôles des pages, pour chaque thème : l'accueil crée l'envie, les scènes et pages d'usage permettent de se projeter, les
-fiches expliquent le choix, les informations pratiques rassurent. L'angle se décline ; le slogan n'est pas répété
-partout.
+| Thème | Utilisateur → acheteur | Situation d'achat | Angle unique | Exclusions principales |
+|---|---|---|---|---|
+| SOUPLE | une personne qui reprend une pratique douce chez elle après une longue pause | elle veut s'y remettre sans cours ni salle | reprendre à son rythme, sans pression de performance | rien ne remplace un encadrement ; aucun bienfait santé |
+| MUSEAU CLUB | une personne qui accueille son premier chien | elle prépare les premières balades | un ensemble cohérent, un rôle clair par pièce | aucune sécurité, résistance ou matière affirmée ; aucun conseil vétérinaire |
+| HEUREN | le partenaire qui la portera → celui ou celle qui l'offre | marquer une étape de vie | un cadeau qui matérialise le moment et se porte ensuite | aucune guerre aux notifications ; aucune spec (mouvement, étanchéité) |
+| ALCÔVE | un lecteur en logement partagé | le canapé est à tout le monde | créer son coin lecture à soi | dimensions, tissu, confort mesuré non affirmés |
+| NOCTIL | un enfant passionné d'espace → son parent (**décision de Thomas**) | offrir un cadeau à un enfant qui aime l'espace | offrir à son enfant sa propre galaxie dans sa chambre | aucune promesse sur le sommeil ni la peur du noir ; aucun positionnement adulte |
+| TRAVERSE | un actif qui part en court séjour juste après le travail | le vendredi, du bureau au départ | du bureau au week-end, sans repasser par chez soi | contenance, format cabine, ordinateur non affirmés |
+| SILLON | un amateur d'espresso qui voyage en van ou en camping-car | changer de paysage sans perdre son café | changer de paysage en gardant son rituel espresso | autonomie, chauffe, café compatible non affirmés |
+| ONDE | un navetteur qui fait chaque jour le même trajet | le trajet quotidien en transports | transformer le trajet en rendez-vous avec sa musique | le bouton vert n'est pas le besoin central ; aucune réduction de bruit ni mesure acoustique |
+| ORBE | un locataire qui meuble sans travaux | le plafonnier est celui du propriétaire | se sentir chez soi avec sa propre lumière | aucune intensité, autonomie ni dimension |
+| FRAISE | un adulte qui veut une routine de vitamines simple et n'aime pas les comprimés (**décision de Thomas**) | les comprimés oubliés au fond du placard | un petit rendez-vous goût fraise | composition fictive annoncée ; aucun effet santé, anti-fatigue ou cheveux ; ni bonbon à partager ni produit capillaire |
+| Atelier Rive | l'ensemble des clients des prestations (logement ou petit espace professionnel) | un emménagement, une pièce qui ne suit plus, plusieurs espaces | un intérieur adapté à sa façon de vivre : **site complet**, toutes les prestations | site jamais réduit à une campagne ; aucun tarif, délai, chantier ni avis inventés |
+
+Les campagnes ciblées (une situation, une cible) relèvent des publications et des publicités : moteur et forfaits de
+Codex, #160 et #161. Les sites ne les reprennent pas.
 
 ## Fiches par thème (état de la livraison)
 
@@ -328,29 +334,33 @@ gros plan des gummies. Les gummies enrobées de sucre et les fraises fraîches r
 aucune image ne montre la prise quotidienne (pas de personne, règle du studio). Code : `tests/fraise-demo-copy.ts`.
 Preuves : kit privé, archive hors dépôt.
 
-## Bilan final des 11 thèmes (consigne du 21 octobre, 19 h 50)
+## Bilan final des 11 thèmes (consigne du 21 octobre, 21 h 45)
 
-Les angles sont des hypothèses éditoriales, à valider par Thomas. Aucune fusion, aucune mise en ligne. Les preuves
-« dépôt » sont dans `docs/preuves/copywriting/<thème>/` ; celles des kits privés (ONDE, ORBE, FRAISE, Atelier Rive)
-sont dans une archive privée remise hors dépôt.
+Aucune fusion, aucune mise en ligne : la validation finale revient à Thomas. Les preuves publiques sont dans
+`docs/preuves/copywriting/<thème>/`. Celles des kits privés (ONDE, ORBE, FRAISE, Atelier Rive) sont dans une archive
+privée remise hors dépôt. Colonne « Visuels » : ce que les images du kit montrent ou ne montrent pas par rapport à l'angle.
 
-| Thème | Famille | Angle (un seul) | Pages réécrites | Commit | Preuves | Limites restantes |
+| Thème | Angle (brief) | Pages réécrites | Commit | Preuves | Visuels | Non renseigné |
 |---|---|---|---|---|---|---|
-| SOUPLE | E-commerce | un rendez-vous avec soi, pas une obligation | accueil, collection, 4 fiches, « Pratiquer chez soi », aide, menus, pied, SEO | d48c80d9 | dépôt (26 captures) | prix et ouverture inconnus : « Prix à définir », achat désactivé |
-| MUSEAU CLUB | Spécialisée | la balade commence à la porte | accueil, collection, 4 fiches, « La balade », aide, inscription, SEO | 4fa83755 | dépôt (26) | tailles et matières inconnues (blocs masqués) |
-| HEUREN | E-commerce | un bleu à regarder, pas un écran à surveiller | accueil, fiche, aide, « Au fil du jour » relue, inscription, SEO | cdf39c9f | dépôt (14) | mouvement, étanchéité, écrin non renseignés |
-| ALCÔVE | E-commerce | s'asseoir pour de bon | accueil, fiche, aide, « Pièce par pièce » relue, inscription, SEO | cdf39c9f | dépôt (14) | dimensions, tissu, entretien non renseignés |
-| NOCTIL | Spécialisée | ce soir, on ne sort pas : on change de ciel (une cible adulte) | accueil, fiche, univers, aide, SEO | 2e4b954a | dépôt (14) | aucun bienfait sur le sommeil, aucune spec |
-| TRAVERSE | Spécialisée | le même sac du lundi au vendredi | accueil, fiche, aide, « Carnet de route » relue, SEO | 2e4b954a | dépôt (14) | volume, poids, format cabine non renseignés |
-| SILLON | Spécialisée | votre espresso ne reste plus à la maison | accueil, fiche, contact, usages relue, pied, SEO | aef8a18d | dépôt (16) | pression, café, autonomie non renseignés |
-| ONDE | E-commerce | d'un geste, vous êtes dans votre musique | accueil, fiche, aide, usages relue, inscription, SEO | 15fab0e4 | archive privée | autonomie, connexion, réduction de bruit non affirmées |
-| ORBE | E-commerce | la lumière change de place, l'atmosphère aussi | accueil, fiche, histoire, FAQ, contact, livraison, pied, SEO | c71d8475 | archive privée | dimensions, alimentation, livraison ; prix démo 79 € conservé |
-| FRAISE | Spécialisée | le flacon qui fait le tour de la table | accueil, fiche, à propos, article, publi-rédactionnel, FAQ, contact, livraison, légales, bibliothèque, panier, pied, SEO | d0cfeaaf | archive privée | ingrédients, allergènes, délais, retours non renseignés ; avis à venir |
-| Atelier Rive | Services | être compris avant d'être conseillé | accueil, prestations, à propos, FAQ, contact, légales, pied, SEO | c71d8475 | archive privée | tarifs, délais, zone, adresse, équipe inconnus (masqués) |
+| FRAISE | vitamines goût fraise, un petit rendez-vous | accueil, fiche (composition fictive, utilisation, précautions), à propos, article, publi-rédactionnel, FAQ, contact, livraison, légales, bibliothèque, panier, bandeaux, pied, SEO | f4ce21ff | archive privée | scène de fête retirée (gros plan des gummies) ; aucune prise quotidienne montrée | composition réelle, allergènes, délais, retours ; avis à venir |
+| NOCTIL | sa propre galaxie dans sa chambre | accueil, fiche, « Où le poser », aide, menu, SEO | 29f6b302 | dépôt (14) | **aucune chambre d'enfant** dans le kit (salon, bureau, coin lecture) | âge conseillé, alimentation, réglages |
+| MUSEAU CLUB | premier chien, chaque pièce a son rôle | accueil, collection, 4 fiches (rôle, quand, ce qu'on voit, avec quoi), « Premières balades », aide, menu, SEO | 12407cae | dépôt (26) | cohérents (chiens portant les pièces, entrée) | tailles, matières, entretien |
+| SOUPLE | reprendre en douceur, à son rythme | accueil, collection, 4 fiches, « Reprendre chez soi », aide, menu, SEO | 6281d4cd | dépôt (26) | cohérents (objets seuls, intérieur calme) | prix, matières, dimensions |
+| HEUREN | il y a des étapes qui méritent une montre | accueil (ouverture sur l'écrin), fiche, aide, « Au fil du jour », inscription, SEO | 7db6b2da | dépôt (14) | cohérents (écrin et ruban en ouverture) | gravure, mouvement, étanchéité, prix |
+| ALCÔVE | une alcôve à soi, le coin lecture | accueil, fiche, aide, « Pièce par pièce », pied, SEO | 2dd28312 | dépôt (14) | coin lecture cohérent ; **aucun logement visiblement partagé** | dimensions, tissu, entretien |
+| TRAVERSE | du bureau au week-end | accueil, fiche, aide, carnet de route, pied, SEO | 8a6c629a | dépôt (14) | **aucune scène de bureau** (café, gare, hôtel, lac) | volume, cabine, ordinateur, poids |
+| SILLON | le paysage change, votre espresso reste | accueil, fiche, usages, contact, pied, SEO | 30ae382d | dépôt (16) | **ni van ni camping-car** (lac, montagne, mer, train) | autonomie, chauffe, café compatible |
+| ONDE | le trajet devient un rendez-vous musique | accueil, fiche, usages (le train d'abord), aide, inscription, SEO | 2953c68f | archive privée | cohérents (train, salon, studio) | autonomie, connexion, isolation |
+| ORBE | une lumière à vous, même en location | accueil, fiche, histoire, FAQ, contact, livraison, pied, SEO | 80af9bcc | archive privée | cohérents (intérieurs sobres) | dimensions, alimentation, livraison |
+| Atelier Rive | un intérieur à votre façon de vivre (site complet) | accueil, prestations, à propos, contact, FAQ, en-tête, SEO de chaque page | 466705e3 | archive privée | intérieurs cohérents ; **aucun espace professionnel** photographié | tarifs, délais, zone, horaires, équipe |
+
+La cohérence visuelle n'est pas complète pour NOCTIL, TRAVERSE, SILLON, ALCÔVE et Atelier Rive (voir la colonne
+« Visuels »). Pour les mettre au niveau du texte, il faudrait de nouveaux visuels, sans personne. Ils ne sont pas
+générés ici, car aucun appel IA payant n'a été fait.
 
 Adaptation client : les rôles de contenu par section sont dans `src/lib/theme/content-roles.ts` et
-`docs/coordination/ROLES-CONTENU-THEMES.md`. Ils sont destinés au moteur central ; la branche de Codex n'est pas
-modifiée. Contrôles exécutés à la livraison : voir le commentaire final de la PR #159.
+`docs/coordination/ROLES-CONTENU-THEMES.md`, destinés au moteur central ; la branche de Codex n'est pas modifiée.
+Contrôles exécutés à la livraison : voir le commentaire final de la PR #159.
 
 ## Boutiques des clients
 
