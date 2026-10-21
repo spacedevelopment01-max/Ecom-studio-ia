@@ -1,3 +1,4 @@
+import { strategyContent } from "@/lib/strategy-consumption";
 import { assertAdvertising } from "@/lib/job-entitlements";
 import { z } from "zod";
 import { all, id, now, one, run } from "@/lib/db";
@@ -26,11 +27,13 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     // Ressortir une campagne des archives l'ajoute aux campagnes actives : même limite du forfait qu'une création.
     if (cur.status === "archived" && b.status !== "archived") assertCampaignSlot(user, p.id);
     run("UPDATE campaigns SET name = ?, objective = ?, networks = ?, brief = ?, plan = ?, status = ?, updated_at = ? WHERE id = ? AND project_id = ?", b.name, b.objective, JSON.stringify(b.networks), JSON.stringify(b.brief), JSON.stringify(b.plan), b.status, now(), b.id, p.id);
+    strategyContent(p.id,"campaign",b.id,{protected:true});
     return ok({ id: b.id });
   }
   assertCampaignSlot(user, p.id);
   const cid = id();
   run("INSERT INTO campaigns (id, project_id, name, objective, networks, status, brief, plan, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)", cid, p.id, b.name, b.objective, JSON.stringify(b.networks), b.status, JSON.stringify(b.brief), JSON.stringify(b.plan), now(), now());
+  strategyContent(p.id,"campaign",cid,{protected:true});
   return ok({ id: cid });
 });
 

@@ -1,4 +1,5 @@
 "use client";
+import { MarketingStrategy } from "./marketing-strategy";
 import {GuidedVideo} from "./guided-video";
 import { LogoV2Panel } from "./logo-v2-panel";
 import { InitialCreatives } from "./initial-creatives";
@@ -303,6 +304,7 @@ export default function TabPreparation() {
     <div className="grid gap-5" data-preparation>
       <InitialCreatives onChange={reload}/>
       <InitialAuthorization/>
+      {approved("research") && <MarketingStrategy projectId={id} onChange={reload}/> }
       {(active === 'content' || active === 'media') && <PreparationHandoff onChange={reload}/>}
       <Card className="p-5 sm:p-7">
         <p className="text-sm text-muted">

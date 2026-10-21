@@ -1,3 +1,4 @@
+import { chooseGeneralistForTest } from "./strategy-choice-fixture";
 import { grantProjectPlan } from "@/lib/project-subscriptions";
 /**
  * Qualité de la boutique produite : finitions d'agence (doublons, sections d'espaces réservés, liens répétés,
@@ -32,7 +33,7 @@ vi.mock("@/lib/ai/llm", async (orig) => {
 // Captures simulées (accueil et fiche produit) : la relecture reçoit des planches sans lancer de navigateur.
 vi.mock("@/lib/theme/snapshot", () => ({ snapshotTheme: async () => ({ desktop: [Buffer.from("d")], mobile: [Buffer.from("m")] }) }));
 
-const SOVA = { ...product, name: "SOVA", sector: "enfants" as const, facts: [] };
+const SOVA = { ...product, name: "SOVA", summary: "Un compagnon pour enfant présenté aux parents, sans bénéfice de développement affirmé.", sector: "enfants" as const, facts: [] };
 function sovaSpec(direction: DirectionId, opts: { files?: Record<string, string> } = {}) {
   const copy = localCopy(SOVA, { name: "SOVA", tagline: "Grandir en douceur.", story: "", values: [] });
   return buildSpec({
@@ -173,6 +174,7 @@ async function runBuild() {
   const { currentTheme,saveThemeVersion } = await import("@/lib/projects");
   const { pid, userId } = await setupProject();
   grantProjectPlan(pid,"dominer");
+  chooseGeneralistForTest(pid);
   saveThemeVersion(pid,sovaSpec("pop"),"Thème historique déjà installé, conservé après #150","user");
   enqueue({ userId, projectId: pid, type: "shop.build", payload: { projectId: pid } });
   const job = claimNext(["shop.build"])!;

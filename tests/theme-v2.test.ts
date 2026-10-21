@@ -1,3 +1,4 @@
+import { chooseGeneralistForTest } from "./strategy-choice-fixture";
 /**
  * Theme Engine V2 (phase 10A) — moteur local de création de sites : intention du site, direction artistique,
  * design system (contrastes), planificateur de pages (pages incomplètes signalées), composition (aucune section vide,
@@ -230,7 +231,7 @@ describe("Theme Engine V2", async () => {
 
   it("buildShop : V2 par défaut, version enregistrée avec son contrôle ; V1 conservé sur demande", async () => {
     const {grantProjectPlan}=await import("@/lib/project-subscriptions");const {saveThemeVersion}=await import("@/lib/projects");
-    for(const pid of [ids.hightech,ids.saas]){grantProjectPlan(pid,"dominer");saveThemeVersion(pid,(await composeThemeV2(pid)).spec,"Thème historique déjà installé, conservé après #150","user");}
+    for(const pid of [ids.hightech,ids.saas]){grantProjectPlan(pid,"dominer");chooseGeneralistForTest(pid);saveThemeVersion(pid,(await composeThemeV2(pid)).spec,"Thème historique déjà installé, conservé après #150","user");}
     const before = listThemeVersions(ids.hightech).length;
     await fr(() => buildShop(null, ids.hightech));
     const cur = currentTheme(ids.hightech)!;

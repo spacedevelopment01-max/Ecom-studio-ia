@@ -1,3 +1,5 @@
+import { withStrategyScope, strategyStamp } from "../src/lib/strategy-consumption";
+import { HttpError } from "../src/lib/auth";
 import { assertRepairableConversation } from "../src/lib/theme/plan-access";
 import { assertJobEntitlements } from "../src/lib/job-entitlements";
 /** Gestionnaires des tâches d'arrière-plan. */
@@ -510,4 +512,4 @@ export const HANDLER_TYPES = Object.keys(handlers);
 for (const action of Object.keys(ACTION_STEPS)) if (handlers[action]) handlers[action] = orchestrated(action, handlers[action]);
 
 // Recheck current rights even for jobs queued before a downgrade.
-for (const action of Object.keys(handlers)) { const execute=handlers[action];handlers[action]=async ctx=>{assertJobEntitlements(action,ctx.job.project_id,ctx.payload);return execute(ctx);}; }
+for (const action of Object.keys(handlers)) { const execute=handlers[action];handlers[action]=async ctx=>{assertJobEntitlements(action,ctx.job.project_id,ctx.payload);const pid=ctx.job.project_id;const stamp=pid?strategyStamp(pid):null;if(pid&&Object.hasOwn(ctx.payload,"strategyVersion")&&ctx.payload.strategyVersion!==(stamp?.id??null)&&!ctx.payload.strategyAwaitingChoice)throw new HttpError(409,"L’angle actif a changé. Vérifiez et confirmez cette tâche avant une nouvelle exécution.","strategy_changed");return pid?withStrategyScope(pid,()=>execute(ctx)):execute(ctx);}; }

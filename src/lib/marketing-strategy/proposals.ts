@@ -107,10 +107,11 @@ export function proposalAnalysis(p: Project) {
   const audienceFact = facts.find((f) =>
     /cible|audience|public|client.*(type|profil)/i.test(f.label),
   );
-  const audience =
+  const audienceCandidate =
     audienceFact?.value ||
     p.brand?.audience?.trim() ||
     p.strategy?.audience?.[0]?.label?.trim();
+  const audience = audienceCandidate && !/\[(?:À|A) (?:préciser|compléter)|\[To (?:complete|define)/i.test(audienceCandidate) ? audienceCandidate : undefined;
   if (audience && !audienceFact)
     sources.push({
       kind: "creative_hypothesis",

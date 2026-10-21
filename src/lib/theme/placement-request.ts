@@ -1,4 +1,5 @@
 /** Exact stored placement, owner/version/context scoped. Read-only validation before any new supplier work. */
+import { strategySelection } from '../strategy-consumption';
 import { HttpError } from '../auth';
 import { currentTheme, loadProject, themeVersion } from '../projects';
 import { stableHash } from '../brain/hash';
@@ -9,7 +10,7 @@ export type ThemePlacement = {
     slotKey: string;
     contextHash: string;
 };
-export const clientThemeContext = (p: ReturnType<typeof loadProject>) => stableHash('theme-client-context', { brand: p.brand, product: p.product, services: p.services });
+export const clientThemeContext = (p: ReturnType<typeof loadProject>) => stableHash('theme-client-context', { brand: p.brand, product: p.product, services: p.services, strategy: (()=>{const s=strategySelection(p.id);return s?{angleId:s.angleId,inputDigest:s.inputDigest}:null;})() });
 export function placementRequest(projectId: string, ref: ThemePlacement) {
     const p = loadProject(projectId), v = themeVersion(projectId, ref.versionId), plan = v?.spec.meta?.adaptation;
     if (!v || !plan)

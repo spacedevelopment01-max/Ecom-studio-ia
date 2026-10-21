@@ -34,6 +34,8 @@ export type Plan = {
   themeEditing: "basic" | "advanced" | "custom";
   /** Propositions initiales de direction artistique (sous réserve du budget IA). */
   artDirections: number;
+  /** Identités d’angles activables sur la durée du projet, jamais un quota mensuel. */
+  marketingAngles: number;
   /** Vidéos IA : aucune, courtes, avancées. */
   videos: "none" | "short" | "advanced";
   /** Qualité des vidéos filmées par l'IA. */
@@ -83,6 +85,7 @@ export const PLANS: Record<PlanId, Plan> = {
     librarySections: 8,
     themeEditing: "basic",
     artDirections: 1,
+    marketingAngles: 1,
     videos: "none",
     videoQuality: "fast",
     ugc: false,
@@ -117,6 +120,7 @@ export const PLANS: Record<PlanId, Plan> = {
     librarySections: 12,
     themeEditing: "advanced",
     artDirections: 3,
+    marketingAngles: 2,
     videos: "short",
     videoQuality: "fast",
     ugc: false,
@@ -150,6 +154,7 @@ export const PLANS: Record<PlanId, Plan> = {
     librarySections: 20,
     themeEditing: "custom",
     artDirections: 5,
+    marketingAngles: 5,
     videos: "advanced",
     videoQuality: "max",
     ugc: true,

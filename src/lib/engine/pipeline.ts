@@ -1,3 +1,4 @@
+import { activeStrategy, proposeStrategies } from "../marketing-strategy";
 import { planAllowsAds } from "../plan-entitlements";
 import { projectPlan } from "../project-billing";
 /**
@@ -11,7 +12,7 @@ import { mergeProductProfile } from "../brain/facts";
 import { userPlan } from "../quotas";
 import { friendlyToolError } from "../tool-errors";
 import { all, id, json, now, one, run } from "../db";
-import { enqueue, JobCancelled, JobContext, JobPaused, UserFacingError, type Job } from "../jobs";
+import { enqueue, pauseJob, JobCancelled, JobContext, JobPaused, UserFacingError, type Job } from "../jobs";
 import { assetData, saveAsset, type Asset } from "../library";
 import { loadProject, saveProduct, saveServices, setStatus, remember, notify } from "../projects";
 import { importLink, fetchImage } from "./import-link";
@@ -126,6 +127,12 @@ export async function runPipeline(ctx: JobContext) {
         const kept = loadProject(projectId);
         markStep(ctx, step.id, "skipped", planSkip === "brand" ? note("skip.brandKept", { name: kept.brand?.name ?? "" }) : note("skip.copyFinal"));
         continue;
+      }
+      if(step.id === "copy" && !activeStrategy(projectId)){
+        proposeStrategies(projectId);
+        run("UPDATE jobs SET payload=? WHERE id=?",JSON.stringify({...ctx.payload,strategyAwaitingChoice:true}),ctx.job.id);
+        pauseJob(ctx.job.id);
+        throw new JobPaused(L("Choisissez votre angle marketing dans Marque avant la rédaction et la construction. Les étapes déjà acquises sont conservées.","Choose your marketing angle in Brand before copywriting and construction. Acquired steps are kept."));
       }
       const since = orch.since(step.id);
       markStep(ctx, step.id, "running");

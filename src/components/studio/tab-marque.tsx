@@ -1,4 +1,5 @@
 "use client";
+import { MarketingStrategy } from "./marketing-strategy";
 import { AiWait } from "../wait-time";
 import { useEffect, useState } from "react";
 import { DirectionThumb } from "./direction-thumb";
@@ -135,6 +136,7 @@ export default function TabMarque() {
   const routes = (ident?.proposals ?? []).filter((x) => x.route);
   return (
     <div className="mx-auto grid max-w-6xl gap-6">
+      <MarketingStrategy projectId={id} onChange={reload} />
       <EngineNotice what={t("la direction de marque et le logo", "the brand direction and logo")} />
       <AiWait busy={busy} label={t("Mise à jour de la marque (logo, site, charte)…", "Updating the brand (logo, website, guide)…")} waitKey="brand-save" expectedMs={15000} className="mb-4" />
       {active[0] && <JobProgress job={active[0]} />}

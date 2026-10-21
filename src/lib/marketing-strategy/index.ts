@@ -105,9 +105,7 @@ function quota(projectId: string, angleId: AngleId) {
     "SELECT angle_id FROM marketing_strategy_used WHERE project_id=?",
     projectId,
   ).map((r) => r.angle_id);
-  const limit =
-    (PLANS[plan] as (typeof PLANS)[typeof plan] & { marketingAngles?: number })
-      .marketingAngles ?? (plan === "creer" ? 1 : plan === "vendre" ? 2 : 5);
+  const limit = PLANS[plan].marketingAngles;
   const active = activeStrategy(projectId);
   // No commercial reset on renewal or replacement subscription. Unspecified downgrade switching is frozen, history retained.
   if (active?.angleId === angleId) return { plan, limit, used };
@@ -424,10 +422,7 @@ export function getStrategyState(projectId: string): StrategyState {
   return {
     projectId,
     plan,
-    limit: plan
-      ? ((PLANS[plan] as any).marketingAngles ??
-        (plan === "creer" ? 1 : plan === "vendre" ? 2 : 5))
-      : 0,
+    limit: plan ? PLANS[plan].marketingAngles : 0,
     angles,
     active,
     usedAngleIds,

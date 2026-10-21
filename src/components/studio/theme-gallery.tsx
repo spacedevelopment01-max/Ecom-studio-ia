@@ -1,4 +1,5 @@
 "use client";
+import { MarketingStrategy } from "./marketing-strategy";
 import { Check, Eye, Lock, Moon } from "lucide-react";
 import type { ThemeRecommendationContract } from "@/lib/theme/theme-recommendation";
 import { REFERENCE_THEMES, themePreviewPath } from "@/lib/theme/theme-fit";
@@ -159,6 +160,7 @@ export function ThemeGallery({ open, onClose, projectId, directions, current, ca
             )}
         {!canApply && t(" Les thèmes s'appliquent une fois la boutique créée (après l'analyse du produit).", " Themes can be applied once the store has been created (after the product analysis).")}
       </p>
+      <MarketingStrategy projectId={projectId} />
       {category && (
         <div className="mb-5 rounded-2xl border border-line bg-paper-2 p-4 text-sm" data-store-kind={category.kind}>
           <p className="font-semibold">

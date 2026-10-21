@@ -54,6 +54,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     };
   });
   return ok({
+    strategy:cur.spec.meta?.strategy??null,
     entitlements,
     adaptation:cur.spec.meta?.adaptation??null,
     quality: json<{ gate?: unknown }>(cur.version.qc, {})?.gate ?? null,

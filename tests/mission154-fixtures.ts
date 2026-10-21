@@ -1,3 +1,4 @@
+import { prepareStrategyChange, activateStrategy } from "@/lib/marketing-strategy";
 /** Isolated client fixtures. All images are explicitly simulated client inputs, never real supplier output. */
 import sharp from 'sharp';
 import { createUser } from '@/lib/auth';
@@ -22,6 +23,7 @@ export async function clientPhoto(role: MediaRole, index: number, service = fals
 }
 export async function clientFixture(options: {
     plan?: PlanId;
+    strategy?: import("@/lib/marketing-strategy/types").AngleId | null;
     services?: boolean;
     incomplete?: boolean;
     catalog?: boolean;
@@ -69,5 +71,6 @@ export async function clientFixture(options: {
     const logo = await saveAsset({ projectId: pid, userId: user.id, data: await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="640" height="120"><path d="M20 30 Q65 0 105 30 L100 90 Q60 110 25 90Z" fill="#325d67"/><text x="135" y="82" font-size="62" font-family="serif" fill="#142f38">${esc(brandName)}</text></svg>`)).png().toBuffer(), name: 'identite-projet.png', mime: 'image/png', origin: 'upload', role: 'logo', status: 'approved', meta: { simulation: true } });
     saveBrand(pid, { ...brand, logo: { ...brand.logo, assetId: logo.id, status: 'provided' } } as never);
     const subscription = grantProjectPlan(pid, options.plan ?? 'dominer');
+    if(options.strategy!==null){const choice=options.strategy??"generalist",prepared=prepareStrategyChange(pid,choice);activateStrategy(pid,{angleId:choice,preparationId:prepared.id,idempotencyKey:`fixture-${pid}`,confirmed:true,retainUnaligned:true});}
     return { user: { ...user, role: 'client' as const }, pid, brand: brandName, copy, assets, subscription, project: loadProject(pid) };
 }

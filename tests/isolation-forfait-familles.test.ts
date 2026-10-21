@@ -1,3 +1,4 @@
+import { chooseGeneralistForTest } from "./strategy-choice-fixture";
 /**
  * Isolation des bibliothèques par famille et « section écrite par l'IA » réservée au forfait Dominer, sur les voies
  * corrigées pour l'issue #145 (IA simulée : aucun appel réel ni payant) :
@@ -85,6 +86,7 @@ describe("isolation des familles et forfait Dominer (issue #145)", async () => {
     const d = await demo(user.id, "orbe");
     grantProjectPlan(d.pid, "creer");
     const before = d.spec.templates.index.order.map((id) => d.spec.templates.index.sections[id].type);
+    chooseGeneralistForTest(d.pid);
     await fr(() => buildShop(null, d.pid, { useAi: false }));
     const spec = currentTheme(d.pid)!.spec;
     expect(spec.direction).toBe("orbe");
@@ -109,6 +111,7 @@ describe("isolation des familles et forfait Dominer (issue #145)", async () => {
       ],
     };
     const fake = { job: { id: "job-design-145" }, step: async (_k: string, f: () => unknown) => f(), progress: () => {} } as never;
+    chooseGeneralistForTest(d.pid);
     await fr(() => buildShop(fake, d.pid, { direction: "orbe", engine: "v1" }));
     const spec = currentTheme(d.pid)!.spec;
     const types = spec.templates.index.order.map((id) => spec.templates.index.sections[id].type);

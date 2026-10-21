@@ -1,5 +1,6 @@
 /** Client adaptation of the validated reference compositions. No demo text/image is used at runtime. */
 import shapes from './reference-shapes.json';
+import { strategySelection, selectedStrategyContext } from '../strategy-consumption';
 import { isDark } from '../color';
 import type { Project } from '../projects';
 import type { JobContext } from '../jobs';
@@ -107,7 +108,7 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
     const en = spec.language === 'en', t = (fr: string, enText: string) => en ? enText : fr;
     ctx?.progress(.3, t('Préparation des pages et des emplacements du thème', 'Preparing theme pages and placements'));
     const inventory = await inventoryClientMedia(p), pool = inventory.usable;
-    const plan: ClientContentPlan = { version: 1, sourceCommit: shapes.sourceCommit, contextHash: clientThemeContext(p), inputHash: stableHash('client-theme-content', { engine: '154.6', shapes: shape, direction: spec.direction, brand: p.brand, product: p.product, services: p.services, copy, media: pool }), status: 'to_verify', pages: [], slots: [], issues: [], excluded: inventory.excluded, generationRequests: [] };
+    const plan: ClientContentPlan = { version: 1, sourceCommit: shapes.sourceCommit, contextHash: clientThemeContext(p), inputHash: stableHash('client-theme-content', { engine: '160.1', strategy: (()=>{const s=strategySelection(p.id);return s?{angleId:s.angleId,inputDigest:s.inputDigest}:null;})(), shapes: shape, direction: spec.direction, brand: p.brand, product: p.product, services: p.services, copy, media: pool }), status: 'to_verify', pages: [], slots: [], issues: [], excluded: inventory.excluded, generationRequests: [] };
     Object.assign(spec.settings, shape.settings ?? {});
     const labels: Record<string, string> = { home: p.brand?.name ?? p.name, story: t('Notre histoire', 'Our story'), uses: t('En situation', 'In use'), details: t('Utilisation et détails', 'Use and details'), contact: t('Questions et contact', 'Questions and contact'), faq: t('Questions fréquentes', 'Frequently asked questions'), shipping: t('Livraison et retours', 'Shipping and returns'), legal: t('Informations légales', 'Legal information'), services: t('Nos prestations', 'Our services'), portfolio: t('Réalisations documentées', 'Documented projects') };
     Object.assign(labels, { privacy: t('Confidentialité', 'Privacy'), terms: t('Conditions générales', 'Terms and conditions'), guide: copy.features.heading, editorial: copy.story.heading, showcase: copy.detail.heading });
@@ -354,7 +355,7 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
         const reference = pool.filter(a => a.kind === 'image' && (slot.role === 'video' ? ['packshot', 'opening', 'use'].includes(a.role) : a.role === 'packshot')).slice(0, 3).map(a => a.id);
         if (slot.role === 'realization')
             continue; // An authentic portfolio cannot be synthesized.
-        plan.generationRequests.push({ key, role: slot.role, kind: slot.role === 'video' ? 'video' : 'image', aspect: slot.aspect ?? (slot.role === 'packshot' || slot.role === 'detail' ? '1:1' : '16:9'), request: t(`Créer une ${roleNames[slot.role][0].toLowerCase()} de ${p.product.name}. ${p.product.summary}. Respecter le produit des références et l'identité ${p.brand?.name ?? p.name}. Aucun fait ajouté, aucune personne. Emplacement : ${slot.page} / ${slot.section}.`, `Create a ${roleNames[slot.role][1].toLowerCase()} of ${p.product.name}. ${p.product.summary}. Preserve the reference product and ${p.brand?.name ?? p.name} identity. No invented facts or people. Placement: ${slot.page} / ${slot.section}.`), referenceAssetIds: reference, people: false, requiresQuote: true, requiresConsent: true });
+        plan.generationRequests.push({ key, role: slot.role, kind: slot.role === 'video' ? 'video' : 'image', aspect: slot.aspect ?? (slot.role === 'packshot' || slot.role === 'detail' ? '1:1' : '16:9'), request: selectedStrategyContext(p.id) + "\n" + t(`Créer une ${roleNames[slot.role][0].toLowerCase()} de ${p.product.name}. ${p.product.summary}. Respecter le produit des références et l'identité ${p.brand?.name ?? p.name}. Aucun fait ajouté, aucune personne. Emplacement : ${slot.page} / ${slot.section}.`, `Create a ${roleNames[slot.role][1].toLowerCase()} of ${p.product.name}. ${p.product.summary}. Preserve the reference product and ${p.brand?.name ?? p.name} identity. No invented facts or people. Placement: ${slot.page} / ${slot.section}.`), referenceAssetIds: reference, people: false, requiresQuote: true, requiresConsent: true });
     }
     if (!logo)
         plan.issues.push({ page: 'group:header', section: 'logo', code: 'project_logo_missing' });

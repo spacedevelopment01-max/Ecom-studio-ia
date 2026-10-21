@@ -1,3 +1,5 @@
+import { strategySelection, strategyContent } from "../strategy-consumption";
+import { assertStrategyChosen, activeStrategy, recordStrategyContent } from "../marketing-strategy";
 /**
  * Construction de la boutique : rassemble les créations validées (logo,
  * images, vidéo, textes) et produit une version du thème. La composition de
@@ -266,7 +268,7 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
   const preparedIdentity=(await import("../preparation/store")).stateOf(projectId)?.stages.brand?.status==="approved";
   if (!brand) throw new Error(L("La marque doit être définie avant la boutique.", "The brand must be defined before the store."));
   // Rédaction : celle du contrat amont quand il la dit prête, sinon celle enregistrée pour le projet, sinon locale.
-  const copy = handoffCopy(projectId) ?? savedCopy(projectId) ?? localCopy(p.product, brand, p);
+  const copy = (await import("../theme/strategic-copy")).strategicCopy(projectId, handoffCopy(projectId) ?? savedCopy(projectId) ?? localCopy(p.product, brand, p));
   if (prepare) await ensureVariantMedia(ctx ?? null, projectId);
   const { slots, files, gallery, variantImages } = collectImages(projectId);
   // Médias du contrat amont (10 images + vidéo d'ouverture, ou 10 photos + 2 vidéos) : affectés explicitement aux
@@ -313,6 +315,8 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
   });
   if (handoff) spec.meta = { ...spec.meta, handoff: handoff as unknown as Record<string, unknown> };
   if(clientAdaptation) await (await import("../theme/client-adaptation")).adaptClientReference(spec,p,copy,ctx);
+  const strategy=strategySelection(projectId);
+  if (clientAdaptation && strategy) spec.meta={...spec.meta, strategy: { id:strategy.id, version:strategy.version, angleId:strategy.angleId }};
   const delivered = deliverContent(spec, p, spec.language ?? contentLang());
   bindReferenceOffers(spec, p, new Set(delivered.map((d) => d.target)));
   if (!services) bindProductContent(spec, p);
@@ -320,7 +324,8 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
   return { p, direction, services, catalog, spec };
 }
 
-export async function buildShop(ctx: JobContext | null, projectId: string, opts: { direction?: DirectionId; useAi?: boolean; summary?: Bi; engine?: "v1" | "v2"; language?: LanguageId } = {}) {
+export async function buildShop(ctx: JobContext | null, projectId: string, opts: { direction?: DirectionId; useAi?: boolean; summary?: Bi; engine?: "v1" | "v2"; language?: LanguageId; prepareOnly?: boolean } = {}) {
+  if(!strategySelection(projectId))assertStrategyChosen(projectId);
   const {assertThemeAllowed}=await import("../plan-gates");
   const chosen=opts.direction??loadProject(projectId).brand?.direction;
   if(chosen)assertThemeAllowed(projectId,chosen,currentTheme(projectId)?.spec.direction??null);
@@ -451,6 +456,7 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
         spec = kept.spec;
         (await import("../theme/adaptation-preservation")).preserveClientRecords(spec,prev.spec,baseline);
         spec.meta = { ...spec.meta, carryOver: kept.report as unknown as Record<string, unknown> };
+        if(spec.meta.strategy && prev.spec.meta?.strategy?.angleId !== spec.meta.strategy.angleId){const retained=kept.report.reapplied.filter(x=>/text|heading|title|label|button|@blocks/.test(x.key)).map(x=>`${x.template}:${x.id}:${x.key}`);spec.meta.strategy={...spec.meta.strategy,retainedPaths:retained,alignment:retained.length?"mixed":"prepared"};}
         const text = describeReport(kept.report, lang);
         if (text) append(inBothLangs(() => L(` · ${describeReport(kept.report, "fr")}`, ` · ${describeReport(kept.report, "en")}`)));
       } else console.warn("[shop] report des retouches du client impossible :", problemsAfter.join(" ; "));
@@ -473,7 +479,8 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
   if (reviewed && !reviewedKept) saveCheck(decide("theme_home", { checker: "ai", score: reviewed.score }), { userId: p.userId, projectId, jobId: ctx?.job.id ?? null, candidateId: `theme-ai-layout:${projectId}:${direction}` });
   if (quality.verdict === "PROVISIONAL") append(inBothLangs(() => L(" · niveau provisoire, à vérifier et améliorer", " · provisional level, review and improve")));
   const conflict = (currentTheme(projectId)?.version.id ?? null) !== parent;
-  const v = saveThemeVersion(projectId, spec, JSON.stringify(summary), author, { checks: L(["structure", "schémas des sections", "contraste des couleurs"], ["structure", "section schemas", "color contrast"]), problems, gate: gateMeta(quality, qcId), ...(clientCompositionBaseline ? { clientCompositionBaseline } : {}) }, parent, { activate: !conflict });
+  const v = saveThemeVersion(projectId, spec, JSON.stringify(summary), author, { checks: L(["structure", "schémas des sections", "contraste des couleurs"], ["structure", "section schemas", "color contrast"]), problems, gate: gateMeta(quality, qcId), ...(clientCompositionBaseline ? { clientCompositionBaseline } : {}) }, parent, { activate: !conflict && !opts.prepareOnly });
+  strategyContent(projectId,"theme",v.id);
   ctx?.progress(0.95, L("Boutique enregistrée", "Store saved"));
   const active = currentTheme(projectId)?.version.id === v.id;
   return { versionId: v.id, number: v.number, delivery: { state: active ? spec.meta?.adaptation?.status === "partial" ? "partial" : quality.verdict === "FINAL" ? "ready" : "to_verify" : "blocked", active, message: active ? spec.meta?.adaptation?.status === "partial" ? L("Adaptation partielle enregistrée : des médias ou informations restent à compléter.", "Partial adaptation saved: some media or information still need completion.") : L("Thème enregistré ; consultez son contrôle avant utilisation.", "Theme saved; review its check before use.") : L("Tentative conservée en brouillon ; version courante protégée.", "Attempt saved as a draft; current version protected."), reasons: [...(spec.meta?.adaptation?.issues.map(i=>`${i.page} / ${i.section}: ${i.code}`)??[]),quality.reason] } };
@@ -501,6 +508,7 @@ export async function switchDirection(ctx: JobContext | null, projectId: string,
   } catch (e) {
     throw new UserFacingError((e as Error).message);
   }
+  assertStrategyChosen(projectId);
   // La marque prend la direction et ses couleurs (logo, charte) avant la construction du site.
   const { adoptDirection } = await import("./brand-direction");
   // Le choix de mise en page ne recolore pas une identité déjà approuvée dans le parcours amont.
