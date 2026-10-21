@@ -282,10 +282,10 @@ body[data-editorial="poudre"] .es-button--secondary{background:transparent;color
 }
 /* Fiche sur téléphone : le produit entier, son nom, le prix et le bouton d'achat dans le premier écran (360 × 640 compris). */
 @media(max-width:749px){
-  body[data-editorial="poudre"] .es-product__grid{row-gap:12px}
-  body[data-editorial="poudre"] .es-product__thumbs{margin-top:6px;gap:6px}
-  body[data-editorial="poudre"] .es-product__thumb{width:44px;height:44px;flex:0 0 44px}
-  body[data-editorial="poudre"] .es-product__info .es-eyebrow{margin-bottom:4px}
-  body[data-editorial="poudre"] .es-product__title{font-size:clamp(1.5rem,7vw,1.9rem);margin-bottom:4px}
-  body[data-editorial="poudre"] .es-product__price{margin-bottom:10px}
+  body[data-editorial="poudre"] .es-product__grid{row-gap:8px}
+  body[data-editorial="poudre"] .es-product__thumbs{margin-top:4px;gap:6px}
+  body[data-editorial="poudre"] .es-product__thumb{width:40px;height:40px;flex:0 0 40px}
+  body[data-editorial="poudre"] .es-product__info .es-eyebrow{margin-bottom:2px}
+  body[data-editorial="poudre"] .es-product__title{font-size:clamp(1.4rem,6.6vw,1.8rem);line-height:1.05;margin-bottom:2px}
+  body[data-editorial="poudre"] .es-product__price{margin-bottom:8px}
 }
