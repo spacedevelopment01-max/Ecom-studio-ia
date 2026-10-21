@@ -1,5 +1,10 @@
 # HEUREN et ALCÔVE — lot de médias attendu (issue #155)
 
+> **Mise à jour du 21 octobre 2026 : lot reçu et intégré.** Branche `assets/heuren-alcove-20261021`, commit `370c28f6`,
+> 32 fichiers conformes au manifeste. La scène sur pierre noire est `heuren/ambiance-07.webp` (version corrigée,
+> bracelet fermé) ; l'ancienne version n'est pas dans le lot. Le logo HEUREN est livré sur fond blanc chaud (non
+> transparent). Détail dans `docs/LISEZMOI-heuren-alcove-155.md`. Le texte ci-dessous est la demande d'origine.
+
 État au 20 octobre 2026 : **aucun média HEUREN ni ALCÔVE n'est présent dans le dépôt.** Toutes les branches distantes
 ont été parcourues : seules d'anciennes photos Pixabay de montre et de fauteuil existent (ARVEN, essais Qwen), et elles
 sont exclues par l'issue (pas de banque d'images, pas de substitution). Rien n'est donc intégré pour l'instant.

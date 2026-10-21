@@ -173,7 +173,28 @@ Descriptions uniques (60 à 160 caractères), canonical, fil d'Ariane, `Product`
 
 ## Vérifications
 
-VERIFS
+Commit testé : **`e7e6c169`** (les commits suivants ne touchent que ce rapport). Tout est exécuté en copie isolée.
+
+| Contrôle | Résultat |
+|---|---|
+| Compilation TypeScript (`tsc --noEmit`) | sans erreur |
+| Tests (`vitest run`, suite complète) | **324 fichiers, 2514 tests réussis**, 2 ignorés (déjà ignorés avant), 0 échec |
+| Tests dédiés (`tests/heuren-alcove.test.ts`) | 26 réussis : classement E-commerce partout, un seul produit, compositions attendues, aucune image répétée dans deux sections qui se suivent, ambiance-07 utilisée et aucune trace de l'ancienne version, textes sans prix ni avis inventés, liens internes valides |
+| Barre d'achat mobile (`tests/barre-achat-mobile.test.ts`) | 3 réussis ; mesures réelles 61 à 63 px sur HEUREN et ALCÔVE, aucun bouton flottant recouvert |
+| Theme Check officiel Shopify | **20 contrôles sur 20 sans erreur** (9 thèmes en français et en anglais, plus HEUREN et ALCÔVE en mode prestations) ; seuls les 4 avertissements `UnusedAssign` déjà présents sur tous les thèmes |
+| Non-régression des 7 thèmes existants (captures avant / après, base PR #153) | 336 captures identiques, 21 écarts : tous dans la zone de la barre d'achat ou du bouton flottant (changement voulu), ou quelques pixels d'anticrénelage |
+| Captures pleine page HEUREN et ALCÔVE | 1440, 430, 390 et 360 px, toutes les pages (accueil, produit, boutique, « Au fil du jour » / « Pièce par pièce », aide, panier, 404…) : **aucun débordement horizontal**, toutes les images chargées, produit entier dans les vues principales |
+| Choix depuis le studio réel (`theme-demo-choice-check`) | HEUREN et ALCÔVE : démo complète consultée avant le choix (ordinateur et téléphone, menu, fiche, page dédiée), projet inchangé pendant la visite, « Choisir ce thème » = une seule tâche, adaptation sans contenu de démo, guide des informations à compléter |
+| Studio réel (`family-studio-check`) | 13 étapes réussies par thème : galerie limitée aux 20 fonctions E-commerce, fonction d'une autre famille introuvable, ajout, disposition, texte, effets, mouvement réduit, déplacement, en-tête et pied de page, **sauvegarde puis rechargement conservés** |
+| Exports WordPress et PrestaShop (`family-export-check`) | profil `cadran` / `arrondi` présent, repères du lookbook actifs, 0 débordement, 0 erreur de script |
+| Export de démonstration final | 9 pages par thème, 47 fichiers, **aucune image manquante** |
+
+Ce qui n'est **pas** vérifié : l'installation réelle des exports chez un hébergeur WordPress ou une boutique PrestaShop
+(seuls le contenu des fichiers et leur rendu dans un navigateur le sont) ; le Codespace de Thomas.
+
+Dans cette copie isolée, seules les démos HEUREN, ALCÔVE, ORBE et FRAISE ont été préparées : les autres cartes de la
+galerie y affichent « Démo complète indisponible ». Ce n'est pas un défaut de la branche (les démos se préparent avec
+`scripts/prepare-theme-demos.ts`), mais cela n'a pas été revu ici.
 
 ## Limites connues
 
