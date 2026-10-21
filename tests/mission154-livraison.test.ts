@@ -1,3 +1,4 @@
+import {chooseGeneralistForTest} from './strategy-choice-fixture';
 const isolatedDatabase = vi.hoisted(() => {
     const fs = process.getBuiltinModule('fs');
     const root = process.env.DATA_DIR;
@@ -129,6 +130,8 @@ it.each([{ brand: 'Pli', name: 'Tablier Lin', summary: 'Un tablier en lin nature
     remember(f.pid, { kind: 'artifact', key: 'shop_copy', value: JSON.stringify(copy), source: 'user' });
     const drawing = services ? '<path d="M420 140Q330 220 420 290Q490 360 410 460Q330 530 450 650Q600 730 670 600Q700 510 610 450Q530 390 610 310Q700 220 590 140Z" fill="#815039"/><path d="M500 120V640" stroke="#d8bd94" stroke-width="22"/>' : '<path d="M320 220L450 120H600L730 220L820 790H230Z" fill="#bfa77f"/><rect x="350" y="500" width="330" height="190" fill="#b59a6f"/><path d="M450 125Q525 -35 600 125" fill="none" stroke="#bfa77f" stroke-width="38"/>';
     await saveAsset({ projectId: f.pid, userId: f.user.id, data: await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="900"><rect width="1000" height="900" fill="#eee8db"/>${drawing}</svg>`)).jpeg().toBuffer(), name: 'client-input.jpg', mime: 'image/jpeg', role: 'packshot', origin: 'upload', status: 'approved', meta: { simulation: true, themeContent: { role: services ? 'opening' : 'packshot', description: c.summary, reviewed: true, subject: services ? '' : 'product:main' } } });
+    // New facts and identity are explicitly reconciled, keeping the already chosen Generalist identity and quota.
+    if(!services)chooseGeneralistForTest(f.pid);
     await fr(() => buildShop(null, f.pid, { direction: c.direction, useAi: false }));
     const result = currentTheme(f.pid)!.spec;
     expect(result.store.shopName).toBe(c.brand);

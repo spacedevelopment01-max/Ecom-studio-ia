@@ -108,7 +108,7 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
     const en = spec.language === 'en', t = (fr: string, enText: string) => en ? enText : fr;
     ctx?.progress(.3, t('Préparation des pages et des emplacements du thème', 'Preparing theme pages and placements'));
     const inventory = await inventoryClientMedia(p), pool = inventory.usable;
-    const plan: ClientContentPlan = { version: 1, sourceCommit: shapes.sourceCommit, contextHash: clientThemeContext(p), inputHash: stableHash('client-theme-content', { engine: '160.1', strategy: (()=>{const s=strategySelection(p.id);return s?{angleId:s.angleId,inputDigest:s.inputDigest}:null;})(), shapes: shape, direction: spec.direction, brand: p.brand, product: p.product, services: p.services, copy, media: pool }), status: 'to_verify', pages: [], slots: [], issues: [], excluded: inventory.excluded, generationRequests: [] };
+    const plan: ClientContentPlan = { version: 1, sourceCommit: shapes.sourceCommit, contextHash: clientThemeContext(p), inputHash: stableHash('client-theme-content', { engine: '160.2', strategy: (()=>{const s=strategySelection(p.id);return s?{angleId:s.angleId,inputDigest:s.inputDigest}:null;})(), shapes: shape, direction: spec.direction, brand: p.brand, product: p.product, services: p.services, copy, media: pool }), status: 'to_verify', pages: [], slots: [], issues: [], excluded: inventory.excluded, generationRequests: [] };
     Object.assign(spec.settings, shape.settings ?? {});
     const labels: Record<string, string> = { home: p.brand?.name ?? p.name, story: t('Notre histoire', 'Our story'), uses: t('En situation', 'In use'), details: t('Utilisation et détails', 'Use and details'), contact: t('Questions et contact', 'Questions and contact'), faq: t('Questions fréquentes', 'Frequently asked questions'), shipping: t('Livraison et retours', 'Shipping and returns'), legal: t('Informations légales', 'Legal information'), services: t('Nos prestations', 'Our services'), portfolio: t('Réalisations documentées', 'Documented projects') };
     Object.assign(labels, { privacy: t('Confidentialité', 'Privacy'), terms: t('Conditions générales', 'Terms and conditions'), guide: copy.features.heading, editorial: copy.story.heading, showcase: copy.detail.heading });
@@ -206,17 +206,9 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
                 if (p.business === 'services' && asset.origin === 'generated') {
                     set('caption', t('Illustration générée — ne représente pas une réalisation authentique', 'Generated illustration — not an authentic completed project'));
                 }
-                if (block && asset.description) {
-                    for (const k of ['title', 'heading', 'caption'])
-                        set(k, asset.description.split(/[.!?]/)[0]);
-                    for (const k of ['text', 'description'])
-                        set(k, paragraph(asset.description));
-                }
-                if (!block && asset.description && ['detail', 'use', 'method', 'realization'].includes(wanted) && (sectionPurpose(sh.type) === 'uses' || /^cv-(feature|detail|scene)$/.test(sh.type))) {
-                    for (const k of ['heading', 'title'])
-                        set(k, roleNames[wanted][en ? 1 : 0]);
-                    set('text', paragraph(asset.description));
-                }
+                // Accessibility descriptions stay in image_alt. They are not commercial copy.
+                // Editorial headings/body have already been bound from acquired project copy.
+
             };
             if (sh.type === 'main-product')
                 for (const variant of spec.store.product.variants) {

@@ -68,8 +68,15 @@ export function bindClientCopy(spec: ThemeSpec, p: Project, copy: ShopCopy, type
     const sections = applySectionCopy(type, schema, ctx, { settings: { ...design } });
     let out = { ...sections.settings, ...design }; // Reference layout wins over library defaults; content is bound below.
     let blocks = sections.blocks ?? [];
-    const headline = purpose === 'opening' ? (pageRole === 'home' ? copy.hero.heading : name) : purpose === 'story' ? (pageRole === 'story' ? copy.about.heading : copy.statement.heading) : purpose === 'method' ? copy.story.heading : purpose === 'faq' ? copy.faq.heading : purpose === 'contact' ? copy.contact.heading : purpose === 'purchase' ? copy.cta.heading : purpose === 'composition' ? t('Composition et matières', 'Composition and materials') : purpose === 'uses' ? copy.gallery.heading : copy.detail.heading;
-    const body = purpose === 'opening' ? copy.hero.text : purpose === 'story' ? (occurrence ? copy.statement.text : copy.about.intro) : purpose === 'method' ? '' : purpose === 'faq' ? '' : purpose === 'contact' ? copy.contact.text : purpose === 'purchase' ? copy.cta.text : purpose === 'uses' ? '' : copy.detail.text;
+    // Develop an editorial sequence from acquired offer/method copy, never from image descriptions.
+    // Services keep the complete activity; products develop the selected use and its confirmed details.
+    const editorialEntries=(services?p.services.services.map(s=>({title:s.name,text:s.description})):copy.story.steps)
+        .concat(copy.features.items.map(s=>({title:s.title,text:s.text})))
+        .filter(s=>genuine(s.title)&&genuine(s.text))
+        .filter((s,i,all)=>all.findIndex(v=>v.title.trim().toLocaleLowerCase()===s.title.trim().toLocaleLowerCase())===i);
+    const useEntry=editorialEntries[occurrence%Math.max(1,editorialEntries.length)];
+    const headline = purpose === 'opening' ? (pageRole === 'home' ? copy.hero.heading : name) : purpose === 'story' ? (pageRole === 'story' ? copy.about.heading : copy.statement.heading) : purpose === 'method' ? copy.story.heading : purpose === 'faq' ? copy.faq.heading : purpose === 'contact' ? copy.contact.heading : purpose === 'purchase' ? copy.cta.heading : purpose === 'composition' ? t('Composition et matières', 'Composition and materials') : purpose === 'uses' ? useEntry?.title??copy.gallery.heading : copy.detail.heading;
+    const body = purpose === 'opening' ? copy.hero.text : purpose === 'story' ? (occurrence ? copy.statement.text : copy.about.intro) : purpose === 'method' ? '' : purpose === 'faq' ? '' : purpose === 'contact' ? copy.contact.text : purpose === 'purchase' ? copy.cta.text : purpose === 'uses' ? useEntry?.text??copy.detail.text : copy.detail.text;
     const set = (k: string, v: unknown) => {
         if (schema.settings.some(x => x.id === k))
             out[k] = v;
@@ -88,6 +95,10 @@ export function bindClientCopy(spec: ThemeSpec, p: Project, copy: ShopCopy, type
         for (const k of ['button_link', 'cta_link'])
             set(k, destination);
     }
+    if(purpose==='uses')blocks=blocks.map((block,index)=>{
+        const entry=editorialEntries[(occurrence+index)%Math.max(1,editorialEntries.length)];
+        return entry?{...block,settings:{...block.settings,title:entry.title,heading:entry.title,caption:genuine(copy.gallery.captions[index])?copy.gallery.captions[index]:entry.title,text:paragraph(entry.text),description:paragraph(entry.text)}}:block;
+    });
     if (['guide', 'editorial', 'showcase'].includes(pageRole) && type === 'rich-text') {
         const heading = pageRole === 'guide' ? copy.features.heading : pageRole === 'editorial' ? copy.story.heading : copy.gallery.heading;
         const text = pageRole === 'guide' ? copy.features.items.map(x => `${x.title} : ${x.text}`).join(' ') : pageRole === 'editorial' ? copy.story.steps.map(x => `${x.title} : ${x.text}`).join(' ') : copy.detail.text;

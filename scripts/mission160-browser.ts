@@ -7,6 +7,8 @@ fs.mkdirSync(out,{recursive:true});
 const accounts=JSON.parse(fs.readFileSync('/tmp/ecs160-ui-accounts.json','utf8'));
 const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/chromium',args:['--no-sandbox','--no-proxy-server']});
 const originalFetch=globalThis.fetch;globalThis.fetch=(input:any,init?:any)=>{const url=new URL(typeof input==='string'?input:input.url??input.toString());if(!['127.0.0.1','localhost','[::1]'].includes(url.hostname))throw Error('Supplier transport forbidden in acceptance');return originalFetch(input,init);};
+const expectedCode=process.env.MISSION160_CODE_SHA;if(!expectedCode)throw Error('Set the frozen code SHA for this acceptance');
+const served=await (await fetch(`${base}/api/version`)).json();if(served.commit!==expectedCode)throw Error(`Unexpected served version: ${served.commit}`);
 const proofs:any[]=[],examples:any[]=[];
 async function reveal(page:any){
  await page.evaluate(async()=>{for(const image of document.images)image.loading='eager';const height=Math.min(document.documentElement.scrollHeight,30000);for(let y=0;y<height;y+=600){scrollTo({top:y,behavior:"instant"});await new Promise(r=>setTimeout(r,100));}scrollTo({top:0,behavior:"instant"});});
@@ -71,7 +73,7 @@ for(const account of accounts){
   const themeVideo=theme.video();await theme.close();if(themeVideo)fs.copyFileSync(await themeVideo.path(),`${out}/${label}-${angle}-theme.webm`);
   if(angle==='expression')for(const platform of ['shopify','woocommerce','prestashop']){const response=await page.request.get(`${base}/api/projects/${account.projectId}/theme/export?platform=${platform}&version=${cur.version.id}`,{timeout:120000});if(!response.ok())throw Error(`Export ${platform}: ${await response.text()}`);fs.writeFileSync(`${out}/${label}-${platform}.zip`,await response.body());}
 
-  const {getStrategyState}=await import('../src/lib/marketing-strategy');const {listContents,latestContent}=await import('../src/lib/seo-v2/store');const {all}=await import('../src/lib/db');examples.push({case:label,angle,strategy:getStrategyState(account.projectId).active?.angle,seo:listContents(account.projectId).map(d=>latestContent(account.projectId,d.docKey)?.doc),posts:all('SELECT caption,status FROM posts WHERE project_id=? AND status!=?',account.projectId,'cancelled'),template:cur.spec.templates.index});
+  const {getStrategyState}=await import('../src/lib/marketing-strategy');const {listContents,latestContent}=await import('../src/lib/seo-v2/store');const {all}=await import('../src/lib/db');examples.push({case:label,angle,strategy:getStrategyState(account.projectId).active?.angle,seo:listContents(account.projectId).map(d=>latestContent(account.projectId,d.docKey)?.doc),posts:all("SELECT p.caption,p.status,c.angle_id,c.version FROM posts p LEFT JOIN marketing_strategy_contents c ON c.project_id=p.project_id AND c.module='post' AND c.content_id=p.id WHERE p.project_id=? AND p.status!='cancelled'",account.projectId),template:cur.spec.templates.index});
   if(all('SELECT id FROM ai_calls WHERE project_id=?',account.projectId).length)throw Error('Unexpected provider trace');
   proofs.push({case:label,angle,persisted:true,themeVersion:cur.version.number,realProviderCalls:0,overflow:false,websiteStrategy:account.services?'general_foundation':angle,websiteUnchanged:account.services?cur.version.id===serviceSiteId:undefined,delivery:(result as any).delivery?.state});
  }
@@ -80,6 +82,6 @@ for(const account of accounts){
  if(errors.length)throw Error(errors.join('\n'));const video=page.video();await page.close();await context.close();if(video)fs.copyFileSync(await video.path(),`${out}/${label}-parcours.webm`);
 }
 } finally {await browser.close();}
-fs.writeFileSync(`${out}/navigateur.json`,JSON.stringify({simulation:true,actualBrowser:true,realProviderCalls:0,proofs},null,2));
+fs.writeFileSync(`${out}/navigateur.json`,JSON.stringify({simulation:true,actualBrowser:true,served,expectedCode,realProviderCalls:0,proofs},null,2));
 fs.writeFileSync(`${out}/exemples-avant-apres.json`,JSON.stringify(examples,null,2));
 console.log(JSON.stringify({cases:proofs.length,output:out}));
