@@ -13,5 +13,5 @@ export async function resumeUnderstanding(projectId:string){
   const {initialize}=await import('../preparation/engine');const first=initialize(projectId,input);
   commitState(projectId,first.revision,s=>{const b=s.stages.brief!.data;b.profile=p.product;b.services=p.services;});
  }
- return {href:`/studio/${projectId}/preparation`};
+ return {href:`/studio/${projectId}/pilote`};
 }
