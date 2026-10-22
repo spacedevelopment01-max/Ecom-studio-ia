@@ -266,7 +266,11 @@ try {
         assert.equal(a.visuelsDuTheme, 0, `${name} ${w} : visuel de la démo ${T} repris`);
         assert.ok(a.debordement <= 0, `${name} ${w} : débordement ${a.debordement}`);
         assert.ok(a.signatureDansLaPage <= 1, `${name} ${w} : signature « ${TAGLINE} » répétée ${a.signatureDansLaPage} fois`);
-        assert.ok(!THEME.leak.test(await pg.locator("body").innerText()), `${name} ${w} : texte de la démo repris`);
+        // Texte de la démo du thème choisi : interdit. Une phrase déjà présente dans le projet de départ est à lui
+        // (START_DEMO joue un client avec ses propres textes) et reste permise.
+        { const txt = await pg.locator("body").innerText(); const own: string = startDemo ? JSON.stringify(startDemo.spec).toLowerCase() : "";
+          const hits: RegExpMatchArray[] = [...txt.matchAll(new RegExp(`.{0,60}(${THEME.leak.source}).{0,40}`, "gi"))].filter((m) => !own.includes(m[1].toLowerCase()));
+          assert.ok(!hits.length, `${name} ${w} : texte de la démo repris — « ${hits[0]?.[0]} »`); }
         await pg.screenshot({ path: path.join(out, `choix-${T}-adaptation-${name}-${w}.png`), fullPage: true });
       }
       await ctx.close();

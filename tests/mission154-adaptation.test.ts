@@ -63,7 +63,9 @@ it.each(['fraise', 'onde', 'sillon', 'noctil', 'traverse', 'orbe', 'rive', 'heur
         expect(s.groups[group].order).toEqual(reference.groups[group].order);
         for (const sid of reference.groups[group].order) {
             expect(s.groups[group].sections[sid].type).toBe(reference.groups[group].sections[sid].type);
-            expect(s.groups[group].sections[sid].block_order).toEqual(reference.groups[group].sections[sid].block_order);
+            // Un encart image du menu sans image du client est retiré (jamais de cadre vide) ; le reste suit la référence.
+            const refSection = reference.groups[group].sections[sid];
+            expect(s.groups[group].sections[sid].block_order).toEqual(refSection.block_order.filter((b: string) => refSection.blocks[b]?.type !== 'promo' || s.groups[group].sections[sid].blocks?.[b]));
             for (const [key, value] of Object.entries(reference.groups[group].sections[sid].settings))
                 if (key !== 'color_scheme') expect(s.groups[group].sections[sid].settings[key], `${direction} ${group} ${key}`).toEqual(value);
         }

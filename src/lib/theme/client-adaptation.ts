@@ -171,7 +171,11 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
                 const frame = /portrait|tall/.test(ratioName) ? .8 : /square/.test(ratioName) ? 1 : /wide|landscape/.test(ratioName) ? 16 / 9 : aspect;
                 const targetAspect = wanted === 'video' ? (frame && frame < 1 ? '9:16' : '16:9') : frame && frame < .7 ? '9:16' : frame && frame < .95 ? '4:5' : frame && frame > 1.2 ? '16:9' : '1:1';
                 const explicit = pool.find(a => a.placement === `theme:${wanted}:${plan.contextHash}:${desiredKey}` && !used.has(a.id));
-                const asset = explicit ?? chooseClientMedium(pool.filter(a => !a.placement && (!a.subject || a.subject === 'product:main' || p.business === 'services')), wanted, used, frame);
+                const candidates = pool.filter(a => !a.placement && (!a.subject || a.subject === 'product:main' || p.business === 'services'));
+                // The opening image is never left empty while the project has a fitting view of its own product: the
+                // requested role first, then another product view (no hotspot position or demo media is reused).
+                const asset = explicit ?? chooseClientMedium(candidates, wanted, used, frame)
+                    ?? (opening && !block ? (['packshot', 'detail', 'opening'] as MediaRole[]).filter(r => r !== wanted).map(r => chooseClientMedium(candidates, r, used, frame)).find(Boolean) : undefined);
                 const slot: ContentSlot = { key: desiredKey, page: template, section: sid, ...(block ? { block } : {}), field, role: wanted, aspect: targetAspect, alignment: asset?.reviewed ? 'declared' : asset ? 'to_review' : 'missing' };
                 plan.slots.push(slot);
                 if (!asset) {
@@ -337,6 +341,15 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
                 for (const k of Object.keys(b.settings))
                     if (mediaKey(k))
                         b.settings[k] = '';
+            // A menu promo card is an image card: without a client image it would show an empty frame in the mobile
+            // menu. It is left out (still available in the editor) instead of showing a placeholder.
+            if (section.blocks && section.block_order) {
+                const empty = section.block_order.filter(bid => section.blocks![bid]?.type === 'promo' && !section.blocks![bid].settings.image);
+                if (empty.length) {
+                    section.block_order = section.block_order.filter(bid => !empty.includes(bid));
+                    for (const bid of empty) delete section.blocks[bid];
+                }
+            }
             if (groupName === 'footer')
                 for (const b of Object.values(section.blocks ?? {}))
                     if (b.type === 'text') {
