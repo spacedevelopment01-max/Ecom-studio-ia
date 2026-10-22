@@ -429,47 +429,52 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
   {
     id: "heuren",
     name: "Heuren",
-    tagline: "Bleu nuit et précision",
-    description: "Boutique mono-produit de la famille E-commerce pour un objet de précision : titre puis grand paysage, déclaration en bleu nuit autour d'un gros plan, repères interactifs sur le produit, bannière en plein cadre, deux usages côte à côte, achat encadré, questions et inscription illustrée. Ivoire, bleu nuit et argent, serif fine, logo centré avec menu à gauche et pied de page encadré.",
-    bestFor: ["e-commerce", "horlogerie", "accessoire", "produit unique", "objet de précision"],
-    en: { tagline: "Midnight blue and precision", description: "Single-product store from the E-commerce family for a precision object: title then a wide landscape, a midnight-blue statement around a close-up, interactive markers on the product, a full-frame banner, two uses side by side, framed purchase, questions and an illustrated sign-up. Ivory, midnight blue and silver, fine serif, centred logo with the menu on the left and a boxed footer.", bestFor: ["e-commerce", "watches", "accessory", "single product", "precision object"] },
-    fonts: { heading: "instrument_serif_n4", body: "inter_n4" },
-    previewFonts: { heading: "Instrument Serif", body: "Inter" },
+    tagline: "Bleu nuit, blanc et champagne",
+    description: "Boutique mono-produit de la famille E-commerce pour un objet à offrir : grandes photographies pleine largeur, fonds blanc et bleu nuit, boutons champagne, titres fins sans empattement. Ouverture plein écran, réassurance, cadeau en coffret, triptyque des occasions, gros plan avec liens de détail, présentation et achat, aide au choix, questions et rappel final.",
+    bestFor: ["e-commerce", "horlogerie", "accessoire", "produit unique", "cadeau"],
+    en: { tagline: "Midnight blue, white and champagne", description: "Single-product store from the E-commerce family for an object to give: large full-width photographs, white and midnight-blue backgrounds, champagne buttons, thin sans-serif headings. Full-screen opening, reassurance, gift box, triptych of occasions, close-up with detail links, presentation and purchase, help to choose, questions and closing reminder.", bestFor: ["e-commerce", "watchmaking", "accessory", "single product", "gift"] },
+    fonts: { heading: "jost_n3", body: "jost_n4" },
+    previewFonts: { heading: "Jost", body: "Jost" },
     motion: "subtle",
     photoMood: "galerie",
     kinds: ["catalog"],
-    // En-tête « Logo centré, menu à gauche » (fond blanc : le logo HEUREN est livré sur fond blanc) et pied « Encadré » :
-    // dispositions de la famille E-commerce qu'ORBE n'utilise pas.
-    look: look({ headerLayout: "nav-left", shape: "bar", menu: "fullscreen", footer: "boxed", ann: "static", card: "minimal", button: "solid", radius: { button: 0, card: 0 }, headingScale: 112, tracking: -1, pageWidth: 1360, gallery: "grid", ds: "maison", density: "airy", buttonUppercase: true }),
+    // Maquette HEUREN du 22 octobre (docs/design/heuren-reference-20261022) : nom en lettres espacées à gauche, menu au
+    // centre, en-tête transparent sur l'ouverture ; pied bleu nuit sur une ligne.
+    look: look({ headerLayout: "logo-left", shape: "bar", menu: "drawer", footer: "minimal", ann: "static", card: "minimal", button: "solid", radius: { button: 0, card: 0 }, headingScale: 100, tracking: 0, pageWidth: 1360, gallery: "carousel", ds: "maison", density: "airy", buttonUppercase: false }),
     settings: { editorial_profile: "cadran", conversion_profile: "none", motion_intensity: "subtle" },
-    headerSettings: { mega_menu: "columns", mobile_submenu: "accordion", show_cart: true, color_scheme: "scheme-3" },
-    // Galerie en grille, cadre carré (les vues sont carrées : montre entière, bracelet compris), zoom, barre d'achat.
-    mainProduct: { gallery_layout: "grid", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
-    // Fond de page blanc (choix du thème, diagnostic du 22 octobre : neuf thèmes sur onze avaient un crème presque
-    // identique) ; la couleur claire de la marque reste celle du texte sur le bleu nuit.
+    headerSettings: { mega_menu: "none", mobile_submenu: "accordion", show_cart: true, transparent_on_home: true, color_scheme: "scheme-1" },
+    // Galerie à miniatures sur fond gris très clair, zoom, pastille de couleur, barre d'achat sur téléphone.
+    mainProduct: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
+    // Fond blanc pur, bleu nuit, gris très clair des fonds produit ; boutons de la couleur d'accent de la marque (champagne
+    // pour la démonstration).
     palette: (k) => {
-      const ivory = k.light("#F7F5F0");
-      const navy = k.night(0.13, 0.42);
-      return [k.scheme("#FFFFFF", navy, k.onLight("#FFFFFF")), k.scheme(navy, ivory, k.onDark(navy), 0.07), k.scheme("#FDFEFD", navy, k.onLight("#FDFEFD")), k.scheme(k.mix(ivory, "#AEB6C2", 0.35), navy, k.onLight(k.mix(ivory, "#AEB6C2", 0.35)))];
+      const navy = k.night(0.12, 0.45);
+      const mist = "#F3F4F6";
+      // Boutons pleins de l'accent tel quel (maquette : champagne sur blanc comme sur bleu nuit) ; le texte et les liens
+      // d'accent restent lisibles par la nuance « encre » calculée dans le thème (contraste 4,5:1 sur le fond).
+      const own = (sc: ReturnType<typeof k.scheme>) => ({ ...sc, accent: k.p.accent, accent_text: k.scheme(k.p.accent, navy, navy).text });
+      return [own(k.scheme("#FFFFFF", navy, k.p.accent)), own(k.scheme(navy, "#FFFFFF", k.p.accent, 0.08)), own(k.scheme(mist, navy, k.p.accent)), k.filled(k.p.accent)];
     },
-    // Accueil : la montre au crépuscule sous un grand titre, le cadran raconté en bleu nuit, les repères sur la montre, une
-    // bannière en plein cadre, une scène portée, l'achat encadré, les questions et l'inscription illustrée.
+    // Accueil de la maquette : ouverture plein écran, réassurance, cadeau en coffret, triptyque des occasions, gros plan avec
+    // liens de détail, présentation et achat, aide au choix, questions, rappel final.
     home: (k) => [
-      // Ouverture « écrin » (différenciation du 22 octobre) : panneau bleu nuit et photo pleine hauteur jusqu'au bord, puis
-      // une page sur fond blanc rythmée par les bandeaux bleu nuit.
-      k.lib("ed-opening", 2, { layout: "ecrin", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.packshot, mobile_image_asset: k.im.portrait ?? "", padding_top: 0, padding_bottom: 0 }),
-      k.lib("ed-statement", 1, { image_asset: k.im.detail1 ?? "", padding_top: 112, padding_bottom: 112 }),
-      k.lib("fs-lookbook", 1, { layout: "markers", image_asset: k.im.packshot ?? k.im.cutout, align: "left" }),
-      k.lib("fs-campaign", 2, { layout: "background", image_asset: k.im.banner ?? k.im.scene1 ?? "", offer_title: "", offer_text: "", period_text: "", conditions: "" }, { hide: !(k.im.banner ?? k.im.scene1) }),
-      k.lib("ed-scene", 1, { layout: "split", image_asset: k.im.scene2 ?? k.im.scene1 ?? "", padding_top: 72, padding_bottom: 72 }, { hide: !(k.im.scene2 ?? k.im.scene1) }),
-      k.lib("featured-purchase", 4, { purchase_style: "compact", image_fit: "contain" }),
-      k.v2.faq("center", 1),
-      ...k.either(k.lib("newsletter-media", 2, { layout: "right", image_asset: k.im.lifestyle2 ?? "", legal: k.privacy }, { hide: !k.im.lifestyle2 }), k.newsletter(2)),
+      k.lib("ed-opening", 2, { layout: "fullscreen", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle ?? k.im.packshot, mobile_image_asset: k.im.portrait ?? "", copy_surface: false, padding_top: 0, padding_bottom: 0 }),
+      k.lib("fs-commitments", 1, { layout: "strip", align: "center", padding_top: 20, padding_bottom: 20 }, { blocks: [{ type: "item", settings: { icon: "box", title: k.t("Livraison", "Delivery") } }, { type: "item", settings: { icon: "return", title: k.t("Retours", "Returns") } }, { type: "item", settings: { icon: "headset", title: k.t("Assistance", "Support") } }] }),
+      k.lib("ed-scene", 1, { layout: "band", text_side: "left", band_height: "tall", image_asset: k.im.lifestyle ?? k.im.scene1 ?? "", padding_top: 0, padding_bottom: 0 }, { hide: !(k.im.lifestyle ?? k.im.scene1) }),
+      ((uses) => k.lib("ed-diptych", 2, { layout: "triptych", padding_top: 0, padding_bottom: 0 }, { hide: uses.length < 2, blocks: uses.map((f) => ({ type: "frame", settings: { image_asset: f, ratio: "portrait", title: "" } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
+      k.lib("ed-scene", 2, { layout: "band", text_side: "left", band_height: "medium", image_asset: k.im.detail1 ?? k.im.detail2 ?? "", padding_top: 0, padding_bottom: 0 }, { hide: !(k.im.detail1 ?? k.im.detail2) }),
+      k.lib("featured-purchase", 1, { layout: "duo", image_fit: "cover", padding_top: 24, padding_bottom: 24 }),
+      k.lib("fs-commitments", 2, { layout: "aside", align: "left", padding_top: 64, padding_bottom: 64 }),
+      k.lib("v2-faq", 1, { layout: "side" }),
+      k.lib("ed-scene", 2, { layout: "band", text_side: "right", band_height: "medium", button_style: "link", image_asset: k.im.banner ?? k.im.lifestyle2 ?? "", padding_top: 0, padding_bottom: 0 }, { hide: !(k.im.banner ?? k.im.lifestyle2) }),
     ],
-    // Fiche : galerie en grille et achat, deux scènes côte à côte, questions à côté du titre.
+    // Fiche de la maquette : galerie et achat, gros plan, la montre de près (repères et détails), coffret, scène d'usage, questions.
     product: (k) => [
-      k.lib("ed-diptych", 1, { layout: "pair", padding_top: 72, padding_bottom: 72 }, { blocks: [k.im.scene1, k.im.lifestyle2 ?? k.im.scene2].filter((f): f is string => !!f).map((f) => ({ type: "frame", settings: { image_asset: f, ratio: "landscape", title: "" } })) }),
-      k.v2.faq("side", 3),
+      k.lib("ed-scene", 2, { layout: "band", text_side: "left", band_height: "medium", image_asset: k.im.detail1 ?? k.im.detail2 ?? "", padding_top: 0, padding_bottom: 0 }, { hide: !(k.im.detail1 ?? k.im.detail2) }),
+      k.lib("fs-lookbook", 1, { layout: "detail", image_asset: k.im.packshot ?? k.im.cutout ?? "", align: "left" }),
+      k.lib("ed-scene", 1, { layout: "band", text_side: "right", band_height: "medium", image_asset: k.im.lifestyle2 ?? k.im.lifestyle ?? "", padding_top: 0, padding_bottom: 0 }, { hide: !(k.im.lifestyle2 ?? k.im.lifestyle) }),
+      k.lib("ed-scene", 2, { layout: "band", text_side: "left", band_height: "medium", image_asset: k.im.scene1 ?? "", padding_top: 0, padding_bottom: 0 }, { hide: !k.im.scene1 }),
+      k.lib("v2-faq", 1, { layout: "side" }),
     ],
     // Site de services (repli) : promesse dans la scène, déclaration, prestations en liste, usages en index, méthode en frise,
     // questions et prise de contact.

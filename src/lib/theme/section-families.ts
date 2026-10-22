@@ -168,8 +168,6 @@ const CATALOG: FamilyEntry[] = [
     d("arch", "Arche et promesse", "Arch and promise", "ed-opening", "split-right", { layout: "arch" }),
     // Issue #158 (SOUPLE) : la scène bord à bord occupe tout le premier écran, titre et bouton posés sur l'image.
     d("fullscreen", "Plein écran", "Full screen", "ed-opening", "background", { layout: "fullscreen" }),
-    // Différenciation du 22 octobre (HEUREN) : panneau sombre à gauche, photo pleine hauteur jusqu'au bord droit.
-    d("ecrin", "Écrin sombre, photo jusqu’au bord", "Dark case, photo to the edge", "ed-opening", "split-right", { layout: "ecrin" }),
   ]),
   e("catalog", 2, "collections", { fr: "Collections et catégories", en: "Collections and categories" }, { fr: "Accès visuels aux familles de produits.", en: "Visual access to product families." }, "collections catégories familles", [
     d("grid", "Grille", "Grid", "fs-collections", "grid-3", { layout: "grid" }),
@@ -186,6 +184,7 @@ const CATALOG: FamilyEntry[] = [
   e("catalog", 4, "featured", { fr: "Produit à la une", en: "Featured product" }, { fr: "Présentation approfondie d'une référence avec informations et achat.", en: "In-depth presentation of one item with details and purchase." }, "produit à la une achat référence", [
     d("offers", "Galerie et achat", "Gallery and purchase", "featured-purchase", "product", { purchase_style: "outlined" }),
     d("compact", "Achat compact", "Compact purchase", "featured-purchase", "product", { purchase_style: "compact" }),
+    d("duo", "Deux photos, prix et deux boutons", "Two photos, price and two buttons", "featured-purchase", "product", { layout: "duo" }),
     d("product-offers", "Offres sur la fiche produit", "Offers on the product page", "purchase-offers", "pricing"),
   ]),
   e("catalog", 5, "lookbook", { fr: "Ambiance et lookbook", en: "Mood and lookbook" }, { fr: "Scènes de plusieurs produits avec repères permettant de les identifier.", en: "Scenes with several products and markers to identify them." }, "ambiance lookbook scène repères produits", [
@@ -193,6 +192,9 @@ const CATALOG: FamilyEntry[] = [
     d("side", "Scène et liste des produits", "Scene and product list", "fs-lookbook", "split-left", { layout: "side" }),
     d("split", "Scène et texte", "Scene and text", "ed-scene", "split-left", { layout: "split" }),
     d("panorama", "Panorama", "Panorama", "ed-scene", "background", { layout: "panorama" }),
+    // HEUREN (maquette du 22 octobre) : photo pleine largeur, texte posé à gauche ou à droite, liens de détail.
+    d("band", "Bandeau photo pleine largeur", "Full-width photo band", "ed-scene", "background", { layout: "band" }),
+    d("detail", "Repères numérotés et détails dépliables", "Numbered markers and expandable details", "fs-lookbook", "hotspots", { layout: "detail" }),
   ]),
   e("catalog", 6, "finishes", { fr: "Matières et finitions", en: "Materials and finishes" }, { fr: "Textures, échantillons visuels et explications.", en: "Textures, visual samples and explanations." }, "matières finitions textures échantillons coloris", [
     d("strip", "Bande des finitions", "Finish strip", "ed-finishes", "grid-3", { image_asset: "" }),
@@ -207,6 +209,7 @@ const CATALOG: FamilyEntry[] = [
     d("side", "Deux usages côte à côte", "Two uses side by side", "ed-diptych", "grid-2", { layout: "side" }),
     d("pair", "Diptyque décalé", "Offset diptych", "ed-diptych", "grid-2", { layout: "pair" }),
     d("index", "Index d'usages", "Index of uses", "ed-diptych", "asym", { layout: "index" }),
+    d("triptych", "Triptyque plein cadre", "Full-bleed triptych", "ed-diptych", "grid-3", { layout: "triptych" }),
   ]),
   e("catalog", 9, "care", { fr: "Entretien et durabilité", en: "Care and durability" }, { fr: "Conseils pour entretenir et prolonger la vie des produits.", en: "Advice to care for products and make them last." }, "entretien durabilité conseils réparation", [
     d("list", "Conseils en liste", "Advice list", "fs-care", "list", { layout: "list" }),
@@ -239,6 +242,8 @@ const CATALOG: FamilyEntry[] = [
     d("list", "Liste numérotée", "Numbered list", "fs-commitments", "list", { layout: "list" }),
     d("split", "Image et engagements", "Image and commitments", "fs-commitments", "split-left", { layout: "split" }),
     d("glow", "Grille d'atouts", "Highlights grid", "features-grid", "grid-2", { style: "glow", columns: 2 }),
+    d("strip", "Bandeau de réassurance", "Reassurance strip", "fs-commitments", "list", { layout: "strip" }),
+    d("aside", "Aide au choix : titre et liens", "Help to choose: title and links", "fs-commitments", "split-left", { layout: "aside" }),
   ]),
   e("catalog", 15, "reviews", { fr: "Avis clients", en: "Customer reviews" }, { fr: "Retours sur les produits et l'expérience d'achat.", en: "Feedback on the products and the buying experience." }, "avis clients notes témoignages", [
     d("grid", "Mur d'avis", "Review wall", "fs-reviews", "grid-3", { layout: "grid" }),
@@ -261,6 +266,7 @@ const CATALOG: FamilyEntry[] = [
     d("center", "Centré", "Centred", "v2-faq", "accordion", { layout: "center" }),
     d("cards", "Accordéons en cartes", "Card accordions", "faq", "accordion", { style: "cards" }),
     d("lines", "Accordéons en lignes", "Line accordions", "faq", "accordion", { style: "lines" }),
+    d("columns", "Thèmes en colonnes et questions", "Topics in columns with questions", "v2-faq", "grid-3", { layout: "columns" }),
   ]),
   e("catalog", 19, "newsletter", { fr: "Newsletter", en: "Newsletter" }, { fr: "Actualités et collections.", en: "News and collections." }, "newsletter inscription", [
     d("simple", "Inscription simple", "Simple sign-up", "newsletter", "newsletter"),

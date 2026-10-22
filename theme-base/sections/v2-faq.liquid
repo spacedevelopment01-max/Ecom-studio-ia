@@ -7,14 +7,36 @@
       {%- if s.heading != blank -%}<h2 class="v2-h2" data-reveal="up">{{ s.heading }}</h2>{%- endif -%}
       {%- if s.text != blank -%}<div class="v2-intro" data-reveal="up">{{ s.text }}</div>{%- endif -%}
     </header>
-    <div class="v2-faq__list">
+    {%- if s.layout == 'columns' -%}
+    {%- comment -%} Une colonne par bloc « Thème » ; les questions qui suivent un thème s'y rangent. {%- endcomment -%}
+    <div class="v2-faq__cols">
+      {%- assign open = false -%}
       {%- for block in section.blocks -%}
+        {%- if block.type == 'topic' -%}
+          {%- if open -%}</div></div>{%- endif -%}
+          <div class="v2-faq__col" {{ block.shopify_attributes }}>
+            {%- if block.settings.image != blank or block.settings.image_asset != blank -%}<div class="v2-faq__col-media">{% render 'ed-media', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.image_alt %}</div>{%- endif -%}
+            <h3 class="v2-faq__col-title">{{ block.settings.title | escape }}</h3>
+            {%- if block.settings.text != blank -%}<p class="v2-faq__col-text">{{ block.settings.text | escape }}</p>{%- endif -%}
+            <div class="v2-faq__list">
+          {%- assign open = true -%}
+        {%- else -%}
+          {%- unless open -%}<div class="v2-faq__col"><div class="v2-faq__list">{%- assign open = true -%}{%- endunless -%}
+          <details class="v2-faq__item" {{ block.shopify_attributes }}><summary><span>{{ block.settings.question }}</span><span class="v2-faq__plus" aria-hidden="true"></span></summary><div class="v2-rte">{{ block.settings.answer }}</div></details>
+        {%- endif -%}
+      {%- endfor -%}
+      {%- if open -%}</div></div>{%- endif -%}
+    </div>
+    {%- else -%}
+    <div class="v2-faq__list">
+      {%- for block in section.blocks -%}{%- if block.type == 'topic' -%}{%- continue -%}{%- endif -%}
         <details class="v2-faq__item" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
           <summary><span>{{ block.settings.question }}</span><span class="v2-faq__plus" aria-hidden="true"></span></summary>
           <div class="v2-rte">{{ block.settings.answer }}</div>
         </details>
       {%- endfor -%}
     </div>
+    {%- endif -%}
   </div>
 </section>
 
@@ -24,23 +46,134 @@
   "tag": "div",
   "class": "es-section-wrapper",
   "settings": [
-    { "type": "select", "id": "layout", "label": "Composition", "default": "side", "options": [
-      { "value": "side", "label": "Titre à côté" }, { "value": "center", "label": "Centrée" }
-    ] },
-    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
-    { "type": "text", "id": "heading", "label": "Titre", "default": "Questions fréquentes" },
-    { "type": "richtext", "id": "text", "label": "Texte" },
-    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
-    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
-    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Composition",
+      "default": "side",
+      "options": [
+        {
+          "value": "side",
+          "label": "Titre à côté"
+        },
+        {
+          "value": "center",
+          "label": "Centrée"
+        },
+        {
+          "value": "columns",
+          "label": "Thèmes en colonnes (photo, titre, questions)"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Surtitre"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Titre",
+      "default": "Questions fréquentes"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texte"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "label": "Marge haute",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "label": "Marge basse",
+      "default": 96
+    }
   ],
   "blocks": [
-    { "type": "question", "name": "Question", "settings": [
-      { "type": "text", "id": "question", "label": "Question", "default": "Votre question ?" },
-      { "type": "richtext", "id": "answer", "label": "Réponse", "default": "<p>[À compléter]</p>" }
-    ] }
+    {
+      "type": "question",
+      "name": "Question",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "label": "Question",
+          "default": "Votre question ?"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "Réponse",
+          "default": "<p>[À compléter]</p>"
+        }
+      ]
+    },
+    {
+      "type": "topic",
+      "name": "Thème (colonne)",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "image_asset",
+          "label": "Image (fichier du thème)"
+        },
+        {
+          "type": "text",
+          "id": "image_alt",
+          "label": "Texte alternatif"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Titre",
+          "default": "Choisir"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Texte"
+        }
+      ]
+    }
   ],
   "max_blocks": 12,
-  "presets": [{ "name": "Questions fréquentes", "blocks": [{ "type": "question" }, { "type": "question" }] }]
+  "presets": [
+    {
+      "name": "Questions fréquentes",
+      "blocks": [
+        {
+          "type": "question"
+        },
+        {
+          "type": "question"
+        }
+      ]
+    }
+  ]
 }
 {% endschema %}

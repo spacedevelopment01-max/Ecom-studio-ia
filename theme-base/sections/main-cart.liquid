@@ -40,10 +40,13 @@
 <section class="es-section es-cart color-{{ cart_scheme }}" style="--pt: 48px; --pb: 96px;" data-cart-page>
   <div class="es-container">
     <h1 class="es-heading es-h1 es-cart__title">{{ cart_title }}{% if settings.cart_show_count and cart.item_count > 0 %} <span class="es-drawer__count" aria-label="{{ 'cart.items_badge' | t: count: cart.item_count }}">{{ cart.item_count }}</span>{% endif %}</h1>
+    {%- if section.settings.intro != blank and cart.item_count > 0 -%}<p class="es-cart__intro es-muted">{{ section.settings.intro | escape }}</p>{%- endif -%}
     {%- if cart.item_count == 0 -%}
-      <div class="es-cart__empty">
-        <p class="es-lead es-cart__empty-title">{{ empty_title }}</p>
-        <a href="{{ routes.all_products_collection_url }}" class="es-button">{{ 'cart.continue' | t }}</a>
+      <div class="es-cart__empty{% if section.settings.empty_image != blank or section.settings.empty_image_asset != blank %} es-cart__empty--media{% endif %}">
+        {%- if section.settings.empty_image != blank or section.settings.empty_image_asset != blank -%}<div class="es-cart__empty-media">{% render 'ed-media', image: section.settings.empty_image, asset: section.settings.empty_image_asset, alt: '' %}</div>{%- endif -%}
+        <p class="es-lead es-cart__empty-title">{{ section.settings.empty_heading | default: empty_title }}</p>
+        {%- if section.settings.empty_text != blank -%}<p class="es-cart__empty-text es-muted">{{ section.settings.empty_text | escape }}</p>{%- endif -%}
+        <a href="{{ section.settings.empty_button_link | default: routes.all_products_collection_url }}" class="es-button">{% if section.settings.empty_button_label != blank %}{{ section.settings.empty_button_label | escape }}{% else %}{{ 'cart.continue' | t }}{% endif %}</a>
         {%- if settings.cart_show_login and shop.customer_accounts_enabled -%}
           <p class="es-drawer__login"><span>{{ 'cart.have_account' | t }}</span><br><a href="{{ routes.account_login_url }}">{{ 'cart.login' | t }}</a> {{ 'cart.login_faster' | t }}</p>
         {%- endif -%}
@@ -129,6 +132,59 @@
 {% schema %}
 {
   "name": "Panier",
-  "settings": [ { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" } ]
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Textes de la page panier"
+    },
+    {
+      "type": "text",
+      "id": "intro",
+      "label": "Phrase sous le titre",
+      "info": "Ex. « Vérifiez votre sélection avant de passer commande. »"
+    },
+    {
+      "type": "header",
+      "content": "Panier vide"
+    },
+    {
+      "type": "image_picker",
+      "id": "empty_image",
+      "label": "Image du panier vide"
+    },
+    {
+      "type": "text",
+      "id": "empty_image_asset",
+      "label": "Image du panier vide (fichier du thème)"
+    },
+    {
+      "type": "text",
+      "id": "empty_heading",
+      "label": "Titre du panier vide",
+      "info": "Vide : le titre du panier vide des réglages du thème."
+    },
+    {
+      "type": "text",
+      "id": "empty_text",
+      "label": "Texte du panier vide"
+    },
+    {
+      "type": "text",
+      "id": "empty_button_label",
+      "label": "Bouton du panier vide",
+      "info": "Vide : « Continuer mes achats »."
+    },
+    {
+      "type": "url",
+      "id": "empty_button_link",
+      "label": "Destination du bouton du panier vide"
+    }
+  ]
 }
 {% endschema %}

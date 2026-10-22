@@ -1,6 +1,6 @@
 {% assign s = section.settings %}
-<section class="ed-section ed-scene ed-scene--{{ s.layout }} color-{{ s.color_scheme }}"{% if s.anchor != blank %} id="{{ s.anchor | handleize }}"{% endif %} data-ed-motion="{{ s.motion }}" style="--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;">
-<div class="ed-shell"><div class="ed-scene__media">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, focus_x: s.focus_x, focus_y: s.focus_y, mobile_focus_x: s.mobile_focus_x, mobile_focus_y: s.mobile_focus_y %}{% if s.caption != blank %}<p class="ed-caption">{{ s.caption | escape }}</p>{% endif %}</div><div class="ed-scene__copy"><p class="ed-kicker">{{ s.label | escape }}</p>{%- assign htag = s.heading_tag | default: 'h2' -%}<{{ htag }} class="ed-title">{{ s.heading | escape }}</{{ htag }}><div class="ed-prose">{{ s.text }}</div>{% if s.button_label != blank and s.button_link != blank %}<a class="ed-button" href="{{ s.button_link }}">{{ s.button_label | escape }}<span aria-hidden="true">↗</span></a>{% endif %}</div></div></section>
+<section class="ed-section ed-scene ed-scene--{{ s.layout }} ed-scene--text-{{ s.text_side | default: 'left' }}{% if s.layout == 'band' %} ed-scene--h-{{ s.band_height | default: 'tall' }}{% if s.veil == false %} ed-scene--clear{% endif %}{% endif %} color-{{ s.color_scheme }}"{% if s.anchor != blank %} id="{{ s.anchor | handleize }}"{% endif %} data-ed-motion="{{ s.motion }}" style="--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;--band-x:{{ s.text_offset | default: 52 }}%;">
+<div class="ed-shell"><div class="ed-scene__media">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, focus_x: s.focus_x, focus_y: s.focus_y, mobile_focus_x: s.mobile_focus_x, mobile_focus_y: s.mobile_focus_y, mobile_image: s.mobile_image, mobile_asset: s.mobile_image_asset %}{% if s.caption != blank %}<p class="ed-caption">{{ s.caption | escape }}</p>{% endif %}</div><div class="ed-scene__copy">{% if s.label != blank or s.layout != 'band' %}<p class="ed-kicker">{{ s.label | escape }}</p>{% endif %}{%- assign htag = s.heading_tag | default: 'h2' -%}<{{ htag }} class="ed-title">{{ s.heading | escape }}</{{ htag }}><div class="ed-prose">{{ s.text }}</div>{% if s.button_label != blank and s.button_link != blank %}<a class="{% if s.button_style == 'link' %}ed-text-link ed-scene__link{% else %}ed-button{% endif %}" href="{{ s.button_link }}">{{ s.button_label | escape }}<span aria-hidden="true">{% if s.button_style == 'link' %}→{% else %}↗{% endif %}</span></a>{% endif %}{% if section.blocks.size > 0 %}<ul class="ed-scene__links" role="list">{% for block in section.blocks %}<li {{ block.shopify_attributes }}>{% if block.settings.link != blank %}<a href="{{ block.settings.link }}">{{ block.settings.label | escape }}</a>{% else %}<span>{{ block.settings.label | escape }}</span>{% endif %}</li>{% endfor %}</ul>{% endif %}</div></div></section>
 {% schema %}
 {
   "name": "Scène et récit",
@@ -159,6 +159,16 @@
       "default": 50
     },
     {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Image sur téléphone"
+    },
+    {
+      "type": "text",
+      "id": "mobile_image_asset",
+      "label": "Image sur téléphone (fichier du thème)"
+    },
+    {
       "type": "select",
       "id": "layout",
       "label": "Composition de scène",
@@ -174,9 +184,84 @@
         {
           "value": "closing",
           "label": "Conclusion illustrée"
+        },
+        {
+          "value": "band",
+          "label": "Bandeau photo pleine largeur"
         }
       ],
       "default": "split"
+    },
+    {
+      "type": "select",
+      "id": "text_side",
+      "label": "Côté du texte",
+      "options": [
+        {
+          "value": "left",
+          "label": "À gauche"
+        },
+        {
+          "value": "right",
+          "label": "À droite"
+        }
+      ],
+      "default": "left",
+      "info": "Bandeau photo et image verticale : côté où se pose le texte."
+    },
+    {
+      "type": "range",
+      "id": "text_offset",
+      "label": "Début du texte à droite",
+      "min": 40,
+      "max": 76,
+      "step": 2,
+      "unit": "%",
+      "default": 52,
+      "info": "Bandeau photo, texte à droite : où commence le texte, en pourcentage de la largeur (pour laisser le produit dégagé)."
+    },
+    {
+      "type": "select",
+      "id": "band_height",
+      "label": "Hauteur du bandeau",
+      "options": [
+        {
+          "value": "medium",
+          "label": "Moyenne"
+        },
+        {
+          "value": "tall",
+          "label": "Grande"
+        },
+        {
+          "value": "screen",
+          "label": "Plein écran"
+        }
+      ],
+      "default": "tall"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Style du bouton",
+      "options": [
+        {
+          "value": "solid",
+          "label": "Bouton plein"
+        },
+        {
+          "value": "link",
+          "label": "Lien souligné"
+        }
+      ],
+      "default": "solid"
+    },
+    {
+      "type": "checkbox",
+      "id": "veil",
+      "label": "Voile sous le texte",
+      "default": true,
+      "info": "Assombrit (ou éclaircit) la photo du côté du texte pour qu'il reste lisible."
     },
     {
       "type": "text",
@@ -188,6 +273,27 @@
     {
       "name": "Scène et récit"
     }
-  ]
+  ],
+  "blocks": [
+    {
+      "type": "link",
+      "name": "Lien",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Texte du lien",
+          "default": "Le détail"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Destination"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 4
 }
 {% endschema %}

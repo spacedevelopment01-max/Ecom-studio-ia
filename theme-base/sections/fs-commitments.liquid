@@ -24,9 +24,9 @@ Engagements (e-commerce : engagements de la marque ; services : engagements de s
           <li class="fs-commit__item{% if s.layout == 'grid' %} {{ cards }}{% endif %}"{% render 'fs-reveal', effect: fx, index: ix %} {{ block.shopify_attributes }}>
             {%- if s.layout == 'list' -%}<span class="fs-commit__num" aria-hidden="true">{{ forloop.index }}</span>{%- else -%}<span class="fs-commit__icon">{% render 'fs-icon', name: block.settings.icon %}</span>{%- endif -%}
             <div>
-              <h3 class="fs-item__title">{{ block.settings.title | escape }}</h3>
+              {%- if s.layout == 'aside' or s.layout == 'strip' -%}{%- assign go = true -%}{%- else -%}{%- assign go = false -%}{%- endif -%}{%- if go and block.settings.proof_link != blank -%}<h3 class="fs-item__title"><a class="fs-commit__go" href="{{ block.settings.proof_link }}">{{ block.settings.title | escape }}<span aria-hidden="true"> →</span></a></h3>{%- else -%}<h3 class="fs-item__title">{{ block.settings.title | escape }}</h3>{%- endif -%}
               {%- if block.settings.text != blank -%}<div class="fs-item__text">{{ block.settings.text }}</div>{%- endif -%}
-              {%- if block.settings.proof_label != blank and block.settings.proof_link != blank -%}<a class="fs-link" href="{{ block.settings.proof_link }}">{{ block.settings.proof_label | escape }}</a>{%- elsif block.settings.proof_label != blank -%}<span class="fs-meta">{{ block.settings.proof_label | escape }}</span>{%- endif -%}
+              {%- if go and block.settings.proof_link != blank -%}{%- elsif block.settings.proof_label != blank and block.settings.proof_link != blank -%}<a class="fs-link" href="{{ block.settings.proof_link }}">{{ block.settings.proof_label | escape }}</a>{%- elsif block.settings.proof_label != blank -%}<span class="fs-meta">{{ block.settings.proof_label | escape }}</span>{%- endif -%}
             </div>
           </li>
         {%- endfor -%}
@@ -102,6 +102,14 @@ Engagements (e-commerce : engagements de la marque ; services : engagements de s
         {
           "value": "split",
           "label": "Image et engagements"
+        },
+        {
+          "value": "strip",
+          "label": "Bandeau de réassurance"
+        },
+        {
+          "value": "aside",
+          "label": "Aide au choix : titre et liens"
         }
       ],
       "default": "grid"
@@ -289,6 +297,18 @@ Engagements (e-commerce : engagements de la marque ; services : engagements de s
             {
               "value": "pin",
               "label": "Lieu"
+            },
+            {
+              "value": "box",
+              "label": "Coffret"
+            },
+            {
+              "value": "headset",
+              "label": "Assistance"
+            },
+            {
+              "value": "ruler",
+              "label": "Dimensions"
             }
           ],
           "default": "check"

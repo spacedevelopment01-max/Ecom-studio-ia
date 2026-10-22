@@ -37,6 +37,9 @@
       var top = function () { try { document.documentElement.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'instant' }); } catch (e) { document.documentElement.scrollIntoView(true); } };
       top(); window.addEventListener('load', function () { top(); setTimeout(top, 120); }, { once: true });
     })();
+    /* En-tête transparent posé sur l'ouverture (HEUREN) : il reste sous la mention d'aperçu tant qu'elle est visible. */
+    function below() { var h = document.querySelector('.es-header--transparent'); if (!h) return; var b = Math.max(0, n.getBoundingClientRect().bottom); h.style.top = b + 'px'; }
+    below(); window.addEventListener('scroll', below, { passive: true }); window.addEventListener('resize', below);
     offset(); setInterval(offset, 600); window.addEventListener('scroll', offset, { passive: true }); window.addEventListener('resize', offset);
   }
 

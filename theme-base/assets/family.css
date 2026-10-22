@@ -408,3 +408,48 @@ body:not(.motion-on) .fs-refs__marquee { overflow-x: auto; -webkit-mask-image: n
   .fs--hover .fs-card, .fs--hover .fs-card .ed-image, .fs-coll__media .ed-image, .fs-making__frame, .fs-making--timeline .fs-making__steps::after { transition: none; }
   .fs--hover .fs-card:hover { transform: none; }
 }
+/* ─── Engagements : « Bandeau de réassurance » (pictogramme et mot, en une ligne) et « Aide au choix » (titre à gauche,
+   liens iconés à droite, séparés par un filet). Maquette HEUREN du 22 octobre. */
+.fs-commitments--strip .fs-commit__body{margin:0}
+.fs-commit__list--strip{display:flex;justify-content:center;list-style:none;padding:0;margin:0}
+.fs-commit__list--strip .fs-commit__item{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:12px;padding:6px 16px;min-width:0}
+.fs-commit__list--strip .fs-commit__item+.fs-commit__item{border-left:1px solid color-mix(in srgb,var(--c-text) 16%,transparent)}
+.fs-commit__list--strip .fs-commit__icon{margin:0}
+.fs-commit__list--strip .fs-icon{width:22px;height:22px}
+.fs-commit__list--strip .fs-item__title{font-size:14px;font-weight:400;margin:0;letter-spacing:.01em}
+.fs-commit__list--strip .fs-item__text{display:none}
+.fs-commit__go{color:inherit;text-decoration:none}
+.fs-commit__go:hover,.fs-commit__go:focus-visible{text-decoration:underline;text-underline-offset:4px}
+.fs-commitments--aside .fs__inner{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:clamp(24px,5vw,80px)}
+.fs-commitments--aside .fs-head{margin:0;text-align:left}
+.fs-commitments--aside .fs-commit__body{margin:0;padding-left:clamp(24px,5vw,80px);border-left:1px solid color-mix(in srgb,var(--c-text) 22%,transparent)}
+.fs-commit__list--aside{display:grid;gap:18px;list-style:none;padding:0;margin:0}
+.fs-commit__list--aside .fs-commit__item{display:flex;align-items:center;gap:16px}
+.fs-commit__list--aside .fs-icon{width:26px;height:26px}
+.fs-commit__list--aside .fs-item__title{font-size:15px;font-weight:400;margin:0}
+.fs-commitments--aside .fs-note{grid-column:1/-1}
+@media(max-width:749px){
+  .fs-commit__list--strip .fs-commit__item{flex-direction:column;gap:6px;padding:4px 8px;text-align:center}
+  .fs-commit__list--strip .fs-item__title{font-size:12px}
+  .fs-commitments--aside .fs__inner{grid-template-columns:minmax(0,1fr);gap:24px}
+  .fs-commitments--aside .fs-commit__body{padding:20px 0 0;border-left:0;border-top:1px solid color-mix(in srgb,var(--c-text) 22%,transparent)}
+}
+/* ─── Repères numérotés et détails dépliables (« fs-lookbook », disposition « detail ») : la photo et ses repères à
+   gauche, un panneau dépliable par repère à droite (même numéro). */
+.fs-lookbook--detail .fs-look__grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:clamp(24px,4vw,64px);align-items:center}
+.fs-look__details{display:grid;gap:12px}
+.fs-look__detail{border:1px solid color-mix(in srgb,var(--c-text) 18%,transparent);background:var(--c-bg)}
+.fs-look__detail summary{list-style:none;display:flex;align-items:center;gap:12px;padding:16px 18px;cursor:pointer}
+.fs-look__detail summary::-webkit-details-marker{display:none}
+.fs-look__detail summary .fs-item__title{flex:1;margin:0;font-size:15px;font-weight:400}
+.fs-look__detail .fs-look__n{display:inline-grid;place-items:center;width:24px;height:24px;border:1px solid currentColor;border-radius:50%;font-size:12px}
+.fs-look__plus{position:relative;width:12px;height:12px}
+.fs-look__plus::before,.fs-look__plus::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:currentColor}
+.fs-look__plus::after{transform:rotate(90deg);transition:transform .2s}
+.fs-look__detail[open] .fs-look__plus::after{transform:rotate(0)}
+.fs-look__detail .fs-item__text{padding:0 18px 16px 54px;font-size:14px}
+.fs-lookbook--detail .fs-note{margin:8px 0 0;font-size:12px;opacity:.7;text-align:center}
+@media(max-width:749px){.fs-lookbook--detail .fs-look__grid{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){.fs-look__plus::after{transition:none}}
+.fs-lookbook--detail .fs-look__media .ed-media{aspect-ratio:auto;height:auto}
+.fs-lookbook--detail .fs-look__media .ed-image{height:auto}
