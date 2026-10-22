@@ -27,12 +27,16 @@ const fr = <T,>(f: () => T) => runWithLang({ content: "fr", ui: "fr" }, f);
 const installed = fs.existsSync(path.join(process.cwd(), "public", "demo", "fraise"));
 const EXPECT: Record<DemoId, { kind: "services" | "catalog" | "specialty"; profile: Record<string, string>; family: RegExp }> = {
   fraise: { kind: "specialty", profile: { conversion_profile: "pop" }, family: /^cv-/ },
-  onde: { kind: "specialty", profile: { conversion_profile: "contrast" }, family: /^cv-/ },
+  onde: { kind: "catalog", profile: { editorial_profile: "studio" }, family: /^(ed-|fs-)/ },
   orbe: { kind: "catalog", profile: { editorial_profile: "object" }, family: /^ed-/ },
   rive: { kind: "services", profile: { editorial_profile: "journal" }, family: /^ed-/ },
   sillon: { kind: "specialty", profile: { conversion_profile: "nomade" }, family: /^cv-/ },
   noctil: { kind: "specialty", profile: { conversion_profile: "astral" }, family: /^cv-/ },
   traverse: { kind: "specialty", profile: { conversion_profile: "itineraire" }, family: /^cv-/ },
+  heuren: { kind: "catalog", profile: { editorial_profile: "cadran" }, family: /^(ed-|fs-)/ },
+  alcove: { kind: "catalog", profile: { editorial_profile: "arrondi" }, family: /^(ed-|fs-)/ },
+  "museau-club": { kind: "specialty", profile: { conversion_profile: "club" }, family: /^cv-/ },
+  souple: { kind: "catalog", profile: { editorial_profile: "poudre" }, family: /^(ed-|fs-)/ },
 };
 
 /** Informations que seul le client peut fournir : la mention « à compléter » est voulue (rien d'inventé), jamais un titre ni une accroche. */
@@ -46,8 +50,8 @@ describe("Les quatre démonstrations dans leur thème de référence", async () 
       const { spec, project } = f;
       expect(spec.direction).toBe(id);
       expect(validateSpec(spec)).toEqual([]);
-      // FRAISE / ONDE : composition du lot 2C, nom court en en-tête (« Fraise », « ONDE ») ; le nom complet est dans le pied de page.
-      expect(id === "fraise" || id === "onde" ? (id === "fraise" ? "Fraise" : "ONDE") : f.demo.brand).toBe(spec.store.shopName);
+      // FRAISE : composition du lot 2C, nom court en en-tête (« Fraise ») ; le nom complet est dans le pied de page.
+      expect(id === "fraise" ? "Fraise" : f.demo.brand).toBe(spec.store.shopName);
       for (const [k, v] of Object.entries(EXPECT[id].profile)) expect(spec.settings[k], k).toBe(v);
       // Palette : les schémas dérivent des rôles de couleur de la démonstration (accent de marque dans un schéma plein).
       const schemes = spec.settings.color_schemes as Record<string, { settings: Record<string, string> }>;
@@ -90,11 +94,11 @@ describe("Les quatre démonstrations dans leur thème de référence", async () 
     });
   }
 
-  it("adaptation : l'identité FRAISE composée dans le thème ONDE (même catégorie) se rend avec ses couleurs et son nom", async () => {
-    const f = await fr(() => demoProject(user.id, "fraise", { direction: "onde" }));
-    expect(f.spec.direction).toBe("onde");
+  it("adaptation : l'identité FRAISE composée dans le thème SILLON (même catégorie) se rend avec ses couleurs et son nom", async () => {
+    const f = await fr(() => demoProject(user.id, "fraise", { direction: "sillon" }));
+    expect(f.spec.direction).toBe("sillon");
     expect(f.spec.store.shopName).toBe("Fraise Gummies");
-    expect(f.spec.settings.conversion_profile).toBe("contrast");
+    expect(f.spec.settings.conversion_profile).toBe("nomade");
     const schemes = f.spec.settings.color_schemes as Record<string, { settings: Record<string, string> }>;
     expect(Object.values(schemes).some((s) => Object.values(s.settings).some((c) => String(c).toUpperCase() === "#E4473F"))).toBe(true);
     const home = await renderPage({ spec: f.spec, base: "", files: compileTheme(f.spec), cart: [] }, "/", new URLSearchParams());

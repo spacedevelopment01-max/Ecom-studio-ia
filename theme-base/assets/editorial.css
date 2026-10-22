@@ -137,3 +137,192 @@ body[data-editorial="object"] [data-main-product] .purchase__offers{grid-templat
 @media(max-width:749px){.ed-finishes__views{gap:8px}.ed-finishes__views figure{padding:4px}.ed-finishes__views figcaption{font-size:13px;padding-top:8px}.ed-finishes__selection fieldset{gap:8px;margin:8px 0 18px}.ed-finishes__selection label{padding:9px 12px;font-size:14px}.ed-finishes .ed-button{width:100%;justify-content:center;gap:12px}}
 .ed-diptych--side .ed-diptych__grid{grid-template-columns:1fr 1fr;gap:32px;align-items:start}.ed-diptych--side .ed-diptych__frame:nth-child(even){padding-top:0}.ed-diptych--side .ed-diptych__frame>.ed-media{aspect-ratio:4/5}
 @media(max-width:749px){.ed-diptych--side .ed-diptych__grid{grid-template-columns:1fr 1fr;gap:12px}.ed-diptych--side .ed-diptych__frame:nth-child(even){padding-left:0}.ed-diptych--side .ed-diptych__frame>.ed-media{aspect-ratio:4/5}.ed-diptych--side h3{font-size:18px}.ed-diptych--side figcaption{padding-top:8px}}
+/* ─── Ouverture « Arche et promesse » (issue #155, ALCÔVE) : promesse à gauche, produit dans un cadre en arche à droite ; au téléphone, l'arche au-dessus du titre, produit entier. */
+.ed-opening--arch .ed-shell{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:clamp(40px,6vw,104px);align-items:center}
+.ed-opening--arch .ed-opening__title{font-size:clamp(56px,5.8vw,96px);max-width:12ch}
+.ed-opening--arch .ed-opening__media{justify-self:end;width:min(100%,520px)}
+.ed-opening--arch .ed-opening__media .ed-media{aspect-ratio:2/3;height:auto;border-radius:999px 999px 18px 18px}
+.ed-opening--arch .ed-caption{grid-column:1/-1}
+/* Téléphone (#157) : l'arche se range à gauche du titre au lieu de le repousser sous le premier écran ; le texte et le
+   bouton suivent sur toute la largeur. L'arche garde son rapport 2/3, le produit reste entier. */
+@media(max-width:749px){.ed-opening--arch .ed-shell{grid-template-columns:minmax(0,46fr) minmax(0,54fr);grid-template-rows:1fr auto auto 1fr auto auto;grid-template-areas:"media ." "media kicker" "media title" "media ." "prose prose" "button button";column-gap:18px;row-gap:0;align-items:start}.ed-opening--arch .ed-opening__copy{display:contents;text-align:left}.ed-opening--arch .ed-opening__media{grid-area:media;justify-self:stretch;width:100%}.ed-opening--arch .ed-kicker{grid-area:kicker;margin-bottom:6px}.ed-opening--arch .ed-opening__title{grid-area:title;font-size:clamp(32px,9.6vw,44px);line-height:1.04;margin:0;max-width:none}.ed-opening--arch .ed-prose{grid-area:prose;margin-top:22px}.ed-opening--arch .ed-button{grid-area:button;justify-self:start;margin-top:14px}.ed-opening--arch .ed-caption{grid-column:1/-1}}
+/* ─── Profil « cadran » (HEUREN, issue #155) : ivoire et bleu nuit, serif fine, filets argentés, angles droits, cadres
+   doublés d'un fin liseré comme une lunette. */
+body[data-editorial="cadran"]{--radius-button:0px;--cd-line:color-mix(in srgb,var(--c-text) 16%,transparent)}
+body[data-editorial="cadran"] .ed-kicker,body[data-editorial="cadran"] .fs .fs-eyebrow,body[data-editorial="cadran"] .es-eyebrow{text-transform:uppercase;letter-spacing:.32em;font-size:11px;font-weight:500;color:color-mix(in srgb,var(--c-text) 64%,transparent)}
+body[data-editorial="cadran"] .ed-title,body[data-editorial="cadran"] .fs h2{font-weight:400;letter-spacing:-.01em}
+body[data-editorial="cadran"] .ed-opening--journal .ed-opening__title{font-size:clamp(64px,7.4vw,124px);max-width:11ch;line-height:.98}
+body[data-editorial="cadran"] .ed-opening--journal .ed-opening__copy{border-bottom:1px solid var(--cd-line);margin-bottom:28px}
+body[data-editorial="cadran"] .ed-button,body[data-editorial="cadran"] .es-button{border-radius:0;text-transform:uppercase;letter-spacing:.18em;font-size:12px}
+body[data-editorial="cadran"] .ed-opening__media .ed-media,body[data-editorial="cadran"] .ed-statement__aside>.ed-media,body[data-editorial="cadran"] .ed-diptych__frame>.ed-media{outline:1px solid var(--cd-line);outline-offset:10px}
+body[data-editorial="cadran"] .ed-points>*{border-top:1px solid var(--cd-line);padding-top:18px}
+body[data-editorial="cadran"] .ed-diptych figcaption h3{font-weight:400}
+body[data-editorial="cadran"] .es-header{border-bottom:1px solid var(--cd-line)}
+body[data-editorial="cadran"] .es-header__wordmark{letter-spacing:.3em;text-transform:uppercase;font-size:24px}
+body[data-editorial="cadran"] .fs-look__dot,body[data-editorial="cadran"] .fs-look__marker{border-radius:50%}
+body[data-editorial="cadran"] .es-product__title{font-weight:400;letter-spacing:-.01em}
+@media(max-width:749px){body[data-editorial="cadran"] .ed-opening--journal .ed-opening__title{font-size:54px}body[data-editorial="cadran"] .ed-opening__media .ed-media,body[data-editorial="cadran"] .ed-statement__aside>.ed-media,body[data-editorial="cadran"] .ed-diptych__frame>.ed-media{outline-offset:6px}}
+/* ─── Profil « arrondi » (ALCÔVE, issue #155) : sable et terre cuite, serif douce, arches, coins arrondis, boutons en
+   pastille ; les sur-titres en italique de la serif. */
+body[data-editorial="arrondi"]{--radius-button:999px;--radius-card:24px}
+body[data-editorial="arrondi"] .ed-kicker,body[data-editorial="arrondi"] .fs .fs-eyebrow,body[data-editorial="arrondi"] .es-eyebrow{font-family:var(--font-heading-family,var(--font-heading));font-style:italic;text-transform:none;letter-spacing:0;font-size:19px;color:var(--c-accent)}
+body[data-editorial="arrondi"] .ed-title,body[data-editorial="arrondi"] .fs h2{font-weight:400;letter-spacing:-.015em}
+body[data-editorial="arrondi"] .ed-button,body[data-editorial="arrondi"] .es-button{border-radius:999px}
+body[data-editorial="arrondi"] .ed-media{border-radius:24px}
+body[data-editorial="arrondi"] .ed-diptych__frame>.ed-media{border-radius:999px 999px 24px 24px}
+/* Recadrages (#157) : une scène large garde son cadre paysage (coins arrondis, pas d'arche qui rogne le décor), et sur
+   téléphone les cadres paysage de ces deux profils ne sont plus forcés en portrait 4/5 : le produit reste entier. */
+body[data-editorial="arrondi"] .ed-diptych__frame.ed-ratio--landscape>.ed-media{border-radius:24px}
+@media(max-width:749px){body[data-editorial="arrondi"] .ed-diptych--pair .ed-diptych__frame.ed-ratio--landscape>.ed-media,body[data-editorial="cadran"] .ed-diptych--pair .ed-diptych__frame.ed-ratio--landscape>.ed-media{aspect-ratio:4/3}}
+body[data-editorial="arrondi"] .fs-look__media,body[data-editorial="arrondi"] .fs-camp__media,body[data-editorial="arrondi"] .fs-card,body[data-editorial="arrondi"] .es-image-text__media,body[data-editorial="arrondi"] .es-product__media{border-radius:24px;overflow:hidden}
+body[data-editorial="arrondi"] .es-product__thumb,body[data-editorial="arrondi"] .es-product__thumbs img{border-radius:14px}
+body[data-editorial="arrondi"] .es-header{min-height:76px}
+/* Repères sur le produit (issue #155) : la photo garde son format d'origine (vue carrée chez HEUREN, scène 16:9 chez
+   ALCÔVE) pour que chaque repère tombe exactement sur le détail qu'il nomme, à toutes les largeurs. */
+body[data-editorial="cadran"] .fs-lookbook--markers .fs-look__scene{max-width:760px;margin-inline:auto}
+body[data-editorial="cadran"] .fs-lookbook--markers .fs-look__media .ed-media{aspect-ratio:1}
+body[data-editorial="arrondi"] .fs-lookbook--side .fs-look__media .ed-media{aspect-ratio:16/9}
+/* ─── Profil « studio » (ONDE, refonte E-commerce de l'issue #158) : graphite profond, vert signal, titres Chivo serrés,
+   cadres nets à petits rayons, filets verts ; une boutique technique sombre, le produit éclairé comme en studio. */
+body[data-editorial="studio"]{--radius-button:6px;--radius-card:14px;--st-line:color-mix(in srgb,var(--c-text) 14%,transparent);--st-signal:var(--c-accent)}
+body[data-editorial="studio"] .ed-kicker,body[data-editorial="studio"] .fs .fs-eyebrow,body[data-editorial="studio"] .es-eyebrow{display:inline-flex;align-items:center;gap:10px;text-transform:uppercase;letter-spacing:.22em;font-size:11px;font-weight:600;color:var(--st-signal);width:fit-content}
+body[data-editorial="studio"] .ed-kicker::before,body[data-editorial="studio"] .fs .fs-eyebrow::before{content:"";width:18px;height:2px;background:var(--st-signal);flex:none}
+body[data-editorial="studio"] .ed-title,body[data-editorial="studio"] .fs h2,body[data-editorial="studio"] .fs h1,body[data-editorial="studio"] .es-heading{font-weight:700;letter-spacing:-.03em;line-height:1.02}
+body[data-editorial="studio"] .fs-accent,body[data-editorial="studio"] .ed-title em,body[data-editorial="studio"] .es-heading em{font-style:normal;color:var(--st-signal)}
+body[data-editorial="studio"] .ed-button,body[data-editorial="studio"] .es-button{border-radius:6px;text-transform:uppercase;letter-spacing:.12em;font-size:12px;font-weight:700}
+body[data-editorial="studio"] .ed-media,body[data-editorial="studio"] .fs-card,body[data-editorial="studio"] .es-product__media,body[data-editorial="studio"] .fs-camp__media{border-radius:14px;overflow:hidden}
+body[data-editorial="studio"] .es-header{border-bottom:1px solid var(--st-line)}
+body[data-editorial="studio"] .es-product__title{font-weight:700;letter-spacing:-.03em}
+body[data-editorial="studio"] .ed-diptych figcaption h3{font-weight:700;letter-spacing:-.02em}
+body[data-editorial="studio"] .ed-diptych__frame>.ed-media{outline:1px solid var(--st-line);outline-offset:-1px}
+/* Ouverture : la campagne en pleine largeur, titre de page sur la bannière sombre, le casque visible à droite. */
+body[data-editorial="studio"] .fs-campaign h1{font-size:clamp(44px,6.4vw,104px);max-width:12ch}
+body[data-editorial="studio"] .fs-camp--background .fs-camp__media .ed-media{aspect-ratio:16/8;min-height:420px}
+@media(max-width:749px){
+  /* Téléphone : le casque entier dans la bannière (format 16:10), les boutons sous l'image, jamais par-dessus le produit. */
+  body[data-editorial="studio"] .fs-campaign .fs__inner{gap:18px}
+  body[data-editorial="studio"] .fs-campaign h1{font-size:clamp(38px,11vw,52px)}
+  body[data-editorial="studio"] .fs-camp--background .fs-camp__media .ed-media{aspect-ratio:16/10;min-height:0}
+  body[data-editorial="studio"] .fs-camp--background .fs-camp__media::after{display:none}
+  body[data-editorial="studio"] .fs-camp--background .fs-camp__copy{grid-area:2/1;margin:14px 0 0;color:inherit;text-shadow:none;max-width:none}
+  body[data-editorial="studio"] .fs-camp__actions{margin:0;gap:10px}
+  body[data-editorial="studio"] .fs-camp__actions .fs-button{flex:1 1 0;letter-spacing:.04em;font-size:11px;padding-inline:12px;white-space:nowrap}
+}
+/* Fiche sur téléphone : le casque entier, son nom, le prix et le bouton d'achat dans le premier écran (360 × 640 compris). */
+@media(max-width:749px){
+  body[data-editorial="studio"] .es-product__grid{row-gap:12px}
+  body[data-editorial="studio"] .es-product__thumbs{margin-top:6px;gap:6px}
+  body[data-editorial="studio"] .es-product__thumb{width:44px;height:44px;flex:0 0 44px}
+  body[data-editorial="studio"] .es-product__info .es-eyebrow{margin-bottom:4px}
+  body[data-editorial="studio"] .es-product__title{font-size:clamp(1.5rem,7vw,1.9rem);margin-bottom:4px}
+  body[data-editorial="studio"] .es-product__price{margin-bottom:10px}
+}
+/* Ouverture « Plein écran » (bibliothèque E-commerce, issue #158) : la scène bord à bord occupe tout le premier écran
+   sous l'en-tête (hauteur réelle mesurée, repli 120 px ; svh suit la barre du navigateur mobile), titre court et bouton
+   posés sur l'image avec un voile pour le contraste. Image dédiée et cadrage propres au téléphone (texte en haut). */
+.ed-opening--fullscreen{padding:0!important}
+.ed-opening--fullscreen .ed-shell{width:100%;max-width:none;position:relative;display:flex;align-items:flex-end;min-height:max(520px,calc(100vh - var(--es-header-bottom,120px)));min-height:max(520px,calc(100svh - var(--es-header-bottom,120px)))}
+.ed-opening--fullscreen .ed-opening__media{position:absolute;inset:0;z-index:0;height:auto}
+.ed-opening--fullscreen .ed-opening__media .ed-media,.ed-opening--fullscreen .ed-opening__media picture{height:100%;aspect-ratio:auto;border-radius:0}
+.ed-opening--fullscreen .ed-opening__media picture .ed-image{height:100%}
+.ed-opening--fullscreen .ed-opening__media::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(18,8,14,.62) 0%,rgba(18,8,14,.34) 38%,rgba(18,8,14,0) 64%),linear-gradient(0deg,rgba(18,8,14,.38) 0%,rgba(18,8,14,0) 46%)}
+.ed-opening--fullscreen .ed-opening__copy{position:relative;z-index:1;width:min(1320px,calc(100% - 2*clamp(20px,4vw,64px)));margin:0 auto;padding:clamp(32px,6vh,80px) 0;color:#fff;display:block;max-width:none}
+.ed-opening--fullscreen .ed-opening__copy :is(.ed-kicker,.ed-title,.ed-prose,.ed-prose p){color:#fff;text-shadow:0 1px 18px rgba(0,0,0,.25)}
+.ed-opening--fullscreen .ed-opening__title{font-size:clamp(44px,5.4vw,84px);max-width:14ch;margin:0 0 18px}
+.ed-opening--fullscreen .ed-prose{max-width:46ch;margin-bottom:26px}
+.ed-opening--fullscreen .ed-button{background:#fff;color:#1d1218;border-color:#fff}
+.ed-opening--fullscreen .ed-caption{position:absolute;right:16px;bottom:12px;z-index:1;color:#fff}
+@media(max-width:749px){
+  .ed-opening--fullscreen .ed-shell{align-items:flex-start;min-height:max(480px,calc(100vh - var(--es-header-bottom,104px)));min-height:max(480px,calc(100svh - var(--es-header-bottom,104px)))}
+  .ed-opening--fullscreen .ed-opening__media::after{background:linear-gradient(180deg,rgba(18,8,14,.66) 0%,rgba(18,8,14,.4) 34%,rgba(18,8,14,0) 58%)}
+  .ed-opening--fullscreen .ed-opening__copy{width:calc(100% - 40px);padding:22px 0 0}
+  .ed-opening--fullscreen .ed-opening__title{font-size:clamp(32px,9.4vw,42px);margin-bottom:10px}
+  .ed-opening--fullscreen .ed-prose{font-size:15px;line-height:1.5;margin-bottom:16px}
+  .ed-opening--fullscreen .ed-kicker{margin-bottom:10px}
+}
+/* Écrans bas (360 × 640…) : texte resserré pour laisser les produits visibles sous le bouton. */
+@media(max-width:749px) and (max-height:720px){
+  .ed-opening--fullscreen .ed-opening__copy{padding-top:16px}
+  .ed-opening--fullscreen .ed-kicker{margin-bottom:6px}
+  .ed-opening--fullscreen .ed-opening__title{font-size:clamp(28px,8.4vw,34px);margin-bottom:8px}
+  .ed-opening--fullscreen .ed-prose{font-size:14px;line-height:1.42;margin-bottom:12px}
+  .ed-opening--fullscreen .ed-button{padding-top:11px;padding-bottom:11px}
+}
+/* ─── Profil « poudre » (SOUPLE, issue #158) : rose poudré, prune et liège ; serif fine (Playfair) sur texte géométrique
+   (Jost), sur-titres espacés précédés d'un point, cadres doux à 18 px, boutons à 10 px ; une boutique calme où la
+   collection s'ouvre en mosaïque et chaque produit garde son cadre. */
+body[data-editorial="poudre"]{--radius-button:10px;--radius-card:18px;--po-line:color-mix(in srgb,var(--c-text) 12%,transparent);--po-dot:var(--c-accent)}
+body[data-editorial="poudre"] .ed-kicker,body[data-editorial="poudre"] .fs .fs-eyebrow,body[data-editorial="poudre"] .es-eyebrow{display:inline-flex;align-items:center;gap:9px;text-transform:uppercase;letter-spacing:.2em;font-size:11px;font-weight:500;width:fit-content}
+body[data-editorial="poudre"] .ed-kicker::before,body[data-editorial="poudre"] .fs .fs-eyebrow::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--po-dot);flex:none}
+body[data-editorial="poudre"] .ed-title,body[data-editorial="poudre"] .fs h2,body[data-editorial="poudre"] .fs h1,body[data-editorial="poudre"] .es-heading{font-weight:400;letter-spacing:-.012em;line-height:1.08}
+body[data-editorial="poudre"] .fs-accent,body[data-editorial="poudre"] .ed-title em,body[data-editorial="poudre"] .es-heading em{font-style:italic;color:var(--c-accent)}
+body[data-editorial="poudre"] .ed-button,body[data-editorial="poudre"] .es-button,body[data-editorial="poudre"] .fs-button{border-radius:10px;letter-spacing:.04em;font-weight:500}
+body[data-editorial="poudre"] .ed-media,body[data-editorial="poudre"] .fs-card,body[data-editorial="poudre"] .es-product__media,body[data-editorial="poudre"] .fs-coll__media,body[data-editorial="poudre"] .es-image-text__media{border-radius:18px;overflow:hidden}
+body[data-editorial="poudre"] .ed-scene--panorama .ed-media{border-radius:0}
+body[data-editorial="poudre"] .es-product__thumb,body[data-editorial="poudre"] .es-product__thumbs img{border-radius:10px}
+body[data-editorial="poudre"] .es-header{border-bottom:1px solid var(--po-line)}
+body[data-editorial="poudre"] .es-product__title{font-weight:400;letter-spacing:-.012em}
+body[data-editorial="poudre"] .ref-footer__signature{font-family:var(--font-heading-family,var(--font-heading));font-weight:400;letter-spacing:-.02em}
+/* Ouverture en mosaïque : le titre de page, puis la collection en grand et chaque produit dans son cadre (vue entière). */
+body[data-editorial="poudre"] .fs-collections h1{font-size:clamp(40px,5.4vw,80px);max-width:16ch}
+body[data-editorial="poudre"] .fs-coll__list--asym .fs-coll__tile:not(:first-child) .fs-coll__media{background:var(--c-surface,rgba(0,0,0,.03))}
+body[data-editorial="poudre"] .fs-coll__list--asym .fs-coll__tile:not(:first-child) .fs-coll__media .ed-media{aspect-ratio:1}
+body[data-editorial="poudre"] .fs-coll__name{font-family:var(--font-heading-family,var(--font-heading));font-weight:400}
+body[data-editorial="poudre"] .fs-coll__arrow{color:var(--c-accent)}
+@media(max-width:749px){
+  /* Téléphone : titre et bouton dans le premier écran, la collection en bandeau, les quatre produits deux par deux. */
+  body[data-editorial="poudre"] .fs-collections .fs__inner{gap:18px}
+  body[data-editorial="poudre"] .fs-collections h1{font-size:clamp(34px,9.6vw,44px)}
+  body[data-editorial="poudre"] .fs-coll__list--asym{gap:10px}
+  body[data-editorial="poudre"] .fs-coll__card{gap:8px}
+  body[data-editorial="poudre"] .fs-coll__name{font-size:1rem}
+}
+/* Liste des produits : des rangées calmes (vignette, nom et prix, une ligne d'usage), deux colonnes sur ordinateur. */
+body[data-editorial="poudre"] .fs-products__list--list{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:clamp(24px,4vw,64px)}
+body[data-editorial="poudre"] .fs-products__list--list .fs-products__item{display:grid;grid-template-columns:clamp(96px,11vw,148px) minmax(0,1fr);grid-template-rows:auto auto;column-gap:22px;align-content:center;padding:18px 0}
+body[data-editorial="poudre"] .fs-products__list--list .fs-products__item>*{max-width:none}
+body[data-editorial="poudre"] .fs-products__list--list .es-card{display:contents}
+body[data-editorial="poudre"] .fs-products__list--list .es-card__media{grid-column:1;grid-row:1/span 2;aspect-ratio:1;border-radius:14px;overflow:hidden}
+body[data-editorial="poudre"] .fs-products__list--list .es-card__info{grid-column:2;align-self:end;display:flex;flex-direction:column;gap:4px;padding:0}
+body[data-editorial="poudre"] .fs-products__list--list .es-card__title{font-family:var(--font-heading-family,var(--font-heading));font-weight:400;font-size:clamp(1.15rem,1.6vw,1.45rem);line-height:1.2}
+body[data-editorial="poudre"] .fs-products__list--list .fs-meta{grid-column:2;align-self:start;margin:6px 0 0}
+/* Cartes produit (catalogue, recommandations) : le nom sur toute la largeur, le prix dessous. */
+body[data-editorial="poudre"] .es-card{min-width:0}
+body[data-editorial="poudre"] .es-card__info{flex-direction:column;align-items:flex-start;gap:4px}
+body[data-editorial="poudre"] .es-card__title{font-family:var(--font-heading-family,var(--font-heading));font-weight:400;font-size:1.08rem;line-height:1.25}
+/* « Dans la collection » sur la fiche : les quatre pièces en vignettes, deux par deux, toutes visibles. */
+body[data-editorial="poudre"] .es-siblings__row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;overflow:visible}
+body[data-editorial="poudre"] .es-sibling{min-width:0;padding:6px 10px 6px 6px;gap:8px;font-size:13px;line-height:1.25;border-radius:12px}
+body[data-editorial="poudre"] .es-sibling img{width:44px;height:44px;border-radius:8px}
+/* Menu « Collections en cartes » : les quatre pièces sur une rangée, l'encart de la collection à droite. */
+body[data-editorial="poudre"] .es-mega--cards .es-mega__inner{grid-template-columns:minmax(0,1.6fr) minmax(260px,1fr)}
+body[data-editorial="poudre"] .es-mega--cards .es-mega__links{grid-template-columns:repeat(4,minmax(0,1fr))}
+body[data-editorial="poudre"] .es-mega__card-title{font-family:var(--font-heading-family,var(--font-heading));font-weight:400}
+/* Scène et liste des produits : la photo garde son format panoramique, chaque repère tombe sur le produit qu'il nomme. */
+body[data-editorial="poudre"] .fs-lookbook--side .fs-look__media .ed-media{aspect-ratio:16/9}
+/* Catalogue, recommandations, recherche : cadre carré, chaque produit entier (les vues du lot sont carrées). */
+body[data-editorial="poudre"] .es-card__media{aspect-ratio:1}
+/* Ouverture plein écran : bouton clair sur le voile, puis prune au survol. */
+body[data-editorial="poudre"] .ed-opening--fullscreen .ed-button{border-radius:10px;padding:15px 22px;font-weight:500}
+body[data-editorial="poudre"] .ed-opening--fullscreen .ed-opening__title{font-weight:400;letter-spacing:-.015em}
+body[data-editorial="poudre"] .ed-opening--fullscreen .ed-kicker::before{background:#fff}
+/* Phrase qui s'allume au défilement : grande mais posée, jamais un mur de texte. */
+body[data-editorial="poudre"] .es-heading[data-scroll-words]{font-size:clamp(28px,3.3vw,46px);line-height:1.18;max-width:26ch}
+/* Produit à la une : la vue carrée entière, sans bandes au-dessus ni au-dessous. */
+body[data-editorial="poudre"] .fp__stage{aspect-ratio:1;border-radius:18px}
+/* Boutons secondaires : contour prune, jamais un gris neutre. */
+body[data-editorial="poudre"] .es-button--secondary{background:transparent;color:var(--c-text);border:1px solid color-mix(in srgb,var(--c-text) 45%,transparent);text-transform:none;letter-spacing:.02em;box-shadow:none}
+@media(max-width:749px){
+  body[data-editorial="poudre"] .fs-products__list--list{grid-template-columns:minmax(0,1fr)}
+  body[data-editorial="poudre"] .fs-products__list--list .fs-products__item{grid-template-columns:96px minmax(0,1fr);column-gap:16px;padding:14px 0}
+  body[data-editorial="poudre"] .fs-coll__list--asym .fs-coll__tile:first-child .fs-coll__media .ed-media{aspect-ratio:4/3}
+}
+/* Fiche sur téléphone : le produit entier, son nom, le prix et le bouton d'achat dans le premier écran (360 × 640 compris). */
+@media(max-width:749px){
+  body[data-editorial="poudre"] .es-product__grid{row-gap:8px}
+  body[data-editorial="poudre"] .es-product__thumbs{margin-top:4px;gap:6px}
+  body[data-editorial="poudre"] .es-product__thumb{width:40px;height:40px;flex:0 0 40px}
+  body[data-editorial="poudre"] .es-product__info .es-eyebrow{margin-bottom:2px}
+  body[data-editorial="poudre"] .es-product__title{font-size:clamp(1.4rem,6.6vw,1.8rem);line-height:1.05;margin-bottom:2px}
+  body[data-editorial="poudre"] .es-product__price{margin-bottom:8px}
+}

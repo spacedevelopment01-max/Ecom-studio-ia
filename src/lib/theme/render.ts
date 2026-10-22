@@ -788,7 +788,11 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     pageTitle = product?.seo?.title || store.product.title;
     seoDescription = product?.seo?.description || null;
   }
-  else if (tplKey === "collection") pageTitle = store.collection.title;
+  else if (tplKey === "collection") {
+    pageTitle = store.collection.title;
+    // Description propre de la collection quand elle existe (sinon la description du produit principal, comme avant).
+    seoDescription = String(store.collection.description ?? "").replace(/<[^>]+>/g, " ").trim() || null;
+  }
   else if (tplKey === "404") pageTitle = pick(lang, "Page introuvable", "Page not found");
 
   const q = route.search ?? "";

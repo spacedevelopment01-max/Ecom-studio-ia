@@ -218,7 +218,7 @@
             <p class="es-sticky-buy__meta"><span data-sticky-meta>{% unless product.has_only_default_variant %}{{ product.selected_or_first_available_variant.title }}{% endunless %}</span> <strong data-sticky-total>{{ product.selected_or_first_available_variant.price | money }}</strong></p>
           </div>
         </div>
-        <button type="button" class="es-button" data-sticky-add {% unless current_variant.available %}disabled{% endunless %}>{{ 'products.product.add_to_cart' | t }}</button>
+        <button type="button" class="es-button" data-sticky-add {% if current_variant.available == false or current_variant.price == nil %}disabled{% endif %}>{% if current_variant.price == nil %}{{ 'products.product.not_for_sale' | t }}{% else %}{{ 'products.product.add_to_cart' | t }}{% endif %}</button>
       </div>
     </div>
   {%- endif -%}

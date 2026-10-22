@@ -150,7 +150,7 @@ describe("SILLON : démonstration", async () => {
 
   it("en-tête : bouton d'achat permanent vers la fiche ; pied à grand nom de marque", () => {
     const home = pages.get("/")!;
-    expect(home).toMatch(new RegExp(`class="es-button es-button--small es-header__cta"[^>]*>[\\s\\S]*?Commander`));
+    expect(home).toMatch(new RegExp(`class="es-button es-button--small es-header__cta"[^>]*>[\\s\\S]*?Voir la machine`)); // démo sans prix : pas de « Commander » (revue du 21 octobre)
     expect(home).toContain(`href="/products/${spec.store.product.handle}" class="es-button es-button--small es-header__cta"`);
     expect(home).toMatch(/es-footer[^"]*wordmark|footer--wordmark|es-footer__wordmark/);
   });

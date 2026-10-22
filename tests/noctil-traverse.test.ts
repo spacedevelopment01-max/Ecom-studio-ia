@@ -59,7 +59,8 @@ describe("NOCTIL et TRAVERSE : thèmes actifs de la famille « boutique spécial
     expect(themeKinds(id)).toEqual(["specialty"]);
     expect(THEME_FAMILY[id]).toBe("specialty");
     expect(themeAllowed("creer", id)).toBe(false);
-    expect(themeAllowed("vendre", id)).toBe(false);
+    // ONDE passée en E-commerce : NOCTIL devient 3e de la boutique spécialisée (Développer), TRAVERSE reste 4e (Dominer).
+    expect(themeAllowed("vendre", id)).toBe(id === "noctil");
     expect(themeAllowed("dominer", id)).toBe(true);
     expect(themeAllowed(null, id)).toBe(false);
     const t = catalogTheme(id)!;

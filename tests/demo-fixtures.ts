@@ -7,6 +7,8 @@
  *
  * Sert aux preuves de la mission E (aperçus statiques, captures, tests) ; jamais exposé au client comme une démo.
  */
+import { curateOrbe, curateRive } from "./engine-demo-copy";
+import { curateFraise } from "./fraise-demo-copy";
 import fs from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
@@ -20,9 +22,12 @@ import { seedHoldout } from "./lot1-holdout-fixtures";
 import { conversionProject } from "./lot2c-fixtures";
 import { sillonProject, SILLON_DIR, SILLON_MEDIA } from "./sillon-fixtures";
 import { kitProject, kitDir, KIT_MEDIA } from "./noctil-traverse-fixtures";
+import { shopKitProject, SHOP_KIT_MEDIA } from "./heuren-alcove-fixtures";
+import { ondeProject } from "./onde-fixtures";
+import { multiKitProject, MULTI_KIT_MEDIA } from "./museau-souple-fixtures";
 import type { DirectionId } from "../src/lib/theme/directions";
 
-export type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse";
+export type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "souple";
 export const DEMO_PROVENANCE = "Issue #137 (19 octobre 2026) — démonstration du studio, identité du manifeste, visuels IA du kit privé sans personne, aucun paiement";
 
 type ManifestDemo = { id: DemoId; brand: string; product: string; sector: string; category: string; direction: DirectionId; palette: string[]; photo: string; logo: string; images: { src: string; label: string }[]; business?: "products" | "services"; storeType?: "mono" | "multi" | "niche" };
@@ -33,7 +38,7 @@ const IDENTITY: Record<DemoId, { tagline: string; summary: string; story: string
   fraise: { tagline: "Le goût fraise qui fait sourire.", summary: "Gummies tendres au goût fraise dans un flacon refermable.", story: "Une marque de démonstration autour d'un flacon de gummies à la fraise.", positioning: "Un flacon de gummies à la fraise, à poser sur la table de la cuisine ou à glisser dans un sac.", price: 2490 },
   onde: { tagline: "Écoutez. Posez. Repartez.", summary: "Casque graphite et noir mat, touches vertes pour repérer les commandes.", story: "Une marque de démonstration autour d'un casque graphite et vert.", positioning: "Un casque pour écouter chez soi, dans le train ou au studio, avec des commandes repérables d'un coup d'œil.", price: 14900 },
   orbe: {
-    tagline: "La lumière change de place. L'atmosphère aussi.", summary: "Lampe nomade à silhouette arrondie. Trois finitions : Dune, Argile et Charbon.", story: "Une silhouette arrondie, trois finitions et des ambiances à composer dans la maison.", positioning: "Une lampe à poser sur la table du dîner, le bureau ou la table de nuit : elle déplace l'ambiance avec elle.", price: 7900,
+    tagline: "Une lumière à vous, même en location.", summary: "Lampe nomade à silhouette arrondie. Trois finitions : Dune, Argile et Charbon.", story: "Une lampe à poser, sans travaux, pour se sentir chez soi dans un appartement loué.", positioning: "Une lampe à poser sur la table du dîner, le bureau ou la table de nuit : elle déplace l'ambiance avec elle.", price: 7900,
     // Ce que le kit montre réellement : trois finitions (une image par finition), une silhouette. Aucune donnée technique inventée.
     variants: [{ name: "Finition", values: ["Dune", "Argile", "Charbon"] }],
     facts: [{ label: "Finitions", value: "Dune, Argile et Charbon" }, { label: "Silhouette", value: "Abat-jour arrondi sur pied fin, socle rond" }],
@@ -66,8 +71,27 @@ const IDENTITY: Record<DemoId, { tagline: string; summary: string; story: string
     tagline: "Un sac, trois temps du voyage.", summary: "Sac à dos de voyage vert olive : grande poche frontale zippée, sangles latérales à boucle noire, poignée sur le dessus, bretelles noires.", story: "TRAVERSE suit la même personne du café du matin au quai de départ, puis jusqu'à la destination.", positioning: "Un sac de voyage pour le quotidien, le départ et la destination.", price: null,
     media: Object.fromEntries(KIT_MEDIA.traverse.filter((m) => m.role !== "logo").map((m) => [m.file, { role: m.role }])),
   },
+  // HEUREN et ALCÔVE (issue #155, e-commerce mono-produit) : identité utilisée seulement pour la preuve d'adaptation.
+  heuren: {
+    tagline: "L'heure bleue, au poignet.", summary: "Montre à cadran bleu nuit soleillé, index et aiguilles argentés, boîtier argenté, bracelet en cuir bleu nuit cousu de bleu et doublé de beige.", story: "HEUREN est née d'un bleu : celui du ciel juste après le coucher du soleil.", positioning: "Une montre au cadran bleu nuit pour le bureau, le soir et le voyage.", price: null,
+    media: Object.fromEntries(SHOP_KIT_MEDIA.heuren.filter((m) => m.role !== "logo").map((m) => [m.file, { role: m.role }])),
+  },
+  alcove: {
+    tagline: "Une alcôve à soi.", summary: "Fauteuil enveloppant au tissu terracotta texturé : dossier et accoudoirs arrondis, coussin d'assise épais, quatre pieds courts en bois brun.", story: "ALCÔVE est né d'une envie simple : un fauteuil sans angle, dans la couleur chaude de la terre cuite.", positioning: "Un fauteuil enveloppant pour le salon, le coin lecture et la chambre.", price: null,
+    media: Object.fromEntries(SHOP_KIT_MEDIA.alcove.filter((m) => m.role !== "logo").map((m) => [m.file, { role: m.role }])),
+  },
+  // MUSEAU CLUB (issue #158, e-commerce de quatre produits) : identité utilisée seulement pour la preuve d'adaptation.
+  "museau-club": {
+    tagline: "Tout le matériel de balade, en bleu cobalt.", summary: "Collection de balade pour chiens en bleu cobalt : un harnais, une laisse, un collier et une pochette à sacs assortis, avec maille crème, boucles noires, anneaux et mousquetons argentés.", story: "MUSEAU CLUB est né d'une idée simple : une seule couleur pour toute la balade, du harnais à la pochette.", positioning: "Une collection coordonnée pour promener son chien : harnais, laisse, collier et pochette à sacs.", price: null,
+    media: Object.fromEntries(MULTI_KIT_MEDIA["museau-club"].filter((m) => m.role !== "logo").map((m) => [m.file, { role: m.role }])),
+  },
+  // SOUPLE (issue #158, e-commerce de quatre produits) : identité utilisée seulement pour la preuve d'adaptation.
+  souple: {
+    tagline: "Toute la journée, on compte sur vous. Ce moment est à vous.", summary: "Collection de yoga et de Pilates en rose poudré, prune et liège : un tapis rose poudré au dessous prune, une brique couleur liège, une sangle prune à deux anneaux argentés et un anneau de Pilates prune à poignées rose mauve.", story: "SOUPLE est né pour celles qui passent leurs journées à répondre aux autres : quatre pièces assorties pour installer chez soi un moment qui leur appartient.", positioning: "Un coin yoga et Pilates à soi, à la maison : tapis, brique, sangle et anneau, à réunir à son rythme.", price: null,
+    media: Object.fromEntries(MULTI_KIT_MEDIA.souple.filter((m) => m.role !== "logo").map((m) => [m.file, { role: m.role }])),
+  },
   rive: {
-    tagline: "Des espaces qui vous ressemblent.", summary: "Aménagement et décoration intérieure : intentions, usages, lumière et matières.", story: "Une étude d'intention à partir de vos usages, de la lumière et des matières.", positioning: "Des intérieurs pensés pièce par pièce à partir de vos usages, de la lumière et des matières, pour la maison comme pour un petit espace professionnel.", price: null,
+    tagline: "Un intérieur à votre façon de vivre.", summary: "Aménagement et décoration intérieure : intentions, usages, lumière et matières.", story: "Une étude d'intention à partir de vos usages, de la lumière et des matières.", positioning: "Des intérieurs pensés pièce par pièce à partir de vos usages, de la lumière et des matières, pour la maison comme pour un petit espace professionnel.", price: null,
     services: {
       ...emptyServiceProfile(),
       services: [
@@ -119,8 +143,29 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
     const c = await kitProject(userId, id);
     return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
   }
-  if ((id === "fraise" || id === "onde") && !options.direction) {
+  // HEUREN et ALCÔVE (issue #155) : même parcours, famille E-commerce, kits suivis dans public/theme-assets/<id>/.
+  if ((id === "heuren" || id === "alcove") && !options.direction) {
+    const c = await shopKitProject(userId, id);
+    return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
+  }
+  // MUSEAU CLUB (issue #158) : même parcours, famille E-commerce, quatre produits, kit suivi dans public/theme-assets/<id>/.
+  if ((id === "museau-club" || id === "souple") && !options.direction) {
+    const c = await multiKitProject(userId, id);
+    return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
+  }
+  // ONDE (refonte E-commerce, issue #158) : même parcours que HEUREN et ALCÔVE, visuels lus dans le kit privé.
+  if (id === "onde" && !options.direction) {
+    const c = await ondeProject(userId);
+    return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
+  }
+  if (id === "fraise" && !options.direction) {
     const c = await conversionProject(userId, id, path.join(process.cwd(), "public", "demo"), { testVideo: options.testVideo });
+    // Rédaction (consigne du 21 octobre, 19 h 50) : mêmes sections, textes vrais (ni avis, ni remise, ni garantie inventés).
+    curateFraise(c.spec);
+    // Le projet lui-même suit la même décision (vitamines fictives) : nom, catégorie et marque cohérents avec la vitrine,
+    // pour que les sections ajoutées ensuite par le studio reprennent le bon produit.
+    { const pr = loadProject(c.pid); if (pr.product) saveProduct(c.pid, { ...pr.product, name: "Gummies vitaminés goût fraise", category: "Vitamines en gummies (produit fictif)", summary: "Vitamines C, D3, B6 et B12 en gummies goût fraise, deux par jour. Produit et composition fictifs de démonstration." });
+      if (pr.brand) saveBrand(c.pid, { ...pr.brand, tagline: "Vos vitamines ont le goût de fraise.", story: "Une marque fictive de démonstration : des vitamines en gummies goût fraise, pour une routine qu'on a envie de garder." }); }
     run("UPDATE projects SET store_type = ?, business_type = ?, updated_at = ? WHERE id = ?", d.storeType ?? "mono", "products", now(), c.pid);
     saveSettings(c.pid, { ...loadProject(c.pid).settings, storeKind: d.category as "services" | "catalog" | "specialty" });
     return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
@@ -138,7 +183,7 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
   run("UPDATE projects SET store_type = ?, business_type = ?, updated_at = ? WHERE id = ?", d.storeType ?? "mono", services ? "services" : "products", now(), pid);
   saveSettings(pid, { ...loadProject(pid).settings, storeKind: d.category as "services" | "catalog" | "specialty" });
   // Visuels : ceux du manifeste d'abord (rôle d'après l'étiquette), puis les autres images du dossier (scènes).
-  const dir = id === "sillon" ? SILLON_DIR : id === "noctil" || id === "traverse" ? kitDir(id) : path.join(process.cwd(), "public", "demo", id);
+  const dir = id === "sillon" ? SILLON_DIR : id === "noctil" || id === "traverse" || id === "heuren" || id === "alcove" || id === "museau-club" || id === "souple" ? kitDir(id) : path.join(process.cwd(), "public", "demo", id);
   const missing: string[] = [];
   const imported = new Set<string>();
   const put = async (file: string, role: string, extra: Record<string, unknown> = {}) => {
@@ -165,5 +210,9 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
   }
   if (fs.existsSync(dir) && !ident.media) for (const f of fs.readdirSync(dir).filter((x) => /\.(webp|jpg|png)$/i.test(x) && !imported.has(x) && !/^(boutique|site|fiche)-|logo/.test(x)).sort()) await put(f, "scene");
   const built = await composeShop(pid, options.direction ?? d.direction, null, false);
+  // Rédaction propre aux démonstrations ORBE et Atelier Rive (revue du 21 octobre) : textes écrits pour leur cible,
+  // champs inconnus masqués ; la composition du moteur ne change pas.
+  if (!options.direction && id === "orbe") curateOrbe(built.spec);
+  if (!options.direction && id === "rive") curateRive(built.spec);
   return { pid, spec: built.spec, demo: d, missing, project: loadProject(pid), services };
 }

@@ -118,4 +118,21 @@ describe("Choisir une direction applique ses couleurs partout", async () => {
     expect(b.palette).toEqual(DIRECTION_PALETTES[to]);
     expect(await adoptDirection(pid, to)).toBe(false);
   }, 60_000);
+
+  it("charte du client (couleurs validées) : le thème choisi change la composition, jamais ses couleurs", async () => {
+    const u = await createUser(`palv${Date.now()}@test.fr`, "motdepasse-test", "P");
+    const pid = await seedThemeScenario(u.id, "artisan");
+    const mine = { primary: "#15233E", secondary: "#D9DDE3", accent: "#C0C6D0", light: "#F7F5F0", dark: "#0D1526" };
+    const p = loadProject(pid);
+    saveBrand(pid, { ...p.brand!, direction: "heuren", palette: mine, paletteMode: "direction", validated: [...(p.brand!.validated ?? []), "palette"] });
+    expect(await adoptDirection(pid, "souple")).toBe(true);
+    const b = loadProject(pid).brand!;
+    expect(b.direction).toBe("souple");
+    expect(b.palette).toEqual(mine);
+    expect(b.paletteMode).toBe("client");
+    const spec = await composedDirectionSpec(pid, "souple", "fr");
+    const schemes = JSON.stringify(spec.settings.color_schemes).toUpperCase();
+    expect(schemes).toContain(mine.primary);
+    expect(schemes).not.toContain(DIRECTION_PALETTES.souple.primary.toUpperCase());
+  }, 60_000);
 });

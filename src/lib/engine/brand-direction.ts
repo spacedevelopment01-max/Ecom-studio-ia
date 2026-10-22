@@ -1,7 +1,7 @@
 /**
  * La marque suit la direction appliquée au site (galerie des thèmes, Boutique, discussion) : palette de la direction,
- * logo recoloré, charte mise à jour — sans IA. Les vraies couleurs du client restent gardées (« Vos couleurs ») et un
- * logo fourni par le client n'est jamais recoloré.
+ * logo recoloré, charte mise à jour — sans IA. Les vraies couleurs du client restent gardées (« Vos couleurs »), des
+ * couleurs validées par le client (sa charte) restent appliquées, et un logo fourni par le client n'est jamais recoloré.
  */
 import { loadProject, saveBrand } from "../projects";
 import { lockedPalette } from "../theme/direction-palettes";
@@ -11,6 +11,12 @@ export async function adoptDirection(projectId: string, direction: DirectionId):
   const p = loadProject(projectId);
   const b = p.brand;
   if (!b || b.direction === direction) return false;
+  // Charte du client (couleurs validées) : elles restent les siennes dans le thème choisi (« Vos couleurs ») ; seule la
+  // composition du thème change. Sans charte validée, repli : la palette du thème choisi (vraies couleurs gardées à part).
+  if ((b.validated ?? []).includes("palette")) {
+    saveBrand(projectId, { ...b, direction, palette: { ...b.palette }, paletteMode: "client", clientPalette: { ...b.palette } });
+    return true;
+  }
   const locked = lockedPalette(b, { direction, hasClientLogo: b.logo?.status === "provided" || !!p.settings.existingSite });
   const old = b.palette;
   saveBrand(projectId, { ...b, direction, ...(locked ?? {}) });

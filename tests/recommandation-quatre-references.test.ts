@@ -6,15 +6,15 @@ import { loadProject, saveCatalog } from "@/lib/projects";
 import { bindEditorial, EditorialSchema, recommendationCatalogue, recommendationDataReady, rebindRecommendationCategory } from "@/lib/preparation/editorial";
 import { categoryForProject, recordCategoryChoice } from "@/lib/project-handoff/category-store";
 
-it.each(["specialized", "ecommerce", "services"] as const)("%s : sept références actives (SILLON : issue #148 ; NOCTIL et TRAVERSE : issue #152), seulement les bonnes éligibles et aucune installation supposée", async category => {
+it.each(["specialized", "ecommerce", "services"] as const)("%s : onze références actives (SILLON : issue #148 ; NOCTIL et TRAVERSE : issue #152 ; HEUREN et ALCÔVE, e-commerce : issue #155 ; MUSEAU CLUB, boutique spécialisée, et SOUPLE, e-commerce : issue #158), seulement les bonnes éligibles et aucune installation supposée", async category => {
   const f = await fixture(category === "services" ? "services" : "products"); validatedBrand(f.pid, f.input);
   const p = loadProject(f.pid), scope = categoryForProject(p);
   recordCategoryChoice(p, undefined, category, scope.contextHash);
   const catalogue = recommendationCatalogue(p);
-  expect(catalogue.map(c => c.referenceId)).toEqual(["fraise", "onde", "orbe", "atelier-rive", "sillon", "noctil", "traverse"]);
+  expect(catalogue.map(c => c.referenceId)).toEqual(["fraise", "onde", "orbe", "atelier-rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple"]);
   expect(catalogue.some(c => c.status === "available")).toBe(false);
   expect(catalogue.every(c => c.engineThemeId === null)).toBe(true);
-  expect(catalogue.filter(c => c.status === "in_progress").map(c => c.referenceId)).toEqual(category === "specialized" ? ["fraise", "onde", "sillon", "noctil", "traverse"] : category === "ecommerce" ? ["orbe"] : ["atelier-rive"]);
+  expect(catalogue.filter(c => c.status === "in_progress").map(c => c.referenceId)).toEqual(category === "specialized" ? ["fraise", "sillon", "noctil", "traverse", "museau-club"] : category === "ecommerce" ? ["onde", "orbe", "heuren", "alcove", "souple"] : ["atelier-rive"]);
   const projection = rebindRecommendationCategory(p, { recommendedId: "atelier", alternatives: [], reasons: ["Ancienne suggestion"], selectedId: "atelier", status: "selected", catalogue: [] });
   expect(projection.selectedId).toBe("atelier"); expect(projection.recommendedId).toBe("");
   expect(projection.status).toBe("reference_pending"); expect(recommendationDataReady(projection)).toBe(true);

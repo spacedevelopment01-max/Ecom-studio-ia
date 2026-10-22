@@ -53,12 +53,12 @@ const fr = <T,>(fn: () => T) => runWithLang({ ui: 'fr', content: 'fr' }, fn);
 const ctx = (id: string) => ({ params: Promise.resolve({ id }) }) as never;
 beforeEach(() => vi.stubGlobal('fetch', async () => { throw Error('External supplier forbidden'); }));
 afterEach(() => vi.unstubAllGlobals());
-it.each(['creer', 'vendre', 'dominer'] as const)('%s : matrice réelle des sept références et droits de famille', plan => {
+it.each(['creer', 'vendre', 'dominer'] as const)('%s : matrice réelle des onze références et droits de famille', plan => {
     const count = plan === 'creer' ? 1 : plan === 'vendre' ? 3 : 5;
-    for (const [id, i] of ['fraise', 'onde', 'sillon', 'noctil', 'traverse'].map((id, i) => [id, i] as const))
-        expect(themeAllowed(plan, id)).toBe(i < count);
-    for (const id of ['orbe', 'rive'])
-        expect(themeAllowed(plan, id)).toBe(true);
+    // Familles réconciliées à l'intégration #159 / #161 : ONDE, HEUREN, ALCÔVE, SOUPLE en E-commerce ; MUSEAU CLUB spécialisée.
+    for (const family of [['fraise', 'sillon', 'noctil', 'traverse', 'museau-club'], ['orbe', 'onde', 'heuren', 'alcove', 'souple'], ['rive']])
+        for (const [id, i] of family.map((id, i) => [id, i] as const))
+            expect(themeAllowed(plan, id)).toBe(i < count);
     expect(themeAllowed(null, 'fraise')).toBe(false);
 });
 it('nouvelle session : retouches des pages, menus, identité et verrous conservées, état actualisé sans écriture', async () => {

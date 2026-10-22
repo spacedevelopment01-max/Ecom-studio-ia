@@ -413,7 +413,7 @@
           },
           {
             "value": "onde",
-            "label": "Onde — contraste sombre, accent vif (référence)"
+            "label": "Onde — studio graphite, signal vert (référence)"
           },
           {
             "value": "orbe",
@@ -434,6 +434,22 @@
           {
             "value": "traverse",
             "label": "Traverse — carnet de voyage, pierre et olive (référence)"
+          },
+          {
+            "value": "heuren",
+            "label": "Heuren — bleu nuit et précision (référence)"
+          },
+          {
+            "value": "alcove",
+            "label": "Alcôve — courbes et terre cuite (référence)"
+          },
+          {
+            "value": "museau-club",
+            "label": "Museau Club — cobalt et balades (référence)"
+          },
+          {
+            "value": "souple",
+            "label": "Souple — rose poudré, prune et liège (référence)"
           }
         ]
       },
@@ -861,6 +877,22 @@
           {
             "value": "journal",
             "label": "Journal et espaces"
+          },
+          {
+            "value": "cadran",
+            "label": "Cadran : ivoire et bleu nuit, serif fine, filets argentés, angles droits"
+          },
+          {
+            "value": "arrondi",
+            "label": "Arrondi : sable et terre cuite, serif douce, arches et coins arrondis"
+          },
+          {
+            "value": "studio",
+            "label": "Studio : graphite profond, vert signal, titres Chivo et cadres nets"
+          },
+          {
+            "value": "poudre",
+            "label": "Poudre : rose poudré, prune et liège, serif fine, mosaïque et cadres doux"
           }
         ]
       },
@@ -894,6 +926,10 @@
           {
             "value": "itineraire",
             "label": "Itinéraire : crème et olive, serif de magazine, colonnes asymétriques et filets"
+          },
+          {
+            "value": "club",
+            "label": "Club : crème et bleu cobalt, titres épais, pastilles et cartes arrondies"
           }
         ]
       }

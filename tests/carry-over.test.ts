@@ -42,7 +42,7 @@ describe("Préservation des retouches du client", () => {
     expect(guarantee?.disabled).toBe(true);
     expect(r.report.kept.map((x) => x.type)).toEqual(["faq"]);
     expect(r.report.hidden.map((x) => x.type)).toEqual(["cv-guarantee"]);
-    expect(r.report.hidden[0].reason).toMatch(/fraise, onde/);
+    expect(r.report.hidden[0].reason).toMatch(/fraise, sillon/);
     // Les identifiants diffèrent entre deux thèmes : le titre modifié n'a pas d'équivalent → signalé « sans équivalent », pas perdu en silence.
     expect(r.report.dropped.length + r.report.reapplied.length).toBeGreaterThan(0);
     const text = describeReport(r.report, "fr");

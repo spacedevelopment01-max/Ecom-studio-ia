@@ -3,8 +3,10 @@ import { PLANS, type PlanId } from './plans';
 export type PlanFamily = 'specialty' | 'catalog' | 'services';
 /** Order within each family; null slots reserve capacity, never represent selectable themes. */
 export const PLAN_THEME_ORDER: Record<PlanFamily, readonly (string | null)[]> = {
-  specialty: ['fraise','onde','sillon','noctil','traverse'],
-  catalog: ['orbe',null,null,null,null],
+  // ONDE est un thème E-commerce depuis sa refonte (issue #158) ; HEUREN, ALCÔVE et SOUPLE y entrent aussi (#155, #158),
+  // MUSEAU CLUB est une boutique spécialisée (décision du 21 octobre, 12 h 58).
+  specialty: ['fraise','sillon','noctil','traverse','museau-club'],
+  catalog: ['orbe','onde','heuren','alcove','souple'],
   services: ['rive',null,null,null,null],
 };
 export const BASE_SECTIONS: Record<PlanFamily, readonly string[]> = {

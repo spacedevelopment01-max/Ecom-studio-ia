@@ -23,7 +23,7 @@ describe("démonstrations : les quatre seules, anciennes retirées", () => {
       for (const d of list) {
         expect(d.direction, d.id).toBe(d.id);
         expect(d.business).toBe(d.id === "rive" ? "services" : "products");
-        expect((d as { category?: string }).category).toBe(d.id === "rive" ? "services" : d.id === "orbe" ? "catalog" : "specialty");
+        expect((d as { category?: string }).category).toBe(d.id === "rive" ? "services" : ["orbe", "heuren", "alcove", "onde", "souple"].includes(d.id) ? "catalog" : "specialty");
         expect(d.palette).toHaveLength(5);
         expect(d.source?.note ?? "").toMatch(/fictiv|fictional/i);
         expect(startingPhotoIsClients(d), `${d.id} : photo IA, jamais « fournie par le client »`).toBe(false);

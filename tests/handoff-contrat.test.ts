@@ -33,7 +33,7 @@ describe("Contrat amont → thème", async () => {
   const hero = await asset("ouverture.png", 1600, 900), pack = await asset("packshot.png", 1000, 1000, "packshot"), detail = await asset("detail.png", 1000, 1000), scene = await asset("scene.png", 1600, 900), story = await asset("story.png", 900, 1600);
   const contract = {
     schemaVersion: 1, kind: "project_ready_for_theme", projectId: pid, revision: 3, provenance: "simulation", builtAt: Date.now(),
-    recommendation: { recommendedId: "fraise", alternatives: [{ id: "onde", reasons: ["Même catégorie"] }, { id: "rive", reasons: ["Hors catégorie"] }], reasons: ["Produit phare, vente directe"], status: "proposal", catalogue: [{ id: "fraise", status: "available", reason: "" }] },
+    recommendation: { recommendedId: "fraise", alternatives: [{ id: "sillon", reasons: ["Même catégorie"] }, { id: "rive", reasons: ["Hors catégorie"] }], reasons: ["Produit phare, vente directe"], status: "proposal", catalogue: [{ id: "fraise", status: "available", reason: "" }] },
     mediaPolicy: { images: 10, videos: 1, source: "ai", heroVideoRequired: true },
     media: [
       { key: "home.hero", pageKey: "home", sectionKey: "hero", purpose: "ouverture", kind: "image", aspect: "16:9", assetId: hero.id, required: true },
@@ -56,8 +56,8 @@ describe("Contrat amont → thème", async () => {
     expect(r.category.kind).toBe("specialty");
     expect(r.category.source).toBe("preparation");
     expect(r.recommended).toBe("fraise");
-    expect(r.alternatives.map((a) => a.id)).toEqual(["onde"]); // « rive » (prestations) exclu de la catégorie
-    expect(r.eligible).toEqual(["fraise", "onde", "sillon", "noctil", "traverse"]); // catalogue actif seulement : jamais l'ancien catalogue en repli
+    expect(r.alternatives.map((a) => a.id)).toEqual(["sillon"]); // « rive » (prestations) exclu de la catégorie
+    expect(r.eligible).toEqual(["fraise", "sillon", "noctil", "traverse", "museau-club"]); // catalogue actif seulement : jamais l'ancien catalogue en repli
     expect(r.eligible).not.toContain("rive");
     expect(r.excluded.find((x) => x.id === "orbe")?.reason).toMatch(/e-commerce/);
     expect(projectStoreKind(p)).toMatchObject({ kind: "specialty", source: "preparation" });

@@ -15,7 +15,7 @@ Collections et catégories (e-commerce) : accès visuels aux familles de produit
 -%}
 <section id="fs-{{ section.id }}" class="fs fs-collections fs-collections--{{ s.layout | default: 'base' }} fs--{{ prof }}{% if prof == 'ed' %} ed-section{% else %} es-section{% endif %}{% if s.background != blank and s.background != 'scheme' %} fs--{{ s.background }}{% endif %}{% if s.hover %} fs--hover{% endif %} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;--fs-angle:{{ s.gradient_angle | default: 165 }}deg;"{% if fx == 'none' %} data-ed-motion="none"{% endif %} >
   <div class="{% if prof == 'ed' %}ed-shell{% else %}es-container{% endif %} fs__inner">
-    {%- render 'fs-head', prof: prof, eyebrow: s.eyebrow, heading: s.heading, accent: s.heading_accent, text: s.text, align: s.align, effect: fx, button_label: s.button_label, button_link: s.button_link -%}
+    {%- render 'fs-head', prof: prof, eyebrow: s.eyebrow, heading: s.heading, accent: s.heading_accent, text: s.text, align: s.align, effect: fx, button_label: s.button_label, button_link: s.button_link, tag: s.heading_tag -%}
     {%- if s.layout == 'index' -%}
       <ol class="fs-coll__index" role="list" data-fs-index>
         {%- for block in section.blocks -%}{%- if s.stagger -%}{%- assign ix = forloop.index0 -%}{%- else -%}{%- assign ix = '' -%}{%- endif -%}
@@ -67,6 +67,22 @@ Collections et catégories (e-commerce) : accès visuels aux familles de produit
       "type": "text",
       "id": "heading_accent",
       "label": "Fin du titre mise en valeur"
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Niveau du titre",
+      "options": [
+        {
+          "value": "h1",
+          "label": "Titre de page"
+        },
+        {
+          "value": "h2",
+          "label": "Titre de section"
+        }
+      ],
+      "default": "h2"
     },
     {
       "type": "richtext",

@@ -38,7 +38,7 @@ export async function designLayer(spec: ThemeSpec, files: ThemeFiles = compileTh
   const classes = attr(bodyTag, "class")
     .split(/\s+/)
     .filter((c) => c && !c.startsWith("template-"));
-  // Profils graphiques (« conversion » : FRAISE, ONDE, SILLON, NOCTIL, TRAVERSE ; « éditorial » : ORBE, Atelier Rive) : attributs du <body>
+  // Profils graphiques (« conversion » : FRAISE, ONDE, SILLON, NOCTIL, TRAVERSE ; « éditorial » : ORBE, Atelier Rive, HEUREN, ALCÔVE) : attributs du <body>
   // dans Shopify, classes du <body> dans WordPress et PrestaShop (aucun des deux ne permet d'y poser un attribut).
   for (const name of ["conversion", "editorial"]) classes.push(`es-${name}-${attr(bodyTag, `data-${name}`) || "none"}`);
   const stylesheets = [...head.matchAll(/<link href="\/assets\/([^"]+\.css)"/g)].map((m) => m[1]);
