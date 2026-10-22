@@ -73,6 +73,12 @@ Les images sont produites par Chromium sur le vrai serveur Next authentifié. Le
 
 ## Limites et réception
 
+### Attente de la première CI de cette recette
+
+La CI du commit de preuves `b1b2cc858637f6bb949d1b5807247d6841c23d09`, run **39849290106**, a réussi le job Docker (construction, worker actif, accueil/inscription HTTP 200). Son job principal reste à l'installation de `ffmpeg` depuis **20 h 30 min 49 s UTC**, avant les types, tests, Theme Check et build. Le journal de ce job encore actif est indisponible (`404 BlobNotFound`) ; la cause détaillée de l'attente n'est donc pas établie. L'accès CLI aux Actions est bloqué (`Forbidden`) et le connecteur n'expose pas l'annulation.
+
+Cette [observation horodatée](../../reports/angles-studio/ci-installation-observee.json) est publiée pour conserver l'état réel. Son envoi relance la CI par l'événement normal de synchronisation de PR ; la règle de concurrence existante annule l'ancienne exécution. Cette annulation ne sera pas une validation. Aucun contrôle n'est retiré ou modifié, aucun code applicatif supplémentaire n'est changé. Le verdict d'une exécution aboutie de la dernière tête sera consigné dans la description et le commentaire final de #168.
+
 Aucune simplification ni refonte des cartes. Aucun essai sur Contretemps. Les cas refusés ont été provoqués dans les données de test, jamais chez un client. Les validations réelles des fournisseurs, de l’analyse d’images/documents, de la pertinence des sources et des angles attendent l’accord explicite de Thomas et les accès nécessaires. La compilation et cette recette simulée ne les prouvent pas.
 
 Aucun thème construit, export CMS exécuté ou résultat marketing généré dans cette passe. Les tests natifs existants couvrent leurs garde-fous ; aucune installation ou réception sur CMS n’est revendiquée. La version accessible dans le studio habituel n’est pas vérifiée. Livré pour revue sur #168, sans fusion ni déploiement.
