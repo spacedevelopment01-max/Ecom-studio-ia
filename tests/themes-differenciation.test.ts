@@ -43,14 +43,14 @@ beforeEach(() => vi.stubGlobal('fetch', async () => { throw Error('Aucun appel r
 afterEach(() => vi.unstubAllGlobals());
 const opening = (id: string) => { const t = (shapes.themes as any)[id].templates.index; return t.sections[t.order[0]]; };
 
-it('formes de référence : HEUREN en plein écran (maquette), Atelier Rive en cartouche, deux ouvertures différentes', () => {
+it('formes de référence : HEUREN et Atelier Rive ouvrent chacun sur la photo de sa maquette (22 et 23 octobre)', () => {
+    // Deux maquettes validées imposent une photo pleine largeur ; elles diffèrent par le profil (« cadran » / « journal »),
+    // les polices, les couleurs et les boutons (un seul pour HEUREN, deux pour Atelier Rive).
     expect(opening('heuren')).toMatchObject({ type: 'ed-opening', settings: { layout: 'banner', color_scheme: 'scheme-2' } });
-    expect(opening('rive')).toMatchObject({ type: 'ed-opening', settings: { layout: 'cartouche' } });
-    // La section qui suit l'ouverture n'a pas la même couleur qu'elle (sinon les deux se fondent).
-    for (const id of ['heuren', 'rive']) {
-        const t = (shapes.themes as any)[id].templates.index;
-        expect(t.sections[t.order[1]].settings.color_scheme).not.toBe(t.sections[t.order[0]].settings.color_scheme);
-    }
+    expect(opening('rive')).toMatchObject({ type: 'ed-opening', settings: { layout: 'banner', heading_tag: 'h1' } });
+    // HEUREN : la section qui suit l'ouverture n'a pas la même couleur qu'elle (sinon les deux se fondent).
+    const t = (shapes.themes as any).heuren.templates.index;
+    expect(t.sections[t.order[1]].settings.color_scheme).not.toBe(t.sections[t.order[0]].settings.color_scheme);
 });
 
 it.each([['heuren', false], ['rive', true]] as const)('%s : un projet client garde l\'ouverture du thème avec ses propres textes', async (direction, services) => {
@@ -59,8 +59,8 @@ it.each([['heuren', false], ['rive', true]] as const)('%s : un projet client gar
     const s = currentTheme(f.pid)!.spec;
     const hero = s.templates.index.sections[s.templates.index.order[0]];
     expect(hero.type).toBe('ed-opening');
-    expect(hero.settings.layout).toBe(direction === 'heuren' ? 'banner' : 'cartouche');
+    expect(hero.settings.layout).toBe('banner');
     expect(hero.settings.button_label).toBe(f.copy.hero.cta);
-    expect(JSON.stringify(s.templates.index)).not.toMatch(/Marquez|ce moment|Un intérieur à votre façon de vivre/);
+    expect(JSON.stringify(s.templates.index)).not.toMatch(/Marquez|ce moment|Un intérieur à votre façon de vivre|Enfin|Plus de place pour ce qui compte/);
     if (direction === 'heuren') expect((s.settings.color_schemes as any)['scheme-1'].settings.background.toUpperCase()).toBe('#FFFFFF');
 });

@@ -29,8 +29,9 @@ export type ThemeDemoPage = { file: string; label: string };
  */
 export type ThemeDemoStatus = { id: string; ready: boolean; preparing: boolean; stale: boolean; title?: string; services?: boolean; version?: string; date?: string; pages: ThemeDemoPage[]; missing?: string[] };
 
-/** Dossier du kit privé d'une démo (FRAISE, ONDE, ORBE, Atelier Rive) ; les autres thèmes ont leurs médias suivis dans le dépôt. */
-export const KIT_THEMES = ["fraise", "onde", "orbe", "rive"] as const;
+/** Dossier du kit privé d'une démo (FRAISE, ONDE, ORBE) ; les autres thèmes ont leurs médias suivis dans le dépôt (Atelier Rive
+ * depuis le dossier du 23 octobre : public/theme-assets/rive/). */
+export const KIT_THEMES = ["fraise", "onde", "orbe"] as const;
 export const kitDir = (id: string, root = process.cwd()) => path.join(root, "public", "demo", id);
 
 const LOCK = () => path.join(themeDemosDir(), ".preparation.json");

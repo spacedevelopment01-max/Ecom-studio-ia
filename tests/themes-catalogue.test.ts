@@ -86,6 +86,10 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
     const alike: string[] = [];
     for (const a of CATALOG_IDS) for (const d of DIRECTIONS) {
       if (a === d.id || (NEW.has(d.id) && d.id < a)) continue;
+      // Deux thèmes qui ne servent jamais le même type de projet (HEUREN : boutiques ; Atelier Rive : services, maquettes
+      // du 23 octobre) ne sont jamais proposés au même client : leur ressemblance n'est pas comparée.
+      const kindsA = CATALOG_THEMES.find((t) => t.id === a)?.kinds, kindsD = CATALOG_THEMES.find((t) => t.id === d.id)?.kinds;
+      if (kindsA && kindsD && !kindsA.some((k) => kindsD.includes(k))) continue;
       const n = diff(signature(products[a]), signature(products[d.id]));
       if (n < 4) alike.push(`${a} ~ ${d.id} (${n} différences)`);
     }

@@ -158,7 +158,8 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
   // public/theme-assets/rive/.
   if (id === "rive" && !options.direction) {
     const c = await riveProject(userId);
-    return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: true };
+    // Palette de la démonstration refaite (prune) ; le manifeste garde l'ancienne, lue par l'accueil du studio (non modifié).
+    return { pid: c.pid, spec: c.spec, demo: { ...d, palette: ["#37152C", "#F4F1F2", "#37152C", "#FFFFFF", "#1E1A1D"] }, missing: c.missing, project: loadProject(c.pid), services: true };
   }
   // ONDE (refonte E-commerce, issue #158) : même parcours que HEUREN et ALCÔVE, visuels lus dans le kit privé.
   if (id === "onde" && !options.direction) {

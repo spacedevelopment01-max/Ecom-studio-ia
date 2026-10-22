@@ -291,10 +291,15 @@ const SERVICES: FamilyEntry[] = [
     d("immersive", "Promesse dans la scène", "Promise within the scene", "ed-opening", "background", { layout: "immersive" }),
     // Différenciation du 22 octobre (Atelier Rive) : la pièce en pleine largeur, le titre dans un cartouche posé dessus.
     d("cartouche", "Photo pleine largeur et cartouche", "Full-width photo and title card", "ed-opening", "background", { layout: "cartouche" }),
+    // Atelier Rive (maquettes du 23 octobre).
+    d("banner", "Bandeau photo, titre blanc et deux boutons", "Photo band, white title and two buttons", "ed-opening", "background", { layout: "banner" }),
   ]),
   e("services", 2, "offers", { fr: "Prestations proposées", en: "Services offered" }, { fr: "Catalogue de services en cartes, liste ou panneaux.", en: "Service catalogue as cards, a list or panels." }, "prestations services catalogue", [
     d("list", "Liste", "List", "services-list", "list", { layout: "list" }),
     d("cards", "Cartes", "Cards", "services-list", "grid-3", { layout: "cards" }),
+    // Atelier Rive (maquettes du 23 octobre).
+    d("thumbs", "Miniatures en ligne", "Thumbnails in a row", "services-list", "cards-rows", { layout: "thumbs", action_style: "arrow" }),
+    d("illustrated", "Colonnes illustrées, listes et boutons", "Illustrated columns, lists and buttons", "services-list", "grid-3", { layout: "cards", action_style: "button" }),
   ]),
   e("services", 3, "detail", { fr: "Détail d'une prestation", en: "Service detail" }, { fr: "Périmètre, contenu et livrables d'un service.", en: "Scope, content and deliverables of a service." }, "détail prestation périmètre livrables", [
     d("split", "Résumé fixe et détail", "Fixed summary and detail", "fs-service", "sticky", { layout: "split" }),
@@ -305,16 +310,23 @@ const SERVICES: FamilyEntry[] = [
     d("cards", "Cartes", "Cards", "fs-needs", "grid-3", { layout: "cards" }),
     d("list", "Liste", "List", "fs-needs", "list", { layout: "list" }),
     d("accordion", "Accordéons", "Accordions", "fs-needs", "accordion", { layout: "accordion" }),
+    // Atelier Rive (maquettes du 23 octobre).
+    d("row", "Titre, texte et besoins en ligne", "Title, text and needs in a row", "fs-needs", "grid-3", { layout: "row", align: "left" }),
     d("scene", "Scène et texte", "Scene and text", "ed-scene", "split-left", { layout: "split" }),
   ]),
   e("services", 5, "portfolio", { fr: "Réalisations", en: "Projects" }, { fr: "Portfolio avec visuels, légendes et liens.", en: "Portfolio with visuals, captions and links." }, "réalisations portfolio projets", [
     d("editorial", "Éditorial", "Editorial", "portfolio", "asym", { layout: "editorial" }),
     d("grid", "Grille", "Grid", "portfolio", "grid-3", { layout: "grid" }),
+    // Atelier Rive (maquettes du 23 octobre).
+    d("asym", "Galerie asymétrique filtrable", "Asymmetric filterable gallery", "portfolio", "mosaic", { layout: "asym" }),
   ]),
   e("services", 6, "case", { fr: "Étude de cas", en: "Case study" }, { fr: "Demande, contraintes, réponse et résultat d'un projet.", en: "Request, constraints, answer and result of a project." }, "étude de cas projet demande contraintes résultat", [
     d("sticky", "Image fixe pendant le récit", "Image fixed during the story", "fs-case", "sticky", { layout: "sticky" }),
     d("columns", "Quatre colonnes", "Four columns", "fs-case", "grid-4", { layout: "columns" }),
     d("stacked", "Récit empilé", "Stacked story", "fs-case", "stacked", { layout: "stacked" }),
+    // Atelier Rive (maquettes du 23 octobre).
+    d("detail", "Besoin, réponse, galerie et projets voisins", "Need, answer, gallery and neighbouring projects", "fs-case", "split-left", { layout: "detail", align: "left" },
+      [{ type: "part", settings: { kind: "request" } }, { type: "part", settings: { kind: "answer" } }, { type: "photo" }, { type: "photo" }, { type: "photo" }]),
   ]),
   e("services", 7, "before-after", { fr: "Avant / après", en: "Before / after" }, { fr: "Transformation réelle, curseur ou vues juxtaposées.", en: "Real transformation, slider or side-by-side views." }, "avant après transformation curseur comparaison", [
     d("slider", "Curseur", "Slider", "ed-study", "beforeafter", { aligned: true }),
@@ -324,6 +336,8 @@ const SERVICES: FamilyEntry[] = [
     d("timeline", "Frise", "Timeline", "timeline", "timeline"),
     d("horizontal", "Étapes horizontales", "Horizontal steps", "how-to", "steps", { layout: "horizontal" }),
     d("vertical", "Étapes verticales", "Vertical steps", "how-to", "list", { layout: "vertical" }),
+    // Atelier Rive (maquettes du 23 octobre).
+    d("columns", "Étapes en colonnes et photo", "Steps in columns and a photo", "timeline", "split-left", { layout: "columns" }),
     d("chapters", "Chapitres illustrés", "Illustrated chapters", "ref-narrative", "sticky"),
   ]),
   e("services", 9, "commitments", { fr: "Engagements de service", en: "Service commitments" }, { fr: "Suivi, qualité, délais et communication.", en: "Follow-up, quality, timing and communication." }, "engagements service suivi qualité délais", [
@@ -340,6 +354,9 @@ const SERVICES: FamilyEntry[] = [
     d("about", "Récit et valeurs", "Story and values", "about", "split-left"),
     d("statement", "Phrase et repères", "Statement and markers", "ed-statement", "statement"),
     d("text", "Grande déclaration", "Large statement", "rich-text", "statement", { style: "statement" }),
+    // Atelier Rive (maquettes du 23 octobre).
+    d("band", "Bandeau photo et phrase", "Photo band and statement", "ed-scene", "band", { layout: "band", text_side: "left", band_height: "medium" }),
+    d("stacked", "Photo, présentation et valeurs illustrées", "Photo, introduction and illustrated values", "about", "stacked", { layout: "stacked" }),
   ]),
   e("services", 12, "credentials", { fr: "Qualifications et assurances", en: "Qualifications and insurance" }, { fr: "Diplômes, certifications et assurances réels.", en: "Real diplomas, certifications and insurance." }, "qualifications certifications assurances diplômes", [
     d("list", "Liste détaillée", "Detailed list", "fs-credentials", "list", { layout: "list" }),
@@ -384,6 +401,9 @@ const SERVICES: FamilyEntry[] = [
     d("calendar", "Calendrier de réservation", "Booking calendar", "booking-calendar", "table"),
     d("form-image", "Formulaire et image", "Form and image", "ed-contact", "form-split"),
     d("band", "Bandeau d'appel", "Call-to-action band", "cta-banner", "band", { style: "center" }),
+    // Atelier Rive (maquettes du 23 octobre).
+    d("band-split", "Bandeau d'appel, titre à gauche", "Call-to-action band, title on the left", "cta-banner", "band", { style: "split", parallax: false }),
+    d("card", "Carte d'appel avec petite photo", "Call-to-action card with a small photo", "cta-banner", "cards-rows", { style: "card", parallax: false }),
   ]),
 ];
 

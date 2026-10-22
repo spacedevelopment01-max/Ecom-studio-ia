@@ -78,8 +78,8 @@ export function themeFitReason(id: string, kind: StoreKind, lang: "fr" | "en" = 
 
 /**
  * Capture d'exemple d'un thème. Celles des thèmes dont les médias sont suivis dans le dépôt (SILLON, issue #148 ; NOCTIL et
- * TRAVERSE, issue #152 ; HEUREN et ALCÔVE, issue #155 ; MUSEAU CLUB et SOUPLE, issue #158) y sont
+ * TRAVERSE, issue #152 ; HEUREN et ALCÔVE, issue #155 ; MUSEAU CLUB et SOUPLE, issue #158 ; Atelier Rive, dossier du 23 octobre) y sont
  * aussi ; les autres viennent du kit privé (public/demo/directions/, hors dépôt).
  */
-const TRACKED_PREVIEWS: Record<string, string> = { sillon: "/theme-assets/sillon/apercu-theme.jpg", noctil: "/theme-assets/noctil/apercu-theme.jpg", traverse: "/theme-assets/traverse/apercu-theme.jpg", heuren: "/theme-assets/heuren/apercu-theme.jpg", alcove: "/theme-assets/alcove/apercu-theme.jpg", "museau-club": "/theme-assets/museau-club/apercu-theme.jpg", souple: "/theme-assets/souple/apercu-theme.jpg" };
+const TRACKED_PREVIEWS: Record<string, string> = { sillon: "/theme-assets/sillon/apercu-theme.jpg", noctil: "/theme-assets/noctil/apercu-theme.jpg", traverse: "/theme-assets/traverse/apercu-theme.jpg", heuren: "/theme-assets/heuren/apercu-theme.jpg", alcove: "/theme-assets/alcove/apercu-theme.jpg", "museau-club": "/theme-assets/museau-club/apercu-theme.jpg", souple: "/theme-assets/souple/apercu-theme.jpg", rive: "/theme-assets/rive/apercu-theme.jpg" };
 export const themePreviewPath = (id: string) => TRACKED_PREVIEWS[id] ?? `/demo/directions/${id}.jpg`;

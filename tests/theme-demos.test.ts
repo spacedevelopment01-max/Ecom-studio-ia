@@ -49,13 +49,13 @@ describe("démos intégrales des thèmes", () => {
   });
 
   it("démo préparée sans ses visuels (kit privé absent) : jamais servie comme prête, sans préparation en boucle", () => {
-    const rive = path.join(dir, "rive");
-    fs.mkdirSync(rive, { recursive: true });
-    fs.writeFileSync(path.join(rive, "accueil.html"), "<!doctype html><title>Atelier Rive</title>");
-    fs.writeFileSync(path.join(rive, "pages.json"), JSON.stringify({ title: "Atelier Rive", services: true, missing: ["rive-01-salon.webp", "rive-02-cuisine.webp"], pages: [{ file: "accueil.html", label: "Accueil" }] }));
-    fs.writeFileSync(path.join(rive, "demo.json"), JSON.stringify({ version: "v2", date: new Date(Date.now() + 60_000).toISOString() }));
-    const s = themeDemoStatus("rive");
-    expect(s).toMatchObject({ ready: false, stale: false, missing: ["rive-01-salon.webp", "rive-02-cuisine.webp"] });
+    const orbe = path.join(dir, "orbe");
+    fs.mkdirSync(orbe, { recursive: true });
+    fs.writeFileSync(path.join(orbe, "accueil.html"), "<!doctype html><title>ORBE</title>");
+    fs.writeFileSync(path.join(orbe, "pages.json"), JSON.stringify({ title: "ORBE", missing: ["orbe-01.webp", "orbe-02.webp"], pages: [{ file: "accueil.html", label: "Accueil" }] }));
+    fs.writeFileSync(path.join(orbe, "demo.json"), JSON.stringify({ version: "v2", date: new Date(Date.now() + 60_000).toISOString() }));
+    const s = themeDemoStatus("orbe");
+    expect(s).toMatchObject({ ready: false, stale: false, missing: ["orbe-01.webp", "orbe-02.webp"] });
     // Démo périmée ou kit copié depuis : reprise ; sinon rien (le kit n'a pas bougé depuis la préparation).
     expect(themeDemoStatus("sillon").missing).toBeUndefined();
   });
