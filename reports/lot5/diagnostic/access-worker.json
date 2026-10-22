@@ -1,0 +1,823 @@
+{
+  "schema": "studio-access-routing-diagnostic-1",
+  "capturedAt": "2026-10-22T11:54:43.533Z",
+  "readOnly": true,
+  "realProviderCalls": 0,
+  "networkCalls": 0,
+  "generationOrRetry": false,
+  "configurationChanged": false,
+  "codeCommit": "bcb76b4f267623157a9e32bb2268270eaea86c29",
+  "configurationCheckoutCommit": "9f8b6c437580490acc52fd165986a1c3a79b394a",
+  "environmentMode": "development",
+  "servedVersion": "not_probed",
+  "storage": {
+    "databasePresent": true,
+    "databaseSelectorExplicit": false,
+    "dataSelectorExplicit": false
+  },
+  "configurationLoader": "worker",
+  "masterSecret": {
+    "parameter": "APP_SECRET",
+    "present": true,
+    "meetsNativeMinimum": true,
+    "fallbackFilePresent": false,
+    "validity": "not_verified_without_encrypted_provider_record"
+  },
+  "parameterPresence": [
+    {
+      "provider": "anthropic",
+      "parameters": [
+        {
+          "parameter": "PROVIDER_ANTHROPIC_APIKEY",
+          "present": false
+        },
+        {
+          "parameter": "ANTHROPIC_API_KEY",
+          "present": false
+        }
+      ]
+    },
+    {
+      "provider": "openai",
+      "parameters": [
+        {
+          "parameter": "PROVIDER_OPENAI_APIKEY",
+          "present": false
+        },
+        {
+          "parameter": "OPENAI_API_KEY",
+          "present": false
+        }
+      ]
+    },
+    {
+      "provider": "google",
+      "parameters": [
+        {
+          "parameter": "PROVIDER_GOOGLE_APIKEY",
+          "present": false
+        },
+        {
+          "parameter": "GOOGLE_API_KEY",
+          "present": false
+        },
+        {
+          "parameter": "GEMINI_API_KEY",
+          "present": false
+        }
+      ]
+    },
+    {
+      "provider": "fal",
+      "parameters": [
+        {
+          "parameter": "PROVIDER_FAL_APIKEY",
+          "present": false
+        },
+        {
+          "parameter": "FAL_KEY",
+          "present": false
+        },
+        {
+          "parameter": "FAL_API_KEY",
+          "present": false
+        }
+      ]
+    },
+    {
+      "provider": "alibaba",
+      "parameters": [
+        {
+          "parameter": "PROVIDER_ALIBABA_APIKEY",
+          "present": false
+        },
+        {
+          "parameter": "DASHSCOPE_API_KEY",
+          "present": false
+        },
+        {
+          "parameter": "ALIBABA_MODEL_STUDIO_API_KEY",
+          "present": false
+        }
+      ]
+    },
+    {
+      "provider": "pexels",
+      "parameters": [
+        {
+          "parameter": "PROVIDER_PEXELS_APIKEY",
+          "present": false
+        },
+        {
+          "parameter": "PEXELS_API_KEY",
+          "present": false
+        }
+      ]
+    },
+    {
+      "provider": "pixabay",
+      "parameters": [
+        {
+          "parameter": "PROVIDER_PIXABAY_APIKEY",
+          "present": false
+        },
+        {
+          "parameter": "PIXABAY_API_KEY",
+          "present": false
+        }
+      ]
+    }
+  ],
+  "providers": [
+    {
+      "provider": "anthropic",
+      "parameter": "provider.anthropic.apiKey",
+      "storedPresent": false,
+      "encrypted": false,
+      "storedReadability": "absent",
+      "effectiveSource": "none",
+      "effectiveAccessible": false,
+      "disabled": false,
+      "status": "absent",
+      "authentication": "not_tested",
+      "modelAuthorization": "not_tested"
+    },
+    {
+      "provider": "openai",
+      "parameter": "provider.openai.apiKey",
+      "storedPresent": false,
+      "encrypted": false,
+      "storedReadability": "absent",
+      "effectiveSource": "none",
+      "effectiveAccessible": false,
+      "disabled": false,
+      "status": "absent",
+      "authentication": "not_tested",
+      "modelAuthorization": "not_tested"
+    },
+    {
+      "provider": "google",
+      "parameter": "provider.google.apiKey",
+      "storedPresent": false,
+      "encrypted": false,
+      "storedReadability": "absent",
+      "effectiveSource": "none",
+      "effectiveAccessible": false,
+      "disabled": false,
+      "status": "absent",
+      "authentication": "not_tested",
+      "modelAuthorization": "not_tested"
+    },
+    {
+      "provider": "fal",
+      "parameter": "provider.fal.apiKey",
+      "storedPresent": false,
+      "encrypted": false,
+      "storedReadability": "absent",
+      "effectiveSource": "none",
+      "effectiveAccessible": false,
+      "disabled": false,
+      "status": "absent",
+      "authentication": "not_tested",
+      "modelAuthorization": "not_tested"
+    },
+    {
+      "provider": "alibaba",
+      "parameter": "provider.alibaba.apiKey",
+      "storedPresent": false,
+      "encrypted": false,
+      "storedReadability": "absent",
+      "effectiveSource": "none",
+      "effectiveAccessible": false,
+      "disabled": false,
+      "status": "absent",
+      "authentication": "not_tested",
+      "modelAuthorization": "not_tested"
+    },
+    {
+      "provider": "pexels",
+      "parameter": "provider.pexels.apiKey",
+      "storedPresent": false,
+      "encrypted": false,
+      "storedReadability": "absent",
+      "effectiveSource": "none",
+      "effectiveAccessible": false,
+      "disabled": false,
+      "status": "absent",
+      "authentication": "not_tested",
+      "modelAuthorization": "not_tested"
+    },
+    {
+      "provider": "pixabay",
+      "parameter": "provider.pixabay.apiKey",
+      "storedPresent": false,
+      "encrypted": false,
+      "storedReadability": "absent",
+      "effectiveSource": "none",
+      "effectiveAccessible": false,
+      "disabled": false,
+      "status": "absent",
+      "authentication": "not_tested",
+      "modelAuthorization": "not_tested"
+    }
+  ],
+  "textRoutes": [
+    {
+      "task": "vision_analysis",
+      "configuredRoute": {
+        "provider": "anthropic",
+        "model": "claude-opus-5-5"
+      },
+      "origin": "code_default",
+      "manualPinned": false,
+      "resolved": {
+        "provider": "anthropic",
+        "model": "claude-opus-5-5"
+      },
+      "authUsable": false,
+      "difficultyVariants": {
+        "simple": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        },
+        "complex": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        }
+      }
+    },
+    {
+      "task": "strategy",
+      "configuredRoute": {
+        "provider": "anthropic",
+        "model": "claude-opus-5-5"
+      },
+      "origin": "code_default",
+      "manualPinned": false,
+      "resolved": {
+        "provider": "anthropic",
+        "model": "claude-opus-5-5"
+      },
+      "authUsable": false,
+      "difficultyVariants": {
+        "simple": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        },
+        "complex": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        }
+      }
+    },
+    {
+      "task": "copywriting",
+      "configuredRoute": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5-5"
+      },
+      "origin": "code_default",
+      "manualPinned": false,
+      "resolved": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5-5"
+      },
+      "authUsable": false,
+      "difficultyVariants": {
+        "simple": {
+          "provider": "anthropic",
+          "model": "claude-sonnet-5-5"
+        },
+        "complex": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        }
+      }
+    },
+    {
+      "task": "theme_design",
+      "configuredRoute": {
+        "provider": "anthropic",
+        "model": "claude-opus-5-5"
+      },
+      "origin": "code_default",
+      "manualPinned": false,
+      "resolved": {
+        "provider": "anthropic",
+        "model": "claude-opus-5-5"
+      },
+      "authUsable": false,
+      "difficultyVariants": {
+        "simple": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        },
+        "complex": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        }
+      }
+    },
+    {
+      "task": "theme_edit",
+      "configuredRoute": {
+        "provider": "anthropic",
+        "model": "claude-opus-5-5"
+      },
+      "origin": "code_default",
+      "manualPinned": false,
+      "resolved": {
+        "provider": "anthropic",
+        "model": "claude-opus-5-5"
+      },
+      "authUsable": false,
+      "difficultyVariants": {
+        "simple": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        },
+        "complex": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        }
+      }
+    },
+    {
+      "task": "theme_custom",
+      "configuredRoute": {
+        "provider": "anthropic",
+        "model": "claude-opus-5-5"
+      },
+      "origin": "code_default",
+      "manualPinned": false,
+      "resolved": {
+        "provider": "anthropic",
+        "model": "claude-opus-5-5"
+      },
+      "authUsable": false,
+      "difficultyVariants": {
+        "simple": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        },
+        "complex": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        }
+      }
+    },
+    {
+      "task": "quality_control",
+      "configuredRoute": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5-5"
+      },
+      "origin": "code_default",
+      "manualPinned": false,
+      "resolved": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5-5"
+      },
+      "authUsable": false,
+      "difficultyVariants": {
+        "simple": {
+          "provider": "anthropic",
+          "model": "claude-sonnet-5-5"
+        },
+        "complex": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        }
+      }
+    },
+    {
+      "task": "photo_triage",
+      "configuredRoute": {
+        "provider": "anthropic",
+        "model": "claude-haiku-4-5"
+      },
+      "origin": "code_default",
+      "manualPinned": false,
+      "resolved": {
+        "provider": "anthropic",
+        "model": "claude-haiku-4-5"
+      },
+      "authUsable": false,
+      "difficultyVariants": {
+        "simple": {
+          "provider": "anthropic",
+          "model": "claude-haiku-4-5"
+        },
+        "complex": {
+          "provider": "anthropic",
+          "model": "claude-sonnet-5-5"
+        }
+      }
+    },
+    {
+      "task": "cutout_check",
+      "configuredRoute": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5-5"
+      },
+      "origin": "code_default",
+      "manualPinned": false,
+      "resolved": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5-5"
+      },
+      "authUsable": false,
+      "difficultyVariants": {
+        "simple": {
+          "provider": "anthropic",
+          "model": "claude-sonnet-5-5"
+        },
+        "complex": {
+          "provider": "anthropic",
+          "model": "claude-sonnet-5-5"
+        }
+      }
+    },
+    {
+      "task": "logo_symbol",
+      "configuredRoute": {
+        "provider": "anthropic",
+        "model": "claude-opus-5-5"
+      },
+      "origin": "code_default",
+      "manualPinned": false,
+      "resolved": {
+        "provider": "anthropic",
+        "model": "claude-opus-5-5"
+      },
+      "authUsable": false,
+      "difficultyVariants": {
+        "simple": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        },
+        "complex": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        }
+      }
+    },
+    {
+      "task": "social_planning",
+      "configuredRoute": {
+        "provider": "anthropic",
+        "model": "claude-opus-5-5"
+      },
+      "origin": "code_default",
+      "manualPinned": false,
+      "resolved": {
+        "provider": "anthropic",
+        "model": "claude-opus-5-5"
+      },
+      "authUsable": false,
+      "difficultyVariants": {
+        "simple": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        },
+        "complex": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        }
+      }
+    },
+    {
+      "task": "social_copy",
+      "configuredRoute": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5-5"
+      },
+      "origin": "code_default",
+      "manualPinned": false,
+      "resolved": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5-5"
+      },
+      "authUsable": false,
+      "difficultyVariants": {
+        "simple": {
+          "provider": "anthropic",
+          "model": "claude-sonnet-5-5"
+        },
+        "complex": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        }
+      }
+    },
+    {
+      "task": "classification",
+      "configuredRoute": {
+        "provider": "anthropic",
+        "model": "claude-haiku-4-5"
+      },
+      "origin": "code_default",
+      "manualPinned": false,
+      "resolved": {
+        "provider": "anthropic",
+        "model": "claude-haiku-4-5"
+      },
+      "authUsable": false,
+      "difficultyVariants": {
+        "simple": {
+          "provider": "anthropic",
+          "model": "claude-haiku-4-5"
+        },
+        "complex": {
+          "provider": "anthropic",
+          "model": "claude-sonnet-5-5"
+        }
+      }
+    },
+    {
+      "task": "video_direction",
+      "configuredRoute": {
+        "provider": "anthropic",
+        "model": "claude-opus-5-5"
+      },
+      "origin": "code_default",
+      "manualPinned": false,
+      "resolved": {
+        "provider": "anthropic",
+        "model": "claude-opus-5-5"
+      },
+      "authUsable": false,
+      "difficultyVariants": {
+        "simple": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        },
+        "complex": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        }
+      }
+    },
+    {
+      "task": "art_direction",
+      "configuredRoute": {
+        "provider": "anthropic",
+        "model": "claude-opus-5-5"
+      },
+      "origin": "code_default",
+      "manualPinned": false,
+      "resolved": {
+        "provider": "anthropic",
+        "model": "claude-opus-5-5"
+      },
+      "authUsable": false,
+      "difficultyVariants": {
+        "simple": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        },
+        "complex": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        }
+      }
+    },
+    {
+      "task": "ad_creative",
+      "configuredRoute": {
+        "provider": "anthropic",
+        "model": "claude-opus-5-5"
+      },
+      "origin": "code_default",
+      "manualPinned": false,
+      "resolved": {
+        "provider": "anthropic",
+        "model": "claude-opus-5-5"
+      },
+      "authUsable": false,
+      "difficultyVariants": {
+        "simple": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        },
+        "complex": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        }
+      }
+    },
+    {
+      "task": "blog_topics",
+      "configuredRoute": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5-5"
+      },
+      "origin": "code_default",
+      "manualPinned": false,
+      "resolved": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5-5"
+      },
+      "authUsable": false,
+      "difficultyVariants": {
+        "simple": {
+          "provider": "anthropic",
+          "model": "claude-sonnet-5-5"
+        },
+        "complex": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        }
+      }
+    },
+    {
+      "task": "blog_writing",
+      "configuredRoute": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5-5"
+      },
+      "origin": "code_default",
+      "manualPinned": false,
+      "resolved": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5-5"
+      },
+      "authUsable": false,
+      "difficultyVariants": {
+        "simple": {
+          "provider": "anthropic",
+          "model": "claude-sonnet-5-5"
+        },
+        "complex": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        }
+      }
+    }
+  ],
+  "mediaRoutes": [
+    {
+      "usage": "logo",
+      "kind": "image",
+      "mode": "manual",
+      "explicit": false,
+      "off": false,
+      "primary": {
+        "provider": "openai",
+        "model": "gpt-image-2.5-sunburst"
+      },
+      "backup": null,
+      "resolved": null
+    },
+    {
+      "usage": "product_image",
+      "kind": "image",
+      "mode": "manual",
+      "explicit": false,
+      "off": false,
+      "primary": {
+        "provider": "openai",
+        "model": "gpt-image-1"
+      },
+      "backup": null,
+      "resolved": null
+    },
+    {
+      "usage": "product_edit",
+      "kind": "image",
+      "mode": "manual",
+      "explicit": false,
+      "off": false,
+      "primary": {
+        "provider": "openai",
+        "model": "gpt-image-1"
+      },
+      "backup": null,
+      "resolved": null
+    },
+    {
+      "usage": "ad_visual",
+      "kind": "image",
+      "mode": "manual",
+      "explicit": false,
+      "off": false,
+      "primary": {
+        "provider": "openai",
+        "model": "gpt-image-1"
+      },
+      "backup": null,
+      "resolved": null
+    },
+    {
+      "usage": "social_image",
+      "kind": "image",
+      "mode": "manual",
+      "explicit": false,
+      "off": false,
+      "primary": {
+        "provider": "openai",
+        "model": "gpt-image-1"
+      },
+      "backup": null,
+      "resolved": null
+    },
+    {
+      "usage": "text_layout",
+      "kind": "image",
+      "mode": "manual",
+      "explicit": false,
+      "off": false,
+      "primary": {
+        "provider": "openai",
+        "model": "gpt-image-1"
+      },
+      "backup": null,
+      "resolved": null
+    },
+    {
+      "usage": "scene",
+      "kind": "image",
+      "mode": "manual",
+      "explicit": false,
+      "off": false,
+      "primary": {
+        "provider": "openai",
+        "model": "gpt-image-1"
+      },
+      "backup": null,
+      "resolved": null
+    },
+    {
+      "usage": "product_video",
+      "kind": "video",
+      "mode": "manual",
+      "explicit": false,
+      "off": false,
+      "primary": {
+        "provider": "google",
+        "model": "veo-3.0-generate-001"
+      },
+      "backup": null,
+      "resolved": null
+    },
+    {
+      "usage": "text_video",
+      "kind": "video",
+      "mode": "manual",
+      "explicit": false,
+      "off": false,
+      "primary": {
+        "provider": "google",
+        "model": "veo-3.0-generate-001"
+      },
+      "backup": null,
+      "resolved": null
+    },
+    {
+      "usage": "ugc_video",
+      "kind": "video",
+      "mode": "manual",
+      "explicit": false,
+      "off": false,
+      "primary": {
+        "provider": "google",
+        "model": "veo-3.0-generate-001"
+      },
+      "backup": null,
+      "resolved": null
+    }
+  ],
+  "nativeResolution": {
+    "available": true,
+    "writeGuardEnabled": true,
+    "providerNetworkGuardEnabled": true
+  },
+  "limitations": [
+    "A resolved route is not a successful model call or model authorization.",
+    "This process reads one local configuration. CI, Codespace and deployed studio credentials are not inferred.",
+    "No secret values, fragments or fingerprints are exported."
+  ],
+  "textAvailability": false,
+  "textMode": "manual",
+  "alibaba": {
+    "region": "intl",
+    "customEndpointPresent": false,
+    "workspacePresent": false
+  },
+  "logoQualityRelay": null,
+  "prices": {
+    "administrativelyConfirmedAt": null,
+    "fresh": false,
+    "officialPricesRevalidatedNow": false
+  },
+  "voice": {
+    "engine": "kokoro_local",
+    "parameters": [
+      "KOKORO_DIR",
+      "KOKORO"
+    ],
+    "configured": false,
+    "assetsAvailable": false,
+    "synthesisTested": false
+  }
+}

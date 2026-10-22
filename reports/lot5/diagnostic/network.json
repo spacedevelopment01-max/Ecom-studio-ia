@@ -1,0 +1,60 @@
+{
+  "capturedAt": "2026-10-22T11:31:22.922215+00:00",
+  "providerGenerations": 0,
+  "checks": [
+    {
+      "target": "anthropic",
+      "method": "HEAD",
+      "authenticated": false,
+      "generation": false,
+      "curlExit": 56,
+      "httpStatus": "000",
+      "proxyConnect403": true
+    },
+    {
+      "target": "openai",
+      "method": "HEAD",
+      "authenticated": false,
+      "generation": false,
+      "curlExit": 56,
+      "httpStatus": "000",
+      "proxyConnect403": true
+    },
+    {
+      "target": "alibaba",
+      "method": "HEAD",
+      "authenticated": false,
+      "generation": false,
+      "curlExit": 56,
+      "httpStatus": "000",
+      "proxyConnect403": true
+    },
+    {
+      "target": "google",
+      "method": "HEAD",
+      "authenticated": false,
+      "generation": false,
+      "curlExit": 56,
+      "httpStatus": "000",
+      "proxyConnect403": true
+    },
+    {
+      "target": "fal",
+      "method": "HEAD",
+      "authenticated": false,
+      "generation": false,
+      "curlExit": 56,
+      "httpStatus": "000",
+      "proxyConnect403": true
+    },
+    {
+      "target": "codespace",
+      "method": "HEAD",
+      "authenticated": false,
+      "generation": false,
+      "curlExit": 56,
+      "httpStatus": "000",
+      "proxyConnect403": true
+    }
+  ]
+}
