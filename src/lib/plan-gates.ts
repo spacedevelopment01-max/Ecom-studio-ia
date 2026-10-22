@@ -129,8 +129,10 @@ const dayBounds = (at: number, tz: string) => {
  * Contenus éditoriaux programmés ce jour-là pour le projet (hors brouillons et échecs). Une publication et ses
  * adaptations pour d'autres réseaux (même `group_id`) comptent pour UN contenu : la limite du forfait porte sur les
  * créations distinctes, l'envoi reste suivi réseau par réseau. Le contenu de `exceptId` n'est pas compté.
+ * Quota d'envoi (#150) : une approbation seule ne réserve pas d'envoi. Déplacement dans le calendrier : `includeApproved`
+ * compte aussi les contenus approuvés de ce jour-là, pour ne jamais en empiler plus que le forfait n'en enverra.
  */
-export function scheduledPostsOn(projectId: string, at: number, exceptId?: string | null, tz?: string | null): number {
+export function scheduledPostsOn(projectId: string, at: number, exceptId?: string | null, tz?: string | null, o: { includeApproved?: boolean } = {}): number {
   const self = exceptId ? one<{ g: string; timezone: string | null }>("SELECT COALESCE(group_id, id) g, timezone FROM posts WHERE id = ?", exceptId) : undefined;
   const zone = tz || self?.timezone || "Europe/Paris";
   let a: number, b: number;
@@ -140,7 +142,7 @@ export function scheduledPostsOn(projectId: string, at: number, exceptId?: strin
     [a, b] = dayBounds(at, "Europe/Paris");
   }
   return one<{ n: number }>(
-    "SELECT COUNT(DISTINCT COALESCE(group_id, id)) n FROM posts WHERE project_id = ? AND scheduled_at >= ? AND scheduled_at < ? AND status IN ('scheduled','publishing','published','paused','uncertain') AND COALESCE(group_id, id) != ?",
+    `SELECT COUNT(DISTINCT COALESCE(group_id, id)) n FROM posts WHERE project_id = ? AND scheduled_at >= ? AND scheduled_at < ? AND status IN (${o.includeApproved ? "'approved'," : ""}'scheduled','publishing','published','paused','uncertain') AND COALESCE(group_id, id) != ?`,
     projectId,
     a,
     b,

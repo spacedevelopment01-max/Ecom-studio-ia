@@ -316,7 +316,7 @@ export function moveRefusal(projectId: string, postId: string, at: number): stri
   if (!plan) return null; // Découverte : brouillons de démonstration, rien ne peut être programmé.
   if (at > now() + PLANS[plan].calendarDays * 86_400_000 + 3_600_000) return `au-delà des ${PLANS[plan].calendarDays} jours de calendrier du forfait`;
   const r = one<{ status: string }>("SELECT status FROM posts WHERE id = ?", postId);
-  if (r && ["approved", "scheduled", "paused"].includes(r.status) && scheduledPostsOn(projectId, at, postId) >= PLANS[plan].postsPerDay) return `déjà ${PLANS[plan].postsPerDay} publication(s) prévue(s) ce jour-là (limite du forfait)`;
+  if (r && ["approved", "scheduled", "paused"].includes(r.status) && scheduledPostsOn(projectId, at, postId, null, { includeApproved: true }) >= PLANS[plan].postsPerDay) return `déjà ${PLANS[plan].postsPerDay} publication(s) prévue(s) ce jour-là (limite du forfait)`;
   return null;
 }
 
