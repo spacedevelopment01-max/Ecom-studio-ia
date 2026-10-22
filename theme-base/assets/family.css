@@ -453,3 +453,29 @@ body:not(.motion-on) .fs-refs__marquee { overflow-x: auto; -webkit-mask-image: n
 @media(prefers-reduced-motion:reduce){.fs-look__plus::after{transition:none}}
 .fs-lookbook--detail .fs-look__media .ed-media{aspect-ratio:auto;height:auto}
 .fs-lookbook--detail .fs-look__media .ed-image{height:auto}
+/* ─── Besoins « en ligne » et détail de projet (maquette Atelier Rive du 23 octobre) ───────────────────────────────── */
+.fs-needs--row .fs-head{margin-bottom:clamp(28px,4vw,48px)}
+.fs-needs__list--row{list-style:none;margin:0;padding:0;display:grid;gap:24px}
+.fs-needs__list--row .fs-need{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:start}
+.fs-needs__list--row .fs-commit__icon{width:48px;height:48px;margin:0;display:grid;place-items:center;border:0;background:none}
+.fs-needs__list--row .fs-icon{width:44px;height:44px;stroke-width:1}
+@media(min-width:750px){
+  .fs-needs--row .fs-head{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:0 clamp(32px,5vw,72px);align-items:center;text-align:left;max-width:none}
+  .fs-needs--row .fs-head>:not(.ed-prose):not(.es-rte):not(.cv-head__text){grid-column:1}
+  .fs-needs--row .fs-head>.ed-prose,.fs-needs--row .fs-head>.es-rte,.fs-needs--row .fs-head>.cv-head__text{grid-column:2;grid-row:1 / span 3;margin:0;padding-left:clamp(20px,2.4vw,32px);border-left:1px solid color-mix(in srgb,var(--c-text) 22%,transparent)}
+  .fs-needs__list--row{grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(20px,3vw,44px)}
+}
+.fs-case__detail{display:grid;gap:clamp(24px,3vw,40px)}
+.fs-case__part+.fs-case__part{margin-top:clamp(20px,2.4vw,32px)}
+.fs-case__part-title{margin:0 0 10px;font-family:var(--font-heading);font-weight:var(--font-heading-weight,400);font-size:clamp(20px,1.6vw,24px);line-height:1.2}
+.fs-case__label{display:block}
+.fs-case__gallery{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,1.4vw,18px);align-items:start}
+.fs-case__photo figure{margin:0}
+.fs-case__photo .ed-media{aspect-ratio:4/5}
+.fs-case__photo figcaption{margin-top:8px;font-size:13px;color:color-mix(in srgb,var(--c-text) 70%,transparent)}
+.fs-case__nav{display:flex;justify-content:space-between;gap:16px;margin-top:clamp(24px,3vw,40px);padding-top:16px;border-top:1px solid color-mix(in srgb,var(--c-text) 14%,transparent)}
+.fs-case__nav a{display:grid;gap:2px;text-decoration:none;color:inherit;font-size:14px}
+.fs-case__nav a small{font-size:12px;color:color-mix(in srgb,var(--c-text) 62%,transparent)}
+.fs-case__next{text-align:right;margin-left:auto}
+@media(min-width:990px){.fs-case__detail{grid-template-columns:minmax(0,.85fr) minmax(0,1.6fr);align-items:start}}
+@media(max-width:749px){.fs-case__gallery{grid-template-columns:repeat(2,minmax(0,1fr))}.fs-case__photo:nth-child(2){grid-column:1 / -1;order:-1}}

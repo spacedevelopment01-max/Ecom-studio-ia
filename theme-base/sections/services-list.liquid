@@ -12,7 +12,7 @@
 <section class="es-section es-svc es-svc--{{ section.settings.layout }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px; --cols: {{ cols }};">
   <div class="es-container">
     {%- if section.settings.eyebrow != blank or section.settings.heading != blank or section.settings.text != blank -%}
-      <header class="es-svc__head{% if section.settings.layout == 'list' %} es-svc__head--split{% endif %}">
+      <header class="es-svc__head{% if section.settings.layout == 'list' or section.settings.layout == 'thumbs' %} es-svc__head--split{% endif %}">
         <div>
           {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
           {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
@@ -33,7 +33,7 @@
           assign num = forloop.index | prepend: '0' | slice: -2, 2
         -%}
         <li class="es-svc__item es-glow{% if block.settings.highlight %} es-svc__item--featured{% endif %}{% if has_media %} es-svc__item--media{% endif %}" data-reveal="up" style="--i: {{ forloop.index0 | modulo: 4 }}" {{ block.shopify_attributes }}>
-          {%- if has_media and section.settings.layout == 'cards' -%}
+          {%- if has_media and section.settings.layout != 'list' -%}
             <div class="es-svc__media">
               {% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.title, sizes: '(min-width: 990px) 33vw, 100vw', class: 'es-cover' %}
             </div>
@@ -58,9 +58,13 @@
           </div>
           {%- if label != blank -%}
             <div class="es-svc__action">
+              {%- if section.settings.action_style == 'button' -%}
+              <a class="es-button es-button--secondary es-svc__button" href="{{ link | default: routes.root_url }}"{% if link contains '://' %} target="_blank" rel="noopener"{% endif %}><span>{{ label }}</span><span class="visually-hidden"> — {{ block.settings.title }}</span></a>
+              {%- else -%}
               <a class="es-link-arrow es-svc__link" href="{{ link | default: routes.root_url }}"{% if link contains '://' %} target="_blank" rel="noopener"{% endif %}>
-                <span>{{ label }}</span><span class="visually-hidden"> — {{ block.settings.title }}</span>{% render 'icon', name: 'arrow' %}
+                <span{% if section.settings.action_style == 'arrow' %} class="visually-hidden"{% endif %}>{{ label }}</span><span class="visually-hidden"> — {{ block.settings.title }}</span>{% render 'icon', name: 'arrow' %}
               </a>
+              {%- endif -%}
             </div>
           {%- endif -%}
         </li>
@@ -75,6 +79,13 @@
 </section>
 
 {% stylesheet %}
+/* Miniatures en ligne (maquette Atelier Rive) : petite photo carrée, titre, texte court et flèche, sans carte. */
+.es-svc--thumbs .es-svc__item { display: grid; grid-template-columns: clamp(72px, 7vw, 104px) minmax(0, 1fr); column-gap: 20px; align-items: start; background: none; border: 0; border-radius: 0; overflow: visible; }
+.es-svc--thumbs .es-svc__media { aspect-ratio: 1; grid-row: 1 / span 2; }
+.es-svc--thumbs .es-svc__body { padding: 0; gap: 6px; }
+.es-svc--thumbs .es-svc__action { grid-column: 2; padding: 0; margin-top: 8px; }
+@media (min-width: 750px) { .es-svc--thumbs .es-svc__list { grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: clamp(20px, 3vw, 44px); } }
+.es-svc__button { margin-top: auto; align-self: flex-start; }
 .es-svc__head { max-width: 760px; margin-bottom: clamp(28px, 4.4vw, 56px); }
 .es-svc__head--split { max-width: none; display: grid; gap: 16px 64px; align-items: end; }
 @media (min-width: 990px) { .es-svc__head--split { grid-template-columns: 1.1fr .9fr; } }
@@ -136,7 +147,8 @@
     { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Prestations" },
     { "type": "text", "id": "heading", "label": "Titre", "default": "Ce que nous faisons pour vous" },
     { "type": "richtext", "id": "text", "label": "Introduction" },
-    { "type": "select", "id": "layout", "label": "Mise en page", "default": "cards", "options": [{ "value": "cards", "label": "Cartes" }, { "value": "list", "label": "Liste détaillée" }] },
+    { "type": "select", "id": "layout", "label": "Mise en page", "default": "cards", "options": [{ "value": "cards", "label": "Cartes" }, { "value": "list", "label": "Liste détaillée" }, { "value": "thumbs", "label": "Miniatures en ligne" }] },
+    { "type": "select", "id": "action_style", "label": "Action de chaque prestation", "default": "link", "options": [{ "value": "link", "label": "Lien et flèche" }, { "value": "button", "label": "Bouton encadré" }, { "value": "arrow", "label": "Flèche seule" }] },
     { "type": "range", "id": "columns", "min": 2, "max": 4, "step": 1, "label": "Colonnes (cartes)", "default": 3 },
     { "type": "text", "id": "button_label", "label": "Bouton de chaque prestation", "default": "Prendre rendez-vous", "info": "Texte utilisé quand une prestation n'a pas son propre bouton." },
     { "type": "url", "id": "button_link", "label": "Lien du bouton de chaque prestation" },

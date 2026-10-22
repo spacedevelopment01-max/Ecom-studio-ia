@@ -20,6 +20,7 @@ import { sampleBlogs } from "./preview-samples";
 /** Correspondance des polices Shopify utilisées par les directions → fichiers locaux. */
 export const FONT_FILES: Record<string, { family: string; files: Record<number, string>; italic?: Record<number, string>; fallback: string }> = {
   // Instrument Serif (italique d'accent des profils « conversion ») : fichiers locaux ; à confirmer dans la bibliothèque de polices Shopify à l'export.
+  newsreader: { family: "Newsreader", files: { 400: "Newsreader-400.ttf" }, fallback: "serif" },
   instrument_serif: { family: "Instrument Serif", files: { 400: "InstrumentSerif-400.ttf" }, italic: { 400: "InstrumentSerif-400italic.ttf" }, fallback: "serif" },
   cormorant: { family: "Cormorant", files: { 400: "Cormorant-400.ttf", 500: "Cormorant-500.ttf", 600: "Cormorant-600.ttf" }, italic: { 400: "Cormorant-500italic.ttf", 500: "Cormorant-500italic.ttf" }, fallback: "serif" },
   inter: { family: "Inter", files: { 400: "Inter-400.ttf", 500: "Inter-500.ttf", 600: "Inter-600.ttf", 700: "Inter-700.ttf", 800: "Inter-700.ttf" }, fallback: "sans-serif" },

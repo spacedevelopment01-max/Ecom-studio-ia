@@ -311,7 +311,15 @@
     "send": "Envoyer",
     "success": "Merci, nous revenons vers vous rapidement.",
     "error": "Vérifiez votre demande avant de réessayer.",
-    "preview_demo": "Aperçu du studio : l'envoi n'est pas actif dans cette démonstration ; la validation du formulaire, elle, est réelle."
+    "preview_demo": "Aperçu du studio : l'envoi n'est pas actif dans cette démonstration ; la validation du formulaire, elle, est réelle.",
+    "errors": {
+      "required": "Ce champ est à remplir.",
+      "email": "Cette adresse e-mail semble incomplète (exemple : nom@domaine.fr).",
+      "choice": "Choisissez une option.",
+      "consent": "Cochez la case pour que nous puissions vous répondre."
+    },
+    "sending": "Envoi en cours…",
+    "failed": "L'envoi n'a pas abouti. Vérifiez votre connexion puis réessayez."
   },
   "customer": {
     "account": "Mon compte",

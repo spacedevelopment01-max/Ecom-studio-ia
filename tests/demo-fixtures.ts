@@ -7,7 +7,8 @@
  *
  * Sert aux preuves de la mission E (aperçus statiques, captures, tests) ; jamais exposé au client comme une démo.
  */
-import { curateOrbe, curateRive } from "./engine-demo-copy";
+import { curateOrbe } from "./engine-demo-copy";
+import { riveProject } from "./rive-fixtures";
 import { curateFraise } from "./fraise-demo-copy";
 import fs from "node:fs";
 import path from "node:path";
@@ -153,6 +154,12 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
     const c = await multiKitProject(userId, id);
     return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
   }
+  // Atelier Rive (dossier du 23 octobre) : projet de services rédigé d'après les maquettes, médias suivis dans
+  // public/theme-assets/rive/.
+  if (id === "rive" && !options.direction) {
+    const c = await riveProject(userId);
+    return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: true };
+  }
   // ONDE (refonte E-commerce, issue #158) : même parcours que HEUREN et ALCÔVE, visuels lus dans le kit privé.
   if (id === "onde" && !options.direction) {
     const c = await ondeProject(userId);
@@ -213,6 +220,5 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
   // Rédaction propre aux démonstrations ORBE et Atelier Rive (revue du 21 octobre) : textes écrits pour leur cible,
   // champs inconnus masqués ; la composition du moteur ne change pas.
   if (!options.direction && id === "orbe") curateOrbe(built.spec);
-  if (!options.direction && id === "rive") curateRive(built.spec);
   return { pid, spec: built.spec, demo: d, missing, project: loadProject(pid), services };
 }

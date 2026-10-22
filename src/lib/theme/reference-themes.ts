@@ -16,7 +16,10 @@
  * section masquée, à compléter dans le studio. Le caractère graphique de chaque référence est porté par les profils
  * globaux (`conversion_profile`, `editorial_profile`) et les sections de sa famille.
  */
-import type { CatalogTheme, ThemeLook } from "./theme-catalog";
+import type { CatalogTheme, Row, ThemeLook } from "./theme-catalog";
+
+/** Même ligne de composition, quelques réglages de disposition en plus (contenus du moteur inchangés). */
+const tune = (r: Row, extra: Record<string, unknown>): Row => [r[0], { ...r[1], ...extra }, r[2], r[3]];
 
 const look = (l: Partial<ThemeLook> & Pick<ThemeLook, "headerLayout" | "shape" | "menu" | "footer" | "ann" | "card" | "button" | "radius">): ThemeLook => ({
   icons: "plain", headingCase: "none", tracking: 0, headingScale: 100, glow: 0, shine: false, dark: false, gallery: "carousel", pageWidth: 1320, spacing: 100, ds: "product", density: "balanced", buttonUppercase: false,
@@ -198,22 +201,26 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
   {
     id: "rive",
     name: "Atelier Rive",
-    tagline: "Journal et espaces",
-    description: "Composition « journal » pour une entreprise de services : ouverture en grand titre sur trois lignes, approche en déclaration, récit interactif des accompagnements, prestations, méthode, inspirations en diptyque, scène, infos pratiques et premier échange ; papier et vert profond ou couleurs de la marque.",
-    bestFor: ["prestations de services", "architecture d'intérieur", "conseil", "atelier", "devis"],
-    en: { tagline: "Journal and spaces", description: "“Journal” composition for a services business: three-line headline opening, approach as a statement, interactive story of the services, offer, method, inspirations as a diptych, scene, practical info and first conversation; paper and deep green or the brand colors.", bestFor: ["services", "interior design", "consulting", "workshop", "quotes"] },
-    fonts: { heading: "archivo_n6", body: "work_sans_n4" },
-    previewFonts: { heading: "Archivo", body: "Work Sans" },
+    tagline: "Intérieurs sur mesure, grandes photos",
+    description: "Site de services d'après les maquettes du 23 octobre : grande photo d'ouverture et titre serif blanc, besoins en ligne, galerie de projets asymétrique et filtrable, prestations en miniatures, méthode en trois temps, bandeau photo, questions côte à côte et bandeau prune ; fonds blancs, boutons prune, pages projets, atelier et contact.",
+    bestFor: ["prestations de services", "architecture d'intérieur", "décoration", "atelier", "premier rendez-vous"],
+    en: { tagline: "Tailored interiors, large photographs", description: "Services website based on the 23 October mockups: large opening photograph with a white serif headline, needs in a row, asymmetric filterable project gallery, services as thumbnails, three-step method, photo band, questions side by side and a plum band; white backgrounds, plum buttons, project, studio and contact pages.", bestFor: ["services", "interior design", "decoration", "studio", "first appointment"] },
+    fonts: { heading: "newsreader_n4", body: "inter_n4" },
+    previewFonts: { heading: "Newsreader", body: "Inter" },
     motion: "subtle",
     photoMood: "terroir",
     kinds: ["services"],
-    look: look({ headerLayout: "logo-left", shape: "bar", menu: "drawer", footer: "split", ann: "static", card: "minimal", button: "frame", radius: { button: 0, card: 0 }, headingScale: 112, tracking: -2, pageWidth: 1440, ds: "craft", density: "airy" }),
+    look: look({ headerLayout: "logo-left", shape: "bar", menu: "drawer-right", footer: "minimal", ann: "static", card: "minimal", button: "solid", radius: { button: 0, card: 0 }, headingScale: 100, tracking: -1, pageWidth: 1360, ds: "craft", density: "airy", buttonUppercase: false }),
+    headerSettings: { mega_menu: "none", mobile_menu: "drawer-right", mobile_submenu: "accordion", show_search: false, show_cart: false, color_scheme: "scheme-1" },
     settings: { editorial_profile: "journal", conversion_profile: "none", motion_intensity: "subtle" },
     mainProduct: { gallery_layout: "stack", sticky_bar: false, color_scheme: "scheme-1" },
+    // Maquettes du 23 octobre : fonds blancs, texte presque noir, couleur de marque (prune pour la démonstration) sur les
+    // boutons et le bandeau d'appel ; un client garde sa propre couleur, lisible sur blanc et en aplat.
     palette: (k) => {
-      const paper = k.light("#EEEAE2");
-      const deep = k.night(0.18, 0.25);
-      return [k.scheme(paper, deep, k.onLight(paper)), k.scheme(deep, paper, k.onDark(deep), 0.06), k.scheme("#FFFFFF", deep, k.onLight("#FFFFFF")), k.filled(k.p.accent)];
+      const ink = k.night(0.11, 0.16);
+      const accent = k.onLight("#FFFFFF");
+      const band = k.filled(accent);
+      return [k.scheme("#FFFFFF", ink, accent), { ...band, accent: band.text, accent_text: band.background }, k.scheme("#FFFFFF", ink, accent), k.filled(accent)];
     },
     home: (k) => [
       k.lib("ed-scene", 1, { layout: "split", image_asset: k.im.lifestyle ?? k.im.hero }),
@@ -226,20 +233,16 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
     ],
     product: (k) => [k.lib("ed-scene", 2, { layout: "split" }), k.faqSec(1, 4, "lines")],
     services: (k) => [
-      // Ouverture « cartouche » (différenciation du 22 octobre) : la pièce sur tout le premier écran, le titre posé dessus
-      // comme une couverture de magazine ; la démarche passe ensuite en vert profond.
-      k.lib("ed-opening", 1, { layout: "cartouche", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.scene1, padding_top: 0, padding_bottom: 0 }),
-      k.lib("ed-statement", 2, { padding_top: 104, padding_bottom: 104 }),
-      k.lib("ref-narrative", 1),
-      k.R.servicesList(3, "list"),
-      k.R.method(1, "timeline"),
-      // Pas de diptyque sur l'accueil : il reprenait la photo d'ouverture (contrôle du 19 octobre) ; les réalisations montrent déjà quatre photos distinctes.
-      ...k.R.portfolio(1, "editorial"),
-      k.R.testimonials(2),
-      k.lib("ed-scene", 1, { layout: "split", image_asset: k.im.detail2 ?? k.im.lifestyle2 ?? k.im.scene3 }),
-      k.R.practical(3),
-      k.faqSec(1, 5, "lines"),
-      k.R.contactForm(1, "Et si l'on commençait par votre projet ?"),
+      // Accueil de la maquette du 23 octobre, dans l'ordre : photo d'ouverture et titre blanc, besoins en ligne, galerie
+      // asymétrique, prestations en miniatures, méthode en trois temps avec photo, bandeau photo, questions, bandeau prune.
+      k.lib("ed-opening", 1, { layout: "banner", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.scene1, copy_surface: false, padding_top: 0, padding_bottom: 0 }),
+      k.lib("fs-needs", 1, { layout: "row", align: "left", effect: "none", padding_top: 72, padding_bottom: 40 }),
+      ...(k.R.portfolio(1, "editorial") as Row[]).map((r) => tune(r, { layout: "asym", eyebrow: "", show_filters: false, show_tags: false, caption_style: "kicker", link_style: "arrow", padding_top: 32, padding_bottom: 48 })),
+      tune(k.R.servicesList(1, "cards", { withImages: true }), { layout: "thumbs", action_style: "arrow", eyebrow: "", padding_top: 48, padding_bottom: 48 }),
+      tune(k.R.method(1, "timeline"), { layout: "columns", eyebrow: "", padding_top: 48, padding_bottom: 32 }),
+      k.lib("ed-scene", 1, { layout: "band", text_side: "left", band_height: "medium", text_offset: 44, image_asset: k.im.detail2 ?? k.im.lifestyle2 ?? k.im.scene3 }),
+      tune(k.faqSec(1, 3, "lines"), { layout: "side", style: "lines", padding_top: 40, padding_bottom: 64 }),
+      k.lib("cta-banner", 2, { style: "split", parallax: false, overlay: 0, padding_top: 72, padding_bottom: 72 }),
     ],
   },
   {

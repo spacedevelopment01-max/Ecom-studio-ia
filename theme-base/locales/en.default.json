@@ -311,7 +311,15 @@
     "send": "Send",
     "success": "Thanks, we'll get back to you shortly.",
     "error": "Please check your request before trying again.",
-    "preview_demo": "Studio preview: sending is not active in this demo; the form validation itself is real."
+    "preview_demo": "Studio preview: sending is not active in this demo; the form validation itself is real.",
+    "errors": {
+      "required": "Please fill in this field.",
+      "email": "This email address looks incomplete (example: name@domain.com).",
+      "choice": "Please choose an option.",
+      "consent": "Tick the box so that we can reply to you."
+    },
+    "sending": "Sending…",
+    "failed": "Your message could not be sent. Check your connection and try again."
   },
   "customer": {
     "account": "My account",

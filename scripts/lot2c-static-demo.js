@@ -96,6 +96,10 @@
     var key = p.get('id') || (p.get('line') && items[Number(p.get('line')) - 1] && items[Number(p.get('line')) - 1].key); if (!key) return;
     var r = apply('change:' + key + ':' + Number(p.get('quantity') || 0)); if (!r) { note(limitMsg); return; } location.href = 'panier.html';
   });
+  /* Formulaire de contact du thème (premier échange) : transport simulé, rien n'est envoyé. Le thème valide les champs,
+     affiche « envoi en cours », puis le succès après la réponse ; « ?envoi=echec » dans l'adresse simule un échec. */
+  window.__esContactDemoNote = 'Démonstration : aucun message n\u2019est réellement envoyé.';
+  window.__esContactTransport = function () { return new Promise(function (ok, ko) { setTimeout(function () { if (/[?&]envoi=echec/.test(location.search)) ko(new Error('échec simulé')); else ok({ ok: true }); }, 900); }); };
   document.addEventListener('DOMContentLoaded', banner);
   /* Formulaires (délégués au document : le contenu principal peut être remplacé par un état enregistré). */
   document.addEventListener('submit', function (e) {
