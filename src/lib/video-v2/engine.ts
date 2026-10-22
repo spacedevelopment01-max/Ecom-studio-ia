@@ -17,7 +17,10 @@ import { projectForSubject } from "../social-v2/ai-post";
 import { resolveSubject } from "../creative-subject";
 import { videoScope,type VideoApproval } from "./approval";
 import { videoReceipt } from "./receipts";
-import { measuredCues } from "./voice";
+import { measuredCues,projectVoice,voiceAvailable } from "./voice";
+import {isOpenAIVoice} from "./openai-voice";
+import {loadCreativeMemory} from "./creative-memory";
+import { requireCreationPlan } from "../plan-gates";
 import { projectRights } from "../plan-gates";
 import crypto from "node:crypto";
 import fs from "node:fs";
@@ -99,6 +102,11 @@ async function runVideoEngineV2InScope(ctx: JobContext | null, projectId: string
   const jobId = ctx?.job.id ?? null;
   const selected = resolveSubject(p, req.ask.subject ?? null);
   const focused = projectForSubject(p, selected);
+  const prefs=loadCreativeMemory(p.id,p).preferences,voice=projectVoice(prefs);
+  if(!injected&&!req.planOnly&&prefs.voice==="on"){
+    if(!voice||!voiceAvailable(voice))throw new Error("Voix demandée indisponible : aucun média payant lancé, choix et acquis conservés.");
+    if(isOpenAIVoice(voice)){requireCreationPlan(null,p.id,"videos");if(!req.approval)throw new Error("Voix payante : scénario et devis à valider avant lancement.");}
+  }
   const deps = injected ?? realVideoDeps(ctx, p, aiActiveFor(p.userId, p.id));
   const before = jobId ? (all<{ c: number }>("SELECT COALESCE(SUM(cost), 0) c FROM ai_calls WHERE job_id = ?", jobId)[0]?.c ?? 0) : 0;
   const capMicro = Math.round((req.maxCostEur ?? DEFAULT_VIDEO_CAP_EUR) * EUR);
@@ -722,7 +730,7 @@ async function recordVoices(p: Project, deps: VideoV2Deps, doc: VideoDocument, j
   for (const v of doc.audio.voice) {
     try {
       const r = await deps.voice!(v.text, doc.audio.voiceId, `${jobId ?? "video2"}:video2:voice:${hash({ t: v.text, id: doc.audio.voiceId })}`);
-      const a = await saveAsset({ projectId: p.id, userId: p.userId, data: r.data, name: `voix-${v.clipId}.${r.mime.includes("mpeg") ? "mp3" : "wav"}`, mime: r.mime, role: "voice", folderKey: "videos.ads", origin: "generated", meta: { videoV2Voice: { clipId: v.clipId } } });
+      const a = (r.assetId?getAsset(r.assetId):null) ?? await saveAsset({ projectId: p.id, userId: p.userId, data: r.data, name: `voix-${v.clipId}.${r.mime.includes("mpeg") ? "mp3" : "wav"}`, mime: r.mime, role: "voice", folderKey: "videos.ads", origin: "generated", meta: { videoV2Voice: { clipId: v.clipId } } });
       v.assetId = a.id;
       const file=path.join(tmpDir("voice-measure"),"voice");
       let actual:number|null=null;

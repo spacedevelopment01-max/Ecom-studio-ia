@@ -21,7 +21,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
     z.object({
       family: z.enum(["premium", "tech", "artisan", "wellness", "promo"]).optional(),
       animation: z.enum(["sober", "punchy", "mask", "words", "highlight"]).optional(),
-      voiceId:z.enum(["ff_siwis","am_michael"]).optional(),
+      voiceId:z.enum(["ff_siwis","am_michael","openai:nova","openai:shimmer","openai:onyx"]).optional(),
       voiceConsent:z.literal("synthetic").optional(),
       voice: z.enum(["on", "off"]).optional(),
       music: z.enum(["on", "off"]).optional(),

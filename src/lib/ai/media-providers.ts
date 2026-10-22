@@ -1,4 +1,5 @@
 import { assertStrategyInputsCurrent } from "../strategy-consumption";
+import { falVideoRequest } from "./fal-video-request";
 import { createHash } from "node:crypto";
 import type { AspectId } from "../image-v2/types";
 import { REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVIDER } from "./logo-policy";
@@ -1013,7 +1014,7 @@ async function falClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; sec
   if (!q) {
     if (trace.previous) operationPending();
     const dataUri = `data:image/jpeg;base64,${(await sharp(input.image).jpeg({ quality: 90 }).toBuffer()).toString("base64")}`;
-    const r = await providerFetch(`https://queue.fal.run/${model}`, { method: "POST", headers, body: JSON.stringify({ prompt: input.prompt, image_url: dataUri, duration: String(seconds) }) });
+    const r = await providerFetch(`https://queue.fal.run/${model}`, { method: "POST", headers, body: JSON.stringify(falVideoRequest(model,{prompt:input.prompt,image:dataUri,seconds})) });
     if (r.status === 401 || r.status === 403) throw refusal(new PermanentError(falRefusal(r.status, await r.text().catch(() => ""))));
     if (!r.ok) {
       const err = new PermanentError(L("fal.ai a refusé la demande : ", "fal.ai rejected the request: ") + (await r.text()).slice(0, 300));
