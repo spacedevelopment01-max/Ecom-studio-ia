@@ -1,20 +1,17 @@
-/**
- * VOIX OFF des publicités vidéo (guide créatif, règle 11) : voix Kokoro (modèle ouvert Apache 2.0, calculée sur le
- * serveur, AUCUN service payant), déjà utilisée pour les tutoriels (`scripts/tts-kokoro.py`). Disponible quand le
- * modèle est installé (variable `KOKORO_DIR` ou `KOKORO` : dossier kokoro-multi-lang-v1_0 avec model.onnx) ; sinon la
- * vidéo est faite sans voix, et l'aperçu le dit.
- *
- * Texte : français naturel, phrases simples, AUCUNE marque tierce (contrôlé avant), rien d'inventé (seulement le nom,
- * la signature, les étapes et les traits écrits par le client). Environ 55 à 75 mots pour 30 s, ajusté à la durée.
- * Les sous-titres suivent la voix RÉELLEMENT générée (durée mesurée de chaque phrase), deux lignes au plus.
+/** Voix : OpenAI sur choix explicite ; Kokoro conservé pour les anciens choix.
+ * Aucune substitution de timbre ou vidéo muette si une voix demandée échoue.
+ * Les sous-titres utilisent la durée mesurée des phrases ; groupes proportionnels,
+ * sans prétendre fournir un alignement mot à mot.
  */
 import fs from "node:fs";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { execTool } from "../exec-tool";
+import { openaiVoiceAvailable, isOpenAIVoice } from "./openai-voice";
+export const voiceAvailable = (voice?:string|null) => voice && !isOpenAIVoice(voice) ? legacyVoiceAvailable() : openaiVoiceAvailable();
 
 export const kokoroDir = () => process.env.KOKORO_DIR || process.env.KOKORO || "";
-export const voiceAvailable = () => {
+export const legacyVoiceAvailable = () => {
   const d = kokoroDir();
   return !!d && ["model.onnx","voices.bin","tokens.txt","espeak-ng-data","dict","lexicon-us-en.txt"].every(f=>fs.existsSync(path.join(d,f))) && fs.existsSync(path.join(process.cwd(), "scripts", "tts-kokoro.py"));
 };
@@ -85,5 +82,5 @@ export function measuredCues(clipId:string,text:string,durationS:number,maxChars
   return chunks.map((chunk,k)=>{const fromS=at;at+=durationS*chunk.length/Math.max(1,chars);return {id:`cue-${clipId}-${k}`,clipId,fromS,toS:at,text:chunk};});
 }
 export function projectVoice(prefs:{voice?:string;voiceId?:string;voiceConsent?:string}) {
-  return prefs.voice === "on" && prefs.voiceConsent === "synthetic" && ["ff_siwis","am_michael"].includes(prefs.voiceId??"") ? prefs.voiceId! : null;
+  return prefs.voice === "on" && prefs.voiceConsent === "synthetic" && (["ff_siwis","am_michael"].includes(prefs.voiceId??"") || isOpenAIVoice(prefs.voiceId??"")) ? prefs.voiceId! : null;
 }
