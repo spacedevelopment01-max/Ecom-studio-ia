@@ -1,0 +1,24 @@
+{
+  "schema": "lot5-runtime-policy-1",
+  "source": "cloud_environment.environment_status",
+  "phase": "running",
+  "connectivity": "connected",
+  "network": {
+    "mode": "restricted",
+    "state": "enforced",
+    "providerHostAllowed": {
+      "anthropic": false,
+      "openai": false,
+      "google": false,
+      "alibaba": false,
+      "fal": false
+    }
+  },
+  "injectedSecretsDeclared": 0,
+  "injectedRuntimeVariablesDeclared": 0,
+  "outboundIdentitiesDeclared": 0,
+  "providerAuthenticationTested": false,
+  "configurationChanged": false,
+  "recordedAt": "2026-10-22T11:46:19.775Z",
+  "observationsCurrentAtProbe": true
+}

@@ -1,0 +1,95 @@
+{
+  "schema": "lot5-diagnostic-validation-1",
+  "recordedAt": "2026-10-22T11:55:44.583400+00:00",
+  "applicationBaseCommit": "b7829553631283e671d95811ea36b2fb82fe1fb2",
+  "testedDiagnosticCommit": "bcb76b4f267623157a9e32bb2268270eaea86c29",
+  "realProviderCalls": 0,
+  "paidGenerations": 0,
+  "diagnosticProviderCostEur": 0,
+  "creativeValidation": "NOT_PERFORMED",
+  "checks": [
+    {
+      "command": "npx tsc --noEmit",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "npx vitest run tests/lot5-diagnostic-acces-routage.test.ts",
+      "exitCode": 0,
+      "filesPassed": 1,
+      "testsPassed": 10,
+      "kind": "isolated_fabricated_settings_no_provider"
+    },
+    {
+      "command": "npx vitest run",
+      "exitCode": 1,
+      "filesPassed": 351,
+      "filesFailed": 4,
+      "testsPassed": 2841,
+      "testsFailed": 9,
+      "testsSkipped": 22,
+      "durationSeconds": 882.97,
+      "missingVersionedInputs": [
+        "reports/openai-real-brand-test",
+        ".claude/skills",
+        ".devcontainer/devcontainer.json"
+      ],
+      "failedGroups": [
+        "openai-streaming",
+        "skills-bibliotheque",
+        "serveur-dev",
+        "erreurs-outils"
+      ],
+      "resolution": "Versioned inputs restored; all failed groups replayed successfully. No complete second global run after restoration."
+    },
+    {
+      "command": "npx vitest run tests/lot5-diagnostic-acces-routage.test.ts tests/openai-streaming.test.ts tests/skills-bibliotheque.test.ts tests/serveur-dev.test.ts tests/erreurs-outils.test.ts",
+      "exitCode": 0,
+      "filesPassed": 5,
+      "testsPassed": 40,
+      "durationSeconds": 30.1,
+      "kind": "isolated_and_simulated_including_local_fake_SSE_server"
+    },
+    {
+      "command": "npx vitest run tests/openai-streaming.test.ts tests/logo-identity.test.ts",
+      "exitCode": 0,
+      "filesPassed": 2,
+      "testsPassed": 17,
+      "kind": "simulated_provider_local_HTTP_existing_fixture_not_new_generation"
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node --import tsx scripts/diagnostic-acces-routage.ts --config-root LOCAL_STUDIO --loader worker",
+      "exitCode": 0,
+      "nativeResolution": true,
+      "generations": 0,
+      "writes": false
+    },
+    {
+      "command": "node --import tsx scripts/diagnostic-acces-routage.ts --config-root LOCAL_STUDIO --loader next",
+      "exitCode": 0,
+      "nativeResolution": true,
+      "generations": 0,
+      "writes": false
+    }
+  ],
+  "applicationSourceCi": {
+    "commit": "b7829553631283e671d95811ea36b2fb82fe1fb2",
+    "runId": 39768964896,
+    "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/39768964896",
+    "conclusion": "success",
+    "verification": "GitHub workflow metadata and jobs read directly",
+    "scope": "base application only, not proof of this new branch or providers"
+  },
+  "finalBranchCi": "TO_BE_REPORTED_IN_DELIVERY_COMMENT_AFTER_PUSH",
+  "limitations": [
+    "No new application code changed, no merge or deployment.",
+    "No authentication, model authorization or official prices validated.",
+    "Global local run was not green; replay and CI must be distinguished.",
+    "No creative output, browser generation workflow, voice synthesis or real-provider MP4 inspected."
+  ]
+}
