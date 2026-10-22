@@ -58,7 +58,7 @@ for(const services of [false,true])it(`préparation native groupée SEO + calend
  const after=latestContent(f.pid,a.docKey!)!;expect(after.version.id).not.toBe(before.version.id);expect(JSON.stringify(after.doc.blocks)).not.toBe(JSON.stringify(before.doc.blocks));expect(after.doc.blocks.find(b=>b.kind==='h1')).toMatchObject({text:activeStrategy(f.pid)!.angle.examples.hero});
  expect(one<any>('SELECT status FROM content_plans WHERE id=?',plan.planId)?.status).toBe('archived');
  const next=results.find(r=>r.module==='calendar')!;expect(all<any>('SELECT status FROM posts WHERE plan_id=?',next.newIds[0]).every(p=>p.status==='planned')).toBe(true);
- expect(all('SELECT id FROM ai_calls WHERE project_id=?',f.pid)).toHaveLength(0);
+ expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'',f.pid)).toHaveLength(0);
 });
 it('une préparation étrangère ne devient ni visible ni consommable dans un autre contexte préparé',async()=>{
  const f=await clientFixture({incomplete:true,copySource:'ai'});const p1=prepareStrategyChange(f.pid,'usage'),p2=prepareStrategyChange(f.pid,'expression');

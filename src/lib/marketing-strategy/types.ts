@@ -38,6 +38,8 @@ export type MarketingAngle = {
     cta: string;
     advertisement: string;
   };
+  communicationChange?: string;
+  researchDigest?: string;
   source: "creative_hypothesis";
   sources: StrategySource[];
 };
@@ -92,6 +94,7 @@ export type StrategyImpact = {
   needsReview: number;
 };
 export type StrategyPreparation = {
+  researchDigest?: string;
   scope?:"project"|"service_communication";
   id: string;
   projectId: string;
@@ -109,20 +112,27 @@ export type StrategyPreparation = {
 export type StrategyState = {
   scope: "project" | "service_communication";
   projectId: string;
+  offerLabel?: string;
   plan: PlanId | null;
   limit: number;
   angles: MarketingAngle[];
+  legacyAngles?: MarketingAngle[];
+  authorizedAngles?: MarketingAngle[];
+  research?: { status: "understanding_required" | "research_required" | "research_ready" | "ready" | "partial" | "stale"; message: string; sourceCount: number; simulation: boolean; job?: {id:string;status:string;progress:number;message:string} | null };
   usedAngleIds: AngleId[];
   active: ActiveStrategy | null;
   missingQuestions: { key: string; question: string }[];
   recommendation: { angleId: AngleId; reason: string } | null;
   generalistExplanation: string;
   analysis: {
-    method: "local_project_evidence";
+    method: "local_project_evidence" | "sourced_ai_research";
+    researchDigest?: string;
+    simulation?: boolean;
+    recommendation?: {angleId:AngleId;reason:string} | null;
     currentInputDigest?: string;
     inputDigest: string;
     sources: StrategySource[];
-    marketSourcesVerified: false;
+    marketSourcesVerified: boolean;
     limits: string[];
   };
   alignment: StrategyContent[];

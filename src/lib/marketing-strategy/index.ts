@@ -1,3 +1,5 @@
+import {stateOf} from "../preparation/store";
+import {marketingResearch,researchAngles} from "./research";
 import { strategyVisibilitySql, strategyContentVisible } from "./visibility";
 /** Persistent project-wide angle identities and atomic activation. No supplier, payment or publishing here. */
 import { createHash } from "node:crypto";
@@ -8,7 +10,6 @@ import { projectPlan } from "../project-billing";
 import { HttpError } from "../auth";
 import { canonicalJSON } from "../brain/hash";
 import {
-  buildAngles,
   proposalAnalysis,
   inputDigest,
   GENERALIST_EXPLANATION,
@@ -33,6 +34,7 @@ function schema() {
   const d = db();
   if (installed.has(d)) return;
   d.exec(`
+ CREATE TABLE IF NOT EXISTS marketing_strategy_set_history(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,angles_json TEXT NOT NULL,analysis_json TEXT NOT NULL,input_digest TEXT NOT NULL,created_at INTEGER NOT NULL);
  CREATE TABLE IF NOT EXISTS marketing_strategy_sets(project_id TEXT PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE, angles_json TEXT NOT NULL, analysis_json TEXT NOT NULL, input_digest TEXT NOT NULL, created_at INTEGER NOT NULL);
  CREATE TABLE IF NOT EXISTS marketing_strategy_versions(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,version INTEGER NOT NULL,angle_id TEXT NOT NULL,angle_json TEXT NOT NULL,input_digest TEXT NOT NULL,activated_at INTEGER NOT NULL,UNIQUE(project_id,version));
  CREATE TABLE IF NOT EXISTS marketing_strategy_active(project_id TEXT PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE,strategy_id TEXT NOT NULL);
@@ -96,7 +98,7 @@ export function assertStrategyChosen(projectId: string) {
   if (!serviceStrategyProject(projectId) && !activeStrategy(projectId))
     throw new HttpError(
       409,
-      "Choisissez explicitement un angle marketing avant de construire votre thème. Les cinq propositions et les démonstrations restent consultables sans activation.",
+      "Choisissez explicitement un angle marketing avant de construire votre thème. La recherche sourcée et les démonstrations restent consultables sans activation.",
       "strategy_choice_required",
     );
 }
@@ -139,84 +141,37 @@ function quota(projectId: string, angleId: AngleId) {
     );
   return { plan, limit, used };
 }
-function proposalSet(projectId: string) {
-  schema();
-  const p = loadProject(projectId),
-    a = proposalAnalysis(p),
-    digest = inputDigest(p);
-  let set = one<any>(
-    "SELECT * FROM marketing_strategy_sets WHERE project_id=?",
-    projectId,
-  );
-  if (!set) {
-    const analysis = {
-      method: "local_project_evidence",
-      inputDigest: digest,
-      sources: a.sources,
-      marketSourcesVerified: false,
-      limits: a.limits,
-    };
-    run(
-      "INSERT OR IGNORE INTO marketing_strategy_sets VALUES(?,?,?,?,?)",
-      projectId,
-      JSON.stringify(buildAngles(p)),
-      JSON.stringify(analysis),
-      digest,
-      now(),
-    );
-    set = one(
-      "SELECT * FROM marketing_strategy_sets WHERE project_id=?",
-      projectId,
-    );
-  } else if (set.input_digest !== digest) {
-    const original=json<MarketingAngle[]>(set.angles_json,[]);
-    const activated=!!one('SELECT 1 FROM marketing_strategy_used WHERE project_id=? LIMIT 1',projectId);
-    // Updating facts is allowed; recalculation must not turn an activated identity into a new target/motivation.
-    const reconciled=buildAngles(p).map(fresh=>{const old=original.find(a=>a.id===fresh.id);return !activated||!old?fresh:{...fresh,title:old.title,audience:old.audience,situation:old.situation,notPriority:old.notPriority,tension:old.tension,motivation:old.motivation,tone:old.tone};});
-    const analysis = {
-      method: "local_project_evidence",
-      inputDigest: digest,
-      sources: a.sources,
-      marketSourcesVerified: false,
-      limits: a.limits,
-    };
-    run(
-      "UPDATE marketing_strategy_sets SET angles_json=?,analysis_json=?,input_digest=? WHERE project_id=?",
-      JSON.stringify(reconciled),
-      JSON.stringify(analysis),
-      digest,
-      projectId,
-    );
-    set = one(
-      "SELECT * FROM marketing_strategy_sets WHERE project_id=?",
-      projectId,
-    );
-  }
-  return { p, a, digest, set };
+function proposalSet(projectId:string){
+ schema();const p=loadProject(projectId);
+ return {p,a:proposalAnalysis(p),digest:inputDigest(p),set:one<any>('SELECT * FROM marketing_strategy_sets WHERE project_id=?',projectId)};
 }
-/** Reanalysis reconciles facts within the same five stable motivations; activated snapshots and quota history remain immutable. */
-export function proposeStrategies(projectId: string): StrategyState {
-  const { p, a, digest } = proposalSet(projectId);
-  const used = all<{ angle_id: string }>(
-    "SELECT angle_id FROM marketing_strategy_used WHERE project_id=?",
-    projectId,
-  );
-  if (!used.length) {
-    run(
-      "UPDATE marketing_strategy_sets SET angles_json=?,analysis_json=?,input_digest=? WHERE project_id=?",
-      JSON.stringify(buildAngles(p)),
-      JSON.stringify({
-        method: "local_project_evidence",
-        inputDigest: digest,
-        sources: a.sources,
-        marketSourcesVerified: false,
-        limits: a.limits,
-      }),
-      digest,
-      projectId,
-    );
-  }
-  return getStrategyState(projectId);
+/** Reuse the sourced native preparation; this endpoint never generates local proposals or spends. */
+export function proposeStrategies(projectId:string):StrategyState{
+ const {p,set,digest}=proposalSet(projectId),ready=marketingResearch(p);
+ if(!ready.data){const saved=getStrategyState(projectId);if(saved.angles.length)return saved;throw new HttpError(409,ready.research.message,'strategy_research_required');}
+ const angles=researchAngles(ready.data,p);
+ for(const old of authorizedAngles(projectId)){
+  const fresh=angles.find(a=>a.id===old.id);
+  if(fresh&&(fresh.audience!==old.audience||fresh.motivation!==old.motivation))throw new HttpError(409,'La nouvelle proposition redéfinit un angle déjà utilisé. Historique et quota conservés ; faites corriger la recherche.','strategy_identity_changed');
+ }
+ const analysis={evidence:{brief:stateOf(projectId)!.stages.brief!.data,research:ready.data},method:'sourced_ai_research',inputDigest:digest,researchDigest:ready.digest,simulation:ready.research.simulation,sources:angles.flatMap(a=>a.sources),marketSourcesVerified:!ready.research.simulation,limits:ready.data.coverage?.limits??[],recommendation:{angleId:ready.data.recommendedId,reason:ready.data.recommendation}};
+ if(set?.input_digest===digest&&json<any>(set.analysis_json,{}).researchDigest===ready.digest)return getStrategyState(projectId);
+ tx(()=>{
+  if(inputDigest(loadProject(projectId))!==digest||marketingResearch(loadProject(projectId)).digest!==ready.digest)throw new HttpError(409,'Le contexte a changé pendant la reprise. Les versions précédentes sont conservées.','strategy_research_stale');
+  const prior=one<any>('SELECT * FROM marketing_strategy_sets WHERE project_id=?',projectId);
+  if(prior)run('INSERT INTO marketing_strategy_set_history VALUES(?,?,?,?,?,?)',id(),projectId,prior.angles_json,prior.analysis_json,prior.input_digest,prior.created_at);
+  run('INSERT INTO marketing_strategy_sets VALUES(?,?,?,?,?) ON CONFLICT(project_id) DO UPDATE SET angles_json=excluded.angles_json,analysis_json=excluded.analysis_json,input_digest=excluded.input_digest,created_at=excluded.created_at',projectId,JSON.stringify(angles),JSON.stringify(analysis),digest,now());
+ });
+ return getStrategyState(projectId);
+}
+function authorizedAngles(projectId:string):MarketingAngle[]{
+ return all<{angle_json:string}>("SELECT v.angle_json FROM marketing_strategy_versions v JOIN marketing_strategy_used u ON u.project_id=v.project_id AND u.angle_id=v.angle_id WHERE v.project_id=? AND v.version=(SELECT MAX(n.version) FROM marketing_strategy_versions n WHERE n.project_id=v.project_id AND n.angle_id=v.angle_id)",projectId).map(r=>JSON.parse(r.angle_json));
+}
+function selectableAngle(state:StrategyState,angleId:AngleId):MarketingAngle{
+ const fresh=state.angles.find(a=>a.id===angleId);if(fresh)return fresh;
+ const old=all<any>('SELECT * FROM marketing_strategy_versions WHERE project_id=? AND angle_id=? ORDER BY version DESC LIMIT 1',state.projectId,angleId)[0];
+ if(state.usedAngleIds.includes(angleId)&&old?.input_digest===state.analysis.currentInputDigest)return JSON.parse(old.angle_json);
+ throw new HttpError(409,'Aucun nouvel angle sourcé disponible pour ces informations. Les choix historiques restent conservés.','strategy_research_required');
 }
 /** Mutable native records need a content identity as well as a stable database ID. */
 function contentFingerprint(projectId:string,module:string,contentId:string):string {
@@ -446,9 +401,13 @@ function inventory(
   });
 }
 export function getStrategyState(projectId: string): StrategyState {
-  const { a, set, digest } = proposalSet(projectId),
+  const { p, a, set, digest } = proposalSet(projectId),
     plan = projectPlan(projectId);
-  const angles = json<MarketingAngle[]>(set.angles_json, []);
+  const stored=json<any>(set?.analysis_json,{}),current=marketingResearch(p);
+  const acquired=current.data?current:stored.method==='sourced_ai_research'&&stored.evidence?marketingResearch(p,stored.evidence):current;
+  const {evidence:privateReceipt,...publicAnalysis}=stored;
+  const ready=!!acquired.data&&stored.method==='sourced_ai_research'&&set?.input_digest===digest&&stored.researchDigest===acquired.digest;
+  const angles = ready?json<MarketingAngle[]>(set.angles_json, []):[];
   const active = activeStrategy(projectId);
   const usedAngleIds = all<{ angle_id: AngleId }>(
     "SELECT angle_id FROM marketing_strategy_used WHERE project_id=? ORDER BY first_activated_at,angle_id",
@@ -461,27 +420,28 @@ export function getStrategyState(projectId: string): StrategyState {
   return {
     projectId,
     scope:serviceStrategyProject(projectId)?'service_communication':'project',
+    offerLabel:p.product.name||p.services.services.map(s=>s.name).join(", "),
     plan,
     limit: plan ? PLANS[plan].marketingAngles : 0,
     angles,
     active,
     usedAngleIds,
     missingQuestions: a.missingQuestions,
-    recommendation: a.missingQuestions.length
-      ? null
-      : {
-          angleId: "usage",
-          reason:
-            loadProject(projectId).settings.language === "en"
-              ? "The project describes an offer and its use. Starting from that concrete moment helps explain its place without inventing performance. This recommendation is a hypothesis; the choice remains yours."
-              : "Le contexte décrit une offre et son usage. Commencer par ce moment concret permet d’en expliquer la place sans inventer de performance. Cette recommandation reste une hypothèse, votre choix vous appartient.",
-        },
+    recommendation: angles.length&&!a.missingQuestions.length?stored.recommendation??null:null,
+    legacyAngles: ready?[]:json<MarketingAngle[]>(set?.angles_json,[]),
+    authorizedAngles: authorizedAngles(projectId),
+    research:{...acquired.research,...ready?{status:'ready' as const}:{}},
     generalistExplanation:
       loadProject(projectId).settings.language === "en"
         ? GENERALIST_EXPLANATION_EN
         : GENERALIST_EXPLANATION,
     analysis: {
-      ...json<any>(set.analysis_json, {}),
+      method:stored.method??'local_project_evidence',
+      inputDigest:set?.input_digest??digest,
+      sources:stored.sources??[],
+      limits:stored.limits??[],
+      ...publicAnalysis,
+      marketSourcesVerified:ready&&stored.marketSourcesVerified===true,
       currentInputDigest: digest,
     },
     alignment: serviceStrategyProject(projectId)?[]:inventory(projectId, active),
@@ -527,7 +487,7 @@ export function preparationStrategy(
 ): ActiveStrategy {
   const prep = readPreparation(projectId, preparationId),
     state = getStrategyState(projectId),
-    angle = state.angles.find((a) => a.id === prep.angleId)!;
+    angle = selectableAngle(state,prep.angleId);
   return {
     id: `draft-${prep.id}`,
     projectId,
@@ -563,7 +523,7 @@ export function prepareStrategyChange(
       projectId,
       version: 0,
       angleId,
-      angle: state.angles.find((a) => a.id === angleId)!,
+      angle: selectableAngle(state,angleId),
       inputDigest: digest,
       activatedAt: 0,
     };
@@ -578,11 +538,13 @@ export function prepareStrategyChange(
       .find(
         (p) =>
           p.inputDigest === digest &&
+          p.researchDigest === target.angle.researchDigest &&
           p.baseStrategyId === (state.active?.id ?? null) &&
           p.inventoryDigest === inventoryDigest,
       );
     if (existing) return existing;
     const p: StrategyPreparation = {
+      researchDigest: target.angle.researchDigest,
       scope:serviceStrategyProject(projectId)?"service_communication":"project",
       id: id(),
       projectId,
@@ -843,6 +805,7 @@ export function activateStrategy(
     const current = activeStrategy(projectId);
     if((prep.scope??'project')!==(serviceStrategyProject(projectId)?'service_communication':'project'))throw new HttpError(409,'La portée de préparation a changé. Préparez un nouveau choix sans remplacer les contenus existants.','strategy_preparation_stale');
     if (
+      prep.researchDigest !== selectableAngle(getStrategyState(projectId),angleId).researchDigest ||
       prep.inputDigest !== inputDigest(loadProject(projectId)) ||
       prep.baseStrategyId !== (current?.id ?? null)
     )
@@ -921,7 +884,8 @@ export function activateStrategy(
     const candidate = preparationStrategy(projectId, prep.id);
     const active: ActiveStrategy =
       current?.angleId === angleId &&
-      current.inputDigest === candidate.inputDigest
+      current.inputDigest === candidate.inputDigest &&
+      hash(current.angle) === hash(candidate.angle)
         ? current
         : { ...candidate, id: `strategy-${id()}`, activatedAt: now() };
     // The synchronous commit only moves pointers to already saved/acquired module versions. A thrown error rolls everything back.

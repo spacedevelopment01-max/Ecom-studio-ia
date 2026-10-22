@@ -1,3 +1,6 @@
+import {resumeUnderstanding} from "@/lib/marketing-strategy/understanding";
+import {createQuote,quoteOf} from "@/lib/preparation/quote";
+import {queuePreparation} from "@/lib/preparation/engine";
 import { quoteStrategyBundle, confirmStrategyBundle, latestStrategyBundle, retryStrategyBundle } from "@/lib/marketing-strategy/bundle";
 import { prepareLocalStrategyModules, preparedModules, commitPreparedStrategyModules } from "@/lib/marketing-strategy/module-preparation";
 import { HttpError } from "@/lib/auth";
@@ -8,6 +11,9 @@ import { projectFromCtx, type Ctx } from '@/lib/route-helpers';
 import { proposeStrategies, getStrategyState, prepareStrategyChange, activateStrategy, stageStrategyModule, failStrategyPreparation } from '@/lib/marketing-strategy';
 const schema = z.discriminatedUnion('action', [
  z.object({ action: z.literal('analyze') }),
+ z.object({action:z.literal('resume_understanding')}),
+ z.object({action:z.literal('quote_research')}),
+ z.object({action:z.literal('confirm_research'),quoteId:z.string().min(1),confirmed:z.literal(true),correction:z.string().max(1200).optional()}),
  z.object({action:z.literal('quote_revisions'),preparationId:z.string().min(1),contents:z.array(z.object({module:z.string().max(30),contentId:z.string().max(100)})).min(1).max(30)}),
  z.object({action:z.literal('confirm_revisions'),bundleId:z.string().min(1),confirmed:z.literal(true)}),
  z.object({action:z.literal('retry_revisions'),bundleId:z.string().min(1),confirmed:z.literal(true)}),
@@ -22,6 +28,9 @@ export const POST=handle(async(req:Request,ctx:Ctx)=>{
  if(input.action==='quote_revisions')return ok({bundle:quoteStrategyBundle(p.id,input.preparationId,input.contents)});
  if(input.action==='confirm_revisions')return ok({bundle:confirmStrategyBundle(p.id,input.bundleId,input.confirmed)});
  if(input.action==='retry_revisions')return ok({bundle:retryStrategyBundle(p.id,input.bundleId,input.confirmed)});
+ if(input.action==='resume_understanding')return ok(await resumeUnderstanding(p.id));
+ if(input.action==='quote_research')return ok({quote:createQuote(p.id,'research','generate')});
+ if(input.action==='confirm_research'){const q=quoteOf(p.id,input.quoteId);if(q.step!=='research'||q.action!=='generate'||!q.paid)throw new HttpError(400,'Devis de recherche IA requis.');return ok(queuePreparation(p.id,q.revision,'research','generate',{capMicro:q.capMicro,paid:true,correction:input.correction}));}
  if(input.action==='analyze')return ok(proposeStrategies(p.id));
  if(input.action==='prepare'){const preparation=prepareStrategyChange(p.id,input.angleId);try{const theme=await prepareStrategyTheme(p.id,preparation.id);return ok({preparation,theme,modules:preparedModules(p.id,preparation.id),bundle:latestStrategyBundle(p.id,preparation.id)});}catch(error){failStrategyPreparation(p.id,preparation.id,'La préparation du thème a échoué. Les versions précédentes et les contenus acquis sont conservés.');throw error;}}
  if(input.action==='prepare_modules'){const modules=await prepareLocalStrategyModules(p.id,input.preparationId);return ok({modules,theme:await prepareStrategyTheme(p.id,input.preparationId)});}

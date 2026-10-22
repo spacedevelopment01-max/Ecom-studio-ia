@@ -1,3 +1,4 @@
+import {activeStrategy} from "@/lib/marketing-strategy";
 import { z } from "zod";
 import { body, handle, ok } from "@/lib/http";
 import { requirePlan } from "@/lib/plan-gates";
@@ -90,6 +91,7 @@ function view(projectId: string) {
   const pending = trackedId ? getJob(trackedId) : null;
   return {
     state,
+    selectedMarketingAngleId:activeStrategy(projectId)?.angleId??null,
     job: pending?.project_id === projectId ? publicJob(pending) : null,
     recoverable: !!recoverablePreparation(projectId, state),
     recovering: pending?.project_id === projectId && json<{recoveryOnly?:boolean}>(pending.payload,{}).recoveryOnly === true && ["queued","running","paused"].includes(pending.status),

@@ -67,7 +67,7 @@ describe("Social V2 — parcours", async () => {
     expect(r.notes.join(" ")).toMatch(/après votre approbation/);
     const rows = all<{ status: string; media: string; engine: string; caption: string }>("SELECT status, media, engine, caption FROM posts WHERE plan_id = ?", r.planId);
     expect(rows.every((x) => x.status === "planned" && x.media === "[]" && x.engine === "v2" && x.caption.length > 0)).toBe(true);
-    expect(all("SELECT 1 FROM ai_calls WHERE project_id = ?", p.id)).toHaveLength(0);
+    expect(all("SELECT 1 FROM ai_calls WHERE project_id = ? AND id NOT GLOB 'fixture_research_*'", p.id)).toHaveLength(0);
     const again = fr(() => createPlanV2(p, r.request, { planId: r.planId }));
     expect(again).toMatchObject({ created: 0, existing: 90 });
     const v = varietyReport(p.id, r.planId);
@@ -306,7 +306,7 @@ describe("Social V2 — parcours", async () => {
     const drafts = all<{ status: string }>("SELECT status FROM posts WHERE plan_id LIKE ?", `auto-${prep}-%`);
     expect(drafts.length).toBe(7);
     expect(drafts.every((d) => d.status === "planned")).toBe(true);
-    expect(all("SELECT 1 FROM ai_calls WHERE project_id = ?", p.id)).toHaveLength(0);
+    expect(all("SELECT 1 FROM ai_calls WHERE project_id = ? AND id NOT GLOB 'fixture_research_*'", p.id)).toHaveLength(0);
     setAutomationStatus(p.id, sched, "paused");
     expect(listAutomations(p.id).find((x) => x.id === sched)!.status).toBe("paused");
   });

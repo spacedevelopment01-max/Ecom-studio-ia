@@ -44,7 +44,7 @@ it.each([
   expect(current.stages.media?.data.slots.filter(s => s.kind === 'video')).toHaveLength(index % 2 ? 2 : 1);
   expect(loadProject(f.pid).brand).toEqual(before);
   expect(all('SELECT id FROM theme_versions WHERE project_id=?', f.pid)).toEqual([]);
-  expect(all('SELECT id FROM ai_calls WHERE project_id=?', f.pid)).toEqual([]);
+  expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'', f.pid)).toEqual([]);
 });
 it('une catégorie ambiguë reste bloquée puis se résout localement sans réécriture des documents', async () => {
   const f = await readyInitial(), c = await providerContent(f.pid);
@@ -55,7 +55,7 @@ it('une catégorie ambiguë reste bloquée puis se résout localement sans réé
   commitState(f.pid, stateOf(f.pid)!.revision, s => { s.stages.content!.data.recommendation = rebindRecommendationCategory(loadProject(f.pid), s.stages.content!.data.recommendation); });
   expect(() => approve(f.pid, stateOf(f.pid)!.revision, 'content')).not.toThrow();
   expect(all('SELECT id,doc_json FROM content_documents WHERE project_id=?', f.pid)).toEqual(texts);
-  expect(all('SELECT id FROM ai_calls WHERE project_id=?', f.pid)).toEqual([]);
+  expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'', f.pid)).toEqual([]);
 });
 it('une ancienne éligibilité stockée ne permet pas une référence appartenant à une autre catégorie actuelle', async () => {
   const f = await readyInitial(); category(f.pid, 'ecommerce');

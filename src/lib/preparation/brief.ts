@@ -43,12 +43,6 @@ export function analyzeLocally(input: Input): Brief {
     input.business === "services" && !services.services.length
       ? "Indiquez au moins une prestation."
       : "",
-    input.business === "services" &&
-    !services.email &&
-    !services.phone &&
-    !services.bookingUrl
-      ? "Indiquez un moyen de contact pour les demandes."
-      : "",
   ].filter(Boolean);
   return { input, profile, services, missing, provenance: "local" };
 }

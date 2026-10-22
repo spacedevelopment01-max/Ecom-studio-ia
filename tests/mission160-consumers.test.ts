@@ -1,3 +1,4 @@
+import {acquiredChoicesForTest} from "./strategy-choice-fixture";
 /** Native consumers; isolated project facts, local files and a simulated publisher. No provider calls. */
 import { describe, expect, it } from 'vitest';
 import sharp from 'sharp';
@@ -27,7 +28,7 @@ async function fixture(service=false) {
  const user=await createUser(`${id()}@example.test`,'isolation-160','Consommateurs');
  const pid=id(); const product={...emptyProduct(),name:service?'Accord — réglage violoncelle':'Pli — sac vélo',category:service?'Lutherie':'Bagagerie',summary:service?'Un atelier sur rendez-vous pour le réglage des instruments à cordes.':'Un sac de transport pour les trajets à vélo et les affaires de travail.',facts:[{key:'detail',label:service?'Contrôle':'Contenance',value:service?'Réglage du chevalet':'12 litres',status:'confirmed',source:'user'}]};
  run('INSERT INTO projects(id,user_id,name,business_type,product_json,strategy_json,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)',pid,user.id,product.name,service?'services':'products',JSON.stringify(product),JSON.stringify({audience:[],angles:[{title:'ANCIEN_ANGLE_DU_STUDIO',idea:'ne doit plus orienter'}],keyMessages:['ANCIEN_MESSAGE_DU_STUDIO'],pillars:['Ancien']}),now(),now());
- grantProjectPlan(pid,'dominer');return{pid,user,project:()=>loadProject(pid)};
+ grantProjectPlan(pid,'dominer');acquiredChoicesForTest(pid);return{pid,user,project:()=>loadProject(pid)};
 }
 function activate(pid:string, angleId:string) {
  const preparation=prepareStrategyChange(pid,angleId);
@@ -63,7 +64,7 @@ it.each([false,true])('la bascule change cible, promesse, ton, scène, publicit�
  });
  }
  for(const key of Object.keys(values[0]) as (keyof typeof values[0])[])expect(values[0][key],key).not.toEqual(values[1][key]);
- expect(one<{n:number}>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=?',f.pid)?.n).toBe(0);
+ expect(one<{n:number}>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'',f.pid)?.n).toBe(0);
 });
 
 it('un aperçu de stratégie préparée reste local et ne change ni l’actif ni la provenance d’une autre exécution',async()=>{
@@ -109,16 +110,17 @@ it('le calendrier et ses publications portent l’angle ; une ancienne programma
 it('un ancien contexte de rédaction ne mélange pas les angles et ne part pas au fournisseur',async()=>{
  const f=await fixture();activate(f.pid,'usage');const old=selectedStrategyContext(f.pid);activate(f.pid,'expression');
  expect(()=>withSelectedStrategy({userId:f.user.id,projectId:f.pid,task:'copywriting',system:'Texte',context:old,prompt:'Demande'})).toThrow(/ancienne stratégie/);
- expect(one<{n:number}>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=?',f.pid)?.n).toBe(0);
+ expect(one<{n:number}>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'',f.pid)?.n).toBe(0);
 });
 
-it('un fait changé exige une réconciliation explicite du même angle, sans nouvel angle ni coût',async()=>{
+it('un fait changé exige une recherche acquise puis une réconciliation explicite du même angle, sans droit supplémentaire',async()=>{
  const f=await fixture();activate(f.pid,'usage');
  saveProduct(f.pid,{...f.project().product,summary:'Un sac de transport destiné aux trajets de week-end, avec rangement.'});
  expect(()=>assertStrategyInputsCurrent(f.pid)).toThrow(/Préparez à nouveau cet angle/);
  expect(()=>withStrategyScope(f.pid,()=>null)).toThrow();
+ expect(()=>activate(f.pid,'usage')).toThrow(/Aucun nouvel angle sourcé/);acquiredChoicesForTest(f.pid);
  activate(f.pid,'usage');expect(()=>assertStrategyInputsCurrent(f.pid)).not.toThrow();expect(getStrategyState(f.pid).usedAngleIds).toEqual(['usage']);
- expect(one<{n:number}>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=?',f.pid)?.n).toBe(0);
+ expect(one<{n:number}>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'',f.pid)?.n).toBe(0);
 });
 
 it('A→B→A conserve une identité de réutilisation sémantique et la trace de version reste exacte',async()=>{
@@ -136,7 +138,7 @@ it('le moteur SEO réutilise effectivement sa rédaction précise après A→B�
  activate(f.pid,'expression');const second=await runContentEngineV2(null,f.pid,request,localOnlyDeps());expect(second.skipped).toBe(false);
  activate(f.pid,'usage');const reused=await runContentEngineV2(null,f.pid,request,localOnlyDeps());
  expect(reused.skipped).toBe(true);expect(reused.costMicro).toBe(0);expect(reused.doc?.blocks).toEqual(first.doc?.blocks);
- expect(one<{n:number}>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=?',f.pid)?.n).toBe(0);
+ expect(one<{n:number}>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'',f.pid)?.n).toBe(0);
 });
 
 it('un contexte préparé ne peut pas transporter la stratégie d’un autre compte',async()=>{

@@ -44,10 +44,10 @@ it("une banque documentaire ne supprime pas la création IA et la replanificatio
   expect(a.steps.find(s => s.kind === "image_generate")?.status).toBe("pending");
   expect(replan(a, ["SEO"], state).steps.find(s => s.kind === "image_generate")?.status).toBe("pending");
 });
-it("la recherche prépare cinq angles", async () => {
+it("la lecture de pages seule ne fabrique aucun angle", async () => {
   const f = await fixture();
   const r = await researchProject(loadProject(f.pid), analyzeLocally(f.input), async url => ({ url, title: "Source test", text: "Descriptif de référence sans promesse commerciale." }) as any);
-  expect(r.angles).toHaveLength(5);
+  expect(r.angles).toHaveLength(0);
 });
 it("un contexte critique trop long bloque avant l'exécution au lieu de perdre la contrainte finale", async () => {
   const f = await fixture();

@@ -18,7 +18,7 @@ it('aucune construction avant choix, cartes consultées sans consommation ni tâ
  const f=await clientFixture({copySource:"ai",strategy:null,incomplete:true});expect(getStrategyState(f.pid).angles).toHaveLength(5);
  expect(activeStrategy(f.pid)).toBeNull();expect(getStrategyState(f.pid).usedAngleIds).toEqual([]);
  await expect(fr(()=>buildShop(null,f.pid,{direction:'traverse',useAi:false}))).rejects.toMatchObject({code:'strategy_choice_required'});
- expect(currentTheme(f.pid)).toBeNull();expect(all('SELECT id FROM ai_calls WHERE project_id=?',f.pid)).toHaveLength(0);
+ expect(currentTheme(f.pid)).toBeNull();expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'',f.pid)).toHaveLength(0);
  await choose(f.pid,'usage');await fr(()=>buildShop(null,f.pid,{direction:'traverse',useAi:false}));expect(currentTheme(f.pid)?.spec.meta?.strategy?.angleId).toBe('usage');
 });
 for(const services of [false,true])it(`parcours ${services?'service RDV':'produit'} : angle A→B→A, copie/faits/retouches/pages/export persistants sans appel`,async()=>{
@@ -37,14 +37,14 @@ for(const services of [false,true])it(`parcours ${services?'service RDV':'produi
  await choose(f.pid,'usage');expect(activeStrategy(f.pid)?.angleId).toBe('usage');
  expect(getStrategyState(f.pid).usedAngleIds.sort()).toEqual(['expression','usage']);
  const before=listThemeVersions(f.pid).length;await fr(()=>buildShop(null,f.pid,{direction,useAi:false}));expect(listThemeVersions(f.pid)).toHaveLength(before);
- expect(one<{n:number}>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=?',f.pid)?.n).toBe(0);
+ expect(one<{n:number}>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'',f.pid)?.n).toBe(0);
 });
 it('tâche préparée avant bascule refusée avant fournisseur ; changement de droits reste revérifié',async()=>{
  const f=await clientFixture({copySource:"ai",strategy:null});await choose(f.pid,'usage');
  const job=enqueue({userId:f.user.id,projectId:f.pid,type:'shop.direction',payload:{projectId:f.pid,direction:'traverse'}});
  await choose(f.pid,'expression');
  await expect(handlers[job.type](new JobContext(job))).rejects.toMatchObject({code:'strategy_changed'});
- expect(currentTheme(f.pid)).toBeNull();expect(all('SELECT id FROM ai_calls WHERE project_id=?',f.pid)).toHaveLength(0);
+ expect(currentTheme(f.pid)).toBeNull();expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'',f.pid)).toHaveLength(0);
 });
 
 it('retour vers un angle : version de thème compatible réutilisée sans mutation de sa provenance ni nouvelle version',async()=>{
@@ -63,5 +63,5 @@ it('une rédaction explicitement fournie par le client reste intégrale et signa
 it('les documents automatiques ne passent pas devant une rédaction exacte fournie par le client',async()=>{
  const f=await clientFixture({copySource:'user'});const {runContentEngineV2}=await import('@/lib/seo-v2/engine');const {localOnlyDeps}=await import('@/lib/seo-v2/deps');
  await runContentEngineV2(null,f.pid,{type:'home_page',lang:'fr'},localOnlyDeps());await fr(()=>buildShop(null,f.pid,{direction:'traverse',useAi:false}));
- expect(JSON.stringify(currentTheme(f.pid)!.spec.templates.index)).toContain(f.copy.hero.heading);expect(all('SELECT id FROM ai_calls WHERE project_id=?',f.pid)).toHaveLength(0);
+ expect(JSON.stringify(currentTheme(f.pid)!.spec.templates.index)).toContain(f.copy.hero.heading);expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'',f.pid)).toHaveLength(0);
 });
