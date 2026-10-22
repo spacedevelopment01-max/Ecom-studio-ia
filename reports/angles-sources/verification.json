@@ -1,0 +1,283 @@
+{
+  "schema": "angles-verification-1",
+  "recordedAt": "2026-10-22T18:08:49.993916+00:00",
+  "codeCommit": "cf39160857bf53c311d50b8034060386fe7068c8",
+  "baseCommit": "0a6aa1dd6dfa5932a5e42e027cef2a3335e74679",
+  "sourceChecksPerformedBeforeCodeCommit": true,
+  "committedCodeMatchesCheckedSource": true,
+  "sourcePhases": {
+    "nativeCoreFrozenFiles": 59,
+    "coreAggregateSha256": "97a1773aca2c36916af37adc005e98d377c63b3bae34f0cc53307fa447cf01cb",
+    "lateUiOnly": [
+      "src/components/studio/ad-campaigns.tsx",
+      "src/components/studio/tab-marque.tsx"
+    ],
+    "lateUiValidation": "TypeScript and three advertising organization tests; these two ancillary views not browser-inspected",
+    "finalAggregateSha256": "8bbdef2c583ab1df9b072523dd2a74c8165230c16945966a0040966677d9340c"
+  },
+  "sourceFileSha256": {
+    "scripts/angles/browser-proof.mts": "4129335fca1081113cac6a094f226f244077bb99fa23934a4964686c9535a75b",
+    "src/app/api/projects/[id]/marketing-strategy/route.ts": "f24e79de85171172068e6ea2cfd467f198cefb2788ffa02ce2a1defa3dee9e69",
+    "src/app/api/projects/[id]/preparation/route.ts": "9e9a338d79250792f7b82099ba32b97f0bab0730e97cfa506ff2a3a597cafccf",
+    "src/components/studio/ad-campaigns.tsx": "4471e7e8edd0b9766ce62bae6cd8e2362a854968b2d72599d9c30151d7c8bccd",
+    "src/components/studio/communication-angle.tsx": "c80d269ecfccffa987a2ecbde82fb5e7507331db9e2472be64cc018eb808b82c",
+    "src/components/studio/marketing-angle-cards.tsx": "cc7ee4459519f75ad3857473788d08440cf50cb2f125718abbfb621a33d4f5b9",
+    "src/components/studio/marketing-strategy.tsx": "624f1db613837a754e029e79111716dd8706eac00d818205a08222bb2e1b6099",
+    "src/components/studio/social-studio.tsx": "9c1fbcb50c7872a390fee16b8aae0a92350d6237a553f0f212b92c3cb76dc605",
+    "src/components/studio/tab-marque.tsx": "df6b7f32bc76bf7739ff1cc851db786824e4d5b84c96731dd2ccbdfc30cb8845",
+    "src/components/studio/tab-preparation.tsx": "d0d8d0d814e71bb63618e3f8e443330fc86956ff8e769e1eb4764087128c9df3",
+    "src/lib/engine/local.ts": "c022da1eb688587a8bfd419e2cd3959d0332271ab73778771b3cb43aaa2b400c",
+    "src/lib/engine/pipeline.ts": "bfecb4ea64339d82d4cbb34f6b669f3e6ef966c505b06c18b25feca43dc56de7",
+    "src/lib/marketing-strategy/index.ts": "78126b0542ce73539c590fcca45fb79f8fbc003872abd63b5cd259563b2e5ffb",
+    "src/lib/marketing-strategy/proposals-en.ts": "b2403d6c90b6b3af83e9d80d3f5413013b6ed40ab5427e7ce11a7b7ea462946f",
+    "src/lib/marketing-strategy/proposals.ts": "e7eb03d80df58e25582507d3a45cb3fad46b95fa13fb5cb85c8b6a3460ba0897",
+    "src/lib/marketing-strategy/research.ts": "177315037d66bc2c453c95c73edfc1372a2f79cbc4d9269f8849a8b8d76a9051",
+    "src/lib/marketing-strategy/types.ts": "9a6810e217d2f5d29fe2df8cfcaabc9dcc72d8c4cfee335985208175336a2178",
+    "src/lib/marketing-strategy/understanding.ts": "802040b46dca5dd5d478e5c7fd77110505c304f1e73558a60c1324a8511ba1c5",
+    "src/lib/preparation/brief.ts": "9f0a22e56cb4da898d10648e4b809bacf77149795c6f9d92d3c6d6e354caec10",
+    "src/lib/preparation/deps.ts": "bad3efaa9cc2da4ff8de0eaa68e2ca337d2bfa220e4650cb1071beba7bc75342",
+    "src/lib/preparation/documents.ts": "73f3376424c6c4d323c94a0365762862eff3fbcf9735c7a76aaf6cdcd1108748",
+    "src/lib/preparation/engine.ts": "40afdc79a68a760f6d47bf68bd6a5d26d368d3d5c4eb26e147463ec980c21d76",
+    "src/lib/preparation/evidence.ts": "6b155920217fe50d6ceadb9f1437a484d805cac083ae4851713fdc666f996871",
+    "src/lib/preparation/inspect.ts": "d3829fe5c57b263048eef0723c5522b193fe9aaa6856d01b8b698112e0359ecc",
+    "src/lib/preparation/research-ai.ts": "0291f1119ee1011cdc91e438d0f061d706ad3af6c251df665751f15b819625fa",
+    "src/lib/preparation/research-evidence.ts": "edf89a29c0fe00de4020fc3bc42f959463eb1721dbc59736cb92bee760e972c6",
+    "src/lib/preparation/research-validation.ts": "ac764e33830e4d4f757c03437d192bc29c56e3c3b877c819629dfca22bfe1311",
+    "src/lib/preparation/research.ts": "ca5af40a03d7c370eadfc15e4bc4f6e5b19442d3ce9b4095e95261e14f919ef6",
+    "src/lib/preparation/types.ts": "5e210dd62059348afa7ee01489368b8b33adc4547cdc4c54cc91609ab14caaeb",
+    "src/lib/preparation/understanding.ts": "0507d27fb0169f98e8db931ed49cdfae11c2e3173aa485f33f5396aa80fb7ca8",
+    "tests/angles-sources.test.ts": "92385d269cb76c962170fdb9c50cc45ea83df5dbdb7d62fe0ae61a2f9e315bed",
+    "tests/audit-amont-regressions.test.ts": "fb528421534dc234adfb5f34398f9855c258ae194feb2f06ef2bcbf6cf1f4f0a",
+    "tests/database-file-setup.ts": "9d35de48504b27f6b1c86268dac743029195baa4c2795b2923b16f6b49cf6201",
+    "tests/database-global-setup.ts": "a6c65d8c6d46a76868ffa08bf03a71fb792e236f17223b7f78b3d7e31378cdb9",
+    "tests/identite-validation-parcours.test.ts": "233f9bac8d88de63fec2538c65734e33ac25978eeb5b4760786ca99c8747a5c2",
+    "tests/initial-authorization.test.ts": "8eda7439901ecd75fa625e8f087752b1f13bd74861bf25d0bbb13213b19e0ed9",
+    "tests/lot2a-reference.test.ts": "db4f39da76b6dd48075cab11956a28a98c0f76ad6d13efb3f69d65293ae8348a",
+    "tests/mission154-adaptation.test.ts": "b5784ab33fa92f1eb44b90230db08f3d1b078b92dc79411d9afefb0fc0426226",
+    "tests/mission154-fixtures.ts": "29053d46d8be6e4497a40f1549b1d6f370397428518ac8dc0463758e8b210185",
+    "tests/mission154-livraison.test.ts": "502c9bce4b0165fe89d28699ef9611791b4a2bd3ff5ab01fcbad909eee3ededa",
+    "tests/mission154-parcours.test.ts": "8c94b2acfd2e2418a313eb60a12eecbc821dfa1b92c952d732648a1d7f857cec",
+    "tests/mission160-api.test.ts": "c861d080f5b7de4aa28a9ad33bb94b63f46d9551d0a87a4f18e14d12ccd8a871",
+    "tests/mission160-bundle.test.ts": "09f6683c6abd7a4b82d1f52d711b95d0f30762aa90188669deeda0edf7526cc2",
+    "tests/mission160-consumers.test.ts": "0a5dc73ff0f16c36444011b9e7f6cb59db340565fd9ae1334e9ed7d9b2ebe700",
+    "tests/mission160-editorial-delivery.test.ts": "8ecb5c2d982fb3e102ffba6eff1549e4d7fc3b5dcd720fe2cc86deb65b14c15f",
+    "tests/mission160-holdout.test.ts": "6e5f29dd08d3a2a7ab22e58c882500d8f3fe7a57b2c43629834d1f56a606ecb1",
+    "tests/mission160-parcours.test.ts": "a1b476719ef2afcc6db7e569d1d5630256e636717f2332c7140c27c19e0dd313",
+    "tests/mission160-service-scopes.test.ts": "97eacb71115f430247c339148fd4d54e00dc0f4a54a9f2e1f143ffee7240a081",
+    "tests/mission160-staging.test.ts": "d7c02b3434122f696a6c4eaa47cbd3d8bb015f164af242a8bbee4984db5116b7",
+    "tests/mission160-strategy.test.ts": "28c0b7ff498be8fd675de02e37a59c92f5378d937a7102725f83fb341063e3a0",
+    "tests/mission160-unseen-final.test.ts": "d11ec274369a4d2fa89f0071ff57104f76208962064151a10dc6dca0f55a6ae9",
+    "tests/preparation-catalogue-actif.test.ts": "65c627cf543a2a336bd19a55327b50786268d4117724306b70bcc0a65da6e9d5",
+    "tests/preparation-fixtures.ts": "35e8e7dd892556ca0ac74c943743564eebfa7b9027eb712857715d809479b83e",
+    "tests/preparation.test.ts": "9a17369b511263f5bda1089ba49f2f1fcedf81b8aceb9b2e1cd4298ed1c2cd0e",
+    "tests/social-v2-engine.test.ts": "2932a871e09136c2a7eeda9481d3adea98f5cdeb6c592a1515f3de41282ebf37",
+    "tests/sourced-strategy-fixture.ts": "a59774c3590c5e5e8708596335cd1af72bfa65b0c76b5b525717f92cec85ef79",
+    "tests/strategy-choice-fixture.ts": "7aec4c0b5a21fcde3432bfb018662531d46425f918d1d0cb0579f76a778df2ca",
+    "tests/theme-v2.test.ts": "f48b1d01f021b621fabf9371cc3147168daa2af6fc4a67e5194bafbd5760194e",
+    "tests/video-creation-rights.test.ts": "198f4c97e089ca15601a7a822bcd30b2bdc176b294d2848ad8c8d2802c23651d",
+    "tests/workflow-v2.test.ts": "bee0b2e73b600d72e02dd968f6ca2bb8470e9d6ff5c42b4fd4189923674bc6d8",
+    "vitest.config.ts": "85ee502b1c9f5a81d2e11c6989d0b5226bb56561b857a986c6da31067c2d4004"
+  },
+  "checks": [
+    {
+      "command": "npx tsc --noEmit",
+      "exitCode": 0
+    },
+    {
+      "command": "npx vitest run --shard=1/3",
+      "exitCode": 0,
+      "filesPassed": 119,
+      "testsPassed": 1028,
+      "testsSkipped": 0,
+      "durationSeconds": 338.33,
+      "logSha256": "9e4dc3b8d977c6aa192021d4625985c943f565f1d08926fab297d30b6c157541"
+    },
+    {
+      "command": "npx vitest run --shard=2/3",
+      "exitCode": 0,
+      "filesPassed": 119,
+      "testsPassed": 942,
+      "testsSkipped": 11,
+      "durationSeconds": 295.9,
+      "logSha256": "8cc33653ed499afb4e19e963ce2ea89548a67ca40dccabf8130f14ad98db56b0"
+    },
+    {
+      "command": "npx vitest run --shard=3/3",
+      "exitCode": 0,
+      "filesPassed": 119,
+      "testsPassed": 924,
+      "testsSkipped": 11,
+      "durationSeconds": 251.28,
+      "logSha256": "683ccb6250c3a8472dac71e20260f617d22db37086554d1bcfbc89b95e0ef3ce"
+    },
+    {
+      "command": "npx vitest run tests/angles-sources.test.ts tests/mission160-consumers.test.ts tests/mission160-strategy.test.ts tests/preparation.test.ts tests/audit-amont-regressions.test.ts tests/preparation-nouvelle-mission.test.ts",
+      "exitCode": 0,
+      "filesPassed": 6,
+      "testsPassed": 162,
+      "testsSkipped": 0,
+      "durationSeconds": 26.06,
+      "logSha256": "d1cd3b579821389eafebb63271bbbc756be31fdd106e4df76e695166333a879e"
+    },
+    {
+      "command": "npx vitest run tests/publicites-organisation.test.ts",
+      "exitCode": 0,
+      "filesPassed": 1,
+      "testsPassed": 3,
+      "testsSkipped": 0,
+      "durationSeconds": 5.3,
+      "logSha256": "4517e5551a49f64c159e6c3271220710e990c50792f36395e9c39646691ba6de"
+    }
+  ],
+  "fullSuiteTotals": {
+    "filesPassed": 357,
+    "testsPassed": 2894,
+    "testsSkipped": 22,
+    "durationSeconds": 885.51
+  },
+  "browser": {
+    "schema": "angles-browser-proof-1",
+    "codeCheckout": "cf39160857bf53c311d50b8034060386fe7068c8",
+    "sourceWorkingTree": false,
+    "realProviderCalls": 0,
+    "studioCodespaceVerified": false,
+    "harness": "Actual MarketingStrategy component and native strategy functions, isolated SQLite, simulated research; not a served studio or creative-quality proof",
+    "checks": [
+      {
+        "scenario": "produit",
+        "device": "desktop",
+        "width": 1440,
+        "file": "produit-desktop.png",
+        "bodyOverflow": false,
+        "actualComponent": true,
+        "simulatedSources": true
+      },
+      {
+        "scenario": "service",
+        "device": "desktop",
+        "width": 1440,
+        "file": "service-desktop.png",
+        "bodyOverflow": false,
+        "actualComponent": true,
+        "simulatedSources": true
+      },
+      {
+        "scenario": "comparaison",
+        "device": "desktop",
+        "width": 1440,
+        "file": "comparaison-desktop.png",
+        "bodyOverflow": false,
+        "actualComponent": true,
+        "simulatedSources": true
+      },
+      {
+        "scenario": "blocage",
+        "device": "desktop",
+        "width": 1440,
+        "file": "blocage-desktop.png",
+        "bodyOverflow": false,
+        "actualComponent": true,
+        "simulatedSources": true
+      },
+      {
+        "scenario": "produit",
+        "device": "mobile",
+        "width": 390,
+        "file": "produit-mobile.png",
+        "bodyOverflow": false,
+        "actualComponent": true,
+        "simulatedSources": true
+      },
+      {
+        "scenario": "service",
+        "device": "mobile",
+        "width": 390,
+        "file": "service-mobile.png",
+        "bodyOverflow": false,
+        "actualComponent": true,
+        "simulatedSources": true
+      },
+      {
+        "scenario": "comparaison",
+        "device": "mobile",
+        "width": 390,
+        "file": "comparaison-mobile.png",
+        "bodyOverflow": false,
+        "actualComponent": true,
+        "simulatedSources": true
+      },
+      {
+        "scenario": "blocage",
+        "device": "mobile",
+        "width": 390,
+        "file": "blocage-mobile.png",
+        "bodyOverflow": false,
+        "actualComponent": true,
+        "simulatedSources": true
+      }
+    ]
+  },
+  "screenshots": [
+    {
+      "file": "blocage-desktop.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "f43e2685d4fd64c126953ef8cb2011d929b0c3e312fd6d3da4cdb759dbd347e5"
+    },
+    {
+      "file": "blocage-mobile.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "b9071cfa8afac04bf9f150014b76b8ec78888b129b1fd867d78cb9aaf0d46060"
+    },
+    {
+      "file": "comparaison-desktop.png",
+      "width": 1440,
+      "height": 2546,
+      "sha256": "3804415e75894faf0e7d224d0c46382eedff5e47cbffadf3c6b5ca93e9cc6ac6"
+    },
+    {
+      "file": "comparaison-mobile.png",
+      "width": 390,
+      "height": 4375,
+      "sha256": "6dab1603880fe71a662c645820f235eb78b4b6012fcc631a8c97f8bad8737d0d"
+    },
+    {
+      "file": "produit-desktop.png",
+      "width": 1440,
+      "height": 1584,
+      "sha256": "4eb815a1579296e57df9e5a94da8842ba7799e6a1ae24e6758dc44477466c064"
+    },
+    {
+      "file": "produit-mobile.png",
+      "width": 390,
+      "height": 3150,
+      "sha256": "eda21d7982d833737954302ed7df7c878e9b455736606b054e9d7191bf7f4d59"
+    },
+    {
+      "file": "service-desktop.png",
+      "width": 1440,
+      "height": 1694,
+      "sha256": "699eed6b5494bd8df795f1950378eb6e824b4a72fe5ddc653dac640c0bc5bd4e"
+    },
+    {
+      "file": "service-mobile.png",
+      "width": 390,
+      "height": 3235,
+      "sha256": "fb01d639292f9786820cf32dc0b92a3d708a8042ddd8f0bd9aefa19f5135e002"
+    }
+  ],
+  "realProviderCalls": 0,
+  "realWebResearchPerformed": false,
+  "creativeQualityProven": false,
+  "liveStudioVersionVerified": false,
+  "merged": false,
+  "deployed": false,
+  "limitations": [
+    "Web and LLM transports are explicit doubles; this does not prove source relevance or future creative quality.",
+    "Browser proof uses real component and native core in a loopback fixture harness, not the authenticated served Codespace.",
+    "Preliminary red and interrupted runs are described in the report, not included in successful full-suite totals.",
+    "PDF extraction depends on worker pdftotext; no OCR guarantee, no live customer document checked.",
+    "No production build executed locally; TypeScript and actual browser component bundle passed."
+  ]
+}
