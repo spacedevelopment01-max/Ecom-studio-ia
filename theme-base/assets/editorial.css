@@ -519,6 +519,7 @@ body[data-editorial="cadran"] .es-collection__title,body[data-editorial="cadran"
 .ed-files__list{font-size:13px}
 [data-ed-contact].is-sending .ed-button{opacity:.75;cursor:progress}
 [data-ed-contact].is-failed [data-contact-status]{color:#A12A2A}
+.ed-form[hidden]{display:none!important}
 .ed-form__done{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;padding:20px 22px;border:1px solid color-mix(in srgb,var(--c-text) 20%,transparent)}
 .ed-form__done svg{width:36px;height:36px;fill:var(--c-accent);stroke:var(--c-accent-text,#fff);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .ed-form__done svg path{fill:none}

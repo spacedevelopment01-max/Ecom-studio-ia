@@ -40,7 +40,7 @@ describe("Atelier Rive : thème de services d'après les maquettes du 23 octobre
     expect(t.fonts).toEqual({ heading: "newsreader_n4", body: "inter_n4" });
     expect(fs.existsSync(path.join("assets", "fonts", "Newsreader-400.ttf"))).toBe(true);
     expect(fs.readFileSync(path.join("assets", "fonts", "licenses", "Newsreader-OFL.txt"), "utf8")).toMatch(/Newsreader Project Authors[\s\S]*SIL Open Font License/);
-    expect(t.settings.editorial_profile).toBe("journal");
+    expect(t.settings?.editorial_profile).toBe("journal");
   });
 });
 

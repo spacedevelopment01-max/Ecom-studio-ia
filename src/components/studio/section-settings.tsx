@@ -167,7 +167,8 @@ function Field({ setting: s, block, value, data, projectId, onApply, onMedia }: 
   if (s.type === "header") return <h4 data-setting={id} className="mt-2 border-b border-line pb-1 text-xs font-semibold uppercase tracking-[.12em] text-muted">{s.label ?? ""}</h4>;
   if (s.type === "paragraph") return <p data-setting={id} className="text-[11px] leading-relaxed text-muted">{s.label ?? ""}</p>;
   if (s.type === "checkbox") {
-    const on = value === true || value === "true";
+    // Réglage jamais modifié : le panneau montre la valeur par défaut du schéma, celle que la boutique affiche.
+    const on = value === undefined || value === null ? s.default === true : value === true || value === "true";
     return <label data-setting={id} className="flex items-center justify-between gap-3 text-sm"><span>{name}{info}</span><button type="button" role="switch" aria-checked={on} aria-label={name} onClick={() => onApply(!on)} className={cx("relative h-5 w-9 shrink-0 rounded-full transition-colors", on ? "bg-signal" : "bg-line")}><span className={cx("absolute top-0.5 size-4 rounded-full bg-white transition-all", on ? "left-4.5" : "left-0.5")} /></button></label>;
   }
   if (s.type === "select" || s.type === "radio" || s.type === "color_scheme") {
