@@ -1,0 +1,15 @@
+{
+  "schema": "angles-studio-link-reproduction-1",
+  "codeCommit": "894b0ce98398411bf1598bada59d0a0aa80bc85f",
+  "productionBuild": true,
+  "nativeLogin": true,
+  "nativeProjectOwnership": true,
+  "nativeResumeAction": true,
+  "finalPath": "/studio/PROJECT/preparation",
+  "httpStatus": 404,
+  "preparationVisible": 0,
+  "realProviderCalls": 0,
+  "simulatedDataOnly": true,
+  "browserErrors": [],
+  "scope": "Actual authenticated Next production server; not a component harness"
+}

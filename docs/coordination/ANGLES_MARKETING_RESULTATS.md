@@ -1,5 +1,7 @@
 # Angles marketing — recherche sourcée et choix explicite
 
+> Livraison initiale conservée pour historique. La [recette complémentaire du studio complet](ANGLES_MARKETING_RECETTE_STUDIO.md) décrit la correction de navigation, la compilation de production et les nouvelles preuves ; les limites de cette livraison initiale ne décrivent pas ces vérifications ultérieures.
+
 Mission : [dix points validés par Thomas, commentaire 6346420003 de #166](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/166#issuecomment-6346420003).
 
 Branche dédiée : `codex/angles-recherche-sourcee`. Base distante examinée : **`0a6aa1dd6dfa5932a5e42e027cef2a3335e74679`**, intégration #162 déjà fusionnée. La PR voix #166 reste séparée. Aucun essai API réel, recherche Internet réelle, génération payante, modification du projet Contretemps, configuration fournisseur, fusion ou déploiement dans cette mission. Les données de test sont isolées et fictives.
