@@ -1,5 +1,8 @@
 # Lot 5 — état réel, préparatifs et résultats
 
+> **Complément actif du 22 octobre 2026 :** [authentification et modèles, sans génération](LOT5_AUTHENTIFICATION_MODELES.md), mission [#6341845652](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/165#issuecomment-6341845652). Thomas a transmis un bloc worker complet : six clés en settings lisibles, Pexels absent, réponses HTTP publiques reçues ; Next reçu partiellement. Authentification, droits modèles et version servie restent non vérifiés. La nouvelle commande remplace l’ancienne pour ce contrôle ; les constats et résultats antérieurs ci-dessous restent historiques. Aucune étape 1 ni génération.
+
+
 ## Statut au 22 octobre 2026
 
 **Consigne active : [complément Thomas #6340748281 de #165](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/165#issuecomment-6340748281). Accès uniquement, puis retour à Thomas ; aucun démarrage d’étape fonctionnelle.** Le protocole de recette globale préparé ci-dessous est remplacé par **un seul projet, une étape fonctionnelle à la fois, validation explicite de Thomas avant la suivante**. Thème, adaptation et copywriting font partie du futur parcours. Voir [accès Codespace et protocole actif](LOT5_ACCES_CODESPACE_ET_RECETTE_PAS_A_PAS.md). Les cas de généralisation ci-dessous sont des réserves pour après ce premier parcours, pas des projets à lancer ensemble.

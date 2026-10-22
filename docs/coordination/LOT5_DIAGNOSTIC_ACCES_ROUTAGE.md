@@ -1,5 +1,8 @@
 # Lot 5 — accès effectifs et routage des fonctions IA
 
+> **Complément actif du 22 octobre 2026 :** [authentification et modèles, sans génération](LOT5_AUTHENTIFICATION_MODELES.md), mission [#6341845652](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/165#issuecomment-6341845652). Thomas a transmis un bloc worker complet : six clés en settings lisibles, Pexels absent, réponses HTTP publiques reçues ; Next reçu partiellement. Authentification, droits modèles et version servie restent non vérifiés. La nouvelle commande remplace l’ancienne pour ce contrôle ; les constats et résultats antérieurs ci-dessous restent historiques. Aucune étape 1 ni génération.
+
+
 Diagnostic du 22 octobre 2026, préalable demandé par [la consigne prioritaire](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/161#issuecomment-6339502711) de la [mission #164](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/164).
 
 ## Conclusion immédiate
