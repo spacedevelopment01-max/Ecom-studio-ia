@@ -226,8 +226,10 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
     ],
     product: (k) => [k.lib("ed-scene", 2, { layout: "split" }), k.faqSec(1, 4, "lines")],
     services: (k) => [
-      k.lib("ed-opening", 1, { layout: "journal", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.scene1 }),
-      k.lib("ed-statement", 1),
+      // Ouverture « cartouche » (différenciation du 22 octobre) : la pièce sur tout le premier écran, le titre posé dessus
+      // comme une couverture de magazine ; la démarche passe ensuite en vert profond.
+      k.lib("ed-opening", 1, { layout: "cartouche", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.scene1, padding_top: 0, padding_bottom: 0 }),
+      k.lib("ed-statement", 2, { padding_top: 104, padding_bottom: 104 }),
       k.lib("ref-narrative", 1),
       k.R.servicesList(3, "list"),
       k.R.method(1, "timeline"),
@@ -443,16 +445,20 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
     headerSettings: { mega_menu: "columns", mobile_submenu: "accordion", show_cart: true, color_scheme: "scheme-3" },
     // Galerie en grille, cadre carré (les vues sont carrées : montre entière, bracelet compris), zoom, barre d'achat.
     mainProduct: { gallery_layout: "grid", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
+    // Fond de page blanc (choix du thème, diagnostic du 22 octobre : neuf thèmes sur onze avaient un crème presque
+    // identique) ; la couleur claire de la marque reste celle du texte sur le bleu nuit.
     palette: (k) => {
       const ivory = k.light("#F7F5F0");
       const navy = k.night(0.13, 0.42);
-      return [k.scheme(ivory, navy, k.onLight(ivory)), k.scheme(navy, ivory, k.onDark(navy), 0.07), k.scheme("#FDFEFD", navy, k.onLight("#FDFEFD")), k.scheme(k.mix(ivory, "#AEB6C2", 0.35), navy, k.onLight(k.mix(ivory, "#AEB6C2", 0.35)))];
+      return [k.scheme("#FFFFFF", navy, k.onLight("#FFFFFF")), k.scheme(navy, ivory, k.onDark(navy), 0.07), k.scheme("#FDFEFD", navy, k.onLight("#FDFEFD")), k.scheme(k.mix(ivory, "#AEB6C2", 0.35), navy, k.onLight(k.mix(ivory, "#AEB6C2", 0.35)))];
     },
     // Accueil : la montre au crépuscule sous un grand titre, le cadran raconté en bleu nuit, les repères sur la montre, une
     // bannière en plein cadre, une scène portée, l'achat encadré, les questions et l'inscription illustrée.
     home: (k) => [
-      k.lib("ed-opening", 1, { layout: "journal", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.packshot, mobile_image_asset: k.im.portrait ?? "", padding_top: 24, padding_bottom: 72 }),
-      k.lib("ed-statement", 2, { image_asset: k.im.detail1 ?? "", padding_top: 96, padding_bottom: 96 }),
+      // Ouverture « écrin » (différenciation du 22 octobre) : panneau bleu nuit et photo pleine hauteur jusqu'au bord, puis
+      // une page sur fond blanc rythmée par les bandeaux bleu nuit.
+      k.lib("ed-opening", 2, { layout: "ecrin", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.packshot, mobile_image_asset: k.im.portrait ?? "", padding_top: 0, padding_bottom: 0 }),
+      k.lib("ed-statement", 1, { image_asset: k.im.detail1 ?? "", padding_top: 112, padding_bottom: 112 }),
       k.lib("fs-lookbook", 1, { layout: "markers", image_asset: k.im.packshot ?? k.im.cutout, align: "left" }),
       k.lib("fs-campaign", 2, { layout: "background", image_asset: k.im.banner ?? k.im.scene1 ?? "", offer_title: "", offer_text: "", period_text: "", conditions: "" }, { hide: !(k.im.banner ?? k.im.scene1) }),
       k.lib("ed-scene", 1, { layout: "split", image_asset: k.im.scene2 ?? k.im.scene1 ?? "", padding_top: 72, padding_bottom: 72 }, { hide: !(k.im.scene2 ?? k.im.scene1) }),

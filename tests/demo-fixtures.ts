@@ -68,7 +68,7 @@ const IDENTITY: Record<DemoId, { tagline: string; summary: string; story: string
     media: Object.fromEntries(KIT_MEDIA.noctil.filter((m) => m.role !== "logo").map((m) => [m.file, { role: m.role }])),
   },
   traverse: {
-    tagline: "Un sac, trois temps du voyage.", summary: "Sac à dos de voyage vert olive : grande poche frontale zippée, sangles latérales à boucle noire, poignée sur le dessus, bretelles noires.", story: "TRAVERSE suit la même personne du café du matin au quai de départ, puis jusqu'à la destination.", positioning: "Un sac de voyage pour le quotidien, le départ et la destination.", price: null,
+    tagline: "Un sac, trois temps du voyage.", summary: "Sac à dos de voyage vert olive : grande poche frontale zippée, sangles latérales à boucle noire, poignée sur le dessus, bretelles noires.", story: "TRAVERSE suit la même personne du bureau du matin au quai de départ, puis jusqu'à la destination.", positioning: "Un sac de voyage pour le quotidien, le départ et la destination.", price: null,
     media: Object.fromEntries(KIT_MEDIA.traverse.filter((m) => m.role !== "logo").map((m) => [m.file, { role: m.role }])),
   },
   // HEUREN et ALCÔVE (issue #155, e-commerce mono-produit) : identité utilisée seulement pour la preuve d'adaptation.

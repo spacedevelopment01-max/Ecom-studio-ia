@@ -168,6 +168,8 @@ const CATALOG: FamilyEntry[] = [
     d("arch", "Arche et promesse", "Arch and promise", "ed-opening", "split-right", { layout: "arch" }),
     // Issue #158 (SOUPLE) : la scène bord à bord occupe tout le premier écran, titre et bouton posés sur l'image.
     d("fullscreen", "Plein écran", "Full screen", "ed-opening", "background", { layout: "fullscreen" }),
+    // Différenciation du 22 octobre (HEUREN) : panneau sombre à gauche, photo pleine hauteur jusqu'au bord droit.
+    d("ecrin", "Écrin sombre, photo jusqu’au bord", "Dark case, photo to the edge", "ed-opening", "split-right", { layout: "ecrin" }),
   ]),
   e("catalog", 2, "collections", { fr: "Collections et catégories", en: "Collections and categories" }, { fr: "Accès visuels aux familles de produits.", en: "Visual access to product families." }, "collections catégories familles", [
     d("grid", "Grille", "Grid", "fs-collections", "grid-3", { layout: "grid" }),
@@ -276,6 +278,8 @@ const SERVICES: FamilyEntry[] = [
   e("services", 1, "hero", { fr: "Présentation de l'activité", en: "Business presentation" }, { fr: "Métier, promesse, grand visuel et action principale.", en: "Trade, promise, large visual and main action." }, "ouverture activité métier promesse", [
     d("journal", "Titre puis paysage", "Title then landscape", "ed-opening", "stacked", { layout: "journal" }),
     d("immersive", "Promesse dans la scène", "Promise within the scene", "ed-opening", "background", { layout: "immersive" }),
+    // Différenciation du 22 octobre (Atelier Rive) : la pièce en pleine largeur, le titre dans un cartouche posé dessus.
+    d("cartouche", "Photo pleine largeur et cartouche", "Full-width photo and title card", "ed-opening", "background", { layout: "cartouche" }),
   ]),
   e("services", 2, "offers", { fr: "Prestations proposées", en: "Services offered" }, { fr: "Catalogue de services en cartes, liste ou panneaux.", en: "Service catalogue as cards, a list or panels." }, "prestations services catalogue", [
     d("list", "Liste", "List", "services-list", "list", { layout: "list" }),

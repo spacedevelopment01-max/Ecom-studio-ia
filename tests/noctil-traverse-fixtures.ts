@@ -123,7 +123,7 @@ export const NOCTIL_FAQ_PENDING: [string, string][] = [
 //  d'affaires (volume non renseigné), prix et commande (information dédiée) ;
 //  exclusions : aucune contenance, compatibilité avion, imperméabilité, compartiment ordinateur ni modularité inventés.
 export const TRAVERSE_FAQ: [string, string][] = [
-  ["Fait-il sérieux au bureau ?", "Olive profond, fermetures et sangles noires, aucune couleur criarde : sur nos photos, il passe du café du matin au salon d'aéroport sans changer de style."],
+  ["Fait-il sérieux au bureau ?", "Olive profond, fermetures et sangles noires, aucune couleur criarde : sur nos photos, il passe d'une banquette en ville au salon d'aéroport sans changer de style."],
   ["Comment l'organiser pour partir directement ?", "La veille : les affaires du week-end dans le compartiment principal, qui s'ouvre par deux curseurs ; ce qui sert pendant le trajet dans la grande poche frontale zippée."],
   ["Comment le porter ?", "Sur le dos avec ses bretelles noires, ou à la main par la poignée du dessus, entre l'ascenseur et le quai."],
   ["Combien d'affaires peut-il contenir ?", "Son volume et ses dimensions ne sont pas encore renseignés : cette démonstration ne promet aucune contenance."],
@@ -451,8 +451,8 @@ function curateTraverse(k: Kit) {
       { type: "feature", settings: { icon: "none", title: "À la sortie", text: p("Poignée sur le dessus, bretelles noires : à la main dans l'ascenseur, sur le dos jusqu'au quai."), link_label: "", link: "" } },
       { type: "feature", settings: { icon: "none", title: "À destination", text: p("Chambre d'hôtel, bord de lac : on pose le sac, on ouvre la poche avant, on retrouve ses affaires."), link_label: "", link: "" } },
     ]),
-    section("cv-alternating", { layout: "alternate", ratio: "portrait", eyebrow: "Carnet de route", heading: "Du café du matin", heading_accent: "au départ du soir", text: "" }, [
-      { type: "row", settings: { ...img("ambiance-05.webp"), eyebrow: "Le matin", heading: "Le café", heading_accent: "avant le bureau", text: p("Posé sur la banquette, à côté de la tasse : les affaires du week-end sont déjà dedans, rien ne le montre."), button_label: "", button_link: "" } },
+    section("cv-alternating", { layout: "alternate", ratio: "portrait", eyebrow: "Carnet de route", heading: "Parti sans repasser", heading_accent: "par chez soi", text: "" }, [
+      { type: "row", settings: { ...img("ambiance-05.webp"), eyebrow: "Le matin", heading: "Prêt", heading_accent: "dès le matin", text: p("Les affaires du week-end sont déjà dedans, et rien ne le montre : posé sur une banquette en ville, il passe pour le sac de tous les jours."), button_label: "", button_link: "" } },
       { type: "row", settings: { ...img("ambiance-10.webp"), eyebrow: "À la sortie du travail", heading: "Le hall", heading_accent: "de la gare", text: p("Un banc, une verrière, le train du week-end : vous êtes parti sans repasser par chez vous."), button_label: "", button_link: "" } },
       { type: "row", settings: { ...img("ambiance-02.webp"), eyebrow: "Le lendemain", heading: "Le ponton", heading_accent: "au petit matin", text: p("Au bord d'un lac brumeux, le sac posé sur les planches : le bureau est loin."), button_label: "Lire le carnet de route", button_link: "/pages/carnet-de-route" } },
     ]),
@@ -495,7 +495,7 @@ function curateTraverse(k: Kit) {
     ]),
     section("content-tabs", { eyebrow: "En un coup d'œil", heading: "TRAVERSE, en deux regards", tab_style: "underline", image_position: "left" }, [
       { type: "tab", settings: { title: "Organisation", icon: "hand", heading: "Ce qui se voit", content: "<ul><li>Grande poche frontale zippée</li><li>Compartiment principal à deux curseurs</li><li>Poche latérale</li><li>Sangles à boucle noire de chaque côté</li><li>Poignée sur le dessus, bretelles noires</li></ul>", ...img("ambiance-01.webp"), button_label: "", button_link: "" } },
-      { type: "tab", settings: { title: "En voyage", icon: "globe", heading: "Du café au salon d'aéroport", content: p("Nos photos le montrent au café, dans le hall d'une gare, dans un salon d'aéroport, au pied d'un lit d'hôtel et au bord d'un lac."), ...img("ambiance-06.webp"), button_label: "Lire le carnet de route", button_link: "/pages/carnet-de-route" } },
+      { type: "tab", settings: { title: "En voyage", icon: "globe", heading: "De la ville au salon d'aéroport", content: p("Nos photos le montrent sur une banquette en ville, dans le hall d'une gare, dans un salon d'aéroport, au pied d'un lit d'hôtel et au bord d'un lac."), ...img("ambiance-06.webp"), button_label: "Lire le carnet de route", button_link: "/pages/carnet-de-route" } },
       { type: "tab", settings: { title: "Fiche technique", icon: "clock", heading: "Fiche technique", content: p(TODO("volume, dimensions, poids, format cabine, imperméabilité, matières")), image_asset: "", button_label: "", button_link: "" }, hidden: true },
     ]),
     section("cv-steps", { layout: "cards", eyebrow: "La veille", heading: "Préparer", heading_accent: "le départ du bureau", text: p("Quatre gestes, de la table du salon au quai de la gare."), button_label: "", button_link: "" }, [
