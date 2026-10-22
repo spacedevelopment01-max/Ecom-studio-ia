@@ -144,9 +144,14 @@ describe("Autopilot V2 — structure éditoriale et limites", async () => {
     const q = await project("creer");
     const plan2 = id();
     run("INSERT INTO content_plans (id, project_id, params, strategy, status, created_at, engine, updated_at) VALUES (?,?,?,?,?,?,?,?)", plan2, q.id, "{}", "{}", "ready", now(), "v2", now());
+    // Publications approuvées : un déplacement compte aussi les approuvées du jour (intégration #162), le résultat ne
+    // dépend plus du jour de la semaine où le test tourne.
     const ids = [1, 2, 3, 4, 5].map((n) => post(q.id, day(n), "approved", null, "instagram", plan2));
     for (const x of ids) run("UPDATE posts SET format = 'reel' WHERE id = ?", x);
-    const out = await fr(() => applySocialEdit(q, "mets les vidéos le mardi", mockSocialDeps().deps, { planId: plan2 }));
+    // Aperçu d'abord (rien ne bouge), puis confirmation : les limites du forfait restent appliquées.
+    const preview = await fr(() => applySocialEdit(q, "mets les vidéos le mardi", mockSocialDeps().deps, { planId: plan2 }));
+    expect(preview).toMatchObject({ needsConfirm: true, confirmKind: "change", applied: false });
+    const out = await fr(() => applySocialEdit(q, "mets les vidéos le mardi", mockSocialDeps().deps, { planId: plan2, confirm: true }));
     const dates = all<{ scheduled_at: number }>(`SELECT scheduled_at FROM posts WHERE id IN (${ids.map(() => "?").join(",")})`, ...ids).map((x) => x.scheduled_at);
     const perDay = new Map<string, number>();
     for (const d of dates) {

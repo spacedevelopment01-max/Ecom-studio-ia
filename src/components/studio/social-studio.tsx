@@ -457,6 +457,8 @@ function CreatePanel({ data, onDone, onGo, reload }: { data: Data; onDone: () =>
           <div className="rounded-2xl bg-paper-2 p-3 text-sm">
             <p>{t(`${result.created} publications planifiées.`, `${result.created} posts planned.`)}</p>
             {[...(result.warnings ?? []), ...(result.notes ?? [])].map((w) => <p key={w} className="text-warn">⚠ {w}</p>)}
+            {/* Visuels (créés par l'IA, devis en % du budget IA puis accord) : étape 2, sans doublon de parcours. */}
+            <p className="mt-1" data-plan-visuals-next>{t("Visuels de ces publications, créés par l'IA (coût montré avant, en % de votre budget IA) :", "Visuals for these posts, created by AI (cost shown first, as a % of your AI budget):")} <button type="button" className="underline" onClick={() => onGo("image")}>{t("Publication image", "Image post")}</button> · <button type="button" className="underline" onClick={() => onGo("video")}>{t("Publication vidéo", "Video post")}</button></p>
             <button type="button" className="mt-1 underline" onClick={onDone}>{t("Voir le calendrier", "See the calendar")}</button>
           </div>
         )}
@@ -537,8 +539,9 @@ function CalendarPanel({ data, reload, onOpen, onRange }: { data: Data; reload: 
   const [net, setNet] = useState<string>("all");
   const posts = useMemo(() => (net === "all" ? data.posts : data.posts.filter((p) => p.network === net)), [data.posts, net]);
   const [chat, setChat] = useState("");
-  const [pending, setPending] = useState<{ text: string; estimateMicro: number } | null>(null);
-  const budget = useBudgetPct();
+  // Aperçu à confirmer (suppression, autre modification, ou coût IA en % du budget) et dernière réponse affichée.
+  const [pending, setPending] = useState<{ text: string; kind: "delete" | "change" | "ai"; summary: string; pct: number | null } | null>(null);
+  const [answer, setAnswer] = useState<{ ok: boolean; text: string } | null>(null);
   const locale = lang === "en" ? enUS : fr;
   const ymd = (ms: number) => formatInTimeZone(ms, tz, "yyyy-MM-dd");
   const byDay = useMemo(() => {
@@ -577,16 +580,21 @@ function CalendarPanel({ data, reload, onOpen, onRange }: { data: Data; reload: 
     if (!text.trim() || sending) return;
     setSending(true);
     try {
-      const r = await api<{ applied: boolean; summary: string; needsConfirm?: boolean; estimateMicro?: number }>(`/api/projects/${id}/social/v2`, { body: { action: "edit", text, confirm } });
-      if (r.needsConfirm) setPending({ text, estimateMicro: r.estimateMicro ?? 0 });
-      else {
+      // Retouche IA : le % du budget IA accepté est renvoyé avec la confirmation (le serveur revérifie le coût).
+      const r = await api<{ applied: boolean; summary: string; needsConfirm?: boolean; confirmKind?: "delete" | "change" | "ai"; pct?: number | null; unclear?: boolean }>(`/api/projects/${id}/social/v2`, { body: { action: "edit", text, confirm, ...(confirm && pending?.kind === "ai" && pending.pct != null ? { approvedPct: pending.pct } : {}) } });
+      // Toujours une réponse visible sous la demande (jamais de silence) : aperçu à confirmer, résultat ou exemples.
+      if (r.needsConfirm) {
+        setAnswer(null);
+        setPending({ text, kind: r.confirmKind ?? "ai", summary: r.summary, pct: r.pct ?? null });
+      } else {
         setPending(null);
-        setChat("");
-        toast(r.applied ? "ok" : "bad", r.summary);
+        if (r.applied) setChat("");
+        setAnswer({ ok: r.applied, text: r.summary });
+        if (r.applied) toast("ok", r.summary);
         reload();
       }
     } catch (e) {
-      toast("bad", (e as Error).message);
+      setAnswer({ ok: false, text: (e as Error).message });
     } finally {
       setSending(false);
     }
@@ -681,19 +689,23 @@ function CalendarPanel({ data, reload, onOpen, onRange }: { data: Data; reload: 
       )}
       <Card className="grid gap-2 p-4" data-social-chat>
         <p className="flex items-center gap-2 font-semibold"><MessageSquare className="size-4" /> {t("Modifier le calendrier en une phrase", "Edit the calendar in one sentence")}</p>
-        <p className="text-xs text-muted">{t("Ex. « Supprime les publications du dimanche », « Mets les vidéos le vendredi », « Programme deux publications par jour au lieu de trois », « Remplace les images des trois prochaines publications » (gratuit) ; « Rends les publications plus premium » (IA, avec estimation).", "E.g. \"Delete Sunday posts\", \"Put videos on Friday\", \"Two posts a day instead of three\", \"Replace the images of the next three posts\" (free); \"Make posts more premium\" (AI, with an estimate).")}</p>
+        <p className="text-xs text-muted">{t("Ex. « Efface tout à partir du 19 octobre », « Vide novembre », « Pas le week-end », « Mets les vidéos le vendredi à 18h », « Décale tout d'une semaine », « Passe les publications Facebook sur Instagram », « Deux publications par jour au lieu de trois », « Annule ma dernière modification » (gratuit, aperçu avant d'agir) ; « Remplace les images des 3 prochaines publications », « Rends les publications plus premium » (IA, coût montré avant en % de votre budget IA).", "E.g. \"Delete everything from October 19\", \"Clear November\", \"No weekends\", \"Move videos to Friday at 6pm\", \"Push everything back a week\", \"Move Facebook posts to Instagram\", \"Two posts a day instead of three\", \"Undo my last change\" (free, preview before acting); \"Replace the images of the next 3 posts\", \"Make posts more premium\" (AI, cost shown first as a % of your AI budget).")}</p>
         <div className="flex gap-2">
           <Input value={chat} onChange={(e) => setChat(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder={t("Votre demande", "Your request")} />
           <Button onClick={() => send()} loading={sending}>{t("Envoyer", "Send")}</Button>
         </div>
         <AiWait busy={sending} label={t("Modification du calendrier…", "Editing the calendar…")} waitKey="social-edit" expectedMs={15000} />
         {pending && (
-          <div className="flex flex-wrap items-center gap-2 rounded-xl bg-warn-soft p-2 text-sm text-warn">
-            {t(`Cette retouche utilise l'IA : coût probable ${budget.label(pending.estimateMicro)}.`, `This edit uses AI: likely cost ${budget.label(pending.estimateMicro)}.`)}
-            <Button size="sm" variant="signal" onClick={() => send(true)}>{t("Confirmer", "Confirm")}</Button>
-            <Button size="sm" variant="secondary" onClick={() => setPending(null)}>{t("Annuler", "Cancel")}</Button>
+          <div className="grid gap-2 rounded-xl bg-warn-soft p-3 text-sm text-warn" data-edit-confirm={pending.kind}>
+            {/* Le résumé du serveur porte l'aperçu, et pour l'IA le coût en % du budget IA (jamais en euros). */}
+            <p>{pending.kind === "ai" ? t(`Cette retouche utilise l'IA : ${pending.summary}`, `This edit uses AI: ${pending.summary}`) : pending.summary}</p>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant={pending.kind === "delete" ? "danger" : "signal"} loading={sending} onClick={() => send(true)} data-action="confirm-edit">{pending.kind === "delete" ? t("Confirmer la suppression", "Confirm deletion") : t("Confirmer", "Confirm")}</Button>
+              <Button size="sm" variant="secondary" onClick={() => setPending(null)}>{t("Annuler", "Cancel")}</Button>
+            </div>
           </div>
         )}
+        {answer && !pending && <p className={cx("rounded-xl p-2 text-sm", answer.ok ? "bg-ok-soft text-ok" : "bg-warn-soft text-warn")} role="status" data-edit-answer={answer.ok ? "ok" : "no"}>{answer.text}</p>}
       </Card>
     </div>
   );

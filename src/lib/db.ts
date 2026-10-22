@@ -876,6 +876,18 @@ CREATE TABLE IF NOT EXISTS social_autopilot_log (
 );
 CREATE INDEX IF NOT EXISTS social_autopilot_log_project ON social_autopilot_log(project_id, at);
 
+-- Dernière retouche du calendrier « en une phrase » (une par projet) : état d'avant (rows), copies créées (created)
+-- et état d'après (after : id → updated_at) pour « annule ma dernière modification » sans écraser une modification
+-- faite entre-temps.
+CREATE TABLE IF NOT EXISTS social_edit_undo (
+  project_id TEXT PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE,
+  at INTEGER NOT NULL,
+  summary TEXT NOT NULL,
+  rows TEXT NOT NULL,
+  created TEXT NOT NULL DEFAULT '[]',
+  after TEXT NOT NULL DEFAULT '{}'
+);
+
 CREATE TABLE IF NOT EXISTS content_runs (
   project_id TEXT NOT NULL,
   run_key TEXT NOT NULL,

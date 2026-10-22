@@ -63,5 +63,13 @@ la mise en page, et le test d'adaptation vérifie l'absence de noms de démonstr
 
 ## PR #127
 
-Voir `docs/coordination/PR127-SORT.md`. La partie « visuels gratuits » (banque de photos, photos libres, vidéos sans
-IA) n'est pas réintroduite, car contraire à la règle des images finales 100 % IA.
+Reprise **à la main** sur le code actuel (commit `5c7b3f55`, réuni ici), sans fusionner l'ancienne branche. Détail dans
+`docs/coordination/PR127-SORT.md`.
+- **Repris** : calendrier modifié en une phrase.
+  - Dates en FR et EN, périodes, jours.
+  - Aperçu avant d'agir, confirmation obligatoire avant une suppression, annulation prudente.
+  - Coût de l'IA en % du budget.
+  - « Remplace les images » produit une image par l'IA, avec devis et accord, sans jamais repayer.
+- **Non repris** : le mode « Visuels gratuits » (banque de photos, photos libres, vidéos montées sans IA), contraire à la
+  règle des images finales 100 % IA.
+- La PR #127 peut être fermée comme « reprise dans #162 ».
