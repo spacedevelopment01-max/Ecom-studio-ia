@@ -111,7 +111,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       z.object({ action: z.literal("unschedule"), ids }),
       z.object({ action: z.literal("pause"), planId: z.string().max(80) }),
       z.object({ action: z.literal("resume"), planId: z.string().max(80) }),
-      z.object({ action: z.literal("edit"), text: z.string().min(3).max(600), confirm: z.boolean().optional(), maxCostEur: z.number().min(0).max(20).optional(), maxCostPct: z.number().min(0).max(100).optional(), planId: z.string().max(80).optional() }),
+      z.object({ action: z.literal("edit"), text: z.string().min(3).max(600), confirm: z.boolean().optional(), maxCostEur: z.number().min(0).max(20).optional(), maxCostPct: z.number().min(0).max(100).optional(), planId: z.string().max(80).optional(), /** Retouche IA : coût vu et accepté par le client, en % du budget IA du mois. */ approvedPct: z.number().min(0).max(1000).optional() }),
       z.object({ action: z.literal("automation"), kind: z.enum(AUTOMATION_KINDS), config: z.record(z.string(), z.unknown()).optional() }),
       z.object({ action: z.literal("quote_one"), kind: z.enum(["image", "carousel", "video"]), mode: z.enum(["free", "ai_image", "ai_post", "ai_video"]), networks: z.number().int().min(1).max(6), pages:z.number().int().min(1).max(10).optional() }),
       z.object({
@@ -191,8 +191,12 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     case "resume":
       planOwned(b.planId);
       return ok({ ok: true, ...setPlanPaused(b.planId, b.action === "pause") });
-    case "edit":
-      return ok(await applySocialEdit(p, b.text, realSocialDeps(null, p, aiActiveFor(p.userId, p.id)), { confirm: b.confirm, maxCostEur: b.maxCostPct != null ? capPctToMicro(p.userId, b.maxCostPct, p.id) / 1e6 : b.maxCostEur, planId: b.planId }));
+    case "edit": {
+      const r = await applySocialEdit(p, b.text, realSocialDeps(null, p, aiActiveFor(p.userId, p.id)), { confirm: b.confirm, maxCostEur: b.maxCostPct != null ? capPctToMicro(p.userId, b.maxCostPct, p.id) / 1e6 : b.maxCostEur, planId: b.planId, approvedPct: b.approvedPct ?? null });
+      // Coût d'une retouche IA : en % du budget IA du mois (`pct`), jamais de montant renvoyé au navigateur.
+      const { estimateMicro: _internal, ...shown } = r;
+      return ok(shown);
+    }
     case "automation":
       requirePlan(user, p.id);
       return ok({ id: createAutomation(p.id, b.kind, b.config ?? {}) });

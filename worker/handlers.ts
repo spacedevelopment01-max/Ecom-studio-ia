@@ -413,7 +413,7 @@ export const handlers: Record<string, Handler> = {
     const { aiActiveFor } = await import("../src/lib/ai/access");
     const p = loadProject(ctx.payload.projectId);
     const deps = realSocialDeps(ctx, p, aiActiveFor(p.userId, p.id));
-    const result=await ctx.step("produce", () => produceBatch(p, ctx.payload.ids ?? [], deps, { allowPaid: !!ctx.payload.allowPaid, maxCostEur: Number(ctx.payload.maxCostEur ?? 0), approvedEstimateMicro: ctx.payload.approvedEstimateMicro ?? null, distinctImages: ctx.payload.distinctImages ?? null, aiImages: ctx.payload.aiImages ?? null, aiBackground: !!ctx.payload.aiBackground, replace: !!ctx.payload.replace }));
+    const result=await ctx.step("produce", () => produceBatch(p, ctx.payload.ids ?? [], deps, { allowPaid: !!ctx.payload.allowPaid, maxCostEur: Number(ctx.payload.maxCostEur ?? 0), approvedEstimateMicro: ctx.payload.approvedEstimateMicro ?? null, distinctImages: ctx.payload.distinctImages ?? null, aiImages: ctx.payload.aiImages ?? null, aiBackground: !!ctx.payload.aiBackground, replace: !!ctx.payload.replace, replaceFrom: ctx.payload.replaceFrom ?? null, batchSize: ctx.payload.batchSize ?? undefined, progress: (done, total) => ctx.progress(total ? done / total : 1, L(`Visuel ${Math.min(done + 1, total)} sur ${total}`, `Visual ${Math.min(done + 1, total)} of ${total}`)) }));
     if(!result.produced && (result.failed||result.skipped))throw new UserFacingError(L("Aucune publication complète produite : ","No complete post produced: ")+result.notes.join(" ; "));
     return {...result,partial:!!(result.failed||result.skipped)};
   },
