@@ -10,7 +10,7 @@
  *     démo) avec le guide des informations à compléter ;
  *  4. galerie et démo sur un téléphone (390 × 844).
  *
- * START_DEMO=<démonstration> (revue de la PR #159) : le projet de départ n'est plus « Atelier Verre » (presque vide : un
+ * CHECK_PLAN=<creer|vendre|dominer> (intégration #162, défaut dominer : droits par famille #150) ; START_DEMO=<démonstration> (revue de la PR #159) : le projet de départ n'est plus « Atelier Verre » (presque vide : un
  * produit sans visuels) mais un projet complet et cohérent — celui d'une autre démonstration de la même famille, avec sa
  * marque, son produit, ses textes et ses propres visuels. Le choix passe par le vrai chemin (tâche « shop.direction » du
  * worker, moteur local, sans IA) ; on vérifie ensuite qu'aucun emplacement d'image n'est vide, qu'aucun visuel du thème
@@ -60,6 +60,9 @@ const user = await createUser(email, password, "Vérification démo complète");
 const { catalogTheme } = await import("../src/lib/theme/theme-catalog");
 const startDemo = START_DEMO ? await runWithLang({ content: "fr", ui: "fr" }, async () => (await import("../tests/demo-fixtures")).demoProject(user.id, START_DEMO)) : null;
 const pid = startDemo ? startDemo.pid : seedHoldout(user.id, 0, "Atelier Verre");
+// Le projet de départ joue un vrai client : ses photos sont les siennes (le marquage « démonstration », qui les exclut à
+// juste titre de toute adaptation client, est retiré pour cette vérification seulement).
+if (startDemo) run("UPDATE assets SET meta = json_remove(meta, '$.demo', '$.lot2a') WHERE project_id = ?", pid);
 // CHARTE=1 (revue du 21 octobre) : le projet de départ a une charte validée (ses couleurs) ; le thème choisi change la
 // composition, jamais ces couleurs. Sans charte validée, repli documenté : la palette du thème choisi.
 const CHARTE = !!startDemo && process.env.CHARTE === "1";
@@ -69,7 +72,9 @@ const TAGLINE = loadProject(pid).brand!.tagline ?? "";
 /** Nom du projet de départ (sa marque) : il doit rester celui du projet après le choix. */
 const NAME = startDemo ? loadProject(pid).brand!.name : "Atelier Verre";
 const startProfile = (() => { const s = catalogTheme(START.id)!.settings ?? {}; return s.conversion_profile && s.conversion_profile !== "none" ? `body[data-conversion='${s.conversion_profile}']` : `body[data-editorial='${s.editorial_profile}']`; })();
-run("INSERT INTO subscriptions (user_id,status,plan,owner_user_id,project_id,source,created_at,updated_at) VALUES (?,'active','creer',?,?,'admin',?,?)", `demo-check-${pid}`, user.id, pid, Date.now(), Date.now());
+run("INSERT INTO subscriptions (user_id,status,plan,owner_user_id,project_id,source,created_at,updated_at) VALUES (?,'active',?,?,?,'admin',?,?)", `demo-check-${pid}`, process.env.CHECK_PLAN ?? "dominer", user.id, pid, Date.now(), Date.now());
+// Stratégie du projet (#160) : la préparation est terminée par un choix explicite avant toute composition du thème.
+{ const { chooseGeneralistForTest } = await import("../tests/strategy-choice-fixture"); chooseGeneralistForTest(pid); }
 // Projet complet : sa boutique actuelle (celle de sa démonstration) est enregistrée comme version du thème, comme pour un client.
 if (startDemo) saveThemeVersion(pid, startDemo.spec, `Boutique ${NAME} (${START.name})`, "user");
 if (!startDemo) {
@@ -280,13 +285,18 @@ try {
   const g = await guided.newPage(); await g.goto(`${origin}/studio/${pid}/boutique`, { waitUntil: "networkidle", timeout: 240000 }); await g.waitForTimeout(1500);
   // Un second thème de la même catégorie, choisi depuis sa carte (ONDE ; en E-commerce, l'autre thème de l'issue #155) :
   // le guide liste ce qui attend les informations du projet.
-  const second = START.kind === "catalog" ? { id: T === "heuren" ? "alcove" : "heuren", body: `body[data-editorial='${T === "heuren" ? "arrondi" : "cadran"}']` } : { id: "onde", body: "body[data-conversion='contrast']" };
+  // ONDE est E-commerce depuis #158 : pour une boutique spécialisée, le second thème est NOCTIL (ou TRAVERSE après NOCTIL).
+  const secondId = START.kind === "catalog" ? (T === "heuren" ? "alcove" : "heuren") : (T === "noctil" ? "traverse" : "noctil");
+  const secondSettings = catalogTheme(secondId)!.settings ?? {};
+  const second = { id: secondId, body: secondSettings.conversion_profile && secondSettings.conversion_profile !== "none" ? `body[data-conversion='${secondSettings.conversion_profile}']` : `body[data-editorial='${secondSettings.editorial_profile}']` };
   await g.getByRole("button", { name: /^Thèmes$/ }).first().click(); await g.locator(`[data-open-demo='${second.id}']`).waitFor({ timeout: 60000 });
   await g.locator(`[data-choose-theme='${second.id}']`).click();
-  await g.locator("[data-theme-guide]").waitFor({ timeout: 300000 });
+  // Guide après le choix : celui du thème, ou le panneau d'adaptation client de Codex (#154/#160) qui le remplace.
+  const guideSel = "[data-theme-guide], [data-theme-adaptation]";
+  await g.locator(guideSel).first().waitFor({ timeout: 300000 });
   await g.frameLocator("iframe[src*='/preview/']").first().locator(second.body).waitFor({ timeout: 180000 }); await g.waitForTimeout(1500);
   await g.screenshot({ path: path.join(out, "choix-12-guide-informations-a-completer.png") });
-  const guide = await g.locator("[data-theme-guide]").innerText();
+  const guide = await g.locator(guideSel).first().innerText();
   steps.push({ step: "après un choix : guide des informations à compléter (sans rien emprunter à la démo)", guide, ok: true });
   await guided.close();
 
