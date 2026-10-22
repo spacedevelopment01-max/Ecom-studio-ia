@@ -204,6 +204,9 @@ body[data-editorial="studio"] .fs-camp--background .fs-camp__media .ed-media{asp
    sous l'en-tête (hauteur réelle mesurée, repli 120 px ; svh suit la barre du navigateur mobile), titre court et bouton
    posés sur l'image avec un voile pour le contraste. Image dédiée et cadrage propres au téléphone (texte en haut). */
 .ed-opening--fullscreen{padding:0!important}
+/* Bandeau photo (maquette HEUREN du 22 octobre) : même photo pleine largeur que « Plein écran », sur une hauteur de bandeau
+   à l'ordinateur ; au téléphone, le premier écran entier (texte en haut, produit dessous). */
+@media(min-width:750px){.ed-opening--banner .ed-shell{min-height:clamp(520px,64vh,720px)!important;align-items:center!important}}
 .ed-opening--fullscreen .ed-shell{width:100%;max-width:none;position:relative;display:flex;align-items:flex-end;min-height:max(520px,calc(100vh - var(--es-header-bottom,120px)));min-height:max(520px,calc(100svh - var(--es-header-bottom,120px)))}
 .ed-opening--fullscreen .ed-opening__media{position:absolute;inset:0;z-index:0;height:auto}
 .ed-opening--fullscreen .ed-opening__media .ed-media,.ed-opening--fullscreen .ed-opening__media picture{height:100%;aspect-ratio:auto;border-radius:0}
@@ -447,7 +450,9 @@ body[data-editorial="cadran"] .v2-faq--side .v2-h2{font-size:clamp(30px,2.6vw,40
 body[data-editorial="cadran"] .es-footer .es-footer__wordmark,body[data-editorial="cadran"] .es-footer__brand{letter-spacing:.42em;text-transform:uppercase;font-weight:400}
 @media(max-width:749px){
   body[data-editorial="cadran"] .ed-opening--fullscreen .ed-shell{align-items:flex-start}
-  body[data-editorial="cadran"]:has(.es-header--transparent) .ed-opening--fullscreen .ed-opening__copy{padding-top:calc(var(--es-header-bottom,64px) + 18px)}
+  /* En-tête transparent : le contenu principal commence sous la seule barre d'annonce (--es-header-bottom), la barre de
+     l'en-tête (64 px) passe par-dessus l'ouverture ; le texte commence dessous. */
+  body[data-editorial="cadran"]:has(.es-header--transparent) .ed-opening--fullscreen .ed-opening__copy{padding-top:calc(var(--es-header-bottom,0px) + 82px)}
   body[data-editorial="cadran"] .ed-opening--fullscreen .ed-opening__title{font-size:clamp(32px,9.6vw,42px)}
   body[data-editorial="cadran"] .ed-opening--fullscreen .ed-opening__media::after{background:linear-gradient(180deg,rgba(9,14,28,.72) 0%,rgba(9,14,28,.32) 40%,rgba(9,14,28,0) 62%)}
   body[data-editorial="cadran"] .es-header .es-header__wordmark{font-size:16px;letter-spacing:.36em}
@@ -466,6 +471,8 @@ body[data-editorial="cadran"] .ed-contact__image{grid-column:2;grid-row:1/span 4
 body[data-editorial="cadran"] .ed-contact__image>.ed-media{height:100%;aspect-ratio:auto;outline:none}
 body[data-editorial="cadran"] .ed-form :is(input,select,textarea){border:1px solid var(--cd-line);padding:12px 14px}
 body[data-editorial="cadran"] .ed-form .ed-button{width:100%;justify-content:center}
+/* Menu mobile plein écran (maquette) : grands liens fins sur le schéma choisi dans l'en-tête, filets clairs. */
+body[data-editorial="cadran"] .es-mobile-menu--fullscreen .es-mobile-menu__list a{font-weight:300}
 /* Panier (maquette) : lignes sur filets, récapitulatif encadré ; panier vide avec la montre, un titre fin et un bouton. */
 body[data-editorial="cadran"] .es-cart__title{font-weight:300;font-size:clamp(34px,3.4vw,48px);margin-bottom:6px}
 body[data-editorial="cadran"] .es-cart__intro{margin:0 0 32px}
@@ -483,6 +490,13 @@ body[data-editorial="cadran"] .es-cart__qty{border-radius:0;border-color:var(--c
 body[data-editorial="cadran"] .es-line-item__remove{font-size:13px;text-decoration:underline;text-underline-offset:4px}
 body[data-editorial="cadran"] .es-line-item__total{white-space:nowrap}
 body[data-editorial="cadran"] .es-line-item__title{font-weight:400}
+/* Livraison et retours (maquette) : cartes encadrées sur deux colonnes, pictogramme à gauche, note de démonstration teintée. */
+body[data-editorial="cadran"] .fs-commit__list--grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+body[data-editorial="cadran"] .fs-commit__list--grid .fs-commit__item{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start;border:1px solid var(--cd-line);border-top:1px solid var(--cd-line);padding:28px;border-radius:0;background:transparent}
+body[data-editorial="cadran"] .fs-commit__list--grid .fs-commit__icon{margin:0}
+body[data-editorial="cadran"] .fs-commit__list--grid .fs-item__title{font-weight:400;font-size:20px;margin:0 0 8px}
+body[data-editorial="cadran"] .fs-commit__list--grid .fs-meta{display:block;margin-top:16px;padding:10px 14px;background:color-mix(in srgb,var(--c-accent) 18%,transparent);font-size:13px;letter-spacing:0;text-transform:none}
+@media(max-width:749px){body[data-editorial="cadran"] .fs-commit__list--grid{grid-template-columns:1fr}}
 /* Boutique : la montre seule, carte large. */
 body[data-editorial="cadran"] .es-collection__title,body[data-editorial="cadran"] .es-collection h1{font-weight:300}
 @media(max-width:749px){

@@ -162,7 +162,7 @@ function curateHeuren(k: Kit) {
 
   // ─── Accueil ─────────────────────────────────────────────────────────────────────────────────────────────────────
   overlay("index", [
-    section("ed-opening", { ...img("hero-desktop.webp"), mobile_image_asset: img("hero-mobile.webp").image_asset, layout: "fullscreen", heading_tag: "h1", label: "", heading: "Marquez\nce moment.", text: p("Une montre à offrir. Un moment à garder."), button_label: "Découvrir la montre", button_link: productHref, copy_surface: false, focus_x: 62, focus_y: 50, mobile_focus_x: 12, mobile_focus_y: 60, padding_top: 0, padding_bottom: 0 }),
+    section("ed-opening", { ...img("hero-desktop.webp"), mobile_image_asset: img("hero-mobile.webp").image_asset, layout: "banner", heading_tag: "h1", label: "", heading: "Marquez\nce moment.", text: p("Une montre à offrir. Un moment à garder."), button_label: "Découvrir la montre", button_link: productHref, copy_surface: false, focus_x: 62, focus_y: 50, mobile_focus_x: 12, mobile_focus_y: 60, padding_top: 0, padding_bottom: 0 }),
     section("fs-commitments", { layout: "strip", align: "center", eyebrow: "", heading: "", heading_accent: "", text: "", note: "", padding_top: 20, padding_bottom: 20 }, [
       { type: "item", settings: { icon: "box", title: "Livraison", text: "", proof_label: "", proof_link: "/pages/livraison-retours" } },
       { type: "item", settings: { icon: "return", title: "Retours", text: "", proof_label: "", proof_link: "/pages/livraison-retours" } },
@@ -302,7 +302,7 @@ function curateHeuren(k: Kit) {
     { title: "FAQ", url: "/pages/conseils" },
   ] };
   const header = Object.values(spec.groups.header.sections).find((s) => s.type === "header")!;
-  header.settings = { ...header.settings, menu: "main-menu", layout: "logo-left", shape: "bar", icons: "plain", mega_menu: "none", mobile_menu: "fullscreen", mobile_submenu: "accordion", sticky: true, transparent_on_home: true, show_search: true, show_cart: true, cta_label: "", phone: "", color_scheme: "scheme-1" };
+  header.settings = { ...header.settings, menu: "main-menu", layout: "logo-left", shape: "bar", icons: "plain", mega_menu: "none", mobile_menu: "fullscreen", mobile_submenu: "accordion", sticky: true, transparent_on_home: true, show_search: true, show_cart: true, cta_label: "", phone: "", color_scheme: "scheme-1", mobile_menu_scheme: "scheme-2" };
   header.blocks = {}; header.block_order = [];
   spec.groups.header.sections = { header };
   spec.groups.header.order = ["header"];
@@ -313,7 +313,7 @@ function curateHeuren(k: Kit) {
   for (const s of Object.values(spec.groups.footer.sections)) if (s.type !== "footer") s.disabled = true;
   k.finish();
   // Nom en lettres espacées (maquette) : le logo serif livré sur fond blanc reste l'icône du site, pas l'en-tête.
-  spec.settings = { ...spec.settings, logo_asset: "", fab_contact_link: "/pages/contact" };
+  spec.settings = { ...spec.settings, logo_asset: "", fab_contact_link: "", fab_back_to_top: false };
 }
 
 // ─── ALCÔVE ───────────────────────────────────────────────────────────────────────────────────────────────────────

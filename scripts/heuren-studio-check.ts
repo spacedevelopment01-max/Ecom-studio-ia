@@ -4,7 +4,7 @@
  * panneau « Réglages » (titre, bouton, côté du texte, couleurs), dupliquée, déplacée ; après rechargement complet, tout
  * est conservé. Captures à chaque étape.
  *
- *   npx tsx scripts/heuren-studio-check.ts <dossier-captures>
+ *   npx tsx scripts/heuren-studio-check.ts <dossier-captures>      (VIDEO_DIR=<dossier> : vidéo du parcours)
  */
 import fs from "node:fs";
 import os from "node:os";
@@ -17,7 +17,7 @@ const temp = fs.mkdtempSync(path.join(os.tmpdir(), "ecs-heuren-studio-")); proce
 const out = path.resolve(process.argv[2] ?? "reports/heuren-studio"); fs.mkdirSync(out, { recursive: true });
 /** Compositions des maquettes : fonction de la galerie, disposition, classe attendue dans l'aperçu. */
 const GALLERY = [
-  ["Présentation principale", "fullscreen", ".ed-opening--fullscreen"],
+  ["Présentation principale", "banner", ".ed-opening--banner"],
   ["Engagements de la marque", "strip", ".fs-commitments--strip"],
   ["Ambiance et lookbook", "band", ".ed-scene--band"],
   ["Usages et installation", "triptych", ".ed-diptych--triptych"],
@@ -49,7 +49,8 @@ const steps: Record<string, unknown>[] = [];
 const shot = async (page: Page, name: string) => { await page.screenshot({ path: path.join(out, `heuren-${name}.png`) }); };
 type Structure = { template: string; sections: { id: string; type: string; name: string }[] }[];
 try {
-  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "fr-FR" }); const page = await context.newPage();
+  // VIDEO_DIR=<dossier> : enregistre le parcours en vidéo (WebM), pour la remise à Thomas.
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "fr-FR", ...(process.env.VIDEO_DIR ? { recordVideo: { dir: process.env.VIDEO_DIR, size: { width: 1440, height: 900 } } } : {}) }); const page = await context.newPage();
   const errors: string[] = []; page.on("pageerror", (e) => errors.push(e.message));
   const login = await context.request.post(`${origin}/api/auth/login`, { data: { email, password } }); assert.ok(login.ok(), `connexion : ${login.status()}`);
   const theme = async () => ((await (await context.request.get(`${origin}/api/projects/${f.pid}/theme`)).json()) as { current: { structure: Structure } }).current.structure;
@@ -147,4 +148,5 @@ try {
   assert.deepEqual(errors.filter((e) => !/ResizeObserver/.test(e)), [], "erreurs de page du studio");
   fs.writeFileSync(path.join(out, "heuren-studio.json"), JSON.stringify({ demo: "heuren", origin: "studio Next.js de développement, base temporaire", steps, date: new Date().toISOString() }, null, 2) + "\n");
   console.log(JSON.stringify({ ok: true, steps }));
+  await context.close();
 } catch (e) { try { const pages = browser.contexts().flatMap((c) => c.pages()); if (pages[0]) await pages[0].screenshot({ path: path.join(out, "heuren-99-echec.png") }); } catch { /* */ } throw e; } finally { await browser.close(); stopDev(); await new Promise((r) => setTimeout(r, 1500)); try { process.kill(-dev.pid!, "SIGKILL"); } catch { /* */ } fs.rmSync(temp, { recursive: true, force: true }); }

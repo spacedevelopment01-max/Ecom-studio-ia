@@ -74,8 +74,13 @@ describe("ONDE : thème actif de la famille E-commerce (mono-produit)", () => {
   it("composition et en-tête / pied distincts d'ORBE, HEUREN et ALCÔVE", () => {
     const themes = ["orbe", "heuren", "alcove", ID].map((i) => catalogTheme(i)!);
     expect(new Set(themes.map((t) => t.fonts.heading)).size).toBe(4);
-    expect(new Set(themes.map((t) => t.look.footer)).size).toBe(4);
-    expect(new Set(themes.map((t) => `${t.headerSettings?.layout ?? t.look.headerLayout}/${t.headerSettings?.mega_menu ?? "none"}`)).size).toBe(4);
+    // Pied de page : la maquette HEUREN du 22 octobre impose le pied « minimal sur une ligne », celui d'ORBE ; ONDE et
+    // ALCÔVE gardent chacun le leur (couleurs, polices et contenus restent propres à chaque thème).
+    expect(new Set(themes.map((t) => t.look.footer)).size).toBe(3);
+    expect(new Set(["alcove", ID].map((i) => catalogTheme(i)!.look.footer)).size).toBe(2);
+    expect(["orbe", "heuren"].map((i) => catalogTheme(i)!.look.footer)).not.toContain(catalogTheme(ID)!.look.footer);
+    // En-tête : HEUREN se distingue d'ORBE par l'en-tête transparent sur la photo d'ouverture (maquette du 22 octobre).
+    expect(new Set(themes.map((t) => `${t.headerSettings?.layout ?? t.look.headerLayout}/${t.headerSettings?.mega_menu ?? "none"}/${t.headerSettings?.transparent_on_home ? "transparent" : "plein"}`)).size).toBe(4);
   });
 
   it("visuels du kit privé jamais suivis dans le dépôt", () => {

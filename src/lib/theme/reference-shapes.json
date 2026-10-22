@@ -10187,7 +10187,7 @@
                 "focus_y": 50,
                 "mobile_focus_x": 12,
                 "mobile_focus_y": 60,
-                "layout": "fullscreen",
+                "layout": "banner",
                 "copy_surface": false,
                 "heading_tag": "h1"
               },
@@ -11235,7 +11235,7 @@
         "motion_enabled": true,
         "motion_intensity": "subtle",
         "motion_parallax": true,
-        "fab_back_to_top": true,
+        "fab_back_to_top": false,
         "fab_contact_icon": "chat",
         "cart_type": "drawer",
         "editorial_profile": "cadran",
@@ -11260,7 +11260,8 @@
                 "color_scheme": "scheme-1",
                 "mega_menu": "none",
                 "mobile_submenu": "accordion",
-                "show_cart": true
+                "show_cart": true,
+                "mobile_menu_scheme": "scheme-2"
               },
               "blocks": {},
               "block_order": []

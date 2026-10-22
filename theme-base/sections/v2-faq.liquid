@@ -8,24 +8,46 @@
       {%- if s.text != blank -%}<div class="v2-intro" data-reveal="up">{{ s.text }}</div>{%- endif -%}
     </header>
     {%- if s.layout == 'columns' -%}
-    {%- comment -%} Une colonne par bloc « Thème » ; les questions qui suivent un thème s'y rangent. {%- endcomment -%}
+    {%- comment -%} Une colonne par bloc « Thème » ; les questions qui suivent un thème s'y rangent (celles placées avant le
+      premier thème forment une première colonne sans titre). {%- endcomment -%}
+    {%- liquid
+      assign lead = 0
+      for block in section.blocks
+        if block.type == 'topic'
+          break
+        endif
+        assign lead = lead | plus: 1
+      endfor
+    -%}
     <div class="v2-faq__cols">
-      {%- assign open = false -%}
-      {%- for block in section.blocks -%}
-        {%- if block.type == 'topic' -%}
-          {%- if open -%}</div></div>{%- endif -%}
-          <div class="v2-faq__col" {{ block.shopify_attributes }}>
-            {%- if block.settings.image != blank or block.settings.image_asset != blank -%}<div class="v2-faq__col-media">{% render 'ed-media', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.image_alt %}</div>{%- endif -%}
-            <h3 class="v2-faq__col-title">{{ block.settings.title | escape }}</h3>
-            {%- if block.settings.text != blank -%}<p class="v2-faq__col-text">{{ block.settings.text | escape }}</p>{%- endif -%}
-            <div class="v2-faq__list">
-          {%- assign open = true -%}
-        {%- else -%}
-          {%- unless open -%}<div class="v2-faq__col"><div class="v2-faq__list">{%- assign open = true -%}{%- endunless -%}
+      {%- if lead > 0 -%}
+      <div class="v2-faq__col">
+        <div class="v2-faq__list">
+          {%- for block in section.blocks limit: lead -%}
           <details class="v2-faq__item" {{ block.shopify_attributes }}><summary><span>{{ block.settings.question }}</span><span class="v2-faq__plus" aria-hidden="true"></span></summary><div class="v2-rte">{{ block.settings.answer }}</div></details>
-        {%- endif -%}
+          {%- endfor -%}
+        </div>
+      </div>
+      {%- endif -%}
+      {%- for topic in section.blocks -%}
+        {%- if topic.type != 'topic' -%}{%- continue -%}{%- endif -%}
+        {%- assign tix = forloop.index0 -%}
+      <div class="v2-faq__col" {{ topic.shopify_attributes }}>
+        {%- if topic.settings.image != blank or topic.settings.image_asset != blank -%}<div class="v2-faq__col-media">{% render 'ed-media', image: topic.settings.image, asset: topic.settings.image_asset, alt: topic.settings.image_alt %}</div>{%- endif -%}
+        <h3 class="v2-faq__col-title">{{ topic.settings.title | escape }}</h3>
+        {%- if topic.settings.text != blank -%}<p class="v2-faq__col-text">{{ topic.settings.text | escape }}</p>{%- endif -%}
+        <div class="v2-faq__list">
+          {%- assign inside = false -%}
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'topic' -%}
+              {%- if forloop.index0 == tix -%}{%- assign inside = true -%}{%- else -%}{%- assign inside = false -%}{%- endif -%}
+            {%- elsif inside -%}
+          <details class="v2-faq__item" {{ block.shopify_attributes }}><summary><span>{{ block.settings.question }}</span><span class="v2-faq__plus" aria-hidden="true"></span></summary><div class="v2-rte">{{ block.settings.answer }}</div></details>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      </div>
       {%- endfor -%}
-      {%- if open -%}</div></div>{%- endif -%}
     </div>
     {%- else -%}
     <div class="v2-faq__list">

@@ -170,6 +170,8 @@ const CATALOG: FamilyEntry[] = [
     d("arch", "Arche et promesse", "Arch and promise", "ed-opening", "split-right", { layout: "arch" }),
     // Issue #158 (SOUPLE) : la scène bord à bord occupe tout le premier écran, titre et bouton posés sur l'image.
     d("fullscreen", "Plein écran", "Full screen", "ed-opening", "background", { layout: "fullscreen" }),
+    // HEUREN (maquette du 22 octobre) : la photo pleine largeur sur une hauteur de bandeau, promesse à gauche.
+    d("banner", "Bandeau photo, texte à gauche", "Photo band, text on the left", "ed-opening", "background", { layout: "banner" }),
   ]),
   e("catalog", 2, "collections", { fr: "Collections et catégories", en: "Collections and categories" }, { fr: "Accès visuels aux familles de produits.", en: "Visual access to product families." }, "collections catégories familles", [
     d("grid", "Grille", "Grid", "fs-collections", "grid-3", { layout: "grid" }),

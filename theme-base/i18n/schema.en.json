@@ -2382,5 +2382,12 @@
   "Lien de suppression d'une ligne": "Line removal link",
   "Vide : « Retirer ».": "Empty: “Remove”.",
   "Lien « continuer » sous le paiement": "“Continue” link under checkout",
-  "Mène à la destination du bouton du panier vide. Vide : pas de lien.": "Goes to the empty-cart button destination. Empty: no link."
+  "Mène à la destination du bouton du panier vide. Vide : pas de lien.": "Goes to the empty-cart button destination. Empty: no link.",
+  "Couleurs du menu mobile": "Mobile menu colours",
+  "Comme l'en-tête": "Same as the header",
+  "Schéma 1": "Scheme 1",
+  "Schéma 2": "Scheme 2",
+  "Schéma 3": "Scheme 3",
+  "Schéma 4": "Scheme 4",
+  "Bandeau photo, texte à gauche": "Photo band, text on the left"
 }
