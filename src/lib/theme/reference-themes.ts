@@ -440,7 +440,7 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
     kinds: ["catalog"],
     // Maquette HEUREN du 22 octobre (docs/design/heuren-reference-20261022) : nom en lettres espacées à gauche, menu au
     // centre, en-tête transparent sur l'ouverture ; pied bleu nuit sur une ligne.
-    look: look({ headerLayout: "logo-left", shape: "bar", menu: "drawer", footer: "minimal", ann: "static", card: "minimal", button: "solid", radius: { button: 0, card: 0 }, headingScale: 100, tracking: 0, pageWidth: 1360, gallery: "carousel", ds: "maison", density: "airy", buttonUppercase: false }),
+    look: look({ headerLayout: "logo-left", shape: "bar", menu: "fullscreen", footer: "minimal", ann: "static", card: "minimal", button: "solid", radius: { button: 0, card: 0 }, headingScale: 100, tracking: 0, pageWidth: 1360, gallery: "carousel", ds: "maison", density: "airy", buttonUppercase: false }),
     settings: { editorial_profile: "cadran", conversion_profile: "none", motion_intensity: "subtle" },
     headerSettings: { mega_menu: "none", mobile_submenu: "accordion", show_cart: true, transparent_on_home: true, color_scheme: "scheme-1" },
     // Galerie à miniatures sur fond gris très clair, zoom, pastille de couleur, barre d'achat sur téléphone.

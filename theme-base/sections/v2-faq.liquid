@@ -4,7 +4,7 @@
   <div class="es-container v2-faq__grid">
     <header class="v2-head v2-faq__head">
       {%- if s.eyebrow != blank -%}<p class="v2-eyebrow" data-reveal="up">{{ s.eyebrow }}</p>{%- endif -%}
-      {%- if s.heading != blank -%}<h2 class="v2-h2" data-reveal="up">{{ s.heading }}</h2>{%- endif -%}
+      {%- if s.heading != blank -%}{%- assign htag = s.heading_tag | default: 'h2' -%}<{{ htag }} class="v2-h2" data-reveal="up">{{ s.heading }}</{{ htag }}>{%- endif -%}
       {%- if s.text != blank -%}<div class="v2-intro" data-reveal="up">{{ s.text }}</div>{%- endif -%}
     </header>
     {%- if s.layout == 'columns' -%}
@@ -76,6 +76,22 @@
       "id": "heading",
       "label": "Titre",
       "default": "Questions fréquentes"
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Niveau du titre",
+      "options": [
+        {
+          "value": "h2",
+          "label": "Titre de section (H2)"
+        },
+        {
+          "value": "h1",
+          "label": "Titre principal de la page (H1)"
+        }
+      ],
+      "default": "h2"
     },
     {
       "type": "richtext",

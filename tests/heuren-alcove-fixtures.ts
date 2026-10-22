@@ -146,19 +146,19 @@ const A_RENSEIGNER = "à renseigner pour le produit réel.";
 function curateHeuren(k: Kit) {
   const { spec, img, section, overlay, productHref } = k;
   k.demoMeta();
-  spec.store.seo = { title: "HEUREN | Une montre bleu nuit à offrir, pour marquer un moment", description: "Une montre au cadran bleu nuit, présentée dans son coffret : pour célébrer une étape, remercier ou simplement faire plaisir. Boutique de démonstration, 190 € prix fictif." };
+  spec.store.seo = { title: "HEUREN | Une montre bleu nuit à offrir, pour marquer un moment", description: "Une montre au cadran bleu nuit, présentée dans son coffret : pour célébrer une étape, remercier ou faire plaisir. Boutique de démonstration." };
   const main = k.product({
     title: "HEUREN Bleu nuit",
     description_html: p("Une montre à offrir pour marquer un moment : un cadran bleu nuit soleillé sans dateur, des index et des aiguilles argentés, un boîtier argenté et un bracelet bleu nuit, présentée dans un coffret bleu nuit à l'intérieur ivoire.") + p("Dimensions, matières, mouvement et étanchéité : " + A_RENSEIGNER),
     images: ["montre-face.webp", "montre-profil.webp", "cadran-macro.webp", "bracelet.webp", "coffret-ferme.webp"],
     tags: ["montre", "bleu nuit", "cadeau"],
-    seo: { title: "HEUREN Bleu nuit : la montre à offrir, cadran bleu nuit sans dateur", description: "Cadran bleu nuit sans dateur, boîtier argenté, bracelet bleu nuit, coffret bleu nuit : faites le tour de la montre HEUREN avant de l'offrir. Prix fictif de démonstration." },
+    seo: { title: "HEUREN Bleu nuit : la montre à offrir, cadran bleu nuit sans dateur", description: "Cadran bleu nuit sans dateur, boîtier argenté, bracelet bleu nuit, coffret bleu nuit : faites le tour de la montre HEUREN avant de l'offrir." },
   });
   // 190 € : prix fictif de démonstration (consigne) ; une seule version, nommée par sa couleur.
   main.price = 19000;
   main.options = ["Couleur"];
   main.variants = [{ title: "Bleu nuit", options: ["Bleu nuit"], price: 19000, available: true, image: main.images[0] }];
-  spec.store.collections = [{ handle: "all", title: "La boutique", description: "Une montre, une seule version : HEUREN Bleu nuit.", products: [main.handle] }];
+  spec.store.collections = [{ handle: "all", title: "La boutique", description: "Une montre, une seule version : HEUREN Bleu nuit, cadran bleu nuit sans dateur, à offrir pour marquer un moment.", products: [main.handle] }];
 
   // ─── Accueil ─────────────────────────────────────────────────────────────────────────────────────────────────────
   overlay("index", [
@@ -237,7 +237,7 @@ function curateHeuren(k: Kit) {
 
   // ─── Boutique (une seule montre, pas de fausse collection) ─────────────────────────────────────────────────────
   spec.templates.collection = { order: ["hero", "main"], sections: {
-    hero: section("ed-scene", { ...img("hero-desktop.webp"), mobile_image_asset: img("hero-mobile.webp").image_asset, layout: "band", text_side: "left", band_height: "medium", label: "HEUREN", heading: "Une montre.\nVotre moment.", heading_tag: "h1", text: p("Une seule montre, pour les instants qui comptent vraiment."), button_label: "Découvrir", button_link: productHref, focus_x: 62, focus_y: 50, mobile_focus_x: 50, mobile_focus_y: 60, color_scheme: "scheme-2", padding_top: 0, padding_bottom: 0 }),
+    hero: section("ed-scene", { ...img("hero-desktop.webp"), mobile_image_asset: img("hero-mobile.webp").image_asset, layout: "band", text_side: "left", band_height: "medium", label: "HEUREN", heading: "Une montre.\nVotre moment.", heading_tag: "h2", text: p("Une seule montre, pour les instants qui comptent vraiment."), button_label: "Découvrir", button_link: productHref, focus_x: 62, focus_y: 50, mobile_focus_x: 50, mobile_focus_y: 60, color_scheme: "scheme-2", padding_top: 0, padding_bottom: 0 }),
     main: section("main-collection", { per_page: 12, columns: 2, enable_filters: false, enable_sorting: false, color_scheme: "scheme-1" }),
   } };
 
@@ -248,15 +248,15 @@ function curateHeuren(k: Kit) {
   // ─── Pages ──────────────────────────────────────────────────────────────────────────────────────────────────────
   const page = (handle: string, title: string, seo: { title: string; description: string }, rows: [string, SectionInstance][]) => {
     k.page(handle, title, seo, rows);
-    // Le titre de page est porté par la première section (H1) : le titre générique reste dans l'éditeur, masqué.
-    spec.templates[`page.${handle}`].sections.title.disabled = true;
+    // Le titre de page est porté par la première section (H1) : la section de page garde le fil d'Ariane.
+    spec.templates[`page.${handle}`].sections.title.settings = { ...spec.templates[`page.${handle}`].sections.title.settings, show_title: false, padding_top: 0, padding_bottom: 0 };
   };
   page("notre-histoire", "Notre histoire", { title: "Notre histoire | HEUREN", description: "HEUREN, marque de démonstration du studio : une montre pensée pour marquer un moment et se porter ensuite, chaque jour." }, [
     ["ouverture", section("ed-scene", { ...img("coffret-ouvert.webp"), layout: "band", text_side: "left", band_height: "tall", label: "", heading: "Les moments passent.\nCe qu'ils représentent reste.", heading_tag: "h1", text: p("HEUREN est une marque de démonstration du studio. Son idée : une montre pensée comme un repère discret, offerte pour un moment qui compte et portée ensuite au quotidien."), button_label: "Découvrir HEUREN", button_link: productHref, focus_x: 72, focus_y: 50, mobile_focus_x: 78, mobile_focus_y: 50, color_scheme: "scheme-1", padding_top: 0, padding_bottom: 0 })],
     ["detail", section("ed-scene", { ...img("cadran-macro.webp"), layout: "split", label: "", heading: "Plus qu'une montre, un compagnon de vos plus beaux moments.", text: "", button_label: "", button_link: "", focus_x: 55, focus_y: 45, mobile_focus_x: 60, mobile_focus_y: 45, color_scheme: "scheme-1", padding_top: 48, padding_bottom: 96 })],
   ]);
   page("conseils", "Conseils et FAQ", { title: "Conseils et FAQ | HEUREN", description: "Choisir, entretenir et commander la montre HEUREN : nos réponses, et ce qui reste à renseigner dans cette démonstration." }, [
-    ["faq", k.section("v2-faq", { layout: "columns", eyebrow: "", heading: "Prenons le temps de vous répondre.", text: p("Nos conseils et réponses aux questions les plus fréquentes, pour vous accompagner à chaque étape."), color_scheme: "scheme-1", padding_top: 72, padding_bottom: 48 }, [
+    ["faq", k.section("v2-faq", { layout: "columns", eyebrow: "", heading: "Prenons le temps de vous répondre.", heading_tag: "h1", text: p("Nos conseils et réponses aux questions les plus fréquentes, pour vous accompagner à chaque étape."), color_scheme: "scheme-1", padding_top: 72, padding_bottom: 48 }, [
       { type: "topic", settings: { ...img("cadran-macro.webp"), title: "Choisir votre montre", text: "Nos conseils pour trouver la montre qui vous correspond." } },
       { type: "question", settings: { question: "Quelle est la taille de la montre ?", answer: p("Diamètre et épaisseur du boîtier : " + A_RENSEIGNER) } },
       { type: "question", settings: { question: "Le bracelet est-il ajustable ?", answer: p("Le bracelet se ferme par une boucle argentée, visible sur nos photos. Longueur et réglage : " + A_RENSEIGNER) } },
@@ -275,7 +275,7 @@ function curateHeuren(k: Kit) {
     ])],
   ]);
   page("contact", "Contact", { title: "Contact | HEUREN", description: "Une question sur la montre HEUREN, une commande ou un retour ? Écrivez-nous. Dans cette démonstration, aucun message n'est envoyé." }, [
-    ["form", section("ed-contact", { ...img("bureau-dessus.webp"), label: "", heading: "Parlons de votre montre.", text: p("Une question, un conseil ou un besoin particulier ? Écrivez-nous. Dans cette démonstration, aucun message n'est réellement envoyé."), button_label: "", button_link: "", room_label: "Sujet", room_placeholder: "Sélectionnez un sujet", rooms: "Choisir sa montre\nUne commande\nUn retour\nAutre question", submit_label: "Envoyer", color_scheme: "scheme-1", padding_top: 0, padding_bottom: 0 })],
+    ["form", section("ed-contact", { ...img("bureau-dessus.webp"), label: "", heading: "Parlons de votre montre.", heading_tag: "h1", text: p("Une question, un conseil ou un besoin particulier ? Écrivez-nous. Dans cette démonstration, aucun message n'est réellement envoyé."), button_label: "", button_link: "", room_label: "Sujet", room_placeholder: "Sélectionnez un sujet", rooms: "Choisir sa montre\nUne commande\nUn retour\nAutre question", submit_label: "Envoyer", color_scheme: "scheme-1", padding_top: 0, padding_bottom: 0 })],
   ]);
   page("livraison-retours", "Livraison et retours", { title: "Livraison et retours | HEUREN", description: "Livraison, retours, remboursement et assistance : les informations à compléter avant la mise en vente de la montre HEUREN." }, [
     ["ouverture", section("ed-scene", { ...img("coffret-ouvert.webp"), layout: "band", text_side: "left", band_height: "medium", label: "", heading: "Avant de commander.", heading_tag: "h1", text: p("Retrouvez ici les informations utiles sur la livraison, les retours, le remboursement et l'assistance."), button_label: "", button_link: "", focus_x: 72, focus_y: 50, mobile_focus_x: 78, mobile_focus_y: 50, color_scheme: "scheme-1", padding_top: 0, padding_bottom: 0 })],

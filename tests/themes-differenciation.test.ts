@@ -33,7 +33,8 @@ import { currentTheme } from '@/lib/projects';
 import { runWithLang } from '@/lib/i18n-server';
 import shapes from '@/lib/theme/reference-shapes.json';
 /**
- * Différenciation des thèmes (consigne du 22 octobre, PR #162) : HEUREN et Atelier Rive n'ont plus la même ouverture.
+ * Différenciation des thèmes (consigne du 22 octobre, PR #162) : HEUREN (maquette du 22 octobre) et Atelier Rive n'ont plus
+ * la même ouverture.
  * La composition de chacun est protégée dans l'adaptation client : un projet client garde l'ouverture du thème choisi,
  * avec ses propres textes, et HEUREN garde son fond de page blanc même quand la couleur claire de la marque est crème.
  */
@@ -42,8 +43,8 @@ beforeEach(() => vi.stubGlobal('fetch', async () => { throw Error('Aucun appel r
 afterEach(() => vi.unstubAllGlobals());
 const opening = (id: string) => { const t = (shapes.themes as any)[id].templates.index; return t.sections[t.order[0]]; };
 
-it('formes de référence : HEUREN en écrin, Atelier Rive en cartouche, deux ouvertures différentes', () => {
-    expect(opening('heuren')).toMatchObject({ type: 'ed-opening', settings: { layout: 'ecrin', color_scheme: 'scheme-2' } });
+it('formes de référence : HEUREN en plein écran (maquette), Atelier Rive en cartouche, deux ouvertures différentes', () => {
+    expect(opening('heuren')).toMatchObject({ type: 'ed-opening', settings: { layout: 'fullscreen', color_scheme: 'scheme-2' } });
     expect(opening('rive')).toMatchObject({ type: 'ed-opening', settings: { layout: 'cartouche' } });
     // La section qui suit l'ouverture n'a pas la même couleur qu'elle (sinon les deux se fondent).
     for (const id of ['heuren', 'rive']) {
@@ -58,8 +59,8 @@ it.each([['heuren', false], ['rive', true]] as const)('%s : un projet client gar
     const s = currentTheme(f.pid)!.spec;
     const hero = s.templates.index.sections[s.templates.index.order[0]];
     expect(hero.type).toBe('ed-opening');
-    expect(hero.settings.layout).toBe(direction === 'heuren' ? 'ecrin' : 'cartouche');
+    expect(hero.settings.layout).toBe(direction === 'heuren' ? 'fullscreen' : 'cartouche');
     expect(hero.settings.button_label).toBe(f.copy.hero.cta);
-    expect(JSON.stringify(s.templates.index)).not.toMatch(/qui méritent une montre|Un intérieur à votre façon de vivre/);
+    expect(JSON.stringify(s.templates.index)).not.toMatch(/Marquez|ce moment|Un intérieur à votre façon de vivre/);
     if (direction === 'heuren') expect((s.settings.color_schemes as any)['scheme-1'].settings.background.toUpperCase()).toBe('#FFFFFF');
 });
