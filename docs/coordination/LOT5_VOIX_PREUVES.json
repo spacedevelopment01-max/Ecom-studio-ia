@@ -1,0 +1,95 @@
+{
+  "schema": "lot5-voice-routing-local-proof-1",
+  "realProviderCallsByCodex": 0,
+  "generationsPaid": 0,
+  "functionalRecipeStepsExecuted": 0,
+  "providerHttp": "mocked",
+  "audioFixture": "ffmpeg-generated tone, not OpenAI or human voice",
+  "videoMontage": "real local MP4/AAC from fixtures, not a provider creative sample",
+  "sourceInventorySha256": "07bd4f033711d286a59b1fd69532de9e185b285dd76fbae464fd976b4c23baf2",
+  "sourceFilesSha256": {
+    "scripts/inspect-routing-corrections.mjs": "3335273af3fd7fc7c6e6908079525bf8bdea6ebec505a14ad3379a1280605d56",
+    "src/app/api/projects/[id]/videos/creative-memory/route.ts": "0e6cfc2a0e2612a734e4894cb72a286fbf3f2a8a53bc00df9856ea00ba67ed1d",
+    "src/app/api/projects/[id]/videos/v2/route.ts": "35588de5f7b6d14b2c23226d890d3a0347b9c115fb2baae5e2020fa86ae9c1e2",
+    "src/components/studio/guided-video.tsx": "038a30c48234d1bfc5f9de0e5cfb5f61c065c12aefd4e1b693c5542a86853e3d",
+    "src/lib/ai/fal-video-request.ts": "d01cf2ac3382f1bd6e72bf33a1ce39b43dc0d7487ece6900d28df4767097e342",
+    "src/lib/ai/media-providers.ts": "409717cbb4962544f7cb5dba97d3a01110f9b2ecc4f986380b863b2e463e9f65",
+    "src/lib/video-v2/approval.ts": "3850fef7c5f05bf0f793f9a7adcc7d7540fb7cd426eaf2687158e6640723e20e",
+    "src/lib/video-v2/chain-quote.ts": "2b87985a7243b6a53ff927e9219b3c29e1e4158fc8efbfc53732c6f6ca7be4c6",
+    "src/lib/video-v2/creative-memory.ts": "e3587ca5cd54e518cb06777a3bd7e10a3d71fc91daa11c75d2a7776cc7c5a07f",
+    "src/lib/video-v2/deps.ts": "08e6ee2bbe29f69e186a99d5c3c463b13526f08c522cfc31bd3adac7b3b756d1",
+    "src/lib/video-v2/engine.ts": "d195ecf901db99a536ab0fae2ea14a5dfb68f60c97f57d4fc548f0cf4ade0ef3",
+    "src/lib/video-v2/openai-voice.ts": "7b6343bf53062f21a9de81595f9eeb5fc0bab332ca79e31538ec8c61a0f21714",
+    "src/lib/video-v2/three-scenes.ts": "262bb691c608b96bda4f19e90ec35f0ee54a6871e6042bffb40f8cefbaa7b867",
+    "src/lib/video-v2/voice.ts": "07334352739ac32ecccf6c3396b7acb1e3836d7826583cb9de37e619091da56f",
+    "tests/brain-contextes-2c.test.ts": "49f3cf4c48f1f121d50e661c378e0081f3c494e52386487e0ed3d687ad97d95f",
+    "tests/database-file-setup.ts": "9d35de48504b27f6b1c86268dac743029195baa4c2795b2923b16f6b49cf6201",
+    "tests/database-global-setup.ts": "a6c65d8c6d46a76868ffa08bf03a71fb792e236f17223b7f78b3d7e31378cdb9",
+    "tests/lot5-fal-adapter.test.ts": "f8ec398d57abcad46203b61c03562a97a393246cd6f9a8854441e433a353fc6b",
+    "tests/lot5-openai-voice.test.ts": "eea4fe3d46654469cd591b1f87d8977f9c05315451ac35d21e84f317c2aa67f3",
+    "tests/lot5-routing-preview.test.ts": "4871f4770f01396a03b81c735730bf8938cbd5fc8c10fb46b945eaea88d88fe9",
+    "vitest.config.ts": "85ee502b1c9f5a81d2e11c6989d0b5226bb56561b857a986c6da31067c2d4004"
+  },
+  "typecheck": {
+    "command": "npx tsc --noEmit",
+    "exitCode": 0
+  },
+  "targeted": {
+    "filesPassed": 9,
+    "testsPassed": 94,
+    "durationSeconds": 24.55,
+    "exitCode": 0,
+    "command": "npx vitest run tests/securite-audit-stabilisation.test.ts tests/lot5-fal-adapter.test.ts tests/lot5-openai-voice.test.ts tests/lot5-routing-preview.test.ts tests/brain-contextes-2c.test.ts tests/video-voice-timing.test.ts tests/video-receipts-approval.test.ts tests/alibaba-media.test.ts tests/routage-multimedia.test.ts"
+  },
+  "suite": {
+    "mode": "all files in three sequential shards, same frozen sources",
+    "parts": [
+      {
+        "command": "npx vitest run --shard=1/3",
+        "exitCode": 0,
+        "filesPassed": 120,
+        "testsPassed": 1031,
+        "testsSkipped": 0,
+        "durationSeconds": 332.05,
+        "logSha256": "4764c802756d0640e6a4973daa672b5b88227fb53e42f98ad2382051e669ff9a"
+      },
+      {
+        "command": "npx vitest run --shard=2/3",
+        "exitCode": 0,
+        "filesPassed": 120,
+        "testsPassed": 937,
+        "testsSkipped": 11,
+        "durationSeconds": 296.82,
+        "logSha256": "1e57363e00abac5bcb824a115197259591cf6c5260c19ca3ec74ed558a2c0e6f"
+      },
+      {
+        "command": "npx vitest run --shard=3/3",
+        "exitCode": 0,
+        "filesPassed": 119,
+        "testsPassed": 924,
+        "testsSkipped": 11,
+        "durationSeconds": 250.86,
+        "logSha256": "ecda3d11bef0503e444277c6f3c7a041bda47f009edf47f44f92c8b8c1b60abe"
+      }
+    ],
+    "filesPassed": 359,
+    "testsPassed": 2892,
+    "testsSkipped": 22,
+    "durationSeconds": 879.73,
+    "allExitCodesZero": true
+  },
+  "limits": [
+    "No real provider inference or TTS authentication.",
+    "No Codespace browser, served version, live configuration or budget modification.",
+    "No production build or CMS verification in this local pass.",
+    "Earlier monolithic runs exited 1 (asynchronous fixture cleanup, then ENOSPC); not accepted as green."
+  ],
+  "testedCodeCommit": "bb454c14bee38257951222a79b8f12125504e81c",
+  "baselineCommit": "8266c171027762acbbf0cf03daefff4c6035fb32",
+  "mainMergeCommit": "0a6aa1dd6dfa5932a5e42e027cef2a3335e74679",
+  "publicScriptDownload": {
+    "codeCommit": "bb454c14bee38257951222a79b8f12125504e81c",
+    "byteIdentical": true,
+    "sha256": "3335273af3fd7fc7c6e6908079525bf8bdea6ebec505a14ad3379a1280605d56"
+  }
+}
