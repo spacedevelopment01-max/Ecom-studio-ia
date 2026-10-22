@@ -37,7 +37,7 @@ describe("Theme Engine V2", async () => {
   for (const s of THEME_SCENARIOS) ids[s] = await seedThemeScenario(u.id, s);
   const results: Record<string, Awaited<ReturnType<typeof composeThemeV2>>> = {};
   for (const s of THEME_SCENARIOS) results[s] = await fr(() => composeThemeV2(ids[s]));
-  const aiCalls = () => one<{ n: number }>("SELECT COUNT(*) AS n FROM ai_calls WHERE user_id = ?", u.id)!.n;
+  const aiCalls = () => one<{ n: number }>("SELECT COUNT(*) AS n FROM ai_calls WHERE user_id = ? AND id NOT LIKE 'fixture_research_%'", u.id)!.n;
 
   it("intention : type de site et conversion déduits du métier (jamais du nom du client)", () => {
     const site = Object.fromEntries(THEME_SCENARIOS.map((s) => [s, results[s].intent.site]));

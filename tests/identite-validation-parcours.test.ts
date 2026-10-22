@@ -58,7 +58,7 @@ it.each(['products', 'services'] as const)('choix %s enregistré et rouvert sans
   const count = all('SELECT id FROM assets WHERE project_id=?', f.pid).length;
   expect(await chooseLogoV2(null, f.pid, selected.logoId)).toMatchObject({ reused: true, main: applied.main });
   expect(all('SELECT id FROM assets WHERE project_id=?', f.pid)).toHaveLength(count);
-  expect(all('SELECT id FROM ai_calls WHERE project_id=?', f.pid)).toEqual([]);
+  expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'', f.pid)).toEqual([]);
   expect(all('SELECT id FROM theme_versions WHERE project_id=?', f.pid)).toEqual([]);
 }, 60000);
 it('une ancienne charte ne masque pas un échec de la nouvelle ; identité active, versions et textes manuels conservés', async () => {

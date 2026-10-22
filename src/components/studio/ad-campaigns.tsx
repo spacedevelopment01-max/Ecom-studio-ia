@@ -97,7 +97,7 @@ export function CampaignsPanel({ autoNew = false }: { autoNew?: boolean } = {}) 
     networks: ["instagram", "facebook"],
     status: "draft",
     brief: { audience: data?.brand?.audience ?? "", budgetNote: "", kpis: svc ? t("Taux de clic, coût par contact, demandes reçues (rendez-vous, devis, appels)", "Click-through rate, cost per lead, requests received (bookings, quotes, calls)") : t("Taux de clic, coût par clic, ajouts au panier", "Click-through rate, cost per click, add-to-carts"), language: projectLang },
-    plan: { ads: (data?.strategy?.angles ?? [{ title: svc ? pick(projectLang, "Nos prestations", "Our services") : pick(projectLang, "Le produit", "The product"), idea: "" }]).slice(0, 3).map((a) => ({ angle: a.title, primary: a.idea, headline: data?.brand?.tagline ?? "", cta: mainCta(projectLang), media: [] })) },
+    plan: { ads: [] }, // No automatic campaign from legacy, unsourced directions.
     posts: [],
   });
   const save = async (c: Campaign) => {

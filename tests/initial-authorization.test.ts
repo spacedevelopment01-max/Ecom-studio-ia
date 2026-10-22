@@ -21,7 +21,7 @@ describe('Accord initial intégré et lancement automatique — fournisseurs sim
     expect(() => quoteInitialAuthorization(f.pid, d.deps)).toThrow(/ne couvre pas le plafond/);
     expect(balance(f.uid, f.pid)).toEqual(before);
     expect(all("SELECT id FROM jobs WHERE project_id=? AND type='social.initial'", f.pid)).toHaveLength(0);
-    expect(all('SELECT id FROM ai_calls WHERE project_id=?', f.pid)).toHaveLength(0);
+    expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'', f.pid)).toHaveLength(0);
     expect(d.plans).toBe(0);
     expect(() => assertInitialEnvelopeBudget(loadProject(f.pid), 50)).not.toThrow();
   });

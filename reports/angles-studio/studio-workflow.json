@@ -1,0 +1,176 @@
+{
+  "schema": "angles-studio-workflow-1",
+  "commit": "289b7d4bcf4c53e852add08f558410c219d153ea",
+  "workingTree": false,
+  "served": {
+    "commit": "289b7d4bcf4c53e852add08f558410c219d153ea",
+    "source": "compiled-build"
+  },
+  "providerCalls": 0,
+  "blockedExternalRequests": 0,
+  "providerDoubles": true,
+  "realNextServer": true,
+  "realWorker": true,
+  "onboarding": "Existing seen preferences set in test browser only; no UI code or CSS overrides",
+  "checks": [
+    {
+      "step": "full studio workflow",
+      "passed": true,
+      "scope": "Real Next production, login, HTTP routes, native worker, persistent SQLite; provider execution simulated"
+    },
+    {
+      "step": "uploaded image and existing client text",
+      "passed": true,
+      "originalImageUnchanged": true,
+      "existingTextUnchanged": true
+    },
+    {
+      "step": "persistent plan quota",
+      "plan": "creer",
+      "limit": 1,
+      "used": 1,
+      "extraChoiceStatus": 402,
+      "reselectionConsumesNoSlot": true,
+      "subscriptionReplacementPreservesHistory": true
+    },
+    {
+      "step": "persistent plan quota",
+      "plan": "vendre",
+      "limit": 2,
+      "used": 2,
+      "extraChoiceStatus": 402,
+      "reselectionConsumesNoSlot": true,
+      "subscriptionReplacementPreservesHistory": true
+    },
+    {
+      "step": "persistent plan quota",
+      "plan": "dominer",
+      "limit": 5,
+      "used": 5,
+      "extraChoiceStatus": 400,
+      "reselectionConsumesNoSlot": true,
+      "subscriptionReplacementPreservesHistory": true
+    },
+    {
+      "step": "service whole business versus communication angle",
+      "passed": true,
+      "serviceCount": 2,
+      "communicationAngle": "reassurance",
+      "siteAngle": "generalist",
+      "usedAngleCount": 1,
+      "serviceProfileUnchanged": true,
+      "themeGenerated": false
+    },
+    {
+      "step": "refusal without invented angle",
+      "scenario": "absent",
+      "passed": true,
+      "newAngles": 0,
+      "lastTaskStatus": "done",
+      "lastTaskProgress": 1,
+      "resultPresent": true,
+      "researchTasks": 0
+    },
+    {
+      "step": "refusal without invented angle",
+      "scenario": "failed",
+      "passed": true,
+      "newAngles": 0,
+      "lastTaskStatus": "failed",
+      "lastTaskProgress": 0.05,
+      "resultPresent": false,
+      "researchTasks": 1
+    },
+    {
+      "step": "refusal without invented angle",
+      "scenario": "partial",
+      "passed": true,
+      "newAngles": 0,
+      "lastTaskStatus": "failed",
+      "lastTaskProgress": 0.05,
+      "resultPresent": false,
+      "researchTasks": 1
+    },
+    {
+      "step": "transmission to modules without generation",
+      "business": "products",
+      "activeAngle": "usage",
+      "modules": [
+        "ads",
+        "social",
+        "video",
+        "logo",
+        "brand",
+        "image",
+        "stock",
+        "theme",
+        "shop_copy",
+        "seo",
+        "blog",
+        "social",
+        "advertising",
+        "video",
+        "qc"
+      ],
+      "passed": true
+    },
+    {
+      "step": "transmission to modules without generation",
+      "business": "services",
+      "activeAngle": "reassurance",
+      "modules": [
+        "ads",
+        "social",
+        "video",
+        "logo",
+        "brand",
+        "image",
+        "stock",
+        "theme",
+        "shop_copy",
+        "seo",
+        "blog",
+        "social",
+        "advertising",
+        "video",
+        "qc"
+      ],
+      "passed": true
+    }
+  ],
+  "captures": [
+    "02-renseignements-desktop.png",
+    "02-renseignements-mobile.png",
+    "02-renseignements-lecture-desktop.png",
+    "02-renseignements-lecture-mobile.png",
+    "03-comprehension-simulee-desktop.png",
+    "03-comprehension-simulee-mobile.png",
+    "04-recherche-simulee-desktop.png",
+    "04-recherche-simulee-mobile.png",
+    "05-angles-simules-desktop.png",
+    "05-angles-simules-mobile.png",
+    "05-angles-simules-lecture-desktop.png",
+    "05-angles-simules-lecture-mobile.png",
+    "06-confirmation-desktop.png",
+    "06-confirmation-mobile.png",
+    "07-choix-sauvegarde-desktop.png",
+    "07-choix-sauvegarde-mobile.png",
+    "08-session-rouverte.png",
+    "09-forfait-1-desktop.png",
+    "09-forfait-1-mobile.png",
+    "09-forfait-2-desktop.png",
+    "09-forfait-2-mobile.png",
+    "09-forfait-5-desktop.png",
+    "09-forfait-5-mobile.png",
+    "10-services-activite-complete-desktop.png",
+    "10-services-activite-complete-mobile.png",
+    "10-services-activite-complete-lecture-desktop.png",
+    "10-services-activite-complete-lecture-mobile.png",
+    "11-blocage-absent-desktop.png",
+    "11-blocage-absent-mobile.png",
+    "11-blocage-failed-desktop.png",
+    "11-blocage-failed-mobile.png",
+    "11-blocage-partial-desktop.png",
+    "11-blocage-partial-mobile.png"
+  ]
+}

@@ -1,3 +1,4 @@
+import {seedSourcedAnglesForTest} from "./sourced-strategy-fixture";
 import { describe, it, expect } from "vitest";
 import { createUser } from "@/lib/auth";
 import { id, now, run, one, all } from "@/lib/db";
@@ -54,6 +55,7 @@ async function fixture(plan: PlanId = "dominer", service = false) {
     now(),
   );
   const subscription = grantProjectPlan(pid, plan);
+  seedSourcedAnglesForTest(pid);
   return { user, pid, p, subscription };
 }
 function activate(pid: string, angleId: string, key = id()) {
@@ -71,14 +73,14 @@ it("consulter cinq cartes ne sélectionne aucun angle ni ne dépense", async () 
   expect(s.angles).toHaveLength(5);
   expect(s.active).toBeNull();
   expect(s.usedAngleIds).toEqual([]);
-  expect(s.generalistExplanation).toContain("reste possible");
+  expect(s.generalistExplanation).toContain("reste un choix explicite");
   expect(() => assertStrategyChosen(f.pid)).toThrow();
   expect(
     one<{ n: number }>(
       "SELECT COUNT(*) n FROM ai_calls WHERE project_id=?",
       f.pid,
     )?.n,
-  ).toBe(0);
+  ).toBe(1); // Un reçu synthétique de fixture, aucun appel réseau.
 });
 it.each([false, true])(
   "quatre motivations, situations, cibles, scènes et exemples réellement distincts, service=%s",
@@ -89,7 +91,7 @@ it.each([false, true])(
       "motivation",
       "situation",
       "audience",
-      "visualDirection",
+      "communicationChange",
       "promise",
     ] as const)
       expect(new Set(s.angles.slice(0, 4).map((a) => a[key])).size).toBe(4);
@@ -113,7 +115,9 @@ it.each([false, true])(
 it("quelques précisions indispensables, sans stratégie inventée activable", async () => {
   const f = await fixture();
   saveProduct(f.pid, emptyProduct());
-  const s = proposeStrategies(f.pid);
+  const s = getStrategyState(f.pid);
+  expect(()=>proposeStrategies(f.pid)).toThrow(/contexte|recherche/i);
+  expect(s.angles).toEqual([]);
   expect(s.missingQuestions.map((q) => q.key)).toEqual(["offer", "usage"]);
   expect(() => prepareStrategyChange(f.pid, "usage")).toThrow();
   expect(activeStrategy(f.pid)).toBeNull();
@@ -171,6 +175,8 @@ it("réanalyse et renommage produit ne créent aucune nouvelle identité/quota",
     ...loadProject(f.pid).product,
     name: "Nouveau nom client",
   });
+  expect(()=>proposeStrategies(f.pid)).toThrow(/contexte|recherche/i);
+  seedSourcedAnglesForTest(f.pid);
   expect(proposeStrategies(f.pid).angles.map((a) => a.id)).toEqual(
     before.map((a) => a.id),
   );
@@ -490,7 +496,8 @@ it("réanalyse réconcilie les nouveaux faits sans changer les identités ni le 
       },
     ],
   });
-  const updated = proposeStrategies(f.pid);
+  expect(()=>proposeStrategies(f.pid)).toThrow(/contexte|recherche/i);
+  const updated = seedSourcedAnglesForTest(f.pid);
   expect(updated.angles[1].proofs).toContain("Contenance : 18 litres");
   expect(updated.angles.map((a) => a.id)).toEqual([
     "usage",
@@ -568,6 +575,8 @@ it("consigne de vocabulaire invalide les acquis et reste appliquée aux nouvelle
     aligned: false,
     reason: "project_changed",
   });
+  expect(()=>proposeStrategies(f.pid)).toThrow(/contexte|recherche/i);
+  seedSourcedAnglesForTest(f.pid);
   expect(proposeStrategies(f.pid).angles[0].examples.hero).not.toMatch(/sac/i);
 });
 it.each([
@@ -604,19 +613,12 @@ it.each([
         },
       ],
     });
-    const s = proposeStrategies(f.pid);
-    expect(s.angles[0].situation).toContain(data.value);
-    expect(s.angles[0].motivation).toContain(data.value);
-    expect(s.angles[2].audience).toContain(data.category);
-    expect(s.angles[3].audience).toContain(data.category);
-    expect(
-      s.angles.every(
-        (a) =>
-          a.examples.subtext.includes(data.name) ||
-          a.examples.subtext.includes(data.summary) ||
-          a.examples.subtext.includes(data.value),
-      ),
-    ).toBe(true);
+    expect(()=>proposeStrategies(f.pid)).toThrow(/contexte|recherche/i);
+    const s=getStrategyState(f.pid);
+    expect(s.angles).toEqual([]);
+    expect(s.legacyAngles).toHaveLength(5);
+    expect(s.usedAngleIds).toEqual([]);
+    expect(loadProject(f.pid).product.facts[0].value).toBe(data.value);
   },
 );
 it("seule la direction de composition change : données stratégiques et compatibilité restent identiques", async () => {
@@ -625,6 +627,7 @@ it("seule la direction de composition change : données stratégiques et compati
   const { saveBrand } = await import("@/lib/projects");
   const brand = localBrand(f.p, f.p.name).brand;
   saveBrand(f.pid, brand);
+  seedSourcedAnglesForTest(f.pid);
   activate(f.pid, "usage");
   recordStrategyContent(f.pid, "custom", "kept");
   saveBrand(f.pid, {
@@ -700,7 +703,7 @@ it("cartes en anglais, mêmes cinq identités, faits client inchangés et exempl
   const f = await fixture();
   const { saveSettings } = await import("@/lib/projects");
   saveSettings(f.pid, { ...loadProject(f.pid).settings, language: "en" });
-  const s = proposeStrategies(f.pid);
+  const s = seedSourcedAnglesForTest(f.pid);
   expect(s.angles.map((a) => a.id)).toEqual([
     "usage",
     "reassurance",
@@ -708,12 +711,12 @@ it("cartes en anglais, mêmes cinq identités, faits client inchangés et exempl
     "discovery",
     "generalist",
   ]);
-  expect(s.angles[4].title).toBe("Generalist");
+  expect(s.angles[4].title).toBe("Present your entire offer");
   expect(s.generalistExplanation).toContain(
-    "general approach remains possible",
+    "explicit choice",
   );
-  expect(s.angles[0].examples.hero).toBe(`Make room for ${f.p.name}.`);
-  expect(s.angles[1].proofs).toContain("Contenance: 12 litres");
+  expect(s.angles[0].examples.hero).toContain(f.p.name);
+  expect(s.angles[1].proofs).toContain("Contenance : 12 litres");
   expect(new Set(s.angles.slice(0, 4).map((a) => a.motivation)).size).toBe(4);
   expect(s.angles[2].examples.advertisement).toContain("your own world");
 });
@@ -747,7 +750,7 @@ it("un média rejeté conservé en historique ne bloque pas le changement du con
 
 it('une réanalyse ne transforme pas un angle activé en une autre cible sans consommer un nouveau droit', async () => {
  const {clientFixture}=await import('./mission154-fixtures');const f=await clientFixture({strategy:null,incomplete:true});
- const before=getStrategyState(f.pid);const p=prepareStrategyChange(f.pid,'usage');activateStrategy(f.pid,{angleId:'usage',preparationId:p.id,idempotencyKey:'fixed-target-160',confirmed:true,retainUnaligned:true});
+ seedSourcedAnglesForTest(f.pid);const before=getStrategyState(f.pid);const p=prepareStrategyChange(f.pid,'usage');activateStrategy(f.pid,{angleId:'usage',preparationId:p.id,idempotencyKey:'fixed-target-160',confirmed:true,retainUnaligned:true});
  const {loadProject,saveBrand}=await import('@/lib/projects');const project=loadProject(f.pid);saveBrand(f.pid,{...project.brand!,audience:'Une nouvelle cible arbitraire obtenue par réanalyse'});
- const after=proposeStrategies(f.pid);expect(after.angles.map(a=>a.audience)).toEqual(before.angles.map(a=>a.audience));expect(after.usedAngleIds).toEqual(['usage']);
+ expect(()=>proposeStrategies(f.pid)).toThrow(/contexte|recherche/i);const after=getStrategyState(f.pid);expect(after.legacyAngles?.map(a=>a.audience)).toEqual(before.angles.map(a=>a.audience));expect(after.usedAngleIds).toEqual(['usage']);
 });

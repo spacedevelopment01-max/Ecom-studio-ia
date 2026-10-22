@@ -502,7 +502,7 @@ function CalCard({ p, tz, onOpen, onAction, row = false }: { p: PostV; tz: strin
   return (
     <div draggable={!locked && !row} onDragStart={(e) => e.dataTransfer.setData("text/post", p.id)} {...(row ? { "data-agenda-post": p.id } : { "data-post": p.id })} className={cx("group relative min-w-0 overflow-hidden rounded-xl border bg-card shadow-sm transition hover:shadow-md", p.blocking.length > 0 ? "border-warn" : "border-line", row && "flex gap-3 p-2")}>
       <span className={cx("absolute inset-y-0 left-0 w-1", STATUS_COLOR[p.status] ?? "bg-line")} aria-hidden />
-      {p.marketingStrategy&&<span className="block px-2 py-1 text-[11px]" data-post-angle={p.marketingStrategy.angleId}>{t("Angle", "Angle")} : {({usage:t("Usage concret","Concrete use"),reassurance:t("Choix éclairé","Informed choice"),expression:t("Expression personnelle","Personal expression"),discovery:t("Découverte","Discovery"),generalist:t("Généraliste","Generalist")})[p.marketingStrategy.angleId]}</span>}
+      {p.marketingStrategy&&<span className="block px-2 py-1 text-[11px]" data-post-angle={p.marketingStrategy.angleId}>{t("Angle", "Angle")} : {({usage:t("Usage concret","Concrete use"),reassurance:t("Choix éclairé","Informed choice"),expression:t("Expression personnelle","Personal expression"),discovery:t("Découverte","Discovery"),generalist:t("Présenter l’ensemble de votre offre","Present your entire offer")})[p.marketingStrategy.angleId]}</span>}
       {row && thumb}
       <div className={cx("min-w-0", row ? "flex-1" : "grid gap-1.5 p-2 pl-2.5")}>
         <div className="flex items-center gap-1.5">

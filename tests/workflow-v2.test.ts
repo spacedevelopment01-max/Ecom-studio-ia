@@ -40,7 +40,7 @@ describe("Studio Workflow V2", async () => {
   (await import("./communication-choice-fixture")).grantProjectPlan(artisan, "vendre");
   await fr(() => buildShopV2(null, artisan));
   const ctxOf = (jobId: string) => new JobContext(getJob(jobId)!);
-  const aiCalls = (userId: string) => one<{ n: number }>("SELECT COUNT(*) n FROM ai_calls WHERE user_id = ?", userId)!.n;
+  const aiCalls = (userId: string) => one<{ n: number }>("SELECT COUNT(*) n FROM ai_calls WHERE user_id = ? AND id NOT LIKE 'fixture_research_%'", userId)!.n;
   const ASK = "Crée ma marque, mon logo, mes visuels, ma boutique Shopify, mes publicités et prépare mes publications Instagram pour les 30 prochains jours.";
 
   it("la demande type est comprise : 6 intentions, calendrier Instagram de 30 jours, thème Shopify à livrer", () => {

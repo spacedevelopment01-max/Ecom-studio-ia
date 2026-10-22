@@ -34,7 +34,7 @@ it('site multi-prestations + SEO + export sans angle ni quota ; A/B ne modifie a
  expect(getStrategyState(f.pid).usedAngleIds).toEqual([]);expect(original.spec.meta?.strategy).toBeUndefined();expect(JSON.stringify(original.spec)).toContain('Découverte des émaux');expect(JSON.stringify(original.spec)).toContain('Atelier de tournage individuel');
  expect(()=>createPlanV2(loadProject(f.pid),planRequest())).toThrowError(expect.objectContaining({code:'strategy_communication_choice_required'}));
  for(const angle of ['usage','reassurance']){const s=choose(f.pid,angle);expect(await prepareStrategyTheme(f.pid,getStrategyState(f.pid).pending?.id??'none')).toBeNull();expect(await prepareLocalStrategyModules(f.pid,'none')).toEqual([]);expect(strategySelection(f.pid)).toBeNull();expect(brainView(loadProject(f.pid),'seo').stable).not.toContain(s.id);expect(withCommunicationStrategy(f.pid,()=>brainView(loadProject(f.pid),'social').stable)).toContain(s.id);expect(currentTheme(f.pid)!.version.id).toBe(original.version.id);expect(latestContent(f.pid,seo.docKey!)?.version.id).toBe(doc.version.id);}
- await buildShop(null,f.pid,{direction:'rive',useAi:false});expect(currentTheme(f.pid)!.version.id).toBe(original.version.id);expect(loadProject(f.pid).brand).toEqual(identity);expect(compileTheme(currentTheme(f.pid)!.spec)).toEqual(compileTheme(original.spec));expect(all('SELECT id FROM ai_calls WHERE project_id=?',f.pid)).toHaveLength(0);
+ await buildShop(null,f.pid,{direction:'rive',useAi:false});expect(currentTheme(f.pid)!.version.id).toBe(original.version.id);expect(loadProject(f.pid).brand).toEqual(identity);expect(compileTheme(currentTheme(f.pid)!.spec)).toEqual(compileTheme(original.spec));expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'',f.pid)).toHaveLength(0);
 });
 it.each([['creer',1],['vendre',2],['dominer',5]] as const)('droits services %s : quota persistant, concurrence, identité et aucun appel',async(plan,limit)=>{
  const f=await clientFixture({services:true,copySource:'ai',strategy:null});grantProjectPlan(f.pid,plan);
@@ -43,7 +43,7 @@ it.each([['creer',1],['vendre',2],['dominer',5]] as const)('droits services %s :
  for(const angle of allowed){const req={...planRequest(),angleId:angle as any};const result=createPlanV2(loadProject(f.pid),req);const row=one<any>('SELECT * FROM marketing_strategy_contents WHERE project_id=? AND module=\'calendar\' AND content_id=?',f.pid,result.planId);expect(row.angle_id).toBe(angle);}
  expect(getStrategyState(f.pid).usedAngleIds).toHaveLength(limit);grantProjectPlan(f.pid,plan);expect(getStrategyState(f.pid).usedAngleIds).toHaveLength(limit);
  if(limit<5){expect(()=>prepareStrategyChange(f.pid,['reassurance','expression'][limit-1])).toThrowError(expect.objectContaining({code:'strategy_angle_limit'}));expect(()=>withCommunicationStrategy(f.pid,()=>null,{angleId:'generalist'})).toThrow();}
- expect(all('SELECT id FROM ai_calls WHERE project_id=?',f.pid)).toHaveLength(0);
+ expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'',f.pid)).toHaveLength(0);
 });
 it('A/B coexistent : calendrier, publication, worker différé et approbation A inchangés après B',async()=>{
  const f=await clientFixture({services:true,copySource:'ai',strategy:null});grantProjectPlan(f.pid,'vendre');const a=choose(f.pid,'usage');
@@ -55,7 +55,7 @@ it('A/B coexistent : calendrier, publication, worker différé et approbation A 
  expect(jobStrategy(f.pid,'social.v2.produce',JSON.parse(queued.payload),true)?.id).toBe(a.id);
  const pb=createPlanV2(loadProject(f.pid),{...planRequest(),angleId:'reassurance'});const later=createPlanV2(loadProject(f.pid),{...planRequest(),angleId:'usage'});
  const stamps=all<any>('SELECT angle_id FROM marketing_strategy_contents WHERE project_id=? AND module=\'calendar\' AND content_id IN (?,?)',f.pid,pb.planId,later.planId);expect(stamps.map(s=>s.angle_id).sort()).toEqual(['reassurance','usage']);
- const r=await handlers[queued.type](new JobContext(queued));expect(r).toBeDefined();expect(all('SELECT id FROM ai_calls WHERE project_id=?',f.pid)).toHaveLength(0);
+ const r=await handlers[queued.type](new JobContext(queued));expect(r).toBeDefined();expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'',f.pid)).toHaveLength(0);
 });
 it('site : un média de campagne reste consultable sans pouvoir entrer automatiquement dans le site',async()=>{
  const f=await clientFixture({services:true,strategy:null});choose(f.pid,'usage');
@@ -70,7 +70,7 @@ it('production simulée A et B : mêmes moteurs, média et provenance héritent 
  const seen:string[]=[];const {deps}=mockSocialDeps({aiActive:true,cost:1});deps.aiPost=async(p,post)=>{seen.push(strategySelection(p.id)!.angleId);const asset=await saveAsset({projectId:p.id,userId:p.userId,name:'media-simule.jpg',mime:'image/jpeg',data:await sharp({create:{width:50,height:50,channels:3,background:'#556677'}}).jpeg().toBuffer(),role:'post',origin:'generated',meta:{simulation:true}});return{assetId:asset.id,costMicro:1,by:'image_v2'};};
  const result=await produceBatch(loadProject(f.pid),[...a.ids,...b.ids],deps,{allowPaid:true,aiImages:60,maxCostEur:1,approvedEstimateMicro:2});expect(result.produced).toBe(2);expect(seen).toEqual(['usage','reassurance']);
  for(const pid of [...a.ids,...b.ids]){const post=one<any>('SELECT media FROM posts WHERE id=?',pid);const postAngle=one<any>('SELECT angle_id FROM marketing_strategy_contents WHERE project_id=? AND module=\'post\' AND content_id=?',f.pid,pid).angle_id;expect(one<any>('SELECT angle_id FROM marketing_strategy_contents WHERE project_id=? AND module=\'asset\' AND content_id=?',f.pid,JSON.parse(post.media)[0]).angle_id).toBe(postAngle);}
- expect(all('SELECT id FROM ai_calls WHERE project_id=?',f.pid)).toHaveLength(0);
+ expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'',f.pid)).toHaveLength(0);
 });
 it('scénario/voix : l’accord A ne peut pas être utilisé sous B ; le site ne dépend d’aucun des deux',async()=>{
  const {sceneApprovalRequest,approveVideoScenario,readVideoApproval}=await import('@/lib/video-v2/approval');const f=await clientFixture({services:true,strategy:null,copySource:'ai'});choose(f.pid,'usage');choose(f.pid,'reassurance');const request:any={as:'post',angleId:'usage',request:'Présenter le geste',scenes:2,aspect:'9:16',totalS:12};const approved=approveVideoScenario(loadProject(f.pid),sceneApprovalRequest(request),{scenes:[{voice:'Texte relu sous A'}]},100);expect(()=>readVideoApproval(loadProject(f.pid),sceneApprovalRequest({...request,angleId:'reassurance'}),approved.token)).toThrow();expect(()=>readVideoApproval(loadProject(f.pid),sceneApprovalRequest(request),approved.token)).not.toThrow();

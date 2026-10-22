@@ -18,5 +18,5 @@ for(const services of [false,true])it(`séquence éditoriale conservée, descrip
  expect(altSeen).toBe(true);expect(visible.join(' ')).not.toContain('DESCRIPTION_ACCESSIBILITE_');
  if(!services){expect(headings.length).toBeGreaterThan(1);expect(new Set(headings).size).toBe(headings.length);expect(visible.join(' ')).toContain('Partager le moment');}
  else expect(visible.join(' ')).toContain(loadProject(f.pid).services.services[1].name);
- expect(all('SELECT id FROM ai_calls WHERE project_id=?',f.pid)).toHaveLength(0);
+ expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'',f.pid)).toHaveLength(0);
 });

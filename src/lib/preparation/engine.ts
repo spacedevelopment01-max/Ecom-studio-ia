@@ -1,3 +1,5 @@
+import {activeStrategy,currentStrategyInputDigest} from "../marketing-strategy";
+import {researchDigest} from "../marketing-strategy/research";
 import { placementHash, receiptFor } from "./media-context";
 import { buildProjectHandoff } from "../project-handoff/contract";
 import { categoryForProject } from "../project-handoff/category-store";
@@ -217,6 +219,7 @@ export function blockers(projectId: string, s = stateOf(projectId)): string[] {
   if (!s.simulation && !loadProject(projectId).brand?.artIdentity) out.push("Direction complète et charte à valider avant thème.");
   if (!analyzed(b)) out.push("Compréhension IA du brief en attente ; le brouillon local ne suffit pas.");
   if (b.missing.length) out.push(...b.missing);
+  if(p.business==='services'&&!p.services.email&&!p.services.phone&&!p.services.bookingUrl)out.push("Indiquez un moyen de contact avant la livraison du site ; ce champ n’est pas nécessaire à la recherche marketing.");
   if (
     stableHash(p.product) !== stableHash(b.profile) ||
     stableHash(p.services) !== stableHash(b.services) ||
@@ -361,6 +364,11 @@ export function approve(
       validateResearch(r, true);
       if (!r.angles.some((a) => a.id === o.choiceId))
         throw new HttpError(400, "Choisissez une proposition disponible.");
+      if(r.formatVersion===3){
+        if(loadProject(projectId).business==='services'&&o.choiceId!=='generalist')throw new HttpError(409,'Le site de services présente toute l’activité. Validez « Présenter l’ensemble de votre offre » ; les autres angles servent aux communications.');
+        const chosen=activeStrategy(projectId);
+        if(loadProject(projectId).business!=='services'&&(!chosen||chosen.angleId!==o.choiceId||chosen.inputDigest!==currentStrategyInputDigest(projectId)||chosen.angle.researchDigest!==researchDigest(r)))throw new HttpError(409,'Préparez et confirmez cet angle dans le comparateur avant de valider la recherche ; le quota et ses conséquences doivent être acceptés.');
+      }
       r.selectedId = o.choiceId;
       saveStrategy(projectId, strategyOf(r));
       remember(projectId, {
@@ -767,7 +775,7 @@ export function requestHash(
       }
       : {}),
     ...(step === "content" ? { page: slot ?? null } : {}),
-    ...(step === "research" ? { researchFormat: 2 } : {}),
+    ...(step === "research" ? { researchFormat: 3 } : {}),
   });
 }
 export function mediaReusable(projectId: string, s = stateOf(projectId)): boolean {
@@ -813,7 +821,7 @@ export function queuePreparation(
       prev &&
       prev.inputHash === inputHash(s, step) &&
       !opts.correction &&
-      !(step === "research" && s.stages.research && isLegacyResearch(s.stages.research.data))
+      !(step === "research" && s.stages.research && (isLegacyResearch(s.stages.research.data)||(s.stages.research.data.formatVersion!==3&&!s.simulation)))
     )
       return { state: s, job: null, reused: true };
     if (action === "collect" && mediaReusable(projectId, s)) return { state: s, job: null, reused: true };

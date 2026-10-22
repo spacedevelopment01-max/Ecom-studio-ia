@@ -114,7 +114,7 @@ describe("Lot 2A — références intégrées", async () => {
     expect(current.spec.meta?.reference?.kind).toBe("products");
     expect(current.spec.templates.index.sections[current.spec.templates.index.order[0]].type).toBe("ref-hero");
     expect(listThemeVersions(pid).some((v) => v.id === before.id)).toBe(true);
-    expect(all("SELECT 1 FROM ai_calls WHERE project_id=?", pid)).toEqual([]);
+    expect(all("SELECT 1 FROM ai_calls WHERE project_id=? AND id NOT LIKE 'fixture_research_%'", pid)).toEqual([]);
   }));
   it("édition manuelle → chat local → worker → historique → restauration : même version, fiches et logo protégés", async () => fr(async () => {
     const { pid, spec } = await referenceProject(user.id, "products", { media: false, multi: true });
@@ -145,7 +145,7 @@ describe("Lot 2A — références intégrées", async () => {
     expect(edited.groups.header.sections[hid].settings.logo_asset).toEqual(logo.sections[hid].settings.logo_asset);
     const restored = await restoreRoute(request("restore", { versionId: initial.id }), ctx); expect(restored.status).toBe(200);
     expect(currentTheme(pid)!.spec).toEqual(spec); expect(listThemeVersions(pid).length).toBe(6);
-    expect(all("SELECT 1 FROM ai_calls WHERE project_id=?", pid)).toEqual([]);
+    expect(all("SELECT 1 FROM ai_calls WHERE project_id=? AND id NOT LIKE 'fixture_research_%'", pid)).toEqual([]);
   }));
   it("bibliothèque : noms FR/EN, réglages, contenu manuel prioritaire, insertion et suppression dans le vrai modèle", async () => fr(async () => {
     const { pid, spec } = await referenceProject(user.id, "services", { media: false, writeServices: false });

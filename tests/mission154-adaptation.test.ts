@@ -119,7 +119,7 @@ it.each(['fraise', 'onde', 'sillon', 'noctil', 'traverse', 'orbe', 'rive', 'heur
     }
     expect(one<{
         n: number;
-    }>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=?', f.pid)?.n).toBe(0);
+    }>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'', f.pid)?.n).toBe(0);
 }, 90000);
 it('média incomplet et fichier disparu : état partiel, acquis conservés et préparation des seuls manques', async () => {
     const f = await clientFixture({ incomplete: true });

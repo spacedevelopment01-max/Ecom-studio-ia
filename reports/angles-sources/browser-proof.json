@@ -1,0 +1,82 @@
+{
+  "schema": "angles-browser-proof-1",
+  "codeCheckout": "cf39160857bf53c311d50b8034060386fe7068c8",
+  "sourceWorkingTree": false,
+  "realProviderCalls": 0,
+  "studioCodespaceVerified": false,
+  "harness": "Actual MarketingStrategy component and native strategy functions, isolated SQLite, simulated research; not a served studio or creative-quality proof",
+  "checks": [
+    {
+      "scenario": "produit",
+      "device": "desktop",
+      "width": 1440,
+      "file": "produit-desktop.png",
+      "bodyOverflow": false,
+      "actualComponent": true,
+      "simulatedSources": true
+    },
+    {
+      "scenario": "service",
+      "device": "desktop",
+      "width": 1440,
+      "file": "service-desktop.png",
+      "bodyOverflow": false,
+      "actualComponent": true,
+      "simulatedSources": true
+    },
+    {
+      "scenario": "comparaison",
+      "device": "desktop",
+      "width": 1440,
+      "file": "comparaison-desktop.png",
+      "bodyOverflow": false,
+      "actualComponent": true,
+      "simulatedSources": true
+    },
+    {
+      "scenario": "blocage",
+      "device": "desktop",
+      "width": 1440,
+      "file": "blocage-desktop.png",
+      "bodyOverflow": false,
+      "actualComponent": true,
+      "simulatedSources": true
+    },
+    {
+      "scenario": "produit",
+      "device": "mobile",
+      "width": 390,
+      "file": "produit-mobile.png",
+      "bodyOverflow": false,
+      "actualComponent": true,
+      "simulatedSources": true
+    },
+    {
+      "scenario": "service",
+      "device": "mobile",
+      "width": 390,
+      "file": "service-mobile.png",
+      "bodyOverflow": false,
+      "actualComponent": true,
+      "simulatedSources": true
+    },
+    {
+      "scenario": "comparaison",
+      "device": "mobile",
+      "width": 390,
+      "file": "comparaison-mobile.png",
+      "bodyOverflow": false,
+      "actualComponent": true,
+      "simulatedSources": true
+    },
+    {
+      "scenario": "blocage",
+      "device": "mobile",
+      "width": 390,
+      "file": "blocage-mobile.png",
+      "bodyOverflow": false,
+      "actualComponent": true,
+      "simulatedSources": true
+    }
+  ]
+}
