@@ -32,7 +32,7 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   if (!cur) throw new HttpError(409, L("Aucune boutique.", "No store yet."));
   const asked = new URL(req.url).searchParams.get("type") ?? "";
   // Élément de galerie par famille (« fam:<fonction>~<disposition> ») : section du thème et réglages de la disposition.
-  const lib = /^fam:[a-z]+\.[a-z0-9-]+(~[a-z0-9-]+)?$/.test(asked) ? resolveLibraryType(asked) : { type: asked, settings: {} as Record<string, unknown> };
+  const lib: ReturnType<typeof resolveLibraryType> = /^fam:[a-z]+\.[a-z0-9-]+(~[a-z0-9-]+)?$/.test(asked) ? resolveLibraryType(asked) : { type: asked, settings: {} };
   const type = lib.type;
   if (!/^[\w-]{1,80}$/.test(type) || !sectionSchema(cur.spec, type)) throw new HttpError(404, L("Section inconnue.", "Unknown section."));
   // Même bibliothèque que la galerie : une section d'une autre famille (ou retirée) n'a pas d'aperçu.
@@ -47,7 +47,7 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   let html = process.env.NODE_ENV === "production" ? cache.get(key) : undefined;
   if (!html) {
     const cctx = sectionContentContext(p, cur.spec, true, targetTemplate);
-    const filled = withProjectMedia(cur.spec, type, { ...lib.settings }, undefined, cctx);
+    const filled = withProjectMedia(cur.spec, type, { ...lib.settings }, lib.blocks, cctx);
     // Séparateurs : rendus entre deux sections voisines factices, sinon on ne voit qu'une bande.
     const around = sectionSchema(cur.spec, "rich-text") ? previewNeighbors(type, filled.settings, sectionSchema(cur.spec, type)!, cctx, cur.spec) : null;
     const res = applyOps(cur.spec, [

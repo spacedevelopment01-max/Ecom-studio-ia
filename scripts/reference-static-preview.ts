@@ -6,8 +6,8 @@
  * côté client par un petit script. Aucun paiement, aucun envoi de formulaire, aucune donnée réelle.
  *
  *   CHROMIUM=/chemin/chrome npx tsx scripts/reference-static-preview.ts <dossier-de-sortie> [--cross]
- *   Produit <sortie>/fraise, onde, orbe, rive ; avec --cross, aussi fraise-en-onde et onde-en-fraise (même catégorie :
- *   preuve d'adaptation d'une identité à un autre thème). Les visuels viennent de public/demo/<id>/ (kit privé, hors dépôt).
+ *   Produit <sortie>/fraise, onde, orbe, rive ; avec --cross, aussi fraise-en-onde, onde-en-fraise et alcove-en-heuren
+ *   (preuve d'adaptation d'une identité à un autre thème). Les visuels viennent de public/demo/<id>/ (kit privé, hors dépôt).
  */
 import fs from "node:fs";
 import os from "node:os";
@@ -40,7 +40,9 @@ async function post(pathname: string, body: string, contentType: string) { const
 const SHIM = fs.readFileSync(path.join(path.dirname(new URL(import.meta.url).pathname), "lot2c-static-demo.js"), "utf8");
 const runs: { id: DemoId; direction: DemoId; name: string }[] = [
   { id: "fraise", direction: "fraise", name: "fraise" }, { id: "onde", direction: "onde", name: "onde" }, { id: "orbe", direction: "orbe", name: "orbe" }, { id: "rive", direction: "rive", name: "rive" }, { id: "sillon", direction: "sillon", name: "sillon" }, { id: "noctil", direction: "noctil", name: "noctil" }, { id: "traverse", direction: "traverse", name: "traverse" }, { id: "heuren", direction: "heuren", name: "heuren" }, { id: "alcove", direction: "alcove", name: "alcove" }, { id: "museau-club", direction: "museau-club", name: "museau-club" }, { id: "souple", direction: "souple", name: "souple" },
-  ...(cross ? [{ id: "fraise" as DemoId, direction: "onde" as DemoId, name: "fraise-en-onde" }, { id: "onde" as DemoId, direction: "fraise" as DemoId, name: "onde-en-fraise" }] : []),
+  ...(cross ? [{ id: "fraise" as DemoId, direction: "onde" as DemoId, name: "fraise-en-onde" }, { id: "onde" as DemoId, direction: "fraise" as DemoId, name: "onde-en-fraise" },
+    // HEUREN (consigne du 22 octobre) : le fauteuil d'ALCÔVE, ses images et ses textes, composé dans HEUREN.
+    { id: "alcove" as DemoId, direction: "heuren" as DemoId, name: "alcove-en-heuren" }] : []),
 ];
 const summary: Record<string, unknown>[] = [];
 try {

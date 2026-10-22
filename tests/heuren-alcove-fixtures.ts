@@ -129,7 +129,7 @@ const BRANDS: Record<ShopKitId, Brand> = {
 };
 
 export async function shopKitProject(userId: string, id: ShopKitId) {
-  return buildKitProject(userId, { id, media: SHOP_KIT_MEDIA[id], handle: SHOP_KIT_HANDLE[id], brand: BRANDS[id], themeName: id === "heuren" ? "Heuren" : "Alcôve", provenance: SHOP_KIT_PROVENANCE, storeKind: "catalog", sector: "maison" }, id === "heuren" ? curateHeuren : curateAlcove);
+  return buildKitProject(userId, { id, media: SHOP_KIT_MEDIA[id], handle: SHOP_KIT_HANDLE[id], brand: BRANDS[id], themeName: id === "heuren" ? "Heuren" : "Alcôve", provenance: SHOP_KIT_PROVENANCE, storeKind: "catalog", sector: id === "heuren" ? "bijoux" : "maison" }, id === "heuren" ? curateHeuren : curateAlcove);
 }
 
 /** Cadre d'un diptyque (photo, titre, phrase). */
@@ -242,7 +242,7 @@ function curateHeuren(k: Kit) {
   } };
 
   // ─── Panier : phrase d'introduction, panier vide avec la montre ; mention de démonstration sous le paiement. ──────
-  for (const sec of Object.values(spec.templates.cart?.sections ?? {})) if (sec.type === "main-cart") sec.settings = { ...sec.settings, intro: "Vérifiez votre sélection avant de passer commande.", empty_image_asset: img("montre-face.webp").image_asset, empty_heading: "Votre panier attend son premier moment.", empty_text: "Certaines histoires commencent par une belle attention.", empty_button_label: "Découvrir la montre", empty_button_link: productHref };
+  for (const sec of Object.values(spec.templates.cart?.sections ?? {})) if (sec.type === "main-cart") sec.settings = { ...sec.settings, intro: "Vérifiez votre sélection avant de passer commande.", empty_image_asset: img("montre-face.webp").image_asset, empty_heading: "Votre panier attend son premier moment.", empty_text: "Certaines histoires commencent par une belle attention.", empty_button_label: "Découvrir la montre", empty_button_link: productHref, qty_buttons: true, remove_label: "Supprimer", continue_label: "← Continuer mes achats" };
   spec.settings = { ...spec.settings, cart_reassurance: "Démonstration — aucun paiement réel." };
 
   // ─── Pages ──────────────────────────────────────────────────────────────────────────────────────────────────────

@@ -477,6 +477,12 @@ body[data-editorial="cadran"] .es-cart__empty-media .ed-media{aspect-ratio:1;bac
 body[data-editorial="cadran"] .es-cart__empty-media .ed-image{object-fit:contain}
 body[data-editorial="cadran"] .es-cart__empty-title{font-weight:300;font-size:clamp(28px,3vw,40px);line-height:1.15;margin:0 0 10px}
 body[data-editorial="cadran"] .es-cart__empty-text{margin:0 0 24px}
+body[data-editorial="cadran"] .es-button.es-button--secondary{border-radius:0;text-transform:none;letter-spacing:.01em;font-size:14px;font-weight:400;min-height:48px;background:transparent;border:1px solid var(--cd-line);color:inherit}
+body[data-editorial="cadran"] .es-line-item{border-bottom:1px solid var(--cd-line);padding-bottom:20px}
+body[data-editorial="cadran"] .es-cart__qty{border-radius:0;border-color:var(--cd-line);margin-top:10px}
+body[data-editorial="cadran"] .es-line-item__remove{font-size:13px;text-decoration:underline;text-underline-offset:4px}
+body[data-editorial="cadran"] .es-line-item__total{white-space:nowrap}
+body[data-editorial="cadran"] .es-line-item__title{font-weight:400}
 /* Boutique : la montre seule, carte large. */
 body[data-editorial="cadran"] .es-collection__title,body[data-editorial="cadran"] .es-collection h1{font-weight:300}
 @media(max-width:749px){

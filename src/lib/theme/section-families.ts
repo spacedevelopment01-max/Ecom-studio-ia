@@ -28,7 +28,9 @@ export type Thumb =
   | "stories" | "table" | "cards" | "stats" | "beforeafter" | "quote" | "quote-split" | "band" | "logos" | "sticky" | "drawing"
   | "form" | "form-split" | "map" | "pricing" | "featured" | "index" | "product" | "newsletter" | "stores" | "asym" | "statement";
 
-export type Disposition = { id: string; label: T; type: string; settings?: Record<string, unknown>; thumb: Thumb };
+/** `blocks` : blocs de départ d'une disposition qui n'existe pas sans eux (triptyque à trois photos, FAQ en thèmes),
+ * posés à l'ajout depuis la galerie et dans son aperçu ; textes et photos sont ensuite ceux du projet. */
+export type Disposition = { id: string; label: T; type: string; settings?: Record<string, unknown>; blocks?: { type: string; settings?: Record<string, unknown> }[]; thumb: Thumb };
 export type FamilyEntry = { key: string; family: FamilyId; n: number; name: T; description: T; keywords: string; dispositions: Disposition[] };
 
 export const FAMILY_LABEL: Record<FamilyId, T> = {
@@ -37,7 +39,7 @@ export const FAMILY_LABEL: Record<FamilyId, T> = {
   services: { fr: "Prestations de services", en: "Services" },
 };
 
-const d = (id: string, fr: string, en: string, type: string, thumb: Thumb, settings?: Record<string, unknown>): Disposition => ({ id, label: { fr, en }, type, thumb, ...(settings ? { settings } : {}) });
+const d = (id: string, fr: string, en: string, type: string, thumb: Thumb, settings?: Record<string, unknown>, blocks?: Disposition["blocks"]): Disposition => ({ id, label: { fr, en }, type, thumb, ...(settings ? { settings } : {}), ...(blocks ? { blocks } : {}) });
 const e = (family: FamilyId, n: number, slug: string, name: T, description: T, keywords: string, dispositions: Disposition[]): FamilyEntry => ({ key: `${family}.${slug}`, family, n, name, description, keywords, dispositions });
 
 // ─── Boutique spécialisée — FRAISE / ONDE ──────────────────────────────────────────────────────────────────────────────
@@ -209,7 +211,7 @@ const CATALOG: FamilyEntry[] = [
     d("side", "Deux usages côte à côte", "Two uses side by side", "ed-diptych", "grid-2", { layout: "side" }),
     d("pair", "Diptyque décalé", "Offset diptych", "ed-diptych", "grid-2", { layout: "pair" }),
     d("index", "Index d'usages", "Index of uses", "ed-diptych", "asym", { layout: "index" }),
-    d("triptych", "Triptyque plein cadre", "Full-bleed triptych", "ed-diptych", "grid-3", { layout: "triptych" }),
+    d("triptych", "Triptyque plein cadre", "Full-bleed triptych", "ed-diptych", "grid-3", { layout: "triptych" }, [{ type: "frame", settings: { ratio: "portrait" } }, { type: "frame", settings: { ratio: "portrait" } }, { type: "frame", settings: { ratio: "portrait" } }]),
   ]),
   e("catalog", 9, "care", { fr: "Entretien et durabilité", en: "Care and durability" }, { fr: "Conseils pour entretenir et prolonger la vie des produits.", en: "Advice to care for products and make them last." }, "entretien durabilité conseils réparation", [
     d("list", "Conseils en liste", "Advice list", "fs-care", "list", { layout: "list" }),
@@ -266,7 +268,8 @@ const CATALOG: FamilyEntry[] = [
     d("center", "Centré", "Centred", "v2-faq", "accordion", { layout: "center" }),
     d("cards", "Accordéons en cartes", "Card accordions", "faq", "accordion", { style: "cards" }),
     d("lines", "Accordéons en lignes", "Line accordions", "faq", "accordion", { style: "lines" }),
-    d("columns", "Thèmes en colonnes et questions", "Topics in columns with questions", "v2-faq", "grid-3", { layout: "columns" }),
+    d("columns", "Thèmes en colonnes et questions", "Topics in columns with questions", "v2-faq", "grid-3", { layout: "columns" },
+      ["Bien choisir", "Entretien", "Commande et livraison"].flatMap((title) => [{ type: "topic", settings: { title } }, { type: "question" }, { type: "question" }])),
   ]),
   e("catalog", 19, "newsletter", { fr: "Newsletter", en: "Newsletter" }, { fr: "Actualités et collections.", en: "News and collections." }, "newsletter inscription", [
     d("simple", "Inscription simple", "Simple sign-up", "newsletter", "newsletter"),

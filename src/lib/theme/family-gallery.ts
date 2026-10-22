@@ -135,8 +135,9 @@ export function familyGallery(family: FamilyId, lang: Lang, available?: (type: s
 }
 
 /** Type de section et réglages d'un identifiant de galerie (« fam:… ») ou d'un type de section direct. */
-export function resolveLibraryType(id: string): { type: string; settings: Record<string, unknown>; entryKey?: string; dispositionId?: string } {
+export function resolveLibraryType(id: string): { type: string; settings: Record<string, unknown>; blocks?: { type: string; settings: Record<string, unknown> }[]; entryKey?: string; dispositionId?: string } {
   const parsed = parseLibraryId(id);
   if (!parsed) return { type: id, settings: {} };
-  return { type: parsed.disposition.type, settings: { ...(parsed.disposition.settings ?? {}) }, entryKey: parsed.entry.key, dispositionId: parsed.disposition.id };
+  const blocks = parsed.disposition.blocks?.map((b) => ({ type: b.type, settings: { ...(b.settings ?? {}) } }));
+  return { type: parsed.disposition.type, settings: { ...(parsed.disposition.settings ?? {}) }, ...(blocks ? { blocks } : {}), entryKey: parsed.entry.key, dispositionId: parsed.disposition.id };
 }

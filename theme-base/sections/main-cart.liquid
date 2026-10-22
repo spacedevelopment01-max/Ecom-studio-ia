@@ -77,11 +77,19 @@
                 {%- unless item.product.has_only_default_variant -%}<p class="es-muted es-small">{{ item.variant.title }}</p>{%- endunless -%}
                 <p class="es-small">{{ item.final_price | money }}</p>
                 <label class="visually-hidden" for="Qty-{{ forloop.index }}">{{ 'products.product.quantity' | t }}</label>
+                {%- if section.settings.qty_buttons and item.properties._es_gift == blank -%}
+                  <div class="es-qty es-qty--small es-cart__qty">
+                    <a href="{{ routes.cart_change_url }}?id={{ item.key }}&amp;quantity={{ item.quantity | minus: 1 }}" class="es-cart__step" aria-label="{{ 'cart.decrease' | t }}">{% render 'icon', name: 'minus' %}</a>
+                    <input id="Qty-{{ forloop.index }}" type="number" name="updates[]" value="{{ item.quantity }}" min="0" data-cart-qty="{{ item.key }}">
+                    <a href="{{ routes.cart_change_url }}?id={{ item.key }}&amp;quantity={{ item.quantity | plus: 1 }}" class="es-cart__step" aria-label="{{ 'cart.increase' | t }}">{% render 'icon', name: 'plus' %}</a>
+                  </div>
+                {%- else -%}
                 <input class="es-qty-input" id="Qty-{{ forloop.index }}" type="number" name="updates[]" value="{{ item.quantity }}" min="0" data-cart-qty="{{ item.key }}"{% if item.properties._es_gift %} disabled{% endif %}>
+                {%- endif -%}
                 {% if item.properties._es_gift %}<input type="hidden" name="updates[]" value="{{ item.quantity }}">{% endif %}
               </div>
               <div class="es-line-item__total">{% if item_saving > 0 %}<s class="es-line-item__compare"><span class="visually-hidden">{{ 'cart.compare_price' | t }} </span>{{ item_original | money }}</s> {% endif %}{{ item.final_line_price | money }}{% if item_saving > 0 and settings.cart_show_savings %}<span class="es-line-item__saving">{{ 'purchase.save' | t }} {{ item_saving | money }}</span>{% endif %}</div>
-              {% unless item.properties._es_gift %}<a href="{{ item.url_to_remove }}" class="es-line-item__remove es-link-button">{{ 'cart.remove' | t }}</a>{% else %}<span class="es-small">{{ 'purchase.gift' | t }}</span>{% endunless %}
+              {% unless item.properties._es_gift %}<a href="{{ item.url_to_remove }}" class="es-line-item__remove es-link-button">{% if section.settings.remove_label != blank %}{{ section.settings.remove_label | escape }}{% else %}{{ 'cart.remove' | t }}{% endif %}</a>{% else %}<span class="es-small">{{ 'purchase.gift' | t }}</span>{% endunless %}
             </li>
           {%- endfor -%}
         </ul>
@@ -116,6 +124,7 @@
           <p class="es-muted es-small">{{ 'cart.taxes_and_shipping' | t }}</p>
           <button type="submit" name="update" class="es-button es-button--secondary es-button--full">{{ 'cart.update' | t }}</button>
           <button type="submit" name="checkout" class="es-button es-button--full es-drawer__checkout">{% if settings.cart_checkout_lock %}<svg class="es-icon es-icon--lock" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>{% endif %}<span>{{ checkout_label }}</span></button>
+          {%- if section.settings.continue_label != blank -%}<a href="{{ section.settings.empty_button_link | default: routes.all_products_collection_url }}" class="es-cart__continue">{{ section.settings.continue_label | escape }}</a>{%- endif -%}
           {%- if additional_checkout_buttons -%}<div class="es-cart__extra">{{ content_for_additional_checkout_buttons }}</div>{%- endif -%}
           {%- if settings.cart_reassurance != blank -%}<p class="es-small es-center es-drawer__guarantee">{% render 'icon', name: 'shield' %}<span>{{ settings.cart_reassurance }}</span></p>{%- endif -%}
           {%- if settings.cart_show_payment_icons and shop.enabled_payment_types.size > 0 -%}
@@ -148,6 +157,24 @@
       "id": "intro",
       "label": "Phrase sous le titre",
       "info": "Ex. « Vérifiez votre sélection avant de passer commande. »"
+    },
+    {
+      "type": "checkbox",
+      "id": "qty_buttons",
+      "label": "Boutons − et + sur chaque ligne",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "remove_label",
+      "label": "Lien de suppression d'une ligne",
+      "info": "Vide : « Retirer »."
+    },
+    {
+      "type": "text",
+      "id": "continue_label",
+      "label": "Lien « continuer » sous le paiement",
+      "info": "Mène à la destination du bouton du panier vide. Vide : pas de lien."
     },
     {
       "type": "header",

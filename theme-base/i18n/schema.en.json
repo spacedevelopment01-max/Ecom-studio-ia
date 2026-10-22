@@ -2377,5 +2377,10 @@
   "Texte alternatif": "Alt text",
   "Titre de section (H2)": "Section heading (H2)",
   "Afficher le titre de la page": "Show the page title",
-  "Décoché : le titre principal est porté par la première section de la page (le fil d'Ariane reste).": "Unchecked: the main heading is carried by the page's first section (the breadcrumb remains)."
+  "Décoché : le titre principal est porté par la première section de la page (le fil d'Ariane reste).": "Unchecked: the main heading is carried by the page's first section (the breadcrumb remains).",
+  "Boutons − et + sur chaque ligne": "− and + buttons on each line",
+  "Lien de suppression d'une ligne": "Line removal link",
+  "Vide : « Retirer ».": "Empty: “Remove”.",
+  "Lien « continuer » sous le paiement": "“Continue” link under checkout",
+  "Mène à la destination du bouton du panier vide. Vide : pas de lien.": "Goes to the empty-cart button destination. Empty: no link."
 }

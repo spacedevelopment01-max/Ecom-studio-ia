@@ -29,6 +29,8 @@ import { saveBrand, loadProject } from "@/lib/projects";
 import { libraryLoader } from "@/lib/theme/loader";
 import { cmsExport } from "@/lib/cms-v2/export";
 import { designLayer } from "@/lib/cms-v2/design";
+import { resolveLibraryType } from "@/lib/theme/family-gallery";
+import { withProjectMedia } from "@/lib/theme/section-defaults";
 import { demoProject } from "./demo-fixtures";
 import { SHOP_KIT_MEDIA, type ShopKitId } from "./heuren-alcove-fixtures";
 import { REFERENCE_THEMES } from "@/lib/project-handoff/categories";
@@ -310,5 +312,24 @@ for (const id of ["heuren", "alcove"] as const) describe(`${id.toUpperCase()} : 
     const all = names + zipText(z, /\.(json|php|tpl|html|txt|csv|xml)$/);
     expect(all).toContain(`es-editorial-${PLAN[id].profile}`);
     expect(all).not.toMatch(/\/home\/user|\/tmp\/ecs-/);
+  });
+});
+
+describe("HEUREN : dispositions de la galerie qui n'existent pas sans leurs blocs", async () => {
+  const user = await createUser("heuren-galerie@example.invalid", "isolated-test-only", "Galerie");
+  const demo = await fr(() => demoProject(user.id, "heuren"));
+  it("triptyque : trois cadres avec une photo du projet ; FAQ en colonnes : trois thèmes illustrés et leurs questions", () => {
+    const tri = resolveLibraryType("fam:catalog.uses~triptych");
+    expect(tri.blocks?.map((b) => b.type)).toEqual(["frame", "frame", "frame"]);
+    const triFilled = withProjectMedia(demo.spec, tri.type, tri.settings, tri.blocks);
+    expect(triFilled.blocks?.every((b) => typeof b.settings?.image_asset === "string" && (b.settings.image_asset as string).length > 0)).toBe(true);
+    const faq = resolveLibraryType("fam:catalog.faq~columns");
+    expect(faq.blocks?.filter((b) => b.type === "topic")).toHaveLength(3);
+    expect(faq.blocks?.filter((b) => b.type === "question")).toHaveLength(6);
+    const faqFilled = withProjectMedia(demo.spec, faq.type, faq.settings, faq.blocks);
+    for (const b of faqFilled.blocks!.filter((x) => x.type === "topic")) expect(String(b.settings?.image_asset ?? "")).not.toBe("");
+    // Copie à chaque appel : le registre de la galerie ne change jamais.
+    tri.blocks![0].settings.ratio = "square";
+    expect(resolveLibraryType("fam:catalog.uses~triptych").blocks![0].settings.ratio).toBe("portrait");
   });
 });

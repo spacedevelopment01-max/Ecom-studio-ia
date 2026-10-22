@@ -459,6 +459,10 @@ input:focus-visible + .es-chip { outline: 2px solid var(--c-accent); outline-off
 .es-line-item__info p { margin: 4px 0; }
 .es-line-items--page .es-line-item { grid-template-columns: 110px 1fr auto auto; padding-bottom: 18px; border-bottom: 1px solid var(--c-border); }
 .es-qty-input { width: 72px; min-height: 40px; padding: 0 10px; border: 1px solid var(--c-border); border-radius: var(--radius-button); background: var(--c-bg); }
+.es-cart__step { width: 34px; height: 36px; display: grid; place-items: center; color: inherit; }
+.es-cart__step .es-icon { width: 14px; }
+.es-cart__qty input { width: 36px; height: 36px; padding: 0; }
+.es-cart__continue { display: block; margin-top: 14px; text-align: center; font-size: .88rem; text-decoration: underline; text-underline-offset: 4px; }
 .es-cart__grid { display: grid; gap: 40px; }
 @media (min-width: 990px) { .es-cart__grid { grid-template-columns: 1.4fr .6fr; } .es-cart__summary { position: sticky; top: calc(var(--header-h) + 24px); align-self: start; } }
 .es-cart__summary { display: grid; gap: 12px; padding: 24px; background: var(--c-surface); border-radius: var(--radius-card); }
