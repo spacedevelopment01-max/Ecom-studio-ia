@@ -1,0 +1,37 @@
+
+ RUN  v5.0.3 /workspace/work/forfaits-150
+
+ ❯ tests/openai-streaming.test.ts (0 test)
+ ❯ tests/logo-identity.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/logo-identity.test.ts [ tests/logo-identity.test.ts ]
+Error: ENOENT: no such file or directory, scandir 'reports/openai-real-brand-test'
+ ❯ tests/logo-identity.test.ts:14:48
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/openai-streaming.test.ts [ tests/openai-streaming.test.ts ]
+Error: ENOENT: no such file or directory, scandir 'reports/openai-real-brand-test'
+ ❯ tests/openai-streaming.test.ts:29:32
+     27|
+     28| const DIR = "reports/openai-real-brand-test";
+     29| const REAL = path.join(DIR, fs.readdirSync(DIR).find((f) => /^direct-.…
+       |                                ^
+     30| const realPng = fs.readFileSync(REAL);
+     31|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 58 passed (60)
+      Tests  415 passed | 8 skipped (423)
+   Start at  15:28:35
+   Duration  484.56s (tests 72%, import 27%, transform 2%)
+
+     Import  564 modules were evaluated 1017 times · 125.83s total, 27% of tracked time
+             ~56.05s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+

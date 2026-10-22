@@ -1,0 +1,219 @@
+{
+  "project": "HEUREN (projet existant, distinct de la démonstration choisie)",
+  "origin": "studio Next.js de développement + worker, base temporaire, aucune IA",
+  "steps": [
+    {
+      "step": "projet existant « HEUREN » (E-commerce) ouvert dans HEUREN",
+      "empreinte": {
+        "projet": "ab292d8a5f10059a",
+        "versionsDeTheme": [
+          "1:3aaveumue6g2jzm6"
+        ],
+        "medias": 17,
+        "taches": 0,
+        "appelsIA": 0,
+        "versionsDeMarque": 2
+      },
+      "ok": true
+    },
+    {
+      "step": "galerie : chaque carte montre la démonstration du thème et propose « Voir la démo complète »",
+      "vignettes": [
+        "/demo/directions/fraise.jpg",
+        "/demo/directions/onde.jpg",
+        "/demo/directions/orbe.jpg",
+        "/demo/directions/rive.jpg",
+        "/theme-assets/sillon/apercu-theme.jpg",
+        "/theme-assets/noctil/apercu-theme.jpg",
+        "/theme-assets/traverse/apercu-theme.jpg",
+        "/theme-assets/heuren/apercu-theme.jpg",
+        "/theme-assets/alcove/apercu-theme.jpg",
+        "/theme-assets/museau-club/apercu-theme.jpg",
+        "/theme-assets/souple/apercu-theme.jpg"
+      ],
+      "ok": true
+    },
+    {
+      "step": "démo complète SOUPLE ouverte (ordinateur) : contenus de démonstration",
+      "pages": [
+        "Accueil",
+        "Tapis de yoga SOUPLE rose poudré",
+        "Brique de yoga SOUPLE liège",
+        "Sangle de yoga SOUPLE prune",
+        "Anneau de Pilates SOUPLE prune",
+        "Boutique",
+        "Votre coin à vous",
+        "Questions et contact",
+        "Panier"
+      ],
+      "ok": true
+    },
+    {
+      "step": "accueil de la démo défilé jusqu'au pied de page",
+      "sections": 21,
+      "ok": true
+    },
+    {
+      "step": "navigation : fiche produit par le sélecteur, page « Votre coin » par le menu de la démo",
+      "ok": true
+    },
+    {
+      "step": "bascule téléphone : la démo s'affiche à 390 px, page conservée, menu mobile",
+      "ok": true
+    },
+    {
+      "step": "démo complète FRAISE ouverte puis fermée ; Échap ne ferme que la démo",
+      "ok": true
+    },
+    {
+      "step": "aucune modification du projet pendant la visite (empreinte identique, aucune écriture)",
+      "avant": {
+        "projet": "ab292d8a5f10059a",
+        "versionsDeTheme": [
+          "1:3aaveumue6g2jzm6"
+        ],
+        "medias": 17,
+        "taches": 0,
+        "appelsIA": 0,
+        "versionsDeMarque": 2
+      },
+      "apres": {
+        "projet": "ab292d8a5f10059a",
+        "versionsDeTheme": [
+          "1:3aaveumue6g2jzm6"
+        ],
+        "medias": 17,
+        "taches": 0,
+        "appelsIA": 0,
+        "versionsDeMarque": 2
+      },
+      "ecritures": [],
+      "ok": true
+    },
+    {
+      "step": "charte validée du projet gardée dans SOUPLE (couleurs du projet, composition du thème)",
+      "palette": {
+        "primary": "#15233E",
+        "secondary": "#D9DDE3",
+        "accent": "#B8946A",
+        "light": "#F7F5F0",
+        "dark": "#0D1526"
+      },
+      "ok": true
+    },
+    {
+      "step": "adaptation d'un projet complet (« HEUREN », heuren → souple) : pages en pleine page, aucun emplacement vide, aucun visuel ni texte de la démo, rechargement identique",
+      "audit": [
+        {
+          "page": "accueil",
+          "largeur": 1440,
+          "vides": 0,
+          "cassees": [],
+          "visuelsDuTheme": 0,
+          "images": 10,
+          "sections": 4,
+          "debordement": 0,
+          "signatureDansLaPage": 1
+        },
+        {
+          "page": "fiche",
+          "largeur": 1440,
+          "vides": 0,
+          "cassees": [],
+          "visuelsDuTheme": 0,
+          "images": 11,
+          "sections": 4,
+          "debordement": 0,
+          "signatureDansLaPage": 0
+        },
+        {
+          "page": "page-au-fil-du-jour",
+          "largeur": 1440,
+          "vides": 0,
+          "cassees": [],
+          "visuelsDuTheme": 0,
+          "images": 5,
+          "sections": 4,
+          "debordement": 0,
+          "signatureDansLaPage": 0
+        },
+        {
+          "page": "page-aide",
+          "largeur": 1440,
+          "vides": 0,
+          "cassees": [],
+          "visuelsDuTheme": 0,
+          "images": 1,
+          "sections": 3,
+          "debordement": 0,
+          "signatureDansLaPage": 0
+        },
+        {
+          "page": "accueil",
+          "largeur": 390,
+          "vides": 0,
+          "cassees": [],
+          "visuelsDuTheme": 0,
+          "images": 10,
+          "sections": 4,
+          "debordement": 0,
+          "signatureDansLaPage": 1
+        },
+        {
+          "page": "fiche",
+          "largeur": 390,
+          "vides": 0,
+          "cassees": [],
+          "visuelsDuTheme": 0,
+          "images": 17,
+          "sections": 4,
+          "debordement": 0,
+          "signatureDansLaPage": 0
+        },
+        {
+          "page": "page-au-fil-du-jour",
+          "largeur": 390,
+          "vides": 0,
+          "cassees": [],
+          "visuelsDuTheme": 0,
+          "images": 5,
+          "sections": 4,
+          "debordement": 0,
+          "signatureDansLaPage": 0
+        },
+        {
+          "page": "page-aide",
+          "largeur": 390,
+          "vides": 0,
+          "cassees": [],
+          "visuelsDuTheme": 0,
+          "images": 1,
+          "sections": 3,
+          "debordement": 0,
+          "signatureDansLaPage": 0
+        }
+      ],
+      "ok": true
+    },
+    {
+      "step": "« Choisir ce thème » (double-clic + demande simultanée) : une seule tâche, une seule version, éditeur sur le projet, aucun contenu de démo",
+      "requetesInterface": 1,
+      "taches": 1,
+      "versions": [
+        "1:3aaveumue6g2jzm6",
+        "2:9eoyte5pknzc7e9k"
+      ],
+      "ok": true
+    },
+    {
+      "step": "après un choix : guide des informations à compléter (sans rien emprunter à la démo)",
+      "guide": "Thème appliqué avec vos contenus\n\nFermer\n\n2 sections attendent vos informations : rien n'est repris de la démonstration, elles restent masquées en attendant. Ouvrez leurs réglages, complétez-les (textes, photos, chiffres réels), puis réaffichez-les avec l'œil.\n\nAccueil ·\nCampagne\nAccueil ·\nQuestions fréquentes",
+      "ok": true
+    },
+    {
+      "step": "studio sur téléphone : galerie, démo complète ORBE en ordinateur puis téléphone, aucun débordement",
+      "ok": true
+    }
+  ],
+  "date": "2026-10-21T19:16:57.120Z"
+}

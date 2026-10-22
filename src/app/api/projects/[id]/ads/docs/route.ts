@@ -1,3 +1,4 @@
+import { strategyVisibilitySql } from "@/lib/marketing-strategy/visibility";
 import { handle, ok } from "@/lib/http";
 import { all, json } from "@/lib/db";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
@@ -13,7 +14,7 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   const rows = all<{ doc_key: string; version: number; source: string; rendered_asset_id: string | null; created_at: number; doc_json: string; edited: number }>(
     `SELECT d.doc_key, d.version, d.source, d.rendered_asset_id, d.created_at, d.doc_json,
             (SELECT COUNT(*) FROM ad_documents u WHERE u.project_id = d.project_id AND u.doc_key = d.doc_key AND u.source <> 'engine') edited
-       FROM ad_documents d JOIN (SELECT doc_key, MAX(version) v FROM ad_documents WHERE project_id = ? GROUP BY doc_key) m ON m.doc_key = d.doc_key AND m.v = d.version
+       FROM ad_documents d JOIN (SELECT doc_key, MAX(version) v FROM ad_documents WHERE project_id = ? AND ${strategyVisibilitySql(p.id,"ad","ad_documents.id")} GROUP BY doc_key) m ON m.doc_key = d.doc_key AND m.v = d.version
       WHERE d.project_id = ? AND (d.doc_key LIKE 'post:%') = ? ORDER BY d.created_at DESC LIMIT 100`,
     p.id,
     p.id,

@@ -19,7 +19,7 @@ vi.mock("@/lib/ai/config", async (orig) => ({ ...(await orig<object>()), activeP
 
 const PNG = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
 const mp4 = Buffer.from("00000018667479706d703432", "hex");
-const net = { calls: [] as { url: string; body: any; headers: Record<string, string> }[], image: "ok" as "ok" | "401" | "inspect" | "500" | "empty", video: "ok" as "ok" | "failed", polls: 0, downloadDown: false };
+const net = { calls: [] as { url: string; body: any; headers: Record<string, string> }[], image: "ok" as "ok" | "401" | "inspect" | "500" | "empty", video: "ok" as "ok" | "failed" | "interrupted", polls: 0, downloadDown: false };
 
 async function fakeFetch(url: string, init?: RequestInit): Promise<Response> {
   const body = init?.body ? JSON.parse(String(init.body)) : null;
@@ -35,6 +35,7 @@ async function fakeFetch(url: string, init?: RequestInit): Promise<Response> {
   if (url.includes("/services/aigc/video-generation/video-synthesis")) return json({ output: { task_id: "task-123", task_status: "PENDING" } });
   if (url.includes("/tasks/task-123")) {
     net.polls++;
+    if (net.video === "interrupted") throw new Error("synthetic worker interruption after provider accepted task");
     if (net.video === "failed") return json({ output: { task_id: "task-123", task_status: "FAILED", message: "content blocked" } });
     return json({ output: { task_id: "task-123", task_status: net.polls < 2 ? "RUNNING" : "SUCCEEDED", video_url: "https://result.test/wan.mp4" } });
   }
@@ -217,10 +218,16 @@ describe("Alibaba Cloud — Qwen-Image et Wan", async () => {
     confirmModel("alibaba:wan2.6-i2v", { unit: "video_second", perSecond: 0.1 });
     setJsonSetting("ai.routes", { video_generation: { provider: "alibaba", model: "wan2.6-i2v" } });
     const k = ctx(c, "job-1:clip-1");
-    setSetting(ali.wanTaskKey(k.usageKey), JSON.stringify({ taskId: "task-123", model: "wan2.6-i2v", seconds: 5, at: Date.now() }));
+    net.video = "interrupted";
+    await expect(fr(() => mp.aiClip("alibaba", k, { image: png, prompt: "plan", aspect: "9:16", seconds: 5 }))).rejects.toThrow(/incertain/);
+    const reservedBeforeResume = reservations(c.userId).length;
+    net.video = "ok";
+    net.calls = [];
     await fr(() => mp.aiClip("alibaba", k, { image: png, prompt: "plan", aspect: "9:16", seconds: 5 }));
     expect(net.calls.some((x) => x.url.includes("video-synthesis"))).toBe(false);
     expect(net.calls.some((x) => x.url.includes("/tasks/task-123"))).toBe(true);
+    expect(reservations(c.userId)).toHaveLength(reservedBeforeResume);
+    expect(reservations(c.userId)[0].status).toBe("reconciled");
 
     // Vidéo terminée et payée, téléchargement coupé : le nouvel essai télécharge seulement (aucune tâche, aucun coût).
     const k2 = ctx(c, "job-2:clip-1");
@@ -246,6 +253,34 @@ describe("Alibaba Cloud — Qwen-Image et Wan", async () => {
     expect(reservations(c.userId)).toEqual([{ status: "released", provider: "alibaba", model: "wan2.6-i2v" }]);
     expect(billed(c.userId)).toEqual([]);
     expect(getSetting(ali.wanTaskKey(k.usageKey))).toBeFalsy();
+  });
+
+  it("média payé reçu avant un incident de sauvegarde aval : octets réutilisés, aucun appel ni débit supplémentaire", async () => {
+    const c = await client(), k = ctx(c, "image-acquired-before-checkpoint");
+    setJsonSetting("ai.routes", { image_generation: { provider: "alibaba", model: "qwen-image-3.0-pro" } });
+    const input = { prompt: "photographie de test sans personne", aspect: "1:1" as const };
+    const original = await fr(() => mp.ambianceImage(k, input));
+    const before = billing.balance(c.userId).available, count = reservations(c.userId).length;
+    net.calls = [];
+    const recovered = await fr(() => mp.ambianceImage(k, input));
+    expect(recovered.equals(original)).toBe(true);
+    expect(net.calls).toHaveLength(0);
+    expect(reservations(c.userId)).toHaveLength(count);
+    expect(billing.balance(c.userId).available).toBe(before);
+    await expect(fr(() => mp.ambianceImage(k, { ...input, prompt: "demande différente" }))).rejects.toThrow(/demande a changé/);
+    expect(net.calls).toHaveLength(0);
+  });
+
+  it("deux clients avec la même clé média ne récupèrent pas le résultat de l'autre", async () => {
+    const a = await client(), b = await client();
+    setJsonSetting("ai.routes", { image_generation: { provider: "alibaba", model: "qwen-image-3.0-pro" } });
+    const input = { prompt: "photographie de test", aspect: "1:1" as const };
+    await fr(() => mp.ambianceImage(ctx(a, "same-key"), input));
+    const before = net.calls.length;
+    await fr(() => mp.ambianceImage(ctx(b, "same-key"), input));
+    expect(net.calls.length).toBeGreaterThan(before);
+    expect(reservations(a.userId)).toHaveLength(1);
+    expect(reservations(b.userId)).toHaveLength(1);
   });
 
   it("test de clé sans génération + état de validation pas à pas (clé, adresse, test, confirmation, tarif, génération)", async () => {

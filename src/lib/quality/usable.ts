@@ -1,3 +1,4 @@
+import { strategyContentVisible, strategyVisibilitySql } from "../marketing-strategy/visibility";
 /**
  * Règle unique de réutilisation automatique d'un asset (thème, publicités, publications, montages vidéo) :
  * ce qui est REJECTED ne revient jamais tout seul ailleurs, et un défaut fatal ne devient jamais réutilisable,
@@ -12,8 +13,9 @@ import type { GateMeta } from "./store";
 
 const gateOf = (a: Pick<Asset, "meta">): Partial<GateMeta> | null => json<{ gate?: Partial<GateMeta> }>(a.meta as any, {}).gate ?? null;
 
-export function isAutoUsable(a: Pick<Asset, "meta" | "status"> & { deleted_at?: number | null }): boolean {
+export function isAutoUsable(a: Pick<Asset, "meta" | "status"> & { deleted_at?: number | null; id?:string; project_id?:string }): boolean {
   if (a.deleted_at) return false;
+  if(a.id&&a.project_id&&!strategyContentVisible(a.project_id,"asset",a.id))return false;
   const g = gateOf(a);
   if (g?.fatal) return false;
   if (a.status === "rejected") return false;
@@ -31,7 +33,7 @@ export function manuallySelectable(a: Pick<Asset, "meta"> & { deleted_at?: numbe
 
 /** Assets d'un rôle réutilisables automatiquement (remplace la lecture directe par rôle dans les modules). */
 export function usableByRole(projectId: string, role: string, limit = 20): Asset[] {
-  return all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = ? AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at DESC LIMIT ?", projectId, role, limit * 3)
+  return all<Asset>(`SELECT * FROM assets WHERE project_id = ? AND role = ? AND deleted_at IS NULL AND status != 'rejected' AND ${strategyVisibilitySql(projectId,"asset","assets.id")} ORDER BY created_at DESC LIMIT ?`, projectId, role, limit * 3)
     .filter(isAutoUsable)
     .slice(0, limit);
 }

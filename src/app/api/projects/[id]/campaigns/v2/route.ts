@@ -1,10 +1,14 @@
+import { withCommunicationRequest } from "@/lib/marketing-strategy/communication-route";
+import { planAllowsAds } from "@/lib/plan-entitlements";
+import { planOfProject } from "@/lib/plan-gates";
+import { assertAdvertising } from "@/lib/job-entitlements";
 import {stableHash} from "@/lib/brain/hash";
 import {campaignEstimate} from "@/lib/ads-v2/estimate";
 import { publicationReadiness } from "@/lib/social-v2/ai-post";
 import { z } from "zod";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
-import { enqueue } from "@/lib/jobs";
+import { enqueue, publicJob, type Job } from "@/lib/jobs";
 import { all, json, one, run } from "@/lib/db";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { L } from "@/lib/i18n-server";
@@ -57,11 +61,15 @@ function aiAds(projectId: string) {
 
 export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
-  return ok({ ...view(p.id), aiAds: aiAds(p.id), ai: aiActiveFor(p.userId, p.id) && (await publicationReadiness(p)).ready, subjects: subjectOptions(p).map((x) => ({ kind: x.kind, key: x.key, name: x.name, hasPhoto: !!x.referenceAssetId, photoId: x.referenceAssetId })) });
+  // L'état terminal reste visible après une tâche très rapide, une déconnexion ou un rechargement.
+  // Les publications organiques et les tâches des autres projets n'appartiennent pas à cette galerie.
+  const aiJobs=all<Job>("SELECT * FROM jobs WHERE project_id=? AND type='image.ai_post' AND (json_extract(payload,'$.request.as')='ad' OR json_extract(payload,'$.request.entryPoint')='ads-guided') ORDER BY created_at DESC, rowid DESC LIMIT 20",p.id).map(publicJob);
+  return ok({ access:planAllowsAds(planOfProject(p.id)), ...view(p.id), aiAds: aiAds(p.id), aiJobs, ai: aiActiveFor(p.userId, p.id) && (await publicationReadiness(p)).ready, subjects: subjectOptions(p).map((x) => ({ kind: x.kind, key: x.key, name: x.name, hasPhoto: !!x.referenceAssetId, photoId: x.referenceAssetId })) });
 });
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
+  return withCommunicationRequest(p.id,req,async()=>{
   const b = await body(
     req,
     z.object({
@@ -89,6 +97,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     run("UPDATE assets SET status = 'rejected', meta = json_set(meta, '$.userRejected', 1) WHERE id = ?", b.assetId!);
     return ok(view(p.id));
   }
+  assertAdvertising(p.id);
   // Devis au coût probable (un essai), dit en % du budget IA ; le plafond de la tâche permet les reprises.
   if (b.action === "ai_quote") return ok({ ...(await publicationReadiness(p)), ai: aiActiveFor(p.userId, p.id) && (await publicationReadiness(p)).ready, estimateMicro: aiPostProbableMicro(), pct: budgetPctOf(p.userId, aiPostProbableMicro(), p.id) });
   if(b.action==="campaign_quote") {const readiness=await publicationReadiness(p);return ok({...campaignEstimate(p,b),...readiness,ai:aiActiveFor(p.userId,p.id)&&readiness.ready});}
@@ -113,4 +122,5 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'ads.v2' AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Des publicités sont déjà en préparation.", "Ads are already being prepared."));
   const job = enqueue({ userId: user.id, projectId: p.id, type: "ads.v2", idempotencyKey:b.operationId?`campaign-create:${p.id}:${b.operationId}:${stableHash("campaign-intent",{count:b.count,platforms:b.platforms,aspects:b.aspects,offer:b.offer,audience:b.audience,objective:b.objective})}`:undefined, label: L("Publicités : angles, textes et créations", "Ads: angles, copy and creatives"), payload: { projectId: p.id, costCapMicro:campaignPrice.capMicro, request: { count: b.count, platforms: b.platforms, objective: b.objective, audience: b.audience, offer: b.offer, aspects: b.aspects } } });
   return ok({ jobId: job.id, ...view(p.id) });
+  },["ai_create", "generate"]);
 });

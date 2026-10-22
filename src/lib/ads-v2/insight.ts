@@ -1,3 +1,4 @@
+import { strategySelection } from "../strategy-consumption";
 /**
  * Analyse du produit et de l'audience (Ads V2) : tout vient du Project Brain (projet, plateforme de marque, faits,
  * prestations, famille du produit, métier), sans appel à l'IA. Ce qui manque est signalé, jamais inventé :
@@ -15,6 +16,8 @@ const ph = (s: string | null | undefined) => !s?.trim() || /\[(À|A) (compléter
 const clean = (s: string | null | undefined) => (ph(s) ? null : s!.trim());
 
 export function adInsight(p: Project, opts: { audience?: string | null; offer?: string | null } = {}): AdInsight {
+  const selected = strategySelection(p.id);
+  const angle = selected?.angle;
   const services = p.business === "services";
   const pf = p.strategy?.platform;
   // Une réponse « [À compléter : …] » n'est pas une réponse : la question n'apparaît jamais seule sur une publicité.
@@ -25,22 +28,23 @@ export function adInsight(p: Project, opts: { audience?: string | null; offer?: 
   const cat = services ? null : resolveProductCategory(p.product);
   const trade = services ? resolveTrade(tradeText(p), p.product.sector ?? null) : null;
   const svc = services ? (p.services?.services ?? []).filter((s) => s.name.trim()).map((s) => ({ name: s.name.trim(), description: (s.description ?? "").trim() })) : [];
-  const declared = clean(opts.audience) ?? clean(p.brand?.audience);
+  const declared = clean(angle?.audience) ?? clean(opts.audience) ?? clean(p.brand?.audience);
   const gaps: string[] = [];
   if (!facts.length && !answered.length) gaps.push("aucun fait confirmé sur le produit : les annonces restent descriptives, sans preuve");
   if (!objections.length) gaps.push("aucune objection avec sa réponse : l'angle « objection levée » n'est pas utilisé");
   if (!declared) gaps.push("audience non décrite : ciblage large conseillé, à affiner avec les chiffres");
   if (services && !p.services?.area?.trim()) gaps.push("zone d'intervention non renseignée");
   return {
+    ...(selected ? { marketingStrategy: selected } : {}),
     business: p.business,
     brand: p.brand?.name?.trim() || p.product.name?.trim() || p.name,
     offerName: p.product.name?.trim() || p.brand?.name?.trim() || p.name,
     category: cat ? { id: cat.id, label: cat.labels.fr || p.product.category, source: cat.source } : { id: trade!.id, label: trade!.labels.fr || p.product.category, source: trade!.source },
     audience: { declared, persona: clean(pf?.persona), adultsOnly: p.product.sector === "enfants" },
-    problem: clean(pf?.problem),
+    problem: clean(angle?.tension) ?? clean(pf?.problem),
     alternatives: clean(pf?.alternatives),
     // Phrase d'analyse réutilisée dans des textes clients : sans vocabulaire d'analyste (copy-voice).
-    difference: customerVoice(clean(pf?.difference)),
+    difference: customerVoice(clean(angle?.promise) ?? clean(pf?.difference)),
     facts: [...facts, ...answered].slice(0, 12),
     objections,
     proofs,
@@ -49,7 +53,7 @@ export function adInsight(p: Project, opts: { audience?: string | null; offer?: 
     services: svc,
     area: services ? clean(p.services?.area) ?? clean(p.services?.address) : null,
     contactMode: services ? (p.services?.contactMode ?? null) : null,
-    tone: p.brand?.personality ?? [],
+    tone: angle ? [angle.tone] : p.brand?.personality ?? [],
     premium: PREMIUM_RE.test(`${(p.brand?.personality ?? []).join(" ")} ${p.brand?.positioning ?? ""}`),
     claimsToAvoid: p.product.claimsToAvoid ?? [],
     offer: clean(opts.offer),

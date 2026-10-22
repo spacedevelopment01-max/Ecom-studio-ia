@@ -26,13 +26,13 @@ describe("quotas des forfaits V2 : seul le blog IA se compte, par projet", () =>
     expect(quotaView(u.id, "blog").left).toBe(0);
   });
 
-  it("images, vidéos et UGC : plus de nombre limite (budget IA du projet seulement) ; blog 0 / 4 / 12 par mois", () => {
+  it("images, vidéos et UGC : plus de nombre limite (budget IA du projet seulement) ; blog 0 / 5 / 10 par mois", () => {
     for (const p of ["creer", "vendre", "dominer"] as const) {
       expect(PLANS[p].quotas.visuals).toBe(0);
       expect(PLANS[p].quotas.aiVideos).toBe(0);
       expect(PLANS[p].quotas.ugc).toBe(0);
     }
-    expect([PLANS.creer.quotas.blog, PLANS.vendre.quotas.blog, PLANS.dominer.quotas.blog]).toEqual([0, 4, 12]);
+    expect([PLANS.creer.quotas.blog, PLANS.vendre.quotas.blog, PLANS.dominer.quotas.blog]).toEqual([0, 5, 10]);
     // Seuls achats complémentaires : recharge IA et rendez-vous — plus aucun pack en vente.
     expect(PACKS_FOR_SALE).toEqual([]);
   });
@@ -43,11 +43,11 @@ describe("quotas des forfaits V2 : seul le blog IA se compte, par projet", () =>
     const b = project(u);
     grantProjectPlan(a, "vendre");
     grantProjectPlan(b, "dominer");
-    expect(quotaView(u, "blog", a).left).toBe(4);
-    expect(quotaView(u, "blog", b).left).toBe(12);
+    expect(quotaView(u, "blog", a).left).toBe(5);
+    expect(quotaView(u, "blog", b).left).toBe(10);
     consumeQuota(u, "blog", 1, "art-1", a);
     consumeQuota(u, "blog", 1, "art-1", a); // même référence : décompté une fois
-    expect(quotaView(u, "blog", a)).toMatchObject({ used: 1, left: 3 });
-    expect(quotaView(u, "blog", b)).toMatchObject({ used: 0, left: 12 });
+    expect(quotaView(u, "blog", a)).toMatchObject({ used: 1, left: 4 });
+    expect(quotaView(u, "blog", b)).toMatchObject({ used: 0, left: 10 });
   });
 });

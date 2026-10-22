@@ -1,3 +1,4 @@
+import { assertStrategyInputsCurrent } from "../strategy-consumption";
 import { createHash } from "node:crypto";
 import type { AspectId } from "../image-v2/types";
 import { REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVIDER } from "./logo-policy";
@@ -15,7 +16,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import OpenAI, { toFile } from "openai";
 import { emitMediaProgress, openaiClient, openaiImage, openaiStreams, OPENAI_PARTIAL_IMAGES, OPENAI_PARTIAL_TOKENS } from "./openai-images";
 import sharp from "sharp";
-import { EUR, recordUsage, release, reserve, settleUncertain } from "../billing";
+import { claimOperationRecovery, EUR, existingOperation, finishOperationRecovery, operationPending, recordUsage, release, requestHash, reserve, saveOperationResult, saveProviderReceipt, settleUncertain } from "../billing";
 import { assertAiAllowed, currentAiUser, currentQuotaScope, currentUserHasAiCredits } from "./access";
 import { assertQuota, consumeQuota, refundQuota, userPlan } from "../quotas";
 import { all } from "../db";
@@ -26,12 +27,12 @@ import { activeProviderKey, bearer, falAuth, FX_SAFETY, isGatewayKey, requirePri
 import { assertUnderCostCap, recordCall, redact } from "./trace";
 import { L } from "../i18n-server";
 import { getJsonSetting, setSetting } from "../settings";
-import { putFile } from "../storage";
+import { fileExists, putFile, readFile } from "../storage";
 import { route, type InputType, type RouteDecision } from "../orchestrator/router";
 import { balance } from "../billing";
 import { incompatibility, mediaBackup, mediaStatus, modelForProvider, selectMedia, USAGE_INFO, usageBackup, usageExplicit, usageOff, type MediaChoice, type MediaNeed, type MediaUsage } from "./media-routing";
 import { mediaModel, type MediaKind } from "./media-models";
-import { alibabaBase, alibabaError, alibabaHeaders, qwenImageBody, qwenSize, qwenImageUrl, wanTask, wanTaskKey, wanVideoBody } from "./alibaba";
+import { alibabaBase, alibabaError, alibabaHeaders, qwenImageBody, qwenSize, qwenImageUrl, wanTask, wanVideoBody } from "./alibaba";
 
 /** brain : contexte du Brain d'où vient la consigne de la génération (portée, empreinte, version), tracé dans ai_calls. */
 type Ctx = { userId: string; projectId: string; jobId?: string | null; usageKey?: string; brain?: { scope: string; hash: string; version: string } };
@@ -52,16 +53,43 @@ function quotaFor(_media: "image" | "video"): "visuals" | "aiVideos" | null {
  * départ du chronomètre) puis par `recordMedia()` (succès) ; une génération partie puis échouée (refus, délai
  * dépassé) est tracée aussi. Aucune image ni consigne n'est enregistrée.
  */
-type MediaTrace = { task: "image_generation" | "video_generation"; ctx?: Ctx; provider?: string; model?: string; unit?: "image" | "video_second" | "tokens"; started?: number; recorded?: boolean; reservation?: string; sent?: boolean; rejected?: boolean; routing?: { reason: string; fallback: boolean; escalation: boolean }; choice?: MediaChoice; usage?: MediaUsage; callId?: string | null };
+type MediaTrace = { task: "image_generation" | "video_generation"; ctx?: Ctx; provider?: string; model?: string; unit?: "image" | "video_second" | "tokens"; started?: number; recorded?: boolean; reservation?: string; sent?: boolean; rejected?: boolean; routing?: { reason: string; fallback: boolean; escalation: boolean }; choice?: MediaChoice; usage?: MediaUsage; callId?: string | null; requestHash?: string; previous?: ReturnType<typeof existingOperation> };
 const mediaTrace = new AsyncLocalStorage<MediaTrace>();
 
 function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...a: A) => Promise<R>): (...a: A) => Promise<R> {
   return (...args: A) => {
-    const t: MediaTrace = { task, ctx: args[0] };
+    const ctx = args[0];
+    const fingerprint = requestHash({ adapter: fn.name, input: args.slice(1) });
+    const previous = existingOperation(ctx.userId, { task, projectId: ctx.projectId, usageKey: ctx.usageKey, requestHash: fingerprint });
+    if (previous?.result) {
+      const saved = JSON.parse(previous.result) as { file?: string };
+      if (saved.file && fileExists(saved.file)) return Promise.resolve(readFile(saved.file) as R);
+    }
+    if (previous && (!previous.provider_receipt || !claimOperationRecovery(previous.id))) operationPending();
+    const t: MediaTrace = { task, ctx, requestHash: fingerprint, previous };
     return mediaTrace.run(t, async () => {
       try {
+        // Image synchrone déjà produite et facturée, téléchargement interrompu : lecture seule.
+        const receipt = previous?.provider_receipt ? JSON.parse(previous.provider_receipt) : null;
+        if (receipt?.downloadUrl && previous) {
+          t.reservation = previous.id;
+          if (receipt.usage) recordMedia(receipt.usage);
+          else if (previous.status === "uncertain" || previous.status === "held") operationPending();
+          else t.recorded = true;
+          const response = await providerFetch(receipt.downloadUrl);
+          if (!response.ok) throw new PermanentError(L("Le média acquis n'a pas pu être récupéré. Il est conservé chez le fournisseur ; aucune nouvelle génération lancée.", "The acquired media could not be retrieved. It is kept at the provider; no new generation was started."));
+          const file = `ai-results/${previous.id}.bin`, data = Buffer.from(await response.arrayBuffer());
+          putFile(file, data);
+          saveOperationResult(previous.id, { file });
+          return data as R;
+        }
         const out = await fn(...args);
         keepPaidImage(t, out);
+        if (t.reservation && Buffer.isBuffer(out)) {
+          const file = `ai-results/${t.reservation}.bin`;
+          putFile(file, out);
+          saveOperationResult(t.reservation, { file });
+        }
         return out;
       } catch (e0) {
         let e = e0;
@@ -88,6 +116,9 @@ function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...
           recordCall({ userId: t.ctx!.userId, projectId: t.ctx!.projectId, jobId: t.ctx!.jobId, task, provider: t.provider, requestedModel: t.model ?? "", unit: t.unit ?? "image", latencyMs: t.started ? Date.now() - t.started : null, usageKey: t.ctx!.usageKey ?? null, estimated: true, status: /délai|timeout|timed out/i.test(msg) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(msg).slice(0, 200)}` , ...brainCols(t.ctx), ...routingCols(t) });
         }
         throw e;
+      } finally {
+        if (t.reservation) finishOperationRecovery(t.reservation);
+        else if (previous) finishOperationRecovery(previous.id);
       }
     });
   };
@@ -205,16 +236,22 @@ export const mediaReservationMaxMicro=(micro:number)=>Math.ceil(micro*MEDIA_MAX_
  * atomique du coût MAXIMAL sur le budget du compte. Rien ne part si le maximum ne peut pas être couvert.
  */
 function gate(ctx: Ctx, micro: number, media: "image" | "video", provider: string, model: string) {
+  const t = mediaTrace.getStore();
+  if (!t) throw new PermanentError("génération hors suivi de réservation");
+  if (t.previous) {
+    if (t.previous.provider !== provider || t.previous.model !== model) operationPending();
+    Object.assign(t, { reservation: t.previous.id, provider, model, unit: media === "video" ? "video_second" : "image", started: Date.now(), sent: true });
+    return;
+  }
+  assertStrategyInputsCurrent(ctx.projectId);
   // Droits du compte vérifiés à chaque génération (forfait, budget), dans une tâche de fond ou non.
   assertAiAllowed(ctx.userId, ctx.projectId);
   const q = quotaFor(media);
   if (q) assertQuota(ctx.userId, q);
   const max = mediaReservationMaxMicro(micro);
   assertUnderCostCap(max);
-  const t = mediaTrace.getStore();
   // Hors trace (appel direct, jamais en pratique) : la génération serait sans suivi de réservation — refusée.
-  if (!t) throw new PermanentError("génération hors suivi de réservation");
-  t.reservation = reserve(ctx.userId, max, { task: t.task, provider, model, jobId: ctx.jobId, projectId: ctx.projectId });
+  t.reservation = reserve(ctx.userId, max, { task: t.task, provider, model, jobId: ctx.jobId, projectId: ctx.projectId, usageKey: ctx.usageKey, requestHash: t.requestHash });
   const priced = requirePrice(provider, model);
   Object.assign(t, { provider, model, unit: media === "video" ? "video_second" : priced.unit === "tokens" ? "tokens" : "image", started: Date.now() });
   // Qwen-Image 3.0 Pro inutilisable et image créée ailleurs (souvent OpenAI, plus cher) : administrateur alerté vite.
@@ -352,6 +389,13 @@ export function falBilledSeconds(model: string, requested?: number) {
  * masque, vidéo). La barrière de qualité reste la même. La décision est attachée à la trace de la génération.
  */
 export function routeMedia(task: "image_generation" | "video_generation", inputType?: InputType, need?: Partial<MediaNeed>): RouteDecision | null {
+  const recovering = mediaTrace.getStore()?.previous;
+  if (recovering) {
+    const reason = "reprise du résultat déjà engagé";
+    const t = mediaTrace.getStore()!;
+    t.choice = { provider: recovering.provider, model: recovering.model, role: "primary", reason } as MediaChoice;
+    return { mode: task === "video_generation" ? "video" : "image", provider: recovering.provider, model: recovering.model, tier: "strong", reason, fallback: false, escalation: false, qualityTarget: null } as RouteDecision;
+  }
   if (!mediaAllowed()) return null;
   const kind: MediaKind = task === "video_generation" ? "video" : "image";
   const t = mediaTrace.getStore();
@@ -836,22 +880,29 @@ async function veoClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; asp
   const seconds = veoBilledSeconds(input.seconds, model);
   const durations = mediaModel("google", model)?.durations ?? [];
   gate(ctx, cost("google", model, { seconds }).micro, "video", "google", model);
-  const jpeg = await sharp(input.image).jpeg({ quality: 90 }).toBuffer();
-  const start = await providerFetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:predictLongRunning`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-    body: JSON.stringify({
-      instances: [{ prompt: input.people ? input.prompt : `${input.prompt}. The product must remain exactly identical (shape, label, colors); slow, elegant camera movement; no people in frame; no text overlay.`, image: { bytesBase64Encoded: jpeg.toString("base64"), mimeType: "image/jpeg" } }],
-      // Veo 3 n'accepte que « allow_adult » à partir d'une image (« dont_allow » est refusé) : l'absence de personnes passe par la consigne.
-      parameters: { aspectRatio: input.aspect, personGeneration: veoPersonGeneration(model, !!input.people), ...(durations.length > 1 ? { durationSeconds: seconds } : {}) },
-    }),
-  });
-  if (start.status === 401 || start.status === 403) throw refusal(new PermanentError(L("Clé Google refusée pour Veo.", "Google key rejected for Veo.")));
-  // Dépôt d'une opération (Veo) : une erreur, même 5xx, signifie qu'aucune opération n'a été créée (la facturation
-  // n'a lieu qu'à la fin d'une opération) : refus net, réservation rendue, secours possible.
-  if (!start.ok) throw refusal(new PermanentError(L("Veo a refusé la demande : ", "Veo rejected the request: ") + (await start.text()).slice(0, 300)));
-  const op: any = await start.json();
-  const name = op.name;
+  const trace = mediaTrace.getStore()!;
+  const previous = trace.previous?.provider_receipt ? JSON.parse(trace.previous.provider_receipt) : null;
+  let name = previous?.name;
+  if (!name) {
+    if (trace.previous) operationPending();
+    const jpeg = await sharp(input.image).jpeg({ quality: 90 }).toBuffer();
+    const start = await providerFetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:predictLongRunning`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify({
+        instances: [{ prompt: input.people ? input.prompt : `${input.prompt}. The product must remain exactly identical (shape, label, colors); slow, elegant camera movement; no people in frame; no text overlay.`, image: { bytesBase64Encoded: jpeg.toString("base64"), mimeType: "image/jpeg" } }],
+        // Veo 3 n'accepte que « allow_adult » à partir d'une image (« dont_allow » est refusé) : l'absence de personnes passe par la consigne.
+        parameters: { aspectRatio: input.aspect, personGeneration: veoPersonGeneration(model, !!input.people), ...(durations.length > 1 ? { durationSeconds: seconds } : {}) },
+      }),
+    });
+    if (!start.ok) {
+      const err = new PermanentError(L("Veo a refusé la demande : ", "Veo rejected the request: ") + (await start.text()).slice(0, 300));
+      throw refused(start.status) ? refusal(err) : err;
+    }
+    name = (await start.json()).name;
+    if (!name) throw new Error("Missing video tracking receipt");
+    saveProviderReceipt(trace.reservation!, { name });
+  }
   for (let i = 0; i < 90; i++) {
     await new Promise((r) => setTimeout(r, mediaPoll.veoMs));
     onWait?.(L(`Génération du plan vidéo par Veo (${(i + 1) * 10} s)…`, `Veo is generating the video shot (${(i + 1) * 10} s)…`));
@@ -861,10 +912,11 @@ async function veoClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; asp
     if (j.done) {
       const uri = j.response?.generateVideoResponse?.generatedSamples?.[0]?.video?.uri;
       if (!uri) throw new PermanentError(L("Veo n'a renvoyé aucune vidéo (contenu filtré).", "Veo returned no video (content filtered)."));
-      const v = await providerFetch(uri, { headers: { "x-goog-api-key": key } });
-      if (!v.ok) throw new Error(L(`Téléchargement Veo impossible (${v.status}).`, `Couldn't download the Veo video (${v.status}).`));
       const c = cost("google", model, { seconds });
       recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "video_generation", provider: "google", model, unit: "video_second", quantity: seconds, costMicro: c.micro, estimated: true, idempotencyKey: ctx.usageKey });
+      // Garder le nom d'opération permet de retrouver une URL signée sans stocker la clé Google.
+      const v = await providerFetch(uri, { headers: { "x-goog-api-key": key } });
+      if (!v.ok) throw new Error(L(`Téléchargement Veo impossible (${v.status}).`, `Couldn't download the Veo video (${v.status}).`));
       return Buffer.from(await v.arrayBuffer());
     }
   }
@@ -953,17 +1005,24 @@ async function falClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; sec
   const headers = { ...falAuth(key), "Content-Type": "application/json" };
   // Plan déjà terminé (et payé) chez fal mais pas encore récupéré (téléchargement coupé) : on le reprend, sans
   // nouvelle génération ni nouveau coût.
-  const doneKey = ctx.usageKey ? `fal.done.${ctx.usageKey}` : null;
-  const done = doneKey ? getJsonSetting<{ responseUrl: string } | null>(doneKey, null) : null;
-  if (done?.responseUrl) return falDownload(await (await providerFetch(done.responseUrl, { headers })).json(), doneKey);
+  const trace = mediaTrace.getStore()!;
+  const previous = trace.previous?.provider_receipt ? JSON.parse(trace.previous.provider_receipt) : null;
   gate(ctx, cost("fal", model, { seconds }).micro, "video", "fal", model);
-  const dataUri = `data:image/jpeg;base64,${(await sharp(input.image).jpeg({ quality: 90 }).toBuffer()).toString("base64")}`;
-  const r = await providerFetch(`https://queue.fal.run/${model}`, { method: "POST", headers, body: JSON.stringify({ prompt: input.prompt, image_url: dataUri, duration: String(seconds) }) });
-  // (Kling 2.1 et Kling 3 : « image_url », « duration » en texte — paramètres du dépôt officiel fal-ai/fal-blender-extension.)
-  if (r.status === 401 || r.status === 403) throw refusal(new PermanentError(falRefusal(r.status, await r.text().catch(() => ""))));
-  // Dépôt dans la file fal : aucune génération créée en cas d'erreur (facturation à la fin) : refus net.
-  if (!r.ok) throw refusal(new PermanentError(L("fal.ai a refusé la demande : ", "fal.ai rejected the request: ") + (await r.text()).slice(0, 300)));
-  const q: any = await r.json();
+  if (previous?.completed) return falDownload(await (await providerFetch(previous.response_url, { headers })).json());
+  let q: { status_url: string; response_url: string } = previous;
+  if (!q) {
+    if (trace.previous) operationPending();
+    const dataUri = `data:image/jpeg;base64,${(await sharp(input.image).jpeg({ quality: 90 }).toBuffer()).toString("base64")}`;
+    const r = await providerFetch(`https://queue.fal.run/${model}`, { method: "POST", headers, body: JSON.stringify({ prompt: input.prompt, image_url: dataUri, duration: String(seconds) }) });
+    if (r.status === 401 || r.status === 403) throw refusal(new PermanentError(falRefusal(r.status, await r.text().catch(() => ""))));
+    if (!r.ok) {
+      const err = new PermanentError(L("fal.ai a refusé la demande : ", "fal.ai rejected the request: ") + (await r.text()).slice(0, 300));
+      throw refused(r.status) ? refusal(err) : err;
+    }
+    q = await r.json();
+    if (!q.status_url || !q.response_url) throw new Error("Missing video tracking receipt");
+    saveProviderReceipt(trace.reservation!, q);
+  }
   for (let i = 0; i < 120; i++) {
     await new Promise((res) => setTimeout(res, mediaPoll.falVideoMs));
     onWait?.(L(`Génération du plan vidéo (${(i + 1) * 6} s)…`, `Generating the video shot (${(i + 1) * 6} s)…`));
@@ -973,16 +1032,16 @@ async function falClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; sec
       // pour une reprise sans repayer si le téléchargement échoue.
       const c = cost("fal", model, { seconds });
       recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "video_generation", provider: "fal", model, unit: "video_second", quantity: seconds, costMicro: c.micro, estimated: true, idempotencyKey: ctx.usageKey });
-      if (doneKey) setSetting(doneKey, JSON.stringify({ responseUrl: q.response_url }));
-      return falDownload(await (await providerFetch(q.response_url, { headers })).json(), doneKey);
+      saveProviderReceipt(trace.reservation!, { ...q, completed: true });
+      return falDownload(await (await providerFetch(q.response_url, { headers })).json());
     }
     if (st.status === "FAILED" || st.status === "ERROR") throw new PermanentError(L("La génération fal.ai a échoué.", "fal.ai generation failed."));
   }
   throw new Error(L("Délai dépassé pour la génération fal.ai.", "fal.ai generation timed out."));
 }
 
-/** Téléchargement du plan terminé (fichier hébergé par fal.media) ; la reprise est oubliée une fois le fichier reçu. */
-async function falDownload(out: any, doneKey: string | null): Promise<Buffer> {
+/** Téléchargement du plan terminé ; le reçu natif reste disponible après la récupération du fichier. */
+async function falDownload(out: any): Promise<Buffer> {
   const url = out?.video?.url;
   if (!url) throw new PermanentError(L("fal.ai n'a renvoyé aucune vidéo.", "fal.ai returned no video."));
   let data: Buffer;
@@ -993,7 +1052,6 @@ async function falDownload(out: any, doneKey: string | null): Promise<Buffer> {
   } catch (e) {
     throw new PermanentError(L(`Plan vidéo terminé chez fal.ai mais impossible à télécharger (${new URL(url).host}) : vérifiez l'accès réseau à ce site. Une nouvelle tentative le récupérera sans le repayer.`, `Video shot finished at fal.ai but could not be downloaded (${new URL(url).host}): check network access to this host. A retry will fetch it without paying again.`) + ` ${redact(String((e as Error)?.message ?? e)).slice(0, 120)}`);
   }
-  if (doneKey) setSetting(doneKey, null);
   return data;
 }
 
@@ -1011,11 +1069,20 @@ async function falImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[],
   const max = cost("fal", model, { images: 1 }).micro;
   gate(ctx, max, "image", "fal", model);
   const headers = { ...falAuth(key), "Content-Type": "application/json" };
+  const trace = mediaTrace.getStore()!;
+  let q: { status_url: string; response_url: string } | null = trace.previous?.provider_receipt ? JSON.parse(trace.previous.provider_receipt) : null;
+  if (!q) {
+    if (trace.previous) operationPending();
   const r = await providerFetch(`https://queue.fal.run/${model}`, { method: "POST", headers, body: JSON.stringify({ prompt, image_urls: refs.map(referenceDataUri), num_images: 1, output_format: "png", aspect_ratio: aspect }) });
-  if (r.status === 401 || r.status === 403) throw refusal(new PermanentError(falRefusal(r.status, await r.text().catch(() => ""))));
-  // Dépôt dans la file fal : aucune génération créée en cas d'erreur (facturation à la fin) : refus net.
-  if (!r.ok) throw refusal(new PermanentError(L("fal.ai a refusé la demande : ", "fal.ai rejected the request: ") + (await r.text()).slice(0, 300)));
-  const q: any = await r.json();
+    if (r.status === 401 || r.status === 403) throw refusal(new PermanentError(falRefusal(r.status, await r.text().catch(() => ""))));
+    if (!r.ok) {
+      const err = new PermanentError(L("fal.ai a refusé la demande : ", "fal.ai rejected the request: ") + (await r.text()).slice(0, 300));
+      throw refused(r.status) ? refusal(err) : err;
+    }
+    q = await r.json();
+    if (!q?.status_url || !q.response_url) throw new Error("Missing image tracking receipt");
+    saveProviderReceipt(trace.reservation!, q);
+  }
   for (let i = 0; i < 100; i++) {
     await new Promise((res) => setTimeout(res, mediaPoll.falImageMs));
     const st: any = await (await providerFetch(q.status_url, { headers })).json();
@@ -1023,8 +1090,10 @@ async function falImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[],
       const out: any = await (await providerFetch(q.response_url, { headers })).json();
       const url = out.images?.[0]?.url ?? out.image?.url;
       if (!url) throw new PermanentError(L("fal.ai n'a renvoyé aucune image.", "fal.ai returned no image."));
-      const img = await providerFetch(url);
       recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "fal", model, unit: "image", quantity: 1, costMicro: max, estimated: true, idempotencyKey: ctx.usageKey });
+      saveProviderReceipt(trace.reservation!, { downloadUrl: url });
+      const img = await providerFetch(url);
+      if (!img.ok) throw new PermanentError(L("Image produite mais téléchargement impossible. Une reprise récupérera ce résultat sans nouvelle génération.", "Image produced but download failed. A retry will retrieve it without generating again."));
       return Buffer.from(await img.arrayBuffer());
     }
     if (st.status === "FAILED" || st.status === "ERROR") throw new PermanentError(L("La génération fal.ai a échoué.", "fal.ai generation failed."));
@@ -1056,7 +1125,9 @@ async function alibabaImage(ctx: Ctx, model: string, prompt: string, refs: Buffe
   const url = qwenImageUrl(await r.json());
   // Réponse sans image : résultat incertain (jamais compté comme un refus gratuit).
   if (!url) throw new Error(L("Alibaba Cloud n'a renvoyé aucune image (contenu filtré ou indisponible).", "Alibaba Cloud returned no image (content filtered or unavailable)."));
-  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "alibaba", model, unit: "image", quantity: 1, costMicro: max, estimated: true, idempotencyKey: ctx.usageKey });
+  const usage = { userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "alibaba", model, unit: "image" as const, quantity: 1, costMicro: max, estimated: true, idempotencyKey: ctx.usageKey };
+  saveProviderReceipt(mediaTrace.getStore()!.reservation!, { downloadUrl: url, usage });
+  recordMedia(usage);
   const img = await providerFetch(url);
   if (!img.ok) throw new PermanentError(L(`Image produite par Alibaba Cloud mais impossible à télécharger (${img.status}).`, `Image produced by Alibaba Cloud but could not be downloaded (${img.status}).`));
   return Buffer.from(await img.arrayBuffer());
@@ -1092,29 +1163,29 @@ async function wanClipImpl(ctx: Ctx, input: { image: Buffer | null; prompt: stri
   if (!input.image && !mm.caps.textToVideo) throw new PermanentError(L(`${mm.label} ne fait pas le texte vers vidéo.`, `${mm.label} doesn't do text-to-video.`));
   const seconds = wanBilledSeconds(model, input.seconds);
   const { base } = alibabaBase();
-  const tk = ctx.usageKey ? wanTaskKey(ctx.usageKey) : null;
+  const trace = mediaTrace.getStore()!;
   type Saved = { taskId: string; model: string; seconds: number; at: number; videoUrl?: string };
-  const prev = tk ? getJsonSetting<Saved | null>(tk, null) : null;
+  const prev: Saved | null = trace.previous?.provider_receipt ? JSON.parse(trace.previous.provider_receipt) : null;
+  gate(ctx, cost("alibaba", model, { seconds }).micro, "video", "alibaba", model);
   const download = async (url: string) => {
     const v = await providerFetch(url);
     if (!v.ok) throw new PermanentError(L(`Vidéo terminée chez Alibaba Cloud mais impossible à télécharger (${v.status}). Un nouvel essai la récupérera sans la repayer (adresse valable environ 24 h).`, `Video finished at Alibaba Cloud but could not be downloaded (${v.status}). A retry will fetch it without paying again (address valid about 24 h).`));
-    const data = Buffer.from(await v.arrayBuffer());
-    if (tk) setSetting(tk, null);
-    return data;
+    return Buffer.from(await v.arrayBuffer());
   };
-  // Déjà terminée et payée, pas encore récupérée : téléchargement seul, aucune nouvelle génération ni nouveau coût.
-  if (prev?.videoUrl && prev.model === model && Date.now() - prev.at < 24 * 3_600_000) return download(prev.videoUrl);
-  gate(ctx, cost("alibaba", model, { seconds }).micro, "video", "alibaba", model);
-  let taskId = prev && prev.model === model && Date.now() - prev.at < 24 * 3_600_000 ? prev.taskId : null;
+  if (prev?.videoUrl) return download(prev.videoUrl);
+  let taskId = prev?.taskId ?? null;
   if (taskId) onWait?.(L("Reprise du suivi de la vidéo déjà lancée chez Alibaba Cloud…", "Resuming the video already started at Alibaba Cloud…"));
   else {
+    if (trace.previous) operationPending();
     const image = input.image ? `data:image/jpeg;base64,${(await sharp(input.image).jpeg({ quality: 90 }).toBuffer()).toString("base64")}` : null;
     const start = await providerFetch(`${base}/services/aigc/video-generation/video-synthesis`, { method: "POST", headers: alibabaHeaders(key, { async: true }), body: JSON.stringify(wanVideoBody({ model, prompt: input.prompt, image, seconds, people: !!input.people })) });
-    // Dépôt d'une tâche : une erreur signifie qu'aucune tâche n'a été créée (rien à suivre, rien de facturé).
-    if (!start.ok) throw refusal(new PermanentError(alibabaError(start.status, await start.text().catch(() => "")).message));
+    if (!start.ok) {
+      const err = new PermanentError(alibabaError(start.status, await start.text().catch(() => "")).message);
+      throw refused(start.status) ? refusal(err) : err;
+    }
     taskId = wanTask(await start.json()).id;
     if (!taskId) throw new Error(L("Alibaba Cloud n'a pas renvoyé d'identifiant de tâche (résultat incertain).", "Alibaba Cloud returned no task ID (uncertain result)."));
-    if (tk) setSetting(tk, JSON.stringify({ taskId, model, seconds, at: Date.now() } satisfies Saved));
+    saveProviderReceipt(trace.reservation!, { taskId, model, seconds, at: Date.now() } satisfies Saved);
   }
   for (let i = 0; i < 150; i++) {
     await new Promise((r) => setTimeout(r, mediaPoll.wanMs));
@@ -1129,15 +1200,13 @@ async function wanClipImpl(ctx: Ctx, input: { image: Buffer | null; prompt: stri
     if (t.status === "SUCCEEDED") {
       if (!t.videoUrl) throw new Error(L("Tâche Wan terminée sans vidéo (résultat incertain).", "Wan task finished without a video (uncertain result)."));
       recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "video_generation", provider: "alibaba", model, unit: "video_second", quantity: seconds, costMicro: cost("alibaba", model, { seconds }).micro, estimated: true, idempotencyKey: ctx.usageKey });
-      if (tk) setSetting(tk, JSON.stringify({ taskId, model, seconds, at: Date.now(), videoUrl: t.videoUrl } satisfies Saved));
+      saveProviderReceipt(trace.reservation!, { taskId, model, seconds, at: Date.now(), videoUrl: t.videoUrl } satisfies Saved);
       return download(t.videoUrl);
     }
     if (t.status === "FAILED" || t.status === "CANCELED") {
-      if (tk) setSetting(tk, null);
       throw refusal(new PermanentError(L(`La génération Wan a échoué chez Alibaba Cloud (non facturée) : ${t.message ?? t.status}`, `Wan generation failed at Alibaba Cloud (not billed): ${t.message ?? t.status}`)));
     }
     if (t.status === "UNKNOWN") {
-      if (tk) setSetting(tk, null);
       throw new Error(L("Tâche Wan introuvable ou expirée chez Alibaba Cloud (résultat incertain).", "Wan task not found or expired at Alibaba Cloud (uncertain result)."));
     }
   }

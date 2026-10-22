@@ -51,7 +51,7 @@ export function localFirst(
 ): LocalFirst | null {
   const commercial = !atts.length && purchaseCommand(spec, message, selection ?? null);
   if (commercial) {
-    const dry = applyOps(spec, commercial.ops, { targeted: new Set(selection ? [`${selection.template}:${selection.section}`] : []) });
+    const dry = applyOps(spec, commercial.ops, { targeted: new Set(selection ? [`${selection.template}:${selection.section}`] : []), storeKind: kind });
     return dry.rejected.length ? null : commercial;
   }
   if (!isSimpleRequest(message)) return null;
@@ -67,7 +67,8 @@ export function localFirst(
   const v2 = v2ThemeCommand(spec, message, sel);
   if (v2) {
     if (!v2.ops.length) return null;
-    const dryV2 = applyOps(spec, v2.ops, { targeted: new Set<string>(sel ? [`${sel.template}:${sel.section}`] : []), mediaFile });
+    // Essai à blanc avec la bibliothèque de la famille : une section hors bibliothèque laisse la main à l'IA.
+    const dryV2 = applyOps(spec, v2.ops, { targeted: new Set<string>(sel ? [`${sel.template}:${sel.section}`] : []), mediaFile, storeKind: kind });
     return dryV2.rejected.length || !dryV2.applied.length ? null : { ops: v2.ops, reply: v2.reply, revert: false };
   }
   const r = localThemeCommand(spec, message, sel, business, kind);

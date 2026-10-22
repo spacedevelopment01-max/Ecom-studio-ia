@@ -1,0 +1,21 @@
+CAPTURE produit-thermometre-01-demande-peu-detaillee
+CAPTURE produit-thermometre-02-reconnexion
+CAPTURE produit-thermometre-03-en-cours-ordinateur
+CAPTURE produit-thermometre-03-en-cours-mobile
+CAPTURE produit-thermometre-04-budget-engage
+CAPTURE produit-thermometre-05-arret-conserve-ordinateur
+CAPTURE produit-thermometre-05-arret-conserve-mobile
+CAPTURE produit-thermometre-06-resultat-repris-ordinateur
+CAPTURE produit-thermometre-06-resultat-repris-mobile
+CAPTURE produit-thermometre-07-budget-insuffisant
+CAPTURE service-affutage-01-demande-peu-detaillee
+CAPTURE service-affutage-02-reconnexion
+CAPTURE service-affutage-03-en-cours-ordinateur
+CAPTURE service-affutage-03-en-cours-mobile
+CAPTURE service-affutage-04-budget-engage
+CAPTURE service-affutage-05-arret-conserve-ordinateur
+CAPTURE service-affutage-05-arret-conserve-mobile
+CAPTURE service-affutage-06-resultat-repris-ordinateur
+CAPTURE service-affutage-06-resultat-repris-mobile
+CAPTURE service-affutage-07-budget-insuffisant
+RECETTE RÉUSSIE : 2 projets créés dans l’UI, reprise sans second débit, zéro thème ni appel réel

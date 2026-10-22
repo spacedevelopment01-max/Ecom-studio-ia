@@ -1,0 +1,44 @@
+[
+  {
+    "file": "produit-prestashop.zip",
+    "entries": 71,
+    "crcValid": true,
+    "sha256": "2451d83a49e1a3ba7cc90c54d67b3f6e71169d358a9d18a3fc217ed8354a3757",
+    "cmsInstalled": false
+  },
+  {
+    "file": "produit-shopify.zip",
+    "entries": 249,
+    "crcValid": true,
+    "sha256": "1ee50a1a25c9263f8b984de9fc95a294ab5cdb422553b63963c3cbefee8ac038",
+    "cmsInstalled": false
+  },
+  {
+    "file": "produit-woocommerce.zip",
+    "entries": 148,
+    "crcValid": true,
+    "sha256": "9b21ed1bc6c34676f35fbdbd5c160bc52afb33b48f469277e5c30cb2a268fb99",
+    "cmsInstalled": false
+  },
+  {
+    "file": "service-prestashop.zip",
+    "entries": 68,
+    "crcValid": true,
+    "sha256": "3ca6f7ed553872013acd9656c7d1709f4b8c47535a0ae2197c9d947377f9751b",
+    "cmsInstalled": false
+  },
+  {
+    "file": "service-shopify.zip",
+    "entries": 239,
+    "crcValid": true,
+    "sha256": "7e850f07988169072570fbaec8e00890cc39e57d9b17712a167afa74e7d7373b",
+    "cmsInstalled": false
+  },
+  {
+    "file": "service-woocommerce.zip",
+    "entries": 139,
+    "crcValid": true,
+    "sha256": "8b56f97f42d5ea1b968990bff46a41f6c0534a5eddf00070f8f46fe5b4132d99",
+    "cmsInstalled": false
+  }
+]

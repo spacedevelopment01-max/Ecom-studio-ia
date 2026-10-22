@@ -1,3 +1,4 @@
+import { grantProjectPlan } from "./communication-choice-fixture";
 /**
  * Publicités au niveau agence (outils simulés : aucun appel réel, aucune dépense) : direction artistique propre au
  * projet, compositions différentes d'une création à l'autre, chacune RECOMPOSÉE par format (1:1, 4:5, 9:16, 1,91:1),
@@ -23,7 +24,7 @@ describe("Publicités premium — direction artistique et formats", async () => 
   const { mockAdDeps } = await import("./ads-v2-mock");
   const fr = <T,>(fn: () => Promise<T> | T) => runWithLang({ ui: "fr", content: "fr" }, async () => fn());
   const u = await createUser(`adsp-${Date.now()}@test.fr`, "motdepasse-test", "P");
-  const fresh = (k: (typeof IMAGE_FIXTURES)[number]) => loadProject(seedImageFixture(u.id, k));
+  const fresh = (k: (typeof IMAGE_FIXTURES)[number]) => {const pid=seedImageFixture(u.id,k);grantProjectPlan(pid,"dominer");return loadProject(pid);};
   const F = [
     { platform: "meta_feed", aspect: "1:1", width: 1080, height: 1080, label: "1:1", safe: { top: 0.06, bottom: 0.08, side: 0.06 } },
     { platform: "meta_feed", aspect: "4:5", width: 1080, height: 1350, label: "4:5", safe: { top: 0.06, bottom: 0.08, side: 0.06 } },

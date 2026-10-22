@@ -37,6 +37,7 @@ export type StoreProduct = {
   /** image : fichier de la galerie montré quand la variante est choisie (ex. le coloris). */
   variants: { title: string; options: string[]; price: number | null; available: boolean; inventory_quantity?: number; sku?: string; image?: string }[];
   images: string[]; // noms de fichiers d'assets (aperçu) — ordre de la galerie
+  imageInfo?: Record<string, {width:number;height:number;alt:string}>;
   tags: string[];
   /** Titre et méta-description du produit pour les moteurs de recherche (envoyés à la plateforme). */
   seo?: { title: string; description: string };
@@ -124,7 +125,7 @@ export type ThemeSpec = {
    * Moteur qui a composé ce thème et sa traçabilité (Theme Engine V2 : intention, direction artistique, plan des
    * pages, contenus à compléter). Ignoré par la compilation et l'export ; absent sur les thèmes plus anciens.
    */
-  meta?: { demo?: { isDemo: true; provenance: string; contactTest?: boolean }; engine?: "v1" | "v2"; v2?: Record<string, any>; productContent?: ProductContentBinding[]; reference?: { version: 1; kind: "products" | "services"; links: { template: string; section: string; block: string; target: string }[] }; /** Retouches et ajouts du client préservés lors d'une recomposition (theme/carry-over.ts). */ carryOver?: Record<string, unknown>; /** Médias et textes placés depuis le contrat du parcours amont (theme/handoff.ts). */ handoff?: Record<string, unknown> };
+  meta?: { strategy?: { id:string; version:number; angleId:string; retainedPaths?:string[]; alignment?:"mixed"|"prepared" }; adaptation?: import("./client-adaptation").ClientContentPlan; demo?: { isDemo: true; provenance: string; contactTest?: boolean }; engine?: "v1" | "v2"; v2?: Record<string, any>; productContent?: ProductContentBinding[]; reference?: { version: 1; kind: "products" | "services"; links: { template: string; section: string; block: string; target: string }[] }; /** Retouches et ajouts du client préservés lors d'une recomposition (theme/carry-over.ts). */ carryOver?: Record<string, unknown>; /** Médias et textes placés depuis le contrat du parcours amont (theme/handoff.ts). */ handoff?: Record<string, unknown> };
   /** Données de la boutique (produit, pages, menus). Séparées du thème ; utilisées par l'aperçu et l'import. */
   store: {
     shopName: string;

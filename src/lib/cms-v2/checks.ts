@@ -23,6 +23,17 @@ const TEXT_EXT = /\.(liquid|json|php|tpl|html|css|js|yml|txt|csv|md)$/i;
 const CONTENT_FILE = /\/(inc\/site\.json|templates\/[^/]+\.html|parts\/[^/]+\.html)$|^templates\/es\/|views\/templates\/(pages|hook)\//;
 const INVENTED = /(n°\s?1\b|numéro un|meilleur du marché|certifié(?!s? par vous)|garanti à vie|100 ?% naturel|best in class|clinically proven|cliniquement prouvé)/i;
 
+/** JSON data blocks are inert; executable tags, event attributes and malformed data stay blocked. */
+export function executableContentScript(content:string):boolean {
+ const normalized=content.replace(/\\u003c/gi,"<");
+ const executable=normalized.replace(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi,(whole,attributes:string,data:string)=>{
+  if(!/\btype\s*=\s*(["'])application\/(?:ld\+)?json\1/i.test(attributes)||/\b(?:src|on[a-z]+)\s*=/i.test(attributes))return whole;
+  if((attributes.match(/\btype\s*=/gi)??[]).length!==1)return whole;
+  try{JSON.parse(data);return '';}catch{return whole;}
+ });
+ return /<script\b/i.test(executable)||/javascript:/i.test(normalized);
+}
+
 /** Médias interdits à l'export : refusés, défaut fatal, verdict REJECTED, supprimés. */
 export function forbiddenMedia(spec: ThemeSpec, projectId?: string): { forbidden: Set<string>; foreign: string[] } {
   const forbidden = new Set<string>();
@@ -197,7 +208,7 @@ export async function staticChecks(platform: CmsPlatform, exp: PlatformExport, s
     }
     // Contenus du site (textes des sections) : aucun script ni lien « javascript: ».
     if (CONTENT_FILE.test(n) || (platform === "shopify" && /^templates\/.+\.json$|^sections\/.+-group\.json$|config\/settings_data\.json$/.test(n))) {
-      if (/<script\b(?![^>]*type="application\/ld\+json")/i.test(s.replace(/\\u003c/g, "<")) || /javascript:/i.test(s)) {
+      if (executableContentScript(s)) {
         scriptHits++;
         issues.push(`script dans les contenus : ${n}`);
       }

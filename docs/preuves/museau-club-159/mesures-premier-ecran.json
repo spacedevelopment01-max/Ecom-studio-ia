@@ -1,0 +1,504 @@
+{
+ "avant (4a95a83e)": {
+  "accueil 360x640": {
+   "h1": [
+    168,
+    288
+   ],
+   "cta": [
+    441,
+    492
+   ],
+   "ctaText": "Voir la collection↗",
+   "images": [
+    [
+     520,
+     700
+    ]
+   ],
+   "firstBottom": 1186,
+   "sw": 360
+  },
+  "produit-collier-museau-club-cobalt 360x640": {
+   "h1": [
+    546,
+    613
+   ],
+   "action": [
+    676,
+    742
+   ],
+   "image": null,
+   "price": [
+    619,
+    654
+   ],
+   "sw": 360
+  },
+  "produit-laisse-museau-club-cobalt 360x640": {
+   "h1": [
+    546,
+    613
+   ],
+   "action": [
+    676,
+    742
+   ],
+   "image": null,
+   "price": [
+    619,
+    654
+   ],
+   "sw": 360
+  },
+  "produit-pochette-sacs-museau-club-cobalt 360x640": {
+   "h1": [
+    546,
+    647
+   ],
+   "action": [
+    709,
+    776
+   ],
+   "image": null,
+   "price": [
+    653,
+    687
+   ],
+   "sw": 360
+  },
+  "produit 360x640": {
+   "h1": [
+    546,
+    613
+   ],
+   "action": [
+    676,
+    742
+   ],
+   "image": null,
+   "price": [
+    619,
+    654
+   ],
+   "sw": 360
+  },
+  "accueil 390x844": {
+   "h1": [
+    168,
+    288
+   ],
+   "cta": [
+    441,
+    492
+   ],
+   "ctaText": "Voir la collection↗",
+   "images": [
+    [
+     520,
+     717
+    ]
+   ],
+   "firstBottom": 1182,
+   "sw": 390
+  },
+  "produit-collier-museau-club-cobalt 390x844": {
+   "h1": [
+    572,
+    639
+   ],
+   "action": [
+    702,
+    768
+   ],
+   "image": null,
+   "price": [
+    645,
+    680
+   ],
+   "sw": 390
+  },
+  "produit-laisse-museau-club-cobalt 390x844": {
+   "h1": [
+    572,
+    639
+   ],
+   "action": [
+    702,
+    768
+   ],
+   "image": null,
+   "price": [
+    645,
+    680
+   ],
+   "sw": 390
+  },
+  "produit-pochette-sacs-museau-club-cobalt 390x844": {
+   "h1": [
+    572,
+    639
+   ],
+   "action": [
+    702,
+    768
+   ],
+   "image": null,
+   "price": [
+    645,
+    680
+   ],
+   "sw": 390
+  },
+  "produit 390x844": {
+   "h1": [
+    572,
+    639
+   ],
+   "action": [
+    702,
+    768
+   ],
+   "image": null,
+   "price": [
+    645,
+    680
+   ],
+   "sw": 390
+  },
+  "accueil 430x932": {
+   "h1": [
+    168,
+    288
+   ],
+   "cta": [
+    413,
+    465
+   ],
+   "ctaText": "Voir la collection↗",
+   "images": [
+    [
+     493,
+     712
+    ]
+   ],
+   "firstBottom": 1135,
+   "sw": 430
+  },
+  "produit-collier-museau-club-cobalt 430x932": {
+   "h1": [
+    606,
+    673
+   ],
+   "action": [
+    736,
+    792
+   ],
+   "image": null,
+   "price": [
+    679,
+    714
+   ],
+   "sw": 430
+  },
+  "produit-laisse-museau-club-cobalt 430x932": {
+   "h1": [
+    606,
+    673
+   ],
+   "action": [
+    736,
+    792
+   ],
+   "image": null,
+   "price": [
+    679,
+    714
+   ],
+   "sw": 430
+  },
+  "produit-pochette-sacs-museau-club-cobalt 430x932": {
+   "h1": [
+    606,
+    673
+   ],
+   "action": [
+    736,
+    792
+   ],
+   "image": null,
+   "price": [
+    679,
+    714
+   ],
+   "sw": 430
+  },
+  "produit 430x932": {
+   "h1": [
+    606,
+    673
+   ],
+   "action": [
+    736,
+    792
+   ],
+   "image": null,
+   "price": [
+    679,
+    714
+   ],
+   "sw": 430
+  }
+ },
+ "apres (9f1360b5)": {
+  "accueil 360x640": {
+   "h1": [
+    165,
+    266
+   ],
+   "cta": [
+    476,
+    532
+   ],
+   "ctaText": "Voir la collection",
+   "images": [
+    [
+     280,
+     462
+    ]
+   ],
+   "firstBottom": 836,
+   "sw": 360
+  },
+  "produit-collier-museau-club-cobalt 360x640": {
+   "h1": [
+    449,
+    501
+   ],
+   "action": [
+    554,
+    637
+   ],
+   "image": null,
+   "price": [
+    507,
+    542
+   ],
+   "sw": 360
+  },
+  "produit-laisse-museau-club-cobalt 360x640": {
+   "h1": [
+    449,
+    501
+   ],
+   "action": [
+    554,
+    637
+   ],
+   "image": null,
+   "price": [
+    507,
+    542
+   ],
+   "sw": 360
+  },
+  "produit-pochette-sacs-museau-club-cobalt 360x640": {
+   "h1": [
+    449,
+    501
+   ],
+   "action": [
+    554,
+    637
+   ],
+   "image": null,
+   "price": [
+    507,
+    542
+   ],
+   "sw": 360
+  },
+  "produit 360x640": {
+   "h1": [
+    449,
+    501
+   ],
+   "action": [
+    554,
+    637
+   ],
+   "image": null,
+   "price": [
+    507,
+    542
+   ],
+   "sw": 360
+  },
+  "accueil 390x844": {
+   "h1": [
+    165,
+    232
+   ],
+   "cta": [
+    459,
+    515
+   ],
+   "ctaText": "Voir la collection",
+   "images": [
+    [
+     246,
+     445
+    ]
+   ],
+   "firstBottom": 794,
+   "sw": 390
+  },
+  "produit-collier-museau-club-cobalt 390x844": {
+   "h1": [
+    469,
+    526
+   ],
+   "action": [
+    579,
+    637
+   ],
+   "image": null,
+   "price": [
+    532,
+    567
+   ],
+   "sw": 390
+  },
+  "produit-laisse-museau-club-cobalt 390x844": {
+   "h1": [
+    469,
+    526
+   ],
+   "action": [
+    579,
+    637
+   ],
+   "image": null,
+   "price": [
+    532,
+    567
+   ],
+   "sw": 390
+  },
+  "produit-pochette-sacs-museau-club-cobalt 390x844": {
+   "h1": [
+    469,
+    526
+   ],
+   "action": [
+    579,
+    637
+   ],
+   "image": null,
+   "price": [
+    532,
+    567
+   ],
+   "sw": 390
+  },
+  "produit 390x844": {
+   "h1": [
+    469,
+    526
+   ],
+   "action": [
+    579,
+    637
+   ],
+   "image": null,
+   "price": [
+    532,
+    567
+   ],
+   "sw": 390
+  },
+  "accueil 430x932": {
+   "h1": [
+    165,
+    232
+   ],
+   "cta": [
+    482,
+    538
+   ],
+   "ctaText": "Voir la collection",
+   "images": [
+    [
+     246,
+     468
+    ]
+   ],
+   "firstBottom": 809,
+   "sw": 430
+  },
+  "produit-collier-museau-club-cobalt 430x932": {
+   "h1": [
+    497,
+    559
+   ],
+   "action": [
+    612,
+    670
+   ],
+   "image": null,
+   "price": [
+    565,
+    600
+   ],
+   "sw": 430
+  },
+  "produit-laisse-museau-club-cobalt 430x932": {
+   "h1": [
+    497,
+    559
+   ],
+   "action": [
+    612,
+    670
+   ],
+   "image": null,
+   "price": [
+    565,
+    600
+   ],
+   "sw": 430
+  },
+  "produit-pochette-sacs-museau-club-cobalt 430x932": {
+   "h1": [
+    497,
+    559
+   ],
+   "action": [
+    612,
+    670
+   ],
+   "image": null,
+   "price": [
+    565,
+    600
+   ],
+   "sw": 430
+  },
+  "produit 430x932": {
+   "h1": [
+    497,
+    559
+   ],
+   "action": [
+    612,
+    670
+   ],
+   "image": null,
+   "price": [
+    565,
+    600
+   ],
+   "sw": 430
+  }
+ }
+}

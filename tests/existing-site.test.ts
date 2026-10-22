@@ -11,7 +11,7 @@ async function setup(site: string, opts: { uploadLogo?: boolean } = {}) {
   const { createUser } = await import("@/lib/auth");
   const { id, now, run } = await import("@/lib/db");
   const { ensureFolders, saveAsset } = await import("@/lib/library");
-  const { JobContext } = await import("@/lib/jobs");
+  const { JobContext, enqueue } = await import("@/lib/jobs");
   const u = await createUser(`site-${site}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}@test.fr`, "motdepasse-test", "Site");
   const pid = id();
   const url = `https://${site}.test/`;
@@ -25,7 +25,7 @@ async function setup(site: string, opts: { uploadLogo?: boolean } = {}) {
     const png = await sharp({ create: { width: 200, height: 80, channels: 4, background: "#123456" } }).png().toBuffer();
     await saveAsset({ projectId: pid, userId: u.id, data: png, name: "mon-logo.png", mime: "image/png", kind: "image", role: "logo", folderKey: "brand.logos", origin: "upload", meta: { provided: true } });
   }
-  const ctx = new JobContext({ id: `test-${pid}`, checkpoint: "{}", payload: "{}" } as any) as JobContextType;
+  const ctx = new JobContext(enqueue({ userId: u.id, projectId: pid, type: "site.import", payload: {} })) as JobContextType;
   return { pid, url, ctx, fetchImpl: fixtureFetcher(site) };
 }
 

@@ -1,3 +1,7 @@
+import { canonicalJSON } from "../brain/hash";
+import { assertContentAlignment } from "../marketing-strategy";
+import { HttpError } from "../auth";
+import { contentStrategy, withCommunicationStrategy, strategyContent, strategySelection } from "../strategy-consumption";
 /**
  * NIVEAU 1 — PLANIFICATION (gratuite, aucune génération payante) : dates de publication (début, fin, jours de la
  * semaine, jours exclus, fuseau), 1 à 5 créneaux par jour, réseaux, répartition des piliers (thèmes prioritaires
@@ -25,6 +29,7 @@ import { commercialCta } from "./creative-contract";
 
 export type FormatKind = "image" | "carousel" | "video" | "text";
 export type PlanRequest = {
+  angleId?: import("../marketing-strategy").AngleId;
   startDate: string;
   endDate?: string | null;
   days?: number;
@@ -136,24 +141,45 @@ export type PlanResult = { planId: string; created: number; existing: number; da
  * Crée (ou complète) un calendrier V2 : une ligne `posts` par publication, statut « planned », texte local proposé
  * (gratuit), aucun média. Relancer avec le même plan ne crée aucun doublon.
  */
-export function createPlanV2(p: Project, req: PlanRequest, o: { planId?: string } = {}): PlanResult {
+export function createPlanV2(p: Project, req: PlanRequest, o: { planId?: string; appendFuture?:boolean } = {}): PlanResult {
+  const original=p.business==='services'&&o.planId&&one('SELECT 1 FROM content_plans WHERE project_id=? AND id=?',p.id,o.planId)?contentStrategy(p.id,"calendar",o.planId):null;
+  if(original&&req.angleId&&original.angleId!==req.angleId)throw new HttpError(409,"Préparez un nouveau calendrier pour cet autre angle ; les publications existantes gardent leur identité.","strategy_calendar_old_angle");
+  return withCommunicationStrategy(p.id,()=>createPlanInScope(p,req,o),original?{strategyId:original.id}:{angleId:req.angleId});
+}
+function createPlanInScope(p:Project,req:PlanRequest,o:{planId?:string;appendFuture?:boolean}):PlanResult {
   const lang = req.lang ?? "fr";
   // Dernier rempart : quel que soit le chemin (route, demande écrite, automatisation), jamais plus de publications par
   // jour que le forfait du projet (Découverte : brouillons de démonstration, rien ne peut être programmé).
   const forfait = planOfProject(p.id);
   const capped = forfait && req.perDay > PLANS[forfait].postsPerDay ? PLANS[forfait].postsPerDay : null;
   if (capped) req = { ...req, perDay: capped };
+  if(forfait){
+    const span=publishingDates(req).length;
+    if(span>PLANS[forfait].calendarDays)throw new Error(`Votre forfait permet ${PLANS[forfait].calendarDays} jours de programmation IA. Réduisez la période.`);
+  }
   const facts = verifiedFacts(p);
   const days = publishingDates(req).length;
   const strategy = socialStrategy(p, { lang, platforms: req.platforms.map((x) => x.platform), startDate: req.startDate, days, perDay: req.perDay, facts });
   const { slots, warnings } = planSlots(req, strategy);
+  if(forfait&&slots.some(s=>s.at>now()+PLANS[forfait].calendarDays*86400000+3600000))throw new Error(`Votre forfait programme jusqu’à ${PLANS[forfait].calendarDays} jours à l’avance.`);
   if (capped) warnings.unshift(lang === "en" ? `limited to ${capped} post(s) per day by your plan` : `limité à ${capped} publication(s) par jour par votre forfait`);
   if (slots.length > 1000) throw new Error("plus de 1000 publications : raccourcissez la période");
   // Questions des clients (recherche SEO V2, hypothèses) : matière des piliers « questions » et « pédagogie ».
   const questions = researchKeywords(p, lang, sitePages(p)).clusters.flatMap((c) => c.questions);
   const planId = o.planId ?? id();
-  if (!one("SELECT 1 FROM content_plans WHERE id = ?", planId))
+  const existingPlan=one<{project_id:string;params:string}>("SELECT project_id,params FROM content_plans WHERE id=?",planId);
+  if(existingPlan){
+    if(existingPlan.project_id!==p.id)throw new HttpError(404,'Calendrier introuvable.');
+    if(!o.appendFuture&&canonicalJSON(JSON.parse(existingPlan.params))!==canonicalJSON(req))throw new HttpError(409,'Ce calendrier a été préparé avec d’autres paramètres. Préparez une nouvelle version sans écraser les publications existantes.','strategy_calendar_parameters_changed');
+    const selection=strategySelection(p.id);const original=one<{angle_id:string;input_digest:string}>("SELECT angle_id,input_digest FROM marketing_strategy_contents WHERE project_id=? AND module='calendar' AND content_id=?",p.id,planId);
+    if(selection&&(original?.angle_id!==selection.angleId||original.input_digest!==selection.inputDigest)){
+      if(selection.id.startsWith('draft-'))throw new HttpError(409,'Ce calendrier dépend de l’ancien angle. Préparez sa nouvelle version avant la bascule.','strategy_calendar_old_angle');
+      assertContentAlignment(p.id,'calendar',planId);
+    }
+  }
+  if (!existingPlan)
     run("INSERT INTO content_plans (id, project_id, params, strategy, status, created_at, engine, updated_at) VALUES (?,?,?,?,?,?,?,?)", planId, p.id, JSON.stringify(req), JSON.stringify(strategy), "ready", now(), "v2", now());
+  if(!existingPlan)strategyContent(p.id, "calendar", planId);
   // Accroches déjà publiées ou refusées (normalisées sans accents : « Découvrez » = « decouvrez ») : jamais reprises.
   const used = usedHooks(p.id);
   const nth = new Map<string, number>();
@@ -233,6 +259,7 @@ export function createPlanV2(p: Project, req: PlanRequest, o: { planId?: string 
          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
         pid, p.id, planId, s.connectionId, s.platform, a.format, "planned", s.at, req.timezone, a.title, a.caption, row.hashtags, a.link, s.pillar.title, "[]", JSON.stringify(brief), key, now() + i, now() + i, "v2", s.pillar.id, s.pillar.objective, contentHash(row), s.groupId,
       );
+      strategyContent(p.id, "post", pid);
       created++;
     }
   });

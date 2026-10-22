@@ -92,14 +92,15 @@ export function videoStrategy(p: Project, intent: VideoIntent, opts: { offer?: s
   const L = LANGUAGE[lang];
   const narrative = (organicVideo(intent.editorial) || intent.purpose === "organic") ? "educational" : narrativeFor(intent, L.narrative);
   const hooks = hookCandidates(i, intent);
-  const hook = hooks[seeded(`${p.id}:${intent.kind}`, hooks.length)] ?? i.offerName;
+  const selected = i.marketingStrategy?.angle;
+  const hook = selected?.examples.hero ?? hooks[seeded(`${p.id}:${intent.kind}`, hooks.length)] ?? i.offerName;
   const proofs = [...i.facts.map((f) => `${f.label} : ${f.value}`), ...i.proofs].slice(0, 4);
   const ctas = CTAS[i.business][contentLang()];
   const cta = (organicVideo(intent.editorial) || intent.purpose === "organic") ? "" : intent.kind === "product_tutorial" || intent.kind === "explainer" ? ctas[Math.min(1, ctas.length - 1)] : ctas[0];
   // Rythme : plus nerveux pour la publicité et le contenu social, plus posé pour les présentations.
   const fast = intent.kind === "video_ad" || intent.kind === "social_content" || intent.kind === "ugc" || intent.kind === "launch";
   const avgShotS = Math.max(1.6, Math.round((fast ? L.avgShotS * 0.8 : L.avgShotS) * 10) / 10);
-  const angle = i.business === "services" ? (i.services[0]?.name ?? i.category.label) : (i.difference ?? i.category.label);
+  const angle = selected?.title ?? (i.business === "services" ? (i.services[0]?.name ?? i.category.label) : (i.difference ?? i.category.label));
   const message = i.difference ?? (i.business === "services" ? `${i.category.label}${i.area ? ` à ${i.area}` : ""}` : `${i.offerName} : ${i.category.label.toLowerCase()}`);
   const gaps = [...i.gaps];
   if (!proofs.length) gaps.push("aucune preuve confirmée : la vidéo ne contient aucune affirmation de résultat");
@@ -109,9 +110,9 @@ export function videoStrategy(p: Project, intent: VideoIntent, opts: { offer?: s
     angle,
     message,
     hook,
-    emotion: L.emotion,
+    emotion: selected?.motivation ?? L.emotion,
     rhythm: { avgShotS, cutsPerMin: Math.round(60 / avgShotS), energy: fast && L.energy === "steady" ? "dynamic" : L.energy },
-    style: { language: lang, narrative, camera: L.camera, light: L.light, music: L.music, transitions: L.transitions },
+    style: { language: lang, narrative, camera: selected ? `${L.camera} ; ${selected.visualDirection}. Produit, identité et autorisations inchangés.` : L.camera, light: L.light, music: L.music, transitions: L.transitions },
     durationS: intent.durationS,
     cta,
     aspect: intent.aspect,

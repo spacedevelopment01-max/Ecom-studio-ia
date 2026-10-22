@@ -1,3 +1,4 @@
+import { assertAdvertising } from "../job-entitlements";
 /**
  * Annonces publicitaires d'une campagne (angle, texte principal, titre, bouton) dans la langue des contenus
  * de l'action (`contentLang()`) : une campagne peut être en anglais pour une boutique en français.
@@ -106,6 +107,7 @@ Langues : « hooks.text », « hook », « angle », « primary », « headline 
 
 /** Propose `count` annonces et leur plan de test dans la langue des contenus de l'exécution en cours. */
 export async function draftAds(p: Project, opts: { userId: string; count?: number; objective?: string; audience?: string; networks?: string[] }): Promise<{ ads: AdDraft[]; by: "ai" | "local"; strategy: AdStrategy }> {
+  assertAdvertising(p.id);
   const lang = contentLang();
   const count = Math.max(1, Math.min(6, opts.count ?? 3));
   if (llmConfigured()) {

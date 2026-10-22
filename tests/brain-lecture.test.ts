@@ -257,7 +257,7 @@ describe("Project Brain 2.0 — lecture seule", async () => {
     expect(brainSnapshot(pid).currentLogo).toMatchObject({ assetId: chosen, source: "brand", state: "PROVISIONAL" });
   });
 
-  it("au plus 4 requêtes SQL pour un instantané complet", () => {
+  it("au plus 5 requêtes SQL, stratégie active versionnée comprise", () => {
     const pid = project();
     memo(pid, { kind: "decision", key: "theme.sections", value: "accueil court" });
     check(pid, { deliverable: "logo_route", verdict: "REJECTED", blocking: ["cliche"] });
@@ -265,7 +265,8 @@ describe("Project Brain 2.0 — lecture seule", async () => {
     const spy = vi.spyOn(db(), "prepare");
     try {
       brainSnapshot(pid);
-      expect(spy.mock.calls.length).toBeLessThanOrEqual(4);
+      // One additional indexed read resolves the explicit, versioned marketing strategy.
+      expect(spy.mock.calls.length).toBeLessThanOrEqual(5);
     } finally {
       spy.mockRestore();
     }

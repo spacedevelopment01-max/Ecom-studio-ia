@@ -1,5 +1,7 @@
 "use client";
+import {CommunicationAngleSelector,useCommunicationAngle} from "./communication-angle";
 import { InitialCreatives } from "./initial-creatives";
+import { CopyFailureHistory } from "./copy-correction";
 /**
  * Studio social V2 : Piloter (vue d'ensemble, communication automatique, stratégie) → Créer (image, vidéo, plusieurs) → Gérer (calendrier, validation, statistiques).
  * Le client voit ce qui est prêt, à valider, programmé, publié, en échec ou à vérifier ; il modifie, déplace
@@ -27,6 +29,7 @@ import { GuidedVideo } from "./guided-video";
 import type { Editorial } from "@/lib/social-v2/creative-contract";
 
 export type PostV = {
+  marketingStrategy?:import("@/lib/strategy-consumption").StrategyStamp|null;
   editorial?:Editorial|null;
   id: string; network: string; format: string; status: string; scheduledAt: number | null; timezone: string; title: string; caption: string; hashtags: string; link: string | null;
   media: AssetView[]; connectionId: string | null; connectionName: string | null; planId: string | null; error: string | null; remoteUrl: string | null; publishedAt: number | null;
@@ -172,6 +175,7 @@ export function SocialStudio({ initial = "calendrier" }: { initial?: Section }) 
         </Card>
       </aside>
       <div className="grid min-w-0 grid-cols-1 content-start gap-5">
+        <CopyFailureHistory/>
         <InitialCreatives onChange={reload}/>
         {section === "vue" && <SocialOverview counts={data.stats.counts} posts={data.posts} statsNote={data.stats.note} hasMetrics={data.stats.byPlatform.some((b) => Object.values(b.metrics).some((m) => m.value != null))} onGo={(s: string) => go((s === "creer" ? "planifier" : s) as Section)} />}
         {section === "pilote" && <AutopilotPanel onChanged={reload} />}
@@ -332,6 +336,7 @@ function StrategyPanel({ data }: { data: Data }) {
 
 function CreatePanel({ data, onDone, onGo, reload }: { data: Data; onDone: () => void; onGo: (s: Section) => void; reload: () => void }) {
   const { id } = useProject();
+  const [angleId,setAngleId]=useCommunicationAngle();
   const t = useT();
   const toast = useToast();
   const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd");
@@ -359,13 +364,13 @@ function CreatePanel({ data, onDone, onGo, reload }: { data: Data; onDone: () =>
   const plan = () => run(async () => {
     const platforms = Object.entries(nets).filter(([, v]) => v.on).map(([platform, v]) => ({ platform, connectionId: v.account || null }));
     if (!platforms.length) throw new Error(t("Choisissez au moins un réseau.", "Choose at least one network."));
-    const r = await api<{ created: number; warnings: string[] }>(`/api/projects/${id}/social/v2`, { body: { action: "plan", request: { startDate: f.startDate, endDate: f.endDate, perDay: f.perDay, weekdays: f.weekdays, slots: f.slots.slice(0, f.perDay), timezone: f.timezone, platforms, distribution: f.distribution, priority: f.priority, formatMix: f.mix, structure: "weekly", exclude: f.exclude.split(/[\s,;]+/).filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x)) } } });
+    const r = await api<{ created: number; warnings: string[] }>(`/api/projects/${id}/social/v2`, { body: { action: "plan", angleId, request: { angleId, startDate: f.startDate, endDate: f.endDate, perDay: f.perDay, weekdays: f.weekdays, slots: f.slots.slice(0, f.perDay), timezone: f.timezone, platforms, distribution: f.distribution, priority: f.priority, formatMix: f.mix, structure: "weekly", exclude: f.exclude.split(/[\s,;]+/).filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x)) } } });
     setResult(r);
     toast("ok", t(`${r.created} publications planifiées (textes proposés, aucun média payant).`, `${r.created} posts planned (proposed copy, no paid media).`));
     reload();
   }, { key: "social-plan", label: t("Préparation du calendrier de publications…", "Preparing the posting calendar…"), ms: 20000 });
   const fromAsk = () => run(async () => {
-    const r = await api<{ created: number; warnings: string[]; notes: string[] }>(`/api/projects/${id}/social/v2`, { body: { action: "ask", text: ask } });
+    const r = await api<{ created: number; warnings: string[]; notes: string[] }>(`/api/projects/${id}/social/v2`, { body: { action: "ask", angleId, text: ask } });
     setResult(r);
     toast("ok", t(`${r.created} publications planifiées.`, `${r.created} posts planned.`));
     reload();
@@ -373,6 +378,7 @@ function CreatePanel({ data, onDone, onGo, reload }: { data: Data; onDone: () =>
   const toggleDay = (d: number) => setF((x) => ({ ...x, weekdays: x.weekdays.includes(d) ? x.weekdays.filter((y) => y !== d) : [...x.weekdays, d].sort() }));
   return (
     <div className="grid min-w-0 grid-cols-1 gap-5" data-social-create>
+      <CommunicationAngleSelector value={angleId} onChange={setAngleId}/>
       {jobs.map((j) => <JobProgress key={j.id} job={j} />)}
       <AiWait busy={busy && !!what} label={what?.label ?? ""} waitKey={what?.key ?? "social"} expectedMs={what?.ms ?? 20000} />
       <Card className="grid gap-2 p-5 sm:p-7" data-create-guide>
@@ -451,6 +457,8 @@ function CreatePanel({ data, onDone, onGo, reload }: { data: Data; onDone: () =>
           <div className="rounded-2xl bg-paper-2 p-3 text-sm">
             <p>{t(`${result.created} publications planifiées.`, `${result.created} posts planned.`)}</p>
             {[...(result.warnings ?? []), ...(result.notes ?? [])].map((w) => <p key={w} className="text-warn">⚠ {w}</p>)}
+            {/* Visuels (créés par l'IA, devis en % du budget IA puis accord) : étape 2, sans doublon de parcours. */}
+            <p className="mt-1" data-plan-visuals-next>{t("Visuels de ces publications, créés par l'IA (coût montré avant, en % de votre budget IA) :", "Visuals for these posts, created by AI (cost shown first, as a % of your AI budget):")} <button type="button" className="underline" onClick={() => onGo("image")}>{t("Publication image", "Image post")}</button> · <button type="button" className="underline" onClick={() => onGo("video")}>{t("Publication vidéo", "Video post")}</button></p>
             <button type="button" className="mt-1 underline" onClick={onDone}>{t("Voir le calendrier", "See the calendar")}</button>
           </div>
         )}
@@ -494,6 +502,7 @@ function CalCard({ p, tz, onOpen, onAction, row = false }: { p: PostV; tz: strin
   return (
     <div draggable={!locked && !row} onDragStart={(e) => e.dataTransfer.setData("text/post", p.id)} {...(row ? { "data-agenda-post": p.id } : { "data-post": p.id })} className={cx("group relative min-w-0 overflow-hidden rounded-xl border bg-card shadow-sm transition hover:shadow-md", p.blocking.length > 0 ? "border-warn" : "border-line", row && "flex gap-3 p-2")}>
       <span className={cx("absolute inset-y-0 left-0 w-1", STATUS_COLOR[p.status] ?? "bg-line")} aria-hidden />
+      {p.marketingStrategy&&<span className="block px-2 py-1 text-[11px]" data-post-angle={p.marketingStrategy.angleId}>{t("Angle", "Angle")} : {({usage:t("Usage concret","Concrete use"),reassurance:t("Choix éclairé","Informed choice"),expression:t("Expression personnelle","Personal expression"),discovery:t("Découverte","Discovery"),generalist:t("Généraliste","Generalist")})[p.marketingStrategy.angleId]}</span>}
       {row && thumb}
       <div className={cx("min-w-0", row ? "flex-1" : "grid gap-1.5 p-2 pl-2.5")}>
         <div className="flex items-center gap-1.5">
@@ -530,8 +539,9 @@ function CalendarPanel({ data, reload, onOpen, onRange }: { data: Data; reload: 
   const [net, setNet] = useState<string>("all");
   const posts = useMemo(() => (net === "all" ? data.posts : data.posts.filter((p) => p.network === net)), [data.posts, net]);
   const [chat, setChat] = useState("");
-  const [pending, setPending] = useState<{ text: string; estimateMicro: number } | null>(null);
-  const budget = useBudgetPct();
+  // Aperçu à confirmer (suppression, autre modification, ou coût IA en % du budget) et dernière réponse affichée.
+  const [pending, setPending] = useState<{ text: string; kind: "delete" | "change" | "ai"; summary: string; pct: number | null } | null>(null);
+  const [answer, setAnswer] = useState<{ ok: boolean; text: string } | null>(null);
   const locale = lang === "en" ? enUS : fr;
   const ymd = (ms: number) => formatInTimeZone(ms, tz, "yyyy-MM-dd");
   const byDay = useMemo(() => {
@@ -570,16 +580,21 @@ function CalendarPanel({ data, reload, onOpen, onRange }: { data: Data; reload: 
     if (!text.trim() || sending) return;
     setSending(true);
     try {
-      const r = await api<{ applied: boolean; summary: string; needsConfirm?: boolean; estimateMicro?: number }>(`/api/projects/${id}/social/v2`, { body: { action: "edit", text, confirm } });
-      if (r.needsConfirm) setPending({ text, estimateMicro: r.estimateMicro ?? 0 });
-      else {
+      // Retouche IA : le % du budget IA accepté est renvoyé avec la confirmation (le serveur revérifie le coût).
+      const r = await api<{ applied: boolean; summary: string; needsConfirm?: boolean; confirmKind?: "delete" | "change" | "ai"; pct?: number | null; unclear?: boolean }>(`/api/projects/${id}/social/v2`, { body: { action: "edit", text, confirm, ...(confirm && pending?.kind === "ai" && pending.pct != null ? { approvedPct: pending.pct } : {}) } });
+      // Toujours une réponse visible sous la demande (jamais de silence) : aperçu à confirmer, résultat ou exemples.
+      if (r.needsConfirm) {
+        setAnswer(null);
+        setPending({ text, kind: r.confirmKind ?? "ai", summary: r.summary, pct: r.pct ?? null });
+      } else {
         setPending(null);
-        setChat("");
-        toast(r.applied ? "ok" : "bad", r.summary);
+        if (r.applied) setChat("");
+        setAnswer({ ok: r.applied, text: r.summary });
+        if (r.applied) toast("ok", r.summary);
         reload();
       }
     } catch (e) {
-      toast("bad", (e as Error).message);
+      setAnswer({ ok: false, text: (e as Error).message });
     } finally {
       setSending(false);
     }
@@ -674,19 +689,23 @@ function CalendarPanel({ data, reload, onOpen, onRange }: { data: Data; reload: 
       )}
       <Card className="grid gap-2 p-4" data-social-chat>
         <p className="flex items-center gap-2 font-semibold"><MessageSquare className="size-4" /> {t("Modifier le calendrier en une phrase", "Edit the calendar in one sentence")}</p>
-        <p className="text-xs text-muted">{t("Ex. « Supprime les publications du dimanche », « Mets les vidéos le vendredi », « Programme deux publications par jour au lieu de trois », « Remplace les images des trois prochaines publications » (gratuit) ; « Rends les publications plus premium » (IA, avec estimation).", "E.g. \"Delete Sunday posts\", \"Put videos on Friday\", \"Two posts a day instead of three\", \"Replace the images of the next three posts\" (free); \"Make posts more premium\" (AI, with an estimate).")}</p>
+        <p className="text-xs text-muted">{t("Ex. « Efface tout à partir du 19 octobre », « Vide novembre », « Pas le week-end », « Mets les vidéos le vendredi à 18h », « Décale tout d'une semaine », « Passe les publications Facebook sur Instagram », « Deux publications par jour au lieu de trois », « Annule ma dernière modification » (gratuit, aperçu avant d'agir) ; « Remplace les images des 3 prochaines publications », « Rends les publications plus premium » (IA, coût montré avant en % de votre budget IA).", "E.g. \"Delete everything from October 19\", \"Clear November\", \"No weekends\", \"Move videos to Friday at 6pm\", \"Push everything back a week\", \"Move Facebook posts to Instagram\", \"Two posts a day instead of three\", \"Undo my last change\" (free, preview before acting); \"Replace the images of the next 3 posts\", \"Make posts more premium\" (AI, cost shown first as a % of your AI budget).")}</p>
         <div className="flex gap-2">
           <Input value={chat} onChange={(e) => setChat(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder={t("Votre demande", "Your request")} />
           <Button onClick={() => send()} loading={sending}>{t("Envoyer", "Send")}</Button>
         </div>
         <AiWait busy={sending} label={t("Modification du calendrier…", "Editing the calendar…")} waitKey="social-edit" expectedMs={15000} />
         {pending && (
-          <div className="flex flex-wrap items-center gap-2 rounded-xl bg-warn-soft p-2 text-sm text-warn">
-            {t(`Cette retouche utilise l'IA : coût probable ${budget.label(pending.estimateMicro)}.`, `This edit uses AI: likely cost ${budget.label(pending.estimateMicro)}.`)}
-            <Button size="sm" variant="signal" onClick={() => send(true)}>{t("Confirmer", "Confirm")}</Button>
-            <Button size="sm" variant="secondary" onClick={() => setPending(null)}>{t("Annuler", "Cancel")}</Button>
+          <div className="grid gap-2 rounded-xl bg-warn-soft p-3 text-sm text-warn" data-edit-confirm={pending.kind}>
+            {/* Le résumé du serveur porte l'aperçu, et pour l'IA le coût en % du budget IA (jamais en euros). */}
+            <p>{pending.kind === "ai" ? t(`Cette retouche utilise l'IA : ${pending.summary}`, `This edit uses AI: ${pending.summary}`) : pending.summary}</p>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant={pending.kind === "delete" ? "danger" : "signal"} loading={sending} onClick={() => send(true)} data-action="confirm-edit">{pending.kind === "delete" ? t("Confirmer la suppression", "Confirm deletion") : t("Confirmer", "Confirm")}</Button>
+              <Button size="sm" variant="secondary" onClick={() => setPending(null)}>{t("Annuler", "Cancel")}</Button>
+            </div>
           </div>
         )}
+        {answer && !pending && <p className={cx("rounded-xl p-2 text-sm", answer.ok ? "bg-ok-soft text-ok" : "bg-warn-soft text-warn")} role="status" data-edit-answer={answer.ok ? "ok" : "no"}>{answer.text}</p>}
       </Card>
     </div>
   );

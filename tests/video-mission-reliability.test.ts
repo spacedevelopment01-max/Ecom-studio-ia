@@ -1,3 +1,4 @@
+import { grantProjectPlan } from "./communication-choice-fixture";
 import { describe, expect, it, vi } from "vitest";
 import sharp from "sharp";
 import type { JobContext } from "@/lib/jobs";
@@ -13,7 +14,7 @@ import { latestVideo, saveVideoVersion } from "@/lib/video-v2/store";
 
 async function fixture(service = false) {
   const u = await createUser(`video-fiabilite-${crypto.randomUUID()}@test.fr`, "motdepasse-test", "Test isolé");
-  const p = loadProject(seedImageFixture(u.id, service ? "restaurant" : "hightech"));
+  const p = loadProject(seedImageFixture(u.id, service ? "restaurant" : "hightech"));grantProjectPlan(p.id,"dominer");
   if (!service) await seedCutout(u.id, p.id);
   const png = await sharp({ create: { width: 90, height: 160, channels: 3, background: "#345678" } }).png().toBuffer();
   const deps: ThreeScenesDeps = {

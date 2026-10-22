@@ -37,7 +37,7 @@ describe("Confirmation avant une création : budget IA du projet", () => {
 describe("Budget IA du projet exposé à l'écran", async () => {
   const { createUser } = await import("@/lib/auth");
   const { runWithLang } = await import("@/lib/i18n-server");
-  const { grantProjectPlan } = await import("@/lib/project-subscriptions");
+  const { grantProjectPlan } = await import("./communication-choice-fixture");
   const { seedThemeScenario } = await import("./theme-v2-fixtures");
   const overview = await import("@/app/api/projects/[id]/route");
   const subscription = await import("@/app/api/projects/[id]/subscription/route");
@@ -52,7 +52,7 @@ describe("Budget IA du projet exposé à l'écran", async () => {
     expect(freeOv.aiBudget).toBeNull();
 
     const pid = await seedThemeScenario(u.id, "artisan");
-    grantProjectPlan(pid, "vendre");
+    grantProjectPlan(pid, "dominer");
     const ov = await (await fr(() => overview.GET(new Request(`http://localhost:3000/api/projects/${pid}`), ctx(pid)))).json();
     expect(ov.aiBudget.usage.plan.used).toBeGreaterThanOrEqual(0);
     expect(ov.aiBudget.usage.paused).toBe(false);
@@ -66,7 +66,7 @@ describe("Budget IA du projet exposé à l'écran", async () => {
 describe("Visuel de prestation : choix de l'image", async () => {
   const { createUser } = await import("@/lib/auth");
   const { runWithLang } = await import("@/lib/i18n-server");
-  const { grantProjectPlan } = await import("@/lib/project-subscriptions");
+  const { grantProjectPlan } = await import("./communication-choice-fixture");
   const { getJob, JobContext } = await import("@/lib/jobs");
   const { run } = await import("@/lib/db");
   const { handlers } = await import("../worker/handlers");
@@ -86,7 +86,7 @@ describe("Visuel de prestation : choix de l'image", async () => {
     const u = await createUser(`bg${Date.now()}@test.fr`, "motdepasse-test", "P");
     sessionUser = { ...u, role: "client" };
     const pid = await seedThemeScenario(u.id, "artisan");
-    grantProjectPlan(pid, "vendre");
+    grantProjectPlan(pid, "dominer");
     for (const background of ["image", "none"]) {
       const job = await launch(pid, { mode: "single", kind: "service", format: "portrait", serviceIndex: background === "none" ? 1 : 0, background });
       expect(job.type).toBe("image.ai_post");

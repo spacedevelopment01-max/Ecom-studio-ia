@@ -29,7 +29,7 @@ describe("Faire un visuel (onglet Images)", async () => {
   const { runWithLang } = await import("@/lib/i18n-server");
   const { loadProject } = await import("@/lib/projects");
   const { saveAsset } = await import("@/lib/library");
-  const { grantProjectPlan } = await import("@/lib/project-subscriptions");
+  const { grantProjectPlan } = await import("./communication-choice-fixture");
   const { getJob, UserFacingError } = await import("@/lib/jobs");
   const { seedThemeScenario } = await import("./theme-v2-fixtures");
   const { seedImageFixture } = await import("./image-v2-fixtures");
@@ -38,7 +38,7 @@ describe("Faire un visuel (onglet Images)", async () => {
   const { generateServiceSingleImage } = await import("@/lib/engine/service-media");
   const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
   const png = () => sharp({ create: { width: 1080, height: 1350, channels: 3, background: "#335544" } }).png().toBuffer();
-  const ctxOf = (id: string) => ({ job: { id, project_id: null }, progress: () => {}, step: async (_k: string, fn: () => Promise<unknown>) => fn() }) as any;
+  const ctxOf = (id: string) => ({ job: { id, project_id: null }, payload: {}, progress: () => {}, step: async (_k: string, fn: () => Promise<unknown>) => fn() }) as any;
   const post = (pid: string, body: Record<string, unknown>) => fr(() => images.POST(new Request(`http://localhost:3000/api/projects/${pid}/images`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }), { params: Promise.resolve({ id: pid }) } as any));
   const user = async () => {
     const u = await createUser(`fv-${Date.now()}-${Math.random()}@test.fr`, "motdepasse-test", "P");
@@ -62,6 +62,7 @@ describe("Faire un visuel (onglet Images)", async () => {
   it("tout par l'IA (services) : textes du client écrits mot pour mot, scène de l'IA gardée, format respecté, visuel rangé", async () => {
     const u = await user();
     const pid = await seedThemeScenario(u.id, "artisan");
+    grantProjectPlan(pid,'dominer');
     const f = fakeDeps();
     const r = await fr(() => generateAiPostImage(ctxOf("job-fv-1"), pid, { kind: "service", format: "story", headline: "Votre salle de bain refaite", cta: "Demander un devis" }, f.deps as any));
     expect(r.assetId).toBeTruthy();
@@ -78,6 +79,7 @@ describe("Faire un visuel (onglet Images)", async () => {
   it("tout par l'IA : « une de mes images » choisie sert de référence ; produit sans photo refusé (rien d'inventé)", async () => {
     const u = await user();
     const pid = await seedThemeScenario(u.id, "artisan");
+    grantProjectPlan(pid,'dominer');
     const mine = await saveAsset({ projectId: pid, userId: u.id, data: await png(), name: "chantier.png", mime: "image/png", role: "lifestyle", folderKey: "images.scenes", origin: "upload", status: "approved", meta: {} });
     const f = fakeDeps();
     await fr(() => generateAiPostImage(ctxOf("job-fv-2"), pid, { kind: "info", format: "square", photoId: mine.id }, f.deps as any));
@@ -111,7 +113,7 @@ describe("Faire un visuel (onglet Images)", async () => {
   it("API (images 100 % IA) : plus de visuel gratuit du studio ; sans IA, refus ; sinon publication entière par l'IA ; devis lisible avant", async () => {
     const u = await user();
     const pid = await seedThemeScenario(u.id, "artisan");
-    grantProjectPlan(pid, "vendre");
+    grantProjectPlan(pid, "dominer");
     // IA inactive (budget épuisé, fournisseur coupé…) : tout est refusé, rien n'est composé à la place.
     aiOn = false;
     expect((await post(pid, { mode: "single", visual: "ai_post", kind: "service" })).status).toBe(402);

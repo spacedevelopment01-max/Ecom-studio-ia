@@ -876,6 +876,18 @@ CREATE TABLE IF NOT EXISTS social_autopilot_log (
 );
 CREATE INDEX IF NOT EXISTS social_autopilot_log_project ON social_autopilot_log(project_id, at);
 
+-- Dernière retouche du calendrier « en une phrase » (une par projet) : état d'avant (rows), copies créées (created)
+-- et état d'après (after : id → updated_at) pour « annule ma dernière modification » sans écraser une modification
+-- faite entre-temps.
+CREATE TABLE IF NOT EXISTS social_edit_undo (
+  project_id TEXT PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE,
+  at INTEGER NOT NULL,
+  summary TEXT NOT NULL,
+  rows TEXT NOT NULL,
+  created TEXT NOT NULL DEFAULT '[]',
+  after TEXT NOT NULL DEFAULT '{}'
+);
+
 CREATE TABLE IF NOT EXISTS content_runs (
   project_id TEXT NOT NULL,
   run_key TEXT NOT NULL,
@@ -940,6 +952,13 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ["wallets", "reserved_topup", "INTEGER NOT NULL DEFAULT 0"],
   ["ai_reservations", "res_monthly", "INTEGER NOT NULL DEFAULT 0"],
   ["ai_reservations", "res_topup", "INTEGER NOT NULL DEFAULT 0"],
+  ["ai_reservations", "usage_event_id", "TEXT"],
+  ["ai_reservations", "settled_period_start", "INTEGER"],
+  ["ai_reservations", "operation_key", "TEXT"],
+  ["ai_reservations", "request_hash", "TEXT"],
+  ["ai_reservations", "result", "TEXT"],
+  ["ai_reservations", "provider_receipt", "TEXT"],
+  ["ai_reservations", "recovery_until", "INTEGER NOT NULL DEFAULT 0"],
   // Décompte d'un quota : période et répartition (mois / packs), pour pouvoir le rendre (image refusée au contrôle).
   ["quota_events", "period_start", "INTEGER"],
   ["quota_events", "from_month", "INTEGER"],
@@ -1008,7 +1027,8 @@ function migrate(db: Database.Database) {
   db.exec(`CREATE INDEX IF NOT EXISTS notifications_user ON notifications(user_id, created_at);
     CREATE INDEX IF NOT EXISTS assets_project_role ON assets(project_id, role, created_at);
     CREATE INDEX IF NOT EXISTS assets_source ON assets(source_asset_id);
-    CREATE INDEX IF NOT EXISTS ai_reservations_job ON ai_reservations(job_id, status);`);
+    CREATE INDEX IF NOT EXISTS ai_reservations_job ON ai_reservations(job_id, status);
+    CREATE UNIQUE INDEX IF NOT EXISTS ai_reservations_operation ON ai_reservations(operation_key) WHERE operation_key IS NOT NULL AND status != 'released';`);
   migrateBillingV2(db);
 }
 

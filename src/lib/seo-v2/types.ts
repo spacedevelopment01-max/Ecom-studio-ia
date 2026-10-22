@@ -93,6 +93,8 @@ export type SeoStrategy = {
 
 /** Faits utilisables : confirmés ou saisis par le client. Tout le reste est inconnu. */
 export type VerifiedFacts = {
+  /** Chosen creative hypothesis, never additional confirmed facts. */
+  marketingStrategy?: import("../marketing-strategy/types").ActiveStrategy;
   brand: string;
   offerName: string;
   category: string;
@@ -162,7 +164,7 @@ export type ContentDoc = {
   schema: Record<string, unknown>[];
   /** Liens internes du document (existants / prévus). */
   links: PageRef[];
-  meta2: { source: "engine" | "user" | "ai_local" | "ai"; by: "ai" | "local"; runId: string | null; createdFrom: string | null; contract?: { request: string; contextHash: string; contextVersion: string; target: string; checks: { checked: string[]; issues: string[]; unchecked: string[] } } };
+  meta2: { marketingStrategy?: import("../strategy-consumption").StrategyStamp | null; source: "engine" | "user" | "ai_local" | "ai"; by: "ai" | "local"; runId: string | null; createdFrom: string | null; contract?: { request: string; contextHash: string; contextVersion: string; target: string; checks: { checked: string[]; issues: string[]; unchecked: string[] } } };
 };
 
 // ------------------------------------------------------------------------------------------- qualité

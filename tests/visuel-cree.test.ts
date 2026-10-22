@@ -18,7 +18,7 @@ describe("Créer un visuel de prestation", async () => {
   const { createUser } = await import("@/lib/auth");
   const { runWithLang } = await import("@/lib/i18n-server");
   const { loadProject } = await import("@/lib/projects");
-  const { grantProjectPlan } = await import("@/lib/project-subscriptions");
+  const { grantProjectPlan } = await import("./communication-choice-fixture");
   const { completeJob, getJob, JobContext } = await import("@/lib/jobs");
   const { run } = await import("@/lib/db");
   const { handlers } = await import("../worker/handlers");
@@ -33,11 +33,11 @@ describe("Créer un visuel de prestation", async () => {
     const u = await createUser(`vis${Date.now()}@test.fr`, "motdepasse-test", "P");
     sessionUser = { ...u, role: "client" };
     const pid = await seedThemeScenario(u.id, "artisan");
-    grantProjectPlan(pid, "vendre");
+    grantProjectPlan(pid, "dominer");
     expect(loadProject(pid).services.services.length).toBeGreaterThan(0);
     // L'écran ouvre la création d'après le forfait DU PROJET (abonnement par projet, sans abonnement du compte).
     const ov = await (await fr(() => overview.GET(new Request(`http://localhost:3000/api/projects/${pid}`), { params: Promise.resolve({ id: pid }) } as any))).json();
-    expect(ov.plan).toBe("vendre");
+    expect(ov.plan).toBe("dominer");
     // Blog : ouvert selon le forfait du projet (Développer : articles inclus), pas selon un abonnement du compte.
     const blog = await import("@/app/api/projects/[id]/blog/route");
     const bl = await (await fr(() => blog.GET(new Request(`http://localhost:3000/api/projects/${pid}/blog`), { params: Promise.resolve({ id: pid }) } as any))).json();

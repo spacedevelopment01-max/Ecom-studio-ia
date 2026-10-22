@@ -1,4 +1,5 @@
 "use client";
+import {CommunicationAngleSelector,useCommunicationAngle} from "./communication-angle";
 /**
  * Publications › Créer : une publication IMAGE ou une publication VIDÉO, avec ou sans IA, et les visuels des
  * publications déjà planifiées. Le prix s'affiche avant tout lancement payant ; rien ne part sans validation.
@@ -66,6 +67,7 @@ export function CreateOnePanel({ data, kind, reload, onCreated }: { data: Data; 
   const t = useT();
   const { lang } = useLang();
   const toast = useToast();
+  const [angleId,setAngleId]=useCommunicationAngle();
   const [imageMode, setImageMode] = useState<VisualMode>("free");
   const [videoMode, setVideoMode] = useState<VideoMode>("free");
   const mode = kind === "image" ? imageMode : videoMode;
@@ -114,7 +116,7 @@ export function CreateOnePanel({ data, kind, reload, onCreated }: { data: Data; 
     setBusy(true);
     try {
       const r = await api<{ ids: string[]; jobId?: string; produced?: number; notes?: string[]; warnings: string[] }>(`/api/projects/${id}/social/v2`, {
-        body: { action: "create_one", kind:requestKind, mode,caption:content||undefined,editorial:kind==="image"?{structure:contentKind||undefined,blocks:contentKind==="quote"?[]:paragraphs.map(text=>({kind:contentKind==="checklist"?"check":contentKind==="tutorial"?"step":"paragraph",text})),...(contentKind==="quote"?{testimonial:{quote:content,author:reviewAuthor||undefined,source:reviewSource,verified:reviewAllowed,authorized:reviewAllowed}}:{})}:undefined, date, time, timezone: data.timezone || "Europe/Paris", platforms: nets.map((platform) => ({ platform, connectionId: data.accounts.find((a) => a.provider === platform && a.status === "active")?.id ?? null })), pillar: pillar || undefined, headline: headline.trim() || undefined, subject:subjectChoice(subjects.find((x) => x.key === subjectKey) ?? subjects[0]),request:request.trim()||undefined, approvedEstimateMicro: mode === "free" ? undefined : quote },
+        body: { action: "create_one", angleId, kind:requestKind, mode,caption:content||undefined,editorial:kind==="image"?{structure:contentKind||undefined,blocks:contentKind==="quote"?[]:paragraphs.map(text=>({kind:contentKind==="checklist"?"check":contentKind==="tutorial"?"step":"paragraph",text})),...(contentKind==="quote"?{testimonial:{quote:content,author:reviewAuthor||undefined,source:reviewSource,verified:reviewAllowed,authorized:reviewAllowed}}:{})}:undefined, date, time, timezone: data.timezone || "Europe/Paris", platforms: nets.map((platform) => ({ platform, connectionId: data.accounts.find((a) => a.provider === platform && a.status === "active")?.id ?? null })), pillar: pillar || undefined, headline: headline.trim() || undefined, subject:subjectChoice(subjects.find((x) => x.key === subjectKey) ?? subjects[0]),request:request.trim()||undefined, approvedEstimateMicro: mode === "free" ? undefined : quote },
       });
       toast("ok", r.jobId ? t("Publication créée : son visuel se prépare avec l'IA, puis elle attend votre validation.", "Post created: its visual is being made with AI, then it waits for your approval.") : t(`Publication créée (${r.ids.length} réseau${r.ids.length > 1 ? "x" : ""}) : relisez-la puis validez-la.`, `Post created (${r.ids.length} network${r.ids.length > 1 ? "s" : ""}): review it, then approve it.`));
       for (const w of [...(r.warnings ?? []), ...(r.notes ?? [])].slice(0, 3)) toast("info", w);
@@ -129,6 +131,7 @@ export function CreateOnePanel({ data, kind, reload, onCreated }: { data: Data; 
   const paid = mode !== "free";
   return (
     <Card className="grid min-w-0 gap-6 p-5 sm:p-7" data-create-one={kind}>
+      <CommunicationAngleSelector value={angleId} onChange={setAngleId}/>
       {jobs.map((j) => <JobProgress key={j.id} job={j} />)}
       <div className="flex items-start gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-paper-2">{kind === "image" ? <ImageIcon className="size-5" /> : <Clapperboard className="size-5" />}</span>

@@ -1,0 +1,50 @@
+{
+  "version": {
+    "commit": "393dc83555193855d8803d08ca28dcfa825296dc",
+    "source": "compiled-build"
+  },
+  "steps": [
+    {
+      "step": "original-demo-read-only",
+      "unchanged": true,
+      "versions": 0,
+      "calls": 0,
+      "pages": 8
+    },
+    {
+      "step": "explicit-choice-native-worker-save",
+      "direction": "orbe",
+      "version": 1,
+      "status": "to_verify",
+      "missingMedia": 0,
+      "calls": 0
+    },
+    {
+      "step": "native-api-export-download",
+      "platform": "shopify",
+      "status": 200,
+      "bytes": 988728,
+      "files": 244,
+      "verdict": "PROVISIONAL"
+    },
+    {
+      "step": "native-api-export-download",
+      "platform": "woocommerce",
+      "status": 200,
+      "bytes": 879954,
+      "files": 144,
+      "verdict": "PROVISIONAL"
+    },
+    {
+      "step": "native-api-export-download",
+      "platform": "prestashop",
+      "status": 200,
+      "bytes": 794479,
+      "files": 71,
+      "verdict": "PROVISIONAL"
+    }
+  ],
+  "errors": [],
+  "noProviderCalls": true,
+  "noRealCmsOrCheckout": true
+}

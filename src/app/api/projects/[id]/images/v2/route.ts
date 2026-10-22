@@ -1,3 +1,5 @@
+import { strategyVisibilitySql } from "@/lib/marketing-strategy/visibility";
+import { checkedPlacementRequest } from "@/lib/theme/placement-request";
 import { z } from "zod";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
@@ -10,13 +12,14 @@ import { requireCreationPlan } from "@/lib/plan-gates";
 import { visualIntent } from "@/lib/image-v2/intent";
 import { ART_DIRECTIONS, VISUAL_KINDS } from "@/lib/image-v2/types";
 import { DIRECTIONS } from "@/lib/image-v2/direction";
+import { stableHash } from "@/lib/brain/hash";
 
 export const runtime = "nodejs";
 
 /** Images V2 du projet : verdict, note, origine, licence, brief résumé (aucune consigne de génération). */
 function view(projectId: string) {
   const rows = all<{ id: string; role: string; status: string; meta: string; created_at: number }>(
-    "SELECT id, role, status, meta, created_at FROM assets WHERE project_id = ? AND deleted_at IS NULL AND json_extract(meta, '$.imageV2') IS NOT NULL ORDER BY created_at DESC LIMIT 60",
+    `SELECT id, role, status, meta, created_at FROM assets WHERE project_id = ? AND ${strategyVisibilitySql(projectId,"asset","assets.id")} AND deleted_at IS NULL AND json_extract(meta, '$.imageV2') IS NOT NULL ORDER BY created_at DESC LIMIT 60`,
     projectId,
   );
   return {
@@ -49,6 +52,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 });
 
 const ImageRequestSchema = z.object({
+  themePlacement:z.object({versionId:z.string().max(80),slotKey:z.string().max(300),contextHash:z.string().max(100)}).optional(),
   kind: z.enum(VISUAL_KINDS).optional(),
   /** Demande en texte libre : l'intention est comprise localement (sans IA). */
   text: z.string().max(400).optional(),
@@ -67,7 +71,7 @@ const ImageRequestSchema = z.object({
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  const b = await body(req, z.object({ action: z.enum(["generate", "edit", "reject", "reject_direction"]), assetId: z.string().max(40).optional(), instruction: z.string().max(400).optional(), direction: z.enum(ART_DIRECTIONS).optional(), request: ImageRequestSchema.optional() }));
+  const b = await body(req, z.object({ operationId:z.string().min(8).max(100).optional(), action: z.enum(["generate", "edit", "reject", "reject_direction"]), assetId: z.string().max(40).optional(), instruction: z.string().max(400).optional(), direction: z.enum(ART_DIRECTIONS).optional(), request: ImageRequestSchema.optional() }));
   if (b.action === "reject") {
     // Image refusée par le client : jamais réutilisée automatiquement (statut refusé, choix humain mémorisé).
     const a = one<{ meta: string }>("SELECT meta FROM assets WHERE id = ? AND project_id = ? AND json_extract(meta, '$.imageV2') IS NOT NULL", b.assetId ?? "", p.id);
@@ -89,10 +93,12 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     if (!a) throw new HttpError(404, L("Photo introuvable.", "Photo not found."));
     const instruction = (b.instruction ?? "").trim();
     if (instruction.length < 3) throw new HttpError(400, L("Décrivez la modification souhaitée.", "Describe the change you want."));
-    const job = enqueue({ userId: user.id, projectId: p.id, type: "image.edit", label: L("Retouche de la photo par l'IA", "AI photo edit"), payload: { projectId: p.id, assetId: a.id, instruction } });
+    const job = enqueue({ userId: user.id, projectId: p.id, type: "image.edit", idempotencyKey:b.operationId?`image-edit:${b.operationId}:${stableHash("edit-intent",{assetId:a.id,instruction})}`:undefined, label: L("Retouche de la photo par l'IA", "AI photo edit"), payload: { projectId: p.id, assetId: a.id, instruction } });
     return ok({ jobId: job.id });
   }
   const r = b.request ?? {};
+  const placement=r.themePlacement?await checkedPlacementRequest(p.id,r.themePlacement):null;
+  if(placement&&placement.request.kind!=="image")throw new HttpError(400,L("Utilisez le parcours vidéo pour cet emplacement.","Use the video workflow for this placement."));
   // Images finales 100 % IA : une image demandée à l'IA n'est jamais remplacée par une photo libre de droits (aucune
   // bascule silencieuse). La recherche de photos libres reste possible seulement quand elle est demandée seule
   // (« Chercher des photos libres », allowGenerate: false).
@@ -101,8 +107,9 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     userId: user.id,
     projectId: p.id,
     type: "image.v2",
+    idempotencyKey:b.operationId?`image-create:${b.operationId}:${stableHash("image-intent",r)}`:undefined,
     label: L("Images : direction artistique et sélection", "Images: art direction and selection"),
-    payload: { projectId: p.id, request: { kind: intent.kind, support: r.support ?? intent.support, aspect: r.aspect, count: r.count ?? 1, topic: r.topic ?? (r.kind ? null : r.text ?? null), allowGenerate: r.allowGenerate !== false, ...(r.allowGenerate !== false ? { noStock: true } : { bankSearch: { typed: r.topic?.trim() || null, broad: !!r.broad, silhouettes: !!r.silhouettes } }) } },
+    payload: { projectId: p.id, request: { ...(placement?{instructions:placement.request.request,references:placement.request.referenceAssetIds,peopleAllowed:false,slot:`theme:${placement.request.role}:${placement.plan.contextHash}:${placement.request.key}`,themePlacement:r.themePlacement}:{}), kind: placement?(placement.request.role==="packshot"?"packshot":placement.request.role==="detail"?"product_image":p.business==="services"?"trade_photo":"usage_scene"):intent.kind, support: r.support ?? intent.support, aspect: r.aspect, count: r.count ?? 1, topic: r.topic ?? (r.kind ? null : r.text ?? null), allowGenerate: r.allowGenerate !== false, ...(r.allowGenerate !== false ? { noStock: true } : { bankSearch: { typed: r.topic?.trim() || null, broad: !!r.broad, silhouettes: !!r.silhouettes } }) } },
   });
   return ok({ jobId: job.id, ...view(p.id) });
 });

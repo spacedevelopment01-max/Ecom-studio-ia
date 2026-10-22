@@ -1,3 +1,5 @@
+import { assertContentAlignment } from "../marketing-strategy";
+import { contentStrategy, withCommunicationStrategy, strategyContent } from "../strategy-consumption";
 /**
  * NIVEAU 2 — PRODUCTION (progressive, par lots) : médias des publications choisies.
  *  - IMAGES (règle du propriétaire, guide du moteur d'images) : toute image de publication est CRÉÉE par l'IA
@@ -97,8 +99,10 @@ export function estimateProduction(p: Project, ids: string[], deps: Pick<SocialD
   const allowPaid = opts.allowPaid && deps.aiActive;
   const aiIds = aiImageIds(rows, opts.aiImages);
   const lines = rows.map((r) => {
-    // Visuels IA demandés pour N publications : seules celles-là sont payantes, les autres restent gratuites.
-    const m = pick(r, { allowPaid: allowPaid && (!opts.aiImages || aiIds.has(r.id)), ai: aiIds.has(r.id), bg: opts.aiBackground }, pools);
+    const own=p.business==='services'?contentStrategy(p.id,'post',r.id):null;
+    const ownPools=own?{image:pools.image.filter(a=>mediaAngleMatches(a,p.id,own)),video:pools.video.filter(a=>mediaAngleMatches(a,p.id,own))}:pools;
+    // The quote and execution use the same angle-compatible stock; no false free reuse.
+    const m = pick(r, { allowPaid: allowPaid && (!opts.aiImages || aiIds.has(r.id)), ai: aiIds.has(r.id), bg: opts.aiBackground }, ownPools);
     const kind = m.method === "video_v2" ? "video" : m.method === "ads_v2" ? "ad" : m.method === "ai_post" ? "ai_post" : "image";
     let units=1;try{units=publicationUnits(r);}catch{units=0;}
     return { postId: r.id, method: m.method, paid: m.paid, estimateMicro: m.paid ? units*probableOf(deps, kind) : 0, capMicro: m.paid ? units*deps.estimate(kind) : 0 };
@@ -115,24 +119,29 @@ export type ProductionResult = { produced: number; skipped: number; failed: numb
  * Production d'un lot. `approvedEstimateMicro` : estimation vue et acceptée par le client — une production
  * payante n'est lancée que si elle a été acceptée et seulement dans le plafond `maxCostEur`.
  */
-export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, o: { allowPaid: boolean; maxCostEur: number; approvedEstimateMicro?: number | null; batchSize?: number; /** Nombre d'images différentes voulu pour les publications du calendrier (vide : une par publication). */ distinctImages?: number | null; /** Les N premières publications en image : visuel entièrement créé par l'IA (payant, dans le plafond). */ aiImages?: number | null; /** Image de fond par l'IA, mise en page du studio (payant, dans le plafond). */ aiBackground?: boolean; /** Remplacer le visuel déjà posé (l'ancien reste dans la bibliothèque). */ replace?: boolean; /** Image de la banque choisie par le client comme fond des publications en image (gratuit). */ background?: Asset | null }): Promise<ProductionResult> {
+export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, o: { allowPaid: boolean; maxCostEur: number; approvedEstimateMicro?: number | null; batchSize?: number; /** Nombre d'images différentes voulu pour les publications du calendrier (vide : une par publication). */ distinctImages?: number | null; /** Les N premières publications en image : visuel entièrement créé par l'IA (payant, dans le plafond). */ aiImages?: number | null; /** Image de fond par l'IA, mise en page du studio (payant, dans le plafond). */ aiBackground?: boolean; /** Remplacer le visuel déjà posé (l'ancien reste dans la bibliothèque). */ replace?: boolean; /** Image de la banque choisie par le client comme fond des publications en image (gratuit). */ background?: Asset | null; /** Remplacement accepté : médias de chaque publication au moment de l'accord. Une publication dont le média a déjà changé (refaite, ou modifiée entre-temps) est sautée : jamais refaite ni repayée par une reprise de la tâche. */ replaceFrom?: Record<string, string> | null; /** Suivi visible : une publication à la fois (tâche de fond). */ progress?: (done: number, total: number) => void }): Promise<ProductionResult> {
   const cap = Math.round(o.maxCostEur * EUR);
   const allowPaid = o.allowPaid && deps.aiActive && o.approvedEstimateMicro != null && o.approvedEstimateMicro <= cap;
   const notes: string[] = [];
   if (o.allowPaid && !allowPaid) notes.push(deps.aiActive ? "estimation non acceptée ou au-delà du plafond : les images attendent leur création par l'IA" : "IA non disponible : les images attendent leur création par l'IA (vidéos de la bibliothèque seulement)");
-  const rows = selectRows(p.id, ids).filter((r) => PRODUCIBLE.has(r.status) && (o.replace || r.media === "[]")).slice(0, o.batchSize ?? 30);
+  const rows = selectRows(p.id, ids).filter((r) => PRODUCIBLE.has(r.status) && (o.replace || r.media === "[]") && (!o.replace || !o.replaceFrom || o.replaceFrom[r.id] === r.media)).slice(0, o.batchSize ?? 30);
   const pools = { image: libraryPool(p.id, "image"), video: libraryPool(p.id, "video") };
   const used = new Map<string, number>();
   const aiIds = aiImageIds(rows, o.aiImages);
   const res: ProductionResult = { produced: 0, skipped: 0, failed: 0, spentMicro: 0, stoppedByCap: false, notes, byMethod: {} };
+  let done = 0;
   for (const r of rows) {
-    const m = pick(r, { allowPaid: allowPaid && (!o.aiImages || aiIds.has(r.id)), ai: aiIds.has(r.id), bg: o.aiBackground }, pools);
+    o.progress?.(done++, rows.length);
+    const own= p.business==='services'?contentStrategy(p.id,"post",r.id):null;
+    const ownPools=own?{image:pools.image.filter(a=>mediaAngleMatches(a,p.id,own)),video:pools.video.filter(a=>mediaAngleMatches(a,p.id,own))}:pools;
+    const m = pick(r, { allowPaid: allowPaid && (!o.aiImages || aiIds.has(r.id)), ai: aiIds.has(r.id), bg: o.aiBackground }, ownPools);
     let out: MediaResult | null = null;
     try {
+      assertContentAlignment(p.id, "post", r.id);
       if (m.method === "none") {
         out = { assetId: null, costMicro: 0, by: "local", note: r.editorialData?.initialCreative ? "Publication initiale : utilisez le suivi des vingt créations pour reprendre les seules créations manquantes, sans doublon." : `publication ${r.id.slice(0, 6)} : ${WAITING_AI}` };
       } else if (m.method === "library") {
-        const pool = needsVideo(r) ? pools.video : pools.image.filter(a=>aiFinal(a)&&matchesEditorial(a,r));
+        const pool = needsVideo(r) ? ownPools.video : ownPools.image.filter(a=>aiFinal(a)&&matchesEditorial(a,r));
         const a = [...pool].sort((x, y) => (used.get(x.id) ?? 0) - (used.get(y.id) ?? 0))[0];
         out = a ? { assetId: a.id,assetIds:r.format==="carousel"?json<any>(a.meta,{}).carousel.assetIds:undefined, costMicro: 0, by: "library" } : null;
       } else {
@@ -145,7 +154,7 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
         } else {
           const opts = { allowPaid: m.paid, maxCostEur: Math.max(0, (cap - res.spentMicro) / EUR) };
           // Image : publication entièrement créée par l'IA (jamais une affiche montée par le studio).
-          out = m.method === "video_v2" ? await deps.video(p, r, opts) : deps.aiPost ? await deps.aiPost(p, r, opts) : null;
+          out = await withCommunicationStrategy(p.id,()=>m.method === "video_v2" ? deps.video(p, r, opts) : deps.aiPost ? deps.aiPost(p, r, opts) : null,own?{strategyId:own.id}:{});
           // Rien d'exploitable : visuel IA refusé après ses essais (ou blocage). Ce qui a été payé reste compté ; la
           // publication attend son visuel, dit clairement — aucun gabarit ni rendu local à la place.
           if (!out?.assetId && m.method !== "video_v2") {
@@ -154,6 +163,8 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
         }
       }
     } catch (e) {
+      // Tâche annulée ou mise en pause par le client : on s'arrête là (jamais une création de plus après l'arrêt).
+      if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
       notes.push(`publication ${r.id.slice(0, 6)} : ${(e as Error).message.slice(0, 120)}`);
       res.failed++;
       continue;
@@ -173,14 +184,21 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
     // L'empreinte change (nouveau média) : une approbation antérieure ne couvre plus cette version.
     afterEdit(r.id);
     run("UPDATE posts SET user_edited = ? WHERE id = ?", r.user_edited, r.id);
+    strategyContent(p.id, "post", r.id,own?{stamp:own}:{});
     res.produced++;
     res.byMethod[out.by] = (res.byMethod[out.by] ?? 0) + 1;
     // Reprise payée (1er essai refusé par le contrôle) : annoncée au client, jamais en silence.
     const notice = retryNotice(p.userId, p.id, out.attempts ?? 1, out.costMicro);
     if (notice) res.notice = res.notice ? `${res.notice} ${notice}` : notice;
   }
+  o.progress?.(rows.length, rows.length);
   return res;
 }
 
 export const postsOfPlan = (planId: string) => all<{ id: string }>("SELECT id FROM posts WHERE plan_id = ? ORDER BY scheduled_at", planId).map((r) => r.id);
 export const nextPosts = (projectId: string, n: number) => all<{ id: string }>("SELECT id FROM posts WHERE project_id = ? AND engine = 'v2' AND status IN ('planned','review','approved') AND scheduled_at >= ? ORDER BY scheduled_at LIMIT ?", projectId, now(), n).map((r) => r.id);
+
+function mediaAngleMatches(asset:Asset,projectId:string,selected:NonNullable<ReturnType<typeof contentStrategy>>){
+ const row=all<{angle_id:string;input_digest:string}>("SELECT angle_id,input_digest FROM marketing_strategy_contents WHERE project_id=? AND module='asset' AND content_id=?",projectId,asset.id)[0];
+ return row?.angle_id===selected.angleId&&row.input_digest===selected.inputDigest;
+}

@@ -1,3 +1,4 @@
+import { assertThemeOperations, assertLibrarySelection } from "@/lib/theme/plan-access";
 import { z } from "zod";
 import { projectKind } from "@/lib/theme/project-kind";
 import { sectionIncompatibility } from "@/lib/theme/section-compat";
@@ -26,6 +27,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   if (!cur) throw new HttpError(409, L("Aucune boutique.", "No store yet."));
   const raw = await body(req, z.object({ type: z.string().max(120), template: z.string().max(80), index: z.number().int().min(0).optional(), replace: z.string().max(120).optional() }));
   // Élément de galerie par famille (« fam:<fonction>~<disposition> ») : section du thème et réglages de la disposition.
+  if(!cur.spec.imported)assertLibrarySelection(p.id,raw.type,raw.replace?cur.spec.templates[raw.template]?.sections[raw.replace]?.type:undefined);
   const lib = resolveLibraryType(raw.type);
   const b = { ...raw, type: lib.type };
   if (!addable(b.type)) throw new HttpError(400, L("Cette section ne s'ajoute pas depuis la bibliothèque.", "This section can't be added from the library."));

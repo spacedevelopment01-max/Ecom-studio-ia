@@ -6,6 +6,7 @@
  * projets a les droits de chaque projet séparément. L'administrateur suit son forfait comme un client.
  * Messages simples qui disent quel forfait débloque quoi.
  */
+import { assertAdvertising } from "./job-entitlements";
 import { HttpError, type User } from "./auth";
 import { one } from "./db";
 import { PLANS, type Plan, type PlanId } from "./plans";
@@ -86,7 +87,7 @@ export function assertThemeAllowed(projectId: string, directionId: string, curre
   if (themeStatus(directionId) === "retired") throw new HttpError(400, L(retiredThemeReason("fr"), retiredThemeReason("en")));
   if (!themeAllowed(plan, directionId)) {
     const need = planForTheme(directionId);
-    throw new HttpError(402, L(`Ce thème n'est pas inclus dans le forfait ${name(plan)} (${PLANS[plan].themes} thèmes). ${needPlan(need)}`, `This theme isn't included in the ${name(plan)} plan (${PLANS[plan].themes} themes). ${needPlan(need)}`), "plan_upgrade");
+    throw new HttpError(402, L(`Ce thème n'est pas inclus dans le forfait ${name(plan)} (${PLANS[plan].themes} thèmes par famille). ${needPlan(need)}`, `This theme isn't included in the ${name(plan)} plan (${PLANS[plan].themes} themes per family). ${needPlan(need)}`), "plan_upgrade");
   }
 }
 
@@ -106,6 +107,7 @@ export function assertAutopublish(_user: User | null, projectId: string) {
 /** Campagnes publicitaires actives (brouillons et prêtes, hors archives). */
 export function assertCampaignSlot(_user: User | null, projectId: string) {
   const plan = requirePlan(null, projectId);
+  assertAdvertising(projectId);
   const max = PLANS[plan].campaigns;
   const n = one<{ n: number }>("SELECT COUNT(*) n FROM campaigns WHERE project_id = ? AND status != 'archived'", projectId)!.n;
   if (n >= max) throw new HttpError(402, L(`Votre forfait ${name(plan)} comprend ${max} campagne(s) active(s). Archivez-en une, ou passez au forfait supérieur.`, `Your ${name(plan)} plan includes ${max} active campaign(s). Archive one, or move up a plan.`));
@@ -127,8 +129,10 @@ const dayBounds = (at: number, tz: string) => {
  * Contenus éditoriaux programmés ce jour-là pour le projet (hors brouillons et échecs). Une publication et ses
  * adaptations pour d'autres réseaux (même `group_id`) comptent pour UN contenu : la limite du forfait porte sur les
  * créations distinctes, l'envoi reste suivi réseau par réseau. Le contenu de `exceptId` n'est pas compté.
+ * Quota d'envoi (#150) : une approbation seule ne réserve pas d'envoi. Déplacement dans le calendrier : `includeApproved`
+ * compte aussi les contenus approuvés de ce jour-là, pour ne jamais en empiler plus que le forfait n'en enverra.
  */
-export function scheduledPostsOn(projectId: string, at: number, exceptId?: string | null, tz?: string | null): number {
+export function scheduledPostsOn(projectId: string, at: number, exceptId?: string | null, tz?: string | null, o: { includeApproved?: boolean } = {}): number {
   const self = exceptId ? one<{ g: string; timezone: string | null }>("SELECT COALESCE(group_id, id) g, timezone FROM posts WHERE id = ?", exceptId) : undefined;
   const zone = tz || self?.timezone || "Europe/Paris";
   let a: number, b: number;
@@ -138,7 +142,7 @@ export function scheduledPostsOn(projectId: string, at: number, exceptId?: strin
     [a, b] = dayBounds(at, "Europe/Paris");
   }
   return one<{ n: number }>(
-    "SELECT COUNT(DISTINCT COALESCE(group_id, id)) n FROM posts WHERE project_id = ? AND scheduled_at >= ? AND scheduled_at < ? AND status IN ('scheduled','approved','publishing','published','paused') AND COALESCE(group_id, id) != ?",
+    `SELECT COUNT(DISTINCT COALESCE(group_id, id)) n FROM posts WHERE project_id = ? AND scheduled_at >= ? AND scheduled_at < ? AND status IN (${o.includeApproved ? "'approved'," : ""}'scheduled','publishing','published','paused','uncertain') AND COALESCE(group_id, id) != ?`,
     projectId,
     a,
     b,
@@ -174,4 +178,11 @@ export function assertPerDayRequest(projectId: string, perDay: number): PlanId {
   const max = PLANS[plan].postsPerDay;
   if (perDay > max) throw new HttpError(402, L(`Votre forfait ${name(plan)} prévoit au plus ${max} publication(s) par jour. ${needPlan(firstWith((p) => p.postsPerDay >= perDay))}`, `Your ${name(plan)} plan allows at most ${max} post(s) per day. ${needPlan(firstWith((p) => p.postsPerDay >= perDay))}`));
   return plan;
+}
+
+/** Actual dispatches today, counted by editorial group across networks, including uncertain sends. */
+export function dispatchedPostsOn(projectId:string,at:number,exceptId:string,tz='Europe/Paris') {
+ let bounds:readonly[number,number];try{bounds=dayBounds(at,tz);}catch{bounds=dayBounds(at,'Europe/Paris');}
+ const group=one<{g:string}>('SELECT COALESCE(group_id,id) g FROM posts WHERE id=? AND project_id=?',exceptId,projectId)?.g??exceptId;
+ return one<{n:number}>(`SELECT COUNT(DISTINCT COALESCE(p.group_id,p.id)) n FROM posts p WHERE p.project_id=? AND COALESCE(p.group_id,p.id)!=? AND ((p.status='publishing' AND p.locked_at>=? AND p.locked_at<?) OR EXISTS(SELECT 1 FROM post_attempts a WHERE a.post_id=p.id AND a.started_at>=? AND a.started_at<? AND a.outcome IN ('sending','published','uncertain')))`,projectId,group,bounds[0],bounds[1],bounds[0],bounds[1])!.n;
 }

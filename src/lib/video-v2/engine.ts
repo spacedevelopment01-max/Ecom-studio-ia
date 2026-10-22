@@ -1,3 +1,5 @@
+import { siteVideoRequest, withSiteStrategy, withCommunicationStrategy, withStrategyScope, strategyReuseKey } from "../strategy-consumption";
+import { assertJobEntitlements } from "../job-entitlements";
 /**
  * Video & UGC Engine V2 (phase 7A) — moteur central.
  *
@@ -87,6 +89,11 @@ type Budget = { capMicro: number; spentMicro: number };
 const hash = (x: unknown) => crypto.createHash("sha256").update(JSON.stringify(x)).digest("hex").slice(0, 16);
 
 export async function runVideoEngineV2(ctx: JobContext | null, projectId: string, req: VideoRequestV2, injected?: VideoV2Deps): Promise<VideoRunResult> {
+  return (siteVideoRequest(projectId,req)?withSiteStrategy:withCommunicationStrategy)(projectId, () => runVideoEngineV2InScope(ctx, projectId, req, injected));
+}
+
+async function runVideoEngineV2InScope(ctx: JobContext | null, projectId: string, req: VideoRequestV2, injected?: VideoV2Deps): Promise<VideoRunResult> {
+  assertJobEntitlements("video.v2",projectId,{request:req});
   if(req.ask.generation&&!req.planOnly&&(!req.approval||!req.approveGeneration))throw new Error("Accord explicite sur le scénario et les clips IA requis ; aucun montage simplifié substitué.");
   const p = loadProject(projectId);
   const jobId = ctx?.job.id ?? null;
@@ -318,7 +325,7 @@ async function writeScript(p: Project, deps: VideoV2Deps, i: AdInsight, st: Crea
     return { ...s, sections, issues: [...s.issues.filter((x) => !bad.includes(x))] };
   };
   if (intent.editorial || !allowAi || !deps.canWrite || intent.complexity === "simple") return ugcFix(local);
-  const material = { proofs: st.proofs, facts: i.facts, claimsToAvoid: i.claimsToAvoid,ctaRequired:intent.purpose!=="organic" };
+  const material = { proofs: st.proofs, facts: i.facts, claimsToAvoid: i.claimsToAvoid,ctaRequired:intent.purpose!=="organic",names:[i.brand,i.offerName] };
   let feedback: string | undefined;
   for (let round = 0; round < 2; round++) {
     try {
@@ -469,7 +476,7 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
   if (!start && o.intent.generation!=="direct") throw new Error(`Scène ${s.id} : référence nécessaire pour un vrai clip, aucun substitut local.`);
 
   const productRef = s.showsProduct && o.inv.cutout ? deps.data(o.inv.cutout.id) : null;
-  const key = shotKey({ v: 1, p: p.id, provider, model, subject: s.subject, action: s.action, camera: s.camera, framing: s.framing, d: s.durationS, start: startAsset, persona: o.persona?.id ?? null, fb: o.feedback ?? null });
+  const key = shotKey({ marketingStrategy: strategyReuseKey(p.id), v: 1, p: p.id, provider, model, subject: s.subject, action: s.action, camera: s.camera, framing: s.framing, d: s.durationS, start: startAsset, persona: o.persona?.id ?? null, fb: o.feedback ?? null });
   const memo = shotMemo(p.id, key);
   if (memo?.verdict === "FINAL" && memo.assetId) {
     stats.reused++;

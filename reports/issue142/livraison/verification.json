@@ -1,0 +1,131 @@
+{
+  "simulation": true,
+  "codeCommit": "cfceadb67356a242ab9eafb514e32a19cf0ed863",
+  "codeTree": "43d004310df190e86c2fe4a21aaf24595ea62aa3",
+  "typecheck": {
+    "command": "npx tsc --noEmit",
+    "exitCode": 0
+  },
+  "suite": {
+    "command": "npx vitest run",
+    "filesPassed": 317,
+    "testsPassed": 2443,
+    "skipped": 13,
+    "exitCode": 0
+  },
+  "build": {
+    "command": "npm run build",
+    "exitCode": 0,
+    "externalNetworkGuard": true
+  },
+  "browser": {
+    "before": "8b8f8b0b9b97581061e683f57c990deb077ffbbb",
+    "after": "cfceadb67356a242ab9eafb514e32a19cf0ed863",
+    "productAndService": true,
+    "realProviderCalls": 0,
+    "realProviderCost": 0
+  },
+  "images": [
+    {
+      "path": "reports/issue142/livraison/before/produit-doseur-01-fin-rapide-before.png",
+      "bytes": 206256,
+      "sha256": "8db3071f83a7d93a6889c986dab8c8fae9ae7171824589b485f2d1c52e32637b"
+    },
+    {
+      "path": "reports/issue142/livraison/before/produit-doseur-02-echec-budget-mobile-before.png",
+      "bytes": 141311,
+      "sha256": "5f81d99d9dc505264a0501b1ed9c136b7bf0bb4751884d9b27c398e3fab4890d"
+    },
+    {
+      "path": "reports/issue142/livraison/before/produit-doseur-02-echec-budget-ordinateur-before.png",
+      "bytes": 223666,
+      "sha256": "ab551a0ccf125b9b039e987e23c2a2783064a648fb1eea5852efa3d0bde258ce"
+    },
+    {
+      "path": "reports/issue142/livraison/before/produit-doseur-03-reconnexion-before.png",
+      "bytes": 218644,
+      "sha256": "604e66a57620d7c02d11a5bb129a38cd82814e9b28f873c60c45d7bf8aeefdf2"
+    },
+    {
+      "path": "reports/issue142/livraison/before/produit-doseur-04-solde-restant-before.png",
+      "bytes": 176066,
+      "sha256": "16189bcc8a1e86ef2bcdab86d785088c6a43d3291651ec976b0c78ced07ff6d3"
+    },
+    {
+      "path": "reports/issue142/livraison/before/service-piano-01-fin-rapide-before.png",
+      "bytes": 207557,
+      "sha256": "e64905eca18cb4dc0294bbc77b2dfba7c575eeadd4943e5c5be6366cadbbdaf9"
+    },
+    {
+      "path": "reports/issue142/livraison/before/service-piano-02-echec-budget-mobile-before.png",
+      "bytes": 141887,
+      "sha256": "ce9e24e27ada6d2c584ac79c755e63f357656f34e0ce343c87fbfb88e6d78068"
+    },
+    {
+      "path": "reports/issue142/livraison/before/service-piano-02-echec-budget-ordinateur-before.png",
+      "bytes": 224181,
+      "sha256": "ede106205edca69988ef9b804b807659d15a018d59aadcb357e69c1fddf89a05"
+    },
+    {
+      "path": "reports/issue142/livraison/before/service-piano-03-reconnexion-before.png",
+      "bytes": 219163,
+      "sha256": "d0ad551de223e19c28231bf8c3f25407a199470ccd3fc0428de4d18f0181638c"
+    },
+    {
+      "path": "reports/issue142/livraison/before/service-piano-04-solde-restant-before.png",
+      "bytes": 169247,
+      "sha256": "57092aa8c0123ab3a6fc3710be2bd214f5bf742e54a318ee87892ea5251c933f"
+    },
+    {
+      "path": "reports/issue142/livraison/after/produit-doseur-01-fin-rapide-after.png",
+      "bytes": 227890,
+      "sha256": "b6508cc7fcf467f2a351fc82da1be23f2200c43c194dd021870f0525d1eabd26"
+    },
+    {
+      "path": "reports/issue142/livraison/after/produit-doseur-02-echec-budget-mobile-after.png",
+      "bytes": 177767,
+      "sha256": "b95841a3ca5f6cb3ec778b72717267bdd470570e06b8fb9a536ef6b9167f1966"
+    },
+    {
+      "path": "reports/issue142/livraison/after/produit-doseur-02-echec-budget-ordinateur-after.png",
+      "bytes": 250824,
+      "sha256": "ba538cb9938f2e291d685d28c0e22d2f180329dbcb9a39a1e74c6ad7025b63c9"
+    },
+    {
+      "path": "reports/issue142/livraison/after/produit-doseur-03-reconnexion-after.png",
+      "bytes": 251101,
+      "sha256": "d8b540e7599436ed74edcf46097673e731b0c2f2032d1e142f7129051bed3d57"
+    },
+    {
+      "path": "reports/issue142/livraison/after/produit-doseur-04-solde-restant-after.png",
+      "bytes": 192722,
+      "sha256": "5cd02c9ca9c79a43874da4d3dbb6ab494140dca4a34ca654c45a728e015a112a"
+    },
+    {
+      "path": "reports/issue142/livraison/after/service-piano-01-fin-rapide-after.png",
+      "bytes": 229087,
+      "sha256": "242d8196fde0f1c9469f26658c1d3a7dad4f24db80a9e456fb9aaeed692b9480"
+    },
+    {
+      "path": "reports/issue142/livraison/after/service-piano-02-echec-budget-mobile-after.png",
+      "bytes": 177597,
+      "sha256": "aaa903a8a827aad02db41623b3fd99d7698d4694a9e80edf19d8a31b51c4671c"
+    },
+    {
+      "path": "reports/issue142/livraison/after/service-piano-02-echec-budget-ordinateur-after.png",
+      "bytes": 251198,
+      "sha256": "25d4078c9c9a3fe6e973761c6470fd4cd18fbfef0e4c7410331546b6fc81f66e"
+    },
+    {
+      "path": "reports/issue142/livraison/after/service-piano-03-reconnexion-after.png",
+      "bytes": 251480,
+      "sha256": "fa92e068b9de88782eb0fd4761bad0326ff78ac5830a6109db03325fd27bbaa9"
+    },
+    {
+      "path": "reports/issue142/livraison/after/service-piano-04-solde-restant-after.png",
+      "bytes": 218240,
+      "sha256": "53770a3a3bae4c8e66d1d782bbf005c0f6483611b1a2bbeb6496584550eb7c77"
+    }
+  ],
+  "privateDiagnosticsPublished": false
+}

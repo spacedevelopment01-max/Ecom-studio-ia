@@ -19,6 +19,8 @@ import { adaptForPlatform } from "./adapt";
 import { gateCmsExport, type CmsGateResult, type CriterionKey, type Measure } from "./quality";
 import type { CmsPlatform, PlatformExport } from "./types";
 import { catalogSnapshot } from "./catalog";
+import { verifyAdaptationFiles } from "../theme/client-adaptation";
+import { loadProject } from "../projects";
 
 export const CMS_PLATFORMS: CmsPlatform[] = ["shopify", "woocommerce", "prestashop", "wix", "squarespace"];
 
@@ -33,6 +35,9 @@ export function safeFileName(name: string): string {
 export async function cmsExport(platform: CmsPlatform, spec0: ThemeSpec, load: AssetLoader, opts: { projectId?: string } = {}): Promise<PlatformExport> {
   const guardedOffers = guardPurchaseExport(spec0, platform);
   const spec = structuredClone(adaptForPlatform(guardedOffers.spec, platform));
+  const fileCount = Object.keys(spec.files).length;
+  if (opts.projectId && spec.meta?.adaptation) await verifyAdaptationFiles(spec, loadProject(opts.projectId));
+  const missingClientFiles = fileCount - Object.keys(spec.files).length;
   const { forbidden } = forbiddenMedia(spec, opts.projectId);
   for (const file of forbiddenMedia(spec, opts.projectId).foreign) forbidden.add(file);
   const blockedIds = new Set([...forbidden].map((f) => spec.files[f]));
@@ -47,6 +52,8 @@ export async function cmsExport(platform: CmsPlatform, spec0: ThemeSpec, load: A
     exp = { platform, zip: k.zip, name: k.name, kind: "kit", files: [], issues: [], sections: [], media: Object.keys(spec.files).filter((f) => !forbidden.has(f)) };
   }
   exp.name = safeFileName(exp.name);
+  if (missingClientFiles) exp.issues.push({code:"client_media_unavailable",severity:"blocking",detail:`${missingClientFiles} fichier(s) client absent(s), refusé(s) ou illisible(s). Export non livrable ; les versions et médias acquis sont conservés.`});
+  if (spec.meta?.adaptation?.status === "partial") exp.issues.push({code:"client_content_partial",severity:"warning",detail:"Adaptation client partielle : consulter le plan des emplacements et les informations à compléter avant publication. / Partial client adaptation: review placements and missing information before publication."});
   const entries = unzipSync(exp.zip);
   const prefix = platform === "woocommerce" ? `${exp.files[0].split("/")[0]}/` : "";
   const mediaPrefix = platform === "woocommerce" ? `${prefix}assets/es/` : platform === "prestashop" ? "assets/es/" : platform === "shopify" ? "assets/" : "medias/";
@@ -58,6 +65,7 @@ export async function cmsExport(platform: CmsPlatform, spec0: ThemeSpec, load: A
   const configuration = strToU8(JSON.stringify({ settings: spec.settings, groups: spec.groups, templates: spec.templates, customSections: spec.customSections, store: { ...spec.store, pages: spec.store.pages.filter(p => p.status !== "draft") } }, null, 2));
   const configurationFile = platform === "woocommerce" ? `${prefix}inc/configuration-studio.json` : platform === "prestashop" ? "config/es-studio.json" : platform === "shopify" ? "assets/es-studio.json" : "configuration-studio.json";
   entries[configurationFile] = configuration;
+  if (spec.meta?.adaptation) entries[`${prefix}adaptation-client.json`] = strToU8(JSON.stringify({status:spec.meta.adaptation.status,pages:spec.meta.adaptation.pages,slots:spec.meta.adaptation.slots,issues:spec.meta.adaptation.issues},null,2));
   if (platform === "wix" || platform === "squarespace") {
     const guide = new TextDecoder().decode(entries["GUIDE.md"]);
     entries["GUIDE.md"] = strToU8(guide + "\n\n## Catalogue, pages et navigation / Catalog, pages and navigation\n\n`catalogue.json` conserve les axes, combinaisons, SKU, prix, associations d’images, pages et menus. `configuration-studio.json` conserve les réglages et tous les contenus des sections. Ces JSON et le CSV sont des données de reprise : aucun n’est annoncé comme un import natif validé. Reportez les colonnes dans le modèle actuel de la plateforme et affectez les fichiers de `medias/`. Aucune publication automatique.\n\n`catalogue.json` retains axes, combinations, SKUs, prices, image associations, pages and menus. `configuration-studio.json` retains section settings and complete contents. These JSON files and the CSV are rebuild data, not a verified native importer. Map columns to the platform’s current template and assign the files in `medias/`. No automatic publication.\n");

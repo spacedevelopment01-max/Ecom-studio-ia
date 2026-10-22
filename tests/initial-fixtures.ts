@@ -1,3 +1,4 @@
+import {chooseCommunicationForTest} from './communication-choice-fixture';
 /** Synthetic provider fixtures; no network or real creative quality asserted. */
 import sharp from 'sharp';
 import { fixture, initializeSynthetic, simulatedDependencies } from './preparation-fixtures';
@@ -26,6 +27,7 @@ export async function readyInitial(index = 0) {
     confirmIdentity(f.pid, stateOf(f.pid)!.revision, { name: b.name, tagline: b.tagline, palette: b.palette, fonts: b.fonts });
     await step('brand', 'logo');
     approve(f.pid, stateOf(f.pid)!.revision, 'brand', { logoId: stateOf(f.pid)!.stages.brand!.data.logoCandidates[0] });
+    chooseCommunicationForTest(f.pid);
     return f;
 }
 const IDEAS = [

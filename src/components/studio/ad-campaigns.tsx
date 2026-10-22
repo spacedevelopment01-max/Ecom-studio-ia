@@ -1,4 +1,5 @@
 "use client";
+import {CommunicationAngleSelector,useCommunicationAngle} from "./communication-angle";
 import { AiWait } from "../wait-time";
 import { useState } from "react";
 import { useEffect } from "react";
@@ -63,6 +64,7 @@ const ctaIn = (cta: string, lang: Lang) => {
 
 /** Campagnes publicitaires : annonces, audiences, plan de test, créations choisies, export pour le gestionnaire. */
 export function CampaignsPanel({ autoNew = false }: { autoNew?: boolean } = {}) {
+  const [angleId,setAngleId]=useCommunicationAngle();
   const { id, data } = useProject();
   const toast = useToast();
   const t = useT();
@@ -100,7 +102,7 @@ export function CampaignsPanel({ autoNew = false }: { autoNew?: boolean } = {}) 
   });
   const save = async (c: Campaign) => {
     try {
-      const r = await api<{ id: string }>(`/api/projects/${id}/campaigns`, { body: { id: c.id || undefined, name: c.name, objective: c.objective, networks: c.networks, brief: { ...c.brief, language: langOf(c) }, plan: { ...c.plan, ads: (c.plan.ads ?? []).map((a) => ({ ...a, media: a.media.map((m) => ({ id: m.id, name: m.name, url: m.url, thumbUrl: m.thumbUrl, kind: m.kind, meta: { format: m.meta?.format } })) })) }, status: c.status } });
+      const r = await api<{ id: string }>(`/api/projects/${id}/campaigns`, { body: { angleId, id: c.id || undefined, name: c.name, objective: c.objective, networks: c.networks, brief: { ...c.brief, language: langOf(c) }, plan: { ...c.plan, ads: (c.plan.ads ?? []).map((a) => ({ ...a, media: a.media.map((m) => ({ id: m.id, name: m.name, url: m.url, thumbUrl: m.thumbUrl, kind: m.kind, meta: { format: m.meta?.format } })) })) }, status: c.status } });
       toast("ok", t("Campagne enregistrée.", "Campaign saved."));
       reload();
       return r.id;
@@ -127,7 +129,7 @@ export function CampaignsPanel({ autoNew = false }: { autoNew?: boolean } = {}) 
     const current = c.plan.ads ?? [];
     setDrafting(true);
     try {
-      const r = await api<{ ads: Omit<Ad, "media">[]; by: "ai" | "local"; strategy?: AdStrategy }>(`/api/projects/${id}/campaigns/draft`, { body: { count: Math.max(1, Math.min(6, current.length || 3)), objective: objectiveIn(c.objective, lang), audience: c.brief.audience || undefined, networks: c.networks }, lang });
+      const r = await api<{ ads: Omit<Ad, "media">[]; by: "ai" | "local"; strategy?: AdStrategy }>(`/api/projects/${id}/campaigns/draft`, { body: { angleId, campaignId:c.id||undefined, count: Math.max(1, Math.min(6, current.length || 3)), objective: objectiveIn(c.objective, lang), audience: c.brief.audience || undefined, networks: c.networks }, lang });
       // Les créations déjà choisies restent attachées aux annonces (même position).
       setEdit((e) => e && { ...e, plan: { ...e.plan, strategy: r.strategy ?? e.plan.strategy, ads: r.ads.map((a, i) => ({ ...a, media: current[i]?.media ?? [] })) } });
       toast("ok", r.by === "ai" ? t("Annonces proposées : relisez-les avant d'enregistrer.", "Ads drafted: review them before saving.") : (svc ? t("Annonces proposées à partir de vos prestations (version simplifiée) : complétez les passages entre crochets.", "Ads drafted from your services (simplified version): fill in the bracketed parts.") : t("Annonces proposées à partir des faits du produit (version simplifiée) : complétez les passages entre crochets.", "Ads drafted from the product facts (simplified version): fill in the bracketed parts.")));
@@ -141,6 +143,7 @@ export function CampaignsPanel({ autoNew = false }: { autoNew?: boolean } = {}) 
   const ctaOptions = (cur: string) => (ctaList[editLang].includes(cur) || !cur ? ctaList[editLang] : [cur, ...ctaList[editLang]]);
   return (
     <div className="grid min-w-0 gap-5" data-ad-campaigns>
+      {data?.plan!=="dominer"&&<Card className="p-4" data-ad-plan-lock>{t("La publicité et l’aide aux campagnes nécessitent Dominer (129 € par mois). Vos campagnes existantes restent conservées.","Advertising and campaign assistance require Dominate (€129 per month). Existing campaigns are kept.")}</Card>}
       <div className="rounded-2xl border border-line bg-card p-4 text-sm text-ink-2">
         {t("Le studio prépare vos campagnes : angles, audiences, textes et créations aux bons formats.", "The studio prepares your campaigns: angles, audiences, copy and creatives in the right formats.")} <strong className="text-ink">{t("Aucune dépense publicitaire n'est engagée depuis le studio", "No ad spend is committed from the studio")}</strong>{t(" : le budget et le lancement se règlent dans le gestionnaire de publicités de chaque réseau, avec l'export ci-dessous.", ": budget and launch are set in each network's ads manager, using the export below.")}
       </div>
@@ -149,7 +152,7 @@ export function CampaignsPanel({ autoNew = false }: { autoNew?: boolean } = {}) 
           <h3 className="font-display text-xl font-semibold">{t("Campagnes", "Campaigns")}</h3>
           <p className="text-sm text-muted">{t("Annonces, audiences et plan de test, avec les créations publicitaires choisies.", "Ads, audiences and test plan, with the chosen ad creatives.")}</p>
         </div>
-        <Button variant="signal" icon={<Plus className="size-4" />} onClick={() => setEdit(blank())} data-new-campaign>{t("Nouvelle campagne", "New campaign")}</Button>
+        <Button variant="signal" icon={<Plus className="size-4" />} disabled={data?.plan!=="dominer"} onClick={() => setEdit(blank())} data-new-campaign>{t("Nouvelle campagne", "New campaign")}</Button>
       </div>
       {(list?.campaigns ?? []).length === 0 ? (
         <Empty title={t("Aucune campagne", "No campaigns")} icon={<Megaphone className="size-5" />}>{t("Créez une campagne : les angles de votre stratégie de marque sont proposés comme point de départ.", "Create a campaign: the angles from your brand strategy are suggested as a starting point.")}</Empty>
@@ -179,6 +182,7 @@ export function CampaignsPanel({ autoNew = false }: { autoNew?: boolean } = {}) 
       )}
       {edit && (
         <Modal open onClose={() => setEdit(null)} title={edit.id ? t("Campagne", "Campaign") : t("Nouvelle campagne", "New campaign")} wide>
+          {!edit.id&&<CommunicationAngleSelector value={angleId} onChange={setAngleId}/>}
           <div className="grid gap-4">
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label={t("Nom", "Name")} htmlFor="cname"><Input id="cname" value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} /></Field>

@@ -184,7 +184,7 @@ export function localDraft(brief: ContentBrief, f: VerifiedFacts, o: { runId?: s
     }
     case "home_page": {
       if (f.business === "services") {
-        w.h1(`${cap(f.category)}${city ? ` ${lang === "fr" ? "à" : lang === "es" ? "en" : "in"} ${city}` : ""} — ${f.brand}`);
+        w.h1(f.marketingStrategy&&f.marketingStrategy.angleId!=="generalist"?f.marketingStrategy.angle.examples.hero:`${cap(f.category)}${city ? ` ${lang === "fr" ? "à" : lang === "es" ? "en" : "in"} ${city}` : ""} — ${f.brand}`);
         w.p(sentence(f.difference ?? tr(lang, `${f.brand} : ${f.services.map((s) => s.name.toLowerCase()).join(", ")}`, `${f.brand}: ${f.services.map((s) => s.name.toLowerCase()).join(", ")}`, `${f.brand}: ${f.services.map((s) => s.name.toLowerCase()).join(", ")}`)));
         w.h2(H.services);
         const svcPages = pages.filter((x) => x.kind === "service");
@@ -200,7 +200,7 @@ export function localDraft(brief: ContentBrief, f: VerifiedFacts, o: { runId?: s
         contactBlock(w, f, lang);
         w.cta(brief.cta ?? P.cta.quote, f.contact.bookingUrl);
       } else {
-        w.h1(`${f.brand} — ${f.offerName}`);
+        w.h1(f.marketingStrategy&&f.marketingStrategy.angleId!=="generalist"?f.marketingStrategy.angle.examples.hero:`${f.brand} — ${f.offerName}`);
         w.p(sentence(f.difference ?? `${f.offerName}, ${f.category.toLowerCase()}`));
         w.h2(H.benefits);
         if (f.facts.length) w.ul(f.facts.slice(0, 4).map(factLine));

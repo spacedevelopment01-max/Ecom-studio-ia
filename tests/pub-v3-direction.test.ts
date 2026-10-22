@@ -1,3 +1,4 @@
+import { grantProjectPlan } from "./communication-choice-fixture";
 /**
  * Moteur publicitaire V3 (outils simulés : aucun appel réel, aucune dépense) : une direction artistique par
  * publicité — concepts différents, prise de vue transmise à l'image, mise en page de la bibliothèque qui garde la
@@ -46,7 +47,7 @@ describe("Publicités V3 : direction artistique par publicité", async () => {
   });
 
   it("casque montré seulement sur les photos du client : 3 publicités, 3 concepts, 3 mises en page, 3 photos différentes", async () => {
-    const pid = seedImageFixture(u.id, "hightech");
+    const pid = seedImageFixture(u.id, "hightech");grantProjectPlan(pid,"dominer");
     const photos: string[] = [];
     for (const f of ["casque-1", "casque-2", "casque-3"]) photos.push((await saveAsset({ projectId: pid, userId: u.id, data: fs.readFileSync(`scripts/demo-products/inputs/pixabay/${f}.jpg`), name: `${f}.jpg`, mime: "image/jpeg", role: "original", folderKey: "images.originals", origin: "upload", meta: { triage: { kind: "busy", plain: false } }, status: "ready" })).id);
     const p = loadProject(pid);
@@ -74,7 +75,7 @@ describe("Publicités V3 : direction artistique par publicité", async () => {
   }, 240_000);
 
   it("avec l'IA d'images : une photo publicitaire par concept générée depuis la photo du client, la mise en situation garde la photo entière", async () => {
-    const pid = seedImageFixture(u.id, "hightech");
+    const pid = seedImageFixture(u.id, "hightech");grantProjectPlan(pid,"dominer");
     const photos: string[] = [];
     for (const f of ["casque-1", "casque-2"]) photos.push((await saveAsset({ projectId: pid, userId: u.id, data: fs.readFileSync(`scripts/demo-products/inputs/pixabay/${f}.jpg`), name: `${f}.jpg`, mime: "image/jpeg", role: "original", folderKey: "images.originals", origin: "upload", meta: { triage: { kind: "busy", plain: false } }, status: "ready" })).id);
     const p = loadProject(pid);
@@ -101,7 +102,7 @@ describe("Publicités V3 : direction artistique par publicité", async () => {
   }, 240_000);
 
   it("prise de vue du concept transmise au moteur d'images (cadrage, lumière, zone de texte)", async () => {
-    const p = loadProject(seedImageFixture(u.id, "cosmetic"));
+    const p = loadProject(seedImageFixture(u.id, "cosmetic"));grantProjectPlan(p.id,"dominer");
     const seen: any[] = [];
     const { deps } = mockAdDeps({ userId: u.id, projectId: p.id, canReview: false });
     const image = deps.image;
@@ -174,7 +175,7 @@ describe("création correcte mais perfectible", () => {
     const { seedImageFixture } = await import("./image-v2-fixtures");
     const { mockAdDeps, adReview } = await import("./ads-v2-mock");
     const u = await createUser(`garde-${Date.now()}@test.fr`, "motdepasse-test", "G");
-    const pid = seedImageFixture(u.id, "hightech");
+    const pid = seedImageFixture(u.id, "hightech");grantProjectPlan(pid,"dominer");
     const { deps } = mockAdDeps({ userId: u.id, projectId: pid, review: () => adReview(6.3, { generic: true, issues: ["accroche banale"], fix: { target: "hook", instruction: "accroche plus précise" } }) });
     const r = await runWithLang({ ui: "fr", content: "fr" }, () => runAdEngineV2(null, pid, { count: 1, platforms: ["meta_story"] }, deps));
     expect(r.outcomes[0].verdict).toBe("PROVISIONAL");
@@ -191,7 +192,7 @@ describe("une seule image payante par création", () => {
     const { seedImageFixture } = await import("./image-v2-fixtures");
     const { mockAdDeps, adReview } = await import("./ads-v2-mock");
     const u = await createUser(`unepaye-${Date.now()}@test.fr`, "motdepasse-test", "P");
-    const pid = seedImageFixture(u.id, "saas");
+    const pid = seedImageFixture(u.id, "saas");grantProjectPlan(pid,"dominer");
     const { deps } = mockAdDeps({ userId: u.id, projectId: pid, review: () => adReview(6.3, { issues: ["image banale"], fix: { target: "visual", instruction: "image plus forte" } }) });
     let paid = 0;
     deps.image = async () => {
@@ -214,7 +215,7 @@ describe("nombre d'images et formats choisis par le client", () => {
     const { mockAdDeps } = await import("./ads-v2-mock");
     const { CREATION_AI_ADS } = await import("@/lib/engine/pipeline");
     const u = await createUser(`formats-${Date.now()}@test.fr`, "motdepasse-test", "F");
-    const pid = seedImageFixture(u.id, "saas");
+    const pid = seedImageFixture(u.id, "saas");grantProjectPlan(pid,"dominer");
     const { deps } = mockAdDeps({ userId: u.id, projectId: pid });
     deps.canGenerate = true;
     let paid = 0;

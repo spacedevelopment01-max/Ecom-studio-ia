@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
+import {chooseGeneralistForTest} from './strategy-choice-fixture';
+import {grantProjectPlan} from './communication-choice-fixture';
 let sessionUser: any = null;
 let injectedQuote=false;
 vi.mock("@/lib/video-v2/chain-quote",async original=>{const real=await original<typeof import("@/lib/video-v2/chain-quote")>();return {...real,sceneChainQuote:(...args:Parameters<typeof real.sceneChainQuote>)=>{const q=real.sceneChainQuote(...args);return injectedQuote?{...q,allowed:true,reason:null,mode:"ai" as const,estimateMicro:50_000,capMicro:100_000,scriptMicro:0}:q;}};});
@@ -31,8 +33,8 @@ describe("Création vidéo guidée : droits natifs, sans fournisseur", async () 
   });
   it("expose le document conservé après échec du premier encodage, puis retire la carte d'erreur après rendu",async()=>{
     const {loadProject}=await import("@/lib/projects");const {buildSceneDoc,localScenePlan}=await import("@/lib/video-v2/three-scenes");const {saveVideoVersion}=await import("@/lib/video-v2/store");
-    const u=await createUser(`resume-encode-${crypto.randomUUID()}@test.invalid`,"motdepasse-test","Fixture");sessionUser=u;const pid=seedImageFixture(u.id,"restaurant"),p=loadProject(pid);
-    const request={as:"post" as const,key:"fixture-first-encode"};const docKey=`vid:${(await import("node:crypto")).default.createHash("sha256").update(request.key).digest("hex").slice(0,20)}`;
+    const u=await createUser(`resume-encode-${crypto.randomUUID()}@test.invalid`,"motdepasse-test","Fixture");sessionUser=u;const pid=seedImageFixture(u.id,"restaurant"),p=loadProject(pid);grantProjectPlan(pid,'dominer');
+    const request={as:"post" as const,mode:"stock" as const,key:"fixture-first-encode"};const docKey=`vid:${(await import("node:crypto")).default.createHash("sha256").update(request.key).digest("hex").slice(0,20)}`;
     const {enqueue}=await import("@/lib/jobs");const job=enqueue({userId:u.id,projectId:pid,type:"video.scenes",label:"Échec simulé",payload:{request}});run("UPDATE jobs SET status='failed',error='Encodeur interrompu' WHERE id=?",job.id);
     const plan=localScenePlan(p,null,request),doc=buildSceneDoc(p,[0,1,2].map(k=>({assetId:`source${k}`,durationS:5,generated:false})),plan,"9:16","post");saveVideoVersion(pid,docKey,doc);
     const ctx={params:Promise.resolve({id:pid})},get=()=>route.GET(new Request("http://localhost"),ctx);
@@ -40,19 +42,23 @@ describe("Création vidéo guidée : droits natifs, sans fournisseur", async () 
     saveVideoVersion(pid,docKey,doc,{renderedAssetId:"fixture-rendered"});expect((await(await get()).json()).drafts).toHaveLength(0);
     expect(all("SELECT id FROM jobs WHERE project_id=?",pid)).toHaveLength(1);
   });
-  it("devis consultable, création refusée sans forfait même pour montage gratuit ; propriétaire payé accepté, étranger refusé", async () => {
+  it("devis consultable, communication refusée sans choix autorisé ; propriétaire payé avec choix accepté, étranger refusé", async () => {
     const u = await createUser(`video-droits-${crypto.randomUUID()}@test.fr`, "motdepasse-test", "Test isolé");
     sessionUser = u;
     const pid = seedImageFixture(u.id, "restaurant");
     const ctx = { params: Promise.resolve({ id: pid }) };
     let approvedEstimateMicro: number | undefined;let approvalToken:string|undefined;
-    const req = (action: string) => new Request(`http://localhost/api/projects/${pid}/creative/video`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action,mode:"stock", as: "ad", scenes: 3, totalS: 15, approvedEstimateMicro,approvalToken }) });
+    const req = (action: string) => new Request(`http://localhost/api/projects/${pid}/creative/video`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action,mode:"stock", as: "post", scenes: 3, totalS: 15, approvedEstimateMicro,approvalToken }) });
+    // A quote remains consultable; the explicit communication choice is required before creation.
     expect((await route.POST(req("quote"), ctx)).status).toBe(200);
-    expect((await route.POST(req("create"), ctx)).status).toBe(402);
+    const withoutChoice=await route.POST(req("create"),ctx);
+    expect(withoutChoice.status).toBe(409);
+    expect((await withoutChoice.json()).code).toBe('strategy_communication_choice_required');
     expect(all("SELECT id FROM jobs WHERE project_id = ?", pid)).toHaveLength(0);
     getSubscription(u.id);
     run("UPDATE subscriptions SET status='active', plan='creer' WHERE user_id = ?", u.id);
     syncAllowance(u.id);
+    chooseGeneralistForTest(pid);
     approvedEstimateMicro = (await (await route.POST(req("quote"), ctx)).json()).estimateMicro;
     approvalToken=(await(await route.POST(req("plan"),ctx)).json()).approvalToken;
     expect((await route.POST(req("create"), ctx)).status).toBe(200);
@@ -69,6 +75,7 @@ describe("Création vidéo guidée : droits natifs, sans fournisseur", async () 
 it('devis injecté, budget natif épuisé après accord : refus serveur avant toute tâche ou appel de clip direct',async()=>{
  const{createUser}=await import('@/lib/auth');const{loadProject}=await import('@/lib/projects');const{seedImageFixture}=await import('./image-v2-fixtures');const{getSubscription,syncAllowance,balance,reserve,release}=await import('@/lib/billing');const{accountKeyFor}=await import('@/lib/project-billing');const{run,all,now}=await import('@/lib/db');const{localScenePlan}=await import('@/lib/video-v2/three-scenes');const route=await import('@/app/api/projects/[id]/creative/video/route');
  const u=await createUser(`video-budget-${crypto.randomUUID()}@test.invalid`,'motdepasse-test','Fictif');sessionUser=u;const pid=seedImageFixture(u.id,'restaurant');getSubscription(u.id);run("UPDATE subscriptions SET status='active',plan='dominer' WHERE user_id=?",u.id);syncAllowance(u.id);
+ chooseGeneralistForTest(pid);
  injectedQuote=true; // Devis injecté seulement ; les droits, l’accord signé et le budget restent natifs.
  const req={as:'ad' as const,generation:'direct' as const,scenes:2,totalS:10};const ctx={params:Promise.resolve({id:pid})};const post=(data:unknown)=>route.POST(new Request('http://localhost',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)}),ctx);
  const quotation=await(await post({action:'quote',...req})).json();expect(quotation.allowed,quotation.reason).toBe(true);const plan=await(await post({action:'plan',...req,draftPlan:localScenePlan(loadProject(pid),null,req)})).json();expect(plan.approvalToken).toBeTruthy();

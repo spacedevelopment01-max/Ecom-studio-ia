@@ -6,6 +6,7 @@
  * sont refusés (la version locale reprend la main). Une section « preuve » n'existe que s'il y a une preuve.
  */
 import { z } from "zod";
+import { assertionText } from "../social-v2/publication-copy-policy";
 import { videoEditorialInstruction, organicVideo } from "./editorial";
 import type { AdInsight } from "../ads-v2/types";
 import { spokenUsage } from "./strategy";
@@ -46,14 +47,15 @@ const NEEDS_PROOF = [
 const fold = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 /** Défauts d'un script : formules creuses, affirmations non confirmées, durée de voix impossible, CTA absent. */
-export function scriptIssues(sections: ScriptSection[], material: { proofs: string[]; facts: { label: string; value: string }[]; claimsToAvoid?: string[]; ctaRequired?:boolean }): string[] {
+export function scriptIssues(sections: ScriptSection[], material: { proofs: string[]; facts: { label: string; value: string }[]; claimsToAvoid?: string[]; ctaRequired?:boolean;names?:string[] }): string[] {
   const issues: string[] = [];
   const known = fold([...material.proofs, ...material.facts.map((f) => `${f.label} ${f.value}`)].join(" "));
   for (const s of sections) {
     const text = `${s.voice} ${s.onScreen}`;
-    for (const h of HOLLOW) if (h.test(text)) issues.push(`${s.part} : formule creuse (« ${text.match(h)![0]} »)`);
+    const checked=[assertionText(s.voice,material.names),assertionText(s.onScreen,material.names)].join(" ");
+    for (const h of HOLLOW) if (h.test(checked)) issues.push(`${s.part} : formule creuse (« ${checked.match(h)![0]} »)`);
     for (const n of NEEDS_PROOF) {
-      const m = text.match(n.re);
+      const m = checked.match(n.re);
       if (!m) continue;
       // Acceptée seulement si l'élément figure dans les faits ou preuves confirmés.
       const token = fold(m[0]).replace(/\s+/g, " ").trim();
@@ -129,7 +131,7 @@ export function localScript(i: AdInsight, st: CreativeStrategy, intent: VideoInt
     const lines = [e.title, ...content.filter(Boolean)];
     const seconds = st.durationS / lines.length;
     const sections:ScriptSection[] = lines.map((text,k)=>({part:k===0?"hook":e.blocks[k-1]?.kind==="cta"?"cta":"development",durationS:seconds,voice:text,onScreen:k===0?e.title:""}));
-    return {style:st.style.narrative,sections,by:"local",issues:scriptIssues(sections,{proofs:st.proofs,facts:i.facts,ctaRequired:e.purpose==="ad"})};
+    return {style:st.style.narrative,sections,by:"local",issues:scriptIssues(sections,{proofs:st.proofs,facts:i.facts,ctaRequired:e.purpose==="ad",names:[i.brand,i.offerName]})};
   }
   const parts: ScriptPart[] = ["hook", "development", "demonstration", ...(st.proofs.length ? (["proof"] as const) : []), "conclusion", ...(intent.purpose === "organic" ? [] : ["cta" as const])];
   // Vidéo très courte : on garde l'essentiel (accroche, démonstration, CTA).
@@ -138,7 +140,7 @@ export function localScript(i: AdInsight, st: CreativeStrategy, intent: VideoInt
   const lines = voiceLines(i, st, intent);
   const cap = (x: string) => x.charAt(0).toLocaleUpperCase() + x.slice(1);
   const sections = kept.map((part, k) => ({ part, durationS: durations[k], voice: lines[part].voice, onScreen: cap(lines[part].onScreen.slice(0, 60)) }));
-  return { style: st.style.narrative, sections, by: "local", issues: scriptIssues(sections, { proofs: st.proofs, facts: i.facts, claimsToAvoid: i.claimsToAvoid,ctaRequired:intent.purpose!=="organic" }) };
+  return { style: st.style.narrative, sections, by: "local", issues: scriptIssues(sections, { proofs: st.proofs, facts: i.facts, claimsToAvoid: i.claimsToAvoid,ctaRequired:intent.purpose!=="organic",names:[i.brand,i.offerName] }) };
 }
 
 export const ScriptSchema = z.object({

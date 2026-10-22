@@ -1,0 +1,104 @@
+[
+  {
+    "file": "produit-expression-theme.mp4",
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1440,
+        "height": 1000
+      }
+    ],
+    "format": {
+      "duration": "47.520000"
+    },
+    "source": "produit-expression-theme.webm",
+    "actualBrowserRecording": true
+  },
+  {
+    "file": "produit-parcours.mp4",
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1440,
+        "height": 1000
+      }
+    ],
+    "format": {
+      "duration": "125.680000"
+    },
+    "source": "produit-parcours.webm",
+    "actualBrowserRecording": true
+  },
+  {
+    "file": "produit-usage-theme.mp4",
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1440,
+        "height": 1000
+      }
+    ],
+    "format": {
+      "duration": "24.080000"
+    },
+    "source": "produit-usage-theme.webm",
+    "actualBrowserRecording": true
+  },
+  {
+    "file": "service-expression-theme.mp4",
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1440,
+        "height": 1000
+      }
+    ],
+    "format": {
+      "duration": "55.680000"
+    },
+    "source": "service-expression-theme.webm",
+    "actualBrowserRecording": true
+  },
+  {
+    "file": "service-parcours.mp4",
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1440,
+        "height": 1000
+      }
+    ],
+    "format": {
+      "duration": "100.000000"
+    },
+    "source": "service-parcours.webm",
+    "actualBrowserRecording": true
+  },
+  {
+    "file": "service-usage-theme.mp4",
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1440,
+        "height": 1000
+      }
+    ],
+    "format": {
+      "duration": "24.040000"
+    },
+    "source": "service-usage-theme.webm",
+    "actualBrowserRecording": true
+  }
+]

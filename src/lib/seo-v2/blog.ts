@@ -1,3 +1,4 @@
+import { strategyContent } from "../strategy-consumption";
 /**
  * Blog V2 : sujets → intention → mot-clé → plan → rédaction → relecture → vérification des faits → contrôle SEO →
  * liens internes → brouillon éditable. Les sujets viennent des groupes de la stratégie (aucune cannibalisation
@@ -43,7 +44,7 @@ export const blogIdFor = (docKey: string) => `b2${crypto.createHash("sha256").up
 export const blogAiAllowed = (userId: string, projectId?: string | null) => blogPlanReason(userId, projectId) == null;
 
 /** Range (ou met à jour) le brouillon dans le blog existant ; un article publié reste publié (statut « prêt »). */
-export function saveBlogDraftV2(p: Project, docKey: string, doc: ContentDoc, o: { notes: string[]; ai: boolean; jobKey: string }) {
+export function saveBlogDraftV2(p: Project, docKey: string, doc: ContentDoc, o: { notes: string[]; ai: boolean; jobKey: string; quotaReserved?:boolean }) {
   const articleId = blogIdFor(docKey);
   const prev = one<{ slug: string; status: string; cover_asset_id: string | null; title: string; body_html: string; v2_hash: string | null }>("SELECT slug, status, cover_asset_id, title, body_html, v2_hash FROM blog_articles WHERE id = ?", articleId);
   // Article modifié par le client dans l'onglet Blog depuis le dernier rangement : jamais écrasé (le document V2 garde
@@ -64,7 +65,8 @@ export function saveBlogDraftV2(p: Project, docKey: string, doc: ContentDoc, o: 
     articleId, p.id, p.userId, title, slug, doc.meta.seoTitle, doc.meta.metaDescription, excerpt, body, "[]", prev?.cover_asset_id ?? pickCover(p.id), doc.lang, JSON.stringify(o.notes.slice(0, 30)), doc.primaryKeyword, "informational", t, t,
   );
   run("UPDATE blog_articles SET v2_hash = ? WHERE id = ?", articleHash(title, body), articleId);
+  strategyContent(p.id,"blog",articleId);
   // Un article écrit par l'IA = 1 article du forfait, décompté une seule fois par rédaction.
-  if (o.ai) consumeQuota(p.userId, "blog", 1, `blog2:${o.jobKey}:${docKey}`, p.id);
+  if (o.ai&&!o.quotaReserved) consumeQuota(p.userId, "blog", 1, `blog-draft:${p.id}:${articleId}`, p.id);
   return articleId;
 }

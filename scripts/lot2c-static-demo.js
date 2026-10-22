@@ -19,10 +19,10 @@
      en bas à droite, au-dessus d'une barre d'achat fixe, et disparaissent seuls. */
   function banner() {
     if (document.getElementById('es-static-note')) return;
-    var s = document.createElement('style'); s.textContent = '#es-static-note{position:relative;z-index:1;margin:0;padding:6px 12px;background:#111;color:#fff;font:600 11px/1.4 system-ui,sans-serif;text-align:center;letter-spacing:.02em}#es-static-note span{opacity:.85;font-weight:500}#es-static-toasts{position:fixed;right:10px;bottom:calc(10px + var(--es-static-offset,0px));z-index:9999;max-width:min(92vw,420px);font:600 12px/1.35 system-ui,sans-serif;transition:bottom .25s;pointer-events:none}body:has(.es-drawer.is-open) #es-static-toasts,body:has(dialog[open]) #es-static-toasts{display:none}#es-static-toasts .es-static-note__msg{margin:8px 0 0;padding:10px 12px;border-radius:12px;background:#fff;color:#111;border:1px solid #ddd;box-shadow:0 10px 30px -14px rgba(0,0,0,.5)}';
+    var s = document.createElement('style'); s.textContent = '#es-static-note{position:relative;z-index:1;margin:0;padding:5px 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#111;color:#fff;font:600 11px/1.4 system-ui,sans-serif;text-align:center;letter-spacing:.02em}#es-static-note span{opacity:.85;font-weight:500}#es-static-toasts{position:fixed;right:10px;bottom:calc(10px + var(--es-static-offset,0px));z-index:9999;max-width:min(92vw,420px);font:600 12px/1.35 system-ui,sans-serif;transition:bottom .25s;pointer-events:none}body:has(.es-drawer.is-open) #es-static-toasts,body:has(dialog[open]) #es-static-toasts{display:none}#es-static-toasts .es-static-note__msg{margin:8px 0 0;padding:10px 12px;border-radius:12px;background:#fff;color:#111;border:1px solid #ddd;box-shadow:0 10px 30px -14px rgba(0,0,0,.5)}';
     document.head.appendChild(s);
     var n = document.createElement('div'); n.id = 'es-static-note'; n.setAttribute('role', 'note');
-    n.innerHTML = '<strong>Aperçu de démonstration</strong> <span>· aperçu statique · paiement désactivé · données fictives</span>';
+    n.innerHTML = '<strong>Aperçu de démonstration</strong> <span>· paiement désactivé</span>';
     document.body.insertBefore(n, document.body.firstChild);
     var toasts = document.createElement('div'); toasts.id = 'es-static-toasts'; document.body.appendChild(toasts);
     /* Décalage au-dessus d'une barre d'achat fixe visible (fiche produit sur téléphone). */

@@ -1,0 +1,8 @@
+{
+  "codeCommit": "6b7fe5e2671e5567f8482fe2ef2c0f7f26527832",
+  "command": "node node_modules/typescript/bin/tsc --noEmit",
+  "exitCode": 0,
+  "sourceLog": "/tmp/ecs160-final-types3.log",
+  "logBytes": 0,
+  "note": "La commande ne produit aucune sortie en cas de succès ; statut de sortie capturé par le terminal."
+}

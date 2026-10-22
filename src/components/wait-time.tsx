@@ -70,8 +70,8 @@ function remember(key: string, ms: number) {
 
 /**
  * Attente d'une réponse directe (préparation faite pendant la requête, sans tâche de fond) : libellé, temps écoulé,
- * temps restant estimé (durées déjà mesurées ici, sinon ordre de grandeur `expectedMs`) et barre qui avance avec le
- * temps (bloquée à 95 % tant que la réponse n'est pas arrivée). `progress` (0–1) : avancement réel s'il est connu.
+ * temps restant estimé (durées déjà mesurées ici, sinon ordre de grandeur `expectedMs`).
+ * Une barre chiffrée n'est montrée que si `progress` (0–1) est réellement connu.
  */
 export function AiWait({ busy, label, waitKey, expectedMs, progress, className }: { busy: boolean; label: string; waitKey: string; expectedMs: number; progress?: number; className?: string }) {
   const start = useWaitStart(busy);
@@ -89,11 +89,10 @@ export function AiWait({ busy, label, waitKey, expectedMs, progress, className }
   // Réponse quasi immédiate : pas de carte qui clignote (elle apparaît après une seconde d'attente).
   if (elapsed < 900) return null;
   const est = learned(waitKey, expectedMs);
-  const value = progress != null ? progress : Math.min(0.95, elapsed / Math.max(1000, est.ms));
   return (
     <div className={cx("rounded-2xl border border-line bg-card p-3", className)} role="status" aria-live="polite" data-ai-wait={waitKey}>
       <p className="flex items-center gap-2 text-sm font-medium"><Spinner className="text-signal" /> {label}</p>
-      <Progress value={value} className="mt-2" />
+      {progress != null && Number.isFinite(progress) && <Progress value={progress} className="mt-2" />}
       <TimeInfo startedAt={start} progress={progress ?? 0} estimate={est} className="mt-1.5" />
     </div>
   );

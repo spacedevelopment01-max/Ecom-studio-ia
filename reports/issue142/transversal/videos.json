@@ -1,0 +1,62 @@
+[
+  {
+    "file": "videos/produit-semis-mobile.mp4",
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 390,
+        "height": 844
+      }
+    ],
+    "format": {
+      "duration": "10.600000"
+    }
+  },
+  {
+    "file": "videos/produit-semis-ordinateur.mp4",
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 960,
+        "height": 666
+      }
+    ],
+    "format": {
+      "duration": "9.600000"
+    }
+  },
+  {
+    "file": "videos/service-reliure-mobile.mp4",
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 390,
+        "height": 844
+      }
+    ],
+    "format": {
+      "duration": "10.360000"
+    }
+  },
+  {
+    "file": "videos/service-reliure-ordinateur.mp4",
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 960,
+        "height": 666
+      }
+    ],
+    "format": {
+      "duration": "8.360000"
+    }
+  }
+]

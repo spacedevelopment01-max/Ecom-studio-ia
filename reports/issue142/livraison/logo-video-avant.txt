@@ -1,0 +1,106 @@
+
+ RUN  v5.0.3 /workspace/work/publications-qualite
+
+ ❯ tests/mission142-livraison-logo-video.test.ts (7 tests | 7 failed) 2056ms
+   × video.v2 : une référence vidéo vide ne devient pas une livraison réussie 604ms
+   × video.v2.render : une référence vidéo vide ne devient pas une livraison réussie 164ms
+   × vidéo missing : fichier absent, illisible ou étranger refusé 164ms
+   × vidéo foreign : fichier absent, illisible ou étranger refusé 313ms
+   × vidéo corrupt : fichier absent, illisible ou étranger refusé 344ms
+   × logo redessiné absent : échec explicite et original conservé 300ms
+   × aucun logo ni série : ne pas afficher une création terminée 166ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/mission142-livraison-logo-video.test.ts > video.v2 : une référence vidéo vide ne devient pas une livraison réussie
+AssertionError: expected 'done' to be 'failed' // Object.is equality
+
+Expected: "failed"
+Received: "done"
+
+ ❯ tests/mission142-livraison-logo-video.test.ts:19:134
+     17| }
+     18| it.each(["video.v2","video.v2.render"])("%s : une référence vidéo vide…
+     19|  const{u,pid}=await fixture();const j=await execute(type,pid,u.id,{req…
+       |                                                                                                                                      ^
+     20| });
+     21| it.each(["missing","foreign","corrupt"])("vidéo %s : fichier absent, i…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  tests/mission142-livraison-logo-video.test.ts > video.v2.render : une référence vidéo vide ne devient pas une livraison réussie
+AssertionError: expected 'done' to be 'failed' // Object.is equality
+
+Expected: "failed"
+Received: "done"
+
+ ❯ tests/mission142-livraison-logo-video.test.ts:19:134
+     17| }
+     18| it.each(["video.v2","video.v2.render"])("%s : une référence vidéo vide…
+     19|  const{u,pid}=await fixture();const j=await execute(type,pid,u.id,{req…
+       |                                                                                                                                      ^
+     20| });
+     21| it.each(["missing","foreign","corrupt"])("vidéo %s : fichier absent, i…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  tests/mission142-livraison-logo-video.test.ts > vidéo missing : fichier absent, illisible ou étranger refusé
+AssertionError: expected 'done' to be 'failed' // Object.is equality
+
+Expected: "failed"
+Received: "done"
+
+ ❯ tests/mission142-livraison-logo-video.test.ts:23:78
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  tests/mission142-livraison-logo-video.test.ts > vidéo foreign : fichier absent, illisible ou étranger refusé
+ FAIL  tests/mission142-livraison-logo-video.test.ts > vidéo corrupt : fichier absent, illisible ou étranger refusé
+AssertionError: expected 'done' to be 'failed' // Object.is equality
+
+Expected: "failed"
+Received: "done"
+
+ ❯ tests/mission142-livraison-logo-video.test.ts:23:78
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  tests/mission142-livraison-logo-video.test.ts > logo redessiné absent : échec explicite et original conservé
+AssertionError: expected 'done' to be 'failed' // Object.is equality
+
+Expected: "failed"
+Received: "done"
+
+ ❯ tests/mission142-livraison-logo-video.test.ts:27:96
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  tests/mission142-livraison-logo-video.test.ts > aucun logo ni série : ne pas afficher une création terminée
+AssertionError: expected 'done' to be 'failed' // Object.is equality
+
+Expected: "failed"
+Received: "done"
+
+ ❯ tests/mission142-livraison-logo-video.test.ts:30:88
+     28| });
+     29| it("aucun logo ni série : ne pas afficher une création terminée",async…
+     30|  const{u,pid}=await fixture();expect((await execute("brand.logo.v2",pi…
+       |                                                                                        ^
+     31| });
+     32|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed (7)
+   Start at  10:33:29
+   Duration  7.17s (transform 37%, import 33%, tests 29%)
+
+  Transform  transforming modules took 2.60s · 37% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

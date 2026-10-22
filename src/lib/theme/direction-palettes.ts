@@ -48,6 +48,13 @@ export const DIRECTION_PALETTES: Record<DirectionId, DirectionPalette> = {
   fraise: { primary: "#C4312A", secondary: "#F9E1DB", accent: "#E4473F", light: "#FBF7F2", dark: "#141414" }, // rouge fraise (principal assombri : 5,1:1 sur le crème), rose pâle en fond doux, crème
   onde: { primary: "#257A10", secondary: "#E6F6DF", accent: "#4ECD01", light: "#FFFFFF", dark: "#1F1F1F" }, // vert vif en accent, vert profond lisible en principal (5,4:1 sur blanc), vert pâle en fond doux, anthracite
   orbe: { primary: "#9B4F36", secondary: "#D8CCB9", accent: "#9B4F36", light: "#F4F0E8", dark: "#29251F" }, // terre cuite, crème
+  sillon: { primary: "#9C5A2C", secondary: "#E7D8C6", accent: "#3B1C0C", light: "#F4EDE3", dark: "#24140C" }, // cuivre (lisible sur ivoire), brun du logo, ivoire chaud
+  noctil: { primary: "#4B3BB8", secondary: "#ECE8FA", accent: "#8E6CF0", light: "#ECE8FA", dark: "#0D0B26" }, // indigo lisible sur lavande, violet du halo, nuit profonde
+  traverse: { primary: "#4F5631", secondary: "#D9D2C2", accent: "#A8572E", light: "#F5F1E8", dark: "#20251A" }, // olive du sac (6,9:1 sur le crème), pierre, crème, terre cuite en accent
+  heuren: { primary: "#15233E", secondary: "#D9DDE3", accent: "#C0C6D0", light: "#F7F5F0", dark: "#0D1526" }, // bleu nuit du cadran, argent brumeux, argent des index et du boîtier, ivoire
+  "museau-club": { primary: "#1636C9", secondary: "#EFE6D2", accent: "#F2C14E", light: "#FBF7EE", dark: "#0B1B5E" }, // bleu cobalt des sangles, crème de la maille, jaune du socle, marine du logo
+  souple: { primary: "#5A1B36", secondary: "#E8CFCB", accent: "#B4637A", light: "#FBF3F0", dark: "#2B0E1C" }, // prune de la sangle et de l'anneau, rose poudré du tapis, rose mauve des poignées de l'anneau, ivoire rosé, prune profond (le liège porte le quatrième fond du thème)
+  alcove: { primary: "#A14225", secondary: "#EEE8E1", accent: "#D9A07E", light: "#F6F0E8", dark: "#2B1A12" }, // terre cuite du logo et du tissu, sable, abricot des lumières du soir
   rive: { primary: "#243B32", secondary: "#B7C2AE", accent: "#243B32", light: "#EEEAE2", dark: "#1B2B25" }, // vert profond, papier
 };
 

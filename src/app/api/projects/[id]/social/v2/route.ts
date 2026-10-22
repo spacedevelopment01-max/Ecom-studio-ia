@@ -1,3 +1,5 @@
+import { withCommunicationRequest } from "@/lib/marketing-strategy/communication-route";
+import { strategyVisibilitySql } from "@/lib/marketing-strategy/visibility";
 import { EditorialSchema, editorialPages, creativeContract, type Editorial } from "@/lib/social-v2/creative-contract";
 import { z } from "zod";
 import { HttpError } from "@/lib/auth";
@@ -36,8 +38,8 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   const u = new URL(req.url).searchParams;
   const from = Number(u.get("from") ?? now() - 7 * 86_400_000);
   const to = Number(u.get("to") ?? now() + 62 * 86_400_000);
-  const rows = all<any>("SELECT p.*, c.name AS connection_name FROM posts p LEFT JOIN connections c ON c.id = p.connection_id WHERE p.project_id = ? AND p.status != 'cancelled' AND ((p.scheduled_at >= ? AND p.scheduled_at < ?) OR p.scheduled_at IS NULL) ORDER BY COALESCE(p.scheduled_at, p.created_at) LIMIT 800", p.id, from, to);
-  const plans = all<{ id: string; params: string; status: string; engine: string; paused: number; created_at: number }>("SELECT id, params, status, engine, paused, created_at FROM content_plans WHERE project_id = ? ORDER BY created_at DESC LIMIT 20", p.id);
+  const rows = all<any>(`SELECT p.*, c.name AS connection_name FROM posts p LEFT JOIN connections c ON c.id = p.connection_id WHERE p.project_id = ? AND ${strategyVisibilitySql(p.id,"post","p.id")} AND p.status != 'cancelled' AND ((p.scheduled_at >= ? AND p.scheduled_at < ?) OR p.scheduled_at IS NULL) ORDER BY COALESCE(p.scheduled_at, p.created_at) LIMIT 800`, p.id, from, to);
+  const plans = all<{ id: string; params: string; status: string; engine: string; paused: number; created_at: number }>(`SELECT id, params, status, engine, paused, created_at FROM content_plans WHERE status NOT IN ('archived','cancelled') AND project_id = ? AND ${strategyVisibilitySql(p.id,"calendar","content_plans.id")} ORDER BY created_at DESC LIMIT 20`, p.id);
   const latest = plans.find((x) => x.engine === "v2");
   const lang = p.settings.language === "en" ? "en" : "fr";
   const facts = verifiedFacts(p);
@@ -68,6 +70,7 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
 
 const ids = z.array(z.string().max(40)).max(1000).optional();
 const Plan = z.object({
+  angleId:z.enum(["usage","reassurance","expression","discovery","generalist"]).optional(),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
   days: z.number().int().min(1).max(366).optional(),
@@ -95,6 +98,7 @@ const Plan = z.object({
  */
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
+  return withCommunicationRequest(p.id,req,async()=>{
   const b = await body(
     req,
     z.discriminatedUnion("action", [
@@ -107,7 +111,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       z.object({ action: z.literal("unschedule"), ids }),
       z.object({ action: z.literal("pause"), planId: z.string().max(80) }),
       z.object({ action: z.literal("resume"), planId: z.string().max(80) }),
-      z.object({ action: z.literal("edit"), text: z.string().min(3).max(600), confirm: z.boolean().optional(), maxCostEur: z.number().min(0).max(20).optional(), maxCostPct: z.number().min(0).max(100).optional(), planId: z.string().max(80).optional() }),
+      z.object({ action: z.literal("edit"), text: z.string().min(3).max(600), confirm: z.boolean().optional(), maxCostEur: z.number().min(0).max(20).optional(), maxCostPct: z.number().min(0).max(100).optional(), planId: z.string().max(80).optional(), /** Retouche IA : coût vu et accepté par le client, en % du budget IA du mois. */ approvedPct: z.number().min(0).max(1000).optional() }),
       z.object({ action: z.literal("automation"), kind: z.enum(AUTOMATION_KINDS), config: z.record(z.string(), z.unknown()).optional() }),
       z.object({ action: z.literal("quote_one"), kind: z.enum(["image", "carousel", "video"]), mode: z.enum(["free", "ai_image", "ai_post", "ai_video"]), networks: z.number().int().min(1).max(6), pages:z.number().int().min(1).max(10).optional() }),
       z.object({
@@ -187,8 +191,12 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     case "resume":
       planOwned(b.planId);
       return ok({ ok: true, ...setPlanPaused(b.planId, b.action === "pause") });
-    case "edit":
-      return ok(await applySocialEdit(p, b.text, realSocialDeps(null, p, aiActiveFor(p.userId, p.id)), { confirm: b.confirm, maxCostEur: b.maxCostPct != null ? capPctToMicro(p.userId, b.maxCostPct, p.id) / 1e6 : b.maxCostEur, planId: b.planId }));
+    case "edit": {
+      const r = await applySocialEdit(p, b.text, realSocialDeps(null, p, aiActiveFor(p.userId, p.id)), { confirm: b.confirm, maxCostEur: b.maxCostPct != null ? capPctToMicro(p.userId, b.maxCostPct, p.id) / 1e6 : b.maxCostEur, planId: b.planId, approvedPct: b.approvedPct ?? null });
+      // Coût d'une retouche IA : en % du budget IA du mois (`pct`), jamais de montant renvoyé au navigateur.
+      const { estimateMicro: _internal, ...shown } = r;
+      return ok(shown);
+    }
     case "automation":
       requirePlan(user, p.id);
       return ok({ id: createAutomation(p.id, b.kind, b.config ?? {}) });
@@ -240,4 +248,5 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       setAutomationStatus(p.id, b.automationId, b.status);
       return ok({ ok: true });
   }
+  },["plan", "ask", "create_one", "automation", "edit"]);
 });

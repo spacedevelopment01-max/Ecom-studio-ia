@@ -182,11 +182,11 @@ describe("mêmes garde-fous budgétaires pour OpenAI et Gemini", async () => {
     expect(calls.send).toBe(0);
   });
 
-  it("budget épuisé : rien n'est envoyé", async () => {
+  it("reste inférieur au minimum : rien n'est envoyé et le reliquat n'est pas annoncé dépensé", async () => {
     const u = await client("creer");
     // Reste minuscule : l'accès est ouvert, mais la réservation du coût maximal est refusée.
     run("UPDATE wallets SET monthly_used = monthly_allowance - 50, topup_balance = 0 WHERE user_id = ?", u.id);
-    await expect(text(u.id)).rejects.toThrow(/utilisée à 100 %/);
+    await expect(text(u.id)).rejects.toThrow(/budget restant.*minimum/);
     expect(calls.send).toBe(0);
     expect(reservations(u.id)).toHaveLength(0);
   });

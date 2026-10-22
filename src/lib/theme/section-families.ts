@@ -164,6 +164,10 @@ const CATALOG: FamilyEntry[] = [
   e("catalog", 1, "hero", { fr: "Présentation principale", en: "Main presentation" }, { fr: "Composition visuelle introduisant la boutique ou une collection.", en: "Visual composition introducing the store or a collection." }, "ouverture hero boutique collection", [
     d("immersive", "Promesse dans la scène", "Promise within the scene", "ed-opening", "background", { layout: "immersive" }),
     d("journal", "Titre puis paysage", "Title then landscape", "ed-opening", "stacked", { layout: "journal" }),
+    // Issue #155 (ALCÔVE) : le produit dans un cadre en arche à côté de la promesse.
+    d("arch", "Arche et promesse", "Arch and promise", "ed-opening", "split-right", { layout: "arch" }),
+    // Issue #158 (SOUPLE) : la scène bord à bord occupe tout le premier écran, titre et bouton posés sur l'image.
+    d("fullscreen", "Plein écran", "Full screen", "ed-opening", "background", { layout: "fullscreen" }),
   ]),
   e("catalog", 2, "collections", { fr: "Collections et catégories", en: "Collections and categories" }, { fr: "Accès visuels aux familles de produits.", en: "Visual access to product families." }, "collections catégories familles", [
     d("grid", "Grille", "Grid", "fs-collections", "grid-3", { layout: "grid" }),
@@ -381,7 +385,7 @@ export function familyTypes(family: FamilyId): Set<string> {
 }
 
 /** Famille d'un thème de référence (repli quand la catégorie du projet n'est pas connue). */
-export const THEME_FAMILY: Record<string, FamilyId> = { fraise: "specialty", onde: "specialty", orbe: "catalog", rive: "services" };
+export const THEME_FAMILY: Record<string, FamilyId> = { fraise: "specialty", onde: "catalog", orbe: "catalog", rive: "services", sillon: "specialty", noctil: "specialty", traverse: "specialty", heuren: "catalog", alcove: "catalog", "museau-club": "specialty", souple: "catalog" };
 export const familyOf = (kind: StoreKind | null | undefined, theme?: string): FamilyId | null => kind ?? (theme ? THEME_FAMILY[theme] ?? null : null);
 
 export const entryByKey = (key: string): FamilyEntry | undefined => ALL_ENTRIES.find((x) => x.key === key);

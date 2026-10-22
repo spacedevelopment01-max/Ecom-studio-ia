@@ -18,6 +18,7 @@ import { projectProgress } from "@/lib/project-progress";
 export const TABS = [
   { id: "pilote", label: "Pilote", labelEn: "Pilot", icon: Compass },
   { id: "produit", label: "Produit", labelEn: "Product", icon: Package },
+  { id: "strategie", label: "Stratégie", labelEn: "Strategy", icon: Palette },
   { id: "marque", label: "Marque", labelEn: "Brand", icon: Palette },
   { id: "boutique", label: "Boutique", labelEn: "Store", icon: Store },
   { id: "images", label: "Images", labelEn: "Images", icon: ImageIcon },

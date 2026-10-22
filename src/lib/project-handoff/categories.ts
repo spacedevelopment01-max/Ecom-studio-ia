@@ -12,9 +12,19 @@ export const CATEGORY_LABELS: Record<ProjectCategory, { fr: string; en: string }
 /** Références demandées, pas des identifiants installables inventés. Le raccordement appartient à Claude. */
 export const REFERENCE_THEMES = [
   { referenceId: "fraise", name: "FRAISE", categories: ["specialized"] },
-  { referenceId: "onde", name: "ONDE", categories: ["specialized"] },
+  { referenceId: "onde", name: "ONDE", categories: ["ecommerce"] },
   { referenceId: "orbe", name: "ORBE", categories: ["ecommerce"] },
   { referenceId: "atelier-rive", name: "Atelier Rive", categories: ["services"] },
+  { referenceId: "sillon", name: "SILLON", categories: ["specialized"] },
+  { referenceId: "noctil", name: "NOCTIL", categories: ["specialized"] },
+  { referenceId: "traverse", name: "TRAVERSE", categories: ["specialized"] },
+  // Issue #155 : mono-produit, mais famille E-commerce (consigne expresse de Thomas).
+  { referenceId: "heuren", name: "HEUREN", categories: ["ecommerce"] },
+  { referenceId: "alcove", name: "ALCÔVE", categories: ["ecommerce"] },
+  // Issue #158 : quatre produits pour chiens, boutique spécialisée (décision de Thomas du 21 octobre).
+  { referenceId: "museau-club", name: "MUSEAU CLUB", categories: ["specialized"] },
+  // Issue #158 : quatre accessoires de yoga et de Pilates en collection, famille E-commerce.
+  { referenceId: "souple", name: "SOUPLE", categories: ["ecommerce"] },
 ] as const;
 export type ReferenceThemeId = (typeof REFERENCE_THEMES)[number]["referenceId"];
 export const REFERENCE_THEME_IDS = REFERENCE_THEMES.map(t => t.referenceId) as [ReferenceThemeId, ...ReferenceThemeId[]];

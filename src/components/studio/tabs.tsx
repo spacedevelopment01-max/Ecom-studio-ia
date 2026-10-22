@@ -1,5 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
+import { StrategyStatus } from "./strategy-status";
 import { Spinner } from "../ui";
 
 const loading = () => (
@@ -11,6 +12,7 @@ const loading = () => (
 const MAP: Record<string, React.ComponentType> = {
   pilote: dynamic(() => import("./tab-pilote"), { loading }),
   produit: dynamic(() => import("./tab-produit"), { loading }),
+  strategie: dynamic(() => import("./tab-strategie"), { loading }),
   marque: dynamic(() => import("./tab-marque"), { loading }),
   boutique: dynamic(() => import("./tab-boutique"), { loading }),
   images: dynamic(() => import("./tab-images"), { loading }),
@@ -26,5 +28,5 @@ const MAP: Record<string, React.ComponentType> = {
 
 export function TabView({ tab }: { tab: string }) {
   const C = MAP[tab];
-  return C ? <C /> : null;
+  return C ? <>{tab!=="strategie"&&<StrategyStatus/>}<C /></> : null;
 }

@@ -241,7 +241,7 @@ export type VideoDocument = {
   disclosure: string | null;
   /** Étalonnage de la direction artistique (plans filmés et photos) ; absent : étalonnage par défaut. */
   grade?: VideoGrade;
-  meta: { initialSlot?:string;siteAmbience?:boolean;retakeCount?:number; retakeBudgetMicro?:number; ending?:{kind:"last_clip";holdS:number}; editorial?: Record<string, unknown>; intent: VideoIntentKind; source: "engine" | "user" | "ai_local" | "ai"; createdFrom: string | null; runId: string | null; /** Habillage publicitaire (titres, panneau, carte de fin posés sur les plans réels). */ promo?: boolean };
+  meta: { marketingStrategy?: import("../strategy-consumption").StrategyStamp | null; initialSlot?:string;siteAmbience?:boolean;retakeCount?:number; retakeBudgetMicro?:number; ending?:{kind:"last_clip";holdS:number}; editorial?: Record<string, unknown>; intent: VideoIntentKind; source: "engine" | "user" | "ai_local" | "ai"; createdFrom: string | null; runId: string | null; /** Habillage publicitaire (titres, panneau, carte de fin posés sur les plans réels). */ promo?: boolean };
 };
 
 // ------------------------------------------------------------------------------------------- qualité et résultat

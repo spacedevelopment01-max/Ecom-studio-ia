@@ -1,0 +1,42 @@
+
+ RUN  v5.0.3 /workspace/work/publications-qualite
+
+ ❯ tests/mission142-livraison-images.test.ts (6 tests | 5 failed) 1165ms
+   × image unavailable : ne jamais annoncer done/100 % undefined sans livrable valide du projet 274ms
+   × image missing : ne jamais annoncer done/100 % undefined sans livrable valide du projet 169ms
+   × image foreign : ne jamais annoncer done/100 % undefined sans livrable valide du projet 180ms
+   × image corrupt : ne jamais annoncer done/100 % undefined sans livrable valide du projet 170ms
+   × image missingfile : ne jamais annoncer done/100 % undefined sans livrable valide du projet 173ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/mission142-livraison-images.test.ts > image unavailable : ne jamais annoncer done/100 % undefined sans livrable valide du projet
+ FAIL  tests/mission142-livraison-images.test.ts > image missing : ne jamais annoncer done/100 % undefined sans livrable valide du projet
+ FAIL  tests/mission142-livraison-images.test.ts > image foreign : ne jamais annoncer done/100 % undefined sans livrable valide du projet
+ FAIL  tests/mission142-livraison-images.test.ts > image corrupt : ne jamais annoncer done/100 % undefined sans livrable valide du projet
+ FAIL  tests/mission142-livraison-images.test.ts > image missingfile : ne jamais annoncer done/100 % undefined sans livrable valide du projet
+AssertionError: expected 'done' to be 'failed' // Object.is equality
+
+Expected: "failed"
+Received: "done"
+
+ ❯ tests/mission142-livraison-images.test.ts:44:48
+     42| }
+     43| it.each(["unavailable","missing","foreign","corrupt","missingfile"])("…
+     44|   const j=await execute(mode);expect(j.status).toBe("failed");expect(j…
+       |                                                ^
+     45| });
+     46| it("une image valide, stockée dans le bon projet, reste livrée",async(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 1 passed (6)
+   Start at  09:51:18
+   Duration  5.92s (transform 42%, import 38%, tests 20%)
+
+  Transform  transforming modules took 2.40s · 42% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

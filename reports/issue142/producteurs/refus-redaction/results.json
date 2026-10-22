@@ -1,0 +1,39 @@
+{
+  "version": {
+    "commit": "33d9e40126dc524a0236c4d76a0a7d7c4e5f1feb",
+    "source": "compiled-build"
+  },
+  "simulation": true,
+  "realProviderCalls": 0,
+  "realProviderCost": 0,
+  "results": [
+    {
+      "business": "products",
+      "failedProgress": 0.15,
+      "failureOriginCode": "COPY_FACTS_REJECTED",
+      "noFailedResult": true,
+      "noImageDelivered": true,
+      "sourceFilesPreserved": true,
+      "persistedAfterReload": true,
+      "syntheticTextUsages": 1,
+      "syntheticBilledMicro": 28000,
+      "settledReservations": 1,
+      "openReservations": 0
+    },
+    {
+      "business": "services",
+      "failedProgress": 0.15,
+      "failureOriginCode": "COPY_FACTS_REJECTED",
+      "noFailedResult": true,
+      "noImageDelivered": true,
+      "sourceFilesPreserved": true,
+      "persistedAfterReload": true,
+      "syntheticTextUsages": 1,
+      "syntheticBilledMicro": 28000,
+      "settledReservations": 1,
+      "openReservations": 0
+    }
+  ],
+  "errors": [],
+  "blockedExternalHosts": []
+}

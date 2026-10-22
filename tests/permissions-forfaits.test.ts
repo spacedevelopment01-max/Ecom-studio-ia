@@ -21,15 +21,27 @@ describe("droits des forfaits, vérifiés côté serveur", async () => {
     return { u, pid };
   };
 
-  it("catalogue actif (consigne 6264783184) : les quatre thèmes de référence pour tout forfait payant ; les 30 anciens restent lisibles mais jamais sélectionnables ; rien sans forfait", async () => {
+  it("catalogue actif (consigne 6264783184) : les onze thèmes de référence selon le forfait et leur famille ; les 30 anciens restent lisibles mais jamais sélectionnables ; rien sans forfait", async () => {
     expect(themeOrderComplete()).toBe(true);
-    expect(THEME_ORDER).toHaveLength(34);
-    expect(THEME_ORDER.slice(30)).toEqual(["fraise", "onde", "orbe", "rive"]);
-    expect([PLANS.creer.themes, PLANS.vendre.themes, PLANS.dominer.themes]).toEqual([4, 4, 4]);
-    for (const id of ["fraise", "onde", "orbe", "rive"]) {
+    expect(THEME_ORDER).toHaveLength(41);
+    expect(THEME_ORDER.slice(30)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple"]);
+    expect([PLANS.creer.themes, PLANS.vendre.themes, PLANS.dominer.themes]).toEqual([1, 3, 5]);
+    // Premier forfait qui ouvre chaque thème (rang dans sa famille, plan-entitlements.ts) : boutique spécialisée
+    // fraise, sillon, noctil, traverse, museau-club ; E-commerce orbe, onde, heuren, alcove, souple ; services rive.
+    const first: Record<string, "creer" | "vendre" | "dominer"> = { fraise: "creer", orbe: "creer", rive: "creer", sillon: "vendre", noctil: "vendre", onde: "vendre", heuren: "vendre", traverse: "dominer", "museau-club": "dominer", alcove: "dominer", souple: "dominer" };
+    const rank = { creer: 0, vendre: 1, dominer: 2 };
+    for (const id of ["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple"]) {
       expect(themeAllowed(null, id)).toBe(false);
-      for (const plan of ["creer", "vendre", "dominer"] as const) expect(themeAllowed(plan, id)).toBe(true);
-      expect(planForTheme(id)).toBe("creer");
+      for (const plan of ["creer", "vendre", "dominer"] as const) expect(themeAllowed(plan, id)).toBe(rank[plan] >= rank[first[id]]);
+      expect(planForTheme(id)).toBe(first[id]);
+    }
+    // Intégration #159 / #161 : la famille du forfait de chaque thème est sa catégorie de projet (theme-fit.ts).
+    const { PLAN_THEME_ORDER } = await import("@/lib/plan-entitlements");
+    const { REFERENCE_THEMES, themeKinds } = await import("@/lib/theme/theme-fit");
+    for (const themeId of REFERENCE_THEMES) {
+      const family = (Object.keys(PLAN_THEME_ORDER) as (keyof typeof PLAN_THEME_ORDER)[]).find((k) => PLAN_THEME_ORDER[k].includes(themeId));
+      expect(family, themeId).toBeDefined();
+      expect(themeKinds(themeId), themeId).toEqual([family]);
     }
     // Ancien catalogue : retiré pour toute nouvelle sélection, même avec le forfait le plus large.
     for (const id of THEME_ORDER.slice(0, 30)) { expect(themeAllowed("dominer", id)).toBe(false); expect(planForTheme(id)).toBeNull(); }

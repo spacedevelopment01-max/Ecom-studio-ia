@@ -1,3 +1,4 @@
+import { grantProjectPlan } from "@/lib/project-subscriptions";
 /**
  * Bibliothèques par famille dans le studio (issue #141), par les vraies routes : galerie de la famille seule, ajout
  * depuis la galerie, refus d'une section d'une autre famille (galerie, opérations), changement de disposition qui garde
@@ -32,7 +33,7 @@ async function login(userId: string) {
 }
 const json = async (r: Response) => (await r.json()) as any;
 /** Démonstration enregistrée comme version courante du thème (comme après la composition dans le studio). */
-const demo = async (userId: string, id: "fraise" | "onde" | "orbe" | "rive") => { const d = await fr(() => demoProject(userId, id)); if (!currentTheme(d.pid)) saveThemeVersion(d.pid, d.spec, "Démonstration", "user"); return d; };
+const demo = async (userId: string, id: "fraise" | "onde" | "orbe" | "rive" | "sillon") => { const d = await fr(() => demoProject(userId, id)); grantProjectPlan(d.pid,"dominer"); if (!currentTheme(d.pid)) saveThemeVersion(d.pid, d.spec, "Démonstration", "user"); return d; };
 
 describe("bibliothèques par famille dans le studio", () => {
   it("galerie : 20 fonctions de la famille du projet (+ structure), ajout, refus des autres familles, disposition, en-tête et pied de page", async () => {
@@ -118,17 +119,19 @@ describe("bibliothèques par famille dans le studio", () => {
     // Services : jamais de panier ni de recherche dans les en-têtes proposés.
     expect((await fr(() => disposition.POST(post({ chrome: { part: "header", preset: "phone" } }), ctx(rive.pid)))).status).toBe(200);
     expect(hdr(rive).s.settings.show_cart).toBe(false);
-    expect(hdr(rive).s.settings.cta_label).toBe("Nous contacter");
+    // Le bouton de la démonstration (« Décrire mon projet », consigne du 21 octobre, 21 h 45) est conservé.
+    expect(hdr(rive).s.settings.cta_label).toBe("Décrire mon projet");
   }, 240_000);
 
   it("identité automatique : la même section dans deux marques de la même famille prend le nom, les textes et le style de chacune", async () => {
     const user = await createUser("familles-2@example.invalid", "isolated-test-only", "Familles 2");
     await login(user.id);
     const fraise = await demo(user.id, "fraise");
-    const onde = await demo(user.id, "onde");
+    // Deux boutiques spécialisées : ONDE est un thème E-commerce depuis #158 (section spécialisée refusée par les droits #150).
+    const sillon = await demo(user.id, "sillon");
     const sections = await import("@/app/api/projects/[id]/theme/sections/route");
     const html: Record<string, string> = {};
-    for (const p of [fraise, onde]) {
+    for (const p of [fraise, sillon]) {
       expect((await fr(() => sections.POST(post({ type: "fam:specialty.making~steps", template: "index", index: 0 }), ctx(p.pid)))).status).toBe(200);
       const spec = currentTheme(p.pid)!.spec;
       const s = spec.templates.index.sections[spec.templates.index.order[0]];
@@ -136,12 +139,12 @@ describe("bibliothèques par famille dans le studio", () => {
       html[p.pid] = (await fr(() => renderPage({ spec, base: "", cart: [] }, "/", new URLSearchParams()))).html;
     }
     const nameOf = (p: typeof fraise) => currentTheme(p.pid)!.spec.store.product.title;
-    const a = html[fraise.pid], b = html[onde.pid];
+    const a = html[fraise.pid], b = html[sillon.pid];
     const sectionOf = (h: string) => h.slice(h.indexOf('class="fs fs-making'), h.indexOf("</section>", h.indexOf('class="fs fs-making')));
-    expect(nameOf(fraise)).not.toBe(nameOf(onde));
+    expect(nameOf(fraise)).not.toBe(nameOf(sillon));
     expect(sectionOf(a)).toContain(nameOf(fraise));
-    expect(sectionOf(b)).toContain(nameOf(onde));
-    expect(sectionOf(a)).not.toContain(nameOf(onde));
+    expect(sectionOf(b)).toContain(nameOf(sillon));
+    expect(sectionOf(a)).not.toContain(nameOf(sillon));
     expect(sectionOf(b)).not.toContain(nameOf(fraise));
     // Palettes et polices propres à chaque projet (variables du thème), sans réglage manuel.
     const vars = (h: string) => (h.match(/--c-accent:\s*[^;]+;/) ?? [""])[0];

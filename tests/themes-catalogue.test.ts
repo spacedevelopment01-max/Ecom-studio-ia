@@ -33,13 +33,13 @@ const products = Object.fromEntries(DIRECTIONS.map((d) => [d.id, sampleSpec(d.id
 const services = Object.fromEntries(DIRECTIONS.map((d) => [d.id, serviceSpec(d.id, "fr", undefined, { rich: true })])) as Record<DirectionId, Spec>;
 
 describe("Catalogue de thèmes : trente choix réellement différents", () => {
-  it("définit 34 thèmes (30 anciens, lisibles seulement, + 4 de référence) et n'en propose que 4 (catalogue actif, consigne 6264783184), présentés en français et en anglais", () => {
-    expect(DIRECTIONS).toHaveLength(34);
-    expect(new Set(DIRECTIONS.map((d) => d.id)).size).toBe(34);
-    expect(new Set(DIRECTIONS.map((d) => d.name)).size).toBe(34);
-    expect(directionCards("fr").map((c) => c.id)).toEqual(["fraise", "onde", "orbe", "rive"]);
+  it("définit 41 thèmes (30 anciens, lisibles seulement, + 11 de référence dont SILLON #148, NOCTIL et TRAVERSE #152, HEUREN et ALCÔVE #155, MUSEAU CLUB et SOUPLE #158) et n'en propose que 11 (catalogue actif), présentés en français et en anglais", () => {
+    expect(DIRECTIONS).toHaveLength(41);
+    expect(new Set(DIRECTIONS.map((d) => d.id)).size).toBe(41);
+    expect(new Set(DIRECTIONS.map((d) => d.name)).size).toBe(41);
+    expect(directionCards("fr").map((c) => c.id)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple"]);
     // Le thème installé d'un projet existant, s'il est retiré, reste listé pour ce projet seulement, signalé « retiré ».
-    expect(directionCards("fr", ["vitrine"]).map((c) => [c.id, c.retired])).toEqual([["vitrine", true], ["fraise", false], ["onde", false], ["orbe", false], ["rive", false]]);
+    expect(directionCards("fr", ["vitrine"]).map((c) => [c.id, c.retired])).toEqual([["vitrine", true], ["fraise", false], ["onde", false], ["orbe", false], ["rive", false], ["sillon", false], ["noctil", false], ["traverse", false], ["heuren", false], ["alcove", false], ["museau-club", false], ["souple", false]]);
     for (const lang of ["fr", "en"] as const) for (const c of directionCards(lang, DIRECTIONS.map((d) => d.id))) {
       expect(c.tagline, c.id).toBeTruthy();
       expect(c.description.length, c.id).toBeGreaterThan(80);

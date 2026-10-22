@@ -1,0 +1,100 @@
+{
+  "artifactVersion": "issue160-2026-10-21-v3",
+  "codeCommit": "6b7fe5e2671e5567f8482fe2ef2c0f7f26527832",
+  "sourceBase": "8d011155c95be6c951c3e94d6d1fb7d48485c99b",
+  "branch": "codex/160-strategie-client",
+  "pullRequest": 161,
+  "capturedAt": "2026-10-21T23:11:11.500290+00:00",
+  "served": {
+    "commit": "6b7fe5e2671e5567f8482fe2ef2c0f7f26527832",
+    "source": "compiled-build"
+  },
+  "technicalChecks": "passed",
+  "creativeDelivery": "partial",
+  "realProviderCalls": 0,
+  "realAiExpenseEur": 0,
+  "customerDataPublished": false,
+  "merged": false,
+  "deployed": false,
+  "customerCodespaceUpdated": false,
+  "localTests": {
+    "filesPassed": 348,
+    "passed": 2765,
+    "skipped": 13,
+    "phpUnavailableConditionalSkips": 11,
+    "historicalSkips": 2,
+    "total": 2778
+  },
+  "targetedTests": {
+    "filesPassed": 24,
+    "passed": 197,
+    "fileArguments": [
+      "tests/mission154-parcours.test.ts",
+      "tests/mission142-livraison-logo-video.test.ts",
+      "tests/mission160*.test.ts",
+      "tests/publications-editoriales.test.ts",
+      "tests/publications-qualite.test.ts",
+      "tests/publications-services.test.ts",
+      "tests/publications-organisation.test.ts",
+      "tests/images-tri.test.ts",
+      "tests/images-faire-un-visuel.test.ts",
+      "tests/budget-ia-visuels.test.ts",
+      "tests/video-creation-rights.test.ts",
+      "tests/video-creative-guide.test.ts",
+      "tests/videos-creation.test.ts",
+      "tests/visuel-cree.test.ts"
+    ]
+  },
+  "ci": {
+    "runId": 39683960125,
+    "status": "success",
+    "passed": 2776,
+    "skipped": 2,
+    "themeCheckCases": 165
+  },
+  "commands": [
+    "node node_modules/typescript/bin/tsc --noEmit",
+    "NODE_OPTIONS=\"--import /tmp/ecs-strategy-160/scripts/verify-video-network-guard.mjs\" node node_modules/vitest/vitest.mjs run --maxWorkers=3",
+    "NODE_OPTIONS=\"--import /tmp/ecs-strategy-160/scripts/verify-video-network-guard.mjs\" node node_modules/vitest/vitest.mjs run tests/mission154-parcours.test.ts tests/mission142-livraison-logo-video.test.ts tests/mission160*.test.ts tests/publications-editoriales.test.ts tests/publications-qualite.test.ts tests/publications-services.test.ts tests/publications-organisation.test.ts tests/images-tri.test.ts tests/images-faire-un-visuel.test.ts tests/budget-ia-visuels.test.ts tests/video-creation-rights.test.ts tests/video-creative-guide.test.ts tests/videos-creation.test.ts tests/visuel-cree.test.ts --maxWorkers=3",
+    "JOBS=2 bash scripts/verify-theme.sh --rapide",
+    "node node_modules/next/dist/bin/next build",
+    "node node_modules/tsx/dist/cli.mjs scripts/mission160-seed.ts",
+    "node node_modules/tsx/dist/cli.mjs scripts/mission160-browser.ts",
+    "node node_modules/tsx/dist/cli.mjs /tmp/ecs160-inspection-readonly.mts",
+    "python zipfile.ZipFile.testzip + inventaire des templates JSONC",
+    "ffmpeg -i SOURCE.webm -c:v libx264 -preset veryfast -crf 22 -threads 1 -pix_fmt yuv420p -movflags +faststart -an CIBLE.mp4",
+    "ffprobe -show_entries format=duration:stream=codec_name,width,height -of json CIBLE.mp4"
+  ],
+  "isolatedExecution": {
+    "dataDirectory": "/tmp/ecs160-ui-data",
+    "server": "http://127.0.0.1:18260",
+    "generalWorkerStarted": false,
+    "networkGuard": "scripts/verify-video-network-guard.mjs; supplier transports refused in browser/seed"
+  },
+  "evidence": {
+    "curatedFullPageCaptures": 8,
+    "curatedReadableFirstScreens": 8,
+    "browserJourneys": 4,
+    "readOnlyViews": 8,
+    "originalVideos": 6,
+    "h264Videos": 6,
+    "nativeExports": 6,
+    "shopifyTemplateInventories": 34
+  },
+  "dependencies": [
+    "PR #156 base integration",
+    "Claude PR #159: four additional themes, copywriting rewrite and content-role registry reconciliation"
+  ],
+  "notVerified": [
+    "real supplier quality or invoices",
+    "actual CMS installation, payment, shipping, promotions, forms or booking",
+    "final visual acceptance of eleven Claude demonstrations",
+    "customer Codespace served version"
+  ],
+  "notes": [
+    "Full-page screenshots can be very tall; readable viewport images are linked separately.",
+    "Temporary read-only inspection initially used .ts outside an ES module package; rerun as .mts completed 8/8. No generation.",
+    "One earlier browser run was duplicated by mistake; both runs stopped, outputs isolated, fresh accounts and a single complete final run used here.",
+    "Local Theme Check rapid log predates the final single-post-only application fix; theme sources unchanged, full final CI also passed."
+  ]
+}

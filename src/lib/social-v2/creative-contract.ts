@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { PostBrief } from "./deps";
+import { assertionText } from "./publication-copy-policy";
 
 export const EditorialBlockSchema = z.object({
   kind: z.enum(["paragraph", "tip", "step", "question", "answer", "check", "quote", "source"]),
@@ -28,8 +29,9 @@ export function creativeContract(post: PostBrief, purpose: CreativePurpose) {
   const e = EditorialSchema.parse(post.editorial ?? {});
   const data = post.editorialData ?? {};
   const role = e.role ?? String(data.roleTitle ?? data.role ?? post.pillar ?? "publication");
-  const structure = e.structure ?? (/avis|review|testimon|quote|citation/i.test(role) ? "quote" : /faq|question/i.test(role) ? "faq" : /check/i.test(role) ? "checklist" : /étape|step|tutor/i.test(role) ? "tutorial" : /conseil|advice|erreur|mistake/i.test(role) ? "advice" : "editorial_photo");
-  if (purpose === "organic" && (structure === "quote" || /avis|review|testimon|quote|citation/i.test(role) || e.blocks?.some(b=>b.kind==="quote") || e.slides?.some(s=>s.blocks.some(b=>b.kind==="quote"))) && (!e.testimonial?.verified || !e.testimonial.authorized))
+  const testimonialRole=/avis|review|testimon|quote|citation/i.test(assertionText(role));
+  const structure = e.structure ?? (testimonialRole ? "quote" : /faq|question/i.test(role) ? "faq" : /check/i.test(role) ? "checklist" : /étape|step|tutor/i.test(role) ? "tutorial" : /conseil|advice|erreur|mistake/i.test(role) ? "advice" : "editorial_photo");
+  if (purpose === "organic" && (structure === "quote" || testimonialRole || e.blocks?.some(b=>b.kind==="quote") || e.slides?.some(s=>s.blocks.some(b=>b.kind==="quote"))) && (!e.testimonial?.verified || !e.testimonial.authorized))
     throw new Error("Avis indisponible : fournissez une citation vérifiable, sa source et l'autorisation, ou choisissez un autre contenu. Aucun avis fabriqué.");
   const blocks: EditorialBlock[] = e.blocks?.length ? [...e.blocks] : (post.caption ?? "").split(/\n\s*\n/).map(x=>x.trim()).filter(x=>x && !/^#/.test(x) && !missing.test(x)).map(text=>({kind:"paragraph",text}));
   for (const text of e.steps ?? []) blocks.push({kind:"step",text});

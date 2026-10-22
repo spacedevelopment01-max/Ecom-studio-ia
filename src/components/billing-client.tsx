@@ -114,11 +114,11 @@ export function UsageMeter({ used, label, thin }: { used: number; label: string;
 export function AiUsageBar({ billing, variant = "compact", className }: { billing: BillingView | null; variant?: "compact" | "full"; className?: string }) {
   const t = useT();
   if (!billing?.ai) return null;
-  const { plan, credits, paused } = billing.ai;
+  const { plan, credits, paused, pending } = billing.ai;
   const date = formatDate(billing.periodEnd, { day: "numeric", month: "long" });
   const left = (u: number) => 100 - u;
   if (variant === "compact") {
-    const title = [t(`Forfait : ${plan.used} % utilisés, reste ${left(plan.used)} %`, `Plan: ${plan.used}% used, ${left(plan.used)}% left`), credits && t(`Crédits achetés : reste ${left(credits.used)} %`, `Purchased credits: ${left(credits.used)}% left`), paused && t(`IA en pause jusqu'au ${date}`, `AI paused until ${date}`)].filter(Boolean).join(" · ");
+    const title = [t(`Forfait : ${plan.used} % utilisés, reste ${left(plan.used)} %`, `Plan: ${plan.used}% used, ${left(plan.used)}% left`), credits && t(`Crédits achetés : reste ${left(credits.used)} %`, `Purchased credits: ${left(credits.used)}% left`), pending ? t("Budget temporairement engagé dans une génération", "Budget temporarily committed to a generation") : paused && t(`IA en pause jusqu'au ${date}`, `AI paused until ${date}`)].filter(Boolean).join(" · ");
     return (
       <Link href="/studio/compte#ia" className={cx("hidden h-10 shrink-0 items-center gap-2 rounded-full border border-line bg-card px-3 text-xs font-medium hover:border-ink md:inline-flex", paused ? "text-bad" : "text-ink-2", className)} title={title} aria-label={title}>
         <Gauge className="size-4 shrink-0" aria-hidden />
@@ -126,7 +126,7 @@ export function AiUsageBar({ billing, variant = "compact", className }: { billin
           <UsageMeter used={plan.used} label={t("IA du forfait", "Plan AI")} thin />
           {credits && <UsageMeter used={credits.used} label={t("Crédits achetés", "Purchased credits")} thin />}
         </span>
-        <span className="whitespace-nowrap tabular-nums">{paused ? t("En pause", "Paused") : plan.used >= 100 && credits ? t(`Crédits : reste ${left(credits.used)} %`, `Credits: ${left(credits.used)}% left`) : t(`Reste ${left(plan.used)} %`, `${left(plan.used)}% left`)}</span>
+        <span className="whitespace-nowrap tabular-nums">{pending ? t("Génération en cours", "Generation in progress") : paused ? t("En pause", "Paused") : plan.used >= 100 && credits ? t(`Crédits : reste ${left(credits.used)} %`, `Credits: ${left(credits.used)}% left`) : t(`Reste ${left(plan.used)} %`, `${left(plan.used)}% left`)}</span>
       </Link>
     );
   }
@@ -144,7 +144,7 @@ export function AiUsageBar({ billing, variant = "compact", className }: { billin
     <div id="ia" className={cx("grid scroll-mt-20 gap-4", className)}>
       {row(t("IA du forfait", "Plan AI"), plan.used, t(`Repart à 0 % le ${date}.`, `Back to 0% on ${date}.`))}
       {credits && row(t("Crédits achetés", "Purchased credits"), credits.used, t("Utilisés une fois le forfait épuisé ; ils n'expirent pas.", "Used once the plan is used up; they don't expire."))}
-      {paused ? (
+      {pending ? <p className="rounded-xl bg-signal/10 p-3 text-sm">{t("Une génération utilise temporairement le budget disponible. Les pourcentages montrent la consommation enregistrée ; attendez son résultat avant une nouvelle action.", "A generation is temporarily using the available budget. Percentages show recorded usage; wait for its result before starting another action.")}</p> : paused ? (
         <div className="rounded-xl bg-bad/10 p-3 text-sm text-bad">
           {t(`L'IA est en pause : elle reprend le ${date}, ou tout de suite avec une recharge. En attendant, le moteur local du studio continue (sans IA).`, `AI is paused: it resumes on ${date}, or right away with a top-up. Meanwhile, the studio's local engine keeps working (without AI).`)}
           <div><Link href="/studio/compte" className="mt-2 inline-flex h-10 items-center rounded-full bg-signal px-4 text-sm font-semibold text-signal-ink">{t("Recharger l'IA", "Top up AI")}</Link></div>

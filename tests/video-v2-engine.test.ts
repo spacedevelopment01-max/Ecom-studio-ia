@@ -1,3 +1,4 @@
+import { grantProjectPlan } from "./communication-choice-fixture";
 /**
  * Video & UGC Engine V2 (phase 7A) — moteur complet avec rendu réel (ffmpeg), outils simulés : AUCUN appel d'IA,
  * aucune dépense. Vérifie : vidéo produite et rangée, accord avant génération, plafond avant envoi, fidélité produit,
@@ -30,7 +31,7 @@ describe("Video Engine V2 — moteur et rendu", async () => {
   const R = { renderScale: 0.2, fps: 8 } as const;
 
   async function cosmetic() {
-    const p = loadProject(seedImageFixture(u.id, "cosmetic"));
+    const p = loadProject(seedImageFixture(u.id, "cosmetic"));grantProjectPlan(p.id,"dominer");
     await seedCutout(u.id, p.id);
     return p;
   }
@@ -201,7 +202,7 @@ describe("Video Engine V2 — moteur et rendu", async () => {
   }, 120_000);
 
   it("vidéo de service longue (> 30 s), format 16:9 ; plans stock distincts sans génération d’image", async () => {
-    const p = loadProject(seedImageFixture(u.id, "artisan"));
+    const p = loadProject(seedImageFixture(u.id, "artisan"));grantProjectPlan(p.id,"dominer");
     const { deps, log } = mockVideoDeps({ userId: u.id, projectId: p.id });
     const r = await fr(() => runVideoEngineV2(null, p.id, { ask: { text: "Présentation de l'entreprise pour YouTube, 45 secondes" }, approveGeneration: true, ...R }, deps));
     const doc = latestVideo(p.id, r.docKey!)!.doc;

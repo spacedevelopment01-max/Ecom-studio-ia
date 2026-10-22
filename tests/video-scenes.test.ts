@@ -1,3 +1,4 @@
+import { grantProjectPlan } from "./communication-choice-fixture";
 /**
  * Vidéo en scènes (création guidée et création du projet) : produit = une image Qwen + un plan Wan 2.6 par scène,
  * service = plans libres de droits ; durée totale, nombre de scènes et format choisis par le client ; carte de fin avec
@@ -17,7 +18,7 @@ describe("Vidéo en scènes", async () => {
 
   async function productProject() {
     const u = await createUser(`vs-${Date.now()}-${Math.random()}@test.fr`, "motdepasse-test", "P");
-    const pid = seedImageFixture(u.id, "hightech");
+    const pid = seedImageFixture(u.id, "hightech");grantProjectPlan(pid,"dominer");
     await seedCutout(u.id, pid);
     return loadProject(pid);
   }
@@ -76,7 +77,7 @@ describe("Vidéo en scènes", async () => {
 
   it("service : plans libres de droits liés au métier, aucune génération", async () => {
     const u = await createUser(`vss-${Date.now()}-${Math.random()}@test.fr`, "motdepasse-test", "P");
-    const p = loadProject(seedImageFixture(u.id, "restaurant"));
+    const p = loadProject(seedImageFixture(u.id, "restaurant"));grantProjectPlan(p.id,"dominer");
     const f = fakeDeps(p);
     const r = await runThreeScenes(null, p.id, { as: "post" }, f.deps);
     expect(r.mode).toBe("stock");

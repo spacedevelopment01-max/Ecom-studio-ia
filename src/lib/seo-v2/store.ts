@@ -1,3 +1,5 @@
+import { strategyContentVisible, strategyVisibilitySql } from "../marketing-strategy/visibility";
+import { strategyContent, strategyStamp } from "../strategy-consumption";
 /**
  * Documents texte V2 : versions (chaque enregistrement est une version ; restaurer recopie une ancienne version,
  * rien n'est perdu), lignée stable par page, protection des modifications du client (une régénération du moteur
@@ -34,17 +36,23 @@ export function releaseContentTarget(projectId: string, target: string, owner: s
 export function renewContentTarget(projectId: string, target: string, owner: string) {
   run("UPDATE content_target_locks SET expires_at=? WHERE project_id=? AND target=? AND owner=?", now() + 15 * 60_000, projectId, target, owner);
 }
-export function saveContentVersion(projectId: string, docKey: string, doc: ContentDoc, o: { note?: string; verdict?: string | null; expectedVersion?: number } = {}): ContentVersion {
+export function saveContentVersion(projectId: string, docKey: string, doc: ContentDoc, o: { strategyStamp?: import("../strategy-consumption").StrategyStamp | null; note?: string; verdict?: string | null; expectedVersion?: number } = {}): ContentVersion {
+  const previous = doc.meta2.source === "user" ? one<{doc_json:string}>(`SELECT doc_json FROM content_documents WHERE project_id=? AND doc_key=? AND ${strategyVisibilitySql(projectId,"seo","content_documents.id")} ORDER BY version DESC LIMIT 1`, projectId, docKey) : null;
+  const preserved = previous ? json<{meta2:{marketingStrategy?: import("../strategy-consumption").StrategyStamp | null}}>(previous.doc_json, { meta2: {} }).meta2.marketingStrategy ?? null : null;
+  const strategy = o.strategyStamp !== undefined ? o.strategyStamp : doc.meta2.source === "user" ? preserved : strategyStamp(projectId);
+  const { marketingStrategy: _untrustedStamp, ...meta } = doc.meta2;
+  doc = { ...doc, meta2: { ...meta, ...(strategy ? { marketingStrategy: strategy } : {}) } };
   if (doc.meta2.contract) doc = { ...doc, meta2: { ...doc.meta2, contract: { ...doc.meta2.contract, checks: checkRequirements(doc, requirementsOf(doc.meta2.contract.request)) } } };
   return tx(() => {
   const version = (one<{ v: number }>("SELECT MAX(version) v FROM content_documents WHERE doc_key = ?", docKey)?.v ?? 0) + 1;
-  if (o.expectedVersion != null && version - 1 !== o.expectedVersion) throw new ContentConflict("content_conflict");
+  if (o.expectedVersion != null && (latestContent(projectId,docKey)?.version.version??0) !== o.expectedVersion) throw new ContentConflict("content_conflict");
   const vid = id();
   const at = now();
   run(
     "INSERT INTO content_documents (id, project_id, doc_key, version, type, lang, title, source, verdict, note, doc_json, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
     vid, projectId, docKey, version, doc.type, doc.lang, doc.page.title.slice(0, 200), doc.meta2.source, o.verdict ?? null, (o.note ?? "").slice(0, 200), JSON.stringify(doc), at,
   );
+  strategyContent(projectId, "seo", vid, { stamp: strategy, protected: doc.meta2.source === "user" });
   return { id: vid, docKey, version, type: doc.type, lang: doc.lang, title: doc.page.title, source: doc.meta2.source, verdict: o.verdict ?? null, note: o.note ?? "", createdAt: at };
   });
 }
@@ -52,12 +60,12 @@ export function saveContentVersion(projectId: string, docKey: string, doc: Conte
 /** Référence livrable : une tentative bloquée n'efface pas le dernier texte utilisable de sa lignée. */
 export function usableContent(projectId: string, docKey: string) {
   const versions = listContentVersions(projectId, docKey);
-  const v = versions.find((v) => v.verdict !== "REJECTED" && v.verdict !== "RETRY");
+  const v = versions.filter(v=>strategyContentVisible(projectId,"seo",v.id)).find((v) => v.verdict !== "REJECTED" && v.verdict !== "RETRY");
   return v ? { version: v, doc: contentVersionDoc(projectId, docKey, v.version)! } : null;
 }
 
 export function latestContent(projectId: string, docKey: string): { doc: ContentDoc; version: ContentVersion } | null {
-  const r = one<any>("SELECT * FROM content_documents WHERE project_id = ? AND doc_key = ? ORDER BY version DESC LIMIT 1", projectId, docKey);
+  const r = one<any>(`SELECT * FROM content_documents WHERE project_id = ? AND doc_key = ? AND ${strategyVisibilitySql(projectId,"seo","content_documents.id")} ORDER BY version DESC LIMIT 1`, projectId, docKey);
   return r ? { doc: json<ContentDoc>(r.doc_json, null as never), version: row(r) } : null;
 }
 
@@ -73,7 +81,7 @@ export function listContentVersions(projectId: string, docKey: string): ContentV
 /** Dernière version de chaque contenu du projet (filtrable par type). */
 export function listContents(projectId: string, types?: ContentType[]): ContentVersion[] {
   const rows = all<any>(
-    "SELECT d.id, d.doc_key, d.version, d.type, d.lang, d.title, d.source, d.verdict, d.note, d.created_at FROM content_documents d JOIN (SELECT doc_key, MAX(version) v FROM content_documents WHERE project_id = ? GROUP BY doc_key) m ON m.doc_key = d.doc_key AND m.v = d.version WHERE d.project_id = ? ORDER BY d.created_at DESC",
+    `SELECT d.id, d.doc_key, d.version, d.type, d.lang, d.title, d.source, d.verdict, d.note, d.created_at FROM content_documents d JOIN (SELECT doc_key, MAX(version) v FROM content_documents WHERE project_id = ? AND ${strategyVisibilitySql(projectId,"seo","content_documents.id")} GROUP BY doc_key) m ON m.doc_key = d.doc_key AND m.v = d.version WHERE d.project_id = ? ORDER BY d.created_at DESC`,
     projectId,
     projectId,
   ).map(row);
@@ -88,7 +96,7 @@ export function contentUserOwned(projectId: string, docKey: string): boolean {
 export function restoreContentVersion(projectId: string, docKey: string, version: number): ContentVersion {
   const doc = contentVersionDoc(projectId, docKey, version);
   if (!doc) throw new Error("version introuvable");
-  return saveContentVersion(projectId, docKey, { ...doc, meta2: { ...doc.meta2, source: "user" } }, { note: `restauration de la version ${version}` });
+  return saveContentVersion(projectId, docKey, { ...doc, meta2: { ...doc.meta2, source: "user" } }, { note: `restauration de la version ${version}`, strategyStamp: doc.meta2.marketingStrategy ?? null });
 }
 
 // ---------------------------------------------------------------- mémoire des rédactions (idempotence)

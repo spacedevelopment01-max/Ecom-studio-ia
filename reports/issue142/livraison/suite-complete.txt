@@ -1,0 +1,12 @@
+
+ RUN  v5.0.3 /workspace/work/publications-qualite
+
+
+ Test Files  317 passed (317)
+      Tests  2443 passed | 13 skipped (2456)
+   Start at  10:36:41
+   Duration  715.22s (tests 76%, import 23%, transform 1%)
+
+    Isolate  317 workers spawned · ~118ms startup each (spawn + environment, per file)
+             at least ~12.31s faster with isolate: false — reuses workers across files instead of one per file
+

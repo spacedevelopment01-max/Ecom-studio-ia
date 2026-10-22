@@ -302,7 +302,7 @@ export function AdCreatives() {
           <Button
             variant="signal"
             icon={<Sparkles className="size-4" />}
-            disabled={running || !data?.brand}
+            disabled={running || !data?.brand || data.plan!=="dominer"}
             onClick={() =>
               setForm({
                 count: 2,

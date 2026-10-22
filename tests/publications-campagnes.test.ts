@@ -1,4 +1,4 @@
-import { enqueue, JobContext, type Job } from "@/lib/jobs";
+import { enqueue, failJob, getJob, JobContext, type Job } from "@/lib/jobs";
 /** Real routes and worker boundary, simulated readiness/engine. No provider or social network called. */
 import { describe, it, expect, vi } from "vitest";
 import sharp from "sharp";
@@ -31,7 +31,7 @@ vi.mock("@/lib/ads-v2/engine", async (orig) => ({
 import { createUser } from "@/lib/auth";
 import { loadProject } from "@/lib/projects";
 import { seedImageFixture, seedCutout } from "./image-v2-fixtures";
-import { grantProjectPlan } from "@/lib/project-subscriptions";
+import { grantProjectPlan } from "./communication-choice-fixture";
 import { one, run } from "@/lib/db";
 import { saveAsset } from "@/lib/library";
 import * as route from "@/app/api/projects/[id]/campaigns/v2/route";
@@ -45,7 +45,7 @@ async function project() {
   );
   state.user = { ...u, role: "client" };
   const p = loadProject(seedImageFixture(u.id, "hightech"));
-  grantProjectPlan(p.id, "vendre");
+  grantProjectPlan(p.id, "dominer");
   await seedCutout(u.id, p.id);
   return p;
 }
@@ -160,6 +160,19 @@ describe("Campagnes : devis, reprise HTTP et statut réel de la tâche", () => {
       false,
     );
   });
+  it("le suivi terminal est relu après déconnexion, sans publications organiques ni tâche étrangère", async () => {
+    const p=await project();
+    const own=enqueue({userId:p.userId,projectId:p.id,type:"image.ai_post",payload:{request:{as:"ad",entryPoint:"ads-guided"}}});
+    run("UPDATE jobs SET status='running' WHERE id=?",own.id);
+    failJob(getJob(own.id)!,new Error("Fichier simulé non enregistré"),{permanent:true});
+    enqueue({userId:p.userId,projectId:p.id,type:"image.ai_post",payload:{request:{as:"post"}}});
+    const foreign=seedImageFixture(p.userId,"restaurant");grantProjectPlan(foreign,"dominer");
+    enqueue({userId:p.userId,projectId:foreign,type:"image.ai_post",payload:{request:{as:"ad"}}});
+    for(let i=0;i<2;i++){
+      const r=await route.GET(new Request("http://localhost"),{params:Promise.resolve({id:p.id})});
+      const data=await r.json();expect(data.aiJobs).toHaveLength(1);expect(data.aiJobs[0].id).toBe(own.id);expect(data.aiJobs[0].status).toBe("failed");expect(data.aiJobs[0].error).toBeTruthy();
+    }
+  });
   it("zéro image après refus du contrôle : le worker échoue et conserve la raison, sans faux ‘prêt’", async () => {
     const p = await project();
     state.result = {
@@ -177,11 +190,12 @@ describe("Campagnes : devis, reprise HTTP et statut réel de la tâche", () => {
   });
   it("succès partiel explicite : image utilisable conservée, blocage et coût retournés", async () => {
     const p = await project();
+    const usable=await saveAsset({projectId:p.id,userId:p.userId,data:await sharp({create:{width:64,height:64,channels:3,background:"#234567"}}).png().toBuffer(),name:"publicite-simulee.png",mime:"image/png",role:"ad",origin:"generated",status:"ready",meta:{gate:{verdict:"FINAL"}}});
     state.result = {
       concepts: [{}],
       outcomes: [
         {
-          assetId: "usable-test",
+          assetId: usable.id,
           verdict: "FINAL",
           platform: "meta_feed",
           aspect: "4:5",
@@ -200,6 +214,9 @@ describe("Campagnes : devis, reprise HTTP et statut réel de la tâche", () => {
     };
     const r = (await handlers["ads.v2"](jobContext(p))) as any;
     expect(r.partial).toBe(true);
+    expect(r.delivery.state).toBe("partial");
+    expect(r.delivery.delivered).toBe(1);
+    expect(r.delivery.expected).toBe(2);
     expect(r.costMicro).toBe(123);
     expect(r.outcomes[1].reason).toBe("plafond atteint");
   });

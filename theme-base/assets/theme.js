@@ -183,10 +183,12 @@
         values.forEach(function (val, i) { var lab = $('[data-option-value="' + i + '"]', wrap); if (lab) lab.textContent = val; });
         if (!v) { addBtn.disabled = true; addLabel.textContent = strings.unavailable; return; }
         idInput.value = v.id;
-        addBtn.disabled = !v.available;
+        var unpriced = v.price == null;
+        addBtn.disabled = !v.available || unpriced;
+        var pending = $('[data-price-pending]', wrap); if (pending) pending.hidden = !unpriced;
         var withPrice = !!$('[data-button-price]', wrap) || wrap.hasAttribute('data-price-in-button');
         if (withPrice) wrap.setAttribute('data-price-in-button', '');
-        addLabel.textContent = v.available ? strings.addToCart + (withPrice && v.price != null ? ' – ' + formatMoney(v.price) : '') : strings.soldOut;
+        addLabel.textContent = unpriced ? strings.notForSale : v.available ? strings.addToCart + (withPrice && v.price != null ? ' – ' + formatMoney(v.price) : '') : strings.soldOut;
         var section = wrap.closest('[data-main-product], [data-featured-product]');
         var priceWrap = section && $('[data-price]', section);
         if (priceWrap && v.price != null) { var cur = priceWrap.querySelector('.es-price__current'); if (cur) cur.textContent = formatMoney(v.price); }
@@ -358,7 +360,8 @@
     if (v.title && v.title !== 'Default Title') parts.push(v.title);
     var meta = $('[data-sticky-meta]', stickyBuy); if (meta) meta.textContent = parts.join(' · ') + (parts.length ? ' ·' : '');
     var total = $('[data-sticky-total]', stickyBuy); if (total && v.price != null) total.textContent = formatMoney(Math.round(v.price * q * (100 - discount) / 100));
-    var btn = $('[data-sticky-add]', stickyBuy); if (btn) btn.disabled = !v.available;
+    var btn = $('[data-sticky-add]', stickyBuy);
+    if (btn) { btn.disabled = !v.available || v.price == null; btn.textContent = v.price == null ? strings.notForSale : strings.addToCart; }
   }
   function stickyBuyOnScroll() {
     if (!stickyBuy || !mainBuy) return;
@@ -367,7 +370,12 @@
     // Visible dès que le bouton d'ajout n'est plus à l'écran (passé sous l'en-tête ou hors champ), masquée au pied de page.
     var headerH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h'), 10) || 0;
     var inView = r.top < window.innerHeight && r.bottom > headerH;
-    stickyBuy.classList.toggle('is-visible', !inView && window.scrollY > 120 && fr > window.innerHeight);
+    var show = !inView && window.scrollY > 120 && fr > window.innerHeight;
+    stickyBuy.classList.toggle('is-visible', show);
+    // Hauteur réelle de la barre et état « affichée » : les boutons flottants et l'avis « ajouté » se placent au-dessus
+    // d'elle seulement quand elle est là (issue #155).
+    if (show) document.documentElement.style.setProperty('--sticky-buy-h', stickyBuy.offsetHeight + 'px');
+    document.body.classList.toggle('sticky-buy-visible', show);
   }
 
   /* ---------- Présentation au défilement ---------- */
@@ -748,7 +756,17 @@
     });
   }
 
+  /* Bas réel de l'en-tête (bandeau compris) : une ouverture « plein écran » occupe exactement le reste du premier écran. */
+  function measureHeaderBottom() {
+    // Haut du contenu principal (en-tête, barre d'annonce et bandeau compris), pour une ouverture « plein écran ».
+    var m = document.querySelector('main'), h = $('[data-header]');
+    var b = m ? m.getBoundingClientRect().top + window.scrollY : h ? h.offsetTop + h.offsetHeight : 0;
+    if (b > 0) document.documentElement.style.setProperty('--es-header-bottom', Math.round(b) + 'px');
+  }
   function init() {
+    measureHeaderBottom();
+    window.addEventListener('resize', measureHeaderBottom);
+    window.addEventListener('load', measureHeaderBottom);
     initBookingCal(document);
     initWords(document);
     initReveal(document);

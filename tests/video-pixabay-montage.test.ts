@@ -1,3 +1,4 @@
+import {grantProjectPlan} from './communication-choice-fixture';
 /**
  * Vidéos montées avec des plans libres de droits (Pixabay d'abord) : chaque moment qui ne montre pas le produit
  * (accroche, développement, démonstration) reçoit SON plan vidéo, différent des autres ; le produit reste montré par
@@ -60,7 +61,7 @@ describe("Montage vidéo sur plans Pixabay", async () => {
 
   it("musique : une piste libre de droits trouvée remplace la musique composée, avec sa licence et sa mention", async () => {
     const { composeMusic } = await import("@/lib/media/music");
-    const p = loadProject(seedImageFixture(u.id, "artisan"));
+    const p = loadProject(seedImageFixture(u.id, "artisan"));grantProjectPlan(p.id,"dominer");
     const { deps } = mockVideoDeps({ userId: u.id, projectId: p.id });
     const s = stockDeps(p.id);
     const track = await saveAsset({ projectId: p.id, userId: u.id, data: composeMusic(30, "calm", 22050), name: "musique-libre.wav", mime: "audio/wav", role: "music", folderKey: "videos.ads", origin: "import", meta: {} });
@@ -75,7 +76,7 @@ describe("Montage vidéo sur plans Pixabay", async () => {
   }, 240_000);
 
   it("services : la vidéo s'ouvre sur un vrai plan du métier", async () => {
-    const p = loadProject(seedImageFixture(u.id, "restaurant"));
+    const p = loadProject(seedImageFixture(u.id, "restaurant"));grantProjectPlan(p.id,"dominer");
     const { deps } = mockVideoDeps({ userId: u.id, projectId: p.id });
     const s = stockDeps(p.id);
     const r = await fr(() => runVideoEngineV2(null, p.id, { ask: { text: "Reel de 15 secondes", allowGeneration: false }, renderScale: 0.2, fps: 8 }, { ...deps, stockClip: s.stockClip }));

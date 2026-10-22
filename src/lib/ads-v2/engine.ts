@@ -1,3 +1,5 @@
+import { withCommunicationStrategy, withStrategyScope, strategyReuseKey } from "../strategy-consumption";
+import { assertAdvertising } from "../job-entitlements";
 /**
  * Advertising Engine V2 (phase 6A) — moteur central.
  *
@@ -100,6 +102,11 @@ const hash = (x: unknown) => crypto.createHash("sha256").update(JSON.stringify(x
 const orientation = (a: AspectId): AspectId => (a === "1:1" ? "1:1" : a === "16:9" || a === "1.91:1" || a === "3:2" || a === "3:1" || a === "4:1" ? "16:9" : "4:5");
 
 export async function runAdEngineV2(ctx: JobContext | null, projectId: string, req: AdRequestV2 = {}, injected?: AdsV2Deps): Promise<AdRunResult> {
+  return withCommunicationStrategy(projectId, () => runAdEngineV2InScope(ctx, projectId, req, injected));
+}
+
+async function runAdEngineV2InScope(ctx: JobContext | null, projectId: string, req: AdRequestV2 = {}, injected?: AdsV2Deps): Promise<AdRunResult> {
+  assertAdvertising(projectId);
   const p = loadProject(projectId);
   const jobId = ctx?.job.id ?? null;
   const deps = injected ?? realAdDeps(ctx, p, aiActiveFor(p.userId, p.id));
@@ -294,7 +301,7 @@ type OneInput = {
 async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdReview | null }> {
   const { p, deps, concept, f, stats } = o;
   const jobId = o.ctx?.job.id ?? null;
-  const h = hash({ policy:"campaign-2", identity:p.brand, strategy:p.strategy, v: ADS_V2_VERSION, c: concept.id, copy: concept.copy, f: `${f.platform}:${f.aspect}`, pal: o.pal, typo: o.typo, layout: concept.visual.layout, dir: concept.direction ? `${concept.direction.id}:${concept.direction.layout}` : null, art: o.art.style, gen: !!deps.canGenerate });
+  const h = hash({ marketingStrategy: strategyReuseKey(p.id), policy:"campaign-2", identity:p.brand, strategy:p.strategy, v: ADS_V2_VERSION, c: concept.id, copy: concept.copy, f: `${f.platform}:${f.aspect}`, pal: o.pal, typo: o.typo, layout: concept.visual.layout, dir: concept.direction ? `${concept.direction.id}:${concept.direction.layout}` : null, art: o.art.style, gen: !!deps.canGenerate });
   // Création modifiée par le client (éditeur visuel) : jamais écrasée en silence par une régénération.
   const docKey = engineDocKey(p.id, concept.id, f.platform, f.aspect);
   if (userOwned(p.id, docKey)) {

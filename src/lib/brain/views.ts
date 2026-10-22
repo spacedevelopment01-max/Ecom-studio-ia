@@ -134,6 +134,7 @@ export function brainItems(s: BrainSnapshot): BrainItem[] {
   const p: Project = s.project;
   const pr = p.product;
   const services = p.business === "services";
+  const selectedStrategy = s.marketingStrategy;
   // Espace réservé dans la langue des contenus (« [À compléter : …] » / « [To complete: …] »), comme le contexte actuel.
   const ph = placeholder(contentLang());
   const items: BrainItem[] = [];
@@ -250,11 +251,11 @@ export function brainItems(s: BrainSnapshot): BrainItem[] {
     add({ id: "brand.direction", section: "brand", level: "soft", tier: 4, scopes: ["logo", "brand", "image", "theme", "video", "all"], source: "brand", text: `Direction artistique : ${b.direction}`, data: b.direction });
     if (b.personality.length) add({ id: "brand.personality", section: "brand", level: "soft", tier: 5, scopes: ["logo", "brand", "social", "advertising", "video", "all"], source: "brand", text: `Personnalité : ${b.personality.join(", ")}`, data: b.personality });
     if (b.positioning) add({ id: "brand.positioning", section: "brand", level: "soft", tier: 5, scopes: ["logo", "brand", "theme", "shop_copy", "blog", "social", "advertising", "video", "all"], source: "brand", text: `Positionnement : ${clip(b.positioning, 300)}`, data: b.positioning });
-    if (b.audience) add({ id: "brand.audience", section: "brand", level: "soft", tier: 5, scopes: ["logo", "brand", "theme", "shop_copy", "seo", "blog", "social", "advertising", "video", "qc", "all"], source: "brand", text: `Cible : ${clip(b.audience, 300)}`, data: b.audience });
+    if (b.audience) add({ id: "brand.audience", section: "brand", level: "soft", tier: 5, scopes: ["logo", "brand", "theme", "shop_copy", "seo", "blog", "social", "advertising", "video", "qc", "all"], source: "brand", text: `${selectedStrategy ? "Public collecté initialement (la cible prioritaire est celle de la stratégie active)" : "Cible"} : ${clip(b.audience, 300)}`, data: b.audience });
     add({ id: "brand.tone", section: "brand", level: "soft", tier: 4, scopes: ["brand", "theme", "shop_copy", "blog", "social", "advertising", "video", "qc", "all"], source: "brand", text: `Ton : ${b.tone.voice}. À faire : ${b.tone.do.join(" ; ")}. À éviter : ${b.tone.dont.join(" ; ")}.`, data: b.tone });
     if (b.story) add({ id: "brand.story", section: "brand", level: "soft", tier: 7, scopes: ["brand", "blog", "all"], source: "brand", text: `Histoire : ${clip(b.story, 600)}`, data: b.story });
     if (b.validated.length) add({ id: "brand.validated", section: "brand", level: "hard", tier: 2, critical: true, scopes: ["logo", "brand", "theme", "image", "social", "advertising", "video", "all"], source: "brand", text: `Éléments VALIDÉS par le client (ne pas changer sans demande explicite) : ${b.validated.join(", ")}`, data: [...b.validated].sort() });
-    if (b.social) add({ id: "brand.social", section: "brand", level: "soft", tier: 4, scopes: ["social", "advertising", "qc", "all"], source: "brand", text: `Ligne éditoriale — piliers : ${b.social.pillars.map((x) => x.title).join(" ; ")}. On dit : ${b.social.say.join(" ; ")}. On ne dit pas : ${b.social.dontSay.join(" ; ")}.`, data: { p: b.social.pillars, s: b.social.say, d: b.social.dontSay, e: b.social.emoji } });
+    if (!selectedStrategy && b.social) add({ id: "brand.social", section: "brand", level: "soft", tier: 4, scopes: ["social", "advertising", "qc", "all"], source: "brand", text: `Ligne éditoriale — piliers : ${b.social.pillars.map((x) => x.title).join(" ; ")}. On dit : ${b.social.say.join(" ; ")}. On ne dit pas : ${b.social.dontSay.join(" ; ")}.`, data: { p: b.social.pillars, s: b.social.say, d: b.social.dontSay, e: b.social.emoji } });
   }
   const logo = s.currentLogo;
   if (logo) {
@@ -264,17 +265,18 @@ export function brainItems(s: BrainSnapshot): BrainItem[] {
   }
 
   // ------------------------------------------------------------------ stratégie
+  if (selectedStrategy) add({ id: "strategy.active", section: "strategy", level: "hard", tier: 1, critical: true, scopes: "*", source: "strategy", text: selectedStrategy, data: selectedStrategy });
   const st = p.strategy;
   if (st) {
-    if (st.keyMessages.length) add({ id: "strategy.messages", section: "strategy", level: "soft", tier: 6, scopes: ["brand", "theme", "shop_copy", "blog", "social", "advertising", "video", "all"], source: "strategy", text: `Messages clés : ${st.keyMessages.join(" ; ")}`, data: st.keyMessages });
-    if (st.pillars.length || st.angles.length) add({ id: "strategy.angles", section: "strategy", level: "soft", tier: 7, scopes: ["brand", "social", "advertising", "all"], source: "strategy", text: `Angles : ${st.angles.map((a) => a.title).join(" ; ")} · piliers : ${st.pillars.join(" ; ")}`, data: { a: st.angles.map((a) => a.title), p: st.pillars } });
+    if (!selectedStrategy && st.keyMessages.length) add({ id: "strategy.messages", section: "strategy", level: "soft", tier: 6, scopes: ["brand", "theme", "shop_copy", "blog", "social", "advertising", "video", "all"], source: "strategy", text: `Messages clés : ${st.keyMessages.join(" ; ")}`, data: st.keyMessages });
+    if (!selectedStrategy && (st.pillars.length || st.angles.length)) add({ id: "strategy.angles", section: "strategy", level: "soft", tier: 7, scopes: ["brand", "social", "advertising", "all"], source: "strategy", text: `Angles : ${st.angles.map((a) => a.title).join(" ; ")} · piliers : ${st.pillars.join(" ; ")}`, data: { a: st.angles.map((a) => a.title), p: st.pillars } });
     const pf = st.platform;
     if (pf) {
       const missing = pf.proofs.filter((x) => x.status === "missing" && x.claim);
       const ok = pf.proofs.filter((x) => x.status === "available" && x.claim);
       if (missing.length) add({ id: "strategy.unproven", section: "rules", level: "hard", tier: 4, critical: true, scopes: [...TEXT, "all"], source: "strategy", text: `Arguments SANS PREUVE (ne jamais les affirmer) : ${missing.map((x) => x.claim).join(" ; ")}`, data: missing.map((x) => x.claim) });
       if (ok.length) add({ id: "strategy.proofs", section: "strategy", level: "soft", tier: 5, scopes: ["theme", "shop_copy", "blog", "advertising", "qc", "all"], source: "strategy", text: `Preuves disponibles : ${ok.map((x) => `${x.claim} (${x.proof})`).join(" ; ")}`, data: ok });
-      if (pf.persona || pf.difference || pf.problem || pf.alternatives)
+      if (!selectedStrategy && (pf.persona || pf.difference || pf.problem || pf.alternatives))
         add({ id: "strategy.platform", section: "strategy", level: "soft", tier: 6, scopes: ["brand", "theme", "shop_copy", "blog", "advertising", "all"], source: "strategy", text: `Plateforme de marque — ${[pf.persona && `persona : ${clip(pf.persona, 200)}`, pf.problem && `problème : ${clip(pf.problem, 200)}`, pf.alternatives && `alternatives et codes de la concurrence (à éviter) : ${clip(pf.alternatives, 200)}`, pf.difference && `différence : ${clip(pf.difference, 200)}`].filter(Boolean).join(" · ")}`, data: { p: pf.persona, pb: pf.problem, a: pf.alternatives, d: pf.difference } });
       const obj = pf.objections.filter((o) => o.objection);
       if (obj.length) add({ id: "strategy.objections", section: "strategy", level: "soft", tier: 6, scopes: ["theme", "shop_copy", "blog", "advertising", "qc", "all"], source: "strategy", text: `Objections et réponses (FAQ, fiche) : ${obj.map((o) => `${o.objection} → ${o.answer || ph}`).join(" ; ")}`, data: obj });

@@ -7,6 +7,8 @@ import { all, one } from "./db";
 import type { Project } from "./projects";
 import type { Asset } from "./library";
 import { productReferences } from "./image-v2/engine";
+import { UserFacingError } from "./jobs";
+import { L } from "./i18n-server";
 
 export type CreativeSubject = { kind: "product"; key: string } | { kind: "service"; name: string };
 
@@ -41,13 +43,14 @@ export function subjectOptions(p: Project): SubjectOption[] {
   return [main, ...items];
 }
 
-/** Sujet demandé, vérifié contre le projet (un sujet inconnu retombe sur le produit principal ou le 1er service). */
+/** A missing optional choice uses the default. An explicitly selected missing subject must never change silently. */
 export function resolveSubject(p: Project, s: CreativeSubject | null | undefined): SubjectOption | null {
   const opts = subjectOptions(p);
-  if (!opts.length) return null;
-  if (!s) return opts[0];
-  const key = s.kind === "service" ? s.name.trim() : s.key;
-  return opts.find((o) => o.kind === s.kind && o.key === key) ?? opts[0];
+  if (!s) return opts[0]??null;
+  const key = s.kind === "service" && typeof s.name==="string" ? s.name.trim() : s.kind==="product"&&typeof s.key==="string"?s.key:null;
+  const chosen=opts.find(o=>o.kind===s.kind&&o.key===key);
+  if(!chosen)throw new UserFacingError(L("Produit ou service introuvable dans ce projet : choisissez de nouveau le sujet. Aucun autre produit ou service ne sera utilisé à sa place.","Product or service not found in this project: select the subject again. No other product or service will be used instead."),"SUBJECT_NOT_FOUND");
+  return chosen;
 }
 
 /** Sujet enregistré sur une publication (brief JSON). */

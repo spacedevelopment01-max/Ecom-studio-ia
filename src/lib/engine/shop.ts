@@ -1,3 +1,6 @@
+import { canonicalJSON } from "../brain/hash";
+import { withSiteStrategy, strategySelection, strategyContent } from "../strategy-consumption";
+import { assertStrategyChosen, activeStrategy, recordStrategyContent, strategySourceCompatible, getStrategyState } from "../marketing-strategy";
 /**
  * Construction de la boutique : rassemble les créations validées (logo,
  * images, vidéo, textes) et produit une version du thème. La composition de
@@ -7,6 +10,8 @@
 import { decide } from "../quality/gate";
 import { applyHandoff, handoffCopy } from "../theme/handoff";
 import { projectKind } from "../theme/project-kind";
+import { sectionIncompatibility } from "../theme/section-compat";
+import { sectionGenerationAllowed } from "../theme/custom-access";
 import { describeReport, preservation, preserve } from "../theme/carry-over";
 import { gateMeta, saveCheck } from "../quality/store";
 import { isAutoUsable } from "../quality/usable";
@@ -258,13 +263,13 @@ export function routeFonts(route: { heading: string; headingWeight: number; body
  * `ctx` présent : les médias manquants (variantes, catalogue) sont préparés d'abord ; sans `ctx` (vignettes
  * d'aperçu des directions), on compose avec ce qui existe déjà, sans rien générer.
  */
-export async function composeShop(projectId: string, directionOpt?: DirectionId, ctx?: JobContext | null, prepare = ctx !== undefined) {
+export async function composeShop(projectId: string, directionOpt?: DirectionId, ctx?: JobContext | null, prepare = ctx !== undefined, clientAdaptation = false) {
   const p = loadProject(projectId);
   const brand = p.brand;
   const preparedIdentity=(await import("../preparation/store")).stateOf(projectId)?.stages.brand?.status==="approved";
   if (!brand) throw new Error(L("La marque doit être définie avant la boutique.", "The brand must be defined before the store."));
   // Rédaction : celle du contrat amont quand il la dit prête, sinon celle enregistrée pour le projet, sinon locale.
-  const copy = handoffCopy(projectId) ?? savedCopy(projectId) ?? localCopy(p.product, brand, p);
+  const copy = (await import("../theme/strategic-copy")).strategicCopy(projectId, handoffCopy(projectId) ?? savedCopy(projectId) ?? localCopy(p.product, brand, p));
   if (prepare) await ensureVariantMedia(ctx ?? null, projectId);
   const { slots, files, gallery, variantImages } = collectImages(projectId);
   // Médias du contrat amont (10 images + vidéo d'ouverture, ou 10 photos + 2 vidéos) : affectés explicitement aux
@@ -296,10 +301,10 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
     shopName: brand.name,
     // Palette verrouillée par la direction (ou « Vos couleurs » du client) ; ancienne marque dans sa direction
     // actuelle : couleurs de la piste de logo retenue, comme avant.
-    palette: preparedIdentity?brand.palette:brand.paletteMode || direction !== brand.direction ? paletteFor(brand, direction) : (effectivePalette(brand) ?? brand.palette),
+    palette: preparedIdentity?brand.palette:clientAdaptation&&ACTIVE_DIRECTIONS.some(d=>d.id===direction)&&brand.paletteMode!=="direction"?(effectivePalette(brand)??brand.palette):brand.paletteMode || direction !== brand.direction ? paletteFor(brand, direction) : (effectivePalette(brand) ?? brand.palette),
     // Typographies de la piste de logo retenue (logo, site et réseaux parlent d'une seule voix), quelle que soit la
     // direction ; à défaut, celles de la marque si elles ont été choisies (IA ou client), pas recopiées d'une direction.
-    fonts: preparedIdentity?brand.fonts:routeFonts(brand.logo?.route) ?? ((directionOpt && directionOpt !== brand.direction) || brand.generatedBy === "local" ? undefined : brand.fonts),
+    fonts: preparedIdentity||brand.validated?.includes("fonts")?brand.fonts:routeFonts(brand.logo?.route) ?? ((directionOpt && directionOpt !== brand.direction) || brand.generatedBy === "local" ? undefined : brand.fonts),
     copy,
     images: slots,
     files,
@@ -310,18 +315,48 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
     ...(catalog ? { storeType: p.storeType, products: catalog.products, collections: catalog.collections } : {}),
   });
   if (handoff) spec.meta = { ...spec.meta, handoff: handoff as unknown as Record<string, unknown> };
+  if(clientAdaptation) await (await import("../theme/client-adaptation")).adaptClientReference(spec,p,copy,ctx);
+  const strategy=strategySelection(projectId);
+  if (clientAdaptation && strategy) spec.meta={...spec.meta, strategy: { id:strategy.id, version:strategy.version, angleId:strategy.angleId }};
+  if(clientAdaptation && strategy && getStrategyState(projectId).alignment.some(c=>c.module==="copy"&&!c.aligned))spec.meta={...spec.meta,strategy:{...spec.meta!.strategy!,retainedPaths:["upstream:shop_copy"],alignment:"mixed"}};
   const delivered = deliverContent(spec, p, spec.language ?? contentLang());
+  if(clientAdaptation&&strategy){
+    const retained=delivered.filter(trace=>{const row=one<{id:string}>('SELECT id FROM content_documents WHERE project_id=? AND doc_key=? AND version=?',projectId,trace.docKey,trace.version);return !row||!strategySourceCompatible(projectId,'seo',row.id,strategy);}).map(trace=>`upstream:seo:${trace.docKey}:${trace.version}`);
+    if(retained.length)spec.meta={...spec.meta,strategy:{...spec.meta!.strategy!,retainedPaths:[...(spec.meta?.strategy?.retainedPaths??[]),...retained],alignment:'mixed'}};
+  }
   bindReferenceOffers(spec, p, new Set(delivered.map((d) => d.target)));
   if (!services) bindProductContent(spec, p);
+  if(clientAdaptation)(await import("../theme/adaptation-preservation")).bindAdaptationProductTargets(spec);
   return { p, direction, services, catalog, spec };
 }
 
-export async function buildShop(ctx: JobContext | null, projectId: string, opts: { direction?: DirectionId; useAi?: boolean; summary?: Bi; engine?: "v1" | "v2"; language?: LanguageId } = {}) {
+export async function buildShop(ctx: JobContext | null, projectId: string, opts: { direction?: DirectionId; useAi?: boolean; summary?: Bi; engine?: "v1" | "v2"; language?: LanguageId; prepareOnly?: boolean } = {}) {
+  return withSiteStrategy(projectId,()=>buildShopInScope(ctx,projectId,opts));
+}
+async function buildShopInScope(ctx:JobContext|null,projectId:string,opts:Parameters<typeof buildShop>[2]={}) {
+  if(!strategySelection(projectId))assertStrategyChosen(projectId);
+  const {assertThemeAllowed}=await import("../plan-gates");
+  const chosen=opts.direction??loadProject(projectId).brand?.direction;
+  if(chosen)assertThemeAllowed(projectId,chosen,currentTheme(projectId)?.spec.direction??null);
+
   if((await import("../preparation/store")).stateOf(projectId)){
     const target=opts.direction??currentTheme(projectId)?.spec.direction;
     const selected=ACTIVE_DIRECTIONS.find(d=>d.id===target);
     if(!selected||opts.engine==="v2")throw new UserFacingError(L("Choisissez un thème disponible dans la galerie avant de composer ce projet. Aucun gabarit générique n’est substitué.","Choose an available gallery theme before building this project. No generic template is substituted."));
     opts={...opts,direction:selected.id,engine:"v1"};
+  }
+
+  // Projet déjà dans l'un des quatre thèmes de référence : recomposé dans ce thème (bibliothèque de sa famille), jamais
+  // remplacé par des sections V2 hors bibliothèque (catalogue, « recomposer », nouveau site).
+  {
+    const existing = currentTheme(projectId);
+    // A historical V2 theme can share a direction id without being that reference composition.
+    // Only an explicit choice may replace it; reading/rebuilding it must preserve its engine.
+    const installed = ACTIVE_DIRECTIONS.find((d) => d.id === (opts.direction ?? (existing?.spec.meta?.engine === "v2" ? null : existing?.spec.direction)));
+    if (installed) {
+      if (opts.engine === "v2") throw new UserFacingError(L(`Ce projet utilise le thème ${installed.name} : il se recompose dans ce thème, pas dans un langage visuel V2.`, `This project uses the ${installed.name} theme: it is rebuilt in that theme, not in a V2 visual language.`));
+      opts = { ...opts, direction: installed.id, engine: "v1" };
+    }
   }
 
   const parent = currentTheme(projectId)?.version.id ?? null;
@@ -333,7 +368,7 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
     const r = await buildShopV2(ctx, projectId, { language: opts.language, summary: opts.summary });
     return { versionId: r.versionId, number: r.number, delivery: r.delivery };
   }
-  const { p, direction, services, catalog, spec: built } = await composeShop(projectId, opts.direction, ctx);
+  const { p, direction, services, catalog, spec: built } = await composeShop(projectId, opts.direction, ctx, !ACTIVE_DIRECTIONS.some(d=>d.id===(opts.direction??loadProject(projectId).brand?.direction)), true);
   let spec = built;
   let author: "ai" | "system" = "system";
   // Résumé de la version enregistré dans les deux langues : affiché ensuite dans celle de l'interface.
@@ -346,23 +381,30 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
   // Relecture visuelle (si elle a lieu) : sert au verdict de qualité de la version enregistrée.
   let reviewed: { score: number } | null = null;
   let reviewedKept = true;
-  if (opts.useAi !== false && llmConfigured() && ctx) {
+  if (!ACTIVE_DIRECTIONS.some(d=>d.id===direction) && opts.useAi !== false && llmConfigured() && ctx) {
     try {
       const design = await ctx.step(`design:${direction}`, () => aiDesignHome({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:design:${direction}` }, p, spec));
       const ops: ThemeOp[] = [];
-      if (design.custom && /^es-custom-[a-z0-9-]{2,40}$/.test(design.custom.type)) ops.push({ op: "custom_section", type: design.custom.type, name: design.custom.name.slice(0, 25), liquid: design.custom.liquid });
+      // Section entièrement écrite par l'IA : forfait Dominer seulement (même règle que le chat et les opérations).
+      const owner = one<{ id: string; role: "client" | "admin" }>("SELECT id, role FROM users WHERE id = ?", p.userId);
+      const customAllowed = !!owner && sectionGenerationAllowed(owner, projectId);
+      if (customAllowed && design.custom && /^es-custom-[a-z0-9-]{2,40}$/.test(design.custom.type)) ops.push({ op: "custom_section", type: design.custom.type, name: design.custom.name.slice(0, 25), liquid: design.custom.liquid });
       const fresh: ThemeSpec = { ...spec, settings: { ...spec.settings, ...Object.fromEntries(Object.entries(design.globals ?? {}).filter(([, v]) => v !== undefined)) }, templates: { ...spec.templates, index: { sections: {}, order: [] } } };
       // Site de services : aucune section de vente, même si l'IA en propose.
       const SALES = /^(featured-product|featured-collection|collection-list|product-|shipping-journey|featured-offer|countdown|main-)/;
       // Section d'un type inconnu proposée par l'IA : retirée seule (le reste de la composition payée est gardé).
       for (const s of design.index) if (!(services && SALES.test(s.type)) && sectionSchema(fresh, s.type)) ops.push({ op: "add_section", template: "index", type: s.type, settings: s.settings, blocks: s.blocks });
-      // Catalogue : la grille de produits figure toujours juste après l'ouverture.
-      if (catalog && !design.index.some((s) => s.type === "featured-collection")) {
+      // Catalogue : la grille de produits figure toujours juste après l'ouverture (celle de la bibliothèque du projet).
+      const kind = projectKind(p);
+      const grid = sectionIncompatibility(fresh, "featured-collection", kind) ? "fs-products" : "featured-collection";
+      if (catalog && !design.index.some((s) => s.type === "featured-collection" || s.type === "fs-products")) {
         const first = ops.findIndex((o) => o.op === "add_section");
-        ops.splice(first + 1, 0, { op: "add_section", template: "index", type: "featured-collection", settings: { heading: p.storeType === "multi" ? C("Les incontournables", "Best sellers") : C("La sélection", "The selection"), collection: "all", limit: 8, columns: 4 } });
+        const heading = p.storeType === "multi" ? C("Les incontournables", "Best sellers") : C("La sélection", "The selection");
+        ops.splice(first + 1, 0, { op: "add_section", template: "index", type: grid, settings: grid === "fs-products" ? { heading, layout: "grid", source: "collection", collection: "all", limit: 8 } : { heading, collection: "all", limit: 8, columns: 4 } });
       }
       // Finitions d'agence (doublons, sections d'espaces réservés, images inexistantes…) avant tout contrôle.
-      const r = applyOps(fresh, ops);
+      // Bibliothèque de la famille du projet : une section d'une autre famille proposée par l'IA est refusée seule.
+      const r = applyOps(fresh, ops, { storeKind: kind });
       r.spec = tidyComposition(r.spec, { strictAssets: true });
       if (r.spec.templates.index.order.length >= 4 && !validateSpec(r.spec).length) {
         spec = r.spec;
@@ -391,7 +433,7 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
         summary = directionSummary;
         append(inBothLangs(() => L(` · composition de l'IA écartée à la relecture visuelle (${review.score}/10)`, ` · AI layout discarded at visual review (${review.score}/10)`)));
       } else if (review?.ops.length) {
-        const r = applyOps(spec, services ? review.ops.filter((o) => !("type" in o && typeof o.type === "string" && /^(featured-product|featured-collection|collection-list|product-|shipping-journey|featured-offer|countdown)/.test(o.type))) : review.ops);
+        const r = applyOps(spec, services ? review.ops.filter((o) => !("type" in o && typeof o.type === "string" && /^(featured-product|featured-collection|collection-list|product-|shipping-journey|featured-offer|countdown)/.test(o.type))) : review.ops, { storeKind: projectKind(p) });
         r.spec = tidyComposition(r.spec, { strictAssets: true });
         // Une relecture qui viderait l'accueil (moins de 4 sections) ou en retirerait l'ouverture n'est pas appliquée.
         const opening = (t: ThemeSpec) => t.templates.index.sections[t.templates.index.order[0]]?.type ?? "";
@@ -410,6 +452,7 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
   // Changement de thème ou nouveau remplissage : les sections ajoutées par le client et ses réglages sont reportés sur
   // la nouvelle composition (une section incompatible avec le thème ou la catégorie reste masquée, jamais supprimée ;
   // en cas de conflit avec une nouvelle valeur automatique, la valeur du client gagne et le conflit est signalé).
+  const clientCompositionBaseline = spec.meta?.adaptation ? structuredClone(spec) : null;
   if (opts.direction) {
     const prev = currentTheme(projectId);
     if (prev && !prev.spec.imported) {
@@ -420,12 +463,16 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
       const problemsAfter = validateSpec(kept.spec);
       if (!problemsAfter.length) {
         spec = kept.spec;
+        (await import("../theme/adaptation-preservation")).preserveClientRecords(spec,prev.spec,baseline);
         spec.meta = { ...spec.meta, carryOver: kept.report as unknown as Record<string, unknown> };
+        if(spec.meta.strategy && prev.spec.meta?.strategy?.angleId !== spec.meta.strategy.angleId){const retained=[...(spec.meta.strategy.retainedPaths??[]),...kept.report.reapplied.filter(x=>/text|heading|title|label|button|image|video|@blocks/.test(x.key)).map(x=>`${x.template}:${x.id}:${x.key}`)];spec.meta.strategy={...spec.meta.strategy,retainedPaths:retained,alignment:retained.length?"mixed":"prepared"};}
         const text = describeReport(kept.report, lang);
         if (text) append(inBothLangs(() => L(` · ${describeReport(kept.report, "fr")}`, ` · ${describeReport(kept.report, "en")}`)));
       } else console.warn("[shop] report des retouches du client impossible :", problemsAfter.join(" ; "));
     }
   }
+  if(spec.meta?.adaptation)await (await import("../theme/client-adaptation")).verifyAdaptationFiles(spec,p);
+  ctx?.progress(.82, L("Vérification des pages, des médias et de la sauvegarde", "Checking pages, media and persistence"));
   const problems = validateSpec(spec);
   if (problems.length) throw new Error(L(`Thème invalide : ${problems.join(" ; ")}`, `Invalid theme: ${problems.join("; ")}`));
   // Niveau de qualité dit honnêtement (Phase 1 : comportement technique inchangé). 8/10 et plus : FINAL ; de 5 à
@@ -433,14 +480,24 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
   // (la composition de l'IA est alors écartée, celle de la direction gardée, non relue). Sans relecture : non contrôlé.
   const checked = decide("theme_home", reviewed && reviewedKept ? { checker: "ai", score: reviewed.score } : { checker: "none", score: null });
   const quality = checked.verdict === "RETRY" && checked.action === "recheck" ? { ...checked, verdict: "PROVISIONAL" as const, action: "none" as const, reason: L("Structure vérifiée ; rendu visuel non vérifié, à relire.", "Structure checked; visual result unchecked, review required."), provisional: { use: "manual" as const, label: "needs_improvement" as const } } : checked;
+  const acquired=currentTheme(projectId);
+  if(spec.meta?.adaptation&&acquired?.spec.direction===spec.direction&&acquired.spec.meta?.adaptation?.inputHash===spec.meta.adaptation.inputHash){
+    return{versionId:acquired.version.id,number:acquired.version.number,delivery:{state:acquired.spec.meta.adaptation.status==="partial"?"partial":"to_verify",active:true,message:L("Version existante réutilisée, sans nouvelle génération ni double version.","Existing version reused, without new generation or duplicate version."),reasons:acquired.spec.meta.adaptation.issues.map(i=>i.code)}};
+  }
+  if(opts.prepareOnly && spec.meta?.adaptation){
+    const comparable=(s:ThemeSpec)=>canonicalJSON({direction:s.direction,settings:s.settings,groups:s.groups,templates:s.templates,store:s.store,files:s.files,customSections:s.customSections,locks:s.locks,language:s.language});
+    const compatible=listThemeVersions(projectId).filter(v=>v.author!=="user").map(v=>themeVersion(projectId,v.id)).find(v=>v && v.spec.meta?.adaptation?.inputHash===spec.meta?.adaptation?.inputHash && comparable(v.spec)===comparable(spec));
+    if(compatible)return{versionId:compatible.version.id,number:compatible.version.number,delivery:{state:"to_verify",active:false,message:L("Version compatible déjà acquise réutilisée pour la bascule, sans génération ni nouvelle version.","An acquired compatible version is reused for the switch, without generation or a new version."),reasons:[]}};
+  }
   const qcId = saveCheck(quality, { userId: p.userId, projectId, jobId: ctx?.job.id ?? null, candidateId: `theme:${projectId}:${direction}` });
   if (reviewed && !reviewedKept) saveCheck(decide("theme_home", { checker: "ai", score: reviewed.score }), { userId: p.userId, projectId, jobId: ctx?.job.id ?? null, candidateId: `theme-ai-layout:${projectId}:${direction}` });
   if (quality.verdict === "PROVISIONAL") append(inBothLangs(() => L(" · niveau provisoire, à vérifier et améliorer", " · provisional level, review and improve")));
   const conflict = (currentTheme(projectId)?.version.id ?? null) !== parent;
-  const v = saveThemeVersion(projectId, spec, JSON.stringify(summary), author, { checks: L(["structure", "schémas des sections", "contraste des couleurs"], ["structure", "section schemas", "color contrast"]), problems, gate: gateMeta(quality, qcId) }, parent, { activate: !conflict });
+  const v = saveThemeVersion(projectId, spec, JSON.stringify(summary), author, { checks: L(["structure", "schémas des sections", "contraste des couleurs"], ["structure", "section schemas", "color contrast"]), problems, gate: gateMeta(quality, qcId), ...(clientCompositionBaseline ? { clientCompositionBaseline } : {}) }, parent, { activate: !conflict && !opts.prepareOnly });
+  strategyContent(projectId,"theme",v.id);
   ctx?.progress(0.95, L("Boutique enregistrée", "Store saved"));
   const active = currentTheme(projectId)?.version.id === v.id;
-  return { versionId: v.id, number: v.number, delivery: { state: active ? quality.verdict === "FINAL" ? "ready" : "to_verify" : "blocked", active, message: active ? L("Thème enregistré ; consultez son contrôle avant utilisation.", "Theme saved; review its check before use.") : L("Tentative conservée en brouillon ; version courante protégée.", "Attempt saved as a draft; current version protected."), reasons: [quality.reason] } };
+  return { versionId: v.id, number: v.number, delivery: { state: active ? spec.meta?.adaptation?.status === "partial" ? "partial" : quality.verdict === "FINAL" ? "ready" : "to_verify" : "blocked", active, message: active ? spec.meta?.adaptation?.status === "partial" ? L("Adaptation partielle enregistrée : des médias ou informations restent à compléter.", "Partial adaptation saved: some media or information still need completion.") : L("Thème enregistré ; consultez son contrôle avant utilisation.", "Theme saved; review its check before use.") : L("Tentative conservée en brouillon ; version courante protégée.", "Attempt saved as a draft; current version protected."), reasons: [...(spec.meta?.adaptation?.issues.map(i=>`${i.page} / ${i.section}: ${i.code}`)??[]),quality.reason] } };
 }
 
 /**
@@ -450,25 +507,27 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
 function compositionBaseline(projectId: string, upToNumber: number): ThemeSpec | null {
   const versions = listThemeVersions(projectId).filter((v) => v.number <= upToNumber);
   for (const v of versions) {
-    const qc = json<{ gate?: unknown }>((v as { qc?: string }).qc ?? "{}", {});
-    if (qc && typeof qc === "object" && "gate" in qc) return themeVersion(projectId, v.id)?.spec ?? null;
+    const qc = json<{ gate?: unknown; clientCompositionBaseline?: ThemeSpec }>((v as { qc?: string }).qc ?? "{}", {});
+    if (qc && typeof qc === "object" && "gate" in qc) return qc.clientCompositionBaseline ?? themeVersion(projectId, v.id)?.spec ?? null;
   }
   return null;
 }
 
 /** Change de direction : nouvelle version complète (l'ancienne reste restaurable), ajouts et réglages du client reportés. */
 export async function switchDirection(ctx: JobContext | null, projectId: string, direction: DirectionId) {
-  // Thèmes du forfait du projet (10, 20 ou 30) — revérifié ici, dans le worker, quel que soit le chemin (écran, chat).
+  // Thèmes du forfait du projet (1 / 3 / tous par famille) — revérifié ici, dans le worker, quel que soit le chemin (écran, chat).
   const { assertThemeAllowed } = await import("../plan-gates");
   try {
-    assertThemeAllowed(projectId, direction, currentTheme(projectId)?.spec.direction ?? loadProject(projectId).brand?.direction ?? null);
+    assertThemeAllowed(projectId, direction, currentTheme(projectId)?.spec.direction ?? null);
   } catch (e) {
     throw new UserFacingError((e as Error).message);
   }
+  assertStrategyChosen(projectId);
   // La marque prend la direction et ses couleurs (logo, charte) avant la construction du site.
   const { adoptDirection } = await import("./brand-direction");
   // Le choix de mise en page ne recolore pas une identité déjà approuvée dans le parcours amont.
-  if((await import("../preparation/store")).stateOf(projectId)?.stages.brand?.status!=="approved")await adoptDirection(projectId, direction);
+  if(ACTIVE_DIRECTIONS.some(d=>d.id===direction)){const p=loadProject(projectId);if(p.brand)(await import("../projects")).saveBrand(projectId,{...p.brand,direction});}
+  else if((await import("../preparation/store")).stateOf(projectId)?.stages.brand?.status!=="approved")await adoptDirection(projectId, direction);
   return buildShop(ctx, projectId, { direction, useAi: false, summary: inBothLangs(() => L(`Direction ${directionById(direction).name} appliquée`, `${directionById(direction).name} direction applied`)) });
 }
 

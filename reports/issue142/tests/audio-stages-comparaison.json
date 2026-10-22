@@ -1,0 +1,287 @@
+{
+  "simulation": true,
+  "realSupplierCalls": 0,
+  "note": "Reproduction FFmpeg locale à six voix. La borne de durée seule et les entrées indépendantes n’éliminent pas tous les blocages ; les étapes séparées sont le correctif final. Un timeout de mesure ne compte jamais comme succès.",
+  "boundedInputAlone": [
+    {
+      "mode": "bounded-only",
+      "exitCode": 0,
+      "elapsedSeconds": 0.796,
+      "stderr": ""
+    },
+    {
+      "mode": "pad-voice-key",
+      "timeoutSeconds": 8
+    }
+  ],
+  "separateInputsOnly": [
+    {
+      "attempt": 1,
+      "exitCode": 0,
+      "elapsedSeconds": 0.808,
+      "stderr": ""
+    },
+    {
+      "attempt": 2,
+      "exitCode": 0,
+      "elapsedSeconds": 0.77,
+      "stderr": ""
+    },
+    {
+      "attempt": 3,
+      "exitCode": 0,
+      "elapsedSeconds": 0.752,
+      "stderr": ""
+    },
+    {
+      "attempt": 4,
+      "exitCode": 0,
+      "elapsedSeconds": 0.878,
+      "stderr": ""
+    },
+    {
+      "attempt": 5,
+      "exitCode": 0,
+      "elapsedSeconds": 0.896,
+      "stderr": ""
+    },
+    {
+      "attempt": 6,
+      "exitCode": 0,
+      "elapsedSeconds": 0.78,
+      "stderr": ""
+    },
+    {
+      "attempt": 7,
+      "exitCode": 0,
+      "elapsedSeconds": 0.742,
+      "stderr": ""
+    },
+    {
+      "attempt": 8,
+      "exitCode": 0,
+      "elapsedSeconds": 0.773,
+      "stderr": ""
+    },
+    {
+      "attempt": 9,
+      "exitCode": 0,
+      "elapsedSeconds": 0.787,
+      "stderr": ""
+    },
+    {
+      "attempt": 10,
+      "timeoutSeconds": 5
+    },
+    {
+      "attempt": 11,
+      "exitCode": 0,
+      "elapsedSeconds": 0.742,
+      "stderr": ""
+    },
+    {
+      "attempt": 12,
+      "exitCode": 0,
+      "elapsedSeconds": 0.78,
+      "stderr": ""
+    }
+  ],
+  "finiteMusicOnly": [
+    {
+      "attempt": 1,
+      "exitCode": 0,
+      "elapsedSeconds": 0.786,
+      "stderr": ""
+    },
+    {
+      "attempt": 2,
+      "exitCode": 0,
+      "elapsedSeconds": 0.75,
+      "stderr": ""
+    },
+    {
+      "attempt": 3,
+      "exitCode": 0,
+      "elapsedSeconds": 0.74,
+      "stderr": ""
+    },
+    {
+      "attempt": 4,
+      "exitCode": 0,
+      "elapsedSeconds": 0.864,
+      "stderr": ""
+    },
+    {
+      "attempt": 5,
+      "exitCode": 0,
+      "elapsedSeconds": 0.821,
+      "stderr": ""
+    },
+    {
+      "attempt": 6,
+      "exitCode": 0,
+      "elapsedSeconds": 0.766,
+      "stderr": ""
+    },
+    {
+      "attempt": 7,
+      "exitCode": 0,
+      "elapsedSeconds": 0.715,
+      "stderr": ""
+    },
+    {
+      "attempt": 8,
+      "exitCode": 0,
+      "elapsedSeconds": 0.728,
+      "stderr": ""
+    },
+    {
+      "attempt": 9,
+      "exitCode": 0,
+      "elapsedSeconds": 0.733,
+      "stderr": ""
+    },
+    {
+      "attempt": 10,
+      "exitCode": 0,
+      "elapsedSeconds": 0.755,
+      "stderr": ""
+    },
+    {
+      "attempt": 11,
+      "exitCode": 0,
+      "elapsedSeconds": 0.729,
+      "stderr": ""
+    },
+    {
+      "attempt": 12,
+      "exitCode": 0,
+      "elapsedSeconds": 0.711,
+      "stderr": ""
+    },
+    {
+      "attempt": 13,
+      "exitCode": 0,
+      "elapsedSeconds": 0.695,
+      "stderr": ""
+    },
+    {
+      "attempt": 14,
+      "exitCode": 0,
+      "elapsedSeconds": 0.69,
+      "stderr": ""
+    },
+    {
+      "attempt": 15,
+      "exitCode": 0,
+      "elapsedSeconds": 0.709,
+      "stderr": ""
+    },
+    {
+      "attempt": 16,
+      "timeoutSeconds": 4
+    }
+  ],
+  "separateStages": [
+    {
+      "attempt": 1,
+      "exitCode": 0,
+      "elapsedSeconds": 0.99
+    },
+    {
+      "attempt": 2,
+      "exitCode": 0,
+      "elapsedSeconds": 1.073
+    },
+    {
+      "attempt": 3,
+      "exitCode": 0,
+      "elapsedSeconds": 1.007
+    },
+    {
+      "attempt": 4,
+      "exitCode": 0,
+      "elapsedSeconds": 1.003
+    },
+    {
+      "attempt": 5,
+      "exitCode": 0,
+      "elapsedSeconds": 1.012
+    },
+    {
+      "attempt": 6,
+      "exitCode": 0,
+      "elapsedSeconds": 1.011
+    },
+    {
+      "attempt": 7,
+      "exitCode": 0,
+      "elapsedSeconds": 1.008
+    },
+    {
+      "attempt": 8,
+      "exitCode": 0,
+      "elapsedSeconds": 1.091
+    },
+    {
+      "attempt": 9,
+      "exitCode": 0,
+      "elapsedSeconds": 1.154
+    },
+    {
+      "attempt": 10,
+      "exitCode": 0,
+      "elapsedSeconds": 1.013
+    },
+    {
+      "attempt": 11,
+      "exitCode": 0,
+      "elapsedSeconds": 1.009
+    },
+    {
+      "attempt": 12,
+      "exitCode": 0,
+      "elapsedSeconds": 1.048
+    },
+    {
+      "attempt": 13,
+      "exitCode": 0,
+      "elapsedSeconds": 1.067
+    },
+    {
+      "attempt": 14,
+      "exitCode": 0,
+      "elapsedSeconds": 1.058
+    },
+    {
+      "attempt": 15,
+      "exitCode": 0,
+      "elapsedSeconds": 0.937
+    },
+    {
+      "attempt": 16,
+      "exitCode": 0,
+      "elapsedSeconds": 0.952
+    },
+    {
+      "attempt": 17,
+      "exitCode": 0,
+      "elapsedSeconds": 1.035
+    },
+    {
+      "attempt": 18,
+      "exitCode": 0,
+      "elapsedSeconds": 1.029
+    },
+    {
+      "attempt": 19,
+      "exitCode": 0,
+      "elapsedSeconds": 1.038
+    },
+    {
+      "attempt": 20,
+      "exitCode": 0,
+      "elapsedSeconds": 0.948
+    }
+  ]
+}

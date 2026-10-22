@@ -1,3 +1,4 @@
+import { strategyContent, strategyStamp } from "./strategy-consumption";
 /**
  * Bibliothèque de fichiers : dossiers, sous-dossiers, médias, versions et
  * usages. Les originaux ne sont jamais écrasés : une retouche crée une
@@ -174,6 +175,8 @@ async function probeVideo(file: string): Promise<{ width?: number; height?: numb
 const SAFE_EXT = new Set(["png", "jpg", "jpeg", "webp", "gif", "avif", "heic", "heif", "svg", "mp4", "mov", "webm", "m4v", "mp3", "wav", "m4a", "ogg", "pdf", "zip", "csv", "txt", "json", "md", "docx", "xlsx", "pptx", "ttf", "otf", "woff", "woff2", "psd", "ai", "eps"]);
 
 export async function saveAsset(input: SaveAssetInput): Promise<Asset> {
+  const strategy = input.origin === "generated" ? strategyStamp(input.projectId) : null;
+  const { marketingStrategy: _untrustedStamp, ...meta } = input.meta ?? {};
   const aid = id();
   // Extension du fichier stocké : celle du type, sinon celle du nom SEULEMENT si elle est connue et inoffensive
   // (jamais « .m3u8 », « .ffconcat »… qu'un outil comme ffmpeg interpréterait comme une liste de lecture).
@@ -221,6 +224,7 @@ export async function saveAsset(input: SaveAssetInput): Promise<Asset> {
   if (input.versionOf) {
     version = (one<{ v: number }>("SELECT MAX(version) v FROM assets WHERE version_of = ? OR id = ?", input.versionOf, input.versionOf)?.v ?? 1) + 1;
   }
+  return tx(() => {
   run(
     `INSERT INTO assets (id, project_id, user_id, folder_id, name, kind, role, mime, size, width, height, duration, storage_key, thumb_key, origin, meta, source_asset_id, version_of, version, status, created_at)
      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
@@ -239,14 +243,16 @@ export async function saveAsset(input: SaveAssetInput): Promise<Asset> {
     key,
     thumbKey,
     input.origin,
-    JSON.stringify(input.meta ?? {}),
+    JSON.stringify({ ...meta, ...(strategy ? { marketingStrategy: strategy } : {}) }),
     input.sourceAssetId ?? null,
     input.versionOf ?? null,
     version,
     input.status ?? "ready",
     now(),
   );
+  if (input.origin === "generated") strategyContent(input.projectId, "asset", aid, { stamp: strategy });
   return getAsset(aid)!;
+  });
 }
 
 export function getAsset(assetId: string): Asset | undefined {

@@ -156,3 +156,22 @@ export const autopublishAllowed = (userId: string) => {
   const plan = userPlan(userId);
   return !!plan && PLANS[plan].autopublish;
 };
+
+/** Reserve one new blog draft before generation, atomically against this subscription's monthly cycle.
+ * Existing drafts/retries do not count again. Failed work without a saved article returns only the count,
+ * never the provider money. A pending claim remains counted across a worker crash. */
+export function reserveBlogDraft(userId:string,projectId:string,articleId:string): string|null {
+  return tx(()=>{
+    const plan=userPlan(userId,projectId);
+    if(!plan||!PLANS[plan].quotas.blog)throw new UserFacingError(L('Les articles de blog nécessitent Développer ou Dominer.','Blog posts require Grow or Dominate.'));
+    if(one('SELECT 1 FROM blog_articles WHERE id=? AND project_id=?',articleId,projectId))return null;
+    const ref=`blog-draft:${accountKeyFor(userId,projectId)}:${articleId}`;
+    if(one('SELECT 1 FROM quota_events WHERE ref=? AND user_id=?',ref,accountKeyFor(userId,projectId)))return ref;
+    assertQuota(userId,'blog',1,projectId);
+    consumeQuota(userId,'blog',1,ref,projectId);
+    return ref;
+  });
+}
+export function releaseUnsavedBlogDraft(userId:string,projectId:string,ref:string|null,articleIds:string[]) {
+  if(ref&&!articleIds.some(articleId=>one('SELECT 1 FROM blog_articles WHERE id=? AND project_id=?',articleId,projectId)))refundQuota(accountKeyFor(userId,projectId),ref);
+}

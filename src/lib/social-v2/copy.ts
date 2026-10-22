@@ -285,6 +285,13 @@ export function writeLocal(o: { pillar: Pillar; archetype: Archetype; f: Verifie
   }
   // Sans matière confirmée : le titre de l'affiche nomme le produit (ou l'offre), pas l'intitulé interne du pilier.
   if (!chosen) chosen = { ...missing(o.pillar, lang, o.n), ...(f.offerName ? { headline: short(f.offerName) } : {}) };
+  const marketing = f.marketingStrategy?.angle;
+  if (marketing && atom && f.marketingStrategy?.angleId!=="generalist") {
+    // Vary the expression by editorial role, while following ONE project motivation.
+    const role = [...pillar.id].reduce((n, c) => n + c.charCodeAt(0), 0);
+    const emphasis = marketing.messages[(o.n + role) % Math.max(1, marketing.messages.length)] || marketing.examples.hero;
+    chosen = { ...chosen, body: [emphasis, chosen.body].filter(Boolean).join("\n") };
+  }
   o.used.add(fold(chosen.hook));
   const caption = [chosen.hook, chosen.body, o.cta].filter((x) => x && x.trim()).join("\n\n");
   const visual: Draft["visual"] = pillar.formats[0] === "reel" || pillar.formats[0] === "video" ? "video" : pillar.objective === "demonstrate" ? "detail" : pillar.objective === "brand" ? "scene" : "creative";

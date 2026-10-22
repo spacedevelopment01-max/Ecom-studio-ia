@@ -10,7 +10,7 @@ import { validateResearch, isLegacyResearch } from "./research-ai";
 /** Orchestration amont : points de reprise existants, validation client et contrat, jamais de thème. */
 import { all, id, json, now, one, run, tx } from "../db";
 import { HttpError } from "../auth";
-import { enqueue, JobPaused, UserFacingError, type JobContext } from "../jobs";
+import { enqueue, getJob, retryJob, JobPaused, UserFacingError, type JobContext } from "../jobs";
 import {
   loadProject,
   remember,
@@ -34,6 +34,7 @@ import { assertAiAllowed } from "../ai/access";
 import { assertCanSpend } from "../billing";
 import { withTrace } from "../ai/trace";
 import { redact } from "../redact";
+import { L } from "../i18n-server";
 import { analyzeLocally } from "./brief";
 import { realDependencies, type Dependencies } from "./deps";
 import {
@@ -194,7 +195,14 @@ export function blockers(projectId: string, s = stateOf(projectId)): string[] {
   const out = needed(s).map(
     (k) => `Étape à valider ou à reprendre : ${names[k]}.`,
   );
-  if (s.pending) out.push("Une préparation est encore en cours.");
+  if (s.pending) {
+    const job = one<{status:string}>("SELECT status FROM jobs WHERE id=? AND project_id=?",s.pending.jobId,projectId);
+    out.push(job?.status === "queued" || job?.status === "running"
+      ? L("Une préparation est encore en cours.", "Preparation is still in progress.")
+      : job?.status === "paused"
+        ? L("La préparation est en pause ; les résultats acquis sont conservés.", "Preparation is paused; acquired results are kept.")
+        : L("La préparation s'est arrêtée et doit être reprise ; les résultats acquis sont conservés.", "Preparation stopped and needs to be resumed; acquired results are kept."));
+  }
   if (out.length) return out;
   const p = loadProject(projectId);
   const b = stageOf(s, "brief").data;
@@ -854,6 +862,26 @@ export function queuePreparation(
     return { state: next, job, reused: false };
   });
 }
+/** Même demande, même tâche et mêmes checkpoints ; jamais un nouvel essai payant implicite. */
+export function recoverablePreparation(projectId: string, s = stateOf(projectId)) {
+  if (!s) return null;
+  const jid = s.pending?.jobId ?? s.error?.jobId;
+  const j = jid ? getJob(jid) : null;
+  if (!j || j.project_id !== projectId || j.user_id !== one<{user_id:string}>("SELECT user_id FROM projects WHERE id=?",projectId)?.user_id || j.type !== "project.prepare" || j.status !== "failed") return null;
+  const payload = json<{ projectId: string; step: Step; action: RunAction; slot?: string; revision: number; inputHash: string }>(j.payload, {} as any);
+  if (payload.projectId !== projectId || !STEPS.includes(payload.step) || !payload.inputHash) return null;
+  const revisionMatches = s.error?.jobId === j.id && s.error.revision === s.revision || s.pending?.jobId === j.id && (s.revision === payload.revision || payload.action === "collect" && s.revision >= payload.revision);
+  return revisionMatches && requestHash(s, payload.step, payload.action, payload.slot) === payload.inputHash ? j : null;
+}
+export function recoverPreparation(projectId: string, revision: number) {
+  return tx(() => {
+    const s = stateOf(projectId);
+    const j = s?.revision === revision ? recoverablePreparation(projectId, s) : null;
+    if (!j) throw new HttpError(409, L("La demande a changé ou ne peut pas être récupérée. Vos modifications sont conservées ; préparez un nouvel essai avec son devis.", "The request changed or cannot be recovered. Your edits are kept; prepare a new attempt with its quote."));
+    retryJob(j.id, { recoveryOnly: true });
+    return getJob(j.id)!;
+  });
+}
 export async function runPreparation(
   ctx: JobContext,
   deps: Dependencies = realDependencies,
@@ -879,15 +907,22 @@ export async function runPreparation(
   };
   let savedRevision: number | undefined;
   try {
-    const s = stateOf(projectId);
+    let s = stateOf(projectId);
+    const resumingFailure = !!s && !s.pending && s.error?.jobId === ctx.job.id && s.error.revision === s.revision;
     if (
       !s ||
-      (s.revision !== revision && !(action === "collect" && s.pending?.jobId === ctx.job.id && s.revision >= revision)) ||
+      (s.revision !== revision && !resumingFailure && !(action === "collect" && s.pending?.jobId === ctx.job.id && s.revision >= revision)) ||
       requestHash(s, step, action, key) !== hash
     )
       throw new UserFacingError(
         "Les données ont changé : aucun nouvel appel fournisseur n’a été lancé.",
       );
+    // Reprise explicite du même travail : les checkpoints et le plafond initial restent attachés
+    // au job. Une retouche ou une nouvelle demande invalide ce droit de reprise par sa révision.
+    if (resumingFailure) s = commitState(projectId, s.revision, n => {
+      n.pending = { step, jobId: ctx.job.id, inputHash: hash };
+      delete n.error;
+    });
     const p = loadProject(projectId);
     requirePlan(null, projectId);
     requireUpstream(s, step);
@@ -895,7 +930,7 @@ export async function runPreparation(
     let expectedRevision = s.revision;
     ctx.progress(0.05, "Préparation à partir des choix validés");
     const execute = () =>
-      withTrace({ jobId: ctx.job.id, projectId, costCapMicro: capMicro }, () =>
+      withTrace({ jobId: ctx.job.id, projectId, costCapMicro: capMicro, recoveryOnly: ctx.payload.recoveryOnly === true }, () =>
         ctx.step(`prepare:${action}:${hash}`, async () => {
           if (action === "collect") {
             const keys = stageOf(s, "media").data.slots.filter(slot=>!(slot.kind==="video"&&slot.source==="ai"&&!slot.assetId)).map(slot => slot.key);
@@ -1036,6 +1071,8 @@ export async function runPreparation(
         if (n.pending?.jobId === ctx.job.id) delete n.pending;
         n.error = {
           step,
+          jobId: ctx.job.id,
+          revision: current.revision + 1,
           message: redact((e as Error).message).slice(0, 500),
           at: now(),
         };

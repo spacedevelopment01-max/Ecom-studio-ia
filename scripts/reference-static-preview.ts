@@ -1,6 +1,6 @@
 /** Aperçu statique consultable des quatre démonstrations composées dans leur thème de référence (issue #137, mission E) :
  * FRAISE (gummies, boutique spécialisée), ONDE (casque, boutique spécialisée), ORBE (lampe, e-commerce), Atelier Rive
- * (décoration d'intérieur, prestations de services). Toutes les pages sont rendues par les vraies routes d'aperçu du
+ * (décoration d'intérieur, prestations de services) et SILLON (machine à espresso nomade, boutique spécialisée, issue #148). Toutes les pages sont rendues par les vraies routes d'aperçu du
  * studio et exportées en fichiers HTML relatifs (images, logos, polices, scripts) ; pour les boutiques, le panier de
  * démonstration est pré-calculé : chaque état atteignable depuis l'interface est rendu par le serveur réel et rejoué
  * côté client par un petit script. Aucun paiement, aucun envoi de formulaire, aucune donnée réelle.
@@ -24,7 +24,7 @@ const out = path.resolve(args.find((a) => !a.startsWith("--")) ?? "reports/refer
 const { demoProject } = await import("../tests/demo-fixtures");
 // Stories FRAISE / ONDE : un clip de test (mire générée, jamais une vraie vidéo produit) prouve le lecteur, comme au lot 2C.
 const testVideo = path.join(out, "clip-test.webm"); try { execFileSync("ffmpeg", ["-y", "-f", "lavfi", "-i", "testsrc=size=540x960:rate=24", "-t", "8", "-c:v", "libvpx-vp9", "-b:v", "400k", "-an", testVideo], { stdio: "ignore" }); } catch { console.warn("ffmpeg absent : stories sans clip de test"); }
-type DemoId = "fraise" | "onde" | "orbe" | "rive";
+type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "souple";
 const { createUser } = await import("../src/lib/auth");
 const { saveThemeVersion } = await import("../src/lib/projects"); const { previewSegment } = await import("../src/lib/theme/preview-access");
 const { GET, POST } = await import("../src/app/preview/[id]/v/[vid]/[[...path]]/route");
@@ -39,7 +39,7 @@ async function post(pathname: string, body: string, contentType: string) { const
 
 const SHIM = fs.readFileSync(path.join(path.dirname(new URL(import.meta.url).pathname), "lot2c-static-demo.js"), "utf8");
 const runs: { id: DemoId; direction: DemoId; name: string }[] = [
-  { id: "fraise", direction: "fraise", name: "fraise" }, { id: "onde", direction: "onde", name: "onde" }, { id: "orbe", direction: "orbe", name: "orbe" }, { id: "rive", direction: "rive", name: "rive" },
+  { id: "fraise", direction: "fraise", name: "fraise" }, { id: "onde", direction: "onde", name: "onde" }, { id: "orbe", direction: "orbe", name: "orbe" }, { id: "rive", direction: "rive", name: "rive" }, { id: "sillon", direction: "sillon", name: "sillon" }, { id: "noctil", direction: "noctil", name: "noctil" }, { id: "traverse", direction: "traverse", name: "traverse" }, { id: "heuren", direction: "heuren", name: "heuren" }, { id: "alcove", direction: "alcove", name: "alcove" }, { id: "museau-club", direction: "museau-club", name: "museau-club" }, { id: "souple", direction: "souple", name: "souple" },
   ...(cross ? [{ id: "fraise" as DemoId, direction: "onde" as DemoId, name: "fraise-en-onde" }, { id: "onde" as DemoId, direction: "fraise" as DemoId, name: "onde-en-fraise" }] : []),
 ];
 const summary: Record<string, unknown>[] = [];
@@ -49,6 +49,8 @@ try {
     const base = `/preview/${pid}/v/${previewSegment(version.id, user.id, pid)}`, dir = path.join(out, run.name); fs.rmSync(dir, { recursive: true, force: true }); fs.mkdirSync(path.join(dir, "assets"), { recursive: true }); fs.mkdirSync(path.join(dir, "fonts")); if (!services) fs.mkdirSync(path.join(dir, "panier"));
     const title = f.demo.brand, productHandle = services ? null : spec.store.product.handle, productTitle = services ? f.demo.brand : spec.store.product.title;
     const pageHandles = spec.store.pages.map((p) => p.handle);
+    // Boutique de plusieurs produits (MUSEAU CLUB, issue #158) : chaque autre produit a sa propre fiche, en fichier plat.
+    const others = services ? [] : (spec.store.products ?? []).filter((p) => p.handle !== productHandle);
     // Correspondance route → fichier plat (liens relatifs, aucun sous-dossier pour les pages).
     const fileFor = (p: string): string => {
       const [pathname] = p.split("?");
@@ -56,6 +58,7 @@ try {
       if (pathname.startsWith("/assets/")) return pathname.slice(1);
       if (pathname.startsWith("/__fonts/")) return "fonts/" + pathname.slice(9);
       if (productHandle && pathname === `/products/${productHandle}`) return "produit.html";
+      if (others.some((o) => pathname === `/products/${o.handle}`)) return `produit-${pathname.slice(10)}.html`;
       if (!services && pathname.startsWith("/collections/")) return "boutique.html";
       if (pathname.startsWith("/pages/")) { const h = pathname.slice(7); return pageHandles.includes(h) ? `page-${h}.html` : "404.html"; }
       if (!services && pathname === "/cart") return "panier.html";
@@ -78,8 +81,10 @@ try {
     const inject = (html: string, extra = "") => html.replace("</body>", `<script>window.__esStaticProduct=${JSON.stringify(productTitle)};</script><script id="es-static-demo">${SHIM}</script>${extra}</body>`);
     async function pageHtml(route: string, status = 200) { const r = await get(`${base}${route}${route.includes("?") ? "&" : "?"}es_raw=1`); assert.equal(r.status, status, `${run.name} ${route} → ${r.status}`); return await r.text(); }
     // Pages.
-    const routes: [string, string][] = [["accueil.html", "/"], ...(services ? [] : [["produit.html", `/products/${productHandle}`], ["boutique.html", "/collections/all"]] as [string, string][]), ...pageHandles.map((h) => [`page-${h}.html`, `/pages/${h}`] as [string, string])];
+    const routes: [string, string][] = [["accueil.html", "/"], ...(services ? [] : [["produit.html", `/products/${productHandle}`], ...others.map((o) => [`produit-${o.handle}.html`, `/products/${o.handle}`]), ["boutique.html", "/collections/all"]] as [string, string][]), ...pageHandles.map((h) => [`page-${h}.html`, `/pages/${h}`] as [string, string])];
     for (const [file, route] of routes) fs.writeFileSync(path.join(dir, file), inject(rewrite(await pageHtml(route))));
+    // Plan des pages (visualiseur « démo complète » du studio) : fichier et titre de chaque page navigable.
+    fs.writeFileSync(path.join(dir, "pages.json"), JSON.stringify({ title, services, pages: [["accueil.html", "Accueil"], ...(services ? [] : [["produit.html", productTitle], ...others.map((o) => [`produit-${o.handle}.html`, o.title]), ["boutique.html", "Boutique"]]), ...spec.store.pages.map((pg) => [`page-${pg.handle}.html`, pg.title]), ...(services ? [] : [["panier.html", "Panier"]])].map(([file, label]) => ({ file, label })) }, null, 2) + "\n");
     fs.writeFileSync(path.join(dir, "404.html"), inject(rewrite(await pageHtml("/page-inconnue", 404))));
     const q = encodeURIComponent(productTitle.split(" ")[0]);
     fs.writeFileSync(path.join(dir, "recherche.html"), inject(rewrite(await pageHtml("/search"))));
@@ -131,5 +136,5 @@ try {
     summary.push({ demo: run.id, theme: run.direction, name: run.name, title, category: f.demo.category, services, pages: routes.length + 4, cartStates, assets: fetched.size, fonts: fonts.size, files, bytes: size, imagesInTheme: Object.keys(spec.files).length, missing: f.missing, handoff: handoff ? { placed: handoff.placed?.length ?? 0, empty: handoff.empty ?? [] } : null });
     console.log(JSON.stringify(summary.at(-1)));
   });
-  fs.writeFileSync(path.join(out, "resume.json"), JSON.stringify({ commit: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(), date: new Date().toISOString(), runs: summary }, null, 2) + "\n");
+  fs.writeFileSync(path.join(out, "resume.json"), JSON.stringify({ commit: (() => { try { return execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim(); } catch { return process.env.THEME_DEMOS_VERSION ?? "inconnu"; } })(), date: new Date().toISOString(), runs: summary }, null, 2) + "\n");
 } finally { fs.rmSync(temp, { recursive: true, force: true }); }

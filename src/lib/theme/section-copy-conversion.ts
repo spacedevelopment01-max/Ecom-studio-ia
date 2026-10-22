@@ -121,7 +121,8 @@ const ingredients: CopyFn = (ctx, base) => ({
 });
 
 const quote: CopyFn = (ctx, base) => ({
-  settings: fill(base.settings, { eyebrow: tr(ctx, "Témoignage", "Testimonial"), quote: todo(ctx, "un avis client réel", "a real customer review"), author: "", detail: "", label: tr(ctx, "Avis fictif", "Fictional review"), button_label: buyLabel(ctx), button_link: productLink(ctx) }),
+  // Aucun avis réel connu : ni note en étoiles ni étiquette « Avis fictif » (rien d'inventé sur le site du client).
+  settings: fill(base.settings, { eyebrow: tr(ctx, "Témoignage", "Testimonial"), quote: todo(ctx, "un avis client réel", "a real customer review"), author: "", detail: "", rating: ctx.sample ? 5 : 0, label: ctx.sample ? tr(ctx, "Avis fictif", "Fictional review") : "", button_label: buyLabel(ctx), button_link: productLink(ctx) }),
   blocks: [],
   samples: false,
 });

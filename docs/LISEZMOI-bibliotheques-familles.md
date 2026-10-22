@@ -72,8 +72,8 @@ fichiers restent : un projet enregistré qui les utilise s'affiche et s'exporte 
 - **Prix du forfait** : le code facture Dominer **129 €/mois** ; l'issue parle de **129,90 €**. Je n'ai pas changé le
   prix : à confirmer par Thomas.
 - **Développer (89 €) perd « Générer »** comme demandé ; la grille tarifaire affichée suit automatiquement.
-- **Exports WordPress / PrestaShop** (fichiers de Codex, non modifiés) : le script `family.js` (carrousels, repères,
-  avant / après) n'y est pas inclus ; le contenu reste visible et lisible, sans ces interactions. Shopify : complet.
+- **Exports WordPress / PrestaShop** : corrigé par l'issue #145 (scripts `family.js`, `conversion.js` et scripts
+  des sections inclus ; voir [`LISEZMOI-verification-145.md`](LISEZMOI-verification-145.md)).
 - **Méga menus** des en-têtes : la différence entre certaines dispositions ne se voit qu'au survol du menu.
 - **Projets dans un ancien thème** (hors des quatre) : seules les dispositions que ce thème sait rendre sont proposées.
 - Les **démonstrations** n'ont qu'un produit (ORBE) ou n'ont pas de vidéo : les sélections de produits et la vidéo

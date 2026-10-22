@@ -1,3 +1,4 @@
+import { assertContentAlignment } from "../marketing-strategy";
 /**
  * Publication réelle sur les réseaux via leurs API officielles. Une
  * publication n'est marquée « publiée » qu'après confirmation de la
@@ -283,6 +284,7 @@ async function publishPinterest(c: Connection, post: PostRow): Promise<PublishRe
 }
 
 export async function publishPost(post: PostRow, c: Connection): Promise<PublishResult> {
+  assertContentAlignment(post.project_id, "post", post.id);
   if (c.status === "revoked" || c.status === "expired") throw new PermanentError(L(`Le compte ${c.name} doit être reconnecté.`, `The account ${c.name} must be reconnected.`));
   switch (c.provider) {
     case "facebook":

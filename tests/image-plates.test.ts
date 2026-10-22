@@ -30,8 +30,9 @@ describe("Décors libres de droits pour les images du produit", async () => {
     }
   });
 
-  it("choix gratuit du décor : surface libre retenue, personne ou autre objet au premier plan écartés", () => {
+  it("choix gratuit du décor : surface libre retenue, personne ou autre objet au premier plan écartés", async () => {
     const p = loadProject(seedImageFixture(u.id, "cosmetic"));
+    const {grantProjectPlan}=await import("@/lib/project-subscriptions");grantProjectPlan(p.id,"dominer");
     const brief = buildBrief(p, { kind: "lifestyle", support: "ad", aspect: "1:1", references: ["x"] });
     expect(plateQueries(p, brief).every((q) => /empty|podium|background/.test(q))).toBe(true);
     const good = scorePlate(candidate("a", "empty wooden table blurred background bokeh"), brief);
@@ -45,6 +46,7 @@ describe("Décors libres de droits pour les images du produit", async () => {
 
   it("produit réel : jamais collé sur une photo libre (même un décor vide parfait) ; photo générée à partir de la photo du produit", async () => {
     const p = loadProject(seedImageFixture(u.id, "cosmetic"));
+    const {grantProjectPlan}=await import("@/lib/project-subscriptions");grantProjectPlan(p.id,"dominer");
     const cutId = await seedCutout(u.id, p.id);
     const prov = mockProvider("pixabay", () => [candidate("deco1", "empty marble table surface background", { source: "pixabay" })]);
     const { deps, log } = mockDeps({ providers: [prov], reference: cut, reviewFor: () => review(8.6) });
@@ -56,6 +58,7 @@ describe("Décors libres de droits pour les images du produit", async () => {
 
   it("décor refusé à la relecture (produit mal intégré) : génération d'un décor vide en dernier recours, jamais deux fois le même décor", async () => {
     const p = loadProject(seedImageFixture(u.id, "cosmetic"));
+    const {grantProjectPlan}=await import("@/lib/project-subscriptions");grantProjectPlan(p.id,"dominer");
     const cutId = await seedCutout(u.id, p.id);
     const prov = mockProvider("pixabay", () => [candidate("deco2", "empty wooden tabletop background", { source: "pixabay" })]);
     const { deps, log } = mockDeps({ providers: [prov], reference: cut, reviewFor: (k) => (k === "deco2" ? review(4, { issues: ["produit qui flotte"] }, { aesthetics: 3 }) : review(8.7)) });
@@ -70,10 +73,11 @@ describe("Décors libres de droits pour les images du produit", async () => {
 
   it("sans contrôle visuel (forfait Découverte) : le produit n'est jamais collé sur une photo libre", async () => {
     const p = loadProject(seedImageFixture(u.id, "cosmetic"));
+    const {grantProjectPlan}=await import("@/lib/project-subscriptions");grantProjectPlan(p.id,"creer");
     const cutId = await seedCutout(u.id, p.id);
     const prov = mockProvider("pixabay", () => [candidate("deco3", "empty stone surface blurred background", { source: "pixabay" })]);
     const { deps, log } = mockDeps({ providers: [prov], reference: cut, canReview: false, canGenerate: false });
-    const r = await fr(() => runImageEngineV2(null, p.id, { kind: "lifestyle", support: "ad", aspect: "4:5", references: [cutId] }, deps));
+    const r = await fr(() => runImageEngineV2(null, p.id, { kind: "lifestyle", support: "site", aspect: "4:5", references: [cutId] }, deps));
     expect(log.reviews).toEqual([]);
     expect(log.generations).toEqual([]);
     expect(log.downloads).not.toContain("deco3");

@@ -331,14 +331,18 @@ describe("Social V2 — parcours", async () => {
     const p = loadProject(seedImageFixture(u.id, "cosmetic"));
     const r = fr(() => createPlanV2(p, { startDate: start(), days: 14, perDay: 3, timezone: "Europe/Paris", platforms: [{ platform: "instagram" }], formatMix: { image: 60, video: 40 } }));
     const { deps, log } = mockSocialDeps({ aiActive: true });
-    const sun = await fr(() => applySocialEdit(p, "Supprime les publications du dimanche", deps));
+    // Suppression : toujours une confirmation avant d'agir (choix du propriétaire), puis appliquée localement.
+    const ask0 = await fr(() => applySocialEdit(p, "Supprime les publications du dimanche", deps));
+    expect(ask0).toMatchObject({ needsConfirm: true, confirmKind: "delete", applied: false });
+    expect(ask0.ids.length).toBe(6);
+    const sun = await fr(() => applySocialEdit(p, "Supprime les publications du dimanche", deps, { confirm: true }));
     expect(sun.by).toBe("local");
     expect(sun.ids.length).toBe(6);
-    const vids = await fr(() => applySocialEdit(p, "Mets les vidéos le vendredi", deps));
+    const vids = await fr(() => applySocialEdit(p, "Mets les vidéos le vendredi", deps, { confirm: true }));
     expect(vids.applied).toBe(true);
     const days = all<{ d: string }>("SELECT strftime('%w', scheduled_at / 1000, 'unixepoch') d FROM posts WHERE plan_id = ? AND format = 'reel' AND status != 'cancelled'", r.planId);
     expect(days.every((x) => x.d === "5")).toBe(true);
-    const red = await fr(() => applySocialEdit(p, "Programme deux publications par jour au lieu de trois", deps));
+    const red = await fr(() => applySocialEdit(p, "Programme deux publications par jour au lieu de trois", deps, { confirm: true }));
     expect(red.by).toBe("local");
     const counts = new Map<string, number>();
     for (const x of all<{ scheduled_at: number }>("SELECT scheduled_at FROM posts WHERE plan_id = ? AND status != 'cancelled'", r.planId)) {
@@ -347,9 +351,12 @@ describe("Social V2 — parcours", async () => {
     }
     expect(Math.max(...counts.values())).toBeLessThanOrEqual(2);
     const rep = await fr(() => applySocialEdit(p, "Remplace les images des trois prochaines publications", deps));
-    expect(rep.ids).toHaveLength(3);
-    // Remplacer une image ne la refait jamais par un gabarit : seulement par l'IA (avec accord), sinon elle attend.
+    // Remplacer une image ne la refait jamais par un gabarit ni ne la retire : devis IA d'abord, rien n'est lancé.
+    expect(rep).toMatchObject({ needsConfirm: true, confirmKind: "ai", applied: false });
+    expect(rep.ids.length).toBeGreaterThan(0);
+    expect(rep.ids.length).toBeLessThanOrEqual(3);
     expect(log.local).toBe(0);
+    expect(log.aiPost).toBe(0);
     expect(log.rewrite).toBe(0);
     const ask = await fr(() => applySocialEdit(p, "Change uniquement le texte de la publication de demain", deps));
     expect(ask.needsConfirm).toBe(true);
@@ -401,6 +408,7 @@ describe("Social V2 — parcours", async () => {
     for (const s of SOCIAL_SCENARIOS) {
       const u = await account();
       const p = loadProject(seedImageFixture(u.id, SOCIAL_FIXTURE[s]));
+      if(p.business==='services'){const {grantProjectPlan}=await import('./communication-choice-fixture');grantProjectPlan(p.id,'dominer');const {prepareStrategyChange,activateStrategy}=await import('@/lib/marketing-strategy');const choice=prepareStrategyChange(p.id,'generalist');activateStrategy(p.id,{angleId:'generalist',preparationId:choice.id,idempotencyKey:`benchmark-${p.id}`,confirmed:true});}
       const c = SOCIAL_PLAN[s];
       const r = fr(() => createPlanV2(p, { startDate: start(), days: c.days, perDay: c.perDay, timezone: "Europe/Paris", platforms: c.platforms.map((platform) => ({ platform })), formatMix: c.mix }));
       expect(r.created, s).toBe(c.days * c.perDay);

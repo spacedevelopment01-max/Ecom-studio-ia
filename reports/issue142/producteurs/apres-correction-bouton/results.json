@@ -1,0 +1,37 @@
+{
+  "version": {
+    "commit": "33d9e40126dc524a0236c4d76a0a7d7c4e5f1feb",
+    "source": "compiled-build"
+  },
+  "simulation": true,
+  "realProviderCalls": 0,
+  "realProviderCost": 0,
+  "results": [
+    {
+      "business": "products",
+      "partialDeliveryShown": true,
+      "partialSuccessNotPromoted": true,
+      "fileVisibleAfterFailure": true,
+      "filesPreservedAfterReload": true,
+      "failureProgress": 0.5,
+      "remainingBudgetPercent": 1,
+      "noCreationBelowMinimum": true,
+      "usages": 0,
+      "reservations": 0
+    },
+    {
+      "business": "services",
+      "partialDeliveryShown": true,
+      "partialSuccessNotPromoted": true,
+      "fileVisibleAfterFailure": true,
+      "filesPreservedAfterReload": true,
+      "failureProgress": 0.5,
+      "remainingBudgetPercent": 1,
+      "noCreationBelowMinimum": true,
+      "usages": 0,
+      "reservations": 0
+    }
+  ],
+  "errors": [],
+  "blockedExternalHosts": []
+}

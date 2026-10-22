@@ -1,3 +1,4 @@
+import { grantProjectPlan } from "@/lib/project-subscriptions";
 /** Quatre pages du brief 6247457951. Données fictives isolées, aucun appel IA ni photo empruntée.
  * Variante « direction artistique » : mêmes rôles de médias et même source commerciale que la fiche,
  * section « Produit à la une » complète sur l'accueil ORBE, cadrages bureau/mobile réglés par image. */
@@ -45,7 +46,7 @@ const MEDIA_META:Record<string,{alt:string;focus?:[number,number];mobile?:[numbe
 };
 const p=(s:string)=>`<p>${s}</p>`;
 export async function editorialProject(userId:string,kind:"products"|"services",mediaDirectory?:string) {
- const services=kind==="services",brandName=services?"Atelier Rive":"ORBE",pid=seedHoldout(userId,services?2:0,"Lot 2B — démo isolée");
+ const services=kind==="services",brandName=services?"Atelier Rive":"ORBE",pid=seedHoldout(userId,services?2:0,"Lot 2B — démo isolée");grantProjectPlan(pid,"dominer");
  const profile={...emptyProduct(),name:services?"Aménagement d'une pièce":"Lampe nomade ORBE",nameStatus:"provided" as const,category:services?"Aménagement intérieur":"Luminaire nomade",sector:"maison" as const,summary:services?"Aménagement et décoration intérieure, intentions, usages, lumière et matières.":"Lampe nomade à silhouette arrondie. Trois finitions : Dune, Argile et Charbon.",price:{amount:services?null:7900,currency:"EUR",status:services?"unknown" as const:"confirmed" as const},facts:services?[]:[{key:"finishes",label:"Finitions",value:"Dune, Argile, Charbon",status:"confirmed" as const,source:"user" as const}]};
  saveProduct(pid,profile);
  const offers=[{key:"conseil",name:"Conseil & direction",description:"Préciser l'ambiance et les choix qui donneront une direction à votre intérieur."},{key:"piece",name:"Aménagement d'une pièce",description:"Organiser les usages, la circulation et les matières à l'échelle d'une pièce."},{key:"ensemble",name:"Projet d'ensemble",description:"Relier plusieurs espaces autour d'une intention commune, avec un périmètre à définir ensemble."}];

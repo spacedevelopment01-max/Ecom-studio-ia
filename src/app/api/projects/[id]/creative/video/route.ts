@@ -1,3 +1,9 @@
+import {strategyStamp} from "@/lib/strategy-consumption";
+import { withCommunicationRequest } from "@/lib/marketing-strategy/communication-route";
+import { strategyVisibilitySql } from "@/lib/marketing-strategy/visibility";
+import { assertAdvertising } from "@/lib/job-entitlements";
+import { planAllowsAds } from "@/lib/plan-entitlements";
+import { projectPlan } from "@/lib/project-billing";
 import {assertCanSpend} from "@/lib/billing";
 import {applyWordingDeep,loadWordingRules} from "@/lib/client-wording";
 import crypto from "node:crypto";
@@ -48,12 +54,12 @@ const Req = z.object({
  * Devis au COÛT PROBABLE (une image et un plan par scène, un essai), montré en % du budget IA du mois ; `capMicro` :
  * plafond de la tâche (coûts maximaux, reprises comprises), jamais montré comme prix.
  */
-const quote = (p:Project,r:ThreeScenesRequest) => {const q=sceneChainQuote(p,r);return {...q,pct:budgetPctOf(p.userId,q.estimateMicro,p.id)};};
+const quote = (p:Project,r:ThreeScenesRequest) => {const q=sceneChainQuote(p,r);if(r.as==='ad'&&!planAllowsAds(projectPlan(p.id)))return{...q,allowed:false,reason:L('La vidéo publicitaire nécessite Dominer (129 € par mois). Les vidéos existantes sont conservées.','Advertising video requires Dominate (€129 per month). Existing videos are kept.'),estimateMicro:0,capMicro:0,pct:0};return {...q,pct:budgetPctOf(p.userId,q.estimateMicro,p.id)};};
 
 /** Vidéos en scènes déjà faites (création guidée et création du projet), avec leur sujet et leur demande. */
 function list(projectId: string) {
   const seen = new Set<string>();
-  return all<{ id: string; meta: string; created_at: number }>("SELECT id, meta, created_at FROM assets WHERE project_id = ? AND role = 'video' AND deleted_at IS NULL AND json_extract(meta, '$.scenes') IS NOT NULL ORDER BY created_at DESC LIMIT 40", projectId).map((r) => {
+  return all<{ id: string; meta: string; created_at: number }>(`SELECT id, meta, created_at FROM assets WHERE project_id = ? AND ${strategyVisibilitySql(projectId,"asset","assets.id")} AND role = 'video' AND deleted_at IS NULL AND json_extract(meta, '$.scenes') IS NOT NULL ORDER BY created_at DESC LIMIT 40`, projectId).map((r) => {
     const m = json<any>(r.meta, {});
     // Un MP4 rendu n'est pas une création validée : conserver les limites du worker jusque dans la carte client.
     const notes = Array.isArray(m.creative?.notes) ? m.creative.notes.filter((s: unknown) => typeof s === "string") : [];
@@ -80,12 +86,15 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
+  return withCommunicationRequest(p.id,req,async()=>{
   const b = await body(req, z.discriminatedUnion("action", [z.object({action:z.literal("refine"),draftPlan:ScenePlanSchema,instruction:z.string().min(1).max(1000),...Req.shape}),z.object({action:z.literal("repair"),jobId:z.string().max(80),index:z.number().int().min(0).max(5),kind:z.enum(["image","clip"]),instruction:z.string().max(1000).optional()}),z.object({action:z.literal("plan"),scenarioJobId:z.string().max(80).optional(),approvedScriptMicro:z.number().int().min(0).optional(),draftPlan:ScenePlanSchema.optional(),...Req.shape}),z.object({ action: z.literal("quote"), ...Req.shape }), z.object({ action: z.literal("create"), ...Req.shape, approvalToken:z.string().max(100000).optional(), approvedEstimateMicro: z.number().int().min(0).nullable().optional() })]));
+  if(b.action!=="repair"&&b.as==="ad")assertAdvertising(p.id);
   if(b.action === "repair") {
     requirePlan(user,p.id);
     const source=one<{id:string;payload:string;status:string}>("SELECT id,payload,status FROM jobs WHERE id=? AND project_id=? AND type='video.scenes'",b.jobId,p.id);
     if(!source || source.status!=="failed") throw new HttpError(409,"Choisissez une vidéo incomplète à reprendre.");
     const original=json<{request:ThreeScenesRequest}>(source.payload,{} as never).request;
+    if(original?.as==="ad")assertAdvertising(p.id);
     if(!original?.approval || original.repair || original.approval.scope!==videoScope(p,sceneApprovalRequest(original))) throw new HttpError(409,"Le contexte a changé ou la reprise a déjà été utilisée : nouveau scénario requis.");
     if(b.index>=(original.scenes??3)) throw new HttpError(400,"Scène inconnue.");
     if(one("SELECT 1 FROM jobs WHERE project_id=? AND json_extract(payload,'$.request.repair.rootJobId')=?",p.id,source.id)) throw new HttpError(409,"Une seule reprise ciblée autorisée dans ce devis.");
@@ -107,7 +116,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
 
   if(b.generation==="direct"&&b.sceneImages?.some(Boolean))throw new HttpError(400,"Choisissez le mode référence pour transmettre une photo, ou retirez cette sélection du mode direct.");
   for(const image of b.sceneImages??[]) {if(!image)continue;const a=getAsset(image.assetId);if(!a||a.project_id!==p.id||a.deleted_at||a.kind!=="image"||assetMeta<any>(a).gate?.fatal)throw new HttpError(400,"Référence image indisponible dans ce projet.");}
-  const r: ThreeScenesRequest = {mode:b.mode,generation:b.generation,purpose:b.purpose,initialSlot:b.initialSlot, sceneImages:b.sceneImages,editorial:b.editorial, as: b.as, subject: b.subject ?? null, request: b.request?.trim() || null, aspect: b.aspect, scenes: b.scenes, totalS: b.totalS, music: b.music };
+  const r: ThreeScenesRequest = { angleId:strategyStamp(p.id)?.angleId,mode:b.mode,generation:b.generation,purpose:b.purpose,initialSlot:b.initialSlot, sceneImages:b.sceneImages,editorial:b.editorial, as: b.as, subject: b.subject ?? null, request: b.request?.trim() || null, aspect: b.aspect, scenes: b.scenes, totalS: b.totalS, music: b.music };
   if(r.purpose==="site"){
     const {stateOf}=await import("@/lib/preparation/store");const state=stateOf(p.id);
     if(state?.stages.brand?.status!=="approved")throw new HttpError(409,"Validez l’identité du projet avant sa proposition vidéo.");
@@ -142,4 +151,5 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   assertCanSpend(user.id,approval.capMicro,p.id);
   const job = enqueue({ userId: user.id, projectId: p.id, type: "video.scenes", label: b.as === "ad" ? L("Publicité vidéo", "Video ad") : L("Publication vidéo", "Video post"), payload: { projectId: p.id, costCapMicro: approval.capMicro, request: { ...r, mode: q.mode,approval } } });
   return ok({ jobId: job.id, ...q });
+  },["plan", "create", "refine", "repair"]);
 });

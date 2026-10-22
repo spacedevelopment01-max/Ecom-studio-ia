@@ -1,3 +1,4 @@
+import { grantProjectPlan } from "./communication-choice-fixture";
 /**
  * Démo montre ARVEN : la vidéo disait « Voici Chronographe… » alors que le client a demandé « montre », jamais
  * « chronographe ». Cause : le moteur vidéo ne lisait pas le vocabulaire du client. Il l'applique maintenant aux
@@ -18,7 +19,7 @@ describe("vidéo : vocabulaire du client appliqué", async () => {
 
   it("vidéo en scènes : aucun « chronographe » à l'écran ni dans la voix, même dans un plan écrit par l'IA", async () => {
     const u = await createUser(`vw-${Date.now()}-${Math.random()}@test.fr`, "motdepasse-test", "P");
-    const pid = seedImageFixture(u.id, "hightech");
+    const pid = seedImageFixture(u.id, "hightech");grantProjectPlan(pid,"vendre");
     run("UPDATE projects SET product_json = json_set(product_json, '$.name', ?, '$.category', ?) WHERE id = ?", "Chronographe acier et cuir", "Montre", pid);
     await seedCutout(u.id, pid);
     addWordingRule(pid, { avoid: "chronographe", use: "montre" });

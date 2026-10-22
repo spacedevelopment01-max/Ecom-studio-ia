@@ -1,0 +1,1 @@
+Native browser acceptance passed: three plans, RDV quote/empty slots/used state, locks, reloads, desktop/mobile. Zero provider/payment/booking.

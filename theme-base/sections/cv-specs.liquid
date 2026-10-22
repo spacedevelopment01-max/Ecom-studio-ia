@@ -18,7 +18,7 @@
       {%- for block in section.blocks -%}
         {%- case block.type -%}
           {%- when 'group' -%}
-            <details class="cv-specs__group" {{ block.shopify_attributes }}{% if block.settings.open %} open{% endif %}{% render 'cv-reveal', animation: s.animation, index: forloop.index0 %}>
+            <details class="cv-specs__group" {{ block.shopify_attributes }}{% if block.settings.open %} open{% endif %} {% render 'cv-reveal', animation: s.animation, index: forloop.index0 %}>
               <summary class="cv-specs__summary"><span>{{ block.settings.title | escape }}</span><span class="es-faq__icon" aria-hidden="true"><i></i><i></i></span></summary>
               <dl class="cv-specs__rows">
                 {%- assign lines = block.settings.rows | newline_to_br | split: '<br />' -%}

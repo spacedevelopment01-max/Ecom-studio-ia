@@ -1,0 +1,322 @@
+[
+  {
+    "brand": "noctil",
+    "source": "Logo futuriste NOCTIL, lumière galactique.png",
+    "path": "public/theme-assets/noctil/logo.webp",
+    "bytes": 211108,
+    "width": 2172,
+    "height": 724,
+    "sha256": "b548447d8624e5f1016d924a9a26cd7c6df3149939afa37b0bc31ab4d4c1f564",
+    "git_blob_sha": "78cb290222f764ffbf2425eaada1da6b4d26aaf5"
+  },
+  {
+    "brand": "noctil",
+    "source": "Projecteur galaxie sphérique NOCTIL.png",
+    "path": "public/theme-assets/noctil/produit-01.webp",
+    "bytes": 141808,
+    "width": 1254,
+    "height": 1254,
+    "sha256": "078d56783a12a81b11d4e49dfeb8f66e83047bd99a5cc50eea5e01b28408310a",
+    "git_blob_sha": "e9ec55a4a23241ea81dda6832b4ffe008600528b"
+  },
+  {
+    "brand": "noctil",
+    "source": "Projecteur galactique NOCTIL, profil latéral.png",
+    "path": "public/theme-assets/noctil/produit-02.webp",
+    "bytes": 153834,
+    "width": 1254,
+    "height": 1254,
+    "sha256": "e79bf6ec8ab04506a2daff1293000e3d536a2afa9bd0cc20dd72841fc0df55eb",
+    "git_blob_sha": "4cb78460e65e03e39e029ba7fd812fead7a72ec6"
+  },
+  {
+    "brand": "noctil",
+    "source": "Projecteur galaxie NOCTIL, vue plongeante.png",
+    "path": "public/theme-assets/noctil/produit-03.webp",
+    "bytes": 171320,
+    "width": 1254,
+    "height": 1254,
+    "sha256": "25309ba743a9389d98876b3ec4b9b59c94f8e952700caca2b0c6e57e3fd0be46",
+    "git_blob_sha": "f90005699e342bd06b8a1b5e6f524eb5e41436af"
+  },
+  {
+    "brand": "noctil",
+    "source": "Objectif galactique en gros plan.png",
+    "path": "public/theme-assets/noctil/produit-04.webp",
+    "bytes": 381230,
+    "width": 1254,
+    "height": 1254,
+    "sha256": "1986fe65bf64803afdb6afb95f7ee44f8ab09b59a7d46d330dcc437a49c4f2e4",
+    "git_blob_sha": "9b9bcbc405fe342b9caffa4e9dd765d25db2c7b0"
+  },
+  {
+    "brand": "noctil",
+    "source": "Détail du projecteur galaxie NOCTIL.png",
+    "path": "public/theme-assets/noctil/produit-05.webp",
+    "bytes": 308142,
+    "width": 1254,
+    "height": 1254,
+    "sha256": "fed7b8133580fa5a71c58e1058a8025b0d18a4a7884828dd8cd717bd7602029c",
+    "git_blob_sha": "7be8d67097d0bf3bdb0ba68d589da829dd2b513b"
+  },
+  {
+    "brand": "noctil",
+    "source": "Projecteur galaxie NOCTIL au crépuscule.png",
+    "path": "public/theme-assets/noctil/ambiance-01.webp",
+    "bytes": 172394,
+    "width": 1122,
+    "height": 1402,
+    "sha256": "eb0d61fbc75f5e57fcaf4b2849f3f98055370b170c09eb75e6615a680a25f044",
+    "git_blob_sha": "52379bf70cb7cf2d227ab5d98141d4489624aa72"
+  },
+  {
+    "brand": "noctil",
+    "source": "Projecteur NOCTIL dans un salon cinéma.png",
+    "path": "public/theme-assets/noctil/ambiance-02.webp",
+    "bytes": 256004,
+    "width": 1536,
+    "height": 1024,
+    "sha256": "3efe39eb9657fe835d4ca6e416535af17f2115b018138a567982c08b6f6d1c65",
+    "git_blob_sha": "f7637f2e90300f3ab8a495a75786c9c3a60d3f30"
+  },
+  {
+    "brand": "noctil",
+    "source": "Projecteur galaxie indigo à lueur violette.png",
+    "path": "public/theme-assets/noctil/ambiance-03.webp",
+    "bytes": 132528,
+    "width": 1536,
+    "height": 1024,
+    "sha256": "960ecd09aaa75093fe82ff0276ccefb4bcf21bc86b5bd18603cd2d8d920afb5c",
+    "git_blob_sha": "29eaee6d6bfdd8c3a36940efb865c8866b495991"
+  },
+  {
+    "brand": "noctil",
+    "source": "Projecteur galactique NOCTIL dans alcôve lavande.png",
+    "path": "public/theme-assets/noctil/ambiance-04.webp",
+    "bytes": 396674,
+    "width": 1122,
+    "height": 1402,
+    "sha256": "b9541870287273ac0dcc2e36659fd9f7d233454d2c01a45da4d063661acc47a6",
+    "git_blob_sha": "6007eebbd3ea9ba174f8d06a918d0f5c67cad7ea"
+  },
+  {
+    "brand": "noctil",
+    "source": "Projecteur NOCTIL sous un ciel violet.png",
+    "path": "public/theme-assets/noctil/ambiance-05.webp",
+    "bytes": 265238,
+    "width": 1122,
+    "height": 1402,
+    "sha256": "7c7479ca48bdbb069c528bd3b33fc942883a3f08b2be352cd8572427db37974e",
+    "git_blob_sha": "8734fdb6cf4fcc25aaab05fc98349ebdac98c5bb"
+  },
+  {
+    "brand": "noctil",
+    "source": "Projecteur galaxie violet sur bureau moderne.png",
+    "path": "public/theme-assets/noctil/ambiance-06.webp",
+    "bytes": 224672,
+    "width": 1536,
+    "height": 1024,
+    "sha256": "7cf84d2e780b44c687f76afbf8da10ed2eb2ad22a9150527ac20d355c75de7b8",
+    "git_blob_sha": "eff684c2dce64142b5a3d63c3f45fbac9a92c1f0"
+  },
+  {
+    "brand": "noctil",
+    "source": "Projecteur indigo dans un coin lecture.png",
+    "path": "public/theme-assets/noctil/ambiance-07.webp",
+    "bytes": 241394,
+    "width": 1122,
+    "height": 1402,
+    "sha256": "d2f8f5622373ee1837bd03782421ae34018c45ef6911a2f4588213adce96aa01",
+    "git_blob_sha": "e5c62ab2b4ef2b0b8d678947e583458b79ac3c52"
+  },
+  {
+    "brand": "noctil",
+    "source": "Projecteur de galaxie dans un loft.png",
+    "path": "public/theme-assets/noctil/ambiance-08.webp",
+    "bytes": 269898,
+    "width": 1536,
+    "height": 1024,
+    "sha256": "324de45933a679f1c896028e96e5746029b2978e28e169f1a200da6547d8542c",
+    "git_blob_sha": "0e1b288151f99a7783ba81799155249efcb70868"
+  },
+  {
+    "brand": "noctil",
+    "source": "Projecteur galaxie violet au-dessus du lit.png",
+    "path": "public/theme-assets/noctil/ambiance-09.webp",
+    "bytes": 219182,
+    "width": 1122,
+    "height": 1402,
+    "sha256": "7cb5e4d2d2b547f46218caedcef998bb0df898ce1953e5dcaee0a0ceb0445541",
+    "git_blob_sha": "35034746ffcc68ebd11aeccc1efea64c89478222"
+  },
+  {
+    "brand": "noctil",
+    "source": "Projecteur de galaxies indigo à halo violet.png",
+    "path": "public/theme-assets/noctil/ambiance-10.webp",
+    "bytes": 208954,
+    "width": 1536,
+    "height": 1024,
+    "sha256": "bc4917815272e7d4e2e3e0b7c47451673c82f9c5c05ccd92808465fd1e688d10",
+    "git_blob_sha": "0a86b31a2ef6f0d6f5994d6fc773da05980a7077"
+  },
+  {
+    "brand": "traverse",
+    "source": "Logo TRAVERSE, emblème T plié.png",
+    "path": "public/theme-assets/traverse/logo.webp",
+    "bytes": 196624,
+    "width": 2191,
+    "height": 718,
+    "sha256": "a82d2d77df667df16e5243be75a7a2d621cdf3b637331a69b2992613e5fb4094",
+    "git_blob_sha": "094190e1804a7b21f26cb596cec235083ef4d40b"
+  },
+  {
+    "brand": "traverse",
+    "source": "Sac à dos modulable vert olive.png",
+    "path": "public/theme-assets/traverse/produit-01.webp",
+    "bytes": 408276,
+    "width": 1254,
+    "height": 1254,
+    "sha256": "116d6a548489a3564afac626907783d04c43b7e293d2636f15a8da779c5879e0",
+    "git_blob_sha": "f9b84cd77a53cc97c70923107e707fe79acb759d"
+  },
+  {
+    "brand": "traverse",
+    "source": "Sac à dos TRAVERSE olive, profil droit.png",
+    "path": "public/theme-assets/traverse/produit-02.webp",
+    "bytes": 302492,
+    "width": 1254,
+    "height": 1254,
+    "sha256": "c86ed3f27a6a078b65b042f6bb8b010ae2c8f8833b55922219ebb51331331ff4",
+    "git_blob_sha": "26b269e95760196b28c525b112f38a969e91aa20"
+  },
+  {
+    "brand": "traverse",
+    "source": "Détail de la poche zippée TRAVERSE.png",
+    "path": "public/theme-assets/traverse/produit-03.webp",
+    "bytes": 671856,
+    "width": 1254,
+    "height": 1254,
+    "sha256": "6203b35ceed00ebffd7061606d646095f2e70a6762f11772d3dcc09c040535e2",
+    "git_blob_sha": "ef36f09689ced69ee5435c61820c7f47bc57d50f"
+  },
+  {
+    "brand": "traverse",
+    "source": "Sac à dos TRAVERSE olive, boucle noire.png",
+    "path": "public/theme-assets/traverse/produit-04.webp",
+    "bytes": 615024,
+    "width": 1254,
+    "height": 1254,
+    "sha256": "ac5e4d71dd0bfeea173d95f5443801c6d87a57d7ecc6f593119ecfee51a450a7",
+    "git_blob_sha": "6fdeb570b7d34c9c32696a5c1a4eb8b6b8acef45"
+  },
+  {
+    "brand": "traverse",
+    "source": "Sac à dos TRAVERSE vert olive.png",
+    "path": "public/theme-assets/traverse/produit-05.webp",
+    "bytes": 298498,
+    "width": 1536,
+    "height": 1024,
+    "sha256": "ad825e1237d6054898bd4d1a09bcfed48beb54b98b0390ff8dc94747458db5fe",
+    "git_blob_sha": "b1e8544247bbd155f3ac9ba8e62751c0cc434c2e"
+  },
+  {
+    "brand": "traverse",
+    "source": "Sac Traverse olive sur pierre sombre.png",
+    "path": "public/theme-assets/traverse/ambiance-01.webp",
+    "bytes": 328720,
+    "width": 1536,
+    "height": 1024,
+    "sha256": "84e0da91beaff25298db9482bb11283d68143c61802fa6848fc83caa53e236ca",
+    "git_blob_sha": "20db260f2fc0120979dd9ddf6a405211341e02ff"
+  },
+  {
+    "brand": "traverse",
+    "source": "Sac TRAVERSE au lac brumeux.png",
+    "path": "public/theme-assets/traverse/ambiance-02.webp",
+    "bytes": 437154,
+    "width": 1122,
+    "height": 1402,
+    "sha256": "8fa7433897667f19eb435f4e23edc044624a05abca56e17db3d0ac6c31b76c74",
+    "git_blob_sha": "a133c7670dfbeee91ea9a6a7ee43c6176f9a219f"
+  },
+  {
+    "brand": "traverse",
+    "source": "Sac TRAVERSE, bivouac au bord du lac.png",
+    "path": "public/theme-assets/traverse/ambiance-03.webp",
+    "bytes": 326652,
+    "width": 1536,
+    "height": 1024,
+    "sha256": "bc1de86a5b7ea313e8da8868c91bc72b67f51981bfcbe4b0facbdfb8e77049f0",
+    "git_blob_sha": "d10209eb21d5869f7054cde044c57ade94dc9b98"
+  },
+  {
+    "brand": "traverse",
+    "source": "Sac à dos devant une rue calme.png",
+    "path": "public/theme-assets/traverse/ambiance-04.webp",
+    "bytes": 356292,
+    "width": 1122,
+    "height": 1402,
+    "sha256": "9eda89b03d2d7995758c6fcaa19ab9f72bfc7e6188f4fad9eeff41a19842459e",
+    "git_blob_sha": "a2c472f8b46f250bf0f8931f98e464ab6bdd7ad2"
+  },
+  {
+    "brand": "traverse",
+    "source": "Sac à dos olive au café.png",
+    "path": "public/theme-assets/traverse/ambiance-05.webp",
+    "bytes": 397672,
+    "width": 1122,
+    "height": 1402,
+    "sha256": "37bccd545455d3d051f472e7fe7210c64338ec725e38b9cce452a035964f52ad",
+    "git_blob_sha": "e3f3a58092dfd9213311cbb76e920a1982c79778"
+  },
+  {
+    "brand": "traverse",
+    "source": "Sac TRAVERSE dans un salon d’aéroport.png",
+    "path": "public/theme-assets/traverse/ambiance-06.webp",
+    "bytes": 266736,
+    "width": 1536,
+    "height": 1024,
+    "sha256": "c1fc9edb5578ceed8c8be950a01976580e821992519838b5ead5ddb8e24e232a",
+    "git_blob_sha": "0c47b206a2d9ad38f0e4d8e8c5e252a5d9c8372f"
+  },
+  {
+    "brand": "traverse",
+    "source": "Sac Traverse et essentiels de voyage.png",
+    "path": "public/theme-assets/traverse/ambiance-07.webp",
+    "bytes": 543236,
+    "width": 1536,
+    "height": 1024,
+    "sha256": "a9febb82e3e01704483cd6b58b59fa2994e0247b6af1951705edefd820c8c6cd",
+    "git_blob_sha": "4f3ac50b25d2821e7be78a55a24c676a2d1adac8"
+  },
+  {
+    "brand": "traverse",
+    "source": "Sac à dos olive sur banc d’hôtel.png",
+    "path": "public/theme-assets/traverse/ambiance-08.webp",
+    "bytes": 322616,
+    "width": 1122,
+    "height": 1402,
+    "sha256": "1109cc040b9dfc11fe58a60fba049fdeefe5e4a978d8423b05c659b97313596e",
+    "git_blob_sha": "36566afda8a94dd8081b33256d1281c02c8f3bc0"
+  },
+  {
+    "brand": "traverse",
+    "source": "Sac à dos olive face aux montagnes.png",
+    "path": "public/theme-assets/traverse/ambiance-09.webp",
+    "bytes": 409960,
+    "width": 1536,
+    "height": 1024,
+    "sha256": "98b265251bd26bf40b8787e97e192a1dbf240d71be783af420e943cf35771501",
+    "git_blob_sha": "89834e3ec6a1e371df07f33bbda6d8c84e9ea4aa"
+  },
+  {
+    "brand": "traverse",
+    "source": "Sac à dos TRAVERSE en gare.png",
+    "path": "public/theme-assets/traverse/ambiance-10.webp",
+    "bytes": 433586,
+    "width": 1122,
+    "height": 1402,
+    "sha256": "52157953388e5a98170bbc1711707a3c937c681a28702f2ae17d122e4aa69ae0",
+    "git_blob_sha": "00c86ef35c80ac1ac8d9bfba3a6380a7c8bd45a8"
+  }
+]

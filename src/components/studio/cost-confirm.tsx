@@ -14,31 +14,8 @@ import { useOptionalProject } from "./project-context";
 import { TOPUP_PRICE_EUR } from "@/lib/plans";
 import type { ProjectSub } from "./project-subscription";
 
-export type CostAction = "pipeline" | "theme" | "images" | "image" | "video-clip" | "ugc" | "blog" | "edit";
-
-/**
- * L'action consomme-t-elle le budget IA, et faut-il le confirmer ? (`ask` faux : on ne prévient que si le budget est
- * épuisé). La composition de la boutique (« theme ») passe toujours : sans budget, le moteur local la fait.
- */
-export function costUsage(action: CostAction, videos?: "ai" | "edited" | "none"): { many?: boolean; ask: boolean; local: boolean } | null {
-  switch (action) {
-    case "pipeline":
-      return videos === "ai" ? { ask: true, local: true } : null;
-    case "images":
-      return { many: true, ask: true, local: true };
-    case "image":
-      return { ask: false, local: true };
-    case "blog":
-    case "edit":
-      return { ask: true, local: true };
-    // Vidéos filmées par l'IA et UGC : pas d'équivalent sans IA.
-    case "video-clip":
-    case "ugc":
-      return { ask: true, local: false };
-    default:
-      return null;
-  }
-}
+import { costUsage, type CostAction } from "@/lib/ai/cost-confirm";
+export { costUsage, type CostAction } from "@/lib/ai/cost-confirm";
 
 type State = { kind: "confirm" | "empty"; many?: boolean; local: boolean; sub: ProjectSub; resolve: (go: boolean) => void };
 
@@ -93,7 +70,7 @@ export function useCostConfirm() {
   const left = ai ? aiLeftPct(ai) : 0;
   const renews = s ? formatDate(s.sub.aiRenewsAt ?? s.sub.periodEnd ?? Date.now(), { day: "numeric", month: "long" }) : "";
   const canTopUp = !!s && (s.sub.status === "active" || s.sub.status === "manual");
-  const title = !s ? "" : s.kind === "empty" ? t("Budget IA du projet épuisé", "Project AI budget used up") : t("Avant de lancer", "Before you start");
+  const title = !s ? "" : s.kind === "empty" ? left > 0 ? t("Budget IA disponible insuffisant", "Insufficient available AI budget") : t("Budget IA du projet épuisé", "Project AI budget used up") : t("Avant de lancer", "Before you start");
   const dialog = (
     <Modal open={!!s} onClose={() => close(false)} title={title}>
       {s && ai && (
@@ -120,7 +97,10 @@ export function useCostConfirm() {
             <p className="flex gap-3 rounded-2xl border border-warn/30 bg-warn-soft p-4 text-warn">
               <TriangleAlert className="mt-0.5 size-5 shrink-0" aria-hidden />
               <span>
-                {t(
+                {left > 0 ? t(
+                  `Il reste ${left} % du budget IA de ce projet, mais le montant disponible est inférieur au minimum requis pour lancer une création. Les réservations en cours peuvent aussi immobiliser une partie du budget. Aucun nouvel appel n’est lancé.`,
+                  `${left}% of this project's AI budget remains, but the available amount is below the minimum required to start a creation. Pending reservations may also hold part of the budget. No new call is started.`,
+                ) : t(
                   `Le budget IA de ce projet est utilisé à 100 %. Il repart le ${renews}, ou tout de suite avec une recharge.${s.local ? " En attendant, le moteur local du studio peut le faire sans IA." : ""}`,
                   `This project's AI budget is 100% used. It resets on ${renews}, or right away with a top-up.${s.local ? " Meanwhile, the studio's local engine can do it without AI." : ""}`,
                 )}

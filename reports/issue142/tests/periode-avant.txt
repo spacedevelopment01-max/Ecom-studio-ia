@@ -1,0 +1,34 @@
+
+ RUN  v5.0.3 /workspace/work/publications-qualite
+
+ ❯ tests/mission142-billing.test.ts (8 tests | 1 failed) 1599ms
+   ❯ Mission 142 : frontières de comptabilisation (8)
+     × un appel encore engagé à la clôture reste affecté à l'ancienne période 173ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/mission142-billing.test.ts > Mission 142 : frontières de comptabilisation > un appel encore engagé à la clôture reste affecté à l'ancienne période
+AssertionError: expected 160000 to be 120000 // Object.is equality
+
+- Expected
++ Received
+
+- 120000
++ 160000
+
+ ❯ tests/mission142-billing.test.ts:106:38
+    104|     settle(reserve(uid, 120_000, meta), 120_000, "new-month", "new mon…
+    105|     settle(reservation, 40_000, "late-old-month", "late result");
+    106|     expect(wallet(uid).monthly_used).toBe(120_000);
+       |                                      ^
+    107|     expect(balance(uid).reserved).toBe(0);
+    108|     expect(one<{ actual: number }>("SELECT actual FROM ai_reservations…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 passed (8)
+   Start at  18:58:06
+   Duration  3.07s (tests 56%, import 38%, transform 6%)
+

@@ -1,0 +1,169 @@
+{
+  "sourceCommit": "393dc83555193855d8803d08ca28dcfa825296dc",
+  "nature": "Isolated inputs; no provider; client media are simulated, not creative quality evidence",
+  "rows": [
+    {
+      "theme": "fraise",
+      "status": "partial",
+      "clientFiles": 30,
+      "pages": 14,
+      "sections": 70,
+      "visibleSections": 59,
+      "slots": 39,
+      "missingSlots": 0,
+      "issues": {
+        "authentic_reviews": 5,
+        "verified_comparison": 3,
+        "information_required": 6,
+        "verified_measurements": 2,
+        "confirmed_hotspot_positions": 1,
+        "legal_information_required": 3
+      },
+      "generationsPrepared": 0,
+      "projectAiCalls": 0
+    },
+    {
+      "theme": "onde",
+      "status": "partial",
+      "clientFiles": 30,
+      "pages": 12,
+      "sections": 54,
+      "visibleSections": 45,
+      "slots": 35,
+      "missingSlots": 0,
+      "issues": {
+        "authentic_reviews": 3,
+        "verified_measurements": 2,
+        "information_required": 6,
+        "verified_comparison": 3,
+        "confirmed_hotspot_positions": 1,
+        "legal_information_required": 3
+      },
+      "generationsPrepared": 0,
+      "projectAiCalls": 0
+    },
+    {
+      "theme": "orbe",
+      "status": "to_verify",
+      "clientFiles": 26,
+      "pages": 6,
+      "sections": 23,
+      "visibleSections": 23,
+      "slots": 7,
+      "missingSlots": 0,
+      "issues": {},
+      "generationsPrepared": 0,
+      "projectAiCalls": 0
+    },
+    {
+      "theme": "rive",
+      "status": "partial",
+      "clientFiles": 13,
+      "pages": 6,
+      "sections": 28,
+      "visibleSections": 27,
+      "slots": 11,
+      "missingSlots": 0,
+      "issues": {
+        "authentic_reviews": 1,
+        "information_required": 1,
+        "legal_information_required": 1
+      },
+      "generationsPrepared": 0,
+      "projectAiCalls": 0
+    },
+    {
+      "theme": "sillon",
+      "status": "partial",
+      "clientFiles": 29,
+      "pages": 5,
+      "sections": 28,
+      "visibleSections": 25,
+      "slots": 23,
+      "missingSlots": 0,
+      "issues": {
+        "confirmed_hotspot_positions": 2,
+        "information_required": 1
+      },
+      "generationsPrepared": 0,
+      "projectAiCalls": 0
+    },
+    {
+      "theme": "noctil",
+      "status": "to_verify",
+      "clientFiles": 29,
+      "pages": 4,
+      "sections": 23,
+      "visibleSections": 23,
+      "slots": 16,
+      "missingSlots": 0,
+      "issues": {},
+      "generationsPrepared": 0,
+      "projectAiCalls": 0
+    },
+    {
+      "theme": "traverse",
+      "status": "partial",
+      "clientFiles": 29,
+      "pages": 4,
+      "sections": 24,
+      "visibleSections": 22,
+      "slots": 19,
+      "missingSlots": 0,
+      "issues": {
+        "confirmed_hotspot_positions": 1,
+        "information_required": 1
+      },
+      "generationsPrepared": 0,
+      "projectAiCalls": 0
+    },
+    {
+      "theme": "traverse-incomplet",
+      "status": "partial",
+      "clientFiles": 3,
+      "pages": 4,
+      "sections": 24,
+      "visibleSections": 15,
+      "slots": 19,
+      "missingSlots": 17,
+      "issues": {
+        "media_missing": 17,
+        "confirmed_hotspot_positions": 1,
+        "information_required": 1
+      },
+      "generationsPrepared": 17,
+      "projectAiCalls": 0
+    }
+  ],
+  "referenceKits": [
+    {
+      "theme": "fraise",
+      "missingFiles": 9
+    },
+    {
+      "theme": "onde",
+      "missingFiles": 9
+    },
+    {
+      "theme": "orbe",
+      "missingFiles": 0
+    },
+    {
+      "theme": "rive",
+      "missingFiles": 0
+    },
+    {
+      "theme": "sillon",
+      "missingFiles": 0
+    },
+    {
+      "theme": "noctil",
+      "missingFiles": 0
+    },
+    {
+      "theme": "traverse",
+      "missingFiles": 0
+    }
+  ],
+  "allProviderCalls": 0
+}

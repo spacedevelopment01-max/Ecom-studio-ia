@@ -27,10 +27,15 @@ export type Plan = {
   featured?: boolean;
   /** Limites en nombre par mois (seul le blog compte encore ; images et vidéos : budget IA du projet). */
   quotas: Record<QuotaKey, number>;
-  /** Thèmes utilisables (les N premiers de la bibliothèque des 30). */
+  /** Thèmes accessibles par famille (catalogue cible de cinq). */
   themes: number;
+  /** Fonctions de section de la bibliothèque par famille, jamais une limite de blocs/page. */
+  librarySections: number;
+  themeEditing: "basic" | "advanced" | "custom";
   /** Propositions initiales de direction artistique (sous réserve du budget IA). */
   artDirections: number;
+  /** Identités d’angles activables sur la durée du projet, jamais un quota mensuel. */
+  marketingAngles: number;
   /** Vidéos IA : aucune, courtes, avancées. */
   videos: "none" | "short" | "advanced";
   /** Qualité des vidéos filmées par l'IA. */
@@ -42,7 +47,7 @@ export type Plan = {
   /** Bibliothèque des modèles de pages, ajout libre de pages, mise en page propre à un produit ou une prestation. */
   pageModels: boolean;
   /** Publicités : essentielles, avancées (variantes), complètes (multivariantes). */
-  ads: "essential" | "advanced" | "full";
+  ads: "none" | "essential" | "advanced" | "full";
   seo: "essential" | "advanced" | "full";
   /** Jours de calendrier de publications. */
   calendarDays: number;
@@ -76,20 +81,23 @@ export const PLANS: Record<PlanId, Plan> = {
     cta: { fr: "Créer mon e-commerce", en: "Build my e-commerce" },
     price: { month: 49, year: 490 },
     quotas: { visuals: 0, aiVideos: 0, ugc: 0, blog: 0 },
-    themes: 4,
+    themes: 1,
+    librarySections: 8,
+    themeEditing: "basic",
     artDirections: 1,
+    marketingAngles: 1,
     videos: "none",
     videoQuality: "fast",
     ugc: false,
     aiSections: false,
     pageModels: false,
-    ads: "essential",
+    ads: "none",
     seo: "essential",
     calendarDays: 7,
     postsPerDay: 1,
     autopublish: true,
     automation: "essential",
-    campaigns: 1,
+    campaigns: 0,
     adVariants: false,
     languages: 1,
     theme: "composed",
@@ -103,26 +111,29 @@ export const PLANS: Record<PlanId, Plan> = {
     id: "vendre",
     name: { fr: "Développer", en: "Grow" },
     tagline: { fr: "Développer ses ventes", en: "Grow your sales" },
-    pitch: { fr: "Créez vos publicités, vidéos et contenus pour développer vos ventes.", en: "Create your ads, videos and content to grow your sales." },
+    pitch: { fr: "Créez vos vidéos et contenus pour développer vos ventes.", en: "Create your videos and content to grow your sales." },
     cta: { fr: "Développer mon activité", en: "Grow my business" },
     price: { month: 89, year: 890 },
     featured: true,
-    quotas: { visuals: 0, aiVideos: 0, ugc: 0, blog: 4 },
-    themes: 4,
+    quotas: { visuals: 0, aiVideos: 0, ugc: 0, blog: 5 },
+    themes: 3,
+    librarySections: 12,
+    themeEditing: "advanced",
     artDirections: 3,
+    marketingAngles: 2,
     videos: "short",
     videoQuality: "fast",
     ugc: false,
     aiSections: false,
     pageModels: true,
-    ads: "advanced",
+    ads: "none",
     seo: "advanced",
     calendarDays: 30,
     postsPerDay: 3,
     autopublish: true,
     automation: "intermediate",
-    campaigns: 5,
-    adVariants: true,
+    campaigns: 0,
+    adVariants: false,
     languages: 2,
     theme: "custom-sections",
     support: "priority",
@@ -138,9 +149,12 @@ export const PLANS: Record<PlanId, Plan> = {
     pitch: { fr: "Automatisez votre marketing et exploitez toute la puissance du studio IA.", en: "Automate your marketing and use the full power of the AI studio." },
     cta: { fr: "Accéder au studio complet", en: "Get the complete studio" },
     price: { month: 129, year: 1290 },
-    quotas: { visuals: 0, aiVideos: 0, ugc: 0, blog: 12 },
-    themes: 4,
+    quotas: { visuals: 0, aiVideos: 0, ugc: 0, blog: 10 },
+    themes: 5,
+    librarySections: 20,
+    themeEditing: "custom",
     artDirections: 5,
+    marketingAngles: 5,
     videos: "advanced",
     videoQuality: "max",
     ugc: true,
@@ -165,6 +179,8 @@ export const PLANS: Record<PlanId, Plan> = {
 };
 /** Recharge IA : seul complément payant avec le rendez-vous, rattachée à un projet précis. */
 export const TOPUP_PRICE_EUR = 10;
+/** Un projet par abonnement, identique aux trois niveaux. Les anciens projets ne sont jamais supprimés. */
+export const PROJECTS_PER_SUBSCRIPTION = 1;
 export const PLAN_IDS = Object.keys(PLANS) as PlanId[];
 
 /** Thèmes entièrement sur mesure par compte et par mois, forfait Dominer (garde-fou : chaque thème mobilise beaucoup d'IA). */
@@ -279,7 +295,7 @@ export type BillingView = {
   launchPackBought: boolean;
   paymentsLive: boolean;
   /** Utilisation de l'IA en % seulement : forfait du mois et crédits achetés (null s'il n'y en a pas) ; null sans forfait. */
-  ai: { plan: { used: number }; credits: { used: number } | null; paused: boolean; /** Base des % de coût (jamais affichée). */ baseMicro?: number } | null;
+  ai: { plan: { used: number }; credits: { used: number } | null; paused: boolean; pending?: boolean; /** Base des % de coût (jamais affichée). */ baseMicro?: number } | null;
   /** Derniers paiements (abonnement, packs). */
   history: { kind: "subscription" | "pack" | "topup"; label: string; amountEur: number; at: number }[];
 };

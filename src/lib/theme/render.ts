@@ -114,11 +114,11 @@ function money(cents: unknown, lang: Lang = "fr") {
 function productDrop(sp: StoreProduct, pi: number, base: string) {
   const media: ImageObj[] = sp.images.map((f, i) => ({
     src: `${base}/assets/${f}`,
-    width: 1600,
-    height: 2000,
-    alt: sp.title,
+    width: sp.imageInfo?.[f]?.width ?? 1600,
+    height: sp.imageInfo?.[f]?.height ?? 2000,
+    alt: sp.imageInfo?.[f]?.alt ?? sp.title,
     id: `m${pi + 1}-${i + 1}`,
-    aspect_ratio: 0.8,
+    aspect_ratio: sp.imageInfo?.[f] ? sp.imageInfo[f].width / sp.imageInfo[f].height : 0.8,
     media_type: "image",
   }));
   const withPreview = media.map((m) => ({ ...m, preview_image: m }));
@@ -561,7 +561,7 @@ export function createEngine(files: ThemeFiles, base: string, lang: Lang = "fr")
     const widths = String(o.widths ?? "").split(",").map((w) => Number(w.trim())).filter(Boolean);
     const srcset = widths.length ? ` srcset="${widths.map((w) => `${withWidth(clean, w)} ${w}w`).join(", ")}"` : "";
     const attr = (k: string, v: unknown) => (v === undefined || v === null || v === "" ? "" : ` ${k}="${String(v).replace(/"/g, "&quot;")}"`);
-    return `<img src="${url}"${srcset}${attr("sizes", o.sizes)}${attr("alt", o.alt ?? "")}${attr("class", o.class)}${attr("loading", o.loading ?? "lazy")}${attr("fetchpriority", o.fetchpriority)} decoding="async">`;
+    return `<img src="${url}"${srcset}${attr("sizes", o.sizes)} alt="${String(o.alt ?? "").replace(/"/g, "&quot;")}"${attr("class", o.class)}${attr("loading", o.loading ?? "lazy")}${attr("fetchpriority", o.fetchpriority)} decoding="async">`;
   });
   f("placeholder_svg_tag", (name: string, cls = "") => placeholderSvg(name, cls));
   f("money", (c: unknown) => money(c, lang));
@@ -788,7 +788,11 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     pageTitle = product?.seo?.title || store.product.title;
     seoDescription = product?.seo?.description || null;
   }
-  else if (tplKey === "collection") pageTitle = store.collection.title;
+  else if (tplKey === "collection") {
+    pageTitle = store.collection.title;
+    // Description propre de la collection quand elle existe (sinon la description du produit principal, comme avant).
+    seoDescription = String(store.collection.description ?? "").replace(/<[^>]+>/g, " ").trim() || null;
+  }
   else if (tplKey === "404") pageTitle = pick(lang, "Page introuvable", "Page not found");
 
   const q = route.search ?? "";
@@ -851,6 +855,8 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
   const layoutName = typeof template.layout === "string" ? template.layout : "theme";
   const layoutSrc = files.get(`layout/${layoutName}.liquid`) ?? files.get("layout/theme.liquid")!;
   let html = await ctxRender(layoutSrc, `layout/${layoutName}.liquid`, { content_for_layout: content });
+  // Aperçu du studio : page privée, jamais indexée (le thème exporté vers la plateforme n'a pas cette balise).
+  html = html.replace("</head>", '<meta name="robots" content="noindex, nofollow"></head>');
   // Remplacement par fonction : le code des sections peut contenir « $$ » ou « $' », motifs spéciaux de String.replace.
   if (collected.css.length) html = html.replace("</head>", () => `<style data-section-styles>${collected.css.join("\n")}</style></head>`);
   if (collected.js.length) html = html.replace("</body>", () => `<script>${collected.js.join("\n")}</script></body>`);

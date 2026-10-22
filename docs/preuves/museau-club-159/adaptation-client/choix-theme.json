@@ -1,0 +1,199 @@
+{
+ "project": "TRAVERSE (projet existant, distinct de la démonstration choisie)",
+ "origin": "studio Next.js de développement + worker, base temporaire, aucune IA",
+ "steps": [
+  {
+   "step": "projet existant « TRAVERSE » (boutique spécialisée) ouvert dans TRAVERSE",
+   "empreinte": {
+    "projet": "be29ac969ad8d500",
+    "versionsDeTheme": [
+     "1:ohpv58r0jegt9yth"
+    ],
+    "medias": 16,
+    "taches": 0,
+    "appelsIA": 0,
+    "versionsDeMarque": 2
+   },
+   "ok": true
+  },
+  {
+   "step": "galerie : chaque carte montre la démonstration du thème et propose « Voir la démo complète »",
+   "vignettes": [
+    "/demo/directions/fraise.jpg",
+    "/demo/directions/onde.jpg",
+    "/demo/directions/orbe.jpg",
+    "/demo/directions/rive.jpg",
+    "/theme-assets/sillon/apercu-theme.jpg",
+    "/theme-assets/noctil/apercu-theme.jpg",
+    "/theme-assets/traverse/apercu-theme.jpg",
+    "/theme-assets/heuren/apercu-theme.jpg",
+    "/theme-assets/alcove/apercu-theme.jpg",
+    "/theme-assets/museau-club/apercu-theme.jpg"
+   ],
+   "ok": true
+  },
+  {
+   "step": "démo complète MUSEAU-CLUB ouverte (ordinateur) : contenus de démonstration",
+   "pages": [
+    "Accueil",
+    "Harnais MUSEAU CLUB cobalt",
+    "Laisse MUSEAU CLUB cobalt",
+    "Collier MUSEAU CLUB cobalt",
+    "Pochette à sacs MUSEAU CLUB cobalt",
+    "Boutique",
+    "La balade",
+    "Questions et contact",
+    "Panier"
+   ],
+   "ok": true
+  },
+  {
+   "step": "accueil de la démo défilé jusqu'au pied de page",
+   "sections": 19,
+   "ok": true
+  },
+  {
+   "step": "navigation : fiche produit par le sélecteur, page « La balade » par le menu de la démo",
+   "ok": true
+  },
+  {
+   "step": "bascule téléphone : la démo s'affiche à 390 px, page conservée, menu mobile",
+   "ok": true
+  },
+  {
+   "step": "démo complète FRAISE ouverte puis fermée ; Échap ne ferme que la démo",
+   "ok": true
+  },
+  {
+   "step": "aucune modification du projet pendant la visite (empreinte identique, aucune écriture)",
+   "avant": {
+    "projet": "be29ac969ad8d500",
+    "versionsDeTheme": [
+     "1:ohpv58r0jegt9yth"
+    ],
+    "medias": 16,
+    "taches": 0,
+    "appelsIA": 0,
+    "versionsDeMarque": 2
+   },
+   "apres": {
+    "projet": "be29ac969ad8d500",
+    "versionsDeTheme": [
+     "1:ohpv58r0jegt9yth"
+    ],
+    "medias": 16,
+    "taches": 0,
+    "appelsIA": 0,
+    "versionsDeMarque": 2
+   },
+   "ecritures": [],
+   "ok": true
+  },
+  {
+   "step": "adaptation d'un projet complet (« TRAVERSE », traverse → museau-club) : pages en pleine page, aucun emplacement vide, aucun visuel ni texte de la démo, rechargement identique",
+   "audit": [
+    {
+     "page": "accueil",
+     "largeur": 1440,
+     "vides": 0,
+     "cassees": [],
+     "visuelsDuTheme": 0,
+     "images": 14,
+     "sections": 6,
+     "debordement": 0
+    },
+    {
+     "page": "fiche",
+     "largeur": 1440,
+     "vides": 0,
+     "cassees": [],
+     "visuelsDuTheme": 0,
+     "images": 24,
+     "sections": 7,
+     "debordement": 0
+    },
+    {
+     "page": "page-carnet-de-route",
+     "largeur": 1440,
+     "vides": 0,
+     "cassees": [],
+     "visuelsDuTheme": 0,
+     "images": 5,
+     "sections": 4,
+     "debordement": 0
+    },
+    {
+     "page": "page-aide",
+     "largeur": 1440,
+     "vides": 0,
+     "cassees": [],
+     "visuelsDuTheme": 0,
+     "images": 2,
+     "sections": 3,
+     "debordement": 0
+    },
+    {
+     "page": "accueil",
+     "largeur": 390,
+     "vides": 0,
+     "cassees": [],
+     "visuelsDuTheme": 0,
+     "images": 14,
+     "sections": 6,
+     "debordement": 0
+    },
+    {
+     "page": "fiche",
+     "largeur": 390,
+     "vides": 0,
+     "cassees": [],
+     "visuelsDuTheme": 0,
+     "images": 23,
+     "sections": 7,
+     "debordement": 0
+    },
+    {
+     "page": "page-carnet-de-route",
+     "largeur": 390,
+     "vides": 0,
+     "cassees": [],
+     "visuelsDuTheme": 0,
+     "images": 5,
+     "sections": 4,
+     "debordement": 0
+    },
+    {
+     "page": "page-aide",
+     "largeur": 390,
+     "vides": 0,
+     "cassees": [],
+     "visuelsDuTheme": 0,
+     "images": 2,
+     "sections": 3,
+     "debordement": 0
+    }
+   ],
+   "ok": true
+  },
+  {
+   "step": "« Choisir ce thème » (double-clic + demande simultanée) : une seule tâche, une seule version, éditeur sur le projet, aucun contenu de démo",
+   "requetesInterface": 1,
+   "taches": 1,
+   "versions": [
+    "1:ohpv58r0jegt9yth",
+    "2:jrh66h79x7rxj7nz"
+   ],
+   "ok": true
+  },
+  {
+   "step": "après un choix : guide des informations à compléter (sans rien emprunter à la démo)",
+   "guide": "Thème appliqué avec vos contenus\n\nFermer\n\n5 sections attendent vos informations : rien n'est repris de la démonstration, elles restent masquées en attendant. Ouvrez leurs réglages, complétez-les (textes, photos, chiffres réels), puis réaffichez-les avec l'œil.\n\nAccueil ·\nAvis en carrousel\nAccueil ·\nTableau comparatif\nAccueil ·\nGarantie\nAccueil ·\nStories vidéo en cartes\nFiche produit ·\nEngagements",
+   "ok": true
+  },
+  {
+   "step": "studio sur téléphone : galerie, démo complète ORBE en ordinateur puis téléphone, aucun débordement",
+   "ok": true
+  }
+ ],
+ "date": "2026-10-21T14:13:51.832Z"
+}

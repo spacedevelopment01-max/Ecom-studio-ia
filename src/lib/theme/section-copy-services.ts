@@ -332,7 +332,7 @@ const stepsFn = (blockType: string, extra: (i: number) => Settings = () => ({}))
 const ctaBanner: CopyFn = (ctx, base, schema) => {
   const d = info(ctx);
   const { out, set } = writer(schema, base);
-  set("heading", d.mode === "quote" ? tr(ctx, "Un projet ? Parlons-en.", "Got a project? Let's talk.") : d.mode === "booking" ? tr(ctx, "Prêt à prendre rendez-vous ?", "Ready to book?") : tr(ctx, "Parlons de votre besoin", "Let's talk about what you need"));
+  set("heading", d.mode === "quote" ? tr(ctx, "Un projet\u00a0? Parlons-en.", "Got a project? Let's talk.") : d.mode === "booking" ? tr(ctx, "Prêt à prendre rendez-vous\u00a0?", "Ready to book?") : tr(ctx, "Parlons de votre besoin", "Let's talk about what you need"));
   set("text", p(d.phone ? tr(ctx, `Ou appelez-nous au ${d.phone}.`, `Or call us on ${d.phone}.`) : ""));
   set("button_label", d.cta);
   set("button_link", d.ctaUrl);

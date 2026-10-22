@@ -1,3 +1,4 @@
+import { assertStrategyInputsCurrent, selectedStrategyContext } from "../strategy-consumption";
 /**
  * Appels Claude (Anthropic SDK) avec :
  *  - routage par tâche (modèle et effort réglables dans l'administration),
@@ -12,7 +13,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import sharp from "sharp";
 import type { z } from "zod";
-import { balance, EUR, recordUsage, release, reserve, settleUncertain } from "../billing";
+import { balance, EUR, existingOperation, operationPending, recordUsage, release, requestHash, reserve, saveOperationResult, settleUncertain } from "../billing";
 import { assertAiAllowed, currentUserHasAiCredits } from "./access";
 import { PermanentError, UserFacingError } from "../jobs";
 import { activeProviderKey, aiAvailability, FX_SAFETY, priceFor, requirePrice, routeFor, TEXT_MODEL_LIMITS, usdToEur, type TaskId } from "./config";
@@ -237,18 +238,12 @@ async function countInputTokens(p: { model: string; system?: unknown; messages: 
 const RETRYABLE = (status: number) => status === 429;
 const RETRY_DELAYS_MS = [1000, 4000];
 
-function pricier(a: string, b: string) {
-  const pa = priceFor("anthropic", a);
-  const pb = priceFor("anthropic", b);
-  if (!pa || pa.unit !== "tokens") return false;
-  return !pb || pb.unit !== "tokens" || pa.outputPerM > pb.outputPerM || pa.inputPerM > pb.inputPerM;
-}
-
-function account(call: LlmCall, model: string, usage: Anthropic.Beta.BetaUsage | Anthropic.Usage, suffix = "", reservationId: string | null = null): { costMicro: number; estimated: boolean; eventId: string | null; dedup: boolean } {
-  const p = priceFor("anthropic", model);
+function account(call: LlmCall, model: string, usage: Anthropic.Beta.BetaUsage | Anthropic.Usage, suffix = "", reservationId: string | null = null, requestedModel = model): { costMicro: number; estimated: boolean; eventId: string | null; dedup: boolean } {
+  const p = requirePrice("anthropic", model), requested = requirePrice("anthropic", requestedModel);
+  if (p.unit !== "tokens" || requested.unit !== "tokens") throw new PermanentError(L("Tarif du modèle servi incompatible : rapprochement nécessaire.", "The served model's price is incompatible: reconciliation required."));
   const input = (usage.input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0) * 1.25 + (usage.cache_read_input_tokens ?? 0) * 0.1;
   const output = usage.output_tokens ?? 0;
-  const usd = p && p.unit === "tokens" ? (input * p.inputPerM + output * p.outputPerM) / 1e6 : 0;
+  const usd = (input * Math.max(p.inputPerM, requested.inputPerM) + output * Math.max(p.outputPerM, requested.outputPerM)) / 1e6;
   const costMicro = Math.round(usd * usdToEur() * EUR);
   const billed = recordUsage({
     userId: call.userId,
@@ -270,10 +265,17 @@ function account(call: LlmCall, model: string, usage: Anthropic.Beta.BetaUsage |
 type RawResult = { text: string; stop: string | null; model: string };
 
 async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[], format?: unknown, suffix = "", callTry = 0): Promise<RawResult> {
+  const operation = { task: call.task, projectId: call.projectId, usageKey: call.usageKey ? `${call.usageKey}${suffix}` : undefined, requestHash: requestHash({ system: systemText(call), messages, format, maxTokens: call.maxTokens }) };
+  const previous = existingOperation(call.userId, operation);
+  if (previous) {
+    if (previous.result) return JSON.parse(previous.result) as RawResult;
+    operationPending();
+  }
+  if (call.projectId) assertStrategyInputsCurrent(call.projectId);
   const decision = routeLlm(call);
   const route = { provider: decision.provider, model: decision.model, effort: decision.effort };
   // OpenAI et Gemini : même autorisation, même réservation, même trace, même facturation (aucun contournement).
-  if (hasTextAdapter(route.provider)) return otherCall(call, decision, messages, format, suffix, callTry);
+  if (hasTextAdapter(route.provider)) return otherCall(call, decision, messages, format, suffix, callTry, operation);
   if (route.provider !== "anthropic") throw new PermanentError(L(`La tâche ${call.task} est routée vers ${route.provider}, qui n'est pas un modèle de langage pris en charge.`, `Task ${call.task} is routed to ${route.provider}, which is not a supported language model.`));
   // Droits du compte vérifiés à chaque appel (forfait, budget), dans une tâche de fond ou non.
   assertAiAllowed(call.userId, call.projectId);
@@ -294,7 +296,8 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   // Aucun repli serveur (`fallbacks`) : un modèle de repli serait facturé à son propre tarif, non couvert.
   const maxMicro = await maxCostMicro(route.model, params, format);
   assertUnderCostCap(maxMicro);
-  const reservation = reserve(call.userId, maxMicro, { task: call.task, provider: "anthropic", model: route.model, jobId: call.jobId, projectId: call.projectId });
+  if (call.projectId) assertStrategyInputsCurrent(call.projectId);
+  const reservation = reserve(call.userId, maxMicro, { ...operation, provider: "anthropic", model: route.model, jobId: call.jobId });
   if (!isHaiku) {
     params.thinking = { type: "adaptive" };
     params.output_config = { effort, ...(format ? { format } : {}) };
@@ -343,10 +346,10 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
       }
     });
   } catch (e) {
-    // Réponse d'erreur du fournisseur (4xx, 429, 5xx) : rien n'a été produit ni facturé, la réservation est rendue.
-    // Coupure réseau, délai dépassé, flux interrompu : résultat incertain, le coût maximal est retenu par prudence.
+    // Seuls les refus nets 4xx hors délai prouvent que l'appel n'a pas produit de résultat.
     const status = (e as { status?: unknown })?.status;
-    if (typeof status === "number") release(reservation, `refus du fournisseur (${status})`);
+    const uncertain = !(typeof status === "number" && providerRefused(status));
+    if (!uncertain) release(reservation, `refus du fournisseur (${status})`);
     else settleUncertain(reservation, redact(String((e as Error)?.message ?? e)).slice(0, 160));
     recordCall({ ...trace, latencyMs: Date.now() - started, httpAttempts: counter.n || null, status: /timeout|timed out/i.test(String((e as Error)?.message)) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(String((e as Error)?.message ?? e)).slice(0, 200)}` });
     if (e instanceof Anthropic.AuthenticationError) throw new PermanentError(L("La clé Anthropic configurée est refusée. Vérifiez-la dans l'administration.", "The configured Anthropic key was rejected. Check it in the admin settings."));
@@ -354,22 +357,19 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     if (e instanceof Anthropic.NotFoundError) throw new PermanentError(L(`Modèle introuvable (${route.model}). Corrigez le routage dans l'administration.`, `Model not found (${route.model}). Fix the routing in the admin settings.`));
     // Coupure réseau, délai dépassé, flux interrompu : le coût maximal vient d'être retenu ; une relance par la file
     // de tâches repaierait (nouvelle réservation, nouvel appel). Arrêt net, comme pour les autres fournisseurs.
-    if (typeof status !== "number") {
+    if (uncertain) {
       const why = redact(String((e as Error)?.message ?? e)).slice(0, 200);
       throw new PermanentError(L(`Résultat incertain chez Anthropic (${why}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.`, `Uncertain result at Anthropic (${why}): maximum cost kept as a precaution, no automatic retry. Check the provider's usage before trying again.`));
-    }
-    // Réponse d'erreur 5xx : Anthropic ne la facture pas (réservation rendue ci-dessus), mais elle n'est jamais
-    // relancée toute seule, ni ici ni par la file de tâches : arrêt net, la personne décide de recommencer.
-    if (status >= 500) {
-      throw new PermanentError(L(`Anthropic a répondu par une erreur (${status}) : rien n'a été facturé, aucune relance automatique. Réessayez dans un moment.`, `Anthropic answered with an error (${status}): nothing was billed, no automatic retry. Try again in a moment.`));
     }
     throw e; // 429 (saturation, réservation rendue) : la file de tâches réessaie plus tard.
   }
   // Modèle servi différent du modèle demandé (ne devrait pas arriver sans repli) : compté au plus cher des deux.
-  const served = msg.model && msg.model !== route.model && pricier(msg.model, route.model) ? msg.model : route.model;
+  const served = msg.model || route.model;
   let billed: ReturnType<typeof account>;
   try {
-    billed = account(call, served, msg.usage, suffix, reservation);
+    // Un identifiant servi inconnu n'est jamais supposé gratuit ni au tarif du modèle demandé.
+    if (msg.model && !priceFor("anthropic", msg.model)) throw new PermanentError(L("Tarif du modèle servi inconnu : coût maximal retenu, rapprochement nécessaire avant toute relance.", "The served model's price is unknown: maximum cost kept; reconciliation is required before retrying."));
+    billed = account(call, served, msg.usage, suffix, reservation, route.model);
   } catch (e) {
     // Réponse reçue (donc facturée) mais comptabilisation impossible : coût maximal retenu.
     settleUncertain(reservation, `comptabilisation impossible : ${String((e as Error)?.message ?? e).slice(0, 120)}`);
@@ -393,7 +393,9 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   });
   if (msg.stop_reason === "refusal") throw new UserFacingError(L("Le modèle a décliné cette demande. Reformulez-la ou retirez l'élément en cause.", "The model declined this request. Rephrase it or remove the element at issue."));
   const text = msg.content.filter((b): b is Anthropic.Beta.BetaTextBlock => b.type === "text").map((b) => b.text).join("");
-  return { text, stop: msg.stop_reason, model: msg.model };
+  const result = { text, stop: msg.stop_reason, model: msg.model };
+  saveOperationResult(reservation, result);
+  return result;
 }
 
 /** Conversation au format neutre des adaptateurs (texte et images JPEG déjà préparées). */
@@ -449,7 +451,7 @@ const providerRefused = (status: number) => status >= 400 && status < 500 && sta
 export const textDeps = { adapters: textAdapters as Record<"openai" | "google", { count: (r: TextRequest, key: string) => Promise<number>; send: (r: TextRequest, key: string) => Promise<TextResult> }> };
 
 /** Appel OpenAI / Gemini : mêmes garde-fous que rawCall (droits, plafond de tâche, réservation, trace, facturation). */
-async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthropic.Beta.BetaMessageParam[], format: unknown, suffix: string, callTry: number): Promise<RawResult> {
+async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthropic.Beta.BetaMessageParam[], format: unknown, suffix: string, callTry: number, operation: { task: string; projectId?: string | null; usageKey?: string; requestHash: string }): Promise<RawResult> {
   const provider = decision.provider as "openai" | "google";
   const model = decision.model;
   const m = textModel(provider, model);
@@ -464,7 +466,8 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
   const { brain } = brainOf(call);
   const maxMicro = await otherMaxCostMicro(provider, req, (r) => adapter.count(r, key));
   assertUnderCostCap(maxMicro);
-  const reservation = reserve(call.userId, maxMicro, { task: call.task, provider, model, jobId: call.jobId, projectId: call.projectId });
+  if (call.projectId) assertStrategyInputsCurrent(call.projectId);
+  const reservation = reserve(call.userId, maxMicro, { ...operation, provider, model, jobId: call.jobId });
   const started = Date.now();
   let attempts = 0;
   const trace = {
@@ -520,7 +523,9 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
   }
   let billed: { costMicro: number; estimated: boolean; eventId: string | null; dedup: boolean };
   try {
-    const p = priceFor(provider, model);
+    const requested = requirePrice(provider, model), served = res!.model ? requirePrice(provider, res!.model) : requested;
+    if (requested.unit !== "tokens" || served.unit !== "tokens") throw new PermanentError(L("Tarif du modèle servi incompatible : rapprochement nécessaire.", "The served model's price is incompatible: reconciliation required."));
+    const p = { ...requested, inputPerM: Math.max(requested.inputPerM, served.inputPerM), outputPerM: Math.max(requested.outputPerM, served.outputPerM) };
     // Entrée mise en cache comptée au tarif plein (remise du fournisseur non supposée : jamais sous le coût réel).
     const usd = p && p.unit === "tokens" ? (res!.usage.input * p.inputPerM + res!.usage.output * p.outputPerM) / 1e6 : 0;
     const costMicro = Math.round(usd * usdToEur() * EUR);
@@ -547,14 +552,28 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
     status: res!.stop === "refusal" ? "refused" : "ok",
   });
   if (res!.stop === "refusal") throw new UserFacingError(L("Le modèle a décliné cette demande. Reformulez-la ou retirez l'élément en cause.", "The model declined this request. Rephrase it or remove the element at issue."));
-  return { text: res!.text, stop: res!.stop === "max_tokens" ? "max_tokens" : res!.stop === "end_turn" ? "end_turn" : res!.stop, model: res!.model };
+  const result = { text: res!.text, stop: res!.stop, model: res!.model };
+  saveOperationResult(reservation, result);
+  return result;
 }
 
 /** Plafond de sortie (réflexion comprise) quand une réponse JSON a été coupée faute de place. */
 const MAX_OUTPUT_TOKENS = 64000;
 
+/** Also covers specialized calls which do not yet request a Brain view. */
+export function withSelectedStrategy(call: LlmCall): LlmCall {
+  if (!call.projectId) return call;
+  const selected = selectedStrategyContext(call.projectId);
+  if (!selected || call.context?.includes(selected)) return call;
+  if (/<strategie_marketing_active\b/.test(call.context ?? "")) {
+    throw new UserFacingError("Le contexte de cette rédaction appartient à une ancienne stratégie. Préparez de nouveau la demande avant toute dépense ; les contenus acquis sont conservés.");
+  }
+  return { ...call, context: [call.context, selected].filter(Boolean).join("\n\n") };
+}
+
 /** Texte libre (rédaction). */
 export async function llmText(call: LlmCall): Promise<string> {
+  call = withSelectedStrategy(call);
   const content = await buildContent(call);
   const r = await rawCall(call, [{ role: "user", content: content as any }]);
   return r.text.trim();
@@ -565,6 +584,7 @@ export async function llmText(call: LlmCall): Promise<string> {
  * validé par Zod avec une tentative de correction guidée par l'erreur.
  */
 export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opts: { strict?: boolean } = {}): Promise<z.infer<S>> {
+  call = withSelectedStrategy(call);
   const content = await buildContent(call);
   const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: content as any }];
   if (opts.strict) {

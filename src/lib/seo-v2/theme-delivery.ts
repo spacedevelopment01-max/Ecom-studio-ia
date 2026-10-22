@@ -16,6 +16,12 @@ export function deliverContent(spec: ThemeSpec, p: Project, lang: string) {
   const previous = currentTheme(p.id)?.spec;
   const historicalPages = [] as ThemeSpec["store"]["pages"];
   for (const old of previous?.store.pages ?? []) {
+    // Reference adaptation owns these generated page templates. Their manual changes are
+    // merged against the pristine composition in buildShop, after SEO delivery. Copying
+    // the whole previous page here would revive a stale/empty generated template.
+    if (spec.meta?.adaptation && previous?.meta?.adaptation && !old.contentTarget &&
+        spec.store.pages.some(page => page.handle === old.handle &&
+          spec.meta!.adaptation!.pages.some(plan => plan.template === `page.${page.template_suffix}`))) continue;
     const page = structuredClone(old);
     const oldKey = page.template_suffix ? `page.${page.template_suffix}` : "page";
     const template = previous!.templates[oldKey];

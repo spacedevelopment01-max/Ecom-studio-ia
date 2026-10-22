@@ -1,0 +1,26 @@
+{
+  "version": {
+    "commit": "8748828bf8b2fb5b657fed5a43709843305989a4",
+    "source": "compiled-build"
+  },
+  "simulation": true,
+  "realProviderCalls": 0,
+  "realProviderCostEur": 0,
+  "realPayments": 0,
+  "realBookings": 0,
+  "checks": [
+    {
+      "name": "forfaits-trois-ordinateur",
+      "viewport": 1440,
+      "content": 1440
+    },
+    {
+      "name": "forfaits-trois-mobile",
+      "viewport": 390,
+      "content": 390
+    }
+  ],
+  "errors": [],
+  "external": [],
+  "forbiddenWrites": []
+}

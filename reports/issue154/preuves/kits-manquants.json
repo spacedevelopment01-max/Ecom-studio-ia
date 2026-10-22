@@ -1,0 +1,30 @@
+[
+  {
+    "theme": "fraise",
+    "missingFiles": [
+      "01-hero",
+      "02-fond-clair",
+      "03-vue-plongee",
+      "04-detail-gummies",
+      "05-detail-packaging",
+      "06-banniere",
+      "07-scene-cuisine",
+      "08-scene-jardin",
+      "09-scene-fete"
+    ]
+  },
+  {
+    "theme": "onde",
+    "missingFiles": [
+      "01-hero",
+      "02-fond-clair",
+      "03-autre-angle",
+      "04-detail-coussinet",
+      "05-detail-arceau",
+      "06-banniere",
+      "07-scene-salon",
+      "08-scene-train",
+      "09-scene-studio"
+    ]
+  }
+]

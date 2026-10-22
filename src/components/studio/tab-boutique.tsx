@@ -14,7 +14,6 @@ const SectionLibrary = dynamic(() => import("./section-library").then((m) => m.S
 const PagesManager = dynamic(() => import("./pages-manager").then((m) => m.PagesManager), { ssr: false });
 const ThemeGallery = dynamic(() => import("./theme-gallery").then((m) => m.ThemeGallery), { ssr: false });
 import { AssetThumb, JobProgress, MediaPicker, useActive, type AssetView } from "./common";
-import { ThemeGrid } from "./theme-gallery";
 import type { LibraryItem } from "./section-library";
 import { SortableList } from "./sortable";
 import type { DirectionCard } from "@/lib/theme/directions";
@@ -30,11 +29,14 @@ import { useBilling } from "../billing-client";
 import { CustomThemeButton, useCustomThemeStatus } from "./custom-theme";
 import { ExportDownload, ExportSteps, PlatformExportDetails } from "./export-platform";
 
+import { ThemeAdaptationPanel } from "./theme-adaptation";
+
 const PREVIEW_SANDBOX = "allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals";
 
 type TFn = <T>(fr: T, en: T) => T;
 
 type ThemeData = {
+  adaptation?:import("@/lib/theme/client-adaptation").ClientContentPlan|null;
   quality?: { verdict: string; reason: string; checked: boolean } | null;
   /** Attribut « sandbox » des aperçus, fourni par le serveur (Codespaces : avec l'origine). */
   sandbox?: string;
@@ -177,6 +179,8 @@ export default function TabBoutique() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
+  // Thème choisi dans la galerie (après la démo) : une fois appliqué, on guide le client vers ce qui manque à SON projet.
+  const [chosenTheme, setChosenTheme] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState<null | "upload" | "report">(null);
   const [libTarget, setLibTarget] = useState<{ template: string; index?: number; label: string; replace?: string } | null>(null);
   const [adding, setAdding] = useState<string | null>(null);
@@ -376,12 +380,13 @@ export default function TabBoutique() {
         <ThemeImportModal open={!!importOpen} onClose={() => setImportOpen(null)} projectId={id} onImported={() => { reload(); reloadProject(); }} />
         {chatJobs[0] && <JobProgress job={chatJobs[0]} className="mb-6" />}
         {!!theme.versions.length && <Card className="mb-6 p-5"><p className="font-semibold">{t("Tentatives conservées, à corriger avant utilisation", "Saved attempts, correction needed before use")}</p><p className="mt-2 text-sm text-muted">{t("Aucun thème utilisable n'est encore activé. Les brouillons restent consultables ; complétez les informations puis relancez la composition.", "No usable theme is active yet. Drafts remain available; complete the information and rebuild.")}</p><ul className="mt-3 grid gap-2">{theme.versions.map((v) => <li key={v.id}><a className="underline" href={`/preview/${id}/v/${v.id}`} target="_blank" rel="noreferrer">{t(`Consulter la tentative ${v.number}`, `View attempt ${v.number}`)}</a><p className="text-xs text-muted">{v.summary}</p></li>)}</ul></Card>}
-        <Empty title={isServices ? t("Le site n'est pas encore composé", "The website hasn't been built yet") : t("La boutique n'est pas encore composée", "The store hasn't been built yet")} icon={<Store className="size-5" />} action={<div className="flex flex-wrap items-center justify-center gap-2">{data?.brand && <><Button onClick={async () => { if(data?.preparation){document.querySelector("[data-initial-theme-grid]")?.scrollIntoView({behavior:"smooth",block:"start"});return;} if (!(await cost.confirm("theme"))) return; await api(`/api/projects/${id}/theme/build`, { body: {}, lang: cl.lang }); reloadProject(); }}>{data?.preparation?t("Choisir le thème du site", "Choose the website theme"):isServices ? t("Composer le site maintenant", "Build the website now") : t("Composer la boutique maintenant", "Build the store now")}</Button><ContentLangPicker {...cl} compact /></>}<Button variant="secondary" icon={<Upload className="size-4" />} onClick={() => setImportOpen("upload")}>{t("Importer mon thème Shopify", "Import my Shopify theme")}</Button></div>}>
+        <Empty title={isServices ? t("Le site n'est pas encore composé", "The website hasn't been built yet") : t("La boutique n'est pas encore composée", "The store hasn't been built yet")} icon={<Store className="size-5" />} action={<div className="flex flex-wrap items-center justify-center gap-2">{data?.brand && <><Button onClick={() => setGalleryOpen(true)}>{isServices?t("Choisir le thème du site", "Choose the website theme"):t("Choisir le thème de la boutique", "Choose the store theme")}</Button><ContentLangPicker {...cl} compact /></>}<Button variant="secondary" icon={<Upload className="size-4" />} onClick={() => setImportOpen("upload")}>{t("Importer mon thème Shopify", "Import my Shopify theme")}</Button></div>}>
           {data?.brand ? t("La marque est prête : vous pouvez lancer la composition.", "The brand is ready: you can start building the store.") : t("Elle sera créée après la marque et les textes (voir le Pilote).", "It will be created after the brand and the copy (see Pilot).")}
         </Empty>
         <h2 className="mb-1 mt-10 font-display text-2xl font-semibold">{t("Les thèmes disponibles", "Available themes")}</h2>
-        <p className="mb-5 text-sm text-muted">{t("Le studio choisit une direction selon votre produit ; vous pourrez en changer à tout moment avec le bouton « Thèmes » de l'éditeur.", "The studio picks a direction based on your product; you can change it at any time with the editor's “Themes” button.")}</p>
-        <div data-initial-theme-grid><ThemeGrid services={isServices} directions={theme.directions} recommendation={theme.recommendation} projectId={id} sandbox={theme.sandbox} plan={(data?.plan??null) as import("@/lib/plans").PlanId|null} busy={initialDirection??(chatJobs.length?"running":null)} onPick={data?.brand&&!discovery?async direction=>{if(!(await cost.confirm("theme",{localOk:true})))return;setInitialDirection(direction.id);try{await api(`/api/projects/${id}/theme/build`,{body:{direction:direction.id},lang:cl.lang});reloadProject();}catch(error){toast("bad",(error as Error).message);}finally{setInitialDirection(null);}}:undefined}/></div>
+        <p className="mb-5 text-sm text-muted">{t("Parcourez les démonstrations complètes avec leurs contenus d’origine. Votre projet est adapté seulement après votre choix explicite.", "Browse the complete demos with their original content. Your project is adapted only after your explicit choice.")}</p>
+        <div data-initial-theme-grid><Button variant="secondary" onClick={()=>setGalleryOpen(true)} data-open-initial-gallery>{t("Voir les démonstrations complètes et choisir", "View the complete demos and choose")}</Button></div>
+        <ThemeGallery recommendation={theme.recommendation} onKindChanged={()=>reload()} services={isServices} sandbox={theme.sandbox} open={galleryOpen} onClose={()=>setGalleryOpen(false)} projectId={id} directions={theme.directions} current={null} canApply={!!data?.brand&&!discovery} onApplied={()=>{reload();reloadProject();}} />
       </div>
     );
 
@@ -537,6 +542,8 @@ export default function TabBoutique() {
   ) : (
     <div className="h-full overflow-y-auto p-4">
       {theme.v2 && <V2Panel v2={theme.v2} busy={!!chatJobs.some((j) => j.type === "shop.build")} onPage={(url) => { setPage(url); setView("preview"); }} onRebuild={async (language) => { if (!confirm(t("Recomposer le site dans ce langage visuel ? Une nouvelle version est créée (gratuite, sans IA) ; l'actuelle reste restaurable.", "Recompose the website in this visual language? A new version is created (free, no AI); the current one stays restorable."))) return; try { await api(`/api/projects/${id}/theme/build`, { body: { engine: "v2", language }, lang: cl.lang }); toast("ok", t("Recomposition lancée.", "Recomposition started.")); reloadProject(); } catch (e) { toast("bad", (e as Error).message); } }} />}
+      {theme.adaptation && <ThemeAdaptationPanel plan={theme.adaptation} projectId={id} versionId={cur.versionId} busy={!!chatJobs.length} onSection={(template,section)=>{setSettingsFor({template,section});}} onRefresh={async()=>{try{await api(`/api/projects/${id}/theme/build`,{body:{direction:cur.direction,useAi:false}});reloadProject();toast("info",t("Reprise locale demandée ; aucune génération payante automatique.","Local resume requested; no automatic paid generation."));}catch(e){toast("bad",(e as Error).message);}}} />}
+      {!theme.adaptation && chosenTheme && cur.direction === chosenTheme && !chatJobs.some((j) => j.type === "shop.direction") && <ThemeChosenGuide hidden={cur.structure.filter((tp) => !tp.template.startsWith("group:")).flatMap((tp) => tp.sections.filter((s) => s.disabled).map((s) => ({ page: pages.find((p) => pageTemplate(p.path, theme) === tp.template)?.label ?? tp.template, name: theme.library.find((l) => l.type === s.type)?.name ?? s.name })))} onClose={() => setChosenTheme(null)} />}
       <p className="mb-4 text-xs leading-relaxed text-muted">{t("Glissez les sections par la poignée pour les réordonner. Le « + » entre deux sections en ajoute une à cet endroit.", "Drag sections by their handle to reorder them. The “+” between two sections adds one at that spot.")}</p>
       {cur.structure.filter((tp) => ["group:header", pageTemplate(page, theme), "group:footer"].includes(tp.template)).map((tp) => {
         const isPage = !tp.template.startsWith("group:");
@@ -729,7 +736,7 @@ export default function TabBoutique() {
       </Modal>
       <ThemeImportModal open={!!importOpen} onClose={() => setImportOpen(null)} projectId={id} onImported={() => { reload(); reloadProject(); }} report={importOpen === "report" ? cur.imported?.report : null} />
       <SectionLibrary open={!!libTarget} onClose={() => setLibTarget(null)} items={theme.library} onPick={addSection} where={libTarget?.label ?? ""} busy={adding} projectId={id} versionId={theme.current.versionId} template={libTarget?.template} aiAvailable={!!data?.ai.llm} onGenerate={generateSection} generateLocked={!!custom.data && !custom.data.sectionsAllowed} sameOrigin={!!theme.sandbox?.includes("allow-same-origin")} onOpenExisting={(type) => { const hit = cur.structure.flatMap((tp) => tp.sections.map((x) => ({ template: tp.template, section: x }))).find((x) => x.section.type === type); setLibTarget(null); if (!hit) return toast("info", t("Ce composant n'est pas présent dans ce thème.", "This component is not present in this theme.")); const target = pages.find((pg) => pageTemplate(pg.path, theme) === hit.template); if (target && !hit.template.startsWith("group:")) setPage(target.path); setLayoutOpen(false); setSettingsFor({ template: hit.template, section: hit.section.id }); setView("structure"); }} />
-      <ThemeGallery recommendation={theme.recommendation} onKindChanged={() => reload()} services={isServices} sandbox={theme.sandbox} open={galleryOpen} onClose={() => setGalleryOpen(false)} projectId={id} directions={theme.directions} current={cur.direction} canApply onApplied={() => (reload(), reloadProject())} />
+      <ThemeGallery recommendation={theme.recommendation} onKindChanged={() => reload()} services={isServices} sandbox={theme.sandbox} open={galleryOpen} onClose={() => setGalleryOpen(false)} projectId={id} directions={theme.directions} current={cur.direction} canApply onApplied={(direction) => { setChosenTheme(direction); setView("structure"); reload(); reloadProject(); }} />
       {pagesOpen && <PagesManager open onClose={() => setPagesOpen(false)} projectId={id} sandbox={theme.sandbox} onOpenPage={(path) => (setPage(path), setView("preview"))} onChanged={() => reload()} />}
       <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} projectId={id} versionId={versionId} fingerprint={cur.fingerprint} platform={data && isPlatform(data.project.platform) ? data.project.platform : "shopify"} business={data?.business ?? "products"} hasProductTemplates={!!cur.products?.some((p) => p.template_suffix)} />
     </div>
@@ -799,6 +806,33 @@ function StockStrip({ stock, projectId, onReplaced, onHeight }: { stock: NonNull
       </Modal>
       <MediaPicker open={!!target} onClose={() => setTarget(null)} kinds={["image"]} title={t("Choisir l'image qui la remplace", "Choose the replacement image")} onPick={replace} />
     </>
+  );
+}
+
+/**
+ * Après « Choisir ce thème » : le thème est composé avec les contenus du projet, jamais ceux de la démonstration. Une
+ * section sans information du client reste masquée ; on la liste ici pour qu'il la complète puis la réaffiche.
+ */
+function ThemeChosenGuide({ hidden, onClose }: { hidden: { page: string; name: string }[]; onClose: () => void }) {
+  const t = useT();
+  return (
+    <div className="mb-5 rounded-2xl border border-signal/40 bg-signal/5 p-3.5 text-sm" role="status" data-theme-guide>
+      <div className="flex items-start gap-2">
+        <p className="min-w-0 flex-1 font-semibold">{t("Thème appliqué avec vos contenus", "Theme applied with your content")}</p>
+        <button type="button" onClick={onClose} className="text-xs text-muted underline">{t("Fermer", "Close")}</button>
+      </div>
+      {hidden.length ? (
+        <>
+          <p className="mt-1 text-ink-2">{t(`${hidden.length} section${hidden.length > 1 ? "s attendent" : " attend"} vos informations : rien n'est repris de la démonstration, elle${hidden.length > 1 ? "s restent masquées" : " reste masquée"} en attendant. ${hidden.length > 1 ? "Ouvrez leurs réglages, complétez-les" : "Ouvrez ses réglages, complétez-la"} (textes, photos, chiffres réels), puis ${hidden.length > 1 ? "réaffichez-les" : "réaffichez-la"} avec l'œil.`, `${hidden.length} section${hidden.length > 1 ? "s are" : " is"} waiting for your information: nothing is taken from the demo, so ${hidden.length > 1 ? "they stay" : "it stays"} hidden for now. ${hidden.length > 1 ? "Open their settings, fill them in (copy, photos, real figures), then show them again" : "Open its settings, fill it in (copy, photos, real figures), then show it again"} with the eye icon.`)}</p>
+          <ul className="mt-2 grid gap-1 text-xs">
+            {hidden.slice(0, 8).map((h, i) => <li key={i} className="flex gap-1.5"><span className="text-muted">{h.page} ·</span> <span className="font-medium">{h.name}</span></li>)}
+            {hidden.length > 8 && <li className="text-muted">{t(`… et ${hidden.length - 8} autre(s)`, `… and ${hidden.length - 8} more`)}</li>}
+          </ul>
+        </>
+      ) : (
+        <p className="mt-1 text-ink-2">{t("Toutes les sections du thème sont remplies avec les contenus de votre projet.", "Every section of the theme is filled with your project's content.")}</p>
+      )}
+    </div>
   );
 }
 

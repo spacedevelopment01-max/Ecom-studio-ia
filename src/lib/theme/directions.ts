@@ -13,7 +13,7 @@ import { servicesPlan } from "./services-site";
 import { bookingCalendar, bookingNeed } from "./booking-need";
 import { tidyComposition } from "./tidy";
 import { planForTheme, themeRank } from "./theme-access";
-import { isActiveThemeId } from "./theme-fit";
+import { isActiveThemeId, themePreviewPath } from "./theme-fit";
 import { CATALOG_THEMES, catalogTheme, type CatalogThemeId, type Kit, type PaletteKit, type Row } from "./theme-catalog";
 import { isReferenceTheme, referenceHomeRows } from "./reference-composition";
 
@@ -402,6 +402,31 @@ function ensurePageTitles(ids: Ids, templates: Record<string, TemplateJson>) {
   }
 }
 
+/**
+ * Une page ne répète pas la même phrase d'une section à l'autre (revue du 21 octobre : sur un projet client, la signature
+ * de la marque reprise par l'ouverture puis par « image et texte »). Un titre ou un texte déjà affiché plus haut par une
+ * section visible devient le repère neutre du rôle de la section quand il en a un, sinon il est retiré ; la première
+ * occurrence (le titre de la page) reste. Rien n'est inventé.
+ */
+const ROLE_HEADING: Record<string, [string, string]> = { "image-with-text": ["En situation", "In its setting"], "ed-scene": ["Chez vous", "At home"] };
+export function distinctCopy(rows: Row[], lang: Lang): Row[] {
+  const norm = (v: unknown) => (typeof v === "string" ? v.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().toLowerCase() : "");
+  const seen = new Set<string>();
+  return rows.map((r) => {
+    if (r[3]?.disabled) return r;
+    const settings = { ...r[1] };
+    for (const key of ["heading", "text", "subheading"]) {
+      if (norm(settings[key]) && seen.has(norm(settings[key]))) {
+        const role = key === "heading" ? ROLE_HEADING[r[0]] : undefined;
+        const alt = role ? pick(lang, role[0], role[1]) : "";
+        settings[key] = alt && !seen.has(norm(alt)) ? alt : "";
+      }
+      if (norm(settings[key])) seen.add(norm(settings[key]));
+    }
+    return [r[0], settings, r[2], r[3]];
+  });
+}
+
 function tpl(ids: Ids, sections: Row[]): TemplateJson {
   const out: TemplateJson = { sections: {}, order: [] };
   for (const [type, settings, blocks, opts] of sections) {
@@ -506,13 +531,13 @@ const CHROME: Record<DirectionId, { shape: string; icons: string; menu: string; 
 const CHROME_LABEL = {
   fr: {
     shape: { floating: "En-tête flottant", pill: "En-tête pilule", bar: "En-tête barre", boxed: "En-tête encadré" } as Record<string, string>,
-    footer: { columns: "Pied en colonnes", wordmark: "Pied à nom géant", card: "Pied avec carte d'inscription", centered: "Pied centré", minimal: "Pied minimal", "brand-left": "Pied avec marque à gauche", split: "Pied en deux parties", stacked: "Pied empilé", boxed: "Pied encadré" } as Record<string, string>,
+    footer: { columns: "Pied en colonnes", wordmark: "Pied à nom géant", card: "Pied avec carte d'inscription", centered: "Pied centré", minimal: "Pied minimal", "brand-left": "Pied avec marque à gauche", split: "Pied en deux parties", stacked: "Pied empilé", boxed: "Pied encadré", "reference-shop": "Pied de vitrine signé" } as Record<string, string>,
     ann: { rotate: "Bandeau rotatif", marquee: "Bandeau défilant", static: "Bandeau fixe" } as Record<string, string>,
     card: { minimal: "Cartes épurées", boxed: "Cartes encadrées", overlay: "Cartes à texte sur image" } as Record<string, string>,
   },
   en: {
     shape: { floating: "Floating header", pill: "Pill header", bar: "Bar header", boxed: "Boxed header" } as Record<string, string>,
-    footer: { columns: "Column footer", wordmark: "Giant-name footer", card: "Footer with sign-up card", centered: "Centered footer", minimal: "Minimal footer", "brand-left": "Brand-left footer", split: "Two-part footer", stacked: "Stacked footer", boxed: "Boxed footer" } as Record<string, string>,
+    footer: { columns: "Column footer", wordmark: "Giant-name footer", card: "Footer with sign-up card", centered: "Centered footer", minimal: "Minimal footer", "brand-left": "Brand-left footer", split: "Two-part footer", stacked: "Stacked footer", boxed: "Boxed footer", "reference-shop": "Signed storefront footer" } as Record<string, string>,
     ann: { rotate: "Rotating banner", marquee: "Scrolling banner", static: "Static banner" } as Record<string, string>,
     card: { minimal: "Minimal cards", boxed: "Boxed cards", overlay: "Text-over-image cards" } as Record<string, string>,
   },
@@ -520,7 +545,7 @@ const CHROME_LABEL = {
 
 /** Capture d'exemple d'une direction (la même en français et en anglais). */
 export function directionPreview(id: string): string {
-  return `/demo/directions/${id}.jpg`;
+  return themePreviewPath(id);
 }
 
 /** Directions présentées dans la galerie : description, aperçu et combinaison d'en-tête / pied de page (langue de l'interface). */
@@ -924,8 +949,11 @@ export function buildSpec(input: BuildInput): ThemeSpec {
       return true;
     };
   }
+  const shelf = svc ? [] : [input.product, ...(input.products ?? [])]
+    .filter((x, i, a) => x?.handle && x.title && a.findIndex((y) => y?.handle === x.handle) === i)
+    .map((x) => ({ handle: x.handle, title: x.title, image: x.images?.[0] ?? "" }));
   const kit: Kit = {
-    t, im, services: !!svc,
+    t, im, shelf, hero: { eyebrow: c.hero.eyebrow, heading: c.hero.heading, text: c.hero.text, cta: c.hero.cta }, services: !!svc,
     privacy: t('<p>Désinscription possible à tout moment grâce au lien présent dans chaque e-mail. <a href="/policies/privacy-policy">Politique de confidentialité</a></p>', '<p>Unsubscribe at any time using the link in every email. <a href="/policies/privacy-policy">Privacy policy</a></p>'),
     heroSplit: (sch, pos, asset) => heroSplit(sch, pos, asset),
     heroFull, feat, iwt, statementRow, stats, specList, faqSec, marq, cta, newsletter, hgallery, mosaicSec, featured,
@@ -1073,14 +1101,14 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   const mainProductRow: Row = ["main-product", { gallery_layout: gallery, sticky_bar: true, color_scheme: "scheme-1", padding_top: 32, padding_bottom: 96, ...(cat?.mainProduct ?? {}) }, productBlocks];
   const recommendationsRow: Row = ["product-recommendations", { heading: t("Vous aimerez aussi", "You may also like"), limit: 4, color_scheme: "scheme-1", padding_top: 64, padding_bottom: 96 }];
   // Thème de référence : sa propre suite de sections sous le corps de la fiche (avis, arguments, caractéristiques, FAQ).
-  const productTpl = tpl(ids, cat?.product ? [mainProductRow, ...flat(cat.product(kit)), recommendationsRow] : [
+  const productTpl = tpl(ids, distinctCopy(cat?.product ? [mainProductRow, ...flat(cat.product(kit)), recommendationsRow] : [
     mainProductRow,
     ["product-reviews", { heading: t("Avis des clients", "Customer reviews"), anchor: reviewsAnchor, color_scheme: "scheme-1", padding_top: 32, padding_bottom: 32 }],
     story(2),
     ...(specs.length ? [specList(1)] : []),
     faqSec(2, 4),
     recommendationsRow,
-  ]);
+  ], lang));
 
   const aboutTpl = tpl(ids, [
     ["rich-text", { align: "center", style: "statement", color_scheme: "scheme-1", ...pad(120, 64) }, [
@@ -1094,7 +1122,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   ]);
 
   const templates: Record<string, TemplateJson> = {
-    index: tpl(ids, index),
+    index: tpl(ids, distinctCopy(index, lang)),
     product: productTpl,
     collection: tpl(ids, [["main-collection", { per_page: 16, columns: 3, enable_filters: true, enable_sorting: true, color_scheme: "scheme-1" }]]),
     "list-collections": tpl(ids, [["main-list-collections", { heading: t("Catalogue", "Catalog"), color_scheme: "scheme-1" }]]),
@@ -1149,7 +1177,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     name: t("Groupe en-tête", "Header group"),
     ...tpl(ids, [
       ...(annItems.length ? [["announcement-bar", { style: CHROME[d.id].ann, color_scheme: "scheme-3" }, annItems.map((t) => ({ type: "announcement", settings: { text: t, link: "" } }))] as Row] : []),
-      ["header", { menu: "main-menu", layout: headerLayout, shape: CHROME[d.id].shape, icons: CHROME[d.id].icons, mobile_menu: CHROME[d.id].menu, sticky: true, transparent_on_home: index[0]?.[0] === "hero-fullbleed", show_search: !svc, color_scheme: "scheme-1", ...(svc ? { show_cart: false, cta_label: svc.headerCta.label, cta_link: svc.headerCta.link, cta_icon: svc.headerCta.icon, phone: svc.phone } : {}) }],
+      ["header", { menu: "main-menu", layout: headerLayout, shape: CHROME[d.id].shape, icons: CHROME[d.id].icons, mobile_menu: CHROME[d.id].menu, sticky: true, transparent_on_home: index[0]?.[0] === "hero-fullbleed", show_search: !svc && !cat?.headerCta, color_scheme: "scheme-1", ...(!svc && cat?.headerCta ? { cta_label: t(cat.headerCta.fr, cat.headerCta.en), cta_link: productUrl, cta_icon: cat.headerCta.icon } : {}), ...(!svc ? cat?.headerSettings ?? {} : {}), ...(svc ? { show_cart: false, cta_label: svc.headerCta.label, cta_link: svc.headerCta.link, cta_icon: svc.headerCta.icon, phone: svc.phone } : {}) }],
     ]),
   };
   const footer: GroupJson = {

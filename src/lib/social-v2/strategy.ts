@@ -1,3 +1,4 @@
+import { strategySelection } from "../strategy-consumption";
 /**
  * Stratégie éditoriale sociale V2 : objectifs, audience, positionnement, ton, messages, thématiques, piliers,
  * formats, fréquence, canaux, appels à l'action, saisonnalité et événements — à partir du Project Brain et des seuls
@@ -156,13 +157,14 @@ export function socialStrategy(p: Project, o: { lang?: string; platforms?: Platf
   if (a === "trade" || a === "service") gaps.push(t("photos réelles de chantiers ou de l'activité (aucune réalisation ne sera inventée)", "real photos of jobs or the business (no work will be invented)"));
   const fmtShare = new Map<PostFormat, number>();
   for (const pl of pillars) for (const [i, fm] of pl.formats.entries()) fmtShare.set(fm, (fmtShare.get(fm) ?? 0) + pl.share * (i === 0 ? 0.6 : 0.4 / Math.max(1, pl.formats.length - 1)));
+  const selected = strategySelection(p.id)?.angle;
   return {
     archetype: a,
     objectives,
     audience: f.audience ?? t("[À compléter : public visé]", "[To complete: target audience]"),
-    positioning: p.brand?.positioning?.trim() || f.difference || t("[À compléter : positionnement]", "[To complete: positioning]"),
-    tone: p.brand?.personality?.length ? p.brand.personality : f.tone,
-    messages: [f.difference, ...f.facts.slice(0, 3).map((x) => (x.label ? `${x.label} : ${x.value}` : x.value)), ...f.services.slice(0, 3).map((s) => s.name), f.area ? t(`Zone : ${f.area}`, `Area: ${f.area}`) : null].filter((x): x is string => !!x),
+    positioning: selected?.promise || p.brand?.positioning?.trim() || f.difference || t("[À compléter : positionnement]", "[To complete: positioning]"),
+    tone: selected ? [selected.tone] : p.brand?.personality?.length ? p.brand.personality : f.tone,
+    messages: [...(selected?.messages ?? []), f.difference, ...f.facts.slice(0, 3).map((x) => (x.label ? `${x.label} : ${x.value}` : x.value)), ...f.services.slice(0, 3).map((s) => s.name), f.area ? t(`Zone : ${f.area}`, `Area: ${f.area}`) : null].filter((x): x is string => !!x),
     themes: pillars.map((x) => x.title),
     pillars,
     formats: [...fmtShare.entries()].map(([format, share]) => ({ format, share: Math.round(share * 100) / 100 })).sort((x, y) => y.share - x.share),

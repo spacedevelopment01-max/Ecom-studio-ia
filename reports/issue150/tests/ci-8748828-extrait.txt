@@ -1,0 +1,13 @@
+2026-10-20T15:44:22.2473975Z Complete job name: Typecheck, tests, Theme Check, build
+2026-10-20T16:03:49.6619604Z  ✓ tests/video-v2-bench.test.ts (6 tests) 52799ms
+2026-10-20T16:03:49.6622384Z      ✓ scénario A (artisan) : intention, langage visuel, durée, vidéo rendue, barrière 13801ms
+2026-10-20T16:03:49.6623830Z      ✓ scénario B (cosmetic) : intention, langage visuel, durée, vidéo rendue, barrière 7513ms
+2026-10-20T16:03:49.6625177Z      ✓ scénario C (hightech) : intention, langage visuel, durée, vidéo rendue, barrière 10431ms
+2026-10-20T16:03:49.6626746Z      ✓ scénario D (restaurant) : intention, langage visuel, durée, vidéo rendue, barrière 9165ms
+2026-10-20T16:03:49.6628098Z      ✓ scénario E (saas) : intention, langage visuel, durée, vidéo rendue, barrière 11882ms
+2026-10-20T16:04:33.0730133Z  FAIL  tests/workflow-garde-fous.test.ts > demande unique : accord, plafond, statuts, Réessayer > refus de consentement : devis payant non accepté → rien n'est lancé, aucun appel
+2026-10-20T16:04:33.0735330Z AssertionError: expected 0 to be greater than 0
+2026-10-20T16:04:33.0828631Z  Test Files  1 failed | 315 passed (316)
+2026-10-20T16:04:33.0848914Z       Tests  1 failed | 2450 passed | 2 skipped (2453)
+2026-10-20T16:04:33.0942895Z ##[error]AssertionError: expected 0 to be greater than 0
+2026-10-20T16:04:34.4616385Z ##[error]Process completed with exit code 1.

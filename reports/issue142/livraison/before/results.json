@@ -1,0 +1,42 @@
+{
+  "phase": "before",
+  "version": {
+    "commit": "8b8f8b0b9b97581061e683f57c990deb077ffbbb",
+    "source": "compiled-build"
+  },
+  "simulation": true,
+  "realProviderCalls": 0,
+  "realProviderCost": 0,
+  "results": [
+    {
+      "business": "products",
+      "refreshedWithoutReload": false,
+      "persistedError": false,
+      "failedProgress": 0.15,
+      "noFailedResult": true,
+      "downloadVerified": true,
+      "foreignDownloadDenied": true,
+      "remainingBudgetMicro": 300000,
+      "displayedPlanUsed": 100,
+      "paused": true,
+      "simulation": true,
+      "recordedSyntheticCostMicro": 144678
+    },
+    {
+      "business": "services",
+      "refreshedWithoutReload": false,
+      "persistedError": false,
+      "failedProgress": 0.15,
+      "noFailedResult": true,
+      "downloadVerified": true,
+      "foreignDownloadDenied": true,
+      "remainingBudgetMicro": 300000,
+      "displayedPlanUsed": 100,
+      "paused": true,
+      "simulation": true,
+      "recordedSyntheticCostMicro": 144678
+    }
+  ],
+  "errors": [],
+  "blockedExternalHosts": []
+}

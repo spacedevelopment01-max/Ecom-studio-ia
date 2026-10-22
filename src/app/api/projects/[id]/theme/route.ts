@@ -1,3 +1,6 @@
+import { planAllowsSection } from "@/lib/plan-entitlements";
+import { planOfProject } from "@/lib/plan-gates";
+import { PLANS } from "@/lib/plans";
 import { storeProducts } from "@/lib/theme/spec";
 import { themeRecommendation } from "@/lib/theme/theme-recommendation";
 import { incompatibleSections } from "@/lib/theme/section-fit";
@@ -17,10 +20,13 @@ import { containerOf, sectionSchema, baseSectionTypes, availableSectionTypes } f
 import { directionCards } from "@/lib/theme/directions";
 import { themeFingerprint } from "@/lib/theme/compile";
 import { layoutChoices } from "@/lib/theme/layout-choices";
+import { familyPanel } from "@/lib/theme/family-ops";
+import { projectKind } from "@/lib/theme/project-kind";
 import { previewSandbox } from "@/lib/theme/preview-access";
 import { stockPhotosInTheme } from "@/lib/theme/stock-notice";
 import { getAsset } from "@/lib/library";
 import { pixabayOnly } from "@/lib/stock/photos";
+import { verifyAdaptationFiles } from "@/lib/theme/client-adaptation";
 
 export const runtime = "nodejs";
 
@@ -29,18 +35,28 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
   // Noms des sections et libellés : langue de l'interface (les textes de la boutique restent dans sa langue).
   const ui = uiLang();
   const cur = currentTheme(p.id);
+  // Read-only reconciliation: a file removed since the last save must be reported on a new session.
+  if (cur?.spec.meta?.adaptation) await verifyAdaptationFiles(cur.spec, p);
   const messages = all<any>("SELECT id, role, content, attachments, selection, theme_version_id, job_id, created_at FROM chat_messages WHERE project_id = ? AND thread = 'shop' ORDER BY created_at ASC LIMIT 200", p.id).map((m) => ({ ...m, attachments: JSON.parse(m.attachments || "[]"), selection: m.selection ? JSON.parse(m.selection) : null }));
   const recommendation = themeRecommendation(p, ui);
   const kind = recommendation.category.kind;
+  const plan=planOfProject(p.id);
+  const entitlements=plan?{librarySections:PLANS[plan].librarySections,themeEditing:PLANS[plan].themeEditing}:null;
   if (!cur) return ok({ current: null, versions: listThemeVersions(p.id), messages, directions: directionCards(ui, p.brand?.direction ? [p.brand.direction] : []), sandbox: previewSandbox(), storeKind: recommendation.category, recommendation });
+  // Section de la bibliothèque, en-tête, pied de page : leurs dispositions sont celles de la famille (panneau
+  // « Réglages ») ; l'ancien menu « Choisir la disposition » n'est gardé que pour les autres sections.
+  const layoutOf = (s: (typeof cur.spec.templates)[string]["sections"][string]) => (!cur.spec.imported && familyPanel(cur.spec, projectKind(p), s, ui) ? undefined : layoutChoices(cur.spec, s, ui));
   const structure = ["group:header", ...Object.keys(cur.spec.templates), "group:footer"].map((t) => {
     const c = containerOf(cur.spec, t)!;
     return {
       template: t,
-      sections: c.order.filter((id) => c.sections[id]).map((id) => ({ id, type: c.sections[id].type, name: sectionSchema(cur.spec, c.sections[id].type, ui)?.name ?? c.sections[id].type, disabled: !!c.sections[id].disabled, locked: cur.spec.locks.includes(`${t}:${id}`), heading: String(c.sections[id].settings?.heading ?? c.sections[id].settings?.heading_line1 ?? "").slice(0, 80), layout: layoutChoices(cur.spec, c.sections[id], ui) })),
+      sections: c.order.filter((id) => c.sections[id]).map((id) => ({ id, type: c.sections[id].type, name: sectionSchema(cur.spec, c.sections[id].type, ui)?.name ?? c.sections[id].type, disabled: !!c.sections[id].disabled, locked: cur.spec.locks.includes(`${t}:${id}`), heading: String(c.sections[id].settings?.heading ?? c.sections[id].settings?.heading_line1 ?? "").slice(0, 80), layout: layoutOf(c.sections[id]) })),
     };
   });
   return ok({
+    strategy:cur.spec.meta?.strategy??null,
+    entitlements,
+    adaptation:cur.spec.meta?.adaptation??null,
     quality: json<{ gate?: unknown }>(cur.version.qc, {})?.gate ?? null,
     current: { versionId: cur.version.id, number: cur.version.number, direction: cur.spec.direction, name: cur.spec.name, language: cur.spec.language ?? "fr", summary: cur.version.summary, fingerprint: themeFingerprint(cur.spec), structure, pages: cur.spec.store.pages, products: storeProducts(cur.spec).map((x) => ({ handle: x.handle, title: x.title, template_suffix: x.template_suffix && cur.spec.templates[`product.${x.template_suffix}`] ? x.template_suffix : null })), product: { handle: cur.spec.store.product.handle, title: cur.spec.store.product.title, price: cur.spec.store.product.price }, motion: cur.spec.imported ? undefined : { enabled: cur.spec.settings.motion_enabled !== false, intensity: String(cur.spec.settings.motion_intensity ?? "normal"), parallax: cur.spec.settings.motion_parallax !== false }, imported: cur.spec.imported ? { name: cur.spec.imported.name, report: cur.spec.imported.report } : undefined },
     versions: listThemeVersions(p.id),
@@ -78,7 +94,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
       // Bibliothèque de la famille du projet (issue #141) : ses 20 fonctions et leurs dispositions, rien d'autre ; une
       // disposition dont la section ne convient pas au thème installé n'est pas proposée.
       : [
-          ...familyGallery(kind, ui, (t) => !sectionIncompatibility(cur.spec, t, kind, ui)),
+          ...familyGallery(kind, ui, (t) => !sectionIncompatibility(cur.spec, t, kind, ui)).filter(e=>planAllowsSection(plan,kind,e.type.replace(/^fam:/,"").split("~")[0])),
           ...baseSectionTypes().filter((t) => !addable(t)).map((t) => {
             const e = libraryEntry(t, ui);
             return { type: t, name: e?.name ?? sectionSchema(null, t, ui)?.name ?? t, category: e?.category ?? "Structure", description: e?.description ?? "", keywords: e?.keywords ?? "", preview: fs.existsSync(path.join(process.cwd(), "public", "sections", `${t}.jpg`)) ? `/sections/${t}.jpg` : null, addable: false };

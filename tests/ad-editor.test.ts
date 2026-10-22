@@ -1,3 +1,4 @@
+import { grantProjectPlan } from "./communication-choice-fixture";
 /**
  * Éditeur visuel des publicités — fondation (documents en calques, opérations, versions, formats, export).
  * Critère de réussite vérifié SANS aucun appel d'IA : ouvrir une publicité générée, sélectionner son titre, changer
@@ -28,6 +29,7 @@ describe("Éditeur visuel des publicités — documents en calques", async () =>
   /** Une publicité générée par le moteur V2 (outils simulés), avec produit et logo. */
   async function generated() {
     const p = loadProject(seedImageFixture(u.id, "cosmetic"));
+    grantProjectPlan(p.id,"dominer");
     const cutId = await seedCutout(u.id, p.id);
     const cut = assetData(getAsset(cutId)!);
     const logoPng = await sharp({ create: { width: 400, height: 120, channels: 4, background: { r: 20, g: 20, b: 20, alpha: 1 } } }).png().toBuffer();
@@ -190,6 +192,7 @@ describe("Éditeur visuel des publicités — documents en calques", async () =>
   });
   it("aucun texte ne chevauche le bouton, quels que soient la mise en page et le format (contrôle signalé sinon)", async () => {
     const p = loadProject(seedImageFixture(u.id, "cosmetic"));
+    grantProjectPlan(p.id,"dominer");
     const cutId = await seedCutout(u.id, p.id);
     const { deps } = mockAdDeps({ userId: u.id, projectId: p.id, cutout: { id: cutId, data: assetData(getAsset(cutId)!) }, logo: null });
     const r = await fr(() => runAdEngineV2(null, p.id, { count: 3, platforms: ["meta_feed", "meta_story", "google_display"] }, deps));

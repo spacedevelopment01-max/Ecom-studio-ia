@@ -261,7 +261,7 @@ export async function runAutopilot(p: Project, deps: SocialDeps, at = now()): Pr
         focus: c.focus,
         lang: c.language,
       },
-      { planId: autoPlanId(p.id) },
+      { planId: autoPlanId(p.id),appendFuture:true },
     );
     out.created = r.created;
     out.notes.push(...r.warnings);

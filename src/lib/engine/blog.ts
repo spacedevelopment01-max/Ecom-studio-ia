@@ -1,3 +1,5 @@
+import { strategyContent } from "../strategy-consumption";
+import { assertContentAlignment } from "../marketing-strategy";
 /**
  * Articles de blog écrits par l'IA (forfaits Vendre : 2 par mois, Dominer : 8 par mois).
  *  - Sujets proposés à partir des faits du projet (questions des acheteurs, usages, guides, comparatifs honnêtes).
@@ -20,7 +22,7 @@ import { brainContext } from "../ai/context";
 import { charter, placeholder } from "../ai/prompts";
 import { llmConfigured, llmJson } from "../ai/llm";
 import { aiCopyReview, copyReviewFeedback, copyReviewMean, copyReviewPassed, lintClaims, lintHollow, scrubClaims } from "../ai/tasks";
-import { assertQuota, consumeQuota, quotaMessage, quotaView, userPlan } from "../quotas";
+import { reserveBlogDraft, releaseUnsavedBlogDraft, assertQuota, quotaMessage, quotaView, userPlan } from "../quotas";
 import { accountKeyFor } from "../project-billing";
 import { PLANS, QUOTA_ERROR, type PlanId } from "../plans";
 import { assetUrl, getAsset } from "../library";
@@ -409,8 +411,12 @@ export async function writeBlogArticle(ctx: JobContext, projectId: string, req: 
   // Déjà écrit lors d'un essai précédent (décompte compris) : rien à refaire.
   const done = ctx.checkpoint.saved as string | undefined;
   if (done) return { articleId: done, resumed: true };
-  assertBlogWrite(p.userId, p.id);
+  const reason=blogPlanReason(p.userId,p.id);if(reason)throw new BlogAccessError(reason);
   if (!llmConfigured()) throw new UserFacingError(L("L'écriture d'articles demande l'IA, qui n'est pas disponible pour le moment. Aucun article n'a été décompté ; réessayez plus tard.", "Writing blog posts requires AI, which isn't available right now. No post was counted; please try again later."));
+  const reservedArticleId=previous?.id??(ctx.checkpoint["article-quota-id"] as string|undefined)??(ctx.checkpoint.articleId as string|undefined)??newId();
+  ctx.save("article-quota-id",reservedArticleId);
+  const quotaRef=reserveBlogDraft(p.userId,projectId,reservedArticleId);
+  try {
   const links = storeLinks(projectId);
   // Requête et intention de recherche : celles du sujet choisi (envoyées par l'écran), sinon celles de l'article
   // réécrit (enregistrées), sinon celles d'un sujet proposé récemment dans ce processus.
@@ -462,7 +468,7 @@ export async function writeBlogArticle(ctx: JobContext, projectId: string, req: 
     ...(gate.verdict === "FINAL" ? [] : [L(`Non validé par le contrôle de qualité : ${gate.reason}. À relire avant toute publication.`, `Not validated by the quality check: ${gate.reason}. Review before publishing.`)]),
   ];
   const t = now();
-  const articleId = previous?.id ?? (await ctx.step("articleId", async () => newId()));
+  const articleId = previous?.id ?? (await ctx.step("articleId", async () => reservedArticleId));
   const slug = uniqueSlug(projectId, previous?.slug && previous.status === "published" ? previous.slug : a.slug, articleId);
   const cover = previous?.cover_asset_id ?? pickCover(projectId);
   run(
@@ -472,11 +478,13 @@ export async function writeBlogArticle(ctx: JobContext, projectId: string, req: 
        body_html = excluded.body_html, tags = excluded.tags, cover_asset_id = excluded.cover_asset_id, language = excluded.language, status = CASE WHEN blog_articles.published_url IS NOT NULL THEN 'ready' ELSE 'draft' END, qc_notes = excluded.qc_notes, keyword = excluded.keyword, search_intent = excluded.search_intent, updated_at = excluded.updated_at`,
     articleId, projectId, p.userId, a.title, slug, a.metaTitle, a.metaDescription, a.excerpt, a.bodyHtml, JSON.stringify(a.tags), cover, contentLang(), JSON.stringify(notes), a.keyword?.trim() || request.keyword || null, request.intent ?? null, t, t,
   );
+  strategyContent(projectId, "blog", articleId);
   saveCheck(gate, { userId: p.userId, projectId, jobId: ctx.job.id, candidateId: `blog:${articleId}` });
-  // Un article écrit (ou réécrit avec l'IA) = 1 article du forfait, décompté une seule fois par tâche.
-  consumeQuota(p.userId, "blog", 1, `blog:${ctx.job.id}`, projectId);
+  // Un nouveau brouillon = un article du cycle ; les réécritures de cette lignée ne comptent pas à nouveau.
+  // The article count was atomically reserved before writing; rewrites do not consume another article.
   ctx.save("saved", articleId);
   return { articleId, words: countWords(a.bodyHtml), notes: notes.length, verdict: gate.verdict };
+  } finally { releaseUnsavedBlogDraft(p.userId,projectId,quotaRef,[reservedArticleId]); }
 }
 
 /**
@@ -484,6 +492,8 @@ export async function writeBlogArticle(ctx: JobContext, projectId: string, req: 
  * qualité est FINAL ; un brouillon technique ne l'est jamais.
  */
 export function blogAutoPublishable(articleId: string): boolean {
+  const owner = one<{ project_id: string }>("SELECT project_id FROM blog_articles WHERE id=?", articleId);
+  if (owner) try { assertContentAlignment(owner.project_id, "blog", articleId); } catch { return false; }
   return one<{ verdict: string }>("SELECT verdict FROM quality_checks WHERE candidate_id = ? ORDER BY created_at DESC LIMIT 1", `blog:${articleId}`)?.verdict === "FINAL";
 }
 

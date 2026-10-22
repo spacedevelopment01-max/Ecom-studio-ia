@@ -5,7 +5,7 @@
  * métier (accroche immédiate, rupture toutes les 1,5 à 2,5 s, structure UGC, budget de test honnête).
  * Cas réel : compagnon pour enfant rose à oreilles (marque inventée).
  */
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 const llm = vi.hoisted(() => ({ queues: {} as Record<string, unknown[]>, calls: [] as { task: string; prompt: string }[], fail: new Set<string>() }));
 vi.mock("@/lib/ai/llm", async (orig) => ({
@@ -50,9 +50,11 @@ const brand = {
   generatedBy: "local",
 } as unknown as Brand;
 
+let projectId="";
+beforeAll(async()=>{const {createUser}=await import("@/lib/auth");const {id,now,run}=await import("@/lib/db");const {grantProjectPlan}=await import("@/lib/project-subscriptions");const u=await createUser(`excellence150-${id()}@example.test`,"isolated-password","Excellence");projectId=id();run("INSERT INTO projects(id,user_id,name,created_at,updated_at) VALUES(?,?,?,?,?)",projectId,u.id,"Projet synthétique",now(),now());grantProjectPlan(projectId,"dominer");});
 const pompon = (withPrice = true) =>
   ({
-    id: "p-pompon",
+    id: projectId,
     userId: "u",
     business: "products",
     settings: { language: "fr" },

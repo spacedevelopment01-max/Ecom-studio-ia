@@ -17,7 +17,7 @@ export type ProjectSub = {
   periodEnd: number | null;
   cancelAtPeriodEnd: boolean;
   managedByAdmin: boolean;
-  ai: { plan: { used: number }; credits: { used: number } | null; paused: boolean } | null;
+  ai: { plan: { used: number }; credits: { used: number } | null; paused: boolean; pending?: boolean } | null;
   /** Date à laquelle le budget IA du forfait repart à 0 %. */
   aiRenewsAt?: number;
   topups: { amountEur: number; refundedEur: number; at: number }[];
@@ -89,6 +89,7 @@ export function ProjectSubscriptionDialog({ projectId, name, open, onClose, onCh
 
           {s.ai && (
             <div className="grid gap-3 rounded-2xl border border-line p-4">
+              {s.ai.pending && <p className="text-sm" role="status">{t("Une génération utilise temporairement le budget disponible. Attendez son résultat avant une nouvelle action ; les pourcentages montrent la consommation enregistrée.", "A generation is temporarily using the available budget. Wait for its result before a new action; percentages show recorded usage.")}</p>}
               <div>
                 <p className="flex justify-between text-sm"><span className="font-medium">{t("IA du forfait (ce projet)", "Plan AI (this project)")}</span><span className="tabular-nums">{t(`reste ${100 - s.ai.plan.used} %`, `${100 - s.ai.plan.used}% left`)}</span></p>
                 <div className="mt-1.5"><UsageMeter used={s.ai.plan.used} label={t("IA du forfait", "Plan AI")} /></div>

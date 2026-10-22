@@ -15,7 +15,7 @@ Campagne et offre du moment (e-commerce) : une mise en avant datée avec ses con
 -%}
 <section id="fs-{{ section.id }}" class="fs fs-campaign fs-campaign--{{ s.layout | default: 'base' }} fs--{{ prof }}{% if prof == 'ed' %} ed-section{% else %} es-section{% endif %}{% if s.background != blank and s.background != 'scheme' %} fs--{{ s.background }}{% endif %}{% if s.hover %} fs--hover{% endif %} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;--fs-angle:{{ s.gradient_angle | default: 165 }}deg;"{% if fx == 'none' %} data-ed-motion="none"{% endif %} >
   <div class="{% if prof == 'ed' %}ed-shell{% else %}es-container{% endif %} fs__inner">
-    {%- render 'fs-head', prof: prof, eyebrow: s.eyebrow, heading: s.heading, accent: s.heading_accent, text: s.text, align: s.align, effect: fx, button_label: '', button_link: '' -%}
+    {%- render 'fs-head', prof: prof, eyebrow: s.eyebrow, heading: s.heading, accent: s.heading_accent, text: s.text, align: s.align, effect: fx, button_label: '', button_link: '', tag: s.heading_tag -%}
     <div class="fs-camp fs-camp--{{ s.layout }}">
       <div class="fs-camp__media"{% render 'fs-reveal', effect: 'curtain' %}>{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, focus_x: s.focus_x, focus_y: s.focus_y %}</div>
       <div class="fs-camp__copy{% if s.layout == 'card' %} {{ cards }}{% endif %}"{% render 'fs-reveal', effect: fx, index: 1 %}>
@@ -48,6 +48,22 @@ Campagne et offre du moment (e-commerce) : une mise en avant datée avec ses con
       "type": "text",
       "id": "heading_accent",
       "label": "Fin du titre mise en valeur"
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Niveau du titre",
+      "options": [
+        {
+          "value": "h1",
+          "label": "Titre de page"
+        },
+        {
+          "value": "h2",
+          "label": "Titre de section"
+        }
+      ],
+      "default": "h2"
     },
     {
       "type": "richtext",

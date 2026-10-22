@@ -17,7 +17,7 @@ export function demos(file: "manifest.json" | "manifest.en.json" = "manifest.jso
 }
 
 /** Les seules démonstrations du studio (priorité du 19 octobre 2026) ; toute autre entrée du manifeste est ignorée. */
-export const DEMO_IDS = ["fraise", "onde", "orbe", "rive"] as const;
+export const DEMO_IDS = ["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple"] as const;
 
 const present = (src: string | undefined) => !!src && fs.existsSync(path.join(process.cwd(), "public", src.replace(/^\//, "")));
 /**
@@ -41,11 +41,18 @@ export function onlyPresentFiles(d: Demo): Demo {
 /** Repli si public/demo/manifest.en.json n'est pas généré : textes des démonstrations françaises traduits pour l'interface anglaise. */
 const DEMO_EN: Record<string, { product?: string; note?: string }> = {
   fraise: { product: "Strawberry gummies", note: "Fictional demo brand (specialty store, Lumora reference theme): AI visuals without people, proposed logo not validated, fictional prices, offers and reviews labelled as such." },
-  onde: { product: "ONDE headphones", note: "Fictional demo brand (specialty store, Pawish reference theme): AI visuals without people, proposed logo not validated, fictional prices and reviews labelled as such; technical specifications left to complete, never claimed." },
+  onde: { product: "ONDE headphones", note: "Fictional demo brand (single-product e-commerce, Onde theme redesigned in issue #158): AI visuals without people, proposed logo not validated; price, battery life, connectivity, warranty and delivery are never claimed; a store with no real sales." },
   orbe: { product: "ORBE portable lamp", note: "Fictional demo brand (e-commerce, editorial composition): a portable lamp in three finishes with accessories; AI visuals without people, no validated logo, fictional prices and offers labelled as such." },
+  sillon: { product: "SILLON portable espresso machine", note: "Fictional demo brand (specialty store, issue #148): already generated AI visuals supplied by the studio owner, without people; price, technical specifications, warranty and delivery are never claimed; a store with no real sales." },
+  noctil: { product: "NOCTIL galaxy projector", note: "Fictional demo brand (specialty store, issue #152): already generated AI visuals supplied by the studio owner, without people; price, technical specifications, compatibility, warranty and any effect on sleep are never claimed; a store with no real sales." },
+  traverse: { product: "TRAVERSE modular travel backpack", note: "Fictional demo brand (specialty store, issue #152): already generated AI visuals supplied by the studio owner, without people; price, capacity, cabin size, waterproofing, materials and warranty are never claimed; a store with no real sales." },
+  heuren: { product: "HEUREN watch", note: "Fictional demo brand (E-commerce, single product, issue #155): already generated AI visuals supplied by the studio owner, without people; price, movement, water resistance, materials, size, warranty and delivery are never claimed; a store with no real sales." },
+  alcove: { product: "ALCÔVE armchair", note: "Fictional demo brand (E-commerce, single product, issue #155): already generated AI visuals supplied by the studio owner, without people; price, dimensions, fabric composition, comfort, warranty and delivery are never claimed; a store with no real sales." },
+  "museau-club": { product: "MUSEAU CLUB walking collection", note: "Fictional demo brand (E-commerce, four products, issue #158): harness, lead, collar and poop-bag pouch for dogs; original AI visuals already created and supplied by the studio owner, dogs only, no people; prices, sizes, materials, strength, safety, warranty and delivery are never claimed; a store with no real sales." },
+  souple: { product: "SOUPLE yoga and Pilates collection", note: "Fictional demo brand (E-commerce, four products, issue #158): yoga mat, cork block, strap and Pilates ring; original AI visuals supplied by the studio owner, objects only, no people; prices, materials, dimensions, grip, certifications, health benefits, warranty and delivery are never claimed; a store with no real sales." },
   rive: { product: "Interior design and decoration", note: "Fictional demo business (services, “journal” composition): design intentions as AI images, never real projects; no real address or client; test contact requests only." },
 };
-const SECTOR_EN: Record<string, string> = { Confiserie: "Confectionery", Audio: "Audio", Luminaires: "Lighting", "Architecture d'intérieur": "Interior design", "Épicerie fine": "Fine food", Accessoires: "Accessories", Plantes: "Plants", Fleuriste: "Florist", Barbier: "Barber", Boissons: "Beverages", Maison: "Home", "High-tech": "Tech", Animaux: "Pets", Mode: "Fashion", "Sport et plein air": "Sports & outdoors", Paysagiste: "Landscaper", Beauté: "Beauty", Sport: "Sports", Alimentation: "Food", Bijoux: "Jewelry", Enfants: "Kids", Horlogerie: "Watches" };
+const SECTOR_EN: Record<string, string> = { Confiserie: "Confectionery", Audio: "Audio", Luminaires: "Lighting", "Architecture d'intérieur": "Interior design", "Épicerie fine": "Fine food", Accessoires: "Accessories", Plantes: "Plants", Fleuriste: "Florist", Barbier: "Barber", Boissons: "Beverages", Maison: "Home", "High-tech": "Tech", Animaux: "Pets", Mode: "Fashion", "Sport et plein air": "Sports & outdoors", Paysagiste: "Landscaper", Beauté: "Beauty", Sport: "Sports", Alimentation: "Food", Bijoux: "Jewelry", Enfants: "Kids", Horlogerie: "Watches", Bagagerie: "Luggage", Mobilier: "Furniture" , Animalerie: "Pet supplies" };
 const IMAGE_LABEL_EN: Record<string, string> = { Bannière: "Banner", Détail: "Detail", Détourage: "Cutout", Packshot: "Packshot", Publicité: "Ad", Scène: "Scene", "Visuel social": "Social visual", "En situation": "Lifestyle" };
 
 export function localizeDemo(d: Demo, lang: Lang): Demo {

@@ -1,3 +1,6 @@
+import {withCommunicationRequest} from "@/lib/marketing-strategy/communication-route";
+import { recordedContentStrategy, strategyContent } from "@/lib/strategy-consumption";
+import { assertAdvertising } from "@/lib/job-entitlements";
 import { z } from "zod";
 import { all, id, now, one, run } from "@/lib/db";
 import { HttpError } from "@/lib/auth";
@@ -12,24 +15,29 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const rows = all<any>("SELECT * FROM campaigns WHERE project_id = ? ORDER BY created_at DESC", p.id);
   // Langue de la campagne (annonces, export, publications) : celle choisie, sinon celle du projet.
   const lang = p.settings.language ?? "fr";
-  return ok({ campaigns: rows.map((r) => ({ ...r, networks: JSON.parse(r.networks), brief: { language: lang, ...JSON.parse(r.brief) }, plan: JSON.parse(r.plan), posts: all("SELECT id, network, format, status, title FROM posts WHERE campaign_id = ?", r.id) })) });
+  return ok({ campaigns: rows.map((r) => ({ ...r, marketingStrategy:recordedContentStrategy(p.id,"campaign",r.id), networks: JSON.parse(r.networks), brief: { language: lang, ...JSON.parse(r.brief) }, plan: JSON.parse(r.plan), posts: all("SELECT id, network, format, status, title FROM posts WHERE campaign_id = ?", r.id) })) });
 });
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
+  return withCommunicationRequest(p.id,req,async()=>{
   const b = await body(req, z.object({ id: z.string().optional(), name: z.string().min(1).max(120), objective: z.string().max(80), networks: z.array(z.string()).max(6), brief: z.object({ language: z.enum(["fr", "en"]).optional() }).catchall(z.any()).default({}), plan: z.record(z.string(), z.any()).default({}), status: z.enum(["draft", "ready", "archived"]).default("draft") }));
+  if(b.status!=="archived")assertAdvertising(p.id);
   if (b.id) {
     const cur = one<{ status: string }>("SELECT status FROM campaigns WHERE id = ? AND project_id = ?", b.id, p.id);
     if (!cur) throw new HttpError(404, L("Campagne introuvable.", "Campaign not found."));
     // Ressortir une campagne des archives l'ajoute aux campagnes actives : même limite du forfait qu'une création.
     if (cur.status === "archived" && b.status !== "archived") assertCampaignSlot(user, p.id);
     run("UPDATE campaigns SET name = ?, objective = ?, networks = ?, brief = ?, plan = ?, status = ?, updated_at = ? WHERE id = ? AND project_id = ?", b.name, b.objective, JSON.stringify(b.networks), JSON.stringify(b.brief), JSON.stringify(b.plan), b.status, now(), b.id, p.id);
+    strategyContent(p.id,"campaign",b.id,{protected:true});
     return ok({ id: b.id });
   }
   assertCampaignSlot(user, p.id);
   const cid = id();
   run("INSERT INTO campaigns (id, project_id, name, objective, networks, status, brief, plan, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)", cid, p.id, b.name, b.objective, JSON.stringify(b.networks), b.status, JSON.stringify(b.brief), JSON.stringify(b.plan), now(), now());
+  strategyContent(p.id,"campaign",cid,{protected:true});
   return ok({ id: cid });
+  },['']);
 });
 
 /** Supprime une campagne. Ses publications déjà créées sont gardées (elles peuvent être programmées), détachées de la campagne. */

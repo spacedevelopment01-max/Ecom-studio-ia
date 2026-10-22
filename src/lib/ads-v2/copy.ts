@@ -107,7 +107,9 @@ export function localCopy(i: AdInsight, a: AnglePlan, lang: Lang, limits: { hook
       break;
   }
   const primaryFirst = cut(`${noDot(hook)}.`, limits.primaryFirstLine);
-  const primary = [primaryFirst, body !== primaryFirst ? body : "", proofLine && !body.includes(proofLine) && a.type !== "gift" ? proofLine : ""].filter(Boolean).join("\n\n");
+  const selected = i.marketingStrategy?.angleId==='generalist'?undefined:i.marketingStrategy?.angle;
+  if (selected) { hook = selected.examples.hero; headline = selected.messages[a.type.length % Math.max(1, selected.messages.length)] || selected.examples.hero; }
+  const primary = [primaryFirst, selected?.examples.advertisement, body !== primaryFirst ? body : "", proofLine && !body.includes(proofLine) && a.type !== "gift" ? proofLine : ""].filter(Boolean).join("\n\n");
   return {
     hook: words(hook, limits.hookWords),
     primary,

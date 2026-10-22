@@ -5,12 +5,16 @@
  *    photo du produit (image Qwen puis mouvement Wan 2.6), dans un plafond de dépense calculé avant ;
  *  - service (tous forfaits) : plans libres de droits du métier, montés par le studio ;
  *  - sinon (forfait Créer, « montage seulement », IA coupée) ou en cas d'échec : montage local, sans génération.
+ * #150 : seule la vidéo de présentation est créée sous 49/89 ; le créneau publicitaire est réservé à Dominer.
  * Une vidéo par point de reprise et une clé stable par projet : rien n'est refait ni repayé.
  */
+import { planAllowsAds } from "../plan-entitlements";
+import { projectPlan } from "../project-billing";
 import { loadProject, type Project } from "../projects";
 import { JobCancelled, JobPaused, type JobContext } from "../jobs";
 import { currentTrace, withTrace } from "../ai/trace";
 import { subjectOptions } from "../creative-subject";
+import { videoDelivery } from "../media/delivery-check";
 import { DEFAULT_TOTAL_S, SCENES, runThreeScenes, type SceneAspect, type SceneQuote, type ThreeScenesDeps, type ThreeScenesRequest } from "./three-scenes";
 
 export const CREATION_VIDEOS: { as: "ad" | "post"; aspect: SceneAspect }[] = [
@@ -42,6 +46,8 @@ export async function creationSceneVideos(ctx: JobContext | null, projectId: str
   const subjects = subjectOptions(p).filter((s) => (mode === "ai" ? s.kind === "product" && !!s.referenceAssetId : true));
   const out: string[] = [];
   for (const [k, slot] of CREATION_VIDEOS.entries()) {
+    // Keep stable slot/receipt keys: a retained advertising asset is never relabelled as organic.
+    if(slot.as==="ad"&&!planAllowsAds(projectPlan(projectId)))continue;
     const one = async (): Promise<string | null> => {
       if (mode === "local") return deps.local(k);
       const s = subjects.length ? subjects[k % subjects.length] : null;
@@ -62,7 +68,8 @@ export async function creationSceneVideos(ctx: JobContext | null, projectId: str
       }
     };
     const id = ctx ? await ctx.step(`creation-video:${k}`, one) : await one();
-    if (id) out.push(id);
+    await videoDelivery(projectId,id);
+    out.push(id!);
   }
   return out;
 }

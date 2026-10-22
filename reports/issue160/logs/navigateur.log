@@ -1,0 +1,11 @@
+Browser start: produit
+Browser produit: usage
+Native theme visible: produit/usage
+Browser produit: expression
+Native theme visible: produit/expression
+Browser start: service
+Browser service: usage
+Native theme visible: service/usage
+Browser service: expression
+Native theme visible: service/expression
+{"cases":4,"output":"/tmp/ecs-strategy-160/reports/issue160"}

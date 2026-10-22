@@ -9,7 +9,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-type Mode = "ok" | "slow" | "status429" | "status500" | "status529" | "timeout" | "huge" | "midstream" | "otherModel";
+type Mode = "ok" | "slow" | "status429" | "status500" | "status529" | "timeout" | "huge" | "midstream" | "otherModel" | "unknownModel";
 const llm: { mode: Mode; calls: number; waiting: (() => void)[]; counted: number | null; countStatus: number | null; counts: any[]; sent: any[] } = { mode: "ok", calls: 0, waiting: [], counted: null, countStatus: null, counts: [], sent: [] };
 vi.mock("@anthropic-ai/sdk", () => {
   class APIError extends Error {}
@@ -34,6 +34,7 @@ vi.mock("@anthropic-ai/sdk", () => {
         if (llm.mode === "midstream") throw new Error("overloaded_error (stream)");
         // Réponse d'un autre modèle, plus cher que celui demandé.
         if (llm.mode === "otherModel") return { ...done, model: "claude-fable-5-1" };
+        if (llm.mode === "unknownModel") return { ...done, model: "synthetic-unpriced-served-model" };
         return done;
       };
       return { finalMessage };
@@ -152,7 +153,7 @@ describe("budget IA : règle des 40 % / 50 % et réservations", async () => {
     for (const r of llm.waiting.splice(0)) r();
     const out = await Promise.all(runs);
     expect(out.filter((o) => o === "ok")).toHaveLength(2);
-    expect(out.filter((o) => /utilisée à 100 %/.test(o))).toHaveLength(3);
+    expect(out.filter((o) => /engagé.*génération en cours/.test(o))).toHaveLength(3);
     expect(wallet(u.id).reserved).toBe(0);
     expect(wallet(u.id).monthly_used).toBeLessThanOrEqual(wallet(u.id).monthly_allowance);
   });
@@ -178,7 +179,7 @@ describe("budget IA : règle des 40 % / 50 % et réservations", async () => {
   it("budget épuisé : l'appel est bloqué avant l'envoi (coût maximal non couvert)", async () => {
     const u = await client("creer");
     setAvailable(u.id, 1000); // 0,001 €
-    await expect(text(u.id)).rejects.toThrow(/utilisée à 100 %/);
+    await expect(text(u.id)).rejects.toThrow(/budget restant.*minimum/);
     expect(llm.calls).toBe(0);
     expect(llm.calls).toBe(0);
     expect(reservations(u.id)).toHaveLength(0);
@@ -253,12 +254,16 @@ describe("budget IA : règle des 40 % / 50 % et réservations", async () => {
     expect(wallet(u.id).reserved).toBe(0);
     await text(u.id);
     expect(reservations(u.id).at(-1)!.status).toBe("settled");
-    // Même usage rejoué (même clé) : déjà compté, la nouvelle réservation est rendue sans second débit.
+    // Même action rejouée : réutiliser le résultat, pas une nouvelle requête masquée par la déduplication comptable.
     await text(u.id, "cle-reprise");
     const after = balance(u.id).available;
-    await text(u.id, "cle-reprise");
+    const requests = llm.calls, count = reservations(u.id).length;
+    const {withTrace}=await import("@/lib/ai/trace");
+    await withTrace({recoveryOnly:true},()=>text(u.id, "cle-reprise"));
+    await expect(withTrace({recoveryOnly:true},()=>text(u.id,"nouvelle-action-interdite-pendant-reprise"))).rejects.toThrow(/nécessite son devis/);
     expect(balance(u.id).available).toBe(after);
-    expect(reservations(u.id).at(-1)!.status).toBe("released");
+    expect(llm.calls).toBe(requests);
+    expect(reservations(u.id)).toHaveLength(count);
   });
 
   it("recharge / pack : budget distinct de 50 % du prix HT payé, une seule fois par paiement", async () => {
@@ -272,6 +277,32 @@ describe("budget IA : règle des 40 % / 50 % et réservations", async () => {
     creditPackBudget(u.id, 14.9, "ref-x", "test");
     creditPackBudget(u.id, 14.9, "ref-x", "test");
     expect(wallet(u.id).topup_balance).toBe(2 * Math.floor(0.5 * (14.9 / 1.2) * EUR));
+  });
+
+  it("doubles clics concurrents : une seule demande fournisseur et une réservation ; résultat repris après fin", async () => {
+    const u = await client("dominer");
+    llm.mode = "slow";
+    const first = text(u.id, "same-action-in-flight");
+    await vi.waitFor(() => expect(llm.calls).toBe(1));
+    await expect(text(u.id, "same-action-in-flight")).rejects.toThrow(/déjà été envoyée/);
+    expect(llm.calls).toBe(1);
+    llm.waiting.splice(0).forEach(resolve => resolve());
+    expect(await first).toBe("ok");
+    expect(await text(u.id, "same-action-in-flight")).toBe("ok");
+    expect(llm.calls).toBe(1);
+    expect(reservations(u.id)).toHaveLength(1);
+  });
+
+  it("modèle servi sans tarif : coût retenu et demande bloquée, jamais un usage gratuit", async () => {
+    const u = await client("dominer");
+    llm.mode = "unknownModel";
+    await expect(text(u.id, "unpriced-reply")).rejects.toThrow(/Tarif.*inconnu/);
+    const before = wallet(u.id).monthly_used;
+    expect(before).toBeGreaterThan(0);
+    expect(reservations(u.id)[0].status).toBe("uncertain");
+    await expect(text(u.id, "unpriced-reply")).rejects.toThrow(/déjà été envoyée/);
+    expect(llm.calls).toBe(1);
+    expect(wallet(u.id).monthly_used).toBe(before);
   });
 
   it("changement de forfait en cours de période : budget au prorata ; résiliation : plus d'IA", async () => {
@@ -458,8 +489,7 @@ describe("plafond fournisseur : coût maximal réellement borné", async () => {
     expect((err as { permanent?: boolean }).permanent).toBe(true);
     expect(llm.calls).toBe(1);
     expect(reservations(u.id).at(-1)!.status).toBe("uncertain");
-    // Erreur 5xx (panne, surcharge 529) : jamais relancée toute seule (ni ici, ni par la file de tâches) ; rien
-    // n'est facturé, la réservation est rendue.
+    // Un 5xx ne prouve pas l'absence de coût : retenue prudente et aucune relance automatique.
     for (const mode of ["status500", "status529"] as const) {
       llm.calls = 0;
       llm.mode = mode;
@@ -467,7 +497,7 @@ describe("plafond fournisseur : coût maximal réellement borné", async () => {
       expect(String((e5 as Error).message)).toMatch(/aucune relance automatique/);
       expect((e5 as { permanent?: boolean }).permanent).toBe(true);
       expect(llm.calls).toBe(1);
-      expect(reservations(u.id).at(-1)!.status).toBe("released");
+      expect(reservations(u.id).at(-1)!.status).toBe("uncertain");
     }
   }, 30_000);
 
