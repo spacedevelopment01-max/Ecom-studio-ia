@@ -50,7 +50,7 @@ export function evidenceNeeded(type: string, p: Project, copy: ShopCopy): string
         return 'confirmed_shipping_terms';
     return null;
 }
-export function bindClientCopy(spec: ThemeSpec, p: Project, copy: ShopCopy, type: string, design: Record<string, unknown>, pageRole: string, occurrence: number): {
+export function bindClientCopy(spec: ThemeSpec, p: Project, copy: ShopCopy, type: string, design: Record<string, unknown>, pageRole: string, occurrence: number, opening?: boolean): {
     section: SectionInstance;
     missing: string[];
 } {
@@ -62,8 +62,10 @@ export function bindClientCopy(spec: ThemeSpec, p: Project, copy: ShopCopy, type
     const services = p.business === 'services';
     const name = services ? p.brand?.name ?? p.name : p.product.name;
     const destination = services ? (p.services.contactMode === 'booking' && p.services.bookingUrl ? p.services.bookingUrl : '/pages/contact') : `/products/${spec.store.product.handle}`;
-    const cta = services ? t(p.services.contactMode === 'booking' ? 'Prendre rendez-vous' : p.services.contactMode === 'quote' ? 'Demander un devis' : 'Nous contacter', p.services.contactMode === 'booking' ? 'Book an appointment' : p.services.contactMode === 'quote' ? 'Request a quote' : 'Contact us') : genuine(copy.hero.cta) && sectionPurpose(type) === 'opening' ? copy.hero.cta : genuine(copy.cta.button) && sectionPurpose(type) === 'purchase' ? copy.cta.button : t(`Découvrir ${p.product.name}`, `Explore ${p.product.name}`);
-    const purpose = sectionPurpose(type), facts = p.product.facts.filter(f => f.status === 'confirmed' && genuine(f.value));
+    const cta = services ? t(p.services.contactMode === 'booking' ? 'Prendre rendez-vous' : p.services.contactMode === 'quote' ? 'Demander un devis' : 'Nous contacter', p.services.contactMode === 'booking' ? 'Book an appointment' : p.services.contactMode === 'quote' ? 'Request a quote' : 'Contact us') : genuine(copy.hero.cta) && (opening ?? sectionPurpose(type) === 'opening') ? copy.hero.cta : genuine(copy.cta.button) && sectionPurpose(type) === 'purchase' ? copy.cta.button : t(`Découvrir ${p.product.name}`, `Explore ${p.product.name}`);
+    // `opening` is decided by the page when known: the first home section opens the store whatever its type (fs-campaign for
+    // ONDE, cv-hotspots for MUSEAU CLUB); a later banner on the same page becomes a call to action.
+    const base = sectionPurpose(type), purpose = opening ? 'opening' : opening === false && base === 'opening' ? 'purchase' : base, facts = p.product.facts.filter(f => f.status === 'confirmed' && genuine(f.value));
     const values = (p.brand?.values ?? []).filter(v => genuine(v.title) && genuine(v.text));
     const sections = applySectionCopy(type, schema, ctx, { settings: { ...design } });
     let out = { ...sections.settings, ...design }; // Reference layout wins over library defaults; content is bound below.

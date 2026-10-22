@@ -13,14 +13,14 @@ const { demoProject } = await import('../../tests/demo-fixtures');
 const { sectionSchema } = await import('../../src/lib/theme/spec');
 const { getAsset } = await import('../../src/lib/library');
 const user = await createUser('reference-shapes@example.test', 'structural-extraction-only', 'Structural test');
-const result: any = { sourceCommit: '5eb672f9d3c70a3b025a4abd0f5353955ba5d62e', provenance: 'Validated compositions, design settings and block order only. No demo copy, logo, image or commercial data.', themes: {} };
+const result: any = { sourceCommit: '5dd5f63011c1e0a4ee2369fe1b2565c4e899f71e', provenance: 'Validated compositions, design settings and block order only. No demo copy, logo, image or commercial data.', themes: {} };
 // Schema types identify styling rather than content. Coordinates of hotspots are content, never design.
 const media = (values: any, type: string) => Object.entries(values ?? {}).filter(([k, v]) => /^(?:image|second|day_image|night_image|poster|video)[a-z_]*_asset$|^second_asset$/.test(k) && (!!v || !!values.media_role || !!values.second_role || /video/.test(k) && /stories|video/.test(type))).map(([field, v]) => { const a = typeof v === 'string' ? getAsset(currentSpec.files[v]) : null; return { field, role: /video/.test(field) ? 'video' : a?.role === 'logo' ? 'logo' : a?.role === 'detail' || /detail/.test(String(values.media_role ?? '')) ? 'detail' : a?.role === 'cutout' || a?.role === 'packshot' ? 'packshot' : /portfolio|study|case/.test(type) ? 'realization' : /hero|opening|banner/.test(type) ? 'opening' : /hotspot|ingredient|cards|finishes/.test(type) ? 'detail' : 'use', aspect: a?.width && a?.height ? +(a.width / a.height).toFixed(3) : null }; });
 let currentSpec: any;
 const visual = new Set(['select', 'range', 'checkbox', 'color_scheme']);
 const forbidden = /rating|price|discount|quantity|stock|shipping|guarantee|countdown|timer|days|hours|minutes|seconds|purchase_enabled|structured_data|^x$|^y$/;
 try {
-    for (const id of ['fraise', 'onde', 'orbe', 'rive', 'sillon', 'noctil', 'traverse'] as const) {
+    for (const id of ['fraise', 'onde', 'orbe', 'rive', 'sillon', 'noctil', 'traverse', 'heuren', 'alcove', 'museau-club', 'souple'] as const) {
         const { spec } = await demoProject(user.id, id);
         currentSpec = spec;
         const templates: any = {};

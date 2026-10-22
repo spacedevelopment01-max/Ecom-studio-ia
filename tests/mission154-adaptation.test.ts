@@ -43,8 +43,9 @@ import shapes from '@/lib/theme/reference-shapes.json';
 const fr = <T,>(f: () => T) => runWithLang({ ui: 'fr', content: 'fr' }, f);
 beforeEach(() => vi.stubGlobal('fetch', async () => { throw Error('No external fetch in mission154'); }));
 afterEach(() => vi.unstubAllGlobals());
-it.each(['fraise', 'onde', 'sillon', 'noctil', 'traverse', 'orbe', 'rive'] as const)('%s : composition de référence, propres médias et copie persistante, aucun contenu de démo', async (direction) => {
-    const f = await clientFixture({ services: direction === 'rive', catalog: direction === 'orbe' });
+// Intégration #159 / #161 : les onze thèmes de référence passent par la même adaptation client.
+it.each(['fraise', 'onde', 'sillon', 'noctil', 'traverse', 'orbe', 'rive', 'heuren', 'alcove', 'museau-club', 'souple'] as const)('%s : composition de référence, propres médias et copie persistante, aucun contenu de démo', async (direction) => {
+    const f = await clientFixture({ services: direction === 'rive', catalog: ['orbe', 'onde', 'heuren', 'alcove', 'souple'].includes(direction) });
     const before = loadProject(f.pid).brand;
     const built = await fr(() => buildShop(null, f.pid, { direction, useAi: false }));
     const current = currentTheme(f.pid)!;
@@ -96,7 +97,7 @@ it.each(['fraise', 'onde', 'sillon', 'noctil', 'traverse', 'orbe', 'rive'] as co
         if (a.kind === 'image')
             expect((await sharp(assetData(a)).metadata()).width).toBeGreaterThan(0);
     }
-    expect(JSON.stringify(s.store)).not.toMatch(/NOCTIL|TRAVERSE|SILLON|ONDE Audio|Fraise Gummies|Atelier Rive/);
+    expect(JSON.stringify(s.store)).not.toMatch(/NOCTIL|TRAVERSE|SILLON|ONDE Audio|Fraise Gummies|Atelier Rive|HEUREN|ALCÔVE|MUSEAU|SOUPLE/);
     expect(s.store.product.description_html).toContain(f.copy.product.description_html);
     expect(loadProject(f.pid).brand?.palette).toEqual(before?.palette);
     expect(s.settings.type_heading_font).toBe(before?.fonts.heading);

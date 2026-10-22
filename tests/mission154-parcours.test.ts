@@ -114,7 +114,7 @@ it('média acquis par le moteur simulé puis réutilisé : une seule génératio
 });
 it.each(['creer', 'vendre'] as const)('%s : baisse après mise en file et publicité directe restent refusées sans dépense', async (plan) => {
     const f = await clientFixture();
-    const job = enqueue({ userId: f.user.id, projectId: f.pid, type: 'shop.direction', payload: { projectId: f.pid, direction: 'noctil' } });
+    const job = enqueue({ userId: f.user.id, projectId: f.pid, type: 'shop.direction', payload: { projectId: f.pid, direction: 'traverse' } }); // TRAVERSE : Dominer seulement (NOCTIL s'ouvre dès Développer depuis l'intégration #159/#161).
     grantProjectPlan(f.pid, plan);
     const claimed = claimNext()!;
     expect(claimed.id).toBe(job.id);

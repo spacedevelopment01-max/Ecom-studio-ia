@@ -148,7 +148,10 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
         for (const sid of layout.order) {
             const sh = layout.sections[sid], n = occurrences.get(`${template}:${sh.type}`) ?? 0;
             occurrences.set(`${template}:${sh.type}`, n + 1);
-            const binding = bindClientCopy(spec, p, copy, sh.type, sh.settings, role, n);
+            // The first home section opens the store whatever its type (fs-campaign for ONDE, cv-hotspots for MUSEAU CLUB).
+            // On the home page only the first section opens; a later banner is a call to action, never a second H1.
+            const opening = role === 'home' ? sid === layout.order[0] : sectionPurpose(sh.type) === 'opening';
+            const binding = bindClientCopy(spec, p, copy, sh.type, sh.settings, role, n, role === 'home' ? opening : undefined);
             let section = binding.section;
             binding.missing.forEach(c => pageIssues(sid, c));
             const schema = sectionSchema(spec, sh.type);
@@ -263,7 +266,12 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
                 if (!provided)
                     pageIssues(sid, 'legal_information_required');
             }
-            if (sectionPurpose(sh.type) === 'opening' && plan.issues.some(i => i.page === template && i.section === sid && i.code === 'media_missing'))
+            // An opening is never a dated offer: campaign name, dates or conditions the client did not give stay empty.
+            if (opening)
+                for (const [k, v] of Object.entries(section.settings))
+                    if (typeof v === 'string' && /\[(?:À|A) (?:compléter|définir)|\[To (?:complete|define)/i.test(v))
+                        section.settings[k] = '';
+            if (opening && plan.issues.some(i => i.page === template && i.section === sid && i.code === 'media_missing'))
                 section.settings.media_role = t('Vue d’ouverture du projet à préparer', 'Project opening image to prepare');
             if (sh.type === 'page-title') {
                 section.settings = { ...section.settings, heading: spec.store.pages.find(x => `page.${x.template_suffix}` === template)?.title ?? labels[role] ?? p.name };
@@ -277,7 +285,7 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
             if (sh.type === 'main-product' && p.business === 'services')
                 pageIssues(sid, 'product_page_not_for_services');
             const blocked = plan.issues.some(i => i.page === template && i.section === sid && !/to_review$/.test(i.code));
-            section.disabled = blocked && sectionPurpose(sh.type) !== 'opening' && sh.type !== 'legal-page';
+            section.disabled = blocked && !opening && sh.type !== 'legal-page';
             sections[sid] = section;
             page.sections.push({ id: sid, type: sh.type, visible: !section.disabled, purpose: sectionPurpose(sh.type) });
         }
