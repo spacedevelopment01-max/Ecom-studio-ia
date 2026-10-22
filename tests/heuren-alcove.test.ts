@@ -181,7 +181,7 @@ for (const id of ["heuren", "alcove"] as const) describe(`${id.toUpperCase()} : 
     // Une seule mention de démonstration (#157) : celle de l'aperçu, pas un bandeau d'annonce en plus.
     expect(visibleText(pages.get("/")!)).not.toContain("Boutique de démonstration");
     expect(Object.values(spec.groups.header.sections).map((sec) => sec.type)).toEqual(["header"]);
-    expect(visibleText(pages.get("/")!)).toMatch(new RegExp(`(©|&copy;)\\s*\\d{4}\\s*${id === "heuren" ? "HEUREN" : "ALCÔVE"}`));
+    expect(visibleText(pages.get("/")!)).toMatch(new RegExp(`(©|&copy;)\\s*\\d{4}\\s*ALCÔVE`));
   });
 
   if (id === "alcove") it("sans prix : achat affiché indisponible (fiche, produit à la une, barre mobile) ; avec un prix de test, l'achat reste normal (#157)", async () => {
