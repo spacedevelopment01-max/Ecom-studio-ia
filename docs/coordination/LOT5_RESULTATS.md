@@ -2,6 +2,8 @@
 
 ## Statut au 22 octobre 2026
 
+**Consigne active : [complément Thomas #6340748281 de #165](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/165#issuecomment-6340748281). Accès uniquement, puis retour à Thomas ; aucun démarrage d’étape fonctionnelle.** Le protocole de recette globale préparé ci-dessous est remplacé par **un seul projet, une étape fonctionnelle à la fois, validation explicite de Thomas avant la suivante**. Thème, adaptation et copywriting font partie du futur parcours. Voir [accès Codespace et protocole actif](LOT5_ACCES_CODESPACE_ET_RECETTE_PAS_A_PAS.md). Les cas de généralisation ci-dessous sont des réserves pour après ce premier parcours, pas des projets à lancer ensemble.
+
 **Diagnostic préalable livré ; campagne réelle bloquée et non commencée.** La priorité [#6339502711](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/161#issuecomment-6339502711) impose de livrer l’accès et le routage avant les essais payants. Voir [LOT5_DIAGNOSTIC_ACCES_ROUTAGE.md](LOT5_DIAGNOSTIC_ACCES_ROUTAGE.md) et [preuves](../../reports/lot5/diagnostic/README.md).
 
 Base applicative inspectée : **b7829553631283e671d95811ea36b2fb82fe1fb2**, PR #162 non fusionnée. Branche Codex séparée `codex/lot5-diagnostic-acces-routage`. La configuration du Codex préexistant est distincte du Codespace client ; aucune donnée/configuration n’a été déplacée ou modifiée. **Commit du script et des tests vérifiés : `bcb76b4f267623157a9e32bb2268270eaea86c29`**, contenu figé avant les preuves ; les fichiers applicatifs restent ceux de la base. Les deux diagnostics natifs ont ensuite été exécutés depuis ce commit. Aucun changement dans `src/`, `worker/`, les thèmes, les compositions de Claude ou la configuration fournisseur.
@@ -52,7 +54,7 @@ git diff --check
 
 Deux premiers essais de vérification sont distingués : les tests du nouveau diagnostic ont d’abord révélé la création automatique d’un répertoire au chargement du module de stockage ; le script neutralise maintenant cet effet sans créer de fichier. Un premier lancement global dans le worktree partiel a été interrompu après erreurs d’assets/polices absents ; les fichiers versionnés `assets/` et `public/` ont ensuite été récupérés. Le lancement global suivant a rencontré des références `reports/`, `.claude/skills` et `.devcontainer` absentes du checkout partiel ; elles ont été restaurées, et les groupes concernés rejoués séparément. Aucun code applicatif n’a été modifié pour masquer ces échecs de préparation du checkout. Ces essais ne sont pas présentés comme verts et n’ont lancé aucune génération fournisseur.
 
-## Matrice préparatoire de recette réelle — pas d’exécution autorisée à ce stade
+## Ancienne matrice préparatoire — réserves après validation du parcours unique, aucune exécution autorisée
 
 Tous les projets seront fictifs et isolés, sans publication. Les médias sources devront être libres d’usage et inspectés. Pas de personne par défaut ; UGC avec personne uniquement après consentement approprié. Les cas de réserve ne doivent pas servir à écrire des règles conditionnées au nom de démonstration.
 
