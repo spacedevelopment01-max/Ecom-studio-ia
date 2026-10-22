@@ -48,6 +48,18 @@ describe("démos intégrales des thèmes", () => {
     expect(themeDemoStatuses().map((x) => x.id)).toEqual([...DEMO_THEMES]);
   });
 
+  it("démo préparée sans ses visuels (kit privé absent) : jamais servie comme prête, sans préparation en boucle", () => {
+    const rive = path.join(dir, "rive");
+    fs.mkdirSync(rive, { recursive: true });
+    fs.writeFileSync(path.join(rive, "accueil.html"), "<!doctype html><title>Atelier Rive</title>");
+    fs.writeFileSync(path.join(rive, "pages.json"), JSON.stringify({ title: "Atelier Rive", services: true, missing: ["rive-01-salon.webp", "rive-02-cuisine.webp"], pages: [{ file: "accueil.html", label: "Accueil" }] }));
+    fs.writeFileSync(path.join(rive, "demo.json"), JSON.stringify({ version: "v2", date: new Date(Date.now() + 60_000).toISOString() }));
+    const s = themeDemoStatus("rive");
+    expect(s).toMatchObject({ ready: false, stale: false, missing: ["rive-01-salon.webp", "rive-02-cuisine.webp"] });
+    // Démo périmée ou kit copié depuis : reprise ; sinon rien (le kit n'a pas bougé depuis la préparation).
+    expect(themeDemoStatus("sillon").missing).toBeUndefined();
+  });
+
   it("fichiers : seulement dans le dossier de la démo, types connus", () => {
     expect(themeDemoFile("sillon", "")!.body.toString()).toContain("SILLON");
     expect(themeDemoFile("sillon", "assets/theme.css")!.type).toMatch(/^text\/css/);
