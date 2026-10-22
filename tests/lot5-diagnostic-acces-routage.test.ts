@@ -5,6 +5,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import Database from 'better-sqlite3';
+import { inspectPublicNetwork } from '../scripts/diagnostic-acces-routage';
 
 // Only isolated, fabricated settings. Never read the developer's studio configuration.
 const roots: string[] = [];
@@ -117,5 +118,39 @@ describe('Lot 5: native access diagnostic without generation or secret disclosur
     expect(db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all()).toEqual([{name:'settings'}]);
     db.close();
     expect(fs.readdirSync(path.join(root,'data'))).toEqual(['studio.db']);
+  });
+  it('runs a downloaded temporary script against the existing checkout with both independent loaders',()=>{
+    const root=fixture([['provider.openai.apiKey',encrypted(fake),1]],{APP_SECRET:master});
+    const temp=path.join(root,'downloaded-diagnostic.mts');
+    fs.copyFileSync(script,temp);
+    const env:NodeJS.ProcessEnv={...process.env,NODE_ENV:'production'};
+    for(const k of Object.keys(env))if(/^(PROVIDER_|AI_|APP_SECRET$|.*API_KEY$|FAL_KEY$|DATA_DIR$|DATABASE_FILE$|KOKORO|__NEXT_PROCESSED_ENV$)/.test(k))delete (env as any)[k];
+    const before=fs.readFileSync(path.join(root,'data/studio.db'));
+    const run=spawnSync(process.execPath,['--import','tsx',temp,'--code-root',path.resolve('.'),'--config-root',root,'--both-loaders'],{cwd:path.resolve('.'),env,encoding:'utf8',timeout:60000,maxBuffer:1024*1024});
+    expect(run.status).toBe(0);expect(run.stderr.length).toBe(0);
+    const result=JSON.parse(run.stdout);
+    expect(result).toMatchObject({readOnly:true,realGenerationCalls:0,configurationChanged:false,servedVersion:'not_probed',network:[]});
+    expect(result.loaders.map((r:any)=>r.configurationLoader)).toEqual(['next','worker']);
+    for(const r of result.loaders){expect(r.nativeResolution.available).toBe(true);expect(provider(r).status).toBe('accessible');}
+    expect(run.stdout.includes(fake)).toBe(false);expect(run.stdout.includes(master)).toBe(false);
+    expect(fs.readFileSync(path.join(root,'data/studio.db')).equals(before)).toBe(true);
+    expect(fs.readdirSync(path.join(root,'data'))).toEqual(['studio.db']);
+  });
+  it('reports a missing native checkout without disclosing child errors or treating it as verified access',()=>{
+    const root=fixture([],{},false);
+    const run=spawnSync(process.execPath,['--import','tsx',script,'--code-root',root,'--config-root',root,'--both-loaders'],{cwd:path.resolve('.'),env:process.env,encoding:'utf8',timeout:60000,maxBuffer:1024*1024});
+    const result=JSON.parse(run.stdout);
+    expect(result.loaders.every((r:any)=>r.error==='CHILD_INSPECTION_FAILED_NO_RAW_ERROR')).toBe(true);
+    expect(result.servedVersion).toBe('not_probed');
+  });
+  it.each([
+    ['000 403',56,'PROXY_CONNECT_REFUSED'],['401 200',0,'HTTP_RESPONSE_RECEIVED'],['403 000',0,'HTTP_RESPONSE_RECEIVED'],['200 000',0,'HTTP_RESPONSE_RECEIVED'],['000 000',28,'NETWORK_FAILURE'],['private-free-error',1,'NETWORK_FAILURE'],
+  ])('classifies public network metadata %s without claiming authentication',(stdout,status,network)=>{
+    const calls:any[]=[];
+    const rows=inspectPublicNetwork(((...args:any[])=>{calls.push(args);return {stdout,stderr:fake,status};}) as any);
+    expect(rows).toHaveLength(7);
+    expect(rows.every(r=>r.network===network&&r.authenticated===false&&r.authentication==='not_tested'&&r.modelAuthorization==='not_tested')).toBe(true);
+    expect(JSON.stringify(rows).includes(fake)).toBe(false);
+    for(const [command,args] of calls){expect(command).toBe('curl');expect(args[0]).toBe('--disable');expect(args).toContain('--head');expect(args).not.toContain('--location');expect(args.join(' ')).not.toMatch(/authorization|api.key|--insecure|--noproxy/i);}
   });
 });

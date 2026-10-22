@@ -6,16 +6,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {createRequire} from 'node:module';
 import {fileURLToPath,pathToFileURL} from 'node:url';
-import {execFileSync} from 'node:child_process';
+import {execFileSync,spawnSync} from 'node:child_process';
 
-const codeRoot=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const bundledCodeRoot=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const providers=['anthropic','openai','google','fal','alibaba','pexels','pixabay'] as const;
 const aliases:Record<string,string[]>={anthropic:['ANTHROPIC_API_KEY'],openai:['OPENAI_API_KEY'],google:['GOOGLE_API_KEY','GEMINI_API_KEY'],fal:['FAL_KEY','FAL_API_KEY'],alibaba:['DASHSCOPE_API_KEY','ALIBABA_MODEL_STUDIO_API_KEY'],pexels:['PEXELS_API_KEY'],pixabay:['PIXABAY_API_KEY']};
 const safeGit=(root:string)=>{try{const s=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim();return /^[a-f0-9]{40}$/.test(s)?s:null;}catch{return null;}};
 const present=(v:unknown)=>typeof v==='string'&&!!v.trim();
 const arg=(name:string)=>{const i=process.argv.indexOf(name);return i<0?null:process.argv[i+1]??null;};
 
-export async function inspectAccessAndRouting(configRoot:string,loader:'worker'|'next'='worker'){
+export async function inspectAccessAndRouting(configRoot:string,loader:'worker'|'next'='worker',codeRoot=bundledCodeRoot){
  const require=createRequire(path.join(codeRoot,'package.json'));
  const {loadEnvConfig}=require('@next/env');
  const mode=process.env.NODE_ENV==='production'?'production':process.env.NODE_ENV==='test'?'test':'development';
@@ -102,7 +102,30 @@ export async function inspectAccessAndRouting(configRoot:string,loader:'worker'|
  return result;
 }
 
+/** Public HEAD requests only: preserve curl's inherited proxy/TLS policy, discard bodies and errors.
+ * This deliberately cannot authenticate or prove model availability. No secret enters curl's arguments.
+ */
+export function inspectPublicNetwork(run:typeof spawnSync=spawnSync){
+ const endpoints:Record<string,string>={anthropic:'https://api.anthropic.com/v1/models',openai:'https://api.openai.com/v1/models',google:'https://generativelanguage.googleapis.com/v1beta/models',alibaba:'https://dashscope-intl.aliyuncs.com/api/v1/models',fal:'https://queue.fal.run/',pexels:'https://api.pexels.com/v1/',pixabay:'https://pixabay.com/api/'};
+ return Object.entries(endpoints).map(([provider,url])=>{
+  const r=run('curl',['--disable','--silent','--head','--proto','=https','--connect-timeout','4','--max-time','6','--output','/dev/null','--write-out','%{http_code} %{http_connect}',url],{encoding:'utf8',timeout:7000,maxBuffer:1024});
+  const m=/^(\d{3}) (\d{3})$/.exec(String(r.stdout??'').trim());
+  const http=m?Number(m[1]):null,proxy=m?Number(m[2]):null;
+  return {provider,endpointBasis:provider==='alibaba'?'PUBLIC_INTL_ONLY_NOT_CUSTOM_OR_OTHER_REGION':'PUBLIC_PROVIDER_HOST',method:'HEAD',authenticated:false,httpStatus:http||null,proxyStatus:proxy||null,network:proxy===403&&http===0?'PROXY_CONNECT_REFUSED':http&&http>=100?'HTTP_RESPONSE_RECEIVED':r.error?'CHECK_UNAVAILABLE':'NETWORK_FAILURE',authentication:'not_tested',modelAuthorization:'not_tested'};
+ });
+}
+
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const root=path.resolve(arg('--config-root')??process.cwd());
- try{console.log(JSON.stringify(await inspectAccessAndRouting(root,arg('--loader')==='next'?'next':'worker'),null,2));}catch{console.log(JSON.stringify({schema:'studio-access-routing-diagnostic-1',readOnly:true,realProviderCalls:0,error:'INSPECTION_FAILED_NO_RAW_ERROR'}));process.exitCode=1;}
+ const codeRoot=path.resolve(arg('--code-root')??bundledCodeRoot);
+ try{
+  if(process.argv.includes('--both-loaders')){
+   // Fresh processes: Next and worker may load different env files and cache native modules.
+   const loaders=['next','worker'].map(loader=>{
+    const r=spawnSync(process.execPath,[...process.execArgv,fileURLToPath(import.meta.url),'--config-root',root,'--code-root',codeRoot,'--loader',loader],{cwd:codeRoot,env:process.env,encoding:'utf8',timeout:45000,maxBuffer:1024*1024});
+    try{if(r.status!==0||r.stderr)return {configurationLoader:loader,error:'CHILD_INSPECTION_FAILED_NO_RAW_ERROR'};return JSON.parse(r.stdout);}catch{return {configurationLoader:loader,error:'CHILD_INSPECTION_FAILED_NO_RAW_ERROR'};}
+   });
+   console.log(JSON.stringify({schema:'studio-codespace-access-diagnostic-1',readOnly:true,generationOrRetry:false,configurationChanged:false,realGenerationCalls:0,environment:'TERMINAL_EXECUTION_NOT_REMOTE_CODEX',codeCommit:safeGit(codeRoot),configurationCheckoutCommit:safeGit(root),servedVersion:'not_probed',loaders,network:process.argv.includes('--network')?inspectPublicNetwork():[],authentication:'not_tested',modelAuthorization:'not_tested'},null,2));
+  }else console.log(JSON.stringify(await inspectAccessAndRouting(root,arg('--loader')==='next'?'next':'worker',codeRoot),null,2));
+ }catch{console.log(JSON.stringify({schema:'studio-access-routing-diagnostic-1',readOnly:true,realProviderCalls:0,error:'INSPECTION_FAILED_NO_RAW_ERROR'}));process.exitCode=1;}
 }
