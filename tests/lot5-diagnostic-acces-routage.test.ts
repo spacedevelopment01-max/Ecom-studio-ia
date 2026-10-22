@@ -153,4 +153,43 @@ describe('Lot 5: native access diagnostic without generation or secret disclosur
     expect(JSON.stringify(rows).includes(fake)).toBe(false);
     for(const [command,args] of calls){expect(command).toBe('curl');expect(args[0]).toBe('--disable');expect(args).toContain('--head');expect(args).not.toContain('--location');expect(args.join(' ')).not.toMatch(/authorization|api.key|--insecure|--noproxy/i);}
   });
+  it.each([false,true])('runs the exact temporary CLI authenticated path with five fake transports, independent loaders and unchanged data (summary=%s)',summary=>{
+    const root=fixture(['anthropic','openai','google','fal','alibaba'].map(p=>[`provider.${p}.apiKey`,encrypted(fake),1] as [string,string,number]),{APP_SECRET:master});
+    const temp=path.join(root,'downloaded.mts');fs.copyFileSync(script,temp);
+    const bin=path.join(root,'bin');fs.mkdirSync(bin);
+    fs.writeFileSync(path.join(bin,'curl'),`#!/usr/bin/env python3\nimport json,sys\nprivate_input=sys.stdin.read()\nu=sys.argv[-1]\nif 'api.anthropic.com' in u: j={'data':[{'id':'claude-opus-5-5','type':'model'}],'has_more':False}\nelif 'api.openai.com' in u: j={'object':'list','data':[{'id':'gpt-image-2.5-sunburst','object':'model'}]}\nelif 'googleapis.com' in u: j={'models':[{'name':'models/gemini-3.1-flash-image'}]}\nelif 'aliyuncs.com' in u: j={'success':True,'code':None,'output':{'models':[{'model':'qwen-image-3.0-pro'}],'total':1,'page_no':1}}\nelse: j={'models':[{'endpoint_id':'fal-ai/kling-video/v3/standard/image-to-video','metadata':{'is_favorited':False}}],'has_more':False}\nprint(json.dumps(j)+'\\nECOM_METADATA 200 000',end='')\n`,{mode:0o700});
+    const env:NodeJS.ProcessEnv={...process.env,NODE_ENV:'production',PATH:bin+path.delimiter+process.env.PATH};
+    for(const k of Object.keys(env))if(/^(PROVIDER_|AI_|APP_SECRET$|.*API_KEY$|FAL_KEY$|DATA_DIR$|DATABASE_FILE$|KOKORO|__NEXT_PROCESSED_ENV$)/.test(k))delete (env as any)[k];
+    const before=fs.readFileSync(path.join(root,'data/studio.db'));
+    const run=spawnSync(process.execPath,['--import','tsx',temp,'--code-root',path.resolve('.'),'--config-root',root,'--both-loaders','--authenticate',...(summary?['--auth-summary']:[])],{cwd:path.resolve('.'),env,encoding:'utf8',timeout:60000,maxBuffer:1024*1024});
+    expect(run.status).toBe(0);expect(run.stderr.length).toBe(0);
+    const result=JSON.parse(run.stdout),worker=result.loaders.find((r:any)=>r.configurationLoader==='worker'),next=result.loaders.find((r:any)=>r.configurationLoader==='next');
+    expect(result.metadataReadAttempts).toBe(5);expect(result.realGenerationCalls).toBe(0);expect(result.authenticatedConfigurationLoader).toBe('worker');
+    const checks=summary?result.authenticationChecks:worker.authenticationChecks;
+    expect(checks).toHaveLength(5);expect(checks.every((r:any)=>r.authentication.startsWith('accepted_'))).toBe(true);
+    expect(worker.masterSecret.validity).toBe('CURRENT_MASTER_AUTHENTICATED_EXISTING_PROVIDER_RECORD');
+    expect(next.authenticationChecks).toBeUndefined();if(!summary)expect(next.providers.every((r:any)=>r.authentication==='not_tested')).toBe(true);
+    expect(checks.every((r:any)=>r.generationTested===false)).toBe(true);
+    expect(run.stdout.includes(fake)).toBe(false);expect(run.stdout.includes(master)).toBe(false);expect(run.stdout.includes(fake.slice(0,4))).toBe(false);expect(run.stdout.includes(fake.slice(-4))).toBe(false);
+    expect(fs.readFileSync(path.join(root,'data/studio.db')).equals(before)).toBe(true);expect(fs.readdirSync(path.join(root,'data'))).toEqual(['studio.db']);
+  });
+
+  it('keeps native disable, gateway and endpoint/region barriers before every authenticated request',()=>{
+    const root=fixture([
+      ['provider.openai.apiKey',encrypted(fake),1],['provider.openai.disabled','1',0],
+      ['provider.alibaba.apiKey',encrypted(fake),1],['provider.alibaba.region','us',0],['provider.fal.disabled','1',0],
+    ],{APP_SECRET:master});
+    const driver=path.join(root,'inspect-barriers.mts');
+    fs.writeFileSync(driver,`import {inspectAccessAndRouting} from ${JSON.stringify(script)};\nconst r=await inspectAccessAndRouting(${JSON.stringify(root)},'worker',${JSON.stringify(path.resolve('.'))},{authenticate:true,catalogReader(){throw Error('MUST_NOT_SEND');}});console.log(JSON.stringify(r));`);
+    const env:NodeJS.ProcessEnv={...process.env,NODE_ENV:'production'};
+    for(const k of Object.keys(env))if(/^(PROVIDER_|AI_|APP_SECRET$|.*API_KEY$|FAL_KEY$|DATA_DIR$|DATABASE_FILE$|KOKORO|__NEXT_PROCESSED_ENV$)/.test(k))delete (env as any)[k];
+    Object.assign(env,{ANTHROPIC_API_KEY:fake,ANTHROPIC_BASE_URL:'https://untrusted.example.test',AI_GATEWAY_PROVIDERS:'google',FAL_KEY:fake});
+    const run=spawnSync(process.execPath,['--import','tsx',driver],{cwd:path.resolve('.'),env,encoding:'utf8',timeout:30000,maxBuffer:1024*1024});
+    expect(run.status).toBe(0);expect(run.stderr.length).toBe(0);const result=JSON.parse(run.stdout);
+    expect(result.nativeResolution.available).toBe(true);expect(result.metadataReadAttempts).toBe(0);
+    const codes=Object.fromEntries(result.authenticationChecks.map((r:any)=>[r.provider,r.failureCode]));
+    expect(codes).toEqual({anthropic:'CUSTOM_ENDPOINT_NOT_TESTED',openai:'NATIVE_ACTIVE_KEY_UNAVAILABLE',google:'NATIVE_ACTIVE_KEY_UNAVAILABLE',alibaba:'DOCUMENTED_METADATA_ENDPOINT_NOT_MATCHED',fal:'NATIVE_ACTIVE_KEY_UNAVAILABLE'});
+    expect(run.stdout.includes(fake)).toBe(false);expect(run.stdout.includes(master)).toBe(false);
+  });
+
 });
