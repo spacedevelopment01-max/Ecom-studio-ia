@@ -39,8 +39,8 @@ export const POST = handle(async (req: Request) => {
     const r = await callCheckout(user, booking.id);
     return ok({ booking: booking.id, confirmed: false, url: r.url });
   } catch (e) {
-    // Paiement impossible à ouvrir : le créneau est libéré tout de suite.
-    run("UPDATE call_bookings SET status = 'canceled', canceled_at = ?, updated_at = ? WHERE id = ? AND status = 'pending_payment'", Date.now(), Date.now(), booking.id);
+    // Réponse incertaine : conserver la même réservation et sa clé Checkout pour une reprise sans nouvel achat.
+    if(!(e instanceof HttpError)||![409,502,503].includes(e.status))run("UPDATE call_bookings SET status = 'canceled', canceled_at = ?, updated_at = ? WHERE id = ? AND status = 'pending_payment'", Date.now(), Date.now(), booking.id);
     throw e;
   }
 });

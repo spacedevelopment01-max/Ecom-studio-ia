@@ -1,0 +1,36 @@
+ RUN  v5.0.3 /tmp/ecs-lot8-169
+
+ ❯ tests/logo-identity.test.ts (0 test)
+ ❯ tests/serveur-dev.test.ts (5 tests | 1 failed) 67ms
+   ❯ serveur de développement (5)
+     × scripts : « dev » passe par le lanceur ; site et worker s'arrêtent ensemble ; routes gardées 30 min 6ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/logo-identity.test.ts [ tests/logo-identity.test.ts ]
+Error: ENOENT: no such file or directory, scandir 'reports/openai-real-brand-test'
+ ❯ tests/logo-identity.test.ts:14:48
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/serveur-dev.test.ts > serveur de développement > scripts : « dev » passe par le lanceur ; site et worker s'arrêtent ensemble ; routes gardées 30 min
+Error: ENOENT: no such file or directory, open '.devcontainer/devcontainer.json'
+ ❯ tests/serveur-dev.test.ts:99:26
+     97|     expect(studio).not.toMatch(/concurrently/);
+     98|     expect(maj).toMatch(/"studio"/);
+     99|     expect(JSON.parse(fs.readFileSync(".devcontainer/devcontainer.json…
+       |                          ^
+    100|     expect(dev).toMatch(/next dev -p \$\{PORT\}/);
+    101|     expect(dev).toMatch(/node_modules\/\.bin/);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 118 passed (120)
+      Tests  1 failed | 1037 passed (1038)
+   Start at  08:39:04
+   Duration  349.52s (tests 75%, import 23%, transform 1%)

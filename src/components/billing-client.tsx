@@ -11,7 +11,7 @@ import { Gauge, Lock, Sparkles, X } from "lucide-react";
 import { cx, formatDate, useApi } from "./ui";
 import { useLang, useT } from "./i18n";
 import { intlLocale, type Lang } from "@/lib/i18n";
-import { PACKS, PLANS, type BillingView, type PackId, type QuotaKey } from "@/lib/plans";
+import { PACKS, PACKS_FOR_SALE, PLANS, type BillingView, type PackId, type QuotaKey } from "@/lib/plans";
 import { budgetPctLabel, formatPctShort, pctOfBudget } from "@/lib/budget-pct";
 
 /** Prix en euros : « 49,90 € » / « €49.90 » (décimales seulement si nécessaires). */
@@ -196,7 +196,8 @@ export function QuotaBanner({ billing, className }: { billing: BillingView | nul
   const empty = (Object.keys(billing.quotas) as QuotaKey[]).filter((k) => plan.quotas[k] > 0 && billing.quotas[k].left <= 0 && !hidden.includes(k));
   if (!empty.length) return null;
   const k = empty[0];
-  const pack = PACK_FOR_QUOTA[k];
+  const candidate=PACK_FOR_QUOTA[k];
+  const pack = candidate&&PACKS_FOR_SALE.includes(candidate)?candidate:null;
   const date = formatDate(billing.periodEnd, { day: "numeric", month: "long" });
   const close = () => {
     const next = [...hidden, k];

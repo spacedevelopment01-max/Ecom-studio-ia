@@ -1,0 +1,140 @@
+{
+  "schema": "lot8-checks-1",
+  "codeCommit": "33ee10f9609456b773ae56c69993b7264f542af3",
+  "baseCommit": "0a6aa1dd6dfa5932a5e42e027cef2a3335e74679",
+  "fullSuitePartitions": [
+    {
+      "partition": 1,
+      "tests": "1 failed | 1037 passed (1038)",
+      "files": "2 failed | 118 passed (120)"
+    },
+    {
+      "partition": 2,
+      "tests": "941 passed | 11 skipped (952)",
+      "files": "119 passed (119)"
+    },
+    {
+      "partition": 3,
+      "tests": "924 passed | 11 skipped (935)",
+      "files": "119 passed (119)"
+    }
+  ],
+  "initialMissingFixtureFailures": [
+    "reports/openai-real-brand-test",
+    " .devcontainer/devcontainer.json"
+  ],
+  "missingFixtureFilesRechecked": {
+    "files": 2,
+    "tests": 8,
+    "exitCode": 0
+  },
+  "globalAfterRecheck": {
+    "files": 358,
+    "passed": 2906,
+    "ignored": 22,
+    "failed": 0
+  },
+  "finalTargeted": {
+    "files": 8,
+    "passed": 144,
+    "exitCode": 0,
+    "overlapsGlobalSuite": true
+  },
+  "typesExitCode": 0,
+  "productionBuildExitCode": 0,
+  "realProviderCalls": 0,
+  "logs": [
+    {
+      "file": "verification-shard-1-initial.log",
+      "sha256": "32ff79689c786421e86a8bbec0266b45ca618a12e965051dec7517059210b08f",
+      "originalConsoleSha256": "c45d38405994a199348efa42cf100c84f2ae6b894f3c677527624d6f95a998a3"
+    },
+    {
+      "file": "verification-shard-1-reprise.log",
+      "sha256": "83317282916f98c08d1d3a222f77c1844df80e6cfb82a511d26264704129008b",
+      "originalConsoleSha256": "16199ecdc47a09f25f104f0e57dd91bf4a2b992869367121b6bfed7c163398b2"
+    },
+    {
+      "file": "verification-shard-2.log",
+      "sha256": "6f953f0dbd2a8089f72164a3dfdad9f22e6be85b52c32fccc86caab8f92f1e03",
+      "originalConsoleSha256": "971d5f2653662cdac173e9e74f7f3ab225d9f55f95cd8e60e641700f359346cf"
+    },
+    {
+      "file": "verification-shard-3.log",
+      "sha256": "a50c6d40345b6f62f415ae5069fa297b50857ec96eb7096805f33c67ff9becef",
+      "originalConsoleSha256": "632622c19a4f2c588cbf9f1b5e10fbfb0f340b314b2a1053c75f12da1dc4a439"
+    },
+    {
+      "file": "verification-ciblee-finale.log",
+      "sha256": "ba7aed754a9d8f166d92d2a5fe64aaefbd1e0fdf6d3885581b3dd0cfc42a4584",
+      "originalConsoleSha256": "f08442aec9742f5ee403c8eab5a46939730a74ffa0ab33a455315c55810762c7"
+    },
+    {
+      "file": "typescript.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalConsoleSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "compilation.log",
+      "sha256": "ac44308c7946ffcd6666a6afb7edc3976711359c123a437749d455bffd8a9ce7",
+      "originalConsoleSha256": "7ae7575eae6a4ae0dea4b8ce3600c0c74d15a3b8caef15de4391f0f50c91a63c"
+    },
+    {
+      "file": "reprise-historique.log",
+      "sha256": "6c1c69705eb97ce04447b08a18f68fe27b87739a1a59f970c0591dc11d0e2ae6",
+      "originalConsoleSha256": "95e6ae9f136afadb51a30bbb3b6c1f1a9110dedbdf27f1508f4a403e1184cc48"
+    }
+  ],
+  "sourceSha256": {
+    "scripts/lot8/migration-proof.mts": "8ad7e14d42067c3a4af82e359b3e00b093e5c5e96f1f7096936a4ed3b4e46fd9",
+    "scripts/lot8/reproduce-baseline.mts": "d1a9913871eff8346d34495a5a36f8a276fb79664ec5b0513ffd969f2fae89ad",
+    "scripts/lot8/studio-proof.mts": "f4a79fb6e281b3bf8ed02a367121748da280442fafa5e33b1c5ef7ea65250b9d",
+    "src/app/api/auth/forgot/route.ts": "e2a270c694dc675d08517f851c1f62dbd0997625837740b67ff706c4f5c78439",
+    "src/app/api/billing/invoices/route.ts": "8ae121530469841ade8dbbc088197b3a8c435cc265eebc3b39f4f75ee557bbd0",
+    "src/app/api/billing/reconcile/route.ts": "35346934bb960941308d1c7d13bc1cedccdbc4e7135e4230f59e08b4c40e7073",
+    "src/app/api/billing/route.ts": "3ab881582ce67a378884a0fe73b84e7f20c9a6cc33bbe80d2e0f06119ca6aa92",
+    "src/app/api/calls/[id]/route.ts": "67a218cd988a46e40f0912af584f4fff6b8bc63779a73908cb40e7178af1b623",
+    "src/app/api/calls/route.ts": "f7934319334f00bd0bf2e625895fc0a166628fc50b8441bd1f8d4cd92434e364",
+    "src/app/api/projects/[id]/subscription/route.ts": "d545329d566407d34606d28b2b1e1e8ec1ef57ebd4f71915e87aeb52ff7402a5",
+    "src/app/api/projects/[id]/videos/bank/route.ts": "587312cefc6a22f9511340f49c6c62f7149b3ed210c09ebf8409e9fb16d35f35",
+    "src/app/api/projects/route.ts": "558b195c98255d77974cecc41a6f43ab08f9c6da29eb8ee7ec1989a47128cdd6",
+    "src/app/api/support/route.ts": "3521cab03ad4c74d7f32aa0529489734528cbf9ffbf23eb73fe491ebe866f0f9",
+    "src/app/contact/page.tsx": "25d3cdb36f1f19a94a13eddd1f574f9a0dc63384af6d8e5706265826b7bc58a7",
+    "src/components/account.tsx": "e94686e212c31ffa5a9d0b1d174bf43e32278c6f3ffef1dc9d6460cf272b5438",
+    "src/components/billing-client.tsx": "578ca119fc42c25ce40b6f32e4ce715ba043ec268aee6fb6570232da0988cb03",
+    "src/components/payment-status.tsx": "27665020005a06a47d3123a3dc099bebe90741ac5073fbd7361f0e8103fbd97b",
+    "src/components/studio/ad-campaigns.tsx": "792f6b8de22165b7e405eb93968488044cfa810381dd1f11799d7ca2cb050d0a",
+    "src/components/studio/calls.tsx": "53ed3aff0677de4fd192b401babcf2a862da229f2e6f0f5f361fdacd31f74eae",
+    "src/components/studio/home.tsx": "f7ac587340c8a9fe223e6ad26d226e21389fdc6192ff3a7133a1fa6254204c86",
+    "src/components/studio/new-subscription.tsx": "168cea1f54dd55e738652771fd8d584207d56a059e3c0edf674262fcbc3e04d7",
+    "src/components/studio/project-subscription.tsx": "494616a8c1dd175ed67dcdbb780e459a70664163c417750fdc081b002eda49c5",
+    "src/components/studio/tab-publicites.tsx": "61e2ae0bbe92d4416edb355ae968a9dd6dac08226656e4c6150959c83b1c47b0",
+    "src/components/studio/tab-videos.tsx": "0025c1e1696cf99cb0d09f054c3c9b2c21d850b77daf1c7b758bc9c769afc5ef",
+    "src/components/support-panel.tsx": "6d5b2e029c9d2f8b5474f72bc7e75cb98c52fa73844bd233d935f18717d1ac71",
+    "src/lib/appointments.ts": "b3da4d077773c43599c5dbbf34f3ed54ae46059f025d3f21dee0f74fd178f772",
+    "src/lib/billing-mutations.ts": "673252f1bec11f31e2d352f46318442acf3eff5fc31b51f39094da18af126180",
+    "src/lib/checkout-intents.ts": "22f878cefa2c627dd7f8e65e5c5d099fc77d8805ae80b7ebf6e03127a6d1df8f",
+    "src/lib/db.ts": "33bc91a26d6177703ce7bae0760262647975c6d4ecfa5121d0518a6b1f6826be",
+    "src/lib/job-entitlements.ts": "7c61cf19b89345b0d13ad2175557e05ab32bc240500e8fb1be72f17832b1be68",
+    "src/lib/payment-reconciliation.ts": "b1632c8931e6e6fb89d72bbbe7a5312760bfafb343bde6ea521c3e9040719cab",
+    "src/lib/payments-v2.ts": "00a93eb6c779754ba30468c79131ba575ab134491a047a5f19b7e21b97b6cc53",
+    "src/lib/payments.ts": "f8ec20f9be09726a08072c01dc20d4837653c26b7da94d7f23bee33e6c84378c",
+    "src/lib/plans.ts": "42a5cffc766827bc8c34976991575d4708a3ad00da38636fcea41f38bc430136",
+    "src/lib/support.ts": "c268b11dab5d19b7c37c6247e447d6c81c97c9a6cd9fb5ad6401d9c179f6f42f",
+    "tests/database-file-setup.ts": "9d35de48504b27f6b1c86268dac743029195baa4c2795b2923b16f6b49cf6201",
+    "tests/database-global-setup.ts": "a6c65d8c6d46a76868ffa08bf03a71fb792e236f17223b7f78b3d7e31378cdb9",
+    "tests/mission169-assistance.test.ts": "2eb1a5a0d81c6e0d9907ab207397cecfdedb084be93f07a0ad762e74fd687859",
+    "tests/mission169-payments.test.ts": "a1778c2ca262354392bcd54d6e8472777ed551ca59bd5d0c2072fd3788f02e49",
+    "tests/mission169-stripe-fixture.ts": "f7bbcfcaf5a332bd20ff145baf63db4589f748d99a96cab72cf150eedf3f3740",
+    "vitest.config.ts": "85ee502b1c9f5a81d2e11c6989d0b5226bb56561b857a986c6da31067c2d4004"
+  },
+  "runtimeHarnessSha256": "7567e4edfd02024cf95cdb692e6db2585c816fd68a4491bdf081aa51a50acc8b",
+  "runtimeHarnessNote": "Final selector and native-button refinements delivered with evidence; application src unchanged from compiled codeCommit.",
+  "evidenceTypecheckExitCode": 0,
+  "evidenceChangesOnly": [
+    "scripts/lot8/studio-proof.mts",
+    "docs/coordination/LOT8_RESULTATS.md",
+    "reports/lot8"
+  ],
+  "logNormalization": "Trailing spaces, terminal carriage returns and blank leading/trailing lines removed; statuses, errors and durations preserved. Original console fingerprints retained."
+}

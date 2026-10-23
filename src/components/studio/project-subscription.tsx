@@ -13,6 +13,7 @@ import { PLAN_IDS, PLANS, TOPUP_PRICE_EUR, type Billing, type PlanId } from "@/l
 export type ProjectSub = {
   plan: PlanId;
   billing: Billing;
+  priceCents?: number | null;
   status: string;
   periodEnd: number | null;
   cancelAtPeriodEnd: boolean;
@@ -75,7 +76,7 @@ export function ProjectSubscriptionDialog({ projectId, name, open, onClose, onCh
           <div className="flex flex-wrap items-center gap-2">
             <p className="font-display text-2xl font-semibold">{PLANS[s.plan].name[lang]}</p>
             <Badge tone={st.tone} dot>{st[lang]}</Badge>
-            <span className="text-sm text-muted">· {formatEur(PLANS[s.plan].price[s.billing], lang)} {s.billing === "year" ? t("TTC / an", "incl. VAT / year") : t("TTC / mois", "incl. VAT / month")}</span>
+            <span className="text-sm text-muted">· {formatEur(s.priceCents!=null?s.priceCents/100:PLANS[s.plan].price[s.billing], lang)} {s.billing === "year" ? t("TTC / an", "incl. VAT / year") : t("TTC / mois", "incl. VAT / month")}</span>
           </div>
           <p className="text-sm text-ink-2">
             {s.status === "canceled"

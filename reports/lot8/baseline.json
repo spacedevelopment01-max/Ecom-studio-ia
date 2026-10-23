@@ -1,0 +1,30 @@
+{
+  "schema": "lot8-baseline-1",
+  "baseCommit": "0a6aa1dd6dfa5932a5e42e027cef2a3335e74679",
+  "sourceSha256": {
+    "payments.ts": "0321379a34a0018e12546e3bf6005893b5c204597ef52c517f9ac7f6aeff3209",
+    "payments-v2.ts": "98765aaeea07a584888589de4cbc6fef5c7cf32dec5b1095c337571788f27690"
+  },
+  "realProviderCalls": 0,
+  "realPayments": 0,
+  "providerTransport": "in-process fixture, no network",
+  "isolatedData": true,
+  "checks": [
+    {
+      "defect": "RETIRED_PACK_STILL_PURCHASABLE",
+      "reproduced": true,
+      "simulatedCheckoutRequests": 1
+    },
+    {
+      "defect": "ZERO_TOPUP_CREDITS_DEFAULT_TEN_EUROS",
+      "reproduced": true,
+      "creditedMicro": 4166666
+    },
+    {
+      "defect": "RECEIPT_WITHOUT_CREDIT_AFTER_INTERRUPTION",
+      "reproduced": true,
+      "receiptSurvived": true,
+      "retryCreditMicro": 0
+    }
+  ]
+}

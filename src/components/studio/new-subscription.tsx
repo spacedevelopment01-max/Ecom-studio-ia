@@ -35,7 +35,7 @@ export function NewSubscription({ paymentsOpen, initialPlan }: { paymentsOpen: b
       <div className="mt-8">
         <PricingCards newSubscription selected={initialPlan ?? null} onChoose={choose} busy={busy} disabledReason={paymentsOpen ? null : t("Le paiement en ligne ouvre bientôt.", "Online payment opens soon.")} />
       </div>
-      <p className="mt-4 text-center text-sm text-muted">{t("Votre projet se crée juste après la confirmation du paiement. Si vous fermez la page, l'abonnement payé vous attend ici : vous ne payez jamais deux fois.", "Your project is created right after the payment is confirmed. If you close the page, the paid subscription waits for you here: you never pay twice.")}</p>
+      <p className="mt-4 text-center text-sm text-muted">{t("Votre projet se crée juste après la confirmation du paiement. Si vous fermez la page, l'abonnement payé vous attend ici : retrouvez-le avant de commencer un autre achat.", "Your project is created right after the payment is confirmed. If you close the page, the paid subscription waits for you here: find it before starting another purchase.")}</p>
     </div>
   );
 }

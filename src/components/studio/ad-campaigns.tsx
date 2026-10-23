@@ -86,9 +86,9 @@ export function CampaignsPanel({ autoNew = false }: { autoNew?: boolean } = {}) 
   const [drafting, setDrafting] = useState(false);
   // « Nouvelle campagne » demandée depuis une autre rubrique : l'éditeur s'ouvre directement.
   useEffect(() => {
-    if (autoNew && data) setEdit((e) => e ?? blank());
+    if (autoNew && data?.plan==='dominer') setEdit((e) => e ?? blank());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoNew, !!data]);
+  }, [autoNew, data?.plan]);
   const langOf = (c: Campaign): Lang => c.brief.language ?? projectLang;
   const blank = (): Campaign => ({
     id: "",
@@ -199,7 +199,7 @@ export function CampaignsPanel({ autoNew = false }: { autoNew?: boolean } = {}) 
             </div>
             <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-paper-2 p-3">
               <ContentLangPicker lang={editLang} setLang={(l) => setLanguage(edit, l)} projectLang={projectLang} />
-              <Button size="sm" variant="secondary" icon={<Wand2 className="size-3.5" />} loading={drafting} onClick={() => draft(edit)}>{t("Proposer les annonces dans cette langue", "Draft ads in this language")}</Button>
+              <Button size="sm" variant="secondary" icon={<Wand2 className="size-3.5" />} disabled={data?.plan!=='dominer'} loading={drafting} onClick={() => draft(edit)}>{t("Proposer les annonces dans cette langue", "Draft ads in this language")}</Button>
               <AiWait busy={drafting} label={t("Rédaction des annonces…", "Writing the ads…")} waitKey="ads-draft" expectedMs={30000} className="w-full" />
               <p className="w-full text-[11px] text-muted">{t("Annonces, boutons, export et publications de cette campagne sont dans cette langue, même si le reste du projet est dans une autre.", "This campaign's ads, buttons, export and posts use this language, even if the rest of the project uses another.")}</p>
             </div>

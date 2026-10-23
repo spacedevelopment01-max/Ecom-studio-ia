@@ -8,5 +8,7 @@ export default async function setup(project:TestProject){
  const directory=project.config.env.DATA_DIR;
  if(typeof directory!=='string'||path.dirname(path.resolve(directory))!==path.resolve(os.tmpdir())||!path.basename(directory).startsWith('ecs-test-'))throw new Error('Only an isolated test database may be initialized');
  process.env.DATA_DIR=directory;
+ delete process.env.DATABASE_FILE;
+ delete process.env.STORAGE_DIR;
  const {db}=await import('../src/lib/db');db().close();
 }

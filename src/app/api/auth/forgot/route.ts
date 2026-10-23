@@ -18,7 +18,7 @@ export const POST = handle(async (req: Request) => {
   const ip = clientIp(req);
   const emailKey = `forgot:email:${email}`;
   const ipKey = ip ? `forgot:ip:${ip}` : null;
-  const same = ok({ ok: true, message: L("Si un compte existe avec cette adresse, un e-mail vient de lui être envoyé avec un lien valable 1 heure.", "If an account exists with this address, an email has just been sent to it with a link valid for 1 hour.") });
+  const same = ok({ ok: true, message: L("Si un compte correspond à cette adresse, l’envoi d’un lien valable 1 heure a été demandé. Vérifiez votre boîte et les indésirables ; si rien n’arrive, contactez l’assistance.", "If an account matches this address, sending a link valid for one hour has been requested. Check your inbox and spam; if nothing arrives, contact support.") });
   if ((ipKey && rateCount(ipKey, LIMITS.forgotPerIp.windowMs) >= LIMITS.forgotPerIp.max)) {
     return fail(429, L("Trop de demandes. Réessayez dans une heure.", "Too many requests. Please try again in an hour."));
   }
