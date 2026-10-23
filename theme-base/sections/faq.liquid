@@ -2,6 +2,8 @@
   FAQ premium : accordéon animé, recherche dans les questions (optionnelle), une ou deux colonnes,
   lien de contact ; données structurées FAQPage pour les moteurs de recherche.
   Réglages historiques conservés (heading, text, style, structured_data, color_scheme, marges).
+  MUSEAU CLUB (maquettes du 23 octobre) : photo à côté des questions (le titre posé sur la photo), thèmes en onglets
+  tirés du thème de chaque question.
 {%- endcomment -%}
 {%- liquid
   assign layout = section.settings.layout | default: 'side'
@@ -9,9 +11,11 @@
     assign layout = 'stacked'
   endif
 -%}
-<section class="es-section es-faq es-faq--{{ section.settings.style }} es-faq--{{ layout }} es-faq--cols-{{ section.settings.columns | default: '1' }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-es-faq{% if section.settings.open_first %} data-open-first{% endif %}>
+{%- assign faq_photo = false -%}{%- if section.settings.image != blank or section.settings.image_asset != blank -%}{%- assign faq_photo = true -%}{%- endif -%}
+<section class="es-section es-faq es-faq--{{ section.settings.style }} es-faq--{{ layout }} es-faq--cols-{{ section.settings.columns | default: '1' }}{% if faq_photo %} es-faq--photo{% endif %} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-es-faq{% if section.settings.open_first %} data-open-first{% endif %}>
   <div class="es-container es-faq__grid">
     <header class="es-faq__head">
+      {%- if faq_photo -%}<div class="es-faq__photo">{% render 'ed-media', image: section.settings.image, asset: section.settings.image_asset, alt: section.settings.image_alt, focus_x: section.settings.focus_x, focus_y: section.settings.focus_y %}</div>{%- endif -%}
       {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
       {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
       {%- if section.settings.text != blank -%}<div class="es-rte es-muted" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
@@ -31,8 +35,18 @@
       {%- endif -%}
     </header>
     <div class="es-faq__list" id="FaqList-{{ section.id }}">
+      {%- if section.settings.topics -%}
+        {%- assign topic_list = section.blocks | map: 'settings' | map: 'topic' | uniq | compact -%}
+        {%- assign first_topic = topic_list | first | handleize -%}
+        {%- if topic_list.size > 0 -%}
+        <div class="es-faq__topics" role="group" aria-label="{{ section.settings.heading | strip_html | escape }}">
+          {%- for t in topic_list -%}{%- if t != blank -%}<button type="button" class="fs-chip-filter{% if forloop.first %} is-active{% endif %}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}" data-chip-filter="{{ t | handleize }}">{{ t | escape }}</button>{%- endif -%}{%- endfor -%}
+        </div>
+        {%- endif -%}
+      {%- endif -%}
       {%- for block in section.blocks -%}
-        <details class="es-accordion es-faq__item" data-reveal="up" style="--i: {{ forloop.index0 }}" data-faq-item{% if forloop.first and section.settings.open_first %} open{% endif %} {{ block.shopify_attributes }}>
+        {%- assign bt = block.settings.topic | handleize -%}
+        <details class="es-accordion es-faq__item" data-reveal="up" style="--i: {{ forloop.index0 }}" data-faq-item{% if section.settings.topics %} data-chip-item="{{ bt }}"{% if first_topic != blank and bt != first_topic %} hidden{% endif %}{% endif %}{% if forloop.first and section.settings.open_first %} open{% endif %} {{ block.shopify_attributes }}>
           <summary>
             {%- if section.settings.style == 'numbered' -%}<span class="es-faq__num" aria-hidden="true">{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>{%- endif -%}
             <span class="es-faq__q">{{ block.settings.question }}</span>
@@ -161,34 +175,247 @@ mark.es-faq__hl { background: rgba(var(--c-accent-rgb), .22); color: inherit; bo
   "tag": "div",
   "class": "es-section-wrapper",
   "settings": [
-    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
-    { "type": "text", "id": "heading", "label": "Titre", "default": "Questions fréquentes" },
-    { "type": "richtext", "id": "text", "label": "Texte" },
-    { "type": "select", "id": "style", "label": "Style", "default": "cards", "options": [ { "value": "cards", "label": "Cartes arrondies" }, { "value": "lines", "label": "Filets" }, { "value": "numbered", "label": "Numérotées" } ] },
-    { "type": "select", "id": "layout", "label": "Disposition", "default": "side", "options": [ { "value": "side", "label": "Titre à gauche, questions à droite" }, { "value": "stacked", "label": "Titre centré au-dessus" } ] },
-    { "type": "select", "id": "columns", "label": "Colonnes de questions", "default": "1", "options": [ { "value": "1", "label": "Une colonne" }, { "value": "2", "label": "Deux colonnes (ordinateur)" } ], "info": "Avec deux colonnes, le titre passe au-dessus." },
-    { "type": "checkbox", "id": "open_first", "label": "Première question ouverte", "default": false },
-    { "type": "checkbox", "id": "search", "label": "Recherche dans les questions", "default": false },
-    { "type": "text", "id": "search_placeholder", "label": "Texte du champ de recherche", "default": "Rechercher une question…" },
-    { "type": "text", "id": "contact_text", "label": "Phrase avant le lien de contact", "info": "Ex. « Une autre question ? »" },
-    { "type": "text", "id": "button_label", "label": "Bouton de contact" },
-    { "type": "url", "id": "button_link", "label": "Lien du bouton de contact" },
-    { "type": "checkbox", "id": "structured_data", "label": "Données structurées pour les moteurs de recherche", "default": true },
-    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
-    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
-    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Surtitre"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Titre",
+      "default": "Questions fréquentes"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texte"
+    },
+    {
+      "type": "select",
+      "id": "style",
+      "label": "Style",
+      "default": "cards",
+      "options": [
+        {
+          "value": "cards",
+          "label": "Cartes arrondies"
+        },
+        {
+          "value": "lines",
+          "label": "Filets"
+        },
+        {
+          "value": "numbered",
+          "label": "Numérotées"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Disposition",
+      "default": "side",
+      "options": [
+        {
+          "value": "side",
+          "label": "Titre à gauche, questions à droite"
+        },
+        {
+          "value": "stacked",
+          "label": "Titre centré au-dessus"
+        }
+      ]
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Photo à côté des questions"
+    },
+    {
+      "type": "text",
+      "id": "image_asset",
+      "label": "Fichier photo fourni avec le thème"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Description de la photo"
+    },
+    {
+      "type": "range",
+      "id": "focus_x",
+      "label": "Point focal horizontal",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "focus_y",
+      "label": "Point focal vertical",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "checkbox",
+      "id": "topics",
+      "label": "Thèmes en onglets",
+      "info": "Onglets tirés du thème de chaque question.",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "columns",
+      "label": "Colonnes de questions",
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": "Une colonne"
+        },
+        {
+          "value": "2",
+          "label": "Deux colonnes (ordinateur)"
+        }
+      ],
+      "info": "Avec deux colonnes, le titre passe au-dessus."
+    },
+    {
+      "type": "checkbox",
+      "id": "open_first",
+      "label": "Première question ouverte",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "search",
+      "label": "Recherche dans les questions",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "search_placeholder",
+      "label": "Texte du champ de recherche",
+      "default": "Rechercher une question…"
+    },
+    {
+      "type": "text",
+      "id": "contact_text",
+      "label": "Phrase avant le lien de contact",
+      "info": "Ex. « Une autre question ? »"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Bouton de contact"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Lien du bouton de contact"
+    },
+    {
+      "type": "checkbox",
+      "id": "structured_data",
+      "label": "Données structurées pour les moteurs de recherche",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "label": "Marge haute",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "label": "Marge basse",
+      "default": 96
+    }
   ],
   "blocks": [
-    { "type": "question", "name": "Question", "settings": [
-      { "type": "text", "id": "question", "label": "Question", "default": "Une question fréquente ?" },
-      { "type": "richtext", "id": "answer", "label": "Réponse", "default": "<p>Une réponse exacte et vérifiée.</p>" }
-    ] }
+    {
+      "type": "question",
+      "name": "Question",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "label": "Question",
+          "default": "Une question fréquente ?"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "Réponse",
+          "default": "<p>Une réponse exacte et vérifiée.</p>"
+        },
+        {
+          "type": "text",
+          "id": "topic",
+          "label": "Thème (onglets)"
+        }
+      ]
+    }
   ],
-  "presets": [{ "name": "FAQ premium", "settings": { "search": true, "open_first": true }, "blocks": [
-    { "type": "question", "settings": { "question": "Quels sont les délais de livraison ?", "answer": "<p>[À compléter : vos délais de livraison réels.]</p>" } },
-    { "type": "question", "settings": { "question": "Puis-je retourner ma commande ?", "answer": "<p>[À compléter : votre politique de retour.]</p>" } },
-    { "type": "question", "settings": { "question": "Comment utiliser le produit ?", "answer": "<p>[À compléter : le mode d'emploi.]</p>" } },
-    { "type": "question", "settings": { "question": "Comment contacter le service client ?", "answer": "<p>[À compléter : vos moyens de contact et horaires.]</p>" } }
-  ] }]
+  "presets": [
+    {
+      "name": "FAQ premium",
+      "settings": {
+        "search": true,
+        "open_first": true
+      },
+      "blocks": [
+        {
+          "type": "question",
+          "settings": {
+            "question": "Quels sont les délais de livraison ?",
+            "answer": "<p>[À compléter : vos délais de livraison réels.]</p>"
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question": "Puis-je retourner ma commande ?",
+            "answer": "<p>[À compléter : votre politique de retour.]</p>"
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question": "Comment utiliser le produit ?",
+            "answer": "<p>[À compléter : le mode d'emploi.]</p>"
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question": "Comment contacter le service client ?",
+            "answer": "<p>[À compléter : vos moyens de contact et horaires.]</p>"
+          }
+        }
+      ]
+    }
+  ]
 }
 {% endschema %}

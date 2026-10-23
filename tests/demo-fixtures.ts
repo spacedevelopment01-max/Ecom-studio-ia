@@ -27,6 +27,7 @@ import { shopKitProject, SHOP_KIT_MEDIA } from "./heuren-alcove-fixtures";
 import { traverseProject, TRAVERSE_MEDIA } from "./traverse-fixtures";
 import { ondeProject } from "./onde-fixtures";
 import { multiKitProject, MULTI_KIT_MEDIA } from "./museau-souple-fixtures";
+import { museauProject } from "./museau-fixtures";
 import type { DirectionId } from "../src/lib/theme/directions";
 
 export type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "souple";
@@ -155,9 +156,10 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
     const c = await shopKitProject(userId, id);
     return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
   }
-  // MUSEAU CLUB (issue #158) : même parcours, famille E-commerce, quatre produits, kit suivi dans public/theme-assets/<id>/.
+  // MUSEAU CLUB : refait d'après les maquettes enrichies du 23 octobre (tests/museau-fixtures.ts), quatre produits, kit
+  // suivi dans public/theme-assets/museau-club/. SOUPLE (issue #158) : même parcours, famille E-commerce.
   if ((id === "museau-club" || id === "souple") && !options.direction) {
-    const c = await multiKitProject(userId, id);
+    const c = id === "museau-club" ? await museauProject(userId) : await multiKitProject(userId, id);
     return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
   }
   // Atelier Rive (dossier du 23 octobre) : projet de services rédigé d'après les maquettes, médias suivis dans

@@ -336,6 +336,17 @@
     section.addEventListener('click', function (e) { if (e.target.closest('.es-bundle, [data-qty-step]')) setTimeout(stickySummary, 0); });
     section.addEventListener('input', function (e) { if (e.target.name === 'quantity') stickySummary(); });
     stickySummary();
+    // Option (taille) choisie dans la barre : coche la même valeur dans le formulaire principal, et inversement.
+    var opt = $('[data-sticky-option]', stickyBuy);
+    if (opt) {
+      opt.addEventListener('change', function () {
+        var idx = opt.getAttribute('data-sticky-option');
+        var input = Array.prototype.find.call(section.querySelectorAll('#MainBuy [data-option-index="' + idx + '"]'), function (i) { return i.value === opt.value; });
+        if (input && input.tagName === 'SELECT') { input.value = opt.value; input.dispatchEvent(new Event('change', { bubbles: true })); }
+        else if (input) { input.checked = true; input.dispatchEvent(new Event('change', { bubbles: true })); }
+      });
+      section.addEventListener('change', function (e) { var t = e.target; if (t && t.closest && t.closest('#MainBuy') && t.getAttribute('data-option-index') === opt.getAttribute('data-sticky-option') && (t.checked || t.tagName === 'SELECT')) opt.value = t.value; });
+    }
     var btn = $('[data-sticky-add]', stickyBuy);
     btn && btn.addEventListener('click', function () {
       var form = $('[data-product-form]', mainBuy);
@@ -359,7 +370,7 @@
     else if (q > 1) parts.push(q + ' ×');
     if (v.title && v.title !== 'Default Title') parts.push(v.title);
     var meta = $('[data-sticky-meta]', stickyBuy); if (meta) meta.textContent = parts.join(' · ') + (parts.length ? ' ·' : '');
-    var total = $('[data-sticky-total]', stickyBuy); if (total && v.price != null) total.textContent = formatMoney(Math.round(v.price * q * (100 - discount) / 100));
+    var total = $('[data-sticky-total]', stickyBuy); if (total && v.price != null) { var m = formatMoney(Math.round(v.price * q * (100 - discount) / 100)); total.textContent = total.hasAttribute('data-trim-zeros') ? m.replace(/[.,]00(?=\D|$)/, '') : m; }
     var btn = $('[data-sticky-add]', stickyBuy);
     if (btn) { btn.disabled = !v.available || v.price == null; btn.textContent = v.price == null ? strings.notForSale : strings.addToCart; }
   }

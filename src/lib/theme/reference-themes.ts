@@ -546,54 +546,57 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
   {
     id: "museau-club",
     name: "Museau Club",
-    tagline: "Cobalt et balades",
-    description: "Boutique spécialisée pour une collection coordonnée de quelques produits : ouverture sur la collection en scène avec un repère par produit et le lien vers chaque fiche, grille des produits, bannière de balade, produit porté, achat en douceur, bandeau d'appel, questions en lignes et inscription illustrée. Crème et bleu cobalt, titres épais, sur-titres en pastille, coins arrondis, menu sur deux rangées avec la collection en image et pied de page en colonnes.",
+    tagline: "Cobalt, crème et jaune doux, titres ronds épais",
+    description: "Boutique spécialisée pour une collection de quelques produits assortis, d'après les maquettes enrichies du 23 octobre : grandes photographies, fonds crème et bleu poudré, pied bleu cobalt, boutons jaune doux et bleu, titres ronds très épais. Ouverture plein cadre, quatre cartes produit, scène en panneau arrondi, gros plan aux détails numérotés, ensemble assorti, petites aventures en pastilles, guide des tailles illustré, présentation de la marque, derniers articles, questions avec photo et inscription finale.",
     bestFor: ["boutique spécialisée", "animalerie", "accessoires", "collection coordonnée", "quelques produits assortis"],
-    en: { tagline: "Cobalt and walks", description: "Specialty store for a coordinated collection of a few products: an opening scene of the collection with one marker per product linking to its page, a product grid, a walk banner, the product worn, a soft purchase block, a call-to-action band, line questions and an illustrated sign-up. Cream and cobalt blue, bold headings, pill eyebrows, rounded corners, a two-row menu with the collection pictured and a column footer.", bestFor: ["specialty store", "pet supplies", "accessories", "coordinated collection", "a few matching products"] },
-    fonts: { heading: "archivo_n8", body: "karla_n4" },
-    previewFonts: { heading: "Archivo", body: "Karla" },
-    motion: "expressive",
+    en: { tagline: "Cobalt, cream and soft yellow, thick rounded headings", description: "Specialty store for a collection of a few matching products, from the enriched 23 October mock-ups: large photographs, cream and powder-blue backgrounds, cobalt footer, soft-yellow and blue buttons, very bold rounded headings. Full-bleed opening, four product cards, scene in a rounded panel, close-up with numbered details, matching set, small adventures as pills, illustrated size guide, brand story, latest articles, questions with a photo and closing sign-up.", bestFor: ["specialty store", "pet supplies", "accessories", "coordinated collection", "a few matching products"] },
+    fonts: { heading: "nunito_n9", body: "dm_sans_n4" },
+    previewFonts: { heading: "Nunito", body: "DM Sans" },
+    motion: "subtle",
     photoMood: "elan",
     kinds: ["specialty"],
-    // En-tête « Deux rangées avec offre » (le logo centré en tête, le menu dessous, la collection en image dans le
-    // sous-menu : la disposition d'origine de MUSEAU CLUB) et pied « Colonnes d'aide et d'informations ».
-    look: look({ headerLayout: "two-rows", shape: "bar", menu: "cards", footer: "columns", ann: "static", card: "boxed", button: "solid", radius: { button: 999, card: 22 }, headingScale: 106, tracking: -2, pageWidth: 1320, gallery: "stack", density: "balanced", buttonUppercase: false }),
-    settings: { conversion_profile: "club", editorial_profile: "none", motion_intensity: "expressive" },
-    headerSettings: { layout: "two-rows", mega_menu: "columns-promo", mobile_menu: "cards", mobile_promo: "top", show_cart: true },
-    // Galerie empilée, cadre carré (chaque vue montre le produit entier), zoom, barre d'achat.
-    mainProduct: { gallery_layout: "stack", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
+    // Maquettes MUSEAU CLUB du 23 octobre (docs/design/museau-club-reference-20261023) : logo à gauche, menu à côté,
+    // recherche, compte et panier à droite ; pied bleu cobalt, marque à gauche, colonnes et inscription.
+    look: look({ headerLayout: "logo-left", shape: "bar", icons: "plain", menu: "drawer", footer: "brand-left", ann: "static", card: "boxed", button: "solid", radius: { button: 999, card: 22 }, headingCase: "none", tracking: -1, headingScale: 100, pageWidth: 1320, gallery: "carousel", density: "balanced", buttonUppercase: false }),
+    settings: { conversion_profile: "club", editorial_profile: "none", motion_intensity: "subtle", card_arrow: true },
+    headerSettings: { mega_menu: "none", mobile_menu: "drawer", mobile_submenu: "accordion", show_search: true, show_cart: true, transparent_on_home: false, color_scheme: "scheme-1", mobile_menu_scheme: "scheme-1" },
+    // Fiche : grande photo, vignettes dessous, zoom, barre d'achat sur téléphone.
+    mainProduct: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
+    // Crème (fonds), bleu cobalt plein (pied, boutons d'achat), bleu poudré (panneaux), jaune doux plein (boutons d'appel) :
+    // couleurs tirées de la marque (primaire, accent, clair) ; titres dans le sombre de la marque.
     palette: (k) => {
-      const cream = k.light("#FBF7EE");
-      const powder = k.mix(cream, "#BFDDF7", 0.55);
-      const navy = k.night(0.2, 0.75);
-      return [k.scheme(cream, navy, k.onLight(cream)), k.filled(k.p.primary), k.scheme(powder, navy, k.onLight(powder)), k.scheme(navy, cream, k.onDark(navy), 0.08)];
+      const cream = k.light("#FCFAF0");
+      const ink = k.p.dark;
+      const powder = k.mix(cream, "#BFDCF8", 0.72);
+      return [k.scheme(cream, ink, k.onLight(cream)), k.filled(k.p.primary), k.scheme(powder, ink, k.onLight(powder)), k.filled(k.p.accent)];
     },
-    // Accueil : la collection en scène (un repère par produit, la liste des pièces), tous les produits, la balade en
-    // bannière, le produit porté, l'achat d'une pièce, un bandeau d'appel, les questions et l'inscription illustrée.
-    home: (k) => {
-      // Sans repères renseignés (projet d'un client qui n'a pas encore situé ses produits sur une scène), l'ouverture
-      // devient une bannière avec le titre de la page : jamais une page d'accueil sans ouverture ni titre. La bannière de
-      // balade est alors retirée, pour ne pas répéter la même bannière deux fois.
-      const opening = k.either(
-        k.lib("cv-hotspots", 1, { layout: "side", ratio: "wide", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.scene1 ?? k.im.packshot, animation: "fade", padding_top: 24, padding_bottom: 64 }),
-        k.lib("cv-banner", 1, { layout: "image-right", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.packshot, animation: "fade", price_text: "", price_note: "", padding_top: 24, padding_bottom: 64 }),
-      );
-      const fallback = opening[0]?.[0] === "cv-banner";
-      return [
-        ...opening,
-        k.lib("fs-products", 1, { layout: "grid", source: "collection", collection: "all", ratio: "square", columns: 4, limit: 4, align: "left", padding_top: 64, padding_bottom: 72 }),
-        k.lib("cv-banner", 1, { layout: "background", image_asset: k.im.banner ?? k.im.scene1 ?? "", price_text: "", price_note: "" }, { hide: fallback || !(k.im.banner ?? k.im.scene1) }),
-        k.lib("image-with-text", 1, { layout: "image-left", ratio: "square", image_asset: k.im.scene2 ?? k.im.lifestyle2 ?? "", reveal: "up" }, { hide: !(k.im.scene2 ?? k.im.lifestyle2) }),
-        k.lib("featured-purchase", 3, { purchase_style: "soft", image_fit: "contain" }),
-        k.lib("cta-banner", 2, { image_asset: k.im.scene3 ?? "", style: "left" }, { hide: !k.im.scene3 }),
-        k.faqSec(1, 5, "lines"),
-        ...k.either(k.lib("newsletter-media", 4, { layout: "left", image_asset: k.im.portrait ?? k.im.lifestyle2 ?? "", legal: k.privacy }, { hide: !(k.im.portrait ?? k.im.lifestyle2) }), k.newsletter(4)),
-      ];
-    },
-    // Fiche : galerie empilée et achat, le produit en situation à côté de son texte, questions en cartes.
+    // Accueil enrichi : ouverture, quatre cartes, scène en panneau arrondi, gros plan aux détails numérotés, ensemble
+    // assorti à côté d'une photo, trois petites aventures, guide des tailles illustré, la marque, derniers articles,
+    // questions avec photo, inscription sur photo.
+    home: (k) => [
+      k.lib("cv-banner", 1, { layout: "background", band_height: "hero", veil: "light", mobile_valign: "top", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle ?? k.im.packshot, image_loading: "eager", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
+      k.lib("fs-products", 1, { layout: "grid", source: "collection", collection: "all", ratio: "square", columns: 4, limit: 4, align: "left", heading: "", text: "", padding_top: 0, padding_bottom: 24 }),
+      k.lib("cv-banner", 3, { layout: "panel-left", button_arrow: true, image_asset: k.im.lifestyle2 ?? k.im.scene1 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle2 ?? k.im.scene1) }),
+      ((details) => k.lib("cv-feature", 1, { layout: "numbered", detail_shape: "circle", detail_numbers: true, image_asset: k.im.packshot ?? k.im.cutout ?? "", button_arrow: true, padding_top: 40, padding_bottom: 40 }, { blocks: details.map((f) => ({ type: "detail", settings: { image_asset: f } })) }))([k.im.detail1, k.im.detail2].filter((f): f is string => !!f)),
+      k.lib("fs-products", 3, { layout: "media", source: "collection", collection: "all", ratio: "square", limit: 3, align: "left", image_asset: k.im.scene1 ?? k.im.lifestyle ?? "", padding_top: 0, padding_bottom: 0 }),
+      ((shots) => k.lib("cv-cards", 1, { layout: "pills", padding_top: 40, padding_bottom: 40 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.scene2, k.im.scene3, k.im.banner].filter((f): f is string => !!f)),
+      k.lib("cv-banner", 3, { layout: "illustration", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
+      k.lib("cv-banner", 1, { layout: "panel-right", button_arrow: true, image_asset: k.im.portrait ?? k.im.lifestyle ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.portrait ?? k.im.lifestyle) }),
+      k.lib("fs-journal", 1, { layout: "row", limit: 3, align: "left", padding_top: 32, padding_bottom: 32 }),
+      k.lib("faq", 1, { style: "lines", layout: "side", open_first: true, image_asset: k.im.lifestyle2 ?? k.im.scene1 ?? "", padding_top: 32, padding_bottom: 32 }),
+      k.lib("newsletter-media", 2, { layout: "background", image_asset: k.im.banner ?? k.im.lifestyle ?? "", legal: k.privacy, padding_top: 0, padding_bottom: 0 }, { hide: !(k.im.banner ?? k.im.lifestyle) }),
+    ],
+    // Fiche enrichie : galerie et achat (détails en médaillons sous la galerie), scène en panneau arrondi, détails pensés,
+    // trois photos en situation, guide des tailles, accordéons, produits assortis, questions, appel final avec le produit.
     product: (k) => [
-      ((scene) => k.lib("cv-alternating", 3, { layout: "image-left", ratio: "landscape", padding_top: 72, padding_bottom: 72 }, { hide: !scene, blocks: scene ? [{ type: "row", settings: { image_asset: scene } }] : [] }))(k.im.scene1 ?? k.im.lifestyle2),
-      k.faqSec(1, 5, "cards"),
+      k.lib("cv-banner", 3, { layout: "panel-right", button_arrow: true, image_asset: k.im.lifestyle ?? k.im.hero ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle ?? k.im.hero) }),
+      k.lib("cv-banner", 3, { layout: "panel-right", image_asset: k.im.detail1 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "", button_label: "" }, { hide: !k.im.detail1 }),
+      ((shots) => k.lib("cv-cards", 1, { layout: "columns", numbered: true, padding_top: 32, padding_bottom: 32 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.scene1, k.im.detail2, k.im.lifestyle2].filter((f): f is string => !!f)),
+      k.lib("cv-banner", 3, { layout: "illustration", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
+      k.faqSec(1, 3, "lines"),
+      k.lib("fs-products", 1, { layout: "grid", source: "collection", collection: "all", ratio: "square", columns: 3, limit: 4, align: "left", padding_top: 32, padding_bottom: 32 }),
+      k.faqSec(1, 4, "cards"),
+      k.lib("cv-banner", 2, { layout: "background", band_height: "medium", veil: "left", button_arrow: true, image_asset: k.im.lifestyle ?? k.im.hero ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle ?? k.im.hero) }),
     ],
     // Site de services (repli) : scène et liste en ouverture, prestations en cartes illustrées, une photo et son texte,
     // méthode en étapes, questions en lignes et prise de contact.

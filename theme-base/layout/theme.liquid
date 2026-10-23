@@ -81,6 +81,10 @@
         }
       {% endfor %}
 
+      {%- comment -%} Couleurs de chaque jeu, disponibles partout (ex. bouton jaune du jeu 4 posé sur un fond crème, MUSEAU CLUB). {%- endcomment -%}
+      :root {
+        {% for scheme in settings.color_schemes -%}--s{{ forloop.index }}-bg: {{ scheme.settings.background }}; --s{{ forloop.index }}-text: {{ scheme.settings.text }}; --s{{ forloop.index }}-accent: {{ scheme.settings.accent }}; --s{{ forloop.index }}-accent-text: {{ scheme.settings.accent_text }};{% endfor %}
+      }
       :root {
         --font-heading: {{ heading_font.family }}, {{ heading_font.fallback_families }};
         --font-heading-style: {{ heading_font.style }};

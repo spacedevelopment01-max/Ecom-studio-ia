@@ -23,6 +23,8 @@ export const FONT_FILES: Record<string, { family: string; files: Record<number, 
   newsreader: { family: "Newsreader", files: { 400: "Newsreader-400.ttf" }, fallback: "serif" },
   // Anton (titres condensés de TRAVERSE, maquettes du 23 octobre) : fichier local sous licence OFL ; présence dans la bibliothèque de polices Shopify à confirmer à l'export.
   anton: { family: "Anton", files: { 400: "Anton-400.ttf" }, fallback: "sans-serif" },
+  // Nunito très gras (titres ronds de MUSEAU CLUB, maquettes du 23 octobre) : fichier local sous licence OFL ; présence dans la bibliothèque de polices Shopify à confirmer à l'export.
+  nunito: { family: "Nunito", files: { 900: "Nunito-900.ttf" }, fallback: "sans-serif" },
   instrument_serif: { family: "Instrument Serif", files: { 400: "InstrumentSerif-400.ttf" }, italic: { 400: "InstrumentSerif-400italic.ttf" }, fallback: "serif" },
   cormorant: { family: "Cormorant", files: { 400: "Cormorant-400.ttf", 500: "Cormorant-500.ttf", 600: "Cormorant-600.ttf" }, italic: { 400: "Cormorant-500italic.ttf", 500: "Cormorant-500italic.ttf" }, fallback: "serif" },
   inter: { family: "Inter", files: { 400: "Inter-400.ttf", 500: "Inter-500.ttf", 600: "Inter-600.ttf", 700: "Inter-700.ttf", 800: "Inter-700.ttf" }, fallback: "sans-serif" },

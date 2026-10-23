@@ -112,8 +112,8 @@
       {%- if section.settings.show_search -%}
         <a href="{{ routes.search_url }}" class="es-icon-button" aria-label="{{ 'general.search' | t }}">{% render 'icon', name: 'search' %}</a>
       {%- endif -%}
-      {%- if shop.customer_accounts_enabled -%}
-        <a href="{{ routes.account_url }}" class="es-icon-button es-hide-mobile" aria-label="{{ 'customer.account' | t }}">{% render 'icon', name: 'account' %}</a>
+      {%- if shop.customer_accounts_enabled or section.settings.account_link != blank -%}
+        <a href="{{ section.settings.account_link | default: routes.account_url }}" class="es-icon-button es-hide-mobile" aria-label="{{ 'customer.account' | t }}">{% render 'icon', name: 'account' %}</a>
       {%- endif -%}
       {%- if section.settings.phone != blank -%}
         <a href="tel:{{ phone_href }}" class="es-icon-button es-header__phone{% if section.settings.cta_label != blank %} es-header__phone--compact{% endif %}" aria-label="{{ 'sections.header.call' | t }} {{ section.settings.phone | escape }}">{% render 'icon', name: 'phone' %}<span class="es-header__phone-number">{{ section.settings.phone }}</span></a>
@@ -267,6 +267,7 @@
     { "type": "checkbox", "id": "transparent_on_home", "label": "Transparent au-dessus de la première section de l'accueil", "default": false },
     { "type": "checkbox", "id": "show_search", "label": "Afficher la recherche", "default": true },
     { "type": "checkbox", "id": "show_cart", "label": "Afficher le panier", "default": true, "info": "Décochez pour un site vitrine ou de services, sans vente en ligne." },
+    { "type": "url", "id": "account_link", "label": "Lien de l'icône « compte »", "info": "Vide : l'icône n'apparaît que si les comptes clients sont activés sur la boutique, et mène au compte natif." },
     { "type": "header", "content": "Bouton d'action" },
     { "type": "text", "id": "cta_label", "label": "Texte du bouton", "info": "Ex. « Prendre rendez-vous », « Demander un devis ». Laissez vide pour ne pas l'afficher." },
     { "type": "url", "id": "cta_link", "label": "Lien du bouton", "info": "Vide : appelle le numéro de téléphone ci-dessous." },

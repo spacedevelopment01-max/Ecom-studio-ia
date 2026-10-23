@@ -1,4 +1,4 @@
-{%- comment -%} Carte produit. Paramètres : product_card, show_secondary, ratio, show_vendor (marque au-dessus du nom), button_label (bouton vers la fiche) {%- endcomment -%}
+{%- comment -%} Carte produit. Paramètres : product_card, show_secondary, ratio, show_vendor (marque au-dessus du nom), button_label (bouton vers la fiche). Réglages du thème : mention sous le nom (ex. « Prix de démonstration ») et flèche ronde vers la fiche (MUSEAU CLUB). {%- endcomment -%}
 {%- liquid
   assign card_ratio = ratio | default: 'portrait'
 -%}
@@ -23,7 +23,9 @@
   <div class="es-card__info">
     {%- if show_vendor and product_card.vendor != blank -%}<p class="es-card__vendor">{{ product_card.vendor | escape }}</p>{%- endif -%}
     <h3 class="es-card__title"><a href="{{ product_card.url | default: '#' }}">{%- if product_card.title != blank -%}{{ product_card.title }}{%- else -%}{{ 'products.product.placeholder_card' | t }}{%- endif -%}</a></h3>
+    {%- if settings.card_price_note != blank -%}<p class="es-card__note">{{ settings.card_price_note | escape }}</p>{%- endif -%}
     {% render 'price', product: product_card, use_variant: false %}
+    {%- if settings.card_arrow -%}<a class="es-card__arrow" href="{{ product_card.url | default: '#' }}" tabindex="-1" aria-hidden="true">{% render 'icon', name: 'arrow' %}</a>{%- endif -%}
     {%- if button_label != blank -%}<a class="es-button es-card__button" href="{{ product_card.url | default: '#' }}" tabindex="-1" aria-hidden="true">{{ button_label | escape }}</a>{%- endif -%}
   </div>
 </article>

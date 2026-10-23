@@ -3,7 +3,10 @@
   assign media_count = product.media.size
 -%}
 <section data-gallery-ratio="{{ section.settings.gallery_ratio | default: 'portrait' }}" class="es-section es-product es-product--{{ section.settings.gallery_layout }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-main-product>
-  <div class="es-container es-product__grid">
+  {%- if section.settings.show_breadcrumb -%}
+  <nav class="es-container es-product__crumbs" aria-label="{{ 'conversion.breadcrumb' | t }}"><a href="{{ routes.root_url }}">{{ 'conversion.home' | t }}</a><span aria-hidden="true">›</span><span aria-current="page">{{ product.title | escape }}</span></nav>
+  {%- endif -%}
+  <div class="es-container es-product__grid" id="acheter">
     <div class="es-product__gallery" data-gallery>
       <div class="es-product__track" data-gallery-track tabindex="0" aria-label="{{ 'products.product.media' | t }}">
         {%- for media in product.media -%}
@@ -36,6 +39,7 @@
           {%- endfor -%}
         </div>
       {%- endif -%}
+      {%- if section.settings.tiles_under_gallery -%}{%- for block in section.blocks -%}{%- if block.type == 'tiles' -%}{% render 'product-tiles', block: block %}{%- endif -%}{%- endfor -%}{%- endif -%}
       {%- if section.settings.enable_zoom -%}
         <dialog class="es-zoom" data-zoom aria-label="{{ 'products.product.media' | t }}">
           <div class="es-zoom__stage" data-zoom-stage></div>
@@ -60,14 +64,14 @@
             {%- when 'title' -%}
               {% if section.settings.display_heading != blank or section.settings.display_intro != blank %}<div data-ed-product-heading {{ block.shopify_attributes }}><h1 class="es-heading es-h2 es-product__title">{{ section.settings.display_heading | default: product.title | escape }}</h1>{% if section.settings.display_intro != blank %}<p class="ed-product-intro">{{ section.settings.display_intro | escape }}</p>{% endif %}</div>{% else %}<h1 class="es-heading es-h2 es-product__title" {{ block.shopify_attributes }}>{{ product.title }}</h1>{% endif %}
             {%- when 'price' -%}
-              <div class="es-product__price" {{ block.shopify_attributes }} data-price-wrap><div class="es-product__price-line">{% render 'price', product: product, use_variant: true %}{% if section.settings.purchase_enabled and section.settings.purchase_unit_label != blank %}<span class="es-product__price-note" data-price-note>{{ section.settings.purchase_unit_label | escape }}</span>{% endif %}</div>
+              <div class="es-product__price" {{ block.shopify_attributes }} data-price-wrap>{% if block.settings.label != blank %}<p class="es-product__price-label">{{ block.settings.label | escape }}</p>{% endif %}<div class="es-product__price-line">{% render 'price', product: product, use_variant: true %}{% if section.settings.purchase_enabled and section.settings.purchase_unit_label != blank %}<span class="es-product__price-note" data-price-note>{{ section.settings.purchase_unit_label | escape }}</span>{% endif %}</div>
                 {%- comment -%} Produit sans prix (aperçu du studio) : aucune mention de taxes ni de livraison autour d'un prix absent. {%- endcomment -%}
                 {% if product.price != nil and block.settings.show_taxes != false %}<p class="es-small es-muted">{{ 'products.product.taxes_included' | t }}</p>{% endif %}
               </div>
             {%- when 'text' -%}
               <div class="es-rte es-product__text" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
             {%- when 'buy_buttons' -%}
-              <div {{ block.shopify_attributes }} id="MainBuy">{% if section.settings.purchase_enabled %}{% render 'purchase-offers', product: product, blocks: section.blocks, offer_settings: section.settings, section_id: section.id %}{% else %}{% render 'product-buy', product: product, section_id: section.id, show_quantity: block.settings.show_quantity, show_dynamic_checkout: block.settings.show_dynamic_checkout, picker: block.settings.picker, price_in_button: block.settings.price_in_button %}{% endif %}</div>
+              <div {{ block.shopify_attributes }} id="MainBuy">{% if section.settings.purchase_enabled %}{% render 'purchase-offers', product: product, blocks: section.blocks, offer_settings: section.settings, section_id: section.id %}{% else %}{% render 'product-buy', product: product, section_id: section.id, show_quantity: block.settings.show_quantity, show_dynamic_checkout: block.settings.show_dynamic_checkout, picker: block.settings.picker, price_in_button: block.settings.price_in_button, swatch_color: block.settings.swatch_color, guide_label: block.settings.guide_label, guide_link: block.settings.guide_link, quantity_label: block.settings.quantity_label %}{% endif %}</div>
             {%- when 'description' -%}
               <div class="es-rte es-product__description" {{ block.shopify_attributes }}>{{ product.description }}</div>
             {%- when 'highlights' -%}
@@ -168,22 +172,7 @@
                 </div>
               {%- endif -%}
             {%- when 'tiles' -%}
-              {%- comment -%} Trois vignettes légendées sous l'achat (maquette TRAVERSE) : gros plans du produit. {%- endcomment -%}
-              <ul class="es-product__tiles" role="list" {{ block.shopify_attributes }}>
-                {%- for i in (1..3) -%}
-                  {%- liquid
-                    assign k_image = 'image_' | append: i
-                    assign k_pick = 'picker_' | append: i
-                    assign k_caption = 'caption_' | append: i
-                    assign t_image = block.settings[k_image]
-                    assign t_pick = block.settings[k_pick]
-                    assign t_caption = block.settings[k_caption]
-                  -%}
-                  {%- if t_image != blank or t_pick != blank -%}
-                    <li class="es-product__tile">{% render 'ed-media', image: t_pick, asset: t_image, alt: t_caption %}{% if t_caption != blank %}<span>{{ t_caption | escape }}</span>{% endif %}</li>
-                  {%- endif -%}
-                {%- endfor -%}
-              </ul>
+              {%- unless section.settings.tiles_under_gallery -%}{% render 'product-tiles', block: block %}{%- endunless -%}
             {%- when 'callout' -%}
               {%- if block.settings.text != blank -%}
                 <div class="es-callout" {{ block.shopify_attributes }}>{% render 'icon', name: block.settings.icon %}<div class="es-rte">{{ block.settings.text }}</div></div>
@@ -232,9 +221,17 @@
           {%- if product.featured_media -%}{{ product.featured_media | image_url: width: 120 | image_tag: loading: 'lazy', alt: '' }}{%- endif -%}
           <div>
             <p class="es-sticky-buy__title">{{ product.title }}</p>
-            <p class="es-sticky-buy__meta"><span data-sticky-meta>{% unless product.has_only_default_variant %}{{ product.selected_or_first_available_variant.title }}{% endunless %}</span> <strong data-sticky-total>{{ product.selected_or_first_available_variant.price | money }}</strong></p>
+            <p class="es-sticky-buy__meta"><span data-sticky-meta>{% unless product.has_only_default_variant %}{{ product.selected_or_first_available_variant.title }}{% endunless %}</span> <strong data-sticky-total{% if settings.price_trim_zeros %} data-trim-zeros{% endif %}>{% if settings.price_trim_zeros %}{{ product.selected_or_first_available_variant.price | money_without_trailing_zeros }}{% else %}{{ product.selected_or_first_available_variant.price | money }}{% endif %}</strong></p>
           </div>
         </div>
+        {%- comment -%} Taille dans la barre (maquettes MUSEAU CLUB) : la même option que le formulaire principal, synchronisée. {%- endcomment -%}
+        {%- for option in product.options_with_values -%}
+          {%- assign on = option.name | downcase -%}
+          {%- if option.values.size > 1 and on == 'taille' or option.values.size > 1 and on == 'size' -%}
+            <label class="visually-hidden" for="StickyOption-{{ section.id }}">{{ option.name }}</label>
+            <select id="StickyOption-{{ section.id }}" class="es-select es-sticky-buy__option" data-sticky-option="{{ forloop.index0 }}">{%- for value in option.values -%}<option value="{{ value | escape }}"{% if option.selected_value == value %} selected{% endif %}>{{ value }}</option>{%- endfor -%}</select>
+          {%- endif -%}
+        {%- endfor -%}
         <button type="button" class="es-button" data-sticky-add {% if current_variant.available == false or current_variant.price == nil %}disabled{% endif %}>{% if current_variant.price == nil %}{{ 'products.product.not_for_sale' | t }}{% else %}{{ 'products.product.add_to_cart' | t }}{% endif %}</button>
       </div>
     </div>
@@ -290,8 +287,11 @@
     { "type": "select", "id": "gallery_layout", "label": "Galerie", "default": "stack", "options": [
       { "value": "stack", "label": "Images empilées" },
       { "value": "carousel", "label": "Carrousel avec miniatures" },
-      { "value": "grid", "label": "Grille deux colonnes" }
+      { "value": "grid", "label": "Grille deux colonnes" },
+      { "value": "thumbs-below", "label": "Grande photo, miniatures dessous" }
     ] },
+    { "type": "checkbox", "id": "show_breadcrumb", "label": "Fil d'Ariane au-dessus de la fiche", "default": false },
+    { "type": "checkbox", "id": "tiles_under_gallery", "label": "Vignettes légendées sous la galerie", "info": "Sinon, sous l'achat.", "default": false },
     { "type": "select", "id": "gallery_ratio", "label": "Cadre des visuels", "default": "portrait", "info": "Carré pour des visuels carrés : aucune bande au-dessus ni en dessous. Le produit n'est jamais étiré ni coupé.", "options": [ { "value": "natural", "label": "Naturel (hauteur de l'image)" }, { "value": "square", "label": "Carré" }, { "value": "portrait", "label": "Portrait 4:5" }, { "value": "landscape", "label": "Paysage 4:3" } ] },
     { "type": "checkbox", "id": "sticky_bar", "label": "Barre d'achat qui suit le défilement", "default": true },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
@@ -311,13 +311,17 @@
     { "type": "@app" },
     { "type": "eyebrow", "name": "Surtitre", "limit": 1, "settings": [ { "type": "text", "id": "text", "label": "Texte", "info": "Vide : nom du fabricant." } ] },
     { "type": "title", "name": "Titre", "limit": 1, "settings": [] },
-    { "type": "price", "name": "Prix", "limit": 1, "settings": [ { "type": "checkbox", "id": "show_taxes", "label": "Mention « taxes incluses »", "default": true } ] },
+    { "type": "price", "name": "Prix", "limit": 1, "settings": [ { "type": "text", "id": "label", "label": "Mention au-dessus du prix", "info": "Ex. « Prix de démonstration » dans une boutique d'exemple." }, { "type": "checkbox", "id": "show_taxes", "label": "Mention « taxes incluses »", "default": true } ] },
     { "type": "text", "name": "Texte", "settings": [ { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>Une phrase d'accroche.</p>" }, { "type": "text", "id": "product_handle", "label": "Réservé au produit (handle)", "info": "Vide : affiché sur toutes les fiches. Sinon, seulement sur la fiche de ce produit." } ] },
     { "type": "buy_buttons", "name": "Boutons d'achat", "limit": 1, "settings": [
       { "type": "select", "id": "picker", "label": "Sélecteur de variantes", "default": "buttons", "options": [ { "value": "buttons", "label": "Boutons" }, { "value": "dropdown", "label": "Liste déroulante" } ] },
       { "type": "checkbox", "id": "show_quantity", "label": "Sélecteur de quantité", "default": true },
       { "type": "checkbox", "id": "show_dynamic_checkout", "label": "Boutons de paiement accéléré", "default": true },
-      { "type": "checkbox", "id": "price_in_button", "label": "Prix dans le bouton d'ajout", "default": false }
+      { "type": "checkbox", "id": "price_in_button", "label": "Prix dans le bouton d'ajout", "default": false },
+      { "type": "color", "id": "swatch_color", "label": "Pastille de l'option Couleur", "info": "Couleur montrée devant la valeur de l'option « Couleur » (un seul coloris)." },
+      { "type": "text", "id": "quantity_label", "label": "Titre au-dessus de la quantité", "info": "Ex. « Quantité ». Vide : aucun titre." },
+      { "type": "text", "id": "guide_label", "label": "Lien du guide des tailles (texte)", "info": "Affiché sous l'option « Taille » seulement." },
+      { "type": "url", "id": "guide_link", "label": "Lien du guide des tailles" }
     ] },
     { "type": "description", "name": "Description", "limit": 1, "settings": [ { "type": "text", "id": "hide_for_handle", "label": "Masquée sur la fiche du produit (handle)", "info": "Utile quand l'accroche de ce produit reprend déjà sa description." } ] },
     { "type": "highlights", "name": "Points forts", "settings": [ { "type": "textarea", "id": "items", "label": "Un point par ligne", "info": "Uniquement des caractéristiques vérifiées.", "default": "Premier point fort\nDeuxième point fort" }, { "type": "select", "id": "icon", "label": "Pictogramme", "default": "check", "options": [ { "value": "check", "label": "Coche" }, { "value": "sparkle", "label": "Étincelle" }, { "value": "leaf", "label": "Feuille" }, { "value": "heart", "label": "Cœur" }, { "value": "star", "label": "Étoile" }, { "value": "bolt", "label": "Éclair" } ] }, { "type": "range", "id": "columns", "min": 1, "max": 2, "step": 1, "label": "Colonnes", "default": 1 }, { "type": "text", "id": "product_handle", "label": "Réservé au produit (handle)", "info": "Vide : affiché sur toutes les fiches. Sinon, seulement sur la fiche de ce produit." } ] },
@@ -388,7 +392,23 @@
       { "type": "text", "id": "caption_2", "label": "Légende 2" },
       { "type": "image_picker", "id": "picker_3", "label": "Vignette 3" },
       { "type": "text", "id": "image_3", "label": "Vignette 3 (fichier du thème)" },
-      { "type": "text", "id": "caption_3", "label": "Légende 3" }
+      { "type": "text", "id": "caption_3", "label": "Légende 3" },
+      { "type": "image_picker", "id": "picker_4", "label": "Vignette 4" },
+      { "type": "text", "id": "image_4", "label": "Vignette 4 (fichier du thème)" },
+      { "type": "text", "id": "caption_4", "label": "Légende 4" },
+      { "type": "select", "id": "shape", "label": "Forme des vignettes", "default": "square", "options": [ { "value": "square", "label": "Carrées" }, { "value": "circle", "label": "Médaillons ronds" } ] },
+      { "type": "range", "id": "zoom_1", "label": "Agrandissement vignette 1", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+      { "type": "range", "id": "focus_x_1", "label": "Point focal horizontal vignette 1", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+      { "type": "range", "id": "focus_y_1", "label": "Point focal vertical vignette 1", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+      { "type": "range", "id": "zoom_2", "label": "Agrandissement vignette 2", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+      { "type": "range", "id": "focus_x_2", "label": "Point focal horizontal vignette 2", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+      { "type": "range", "id": "focus_y_2", "label": "Point focal vertical vignette 2", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+      { "type": "range", "id": "zoom_3", "label": "Agrandissement vignette 3", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+      { "type": "range", "id": "focus_x_3", "label": "Point focal horizontal vignette 3", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+      { "type": "range", "id": "focus_y_3", "label": "Point focal vertical vignette 3", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+      { "type": "range", "id": "zoom_4", "label": "Agrandissement vignette 4", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+      { "type": "range", "id": "focus_x_4", "label": "Point focal horizontal vignette 4", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+      { "type": "range", "id": "focus_y_4", "label": "Point focal vertical vignette 4", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 }
     ] },
     { "type": "callout", "name": "Encart d'information", "settings": [
       { "type": "select", "id": "icon", "label": "Pictogramme", "default": "check", "options": [ { "value": "check", "label": "Coche" }, { "value": "shield", "label": "Protection" }, { "value": "truck", "label": "Livraison" }, { "value": "leaf", "label": "Nature" }, { "value": "gift", "label": "Cadeau" }, { "value": "globe", "label": "Monde" }, { "value": "heart", "label": "Cœur" } ] },

@@ -103,3 +103,15 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { init(document); }); else init(document);
   document.addEventListener('shopify:section:load', function (e) { init(e.target); });
 })();
+
+/* Filtres en pastilles (journal, boutique, questions par thème — maquettes MUSEAU CLUB) : un bouton [data-chip-filter]
+   montre les éléments [data-chip-item] de sa section dont la catégorie correspond ; « Tous » (valeur vide) montre tout. */
+(function () {
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-chip-filter]'); if (!b) return;
+    var root = b.closest('section') || document;
+    var tag = b.getAttribute('data-chip-filter');
+    root.querySelectorAll('[data-chip-filter]').forEach(function (x) { var on = x === b; x.classList.toggle('is-active', on); x.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    root.querySelectorAll('[data-chip-item]').forEach(function (it) { it.hidden = !!tag && (' ' + it.getAttribute('data-chip-item') + ' ').indexOf(' ' + tag + ' ') < 0; });
+  });
+})();
