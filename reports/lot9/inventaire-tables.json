@@ -1,0 +1,1256 @@
+{
+  "schema": "lot9-table-inventory-1",
+  "isolatedEmptyDatabase": true,
+  "tables": [
+    {
+      "table": "ad_documents",
+      "fields": [
+        "id",
+        "project_id",
+        "doc_key",
+        "version",
+        "source",
+        "note",
+        "doc_json",
+        "rendered_asset_id",
+        "created_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "admin_claims",
+      "fields": [
+        "token_hash",
+        "user_id",
+        "expires_at",
+        "used_at",
+        "created_at"
+      ],
+      "scope": "account",
+      "exported": false
+    },
+    {
+      "table": "ai_calls",
+      "fields": [
+        "id",
+        "created_at",
+        "user_id",
+        "project_id",
+        "job_id",
+        "task",
+        "step",
+        "candidate_id",
+        "attempt",
+        "call_try",
+        "provider",
+        "requested_model",
+        "served_model",
+        "unit",
+        "input_tokens",
+        "cache_read_tokens",
+        "cache_write_tokens",
+        "output_tokens",
+        "quantity",
+        "latency_ms",
+        "http_attempts",
+        "stop_reason",
+        "effort",
+        "cost",
+        "estimated",
+        "usage_key",
+        "usage_event_id",
+        "billing_dedup",
+        "status",
+        "error_kind",
+        "prompt_key",
+        "prompt_hash",
+        "quality_check_id",
+        "brain_scope",
+        "brain_hash",
+        "brain_version",
+        "intent",
+        "plan_id",
+        "step_id",
+        "routing_reason",
+        "routing_fallback",
+        "routing_escalation",
+        "skills"
+      ],
+      "scope": "project",
+      "exported": false
+    },
+    {
+      "table": "ai_reservations",
+      "fields": [
+        "id",
+        "user_id",
+        "amount",
+        "res_monthly",
+        "res_topup",
+        "status",
+        "task",
+        "provider",
+        "model",
+        "job_id",
+        "project_id",
+        "actual",
+        "debit_monthly",
+        "debit_topup",
+        "note",
+        "created_at",
+        "settled_at",
+        "usage_event_id",
+        "settled_period_start",
+        "operation_key",
+        "request_hash",
+        "result",
+        "provider_receipt",
+        "recovery_until"
+      ],
+      "scope": "project",
+      "exported": false
+    },
+    {
+      "table": "asset_cache_entries",
+      "fields": [
+        "cache_key",
+        "asset_id",
+        "project_id",
+        "user_id"
+      ],
+      "scope": "project",
+      "exported": false
+    },
+    {
+      "table": "asset_usages",
+      "fields": [
+        "asset_id",
+        "target_type",
+        "target_id",
+        "label",
+        "created_at"
+      ],
+      "scope": "manual_review",
+      "exported": false
+    },
+    {
+      "table": "assets",
+      "fields": [
+        "id",
+        "project_id",
+        "user_id",
+        "folder_id",
+        "name",
+        "kind",
+        "role",
+        "mime",
+        "size",
+        "width",
+        "height",
+        "duration",
+        "storage_key",
+        "thumb_key",
+        "origin",
+        "meta",
+        "source_asset_id",
+        "version_of",
+        "version",
+        "status",
+        "starred",
+        "deleted_at",
+        "created_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "billing_mutations",
+      "fields": [
+        "id",
+        "scope",
+        "user_id",
+        "path",
+        "params_json",
+        "response_json",
+        "outcome",
+        "lease_until",
+        "created_at",
+        "applied_at"
+      ],
+      "scope": "account",
+      "exported": false
+    },
+    {
+      "table": "blog_articles",
+      "fields": [
+        "id",
+        "project_id",
+        "user_id",
+        "title",
+        "slug",
+        "meta_title",
+        "meta_description",
+        "excerpt",
+        "body_html",
+        "tags",
+        "cover_asset_id",
+        "language",
+        "status",
+        "published_url",
+        "platform_ref",
+        "qc_notes",
+        "created_at",
+        "updated_at",
+        "deleted_at",
+        "keyword",
+        "search_intent",
+        "v2_hash"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "brand_versions",
+      "fields": [
+        "id",
+        "project_id",
+        "fingerprint",
+        "snapshot_json",
+        "created_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "call_bookings",
+      "fields": [
+        "id",
+        "slot_id",
+        "user_id",
+        "project_id",
+        "plan",
+        "price_cents",
+        "free",
+        "status",
+        "topic",
+        "phone",
+        "stripe_session",
+        "payment_intent",
+        "refunded",
+        "created_at",
+        "updated_at",
+        "canceled_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "call_slots",
+      "fields": [
+        "id",
+        "starts_at",
+        "ends_at",
+        "status",
+        "created_at"
+      ],
+      "scope": "manual_review",
+      "exported": false
+    },
+    {
+      "table": "campaigns",
+      "fields": [
+        "id",
+        "project_id",
+        "name",
+        "objective",
+        "networks",
+        "status",
+        "brief",
+        "plan",
+        "created_at",
+        "updated_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "chat_messages",
+      "fields": [
+        "id",
+        "project_id",
+        "thread",
+        "role",
+        "content",
+        "attachments",
+        "selection",
+        "theme_version_id",
+        "job_id",
+        "created_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "checkout_intents",
+      "fields": [
+        "id",
+        "signature",
+        "user_id",
+        "params_json",
+        "lease_until",
+        "session_id",
+        "created_at",
+        "closed_at"
+      ],
+      "scope": "account",
+      "exported": true
+    },
+    {
+      "table": "checkout_sessions",
+      "fields": [
+        "id",
+        "user_id",
+        "kind",
+        "plan",
+        "billing",
+        "project_id",
+        "ref",
+        "url",
+        "status",
+        "created_at",
+        "completed_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "connections",
+      "fields": [
+        "id",
+        "user_id",
+        "provider",
+        "external_id",
+        "name",
+        "avatar_url",
+        "access_token",
+        "refresh_token",
+        "expires_at",
+        "scopes",
+        "meta",
+        "status",
+        "status_message",
+        "created_at",
+        "updated_at"
+      ],
+      "scope": "account",
+      "exported": true
+    },
+    {
+      "table": "content_documents",
+      "fields": [
+        "id",
+        "project_id",
+        "doc_key",
+        "version",
+        "type",
+        "lang",
+        "title",
+        "source",
+        "verdict",
+        "note",
+        "doc_json",
+        "created_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "content_plans",
+      "fields": [
+        "id",
+        "project_id",
+        "params",
+        "strategy",
+        "status",
+        "job_id",
+        "created_at",
+        "engine",
+        "paused",
+        "updated_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "content_runs",
+      "fields": [
+        "project_id",
+        "run_key",
+        "doc_key",
+        "version",
+        "verdict",
+        "cost_micro",
+        "created_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "content_target_locks",
+      "fields": [
+        "project_id",
+        "target",
+        "owner",
+        "job_id",
+        "expires_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "error_log",
+      "fields": [
+        "id",
+        "scope",
+        "message",
+        "details",
+        "user_id",
+        "project_id",
+        "created_at"
+      ],
+      "scope": "project",
+      "exported": false
+    },
+    {
+      "table": "expenses",
+      "fields": [
+        "id",
+        "date",
+        "label",
+        "category",
+        "supplier",
+        "amount_ht",
+        "vat_rate",
+        "vat",
+        "amount_ttc",
+        "payment_method",
+        "status",
+        "paid_at",
+        "notes",
+        "receipt_key",
+        "receipt_name",
+        "receipt_mime",
+        "recurring_id",
+        "period_key",
+        "created_at",
+        "updated_at",
+        "deleted_at"
+      ],
+      "scope": "manual_review",
+      "exported": false
+    },
+    {
+      "table": "folders",
+      "fields": [
+        "id",
+        "project_id",
+        "parent_id",
+        "name",
+        "system_key",
+        "created_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "image_candidates",
+      "fields": [
+        "project_id",
+        "candidate_key",
+        "brief_hash",
+        "verdict",
+        "score",
+        "codes_json",
+        "check_id",
+        "asset_id",
+        "phash",
+        "created_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "jobs",
+      "fields": [
+        "id",
+        "user_id",
+        "project_id",
+        "type",
+        "label",
+        "payload",
+        "status",
+        "progress",
+        "message",
+        "result",
+        "error",
+        "attempts",
+        "max_attempts",
+        "run_at",
+        "locked_by",
+        "locked_until",
+        "idempotency_key",
+        "parent_id",
+        "depends_on",
+        "checkpoint",
+        "created_at",
+        "updated_at",
+        "finished_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "ledger",
+      "fields": [
+        "id",
+        "user_id",
+        "type",
+        "bucket",
+        "amount",
+        "ref",
+        "note",
+        "created_at"
+      ],
+      "scope": "account",
+      "exported": false
+    },
+    {
+      "table": "memory",
+      "fields": [
+        "id",
+        "project_id",
+        "kind",
+        "key",
+        "value",
+        "status",
+        "source",
+        "scope",
+        "created_at",
+        "updated_at",
+        "norm_key",
+        "state",
+        "superseded_by",
+        "origin",
+        "evidence_json"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "notifications",
+      "fields": [
+        "id",
+        "user_id",
+        "project_id",
+        "level",
+        "title",
+        "body",
+        "read_at",
+        "created_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "oauth_states",
+      "fields": [
+        "state",
+        "user_id",
+        "provider",
+        "project_id",
+        "verifier",
+        "redirect",
+        "created_at"
+      ],
+      "scope": "project",
+      "exported": false
+    },
+    {
+      "table": "pack_balances",
+      "fields": [
+        "user_id",
+        "key",
+        "balance"
+      ],
+      "scope": "account",
+      "exported": true
+    },
+    {
+      "table": "pack_purchases",
+      "fields": [
+        "id",
+        "user_id",
+        "pack",
+        "ref",
+        "created_at"
+      ],
+      "scope": "account",
+      "exported": true
+    },
+    {
+      "table": "password_resets",
+      "fields": [
+        "token_hash",
+        "user_id",
+        "expires_at",
+        "used_at",
+        "created_by",
+        "created_at"
+      ],
+      "scope": "account",
+      "exported": false
+    },
+    {
+      "table": "payments",
+      "fields": [
+        "id",
+        "user_id",
+        "kind",
+        "amount_cents",
+        "status",
+        "stripe_id",
+        "created_at",
+        "label",
+        "project_id",
+        "account_key",
+        "payment_intent",
+        "refunded_cents"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "pending_registrations",
+      "fields": [
+        "email",
+        "name",
+        "password_hash",
+        "token_hash",
+        "expires_at",
+        "language",
+        "next_path",
+        "created_at"
+      ],
+      "scope": "manual_review",
+      "exported": false
+    },
+    {
+      "table": "post_attempts",
+      "fields": [
+        "id",
+        "post_id",
+        "attempt",
+        "lock_token",
+        "started_at",
+        "ended_at",
+        "outcome",
+        "detail",
+        "remote_id"
+      ],
+      "scope": "manual_review",
+      "exported": false
+    },
+    {
+      "table": "post_metrics",
+      "fields": [
+        "post_id",
+        "metric",
+        "value",
+        "source",
+        "fetched_at"
+      ],
+      "scope": "manual_review",
+      "exported": false
+    },
+    {
+      "table": "posts",
+      "fields": [
+        "id",
+        "project_id",
+        "plan_id",
+        "campaign_id",
+        "connection_id",
+        "network",
+        "format",
+        "status",
+        "scheduled_at",
+        "timezone",
+        "title",
+        "caption",
+        "hashtags",
+        "link",
+        "angle",
+        "media",
+        "brief",
+        "approved_at",
+        "approved_by",
+        "auto_approved",
+        "publish_job_id",
+        "publish_key",
+        "remote_id",
+        "remote_url",
+        "attempts",
+        "error",
+        "published_at",
+        "created_at",
+        "updated_at",
+        "engine",
+        "pillar",
+        "objective",
+        "content_hash",
+        "approved_hash",
+        "user_edited",
+        "lock_token",
+        "locked_at",
+        "production",
+        "gate",
+        "group_id"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "privacy_requests",
+      "fields": [
+        "id",
+        "user_id",
+        "status",
+        "created_at"
+      ],
+      "scope": "account",
+      "exported": true
+    },
+    {
+      "table": "project_connections",
+      "fields": [
+        "project_id",
+        "connection_id"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "project_link_versions",
+      "fields": [
+        "project_id",
+        "version"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "projects",
+      "fields": [
+        "id",
+        "user_id",
+        "name",
+        "status",
+        "platform",
+        "sector",
+        "product_json",
+        "brand_json",
+        "strategy_json",
+        "settings_json",
+        "sources_json",
+        "current_theme_version_id",
+        "cover_asset_id",
+        "store_url",
+        "archived",
+        "created_at",
+        "updated_at",
+        "store_type",
+        "catalog_json",
+        "business_type",
+        "business_json",
+        "hidden"
+      ],
+      "scope": "account",
+      "exported": true
+    },
+    {
+      "table": "prompt_favorites",
+      "fields": [
+        "user_id",
+        "prompt_id",
+        "created_at"
+      ],
+      "scope": "account",
+      "exported": true
+    },
+    {
+      "table": "prompt_ideas",
+      "fields": [
+        "project_id",
+        "data",
+        "fingerprint",
+        "created_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "quality_checks",
+      "fields": [
+        "id",
+        "created_at",
+        "user_id",
+        "project_id",
+        "job_id",
+        "step",
+        "deliverable",
+        "candidate_id",
+        "asset_id",
+        "attempt",
+        "checker",
+        "checked",
+        "confidence",
+        "score",
+        "criteria_json",
+        "blocking_json",
+        "fatal_json",
+        "feedback",
+        "verdict",
+        "fatal",
+        "action",
+        "reason",
+        "policy_version",
+        "previous_check_id"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "quota_events",
+      "fields": [
+        "ref",
+        "user_id",
+        "key",
+        "amount",
+        "created_at",
+        "period_start",
+        "from_month",
+        "from_pack"
+      ],
+      "scope": "account",
+      "exported": true
+    },
+    {
+      "table": "quota_usage",
+      "fields": [
+        "user_id",
+        "period_start",
+        "key",
+        "included",
+        "rollover",
+        "used"
+      ],
+      "scope": "account",
+      "exported": true
+    },
+    {
+      "table": "rate_events",
+      "fields": [
+        "key",
+        "at"
+      ],
+      "scope": "manual_review",
+      "exported": false
+    },
+    {
+      "table": "recurring_charges",
+      "fields": [
+        "id",
+        "label",
+        "category",
+        "supplier",
+        "amount_ht",
+        "vat_rate",
+        "frequency",
+        "day",
+        "start_date",
+        "end_date",
+        "payment_method",
+        "auto_paid",
+        "active",
+        "created_at",
+        "updated_at"
+      ],
+      "scope": "manual_review",
+      "exported": false
+    },
+    {
+      "table": "sessions",
+      "fields": [
+        "id",
+        "user_id",
+        "expires_at",
+        "created_at"
+      ],
+      "scope": "account",
+      "exported": false
+    },
+    {
+      "table": "settings",
+      "fields": [
+        "key",
+        "value",
+        "secret",
+        "updated_at"
+      ],
+      "scope": "manual_review",
+      "exported": false
+    },
+    {
+      "table": "social_automations",
+      "fields": [
+        "id",
+        "project_id",
+        "kind",
+        "config",
+        "status",
+        "last_run_at",
+        "next_run_at",
+        "last_result",
+        "created_at",
+        "updated_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "social_autopilot_log",
+      "fields": [
+        "id",
+        "project_id",
+        "at",
+        "action",
+        "detail"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "social_edit_undo",
+      "fields": [
+        "project_id",
+        "at",
+        "summary",
+        "rows",
+        "created",
+        "after"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "social_memory",
+      "fields": [
+        "project_id",
+        "kind",
+        "key",
+        "uses",
+        "last_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "social_settings",
+      "fields": [
+        "project_id",
+        "config",
+        "autopilot",
+        "consent_at",
+        "consent_by",
+        "consent_text",
+        "paused",
+        "last_run_at",
+        "next_run_at",
+        "last_result",
+        "updated_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "stripe_cancellations",
+      "fields": [
+        "subscription_id",
+        "user_id",
+        "attempts",
+        "next_at",
+        "last_error",
+        "done_at",
+        "created_at"
+      ],
+      "scope": "account",
+      "exported": false
+    },
+    {
+      "table": "stripe_event_claims",
+      "fields": [
+        "id",
+        "owner",
+        "lease_until",
+        "attempts"
+      ],
+      "scope": "manual_review",
+      "exported": false
+    },
+    {
+      "table": "stripe_events",
+      "fields": [
+        "id",
+        "type",
+        "created",
+        "processed_at"
+      ],
+      "scope": "manual_review",
+      "exported": false
+    },
+    {
+      "table": "subscriptions",
+      "fields": [
+        "user_id",
+        "status",
+        "stores",
+        "stripe_customer_id",
+        "stripe_subscription_id",
+        "current_period_start",
+        "current_period_end",
+        "updated_at",
+        "plan",
+        "billing",
+        "stripe_event_at",
+        "stripe_checkout_at",
+        "owner_user_id",
+        "project_id",
+        "bound_at",
+        "created_at",
+        "source",
+        "price_cents",
+        "cancel_at_period_end"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "support_messages",
+      "fields": [
+        "id",
+        "ticket_id",
+        "user_id",
+        "staff",
+        "body",
+        "request_key",
+        "created_at"
+      ],
+      "scope": "support_ticket",
+      "exported": true
+    },
+    {
+      "table": "support_tickets",
+      "fields": [
+        "id",
+        "user_id",
+        "project_id",
+        "subject",
+        "category",
+        "job_id",
+        "status",
+        "request_key",
+        "created_at",
+        "updated_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "task_plans",
+      "fields": [
+        "id",
+        "project_id",
+        "user_id",
+        "request_key",
+        "intents_json",
+        "steps_json",
+        "warnings_json",
+        "status",
+        "created_at",
+        "updated_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "theme_versions",
+      "fields": [
+        "id",
+        "project_id",
+        "number",
+        "spec",
+        "summary",
+        "author",
+        "parent_id",
+        "qc",
+        "created_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "usage_events",
+      "fields": [
+        "id",
+        "user_id",
+        "project_id",
+        "job_id",
+        "task",
+        "provider",
+        "model",
+        "unit",
+        "input_units",
+        "output_units",
+        "quantity",
+        "cost",
+        "billed",
+        "estimated",
+        "idempotency_key",
+        "created_at"
+      ],
+      "scope": "project",
+      "exported": false
+    },
+    {
+      "table": "user_prompts",
+      "fields": [
+        "id",
+        "user_id",
+        "title",
+        "sector",
+        "category",
+        "target",
+        "body",
+        "based_on",
+        "created_at",
+        "updated_at"
+      ],
+      "scope": "account",
+      "exported": true
+    },
+    {
+      "table": "users",
+      "fields": [
+        "id",
+        "email",
+        "name",
+        "password_hash",
+        "role",
+        "timezone",
+        "created_at"
+      ],
+      "scope": "identity",
+      "exported": true
+    },
+    {
+      "table": "video_documents",
+      "fields": [
+        "id",
+        "project_id",
+        "doc_key",
+        "version",
+        "source",
+        "note",
+        "doc_json",
+        "rendered_asset_id",
+        "created_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "video_shots",
+      "fields": [
+        "project_id",
+        "shot_key",
+        "asset_id",
+        "method",
+        "verdict",
+        "provider",
+        "model",
+        "cost_micro",
+        "attempts",
+        "reason",
+        "created_at"
+      ],
+      "scope": "project",
+      "exported": true
+    },
+    {
+      "table": "wallets",
+      "fields": [
+        "user_id",
+        "period_start",
+        "period_end",
+        "monthly_allowance",
+        "monthly_used",
+        "topup_balance",
+        "topup_period_added",
+        "topup_period_used",
+        "alert80_sent_at",
+        "updated_at",
+        "prev_period_start",
+        "reserved",
+        "rule_version",
+        "reserved_topup"
+      ],
+      "scope": "account",
+      "exported": false
+    },
+    {
+      "table": "worker_heartbeat",
+      "fields": [
+        "id",
+        "beat_at",
+        "info"
+      ],
+      "scope": "manual_review",
+      "exported": false
+    },
+    {
+      "table": "workflows",
+      "fields": [
+        "id",
+        "project_id",
+        "user_id",
+        "request",
+        "intents_json",
+        "params_json",
+        "estimate_json",
+        "approved_micro",
+        "cap_micro",
+        "status",
+        "clarification",
+        "plan_id",
+        "pipeline_job_id",
+        "job_id",
+        "error",
+        "created_at",
+        "updated_at"
+      ],
+      "scope": "project",
+      "exported": true
+    }
+  ]
+}

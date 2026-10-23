@@ -1,0 +1,211 @@
+{
+  "schema": "lot9-artifact-sha256-1",
+  "applicationCodeCommit": "c67d0656c577381fcd50d36f25b5dba684969a00",
+  "files": [
+    {
+      "file": "01-inscription-confirmation-demandee-mobile.png",
+      "bytes": 52939,
+      "sha256": "ccfa69013d1d165c32ce2b93e5f96ff4b2baa53937a85e0095e50b38c5dd6d85",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "01-inscription-confirmation-demandee-ordinateur.png",
+      "bytes": 95956,
+      "sha256": "d1db250bc89da6953bee07abbe9419aa57b0338641046d62bb3cf7432e00e13e",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "02-confirmation-adresse-mobile.png",
+      "bytes": 30649,
+      "sha256": "51bad69e8a60e0acdb65c0297fae00214932f50e8351e5bfecb37088eb8d53be",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "02-confirmation-adresse-ordinateur.png",
+      "bytes": 37152,
+      "sha256": "7332c47568e5df7a56420186da9efb9d61c535bea812f73f2679e43b42936fca",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "03-donnees-personnelles-mobile.png",
+      "bytes": 55135,
+      "sha256": "a16c067d27817e83f31077287ed85ff44db80cf7c16f9bf2de02f9cc8ba27041",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "03-donnees-personnelles-ordinateur.png",
+      "bytes": 73859,
+      "sha256": "eabdf0594c627a25fb6445add6c953491ca2e49330ea41af05f020f5bd4c4f82",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "04-demande-effacement-en-attente-mobile.png",
+      "bytes": 61594,
+      "sha256": "58dcf9b9d347efecd568a6c174b2bb547db0ebdfe2b692ca0410c5587cfd33b0",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "04-demande-effacement-en-attente-ordinateur.png",
+      "bytes": 83210,
+      "sha256": "eb3a0dc82e113ce2230e82a84323a3f938c167def82fe9c42940448fa02b726d",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "05-apercu-produit-base-noctil-mobile.png",
+      "bytes": 113267,
+      "sha256": "b4bc9b539b04572da9e9c51181be0a4d9403eb10d28095b32f1be1fc0800ab83",
+      "width": 390,
+      "height": 1249
+    },
+    {
+      "file": "05-apercu-produit-base-noctil-ordinateur.png",
+      "bytes": 490065,
+      "sha256": "1daaf1cad546d3cc846856ee9ee9f7d84d949ae9a1e3bdbd057461f92ac2d80d",
+      "width": 1440,
+      "height": 1204
+    },
+    {
+      "file": "05-apercu-service-donnees-synthetiques-mobile.png",
+      "bytes": 106865,
+      "sha256": "1b5be11c4d01b3929e7000250ad6fa6484aa497096aa6e440d64e415a22b4c03",
+      "width": 390,
+      "height": 1183
+    },
+    {
+      "file": "05-apercu-service-donnees-synthetiques-ordinateur.png",
+      "bytes": 327595,
+      "sha256": "39bd78b0815c4fafb0f3995ff4f7d96de2612a0ebbc486f80364fbafa0f28fcd",
+      "width": 1440,
+      "height": 1218
+    },
+    {
+      "file": "06-produit-base-noctil-accueil-mobile.png",
+      "bytes": 1796168,
+      "sha256": "693d58f6d8eb1379da9938b4fa6c2185639b862ca71b0189fa5ba2d6017e19e4",
+      "width": 390,
+      "height": 7471
+    },
+    {
+      "file": "06-produit-base-noctil-accueil-ordinateur.png",
+      "bytes": 4986029,
+      "sha256": "9f77df78cc23ee4aee3227dddef1ab1e4c4262b011e5b6e89cbc87051a0df2ec",
+      "width": 1440,
+      "height": 6993
+    },
+    {
+      "file": "06-produit-base-noctil-detail-mobile.png",
+      "bytes": 1084700,
+      "sha256": "b8bac4a7c97e242163d85f19621ebf17b34a42cfb1ced96718b4170f51e93402",
+      "width": 390,
+      "height": 6049
+    },
+    {
+      "file": "06-produit-base-noctil-detail-ordinateur.png",
+      "bytes": 2782514,
+      "sha256": "03db21465288448662bc5cb3a2144b2280e7eb9042bee11486fb313b76919842",
+      "width": 1440,
+      "height": 6072
+    },
+    {
+      "file": "06-service-donnees-synthetiques-accueil-mobile.png",
+      "bytes": 461640,
+      "sha256": "f9b33e0f79529c6b774c398839333e1c90a4803b19771c58e1fdbbe19e1c423e",
+      "width": 390,
+      "height": 8513
+    },
+    {
+      "file": "06-service-donnees-synthetiques-accueil-ordinateur.png",
+      "bytes": 856539,
+      "sha256": "b234fb6eda9c63171476366eb490e77cb98258f936ad2850dcae711633d367a1",
+      "width": 1440,
+      "height": 7619
+    },
+    {
+      "file": "06-service-donnees-synthetiques-detail-mobile.png",
+      "bytes": 229190,
+      "sha256": "ea94675ed62dee538a07a0426f055fb0bdcafc0a0c97936e86d85aee25ba120d",
+      "width": 390,
+      "height": 3811
+    },
+    {
+      "file": "06-service-donnees-synthetiques-detail-ordinateur.png",
+      "bytes": 439921,
+      "sha256": "b337b27d9dcc76fdb05fb0bd8f07ede49a91d8f5edcd00c181017a9e2125270f",
+      "width": 1440,
+      "height": 3483
+    },
+    {
+      "file": "README.md",
+      "bytes": 4475,
+      "sha256": "e6b95043d067174262e7aa480eb3a8270d41d6789f92fb4627ecbad647e14369"
+    },
+    {
+      "file": "build.log",
+      "bytes": 14467,
+      "sha256": "4e31f4bc184dcee1aa373270c2f11e717b90211923d12a6600143d8b6fe6e8c1"
+    },
+    {
+      "file": "dependances.json",
+      "bytes": 7020,
+      "sha256": "644abf20dd4a85dc121efa0ab22bf7d45ee421915150894f0bfb086a28379f2a"
+    },
+    {
+      "file": "inventaire-tables.json",
+      "bytes": 23889,
+      "sha256": "fcb5d9da430343b2a7bdfe267530b0b660e92da732ccd29798512dac2fb36cef"
+    },
+    {
+      "file": "noctil-manifeste-source.json",
+      "bytes": 10474,
+      "sha256": "f360d5400623ea0b677f07da23f4943054411f57877e53b7d5cc9515ebefef68"
+    },
+    {
+      "file": "parcours.json",
+      "bytes": 5014,
+      "sha256": "3d8483f146805524e35a65624029c54d9aa64ef9fb9f16eb4d69009b9e8c8960"
+    },
+    {
+      "file": "registre-ressources.json",
+      "bytes": 244906,
+      "sha256": "661bd90b991d6c748b957b4f808eaf69ee4f7758fd4fbe81ebae3b8b3f5c3c7e"
+    },
+    {
+      "file": "scan-secrets.json",
+      "bytes": 1008,
+      "sha256": "9ce48d4f513cf02b090990d3ca5f802bb98f83a920e8d2ba47c429f7d8ab7f5e"
+    },
+    {
+      "file": "separation-contenus.json",
+      "bytes": 4285,
+      "sha256": "22896e016f5cc757cd414d941c8f6dee49cf0cdc3a8abdaba6ca261db3503824"
+    },
+    {
+      "file": "tests-complets.log",
+      "bytes": 392,
+      "sha256": "f00fc23c13adbf7527e188fc9d58ede0cc2ff058975b0e755b215d72a8f76928"
+    },
+    {
+      "file": "theme-check.log",
+      "bytes": 1460,
+      "sha256": "d2aa17eb801ae7d7be152d1ad3845996e369e7cb6bb3b271dba345a4d8673922"
+    },
+    {
+      "file": "types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "verifications.json",
+      "bytes": 5442,
+      "sha256": "48e830651413515f9a93d9f1ed5ed23299378832de812a8a12ddbc9cbf81f667"
+    }
+  ]
+}
