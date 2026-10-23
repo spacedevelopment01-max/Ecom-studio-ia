@@ -56,7 +56,7 @@ try {
   await open(page, "accueil.html");
   await page.locator("[data-re-search] [data-re-tab=location]").click();
   await page.fill("[data-re-search] input[name=ville]", "Lyon"); await page.selectOption("[data-re-search] select[name=max]", "1250");
-  await page.locator("[data-re-search] button[type=submit]").click(); await page.waitForLoadState("load"); await page.waitForTimeout(400);
+  await Promise.all([page.waitForURL(/page-louer\.html\?/, { timeout: 15000 }), page.locator("[data-re-search] button[type=submit]").click()]); await page.waitForTimeout(400);
   assert.match(page.url(), /page-louer\.html\?/); assert.match(page.url(), /ville=Lyon/); assert.match(page.url(), /max=1250/);
   const lyon = await visibleCards(); assert.ok(lyon >= 1);
   await page.screenshot({ path: path.join(out, "03-recherche-accueil-louer.png"), fullPage: false });

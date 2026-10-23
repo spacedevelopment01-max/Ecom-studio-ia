@@ -44,8 +44,8 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
 - **Réponses courtes et claires**, sans jargon ; ne pas reposer une question à laquelle il a déjà répondu.
 - **Ne pas décider à sa place** : un retrait de contenu ou un changement visible important se propose, il ne s'applique
   qu'après son accord. Retirer un visuel raté sans rien mettre à la place n'est pas une correction.
-- **Catalogue de thèmes actif** (consigne du 19 octobre 2026, issue #137, commentaire 6264783184 ; SILLON ajouté par l'issue #148, NOCTIL et TRAVERSE par l'issue #152, HEUREN et ALCÔVE par l'issue #155, MUSEAU CLUB et SOUPLE par l'issue #158) :
-  seuls **fraise**, **onde**, **orbe**, **rive**, **sillon**, **noctil**, **traverse**, **heuren**, **alcove**, **museau-club** et **souple** sont proposés (galerie, IA, commandes, recommandation, tarifs). Les 30 anciens thèmes ne sont ni
+- **Catalogue de thèmes actif** (consigne du 19 octobre 2026, issue #137, commentaire 6264783184 ; SILLON ajouté par l'issue #148, NOCTIL et TRAVERSE par l'issue #152, HEUREN et ALCÔVE par l'issue #155, MUSEAU CLUB et SOUPLE par l'issue #158, MAISON & HORIZON par l'issue #172) :
+  seuls **fraise**, **onde**, **orbe**, **rive**, **sillon**, **noctil**, **traverse**, **heuren**, **alcove**, **museau-club**, **souple** et **maison-horizon** sont proposés (galerie, IA, commandes, recommandation, tarifs). Les 30 anciens thèmes ne sont ni
   sélectionnables ni recommandés ; un projet qui en utilise un le garde (compatibilité de lecture), jamais de migration
   silencieuse, jamais de repli vers l'ancien catalogue. Ne pas les moderniser ni créer leurs remplaçants sans consigne.
 - **Démonstrations** (priorité du 19 octobre 2026, issue #137) : les seules sont **FRAISE** (gummies, boutique spécialisée),
@@ -66,6 +66,14 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   brique, sangle et anneau de Pilates) : thème de la **famille E-commerce, à quatre produits** (consigne du 21 octobre,
   16 h 02 ; profil éditorial « poudre », ouverture en mosaïque de la collection, en-tête « Collections en cartes », pied
   « Boutique éditoriale »), médias dans `public/theme-assets/souple/`, démonstration dans le même fichier.
+  **MAISON & HORIZON** (agence immobilière, achat et location, issue #172) : thème de la **famille Prestations de services**
+  (ouvert à partir du forfait Vendre, à confirmer), profil éditorial « horizon » (`assets/horizon.css`, `horizon.js`,
+  sections `re-*`) ; les **biens** se saisissent dans l'espace **Biens** du studio (`src/lib/biens.ts`, table `biens`) et
+  sont injectés au rendu (`withBiens`), jamais écrits dans le thème ; pages de recherche et fiche ajoutées à tout projet
+  qui choisit le thème (`src/lib/theme/real-estate-site.ts`) ; démonstration `tests/maison-horizon-fixtures.ts` (27 biens,
+  une série de photos par bien, aucune photo partagée), 90 images en grand format dans le kit privé
+  `public/demo/maison-horizon/` (non publiées sur GitHub, consigne du dossier) ; rapport
+  `docs/coordination/MAISON_HORIZON_RESULTATS.md`.
   Les anciennes démos (ARVEN, Cime, Les Tribunes, Sonore, Racines & Pierres, Atelier Pivoine, Ostral) sont abandonnées :
   ne pas les adapter ni les maintenir. Leurs visuels viennent du kit privé de Thomas (`public/demo/<id>/`, hors dépôt).
   **Démos intégrales avant le choix** (revue PR #149) : la galerie « Thèmes » ouvre la boutique de démonstration
