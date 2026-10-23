@@ -70,7 +70,8 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   (ouvert à partir du forfait Vendre, à confirmer), profil éditorial « horizon » (`assets/horizon.css`, `horizon.js`,
   sections `re-*`) ; les **biens** se saisissent dans l'espace **Biens** du studio (`src/lib/biens.ts`, table `biens`) et
   sont injectés au rendu (`withBiens`), jamais écrits dans le thème ; pages de recherche et fiche ajoutées à tout projet
-  qui choisit le thème (`src/lib/theme/real-estate-site.ts`) ; démonstration `tests/maison-horizon-fixtures.ts` (27 biens,
+  qui choisit le thème (`src/lib/theme/real-estate-site.ts`, chargé aussi dans le navigateur via `directions.ts` : imports de
+  types seulement, sinon le studio ne compile plus) ; démonstration `tests/maison-horizon-fixtures.ts` (27 biens,
   une série de photos par bien, aucune photo partagée), 90 images en grand format dans le kit privé
   `public/demo/maison-horizon/` (non publiées sur GitHub, consigne du dossier) ; rapport
   `docs/coordination/MAISON_HORIZON_RESULTATS.md`.

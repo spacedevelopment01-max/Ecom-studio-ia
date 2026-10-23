@@ -113,4 +113,21 @@ Hébergement natif du site par le studio : V2.
 
 ## Vérifications
 
-<!-- VERIFICATIONS -->
+Branche `claude/themes-differenciation`, PR #167 (17 commits « MAISON & HORIZON », de `f478467b` au dernier commit de la
+branche). Rien n'est fusionné ni déployé.
+
+| Contrôle | Résultat |
+|---|---|
+| Tests ciblés `tests/maison-horizon.test.ts` | 8/8 : un bien ajouté apparaît (accueil, Acheter, fiche) sans modifier le thème, retiré il disparaît, vendu il reste ; brouillon prévisualisé seul ; formulaires honnêtes ; export Shopify / WooCommerce / PrestaShop ; sections réservées au thème ; site immobilier sans module serveur (chargé par le navigateur) ; démo complète (27 biens, aucune photo partagée — avec le kit privé) |
+| Suite complète (vitest, 362 fichiers) | 2 939 réussis, 3 échecs de registres (rôles de contenu des sections `re-*`, fiche d'un bien traitée comme composant structurel, contrôle d'identité qui essayait d'ajouter des sections immobilières sur Atelier Rive) → corrigés, les 20 fichiers concernés repassés (115/115) |
+| Theme Check officiel (Shopify), Maison & Horizon en Prestations de services, FR et EN | 0 erreur ; 4 avertissements anciens dans des sections `fs-*` hors de cette mission |
+| Preuve des interactions en navigateur (`scripts/maison-horizon-interactions.ts`, démo statique) | 22/22 étapes : filtres, tri, pages, état vide, retour arrière, recherche de l'accueil, carte, visionneuse, demande de visite vérifiée sans envoi, favoris et comparaison, estimation en 3 étapes sans prix, fiche au téléphone, onglets légaux, cookies |
+| Preuve du studio (`scripts/maison-horizon-studio-check.ts`, Next.js réel, base temporaire) | 7/7 étapes : onglet Biens et 27 biens listés ; ajout d'un brouillon ; publication refusée avec le message du serveur (« il manque : au moins une photo, la surface, le loyer hors charges ») ; saisie et photo choisie dans les médias ; aperçu du brouillon seul ; publié → visible sur Louer (filtre Lille) et fiche ouverte, version du thème inchangée ; retiré → absent du site, gardé dans l'onglet |
+| Captures et comparaisons | 40 captures (20 pages × ordinateur et téléphone), aucun débordement horizontal ; 20 planches « maquette / rendu » côte à côte (images du kit privé : envoyées à Thomas, non publiées) |
+
+Défaut trouvé par la preuve du studio et corrigé : le site immobilier lisait les schémas de sections sur le disque ;
+or `directions.ts` est aussi chargé par l'onglet Marque (navigateur) : le studio ne compilait plus. Il compose désormais
+les sections avec leurs seuls réglages (les valeurs par défaut viennent du schéma au rendu) et un test empêche le retour
+d'un import serveur.
+
+**Une CI verte ne vaut pas validation visuelle** : les comparaisons sont à valider par Thomas.
