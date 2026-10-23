@@ -1,0 +1,80 @@
+[
+  {
+    "path": "maquettes/01-accueil-composition.webp",
+    "width": 1024,
+    "height": 1536,
+    "sha256": "1ac6bdeb8172e0354a64b459fbc01538b944a4e01ccf6b9513af63547eab7c59"
+  },
+  {
+    "path": "maquettes/02-commerce-composition.webp",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "1216c5a7e98b2a82bca83921833ed8a01d1c6e35f3bf4e82914ba7027025cea3"
+  },
+  {
+    "path": "maquettes/03-pages-complementaires.webp",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "54836608eca539f2c700ec2e2e83accab68fc9bc1387632835cc826377e8bced"
+  },
+  {
+    "path": "maquettes/04-article-et-legal.webp",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "a61c3d47bc0849ebc6f020314ffa57464eefa1d8e58edee1720ba864a3b049dc"
+  },
+  {
+    "path": "medias/detail-boucle.webp",
+    "width": 1254,
+    "height": 1254,
+    "sha256": "53679bc238e28e4f06ef13e7de5d94cb497728cca2641ceb475aa7e4bceb0abf"
+  },
+  {
+    "path": "medias/detail-poche.webp",
+    "width": 1254,
+    "height": 1254,
+    "sha256": "c16d5596e813f438c5607e777afc2dce65e659f07b069b75cf07ebe474c0d4ea"
+  },
+  {
+    "path": "medias/detail-poignee.webp",
+    "width": 1254,
+    "height": 1254,
+    "sha256": "6b3da57d4561bc25914fe3892979d5afadfefaa2c5b5535fb284bbc2da786a94"
+  },
+  {
+    "path": "medias/hero-gare.webp",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "1c4c25fba1a2cc357a92bc2d1f72185647c2b03ff3e9a3b0856dbb0be633818d"
+  },
+  {
+    "path": "medias/lac.webp",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "30adf504ef7ac957d2648d1777fab62cbb82cab2bf84f61f51ffe4f11472948a"
+  },
+  {
+    "path": "medias/montagne.webp",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "43177df267ce135bf802f6b215c7cc209fdadfa361d6ce8ef04d291a0ef4043a"
+  },
+  {
+    "path": "medias/paysage.webp",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "2a559d800afa31ca7808f3b1a7f528b6ee4cb3c4dc71e76604109520375fafaa"
+  },
+  {
+    "path": "medias/produit-reference.webp",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "ff4bb11e082aa73822d91fabf92b23f97e438786b67048778f40c67cbc174c43"
+  },
+  {
+    "path": "medias/train.webp",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "22b830a723faca7bb36f3c7cd4ab3256b3c028ad86dae335e6ecc415edb0226b"
+  }
+]
