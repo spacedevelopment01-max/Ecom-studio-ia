@@ -156,6 +156,7 @@ body:has(.ts-header) .es-main { background: #F6F0E5; }
   .ts-hero__inner { min-height: var(--ts-hero-h-mobile, 340px); }
   .ts-hero .ts-title { font-size: var(--ts-hero-title-mobile, 40px); }
   .ts-hero__text { font-size: 15px; }
+  .ts-hero--page .ts-hero__shade, .ts-hero--booking .ts-hero__shade { background: linear-gradient(180deg, rgba(28,16,12,.38) 0%, rgba(28,16,12,.62) 100%); }
   /* Accueil sur téléphone : la photo, puis le bloc sombre avec l'accroche et les deux boutons empilés. */
   .ts-hero--stack { background: #2a1b16; }
   .ts-hero--stack .ts-hero__media { position: relative; height: 300px; }
@@ -198,6 +199,7 @@ body:has(.ts-header) .es-main { background: #F6F0E5; }
   .ts-split--mobile-inset .ts-split__media .ts-img { border-radius: 3px; }
   .ts-split--right .ts-split__media { order: 0; }
   .ts-split--boxed { padding-top: 36px; }
+  .ts-split--boxed .ts-split__media .ts-img { aspect-ratio: 4 / 3; }
   .ts-split .ts-ornament--left { display: none; }
 }
 
@@ -413,7 +415,7 @@ body:has(.ts-header) .es-main { background: #F6F0E5; }
 /* Panneau bordeaux */
 .ts-panel { background: var(--ts-wine-deep); color: #F6F0E5; padding: 34px 0 32px; overflow: hidden; }
 .ts-panel .ts-title { color: #F6F0E5; font-size: clamp(28px, 2.5vw, 36px); margin-bottom: 14px; }
-.ts-panel .ts-text { color: #EBDDD4; max-width: 600px; font-size: 16px; }
+.ts-panel .ts-text { color: #EBDDD4; max-width: 520px; font-size: 16px; }
 .ts-panel .ts-ornament { right: clamp(20px, 6vw, 90px); top: 50%; transform: translateY(-50%); width: 120px; height: 160px; color: #B7B78F; opacity: .8; }
 @media (max-width: 749px) { .ts-panel .ts-ornament { width: 70px; height: 96px; top: 28px; transform: none; opacity: .5; } }
 

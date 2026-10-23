@@ -32,6 +32,7 @@ type Core = {
   formatTime(time: string, lang?: string): string;
   maskEmail(email: string): string;
   nowIn(timezone: string, at?: number): { date: string; minute: number };
+  monthGrid(year: number, month: number): (string | null)[];
   ics(res: { number: string; date: string; time: string }, opts: Record<string, unknown>): string;
 };
 /**

@@ -8,7 +8,8 @@ import path from "node:path";
 import { createUser } from "@/lib/auth";
 import { compileTheme } from "@/lib/theme/compile";
 import { renderPage } from "@/lib/theme/render";
-import { validateSpec } from "@/lib/theme/ops";
+import { applyOps, validateSpec } from "@/lib/theme/ops";
+import { currentTheme, saveThemeVersion } from "@/lib/projects";
 import { ACTIVE_DIRECTIONS } from "@/lib/theme/directions";
 import { themeKinds } from "@/lib/theme/theme-fit";
 import { planForTheme } from "@/lib/theme/theme-access";
@@ -95,6 +96,35 @@ describe("Démonstration TABLE SAISON (planches 01 à 05)", async () => {
     expect(legal).toContain("Éditeur du site");
     expect(legal).toContain("[À renseigner]");
     expect((await render("/pages/cookies")).html).toContain("data-ts-cookies-reset");
+  });
+
+  it("édition : prix d'un plat, capacité, section masquée, dupliquée et déplacée ; enregistrée puis relue à l'identique", async () => {
+    const carte = spec.templates["page.ts-carte"];
+    const menuId = carte.order.find((id) => carte.sections[id].type === "ts-menu")!;
+    const risotto = Object.entries(carte.sections[menuId].blocks!).find(([, b]) => b.settings.name === "Risotto aux champignons")![0];
+    const restaurant = spec.groups.header.order.find((id) => spec.groups.header.sections[id].type === "ts-restaurant")!;
+    const dishes = spec.templates.index.order.find((id) => spec.templates.index.sections[id].type === "ts-dishes")!;
+    const faqId = spec.templates.index.order.find((id) => spec.templates.index.sections[id].type === "ts-faq")!;
+    const r = applyOps(spec, [
+      { op: "set_setting", template: "page.ts-carte", section: menuId, block: risotto, key: "price", value: "23 €" },
+      { op: "set_setting", template: "group:header", section: restaurant, key: "capacity", value: 30 },
+      { op: "toggle_section", template: "index", section: faqId, disabled: true },
+      { op: "duplicate_section", template: "index", section: dishes },
+      { op: "move_section", template: "index", section: dishes, position: { index: 0 } },
+    ] as never);
+    expect(r.rejected ?? []).toEqual([]);
+    const v = saveThemeVersion(demo.pid, r.spec, "Retouche", "user");
+    const back = currentTheme(demo.pid)!;
+    expect(back.version.id).toBe(v.id);
+    expect(JSON.stringify(back.spec)).toBe(JSON.stringify(r.spec));
+    const f = compileTheme(back.spec);
+    const carteHtml = visibleText((await renderPage({ spec: back.spec, base: "", files: f, cart: [] }, "/pages/la-carte", new URLSearchParams())).html);
+    expect(carteHtml).toMatch(/Risotto aux champignons.{0,40}23 €/);
+    const home = (await renderPage({ spec: back.spec, base: "", files: f, cart: [] }, "/", new URLSearchParams())).html;
+    expect(home).not.toContain("Vos questions, nos réponses.");
+    expect((home.match(/class="ts-section ts-dishes/g) ?? []).length).toBe(2);
+    expect(back.spec.templates.index.order[0]).toBe(dishes);
+    expect(JSON.parse(home.match(/id="ts-config">([\s\S]*?)<\/script>/)![1]).capacity).toBe(30);
   });
 
   it("galerie filtrable et visionneuse accessible, contact avec plan illustratif signalé", async () => {
