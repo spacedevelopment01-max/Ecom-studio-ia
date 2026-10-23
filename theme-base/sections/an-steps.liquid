@@ -1,0 +1,51 @@
+{%- comment -%}
+  ATELIER NUANCE : étapes numérotées.
+  - band : bandeau chocolat « Votre rendez-vous, simplement. », bouton et trois étapes à cercles (planche 04) ;
+  - line : « Les étapes de votre prestation », pastilles terracotta sur un filet (fiche, planche 05).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="an-section an-steps an-steps--{{ s.style }}">
+  <div class="an-wrap">
+    <div class="an-steps__head">
+      {%- if s.heading != blank -%}<h2 class="an-title {% if s.style == 'band' %}an-title--xl{% else %}an-title--md{% endif %}">{{ s.heading | escape | newline_to_br }}</h2>{%- endif -%}
+      {%- if s.button_label != blank -%}<a class="an-btn an-btn--peach an-steps__btn" href="{{ s.button_link | default: '/pages/prendre-rendez-vous' }}"><span>{{ s.button_label }}</span>{% render 'an-icon', name: 'arrow' %}</a>{%- endif -%}
+    </div>
+    <ol class="an-steps__list" role="list">
+      {%- for block in section.blocks -%}
+        {%- assign b = block.settings -%}
+        <li class="an-steps__item" {{ block.shopify_attributes }}>
+          <span class="an-steps__num" aria-hidden="true">{% if s.style == 'band' %}{{ forloop.index | prepend: '0' | slice: -2, 2 }}{% else %}{{ forloop.index }}{% endif %}</span>
+          <div>
+            <h3 class="an-steps__title">{{ b.title | escape | newline_to_br }}</h3>
+            {%- if b.text != blank -%}<p class="an-steps__text">{{ b.text | escape | newline_to_br }}</p>{%- endif -%}
+          </div>
+        </li>
+      {%- endfor -%}
+    </ol>
+    {%- if s.button_label != blank -%}<a class="an-btn an-btn--peach an-steps__btn-m" href="{{ s.button_link | default: '/pages/prendre-rendez-vous' }}"><span>{{ s.button_label }}</span>{% render 'an-icon', name: 'arrow' %}</a>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Étapes numérotées",
+  "class": "an-steps-section",
+  "max_blocks": 5,
+  "settings": [
+    { "type": "select", "id": "style", "label": "Style", "default": "band", "options": [{ "value": "band", "label": "Bandeau chocolat" }, { "value": "line", "label": "Pastilles sur un filet" }] },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Votre rendez-vous, simplement." },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" }
+  ],
+  "blocks": [
+    {
+      "type": "step", "name": "Étape",
+      "settings": [
+        { "type": "textarea", "id": "title", "label": "Titre", "default": "Étape" },
+        { "type": "textarea", "id": "text", "label": "Texte" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Étapes numérotées" }]
+}
+{% endschema %}

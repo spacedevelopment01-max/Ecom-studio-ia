@@ -155,6 +155,11 @@ export type CatalogTheme = {
   headerSettings?: Record<string, unknown>;
   /** Sections de la fiche produit après le corps (sinon : avis, récit, caractéristiques, FAQ de la direction). */
   product?: (k: Kit) => (Row | Row[])[];
+  /**
+   * Finition propre au thème, appliquée à la fin de la composition (ATELIER NUANCE, issue #177 : réglages du salon
+   * dans l'en-tête, pied, pages du salon, page introuvable). Les contenus restent ceux du projet.
+   */
+  finish?: (spec: import("./spec").ThemeSpec, ctx: { kit: Kit; lang: import("../i18n").Lang; services: boolean; shopName: string; address: string; phone: string; email: string; hours: string; contactUrl: string; bookingLabel: string; bookingLink: string; legalUrl: string; offers?: { key?: string; name: string; description: string; price?: string; duration?: string }[] }) => void;
 };
 
 const look = (l: Partial<ThemeLook> & Pick<ThemeLook, "headerLayout" | "shape" | "menu" | "footer" | "ann" | "card" | "button" | "radius">): ThemeLook => ({
@@ -175,7 +180,7 @@ const look = (l: Partial<ThemeLook> & Pick<ThemeLook, "headerLayout" | "shape" |
 });
 
 /** Identifiants des thèmes du catalogue (dans l'ordre de présentation). */
-export const CATALOG_IDS = ["vitrine", "manifeste", "laboratoire", "magazine", "cinema", "rituel", "horizon", "lookbook", "marche", "signal", "jardin", "reception", "cabinet", "recre", "epure", "tribu", "etabli", "velours", "lancement", "fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple"] as const;
+export const CATALOG_IDS = ["vitrine", "manifeste", "laboratoire", "magazine", "cinema", "rituel", "horizon", "lookbook", "marche", "signal", "jardin", "reception", "cabinet", "recre", "epure", "tribu", "etabli", "velours", "lancement", "fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "atelier-nuance"] as const;
 export type CatalogThemeId = (typeof CATALOG_IDS)[number];
 
 export const CATALOG_THEMES: (CatalogTheme & { id: CatalogThemeId })[] = [

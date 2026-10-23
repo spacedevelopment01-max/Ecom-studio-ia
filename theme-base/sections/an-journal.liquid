@@ -1,0 +1,61 @@
+{%- comment -%}
+  ATELIER NUANCE : le journal (planche 03). Article vedette (photo, sur-titre, titre, chapeau, « Lire l'article »)
+  puis cartes d'articles. Chaque lien mène à une vraie page d'article (une adresse par article).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- if section.blocks.size > 0 -%}
+<section class="an-section an-journal">
+  <div class="an-wrap">
+    {%- for block in section.blocks -%}
+      {%- assign b = block.settings -%}
+      {%- if forloop.first -%}
+        <article class="an-journal__lead" {{ block.shopify_attributes }}>
+          <a class="an-journal__lead-img" href="{{ b.link }}" tabindex="-1" aria-hidden="true">{% render 'an-img', image: b.image, asset: b.image_asset, alt: '', pos: b.image_position %}</a>
+          <div class="an-journal__lead-body">
+            {%- if b.eyebrow != blank -%}<p class="an-eyebrow">{{ b.eyebrow }}</p>{%- endif -%}
+            <h2 class="an-title an-title--lg"><a href="{{ b.link }}">{{ b.title | escape | newline_to_br }}</a></h2>
+            {%- if b.text != blank -%}<p class="an-journal__excerpt">{{ b.text }}</p>{%- endif -%}
+            <a class="an-btn an-btn--peach an-btn--sm" href="{{ b.link }}"><span>{{ s.read_label }}</span>{% render 'an-icon', name: 'arrow' %}<span class="visually-hidden"> : {{ b.title }}</span></a>
+          </div>
+        </article>
+        <ul class="an-journal__cards" role="list">
+      {%- else -%}
+          <li class="an-journal__card" {{ block.shopify_attributes }}>
+            <a class="an-journal__card-img" href="{{ b.link }}" tabindex="-1" aria-hidden="true">{% render 'an-img', image: b.image, asset: b.image_asset, alt: '', pos: b.image_position %}</a>
+            {%- if b.eyebrow != blank -%}<p class="an-eyebrow an-eyebrow--terra">{{ b.eyebrow }}</p>{%- endif -%}
+            <h3 class="an-journal__card-title"><a href="{{ b.link }}">{{ b.title | escape | newline_to_br }}</a></h3>
+            {%- if b.text != blank -%}<p class="an-journal__card-text">{{ b.text }}</p>{%- endif -%}
+            <a class="an-btn an-btn--peach an-btn--xs" href="{{ b.link }}"><span>{{ s.read_label }}</span>{% render 'an-icon', name: 'arrow' %}<span class="visually-hidden"> : {{ b.title }}</span></a>
+          </li>
+      {%- endif -%}
+      {%- if forloop.last -%}</ul>{%- endif -%}
+    {%- endfor -%}
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Journal du salon",
+  "class": "an-journal-section",
+  "max_blocks": 13,
+  "settings": [
+    { "type": "text", "id": "read_label", "label": "Texte des liens", "default": "Lire l'article" }
+  ],
+  "blocks": [
+    {
+      "type": "article", "name": "Article",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+        { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+        { "type": "text", "id": "eyebrow", "label": "Rubrique", "default": "Conseils" },
+        { "type": "textarea", "id": "title", "label": "Titre", "default": "Article" },
+        { "type": "textarea", "id": "text", "label": "Chapeau" },
+        { "type": "url", "id": "link", "label": "Page de l'article" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Journal du salon" }]
+}
+{% endschema %}

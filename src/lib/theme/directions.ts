@@ -1327,5 +1327,10 @@ export function buildSpec(input: BuildInput): ThemeSpec {
       for (const block of Object.values(section.blocks ?? {})) if (block.type === "buy_buttons") block.settings.show_dynamic_checkout = false;
     }
   }
+  // Finition propre au thème du catalogue (ATELIER NUANCE : réglages du salon, pages du salon, page introuvable).
+  if (cat?.finish) {
+    const sv = input.services;
+    cat.finish(result, { kit, lang, services: !!svc, shopName: input.shopName, address: sv?.address.trim() ?? "", phone: sv?.phone.trim() ?? "", email: sv?.email.trim() ?? "", hours: sv?.hours.trim() ?? "", contactUrl: svc ? svc.urls.contact : "/pages/contact", bookingLabel: svc ? svc.headerCta.label : t("Nous contacter", "Contact us"), bookingLink: svc ? svc.headerCta.link || svc.urls.contact : "/pages/contact", legalUrl: svc ? svc.urls.legal : "/policies/legal-notice", offers: svc ? sv?.services ?? [] : [] });
+  }
   return result;
 }

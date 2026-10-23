@@ -1,0 +1,50 @@
+{%- comment -%}
+  ATELIER NUANCE : prestations phares (nom, prix | durée, flèche ronde). Les prix et durées suivent la source unique
+  des « Réglages du salon » (identifiant de prestation) ; la mention de démonstration s'affiche dessous.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- if section.blocks.size > 0 -%}
+<section class="an-section an-featured">
+  <div class="an-wrap">
+    {%- if s.eyebrow != blank -%}<h2 class="an-eyebrow">{{ s.eyebrow }}</h2>{%- endif -%}
+    <ul class="an-featured__list" role="list">
+      {%- for block in section.blocks -%}
+        {%- assign b = block.settings -%}
+        <li class="an-featured__item" {{ block.shopify_attributes }}>
+          <a class="an-featured__link" href="{{ b.link | default: '/pages/prestations' }}" data-an-svc="{{ b.service_id | escape }}">
+            <span class="an-featured__name">{{ b.name }}</span>
+            <span class="an-featured__meta"><span class="an-price" data-an-f="price">{{ b.price }}</span><span class="an-sep" aria-hidden="true"></span><span data-an-f="duration">{{ b.duration }}</span></span>
+            <span class="an-round" aria-hidden="true">{% render 'an-icon', name: 'next' %}</span>
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+    {%- if s.note != blank -%}<p class="an-note" data-an-demo-note>{{ s.note }}</p>{%- endif -%}
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Prestations phares",
+  "class": "an-featured-section",
+  "max_blocks": 4,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Petit titre", "default": "Nos prestations phares" },
+    { "type": "text", "id": "note", "label": "Mention sous la liste", "default": "Tarifs et disponibilités de démonstration." }
+  ],
+  "blocks": [
+    {
+      "type": "service", "name": "Prestation",
+      "settings": [
+        { "type": "text", "id": "service_id", "label": "Identifiant de la prestation", "info": "Le prix et la durée suivent alors les « Réglages du salon »." },
+        { "type": "text", "id": "name", "label": "Nom", "default": "Prestation" },
+        { "type": "text", "id": "price", "label": "Prix affiché" },
+        { "type": "text", "id": "duration", "label": "Durée affichée" },
+        { "type": "url", "id": "link", "label": "Lien" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Prestations phares" }]
+}
+{% endschema %}
