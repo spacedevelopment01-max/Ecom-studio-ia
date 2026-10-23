@@ -253,6 +253,7 @@ export function colorSchemes(direction: DirectionId, p: BrandPalette): Record<st
       filled,
       onLight,
       onDark,
+      accentOn: (bg: string) => brandAccent(bg, p.accent, p.primary, p.dark),
       night: (l: number, sat = 0.5) => withLightness(deep, l, sat),
       light,
       tint: (c: string, l: number, sat = 1) => withLightness(c, l, sat),

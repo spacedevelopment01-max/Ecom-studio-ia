@@ -30,6 +30,8 @@ export type PaletteKit = {
   /** Couleur de la marque lisible sur un fond clair / sombre (jamais dénaturée). */
   onLight: (bg: string) => string;
   onDark: (bg: string) => string;
+  /** Couleur d'accent de la marque d'abord (boutons d'action), sinon la principale, lisible sur ce fond. */
+  accentOn: (bg: string) => string;
   /** Sombre de la marque à une luminosité donnée. */
   night: (l: number, sat?: number) => string;
   /** Clair de la marque s'il est vraiment clair, sinon la couleur de repli. */

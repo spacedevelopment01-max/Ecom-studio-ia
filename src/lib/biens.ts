@@ -34,6 +34,8 @@ const short = (max: number) => z.string().trim().max(max);
 /** Données saisies d'un bien (tout est facultatif en brouillon ; la publication exige l'essentiel). */
 export const bienDataSchema = z.object({
   title: short(120).default(""),
+  /** Titre d'ouverture de la fiche (facultatif) : sinon le titre du bien. */
+  headline: short(140).default(""),
   type: z.enum(BIEN_TYPES).default("maison"),
   summary: short(180).default(""),
   description: short(6000).default(""),
@@ -188,7 +190,7 @@ export function storeBiens(projectId: string): { biens: StoreBien[]; files: Reco
   const biens = listBiens(projectId).filter((b) => VISIBLE_STATUSES.includes(b.status)).map((b): StoreBien => {
     const d = b.data;
     return {
-      ref: b.ref, handle: b.handle, transaction: b.transaction, status: b.status, type: d.type, title: d.title, summary: d.summary, description: d.description,
+      ref: b.ref, handle: b.handle, transaction: b.transaction, status: b.status, type: d.type, title: d.title, headline: d.headline, summary: d.summary, description: d.description,
       city: d.city, postalCode: d.postalCode, sector: d.sector, address: d.addressVisibility === "exacte" ? d.address : "", price: d.price, rent: d.rent, charges: d.charges,
       deposit: d.deposit, fees: d.fees, surface: d.surface, land: d.land, rooms: d.rooms, bedrooms: d.bedrooms, floor: d.floor, furnished: d.furnished, exteriors: d.exteriors,
       pool: d.pool, features: d.features, availability: d.availability, dpe: d.dpe, ges: d.ges, propertyTax: d.propertyTax, photos: d.photos.map(file), plan: d.plan ? file(d.plan) : null,

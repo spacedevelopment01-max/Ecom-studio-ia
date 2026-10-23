@@ -153,7 +153,7 @@ export type ThemeSpec = {
 
 /** Un bien prêt pour le thème (métaobjet « bien » dans Shopify, page /pages/bien/<adresse>). */
 export type StoreBien = {
-  ref: string; handle: string; transaction: "vente" | "location"; status: string; type: string; title: string; summary: string; description: string;
+  ref: string; handle: string; transaction: "vente" | "location"; status: string; type: string; title: string; headline?: string; summary: string; description: string;
   city: string; postalCode: string; sector: string; address: string; price: number | null; rent: number | null; charges: number | null; deposit: number | null;
   fees: string; surface: number | null; land: number | null; rooms: number | null; bedrooms: number | null; floor: string; furnished: boolean | null;
   exteriors: string[]; pool: boolean; features: string[]; availability: string; dpe: string | null; ges: string | null; propertyTax: string;

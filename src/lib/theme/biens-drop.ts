@@ -33,6 +33,7 @@ export function bienDrop(b: StoreBien, base: string) {
     type_bien: v(b.type),
     type_label: v(TYPE_LABELS[b.type] ?? "Bien"),
     titre: v(b.title),
+    titre_fiche: v(b.headline || b.title),
     accroche: v(b.summary),
     description: v(b.description),
     paragraphes: v(b.description.split(/\n{2,}/).map((x) => x.trim()).filter(Boolean)),

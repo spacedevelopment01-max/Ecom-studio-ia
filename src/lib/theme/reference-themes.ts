@@ -717,9 +717,9 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
     palette: (k) => {
       const ivory = k.light("#F7F2EA");
       const band = k.mix(ivory, "#D9C9AE", 0.32);
-      const green = k.night(0.16, 0.32);
-      const accent = k.onLight(ivory);
-      return [k.scheme(ivory, green, accent), k.scheme(band, green, k.onLight(band)), k.scheme(green, ivory, k.onDark(green), 0.06), k.scheme("#FFFFFF", green, k.onLight("#FFFFFF"))];
+      // Vert profond de la marque (sa teinte, assombrie au besoin) : #1F3A2F pour la démonstration.
+      const green = k.tint(k.p.primary, 0.18);
+      return [k.scheme(ivory, green, k.accentOn(ivory)), k.scheme(band, green, k.accentOn(band)), k.scheme(green, ivory, k.onDark(green), 0.06), k.scheme("#FFFFFF", green, k.accentOn("#FFFFFF"))];
     },
     home: (k) => [k.lib("re-hero", 1, { layout: "home", heading: k.hero.heading, image_asset: k.im.hero ?? k.im.lifestyle ?? "" }), k.lib("re-listings", 1, { mode: "featured", layout: "home", limit: 4 }), k.faqSec(1, 4, "lines"), k.cta(3)],
     product: (k) => [k.faqSec(1, 4, "lines")],

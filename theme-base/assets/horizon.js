@@ -111,11 +111,40 @@
     var cities = root.querySelector("[data-re-cities]");
     if (cities) { var seen = {}; cards.forEach(function (c) { var name = c.querySelector(".re-card__place"); var city = (name && name.textContent || "").replace(/\s*\(.*$/, "").trim(); if (city && !seen[city]) { seen[city] = 1; var o = document.createElement("option"); o.value = city; cities.appendChild(o); } }); }
     var state = {};
+    var defaultCity = root.getAttribute("data-default-city") || "";
     function read() {
       var c = {};
       if (useUrl) { var q = new URLSearchParams(location.search); FIELDS.forEach(function (f) { if (q.get(f)) c[f] = q.get(f); }); }
+      if (defaultCity && !Object.keys(c).length && !(history.state && history.state.mh)) c.ville = defaultCity;
       return c;
     }
+    /* Carte illustrative : un repère par bien placé ; visible si son bien est dans les résultats d'une ville choisie. */
+    var pins = Array.prototype.slice.call(root.querySelectorAll("[data-re-pin]")), hint = root.querySelector("[data-re-map-hint]");
+    function syncPins(visible, c) {
+      if (!pins.length && !hint) return;
+      var refs = {}; visible.forEach(function (card) { refs[card.getAttribute("data-ref")] = 1; });
+      var placed = 0;
+      pins.forEach(function (pin) { var on = !!c.ville && !!refs[pin.getAttribute("data-re-pin")]; pin.hidden = !on; if (on) placed++; });
+      if (hint) { hint.hidden = !!c.ville && placed > 0; if (c.ville && !placed) hint.textContent = "Aucun bien de cette recherche n'est placé sur la carte illustrative."; else hint.textContent = hint.getAttribute("data-default") || hint.textContent; }
+    }
+    if (hint) hint.setAttribute("data-default", hint.textContent);
+    pins.forEach(function (pin) {
+      var card = cards.filter(function (c) { return c.getAttribute("data-ref") === pin.getAttribute("data-re-pin"); })[0];
+      if (!card) return;
+      var on = function () { pin.classList.add("is-active"); card.classList.add("is-active"); }, off = function () { pin.classList.remove("is-active"); card.classList.remove("is-active"); };
+      [pin, card].forEach(function (el) { el.addEventListener("mouseenter", on); el.addEventListener("mouseleave", off); el.addEventListener("focusin", on); el.addEventListener("focusout", off); });
+    });
+    var view = root.querySelector("[data-re-mapview]");
+    root.querySelectorAll("[data-re-view]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var v = b.getAttribute("data-re-view");
+        if (view) view.setAttribute("data-view", v);
+        root.querySelectorAll("[data-re-view]").forEach(function (o) { var on = o === b; o.classList.toggle("is-active", on); o.setAttribute("aria-pressed", on ? "true" : "false"); });
+        announce(v === "map" ? "Affichage carte et liste." : "Affichage en liste.");
+      });
+    });
+    var toggle = root.querySelector("[data-re-filters-toggle]");
+    if (toggle && form) toggle.addEventListener("click", function () { var open = !form.classList.contains("is-open"); form.classList.toggle("is-open", open); toggle.setAttribute("aria-expanded", open ? "true" : "false"); if (open) { var first = form.querySelector("input, select"); if (first) first.focus(); } });
     function toForm(c) {
       if (form) Array.prototype.forEach.call(form.elements, function (el) { if (!el.name) return; if (el.type === "checkbox") el.checked = !!c[el.name]; else if (c[el.name] !== undefined) el.value = c[el.name]; else el.value = ""; });
       if (sortSel) sortSel.value = c.tri || "";
@@ -142,6 +171,7 @@
       cards.forEach(function (card) { card.hidden = true; });
       visible.forEach(function (card, i) { card.hidden = perPage ? (i < (page - 1) * perPage || i >= page * perPage) : false; });
       var shown = visible.filter(function (card) { return !card.hidden; }).length;
+      syncPins(visible, c);
       if (count) count.textContent = total === cards.length ? shown + " bien" + (shown > 1 ? "s" : "") + " sur " + total : total + " bien" + (total > 1 ? "s" : "") + " trouvé" + (total > 1 ? "s" : "") + " sur " + cards.length + (perPage && pages > 1 ? " · page " + page + " sur " + pages : "");
       if (empty) empty.hidden = total !== 0;
       if (pager) {

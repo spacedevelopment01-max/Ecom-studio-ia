@@ -10,7 +10,7 @@ body[data-editorial="horizon"] {
   --mh-card: color-mix(in srgb, var(--c-bg) 55%, #fff);
   --mh-sand: color-mix(in srgb, var(--c-bg) 86%, #b89a6a);
   --mh-terra: var(--c-accent);
-  --mh-green: var(--mh-brand, #1f3a2f);
+  --mh-green: var(--c-text);
   --mh-r: 2px;
   --page-width: 1320px;
 }
@@ -48,7 +48,7 @@ body[data-editorial="horizon"] h1, body[data-editorial="horizon"] h2, body[data-
 .re-hero--h-medium .re-hero__inner { min-height: 440px; }
 .re-hero--h-short .re-hero__inner { min-height: 360px; }
 .re-hero--bottom .re-hero__inner { justify-content: flex-end; padding-bottom: 48px; }
-.re-hero__copy { max-width: 620px; }
+.re-hero__copy { max-width: 760px; }
 .re-hero__title { margin: 0; color: #fff; font-size: clamp(2.4rem, 4.4vw, 4.3rem); line-height: 1.04; text-wrap: balance; }
 .re-hero__text { margin-top: 16px; max-width: 56ch; color: rgba(255,255,255,.92); font-size: 1.02rem; line-height: 1.55; }
 .re-hero__text p { margin: 0; }
@@ -148,6 +148,157 @@ h1.re-title { font-size: clamp(2rem, 3vw, 2.7rem); }
 .re-pager .es-icon { width: 16px; height: 16px; }
 .re-more-mobile { display: none; }
 
+/* ── En-tête et pied : mot-symbole (nom de la boutique en capitales serif) précédé d'une arche au trait ────────────── */
+body[data-editorial="horizon"] .es-header .es-header__wordmark, body[data-editorial="horizon"] a.es-footer__brand { display: inline-flex; align-items: center; gap: 10px; font: 500 .98rem/1.05 var(--font-heading); letter-spacing: .14em; text-transform: uppercase; }
+body[data-editorial="horizon"] .es-header__wordmark::before, body[data-editorial="horizon"] a.es-footer__brand::before { content: ""; flex: 0 0 auto; width: 26px; height: 30px; background: currentColor; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 30' fill='none' stroke='black' stroke-width='1.4'%3E%3Cpath d='M2 29V13a11 11 0 0 1 22 0v16'/%3E%3Cpath d='M7 29V14a6 6 0 0 1 12 0v15'/%3E%3Cpath d='M1 29h24'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 30' fill='none' stroke='black' stroke-width='1.4'%3E%3Cpath d='M2 29V13a11 11 0 0 1 22 0v16'/%3E%3Cpath d='M7 29V14a6 6 0 0 1 12 0v15'/%3E%3Cpath d='M1 29h24'/%3E%3C/svg%3E") center / contain no-repeat; }
+body[data-editorial="horizon"] .es-header__cta { background: var(--mh-green, #1f3a2f); color: #fff; border-color: var(--mh-green, #1f3a2f); border-radius: 2px; text-transform: none; letter-spacing: 0; font-weight: 500; }
+body[data-editorial="horizon"] [data-re-fav-count][hidden] { display: none; }
+body[data-editorial="horizon"] a.es-footer__brand { color: inherit; text-decoration: none; }
+body[data-editorial="horizon"] .es-header__favorites { position: relative; color: var(--c-text); }
+body[data-editorial="horizon"] .es-header__favorites .es-cart-count { background: var(--c-accent); color: #fff; }
+body[data-editorial="horizon"] .es-footer--brand-left .es-footer__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 989px) { body[data-editorial="horizon"] .es-footer--brand-left .es-footer__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+body[data-editorial="horizon"] .es-footer__wordmark { font-family: var(--font-heading); letter-spacing: .14em; text-transform: uppercase; }
+
+/* ── Panneau de recherche des pages Acheter / Louer / Carte (posé sur la photo d'ouverture) ────────────────────── */
+.re-panel { position: relative; z-index: 2; margin: 0 0 30px; }
+.re-listings--overlap { padding-top: 0 !important; }
+.re-listings--overlap .re-panel { margin-top: -86px; }
+.re-panel .re-tabs { display: inline-flex; }
+.re-panel .re-tab { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 120px; min-height: 40px; text-decoration: none; }
+.re-panel .re-tab.is-active, .re-panel .re-tab[aria-pressed="true"] { background: var(--c-accent); color: var(--c-accent-text, #fff); }
+.re-panel .re-tab .es-icon { width: 16px; height: 16px; }
+.re-panel .re-filters { margin: 0; border-top: 0; }
+.re-filters-toggle { display: none; }
+
+/* ── Carte illustrative et liste (planche 02, troisième écran) ─────────────────────────────────────────────── */
+.re-listings--map .re-filters { grid-template-columns: minmax(0, 1.3fr) repeat(4, minmax(0, 1fr)) auto; }
+.re-mapview { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr); gap: 22px; align-items: start; }
+.re-mapview[data-view="list"] { grid-template-columns: minmax(0, 1fr); }
+.re-mapview[data-view="list"] .re-map { display: none; }
+.re-mapview[data-view="list"] .re-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.re-map { position: sticky; top: calc(var(--header-h, 72px) + 12px); }
+.re-map__canvas { position: relative; height: min(76vh, 720px); overflow: hidden; border: 1px solid var(--mh-line); background: var(--mh-sand); }
+.re-map__canvas .ed-media { position: absolute; inset: 0; height: 100%; }
+.re-map__canvas img { width: 100%; height: 100%; object-fit: cover; }
+.re-map__label { position: absolute; left: 12px; bottom: 12px; margin: 0; padding: 6px 12px; background: var(--c-bg); border: 1px solid var(--mh-line); font-size: .76rem; }
+.re-map__hint { position: absolute; left: 50%; top: 18px; transform: translateX(-50%); width: max-content; max-width: calc(100% - 32px); margin: 0; padding: 10px 16px; background: var(--c-bg); border: 1px solid var(--mh-line); box-shadow: 0 10px 24px -18px rgba(0,0,0,.5); font-size: .82rem; text-align: center; }
+.re-map__hint[hidden] { display: none; }
+.re-pin { position: absolute; z-index: 2; display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px 6px 8px; transform: translate(-50%, -100%); background: #fff; color: var(--c-text); border-radius: 3px; box-shadow: 0 6px 16px -8px rgba(0,0,0,.45); font: 600 .78rem/1 var(--font-body); white-space: nowrap; text-decoration: none; transition: transform .15s, background-color .15s; }
+.re-pin .es-icon { width: 16px; height: 16px; color: var(--c-accent); }
+.re-pin[hidden] { display: none; }
+.re-pin:hover, .re-pin:focus-visible, .re-pin.is-active { z-index: 3; background: var(--c-accent); color: #fff; transform: translate(-50%, -100%) scale(1.06); }
+.re-pin:hover .es-icon, .re-pin:focus-visible .es-icon, .re-pin.is-active .es-icon { color: #fff; }
+.re-pin:focus-visible { outline: 2px solid var(--c-text); outline-offset: 2px; }
+.re-card.is-active { border-color: var(--c-accent); }
+.re-mapview__list .re-toolbar { margin: 0 0 12px; }
+
+/* ── Tuiles ───────────────────────────────────────────────────────────────────────────────────────────────────── */
+.re-tiles__list { display: grid; gap: 22px; margin: 0; padding: 0; list-style: none; }
+.re-tile { position: relative; min-width: 0; }
+.re-tile__media { overflow: hidden; background: var(--mh-sand); }
+.re-tile__media .ed-media, .re-tile__media img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.re-tile__media img { transition: transform .5s ease; }
+.re-tile--link:hover .re-tile__media img { transform: scale(1.03); }
+.re-tile__title { margin: 0; font: 400 1.18rem/1.25 var(--font-heading); color: var(--c-text); }
+.re-tile__title a { color: inherit; text-decoration: none; }
+.re-tile__title a::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+.re-tile__text { margin: 4px 0 0; font-size: .84rem; line-height: 1.5; color: var(--mh-muted); }
+.re-tile__meta { margin: 0 0 4px; font-size: .74rem; color: var(--mh-muted); }
+.re-tile__link { margin-top: 10px; position: relative; z-index: 2; }
+.re-tile__icon { display: inline-grid; place-items: center; color: var(--c-accent); }
+.re-tile__icon .es-icon { width: 38px; height: 38px; stroke-width: 1.2; }
+.re-tiles__text { max-width: 52ch; font-size: .92rem; line-height: 1.6; color: var(--mh-muted); }
+.re-tiles__text p { margin: 10px 0 0; }
+/* Deux chemins : texte à gauche, deux photos. */
+.re-tiles--split .re-tiles__wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 40px; align-items: center; padding-top: 32px; padding-bottom: 32px; }
+.re-tiles--split .re-tiles__head { display: grid; gap: 22px; justify-items: start; }
+.re-tiles--split .re-title { font-size: clamp(1.8rem, 2.6vw, 2.4rem); }
+.re-tiles--split .re-tiles__list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.re-tiles--split .re-tile { display: grid; grid-template-columns: minmax(0, 1fr) auto; background: var(--mh-card); border: 1px solid var(--mh-line); }
+.re-tiles--split .re-tile__media { grid-column: 1 / -1; aspect-ratio: 16 / 11; }
+.re-tiles--split .re-tile__body { padding: 14px 16px; }
+.re-tiles--split .re-tile__arrow { align-self: center; padding-right: 16px; }
+.re-tiles--split .re-tile__arrow .es-icon { width: 18px; height: 18px; }
+/* Services : trois colonnes séparées par un filet. */
+.re-tiles--services .re-tiles__list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+.re-tiles--services .re-tile { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; padding: 10px 28px; border-left: 1px solid var(--mh-line); }
+.re-tiles--services .re-tile:first-child { border-left: 0; padding-left: 0; }
+/* Secteurs : quatre photos légendées. */
+.re-tiles--sectors .re-tiles__list { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.re-tiles--sectors .re-tile__media { aspect-ratio: 16 / 10.5; }
+.re-tiles--sectors .re-tile__body { padding-top: 10px; }
+.re-tiles--sectors .re-tile__title { font-size: 1.05rem; }
+/* Articles : titre à gauche, trois vignettes en ligne. */
+.re-tiles--articles .re-tiles__wrap { display: grid; grid-template-columns: minmax(180px, .5fr) minmax(0, 3fr); gap: 28px; align-items: start; }
+.re-tiles--articles .re-tiles__head { display: grid; gap: 12px; justify-items: start; }
+.re-tiles--articles .re-tiles__list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
+.re-tiles--articles .re-tile { display: grid; grid-template-columns: 42% minmax(0, 1fr); gap: 14px; align-items: start; }
+.re-tiles--articles .re-tile__media { aspect-ratio: 1 / 1; }
+.re-tiles--articles .re-tile__title { font-size: .98rem; }
+/* Étapes numérotées. */
+.re-tiles--steps .re-tiles__list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+.re-tiles--steps .re-tile { display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: 14px; align-items: start; padding: 8px 22px; border-left: 1px solid var(--mh-line); }
+.re-tiles--steps .re-tile:first-child { border-left: 0; padding-left: 0; }
+.re-tile__num { font: 400 1.1rem/1.4 var(--font-heading); color: var(--c-accent); }
+.re-tiles--steps .re-tile__icon .es-icon { width: 30px; height: 30px; }
+.re-tiles--steps .re-tile__title { font: 600 .9rem/1.35 var(--font-body); }
+/* Cartes et engagements. */
+.re-tiles--cards .re-tiles__list, .re-tiles--icons .re-tiles__list { grid-template-columns: repeat(var(--re-cols, 3), minmax(0, 1fr)); }
+.re-tiles--cards .re-tile { background: var(--mh-card); border: 1px solid var(--mh-line); }
+.re-tiles--cards .re-tile__media { aspect-ratio: 16 / 10; }
+.re-tiles--cards .re-tile__body { padding: 16px; }
+.re-tiles--icons .re-tile { display: grid; gap: 10px; align-content: start; }
+.re-tiles__note { margin-top: 16px; }
+
+/* ── Mises en avant ───────────────────────────────────────────────────────────────────────────────────────────── */
+.re-feature__title { margin: 0; font-size: clamp(1.7rem, 2.6vw, 2.4rem); line-height: 1.12; color: inherit; }
+.re-feature__text { margin-top: 14px; font-size: .92rem; line-height: 1.6; }
+.re-feature__text p { margin: 0 0 8px; }
+/* Bien d'exception : panneau vert à gauche, photo à droite (pleine largeur). */
+.re-feature--bien { padding: 0 !important; }
+.re-feature__grid { display: grid; grid-template-columns: minmax(320px, 1fr) minmax(0, 1.9fr); min-height: 420px; max-width: var(--page-width, 1320px); margin: 0 auto; }
+.re-feature__panel { display: flex; flex-direction: column; justify-content: center; padding: 40px 34px; background: var(--mh-green, #1f3a2f); color: #fff; }
+.re-feature__panel .re-eyebrow { color: rgba(255,255,255,.78); }
+.re-feature__place { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; font-size: .86rem; color: rgba(255,255,255,.86); }
+.re-feature__place .es-icon { width: 16px; height: 16px; }
+.re-feature__price { margin: 14px 0 0; font: 400 1.6rem/1.1 var(--font-heading); }
+.re-feature__panel .re-facts { color: rgba(255,255,255,.86); }
+.re-feature__panel .re-facts .es-icon { color: #fff; }
+.re-feature__panel .re-feature__text { color: rgba(255,255,255,.9); max-width: 44ch; }
+.re-feature__panel .re-note { color: rgba(255,255,255,.7); margin: 4px 0 0; }
+.re-feature__media { display: block; min-height: 100%; overflow: hidden; background: var(--mh-sand); }
+.re-feature__media .es-image, .re-feature__media img, .re-feature__media .ed-media { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* Bandeau photo. */
+.re-feature__band { position: relative; isolation: isolate; color: #fff; overflow: hidden; max-width: var(--page-width, 1320px); margin: 0 auto; }
+.re-feature__photo { position: absolute; inset: 0; z-index: -2; }
+.re-feature__photo .ed-media { position: absolute; inset: 0; height: 100%; }
+.re-feature__photo img { width: 100%; height: 100%; object-fit: cover; object-position: var(--ed-fx, 50%) var(--ed-fy, 50%); }
+.re-feature__band::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(20,22,16,.74), rgba(20,22,16,.45) 55%, rgba(20,22,16,.12)); }
+.re-feature__band .re-feature__copy { padding-top: 34px; padding-bottom: 34px; }
+.re-feature__band .re-feature__copy > * { max-width: 760px; }
+.re-feature__band .re-feature__title { font-size: clamp(1.5rem, 2.2vw, 2rem); color: #fff; }
+.re-feature__band .re-feature__text { color: rgba(255,255,255,.9); }
+.re-feature__band .re-actions { margin-top: 16px; }
+/* Histoire : texte et photo. */
+.re-feature__story { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 40px; align-items: center; }
+.re-feature--media-left .re-feature__story .re-feature__media { order: -1; }
+.re-feature__story .re-feature__media { aspect-ratio: 16 / 9; }
+.re-feature__kicker { margin: 0 0 6px; font: 400 1.5rem/1.2 var(--font-heading); }
+.re-feature__story .re-feature__title { font-size: clamp(1.25rem, 1.8vw, 1.6rem); }
+.re-feature__story .re-feature__text { color: var(--mh-muted); max-width: 52ch; }
+.re-feature__story .re-feature__text small { font-size: .78rem; }
+.re-feature__more { margin: 14px 0 0; }
+/* Bande de contact. */
+.re-feature__strip { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto; gap: 28px; align-items: center; padding-top: 18px; padding-bottom: 18px; border-top: 1px solid var(--mh-line); }
+.re-feature__strip .re-feature__title { font-size: 1.15rem; }
+.re-feature__contact { display: flex; flex-wrap: wrap; gap: 14px 40px; }
+.re-feature__line { display: flex; align-items: center; gap: 12px; margin: 0; font-size: .9rem; }
+.re-feature__line .es-icon { width: 22px; height: 22px; color: var(--c-text); }
+.re-feature__line span { display: grid; gap: 2px; }
+.re-feature__line a { color: inherit; text-decoration: none; font-weight: 500; }
+.re-feature__line small { font-size: .74rem; color: var(--mh-muted); }
+
 /* ── Téléphone ────────────────────────────────────────────────────────────────────────────────────────────────── */
 @media (max-width: 989px) {
   .re-listings--home .re-grid, .re-listings--grid .re-grid, .re-listings--mini .re-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -155,8 +306,22 @@ h1.re-title { font-size: clamp(2rem, 3vw, 2.7rem); }
   .re-filters .re-field--city, .re-filters [data-re-apply] { grid-column: 1 / -1; }
   .re-search__fields { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .re-search__fields .re-field--city, .re-search__go { grid-column: 1 / -1; }
+  .re-mapview { grid-template-columns: minmax(0, 1fr); }
+  .re-map { position: relative; top: 0; }
+  .re-map__canvas { height: 420px; }
+  .re-mapview[data-view="list"] .re-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .re-tiles--split .re-tiles__wrap, .re-tiles--articles .re-tiles__wrap, .re-feature__story { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+  .re-tiles--sectors .re-tiles__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .re-tiles--articles .re-tiles__list { grid-template-columns: minmax(0, 1fr); }
+  .re-tiles--articles .re-tile { grid-template-columns: 34% minmax(0, 1fr); }
+  .re-feature__grid { grid-template-columns: minmax(0, 1fr); }
+  .re-feature__media { aspect-ratio: 16 / 10; min-height: 0; order: -1; }
+  .re-feature__strip { grid-template-columns: minmax(0, 1fr); gap: 16px; }
 }
 @media (max-width: 749px) {
+  body[data-editorial="horizon"] .es-header .es-header__cta { display: none; }
+  body[data-editorial="horizon"] .es-header .es-header__wordmark { font-size: .8rem; line-height: 1.15; white-space: normal; max-width: 9.5em; overflow: visible; }
+  body[data-editorial="horizon"] .es-header .es-header__wordmark::before { width: 22px; height: 26px; }
   .re-hero__inner { min-height: 0; padding-top: calc(var(--header-h, 64px) + 28px); padding-bottom: 28px; }
   .re-hero--home .re-hero__inner { min-height: 0; padding-top: calc(var(--header-h, 64px) + 28px); padding-bottom: 0; }
   .re-hero__title { font-size: clamp(2rem, 9vw, 2.5rem); }
@@ -173,5 +338,21 @@ h1.re-title { font-size: clamp(2rem, 3vw, 2.7rem); }
   .re-filters { grid-template-columns: minmax(0, 1fr); padding: 14px; }
   .re-reset { margin-left: 0; }
   .re-card--list .re-card__media { flex-basis: 42%; }
+  .re-listings--overlap .re-panel { margin-top: -40px; }
+  .re-panel .re-tabs { display: flex; }
+  .re-panel .re-tab { flex: 1; min-width: 0; }
+  .re-listings--map .re-filters { display: none; }
+  .re-listings--map .re-filters.is-open { display: grid; }
+  .re-filters-toggle { display: inline-flex; width: 100%; margin-top: 10px; }
+  .re-mapview[data-view="map"] .re-mapview__list { display: none; }
+  .re-mapview[data-view="list"] .re-grid { grid-template-columns: minmax(0, 1fr); }
+  .re-map__canvas { height: 64vh; min-height: 380px; }
+  .re-tiles--services .re-tiles__list, .re-tiles--steps .re-tiles__list, .re-tiles--cards .re-tiles__list, .re-tiles--icons .re-tiles__list { grid-template-columns: minmax(0, 1fr); }
+  .re-tiles--services .re-tile, .re-tiles--steps .re-tile { padding: 14px 0; border-left: 0; border-top: 1px solid var(--mh-line); }
+  .re-tiles--services .re-tile:first-child, .re-tiles--steps .re-tile:first-child { border-top: 0; }
+  .re-tiles--split .re-tiles__list { grid-template-columns: minmax(0, 1fr); }
+  .re-tiles--sectors .re-tiles__list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .re-feature__panel { padding: 28px 20px; }
+  .re-feature__band .re-feature__copy { padding-top: 28px; padding-bottom: 28px; }
 }
-@media (prefers-reduced-motion: reduce) { .re-card__photo img, .re-btn { transition: none; } .re-card:hover .re-card__photo img { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .re-card__photo img, .re-btn, .re-tile__media img, .re-pin { transition: none; } .re-tile--link:hover .re-tile__media img { transform: none; } .re-card:hover .re-card__photo img { transform: none; } }

@@ -7,14 +7,15 @@
 {%- assign mode = s.mode | default: 'featured' -%}
 {%- assign layout = s.layout | default: 'grid' -%}
 {%- assign card_style = 'grid' -%}
-{%- if layout == 'home' -%}{%- assign card_style = 'home' -%}{%- elsif layout == 'mini' -%}{%- assign card_style = 'mini' -%}{%- elsif layout == 'list' -%}{%- assign card_style = 'list' -%}{%- endif -%}
+{%- if layout == 'home' -%}{%- assign card_style = 'home' -%}{%- elsif layout == 'mini' -%}{%- assign card_style = 'mini' -%}{%- elsif layout == 'list' or layout == 'map' -%}{%- assign card_style = 'list' -%}{%- endif -%}
 {%- assign all_biens = shop.metaobjects.bien.values -%}
 {%- assign featured_count = 0 -%}
 {%- for b in all_biens -%}{%- if b.a_la_une.value and b.disponible.value -%}{%- assign featured_count = featured_count | plus: 1 -%}{%- endif -%}{%- endfor -%}
 {%- assign limit = s.limit | default: 0 -%}
 {%- assign shown = 0 -%}
-<section class="es-section re-listings re-listings--{{ layout }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;" data-re-listings data-mode="{{ mode }}" data-per-page="{{ s.per_page | default: 0 }}"{% if s.use_url %} data-use-url{% endif %}>
+<section class="es-section re-listings re-listings--{{ layout }}{% if s.overlap %} re-listings--overlap{% endif %} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;" data-re-listings data-mode="{{ mode }}" data-per-page="{{ s.per_page | default: 0 }}"{% if s.use_url %} data-use-url{% endif %}{% if s.default_city != blank %} data-default-city="{{ s.default_city | escape }}"{% endif %}>
   <div class="es-container">
+    {%- capture head -%}
     {%- if s.heading != blank or s.note != blank or s.link_label != blank -%}
     <header class="re-head">
       {%- if s.heading != blank -%}<{{ s.heading_tag | default: 'h2' }} class="re-title">{{ s.heading | escape }}</{{ s.heading_tag | default: 'h2' }}>{%- endif -%}
@@ -24,8 +25,23 @@
       </div>
     </header>
     {%- endif -%}
+    {%- endcapture -%}
+    {%- unless s.overlap -%}{{ head }}{%- endunless -%}
     {%- if s.show_filters and mode != 'featured' and mode != 'similar' -%}
-    <form class="re-filters" data-re-filters role="search" aria-label="{{ s.filters_label | default: 'Affiner la recherche' | escape }}">
+    <div class="re-panel">
+    {%- if s.tabs == 'transaction' and s.buy_url != blank and s.rent_url != blank -%}
+    <nav class="re-tabs" aria-label="{{ s.tabs_label | default: 'Type de recherche' | escape }}">
+      <a class="re-tab{% if mode == 'vente' %} is-active{% endif %}" href="{{ s.buy_url }}"{% if mode == 'vente' %} aria-current="page"{% endif %}>{{ s.tab_buy | default: 'Acheter' | escape }}</a>
+      <a class="re-tab{% if mode == 'location' %} is-active{% endif %}" href="{{ s.rent_url }}"{% if mode == 'location' %} aria-current="page"{% endif %}>{{ s.tab_rent | default: 'Louer' | escape }}</a>
+    </nav>
+    {%- elsif s.tabs == 'view' -%}
+    <div class="re-tabs" role="group" aria-label="{{ s.tabs_label | default: 'Affichage' | escape }}">
+      <button type="button" class="re-tab is-active" aria-pressed="true" data-re-view="map">{% render 'mh-icon', name: 'map' %} {{ s.tab_map | default: 'Carte' | escape }}</button>
+      <button type="button" class="re-tab" aria-pressed="false" data-re-view="list">{% render 'mh-icon', name: 'list' %} {{ s.tab_list | default: 'Liste' | escape }}</button>
+    </div>
+    {%- endif -%}
+    {%- if layout == 'map' -%}<button type="button" class="re-filters-toggle re-btn re-btn--line" data-re-filters-toggle aria-expanded="false" aria-controls="Filtres-{{ section.id }}">{% render 'mh-icon', name: 'filter' %} {{ s.filters_button | default: 'Filtres' | escape }}</button>{%- endif -%}
+    <form class="re-filters" id="Filtres-{{ section.id }}" data-re-filters role="search" aria-label="{{ s.filters_label | default: 'Affiner la recherche' | escape }}">
       <div class="re-field re-field--city"><label for="Ville-{{ section.id }}">{{ s.label_city | default: 'Ville ou secteur' }}</label><input id="Ville-{{ section.id }}" name="ville" type="text" list="Villes-{{ section.id }}" placeholder="{{ s.placeholder_city | escape }}" autocomplete="off"><datalist id="Villes-{{ section.id }}" data-re-cities></datalist></div>
       <div class="re-field"><label for="Type-{{ section.id }}">Type de bien</label><select id="Type-{{ section.id }}" name="type"><option value="">Tous les types</option><option value="maison">Maison</option><option value="appartement">Appartement</option><option value="villa">Villa</option><option value="loft">Loft</option><option value="propriete">Propriété</option><option value="mas">Mas</option></select></div>
       <div class="re-field"><label for="Budget-{{ section.id }}">{% if mode == 'location' %}Budget max / mois{% else %}Budget max{% endif %}</label><select id="Budget-{{ section.id }}" name="max"><option value="">Tous les budgets</option>{%- if mode == 'location' -%}{%- assign steps = '800:800 €,1000:1 000 €,1250:1 250 €,1500:1 500 €,2000:2 000 €,2500:2 500 €,3000:3 000 €' | split: ',' -%}{%- else -%}{%- assign steps = '300000:300 000 €,500000:500 000 €,750000:750 000 €,1000000:1 000 000 €,1500000:1 500 000 €,2000000:2 000 000 €,3000000:3 000 000 €' | split: ',' -%}{%- endif -%}{%- for st in steps -%}{%- assign kv = st | split: ':' -%}<option value="{{ kv[0] }}">{{ kv[1] }}</option>{%- endfor -%}</select></div>
@@ -44,12 +60,35 @@
         <button type="button" class="re-reset" data-re-reset>{{ s.reset_label | default: 'Effacer les filtres' | escape }}</button>
       </div>
     </form>
+    </div>
     {%- endif -%}
+    {%- if s.overlap -%}{{ head }}{%- endif -%}
+    {%- capture toolbar -%}
     {%- if s.show_count or s.show_sort -%}
     <div class="re-toolbar">
       {%- if s.show_count -%}<p class="re-count" data-re-count aria-live="polite"></p>{%- endif -%}
       {%- if s.show_sort -%}<label class="re-sort"><span>Trier :</span><select name="tri" data-re-sort><option value="">Pertinence</option><option value="prix-asc">Prix croissant</option><option value="prix-desc">Prix décroissant</option><option value="surface-desc">Surface décroissante</option></select></label>{%- endif -%}
     </div>
+    {%- endif -%}
+    {%- endcapture -%}
+    {%- unless layout == 'map' -%}{{ toolbar }}{%- endunless -%}
+    {%- if layout == 'map' -%}
+    <div class="re-mapview" data-re-mapview data-view="map">
+      <div class="re-map" data-re-map>
+        <div class="re-map__canvas">
+          {%- if s.map_image != blank or s.map_asset != blank -%}{% render 'ed-media', image: s.map_image, asset: s.map_asset, alt: s.map_alt, loading: 'lazy' %}{%- endif -%}
+          {%- for bien in all_biens -%}
+            {%- if bien.carte_x.value == nil or bien.carte_y.value == nil -%}{%- continue -%}{%- endif -%}
+            {%- if mode == 'vente' and bien.transaction.value != 'vente' -%}{%- continue -%}{%- endif -%}
+            {%- if mode == 'location' and bien.transaction.value != 'location' -%}{%- continue -%}{%- endif -%}
+            <a class="re-pin" href="{{ bien.system.url }}" data-re-pin="{{ bien.reference.value | escape }}" style="left:{{ bien.carte_x.value }}%;top:{{ bien.carte_y.value }}%;">{% render 'mh-icon', name: 'pin' %}<span>{% if bien.transaction.value == 'location' %}{{ bien.loyer_hc_texte.value }}{% else %}{{ bien.prix_texte.value }}{% endif %}</span><span class="visually-hidden"> — {{ bien.titre.value | escape }}, {{ bien.localisation.value | escape }}</span></a>
+          {%- endfor -%}
+        </div>
+        <p class="re-map__label">{{ s.map_label | default: 'Carte illustrative' | escape }}</p>
+        <p class="re-map__hint" data-re-map-hint hidden>{{ s.map_hint | default: 'Choisissez une ville pour placer ses biens sur la carte illustrative.' | escape }}</p>
+      </div>
+      <div class="re-mapview__list">
+        {{ toolbar }}
     {%- endif -%}
     <div class="re-grid" data-re-grid>
       {%- for bien in all_biens -%}
@@ -76,6 +115,7 @@
       <button type="button" class="re-btn re-btn--line" data-re-reset>{{ s.reset_label | default: 'Effacer les filtres' | escape }}</button>
     </div>
     {%- if s.per_page > 0 -%}<nav class="re-pager" data-re-pager aria-label="Pages de résultats" hidden></nav>{%- endif -%}
+    {%- if layout == 'map' -%}</div></div>{%- endif -%}
     {%- if layout == 'home' and s.link_label != blank and s.link != blank -%}<p class="re-more-mobile"><a class="re-link" href="{{ s.link }}">{{ s.link_label | escape }} {% render 'mh-icon', name: 'arrow' %}</a></p>{%- endif -%}
   </div>
 </section>
@@ -87,7 +127,7 @@
   "class": "section-re-listings",
   "settings": [
     { "type": "select", "id": "mode", "label": "Biens montrés", "default": "featured", "options": [ { "value": "featured", "label": "À la une (sinon les premiers disponibles)" }, { "value": "vente", "label": "À vendre" }, { "value": "location", "label": "À louer" }, { "value": "all", "label": "Tous" }, { "value": "similar", "label": "Similaires (fiche d'un bien)" } ] },
-    { "type": "select", "id": "layout", "label": "Disposition", "default": "grid", "options": [ { "value": "home", "label": "Rangée de cartes (accueil)" }, { "value": "grid", "label": "Grille de résultats" }, { "value": "list", "label": "Liste (à côté d'une carte)" }, { "value": "mini", "label": "Petites cartes en ligne" } ] },
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "grid", "options": [ { "value": "home", "label": "Rangée de cartes (accueil)" }, { "value": "grid", "label": "Grille de résultats" }, { "value": "list", "label": "Liste (à côté d'une carte)" }, { "value": "mini", "label": "Petites cartes en ligne" }, { "value": "map", "label": "Carte illustrative et liste" } ] },
     { "type": "text", "id": "heading", "label": "Titre", "default": "Nos biens à la une" },
     { "type": "select", "id": "heading_tag", "label": "Niveau du titre", "default": "h2", "options": [ { "value": "h1", "label": "H1 (ouverture de page)" }, { "value": "h2", "label": "H2" } ] },
     { "type": "text", "id": "note", "label": "Mention", "default": "Biens et prix de démonstration", "info": "Petite mention à droite du titre (à vider pour de vrais biens)." },
@@ -102,6 +142,23 @@
     { "type": "checkbox", "id": "show_count", "label": "Nombre de biens trouvés", "default": false },
     { "type": "checkbox", "id": "show_sort", "label": "Tri", "default": false },
     { "type": "range", "id": "per_page", "label": "Biens par page (0 = sans pagination)", "min": 0, "max": 24, "step": 1, "default": 0 },
+    { "type": "checkbox", "id": "overlap", "label": "Panneau de recherche posé sur la photo d'ouverture", "default": false },
+    { "type": "select", "id": "tabs", "label": "Onglets du panneau", "default": "none", "options": [ { "value": "none", "label": "Aucun" }, { "value": "transaction", "label": "Acheter / Louer (liens)" }, { "value": "view", "label": "Carte / Liste (carte illustrative)" } ] },
+    { "type": "url", "id": "buy_url", "label": "Page « Acheter »" },
+    { "type": "url", "id": "rent_url", "label": "Page « Louer »" },
+    { "type": "text", "id": "tab_buy", "label": "Onglet Acheter", "default": "Acheter" },
+    { "type": "text", "id": "tab_rent", "label": "Onglet Louer", "default": "Louer" },
+    { "type": "text", "id": "tab_map", "label": "Onglet Carte", "default": "Carte" },
+    { "type": "text", "id": "tab_list", "label": "Onglet Liste", "default": "Liste" },
+    { "type": "text", "id": "tabs_label", "label": "Nom des onglets (lecteurs d'écran)" },
+    { "type": "text", "id": "filters_button", "label": "Bouton des filtres (carte)", "default": "Filtres" },
+    { "type": "text", "id": "default_city", "label": "Ville proposée d'office", "info": "Utilisée quand l'adresse ne contient aucun critère (ex. la carte s'ouvre sur une ville)." },
+    { "type": "header", "content": "Carte illustrative" },
+    { "type": "image_picker", "id": "map_image", "label": "Image de la carte" },
+    { "type": "text", "id": "map_asset", "label": "Image de la carte (fichier du thème)" },
+    { "type": "text", "id": "map_alt", "label": "Description de la carte" },
+    { "type": "text", "id": "map_label", "label": "Mention sur la carte", "default": "Carte illustrative", "info": "Les repères suivent la position saisie pour chaque bien : ce n'est pas une carte géographique interactive." },
+    { "type": "text", "id": "map_hint", "label": "Message sans ville choisie", "default": "Choisissez une ville pour placer ses biens sur la carte illustrative." },
     { "type": "text", "id": "label_city", "label": "Libellé de la ville", "default": "Ville ou secteur" },
     { "type": "text", "id": "placeholder_city", "label": "Exemple de ville", "default": "Ex : Aix-en-Provence, Lyon…" },
     { "type": "text", "id": "search_label", "label": "Bouton de recherche", "default": "Rechercher" },

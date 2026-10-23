@@ -122,7 +122,6 @@
     {{ 'editorial.css' | asset_url | stylesheet_tag }}
     {{ 'conversion.css' | asset_url | stylesheet_tag }}
     {{ 'family.css' | asset_url | stylesheet_tag }}
-    {%- if settings.editorial_profile == 'horizon' -%}{{ 'horizon.css' | asset_url | stylesheet_tag }}<meta name="mh-shop" content="{{ shop.name | handleize }}">{%- endif -%}
     {%- if settings.ds_language != 'none' and settings.ds_language != blank -%}
       {%- assign ds_r = settings.ds_ratio | default: 125 | divided_by: 100.0 -%}
       {%- assign ds_r2 = ds_r | times: ds_r -%}
@@ -155,6 +154,8 @@
       window.themeSettings = { moneyFormat: {{ shop.money_format | json }}, cartType: {{ settings.cart_type | json }}, motion: {{ settings.motion_enabled | json }}, parallax: {{ settings.motion_parallax | json }} };
     </script>
     {{ 'purchase-offers.css' | asset_url | stylesheet_tag }}
+    {%- comment -%} Maison & Horizon : chargé en dernier (ses règles priment sur la couche commune). {%- endcomment -%}
+    {%- if settings.editorial_profile == 'horizon' -%}{{ 'horizon.css' | asset_url | stylesheet_tag }}<meta name="mh-shop" content="{{ shop.name | handleize }}">{%- endif -%}
   <script src="{{ 'purchase-offers.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'reference-interactions.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'editorial.js' | asset_url }}" defer="defer"></script>

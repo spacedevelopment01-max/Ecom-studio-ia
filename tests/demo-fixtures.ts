@@ -9,6 +9,7 @@
  */
 import { curateOrbe } from "./engine-demo-copy";
 import { riveProject } from "./rive-fixtures";
+import { maisonHorizonProject } from "./maison-horizon-fixtures";
 import { curateFraise } from "./fraise-demo-copy";
 import fs from "node:fs";
 import path from "node:path";
@@ -31,14 +32,14 @@ import { multiKitProject, MULTI_KIT_MEDIA } from "./museau-souple-fixtures";
 import { museauProject } from "./museau-fixtures";
 import type { DirectionId } from "../src/lib/theme/directions";
 
-export type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "souple";
+export type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "souple" | "maison-horizon";
 export const DEMO_PROVENANCE = "Issue #137 (19 octobre 2026) — démonstration du studio, identité du manifeste, visuels IA du kit privé sans personne, aucun paiement";
 
 type ManifestDemo = { id: DemoId; brand: string; product: string; sector: string; category: string; direction: DirectionId; palette: string[]; photo: string; logo: string; images: { src: string; label: string }[]; business?: "products" | "services"; storeType?: "mono" | "multi" | "niche" };
 
 /** Textes d'identité validés avec les démonstrations (accroche, résumé, offre) : les mêmes que les fixtures des lots 2B / 2C. */
 type MediaPlan = Record<string, { role: string; variant?: string }>;
-const IDENTITY: Record<DemoId, { tagline: string; summary: string; story: string; positioning: string; price: number | null; services?: ServiceProfile; variants?: { name: string; values: string[] }[]; facts?: { label: string; value: string }[]; media?: MediaPlan }> = {
+const IDENTITY: Record<Exclude<DemoId, "maison-horizon">, { tagline: string; summary: string; story: string; positioning: string; price: number | null; services?: ServiceProfile; variants?: { name: string; values: string[] }[]; facts?: { label: string; value: string }[]; media?: MediaPlan }> = {
   fraise: { tagline: "Le goût fraise qui fait sourire.", summary: "Gummies tendres au goût fraise dans un flacon refermable.", story: "Une marque de démonstration autour d'un flacon de gummies à la fraise.", positioning: "Un flacon de gummies à la fraise, à poser sur la table de la cuisine ou à glisser dans un sac.", price: 2490 },
   onde: { tagline: "Écoutez. Posez. Repartez.", summary: "Casque graphite et noir mat, touches vertes pour repérer les commandes.", story: "Une marque de démonstration autour d'un casque graphite et vert.", positioning: "Un casque pour écouter chez soi, dans le train ou au studio, avec des commandes repérables d'un coup d'œil.", price: 14900 },
   orbe: {
@@ -130,6 +131,13 @@ const roleOf = (label: string) => (/packshot|fond blanc/i.test(label) ? "packsho
  * identité dans un autre thème (preuve d'adaptation).
  */
 export async function demoProject(userId: string, id: DemoId, options: { direction?: DirectionId; testVideo?: string } = {}) {
+  // MAISON & HORIZON (issue #172) : agence immobilière, biens saisis comme dans l'onglet « Biens », kit privé
+  // public/demo/maison-horizon/ (hors dépôt, non inscrit au manifeste de l'accueil du studio).
+  if (id === "maison-horizon") {
+    const c = await maisonHorizonProject(userId);
+    const demo: ManifestDemo = { id, brand: "Maison & Horizon", product: "Achat, vente et location de biens immobiliers", sector: "Agence immobilière", category: "services", direction: "maison-horizon" as DirectionId, palette: ["#1F3A2F", "#E7DCC8", "#B4553A", "#F7F2EA", "#16241C"], photo: "/demo/maison-horizon/accueil-hero.webp", logo: "", images: [], business: "services" };
+    return { pid: c.pid, spec: c.spec, demo, missing: c.missing, project: loadProject(c.pid), services: true };
+  }
   const d = demoManifest(id), ident = IDENTITY[id];
   // FRAISE et ONDE dans leur propre thème : la composition complète validée du lot 2C (références Lumora et Pawish :
   // accueil et fiche riches, offres, avis fictifs étiquetés, comparatif, garantie en exemple, stories, FAQ, pages, menus),

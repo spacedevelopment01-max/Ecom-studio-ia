@@ -115,6 +115,9 @@
       {%- if shop.customer_accounts_enabled or section.settings.account_link != blank -%}
         <a href="{{ section.settings.account_link | default: routes.account_url }}" class="es-icon-button es-hide-mobile" aria-label="{{ 'customer.account' | t }}">{% render 'icon', name: 'account' %}</a>
       {%- endif -%}
+      {%- if section.settings.favorites_link != blank -%}
+        <a href="{{ section.settings.favorites_link }}" class="es-icon-button es-header__favorites" aria-label="{{ section.settings.favorites_label | default: 'Favoris' | escape }}">{% render 'icon', name: 'heart' %}<span class="es-cart-count" data-re-fav-count data-hide-empty hidden>0</span></a>
+      {%- endif -%}
       {%- if section.settings.phone != blank -%}
         <a href="tel:{{ phone_href }}" class="es-icon-button es-header__phone{% if section.settings.cta_label != blank %} es-header__phone--compact{% endif %}" aria-label="{{ 'sections.header.call' | t }} {{ section.settings.phone | escape }}">{% render 'icon', name: 'phone' %}<span class="es-header__phone-number">{{ section.settings.phone }}</span></a>
       {%- endif -%}
@@ -125,7 +128,7 @@
         </a>
       {%- endif -%}
       {%- if section.settings.cta_label != blank -%}
-        <a href="{{ cta_href }}" class="es-button es-button--small es-header__cta"{% if cta_external %} target="_blank" rel="noopener"{% endif %}>{% render 'icon', name: section.settings.cta_icon %}<span>{{ section.settings.cta_label }}</span></a>
+        <a href="{{ cta_href }}" class="es-button es-button--small es-header__cta"{% if cta_external %} target="_blank" rel="noopener"{% endif %}>{% if section.settings.cta_icon != 'none' %}{% render 'icon', name: section.settings.cta_icon %}{% endif %}<span>{{ section.settings.cta_label }}</span></a>
       {%- endif -%}
     </div>
   </div>
@@ -174,7 +177,7 @@
       <div class="es-mobile-menu__promos">{% render 'es-menu-promo', blocks: section.blocks, where: 'mobile', limit: 2, size: 'small' %}</div>
     {%- endif -%}
     {%- if section.settings.cta_label != blank -%}
-      <a href="{{ cta_href }}" class="es-button es-button--full es-mobile-menu__cta"{% if cta_external %} target="_blank" rel="noopener"{% endif %}>{% render 'icon', name: section.settings.cta_icon %}<span>{{ section.settings.cta_label }}</span></a>
+      <a href="{{ cta_href }}" class="es-button es-button--full es-mobile-menu__cta"{% if cta_external %} target="_blank" rel="noopener"{% endif %}>{% if section.settings.cta_icon != 'none' %}{% render 'icon', name: section.settings.cta_icon %}{% endif %}<span>{{ section.settings.cta_label }}</span></a>
     {%- endif -%}
     {%- if section.settings.phone != blank -%}
       <a href="tel:{{ phone_href }}" class="es-mobile-menu__phone">{% render 'icon', name: 'phone' %}<span>{{ section.settings.phone }}</span></a>
@@ -270,9 +273,11 @@
     { "type": "text", "id": "cart_label", "label": "Texte à côté de l'icône du panier", "info": "Facultatif, ex. « Panier » : le lien du panier devient une pastille." },
     { "type": "url", "id": "account_link", "label": "Lien de l'icône « compte »", "info": "Vide : l'icône n'apparaît que si les comptes clients sont activés sur la boutique, et mène au compte natif." },
     { "type": "header", "content": "Bouton d'action" },
+    { "type": "url", "id": "favorites_link", "label": "Lien de l'icône « favoris »", "info": "Page des biens ou produits mis de côté (cœur avec leur nombre). Vide : pas d'icône." },
+    { "type": "text", "id": "favorites_label", "label": "Nom de l'icône « favoris » (lecteurs d'écran)", "default": "Favoris" },
     { "type": "text", "id": "cta_label", "label": "Texte du bouton", "info": "Ex. « Prendre rendez-vous », « Demander un devis ». Laissez vide pour ne pas l'afficher." },
     { "type": "url", "id": "cta_link", "label": "Lien du bouton", "info": "Vide : appelle le numéro de téléphone ci-dessous." },
-    { "type": "select", "id": "cta_icon", "label": "Icône du bouton", "default": "clock", "options": [{ "value": "clock", "label": "Horloge" }, { "value": "phone", "label": "Téléphone" }, { "value": "mail", "label": "E-mail" }, { "value": "chat", "label": "Message" }, { "value": "arrow", "label": "Flèche" }] },
+    { "type": "select", "id": "cta_icon", "label": "Icône du bouton", "default": "clock", "options": [{ "value": "none", "label": "Aucune" }, { "value": "clock", "label": "Horloge" }, { "value": "phone", "label": "Téléphone" }, { "value": "mail", "label": "E-mail" }, { "value": "chat", "label": "Message" }, { "value": "arrow", "label": "Flèche" }] },
     { "type": "text", "id": "phone", "label": "Téléphone affiché", "info": "Facultatif. Numéro cliquable pour appeler depuis un téléphone." },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" }
   ],

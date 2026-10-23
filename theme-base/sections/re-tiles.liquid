@@ -1,0 +1,87 @@
+{%- comment -%}
+  Tuiles Maison & Horizon : une même section, sept dispositions, pour les rubriques en cartes des planches.
+  - « Deux chemins » : texte à gauche, deux grandes photos cliquables (Acheter / Louer).
+  - « Services » : icône au trait, titre, texte et lien, séparés par des filets.
+  - « Secteurs » : quatre photos et leur légende (liens vers une recherche déjà filtrée).
+  - « Articles » : titre à gauche, articles en ligne (vignette, rubrique, titre, lien).
+  - « Étapes » : étapes numérotées avec icône. « Cartes » : photo, titre, texte, lien. « Engagements » : icône, titre, texte.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- assign layout = s.layout | default: 'cards' -%}
+<section class="es-section re-tiles re-tiles--{{ layout }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;--re-cols:{{ s.columns | default: 3 }};">
+  <div class="es-container re-tiles__wrap">
+    {%- if s.eyebrow != blank or s.heading != blank or s.text != blank or s.link_label != blank -%}
+    <header class="re-tiles__head{% if layout != 'split' and layout != 'articles' %} re-head{% endif %}">
+      <div class="re-tiles__intro">
+        {%- if s.eyebrow != blank -%}<p class="re-eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
+        {%- if s.heading != blank -%}<{{ s.heading_tag | default: 'h2' }} class="re-title">{{ s.heading | escape | newline_to_br }}</{{ s.heading_tag | default: 'h2' }}>{%- endif -%}
+        {%- if s.text != blank -%}<div class="re-tiles__text">{{ s.text }}</div>{%- endif -%}
+      </div>
+      {%- if s.link_label != blank and s.link != blank -%}<a class="re-link" href="{{ s.link }}">{{ s.link_label | escape }} {% render 'mh-icon', name: 'arrow' %}</a>{%- endif -%}
+    </header>
+    {%- endif -%}
+    <ul class="re-tiles__list" role="list">
+      {%- for block in section.blocks -%}
+        {%- assign b = block.settings -%}
+        {%- assign has_media = false -%}{%- if b.image != blank or b.image_asset != blank -%}{%- assign has_media = true -%}{%- endif -%}
+        <li class="re-tile{% if b.link != blank %} re-tile--link{% endif %}" {{ block.shopify_attributes }}>
+          {%- if has_media and layout != 'services' and layout != 'icons' and layout != 'steps' -%}
+            <div class="re-tile__media">{% render 'ed-media', image: b.image, asset: b.image_asset, alt: b.image_alt, loading: 'lazy' %}</div>
+          {%- endif -%}
+          {%- if layout == 'steps' -%}<span class="re-tile__num" aria-hidden="true">{{ forloop.index }}</span>{%- endif -%}
+          {%- if b.icon != blank and b.icon != 'none' and layout != 'sectors' and layout != 'articles' -%}<span class="re-tile__icon">{% render 'mh-icon', name: b.icon %}</span>{%- endif -%}
+          <div class="re-tile__body">
+            {%- if b.meta != blank -%}<p class="re-tile__meta">{{ b.meta | escape }}</p>{%- endif -%}
+            {%- if b.title != blank -%}
+              <h3 class="re-tile__title">{%- if b.link != blank and b.link_label == blank -%}<a href="{{ b.link }}">{{ b.title | escape }}</a>{%- else -%}{{ b.title | escape }}{%- endif -%}</h3>
+            {%- endif -%}
+            {%- if b.text != blank -%}<p class="re-tile__text">{{ b.text | escape }}</p>{%- endif -%}
+            {%- if b.link != blank and b.link_label != blank -%}<a class="re-link re-tile__link" href="{{ b.link }}">{{ b.link_label | escape }} {% render 'mh-icon', name: 'arrow' %}</a>{%- endif -%}
+          </div>
+          {%- if layout == 'split' and b.link != blank -%}<span class="re-tile__arrow" aria-hidden="true">{% render 'mh-icon', name: 'arrow' %}</span>{%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+    {%- if s.note != blank -%}<p class="re-note re-tiles__note">{{ s.note | escape }}</p>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Tuiles immobilières",
+  "tag": "div",
+  "class": "section-re-tiles",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "cards", "options": [ { "value": "split", "label": "Deux chemins (texte et deux photos)" }, { "value": "services", "label": "Services (icônes en ligne)" }, { "value": "sectors", "label": "Secteurs (photos légendées)" }, { "value": "articles", "label": "Articles (vignettes en ligne)" }, { "value": "steps", "label": "Étapes numérotées" }, { "value": "cards", "label": "Cartes avec photo" }, { "value": "icons", "label": "Engagements (icône, titre, texte)" } ] },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "textarea", "id": "heading", "label": "Titre" },
+    { "type": "select", "id": "heading_tag", "label": "Niveau du titre", "default": "h2", "options": [ { "value": "h1", "label": "H1 (ouverture de page)" }, { "value": "h2", "label": "H2" } ] },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "link_label", "label": "Libellé du lien" },
+    { "type": "url", "id": "link", "label": "Lien" },
+    { "type": "range", "id": "columns", "label": "Colonnes (cartes, engagements)", "min": 2, "max": 4, "step": 1, "default": 3 },
+    { "type": "text", "id": "note", "label": "Mention sous les tuiles" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "label": "Marge haute", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 40 },
+    { "type": "range", "id": "padding_bottom", "label": "Marge basse", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 40 }
+  ],
+  "blocks": [
+    {
+      "type": "tile",
+      "name": "Tuile",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Photo" },
+        { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+        { "type": "text", "id": "image_alt", "label": "Description de la photo" },
+        { "type": "select", "id": "icon", "label": "Icône", "default": "none", "options": [ { "value": "none", "label": "Aucune" }, { "value": "house", "label": "Maison" }, { "value": "key", "label": "Clé" }, { "value": "document", "label": "Document" }, { "value": "estimate", "label": "Estimation" }, { "value": "handshake", "label": "Poignée de main" }, { "value": "calendar", "label": "Calendrier" }, { "value": "camera", "label": "Appareil photo" }, { "value": "megaphone", "label": "Diffusion" }, { "value": "signature", "label": "Signature" }, { "value": "people", "label": "Personnes" }, { "value": "shield", "label": "Bouclier" }, { "value": "chat", "label": "Bulle" }, { "value": "eye", "label": "Œil" }, { "value": "leaf", "label": "Feuille" }, { "value": "chart", "label": "Graphique" }, { "value": "idea", "label": "Ampoule" }, { "value": "pin", "label": "Repère" }, { "value": "phone", "label": "Téléphone" }, { "value": "mail", "label": "Enveloppe" }, { "value": "search", "label": "Loupe" }, { "value": "heart", "label": "Cœur" }, { "value": "bell", "label": "Cloche" }, { "value": "lock", "label": "Cadenas" } ] },
+        { "type": "text", "id": "meta", "label": "Rubrique ou date" },
+        { "type": "text", "id": "title", "label": "Titre" },
+        { "type": "textarea", "id": "text", "label": "Texte" },
+        { "type": "text", "id": "link_label", "label": "Libellé du lien", "info": "Vide : toute la tuile est cliquable (si un lien est donné)." },
+        { "type": "url", "id": "link", "label": "Lien" }
+      ]
+    }
+  ],
+  "presets": [ { "name": "Tuiles immobilières", "blocks": [ { "type": "tile" }, { "type": "tile" }, { "type": "tile" } ] } ]
+}
+{% endschema %}
