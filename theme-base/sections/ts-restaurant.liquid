@@ -20,7 +20,7 @@
     --ts-olive: {{ s.color_olive }};
     --ts-ivory: {{ s.color_ivory }};
   }
-  body.dir-table-saison .es-header__wordmark::after { content: {{ s.logo_subtitle | json }}; }
+  body.dir-table-saison .es-header__wordmark::after, body.dir-table-saison .es-footer__brand::after { content: {{ s.logo_subtitle | json }}; }
 </style>
 <script type="application/json" id="ts-config">
   {
@@ -39,16 +39,17 @@
     "minParty": {{ s.min_party | json }},
     "maxParty": {{ s.max_party | json }},
     "horizonDays": {{ s.horizon_days | json }},
-    "leadMinutes": {{ s.lead_minutes | json }},
-    "pages": {
-      "reserve": {{ s.page_reserve | default: '/pages/reserver' | json }},
-      "manage": {{ s.page_manage | default: '/pages/ma-reservation' | json }},
-      "modify": {{ s.page_modify | default: '/pages/modifier-ma-reservation' | json }},
-      "lookup": {{ s.page_lookup | default: '/pages/retrouver-ma-reservation' | json }},
-      "groupSent": {{ s.page_group_sent | default: '/pages/demande-de-groupe-recue' | json }}
-    }
+    "leadMinutes": {{ s.lead_minutes | json }}
   }
 </script>
+{%- comment -%} Adresses des pages du parcours : de vrais liens (réécrits par l'aperçu et les exports), lus par le script. {%- endcomment -%}
+<div hidden data-ts-pages>
+  <a data-page="reserve" href="{{ s.page_reserve | default: '/pages/reserver' }}" tabindex="-1" aria-hidden="true"></a>
+  <a data-page="manage" href="{{ s.page_manage | default: '/pages/ma-reservation' }}" tabindex="-1" aria-hidden="true"></a>
+  <a data-page="modify" href="{{ s.page_modify | default: '/pages/modifier-ma-reservation' }}" tabindex="-1" aria-hidden="true"></a>
+  <a data-page="lookup" href="{{ s.page_lookup | default: '/pages/retrouver-ma-reservation' }}" tabindex="-1" aria-hidden="true"></a>
+  <a data-page="groupSent" href="{{ s.page_group_sent | default: '/pages/demande-de-groupe-recue' }}" tabindex="-1" aria-hidden="true"></a>
+</div>
 {%- if s.show_bookbar and s.booking_label != blank -%}
   <div class="ts-bookbar" data-ts-bookbar>
     <a href="{{ s.booking_link | default: '/pages/reserver' }}">{% render 'ts-icon', name: 'calendar-grid' %}<span>{{ s.booking_label }}</span></a>

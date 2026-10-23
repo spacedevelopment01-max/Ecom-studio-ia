@@ -2648,6 +2648,8 @@
   "Ex. « 1fr 1fr » ou « 1.15fr .8fr 1.1fr ».": "e.g. \"1fr 1fr\" or \"1.15fr .8fr 1.1fr\".",
   "Format des photos (largeur / hauteur)": "Photo format (width / height)",
   "Bord à bord": "Edge to edge",
+  "Hauteur commune sur ordinateur": "Shared height on desktop",
+  "0 : chaque photo garde le format choisi.": "0: each photo keeps the chosen format.",
   "Citation et boutons": "Quote and buttons",
   "« Une cuisine de saison pour des moments qui comptent. »": "\"Seasonal cooking for moments that matter.\"",
   "Demande de groupe": "Group request",

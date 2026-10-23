@@ -3,7 +3,7 @@
  *
  *  - Persistance durable et isolée par établissement : chaque réservation appartient à UN projet du studio (le
  *    restaurant) ; aucune requête ne lit ni ne modifie les réservations d'un autre projet.
- *  - Règles du restaurant lues dans le thème enregistré du projet (section « ts-booking ») : services et heures, jours
+ *  - Règles du restaurant lues dans le thème enregistré du projet (section « ts-restaurant ») : services et heures, jours
  *    d'ouverture, fermetures, capacité, taille des groupes, fuseau horaire. Jamais celles envoyées par le navigateur.
  *  - Vérification atomique : le calcul des couverts déjà pris et l'enregistrement se font dans la même transaction
  *    SQLite immédiate (deux réservations simultanées ne peuvent pas dépasser la capacité d'un créneau).
@@ -15,7 +15,7 @@
  *    ne passe jamais par ici.
  */
 import crypto from "node:crypto";
-import { createRequire } from "node:module";
+import fs from "node:fs";
 import path from "node:path";
 import { all, now, one, run, tx } from "../db";
 import { currentTheme } from "../projects";
@@ -34,9 +34,17 @@ type Core = {
   nowIn(timezone: string, at?: number): { date: string; minute: number };
   ics(res: { number: string; date: string; time: string }, opts: Record<string, unknown>): string;
 };
-const req = createRequire(import.meta.url);
-/** Même calcul que le site (theme-base/assets/table-saison-core.js) : une seule règle des disponibilités. */
-export const core: Core = req(path.join(process.cwd(), "theme-base", "assets", "table-saison-core.js"));
+/**
+ * Même calcul que le site (theme-base/assets/table-saison-core.js) : une seule règle des disponibilités. Le fichier est
+ * un script de thème (ni module ESM ni CommonJS du dépôt) : il est évalué une fois avec son propre objet `module`.
+ */
+function loadCore(): Core {
+  const src = fs.readFileSync(path.join(process.cwd(), "theme-base", "assets", "table-saison-core.js"), "utf8");
+  const mod = { exports: {} as Core };
+  new Function("module", "self", src)(mod, {});
+  return mod.exports;
+}
+export const core: Core = loadCore();
 
 export type RestaurantConfig = {
   timezone: string; openDays: number[]; closures: string[];
@@ -77,9 +85,9 @@ const SLOT_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 const list = (v: unknown) => String(v ?? "").split(/[\s,;]+/).map((x) => x.trim()).filter((x) => SLOT_RE.test(x));
 const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
 
-/** Section de réservation du thème (première trouvée), ou null. */
-export function bookingSection(spec: Pick<ThemeSpec, "templates">) {
-  for (const t of Object.values(spec.templates ?? {})) for (const s of Object.values(t.sections ?? {})) if (s.type === "ts-booking" && !s.disabled) return s;
+/** Réglages du restaurant du thème (section « ts-restaurant » de l'en-tête), ou null. */
+export function restaurantSection(spec: Pick<ThemeSpec, "templates" | "groups">) {
+  for (const t of [spec.groups?.header, ...Object.values(spec.templates ?? {})]) for (const s of Object.values(t?.sections ?? {})) if (s.type === "ts-restaurant" && !s.disabled) return s;
   return null;
 }
 
@@ -100,7 +108,7 @@ export function configFromSettings(s: Record<string, unknown>): RestaurantConfig
 
 export function restaurantOf(projectId: string): Restaurant {
   const theme = currentTheme(projectId);
-  const sec = theme ? bookingSection(theme.spec) : null;
+  const sec = theme ? restaurantSection(theme.spec) : null;
   if (!theme || !sec) throw new BookingError("not_found", 404);
   const s = sec.settings ?? {};
   return { config: configFromSettings(s), mode: s.booking_mode === "live" ? "live" : "demo", name: theme.spec.store?.shopName || "", address: str(s.address), notifyEmail: /@/.test(str(s.notify_email)) ? str(s.notify_email) : null, siteUrl: /^https:\/\/[\w.-]+(\/[\w./-]*)?$/.test(str(s.site_url)) ? str(s.site_url) : null };

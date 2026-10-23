@@ -4,7 +4,7 @@
  * Toutes les règles sont préfixées « ts- » et ne s'appliquent qu'aux sections du thème : aucun autre thème n'est touché.
  * Couleurs : variables --ts-* (réglages de la section d'en-tête, modifiables dans le studio).
  */
-.ts-root, .ts-section, .ts-header, .ts-footer, .ts-bookbar, .ts-cookies, .ts-dialog {
+body.dir-table-saison, .ts-root, .ts-section, .ts-header, .ts-footer, .ts-bookbar, .ts-cookies, .ts-dialog {
   --ts-ivory: #F6F0E5;
   --ts-paper: #FBF8F2;
   --ts-sand: #EFE8DA;
@@ -32,13 +32,17 @@ body:has(.ts-header) .es-main { background: #F6F0E5; }
 .ts-section { background: var(--ts-ivory); position: relative; }
 .ts-section *, .ts-header *, .ts-footer * { box-sizing: border-box; }
 .ts-section img { display: block; max-width: 100%; }
+.ts-section [hidden], .ts-section[hidden], .ts-dialog[hidden], .ts-cookies[hidden] { display: none !important; }
+.ts-section :is(h1, h2, h3, h4, p, blockquote) { margin-top: 0; }
+.ts-item__name, .ts-item__desc, .ts-acc__h, .ts-dish__name { margin: 0; }
+.ts-dish__name { margin-bottom: 8px; }
 .ts-wrap { width: 100%; max-width: calc(var(--ts-width) + 2 * var(--ts-gutter)); margin: 0 auto; padding: 0 var(--ts-gutter); }
 
 /* Typographie */
 .ts-eyebrow { font-family: var(--ts-sans); font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--ts-wine); margin: 0 0 10px; font-weight: 500; }
 .ts-title { font-family: var(--ts-serif); font-weight: 400; color: var(--ts-wine-deep); line-height: 1.08; letter-spacing: -.005em; margin: 0; text-transform: none; }
 .ts-title--xl { font-size: clamp(38px, 4.3vw, 62px); }
-.ts-title--l { font-size: clamp(30px, 3vw, 44px); }
+.ts-title--l { font-size: clamp(28px, 2.75vw, 40px); }
 .ts-title--m { font-size: clamp(26px, 2.3vw, 34px); }
 .ts-title--s { font-size: clamp(21px, 1.7vw, 25px); }
 .ts-text { font-size: 15px; line-height: 1.6; color: var(--ts-ink); margin: 0; }
@@ -123,10 +127,12 @@ body:has(.ts-header) .es-main { background: #F6F0E5; }
 /* ---------------------------------------------------------------- Ouvertures (hero) */
 .ts-hero { position: relative; color: #fff; overflow: hidden; background: #2b1d18; }
 .ts-hero__media { position: absolute; inset: 0; }
+.ts-hero__media .ts-img, .ts-banner__media .ts-img { height: 100%; }
 .ts-hero__media img, .ts-hero__media picture { width: 100%; height: 100%; object-fit: cover; }
 .ts-hero__shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(28, 16, 12, .78) 0%, rgba(28, 16, 12, .5) 38%, rgba(28, 16, 12, .06) 70%); }
 .ts-hero__inner { position: relative; display: flex; flex-direction: column; justify-content: center; min-height: var(--ts-hero-h, 460px); padding-top: 40px; padding-bottom: 40px; }
 .ts-hero__content { max-width: 560px; }
+.ts-hero--home .ts-title { max-width: 12.4ch; font-size: clamp(40px, 3.9vw, 58px); }
 .ts-hero .ts-eyebrow { color: rgba(255,255,255,.88); letter-spacing: .24em; }
 .ts-hero .ts-title { color: #fff; font-size: var(--ts-hero-title, clamp(40px, 4.4vw, 64px)); line-height: 1.04; }
 .ts-hero__text { margin: 14px 0 0; font-size: 17px; line-height: 1.5; color: rgba(255,255,255,.92); max-width: 520px; }
@@ -136,15 +142,16 @@ body:has(.ts-header) .es-main { background: #F6F0E5; }
 .ts-hero--center .ts-hero__content { max-width: 760px; }
 .ts-hero--center .ts-hero__shade { background: linear-gradient(180deg, rgba(28,16,12,.55), rgba(28,16,12,.35)); }
 .ts-hero--center .ts-hero__text { margin-left: auto; margin-right: auto; }
+.ts-hero--booking .ts-hero__content { max-width: 760px; }
 .ts-hero--booking .ts-hero__shade { background: linear-gradient(90deg, rgba(28,16,12,.72) 0%, rgba(28,16,12,.42) 45%, rgba(28,16,12,.08) 80%); }
 /* Ouverture « fondu » : texte sur l'ivoire à gauche, photo qui s'efface vers lui (Retrouver ma réservation, demande de groupe). */
 .ts-hero--fade { color: var(--ts-ink); background: var(--ts-ivory); }
-.ts-hero--fade .ts-hero__media { left: 40%; }
-.ts-hero--fade .ts-hero__shade { background: linear-gradient(90deg, var(--ts-ivory) 0%, rgba(246,240,229,.82) 14%, rgba(246,240,229,0) 42%); }
+.ts-hero--fade .ts-hero__media { left: 38%; }
+.ts-hero--fade .ts-hero__shade { background: linear-gradient(90deg, var(--ts-ivory) 0%, var(--ts-ivory) 36%, rgba(246,240,229,.78) 44%, rgba(246,240,229,.25) 54%, rgba(246,240,229,0) 64%); }
 .ts-hero--fade .ts-title { color: var(--ts-wine-deep); }
 .ts-hero--fade .ts-eyebrow { color: #8B6B4A; }
 .ts-hero--fade .ts-hero__text { color: var(--ts-ink); }
-.ts-hero--fade .ts-hero__content { max-width: 520px; }
+.ts-hero--fade .ts-hero__content { max-width: 500px; }
 @media (max-width: 749px) {
   .ts-hero__inner { min-height: var(--ts-hero-h-mobile, 340px); }
   .ts-hero .ts-title { font-size: var(--ts-hero-title-mobile, 40px); }
@@ -168,8 +175,8 @@ body:has(.ts-header) .es-main { background: #F6F0E5; }
 .ts-split__text { position: relative; display: flex; flex-direction: column; justify-content: center; padding: 40px var(--ts-gutter) 40px max(var(--ts-gutter), calc((100vw - var(--ts-width)) / 2)); }
 .ts-split--right .ts-split__text { padding: 40px max(var(--ts-gutter), calc((100vw - var(--ts-width)) / 2)) 40px clamp(32px, 4vw, 64px); }
 .ts-split--right .ts-split__media { order: -1; }
-.ts-split__media { min-height: 240px; }
-.ts-split__media .ts-img { height: 100%; }
+.ts-split__media { min-height: 240px; position: relative; }
+.ts-split__media .ts-img { position: absolute; inset: 0; height: 100%; }
 .ts-split .ts-title { margin-bottom: 16px; }
 .ts-split .ts-text { max-width: 560px; }
 .ts-split .ts-link, .ts-split .ts-btn { margin-top: 26px; align-self: flex-start; }
@@ -180,12 +187,12 @@ body:has(.ts-header) .es-main { background: #F6F0E5; }
 /* Page « Le lieu » : texte et photo de plat, encadrés dans la page (pas en pleine largeur). */
 .ts-split--boxed { max-width: calc(var(--ts-width) + 2 * var(--ts-gutter)); margin: 0 auto; padding: 56px var(--ts-gutter) 28px; gap: clamp(28px, 4vw, 64px); grid-template-columns: 1.45fr 1fr; }
 .ts-split--boxed .ts-split__text { padding: 0; }
-.ts-split--boxed .ts-split__media .ts-img { border-radius: 2px; aspect-ratio: 4 / 5; height: auto; }
+.ts-split--boxed .ts-split__media .ts-img { position: relative; border-radius: 2px; aspect-ratio: 4 / 5; height: auto; }
 @media (max-width: 749px) {
   .ts-split, .ts-split--boxed { grid-template-columns: 1fr; min-height: 0; }
   .ts-split__text, .ts-split--right .ts-split__text { padding: 36px var(--ts-gutter) 30px; }
   .ts-split__media { min-height: 0; }
-  .ts-split__media .ts-img { aspect-ratio: 16 / 10; height: auto; }
+  .ts-split__media .ts-img { position: relative; inset: auto; aspect-ratio: 16 / 10; height: auto; }
   .ts-split--mobile-text-only .ts-split__media { display: none; }
   .ts-split--mobile-inset .ts-split__media { padding: 0 var(--ts-gutter); }
   .ts-split--mobile-inset .ts-split__media .ts-img { border-radius: 3px; }
@@ -212,6 +219,7 @@ body:has(.ts-header) .es-main { background: #F6F0E5; }
 .ts-dishes--plain .ts-dish__name { color: var(--ts-wine-deep); }
 .ts-dishes--plain .ts-dishes__head .ts-title { font-size: clamp(24px, 2vw, 30px); }
 .ts-dishes--plain .ts-dishes__head .ts-text { margin-top: 14px; color: var(--ts-muted); }
+.ts-dishes__head .ts-rule { margin: 14px auto; }
 .ts-dishes--plain { padding: 46px 0 44px; }
 @media (max-width: 749px) {
   .ts-dishes { padding: 28px 0 30px; }
@@ -250,7 +258,7 @@ body:has(.ts-header) .es-main { background: #F6F0E5; }
 }
 
 /* ---------------------------------------------------------------- Ingrédients */
-.ts-ingredients { display: grid; grid-template-columns: 1fr 1.36fr; align-items: center; gap: 10px; padding: 10px 0; }
+.ts-ingredients { display: grid; grid-template-columns: 1.12fr 1.36fr; align-items: center; gap: 10px; padding: 10px 0; }
 .ts-ingredients__text { padding: 26px 24px 26px max(var(--ts-gutter), calc((100vw - var(--ts-width)) / 2)); }
 .ts-ingredients .ts-title { margin-bottom: 12px; }
 .ts-ingredients .ts-link { margin-top: 18px; }
@@ -393,6 +401,7 @@ body:has(.ts-header) .es-main { background: #F6F0E5; }
 /* ---------------------------------------------------------------- Rangée de photos (Le lieu) */
 .ts-photos { display: grid; grid-template-columns: var(--ts-photos-cols, 1fr 1fr); gap: var(--ts-photos-gap, 14px); padding: var(--ts-photos-pad, 0 var(--ts-gutter) 14px); max-width: calc(var(--ts-width) + 2 * var(--ts-gutter)); margin: 0 auto; }
 .ts-photos .ts-img { aspect-ratio: var(--ts-photos-ratio, 1.35); border-radius: 2px; }
+.ts-photos--fixed .ts-img { aspect-ratio: auto; height: var(--ts-photos-h); }
 .ts-photos--bleed { max-width: none; padding: 0; gap: 6px; }
 .ts-photos--bleed .ts-img { border-radius: 0; }
 @media (max-width: 749px) {
@@ -420,12 +429,13 @@ body:has(.ts-header) .es-main { background: #F6F0E5; }
 
 .ts-form-split { display: grid; grid-template-columns: 1.55fr 1fr; gap: clamp(20px, 3vw, 40px); padding: 22px 0 26px; border-top: 1px solid var(--ts-line); }
 .ts-form-split .ts-title { font-size: clamp(22px, 1.8vw, 26px); color: var(--ts-wine-deep); }
-.ts-form-split > .ts-img, .ts-form-split__media .ts-img { height: 100%; min-height: 420px; border-radius: 2px; }
+.ts-form-split__media { position: relative; min-height: 420px; }
+.ts-form-split__media .ts-img { position: absolute; inset: 0; height: 100%; border-radius: 2px; }
 .ts-conditions { background: #EDE5D7; border-radius: 4px; padding: 22px 26px; margin: 4px 0 40px; }
 .ts-conditions .ts-title { font-size: 19px; color: var(--ts-wine-deep); }
 .ts-conditions .ts-rule { margin: 10px 0 12px; width: 28px; color: var(--ts-wine); }
 .ts-conditions .ts-text { color: var(--ts-muted); font-family: var(--ts-serif); font-size: 15px; }
-@media (max-width: 749px) { .ts-form-split { grid-template-columns: 1fr; } .ts-form-split > .ts-img, .ts-form-split__media .ts-img { min-height: 0; aspect-ratio: 4 / 3; } }
+@media (max-width: 749px) { .ts-form-split { grid-template-columns: 1fr; } .ts-form-split__media { min-height: 0; } .ts-form-split__media .ts-img { position: relative; aspect-ratio: 4 / 3; height: auto; } }
 
 /* ---------------------------------------------------------------- Formulaires */
 .ts-form { display: grid; gap: 16px; }
@@ -586,7 +596,8 @@ select.ts-input { appearance: none; background-image: url("data:image/svg+xml,%3
 .ts-facts svg { width: 18px; height: 18px; margin-top: 1px; }
 .ts-confirm__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 22px; }
 .ts-confirm__actions .ts-btn { font-family: var(--ts-serif); font-size: 15px; justify-content: flex-start; padding: 0 22px; }
-.ts-confirm__media .ts-img { height: 100%; min-height: 260px; border-radius: 3px; }
+.ts-confirm__media { position: relative; min-height: 260px; }
+.ts-confirm__media .ts-img { position: absolute; inset: 0; height: 100%; border-radius: 3px; }
 .ts-place { grid-column: 1 / -1; display: flex; align-items: center; gap: 22px; background: #ECE5D8; border-radius: 4px; padding: 16px 22px; }
 .ts-place svg { width: 26px; height: 32px; color: #6E6B48; flex: none; }
 .ts-place div { font: 400 14px/1.45 var(--ts-serif); }
@@ -611,7 +622,9 @@ select.ts-input { appearance: none; background-image: url("data:image/svg+xml,%3
   .ts-booking[data-step="3"] .ts-hero { display: none; }
   .ts-booking__foot { flex-direction: column-reverse; align-items: stretch; }
   .ts-booking__foot .ts-btn { width: 100%; }
-  .ts-booking__aside .ts-btn { position: sticky; bottom: calc(80px + env(safe-area-inset-bottom)); }
+  .ts-booking__aside .ts-btn { position: sticky; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 3; }
+  body.ts-booking-page .ts-bookbar { display: none; }
+  body.ts-booking-page.ts-has-bookbar { padding-bottom: 0; }
   .ts-slots button { min-width: calc(50% - 6px); flex: 1 1 calc(50% - 6px); }
   .ts-summary-bar { gap: 12px 20px; }
   .ts-confirm { margin-top: -40px; border-radius: 0; box-shadow: none; }
@@ -632,7 +645,8 @@ select.ts-input { appearance: none; background-image: url("data:image/svg+xml,%3
 .ts-kv strong { font: 400 19px/1.25 var(--ts-sans); }
 .ts-badge { display: inline-flex; align-items: center; justify-self: start; padding: 5px 14px; border-radius: 99px; font-size: 14px; background: var(--ts-sage); color: #3C5A22; }
 .ts-badge--canceled { background: var(--ts-rose); color: #7A2630; }
-.ts-manage__media .ts-img { height: 100%; min-height: 300px; border-radius: 3px; }
+.ts-manage__media { position: relative; min-height: 300px; }
+.ts-manage__media .ts-img { position: absolute; inset: 0; height: 100%; border-radius: 3px; }
 .ts-manage__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 20px; }
 .ts-manage__boxes { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
 .ts-box { background: #EDE6D9; border-radius: 4px; padding: 18px 26px; font-size: 14px; }
@@ -677,6 +691,7 @@ select.ts-input { appearance: none; background-image: url("data:image/svg+xml,%3
 .ts-dialog__close { position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; border: 0; background: none; cursor: pointer; color: var(--ts-ink); }
 .ts-dialog__close svg { width: 20px; height: 20px; }
 .ts-dialog__note { background: #EEE8DD; padding: 14px 16px; border-radius: 3px; font-size: 12.5px; color: #4A403A; display: flex; gap: 10px; margin-bottom: 18px; min-height: 64px; }
+.ts-dialog__note svg { width: 18px; height: 18px; flex: none; margin-top: 1px; }
 .ts-dialog__actions { display: grid; grid-template-columns: auto 1fr; gap: 10px; }
 
 /* ---------------------------------------------------------------- Pages légales */
@@ -750,3 +765,53 @@ select.ts-input { appearance: none; background-image: url("data:image/svg+xml,%3
 /* Réduction des animations */
 @media (prefers-reduced-motion: reduce) { .ts-section *, .ts-tile .ts-img img, .ts-gallery__item img { transition: none !important; } }
 .ts-visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------------------------------------------------------------- En-tête et pied de page communs du studio, habillés pour TABLE SAISON
+   (sections « header » et « footer » du thème de base : menus, logo et réglages restent ceux de l'éditeur). */
+body.dir-table-saison { background: var(--ts-ivory); }
+body.dir-table-saison .es-header { background: var(--ts-ivory); color: var(--ts-ink); box-shadow: none; border-bottom: 1px solid rgba(110, 31, 45, .08); }
+body.dir-table-saison .es-header__inner { min-height: 74px; max-width: calc(1240px + 2 * clamp(16px, 4.4vw, 64px)); padding-left: clamp(16px, 4.4vw, 64px); padding-right: clamp(16px, 4.4vw, 64px); }
+body.dir-table-saison .es-header__wordmark { display: inline-flex; flex-direction: column; align-items: center; font-family: var(--ts-serif); font-size: 27px; font-weight: 400; letter-spacing: .1em; line-height: 1; color: var(--ts-wine-deep); text-transform: uppercase; white-space: nowrap; }
+body.dir-table-saison .es-header__wordmark::after { display: block; font-family: var(--ts-sans); font-size: 9.5px; letter-spacing: .32em; margin-top: 6px; text-transform: uppercase; color: var(--ts-wine-deep); }
+body.dir-table-saison .es-mobile-menu__head .es-header__wordmark::after { content: none; }
+body.dir-table-saison .es-header__nav { margin-left: auto; }
+body.dir-table-saison .es-header__nav ul { gap: clamp(22px, 3vw, 46px); }
+body.dir-table-saison .es-nav__link { font: 400 14px/1 var(--ts-sans); color: var(--ts-ink); text-transform: none; letter-spacing: 0; padding: 8px 0; border-bottom: 1px solid transparent; }
+body.dir-table-saison .es-nav__link:hover, body.dir-table-saison .es-nav__link[aria-current="page"] { color: var(--ts-wine); border-bottom-color: var(--ts-wine); }
+body.dir-table-saison .es-header__icons { margin-left: clamp(18px, 4vw, 72px); }
+body.dir-table-saison .es-header__cta { background: var(--ts-wine); border-color: var(--ts-wine); color: #fff; border-radius: 4px !important; text-transform: none; letter-spacing: 0; font: 500 14px/1.2 var(--ts-sans); min-height: 42px; padding: 0 24px; box-shadow: none; }
+body.dir-table-saison .es-header__cta:hover { background: var(--ts-wine-dark); border-color: var(--ts-wine-dark); }
+body.dir-table-saison .es-header__burger { color: var(--ts-ink); }
+body.dir-table-saison .es-mobile-menu { background: var(--ts-ivory); color: var(--ts-ink); }
+body.dir-table-saison .es-mm__link { font-family: var(--ts-serif); font-size: 24px; color: var(--ts-wine-deep); text-transform: none; }
+body.dir-table-saison .es-mobile-menu__cta { background: var(--ts-wine); border-color: var(--ts-wine); color: #fff; border-radius: 4px; text-transform: none; letter-spacing: 0; }
+@media (max-width: 749px) {
+  body.dir-table-saison .es-header__inner { min-height: 64px; }
+  body.dir-table-saison .es-header__wordmark { font-size: 23px; letter-spacing: .08em; }
+  body.dir-table-saison .es-header__wordmark::after { font-size: 8px; margin-top: 5px; }
+  /* Sur téléphone, la barre fixe du bas porte la réservation : l'en-tête garde le nom et le menu (maquettes 01 à 03). */
+  body.dir-table-saison .es-header__icons .es-header__cta { display: none; }
+  body.dir-table-saison .es-header__inner { display: flex; justify-content: space-between; }
+  body.dir-table-saison .es-header__logo { order: 0; margin-right: auto; }
+  body.dir-table-saison .es-header__burger { order: 2; }
+}
+body.dir-table-saison .es-footer { background: var(--ts-wine-deep); color: #EADCD3; padding: 34px 0 6px; }
+body.dir-table-saison .es-footer.es-ambient::before, body.dir-table-saison .es-footer.es-ambient::after { display: none; }
+body.dir-table-saison .es-footer .es-container { max-width: calc(1240px + 2 * clamp(16px, 4.4vw, 64px)); padding-left: clamp(16px, 4.4vw, 64px); padding-right: clamp(16px, 4.4vw, 64px); }
+body.dir-table-saison .es-footer__brand { display: inline-flex; flex-direction: column; align-items: center; font-family: var(--ts-serif); font-size: 25px; letter-spacing: .1em; line-height: 1; color: #F6F0E5; text-decoration: none; text-transform: uppercase; }
+body.dir-table-saison .es-footer__brand::after { display: block; font-family: var(--ts-sans); font-size: 9px; letter-spacing: .32em; margin-top: 7px; }
+body.dir-table-saison .es-footer__heading { font: 500 13px/1.2 var(--ts-sans); letter-spacing: 0; text-transform: none; color: #F6F0E5; margin: 0 0 10px; }
+body.dir-table-saison .es-footer__links, body.dir-table-saison .es-footer .es-rte { font-size: 13px; line-height: 1.7; color: #E4D3CA; }
+body.dir-table-saison .es-footer__links a, body.dir-table-saison .es-footer .es-rte a { color: inherit; text-decoration: none; }
+body.dir-table-saison .es-footer__links a:hover { text-decoration: underline; }
+body.dir-table-saison .es-footer__bottom { display: none; }
+body.dir-table-saison .es-footer__grid { gap: 28px clamp(28px, 4vw, 64px); }
+@media (min-width: 990px) { body.dir-table-saison .es-footer__layout { grid-template-columns: minmax(220px, .7fr) 2fr; align-items: start; } body.dir-table-saison .es-footer__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.ts-footnote { background: var(--ts-wine-deep); }
+.ts-footnote .ts-footer__bottom { border-top: 1px solid rgba(255,255,255,.1); }
+/* Pages intérieures (planches 02 à 05) : pied compact sur une ligne — marque, menu ; horaires et coordonnées restent sur l'accueil. */
+body.dir-table-saison:not(.template-index) .es-footer { padding: 24px 0 4px; }
+body.dir-table-saison:not(.template-index) .es-footer__block--text { display: none; }
+body.dir-table-saison:not(.template-index) .es-footer__block--links .es-footer__heading { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+body.dir-table-saison:not(.template-index) .es-footer__links { display: flex; flex-wrap: wrap; gap: 6px clamp(18px, 2.6vw, 40px); font-size: 13.5px; }
+@media (min-width: 990px) { body.dir-table-saison:not(.template-index) .es-footer__layout { align-items: center; } body.dir-table-saison:not(.template-index) .es-footer__grid { grid-template-columns: 1fr; } }

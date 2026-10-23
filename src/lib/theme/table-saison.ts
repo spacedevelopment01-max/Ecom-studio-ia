@@ -224,4 +224,5 @@ export const TABLE_SAISON_THEME: CatalogTheme = {
   home: shopHome,
   services: servicesHome,
   product: (k) => [k.faqSec(1, 4, "lines")],
+  finish: finishTableSaison,
 };

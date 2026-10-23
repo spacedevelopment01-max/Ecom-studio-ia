@@ -54,7 +54,9 @@
 
   var CFG = (function () { var el = document.getElementById('ts-config'); try { return el ? JSON.parse(el.textContent) : null; } catch (e) { return null; } })() || { mode: 'demo', services: [], pages: {} };
   var LIVE = CFG.mode === 'live' && /^https:\/\//.test(CFG.api || '');
-  var PAGES = CFG.pages || {};
+  var PAGES = {}, PAGE_URLS = {};
+  Array.prototype.forEach.call(document.querySelectorAll('[data-ts-pages] a[data-page]'), function (a) { PAGES[a.getAttribute('data-page')] = a.getAttribute('href'); PAGE_URLS[a.getAttribute('data-page')] = a.href; });
+  function onPage(key) { try { return !!PAGE_URLS[key] && new URL(PAGE_URLS[key]).pathname === location.pathname; } catch (e) { return false; } }
   function core() { return window.TableSaisonCore; }
   function rules() {
     var C = core(), list = function (v) { return String(v || '').split(/[\s,;]+/).filter(C.isTime); };
@@ -102,7 +104,9 @@
 
   /* ---------------------------------------------------------------- Éléments communs */
   function initCommon() {
-    if ($('[data-ts-bookbar]')) document.body.classList.add('ts-has-bookbar');
+    // Page de réservation : la barre « Réserver une table » laisse la place au bouton de l'étape en cours.
+    if ($('[data-ts-booking]')) document.body.classList.add('ts-booking-page');
+    else if ($('[data-ts-bookbar]')) document.body.classList.add('ts-has-bookbar');
     if (!LIVE) $$('[data-ts-sim]').forEach(function (el) { el.hidden = false; });
     $$('[data-ts-acc] .ts-acc__q').forEach(function (btn) {
       var panel = document.getElementById(btn.getAttribute('aria-controls'));
@@ -201,7 +205,8 @@
   }
   /** Page « demande reçue » ouverte depuis la démonstration : la simulation est écrite noir sur blanc. */
   function initGroupSent() {
-    if (location.hash !== '#simulation') return;
+    // Démonstration : la page dit toujours qu'aucune demande n'a été envoyée ; service réel : seulement après un envoi enregistré.
+    if (LIVE && location.hash !== '#simulation') return;
     var hero = $('.ts-hero--fade .ts-hero__content'); if (!hero) return;
     var p = document.createElement('p'); p.className = 'ts-demo-flag'; p.textContent = T.groupDemo; hero.insertBefore(p, hero.firstChild);
   }
@@ -241,7 +246,7 @@
     function out(name, value) { $$('[data-ts-out="' + name + '"]', section).forEach(function (el) { el.textContent = value; }); }
     function refreshOut() {
       out('party', partyText(draft.party)); out('date', draft.date ? dateText(draft.date) : T.chooseDate); out('time', draft.time ? timeText(draft.time) : T.chooseTime);
-      out('address', CFG.address || '');
+      out('address', CFG.address || (EN ? '[To complete]' : '[À renseigner]'));
     }
     var steps = ['1', '2', '3', 'unavailable', 'confirm'], heroes = { '1': 'step1', '2': 'step2', '3': 'step3', unavailable: 'unavailable', confirm: 'confirm' };
     function show(step, focus) {
@@ -428,7 +433,7 @@
     }
     function renderConfirm() {
       var r = lastConfirmed;
-      out('number', r.number); out('party', partyText(r.party)); out('when', dateText(r.date) + ' ' + T.at + ' ' + timeText(r.time)); out('address', CFG.address || '');
+      out('number', r.number); out('party', partyText(r.party)); out('when', dateText(r.date) + ' ' + T.at + ' ' + timeText(r.time)); out('address', CFG.address || (EN ? '[To complete]' : '[À renseigner]'));
       out('email-state', r.emailState === 'demo' ? fmt(T.demoEmail, { email: r.email }) : r.emailState === 'sent' ? fmt(T.emailSent, { email: r.email }) : r.emailState === 'not_configured' ? T.emailOff : r.emailState === 'failed' ? T.emailFailed : '');
       $('[data-ts-confirm-note]', section).textContent = LIVE ? T.liveNote : T.demoNote;
       var link = $('[data-ts-manage-link]', section); if (link && r.token) link.href = (PAGES.manage || link.getAttribute('href').split('#')[0]) + '#r=' + encodeURIComponent(r.number) + '&t=' + encodeURIComponent(r.token);
@@ -498,7 +503,7 @@
       var ref = $('[data-ts-ref]', root); if (ref) ref.textContent = (EN ? 'Booking no. ' : 'Réservation n° ') + r.number;
       outs('party', partyText(r.party)); outs('date', dateText(r.date)); outs('time', timeText(r.time));
       outs('status', canceled ? T.canceled : T.confirmed); $$('.ts-badge', root).forEach(function (b) { b.classList.toggle('ts-badge--canceled', canceled); });
-      outs('email', r.emailMasked || core().maskEmail(r.email)); outs('note', r.note ? r.note : T.noPref); outs('address', CFG.address || '');
+      outs('email', r.emailMasked || core().maskEmail(r.email)); outs('note', r.note ? r.note : T.noPref); outs('address', CFG.address || (EN ? '[To complete]' : '[À renseigner]'));
       var actions = $('[data-ts-actions]', root); if (actions) actions.hidden = canceled;
       var noteBtn = $('[data-ts-note-open]', root); if (noteBtn) noteBtn.hidden = canceled;
       var mod = $('[data-ts-modify-link]', root); if (mod) mod.href = (PAGES.modify || mod.getAttribute('href').split('#')[0]) + accessHash(state.access);
@@ -591,7 +596,8 @@
     $$('[data-ts-booking]').forEach(initBooking);
     $$('[data-ts-manage]').forEach(initManage);
     var cookies = $('[data-ts-cookies]'); if (cookies) initCookies(cookies);
-    initGroupSent();
+    $$('[data-ts-cookies-reset]').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); if (window.TableSaisonConsent) window.TableSaisonConsent.reset(); }); });
+    if (onPage('groupSent')) initGroupSent();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
