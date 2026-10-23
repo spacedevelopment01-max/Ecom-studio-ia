@@ -54,13 +54,70 @@ export const MUSEAU_PAGES = {
   motDePasse: "/pages/mot-de-passe-oublie", adresses: "/pages/mes-adresses", infos: "/pages/informations-personnelles",
   paiement: "/pages/finaliser-ma-commande", confirmation: "/pages/confirmation-de-commande",
 };
-/** Articles du journal (pages réelles, gabarit d'article complet). */
-export const MUSEAU_ARTICLES = [
-  { handle: "les-petits-rituels-des-grandes-balades", title: "Les petits rituels des grandes balades", tag: "Balades", image: "ambiance-05.webp" },
-  { handle: "preparer-son-sac-pour-la-balade", title: "Préparer son sac pour la balade", tag: "Conseils", image: "ambiance-03.webp" },
-  { handle: "choisir-la-taille-de-son-harnais", title: "Choisir la taille de son harnais", tag: "Conseils", image: "harnais-05.webp" },
-  { handle: "des-idees-pour-changer-de-chemin", title: "Des idées pour changer de chemin", tag: "Balades", image: "ambiance-07.webp" },
-  { handle: "le-quotidien-en-bonne-compagnie", title: "Le quotidien, en bonne compagnie", tag: "Le club", image: "ambiance-04.webp" },
+/** Articles du journal (pages réelles, gabarit d'article complet) : conseils généraux, aucun chiffre ni fait inventé. */
+type Article = { handle: string; title: string; tag: string; image: string; excerpt: string; intro: string; body: [string, string, string?][] };
+export const MUSEAU_ARTICLES: Article[] = [
+  { handle: "les-petits-rituels-des-grandes-balades", title: "Les petits rituels des grandes balades", tag: "Balades", image: "ambiance-05.webp",
+    excerpt: "Quelques idées simples pour transformer une sortie en vrai moment de complicité.",
+    intro: "Il n'y a pas de grande aventure sans ces petits rituels qui transforment une simple sortie en moment de complicité. Voici quelques idées pour profiter encore plus de vos balades, au fil des saisons.",
+    body: [
+      ["Préparer les essentiels", "Avant de partir, un petit tour de vos indispensables : harnais ou collier, laisse, pochette et ses sachets. Des essentiels rangés au même endroit rendent chaque départ plus simple.", "ambiance-03.webp"],
+      ["Prendre le temps", "Une balade, c'est aussi l'occasion de ralentir : observer, explorer, laisser le temps de sentir. Ces moments simples font partie du plaisir de sortir à deux."],
+      ["Changer de décor", "Varier les lieux de balade permet de découvrir de nouveaux chemins : forêt, campagne, ville ou bord de mer, chaque sortie raconte une histoire différente.", "ambiance-07.webp"],
+      ["Rentrer et ranger", "Au retour, un dernier rituel : raccrocher la laisse et la pochette au même endroit, pour qu'elles soient prêtes pour la prochaine sortie."],
+    ] },
+  { handle: "preparer-son-sac-pour-la-balade", title: "Préparer son sac pour la balade", tag: "Conseils", image: "ambiance-03.webp",
+    excerpt: "Les indispensables à prévoir pour partir l'esprit léger, quelle que soit la durée de la sortie.",
+    intro: "Partir l'esprit léger, c'est d'abord savoir ce qu'on emporte. Une petite liste suffit pour ne rien oublier, de la balade du matin à la sortie de la journée.",
+    body: [
+      ["Les accessoires de sortie", "Le harnais ou le collier, la laisse et la pochette à sacs : trois éléments assortis qui se retrouvent d'un coup d'œil avant de partir.", "ambiance-01.webp"],
+      ["Les sachets à portée de main", "La pochette s'accroche à la laisse par son mousqueton : les sachets restent à portée de main pendant toute la balade."],
+      ["De l'eau pour deux", "Pour une sortie plus longue, prévoyez de l'eau pour vous et pour votre chien, surtout quand il fait chaud.", "ambiance-06.webp"],
+      ["Un rangement qui ne bouge pas", "Gardez tout au même endroit près de la porte : la prochaine sortie commence dès que la laisse est en main."],
+    ] },
+  { handle: "choisir-la-taille-de-son-harnais", title: "Choisir la taille de son harnais", tag: "Conseils", image: "harnais-05.webp",
+    excerpt: "Deux mesures à prendre et un tableau à consulter pour choisir la bonne taille.",
+    intro: "Le bon harnais commence par deux mesures simples. Voici comment les prendre et les comparer au guide des tailles.",
+    body: [
+      ["Mesurer le tour de poitrail", "Avec un mètre ruban souple, mesurez autour de la partie la plus large de la poitrine, juste derrière les pattes avant.", "harnais-02.webp"],
+      ["Mesurer le tour de cou", "Mesurez la base du cou, là où le collier se place naturellement."],
+      ["Comparer au guide", "Reportez vos deux mesures dans le guide des tailles : chaque taille y indique son tour de cou et son tour de poitrail (mesures à renseigner par la marque).", "harnais-04.webp"],
+      ["Un doute entre deux tailles ?", "Comparez de nouveau vos mesures au tableau, puis écrivez-nous : nous vous aiderons à choisir."],
+    ] },
+  { handle: "des-idees-pour-changer-de-chemin", title: "Des idées pour changer de chemin", tag: "Balades", image: "ambiance-07.webp",
+    excerpt: "Forêt, bord de mer, campagne ou ville : de quoi varier les plaisirs de la balade.",
+    intro: "Le même trajet tous les jours, c'est rassurant ; un nouveau chemin de temps en temps, c'est une petite aventure. Quelques idées pour varier les sorties.",
+    body: [
+      ["Le parc d'à côté", "Un autre parc, une autre allée : il suffit parfois de tourner à gauche plutôt qu'à droite pour découvrir un nouveau terrain de jeu.", "ambiance-05.webp"],
+      ["La campagne le week-end", "Les chemins de campagne offrent de l'espace et de nouvelles odeurs à explorer, à votre rythme."],
+      ["Le bord de l'eau", "Lac, rivière ou bord de mer : renseignez-vous sur les règles d'accès aux chiens avant de partir.", "ambiance-10.webp"],
+      ["La ville autrement", "Une balade en ville peut aussi devenir une découverte : une rue calme, une place, un nouveau quartier."],
+    ] },
+  { handle: "le-quotidien-en-bonne-compagnie", title: "Le quotidien, en bonne compagnie", tag: "Le club", image: "ambiance-04.webp",
+    excerpt: "Ces petits moments simples qui rendent la vie plus belle, une sortie après l'autre.",
+    intro: "Le matin avant le travail, le soir au retour : les balades du quotidien sont souvent les plus précieuses. Petit éloge des sorties de tous les jours.",
+    body: [
+      ["Le rendez-vous du matin", "Une première sortie pour bien commencer la journée, ensemble, avant que tout s'accélère.", "ambiance-02.webp"],
+      ["La pause de midi", "Quand c'est possible, une courte sortie au milieu de la journée fait du bien à tous les deux."],
+      ["La balade du soir", "Le soir, on prend le temps : un tour un peu plus long, pour se retrouver.", "ambiance-09.webp"],
+      ["Des essentiels toujours prêts", "Des accessoires assortis, rangés au même endroit : la sortie peut commencer à tout moment."],
+    ] },
+];
+
+/** Questions de la page FAQ, par thème (pastilles) : rien d'universel, de délai, de mesure ni de garantie inventés. */
+export const MUSEAU_FAQ: [string, string, string][] = [
+  ["Comment bien choisir la taille de mon harnais ?", "Mesurez le tour de cou et le tour de poitrail de votre chien, puis comparez-les au guide des tailles. En cas de doute entre deux tailles, écrivez-nous.", "Produits"],
+  ["Le harnais est-il réglable ?", A_RENSEIGNER("Les possibilités de réglage du harnais"), "Produits"],
+  ["Le collier convient-il à tous les chiens ?", "Cela dépend de son tour de cou : comparez-le au guide des tailles. Les mesures de chaque taille sont à renseigner dans cette démonstration.", "Produits"],
+  ["La laisse est-elle adaptée aux promenades en ville ?", "Elle s'accroche au collier comme au harnais par son mousqueton métallique. Longueur et largeur : à renseigner.", "Produits"],
+  ["La pochette peut-elle contenir plusieurs rouleaux de sacs ?", A_RENSEIGNER("La contenance de la pochette"), "Produits"],
+  ["Comment entretenir les accessoires ?", A_RENSEIGNER("Les conseils d'entretien de chaque accessoire"), "Produits"],
+  ["Comment suivre ma commande ?", "Les informations de suivi vous sont envoyées par e-mail. Modalités de suivi : à renseigner.", "Commande"],
+  ["Puis-je modifier ma commande ?", A_RENSEIGNER("Les conditions de modification d'une commande"), "Commande"],
+  ["Quels moyens de paiement acceptez-vous ?", A_RENSEIGNER("Les moyens de paiement acceptés"), "Commande"],
+  ["Quels sont les délais de livraison ?", "Les délais sont indiqués lors de la validation du panier. Délais de la boutique : à renseigner.", "Livraison"],
+  ["Combien coûte la livraison ?", "Les frais de livraison sont calculés à l'étape suivante de la commande. Tarifs : à renseigner.", "Livraison"],
+  ["Comment retourner un article ?", "Les conditions de retour sont réunies sur la page Livraison et retours (à renseigner).", "Livraison"],
 ];
 
 /** Questions de l'accueil : la taille renvoie au guide ; rien d'universel, de délai ni de mesure inventés. */
@@ -267,7 +324,7 @@ function curateMuseau(k: Kit) {
   spec.store.menus.footer = { title: "Boutique", links: shopLinks };
   spec.store.menus["footer-club"] = { title: "Le club", links: [{ title: "Notre histoire", url: MUSEAU_PAGES.club }, { title: "Journal", url: MUSEAU_PAGES.journal }, { title: "Nous contacter", url: MUSEAU_PAGES.contact }] };
   spec.store.menus["footer-aide"] = { title: "Aide", links: [{ title: "Suivi de commande", url: MUSEAU_PAGES.connexion }, { title: "Guide des tailles", url: MUSEAU_PAGES.tailles }, { title: "Livraison et retours", url: MUSEAU_PAGES.livraison }, { title: "FAQ", url: MUSEAU_PAGES.faq }, { title: "Nous contacter", url: MUSEAU_PAGES.contact }] };
-  spec.store.menus.legal = { title: "Informations légales", links: [{ title: "Mentions légales", url: MUSEAU_PAGES.mentions }, { title: "Confidentialité", url: MUSEAU_PAGES.confidentialite }, { title: "CGV", url: MUSEAU_PAGES.cgv }] };
+  spec.store.menus.legal = { title: "Informations légales", links: [{ title: "Mentions légales", url: MUSEAU_PAGES.mentions }, { title: "Confidentialité", url: MUSEAU_PAGES.confidentialite }, { title: "CGV", url: MUSEAU_PAGES.cgv }, { title: "Cookies", url: "#cookies" }] };
   const header = Object.values(spec.groups.header.sections).find((s) => s.type === "header")!;
   header.settings = { ...header.settings, menu: "main-menu", layout: "logo-left", shape: "bar", icons: "plain", mega_menu: "none", mobile_menu: "drawer", mobile_submenu: "accordion", sticky: true, transparent_on_home: false, show_search: true, show_cart: true, account_link: MUSEAU_PAGES.connexion, cta_label: "", phone: "", color_scheme: "scheme-1", mobile_menu_scheme: "scheme-1" };
   header.blocks = {};
@@ -308,11 +365,14 @@ function curateMuseau(k: Kit) {
   // ─── Pages (contenu détaillé : voir pagesMuseau). ────────────────────────────────────────────────────────────────
   pagesMuseau(k, href);
   k.finish();
-  spec.settings = { ...spec.settings, logo_width: 170, fab_contact_link: MUSEAU_PAGES.contact };
+  spec.settings = { ...spec.settings, logo_width: 170, fab_contact_link: MUSEAU_PAGES.contact, cookie_banner: true, cookie_policy_link: MUSEAU_PAGES.confidentialite };
 }
 
 /** Bandeau d'ouverture des pages intérieures (H1). */
-const pageHero = (k: Kit, file: string, heading: string, text: string, extra: Record<string, unknown> = {}) => k.section("cv-banner", { ...k.img(file), layout: "background", band_height: "tall", veil: "light", mobile_valign: "top", focus_x: 60, focus_y: 40, mobile_focus_x: 60, mobile_focus_y: 40, heading, heading_tag: "h1", heading_accent: "", eyebrow: "", text: p(text), price_text: "", price_note: "", button_label: "", button_link: "", button_style: "solid", button_arrow: true, note: "", animation: "fade", color_scheme: "scheme-1", padding_top: 0, padding_bottom: 0, ...extra });
+// Photo en largeur : en fond, texte sur voile clair ; photo carrée ou en hauteur : panneau crème à gauche, photo à droite
+// (sinon un bandeau très large n'en montrerait qu'une bande).
+const WIDE = /ambiance-(0[1235678]|10)\.webp$/;
+const pageHero = (k: Kit, file: string, heading: string, text: string, extra: Record<string, unknown> = {}) => k.section("cv-banner", { ...k.img(file), layout: WIDE.test(file) ? "background" : "panel-left", band_height: "tall", veil: WIDE.test(file) ? "light" : "none", mobile_valign: "bottom", focus_x: 60, focus_y: 40, mobile_focus_x: 60, mobile_focus_y: 30, heading, heading_tag: "h1", heading_accent: "", eyebrow: "", text: p(text), price_text: "", price_note: "", button_label: "", button_link: "", button_style: "solid", button_arrow: true, note: "", animation: "fade", color_scheme: "scheme-1", padding_top: 0, padding_bottom: 0, ...extra });
 
 function pagesMuseau(k: Kit, href: (key: string) => string) {
   const { spec } = k;
@@ -330,15 +390,109 @@ function pagesMuseau(k: Kit, href: (key: string) => string) {
   ];
   page("finaliser-ma-commande", "Finaliser ma commande", { title: "Finaliser ma commande (exemple) | MUSEAU CLUB", description: "Exemple de commande de la boutique de démonstration : rien n'est envoyé ni payé." }, [["order", k.section("demo-order", { layout: "checkout", eyebrow: "Exemple de démonstration", heading: "Finaliser ma commande", text: p("Encore un peu et c'est parti pour de nouvelles aventures."), button_label: "Voir l'exemple de confirmation", button_link: MUSEAU_PAGES.confirmation, button_note: "Aucun paiement : la démonstration montre seulement le parcours.", color_scheme: "scheme-1", padding_top: 32, padding_bottom: 56 }, orderLines)]]);
   page("confirmation-de-commande", "Confirmation de commande", { title: "Confirmation (exemple) | MUSEAU CLUB", description: "Exemple de confirmation de la boutique de démonstration : aucune commande réelle." }, [["order", k.section("demo-order", { ...k.img("ambiance-09.webp"), focus_x: 50, focus_y: 30, layout: "confirmation", eyebrow: "Exemple de confirmation", heading: "Merci,\nla balade peut\ncommencer.", text: p("Dans une vraie boutique, la confirmation et l'e-mail de commande sont envoyés par Shopify après le paiement. Ici, aucune commande n'a été passée."), button_label: "Voir l'exemple de commande", button_link: MUSEAU_PAGES.commande, summary_title: "Récapitulatif de la commande", color_scheme: "scheme-1", padding_top: 32, padding_bottom: 56 }, orderLines)]]);
-  page("le-club", "Le club", { title: "Le club | MUSEAU CLUB", description: "Pour ceux qui ne disent jamais non à une balade : l'histoire de MUSEAU CLUB." }, [["hero", pageHero(k, "ambiance-02.webp", "Pour ceux\nqui ne disent\njamais non\nà une balade.", "MUSEAU CLUB, c'est une collection d'accessoires pensés pour tous ceux qui partagent une même évidence : les plus beaux moments sont souvent dehors.")]]);
-  page("journal", "Journal", { title: "Journal | MUSEAU CLUB", description: "Des idées, des inspirations et des conseils pour explorer le monde ensemble." }, [["hero", pageHero(k, "ambiance-09.webp", "Le journal\ndes sorties\nà deux.", "Des idées, des inspirations et des conseils pour explorer le monde ensemble, autrement.")]]);
-  for (const a of MUSEAU_ARTICLES) page(a.handle, a.title, { title: `${a.title} | Journal MUSEAU CLUB`, description: a.title }, [["hero", pageHero(k, a.image, a.title, "Article du journal MUSEAU CLUB.")]]);
-  page("guide-des-tailles", "Guide des tailles", { title: "Guide des tailles | MUSEAU CLUB", description: "Bien choisir, avant de partir : comment mesurer votre chien." }, [["hero", pageHero(k, "ambiance-09.webp", "Bien choisir,\navant de partir.", "Un bon ajustement, c'est plus de plaisir au quotidien et des balades encore plus belles.")]]);
-  page("faq", "FAQ", { title: "FAQ | MUSEAU CLUB", description: "Les réponses aux questions les plus fréquentes." }, [["hero", pageHero(k, "ambiance-04.webp", "Une question\navant la balade ?", "Retrouvez ici les réponses aux questions les plus fréquentes sur nos produits, votre commande et la livraison.")]]);
-  page("contact", "Contact", { title: "Contact | MUSEAU CLUB", description: "Une question ? On vous répond avec plaisir." }, [["hero", pageHero(k, "ambiance-02.webp", "Une question ?\nOn vous répond\navec plaisir.", "Envoyez-nous un message, nous vous répondrons dès que possible.")]]);
-  page("livraison-retours", "Livraison et retours", { title: "Livraison et retours | MUSEAU CLUB", description: "Tout savoir avant de commander." }, [["hero", pageHero(k, "ambiance-03.webp", "Tout savoir\navant de commander.", "Retrouvez ici toutes les informations sur la livraison, le suivi de commande et les retours.")]]);
-  page("mentions-legales", "Mentions légales", { title: "Mentions légales | MUSEAU CLUB", description: "Modèle de démonstration à compléter." }, [["hero", pageHero(k, "ambiance-04.webp", "Mentions\nlégales", "Cette page présente les mentions légales à titre de modèle de démonstration.")]]);
-  page("confidentialite", "Confidentialité", { title: "Confidentialité | MUSEAU CLUB", description: "Modèle de démonstration à compléter." }, [["hero", pageHero(k, "ambiance-06.webp", "Notre politique\nde confidentialité", "Cette page est un modèle de démonstration, à compléter et valider.")]]);
-  page("cgv", "Conditions générales de vente", { title: "CGV | MUSEAU CLUB", description: "Modèle de démonstration à compléter." }, [["hero", pageHero(k, "harnais-02.webp", "Conditions\ngénérales de vente", "Cette page présente les conditions générales de vente à titre de modèle de démonstration.")]]);
-  page("connexion", "Connexion", { title: "Connexion | MUSEAU CLUB", description: "Connexion (démonstration)." }, [["hero", pageHero(k, "ambiance-09.webp", "Bon retour\nparmi nous !", "Connectez-vous à votre compte pour retrouver vos commandes et vos adresses.")]]);
+  const S = (type: string, settings: Record<string, unknown>, blocks: { type: string; settings: Record<string, unknown> }[] = []) => k.section(type, settings, blocks);
+  const band = (file: string, layout: "panel-left" | "panel-right", heading: string, text: string, button: [string, string] | null, extra: Record<string, unknown> = {}) => S("cv-banner", { ...k.img(file), layout, focus_x: 50, focus_y: 50, mobile_focus_x: 50, mobile_focus_y: 50, heading, heading_tag: "h2", heading_accent: "", eyebrow: "", text: p(text), price_text: "", price_note: "", button_label: button?.[0] ?? "", button_link: button?.[1] ?? "", button_style: "solid", button_arrow: true, note: "", animation: "fade", color_scheme: "scheme-3", padding_top: 0, padding_bottom: 0, ...extra });
+  const faqRows = (rows: [string, string, string?][]) => rows.map(([question, answer, topic]) => ({ type: "question", settings: { question, answer: p(answer), topic: topic ?? "" } }));
+  const journalCards = (list: typeof MUSEAU_ARTICLES) => list.map((a) => ({ type: "article", settings: { ...k.img(a.image), title: a.title, text: a.excerpt, tag: a.tag, date_text: "", link: `/pages/${a.handle}` } }));
+  const hero = (file: string, eyebrow: string, heading: string, text: string, extra: Record<string, unknown> = {}) => pageHero(k, file, heading, text, { eyebrow, ...extra });
+
+  // ─── Le club (planche 06) ───────────────────────────────────────────────────────────────────────────────────────
+  page("le-club", "Le club", { title: "Le club | MUSEAU CLUB", description: "Pour ceux qui ne disent jamais non à une balade : l'histoire de MUSEAU CLUB et de ses quatre essentiels assortis." }, [
+    ["hero", hero("ambiance-02.webp", "", "Pour ceux\nqui ne disent\njamais non\nà une balade.", "MUSEAU CLUB, c'est une collection d'accessoires pensés pour tous ceux qui partagent une même évidence : les plus beaux moments sont souvent dehors.", { button_label: "Découvrir la collection", button_link: "/collections/all", focus_x: 66, focus_y: 24 })],
+    ["essentiels", band("ambiance-01.webp", "panel-left", "Un chien.\nQuatre essentiels.\nMille sorties.", "Un harnais, une laisse, un collier et une pochette à sacs assortis, en bleu cobalt et maille crème, pour vivre ensemble de belles aventures au quotidien.", ["Voir la collection", "/collections/all"])],
+    ["quotidien", band("ambiance-09.webp", "panel-right", "Le quotidien,\nen bonne compagnie.", "Des accessoires pour toutes vos balades, des grands horizons aux petits coins de quartier.", ["Découvrir la collection", "/collections/all"], { focus_y: 16, mobile_focus_y: 14 })],
+    ["details", S("cv-feature", { layout: "numbered", detail_shape: "square", detail_numbers: false, image_asset: "", image_alt: "", eyebrow: "", heading: "Des détails qui comptent.", heading_accent: "", text: "", button_label: "", button_link: "", guarantee_text: "", animation: "fade", color_scheme: "scheme-1", padding_top: 32, padding_bottom: 40 }, [
+      { type: "detail", settings: { ...k.img("harnais-03.webp"), caption: "Une doublure en maille crème" } },
+      { type: "detail", settings: { ...k.img("collier-05.webp"), caption: "Un design épuré" } },
+      { type: "detail", settings: { ...k.img("harnais-04.webp"), caption: "Des boucles noires à clip" } },
+      { type: "detail", settings: { ...k.img("laisse-04.webp"), caption: "Pensés pour toutes les sorties" } },
+    ])],
+  ]);
+
+  // ─── Journal : ouverture, pastilles par catégorie, grille d'articles (planche 06) ───────────────────────────────
+  page("journal", "Journal", { title: "Journal | MUSEAU CLUB", description: "Des idées, des inspirations et des conseils pour explorer le monde ensemble, autrement." }, [
+    ["hero", hero("ambiance-07.webp", "", "Le journal\ndes sorties\nà deux.", "Des idées, des inspirations et des conseils pour explorer le monde ensemble, autrement.", { focus_y: 50 })],
+    ["articles", S("fs-journal", { layout: "grid", filters: true, all_label: "Tous", tag_on_image: true, eyebrow: "", heading: "", heading_accent: "", text: "", align: "left", button_label: "", button_link: "", limit: 6, show_date: false, show_excerpt: true, link_label: "Lire l'article", effect: "fade", color_scheme: "scheme-1", padding_top: 28, padding_bottom: 48 }, journalCards(MUSEAU_ARTICLES))],
+  ]);
+
+  // ─── Articles : gabarit complet (fil d'Ariane, titre, chapeau, photo, intertitres, encart, articles similaires) ─
+  for (const a of MUSEAU_ARTICLES) {
+    const others = MUSEAU_ARTICLES.filter((x) => x.handle !== a.handle).slice(0, 3);
+    const blocksOf = (body: Article["body"]) => body.flatMap(([h, t, img]) => [
+      ...(img ? [{ type: "image", settings: { ...k.img(img), caption: "" } }] : []),
+      { type: "heading", settings: { text: h } },
+      { type: "paragraph", settings: { text: p(t) } },
+    ]);
+    page(a.handle, a.title, { title: `${a.title} | Journal MUSEAU CLUB`, description: a.excerpt }, [
+      ["article", S("cv-article", { style: "listicle", width: "regular", label_bar: "", crumb_label: a.tag, crumb_link: MUSEAU_PAGES.journal, crumb_link_label: "Journal", eyebrow: "", heading: a.title, heading_accent: "", intro: p(a.intro), author: "", date_text: "", rating_text: "", demo_note: "", animation: "fade", color_scheme: "scheme-1", padding_top: 24, padding_bottom: 24 }, [{ type: "image", settings: { ...k.img(a.image), caption: "" } }, ...blocksOf(a.body.slice(0, 2))])],
+      ["encart", band("ambiance-01.webp", "panel-right", "Toujours prêts pour\nla prochaine aventure.", "Découvrez notre collection d'accessoires assortis, pensés pour vous accompagner partout.", ["Voir la collection", "/collections/all"])],
+      ["suite", S("cv-article", { style: "listicle", width: "regular", label_bar: "", crumb_label: "", crumb_link: "", crumb_link_label: "", eyebrow: "", heading: "", heading_accent: "", intro: "", author: "", date_text: "", rating_text: "", demo_note: "", animation: "fade", color_scheme: "scheme-1", padding_top: 16, padding_bottom: 16 }, blocksOf(a.body.slice(2)))],
+      ["similaires", S("fs-journal", { layout: "row", filters: false, tag_on_image: false, eyebrow: "", heading: "Articles similaires", heading_accent: "", text: "", align: "left", button_label: "Voir tous les articles", button_link: MUSEAU_PAGES.journal, limit: 3, show_date: false, show_excerpt: false, link_label: "Lire l'article", effect: "fade", color_scheme: "scheme-1", padding_top: 24, padding_bottom: 48 }, journalCards(others))],
+    ]);
+  }
+
+  // ─── Guide des tailles (planche 07) : mesures « à renseigner », jamais de conseil de prendre la taille au-dessus ─
+  page("guide-des-tailles", "Guide des tailles", { title: "Guide des tailles | MUSEAU CLUB", description: "Bien choisir, avant de partir : comment mesurer le tour de cou et le tour de poitrail de votre chien." }, [
+    ["hero", hero("ambiance-09.webp", "Guide des tailles", "Bien choisir,\navant de partir.", "Un bon ajustement rend chaque sortie plus agréable. Prenez deux mesures, puis comparez-les au tableau.", { focus_y: 26, mobile_focus_y: 20 })],
+    ["mesurer", S("cv-banner", { layout: "illustration", heading: "Comment mesurer ?", heading_tag: "h2", heading_accent: "", eyebrow: "", text: p("1. Tour de cou : mesurez la base du cou, là où le collier se place naturellement.") + p("2. Tour de poitrail : mesurez autour de la partie la plus large de la poitrine, juste derrière les pattes avant."), illus_label_1: "Tour de cou", illus_label_2: "Tour de poitrail", illus_note: "", price_text: "", price_note: "", button_label: "", button_link: "", button_style: "solid", button_arrow: true, note: "", animation: "fade", color_scheme: "scheme-3", padding_top: 0, padding_bottom: 0 })],
+    ["tableau", S("cv-specs", { layout: "table", table_first_column: "Taille", eyebrow: "", heading: "Guide des tailles", heading_accent: "", text: p("Le harnais et le collier existent en quatre tailles, de XS à L. Les mesures de chaque taille sont à renseigner par la marque."), note: "", animation: "fade", color_scheme: "scheme-1", padding_top: 32, padding_bottom: 24 }, MUSEAU_SIZES.map((size) => ({ type: "group", settings: { title: size, rows: "Tour de cou : À renseigner\nTour de poitrail : À renseigner", open: false } })))],
+    ["fiches", S("cv-cards", { layout: "pills", heading: "", heading_accent: "", text: "", animation: "fade", color_scheme: "scheme-1", padding_top: 8, padding_bottom: 24 }, [
+      { type: "card", settings: { ...k.img("harnais-01.webp"), focus_x: 50, focus_y: 50, title: "Le harnais en détail", text: "", link: `/products/${MUSEAU_PRODUCTS[0].handle}`, link_label: "" } },
+      { type: "card", settings: { ...k.img("collier-01.webp"), focus_x: 50, focus_y: 50, title: "Le collier en détail", text: "", link: `/products/${MUSEAU_PRODUCTS[2].handle}`, link_label: "" } },
+    ])],
+    ["doute", band("ambiance-02.webp", "panel-right", "Un doute ?", "Entre deux tailles, comparez vos deux mesures au tableau. Si vous hésitez encore, écrivez-nous : nous vous aiderons à choisir.", ["Nous contacter", MUSEAU_PAGES.contact], { focus_x: 66, focus_y: 30 })],
+  ]);
+
+  // ─── FAQ : recherche, thèmes en pastilles, appel au contact ─────────────────────────────────────────────────────
+  page("faq", "FAQ", { title: "FAQ | MUSEAU CLUB", description: "Les réponses aux questions les plus fréquentes sur nos produits, votre commande et la livraison." }, [
+    ["hero", hero("ambiance-04.webp", "FAQ", "Une question\navant la balade ?", "Retrouvez ici les réponses aux questions les plus fréquentes sur nos produits, votre commande et la livraison.", { focus_x: 50, focus_y: 30 })],
+    ["questions", S("faq", { eyebrow: "", heading: "", text: "", style: "cards", layout: "stacked", columns: "1", open_first: true, search: true, search_placeholder: "Rechercher une question…", topics: true, contact_text: "", button_label: "", button_link: "", structured_data: false, color_scheme: "scheme-1", padding_top: 28, padding_bottom: 32 }, faqRows(MUSEAU_FAQ))],
+    ["contact", band("ambiance-03.webp", "panel-right", "Vous ne trouvez pas\nla réponse ?", "Notre équipe est là pour vous aider.", ["Nous contacter", MUSEAU_PAGES.contact])],
+  ]);
+
+  // ─── Contact : formulaire (états vérifiés dans l'aperçu, aucun envoi réel), communauté ───────────────────────────
+  page("contact", "Contact", { title: "Contact | MUSEAU CLUB", description: "Une question ? Envoyez-nous un message." }, [
+    ["hero", hero("ambiance-09.webp", "Contact", "Une question ?\nOn vous répond\navec plaisir.", "Envoyez-nous un message : nous vous répondrons dès que possible.", { focus_y: 24, mobile_focus_y: 18 })],
+    ["form", S("contact-form", { ...k.img("ambiance-02.webp"), eyebrow: "", heading: "Envoyez-nous un message", text: "", email: "", hours: "", response: "", show_phone: false, require_name: true, require_message: true, name_placeholder: "Votre prénom", email_placeholder: "votre@email.com", message_placeholder: "Votre message…", submit_label: "Envoyer mon message", inline_states: true, color_scheme: "scheme-1", padding_top: 32, padding_bottom: 32 })],
+    ["journal", band("ambiance-05.webp", "panel-left", "Une belle communauté,\nmême à distance.", "Des conseils, des idées et des histoires de balades à retrouver sur notre journal.", ["Lire le journal", MUSEAU_PAGES.journal])],
+  ]);
+
+  // ─── Livraison et retours : cartes ouvertes, toutes les valeurs « à renseigner » ────────────────────────────────
+  page("livraison-retours", "Livraison et retours", { title: "Livraison et retours | MUSEAU CLUB", description: "Livraison, suivi de commande et retours : les informations de la boutique." }, [
+    ["hero", hero("ambiance-03.webp", "Livraison et retours", "Tout savoir\navant de commander.", "Retrouvez ici les informations sur la livraison, le suivi de commande et les retours.")],
+    ["infos", S("cv-specs", { layout: "cards", eyebrow: "", heading: "", heading_accent: "", text: "", note: "", animation: "fade", color_scheme: "scheme-1", padding_top: 32, padding_bottom: 24 }, [
+      { type: "group", settings: { icon: "truck", title: "Livraison", text: p("Les délais et les frais de livraison sont indiqués lors de la validation de votre panier."), rows: "Zones de livraison : À renseigner\nDélais de livraison : À renseigner\nFrais de livraison : À renseigner", open: true } },
+      { type: "group", settings: { icon: "search", title: "Suivi de commande", text: p("Les informations de suivi de votre commande vous sont communiquées par e-mail."), rows: "Confirmation d'expédition : À renseigner\nSuivi en ligne : À renseigner", open: true } },
+      { type: "group", settings: { icon: "return", title: "Retours", text: p("Les conditions de retour de la boutique sont détaillées ci-dessous."), rows: "Procédure de retour : À renseigner\nFrais de retour : À renseigner\nRemboursement : À renseigner", open: true } },
+    ])],
+    ["question", band("ambiance-10.webp", "panel-left", "Une autre question ?", "Consultez notre FAQ ou contactez notre équipe.", ["Voir la FAQ", MUSEAU_PAGES.faq])],
+  ]);
+
+  // ─── Pages légales : modèles « à compléter et valider », sommaire automatique ───────────────────────────────────
+  const legal = (handle: string, title: string, file: string, heading: string, intro: string, parts: [string, string][], extra: Record<string, unknown> = {}) => page(handle, title, { title: `${title} | MUSEAU CLUB`, description: `${title} : modèle de démonstration à compléter et à valider.` }, [
+    ["hero", hero(file, "", heading, intro, { note: "", ...extra })],
+    ["texte", S("legal-page", { source: "blocks", eyebrow: "", heading: "", updated: "", intro: p("Modèle de démonstration : contenu à compléter et à valider avant toute publication."), show_toc: true, show_print: false, color_scheme: "scheme-1", padding_top: 32, padding_bottom: 48 }, parts.map(([t, x]) => ({ type: "part", settings: { title: t, text: p("Modèle de démonstration : contenu à compléter et à valider.") + p(`[À renseigner : ${x}]`) } })))],
+  ]);
+  legal("mentions-legales", "Mentions légales", "ambiance-04.webp", "Mentions\nlégales", "Cette page présente les mentions légales à titre de modèle de démonstration. Son contenu est à compléter et à valider avant toute publication.", [
+    ["Éditeur du site", "raison sociale, adresse, numéro d'immatriculation et coordonnées de l'éditeur"], ["Hébergement", "nom, adresse et coordonnées de l'hébergeur du site"], ["Contact", "e-mail, formulaire et adresse postale"], ["Propriété intellectuelle", "droits sur les textes, photos et marques du site"], ["Données personnelles", "renvoi vers la politique de confidentialité"], ["Cookies", "renvoi vers la gestion des préférences de cookies"], ["Liens externes", "règles applicables aux liens vers d'autres sites"],
+  ], { focus_y: 30 });
+  legal("confidentialite", "Confidentialité", "ambiance-06.webp", "Notre politique\nde confidentialité", "Cette page est un modèle de démonstration, à compléter et à valider.", [
+    ["Données collectées", "catégories de données collectées (compte, commandes, navigation)"], ["Finalités", "finalités du traitement (gestion des commandes, service client, communication)"], ["Base légale", "base légale de chaque traitement"], ["Durée de conservation", "durée de conservation de chaque catégorie de données"], ["Vos droits", "droits d'accès, de rectification, d'effacement et modalités d'exercice"], ["Cookies", "cookies utilisés ; vos choix se modifient depuis le bandeau « Vos préférences de cookies » (lien « Gérer les cookies » ci-dessous)"], ["Sécurité", "mesures de sécurité mises en place"], ["Contact", "coordonnées du responsable du traitement"],
+  ], { button_label: "Gérer les cookies", button_link: "#cookies" });
+  legal("cgv", "Conditions générales de vente", "harnais-02.webp", "Conditions\ngénérales de vente", "Cette page présente les conditions générales de vente à titre de modèle de démonstration. Son contenu est à compléter et à valider avant toute publication.", [
+    ["Produits", "description des produits proposés (harnais, laisses, colliers, pochettes) et de leurs caractéristiques"], ["Prix", "devise, mention TTC ou HT et frais éventuels"], ["Commande", "étapes de la commande et de sa validation"], ["Paiement", "moyens de paiement acceptés"], ["Livraison", "zones, délais et frais de livraison"], ["Retours et rétractation", "délai et modalités du droit de rétractation"], ["Garanties", "garanties légales applicables"], ["Responsabilité", "limites de responsabilité"], ["Droit applicable", "droit applicable et règlement des litiges"], ["Contact", "coordonnées du service client"],
+  ], { focus_x: 50, focus_y: 50 });
+
+  // ─── Espace client (planche 08) : écrans d'exemple reliés entre eux, aucune donnée envoyée ──────────────────────
+  const links = { recover_link: MUSEAU_PAGES.motDePasse, account_link: MUSEAU_PAGES.compte, order_link: MUSEAU_PAGES.commande, addresses_link: MUSEAU_PAGES.adresses, infos_link: MUSEAU_PAGES.infos, logout_link: MUSEAU_PAGES.connexion };
+  const lines = [{ type: "line", settings: { product: MUSEAU_PRODUCTS[0].handle, quantity: 1 } }, { type: "line", settings: { product: MUSEAU_PRODUCTS[1].handle, quantity: 1 } }];
+  const account = (handle: string, title: string, settings: Record<string, unknown>, withLines = false) => page(handle, title, { title: `${title} | MUSEAU CLUB`, description: `${title} : écran d'exemple de la boutique de démonstration.` }, [["compte", S("demo-account", { ...links, color_scheme: "scheme-1", padding_top: 32, padding_bottom: 56, ...settings }, withLines ? lines : [])]]);
+  account("connexion", "Connexion", { ...k.img("ambiance-09.webp"), focus_y: 30, layout: "login", heading: "Bon retour\nparmi nous !", text: p("Connectez-vous à votre compte pour retrouver vos commandes, gérer vos adresses et vos informations."), button_label: "Se connecter", button_link: MUSEAU_PAGES.compte, secondary_label: "Créer un compte", secondary_link: MUSEAU_PAGES.inscription });
+  account("creer-un-compte", "Créer un compte", { ...k.img("ambiance-02.webp"), focus_x: 66, focus_y: 30, layout: "register", heading: "Rejoindre\nle club", text: p("Créez votre compte pour suivre vos commandes et enregistrer vos adresses."), button_label: "Créer mon compte", button_link: MUSEAU_PAGES.compte, secondary_label: "J'ai déjà un compte", secondary_link: MUSEAU_PAGES.connexion });
+  account("mot-de-passe-oublie", "Mot de passe oublié", { ...k.img("ambiance-04.webp"), focus_y: 30, layout: "recover", heading: "Mot de passe\noublié ?", text: p("Indiquez votre adresse e-mail : sur une vraie boutique, vous recevriez un lien pour choisir un nouveau mot de passe."), button_label: "Retour à la connexion", button_link: MUSEAU_PAGES.connexion, secondary_label: "", secondary_link: "" });
+  account("mon-compte", "Mon compte", { layout: "account", heading: "Bonjour !", text: p("Bienvenue dans votre espace personnel. Retrouvez vos commandes, vos adresses et vos informations."), empty_text: "Aucune autre commande pour le moment." }, true);
+  account("commande-1001", "Commande n°1001", { layout: "order", heading: "Commande n°1001", text: p("Voici le détail de la commande d'exemple."), demo_note: "Cette page est une maquette de démonstration : aucune commande ni aucun envoi réel." }, true);
+  account("mes-adresses", "Mes adresses", { layout: "addresses", heading: "Mes adresses", text: "", empty_text: "Aucune adresse enregistrée dans cette démonstration." });
+  account("informations-personnelles", "Informations personnelles", { layout: "infos", heading: "Mes informations", text: "" });
+
 }

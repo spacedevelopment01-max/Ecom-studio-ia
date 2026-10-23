@@ -810,3 +810,26 @@
   /* Éditeur de thème Shopify : réinitialise les sections rechargées. */
   document.addEventListener('shopify:section:load', function (e) { initBookingCal(e.target); initNarrative(e.target); initWords(e.target); initCounters(e.target); initCompare(e.target); initGlow(e.target); initScrollEffects(); initReveal(e.target); initBuy(e.target); initOffers(e.target); initEta(e.target); initStory(); initRoutine(); initHGallery(); initParallax(); initVideos(); initGallery(); });
 })();
+
+/* Bandeau de préférences de cookies (réglage du thème « Cookies ») : choix gardé dans le navigateur et transmis à
+   l'API de confidentialité des clients de Shopify si elle est chargée ; un lien vers « #cookies » rouvre le bandeau. */
+(function () {
+  var box = document.querySelector('[data-cookie-banner]'); if (!box) return;
+  var KEY = 'es-cookie-consent';
+  function read() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+  function save(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) { /* stockage indisponible */ } }
+  function send(v) { try { if (window.Shopify && Shopify.customerPrivacy && Shopify.customerPrivacy.setTrackingConsent) Shopify.customerPrivacy.setTrackingConsent({ analytics: v.analytics, marketing: v.marketing, preferences: v.analytics, sale_of_data: v.marketing }, function () {}); } catch (e) { /* API absente */ } }
+  var prefs = box.querySelector('[data-cookie-prefs]'), custom = box.querySelector('[data-cookie-customize]'), saveBtn = box.querySelector('[data-cookie-choice="save"]');
+  function open() { box.hidden = false; var v = read(); if (v && prefs) { try { v = JSON.parse(v); prefs.analytics.checked = !!v.analytics; prefs.marketing.checked = !!v.marketing; } catch (e) { /* choix illisible */ } } }
+  function close(v) { save(v); send(v); box.hidden = true; }
+  box.addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    if (b === custom) { var on = prefs.hidden; prefs.hidden = !on; saveBtn.hidden = !on; custom.setAttribute('aria-expanded', on ? 'true' : 'false'); if (on) prefs.querySelector('input').focus(); return; }
+    var c = b.getAttribute('data-cookie-choice');
+    if (c === 'accept') close({ analytics: true, marketing: true });
+    else if (c === 'refuse') close({ analytics: false, marketing: false });
+    else if (c === 'save') close({ analytics: prefs.analytics.checked, marketing: prefs.marketing.checked });
+  });
+  document.addEventListener('click', function (e) { var a = e.target.closest && e.target.closest('a[href$="#cookies"]'); if (!a) return; e.preventDefault(); open(); });
+  if (!read()) open();
+})();

@@ -177,6 +177,7 @@
     {%- endif -%}
 
     {% render 'floating-actions' %}
+    {%- if settings.cookie_banner -%}{% render 'cookie-banner' %}{%- endif -%}
     <div class="es-toast" role="status" aria-live="polite" hidden></div>
   </body>
 </html>

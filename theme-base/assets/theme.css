@@ -1392,3 +1392,15 @@ body:has(.es-newsletter) .es-footer__card, body:has(.es-newsletter) .es-footer__
 
 /* Page dont le titre est porté par la première section : la section de page ne garde que le fil d'Ariane. */
 .es-page--untitled { padding: 0 !important; }
+/* Bandeau de préférences de cookies (réglage du thème « Cookies »). */
+.es-cookies { position: fixed; left: 50%; bottom: 16px; z-index: 60; width: min(calc(100% - 24px), 860px); transform: translateX(-50%); background: var(--c-bg); color: var(--c-text); border-radius: var(--radius-card, 16px); box-shadow: 0 18px 50px -18px rgba(0,0,0,.45); border: 1px solid rgba(var(--c-text-rgb), .1); }
+.es-cookies[hidden] { display: none; }
+.es-cookies__inner { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px 18px; align-items: center; padding: 16px 20px; }
+.es-cookies__icon { color: var(--c-accent); }
+.es-cookies__title { margin: 0 0 4px; font-weight: 700; }
+.es-cookies__text, .es-cookies__needed { margin: 0; font-size: .85rem; line-height: 1.45; }
+.es-cookies__needed { margin-top: 6px; opacity: .8; }
+.es-cookies__prefs { display: grid; gap: 6px; margin-top: 10px; }
+.es-cookies__actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.es-cookies__btn { min-height: 42px; padding: 8px 16px; font-size: .88rem; }
+@media (max-width: 749px) { .es-cookies__inner { grid-template-columns: 1fr; } .es-cookies__icon { display: none; } .es-cookies__actions { justify-content: stretch; } .es-cookies__btn { flex: 1 1 auto; } }
