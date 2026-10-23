@@ -204,7 +204,7 @@ function curateNoctil(k: Kit) {
   // ─── Accueil (planche 01), dans l'ordre de la maquette. ────────────────────────────────────────────────────────────
   const home: SectionInstance[] = [
     section("cv-banner", { ...img("hero-chambre.webp"), layout: "night", band_height: "hero", veil: "left", mobile_valign: "top", image_loading: "eager", focus_x: 62, focus_y: 50, mobile_focus_x: 64, mobile_focus_y: 40, heading: "Un petit monde.\nUn ciel immense.", heading_tag: "h1", heading_accent: "", eyebrow: "", text: p("Transformez la chambre de votre enfant en un univers d'exploration, d'histoires et d'émerveillement."), price_text: "", price_note: "", button_label: "Découvrir NOCTIL", button_link: href, button_style: "solid", button_arrow: true, note: "", animation: "fade", color_scheme: "scheme-2", padding_top: 0, padding_bottom: 0 }),
-    section("cv-rise", { ...img("projecteur-detoure.png"), image_loading: "eager", layout: "media-left", overlap: "auto", media_width: 44, rise: 20, mobile_width: 74, mobile_rise: 27, decor: true, curve: true, eyebrow: "", heading: "L'imagination\ncommence ici.", heading_tag: "h2", text: p("NOCTIL projette un univers fascinant qui transforme chaque soir en une nouvelle aventure. Une invitation à rêver, explorer et inventer, depuis la chambre de votre enfant."), buy_product: NOCTIL_HANDLE, price_text: "", price_note: "Prix de démonstration", button_label: "Ajouter au panier", button_link: "", button_arrow: true, animation: "fade", color_scheme: "scheme-1", padding_top: 32, padding_bottom: 24 }),
+    section("cv-rise", { ...img("projecteur-detoure.png"), image_loading: "eager", layout: "media-left", overlap: "auto", media_width: 44, rise: 20, mobile_width: 74, mobile_rise: 38, decor: true, curve: true, eyebrow: "", heading: "L'imagination\ncommence ici.", heading_tag: "h2", text: p("NOCTIL projette un univers fascinant qui transforme chaque soir en une nouvelle aventure. Une invitation à rêver, explorer et inventer, depuis la chambre de votre enfant."), buy_product: NOCTIL_HANDLE, price_text: "", price_note: "Prix de démonstration", button_label: "Ajouter au panier", button_link: "", button_arrow: true, animation: "fade", color_scheme: "scheme-1", padding_top: 32, padding_bottom: 24 }),
     section("cv-cards", { layout: "columns", heading: "", heading_accent: "", text: "", animation: "fade", color_scheme: "scheme-1", padding_top: 16, padding_bottom: 24 }, [
       { type: "card", settings: { ...img("chambre-fusee.webp"), focus_x: 50, focus_y: 30, title: "Une chambre à explorer", text: p("Un univers captivant pour éveiller la curiosité et l'envie de découvrir."), link: NOCTIL_PAGES.univers, link_label: "Notre univers" } },
       { type: "card", settings: { ...img("tipi.webp"), focus_x: 60, focus_y: 40, title: "Des histoires à inventer", text: p("Un décor magique qui donne vie aux plus belles histoires."), link: `/pages/${article("histoires-d-etoiles").handle}`, link_label: "Lire l'article" } },
@@ -266,7 +266,7 @@ function curateNoctil(k: Kit) {
   spec.store.menus["footer-compte"] = { title: "Mon compte", links: [{ title: "Se connecter", url: NOCTIL_PAGES.connexion }, { title: "Créer un compte", url: NOCTIL_PAGES.inscription }, { title: "Mes commandes", url: NOCTIL_PAGES.commande }] };
   spec.store.menus.legal = { title: "Légal", links: [{ title: "Mentions légales", url: NOCTIL_PAGES.mentions }, { title: "Conditions générales de vente", url: NOCTIL_PAGES.cgv }, { title: "Politique de confidentialité", url: NOCTIL_PAGES.confidentialite }, { title: "Politique des cookies", url: NOCTIL_PAGES.cookies }, { title: "Gérer les cookies", url: "#cookies" }] };
   const header = Object.values(spec.groups.header.sections).find((s) => s.type === "header")!;
-  header.settings = { ...header.settings, menu: "main-menu", layout: "logo-left", shape: "bar", icons: "plain", mega_menu: "none", mobile_menu: "drawer", mobile_submenu: "accordion", sticky: true, transparent_on_home: true, show_search: false, show_cart: true, cart_label: "Panier", account_link: NOCTIL_PAGES.connexion, cta_label: "", phone: "", color_scheme: "scheme-1", mobile_menu_scheme: "scheme-2" };
+  header.settings = { ...header.settings, menu: "main-menu", layout: "logo-left", shape: "bar", icons: "plain", mega_menu: "none", mobile_menu: "drawer-right", mobile_submenu: "accordion", sticky: true, transparent_on_home: true, show_search: false, show_cart: true, cart_label: "Panier", account_link: NOCTIL_PAGES.connexion, cta_label: "", phone: "", color_scheme: "scheme-1", mobile_menu_scheme: "scheme-2" };
   header.blocks = {};
   header.block_order = [];
   spec.groups.header.sections = { header };
@@ -274,7 +274,7 @@ function curateNoctil(k: Kit) {
   const footer = Object.values(spec.groups.footer.sections).find((s) => s.type === "footer")!;
   const fschema = sectionSchema(spec, "footer")!;
   const fblock = (type: string, settings: Record<string, unknown>) => ({ type, settings: withDefaults(fschema.blocks.find((b) => b.type === type)?.settings, settings) });
-  footer.settings = { ...footer.settings, style: "brand-left", tagline: "Des étoiles plein l'imagination.", show_wordmark: false, show_policies: false, show_payment: false, color_scheme: "scheme-2", logo_asset: k.name("logo.webp"), bottom_text: "Boutique et prix de démonstration : 69 €.", bottom_menu: "" };
+  footer.settings = { ...footer.settings, style: "columns", tagline: "Des étoiles plein l'imagination.", show_wordmark: false, show_policies: false, show_payment: false, color_scheme: "scheme-2", logo_asset: k.name("logo.webp"), bottom_text: "Boutique et prix de démonstration : 69 €.", bottom_menu: "" };
   footer.blocks = {
     shop: fblock("links", { heading: "Boutique", menu: "footer" }),
     help: fblock("links", { heading: "Aide", menu: "footer-aide" }),
@@ -307,7 +307,7 @@ function curateNoctil(k: Kit) {
   // ─── Pages (planches 03 à 07) : voir pagesNoctil. ──────────────────────────────────────────────────────────────
   pagesNoctil(k, href);
   k.finish();
-  spec.settings = { ...spec.settings, logo_width: 150, logo_light_on_dark: true, fab_contact_link: NOCTIL_PAGES.contact, cookie_banner: true, cookie_policy_link: NOCTIL_PAGES.cookies };
+  spec.settings = { ...spec.settings, logo_width: 150, logo_light_on_dark: true, fab_contact_link: NOCTIL_PAGES.contact, cookie_banner: true, cookie_policy_link: NOCTIL_PAGES.cookies, cookie_policy_label: "Politique des cookies", cookie_title: "Vos préférences de confidentialité", cookie_text: "Nous utilisons des cookies pour le fonctionnement du site et, seulement avec votre accord, pour mesurer l'audience et personnaliser le contenu. Choisissez les catégories que vous acceptez.", cookie_analytics: "Cookies de mesure d'audience : nous aident à comprendre l'utilisation du site.", cookie_marketing: "Cookies de personnalisation : permettent de vous proposer un contenu adapté.", cookie_needed: "Cookies strictement nécessaires : essentiels au fonctionnement du site, toujours actifs." };
 }
 
 /** Après `overlay`, retire les sections de la composition de référence que la planche n'utilise pas (marquées). */

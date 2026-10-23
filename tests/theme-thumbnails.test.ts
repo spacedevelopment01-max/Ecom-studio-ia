@@ -9,7 +9,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 const TRACKED: Record<string, string> = {
-  sillon: "tests/sillon-fixtures.ts", noctil: "tests/noctil-traverse-fixtures.ts", traverse: "tests/traverse-fixtures.ts",
+  sillon: "tests/sillon-fixtures.ts", noctil: "tests/noctil-fixtures.ts", traverse: "tests/traverse-fixtures.ts",
   heuren: "tests/heuren-alcove-fixtures.ts", rive: "tests/rive-fixtures.ts", alcove: "tests/heuren-alcove-fixtures.ts", "museau-club": "tests/museau-fixtures.ts", souple: "tests/museau-souple-fixtures.ts",
 };
 // Texte des démos sans balises ni retours à la ligne, pour retrouver un titre composé de plusieurs réglages.

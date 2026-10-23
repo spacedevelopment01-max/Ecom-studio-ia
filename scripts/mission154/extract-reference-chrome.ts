@@ -13,12 +13,13 @@ const file = 'src/lib/theme/reference-shapes.json';
 const shapes = JSON.parse(fs.readFileSync(file, 'utf8'));
 const user = await createUser('chrome-reference@example.test', 'isolated-structural-extraction', 'Structural test');
 const visual = new Set(['select', 'range', 'checkbox', 'color_scheme']);
+// Le logo éclairci sur fond sombre (NOCTIL) dépend du logo foncé de la démonstration : jamais recopié chez un client.
 const forbidden = /rating|price|discount|quantity|stock|shipping|guarantee|countdown|timer|days|hours|minutes|seconds|purchase_enabled|structured_data/;
 const globalDefs = JSON.parse(fs.readFileSync('theme-base/config/settings_schema.json', 'utf8')).flatMap((group: any) => group.settings ?? []);
 try {
     for (const id of Object.keys(shapes.themes)) {
         const { spec } = await demoProject(user.id, id as any);
-        shapes.themes[id].settings = Object.fromEntries(Object.entries(spec.settings).filter(([key]) => { const d = globalDefs.find((d: any) => d.id === key); return d && visual.has(d.type) && !forbidden.test(key) && (!key.startsWith('cart_') || key === 'cart_type') && !key.startsWith('cookie_'); }));
+        shapes.themes[id].settings = Object.fromEntries(Object.entries(spec.settings).filter(([key]) => { const d = globalDefs.find((d: any) => d.id === key); return d && visual.has(d.type) && !forbidden.test(key) && (!key.startsWith('cart_') || key === 'cart_type') && !key.startsWith('cookie_') && key !== 'logo_light_on_dark'; }));
         shapes.themes[id].groups = Object.fromEntries(Object.entries(spec.groups).map(([key, group]) => [key, {
             order: group.order,
             sections: Object.fromEntries(group.order.map(sid => {

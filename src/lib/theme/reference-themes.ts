@@ -321,11 +321,11 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
     photoMood: "nocturne",
     kinds: ["specialty"],
     // Maquettes NOCTIL du 23 octobre (docs/design/noctil-reference-20261023) : logo à gauche, menu à côté, compte et
-    // panier en pastille lavande à droite ; en-tête transparent sur la photo d'ouverture de l'accueil ; pied bleu nuit,
-    // marque à gauche, colonnes de liens.
-    look: look({ headerLayout: "logo-left", shape: "bar", icons: "plain", menu: "drawer", footer: "brand-left", ann: "static", card: "boxed", button: "solid", radius: { button: 999, card: 18 }, headingCase: "none", tracking: -1, headingScale: 100, pageWidth: 1280, gallery: "carousel", density: "balanced", buttonUppercase: false }),
+    // panier en pastille lavande à droite, menu du téléphone à droite (le bouton y est) ; en-tête transparent sur la photo
+    // d'ouverture de l'accueil ; pied bleu nuit en colonnes (marque, liens).
+    look: look({ headerLayout: "logo-left", shape: "bar", icons: "plain", menu: "drawer-right", footer: "columns", ann: "static", card: "minimal", button: "solid", radius: { button: 999, card: 18 }, headingCase: "none", tracking: -1, headingScale: 100, pageWidth: 1280, gallery: "carousel", density: "balanced", buttonUppercase: false }),
     settings: { conversion_profile: "astral", editorial_profile: "none", motion_intensity: "subtle", card_arrow: true },
-    headerSettings: { mega_menu: "none", mobile_menu: "drawer", mobile_submenu: "accordion", show_search: false, show_cart: true, transparent_on_home: true, color_scheme: "scheme-1", mobile_menu_scheme: "scheme-2" },
+    headerSettings: { mega_menu: "none", mobile_menu: "drawer-right", mobile_submenu: "accordion", show_search: false, show_cart: true, transparent_on_home: true, color_scheme: "scheme-1", mobile_menu_scheme: "scheme-2" },
     // Fiche : grande vue et vignettes (à gauche sur ordinateur, dessous sur téléphone), zoom, barre d'achat qui suit.
     mainProduct: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
     // Crème (fonds), bleu nuit (bandeaux, pied), lavande pâle (panneaux d'aide), lavande pleine (boutons) : tirées de la
@@ -338,8 +338,9 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       return [k.scheme(cream, ink, k.onLight(cream)), k.scheme(night, "#F8F5EF", k.onDark(night), 0.06), k.scheme(pale, ink, k.onLight(pale)), k.filled(k.p.primary)];
     },
     // Accueil (planche 01) : ouverture de nuit, produit détouré en surplomb avec prix et ajout au panier, trois scènes en
-    // cartes, bandeau sombre, trois étapes, bandeau sur photo, derniers articles, questions et appel final sur la nuit.
-    // Sans produit détouré, la section garde le produit dans sa propre bande (aucun cadre opaque sur la photo).
+    // cartes, bandeau sombre, trois étapes, bandeau sur photo, questions et appel final sur la nuit (les articles du journal
+    // de la démonstration s'ajoutent à la rédaction : un projet sans articles n'en montre pas). Sans produit détouré, la
+    // section garde le produit dans sa propre bande (aucun cadre opaque sur la photo).
     home: (k) => [
       k.lib("cv-banner", 2, { layout: "night", band_height: "hero", veil: "left", mobile_valign: "top", heading_tag: "h1", image_asset: k.im.banner ?? k.im.lifestyle ?? k.im.hero, image_loading: "eager", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
       k.lib("cv-rise", 1, { image_asset: k.im.cutout ?? k.im.packshot ?? "", overlap: k.im.cutout ? "auto" : "none", decor: !!k.im.cutout, curve: !!k.im.cutout, button_arrow: true, padding_top: 32, padding_bottom: 24 }),
@@ -347,7 +348,6 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       k.lib("cv-banner", 2, { layout: "background", band_height: "medium", veil: "right", button_arrow: true, image_asset: k.im.lifestyle ?? k.im.lifestyle2 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle ?? k.im.lifestyle2) }),
       k.lib("cv-steps", 1, { layout: "cards", padding_top: 24, padding_bottom: 24 }),
       k.lib("cv-banner", 2, { layout: "background", band_height: "medium", veil: "left", button_arrow: true, image_asset: k.im.lifestyle2 ?? k.im.scene1 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle2 ?? k.im.scene1) }),
-      k.lib("fs-journal", 1, { layout: "row", limit: 3, align: "left", padding_top: 24, padding_bottom: 24 }),
       k.lib("faq", 2, { style: "lines", layout: "side", open_first: true, padding_top: 40, padding_bottom: 40 }),
     ],
     // Fiche (planche 02) : galerie et achat, bandeau d'aventure, trois bénéfices en icônes, deux gros plans sur la nuit,
@@ -361,13 +361,14 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       k.faqSec(1, 5, "lines"),
       k.lib("fs-journal", 2, { layout: "row", limit: 2, align: "left", padding_top: 24, padding_bottom: 24 }),
     ],
-    // Site de services (repli) : ouverture de nuit, prestations en cartes, méthode en étapes, bandeau photo, questions,
-    // prise de contact — sans l'enchaînement de TRAVERSE ni de MUSEAU CLUB.
+    // Site de services (repli) : ouverture de nuit, atouts en rangée, prestations en cartes, méthode, une photo et son
+    // texte, questions, prise de contact — sans l'enchaînement de TRAVERSE, de SILLON ni de MUSEAU CLUB.
     services: (k) => [
       k.lib("cv-banner", 2, { layout: "night", band_height: "tall", veil: "left", mobile_valign: "top", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle, image_loading: "eager", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
+      k.lib("features-grid", 1, { layout: "row", columns: 3, columns_mobile: "1", style: "plain", heading_align: "left", padding_top: 28, padding_bottom: 28 }),
       k.R.servicesList(1, "cards", { withImages: true }),
       k.R.method(1, "howto-h"),
-      k.lib("cv-banner", 2, { layout: "background", band_height: "medium", veil: "right", button_arrow: true, image_asset: k.im.lifestyle2 ?? k.im.banner ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle2 ?? k.im.banner) }),
+      k.lib("image-with-text", 1, { layout: "image-left", ratio: "landscape", image_asset: k.im.lifestyle2 ?? k.im.scene1 ?? "", reveal: "up" }, { hide: !(k.im.lifestyle2 ?? k.im.scene1) }),
       k.faqSec(2, 5, "lines"),
       k.R.booking(1),
     ],

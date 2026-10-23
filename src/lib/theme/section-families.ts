@@ -62,6 +62,10 @@ const SPECIALTY: FamilyEntry[] = [
     d("panel-right", "Photo à gauche, panneau arrondi à droite", "Photo on the left, rounded panel on the right", "cv-banner", "split-left", { layout: "panel-right", button_arrow: true }),
     d("size-guide", "Guide des tailles illustré", "Illustrated size guide", "cv-banner", "drawing", { layout: "illustration", illus_label_1: "Tour de cou", illus_label_2: "Tour de poitrail", button_arrow: true }),
     d("buy-band", "Appel final avec le produit et son prix", "Final call with the product and its price", "cv-banner", "band", { layout: "background", band_height: "medium", veil: "light", button_arrow: true }),
+    // NOCTIL (maquettes du 23 octobre) : ouverture de nuit (bas de photo laissé au produit en surplomb), bandeau sombre au
+    // texte à droite.
+    d("night", "Ouverture de nuit, texte clair", "Night opening, light text", "cv-banner", "background", { layout: "night", band_height: "hero", veil: "left", mobile_valign: "top", button_arrow: true }),
+    d("dark-right", "Bandeau sombre, texte à droite", "Dark band, text on the right", "cv-banner", "band", { layout: "background", band_height: "medium", veil: "right", button_arrow: true }),
   ]),
   e("specialty", 2, "benefits", { fr: "Bénéfices du produit", en: "Product benefits" }, { fr: "Avantages clients avec icônes, illustrations ou photos.", en: "Customer benefits with icons, illustrations or photos." }, "bénéfices avantages atouts icônes", [
     d("grid", "Grille", "Grid", "features-grid", "grid-4", { layout: "grid", columns: 4, columns_mobile: "2", style: "plain" }),
@@ -76,6 +80,9 @@ const SPECIALTY: FamilyEntry[] = [
     // MUSEAU CLUB : produit en grand et trois gros plans ronds numérotés.
     d("numbered", "Produit et gros plans numérotés", "Product and numbered close-ups", "cv-feature", "split-right", { layout: "numbered", detail_shape: "circle", detail_numbers: true, button_arrow: true },
       [{ type: "detail" }, { type: "detail" }, { type: "detail" }]),
+    // NOCTIL : trois atouts en rangée, pictogramme rond à gauche du texte.
+    d("row", "Rangée d'atouts à pictogramme", "Row of benefits with icons", "features-grid", "list", { layout: "row", columns: 3, columns_mobile: "1", style: "plain" },
+      [{ type: "feature", settings: { icon: "moon" } }, { type: "feature", settings: { icon: "star" } }, { type: "feature", settings: { icon: "planet" } }]),
     d("marquee", "Bandeau défilant", "Scrolling band", "marquee", "marquee", { size: "small" }),
   ]),
   e("specialty", 3, "details", { fr: "Détails du produit", en: "Product details" }, { fr: "Gros plans légendés ou repères interactifs sur le produit.", en: "Captioned close-ups or interactive markers on the product." }, "détails gros plan repères points interactifs", [
@@ -86,6 +93,8 @@ const SPECIALTY: FamilyEntry[] = [
     // MUSEAU CLUB : photos à pastilles (lieu, moment) et photos numérotées.
     d("pills", "Photos à pastilles, titre à gauche", "Photos with pill labels, title on the left", "cv-cards", "grid-3", { layout: "pills" }, [{ type: "card" }, { type: "card" }, { type: "card" }]),
     d("numbered", "Photos numérotées", "Numbered photos", "cv-cards", "grid-3", { layout: "columns", numbered: true }),
+    // NOCTIL : cartes en colonnes qui défilent une à une sur téléphone.
+    d("columns-carousel", "Cartes, carrousel sur téléphone", "Cards, carousel on phone", "cv-cards", "carousel", { layout: "columns", mobile_carousel: true }),
     d("hotspots", "Repères interactifs", "Interactive markers", "cv-hotspots", "hotspots", { layout: "side" }),
     d("hotspots-stacked", "Repères, liste dessous", "Markers, list below", "cv-hotspots", "hotspots", { layout: "stacked" }),
   ]),
@@ -116,6 +125,8 @@ const SPECIALTY: FamilyEntry[] = [
     d("mosaic", "Mosaïque", "Mosaic", "cv-gallery", "mosaic", { layout: "mosaic" }),
     d("grid", "Galerie en grille", "Grid gallery", "cv-gallery", "grid-3", { layout: "grid" }),
     d("carousel", "Galerie en carrousel", "Carousel gallery", "cv-gallery", "carousel", { layout: "carousel" }),
+    // NOCTIL : grille sur ordinateur, une image à la fois sur téléphone.
+    d("grid-carousel", "Grille, carrousel sur téléphone", "Grid, carousel on phone", "cv-gallery", "grid-3", { layout: "grid", mobile_carousel: true }),
   ]),
   e("specialty", 8, "video", { fr: "Démonstration vidéo", en: "Video demonstration" }, { fr: "Média dédié montrant le fonctionnement ou l'utilisation.", en: "Dedicated media showing how the product works or is used." }, "vidéo démonstration fonctionnement stories", [
     d("wide", "Grand lecteur", "Large player", "fs-video", "video", { layout: "wide" }),
@@ -153,6 +164,9 @@ const SPECIALTY: FamilyEntry[] = [
     // MUSEAU CLUB : le journal de la marque (rangée de petites cartes ; grille à pastilles par catégorie).
     d("journal-row", "Articles du journal en rangée", "Journal articles in a row", "fs-journal", "cards-rows", { layout: "row" }),
     d("journal-grid", "Journal à pastilles", "Journal with filter pills", "fs-journal", "grid-2", { layout: "grid", filters: true, tag_on_image: true, show_excerpt: true }),
+    // NOCTIL : journal à filtres et pages, deux articles en cartes larges.
+    d("journal-pages", "Journal à filtres et pages", "Journal with filters and pages", "fs-journal", "grid-3", { layout: "grid", filters: true, per_page: 6, show_excerpt: true }),
+    d("journal-list", "Deux articles en cartes larges", "Two articles in wide cards", "fs-journal", "cards-rows", { layout: "list", limit: 2, show_excerpt: true }),
   ]),
   e("specialty", 14, "making", { fr: "Fabrication et savoir-faire", en: "Making and know-how" }, { fr: "Conception, fabrication et contrôles qualité.", en: "Design, making and quality checks." }, "fabrication savoir-faire conception contrôle qualité", [
     d("steps", "Étapes illustrées", "Illustrated steps", "fs-making", "steps", { layout: "steps" }),
@@ -165,6 +179,10 @@ const SPECIALTY: FamilyEntry[] = [
     d("compact", "Achat compact", "Compact purchase", "featured-purchase", "product", { purchase_style: "compact" }),
     d("product-offers", "Offres sur la fiche produit", "Offers on the product page", "purchase-offers", "pricing"),
     d("band", "Bandeau d'appel à l'achat", "Purchase call-to-action band", "cta-banner", "band", { style: "center" }),
+    // NOCTIL : le produit détouré remonte sur la grande photo du dessus, avec son prix et l'ajout au panier ; appel final
+    // avec le produit détouré, sans débordement.
+    d("rise", "Produit en surplomb, prix et panier", "Overlapping product, price and cart", "cv-rise", "split-left", { layout: "media-left", overlap: "auto", decor: true }),
+    d("rise-final", "Appel final avec le produit détouré", "Final call with the cut-out product", "cv-rise", "split-right", { layout: "media-right", overlap: "none", rise: 0, media_width: 30 }),
   ]),
   e("specialty", 16, "addons", { fr: "Produits complémentaires", en: "Complementary products" }, { fr: "Accessoires et références qui complètent l'utilisation.", en: "Accessories and items that complete the use." }, "complémentaires accessoires recommandations", [
     d("recommended", "Recommandations automatiques", "Automatic recommendations", "product-recommendations", "grid-4", { intent: "complementary" }),
@@ -192,6 +210,11 @@ const SPECIALTY: FamilyEntry[] = [
     // MUSEAU CLUB : recherche et thèmes en pastilles ; photo avec le titre posé dessus.
     d("topics", "Recherche et thèmes", "Search and topics", "faq", "tabs", { style: "cards", layout: "stacked", search: true, topics: true }),
     d("photo", "Photo et questions", "Photo and questions", "faq", "split-left", { style: "lines", layout: "side" }),
+    // NOCTIL : deux FAQ côte à côte (mentions « À confirmer ») ; recherche et thèmes en intertitres.
+    d("pair", "Deux FAQ côte à côte", "Two FAQs side by side", "faq", "grid-2", { style: "lines", layout: "stacked", pair: true },
+      [{ type: "question", settings: { badge: "À confirmer" } }, { type: "question", settings: { badge: "À confirmer" } }]),
+    d("topic-titles", "Recherche et thèmes en intertitres", "Search and topic headings", "faq", "accordion", { style: "lines", layout: "stacked", search: true, topic_titles: true },
+      [{ type: "question", settings: { topic: "Le produit" } }, { type: "question", settings: { topic: "Livraison" } }]),
   ]),
   e("specialty", 19, "newsletter", { fr: "Newsletter", en: "Newsletter" }, { fr: "Invitation à recevoir les actualités.", en: "Invitation to receive news." }, "newsletter inscription e-mail", [
     d("simple", "Inscription simple", "Simple sign-up", "newsletter", "newsletter"),
@@ -203,6 +226,8 @@ const SPECIALTY: FamilyEntry[] = [
     d("form", "Formulaire et coordonnées", "Form and details", "contact-form", "form"),
     // TRAVERSE : formulaire vérifié dans la page, photo à droite.
     d("form-photo", "Formulaire et photo", "Form and photo", "contact-form", "split-left", { inline_states: true, show_phone: false, require_name: true }),
+    // NOCTIL : sujet à choisir, numéro de commande facultatif, case d'accord.
+    d("form-subject", "Formulaire avec sujet et accord", "Form with subject and consent", "contact-form", "form", { inline_states: true, show_phone: false, require_name: true, require_message: true, order_field: true, subjects: "Ma commande\nLe produit\nLivraison et retours\nAutre demande", consent_text: "J'accepte que mes informations soient utilisées uniquement pour répondre à ma demande." }),
     d("channels", "Moyens de contact", "Ways to reach us", "fs-stores", "cards", { layout: "channels" }),
   ]),
 ];

@@ -14,6 +14,10 @@ const { sectionSchema } = await import('../../src/lib/theme/spec');
 const { getAsset } = await import('../../src/lib/library');
 const user = await createUser('reference-shapes@example.test', 'structural-extraction-only', 'Structural test');
 const MUSEAU_DEMO_ONLY = /^page\.(journal|les-petits-rituels-des-grandes-balades|preparer-son-sac-pour-la-balade|choisir-la-taille-de-son-harnais|des-idees-pour-changer-de-chemin|le-quotidien-en-bonne-compagnie|finaliser-ma-commande|confirmation-de-commande|connexion|creer-un-compte|mot-de-passe-oublie|mon-compte|commande-1001|mes-adresses|informations-personnelles)$/;
+// NOCTIL (maquettes du 23 octobre) : journal et ses articles, exemple de commande, espace client et politique des cookies
+// sont des pages de la démonstration ; elles ne passent jamais chez un client.
+const NOCTIL_DEMO_ONLY = /^page\.(journal|une-chambre-mille-histoires|creer-un-rituel-du-soir|histoires-d-etoiles|decorer-une-chambre-qui-fait-rever|couleurs-et-ambiance|les-doudous-aussi-revent|a-la-decouverte-des-planetes|un-univers-qui-grandit-avec-eux|observer-la-lune|finaliser-la-commande|confirmation-de-commande|connexion|creer-un-compte|mot-de-passe-oublie|mon-compte|commande-noctil-0001|mes-informations|politique-cookies)$/;
+const DEMO_ONLY = { test: (key: string) => MUSEAU_DEMO_ONLY.test(key) || NOCTIL_DEMO_ONLY.test(key) };
 const result: any = { sourceCommit: '5dd5f63011c1e0a4ee2369fe1b2565c4e899f71e', provenance: 'Validated compositions, design settings and block order only. No demo copy, logo, image or commercial data.', themes: {} };
 // Schema types identify styling rather than content. Coordinates of hotspots are content, never design.
 // TRAVERSE : ses cartes sur photo et celles du carnet sont des paysages (rôle « situation ») ; les photos de détail du client
@@ -40,7 +44,7 @@ try {
                 continue;
             // MUSEAU CLUB (maquettes du 23 octobre) : journal, articles d'exemple, exemple de commande et écrans de compte
             // restent dans la démonstration (un client publie ses articles ; commande et compte sont ceux de Shopify).
-            if (MUSEAU_DEMO_ONLY.test(key))
+            if (DEMO_ONLY.test(key))
                 continue;
             const sections: any = {};
             // MUSEAU CLUB : le dessin du guide des tailles est celui d'un chien (tour de cou, tour de poitrail) ; il ne
@@ -53,7 +57,7 @@ try {
             }
             templates[key] = { sections, order };
         }
-        result.themes[id] = { templates, pages: spec.store.pages.filter(p => !/^projet-/.test(p.handle) && p.handle !== 'deux-jours-un-autre-decor' && !MUSEAU_DEMO_ONLY.test(`page.${p.handle}`)).map(p => ({ suffix: p.template_suffix, role: /confidential|privacy/.test(p.handle) ? 'privacy' : /condition|terms|^cgv$/.test(p.handle) ? 'terms' : p.handle === 'listicle' ? 'guide' : p.handle === 'advertorial' ? 'editorial' : p.handle === 'sections' ? 'showcase' : /contact|aide|help/.test(p.handle) ? 'contact' : /faq|questions/.test(p.handle) ? 'faq' : /livraison|shipping/.test(p.handle) ? 'shipping' : /utilisation|caracteristiques|how|detail|tailles/.test(p.handle) ? 'details' : /usage|carnet|piece|inspiration/.test(p.handle) ? 'uses' : /legal|mention/.test(p.handle) ? 'legal' : /prestation|service/.test(p.handle) ? 'services' : /projet|realisation|portfolio/.test(p.handle) ? 'portfolio' : 'story' })) };
+        result.themes[id] = { templates, pages: spec.store.pages.filter(p => !/^projet-/.test(p.handle) && p.handle !== 'deux-jours-un-autre-decor' && !DEMO_ONLY.test(`page.${p.handle}`)).map(p => ({ suffix: p.template_suffix, role: /confidential|privacy/.test(p.handle) ? 'privacy' : /condition|terms|^cgv$/.test(p.handle) ? 'terms' : p.handle === 'listicle' ? 'guide' : p.handle === 'advertorial' ? 'editorial' : p.handle === 'sections' ? 'showcase' : /contact|aide|help/.test(p.handle) ? 'contact' : /faq|questions/.test(p.handle) ? 'faq' : /livraison|shipping/.test(p.handle) ? 'shipping' : /utilisation|caracteristiques|how|detail|tailles|demarrer/.test(p.handle) ? 'details' : /usage|carnet|piece|inspiration/.test(p.handle) ? 'uses' : /legal|mention/.test(p.handle) ? 'legal' : /prestation|service/.test(p.handle) ? 'services' : /projet|realisation|portfolio/.test(p.handle) ? 'portfolio' : 'story' })) };
         console.log(id, Object.keys(templates).length, 'templates', Object.values(templates).reduce((n: number, t: any) => n + t.order.length, 0), 'sections');
     }
     fs.writeFileSync('src/lib/theme/reference-shapes.json', JSON.stringify(result, null, 2) + '\n');
