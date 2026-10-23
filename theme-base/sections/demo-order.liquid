@@ -1,0 +1,158 @@
+{%- comment -%}
+  Exemple de commande (MUSEAU CLUB, planche 05 du 23 octobre) : page « Finaliser ma commande » et page de confirmation
+  d'une boutique de démonstration. Rien n'est envoyé ni payé : les champs sont désactivés, aucune donnée de carte n'est
+  demandée et le récapitulatif est fixe (blocs « ligne »). Sur une vraie boutique, la commande et sa confirmation sont
+  des pages de Shopify : cette section sert seulement à montrer le parcours dans l'aperçu.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign layout = s.layout | default: 'checkout'
+  assign subtotal = 0
+  assign count = 0
+  for block in section.blocks
+    assign line_product = all_products[block.settings.product] | default: block.settings.product
+    if line_product.title != blank
+      assign line_qty = block.settings.quantity | default: 1
+      assign line_total = line_product.price | times: line_qty
+      assign subtotal = subtotal | plus: line_total
+      assign count = count | plus: line_qty
+    endif
+  endfor
+-%}
+{%- capture summary -%}
+  <aside class="es-order__summary" aria-label="{{ s.summary_title | escape }}">
+    <h2 class="es-order__summary-title">{{ s.summary_title | escape }}{% if count > 0 %} <span>({{ count }} {% if count > 1 %}{{ s.items_label | default: 'articles' | escape }}{% else %}{{ s.item_label | default: 'article' | escape }}{% endif %})</span>{% endif %}</h2>
+    <ul class="es-order__lines" role="list">
+      {%- for block in section.blocks -%}
+        {%- assign line_product = all_products[block.settings.product] | default: block.settings.product -%}
+        {%- if line_product.title != blank -%}
+          {%- assign line_qty = block.settings.quantity | default: 1 -%}
+          <li class="es-order__line" {{ block.shopify_attributes }}>
+            <span class="es-order__thumb">{%- if line_product.featured_media -%}{{ line_product.featured_media | image_url: width: 160 | image_tag: loading: 'lazy', alt: line_product.title }}{%- endif -%}</span>
+            <span class="es-order__line-info"><strong>{{ line_product.title | escape }}</strong>{%- if block.settings.variant_label != blank -%}<span>{{ block.settings.variant_label | escape | newline_to_br }}</span>{%- endif -%}</span>
+            <span class="es-order__qty">{{ line_qty }}</span>
+            <span class="es-order__price">{% if settings.price_trim_zeros %}{{ line_product.price | times: line_qty | money_without_trailing_zeros }}{% else %}{{ line_product.price | times: line_qty | money }}{% endif %}</span>
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+    <dl class="es-order__totals">
+      <div><dt>{{ s.subtotal_label | escape }}</dt><dd>{% if settings.price_trim_zeros %}{{ subtotal | money_without_trailing_zeros }}{% else %}{{ subtotal | money }}{% endif %}</dd></div>
+      {%- if s.shipping_label != blank -%}<div><dt>{{ s.shipping_label | escape }}</dt><dd>{{ s.shipping_value | escape }}</dd></div>{%- endif -%}
+    </dl>
+    {%- if s.total_note != blank -%}<p class="es-order__note">{{ s.total_note | escape }}</p>{%- endif -%}
+  </aside>
+{%- endcapture -%}
+<section class="es-section es-order es-order--{{ layout }} color-{{ s.color_scheme }}" style="--pt: {{ s.padding_top }}px; --pb: {{ s.padding_bottom }}px;">
+  <div class="es-container">
+    {%- if layout == 'confirmation' -%}
+      <div class="es-order__confirm">
+        <div class="es-order__confirm-copy">
+          {%- if s.eyebrow != blank -%}<p class="es-order__pill">{{ s.eyebrow | escape }}</p>{%- endif -%}
+          <span class="es-order__check" aria-hidden="true">{% render 'icon', name: 'check' %}</span>
+          <h1 class="es-heading es-order__title">{{ s.heading | escape | newline_to_br }}</h1>
+          {%- if s.text != blank -%}<div class="es-rte es-order__text">{{ s.text }}</div>{%- endif -%}
+          {%- if s.button_label != blank -%}<a class="es-button es-order__button" href="{{ s.button_link | default: routes.root_url }}">{{ s.button_label | escape }}</a>{%- endif -%}
+        </div>
+        {%- if s.image != blank or s.image_asset != blank -%}<div class="es-order__photo">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, focus_x: s.focus_x, focus_y: s.focus_y %}</div>{%- endif -%}
+        {{ summary }}
+      </div>
+    {%- else -%}
+      <header class="es-order__head">
+        {%- if s.eyebrow != blank -%}<p class="es-order__pill">{{ s.eyebrow | escape }}</p>{%- endif -%}
+        <h1 class="es-heading es-order__title">{{ s.heading | escape | newline_to_br }}</h1>
+        {%- if s.text != blank -%}<div class="es-rte es-order__text">{{ s.text }}</div>{%- endif -%}
+      </header>
+      <div class="es-order__grid">
+        <form class="es-order__form" action="#" onsubmit="return false" aria-describedby="OrderDemo-{{ section.id }}">
+          <p class="es-order__demo" id="OrderDemo-{{ section.id }}">{{ s.demo_notice | escape }}</p>
+          <fieldset class="es-order__step" disabled>
+            <legend>{{ s.contact_title | escape }}</legend>
+            <label class="es-order__field es-order__field--full"><span>{{ s.email_label | escape }}</span><input type="email" autocomplete="off" placeholder="{{ s.email_placeholder | escape }}"></label>
+          </fieldset>
+          <fieldset class="es-order__step" disabled>
+            <legend>{{ s.address_title | escape }}</legend>
+            <label class="es-order__field"><span>{{ s.first_name_label | escape }}</span><input type="text" autocomplete="off"></label>
+            <label class="es-order__field"><span>{{ s.last_name_label | escape }}</span><input type="text" autocomplete="off"></label>
+            <label class="es-order__field es-order__field--full"><span>{{ s.address_label | escape }}</span><input type="text" autocomplete="off" placeholder="{{ s.address_placeholder | escape }}"></label>
+            <label class="es-order__field"><span>{{ s.zip_label | escape }}</span><input type="text" autocomplete="off"></label>
+            <label class="es-order__field"><span>{{ s.city_label | escape }}</span><input type="text" autocomplete="off"></label>
+            <label class="es-order__field es-order__field--full"><span>{{ s.country_label | escape }}</span><input type="text" autocomplete="off" value="{{ s.country_value | escape }}"></label>
+          </fieldset>
+          <fieldset class="es-order__step" disabled>
+            <legend>{{ s.shipping_title | escape }}</legend>
+            <p class="es-order__option">{% render 'icon', name: 'truck' %}<span><strong>{{ s.shipping_label | escape }}</strong> {{ s.shipping_value | escape }}</span></p>
+          </fieldset>
+          <fieldset class="es-order__step" disabled>
+            <legend>{{ s.payment_title | escape }}</legend>
+            <p class="es-order__option es-order__option--muted">{% render 'icon', name: 'shield' %}<span>{{ s.payment_text | escape }}</span></p>
+          </fieldset>
+        </form>
+        <div class="es-order__side">
+          {{ summary }}
+          {%- if s.button_label != blank -%}<a class="es-button es-order__button" href="{{ s.button_link | default: routes.root_url }}">{{ s.button_label | escape }}</a>{%- endif -%}
+          {%- if s.button_note != blank -%}<p class="es-order__note">{{ s.button_note | escape }}</p>{%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Exemple de commande",
+  "tag": "section",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "paragraph", "content": "Page d'exemple pour une boutique de démonstration : aucun champ n'est envoyé, aucune carte n'est demandée. Sur une vraie boutique, la commande et sa confirmation sont des pages de Shopify." },
+    { "type": "select", "id": "layout", "label": "Page", "default": "checkout", "options": [ { "value": "checkout", "label": "Finaliser la commande" }, { "value": "confirmation", "label": "Confirmation" } ] },
+    { "type": "text", "id": "eyebrow", "label": "Pastille au-dessus du titre", "default": "Exemple de démonstration" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Finaliser ma commande" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "demo_notice", "label": "Mention de démonstration (formulaire)", "default": "Exemple de démonstration : les champs sont désactivés, rien n'est envoyé ni payé." },
+    { "type": "header", "content": "Étapes" },
+    { "type": "text", "id": "contact_title", "label": "Étape contact", "default": "1. Contact" },
+    { "type": "text", "id": "email_label", "label": "Champ e-mail", "default": "Adresse e-mail" },
+    { "type": "text", "id": "email_placeholder", "label": "Exemple d'e-mail", "default": "votre@email.com" },
+    { "type": "text", "id": "address_title", "label": "Étape adresse", "default": "2. Adresse de livraison" },
+    { "type": "text", "id": "first_name_label", "label": "Champ prénom", "default": "Prénom" },
+    { "type": "text", "id": "last_name_label", "label": "Champ nom", "default": "Nom" },
+    { "type": "text", "id": "address_label", "label": "Champ adresse", "default": "Adresse" },
+    { "type": "text", "id": "address_placeholder", "label": "Exemple d'adresse", "default": "Numéro et nom de la rue" },
+    { "type": "text", "id": "zip_label", "label": "Champ code postal", "default": "Code postal" },
+    { "type": "text", "id": "city_label", "label": "Champ ville", "default": "Ville" },
+    { "type": "text", "id": "country_label", "label": "Champ pays", "default": "Pays" },
+    { "type": "text", "id": "country_value", "label": "Pays affiché", "default": "France" },
+    { "type": "text", "id": "shipping_title", "label": "Étape livraison", "default": "3. Livraison" },
+    { "type": "text", "id": "payment_title", "label": "Étape paiement", "default": "4. Paiement" },
+    { "type": "textarea", "id": "payment_text", "label": "Texte de l'étape paiement", "default": "Paiement désactivé dans cette démonstration. Sur une vraie boutique, le paiement se fait sur la page sécurisée de Shopify." },
+    { "type": "header", "content": "Récapitulatif" },
+    { "type": "text", "id": "summary_title", "label": "Titre", "default": "Récapitulatif" },
+    { "type": "text", "id": "item_label", "label": "Mot « article »", "default": "article" },
+    { "type": "text", "id": "items_label", "label": "Mot « articles »", "default": "articles" },
+    { "type": "text", "id": "subtotal_label", "label": "Libellé du sous-total", "default": "Sous-total" },
+    { "type": "text", "id": "shipping_label", "label": "Libellé livraison", "default": "Livraison" },
+    { "type": "text", "id": "shipping_value", "label": "Texte livraison", "default": "À calculer" },
+    { "type": "text", "id": "total_note", "label": "Mention sous le récapitulatif", "default": "Prix de démonstration" },
+    { "type": "header", "content": "Bouton et photo" },
+    { "type": "text", "id": "button_label", "label": "Bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "text", "id": "button_note", "label": "Mention sous le bouton" },
+    { "type": "image_picker", "id": "image", "label": "Photo (confirmation)" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif de la photo" },
+    { "type": "range", "id": "focus_x", "label": "Point focal horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "focus_y", "label": "Point focal vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "label": "Marge haute", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 40 },
+    { "type": "range", "id": "padding_bottom", "label": "Marge basse", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 64 }
+  ],
+  "blocks": [
+    { "type": "line", "name": "Ligne du récapitulatif", "limit": 6, "settings": [
+      { "type": "product", "id": "product", "label": "Produit" },
+      { "type": "textarea", "id": "variant_label", "label": "Variante affichée", "info": "Ex. « Bleu cobalt » puis, à la ligne, « Taille M »." },
+      { "type": "range", "id": "quantity", "label": "Quantité", "min": 1, "max": 5, "step": 1, "default": 1 }
+    ] }
+  ]
+}
+{% endschema %}

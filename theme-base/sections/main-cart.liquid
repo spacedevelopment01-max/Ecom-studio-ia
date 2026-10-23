@@ -44,10 +44,17 @@
   assign hero_asset = section.settings.hero_image_asset
   assign hero_pick = section.settings.hero_image
   assign hero_title = section.settings.hero_heading | default: cart_title
+  assign hero_fx = section.settings.hero_focus_x
+  assign hero_fy = section.settings.hero_focus_y
   if cart.item_count == 0
     if section.settings.hero_empty_image_asset != blank or section.settings.hero_empty_image != blank
       assign hero_asset = section.settings.hero_empty_image_asset
       assign hero_pick = section.settings.hero_empty_image
+      # Point focal propre au panier vide seulement s'il a été réglé (les paniers existants gardent celui du bandeau).
+      if section.settings.hero_empty_focus_x != 50 or section.settings.hero_empty_focus_y != 50
+        assign hero_fx = section.settings.hero_empty_focus_x
+        assign hero_fy = section.settings.hero_empty_focus_y
+      endif
     endif
     assign hero_title = section.settings.hero_empty_heading | default: hero_title
   endif
@@ -58,11 +65,19 @@
 -%}
 {%- if has_hero -%}
 <div class="es-cart__hero color-{{ section.settings.hero_color_scheme | default: 'scheme-2' }}"{% if section.settings.hero_zoom > 100 and cart.item_count > 0 %} style="--cv-zoom:{{ section.settings.hero_zoom | divided_by: 100.0 }};"{% endif %}>
-  {% render 'ed-media', image: hero_pick, asset: hero_asset, alt: '', focus_x: section.settings.hero_focus_x, focus_y: section.settings.hero_focus_y, loading: 'eager' %}
-  <div class="es-container es-cart__hero-copy"><h1 class="es-heading es-cart__hero-title">{{ hero_title | escape | newline_to_br }}</h1></div>
+  {% render 'ed-media', image: hero_pick, asset: hero_asset, alt: '', focus_x: hero_fx, focus_y: hero_fy, loading: 'eager' %}
+  <div class="es-container es-cart__hero-copy"><h1 class="es-heading es-cart__hero-title">{{ hero_title | escape | newline_to_br }}</h1>
+    {%- if cart.item_count > 0 -%}
+      {%- if section.settings.hero_text != blank -%}<p class="es-cart__hero-text">{{ section.settings.hero_text | escape | newline_to_br }}</p>{%- endif -%}
+    {%- else -%}
+      {%- if section.settings.hero_empty_text != blank -%}<p class="es-cart__hero-text">{{ section.settings.hero_empty_text | escape | newline_to_br }}</p>{%- endif -%}
+      {%- if section.settings.hero_empty_button_label != blank -%}<a class="es-button es-cart__hero-button" href="{{ section.settings.hero_empty_button_link | default: routes.all_products_collection_url }}">{{ section.settings.hero_empty_button_label | escape }} {% render 'icon', name: 'arrow' %}</a>{%- endif -%}
+    {%- endif -%}
+  </div>
 </div>
 {%- endif -%}
 <section class="es-section es-cart{% if has_hero %} es-cart--hero{% endif %} color-{{ cart_scheme }}" style="--pt: 48px; --pb: 96px;" data-cart-page>
+  {%- if section.settings.demo_checkout_link != blank -%}<a hidden aria-hidden="true" tabindex="-1" data-demo-checkout href="{{ section.settings.demo_checkout_link }}"></a>{%- endif -%}
   <div class="es-container">
     {%- unless has_hero -%}
     <h1 class="es-heading es-h1 es-cart__title">{{ cart_title }}{% if settings.cart_show_count and cart.item_count > 0 %} <span class="es-drawer__count" aria-label="{{ 'cart.items_badge' | t: count: cart.item_count }}">{{ cart.item_count }}</span>{% endif %}</h1>
@@ -103,7 +118,11 @@
               <a href="{{ item.url }}" class="es-line-item__media">{%- if item.image -%}{{ item.image | image_url: width: 300 | image_tag: loading: 'lazy', alt: item.title }}{%- endif -%}</a>
               <div class="es-line-item__info">
                 <a href="{{ item.url }}" class="es-line-item__title">{{ item.product.title }}</a>
-                {%- unless item.product.has_only_default_variant -%}<p class="es-muted es-small">{{ item.variant.title }}</p>{%- endunless -%}
+                {%- unless item.product.has_only_default_variant -%}
+                  {%- if section.settings.variant_options -%}
+                    <p class="es-muted es-small es-line-item__options">{%- for opt in item.options_with_values -%}<span class="es-line-item__option{% unless forloop.first %} es-line-item__option--tag{% endunless %}">{% unless forloop.first %}{{ opt.name | escape }} {% endunless %}{{ opt.value | escape }}</span>{%- endfor -%}</p>
+                  {%- else -%}<p class="es-muted es-small">{{ item.variant.title }}</p>{%- endif -%}
+                {%- endunless -%}
                 <p class="es-small">{% if settings.price_trim_zeros %}{{ item.final_price | money_without_trailing_zeros }}{% else %}{{ item.final_price | money }}{% endif %}</p>
                 <label class="visually-hidden" for="Qty-{{ forloop.index }}">{{ 'products.product.quantity' | t }}</label>
                 {%- if section.settings.qty_buttons and item.properties._es_gift == blank -%}
@@ -149,7 +168,8 @@
           {%- if settings.cart_show_savings and savings > 0 -%}
             <div class="es-drawer__row es-drawer__savings"><span>{{ 'cart.savings' | t }}</span><strong class="es-drawer__savings-tag">{% render 'icon', name: 'gift' %}−{% if settings.price_trim_zeros %}{{ savings | money_without_trailing_zeros }}{% else %}{{ savings | money }}{% endif %}</strong></div>
           {%- endif -%}
-          <div class="es-drawer__total es-drawer__row"><span>{% if settings.cart_total_count %}{{ 'cart.total_items' | t: count: cart.item_count }}{% else %}{{ 'cart.subtotal' | t }}{% endif %}</span><strong>{% if settings.cart_show_savings and savings > 0 %}<s class="es-drawer__compare">{% if settings.price_trim_zeros %}{{ original_total | money_without_trailing_zeros }}{% else %}{{ original_total | money }}{% endif %}</s> {% endif %}{% if settings.price_trim_zeros %}{{ cart.total_price | money_without_trailing_zeros }}{% else %}{{ cart.total_price | money }}{% endif %}</strong></div>
+          {%- if section.settings.shipping_label != blank -%}<div class="es-drawer__row es-cart__shipping"><span>{{ section.settings.shipping_label | escape }}</span><span>{{ section.settings.shipping_text | escape }}</span></div>{%- endif -%}
+          <div class="es-drawer__total es-drawer__row"><span>{% if section.settings.total_label != blank %}{{ section.settings.total_label | replace: '[n]', cart.item_count | escape }}{% elsif settings.cart_total_count %}{{ 'cart.total_items' | t: count: cart.item_count }}{% else %}{{ 'cart.subtotal' | t }}{% endif %}</span><strong>{% if settings.cart_show_savings and savings > 0 %}<s class="es-drawer__compare">{% if settings.price_trim_zeros %}{{ original_total | money_without_trailing_zeros }}{% else %}{{ original_total | money }}{% endif %}</s> {% endif %}{% if settings.price_trim_zeros %}{{ cart.total_price | money_without_trailing_zeros }}{% else %}{{ cart.total_price | money }}{% endif %}</strong></div>
           {%- if section.settings.summary_note != blank -%}<p class="es-muted es-small es-cart__note">{{ section.settings.summary_note | escape }}</p>{%- endif -%}
           {%- if section.settings.show_taxes_note != false -%}<p class="es-muted es-small">{{ 'cart.taxes_and_shipping' | t }}</p>{%- endif -%}
           {%- if section.settings.show_update != false -%}<button type="submit" name="update" class="es-button es-button--secondary es-button--full">{{ 'cart.update' | t }}</button>{%- endif -%}
@@ -195,6 +215,13 @@
       "default": false
     },
     {
+      "type": "checkbox",
+      "id": "variant_options",
+      "label": "Options de la variante une par une",
+      "info": "Ex. « Bleu cobalt » puis « Taille M », au lieu de « Bleu cobalt / M ».",
+      "default": false
+    },
+    {
       "type": "text",
       "id": "remove_label",
       "label": "Lien de suppression d'une ligne",
@@ -206,30 +233,212 @@
       "label": "Lien « continuer » sous le paiement",
       "info": "Mène à la destination du bouton du panier vide. Vide : pas de lien."
     },
-    { "type": "checkbox", "id": "table_head", "label": "En-têtes Produit, Quantité, Prix", "default": false },
-    { "type": "text", "id": "head_product", "label": "En-tête « Produit »", "default": "Produit" },
-    { "type": "text", "id": "head_quantity", "label": "En-tête « Quantité »", "default": "Quantité" },
-    { "type": "text", "id": "head_price", "label": "En-tête « Prix »", "default": "Prix" },
-    { "type": "text", "id": "summary_note", "label": "Mention sous le total", "info": "Ex. « Prix de démonstration »." },
-    { "type": "checkbox", "id": "show_taxes_note", "label": "Phrase sur les taxes et frais", "default": true },
-    { "type": "checkbox", "id": "show_update", "label": "Bouton « Mettre à jour »", "default": true },
-    { "type": "header", "content": "Bandeau photo" },
-    { "type": "paragraph", "content": "Avec une photo, le titre du panier s'affiche dessus, en grand." },
-    { "type": "image_picker", "id": "hero_image", "label": "Photo du bandeau" },
-    { "type": "text", "id": "hero_image_asset", "label": "Photo du bandeau (fichier du thème)" },
-    { "type": "range", "id": "hero_focus_x", "label": "Point focal horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
-    { "type": "range", "id": "hero_focus_y", "label": "Point focal vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
-    { "type": "range", "id": "hero_zoom", "label": "Agrandissement de la photo (panier rempli)", "info": "Au-delà de 100 %, la photo est agrandie autour du point focal.", "min": 100, "max": 250, "step": 5, "unit": "%", "default": 100 },
-    { "type": "textarea", "id": "hero_heading", "label": "Titre sur le bandeau", "info": "Vide : le titre du panier." },
-    { "type": "image_picker", "id": "hero_empty_image", "label": "Photo du bandeau, panier vide" },
-    { "type": "text", "id": "hero_empty_image_asset", "label": "Photo du bandeau, panier vide (fichier du thème)" },
-    { "type": "textarea", "id": "hero_empty_heading", "label": "Titre sur le bandeau, panier vide" },
-    { "type": "color_scheme", "id": "hero_color_scheme", "label": "Schéma de couleurs du bandeau", "default": "scheme-2" },
+    {
+      "type": "checkbox",
+      "id": "table_head",
+      "label": "En-têtes Produit, Quantité, Prix",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "head_product",
+      "label": "En-tête « Produit »",
+      "default": "Produit"
+    },
+    {
+      "type": "text",
+      "id": "head_quantity",
+      "label": "En-tête « Quantité »",
+      "default": "Quantité"
+    },
+    {
+      "type": "text",
+      "id": "head_price",
+      "label": "En-tête « Prix »",
+      "default": "Prix"
+    },
+    {
+      "type": "text",
+      "id": "summary_note",
+      "label": "Mention sous le total",
+      "info": "Ex. « Prix de démonstration »."
+    },
+    {
+      "type": "text",
+      "id": "total_label",
+      "label": "Libellé du montant du panier",
+      "info": "Ex. « Sous-total ([n] articles) » : [n] est remplacé par le nombre d'articles. Vide : libellé du thème."
+    },
+    {
+      "type": "text",
+      "id": "shipping_label",
+      "label": "Ligne livraison : libellé",
+      "info": "Ex. « Livraison ». Vide : pas de ligne."
+    },
+    {
+      "type": "text",
+      "id": "shipping_text",
+      "label": "Ligne livraison : texte",
+      "info": "Ex. « Calculée à l'étape suivante »."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_taxes_note",
+      "label": "Phrase sur les taxes et frais",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_update",
+      "label": "Bouton « Mettre à jour »",
+      "default": true
+    },
+    {
+      "type": "url",
+      "id": "demo_checkout_link",
+      "label": "Exemple de commande (aperçu de démonstration)",
+      "info": "Utilisé seulement par l'aperçu de démonstration du studio, où le paiement est désactivé. Sur la boutique, « Passer commande » ouvre toujours le paiement de Shopify."
+    },
+    {
+      "type": "header",
+      "content": "Bandeau photo"
+    },
+    {
+      "type": "paragraph",
+      "content": "Avec une photo, le titre du panier s'affiche dessus, en grand."
+    },
+    {
+      "type": "image_picker",
+      "id": "hero_image",
+      "label": "Photo du bandeau"
+    },
+    {
+      "type": "text",
+      "id": "hero_image_asset",
+      "label": "Photo du bandeau (fichier du thème)"
+    },
+    {
+      "type": "range",
+      "id": "hero_focus_x",
+      "label": "Point focal horizontal",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "hero_focus_y",
+      "label": "Point focal vertical",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "hero_zoom",
+      "label": "Agrandissement de la photo (panier rempli)",
+      "info": "Au-delà de 100 %, la photo est agrandie autour du point focal.",
+      "min": 100,
+      "max": 250,
+      "step": 5,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "textarea",
+      "id": "hero_heading",
+      "label": "Titre sur le bandeau",
+      "info": "Vide : le titre du panier."
+    },
+    {
+      "type": "textarea",
+      "id": "hero_text",
+      "label": "Texte sous le titre (panier rempli)"
+    },
+    {
+      "type": "image_picker",
+      "id": "hero_empty_image",
+      "label": "Photo du bandeau, panier vide"
+    },
+    {
+      "type": "text",
+      "id": "hero_empty_image_asset",
+      "label": "Photo du bandeau, panier vide (fichier du thème)"
+    },
+    {
+      "type": "range",
+      "id": "hero_empty_focus_x",
+      "label": "Point focal horizontal (panier vide)",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "hero_empty_focus_y",
+      "label": "Point focal vertical (panier vide)",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "textarea",
+      "id": "hero_empty_heading",
+      "label": "Titre sur le bandeau, panier vide"
+    },
+    {
+      "type": "textarea",
+      "id": "hero_empty_text",
+      "label": "Texte sous le titre (panier vide)"
+    },
+    {
+      "type": "text",
+      "id": "hero_empty_button_label",
+      "label": "Bouton du bandeau (panier vide)"
+    },
+    {
+      "type": "url",
+      "id": "hero_empty_button_link",
+      "label": "Lien du bouton (panier vide)"
+    },
+    {
+      "type": "color_scheme",
+      "id": "hero_color_scheme",
+      "label": "Schéma de couleurs du bandeau",
+      "default": "scheme-2"
+    },
     {
       "type": "header",
       "content": "Panier vide"
     },
-    { "type": "select", "id": "empty_icon", "label": "Pictogramme du panier vide", "default": "none", "options": [ { "value": "none", "label": "Aucun" }, { "value": "backpack", "label": "Sac à dos" }, { "value": "cart", "label": "Panier" } ] },
+    {
+      "type": "select",
+      "id": "empty_icon",
+      "label": "Pictogramme du panier vide",
+      "default": "none",
+      "options": [
+        {
+          "value": "none",
+          "label": "Aucun"
+        },
+        {
+          "value": "backpack",
+          "label": "Sac à dos"
+        },
+        {
+          "value": "cart",
+          "label": "Panier"
+        }
+      ]
+    },
     {
       "type": "image_picker",
       "id": "empty_image",

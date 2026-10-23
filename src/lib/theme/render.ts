@@ -260,6 +260,7 @@ function buildStore(opts: PreviewOptions, current: { product?: string; collectio
         line_price: price * l.quantity,
         final_line_price: finalLine,
         url_to_remove: `${base}/cart/change?line=${i + 1}&quantity=0`,
+        options_with_values: ((p.options ?? []) as string[]).map((name, oi) => ({ name, value: v.options?.[oi] ?? "" })),
       };
     });
   const cart = {

@@ -7,7 +7,7 @@
     </header>
     {%- endif -%}
     {%- paginate collection.products by section.settings.per_page -%}
-      <div class="es-collection__bar">
+      {%- if section.settings.show_count != false or section.settings.enable_filters or section.settings.enable_sorting -%}<div class="es-collection__bar">
       {%- if section.settings.show_count != false -%}<p class="es-small es-muted es-collection__count">{{ 'collections.product_count' | t: count: collection.products_count }}</p>{%- endif -%}
       <form class="es-filters" data-filters action="{{ collection.url }}" method="get">
         {%- if section.settings.enable_filters -%}
@@ -40,10 +40,23 @@
         {%- endif -%}
         <noscript><button type="submit" class="es-button es-button--small">{{ 'collections.apply' | t }}</button></noscript>
       </form>
-      </div>
+      </div>{%- endif -%}
+      {%- if section.settings.type_chips -%}
+        {%- assign chip_types = '' -%}
+        {%- for product in collection.products -%}{%- if product.type != blank -%}{%- assign chip_key = '|' | append: product.type | append: '|' -%}{%- unless chip_types contains chip_key -%}{%- assign chip_types = chip_types | append: chip_key -%}{%- endunless -%}{%- endif -%}{%- endfor -%}
+        {%- assign chip_list = chip_types | split: '|' -%}
+        {%- if chip_list.size > 1 -%}
+        <div class="es-collection__chips" role="group" aria-label="{{ collection.title | escape }}" data-chip-filters>
+          <button type="button" class="fs-chip-filter is-active" aria-pressed="true" data-chip-filter="">{{ section.settings.chips_all_label | default: 'Tous' | escape }}</button>
+          {%- for t in chip_list -%}{%- if t != blank -%}<button type="button" class="fs-chip-filter" aria-pressed="false" data-chip-filter="{{ t | handleize }}">{{ t | escape }}</button>{%- endif -%}{%- endfor -%}
+        </div>
+        {%- endif -%}
+      {%- endif -%}
       <div class="es-product-grid" style="--cols: {{ section.settings.columns }}">
         {%- for product in collection.products -%}
+          {%- if section.settings.type_chips -%}<div class="es-collection__item" data-chip-item="{{ product.type | handleize }}">{%- endif -%}
           {% render 'product-card', product_card: product, show_secondary: true, ratio: section.settings.card_ratio, show_vendor: section.settings.card_vendor, button_label: section.settings.card_button_label %}
+          {%- if section.settings.type_chips -%}</div>{%- endif -%}
         {%- else -%}
           <p class="es-empty">{{ 'collections.empty' | t }}</p>
         {%- endfor -%}
@@ -57,16 +70,96 @@
 {
   "name": "Collection",
   "settings": [
-    { "type": "range", "id": "per_page", "min": 8, "max": 48, "step": 4, "label": "Produits par page", "default": 16 },
-    { "type": "range", "id": "columns", "min": 2, "max": 4, "step": 1, "label": "Colonnes", "default": 3 },
-    { "type": "checkbox", "id": "enable_filters", "label": "Filtres", "default": true },
-    { "type": "checkbox", "id": "enable_sorting", "label": "Tri", "default": true },
-    { "type": "checkbox", "id": "show_header", "label": "Titre et description de la collection", "info": "Décochez quand un bandeau au-dessus porte déjà le titre de la page (H1).", "default": true },
-    { "type": "checkbox", "id": "show_count", "label": "Nombre de produits", "default": true },
-    { "type": "select", "id": "card_ratio", "label": "Format des photos des cartes", "default": "portrait", "options": [ { "value": "portrait", "label": "Portrait" }, { "value": "square", "label": "Carré" } ] },
-    { "type": "checkbox", "id": "card_vendor", "label": "Marque au-dessus du nom", "default": false },
-    { "type": "text", "id": "card_button_label", "label": "Bouton sous chaque carte", "info": "Ex. « Voir le produit ». Vide : pas de bouton." },
-    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" }
+    {
+      "type": "range",
+      "id": "per_page",
+      "min": 8,
+      "max": 48,
+      "step": 4,
+      "label": "Produits par page",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "label": "Colonnes",
+      "default": 3
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_filters",
+      "label": "Filtres",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sorting",
+      "label": "Tri",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "type_chips",
+      "label": "Pastilles de filtre par type de produit",
+      "info": "« Tous », puis un bouton par type de produit de la collection (filtrage dans la page).",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "chips_all_label",
+      "label": "Libellé de la pastille « Tous »",
+      "default": "Tous"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_header",
+      "label": "Titre et description de la collection",
+      "info": "Décochez quand un bandeau au-dessus porte déjà le titre de la page (H1).",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_count",
+      "label": "Nombre de produits",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "card_ratio",
+      "label": "Format des photos des cartes",
+      "default": "portrait",
+      "options": [
+        {
+          "value": "portrait",
+          "label": "Portrait"
+        },
+        {
+          "value": "square",
+          "label": "Carré"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "card_vendor",
+      "label": "Marque au-dessus du nom",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "card_button_label",
+      "label": "Bouton sous chaque carte",
+      "info": "Ex. « Voir le produit ». Vide : pas de bouton."
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    }
   ]
 }
 {% endschema %}

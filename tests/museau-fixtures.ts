@@ -145,6 +145,8 @@ const FICHES: Record<string, Fiche> = {
   },
 };
 const SHORT: Record<string, string> = { harnais: "Harnais", laisse: "Laisse", collier: "Collier", pochette: "Pochette" };
+/** Type de chaque produit (pastilles de filtre de la boutique, planche 04). */
+const TYPE: Record<string, string> = { harnais: "Harnais", laisse: "Laisses", collier: "Colliers", pochette: "Pochettes" };
 
 function curateMuseau(k: Kit) {
   const { spec, img, section, overlay } = k;
@@ -167,7 +169,7 @@ function curateMuseau(k: Kit) {
       ...spec.store.product, contentTarget: `product:${it.key}`, handle: it.handle, title: SHORT[it.key], vendor: "MUSEAU CLUB", template_suffix: suffix,
       price, compare_at_price: null, currency: "EUR", options: sized ? ["Couleur", "Taille"] : ["Couleur"],
       variants: sized ? MUSEAU_SIZES.map((size) => ({ title: `${COLOR} / ${size}`, options: [COLOR, size], price, available: true })) : [{ title: COLOR, options: [COLOR], price, available: true }],
-      description_html: f.description, images: it.views.map(k.name), tags: [it.category.toLowerCase(), "bleu cobalt"], seo: f.seo,
+      description_html: f.description, images: it.views.map(k.name), tags: [TYPE[it.key], "bleu cobalt"], seo: f.seo,
     };
   });
   spec.store.product = products[0];
@@ -200,7 +202,7 @@ function curateMuseau(k: Kit) {
 
   // ─── Accueil enrichi (planche 01), onze blocs dans l'ordre de la maquette. ─────────────────────────────────────────
   overlay("index", [
-    section("cv-banner", { ...img("ambiance-02.webp"), layout: "background", band_height: "hero", veil: "light", mobile_valign: "top", image_loading: "eager", focus_x: 66, focus_y: 40, mobile_focus_x: 74, mobile_focus_y: 12, heading: "LE BONHEUR\nEST AU BOUT\nDE LA LAISSE.", heading_tag: "h1", heading_accent: "", eyebrow: "", text: p("Les essentiels de vos sorties à deux."), price_text: "", price_note: "", button_label: "On sort ?", button_link: "/collections/all", button_style: "solid", button_arrow: true, note: "", animation: "fade", color_scheme: "scheme-1", padding_top: 0, padding_bottom: 0 }),
+    section("cv-banner", { ...img("ambiance-02.webp"), layout: "background", band_height: "hero", veil: "light", mobile_valign: "bottom", image_loading: "eager", focus_x: 66, focus_y: 40, mobile_focus_x: 74, mobile_focus_y: 12, heading: "LE BONHEUR\nEST AU BOUT\nDE LA LAISSE.", heading_tag: "h1", heading_accent: "", eyebrow: "", text: p("Les essentiels de vos sorties à deux."), price_text: "", price_note: "", button_label: "On sort ?", button_link: "/collections/all", button_style: "solid", button_arrow: true, note: "", animation: "fade", color_scheme: "scheme-1", padding_top: 0, padding_bottom: 0 }),
     section("fs-products", { layout: "grid", source: "manual", eyebrow: "", heading: "", heading_accent: "", text: "", button_label: "", button_link: "", ratio: "square", columns: 4, limit: 4, align: "left", show_secondary: false, effect: "fade", color_scheme: "scheme-1", padding_top: 0, padding_bottom: 8 }, productBlocks(["harnais", "laisse", "collier", "pochette"])),
     section("cv-banner", { ...img("ambiance-09.webp"), layout: "panel-left", focus_x: 50, focus_y: 22, mobile_focus_x: 50, mobile_focus_y: 20, heading: "Il attend ce moment\ntoute la journée.", heading_tag: "h2", heading_accent: "", eyebrow: "", text: p("Des accessoires pensés pour toutes vos aventures, du quotidien aux grands horizons."), price_text: "", price_note: "", button_label: "Voir la collection", button_link: "/collections/all", button_style: "solid", button_arrow: true, note: "", animation: "fade", color_scheme: "scheme-3", padding_top: 0, padding_bottom: 0 }),
     section("cv-feature", { ...img("harnais-01.webp"), layout: "numbered", detail_shape: "circle", detail_numbers: true, image_zoom: 165, focus_x: 40, focus_y: 58, eyebrow: "Le harnais", heading: "De près, tout se joue\ndans les détails.", heading_accent: "", text: p("Une maille crème, des boucles noires et un anneau métallique : des détails à voir de près, pour les sorties de tous les jours."), button_label: "Découvrir le harnais", button_link: href("harnais"), button_arrow: true, guarantee_text: "", animation: "fade", color_scheme: "scheme-1", padding_top: 40, padding_bottom: 40 }, [
@@ -285,6 +287,24 @@ function curateMuseau(k: Kit) {
   footer.block_order = ["shop", "club", "help", "news"];
   for (const s of Object.values(spec.groups.footer.sections)) if (s.type !== "footer") s.disabled = true;
 
+  // ─── Boutique (planche 04, colonne centrale) : ouverture, pastilles par type, 2 × 2 grandes cartes, guide, ensemble. ─
+  const guideBand = (heading: string) => section("cv-banner", { layout: "illustration", heading, heading_tag: "h2", heading_accent: "", eyebrow: "", text: p("Mesurez son tour de cou et son tour de poitrail, puis comparez-les aux mesures du guide."), illus_label_1: "Tour de cou", illus_label_2: "Tour de poitrail", illus_note: "", price_text: "", price_note: "", button_label: "Voir le guide des tailles", button_link: MUSEAU_PAGES.tailles, button_style: "solid", button_arrow: true, note: "", animation: "fade", color_scheme: "scheme-3", padding_top: 0, padding_bottom: 0 });
+  spec.templates.collection = { order: ["hero", "main", "guide", "set"], sections: {
+    hero: section("cv-banner", { ...img("ambiance-02.webp"), layout: "background", band_height: "tall", veil: "light", mobile_valign: "bottom", image_loading: "eager", focus_x: 66, focus_y: 22, mobile_focus_x: 74, mobile_focus_y: 12, eyebrow: "La collection", heading: "La collection\npromenade.", heading_tag: "h1", heading_accent: "", text: p("Quatre essentiels pour profiter de chaque sortie, avec style et complicité."), price_text: "", price_note: "", button_label: "", button_link: "", note: "", animation: "fade", color_scheme: "scheme-1", padding_top: 0, padding_bottom: 0 }),
+    main: section("main-collection", { per_page: 12, columns: 2, enable_filters: false, enable_sorting: false, type_chips: true, chips_all_label: "Tous", show_header: false, show_count: false, card_vendor: false, card_button_label: "", card_ratio: "square", color_scheme: "scheme-1" }),
+    guide: guideBand("Guide des tailles."),
+    set: section("fs-products", { layout: "plus", source: "manual", eyebrow: "", heading: "Complétez la promenade.", heading_accent: "", text: p("Un ensemble assorti pour des balades encore plus belles."), button_label: "", button_link: "", ratio: "square", limit: 4, align: "left", show_secondary: false, effect: "fade", color_scheme: "scheme-1", padding_top: 32, padding_bottom: 40 }, productBlocks(["harnais", "laisse", "collier", "pochette"])),
+  } };
+
+  // ─── Panier (planche 05) : bandeau photo, lignes avec couleur et taille, sous-total et livraison à l'étape suivante
+  // (jamais un « Total » trompeur), puis « Complétez la balade ? » ; panier vide : « La prochaine balade commence ici. »
+  // et « Nos essentiels ». « Passer commande » mène, dans l'aperçu seulement, à l'exemple de commande sans paiement. ──
+  for (const sec of Object.values(spec.templates.cart?.sections ?? {})) if (sec.type === "main-cart") sec.settings = { ...sec.settings, intro: "", hero_image_asset: img("ambiance-02.webp").image_asset, hero_focus_x: 66, hero_focus_y: 24, hero_zoom: 100, hero_heading: "Votre panier", hero_text: "Les essentiels de vos prochaines balades.", hero_empty_image_asset: img("ambiance-04.webp").image_asset, hero_empty_focus_x: 50, hero_empty_focus_y: 34, hero_empty_heading: "La prochaine\nbalade\ncommence ici.", hero_empty_text: "Des accessoires pensés pour profiter de chaque moment ensemble.", hero_empty_button_label: "Découvrir la collection", hero_empty_button_link: "/collections/all", hero_color_scheme: "scheme-1", table_head: false, show_update: false, show_taxes_note: false, variant_options: true, total_label: "Sous-total", shipping_label: "Livraison", shipping_text: "Calculée à l'étape suivante", summary_note: "Prix de démonstration", empty_icon: "none", empty_image_asset: "", empty_heading: "Votre panier est vide.", empty_text: "", empty_button_label: "Découvrir la collection", empty_button_link: "/collections/all", qty_buttons: true, remove_label: "Supprimer", continue_label: "Continuer mes achats", demo_checkout_link: MUSEAU_PAGES.paiement, color_scheme: "scheme-1" };
+  spec.templates.cart.sections.more = section("fs-products", { layout: "grid", source: "manual", cart_visibility: "filled", exclude_cart_items: true, card_button_label: "Voir le produit", eyebrow: "", heading: "Complétez la balade ?", heading_accent: "", text: p("Nos autres essentiels."), button_label: "", button_link: "", ratio: "square", columns: 3, limit: 4, align: "left", show_secondary: false, effect: "fade", color_scheme: "scheme-4", padding_top: 32, padding_bottom: 40 }, productBlocks(["harnais", "laisse", "collier", "pochette"]));
+  spec.templates.cart.sections.essentials = section("fs-products", { layout: "grid", source: "manual", cart_visibility: "empty", card_button_label: "Voir le produit", eyebrow: "", heading: "Nos essentiels", heading_accent: "", text: p("Quatre accessoires assortis pour vos sorties de tous les jours."), button_label: "", button_link: "", ratio: "square", columns: 4, limit: 4, align: "center", show_secondary: false, effect: "fade", color_scheme: "scheme-1", padding_top: 32, padding_bottom: 48 }, productBlocks(["harnais", "laisse", "collier", "pochette"]));
+  spec.templates.cart.order.push("more", "essentials");
+  spec.settings = { ...spec.settings, cart_discount_code: true, cart_checkout_label: "Passer commande", cart_reassurance: "" };
+
   // ─── Pages (contenu détaillé : voir pagesMuseau). ────────────────────────────────────────────────────────────────
   pagesMuseau(k, href);
   k.finish();
@@ -302,6 +322,14 @@ function pagesMuseau(k: Kit, href: (key: string) => string) {
     spec.templates[`page.${handle}`].sections.title.settings = { ...spec.templates[`page.${handle}`].sections.title.settings, show_title: false, padding_top: 0, padding_bottom: 0 };
   };
   void href;
+  // Exemple de commande et de confirmation (planche 05) : aucune carte demandée, champs désactivés, récapitulatif fixe
+  // (harnais taille M + laisse = 78 € de sous-total, livraison à calculer). Pages de démonstration seulement.
+  const orderLines = [
+    { type: "line", settings: { product: MUSEAU_PRODUCTS[0].handle, variant_label: "Bleu cobalt\nTaille M", quantity: 1 } },
+    { type: "line", settings: { product: MUSEAU_PRODUCTS[1].handle, variant_label: "Bleu cobalt", quantity: 1 } },
+  ];
+  page("finaliser-ma-commande", "Finaliser ma commande", { title: "Finaliser ma commande (exemple) | MUSEAU CLUB", description: "Exemple de commande de la boutique de démonstration : rien n'est envoyé ni payé." }, [["order", k.section("demo-order", { layout: "checkout", eyebrow: "Exemple de démonstration", heading: "Finaliser ma commande", text: p("Encore un peu et c'est parti pour de nouvelles aventures."), button_label: "Voir l'exemple de confirmation", button_link: MUSEAU_PAGES.confirmation, button_note: "Aucun paiement : la démonstration montre seulement le parcours.", color_scheme: "scheme-1", padding_top: 32, padding_bottom: 56 }, orderLines)]]);
+  page("confirmation-de-commande", "Confirmation de commande", { title: "Confirmation (exemple) | MUSEAU CLUB", description: "Exemple de confirmation de la boutique de démonstration : aucune commande réelle." }, [["order", k.section("demo-order", { ...k.img("ambiance-09.webp"), focus_x: 50, focus_y: 30, layout: "confirmation", eyebrow: "Exemple de confirmation", heading: "Merci,\nla balade peut\ncommencer.", text: p("Dans une vraie boutique, la confirmation et l'e-mail de commande sont envoyés par Shopify après le paiement. Ici, aucune commande n'a été passée."), button_label: "Voir l'exemple de commande", button_link: MUSEAU_PAGES.commande, summary_title: "Récapitulatif de la commande", color_scheme: "scheme-1", padding_top: 32, padding_bottom: 56 }, orderLines)]]);
   page("le-club", "Le club", { title: "Le club | MUSEAU CLUB", description: "Pour ceux qui ne disent jamais non à une balade : l'histoire de MUSEAU CLUB." }, [["hero", pageHero(k, "ambiance-02.webp", "Pour ceux\nqui ne disent\njamais non\nà une balade.", "MUSEAU CLUB, c'est une collection d'accessoires pensés pour tous ceux qui partagent une même évidence : les plus beaux moments sont souvent dehors.")]]);
   page("journal", "Journal", { title: "Journal | MUSEAU CLUB", description: "Des idées, des inspirations et des conseils pour explorer le monde ensemble." }, [["hero", pageHero(k, "ambiance-09.webp", "Le journal\ndes sorties\nà deux.", "Des idées, des inspirations et des conseils pour explorer le monde ensemble, autrement.")]]);
   for (const a of MUSEAU_ARTICLES) page(a.handle, a.title, { title: `${a.title} | Journal MUSEAU CLUB`, description: a.title }, [["hero", pageHero(k, a.image, a.title, "Article du journal MUSEAU CLUB.")]]);

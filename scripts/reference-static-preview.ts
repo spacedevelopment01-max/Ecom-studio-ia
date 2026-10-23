@@ -29,7 +29,7 @@ const { createUser } = await import("../src/lib/auth");
 const { saveThemeVersion } = await import("../src/lib/projects"); const { previewSegment } = await import("../src/lib/theme/preview-access");
 const { GET, POST } = await import("../src/app/preview/[id]/v/[vid]/[[...path]]/route");
 const { runWithLang } = await import("../src/lib/i18n-server");
-const { variantId } = await import("../src/lib/theme/render"); const { purchaseConfig } = await import("../src/lib/theme/purchase-offers");
+const { variantId } = await import("../src/lib/theme/render"); const { storeProducts } = await import("../src/lib/theme/store-products"); const { purchaseConfig } = await import("../src/lib/theme/purchase-offers");
 const user = await createUser("reference-static@example.invalid", "isolated-test-only", "Aperçu statique");
 const ORIGIN = "http://127.0.0.1";
 type Ctx = { params: Promise<{ id: string; vid: string; path: string[] }> };
@@ -110,12 +110,17 @@ try {
       const clear = async () => { for (let guard = 0; guard < 8; guard++) { const c = await cartJson(); if (!c.items.length) return; for (const item of c.items) if (!item.properties?._es_gift) await post(`${base}/cart/change`, JSON.stringify({ id: item.key, quantity: 0 }), "application/json"); } };
       const stateKey = (c: { items: Item[] }) => c.items.map((i) => `${i.key}x${i.quantity}`).sort().join("|") || "vide";
       const mainSection = Object.values(spec.templates.product.sections).find((sec) => sec.type === "main-product")!, purchase = purchaseConfig(mainSection), vid = variantId(0, 0);
+      // Boutique à plusieurs produits (MUSEAU CLUB, SOUPLE) : chaque variante de chaque produit s'ajoute (1 ou 2), dans
+      // la limite de 2 lignes et 3 articles pour garder un nombre d'états raisonnable ; sinon, le produit principal.
+      const catalog = storeProducts(spec), multi = catalog.length > 1 && !purchase?.offers?.length;
       const adds: { action: string; body: string }[] = purchase?.offers?.length
         ? purchase.offers.map((o) => ({ action: `add:offer:${o.id}`, body: JSON.stringify({ offer: o.id, target: spec.store.product.contentTarget ?? "product:main", variants: Array(o.quantity).fill(vid) }) }))
-        : [1, 2, 3].map((n) => ({ action: `add:id:${vid}:${n}`, body: JSON.stringify({ id: vid, quantity: n }) }));
+        : multi
+          ? catalog.flatMap((p, pi) => (p.variants?.length ? p.variants : [null]).flatMap((_, vi) => [1, 2].map((n) => ({ action: `add:id:${variantId(pi, vi)}:${n}`, body: JSON.stringify({ id: variantId(pi, vi), quantity: n }) }))))
+          : [1, 2, 3].map((n) => ({ action: `add:id:${vid}:${n}`, body: JSON.stringify({ id: vid, quantity: n }) }));
       const states: Record<string, { cart: unknown; drawer: string; page: string }> = {}, edges: Record<string, Record<string, string>> = {}, queue: string[] = [];
       const capture = async (key: string) => { if (states[key]) return; const c = await cartJson(); const sections = JSON.parse(await (await get(`${base}/cart?sections=cart-drawer`)).text()) as Record<string, string>; assert.ok(sections["cart-drawer"], `tiroir non rendu pour ${key}`); const page = await pageHtml("/cart"); states[key] = { cart: JSON.parse(rewrite(JSON.stringify(c))), drawer: rewrite(sections["cart-drawer"] ?? ""), page: inject(rewrite(page).replace("<html", `<html data-static-state="${key}"`)) }; queue.push(key); };
-      const MAX_ITEMS = 12, MAX_LINES = 3;
+      const MAX_ITEMS = multi ? 3 : 12, MAX_LINES = multi ? 2 : 3;
       const pathsTo: Record<string, { action: string; body: string; url: string }[]> = { vide: [] };
       await clear(); await capture("vide");
       while (queue.length) {

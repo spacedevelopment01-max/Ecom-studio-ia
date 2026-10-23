@@ -4,7 +4,7 @@
    Aucun paiement, aucun envoi : toute action hors des états pré-calculés affiche un message explicite. */
 (function () {
   'use strict';
-  var KEY = 'es-static-cart', limitMsg = 'Aperçu statique : cette combinaison n’a pas été pré-calculée (12 articles ou 3 lignes au plus). Retirez une ligne pour continuer.';
+  var KEY = 'es-static-cart', limitMsg = 'Aperçu statique : cette combinaison n’a pas été pré-calculée (le panier de démonstration est limité). Retirez un article pour continuer.';
   var transitions = null, cache = {};
   function sync(url) { try { var x = new XMLHttpRequest(); x.open('GET', url, false); x.send(null); return x.status === 200 || x.status === 0 ? x.responseText : null; } catch (e) { return null; } }
   function load(url) { if (cache[url]) return cache[url]; var t = sync(url); cache[url] = t ? JSON.parse(t) : null; return cache[url]; }
@@ -106,7 +106,7 @@
     var form = e.target; if (!form || form.tagName !== 'FORM') return;
     if (form.hasAttribute('data-product-form') || form.closest('[data-purchase]')) return; /* gérés par le thème */
     if (form.id === 'CartForm') {
-      e.preventDefault(); if (e.submitter && e.submitter.name === 'checkout') { note('Paiement désactivé dans cet aperçu de démonstration.'); return; }
+      e.preventDefault(); if (e.submitter && e.submitter.name === 'checkout') { var demo = document.querySelector('[data-demo-checkout]'); if (demo && demo.getAttribute('href')) { location.href = demo.getAttribute('href'); return; } note('Paiement désactivé dans cet aperçu de démonstration.'); return; }
       var inputs = form.querySelectorAll('input[name="updates[]"]'), st = state(stateKey()), items = st && st.cart ? st.cart.items : [];
       for (var i = 0; i < inputs.length && i < items.length; i++) { var want = Number(inputs[i].value); if (want !== items[i].quantity) { var r = apply('change:' + items[i].key + ':' + want); if (!r) { note(limitMsg); return; } } }
       location.href = 'panier.html'; return;
